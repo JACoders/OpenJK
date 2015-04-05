@@ -5591,7 +5591,6 @@ void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  )
 	}
 
 	if (self->client->sess.raceMode) { //Dont attempt to block in racemode
-		trap->Print("Memes, canceling block check\n");
 		return;
 	}
 
@@ -8258,7 +8257,6 @@ void WP_SaberPositionUpdate( gentity_t *self, usercmd_t *ucmd )
 	}
 
 	if (self && self->inuse && self->client && self->client->sess.raceMode) {
-		trap->Print("Memes, canceling saber check\n");
 		return;
 	}
 

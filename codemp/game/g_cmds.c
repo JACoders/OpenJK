@@ -7679,9 +7679,9 @@ void Cmd_ShowNet_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				Q_strncpyz(strRate, "^7Bot    ", sizeof(strRate)); //dont fucking know why it needs 4 spaces
 				Q_strncpyz(strSnaps, "^7Bot    ", sizeof(strSnaps));
 
-				Q_strncpyz(strFPS, "^7Bot^7", sizeof(strFPS));
-				Q_strncpyz(strPackets, "^7Bot^7", sizeof(strPackets));
-				Q_strncpyz(strTimenudge, "^7Bot^7", sizeof(strTimenudge));
+				Q_strncpyz(strFPS, "^7Bot    ", sizeof(strFPS));
+				Q_strncpyz(strPackets, "^7Bot    ", sizeof(strPackets));
+				Q_strncpyz(strTimenudge, "^7Bot    ", sizeof(strTimenudge));
 			}
 			else {
 				if (cl->pers.rate < sv_maxRate.integer)
