@@ -1571,7 +1571,7 @@ static void CG_ZykMod( void )
 
 	trap->Cmd_Argv( 1, arg, sizeof( arg ) );
 
-	while (j < 80)
+	while (j < 81)
 	{ // zyk: parsing info from the server and setting the respective cvars
 		k = 0;
 
@@ -1679,11 +1679,80 @@ static void CG_ZykMod( void )
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
 			}
 		}
-		else
+		else if (j < 80)
 		{
 			int setting_value = j-63;
 
 			trap->Cvar_Set(va("ui_zyk_setting_%d_value", setting_value), va("%s",value));
+		}
+		else
+		{ // zyk: receive the Upgrades bought from the seller
+			int secrets_found = atoi(value);
+
+			if (secrets_found & (1 << 0))
+				trap->Cvar_Set("ui_zyk_upgrade_0_value", "Holdable Items Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_0_value", "Holdable Items Upgrade - no");
+
+			if (secrets_found & (1 << 1))
+				trap->Cvar_Set("ui_zyk_upgrade_1_value","Bounty Hunter Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_1_value","Bounty Hunter Upgrade - no");
+
+			if (secrets_found & (1 << 7))
+				trap->Cvar_Set("ui_zyk_upgrade_2_value","Stealth Attacker Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_2_value","Stealth Attacker Upgrade - no");
+
+			if (secrets_found & (1 << 8))
+				trap->Cvar_Set("ui_zyk_upgrade_3_value","Force Gunner Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_3_value","Force Gunner Upgrade - no");
+
+			if (secrets_found & (1 << 9))
+				trap->Cvar_Set("ui_zyk_upgrade_4_value","Impact Reducer - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_4_value","Impact Reducer - no");
+
+			if (secrets_found & (1 << 10))
+				trap->Cvar_Set("ui_zyk_upgrade_5_value","Flame Thrower - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_5_value","Flame Thrower - no");
+
+			if (secrets_found & (1 << 11))
+				trap->Cvar_Set("ui_zyk_upgrade_6_value","Power Cell Weapons Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_6_value","Power Cell Weapons Upgrade - no");
+
+			if (secrets_found & (1 << 12))
+				trap->Cvar_Set("ui_zyk_upgrade_7_value","Blaster Pack Weapons Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_7_value","Blaster Pack Weapons Upgrade - no");
+
+			if (secrets_found & (1 << 13))
+				trap->Cvar_Set("ui_zyk_upgrade_8_value","Metal Bolts Weapons Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_8_value","Metal Bolts Weapons Upgrade - no");
+
+			if (secrets_found & (1 << 14))
+				trap->Cvar_Set("ui_zyk_upgrade_9_value","Rocket Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_9_value","Rocket Upgrade - no");
+
+			if (secrets_found & (1 << 15))
+				trap->Cvar_Set("ui_zyk_upgrade_10_value","Stun Baton Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_10_value","Stun Baton Upgrade - no");
+
+			if (secrets_found & (1 << 16))
+				trap->Cvar_Set("ui_zyk_upgrade_11_value","Armored Soldier Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_11_value","Armored Soldier Upgrade - no");
+
+			if (secrets_found & (1 << 17))
+				trap->Cvar_Set("ui_zyk_upgrade_12_value","Jetpack Upgrade - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_12_value","Jetpack Upgrade - no");
 		}
 
 		j++;

@@ -6904,6 +6904,8 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 			}
 		}
 
+		strcpy(content,va("%s%d-",content,ent->client->pers.secrets_found));
+
 		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-%s\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent),content));
 	}
 }
