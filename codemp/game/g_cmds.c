@@ -9518,6 +9518,8 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		save_account(ent);
 
 		trap->SendServerCommand( ent-g_entities, va("chat \"^3Jawa Seller: ^7Thanks %s^7!\n\"",ent->client->pers.netname) );
+
+		Cmd_ZykMod_f(ent);
 	}
 	else
 	{
