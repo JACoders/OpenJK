@@ -2322,8 +2322,25 @@ static qboolean PM_CheckJump( void )
 					}
 				}
 				if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8) {
+#ifdef _GAME
+					{
+						gclient_t *client = NULL;
+						{
+							int clientNum = pm->ps->clientNum;
+							if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+								client = g_entities[clientNum].client;
+							}
+						}
+					}
+
+					if (client && client->pers.practice && client->sess.raceMode) {
+					}
+					else
+#endif
+					{
 					pm->cmd.upmove = 0; // change this to allow hold to jump?
 					return qfalse;
+					}
 				}
 			}
 		}
@@ -2342,9 +2359,27 @@ static qboolean PM_CheckJump( void )
 		// clear upmove so cmdscale doesn't lower running speed - LODA FIXME
 		if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8)
 		{
+#ifdef _GAME
+			{
+				gclient_t *client = NULL;
+				{
+					int clientNum = pm->ps->clientNum;
+					if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+						client = g_entities[clientNum].client;
+					}
+				}
+			}
+
+			if (client && client->pers.practice && client->sess.raceMode) {
+			}
+			else
+#endif
+			{
 			pm->cmd.upmove = 0;
 			return qfalse;
+			}
 		}
+		//hold to jump?
 	}
 
 	if ( pm->ps->gravity <= 0 )
