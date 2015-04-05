@@ -11105,6 +11105,16 @@ void PmoveSingle (pmove_t *pmove) {
 	//if we're in jetpack mode then see if we should be jetting around
 	if (pm->ps->pm_type == PM_JETPACK)
 	{
+		int zyk_jetpack_max_vel = 512; // zyk: changed from 256 to 512
+
+#if defined (_GAME)
+		gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+
+		// zyk: if player has the Jetpack Upgrade, increase max velocity
+		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.secrets_found & (1 << 17))
+			zyk_jetpack_max_vel = 768;
+#endif
+
 		if (pm->cmd.rightmove > 0)
 		{
 			PM_ContinueLegsAnim(BOTH_INAIRRIGHT1);
@@ -11133,7 +11143,7 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->ps->velocity[1] += Q_irand(-100, 100);
 		}
 
-		if (pm->cmd.upmove > 0 && pm->ps->velocity[2] < 512) // zyk: changed from 256 to 512
+		if (pm->cmd.upmove > 0 && pm->ps->velocity[2] < zyk_jetpack_max_vel) 
 		{ //cap upward velocity off at 256. Seems reasonable.
 			float addIn = 12.0f;
 
@@ -11172,7 +11182,7 @@ void PmoveSingle (pmove_t *pmove) {
 		{
 			pm->ps->eFlags &= ~EF_JETPACK_FLAMING; //idling
 
-			if (pm->ps->velocity[2] < 512) // zyk: changed from 256 to 512
+			if (pm->ps->velocity[2] < zyk_jetpack_max_vel)
 			{
 				if (pm->ps->velocity[2] < -100)
 				{
