@@ -1013,6 +1013,9 @@ Ghoul2 Insert End
 	// 0 - Radar Upgrade
 	// 1 - Blue Jetpack Flame
 	int rpg_stuff;
+
+	// zyk: tests which clients must have the blue jet efx rendered client-side
+	qboolean zyk_blue_jet_efx[MAX_CLIENTS];
 } cg_t;
 
 #define MAX_TICS	14

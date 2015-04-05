@@ -5141,16 +5141,9 @@ void initialize_rpg_skills(gentity_t *ent)
 		set_max_shield(ent);
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
-		if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-			G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
-		else // zyk: removing radar upgrade from client-side game		
-			G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
-
-		// zyk: event to set the blue jetpack flame
-		if (ent->client->pers.secrets_found & (1 << 17))
-			G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
-		else
-			G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
+		// zyk: update the rpg stuff info at the client-side game
+		ent->client->pers.send_event_timer = level.time + 2000;
+		ent->client->pers.player_statuses &= ~(1 << 2);
 	}
 }
 
@@ -5867,11 +5860,8 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	// zyk: resetting force powers
 	WP_InitForcePowers( ent );
 
-	// zyk: removing rpg stuff from client-side game
-	G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
-
-	// zyk: removing blue jetpack flame
-	G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
+	// zyk: update the rpg stuff info at the client-side game
+	ent->client->pers.player_statuses &= ~(1 << 2);
 			
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
@@ -9444,9 +9434,8 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.secrets_found |= (1 << 1);
 
-			// zyk: sending event of the Radar Upgrade, if the player is a Bounty Hunter
-			if (ent->client->pers.rpg_class == 2)
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
+			// zyk: update the rpg stuff info at the client-side game
+			ent->client->pers.player_statuses &= ~(1 << 2);
 		}
 		else if (value == 30)
 		{
@@ -9517,8 +9506,8 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.secrets_found |= (1 << 17);
 
-			// zyk: event to set the blue jetpack flame
-			G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
+			// zyk: update the rpg stuff info at the client-side game
+			ent->client->pers.player_statuses &= ~(1 << 2);
 		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));

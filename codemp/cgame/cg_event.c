@@ -2686,6 +2686,17 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 			Com_Printf("%s\n", psStringEDRef);
 		}
+		else if (es->number < MAX_CLIENTS)
+		{ // zyk handling the jetpack effect for other players
+			if (es->eventParm == 7)
+			{ // zyk: if 7, set the blue jetpack flame
+				cg.zyk_blue_jet_efx[es->number] = qtrue;
+			}
+			else if (es->eventParm == 8)
+			{ // zyk: if 8, remove blue jetpack flame
+				cg.zyk_blue_jet_efx[es->number] = qfalse;
+			}
+		}
 		break;
 
 	//=================================================================

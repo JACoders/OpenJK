@@ -2659,6 +2659,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	client->pers.mind_controlled1_id = -1;
 	client->pers.guardian_invoked_by_id = -1;
 
+	// zyk: sending events to client game
+	client->pers.send_event_timer = level.time + 2000;
+
 	client->pers.skill_counter = 0;
 	VectorSet(client->pers.teleport_point,0,0,0);
 	VectorCopy(client->ps.viewangles,client->pers.teleport_angles);

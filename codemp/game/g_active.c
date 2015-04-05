@@ -812,17 +812,6 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 					ent->client->ps.stats[STAT_ARMOR] += 1;
 			}
 
-			if (!(ent->client->pers.player_statuses & (1 << 2)) && (level.time - ent->client->pers.enterTime) > 2000)
-			{ // zyk: send this event after some seconds in map and if the player did not received this event yet
-				// must wait some seconds because after a map change, sometimes the event is not received by the client-side game right away
-				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-					G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
-				else // zyk: removing rpg stuff from client-side game		
-					G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
-
-				ent->client->pers.player_statuses |= (1 << 2);
-			}
-
 			if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)) && ent->health > 0)
 			{ // zyk: Light Power
 				if (ent->health < ent->client->pers.max_rpg_health)
@@ -830,6 +819,31 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				else if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
 					ent->client->ps.stats[STAT_ARMOR] += 1;
 			}
+		}
+
+		if (!(ent->client->pers.player_statuses & (1 << 2)) && ent->client->pers.send_event_timer < level.time)
+		{ // zyk: send this event after some seconds in map and if the player did not received this event yet
+			// must wait some seconds because after a map change, sometimes the event is not received by the client-side game right away
+			if (client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+			{
+				G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
+			}
+			else // zyk: removing rpg stuff from client-side game		
+				G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
+
+			ent->client->pers.player_statuses |= (1 << 2);
+			ent->client->pers.player_statuses &= ~(1 << 3);
+			ent->client->pers.send_event_timer = level.time + 500;
+		}
+		else if (!(ent->client->pers.player_statuses & (1 << 3)) && ent->client->pers.send_event_timer < level.time)
+		{
+			// zyk: event to set the blue jetpack flame
+			if (client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 17))
+				G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
+			else
+				G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
+
+			ent->client->pers.player_statuses |= (1 << 3);
 		}
 
 		if (level.screen_message_timer[ent->s.number] >= (level.time + 1000))

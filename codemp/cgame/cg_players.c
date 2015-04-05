@@ -8756,8 +8756,9 @@ void CG_Player( centity_t *cent ) {
 				{ //create effects
 					//FIXME: Just one big effect
 					//Play the effect
-					if (cg.rpg_stuff & (1 << 1))
-					{ // zyk: if player has the jetpack upgrade, use the blue jetpack effect
+					if ((cg.snap->ps.clientNum == cent->currentState.number && cg.rpg_stuff & (1 << 1)) || 
+						(cg.snap->ps.clientNum != cent->currentState.number && cg.zyk_blue_jet_efx[cent->currentState.number] == qtrue))
+					{ // zyk: if this player has the jetpack upgrade, use the blue jetpack effect
 						trap->FX_PlayEffectID(cgs.effects.mBlueJet, flamePos, flameDir, -1, -1, qfalse);
 						trap->FX_PlayEffectID(cgs.effects.mBlueJet, flamePos, flameDir, -1, -1, qfalse);
 					}
@@ -8775,7 +8776,8 @@ void CG_Player( centity_t *cent ) {
 				{ //just idling
 					//FIXME: Different smaller effect for idle
 					//Play the effect
-					if (cg.rpg_stuff & (1 << 1))
+					if ((cg.snap->ps.clientNum == cent->currentState.number && cg.rpg_stuff & (1 << 1)) || 
+						(cg.snap->ps.clientNum != cent->currentState.number && cg.zyk_blue_jet_efx[cent->currentState.number] == qtrue))
 					{ // zyk: if player has the jetpack upgrade, use the blue jetpack effect
 						trap->FX_PlayEffectID(cgs.effects.mBlueJet, flamePos, flameDir, -1, -1, qfalse);
 					}

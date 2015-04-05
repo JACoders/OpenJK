@@ -2460,6 +2460,7 @@ void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum )
 	char buf[64];
 	const char	*s;
 	int i = 0;
+	int j = 0;
 
 	BG_InitAnimsets(); //clear it out
 
@@ -2509,6 +2510,12 @@ Ghoul2 Insert End
 
 	// zyk: initialize this value, used by RPG Mode
 	cg.rpg_stuff = 0;
+
+	// zyk: initialize the blue jet players
+	for (j = 0; j < MAX_CLIENTS; j++)
+	{
+		cg.zyk_blue_jet_efx[j] = qfalse;
+	}
 
 	cgs.processedSnapshotNum = serverMessageNum;
 	cgs.serverCommandSequence = serverCommandSequence;
