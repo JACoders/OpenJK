@@ -635,6 +635,11 @@ static qboolean pas_find_enemies( gentity_t *self )
 
 		if ( target->client )
 		{
+			if (target->NPC && target->client->playerTeam == NPCTEAM_PLAYER && target->client->enemyTeam == NPCTEAM_ENEMY)
+			{ // zyk: dont attack allied npcs
+				continue;
+			}
+
 			VectorCopy( target->client->ps.origin, org );
 		}
 		else
