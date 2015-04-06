@@ -4672,6 +4672,9 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 					ent->client->pers.secrets_found |= (1 << 6);
 			}
 
+			// zyk: skill counter does not give credits, only Level Up Score
+			ent->client->pers.credits_modifier = -10;
+
 			rpg_score(ent);
 		}
 	}
