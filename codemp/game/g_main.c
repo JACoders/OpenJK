@@ -3229,6 +3229,7 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time );
 
 void G_RunFrame( int levelTime ) {
 	int			i;
+	int			j;
 	gentity_t	*ent;
 #ifdef _G_FRAME_PERFANAL
 	int			iTimer_ItemRun = 0;
@@ -3370,24 +3371,42 @@ void G_RunFrame( int levelTime ) {
 	}
 	if ( level.pause.state == PAUSE_PAUSED ) {
 		if ( lastMsgTime < level.time - 500 ) {
-			//G_Announce( va( "Match has been paused.\n%.0f seconds remaining", ceilf( (level.pause.time - level.time) / 1000.0f ) ) );
-			trap->SendServerCommand( -1, va("cp \"Match has been paused.\n%.0f seconds remaining\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+
+			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
+				if (!g_entities[j].inuse)
+					continue;
+				if (!level.clients[j].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+					trap->SendServerCommand( j, va("cp \"Match has been paused.\n%.0f seconds remaining\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			}	
+			//trap->SendServerCommand( -1, va("cp \"Match has been paused.\n%.0f seconds remaining\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
 			lastMsgTime = level.time;
 		}
 
 		if ( level.time > level.pause.time - (g_unpauseTime.integer * 1000) )
 			level.pause.state = PAUSE_UNPAUSING;
 	}
-	if ( level.pause.state == PAUSE_UNPAUSING ) {
+	else if ( level.pause.state == PAUSE_UNPAUSING ) {
 		if ( lastMsgTime < level.time - 500 ) {
-			//G_Announce( va( "MATCH IS UNPAUSING\nin %.0f...", ceilf( (level.pause.time - level.time) / 1000.0f ) ) );
-			trap->SendServerCommand( -1, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			
+			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
+				if (!g_entities[j].inuse)
+					continue;
+				if (!level.clients[i].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+					trap->SendServerCommand( j, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
+			}	
+			//trap->SendServerCommand( -1, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
 			lastMsgTime = level.time;
 		}
 
-		if ( level.time > level.pause.time ) {
+		else if ( level.time > level.pause.time ) {
 			level.pause.state = PAUSE_NONE;
-			trap->SendServerCommand( -1, "cp \"Fight!\n\"" );
+			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
+				if (!g_entities[j].inuse)
+					continue;
+				if (!level.clients[j].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+					trap->SendServerCommand( i, "cp \"Fight!\n\"" );
+			}	
+			//trap->SendServerCommand( -1, "cp \"Fight!\n\"" );
 		}
 	}
 
