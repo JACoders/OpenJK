@@ -3242,7 +3242,7 @@ static void PM_AirMove( void ) {
 #if defined (_GAME)
 			gentity_t *player_ent = &g_entities[pm->ps->clientNum];
 			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.secrets_found & (1 << 17))
-				VectorScale(wishvel, 1.4f, wishvel);
+				VectorScale(wishvel, 1.2f, wishvel);
 			else
 				VectorScale(wishvel, 0.8f, wishvel);
 #else
@@ -3254,7 +3254,7 @@ static void PM_AirMove( void ) {
 #if defined (_GAME) // zyk: added the Jetpack Upgrade test, in this case, player can have more control
 			gentity_t *player_ent = &g_entities[pm->ps->clientNum];
 			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.secrets_found & (1 << 17))
-				VectorScale(wishvel, 3.5f, wishvel);
+				VectorScale(wishvel, 3.0f, wishvel);
 			else
 				VectorScale(wishvel, 2.0f, wishvel);
 #else
@@ -11105,14 +11105,14 @@ void PmoveSingle (pmove_t *pmove) {
 	//if we're in jetpack mode then see if we should be jetting around
 	if (pm->ps->pm_type == PM_JETPACK)
 	{
-		int zyk_jetpack_max_vel = 512; // zyk: changed from 256 to 512
+		int zyk_jetpack_max_vel = 512; // zyk: default 256
 
 #if defined (_GAME)
 		gentity_t *player_ent = &g_entities[pm->ps->clientNum];
 
 		// zyk: if player has the Jetpack Upgrade, increase max velocity
 		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.secrets_found & (1 << 17))
-			zyk_jetpack_max_vel = 768;
+			zyk_jetpack_max_vel = 704;
 #endif
 
 		if (pm->cmd.rightmove > 0)
