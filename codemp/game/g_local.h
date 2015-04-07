@@ -245,15 +245,39 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define VOTE_FRAGLIMIT		(1<<6)
 #define VOTE_CAPTURELIMIT	(1<<7)
 
-#define JAPRO_PLUGIN_BHOP			(1<<0)	//
-#define JAPRO_PLUGIN_NOROLL			(1<<1)	//
-#define JAPRO_PLUGIN_NOCART			(1<<2)	//
-#define JAPRO_PLUGIN_JAWARUN		(1<<3)	//
-#define JAPRO_PLUGIN_NODUELTELE		(1<<4)	//
-#define JAPRO_PLUGIN_NOCENTERCP		(1<<5)	//
-#define JAPRO_PLUGIN_CHATBOXCP		(1<<6)	//
-#define JAPRO_PLUGIN_NODMGNUMBERS	(1<<7)	//
-#define JAPRO_PLUGIN_CENTERMUZZLE	(1<<8)	//
+//ja+ stuff
+#define CPD_NEWDRAINEFX			(1<<0)
+#define CPD_DUELSEEOTHERS		(1<<1)
+#define CPD_ENDDUELROTATION		(1<<2) 
+#define CPD_BLACKSABERSDISABLE	(1<<3)
+#define CPD_AUTOREPLYDISABLE	(1<<4) 
+#define CPD_NEWFORCEEFFECT		(1<<5) 
+#define CPD_NEWDEATHMSG_DISABLE	(1<<6)
+#define CPD_NEWSIGHTEFFECT		(1<<7) 
+#define CPD_NOALTDIMEFFECT		(1<<8)
+#define CPD_HOLSTEREDSABER		(1<<9) 
+#define CPD_LEDGEGRAB			(1<<10)
+#define CPD_NEWDFAPRIM			(1<<11) 
+#define CPD_NEWDFAALT			(1<<12) 
+#define CPD_NOSPCARTWHEEL		(1<<13)
+#define CPD_ALLOWLIBCURL		(1<<14)
+
+//ja++ stuff
+#define CPD_NOKATA				(1<<15) // don't allow katas
+#define CPD_NOBUTTERFLY			(1<<16) // don't allow butterflies
+#define CPD_NOSTAB				(1<<17) // don't allow backstab/rollstab
+#define CPD_NODFA				(1<<18) // don't allow DFAs
+
+//japro stuff
+#define JAPRO_PLUGIN_BHOP			(1<<19)	//
+#define JAPRO_PLUGIN_NOROLL			(1<<20)	//
+#define JAPRO_PLUGIN_NOCART			(1<<21)	//
+#define JAPRO_PLUGIN_JAWARUN		(1<<22)	//
+#define JAPRO_PLUGIN_NODUELTELE		(1<<23)	//
+#define JAPRO_PLUGIN_NOCENTERCP		(1<<24)	//
+#define JAPRO_PLUGIN_CHATBOXCP		(1<<25)	//
+#define JAPRO_PLUGIN_NODMGNUMBERS	(1<<26)	//
+#define JAPRO_PLUGIN_CENTERMUZZLE	(1<<27)	//
 
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
