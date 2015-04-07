@@ -329,6 +329,40 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 			case SDLK_NUMLOCKCLEAR: key = A_NUMLOCK;       break;
 			case SDLK_CAPSLOCK:     key = A_CAPSLOCK;      break;
 
+			case L'\u00D7':			key = A_MULTIPLY;		break;
+			case L'\u00E0':			key = A_LOW_AGRAVE;		break;
+			case L'\u00E1':			key = A_LOW_AACUTE;		break;
+			case L'\u00E2':			key = A_LOW_ACIRCUMFLEX; break;
+			case L'\u00E3':			key = A_LOW_ATILDE;		break;
+			case L'\u00E4':			key = A_LOW_ADIERESIS;	break;
+			case L'\u00E5':			key = A_LOW_ARING;		break;
+			case L'\u00E6':			key = A_LOW_AE;			break;
+			case L'\u00E7':			key = A_LOW_CCEDILLA;	break;
+			case L'\u00E8':			key = A_LOW_EGRAVE;		break;
+			case L'\u00E9':			key = A_LOW_EACUTE;		break;
+			case L'\u00EA':			key = A_LOW_ECIRCUMFLEX; break;
+			case L'\u00EB':			key = A_LOW_EDIERESIS;	break;
+			case L'\u00EC':			key = A_LOW_IGRAVE;		break;
+			case L'\u00ED':			key = A_LOW_IACUTE;		break;
+			case L'\u00EE':			key = A_LOW_ICIRCUMFLEX; break;
+			case L'\u00EF':			key = A_LOW_IDIERESIS;	break;
+			case L'\u00F0':			key = A_LOW_ETH;		break;
+			case L'\u00F1':			key = A_LOW_NTILDE;		break;
+			case L'\u00F2':			key = A_LOW_OGRAVE;		break;
+			case L'\u00F3':			key = A_LOW_OACUTE;		break;
+			case L'\u00F4':			key = A_LOW_OCIRCUMFLEX; break;
+			case L'\u00F5':			key = A_LOW_OTILDE;		break;
+			case L'\u00F6':			key = A_LOW_ODIERESIS;	break;
+			case L'\u00F7':			key = A_DIVIDE;			break;
+			case L'\u00F8':			key = A_LOW_OSLASH;		break;
+			case L'\u00F9':			key = A_LOW_UGRAVE;		break;
+			case L'\u00FA':			key = A_LOW_UACUTE;		break;
+			case L'\u00FB':			key = A_LOW_UCIRCUMFLEX; break;
+			case L'\u00FC':			key = A_LOW_UDIERESIS;	break;
+			case L'\u00FD':			key = A_LOW_YACUTE;		break;
+			case L'\u00FE':			key = A_LOW_THORN;		break;
+			case L'\u00FF':			key = A_LOW_YDIERESIS;	break;
+
 			default:
 				break;
 		}
@@ -620,34 +654,7 @@ static void IN_ProcessEvents( void )
 					// Quick and dirty UTF-8 to UTF-32 conversion
 					while( *c )
 					{
-						int utf32 = 0;
-
-						if( ( *c & 0x80 ) == 0 )
-							utf32 = *c++;
-						else if( ( *c & 0xE0 ) == 0xC0 ) // 110x xxxx
-						{
-							utf32 |= ( *c++ & 0x1F ) << 6;
-							utf32 |= ( *c++ & 0x3F );
-						}
-						else if( ( *c & 0xF0 ) == 0xE0 ) // 1110 xxxx
-						{
-							utf32 |= ( *c++ & 0x0F ) << 12;
-							utf32 |= ( *c++ & 0x3F ) << 6;
-							utf32 |= ( *c++ & 0x3F );
-						}
-						else if( ( *c & 0xF8 ) == 0xF0 ) // 1111 0xxx
-						{
-							utf32 |= ( *c++ & 0x07 ) << 18;
-							utf32 |= ( *c++ & 0x3F ) << 12;
-							utf32 |= ( *c++ & 0x3F ) << 6;
-							utf32 |= ( *c++ & 0x3F );
-						}
-						else
-						{
-							Com_DPrintf( "Unrecognised UTF-8 lead byte: 0x%x\n", (unsigned int)*c );
-							c++;
-						}
-
+						uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
 						if( utf32 != 0 )
 						{
 							if( IN_IsConsoleKey( A_NULL, utf32 ) )
