@@ -558,7 +558,7 @@ void Boba_FireDecide( void )
 	{//enemy within 128
 		if (TIMER_Done( NPCS.NPC, "bobaChangeWeapon" ))
 		{ // zyk: enemy is close. Get some good weapon for close range
-			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->jetPackOn)
 			{ // zyk: use demp2 to try to disable enemy jetpack
 				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
@@ -607,7 +607,7 @@ void Boba_FireDecide( void )
 			else
 				NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 
-			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->jetPackOn)
 			{ // zyk: use demp2 to try to disable enemy jetpack
 				NPC_ChangeWeapon( WP_DEMP2 );
 			}
@@ -639,7 +639,7 @@ void Boba_FireDecide( void )
 		// zyk: if he has disruptor, use it. Else, changes to some other weapon
 		if (TIMER_Done( NPCS.NPC, "bobaChangeWeapon" ))
 		{
-			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+			if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->jetPackOn)
 			{ // zyk: use demp2 to try to disable enemy jetpack
 				if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 					NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
@@ -4428,7 +4428,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 			if ( enemy_dist < 128 )
 			{//enemy within 128
 				 // zyk: enemy is close. Get some good weapon for close range
-				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->jetPackOn)
 				{ // zyk: use demp2 to try to disable enemy jetpack
 					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
@@ -4474,7 +4474,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 				else
 					NPCS.NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 
-				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->jetPackOn)
 				{ // zyk: use demp2 to try to disable enemy jetpack
 					NPC_ChangeWeapon( WP_DEMP2 );
 				}
@@ -4500,7 +4500,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 			}
 			else if ( enemy_dist > 512 )
 			{
-				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client->jetPackOn)
+				if (HaveWeapon(WP_DEMP2) && NPCS.NPC->enemy && NPCS.NPC->enemy->client && NPCS.NPC->enemy->client->jetPackOn)
 				{ // zyk: use demp2 to try to disable enemy jetpack
 					if ( NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE )
 						NPCS.NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
