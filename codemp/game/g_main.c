@@ -3391,7 +3391,7 @@ void G_RunFrame( int levelTime ) {
 			for (j=0; j<MAX_CLIENTS; j++) {//Also print to anyone spectating them..
 				if (!g_entities[j].inuse)
 					continue;
-				if (!level.clients[i].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
+				if (!level.clients[j].sess.raceMode || (level.clients[j].sess.sessionTeam == TEAM_SPECTATOR)) //Not in racemode, or in spec, show the msg?
 					trap->SendServerCommand( j, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
 			}	
 			//trap->SendServerCommand( -1, va("cp \"MATCH IS UNPAUSING\nin %.0f...\n\"", ceilf( (level.pause.time - level.time) / 1000.0f)) );
