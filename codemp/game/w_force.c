@@ -2903,7 +2903,12 @@ void ForceTelepathy(gentity_t *self)
 				WP_AddAsMindtricked(&self->client->ps.fd, tr.entityNum);
 
 			// zyk: mind control this player, if he is not being mind controlled by someone else
-			if (self->client->sess.amrpgmode == 2 && self->client->pers.other_skills_levels[8] > 0 && (tricked_entity->NPC || (tricked_entity->client->sess.sessionTeam != TEAM_SPECTATOR && tricked_entity->inuse == qtrue)) && tricked_entity->s.NPC_class != CLASS_VEHICLE && tricked_entity->client->pers.being_mind_controlled == -1 && self->client->pers.being_mind_controlled == -1 && self->client->pers.force_powers_levels[11] > tricked_entity->client->ps.fd.forcePowerLevel[FP_SEE] && tricked_entity->health > 0)
+			if (self->client->sess.amrpgmode == 2 && self->client->pers.other_skills_levels[8] > 0 && 
+				(tricked_entity->NPC || (tricked_entity->client->sess.sessionTeam != TEAM_SPECTATOR && tricked_entity->inuse == qtrue)) && 
+				tricked_entity->s.NPC_class != CLASS_VEHICLE && tricked_entity->client->pers.being_mind_controlled == -1 && 
+				self->client->pers.being_mind_controlled == -1 && 
+				((tricked_entity->client->sess.amrpgmode == 2 && self->client->pers.force_powers_levels[11] > tricked_entity->client->pers.force_powers_levels[4]) || 
+				(tricked_entity->client->sess.amrpgmode != 2 && self->client->pers.force_powers_levels[11] > tricked_entity->client->ps.fd.forcePowerLevel[FP_SEE])) && tricked_entity->health > 0)
 			{
 				int can_use_mind_control = 1;
 
@@ -3011,7 +3016,12 @@ void ForceTelepathy(gentity_t *self)
 					WP_AddAsMindtricked(&self->client->ps.fd, ent->s.number);
 
 				// zyk: mind control this player, if he is not being mind controlled by someone else
-				if (self->client->sess.amrpgmode == 2 && self->client->pers.other_skills_levels[8] > 0 && (ent->NPC || (ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->inuse == qtrue)) && ent->s.NPC_class != CLASS_VEHICLE && ent->client->pers.being_mind_controlled == -1 && self->client->pers.being_mind_controlled == -1 && self->client->pers.force_powers_levels[11] > ent->client->ps.fd.forcePowerLevel[FP_SEE] && ent->health > 0)
+				if (self->client->sess.amrpgmode == 2 && self->client->pers.other_skills_levels[8] > 0 && 
+					(ent->NPC || (ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->inuse == qtrue)) && ent->s.NPC_class != CLASS_VEHICLE && 
+					ent->client->pers.being_mind_controlled == -1 && self->client->pers.being_mind_controlled == -1 && 
+					((ent->client->sess.amrpgmode == 2 && self->client->pers.force_powers_levels[11] > ent->client->pers.force_powers_levels[4]) || 
+					(ent->client->sess.amrpgmode != 2 && self->client->pers.force_powers_levels[11] > ent->client->ps.fd.forcePowerLevel[FP_SEE])) && 
+					ent->health > 0)
 				{
 					int can_use_mind_control = 1;
 

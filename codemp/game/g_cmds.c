@@ -4733,11 +4733,27 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
 
 		// zyk: loading Sense value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && ent->client->pers.force_powers_levels[4] > 0)
-			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-		if (ent->client->pers.force_powers_levels[4] == 0)
-			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
-		ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+		{ // zyk: these classes have no force, so they do not need Sense (although they can have the skill to resist Mind Control)
+			if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+			{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
+			}
+			else
+			{
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
+			}
+		}
+		else
+		{
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && ent->client->pers.force_powers_levels[4] > 0)
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+			if (ent->client->pers.force_powers_levels[4] == 0)
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+		}
 
 		// zyk: loading Saber Offense value
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && ent->client->pers.force_powers_levels[5] > 0)
@@ -5943,11 +5959,28 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value)
 	{
 		if (ent->client->pers.force_powers_levels[4] < 3)
 		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)))
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
 			ent->client->pers.force_powers_levels[4]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
 			ent->client->pers.skillpoints--;
+
+			if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			{ // zyk: these classes have no force, so they do not need Sense (although they can have the skill to resist Mind Control)
+				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+				{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
+				}
+				else
+				{
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
+				}
+			}
+			else
+			{
+				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)))
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+			}
 		}
 		else
 		{
@@ -7169,10 +7202,27 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 		if (ent->client->pers.force_powers_levels[4] > 0)
 		{
 			ent->client->pers.force_powers_levels[4]--;
-			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
-			if (ent->client->ps.fd.forcePowerLevel[FP_SEE] == 0)
-				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
 			ent->client->pers.skillpoints++;
+
+			if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			{ // zyk: these classes have no force, so they do not need Sense (although they can have the skill to resist Mind Control)
+				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+				{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
+					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
+				}
+				else
+				{
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
+				}
+			}
+			else
+			{
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+				if (ent->client->ps.fd.forcePowerLevel[FP_SEE] == 0)
+					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+			}
 		}
 		else
 		{
@@ -9106,7 +9156,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 29)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 20 seconds more, has fast shooting rate and more damage. Sentry Gun has more damage. Allows placing more sentry guns. Allows buying and selling from seller remotely, so no need to call him. Gives the Thermal Vision, used with Binoculars. You can set the Thermal Vision level by upgrading Sense. Gives the Radar Upgrade (requires Zyk OpenJK Client installed)\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 20 seconds more, has fast shooting rate and more damage. Sentry Gun has more damage. Allows placing more sentry guns. Allows buying and selling from seller remotely, so no need to call him. Gives the Thermal Vision, used with Binoculars. Gives the Radar Upgrade (requires Zyk OpenJK Client installed)\n\n\"");
 		}
 		else if (i == 30)
 		{
@@ -9438,6 +9488,11 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 29)
 		{
 			ent->client->pers.secrets_found |= (1 << 1);
+			if (ent->client->pers.rpg_class == 2)
+			{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
+				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
+			}
 
 			// zyk: update the rpg stuff info at the client-side game
 			ent->client->pers.player_statuses &= ~(1 << 2);
