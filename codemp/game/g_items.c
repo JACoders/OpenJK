@@ -1248,7 +1248,7 @@ void ItemUse_MedPack(gentity_t *ent)
 	MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);
 }
 
-#define JETPACK_TOGGLE_TIME			1000
+#define JETPACK_TOGGLE_TIME			900 // zyk: default 1000
 void Jetpack_Off(gentity_t *ent)
 { //create effects?
 	assert(ent && ent->client);
