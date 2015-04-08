@@ -220,6 +220,8 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define	REDUCE_SABERDROP	(1<<26)
 #define ALLOW_ROLLCANCEL	(1<<27)
 #define	NO_MP_SABERLERP		(1<<28)
+#define	FIX_MINEAMMO		(1<<29)
+#define	JK2_STYLE_ALT_TRIPMINE	(1<<30)
 
 
 #define SABERSTYLE_BLUE (1<<0)//blue only
@@ -246,27 +248,27 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define VOTE_CAPTURELIMIT	(1<<7)
 
 //ja+ stuff
-#define CPD_NEWDRAINEFX			(1<<0)
-#define CPD_DUELSEEOTHERS		(1<<1)
-#define CPD_ENDDUELROTATION		(1<<2) 
-#define CPD_BLACKSABERSDISABLE	(1<<3)
-#define CPD_AUTOREPLYDISABLE	(1<<4) 
-#define CPD_NEWFORCEEFFECT		(1<<5) 
-#define CPD_NEWDEATHMSG_DISABLE	(1<<6)
-#define CPD_NEWSIGHTEFFECT		(1<<7) 
-#define CPD_NOALTDIMEFFECT		(1<<8)
-#define CPD_HOLSTEREDSABER		(1<<9) 
-#define CPD_LEDGEGRAB			(1<<10)
-#define CPD_NEWDFAPRIM			(1<<11) 
-#define CPD_NEWDFAALT			(1<<12) 
-#define CPD_NOSPCARTWHEEL		(1<<13)
-#define CPD_ALLOWLIBCURL		(1<<14)
+#define JAPRO_PLUGIN_NEWDRAINEFX		(1<<0)
+#define JAPRO_PLUGIN_DUELSEEOTHERS		(1<<1)
+#define JAPRO_PLUGIN_ENDDUELROTATION	(1<<2) 
+#define JAPRO_PLUGIN_BLACKSABERSDISABLE	(1<<3)
+#define JAPRO_PLUGIN_AUTOREPLYDISABLE	(1<<4) 
+#define JAPRO_PLUGIN_NEWFORCEEFFECT		(1<<5) 
+#define JAPRO_PLUGIN_NEWDEATHMSG_DISABLE (1<<6)
+#define JAPRO_PLUGIN_NEWSIGHTEFFECT		(1<<7) 
+#define JAPRO_PLUGIN_NOALTDIMEFFECT		(1<<8)
+#define JAPRO_PLUGIN_HOLSTEREDSABER		(1<<9) 
+#define JAPRO_PLUGIN_LEDGEGRAB			(1<<10)
+#define JAPRO_PLUGIN_NEWDFAPRIM			(1<<11) 
+#define JAPRO_PLUGIN_NEWDFAALT			(1<<12) 
+#define JAPRO_PLUGIN_NOSPCARTWHEEL		(1<<13)
+#define JAPRO_PLUGIN_ALLOWLIBCURL		(1<<14)
 
 //ja++ stuff
-#define CPD_NOKATA				(1<<15) // don't allow katas
-#define CPD_NOBUTTERFLY			(1<<16) // don't allow butterflies
-#define CPD_NOSTAB				(1<<17) // don't allow backstab/rollstab
-#define CPD_NODFA				(1<<18) // don't allow DFAs
+#define JAPRO_PLUGIN_NOKATA				(1<<15) // don't allow katas
+#define JAPRO_PLUGIN_NOBUTTERFLY		(1<<16) // don't allow butterflies
+#define JAPRO_PLUGIN_NOSTAB				(1<<17) // don't allow backstab/rollstab
+#define JAPRO_PLUGIN_NODFA				(1<<18) // don't allow DFAs
 
 //japro stuff
 #define JAPRO_PLUGIN_BHOP			(1<<19)	//

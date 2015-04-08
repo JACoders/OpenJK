@@ -638,7 +638,9 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Flechette stake gun"},//25
 	{"Reduce saberdrops for MP damages"},//26
 	{"Allow rollcancel for saber swings"},//27
-	{"Skip saber interpolate for MP dmgs"}//28
+	{"Skip saber interpolate for MP dmgs"},//28
+	{"Fix dropped mine ammo count"},//29
+	{"JK2 Style Alt Tripmine"}//30
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 

@@ -3085,7 +3085,9 @@ void laserTrapStick( gentity_t *ent, vec3_t endpos, vec3_t normal )
 	{
 		ent->touch = touchLaserTrap;
 		ent->think = proxMineThink;//laserTrapExplode;
-		ent->genericValue15 = level.time + 30000; //auto-explode after 30 seconds.
+		if (!(g_tweakWeapons.integer & JK2_STYLE_ALT_TRIPMINE)) {
+			ent->genericValue15 = level.time + 30000; //auto-explode after 30 seconds.
+		}
 		ent->nextthink = level.time + LT_ALT_TIME; // How long 'til she blows
 
 		//make it shootable

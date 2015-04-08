@@ -461,7 +461,7 @@ void AddScore( gentity_t *ent, vec3_t origin, int score )
 =================
 TossClientItems
 
-rww - Toss the weapon away from the player in the specified direction
+rww - Toss the weapon away from the player in the specified direction.  Only ever called by being force-pullled(?)
 =================
 */
 void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
@@ -633,7 +633,15 @@ void TossClientItems( gentity_t *self ) {
 		te->s.eventParm = self->s.number;
 
 		// spawn the item
-		Drop_Item( self, item, 0 );
+		drop = Drop_Item( self, item, 0 );
+		if ((g_tweakWeapons.integer & FIX_MINEAMMO) && ((weapon == WP_TRIP_MINE) || (weapon == WP_DET_PACK)) && (self->client->ps.ammo[weaponData[weapon].ammoIndex] < bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity)) { //Quantity is always 3 for mines i guess
+			drop->count = self->client->ps.ammo[weaponData[weapon].ammoIndex];
+			if (drop->count < 1)
+				drop->count = 1;
+			if (drop->count > 3)
+				drop->count = 3; 
+		}
+		//trap->Print("Drop count: %i, Ammoindex: %i, Quantity: %i\n", drop->count, self->client->ps.ammo[weaponData[weapon].ammoIndex], bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity);
 	}
 
 	// drop all the powerups if not in teamplay
