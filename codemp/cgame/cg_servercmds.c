@@ -1754,10 +1754,18 @@ static void CG_ZykMod( void )
 			else
 				trap->Cvar_Set("ui_zyk_upgrade_12_value","Jetpack Upgrade - no");
 
-			if (Q_stricmp(rpg_class, "Force User") == 0 && secrets_found & (1 << 2))
+			if (Q_stricmp(rpg_class, "Free Warrior") == 0)
+				trap->Cvar_Set("ui_zyk_unique_skill","");
+			else if (Q_stricmp(rpg_class, "Force User") == 0 && secrets_found & (1 << 2))
 				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else if (Q_stricmp(rpg_class, "Bounty Hunter") == 0)
+				trap->Cvar_Set("ui_zyk_unique_skill","");
+			else if (Q_stricmp(rpg_class, "Armored Soldier") == 0)
+				trap->Cvar_Set("ui_zyk_unique_skill","");
 			else if (Q_stricmp(rpg_class, "Monk") == 0 && secrets_found & (1 << 3))
 				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else if (Q_stricmp(rpg_class, "Stealth Attacker") == 0)
+				trap->Cvar_Set("ui_zyk_unique_skill","");
 			else if (Q_stricmp(rpg_class, "Duelist") == 0 && secrets_found & (1 << 4))
 				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
 			else if (Q_stricmp(rpg_class, "Force Gunner") == 0 && secrets_found & (1 << 5))
