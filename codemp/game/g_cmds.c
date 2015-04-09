@@ -6809,7 +6809,7 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 	if (ent->client->sess.amrpgmode == 2)
 	{
 		int i = 0;
-		char content[512];
+		char content[1024];
 
 		strcpy(content,"");
 
@@ -6940,7 +6940,8 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 			}
 		}
 
-		strcpy(content,va("%s%d-",content,ent->client->pers.secrets_found));
+		strcpy(content,va("%s%d-%d-%d-%d-%d-",content,ent->client->pers.secrets_found,ent->client->pers.defeated_guardians,ent->client->pers.hunter_quest_progress,
+			ent->client->pers.eternity_quest_progress,ent->client->pers.universe_quest_progress));
 
 		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-%s\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent),content));
 	}

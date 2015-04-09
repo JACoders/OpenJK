@@ -1571,7 +1571,7 @@ static void CG_ZykMod( void )
 
 	trap->Cmd_Argv( 1, arg, sizeof( arg ) );
 
-	while (j < 81)
+	while (j < 85)
 	{ // zyk: parsing info from the server and setting the respective cvars
 		k = 0;
 
@@ -1685,7 +1685,7 @@ static void CG_ZykMod( void )
 
 			trap->Cvar_Set(va("ui_zyk_setting_%d_value", setting_value), va("%s",value));
 		}
-		else
+		else if (j < 81)
 		{ // zyk: receive the Upgrades bought from the seller
 			int secrets_found = atoi(value);
 
@@ -1753,6 +1753,88 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_upgrade_12_value","Jetpack Upgrade - yes");
 			else
 				trap->Cvar_Set("ui_zyk_upgrade_12_value","Jetpack Upgrade - no");
+
+			if (Q_stricmp(rpg_class, "Force User") == 0 && secrets_found & (1 << 2))
+				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else if (Q_stricmp(rpg_class, "Monk") == 0 && secrets_found & (1 << 3))
+				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else if (Q_stricmp(rpg_class, "Duelist") == 0 && secrets_found & (1 << 4))
+				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else if (Q_stricmp(rpg_class, "Force Gunner") == 0 && secrets_found & (1 << 5))
+				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else if (Q_stricmp(rpg_class, "Magic Master") == 0 && secrets_found & (1 << 6))
+				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
+			else
+				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - no");
+		}
+		else if (j == 81)
+		{
+			int light_quest_progress = atoi(value);
+
+			if (light_quest_progress == 9)
+				trap->Cvar_Set("ui_zyk_light_power","Light Power - yes");
+			else
+				trap->Cvar_Set("ui_zyk_light_power","Light Power - no");
+
+			if (light_quest_progress == 9)
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Free Warrior") == 0 && light_quest_progress & (1 << 11))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Force User") == 0 && light_quest_progress & (1 << 6))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Bounty Hunter") == 0 && light_quest_progress & (1 << 10))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Armored Soldier") == 0 && light_quest_progress & (1 << 5))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Monk") == 0 && light_quest_progress & (1 << 9))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Stealth Attacker") == 0 && light_quest_progress & (1 << 4))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Duelist") == 0 && light_quest_progress & (1 << 7))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Force Gunner") == 0 && light_quest_progress & (1 << 8))
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else if (Q_stricmp(rpg_class, "Magic Master") == 0)
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+			else
+				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - no");
+		}
+		else if (j == 82)
+		{
+			int dark_quest_progress = atoi(value);
+
+			if (dark_quest_progress == 10)
+				trap->Cvar_Set("ui_zyk_dark_power","Dark Power - yes");
+			else
+				trap->Cvar_Set("ui_zyk_dark_power","Dark Power - no");
+		}
+		else if (j == 83)
+		{
+			int eternity_quest_progress = atoi(value);
+
+			if (eternity_quest_progress == 11)
+				trap->Cvar_Set("ui_zyk_eternity_power","Eternity Power - yes");
+			else
+				trap->Cvar_Set("ui_zyk_eternity_power","Eternity Power - no");
+		}
+		else if (j == 84)
+		{
+			int universe_quest_progress = atoi(value);
+
+			if (universe_quest_progress >= 8)
+				trap->Cvar_Set("ui_zyk_universe_power","Universe Power - yes");
+			else
+				trap->Cvar_Set("ui_zyk_universe_power","Universe Power - no");
+
+			if (universe_quest_progress >= 15)
+				trap->Cvar_Set("ui_zyk_ultimate_power","Ultimate Power - yes");
+			else
+				trap->Cvar_Set("ui_zyk_ultimate_power","Ultimate Power - no");
+
+			if (universe_quest_progress == 18)
+				trap->Cvar_Set("ui_zyk_resurrection_power","Resurrection Power - yes");
+			else
+				trap->Cvar_Set("ui_zyk_resurrection_power","Resurrection Power - no");
 		}
 
 		j++;
