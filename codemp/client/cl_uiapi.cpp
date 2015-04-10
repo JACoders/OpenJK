@@ -158,16 +158,19 @@ static void CL_GetGlconfig( glconfig_t *config ) {
 }
 
 static void GetClipboardData( char *buf, int buflen ) {
-	char	*cbd;
+	char	*cbd, *c;
 
-	cbd = Sys_GetClipboardData();
-
+	c = cbd = Sys_GetClipboardData();
 	if ( !cbd ) {
 		*buf = 0;
 		return;
 	}
 
-	Q_strncpyz( buf, cbd, buflen );
+	for ( int i = 0, end = buflen - 1; *c && i < end; i++ )
+	{
+		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
+		buf[i] = ConvertUTF32ToExpectedCharset( utf32 );
+	}
 
 	Z_Free( cbd );
 }

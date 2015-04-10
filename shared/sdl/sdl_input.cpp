@@ -606,7 +606,7 @@ void IN_Init( void *windowData )
 	Com_DPrintf( "------------------------------------\n" );
 }
 
-static uint8_t ConvertUTF32ToExpectedCharset( uint32_t utf32 )
+uint8_t ConvertUTF32ToExpectedCharset( uint32_t utf32 )
 {
 	switch ( utf32 )
 	{

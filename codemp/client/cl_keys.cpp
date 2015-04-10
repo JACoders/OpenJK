@@ -503,7 +503,7 @@ void Field_Paste( field_t *edit ) {
 	while( *c )
 	{
 		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
-		Field_CharEvent( edit, utf32 );
+		Field_CharEvent( edit, ConvertUTF32ToExpectedCharset( utf32 ) );
 	}
 
 	Z_Free( cbd );
