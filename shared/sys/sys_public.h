@@ -200,3 +200,5 @@ void		WIN_Present( window_t *window );
 void		WIN_SetGamma( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
 void		WIN_Shutdown( void );
 void *		WIN_GL_GetProcAddress( const char *proc );
+
+uint8_t ConvertUTF32ToExpectedCharset( uint32_t utf32 );
