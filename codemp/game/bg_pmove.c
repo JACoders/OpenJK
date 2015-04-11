@@ -3632,9 +3632,10 @@ static int PM_TryRoll( void )
 	}
 
 	if (// (pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE) || // zyk: commented these conditions so player can roll holding other weapons
-		PM_IsRocketTrooper() ||
-		BG_HasYsalamiri(pm->gametype, pm->ps) ||
-		!BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION))
+		PM_IsRocketTrooper() //||
+		// BG_HasYsalamiri(pm->gametype, pm->ps) || zyk: now players with ysalamiri can roll
+		// !BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) zyk: now players without Jump can also roll
+		)
 	{ //Not using saber, or can't use jump
 		return 0;
 	}
