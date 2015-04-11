@@ -4892,6 +4892,7 @@ void quest_power_events(gentity_t *ent)
 			ent->client->noCorpse = qtrue;
 			ent->client->ps.eFlags &= ~EF_NODRAW;
 			ent->client->ps.eFlags2 &= ~EF2_HELD_BY_MONSTER;
+			ent->flags = 0;
 			initialize_rpg_skills(ent);
 			ent->client->pers.quest_power_status &= ~(1 << 10);
 		}
