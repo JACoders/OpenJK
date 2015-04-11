@@ -7027,6 +7027,9 @@ static void UI_RunMenuScript(char **args)
 		{
 			UI_UpdateSiegeStatusIcons();
 		}
+		else if (Q_stricmp(name, "strafehelperactivecolor" ) == 0) {
+			trap->Cvar_Set( "cg_strafeHelperActiveColor", va("%i %i %i %i", ui_sha_r.integer, ui_sha_g.integer, ui_sha_b.integer, ui_sha_a.integer) );
+		}
 		else if (Q_stricmp(name, "setcurrentNetMap") == 0)
 		{
 			menuDef_t *menu;
