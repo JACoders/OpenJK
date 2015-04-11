@@ -6047,6 +6047,12 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		}
 	}
 
+	// zyk: Bounty Hunter with Thermal Vision cannot dodge
+	if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2)
+	{
+		return qfalse;
+	}
+
 	switch( hitLoc )
 	{
 	case HL_NONE:
