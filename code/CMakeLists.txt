@@ -180,15 +180,20 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
 
-	set(SPEngineMinizipFiles
-		"${OpenJKLibDir}/minizip/ioapi.c"
-		"${OpenJKLibDir}/minizip/ioapi.h"
-		"${OpenJKLibDir}/minizip/unzip.cpp"
-		"${OpenJKLibDir}/minizip/unzip.h"
-		)
-	source_group("minizip" FILES ${SPEngineMinizipFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMinizipFiles})
-
+	if(UseInternalMinizip)
+		set(SPEngineMinizipFiles
+			"${OpenJKLibDir}/minizip/ioapi.c"
+			"${OpenJKLibDir}/minizip/ioapi.h"
+			"${OpenJKLibDir}/minizip/unzip.cpp"
+			"${OpenJKLibDir}/minizip/unzip.h"
+			)
+		source_group("minizip" FILES ${SPEngineMinizipFiles})
+		set(SPEngineFiles ${SPEngineFiles} ${SPEngineMinizipFiles})
+	else(UseInternalMinizip)
+		pkg_check_modules(MINIZIP REQUIRED minizip)
+		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${MINIZIP_INCLUDE_DIRS})
+		set(SPEngineLibraries ${SPEngineLibraries} ${MINIZIP_LIBRARIES})
+	endif(UseInternalMinizip)
 
 	# Server files
 	set(SPEngineServerFiles
