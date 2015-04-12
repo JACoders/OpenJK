@@ -4999,7 +4999,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{ // zyk: damage resistance of each class
 		// zyk: when player is in Hard Mode/Challenge Mode, he takes more damage
 		if (targ->client->pers.can_play_quest == 1 && targ->client->pers.player_settings & (1 << 15))
-			damage = (int)ceil(damage * 1.2);
+			damage = (int)ceil(damage * 1.15);
 
 		// zyk: Ultra Resistance bonus resistance
 		if (targ->client->pers.quest_power_status & (1 << 7))
