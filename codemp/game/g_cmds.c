@@ -9029,7 +9029,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 
 		if (Q_stricmp(arg1, "ammo" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^31 - Blaster Pack: ^7Buy: 30 - Sell: 10\n^32 - Power Cell: ^7Buy: 50 - Sell: 15\n^33 - Metal Bolts: ^7Buy: 70 - Sell: 20\n^34 - Rockets: ^7Buy: 100 - Sell: 30\n^35 - Thermals: ^7Buy: 120 - Sell: 35\n^36 - Trip Mines: ^7Buy: 150 - Sell: 40\n^37 - Det Packs: ^7Buy: 220 - Sell: 45\n^330 - Flame Thrower Fuel: ^7Buy: 200 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^31 - Blaster Pack: ^7Buy: 20 - Sell: 10\n^32 - Power Cell: ^7Buy: 25 - Sell: 15\n^33 - Metal Bolts: ^7Buy: 30 - Sell: 20\n^34 - Rockets: ^7Buy: 50 - Sell: 30\n^35 - Thermals: ^7Buy: 100 - Sell: 35\n^36 - Trip Mines: ^7Buy: 140 - Sell: 40\n^37 - Det Packs: ^7Buy: 170 - Sell: 45\n^330 - Flame Thrower Fuel: ^7Buy: 200 - Sell: ^1no^7\n\n\"");
 		}
 		else if (Q_stricmp(arg1, "items" ) == 0)
 		{
@@ -9238,7 +9238,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {30,50,70,100,120,150,220,5000,250,200,230,300,400,200,5000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {20,25,30,50,100,140,170,5000,250,200,230,300,400,200,5000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,300,20,1000,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000};
 
 	if (trap->Argc() == 1)
 	{
