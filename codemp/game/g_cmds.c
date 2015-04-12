@@ -9041,7 +9041,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 5000 - Sell: 1500\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: 1000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no\n^346 - Jetpack Upgrade: ^7Buy: 10000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 5000 - Sell: ^1no\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: ^1no\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no\n^346 - Jetpack Upgrade: ^7Buy: 10000 - Sell: ^1no^7\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9596,7 +9596,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,1500,1000,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0};
 
 	if (trap->Argc() == 1)
 	{
@@ -9701,16 +9701,6 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	else if (value == 14 && ent->client->ps.powerups[PW_YSALAMIRI])
 	{
 		ent->client->ps.powerups[PW_YSALAMIRI] = 0;
-		sold = 1;
-	}
-	else if (value == 15 && ent->client->pers.secrets_found & (1 << 9))
-	{
-		ent->client->pers.secrets_found &= ~(1 << 9);
-		sold = 1;
-	}
-	else if (value == 16 && ent->client->pers.secrets_found & (1 << 10))
-	{
-		ent->client->pers.secrets_found &= ~(1 << 10);
 		sold = 1;
 	}
 	else if (value == 17 && (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BLASTER)))
