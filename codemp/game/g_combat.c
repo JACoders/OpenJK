@@ -600,10 +600,15 @@ void TossClientItems( gentity_t *self ) {
 
 	self->s.bolt2 = weapon;
 
-	if ( weapon > WP_BRYAR_PISTOL &&
+	// zyk: player or npcs can also drop stun baton and blaster pistol
+	if ( weapon != WP_NONE &&
+		weapon != WP_MELEE &&
+		weapon != WP_SABER &&
 		weapon != WP_EMPLACED_GUN &&
 		weapon != WP_TURRET &&
-		self->client->ps.ammo[ weaponData[weapon].ammoIndex ] ) {
+		(self->client->ps.ammo[ weaponData[weapon].ammoIndex ] ||
+		weapon == WP_STUN_BATON
+		) ) {
 		gentity_t *te;
 
 		// find the item type for this weapon

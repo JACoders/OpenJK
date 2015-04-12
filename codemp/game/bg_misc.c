@@ -2098,9 +2098,9 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 			return qfalse;
 		}
 		*/
-		// zyk: weapons now only test for max ammo
+		// zyk: weapons now only test for max ammo, and stun baton can always be picked up
 		// if (item->giTag == WP_THERMAL || item->giTag == WP_TRIP_MINE || item->giTag == WP_DET_PACK)
-		if (ps->stats[STAT_WEAPONS] & (1 << item->giTag))
+		if (ps->stats[STAT_WEAPONS] & (1 << item->giTag) && item->giTag != WP_STUN_BATON)
 		{ //check to see if full on ammo for this, if so, then..
 			int ammoIndex = weaponData[item->giTag].ammoIndex;
 			if (ps->ammo[ammoIndex] >= ammoData[ammoIndex].max)
