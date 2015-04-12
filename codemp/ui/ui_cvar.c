@@ -33,6 +33,9 @@ static void CVU_Derpity( void ) {
 }
 */
 
+static void CVU_StrafeHelper (void) {
+	trap->Cvar_Set( "cg_strafeHelperActiveColor", va("%i %i %i %i", ui_sha_r.integer, ui_sha_g.integer, ui_sha_b.integer, ui_sha_a.integer) );
+}
 
 //
 // Cvar table
@@ -82,6 +85,4 @@ void UI_UpdateCvars( void ) {
 			}
 		}
 	}
-
-	trap->Cvar_Set( "cg_strafeHelperActiveColor", va("%i %i %i %i", ui_sha_r.integer, ui_sha_g.integer, ui_sha_b.integer, ui_sha_a.integer) );
 }
