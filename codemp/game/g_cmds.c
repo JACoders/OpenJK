@@ -11449,6 +11449,8 @@ void Cmd_Drop_f( gentity_t *ent ) {
 	gentity_t *launched;
 	int weapon = ent->s.weapon;
 	vec3_t uorg, vecnorm, thispush_org;
+	int current_ammo = 0;
+	int ammo_count = 0;
 
 	if (weapon == WP_NONE || weapon == WP_MELEE || weapon == WP_EMPLACED_GUN || weapon == WP_TURRET)
 	{ //can't have this
@@ -11486,12 +11488,25 @@ void Cmd_Drop_f( gentity_t *ent ) {
 
 	launched->count = bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity;
 
-	ent->client->ps.ammo[weaponData[weapon].ammoIndex] -= (int)ceil(bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity * 0.5);
+	// zyk: setting amount of ammo in this dropped weapon
+	current_ammo = ent->client->ps.ammo[weaponData[weapon].ammoIndex];
+	ammo_count = (int)ceil(bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity * zyk_add_ammo_scale.value);
 
-	if (ent->client->ps.ammo[weaponData[weapon].ammoIndex] < 0)
+	if (current_ammo < ammo_count)
+	{ // zyk: player does not have the default ammo to set in the weapon, so set the current_ammo of the player in the weapon
+		ent->client->ps.ammo[weaponData[weapon].ammoIndex] -= current_ammo;
+		if (zyk_add_ammo_scale.value > 0 && current_ammo > 0)
+			launched->count = (current_ammo/zyk_add_ammo_scale.value);
+		else
+			launched->count = -1; // zyk: in this case, player has no ammo, so weapon should add no ammo to the player who picks up this weapon
+	}
+	else
 	{
-		launched->count -= (-ent->client->ps.ammo[weaponData[weapon].ammoIndex]);
-		ent->client->ps.ammo[weaponData[weapon].ammoIndex] = 0;
+		ent->client->ps.ammo[weaponData[weapon].ammoIndex] -= ammo_count;
+		if (zyk_add_ammo_scale.value > 0 && current_ammo > 0)
+			launched->count = (ammo_count/zyk_add_ammo_scale.value);
+		else
+			launched->count = -1; // zyk: in this case, player has no ammo, so weapon should add no ammo to the player who picks up this weapon
 	}
 
 	if ((ent->client->ps.ammo[weaponData[weapon].ammoIndex] < 1 && weapon != WP_DET_PACK) ||
