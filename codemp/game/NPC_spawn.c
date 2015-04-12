@@ -4579,8 +4579,8 @@ void NPC_Kill_f( void )
 		}
 	}
 
-	for ( n = 1; n < ENTITYNUM_MAX_NORMAL; n++)
-	{
+	for ( n = 1; n < level.num_entities; n++)
+	{ // zyk: changed from ENTITYNUM_MAX_NORMAL to level.num_entities
 		player = &g_entities[n];
 		if (!player->inuse) {
 			continue;
@@ -4590,6 +4590,7 @@ void NPC_Kill_f( void )
 		{
 			int i = 0; // zyk: used to test the guardian npcs
 			int found = 0; // zyk: will be set to 1 when found a guardian npc
+
 			for (i = 1; i <= NUMBER_OF_GUARDIANS; i++)
 			{
 				if (Q_stricmp( player->NPC_type, va("guardian_boss_%d",i) ) == 0)
