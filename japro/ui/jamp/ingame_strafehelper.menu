@@ -97,7 +97,7 @@
 			group				strafeHelper
 			type				ITEM_TYPE_SLIDER
 			text				"Cutoff:"
-			cvarfloat			"cg_strafeHelperCutoff" 0 0 255
+			cvarfloat			"cg_strafeHelperCutoff" 0 0 225
 			rect				10 24 186 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			82
@@ -203,7 +203,7 @@
 			group				strafeHelper
 			type				ITEM_TYPE_SLIDER
 			text				"Invert Offset:"
-			cvarfloat			"cg_strafeHelperInvertOffset" 75 0 255
+			cvarfloat			"cg_strafeHelperInvertOffset" 75 0 200
 			rect				10 64 186 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			82
@@ -256,7 +256,7 @@
 			group				strafeHelper
 			type				ITEM_TYPE_SLIDER
 			text				"Offset:"
-			cvarfloat			"cg_strafeHelperOffset" 75 0 255
+			cvarfloat			"cg_strafeHelperOffset" 75 0 200
 			rect				10 84 186 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			82
@@ -521,7 +521,7 @@
 			group				strafeHelper
 			type				ITEM_TYPE_SLIDER
 			text				"Active Alpha:"
-			cvarfloat			"ui_sha_a" 200 0 255
+			cvarfloat			"ui_sha_a" 200 25 255
 			rect				10 184 186 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			82

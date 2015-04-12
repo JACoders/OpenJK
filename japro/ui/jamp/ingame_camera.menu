@@ -363,7 +363,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonCameraDamp "0.30000"
+				setcvar cg_thirdPersonCameraDamp "1.00000"
 			}
 		}
 	}
