@@ -1730,6 +1730,16 @@ void TryUse( gentity_t *ent )
 		ent->client->pers.print_products_timer = level.time + 1000;
 		return;
 	}
+	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1) &&
+			 target && Q_stricmp(target->classname, "sentryGun") == 0 && ent->client->pers.bounty_hunter_sentries < MAX_BOUNTY_HUNTER_SENTRIES)
+	{ // zyk: Bounty Hunter Upgrade allows recovering sentry guns
+		ent->client->pers.bounty_hunter_sentries++;
+		ent->client->pers.bounty_hunter_placed_sentries--;
+		ent->client->ps.fd.sentryDeployed = qfalse;
+		G_FreeEntity(target);
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/weapons/w_pkup.wav"));
+		return;
+	}
 	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.can_play_quest == 1)
 	{
 		if (target && target->client && target->NPC && ent->client->pers.universe_quest_progress == 13)
