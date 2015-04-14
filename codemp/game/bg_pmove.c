@@ -9353,7 +9353,7 @@ void PM_AdjustAttackStates( pmove_t *pmove )
 			pmove->cmd.upmove <= 0 && !pmove->cmd.forwardmove && !pmove->cmd.rightmove*/)
 		{
 			// We just pressed the alt-fire key
-			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD && pmove->ps->pm_type != PM_NOCLIP)
+			if ( !pmove->ps->zoomMode && pmove->ps->pm_type != PM_DEAD && pmove->ps->pm_type != PM_NOCLIP && !pm->ps->stats[STAT_RACEMODE])
 			{
 				// not already zooming, so do it now
 				pmove->ps->zoomMode = 1;

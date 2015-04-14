@@ -2991,10 +2991,10 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 			//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].lastVoteTime);
 			if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
 				//trap->Print("Found clients IP in array!\n");
-				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*60*3))) {
+				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*g_voteTimeout.integer))) {
 					//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
 					char timeStr[32];
-					TimeToString( (1000*60*3 - (level.time - voteFloodProtect[j].lastVoteTime)) , timeStr, sizeof(timeStr), qtrue);
+					TimeToString( (1000*g_voteTimeout.integer - (level.time - voteFloodProtect[j].lastVoteTime)) , timeStr, sizeof(timeStr), qtrue);
 					trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
 					return;
 				}
@@ -6653,8 +6653,8 @@ void Cmd_Amtelemark_f(gentity_t *ent)
 
 void Cmd_RaceTele_f(gentity_t *ent)
 {
-	if (trap->Argc() > 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele to teleport to your telemark or /amTele <client>\n\"" );
+	if (trap->Argc() > 2 && trap->Argc() != 4) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /amTele to teleport to your telemark or /amTele <client> or /amtele <X Y Z>\n\"" );
 	}		
 	if (trap->Argc() == 1) {//Amtele to telemark
 		if (ent->client->pers.telemarkOrigin[0] != 0 || ent->client->pers.telemarkOrigin[1] != 0 || ent->client->pers.telemarkOrigin[2] != 0 || ent->client->pers.telemarkAngle != 0) {
@@ -6683,6 +6683,22 @@ void Cmd_RaceTele_f(gentity_t *ent)
 		origin[1] = g_entities[clientid].client->ps.origin[1];
 		origin[2] = g_entities[clientid].client->ps.origin[2] + 96;
 
+		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue );
+	}
+
+	if (trap->Argc() == 4)
+	{ 
+		char x[32], y[32], z[32];
+		vec3_t angles = {0, 0, 0}, origin;
+
+		trap->Argv(1, x, sizeof(x));
+		trap->Argv(2, y, sizeof(y));
+		trap->Argv(3, z, sizeof(z));
+
+		origin[0] = atoi(x);
+		origin[1] = atoi(y);
+		origin[2] = atoi(z);
+			
 		AmTeleportPlayer( ent, origin, angles, qtrue, qtrue );
 	}
 }

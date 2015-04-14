@@ -272,7 +272,8 @@ XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue 
 XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( sv_maxTeamSize,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixVote,					"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )//latch cuz of calculateRanks? not sure man
-XCVAR_DEF( g_allowSpotting,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )//latch cuz of calculateRanks? not sure man
+XCVAR_DEF( g_allowSpotting,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_voteTimeout,				"180",			NULL,				CVAR_ARCHIVE,									qfalse )//Time in seconds to lockout callvote after a failed vote
 
 XCVAR_DEF( g_pauseTime,					"120",			NULL,				CVAR_NONE,										qfalse )
 XCVAR_DEF( g_unpauseTime,				"5",			NULL,				CVAR_NONE,										qfalse )

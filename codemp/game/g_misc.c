@@ -274,7 +274,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		VectorSet(maxs, 15, 15, DEFAULT_MAXS_2);
 
 		VectorCopy(origin, down);//Drop them to floor so they cant abuse?
-		down[2] -= 4096;
+		down[2] -= 32768;
 		JP_Trace(&tr, origin, mins, maxs, down, player->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 		neworigin[2] = (int)tr.endpos[2];//Why does it crash without casting to int? wtf
 	}

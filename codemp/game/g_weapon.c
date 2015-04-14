@@ -1907,7 +1907,7 @@ void prox_mine_think( gentity_t *ent )
 
 		for ( i = 0; i < count; i++ )
 		{
-			if ( ent_list[i]->client && ent_list[i]->health > 0 && ent->activator && ent_list[i]->s.number != ent->activator->s.number )
+			if ( ent_list[i]->client && ent_list[i]->health > 0 && ent->activator && ent_list[i]->s.number != ent->activator->s.number && !ent_list[i]->client->sess.raceMode )
 			{
 				blow = qtrue;
 				break;
