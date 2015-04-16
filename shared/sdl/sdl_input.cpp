@@ -1113,7 +1113,11 @@ void IN_Frame (void) {
 	IN_JoyMove( );
 
 	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
+#ifdef _JK2EXE
 	loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
+#else
+	loading = (qboolean)( clc.state != CA_DISCONNECTED && clc.state != CA_ACTIVE );
+#endif
 
 	if( !cls.glconfig.isFullscreen && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) )
 	{
