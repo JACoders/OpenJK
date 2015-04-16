@@ -1284,6 +1284,8 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 
 //void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex );
 void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
+	int lessTime;
+
 	if (!player->client)
 		return;
 	if (player->client->sess.sessionTeam != TEAM_FREE)
@@ -1332,7 +1334,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 
 	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
 	player->client->pers.stats.startTime = trap->Milliseconds();
-	player->client->pers.stats.startTime -= InterpolateTouchTime(player, trigger);
+	lessTime = InterpolateTouchTime(player, trigger);
+	player->client->pers.stats.startTime -= lessTime;
 	player->client->pers.stats.topSpeed = 0;
 	player->client->pers.stats.displacement = 0;
 	player->client->pers.stats.displacementSamples = 0;
@@ -1341,7 +1344,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		//trap->SendServerCommand(player-g_entities, va("cp \"Starting lag: %i\n 2: %i\n 3: %i\n\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, trap->Milliseconds() - player->client->pers.cmd.serverTime));
 
 	if (player->client->ps.stats[STAT_RACEMODE]) {
-		player->client->ps.duelTime = level.time;
+		player->client->ps.duelTime = level.time - lessTime;//player->client->pers.stats.startTime;//level.time;
 
 		player->client->ps.stats[STAT_HEALTH] = player->health = player->client->ps.stats[STAT_MAX_HEALTH];
 		player->client->ps.stats[STAT_ARMOR] = 25;
