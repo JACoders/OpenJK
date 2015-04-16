@@ -659,7 +659,7 @@ uint8_t ConvertUTF32ToExpectedCharset( uint32_t utf32 )
 		case 0x043D: return 237;
 		case 0x043E: return 238;
 		case 0x043F: return 239;
-		case 0x0440: return 230;
+		case 0x0440: return 240;
 		case 0x0441: return 241;
 		case 0x0442: return 242;
 		case 0x0443: return 243;
