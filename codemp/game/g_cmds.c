@@ -7423,6 +7423,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Fixed saber switch swing\n");
 	if (g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL)
 		Q_strcat(buf, sizeof(buf), "   ^5Roll cancel enabled\n");
+	if (g_tweakSaber.integer & ST_NO_REDCHAIN)
+		Q_strcat(buf, sizeof(buf), "   ^5Red swings can not be chained\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
 	//Gun changes
@@ -7588,6 +7590,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Force absorb does not gain forcepoints from grip\n");
 		if (g_tweakForce.integer & FT_JK2GRIP)
 			Q_strcat(buf, sizeof(buf), "   ^5JK2 1.02 style grip\n");
+		if (g_tweakForce.integer & FT_NO_CROUCHATTACK_FP)
+			Q_strcat(buf, sizeof(buf), "   ^5Crouch special attacks do not cost forcepower\n");
 		if (level.gametype >= GT_TEAM) {
 			if (g_teamAbsorbScale.value != 1.0f)
 				Q_strcat(buf, sizeof(buf), va("   ^5Absorb team scale: ^2%.2f\n", g_teamAbsorbScale.value));

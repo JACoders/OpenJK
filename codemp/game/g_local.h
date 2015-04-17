@@ -255,7 +255,6 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define ST_ALLOW_ROLLCANCEL		(1<<4) //CLIENT
 #define ST_NO_REDCHAIN			(1<<5)
 #define ST_FIXED_SABERSWITCH	(1<<6)
-
 #define ST_EASYBACKSLASH		(1<<7)
 #define ST_JK2RDFA				(1<<8)
 #define ST_FIXYELLOWDFA			(1<<9)
@@ -263,10 +262,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define ST_SPINBACKSLASH		(1<<11)
 #define ST_JK2LUNGE				(1<<12)
 
-
-
-
-
+//Saberstyles
 #define SABERSTYLE_BLUE (1<<0)//blue only
 #define SABERSTYLE_YELLOW (1<<1)//yellow only
 #define SABERSTYLE_RED (1<<2) //red only
@@ -274,7 +270,6 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define SABERSTYLE_STAFF (1<<4)//staff only
 #define SABERSTYLE_DESANN (1<<5)// desann only
 #define SABERSTYLE_TAVION (1<<6)//tavion only
-
 
 //JAPRO - Serverside - Unlagged bitvalues
 #define UNLAGGED_PROJ_NUDGE	(1<<0)
@@ -290,7 +285,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define VOTE_FRAGLIMIT		(1<<6)
 #define VOTE_CAPTURELIMIT	(1<<7)
 
-//ja+ stuff
+//ja+ cp_plugindisable stuff
 #define JAPRO_PLUGIN_NEWDRAINEFX		(1<<0)
 #define JAPRO_PLUGIN_DUELSEEOTHERS		(1<<1)
 #define JAPRO_PLUGIN_ENDDUELROTATION	(1<<2) 
@@ -307,13 +302,13 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_PLUGIN_NOSPCARTWHEEL		(1<<13)
 #define JAPRO_PLUGIN_ALLOWLIBCURL		(1<<14)
 
-//ja++ stuff
+//ja++ cp_plugindisable stuff
 #define JAPRO_PLUGIN_NOKATA				(1<<15) // don't allow katas
 #define JAPRO_PLUGIN_NOBUTTERFLY		(1<<16) // don't allow butterflies
 #define JAPRO_PLUGIN_NOSTAB				(1<<17) // don't allow backstab/rollstab
 #define JAPRO_PLUGIN_NODFA				(1<<18) // don't allow DFAs
 
-//japro stuff
+//japro cp_plugindisable stuff
 #define JAPRO_PLUGIN_BHOP			(1<<19)	//
 #define JAPRO_PLUGIN_NOROLL			(1<<20)	//
 #define JAPRO_PLUGIN_NOCART			(1<<21)	//
