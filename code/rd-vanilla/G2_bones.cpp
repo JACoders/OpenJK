@@ -1504,7 +1504,7 @@ void G2_ResetRagDoll(CGhoul2Info_v &ghoul2V)
 	//Eh, screw it. Ragdoll does a lot of terrible things to the bones that probably aren't directly reversible, so just reset it all.
 	//rwwFIXMEFIXME: I think SP might store bone indecies gameside.. which would make this cause terrible terrible things to happen.
 	//If so this needs to be done a better way somehow. Providing SP ever even needs to reset ragdoll, it's only used in MP on respawn.
-	G2_Init_Bone_List(blist);
+	G2_Init_Bone_List(blist, ghoul2.aHeader->numBones);
 #else //The anims on every bone are messed up too, as are the angles. There's not really any way to get back to a normal state, so just clear the list
 	  //and let them re-set their anims/angles gameside.
 	int i = 0;
@@ -4757,9 +4757,10 @@ qboolean G2_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params
 }
 
 // set the bone list to all unused so the bone transformation routine ignores it.
-void G2_Init_Bone_List(boneInfo_v &blist)
+void G2_Init_Bone_List(boneInfo_v &blist, int numBones)
 {
 	blist.clear();
+	blist.reserve(numBones);
 }
 
 int	G2_Get_Bone_Index(CGhoul2Info *ghoul2, const char *boneName, qboolean bAddIfNotFound)
