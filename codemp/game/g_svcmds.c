@@ -640,7 +640,8 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Allow rollcancel for saber swings"},//27
 	{"Skip saber interpolate for MP dmgs"},//28
 	{"Fix dropped mine ammo count"},//29
-	{"JK2 Style Alt Tripmine"}//30
+	{"JK2 Style Alt Tripmine"},//30
+	{"JK2 Sabersystem"}//31
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 

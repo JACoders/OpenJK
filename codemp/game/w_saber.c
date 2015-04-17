@@ -4251,29 +4251,59 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 
 			else if (self->client->ps.fd.saberAnimLevel == SS_STRONG)//Red Style 
 			{
-				if (self->client->ps.saberMove == LS_A_T2B) //this is a vert i think?
-					dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 70*g_redDamageScale.value, 0.65f);
-				else if (self->client->ps.saberMove == LS_A_BACK)//Red Backslash
-					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
-				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Red DBS
-					dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
-				else if (g_spinRedDFA.integer && self->client->ps.saberMove == LS_A_JUMP_T__B_)//Red DFA
-					dmg = G_GetAttackDamage(self, 2, 60*g_redDFADamageScale.value, 0.65f);
-				else if (!g_spinRedDFA.integer && self->client->ps.saberMove == LS_A_JUMP_T__B_)//Red DFA
-					dmg = G_GetAttackDamage(self, 2, 100*g_redDFADamageScale.value, 0.65f); //instead of just reddamagescale
+				if (self->client->ps.saberMove == LS_A_T2B) { //this is a vert i think?
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 100*g_redDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 70*g_redDamageScale.value, 0.65f);
+				}
+				else if (self->client->ps.saberMove == LS_A_BACK) {//Red Backslash
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 120*g_backslashDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
+				}
+				else if (self->client->ps.saberMove == LS_A_BACK_CR) { //Red DBS
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 140*g_backslashDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
+				}
+				else if (self->client->ps.saberMove == LS_A_JUMP_T__B_) {//Red DFA
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 120*g_redDFADamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 60*g_redDFADamageScale.value, 0.65f);
+				}
 				else if (self->client->ps.saberMove == LS_A3_SPECIAL)
 					dmg = 20*g_redDamageScale.value;
-				else//Regular swing
-					dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 85*g_redDamageScale.value, 0.65f);
+				else {//Regular swing
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 100*g_redDFADamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 85*g_redDamageScale.value, 0.65f);
+				}
 			}
 			else if (self->client->ps.fd.saberAnimLevel == SS_MEDIUM)//Yellow Style
 			{
-				if (self->client->ps.saberMove == LS_A_FLIP_STAB || self->client->ps.saberMove == LS_A_FLIP_SLASH)//Yellow DFA and something else?
-					dmg = G_GetAttackDamage(self, 2, 50*g_yellowDamageScale.value, 0.5f);
-				else if (self->client->ps.saberMove == LS_A_BACK)//Yellow Backslash
-					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
-				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Yellow DBS
-					dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
+				if (self->client->ps.saberMove == LS_A_FLIP_STAB || self->client->ps.saberMove == LS_A_FLIP_SLASH) { //Yellow DFA and something else?
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 60*g_yellowDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 50*g_yellowDamageScale.value, 0.5f);
+				}
+				else if (self->client->ps.saberMove == LS_A_BACK) { //Yellow Backslash
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 140*g_backslashDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
+				}
+				else if (self->client->ps.saberMove == LS_A_BACK_CR) {//Yellow DBS
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 140*g_backslashDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
+				}
 				else if (self->client->ps.saberMove == LS_A_BACKSTAB)//Switched from staff backstab
 					dmg = G_GetAttackDamage(self, 2, 20, 0.5f);
 				else if (self->client->ps.saberMove == LS_SPINATTACK)//Switched from staff crouch kata'ing
@@ -4292,15 +4322,27 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 					dmg = 30;
 				else if (self->client->ps.saberMove == LS_A2_SPECIAL)
 					dmg = 20*g_yellowDamageScale.value;
-				else//Normal yellow swing
-					dmg = 40*g_yellowDamageScale.value;
+				else {//Normal yellow swing
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 60*g_yellowDamageScale.value;
+					else
+						dmg = 40*g_yellowDamageScale.value;
+				}
 			}
 			else if (self->client->ps.fd.saberAnimLevel == SS_FAST)//Blue Style
 			{
-				if (self->client->ps.saberMove == LS_A_LUNGE)//Blue Lunge
-					dmg = G_GetAttackDamage(self, 20*g_blueDamageScale.value, 40*g_blueDamageScale.value, 0.3f);
-				else if (self->client->ps.saberMove == LS_A_BACKSTAB)//Blue Backstab
-					dmg = G_GetAttackDamage(self, 2, 25*g_blueDamageScale.value, 0.5f);
+				if (self->client->ps.saberMove == LS_A_LUNGE) {//Blue Lunge
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 40*g_blueDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 20*g_blueDamageScale.value, 40*g_blueDamageScale.value, 0.3f);
+				}
+				else if (self->client->ps.saberMove == LS_A_BACKSTAB) { //Blue Backstab
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 25*g_blueDamageScale.value;
+					else
+						dmg = G_GetAttackDamage(self, 2, 25*g_blueDamageScale.value, 0.5f);
+				}
 				else if (self->client->ps.saberMove == LS_A_BACK)//Switched from dual backslash
 					dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_BACK_CR)//Switched from dual DBS
@@ -4313,8 +4355,12 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else if (self->client->ps.saberMove == LS_A2_SPECIAL)
 					dmg = 20*g_blueDamageScale.value;
-				else//Normal blue swing
-					dmg = 10*g_blueDamageScale.value;//was 35
+				else {//Normal blue swing
+					if (g_tweakWeapons.integer & JK2_SABERSYSTEM)
+						dmg = 20*g_blueDamageScale.value;
+					else
+						dmg = 10*g_blueDamageScale.value;//was 35
+				}
 			}
 			else { //tavion, desann
 				if (self->client->ps.saberMove == LS_A_BACK)//Red Backslash
