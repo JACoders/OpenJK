@@ -630,17 +630,17 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Infinite ammo"},//18
 	{"Stun baton heal gun"},//19
 	{"Weapons can damage vehicles"},//20
-	{"Reduced saberblock for MP damages"},//21
+	//{"Reduced saberblock for MP damages"},//21
 	{"Allow gunroll"},//22
 	{"Fast weaponswitch"},//22
-	{"Fixed saberswitch"},//23
+	//{"Fixed saberswitch"},//23
 	{"Impact nitrons"},//24
 	{"Flechette stake gun"},//25
-	{"Reduce saberdrops for MP damages"},//26
-	{"Allow rollcancel for saber swings"},//27
-	{"Skip saber interpolate for MP dmgs"},//28
+	//{"Reduce saberdrops for MP damages"},//26
+	//{"Allow rollcancel for saber swings"},//27
+	//{"Skip saber interpolate for MP dmgs"},//28
 	{"Fix dropped mine ammo count"},//29
-	{"JK2 Style Alt Tripmine"},//30
+	{"JK2 Style Alt Tripmine"}//30
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 
@@ -678,6 +678,271 @@ void Svcmd_ToggleTweakWeapons_f( void ) {
 			? "^2Enabled" : "^1Disabled") );
 
 		CVU_TweakWeapons();
+	}
+}
+
+static bitInfo_T saberTweaks[] = { 
+	{"Skip saber interpolate for MP dmgs"},//1
+	{"JK2 Style Damage System"},//2
+	{"Reduced saberblock for MP damages"},//3
+	{"Reduce saberdrops for MP damages"},//4
+	{"Allow rollcancel for saber swings"},//5
+	{"Remove chainable swings from red stance"},//6
+	{"Fixed saberswitch"},//7
+	{"No aim backslash"},//8
+	{"JK2 red DFA"},//9
+	{"Fix yellow DFA"},//10
+	{"Spin red DFA"},//11
+	{"Spin backslash"},//12
+	{"JK2 Lunge"},//13
+};
+static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
+
+void CVU_TweakSaber (void);
+void Svcmd_ToggleTweakSaber_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_SABER_TWEAKS; i++ ) {
+			if ( (g_tweakSaber.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, saberTweaks[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, saberTweaks[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_SABER_TWEAKS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_SABER_TWEAKS ) {
+			trap->Print( "tweakSaber: Invalid range: %i [0, %i]\n", index, MAX_SABER_TWEAKS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_tweakSaber", va( "%i", (1 << index) ^ (g_tweakSaber.integer & mask ) ) );
+		trap->Cvar_Update( &g_tweakSaber );
+
+		trap->Print( "%s %s^7\n", saberTweaks[index].string, ((g_tweakSaber.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+
+		CVU_TweakSaber();
+	}
+}
+
+static bitInfo_T forceTweaks[] = { 
+	{"No forcepower drain for crouch attack"},//1
+	{"Fix projectile force push dir"},//2
+	{"Push pull knockdowns"},//3
+	{"Fix grip absorb"},//4
+	{"Allow force combo"},//5
+	{"Fix pull strength"},//6
+	{"JK2 grip"},//7
+	{"Fast grip runspeed"},//8
+	{"Push/pull items"},//9
+};
+static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
+
+void CVU_TweakForce (void);
+void Svcmd_ToggleTweakForce_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_FORCE_TWEAKS; i++ ) {
+			if ( (g_tweakForce.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, forceTweaks[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, forceTweaks[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_FORCE_TWEAKS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_FORCE_TWEAKS ) {
+			trap->Print( "tweakForce: Invalid range: %i [0, %i]\n", index, MAX_FORCE_TWEAKS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_tweakForce", va( "%i", (1 << index) ^ (g_tweakForce.integer & mask ) ) );
+		trap->Cvar_Update( &g_tweakForce );
+
+		trap->Print( "%s %s^7\n", forceTweaks[index].string, ((g_tweakForce.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+
+		CVU_TweakForce();
+	}
+}
+
+/*
+static bitInfo_T weaponDisable[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{"Stun Baton"},//1
+	{"Melee"},//2
+	{"Saber"},//3
+	{"Bryar Pistol"},//4
+	{"Blaster"},//5
+	{"Disruptor"},//6
+	{"Bowcaster"},//7
+	{"Repeater"},//8
+	{"Demp2"},//9
+	{"Flechette"},//10
+	{"Rocket Launcher"},//11
+	{"Thermal"},//12
+	{"Trip Mine"},//13
+	{"Det Pack"},//14
+	{"Concussion Rifle"},//15
+	{"Old Bryar Pistol"},//16
+	{"Emplaced Gun"},//17
+	{"Turret"}//18
+};
+static const int MAX_WEAPON_DISABLES = ARRAY_LEN( weaponDisable );
+
+void Svcmd_ToggleWeaponDisable_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_WEAPON_DISABLES; i++ ) {
+			if ( (g_weaponDisable.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, weaponDisable[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, weaponDisable[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_WEAPON_DISABLES) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_WEAPON_DISABLES ) {
+			trap->Print( "weaponDisable: Invalid range: %i [0, %i]\n", index, MAX_WEAPON_DISABLES - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_weaponDisable", va( "%i", (1 << index) ^ (g_weaponDisable.integer & mask ) ) );
+		trap->Cvar_Update( &g_weaponDisable );
+
+		trap->Print( "%s %s^7\n", weaponDisable[index].string, ((g_weaponDisable.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+*/
+
+static bitInfo_T startingWeapons[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{"Stun Baton"},//1
+	{"Melee"},//2
+	{"Saber"},//3
+	{"Bryar Pistol"},//4
+	{"Blaster"},//5
+	{"Disruptor"},//6
+	{"Bowcaster"},//7
+	{"Repeater"},//8
+	{"Demp2"},//9
+	{"Flechette"},//10
+	{"Rocket Launcher"},//11
+	{"Thermal"},//12
+	{"Trip Mine"},//13
+	{"Det Pack"},//14
+	{"Concussion Rifle"},//15
+	{"Old Bryar Pistol"}//16
+};
+static const int MAX_STARTING_WEAPONS = ARRAY_LEN( startingWeapons );
+
+void Svcmd_ToggleStartingWeapons_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_STARTING_WEAPONS; i++ ) {
+			if ( (g_startingWeapons.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, startingWeapons[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, startingWeapons[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_STARTING_WEAPONS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_STARTING_WEAPONS ) {
+			trap->Print( "startingWeapons: Invalid range: %i [0, %i]\n", index, MAX_STARTING_WEAPONS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_startingWeapons", va( "%i", (1 << index) ^ (g_startingWeapons.integer & mask ) ) );
+		trap->Cvar_Update( &g_startingWeapons );
+
+		trap->Print( "%s %s^7\n", startingWeapons[index].string, ((g_startingWeapons.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+
+static bitInfo_T startingItems[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{"Seeker"},//1
+	{"Shield"},//2
+	{"Bacta"},//3
+	{"Big Bacta"},//4
+	{"Binoculars"},//5
+	{"Sentry Gun"},//6
+	{"Jetpack"},//7
+	{"Health Dispenser"},//8
+	{"Ammo Dispenser"},//9
+	{"E-WEB"},//10
+	{"Cloak"}//11
+};
+static const int MAX_STARTING_ITEMS = ARRAY_LEN( startingItems );
+
+void Svcmd_ToggleStartingItems_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_STARTING_ITEMS; i++ ) {
+			if ( (g_startingItems.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, startingItems[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, startingItems[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_STARTING_ITEMS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_STARTING_ITEMS ) {
+			trap->Print( "startingItems: Invalid range: %i [0, %i]\n", index, MAX_STARTING_ITEMS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_startingItems", va( "%i", (1 << index) ^ (g_startingItems.integer & mask ) ) );
+		trap->Cvar_Update( &g_startingItems );
+
+		trap->Print( "%s %s^7\n", startingItems[index].string, ((g_startingItems.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
 	}
 }
 
@@ -737,8 +1002,14 @@ svcmd_t svcmds[] = {
 	{ "renameAccount",				Svcmd_RenameAccount_f,				qfalse },
 
 	{ "say",						Svcmd_Say_f,						qtrue },
+
+	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
+	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
+
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
-	{ "tweakweapons",				Svcmd_ToggleTweakWeapons_f,			qfalse }
+	{ "tweakForce",					Svcmd_ToggleTweakForce_f,			qfalse },
+	{ "tweakSaber",					Svcmd_ToggleTweakSaber_f,			qfalse },
+	{ "tweakWeapons",				Svcmd_ToggleTweakWeapons_f,			qfalse }
 };
 static const size_t numsvcmds = ARRAY_LEN( svcmds );
 

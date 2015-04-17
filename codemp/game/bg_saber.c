@@ -699,6 +699,15 @@ int PM_SaberAttackChainAngle( int move1, int move2 )
 	return saberMoveTransitionAngle[saberMoveData[move1].endQuad][saberMoveData[move2].startQuad];
 }
 
+// Need to avoid nesting namespaces! .. have to move this up a ways... :/
+#ifdef _GAME //including game headers on cgame is FORBIDDEN ^_^
+	#include "g_local.h"
+	extern void NPC_SetAnim(gentity_t *ent, int setAnimParts, int anim, int setAnimFlags);
+	extern gentity_t g_entities[];
+#elif defined(_CGAME)
+	#include "cgame/cg_local.h" //ahahahahhahahaha@$!$!
+#endif
+
 qboolean PM_SaberKataDone(int curmove, int newmove)
 {
 	if (pm->ps->m_iVehicleNum)
@@ -726,6 +735,15 @@ qboolean PM_SaberKataDone(int curmove, int newmove)
 	}
 	else if ( pm->ps->fd.saberAnimLevel == FORCE_LEVEL_3 )
 	{
+#ifdef _GAME
+		if ((pm->ps->saberAttackChainCount >= 1) && (g_tweakSaber.integer & ST_NO_REDCHAIN))
+#else
+		if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN))
+#endif
+		{
+			return qtrue;
+		}
+
 		if ( curmove == LS_NONE || newmove == LS_NONE )
 		{
 			if ( pm->ps->fd.saberAnimLevel >= FORCE_LEVEL_3 && pm->ps->saberAttackChainCount > PM_irand_timesync( 0, 1 ) )
@@ -891,15 +909,6 @@ int PM_SaberLockWinAnim( qboolean victory, qboolean superBreak )
 	}
 	return winAnim;
 }
-
-// Need to avoid nesting namespaces!
-#ifdef _GAME //including game headers on cgame is FORBIDDEN ^_^
-	#include "g_local.h"
-	extern void NPC_SetAnim(gentity_t *ent, int setAnimParts, int anim, int setAnimFlags);
-	extern gentity_t g_entities[];
-#elif defined(_CGAME)
-	#include "cgame/cg_local.h" //ahahahahhahahaha@$!$!
-#endif
 
 int PM_SaberLockLoseAnim( playerState_t *genemy, qboolean victory, qboolean superBreak )
 { 
@@ -1532,7 +1541,7 @@ qboolean PM_CanBackstab(void)
 	vec3_t trmaxs = {15, 15, 8};
 
 #ifdef _GAME
-	if (g_easyBackslash.integer) //easybackslash
+	if (g_tweakSaber.integer & ST_EASYBACKSLASH) //easybackslash
 	{
 		gclient_t	*cl;
 		int i;
@@ -1658,7 +1667,7 @@ saberMoveName_t PM_SaberFlipOverAttackMove(void)
 	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
 	AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
 #ifdef _GAME
-	if (g_tweakYellowDFA.integer)
+	if (g_tweakSaber.integer & ST_FIXYELLOWDFA)
 #else
 	if ((cgs.cinfo & JAPLUS_CINFO_YELLOWDFA) || (cgs.jcinfo & JAPRO_CINFO_YELLOWDFA))
 #endif
@@ -2547,7 +2556,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			}
 			else if (
 #ifdef _GAME
-				(!g_jk2DFA.integer || pm->ps->stats[STAT_RACEMODE])
+				(!(g_tweakSaber.integer & ST_JK2RDFA) || pm->ps->stats[STAT_RACEMODE])
 #else
 				((cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_JK2DFA) || pm->ps->stats[STAT_RACEMODE])) || (cgs.isJAPlus && !(cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
 #endif
@@ -2576,7 +2585,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 
 			else if ( //Loda fixme, why isnt this easy to do like jk2?
 #ifdef _GAME
-				(g_jk2DFA.integer && !pm->ps->stats[STAT_RACEMODE])
+				((g_tweakSaber.integer & ST_JK2RDFA) && !pm->ps->stats[STAT_RACEMODE])
 #else
 				((cgs.isJAPro && !pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA)))
 #endif
@@ -2612,12 +2621,15 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 				if ( newmove != LS_A_T2B
 					&& newmove != LS_NONE )
 				{
-					BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
+#ifdef _GAME
+					//if (!(g_forceTweaks.integer & FT_NO_CROUCHATTACK_FP))
+#endif
+						BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 				}
 			}
 			else if ((pm->ps->fd.saberAnimLevel == SS_FAST || pm->ps->fd.saberAnimLevel == SS_DUAL) && !pm->ps->stats[STAT_RACEMODE] &&
 #ifdef _GAME
-				g_jk2Lunge.integer && //japro idk
+				(g_tweakSaber.integer & ST_JK2LUNGE) && //japro idk
 #else
 				(cgs.jcinfo & JAPRO_CINFO_JK2LUNGE) && //japro idk
 #endif
@@ -2630,7 +2642,10 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 				if ( newmove != LS_A_T2B
 					&& newmove != LS_NONE )
 				{
-					BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
+#ifdef _GAME
+					//if (!(g_forceTweaks.integer & FT_NO_CROUCHATTACK_FP))
+#endif
+						BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 				}
 			}
 			else if ( !noSpecials )

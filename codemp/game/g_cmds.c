@@ -7405,23 +7405,23 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), va("   ^5Backslash damage scale^3: ^2%.2f\n", g_backslashDamageScale.value));
 	if (g_redDFADamageScale.value != 1)
 		Q_strcat(buf, sizeof(buf), va("   ^5Red DFA damage scale^3: ^2%.2f\n", g_redDFADamageScale.value));
-	if (g_tweakYellowDFA.integer)
+	if (g_tweakSaber.integer & ST_FIXYELLOWDFA)
 		Q_strcat(buf, sizeof(buf), "   ^5JK2 Style yellow DFA\n");
-	if (g_spinBackslash.integer)
+	if (g_tweakSaber.integer & ST_SPINBACKSLASH)
 		Q_strcat(buf, sizeof(buf), "   ^5Spinable backslash\n");
-	if (g_spinRedDFA.integer)
+	if (g_tweakSaber.integer & ST_SPINREDDFA)
 		Q_strcat(buf, sizeof(buf), "   ^5Spinable red DFA\n");
-	if (g_jk2Lunge.integer)
+	if (g_tweakSaber.integer & ST_JK2LUNGE)
 		Q_strcat(buf, sizeof(buf), "   ^5JK2 style lunge\n");
 	if (g_maxSaberDefense.integer)
 		Q_strcat(buf, sizeof(buf), va("   ^5Saber defense level capped at^3: ^2%i\n", g_maxSaberDefense.integer));
-	if ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && (!d_saberSPStyleDamage.integer || !g_saberDuelSPDamage.integer))
+	if ((g_tweakSaber.integer & ST_REDUCE_SABERBLOCK) && (!d_saberSPStyleDamage.integer || !g_saberDuelSPDamage.integer))
 		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber block for MP style damage\n");
-	if ((g_tweakWeapons.integer & REDUCE_SABERDROP) && (!d_saberSPStyleDamage.integer || !g_forceDuelSPDamage.integer))
+	if ((g_tweakSaber.integer & ST_REDUCE_SABERDROP) && (!d_saberSPStyleDamage.integer || !g_forceDuelSPDamage.integer))
 		Q_strcat(buf, sizeof(buf), "   ^5Reduced saber drop for MP style damage\n");
-	if (g_tweakWeapons.integer & FIXED_SABERSWITCH)
+	if (g_tweakSaber.integer & ST_FIXED_SABERSWITCH)
 		Q_strcat(buf, sizeof(buf), "   ^5Fixed saber switch swing\n");
-	if (g_tweakWeapons.integer & ALLOW_ROLLCANCEL)
+	if (g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL)
 		Q_strcat(buf, sizeof(buf), "   ^5Roll cancel enabled\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
@@ -7560,9 +7560,9 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	//Force changes
 	if (g_forcePowerDisable.integer < (1<<NUM_FORCE_POWERS)) {
 		Q_strncpyz(buf, " ^3Force Changes:\n", sizeof(buf));
-		if (g_forceCombo.integer)
+		if (g_tweakForce.integer & FT_FORCECOMBO)
 			Q_strcat(buf, sizeof(buf), "   ^5Force combo enabled\n");
-		if (g_fastGrip.integer)
+		if (g_tweakForce.integer & FT_FASTGRIP)
 			Q_strcat(buf, sizeof(buf), "   ^5Increased grip runspeed\n");
 		if (g_fixGetups.integer == 1)
 			Q_strcat(buf, sizeof(buf), "   ^5Grip during knockdown recovery\n");
@@ -7580,13 +7580,13 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, and target can turn on/off lightsaber in grip\n");
 		else if (g_fixSaberInGrip.integer > 2)
 			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, target can turn on/off lightsaber in grip, and target can switch weapons in grip\n");
-		if (g_pushPullKnockdown.integer)
+		if (g_tweakForce.integer & FT_PUSHPULLKD)
 			Q_strcat(buf, sizeof(buf), "   ^5Knocked down players are affected by push/pull\n");
 		if ((!(g_forcePowerDisable.integer & FP_PULL) || !(g_forcePowerDisable.integer & FP_PUSH)) && g_unlagged.integer & UNLAGGED_PUSHPULL)
 			Q_strcat(buf, sizeof(buf), "   ^5Lag compensation for force push/pull\n");
-		if (g_fixGripAbsorb.integer)
+		if (g_tweakForce.integer & FT_GRIPABSORB)
 			Q_strcat(buf, sizeof(buf), "   ^5Force absorb does not gain forcepoints from grip\n");
-		if (g_jk2Grip.integer)
+		if (g_tweakForce.integer & FT_JK2GRIP)
 			Q_strcat(buf, sizeof(buf), "   ^5JK2 1.02 style grip\n");
 		if (level.gametype >= GT_TEAM) {
 			if (g_teamAbsorbScale.value != 1.0f)

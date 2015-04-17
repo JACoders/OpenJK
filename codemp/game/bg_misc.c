@@ -462,8 +462,8 @@ qboolean BG_LegalizedForcePowers(char *powerOut, size_t powerOutSize, int maxRan
 	allowedPoints = forceMasteryPoints[maxRank];
 
 #ifdef _GAME
-	if (g_fixWeaponForcePoints.integer && g_weaponDisable.integer != 524279)
-		allowedPoints += 2;
+	//if (g_fixWeaponForcePoints.integer && g_weaponDisable.integer != 524279)
+		//allowedPoints += 2;
 #endif
 
 	i = 0;

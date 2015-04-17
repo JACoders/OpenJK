@@ -168,40 +168,41 @@ XCVAR_DEF( g_fixFlagHitbox,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_rabbit,					"0",			G_UpdateRabbitCvar,	CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
-XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_tweakSaber,				"0",			CVU_TweakSaber,		CVAR_ARCHIVE,									qtrue )
+//XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE,									qtrue )	//s
+//XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE,									qtrue )	//s
+//XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE,									qtrue )	//s
+//XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE,									qtrue )	//s
+//XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE,									qtrue )	//s
 XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGroundStab,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_saberDuelSPDamage,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_forceDuelSPDamage,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_saberDuelSPDamage,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //s ?
+XCVAR_DEF( g_forceDuelSPDamage,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //s ?
 XCVAR_DEF( g_saberDisable,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_blueDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
 XCVAR_DEF( g_yellowDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
 XCVAR_DEF( g_redDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
-XCVAR_DEF( g_easyBackslash,				"0",			CVU_EasyBackslash,	CVAR_ARCHIVE,									qtrue ) 
+//XCVAR_DEF( g_easyBackslash,				"0",			CVU_EasyBackslash,	CVAR_ARCHIVE,									qtrue ) //s
 XCVAR_DEF( g_redDFADamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) 
-XCVAR_DEF( g_jk2SaberDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) 
+//XCVAR_DEF( g_jk2SaberDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //s
 
 //JAPRO FORCE
-XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_pushPullKnockdown,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixGripAbsorb,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_tweakForce,				"0",			CVU_TweakForce,		CVAR_ARCHIVE,									qtrue )
+//XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue ) //f
+//XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue ) //f
+XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) 
+//XCVAR_DEF( g_pushPullKnockdown,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
+//XCVAR_DEF( g_fixGripAbsorb,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
 XCVAR_DEF( g_fixLightning,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGetups,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixPullStrength,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixWeaponForcePoints,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixProjectilePush,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_teamAbsorbScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
+//XCVAR_DEF( g_fixPullStrength,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
+//XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
+//XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
+//XCVAR_DEF( g_fixWeaponForcePoints,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+//XCVAR_DEF( g_fixProjectilePush,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
+XCVAR_DEF( g_teamAbsorbScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) 
 XCVAR_DEF( g_teamHealScale,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_teamEnergizeScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 
@@ -247,7 +248,7 @@ XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_allowNoFollow,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //race also
 
 //JAPRO OTHER Gameplay
-XCVAR_DEF( g_flipKickDamageScale,		"1",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_flipKickDamageScale,		"1",			NULL,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )

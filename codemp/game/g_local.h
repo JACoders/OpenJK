@@ -190,6 +190,9 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
 #define JAPRO_CINFO_BHOP2			(1<<26)	//option for only bhop mode
 
+#define JAPRO_CINFO_ROLLCANCEL		(1<<27)	//option for only bhop mode
+#define JAPRO_CINFO_NOREDCHAIN		(1<<28)	//option for only bhop mode
+
 //JAPRO - Serverside - Tweak Weapons bitvalues
 #define DEMP2_RANDOM		(1<<0)
 #define DEMP2_DAM			(1<<1)
@@ -211,17 +214,58 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define INFINITE_AMMO		(1<<17)
 #define STUN_HEAL			(1<<18)
 #define ANTI_VEHICLE		(1<<19)
-#define REDUCE_SABERBLOCK	(1<<20)
-#define ALLOW_GUNROLL		(1<<21)
-#define FAST_WEAPONSWITCH	(1<<22)
-#define FIXED_SABERSWITCH	(1<<23)
+
+#define ALLOW_GUNROLL		(1<<20) 
+#define FAST_WEAPONSWITCH	(1<<21)   
+#define IMPACT_NITRON		(1<<22)
+#define STAKE_GUN			(1<<23)
+#define	FIX_MINEAMMO		(1<<24)
+#define	JK2_STYLE_ALT_TRIPMINE	(1<<25)
+
+/*
+//#define REDUCE_SABERBLOCK	(1<<20) //s
+#define ALLOW_GUNROLL		(1<<21)      //CLIENT
+#define FAST_WEAPONSWITCH	(1<<22)      
+//#define FIXED_SABERSWITCH	(1<<23) //s 
 #define IMPACT_NITRON		(1<<24)
 #define STAKE_GUN			(1<<25)
-#define	REDUCE_SABERDROP	(1<<26)
-#define ALLOW_ROLLCANCEL	(1<<27)
-#define	NO_MP_SABERLERP		(1<<28)
+//#define	REDUCE_SABERDROP	(1<<26) //s
+//#define ALLOW_ROLLCANCEL	(1<<27) //s
+//#define	NO_MP_SABERLERP		(1<<28) //s
 #define	FIX_MINEAMMO		(1<<29)
 #define	JK2_STYLE_ALT_TRIPMINE	(1<<30)
+*/
+
+//Force Tweaks
+#define	FT_NO_CROUCHATTACK_FP (1<<0)
+#define	FT_FIX_PROJ_PUSH	  (1<<1)
+#define	FT_PUSHPULLKD		  (1<<2)
+#define	FT_GRIPABSORB		  (1<<3)
+#define	FT_FORCECOMBO		  (1<<4)
+#define	FT_PULLSTRENGTH		  (1<<5)
+#define	FT_JK2GRIP			  (1<<6)
+#define	FT_FASTGRIP			  (1<<7)
+#define	FT_PUSHPULLITEMS	  (1<<8)
+
+//Saber tweaks
+#define	ST_NO_MP_SABERLERP		(1<<0)
+#define ST_JK2_DMGSYSTEM		(1<<1)
+#define ST_REDUCE_SABERBLOCK	(1<<2)
+#define	ST_REDUCE_SABERDROP		(1<<3)
+#define ST_ALLOW_ROLLCANCEL		(1<<4) //CLIENT
+#define ST_NO_REDCHAIN			(1<<5)
+#define ST_FIXED_SABERSWITCH	(1<<6)
+
+#define ST_EASYBACKSLASH		(1<<7)
+#define ST_JK2RDFA				(1<<8)
+#define ST_FIXYELLOWDFA			(1<<9)
+#define ST_SPINREDDFA			(1<<10)
+#define ST_SPINBACKSLASH		(1<<11)
+#define ST_JK2LUNGE				(1<<12)
+
+
+
+
 
 #define SABERSTYLE_BLUE (1<<0)//blue only
 #define SABERSTYLE_YELLOW (1<<1)//yellow only

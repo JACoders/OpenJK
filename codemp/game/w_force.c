@@ -588,7 +588,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 	}
 
 //[JAPRO - Serverside - Force - Allow push/pull on knocked down players - Start]
-	if (!g_pushPullKnockdown.integer && other && other->client && (forcePower == FP_PUSH ||	forcePower == FP_PULL))
+	if (!(g_tweakForce.integer & FT_PUSHPULLKD) && other && other->client && (forcePower == FP_PUSH ||	forcePower == FP_PULL))
 	{
 		if (BG_InKnockDown(other->client->ps.legsAnim))
 			return 0;
@@ -812,7 +812,7 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 		return -1;
 	}
 
-	if (g_fixGripAbsorb.integer && atPower == FP_GRIP)//JAPRO - Serverside - Force - Stop failed grips from giving forcepoints to reciever.. why does this work
+	if ((g_tweakForce.integer & FT_GRIPABSORB) && atPower == FP_GRIP)//JAPRO - Serverside - Force - Stop failed grips from giving forcepoints to reciever.. why does this work
 		return -1;
 
 //[JAPRO - Serverside - Saber - Tweak force lightning - Start]
@@ -1589,7 +1589,7 @@ void ForceProtect( gentity_t *self )
 
 //JAPRO - Serverside - Allow force combos - Start
 	// Make sure to turn off Force Rage and Force Absorb.
-	if (!g_forceCombo.integer)
+	if (!(g_tweakForce.integer & FT_FORCECOMBO))
 	{
 		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
 		{
@@ -1629,7 +1629,7 @@ void ForceAbsorb( gentity_t *self )
 	}
 
 //JAPRO - Serverside - Allow force combos - Start
-	if (!g_forceCombo.integer)
+	if (!(g_tweakForce.integer & FT_FORCECOMBO))
 	{// Make sure to turn off Force Rage and Force Protection.
 		if (self->client->ps.fd.forcePowersActive & (1 << FP_RAGE) )
 		{
@@ -1680,7 +1680,7 @@ void ForceRage( gentity_t *self )
 
 //JAPRO - Serverside - Allow force combos - Start
 	//Make sure to turn off Force Protection and Force Absorb.
-	if (!g_forceCombo.integer)
+	if (!(g_tweakForce.integer & FT_FORCECOMBO))
 	{
 		if (self->client->ps.fd.forcePowersActive & (1 << FP_PROTECT) )
 		{
@@ -3648,7 +3648,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					//fullbody push effect
 					push_list[x]->client->pushEffectTime = level.time + 600;
 
-					if (g_fixPullStrength.integer && pull) {
+					if ((g_tweakForce.integer & FT_PULLSTRENGTH) && pull) {
 						push_list[x]->client->ps.velocity[0] += pushDir[0]*pushPowerMod;
 						push_list[x]->client->ps.velocity[1] += pushDir[1]*pushPowerMod;
 					}
@@ -3668,7 +3668,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					}
 					else
 					{
-						if (g_fixPullStrength.integer && pull)
+						if ((g_tweakForce.integer & FT_PULLSTRENGTH) && pull)
 							push_list[x]->client->ps.velocity[2] += pushDir[2]*pushPowerMod;
 						else
 							push_list[x]->client->ps.velocity[2] = pushDir[2]*pushPowerMod;
@@ -3717,7 +3717,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			}
 //JAPRO - Serverside - Flag push/pull physics - End
 //JAPRO - Serverside - Item push/pull physics - Start
-			else if ( g_pushPullItems.integer && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
+			else if ( (g_tweakForce.integer & FT_PUSHPULLITEMS) && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
 			{
 				push_list[x]->nextthink = level.time + 30000;
 				push_list[x]->think = ResetItem;//incase it falls off a cliff
@@ -4036,7 +4036,7 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		return;
 	}
 
-	if (!g_jk2Grip.integer && tr.fraction != 1.0f && tr.entityNum != gripEnt->s.number)
+	if (!(g_tweakForce.integer & FT_JK2GRIP) && tr.fraction != 1.0f && tr.entityNum != gripEnt->s.number)
 	{
 		WP_ForcePowerStop(self, forcePower);
 		return;

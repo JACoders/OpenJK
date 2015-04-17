@@ -120,6 +120,7 @@
 #define JAPRO_CINFO_NOJAWARUN		(1<<25) //Jawa run anim
 #define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
 #define JAPRO_CINFO_ROLLCANCEL		(1<<27) //jk2 1.02 rollcancel move
+#define JAPRO_CINFO_NOREDCHAIN		(1<<28) //no red chains 1.02
 
 //ja+ stuff
 #define JAPRO_PLUGIN_NEWDRAINEFX		(1<<0)

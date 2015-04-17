@@ -3097,7 +3097,7 @@ static qboolean PM_CheckJump( void )
 	}
 
 #ifdef _GAME
-	if (g_jk2DFA.integer && !pm->ps->stats[STAT_RACEMODE])
+	if ((g_tweakSaber.integer & ST_JK2RDFA) && !pm->ps->stats[STAT_RACEMODE])
 #else
 	if (((cgs.isJAPro && !pm->ps->stats[STAT_RACEMODE] && (cgs.jcinfo & JAPRO_CINFO_JK2DFA)) || (cgs.isJAPlus && (cgs.jcinfo & JAPLUS_CINFO_JK2DFA))))
 #endif
@@ -4365,7 +4365,7 @@ static int PM_TryRoll( void )
 		}
 
 #ifdef _GAME
-	if (!(g_tweakWeapons.integer & ALLOW_ROLLCANCEL)) {
+	if (!(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL)) {
 #else
 	if (!(cgs.jcinfo & JAPRO_CINFO_ROLLCANCEL)) {
 #endif
@@ -6998,7 +6998,7 @@ void PM_FinishWeaponChange( void ) {
 	pm->ps->weapon = weapon;
 	pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FIXED_SABERSWITCH) && weapon == WP_SABER) {//fix saber switch glitch if we want
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakSaber.integer & ST_FIXED_SABERSWITCH) && weapon == WP_SABER) {//fix saber switch glitch if we want
 		pm->ps->weaponTime += 1250;
 		((gentity_t *)pm_entSelf)->client->saberDelayCount += 1000; //Ait.. this is the delay past 250 that is added, we wil subract this from weapontime later when checking forcepower use
 		//saberDelay can never be negative. Saber delay can never be more than weapontime-250.
@@ -9053,7 +9053,7 @@ static void PM_DropTimers( void ) {
 		pm->ps->stats[STAT_JUMPTIME] -= pml.msec;
 
 #ifdef _GAME
-	if (g_tweakWeapons.integer & FIXED_SABERSWITCH) {
+	if (g_tweakSaber.integer & ST_FIXED_SABERSWITCH) {
 		if (((gentity_t *)pm_entSelf)->client->saberDelayCount > 0) {
 			((gentity_t *)pm_entSelf)->client->saberDelayCount -= pml.msec;
 			((gentity_t *)pm_entSelf)->client->saberDelay = 1000;
@@ -9682,7 +9682,7 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 //[JAPRO - Serverside + Clientside - Force - Add fast grip option - Start]
 	if (ps->fd.forcePowersActive & (1 << FP_GRIP)) {
 #ifdef _GAME
-		if (g_fastGrip.integer)
+		if (g_tweakForce.integer & FT_FASTGRIP)
 #else
 		if (cgs.isJAPlus || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FASTGRIP))
 #endif
@@ -9694,7 +9694,7 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 
 //JAPRO - Serverside - Force Combo - Start
 #ifdef _GAME
- 	if (g_forceCombo.integer && ps->fd.forcePowersActive & (1 << FP_SPEED) && ps->fd.forcePowersActive & (1 << FP_RAGE))
+ 	if ((g_tweakForce.integer & FT_FORCECOMBO) && ps->fd.forcePowersActive & (1 << FP_SPEED) && ps->fd.forcePowersActive & (1 << FP_RAGE))
 #else
 	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_FORCECOMBO) && ps->fd.forcePowersActive & (1 << FP_SPEED) && ps->fd.forcePowersActive & (1 << FP_RAGE))
 #endif
@@ -11711,7 +11711,7 @@ void PmoveSingle (pmove_t *pmove) {
 			{
 //[JAPRO - Serverside - Saber - Tweak yellow dfa - Start]
 #ifdef _GAME
-				if (!g_tweakYellowDFA.integer)
+				if (!(g_tweakSaber.integer & ST_FIXYELLOWDFA))
 #else
 				if (!((cgs.cinfo & JAPLUS_CINFO_YELLOWDFA) || (cgs.jcinfo & JAPRO_CINFO_YELLOWDFA)))
 #endif
@@ -12115,11 +12115,11 @@ void PmoveSingle (pmove_t *pmove) {
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 
 #ifdef _GAME
-	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !g_spinRedDFA.integer)
+	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(g_tweakSaber.integer & ST_SPINREDDFA))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
-	else if ((pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK)  && !g_spinBackslash.integer)
+	else if ((pm->ps->saberMove == LS_A_BACK_CR || pm->ps->saberMove == LS_A_BACK)  && !(g_tweakSaber.integer & ST_SPINBACKSLASH))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
-	else if	(pm->ps->saberMove == LS_A_LUNGE && (!g_jk2Lunge.integer || pm->ps->stats[STAT_RACEMODE]))
+	else if	(pm->ps->saberMove == LS_A_LUNGE && (!(g_tweakSaber.integer & ST_JK2LUNGE) || pm->ps->stats[STAT_RACEMODE]))
 		PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 #else
 	if (pm->ps->saberMove == LS_A_JUMP_T__B_ && !(cgs.jcinfo & JAPRO_CINFO_REDDFA))

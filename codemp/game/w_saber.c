@@ -4252,25 +4252,25 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			else if (self->client->ps.fd.saberAnimLevel == SS_STRONG)//Red Style 
 			{
 				if (self->client->ps.saberMove == LS_A_T2B) { //this is a vert i think?
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 100*g_redDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 70*g_redDamageScale.value, 0.65f);
 				}
 				else if (self->client->ps.saberMove == LS_A_BACK) {//Red Backslash
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 120*g_backslashDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
 				}
 				else if (self->client->ps.saberMove == LS_A_BACK_CR) { //Red DBS
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 140*g_backslashDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
 				}
 				else if (self->client->ps.saberMove == LS_A_JUMP_T__B_) {//Red DFA
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 120*g_redDFADamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 60*g_redDFADamageScale.value, 0.65f);
@@ -4278,7 +4278,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_A3_SPECIAL)
 					dmg = 20*g_redDamageScale.value;
 				else {//Regular swing
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 100*g_redDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 30*g_redDamageScale.value, 85*g_redDamageScale.value, 0.65f);
@@ -4287,19 +4287,19 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			else if (self->client->ps.fd.saberAnimLevel == SS_MEDIUM)//Yellow Style
 			{
 				if (self->client->ps.saberMove == LS_A_FLIP_STAB || self->client->ps.saberMove == LS_A_FLIP_SLASH) { //Yellow DFA and something else?
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 60*g_yellowDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 50*g_yellowDamageScale.value, 0.5f);
 				}
 				else if (self->client->ps.saberMove == LS_A_BACK) { //Yellow Backslash
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 140*g_backslashDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 30*g_backslashDamageScale.value, 0.5f);
 				}
 				else if (self->client->ps.saberMove == LS_A_BACK_CR) {//Yellow DBS
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 140*g_backslashDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 40*g_backslashDamageScale.value, 0.5f);
@@ -4319,7 +4319,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_A_BACKFLIP_ATK)//Switched from back staff dfa
 					dmg = G_GetAttackDamage(self, 2, 50, 0.5f);
 				else if (self->client->ps.saberMove == LS_A_T2B) {//now what is this
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 60*g_yellowDamageScale.value;
 					else
 						dmg = 30*g_yellowDamageScale.value;
@@ -4327,7 +4327,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_A2_SPECIAL)
 					dmg = 20*g_yellowDamageScale.value;
 				else {//Normal yellow swing
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 60*g_yellowDamageScale.value;
 					else
 						dmg = 40*g_yellowDamageScale.value;
@@ -4336,13 +4336,13 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			else if (self->client->ps.fd.saberAnimLevel == SS_FAST)//Blue Style
 			{
 				if (self->client->ps.saberMove == LS_A_LUNGE) {//Blue Lunge
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 40*g_blueDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 20*g_blueDamageScale.value, 40*g_blueDamageScale.value, 0.3f);
 				}
 				else if (self->client->ps.saberMove == LS_A_BACKSTAB) { //Blue Backstab
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 25*g_blueDamageScale.value;
 					else
 						dmg = G_GetAttackDamage(self, 2, 25*g_blueDamageScale.value, 0.5f);
@@ -4360,7 +4360,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				else if (self->client->ps.saberMove == LS_A2_SPECIAL)
 					dmg = 20*g_blueDamageScale.value;
 				else {//Normal blue swing
-					if (g_jk2SaberDmg.integer)
+					if (g_tweakSaber.integer & ST_JK2_DMGSYSTEM)
 						dmg = 20*g_blueDamageScale.value;
 					else
 						dmg = 10*g_blueDamageScale.value;//was 35
@@ -4425,7 +4425,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		unblockable = qtrue;
 		self->client->ps.saberBlocked = 0;
 
-		if (!SaberSPStyle(self) && !inBackAttack && !(g_jk2SaberDmg.integer))
+		if (!SaberSPStyle(self) && !inBackAttack && !(g_tweakSaber.integer & ST_JK2_DMGSYSTEM))
 		{
 			if (self->client->ps.saberMove == LS_A_JUMP_T__B_)
 			{ //do extra damage for special unblockables
@@ -6930,7 +6930,7 @@ qboolean saberCheckKnockdown_BrokenParry(gentity_t *saberent, gentity_t *saberOw
 		return qfalse;
 	}
 
-	if (!SaberSPStyle(saberOwner) && (g_tweakWeapons.integer & REDUCE_SABERBLOCK))
+	if (!SaberSPStyle(saberOwner) && (g_tweakSaber.integer & ST_REDUCE_SABERBLOCK))
 		return qfalse; //Dont do this shit in MP dmgs i guess...
 
 	//Neither gets an advantage based on attack state, when it comes to knocking
@@ -7049,7 +7049,7 @@ qboolean saberCheckKnockdown_Thrown(gentity_t *saberent, gentity_t *saberOwner, 
 		return qfalse;
 	}
 
-	if (!SaberSPStyle(saberOwner) && (g_tweakWeapons.integer & REDUCE_SABERDROP)) //test..
+	if (!SaberSPStyle(saberOwner) && (g_tweakSaber.integer & ST_REDUCE_SABERDROP)) //test..
 		return qfalse; //Dont do saberdrops for idle STs either i guess..
 
 	defenLevel = other->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE];
@@ -9231,7 +9231,7 @@ nextStep:
 					}
 				}
 //[JAPRO - Serverside - Saber - Remove MP Ghosting by adding always Lerp - Start]
-				else if (SaberSPStyle(self) || !(g_tweakWeapons.integer & NO_MP_SABERLERP)) { //oops
+				else if (SaberSPStyle(self) || !(g_tweakSaber.integer & ST_NO_MP_SABERLERP)) { //oops
 					G_SPSaberDamageTraceLerped( self, rSaberNum, rBladeNum, boltOrigin, end, (MASK_PLAYERSOLID|CONTENTS_LIGHTSABER|MASK_SHOT) );
 				}
 				else {
@@ -9492,7 +9492,7 @@ static int G_SaberPierceLevelForStance( int stance ) {
 qboolean WP_SaberCanBlockSwing(int ourStr, int attackStr) //If this returns false, we dont block the saber during our swing? (default true)
 {
 	//JAPRO reduce saber block
-	if (g_tweakWeapons.integer & REDUCE_SABERBLOCK) {
+	if (g_tweakSaber.integer & ST_REDUCE_SABERBLOCK) {
 		const int ourLevel = G_SaberPierceLevelForStance( ourStr );
 		const int theirLevel = G_SaberPierceLevelForStance( attackStr );
 		const int diff = theirLevel - ourLevel; // range [0, 2]
@@ -9552,7 +9552,7 @@ int WP_SaberCanBlock(gentity_t *self, vec3_t point, int dflags, int mod, qboolea
 	}
 
 	//JAPRO reduce saber block
-	if (!SaberSPStyle(self) && ((g_tweakWeapons.integer & REDUCE_SABERBLOCK) && !projectile && !thrownSaber)) {
+	if (!SaberSPStyle(self) && ((g_tweakSaber.integer & ST_REDUCE_SABERBLOCK) && !projectile && !thrownSaber)) {
 		const int ourLevel = G_SaberLevelForStance( self->client->ps.fd.saberAnimLevel );
 		const int theirLevel = G_SaberLevelForStance( attackStr );
 		const int diff = theirLevel - ourLevel; // range [0, 2]

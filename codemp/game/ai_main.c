@@ -7077,7 +7077,7 @@ void NewBotAI_NF(bot_state_t *bs)
 			}
 			trap->EA_MoveForward(bs->client); 
 		}
-		else if (g_easyBackslash.integer && (bs->frame_Enemy_Len < 128) && (g_backslashDamageScale.value >= 5 || (g_backslashDamageScale.value >= 3 && g_spinBackslash.integer))) {
+		else if ((g_tweakSaber.integer & ST_EASYBACKSLASH) && (bs->frame_Enemy_Len < 128) && (g_backslashDamageScale.value >= 5 || (g_backslashDamageScale.value >= 3 && (g_tweakSaber.integer & ST_SPINBACKSLASH)))) {
 			//Do a backslash 
 			//bs->ideal_viewangles[YAW] += 180;
 			if (BS_GroundDistance(bs) < 20)

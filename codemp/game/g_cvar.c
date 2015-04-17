@@ -49,11 +49,13 @@ static void CVU_Roll(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+/*
 static void CVU_YDFA(void) {
 	g_tweakYellowDFA.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_YELLOWDFA) : (jcinfo.integer &= ~JAPRO_CINFO_YELLOWDFA);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
+*/
 
 static void CVU_Headslide(void) {
 	g_slideOnPlayer.integer ?
@@ -89,11 +91,13 @@ static void CVU_Bhop(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+/*
 static void CVU_FastGrip(void) {
 	g_fastGrip.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_FASTGRIP) : (jcinfo.integer &= ~JAPRO_CINFO_FASTGRIP);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
+
 
 static void CVU_SpinBackslash(void) {
 	g_spinBackslash.integer ?
@@ -112,6 +116,7 @@ static void CVU_SpinRDFA(void) {
 		(jcinfo.integer |= JAPRO_CINFO_REDDFA) : (jcinfo.integer &= ~JAPRO_CINFO_REDDFA);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
+*/
 
 static void CVU_TweakJetpack(void) {
 	g_tweakJetpack.integer ?
@@ -125,12 +130,6 @@ static void CVU_ScreenShake(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
-static void CVU_ForceCombo(void) { //Only needed to predict speed+darkrage runspeed :/
-	g_forceCombo.integer ?
-		(jcinfo.integer |= JAPRO_CINFO_FORCECOMBO) : (jcinfo.integer &= ~JAPRO_CINFO_FORCECOMBO);
-	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
-}
-
 void CVU_TweakWeapons(void) {
 	(g_tweakWeapons.integer & PSEUDORANDOM_FIRE) ?
 		(jcinfo.integer |= JAPRO_CINFO_PSEUDORANDOM_FIRE) : (jcinfo.integer &= ~JAPRO_CINFO_PSEUDORANDOM_FIRE);
@@ -140,26 +139,40 @@ void CVU_TweakWeapons(void) {
 		(jcinfo.integer |= JAPRO_CINFO_SHOCKLANCE) : (jcinfo.integer &= ~JAPRO_CINFO_SHOCKLANCE);
 	(g_tweakWeapons.integer & ALLOW_GUNROLL) ?
 		(jcinfo.integer |= JAPRO_CINFO_GUNROLL) : (jcinfo.integer &= ~JAPRO_CINFO_GUNROLL);
-	(g_tweakWeapons.integer & ALLOW_ROLLCANCEL) ?
-		(jcinfo.integer |= ALLOW_ROLLCANCEL) : (jcinfo.integer &= ~ALLOW_ROLLCANCEL);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
+void CVU_TweakSaber(void) {
+	(g_tweakSaber.integer & ST_ALLOW_ROLLCANCEL) ?
+		(jcinfo.integer |= JAPRO_CINFO_ROLLCANCEL) : (jcinfo.integer &= ~JAPRO_CINFO_ROLLCANCEL);
+	(g_tweakSaber.integer & ST_NO_REDCHAIN) ?
+		(jcinfo.integer |= JAPRO_CINFO_NOREDCHAIN) : (jcinfo.integer &= ~JAPRO_CINFO_NOREDCHAIN);
+	(g_tweakSaber.integer & ST_SPINREDDFA) ?
+		(jcinfo.integer |= JAPRO_CINFO_REDDFA) : (jcinfo.integer &= ~JAPRO_CINFO_REDDFA);
+	(g_tweakSaber.integer & ST_EASYBACKSLASH) ?
+		(jcinfo.integer |= JAPRO_CINFO_EASYBACKSLASH) : (jcinfo.integer &= ~JAPRO_CINFO_EASYBACKSLASH);
+	(g_tweakSaber.integer & ST_SPINBACKSLASH) ?
+		(jcinfo.integer |= JAPRO_CINFO_BACKSLASH) : (jcinfo.integer &= ~JAPRO_CINFO_BACKSLASH);
+	(g_tweakSaber.integer & ST_FIXYELLOWDFA) ?
+		(jcinfo.integer |= JAPRO_CINFO_YELLOWDFA) : (jcinfo.integer &= ~JAPRO_CINFO_YELLOWDFA);
+	(g_tweakSaber.integer & ST_JK2LUNGE) ?
+		(jcinfo.integer |= JAPRO_CINFO_JK2LUNGE) : (jcinfo.integer &= ~JAPRO_CINFO_JK2LUNGE);
+	(g_tweakSaber.integer & ST_JK2RDFA) ?
+		(jcinfo.integer |= JAPRO_CINFO_JK2DFA) : (jcinfo.integer &= ~JAPRO_CINFO_JK2DFA);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
+void CVU_TweakForce(void) {
+	(g_tweakForce.integer & FT_FORCECOMBO) ?
+		(jcinfo.integer |= JAPRO_CINFO_FORCECOMBO) : (jcinfo.integer &= ~JAPRO_CINFO_FORCECOMBO);
+	(g_tweakForce.integer & FT_FASTGRIP) ?
+		(jcinfo.integer |= JAPRO_CINFO_FASTGRIP) : (jcinfo.integer &= ~JAPRO_CINFO_FASTGRIP);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
 static void CVU_LegDangle(void) {
 	!g_LegDangle.integer ?
 		(jcinfo.integer |= JAPRO_CINFO_LEGDANGLE) : (jcinfo.integer &= ~JAPRO_CINFO_LEGDANGLE);
-	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
-}
-
-static void CVU_JK2Lunge(void) {
-	g_jk2Lunge.integer ?
-		(jcinfo.integer |= JAPRO_CINFO_JK2LUNGE) : (jcinfo.integer &= ~JAPRO_CINFO_JK2LUNGE);
-	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
-}
-
-static void CVU_JK2DFA(void) {
-	g_jk2DFA.integer ?
-		(jcinfo.integer |= JAPRO_CINFO_JK2DFA) : (jcinfo.integer &= ~JAPRO_CINFO_JK2DFA);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 

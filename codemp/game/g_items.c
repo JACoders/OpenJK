@@ -2322,7 +2322,7 @@ void RespawnItem( gentity_t *ent ) {
 			;
 	}
 
-	if (g_pushPullItems.integer)
+	if (g_tweakForce.integer & FT_PUSHPULLITEMS)
 	{
 		VectorCopy(ent->origOrigin, ent->s.origin);
 		VectorCopy(ent->origOrigin, ent->s.pos.trBase);
