@@ -4471,7 +4471,7 @@ void ClientThink_real( gentity_t *ent ) {
 					break;
 			}
 			else { //Single
-				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 50) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
+				if (ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] > level.time - 300) //Not sure what this should be.. on baseJK you can bypass any delay, though it seems clearly intended to be 300ms delay..
 					break; //Cant really make this delay super low, since then people who use keyboard binds for saberswitch have trouble only switching once i guess :s
 			}
 			ent->client->genCmdDebounce[GENCMD_DELAY_SABERSWITCH] = level.time;
