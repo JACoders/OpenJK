@@ -736,7 +736,7 @@ qboolean PM_SaberKataDone(int curmove, int newmove)
 	else if ( pm->ps->fd.saberAnimLevel == FORCE_LEVEL_3 )
 	{
 #ifdef _GAME
-		if ((pm->ps->saberAttackChainCount >= 1) && (g_tweakSaber.integer & ST_NO_REDCHAIN))
+		if ((pm->ps->saberAttackChainCount >= 1) && !pm->ps->stats[STAT_RACEMODE] && (g_tweakSaber.integer & ST_NO_REDCHAIN))
 #else
 		if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_NOREDCHAIN))
 #endif
@@ -2622,7 +2622,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					&& newmove != LS_NONE )
 				{
 #ifdef _GAME
-					//if (!(g_forceTweaks.integer & FT_NO_CROUCHATTACK_FP))
+					if (!(g_tweakForce.integer & FT_NO_CROUCHATTACK_FP))
 #endif
 						BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 				}
@@ -2643,7 +2643,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					&& newmove != LS_NONE )
 				{
 #ifdef _GAME
-					//if (!(g_forceTweaks.integer & FT_NO_CROUCHATTACK_FP))
+					if (!(g_tweakForce.integer & FT_NO_CROUCHATTACK_FP))
 #endif
 						BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 				}
