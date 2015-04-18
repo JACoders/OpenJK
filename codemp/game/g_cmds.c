@@ -5161,7 +5161,7 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
 		// zyk: update the rpg stuff info at the client-side game
-		ent->client->pers.send_event_timer = level.time + 2000;
+		ent->client->pers.send_event_timer = level.time + 3000;
 		ent->client->pers.player_statuses &= ~(1 << 2);
 	}
 }
@@ -9072,7 +9072,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 8)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stealth Attacker Upgrade: ^7Stealth Attacker will be invulnerable to electric attacks and will have 20 per cent more damage in his starting weapons. Protects from stun baton 2/3 and 3/3 knock down and also from losing guns to force pull\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stealth Attacker Upgrade: ^7Stealth Attacker will be invulnerable to electric attacks and will have 20 per cent more damage in his starting weapons. Protects from stun baton 2/3 and 3/3 knock down and also from losing guns to force pull. Makes him invisible to the Bounty Hunter Upgrade Radar\n\n\"");
 		}
 		else if (i == 9)
 		{
@@ -9396,6 +9396,9 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 8)
 		{
 			ent->client->pers.secrets_found |= (1 << 7);
+
+			// zyk: update the rpg stuff info at the client-side game
+			ent->client->pers.player_statuses &= ~(1 << 2);
 		}
 		else if (value == 9)
 		{

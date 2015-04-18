@@ -2514,7 +2514,7 @@ Ghoul2 Insert End
 	// zyk: initialize the blue jet players
 	for (j = 0; j < MAX_CLIENTS; j++)
 	{
-		cg.zyk_blue_jet_efx[j] = qfalse;
+		cg.zyk_rpg_stuff[j] = 0;
 	}
 
 	cgs.processedSnapshotNum = serverMessageNum;

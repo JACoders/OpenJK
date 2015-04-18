@@ -2660,7 +2660,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	client->pers.guardian_invoked_by_id = -1;
 
 	// zyk: sending events to client game
-	client->pers.send_event_timer = level.time + 2000;
+	client->pers.send_event_timer = level.time + 3000;
 
 	client->pers.skill_counter = 0;
 	VectorSet(client->pers.teleport_point,0,0,0);

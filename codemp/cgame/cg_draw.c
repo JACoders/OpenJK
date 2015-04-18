@@ -3758,6 +3758,11 @@ float CG_DrawRadar ( float y )
 				{
 					continue;
 				}
+				
+				if (cg.zyk_rpg_stuff[cent->currentState.number] & (1 << 1))
+				{ // zyk: if this is a stealth attacker with upgrade, do not draw it on radar
+					continue;
+				}
 
 				VectorCopy4 ( teamColor, color );
 

@@ -548,8 +548,9 @@ typedef struct clientPersistant_s {
 	// zyk: Possible bit values are:
 	// 0 - Player is silenced
 	// 1 - using an emote
-	// 2 - Received Radar event - necessary because after a map change, the first spawn cannot get the event immediately
-	// 3 - Received Jetpack Flame event - necessary because after a map change, the first spawn cannot get the event immediately
+	// 2 - Received Radar event - set after client-side receives the Bounty Hunter Upgrade event
+	// 3 - Received Jetpack Flame event - set after client-side receives the Jetpack Upgrade event
+	// 4 - Received Stealth Attacker Upgrade event - set after client-side receives the Stealth Attacker Upgrade event
 	int player_statuses;
 
 	// zyk: timer to send events to client game

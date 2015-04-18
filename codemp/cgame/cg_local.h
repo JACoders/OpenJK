@@ -1014,8 +1014,11 @@ Ghoul2 Insert End
 	// 1 - Blue Jetpack Flame
 	int rpg_stuff;
 
-	// zyk: tests which clients must have the blue jet efx rendered client-side
-	qboolean zyk_blue_jet_efx[MAX_CLIENTS];
+	// zyk: sets clients which must have some RPG stuff set for this cg player to see the stuff on them
+	// Possible bitvalues:
+	// 0 - Blue Jet Flame
+	// 1 - Stealth Attacker Upgrade, which makes Radar not see this player
+	int zyk_rpg_stuff[MAX_CLIENTS];
 } cg_t;
 
 #define MAX_TICS	14

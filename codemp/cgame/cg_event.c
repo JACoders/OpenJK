@@ -2689,12 +2689,20 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		else if (es->number < MAX_CLIENTS)
 		{ // zyk handling the jetpack effect for other players
 			if (es->eventParm == 7)
-			{ // zyk: if 7, set the blue jetpack flame
-				cg.zyk_blue_jet_efx[es->number] = qtrue;
+			{ // zyk: set the blue jetpack flame
+				cg.zyk_rpg_stuff[es->number] |= (1 << 0);
 			}
 			else if (es->eventParm == 8)
-			{ // zyk: if 8, remove blue jetpack flame
-				cg.zyk_blue_jet_efx[es->number] = qfalse;
+			{ // zyk: remove blue jetpack flame
+				cg.zyk_rpg_stuff[es->number] &= ~(1 << 0);
+			}
+			else if (es->eventParm == 9)
+			{ // zyk: add this player so it will not be visible by the cg player radar
+				cg.zyk_rpg_stuff[es->number] |= (1 << 1);
+			}
+			else if (es->eventParm == 10)
+			{ // zyk: remove this player so it will be visible by the cg player radar
+				cg.zyk_rpg_stuff[es->number] &= ~(1 << 1);
 			}
 		}
 		break;
