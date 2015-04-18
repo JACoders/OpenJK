@@ -6904,8 +6904,7 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 				}
 				else
 				{
-					if (ent->client->pers.defeated_guardians == 0 && ent->client->pers.hunter_quest_progress == 0 &&
-						ent->client->pers.eternity_quest_progress == 0 && ent->client->pers.universe_quest_progress == 0)
+					if (ent->client->pers.universe_quest_counter & (1 << 29))
 					{
 						strcpy(content,va("%sChallenge-",content));
 					}
