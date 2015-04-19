@@ -3612,6 +3612,9 @@ static int PM_FootstepForSurface( void )
 }
 
 extern qboolean PM_CanRollFromSoulCal( playerState_t *ps );
+#if defined( _GAME )
+extern void rpg_skill_counter(gentity_t *ent, int amount);
+#endif
 static int PM_TryRoll( void )
 {
 	trace_t	trace;
@@ -3692,6 +3695,14 @@ static int PM_TryRoll( void )
 		pm->trace( &trace, pm->ps->origin, mins, maxs, traceto, pm->ps->clientNum, CONTENTS_SOLID );
 		if ( trace.fraction >= 1.0f )
 		{
+#if defined( _GAME )
+			gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+
+			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2)
+			{ // zyk: rolling increases skill counter
+				rpg_skill_counter(player_ent, 20);
+			}
+#endif
 			pm->ps->saberMove = LS_NONE;
 			return anim;
 		}
