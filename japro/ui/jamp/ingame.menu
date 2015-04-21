@@ -66,7 +66,7 @@
 			name				background_pic_bottom
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 448 640 32
+			rect				190 464 260 16
 			background			"gfx/menus/menu_top_mp"
 			forecolor			1 1 1 1
 			visible				1
@@ -618,7 +618,7 @@
 			name				browserButton
 			//group				none
 			style				WINDOW_STYLE_SHADER
-			rect				5 448 70 32
+			rect				395 464 50 16
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -631,13 +631,13 @@
 			text				"Browser"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				5 448 70 32
+			rect				395 464 50 16
 			font				2
-			textscale			.8
+			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
-			textaligny			2
+			textalignx          25
+			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
 			visible				1
@@ -661,7 +661,7 @@
 			name				moveButton
 			//group				none
 			style				WINDOW_STYLE_SHADER
-			rect				75 448 70 32
+			rect				345 464 50 16
 			background		"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -674,13 +674,13 @@
 			text				"Move"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				75 448 70 32
+			rect				345 464 50 16
 			font				2
-			textscale			.8
+			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx          35
-			textaligny			2
+			textalignx          25
+			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
 			visible				1
@@ -698,59 +698,59 @@
 				hide			moveButton
 			}
 		}
-		
-		itemDef 
-		{
-			name				printstatsButton
-			group				none
-			style				WINDOW_STYLE_SHADER
-			rect				145 448 70 32
-			background			"gfx/menus/menu_buttonback"			// Frame around button
-			forecolor			1 1 1 1
-			decoration
-			visible			0
-		}
+		//-----------------------------------------------------------
+		//itemDef 
+		//{
+		//	name				printstatsButton
+		//	group				none
+		//	style				WINDOW_STYLE_SHADER
+		//	rect				145 448 70 32
+		//	background			"gfx/menus/menu_buttonback"			// Frame around button
+		//	forecolor			1 1 1 1
+		//	decoration
+		//	visible			0
+		//}
 
-		itemDef 
-		{
-			name				printstats
-			text				"Printstats"
-			type				1
-			style				WINDOW_STYLE_FILLED
-			rect				145 448 70 32
-			font				2
-			textscale			.8
-			textstyle			3
-			textalign			ITEM_ALIGN_CENTER
-			textalignx         	35
-			textaligny			2
-			forecolor			1 .682 0 1
-			backcolor			0 0 0 0
-			visible				1
-			cvartest			"g_gametype"
-			showcvar			{ "6", "8" }
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				exec			"cmd printstats" ; 
-				uiScript		closeingame 
-			} 
-			mouseenter 
-			{ 
-				show			printstatsButton
-			}
-			mouseexit 
-			{ 
-				hide			printstatsButton
-			}
-		}
-		
+		//itemDef 
+		//{
+		//	name				printstats
+		//	text				"Printstats"
+		//	type				1
+		//	style				WINDOW_STYLE_FILLED
+		//	rect				145 448 70 32
+		//	font				2
+		//	textscale			.8
+		//	textstyle			3
+		//	textalign			ITEM_ALIGN_CENTER
+		//	textalignx         	35
+		//	textaligny			2
+		//	forecolor			1 .682 0 1
+		//	backcolor			0 0 0 0
+		//	visible				1
+		//	cvartest			"g_gametype"
+		//	showcvar			{ "6", "8" }
+		//	action 
+		//	{ 
+		//		play			"sound/interface/button1.wav" ;
+		//		exec			"cmd printstats" ; 
+		//		uiScript		closeingame 
+		//	} 
+		//	mouseenter 
+		//	{ 
+		//		show			printstatsButton
+		//	}
+		//	mouseexit 
+		//	{ 
+		//		hide			printstatsButton
+		//	}
+		//}
+		//-------------------------------------------------------------------
 		itemDef 
 		{
 			name				cameraButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				215 448 70 32
+			rect				245 464 50 46
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -763,13 +763,13 @@
 			text				"Camera"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				215 448 70 32
+			rect				245 464 50 16
 			font				2
-			textscale			.8
+			textscale			.7
 			textstyle			3
 			textalign			ITEM_ALIGN_CENTER
-			textalignx         	35
-			textaligny			2
+			textalignx         	25
+			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
 			visible				1
@@ -785,6 +785,49 @@
 			mouseexit 
 			{ 
 				hide			cameraButton
+			}
+		}
+		
+		itemDef 
+		{
+			name				strafeHelperButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				195 464 50 16
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+
+		itemDef 
+		{
+			name				strafeHelper
+			text				"Helper"
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				195 464 50 16
+			font				2
+			textscale			.7
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	25
+			textaligny			-2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			strafehelpermenu
+			} 
+			mouseenter 
+			{ 
+				show			strafeHelperButton
+			}
+			mouseexit 
+			{ 
+				hide			strafeHelperButton
 			}
 		}
 	}

@@ -8,7 +8,7 @@
 		visible					0
 		fullScreen				0
 		outOfBoundsClick						// this closes the window if it gets a click out of the rectangle
-		rect					10 342 212 98
+		rect					262 342 212 98
 		focusColor				1 1 1 1
 
 
