@@ -549,7 +549,7 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 
 	if ( self->spawnflags & 4 )
 	{//USE_BUTTON
-		if (!g_tweakJetpack.integer && other->client->sess.raceMode && other->client->sess.movementStyle == MV_JETPACK)
+		if (!g_tweakJetpack.integer && other->client->sess.raceMode && other->client->sess.movementStyle == MV_JETPACK && VectorLengthSquared(other->client->ps.velocity))
 			return;
 		if (other->client->sess.raceMode && other->client->sess.movementStyle == MV_SWOOP && other->client->ps.m_iVehicleNum)
 			return;
