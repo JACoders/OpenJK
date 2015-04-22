@@ -3801,7 +3801,15 @@ void G_RunFrame( int levelTime ) {
 					}
 				}
 				if (ent->client->pers.stats.startTime) {
-					const float xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
+					float xyspeed;
+					if (ent->client->ps.m_iVehicleNum) {
+						gentity_t *currentVeh = &g_entities[ent->client->ps.m_iVehicleNum];
+
+						if (currentVeh->client)
+							xyspeed = sqrt(currentVeh->client->ps.velocity[0] * currentVeh->client->ps.velocity[0] + currentVeh->client->ps.velocity[1] * currentVeh->client->ps.velocity[1]);
+					}
+					else
+						xyspeed = sqrt(ent->client->ps.velocity[0] * ent->client->ps.velocity[0] + ent->client->ps.velocity[1] * ent->client->ps.velocity[1]);
 					ent->client->pers.stats.displacement += xyspeed/sv_fps.value;
 					ent->client->pers.stats.displacementSamples++;
 					if (xyspeed > ent->client->pers.stats.topSpeed)
