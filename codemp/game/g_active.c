@@ -1749,7 +1749,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 			ItemUse_Sentry(ent);
 			break;
 		case EV_USE_ITEM7: //jetpack
-			if (!g_tweakJetpack.integer)
+			if (!g_tweakJetpack.integer || ent->client->sess.raceMode)
 				ItemUse_Jetpack(ent);
 			break;
 		case EV_USE_ITEM8: //health disp
@@ -3178,7 +3178,7 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 
 //JAPRO - Serverside - jetpack - Effects - Start
-			else if (g_tweakJetpack.integer && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&client->ps))
+			else if (g_tweakJetpack.integer && !ent->client->sess.raceMode && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&client->ps))
 			{
 				client->ps.eFlags |= EF_JETPACK_ACTIVE;
 				killJetFlags = qfalse;
@@ -4401,7 +4401,7 @@ void ClientThink_real( gentity_t *ent ) {
 			if ( (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) &&
 				G_ItemUsable(&ent->client->ps, HI_JETPACK) )
 			{
-				if (!g_tweakJetpack.integer) {//JAPRO - Remove old jetpack
+				if (!g_tweakJetpack.integer || ent->client->sess.raceMode) {//JAPRO - Remove old jetpack
 					ItemUse_Jetpack(ent);
 					G_AddEvent(ent, EV_USE_ITEM0+HI_JETPACK, 0);
 				}

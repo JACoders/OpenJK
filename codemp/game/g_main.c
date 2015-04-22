@@ -3679,7 +3679,7 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebReduce = level.time + JETPACK_DEFUEL_RATE;
 				}
 			}
-			else if (!g_tweakJetpack.integer && ent->client->ps.jetpackFuel < 100)
+			else if ((!g_tweakJetpack.integer || ent->client->sess.raceMode) && ent->client->ps.jetpackFuel < 100)
 			{ //recharge jetpack
 				if (ent->client->jetPackDebRecharge < level.time)
 				{
@@ -3687,7 +3687,7 @@ void G_RunFrame( int levelTime ) {
 					ent->client->jetPackDebRecharge = level.time + JETPACK_REFUEL_RATE;
 				}
 			}
-			else if (g_tweakJetpack.integer && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&ent->client->ps))
+			else if (g_tweakJetpack.integer && ent->client->sess.raceMode && ent->client->pers.cmd.buttons & BUTTON_JETPACK && BG_CanJetpack(&ent->client->ps))
 			{ //using jetpack, drain fuel
 				if (ent->client->jetPackDebReduce < level.time)
 				{
