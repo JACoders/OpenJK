@@ -10,7 +10,6 @@
 #define LOCAL_DB_PATH "japro/data.db"
 #define GLOBAL_DB_PATH sv_globalDBPath.string
 #define MAX_TMP_RACELOG_SIZE 80 * 1024
-#define	NUM_MOVEMENTSTYLES 8
 
 #define CALL_SQLITE(f) {                                        \
         int i;                                                  \
@@ -41,7 +40,7 @@ typedef struct RaceRecord_s {
 	unsigned int		end_timeInt;
 } RaceRecord_t;
 
-RaceRecord_t	HighScores[32][9][10];//32 courses, 9 styles, 10 spots on highscore list
+RaceRecord_t	HighScores[32][MV_NUMSTYLES][10];//32 courses, 9 styles, 10 spots on highscore list
 
 typedef struct PersonalBests_s {
 	char				username[16];
@@ -575,6 +574,8 @@ void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 		case 6:	Q_strncpyz(styleString, "wsw", styleStringSize); break;
 		case 7:	Q_strncpyz(styleString, "rjq3", styleStringSize); break;
 		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
+		case 9:	Q_strncpyz(styleString, "swoop", styleStringSize); break;
+		case 10: Q_strncpyz(styleString, "jetpack", styleStringSize); break;
 		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
 	}
 }
@@ -1654,7 +1655,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 
 	//For each course-style, find the 1/2/3 rank.  If it matches username, add to count.
 	for (course = 0; course < level.numCourses; course++) { //For each course
-		for (style = 0; style <= NUM_MOVEMENTSTYLES; style++) { //For each style...0 = siege, 8 = rjcpm
+		for (style = 0; style < MV_NUMSTYLES; style++) { //For each style...0 = siege, 8 = rjcpm
 			IntegerToRaceName(style, styleStr, sizeof(styleStr));
 
 			if (!Q_stricmp(HighScores[course][style][0].username, username)) { //They have gold
@@ -1948,7 +1949,7 @@ void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 		Q_strncpyz(courseName, mapName, sizeof(courseName));
 		if (level.courseName[i][0])
 			Q_strcat(courseName, sizeof(courseName), va(" (%s)", level.courseName[i]));
-		for (mstyle = 0; mstyle <= NUM_MOVEMENTSTYLES; mstyle++) { //9 movement styles. 0-8
+		for (mstyle = 0; mstyle < MV_NUMSTYLES; mstyle++) { //9 movement styles. 0-8
 			int rank = 0;
 
 			sql = "SELECT LR.id, LR.username, LR.coursename, LR.duration_ms, LR.topspeed, LR.average, LR.style, LR.end_time "  //Place 1
@@ -2253,7 +2254,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 	for (course=0; course<level.numCourses; course++) { //For each course
 		Q_strncpyz(msg, "", sizeof(msg));
 		printed = qfalse;
-		for (style = 0; style <= NUM_MOVEMENTSTYLES; style++) { //For each style
+		for (style = 0; style < MV_NUMSTYLES; style++) { //For each style
 			found = qfalse;
 			for (i=0; i<10; i++) {
 				if (HighScores[course][style][i].username && HighScores[course][style][i].username[0] && !Q_stricmp(HighScores[course][style][i].username, username)) {

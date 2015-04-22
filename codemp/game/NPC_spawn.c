@@ -3996,8 +3996,10 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	}
 
 	ourVehicle = (NPC_Spawn_Do( NPCspawner ));
-	ourVehicle->client->raceSwoop = qtrue;
-	ourVehicle->s.bolt1 = 2;
+	if (altDimension) {
+		ourVehicle->client->raceSwoop = qtrue;
+		ourVehicle->s.bolt1 = 2;
+	}
 
 	return ourVehicle;
 }
