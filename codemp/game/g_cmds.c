@@ -691,6 +691,8 @@ argv(0) noclip
 ==================
 */
 void Cmd_RaceNoclip_f( gentity_t *ent ) {
+	if (ent->client->ps.m_iVehicleNum)
+		return;
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
 	ent->client->noclip = !ent->client->noclip;
 	ResetPlayerTimers(ent, qtrue);
@@ -772,7 +774,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			if (clientid == -1 || clientid == -2)  
 				return; 
 			target = &g_entities[clientid];
-			if (!target->client)
+			if (!target->client || target->client->ps.m_iVehicleNum)
 				return;
 			trap->SendServerCommand(target-g_entities, va("print \"%s\n\"", target->client->noclip ? "noclip OFF" : "noclip ON"));
 			if (target->client->sess.raceMode && target->client->noclip)
@@ -782,6 +784,8 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 			return;
 		}
 		if (trap->Argc() == 1) {
+			if (ent->client->ps.m_iVehicleNum)
+				return;
 			trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", ent->client->noclip ? "noclip OFF" : "noclip ON"));
 			if (ent->client->sess.raceMode && ent->client->noclip)
 				AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
@@ -6279,6 +6283,15 @@ static void Cmd_AmRun_f(gentity_t *ent)
 	//If emote is allowed, print toggle msg?
 }
 
+extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle, qboolean altDimension );
+static void SpawnRaceSwoop(gentity_t *ent)
+{
+	gentity_t *target;
+	target = NPC_SpawnType(ent, "swoop_mp", "", qtrue, qtrue);
+
+	ent->client->ourSwoopNum = target->s.number;
+}
+
 int RaceNameToInteger(char *style);
 static void Cmd_MovementStyle_f(gentity_t *ent)
 {
@@ -6289,7 +6302,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, or jetpack>.\n\"" );
 		return;
 	}
 
@@ -6310,7 +6323,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
-	if (VectorLength(ent->client->ps.velocity)) {
+	if (VectorLength(ent->client->ps.velocity) && !ent->client->ps.m_iVehicleNum) {
 		trap->SendServerCommand(ent-g_entities, "print \"You must be standing still to use this command!\n\"");
 		return;
 	}
@@ -6328,6 +6341,12 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		ent->client->sess.movementStyle = style;
 		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 
+		if (ent->client->ourSwoopNum) {
+			gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
+			G_FreeEntity( ourSwoop );
+			ent->client->ourSwoopNum = 0;
+		}
+
 		if (style == 7 || style == 8) {
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
 		}
@@ -6335,10 +6354,21 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
 			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 		}
+
+		if (style == 9) {
+			SpawnRaceSwoop(ent);
+		}
+
+		if (style == 10) {
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+		}
+		else {
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); 
+		}
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 	}
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, or rjcpm>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, or jetpack>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 
@@ -7933,7 +7963,7 @@ command_t commands[] = {
 	{ "warplist",			Cmd_WarpList_f,				CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
 
-	{ "whois",				Cmd_ACWhois_f,				0 },
+	{ "whois",				Cmd_ACWhois_f,				0 }
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 

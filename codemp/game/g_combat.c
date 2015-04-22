@@ -2920,6 +2920,12 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			self->nextthink = level.time;
 		}
 
+		if (self->client->ourSwoopNum) {
+			gentity_t *ourSwoop = &g_entities[self->client->ourSwoopNum];
+			G_FreeEntity( ourSwoop );
+			self->client->ourSwoopNum = 0;
+		}
+
 		//self->client->ps.legsAnim = anim;
 		//self->client->ps.torsoAnim = anim;
 //		self->client->ps.pm_flags |= PMF_UPDATE_ANIM;		// Make sure the pmove sets up the GHOUL2 anims.
@@ -4698,6 +4704,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->sess.raceMode && ((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && targ->client && (targ != attacker))
 		return;
 	if (targ && targ->client && targ->client->sess.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT && mod != MOD_CRUSH && mod != MOD_LAVA && (damage != Q3_INFINITE)) //Fixme, change this to get rid of dmg from doors/eles.. but only if they get made completely nonsolid first
+		return;
+	if (targ && targ->client && targ->client->raceSwoop)
 		return;
 
 	if ( targ->client )

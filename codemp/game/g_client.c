@@ -4344,6 +4344,12 @@ void ClientDisconnect( int clientNum ) {
 		}
 	}
 
+	if (ent->client->ourSwoopNum) {
+		gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
+		G_FreeEntity( ourSwoop );
+		ent->client->ourSwoopNum = 0;
+	}
+
 //JAPRO - Serverside - Stop those pesky reconnect whores - End
 
 	i = 0;

@@ -1907,7 +1907,7 @@ void prox_mine_think( gentity_t *ent )
 
 		for ( i = 0; i < count; i++ )
 		{
-			if ( ent_list[i]->client && ent_list[i]->health > 0 && ent->activator && ent_list[i]->s.number != ent->activator->s.number && !ent_list[i]->client->sess.raceMode )
+			if ( ent_list[i]->client && ent_list[i]->health > 0 && ent->activator && ent_list[i]->s.number != ent->activator->s.number )
 			{
 				blow = qtrue;
 				break;
@@ -3085,9 +3085,10 @@ void laserTrapStick( gentity_t *ent, vec3_t endpos, vec3_t normal )
 	{
 		ent->touch = touchLaserTrap;
 		ent->think = proxMineThink;//laserTrapExplode;
-		if (!(g_tweakWeapons.integer & JK2_STYLE_ALT_TRIPMINE)) {
+
+
+		if (!(g_tweakWeapons.integer & JK2_STYLE_ALT_TRIPMINE))
 			ent->genericValue15 = level.time + 30000; //auto-explode after 30 seconds.
-		}
 		ent->nextthink = level.time + LT_ALT_TIME; // How long 'til she blows
 
 		//make it shootable
@@ -5326,6 +5327,8 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{
+		if (&g_entities[ent->m_pVehicle->m_pPilot->s.number].client && &g_entities[ent->m_pVehicle->m_pPilot->s.number].client->sess.raceMode) //what a mess
+			return;
 		FireVehicleWeapon( ent, altFire );
 		return;
 	}

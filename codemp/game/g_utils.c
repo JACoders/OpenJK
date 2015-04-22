@@ -1683,6 +1683,20 @@ void TryUse( gentity_t *ent )
 		goto tryJetPack;
 	}
 
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle == 9 && !ent->client->noclip) { //Swoop movement style	
+		gentity_t *ourVeh;
+		
+		if (ent->client->ourSwoopNum) {
+			ourVeh = &g_entities[ent->client->ourSwoopNum];
+
+			if (!ent->client->ps.m_iVehicleNum) { //If we are not in a vehicle, board our swoop.
+				if (ourVeh && ourVeh->m_pVehicle && ourVeh->client && ourVeh->s.NPC_class == CLASS_VEHICLE && ourVeh->m_pVehicle->m_pVehicleInfo) //if ourVeh is a vehicle then perform appropriate checks
+					ourVeh->m_pVehicle->m_pVehicleInfo->Board( ourVeh->m_pVehicle, (bgEntity_t *)ent );
+			}
+		}
+		return; //If we are in a swoop... do nothing..
+	}
+
 	if (ent->client->bodyGrabIndex != ENTITYNUM_NONE)
 	{ //then hitting the use key just means let go
 		if (ent->client->bodyGrabTime < level.time)

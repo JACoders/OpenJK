@@ -168,11 +168,11 @@ static void BeginHack(int entityNum)
 			}
 		}
 
-		for (i = 0; i < level.maxclients; i++) { //loda fixme? This should go through all entities... to also account for people lightsabers..? or is that too costly
+		for (i = 0; i < level.num_entities; i++) { //loda fixme? This should go through all entities... to also account for people lightsabers..? or is that too costly
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && 
-					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
+				if (ent->inuse && ent->client &&
+					(ent->client->ps.duelInProgress || ent->client->sess.raceMode || ent->client->raceSwoop)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}

@@ -987,6 +987,7 @@ struct gclient_s {
 	int			lastHereTime;		//japro to optimize bots / autorecord
 	qboolean	inactivityWarning;	// qtrue if the five seoond warning has been given
 	int			rewardTime;			// clear the EF_AWARD_IMPRESSIVE, etc when time > this
+	int			ourSwoopNum;		//for swoop movementstyle
 
 	int			airOutTime;
 
@@ -1079,6 +1080,7 @@ struct gclient_s {
 	gentity_t	*formationGoal;
 	int			nextFormGoal;
 	class_t		NPC_class;
+	qboolean	raceSwoop;
 
 	vec3_t		pushVec;
 	int			pushVecTime;
@@ -1198,6 +1200,22 @@ typedef enum
 	AET_SIGHT,
 	AET_SOUND,
 } alertEventType_e;
+
+typedef enum //movementstyle enum
+{
+	MV_SIEGE,
+	MV_JKA,
+	MV_QW,
+	MV_CPM,
+	MV_Q3,
+	MV_PJK,
+	MV_WSW,
+	MV_RJQ3,
+	MV_RJCPM,
+	MV_SWOOP,
+	MV_JETPACK,
+	MV_NUMSTYLES,
+} movementStyle_e;
 
 typedef enum
 {

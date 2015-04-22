@@ -1110,12 +1110,12 @@ void ItemUse_Sentry( gentity_t *ent )
 	SP_PAS( sentry );
 }
 
-extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
+extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle, qboolean altDimension );
 void ItemUse_Seeker(gentity_t *ent)
 {
 	if ( level.gametype == GT_SIEGE && d_siegeSeekerNPC.integer )
 	{//actualy spawn a remote NPC
-		gentity_t *remote = NPC_SpawnType( ent, "remote", NULL, qfalse );
+		gentity_t *remote = NPC_SpawnType( ent, "remote", NULL, qfalse, qfalse );
 		if ( remote && remote->client )
 		{//set it to my team
 			remote->s.owner = remote->r.ownerNum = ent->s.number;

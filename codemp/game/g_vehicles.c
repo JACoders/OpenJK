@@ -590,6 +590,10 @@ qboolean Eject( Vehicle_t *pVeh, bgEntity_t *pEnt, qboolean forceEject )
 	qboolean	taintedRider = qfalse;
 	qboolean	deadRider = qfalse;
 
+	if (ent->client->sess.raceMode && ent->client->sess.movementStyle == MV_SWOOP) {
+		return qfalse;
+	}
+
 	if ( pEnt == pVeh->m_pDroidUnit )
 	{
 		G_EjectDroidUnit( pVeh, qfalse );

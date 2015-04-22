@@ -2034,6 +2034,10 @@ int RaceNameToInteger(char *style) {
 		return 7;
 	if (!Q_stricmp(style, "rjcpm") || !Q_stricmp(style, "cpmrj") || !Q_stricmp(style, "8"))
 		return 8;
+	if (!Q_stricmp(style, "swoop") || !Q_stricmp(style, "9"))
+		return 9;
+	if (!Q_stricmp(style, "jetpack") || !Q_stricmp(style, "10"))
+		return 10;
 	return -1;
 }
 
