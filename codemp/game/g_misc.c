@@ -292,13 +292,24 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	// unlink to make sure it can't possibly interfere with G_KillBox
 	trap->UnlinkEntity ((sharedEntity_t *)player);
 
-	if (player->client->ps.m_iVehicleNum) {
+	if (player->client->ps.m_iVehicleNum) {	
+		int			i;
 		gentity_t *currentVeh = &g_entities[player->client->ps.m_iVehicleNum];
 		if (currentVeh->client) {
 			VectorCopy ( neworigin, currentVeh->client->ps.origin );
 			currentVeh->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
 			VectorClear(currentVeh->client->ps.velocity);
 		}
+		/*
+		for (i=0 ; i<3 ; i++) {// set the delta angle , doesnt fucking work
+			int		cmdAngle;
+			cmdAngle = ANGLE2SHORT(angles[i]);
+			currentVeh->client->ps.delta_angles[i] = cmdAngle - currentVeh->client->pers.cmd.angles[i];
+		}
+		VectorCopy( angles, currentVeh->s.angles );
+		VectorCopy( angles, currentVeh->s.apos.trBase );
+		VectorCopy (currentVeh->s.angles, currentVeh->client->ps.viewangles);
+		*/
 	}
 	else {
 		VectorCopy ( neworigin, player->client->ps.origin );
@@ -310,13 +321,13 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	player->client->ps.eFlags ^= EF_TELEPORT_BIT;
 	G_ResetTrail( player );//unlagged
 
-	// set angles
-	SetClientViewAngle( player, angles );
-
 	// kill anything at the destination
 	if ( player->client->sess.sessionTeam != TEAM_SPECTATOR ) {
 		G_KillBox (player);
 	}
+
+	// set angles
+	SetClientViewAngle( player, angles );
 
 	// save results of pmove
 	BG_PlayerStateToEntityState( &player->client->ps, &player->s, qtrue );

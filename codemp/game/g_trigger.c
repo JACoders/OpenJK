@@ -1377,7 +1377,7 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		return;
 	if (player->s.eType == ET_NPC)
 		return;
-	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE) 
+	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE && player->client->ps.pm_type != PM_JETPACK) 
 		return;
 
 	multi_trigger(trigger, player);
@@ -1429,46 +1429,46 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
 
 		if (player->client->ps.stats[STAT_RACEMODE]) {
-			if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+			if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SIEGE)
 				Q_strncpyz(style, "siege", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 1)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JKA)
 				Q_strncpyz(style, "jka", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 2)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_QW)
 				Q_strncpyz(style, "qw", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 3)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_CPM)
 				Q_strncpyz(style, "cpm", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 4)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_Q3)
 				Q_strncpyz(style, "q3", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 5)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_PJK)
 				Q_strncpyz(style, "pjk", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 6)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_WSW)
 				Q_strncpyz(style, "wsw", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJQ3)
 				Q_strncpyz(style, "rjq3", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_RJCPM)
 				Q_strncpyz(style, "rjcpm", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 9)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SWOOP)
 				Q_strncpyz(style, "swoop", sizeof(style));
-			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JETPACK)
 				Q_strncpyz(style, "jetpack", sizeof(style));
 		}
-		else if (g_movementStyle.integer == 0)
+		else if (g_movementStyle.integer == MV_SIEGE)
 			Q_strncpyz(style, "siege", sizeof(style));
-		else if (g_movementStyle.integer == 1)
+		else if (g_movementStyle.integer == MV_JKA)
 			Q_strncpyz(style, "jka", sizeof(style));
-		else if (g_movementStyle.integer == 2)
+		else if (g_movementStyle.integer == MV_QW)
 			Q_strncpyz(style, "qw", sizeof(style));
-		else if (g_movementStyle.integer == 3)
+		else if (g_movementStyle.integer == MV_CPM)
 			Q_strncpyz(style, "cpm", sizeof(style));
-		else if (g_movementStyle.integer == 4)
+		else if (g_movementStyle.integer == MV_Q3)
 			Q_strncpyz(style, "q3", sizeof(style));
-		else if (g_movementStyle.integer == 5)
+		else if (g_movementStyle.integer == MV_PJK)
 			Q_strncpyz(style, "pjk", sizeof(style));
-		else if (g_movementStyle.integer == 6)
+		else if (g_movementStyle.integer == MV_WSW)
 			Q_strncpyz(style, "wsw", sizeof(style));
-		else if (g_movementStyle.integer == 7)
+		else if (g_movementStyle.integer == MV_RJQ3)
 			Q_strncpyz(style, "rjq3", sizeof(style));
-		else if (g_movementStyle.integer == 8)
+		else if (g_movementStyle.integer == MV_RJCPM)
 			Q_strncpyz(style, "rjcpm", sizeof(style));
 
 		/*
