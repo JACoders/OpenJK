@@ -293,7 +293,6 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	trap->UnlinkEntity ((sharedEntity_t *)player);
 
 	if (player->client->ps.m_iVehicleNum) {	
-		int			i;
 		gentity_t *currentVeh = &g_entities[player->client->ps.m_iVehicleNum];
 		if (currentVeh->client) {
 			VectorCopy ( neworigin, currentVeh->client->ps.origin );
