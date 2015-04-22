@@ -6528,15 +6528,15 @@ static void Cmd_Hide_f(gentity_t *ent)
 
 static void Cmd_Launch_f(gentity_t *ent)
 {
-	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], pitchStr[16], zSpeedStr[16];
+	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], zSpeedStr[16];
 	vec3_t fwdAngles, jumpFwd;
 	const int clampSpeed = 25000;
 
 	if (!ent->client)
 		return;
 
-	if (trap->Argc() != 2 && trap->Argc() != 8) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /launch <speed> or /launch <x y z yaw pitch xyspeed zspeed>\n\"" );
+	if (trap->Argc() != 2 && trap->Argc() != 7) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /launch <speed> or /launch <x y z yaw xyspeed zspeed>\n\"" );
 		return;
 	}
 
@@ -6575,9 +6575,8 @@ static void Cmd_Launch_f(gentity_t *ent)
 		trap->Argv(2, yStr, sizeof(yStr));
 		trap->Argv(3, zStr, sizeof(zStr));
 		trap->Argv(4, yawStr, sizeof(yawStr));
-		trap->Argv(5, pitchStr, sizeof(pitchStr));
-		trap->Argv(6, xySpeedStr, sizeof(xySpeedStr));
-		trap->Argv(7, zSpeedStr, sizeof(zSpeedStr));
+		trap->Argv(5, xySpeedStr, sizeof(xySpeedStr));
+		trap->Argv(6, zSpeedStr, sizeof(zSpeedStr));
 
 		xyspeed = atoi(xySpeedStr);
 		if (xyspeed > clampSpeed)
@@ -6594,15 +6593,15 @@ static void Cmd_Launch_f(gentity_t *ent)
 		origin[0] = atoi(xStr);
 		origin[1] = atoi(yStr);
 		origin[2] = atoi(zStr);
-		angles[0] = atoi(yawStr);
-		angles[1] = atoi(pitchStr);
+		angles[0] = 0;
+		angles[1] = atoi(yawStr);
 		angles[2] = 0;
 
 		//tele
 		AmTeleportPlayer( ent, origin, angles, qfalse, qtrue);
 
 		fwdAngles[0] = atoi(yawStr);
-		fwdAngles[1] = atoi(pitchStr);
+		fwdAngles[1] = 0;
 		fwdAngles[2] = 0;
 		AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
 
