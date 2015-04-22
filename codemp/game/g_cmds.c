@@ -6577,7 +6577,7 @@ static void Cmd_Launch_f(gentity_t *ent)
 		trap->Argv(4, yawStr, sizeof(yawStr));
 		trap->Argv(5, pitchStr, sizeof(pitchStr));
 		trap->Argv(6, xySpeedStr, sizeof(xySpeedStr));
-		trap->Argv(6, zSpeedStr, sizeof(zSpeedStr));
+		trap->Argv(7, zSpeedStr, sizeof(zSpeedStr));
 
 		xyspeed = atoi(xySpeedStr);
 		if (xyspeed > clampSpeed)
@@ -6601,8 +6601,9 @@ static void Cmd_Launch_f(gentity_t *ent)
 		//tele
 		AmTeleportPlayer( ent, origin, angles, qfalse, qtrue);
 
-		fwdAngles[YAW] = atoi(yawStr);
-		fwdAngles[PITCH] = atoi(pitchStr);
+		fwdAngles[0] = atoi(yawStr);
+		fwdAngles[1] = atoi(pitchStr);
+		fwdAngles[2] = 0;
 		AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
 
 		VectorScale( jumpFwd, xyspeed, ent->client->ps.velocity );
