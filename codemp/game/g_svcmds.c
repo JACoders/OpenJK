@@ -898,6 +898,7 @@ void Svcmd_ToggleStartingWeapons_f( void ) {
 }
 
 static bitInfo_T startingItems[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{""},//0
 	{"Seeker"},//1
 	{"Shield"},//2
 	{"Bacta"},//3
