@@ -292,10 +292,19 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	// unlink to make sure it can't possibly interfere with G_KillBox
 	trap->UnlinkEntity ((sharedEntity_t *)player);
 
-	VectorCopy ( neworigin, player->client->ps.origin );
-	player->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
-
-	VectorClear(player->client->ps.velocity);
+	if (player->client->ps.m_iVehicleNum) {
+		gentity_t *currentVeh = &g_entities[player->client->ps.m_iVehicleNum];
+		if (currentVeh->client) {
+			VectorCopy ( neworigin, currentVeh->client->ps.origin );
+			currentVeh->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
+			VectorClear(currentVeh->client->ps.velocity);
+		}
+	}
+	else {
+		VectorCopy ( neworigin, player->client->ps.origin );
+		player->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
+		VectorClear(player->client->ps.velocity);
+	}
 
 	// toggle the teleport bit so the client knows to not lerp
 	player->client->ps.eFlags ^= EF_TELEPORT_BIT;
