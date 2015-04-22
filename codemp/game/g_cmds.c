@@ -6600,8 +6600,8 @@ static void Cmd_Launch_f(gentity_t *ent)
 		//tele
 		AmTeleportPlayer( ent, origin, angles, qfalse, qtrue);
 
-		fwdAngles[0] = atoi(yawStr);
-		fwdAngles[1] = 0;
+		fwdAngles[0] = 0;
+		fwdAngles[1] = atoi(yawStr);
 		fwdAngles[2] = 0;
 		AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
 
