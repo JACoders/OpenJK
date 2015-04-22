@@ -6528,16 +6528,15 @@ static void Cmd_Hide_f(gentity_t *ent)
 
 static void Cmd_Launch_f(gentity_t *ent)
 {
-	int speed;
-	char input[32];
+	char xySpeedStr[16], xStr[16], yStr[16], zStr[16], yawStr[16], pitchStr[16], zSpeedStr[16];
 	vec3_t fwdAngles, jumpFwd;
 	const int clampSpeed = 25000;
 
 	if (!ent->client)
 		return;
 
-	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /launch <speed>\n\"" );
+	if (trap->Argc() != 2 && trap->Argc() != 8) {
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /launch <speed> or /launch <x y z yaw pitch xyspeed zspeed>\n\"" );
 		return;
 	}
 
@@ -6551,19 +6550,65 @@ static void Cmd_Launch_f(gentity_t *ent)
 		return;
 	}
 
-	trap->Argv(1, input, sizeof(input));
-	speed = atoi(input);
+	if (trap->Argc() == 2) {
+		int xyspeed;
 
-	if (speed > clampSpeed)
-		speed = clampSpeed;
-	else if (speed < -clampSpeed)
-		speed = -clampSpeed;
+		trap->Argv(1, xySpeedStr, sizeof(xySpeedStr));
 
-	VectorCopy( ent->client->ps.viewangles, fwdAngles );
-	fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
-	AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
-	VectorScale( jumpFwd, speed, ent->client->ps.velocity );
-	ent->client->ps.velocity[2] = 270; //Hmm?
+		xyspeed = atoi(xySpeedStr);
+		if (xyspeed > clampSpeed)
+			xyspeed = clampSpeed;
+		else if (xyspeed < -clampSpeed)
+			xyspeed = -clampSpeed;
+
+		VectorCopy( ent->client->ps.viewangles, fwdAngles );
+		fwdAngles[PITCH] = fwdAngles[ROLL] = 0;
+		AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
+		VectorScale( jumpFwd, xyspeed, ent->client->ps.velocity );
+		ent->client->ps.velocity[2] = 270; //Hmm?
+	}
+	else {
+		int xyspeed, zspeed;
+		vec3_t origin, angles;
+
+		trap->Argv(1, xStr, sizeof(xStr));
+		trap->Argv(2, yStr, sizeof(yStr));
+		trap->Argv(3, zStr, sizeof(zStr));
+		trap->Argv(4, yawStr, sizeof(yawStr));
+		trap->Argv(5, pitchStr, sizeof(pitchStr));
+		trap->Argv(6, xySpeedStr, sizeof(xySpeedStr));
+		trap->Argv(6, zSpeedStr, sizeof(zSpeedStr));
+
+		xyspeed = atoi(xySpeedStr);
+		if (xyspeed > clampSpeed)
+			xyspeed = clampSpeed;
+		else if (xyspeed < -clampSpeed)
+			xyspeed = -clampSpeed;
+
+		zspeed = atoi(zSpeedStr);
+		if (zspeed > clampSpeed)
+			zspeed = clampSpeed;
+		else if (zspeed < -clampSpeed)
+			zspeed = -clampSpeed;
+
+		origin[0] = atoi(xStr);
+		origin[1] = atoi(yStr);
+		origin[2] = atoi(zStr);
+		angles[0] = atoi(yawStr);
+		angles[1] = atoi(pitchStr);
+		angles[2] = 0;
+
+		//tele
+		AmTeleportPlayer( ent, origin, angles, qfalse, qtrue);
+
+		fwdAngles[YAW] = atoi(yawStr);
+		fwdAngles[PITCH] = atoi(pitchStr);
+		AngleVectors( fwdAngles, jumpFwd, NULL, NULL );
+
+		VectorScale( jumpFwd, xyspeed, ent->client->ps.velocity );
+		ent->client->ps.velocity[2] = zspeed; //Hmm?
+	}
+
 	//PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
 
 	//PM_AddEvent( EV_JUMP );

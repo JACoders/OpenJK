@@ -549,6 +549,10 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace )
 
 	if ( self->spawnflags & 4 )
 	{//USE_BUTTON
+		if (!g_tweakJetpack.integer && other->client->sess.raceMode && other->client->sess.movementStyle == MV_JETPACK)
+			return;
+		if (other->client->sess.raceMode && other->client->sess.movementStyle == MV_SWOOP && other->client->ps.m_iVehicleNum)
+			return;
 		if (other->client->ps.torsoAnim != BOTH_BUTTON_HOLD &&
 			other->client->ps.torsoAnim != BOTH_CONSOLE1)
 		{
@@ -1445,6 +1449,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				Q_strncpyz(style, "rjq3", sizeof(style));
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)
 				Q_strncpyz(style, "rjcpm", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 9)
+				Q_strncpyz(style, "swoop", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)
+				Q_strncpyz(style, "jetpack", sizeof(style));
 		}
 		else if (g_movementStyle.integer == 0)
 			Q_strncpyz(style, "siege", sizeof(style));
