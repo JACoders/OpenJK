@@ -947,6 +947,111 @@ void Svcmd_ToggleStartingItems_f( void ) {
 	}
 }
 
+static bitInfo_T adminOptions[] = {
+	{"Amtele"},//0
+	{"Amfreeze"},//1
+	{"Amtelemark"},//2
+	{"Amban"},//3
+	{"Amkick"},//4
+	{"NPC"},//5
+	{"Noclip"},//6
+	{"Grantadmin"},//7
+	{"Ammap"},//8
+	{"Ampsay"},//9
+	{"Amforceteam"},//10
+	{"Amlockteam"},//11
+	{"Amvstr"},//12
+	{"See IPs"},//13
+	{"Amrename"},//14
+	{"Amlistmaps"},//15
+	{"Rebuild highscores (?)"},//16
+	{"Amwhois"},//17
+	{"Amlookup"},//18
+	{"Use hide"},//19
+	{"See hiders"},//20
+	{"Callvote"},//21
+	{"Killvote"}//22
+};
+static const int MAX_ADMIN_OPTIONS = ARRAY_LEN( adminOptions );
+
+void Svcmd_ToggleAdmin_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+		return;
+	}
+	else if ( trap->Argc() == 2 ) {
+		int i = 0, level;
+		char arg1[8] = {0};
+
+		trap->Argv( 1, arg1, sizeof(arg1) );
+		if ( !Q_stricmp(arg1, "j") || !Q_stricmp(arg1, "junior"))
+			level = 0;
+		else if ( !Q_stricmp(arg1, "f") || !Q_stricmp(arg1, "full"))
+			level = 1;
+		else {
+			trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+			return;
+		}
+
+		for ( i = 0; i < MAX_ADMIN_OPTIONS; i++ ) {
+			if (level == 0) {
+				if ( (g_juniorAdminLevel.integer & (1 << i)) ) {
+					trap->Print( "%2d [X] %s\n", i, adminOptions[i].string );
+				}
+				else {
+					trap->Print( "%2d [ ] %s\n", i, adminOptions[i].string );
+				}
+			}
+			else if (level == 1) {
+				if ( (g_fullAdminLevel.integer & (1 << i)) ) {
+					trap->Print( "%2d [X] %s\n", i, adminOptions[i].string );
+				}
+				else {
+					trap->Print( "%2d [ ] %s\n", i, adminOptions[i].string );
+				}
+			}
+		}
+		return;
+	}
+	else {
+		char arg1[8] = {0}, arg2[8] = { 0 };
+		int index, level;
+		const uint32_t mask = (1 << MAX_ADMIN_OPTIONS) - 1;
+
+		trap->Argv( 1, arg1, sizeof(arg1) );
+		if ( !Q_stricmp(arg1, "j") || !Q_stricmp(arg1, "junior"))
+			level = 0;
+		else if ( !Q_stricmp(arg1, "f") || !Q_stricmp(arg1, "full"))
+			level = 1;
+		else {
+			trap->Print("Usage: toggleAdmin <admin level (full or junior) admin option>\n");
+			return;
+		}
+		trap->Argv( 2, arg2, sizeof(arg2) );
+		index = atoi( arg2 );
+
+		if ( index < 0 || index >= MAX_ADMIN_OPTIONS ) {
+			trap->Print( "toggleAdmin: Invalid range: %i [0, %i]\n", index, MAX_ADMIN_OPTIONS - 1 );
+			return;
+		}
+
+		if (level == 0) {
+			trap->Cvar_Set( "g_juniorAdminLevel", va( "%i", (1 << index) ^ (g_juniorAdminLevel.integer & mask ) ) );
+			trap->Cvar_Update( &g_juniorAdminLevel );
+
+			trap->Print( "%s %s^7\n", adminOptions[index].string, ((g_juniorAdminLevel.integer & (1 << index))
+				? "^2Enabled" : "^1Disabled") );
+		}
+		else if (level == 1) {
+			trap->Cvar_Set( "g_fullAdminLevel", va( "%i", (1 << index) ^ (g_fullAdminLevel.integer & mask ) ) );
+			trap->Cvar_Update( &g_fullAdminLevel );
+
+			trap->Print( "%s %s^7\n", adminOptions[index].string, ((g_fullAdminLevel.integer & (1 << index))
+				? "^2Enabled" : "^1Disabled") );
+		}
+	}
+}
+
 typedef struct svcmd_s {
 	const char	*name;
 	void		(*func)(void);
@@ -1006,6 +1111,7 @@ svcmd_t svcmds[] = {
 
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
+	{ "toggleAdmin",				Svcmd_ToggleAdmin_f,				qfalse },
 
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
 	{ "tweakForce",					Svcmd_ToggleTweakForce_f,			qfalse },
