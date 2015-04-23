@@ -2922,6 +2922,15 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 		if (self->client->ourSwoopNum) {
 			gentity_t *ourSwoop = &g_entities[self->client->ourSwoopNum];
+
+			/*
+			if (self->client->ps.m_iVehicleNum) { //If we are in a vehicle, properly eject from it?
+				if (ourSwoop && ourSwoop->m_pVehicle && ourSwoop->client && ourSwoop->s.NPC_class == CLASS_VEHICLE && ourSwoop->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
+					ourSwoop->m_pVehicle->m_pVehicleInfo->Eject( ourSwoop->m_pVehicle, (bgEntity_t *)self, qtrue );
+				}			
+			}
+			*/
+
 			G_FreeEntity( ourSwoop );
 			self->client->ourSwoopNum = 0;
 		}

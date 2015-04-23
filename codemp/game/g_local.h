@@ -1267,7 +1267,9 @@ Warp_t	warpList[64];
 //japro
 typedef struct VoteFloodProtect_s {
 	char				ip[NET_ADDRSTRMAXLEN];
-	int					lastVoteTime;
+	int					failCount;
+	int					voteTimeoutUntil;
+	int					nextDropTime;
 } VoteFloodProtect_t;
 #define		voteFloodProtectSize 64
 VoteFloodProtect_t	voteFloodProtect[voteFloodProtectSize];//32 courses, 9 styles, 10 spots on highscore list

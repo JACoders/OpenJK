@@ -4346,6 +4346,15 @@ void ClientDisconnect( int clientNum ) {
 
 	if (ent->client->ourSwoopNum) {
 		gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
+
+		/*
+		if (ent->client->ps.m_iVehicleNum) { //If we are in a vehicle, properly eject from it?
+			if (ourSwoop && ourSwoop->m_pVehicle && ourSwoop->client && ourSwoop->s.NPC_class == CLASS_VEHICLE && ourSwoop->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
+				ourSwoop->m_pVehicle->m_pVehicleInfo->Eject( ourSwoop->m_pVehicle, (bgEntity_t *)ent, qtrue );
+			}			
+		}
+		*/
+
 		G_FreeEntity( ourSwoop );
 		ent->client->ourSwoopNum = 0;
 	}

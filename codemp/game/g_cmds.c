@@ -2992,17 +2992,22 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 
 		//Check if we are allowed to call vote
 		for (j=0; j<voteFloodProtectSize; j++) {
-			//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].lastVoteTime);
+			//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].voteTimeoutUntil);
 			if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
 				//trap->Print("Found clients IP in array!\n");
-				if (voteFloodProtect[j].lastVoteTime && (voteFloodProtect[j].lastVoteTime > (level.time - 1000*g_voteTimeout.integer))) {
+
+				const int voteTimeout = voteFloodProtect[j].failCount+1 * 1000*g_voteTimeout.integer;
+
+				if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > level.time)) {
 					//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
 					char timeStr[32];
-					TimeToString( (1000*g_voteTimeout.integer - (level.time - voteFloodProtect[j].lastVoteTime)) , timeStr, sizeof(timeStr), qtrue);
+					TimeToString((voteFloodProtect[j].voteTimeoutUntil - level.time) , timeStr, sizeof(timeStr), qtrue);
 					trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
 					return;
 				}
 				break;
+
+
 			}
 			else if (!voteFloodProtect[j].ip[0]) {
 				//trap->Print("Finished array search without finding clients IP! They have not failed a vote yet!\n");
@@ -6342,7 +6347,17 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		AmTeleportPlayer( ent, ent->client->ps.origin, ent->client->ps.viewangles, qtrue, qtrue ); //Good
 
 		if (ent->client->ourSwoopNum) {
+
 			gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
+
+			/*
+			if (ent->client->ps.m_iVehicleNum) { //If we are in a vehicle, properly eject from it?
+				if (ourSwoop && ourSwoop->m_pVehicle && ourSwoop->client && ourSwoop->s.NPC_class == CLASS_VEHICLE && ourSwoop->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
+					ourSwoop->m_pVehicle->m_pVehicleInfo->Eject( ourSwoop->m_pVehicle, (bgEntity_t *)ent, qtrue );
+				}			
+			}
+			*/
+
 			G_FreeEntity( ourSwoop );
 			ent->client->ourSwoopNum = 0;
 		}
