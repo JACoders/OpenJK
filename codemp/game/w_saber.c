@@ -8192,6 +8192,11 @@ static void G_GrabSomeMofos(gentity_t *self)
 				tortureAnim = BOTH_KYLE_PA_2;
 				correspondingAnim = BOTH_PLAYER_PA_2;
 			}
+			else if (self->client->pers.cmd.rightmove)
+			{ //grab thing
+				tortureAnim = BOTH_KYLE_PA_3;
+				correspondingAnim = BOTH_PLAYER_PA_3;
+			}
 
 			if (tortureAnim == -1 || correspondingAnim == -1)
 			{
