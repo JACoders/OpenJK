@@ -392,6 +392,7 @@ typedef enum {
 	E_BERNIE,
 	E_SLEEP,
 	E_SABERFLIP,
+	E_SLAP,
 	E_ALL
 } emote_type_t;
 

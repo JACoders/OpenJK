@@ -4308,9 +4308,9 @@ void Cmd_DebugSetBodyAnim_f(gentity_t *self)
 }
 #endif
 
-void StandardSetBodyAnim(gentity_t *self, int anim, int flags)
+void StandardSetBodyAnim(gentity_t *self, int anim, int flags, int body)
 {
-	G_SetAnim(self, NULL, SETANIM_BOTH, anim, flags, 0);
+	G_SetAnim(self, NULL, body, anim, flags, 0);
 }
 
 void DismembermentTest(gentity_t *self);
@@ -5485,6 +5485,8 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "amSit4 "); 
 	if (!(g_emotesDisable.integer & (1 << E_SIT5)))
 		Q_strcat(buf, sizeof(buf), "amSit5 "); 
+	if (!(g_emotesDisable.integer & (1 << E_SLAP)))
+		Q_strcat(buf, sizeof(buf), "amSlap "); 
 	if (!(g_emotesDisable.integer & (1 << E_SLEEP)))
 		Q_strcat(buf, sizeof(buf), "amSleep "); 
 	if (!(g_emotesDisable.integer & (1 << E_SURRENDER)))
@@ -5972,7 +5974,7 @@ static void Cmd_ModVersion_f(gentity_t *ent) {
 }
 
 extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
-static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
+static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber, int body)
 {
 	if (!ent->client)
 		return;
@@ -6014,7 +6016,7 @@ static void DoEmote(gentity_t *ent, int anim, qboolean freeze, qboolean nosaber)
 		if (ent->client->saber[1].soundOff && ent->client->saber[1].model[0])
 			G_Sound(ent, CHAN_AUTO, ent->client->saber[1].soundOff);
 	}
-	StandardSetBodyAnim(ent, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS);
+	StandardSetBodyAnim(ent, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, body);
 }
 
 static void Cmd_EmoteSit_f(gentity_t *ent)
@@ -6023,7 +6025,7 @@ static void Cmd_EmoteSit_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SIT1, qtrue, qtrue);
+	DoEmote(ent, BOTH_SIT1, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSit2_f(gentity_t *ent)
@@ -6032,7 +6034,7 @@ static void Cmd_EmoteSit2_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SIT3, qtrue, qtrue);
+	DoEmote(ent, BOTH_SIT3, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSit3_f(gentity_t *ent)
@@ -6041,7 +6043,7 @@ static void Cmd_EmoteSit3_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SIT6, qtrue, qtrue);
+	DoEmote(ent, BOTH_SIT6, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSit4_f(gentity_t *ent)
@@ -6050,7 +6052,7 @@ static void Cmd_EmoteSit4_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SIT2, qtrue, qtrue);
+	DoEmote(ent, BOTH_SIT2, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSurrender_f(gentity_t *ent)
@@ -6059,7 +6061,7 @@ static void Cmd_EmoteSurrender_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, TORSO_SURRENDER_START, qtrue, qtrue);
+	DoEmote(ent, TORSO_SURRENDER_START, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteCheer_f(gentity_t *ent)
@@ -6068,7 +6070,7 @@ static void Cmd_EmoteCheer_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_TUSKENTAUNT1, qfalse, qtrue);
+	DoEmote(ent, BOTH_TUSKENTAUNT1, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteTaunt_f(gentity_t *ent)
@@ -6077,7 +6079,7 @@ static void Cmd_EmoteTaunt_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_ALORA_TAUNT, qfalse, qfalse);
+	DoEmote(ent, BOTH_ALORA_TAUNT, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteVictory_f(gentity_t *ent)
@@ -6086,7 +6088,7 @@ static void Cmd_EmoteVictory_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_TAVION_SCEPTERGROUND, qfalse, qfalse);
+	DoEmote(ent, BOTH_TAVION_SCEPTERGROUND, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteRage_f(gentity_t *ent)
@@ -6095,7 +6097,7 @@ static void Cmd_EmoteRage_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_FORCE_RAGE, qfalse, qfalse);
+	DoEmote(ent, BOTH_FORCE_RAGE, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSmack_f(gentity_t *ent)
@@ -6104,7 +6106,7 @@ static void Cmd_EmoteSmack_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_TOSS1, qfalse, qfalse);
+	DoEmote(ent, BOTH_TOSS1, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteCower_f(gentity_t *ent)
@@ -6113,7 +6115,7 @@ static void Cmd_EmoteCower_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_COWER1, qfalse, qtrue);
+	DoEmote(ent, BOTH_COWER1, qfalse, qtrue, SETANIM_BOTH);
 }
 
 
@@ -6123,7 +6125,7 @@ static void Cmd_EmoteNoisy_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SONICPAIN_HOLD, qfalse, qtrue);
+	DoEmote(ent, BOTH_SONICPAIN_HOLD, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteHug_f(gentity_t *ent)
@@ -6132,7 +6134,7 @@ static void Cmd_EmoteHug_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_HUGGER1, qfalse, qtrue);
+	DoEmote(ent, BOTH_HUGGER1, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBeg_f(gentity_t *ent)
@@ -6141,7 +6143,7 @@ static void Cmd_EmoteBeg_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_KNEES1, qtrue, qtrue);
+	DoEmote(ent, BOTH_KNEES1, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBeg2_f(gentity_t *ent)
@@ -6150,7 +6152,7 @@ static void Cmd_EmoteBeg2_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_KNEES2, qtrue, qtrue);
+	DoEmote(ent, BOTH_KNEES2, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBernie_f(gentity_t *ent)
@@ -6159,7 +6161,7 @@ static void Cmd_EmoteBernie_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_FORCE_DRAIN_GRABBED, qtrue, qfalse);
+	DoEmote(ent, BOTH_FORCE_DRAIN_GRABBED, qtrue, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBreakdance_f(gentity_t *ent)
@@ -6168,7 +6170,7 @@ static void Cmd_EmoteBreakdance_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_FORCE_GETUP_B2, qfalse, qtrue);
+	DoEmote(ent, BOTH_FORCE_GETUP_B2, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBreakdance2_f(gentity_t *ent)
@@ -6177,7 +6179,7 @@ static void Cmd_EmoteBreakdance2_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_FORCE_GETUP_B4, qfalse, qtrue);
+	DoEmote(ent, BOTH_FORCE_GETUP_B4, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBreakdance3_f(gentity_t *ent)
@@ -6186,7 +6188,7 @@ static void Cmd_EmoteBreakdance3_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_FORCE_GETUP_B5, qfalse, qtrue);
+	DoEmote(ent, BOTH_FORCE_GETUP_B5, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteBreakdance4_f(gentity_t *ent)
@@ -6195,7 +6197,7 @@ static void Cmd_EmoteBreakdance4_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_FORCE_GETUP_B6, qfalse, qtrue);
+	DoEmote(ent, BOTH_FORCE_GETUP_B6, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteTaunt2_f(gentity_t *ent)
@@ -6204,7 +6206,7 @@ static void Cmd_EmoteTaunt2_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SCEPTER_HOLD, qfalse, qfalse);
+	DoEmote(ent, BOTH_SCEPTER_HOLD, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSit5_f(gentity_t *ent)
@@ -6213,7 +6215,7 @@ static void Cmd_EmoteSit5_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SLEEP6STOP, qtrue, qtrue);
+	DoEmote(ent, BOTH_SLEEP6STOP, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSleep_f(gentity_t *ent)
@@ -6222,7 +6224,7 @@ static void Cmd_EmoteSleep_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_SLEEP1, qtrue, qtrue);
+	DoEmote(ent, BOTH_SLEEP1, qtrue, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteDance_f(gentity_t *ent)
@@ -6231,7 +6233,7 @@ static void Cmd_EmoteDance_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_STEADYSELF1, qfalse, qtrue);
+	DoEmote(ent, BOTH_STEADYSELF1, qfalse, qtrue, SETANIM_BOTH);
 }
 
 static void Cmd_EmotePoint_f(gentity_t *ent)
@@ -6240,7 +6242,7 @@ static void Cmd_EmotePoint_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, BOTH_STAND5TOAIM, qtrue, qfalse);
+	DoEmote(ent, BOTH_STAND5TOAIM, qtrue, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSaberFlip_f(gentity_t *ent)
@@ -6255,21 +6257,30 @@ static void Cmd_EmoteSaberFlip_f(gentity_t *ent)
 
 	if (ent->client->ps.fd.saberAnimLevel == SS_FAST || ent->client->ps.fd.saberAnimLevel == SS_MEDIUM || ent->client->ps.fd.saberAnimLevel == SS_STRONG) { //Get style, do specific anim
 		if (ent->client->ps.saberHolstered)
-			DoEmote(ent, BOTH_STAND1TO2, qfalse, qfalse);
+			DoEmote(ent, BOTH_STAND1TO2, qfalse, qfalse, SETANIM_BOTH);
 		else
-			DoEmote(ent, BOTH_STAND2TO1, qfalse, qfalse);
+			DoEmote(ent, BOTH_STAND2TO1, qfalse, qfalse, SETANIM_BOTH);
 	}
 	else if (ent->client->ps.fd.saberAnimLevel == SS_STAFF) {
 		if (ent->client->ps.saberHolstered)
-			DoEmote(ent, BOTH_S1_S7, qfalse, qfalse);
+			DoEmote(ent, BOTH_S1_S7, qfalse, qfalse, SETANIM_BOTH);
 		else
-			DoEmote(ent, BOTH_SHOWOFF_STAFF, qfalse, qfalse);
+			DoEmote(ent, BOTH_SHOWOFF_STAFF, qfalse, qfalse, SETANIM_BOTH);
 	}
 	else if (ent->client->ps.fd.saberAnimLevel == SS_DUAL) {
-		DoEmote(ent, BOTH_SHOWOFF_FAST, qfalse, qfalse);
+		DoEmote(ent, BOTH_SHOWOFF_FAST, qfalse, qfalse, SETANIM_BOTH);
 	}
 
 	Cmd_ToggleSaber_f(ent);
+}
+
+static void Cmd_EmoteSlap_f(gentity_t *ent)
+{
+	if (g_emotesDisable.integer & (1 << E_SLAP)) {
+		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
+		return;
+	}
+	DoEmote(ent, BOTH_FORCEGRIP3THROW, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_AmRun_f(gentity_t *ent)
@@ -7914,6 +7925,7 @@ command_t commands[] = {
 	{ "amsit3",				Cmd_EmoteSit3_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsit4",				Cmd_EmoteSit4_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsit5",				Cmd_EmoteSit5_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
+	{ "amslap",				Cmd_EmoteSlap_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsleep",			Cmd_EmoteSleep_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	{ "amsmack",			Cmd_EmoteSmack_f,			CMD_NOINTERMISSION|CMD_ALIVE },//EMOTE
 	//{ "amstatus",			Cmd_Amstatus_f,				0 },
