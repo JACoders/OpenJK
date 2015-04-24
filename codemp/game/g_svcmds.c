@@ -910,7 +910,8 @@ static bitInfo_T startingItems[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Health Dispenser"},//8
 	{"Ammo Dispenser"},//9
 	{"E-WEB"},//10
-	{"Cloak"}//11
+	{"Cloak"},//11
+	{"Ability to toggle jetpack"}//11
 };
 static const int MAX_STARTING_ITEMS = ARRAY_LEN( startingItems );
 

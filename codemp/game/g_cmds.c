@@ -5768,7 +5768,7 @@ static void Cmd_Jetpack_f(gentity_t *ent)
 
 	if (ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK))//Already have it
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); //Always get rid of it
-	else if (g_startingItems.integer & (1 << HI_JETPACK)) { //We dont have it, and we spawn with it.. i guess we should have it anyway
+	else if (g_startingItems.integer & (1 << HI_JETPACK) || g_startingItems.integer & (1 << HI_NUM_HOLDABLE)) { //We dont have it, and we spawn with it, or the ability to toggle it
 		if (ent->client->ps.duelInProgress) {
 			trap->SendServerCommand( ent-g_entities, "print \"Command not allowed in duel. (jetpack).\n\"" );
 		}
