@@ -6188,6 +6188,26 @@ static void UI_RunMenuScript(char **args)
 			if (uiInfo.teamIndex >= 0 && uiInfo.teamIndex < uiInfo.myTeamCount) {
 				trap->Cmd_ExecuteText( EXEC_APPEND, va("callteamvote leader \"%s\"\n",uiInfo.teamNames[uiInfo.teamIndex]) );
 			}
+		} else if (Q_stricmp(name, "voteFFATime") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote timelimit %i\n", ui_ffa_timelimit.integer) );
+		} else if (Q_stricmp(name, "voteFFAFrag") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote fraglimit %i\n", ui_ffa_fraglimit.integer) );
+		} else if (Q_stricmp(name, "voteCTFTime") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote timelimit %i\n", ui_ctf_timelimit.integer) );
+		} else if (Q_stricmp(name, "voteCTFCapture") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote capturelimit %i\n", ui_ctf_capturelimit.integer) );
+		} else if (Q_stricmp(name, "voteTeamTime") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote timelimit %i\n", ui_team_timelimit.integer) );
+		} else if (Q_stricmp(name, "voteTeamFrag") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote fraglimit %i\n", ui_team_fraglimit.integer) );
+		} else if (Q_stricmp(name, "voteDuelTime") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote timelimit %i\n", ui_duel_timelimit.integer) );
+		} else if (Q_stricmp(name, "voteDuelFrag") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote fraglimit %i\n", ui_duel_fraglimit.integer) );
+		} else if (Q_stricmp(name, "voteTeamSize") == 0) {
+			if (ui_teamSize.integer >= 1 && ui_teamSize.integer <= 16) {
+				trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote sv_maxteamsize %i\n", ui_teamSize.integer) );
+			}
 		} else if (Q_stricmp(name, "addBot") == 0) {
 			if (trap->Cvar_VariableValue("g_gametype") >= GT_TEAM) {
 				trap->Cmd_ExecuteText( EXEC_APPEND, va("addbot \"%s\" %i %s\n", UI_GetBotNameByNumber(uiInfo.botIndex), uiInfo.skillIndex+1, (uiInfo.redBlue == 0) ? "Red" : "Blue") );

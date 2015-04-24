@@ -449,11 +449,434 @@
 		{
 			name				type
 			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Time Limit:"
+			descText			"Select a time limit."
+			style				0
+			cvar				UI_FFA_TIMELIMIT
+			rect				123 40 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "0", "1", "2" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this time limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 40 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "0", "1", "2" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteFFATime ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Frag Limit:"
+			descText			"Select a frag limit."
+			style				0
+			cvar				UI_FFA_FRAGLIMIT
+			rect				123 70 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "0", "1", "2" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this frag limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 70 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "0", "1", "2" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteFFAFrag ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Time Limit:"
+			descText			"Select a time limit."
+			style				0
+			cvar				UI_CTF_TIMELIMIT
+			rect				123 40 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "8", "9" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this time limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 40 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "8", "9" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteCTFTime ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Capture Limit:"
+			descText			"Select a capture limit."
+			style				0
+			cvar				UI_CTF_CAPTURELIMIT
+			rect				123 70 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "8", "9" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this capture limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 70 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "8", "9" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteCTFCapture ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Time Limit:"
+			descText			"Select a time limit."
+			style				0
+			cvar				UI_TEAM_TIMELIMIT
+			rect				123 40 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "6", "7" }
+		}
+		
+		itemDef
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this time limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 40 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "6", "7" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteTeamTime ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Frag Limit:"
+			descText			"Select a frag limit."
+			style				0
+			cvar				UI_TEAM_FRAGLIMIT
+			rect				123 70 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "6", "7" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this frag limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 70 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "6", "7" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteTeamFrag ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Time Limit:"
+			descText			"Select a time limit."
+			style				0
+			cvar				UI_DUEL_TIMELIMIT
+			rect				123 40 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "3", "4" }
+		}
+		
+		itemDef
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this time limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 40 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "3", "4" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteDuelTime ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Frag Limit:"
+			descText			"Select a frag limit."
+			style				0
+			cvar				UI_DUEL_FRAGLIMIT
+			rect				123 70 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "3", "4" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this frag limit."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 70 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "3", "4" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteDuelFrag ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Team Size:"
+			descText			"Select a team size. [1-16]"
+			style				0
+			cvar				UI_TEAMSIZE
+			rect				123 100 130 30
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			8
+			textaligny			2
+			font				2
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "6", "7", "8", "9" }
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
+			text				@MENUS_OKAY
+			descText			"Begin vote for this team size."
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				280 100 80 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			40
+			textaligny			3
+			font				3
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				0
+			cvartest			"ui_about_gametype"
+			showcvar			{ "6", "7", "8", "9" }
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				uiScript voteTeamSize ; 
+				uiScript closeingame 
+			}	  	  
+		}
+		
+		itemDef 
+		{
+			name				type
+			group				grpCallVote
 			text				@MENUS_GAME_TYPE
 			descText			@MENUS_SELECT_A_NEW_GAME_TYPE
 			style				0
 			ownerdraw			UI_NETGAMETYPE
-			rect				120 95 230 30
+			rect				123 130 230 30
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			50
 			textaligny			2
@@ -463,7 +886,6 @@
 			visible				0
 		}
 
-
 		itemDef 
 		{
 			name				type
@@ -472,10 +894,10 @@
 			descText			@MENUS_BEGIN_VOTE_FOR_THIS_GAME
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				140 216 80 30
+			rect				120 160 80 30
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			40
-			textaligny			0
+			textaligny			3
 			font				3
 			textscale			1
 			forecolor			1 .682 0 1
@@ -485,15 +907,7 @@
 				play			"sound/interface/button1.wav" ;
 				uiScript voteGame ; 
 				uiScript closeingame 
-			}
-			mouseEnter 
-			{ 
-				show				doneButton
-			}
-			mouseExit 
-			{ 
-				hide				doneButton
-			}	  	  
+			}  	  
 		}
 
 
