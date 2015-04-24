@@ -844,6 +844,7 @@ void Svcmd_ToggleWeaponDisable_f( void ) {
 */
 
 static bitInfo_T startingWeapons[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{""},//0
 	{"Stun Baton"},//1
 	{"Melee"},//2
 	{"Saber"},//3
