@@ -35,6 +35,7 @@
 	loadMenu { "ui/jamp/ingame_server.menu"			}
 	loadMenu { "ui/jamp/ingame_move.menu"			}
 	loadMenu { "ui/jamp/ingame_camera.menu"			}
-	loadMenu { "ui/jamp/ingame_strafehelper.menu"			}
+	loadMenu { "ui/jamp/ingame_strafehelper.menu"		}
+	loadMenu { "ui/jamp/ingame_spectator.menu"		}
 }
 

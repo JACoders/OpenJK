@@ -1,0 +1,167 @@
+//-----------------------------------------
+// SPECTATOR MENU
+//-----------------------------------------
+{
+	menuDef
+	{
+		name					spectatormenu
+		visible					0
+		fullScreen				0
+		outOfBoundsClick
+		rect					95 352 250 88
+		focusColor				1 1 1 1
+		
+		// Overall window backdrop
+		itemDef 
+		{
+			name				background_pic
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				0 0 250 88
+			background			"gfx/menus/menu_box_ingame"
+			forecolor			1 1 1 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 250 88
+			backcolor			0 0 .6 .5
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .6 1
+			visible				1
+			decoration
+		}
+		
+		itemDef
+		{
+			name				hud
+			group				spectator
+			type				ITEM_TYPE_MULTI
+			text				"Show SpecHUD:"
+			cvar				cg_specHud
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
+			}
+			rect				70 4 110 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			43
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef
+		{
+			name				dampSlider
+			group				spectator
+			type				ITEM_TYPE_SLIDER
+			text				"CDamp:"
+			cvarfloat			"cg_spectatorCameraDamp" 0 0 1
+			rect				10 24 150 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			45
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				dampField
+			group				spectator
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_spectatorCameraDamp"
+			rect				165 24 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				dampReset
+ 			group				spectator
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				210 24 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_spectatorCameraDamp "0.00000"
+			}
+		}
+		
+		itemDef
+		{
+			name				red
+			group				spectator
+			type				1
+			text				"Follow Red Team"
+			cvartest			"g_gametype"
+			showcvar			{ "6", "8" }
+			rect				70 44 110 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			55
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			1 0 0 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd followredflag" ; 
+				uiScript		closeingame
+			}
+		}
+		
+		itemDef
+		{
+			name				blue
+			group				spectator
+			type				1
+			text				"Follow Blue Team"
+			cvartest			"g_gametype"
+			showcvar			{ "6", "8" }
+			rect				70 64 110 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			55
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			0 0 1 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd followblueflag" ; 
+				uiScript		closeingame
+			}
+		}
+}
