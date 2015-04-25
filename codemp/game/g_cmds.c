@@ -2991,27 +2991,29 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		//trap->Print("Checking if client can vote: his ip is %s\n", ourIP);
 
 		//Check if we are allowed to call vote
-		for (j=0; j<voteFloodProtectSize; j++) {
-			//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].voteTimeoutUntil);
-			if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
-				//trap->Print("Found clients IP in array!\n");
+		if (g_voteTimeout.integer) {
+			for (j=0; j<voteFloodProtectSize; j++) {
+				//trap->Print("Searching slot: %i (%s, %i)\n", j, voteFloodProtect[j].ip, voteFloodProtect[j].voteTimeoutUntil);
+				if (!Q_stricmp(voteFloodProtect[j].ip, ourIP)) {
+					//trap->Print("Found clients IP in array!\n");
 
-				const int voteTimeout = voteFloodProtect[j].failCount+1 * 1000*g_voteTimeout.integer;
+					const int voteTimeout = voteFloodProtect[j].failCount+1 * 1000*g_voteTimeout.integer;
 
-				if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > level.time)) {
-					//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
-					char timeStr[32];
-					TimeToString((voteFloodProtect[j].voteTimeoutUntil - level.time) , timeStr, sizeof(timeStr), qtrue);
-					trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
-					return;
+					if (voteFloodProtect[j].voteTimeoutUntil && (voteFloodProtect[j].voteTimeoutUntil > level.time)) {
+						//trap->Print("Client has just failed a vote, dont let them call this new one!\n");
+						char timeStr[32];
+						TimeToString((voteFloodProtect[j].voteTimeoutUntil - level.time) , timeStr, sizeof(timeStr), qtrue);
+						trap->SendServerCommand( ent-g_entities, va( "print \"Please wait %s before calling a new vote.\n\"", timeStr) );
+						return;
+					}
+					break;
+
+
 				}
-				break;
-
-
-			}
-			else if (!voteFloodProtect[j].ip[0]) {
-				//trap->Print("Finished array search without finding clients IP! They have not failed a vote yet!\n");
-				break;
+				else if (!voteFloodProtect[j].ip[0]) {
+					//trap->Print("Finished array search without finding clients IP! They have not failed a vote yet!\n");
+					break;
+				}
 			}
 		}
 
@@ -6303,7 +6305,7 @@ extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetnam
 static void SpawnRaceSwoop(gentity_t *ent)
 {
 	gentity_t *target;
-	target = NPC_SpawnType(ent, "swoop_mp", "", qtrue, qtrue);
+	target = NPC_SpawnType(ent, "swoop_mp2", "", qtrue, qtrue);
 
 	ent->client->ourSwoopNum = target->s.number;
 }

@@ -2806,6 +2806,9 @@ void SetFailedCallVoteIP(char *ClientIP) {
 		return;
 	}
 
+	if (!g_voteTimeout.integer) //no point if thers no timeout specified
+		return;
+
 	//trap->Print("Client failed a vote! Setting his IP in the array!\n");
 	for (i=0; i<voteFloodProtectSize; i++) { //Set
 		if (!Q_stricmp(voteFloodProtect[i].ip, ClientIP)) { //Found us in the array, so update our votetime
@@ -3118,7 +3121,7 @@ void CheckCvars( void ) {
 	}
 }
 
-static void DropVoteTimeouts(void) {
+static void DropVoteTimeouts(void) { //doesnt need to be checked every frame but w/e..
 	int i;
 	for (i=0; i<voteFloodProtectSize; i++) { //Set
 		if (voteFloodProtect[i].ip[0]) { //Found an slot

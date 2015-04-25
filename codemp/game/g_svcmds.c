@@ -694,7 +694,7 @@ static bitInfo_T saberTweaks[] = {
 	{"Fix yellow DFA"},//10
 	{"Spin red DFA"},//11
 	{"Spin backslash"},//12
-	{"JK2 Lunge"},//13
+	{"JK2 Lunge"}//13
 };
 static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
 
@@ -744,7 +744,7 @@ static bitInfo_T forceTweaks[] = {
 	{"Fix pull strength"},//6
 	{"JK2 grip"},//7
 	{"Fast grip runspeed"},//8
-	{"Push/pull items"},//9
+	{"Push/pull items"}//9
 };
 static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
 
@@ -1054,6 +1054,59 @@ void Svcmd_ToggleAdmin_f( void ) {
 	}
 }
 
+static bitInfo_T voteOptions[] = { 
+	{"Capturelimit"},//1
+	{"Clientkick"},//2
+	{"Forcespec"},//3
+	{"Fraglimit"},//4
+	{"g_doWarmup"},//5
+	{"g_gametype"},//6
+	{"kick"},//7
+	{"map"},//8
+	{"map_restart"},//9
+	{"nextmap"},//10
+	{"sv_maxteamsize"},//11
+	{"timelimit"},//12
+	{"vstr"},//13
+	{"poll"},//14
+	{"pause"}//15
+};
+static const int MAX_VOTE_OPTIONS = ARRAY_LEN( voteOptions );
+
+void Svcmd_ToggleVote_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_VOTE_OPTIONS; i++ ) {
+			if ( (g_allowVote.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, voteOptions[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, voteOptions[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_VOTE_OPTIONS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_VOTE_OPTIONS ) {
+			trap->Print( "toggleVote: Invalid range: %i [0, %i]\n", index, MAX_VOTE_OPTIONS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_allowVote", va( "%i", (1 << index) ^ (g_allowVote.integer & mask ) ) );
+		trap->Cvar_Update( &g_allowVote );
+
+		trap->Print( "%s %s^7\n", voteOptions[index].string, ((g_allowVote.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+
 typedef struct svcmd_s {
 	const char	*name;
 	void		(*func)(void);
@@ -1114,6 +1167,7 @@ svcmd_t svcmds[] = {
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
 	{ "toggleAdmin",				Svcmd_ToggleAdmin_f,				qfalse },
+	{ "toggleVote",					Svcmd_ToggleVote_f,					qfalse },
 
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
 	{ "tweakForce",					Svcmd_ToggleTweakForce_f,			qfalse },
