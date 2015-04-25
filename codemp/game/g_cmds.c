@@ -4596,7 +4596,7 @@ void save_account(gentity_t *ent)
 void rpg_score(gentity_t *ent)
 {
 	int send_message = 0; // zyk: if its 1, sends the message in player console
-	char message[1024];
+	char message[128];
 
 	strcpy(message,"");
 
@@ -4612,15 +4612,11 @@ void rpg_score(gentity_t *ent)
 			ent->client->pers.level++;
 
 			if (ent->client->pers.level % 10 == 0) // zyk: every level divisible by 10 the player will get bonus skillpoints
-			{
 				ent->client->pers.skillpoints+=(ent->client->pers.level/10) + 1;
-				sprintf(message,"%sYou reached ^3level %d ^7and got 1 + %d bonus skillpoints!\n", message, ent->client->pers.level, (ent->client->pers.level/10));
-			}
 			else
-			{
 				ent->client->pers.skillpoints++;
-				sprintf(message,"%sYou reached ^3level %d ^7and have %d skillpoints.\n", message, ent->client->pers.level, ent->client->pers.skillpoints);
-			}
+
+			strcpy(message,va("New Level: %d, Skillpoints: %d\n", ent->client->pers.level, ent->client->pers.skillpoints));
 
 			// zyk: got a new level, so change the max health and max shield
 			set_max_health(ent);
