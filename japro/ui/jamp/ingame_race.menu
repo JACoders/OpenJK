@@ -49,7 +49,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -70,7 +70,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -90,7 +90,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -110,7 +110,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -130,7 +130,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -150,7 +150,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -170,7 +170,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -190,7 +190,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -210,7 +210,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -230,7 +230,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1 
 			action 
 			{ 
@@ -250,7 +250,7 @@
 			textaligny			1     
 			font				4
 			textscale			1
-			forecolor			.615 .615 .956 1
+			forecolor			1 .682 0 1
 			visible				1
 			action 
 			{ 
@@ -410,11 +410,11 @@
 		
 		itemDef 
 		{
-			text				RACE
+			text				"RACE!"
 			type				1	
-			rect				131 64 42 20  
+			rect				121 64 62 20  
 			textalign			ITEM_ALIGN_CENTER
-			textalignx			21
+			textalignx			31
 			textaligny			-4
 			font				2
 			textscale			.95
