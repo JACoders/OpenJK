@@ -348,7 +348,7 @@
 			text				@MENUS_JOIN_GAME
 			type				1
 			style				2	
-			rect				2 14 124 30   
+			rect				2 34 124 30   
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
 			textaligny			0     
@@ -373,11 +373,11 @@
 			}
 			mouseEnter 
 			{ 
-				show			button1odd
+				show			button2
 			}
 			mouseExit 
 			{ 
-				hide			button1odd
+				hide			button2
 			}
 		}
  
@@ -387,7 +387,7 @@
 			text				@MENUS_SPECTATE
 			type				1
 			style				2	
-			rect				2 74 124 30   
+			rect				2 64 124 30    
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			62
 			textaligny			0     
@@ -412,50 +412,11 @@
 			}
 			mouseEnter 
 			{ 
-				show			button3odd
+				show			button3
 			}
 			mouseExit 
 			{ 
-				hide			button3odd
-			}
-		}
-		
-		itemDef 
-		{
-			name				team
-			text				Race
-			type				1
-			style				2	
-			rect				2 44 124 30  
-			textalign			ITEM_ALIGN_CENTER
-			textalignx			62
-			textaligny			0     
-			font				2
-			textscale			1
-			forecolor			1 .682 0 1
-			cvarTest			"ui_about_gametype"
-			hideCvar 
-			{ 
-				"4" ;
-				"6" ; 
-				"7" ; 
-				"8" ; 
-				"9"
-			}
-			visible				1 
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				exec			"cmd race" ; 
-				uiScript		closeingame 
-			}
-			mouseEnter 
-			{ 
-				show			button2odd
-			}
-			mouseExit 
-			{ 
-				hide			button2odd
+				hide			button3
 			}
 		}
 	}
