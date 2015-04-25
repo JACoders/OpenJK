@@ -2112,6 +2112,7 @@ extern qboolean Jedi_WaitingAmbush( gentity_t *self );
 void CheckExitRules( void );
 extern void Rancor_DropVictim( gentity_t *self );
 
+extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
 void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern ?
 void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
 extern qboolean g_dontFrickinCheck;
@@ -2930,7 +2931,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				}			
 			}
 			*/
-
+			G_LeaveVehicle( self, qfalse );
 			G_FreeEntity( ourSwoop );
 			self->client->ourSwoopNum = 0;
 		}

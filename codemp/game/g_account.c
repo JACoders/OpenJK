@@ -2175,8 +2175,12 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	else
 		Q_strncpyz(durationStr, va("%.3f", ((float)duration_ms * 0.001)), sizeof(durationStr));
 
-	if (duration_ms)
-		trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5 with max ^3%i^5 and average ^3%i^5.\n\"", durationStr, topspeed, average));
+	if (duration_ms) {
+		if (!topspeed && !average)
+			trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5.\n\"", durationStr)); //whatever, probably wont ever get around to fixing this since it fucks with the caching
+		else
+			trap->SendServerCommand( ent-g_entities, va("print \"^5 This players fastest time is ^3%s^5 with max ^3%i^5 and average ^3%i^5.\n\"", durationStr, topspeed, average));
+	}
 	else
 		trap->SendServerCommand(ent-g_entities, "print \"^5 No results found.\n\"");
 
@@ -2530,6 +2534,11 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 						Q_strncpyz(strStyle, "^7rjq3^7", sizeof(strStyle));
 					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 8)
 						Q_strncpyz(strStyle, "^7rjcpm^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 9)
+						Q_strncpyz(strStyle, "^7swoop^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 10)
+						Q_strncpyz(strStyle, "^7jetpack^7", sizeof(strStyle));
+
 				}
 			}
 

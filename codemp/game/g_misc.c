@@ -299,6 +299,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	if (player->client->ps.m_iVehicleNum) {	
 		gentity_t *currentVeh = &g_entities[player->client->ps.m_iVehicleNum];
 		if (currentVeh->client) {
+			currentVeh->m_pVehicle->m_iTurboTime = 0;
 			VectorCopy ( neworigin, currentVeh->client->ps.origin );
 			currentVeh->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
 			VectorClear(currentVeh->client->ps.velocity);

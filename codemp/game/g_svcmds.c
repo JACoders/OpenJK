@@ -683,7 +683,7 @@ void Svcmd_ToggleTweakWeapons_f( void ) {
 
 static bitInfo_T saberTweaks[] = { 
 	{"Skip saber interpolate for MP dmgs"},//1
-	{"JK2 Style Damage System"},//2
+	{"JK2 1.02 Style Damage System"},//2
 	{"Reduced saberblock for MP damages"},//3
 	{"Reduce saberdrops for MP damages"},//4
 	{"Allow rollcancel for saber swings"},//5

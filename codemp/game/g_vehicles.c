@@ -590,7 +590,7 @@ qboolean Eject( Vehicle_t *pVeh, bgEntity_t *pEnt, qboolean forceEject )
 	qboolean	taintedRider = qfalse;
 	qboolean	deadRider = qfalse;
 
-	if (ent->client->sess.raceMode && ent->client->sess.movementStyle == MV_SWOOP) {
+	if (ent->client && ent->client->sess.raceMode && ent->client->sess.movementStyle == MV_SWOOP) {
 		return qfalse;
 	}
 
@@ -667,8 +667,10 @@ qboolean Eject( Vehicle_t *pVeh, bgEntity_t *pEnt, qboolean forceEject )
 	}
 
 	// Move them to the exit position.
-	G_SetOrigin( ent, vExitPos );
-	VectorCopy(ent->r.currentOrigin, ent->client->ps.origin);
+	if (!ent->client || ent->client->sess.sessionTeam != TEAM_SPECTATOR) { //Dont do this to spectators, it fucks up their view when they stop following i guess?
+		G_SetOrigin( ent, vExitPos );
+		VectorCopy(ent->r.currentOrigin, ent->client->ps.origin);
+	}
 	trap->LinkEntity( (sharedEntity_t *)ent );
 
 	// If it's the player, stop overrides.

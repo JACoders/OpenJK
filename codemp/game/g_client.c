@@ -2168,6 +2168,7 @@ char *G_ValidateUserinfo( const char *userinfo )
 			return "Invalid characters found";
 	}
 
+	//this shit seems broken.. VVV
 	for ( currentInfo=0; currentInfo<numUserinfoFields; currentInfo++ )
 	{
 		info = &userinfoFields[currentInfo];
@@ -4344,21 +4345,6 @@ void ClientDisconnect( int clientNum ) {
 		}
 	}
 
-	if (ent->client->ourSwoopNum) {
-		gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
-
-		/*
-		if (ent->client->ps.m_iVehicleNum) { //If we are in a vehicle, properly eject from it?
-			if (ourSwoop && ourSwoop->m_pVehicle && ourSwoop->client && ourSwoop->s.NPC_class == CLASS_VEHICLE && ourSwoop->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
-				ourSwoop->m_pVehicle->m_pVehicleInfo->Eject( ourSwoop->m_pVehicle, (bgEntity_t *)ent, qtrue );
-			}			
-		}
-		*/
-
-		G_FreeEntity( ourSwoop );
-		ent->client->ourSwoopNum = 0;
-	}
-
 //JAPRO - Serverside - Stop those pesky reconnect whores - End
 
 	i = 0;
@@ -4385,6 +4371,21 @@ void ClientDisconnect( int clientNum ) {
 	i = 0;
 
 	G_LeaveVehicle( ent, qtrue );
+
+	if (ent->client->ourSwoopNum) {
+		gentity_t *ourSwoop = &g_entities[ent->client->ourSwoopNum];
+
+		/*
+		if (ent->client->ps.m_iVehicleNum) { //If we are in a vehicle, properly eject from it?
+			if (ourSwoop && ourSwoop->m_pVehicle && ourSwoop->client && ourSwoop->s.NPC_class == CLASS_VEHICLE && ourSwoop->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
+				ourSwoop->m_pVehicle->m_pVehicleInfo->Eject( ourSwoop->m_pVehicle, (bgEntity_t *)ent, qtrue );
+			}			
+		}
+		*/
+
+		G_FreeEntity( ourSwoop );
+		ent->client->ourSwoopNum = 0;
+	}
 
 	// stop any following clients
 	for ( i = 0 ; i < level.maxclients ; i++ ) {

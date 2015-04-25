@@ -1189,15 +1189,17 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 { //How 2 check if cvars were valid the whole time of run.. and before? since you can get a headstart with higher g_speed before hitting start timer? :S
 	//Make most of this hardcoded into racemode..? speed, knockback, debugmelee, stepslidefix, gravity, quakestyleteleport
+	int style;
 	if (!player->client)
 		return qfalse;
 	if (!player->client->ps.stats[STAT_RACEMODE])
 		return qfalse;
-	if (((player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && g_knockback.value != 1000.0f)
+
+	style = player->client->sess.movementStyle;
+
+	if (((style == MV_RJQ3) || (style == MV_RJCPM)) && g_knockback.value != 1000.0f)
 		return qfalse;
-	//if (((player->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (player->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && g_weaponDamageScale.value != 1.0f)
-		//return qfalse;
-	if (player->client->ps.stats[STAT_MOVEMENTSTYLE] != 3 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 4 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 6 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 7 && player->client->ps.stats[STAT_MOVEMENTSTYLE] != 8) { //Ignore forcejump restrictions if in onlybhop movement modes
+	if (style != MV_CPM && style != MV_Q3 && style != MV_WSW && style != MV_RJQ3 && style != MV_RJCPM && style != MV_JETPACK) { //Ignore forcejump restrictions if in onlybhop movement modes
 		if (restrictions & (1 << 0)) {//flags 1 = restrict to jump1
 			if (player->client->ps.fd.forcePowerLevel[FP_LEVITATION] != 1) {
 				trap->SendServerCommand( player-g_entities, "cp \"^3Warning: this course requires force jump level 1!\n\n\n\n\n\n\n\n\n\n\"");
@@ -1219,9 +1221,9 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 	}
 	if (player->client->pers.haste && !(restrictions & (1 << 3))) 
 		return qfalse; //IF client has haste, and the course does not allow haste, dont count it.
-	if ((player->client->sess.movementStyle != MV_JETPACK) && (player->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && !(restrictions & (1 << 4)))
+	if ((style != MV_JETPACK) && (player->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && !(restrictions & (1 << 4)))
 		return qfalse; //IF client has jetpack, and the course does not allow jetpack, dont count it.
-	if (player->client->sess.movementStyle == MV_SWOOP && !player->client->ps.m_iVehicleNum)
+	if (style == MV_SWOOP && !player->client->ps.m_iVehicleNum)
 		return qfalse;
 	if (sv_cheats.integer)
 		return qfalse;
