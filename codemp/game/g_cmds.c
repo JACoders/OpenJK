@@ -4616,7 +4616,7 @@ void rpg_score(gentity_t *ent)
 			else
 				ent->client->pers.skillpoints++;
 
-			strcpy(message,va("New Level: %d, Skillpoints: %d\n", ent->client->pers.level, ent->client->pers.skillpoints));
+			strcpy(message,va("^3New Level: ^7%d^3, Skillpoints: ^7%d\n", ent->client->pers.level, ent->client->pers.skillpoints));
 
 			// zyk: got a new level, so change the max health and max shield
 			set_max_health(ent);
