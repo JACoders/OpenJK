@@ -66,7 +66,7 @@
 			name				background_pic_bottom
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				190 448 260 32
+			rect				190 464 260 16
 			background			"gfx/menus/menu_top_mp"
 			forecolor			1 1 1 1
 			visible				1
@@ -618,7 +618,7 @@
 			name				spectatorButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				195 448 50 16
+			rect				295 464 50 16
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -628,10 +628,10 @@
 		itemDef 
 		{
 			name				spectator
-			text				"Spectator"
+			text				"Spec"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				195 448 50 16
+			rect				295 464 50 16
 			font				2
 			textscale			.7
 			textstyle			3
@@ -701,7 +701,7 @@
 		
 		itemDef 
 		{
-			name				moveButton
+			name				raceButton
 			//group				none
 			style				WINDOW_STYLE_SHADER
 			rect				345 464 50 16
@@ -713,8 +713,8 @@
 		
 		itemDef 
 		{
-			name				move
-			text				"Move"
+			name				race
+			text				"Race"
 			type				1
 			style				WINDOW_STYLE_FILLED
 			rect				345 464 50 16
@@ -730,18 +730,18 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav" ;
-				open			movemenu
+				open			racemenu
 			}
 			mouseenter 
 			{ 
-				show			moveButton
+				show			raceButton
 			}
 			mouseexit 
 			{ 
-				hide			moveButton
+				hide			raceButton
 			}
 		}
-
+/*
 		itemDef 
 		{
 			name				printstatsButton
@@ -787,7 +787,7 @@
 				hide			printstatsButton
 			}
 		}
-		
+*/		
 		itemDef 
 		{
 			name				cameraButton

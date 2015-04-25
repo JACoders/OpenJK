@@ -8,7 +8,7 @@
 		visible					0
 		fullScreen				0
 		outOfBoundsClick
-		rect					95 352 250 88
+		rect					195 352 250 88
 		focusColor				1 1 1 1
 		
 		// Overall window backdrop
