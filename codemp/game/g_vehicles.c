@@ -1239,7 +1239,15 @@ static qboolean Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 
 	if (parent && parent->r.ownerNum != parent->s.owner)
 	{
-		parent->s.owner = parent->r.ownerNum;
+		gentity_t *racePilot = &g_entities[parent->s.owner];
+
+		if (g_raceMode.integer && racePilot->client && racePilot->client->sess.movementStyle == MV_SWOOP) { //dunno, this fixes race swoop somehow, sad hack
+			//trap->Print("Spot 6: Ownernum: %i, Owner: %i, parent? %i\n", parent->r.ownerNum, parent->s.owner, parent->s.number);
+		}
+		else {
+			parent->s.owner = parent->r.ownerNum;
+			//trap->Print("Spot 6: setting s.owner to %i\n", parent->s.owner);
+		}
 	}
 
 	//keep the PS value in sync. set it up here in case we return below at some point.

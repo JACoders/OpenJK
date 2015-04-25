@@ -2449,19 +2449,19 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 
 	if (whois && seeip) {
 		if (g_raceMode.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Race  Style  Jump  Hidden  Nickame\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Race  Style    Jump  Hidden  Nickame\n\"");
 		else
 			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          IP                Plugin  Admin  Nickname\n\"");
 	}
 	else if (whois) {
 		if (g_raceMode.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Admin  Race  Style  Jump  Hidden  Nickame\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Admin  Race  Style    Jump  Hidden  Nickame\n\"");
 		else
 			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Admin  Nickname\n\"");
 	}
 	else {
 		if (g_raceMode.integer)
-			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Race  Style  Jump  Hidden  Nickname\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Race  Style    Jump  Hidden  Nickname\n\"");
 		else
 			trap->SendServerCommand(ent-g_entities, "print \"^5   Username          Plugin  Nickname\n\"");
 	}
@@ -2576,21 +2576,21 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 				if (seeip) {
 					//Admin prints
 					if (g_raceMode.integer)
-						tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
+						tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%-10s%-13s%-6s%-12s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
 					else
 						tmpMsg = va( "%-2s%-22s%-18s%-12s%-11s%s\n", strNum, strUser, strIP, strPlugin, strAdmin, strName);
 				}
 				else {
 					//Admin prints
 					if (g_raceMode.integer)
-						tmpMsg = va( "%-2s%-22s%-12s%-11s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
+						tmpMsg = va( "%-2s%-22s%-12s%-11s%-10s%-13s%-6s%-12s%s\n", strNum, strUser, strPlugin, strAdmin, strRace, strStyle, jumpLevel, strHidden, strName);
 					else
 						tmpMsg = va( "%-2s%-22s%-12s%-11s%s\n", strNum, strUser, strPlugin, strAdmin, strName);
 				}
 			}
 			else {//Not admin
 				if (g_raceMode.integer)
-					tmpMsg = va( "%-2s%-22s%-12s%-10s%-11s%-6s%-12s%s\n", strNum, strUser, strPlugin, strRace, strStyle, jumpLevel, strHidden, strName);
+					tmpMsg = va( "%-2s%-22s%-12s%-10s%-13s%-6s%-12s%s\n", strNum, strUser, strPlugin, strRace, strStyle, jumpLevel, strHidden, strName);
 				else
 					tmpMsg = va( "%-2s%-22s%-12s%s\n", strNum, strUser, strPlugin, strName);
 			}

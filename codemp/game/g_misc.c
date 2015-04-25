@@ -304,16 +304,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 			currentVeh->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
 			VectorClear(currentVeh->client->ps.velocity);
 		}
-		/*
-		for (i=0 ; i<3 ; i++) {// set the delta angle , doesnt fucking work
-			int		cmdAngle;
-			cmdAngle = ANGLE2SHORT(angles[i]);
-			currentVeh->client->ps.delta_angles[i] = cmdAngle - currentVeh->client->pers.cmd.angles[i];
-		}
-		VectorCopy( angles, currentVeh->s.angles );
-		VectorCopy( angles, currentVeh->s.apos.trBase );
-		VectorCopy (currentVeh->s.angles, currentVeh->client->ps.viewangles);
-		*/
+		VectorCopy(angles, currentVeh->m_pVehicle->m_vOrientation);
 	}
 	else {
 		VectorCopy ( neworigin, player->client->ps.origin );
