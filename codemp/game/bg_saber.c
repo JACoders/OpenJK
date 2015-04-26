@@ -2535,7 +2535,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 					BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 				}
 			}
-			else if (!noSpecials&&
+			else if (!noSpecials &&
 				pm->ps->fd.saberAnimLevel == SS_MEDIUM &&
 				pm->ps->velocity[2] > 100 &&
 				PM_GroundDistance() < 32 &&
@@ -2961,6 +2961,11 @@ void PM_WeaponLightsaber(void)
 	int			anim=-1, curmove, newmove=LS_NONE;
 
 	qboolean checkOnlyWeap = qfalse;
+
+	if (pm->ps->stats[STAT_RACEMODE] && pm->ps->stats[STAT_MOVEMENTSTYLE] == MV_JETPACK && pm->ps->pm_type == PM_JETPACK ) {
+		pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
+		pm->cmd.buttons &= ~BUTTON_ATTACK;
+	}
 
 	if ( PM_InKnockDown( pm->ps ) || BG_InRoll( pm->ps, pm->ps->legsAnim ))
 	{//in knockdown
