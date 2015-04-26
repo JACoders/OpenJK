@@ -139,7 +139,7 @@ static void BeginHack(int entityNum)
 			}
 		}
 	} 
-	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
+	else if ((0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) || (g_entities[entityNum].client && g_entities[entityNum].client->raceSwoop)) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
 			if (i != entityNum) {
@@ -199,7 +199,7 @@ static void EndHack(int entityNum) {
 			}
 		}
 	}
-	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
+	else if ((0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) || (g_entities[entityNum].client && g_entities[entityNum].client->raceSwoop)) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
