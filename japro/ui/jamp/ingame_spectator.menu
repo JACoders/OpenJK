@@ -8,7 +8,7 @@
 		visible					0
 		fullScreen				0
 		outOfBoundsClick
-		rect					195 352 250 88
+		rect					263 352 114 88
 		focusColor				1 1 1 1
 		
 		// Overall window backdrop
@@ -17,7 +17,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 250 88
+			rect				0 0 114 88
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -29,7 +29,7 @@
 			name				setup_background
 			group				none
 			style				WINDOW_STYLE_FILLED
-			rect				0 0 250 88
+			rect				0 0 114 88
 			backcolor			0 0 .6 .5
 			forecolor			1 1 1 1
 			border				1
@@ -43,16 +43,16 @@
 			name				hud
 			group				spectator
 			type				ITEM_TYPE_MULTI
-			text				"Show SpecHUD:"
+			text				"SpecHUD:"
 			cvar				cg_specHud
 			cvarFloatList
 			{
 				@MENUS_OFF 0
 				@MENUS_ON 1
 			}
-			rect				70 4 110 20
-			textalign			ITEM_ALIGN_CENTER
-			textalignx			43
+			rect				2 4 110 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			80
 			textaligny			0
 			font				4
 			textscale			1
@@ -66,14 +66,19 @@
 		
 		itemDef
 		{
-			name				dampSlider
+			name				damp
 			group				spectator
-			type				ITEM_TYPE_SLIDER
-			text				"CDamp:"
-			cvarfloat			"cg_spectatorCameraDamp" 0 0 1
-			rect				10 24 150 20
+			type				ITEM_TYPE_MULTI
+			text				"CameraDamp:"
+			cvar				"cg_spectatorCameraDamp"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
+			}
+			rect				2 24 110 20
 			textalign			ITEM_ALIGN_RIGHT
-			textalignx			45
+			textalignx			80
 			font				4
 			textscale			1
 			forecolor			.615 .615 .956 1
@@ -81,39 +86,6 @@
 			action
 			{
 				play			"sound/interface/button1.wav" ;
-			}
-		}
-		
-		itemDef 
-		{
-			name				dampField
-			group				spectator
-			type				ITEM_TYPE_NUMERICFIELD
-			text				""
-			cvar				"cg_spectatorCameraDamp"
-			rect				165 24 40 20
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			action				{ play "sound/interface/button1.wav" ; }
-		}
-		
-		itemDef
-		{
-			name				dampReset
- 			group				spectator
-     		type				ITEM_TYPE_BUTTON
-			text				"Reset"
-			rect				210 24 30 20
-			font 				4
-			textscale 			1
-			forecolor			1 .682 0 1
-			visible				1
-			action
-			{
-				play "sound/interface/button1.wav" ;
-				setcvar cg_spectatorCameraDamp "0.00000"
 			}
 		}
 		
@@ -125,7 +97,7 @@
 			text				"Follow Red Team"
 			cvartest			"g_gametype"
 			showcvar			{ "6", "8" }
-			rect				70 44 110 20
+			rect				2 44 110 20
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			55
 			textaligny			0
@@ -149,7 +121,7 @@
 			text				"Follow Blue Team"
 			cvartest			"g_gametype"
 			showcvar			{ "6", "8" }
-			rect				70 64 110 20
+			rect				2 64 110 20
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			55
 			textaligny			0
