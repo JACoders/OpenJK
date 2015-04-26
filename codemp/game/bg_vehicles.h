@@ -592,6 +592,7 @@ typedef struct Vehicle_s
 
 	// the last time this vehicle fired a turbo burst
 	int			m_iTurboTime;
+	int			m_iGravTime;
 
 	//how long it should drop like a rock for after freed from SUSPEND
 	int			m_iDropTime;

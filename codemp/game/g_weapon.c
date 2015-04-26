@@ -5327,7 +5327,9 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{
-		if (&g_entities[ent->m_pVehicle->m_pPilot->s.number].client && &g_entities[ent->m_pVehicle->m_pPilot->s.number].client->sess.raceMode) //what a mess
+		//if (&g_entities[ent->m_pVehicle->m_pPilot->s.number].client && &g_entities[ent->m_pVehicle->m_pPilot->s.number].client->sess.raceMode) //what a mess
+			//return;
+		if (ent->client && ent->client->raceSwoop)
 			return;
 		FireVehicleWeapon( ent, altFire );
 		return;
