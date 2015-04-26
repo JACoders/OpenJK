@@ -63,6 +63,12 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 		return;
 	}
 
+	if (g_raceMode.integer) {
+		gentity_t *ourvehicle = (gentity_t *)pEnt;
+		if (ourvehicle->client && ourvehicle->client->raceSwoop)
+			return;
+	}
+
 	if ( pSelfVeh//I have a vehicle struct
 		&& pSelfVeh->m_iRemovedSurfaces )//vehicle has bits removed
 	{//spiralling to our deaths, explode on any solid impact

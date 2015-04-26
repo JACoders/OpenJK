@@ -226,11 +226,11 @@ static void EndHack(int entityNum) {
 			}
 		}
 
-		for (i = 0; i < level.maxclients; i++) {
+		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
-				if (ent->inuse &&
-					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) {
+				if (ent->inuse && ent->client &&
+					(ent->client->ps.duelInProgress || ent->client->sess.raceMode || ent->client->raceSwoop)) {
 					ent->r.ownerNum = saved[i];
 				}
 			}

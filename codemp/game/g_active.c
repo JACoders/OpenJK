@@ -4804,7 +4804,7 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		return;
 	}
-	
+
 	//Copy current velocity to lastvelocity
 	VectorCopy(ent->client->ps.velocity, ent->client->lastVelocity);
 
@@ -4817,7 +4817,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	//try some idle anims on ent if getting no input and not moving for some time
 	G_CheckClientIdle( ent, ucmd );
-
 	// This code was moved here from clientThink to fix a problem with g_synchronousClients 
 	// being set to 1 when in vehicles. 
 	if ( ent->s.number < MAX_CLIENTS && ent->client->ps.m_iVehicleNum )
@@ -4832,7 +4831,6 @@ void ClientThink_real( gentity_t *ent ) {
 			ent->client->ps.m_iVehicleNum = 0;
 		}
 	}
-
 }
 
 /*
@@ -4873,7 +4871,6 @@ A new command has arrived from the client
 */
 void ClientThink( int clientNum, usercmd_t *ucmd ) {
 	gentity_t *ent;
-
 	ent = g_entities + clientNum;
 	if (clientNum < MAX_CLIENTS)
 	{
@@ -4886,7 +4883,7 @@ void ClientThink( int clientNum, usercmd_t *ucmd ) {
 
 	if (ucmd)
 	{
-		ent->client->pers.cmd = *ucmd;
+		ent->client->pers.cmd = *ucmd; //Somehow this crashes the server if you try to board a vehicle without it having spawned yet...? somtimes?
 	}
 
 /* 	This was moved to clientthink_real, but since its sort of a risky change i left it here for 

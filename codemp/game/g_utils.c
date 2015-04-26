@@ -1691,7 +1691,7 @@ void TryUse( gentity_t *ent )
 			ourVeh = &g_entities[ent->client->ourSwoopNum];
 
 			if (!ent->client->ps.m_iVehicleNum) { //If we are not in a vehicle, board our swoop.
-				if (ourVeh && ourVeh->m_pVehicle && ourVeh->client && ourVeh->s.NPC_class == CLASS_VEHICLE && ourVeh->m_pVehicle->m_pVehicleInfo) {//if ourVeh is a vehicle then perform appropriate checks
+				if (ourVeh && ourVeh->m_pVehicle && ourVeh->client && ourVeh->s.NPC_class == CLASS_VEHICLE && ourVeh->m_pVehicle->m_pVehicleInfo && ourVeh->client->ps.persistant[PERS_SPAWN_COUNT]) {//if ourVeh is a vehicle then perform appropriate checks
 					ourVeh->m_pVehicle->m_pVehicleInfo->Board( ourVeh->m_pVehicle, (bgEntity_t *)ent );
 					ResetPlayerTimers(ent, qtrue);
 				}			
