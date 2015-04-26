@@ -357,7 +357,7 @@ qboolean Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 		VectorClear( parent->client->ps.delta_angles );*/
 
 		// Set the looping sound only when there is a pilot (when the vehicle is "on").
-		if ( pVeh->m_pVehicleInfo->soundLoop )
+		if ( pVeh->m_pVehicleInfo->soundLoop && !parent->client->raceSwoop )
 		{
 			parent->client->ps.loopSound = parent->s.loopSound = pVeh->m_pVehicleInfo->soundLoop;
 		}

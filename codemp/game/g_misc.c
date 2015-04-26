@@ -303,6 +303,7 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 			VectorCopy ( neworigin, currentVeh->client->ps.origin );
 			currentVeh->client->ps.origin[2] += 8;//Get rid of weird jitteryness after teleporting on ground
 			VectorClear(currentVeh->client->ps.velocity);
+			currentVeh->client->ps.speed = 0; //stop it from sliding after we tele
 		}
 		VectorCopy(angles, currentVeh->m_pVehicle->m_vOrientation);
 	}
