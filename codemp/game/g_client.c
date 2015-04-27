@@ -2160,7 +2160,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			Q_StripColor( client->pers.netname_nocolor );
 		}
 		else {
-			trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
+			trap->SendServerCommand( -1, va( "print \"%s" S_COLOR_WHITE " %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
 			G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
 			client->pers.netnameTime = level.time + 5000;
 		}
@@ -2316,7 +2316,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	s = Info_ValueForKey( userinfo, "snaps" );
 	if ( atoi( s ) < sv_fps.integer )
-		trap->SendServerCommand( clientNum, va( "print \""S_COLOR_YELLOW"Recommend setting /snaps %d or higher to match this server's sv_fps\n\"", sv_fps.integer ) );
+		trap->SendServerCommand( clientNum, va( "print \"" S_COLOR_YELLOW "Recommend setting /snaps %d or higher to match this server's sv_fps\n\"", sv_fps.integer ) );
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
