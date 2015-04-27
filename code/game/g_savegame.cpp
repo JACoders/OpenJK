@@ -499,7 +499,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 	}
 }
 
-static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, int iLen)
+static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, size_t iLen)
 {
 	strList = new std::list<sstring_t>;
 
