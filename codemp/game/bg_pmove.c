@@ -12734,9 +12734,16 @@ void PmoveSingle (pmove_t *pmove) {
 	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK) && ((pml.msec < 4) || (pml.msec > 25))) {
 	}
 #endif
-	else if (!pm->pmove_float)
-		trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
+	else if (!pm->pmove_float) {
+		bgEntity_t *veh;	
+		veh = pm_entSelf;
 
+		if (veh->m_pVehicle && veh->m_pVehicle->m_pPilot && veh->m_pVehicle->m_pPilot->playerState && veh->m_pVehicle->m_pPilot->playerState->stats[STAT_RACEMODE]) {
+		}
+		else
+			trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
+	}
+	
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
 	{
 		pm->ps->gravity = savedGravity;
