@@ -140,5 +140,7 @@ XCVAR_DEF( ui_sha_r,						"0",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL 
 XCVAR_DEF( ui_sha_g,						"255",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_sha_b,						"0",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_sha_a,						"200",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_username,						"",						NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_password,						"",						NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 
 #undef XCVAR_DEF

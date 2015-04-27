@@ -6208,6 +6208,10 @@ static void UI_RunMenuScript(char **args)
 			if (ui_teamSize.integer >= 1 && ui_teamSize.integer <= 16) {
 				trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote sv_maxteamsize %i\n", ui_teamSize.integer) );
 			}
+		} else if (Q_stricmp(name, "login") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("login %s %s\n", ui_username.string, ui_password.string) );
+		} else if (Q_stricmp(name, "register") == 0) {
+			trap->Cmd_ExecuteText( EXEC_APPEND, va("register %s %s\n", ui_username.string, ui_password.string) );
 		} else if (Q_stricmp(name, "addBot") == 0) {
 			if (trap->Cvar_VariableValue("g_gametype") >= GT_TEAM) {
 				trap->Cmd_ExecuteText( EXEC_APPEND, va("addbot \"%s\" %i %s\n", UI_GetBotNameByNumber(uiInfo.botIndex), uiInfo.skillIndex+1, (uiInfo.redBlue == 0) ? "Red" : "Blue") );

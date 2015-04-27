@@ -873,5 +873,48 @@
 				hide			strafeHelperButton
 			}
 		}
+		
+		itemDef 
+		{
+			name				accountButton
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				295 448 50 16
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible			0
+		}
+		
+		itemDef 
+		{
+			name				account
+			text				"Account"
+			type				1
+			style				WINDOW_STYLE_FILLED
+			rect				295 448 50 16
+			font				2
+			textscale			.7
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx         	25
+			textaligny			-2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			accountmenu
+			} 
+			mouseenter 
+			{ 
+				show			accountButton
+			}
+			mouseexit 
+			{ 
+				hide			accountButton
+			}
+		}
 	}
 }
