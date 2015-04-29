@@ -72,7 +72,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif()
 
 	if(UseInternalSDL2)
-		if(ARCH_BITS EQUAL 32)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(SPEngineLibraries
 				${SPEngineLibraries}
 				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
@@ -404,7 +404,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		if(WIN32)
 			add_executable(${ProjectName} WIN32 ${SPEngineFiles})
 			if(UseInternalSDL2)
-				if(ARCH_BITS EQUAL 32)
+				if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 					set(SPEngineExtraInstallFiles
 						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
 						)
