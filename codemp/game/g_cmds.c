@@ -2519,6 +2519,7 @@ qboolean G_VoteGametype( gentity_t *ent, int numArgs, const char *arg1, const ch
 	Com_sprintf( level.voteString, sizeof( level.voteString ), "%s %d", arg1, gt );
 	Com_sprintf( level.voteDisplayString, sizeof( level.voteDisplayString ), "%s %s", arg1, gameNames[gt] );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+
 	return qtrue;
 }
 
@@ -3164,7 +3165,7 @@ validVote:
 
 	trap->SetConfigstring( CS_VOTE_TIME,	va( "%i", level.voteTime ) );
 	//trap->SetConfigstring( CS_VOTE_STRING,	level.voteDisplayString );	
-	trap->SetConfigstring( CS_VOTE_STRING,	va("%s^7", level.voteDisplayString) );	 //dunno why this has to be done here..
+	trap->SetConfigstring( CS_VOTE_STRING,	va("%s", level.voteDisplayString) );	 //dunno why this has to be done here..
 
 	trap->SetConfigstring( CS_VOTE_YES,		va( "%i", level.voteYes ) );
 	trap->SetConfigstring( CS_VOTE_NO,		va( "%i", level.voteNo ) );	
@@ -6950,7 +6951,7 @@ void Cmd_Amtele_f(gentity_t *ent)
 		origin[0] = g_entities[clientid1].client->ps.origin[0];
 		origin[1] = g_entities[clientid1].client->ps.origin[1];
 		origin[2] = g_entities[clientid1].client->ps.origin[2] + 96;
-		AmTeleportPlayer( ent, origin, angles, droptofloor, qfalse );
+		AmTeleportPlayer( ent, origin, angles, droptofloor, race );
 		return;
 	}
 

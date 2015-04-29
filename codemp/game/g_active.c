@@ -2991,8 +2991,10 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (client->savedJumpLevel) {
 		client->ps.fd.forcePowerLevel[FP_LEVITATION] = client->savedJumpLevel;
 	}
-	if (client->ps.stats[STAT_RACEMODE] && client->ps.stats[STAT_ONLYBHOP]) {
-		client->ps.fd.forcePowerLevel[FP_LEVITATION] = 3;
+	if (client->ps.stats[STAT_RACEMODE]) {
+			client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = 3; //make sure its allowed on server? or?
+		if (client->ps.stats[STAT_ONLYBHOP])
+			client->ps.fd.forcePowerLevel[FP_LEVITATION] = 3;
 	}
 
 	//
