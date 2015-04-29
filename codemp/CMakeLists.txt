@@ -388,7 +388,7 @@ if(BuildMPEngine)
 	endif()
 
 	if(UseInternalSDL2)
-		if(ARCH_BITS EQUAL 32)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(MPEngineLibraries
 				${MPEngineLibraries}
 				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
@@ -569,7 +569,7 @@ if(BuildMPEngine)
 	if(WIN32)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
 		if(UseInternalSDL2)
-			if(ARCH_BITS EQUAL 32)
+			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 				set(MPEngineExtraInstallFiles
 					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
 					)
