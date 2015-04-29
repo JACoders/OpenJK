@@ -48,7 +48,7 @@
 
 #define	SCORE_NOT_PRESENT	-9999	// for the CS_SCORES[12] when only one player is present
 
-#define	VOTE_TIME			30000 //+ (g_fixVote.integer * 30000)// 30 seconds before vote times out, //japro- Now look at this sad hack
+#define	VOTE_TIME			30000 //+ (g_tweakVote.integer * 30000)// 30 seconds before vote times out, //japro- Now look at this sad hack
 
 #define DEFAULT_MINS_2		-24
 #define DEFAULT_MAXS_2		40

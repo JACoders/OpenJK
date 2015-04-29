@@ -1107,6 +1107,55 @@ void Svcmd_ToggleVote_f( void ) {
 	}
 }
 
+static bitInfo_T voteTweaks[] = { 
+	{"Allow spec callvote in siege gametype"},//1
+	{"Allow spec callvote in CTF/TFFA gametypes"},//2
+	{"Clear vote when going to spectate"},//3
+	{"Dont allow callvote for 30s after mapload"},//4
+	{"Floodprotect callvotes by IP"},//5
+	{"Dont allow map callvotes for 10 minutes at start of each map"},//6
+	{"Add vote delay for map callvotes only"},//7
+	{"Allow voting from spectate"},//8
+	{"Show votes in console"},//9
+	{"Only count voters in pass/fail calculation"},//10
+	{"Fix mapchange after gametype vote"}//11
+};
+static const int MAX_VOTE_TWEAKS = ARRAY_LEN( voteTweaks );
+
+void Svcmd_ToggleTweakVote_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_VOTE_TWEAKS; i++ ) {
+			if ( (g_tweakVote.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, voteTweaks[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, voteTweaks[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_VOTE_TWEAKS) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_VOTE_TWEAKS ) {
+			trap->Print( "tweakVote: Invalid range: %i [0, %i]\n", index, MAX_VOTE_TWEAKS - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_tweakVote", va( "%i", (1 << index) ^ (g_tweakVote.integer & mask ) ) );
+		trap->Cvar_Update( &g_tweakVote );
+
+		trap->Print( "%s %s^7\n", voteTweaks[index].string, ((g_tweakVote.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+
 typedef struct svcmd_s {
 	const char	*name;
 	void		(*func)(void);
@@ -1172,6 +1221,7 @@ svcmd_t svcmds[] = {
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
 	{ "tweakForce",					Svcmd_ToggleTweakForce_f,			qfalse },
 	{ "tweakSaber",					Svcmd_ToggleTweakSaber_f,			qfalse },
+	{ "tweakVote",					Svcmd_ToggleTweakVote_f,			qfalse },
 	{ "tweakWeapons",				Svcmd_ToggleTweakWeapons_f,			qfalse }
 };
 static const size_t numsvcmds = ARRAY_LEN( svcmds );

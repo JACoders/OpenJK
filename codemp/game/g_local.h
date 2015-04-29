@@ -319,6 +319,19 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_PLUGIN_NODMGNUMBERS	(1<<26)	//
 #define JAPRO_PLUGIN_CENTERMUZZLE	(1<<27)	//
 
+//g_tweakVote TWEAKS
+#define TV_ALLOW_SIEGESPECVOTE		(1<<0)
+#define TV_ALLOW_CTFTFFASPECVOTE	(1<<1)
+#define TV_CLEAR_SPEC_VOTES			(1<<2)
+#define TV_MAPLOADTIMEOUT			(1<<3)
+#define TV_FLOODPROTECTBYIP			(1<<4)
+#define TV_MAPCHANGELOCKOUT			(1<<5)
+#define TV_MAPCHANGEVOTEDELAY		(1<<6)
+#define TV_ALLOW_SPECVOTE			(1<<7)
+#define TV_SHOW_VOTES				(1<<8)
+#define TV_ONLY_COUNT_VOTERS		(1<<9)
+#define TV_FIX_GAMETYPEMAP			(1<<10)
+
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
 void G_TimeShiftClient( gentity_t *ent, int time );
@@ -1326,7 +1339,7 @@ typedef struct level_locals_s {
 	int			voteYes;
 	int			voteNo;
 	int			numVotingClients;		// set by CalculateRanks
-	char		callVoteIP[NET_ADDRSTRMAXLEN]; //japro g_fixvote
+	char		callVoteIP[NET_ADDRSTRMAXLEN]; //japro g_tweakVote
 
 	qboolean	votingGametype;
 	int			votingGametypeTo;

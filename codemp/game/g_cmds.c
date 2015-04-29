@@ -1367,7 +1367,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 		AddTournamentQueue( client );
 
 	// clear votes if going to spectator (specs can't vote)
-	if (team == TEAM_SPECTATOR && !g_fixVote.integer)
+	if (team == TEAM_SPECTATOR && !(g_tweakVote.integer & TV_CLEAR_SPEC_VOTES))
 		G_ClearVote( ent );
 	// also clear team votes if switching red/blue or going to spec
 	G_ClearTeamVote( ent, oldTeam );
@@ -2936,7 +2936,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 	
-	if (g_fixVote.integer && (level.startTime > (level.time - 1000*30))) { //Dont let a vote be called within 30sec of mapload ever
+	if ((g_tweakVote.integer & TV_MAPLOADTIMEOUT) && (level.startTime > (level.time - 1000*30))) { //Dont let a vote be called within 30sec of mapload ever
 		trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to callvote within 30 seconds of map load.\n\"" );//print to wait X more minutes..seconds?
 		return;
 	} //fuck this stupid thing.. why does it work on 1 server but not the other..	
@@ -2972,14 +2972,26 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// can't vote as a spectator, except in (power)duel.. fuck this logic
+
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR || (ent->client->sess.sessionTeam == TEAM_FREE && level.gametype >= GT_TEAM)) { //If we are in spec or racemode
+		if (level.gametype == GT_SIEGE && g_tweakVote.integer & TV_ALLOW_SIEGESPECVOTE) {
+		}
+		else if (level.gametype >= GT_TEAM && g_tweakVote.integer & TV_ALLOW_CTFTFFASPECVOTE) {
+		}
+		else
+			trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
+	}
+
+	/*
 	if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && (ent->client->sess.sessionTeam == TEAM_SPECTATOR || (ent->client->sess.sessionTeam == TEAM_FREE && level.gametype >= GT_TEAM))) {
-		if (level.gametype >= GT_TEAM || !g_fixVote.integer) {
+		if (level.gametype >= GT_TEAM || !g_tweakVote.integer) {
 			trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "NOSPECVOTE" ) ) );
 			return;
 		}
 	}
+	*/
 
-	if (g_fixVote.integer) {
+	if (g_tweakVote.integer & TV_FLOODPROTECTBYIP) {
 		char ourIP[NET_ADDRSTRMAXLEN] = {0};
 		char *p = NULL;
 		int j;
@@ -3036,7 +3048,7 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (g_fixVote.integer && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
+	if ((g_tweakVote.integer & TV_MAPCHANGELOCKOUT) && !Q_stricmp(arg1, "map") && (level.gametype == GT_FFA) && (level.startTime > (level.time - 1000*60*10))) { //Dont let a map vote be called within 10 mins of map load if we are in ffa
 		char timeStr[32];
 		TimeToString( (1000*60*10 - (level.time - level.startTime)) , timeStr, sizeof(timeStr), qtrue);
 		trap->SendServerCommand( ent-g_entities, va( "print \"The server just changed to this map, please wait %s before calling a map vote.\n\"", timeStr) );
@@ -3109,7 +3121,7 @@ validVote:
 
 	level.votingGametype = qfalse;
 
-	if (g_fixVote.integer) {
+	if (g_tweakVote.integer & TV_MAPCHANGEVOTEDELAY) {
 		if (!Q_stricmp(arg1, "map"))
 			level.voteExecuteDelay = vote->voteDelay ? g_voteDelay.integer : 0;
 		else 
@@ -3120,7 +3132,7 @@ validVote:
 
 	// there is still a vote to be executed, execute it and store the new vote
 	if (level.voteExecuteTime ) { //bad idea
-		if (g_fixVote.integer) {
+		if (g_tweakVote.integer) { //wait what is this..
 			trap->SendServerCommand( ent-g_entities, "print \"You are not allowed to call a new vote at this time.\n\"" );//print to wait X more minutes..seconds?
 			return;
 		}
@@ -3190,13 +3202,13 @@ void Cmd_Vote_f( gentity_t *ent ) {
 	}
 	if (level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL)
 	{
-		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR && !g_fixVote.integer) {
+		if ( ent->client->sess.sessionTeam == TEAM_SPECTATOR && !(g_tweakVote.integer & TV_ALLOW_SPECVOTE)) {
 			trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOTEASSPEC")) );
 			return;
 		}
 	}
 
-	if (g_fixVote.integer) { //Dont let ppl with same IP have more than 1 vote
+	if (g_tweakVote.integer & TV_FLOODPROTECTBYIP) { //Dont let ppl with same IP have more than 1 vote
 		char ourIP[NET_ADDRSTRMAXLEN] = {0};
 		char *n = NULL;
 		gclient_t	*cl;
@@ -3242,7 +3254,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		ent->client->pers.vote = 1;
 		trap->SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
 
-		if (g_fixVote.integer > 1)
+		if (g_tweakVote.integer & TV_SHOW_VOTES)
 			trap->SendServerCommand( -1, va("print \"%s^7 voted yes.\n\"", ent->client->pers.netname) );
 		else
 			trap->SendServerCommand( ent-g_entities, va("print \"%s (Yes)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
@@ -3251,7 +3263,7 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		level.voteNo++;
 		ent->client->pers.vote = 2;
 		trap->SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
-		if (g_fixVote.integer > 1)
+		if (g_tweakVote.integer & TV_SHOW_VOTES)
 			trap->SendServerCommand( -1, va("print \"%s^7 voted no.\n\"", ent->client->pers.netname) );
 		else
 			trap->SendServerCommand( ent-g_entities, va("print \"%s (No)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );

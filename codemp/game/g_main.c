@@ -1136,7 +1136,7 @@ void CalculateRanks( void ) {
 			level.sortedClients[level.numConnectedClients] = i;
 			level.numConnectedClients++;
 
-			if (g_fixVote.integer) {
+			if (g_tweakVote.integer & TV_ONLY_COUNT_VOTERS) {
 				if ( level.clients[i].pers.connected == CON_CONNECTED ) {
 					if ( !(g_entities[i].r.svFlags & SVF_BOT) ) {
 						level.numRealVotingClients++;
@@ -2865,7 +2865,7 @@ void CheckVote( void ) {
 
 		if (level.votingGametype)
 		{
-			if (!g_fixVote.integer && level.gametype != level.votingGametypeTo)
+			if (!(g_tweakVote.integer & TV_FIX_GAMETYPEMAP) && level.gametype != level.votingGametypeTo)
 			{ //If we're voting to a different game type, be sure to refresh all the map stuff
 				//const char *nextMap = G_RefreshNextMap(level.votingGametypeTo, qtrue);
 				const char *nextMap = G_GetDefaultMap(level.votingGametypeTo);
@@ -2922,7 +2922,7 @@ void CheckVote( void ) {
 		return;
 	}
 	if ( level.time-level.voteTime >= VOTE_TIME || ((level.voteYes + level.voteNo == 0) && Q_stricmp(level.voteString, "")) ) { //Vote has expired.., or vote caller disconnected b4 any1 could vote? dunno
-		if (g_fixVote.integer) {
+		if (g_tweakVote.integer & TV_ONLY_COUNT_VOTERS) {
 			if (level.voteYes > level.voteNo) { //If we have majority of votes.. pass it, else fail
 				VotePassed();
 			}
@@ -2932,12 +2932,12 @@ void CheckVote( void ) {
 				SetFailedCallVoteIP(level.callVoteIP);
 			}
 		}
-		else //Fail if it expires and not fixvote
+		else //Fail if it expires and not g_tweakVote
 			trap->SendServerCommand( -1, va("print \"%s (%s^7)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 	}
 	else {
 		int numClients = level.numVotingClients;
-		if (g_fixVote.integer) {
+		if (g_tweakVote.integer & TV_ONLY_COUNT_VOTERS) {
 			numClients = level.numRealVotingClients;
 		}
 
