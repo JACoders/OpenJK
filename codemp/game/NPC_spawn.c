@@ -43,7 +43,7 @@ extern void NPC_GalakMech_Init( gentity_t *ent );
 extern void NPC_Protocol_Precache( void );
 extern void Boba_Precache( void );
 extern void NPC_Wampa_Precache( void );
-gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle, qboolean altDimension );
+gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
 
 extern void Rancor_SetBolts( gentity_t *self );
 extern void Wampa_SetBolts( gentity_t *self );
@@ -1224,7 +1224,7 @@ void NPC_Begin (gentity_t *ent)
 						droidNPCType = "r5d2";
 					}
 				}
-				droidEnt = NPC_SpawnType( ent, droidNPCType, NULL, qfalse, qfalse );
+				droidEnt = NPC_SpawnType( ent, droidNPCType, NULL, qfalse );
 				if ( droidEnt != NULL )
 				{
 					if ( droidEnt->client )
@@ -3849,7 +3849,7 @@ void SP_NPC_Droid_Protocol( gentity_t *self)
 NPC_Spawn_f
 */
 
-gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle, qboolean altDimension ) 
+gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle ) 
 {
 	gentity_t		*NPCspawner = G_Spawn(qtrue);
 	vec3_t			forward, end;
@@ -3996,10 +3996,6 @@ gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboo
 	}
 
 	ourVehicle = (NPC_Spawn_Do( NPCspawner ));
-	if (altDimension) {
-		ourVehicle->client->raceSwoop = qtrue;
-		ourVehicle->s.bolt1 = 2;
-	}
 
 	return ourVehicle;
 }
@@ -4035,7 +4031,7 @@ void NPC_Spawn_f( gentity_t *ent )
 	if (Q_stricmp("saber_droid_training", npc_type) == 0) 
 		return;
 
-	NPC_SpawnType( ent, npc_type, targetname, isVehicle, qfalse );
+	NPC_SpawnType( ent, npc_type, targetname, isVehicle );
 }
 
 /*

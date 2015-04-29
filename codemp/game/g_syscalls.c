@@ -121,7 +121,7 @@ This abuses ownerNum to allow nonsolid duels
 (used by trace functions)
 ============================================
 */
-static void BeginHack(int entityNum)
+static QINLINE void BeginHack(int entityNum)
 {
 
 	//If we are dueling, this makes everything thats not us, or them nonsolid... But it should also not make their saber nonsolid? rite? ahhh
@@ -139,7 +139,7 @@ static void BeginHack(int entityNum)
 			}
 		}
 	} 
-	else if ((0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) || (g_entities[entityNum].client && g_entities[entityNum].client->raceSwoop)) {
+	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
 			if (i != entityNum) {
@@ -172,7 +172,7 @@ static void BeginHack(int entityNum)
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse && ent->client &&
-					(ent->client->ps.duelInProgress || ent->client->sess.raceMode || ent->client->raceSwoop)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
+					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
 					saved[i] = ent->r.ownerNum;
 					ent->r.ownerNum = entityNum;
 				}
@@ -187,7 +187,7 @@ EndHack
 This cleans up the damage BeginHack caused
 ==========================================
 */
-static void EndHack(int entityNum) {
+static QINLINE void EndHack(int entityNum) { //Should be inline?
 	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
@@ -199,7 +199,7 @@ static void EndHack(int entityNum) {
 			}
 		}
 	}
-	else if ((0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) || (g_entities[entityNum].client && g_entities[entityNum].client->raceSwoop)) {
+	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
@@ -230,7 +230,7 @@ static void EndHack(int entityNum) {
 			if (i != entityNum) {
 				gentity_t *ent = &g_entities[i];
 				if (ent->inuse && ent->client &&
-					(ent->client->ps.duelInProgress || ent->client->sess.raceMode || ent->client->raceSwoop)) {
+					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) {
 					ent->r.ownerNum = saved[i];
 				}
 			}

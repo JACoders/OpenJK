@@ -1094,7 +1094,6 @@ struct gclient_s {
 	gentity_t	*formationGoal;
 	int			nextFormGoal;
 	class_t		NPC_class;
-	qboolean	raceSwoop;
 
 	vec3_t		pushVec;
 	int			pushVecTime;

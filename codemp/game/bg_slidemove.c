@@ -63,12 +63,6 @@ void PM_VehicleImpact(bgEntity_t *pEnt, trace_t *trace)
 		return;
 	}
 
-	if (g_raceMode.integer) {
-		gentity_t *ourvehicle = (gentity_t *)pEnt;
-		if (ourvehicle->client && ourvehicle->client->raceSwoop)
-			return;
-	}
-
 	if ( pSelfVeh//I have a vehicle struct
 		&& pSelfVeh->m_iRemovedSurfaces )//vehicle has bits removed
 	{//spiralling to our deaths, explode on any solid impact
@@ -723,7 +717,8 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 			if (pEnt && pEnt->s.eType == ET_NPC && pEnt->s.NPC_class == CLASS_VEHICLE &&
 				pEnt->m_pVehicle)
 			{ //do vehicle impact stuff then
-				PM_VehicleImpact(pEnt, &trace);
+				if (!pEnt->playerState->stats[STAT_RACEMODE])
+					PM_VehicleImpact(pEnt, &trace);
 			}
 		}
 #ifdef _GAME

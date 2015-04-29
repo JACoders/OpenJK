@@ -4715,8 +4715,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		return;
 	if (targ && targ->client && targ->client->sess.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT && mod != MOD_CRUSH && mod != MOD_LAVA && (damage != Q3_INFINITE)) //Fixme, change this to get rid of dmg from doors/eles.. but only if they get made completely nonsolid first
 		return;
-	if (targ && targ->client && targ->client->raceSwoop)
-		return;
 
 	if ( targ->client )
 	{//don't take damage when in a walker, or fighter

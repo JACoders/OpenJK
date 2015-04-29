@@ -5329,7 +5329,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 	{
 		//if (&g_entities[ent->m_pVehicle->m_pPilot->s.number].client && &g_entities[ent->m_pVehicle->m_pPilot->s.number].client->sess.raceMode) //what a mess
 			//return;
-		if (ent->client && ent->client->raceSwoop)
+		if (ent->client && ent->client->sess.raceMode)
 			return;
 		FireVehicleWeapon( ent, altFire );
 		return;

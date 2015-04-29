@@ -2938,11 +2938,11 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)//Japro racemode, uhh, cant think of any case where racemode should be turned off since its off by default and this is their first time in server?
 		client->sess.raceMode = qtrue;
-	if (g_raceMode.integer && (level.gametype == GT_TEAM || level.gametype == GT_CTF) && client->sess.sessionTeam == TEAM_FREE)
+	else if (g_raceMode.integer && (level.gametype == GT_TEAM || level.gametype == GT_CTF) && client->sess.sessionTeam == TEAM_FREE)
 		client->sess.raceMode = qtrue;
 	if (client->sess.sessionTeam != TEAM_FREE && client->sess.sessionTeam != TEAM_SPECTATOR)
 		client->sess.raceMode = qfalse;
-	if (!g_raceMode.integer) 
+	else if (!g_raceMode.integer) 
 		client->sess.raceMode = qfalse;
 
 	if (client->sess.raceMode) 
@@ -3741,11 +3741,11 @@ void ClientSpawn(gentity_t *ent) {
 
 	if (g_raceMode.integer == 1 && level.gametype == GT_FFA)
 		client->sess.raceMode = qtrue;
-	if (g_raceMode.integer && (level.gametype == GT_TEAM || level.gametype == GT_CTF) && client->sess.sessionTeam == TEAM_FREE)
+	else if (g_raceMode.integer && (level.gametype == GT_TEAM || level.gametype == GT_CTF) && client->sess.sessionTeam == TEAM_FREE)
 		client->sess.raceMode = qtrue;
 	if (client->sess.sessionTeam != TEAM_FREE && client->sess.sessionTeam != TEAM_SPECTATOR)
 		client->sess.raceMode = qfalse;
-	if (!g_raceMode.integer) 
+	else if (!g_raceMode.integer) 
 		client->sess.raceMode = qfalse;
 
 	if (client->sess.raceMode) 

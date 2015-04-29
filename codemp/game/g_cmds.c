@@ -6314,13 +6314,17 @@ static void Cmd_AmRun_f(gentity_t *ent)
 	//If emote is allowed, print toggle msg?
 }
 
-extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle, qboolean altDimension );
+extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
 static void SpawnRaceSwoop(gentity_t *ent)
 {
 	gentity_t *target;
-	target = NPC_SpawnType(ent, "swoop_mp2", "", qtrue, qtrue);
+	target = NPC_SpawnType(ent, "swoop_mp2", "", qtrue);
 
 	ent->client->ourSwoopNum = target->s.number;
+	if (target->client) {
+		target->client->sess.raceMode = qtrue;
+		target->client->ps.stats[STAT_RACEMODE] = qtrue;
+	}
 }
 
 int RaceNameToInteger(char *style);
