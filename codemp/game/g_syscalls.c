@@ -123,58 +123,50 @@ This abuses ownerNum to allow nonsolid duels
 */
 static QINLINE void BeginHack(int entityNum)
 {
-
-	//If we are dueling, this makes everything thats not us, or them nonsolid... But it should also not make their saber nonsolid? rite? ahhh
-
 	// since we are in a duel, make everyone else nonsolid
 	if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].ps.duelInProgress) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
 			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
-				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC) || ((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap")))) {
-					saved[i] = ent->r.ownerNum;
-					ent->r.ownerNum = entityNum;
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER || g_entities[i].s.eType == ET_NPC) ||
+					((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap"))))) {
+					saved[i] = g_entities[i].r.ownerNum;
+					g_entities[i].r.ownerNum = entityNum;
 				}
 			}
 		}
 	} 
-	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
+	else if (g_entities[entityNum].client && g_entities[entityNum].client->sess.raceMode) { //Have to check all entities because swoops can be racemode too :/
 		int i;
 		for (i = 0; i < level.num_entities; i++) { ////This is numentities not max_clients because of NPCS
 			if (i != entityNum) {
-				gentity_t *ent = &g_entities[i];
-
-				if (ent->inuse &&
-					(ent->s.eType == ET_PLAYER) ||
-					(ent->s.eType == ET_NPC) ||
-					(ent->s.eType == ET_MOVER && ((!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))) ||
-					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap"))))
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER) ||
+					(g_entities[i].s.eType == ET_NPC) ||
+					(g_entities[i].s.eType == ET_MOVER && ((!Q_stricmp(g_entities[i].classname, "func_door") || !Q_stricmp(g_entities[i].classname, "func_plat")))) ||
+					(g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap")))))
 				{
-					saved[i] = ent->r.ownerNum;
-					ent->r.ownerNum = entityNum;
+					saved[i] = g_entities[i].r.ownerNum;
+					g_entities[i].r.ownerNum = entityNum;
 				}
 			}
 		}
 	}
 	else { // we are not dueling but make those that are nonsolid
 		int i;
-
-		gentity_t *saber = &g_entities[entityNum];
-		if (saber->inuse) {
-			gentity_t *thrower = &g_entities[saber->r.ownerNum];
-			if (thrower->client && thrower->client->ps.duelInProgress) { //&& dueltypes[thrower->client->ps.clientNum] != 0. nvm.. this dosnt happen in nf battles
+		if (g_entities[entityNum].inuse) {//Saber
+			const int saberOwner = g_entities[entityNum].r.ownerNum;//Saberowner
+			if (g_entities[saberOwner].client && g_entities[saberOwner].client->ps.duelInProgress) {
 				return;
 			}
 		}
-
 		for (i = 0; i < level.num_entities; i++) { //loda fixme? This should go through all entities... to also account for people lightsabers..? or is that too costly
 			if (i != entityNum) {
-				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && ent->client &&
-					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
-					saved[i] = ent->r.ownerNum;
-					ent->r.ownerNum = entityNum;
+				if (g_entities[i].inuse && g_entities[i].client &&
+					(g_entities[i].client->ps.duelInProgress || g_entities[i].client->sess.raceMode)) { //loda fixme? Or the ent is a saber, and its owner is in racemode or duel in progress
+					saved[i] = g_entities[i].r.ownerNum;
+					g_entities[i].r.ownerNum = entityNum;
 				}
 			}
 		}
@@ -192,46 +184,42 @@ static QINLINE void EndHack(int entityNum) { //Should be inline?
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum && i != level.clients[entityNum].ps.duelIndex) {
-				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && (ent->s.eType == ET_PLAYER || ent->s.eType == ET_NPC) || ((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap")))) {
-					ent->r.ownerNum = saved[i];
+				if (g_entities[i].inuse && 
+					((g_entities[i].s.eType == ET_PLAYER || g_entities[i].s.eType == ET_NPC) || 
+					((dueltypes[level.clients[entityNum].ps.clientNum] <= 1) && g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap"))))) {
+					g_entities[i].r.ownerNum = saved[i];
 				}
 			}
 		}
 	}
-	else if (0 <= entityNum && entityNum < MAX_CLIENTS && level.clients[entityNum].sess.raceMode) {
+	else if (g_entities[entityNum].client && g_entities[entityNum].client->sess.raceMode) {
 		int i;
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
-				gentity_t *ent = &g_entities[i];
-				if (ent->inuse &&
-					(ent->s.eType == ET_PLAYER) ||
-					(ent->s.eType == ET_NPC) ||
-					(ent->s.eType == ET_MOVER && ((!Q_stricmp(ent->classname, "func_door") || !Q_stricmp(ent->classname, "func_plat")))) ||
-					(ent->s.eType == ET_GENERAL && (!Q_stricmp(ent->classname, "laserTrap"))))
+				if (g_entities[i].inuse &&
+					((g_entities[i].s.eType == ET_PLAYER) ||
+					(g_entities[i].s.eType == ET_NPC) ||
+					(g_entities[i].s.eType == ET_MOVER && ((!Q_stricmp(g_entities[i].classname, "func_door") || !Q_stricmp(g_entities[i].classname, "func_plat")))) ||
+					(g_entities[i].s.eType == ET_GENERAL && (!Q_stricmp(g_entities[i].classname, "laserTrap")))))
 				{
-					ent->r.ownerNum = saved[i];
+					g_entities[i].r.ownerNum = saved[i];
 				}
 			}
 		}
 	}
 	else {
 		int i;
-
-		gentity_t *saber = &g_entities[entityNum];
-		if (saber->inuse) {
-			gentity_t *thrower = &g_entities[saber->r.ownerNum];
-			if (thrower->client && thrower->client->ps.duelInProgress) {
+		if (g_entities[entityNum].inuse) {//Saber
+			const int saberOwner = g_entities[entityNum].r.ownerNum;//Saberowner
+			if (g_entities[saberOwner].client && g_entities[saberOwner].client->ps.duelInProgress) {
 				return;
 			}
 		}
-
 		for (i = 0; i < level.num_entities; i++) {
 			if (i != entityNum) {
-				gentity_t *ent = &g_entities[i];
-				if (ent->inuse && ent->client &&
-					(ent->client->ps.duelInProgress || ent->client->sess.raceMode)) {
-					ent->r.ownerNum = saved[i];
+				if (g_entities[i].inuse && g_entities[i].client &&
+					(g_entities[i].client->ps.duelInProgress || g_entities[i].client->sess.raceMode)) {
+					g_entities[i].r.ownerNum = saved[i];
 				}
 			}
 		}
