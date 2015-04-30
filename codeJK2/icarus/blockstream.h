@@ -32,6 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #ifdef _MSC_VER
 	#pragma warning (push, 3)	//go back down to 3 for the stl include
