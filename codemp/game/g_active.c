@@ -3055,6 +3055,10 @@ void ClientThink_real( gentity_t *ent ) {
 	else if (ent && ent->client && ent->client->sess.raceMode) {
 		ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_DISRUPTOR);
 		ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+		if (ent->client->sess.movementStyle == MV_JETPACK) //always give jetpack style a jetpack, and non jetpack styles no jetpack, maybe this should just be in clientspawn ?
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+		else
+			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); 
 	}
 
 

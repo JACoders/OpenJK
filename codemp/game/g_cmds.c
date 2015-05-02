@@ -648,6 +648,7 @@ void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
 void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 {
 	qboolean wasReset = qfalse;;
+
 	if (!ent->client)
 		return;
 	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag)
@@ -664,6 +665,8 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 	ent->client->pers.stats.displacementFlagSamples = 0;
 	ent->client->ps.stats[STAT_JUMPTIME] = 0;
 	ent->client->ps.fd.forcePower = 100; //Reset their force back to full i guess!
+
+	ent->client->pers.stats.lastResetTime = level.time; //well im just not sure
 
 	if (ent->client->sess.raceMode) {
 		VectorClear(ent->client->ps.velocity); //lel
