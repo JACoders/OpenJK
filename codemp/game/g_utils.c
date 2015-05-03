@@ -1731,7 +1731,8 @@ void TryUse( gentity_t *ent )
 		return;
 	}
 	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1) &&
-			 target && Q_stricmp(target->classname, "sentryGun") == 0 && ent->client->pers.bounty_hunter_sentries < MAX_BOUNTY_HUNTER_SENTRIES)
+			target && Q_stricmp(target->classname, "sentryGun") == 0 && target->parent && target->parent == ent &&
+			 ent->client->pers.bounty_hunter_sentries < MAX_BOUNTY_HUNTER_SENTRIES)
 	{ // zyk: Bounty Hunter Upgrade allows recovering sentry guns
 		ent->client->pers.bounty_hunter_sentries++;
 		ent->client->pers.bounty_hunter_placed_sentries--;
