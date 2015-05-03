@@ -1741,6 +1741,14 @@ void TryUse( gentity_t *ent )
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/weapons/w_pkup.wav"));
 		return;
 	}
+	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1) &&
+			target && target->s.eType == ET_SPECIAL && target->s.modelindex == HI_SHIELD && target->parent && target->parent == ent)
+	{ // zyk: Bounty Hunter Upgrade allows recovering force fields
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SHIELD);
+		G_FreeEntity(target);
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/weapons/w_pkup.wav"));
+		return;
+	}
 	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.can_play_quest == 1)
 	{
 		if (target && target->client && target->NPC && ent->client->pers.universe_quest_progress == 13)

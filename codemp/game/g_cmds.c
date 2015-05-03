@@ -9152,7 +9152,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 29)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 20 seconds more, has fast shooting rate and more damage. Sentry Gun has more damage. Allows placing more sentry guns and recovering them by pressing Use key on each one. Allows buying and selling from seller remotely, so no need to call him. Gives the Thermal Vision, used with Binoculars. Gives the Radar Upgrade (requires Zyk OpenJK Client installed)\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Bounty Hunter Upgrade: ^7increases Bounty Hunter health resistance to damage by 5 per cent and shield resistance by 5 per cent. Seeker Drone lasts 20 seconds more, has fast shooting rate and more damage. Sentry Gun has more damage. Allows placing more sentry guns and recovering them by pressing Use key on each one. Allows recovering force fields by pressing Use key on them. Allows buying and selling from seller remotely, so no need to call him. Gives the Thermal Vision, used with Binoculars. Gives the Radar Upgrade (requires Zyk OpenJK Client installed)\n\n\"");
 		}
 		else if (i == 30)
 		{
