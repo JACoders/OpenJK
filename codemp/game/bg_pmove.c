@@ -179,7 +179,6 @@ float forceJumpStrength[NUM_FORCE_POWER_LEVELS] =
 static int GetFlipkick(playerState_t *ps) {
 	//if (!ps) //?
 		//return;
-
 	#if _GAME
 		if (ps->duelInProgress) {
 			if (dueltypes[ps->clientNum] == 0) { //NF.. man this sucks.. fucks up JA+ nf duels
@@ -12469,16 +12468,10 @@ void PmoveSingle (pmove_t *pmove) {
 
 
 				if (!GetFlipkick(pm->ps))
-/*
-#ifdef _GAME
-				if (!g_flipKick.integer)
-#else
-				if (!(cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK))
-#endif
-*/
 				{ //try forcing velocity up and also force him to jump
 					pm->ps->velocity[2] = 270; //seems reasonable
-					pm->cmd.upmove = 127;
+					if (pm->ps->clientNum < MAX_CLIENTS) //Fixes a crash that happens when npcs bounce on other npcs heads with g_flipkick 0 ...?
+						pm->cmd.upmove = 127; //Probably this is why it was crashing, trying to send this on an npc...?
 				}
 		}
 #ifdef _GAME

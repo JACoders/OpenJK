@@ -635,11 +635,9 @@ void Cmd_Notarget_f( gentity_t *ent ) {
 
 void QINLINE DeletePlayerProjectiles(gentity_t *ent) {
 	int i;
-	gentity_t *hit;
 	for (i=MAX_CLIENTS; i<MAX_GENTITIES; i++) { //can be optimized more?
-		hit = &g_entities[i];
-		if (hit->inuse && hit->s.eType == ET_MISSILE && (hit->r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
-			G_FreeEntity(hit);
+		if (g_entities[i].inuse && g_entities[i].s.eType == ET_MISSILE && (g_entities[i].r.ownerNum == ent->s.number)) { //Delete (rocket) if its ours
+			G_FreeEntity(&g_entities[i]);
 			//trap->Print("This only sometimes prints.. even if we have a missile in the air.  (its num: %i, our num: %i, weap type: %i) \n", hit->r.ownerNum, ent->s.number, hit->s.weapon);
 		}
 	}
