@@ -872,6 +872,11 @@ void PM_HoverTrace( void )
 	{
 		int traceContents;
 		float minNormal = pVeh->m_pVehicleInfo->maxSlope;
+		float realMinNormal = 0.5f;
+
+		if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, let it climb steeper things because this is annoying. RACESWOOP
+			realMinNormal = 0.65f;
+		}
 
 		point[0] = pm->ps->origin[0];
 		point[1] = pm->ps->origin[1];
@@ -888,8 +893,8 @@ void PM_HoverTrace( void )
 			traceContents |= (CONTENTS_WATER|CONTENTS_SLIME|CONTENTS_LAVA);
 		}
 		pm->trace( trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, traceContents );
-		if (trace->plane.normal[0] > 0.5f || trace->plane.normal[0] < -0.5f ||
-			trace->plane.normal[1] > 0.5f || trace->plane.normal[1] < -0.5f)
+		if (trace->plane.normal[0] > realMinNormal || trace->plane.normal[0] < -realMinNormal ||
+			trace->plane.normal[1] > realMinNormal || trace->plane.normal[1] < -realMinNormal)
 		{ //steep slanted hill, don't go up it.
 			float d = fabs(trace->plane.normal[0]);
 			float e = fabs(trace->plane.normal[1]);
