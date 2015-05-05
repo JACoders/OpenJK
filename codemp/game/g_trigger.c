@@ -1300,15 +1300,15 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
+	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
+		return;
+	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
+		return;
 	if (player->s.eType == ET_NPC)
 		return;
 	if (player->client->ps.pm_type != PM_NORMAL && player->client->ps.pm_type != PM_FLOAT && player->client->ps.pm_type != PM_FREEZE && player->client->ps.pm_type != PM_JETPACK)
 		return;
-	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
-		return;
 	if (player->client->sess.raceMode && player->client->sess.movementStyle == MV_SWOOP && !player->client->ps.m_iVehicleNum) //Dont start the timer for swoop racers if they dont have a swoop
-		return;
-	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
 		return;
 
 	if (player->client->pers.recordingDemo && player->client->pers.keepDemo) {
@@ -1336,7 +1336,13 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->lastStartTime = level.time;
 	player->client->pers.keepDemo = qfalse;
 
-	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts?
+	if (player->client->ps.m_iVehicleNum) { //We are in a vehicle, so use the trigger on that instead maybe? or both..
+		gentity_t *ourVeh = &g_entities[player->client->ps.m_iVehicleNum];	
+		if (ourVeh->inuse && ourVeh->client) //just to be safe
+			multi_trigger(trigger, ourVeh);
+	}
+
+	multi_trigger(trigger, player); //Let it have a target, so it can point to restricts.  Move this up here, so swoops can activate it for proper swoop teleporting?
 
 	if (trigger->noise_index) 
 		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?

@@ -881,8 +881,10 @@ void PM_HoverTrace( void )
 #endif
 
 		if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, let it climb steeper things because this is annoying. RACESWOOP
-			minNormal = 0.5f; //Max slope steepness before it stops hovoring you up
-			realMinNormal = 0.7f; //Max slope steepness before you are unable to climb it at all
+			minNormal = 0.5f; //Max slope steepness before it stops hovoring you up - used to be 0.65
+			realMinNormal = 0.7f; //Max slope steepness before you are unable to climb it at all - used to be 0.5
+			//Before, any slope that you could climb up, you could also hovor boost up..?
+			//now you can only hovor boost up slopes that you could already climb before? and you can now climb steeper slopes than before?
 		}
 
 		point[0] = pm->ps->origin[0];
@@ -4957,8 +4959,8 @@ static void PM_GroundTrace( void ) {
 		if (pEnt && pEnt->s.NPC_class == CLASS_VEHICLE)
 		{
 			minNormal = pEnt->m_pVehicle->m_pVehicleInfo->maxSlope;
-			if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, let it climb steeper things because this is annoying. RACESWOOP
-				minNormal = 0.5f; //Max slope steepness before it stops hovoring you up
+			if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, RACESWOOP
+				minNormal = 0.5f; //Max slope steepness before it stops hovoring you up, used to be 0.65
 			}
 		}
 	}
