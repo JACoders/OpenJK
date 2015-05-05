@@ -873,9 +873,16 @@ void PM_HoverTrace( void )
 		int traceContents;
 		float minNormal = pVeh->m_pVehicleInfo->maxSlope;
 		float realMinNormal = 0.5f;
+		int curTime;
+#ifdef _GAME
+		curTime = level.time;
+#else
+		curTime = pm->cmd.serverTime;
+#endif
 
 		if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, let it climb steeper things because this is annoying. RACESWOOP
-			realMinNormal = 0.65f;
+			minNormal = 0.5f; //Max slope steepness before it stops hovoring you up
+			realMinNormal = 0.7f; //Max slope steepness before you are unable to climb it at all
 		}
 
 		point[0] = pm->ps->origin[0];
@@ -893,8 +900,8 @@ void PM_HoverTrace( void )
 			traceContents |= (CONTENTS_WATER|CONTENTS_SLIME|CONTENTS_LAVA);
 		}
 		pm->trace( trace, pm->ps->origin, pm->mins, pm->maxs, point, pm->ps->clientNum, traceContents );
-		if (trace->plane.normal[0] > realMinNormal || trace->plane.normal[0] < -realMinNormal ||
-			trace->plane.normal[1] > realMinNormal || trace->plane.normal[1] < -realMinNormal)
+		if ((trace->plane.normal[0] > realMinNormal || trace->plane.normal[0] < -realMinNormal ||
+			trace->plane.normal[1] > realMinNormal || trace->plane.normal[1] < -realMinNormal) && (!pVeh->m_iGravTime || curTime >= pVeh->m_iGravTime))
 		{ //steep slanted hill, don't go up it.
 			float d = fabs(trace->plane.normal[0]);
 			float e = fabs(trace->plane.normal[1]);
@@ -4950,6 +4957,9 @@ static void PM_GroundTrace( void ) {
 		if (pEnt && pEnt->s.NPC_class == CLASS_VEHICLE)
 		{
 			minNormal = pEnt->m_pVehicle->m_pVehicleInfo->maxSlope;
+			if (pm->ps->stats[STAT_RACEMODE]) {//Its a vehicle in racemode, let it climb steeper things because this is annoying. RACESWOOP
+				minNormal = 0.5f; //Max slope steepness before it stops hovoring you up
+			}
 		}
 	}
 
