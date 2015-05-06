@@ -1839,8 +1839,6 @@ extern int AITime;
 void NPC_Think ( gentity_t *self)//, int msec )
 {
 	vec3_t	oldMoveDir;
-	int i = 0;
-	gentity_t *player;
 
 	self->nextthink = level.time + FRAMETIME;
 
@@ -1883,31 +1881,6 @@ void NPC_Think ( gentity_t *self)//, int msec )
 	}
 
 	self->nextthink = level.time + FRAMETIME/2;
-
-
-	while (i < MAX_CLIENTS)
-	{
-		player = &g_entities[i];
-
-		if (player->inuse && player->client && player->client->sess.sessionTeam != TEAM_SPECTATOR &&
-			!(player->client->ps.pm_flags & PMF_FOLLOW))
-		{
-			//if ( player->client->ps.viewEntity == self->s.number )
-			if (0) //rwwFIXMEFIXME: Allow controlling ents
-			{//being controlled by player
-				G_DroidSounds( self );
-				//FIXME: might want to at least make sounds or something?
-				//NPC_UpdateAngles(qtrue, qtrue);
-				//Which ucmd should we send?  Does it matter, since it gets overridden anyway?
-				NPCS.NPCInfo->last_ucmd.serverTime = level.time - 50;
-				ClientThink( NPCS.NPC->s.number, &NPCS.ucmd );
-				//VectorCopy(self->s.origin, self->s.origin2 );
-				VectorCopy(self->r.currentOrigin, self->client->ps.origin);
-				return;
-			}
-		}
-		i++;
-	}
 
 	if ( self->client->NPC_class == CLASS_VEHICLE)
 	{
