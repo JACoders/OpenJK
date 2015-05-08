@@ -314,6 +314,18 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		parentPS->speed *= (pVeh->m_fTimeModifier/60.0f);
 	}
 
+	/*
+	{
+		const float xyspeed = sqrt(parentPS->velocity[0] * parentPS->velocity[0] + parentPS->velocity[1] * parentPS->velocity[1]);
+		if (xyspeed < 700) {
+			parentPS->speed = 700;
+			pVeh->m_pVehicleInfo->acceleration = 50;
+		}
+		else
+			pVeh->m_pVehicleInfo->acceleration = 5;
+	}
+	*/
+
 
 	/********************************************************************************/
 	/*	END Here is where we move the vehicle (forward or back or whatever). END	*/

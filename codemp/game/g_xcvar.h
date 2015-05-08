@@ -157,7 +157,7 @@ XCVAR_DEF( sv_maxRate,					"7000",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					
 XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
-XCVAR_DEF( sv_autoDemo,					"0",			NULL,				CVAR_NONE,										qfalse )
+XCVAR_DEF( sv_autoRaceDemo,				"0",			NULL,				CVAR_NONE,										qfalse )
 
 //JAPRO CTF
 XCVAR_DEF( g_flagDrag,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -311,7 +311,7 @@ XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfal
 
 //XCVAR_DEF( cl_yawspeed,				"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
 //XCVAR_DEF( cl_allowDownload,			"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
-XCVAR_DEF( r_primitives,				"0",			NULL,				CVAR_SYSTEMINFO,									qtrue )
+//XCVAR_DEF( r_primitives,				"0",			NULL,				CVAR_SYSTEMINFO,								qtrue ) //not needed anymore, RIP jaiko
 
 XCVAR_DEF( g_fixFlipKick,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

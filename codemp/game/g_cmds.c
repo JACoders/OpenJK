@@ -6325,6 +6325,11 @@ static void SpawnRaceSwoop(gentity_t *ent)
 	if (target->client) {
 		target->client->sess.raceMode = qtrue;
 		target->client->ps.stats[STAT_RACEMODE] = qtrue;
+		/*
+		target->m_pVehicle->m_pVehicleInfo->acceleration = 25;
+		target->m_pVehicle->m_pVehicleInfo->speedMax = 1400;
+		target->m_pVehicle->m_pVehicleInfo->turboSpeed = 2000;
+		*/
 	}
 }
 

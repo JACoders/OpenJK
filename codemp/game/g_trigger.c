@@ -1319,7 +1319,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		player->client->pers.recordingDemo = qfalse;
 	}
 
-	if ((sv_autoDemo.integer == 3) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && player->client->sess.raceMode && !sv_cheats.integer && player->client->pers.userName[0]) {
+	if ((sv_autoRaceDemo.integer) && !(player->client->pers.noFollow) && !(player->client->pers.practice) && player->client->sess.raceMode && !sv_cheats.integer && player->client->pers.userName[0]) {
 		if (!player->client->pers.recordingDemo) { //Start the new demo
 			player->client->pers.recordingDemo = qtrue;
 			//trap->SendServerCommand( player-g_entities, "chat \"RECORDING STARTED\"");

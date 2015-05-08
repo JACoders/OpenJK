@@ -3583,27 +3583,26 @@ static void PM_AirMove( void ) {
 		else
 		{
 			float controlMod = 1.0f;
+			vec3_t	vfwd, vrt;
+			vec3_t	vAngles;
+			float speed = pm->ps->speed;
+			float strafeSpeed = 0;
+
 			if ( pml.groundPlane )
 			{//on a slope of some kind, shouldn't have much control and should slide a lot
 				controlMod = pml.groundTrace.plane.normal[2];
 			}
 
-			vec3_t	vfwd, vrt;
-			vec3_t	vAngles;
-
 			VectorCopy( pVeh->m_vOrientation, vAngles );
 			vAngles[ROLL] = 0;//since we're a hovercraft, we really don't want to stafe up into the air if we're banking
 			AngleVectors( vAngles, vfwd, vrt, NULL );
-
-			float speed = pm->ps->speed;
-			float strafeSpeed = 0;
 
 			if ( fmove < 0 )
 			{//going backwards
 				if ( speed < 0 )
 				{//speed is negative, but since our command is reverse, make speed positive
 					speed = fabs( speed );
-					/*
+					
 					if ( pml.groundPlane )
 					{//on a slope, still have some control
 						speed = fabs( speed );
@@ -3612,7 +3611,7 @@ static void PM_AirMove( void ) {
 					{//can't reverse in air
 						speed = 0;
 					}
-					*/
+					
 				}
 				else if ( speed > 0 )
 				{//trying to move back but speed is still positive, so keep moving forward (we'll slow down eventually)
@@ -3653,7 +3652,7 @@ static void PM_AirMove( void ) {
 					{//alternate control scheme: can strafe
 						if ( smove )
 						{
-							/*
+							
 							if ( fmove > 0 )
 							{//actively accelerating
 								strafeSpeed = pm->ps->speed;
@@ -3662,7 +3661,7 @@ static void PM_AirMove( void ) {
 							{//not stepping on accelerator, only strafe based on magnitude of current forward velocity
 								strafeSpeed = fabs(DotProduct( pm->ps->velocity, vfwd ));
 							}
-							*/
+							
 							strafeSpeed = ((float)(smove))/127.0f;
 						}
 					}
