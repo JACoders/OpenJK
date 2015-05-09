@@ -627,7 +627,8 @@ void TossClientItems( gentity_t *self ) {
 	if ( level.gametype != GT_TEAM && level.gametype != GT_SIEGE ) {
 		angle = 45;
 		for ( i = 1 ; i < PW_NUM_POWERUPS ; i++ ) {
-			if ( self->client->ps.powerups[ i ] > level.time ) {
+			if ( self->client->ps.powerups[ i ] > level.time && i != PW_QUAD && i != PW_NEUTRALFLAG) 
+			{ // zyk: do not drop PW_QUAD and PW_NEUTRALFLAG
 				item = BG_FindItemForPowerup( i );
 				if ( !item ) {
 					continue;
@@ -636,8 +637,7 @@ void TossClientItems( gentity_t *self ) {
 				// zyk: RPG players cannot drop force enlightments because they are now used as the effect when using Special Powers
 				// and cannot drop neutral flag and quad because they are used by Unique Skill
 				if (item->giType == IT_POWERUP && 
-					(item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || item->giTag == PW_FORCE_ENLIGHTENED_DARK || 
-					 item->giTag == PW_NEUTRALFLAG || item->giTag == PW_QUAD) && 
+					(item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || item->giTag == PW_FORCE_ENLIGHTENED_DARK) && 
 					self->client->sess.amrpgmode == 2)
 				{
 					continue;
