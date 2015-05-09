@@ -4525,8 +4525,8 @@ void save_account(gentity_t *ent)
 	// zyk: used to prevent account save in map change time or before loading account after changing map
 	if (level.voteExecuteTime < level.time && ent->client->pers.connected == CON_CONNECTED)
 	{
-		if (ent->client->sess.amrpgmode == 2)
-		{
+		if (ent->client->sess.amrpgmode == 2 && level.rp_mode == qfalse)
+		{ // zyk: players can only save things if server is not at RP Mode
 			FILE *account_file;
 			gclient_t *client;
 			client = ent->client;
@@ -4593,12 +4593,17 @@ void save_account(gentity_t *ent)
 }
 
 // zyk: gives rpg score to the player
-void rpg_score(gentity_t *ent)
+void rpg_score(gentity_t *ent, qboolean admin_rp_mode)
 {
 	int send_message = 0; // zyk: if its 1, sends the message in player console
 	char message[128];
 
 	strcpy(message,"");
+
+	if (admin_rp_mode == qfalse && level.rp_mode == qtrue)
+	{ // zyk: in RP Mode, only admins can give levels to RPG players
+		return;
+	}
 
 	add_credits(ent, (10 + ent->client->pers.credits_modifier));
 
@@ -4671,7 +4676,7 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 			// zyk: skill counter does not give credits, only Level Up Score
 			ent->client->pers.credits_modifier = -10;
 
-			rpg_score(ent);
+			rpg_score(ent, qfalse);
 		}
 	}
 }
@@ -5745,6 +5750,9 @@ void quest_get_new_player(gentity_t *ent)
 	ent->client->pers.can_play_quest = 0;
 
 	if (zyk_allow_quests.integer != 1)
+		return;
+
+	if (level.rp_mode == qtrue)
 		return;
 
 	for (i = 0; i < level.maxclients; i++)
@@ -10988,6 +10996,12 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (level.rp_mode == qtrue)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You can't change class when RP Mode is activated by an admin.\n\"" );
+		return;
+	}
+
 	remove_credits(ent, 10);
 
 	save_config(ent);
@@ -12024,6 +12038,15 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[7],va("^3 %d ^7- ClientPrint: ^1no\n",ADM_CLIENTPRINT));
 		}
 
+		if ((ent->client->pers.bitvalue & (1 << ADM_RPMODE))) 
+		{
+			strcpy(message_content[8],va("^3 %d ^7- RP Mode: ^2yes\n",ADM_RPMODE));
+		}
+		else
+		{
+			strcpy(message_content[8],va("^3 %d ^7- RP Mode: ^1no\n",ADM_RPMODE));
+		}
+
 		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
@@ -12070,6 +12093,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_CLIENTPRINT)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/clientprint <player name or ID, or -1 to show to all players> <message> ^7to print a message in the screen\n\n\"" );
+		}
+		else if (command_number == ADM_RPMODE)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/rpmode makes all players not able to use /rpgclass and level up. Admins can give levels by using /levelgive <player name or ID>\n\n\"" );
 		}
 	}
 }
@@ -12195,6 +12222,98 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_RpMode_f
+==================
+*/
+void Cmd_RpMode_f( gentity_t *ent ) {
+	if (!(ent->client->pers.bitvalue & (1 << ADM_RPMODE)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if (level.rp_mode == qtrue)
+	{
+		int i = 0;
+		level.rp_mode = qfalse;
+
+		for (i = 0; i < MAX_CLIENTS; i++)
+		{ // zyk: logout everyone in RPG Mode so they must reload their accounts
+			gentity_t *this_player = &g_entities[i];
+
+			if (this_player && this_player->client && this_player->client->sess.amrpgmode == 2)
+				this_player->client->sess.amrpgmode = 0;
+		}
+
+		trap->SendServerCommand( ent-g_entities, "print \"^3RPG System: ^7RP Mode ^1OFF^7\n\"" );
+	}
+	else
+	{
+		level.rp_mode = qtrue;
+		trap->SendServerCommand( ent-g_entities, "print \"^3RPG System: ^7RP Mode ^2ON^7\n\"" );
+	}
+}
+
+/*
+==================
+Cmd_LevelGive_f
+==================
+*/
+void Cmd_LevelGive_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS];
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_RPMODE)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+   
+	if ( trap->Argc() != 2) 
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must specify the player name or ID.\n\"" ); 
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	client_id = zyk_get_client( arg1 );
+
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+		return;
+	}
+
+	if (level.rp_mode == qfalse)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"The server is not at RP Mode\n\"") );
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode == 2)
+	{
+		if (g_entities[client_id].client->pers.level < MAX_RPG_LEVEL)
+		{
+			g_entities[client_id].client->pers.score_modifier = g_entities[client_id].client->pers.level;
+			g_entities[client_id].client->pers.credits_modifier = -10;
+			rpg_score(&g_entities[client_id], qtrue);
+
+			trap->SendServerCommand( ent-g_entities, va("print \"Target player leveled up\n\"") );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Target player is at the max rpg level\n\"") );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"The player must be in RPG Mode\n\"") );
+	}
+}
+
+/*
+==================
 Cmd_EntitySystem_f
 ==================
 */
@@ -12277,6 +12396,7 @@ command_t commands[] = {
 	{ "kill",				Cmd_Kill_f,					CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "killother",			Cmd_KillOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
 //	{ "kylesmash",			TryGrapple,					0 },
+	{ "levelgive",			Cmd_LevelGive_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "levelshot",			Cmd_LevelShot_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "list",				Cmd_ListAccount_f,			CMD_NOINTERMISSION },
 	{ "login",				Cmd_LoginAccount_f,			CMD_NOINTERMISSION },
@@ -12292,6 +12412,7 @@ command_t commands[] = {
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "rpgclass",			Cmd_RpgClass_f,				CMD_RPG|CMD_NOINTERMISSION },
+	{ "rpmode",				Cmd_RpMode_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "score",				Cmd_Score_f,				0 },
