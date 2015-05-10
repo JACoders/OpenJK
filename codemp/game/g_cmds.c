@@ -6950,146 +6950,141 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 	}
 }
 
-/*
-==================
-Cmd_UpSkill_f
-==================
-*/
-void Cmd_UpSkill_f( gentity_t *ent ) {
-	char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be upgraded
-	int upgrade_value; // zyk: the integer value of arg1
-	qboolean is_upgraded = qfalse;
-		    
-	if ( trap->Argc() != 2) 
-	{ 
-		trap->SendServerCommand( ent-g_entities, "print \"You must specify the number of the skill to be upgraded.\n\"" ); 
-		return;
-	}
-
-	trap->Argv( 1, arg1, sizeof( arg1 ) );
-	upgrade_value = atoi(arg1);
-
+qboolean validate_upgrade_skill(gentity_t *ent, int upgrade_value)
+{
 	// zyk: validation on the upgrade level, which must be in the range of valid skills.
 	if (upgrade_value < 1 || upgrade_value > NUMBER_OF_SKILLS)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid skill number.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	// zyk: the user must have skillpoints to get a new skill level
 	if (ent->client->pers.skillpoints == 0)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You dont have enough skillpoints.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	// zyk: validation on skills that are allowed to specific RPG classes
 	if (ent->client->pers.rpg_class == 1 && ((upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 40 && upgrade_value <= 54)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Force User class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 2 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 55))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Bounty Hunter class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 3 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 39) || upgrade_value == 49 || (upgrade_value >= 52 && upgrade_value <= 55)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Armored Soldier class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 4 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 9) || upgrade_value == 11 || upgrade_value == 14 || upgrade_value == 17 || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 39 && upgrade_value <= 54)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Monk class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 5 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 21) || upgrade_value == 23 || (upgrade_value >= 26 && upgrade_value <= 27) || upgrade_value == 29 || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 40) || (upgrade_value >= 43 && upgrade_value <= 44) || (upgrade_value >= 48 && upgrade_value <= 49) || (upgrade_value >= 51 && upgrade_value <= 53) || upgrade_value == 55))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Stealth Attacker class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 6 && ((upgrade_value >= 12 && upgrade_value <= 13) || (upgrade_value >= 17 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 38 && upgrade_value <= 54)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Duelist class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 7 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 8) || (upgrade_value >= 11 && upgrade_value <= 12) || upgrade_value == 15 || upgrade_value == 17 || upgrade_value == 20 || upgrade_value == 23 || (upgrade_value >= 25 && upgrade_value <= 26) || (upgrade_value >= 28 && upgrade_value <= 29) || upgrade_value == 39 || (upgrade_value >= 45 && upgrade_value <= 46) || upgrade_value == 48 || upgrade_value == 51 || (upgrade_value >= 53 && upgrade_value <= 54)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Force Gunner class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (ent->client->pers.rpg_class == 8 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 47) || (upgrade_value >= 49 && upgrade_value <= 55)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Magic Master class doesn't allow this skill.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	// zyk: validation on skills that require certain conditions to be upgraded
 	if (upgrade_value == 20 && ent->client->pers.weapons_levels[0] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in Blaster Pistol.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 21 && ent->client->pers.weapons_levels[1] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in E11 Blaster Rifle.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 22 && ent->client->pers.weapons_levels[2] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in Disruptor.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 23 && ent->client->pers.weapons_levels[3] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in Bowcaster.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 24 && ent->client->pers.weapons_levels[4] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Repeater.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 25 && ent->client->pers.weapons_levels[5] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in DEMP2.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 26 && ent->client->pers.weapons_levels[6] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Flechette.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 27 && ent->client->pers.weapons_levels[7] == 1 && !(ent->client->pers.secrets_found & (1 << 14)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Rocket Upgrade to get 2/2 in Rocket Launcher.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 28 && ent->client->pers.weapons_levels[8] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Concussion Rifle.\n\"" );
-		return;
+		return qfalse;
 	}
 
 	if (upgrade_value == 29 && ent->client->pers.weapons_levels[9] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in Bryar Pistol.\n\"" );
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
+void do_upgrade_skill(gentity_t *ent, int upgrade_value)
+{
+	qboolean is_upgraded = qfalse;
+
+	if (validate_upgrade_skill(ent, upgrade_value) == qfalse)
+	{
 		return;
 	}
 
@@ -7109,22 +7104,33 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 
 /*
 ==================
-Cmd_DownSkill_f
+Cmd_UpSkill_f
 ==================
 */
-void Cmd_DownSkill_f( gentity_t *ent ) {
-	char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be downgraded
-	int downgrade_value; // zyk: the integer value of arg1
-
+void Cmd_UpSkill_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be upgraded
+	int upgrade_value; // zyk: the integer value of arg1
+		    
 	if ( trap->Argc() != 2) 
 	{ 
-		trap->SendServerCommand( ent-g_entities, "print \"You must specify the number of the skill to be downgraded.\n\"" ); 
+		trap->SendServerCommand( ent-g_entities, "print \"You must specify the number of the skill to be upgraded.\n\"" ); 
 		return;
 	}
 
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
-	downgrade_value = atoi(arg1);
+	upgrade_value = atoi(arg1);
 
+	if (level.rp_mode == qtrue)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You can't upgrade skill when RP Mode is activated by an admin.\n\"" );
+		return;
+	}
+
+	do_upgrade_skill(ent, upgrade_value);
+}
+
+void do_downgrade_skill(gentity_t *ent, int downgrade_value)
+{
 	// zyk: validation on the downgrade level, which must be in the range of valid skills.
 	if (downgrade_value < 1 || downgrade_value > NUMBER_OF_SKILLS)
 	{
@@ -8013,6 +8019,33 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 	trap->SendServerCommand( ent-g_entities, "print \"Skill downgraded successfully.\n\"" );
 
 	Cmd_ZykMod_f(ent);
+}
+
+/*
+==================
+Cmd_DownSkill_f
+==================
+*/
+void Cmd_DownSkill_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS]; // zyk: value the user sends as an arg which is the skill to be downgraded
+	int downgrade_value; // zyk: the integer value of arg1
+
+	if ( trap->Argc() != 2) 
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must specify the number of the skill to be downgraded.\n\"" ); 
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	downgrade_value = atoi(arg1);
+
+	if (level.rp_mode == qtrue)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You can't downgrade skill when RP Mode is activated by an admin.\n\"" );
+		return;
+	}
+
+	do_downgrade_skill(ent, downgrade_value);
 }
 
 /*
@@ -10965,24 +10998,9 @@ void save_config(gentity_t *ent)
 	}
 }
 
-/*
-==================
-Cmd_RpgClass_f
-==================
-*/
-void Cmd_RpgClass_f( gentity_t *ent ) {
-	char arg1[MAX_STRING_CHARS];
-	int value = 0;
+void do_change_class(gentity_t *ent, int value)
+{
 	int i = 0;
-
-	if (trap->Argc() == 1)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"Look at ^3/list classes ^7to see the class number, then ^2/rpgclass <class number>^7\n\"" );
-		return;
-	}
-
-	trap->Argv(1, arg1, sizeof( arg1 ));
-	value = atoi(arg1);
 
 	if (value < 0 || value > 8)
 	{
@@ -10993,12 +11011,6 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 	if (ent->client->pers.credits < 10)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have enough credits to change your class.\n\"" );
-		return;
-	}
-
-	if (level.rp_mode == qtrue)
-	{
-		trap->SendServerCommand( ent-g_entities, "print \"You can't change class when RP Mode is activated by an admin.\n\"" );
 		return;
 	}
 
@@ -11066,6 +11078,33 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 		add_credits(ent, 10);
 		G_Kill(ent);
 	}
+}
+
+/*
+==================
+Cmd_RpgClass_f
+==================
+*/
+void Cmd_RpgClass_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS];
+	int value = 0;
+
+	if (trap->Argc() == 1)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Look at ^3/list classes ^7to see the class number, then ^2/rpgclass <class number>^7\n\"" );
+		return;
+	}
+
+	trap->Argv(1, arg1, sizeof( arg1 ));
+	value = atoi(arg1);
+
+	if (level.rp_mode == qtrue)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You can't change class when RP Mode is activated by an admin.\n\"" );
+		return;
+	}
+
+	do_change_class(ent, value);
 }
 
 /*
@@ -12256,6 +12295,132 @@ void Cmd_RpMode_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_RpModeClass_f
+==================
+*/
+void Cmd_RpModeClass_f( gentity_t *ent ) {
+	char	arg1[MAX_STRING_CHARS];
+	char	arg2[MAX_STRING_CHARS];
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_RPMODE)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( trap->Argc() != 3 )
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must write a player name or ID and the class number.\n\"" ); 
+		return; 
+	}
+
+	trap->Argv( 1,  arg1, sizeof( arg1 ) );
+	trap->Argv( 2,  arg2, sizeof( arg2 ) );
+	client_id = zyk_get_client( arg1 ); 
+				
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode != 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Player is not in RPG Mode\n\"") );
+		return;
+	}
+
+	do_change_class(&g_entities[client_id], atoi(arg2));
+	trap->SendServerCommand( ent-g_entities, va("print \"Changed target player class\n\"") );
+}
+
+/*
+==================
+Cmd_RpModeUp_f
+==================
+*/
+void Cmd_RpModeUp_f( gentity_t *ent ) {
+	char	arg1[MAX_STRING_CHARS];
+	char	arg2[MAX_STRING_CHARS];
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_RPMODE)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( trap->Argc() != 3 )
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must write a player name or ID and the skill number.\n\"" ); 
+		return; 
+	}
+
+	trap->Argv( 1,  arg1, sizeof( arg1 ) );
+	trap->Argv( 2,  arg2, sizeof( arg2 ) );
+	client_id = zyk_get_client( arg1 ); 
+				
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode != 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Player is not in RPG Mode\n\"") );
+		return;
+	}
+
+	do_upgrade_skill(&g_entities[client_id], atoi(arg2));
+	trap->SendServerCommand( ent-g_entities, va("print \"Upgraded target player skill\n\"") );
+}
+
+/*
+==================
+Cmd_RpModeDown_f
+==================
+*/
+void Cmd_RpModeDown_f( gentity_t *ent ) {
+	char	arg1[MAX_STRING_CHARS];
+	char	arg2[MAX_STRING_CHARS];
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_RPMODE)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( trap->Argc() != 3 )
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must write a player name or ID and the skill number.\n\"" ); 
+		return; 
+	}
+
+	trap->Argv( 1,  arg1, sizeof( arg1 ) );
+	trap->Argv( 2,  arg2, sizeof( arg2 ) );
+	client_id = zyk_get_client( arg1 ); 
+				
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode != 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Player is not in RPG Mode\n\"") );
+		return;
+	}
+
+	do_downgrade_skill(&g_entities[client_id], atoi(arg2));
+	trap->SendServerCommand( ent-g_entities, va("print \"Downgraded target player skill\n\"") );
+}
+
+/*
+==================
 Cmd_LevelGive_f
 ==================
 */
@@ -12413,6 +12578,9 @@ command_t commands[] = {
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "rpgclass",			Cmd_RpgClass_f,				CMD_RPG|CMD_NOINTERMISSION },
 	{ "rpmode",				Cmd_RpMode_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "rpmodeclass",		Cmd_RpModeClass_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "rpmodedown",			Cmd_RpModeDown_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "rpmodeup",			Cmd_RpModeUp_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
 	{ "score",				Cmd_Score_f,				0 },
