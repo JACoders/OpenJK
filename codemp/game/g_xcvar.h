@@ -157,7 +157,7 @@ XCVAR_DEF( sv_maxRate,					"7000",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					
 XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
-XCVAR_DEF( sv_autoRaceDemo,				"0",			NULL,				CVAR_NONE,										qfalse )
+XCVAR_DEF( sv_autoRaceDemo,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO CTF
 XCVAR_DEF( g_flagDrag,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

@@ -5418,6 +5418,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strncpyz(buf, "   ^3Game commands: ", sizeof(buf));
 	Q_strcat(buf, sizeof(buf), "amMOTD ");
 	Q_strcat(buf, sizeof(buf), "printStats ");
+	Q_strcat(buf, sizeof(buf), "showNet ");
 	if (g_privateDuel.integer) {
 		Q_strcat(buf, sizeof(buf), "engage_FullForceDuel ");
 		Q_strcat(buf, sizeof(buf), "engage_gunDuel ");
