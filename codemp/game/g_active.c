@@ -3310,7 +3310,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
-								ent->client->pers.unique_skill_timer = level.time + 30000;
+								ent->client->pers.unique_skill_timer = level.time + 35000;
 							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
@@ -3321,7 +3321,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
-								ent->client->pers.unique_skill_timer = level.time + 25000;
+								ent->client->pers.unique_skill_timer = level.time + 30000;
 							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
@@ -3366,17 +3366,14 @@ void ClientThink_real( gentity_t *ent ) {
 												{ // zyk: disables force regen
 													player_ent->client->ps.powerups[PW_QUAD] = level.time + 7000;
 												}
-
-												// zyk: this ability also damages the enemy
-												G_Damage(player_ent,ent,ent,NULL,NULL,50,0,MOD_UNKNOWN);
 											}
 										}
 									}
 								}
 
-								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
-								ent->client->pers.unique_skill_timer = level.time + 35000;
+								ent->client->pers.unique_skill_timer = level.time + 45000;
 							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)

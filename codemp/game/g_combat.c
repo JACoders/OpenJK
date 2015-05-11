@@ -4887,7 +4887,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (attacker->client->pers.rpg_class == 6 && (mod == MOD_SABER || mod == MOD_MELEE))
 		{ // zyk: Duelist has higher damage in saber and melee
-			damage = (int)ceil(damage * (1.2 + (0.2 * attacker->client->pers.other_skills_levels[10])));
+			float duelist_unique_skill_damage = 0.0;
+
+			// zyk: Duelist Unique Skill increase saber damage
+			if (attacker->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				duelist_unique_skill_damage = 0.2;
+
+			damage = (int)ceil(damage * (1.2 + (0.2 * attacker->client->pers.other_skills_levels[10]) + duelist_unique_skill_damage));
 		}
 		else if (attacker->client->pers.rpg_class == 7)
 		{ // zyk: Force Gunner bonus damage
