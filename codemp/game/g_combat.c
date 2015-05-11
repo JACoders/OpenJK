@@ -718,7 +718,7 @@ void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int d
 	// NOTENOTE No gibbing right now, this is star wars.
 	qboolean doDisint = qfalse;
 
-	if ((g_dismember.integer >= 105) && (self->health < (GIB_HEALTH+1))) {
+	if ((self->client && self->client->NPC_class != CLASS_VEHICLE) && (g_dismember.integer >= 105) && (self->health < (GIB_HEALTH+1))) {
 		GibEntity( self, 0 );
 		return;
 	}
@@ -2884,7 +2884,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	// NOTENOTE No gib deaths right now, this is star wars.
 	///*
 	// never gib in a nodrop
-	if ((self->health <= GIB_HEALTH && g_dismember.integer >= 103 && meansOfDeath != MOD_SUICIDE && meansOfDeath != MOD_TEAM_CHANGE) || ((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104))//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
+	if ((self->client && self->client->NPC_class != CLASS_VEHICLE) &&
+		(self->health <= GIB_HEALTH && g_dismember.integer >= 103 && meansOfDeath != MOD_SUICIDE && meansOfDeath != MOD_TEAM_CHANGE) || 
+		((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104)
+		)//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
 	{
 		// gib death
 		GibEntity( self, killer );
