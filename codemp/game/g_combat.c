@@ -691,17 +691,22 @@ void LookAtKiller( gentity_t *self, gentity_t *inflictor, gentity_t *attacker ) 
 GibEntity
 ==================
 */
-void GibEntity( gentity_t *self, int killer ) {
-	G_AddEvent( self, EV_GIB_PLAYER, killer );
-	self->takedamage = qfalse;
-	self->s.eType = ET_INVISIBLE;
-	self->r.contents = 0;
-}
 
 void BodyRid(gentity_t *ent)
 {
 	trap->UnlinkEntity( (sharedEntity_t *)ent );
 	ent->physicsObject = qfalse;
+}
+
+void GibEntity( gentity_t *self, int killer ) {
+	G_AddEvent( self, EV_GIB_PLAYER, killer );
+	self->takedamage = qfalse;
+	//self->s.eType = ET_INVISIBLE;
+	self->r.contents = 0;
+	if (self->client) //what the fuck, making it invisible gets rid of the AddEvent entity or something? do this sad hack for now.. - loda fixme
+		self->client->ps.eFlags |= EF_DISINTEGRATION;
+	else
+		self->s.eFlags |= EF_DISINTEGRATION;
 }
 
 /*
@@ -712,6 +717,11 @@ body_die
 void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	// NOTENOTE No gibbing right now, this is star wars.
 	qboolean doDisint = qfalse;
+
+	if ((g_dismember.integer >= 105) && (self->health < (GIB_HEALTH+1))) {
+		GibEntity( self, 0 );
+		return;
+	}
 
 	if (self->s.eType == ET_NPC)
 	{ //well, just rem it then, so long as it's done with its death anim and it's not a standard weapon.
@@ -2872,15 +2882,15 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	self->client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
 
 	// NOTENOTE No gib deaths right now, this is star wars.
-	/*
+	///*
 	// never gib in a nodrop
-	if ( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
+	if ((self->health <= GIB_HEALTH && g_dismember.integer >= 103) || (meansOfDeath == MOD_SUICIDE && g_dismember.integer >= 104))//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
 	{
 		// gib death
 		GibEntity( self, killer );
 	} 
 	else 
-	*/
+	//*/
 	{
 		// normal death
 		
@@ -2908,7 +2918,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 			self->client->ps.pm_type = sPMType;
 
-			if (meansOfDeath == MOD_SABER || (meansOfDeath == MOD_MELEE && G_HeavyMelee( attacker )) )//saber or heavy melee (claws)
+			if ((meansOfDeath == MOD_SABER || (meansOfDeath == MOD_MELEE && G_HeavyMelee( attacker )) ) || g_dismember.integer >= 101)//saber or heavy melee (claws)
 			{ //update the anim on the actual skeleton (so bolt point will reflect the correct position) and then check for dismem
 				G_UpdateClientAnims(self, 1.0f);
 				G_CheckForDismemberment(self, attacker, self->pos1, damage, anim, qfalse);
@@ -4188,8 +4198,7 @@ qboolean G_GetHitLocFromSurfName( gentity_t *ent, const char *surfName, int *hit
 #endif //_DEBUG
 	*/
 
-	//if ( g_dismemberment->integer >= 11381138 || !ent->client->dismembered )
-	if (g_dismember.integer == 100)
+	if (g_dismember.integer >= 100)
 	{ //full probability...
 		if ( ent->client && ent->client->NPC_class == CLASS_PROTOCOL )
 		{
@@ -5902,7 +5911,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				targ->client &&
 				(targ->s.eFlags & EF_DEAD))
 			{ //an NPC that's already dead. Maybe we can cut some more limbs off!
-				if ( (mod == MOD_SABER || (mod == MOD_MELEE && G_HeavyMelee( attacker )) )//saber or heavy melee (claws)
+				if ( ((mod == MOD_SABER || (mod == MOD_MELEE && G_HeavyMelee( attacker )) ) || g_dismember.integer >= 102)//saber or heavy melee (claws)
 					&& take > 2
 					&& !(dflags&DAMAGE_NO_DISMEMBER) )
 				{
