@@ -690,11 +690,11 @@ qboolean	PM_SlideMove( qboolean gravity ) {
 		VectorMA( pm->ps->origin, time_left, pm->ps->velocity, end );
 
 		// see if we can make it there
-		pm->trace ( &trace, pm->ps->origin, pm->mins, pm->maxs, end, pm->ps->clientNum, pm->tracemask);
+		pm->trace ( &trace, pm->ps->origin, pm->mins, pm->maxs, end, pm->ps->clientNum, pm->tracemask); //Normal player tracemask is SOLID,PLAYERCLIP,BODY,TERRAIN
 
 		if (trace.allsolid) {
 			// entity is completely trapped in another solid
-			pm->ps->velocity[2] = 0;	// don't build up falling damage, but allow sideways acceleration
+			pm->ps->velocity[2] = 0;	// don't build up falling damage, but allow sideways acceleration. wallbug!?
 			return qtrue;
 		}
 

@@ -1053,7 +1053,7 @@ Spectators will only interact with teleporters.
 This version checks at 6 unit steps between last and current origins
 ============
 */
-//extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
 void G_TouchTriggersLerped( gentity_t *ent ) {
 	int			i, num, touch[MAX_GENTITIES];
 	float		dist, curDist = 0;
@@ -1121,6 +1121,68 @@ void G_TouchTriggersLerped( gentity_t *ent ) {
 		}
 	}
 
+}
+
+void G_TouchTriggersWithTrace( gentity_t *ent ) {
+	static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
+	static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
+	trace_t		trace;
+
+	if ((ent->client->oldFlags ^ ent->client->ps.eFlags ) & EF_TELEPORT_BIT)
+		return;
+	if (ent->client->ps.pm_type != PM_NORMAL && ent->client->ps.pm_type != PM_JETPACK && ent->client->ps.pm_type != PM_FLOAT)
+		return;
+
+	trap->Trace( &trace, ent->client->ps.origin, playerMins, playerMaxs, ent->client->oldOrigin, ent->client->ps.clientNum, CONTENTS_TRIGGER, qfalse, 0, 0 );
+
+	
+	{
+		G_TestLine(ent->client->ps.origin, ent->client->oldOrigin, 0x00000ff, 5000);
+	}
+		
+	if (trace.allsolid) //We are actually inside the trigger, so lets assume we already checked it..
+		return;
+	if (trace.fraction == 1) //Did the entire trace without hitting any triggers
+		 return;
+
+	if (trace.fraction > 0) {
+		gentity_t	*hit;
+
+		//trap->Print("Touched trigger with trace: %i, touch? %i\n", trace.entityNum, !!ent->touch);
+
+		hit = &g_entities[trace.entityNum];
+
+		if (!hit->touch) //No point if the trigger doesnt do anything if we touch it.
+			return;
+		/*
+		if (Q_stricmp(hit->classname, "trigger_teleport") && 
+			Q_stricmp(hit->classname, "trigger_multiple") && 
+			Q_stricmp(hit->classname, "df_trigger_checkpoint") && 
+			Q_stricmp(hit->classname, "df_trigger_start") && 
+			Q_stricmp(hit->classname, "df_trigger_finish"))//Not teleport, or multiple trigger, or checkpoint
+			return;
+		*/
+
+		hit->touch (hit, ent, NULL);
+
+		//hit = &g_entities[touch[i]];
+		//trace.entityNum is the trigger...
+		//if ((!hit->touch) && (!ent->touch)) //why ent->touch ?
+			//continue;
+		//if (Q_stricmp(hit->classname, "trigger_teleport") && Q_stricmp(hit->classname, "trigger_multiple") && Q_stricmp(hit->classname, "df_trigger_checkpoint"))//Not teleport, or multiple trigger, or checkpoint
+			//continue;
+		//if (!trap->EntityContact( mins, maxs, (sharedEntity_t *)hit, qfalse))
+			//continue;
+
+		//memset( &trace2, 0, sizeof(trace2) );
+
+		//if (hit->touch) {
+			//hit->touch (hit, ent, &trace2);
+			//trap->Print("Using a lerped trigger!\n");
+			//trap->SendServerCommand( -1, "print \"Using lerped trigger\n\"");
+		//}
+
+	}
 }
 
 
@@ -2699,6 +2761,15 @@ void ClientThink_real( gentity_t *ent ) {
 					veh->m_pVehicle->m_ucmd.rightmove = 0;
 					veh->m_pVehicle->m_ucmd.upmove = 0;
 				}
+
+				if ( veh->m_pVehicle->m_ucmd.serverTime > level.time + 200 ) { //just wow
+					veh->m_pVehicle->m_ucmd.serverTime = level.time + 200;
+					//trap->Print("serverTime <<<<<\n" );
+				}
+				if ( veh->m_pVehicle->m_ucmd.serverTime < level.time - 1000 ) {
+					veh->m_pVehicle->m_ucmd.serverTime = level.time - 1000;
+					//trap->Print("serverTime >>>>>\n" );
+				} 
 			}
 		}
 	}
@@ -2861,7 +2932,6 @@ void ClientThink_real( gentity_t *ent ) {
 		G_HeldByMonster( ent, ucmd );
 	}
 
-
 	// sanity check the command time to prevent speedup cheating
 	if ( ucmd->serverTime > level.time + 200 ) {
 		ucmd->serverTime = level.time + 200;
@@ -2871,7 +2941,6 @@ void ClientThink_real( gentity_t *ent ) {
 		ucmd->serverTime = level.time - 1000;
 //		trap->Print("serverTime >>>>>\n" );
 	} 
-
 
 #if 0
 //
@@ -4021,6 +4090,7 @@ void ClientThink_real( gentity_t *ent ) {
 	pmove.nonHumanoid = (ent->localAnimIndex > 0);
 
 	VectorCopy( client->ps.origin, client->oldOrigin );
+	client->oldFlags = client->ps.eFlags;
 
 	/*
 	if (level.intermissionQueued != 0 && g_singlePlayer.integer) {
@@ -5005,19 +5075,22 @@ void G_RunClient( gentity_t *ent ) {
 		ent->client->lastHereTime = level.time;
 	}
 
-	if (ent->client->sess.raceMode) {
-		if (!(ent->r.svFlags & SVF_BOT) && (ent->client->lastCmdTime < (level.time - 250))) { //Force 250ms updaterate for racers?
-			ForceClientUpdate(ent);
-			return;
+	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && !(ent->r.svFlags & SVF_BOT)) {
+		if (ent->client->sess.raceMode) {
+			if (ent->client->lastCmdTime < (level.time - 250)) { //Force 250ms updaterate for racers?
+				ForceClientUpdate(ent);
+				return;
+			}
+			if (!ent->client->noclip && (ent->client->lastCmdTime < (level.time - 50))) { //eh?
+				G_TouchTriggersLerped( ent );
+			}
+			//G_TouchTriggersWithTrace( ent ); //Always do trace trigger check for racers?
 		}
-		if (!(ent->r.svFlags & SVF_BOT) && !ent->client->noclip && (ent->client->lastCmdTime < (level.time - 50))) { //eh?
-			G_TouchTriggersLerped( ent );
-		}
-	}
-	else {
-		if (!(ent->r.svFlags & SVF_BOT) && g_forceClientUpdateRate.integer && (ent->client->lastCmdTime < (level.time - g_forceClientUpdateRate.integer))) {
-			ForceClientUpdate(ent);
-			return;
+		else {
+			if (g_forceClientUpdateRate.integer && (ent->client->lastCmdTime < (level.time - g_forceClientUpdateRate.integer))) {
+				ForceClientUpdate(ent);
+				return;
+			}
 		}
 	}
 

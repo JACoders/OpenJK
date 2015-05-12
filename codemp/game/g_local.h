@@ -973,6 +973,7 @@ struct gclient_s {
 	int			latched_buttons;
 
 	vec3_t		oldOrigin;
+	int			oldFlags;
 
 	// sum up damage over an entire frame, so
 	// shotgun blasts give a single big kick

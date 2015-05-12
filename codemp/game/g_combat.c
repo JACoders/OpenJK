@@ -714,12 +714,19 @@ void GibEntity( gentity_t *self, int killer ) {
 body_die
 ==================
 */
+extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
 void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	// NOTENOTE No gibbing right now, this is star wars.
 	qboolean doDisint = qfalse;
 
 	if ((self->client && self->client->NPC_class != CLASS_VEHICLE) && (g_dismember.integer >= 105) && (self->health < (GIB_HEALTH+1))) {
 		GibEntity( self, 0 );
+		if (self->client->ourSwoopNum) {
+			gentity_t *ourSwoop = &g_entities[self->client->ourSwoopNum];
+			G_LeaveVehicle( self, qfalse );
+			G_FreeEntity( ourSwoop );
+			self->client->ourSwoopNum = 0;
+		}
 		return;
 	}
 
@@ -2122,7 +2129,6 @@ extern qboolean Jedi_WaitingAmbush( gentity_t *self );
 void CheckExitRules( void );
 extern void Rancor_DropVictim( gentity_t *self );
 
-extern void G_LeaveVehicle( gentity_t* ent, qboolean ConCheck );
 void ResetPlayerTimers(gentity_t *ent, qboolean print);//extern ?
 void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type);
 extern qboolean g_dontFrickinCheck;
@@ -2884,13 +2890,21 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	// NOTENOTE No gib deaths right now, this is star wars.
 	///*
 	// never gib in a nodrop
+
 	if ((self->client && self->client->NPC_class != CLASS_VEHICLE) &&
+		(self->health != -999 || meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && //:^)
 		(self->health <= GIB_HEALTH && g_dismember.integer >= 103 && meansOfDeath != MOD_SUICIDE && meansOfDeath != MOD_TEAM_CHANGE) || 
 		((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104)
 		)//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
 	{
 		// gib death
 		GibEntity( self, killer );
+		if (self->client->ourSwoopNum) {
+			gentity_t *ourSwoop = &g_entities[self->client->ourSwoopNum];
+			G_LeaveVehicle( self, qfalse );
+			G_FreeEntity( ourSwoop );
+			self->client->ourSwoopNum = 0;
+		}
 	} 
 	else 
 	//*/
@@ -2921,7 +2935,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 
 			self->client->ps.pm_type = sPMType;
 
-			if ((meansOfDeath == MOD_SABER || (meansOfDeath == MOD_MELEE && G_HeavyMelee( attacker )) ) || g_dismember.integer >= 101)//saber or heavy melee (claws)
+			if ((meansOfDeath == MOD_SABER || (meansOfDeath == MOD_MELEE && G_HeavyMelee( attacker )) ) || (g_dismember.integer >= 101 && meansOfDeath != MOD_SUICIDE && meansOfDeath != MOD_TEAM_CHANGE))//saber or heavy melee (claws)
 			{ //update the anim on the actual skeleton (so bolt point will reflect the correct position) and then check for dismem
 				G_UpdateClientAnims(self, 1.0f);
 				G_CheckForDismemberment(self, attacker, self->pos1, damage, anim, qfalse);
@@ -5914,10 +5928,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				targ->client &&
 				(targ->s.eFlags & EF_DEAD))
 			{ //an NPC that's already dead. Maybe we can cut some more limbs off!
-				if ( ((mod == MOD_SABER || (mod == MOD_MELEE && G_HeavyMelee( attacker )) ) || g_dismember.integer >= 102)//saber or heavy melee (claws)
+				if ( ((mod == MOD_SABER || (mod == MOD_MELEE && G_HeavyMelee( attacker )) ) || (g_dismember.integer >= 102 && mod != MOD_SUICIDE && mod != MOD_TEAM_CHANGE))//saber or heavy melee (claws)
 					&& take > 2
 					&& !(dflags&DAMAGE_NO_DISMEMBER) )
 				{
+					trap->Print("1 means of death is %i\n", mod);
 					G_CheckForDismemberment(targ, attacker, targ->pos1, take, targ->client->ps.torsoAnim, qtrue);
 				}
 			}
