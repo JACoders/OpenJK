@@ -2761,15 +2761,6 @@ void ClientThink_real( gentity_t *ent ) {
 					veh->m_pVehicle->m_ucmd.rightmove = 0;
 					veh->m_pVehicle->m_ucmd.upmove = 0;
 				}
-
-				if ( veh->m_pVehicle->m_ucmd.serverTime > level.time + 200 ) { //just wow
-					veh->m_pVehicle->m_ucmd.serverTime = level.time + 200;
-					//trap->Print("serverTime <<<<<\n" );
-				}
-				if ( veh->m_pVehicle->m_ucmd.serverTime < level.time - 1000 ) {
-					veh->m_pVehicle->m_ucmd.serverTime = level.time - 1000;
-					//trap->Print("serverTime >>>>>\n" );
-				} 
 			}
 		}
 	}
@@ -4217,6 +4208,15 @@ void ClientThink_real( gentity_t *ent ) {
 					ent->m_pVehicle->m_ucmd.serverTime = level.time;
 					ent->client->ps.commandTime = level.time-100;
 					msec = 100;
+				}
+
+				if ( ent->m_pVehicle->m_ucmd.serverTime > level.time + 200 ) { //stop speedup cheating for vehicles
+					ent->m_pVehicle->m_ucmd.serverTime = level.time + 200;
+					//trap->Print("serverTime <<<<<\n" );
+				}
+				if ( ent->m_pVehicle->m_ucmd.serverTime < level.time - 1000 ) {
+					ent->m_pVehicle->m_ucmd.serverTime = level.time - 1000;
+					//trap->Print("serverTime >>>>>\n" );
 				}
 
 				memcpy(&pmove.cmd, &ent->m_pVehicle->m_ucmd, sizeof(usercmd_t));
