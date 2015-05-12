@@ -1053,6 +1053,7 @@ Spectators will only interact with teleporters.
 This version checks at 6 unit steps between last and current origins
 ============
 */
+/*
 extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
 void G_TouchTriggersLerped( gentity_t *ent ) {
 	int			i, num, touch[MAX_GENTITIES];
@@ -1065,7 +1066,9 @@ void G_TouchTriggersLerped( gentity_t *ent ) {
 
 	//trap->Print("Checking lerped trigger\n");
 
-	if (!ent->client)
+	if ((ent->client->oldFlags ^ ent->client->ps.eFlags ) & EF_TELEPORT_BIT)
+		return;
+	if (ent->client->ps.pm_type != PM_NORMAL && ent->client->ps.pm_type != PM_JETPACK && ent->client->ps.pm_type != PM_FLOAT)
 		return;
 
 	VectorSubtract( ent->client->ps.origin, ent->client->oldOrigin, diff );
@@ -1077,16 +1080,14 @@ void G_TouchTriggersLerped( gentity_t *ent ) {
 
 	for (curDist = 0; curDist  < dist; curDist += 24.0f) {
 		VectorMA( ent->client->oldOrigin, curDist, diff, end );
-
-		/*
+	
 		{
 			vec3_t		end2;
 			VectorCopy(end, end2);
 			end2[2] += 128;
 			G_TestLine(end, end2, 0x00000ff, 8000);
 		}
-		*/		
-
+			
 		VectorSubtract( end, range, mins ); //tha fuck is this
 		VectorAdd( end, range, maxs );
 
@@ -1122,10 +1123,13 @@ void G_TouchTriggersLerped( gentity_t *ent ) {
 	}
 
 }
+*/
 
+//extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
 void G_TouchTriggersWithTrace( gentity_t *ent ) {
 	static vec3_t	playerMins = {-15, -15, DEFAULT_MINS_2};
 	static vec3_t	playerMaxs = {15, 15, DEFAULT_MAXS_2};
+	vec3_t			diff;
 	trace_t		trace;
 
 	if ((ent->client->oldFlags ^ ent->client->ps.eFlags ) & EF_TELEPORT_BIT)
@@ -1133,12 +1137,12 @@ void G_TouchTriggersWithTrace( gentity_t *ent ) {
 	if (ent->client->ps.pm_type != PM_NORMAL && ent->client->ps.pm_type != PM_JETPACK && ent->client->ps.pm_type != PM_FLOAT)
 		return;
 
-	trap->Trace( &trace, ent->client->ps.origin, playerMins, playerMaxs, ent->client->oldOrigin, ent->client->ps.clientNum, CONTENTS_TRIGGER, qfalse, 0, 0 );
+	VectorSubtract( ent->client->ps.origin, ent->client->oldOrigin, diff );
+	if (VectorLengthSquared(diff) > 512*512) //sanity check i guess
+		return;
 
-	
-	{
-		G_TestLine(ent->client->ps.origin, ent->client->oldOrigin, 0x00000ff, 5000);
-	}
+	trap->Trace( &trace, ent->client->ps.origin, playerMins, playerMaxs, ent->client->oldOrigin, ent->client->ps.clientNum, CONTENTS_TRIGGER, qfalse, 0, 0 );
+	//G_TestLine(ent->client->ps.origin, ent->client->oldOrigin, 0x00000ff, 5000);
 		
 	if (trace.allsolid) //We are actually inside the trigger, so lets assume we already checked it..
 		return;
@@ -1147,8 +1151,6 @@ void G_TouchTriggersWithTrace( gentity_t *ent ) {
 
 	if (trace.fraction > 0) {
 		gentity_t	*hit;
-
-		//trap->Print("Touched trigger with trace: %i, touch? %i\n", trace.entityNum, !!ent->touch);
 
 		hit = &g_entities[trace.entityNum];
 
@@ -1163,25 +1165,10 @@ void G_TouchTriggersWithTrace( gentity_t *ent ) {
 			return;
 		*/
 
-		hit->touch (hit, ent, NULL);
-
-		//hit = &g_entities[touch[i]];
-		//trace.entityNum is the trigger...
-		//if ((!hit->touch) && (!ent->touch)) //why ent->touch ?
-			//continue;
-		//if (Q_stricmp(hit->classname, "trigger_teleport") && Q_stricmp(hit->classname, "trigger_multiple") && Q_stricmp(hit->classname, "df_trigger_checkpoint"))//Not teleport, or multiple trigger, or checkpoint
-			//continue;
-		//if (!trap->EntityContact( mins, maxs, (sharedEntity_t *)hit, qfalse))
-			//continue;
+		//trap->Print("Trace trigger touch! time: %i\n", trap->Milliseconds());
 
 		//memset( &trace2, 0, sizeof(trace2) );
-
-		//if (hit->touch) {
-			//hit->touch (hit, ent, &trace2);
-			//trap->Print("Using a lerped trigger!\n");
-			//trap->SendServerCommand( -1, "print \"Using lerped trigger\n\"");
-		//}
-
+		hit->touch (hit, ent, NULL);
 	}
 }
 
@@ -4080,9 +4067,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	pmove.nonHumanoid = (ent->localAnimIndex > 0);
 
-	VectorCopy( client->ps.origin, client->oldOrigin );
-	client->oldFlags = client->ps.eFlags;
-
 	/*
 	if (level.intermissionQueued != 0 && g_singlePlayer.integer) {
 		if ( level.time - level.intermissionQueued >= 1000  ) {
@@ -5040,7 +5024,7 @@ static void ForceClientUpdate(gentity_t *ent) {
 }
 
 void G_RunClient( gentity_t *ent ) {
-
+	qboolean forceUpdateRate = qfalse;
 
 	//If racemode , do forceclientupdaterate hardcoded at like 4/5 hz ?
 
@@ -5077,23 +5061,46 @@ void G_RunClient( gentity_t *ent ) {
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && !(ent->r.svFlags & SVF_BOT)) {
 		if (ent->client->sess.raceMode) {
 			if (ent->client->lastCmdTime < (level.time - 250)) { //Force 250ms updaterate for racers?
-				ForceClientUpdate(ent);
-				return;
+				forceUpdateRate = qtrue;
 			}
-			if (!ent->client->noclip && (ent->client->lastCmdTime < (level.time - 50))) { //eh?
-				G_TouchTriggersLerped( ent );
+			else {
+				G_TouchTriggersWithTrace( ent );
+				//if (ent->client->lastCmdTime < (level.time - 50)) { //This is cool but it doesnt prevent timenudge warp abuse bypassing triggers
+				//G_TouchTriggersLerped( ent ); 
+				//}
 			}
-			//G_TouchTriggersWithTrace( ent ); //Always do trace trigger check for racers?
+
+			/*
+			ok, is it safe to do lerp/trace checks for timer triggers?
+			we are only checking to see if we touch a trigger between our last spot, and our current spot.
+			ignoring teles/warps/noclip/swoop boarding, that seems fine... 
+			//This happens every sv_fps. NOT every client frame... so its possible that this could hit something that a client wouldnt have hit normally?... but really it would not be noticable.
+			//to account for tele/warp/noclip/boarding, store previous teleport bit state, check if it was toggled, dont trace if so?
+			//where do we store previous teleport bit state, i guess here in runclient?
+			//if we are lagging bad, we do forceclientupdaterate and return, that could skip setting oldflags, oldorigin??
+
+			//for hitting timer triggers, i dont see how this can be abused really... worth a try.
+
+			*/
+
 		}
 		else {
 			if (g_forceClientUpdateRate.integer && (ent->client->lastCmdTime < (level.time - g_forceClientUpdateRate.integer))) {
-				ForceClientUpdate(ent);
-				return;
+				forceUpdateRate = qtrue;
 			}
 		}
 	}
 
-	ent->client->pers.lastCmd = ent->client->pers.cmd;
+	VectorCopy( ent->client->ps.origin, ent->client->oldOrigin );
+	ent->client->oldFlags = ent->client->ps.eFlags; //fuck, this should be in runframe?
+
+	if (forceUpdateRate) {
+		ForceClientUpdate(ent);
+		return;
+	}
+
+	ent->client->pers.lastCmd = ent->client->pers.cmd; //this should be after force update rate .... because..?
+
 
 	if ( !(ent->r.svFlags & SVF_BOT) && !g_synchronousClients.integer ) {
 		return;

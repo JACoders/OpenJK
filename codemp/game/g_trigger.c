@@ -1311,6 +1311,8 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (player->client->sess.raceMode && player->client->sess.movementStyle == MV_SWOOP && !player->client->ps.m_iVehicleNum) //Dont start the timer for swoop racers if they dont have a swoop
 		return;
 
+	//trap->Print("Actual trigger touch! time: %i\n", trap->Milliseconds());
+
 	if (player->client->pers.recordingDemo && player->client->pers.keepDemo) {
 		//We are still recording a demo that we want to keep?
 		//Stop and rename it
