@@ -8831,7 +8831,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 5)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Sense: ^7allows you to see people through walls, invisible people or cloaked people and you can dodge disruptor shots. Represents your mind strength to resist Mind Control if your sense level is equal or higher than the enemy's mind trick level\n\"" );
 					if (i == 6)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Saber Attack: ^7gives you the saber. If you are using Single Saber, gives you the saber styles. If using duals or staff, increases saber damage, which is increased by 25 per cent until level 5, which has 10 per cent more damage\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Saber Attack: ^7gives you the saber. If you are using Single Saber, gives you the saber styles. If using duals or staff, increases saber damage, which is increased by 25 per cent until level 5, which has 5 per cent more damage\n\"" );
 					if (i == 7)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Saber Defense: ^7increases your ability to block, parry enemy saber attacks or enemy shots\n\"" );
 					if (i == 8)

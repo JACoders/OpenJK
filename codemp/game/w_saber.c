@@ -2969,8 +2969,8 @@ static QINLINE int G_PowerLevelForSaberAnim( gentity_t *ent, int saberNum, qbool
 			return FORCE_LEVEL_3;
 		}
 		if ( anim >= BOTH_A4_T__B_ && anim <= BOTH_D4_B____ )
-		{//desann
-			return FORCE_LEVEL_4;
+		{//desann // zyk: changed desann style damage. Default FORCE_LEVEL_4
+			return FORCE_LEVEL_3;
 		}
 		if ( anim >= BOTH_A5_T__B_ && anim <= BOTH_D5_B____ )
 		{//tavion
