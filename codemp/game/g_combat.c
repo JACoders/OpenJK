@@ -2897,6 +2897,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104)
 		)//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
 	{
+		self->client->respawnTime = level.time + 1000;
 		// gib death
 		GibEntity( self, killer );
 		if (self->client->ourSwoopNum) {
@@ -2904,6 +2905,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			G_LeaveVehicle( self, qfalse );
 			G_FreeEntity( ourSwoop );
 			self->client->ourSwoopNum = 0;
+		}
+		if (self != attacker)
+		{ //don't make NPCs want to murder you on respawn for killing yourself!
+			G_DeathAlert( self, attacker );
 		}
 	} 
 	else 

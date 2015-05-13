@@ -498,6 +498,27 @@ void Svcmd_ForceTeam_f( void ) {
 	cl->switchTeamTime = level.time + 5000; //might need to be way more
 }
 
+void Svcmd_ResetScores_f (void) {
+	int i;
+	gclient_t	*cl;
+
+	for (i=0 ; i < level.numConnectedClients ; i++) {
+		cl=&level.clients[level.sortedClients[i]];
+		cl->ps.persistant[PERS_SCORE] = 0;
+		cl->ps.persistant[PERS_HITS] = 0;
+		cl->ps.persistant[PERS_KILLED] = 0;
+		cl->ps.persistant[PERS_IMPRESSIVE_COUNT] = 0;
+		cl->ps.persistant[PERS_EXCELLENT_COUNT] = 0;
+		cl->ps.persistant[PERS_DEFEND_COUNT] = 0;
+		cl->ps.persistant[PERS_ASSIST_COUNT] = 0;
+		cl->ps.persistant[PERS_GAUNTLET_FRAG_COUNT] = 0;
+		cl->ps.persistant[PERS_CAPTURES] = 0;
+	}
+
+	level.teamScores[TEAM_RED] = 0;
+	level.teamScores[TEAM_BLUE] = 0;
+}
+
 void Svcmd_AmKick_f(void) {
 		int clientid = -1; 
 		char   arg[MAX_NETNAME]; 
@@ -1210,6 +1231,7 @@ svcmd_t svcmds[] = {
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 
 	{ "renameAccount",				Svcmd_RenameAccount_f,				qfalse },
+	{ "resetScores",				Svcmd_ResetScores_f,				qfalse },
 
 	{ "say",						Svcmd_Say_f,						qtrue },
 
