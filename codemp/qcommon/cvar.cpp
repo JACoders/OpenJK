@@ -485,19 +485,19 @@ Prints the value, default, and latched string of the given variable
 ============
 */
 void Cvar_Print( cvar_t *v ) {
-	Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, v->name, v->string );
+	Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, v->name, v->string );
 
 	if ( !(v->flags & CVAR_ROM) ) {
 		if ( !Q_stricmp( v->string, v->resetString ) )
-			Com_Printf( ", "S_COLOR_WHITE"the default" );
+			Com_Printf( ", " S_COLOR_WHITE "the default" );
 		else
-			Com_Printf( ", "S_COLOR_WHITE"default = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, v->resetString );
+			Com_Printf( ", " S_COLOR_WHITE "default = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, v->resetString );
 	}
 
 	Com_Printf( "\n" );
 
 	if ( v->latchedString )
-		Com_Printf( "     latched = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\"\n", v->latchedString );
+		Com_Printf( "     latched = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"\n", v->latchedString );
 }
 
 /*
@@ -1088,9 +1088,9 @@ void Cvar_List_f( void ) {
 		if (var->flags & CVAR_CHEAT)		Com_Printf( "C" );	else Com_Printf( " " );
 		if (var->flags & CVAR_USER_CREATED)	Com_Printf( "?" );	else Com_Printf( " " );
 
-		Com_Printf( S_COLOR_WHITE" %s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->name, var->string );
+		Com_Printf( S_COLOR_WHITE " %s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, var->name, var->string );
 		if ( var->latchedString )
-			Com_Printf( ", latched = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE, var->latchedString );
+			Com_Printf( ", latched = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE, var->latchedString );
 		Com_Printf( "\n" );
 	}
 
@@ -1127,9 +1127,9 @@ void Cvar_ListModified_f( void ) {
 	{
 		char *value = (*itr)->latchedString ? (*itr)->latchedString : (*itr)->string;
 
-		Com_Printf( S_COLOR_GREY"Cvar "
-			S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE", "
-			S_COLOR_WHITE"default = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n",
+		Com_Printf( S_COLOR_GREY "Cvar "
+			S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE ", "
+			S_COLOR_WHITE "default = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n",
 			(*itr)->name, value, (*itr)->resetString );
 	}
 }
