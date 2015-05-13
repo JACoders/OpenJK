@@ -517,6 +517,7 @@ void Svcmd_ResetScores_f (void) {
 
 	level.teamScores[TEAM_RED] = 0;
 	level.teamScores[TEAM_BLUE] = 0;
+	CalculateRanks();
 }
 
 void Svcmd_AmKick_f(void) {
