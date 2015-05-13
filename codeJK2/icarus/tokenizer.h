@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __TOKENIZER_H
 
 #include <string>
+#include <string.h>
 #include <vector>
 #include <map>
 
