@@ -700,13 +700,14 @@ void BodyRid(gentity_t *ent)
 
 void GibEntity( gentity_t *self, int killer ) {
 	G_AddEvent( self, EV_GIB_PLAYER, killer );
+	
 	self->takedamage = qfalse;
 	//self->s.eType = ET_INVISIBLE;
 	self->r.contents = 0;
 	if (self->client) //what the fuck, making it invisible gets rid of the AddEvent entity or something? do this sad hack for now.. - loda fixme
-		self->client->ps.eFlags |= EF_DISINTEGRATION;
+		self->client->ps.eFlags |= EF_NODRAW;
 	else
-		self->s.eFlags |= EF_DISINTEGRATION;
+		self->s.eFlags |= EF_NODRAW;
 }
 
 /*
@@ -2897,9 +2898,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		((meansOfDeath == MOD_SUICIDE || meansOfDeath == MOD_TEAM_CHANGE) && g_dismember.integer >= 104)
 		)//( (self->health <= GIB_HEALTH && !(contents & CONTENTS_NODROP) && g_blood.integer) || meansOfDeath == MOD_SUICIDE) 
 	{
+		
 		self->client->respawnTime = level.time + 1000;
 		// gib death
-		GibEntity( self, killer );
+		GibEntity( self, killer );	
 		if (self->client->ourSwoopNum) {
 			gentity_t *ourSwoop = &g_entities[self->client->ourSwoopNum];
 			G_LeaveVehicle( self, qfalse );
@@ -2910,6 +2912,10 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		{ //don't make NPCs want to murder you on respawn for killing yourself!
 			G_DeathAlert( self, attacker );
 		}
+		if ( self->health <= GIB_HEALTH ) {
+			self->health = GIB_HEALTH+1;
+		}
+		
 	} 
 	else 
 	//*/
@@ -5937,7 +5943,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 					&& take > 2
 					&& !(dflags&DAMAGE_NO_DISMEMBER) )
 				{
-					trap->Print("1 means of death is %i\n", mod);
 					G_CheckForDismemberment(targ, attacker, targ->pos1, take, targ->client->ps.torsoAnim, qtrue);
 				}
 			}
