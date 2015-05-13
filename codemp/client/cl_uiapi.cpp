@@ -1044,7 +1044,7 @@ void CL_BindUI( void ) {
 	static uiImport_t uii;
 	uiExport_t		*ret;
 	GetUIAPI_t		GetUIAPI;
-	char			dllName[MAX_OSPATH] = "ui"ARCH_STRING DLL_EXT;
+	char			dllName[MAX_OSPATH] = "ui" ARCH_STRING DLL_EXT;
 
 	memset( &uii, 0, sizeof( uii ) );
 
