@@ -4828,7 +4828,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 			else if (attacker->client->pers.force_powers_levels[5] == FORCE_LEVEL_5)
 			{
-				damage = (int)ceil(damage*1.05);
+				damage = (int)ceil(damage*1.1);
 			}
 		}
 	}
