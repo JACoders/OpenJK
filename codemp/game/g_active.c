@@ -3372,8 +3372,8 @@ void ClientThink_real( gentity_t *ent ) {
 								}
 
 								// zyk: recovers some MP
-								if ((ent->client->pers.magic_power + 15) < zyk_max_magic_power(ent))
-									ent->client->pers.magic_power += 15;
+								if ((ent->client->pers.magic_power + 10) < zyk_max_magic_power(ent))
+									ent->client->pers.magic_power += 10;
 								else
 									ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
