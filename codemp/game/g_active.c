@@ -3371,7 +3371,13 @@ void ClientThink_real( gentity_t *ent ) {
 									}
 								}
 
-								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+								// zyk: recovers some MP
+								if ((ent->client->pers.magic_power + 15) < zyk_max_magic_power(ent))
+									ent->client->pers.magic_power += 15;
+								else
+									ent->client->pers.magic_power = zyk_max_magic_power(ent);
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
 
 								ent->client->pers.unique_skill_timer = level.time + 45000;
 							}
@@ -3417,7 +3423,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 							if (ent->client->pers.secrets_found & (1 << 8) && ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2) && 
 								ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
-							{ // zyk: Force Gunner Upgrade restores some shield by spedning some force power
+							{ // zyk: Force Gunner Upgrade restores some shield by spending some force power
 								if ((ent->client->ps.stats[STAT_ARMOR] + 25) < ent->client->pers.max_rpg_shield)
 									ent->client->ps.stats[STAT_ARMOR] += 25;
 								else
