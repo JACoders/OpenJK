@@ -2908,14 +2908,14 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			G_FreeEntity( ourSwoop );
 			self->client->ourSwoopNum = 0;
 		}
+		
 		if (self != attacker)
 		{ //don't make NPCs want to murder you on respawn for killing yourself!
 			G_DeathAlert( self, attacker );
 		}
 		if ( self->health <= GIB_HEALTH ) {
 			self->health = GIB_HEALTH+1;
-		}
-		
+		}		
 	} 
 	else 
 	//*/

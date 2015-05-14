@@ -6370,11 +6370,6 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 	}
 
-	if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
-		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
-		ResetPlayerTimers(ent, qtrue);
-	}
-
 	trap->Argv(1, mStyle, sizeof(mStyle));
 
 	style = RaceNameToInteger(mStyle);
@@ -6417,7 +6412,13 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		else {
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); 
 		}
-		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+
+		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
+			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
+			ResetPlayerTimers(ent, qtrue);
+		}
+		else
+			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 	}
 	else
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, or jetpack>.\n\"" );
@@ -6499,8 +6500,8 @@ static void Cmd_BackwardsRocket_f(gentity_t *ent)
 		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated: timer reset.\n\"");
 		ResetPlayerTimers(ent, qtrue);
 	}
-
-	trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
+	else
+		trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 
 	ent->client->pers.backwardsRocket = !ent->client->pers.backwardsRocket;
 }

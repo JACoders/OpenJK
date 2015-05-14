@@ -513,6 +513,13 @@ void Svcmd_ResetScores_f (void) {
 		cl->ps.persistant[PERS_ASSIST_COUNT] = 0;
 		cl->ps.persistant[PERS_GAUNTLET_FRAG_COUNT] = 0;
 		cl->ps.persistant[PERS_CAPTURES] = 0;
+
+		cl->pers.stats.damageGiven = 0;
+		cl->pers.stats.damageTaken = 0;
+		cl->pers.stats.teamKills = 0;
+		cl->pers.stats.kills = 0;
+		cl->pers.stats.teamHealGiven = 0;
+		cl->pers.stats.teamEnergizeGiven = 0;
 	}
 
 	level.teamScores[TEAM_RED] = 0;

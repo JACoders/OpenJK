@@ -1067,7 +1067,7 @@ static qboolean CopyToBodyQue( gentity_t *ent ) {
 		return qfalse;
 	}
 
-	if (ent->client && (ent->client->ps.eFlags & EF_DISINTEGRATION))
+	if (ent->client && ((ent->client->ps.eFlags & EF_DISINTEGRATION) || (ent->client->ps.eFlags & EF_NODRAW)))
 	{ //for now, just don't spawn a body if you got disint'd
 		return qfalse;
 	}
