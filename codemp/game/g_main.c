@@ -8925,35 +8925,35 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
-							poison_mushrooms(ent,100,1500);
+							poison_mushrooms(ent,100,1600);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Poison Mushrooms!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 7)
 						{
-							water_splash(ent,800,100);
+							water_splash(ent,1000,100);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Water Splash!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 8)
 						{
-							rock_fall(ent,1200,55);
+							rock_fall(ent,1500,55);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Rockfall!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							ultra_flame(ent,1800,50);
+							ultra_flame(ent,2000,50);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ultra Flame!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 10)
 						{
-							dome_of_doom(ent,1500,40);
+							dome_of_doom(ent,1900,40);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Dome of Damage!\""));
 							ent->client->pers.hunter_quest_messages++;
 							ent->client->pers.guardian_timer = level.time + 3000;
