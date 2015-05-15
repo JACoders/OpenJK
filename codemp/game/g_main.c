@@ -8911,7 +8911,7 @@ void G_RunFrame( int levelTime ) {
 									Jetpack_Off(player_ent);
 								}
 
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,230,0,MOD_UNKNOWN);
 
 								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
@@ -9023,7 +9023,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 16)
 						{
-							chaos_power(ent,1600,400);
+							chaos_power(ent,1600,380);
 
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
 
