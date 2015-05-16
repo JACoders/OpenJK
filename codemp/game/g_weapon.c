@@ -2639,7 +2639,7 @@ void WP_PlaceLaserTrap( gentity_t *ent, qboolean alt_fire )
 	found = NULL;
 	trapcount_org = trapcount;
 	lowestTimeStamp = level.time;
-	while ( trapcount > 18 ) // zyk: changed laser trap limit from 9 to 18. This is the maximum a player can put before the game removes the oldest ones
+	while ( trapcount > 21 ) // zyk: changed laser trap limit. Default 9. This is the maximum a player can put before the game removes the oldest ones
 	{
 		removeMe = -1;
 		for ( i = 0; i < trapcount_org; i++ )
@@ -3013,7 +3013,7 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 	found = NULL;
 	trapcount_org = trapcount;
 	lowestTimeStamp = level.time;
-	while ( trapcount > 18 ) // zyk: changed from 9 to 18. This is the maximum det packs a player can place before the game removes the old ones
+	while ( trapcount > 21 ) // zyk: changed max mines. Default 9. This is the maximum det packs a player can place before the game removes the old ones
 	{
 		removeMe = -1;
 		for ( i = 0; i < trapcount_org; i++ )
