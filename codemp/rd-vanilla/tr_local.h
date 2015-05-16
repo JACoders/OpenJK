@@ -44,6 +44,19 @@ typedef unsigned int glIndex_t;
 #define MAX_STATES_PER_SHADER 32
 #define MAX_STATE_NAME 32
 
+// for some reason postprocessing is broken on linux
+#ifndef __linux__
+#	define GAMMA_DEFAULT "2" /* GAMMA_POSTPROCESSING */
+#else
+#	define GAMMA_DEFAULT "1" /* GAMMA_HARDWARE */
+#endif
+
+typedef enum {
+	GAMMA_NONE,
+	GAMMA_HARDWARE,
+	GAMMA_POSTPROCESSING
+} gammamethod_t;
+
 typedef enum
 {
 	DLIGHT_VERTICAL	= 0,
@@ -1051,6 +1064,14 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
+
+	GLhandleARB gammaProgram, m_hVShader, m_hFShader;
+	GLint gammaUniformLoc;
+	GLint gammaSceneBufferLoc;
+
+	GLuint gammaScreen;
+	GLuint gammaFramebuffer;
+	GLuint gammaRenderDepthBuffer, gammaRenderTarget;
 } trGlobals_t;
 
 struct glconfigExt_t
@@ -1147,6 +1168,7 @@ extern cvar_t	*r_fullscreen;
 extern cvar_t	*r_noborder;			// disable border in windowed mode
 extern cvar_t	*r_centerWindow;		// override vid_x/ypos and center the window
 extern cvar_t	*r_gamma;
+extern cvar_t	*r_gammamethod;
 extern cvar_t	*r_displayRefresh;		// optional display refresh option
 extern cvar_t	*r_ignorehwgamma;		// overrides hardware gamma capabilities
 

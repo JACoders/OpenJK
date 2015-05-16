@@ -1868,6 +1868,44 @@ const void	*RB_SwapBuffers( const void *data ) {
 		Hunk_FreeTempMemory( stencilReadback );
 	}
 
+	if (glConfig.deviceSupportsPostprocessingGamma && r_gammamethod->integer == GAMMA_POSTPROCESSING) {
+		qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		qglBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+
+		qglViewport(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+		qglScissor(0, 0, glConfig.vidWidth, glConfig.vidHeight);
+		qglMatrixMode(GL_PROJECTION);
+		qglLoadIdentity();
+		qglOrtho(0, glConfig.vidWidth, glConfig.vidHeight, 0, 0, 1);
+		qglMatrixMode(GL_MODELVIEW);
+		qglLoadIdentity();
+
+		GL_State(GLS_DEPTHTEST_DISABLE);
+
+		qglUseProgramObjectARB(tr.gammaProgram);
+		qglEnable(GL_TEXTURE_2D);
+
+		qglUniform1iARB(tr.gammaSceneBufferLoc, 0);
+		qglUniform1fARB(tr.gammaUniformLoc, r_gamma->value);
+
+		qglColor3f(tr.identityLight, tr.identityLight, tr.identityLight);
+		qglActiveTextureARB(GL_TEXTURE0_ARB);
+		qglBindTexture(GL_TEXTURE_2D, tr.gammaRenderTarget);
+
+		qglBegin(GL_QUADS);
+		qglTexCoord2f(0, 1);
+		qglVertex2f(0, 0);
+		qglTexCoord2f(1, 1);
+		qglVertex2f(glConfig.vidWidth, 0);
+		qglTexCoord2f(1, 0);
+		qglVertex2f(glConfig.vidWidth, glConfig.vidHeight);
+		qglTexCoord2f(0, 0);
+		qglVertex2f(0, glConfig.vidHeight);
+		qglEnd();
+
+		qglUseProgramObjectARB(0);
+	}
+
     if ( !glState.finishCalled ) {
         qglFinish();
 	}

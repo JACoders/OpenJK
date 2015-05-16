@@ -4115,6 +4115,96 @@ static void ScanAndLoadShaderFiles( void )
 
 /*
 ====================
+GammaGenerateProgram
+====================
+*/
+const char *g_GammaVertexShaderARB = {
+	"void main(void)" "\n"
+	"{" "\n"
+		"gl_Position = ftransform();" "\n"
+		"gl_TexCoord[0] = gl_MultiTexCoord0;"  "\n"
+	"}"
+};
+
+const char *g_GammaFragmentShaderARB = {
+	"uniform sampler2D sceneBuffer;" "\n"
+	"uniform float gamma;" "\n"
+	"\n"
+	"void main(void)" "\n"
+	"{" "\n"
+		"vec2 uv = gl_TexCoord[0].xy;" "\n"
+		"vec3 color = texture2D(sceneBuffer, uv).rgb;" "\n"
+		"gl_FragColor.rgb = pow(color, vec3(1.0 / gamma));" "\n"
+	"}"
+};
+
+qboolean GammaGenerateProgram() {
+	GLint objStatus;
+
+	// shader
+	tr.m_hVShader = qglCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
+	qglShaderSourceARB(tr.m_hVShader, 1, (const GLcharARB **)&g_GammaVertexShaderARB, NULL);
+	qglCompileShaderARB(tr.m_hVShader);
+
+	tr.m_hFShader = qglCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
+	qglShaderSourceARB(tr.m_hFShader, 1, (const GLcharARB **)&g_GammaFragmentShaderARB, NULL);
+	qglCompileShaderARB(tr.m_hFShader);
+
+	// program
+	tr.gammaProgram = qglCreateProgramObjectARB();
+	qglAttachObjectARB(tr.gammaProgram, tr.m_hVShader);
+	qglAttachObjectARB(tr.gammaProgram, tr.m_hFShader);
+	qglLinkProgramARB(tr.gammaProgram);
+
+	qglUseProgramObjectARB(tr.gammaProgram);
+
+	tr.gammaUniformLoc = qglGetUniformLocationARB(tr.gammaProgram, "gamma");
+	tr.gammaSceneBufferLoc = qglGetUniformLocationARB(tr.gammaProgram, "sceneBuffer");
+
+	qglValidateProgramARB(tr.gammaProgram);
+	qglGetObjectParameterivARB(tr.gammaProgram, GL_OBJECT_VALIDATE_STATUS_ARB, &objStatus);
+	if (!objStatus) {
+		return qtrue;
+	}
+
+	qglUseProgramObjectARB(0);
+
+	// framebuffer object
+	tr.gammaFramebuffer = 0;
+	qglGenFramebuffersEXT(1, &tr.gammaFramebuffer);
+	qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, tr.gammaFramebuffer);
+
+	// depth buffer
+	tr.gammaRenderDepthBuffer = 0;
+	qglGenRenderbuffersEXT(1, &tr.gammaRenderDepthBuffer);
+	qglBindRenderbufferEXT(GL_RENDERBUFFER_EXT, tr.gammaRenderDepthBuffer);
+	qglRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, glConfig.vidWidth, glConfig.vidHeight);
+
+	// texture
+	tr.gammaRenderTarget = 0;
+	qglGenTextures(1, &tr.gammaRenderTarget);
+	qglBindTexture(GL_TEXTURE_2D, tr.gammaRenderTarget);
+	qglTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, glConfig.vidWidth, glConfig.vidHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	qglFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, tr.gammaRenderTarget, 0);
+	qglFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, tr.gammaRenderDepthBuffer);
+	qglDrawBuffer(GL_COLOR_ATTACHMENT0_EXT);
+
+	qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+	if (qglCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) != GL_FRAMEBUFFER_COMPLETE_EXT) {
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+/*
+====================
 CreateInternalShaders
 ====================
 */
@@ -4151,6 +4241,14 @@ static void CreateInternalShaders( void ) {
 	shader.defaultShader = qtrue;
 
 	ARB_InitGlowShaders();
+
+	if (glConfig.deviceSupportsPostprocessingGamma && r_gammamethod->integer == GAMMA_POSTPROCESSING) {
+		if (GammaGenerateProgram()) {
+			ri->Printf(PRINT_WARNING, "failed initializing gamma program... falling back to hardware gamma\n");
+			glConfig.deviceSupportsPostprocessingGamma = qfalse;
+			r_gammamethod->integer = GAMMA_HARDWARE; // temporary fallback to hardware gamma
+		}
+	}
 }
 
 static void CreateExternalShaders( void ) {

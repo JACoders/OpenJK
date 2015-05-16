@@ -163,6 +163,8 @@ cvar_t	*r_debugSort;
 
 cvar_t	*r_marksOnTriangleMeshes;
 
+cvar_t *r_gammamethod;
+
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
 #define	DEFAULT_MAX_POLYS		600
@@ -255,6 +257,46 @@ PFNGLISPROGRAMARBPROC qglIsProgramARB;
 
 PFNGLLOCKARRAYSEXTPROC qglLockArraysEXT;
 PFNGLUNLOCKARRAYSEXTPROC qglUnlockArraysEXT;
+
+PFNGLGETHANDLEARBPROC qglGetHandleARB = NULL;
+PFNGLDELETEOBJECTARBPROC qglDeleteObjectARB = NULL;
+PFNGLDETACHOBJECTARBPROC qglDetachObjectARB = NULL;
+PFNGLCREATESHADEROBJECTARBPROC qglCreateShaderObjectARB = NULL;
+PFNGLSHADERSOURCEARBPROC qglShaderSourceARB = NULL;
+PFNGLCOMPILESHADERARBPROC qglCompileShaderARB = NULL;
+PFNGLCREATEPROGRAMOBJECTARBPROC qglCreateProgramObjectARB = NULL;
+PFNGLATTACHOBJECTARBPROC qglAttachObjectARB = NULL;
+PFNGLLINKPROGRAMARBPROC	qglLinkProgramARB = NULL;
+PFNGLUSEPROGRAMOBJECTARBPROC qglUseProgramObjectARB = NULL;
+PFNGLVALIDATEPROGRAMARBPROC	qglValidateProgramARB = NULL;
+PFNGLGETUNIFORMLOCATIONARBPROC qglGetUniformLocationARB = NULL;
+PFNGLUNIFORM1IARBPROC qglUniform1iARB = NULL;
+PFNGLUNIFORM1FARBPROC qglUniform1fARB = NULL;
+PFNGLUNIFORM4FARBPROC qglUniform4fARB = NULL;
+PFNGLUNIFORM4FVARBPROC qglUniform4fvARB = NULL;
+PFNGLGETINFOLOGARBPROC qglGetInfoLogARB = NULL;
+PFNGLGETOBJECTPARAMETERIVARBPROC qglGetObjectParameterivARB = NULL;
+PFNGLGETATTACHEDOBJECTSARBPROC qglGetAttachedObjectsARB = NULL;
+
+GLboolean(APIENTRY * qglIsRenderbufferEXT) (GLuint renderbuffer);
+void			(APIENTRY * qglBindRenderbufferEXT) (GLenum target, GLuint renderbuffer);
+void			(APIENTRY * qglDeleteRenderbuffersEXT) (GLsizei n, const GLuint * renderbuffers);
+void			(APIENTRY * qglGenRenderbuffersEXT) (GLsizei n, GLuint * renderbuffers);
+void			(APIENTRY * qglRenderbufferStorageEXT) (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+void			(APIENTRY * qglGetRenderbufferParameterivEXT) (GLenum target, GLenum pname, GLint * params);
+GLboolean(APIENTRY * qglIsFramebufferEXT) (GLuint framebuffer);
+void			(APIENTRY * qglBindFramebufferEXT) (GLenum target, GLuint framebuffer);
+void			(APIENTRY * qglDeleteFramebuffersEXT) (GLsizei n, const GLuint * framebuffers);
+void			(APIENTRY * qglGenFramebuffersEXT) (GLsizei n, GLuint * framebuffers);
+GLenum(APIENTRY * qglCheckFramebufferStatusEXT) (GLenum target);
+void			(APIENTRY * qglFramebufferTexture1DEXT) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+void			(APIENTRY * qglFramebufferTexture2DEXT) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level);
+void			(APIENTRY * qglFramebufferTexture3DEXT) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
+void			(APIENTRY * qglFramebufferRenderbufferEXT) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer);
+void			(APIENTRY * qglGetFramebufferAttachmentParameterivEXT) (GLenum target, GLenum attachment, GLenum pname, GLint * params);
+void			(APIENTRY * qglGenerateMipmapEXT) (GLenum target);
+void			(APIENTRY * qglBlitFramebufferEXT) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
+
 
 bool g_bTextureRectangleHack = false;
 
@@ -711,6 +753,56 @@ static void GLimp_InitExtensions( void )
 	{
 		g_bDynamicGlowSupported = false;
 		ri->Cvar_Set( "r_DynamicGlow","0" );
+	}
+
+	if (GL_CheckForExtension("GL_ARB_shader_objects") &&
+		GL_CheckForExtension("GL_ARB_shading_language_100") &&
+		GL_CheckForExtension("GL_ARB_vertex_shader") &&
+		GL_CheckForExtension("GL_ARB_fragment_shader") &&
+		GL_CheckForExtension("GL_EXT_framebuffer_object")) {
+		qglCreateShaderObjectARB = (PFNGLCREATESHADEROBJECTARBPROC)ri->GL_GetProcAddress("glCreateShaderObjectARB");
+		qglShaderSourceARB = (PFNGLSHADERSOURCEARBPROC)ri->GL_GetProcAddress("glShaderSourceARB");
+		qglCompileShaderARB = (PFNGLCOMPILESHADERARBPROC)ri->GL_GetProcAddress("glCompileShaderARB");
+
+		qglGetHandleARB = (PFNGLGETHANDLEARBPROC)ri->GL_GetProcAddress("glGetHandleARB");
+		qglDeleteObjectARB = (PFNGLDELETEOBJECTARBPROC)ri->GL_GetProcAddress("glDeleteObjectARB");
+		qglDetachObjectARB = (PFNGLDETACHOBJECTARBPROC)ri->GL_GetProcAddress("glDetachObjectARB");
+		qglCreateProgramObjectARB = (PFNGLCREATEPROGRAMOBJECTARBPROC)ri->GL_GetProcAddress("glCreateProgramObjectARB");
+		qglAttachObjectARB = (PFNGLATTACHOBJECTARBPROC)ri->GL_GetProcAddress("glAttachObjectARB");
+		qglLinkProgramARB = (PFNGLLINKPROGRAMARBPROC)ri->GL_GetProcAddress("glLinkProgramARB");
+		qglUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC)ri->GL_GetProcAddress("glUseProgramObjectARB");
+		qglValidateProgramARB = (PFNGLVALIDATEPROGRAMARBPROC)ri->GL_GetProcAddress("glValidateProgramARB");
+		qglGetUniformLocationARB = (PFNGLGETUNIFORMLOCATIONARBPROC)ri->GL_GetProcAddress("glGetUniformLocationARB");
+		qglUniform1iARB = (PFNGLUNIFORM1IARBPROC)ri->GL_GetProcAddress("glUniform1iARB");
+		qglUniform1fARB = (PFNGLUNIFORM1FARBPROC)ri->GL_GetProcAddress("glUniform1fARB");
+		qglUniform4fARB = (PFNGLUNIFORM4FARBPROC)ri->GL_GetProcAddress("glUniform4fARB");
+		qglUniform4fvARB = (PFNGLUNIFORM4FVARBPROC)ri->GL_GetProcAddress("glUniform4fvARB");
+		qglGetInfoLogARB = (PFNGLGETINFOLOGARBPROC)ri->GL_GetProcAddress("glGetInfoLogARB");
+		qglGetObjectParameterivARB = (PFNGLGETOBJECTPARAMETERIVARBPROC)ri->GL_GetProcAddress("glGetObjectParameterivARB");
+		qglGetAttachedObjectsARB = (PFNGLGETATTACHEDOBJECTSARBPROC)ri->GL_GetProcAddress("glGetAttachedObjectsARB");
+
+		qglGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)ri->GL_GetProcAddress("glGenFramebuffersEXT");
+		qglDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)ri->GL_GetProcAddress("glDeleteFramebuffersEXT");
+		qglBindFramebufferEXT = (PFNGLBINDFRAMEBUFFEREXTPROC)ri->GL_GetProcAddress("glBindFramebufferEXT");
+		qglFramebufferTexture2DEXT = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)ri->GL_GetProcAddress("glFramebufferTexture2DEXT");
+		qglCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)ri->GL_GetProcAddress("glCheckFramebufferStatusEXT");
+		qglGenRenderbuffersEXT = (PFNGLGENRENDERBUFFERSEXTPROC)ri->GL_GetProcAddress("glGenRenderbuffersEXT");
+		qglDeleteRenderbuffersEXT = (PFNGLDELETERENDERBUFFERSEXTPROC)ri->GL_GetProcAddress("glDeleteRenderbuffersEXT");
+		qglBindRenderbufferEXT = (PFNGLBINDRENDERBUFFEREXTPROC)ri->GL_GetProcAddress("glBindRenderbufferEXT");
+		qglRenderbufferStorageEXT = (PFNGLRENDERBUFFERSTORAGEEXTPROC)ri->GL_GetProcAddress("glRenderbufferStorageEXT");
+		qglFramebufferRenderbufferEXT = (PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC)ri->GL_GetProcAddress("glFramebufferRenderbufferEXT");
+		qglGenerateMipmapEXT = (PFNGLGENERATEMIPMAPEXTPROC)ri->GL_GetProcAddress("glGenerateMipmapEXT");
+
+		ri->Printf(PRINT_ALL, "...using GL_ARB_shader_objects\n");
+		ri->Printf(PRINT_ALL, "...using GL_ARB_shading_language_100\n");
+		ri->Printf(PRINT_ALL, "...using GL_ARB_vertex_shader\n");
+		ri->Printf(PRINT_ALL, "...using GL_ARB_fragment_shader\n");
+		ri->Printf(PRINT_ALL, "...using GL_EXT_framebuffer_object\n");
+
+		glConfig.deviceSupportsPostprocessingGamma = qtrue;
+	}
+	else {
+		glConfig.deviceSupportsPostprocessingGamma = qfalse;
 	}
 }
 
@@ -1394,13 +1486,13 @@ void GfxInfo_f( void )
 	{
 		ri->Printf( PRINT_ALL, "N/A\n" );
 	}
-	if ( glConfig.deviceSupportsGamma )
-	{
-		ri->Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
+
+	// ouned: gamma correction
+	if (glConfig.deviceSupportsPostprocessingGamma) {
+		ri->Printf(PRINT_ALL, "GAMMA_METHOD: postprocessing\n");
 	}
-	else
-	{
-		ri->Printf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
+	if (glConfig.deviceSupportsGamma) {
+		ri->Printf(PRINT_ALL, "GAMMA_METHOD: hardware\n");
 	}
 
 	// rendering primitives
@@ -1647,6 +1739,10 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+	r_gamma								= ri->Cvar_Get( "r_gamma",							"1",						CVAR_ARCHIVE );
+	r_gammamethod						= ri->Cvar_Get( "r_gammamethod",					GAMMA_DEFAULT,				CVAR_ARCHIVE | CVAR_LATCH );
+
 	r_modelpoolmegs = ri->Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
 	if (ri->Sys_LowPhysicalMemory() )
 		ri->Cvar_Set("r_modelpoolmegs", "0");
@@ -1733,6 +1829,10 @@ void R_Init( void ) {
 	}
 	InitOpenGL();
 
+	if (r_gammamethod->integer == GAMMA_POSTPROCESSING && !glConfig.deviceSupportsPostprocessingGamma) {
+		r_gammamethod->integer = GAMMA_HARDWARE; // temporary fallback to hardware gamma
+	}
+
 	R_InitImages();
 	R_InitShaders(qfalse);
 	R_InitSkins();
@@ -1799,6 +1899,37 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 		// Release the blur texture.
 		qglDeleteTextures( 1, &tr.blurImage );
+	}
+
+	if (tr.m_hVShader) {
+		qglDetachObjectARB(tr.gammaProgram, tr.m_hVShader);
+		qglDeleteObjectARB(tr.m_hVShader);
+
+		tr.m_hVShader = 0;
+	}
+	if (tr.m_hFShader) {
+		qglDetachObjectARB(tr.gammaProgram, tr.m_hFShader);
+		qglDeleteObjectARB(tr.m_hFShader);
+
+		tr.m_hFShader = 0;
+	}
+
+	if (tr.gammaProgram) {
+		qglDeleteObjectARB(tr.gammaProgram);
+		tr.gammaProgram = 0;
+	}
+
+	if (tr.gammaRenderTarget) {
+		qglDeleteTextures(1, &tr.gammaRenderTarget);
+	}
+
+	if (tr.gammaRenderDepthBuffer) {
+		qglDeleteRenderbuffersEXT(1, &tr.gammaRenderDepthBuffer);
+	}
+
+	if (tr.gammaFramebuffer) {
+		qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		qglDeleteFramebuffersEXT(1, &tr.gammaFramebuffer);
 	}
 
 	R_ShutdownWorldEffects();

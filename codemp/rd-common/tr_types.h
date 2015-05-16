@@ -404,4 +404,6 @@ typedef struct glconfig_s {
 	// used CDS.
 	qboolean				isFullscreen;
 	qboolean				stereoEnabled;
+
+	qboolean				deviceSupportsPostprocessingGamma;
 } glconfig_t;
