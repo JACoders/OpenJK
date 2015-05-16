@@ -326,6 +326,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	}
 	glState.finishCalled = qfalse;
 
+	if (glConfig.deviceSupportsPostprocessingGamma && r_gammamethod->integer == GAMMA_POSTPROCESSING) {
+		qglBindFramebufferEXT(GL_FRAMEBUFFER_EXT, tr.gammaFramebuffer);
+	}
+
 	tr.frameCount++;
 	tr.frameSceneNum = 0;
 
