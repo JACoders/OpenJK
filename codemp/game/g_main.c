@@ -716,7 +716,19 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "t1_danger") == 0)
 	{
+		int i = 0;
+		gentity_t *ent;
+
 		level.quest_map = 18;
+
+		for (i = 0; i < level.num_entities; i++)
+		{
+			ent = &g_entities[i];
+			if (Q_stricmp( ent->classname, "NPC_Monster_Sand_Creature") == 0)
+			{ // zyk: remove the map change entity
+				G_FreeEntity( ent );
+			}
+		}
 
 		zyk_create_info_player_deathmatch(-3705,-3362,1121,90);
 		zyk_create_info_player_deathmatch(-3705,-2993,1121,90);
