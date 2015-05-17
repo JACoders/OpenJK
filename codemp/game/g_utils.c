@@ -1818,7 +1818,7 @@ void TryUse( gentity_t *ent )
 			{
 				if (ent->client->pers.universe_quest_messages == 65 && ent->client->pers.universe_quest_objective_control == 0 && !(ent->client->pers.universe_quest_counter & (1 << 2)))
 				{ // zyk: killed all raiders
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You must be indeed the hero of the legend that the sages told about! Here, accept the Amulet of Eternity as a reward.\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7You must be indeed the hero of the legend that the sages told about! Here, accept the Amulet of Eternity as a reward.\"");
 					ent->client->pers.universe_quest_messages = 40;
 					ent->client->pers.universe_quest_counter |= (1 << 2);
 					
@@ -1830,60 +1830,60 @@ void TryUse( gentity_t *ent )
 				}
 				else if (!(ent->client->pers.universe_quest_counter & (1 << 2)) && ent->client->pers.universe_quest_objective_control == -6)
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7The sand raiders are coming! Defeat them and I give you the Amulet of Eternity!\""); // eternity
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7The sand raiders are coming! Defeat them and I give you the Amulet of Eternity!\""); // eternity
 					ent->client->pers.universe_quest_objective_control = 4; // zyk: player must kill 4 sand raiders
 					ent->client->pers.universe_quest_messages = 60;
 				}
 				else if (!(ent->client->pers.universe_quest_counter & (1 << 2)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Please defeat the sand raiders to save our city!\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Please defeat the sand raiders to save our city!\"");
 				}
 				else
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Thank you for everything you have done for us, brave hero!\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Thank you for everything you have done for us, brave hero!\"");
 			}
 			else if (target->client->pers.universe_quest_objective_control == -20)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hi, mister! Welcome to our city! ^^\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Hi, mister! Welcome to our city! ^^\"");
 			else if (target->client->pers.universe_quest_objective_control == -30)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Leave me alone!\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Leave me alone!\"");
 			else if (target->client->pers.universe_quest_objective_control == -40)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I cant talk now, sorry!\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7I cant talk now, sorry!\"");
 			else if (target->client->pers.universe_quest_objective_control == -50)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Later, buddy.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Later, buddy.\"");
 			else if (target->client->pers.universe_quest_objective_control == -60)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7What are you doing here?\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7What are you doing here?\"");
 			else if (target->client->pers.universe_quest_objective_control == -70)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulet of Light? Never heard of it.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Amulet of Light? Never heard of it.\"");
 			else if (target->client->pers.universe_quest_objective_control == -80)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Maybe the mayor of the city can help you.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Maybe the mayor of the city can help you.\"");
 			else if (target->client->pers.universe_quest_objective_control == -90)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7What the hell do you want from me? :/\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7What the hell do you want from me? :/\"");
 			else if (target->client->pers.universe_quest_objective_control == -100)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hello, man :)\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Hello, man :)\"");
 			else if (target->client->pers.universe_quest_objective_control == -110)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7A bothering man you are... :|\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7A bothering man you are... :|\"");
 			else if (target->client->pers.universe_quest_objective_control == -120)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Get out of here! >:/\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Get out of here! >:/\"");
 			else if (target->client->pers.universe_quest_objective_control == -130)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Sorry, maybe some other time.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Sorry, maybe some other time.\"");
 			else if (target->client->pers.universe_quest_objective_control == -140)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hello, please feel free to explore our city :)\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Hello, please feel free to explore our city :)\"");
 			else if (target->client->pers.universe_quest_objective_control == -150)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You can get some ammo in some places in the city\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7You can get some ammo in some places in the city\"");
 			else if (target->client->pers.universe_quest_objective_control == -160)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Wanna trade?\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Wanna trade?\"");
 			else if (target->client->pers.universe_quest_objective_control == -170)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Welcome.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Welcome.\"");
 			else if (target->client->pers.universe_quest_objective_control == -180)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Who the hell you think you are to talk to me! Scram!\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Who the hell you think you are to talk to me! Scram!\"");
 			else if (target->client->pers.universe_quest_objective_control == -190)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Can we please talk later? :)\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Can we please talk later? :)\"");
 			else if (target->client->pers.universe_quest_objective_control == -200)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I dont have time now\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7I dont have time now\"");
 			else if (target->client->pers.universe_quest_objective_control == -210 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_messages >= 40 && ent->client->pers.universe_quest_progress == 5 && ent->client->pers.universe_quest_objective_control == -6)
 			{
 				if (ent->client->pers.universe_quest_messages == 102 && !(ent->client->pers.universe_quest_counter & (1 << 0)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amazing! You found out his name! Now I will give you the Amulet of Light!\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Amazing! You found out his name! Now I will give you the Amulet of Light!\"");
 					ent->client->pers.universe_quest_messages = 40;
 					ent->client->pers.universe_quest_counter |= (1 << 0);
 
@@ -1892,45 +1892,45 @@ void TryUse( gentity_t *ent )
 				}
 				else if (ent->client->pers.universe_quest_messages == 103 && !(ent->client->pers.universe_quest_counter & (1 << 0)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hehehe! Try again mister, the sages told me the true hero would succeed!\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Hehehe! Try again mister, the sages told me the true hero would succeed!\"");
 					ent->client->pers.universe_quest_messages = 40;
 				}
 				else if (!(ent->client->pers.universe_quest_counter & (1 << 0)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Tell me the name of the mayor and I give you the Amulet of Light! (use ^3/answer <name>^7 and talk again to the citizen)\""); // light
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Tell me the name of the mayor and I give you the Amulet of Light! (use ^3/answer <name>^7 and talk again to the citizen)\""); // light
 					ent->client->pers.universe_quest_messages = 101;
 				}
 				else
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I knew it! You are the legendary hero! ^^\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7I knew it! You are the legendary hero! ^^\"");
 			}
 			else if (target->client->pers.universe_quest_objective_control == -220)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I dont want to talk. Kindly leave.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7I dont want to talk. Kindly leave.\"");
 			else if (target->client->pers.universe_quest_objective_control == -230)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Oh man, I cant talk to you now.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Oh man, I cant talk to you now.\"");
 			else if (target->client->pers.universe_quest_objective_control == -240)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Can you please get away from my sight? :|\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Can you please get away from my sight? :|\"");
 			else if (target->client->pers.universe_quest_objective_control == -250)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Beware, some people here dont have too much sense of humor. :p\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Beware, some people here dont have too much sense of humor. :p\"");
 			else if (target->client->pers.universe_quest_objective_control == -260)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Who are you? Please leave me alone! :o\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Who are you? Please leave me alone! :o\"");
 			else if (target->client->pers.universe_quest_objective_control == -270)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Need some help? Well...I cant help. Sorry.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Need some help? Well...I cant help. Sorry.\"");
 			else if (target->client->pers.universe_quest_objective_control == -280)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulet of Darkness! Ask the mayor, maybe he can help.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Amulet of Darkness! Ask the mayor, maybe he can help.\"");
 			else if (target->client->pers.universe_quest_objective_control == -290)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hey!\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Hey!\"");
 			else if (target->client->pers.universe_quest_objective_control == -300)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I must watch the city from here to maintain security.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7I must watch the city from here to maintain security.\"");
 			else if (target->client->pers.universe_quest_objective_control == -310 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_messages >= 40 && ent->client->pers.universe_quest_progress == 5 && ent->client->pers.universe_quest_objective_control == -6)
 			{
 				if (ent->client->pers.universe_quest_messages != 51 && !(ent->client->pers.universe_quest_counter & (1 << 1)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Please help me, my droid has become dangerous! Destroy it and I give you the Amulet of Darkness.\""); // darkness
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Please help me, my droid has become dangerous! Destroy it and I give you the Amulet of Darkness.\""); // darkness
 					ent->client->pers.universe_quest_messages = 50;
 				}
 				else if (!(ent->client->pers.universe_quest_counter & (1 << 1)))
 				{
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Thank you! Now receive the Amulet of Darkness from me, hero!\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Thank you! Now receive the Amulet of Darkness from me, hero!\"");
 					ent->client->pers.universe_quest_messages = 40;
 					ent->client->pers.universe_quest_counter |= (1 << 1);
 
@@ -1938,24 +1938,24 @@ void TryUse( gentity_t *ent )
 					got_all_amulets(ent);
 				}
 				else
-					trap->SendServerCommand( -1, "chat \"^3Citizen: ^7You must be the legendary hero the sages told me about! :D\"");
+					trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7You must be the legendary hero the sages told me about! :D\"");
 			}
 			else if (target->client->pers.universe_quest_objective_control == -320)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Im so happy today. :D\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Im so happy today. :D\"");
 			else if (target->client->pers.universe_quest_objective_control == -330)
-				trap->SendServerCommand( -1, "chat \"^3Samir: ^7I am Samir, the mayor of the city. Nice to meet you. Amulets ... I dont know anything about it, sorry.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Samir: ^7I am Samir, the mayor of the city. Nice to meet you. Amulets ... I dont know anything about it, sorry.\"");
 			else if (target->client->pers.universe_quest_objective_control == -340)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulet of Eternity? What do you think I am, a jewel keeper?\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Amulet of Eternity? What do you think I am, a jewel keeper?\"");
 			else if (target->client->pers.universe_quest_objective_control == -360)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Amulets? What do you think I am? A rich guy? Jewelry is too expensive!\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Amulets? What do you think I am? A rich guy? Jewelry is too expensive!\"");
 			else if (target->client->pers.universe_quest_objective_control == -370)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7I heard that the guy in the Millenium Falcon area is having some problems with his droid.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7I heard that the guy in the Millenium Falcon area is having some problems with his droid.\"");
 			else if (target->client->pers.universe_quest_objective_control == -380)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Welcome. Please come often to our city, friend!\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Welcome. Please come often to our city, friend!\"");
 			else if (target->client->pers.universe_quest_objective_control == -390)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Bye, i have some things to do now.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Bye, i have some things to do now.\"");
 			else if (target->client->pers.universe_quest_objective_control == -400)
-				trap->SendServerCommand( -1, "chat \"^3Citizen: ^7Hi.\"");
+				trap->SendServerCommand( ent->s.number, "chat \"^3Citizen: ^7Hi.\"");
 
 			return;
 		}

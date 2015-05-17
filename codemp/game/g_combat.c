@@ -2158,7 +2158,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		save_account(self);
 
-		trap->SendServerCommand( -1, va("chat \"^3Quest System: ^7%s^7! You died in the Challenge Mode! You lost all your quests!\n\"", self->client->pers.netname) );
+		trap->SendServerCommand( self->s.number, va("chat \"^3Quest System: ^7%s^7! You died in the Challenge Mode! You lost all your quests!\n\"", self->client->pers.netname) );
 	}
 
 	// zyk: setting the credits_modifier and the bonus score for the RPG player
@@ -2249,7 +2249,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		{
 			gentity_t *player_ent = &g_entities[self->client->pers.universe_quest_artifact_holder_id];
 
-			trap->SendServerCommand( -1, va("chat \"^3Spooky voice^7: I am going away, since I am not welcome here...\""));
+			trap->SendServerCommand( player_ent->s.number, va("chat \"^3Spooky voice^7: I am going away, since I am not welcome here...\""));
 			player_ent->client->pers.universe_quest_artifact_holder_id = -1;
 
 			// zyk: fixed bug in which a boss battle would kill this npc and pass quest turn
@@ -2281,7 +2281,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 		else if ((Q_stricmp( self->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_eternity" ) == 0) && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9) // zyk: if its a Sage, player fails the objective
 		{
-			trap->SendServerCommand( -1, va("chat \"%s^7: Oh no! One of the sages is dead! I failed to protect them...\"", the_old_player->client->pers.netname));
+			trap->SendServerCommand( the_old_player->s.number, va("chat \"%s^7: Oh no! One of the sages is dead! I failed to protect them...\"", the_old_player->client->pers.netname));
 
 			// zyk: if player fails the first Universe Quest objective, pass the turn to another player
 			quest_get_new_player(the_old_player);
@@ -2299,13 +2299,13 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 		else if ((Q_stricmp( self->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_eternity" ) == 0) && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_progress == 1 && level.quest_map == 9)
 		{ // zyk: if sage dies, player fails the second objective
-			trap->SendServerCommand( -1, va("chat \"%s^7: I cant believe it! Now it is all lost...\"", the_old_player->client->pers.netname));
+			trap->SendServerCommand( the_old_player->s.number, va("chat \"%s^7: I cant believe it! Now it is all lost...\"", the_old_player->client->pers.netname));
 
 			quest_get_new_player(the_old_player);
 		}
 		else if (Q_stricmp( self->NPC_type, "sage_of_universe" ) == 0 && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_objective_control == 5 && the_old_player->client->pers.universe_quest_progress == 4)
 		{ // zyk: Sage of Universe died in the fifth Universe Quest objective, pass turn to another player
-			trap->SendServerCommand( -1, va("chat \"%s^7: It cannot be! The Sage of Universe is dead...\"", the_old_player->client->pers.netname));
+			trap->SendServerCommand( the_old_player->s.number, va("chat \"%s^7: It cannot be! The Sage of Universe is dead...\"", the_old_player->client->pers.netname));
 
 			quest_get_new_player(the_old_player);
 		}
@@ -2317,19 +2317,19 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 				if (the_old_player->client->pers.universe_quest_objective_control == 0)
 				{ // zyk: player defeated all soldiers, so he completed the mission
-					trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7We defeated them all.\"");
+					trap->SendServerCommand( the_old_player->s.number, "chat \"^7Guardian of Time: ^7We defeated them all.\"");
 					the_old_player->client->pers.hunter_quest_timer = level.time + 3000;
 					the_old_player->client->pers.hunter_quest_messages = 40;
 				}
 				else if (the_old_player->client->pers.universe_quest_objective_control == 10)
 				{ // zyk: after the player defeats some soldiers, Master of Evil will send more
 					the_old_player->client->pers.hunter_quest_messages = 12;
-					trap->SendServerCommand( -1, "chat \"^7Guardian of Time: ^7More soldiers coming.\"");
+					trap->SendServerCommand( the_old_player->s.number, "chat \"^7Guardian of Time: ^7More soldiers coming.\"");
 				}
 			}
 			else
 			{
-				trap->SendServerCommand( -1, va("chat \"%s: ^7No! One of my allies died...\"", the_old_player->client->pers.netname));
+				trap->SendServerCommand( the_old_player->s.number, va("chat \"%s: ^7No! One of my allies died...\"", the_old_player->client->pers.netname));
 				the_old_player->client->pers.hunter_quest_timer = level.time + 3000;
 				the_old_player->client->pers.hunter_quest_messages = 50;
 			}
@@ -2340,7 +2340,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		if (quest_player->client->pers.guardian_mode == 8)
 		{ // zyk: defeated the Guardian of Light
 			quest_player->client->pers.defeated_guardians = NUMBER_OF_GUARDIANS;
-			trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Well done, brave warrior! Now i shall grant you the ^5Light Power^7!\"");
+			trap->SendServerCommand( quest_player->s.number, "chat \"^5Guardian of Light: ^7Well done, brave warrior! Now i shall grant you the ^5Light Power^7!\"");
 		}
 		else
 		{
@@ -2355,35 +2355,35 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			// zyk: make the chat message for each guardian the player defeats
 			if (light_quest_bitvalue == 4)
 			{
-				trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Well done... continue your quest... if you seek the power of light...\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^4Guardian of Water: ^7Well done... continue your quest... if you seek the power of light...\"");
 			}
 			else if (light_quest_bitvalue == 5)
 			{
-				trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Incredible! you are indeed a strong warrior...\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^3Guardian of Earth: ^7Incredible! you are indeed a strong warrior...\"");
 			}
 			else if (light_quest_bitvalue == 6)
 			{
-				trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7You just defeated the power of forest! Amazing!\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^2Guardian of Forest: ^7You just defeated the power of forest! Amazing!\"");
 			}
 			else if (light_quest_bitvalue == 7)
 			{
-				trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7You must be quite intelligent to beat me.\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^5Guardian of Intelligence: ^7You must be quite intelligent to beat me.\"");
 			}
 			else if (light_quest_bitvalue == 8)
 			{
-				trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Wow! You are fast and strong, you deserve the victory!\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^6Guardian of Agility: ^7Wow! You are fast and strong, you deserve the victory!\"");
 			}
 			else if (light_quest_bitvalue == 9)
 			{
-				trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7I cant believe it, you defeated the power of fire!\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^1Guardian of Fire: ^7I cant believe it, you defeated the power of fire!\"");
 			}
 			else if (light_quest_bitvalue == 10)
 			{
-				trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7You are indeed the chosen warrior... may the power of the wind guide you in your quest.\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^7Guardian of Wind: ^7You are indeed the chosen warrior... may the power of the wind guide you in your quest.\"");
 			}
 			else if (light_quest_bitvalue == 11)
 			{
-				trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7You are a resistant and strong warrior.\"");
+				trap->SendServerCommand( quest_player->s.number, "chat \"^3Guardian of Resistance: ^7You are a resistant and strong warrior.\"");
 			}
 		}
 
@@ -2401,7 +2401,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		save_account(quest_player);
 
-		trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Well done, mighty warrior... now I shall grant you the ^1Dark Power^7!\"");
+		trap->SendServerCommand( quest_player->s.number, "chat \"^1Guardian of Darkness: ^7Well done, mighty warrior... now I shall grant you the ^1Dark Power^7!\"");
 
 		quest_get_new_player(quest_player);
 	}
@@ -2412,7 +2412,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		save_account(quest_player);
 
-		trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Very well...you are a worthy warrior...you deserve my ^3Eternity Power^7!\"");
+		trap->SendServerCommand( quest_player->s.number, "chat \"^3Guardian of Eternity: ^7Very well...you are a worthy warrior...you deserve my ^3Eternity Power^7!\"");
 
 		quest_get_new_player(quest_player);
 	}
@@ -2422,7 +2422,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		quest_player->client->pers.universe_quest_timer = level.time + 2000;
 		quest_player->client->pers.guardian_mode = 0;
 
-		trap->SendServerCommand( -1, va("chat \"^1Master of Evil: ^7Nooooo...\""));
+		trap->SendServerCommand( quest_player->s.number, va("chat \"^1Master of Evil: ^7Nooooo...\""));
 	}
 	else if (quest_player && quest_player->client->pers.guardian_mode == 13)
 	{ // zyk: defeated the Guardian of Universe
