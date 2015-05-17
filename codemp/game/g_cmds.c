@@ -8459,7 +8459,30 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			else if (Q_stricmp( arg1, "quests" ) == 0)
 			{
 				if (zyk_allow_quests.integer == 1)
-					trap->SendServerCommand(ent-g_entities, "print \"\n^3RPG Mode Quests\n\n^2/list universe: ^7Universe Quest (Main Quest)\n\n^2/list light: ^7Light Quest\n^2/list dark: ^7Dark Quest\n^2/list eternity: ^7Eternity Quest\n\n^3/list bounty: ^7The Bounty Hunter quest\n^3/list guardian: ^7The Guardian Quest\n\n\"");
+				{
+					char quest_player[512];
+					char target_player[512];
+					int j = 0;
+
+					strcpy(quest_player, "");
+					strcpy(target_player, "");
+
+					for (j = 0; j < MAX_CLIENTS; j++)
+					{
+						gentity_t *player = &g_entities[j];
+
+						if (player && player->client && player->client->sess.amrpgmode == 2 && player->client->pers.can_play_quest == 1)
+						{
+							strcpy(quest_player, va("%s", player->client->pers.netname));
+						}
+						if (player && player->client && player->client->sess.amrpgmode == 2 && level.bounty_quest_choose_target == qfalse && player->s.number == level.bounty_quest_target_id)
+						{
+							strcpy(target_player, va("%s", player->client->pers.netname));
+						}
+					}
+
+					trap->SendServerCommand(ent-g_entities, va("print \"\n^3RPG Mode Quests\n\n^2/list universe: ^7Universe Quest (Main Quest)\n\n^2/list light: ^7Light Quest\n^2/list dark: ^7Dark Quest\n^2/list eternity: ^7Eternity Quest\n\n^3/list bounty: ^7The Bounty Hunter quest\n^3/list guardian: ^7The Guardian Quest\n\n^3Quest Player: ^7%s\n^3Bounty Quest Target: ^7%s^7\n\n\"", quest_player, target_player));
+				}
 				else
 					trap->SendServerCommand(ent-g_entities, "print \"\n^3RPG Mode Quests\n\n^1Quests are not allowed in this server^7\n\n\"");
 			}
