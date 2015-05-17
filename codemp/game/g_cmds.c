@@ -5814,11 +5814,6 @@ void try_finishing_race()
 	{ // zyk: no one is racing, so finish the race
 		level.race_mode = 0;
 
-		for (j = 0; j < MAX_RACERS; j++)
-		{ // zyk: resetting race vehicle ids
-			level.race_mode_vehicle[j] = -1;
-		}
-
 		trap->SendServerCommand( -1, va("chat \"^3Race System: ^7The race is over!\""));
 	}
 }
@@ -11450,7 +11445,7 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 			}
 
 			if (swoop_number == -1)
-			{ // zyk: the meximum allowed number of racers is 8 in this map
+			{ // zyk: exceeded the MAX_RACERS
 				trap->SendServerCommand( ent-g_entities, "print \"The race is already full of racers! Try again later!\n\"" );
 				return;
 			}
@@ -11462,6 +11457,25 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 			yaw[0] = 0.0f;
 			yaw[1] = -179.0f;
 			yaw[2] = 0.0f;
+
+			if (level.race_mode == 0)
+			{ // zyk: if this is the first player entering the race, clean the old race swoops left in the map
+				int k = 0;
+
+				for (k = 0; k < MAX_RACERS; k++)
+				{
+					if (level.race_mode_vehicle[k] != -1)
+					{
+						gentity_t *vehicle_ent = &g_entities[level.race_mode_vehicle[k]];
+						if (vehicle_ent)
+						{
+							G_FreeEntity(vehicle_ent);
+						}
+						
+						level.race_mode_vehicle[k] = -1;
+					}
+				}
+			}
 
 			if (swoop_number < MAX_RACERS)
 			{
