@@ -5727,7 +5727,7 @@ void choose_new_player(gentity_t *next_player)
 			}
 			else if (level.quest_map == 15 && !(next_player->client->pers.defeated_guardians & (1 << 10)))
 			{ // zyk: Guardian of Wind
-				load_effect(5225,462,665,0,"env/btend");
+				load_effect(-153,-455,216,0,"env/btend");
 			}
 			else if (level.quest_map == 14 && !(next_player->client->pers.defeated_guardians & (1 << 11)))
 			{ // zyk: Guardian of Resistance
@@ -8527,9 +8527,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 							strcpy(guardian_message, va("%s\n^1Guardian of Fire ^7(mp/duel5) - ^1no",guardian_message));
 
 						if (ent->client->pers.defeated_guardians & (1 << 10))
-							strcpy(guardian_message, va("%s\n^7Guardian of Wind ^7(t2_wedge) - ^2yes",guardian_message));
+							strcpy(guardian_message, va("%s\n^7Guardian of Wind ^7(mp/duel9) - ^2yes",guardian_message));
 						else
-							strcpy(guardian_message, va("%s\n^7Guardian of Wind ^7(t2_wedge) - ^1no",guardian_message));
+							strcpy(guardian_message, va("%s\n^7Guardian of Wind ^7(mp/duel9) - ^1no",guardian_message));
 
 						if (ent->client->pers.defeated_guardians & (1 << 11))
 							strcpy(guardian_message, va("%s\n^3Guardian of Resistance ^7(mp/duel8) - ^2yes",guardian_message));

@@ -923,8 +923,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "t2_wedge") == 0)
 	{
-		level.quest_map = 15;
-
 		zyk_create_info_player_deathmatch(6328,539,-110,-178);
 		zyk_create_info_player_deathmatch(6332,743,-110,-178);
 	}
@@ -1190,6 +1188,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	{
 		level.quest_map = 14;
 	}
+	else if (Q_stricmp(zyk_mapname, "mp/duel9") == 0 && g_gametype.integer == GT_FFA)
+	{
+		level.quest_map = 15;
+	}
 	else if (Q_stricmp(zyk_mapname, "mp/siege_korriban") == 0 && g_gametype.integer == GT_FFA)
 	{ // zyk: if its a FFA game, then remove the coffin and the coffin shield in the final part
 		int i = 0;
@@ -1287,8 +1289,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			strcpy(level.default_map_music,"music/yavin2/yavtemp2_explore.mp3");
 		else if (level.quest_map == 13)
 			strcpy(level.default_map_music,"music/t1_fatal/tunnels_explore.mp3");
-		else if (level.quest_map == 15)
-			strcpy(level.default_map_music,"music/t2_wedge/besplat_explore.mp3");
 		else
 			strcpy(level.default_map_music,"music/hoth2/hoth2_explore.mp3");
 	}
@@ -6744,7 +6744,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 15)
 					{
-						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 10)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > 5125 && (int) ent->client->ps.origin[0] < 5325 && (int) ent->client->ps.origin[1] > 362 && (int) ent->client->ps.origin[1] < 562 && (int) ent->client->ps.origin[2] == 664)
+						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 10)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > -253 && (int) ent->client->ps.origin[0] < -53 && (int) ent->client->ps.origin[1] > -555 && (int) ent->client->ps.origin[1] < -355 && (int) ent->client->ps.origin[2] == 216)
 						{
 							if (ent->client->pers.light_quest_timer < level.time)
 							{
@@ -6752,7 +6752,7 @@ void G_RunFrame( int levelTime ) {
 									trap->SendServerCommand( ent->s.number, va("chat \"^7Guardian of Wind: ^7I am the Guardian of Wind, %s^7! Try to reach me in the air if you can!\"",ent->client->pers.netname));
 								else if (ent->client->pers.light_quest_messages == 1)
 								{
-									spawn_boss(ent,5225,462,665,179,"guardian_boss_7",5025,462,865,179,7);
+									spawn_boss(ent,-156,-298,217,-90,"guardian_boss_7",-156,-584,300,90,7);
 								}
 								ent->client->pers.light_quest_messages++;
 								ent->client->pers.light_quest_timer = level.time + 3000;
