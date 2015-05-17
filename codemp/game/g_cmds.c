@@ -4592,6 +4592,57 @@ void save_account(gentity_t *ent)
 	}
 }
 
+qboolean validate_rpg_class(gentity_t *ent)
+{
+	if (ent->client->pers.rpg_class == 0 && zyk_allow_free_warrior.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Free Warrior not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 1 && zyk_allow_force_user.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Force User not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 2 && zyk_allow_bounty_hunter.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Bounty Hunter not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 3 && zyk_allow_armored_soldier.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Armored Soldier not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 4 && zyk_allow_monk.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Monk not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 5 && zyk_allow_stealth_attacker.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Stealth Attacker not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 6 && zyk_allow_duelist.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Duelist not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 7 && zyk_allow_force_gunner.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Force Gunner not allowed in this server\n\"" );
+		return qfalse;
+	}
+	else if (ent->client->pers.rpg_class == 8 && zyk_allow_magic_master.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Magic Master not allowed in this server\n\"" );
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
 // zyk: gives rpg score to the player
 void rpg_score(gentity_t *ent, qboolean admin_rp_mode)
 {
@@ -4604,6 +4655,9 @@ void rpg_score(gentity_t *ent, qboolean admin_rp_mode)
 	{ // zyk: in RP Mode, only admins can give levels to RPG players
 		return;
 	}
+
+	if (validate_rpg_class(ent) == qfalse)
+		return;
 
 	add_credits(ent, (10 + ent->client->pers.credits_modifier));
 
@@ -4705,6 +4759,9 @@ void initialize_rpg_skills(gentity_t *ent)
 {
 	if (ent->client->sess.amrpgmode == 2)
 	{
+		if (validate_rpg_class(ent) == qfalse)
+			return;
+
 		// zyk: loading Jump value
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)) && ent->client->pers.force_powers_levels[0] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
@@ -7121,6 +7178,9 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (validate_rpg_class(ent) == qfalse)
+		return;
+
 	do_upgrade_skill(ent, upgrade_value);
 }
 
@@ -7132,6 +7192,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid skill number.\n\"" );
 		return;
 	}
+
+	if (validate_rpg_class(ent) == qfalse)
+		return;
 
 	// zyk: the downgrade is done if it doesnt go below the minimum level of the skill
 	if (downgrade_value == 1)
@@ -11031,6 +11094,9 @@ void do_change_class(gentity_t *ent, int value)
 		trap->SendServerCommand( ent-g_entities, "print \"You cannot change class after level 1 in this server.\n\"" );
 		return;
 	}
+
+	if (validate_rpg_class(ent) == qfalse)
+		return;
 
 	if (zyk_allow_class_change.integer == 1)
 	{
