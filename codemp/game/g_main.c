@@ -553,8 +553,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.boss_battle_music_reset_timer = 0;
 
-	level.rp_mode = qfalse;
-
 	if (1)
 	{
 		int zyk_iterator = 0;

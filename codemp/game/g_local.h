@@ -1445,9 +1445,6 @@ typedef struct level_locals_s {
 
 	// zyk: how much time it must show the message for the player
 	int screen_message_timer[MAX_CLIENTS];
-
-	// zyk: RP Mode. Players cannot get levels or change class. Admins can give levels using a /levelgive
-	qboolean rp_mode;
 } level_locals_t;
 
 

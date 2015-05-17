@@ -4525,7 +4525,7 @@ void save_account(gentity_t *ent)
 	// zyk: used to prevent account save in map change time or before loading account after changing map
 	if (level.voteExecuteTime < level.time && ent->client->pers.connected == CON_CONNECTED)
 	{
-		if (ent->client->sess.amrpgmode == 2 && level.rp_mode == qfalse)
+		if (ent->client->sess.amrpgmode == 2 && zyk_rp_mode.integer != 1)
 		{ // zyk: players can only save things if server is not at RP Mode
 			FILE *account_file;
 			gclient_t *client;
@@ -4600,7 +4600,7 @@ void rpg_score(gentity_t *ent, qboolean admin_rp_mode)
 
 	strcpy(message,"");
 
-	if (admin_rp_mode == qfalse && level.rp_mode == qtrue)
+	if (admin_rp_mode == qfalse && zyk_rp_mode.integer == 1)
 	{ // zyk: in RP Mode, only admins can give levels to RPG players
 		return;
 	}
@@ -5752,7 +5752,7 @@ void quest_get_new_player(gentity_t *ent)
 	if (zyk_allow_quests.integer != 1)
 		return;
 
-	if (level.rp_mode == qtrue)
+	if (zyk_rp_mode.integer == 1)
 		return;
 
 	for (i = 0; i < level.maxclients; i++)
@@ -7115,7 +7115,7 @@ void Cmd_UpSkill_f( gentity_t *ent ) {
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
 	upgrade_value = atoi(arg1);
 
-	if (level.rp_mode == qtrue)
+	if (zyk_rp_mode.integer == 1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You can't upgrade skill when RP Mode is activated by an admin.\n\"" );
 		return;
@@ -8034,7 +8034,7 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
 	downgrade_value = atoi(arg1);
 
-	if (level.rp_mode == qtrue)
+	if (zyk_rp_mode.integer == 1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You can't downgrade skill when RP Mode is activated by an admin.\n\"" );
 		return;
@@ -11116,7 +11116,7 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 	trap->Argv(1, arg1, sizeof( arg1 ));
 	value = atoi(arg1);
 
-	if (level.rp_mode == qtrue)
+	if (zyk_rp_mode.integer == 1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You can't change class when RP Mode is activated by an admin.\n\"" );
 		return;
@@ -12308,10 +12308,11 @@ void Cmd_RpMode_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (level.rp_mode == qtrue)
+	if (zyk_rp_mode.integer == 1)
 	{
 		int i = 0;
-		level.rp_mode = qfalse;
+
+		trap->Cvar_Set( "zyk_rp_mode", "0" );
 
 		for (i = 0; i < MAX_CLIENTS; i++)
 		{ // zyk: logout everyone in RPG Mode so they must reload their accounts
@@ -12325,7 +12326,7 @@ void Cmd_RpMode_f( gentity_t *ent ) {
 	}
 	else
 	{
-		level.rp_mode = qtrue;
+		trap->Cvar_Set( "zyk_rp_mode", "1" );
 		trap->SendServerCommand( ent-g_entities, "print \"^3RPG System: ^7RP Mode ^2ON^7\n\"" );
 	}
 }
@@ -12487,7 +12488,7 @@ void Cmd_LevelGive_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (level.rp_mode == qfalse)
+	if (zyk_rp_mode.integer != 1)
 	{
 		trap->SendServerCommand( ent-g_entities, va("print \"The server is not at RP Mode\n\"") );
 		return;
