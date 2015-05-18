@@ -2270,13 +2270,24 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 					break;
 				}
 			}
+
 			if (!found) {
 				if (!printed) {
 					Q_strcat(msg, sizeof(msg), va("^3%-12s", level.courseName[course]));
 					printed = qtrue;
 				}
+				else {
+					//Q_strcat(msg, sizeof(msg), ":");
+				}
+				//Q_strcat(msg, sizeof(msg), va("<%i, %i>", found, printed));
+				//Q_strcat(msg, sizeof(msg), "-");
 				IntegerToRaceName(style, styleString, sizeof(styleString));
 				Q_strcat(msg, sizeof(msg), va(" ^5%-6s", styleString));
+			}
+			else
+			{
+				if (printed)
+					Q_strcat(msg, sizeof(msg), "       ");
 			}
 		}
 		if (printed) {

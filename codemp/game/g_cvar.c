@@ -210,7 +210,45 @@ static void RemoveRabbit(void) {
 	}
 }
 
+static void RemoveWeapons(void) {
+	int i;
+	gentity_t	*ent;
+
+	for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
+		ent = &g_entities[i];
+		if (ent->inuse && (ent->s.eType == ET_ITEM) && ((ent->item->giType == IT_WEAPON) || (ent->item->giType == IT_AMMO)) ) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+			G_FreeEntity( ent );
+			//return;
+		}
+	}
+}
+
 qboolean G_CallSpawn( gentity_t *ent );
+void G_UpdateWeaponDisableCvar( void ) {
+
+	if (g_weaponDisable.integer == 524279) {
+		RemoveWeapons();
+	}
+
+	/*
+	//if (g_weaponDisable.integer) { //
+		gentity_t	*ent;
+
+
+		if (level.neutralFlag) {
+			ent = G_Spawn(qtrue);
+
+			ent->classname = "team_CTF_neutralflag";
+			VectorCopy(level.neutralFlagOrigin, ent->s.origin);
+
+			if (!G_CallSpawn(ent))
+				G_FreeEntity( ent );
+		}
+		//trap->Print("Rabbit turning on!\n");
+	//}
+	*/
+}
+
 void G_UpdateRabbitCvar( void ) {
 	if (g_rabbit.integer) { //
 		gentity_t	*ent;

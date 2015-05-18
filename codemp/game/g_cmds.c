@@ -2875,6 +2875,14 @@ qboolean G_VotePause( gentity_t *ent, int numArgs, const char *arg1, const char 
 	return qtrue;
 }
 
+qboolean G_VoteReset( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
+
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "resetplayers");
+	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
+	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
+	return qtrue;
+}
+
 qboolean G_VoteForceSpec( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 	int n = atoi ( arg2 );
 
@@ -2921,6 +2929,7 @@ static voteString_t validVoteStrings[] = {
 	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
 	{	"poll",					"poll",				G_VotePoll,				1,		GTB_ALL,								qfalse,			"<poll question>" },
 	{	"pause",				"pause",			G_VotePause,			0,		GTB_ALL,								qfalse,			NULL },
+	{	"reset",				"reset",			G_VoteReset,			0,		GTB_ALL,								qfalse,			NULL },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 
@@ -5249,6 +5258,7 @@ void Cmd_Ammap_f(gentity_t *ent)
 
 		//if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		trap->SendServerCommand( -1, va("print \"^3Map change triggered by ^7%s\n\"", ent->client->pers.netname ));
+		G_LogPrintf ( "Map change triggered by ^7%s\n", ent->client->pers.netname );
 
 		trap->SendConsoleCommand( EXEC_APPEND, va("g_gametype %i\n", gtype));
 		trap->SendConsoleCommand( EXEC_APPEND, va("map %s\n", mapname));
@@ -5284,6 +5294,7 @@ void Cmd_Amvstr_f(gentity_t *ent)
 		}
 
 		trap->SendServerCommand( -1, va("print \"^3Vstr (%s) executed by ^7%s\n\"", arg, ent->client->pers.netname ));
+		G_LogPrintf ( "Vstr (%s) executed by ^7%s\n", arg, ent->client->pers.netname );
 		trap->SendConsoleCommand( EXEC_APPEND, va("vstr %s\n", arg));
 
 }
@@ -7357,12 +7368,12 @@ static qboolean LoadEnts(char *fileName) {
 	fLen = trap->FS_Open(fileName, &fh, FS_READ);
 
 	if (!fh) {
-		Com_Printf ("Couldn't load tele locations from %s\n", fileName);
+		Com_Printf ("Couldn't load entities from %s\n", fileName);
 		return qfalse;
 	}
 	if (fLen >= MAX_FILESIZE) {
 		trap->FS_Close(fh);
-		Com_Printf ("Couldn't load tele locations from %s, file is too large\n", fileName);
+		Com_Printf ("Couldn't load entities from %s, file is too large\n", fileName);
 		return qfalse;
 	}
 	
