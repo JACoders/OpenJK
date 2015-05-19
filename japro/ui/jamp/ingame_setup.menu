@@ -2046,6 +2046,42 @@
 				hide			highlight8
 			} 
 		}
+		
+		itemDef 
+		{
+			name				allowdownload
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_ALLOW_DOWNLOADS
+			descText			@MENUS_ALLOW_DOWNLOADS_INFO
+			cvar				"cl_allowDownload"
+			cvarFloatList		
+			{ 
+				@MENUS_ON	 	0
+				@MENUS_OFF 		1
+			}
+			rect				220 201 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+
+			action 
+			{
+				play			"sound/interface/button1"	
+			}
+			mouseenter 
+			{ 
+				show			highlight9
+			}
+			mouseexit 
+			{ 
+				hide			highlight9
+			} 
+		}
 
 		itemDef 
 		{	
@@ -2062,7 +2098,7 @@
 				@MENUS_SOUNDS_AND_EFFECTS	2
 				@MENUS_SOUNDS_EFFECTS_GRAPHICS	3
 			}
-			rect				220 201 300 20
+			rect				220 221 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2076,11 +2112,11 @@
 			}
 			mouseenter 
 			{ 
-				show			highlight9
+				show			highlight10
 			}
 			mouseexit 
 			{ 
-				hide			highlight9
+				hide			highlight10
 			} 
 		}
 
@@ -2093,7 +2129,7 @@
 			cvar				"se_language"
 			feeder				40
 			cvarStrList			feeder
-			rect				220 221 300 20
+			rect				220 241 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2110,11 +2146,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight10
+				show			highlight11
 			}
 			mouseexit 
 			{ 
-				hide			highlight10
+				hide			highlight11
 			} 
 		}
 		
@@ -2132,7 +2168,7 @@
 				Deutsch   			deutsch
 				"Español" 			espanol
 			}
-			rect				220 241 300 20
+			rect				220 261 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2149,11 +2185,11 @@
 			}
 			mouseenter 
 			{ 
-				show			highlight11
+				show			highlight12
 			}
 			mouseexit 
 			{ 
-				hide			highlight11
+				hide			highlight12
 			} 
 		}
 		
