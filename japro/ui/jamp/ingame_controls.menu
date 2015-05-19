@@ -3598,6 +3598,38 @@
 			}
 		}
 		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Spot:"
+			cvar				"spot"
+			rect				220 261 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Place a marker on spotted enemies."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight12
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight12
+				hide			keybindstatus
+			}
+		}
+		
 		//----------------------------------------------------------------------------------------------
 		//
 		//	Text
