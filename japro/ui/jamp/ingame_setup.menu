@@ -1451,7 +1451,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				@MENUS_MUSIC_VOLUME
 			cvarfloat			"s_musicvolume" 0 0 1
-			rect				220 81 300 20
+			rect				220 81 282 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -1474,6 +1474,26 @@
 			{ 
 				hide			highlight3
 			} 
+		}
+		
+		itemDef
+		{
+			name				duel_music
+			group				sound
+			type				ITEM_TYPE_MULTI
+			text				"Duel:"
+			cvar				"cg_duelMusic"
+			cvarFloatList		{ "On" 1 "Off" 0 }
+			rect				506 81 54 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			desctext			"Toggle the duel soundtrack played during a duel."
+			action				{ play "sound/interface/button1" }
 		}
 
 		itemDef 
