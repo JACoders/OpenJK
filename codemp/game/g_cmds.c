@@ -2929,7 +2929,7 @@ static voteString_t validVoteStrings[] = {
 	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
 	{	"poll",					"poll",				G_VotePoll,				1,		GTB_ALL,								qfalse,			"<poll question>" },
 	{	"pause",				"pause",			G_VotePause,			0,		GTB_ALL,								qfalse,			NULL },
-	{	"reset",				"reset",			G_VoteReset,			0,		GTB_ALL,								qfalse,			NULL },
+	{	"reset",				"resetplayers",		G_VoteReset,			0,		GTB_ALL,								qfalse,			NULL },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 

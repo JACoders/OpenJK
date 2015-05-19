@@ -3838,7 +3838,7 @@ weapChecks:
 
 								VectorCopy(pm->ps->origin, down);
 								down[2] -= 256;
-								pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID);
+								pm->trace(&tr, pm->ps->origin, pm->mins, pm->maxs, down, pm->ps->clientNum, MASK_SOLID); //Change this to mask_playersolid to allow dfa glitch on more maps (annh slide man etc).
 
 								//trap->Print("surfFlags: %i, Planenormal: %f\n", tr.surfaceFlags, pml.groundTrace.plane.normal[2]);
 

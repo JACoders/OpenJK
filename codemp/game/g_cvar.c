@@ -201,7 +201,7 @@ static void RemoveRabbit(void) {
 		cl->ps.powerups[PW_NEUTRALFLAG] = 0;
 	}
 
-	for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
+	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
 		if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType != IT_WEAPON)) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
 			G_FreeEntity( ent );
@@ -214,9 +214,9 @@ static void RemoveWeapons(void) {
 	int i;
 	gentity_t	*ent;
 
-	for (i = 0; i < level.num_entities; i++) { //This is numentities not max_clients because of NPCS
+	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
-		if (ent->inuse && (ent->s.eType == ET_ITEM) && ((ent->item->giType == IT_WEAPON) || (ent->item->giType == IT_AMMO)) ) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+		if (ent->inuse && (ent->s.eType == ET_ITEM) && ((ent->item->giType == IT_WEAPON) || (ent->item->giType == IT_AMMO)) ) {
 			G_FreeEntity( ent );
 			//return;
 		}

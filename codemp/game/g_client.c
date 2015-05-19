@@ -2295,10 +2295,18 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	else if (!Q_stricmp(s, ""))
 		client->pers.timenudge = Q3_INFINITE;
 
-	s = Info_ValueForKey( userinfo, "com_maxfps" );
-	client->pers.maxFPS = atoi(s);
-	if (client->pers.maxFPS > 1000)
-		client->pers.maxFPS = 1000;
+	s = Info_ValueForKey( userinfo, "com_MaxFPS" );
+	if (!atoi(s)) {
+		s = Info_ValueForKey( userinfo, "cg_displayMaxFPS" );
+		client->pers.maxFPS = atoi(s);
+		if (client->pers.maxFPS > 1000)
+			client->pers.maxFPS = 1000;
+	}
+	else {
+		client->pers.maxFPS = atoi(s);
+		if (client->pers.maxFPS > 1000)
+			client->pers.maxFPS = 1000;
+	}
 
 	s = Info_ValueForKey( userinfo, "cl_maxPackets" );
 	client->pers.maxPackets = atoi(s);

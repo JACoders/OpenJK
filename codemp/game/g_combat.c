@@ -4750,7 +4750,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		return;
 	if (attacker && attacker->client && attacker->client->sess.raceMode && ((attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 7) || (attacker->client->ps.stats[STAT_MOVEMENTSTYLE] == 8)) && targ->client && (targ != attacker))
 		return;
-	if (targ && targ->client && targ->client->sess.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT && mod != MOD_CRUSH && mod != MOD_LAVA && (damage != Q3_INFINITE)) //Fixme, change this to get rid of dmg from doors/eles.. but only if they get made completely nonsolid first
+	if (targ && targ->client && targ->client->sess.raceMode && attacker != targ && mod != MOD_TRIGGER_HURT /*&& mod != MOD_CRUSH*/ && mod != MOD_LAVA && (damage != Q3_INFINITE)) //Fixme, change this to get rid of dmg from doors/eles.. but only if they get made completely nonsolid first
 		return;
 
 	if ( targ->client )
