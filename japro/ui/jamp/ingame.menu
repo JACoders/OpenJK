@@ -846,7 +846,7 @@
 		itemDef 
 		{
 			name				strafeHelper
-			text				"Helper"
+			text				"Strafe H."
 			type				1
 			style				WINDOW_STYLE_FILLED
 			rect				195 464 50 16
