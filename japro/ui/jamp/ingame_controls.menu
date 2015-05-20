@@ -2565,6 +2565,37 @@
 				hide			highlight3
 			} 
 		}
+		
+		itemDef 
+		{
+			name				mousejoystick
+			group				joycontrols
+			type				ITEM_TYPE_SLIDER
+			text				"Scope Sensitivity"
+			cvarfloat			"cg_scopeSensitivity" 1 0 1
+			rect				220 101 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Manually scale the sensitivity of Disruptor scope."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+			} 
+		}
 
 		itemDef 
 		{
@@ -2573,7 +2604,7 @@
 			type				ITEM_TYPE_YESNO
 			text				@MENUS_INVERT_PITCH
 			cvar				"ui_mousePitch"
-			rect				220 101 300 20
+			rect				220 121 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2590,12 +2621,12 @@
 
 			mouseenter 
 			{ 
-				show			highlight4
+				show			highlight5
 			}
 
 			mouseexit 
 			{ 
-				hide			highlight4
+				hide			highlight5
 			}			
 		}
 
@@ -2606,7 +2637,7 @@
 			type				ITEM_TYPE_YESNO
 			text				@MENUS_SMOOTH_MOUSE
 			cvar				"m_filter"
-			rect				220 121 300 20
+			rect				220 141 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2623,42 +2654,6 @@
 
 			mouseenter 
 			{ 
-				show			highlight5
-			}
-
-			mouseexit 
-			{ 
-				hide			highlight5
-			}			
-		}
-
-//
-// Not shown
-//
-		itemDef 
-		{
-			name				mousejoystick
-			group				joycontrols_obsolete
-			type				ITEM_TYPE_YESNO
-			text				@MENUS_FORCE_FEEDBACK
-			cvar				"use_ff"
-			rect				220 141 300 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			151
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible			0 
-			// appearance_slot		5
-			descText			@MENUS_WHEN_TURNED_ON_GAME
-			action
-			{
-				play			"sound/interface/button1.wav" ; 
-			}
-		
-			mouseenter 
-			{ 
 				show			highlight6
 			}
 
@@ -2672,10 +2667,73 @@
 		{
 			name				mousejoystick
 			group				joycontrols
+			type				ITEM_TYPE_BIND
+			text				"Zoom:"
+			cvar				"+zoom"
+			rect				220 161 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"If held, allows player to zoom in."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+		
+			mouseenter 
+			{ 
+				show			highlight7
+			}
+
+			mouseexit 
+			{ 
+				hide			highlight7
+			}			
+		}
+		
+		itemDef 
+		{
+			name				mousejoystick
+			group				joycontrols
+			type				ITEM_TYPE_SLIDER
+			text				"Zoom Sensitivity"
+			cvarfloat			"cg_zoomSensitivity" 0 0 30
+			rect				220 181 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"Adjust sensitivity when holding down the zoom button. If 0, it will be automatically scaled."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{ 
+				show			highlight8
+			}
+			mouseexit 
+			{ 
+				hide			highlight8
+			} 
+		}
+
+		itemDef 
+		{
+			name				mousejoystick
+			group				joycontrols
 			type				ITEM_TYPE_YESNO
 			text				@MENUS_ENABLE_JOYSTICK
 			cvar				"in_joystick"
-			rect				220 181 300 20
+			rect				220 221 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2693,12 +2751,12 @@
 
 			mouseenter 
 			{ 
-				show			highlight8
+				show			highlight10
 			}
 
 			mouseexit 
 			{ 
-				hide			highlight8
+				hide			highlight10
 			}			
 		}
 
@@ -2709,7 +2767,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				@MENUS_JOYSTICK_THRESHOLD
 			cvarfloat			"joy_threshold" .15 .05 .75
-			rect				220 201 300 20
+			rect				220 241 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2726,11 +2784,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight9
+				show			highlight11
 			}
 			mouseexit 
 			{ 
-				hide			highlight9
+				hide			highlight11
 			} 
 		}
 
@@ -2741,7 +2799,7 @@
 			type				ITEM_TYPE_YESNO
 			text				@MENUS_X_AXIS_AS_BUTTONS
 			cvar				"joy_xbutton"
-			rect				220 221 300 20
+			rect				220 261 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2758,12 +2816,12 @@
 		
 			mouseenter 
 			{ 
-				show			highlight10
+				show			highlight12
 			}
 
 			mouseexit 
 			{ 
-				hide			highlight10
+				hide			highlight12
 			}			
 		}
 
@@ -2774,7 +2832,7 @@
 			type				ITEM_TYPE_YESNO
 			text				@MENUS_Y_AXIS_AS_BUTTONS
 			cvar				"joy_ybutton"
-			rect				220 241 300 20
+			rect				220 281 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151
 			textaligny			0
@@ -2791,12 +2849,12 @@
 		
 			mouseenter 
 			{ 
-				show			highlight11
+				show			highlight13
 			}
 
 			mouseexit 
 			{ 
-				hide			highlight11
+				hide			highlight13
 			}			
 		}
 
@@ -3362,39 +3420,6 @@
 			mouseexit 
 			{ 
 				hide			highlight4
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Zoom:"
-			cvar				"+zoom"
-			rect				220 121 300 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			151 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			// appearance_slot		4
-			descText			"If held, allows player to zoom in."
-			action
-			{
-				play			"sound/interface/button1.wav" ; 
-			}
-
-			mouseenter 
-			{
-				show			highlight5
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight5
 				hide			keybindstatus
 			}
 		}
