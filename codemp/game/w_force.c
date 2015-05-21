@@ -629,10 +629,7 @@ qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int 
 
 	if (forcePower == FP_HEAL) // zyk: added the HEAL condition to keep balance
 	{
-		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
-			drain = ((zyk_max_force_power.integer/2) - (zyk_max_force_power.integer/20));
-		else
-			drain = (zyk_max_force_power.integer/2);
+		drain = (zyk_max_force_power.integer/2);
 	}
 	else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1)
 	{ // zyk: Force User class. He spends less force power
