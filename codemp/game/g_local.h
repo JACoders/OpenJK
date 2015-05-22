@@ -517,7 +517,7 @@ typedef enum {
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
 // zyk: quantity of items at the jawa seller
-#define NUMBER_OF_SELLER_ITEMS 46
+#define NUMBER_OF_SELLER_ITEMS 47
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -608,10 +608,10 @@ typedef struct clientPersistant_s {
 	// 6 - Duelist
 	// 7 - Force Gunner
 	// 8 - Magic Master
+	// 9 - Force Tank
 	int rpg_class;
 
 	// zyk: current power selected by Magic Master to use
-	// 0 - Magic Fist
 	// 1 - Inner Area Damage
 	// 2 - Healing Water
 	// 3 - Water Splash
@@ -693,6 +693,8 @@ typedef struct clientPersistant_s {
 	// 15 - Stun Baton Upgrade
 	// 16 - Armored Soldier Upgrade
 	// 17 - Jetpack Upgrade
+	// 18 - Force Tank Unique Skill - got after player reaches level 10 and fills the skill counter once
+	// 19 - Force Tank Upgrade
 	int secrets_found;
 
 	// zyk: amount of sentries the Bounty Hunter starts with

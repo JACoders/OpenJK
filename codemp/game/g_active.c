@@ -3444,6 +3444,12 @@ void ClientThink_real( gentity_t *ent ) {
 
 							ent->client->pers.unique_skill_timer = level.time + 50000;
 						}
+						else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
+						{ // zyk: Force Tank
+							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+							ent->client->pers.unique_skill_timer = level.time + 55000;
+						}
 					}
 					else
 					{ // zyk: still in cooldown time, shows the time left in chat

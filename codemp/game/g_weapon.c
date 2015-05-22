@@ -3232,6 +3232,11 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 								break;
 							}
 
+							if (traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 9)
+							{ // zyk Force Tank cannot be knocked down
+								break;
+							}
+
 							//if ( G_HasKnockdownAnims( traceEnt ) )
 							if (!noKnockBack && !traceEnt->localAnimIndex && traceEnt->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN &&
 								BG_KnockDownable(&traceEnt->client->ps)) //just check for humanoids..
