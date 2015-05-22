@@ -3446,9 +3446,47 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
 						{ // zyk: Force Tank
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							{
+								int player_it = 0;
 
-							ent->client->pers.unique_skill_timer = level.time + 55000;
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+
+								for (player_it = 0; player_it < level.num_entities; player_it++)
+								{
+									gentity_t *player_ent = &g_entities[player_it];
+
+									if (ent->s.number != player_it && player_ent && player_ent->client)
+									{
+										int player_distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+										if (player_distance < 300)
+										{
+											int found = 0;
+
+											// zyk: allies will not be hit by this power
+											if (player_it < level.maxclients && (ent->client->sess.ally1 == player_it || ent->client->sess.ally2 == player_it || ent->client->sess.ally3 == player_it))
+											{
+												found = 1;
+											}
+
+											if (found == 0)
+											{
+												G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,20,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
+
+												if ((ent->health + 10) < ent->client->pers.max_rpg_health)
+													ent->health += 10;
+												else
+													ent->health = ent->client->pers.max_rpg_health;
+											}
+										}
+									}
+								}
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								ent->client->pers.unique_skill_timer = level.time + 55000;
+							}
 						}
 					}
 					else
