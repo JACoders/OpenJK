@@ -1787,7 +1787,6 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 
 void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits )
 {
-	return;
 	VBO_t *vbo = glState.currentVBO;
 
 	if ( attribBits & ATTR_TEXCOORD0 )
