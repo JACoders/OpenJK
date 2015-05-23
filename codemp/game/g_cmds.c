@@ -4573,8 +4573,8 @@ void save_account(gentity_t *ent)
 	// zyk: used to prevent account save in map change time or before loading account after changing map
 	if (level.voteExecuteTime < level.time && ent->client->pers.connected == CON_CONNECTED)
 	{
-		if (ent->client->sess.amrpgmode == 2 && zyk_rp_mode.integer != 1)
-		{ // zyk: players can only save things if server is not at RP Mode
+		if (ent->client->sess.amrpgmode == 2 && (zyk_rp_mode.integer != 1 || zyk_allow_saving_in_rp_mode.integer == 1))
+		{ // zyk: players can only save things if server is not at RP Mode or if it is allowed in config
 			FILE *account_file;
 			gclient_t *client;
 			client = ent->client;
