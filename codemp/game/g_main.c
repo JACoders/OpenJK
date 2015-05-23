@@ -8804,6 +8804,8 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 16)
 				{ // zyk: Guardian of Ice
+					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
+
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						ice_stalagmite(ent,500,150);
