@@ -9430,7 +9430,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 47)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Tank Upgrade: ^7increases resistance to damage and saber can no longer be dropped out of hand\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Tank Upgrade: ^7increases resistance to damage and saber can no longer be dropped out of hand. Decreases knockback a bit\n\n\"");
 		}
 	}
 }

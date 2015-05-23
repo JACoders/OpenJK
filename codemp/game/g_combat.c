@@ -5255,10 +5255,18 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		knockback = 0;
 	}
 
-	// zyk: if player is in RPG Mode, reduce knockback based on the Impact Reducer item of the player
-	if (targ && targ->client && targ->client->sess.amrpgmode == 2 && targ->client->pers.secrets_found & (1 << 9))
+	// zyk: if player is in RPG Mode, reduce knockback based on the Impact Reducer item of the player and on Force Tank Upgrade for Force Tank class
+	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{
-		knockback = knockback * 0.2;
+		int new_knockback = knockback;
+
+		if (targ->client->pers.secrets_found & (1 << 9))
+			new_knockback -= knockback * 0.8;
+
+		if (targ->client->pers.rpg_class == 9 && targ->client->pers.secrets_found & (1 << 19))
+			new_knockback -= knockback * 0.15;
+
+		knockback = new_knockback;
 	}
 
 	// zyk: these npcs will not have knockback
