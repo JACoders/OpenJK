@@ -4296,16 +4296,7 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 
 		zyk_set_entity_field(new_ent,"model",effect_path);
 
-		if (Q_stricmp(spawnflags,"1") == 0)
-			zyk_set_entity_field(new_ent,"health","300");
-
 		zyk_spawn_entity(new_ent);
-
-		if (damage > 0)
-			new_ent->splashDamage = damage;
-
-		if (radius > 0)
-			new_ent->splashRadius = radius;
 
 		level.special_power_effects[new_ent->s.number] = ent->s.number;
 		level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
@@ -4395,7 +4386,7 @@ void ice_boulder(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, NULL, "1", "models/map_objects/hoth/rock_b.md3", 0, 20, 50, 5000);
+			zyk_quest_effect_spawn(ent, player_ent, NULL, "1", "models/map_objects/hoth/rock_b.md3", 0, 20, 50, 4000);
 
 			G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,damage,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
 		}
@@ -4664,7 +4655,17 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
-	else if (selected_power < 1 || selected_power > 17)
+	else if (selected_power == 18 && !(ent->client->pers.defeated_guardians & (1 << 12)) && 
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 19 && !(ent->client->pers.defeated_guardians & (1 << 12)) && 
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power < 1 || selected_power > 19)
 	{ // zyk: if, for some reason, there is an invalid selected power value, does not allow it
 		return qfalse;
 	}
@@ -4742,6 +4743,14 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Strength      ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
 	}
+	else if (selected_power == 18)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ice Stalagmite      ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+	}
+	else if (selected_power == 19)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ice Boulder         ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+	}
 }
 
 void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
@@ -4751,7 +4760,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->pers.selected_special_power++;
-			if (ent->client->pers.selected_special_power == 18)
+			if (ent->client->pers.selected_special_power == 20)
 				ent->client->pers.selected_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse);
 	}
@@ -4761,7 +4770,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->pers.selected_special_power--;
 			if (ent->client->pers.selected_special_power == 0)
-				ent->client->pers.selected_special_power = 17;
+				ent->client->pers.selected_special_power = 19;
 		} while (magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse);
 	}
 
@@ -4775,7 +4784,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->pers.selected_left_special_power++;
-			if (ent->client->pers.selected_left_special_power == 18)
+			if (ent->client->pers.selected_left_special_power == 20)
 				ent->client->pers.selected_left_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse);
 	}
@@ -4785,7 +4794,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->pers.selected_left_special_power--;
 			if (ent->client->pers.selected_left_special_power == 0)
-				ent->client->pers.selected_left_special_power = 17;
+				ent->client->pers.selected_left_special_power = 19;
 		} while (magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse);
 	}
 
@@ -4799,7 +4808,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->pers.selected_right_special_power++;
-			if (ent->client->pers.selected_right_special_power == 18)
+			if (ent->client->pers.selected_right_special_power == 20)
 				ent->client->pers.selected_right_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse);
 	}
@@ -4809,7 +4818,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->pers.selected_right_special_power--;
 			if (ent->client->pers.selected_right_special_power == 0)
-				ent->client->pers.selected_right_special_power = 17;
+				ent->client->pers.selected_right_special_power = 19;
 		} while (magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse);
 	}
 

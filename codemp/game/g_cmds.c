@@ -3461,6 +3461,8 @@ extern void water_splash(gentity_t *ent, int distance, int damage);
 extern void ultra_flame(gentity_t *ent, int distance, int damage);
 extern void rock_fall(gentity_t *ent, int distance, int damage);
 extern void dome_of_doom(gentity_t *ent, int distance, int damage);
+extern void ice_stalagmite(gentity_t *ent, int distance, int damage);
+extern void ice_boulder(gentity_t *ent, int distance, int damage);
 extern void hurricane(gentity_t *ent, int distance, int duration);
 extern void slow_motion(gentity_t *ent, int distance, int duration);
 extern void ultra_speed(gentity_t *ent, int duration);
@@ -3611,6 +3613,16 @@ qboolean TryGrapple(gentity_t *ent)
 					{
 						use_this_power = 0;
 					}
+					else if (use_this_power == 18 && !(ent->client->pers.defeated_guardians & (1 << 12) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{
+						use_this_power = 0;
+					}
+					else if (use_this_power == 19 && !(ent->client->pers.defeated_guardians & (1 << 12) || 
+							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					{
+						use_this_power = 0;
+					}
 				}
 				else
 				{
@@ -3658,6 +3670,11 @@ qboolean TryGrapple(gentity_t *ent)
 						{ // zyk: Ultra Speed
 							use_this_power = 10;
 						}
+						else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) || 
+								 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Ice Boulder
+							use_this_power = 19;
+						}
 					}
 					else if (ent->client->pers.cmd.rightmove < 0)
 					{ // zyk: Special Power Left direction
@@ -3701,6 +3718,11 @@ qboolean TryGrapple(gentity_t *ent)
 								 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 						{ // zyk: Slow Motion
 							use_this_power = 11;
+						}
+						else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) || 
+								 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Ice Stalagmite
+							use_this_power = 18;
 						}
 					}
 				}
@@ -3943,6 +3965,28 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_speed_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 18 && zyk_enable_ice_stalagmite.integer == 1 && ent->client->pers.magic_power >= zyk_ice_stalagmite_mp_cost.integer)
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						ice_stalagmite(ent,500,150);
+						ent->client->pers.magic_power -= zyk_ice_stalagmite_mp_cost.integer;
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_stalagmite_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_stalagmite_cooldown.integer;
+						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Stalagmite!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 19 && zyk_enable_ice_boulder.integer == 1 && ent->client->pers.magic_power >= zyk_ice_boulder_mp_cost.integer)
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						ice_boulder(ent,400,70);
+						ent->client->pers.magic_power -= zyk_ice_boulder_mp_cost.integer;
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_boulder_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_boulder_cooldown.integer;
+						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Boulder!\"", ent->client->pers.netname));
 					}
 				}
 			}
@@ -8425,6 +8469,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+				else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) || 
+						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 8)
 					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
 				else
@@ -9107,6 +9154,8 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 8)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Special Powers: ^7this class can use any of the Light Quest special powers. Use A, W or D and melee kata to use a power. You can set each of A, W and D powers with the force power keys (usually the F3, F4, F5, F6, F7 and F8 keys)\n\"") );
+					else if (ent->client->pers.rpg_class == 9)
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Ice Boulder: ^7creates a boulder that damages and traps enemies nearby for some seconds. Attack with D + special melee to use this power\n^3Ice Stalagmite: ^7greatly damages enemies nearby with a stalagmite. Attack with A + special melee to use this power\n\"") );
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{
