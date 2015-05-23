@@ -203,6 +203,7 @@ XCVAR_DEF( ui_zyk_upgrade_9_value,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNA
 XCVAR_DEF( ui_zyk_upgrade_10_value,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_upgrade_11_value,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_upgrade_12_value,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_zyk_upgrade_13_value,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_light_power,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_dark_power,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_eternity_power,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
