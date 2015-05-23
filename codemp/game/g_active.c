@@ -3485,7 +3485,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 12000;
 
-								ent->client->pers.unique_skill_timer = level.time + 55000;
+								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}
 						}
 					}
