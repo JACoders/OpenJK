@@ -2453,6 +2453,10 @@ struct shaderCommands_s
 	VBO_t       *vbo;
 	IBO_t       *ibo;
 	qboolean    useInternalVBO;
+	int			internalVBOWriteOffset;
+	int			internalVBOCommitOffset;
+	int			internalIBOWriteOffset;
+	int			internalIBOCommitOffset;
 
 	stageVars_t	svars QALIGN(16);
 
@@ -2652,6 +2656,7 @@ void            R_ShutdownVBOs(void);
 void            R_VBOList_f(void);
 
 void            RB_UpdateVBOs(unsigned int attribBits);
+void			RB_CommitInternalBufferData();
 void			CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties);
 void			CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties);
 

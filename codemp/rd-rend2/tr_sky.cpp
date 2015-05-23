@@ -472,6 +472,8 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	//R_BindNullVBO();
 	//R_BindNullIBO();
 
+	RB_CommitInternalBufferData();
+
 	tess.numIndexes = tess.firstIndex;
 	tess.numVertexes = firstVertex;
 	tess.firstIndex = 0;

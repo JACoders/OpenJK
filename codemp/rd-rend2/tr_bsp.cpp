@@ -2063,7 +2063,7 @@ static void R_CreateWorldVBOs(void)
 		vbo->offsets[ATTR_INDEX_NORMAL] = offsetof(packedVertex_t, normal);
 		vbo->offsets[ATTR_INDEX_TANGENT] = offsetof(packedVertex_t, tangent);
 		vbo->offsets[ATTR_INDEX_TEXCOORD0] = offsetof(packedVertex_t, texcoords[0]);
-		vbo->offsets[ATTR_INDEX_TEXCOORD1] = offsetof(packedVertex_t, texcoords[1]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD1] = offsetof(packedVertex_t, texcoords[0]);
 		vbo->offsets[ATTR_INDEX_COLOR] = offsetof(packedVertex_t, colors);
 		vbo->offsets[ATTR_INDEX_LIGHTDIRECTION] = offsetof(packedVertex_t, lightDirection);
 

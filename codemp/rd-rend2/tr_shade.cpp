@@ -42,7 +42,7 @@ R_DrawElements
 
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex )
 {
-	qglDrawRangeElements(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)));
+	qglDrawRangeElements(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)) + (tess.useInternalVBO ? tess.internalIBOCommitOffset : 0));
 }
 
 
@@ -1849,6 +1849,8 @@ void RB_StageIteratorGeneric( void )
 	if ( tess.fogNum && tess.shader->fogPass ) {
 		RB_FogPass();
 	}
+
+	RB_CommitInternalBufferData();
 
 	//
 	// reset polygon offset
