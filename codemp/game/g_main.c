@@ -4262,7 +4262,7 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 {
 	gentity_t *new_ent = G_Spawn();
 
-	if (targetname)
+	if (!strstr(effect_path,".md3"))
 	{// zyk: effect power
 		zyk_set_entity_field(new_ent,"classname","fx_runner");
 		zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
@@ -4295,6 +4295,8 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 		zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
 
 		zyk_set_entity_field(new_ent,"model",effect_path);
+
+		zyk_set_entity_field(new_ent,"targetname",targetname);
 
 		zyk_spawn_entity(new_ent);
 
@@ -4368,7 +4370,7 @@ void ice_stalagmite(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, NULL, "0", "models/map_objects/hoth/stalagmite_small.md3", 0, 0, 0, 2000);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_ice_stalagmite", "0", "models/map_objects/hoth/stalagmite_small.md3", 0, 0, 0, 2000);
 
 			G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,damage,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
 		}
@@ -4386,7 +4388,7 @@ void ice_boulder(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, NULL, "1", "models/map_objects/hoth/rock_b.md3", 0, 20, 50, 4000);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_ice_boulder", "1", "models/map_objects/hoth/rock_b.md3", 0, 20, 50, 4000);
 
 			G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,damage,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
 		}

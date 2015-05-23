@@ -353,8 +353,16 @@ void SP_misc_model_breakable( gentity_t *ent )
 	bHasScale = G_SpawnVector("modelscale_vec", "0 0 0", ent->modelScale);
 
 	// zyk: now the size is set correctly
-	G_SpawnVector("mins", "-16 -16 -16", ent->r.mins);
-	G_SpawnVector("maxs", "16 16 16", ent->r.maxs);
+	if (Q_stricmp(ent->targetname,"zyk_ice_boulder") == 0)
+	{
+		G_SpawnVector("mins", "-60 -60 -20", ent->r.mins);
+		G_SpawnVector("maxs", "60 60 42", ent->r.maxs);
+	}
+	else
+	{
+		G_SpawnVector("mins", "-16 -16 -16", ent->r.mins);
+		G_SpawnVector("maxs", "16 16 16", ent->r.maxs);
+	}
 
 	if (!bHasScale)
 	{
