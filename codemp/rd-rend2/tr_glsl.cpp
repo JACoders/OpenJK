@@ -1832,6 +1832,11 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 	if ( tess.useInternalVBO )
 	{
 		CalculateVertexArraysProperties(attribBits, &vertexArrays);
+		for ( int i = 0; i < vertexArrays.numVertexArrays; i++ )
+		{
+			int attributeIndex = vertexArrays.enabledAttributes[i];
+			vertexArrays.offsets[attributeIndex] += tess.internalVBOCommitOffset;
+		}
 	}
 	else
 	{
@@ -1859,15 +1864,6 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
 		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
 	};
-	
-	if ( tess.useInternalVBO )
-	{
-		for ( int i = 0; i < vertexArrays.numVertexArrays; i++ )
-		{
-			int attributeIndex = vertexArrays.enabledAttributes[i];
-			vertexArrays.offsets[attributeIndex] += tess.internalVBOCommitOffset;
-		}
-	}
 
 	for ( int i = 0, j = 1 ; i < ATTR_INDEX_MAX; i++, j <<= 1 )
 	{

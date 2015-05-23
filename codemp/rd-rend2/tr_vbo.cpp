@@ -481,6 +481,7 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	// update the default IBO
 	if(tess.numIndexes > 0 && tess.numIndexes <= SHADER_MAX_INDEXES)
 	{
+		GLbitfield mapFlags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
 		int totalIndexDataSize = tess.numIndexes * sizeof(tess.indexes[0]);
 
 		R_BindIBO(tess.ibo);
@@ -489,9 +490,13 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		{
 			tess.internalIBOCommitOffset = 0;
 			tess.internalIBOWriteOffset = 0;
+			mapFlags |= GL_MAP_INVALIDATE_BUFFER_BIT;
 		}
 
-		qglBufferSubData(GL_ELEMENT_ARRAY_BUFFER, tess.internalIBOWriteOffset, totalIndexDataSize, tess.indexes);
+		void *dst = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, tess.internalIBOCommitOffset, totalIndexDataSize, mapFlags);
+		memcpy(dst, tess.indexes, totalIndexDataSize);
+		qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
 		tess.internalIBOWriteOffset += totalIndexDataSize;
 	}
 }
