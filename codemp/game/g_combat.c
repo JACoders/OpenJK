@@ -2335,7 +2335,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			}
 		}
 	}
-	else if (quest_player && (quest_player->client->pers.guardian_mode <= 8 || quest_player->client->pers.guardian_mode == 11))
+	else if (quest_player && (quest_player->client->pers.guardian_mode <= 8 || quest_player->client->pers.guardian_mode == 11 || quest_player->client->pers.guardian_mode == 16))
 	{ // zyk: Light Quest. If guardian was defeated by the invoker, increase the defeated_guardians value
 		if (quest_player->client->pers.guardian_mode == 8)
 		{ // zyk: defeated the Guardian of Light
