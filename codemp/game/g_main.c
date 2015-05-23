@@ -4262,29 +4262,54 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 {
 	gentity_t *new_ent = G_Spawn();
 
-	zyk_set_entity_field(new_ent,"classname","fx_runner");
-	zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
-	zyk_set_entity_field(new_ent,"targetname",targetname);
-	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
+	if (targetname)
+	{// zyk: effect power
+		zyk_set_entity_field(new_ent,"classname","fx_runner");
+		zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
+		zyk_set_entity_field(new_ent,"targetname",targetname);
+		zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
 
-	new_ent->s.modelindex = G_EffectIndex( effect_path );
+		new_ent->s.modelindex = G_EffectIndex( effect_path );
 
-	zyk_spawn_entity(new_ent);
+		zyk_spawn_entity(new_ent);
 
-	if (damage > 0)
-		new_ent->splashDamage = damage;
+		if (damage > 0)
+			new_ent->splashDamage = damage;
 
-	if (radius > 0)
-		new_ent->splashRadius = radius;
+		if (radius > 0)
+			new_ent->splashRadius = radius;
 
-	if (start_time > 0) 
-		new_ent->nextthink = level.time + start_time;
+		if (start_time > 0) 
+			new_ent->nextthink = level.time + start_time;
 
-	level.special_power_effects[new_ent->s.number] = ent->s.number;
-	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+		level.special_power_effects[new_ent->s.number] = ent->s.number;
+		level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
 
-	if (Q_stricmp(targetname, "zyk_quest_effect_drain") == 0)
-		G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/arc_lp.wav"));
+		if (Q_stricmp(targetname, "zyk_quest_effect_drain") == 0)
+			G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/arc_lp.wav"));
+	}
+	else
+	{ // zyk: model power
+		zyk_set_entity_field(new_ent,"classname","misc_model_breakable");
+		zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
+		zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
+
+		zyk_set_entity_field(new_ent,"model",effect_path);
+
+		if (Q_stricmp(spawnflags,"1") == 0)
+			zyk_set_entity_field(new_ent,"health","300");
+
+		zyk_spawn_entity(new_ent);
+
+		if (damage > 0)
+			new_ent->splashDamage = damage;
+
+		if (radius > 0)
+			new_ent->splashRadius = radius;
+
+		level.special_power_effects[new_ent->s.number] = ent->s.number;
+		level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+	}
 }
 
 // zyk: Water Splash. Damages the targets and heals the user
@@ -4337,6 +4362,42 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_dome", "4", "env/dome", 1400, damage, 290, 10000);
+		}
+	}
+}
+
+// zyk: Ice Stalagmite
+void ice_stalagmite(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
+		{
+			zyk_quest_effect_spawn(ent, player_ent, NULL, "0", "models/map_objects/hoth/stalagmite_small.md3", 0, 0, 0, 2000);
+
+			G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,damage,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
+		}
+	}
+}
+
+// zyk: Ice Boulder
+void ice_boulder(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
+		{
+			zyk_quest_effect_spawn(ent, player_ent, NULL, "1", "models/map_objects/hoth/rock_b.md3", 0, 20, 50, 5000);
+
+			G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,damage,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
 		}
 	}
 }
@@ -4511,7 +4572,12 @@ void clear_special_power_effect(gentity_t *ent)
 	if (level.special_power_effects[ent->s.number] != -1 && level.special_power_effects_timer[ent->s.number] < level.time)
 	{ 
 		level.special_power_effects[ent->s.number] = -1;
-		ent->think = G_FreeEntity;
+
+		// zyk: if it is a misc_model_breakable power, remove it right now
+		if (Q_stricmp(ent->classname, "misc_model_breakable") == 0)
+			G_FreeEntity(ent);
+		else
+			ent->think = G_FreeEntity;
 	}
 }
 
@@ -6011,6 +6077,21 @@ void G_RunFrame( int levelTime ) {
 							{
 								ent->client->pers.universe_quest_messages++;
 								ent->client->pers.universe_quest_timer = level.time + 5000;
+							}
+						}
+
+						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 12)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->r.currentOrigin[0] > -5648 && (int) ent->r.currentOrigin[0] < -5448 && (int) ent->r.currentOrigin[1] > 11448 && (int) ent->r.currentOrigin[1] < 11648 && (int) ent->r.currentOrigin[2] >= 980 && (int) ent->r.currentOrigin[2] <= 1000)
+						{
+							if (ent->client->pers.light_quest_timer < level.time)
+							{
+								if (ent->client->pers.light_quest_messages == 0)
+									trap->SendServerCommand( ent->s.number, va("chat \"^5Guardian of Ice: ^7I am the Guardian of Ice, %s^7. I will freeze you!\"",ent->client->pers.netname));
+								else if (ent->client->pers.light_quest_messages == 1)
+								{
+									spawn_boss(ent,-4652,11607,991,179,"guardian_boss_10",-5623,11598,991,0,16);
+								}
+								ent->client->pers.light_quest_messages++;
+								ent->client->pers.light_quest_timer = level.time + 3000;
 							}
 						}
 					}
@@ -8710,6 +8791,24 @@ void G_RunFrame( int levelTime ) {
 
 						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Hurricane!\"");
 						ent->client->pers.light_quest_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];
+					}
+				}
+				else if (ent->client->pers.guardian_mode == 16)
+				{ // zyk: Guardian of Ice
+					if (ent->client->pers.guardian_timer < level.time)
+					{
+						ice_stalagmite(ent,500,150);
+
+						ent->client->pers.guardian_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
+						trap->SendServerCommand( -1, "chat \"^5Guardian of Ice: ^7Ice Stalagmite!\"");
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						ice_boulder(ent,400,70);
+
+						trap->SendServerCommand( -1, "chat \"^5Guardian of Ice: ^7Ice Boulder!\"");
+						ent->client->pers.light_quest_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 8)

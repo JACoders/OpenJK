@@ -4435,6 +4435,10 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			value = atoi(content);
 			ent->client->pers.defeated_guardians = value;
 
+			// zyk: compability with old mod versions, in which the players who completed the quest had a value of 9
+			if (ent->client->pers.defeated_guardians == 9)
+				ent->client->pers.defeated_guardians = NUMBER_OF_GUARDIANS;
+
 			// zyk: loading Dark Quest completed objectives value
 			fscanf(account_file,"%s",content);
 			value = atoi(content);
@@ -5442,7 +5446,7 @@ qboolean light_quest_defeated_guardians(gentity_t *ent)
 {
 	int j = 0, number_of_guardians_defeated = 0;
 
-	for (j = 4; j < 12; j++)
+	for (j = 4; j <= 12; j++)
 	{
 		if (ent->client->pers.defeated_guardians & (1 << j))
 		{
@@ -5607,7 +5611,7 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 4 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 7))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 2)))))
 			found = 1;
-		else if (level.quest_map == 5 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))))
+		else if (level.quest_map == 5 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 12))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))))
 			found = 1;
 		else if (level.quest_map == 6 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 9))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 6)))))
 			found = 1;
@@ -5796,6 +5800,10 @@ void choose_new_player(gentity_t *next_player)
 			else if (level.quest_map == 14 && !(next_player->client->pers.defeated_guardians & (1 << 11)))
 			{ // zyk: Guardian of Resistance
 				load_effect(0,1135,9,0,"env/btend");
+			}
+			else if (level.quest_map == 5 && !(next_player->client->pers.defeated_guardians & (1 << 12)))
+			{ // zyk: Guardian of Ice
+				load_effect(-5548,11548,990,0,"env/btend");
 			}
 		}
 
@@ -8615,6 +8623,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 							strcpy(guardian_message, va("%s\n^3Guardian of Resistance ^7(mp/duel8) - ^2yes",guardian_message));
 						else
 							strcpy(guardian_message, va("%s\n^3Guardian of Resistance ^7(mp/duel8) - ^1no",guardian_message));
+
+						if (ent->client->pers.defeated_guardians & (1 << 12))
+							strcpy(guardian_message, va("%s\n^5Guardian of Ice ^7(hoth2) - ^2yes",guardian_message));
+						else
+							strcpy(guardian_message, va("%s\n^5Guardian of Ice ^7(hoth2) - ^1no",guardian_message));
 					}
 				}
 				else

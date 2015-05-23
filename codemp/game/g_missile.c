@@ -482,6 +482,12 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			cannot_deflect = 1;
 		}
 
+		// zyk: Guardian of Ice can hit anyone with his bowcaster shots
+		if (this_npc && this_npc->client && this_npc->client->pers.guardian_mode == 16)
+		{
+			cannot_deflect = 1;
+		}
+
 		// zyk: Magic Fist can hit anything!
 		if (ent->methodOfDeath == MOD_MELEE && (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_DEMP2))
 		{

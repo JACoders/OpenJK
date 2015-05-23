@@ -2349,6 +2349,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			{
 				light_quest_bitvalue = 11;
 			}
+			else if (quest_player->client->pers.guardian_mode == 16)
+			{
+				light_quest_bitvalue = 12;
+			}
 
 			quest_player->client->pers.defeated_guardians |= (1 << light_quest_bitvalue);
 
@@ -2384,6 +2388,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			else if (light_quest_bitvalue == 11)
 			{
 				trap->SendServerCommand( quest_player->s.number, "chat \"^3Guardian of Resistance: ^7You are a resistant and strong warrior.\"");
+			}
+			else if (light_quest_bitvalue == 12)
+			{
+				trap->SendServerCommand( quest_player->s.number, "chat \"^5Guardian of Ice: ^7You are a very powerful warrior!\"");
 			}
 		}
 

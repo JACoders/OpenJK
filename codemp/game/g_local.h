@@ -489,7 +489,7 @@ typedef enum {
 #define NUMBER_OF_LINES 71
 
 // zyk: number of Light Quest guardians to be defeated 
-#define NUMBER_OF_GUARDIANS 9
+#define NUMBER_OF_GUARDIANS 10
 
 // zyk: number of Dark Quest objectives
 #define NUMBER_OF_OBJECTIVES 10
@@ -732,6 +732,7 @@ typedef struct clientPersistant_s {
 	// 9 - Guardian of Fire
 	// 10 - Guardian of Wind
 	// 11 - Guardian of Resistance
+	// 12 - Guardian of Ice
 	int defeated_guardians; 
 
 	// zyk: number of notes collected in Dark Quest
@@ -867,6 +868,7 @@ typedef struct clientPersistant_s {
 	// 13 - Guardian of Universe
 	// 14 - Guardian of Chaos
 	// 15 - Master of Death
+	// 16 - Guardian of Ice
 	int guardian_mode; 
 
 	// zyk: used by the last guardians in quests for their special abilities
