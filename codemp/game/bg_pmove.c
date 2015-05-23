@@ -12729,28 +12729,35 @@ void PmoveSingle (pmove_t *pmove) {
 	PM_WaterEvents();
 
 	//Walbug fix start, if getting stuck w/o noclip is even possible.  This should maybe be after round float? im not sure..
-	if (pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLengthSquared(pm->ps->velocity) > VectorLengthSquared(pml.previous_velocity)))
+	if ((pm->ps->persistant[PERS_TEAM] != TEAM_SPECTATOR) && pm->ps->stats[STAT_RACEMODE] && VectorCompare(pm->ps->origin, pml.previous_origin) && (VectorLengthSquared(pm->ps->velocity) > VectorLengthSquared(pml.previous_velocity)))
 			VectorClear(pm->ps->velocity); //Their velocity is increasing while their origin is not moving (wallbug), so prevent this..
 	//Wallbug fix end
 
-	if (pm->ps->stats[STAT_RACEMODE]) //japro fix racemode fps
-		pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
-#ifdef _GAME
-	else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.
-		//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
+	if (pm->ps->persistant[PERS_TEAM] == TEAM_SPECTATOR) {
+		trap->SnapVector( pm->ps->velocity ); 
 	}
-#else if _CGAME
-	else if ((cgs.jcinfo & JAPRO_CINFO_JETPACK) && ((pml.msec < 4) || (pml.msec > 25))) {
-	}
-#endif
-	else if (!pm->pmove_float) {
-		bgEntity_t *veh;	
-		veh = pm_entSelf;
-
-		if (veh->m_pVehicle && veh->m_pVehicle->m_pPilot && veh->m_pVehicle->m_pPilot->playerState && veh->m_pVehicle->m_pPilot->playerState->stats[STAT_RACEMODE]) {
+	else {
+		if (pm->ps->stats[STAT_RACEMODE]) //japro fix racemode fps
+			pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
+	#ifdef _GAME
+		else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.
+			//trap->SendServerCommand( -1, va("print \"333? msec: %i\n\"", pml.msec ));
 		}
-		else
+	#else if _CGAME
+		else if ((cgs.jcinfo & JAPRO_CINFO_HIGHFPSFIX) && ((pml.msec < 4) || (pml.msec > 25))) {
+		}
+	#endif
+		else if (!pm->pmove_float) {
+			/*
+			bgEntity_t *veh;	
+			veh = pm_entSelf;
+
+			if (veh->m_pVehicle && veh->m_pVehicle->m_pPilot && veh->m_pVehicle->m_pPilot->playerState && veh->m_pVehicle->m_pPilot->playerState->stats[STAT_RACEMODE]) {
+			}
+			else
+			*/
 			trap->SnapVector( pm->ps->velocity ); // snap velocity to integer coordinates to save network bandwidth
+		}
 	}
 	
  	if (pm->ps->pm_type == PM_JETPACK || gPMDoSlowFall )
