@@ -4454,24 +4454,18 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		vec2_t *texcoords;
 		vec4_t *bonerefs;
 		vec4_t *weights;
-#ifdef USE_VERT_TANGENT_SPACE
 		uint32_t *tangents;
-#endif
 
 		byte *data;
 		int dataSize = 0;
 		int ofsPosition, ofsNormals, ofsTexcoords, ofsBoneRefs, ofsWeights;
-#ifdef USE_VERT_TANGENT_SPACE
 		int ofs_tangent;
-#endif
 		int stride = 0;
 		int numVerts = 0;
 		int numTriangles = 0;
 
-#ifdef USE_VERT_TANGENT_SPACE
 		vec3_t *tangentsf;
 		vec3_t *bitangentsf;
-#endif
 
 		// +1 to add total vertex count
 		int *baseVertexes = (int *)ri->Hunk_AllocateTempMemory (sizeof (int) * (mdxm->numSurfaces + 1));
@@ -4497,19 +4491,15 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 		baseVertexes[mdxm->numSurfaces] = numVerts;
 
-#ifdef USE_VERT_TANGENT_SPACE
 		tangentsf = (vec3_t *)ri->Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);
 		bitangentsf = (vec3_t *)ri->Hunk_AllocateTempMemory (sizeof (vec3_t) * numVerts);;
-#endif
 
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
 		dataSize += numVerts * sizeof (*texcoords);
 		dataSize += numVerts * sizeof (*weights);
 		dataSize += numVerts * sizeof (*bonerefs);
-#ifdef USE_VERT_TANGENT_SPACE
 		dataSize += numVerts * sizeof (*tangents);
-#endif
 
 		// Allocate and write to memory
 		data = (byte *)ri->Hunk_AllocateTempMemory (dataSize);
@@ -4534,11 +4524,9 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		ofsWeights = stride;
 		stride += sizeof (*weights);
 
-#ifdef USE_VERT_TANGENT_SPACE
 		tangents = (uint32_t *)(data + stride);
 		ofs_tangent = stride;
 		stride += sizeof (*tangents);
-#endif
 
 		surf = (mdxmSurface_t *)((byte *)lod + sizeof (mdxmLOD_t) + (mdxm->numSurfaces * sizeof (mdxmLODSurfOffset_t)));
 
@@ -4587,7 +4575,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				texcoords = (vec2_t *)((byte *)texcoords + stride);
 			}
 
-#ifdef USE_VERT_TANGENT_SPACE
 			mdxmTriangle_t *t = (mdxmTriangle_t *)((byte *)surf + surf->ofsTriangles);
 			for ( int k = 0; k < surf->numTriangles; k++ )
 			{
@@ -4655,7 +4642,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				*tangents = R_VboPackTangent (T);
 				tangents = (uint32_t *)((byte *)tangents + stride);
 			}
-#endif
 
 			surf = (mdxmSurface_t *)((byte *)surf + surf->ofsEnd);
 		}
@@ -4674,23 +4660,26 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		ri->Hunk_FreeTempMemory (tangentsf);
 		ri->Hunk_FreeTempMemory (bitangentsf);
 
-		vbo->ofs_xyz = ofsPosition;
-		vbo->ofs_normal = ofsNormals;
-		vbo->ofs_st = ofsTexcoords;
-		vbo->ofs_boneindexes = ofsBoneRefs;
-		vbo->ofs_boneweights = ofsWeights;
-#ifdef USE_VERT_TANGENT_SPACE
-		vbo->ofs_tangent = ofs_tangent;
-#endif
+		vbo->offsets[ATTR_INDEX_POSITION] = ofsPosition;
+		vbo->offsets[ATTR_INDEX_NORMAL] = ofsNormals;
+		vbo->offsets[ATTR_INDEX_TEXCOORD0] = ofsTexcoords;
+		vbo->offsets[ATTR_INDEX_BONE_INDEXES] = ofsBoneRefs;
+		vbo->offsets[ATTR_INDEX_BONE_WEIGHTS] = ofsWeights;
+		vbo->offsets[ATTR_INDEX_TANGENT] = ofs_tangent;
 
-		vbo->stride_xyz = stride;
-		vbo->stride_normal = stride;
-		vbo->stride_st = stride;
-		vbo->stride_boneindexes = stride;
-		vbo->stride_boneweights = stride;
-#ifdef USE_VERT_TANGENT_SPACE
-		vbo->stride_tangent = stride;
-#endif
+		vbo->strides[ATTR_INDEX_POSITION] = stride;
+		vbo->strides[ATTR_INDEX_NORMAL] = stride;
+		vbo->strides[ATTR_INDEX_TEXCOORD0] = stride;
+		vbo->strides[ATTR_INDEX_BONE_INDEXES] = stride;
+		vbo->strides[ATTR_INDEX_BONE_WEIGHTS] = stride;
+		vbo->strides[ATTR_INDEX_TANGENT] = stride;
+
+		vbo->sizes[ATTR_INDEX_POSITION] = sizeof(*verts);
+		vbo->sizes[ATTR_INDEX_NORMAL] = sizeof(*normals);
+		vbo->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(*texcoords);
+		vbo->sizes[ATTR_INDEX_BONE_WEIGHTS] = sizeof(*weights);
+		vbo->sizes[ATTR_INDEX_BONE_INDEXES] = sizeof(*bonerefs);
+		vbo->sizes[ATTR_INDEX_TANGENT] = sizeof(*tangents);
 
 		// Fill in the index buffer
 		glIndex_t *indices = (glIndex_t *)ri->Hunk_AllocateTempMemory (sizeof (glIndex_t) * numTriangles * 3);

@@ -1025,9 +1025,7 @@ void RB_IQMSurfaceAnim( surfaceType_t *surface ) {
 
 	vec4_t		*outXYZ;
 	uint32_t	*outNormal;
-#ifdef USE_VERT_TANGENT_SPACE
 	uint32_t	*outTangent;
-#endif
 	vec2_t		(*outTexCoord)[2];
 	vec4_t	*outColor;
 
@@ -1043,9 +1041,7 @@ void RB_IQMSurfaceAnim( surfaceType_t *surface ) {
 
 	outXYZ = &tess.xyz[tess.numVertexes];
 	outNormal = &tess.normal[tess.numVertexes];
-#ifdef USE_VERT_TANGENT_SPACE
 	outTangent = &tess.tangent[tess.numVertexes];
-#endif
 	outTexCoord = &tess.texCoords[tess.numVertexes];
 	outColor = &tess.vertexColors[tess.numVertexes];
 
@@ -1132,14 +1128,12 @@ void RB_IQMSurfaceAnim( surfaceType_t *surface ) {
 
 			*outNormal = R_VboPackNormal(normal);
 
-#ifdef USE_VERT_TANGENT_SPACE
 			tangent[0] = DotProduct(&nrmMat[0], &data->tangents[4*vtx]);
 			tangent[1] = DotProduct(&nrmMat[3], &data->tangents[4*vtx]);
 			tangent[2] = DotProduct(&nrmMat[6], &data->tangents[4*vtx]);
 			tangent[3] = data->tangents[4*vtx+3];
 
 			*outTangent++ = R_VboPackTangent(tangent);
-#endif
 		}
 
 		(*outColor)[0] = data->colors[4*vtx+0] / 255.0f;

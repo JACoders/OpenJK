@@ -263,9 +263,7 @@ void R_InitVBOs(void)
 
 	dataSize  = sizeof(tess.xyz[0]);
 	dataSize += sizeof(tess.normal[0]);
-#ifdef USE_VERT_TANGENT_SPACE
 	dataSize += sizeof(tess.tangent[0]);
-#endif
 	dataSize += sizeof(tess.vertexColors[0]);
 	dataSize += sizeof(tess.texCoords[0][0]) * 2;
 	dataSize += sizeof(tess.lightdir[0]);
@@ -275,25 +273,21 @@ void R_InitVBOs(void)
 
 	offset = 0;
 
-	tess.vbo->ofs_xyz         = offset; offset += sizeof(tess.xyz[0])              * SHADER_MAX_VERTEXES;
-	tess.vbo->ofs_normal      = offset; offset += sizeof(tess.normal[0])           * SHADER_MAX_VERTEXES;
-#ifdef USE_VERT_TANGENT_SPACE
-	tess.vbo->ofs_tangent     = offset; offset += sizeof(tess.tangent[0])          * SHADER_MAX_VERTEXES;
-#endif
+	tess.vbo->offsets[ATTR_INDEX_POSITION]       = offset; offset += sizeof(tess.xyz[0])              * SHADER_MAX_VERTEXES;
+	tess.vbo->offsets[ATTR_INDEX_NORMAL]         = offset; offset += sizeof(tess.normal[0])           * SHADER_MAX_VERTEXES;
 	// these next two are actually interleaved
-	tess.vbo->ofs_st          = offset; offset += sizeof(tess.texCoords[0][0]) * 2 * SHADER_MAX_VERTEXES;
+	tess.vbo->offsets[ATTR_INDEX_TEXCOORD0]      = offset; offset += sizeof(tess.texCoords[0][0]) * 2 * SHADER_MAX_VERTEXES;
+	tess.vbo->offsets[ATTR_INDEX_TANGENT]        = offset; offset += sizeof(tess.tangent[0])          * SHADER_MAX_VERTEXES;
 
-	tess.vbo->ofs_vertexcolor = offset; offset += sizeof(tess.vertexColors[0])     * SHADER_MAX_VERTEXES;
-	tess.vbo->ofs_lightdir    = offset;
+	tess.vbo->offsets[ATTR_INDEX_COLOR]          = offset; offset += sizeof(tess.vertexColors[0])     * SHADER_MAX_VERTEXES;
+	tess.vbo->offsets[ATTR_INDEX_LIGHTDIRECTION] = offset;
 
-	tess.vbo->stride_xyz         = sizeof(tess.xyz[0]);
-	tess.vbo->stride_normal      = sizeof(tess.normal[0]);
-#ifdef USE_VERT_TANGENT_SPACE
-	tess.vbo->stride_tangent     = sizeof(tess.tangent[0]);
-#endif
-	tess.vbo->stride_vertexcolor = sizeof(tess.vertexColors[0]);
-	tess.vbo->stride_st          = sizeof(tess.texCoords[0][0]) * 2;
-	tess.vbo->stride_lightdir    = sizeof(tess.lightdir[0]);
+	tess.vbo->strides[ATTR_INDEX_POSITION]       = sizeof(tess.xyz[0]);
+	tess.vbo->strides[ATTR_INDEX_NORMAL]         = sizeof(tess.normal[0]);
+	tess.vbo->strides[ATTR_INDEX_TANGENT]        = sizeof(tess.tangent[0]);
+	tess.vbo->strides[ATTR_INDEX_COLOR]          = sizeof(tess.vertexColors[0]);
+	tess.vbo->strides[ATTR_INDEX_TEXCOORD0]      = sizeof(tess.texCoords[0][0]) * 2;
+	tess.vbo->strides[ATTR_INDEX_LIGHTDIRECTION] = sizeof(tess.lightdir[0]);
 
 	dataSize = sizeof(tess.indexes[0]) * SHADER_MAX_INDEXES;
 
@@ -375,6 +369,68 @@ void R_VBOList_f(void)
 	ri->Printf(PRINT_ALL, " %.2f MB in total\n\n", indexesSize / (1024.0f * 1024.0f));
 }
 
+void AddVertexArray(VertexArraysProperties *properties, int attributeIndex, size_t size, int stride, int offset, void *stream )
+{
+	properties->enabledAttributes[properties->numVertexArrays]  = attributeIndex;
+	properties->offsets[attributeIndex]                         = offset;
+	properties->vertexDataSize                                 += size;
+	properties->sizes[attributeIndex]                           = size;
+	properties->strides[attributeIndex]                         = stride;
+	properties->streams[attributeIndex]                         = stream;
+
+	properties->numVertexArrays++;
+}
+
+void CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties)
+{
+	properties->vertexDataSize = 0;
+	properties->numVertexArrays = 0;
+
+	if(attributes & ATTR_BITS)
+	{
+		if (attributes & ATTR_POSITION)
+			AddVertexArray(properties, ATTR_INDEX_POSITION, sizeof(tess.xyz[0]), 0, properties->vertexDataSize, tess.xyz);
+
+		if (attributes & (ATTR_TEXCOORD0 | ATTR_TEXCOORD1))
+			AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0]);
+
+		if (attributes & ATTR_NORMAL)
+			AddVertexArray(properties, ATTR_INDEX_NORMAL, sizeof(tess.normal[0]), 0, properties->vertexDataSize, tess.normal);
+
+		if (attributes & ATTR_TANGENT)
+			AddVertexArray(properties, ATTR_INDEX_TANGENT, sizeof(tess.tangent[0]), 0, properties->vertexDataSize, tess.tangent);
+
+		if (attributes & ATTR_COLOR)
+			AddVertexArray(properties, ATTR_INDEX_COLOR, sizeof(tess.vertexColors[0]), 0, properties->vertexDataSize, tess.vertexColors);
+
+		if (attributes & ATTR_LIGHTDIRECTION)
+			AddVertexArray(properties, ATTR_INDEX_LIGHTDIRECTION, sizeof(tess.lightdir[0]), 0, properties->vertexDataSize, tess.lightdir);
+	}
+	else
+	{
+		AddVertexArray(properties, ATTR_INDEX_POSITION, sizeof(tess.xyz[0]), 0, properties->vertexDataSize, tess.xyz);
+		AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0]);
+		AddVertexArray(properties, ATTR_INDEX_NORMAL, sizeof(tess.normal[0]), 0, properties->vertexDataSize, tess.normal);
+		AddVertexArray(properties, ATTR_INDEX_TANGENT, sizeof(tess.tangent[0]), 0, properties->vertexDataSize, tess.tangent);
+		AddVertexArray(properties, ATTR_INDEX_COLOR, sizeof(tess.vertexColors[0]), 0, properties->vertexDataSize, tess.vertexColors);
+		AddVertexArray(properties, ATTR_INDEX_LIGHTDIRECTION, sizeof(tess.lightdir[0]), 0, properties->vertexDataSize, tess.lightdir);
+	}
+
+	for ( int i = 0; i < properties->numVertexArrays; i++ )
+		properties->strides[properties->enabledAttributes[i]] = properties->vertexDataSize;
+}
+
+void CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties)
+{
+	properties->vertexDataSize = 0;
+	properties->numVertexArrays = 0;
+
+	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
+	{
+		if ( attributes & j )
+			AddVertexArray(properties, i, vbo->sizes[i], vbo->strides[i], vbo->offsets[i], NULL);
+	}
+}
 
 /*
 ==============
@@ -394,65 +450,30 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	// update the default VBO
 	if(tess.numVertexes > 0 && tess.numVertexes <= SHADER_MAX_VERTEXES)
 	{
-		backEnd.pc.c_dynamicVboTotalSize += tess.numVertexes * (tess.vbo->vertexesSize / SHADER_MAX_VERTEXES);
+		VertexArraysProperties vertexArrays = {};
+		CalculateVertexArraysProperties(attribBits, &vertexArrays);
+
+		backEnd.pc.c_dynamicVboTotalSize += tess.numVertexes * vertexArrays.vertexDataSize;
 
 		R_BindVBO(tess.vbo);
 
 		// orphan old buffer so we don't stall on it
-		qglBufferData(GL_ARRAY_BUFFER, tess.vbo->vertexesSize, NULL, GL_STREAM_DRAW);
+		void *dstPtr = qglMapBufferRange(GL_ARRAY_BUFFER, 0, tess.numVertexes * vertexArrays.vertexDataSize, GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT);
+		void *writePtr = dstPtr;
 
-		if(attribBits & ATTR_BITS)
+		// Interleave the data
+		for ( int i = 0; i < tess.numVertexes; i++ )
 		{
-			if(attribBits & ATTR_POSITION)
+			for ( int j = 0; j < vertexArrays.numVertexArrays; j++ )
 			{
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_xyz, tess.numVertexes * sizeof(tess.xyz[0]));
-				qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_xyz,         tess.numVertexes * sizeof(tess.xyz[0]),              tess.xyz);
-			}
+				int attributeIndex = vertexArrays.enabledAttributes[j];
 
-			if(attribBits & ATTR_TEXCOORD0 || attribBits & ATTR_TEXCOORD1)
-			{
-				// these are interleaved, so we update both if either need it
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_st, tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2);
-				qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_st,          tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2, tess.texCoords);
-			}
-
-			if(attribBits & ATTR_NORMAL)
-			{
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_normal, tess.numVertexes * sizeof(tess.normal[0]));
-				qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_normal,      tess.numVertexes * sizeof(tess.normal[0]),           tess.normal);
-			}
-
-#ifdef USE_VERT_TANGENT_SPACE
-			if(attribBits & ATTR_TANGENT)
-			{
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_tangent, tess.numVertexes * sizeof(tess.tangent[0]));
-				qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_tangent,     tess.numVertexes * sizeof(tess.tangent[0]),          tess.tangent);
-			}
-#endif
-
-			if(attribBits & ATTR_COLOR)
-			{
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]));
-				qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]),     tess.vertexColors);
-			}
-
-			if(attribBits & ATTR_LIGHTDIRECTION)
-			{
-				//ri->Printf(PRINT_ALL, "offset %d, size %d\n", tess.vbo->ofs_lightdir, tess.numVertexes * sizeof(tess.lightdir[0]));
-				qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_lightdir,    tess.numVertexes * sizeof(tess.lightdir[0]),         tess.lightdir);
+				memcpy(writePtr, (byte *)vertexArrays.streams[attributeIndex] + i * vertexArrays.sizes[attributeIndex], vertexArrays.sizes[attributeIndex]);
+				writePtr = (byte *)writePtr + vertexArrays.sizes[attributeIndex];
 			}
 		}
-		else
-		{
-			qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_xyz,         tess.numVertexes * sizeof(tess.xyz[0]),              tess.xyz);
-			qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_st,          tess.numVertexes * sizeof(tess.texCoords[0][0]) * 2, tess.texCoords);
-			qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_normal,      tess.numVertexes * sizeof(tess.normal[0]),           tess.normal);
-#ifdef USE_VERT_TANGENT_SPACE
-			qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_tangent,     tess.numVertexes * sizeof(tess.tangent[0]),          tess.tangent);
-#endif
-			qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_vertexcolor, tess.numVertexes * sizeof(tess.vertexColors[0]),     tess.vertexColors);
-			qglBufferSubData(GL_ARRAY_BUFFER, tess.vbo->ofs_lightdir,    tess.numVertexes * sizeof(tess.lightdir[0]),         tess.lightdir);
-		}
+
+		qglUnmapBuffer(GL_ARRAY_BUFFER);
 	}
 
 	// update the default IBO

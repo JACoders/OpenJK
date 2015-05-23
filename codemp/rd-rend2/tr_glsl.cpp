@@ -585,10 +585,8 @@ static bool GLSL_EndLoadGPUShader (shaderProgram_t *program)
 	if(attribs & ATTR_TEXCOORD1)
 		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD1, "attr_TexCoord1");
 
-#ifdef USE_VERT_TANGENT_SPACE
 	if(attribs & ATTR_TANGENT)
 		qglBindAttribLocation(program->program, ATTR_INDEX_TANGENT, "attr_Tangent");
-#endif
 
 	if(attribs & ATTR_NORMAL)
 		qglBindAttribLocation(program->program, ATTR_INDEX_NORMAL, "attr_Normal");
@@ -608,10 +606,8 @@ static bool GLSL_EndLoadGPUShader (shaderProgram_t *program)
 	if(attribs & ATTR_NORMAL2)
 		qglBindAttribLocation(program->program, ATTR_INDEX_NORMAL2, "attr_Normal2");
 
-#ifdef USE_VERT_TANGENT_SPACE
 	if(attribs & ATTR_TANGENT2)
 		qglBindAttribLocation(program->program, ATTR_INDEX_TANGENT2, "attr_Tangent2");
-#endif
 
 	if(attribs & ATTR_BONE_INDEXES)
 		qglBindAttribLocation(program->program, ATTR_INDEX_BONE_INDEXES, "attr_BoneIndexes");
@@ -1147,10 +1143,8 @@ int GLSL_BeginLoadGPUShaders(void)
 				if (r_normalMapping->integer == 3)
 					Q_strcat(extradefines, 1024, "#define USE_TRIACE_OREN_NAYAR\n");
 
-#ifdef USE_VERT_TANGENT_SPACE
 				Q_strcat(extradefines, 1024, "#define USE_VERT_TANGENT_SPACE\n");
 				attribs |= ATTR_TANGENT;
-#endif
 
 				if ((i & LIGHTDEF_USE_PARALLAXMAP) && r_parallaxMapping->integer)
 					Q_strcat(extradefines, 1024, "#define USE_PARALLAXMAP\n");
@@ -1196,12 +1190,10 @@ int GLSL_BeginLoadGPUShaders(void)
 			Q_strcat(extradefines, 1024, "#define USE_MODELMATRIX\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 
-#ifdef USE_VERT_TANGENT_SPACE
 			if (r_normalMapping->integer)
 			{
 				attribs |= ATTR_TANGENT2;
 			}
-#endif
 		}
 
 		if (i & LIGHTDEF_USE_GLOW_BUFFER)
@@ -1691,22 +1683,9 @@ void GLSL_ShutdownGPUShaders(void)
 
 	ri->Printf(PRINT_ALL, "------- GLSL_ShutdownGPUShaders -------\n");
 
-	qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD0);
-	qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD1);
-	qglDisableVertexAttribArray(ATTR_INDEX_POSITION);
-	qglDisableVertexAttribArray(ATTR_INDEX_POSITION2);
-	qglDisableVertexAttribArray(ATTR_INDEX_NORMAL);
-#ifdef USE_VERT_TANGENT_SPACE
-	qglDisableVertexAttribArray(ATTR_INDEX_TANGENT);
-#endif
-	qglDisableVertexAttribArray(ATTR_INDEX_NORMAL2);
-#ifdef USE_VERT_TANGENT_SPACE
-	qglDisableVertexAttribArray(ATTR_INDEX_TANGENT2);
-#endif
-	qglDisableVertexAttribArray(ATTR_INDEX_COLOR);
-	qglDisableVertexAttribArray(ATTR_INDEX_LIGHTDIRECTION);
-	qglDisableVertexAttribArray(ATTR_INDEX_BONE_INDEXES);
-	qglDisableVertexAttribArray(ATTR_INDEX_BONE_WEIGHTS);
+	for ( int i = 0; i < ATTR_INDEX_MAX; i++ )
+		qglDisableVertexAttribArray(i);
+
 	GLSL_BindNullProgram();
 
 	for ( i = 0; i < GENERICDEF_COUNT; i++)
@@ -1788,180 +1767,18 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 	GLSL_VertexAttribPointers(stateBits);
 
 	diff = stateBits ^ glState.vertexAttribsState;
-	if(!diff)
-	{
+	if (!diff)
 		return;
-	}
 
-	if(diff & ATTR_POSITION)
+	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j << 1 )
 	{
-		if(stateBits & ATTR_POSITION)
+		// FIXME: Use BitScanForward?
+		if (diff & j)
 		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_POSITION )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_POSITION);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_POSITION )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_POSITION);
-		}
-	}
-
-	if(diff & ATTR_TEXCOORD0)
-	{
-		if(stateBits & ATTR_TEXCOORD0)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_TEXCOORD )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_TEXCOORD0);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_TEXCOORD )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD0);
-		}
-	}
-
-	if(diff & ATTR_TEXCOORD1)
-	{
-		if(stateBits & ATTR_TEXCOORD1)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_LIGHTCOORD )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_TEXCOORD1);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_LIGHTCOORD )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_TEXCOORD1);
-		}
-	}
-
-	if(diff & ATTR_NORMAL)
-	{
-		if(stateBits & ATTR_NORMAL)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_NORMAL )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_NORMAL);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_NORMAL )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_NORMAL);
-		}
-	}
-
-#ifdef USE_VERT_TANGENT_SPACE
-	if(diff & ATTR_TANGENT)
-	{
-		if(stateBits & ATTR_TANGENT)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_TANGENT )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_TANGENT);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_TANGENT )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_TANGENT);
-		}
-	}
-#endif
-
-	if(diff & ATTR_COLOR)
-	{
-		if(stateBits & ATTR_COLOR)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_COLOR )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_COLOR);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_COLOR )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_COLOR);
-		}
-	}
-
-	if(diff & ATTR_LIGHTDIRECTION)
-	{
-		if(stateBits & ATTR_LIGHTDIRECTION)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_LIGHTDIRECTION )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_LIGHTDIRECTION);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_LIGHTDIRECTION )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_LIGHTDIRECTION);
-		}
-	}
-
-	if(diff & ATTR_POSITION2)
-	{
-		if(stateBits & ATTR_POSITION2)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_POSITION2 )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_POSITION2);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_POSITION2 )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_POSITION2);
-		}
-	}
-
-	if(diff & ATTR_NORMAL2)
-	{
-		if(stateBits & ATTR_NORMAL2)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_NORMAL2 )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_NORMAL2);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_NORMAL2 )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_NORMAL2);
-		}
-	}
-
-#ifdef USE_VERT_TANGENT_SPACE
-	if(diff & ATTR_TANGENT2)
-	{
-		if(stateBits & ATTR_TANGENT2)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_TANGENT2 )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_TANGENT2);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_TANGENT2 )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_TANGENT2);
-		}
-	}
-#endif
-
-	if(diff & ATTR_BONE_INDEXES)
-	{
-		if(stateBits & ATTR_BONE_INDEXES)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_BONE_INDEXES )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_BONE_INDEXES);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_BONE_INDEXES )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_BONE_INDEXES);
-		}
-	}
-
-	if(diff & ATTR_BONE_WEIGHTS)
-	{
-		if(stateBits & ATTR_BONE_WEIGHTS)
-		{
-			GLimp_LogComment("qglEnableVertexAttribArray( ATTR_INDEX_BONE_WEIGHTS )\n");
-			qglEnableVertexAttribArray(ATTR_INDEX_BONE_WEIGHTS);
-		}
-		else
-		{
-			GLimp_LogComment("qglDisableVertexAttribArray( ATTR_INDEX_BONE_WEIGHTS )\n");
-			qglDisableVertexAttribArray(ATTR_INDEX_BONE_WEIGHTS);
+			if(stateBits & j)
+				qglEnableVertexAttribArray(i);
+			else
+				qglDisableVertexAttribArray(i);
 		}
 	}
 
@@ -1970,20 +1787,21 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 
 void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits )
 {
+	return;
 	VBO_t *vbo = glState.currentVBO;
 
 	if ( attribBits & ATTR_TEXCOORD0 )
 	{
 		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
 
-		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->strides[ATTR_INDEX_TEXCOORD0], BUFFER_OFFSET(vbo->offsets[ATTR_INDEX_TEXCOORD0] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
 	}
 
 	if ( attribBits & ATTR_TEXCOORD1 )
 	{
 		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTCOORD )\n");
 
-		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->strides[ATTR_INDEX_TEXCOORD1], BUFFER_OFFSET(vbo->offsets[ATTR_INDEX_TEXCOORD1] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
 	}
 }
 
@@ -2009,107 +1827,53 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 	oldFrame = glState.vertexAttribsOldFrame;
 	newFrame = glState.vertexAttribsNewFrame;
 	animated = glState.vertexAnimation;
+
+	VertexArraysProperties vertexArrays;
+	if ( tess.useInternalVBO )
+	{
+		CalculateVertexArraysProperties(attribBits, &vertexArrays);
+	}
+	else
+	{
+		CalculateVertexArraysFromVBO(attribBits, vbo, &vertexArrays);
+	}
+
+	const struct
+	{
+		int numComponents;
+		GLenum type;
+		GLboolean normalize;
+		int offset;
+	} attributes[ATTR_INDEX_MAX] = {
+		{ 3, GL_FLOAT, GL_FALSE, 0 }, // position
+		{ 2, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0] },
+		{ 2, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1] },
+		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // tangent
+		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // normal
+		{ 4, GL_FLOAT, GL_FALSE, 0 }, // color
+		{ 0, GL_NONE, GL_FALSE, 0 }, // paint color
+		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // light direction
+		{ 4, GL_FLOAT, GL_FALSE, 0 }, // bon indices
+		{ 4, GL_FLOAT, GL_FALSE, 0 }, // bone weights
+		{ 3, GL_FLOAT, GL_FALSE, 0 }, // pos2
+		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
+		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
+	};
 	
-	if((attribBits & ATTR_POSITION) && (!(glState.vertexAttribPointersSet & ATTR_POSITION) || animated))
+	for ( int i = 0, j = 1 ; i < ATTR_INDEX_MAX; i++, j <<= 1 )
 	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_POSITION )\n");
+		if ( attribBits & j )
+		{
+			qglVertexAttribPointer(i,
+				attributes[i].numComponents,
+				attributes[i].type,
+				attributes[i].normalize,
+				vertexArrays.strides[i],
+				BUFFER_OFFSET(vertexArrays.offsets[i] + attributes[i].offset));
 
-		qglVertexAttribPointer(ATTR_INDEX_POSITION, 3, GL_FLOAT, 0, vbo->stride_xyz, BUFFER_OFFSET(vbo->ofs_xyz + newFrame * vbo->size_xyz));
-		glState.vertexAttribPointersSet |= ATTR_POSITION;
+			glState.vertexAttribPointersSet |= j;
+		}
 	}
-
-	if((attribBits & ATTR_TEXCOORD0) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD0))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
-		glState.vertexAttribPointersSet |= ATTR_TEXCOORD0;
-	}
-
-	if((attribBits & ATTR_TEXCOORD1) && !(glState.vertexAttribPointersSet & ATTR_TEXCOORD1))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTCOORD )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->stride_st, BUFFER_OFFSET(vbo->ofs_st + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
-		glState.vertexAttribPointersSet |= ATTR_TEXCOORD1;
-	}
-
-	if((attribBits & ATTR_NORMAL) && (!(glState.vertexAttribPointersSet & ATTR_NORMAL) || animated))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_NORMAL )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_NORMAL, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_normal, BUFFER_OFFSET(vbo->ofs_normal + newFrame * vbo->size_normal));
-		glState.vertexAttribPointersSet |= ATTR_NORMAL;
-	}
-
-#ifdef USE_VERT_TANGENT_SPACE
-	if((attribBits & ATTR_TANGENT) && (!(glState.vertexAttribPointersSet & ATTR_TANGENT) || animated))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TANGENT )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_TANGENT, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_tangent, BUFFER_OFFSET(vbo->ofs_tangent + newFrame * vbo->size_normal)); // FIXME
-		glState.vertexAttribPointersSet |= ATTR_TANGENT;
-	}
-#endif
-
-	if((attribBits & ATTR_COLOR) && !(glState.vertexAttribPointersSet & ATTR_COLOR))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_COLOR )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_COLOR, 4, GL_FLOAT, 0, vbo->stride_vertexcolor, BUFFER_OFFSET(vbo->ofs_vertexcolor));
-		glState.vertexAttribPointersSet |= ATTR_COLOR;
-	}
-
-	if((attribBits & ATTR_LIGHTDIRECTION) && !(glState.vertexAttribPointersSet & ATTR_LIGHTDIRECTION))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTDIRECTION )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_LIGHTDIRECTION, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_lightdir, BUFFER_OFFSET(vbo->ofs_lightdir));
-		glState.vertexAttribPointersSet |= ATTR_LIGHTDIRECTION;
-	}
-
-	if((attribBits & ATTR_POSITION2) && (!(glState.vertexAttribPointersSet & ATTR_POSITION2) || animated))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_POSITION2 )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_POSITION2, 3, GL_FLOAT, 0, vbo->stride_xyz, BUFFER_OFFSET(vbo->ofs_xyz + oldFrame * vbo->size_xyz));
-		glState.vertexAttribPointersSet |= ATTR_POSITION2;
-	}
-
-	if((attribBits & ATTR_NORMAL2) && (!(glState.vertexAttribPointersSet & ATTR_NORMAL2) || animated))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_NORMAL2 )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_NORMAL2, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_normal, BUFFER_OFFSET(vbo->ofs_normal + oldFrame * vbo->size_normal));
-		glState.vertexAttribPointersSet |= ATTR_NORMAL2;
-	}
-
-#ifdef USE_VERT_TANGENT_SPACE
-	if((attribBits & ATTR_TANGENT2) && (!(glState.vertexAttribPointersSet & ATTR_TANGENT2) || animated))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TANGENT2 )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_TANGENT2, 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, vbo->stride_tangent, BUFFER_OFFSET(vbo->ofs_tangent + oldFrame * vbo->size_normal)); // FIXME
-		glState.vertexAttribPointersSet |= ATTR_TANGENT2;
-	}
-#endif
-
-	if((attribBits & ATTR_BONE_INDEXES) && !(glState.vertexAttribPointersSet & ATTR_BONE_INDEXES))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_BONE_INDEXES )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_BONE_INDEXES, 4, GL_FLOAT, 0, vbo->stride_boneindexes, BUFFER_OFFSET(vbo->ofs_boneindexes));
-		glState.vertexAttribPointersSet |= ATTR_BONE_INDEXES;
-	}
-
-	if((attribBits & ATTR_BONE_WEIGHTS) && !(glState.vertexAttribPointersSet & ATTR_BONE_WEIGHTS))
-	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_BONE_WEIGHTS )\n");
-
-		qglVertexAttribPointer(ATTR_INDEX_BONE_WEIGHTS, 4, GL_FLOAT, 0, vbo->stride_boneweights, BUFFER_OFFSET(vbo->ofs_boneweights));
-		glState.vertexAttribPointersSet |= ATTR_BONE_WEIGHTS;
-	}
-
 }
 
 

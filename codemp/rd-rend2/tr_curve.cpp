@@ -215,7 +215,6 @@ static	int	neighbors[8][2] = {
 	}
 }
 
-#ifdef USE_VERT_TANGENT_SPACE
 static void MakeMeshTangentVectors(int width, int height, srfVert_t ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE], int numIndexes,
 								   glIndex_t indexes[(MAX_GRID_SIZE-1)*(MAX_GRID_SIZE-1)*2*3])
 {
@@ -254,8 +253,6 @@ static void MakeMeshTangentVectors(int width, int height, srfVert_t ctrl[MAX_GRI
 		}
 	}
 }
-#endif
-
 
 static int MakeMeshIndexes(int width, int height, srfVert_t ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE],
 							 glIndex_t indexes[(MAX_GRID_SIZE-1)*(MAX_GRID_SIZE-1)*2*3])
@@ -640,9 +637,7 @@ srfBspSurface_t *R_SubdividePatchToGrid( int width, int height,
 
 	// calculate normals
 	MakeMeshNormals( width, height, ctrl );
-#ifdef USE_VERT_TANGENT_SPACE
 	MakeMeshTangentVectors(width, height, ctrl, numIndexes, indexes);
-#endif
 
 	return R_CreateSurfaceGridMesh(width, height, ctrl, errorTable, numIndexes, indexes);
 }
