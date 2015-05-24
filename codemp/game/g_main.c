@@ -6463,7 +6463,7 @@ void G_RunFrame( int levelTime ) {
 									trap->SendServerCommand( ent->s.number, "chat \"^5Guardian of Light: ^7Defeat me and I will grant you the Light Power!\"");
 								else if (ent->client->pers.light_quest_messages == 3)
 								{
-									spawn_boss(ent,-992,-1802,25,90,va("guardian_boss_%d",NUMBER_OF_GUARDIANS),0,0,0,0,8);
+									spawn_boss(ent,-992,-1802,25,90,"guardian_boss_9",0,0,0,0,8);
 								}
 
 								ent->client->pers.light_quest_messages++;
