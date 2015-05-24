@@ -2487,9 +2487,6 @@ struct shaderCommands_s
 	int			numPasses;
 	void		(*currentStageIteratorFunc)( void );
 	shaderStage_t	**xstages;
-
-	// JA specific
-	bool		fading;
 };
 
 #ifdef _WIN32

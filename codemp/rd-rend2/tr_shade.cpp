@@ -1709,7 +1709,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input )
 void RB_StageIteratorGeneric( void )
 {
 	shaderCommands_t *input;
-	unsigned int vertexAttribs = 0;
+	uint32_t vertexAttribs = 0;
 
 	input = &tess;
 	

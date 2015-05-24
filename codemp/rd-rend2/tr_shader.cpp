@@ -3133,10 +3133,24 @@ static void SortNewShader( void ) {
 	newShader = tr.shaders[ tr.numShaders - 1 ];
 	sort = newShader->sort;
 
+	int numStagesInNewShader = 0;
+	while ( newShader->stages[numStagesInNewShader] )
+		numStagesInNewShader++;
+
 	for ( i = tr.numShaders - 2 ; i >= 0 ; i-- ) {
-		if ( tr.sortedShaders[ i ]->sort <= sort ) {
+		int numStages = 0;
+		while ( tr.sortedShaders[numStages] )
+			numStages++;
+
+		if ( tr.sortedShaders[ i ]->sort < sort ) {
 			break;
 		}
+
+		if ( tr.sortedShaders[ i ]->sort == sort && numStages <= numStagesInNewShader )
+		{
+			break;
+		}
+	
 		tr.sortedShaders[i+1] = tr.sortedShaders[i];
 		tr.sortedShaders[i+1]->sortedIndex++;
 	}

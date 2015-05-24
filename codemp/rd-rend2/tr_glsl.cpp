@@ -1806,8 +1806,6 @@ void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits )
 
 void GLSL_VertexAttribPointers(uint32_t attribBits)
 {
-	qboolean animated;
-	int newFrame, oldFrame;
 	VBO_t *vbo = glState.currentVBO;
 	
 	if(!vbo)
@@ -1821,11 +1819,6 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 	{
 		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
 	}
-
-	// position/normal/tangent are always set in case of animation
-	oldFrame = glState.vertexAttribsOldFrame;
-	newFrame = glState.vertexAttribsNewFrame;
-	animated = glState.vertexAnimation;
 
 	VertexArraysProperties vertexArrays;
 	if ( tess.useInternalVBO )
