@@ -3474,8 +3474,8 @@ void ClientThink_real( gentity_t *ent ) {
 											{
 												G_Damage(player_ent,ent,ent,NULL,player_ent->client->ps.origin,20,DAMAGE_NO_PROTECTION,MOD_UNKNOWN);
 
-												if ((ent->health + 10) < ent->client->pers.max_rpg_health)
-													ent->health += 10;
+												if ((ent->health + 15) < ent->client->pers.max_rpg_health)
+													ent->health += 15;
 												else
 													ent->health = ent->client->pers.max_rpg_health;
 											}
