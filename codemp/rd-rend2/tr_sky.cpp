@@ -418,6 +418,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 
 	tess.minIndex = firstVertex;
 	tess.maxIndex = tess.numVertexes;
+	tess.useInternalVBO = qtrue;
 
 	// FIXME: A lot of this can probably be removed for speed, and refactored into a more convenient function
 	RB_UpdateVBOs(ATTR_POSITION | ATTR_TEXCOORD0);
@@ -473,7 +474,8 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	//R_BindNullIBO();
 
 	RB_CommitInternalBufferData();
-
+	
+	tess.useInternalVBO = qfalse;
 	tess.numIndexes = tess.firstIndex;
 	tess.numVertexes = firstVertex;
 	tess.firstIndex = 0;

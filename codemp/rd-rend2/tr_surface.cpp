@@ -199,6 +199,7 @@ void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4])
 	tess.indexes[tess.numIndexes++] = 3;
 	tess.minIndex = 0;
 	tess.maxIndex = 3;
+	tess.useInternalVBO = qtrue;
 
 	RB_UpdateVBOs(ATTR_POSITION | ATTR_TEXCOORD0);
 
@@ -213,6 +214,7 @@ void RB_InstantQuad2(vec4_t quadVerts[4], vec2_t texCoords[4])
 	tess.firstIndex = 0;
 	tess.minIndex = 0;
 	tess.maxIndex = 0;
+	tess.useInternalVBO = qfalse;
 }
 
 
@@ -646,6 +648,7 @@ static void RB_SurfaceBeam( void )
 
 	tess.minIndex = 0;
 	tess.maxIndex = tess.numVertexes;
+	tess.useInternalVBO = qtrue;
 
 	// FIXME: A lot of this can probably be removed for speed, and refactored into a more convenient function
 	RB_UpdateVBOs(ATTR_POSITION);
@@ -666,6 +669,7 @@ static void RB_SurfaceBeam( void )
 	tess.firstIndex = 0;
 	tess.minIndex = 0;
 	tess.maxIndex = 0;
+	tess.useInternalVBO = qfalse;
 }
 
 //------------------
