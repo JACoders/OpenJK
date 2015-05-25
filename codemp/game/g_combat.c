@@ -5049,7 +5049,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 			{ // zyk: Unique Skill increases resistance to damage
-				unique_skill_resistance += 0.1;
+				unique_skill_resistance += 0.05;
 			}
 
 			if (targ->client->pers.secrets_found & (1 << 19))
