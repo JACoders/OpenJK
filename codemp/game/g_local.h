@@ -554,6 +554,9 @@ typedef struct clientPersistant_s {
 	// 4 - Received Stealth Attacker Upgrade event - set after client-side receives the Stealth Attacker Upgrade event
 	int player_statuses;
 
+	// zyk: has the player id who called this seller
+	int seller_invoked_by_id;
+
 	// zyk: timer to send events to client game
 	int send_event_timer;
 

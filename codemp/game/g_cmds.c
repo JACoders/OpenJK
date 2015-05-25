@@ -9190,6 +9190,20 @@ Cmd_CallSeller_f
 extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle );
 void Cmd_CallSeller_f( gentity_t *ent ) {
 	gentity_t *npc_ent = NULL;
+	int i = 0;
+	int seller_id = -1;
+
+	for (i = MAX_CLIENTS; i < level.num_entities; i++)
+	{
+		npc_ent = &g_entities[i];
+
+		if (npc_ent && npc_ent->client && npc_ent->NPC && Q_stricmp(npc_ent->NPC_type, "jawa_seller") == 0 && 
+			npc_ent->client->pers.seller_invoked_by_id == ent->s.number)
+		{
+			seller_id = npc_ent->s.number;
+			break;
+		}
+	}
 
 	if (ent->client->pers.guardian_mode == 14)
 	{
@@ -9197,15 +9211,27 @@ void Cmd_CallSeller_f( gentity_t *ent ) {
 		return;
 	}
 
-	npc_ent = NPC_SpawnType(ent,"jawa_seller",NULL,qfalse);
-	if (npc_ent)
+	if (seller_id == -1)
 	{
-		npc_ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-		trap->SendServerCommand( ent-g_entities, "chat \"^3Jawa Seller: ^7Hello, friend! I have some products to sell.\"");
+		npc_ent = NPC_SpawnType(ent,"jawa_seller",NULL,qfalse);
+		if (npc_ent)
+		{
+			npc_ent->client->pers.seller_invoked_by_id = ent->s.number;
+			npc_ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			trap->SendServerCommand( ent-g_entities, "chat \"^3Jawa Seller: ^7Hello, friend! I have some products to sell.\"");
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, va("chat \"%s: ^7The seller couldn't come...\"", ent->client->pers.netname));
+		}
 	}
 	else
-	{
-		trap->SendServerCommand( ent-g_entities, va("chat \"%s: ^7The seller couldn't come...\"", ent->client->pers.netname));
+	{ // zyk: seller of this player is already in the map, remove him
+		npc_ent = &g_entities[seller_id];
+
+		G_FreeEntity(npc_ent);
+
+		trap->SendServerCommand( ent-g_entities, "chat \"^3Jawa Seller: ^7See you later, friend!\"");
 	}
 }
 
