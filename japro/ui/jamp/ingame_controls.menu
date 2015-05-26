@@ -2571,7 +2571,7 @@
 			name				mousejoystick
 			group				joycontrols
 			type				ITEM_TYPE_SLIDER
-			text				"Scope Sensitivity"
+			text				"Scope Sensitivity:"
 			cvarfloat			"cg_scopeSensitivity" 1 0 1
 			rect				220 101 300 20
 			textalign			ITEM_ALIGN_RIGHT
@@ -2700,7 +2700,7 @@
 			name				mousejoystick
 			group				joycontrols
 			type				ITEM_TYPE_SLIDER
-			text				"Zoom Sensitivity"
+			text				"Zoom Sensitivity:"
 			cvarfloat			"cg_zoomSensitivity" 0 0 30
 			rect				220 181 300 20
 			textalign			ITEM_ALIGN_RIGHT
