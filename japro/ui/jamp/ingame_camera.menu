@@ -36,9 +36,35 @@
 				@MENUS_OFF 0
 				@MENUS_ON 1
 			}
-			rect				10 4 116 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			90
+			rect				6 4 54 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef
+		{
+			name				fpls
+			group				camera
+			type				ITEM_TYPE_MULTI
+			text				"FPLS:"
+			cvar				cg_fpls
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
+			}
+			rect				67 4 59 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
 			textaligny			0
 			font				4
 			textscale			1
