@@ -15,26 +15,14 @@
 		// Overall window backdrop
 		itemDef 
 		{
-			name				background_pic
-			group				none
-			style				WINDOW_STYLE_SHADER
-			rect				0 0 238 88
-			background			"gfx/menus/menu_box_ingame"
-			forecolor			1 1 1 1
-			visible				1
-			decoration
-		}
-		
-		itemDef 
-		{
 			name				setup_background
 			group				none
 			style				WINDOW_STYLE_FILLED
 			rect				0 0 238 88
-			backcolor			0 0 .6 .5
+			backcolor			0 0 .35 .9
 			forecolor			1 1 1 1
 			border				1
-			bordercolor			0 0 .6 1
+			bordercolor			0 0 .8 1
 			visible				1
 			decoration
 		}
