@@ -1712,7 +1712,15 @@
 			cvarFloatList		
 			{ 
 				@MENUS_OFF 0  
-				@MENUS_ON 1 
+				1 1
+				2 2
+				3 3
+				4 4
+				5 5
+				6 6
+				7 7
+				8 8
+				9 9
 			}
 			rect				220 41 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
