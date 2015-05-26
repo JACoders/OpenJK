@@ -9216,8 +9216,8 @@ void Cmd_CallSeller_f( gentity_t *ent ) {
 		npc_ent = &g_entities[i];
 
 		if (npc_ent && npc_ent->client && npc_ent->NPC && Q_stricmp(npc_ent->NPC_type, "jawa_seller") == 0 && 
-			npc_ent->client->pers.seller_invoked_by_id == ent->s.number)
-		{
+			npc_ent->health > 0 && npc_ent->client->pers.seller_invoked_by_id == ent->s.number)
+		{ // zyk: found the seller of this player
 			seller_id = npc_ent->s.number;
 			break;
 		}
