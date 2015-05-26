@@ -391,7 +391,7 @@
 		visible					0
 		fullscreen				0
 		outOfBoundsClick
-		rect					10 296 282 138
+		rect					6 296 290 138
 		focusColor				1 1 1 1
 		style					1
 		border					1
@@ -408,7 +408,7 @@
 			name				setup_background
 			group				none
 			style				WINDOW_STYLE_FILLED
-			rect				0 0 282 138
+			rect				0 0 290 138
 			backcolor			0 0 .35 .9
 			forecolor			1 1 1 1
 			border				1
@@ -423,11 +423,11 @@
 			text				"Advanced Strafe Helper Options"
 			style				WINDOW_STYLE_SHADER
 			background			"gfx/menus/menu_blendbox"
-			rect				0 4 282 20
+			rect				0 4 290 20
 			font				3
 			textscale			0.7
 			textalign			ITEM_ALIGN_CENTER		
-			textalignx			141
+			textalignx			145
 			textaligny			1
 			forecolor			.549 .854 1 1
 	      	visible				1 
@@ -441,7 +441,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				"FPS:"
 			cvarfloat			"cg_strafeHelper_FPS" 1000 0 1000
-			rect				10 24 172 20
+			rect				14 24 172 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			68
 			font				4
@@ -461,7 +461,7 @@
 			type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"cg_strafeHelper_FPS"
-			rect				192 24 40 20
+			rect				196 24 40 20
 			font 				4
 			textscale 			1
 			forecolor			.615 .615 .956 1
@@ -475,7 +475,7 @@
  			group				strafeHelper
      		type				ITEM_TYPE_BUTTON
 			text				"Reset"
-			rect				242 24 30 20
+			rect				246 24 30 20
 			font 				4
 			textscale 			1
 			forecolor			1 .682 0 1
@@ -494,7 +494,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				"Precision:"
 			cvarfloat			"cg_strafeHelperPrecision" 256 0 1000
-			rect				10 44 172 20
+			rect				14 44 172 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			68
 			font				4
@@ -514,7 +514,7 @@
 			type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"cg_strafeHelperPrecision"
-			rect				192 44 40 20
+			rect				196 44 40 20
 			font 				4
 			textscale 			1
 			forecolor			.615 .615 .956 1
@@ -528,7 +528,7 @@
  			group				strafeHelper
      		type				ITEM_TYPE_BUTTON
 			text				"Reset"
-			rect				242 44 30 20
+			rect				246 44 30 20
 			font 				4
 			textscale 			1
 			forecolor			1 .682 0 1
@@ -547,7 +547,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				"Offset:"
 			cvarfloat			"cg_strafeHelperOffset" 75 0 200
-			rect				10 64 172 20
+			rect				14 64 172 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			68
 			font				4
@@ -567,7 +567,7 @@
 			type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"cg_strafeHelperOffset"
-			rect				192 64 40 20
+			rect				196 64 40 20
 			font 				4
 			textscale 			1
 			forecolor			.615 .615 .956 1
@@ -581,7 +581,7 @@
  			group				strafeHelper
      		type				ITEM_TYPE_BUTTON
 			text				"Reset"
-			rect				242 64 30 20
+			rect				246 64 30 20
 			font 				4
 			textscale 			1
 			forecolor			1 .682 0 1
@@ -600,7 +600,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				"Invert Offset:"
 			cvarfloat			"cg_strafeHelperInvertOffset" 75 0 200
-			rect				10 84 172 20
+			rect				14 84 172 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			68
 			font				4
@@ -620,7 +620,7 @@
 			type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"cg_strafeHelperInvertOffset"
-			rect				192 84 40 20
+			rect				196 84 40 20
 			font 				4
 			textscale 			1
 			forecolor			.615 .615 .956 1
@@ -634,7 +634,7 @@
  			group				strafeHelper
      		type				ITEM_TYPE_BUTTON
 			text				"Reset"
-			rect				242 84 30 20
+			rect				246 84 30 20
 			font 				4
 			textscale 			1
 			forecolor			1 .682 0 1
@@ -651,7 +651,7 @@
 			name				button_glow
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				20 104 242 30
+			rect				20 104 250 30
 			background			"gfx/menus/menu_buttonback"
 			forecolor			1 1 1 1
 			visible				0
@@ -666,9 +666,9 @@
 			font				3
 			textscale			.8
 			style				WINDOW_STYLE_FILLED
-			rect				20 104 242 30
+			rect				20 104 250 30
 			textalign			ITEM_ALIGN_CENTER
-			textalignx			121
+			textalignx			125
 			textaligny			5
 			forecolor			1 .682 0 1
 			visible				1
