@@ -52,15 +52,15 @@
 		
 		itemDef
 		{
-			name				firstPerson
+			name				gunThirdPerson
 			group				camera
 			type				ITEM_TYPE_MULTI
-			text				"1st Person:"
+			text				"Gun 3rd Person:"
 			cvar				cg_thirdPerson
 			cvarFloatList
 			{
-				@MENUS_OFF 1
-				@MENUS_ON 0
+				@MENUS_OFF 0
+				@MENUS_ON 1
 			}
 			rect				136 4 88 20
 			textalign			ITEM_ALIGN_LEFT
