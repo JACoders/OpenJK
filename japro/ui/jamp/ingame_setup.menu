@@ -946,11 +946,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight11
+				show			highlight13
 			}
 			mouseexit 
 			{ 
-				hide			highlight11
+				hide			highlight13
 			} 
 		}
 
@@ -2202,7 +2202,7 @@
 			text				@MENUS_SET_LANGUAGE
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				365 261 120 32 
+			rect				365 281 120 32 
 			font				2
 			textscale			1        
 			textalign			ITEM_ALIGN_CENTER
@@ -2221,11 +2221,11 @@
 			}
 			mouseEnter 
 			{ 
-				show			highlight12
+				show			highlight13
 			}
 			mouseExit 
 			{ 
-				hide			highlight12
+				hide			highlight13
 			}	  	  
 
 		}
