@@ -5045,19 +5045,19 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (targ->client->pers.rpg_class == 9) // zyk: Force Tank damage resistance
 		{			
-			float unique_skill_resistance = 0.0;
+			float force_tank_bonus_resistance = 0.0;
 
 			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 			{ // zyk: Unique Skill increases resistance to damage
-				unique_skill_resistance += 0.05;
+				force_tank_bonus_resistance += 0.05;
 			}
 
 			if (targ->client->pers.secrets_found & (1 << 19))
 			{ // zyk: Force Tank Upgrade increases damage resistance
-				unique_skill_resistance += 0.05;
+				force_tank_bonus_resistance += 0.1;
 			}
 
-			damage = (int)ceil(damage * (0.85 - unique_skill_resistance - ((0.05 * targ->client->pers.other_skills_levels[10]))));
+			damage = (int)ceil(damage * (0.85 - force_tank_bonus_resistance - ((0.05 * targ->client->pers.other_skills_levels[10]))));
 		}
 	}
 
