@@ -4907,6 +4907,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (inflictor && (inflictor->s.weapon == WP_BOWCASTER || inflictor->s.weapon == WP_DEMP2))
 				can_damage_heavy_things = qtrue;
 		}
+		else if (attacker->client->pers.rpg_class == 9 && mod == MOD_SABER)
+		{ // zyk: Force Tank has higher damage in saber
+			if (attacker->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				damage = (int)ceil(damage * 1.1);
+		}
 	}
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.weapons_levels[5] == 2 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
@@ -5047,17 +5052,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{			
 			float force_tank_bonus_resistance = 0.0;
 
-			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-			{ // zyk: Unique Skill increases resistance to damage
-				force_tank_bonus_resistance += 0.05;
-			}
-
 			if (targ->client->pers.secrets_found & (1 << 19))
 			{ // zyk: Force Tank Upgrade increases damage resistance
 				force_tank_bonus_resistance += 0.1;
 			}
 
-			damage = (int)ceil(damage * (0.85 - force_tank_bonus_resistance - ((0.05 * targ->client->pers.other_skills_levels[10]))));
+			damage = (int)ceil(damage * (0.9 - force_tank_bonus_resistance - ((0.1 * targ->client->pers.other_skills_levels[10]))));
 		}
 	}
 
