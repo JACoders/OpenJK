@@ -1764,13 +1764,14 @@ void GLSL_VertexAttribsState(uint32_t stateBits)
 {
 	uint32_t		diff;
 
+	//Com_Printf("%d\n", stateBits);
 	GLSL_VertexAttribPointers(stateBits);
 
 	diff = stateBits ^ glState.vertexAttribsState;
 	if (!diff)
 		return;
 
-	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j << 1 )
+	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
 	{
 		// FIXME: Use BitScanForward?
 		if (diff & j)
