@@ -860,7 +860,7 @@
 			forecolor		.615 .615 .956 1
 			cvarStrList		{  @MENUS_BILINEAR , "GL_LINEAR_MIPMAP_NEAREST" , @MENUS_TRILINEAR , "GL_LINEAR_MIPMAP_LINEAR" }
 			descText			@MENUS_ADJUST_HOW_WELL_THE_TEXTURES
-			cvar				"ui_r_texturemode"
+			cvar				"r_texturemode"
 
 			visible				0
 
@@ -876,8 +876,6 @@
 			{
 				play			"sound/interface/button1.wav"
 				uiScript		glCustom
-				setcvar			ui_r_modified	1
-				show			applyChanges
 			}
 		}
 
