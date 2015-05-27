@@ -739,6 +739,14 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			VectorScale( velocity, 0.9f, other->s.pos.trDelta );
 			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
 		}
+		else if (ent->s.weapon == WP_THERMAL)
+		{
+			other->s.pos.trType = TR_GRAVITY;
+			other->s.pos.trTime = level.time;
+			BG_EvaluateTrajectoryDelta( &ent->s.pos, level.time, velocity );
+			VectorScale( velocity, 0.9f, other->s.pos.trDelta ); //tweak?
+			VectorCopy( other->r.currentOrigin, other->s.pos.trBase );
+		}
 	}
 //JAPRO - Serverside - Flag punting - End
 
