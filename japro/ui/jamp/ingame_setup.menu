@@ -749,7 +749,7 @@
 			font 				4
 			textscale 			1
 			forecolor		.615 .615 .956 1
-			cvarFloatList		{  @MENUS_LOW 2 @MENUS_MEDIUM 1 @MENUS_HIGH 0 }
+			cvarFloatList		{  "Very Low" 3 @MENUS_LOW 2 @MENUS_MEDIUM 1 @MENUS_HIGH 0 }
 			descText			@MENUS_ADJUST_THE_NUMBER_OF
 			cvar				"ui_r_lodbias"
 
@@ -911,7 +911,6 @@
 			action 
 			{
 				play			"sound/interface/button1"
-				uiScript		glCustom
 				setcvar			ui_r_modified	1
 				show			applyChanges
 			}
@@ -946,11 +945,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight13
+				show			highlight11
 			}
 			mouseexit 
 			{ 
-				hide			highlight13
+				hide			highlight11
 			} 
 		}
 

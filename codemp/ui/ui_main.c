@@ -4723,6 +4723,10 @@ static void UI_Update(const char *name) {
 			case 2:
 				trap->Cvar_SetValue( "ui_r_subdivisions", 20 );
 				break;
+
+			case 3:
+				trap->Cvar_SetValue( "ui_r_subdivisions", 80 );
+				break;
 		}
 	}
 	else if (Q_stricmp(name, "ui_r_glCustom") == 0)
@@ -4731,13 +4735,11 @@ static void UI_Update(const char *name) {
 		{
 		case 0:	// high quality
 
-			trap->Cvar_SetValue( "ui_r_fullScreen", 1 );
 			trap->Cvar_SetValue( "ui_r_subdivisions", 4 );
 			trap->Cvar_SetValue( "ui_r_lodbias", 0 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 32 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 24 );
 			trap->Cvar_SetValue( "ui_r_picmip", 0 );
-			trap->Cvar_SetValue( "ui_r_mode", 4 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 32 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 0 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 1 );
@@ -4746,13 +4748,11 @@ static void UI_Update(const char *name) {
 			break;
 
 		case 1: // normal
-			trap->Cvar_SetValue( "ui_r_fullScreen", 1 );
 			trap->Cvar_SetValue( "ui_r_subdivisions", 4 );
 			trap->Cvar_SetValue( "ui_r_lodbias", 0 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 0 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 24 );
 			trap->Cvar_SetValue( "ui_r_picmip", 1 );
-			trap->Cvar_SetValue( "ui_r_mode", 3 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 0 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 0 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 1 );
@@ -4762,13 +4762,11 @@ static void UI_Update(const char *name) {
 
 		case 2: // fast
 
-			trap->Cvar_SetValue( "ui_r_fullScreen", 1 );
 			trap->Cvar_SetValue( "ui_r_subdivisions", 12 );
 			trap->Cvar_SetValue( "ui_r_lodbias", 1 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 0 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 0 );
 			trap->Cvar_SetValue( "ui_r_picmip", 2 );
-			trap->Cvar_SetValue( "ui_r_mode", 3 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 0 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 1 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 0 );
@@ -4778,12 +4776,10 @@ static void UI_Update(const char *name) {
 
 		case 3: // fastest
 
-			trap->Cvar_SetValue( "ui_r_fullScreen", 1 );
 			trap->Cvar_SetValue( "ui_r_subdivisions", 20 );
 			trap->Cvar_SetValue( "ui_r_lodbias", 2 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 16 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 16 );
-			trap->Cvar_SetValue( "ui_r_mode", 3 );
 			trap->Cvar_SetValue( "ui_r_picmip", 3 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 16 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 1 );
