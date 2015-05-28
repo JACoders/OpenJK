@@ -1834,6 +1834,7 @@ typedef struct {
 	int textureCompression;
 
 	qboolean immutableTextures;
+	qboolean immutableBuffers;
 
 	qboolean floatLightmap;
 } glRefConfig_t;
@@ -2159,6 +2160,7 @@ extern  cvar_t  *r_arb_half_float_pixel;
 extern  cvar_t  *r_ext_framebuffer_multisample;
 extern  cvar_t  *r_arb_seamless_cube_map;
 extern  cvar_t  *r_arb_vertex_type_2_10_10_10_rev;
+extern	cvar_t	*r_arb_buffer_storage;
 
 extern	cvar_t	*r_nobind;						// turns off binding to appropriate textures
 extern	cvar_t	*r_singleShader;				// make most world faces use default shader
@@ -2452,6 +2454,8 @@ struct shaderCommands_s
 
 	VBO_t       *vbo;
 	IBO_t       *ibo;
+	void		*vboData; // If immutable buffers
+	void		*iboData; // are available
 	qboolean    useInternalVBO;
 	int			internalVBOWriteOffset;
 	int			internalVBOCommitOffset;

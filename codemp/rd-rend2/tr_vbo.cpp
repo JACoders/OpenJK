@@ -77,7 +77,6 @@ R_CreateVBO
 VBO_t *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 {
 	VBO_t          *vbo;
-	int				glUsage = GetGLBufferUsage (usage);
 
 	if ( tr.numVBOs == MAX_VBOS ) {
 		ri->Error( ERR_DROP, "R_CreateVBO: MAX_VBOS hit");
@@ -94,7 +93,21 @@ VBO_t *R_CreateVBO(byte * vertexes, int vertexesSize, vboUsage_t usage)
 	tr.numVBOs++;
 
 	qglBindBuffer(GL_ARRAY_BUFFER, vbo->vertexesVBO);
-	qglBufferData(GL_ARRAY_BUFFER, vertexesSize, vertexes, glUsage);
+	if ( glRefConfig.immutableBuffers )
+	{
+		GLbitfield creationFlags = 0;
+		if ( usage == VBO_USAGE_DYNAMIC )
+		{
+			creationFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+		}
+
+		qglBufferStorage(GL_ARRAY_BUFFER, vertexesSize, vertexes, creationFlags);
+	}
+	else
+	{
+		int glUsage = GetGLBufferUsage (usage);
+		qglBufferData(GL_ARRAY_BUFFER, vertexesSize, vertexes, glUsage);
+	}
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -113,7 +126,6 @@ R_CreateIBO
 IBO_t *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
 {
 	IBO_t          *ibo;
-	int				glUsage = GetGLBufferUsage (usage);
 
 	if ( tr.numIBOs == MAX_IBOS ) {
 		ri->Error( ERR_DROP, "R_CreateIBO: MAX_IBOS hit");
@@ -128,7 +140,22 @@ IBO_t *R_CreateIBO(byte * indexes, int indexesSize, vboUsage_t usage)
 	tr.numIBOs++;
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo->indexesVBO);
-	qglBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize, indexes, glUsage);
+	if ( glRefConfig.immutableBuffers )
+	{
+		GLbitfield creationFlags = 0;
+		if ( usage == VBO_USAGE_DYNAMIC )
+		{
+			creationFlags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+		}
+
+		qglBufferStorage(GL_ELEMENT_ARRAY_BUFFER, indexesSize, indexes, creationFlags);
+		GL_CheckErrors();
+	}
+	else
+	{
+		int glUsage = GetGLBufferUsage (usage);
+		qglBufferData(GL_ELEMENT_ARRAY_BUFFER, indexesSize, indexes, glUsage);
+	}
 
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -282,8 +309,31 @@ void R_InitVBOs(void)
 	tess.vbo->strides[ATTR_INDEX_TEXCOORD0]      = sizeof(tess.texCoords[0][0]) * 2;
 	tess.vbo->strides[ATTR_INDEX_LIGHTDIRECTION] = sizeof(tess.lightdir[0]);
 
+	tess.vbo->sizes[ATTR_INDEX_POSITION]         = sizeof(tess.xyz[0]);
+	tess.vbo->sizes[ATTR_INDEX_NORMAL]           = sizeof(tess.normal[0]);
+	tess.vbo->sizes[ATTR_INDEX_TANGENT]          = sizeof(tess.tangent[0]);
+	tess.vbo->sizes[ATTR_INDEX_COLOR]            = sizeof(tess.vertexColors[0]);
+	tess.vbo->sizes[ATTR_INDEX_TEXCOORD0]        = sizeof(tess.texCoords[0][0]) * 2;
+	tess.vbo->sizes[ATTR_INDEX_LIGHTDIRECTION]   = sizeof(tess.lightdir[0]);
+
 	dataSize = 4 * 1024 * 1024;
 	tess.ibo = R_CreateIBO(NULL, dataSize, VBO_USAGE_DYNAMIC);
+
+	if ( glRefConfig.immutableBuffers )
+	{
+		R_BindVBO(tess.vbo);
+		GL_CheckErrors();
+
+		R_BindIBO(tess.ibo);
+		GL_CheckErrors();
+
+		tess.vboData = qglMapBufferRange(GL_ARRAY_BUFFER, 0, tess.vbo->vertexesSize, GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT);
+		GL_CheckErrors();
+
+		tess.iboData = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, tess.ibo->indexesSize, GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT);
+		GL_CheckErrors();
+
+	}
 
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -299,6 +349,14 @@ R_ShutdownVBOs
 void R_ShutdownVBOs(void)
 {
 	ri->Printf(PRINT_ALL, "------- R_ShutdownVBOs -------\n");
+
+	if ( glRefConfig.immutableBuffers )
+	{
+		R_BindVBO(tess.vbo);
+		R_BindIBO(tess.ibo);
+		qglUnmapBuffer(GL_ARRAY_BUFFER);
+		qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+	}
 
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -459,10 +517,18 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		R_BindVBO(tess.vbo);
 
 		// orphan old buffer so we don't stall on it
-		void *dstPtr = qglMapBufferRange(GL_ARRAY_BUFFER, tess.internalVBOWriteOffset, totalVertexDataSize, mapFlags);
-		void *writePtr = dstPtr;
+		void *dstPtr;
+		if ( glRefConfig.immutableBuffers )
+		{
+			dstPtr = (byte *)tess.vboData + tess.internalVBOWriteOffset;
+		}
+		else
+		{
+			dstPtr = qglMapBufferRange(GL_ARRAY_BUFFER, tess.internalVBOWriteOffset, totalVertexDataSize, mapFlags);
+		}
 
 		// Interleave the data
+		void *writePtr = dstPtr;
 		for ( int i = 0; i < tess.numVertexes; i++ )
 		{
 			for ( int j = 0; j < vertexArrays.numVertexArrays; j++ )
@@ -474,7 +540,11 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			}
 		}
 
-		qglUnmapBuffer(GL_ARRAY_BUFFER);
+		if ( !glRefConfig.immutableBuffers )
+		{
+			qglUnmapBuffer(GL_ARRAY_BUFFER);
+		}
+
 		tess.internalVBOWriteOffset += totalVertexDataSize;
 	}
 
@@ -493,9 +563,22 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			mapFlags |= GL_MAP_INVALIDATE_BUFFER_BIT;
 		}
 
-		void *dst = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, tess.internalIBOCommitOffset, totalIndexDataSize, mapFlags);
+		void *dst;
+		if ( glRefConfig.immutableBuffers )
+		{
+			dst = (byte *)tess.iboData + tess.internalIBOWriteOffset;
+		}
+		else
+		{
+			dst = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, tess.internalIBOCommitOffset, totalIndexDataSize, mapFlags);
+		}
+
 		memcpy(dst, tess.indexes, totalIndexDataSize);
-		qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+
+		if ( !glRefConfig.immutableBuffers )
+		{
+			qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+		}
 
 		tess.internalIBOWriteOffset += totalIndexDataSize;
 	}

@@ -203,6 +203,9 @@ PFNGLTEXSTORAGE1DPROC qglTexStorage1D;
 PFNGLTEXSTORAGE2DPROC qglTexStorage2D;
 PFNGLTEXSTORAGE3DPROC qglTexStorage3D;
 
+// GL_ARB_buffer_storage
+PFNGLBUFFERSTORAGEPROC qglBufferStorage;
+
 static qboolean GLimp_HaveExtension(const char *ext)
 {
 	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
@@ -475,6 +478,30 @@ void GLimp_InitExtraExtensions()
 		loaded = (qboolean)(loaded && GetGLFunction (qglTexStorage2D, "glTexStorage2D", qfalse));
 
 		glRefConfig.immutableTextures = loaded;
+		ri->Printf(PRINT_ALL, result[loaded], extension);
+	}
+	else
+	{
+		ri->Printf(PRINT_ALL, result[2], extension);
+	}
+
+	// GL_ARB_buffer_storage
+	extension = "GL_ARB_buffer_storage";
+	glRefConfig.immutableBuffers = qfalse;
+	if( GLimp_HaveExtension( extension ) )
+	{
+		qboolean loaded = qtrue;
+		
+		if ( r_arb_buffer_storage->integer )
+		{
+			loaded = (qboolean)(loaded && GetGLFunction (qglBufferStorage, "glBufferStorage", qfalse));
+		}
+		else
+		{
+			loaded = qfalse;
+		}
+
+		glRefConfig.immutableBuffers = loaded;
 		ri->Printf(PRINT_ALL, result[loaded], extension);
 	}
 	else

@@ -94,6 +94,7 @@ cvar_t  *r_arb_half_float_pixel;
 cvar_t  *r_ext_framebuffer_multisample;
 cvar_t  *r_arb_seamless_cube_map;
 cvar_t  *r_arb_vertex_type_2_10_10_10_rev;
+cvar_t	*r_arb_buffer_storage;
 
 cvar_t  *r_mergeMultidraws;
 cvar_t  *r_mergeLeafSurfaces;
@@ -1527,6 +1528,7 @@ static void GfxInfo_f( void )
 	if ( displayRefresh ) {
 		ri->Printf( PRINT_ALL, "Display refresh set to %d\n", displayRefresh );
 	}
+
 	if ( r_finish->integer ) {
 		ri->Printf( PRINT_ALL, "Forcing glFinish\n" );
 	}
@@ -1634,6 +1636,7 @@ void R_Register( void )
 	r_ext_framebuffer_multisample = ri->Cvar_Get( "r_ext_framebuffer_multisample", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_seamless_cube_map = ri->Cvar_Get( "r_arb_seamless_cube_map", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_arb_vertex_type_2_10_10_10_rev = ri->Cvar_Get( "r_arb_vertex_type_2_10_10_10_rev", "1", CVAR_ARCHIVE | CVAR_LATCH);
+	r_arb_buffer_storage = ri->Cvar_Get( "r_arb_buffer_storage", "0", CVAR_ARCHIVE | CVAR_LATCH);
 	r_ext_texture_filter_anisotropic = ri->Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
 
 	r_dynamicGlow						= ri->Cvar_Get( "r_dynamicGlow",			"0",		CVAR_ARCHIVE );
