@@ -32,7 +32,7 @@
 			group				strafeHelper
 			type				ITEM_TYPE_SLIDER
 			text				"Cutoff:"
-			cvarfloat			"cg_strafeHelperCutoff" 0 0 225
+			cvarfloat			"cg_strafeHelperCutoff" 0 0 230
 			rect				10 4 172 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			68
