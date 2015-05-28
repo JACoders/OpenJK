@@ -281,10 +281,6 @@ void RB_TestFlare( flare_t *f ) {
 
 	backEnd.pc.c_flareTests++;
 
-	// doing a readpixels is as good as doing a glFinish(), so
-	// don't bother with another sync
-	glState.finishCalled = qfalse;
-
 	// if we're doing multisample rendering, read from the correct FBO
 	oldFbo = glState.currentFBO;
 	if (tr.msaaResolveFbo)

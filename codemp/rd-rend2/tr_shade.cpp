@@ -1718,22 +1718,6 @@ void RB_StageIteratorGeneric( void )
 		return;
 	}
 
-	if (tess.useInternalVBO)
-	{
-		RB_DeformTessGeometry();
-	}
-
-	vertexAttribs = RB_CalcShaderVertexAttribs( input->shader );
-
-	if (tess.useInternalVBO)
-	{
-		RB_UpdateVBOs(vertexAttribs);
-	}
-	else
-	{
-		backEnd.pc.c_staticVboDraws++;
-	}
-
 	//
 	// log this call
 	//
@@ -1742,6 +1726,18 @@ void RB_StageIteratorGeneric( void )
 		// don't just call LogComment, or we will get
 		// a call to va() every frame!
 		GLimp_LogComment( va("--- RB_StageIteratorGeneric( %s ) ---\n", tess.shader->name) );
+	}
+
+	vertexAttribs = RB_CalcShaderVertexAttribs( input->shader );
+
+	if (tess.useInternalVBO)
+	{
+		RB_DeformTessGeometry();
+		RB_UpdateVBOs(vertexAttribs);
+	}
+	else
+	{
+		backEnd.pc.c_staticVboDraws++;
 	}
 
 	//

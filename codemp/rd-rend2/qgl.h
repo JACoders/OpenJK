@@ -406,6 +406,9 @@ extern PFNGLUNMAPBUFFERPROC qglUnmapBuffer;
 extern PFNGLCOPYBUFFERSUBDATAPROC qglCopyBufferSubData;
 extern PFNGLISBUFFERPROC qglIsBuffer;
 
+// Texturing
+extern PFNGLACTIVETEXTUREPROC qglActiveTexture;
+
 // Shader objects
 extern PFNGLCREATESHADERPROC qglCreateShader;
 extern PFNGLSHADERSOURCEPROC qglShaderSource;
@@ -543,6 +546,7 @@ extern PFNGLRENDERBUFFERSTORAGEMULTISAMPLEPROC qglRenderbufferStorageMultisample
 extern PFNGLBLITFRAMEBUFFERPROC qglBlitFramebuffer;
 extern PFNGLGENERATEMIPMAPPROC qglGenerateMipmap;
 extern PFNGLDRAWBUFFERSPROC qglDrawBuffers;
+extern PFNGLCLEARBUFFERFVPROC qglClearBufferfv;
 
 // Query objects
 extern PFNGLGENQUERIESPROC qglGenQueries;

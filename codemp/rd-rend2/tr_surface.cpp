@@ -2052,7 +2052,7 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	//mdvSurface_t   *mdvSurface;
 	refEntity_t    *refEnt;
 
-//	GLimp_LogComment("--- RB_SurfaceVBOMDVMesh ---\n");					// FIXME: REIMPLEMENT (wasn't implemented in ioq3 to begin with) --eez
+	GLimp_LogComment("--- RB_SurfaceVBOMDVMesh ---\n");
 
 	if(!surface->vbo || !surface->ibo)
 		return;

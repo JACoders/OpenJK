@@ -67,6 +67,9 @@ PFNGLUNMAPBUFFERPROC qglUnmapBuffer;
 PFNGLCOPYBUFFERSUBDATAPROC qglCopyBufferSubData;
 PFNGLISBUFFERPROC qglIsBuffer;
 
+// Texturing
+PFNGLACTIVETEXTUREPROC qglActiveTexture;
+
 // Shader objects
 PFNGLCREATESHADERPROC qglCreateShader;
 PFNGLSHADERSOURCEPROC qglShaderSource;
@@ -232,10 +235,13 @@ static qboolean GetGLFunction ( GLFuncType& glFunction, const char *glFunctionSt
 	return qtrue;
 }
 
-void GLimp_InitExtraExtensions()
+void GLW_InitTextureCompression( void );
+void GLimp_InitExtensions()
 {
 	char *extension;
 	const char* result[3] = { "...ignoring %s\n", "...using %s\n", "...%s not found\n" };
+
+	Com_Printf("Initializing OpenGL 3.2 functions\n");
 
 	// Drawing commands
 	GetGLFunction (qglDrawRangeElements, "glDrawRangeElements", qtrue);
@@ -278,6 +284,10 @@ void GLimp_InitExtraExtensions()
 	GetGLFunction (qglUnmapBuffer, "glUnmapBuffer", qtrue);
 	GetGLFunction (qglCopyBufferSubData, "glCopyBufferSubData", qtrue);
 	GetGLFunction (qglIsBuffer, "glIsBuffer", qtrue);
+
+	// Texturing
+	GetGLFunction (qglActiveTexture, "glActiveTexture", qtrue);
+
 
 	// Shader objects
 	GetGLFunction (qglCreateShader, "glCreateShader", qtrue);
@@ -424,9 +434,40 @@ void GLimp_InitExtraExtensions()
 	GetGLFunction (qglGetQueryObjectiv, "glGetQueryObjectiv", qtrue);
 	GetGLFunction (qglGetQueryObjectuiv, "glGetQueryObjectuiv", qtrue);
 
+	Com_Printf ("Initializing OpenGL extensions\n" );
+
+	// Select our tc scheme
+	GLW_InitTextureCompression();
+
+	// GL_EXT_texture_filter_anisotropic
+	glConfig.maxTextureFilterAnisotropy = 0;
+	if ( GLimp_HaveExtension( "EXT_texture_filter_anisotropic" ) )
+	{
+		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
+		Com_Printf ("...GL_EXT_texture_filter_anisotropic available\n" );
+
+		if ( r_ext_texture_filter_anisotropic->integer > 1 )
+		{
+			Com_Printf ("...using GL_EXT_texture_filter_anisotropic\n" );
+		}
+		else
+		{
+			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
+		}
+		ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
+		{
+			ri->Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		}
+	}
+	else
+	{
+		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
+		ri->Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+	}
+
 	// Memory info
 	glRefConfig.memInfo = MI_NONE;
-
 	if( GLimp_HaveExtension( "GL_NVX_gpu_memory_info" ) )
 	{
 		glRefConfig.memInfo = MI_NVX;

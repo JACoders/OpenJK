@@ -78,7 +78,7 @@ void GL_SelectTexture( int unit )
 	if (!(unit >= 0 && unit <= 31))
 		ri->Error( ERR_DROP, "GL_SelectTexture: unit = %i", unit );
 
-	qglActiveTextureARB( GL_TEXTURE0_ARB + unit );
+	qglActiveTexture( GL_TEXTURE0 + unit );
 
 	glState.currenttmu = unit;
 }
@@ -437,15 +437,6 @@ to actually render the visible surfaces for this view
 */
 void RB_BeginDrawingView (void) {
 	int clearBits = 0;
-
-	// sync with gl if needed
-	if ( r_finish->integer == 1 && !glState.finishCalled ) {
-		qglFinish ();
-		glState.finishCalled = qtrue;
-	}
-	if ( r_finish->integer == 0 ) {
-		glState.finishCalled = qtrue;
-	}
 
 	// we will need to change the projection matrix before drawing
 	// 2D images again
@@ -1720,10 +1711,6 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		{
 			FBO_FastBlit(tr.renderFbo, NULL, NULL, NULL, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 		}
-	}
-
-	if ( !glState.finishCalled ) {
-		qglFinish();
 	}
 
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );

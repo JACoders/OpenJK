@@ -1785,7 +1785,6 @@ typedef struct {
 typedef struct glstate_s {
 	int			currenttextures[NUM_TEXTURE_BUNDLES];
 	int			currenttmu;
-	qboolean	finishCalled;
 	int			texEnv[2];
 	int			faceCulling;
 	uint32_t	glStateBits;
@@ -2423,7 +2422,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 */
 
 static QINLINE void	GLimp_LogComment( char *comment ) {}
-void GLimp_InitExtraExtensions();
+void GLimp_InitExtensions();
 
 /*
 ====================================================================
