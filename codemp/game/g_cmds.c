@@ -9177,7 +9177,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{
-					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: shoots electric bolts that deals more damage\nForce Tank: increases resistance to damage and drains hp from nearby enemies\n\"") );
+					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: shoots electric bolts that deals more damage\nForce Tank: increases saber damage and drains hp from nearby enemies\n\"") );
 				}
 				else
 				{
@@ -9474,7 +9474,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 47)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Tank Upgrade: ^7increases saber damage. Saber can no longer be dropped out of hand. Decreases knockback a bit\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Force Tank Upgrade: ^7increases damage resistance. Saber can no longer be dropped out of hand. Decreases knockback a bit\n\n\"");
 		}
 	}
 }
