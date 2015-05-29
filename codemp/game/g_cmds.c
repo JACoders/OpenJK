@@ -8917,7 +8917,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "info" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"\nTo get levels in RPG Mode, defeat players or npcs. The levels also give skillpoints, which can be used to get skills (force, weapons, ammo, etc). You can upgrade skills by using ^3/up <skill number>^7. Try also playing the quests, which can give you special powers.\n\n\"");
+				trap->SendServerCommand( ent-g_entities, va("print \"\n^3%s\n\n^7To get levels in RPG Mode, defeat players or npcs. The levels also give skillpoints, which can be used to get skills (force, weapons, ammo, etc). You can upgrade skills by using ^3/up <skill number>^7. Try also playing the quests, which can give you special powers.\n\n\"", GAMEVERSION));
 			}
 			else if (Q_stricmp( arg1, "stuff" ) == 0)
 			{
