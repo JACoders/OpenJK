@@ -4519,6 +4519,15 @@ static void PM_CrashLandEffect( void )
 	}
 }
 #endif
+
+/*
+static void CheckHalfPlayerSpeed(void ) {
+	if (PM_GetMovePhysics() == MV_SP) {
+		pm->ps->velocity[0] *= 0.5f;
+		pm->ps->velocity[1] *= 0.5f;
+	}
+}
+*/
 /*
 =================
 PM_CrashLand
@@ -12737,7 +12746,7 @@ void PmoveSingle (pmove_t *pmove) {
 		trap->SnapVector( pm->ps->velocity ); 
 	}
 	else {
-		if (pm->ps->stats[STAT_RACEMODE]) //japro fix racemode fps
+		if (pm->ps->stats[STAT_RACEMODE] || pm->pmove_float > 1) //japro fix racemode fps
 			pm->ps->velocity[2] = bg_roundfloat(pm->ps->velocity[2]);
 	#ifdef _GAME
 		else if (g_fixHighFPSAbuse.integer && ((pml.msec < 4) || (pml.msec > 25))) { //More than 333fps, or less than 40fps.

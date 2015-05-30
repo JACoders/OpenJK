@@ -381,9 +381,6 @@ typedef enum {
 	E_BEG,
 	E_BEG2,
 	E_BREAKDANCE,
-	E_BREAKDANCE2,
-	E_BREAKDANCE3,
-	E_BREAKDANCE4,
 	E_CHEER,
 	E_COWER,
 	E_DANCE,
@@ -392,20 +389,16 @@ typedef enum {
 	E_POINT,
 	E_RAGE,
 	E_SIT,
-	E_SIT2,
-	E_SIT3,
-	E_SIT4,
-	E_SIT5,
 	E_SURRENDER,
 	E_SMACK,
 	E_TAUNT,
-	E_TAUNT2,
 	E_VICTORY,
 	E_JAWARUN,
 	E_BERNIE,
 	E_SLEEP,
 	E_SABERFLIP,
 	E_SLAP,
+	E_SIGNAL, //Group them all here, running out of space in this :s
 	E_ALL
 } emote_type_t;
 
@@ -1229,6 +1222,7 @@ typedef enum //movementstyle enum
 	MV_RJCPM,
 	MV_SWOOP,
 	MV_JETPACK,
+	//MV_SP,
 	MV_NUMSTYLES,
 } movementStyle_e;
 
