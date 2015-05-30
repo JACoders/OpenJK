@@ -4910,7 +4910,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 9 && mod == MOD_SABER)
 		{ // zyk: Force Tank Unique Skill increases saber damage
 			if (attacker->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-				damage = (int)ceil(damage * 1.1);
+				damage = (int)ceil(damage * 1.15);
 		}
 	}
 
