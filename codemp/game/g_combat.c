@@ -4929,14 +4929,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = damage * 1.25;
 	}
 
-	if (attacker && attacker->client && attacker->NPC)
-	{
-		if ((attacker->client->pers.guardian_mode >= 12 && attacker->client->pers.guardian_mode <= 15) || attacker->client->pers.universe_quest_artifact_holder_id != -1)
-		{ // zyk: these quest npcs have bonus damage
-			damage = (int)ceil(damage*1.12);
-		}
-	}
-
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(attacker->client->pers.player_settings & (1 << 2)))
 	{ // zyk: Dark Power increases damage of every attack
 		damage = (int)ceil(damage*1.15);
