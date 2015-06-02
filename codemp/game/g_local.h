@@ -457,6 +457,40 @@ typedef struct clientSession_s {
 	int	amrpgmode; // zyk: saved in session so the player account can be loaded again in map changes
 	char filename[32]; // zyk: player account filename
 
+	// zyk: current power selected by Magic Master to use
+	// 1 - Inner Area Damage
+	// 2 - Healing Water
+	// 3 - Water Splash
+	// 4 - Earthquake
+	// 5 - Rockfall
+	// 6 - Sleeping Flowers
+	// 7 - Poison Mushrooms
+	// 8 - Cloaking
+	// 9 - Dome of Damage
+	// 10 - Ultra Speed
+	// 11 - Slow Motion
+	// 12 - Flame Burst
+	// 13 - Ultra Flame
+	// 14 - Blowing Wind
+	// 15 - Hurricane
+	// 16 - Ultra Resistance
+	// 17 - Ultra Strength
+	int selected_special_power;
+
+	// zyk: same as above but selects power to be used with A + melee kata
+	int selected_left_special_power;
+
+	// zyk: same as above but selects power to be used with D + melee kata
+	int selected_right_special_power;
+	
+	// zyk: activates Magic Fist types
+	// Possible values are:
+	// 0 - Magic Fist
+	// 1 - Fist Charged Attack
+	// 2 - Fist Spray Attack
+	// 3 - No fist attacks
+	int magic_fist_selection;
+
 	// zyk: used to set the ally ids. The allies dont receive damage from this player
 	int ally1;
 	int ally2;
@@ -613,40 +647,6 @@ typedef struct clientPersistant_s {
 	// 8 - Magic Master
 	// 9 - Force Tank
 	int rpg_class;
-
-	// zyk: current power selected by Magic Master to use
-	// 1 - Inner Area Damage
-	// 2 - Healing Water
-	// 3 - Water Splash
-	// 4 - Earthquake
-	// 5 - Rockfall
-	// 6 - Sleeping Flowers
-	// 7 - Poison Mushrooms
-	// 8 - Cloaking
-	// 9 - Dome of Damage
-	// 10 - Ultra Speed
-	// 11 - Slow Motion
-	// 12 - Flame Burst
-	// 13 - Ultra Flame
-	// 14 - Blowing Wind
-	// 15 - Hurricane
-	// 16 - Ultra Resistance
-	// 17 - Ultra Strength
-	int selected_special_power;
-
-	// zyk: same as above but selects power to be used with A + melee kata
-	int selected_left_special_power;
-
-	// zyk: same as above but selects power to be used with D + melee kata
-	int selected_right_special_power;
-	
-	// zyk: activates Magic Fist types
-	// Possible values are:
-	// 0 - Magic Fist
-	// 1 - Fist Charged Attack
-	// 2 - Fist Spray Attack
-	// 3 - No fist attacks
-	int magic_fist_selection;
 
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;

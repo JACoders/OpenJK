@@ -3575,7 +3575,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 	{
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8)
 		{ // zyk: Magic Master fist attacks
-			if (ent->client->pers.magic_fist_selection == 0 && ent->client->pers.magic_power >= zyk_magic_fist_mp_cost.integer)
+			if (ent->client->sess.magic_fist_selection == 0 && ent->client->pers.magic_power >= zyk_magic_fist_mp_cost.integer)
 			{ // zyk: Magic Fist
 				vec3_t origin, dir, zyk_forward;
 				gentity_t *missile = NULL;
@@ -3631,7 +3631,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
 			}
-			else if (ent->client->pers.magic_fist_selection == 1 && ent->client->pers.magic_power >= zyk_first_charged_mp_cost.integer)
+			else if (ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= zyk_first_charged_mp_cost.integer)
 			{ // zyk: Magic Fist Charged Attack
 				int count = 2;
 				gentity_t	*missile;
@@ -3693,7 +3693,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				ent->client->pers.magic_power -= zyk_first_charged_mp_cost.integer;
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 			}
-			else if (ent->client->pers.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
+			else if (ent->client->sess.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
 			{ // zyk: Magic Fist Spray Attack
 				gentity_t	*missile;
 				vec3_t origin;
@@ -4765,7 +4765,7 @@ void FireWeapon( gentity_t *ent, qboolean altFire ) {
 	}
 
 	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
-		ent->client->pers.selected_special_power == 0 && ent->s.weapon == WP_MELEE)
+		ent->client->sess.selected_special_power == 0 && ent->s.weapon == WP_MELEE)
 	{ // zyk: Magic Master can shoot from his hands
 		ent->client->accuracy_shots++;
 	}

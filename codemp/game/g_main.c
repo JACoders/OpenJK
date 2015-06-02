@@ -4761,22 +4761,22 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 	{
 		do
 		{
-			ent->client->pers.selected_special_power++;
-			if (ent->client->pers.selected_special_power == 20)
-				ent->client->pers.selected_special_power = 1;
-		} while (magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse);
+			ent->client->sess.selected_special_power++;
+			if (ent->client->sess.selected_special_power == 20)
+				ent->client->sess.selected_special_power = 1;
+		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 	else
 	{
 		do
 		{
-			ent->client->pers.selected_special_power--;
-			if (ent->client->pers.selected_special_power == 0)
-				ent->client->pers.selected_special_power = 19;
-		} while (magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse);
+			ent->client->sess.selected_special_power--;
+			if (ent->client->sess.selected_special_power == 0)
+				ent->client->sess.selected_special_power = 19;
+		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 
-	zyk_print_special_power(ent,ent->client->pers.selected_special_power,'^');
+	zyk_print_special_power(ent,ent->client->sess.selected_special_power,'^');
 }
 
 void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
@@ -4785,22 +4785,22 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 	{
 		do
 		{
-			ent->client->pers.selected_left_special_power++;
-			if (ent->client->pers.selected_left_special_power == 20)
-				ent->client->pers.selected_left_special_power = 1;
-		} while (magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse);
+			ent->client->sess.selected_left_special_power++;
+			if (ent->client->sess.selected_left_special_power == 20)
+				ent->client->sess.selected_left_special_power = 1;
+		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 	else
 	{
 		do
 		{
-			ent->client->pers.selected_left_special_power--;
-			if (ent->client->pers.selected_left_special_power == 0)
-				ent->client->pers.selected_left_special_power = 19;
-		} while (magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse);
+			ent->client->sess.selected_left_special_power--;
+			if (ent->client->sess.selected_left_special_power == 0)
+				ent->client->sess.selected_left_special_power = 19;
+		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 
-	zyk_print_special_power(ent,ent->client->pers.selected_left_special_power,'<');
+	zyk_print_special_power(ent,ent->client->sess.selected_left_special_power,'<');
 }
 
 void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
@@ -4809,22 +4809,22 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 	{
 		do
 		{
-			ent->client->pers.selected_right_special_power++;
-			if (ent->client->pers.selected_right_special_power == 20)
-				ent->client->pers.selected_right_special_power = 1;
-		} while (magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse);
+			ent->client->sess.selected_right_special_power++;
+			if (ent->client->sess.selected_right_special_power == 20)
+				ent->client->sess.selected_right_special_power = 1;
+		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 	else
 	{
 		do
 		{
-			ent->client->pers.selected_right_special_power--;
-			if (ent->client->pers.selected_right_special_power == 0)
-				ent->client->pers.selected_right_special_power = 19;
-		} while (magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse);
+			ent->client->sess.selected_right_special_power--;
+			if (ent->client->sess.selected_right_special_power == 0)
+				ent->client->sess.selected_right_special_power = 19;
+		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 
-	zyk_print_special_power(ent,ent->client->pers.selected_right_special_power,'>');
+	zyk_print_special_power(ent,ent->client->sess.selected_right_special_power,'>');
 }
 
 // zyk: controls the quest powers stuff

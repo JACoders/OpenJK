@@ -3521,15 +3521,15 @@ qboolean TryGrapple(gentity_t *ent)
 				{ // zyk: Magic Master has his own way of choosing a power
 					if (ent->client->pers.cmd.forwardmove > 0)
 					{ // zyk: Special Power Up direction
-						use_this_power = ent->client->pers.selected_special_power;
+						use_this_power = ent->client->sess.selected_special_power;
 					}
 					else if (ent->client->pers.cmd.rightmove > 0)
 					{ // zyk: Special Power Right direction
-						use_this_power = ent->client->pers.selected_right_special_power;
+						use_this_power = ent->client->sess.selected_right_special_power;
 					}
 					else if (ent->client->pers.cmd.rightmove < 0)
 					{ // zyk: Special Power Left direction
-						use_this_power = ent->client->pers.selected_left_special_power;
+						use_this_power = ent->client->sess.selected_left_special_power;
 					}
 
 					// zyk: can use the power if he beat a specific light quest boss
@@ -5099,16 +5099,16 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		ent->client->pers.thermal_vision = qfalse;
 
-		if (ent->client->pers.rpg_class != 8 || magic_master_has_this_power(ent, ent->client->pers.selected_special_power) == qfalse || 
-			magic_master_has_this_power(ent, ent->client->pers.selected_left_special_power) == qfalse || 
-			magic_master_has_this_power(ent, ent->client->pers.selected_right_special_power) == qfalse || 
-			ent->client->pers.magic_fist_selection < 0 || 
-			ent->client->pers.magic_fist_selection > 3)
-		{ // zyk: this will allow Magic Master selected powers to persist between respawns
-			ent->client->pers.selected_special_power = 1;
-			ent->client->pers.selected_left_special_power = 1;
-			ent->client->pers.selected_right_special_power = 1;
-			ent->client->pers.magic_fist_selection = 0;
+		if (ent->client->pers.rpg_class != 8 || magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse || 
+			magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse || 
+			magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse || 
+			ent->client->sess.magic_fist_selection < 0 || 
+			ent->client->sess.magic_fist_selection > 3)
+		{ // zyk: this will allow Magic Master selected powers to persist between respawns and to prevent exploits when logging in another account
+			ent->client->sess.selected_special_power = 1;
+			ent->client->sess.selected_left_special_power = 1;
+			ent->client->sess.selected_right_special_power = 1;
+			ent->client->sess.magic_fist_selection = 0;
 		}
 
 		ent->client->pers.quest_power_usage_timer = 0;
