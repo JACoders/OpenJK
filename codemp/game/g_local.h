@@ -1209,6 +1209,7 @@ typedef enum
 	AET_SOUND,
 } alertEventType_e;
 
+#define _SPPHYSICS 0
 typedef enum //movementstyle enum
 {
 	MV_SIEGE,
@@ -1222,7 +1223,9 @@ typedef enum //movementstyle enum
 	MV_RJCPM,
 	MV_SWOOP,
 	MV_JETPACK,
-	//MV_SP,
+#if _SPPHYSICS
+	MV_SP,
+#endif
 	MV_NUMSTYLES,
 } movementStyle_e;
 

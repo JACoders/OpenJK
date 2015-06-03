@@ -1290,6 +1290,23 @@ int InterpolateTouchTime(gentity_t *activator, gentity_t *trigger)
 	return lessTime;
 }
 
+static QINLINE int GetTimeMS() {
+ //return level.time;
+ return trap->Milliseconds();
+
+ /*
+ 	regarding precision:
+	currently, it assumes that client touch trigger checks are done every 8ms.  it might require the client to have atleast 125fps for this to happen though.  also, does maxpackets affect this?
+	then, interpolation is done on the touch time to get it down to 1ms precision.
+
+	if touch trigger checks were only done every server frame, this should use level.time, and interpolation would take it from 1000/sv_fps precision down to 1ms precision,
+	but that doesnt seem to be the case.
+
+	trace triggers shouldnt really affect this, atleast not in an abusable way.
+	*/
+
+}
+
 //void G_SoundPrivate( gentity_t *ent, int channel, int soundIndex );
 void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
 	int lessTime;
@@ -1300,7 +1317,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 		return;
 	if (player->r.svFlags & SVF_BOT)
 		return;
-	if (trap->Milliseconds() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
+	if (GetTimeMS() - player->client->pers.stats.startTime < 500)//Some built in floodprotect per player?
 		return;
 	if (player->client->pers.stats.lastResetTime == level.time) //Dont allow a starttimer to start in the same frame as a resettimer (called from noclip or amtele)
 		return;
@@ -1311,7 +1328,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (player->client->sess.raceMode && player->client->sess.movementStyle == MV_SWOOP && !player->client->ps.m_iVehicleNum) //Dont start the timer for swoop racers if they dont have a swoop
 		return;
 
-	//trap->Print("Actual trigger touch! time: %i\n", trap->Milliseconds());
+	//trap->Print("Actual trigger touch! time: %i\n", GetTimeMS());
 
 	if (player->client->pers.recordingDemo && player->client->pers.keepDemo) {
 		//We are still recording a demo that we want to keep?
@@ -1349,11 +1366,19 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	if (trigger->noise_index) 
 		G_Sound( player, CHAN_AUTO, trigger->noise_index );//could just use player instead of trigger->activator ?   How do we make this so only the activator hears it?
 
-	player->client->pers.startLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //use level.previousTime?
+	player->client->pers.startLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime; //use level.previousTime?
 	//trap->SendServerCommand( player-g_entities, va("chat \"startlag: %i\"", player->client->pers.startLag));
 
+	/*
+	//fixme? 
+	so we need to get StartLag, defined by the difference between level.time and cmd.servertime.  i dont think it should be related to trap->milliseconds.
+	level.frameStartTime is just trap_milliseconds at the start of the frame.
+	level.time is just incrempted by a constant every frame (1000 / sv_fps->integer)
+	how often is pers.cmd.serverTime updated? every client frame? maybe it should use trap->milliseconds then.. :/
+	*/
+
 	player->client->pers.stats.startLevelTime = level.time; //Should this use trap milliseconds instead.. 
-	player->client->pers.stats.startTime = trap->Milliseconds();
+	player->client->pers.stats.startTime = GetTimeMS();
 	lessTime = InterpolateTouchTime(player, trigger);
 	player->client->pers.stats.startTime -= lessTime;
 	player->client->pers.stats.topSpeed = 0;
@@ -1361,7 +1386,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	player->client->pers.stats.displacementSamples = 0;
 
 	//if (player->r.svFlags & SVF_JUNIORADMIN)
-		//trap->SendServerCommand(player-g_entities, va("cp \"Starting lag: %i\n 2: %i\n 3: %i\n\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, trap->Milliseconds() - player->client->pers.cmd.serverTime));
+		//trap->SendServerCommand(player-g_entities, va("cp \"Starting lag: %i\n 2: %i\n 3: %i\n\"", player->client->pers.startLag, level.time - player->client->pers.cmd.serverTime, GetTimeMS() - player->client->pers.cmd.serverTime));
 
 	if (player->client->ps.stats[STAT_RACEMODE]) {
 		player->client->ps.duelTime = level.time - lessTime;//player->client->pers.stats.startTime;//level.time;
@@ -1397,10 +1422,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 	if (player->client->pers.stats.startTime) {
 		char style[32] = {0}, timeStr[32] = {0}, playerName[MAX_NETNAME] = {0};
 		char c[4] = S_COLOR_RED;
-		float time = (trap->Milliseconds() - player->client->pers.stats.startTime);
+		float time = GetTimeMS() - player->client->pers.stats.startTime;
 		int average, restrictions = 0, nameColor = 7;
 		qboolean valid = qfalse;
-		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
+		const int endLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
 
 		if (diffLag > 0) {//Should this be more trusting..?.. -20? -30?
@@ -1557,8 +1582,8 @@ void TimerCheckpoint(gentity_t *trigger, gentity_t *player, trace_t *trace) {//J
 
 	if (player->client->pers.stats.startTime && (level.time - player->client->pers.stats.lastCheckpointTime > 1000)) { //make this more accurate with interp? or dosnt really matter ...
 		int i;
-		int time = trap->Milliseconds() - player->client->pers.stats.startTime;
-		const int endLag = trap->Milliseconds() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
+		int time = GetTimeMS() - player->client->pers.stats.startTime;
+		const int endLag = GetTimeMS() - level.frameStartTime + level.time - player->client->pers.cmd.serverTime;
 		const int diffLag = player->client->pers.startLag - endLag;
 		int average;
 		//const int average = floorf(player->client->pers.stats.displacement / ((level.time - player->client->pers.stats.startLevelTime) * 0.001f)) + 0.5f; //Could this be more accurate?

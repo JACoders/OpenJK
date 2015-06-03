@@ -3727,6 +3727,12 @@ static void PM_AirMove( void ) {
 	wishspeed *= scale;
 
 	accelerate = pm_airaccelerate;
+
+#if _SPPHYSICS
+	if (PM_GetMovePhysics() == MV_SP)
+		accelerate = 4.0f;
+#endif
+
 	if ( pVeh && pVeh->m_pVehicleInfo->type == VH_SPEEDER )
 	{//speeders have more control in air
 		//in mid-air
@@ -3749,8 +3755,8 @@ static void PM_AirMove( void ) {
 			accel = 2.5f;//cpm_pm_airstopaccelerate 
 		else
 			accel = pm_airaccelerate;
-		if ((((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 8)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6))
-		{
+
+		if ((((PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 5) || PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 8)) && (pm->ps->movementDir == 2 || pm->ps->movementDir == 6)) {
 			if (wishspeed > 30.0f)//cpm_pm_wishspeed
 				wishspeed = 30.0f;	
 			accel = 70.0f;//cpm_pm_strafeaccelerate
@@ -4084,6 +4090,11 @@ static void PM_WalkMove( void ) {
 		realaccelerate = 12.0f;
 		realduckscale = 0.3125f;
 	}
+#if _SPPHYSICS
+	else if (PM_GetMovePhysics() == MV_SP) {
+		realaccelerate = 14.0f;
+	}
+#endif
 
 	PM_Friction ();
 
@@ -4188,7 +4199,7 @@ static void PM_WalkMove( void ) {
 	}
 	else if ( ( pml.groundTrace.surfaceFlags & SURF_SLICK ) || pm->ps->pm_flags & PMF_TIME_KNOCKBACK )
 	{
-		accelerate = pm_airaccelerate;
+		accelerate = pm_airaccelerate; //this should be changed for QW and other stuff, but whatever, already done
 	}
 	else
 	{
@@ -4521,14 +4532,6 @@ static void PM_CrashLandEffect( void )
 #endif
 
 /*
-static void CheckHalfPlayerSpeed(void ) {
-	if (PM_GetMovePhysics() == MV_SP) {
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
-	}
-}
-*/
-/*
 =================
 PM_CrashLand
 
@@ -4561,6 +4564,14 @@ static void PM_CrashLand( void ) {
 
 	delta = vel + t * acc;
 	delta = delta*delta * 0.0001;
+
+#if _SPPHYSICS
+	if (pm->ps->fd.forceJumpZStart && ((int)pm->ps->origin[2] >= (int)pm->ps->fd.forceJumpZStart) && PM_GetMovePhysics() == MV_SP) {
+		//trap->Print("cutting speed in half\n");
+		pm->ps->velocity[0] *= 0.5f;
+		pm->ps->velocity[1] *= 0.5f;
+	}
+#endif
 
 #ifdef _GAME
 	PM_CrashLandEffect();
