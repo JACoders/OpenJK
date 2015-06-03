@@ -1313,6 +1313,7 @@ static consoleCommand_t	commands[] = {
 	//{ "imagecacheinfo",		RE_RegisterImages_Info_f },
 	{ "modellist",			R_Modellist_f },
 	//{ "modelcacheinfo",		RE_RegisterModels_Info_f },
+	{ "vbolist",			R_VBOList_f },
 };
 
 static const size_t numCommands = ARRAY_LEN( commands );
