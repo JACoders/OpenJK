@@ -5005,6 +5005,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = (int)ceil(damage*0.85);
 	}
 
+	// zyk: player or npc with Magic Shield cannot take any damage
+	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 11))
+		return;
+
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{ // zyk: damage resistance of each class
 		// zyk: when player is in Hard Mode/Challenge Mode, he takes more damage
@@ -6282,7 +6286,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			maxs[i] = origin[i] + radius + 1000;
 		}
 		else if (i == 2 && attacker && Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0)
-		{ // zyk: Dome of Damage/Dome of Doom quest power calculates the bounding box in a different way
+		{ // zyk: Dome of Damage quest power calculates the bounding box in a different way
 			mins[i] = origin[i] - 20;
 			maxs[i] = origin[i] + radius - 150;
 		}

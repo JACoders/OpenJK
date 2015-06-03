@@ -3470,7 +3470,7 @@ extern void ultra_strength(gentity_t *ent, int duration);
 extern void ultra_resistance(gentity_t *ent, int duration);
 extern void immunity_power(gentity_t *ent, int duration);
 extern void ultra_drain(gentity_t *ent, int radius, int damage, int duration);
-extern void Jedi_Cloak( gentity_t *self );
+extern void magic_shield(gentity_t *ent, int duration);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3933,16 +3933,16 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_earthquake_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 8 && zyk_enable_cloaking.integer == 1 && ent->client->pers.magic_power >= zyk_cloaking_mp_cost.integer)
+					else if (use_this_power == 8 && zyk_enable_magic_shield.integer == 1 && ent->client->pers.magic_power >= zyk_magic_shield_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						Jedi_Cloak(ent);
-						ent->client->pers.magic_power -= zyk_cloaking_mp_cost.integer;
+						magic_shield(ent, 4000);
+						ent->client->pers.magic_power -= zyk_magic_shield_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_cloaking_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0)) + (1000 * ent->client->pers.other_skills_levels[10]);
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_cloaking_cooldown.integer;
-						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Cloaking!\"", ent->client->pers.netname));
+							ent->client->pers.quest_power_usage_timer = level.time + zyk_magic_shield_cooldown.integer;
+						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Magic Shield!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 14 && zyk_enable_blowing_wind.integer == 1 && ent->client->pers.magic_power >= zyk_blowing_wind_mp_cost.integer)
 					{
@@ -5111,6 +5111,7 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->sess.magic_fist_selection = 0;
 		}
 
+		ent->client->pers.quest_power_status = 0;
 		ent->client->pers.quest_power_usage_timer = 0;
 
 		ent->client->pers.magic_power = zyk_max_magic_power(ent);
@@ -9167,7 +9168,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.rpg_class == 5)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Healing Water: ^7instantly recovers some hp. Attack with D + special melee to use this power\n^3Water Splash: ^7damages enemies, draining their hp and healing you. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 6)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Cloaking: ^7cloaks you. Attack with D + special melee to use this power\n^3Dome of Damage: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Magic Shield: ^7creates a shield that makes you invulnerable for a short time. Attack with D + special melee to use this power\n^3Dome of Damage: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 7)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 8)

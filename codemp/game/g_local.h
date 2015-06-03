@@ -465,7 +465,7 @@ typedef struct clientSession_s {
 	// 5 - Rockfall
 	// 6 - Sleeping Flowers
 	// 7 - Poison Mushrooms
-	// 8 - Cloaking
+	// 8 - Magic Shield
 	// 9 - Dome of Damage
 	// 10 - Ultra Speed
 	// 11 - Slow Motion
@@ -813,6 +813,7 @@ typedef struct clientPersistant_s {
 	//  8 - hit by Blowing Wind
 	//  9 - using Ultra Speed
 	// 10 - using Resurrection Power
+	// 11 - using Magic Shield
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses
@@ -825,6 +826,7 @@ typedef struct clientPersistant_s {
 	int quest_power1_timer;
 	int quest_power2_timer;
 	int quest_power3_timer;
+	int quest_power4_timer;
 
 	// zyk: timers used by the quest powers hitting this player
 	int quest_target1_timer;

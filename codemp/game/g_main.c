@@ -4343,7 +4343,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 	}
 }
 
-// zyk: Dome of Doom/Dome of Damage
+// zyk: Dome of Damage
 void dome_of_doom(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
@@ -4357,6 +4357,14 @@ void dome_of_doom(gentity_t *ent, int distance, int damage)
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_dome", "4", "env/dome", 1400, damage, 290, 10000);
 		}
 	}
+}
+
+// zyk: Magic Shield
+void magic_shield(gentity_t *ent, int duration)
+{
+	ent->client->pers.quest_power_status |= (1 << 11);
+	ent->client->pers.quest_power4_timer = level.time + duration;
+	ent->client->invulnerableTimer = level.time + duration;
 }
 
 // zyk: Ice Stalagmite
@@ -4707,7 +4715,7 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	}
 	else if (selected_power == 8)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Cloaking            ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Shield        ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
 	}
 	else if (selected_power == 9)
 	{
@@ -4982,6 +4990,19 @@ void quest_power_events(gentity_t *ent)
 			if (ent->client->pers.quest_power_status & (1 << 9) && ent->client->pers.quest_power3_timer < level.time)
 			{ // zyk: Ultra Speed
 				ent->client->pers.quest_power_status &= ~(1 << 9);
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 11))
+			{ // zyk: Magic Shield
+				if (ent->client->pers.quest_power4_timer < level.time)
+				{ // zyk: Magic Shield run out
+					ent->client->pers.quest_power_status &= ~(1 << 11);
+				}
+				else
+				{
+					ent->client->ps.eFlags |= EF_INVULNERABLE;
+					ent->client->invulnerableTimer = ent->client->pers.quest_power4_timer;
+				}
 			}
 		}
 		else if (!ent->NPC && ent->client->pers.quest_power_status & (1 << 10) && ent->client->pers.quest_power1_timer < level.time && 
@@ -8707,22 +8728,23 @@ void G_RunFrame( int levelTime ) {
 				else if (ent->client->pers.guardian_mode == 4)
 				{ // zyk: Guardian of Intelligence
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
+
 					if (ent->client->pers.guardian_timer < level.time)
-					{ // zyk: uses cloaking ability
-						if (!ent->client->ps.powerups[PW_CLOAKED])
+					{
+						if (ent->client->pers.light_quest_messages == 0)
 						{
-							Jedi_Cloak(ent);
-							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Cloaking!\"");
+							dome_of_doom(ent,1500,40);
+							ent->client->pers.light_quest_messages = 1;
+							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
+						}
+						else
+						{
+							magic_shield(ent, 4000);
+							ent->client->pers.light_quest_messages = 0;
+							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Magic Shield!\"");
 						}
 
-						ent->client->pers.guardian_timer = level.time + 10000;
-					}
-
-					if (ent->client->pers.light_quest_timer < level.time)
-					{
-						dome_of_doom(ent,1500,40);
-						trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
-						ent->client->pers.light_quest_timer = level.time + ent->health + 2000 + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
+						ent->client->pers.guardian_timer = level.time + ent->health + 2000 + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 5)
