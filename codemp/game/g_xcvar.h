@@ -91,7 +91,7 @@ XCVAR_DEF( g_log,						"games.log",	NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_logClientInfo,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_logSync,					"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_maxConnPerIP,				"3",			NULL,				CVAR_ARCHIVE,									qfalse )
-XCVAR_DEF( g_maxForceRank,				"7",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE/*|CVAR_LATCH*/,	qfalse )
+XCVAR_DEF( g_maxForceRank,				"7",			CVU_ForceDisable,	CVAR_SERVERINFO|CVAR_ARCHIVE/*|CVAR_LATCH*/,	qfalse )
 XCVAR_DEF( g_maxGameClients,			"0",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( g_maxHolocronCarry,			"3",			NULL,				CVAR_LATCH,										qfalse )
 XCVAR_DEF( g_motd,						"",				NULL,				CVAR_NONE,										qfalse )
@@ -250,7 +250,7 @@ XCVAR_DEF( g_allowNoFollow,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //r
 //JAPRO OTHER Gameplay
 XCVAR_DEF( g_flipKickDamageScale,		"1",			NULL,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_startingItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_startingItems,				"0",			CVU_StartingItems,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_screenShake,				"0",			CVU_ScreenShake,	CVAR_ARCHIVE,									qtrue ) //should be g_forceScreenShake
 XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_LATCH,						qtrue )

@@ -232,6 +232,7 @@ static void RemoveWeaponsFromMap(void) {
 
 static void SpawnWeaponsInMap(void) {
 	//this might be hard.
+	//look at G_SpawnEntitiesFromString
 }
 
 static void RemoveWeaponsFromPlayer(gentity_t *ent) {
@@ -280,6 +281,23 @@ void CVU_StartingWeapons( void ) {
 		if (ent->inuse && ent->client) {
 			RemoveWeaponsFromPlayer(ent);
 			GiveClientWeapons(ent->client);
+		}
+	}
+}
+
+//Need to do all this shit again for items, but lazy.
+void GiveClientItems(gclient_t *client);
+void CVU_StartingItems( void ) {
+	int i;
+	gentity_t *ent;
+
+	for (i=0 ; i < level.numConnectedClients ; i++) { //For each player, call removeweapons, and addweapons.
+		ent = &g_entities[level.sortedClients[i]];
+		if (ent->inuse && ent->client) {
+			//RemoveItemsFromPlayer(ent);
+			//Problem here is that thers no g_itemDisable cmd, so we have to parse all the other item individual disable cmds...
+			//Maybe just let them keep their old items until they die, oh well.
+			GiveClientItems(ent->client);
 		}
 	}
 }
