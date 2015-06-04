@@ -3936,7 +3936,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 8 && zyk_enable_magic_shield.integer == 1 && ent->client->pers.magic_power >= zyk_magic_shield_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						magic_shield(ent, 4000);
+						magic_shield(ent, 5000);
 						ent->client->pers.magic_power -= zyk_magic_shield_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0)) + (1000 * ent->client->pers.other_skills_levels[10]);
@@ -9168,7 +9168,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.rpg_class == 5)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Healing Water: ^7instantly recovers some hp. Attack with D + special melee to use this power\n^3Water Splash: ^7damages enemies, draining their hp and healing you. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 6)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Magic Shield: ^7creates a shield that makes you invulnerable for a short time. Attack with D + special melee to use this power\n^3Dome of Damage: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Magic Shield: ^7creates a shield that makes you take very little dmage from enemies for a short time. Attack with D + special melee to use this power\n^3Dome of Damage: ^7an energy dome appears at enemies, damaging anyone inside the dome. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 7)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power\n\"") );
 					else if (ent->client->pers.rpg_class == 8)

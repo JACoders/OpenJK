@@ -5005,9 +5005,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = (int)ceil(damage*0.85);
 	}
 
-	// zyk: player or npc with Magic Shield cannot take any damage
+	// zyk: player or npc with Magic Shield takes very little damage
 	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 11))
-		return;
+		damage = 1;
 
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{ // zyk: damage resistance of each class
@@ -5483,8 +5483,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			{
 				targ->client->ps.eFlags &= ~EF_INVULNERABLE;
 			}
-			else
-			{
+			else if (!((targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 11)))
+			{ // zyk: added condition to not consider clients using Magic Shield
 				return;
 			}
 		}

@@ -8739,7 +8739,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else
 						{
-							magic_shield(ent, 4000);
+							magic_shield(ent, 5000);
 							ent->client->pers.light_quest_messages = 0;
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Magic Shield!\"");
 						}
