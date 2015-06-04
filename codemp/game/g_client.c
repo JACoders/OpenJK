@@ -3357,6 +3357,8 @@ void GiveClientWeapons(gclient_t *client) {
 	client->ps.ammo[AMMO_TRIPMINE] = 0;
 	client->ps.ammo[AMMO_THERMAL] = 0;
 
+	//I guess this could be cleaned up a ton, but that trusts the user to not put a retarded value for g_startingWeapons ?
+
 				if (g_startingWeapons.integer & (1 << WP_STUN_BATON))
 					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_STUN_BATON);
 				if (g_startingWeapons.integer & (1 << WP_MELEE))
@@ -3388,10 +3390,10 @@ void GiveClientWeapons(gclient_t *client) {
 				if (g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
 					client->ps.stats[STAT_WEAPONS] |= ( 1 << WP_BRYAR_OLD);
 
-				if (!(g_startingWeapons.integer & (1 << 0))) {
+				if (!(g_startingWeapons.integer & (1 << 0))) { //oh right, startingWeapons bit 1 gives more ammo
 					if (g_startingWeapons.integer & (1 << WP_BLASTER) || g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
 						client->ps.ammo[AMMO_BLASTER] = 300;
-					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER))
+					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER) || g_startingWeapons.integer & (1 << WP_DEMP2))
 						client->ps.ammo[AMMO_POWERCELL] = 200;
 					if (g_startingWeapons.integer & (1 << WP_REPEATER) || g_startingWeapons.integer & (1 << WP_FLECHETTE) || g_startingWeapons.integer & (1 << WP_CONCUSSION))
 						client->ps.ammo[AMMO_METAL_BOLTS] = 200;
@@ -3407,7 +3409,7 @@ void GiveClientWeapons(gclient_t *client) {
 				else {
 					if (g_startingWeapons.integer & (1 << WP_BLASTER) || g_startingWeapons.integer & (1 << WP_BRYAR_OLD))
 						client->ps.ammo[AMMO_BLASTER] = 600;
-					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER))
+					if (g_startingWeapons.integer & (1 << WP_DISRUPTOR) || g_startingWeapons.integer & (1 << WP_BOWCASTER) || g_startingWeapons.integer & (1 << WP_DEMP2))
 						client->ps.ammo[AMMO_POWERCELL] = 600;
 					if (g_startingWeapons.integer & (1 << WP_REPEATER) || g_startingWeapons.integer & (1 << WP_FLECHETTE) || g_startingWeapons.integer & (1 << WP_CONCUSSION))
 						client->ps.ammo[AMMO_METAL_BOLTS] = 600;

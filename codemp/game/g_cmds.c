@@ -2877,7 +2877,7 @@ qboolean G_VotePause( gentity_t *ent, int numArgs, const char *arg1, const char 
 
 qboolean G_VoteReset( gentity_t *ent, int numArgs, const char *arg1, const char *arg2 ) {
 
-	Com_sprintf( level.voteString, sizeof( level.voteString ), "resetplayers");
+	Com_sprintf( level.voteString, sizeof( level.voteString ), "resetScores");
 	Q_strncpyz( level.voteDisplayString, level.voteString, sizeof( level.voteDisplayString ) );
 	Q_strncpyz( level.voteStringClean, level.voteString, sizeof( level.voteStringClean ) );
 	return qtrue;
@@ -2929,7 +2929,7 @@ static voteString_t validVoteStrings[] = {
 	{	"vstr",					"vstr",				G_VoteVSTR,				1,		GTB_ALL,								qtrue,			"<vstr name>" },
 	{	"poll",					"poll",				G_VotePoll,				1,		GTB_ALL,								qfalse,			"<poll question>" },
 	{	"pause",				"pause",			G_VotePause,			0,		GTB_ALL,								qfalse,			NULL },
-	{	"reset",				"resetplayers",		G_VoteReset,			0,		GTB_ALL,								qfalse,			NULL },
+	{	"score_restart",		"NULL",				G_VoteReset,			0,		GTB_ALL,								qfalse,			NULL },
 };
 static const int validVoteStringsSize = ARRAY_LEN( validVoteStrings );
 

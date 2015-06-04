@@ -499,7 +499,7 @@ void Svcmd_ForceTeam_f( void ) {
 }
 
 void G_Kill( gentity_t *ent );
-void Svcmd_ResetPlayers_f (void) {
+void Svcmd_ResetScores_f (void) {
 	int i;
 	//gclient_t	*cl;
 	gentity_t *ent;
@@ -511,30 +511,32 @@ void Svcmd_ResetPlayers_f (void) {
 		//cl=&level.clients[level.sortedClients[i]];
 		ent = &g_entities[level.sortedClients[i]];
 
-		ent->client->ps.fd.forceDoInit = 1;
+		if (ent->inuse && ent->client) {
+			//ent->client->ps.fd.forceDoInit = 1;
 
-		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && !ent->client->sess.raceMode) {
-			G_Kill( ent ); //respawn them
+			//if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && !ent->client->sess.raceMode) {
+				//G_Kill( ent ); //respawn them
+			//}
+
+			ent->client->ps.persistant[PERS_SCORE] = 0;
+			ent->client->ps.persistant[PERS_HITS] = 0;
+			ent->client->ps.persistant[PERS_KILLED] = 0;
+			ent->client->ps.persistant[PERS_IMPRESSIVE_COUNT] = 0;
+			ent->client->ps.persistant[PERS_EXCELLENT_COUNT] = 0;
+			ent->client->ps.persistant[PERS_DEFEND_COUNT] = 0;
+			ent->client->ps.persistant[PERS_ASSIST_COUNT] = 0;
+			ent->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT] = 0;
+			ent->client->ps.persistant[PERS_CAPTURES] = 0;
+
+			ent->client->pers.stats.damageGiven = 0;
+			ent->client->pers.stats.damageTaken = 0;
+			ent->client->pers.stats.teamKills = 0;
+			ent->client->pers.stats.kills = 0;
+			ent->client->pers.stats.teamHealGiven = 0;
+			ent->client->pers.stats.teamEnergizeGiven = 0;
+			//Cmd_ForceChange_f(ent);
+			//WP_InitForcePowers( ent );
 		}
-
-		ent->client->ps.persistant[PERS_SCORE] = 0;
-		ent->client->ps.persistant[PERS_HITS] = 0;
-		ent->client->ps.persistant[PERS_KILLED] = 0;
-		ent->client->ps.persistant[PERS_IMPRESSIVE_COUNT] = 0;
-		ent->client->ps.persistant[PERS_EXCELLENT_COUNT] = 0;
-		ent->client->ps.persistant[PERS_DEFEND_COUNT] = 0;
-		ent->client->ps.persistant[PERS_ASSIST_COUNT] = 0;
-		ent->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT] = 0;
-		ent->client->ps.persistant[PERS_CAPTURES] = 0;
-
-		ent->client->pers.stats.damageGiven = 0;
-		ent->client->pers.stats.damageTaken = 0;
-		ent->client->pers.stats.teamKills = 0;
-		ent->client->pers.stats.kills = 0;
-		ent->client->pers.stats.teamHealGiven = 0;
-		ent->client->pers.stats.teamEnergizeGiven = 0;
-		//Cmd_ForceChange_f(ent);
-		//WP_InitForcePowers( ent );
 	}
 
 	level.teamScores[TEAM_RED] = 0;
@@ -909,6 +911,7 @@ static bitInfo_T startingWeapons[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 };
 static const int MAX_STARTING_WEAPONS = ARRAY_LEN( startingWeapons );
 
+void CVU_StartingWeapons( void );
 void Svcmd_ToggleStartingWeapons_f( void ) {
 	if ( trap->Argc() == 1 ) {
 		int i = 0;
@@ -940,6 +943,8 @@ void Svcmd_ToggleStartingWeapons_f( void ) {
 
 		trap->Print( "%s %s^7\n", startingWeapons[index].string, ((g_startingWeapons.integer & (1 << index))
 			? "^2Enabled" : "^1Disabled") );
+
+		CVU_StartingWeapons();
 	}
 }
 
@@ -1255,7 +1260,7 @@ svcmd_t svcmds[] = {
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 
 	{ "renameAccount",				Svcmd_RenameAccount_f,				qfalse },
-	{ "resetPlayers",				Svcmd_ResetPlayers_f,				qfalse },
+	{ "resetScores",				Svcmd_ResetScores_f,				qfalse },
 
 	{ "say",						Svcmd_Say_f,						qtrue },
 

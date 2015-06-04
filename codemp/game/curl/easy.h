@@ -1,5 +1,3 @@
-#if 0
-
 #ifndef __CURL_EASY_H
 #define __CURL_EASY_H
 /***************************************************************************
@@ -79,8 +77,5 @@ CURL_EXTERN void curl_easy_reset(CURL *curl);
 #ifdef  __cplusplus
 }
 #endif
-
-#endif
-
 
 #endif

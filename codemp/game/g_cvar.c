@@ -210,46 +210,81 @@ static void RemoveRabbit(void) {
 	}
 }
 
-static void RemoveWeapons(void) {
+void G_FreeAmmoEntity( gentity_t *ent );
+static void RemoveWeaponsFromMap(void) {
 	int i;
 	gentity_t	*ent;
+	int wDisable = g_weaponDisable.integer;
 
 	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
-		if (ent->inuse && (ent->s.eType == ET_ITEM) && ((ent->item->giType == IT_WEAPON) || (ent->item->giType == IT_AMMO)) ) {
-			G_FreeEntity( ent );
-			//return;
+
+		if (ent->inuse && ent->s.eType == ET_ITEM && ent->item) {
+			if ((ent->item->giType == IT_WEAPON) && wDisable & (1 << ent->item->giTag)) {
+				G_FreeEntity(ent);
+			}
+			else if (ent->item->giType == IT_AMMO) {
+				G_FreeAmmoEntity(ent);
+			}
 		}
+	}
+}
+
+static void SpawnWeaponsInMap(void) {
+	//this might be hard.
+}
+
+static void RemoveWeaponsFromPlayer(gentity_t *ent) {
+	int disallowedWeaps = g_weaponDisable.integer & ~g_startingWeapons.integer;
+	ent->client->ps.stats[STAT_WEAPONS] &= ~disallowedWeaps; //Subtract disallowed weapons from current weapons.
+
+	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 >> ent->client->ps.weapon))) { //If our weapon selected does not appear in our weapons list
+		ent->client->ps.weapon = WP_MELEE; //who knows why this does shit even if our current weapon is fine.
 	}
 }
 
 qboolean G_CallSpawn( gentity_t *ent );
-void G_UpdateWeaponDisableCvar( void ) {
+void CVU_WeaponDisable( void ) {
+	int i;
+	gentity_t *ent;
 
-	if (g_weaponDisable.integer == 524279) {
-		RemoveWeapons();
-	}
-
-	/*
-	//if (g_weaponDisable.integer) { //
-		gentity_t	*ent;
-
-
-		if (level.neutralFlag) {
-			ent = G_Spawn(qtrue);
-
-			ent->classname = "team_CTF_neutralflag";
-			VectorCopy(level.neutralFlagOrigin, ent->s.origin);
-
-			if (!G_CallSpawn(ent))
-				G_FreeEntity( ent );
+	for (i=0 ; i < level.numConnectedClients ; i++) { //For each player, call removeweapons, and addweapons.
+		ent = &g_entities[level.sortedClients[i]];
+		if (ent->inuse && ent->client) {
+			RemoveWeaponsFromPlayer(ent);
 		}
-		//trap->Print("Rabbit turning on!\n");
-	//}
-	*/
+	}
+	RemoveWeaponsFromMap();
+	SpawnWeaponsInMap();
 }
 
-void G_UpdateRabbitCvar( void ) {
+void CVU_ForceDisable( void ) {
+	int i;
+	gentity_t *ent;
+
+	for (i=0 ; i < level.numConnectedClients ; i++) {
+		ent = &g_entities[level.sortedClients[i]];
+		if (ent->inuse && ent->client) {
+			WP_InitForcePowers( ent );
+		}
+	}
+}
+
+void GiveClientWeapons(gclient_t *client);
+void CVU_StartingWeapons( void ) {
+	int i;
+	gentity_t *ent;
+
+	for (i=0 ; i < level.numConnectedClients ; i++) { //For each player, call removeweapons, and addweapons.
+		ent = &g_entities[level.sortedClients[i]];
+		if (ent->inuse && ent->client) {
+			RemoveWeaponsFromPlayer(ent);
+			GiveClientWeapons(ent->client);
+		}
+	}
+}
+
+void CVU_Rabbit( void ) {
 	if (g_rabbit.integer) { //
 		gentity_t	*ent;
 
@@ -264,11 +299,9 @@ void G_UpdateRabbitCvar( void ) {
 			if (!G_CallSpawn(ent))
 				G_FreeEntity( ent );
 		}
-		//trap->Print("Rabbit turning on!\n");
 	}
 	else {
 		RemoveRabbit();
-		//trap->Print("Rabbit turning off!\n");
 	}
 }
 

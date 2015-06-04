@@ -4,8 +4,12 @@
 #include <string.h>
 #include "sqlite3.h"
 
+#define _USE_CURL 0
+
+#if _USE_CURL
 #include "curl/curl.h"
 #include "curl/easy.h"
+#endif
 
 #define LOCAL_DB_PATH "japro/data.db"
 #define GLOBAL_DB_PATH sv_globalDBPath.string
@@ -321,58 +325,6 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 	//DebugWriteToDB("G_AddDuel");
 }
 
-void AddRunToWebServer(RaceRecord_t record) 
-{ 
-
-	//fetch_response();
-#if 0
-	CURL *curl;
-	char address[128], data[256], password[64];
-	CURLcode res;
-
-
-	Q_strncpyz(address, sv_webServerPath.string, sizeof(address));
-	Q_strncpyz(password, sv_webServerPassword.string, sizeof(password));
-
-	//Case, special chars matter? clean??  Encode coursename / username for html ?
-
-#if 0
-	Q_strncpyz(record.username, "testuser", sizeof(record.username));
-	Q_strncpyz(record.coursename, "testcourse", sizeof(record.coursename));
-	record.duration_ms = 123456;
-	record.topspeed = 835;
-	record.average = 652;
-	record.style = 3;
-	record.end_timeInt = 26246234;
-#endif
-
-	Com_sprintf(data, sizeof(data), "username=%s&coursename=%s&duration_ms=%i&topspeed=%i&average=%i&style=%i&end_time=%i", 
-		record.username, record.coursename, record.duration_ms, record.topspeed, record.average, record.style, record.end_time);
-
-	curl_global_init(CURL_GLOBAL_ALL);
-	curl = curl_easy_init();
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-		curl_easy_setopt(curl, CURLOPT_URL, address);
-		curl_easy_setopt(curl, CURLOPT_POST, 1);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
-		res = curl_easy_perform(curl); 
-	
-		if(res != CURLE_OK) 
-			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
-		else 
-			trap->Print("cURL Worked?\n"); //de fuck izzat
-
-		curl_easy_cleanup(curl);
-	}
-	else 
-		trap->Print("ERROR: Libcurl failed\n"); //de fuck izzat
-#endif
-
-
-
-} 
-
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s = 0, row = 0, i, j; //MAX_FILESIZE = 4096
@@ -482,7 +434,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 			CALL_SQLITE (reset (stmt));
 			CALL_SQLITE (clear_bindings (stmt));
 
-			AddRunToWebServer(TempRaceRecord[place]);
+			//AddRunToWebServer(TempRaceRecord[place]);
 		}
 	}
 
@@ -2717,3 +2669,53 @@ void G_SpawnWarpLocationsFromCfg(void) //loda fixme
 
 	Com_Printf ("Loaded warp locations from %s\n", filename);
 }
+
+void AddRunToWebServer(RaceRecord_t record) 
+{ 
+
+	//fetch_response();
+#if 0
+	CURL *curl;
+	char address[128], data[256], password[64];
+	CURLcode res;
+
+
+	Q_strncpyz(address, sv_webServerPath.string, sizeof(address));
+	Q_strncpyz(password, sv_webServerPassword.string, sizeof(password));
+
+	//Case, special chars matter? clean??  Encode coursename / username for html ?
+
+#if 0
+	Q_strncpyz(record.username, "testuser", sizeof(record.username));
+	Q_strncpyz(record.coursename, "testcourse", sizeof(record.coursename));
+	record.duration_ms = 123456;
+	record.topspeed = 835;
+	record.average = 652;
+	record.style = 3;
+	record.end_timeInt = 26246234;
+#endif
+
+	Com_sprintf(data, sizeof(data), "username=%s&coursename=%s&duration_ms=%i&topspeed=%i&average=%i&style=%i&end_time=%i", 
+		record.username, record.coursename, record.duration_ms, record.topspeed, record.average, record.style, record.end_time);
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+	if (curl) {
+		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+		curl_easy_setopt(curl, CURLOPT_URL, address);
+		curl_easy_setopt(curl, CURLOPT_POST, 1);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+		res = curl_easy_perform(curl); 
+	
+		if(res != CURLE_OK) 
+			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
+		else 
+			trap->Print("cURL Worked?\n"); //de fuck izzat
+
+		curl_easy_cleanup(curl);
+	}
+	else 
+		trap->Print("ERROR: Libcurl failed\n"); //de fuck izzat
+#endif
+
+} 
