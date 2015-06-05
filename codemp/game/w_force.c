@@ -542,6 +542,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
+	if (other && other->client && (other->NPC || other->client->sess.amrpgmode == 2) && 
+		(forcePower == FP_PUSH || forcePower == FP_PULL || forcePower == FP_GRIP) && 
+		other->client->pers.quest_power_status & (1 << 11))
+	{ // zyk: Magic Shield protects against some force powers
+		return 0;
+	}
+
 	if (attacker && attacker->client && !BG_CanUseFPNow(level.gametype, &attacker->client->ps, level.time, forcePower))
 	{
 		return 0;
