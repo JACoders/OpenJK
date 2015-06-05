@@ -3392,6 +3392,7 @@ static void WP_FireConcussion( gentity_t *ent )
 //---------------------------------------------------------
 // FireStunBaton
 //---------------------------------------------------------
+extern qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target);
 void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 {
 	gentity_t	*tr_ent;
@@ -3525,6 +3526,11 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 					// zyk: Stealth Attacker Upgrade protects against the stun effect
 					if (tr_ent->client->sess.amrpgmode == 2 && tr_ent->client->pers.rpg_class == 5 && tr_ent->client->pers.secrets_found & (1 << 7))
 					{
+						return;
+					}
+
+					if (zyk_can_hit_target(ent, tr_ent) == qfalse)
+					{ // zyk: testing if the target player can get knockdown
 						return;
 					}
 
