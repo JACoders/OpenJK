@@ -3977,7 +3977,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 18 && zyk_enable_ice_stalagmite.integer == 1 && ent->client->pers.magic_power >= zyk_ice_stalagmite_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						ice_stalagmite(ent,500,150);
+						ice_stalagmite(ent,500,160);
 						ent->client->pers.magic_power -= zyk_ice_stalagmite_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_stalagmite_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
@@ -3988,7 +3988,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 19 && zyk_enable_ice_boulder.integer == 1 && ent->client->pers.magic_power >= zyk_ice_boulder_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						ice_boulder(ent,400,70);
+						ice_boulder(ent,400,80);
 						ent->client->pers.magic_power -= zyk_ice_boulder_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_boulder_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));

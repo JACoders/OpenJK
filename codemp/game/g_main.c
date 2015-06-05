@@ -8849,7 +8849,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.guardian_timer < level.time)
 					{
-						ice_stalagmite(ent,500,150);
+						ice_stalagmite(ent,500,160);
 
 						ent->client->pers.guardian_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Ice: ^7Ice Stalagmite!\"");
@@ -8857,7 +8857,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						ice_boulder(ent,400,70);
+						ice_boulder(ent,400,80);
 
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Ice: ^7Ice Boulder!\"");
 						ent->client->pers.light_quest_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
