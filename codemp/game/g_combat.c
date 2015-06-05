@@ -4818,6 +4818,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (zyk_can_hit_target(attacker, targ) == qfalse)
 		return;
 
+	// zyk: target has chat protection
+	if (targ && targ->client && !targ->NPC && targ->client->pers.player_statuses & (1 << 5))
+		return;
+
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_SABER)
 	{ // zyk: player in RPG mode, with duals or staff, has a better damage depending on Saber Attack level
 		if (attacker->client->saber[0].saberFlags&SFL_TWO_HANDED || (attacker->client->saber[0].model[0] && attacker->client->saber[1].model[0]))

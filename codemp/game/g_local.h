@@ -586,7 +586,11 @@ typedef struct clientPersistant_s {
 	// 2 - Received Radar event - set after client-side receives the Bounty Hunter Upgrade event
 	// 3 - Received Jetpack Flame event - set after client-side receives the Jetpack Upgrade event
 	// 4 - Received Stealth Attacker Upgrade event - set after client-side receives the Stealth Attacker Upgrade event
+	// 5 - Chat protection activated for this player
 	int player_statuses;
+
+	// zyk: chat protection cooldown timer. After this time, player will be protected against damage
+	int chat_protection_timer;
 
 	// zyk: has the player id who called this seller
 	int seller_invoked_by_id;

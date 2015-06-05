@@ -1652,11 +1652,19 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	switch ( mode ) {
 	default:
 	case SAY_ALL:
+		// zyk: if player is silenced by an admin, he cannot say anything
+		if (ent->client->pers.player_statuses & (1 << 0))
+			return;
+
 		G_LogPrintf( "say: %s: %s\n", ent->client->pers.netname, text );
 		Com_sprintf (name, sizeof(name), "%s%c%c"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		color = COLOR_GREEN;
 		break;
 	case SAY_TEAM:
+		// zyk: if player is silenced by an admin, he cannot say anything
+		if (ent->client->pers.player_statuses & (1 << 0))
+			return;
+
 		G_LogPrintf( "sayteam: %s: %s\n", ent->client->pers.netname, text );
 		if (Team_GetLocationMsg(ent, location, sizeof(location)))
 		{
@@ -1714,10 +1722,6 @@ static void Cmd_Say_f( gentity_t *ent ) {
 	char *p = NULL;
 
 	if ( trap->Argc () < 2 )
-		return;
-
-	// zyk: if player is silenced by an admin, he cannot say anything
-	if (ent->client->pers.player_statuses & (1 << 0))
 		return;
 
 	p = ConcatArgs( 1 );

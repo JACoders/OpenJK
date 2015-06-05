@@ -5702,6 +5702,23 @@ void G_RunFrame( int levelTime ) {
 
 			quest_power_events(ent);
 
+			if (zyk_chat_protection_timer.integer > 0)
+			{ // zyk: chat protection. If 0, it is off. If greater than 0, set the timer to protect the player
+				if (ent->client->ps.eFlags & EF_TALK && ent->client->pers.chat_protection_timer == 0)
+				{
+					ent->client->pers.chat_protection_timer = level.time + zyk_chat_protection_timer.integer;
+				}
+				else if (ent->client->ps.eFlags & EF_TALK && ent->client->pers.chat_protection_timer < level.time)
+				{
+					ent->client->pers.player_statuses |= (1 << 5);
+				}
+				else if (ent->client->pers.chat_protection_timer != 0 && !(ent->client->ps.eFlags & EF_TALK))
+				{
+					ent->client->pers.player_statuses &= ~(1 << 5);
+					ent->client->pers.chat_protection_timer = 0;
+				}
+			}
+
 			if (ent->client->sess.amrpgmode == 2 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ // zyk: RPG Mode skills and quests actions. Must be done if player is not at Spectator Mode
 				// zyk: Weapon Upgrades

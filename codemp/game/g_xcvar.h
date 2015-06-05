@@ -300,5 +300,6 @@ XCVAR_DEF( zyk_allow_duelist,			"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,				
 XCVAR_DEF( zyk_allow_force_gunner,		"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_allow_magic_master,		"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_allow_force_tank,		"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_chat_protection_timer,	"0",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF

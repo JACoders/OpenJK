@@ -3775,6 +3775,8 @@ void ClientSpawn(gentity_t *ent) {
 		quest_get_new_player(ent);
 	}
 
+	ent->client->pers.chat_protection_timer = 0;
+
 	// the respawned flag will be cleared after the attack and jump keys come up
 	client->ps.pm_flags |= PMF_RESPAWNED;
 
