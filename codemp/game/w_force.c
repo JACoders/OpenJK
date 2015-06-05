@@ -3717,13 +3717,12 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			}
 //JAPRO - Serverside - Flag push/pull physics - End
 //JAPRO - Serverside - Item push/pull physics - Start
-			else if ( (g_tweakForce.integer & FT_PUSHPULLITEMS) && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
+			else if ( (g_tweakForce.integer & FT_PUSHPULLITEMS) && !(push_list[x]->s.eFlags & EF_NODRAW) && !self->client->ps.duelInProgress && push_list[x]->s.eType == ET_ITEM && (push_list[x]->item->giType == IT_AMMO || push_list[x]->item->giType == IT_ARMOR || push_list[x]->item->giType == IT_HEALTH))
 			{
 				push_list[x]->nextthink = level.time + 30000;
 				push_list[x]->think = ResetItem;//incase it falls off a cliff
 				if ( pull )
 				{//pull the item
-
 					push_list[x]->s.pos.trType = TR_GRAVITY;
 					push_list[x]->s.apos.trType = TR_GRAVITY;
 					VectorScale( forward, -650.0f, push_list[x]->s.pos.trDelta );

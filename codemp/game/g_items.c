@@ -2857,12 +2857,12 @@ void Use_Item( gentity_t *ent, gentity_t *other, gentity_t *activator ) {
 //======================================================================
 
 
-void G_FreeAmmoEntity( gentity_t *ent ) {
+qboolean G_FreeAmmoEntity( gitem_t *item ) {
 	qboolean freeEntity = qfalse;
 	int wDisable = g_weaponDisable.integer;
 	int startingWeapons = g_startingWeapons.integer;
 
-	switch(ent->item->giTag)
+	switch(item->giTag)
 	{
 		case AMMO_BLASTER: 
 			if ((wDisable & (1 << WP_BRYAR_OLD)) && (wDisable & (1 << WP_BLASTER)) && !(startingWeapons & (1 << WP_BRYAR_OLD)) && !(startingWeapons & (1 << WP_BLASTER))) {
@@ -2903,9 +2903,10 @@ void G_FreeAmmoEntity( gentity_t *ent ) {
 			freeEntity = qtrue;
 			break;
 	}
-	if (freeEntity) {
-		G_FreeEntity( ent );
-	}
+	return freeEntity;
+	//if (freeEntity) {
+		//G_FreeEntity( ent );
+	//}
 }
 /*
 ================
@@ -2934,10 +2935,7 @@ void FinishSpawningItem( gentity_t *ent ) {
 
 	if (level.gametype != GT_JEDIMASTER)
 	{
-		if (ent->item->giType == IT_AMMO) {
-			G_FreeAmmoEntity(ent);
-		}
-		else if (HasSetSaberOnly() && ent->item->giType == IT_HOLDABLE) {
+		if ((ent->item->giType != IT_AMMO) && (HasSetSaberOnly() && ent->item->giType == IT_HOLDABLE)) {
 			if (ent->item->giTag == HI_SEEKER || ent->item->giTag == HI_SHIELD || ent->item->giTag == HI_SENTRY_GUN) {
 				G_FreeEntity( ent );
 				return;
@@ -3220,16 +3218,20 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 		wDisable = g_weaponDisable.integer;
 	}
 
+	/*
 	if (item->giType == IT_WEAPON &&
 		wDisable &&
 		(wDisable & (1 << item->giTag)))
 	{
+		//save the entity here somehow so it can be respawned?
+
 		if (level.gametype != GT_JEDIMASTER)
 		{
 			G_FreeEntity( ent );
 			return;
 		}
 	}
+	*/
 
 	RegisterItem( item );
 	if ( G_ItemDisabled(item) )
@@ -3247,6 +3249,30 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 	ent->think = FinishSpawningItem;
 
 	ent->physicsBounce = 0.50;		// items are bouncy
+
+	if (level.gametype != GT_JEDIMASTER)
+	{
+		if (item->giType == IT_WEAPON && wDisable && (wDisable & (1 << item->giTag))) {
+			ent->think = 0;
+			ent->nextthink = 0;
+			ent->s.eFlags |= EF_NODRAW;
+			ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+			ent->r.svFlags |= SVF_NOCLIENT;
+			ent->r.contents = 0;
+			//ent->inuse = qfalse;
+			return;
+		}
+		else if (item->giType == IT_AMMO && wDisable && G_FreeAmmoEntity(item)) {
+			ent->think = 0;
+			ent->nextthink = 0;
+			ent->s.eFlags |= EF_NODRAW;
+			ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+			ent->r.svFlags |= SVF_NOCLIENT;
+			ent->r.contents = 0;
+			//ent->inuse = qfalse;
+			return;
+		}
+	}
 
 	if ( item->giType == IT_POWERUP ) {
 		G_SoundIndex( "sound/items/respawn1" );

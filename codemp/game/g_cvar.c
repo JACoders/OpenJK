@@ -203,14 +203,14 @@ static void RemoveRabbit(void) {
 
 	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
-		if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType != IT_WEAPON)) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
+		if (ent->inuse && (ent->s.eType == ET_ITEM) && (ent->item->giTag == PW_NEUTRALFLAG) && (ent->item->giType = IT_TEAM)) {
 			G_FreeEntity( ent );
 			return;
 		}
 	}
 }
 
-void G_FreeAmmoEntity( gentity_t *ent );
+qboolean G_FreeAmmoEntity( gitem_t *item );
 static void RemoveWeaponsFromMap(void) {
 	int i;
 	gentity_t	*ent;
@@ -219,20 +219,60 @@ static void RemoveWeaponsFromMap(void) {
 	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
 
-		if (ent->inuse && ent->s.eType == ET_ITEM && ent->item) {
+		if (ent->inuse && ent->item) {
 			if ((ent->item->giType == IT_WEAPON) && wDisable & (1 << ent->item->giTag)) {
-				G_FreeEntity(ent);
+				ent->think = 0;
+				ent->nextthink = 0;
+				ent->s.eFlags |= EF_NODRAW;
+				ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+				ent->r.svFlags |= SVF_NOCLIENT;
+				ent->r.contents = 0;
+				//ent->inuse = qfalse;
 			}
-			else if (ent->item->giType == IT_AMMO) {
-				G_FreeAmmoEntity(ent);
+			else if (ent->item->giType == IT_AMMO && wDisable && G_FreeAmmoEntity(ent->item)) {
+				ent->think = 0;
+				ent->nextthink = 0;
+				ent->s.eFlags |= EF_NODRAW;
+				ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+				ent->r.svFlags |= SVF_NOCLIENT;
+				ent->r.contents = 0;
+				//ent->inuse = qfalse;
 			}
 		}
 	}
 }
 
+qboolean G_CallSpawn( gentity_t *ent );
+//qboolean G_ParseSpawnVars( qboolean inSubBSP );
 static void SpawnWeaponsInMap(void) {
-	//this might be hard.
-	//look at G_SpawnEntitiesFromString
+	int i;
+	gentity_t	*ent;
+	int wDisable = g_weaponDisable.integer;
+
+	for (i = 0; i < level.num_entities; i++) {
+		ent = &g_entities[i];
+
+		if (ent->inuse && ent->item) { //eh?
+			if ((ent->item->giType == IT_WEAPON) && !(wDisable & (1 << ent->item->giTag))) {
+				ent->think = FinishSpawningItem;
+				ent->nextthink = level.time + FRAMETIME * 2;
+				ent->s.eFlags &= ~EF_NODRAW;
+				ent->s.eFlags &= ~EF_DROPPEDWEAPON; //sad hack
+				ent->r.svFlags &= ~SVF_NOCLIENT;
+				ent->r.contents = CONTENTS_TRIGGER;
+				//ent->inuse = qtrue;
+			}
+			else if (ent->item->giType == IT_AMMO && !(wDisable && G_FreeAmmoEntity(ent->item))) {
+				ent->think = FinishSpawningItem;
+				ent->nextthink = level.time + FRAMETIME * 2;
+				ent->s.eFlags &= ~EF_NODRAW;
+				ent->s.eFlags &= ~EF_DROPPEDWEAPON; //sad hack
+				ent->r.svFlags &= ~SVF_NOCLIENT;
+				ent->r.contents = CONTENTS_TRIGGER;
+				//ent->inuse = qtrue;
+			}
+		}
+	}
 }
 
 static void RemoveWeaponsFromPlayer(gentity_t *ent) {
@@ -244,7 +284,6 @@ static void RemoveWeaponsFromPlayer(gentity_t *ent) {
 	}
 }
 
-qboolean G_CallSpawn( gentity_t *ent );
 void CVU_WeaponDisable( void ) {
 	int i;
 	gentity_t *ent;
