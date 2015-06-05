@@ -278,15 +278,13 @@ static void SpawnWeaponsInMap(void) {
 static void RemoveWeaponsFromPlayer(gentity_t *ent) {
 	int disallowedWeaps = g_weaponDisable.integer & ~g_startingWeapons.integer;
 
-	if (!ent->client->sess.raceMode) {
-		ent->client->ps.stats[STAT_WEAPONS] &= ~disallowedWeaps; //Subtract disallowed weapons from current weapons.
+	ent->client->ps.stats[STAT_WEAPONS] &= ~disallowedWeaps; //Subtract disallowed weapons from current weapons.
 
-		if (ent->client->ps.stats[STAT_WEAPONS] <= 0)
-			ent->client->ps.stats[STAT_WEAPONS] = WP_MELEE;
+	if (ent->client->ps.stats[STAT_WEAPONS] <= 0)
+		ent->client->ps.stats[STAT_WEAPONS] = WP_MELEE;
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 >> ent->client->ps.weapon))) { //If our weapon selected does not appear in our weapons list
-			ent->client->ps.weapon = WP_MELEE; //who knows why this does shit even if our current weapon is fine.
-		}
+	if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 >> ent->client->ps.weapon))) { //If our weapon selected does not appear in our weapons list
+		ent->client->ps.weapon = WP_MELEE; //who knows why this does shit even if our current weapon is fine.
 	}
 }
 
@@ -296,7 +294,7 @@ void CVU_WeaponDisable( void ) {
 
 	for (i=0 ; i < level.numConnectedClients ; i++) { //For each player, call removeweapons, and addweapons.
 		ent = &g_entities[level.sortedClients[i]];
-		if (ent->inuse && ent->client) {
+		if (ent->inuse && ent->client && !ent->client->sess.raceMode) {
 			RemoveWeaponsFromPlayer(ent);
 		}
 	}
@@ -323,7 +321,7 @@ void CVU_StartingWeapons( void ) {
 
 	for (i=0 ; i < level.numConnectedClients ; i++) { //For each player, call removeweapons, and addweapons.
 		ent = &g_entities[level.sortedClients[i]];
-		if (ent->inuse && ent->client) {
+		if (ent->inuse && ent->client && !ent->client->sess.raceMode) {
 			RemoveWeaponsFromPlayer(ent);
 			GiveClientWeapons(ent->client);
 		}
@@ -338,7 +336,7 @@ void CVU_StartingItems( void ) {
 
 	for (i=0 ; i < level.numConnectedClients ; i++) { //For each player, call removeweapons, and addweapons.
 		ent = &g_entities[level.sortedClients[i]];
-		if (ent->inuse && ent->client) {
+		if (ent->inuse && ent->client && !ent->client->sess.raceMode) {
 			//RemoveItemsFromPlayer(ent);
 			//Problem here is that thers no g_itemDisable cmd, so we have to parse all the other item individual disable cmds...
 			//Maybe just let them keep their old items until they die, oh well.
