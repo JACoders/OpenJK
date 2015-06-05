@@ -1799,7 +1799,7 @@ static void CG_ZykMod( void )
 			else
 				trap->Cvar_Set("ui_zyk_light_power","Light Power - no");
 
-			if (light_quest_progress == 9)
+			if (light_quest_progress == 10)
 				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
 			else if (Q_stricmp(rpg_class, "Free Warrior") == 0 && light_quest_progress & (1 << 11))
 				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
