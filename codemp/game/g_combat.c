@@ -495,6 +495,11 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 		return;
 	}
 
+	if (self && self->client && self->NPC && self->client->pers.guardian_invoked_by_id != -1)
+	{ // zyk: guardians cant lose their guns
+		return;
+	}
+
 	// find the item type for this weapon
 	item = BG_FindItemForWeapon( weapon );
 

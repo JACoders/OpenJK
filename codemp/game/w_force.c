@@ -3805,6 +3805,11 @@ void ForceThrow( gentity_t *self, qboolean pull )
 							canPullWeapon = qfalse;
 						}
 
+						if (push_list[x]->NPC && push_list[x]->client->pers.guardian_invoked_by_id != -1)
+						{ // zyk: guardians cannot have their weapon pulled from them
+							canPullWeapon = qfalse;
+						}
+
 						if (!OnSameTeam(self, push_list[x]) && Q_irand(1, 10) <= randfact && canPullWeapon)
 						{
 							vec3_t uorg, vecnorm;

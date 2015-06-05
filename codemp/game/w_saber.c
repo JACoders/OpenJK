@@ -6635,6 +6635,10 @@ qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t 
 	if (saberOwner->client->sess.amrpgmode == 2 && saberOwner->client->pers.rpg_class == 9 && saberOwner->client->pers.secrets_found & (1 << 19))
 		return qfalse;
 
+	// zyk: guardians cannot lose saber
+	if (saberOwner->NPC && saberOwner->client->pers.guardian_invoked_by_id != -1)
+		return qfalse;
+
 	saberOwner->client->ps.saberInFlight = qtrue;
 	saberOwner->client->ps.saberEntityState = 1;
 
