@@ -2262,6 +2262,11 @@ void ClientThink_real( gentity_t *ent ) {
 				client->pers.quest_power_status &= ~(1 << 2);
 				client->ps.pm_type = PM_NORMAL;
 			}
+
+			if (client->pers.player_statuses & (1 << 6))
+			{ // zyk: paralyzed by an admin. Keep him this way
+				client->ps.forceHandExtendTime = level.time + 500;
+			}
 		}
 	}
 

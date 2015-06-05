@@ -545,6 +545,10 @@ void G_Kill( gentity_t *ent ) {
 		}
 	}
 
+	// zyk: target has been paralyzed by an admin
+	if (ent && ent->client && !ent->NPC && ent->client->pers.player_statuses & (1 << 6))
+		return;
+
 	ent->flags &= ~FL_GODMODE;
 	ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
 	player_die (ent, ent, ent, 100000, MOD_SUICIDE);
@@ -12277,92 +12281,101 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_NPC))) 
 		{
-			strcpy(message_content[0],va("^3 %d ^7- NPC: ^2yes\n",ADM_NPC));
+			strcpy(message_content[0],va("^3  %d ^7- NPC: ^2yes\n",ADM_NPC));
 		}
 		else
 		{
-			strcpy(message_content[0],va("^3 %d ^7- NPC: ^1no\n",ADM_NPC));
+			strcpy(message_content[0],va("^3  %d ^7- NPC: ^1no\n",ADM_NPC));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_NOCLIP))) 
 		{
-			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^2yes\n",ADM_NOCLIP));
+			strcpy(message_content[1],va("^3  %d ^7- NoClip: ^2yes\n",ADM_NOCLIP));
 		}
 		else
 		{
-			strcpy(message_content[1],va("^3 %d ^7- NoClip: ^1no\n",ADM_NOCLIP));
+			strcpy(message_content[1],va("^3  %d ^7- NoClip: ^1no\n",ADM_NOCLIP));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_GIVEADM))) 
 		{
-			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^2yes\n",ADM_GIVEADM));
+			strcpy(message_content[2],va("^3  %d ^7- GiveAdmin: ^2yes\n",ADM_GIVEADM));
 		}
 		else
 		{
-			strcpy(message_content[2],va("^3 %d ^7- GiveAdmin: ^1no\n",ADM_GIVEADM));
+			strcpy(message_content[2],va("^3  %d ^7- GiveAdmin: ^1no\n",ADM_GIVEADM));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_TELE))) 
 		{
-			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^2yes\n",ADM_TELE));
+			strcpy(message_content[3],va("^3  %d ^7- Teleport: ^2yes\n",ADM_TELE));
 		}
 		else
 		{
-			strcpy(message_content[3],va("^3 %d ^7- Teleport: ^1no\n",ADM_TELE));
+			strcpy(message_content[3],va("^3  %d ^7- Teleport: ^1no\n",ADM_TELE));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_ADMPROTECT))) 
 		{
-			strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^2yes\n",ADM_ADMPROTECT));
+			strcpy(message_content[4],va("^3  %d ^7- AdminProtect: ^2yes\n",ADM_ADMPROTECT));
 		}
 		else
 		{
-			strcpy(message_content[4],va("^3 %d ^7- AdminProtect: ^1no\n",ADM_ADMPROTECT));
+			strcpy(message_content[4],va("^3  %d ^7- AdminProtect: ^1no\n",ADM_ADMPROTECT));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM))) 
 		{
-			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^2yes\n",ADM_ENTITYSYSTEM));
+			strcpy(message_content[5],va("^3  %d ^7- EntitySystem: ^2yes\n",ADM_ENTITYSYSTEM));
 		}
 		else
 		{
-			strcpy(message_content[5],va("^3 %d ^7- EntitySystem: ^1no\n",ADM_ENTITYSYSTEM));
+			strcpy(message_content[5],va("^3  %d ^7- EntitySystem: ^1no\n",ADM_ENTITYSYSTEM));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_SILENCE))) 
 		{
-			strcpy(message_content[6],va("^3 %d ^7- Silence: ^2yes\n",ADM_SILENCE));
+			strcpy(message_content[6],va("^3  %d ^7- Silence: ^2yes\n",ADM_SILENCE));
 		}
 		else
 		{
-			strcpy(message_content[6],va("^3 %d ^7- Silence: ^1no\n",ADM_SILENCE));
+			strcpy(message_content[6],va("^3  %d ^7- Silence: ^1no\n",ADM_SILENCE));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_CLIENTPRINT))) 
 		{
-			strcpy(message_content[7],va("^3 %d ^7- ClientPrint: ^2yes\n",ADM_CLIENTPRINT));
+			strcpy(message_content[7],va("^3  %d ^7- ClientPrint: ^2yes\n",ADM_CLIENTPRINT));
 		}
 		else
 		{
-			strcpy(message_content[7],va("^3 %d ^7- ClientPrint: ^1no\n",ADM_CLIENTPRINT));
+			strcpy(message_content[7],va("^3  %d ^7- ClientPrint: ^1no\n",ADM_CLIENTPRINT));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_RPMODE))) 
 		{
-			strcpy(message_content[8],va("^3 %d ^7- RP Mode: ^2yes\n",ADM_RPMODE));
+			strcpy(message_content[8],va("^3  %d ^7- RP Mode: ^2yes\n",ADM_RPMODE));
 		}
 		else
 		{
-			strcpy(message_content[8],va("^3 %d ^7- RP Mode: ^1no\n",ADM_RPMODE));
+			strcpy(message_content[8],va("^3  %d ^7- RP Mode: ^1no\n",ADM_RPMODE));
 		}
 
 		if ((ent->client->pers.bitvalue & (1 << ADM_KICK))) 
 		{
-			strcpy(message_content[9],va("^3 %d ^7- Kick: ^2yes\n",ADM_KICK));
+			strcpy(message_content[9],va("^3  %d ^7- Kick: ^2yes\n",ADM_KICK));
 		}
 		else
 		{
-			strcpy(message_content[9],va("^3 %d ^7- Kick: ^1no\n",ADM_KICK));
+			strcpy(message_content[9],va("^3  %d ^7- Kick: ^1no\n",ADM_KICK));
+		}
+
+		if ((ent->client->pers.bitvalue & (1 << ADM_PARALYZE))) 
+		{
+			strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^2yes\n",ADM_PARALYZE));
+		}
+		else
+		{
+			strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^1no\n",ADM_PARALYZE));
 		}
 
 		for (i = 0; i < ADM_NUM_CMDS; i++)
@@ -12419,6 +12432,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_KICK)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/admkick <player name or ID> ^7to kick a player from the server\n\n\"" );
+		}
+		else if (command_number == ADM_PARALYZE)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/paralyze <player name or ID> ^7to paralyze a player. Use it again so the target player will no longer be paralyzed\n\n\"" );
 		}
 	}
 }
@@ -12811,6 +12828,62 @@ void Cmd_AdmKick_f( gentity_t *ent ) {
 }
 
 /*
+==================
+Cmd_Paralyze_f
+==================
+*/
+void Cmd_Paralyze_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS];
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_PARALYZE)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+   
+	if ( trap->Argc() != 2) 
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must specify the player name or ID.\n\"" ); 
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	client_id = zyk_get_client( arg1 );
+
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+		return;
+	}
+
+	if (g_entities[client_id].client->pers.player_statuses & (1 << 6))
+	{ // zyk: if paralyzed, remove it from the target player
+		g_entities[client_id].client->pers.player_statuses &= ~(1 << 6);
+
+		// zyk: kill the target player to prevent exploits with RPG Mode commands
+		G_Kill(&g_entities[client_id]);
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Target player %s ^7is no longer paralyzed\n\"", g_entities[client_id].client->pers.netname) );
+		trap->SendServerCommand( client_id, va("print \"You are no longer paralyzed\n\"") );
+	}
+	else
+	{ // zyk: paralyze the target player
+		g_entities[client_id].client->pers.player_statuses |= (1 << 6);
+
+		g_entities[client_id].client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+		g_entities[client_id].client->ps.forceHandExtendTime = level.time + 500;
+		g_entities[client_id].client->ps.velocity[2] += 150;
+		g_entities[client_id].client->ps.forceDodgeAnim = 0;
+		g_entities[client_id].client->ps.quickerGetup = qtrue;
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Paralyzed the target player %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		trap->SendServerCommand( client_id, va("print \"You were paralyzed by an admin\n\"") );
+	}
+}
+
+/*
 =================
 ClientCommand
 =================
@@ -12892,6 +12965,7 @@ command_t commands[] = {
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_LOGGEDIN|CMD_ALIVE },
 	{ "npclist",			Cmd_NpcList_f,				CMD_NOINTERMISSION },
+	{ "paralyze",			Cmd_Paralyze_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "playermode",			Cmd_PlayerMode_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },

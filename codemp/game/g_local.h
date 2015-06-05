@@ -517,6 +517,7 @@ typedef enum {
 	ADM_CLIENTPRINT,
 	ADM_RPMODE,
 	ADM_KICK,
+	ADM_PARALYZE,
 	ADM_NUM_CMDS
 } zyk_admin_t;
 
@@ -582,12 +583,13 @@ typedef struct clientPersistant_s {
 	// zyk: account system attributes
 
 	// zyk: Possible bit values are:
-	// 0 - Player is silenced
+	// 0 - Silenced by an admin
 	// 1 - using an emote
 	// 2 - Received Radar event - set after client-side receives the Bounty Hunter Upgrade event
 	// 3 - Received Jetpack Flame event - set after client-side receives the Jetpack Upgrade event
 	// 4 - Received Stealth Attacker Upgrade event - set after client-side receives the Stealth Attacker Upgrade event
 	// 5 - Chat protection activated for this player
+	// 6 - Paralyzed by an admin
 	int player_statuses;
 
 	// zyk: chat protection cooldown timer. After this time, player will be protected against damage
