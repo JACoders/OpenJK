@@ -3850,10 +3850,13 @@ void ForceThrow( gentity_t *self, qboolean pull )
 							if (push_list[x]->client->sess.amrpgmode != 2 || push_list[x]->client->pers.rpg_class != 3 || 
 								!(push_list[x]->client->pers.secrets_found & (1 << 16)))
 							{
-								push_list[x]->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-								push_list[x]->client->ps.forceHandExtendTime = level.time + 700;
-								push_list[x]->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
-								push_list[x]->client->ps.quickerGetup = qtrue;
+								if (!(push_list[x]->NPC && push_list[x]->client->pers.guardian_invoked_by_id != -1 && Q_irand(0,4) > 0))
+								{ // zyk: bosses have a small chance of getting knockdown
+									push_list[x]->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+									push_list[x]->client->ps.forceHandExtendTime = level.time + 700;
+									push_list[x]->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
+									push_list[x]->client->ps.quickerGetup = qtrue;
+								}
 							}
 						}
 						else if (push_list[x]->s.number < MAX_CLIENTS && push_list[x]->client->ps.m_iVehicleNum &&
