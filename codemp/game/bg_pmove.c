@@ -5874,6 +5874,11 @@ void PM_BeginWeaponChange( int weapon ) {
 		return;
 	}
 
+	if (BG_InGrappleMove(pm->ps->torsoAnim) == 3 || BG_InGrappleMove(pm->ps->legsAnim) == 3)
+	{ // zyk: if this client is being grappled by melee grapple, cannot cancel it
+		return;
+	}
+
 	// turn of any kind of zooming when weapon switching.
 	if (pm->ps->zoomMode)
 	{
