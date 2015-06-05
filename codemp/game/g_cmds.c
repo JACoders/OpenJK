@@ -12356,6 +12356,15 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[8],va("^3 %d ^7- RP Mode: ^1no\n",ADM_RPMODE));
 		}
 
+		if ((ent->client->pers.bitvalue & (1 << ADM_KICK))) 
+		{
+			strcpy(message_content[9],va("^3 %d ^7- Kick: ^2yes\n",ADM_KICK));
+		}
+		else
+		{
+			strcpy(message_content[9],va("^3 %d ^7- Kick: ^1no\n",ADM_KICK));
+		}
+
 		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
@@ -12405,7 +12414,11 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		}
 		else if (command_number == ADM_RPMODE)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/rpmode makes all players not able to use /rpgclass and level up. Admins can give levels by using /levelgive <player name or ID>\n\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/rpmode ^7to make all players not able to use ^3/rpgclass ^7and level up. Admins can give levels by using ^3/levelgive <player name or ID>^7\n\n\"" );
+		}
+		else if (command_number == ADM_KICK)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/admkick <player name or ID> ^7to kick a player from the server\n\n\"" );
 		}
 	}
 }
@@ -12511,7 +12524,7 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 		else
 		{
 			bitvaluecommand = atoi(arg2);
-			if (bitvaluecommand < 0 || bitvaluecommand >= ADM_GIVEADM)
+			if (bitvaluecommand < 0 || bitvaluecommand >= ADM_NUM_CMDS)
 			{
 				trap->SendServerCommand( ent-g_entities, va("print \"Invalid admin command\n\"") );
 				return; 
@@ -12764,6 +12777,40 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 }
 
 /*
+==================
+Cmd_AdmKick_f
+==================
+*/
+void Cmd_AdmKick_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS];
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_KICK)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+   
+	if ( trap->Argc() != 2) 
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"You must specify the player name or ID.\n\"" ); 
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	client_id = zyk_get_client( arg1 );
+
+	if (client_id == -1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
+		return;
+	}
+
+	trap->SendConsoleCommand( EXEC_APPEND, va( "kick %d\n", client_id) );
+}
+
+/*
 =================
 ClientCommand
 =================
@@ -12791,6 +12838,7 @@ command_t commands[] = {
 	{ "admindown",			Cmd_AdminDown_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "adminlist",			Cmd_AdminList_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "adminup",			Cmd_AdminUp_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "admkick",			Cmd_AdmKick_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "allyadd",			Cmd_AllyAdd_f,				CMD_NOINTERMISSION },
 	{ "allylist",			Cmd_AllyList_f,				CMD_NOINTERMISSION },
 	{ "allyremove",			Cmd_AllyRemove_f,			CMD_NOINTERMISSION },

@@ -516,6 +516,7 @@ typedef enum {
 	ADM_SILENCE,
 	ADM_CLIENTPRINT,
 	ADM_RPMODE,
+	ADM_KICK,
 	ADM_NUM_CMDS
 } zyk_admin_t;
 
