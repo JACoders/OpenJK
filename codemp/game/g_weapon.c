@@ -3509,7 +3509,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 				}
 
 				// zyk: if the player has stun baton at level 3 in RPG mode, causes the tr_ent to be slapped
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3 && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && ent->client->pers.rpg_class != 6 && ent->client->pers.rpg_class != 8)
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3 && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && ent->client->pers.rpg_class != 6 && ent->client->pers.rpg_class != 8 && ent->client->pers.rpg_class != 9)
 				{
 					// zyk: allies cant be slapped
 					if (ent->client->sess.ally1 == (tr_ent-g_entities) || ent->client->sess.ally2 == (tr_ent-g_entities) || ent->client->sess.ally3 == (tr_ent-g_entities))
