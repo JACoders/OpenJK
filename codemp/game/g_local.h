@@ -475,6 +475,9 @@ typedef struct clientSession_s {
 	// 15 - Hurricane
 	// 16 - Ultra Resistance
 	// 17 - Ultra Strength
+	// 18 - Ice Stalagmite
+	// 19 - Ice Boulder
+	// 20 - Healing Area
 	int selected_special_power;
 
 	// zyk: same as above but selects power to be used with A + melee kata

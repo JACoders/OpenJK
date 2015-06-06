@@ -3479,6 +3479,7 @@ extern void ultra_resistance(gentity_t *ent, int duration);
 extern void immunity_power(gentity_t *ent, int duration);
 extern void ultra_drain(gentity_t *ent, int radius, int damage, int duration);
 extern void magic_shield(gentity_t *ent, int duration);
+extern void healing_area(gentity_t *ent, int damage, int duration);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3995,6 +3996,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_boulder_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Boulder!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 20 && zyk_enable_healing_area.integer == 1 && ent->client->pers.magic_power >= zyk_healing_area_mp_cost.integer)
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						healing_area(ent,2,5000);
+						ent->client->pers.magic_power -= zyk_healing_area_mp_cost.integer;
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_area_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_area_cooldown.integer;
+						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Area!\"", ent->client->pers.netname));
 					}
 				}
 			}

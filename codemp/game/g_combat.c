@@ -6364,9 +6364,21 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			}
 			else
 			{
-				// zyk: if it is an effect used by special power, then attacker must be the owner of the effect. Also, do not hit the owner
+				if (attacker && ent && level.special_power_effects[attacker->s.number] != -1 && Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0)
+				{ // zyk: Healing Area. Heals the user and his allies
+					gentity_t *quest_power_user = &g_entities[level.special_power_effects[attacker->s.number]];
+
+					// zyk: if the power user and the target are allies (player or npc), or the target is the quest power user himself, heal him
+					if (quest_power_user && quest_power_user->client && ent && ent->client &&
+						(level.special_power_effects[attacker->s.number] == ent->s.number || OnSameTeam(quest_power_user, ent) == qtrue || npcs_on_same_team(quest_power_user, ent) == qtrue))
+					{
+						if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
+							ent->health++;
+					}
+				}
+				
 				if (attacker && ent && level.special_power_effects[attacker->s.number] != -1 && level.special_power_effects[attacker->s.number] != ent->s.number)
-				{
+				{ // zyk: if it is an effect used by special power, then attacker must be the owner of the effect. Also, do not hit the owner
 					if (!ent->client || ent->client->sess.amrpgmode != 2 || ((ent->client->sess.amrpgmode == 2 || ent->client->pers.guardian_invoked_by_id != -1) && !(ent->client->pers.quest_power_status & (1 << 0))))
 					{ // zyk: can only hit if this player or boss is not using Immunity Power
 						gentity_t *quest_power_user = &g_entities[level.special_power_effects[attacker->s.number]];
@@ -6393,10 +6405,15 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_flame") == 0 || 
-							Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0)
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0 ||
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0)
+						{
 							G_Damage (ent, quest_power_user, quest_power_user, NULL, origin, (int)points, DAMAGE_RADIUS, mod);
+						}
 						else
+						{
 							G_Damage (ent, quest_power_user, quest_power_user, dir, origin, (int)points, DAMAGE_RADIUS, mod);
+						}
 					}
 				}
 				else if (!attacker || level.special_power_effects[attacker->s.number] == -1)
