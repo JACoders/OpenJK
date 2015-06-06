@@ -208,7 +208,7 @@ XCVAR_DEF( zyk_shield_respawn_time,	"20",				NULL,				CVAR_ARCHIVE|CVAR_NORESTAR
 XCVAR_DEF( zyk_health_respawn_time,	"30",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_holdable_item_respawn_time,	"60",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_inner_area_damage_cooldown,	"12000",	NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
-XCVAR_DEF( zyk_healing_area_cooldown,	"40000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_healing_area_cooldown,	"32000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ultra_strength_cooldown,	"5000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_poison_mushrooms_cooldown,	"10000",	NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_water_splash_cooldown,	"9000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
