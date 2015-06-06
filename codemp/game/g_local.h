@@ -1418,6 +1418,10 @@ typedef struct level_locals_s {
 
 	vec3_t		neutralFlagOrigin; //so we can toggle rabbit without restarting map and reparsing entity list i guess!
 	qboolean	neutralFlag;
+	vec3_t		redFlagOrigin;
+	vec3_t		blueFlagOrigin;
+	qboolean	redFlag;
+	qboolean	blueFlag;
 
 #if _retardedsabertest
 	int			saberUpdateDebounceTime; //why not

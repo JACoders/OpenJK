@@ -2989,26 +2989,43 @@ void FinishSpawningItem( gentity_t *ent ) {
 		}
 	}
 
+	/*
 	if (level.gametype != GT_CTF &&	level.gametype != GT_CTY &&	ent->item->giType == IT_TEAM) {
 		if (ent->item->giTag == PW_BLUEFLAG || ent->item->giTag == PW_REDFLAG) {//always remove red/blu flags if not ctf/cty
 			G_FreeEntity( ent );
 			return;
 		}
 	}
+	*/
+	//Check if we should remove the flags.
 
-	//Check if we should remove the rabbit flag.
+	if (ent->item->giType == IT_TEAM) {
 
-	if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
-		if (ent->item->giType != IT_WEAPON) { // Loda fixme, idk why but somehow its thinking snipers are PW_NEUTRALFLAG...?
-			if (level.gametype == GT_FFA || level.gametype == GT_TEAM) {
-				VectorCopy(ent->s.origin, level.neutralFlagOrigin);
-				level.neutralFlag = qtrue;
-			}
+		if (ent->item->giTag == PW_NEUTRALFLAG) {//always remove neutralflag unless in ffa
+			VectorCopy(ent->s.origin, level.neutralFlagOrigin);
+			level.neutralFlag = qtrue;
 			if (!g_rabbit.integer || (level.gametype != GT_FFA && level.gametype != GT_TEAM)) {
 				G_FreeEntity( ent );
 				return;
 			}
 		}
+		else if (ent->item->giTag == PW_REDFLAG) {
+			VectorCopy(ent->s.origin, level.redFlagOrigin);
+			level.redFlag = qtrue;
+			if (level.gametype != GT_CTF &&	level.gametype != GT_CTY) {
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+		else if (ent->item->giTag == PW_BLUEFLAG) {
+			VectorCopy(ent->s.origin, level.blueFlagOrigin);
+			level.blueFlag = qtrue;
+			if (level.gametype != GT_CTF &&	level.gametype != GT_CTY) {
+				G_FreeEntity( ent );
+				return;
+			}
+		}
+
 	}
 
 	VectorSet (ent->r.mins, -8, -8, -0);

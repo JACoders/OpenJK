@@ -5275,7 +5275,7 @@ Cmd_Amvstr_f
 */
 void Cmd_Amvstr_f(gentity_t *ent)
 {
-		char   arg[MAX_STRING_CHARS]; 
+		char   arg[MAX_STRING_CHARS], buf[MAX_CVAR_VALUE_STRING];; 
 
 		if (!CheckAdminCmd(ent, A_VSTR, "amVstr"))
 			return;
@@ -5294,8 +5294,17 @@ void Cmd_Amvstr_f(gentity_t *ent)
 			return;
 		}
 
-		trap->SendServerCommand( -1, va("print \"^3Vstr (%s) executed by ^7%s\n\"", arg, ent->client->pers.netname ));
-		G_LogPrintf ( "Vstr (%s) executed by ^7%s\n", arg, ent->client->pers.netname );
+		//clean the string?
+		Q_strlwr(arg);
+		Q_CleanStr(arg);
+
+		//Check if vstr exists, if not return qfalse.
+		trap->Cvar_VariableStringBuffer(arg, buf, sizeof(buf));
+		if (!Q_stricmp(buf, ""))
+			return;
+
+		trap->SendServerCommand( -1, va("print \"^3Vstr (%s^3) executed by ^7%s\n\"", arg, ent->client->pers.netname ));
+		G_LogPrintf ( "Vstr (%s^7) executed by ^7%s\n", arg, ent->client->pers.netname );
 		trap->SendConsoleCommand( EXEC_APPEND, va("vstr %s\n", arg));
 
 }

@@ -210,6 +210,30 @@ static void RemoveRabbit(void) {
 	}
 }
 
+static void RemoveCTFFlags(void) {
+	int i;
+	gclient_t	*cl;
+	gentity_t	*ent;
+
+	Team_ReturnFlag(TEAM_RED);
+	Team_ReturnFlag(TEAM_BLUE);
+
+	for (i=0;  i<level.numPlayingClients; i++) {
+		cl = &level.clients[level.sortedClients[i]];
+
+		cl->ps.powerups[PW_REDFLAG] = 0;
+		cl->ps.powerups[PW_BLUEFLAG] = 0;
+	}
+
+	for (i = 0; i < level.num_entities; i++) {
+		ent = &g_entities[i];
+		if (ent->inuse && (ent->s.eType == ET_ITEM) && ((ent->item->giTag == PW_REDFLAG) || (ent->item->giTag == PW_BLUEFLAG)) && (ent->item->giType = IT_TEAM)) {
+			G_FreeEntity( ent );
+			//return;
+		}
+	}
+}
+
 qboolean G_FreeAmmoEntity( gitem_t *item );
 static void RemoveWeaponsFromMap(void) {
 	int i;
@@ -351,7 +375,7 @@ void CVU_Rabbit( void ) {
 
 		RemoveRabbit(); //Delete the current flag first
 
-		if (level.neutralFlag) {
+		if (level.neutralFlag && (level.gametype == GT_FFA || level.gametype == GT_TEAM)) {
 			ent = G_Spawn(qtrue);
 
 			ent->classname = "team_CTF_neutralflag";
@@ -364,6 +388,51 @@ void CVU_Rabbit( void ) {
 	else {
 		RemoveRabbit();
 	}
+}
+
+void G_CacheGametype( void );
+void Svcmd_ResetScores_f (void);
+void CVU_Gametype (void) {
+
+	if (g_forceGametype.integer < GT_FFA || g_forceGametype.integer >= GT_MAX_GAME_TYPE)
+		return;
+	if (g_forceGametype.integer == GT_SIEGE || g_forceGametype.integer == GT_SINGLE_PLAYER) //Also dont even bother with siege, idk
+		return;
+
+	trap->Cvar_Register(&g_gametype, "g_gametype", "0", CVAR_SERVERINFO);
+	trap->Cvar_Set( "g_gametype", va( "%i", g_forceGametype.integer ) );
+	trap->Cvar_Update( &g_gametype );
+
+	G_CacheGametype();
+	Svcmd_ResetScores_f();
+
+	if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //
+		gentity_t	*ent;
+
+		RemoveCTFFlags(); //Delete the current flag first
+
+		if (level.redFlag) {
+			ent = G_Spawn(qtrue);
+			ent->classname = "team_CTF_redflag";
+			VectorCopy(level.redFlagOrigin, ent->s.origin);
+			if (!G_CallSpawn(ent))
+				G_FreeEntity( ent );
+		}
+		if (level.blueFlag) {
+			ent = G_Spawn(qtrue);
+			ent->classname = "team_CTF_blueflag";
+			VectorCopy(level.blueFlagOrigin, ent->s.origin);
+			if (!G_CallSpawn(ent))
+				G_FreeEntity( ent );
+		}
+	}
+	else {
+		RemoveCTFFlags();
+	}
+
+	//Spawn / clear ctf flags?  
+	//who knows what needs to be done for siege.. forget it.
+
 }
 
 //

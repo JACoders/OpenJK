@@ -320,4 +320,6 @@ XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 #endif
 
+XCVAR_DEF( g_forceGametype,				"-1",			CVU_Gametype,		CVAR_NONE,										qfalse )
+
 #undef XCVAR_DEF
