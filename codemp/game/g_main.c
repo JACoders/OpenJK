@@ -131,6 +131,10 @@ void G_CacheGametype( void )
 		level.gametype = atoi( g_gametype.string );
 
 	trap->Cvar_Set( "g_gametype", va( "%i", level.gametype ) );
+
+	if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
+		level.wasTeamGametype = qtrue;
+	}
 }
 
 /*

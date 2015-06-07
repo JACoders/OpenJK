@@ -6274,7 +6274,7 @@ static void Cmd_EmoteSignal1_f(gentity_t *ent) {
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, TORSO_HANDSIGNAL1, qtrue, qfalse, SETANIM_BOTH);
+	DoEmote(ent, TORSO_HANDSIGNAL1, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSignal2_f(gentity_t *ent) {
@@ -6282,7 +6282,7 @@ static void Cmd_EmoteSignal2_f(gentity_t *ent) {
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, TORSO_HANDSIGNAL2, qtrue, qfalse, SETANIM_BOTH);
+	DoEmote(ent, TORSO_HANDSIGNAL2, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSignal3_f(gentity_t *ent) {
@@ -6290,7 +6290,7 @@ static void Cmd_EmoteSignal3_f(gentity_t *ent) {
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, TORSO_HANDSIGNAL3, qtrue, qfalse, SETANIM_BOTH);
+	DoEmote(ent, TORSO_HANDSIGNAL3, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSignal4_f(gentity_t *ent) {
@@ -6298,7 +6298,7 @@ static void Cmd_EmoteSignal4_f(gentity_t *ent) {
 		trap->SendServerCommand(ent-g_entities, "print \"This emote is not allowed on this server.\n\"");
 		return;
 	}
-	DoEmote(ent, TORSO_HANDSIGNAL4, qtrue, qfalse, SETANIM_BOTH);
+	DoEmote(ent, TORSO_HANDSIGNAL4, qfalse, qfalse, SETANIM_BOTH);
 }
 
 static void Cmd_EmoteSaberFlip_f(gentity_t *ent)

@@ -393,7 +393,6 @@ void CVU_Rabbit( void ) {
 void G_CacheGametype( void );
 void Svcmd_ResetScores_f (void);
 void CVU_Gametype (void) {
-
 	if (g_forceGametype.integer < GT_FFA || g_forceGametype.integer >= GT_MAX_GAME_TYPE)
 		return;
 	if (g_forceGametype.integer == GT_SIEGE || g_forceGametype.integer == GT_SINGLE_PLAYER) //Also dont even bother with siege, idk

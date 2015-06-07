@@ -1422,6 +1422,7 @@ typedef struct level_locals_s {
 	vec3_t		blueFlagOrigin;
 	qboolean	redFlag;
 	qboolean	blueFlag;
+	qboolean	wasTeamGametype;
 
 #if _retardedsabertest
 	int			saberUpdateDebounceTime; //why not
