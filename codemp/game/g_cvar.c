@@ -390,6 +390,7 @@ void CVU_Rabbit( void ) {
 	}
 }
 
+void SetGametypeFuncSolids( void );
 void G_CacheGametype( void );
 void Svcmd_ResetScores_f (void);
 void CVU_Gametype (void) {
@@ -428,6 +429,8 @@ void CVU_Gametype (void) {
 	else {
 		RemoveCTFFlags();
 	}
+
+	SetGametypeFuncSolids();
 
 	//Spawn / clear ctf flags?  
 	//who knows what needs to be done for siege.. forget it.

@@ -108,6 +108,29 @@ sharedBuffer_t gSharedBuffer;
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
 
+void SetGametypeFuncSolids (void) {
+	int i;
+	gentity_t *ent;
+
+	for (i = 0; i < level.num_entities; i++) {
+		ent = &g_entities[i];
+		if (ent->inuse && ent->s.eType == ET_MOVER) {
+			if(ent->spawnflags & 512) {				
+				if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //Make nonsolid/invis
+					ent->r.contents = 0;
+					ent->r.svFlags |= SVF_NOCLIENT;
+					ent->s.eFlags |= EF_NODRAW;
+				}
+				else { //Make solid/vis
+					ent->r.contents = CONTENTS_SOLID;
+					ent->r.svFlags &= ~SVF_NOCLIENT;
+					ent->s.eFlags &= ~EF_NODRAW;
+				}			
+			}
+		}
+	}
+}
+
 void G_CacheGametype( void )
 {
 	// check some things
@@ -131,10 +154,6 @@ void G_CacheGametype( void )
 		level.gametype = atoi( g_gametype.string );
 
 	trap->Cvar_Set( "g_gametype", va( "%i", level.gametype ) );
-
-	if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
-		level.wasTeamGametype = qtrue;
-	}
 }
 
 /*
@@ -349,6 +368,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_SpawnWarpLocationsFromCfg();
 	G_SpawnHoleFixes();
 	InitGameAccountStuff();
+	SetGametypeFuncSolids();
 
 	// general initialization
 	G_FindTeams();

@@ -1247,9 +1247,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (player->client->pers.practice)
 		return qfalse;
-	if ((restrictions & (1 << 5)) && level.gametype != GT_FFA)//spawnflags 32 is FFA_ONLY
-		return qfalse;
-	if ((restrictions & (1 << 5)) && level.wasTeamGametype) //sad temp fix to stop runs from counting after live switching from ctf->ffa
+	if ((restrictions & (1 << 5)) && (level.gametype == GT_CTF || level.gametype == GT_CTY))//spawnflags 32 is FFA_ONLY
 		return qfalse;
 
 	return qtrue;
