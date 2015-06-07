@@ -3637,12 +3637,17 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
 			}
-			else if (ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= zyk_first_charged_mp_cost.integer)
-			{ // zyk: Magic Fist Charged Attack
+			else if ((ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 2)) || 
+					 (ent->client->sess.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 3)))
+			{ // zyk: Magic Fist Charged Attack and Faster Attack
 				int count = 2;
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
 				int i;
+				float bolt_speed = 5000.0;
+
+				if (ent->client->sess.magic_fist_selection == 2)
+					bolt_speed = 7500.0;
 
 				for (i = 0; i < count; i++ )
 				{
@@ -3659,7 +3664,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 					{
-						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+						missile = CreateMissile( origin, zyk_forward, bolt_speed, 10000, ent, qfalse);
 
 						missile->classname = "demp2_proj";
 						missile->s.weapon = WP_DEMP2;
@@ -3676,7 +3681,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					}
 					else
 					{
-						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+						missile = CreateMissile( origin, zyk_forward, bolt_speed, 10000, ent, qfalse);
 
 						missile->classname = "bowcaster_proj";
 						missile->s.weapon = WP_BOWCASTER;
@@ -3694,78 +3699,17 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					}
 				}
 
-				rpg_skill_counter(ent, 20);
-
-				ent->client->pers.magic_power -= zyk_first_charged_mp_cost.integer;
-				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
-			}
-			else if (ent->client->sess.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_fist_spray_count.integer/4))
-			{ // zyk: Magic Fist Spray Attack
-				gentity_t	*missile;
-				vec3_t origin;
-				int i;
-				int angle_value = ent->client->ps.viewangles[1];
-
-				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 9);
-				else
-					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33);
-
-				for (i = 0; i < zyk_fist_spray_count.integer; i++ )
+				if (ent->client->sess.magic_fist_selection == 1)
 				{
-					vec3_t dir, zyk_forward;
-
-					angle_value += (360/zyk_fist_spray_count.integer);
-
-					if (angle_value >= 180)
-						angle_value -= 359;
-
-					VectorSet(dir, 0, angle_value, 0);
-
-					AngleVectors( dir, zyk_forward, NULL, NULL );
-
-					VectorNormalize(zyk_forward);
-
-					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-					{
-						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
-
-						missile->classname = "demp2_proj";
-						missile->s.weapon = WP_DEMP2;
-
-						VectorSet( missile->r.maxs, 2, 2, 2 );
-						VectorScale( missile->r.maxs, -1, missile->r.mins );
-						missile->damage = zyk_magic_fist_damage.integer * 2;
-						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-						missile->methodOfDeath = MOD_MELEE;
-						missile->clipmask = MASK_SHOT;
-
-						// we don't want it to ever bounce
-						missile->bounceCount = 0;
-					}
-					else
-					{
-						missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
-
-						missile->classname = "bowcaster_proj";
-						missile->s.weapon = WP_BOWCASTER;
-
-						VectorSet( missile->r.maxs, 2, 2, 2 );
-						VectorScale( missile->r.maxs, -1, missile->r.mins );
-
-						missile->damage = zyk_magic_fist_damage.integer;
-						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-						missile->methodOfDeath = MOD_MELEE;
-						missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-						// we don't want it to bounce
-						missile->bounceCount = 0;
-					}
+					rpg_skill_counter(ent, 20);
+					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 2);
+				}
+				else
+				{
+					rpg_skill_counter(ent, 30);
+					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 3);
 				}
 
-				rpg_skill_counter(ent, 30);
-
-				ent->client->pers.magic_power -= (zyk_fist_spray_count.integer/4);
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 			}
 		}
