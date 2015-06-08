@@ -335,7 +335,8 @@ static int JP_ClientNumberFromString(gentity_t *to, const char *s)
 		if (match != -1)//uhh
 			return match;
 	}
-	trap->SendServerCommand(to-g_entities, va("print \"User '%s' is not on the server\n\"", s));
+	if (!atoi(s)) //Uhh.. well.. whatever. fixes amtele spam problem when teleporting to x y z yaw
+		trap->SendServerCommand(to-g_entities, va("print \"User '%s' is not on the server\n\"", s));
 	return -1;
 }
 //[JAPRO - Serverside - All - Redid and clientnumberfromstring for partial name recognition - End]

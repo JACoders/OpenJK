@@ -128,6 +128,7 @@ void SetGametypeFuncSolids (void) {
 				}			
 			}
 		}
+		//Also check for trigger with spawnflags 8192 ?
 	}
 }
 

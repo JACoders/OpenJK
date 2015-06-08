@@ -248,7 +248,7 @@ static void RemoveWeaponsFromMap(void) {
 				ent->think = 0;
 				ent->nextthink = 0;
 				ent->s.eFlags |= EF_NODRAW;
-				ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+				//ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
 				ent->r.svFlags |= SVF_NOCLIENT;
 				ent->r.contents = 0;
 				//ent->inuse = qfalse;
@@ -257,7 +257,7 @@ static void RemoveWeaponsFromMap(void) {
 				ent->think = 0;
 				ent->nextthink = 0;
 				ent->s.eFlags |= EF_NODRAW;
-				ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+				//ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
 				ent->r.svFlags |= SVF_NOCLIENT;
 				ent->r.contents = 0;
 				//ent->inuse = qfalse;
@@ -281,18 +281,20 @@ static void SpawnWeaponsInMap(void) {
 				ent->think = FinishSpawningItem;
 				ent->nextthink = level.time + FRAMETIME * 2;
 				ent->s.eFlags &= ~EF_NODRAW;
-				ent->s.eFlags &= ~EF_DROPPEDWEAPON; //sad hack
+				//ent->s.eFlags &= ~EF_DROPPEDWEAPON; //sad hack
 				ent->r.svFlags &= ~SVF_NOCLIENT;
-				ent->r.contents = CONTENTS_TRIGGER;
+				//ent->r.contents = CONTENTS_TRIGGER;
 				//ent->inuse = qtrue;
+				//trap->Print("spawning wep\n");
+				//ent->spawnedBefore = qfalse;
 			}
 			else if (ent->item->giType == IT_AMMO && !(wDisable && G_FreeAmmoEntity(ent->item))) {
 				ent->think = FinishSpawningItem;
 				ent->nextthink = level.time + FRAMETIME * 2;
 				ent->s.eFlags &= ~EF_NODRAW;
-				ent->s.eFlags &= ~EF_DROPPEDWEAPON; //sad hack
+				//ent->s.eFlags &= ~EF_DROPPEDWEAPON; //sad hack
 				ent->r.svFlags &= ~SVF_NOCLIENT;
-				ent->r.contents = CONTENTS_TRIGGER;
+				//ent->r.contents = CONTENTS_TRIGGER;
 				//ent->inuse = qtrue;
 			}
 		}

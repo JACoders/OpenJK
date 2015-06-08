@@ -3273,7 +3273,7 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 			ent->think = 0;
 			ent->nextthink = 0;
 			ent->s.eFlags |= EF_NODRAW;
-			ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+			//ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
 			ent->r.svFlags |= SVF_NOCLIENT;
 			ent->r.contents = 0;
 			//ent->inuse = qfalse;
@@ -3283,7 +3283,7 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 			ent->think = 0;
 			ent->nextthink = 0;
 			ent->s.eFlags |= EF_NODRAW;
-			ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
+			//ent->s.eFlags |= EF_DROPPEDWEAPON; //sad hack
 			ent->r.svFlags |= SVF_NOCLIENT;
 			ent->r.contents = 0;
 			//ent->inuse = qfalse;
