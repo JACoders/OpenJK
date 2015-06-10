@@ -2882,7 +2882,7 @@ void SV_BindGame( void ) {
 	static gameImport_t gi;
 	gameExport_t		*ret;
 	GetGameAPI_t		GetGameAPI;
-	char				dllName[MAX_OSPATH] = "jampgame"ARCH_STRING DLL_EXT;
+	char				dllName[MAX_OSPATH] = "jampgame" ARCH_STRING DLL_EXT;
 
 	memset( &gi, 0, sizeof( gi ) );
 

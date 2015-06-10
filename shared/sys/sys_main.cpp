@@ -398,7 +398,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 			fn = FS_BuildOSPath( libDir, BASEGAME, filename );
 			libHandle = Sys_LoadLibrary( fn );
 			if ( libHandle )
-				break;
+				return libHandle;
 
 			Com_Printf( "%s(%s) failed: \"%s\"\n", callerName, fn, Sys_LibraryError() );
 		}
@@ -415,7 +415,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 			fn = FS_BuildOSPath( libDir, OPENJKGAME, filename );
 			libHandle = Sys_LoadLibrary( fn );
 			if ( libHandle )
-				break;
+				return libHandle;
 
 			Com_Printf( "%s(%s) failed: \"%s\"\n", callerName, fn, Sys_LibraryError() );
 		}
@@ -432,7 +432,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 			fn = va( "%s%c%s", libDir, PATH_SEP, filename );
 			libHandle = Sys_LoadLibrary( fn );
 			if ( libHandle )
-				break;
+				return libHandle;
 
 			Com_Printf( "%s(%s) failed: \"%s\"\n", callerName, fn, Sys_LibraryError() );
 		}

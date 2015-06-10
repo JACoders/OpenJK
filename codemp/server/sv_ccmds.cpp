@@ -1249,8 +1249,8 @@ static void SV_ConSay_f(void) {
 
 	Cmd_ArgsBuffer( text, sizeof(text) );
 
-	Com_Printf ("broadcast: chat \""SVSAY_PREFIX"%s\\n\"\n", SV_ExpandNewlines((char *)text) );
-	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
+	Com_Printf ("broadcast: chat \"" SVSAY_PREFIX "%s\\n\"\n", SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(NULL, "chat \"" SVSAY_PREFIX "%s\"\n", text);
 }
 
 #define SVTELL_PREFIX "\x19[Server^7\x19]\x19: "
@@ -1287,8 +1287,8 @@ static void SV_ConTell_f(void) {
 
 	Cmd_ArgsFromBuffer( 2, text, sizeof(text) );
 
-	Com_Printf ("tell: svtell to %s"S_COLOR_WHITE": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
-	SV_SendServerCommand(cl, "chat \""SVTELL_PREFIX S_COLOR_MAGENTA"%s"S_COLOR_WHITE"\"\n", text);
+	Com_Printf ("tell: svtell to %s" S_COLOR_WHITE ": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(cl, "chat \"" SVTELL_PREFIX S_COLOR_MAGENTA "%s" S_COLOR_WHITE "\"\n", text);
 }
 
 const char *forceToggleNamePrints[NUM_FORCE_POWERS] = {

@@ -1419,7 +1419,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 
 	if ( newent == NULL )
 	{
-		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Spawn failed\n" );
+		Com_Printf ( S_COLOR_RED "ERROR: NPC G_Spawn failed\n" );
 		return NULL;
 	}
 
@@ -1428,7 +1428,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	newent->NPC = New_NPC_t(newent->s.number);
 	if ( newent->NPC == NULL )
 	{
-		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );
+		Com_Printf ( S_COLOR_RED "ERROR: NPC G_Alloc NPC failed\n" );
 		goto finish;
 	//	return NULL;
 	}
@@ -1451,7 +1451,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 
 	if ( newent->client == NULL )
 	{
-		Com_Printf ( S_COLOR_RED"ERROR: NPC BG_Alloc client failed\n" );
+		Com_Printf ( S_COLOR_RED "ERROR: NPC BG_Alloc client failed\n" );
 		goto finish;
 	//	return NULL;
 	}

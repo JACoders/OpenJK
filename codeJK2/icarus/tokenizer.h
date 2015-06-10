@@ -25,8 +25,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __TOKENIZER_H
 #define __TOKENIZER_H
 
-#include <cstdint>
 #include <string>
+#include <string.h>
 #include <vector>
 #include <map>
 
@@ -427,7 +427,7 @@ public:
 	void SetErrorProc(LPTokenizerErrorProc errorProc);
 	void AddParseStream(byte* data, long datasize);
 	bool AddParseFile(const char *filename);
-	uint32_t ParseRGB();
+	unsigned int ParseRGB();
 	long GetRemainingSize();
 
 	unsigned GetFlags();

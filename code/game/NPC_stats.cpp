@@ -40,7 +40,7 @@ extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern stringID_table_t WPTable[];
 
-#define		MAX_MODELS_PER_LEVEL	40
+#define		MAX_MODELS_PER_LEVEL	60
 
 hstring		modelsAlreadyDone[MAX_MODELS_PER_LEVEL];
 
@@ -214,7 +214,7 @@ qboolean G_ParseLiteral( const char **data, const char *string )
 //
 // NPC parameters file : ext_data/NPCs/*.npc*
 //
-#define MAX_NPC_DATA_SIZE 0x40000
+#define MAX_NPC_DATA_SIZE 0x80000
 char	NPCParms[MAX_NPC_DATA_SIZE];
 
 /*
