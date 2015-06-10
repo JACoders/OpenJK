@@ -4039,6 +4039,12 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			{ // zyk: now it will be possible to push/pull items
 				float dirLen = 0;
 
+				// zyk: do not push/pull ctf flags
+				if (push_list[x]->item && (push_list[x]->item->giTag == PW_REDFLAG || push_list[x]->item->giTag == PW_BLUEFLAG))
+				{
+					continue;
+				}
+
 				// zyk: it must be the current origin, or the pushDir will use the original origin
 				VectorCopy(push_list[x]->r.currentOrigin, thispush_org);
 
