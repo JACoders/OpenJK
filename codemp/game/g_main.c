@@ -3458,9 +3458,13 @@ void CheckVote( void ) {
 					//trap->Cvar_Set("bot_minplayers", "0");
 				}
 
-				if (nextMap && nextMap[0])
+				if (nextMap && nextMap[0] && zyk_change_map_gametype_vote.integer)
 				{
 					trap->SendConsoleCommand( EXEC_APPEND, va("map %s\n", nextMap ) );
+				}
+				else
+				{ // zyk: if zyk_change_map_gametype_vote is 0, just restart the current map
+					trap->SendConsoleCommand( EXEC_APPEND, "map_restart 0\n"  );
 				}
 			}
 			else
