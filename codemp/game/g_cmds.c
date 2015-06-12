@@ -4198,7 +4198,7 @@ void load_account(gentity_t *ent, qboolean change_mode)
 				ent->client->sess.amrpgmode = 2;
 		}
 
-		if (zyk_allow_rpg_mode.integer == 0 && ent->client->sess.amrpgmode == 2)
+		if ((zyk_allow_rpg_mode.integer == 0 || (zyk_allow_rpg_in_other_gametypes.integer == 0 && g_gametype.integer != GT_FFA)) && ent->client->sess.amrpgmode == 2)
 		{ // zyk: RPG Mode not allowed. Change his account to Admin-Only Mode
 			ent->client->sess.amrpgmode = 1;
 		}
