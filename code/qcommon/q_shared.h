@@ -802,9 +802,7 @@ inline int Q_irand(int min, int max) {
 	return (rand() % (max - min + 1)) + min;
 }
 
-inline float random() {
-	return rand() / (float)RAND_MAX;
-}
+#define random() (rand() / (float)RAND_MAX)
 
 //  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
 inline float Q_flrand(float min, float max) {
