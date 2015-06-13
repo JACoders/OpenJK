@@ -22,13 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tr_local.h"
-#ifdef _WIN32
 #include "glext.h"
-#endif
-
-#if !defined __TR_WORLDEFFECTS_H
-	#include "tr_WorldEffects.h"
-#endif
+#include "tr_WorldEffects.h"
 
 backEndData_t	*backEndData;
 backEndState_t	backEnd;

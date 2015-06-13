@@ -24,19 +24,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // tr_models.c -- model loading and caching
 
 #include "tr_local.h"
-
-
 #include "qcommon/disablewarnings.h"
-
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include "qcommon/sstring.h"	// #include <string>
+
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
 
 #define	LL(x) x=LittleLong(x)
 

@@ -23,28 +23,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 // Sequencer Header File
-
 #include "blockstream.h"
 #include "interface.h"
 #include "taskmanager.h"
 #include "sequence.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4786)	//identifier was truncated
-
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <list>
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 
 //Defines
-
 #define SQ_COMMON		0x00000000 	//Common one-pass sequence
 #define	SQ_LOOP			0x00000001 	//Looping sequence
 #define SQ_RETAIN		0x00000002 	//Inside a looping sequence list, retain the information

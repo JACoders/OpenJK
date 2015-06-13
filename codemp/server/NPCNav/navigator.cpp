@@ -22,20 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/q_shared.h"
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4018)
-#pragma warning( disable : 4245)
-#pragma warning( disable : 4284)
-#pragma warning( disable : 4512)
-#pragma warning( disable : 4786)
-
-#pragma warning ( disable : 4663 )	//spcialize class
-#pragma warning( push, 3 )
-#endif
 #include <algorithm>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
 
 #include "navigator.h"
 #include "game/g_nav.h"

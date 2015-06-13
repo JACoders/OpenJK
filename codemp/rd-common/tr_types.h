@@ -152,9 +152,6 @@ typedef struct miniRefEntity_s
 
 } miniRefEntity_t;
 
-#ifdef _MSC_VER
-#pragma warning (disable : 4201 )
-#endif
 typedef struct refEntity_s {
 	// this stucture must remain identical as the miniRefEntity_t
 	//

@@ -797,34 +797,23 @@ inline float Q_crandom( int *seed ) {
 	return 2.0F * ( Q_random( seed ) - 0.5f );
 }
 
-//  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
-inline float Q_flrand(float min, float max) {
-	return ((rand() * (max - min)) / ((float)RAND_MAX)) + min;
-}
-
 // Returns an integer min <= x <= max (ie inclusive)
 inline int Q_irand(int min, int max) {
-	max++; //so it can round down
-#ifdef _WIN32
-	return ((rand() * (max - min)) >> 15) + min;
-#else
-	//rand() returns much larger values on OSX/Linux, so make the result smaller
-	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
-#endif
+	return (rand() % (max - min + 1)) + min;
 }
 
-#ifdef _WIN32
-//returns a float between 0 and 1.0
 inline float random() {
-	return (rand() / ((float)0x7fff));
+	return rand() / (float)RAND_MAX;
 }
-#else
-#define random() (rand() / ((float)RAND_MAX))
-#endif
+
+//  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
+inline float Q_flrand(float min, float max) {
+	return (random() * (max - min)) + min;
+}
 
 //returns a float between -1 and 1.0
 inline float crandom() {
-	return (2.0F * (random() - 0.5F));
+	return Q_flrand(-1.0f, 1.0f);
 }
 
 float erandom( float mean );

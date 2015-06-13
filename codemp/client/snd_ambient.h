@@ -22,29 +22,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-// Includes
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4786 )
-#pragma warning ( disable : 4511 )	//copy constructor could not be gen
-#pragma warning ( disable : 4512 )	//assign constructor could not be gen
-
-//these don't work because stl re-sets them
-//#pragma warning ( disable : 4663 )	//spcialize class
-//#pragma warning ( disable : 4018 )	//signed/unsigned
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
-
 #include "qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-
-// Defines
 
 #define	AMBIENT_SET_FILENAME	"sound/sound.txt"
 

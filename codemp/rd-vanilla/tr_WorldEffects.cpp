@@ -39,9 +39,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "Ratl/vector_vs.h"
 #include "Ratl/bits_vs.h"
 
-#ifdef _WIN32
 #include "glext.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Defines
@@ -72,10 +70,6 @@ int			mParticlesRendered;
 ////////////////////////////////////////////////////////////////////////////////////////
 // Handy Functions
 ////////////////////////////////////////////////////////////////////////////////////////
-#ifdef _MSC_VER
-#pragma warning( disable : 4512 )
-#endif
-
 // Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max)
 inline float WE_flrand(float min, float max) {
 	return ((rand() * (max - min)) / (RAND_MAX)) + min;

@@ -22,21 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-/*
-Ghoul2 Insert Start
-*/
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
-
-/*
-Ghoul2 Insert End
-*/
 
 #define MDXABONEDEF
 #include "rd-common/mdx_format.h"
