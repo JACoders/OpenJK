@@ -1456,7 +1456,7 @@ struct shaderCommands_s
 	bool		fading;
 };
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	typedef __declspec(align(16)) shaderCommands_s	shaderCommands_t;
 #else
 	typedef struct shaderCommands_s  shaderCommands_t;
@@ -1608,9 +1608,6 @@ ANIMATED MODELS
 /*
 Ghoul2 Insert Start
 */
-#ifdef _MSC_VER
-#pragma warning (disable: 4512)	//default assignment operator could not be gened
-#endif
 class CRenderableSurface
 {
 public:

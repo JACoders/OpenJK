@@ -24,23 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #if !defined(GHOUL2_SHARED_H_INC)
 #define GHOUL2_SHARED_H_INC
 
-/*
-Ghoul2 Insert Start
-*/
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#pragma warning(disable:4702)	//unreachable code
-#endif
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-/*
-Ghoul2 Insert End
-*/
 
 #define G2T_SV_TIME (0)
 #define G2T_CG_TIME (1)

@@ -23,13 +23,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // tr_image.c
 #include "tr_local.h"
 
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
+
 bool gServerSkinHack = false;
 
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );

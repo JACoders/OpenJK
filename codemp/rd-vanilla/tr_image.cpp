@@ -24,17 +24,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // tr_image.c
 #include "tr_local.h"
 #include "../rd-common/tr_common.h"
-#ifdef _WIN32
 #include "glext.h"
-#endif
 
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
 
 static byte			 s_intensitytable[256];
 static unsigned char s_gammatable[256];

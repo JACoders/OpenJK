@@ -64,11 +64,7 @@ template <class T>
 class handle_pool_base : public pool_root<T>
 {
 public:
-#ifdef _WIN32
-	typedef typename T TStorageTraits;
-#else
     typedef T TStorageTraits;
-#endif
 	typedef typename T::TValue TTValue;
  	////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -254,10 +250,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At handle
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
-    typename
-#endif
-	pool_root<T>::iterator	at(int handle)
+    typename pool_root<T>::iterator	at(int handle)
 	{
 		assert(is_used(handle));
 		return pool_root<T>::at_index(handle&mMASK_HANDLE_TO_INDEX);
@@ -266,10 +259,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At handle
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
-    typename
-#endif
-	pool_root<T>::const_iterator	at(int handle) const
+    typename pool_root<T>::const_iterator	at(int handle) const
 	{
 		assert(is_used(handle));
 		return pool_root<T>::at_index(handle&mMASK_HANDLE_TO_INDEX);

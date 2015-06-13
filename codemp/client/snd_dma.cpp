@@ -35,6 +35,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 qboolean s_shutUp = qfalse;
 
 static void S_Play_f(void);

@@ -550,9 +550,6 @@ RB_DeformTessGeometry
 
 =====================
 */
-#ifdef _MSC_VER
-#pragma warning( disable : 4710 )	//vectorLength not inlined in AutospriteDeform which is auto-inlined in here
-#endif
 void RB_DeformTessGeometry( void ) {
 	int		i;
 	deformStage_t	*ds;
@@ -598,10 +595,6 @@ void RB_DeformTessGeometry( void ) {
 		}
 	}
 }
-#ifdef _MSC_VER
-#pragma warning( default: 4710 )
-#endif
-
 
 /*
 ====================================================================

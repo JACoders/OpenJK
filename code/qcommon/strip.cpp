@@ -25,26 +25,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../server/server.h"
 #include "q_shared.h"
 #include "qcommon.h"
-
-
 #include "stringed_ingame.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4510)	//default ctor could not be generated
-#pragma warning(disable:4511)
-#pragma warning(disable:4512)
-#pragma warning(disable:4610)	//user def ctor required
-#pragma warning(disable:4663)
-
-#pragma warning (push, 3)		//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <string>
 #include <list>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning(disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 
 cvar_t	*sp_language;
 static cvar_t	*sp_show_strip;

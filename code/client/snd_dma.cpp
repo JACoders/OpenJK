@@ -35,6 +35,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_music.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
 
 static void S_Play_f(void);
 static void S_SoundList_f(void);
@@ -557,9 +560,11 @@ void S_Init( void ) {
 
 				if (s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
 							s_channels[i].alSource, &ulFlags, sizeof(ulFlags))!=AL_NO_ERROR)
-#ifdef _MSC_VER
-							OutputDebugString("Failed to to remove Source flags\n");
+				{
+#ifdef _WIN32
+					OutputDebugString("Failed to to remove Source flags\n");
 #endif
+				}
 			}
 
 			s_numChannels++;
