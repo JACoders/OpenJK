@@ -318,7 +318,7 @@ void R_LightScaleTexture (unsigned *in, int inwidth, int inheight, qboolean only
 {
 	if ( only_gamma )
 	{
-		if ( !glConfig.deviceSupportsGamma )
+		if ( !glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders )
 		{
 			int		i, c;
 			byte	*p;
@@ -343,7 +343,7 @@ void R_LightScaleTexture (unsigned *in, int inwidth, int inheight, qboolean only
 
 		c = inwidth*inheight;
 
-		if ( glConfig.deviceSupportsGamma )
+		if ( glConfig.deviceSupportsGamma || glConfigExt.doGammaCorrectionWithShaders )
 		{
 			for (i=0 ; i<c ; i++, p+=4)
 			{
@@ -1356,8 +1356,18 @@ void R_CreateBuiltinImages( void ) {
 	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP );
 	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
-	qglEnable( GL_TEXTURE_2D );
+	qglEnable( GL_TEXTURE_3D );
 
+	tr.gammaCorrectLUTImage = 1024 + giTextureBindNum++;
+	qglBindTexture(GL_TEXTURE_3D, tr.gammaCorrectLUTImage);
+	qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, 64, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	qglDisable(GL_TEXTURE_3D);
+	qglEnable(GL_TEXTURE_2D);
 
 	// with overbright bits active, we need an image which is some fraction of full color,
 	// for default lightmaps, etc
@@ -1396,7 +1406,7 @@ void R_SetColorMappings( void ) {
 
 	// setup the overbright lighting
 	tr.overbrightBits = r_overBrightBits->integer;
-	if ( !glConfig.deviceSupportsGamma ) {
+	if ( !glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders ) {
 		tr.overbrightBits = 0;		// need hardware gamma for overbright
 	}
 
@@ -1432,20 +1442,28 @@ void R_SetColorMappings( void ) {
 
 	shift = tr.overbrightBits;
 
-	for ( i = 0; i < 256; i++ ) {
-		if ( g == 1 ) {
-			inf = i;
-		} else {
-			inf = 255 * pow ( i/255.0f, 1.0f / g ) + 0.5f;
+	if ( !glConfigExt.doGammaCorrectionWithShaders )
+	{
+		for ( i = 0; i < 256; i++ ) {
+			if ( g == 1 ) {
+				inf = i;
+			} else {
+				inf = 255 * pow ( i/255.0f, 1.0f / g ) + 0.5f;
+			}
+			inf <<= shift;
+			if (inf < 0) {
+				inf = 0;
+			}
+			if (inf > 255) {
+				inf = 255;
+			}
+			s_gammatable[i] = inf;
 		}
-		inf <<= shift;
-		if (inf < 0) {
-			inf = 0;
+
+		if ( glConfig.deviceSupportsGamma )
+		{
+			ri->WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
 		}
-		if (inf > 255) {
-			inf = 255;
-		}
-		s_gammatable[i] = inf;
 	}
 
 	for (i=0 ; i<256 ; i++) {
@@ -1455,10 +1473,51 @@ void R_SetColorMappings( void ) {
 		}
 		s_intensitytable[i] = j;
 	}
+}
 
-	if ( glConfig.deviceSupportsGamma )
+void R_SetGammaCorrectionLUT()
+{
+	if ( glConfigExt.doGammaCorrectionWithShaders )
 	{
-		ri->WIN_SetGamma( &glConfig, s_gammatable, s_gammatable, s_gammatable );
+		int inf;
+		int shift = tr.overbrightBits;
+		float g = r_gamma->value;
+		byte gammaCorrected[64];
+
+		for ( int i = 0; i < 64; i++ )
+		{
+			if ( g == 1.0f )
+			{
+				inf = (int)(((float)i / 63.0f) * 255.0f + 0.5f);
+			}
+			else
+			{
+				inf = (int)(255.0f * pow((float)i / 63.0f, 1.0f / g) + 0.5f);
+			}
+
+			gammaCorrected[i] = Com_Clampi(0, 255, inf << shift);
+		}
+
+		byte *lutTable = (byte *)ri->Hunk_AllocateTempMemory(64 * 64 * 64 * 3);
+		byte *write = lutTable;
+		for ( int z = 0; z < 64; z++ )
+		{
+			for ( int y = 0; y < 64; y++ )
+			{
+				for ( int x = 0; x < 64; x++ )
+				{
+					*write++ = gammaCorrected[x];
+					*write++ = gammaCorrected[y];
+					*write++ = gammaCorrected[z];
+				}
+			}
+		}
+
+		qglBindTexture(GL_TEXTURE_3D, tr.gammaCorrectLUTImage);
+		qglPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		qglTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, 64, 64, 64, GL_RGB, GL_UNSIGNED_BYTE, lutTable);
+
+		ri->Hunk_FreeTempMemory(lutTable);
 	}
 }
 
@@ -1474,6 +1533,8 @@ void	R_InitImages( void ) {
 
 	// create default texture and white texture
 	R_CreateBuiltinImages();
+
+	R_SetGammaCorrectionLUT();
 }
 
 /*
