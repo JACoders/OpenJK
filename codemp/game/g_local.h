@@ -664,6 +664,9 @@ typedef struct clientPersistant_s {
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;
 
+	// zyk: stun baton 3/3 timer. This entity has less run speed during this time
+	int stun_baton_less_speed_timer;
+
 	// zyk: when a bounty hunter is using the thermal vision, it is set to qtrue
 	qboolean thermal_vision;
 

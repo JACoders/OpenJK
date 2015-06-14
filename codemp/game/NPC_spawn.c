@@ -1758,6 +1758,7 @@ finish:
 		newent->client->pers.universe_quest_artifact_holder_id = -1;
 		newent->client->pers.race_position = 0;
 		newent->client->pers.seller_invoked_by_id = -1;
+		newent->client->pers.stun_baton_less_speed_timer = 0;
 
 		newent->client->sess.ally1 = -1;
 		newent->client->sess.ally2 = -1;

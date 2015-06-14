@@ -3508,37 +3508,33 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 					Jedi_Decloak(tr_ent);
 				}
 
-				// zyk: if the player has stun baton at level 3 in RPG mode, causes the tr_ent to be slapped
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3 && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && ent->client->pers.rpg_class != 6 && ent->client->pers.rpg_class != 8 && ent->client->pers.rpg_class != 9)
+				// zyk: if the player has stun baton at level 3 in RPG mode, enemy has its speed decreased
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3)
 				{
-					// zyk: allies cant be slapped
+					// zyk: allies cant be hit by it
 					if (ent->client->sess.ally1 == (tr_ent-g_entities) || ent->client->sess.ally2 == (tr_ent-g_entities) || ent->client->sess.ally3 == (tr_ent-g_entities))
 					{
 						return;
 					}
 
-					// zyk: guardians cant take the stun effect
+					// zyk: guardians cant be hit by it
 					if (tr_ent->client->pers.guardian_invoked_by_id != -1)
 					{
 						return;
 					}
 
-					// zyk: Stealth Attacker Upgrade protects against the stun effect
+					// zyk: Stealth Attacker Upgrade protects against it
 					if (tr_ent->client->sess.amrpgmode == 2 && tr_ent->client->pers.rpg_class == 5 && tr_ent->client->pers.secrets_found & (1 << 7))
 					{
 						return;
 					}
 
 					if (zyk_can_hit_target(ent, tr_ent) == qfalse)
-					{ // zyk: testing if the target player can get knockdown
+					{ // zyk: testing if the target player can get the stun baton 3/3 effect
 						return;
 					}
 
-					tr_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-					tr_ent->client->ps.forceHandExtendTime = level.time + 300;
-					tr_ent->client->ps.velocity[2] += 200;
-					tr_ent->client->ps.forceDodgeAnim = 0;
-					tr_ent->client->ps.quickerGetup = qtrue;
+					tr_ent->client->pers.stun_baton_less_speed_timer = level.time + 2000;
 				}
 			}
 		}
