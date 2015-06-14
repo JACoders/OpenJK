@@ -986,6 +986,11 @@ typedef struct trGlobals_s {
 	// Image used to downsample and blur scene to.	- AReis
 	GLuint					blurImage;
 
+	// Gamma correction using vertex/pixel programs
+	GLuint					gammaCorrectLUTImage;
+	GLuint					gammaCorrectVtxShader;
+	GLuint					gammaCorrectPxShader;
+
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
 	shader_t				*distortionShader;
@@ -1057,6 +1062,7 @@ struct glconfigExt_t
 {
 	glconfig_t *glConfig;
 
+	qboolean doGammaCorrectionWithShaders;
 	const char *originalExtensionString;
 };
 
@@ -1349,6 +1355,7 @@ image_t		*R_CreateImage( const char *name, const byte *pic, int width, int heigh
 qboolean	R_GetModeInfo( int *width, int *height, int mode );
 
 void		R_SetColorMappings( void );
+void		R_SetGammaCorrectionLUT();
 void		R_GammaCorrect( byte *buffer, int bufSize );
 
 void	R_ImageList_f( void );
@@ -1392,7 +1399,7 @@ void    R_RemapShader(const char *oldShader, const char *newShader, const char *
 //
 // tr_arb.c
 //
-void ARB_InitGlowShaders( void );
+void ARB_InitGPUShaders( void );
 
 
 /*
