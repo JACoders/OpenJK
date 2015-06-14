@@ -261,6 +261,13 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 		code = ERR_FATAL;
 	}
 
+	// ERR_DROPs on dedicated drop to an interactive console
+	// which doesn't make sense for dedicated as it's generally
+	// run unattended
+	if ( com_dedicated && com_dedicated->integer ) {
+		code = ERR_FATAL;
+	}
+
 	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
 	currentTime = Sys_Milliseconds();
 	if ( currentTime - lastErrorTime < 100 ) {
