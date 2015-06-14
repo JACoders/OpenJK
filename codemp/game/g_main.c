@@ -553,6 +553,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.boss_battle_music_reset_timer = 0;
 
+	level.voting_player = -1;
+
 	if (1)
 	{
 		int zyk_iterator = 0;
@@ -3515,6 +3517,10 @@ void CheckVote( void ) {
 		}
 		else
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+
+		// zyk: set the timer for the next vote of this player
+		if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
+			g_entities[level.voting_player].client->sess.vote_timer = level.time + zyk_vote_timer.integer;
 	}
 	else 
 	{
@@ -3522,12 +3528,18 @@ void CheckVote( void ) {
 			// execute the command, then remove the vote
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEPASSED"), level.voteStringClean) );
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
+			// zyk: set the timer for the next vote of this player
+			if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
+				g_entities[level.voting_player].client->sess.vote_timer = level.time + zyk_vote_timer.integer;
 		}
-
 		// same behavior as a timeout
 		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
+		{
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
-
+			// zyk: set the timer for the next vote of this player
+			if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
+				g_entities[level.voting_player].client->sess.vote_timer = level.time + zyk_vote_timer.integer;
+		}
 		else // still waiting for a majority
 			return;
 	}

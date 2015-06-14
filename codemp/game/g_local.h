@@ -494,6 +494,9 @@ typedef struct clientSession_s {
 	// 3 - No fist attacks
 	int magic_fist_selection;
 
+	// zyk: vote timer, used to avoid vote spam
+	int vote_timer;
+
 	// zyk: used to set the ally ids. The allies dont receive damage from this player
 	int ally1;
 	int ally2;
@@ -1464,6 +1467,9 @@ typedef struct level_locals_s {
 
 	// zyk: how much time it must show the message for the player
 	int screen_message_timer[MAX_CLIENTS];
+
+	// zyk: the player who called the last vote
+	int voting_player;
 } level_locals_t;
 
 

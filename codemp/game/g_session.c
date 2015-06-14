@@ -73,6 +73,7 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally1 ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally2 ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally3 ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.vote_timer ) );
 	Q_strcat( s, sizeof( s ), va( "%s ", filename ) );
 	Q_strcat( s, sizeof( s ), va( "%s ", siegeClass ) );
 	Q_strcat( s, sizeof( s ), va( "%s", IP ) );
@@ -98,7 +99,7 @@ void G_ReadSessionData( gclient_t *client )
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %s %s",
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %s %s",
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -119,6 +120,7 @@ void G_ReadSessionData( gclient_t *client )
 		&client->sess.ally1,
 		&client->sess.ally2,
 		&client->sess.ally3,
+		&client->sess.vote_timer,
 		client->sess.filename,
 		client->sess.siegeClass,
 		client->sess.IP
@@ -265,6 +267,8 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	sess->ally1 = -1;
 	sess->ally2 = -1;
 	sess->ally3 = -1;
+
+	sess->vote_timer = 0;
 
 	G_WriteClientSessionData( client );
 }
