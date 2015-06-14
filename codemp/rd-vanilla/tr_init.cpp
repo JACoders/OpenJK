@@ -217,8 +217,10 @@ cvar_t *r_screenshotJpegQuality;
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
+#if !defined(__APPLE__)
 PFNGLTEXIMAGE3DPROC qglTexImage3D;
 PFNGLTEXSUBIMAGE3DPROC qglTexSubImage3D;
+#endif
 
 PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
 PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
@@ -705,12 +707,16 @@ static void GLimp_InitExtensions( void )
 	glConfigExt.doGammaCorrectionWithShaders = qfalse;
 	if ( bTexRectSupported && bARBVertexProgram && bARBFragmentProgram )
 	{
+#if !defined(__APPLE__)
 		qglTexImage3D = (PFNGLTEXIMAGE3DPROC)ri->GL_GetProcAddress("glTexImage3D");
 		qglTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)ri->GL_GetProcAddress("glTexSubImage3D");
 		if ( qglTexImage3D && qglTexSubImage3D )
 		{
 			glConfigExt.doGammaCorrectionWithShaders = qtrue;
 		}
+#else
+		glConfigExt.doGammaCorrectionWithShaders = qfalse;
+#endif
 	}
 	
 	// Only allow dynamic glows/flares if they have the hardware
