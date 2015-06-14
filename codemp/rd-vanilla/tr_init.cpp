@@ -715,7 +715,7 @@ static void GLimp_InitExtensions( void )
 			glConfigExt.doGammaCorrectionWithShaders = qtrue;
 		}
 #else
-		glConfigExt.doGammaCorrectionWithShaders = qfalse;
+		glConfigExt.doGammaCorrectionWithShaders = qtrue;
 #endif
 	}
 	
