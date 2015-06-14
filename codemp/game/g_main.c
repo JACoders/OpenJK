@@ -3520,7 +3520,7 @@ void CheckVote( void ) {
 
 		// zyk: set the timer for the next vote of this player
 		if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
-			g_entities[level.voting_player].client->sess.vote_timer = level.time + zyk_vote_timer.integer;
+			g_entities[level.voting_player].client->sess.vote_timer = zyk_vote_timer.integer;
 	}
 	else 
 	{
@@ -3530,7 +3530,7 @@ void CheckVote( void ) {
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 			// zyk: set the timer for the next vote of this player
 			if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
-				g_entities[level.voting_player].client->sess.vote_timer = level.time + zyk_vote_timer.integer;
+				g_entities[level.voting_player].client->sess.vote_timer = zyk_vote_timer.integer;
 		}
 		// same behavior as a timeout
 		else if ( level.voteNo >= (level.numVotingClients+1)/2 )
@@ -3538,7 +3538,7 @@ void CheckVote( void ) {
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
 			// zyk: set the timer for the next vote of this player
 			if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
-				g_entities[level.voting_player].client->sess.vote_timer = level.time + zyk_vote_timer.integer;
+				g_entities[level.voting_player].client->sess.vote_timer = zyk_vote_timer.integer;
 		}
 		else // still waiting for a majority
 			return;

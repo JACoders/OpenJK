@@ -2394,9 +2394,9 @@ void Cmd_CallVote_f( gentity_t *ent ) {
 	}
 
 	// zyk: tests if this player can vote now
-	if (zyk_vote_timer.integer > 0 && ent->client->sess.vote_timer > level.time)
+	if (zyk_vote_timer.integer > 0 && ent->client->sess.vote_timer > 0)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"You cannot vote now, wait %d seconds and try again.\n\"", ((ent->client->sess.vote_timer - level.time)/1000)));
+		trap->SendServerCommand( ent-g_entities, va("print \"You cannot vote now, wait %d seconds and try again.\n\"", ent->client->sess.vote_timer));
 		return;
 	}
 

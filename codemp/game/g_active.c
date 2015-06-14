@@ -821,6 +821,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			}
 		}
 
+		if (zyk_vote_timer.integer > 0 && ent->client->sess.vote_timer > 0)
+		{ // zyk: countdown of the vote timer
+			ent->client->sess.vote_timer--;
+		}
+
 		if (level.screen_message_timer[ent->s.number] >= (level.time + 1000))
 		{ // zyk: show the screen message. The cp shows the message at least for 3 seconds
 			trap->SendServerCommand( ent->s.number, va("cp \"%s\"", zyk_screen_message.string) );
