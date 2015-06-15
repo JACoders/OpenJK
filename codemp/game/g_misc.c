@@ -2111,14 +2111,6 @@ void SP_misc_shield_floor_unit( gentity_t *ent )
 	vec3_t dest;
 	trace_t tr;
 
-	if (level.gametype != GT_CTF &&
-		level.gametype != GT_CTY &&
-		level.gametype != GT_SIEGE)
-	{
-		G_FreeEntity( ent );
-		return;
-	}
-
 	VectorSet( ent->r.mins, -16, -16, 0 );
 	VectorSet( ent->r.maxs, 16, 16, 40 );
 
