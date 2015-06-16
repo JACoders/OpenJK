@@ -1771,7 +1771,11 @@ void shield_power_converter_use( gentity_t *self, gentity_t *other, gentity_t *a
 		}
 		else
 		{
-			maxArmor = activator->client->ps.stats[STAT_MAX_HEALTH];
+			// zyk: RPG Mode max shield
+			if (activator->client->sess.amrpgmode == 2)
+				maxArmor = activator->client->pers.max_rpg_shield;
+			else
+				maxArmor = activator->client->ps.stats[STAT_MAX_HEALTH];
 		}
 		dif = maxArmor - activator->client->ps.stats[STAT_ARMOR];
 
