@@ -114,8 +114,8 @@ void SetGametypeFuncSolids (void) {
 
 	for (i = 0; i < level.num_entities; i++) {
 		ent = &g_entities[i];
-		if (ent->inuse && ent->s.eType == ET_MOVER) {
-			if(ent->spawnflags & 512) {				
+		if (ent->inuse) {
+			if (ent->s.eType == ET_MOVER && ent->spawnflags & 512) {				
 				if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //Make nonsolid/invis
 					ent->r.contents = 0;
 					ent->r.svFlags |= SVF_NOCLIENT;
@@ -127,8 +127,15 @@ void SetGametypeFuncSolids (void) {
 					ent->s.eFlags &= ~EF_NODRAW;
 				}			
 			}
+			else if (ent->r.contents == CONTENTS_TRIGGER && ent->spawnflags & 8192) {		
+				if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //Make nonsolid/invis
+					ent->flags |= FL_INACTIVE;
+				}
+				else {
+					ent->flags &= ~FL_INACTIVE;
+				}
+			}
 		}
-		//Also check for trigger with spawnflags 8192 ?
 	}
 }
 

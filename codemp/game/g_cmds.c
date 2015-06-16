@@ -5258,6 +5258,33 @@ void Cmd_Ammap_f(gentity_t *ent)
 	
 		gtype = atoi(gametype);
 
+		{
+			char				unsortedMaps[4096], buf[512] = {0};
+			char*				possibleMapName;
+			int					numMaps;
+			const unsigned int  MAX_MAPS = 512;
+			qboolean found = qfalse;
+
+			numMaps = trap->FS_GetFileList( "maps", ".bsp", unsortedMaps, sizeof(unsortedMaps) );
+			if (numMaps) {
+				int len, i;
+				if (numMaps > MAX_MAPS)
+					numMaps = MAX_MAPS;
+				possibleMapName = unsortedMaps;
+				for (i = 0; i < numMaps; i++) {
+					len = strlen(possibleMapName);
+					if (!Q_stricmp(possibleMapName + len - 4, ".bsp"))
+						possibleMapName[len-4] = '\0';
+					if (!Q_stricmp(mapname, possibleMapName)) {
+						found = qtrue;
+					}
+					possibleMapName += len + 1;
+				}
+			}	
+			if (!found)
+				return;
+		}
+
 		//if (ent->client->sess.juniorAdmin)//Logged in as junior admin
 		trap->SendServerCommand( -1, va("print \"^3Map change triggered by ^7%s\n\"", ent->client->pers.netname ));
 		G_LogPrintf ( "Map change triggered by ^7%s\n", ent->client->pers.netname );

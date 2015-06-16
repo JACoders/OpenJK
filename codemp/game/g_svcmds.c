@@ -573,7 +573,8 @@ void G_CacheGametype( void );
 qboolean G_CallSpawn( gentity_t *ent );
 void Svcmd_ChangeGametype_f (void) {
 	char	input[16];
-	int		gametype;
+	int		gametype, i;
+	gclient_t	*cl;
 
 	if ( trap->Argc() != 2 ) {
 		trap->Print("Usage: gametype <#>\n");
@@ -617,6 +618,17 @@ void Svcmd_ChangeGametype_f (void) {
 	}
 	else {
 		RemoveCTFFlags();
+	}
+
+	for (i=0;  i<level.numPlayingClients; i++) { //Move people to the proper team if changing from team to non team gametype etc
+		cl = &level.clients[level.sortedClients[i]];
+
+		if (level.gametype < GT_TEAM && (cl->sess.sessionTeam == TEAM_RED || cl->sess.sessionTeam == TEAM_BLUE)) {
+			cl->sess.sessionTeam = TEAM_FREE;
+		}
+		else if (level.gametype >= GT_TEAM && !g_raceMode.integer && cl->sess.sessionTeam == TEAM_FREE) {
+			cl->sess.sessionTeam = TEAM_SPECTATOR;
+		}
 	}
 
 	SetGametypeFuncSolids();

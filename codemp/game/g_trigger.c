@@ -11,7 +11,7 @@ void InitTrigger( gentity_t *self ) {
 
 	trap->SetBrushModel( (sharedEntity_t *)self, self->model );
 	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap->SetBrushModel
-	self->r.svFlags = SVF_NOCLIENT;
+	self->r.svFlags = SVF_NOCLIENT; //whats this? triggers are not networked to clients then?
 
 	if(self->spawnflags & 128)
 	{
