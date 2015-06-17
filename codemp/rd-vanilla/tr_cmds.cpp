@@ -385,6 +385,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 		R_IssuePendingRenderCommands();
 		R_SetColorMappings();
+		R_SetGammaCorrectionLUT();
 	}
 
     // check for errors
@@ -392,9 +393,11 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
         int	err;
 
 		R_IssuePendingRenderCommands();
+#if defined(_DEBUG)
         if ( ( err = qglGetError() ) != GL_NO_ERROR ) {
             Com_Error( ERR_FATAL, "RE_BeginFrame() - glGetError() failed (0x%x)!\n", err );
         }
+#endif
     }
 
 	//

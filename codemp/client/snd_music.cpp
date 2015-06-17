@@ -24,28 +24,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //  Stuff to parse in special x-fade music format and handle blending etc
 
-#include "qcommon/q_shared.h"
-
-
-#include "qcommon/sstring.h"
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4663 )	//spcialize class
-#pragma warning( push, 3 )
-#endif
 #include <algorithm>
 #include <string>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
+
+#include "qcommon/q_shared.h"
+#include "qcommon/sstring.h"
+#include "qcommon/GenericParser2.h"
 
 #include "snd_local.h"
-
-//
 #include "snd_music.h"
 #include "snd_ambient.h"
 
-#include "qcommon/GenericParser2.h"
 
 extern qboolean S_FileExists( const char *psFilename );
 

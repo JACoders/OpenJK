@@ -30,9 +30,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "ghoul2/G2_gore.h"
 #endif
 
-#ifdef _MSC_VER
-#pragma warning (disable: 4512)	//default assignment operator could not be gened
-#endif
 #include "qcommon/disablewarnings.h"
 
 #define	LL(x) x=LittleLong(x)

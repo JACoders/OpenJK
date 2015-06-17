@@ -22,13 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "tr_local.h"
-#ifdef _WIN32
 #include "glext.h"
-#endif
-
-#if !defined __TR_WORLDEFFECTS_H
-	#include "tr_WorldEffects.h"
-#endif
+#include "tr_WorldEffects.h"
 
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
@@ -1828,6 +1823,51 @@ void RB_ShowImages( void ) {
 //	ri->Printf( PRINT_ALL, "%i msec to draw all images\n", end - start );
 }
 
+static void RB_GammaCorrectRender()
+{
+	qglPushAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
+
+	RB_SetGL2D();
+
+	// All this fixed-function texture type enabling/disabling is ludicrous :(
+	qglEnable(GL_TEXTURE_RECTANGLE_ARB);
+	GL_SelectTexture(0);
+	qglBindTexture(GL_TEXTURE_RECTANGLE_ARB, tr.sceneImage);
+	qglCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, 0, 0, glConfig.vidWidth, glConfig.vidHeight, 0);
+
+	qglEnable(GL_TEXTURE_3D);
+	GL_SelectTexture(1);
+	qglBindTexture(GL_TEXTURE_3D, tr.gammaCorrectLUTImage);
+
+	qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, tr.gammaCorrectVtxShader);
+	qglBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, tr.gammaCorrectPxShader);
+
+	qglEnable(GL_VERTEX_PROGRAM_ARB);
+	qglEnable(GL_FRAGMENT_PROGRAM_ARB);
+
+	qglBegin(GL_QUADS);
+		qglTexCoord2f(0.0f, 0.0f);
+		qglVertex2f(-1.0f, -1.0f);
+
+		qglTexCoord2f(0.0f, (float)glConfig.vidHeight);
+		qglVertex2f(-1.0f,  1.0f);
+
+		qglTexCoord2f((float)glConfig.vidWidth, (float)glConfig.vidHeight);
+		qglVertex2f( 1.0f,  1.0f);
+
+		qglTexCoord2f((float)glConfig.vidWidth, 0.0f);
+		qglVertex2f( 1.0f, -1.0f);
+	qglEnd();
+
+	qglDisable(GL_VERTEX_PROGRAM_ARB);
+	qglDisable(GL_FRAGMENT_PROGRAM_ARB);
+
+	qglDisable(GL_TEXTURE_3D);
+	GL_SelectTexture(0);
+
+	qglPopAttrib();
+}
+
 
 /*
 =============
@@ -1841,6 +1881,11 @@ const void	*RB_SwapBuffers( const void *data ) {
 	// finish any 2D drawing if needed
 	if ( tess.numIndexes ) {
 		RB_EndSurface();
+	}
+
+	if ( glConfigExt.doGammaCorrectionWithShaders )
+	{
+		RB_GammaCorrectRender();
 	}
 
 	// texture swapping test

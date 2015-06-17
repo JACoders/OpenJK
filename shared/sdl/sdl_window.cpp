@@ -516,7 +516,9 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 				continue;
 			}
 
+#ifndef MACOS_X
 			SDL_SetWindowIcon( screen, icon );
+#endif
 
 			if( fullscreen )
 			{
@@ -568,7 +570,9 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 		}
 		else
 		{
+#ifndef MACOS_X
 			SDL_SetWindowIcon( screen, icon );
+#endif
 			if( fullscreen )
 			{
 				if( SDL_SetWindowDisplayMode( screen, NULL ) < 0 )

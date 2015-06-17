@@ -903,15 +903,9 @@ void G_FreeEntity( gentity_t *ed ) {
 			gi.Free(ed->client->clientInfo.customBasicSoundDir);
 		}
 		if(ed->client->clientInfo.customCombatSoundDir) {
-#ifdef _MSC_VER
-			assert(*(unsigned int*)ed->client->clientInfo.customCombatSoundDir != 0xfeeefeee);
-#endif
 			gi.Free(ed->client->clientInfo.customCombatSoundDir);
 		}
 		if(ed->client->clientInfo.customExtraSoundDir) {
-#ifdef _MSC_VER
-			assert(*(unsigned int*)ed->client->clientInfo.customExtraSoundDir != 0xfeeefeee);
-#endif
 			gi.Free(ed->client->clientInfo.customExtraSoundDir);
 		}
 		if(ed->client->clientInfo.customJediSoundDir) {

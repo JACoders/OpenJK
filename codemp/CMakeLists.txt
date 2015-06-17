@@ -371,7 +371,7 @@ if(BuildMPEngine)
 	endif()
 
 	# OpenAL (is optionally included for Windows)
-	if (WIN32 AND NOT WIN64)
+	if (MSVC AND NOT WIN64)
 		if(UseInternalOpenAL)
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
@@ -388,7 +388,7 @@ if(BuildMPEngine)
 	endif()
 
 	if(UseInternalSDL2)
-		if(ARCH_BITS EQUAL 32)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(MPEngineLibraries
 				${MPEngineLibraries}
 				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
@@ -413,14 +413,14 @@ if(BuildMPEngine)
 	endif()
 
 	# EAX is Windows-Only (right?)
-	if(WIN32)
+	if(MSVC)
 		set(MPEngineEAXFiles
 			"${MPDir}/client/eax/eax.h"
 			"${MPDir}/client/eax/EaxMan.h"
 			)
 		source_group("eax" FILES ${MPEngineEAXFiles})
 		set(MPEngineFiles ${MPEngineFiles} ${MPEngineEAXFiles})
-	endif(WIN32)
+	endif(MSVC)
 
 	#    Source Files
 
@@ -569,7 +569,7 @@ if(BuildMPEngine)
 	if(WIN32)
 		add_executable(${MPEngine} WIN32 ${MPEngineFiles})
 		if(UseInternalSDL2)
-			if(ARCH_BITS EQUAL 32)
+			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 				set(MPEngineExtraInstallFiles
 					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
 					)
@@ -717,14 +717,22 @@ if(BuildMPUI)
 	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
 endif()
 
-set(GameLibFullPaths)
-foreach(GameLib ${GameLibsBuilt})
-	set(GameLibFullPaths
-		${GameLibFullPaths}
-		${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
-endforeach(GameLib)
-
 if(WIN32)
+set(GameLibFullPaths)
+	if(MSVC)
+		foreach(GameLib ${GameLibsBuilt})
+			set(GameLibFullPaths
+				${GameLibFullPaths}
+				${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+		endforeach(GameLib)
+	else()
+		foreach(GameLib ${GameLibsBuilt})
+			set(GameLibFullPaths
+				${GameLibFullPaths}
+				${CMAKE_BINARY_DIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+		endforeach(GameLib)
+	endif()
+
 	include(InstallZIP)
 	add_zip_command(openjk.pk3
 		FILES ${GameLibFullPaths}

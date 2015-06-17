@@ -63,11 +63,7 @@ template <class T>
 class queue_base : public ratl_base
 {
 public:
-#ifdef _WIN32
-	typedef typename T TStorageTraits;
-#else
     typedef T TStorageTraits;
-#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -104,9 +100,6 @@ private:
 
 
 public:
-#ifdef _WIN32
-	typedef T TStorageTraits;
-#endif
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constructor

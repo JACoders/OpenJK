@@ -62,11 +62,7 @@ template <class T>
 class pool_root : public ratl_base
 {
 public:
-#ifdef _WIN32
-	typedef typename T TStorageTraits;
-#else
     typedef T TStorageTraits;
-#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -535,10 +531,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At index
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
-    typename
-#endif
-	pool_root<T>::iterator	at(int index)
+    typename pool_root<T>::iterator	at(int index)
 	{
 		return pool_root<T>::at_index(index);
 	}
@@ -546,10 +539,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At index
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
-    typename
-#endif
-	pool_root<T>::const_iterator	at(int index) const
+    typename pool_root<T>::const_iterator	at(int index) const
 	{
 		return pool_root<T>::at_index(index);
 	}

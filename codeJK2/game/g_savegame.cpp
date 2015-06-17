@@ -441,7 +441,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 	}
 }
 
-static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int ulChid, int iLen)
+static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int ulChid, size_t iLen)
 {
 	strList = new list<sstring_t>;
 
