@@ -166,6 +166,54 @@ void zyk_create_info_player_deathmatch(int x, int y, int z, int yaw)
 	}
 }
 
+// zyk: creates a ctf flag spawn point
+void zyk_create_ctf_flag_spawn(int x, int y, int z, qboolean redteam)
+{
+	gentity_t *spawn_ent = NULL;
+
+	spawn_ent = G_Spawn();
+	if (spawn_ent)
+	{
+		if (redteam == qtrue)
+			zyk_set_entity_field(spawn_ent,"classname","team_CTF_redflag");
+		else
+			zyk_set_entity_field(spawn_ent,"classname","team_CTF_blueflag");
+
+		zyk_set_entity_field(spawn_ent,"origin",va("%d %d %d",x,y,z));
+		zyk_spawn_entity(spawn_ent);
+	}
+}
+
+// zyk: creates a ctf player spawn point
+void zyk_create_ctf_player_spawn(int x, int y, int z, int yaw, qboolean redteam, qboolean team_begin_spawn_point)
+{
+	gentity_t *spawn_ent = NULL;
+
+	spawn_ent = G_Spawn();
+	if (spawn_ent)
+	{
+		if (redteam == qtrue)
+		{
+			if (team_begin_spawn_point == qtrue)
+				zyk_set_entity_field(spawn_ent,"classname","team_CTF_redplayer");
+			else
+				zyk_set_entity_field(spawn_ent,"classname","team_CTF_redspawn");
+		}
+		else
+		{
+			if (team_begin_spawn_point == qtrue)
+				zyk_set_entity_field(spawn_ent,"classname","team_CTF_blueplayer");
+			else
+				zyk_set_entity_field(spawn_ent,"classname","team_CTF_bluespawn");
+		}
+
+		zyk_set_entity_field(spawn_ent,"origin",va("%d %d %d",x,y,z));
+		zyk_set_entity_field(spawn_ent,"angles",va("0 %d 0",yaw));
+
+		zyk_spawn_entity(spawn_ent);
+	}
+}
+
 // zyk: used to fix func_door entities in SP maps that wont work and must be removed without causing the door glitch
 void fix_sp_func_door(gentity_t *ent)
 {
@@ -402,6 +450,18 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
 
+	// zyk: getting mapname
+	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
+
+	if (level.gametype == GT_CTF)
+	{ // zyk: maps that will now have support to CTF gametype (like some SP maps) must have the CTF flags placed before the G_CheckTeamItems function call
+		if (Q_stricmp(zyk_mapname, "t1_surprise") == 0)
+		{
+			zyk_create_ctf_flag_spawn(1337,-6492,224,qtrue);
+			zyk_create_ctf_flag_spawn(2697,5443,1056,qfalse);
+		}
+	}
+
 	// general initialization
 	G_FindTeams();
 
@@ -576,9 +636,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			level.screen_message_timer[zyk_iterator] = 0;
 		}
 	}
-
-	// zyk: getting mapname
-	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
 
 	// zyk: added this fix for SP maps
 	if (Q_stricmp(zyk_mapname, "academy1") == 0)
@@ -828,6 +885,25 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		}
 		zyk_create_info_player_deathmatch(1913,-6151,222,153);
 		zyk_create_info_player_deathmatch(1921,-5812,222,-179);
+
+		if (level.gametype == GT_CTF)
+		{ // zyk: in CTF, add the team player spawns
+			zyk_create_ctf_player_spawn(1782,-6041,216,117,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(1286,-5946,223,100,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(854,-5910,223,65,qtrue,qtrue);
+
+			zyk_create_ctf_player_spawn(2654,5423,880,-90,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(2883,5431,1056,-179,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(2709,4680,1056,179,qfalse,qtrue);
+
+			zyk_create_ctf_player_spawn(1782,-6041,216,117,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(1286,-5946,223,100,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(854,-5910,223,65,qtrue,qfalse);
+
+			zyk_create_ctf_player_spawn(2654,5423,880,-90,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(2883,5431,1056,-179,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(2709,4680,1056,179,qfalse,qfalse);
+		}
 	}
 	else if (Q_stricmp(zyk_mapname, "t2_rancor") == 0)
 	{
