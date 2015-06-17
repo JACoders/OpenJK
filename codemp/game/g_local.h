@@ -559,7 +559,7 @@ typedef enum {
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
 // zyk: quantity of items at the jawa seller
-#define NUMBER_OF_SELLER_ITEMS 50
+#define NUMBER_OF_SELLER_ITEMS 52
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -599,6 +599,8 @@ typedef struct clientPersistant_s {
 	// 7 - using Force Armor
 	// 8 - using Saber Armor
 	// 9 - using Gun Armor
+	// 10 - using Healing Crystal
+	// 11 - using Energy Crystal
 	int player_statuses;
 
 	// zyk: chat protection cooldown timer. After this time, player will be protected against damage

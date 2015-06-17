@@ -788,6 +788,8 @@ ClientTimerActions
 Actions that happen once a second
 ==================
 */
+extern int zyk_max_magic_power(gentity_t *ent);
+extern void Add_Ammo (gentity_t *ent, int weapon, int count);
 void ClientTimerActions( gentity_t *ent, int msec ) {
 	gclient_t	*client;
 
@@ -800,30 +802,55 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 		if (client->sess.amrpgmode == 2)
 		{
-			if (ent->client->pers.rpg_class == 4 && ent->health > 0)
+			if (client->pers.rpg_class == 4 && ent->health > 0)
 			{ // zyk: Monk auto-healing ability
-				if (ent->health < ent->client->pers.max_rpg_health)
+				if (ent->health < client->pers.max_rpg_health)
 					ent->health += 1;
 			}
 
-			if (ent->client->pers.rpg_class == 3 && ent->health > 0)
+			if (client->pers.rpg_class == 3 && ent->health > 0)
 			{ // zyk: Armored Soldier auto-shield-healing ability
-				if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
-					ent->client->ps.stats[STAT_ARMOR] += 1;
+				if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
+					client->ps.stats[STAT_ARMOR] += 1;
 			}
 
-			if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)) && ent->health > 0)
+			if (client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(client->pers.player_settings & (1 << 1)) && ent->health > 0)
 			{ // zyk: Light Power
-				if (ent->health < ent->client->pers.max_rpg_health)
+				if (ent->health < client->pers.max_rpg_health)
 					ent->health += 1;
-				else if (ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
-					ent->client->ps.stats[STAT_ARMOR] += 1;
+				else if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
+					client->ps.stats[STAT_ARMOR] += 1;
+			}
+
+			if (client->pers.player_statuses & (1 << 10))
+			{ // zyk: Healing Crystal
+				if (ent->health < client->pers.max_rpg_health)
+					ent->health += 1;
+
+				if (client->pers.magic_power < zyk_max_magic_power(ent))
+					client->pers.magic_power += 1;
+
+				if (client->ps.fd.forcePower < client->pers.max_force_power)
+					client->ps.fd.forcePower += 1;
+
+				client->ps.powerups[PW_SHIELDHIT] = level.time + 2000;
+			}
+
+			if (client->pers.player_statuses & (1 << 11))
+			{ // zyk: Energy Crystal
+				if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
+					client->ps.stats[STAT_ARMOR] += 1;
+
+				Add_Ammo(ent, AMMO_BLASTER, 1);
+				Add_Ammo(ent, AMMO_POWERCELL, 1);
+
+				client->ps.powerups[PW_SHIELDHIT] = level.time + 2000;
 			}
 		}
 
-		if (zyk_vote_timer.integer > 0 && ent->client->sess.vote_timer > 0)
+		if (zyk_vote_timer.integer > 0 && client->sess.vote_timer > 0)
 		{ // zyk: countdown of the vote timer
-			ent->client->sess.vote_timer--;
+			client->sess.vote_timer--;
 		}
 
 		if (level.screen_message_timer[ent->s.number] >= (level.time + 1000))
@@ -1987,7 +2014,6 @@ once for each server frame, which makes for smooth demo recording.
 ==============
 */
 extern void Boba_FlyStop( gentity_t *self );
-extern int zyk_max_magic_power(gentity_t *ent);
 extern void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power);
 extern void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power);
 extern void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power);

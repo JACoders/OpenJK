@@ -2466,8 +2466,12 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		// zyk: removing the armors from the player
 		self->client->pers.player_statuses &= ~(1 << 7);
-		self->client->pers.player_statuses |= ~(1 << 8);
-		self->client->pers.player_statuses |= ~(1 << 9);
+		self->client->pers.player_statuses &= ~(1 << 8);
+		self->client->pers.player_statuses &= ~(1 << 9);
+
+		// zyk: removing the crystals from the player
+		self->client->pers.player_statuses &= ~(1 << 10);
+		self->client->pers.player_statuses &= ~(1 << 11);
 
 		// zyk: RPG players lose credits if they die
 		remove_credits(self, 10);
