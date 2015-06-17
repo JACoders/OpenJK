@@ -2200,7 +2200,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		if (attacker->client->pers.rpg_class == 2)
 		{ // zyk: Bounty Hunter class receives more credits
-			attacker->client->pers.credits_modifier += 10 * (attacker->client->pers.other_skills_levels[10] + 1);
+			attacker->client->pers.credits_modifier += 5 * (attacker->client->pers.other_skills_levels[10] + 1);
 		}
 
 		// zyk: Bounty Quest manager
