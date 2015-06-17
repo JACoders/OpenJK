@@ -2860,13 +2860,13 @@ setAnimLegs:
 						ps->legsTimer /= 1.5;  // zyk: changed speed value from 1.7 to something depending on the level
 					}
 					else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_2){
-						ps->legsTimer /= 2.4;	// zyk: changed speed value
+						ps->legsTimer /= 2.0;	// zyk: changed speed value
 					}
 					else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_3){
-						ps->legsTimer /= 3.3;	// zyk: changed speed value
+						ps->legsTimer /= 2.5;	// zyk: changed speed value
 					}
 					else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_4){
-						ps->legsTimer /= 4.2;	// zyk: changed speed value
+						ps->legsTimer /= 3.0;	// zyk: changed speed value
 					}
 				}
 			}

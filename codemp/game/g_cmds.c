@@ -9149,7 +9149,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 3)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Pull: ^7pulls the opponent towards you\n\"" );
 					if (i == 4)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Speed: ^7increases your speed. Level 1 is 1.5 times normal speed. Level 2 is 2.4, level 3 is 3.3 times and level 4 is 4.2 times\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Speed: ^7increases your speed. Level 1 is 1.5 times normal speed. Level 2 is 2.0, level 3 is 2.5 times and level 4 is 3.0 times\n\"" );
 					if (i == 5)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Sense: ^7allows you to see people through walls, invisible people or cloaked people and you can dodge disruptor shots. Represents your mind strength to resist Mind Control if your sense level is equal or higher than the enemy's mind trick level\n\"" );
 					if (i == 6)

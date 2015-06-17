@@ -8755,13 +8755,13 @@ void BG_AdjustClientSpeed(playerState_t *ps, usercmd_t *cmd, int svTime)
 			ps->speed *= 1.5f; // zyk: changed speed value  // zyk: changed speed value from 1.7 to something depending on the level
 		}
 		else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_2){
-			ps->speed *= 2.4f; // zyk: changed speed value	// zyk: changed speed value
+			ps->speed *= 2.0f; // zyk: changed speed value	// zyk: changed speed value
 		}
 		else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_3){
-			ps->speed *= 3.3f; // zyk: changed speed value	// zyk: changed speed value
+			ps->speed *= 2.5f; // zyk: changed speed value	// zyk: changed speed value
 		}
 		else if (ps->fd.forcePowerLevel[FP_SPEED] == FORCE_LEVEL_4){
-			ps->speed *= 4.2f; // zyk: changed speed value	// zyk: changed speed value
+			ps->speed *= 3.0f; // zyk: changed speed value	// zyk: changed speed value
 		}
 	}
 	else if (ps->fd.forcePowersActive & (1 << FP_RAGE))
