@@ -4698,33 +4698,40 @@ static void UI_Update(const char *name) {
 		{
 			case 0:
 				trap->Cvar_SetValue( "ui_r_depthbits", 0 );
+				trap->Cvar_SetValue( "ui_r_texturebits", 0 );
 				break;
 
 			case 16:
 				trap->Cvar_SetValue( "ui_r_depthbits", 16 );
+				trap->Cvar_SetValue( "ui_r_texturebits", 16 );
 				break;
 
 			case 32:
 				trap->Cvar_SetValue( "ui_r_depthbits", 24 );
+				trap->Cvar_SetValue( "ui_r_texturebits", 32 );
 				break;
 		}
 	}
-	else if (Q_stricmp(name, "ui_r_lodbias") == 0)
+	else if (Q_stricmp(name, "ui_geometricdetail") == 0)
 	{
 		switch (val)
 		{
 			case 0:
+				trap->Cvar_SetValue( "ui_r_lodbias", 0 );
 				trap->Cvar_SetValue( "ui_r_subdivisions", 4 );
 				break;
 			case 1:
+				trap->Cvar_SetValue( "ui_r_lodbias", 1 );
 				trap->Cvar_SetValue( "ui_r_subdivisions", 12 );
 				break;
 
 			case 2:
+				trap->Cvar_SetValue( "ui_r_lodbias", 2 );
 				trap->Cvar_SetValue( "ui_r_subdivisions", 20 );
 				break;
 
 			case 3:
+				trap->Cvar_SetValue( "ui_r_lodbias", 3 );
 				trap->Cvar_SetValue( "ui_r_subdivisions", 80 );
 				break;
 		}
@@ -4735,56 +4742,52 @@ static void UI_Update(const char *name) {
 		{
 		case 0:	// high quality
 
-			trap->Cvar_SetValue( "ui_r_subdivisions", 4 );
-			trap->Cvar_SetValue( "ui_r_lodbias", 0 );
+			trap->Cvar_SetValue( "ui_geometricdetail", 0 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 32 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 24 );
 			trap->Cvar_SetValue( "ui_r_picmip", 0 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 32 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 0 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 1 );
-		//	trap->Cvar_SetValue( "ui_cg_shadows", 2 );//stencil
+			trap->Cvar_SetValue( "ui_cg_shadows", 2 );//stencil
 			trap->Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
 			break;
 
 		case 1: // normal
-			trap->Cvar_SetValue( "ui_r_subdivisions", 4 );
-			trap->Cvar_SetValue( "ui_r_lodbias", 0 );
+			trap->Cvar_SetValue( "ui_geometricdetail", 0 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 0 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 24 );
 			trap->Cvar_SetValue( "ui_r_picmip", 1 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 0 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 0 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 1 );
-		//	trap->Cvar_SetValue( "ui_cg_shadows", 2 );
+			trap->Cvar_SetValue( "ui_cg_shadows", 2 );
 			trap->Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_LINEAR" );
 			break;
 
 		case 2: // fast
 
-			trap->Cvar_SetValue( "ui_r_subdivisions", 12 );
-			trap->Cvar_SetValue( "ui_r_lodbias", 1 );
+			trap->Cvar_SetValue( "ui_geometricdetail", 1 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 0 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 0 );
 			trap->Cvar_SetValue( "ui_r_picmip", 2 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 0 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 1 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 0 );
-		//	trap->Cvar_SetValue( "ui_cg_shadows", 1 );
+			trap->Cvar_SetValue( "ui_cg_shadows", 1 );
 			trap->Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_NEAREST" );
 			break;
 
 		case 3: // fastest
 
-			trap->Cvar_SetValue( "ui_r_subdivisions", 20 );
-			trap->Cvar_SetValue( "ui_r_lodbias", 2 );
+			trap->Cvar_SetValue( "ui_geometricdetail", 2 );
 			trap->Cvar_SetValue( "ui_r_colorbits", 16 );
 			trap->Cvar_SetValue( "ui_r_depthbits", 16 );
 			trap->Cvar_SetValue( "ui_r_picmip", 3 );
 			trap->Cvar_SetValue( "ui_r_texturebits", 16 );
 			trap->Cvar_SetValue( "ui_r_fastSky", 1 );
 			trap->Cvar_SetValue( "ui_r_inGameVideo", 0 );
-		//	trap->Cvar_SetValue( "ui_cg_shadows", 0 );
+			trap->Cvar_SetValue( "ui_cg_shadows", 0 );
 			trap->Cvar_Set( "ui_r_texturemode", "GL_LINEAR_MIPMAP_NEAREST" );
 			break;
 		}
@@ -4872,7 +4875,10 @@ void UI_UpdateVideoSetup ( void )
 	trap->Cvar_Set ( "r_fullscreen", UI_Cvar_VariableString ( "ui_r_fullscreen" ) );
 	trap->Cvar_Set ( "r_colorbits", UI_Cvar_VariableString ( "ui_r_colorbits" ) );
 	trap->Cvar_Set ( "r_lodbias", UI_Cvar_VariableString ( "ui_r_lodbias" ) );
-	trap->Cvar_Set ( "r_picmip", UI_Cvar_VariableString ( "ui_r_picmip" ) );
+	if ( trap->Cvar_VariableValue( "ui_r_picmip" ) < 4 )
+		trap->Cvar_Set ( "r_picmip", UI_Cvar_VariableString ( "ui_r_picmip" ) );
+	else
+		trap->Cvar_Set ( "r_picmip", UI_Cvar_VariableString ( "ui_r_picmip_custom" ) );
 	trap->Cvar_Set ( "r_texturebits", UI_Cvar_VariableString ( "ui_r_texturebits" ) );
 	trap->Cvar_Set ( "r_texturemode", UI_Cvar_VariableString ( "ui_r_texturemode" ) );
 	trap->Cvar_Set ( "r_detailtextures", UI_Cvar_VariableString ( "ui_r_detailtextures" ) );
@@ -4880,12 +4886,19 @@ void UI_UpdateVideoSetup ( void )
 	trap->Cvar_Set ( "r_depthbits", UI_Cvar_VariableString ( "ui_r_depthbits" ) );
 	trap->Cvar_Set ( "r_subdivisions", UI_Cvar_VariableString ( "ui_r_subdivisions" ) );
 	trap->Cvar_Set ( "r_fastSky", UI_Cvar_VariableString ( "ui_r_fastSky" ) );
+	trap->Cvar_Set ( "r_intensity", UI_Cvar_VariableString ( "ui_r_intensity" ) );
+	trap->Cvar_Set ( "r_vertexLight", UI_Cvar_VariableString ( "ui_r_vertexLight" ) );
+	trap->Cvar_Set ( "r_fullBright", UI_Cvar_VariableString ( "ui_r_fullBright" ) );
+	trap->Cvar_Set ( "r_lightMap", UI_Cvar_VariableString ( "ui_r_lightMap" ) );
 	trap->Cvar_Set ( "r_inGameVideo", UI_Cvar_VariableString ( "ui_r_inGameVideo" ) );
 	trap->Cvar_Set ( "r_allowExtensions", UI_Cvar_VariableString ( "ui_r_allowExtensions" ) );
 	trap->Cvar_Set ( "cg_shadows", UI_Cvar_VariableString ( "ui_cg_shadows" ) );
 	trap->Cvar_Set ( "ui_r_modified", "0" );
 
-	trap->Cmd_ExecuteText( EXEC_APPEND, "vid_restart;" );
+	if ( trap->Cvar_VariableValue ( "ui_vidrestart" ) ) {
+		trap->Cmd_ExecuteText( EXEC_APPEND, "vid_restart;" );
+		trap->Cvar_Set ( "ui_vidrestart", "0" );
+	}
 }
 
 /*
@@ -4896,45 +4909,85 @@ Retrieves the current actual video settings into the temporary user
 interface versions of the cvars.
 =================
 */
+void UI_GetGeometricDetail ( void ) {
+	if ( trap->Cvar_VariableValue( "r_lodbias" ) == 0 && trap->Cvar_VariableValue( "r_subdivisions" ) == 4 )
+		trap->Cvar_SetValue( "ui_geometricdetail", 0 );
+	else if ( trap->Cvar_VariableValue( "r_lodbias" ) == 1 && trap->Cvar_VariableValue( "r_subdivisions" ) == 12 )
+		trap->Cvar_SetValue( "ui_geometricdetail", 1 );
+	else if ( trap->Cvar_VariableValue( "r_lodbias" ) == 2 && trap->Cvar_VariableValue( "r_subdivisions" ) == 20 )
+		trap->Cvar_SetValue( "ui_geometricdetail", 2 );
+	else if ( trap->Cvar_VariableValue( "r_lodbias" ) == 3 && trap->Cvar_VariableValue( "r_subdivisions" ) == 80 )
+		trap->Cvar_SetValue( "ui_geometricdetail", 3 );
+	else
+		trap->Cvar_SetValue( "ui_geometricdetail", 4 );
+}
+
 void UI_GetVideoSetup ( void )
 {
 	trap->Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_INTERNAL|CVAR_ARCHIVE );
-
+	
 	// Make sure the cvars are registered as read only.
 	trap->Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_fullscreen",			"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_fullscreen",				"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_lodbias",				"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_picmip",				"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_texturebits",			"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_texturemode",			"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_detailtextures",		"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_geometricdetail",			"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_lodbias",					"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_picmip",					"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_picmip_custom",			"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_texturebits",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_texturemode",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_detailtextures",			"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_ext_compress_textures",	"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_depthbits",				"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_subdivisions",			"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_fastSky",				"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_inGameVideo",			"0", CVAR_ROM|CVAR_INTERNAL );
-	trap->Cvar_Register ( NULL, "ui_r_allowExtensions",		"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_fastSky",					"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_intensity",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_vertexLight",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_fullBright",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_lightMap",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_inGameVideo",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_allowExtensions",			"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_cg_shadows",				"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_modified",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_vidrestart",				"0", CVAR_ROM|CVAR_INTERNAL );
 
 	// Copy over the real video cvars into their temporary counterparts
 	trap->Cvar_Set ( "ui_r_mode",						UI_Cvar_VariableString ( "r_mode" ) );
-	trap->Cvar_Set ( "ui_r_colorbits",				UI_Cvar_VariableString ( "r_colorbits" ) );
-	trap->Cvar_Set ( "ui_r_fullscreen",				UI_Cvar_VariableString ( "r_fullscreen" ) );
+	trap->Cvar_Set ( "ui_r_colorbits",					UI_Cvar_VariableString ( "r_colorbits" ) );
+	trap->Cvar_Set ( "ui_r_fullscreen",					UI_Cvar_VariableString ( "r_fullscreen" ) );
+	UI_GetGeometricDetail ( );
 	trap->Cvar_Set ( "ui_r_lodbias",					UI_Cvar_VariableString ( "r_lodbias" ) );
-	trap->Cvar_Set ( "ui_r_picmip",					UI_Cvar_VariableString ( "r_picmip" ) );
+	if ( trap->Cvar_VariableValue( "r_picmip" ) > 3 )
+		trap->Cvar_Set ( "ui_r_picmip",					"4" );
+	else
+		trap->Cvar_Set ( "ui_r_picmip",					UI_Cvar_VariableString ( "r_picmip" ) );
+	trap->Cvar_Set ( "ui_r_picmip_custom",				UI_Cvar_VariableString ( "r_picmip" ) );
 	trap->Cvar_Set ( "ui_r_texturebits",				UI_Cvar_VariableString ( "r_texturebits" ) );
 	trap->Cvar_Set ( "ui_r_texturemode",				UI_Cvar_VariableString ( "r_texturemode" ) );
-	trap->Cvar_Set ( "ui_r_detailtextures",			UI_Cvar_VariableString ( "r_detailtextures" ) );
-	trap->Cvar_Set ( "ui_r_ext_compress_textures",	UI_Cvar_VariableString ( "r_ext_compress_textures" ) );
-	trap->Cvar_Set ( "ui_r_depthbits",				UI_Cvar_VariableString ( "r_depthbits" ) );
+	trap->Cvar_Set ( "ui_r_detailtextures",				UI_Cvar_VariableString ( "r_detailtextures" ) );
+	trap->Cvar_Set ( "ui_r_ext_compress_textures",		UI_Cvar_VariableString ( "r_ext_compress_textures" ) );
+	trap->Cvar_Set ( "ui_r_depthbits",					UI_Cvar_VariableString ( "r_depthbits" ) );
 	trap->Cvar_Set ( "ui_r_subdivisions",				UI_Cvar_VariableString ( "r_subdivisions" ) );
 	trap->Cvar_Set ( "ui_r_fastSky",					UI_Cvar_VariableString ( "r_fastSky" ) );
+	trap->Cvar_Set ( "ui_r_intensity",					UI_Cvar_VariableString ( "r_intensity" ) );
+	trap->Cvar_Set ( "ui_r_vertexLight",				UI_Cvar_VariableString ( "r_vertexLight" ) );
+	trap->Cvar_Set ( "ui_r_fullBright",					UI_Cvar_VariableString ( "r_fullBright" ) );
+	trap->Cvar_Set ( "ui_r_lightMap",					UI_Cvar_VariableString ( "r_lightMap" ) );
 	trap->Cvar_Set ( "ui_r_inGameVideo",				UI_Cvar_VariableString ( "r_inGameVideo" ) );
 	trap->Cvar_Set ( "ui_r_allowExtensions",			UI_Cvar_VariableString ( "r_allowExtensions" ) );
 	trap->Cvar_Set ( "ui_cg_shadows",					UI_Cvar_VariableString ( "cg_shadows" ) );
 	trap->Cvar_Set ( "ui_r_modified",					"0" );
+	trap->Cvar_Set ( "ui_vidrestart",					"0" );
+}
+
+void UI_UpdateNetworkSetup ( void ) {
+	trap->Cvar_Set ( "cl_maxpackets", UI_Cvar_VariableString ( "ui_cl_maxpackets" ) );
+}
+
+void UI_GetNetworkSetup ( void ) {
+	trap->Cvar_Register ( NULL, "ui_cl_maxpackets",			"0", CVAR_ROM|CVAR_INTERNAL );
+
+	trap->Cvar_Set ( "ui_cl_maxpackets",			UI_Cvar_VariableString ( "cl_maxpackets" ) );
 }
 
 // If the game type is siege, hide the addbot button. I would have done a cvar text on that item,
@@ -6126,6 +6179,10 @@ static void UI_RunMenuScript(char **args)
 		{
 			UI_GetVideoSetup ( );
 		}
+		else if (Q_stricmp(name, "getnetworksetup") == 0)
+		{
+			UI_GetNetworkSetup ( );
+		}
 		else if (Q_stricmp(name, "getsaberhiltinfo") == 0)
 		{
 			WP_SaberGetHiltInfo(saberSingleHiltInfo, saberStaffHiltInfo);
@@ -6142,6 +6199,10 @@ static void UI_RunMenuScript(char **args)
 		else if (Q_stricmp(name, "updatevideosetup") == 0)
 		{
 			UI_UpdateVideoSetup ( );
+		}
+		else if (Q_stricmp(name, "updatenetworksetup") == 0)
+		{
+			UI_UpdateNetworkSetup ( );
 		}
 		else if (Q_stricmp(name, "ServerSort") == 0)
 		{
