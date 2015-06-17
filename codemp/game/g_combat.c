@@ -2464,6 +2464,11 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			self->client->pers.guardian_mode = 0;
 		}
 
+		// zyk: removing the armors from the player
+		self->client->pers.player_statuses &= ~(1 << 7);
+		self->client->pers.player_statuses |= ~(1 << 8);
+		self->client->pers.player_statuses |= ~(1 << 9);
+
 		// zyk: RPG players lose credits if they die
 		remove_credits(self, 10);
 		save_account(self);
@@ -5020,6 +5025,18 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{ // zyk: damage resistance of each class
+		
+		if (targ->client->pers.player_statuses & (1 << 8) && mod == MOD_SABER)
+		{ // zyk: using the Saber Armor, reduces saber damage
+			damage = (int)ceil(damage * 0.8);
+		}
+
+		if (targ->client->pers.player_statuses & (1 << 9) && mod != MOD_SABER && mod != MOD_UNKNOWN && mod != MOD_TRIGGER_HURT && 
+			mod != MOD_FORCE_DARK && mod != MOD_WATER && mod != MOD_FALLING && mod != MOD_SUICIDE && mod != MOD_TELEFRAG && mod != MOD_SLIME)
+		{ // zyk: using the Gun Armor, reduces gun and melee damage
+			damage = (int)ceil(damage * 0.8);
+		}
+
 		// zyk: when player is in Hard Mode/Challenge Mode, he takes more damage
 		if (targ->client->pers.can_play_quest == 1 && targ->client->pers.player_settings & (1 << 15))
 			damage = (int)ceil(damage * 1.15);

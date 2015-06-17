@@ -549,6 +549,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
+	if (other && other->client && other->client->sess.amrpgmode == 2 && other->client->pers.player_statuses & (1 << 7) &&
+		(forcePower == FP_PUSH || forcePower == FP_PULL || forcePower == FP_TELEPATHY || forcePower == FP_LIGHTNING || 
+		 forcePower == FP_GRIP || forcePower == FP_DRAIN))
+	{ // zyk: RPG player using the Force Armor cant be hit by these force powers
+		return 0;
+	}
+
 	if (attacker && attacker->client && !BG_CanUseFPNow(level.gametype, &attacker->client->ps, level.time, forcePower))
 	{
 		return 0;
