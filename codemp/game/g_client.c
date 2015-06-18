@@ -3584,33 +3584,49 @@ void ClientSpawn(gentity_t *ent) {
 
 				if (m >= WP_BRYAR_PISTOL)
 				{ //Max his ammo out for all the weapons he has.
-					if ( level.gametype == GT_SIEGE
-						&& m == WP_ROCKET_LAUNCHER )
-					{//don't give full ammo!
-						//FIXME: extern this and check it when getting ammo from supplier, pickups or ammo stations!
-						if ( client->siegeClass != -1 &&
-							(bgSiegeClasses[client->siegeClass].classflags & (1<<CFL_SINGLE_ROCKET)) )
-						{
-							client->ps.ammo[weaponData[m].ammoIndex] = 1;
-						}
-						else
-						{
-							client->ps.ammo[weaponData[m].ammoIndex] = 10;
-						}
-					}
-					else
+					// zyk: all weapons, including rocket launcher, will have max ammo based on the max ammo cvars
+					int ammo_type = AMMO_BLASTER;
+					int max_ammo = zyk_max_blaster_pack_ammo.integer;
+
+					if (m == WP_DISRUPTOR || m == WP_BOWCASTER || m == WP_DEMP2)
 					{
-						if ( level.gametype == GT_SIEGE
-							&& client->siegeClass != -1
-							&& (bgSiegeClasses[client->siegeClass].classflags & (1<<CFL_EXTRA_AMMO)) )
-						{//double ammo
-							client->ps.ammo[weaponData[m].ammoIndex] = ammoData[weaponData[m].ammoIndex].max*2;
-							client->ps.eFlags |= EF_DOUBLE_AMMO;
-						}
-						else
-						{
-							client->ps.ammo[weaponData[m].ammoIndex] = ammoData[weaponData[m].ammoIndex].max;
-						}
+						ammo_type = AMMO_POWERCELL;
+						max_ammo = zyk_max_power_cell_ammo.integer;
+					}
+					else if (m == WP_REPEATER || m == WP_FLECHETTE || m == WP_CONCUSSION)
+					{
+						ammo_type = AMMO_METAL_BOLTS;
+						max_ammo = zyk_max_metal_bolt_ammo.integer;
+					}
+					else if (m == WP_ROCKET_LAUNCHER)
+					{
+						ammo_type = AMMO_ROCKETS;
+						max_ammo = zyk_max_rocket_ammo.integer;
+					}
+					else if (m == WP_THERMAL)
+					{
+						ammo_type = AMMO_THERMAL;
+						max_ammo = zyk_max_thermal_ammo.integer;
+					}
+					else if (m == WP_TRIP_MINE)
+					{
+						ammo_type = AMMO_TRIPMINE;
+						max_ammo = zyk_max_tripmine_ammo.integer;
+					}
+					else if (m == WP_DET_PACK)
+					{
+						ammo_type = AMMO_DETPACK;
+						max_ammo = zyk_max_detpack_ammo.integer;
+					}
+
+					client->ps.ammo[ammo_type] = max_ammo;
+
+					if ( level.gametype == GT_SIEGE
+						&& client->siegeClass != -1
+						&& (bgSiegeClasses[client->siegeClass].classflags & (1<<CFL_EXTRA_AMMO)) )
+					{//double ammo
+						client->ps.ammo[ammo_type] *= 2;
+						client->ps.eFlags |= EF_DOUBLE_AMMO;
 					}
 				}
 			}
