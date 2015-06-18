@@ -4820,6 +4820,12 @@ void Cmd_NPC_f( gentity_t *ent )
 		return;
 	}
 
+	if (g_gametype.integer != GT_FFA && zyk_allow_adm_in_other_gametypes.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"NPC command not allowed in gametypes other than FFA.\n\"" );
+		return;
+	}
+
 	for (player_it = 0; player_it < level.maxclients; player_it++)
 	{ // zyk: cant spawn guardians if a player is in a guardian battle
 		this_ent = &g_entities[player_it];

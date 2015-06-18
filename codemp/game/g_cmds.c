@@ -462,6 +462,12 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (g_gametype.integer != GT_FFA && zyk_allow_adm_in_other_gametypes.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Noclip command not allowed in gametypes other than FFA.\n\"" );
+		return;
+	}
+
 	// zyk: deactivating saber
 	if ( ent->client->ps.saberHolstered < 2 )
 	{
@@ -10437,6 +10443,12 @@ void Cmd_Teleport_f( gentity_t *ent )
 	if (!(ent->client->pers.bitvalue & (1 << ADM_TELE)))
 	{ // zyk: teleport admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if (g_gametype.integer != GT_FFA && zyk_allow_adm_in_other_gametypes.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Teleport command not allowed in gametypes other than FFA.\n\"" );
 		return;
 	}
 
