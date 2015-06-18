@@ -34,8 +34,6 @@ woven in by Terry Thorsen 1/2003.
   version without encryption capabilities).
  */
 
-#include "qcommon/q_shared.h"
-#include "qcommon/qcommon.h"
 #include "unzip.h"
 
 #ifndef local
@@ -59,11 +57,18 @@ woven in by Terry Thorsen 1/2003.
 #define UNZ_MAXFILENAMEINZIP (256)
 #endif
 
+/* Normally, these forward declarations are a bad thing, but this seems to be
+   the best way to get at openjk_minizip_malloc and Z_Free without tightly
+   binding the bundled minizip lib to the rest of the engine. */
+
+void* openjk_minizip_malloc(int);
+int   openjk_minizip_free(void*);
+
 #ifndef ALLOC
-# define ALLOC(size) (Z_Malloc(size + 1, TAG_MINIZIP, qfalse))
+# define ALLOC(size) (openjk_minizip_malloc(size))
 #endif
 #ifndef TRYFREE
-# define TRYFREE(p) {if (p) Z_Free(p);}
+# define TRYFREE(p) {if (p) openjk_minizip_free(p);}
 #endif
 
 #define SIZECENTRALDIRITEM (0x2e)

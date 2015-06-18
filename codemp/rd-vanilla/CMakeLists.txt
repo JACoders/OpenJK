@@ -138,43 +138,13 @@ else(UseInternalPNG)
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${PNG_LIBRARIES})
 endif(UseInternalPNG)
 
-if(UseInternalZlib)
-	set(MPVanillaRendererZLibFiles
-		"${OpenJKLibDir}/zlib/adler32.c"
-		"${OpenJKLibDir}/zlib/compress.c"
-		"${OpenJKLibDir}/zlib/crc32.c"
-		"${OpenJKLibDir}/zlib/deflate.c"
-		"${OpenJKLibDir}/zlib/gzclose.c"
-		"${OpenJKLibDir}/zlib/gzlib.c"
-		"${OpenJKLibDir}/zlib/gzread.c"
-		"${OpenJKLibDir}/zlib/gzwrite.c"
-		"${OpenJKLibDir}/zlib/infback.c"
-		"${OpenJKLibDir}/zlib/inffast.c"
-		"${OpenJKLibDir}/zlib/inflate.c"
-		"${OpenJKLibDir}/zlib/inftrees.c"
-		"${OpenJKLibDir}/zlib/trees.c"
-		"${OpenJKLibDir}/zlib/uncompr.c"
-		"${OpenJKLibDir}/zlib/zutil.c"
-		"${OpenJKLibDir}/zlib/crc32.h"
-		"${OpenJKLibDir}/zlib/deflate.h"
-		"${OpenJKLibDir}/zlib/gzguts.h"
-		"${OpenJKLibDir}/zlib/inffast.h"
-		"${OpenJKLibDir}/zlib/inffixed.h"
-		"${OpenJKLibDir}/zlib/inflate.h"
-		"${OpenJKLibDir}/zlib/inftrees.h"
-		"${OpenJKLibDir}/zlib/trees.h"
-		"${OpenJKLibDir}/zlib/zconf.h"
-		"${OpenJKLibDir}/zlib/zlib.h"
-		"${OpenJKLibDir}/zlib/zutil.h")
-	source_group("zlib" FILES ${MPVanillaRendererZLibFiles})
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererZLibFiles})
-	
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${OpenJKLibDir}/zlib")
-else()
-	find_package(ZLIB REQUIRED)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${ZLIB_LIBRARY})
-endif()
+# Transparently use either bundled or system zlib.
+list(APPEND MPVanillaRendererIncludeDirectories ${ZLIB_INCLUDE_DIR})
+list(APPEND MPVanillaRendererLibraries          ${ZLIB_LIBRARIES})
+
+# Transparently use our bundled minizip.
+list(APPEND MPVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+list(APPEND MPVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
 
 find_package(OpenGL REQUIRED)
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
@@ -208,6 +178,10 @@ else(WIN32)
 endif()
 
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
+
+# Hide symbols not explicitly marked public.
+set_property(TARGET ${MPVanillaRenderer} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 set_target_properties(${MPVanillaRenderer} PROPERTIES INCLUDE_DIRECTORIES "${MPVanillaRendererIncludeDirectories}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES PROJECT_LABEL "MP Vanilla Renderer")
 target_link_libraries(${MPVanillaRenderer} ${MPVanillaRendererLibraries})

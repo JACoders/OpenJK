@@ -16,7 +16,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 2.8.8)
+cmake_minimum_required(VERSION 2.8.9)
+
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
@@ -43,34 +44,42 @@ option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openj
 option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" OFF)
 option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" OFF)
 
-# Customizable libraries
-if(WIN32)
-	option(UseInternalOpenAL "Whether to use the included OpenAL instead of a locally installed one" ON)
-	option(UseInternalZlib "Whether to use the included zlib instead of a locally installed one" ON)
-endif()
+# Configure the use of bundled libraries.  By default, we assume the user is on
+# a platform that does not require any bundling.
+#
+# Note that we always use the bundled copy of minizip, since it is modified to
+# use Z_Malloc.
+
+set(UseInternalOpenALDefault OFF)
+set(UseInternalZlibDefault   OFF)
+set(UseInternalPNGDefault    OFF)
+set(UseInternalJPEGDefault   OFF)
+set(UseInternalSDL2Default   OFF)
 
 if(WIN32)
-	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" ON)
-else()
-	option(UseInternalPNG "Whether to use the included libpng instead of a locally installed one" OFF)
+  set(UseInternalOpenALDefault ON)
+  set(UseInternalZlibDefault   ON)
+  set(UseInternalJPEGDefault   ON)
+  set(UseInternalSDL2Default   ON)
 endif()
 
-if(WIN32 OR APPLE)
-	option(UseInternalJPEG "Whether to use the included libjpeg instead of a locally installed one" ON)
-else()
-	option(UseInternalJPEG "Whether to use the included libjpeg instead of a locally installed one" OFF)
+if(MSVC)
+  set(UseInternalSDL2Default ON)
 endif()
 
 if(APPLE)
-	option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
-else()
-	set(MakeApplicationBundles OFF)
+  set(UseInternalJPEGDefault ON)
 endif()
 
-if(WIN32)
-	option(UseInternalSDL2 "Whether to use the included SDL2 library instead of a locally installed one" ON)
-else()
-	set(UseInternalSDL2 OFF)
+option(UseInternalOpenAL "If set, use bundled OpenAL."  ${UseInternalOpenALDefault})
+option(UseInternalZlib   "If set, use bundled zlib."    ${UseInternalZlibDefault})
+option(UseInternalPNG    "If set, use bundled libpng."  ${UseInternalPNGDefault})
+option(UseInternalJPEG   "If set, use bundled libjpeg." ${UseInternalJPEGDefault})
+option(UseInternalSDL2   "If set, use bundled SDL2."    ${UseInternalSDL2Default})
+
+# This option won't appear on non-Apple platforms.
+if(APPLE)
+  option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 endif()
 
 # Custom CMake Modules needed
@@ -143,6 +152,7 @@ set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
+set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
 include(InstallConfig)
 
@@ -173,9 +183,19 @@ if(MSVC)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
+	# We don't try to control symbol visibility under MSVC.
+	set(OPENJK_VISIBILITY_FLAGS "")
+
 elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang"))
 	# I hope this doesn't come back to bite me in the butt later on.
 	# Realistically though, can the C and CXX compilers be different?
+
+	# Visibility can't be set project-wide -- it needs to be specified on a
+	# per-target basis.  This is primarily due to the bundled copy of ZLib.
+	# ZLib explicitly declares symbols hidden, rather than defaulting to hidden.
+	#
+	# Note that -fvisibility=hidden is stronger than -fvisibility-inlines-hidden.
+	set(OPENJK_VISIBILITY_FLAGS "-fvisibility=hidden")
 
 	# removes the -rdynamic flag at linking (which causes crashes for some reason)
 	set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
@@ -196,7 +216,6 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 	if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsigned-char")
 		if (X86)
 			# "x86 vm will crash without -mstackrealign since MMX
@@ -223,8 +242,6 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsigned-char")
 		if (X86)
 			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mstackrealign")
@@ -264,10 +281,13 @@ if(UseInternalJPEG)
 endif()
 
 if(UseInternalZlib)
-	set(SharedDefines ${SharedDefines} "USE_INTERNAL_ZLIB")
+  add_subdirectory(lib/zlib)
+else()
+  find_package(ZLIB REQUIRED)
 endif()
 
-set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
+# Always use bundled minizip (sets MINIZIP_{LIBRARIES,INCLUDE_DIR})
+add_subdirectory(lib/minizip)
 
 # Add projects
 add_subdirectory(${SPDir})

@@ -35,7 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef FINAL_BUILD
 #include "../client/client.h"
 #endif
-#include "minizip/unzip.h"
+#include <minizip/unzip.h>
 
 // for rmdir
 #if defined (_MSC_VER)

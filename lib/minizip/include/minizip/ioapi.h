@@ -31,6 +31,19 @@
 #endif
 #endif
 
+/* Small workaround.  Modern zlibs don't define a bare OF, but rather _Z_OF.
+   This causes compilation failures on when using the bundled minizip with a
+   modern system zlib.  This workaround will go away with the next commit, which
+   will bump the versions of the bundled zlib and minizip. */
+#ifndef OF
+#define OF(args) args
+#endif
+
+/* Another workaround. */
+#ifndef NULL
+#define NULL ((void*) 0)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

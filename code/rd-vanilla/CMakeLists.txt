@@ -87,43 +87,13 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${PNG_LIBRARIES})
 	endif(UseInternalPNG)
 
-	if(UseInternalZlib)
-		set(SPRDVanillaRendererZlibFiles
-			"${OpenJKLibDir}/zlib/adler32.c"
-			"${OpenJKLibDir}/zlib/compress.c"
-			"${OpenJKLibDir}/zlib/crc32.c"
-			"${OpenJKLibDir}/zlib/deflate.c"
-			"${OpenJKLibDir}/zlib/gzclose.c"
-			"${OpenJKLibDir}/zlib/gzlib.c"
-			"${OpenJKLibDir}/zlib/gzread.c"
-			"${OpenJKLibDir}/zlib/gzwrite.c"
-			"${OpenJKLibDir}/zlib/infback.c"
-			"${OpenJKLibDir}/zlib/inffast.c"
-			"${OpenJKLibDir}/zlib/inflate.c"
-			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/trees.c"
-			"${OpenJKLibDir}/zlib/uncompr.c"
-			"${OpenJKLibDir}/zlib/zutil.c"
-			"${OpenJKLibDir}/zlib/crc32.h"
-			"${OpenJKLibDir}/zlib/deflate.h"
-			"${OpenJKLibDir}/zlib/gzguts.h"
-			"${OpenJKLibDir}/zlib/inffast.h"
-			"${OpenJKLibDir}/zlib/inffixed.h"
-			"${OpenJKLibDir}/zlib/inflate.h"
-			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/trees.h"
-			"${OpenJKLibDir}/zlib/zconf.h"
-			"${OpenJKLibDir}/zlib/zlib.h"
-			"${OpenJKLibDir}/zlib/zutil.h")
-		source_group("zlib" FILES ${SPRDVanillaRendererZlibFiles})
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaRendererZlibFiles})
-		
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${OpenJKLibDir}/zlib")
-	else(UseInternalZlib)
-		find_package(ZLIB REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${ZLIB_LIBRARY})
-	endif(UseInternalZlib)
+    # Transparently use either bundled or system zlib.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${ZLIB_INCLUDE_DIR})
+    list(APPEND SPRDVanillaRendererLibraries          ${ZLIB_LIBRARIES})
+
+    # Transparently use our bundled minizip.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+    list(APPEND SPRDVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
 
 	# Misc files
 	set(SPRDVanillaCommonFiles
@@ -224,6 +194,10 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		endif()
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPRDVanillaDefines}")
+
+		# Hide symbols not explicitly marked public.
+		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 
