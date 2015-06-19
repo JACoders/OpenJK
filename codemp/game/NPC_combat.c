@@ -560,6 +560,11 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		return;
 	}
 
+	if (newWeapon < 0)
+	{ // zyk: bug fix. If newWeapon is -1, set it to WP_NONE
+		newWeapon = WP_NONE;
+	}
+
 	ent->client->ps.weapon = newWeapon;
 	ent->client->pers.cmd.weapon = newWeapon;
 	ent->NPC->shotTime = 0;
