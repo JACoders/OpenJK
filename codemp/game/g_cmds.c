@@ -4217,6 +4217,10 @@ void load_account(gentity_t *ent, qboolean change_mode)
 		{ // zyk: RPG Mode not allowed. Change his account to Admin-Only Mode
 			ent->client->sess.amrpgmode = 1;
 		}
+		else if (g_gametype.integer == GT_SIEGE)
+		{ // zyk: Siege will never allow RPG Mode
+			ent->client->sess.amrpgmode = 1;
+		}
 
 		// zyk: initializing mind control attributes used in RPG mode
 		ent->client->pers.being_mind_controlled = -1;
