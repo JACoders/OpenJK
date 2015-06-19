@@ -2686,13 +2686,16 @@ void ClientThink_real( gentity_t *ent ) {
 		if (!duelAgainst || !duelAgainst->client || !duelAgainst->inuse ||
 			duelAgainst->client->ps.duelIndex != ent->s.number)
 		{
-			ent->client->ps.duelInProgress = 0;
+			ent->client->ps.duelInProgress = qfalse;
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 		}
 		else if (duelAgainst->health < 1 || duelAgainst->client->ps.stats[STAT_HEALTH] < 1)
 		{
-			ent->client->ps.duelInProgress = 0;
-			duelAgainst->client->ps.duelInProgress = 0;
+			int old_health = ent->health;
+			int old_shield = ent->client->ps.stats[STAT_ARMOR];
+
+			ent->client->ps.duelInProgress = qfalse;
+			duelAgainst->client->ps.duelInProgress = qfalse;
 
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 			G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 0);
@@ -2700,10 +2703,8 @@ void ClientThink_real( gentity_t *ent ) {
 			//Winner gets full health.. providing he's still alive
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
-				{
-					ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-				}
+				ent->client->ps.stats[STAT_HEALTH] = ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+				ent->client->ps.stats[STAT_ARMOR] = zyk_starting_shield.integer;
 
 				if (g_spawnInvulnerability.integer)
 				{
@@ -2720,7 +2721,7 @@ void ClientThink_real( gentity_t *ent ) {
 			// zyk: now announce in console
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-				trap->SendServerCommand( -1, va("print \"%s ^7%s %s^7, ending with ^1%d^7/^2%d^7!\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->health, ent->client->ps.stats[STAT_ARMOR]) );
+				trap->SendServerCommand( -1, va("print \"%s ^7%s %s^7, ending with ^1%d^7/^2%d^7!\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, old_health, old_shield) );
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
