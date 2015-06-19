@@ -1993,6 +1993,14 @@ void SP_NPC_spawner( gentity_t *self)
 		self->nextthink = level.time;
 		return;
 	}
+
+	if (level.is_vjun3_map == qtrue && Q_stricmp(self->NPC_type, "protocol_imp") == 0)
+	{ // zyk: vjun3 map will not load protocol_imp to avoid exceeding npc limit and crashing the server
+		self->think = G_FreeEntity;
+		self->nextthink = level.time;
+		return;
+	}
+
 	if ( !self->fullName || !self->fullName[0] )
 	{
 		//FIXME: make an index into an external string table for localization

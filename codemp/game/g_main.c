@@ -447,11 +447,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// zyk: now it will always force calculating paths
 	navCalculatePaths = qtrue;
 
-	// parse the key/value pairs and spawn gentities
-	G_SpawnEntitiesFromString(qfalse);
-
 	// zyk: getting mapname
 	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
+
+	level.is_vjun3_map = qfalse;
+	if (Q_stricmp(zyk_mapname, "vjun3") == 0)
+	{ // zyk: fixing vjun3 map. It will not load protocol_imp npc to prevent exceeding the npc model limit (16) and crashing clients
+		level.is_vjun3_map = qtrue;
+	}
+
+	// parse the key/value pairs and spawn gentities
+	G_SpawnEntitiesFromString(qfalse);
 
 	if (level.gametype == GT_CTF)
 	{ // zyk: maps that will now have support to CTF gametype (like some SP maps) must have the CTF flags placed before the G_CheckTeamItems function call
@@ -1064,19 +1070,18 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	}
 	else if (Q_stricmp(zyk_mapname, "vjun3") == 0)
 	{
-		/*
 		int i = 0;
 		gentity_t *ent;
 
 		for (i = 0; i < level.num_entities; i++)
 		{
 			ent = &g_entities[i];
-			if (Q_stricmp( ent->targetname, "front_door") == 0)
+			if (Q_stricmp( ent->targetname, "end_level") == 0)
 			{
 				G_FreeEntity( ent );
 			}
 		}
-		*/
+
 		zyk_create_info_player_deathmatch(-8272,-391,1433,179);
 		zyk_create_info_player_deathmatch(-8375,-722,1433,179);
 	}
