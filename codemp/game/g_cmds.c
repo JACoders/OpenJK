@@ -9205,9 +9205,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 26)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Flechette: ^7this weapon is similar to a shotgun. Normal fire causes %d damage. Alt fire shoots 2 bombs and causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_flechette_damage.integer, zyk_flechette_alt_damage.integer) );
 					if (i == 27)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Rocket Launcher: ^7a powerful explosive weapon. Normal fire shoots a rocket causing %d damage. Alt fire shoots a homing missile. At level 2 causes 25 per cent more damage\n\"", zyk_rocket_damage.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Rocket Launcher: ^7a powerful explosive weapon. Normal fire shoots a rocket causing %d damage. Alt fire shoots a homing missile. At level 2 causes 25 per cent more damage and destroys objects which could only be damaged by saber\n\"", zyk_rocket_damage.integer) );
 					if (i == 28)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Concussion Rifle: ^7it shoots a powerful shot that has a big damage area. Alt fire shoots a ray similar to disruptor shots, but it can go through force fields and can throw the enemy on the ground. Normal fire causes %d damage and alt fire causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_concussion_damage.integer, zyk_concussion_alt_damage.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Concussion Rifle: ^7it shoots a powerful shot that has a big damage area. Alt fire shoots a ray similar to disruptor shots, but it can go through force fields and can throw the enemy on the ground. Normal fire causes %d damage and alt fire causes %d damage. At level 2 causes 25 per cent more damage and destroys objects which could only be damaged by saber\n\"", zyk_concussion_damage.integer, zyk_concussion_alt_damage.integer) );
 					if (i == 29)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Bryar Pistol: ^7very similar to the blaster pistol, but this one has a better fire rate with normal shot. Causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_blaster_pistol_damage.integer) );
 					if (i == 30)
@@ -9549,7 +9549,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 28)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Rocket Upgrade: ^7increases damage of rocket launcher which uses rockets as ammo\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Rocket Upgrade: ^7increases damage of rocket launcher which uses rockets as ammo. Also adds a new feature to it\n\n\"");
 		}
 		else if (i == 29)
 		{

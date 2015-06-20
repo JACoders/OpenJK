@@ -4777,6 +4777,24 @@ void G_Knockdown( gentity_t *victim )
 	}
 }
 
+// zyk: tests if this rpg player can damage saber-only damage things
+qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, int mod)
+{
+	if ((mod == MOD_ROCKET || mod == MOD_ROCKET_HOMING || mod == MOD_ROCKET_SPLASH || mod == MOD_ROCKET_HOMING_SPLASH) && attacker && 
+		attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.weapons_levels[7] == 2)
+	{
+		return qtrue;
+	}
+	
+	if ((mod == MOD_CONC || mod == MOD_CONC_ALT) && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && 
+		attacker->client->pers.weapons_levels[8] == 2)
+	{
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
 /*
 ============
 G_Damage
@@ -5127,12 +5145,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if ( (targ->flags&FL_SHIELDED) && mod != MOD_SABER  && !targ->client)
 	{//magnetically protected, this thing can only be damaged by lightsabers
-		return;
+		if (zyk_can_damage_saber_only_entities(attacker, mod) == qfalse)
+			return;
 	}
 
 	if ((targ->flags & FL_DMG_BY_SABER_ONLY) && mod != MOD_SABER)
 	{ //saber-only damage
-		return;
+		if (zyk_can_damage_saber_only_entities(attacker, mod) == qfalse)
+			return;
 	}
 
 	if ( targ->client )
