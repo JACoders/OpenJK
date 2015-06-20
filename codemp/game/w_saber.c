@@ -4289,7 +4289,22 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			dmg = SABER_NONATTACK_DAMAGE;
 		}
 		*/
-		dmg = SABER_NONATTACK_DAMAGE; // zyk: added this line so saber does touch damage
+
+		// zyk: do touch damage if > 0. Players in duels will not do touch dmg based in this cvar
+		if (zyk_allow_saber_touch_damage.integer > 0 && (self->NPC || self->client->ps.duelInProgress == qfalse))
+			dmg = SABER_NONATTACK_DAMAGE;
+		else
+			dmg = 0;
+
+		// zyk: tests if players in private duel should do touch damage
+		if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+		{
+			if (zyk_allow_duel_saber_touch_damage.integer > 0)
+				dmg = SABER_NONATTACK_DAMAGE;
+			else
+				dmg = 0;
+		}
+
 		idleDamage = qtrue;
 	}
 	else
