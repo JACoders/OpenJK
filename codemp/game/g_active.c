@@ -2060,6 +2060,14 @@ qboolean G_ActionButtonPressed(int buttons)
 	{
 		return qtrue;
 	}
+	else if (buttons & BUTTON_DASH)
+	{
+		return qtrue;
+	}
+	else if (buttons & BUTTON_TARGET)
+	{
+		return qtrue;
+	}
 
 	return qfalse;
 }
@@ -2690,6 +2698,31 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	}
 }
 
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+void TryTargettingLaser( gentity_t *ent ) {
+	//BUTTON_TARGET
+	//Only gets called if we are ingame i think
+	//Check if we are alive
+	vec3_t start, end, view;
+	trace_t trace;
+
+	if (!ent || !ent->client)
+		return;
+	if (ent->health <= 0)
+		return;
+
+	AngleVectors( ent->client->ps.viewangles, view, NULL, NULL );
+
+	VectorCopy( ent->client->ps.origin, start );
+	start[2] += ent->client->ps.viewheight;
+	VectorMA( start, 32, view, start ); //znear
+	VectorMA( start, 8192, view, end ); //max distance
+
+	trap->Trace(&trace, start, NULL, NULL, end, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
+
+	G_TestLine(start, trace.endpos, 0x0000ff, 50); //check trace.fraction? ehh trace.startsolid or whatever?
+}
+
 void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);
 void GiveClientWeapons(gclient_t *client);
 /*
@@ -3195,7 +3228,7 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			else if (client->emote_freeze)
 			{ //unfreeze if we are being gripped i guess rite
-				if (client->ps.fd.forceGripCripple || client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove || client->ps.eFlags2 == EF2_HELD_BY_MONSTER || client->buttons & BUTTON_ATTACK || client->buttons & BUTTON_ALT_ATTACK)
+				if (client->ps.fd.forceGripCripple || client->pers.cmd.forwardmove || client->pers.cmd.rightmove || client->pers.cmd.upmove || client->ps.eFlags2 == EF2_HELD_BY_MONSTER || client->buttons & BUTTON_ATTACK || client->buttons & BUTTON_ALT_ATTACK || client->buttons & BUTTON_DASH)
 				{
 					client->emote_freeze = qfalse;
 					client->ps.saberCanThrow = qtrue;
@@ -4627,6 +4660,9 @@ void ClientThink_real( gentity_t *ent ) {
 	{
 		TryUse(ent);
 		ent->client->ps.useDelay = level.time + 100;
+	}
+	if (g_allowTargetLaser.integer && ent->client->pers.cmd.buttons & BUTTON_TARGET) { //Add cvar to enable/disable
+		TryTargettingLaser(ent);
 	}
 
 	// link entity now, after any personal teleporters have been used

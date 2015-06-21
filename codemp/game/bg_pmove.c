@@ -3869,31 +3869,32 @@ static void PM_CheckDash(void)
 
 	//PM_AddEvent( EV_FALL );
 
-	if (pm->cmd.forwardmove > 0) {//W
-		if (pm->cmd.rightmove > 0) //D
-			PM_DodgeMove(1, 1);
-		else if (pm->cmd.rightmove < 0) //A
-			PM_DodgeMove(1, -1);
-		else {//only W, do "dash" instead of dodge
-			PM_DashMove();
+	if (pm->cmd.buttons & BUTTON_WALKING) { //Dodge move
+		if (pm->cmd.forwardmove > 0) {//W
+			if (pm->cmd.rightmove > 0) //D
+				PM_DodgeMove(1, 1);
+			else if (pm->cmd.rightmove < 0) //A
+				PM_DodgeMove(1, -1);
+			else 
+				PM_DodgeMove(1, 0);
 		}
-	}
-	else if (pm->cmd.forwardmove < 0) {//S
-		if (pm->cmd.rightmove > 0) //D
-			PM_DodgeMove(-1, 1);
-		else if (pm->cmd.rightmove < 0) //A
-			PM_DodgeMove(-1, -1);
-		else
-			PM_DodgeMove(-1, 0);
-	}
-	else {
-		if (pm->cmd.rightmove > 0) //D
-			PM_DodgeMove(0, 1);
-		else if (pm->cmd.rightmove < 0) //A
-			PM_DodgeMove(0, -1);
+		else if (pm->cmd.forwardmove < 0) {//S
+			if (pm->cmd.rightmove > 0) //D
+				PM_DodgeMove(-1, 1);
+			else if (pm->cmd.rightmove < 0) //A
+				PM_DodgeMove(-1, -1);
+			else
+				PM_DodgeMove(-1, 0);
+		}
 		else {
-			PM_DashMove();
+			if (pm->cmd.rightmove > 0) //D
+				PM_DodgeMove(0, 1);
+			else if (pm->cmd.rightmove < 0) //A
+				PM_DodgeMove(0, -1);
 		}
+	}
+	else { //Dash move
+		PM_DashMove(); //Dont care what wasd keys they press, due to pussers.
 	}
 }
 
