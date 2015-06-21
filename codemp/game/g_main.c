@@ -4014,9 +4014,41 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	zyk_TeleportPlayer(ent,player_origin,player_yaw);
 
-	// zyk: in the Master of Death battle, also teleport allies to places to prevent exploits
-	if (guardian_mode == 15)
-	{
+	if (guardian_mode == 14)
+	{ // zyk: teleporting allies in Guardian of Chaos battle
+		if (ent->client->sess.ally1 != -1)
+		{
+			player_origin[0] = x + 200;
+			player_origin[1] = y + 100;
+			player_origin[2] = z + 50;
+			player_yaw[0] = 0;
+			player_yaw[1] = yaw;
+			player_yaw[2] = 0;
+			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally1],player_origin,player_yaw);
+		}
+		if (ent->client->sess.ally2 != -1)
+		{
+			player_origin[0] = x + 200;
+			player_origin[1] = y;
+			player_origin[2] = z + 50;
+			player_yaw[0] = 0;
+			player_yaw[1] = yaw;
+			player_yaw[2] = 0;
+			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally2],player_origin,player_yaw);
+		}
+		if (ent->client->sess.ally3 != -1)
+		{
+			player_origin[0] = x + 200;
+			player_origin[1] = y - 100;
+			player_origin[2] = z + 50;
+			player_yaw[0] = 0;
+			player_yaw[1] = yaw;
+			player_yaw[2] = 0;
+			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally3],player_origin,player_yaw);
+		}
+	}
+	else if (guardian_mode == 15)
+	{ // zyk: in the Master of Death battle, also teleport allies to places to prevent exploits
 		if (ent->client->sess.ally1 != -1)
 		{
 			player_origin[0] = x;
@@ -4057,12 +4089,10 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	if (npc_ent)
 	{
-		if (guardian_mode != 14)
-		{
-			npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health/10 * number_of_allies);
-			npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->NPC->stats.health;
-			npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
-		}
+		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health/10 * number_of_allies);
+		npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->NPC->stats.health;
+		npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
+
 		npc_ent->client->pers.guardian_invoked_by_id = ent-g_entities;
 		npc_ent->client->pers.guardian_weapons_backup = npc_ent->client->ps.stats[STAT_WEAPONS];
 		npc_ent->client->pers.hunter_quest_messages = 0;

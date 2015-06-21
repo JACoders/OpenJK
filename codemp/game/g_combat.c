@@ -4982,8 +4982,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (quest_player_ent->client->sess.ally3 != -1)
 			number_of_allies++;
 
-		if (quest_player_ent->client->pers.guardian_mode != 14)
-			damage += ((int)ceil(damage * 0.1 * number_of_allies));
+		damage += ((int)ceil(damage * 0.1 * number_of_allies));
 
 		// zyk: Guardian of Darkness used her Dark Power. Increase damage
 		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
