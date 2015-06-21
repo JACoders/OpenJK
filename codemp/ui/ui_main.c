@@ -4736,6 +4736,137 @@ static void UI_Update(const char *name) {
 				break;
 		}
 	}
+	else if (Q_stricmp(name, "ui_resolution") == 0)
+	{
+		if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 0 ) {
+			switch (val) {
+				case 0:
+					trap->Cvar_SetValue( "ui_r_mode", 0 );
+					break;
+				case 1:
+					trap->Cvar_SetValue( "ui_r_mode", 1 );
+					break;
+				case 2:
+					trap->Cvar_SetValue( "ui_r_mode", 2 );
+					break;
+				case 3:
+					trap->Cvar_SetValue( "ui_r_mode", 3 );
+					break;
+				case 4:
+					trap->Cvar_SetValue( "ui_r_mode", 4 );
+					break;
+				case 5:
+					trap->Cvar_SetValue( "ui_r_mode", 5 );
+					break;
+				case 6:
+					trap->Cvar_SetValue( "ui_r_mode", 6 );
+					break;
+				case 7:
+					trap->Cvar_SetValue( "ui_r_mode", 7 );
+					break;
+				case 8:
+					trap->Cvar_SetValue( "ui_r_mode", 8 );
+					break;
+				case 9:
+					trap->Cvar_SetValue( "ui_r_mode", 9 );
+					break;
+				case 10:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1920 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 1440 );
+					break;
+				case 11:
+					trap->Cvar_SetValue( "ui_r_mode", 10 );
+					break;
+			}
+		} else if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 1 ) {
+			switch (val) {
+				case 0:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 640 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 360 );
+					break;
+				case 1:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 800 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 450 );
+					break;
+				case 2:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1024 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 576 );
+					break;
+				case 3:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1280 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 720 );
+					break;
+				case 4:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1280 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 768 );
+					break;
+				case 5:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1600 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 900 );
+					break;
+				case 6:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1920);
+					trap->Cvar_SetValue( "ui_r_customHeight", 1080 );
+					break;
+			}
+		} else if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 2 ) {
+			switch (val) {
+				case 0:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 640 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 400 );
+					break;
+				case 1:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 800 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 500 );
+					break;
+				case 2:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1024 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 640 );
+					break;
+				case 3:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1280 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 800 );
+					break;
+				case 4:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1440 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 900 );
+					break;
+				case 5:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1600 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 1000 );
+					break;
+				case 6:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1680 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 1050 );
+					break;
+				case 7:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1920 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 1200 );
+					break;
+				case 8:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 2560 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 1600 );
+					break;
+			}
+		}
+	}
 	else if (Q_stricmp(name, "ui_r_glCustom") == 0)
 	{
 		switch (val)
@@ -4872,6 +5003,8 @@ you to discard your changes if you did something you didnt want
 void UI_UpdateVideoSetup ( void )
 {
 	trap->Cvar_Set ( "r_mode", UI_Cvar_VariableString ( "ui_r_mode" ) );
+	trap->Cvar_Set ( "r_customWidth", UI_Cvar_VariableString ( "ui_r_customWidth" ) );
+	trap->Cvar_Set ( "r_customHeight", UI_Cvar_VariableString ( "ui_r_customHeight" ) );
 	trap->Cvar_Set ( "r_fullscreen", UI_Cvar_VariableString ( "ui_r_fullscreen" ) );
 	trap->Cvar_Set ( "r_colorbits", UI_Cvar_VariableString ( "ui_r_colorbits" ) );
 	trap->Cvar_Set ( "r_lodbias", UI_Cvar_VariableString ( "ui_r_lodbias" ) );
@@ -4909,6 +5042,60 @@ Retrieves the current actual video settings into the temporary user
 interface versions of the cvars.
 =================
 */
+typedef struct ui_vidmode_s {
+	int aspectRatio, resolution, width, height;
+} ui_vidmode_t;
+
+const ui_vidmode_t ui_r_vidModes[] = {
+	{ 0, 10, 1920, 1440},
+	{ 1, 0, 640, 360 },
+	{ 1, 1, 800, 450 },
+	{ 1, 2, 1024, 576 },
+	{ 1, 3, 1280, 720 },
+	{ 1, 4, 1280, 768 },
+	{ 1, 5, 1600, 900 },
+	{ 1, 6, 1920, 1080 },
+	{ 2, 0, 640, 400 },
+	{ 2, 1, 800, 500 },
+	{ 2, 2, 1024, 640 },
+	{ 2, 3, 1280, 800 },
+	{ 2, 4, 1440, 900 },
+	{ 2, 5, 1600, 1000 },
+	{ 2, 6, 1680, 1050 },
+	{ 2, 7, 1920, 1200 },
+	{ 2, 8, 2560, 1600 }
+};
+
+void UI_GetVidMode ( void ) {
+	float mode = trap->Cvar_VariableValue( "r_mode" );
+	float width = trap->Cvar_VariableValue( "r_customWidth" );
+	float height = trap->Cvar_VariableValue( "r_customHeight" );
+
+	if ( mode >= 0 ) {
+		trap->Cvar_Set ( "ui_aspectratio", "0" );
+		if ( mode >= 10 )
+			trap->Cvar_SetValue ( "ui_resolution", mode + 1 );
+		else
+			trap->Cvar_SetValue ( "ui_resolution", mode );
+	} else if ( mode == -2 ) {
+		trap->Cvar_SetValue ( "ui_aspectratio", -1 );
+		trap->Cvar_SetValue ( "ui_resolution", 0 );
+	} else {
+		int i;
+
+		trap->Cvar_SetValue ( "ui_aspectratio", 3 );
+		trap->Cvar_SetValue ( "ui_resolution", 0 );
+
+		for ( i = 0; i < ARRAY_LEN( ui_r_vidModes ); i++ ) {
+			if ( width == ui_r_vidModes[i].width && height == ui_r_vidModes[i].height ) {
+				trap->Cvar_SetValue ( "ui_aspectratio", ui_r_vidModes[i].aspectRatio );
+				trap->Cvar_SetValue ( "ui_resolution", ui_r_vidModes[i].resolution );
+				break;
+			}
+		}
+	}
+}
+
 void UI_GetGeometricDetail ( void ) {
 	if ( trap->Cvar_VariableValue( "r_lodbias" ) == 0 && trap->Cvar_VariableValue( "r_subdivisions" ) == 4 )
 		trap->Cvar_SetValue( "ui_geometricdetail", 0 );
@@ -4927,7 +5114,11 @@ void UI_GetVideoSetup ( void )
 	trap->Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_INTERNAL|CVAR_ARCHIVE );
 	
 	// Make sure the cvars are registered as read only.
+	trap->Cvar_Register ( NULL, "ui_aspectratio",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_resolution",				"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_customWidth",				"0", CVAR_ROM|CVAR_INTERNAL );
+	trap->Cvar_Register ( NULL, "ui_r_customHeight",			"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_fullscreen",				"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM|CVAR_INTERNAL );
 	trap->Cvar_Register ( NULL, "ui_geometricdetail",			"0", CVAR_ROM|CVAR_INTERNAL );
@@ -4953,6 +5144,9 @@ void UI_GetVideoSetup ( void )
 
 	// Copy over the real video cvars into their temporary counterparts
 	trap->Cvar_Set ( "ui_r_mode",						UI_Cvar_VariableString ( "r_mode" ) );
+	trap->Cvar_Set ( "ui_r_customWidth",				UI_Cvar_VariableString ( "r_customWidth" ) );
+	trap->Cvar_Set ( "ui_r_customHeight",				UI_Cvar_VariableString ( "r_customHeight" ) );
+	UI_GetVidMode ( );
 	trap->Cvar_Set ( "ui_r_colorbits",					UI_Cvar_VariableString ( "r_colorbits" ) );
 	trap->Cvar_Set ( "ui_r_fullscreen",					UI_Cvar_VariableString ( "r_fullscreen" ) );
 	UI_GetGeometricDetail ( );

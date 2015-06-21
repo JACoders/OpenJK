@@ -855,10 +855,10 @@
 		{	
 			name				aspect_ratio
 			group				video
-      		type				ITEM_TYPE_TEXT
+      		type				ITEM_TYPE_MULTI
 			text				"Aspect Ratio:"
-			cvarFloatList		{}
-			cvar				""
+			cvarFloatList		{ "Desktop Resolution" -1 "4:3" 0 "16:9" 1 "16:10" 2 }
+			cvar				"ui_aspectratio"
 			rect				220 83 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -867,25 +867,52 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			descText			"Change the aspect ratio."
+			cvarTest			ui_aspectratio
+			showCvar			{ -1 }
 			visible				0
 
 			mouseenter			{ show highlight3 }
 			mouseexit			{ hide highlight3 }
-			action				{ play "sound/interface/button1" }
+			action
+			{
+				play "sound/interface/button1"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+				setcvar			ui_resolution	0
+				uiScript update "ui_resolution"
+			}
 		}
 		
-		itemDef
-		{
-			name				placeholder
+		itemDef 
+		{	
+			name				aspect_ratio
 			group				video
-			type				ITEM_TYPE_TEXT
-			text				"Coming Soon!"
-			rect				392 83 50 20
-			textalign			ITEM_ALIGN_LEFT
-			font				4
-			textscale			1
-			forecolor			1 1 1 1
+      		type				ITEM_TYPE_MULTI
+			text				"Aspect Ratio:"
+			cvarFloatList		{ "4:3" 0 "16:9" 1 "16:10" 2 "Custom" 3 }
+			cvar				"ui_aspectratio"
+			rect				220 83 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			descText			"Change the aspect ratio."
+			cvarTest			ui_aspectratio
+			hideCvar			{ -1 }
 			visible				0
+
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
+			action
+			{
+				play "sound/interface/button1"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+				setcvar			ui_resolution	0
+				uiScript update "ui_resolution"
+			}
 		}
 
 		itemDef 
@@ -894,8 +921,8 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
-			cvarFloatList		{  @MENUS_640_X_480 3 @MENUS_800_X_600 4  @MENUS_1024_X_768 6 @MENUS_1152_X_864 7  @MENUS_1280_X_1024 8  @MENUS_1600_X_1200 9  @MENUS_2048_X_1536 10 @MENUS_2400_X_600 12 }
-			cvar				"ui_r_mode"
+			cvarFloatList		{ "320 X 240" 0 "400 X 300" 1 "512 X 384" 2 @MENUS_640_X_480 3 @MENUS_800_X_600 4  @MENUS_1024_X_768 6 @MENUS_1152_X_864 7  @MENUS_1280_X_1024 8  @MENUS_1600_X_1200 9  "1920 X 1440" 10 @MENUS_2048_X_1536 11 }
+			cvar				"ui_resolution"
 			rect				220 103 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -904,7 +931,8 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			descText			@MENUS_CHANGE_THE_DISPLAY_RESOLUTION
-
+			cvarTest			ui_aspectratio
+			showCvar			{ 0 }
 			visible				0
 
 			mouseenter 
@@ -918,7 +946,178 @@
 			action 
 			{
 				play			"sound/interface/button1"
-				uiScript		glCustom
+				uiScript update "ui_resolution"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+			}
+		}
+		
+		itemDef 
+		{	
+			name				resolution
+			group				video
+      		type				ITEM_TYPE_MULTI
+			text				"Resolution:"
+			cvarFloatList		{ "640 X 360" 0 "800 X 450" 1 "1024 X 576" 2 "1280 X 720" 3 "1280 X 768" 4 "1600 X 900" 5 "1920 X 1080" 6 }
+			cvar				"ui_resolution"
+			rect				220 103 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			descText			@MENUS_CHANGE_THE_DISPLAY_RESOLUTION
+			cvarTest			ui_aspectratio
+			showCvar			{ 1 }
+			visible				0
+
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+			} 
+			action 
+			{
+				play			"sound/interface/button1"
+				uiScript update "ui_resolution"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+			}
+		}
+		
+		itemDef 
+		{	
+			name				resolution
+			group				video
+      		type				ITEM_TYPE_MULTI
+			text				"Resolution:"
+			cvarFloatList		{ "640 X 400" 0 "800 X 500" 1 "1024 X 640" 2 "1280 X 800" 3 "1440 X 900" 4 "1600 X 1000" 5 "1600 X 1050" 6 "1920 X 1200" 7 "2560 X 1600" 8 }
+			cvar				"ui_resolution"
+			rect				220 103 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			descText			@MENUS_CHANGE_THE_DISPLAY_RESOLUTION
+			cvarTest			ui_aspectratio
+			showCvar			{ 2 }
+			visible				0
+
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+			} 
+			action 
+			{
+				play			"sound/interface/button1"
+				uiScript update "ui_resolution"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+			}
+		}
+		
+		itemDef 
+		{	
+			name				resolution
+			group				video
+      		type				ITEM_TYPE_TEXT
+			text				"Resolution:"
+			rect				220 103 170 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			descText			@MENUS_CHANGE_THE_DISPLAY_RESOLUTION
+			cvarTest			ui_aspectratio
+			showCvar			{ 3 }
+			visible				0
+
+			action 
+			{
+				play			"sound/interface/button1"
+			}
+		}
+		
+		itemDef 
+		{	
+			name				customResolutionWidth
+			group				video
+      		type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"ui_r_customWidth"
+			rect				392 103 26 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			descText			@MENUS_CHANGE_THE_DISPLAY_RESOLUTION
+			cvarTest			ui_aspectratio
+			showCvar			{ 3 }
+			visible				0
+
+			action 
+			{
+				play			"sound/interface/button1"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+			}
+		}
+		
+		itemDef 
+		{	
+			name				customResolutionCross
+			group				video
+      		type				ITEM_TYPE_TEXT
+			text				"X"
+			rect				420 103 8 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			1 1 1 1
+			cvarTest			ui_aspectratio
+			showCvar			{ 3 }
+			visible				0
+		}
+		
+		itemDef 
+		{	
+			name				customResolutionHeight
+			group				video
+      		type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"ui_r_customHeight"
+			rect				432 103 26 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			backcolor			.5 .5 .5 1
+			descText			@MENUS_CHANGE_THE_DISPLAY_RESOLUTION
+			cvarTest			ui_aspectratio
+			showCvar			{ 3 }
+			visible				0
+
+			action 
+			{
+				play			"sound/interface/button1"
 				setcvar			ui_r_modified	1
 				setcvar			ui_vidrestart	1
 			}
@@ -1030,7 +1229,7 @@
 			{
 				play			"sound/interface/button1"
 				uiScript		glCustom
-				uiScript update "ui_r_lodbias"
+				uiScript update "ui_geometricdetail"
 				setcvar			ui_r_modified	1
 				setcvar			ui_vidrestart	1
 			}
