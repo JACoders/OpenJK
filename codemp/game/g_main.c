@@ -461,7 +461,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	if (level.gametype == GT_CTF)
 	{ // zyk: maps that will now have support to CTF gametype (like some SP maps) must have the CTF flags placed before the G_CheckTeamItems function call
-		if (Q_stricmp(zyk_mapname, "t1_surprise") == 0)
+		if (Q_stricmp(zyk_mapname, "t1_fatal") == 0)
+		{
+			zyk_create_ctf_flag_spawn(-2366,-2561,4536,qtrue);
+			zyk_create_ctf_flag_spawn(1281,2943,4540,qfalse);
+		}
+		else if (Q_stricmp(zyk_mapname, "t1_surprise") == 0)
 		{
 			zyk_create_ctf_flag_spawn(1337,-6492,224,qtrue);
 			zyk_create_ctf_flag_spawn(2697,5443,1056,qfalse);
@@ -843,6 +848,25 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		}
 		zyk_create_info_player_deathmatch(-1563,-4241,4569,-157);
 		zyk_create_info_player_deathmatch(-1135,-4303,4569,179);
+
+		if (level.gametype == GT_CTF)
+		{ // zyk: in CTF, add the team player spawns
+			zyk_create_ctf_player_spawn(-2110,-2453,4536,-90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-2618,-2453,4536,-90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-2371,-2783,4536,90,qtrue,qtrue);
+
+			zyk_create_ctf_player_spawn(1142,3081,4536,-45,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(1414,3075,4536,-135,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(1281,2747,4536,90,qfalse,qtrue);
+
+			zyk_create_ctf_player_spawn(-2110,-2453,4536,-90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-2618,-2453,4536,-90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-2371,-2783,4536,90,qtrue,qfalse);
+
+			zyk_create_ctf_player_spawn(1142,3081,4536,-45,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(1414,3075,4536,-135,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(1281,2747,4536,90,qfalse,qfalse);
+		}
 	}
 	else if (Q_stricmp(zyk_mapname, "t1_inter") == 0)
 	{
