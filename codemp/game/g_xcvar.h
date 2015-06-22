@@ -309,5 +309,6 @@ XCVAR_DEF( zyk_allow_adm_in_other_gametypes, "1",		NULL,				CVAR_ARCHIVE|CVAR_NO
 XCVAR_DEF( zyk_starting_shield, "25",					NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_allow_saber_touch_damage, "1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_allow_duel_saber_touch_damage, "1",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_duel_saberDmgDelay_Idle,		"350",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 
 #undef XCVAR_DEF

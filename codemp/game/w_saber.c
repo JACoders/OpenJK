@@ -4555,7 +4555,12 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		{//stabdowns only damage people who are actually on the ground...
 			return qfalse;
 		}
-		self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
+
+		// zyk: this is the cvar to set saber blocks and parries time in miliseconds, in private duels
+		if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+			self->client->ps.saberIdleWound = level.time + zyk_duel_saberDmgDelay_Idle.integer;
+		else
+			self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
 
 		didHit = qtrue;
 
@@ -4566,7 +4571,11 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 		{//hit a client who blocked the attack (fake: didn't actually hit their saber)
 			if (dmg <= SABER_NONATTACK_DAMAGE)
 			{
-				self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
+				// zyk: this is the cvar to set saber blocks and parries time in miliseconds, in private duels
+				if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+					self->client->ps.saberIdleWound = level.time + zyk_duel_saberDmgDelay_Idle.integer;
+				else
+					self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
 			}
 			saberDoClashEffect = qtrue;
 			VectorCopy( tr.endpos, saberClashPos );
@@ -4790,11 +4799,20 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			return qtrue;
 		}
 		didHit = qtrue;
-		self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
+
+		// zyk: this is the cvar to set saber blocks and parries time in miliseconds, in private duels
+		if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+			self->client->ps.saberIdleWound = level.time + zyk_duel_saberDmgDelay_Idle.integer;
+		else
+			self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
 
 		if (dmg <= SABER_NONATTACK_DAMAGE)
 		{
-			self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
+			// zyk: this is the cvar to set saber blocks and parries time in miliseconds, in private duels
+			if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+				self->client->ps.saberIdleWound = level.time + zyk_duel_saberDmgDelay_Idle.integer;
+			else
+				self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
 		}
 
 		saberDoClashEffect = qtrue;
