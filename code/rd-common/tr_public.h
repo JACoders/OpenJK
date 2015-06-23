@@ -33,8 +33,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	REF_API_VERSION		15
 
 typedef struct {
-	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+	void				(*Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+	void				(*Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int					(*Milliseconds)						( void );
@@ -380,4 +380,4 @@ typedef struct {
 // If the module can't init to a valid rendering state, NULL will be
 // returned.
 
-typedef	refexport_t* (QDECL *GetRefAPI_t) (int apiVersion, refimport_t *rimp);
+typedef	refexport_t* (*GetRefAPI_t) (int apiVersion, refimport_t *rimp);

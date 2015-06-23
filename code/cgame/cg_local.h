@@ -662,8 +662,8 @@ void CG_NewClientinfo( int clientNum );
 const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 
-void QDECL CG_Printf( const char *msg, ... );
-void QDECL CG_Error( const char *msg, ... );
+void CG_Printf( const char *msg, ... );
+void CG_Error( const char *msg, ... );
 
 void CG_StartMusic( qboolean bForceStart );
 

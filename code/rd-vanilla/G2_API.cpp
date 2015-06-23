@@ -1884,7 +1884,7 @@ qboolean G2API_GetAnimFileName(CGhoul2Info *ghlInfo, char **filename)
 SV_QsortEntityNumbers
 =======================
 */
-static int QDECL QsortDistance( const void *a, const void *b ) {
+static int QsortDistance( const void *a, const void *b ) {
 	const float	&ea = ((CCollisionRecord*)a)->mDistance;
 	const float	&eb = ((CCollisionRecord*)b)->mDistance;
 

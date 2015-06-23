@@ -24,20 +24,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-// for windows fastcall option
-#define QDECL
-#define QCALL
-
 // Win64
 #if defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
 
 	#define idx64
-
-	#undef QDECL
-	#define QDECL __cdecl
-
-	#undef QCALL
-	#define QCALL __stdcall
 
 	#if defined(_MSC_VER)
 		#define OS_STRING "win_msvc"
@@ -60,12 +50,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // Win32
 #elif defined(_WIN32) || defined(__WIN32__)
-
-	#undef QDECL
-	#define	QDECL __cdecl
-
-	#undef QCALL
-	#define QCALL __stdcall
 
 	#if defined(_MSC_VER)
 		#define OS_STRING "win_msvc"

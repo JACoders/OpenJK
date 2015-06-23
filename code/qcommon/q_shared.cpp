@@ -1219,7 +1219,7 @@ int Q_vsnprintf(char *str, size_t size, const char *format, va_list ap)
 }
 #endif
 
-int QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
+int Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
 
@@ -1245,7 +1245,7 @@ FIXME: make this buffer size safe someday
 #define	MAX_VA_STRING	32000
 #define MAX_VA_BUFFERS 4
 
-char * QDECL va( const char *format, ... )
+char* va( const char *format, ... )
 {
 	va_list		argptr;
 	static char	string[MAX_VA_BUFFERS][MAX_VA_STRING];	// in case va is called by nested functions

@@ -66,7 +66,7 @@ extern bool bXMenPathHack;
 typedef enum {qfalse, qtrue}	qboolean;
 typedef int		qhandle_t;
 typedef int		TextureHandle_t;
-#define	QDECL	__cdecl
+
 // angle indexes
 #define	PITCH				0		// up / down
 #define	YAW					1		// left / right

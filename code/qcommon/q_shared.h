@@ -1017,7 +1017,7 @@ void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 int Com_HexStrToInt( const char *str );
 
-int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+int	Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 char *Com_SkipTokens( char *s, int numTokens, char *sep );
 char *Com_SkipCharset( char *s, char *sep );
@@ -1098,7 +1098,7 @@ float	LittleFloat (const float *l);
 void	Swap_Init (void);
 */
 
-char	* QDECL va(const char *format, ...);
+char	* va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
 void Com_TruncateLongString( char *buffer, const char *s );
@@ -1115,8 +1115,8 @@ qboolean Info_Validate( const char *s );
 void Info_NextPair( const char **s, char key[MAX_INFO_KEY], char value[MAX_INFO_VALUE] );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-void	NORETURN QDECL Com_Error( int level, const char *error, ... );
-void	QDECL Com_Printf( const char *msg, ... );
+void NORETURN Com_Error( int level, const char *error, ... );
+void Com_Printf( const char *msg, ... );
 
 
 /*

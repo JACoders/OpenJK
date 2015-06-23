@@ -374,13 +374,13 @@ typedef struct {
 typedef struct
 {
 	// print message on the local console
-	void	(QDECL *Printf)( int printLevel, const char *fmt, ...);
+	void	(*Printf)( int printLevel, const char *fmt, ...);
 	// abort the game  (flushes model now instead!)
-	void	(QDECL *Error)( int errorLevel, const char *fmt, ...);
+	void	(*Error)( int errorLevel, const char *fmt, ...);
 /*
 
 	// functions used to decode key/value pairs
-	char	*(QDECL *ValueForKey)(const char *input, const char *key);
+	char	*(*ValueForKey)(const char *input, const char *key);
 
 	// milliseconds should only be used for profiling, never
 	// for anything game related.  Get time from the refdef
@@ -477,7 +477,7 @@ float Com_Clamp( float min, float max, float value );
 char *COM_SkipPath (char *pathname);
 void COM_StripExtension( const char *in, char *out );
 void COM_DefaultExtension (char *path, int maxSize, const char *extension );
-void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...);
+void Com_sprintf( char *dest, int size, const char *fmt, ...);
 int    LongSwap (int l);
 #define BigLong(x) LongSwap(x)
 void Com_Printf( const char *format, ... );

@@ -44,4 +44,4 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #	define Sys_LibraryError() SDL_GetError()
 #endif
 
-void * QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
+void* Sys_LoadDll(const char *name, qboolean useSystemLib);

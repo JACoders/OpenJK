@@ -221,7 +221,7 @@ static void Sys_ErrorDialog( const char *error )
 }
 #endif
 
-void NORETURN QDECL Sys_Error( const char *error, ... )
+void NORETURN Sys_Error( const char *error, ... )
 {
 	va_list argptr;
 	char    string[1024];
@@ -510,7 +510,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 		}
 	}
 
-	typedef void QDECL DllEntryProc( SystemCallProc *syscallptr );
+	typedef void DllEntryProc( SystemCallProc *syscallptr );
 
 	DllEntryProc *dllEntry = (DllEntryProc *)Sys_LoadFunction( libHandle, "dllEntry" );
 	*vmMain = (VMMainProc *)Sys_LoadFunction( libHandle, "vmMain" );

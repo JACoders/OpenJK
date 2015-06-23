@@ -535,7 +535,7 @@ void	FS_FilenameCompletion( const char *dir, const char *ext, qboolean stripExt,
 
 const char *FS_GetCurrentGameDir(bool emptybase=false);
 
-void 	QDECL FS_Printf( fileHandle_t f, const char *fmt, ... );
+void FS_Printf( fileHandle_t f, const char *fmt, ... );
 // like fprintf
 
 int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode );
@@ -597,9 +597,9 @@ void		Info_Print( const char *s );
 
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
-void 		QDECL Com_Printf( const char *fmt, ... );
-void 		QDECL Com_DPrintf( const char *fmt, ... );
-void 		NORETURN QDECL Com_Error( int code, const char *fmt, ... );
+void 		Com_Printf( const char *fmt, ... );
+void 		Com_DPrintf( const char *fmt, ... );
+void 		NORETURN Com_Error( int code, const char *fmt, ... );
 void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
