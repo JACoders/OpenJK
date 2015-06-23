@@ -4378,7 +4378,11 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 
 	if (dmg > SABER_NONATTACK_DAMAGE)
 	{
-		dmg *= g_saberDamageScale.value;
+		// zyk: cvar that sets the saber damage in private duels
+		if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+			dmg *= zyk_duel_saberDamageScale.value;
+		else
+			dmg *= g_saberDamageScale.value;
 
 		//see if this specific saber has a damagescale
 		if ( !WP_SaberBladeUseSecondBladeStyle( &self->client->saber[rSaberNum], rBladeNum )
@@ -6687,7 +6691,12 @@ qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t 
 
 	saberent->parent = saberOwner;
 
-	saberent->damage = zyk_saber_throw_damage.integer * g_saberDamageScale.value; // zyk: throw damage will also be scaled
+	// zyk: cvar that sets the saber damage in private duels
+	if (!saberOwner->NPC && saberOwner->client->ps.duelInProgress == qtrue)
+		saberent->damage = zyk_saber_throw_damage.integer * zyk_duel_saberDamageScale.value;
+	else
+		saberent->damage = zyk_saber_throw_damage.integer * g_saberDamageScale.value; // zyk: throw damage will also be scaled
+
 	saberent->methodOfDeath = MOD_SABER;
 	saberent->splashMethodOfDeath = MOD_SABER;
 	saberent->s.solid = 2;
@@ -8699,7 +8708,12 @@ nextStep:
 				saberent->nextthink = level.time + FRAMETIME;
 				saberent->think = saberFirstThrown;
 
-				saberent->damage = zyk_saber_throw_damage.integer * g_saberDamageScale.value; // zyk: throw damage will also be scaled
+				// zyk: cvar that sets the saber damage in private duels
+				if (!self->NPC && self->client->ps.duelInProgress == qtrue)
+					saberent->damage = zyk_saber_throw_damage.integer * zyk_duel_saberDamageScale.value;
+				else
+					saberent->damage = zyk_saber_throw_damage.integer * g_saberDamageScale.value; // zyk: throw damage will also be scaled
+
 				saberent->methodOfDeath = MOD_SABER;
 				saberent->splashMethodOfDeath = MOD_SABER;
 				saberent->s.solid = 2;
