@@ -4999,8 +4999,10 @@ void FindGenericEnemyIndex(gentity_t *self)
 
 		if (ent && ent->client && ent->s.number != self->s.number && ent->health > 0 && !OnSameTeam(self, ent) && ent->client->ps.pm_type != PM_INTERMISSION && ent->client->ps.pm_type != PM_SPECTATOR)
 		{
-			if (self->client->sess.ally1 != ent->s.number && self->client->sess.ally2 != ent->s.number && self->client->sess.ally3 != ent->s.number)
-			{ // zyk: allies cant be attacked by seeker drone
+			if (self->client->sess.ally1 != ent->s.number && self->client->sess.ally2 != ent->s.number && self->client->sess.ally3 != ent->s.number && 
+				(ent->NPC || (ent->client->pers.connected == CON_CONNECTED && ent->client->sess.sessionTeam != TEAM_SPECTATOR && 
+				 ent->client->ps.duelInProgress == qfalse)))
+			{ // zyk: allies and not connected players cant be attacked by seeker drone
 				VectorSubtract(ent->client->ps.origin, self->client->ps.origin, a);
 				tlen = VectorLength(a);
 
