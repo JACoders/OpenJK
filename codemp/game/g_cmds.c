@@ -4589,8 +4589,8 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			}
 		
 			// zyk: player starts with jetpack if it is enabled in player settings and is not in Siege Mode
-			if (!(ent->client->pers.player_settings & (1 << 12)) && 
-				(zyk_allow_rpg_in_other_gametypes.integer > 0 || g_gametype.integer != GT_SIEGE))
+			if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
+				(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer))
 			{
 				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 			}
@@ -12051,9 +12051,9 @@ Cmd_Jetpack_f
 ==================
 */
 void Cmd_Jetpack_f( gentity_t *ent ) {
-	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && 
+	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && zyk_allow_jetpack_command.integer && 
 		(ent->client->sess.amrpgmode < 2 || ent->client->pers.other_skills_levels[4] > 0) && 
-		(zyk_allow_rpg_in_other_gametypes.integer > 0 || g_gametype.integer != GT_SIEGE))
+		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer))
 	{ // zyk: gets jetpack if player does not have it. RPG players need jetpack skill to get it
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 	}
