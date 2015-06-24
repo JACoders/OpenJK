@@ -89,8 +89,8 @@ int adjustRespawnTime(float preRespawnTime, int itemType, int itemTag)
 #define SHIELD_HALFTHICKNESS		4
 #define SHIELD_PLACEDIST			64
 
-#define SHIELD_SIEGE_HEALTH			2000
-#define SHIELD_SIEGE_HEALTH_DEC		(SHIELD_SIEGE_HEALTH/25)	// still 25 seconds.
+#define SHIELD_SIEGE_HEALTH			1000
+#define SHIELD_SIEGE_HEALTH_DEC		1	// still 25 seconds. zyk: changed to 1	
 
 static qhandle_t	shieldLoopSound=0;
 static qhandle_t	shieldAttachSound=0;
@@ -118,8 +118,8 @@ void ShieldThink(gentity_t *self)
 {
 	self->s.trickedentindex = 0;
 
-	if ( level.gametype == GT_SIEGE )
-	{
+	if ( level.gametype == GT_SIEGE || level.gametype == GT_CTF)
+	{ // zyk: added CTF condition
 		self->health -= SHIELD_SIEGE_HEALTH_DEC;
 	}
 	else
@@ -328,14 +328,21 @@ void CreateShield(gentity_t *ent)
 	paramData = (xaxis << 24) | (height << 16) | (posWidth << 8) | (negWidth);
 	ent->s.time2 = paramData;
 
-	if ( level.gametype == GT_SIEGE )
-	{
-		ent->health = ceil((float)(SHIELD_SIEGE_HEALTH*1));
+	if ( level.gametype == GT_SIEGE || level.gametype == GT_CTF)
+	{ // zyk: added CTF condition
+		// zyk: Force Field 2/2 in RPG Mode has double health
+		if (ent->parent && ent->parent->client && ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.secrets_found & (1 << 0))
+		{
+			ent->health = SHIELD_SIEGE_HEALTH * 2;
+		}
+		else
+		{
+			ent->health = SHIELD_SIEGE_HEALTH;
+		}
 	}
 	else
-	{
-	// zyk: Force Field 2/2 in RPG Mode has double health
-		if (ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.secrets_found & (1 << 0))
+	{ // zyk: Force Field 2/2 in RPG Mode has double health
+		if (ent->parent && ent->parent->client && ent->parent->client->sess.amrpgmode == 2 && ent->parent->client->pers.secrets_found & (1 << 0))
 		{
 			ent->health = SHIELD_HEALTH * 2;
 		}
