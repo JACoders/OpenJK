@@ -464,17 +464,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		if (Q_stricmp(zyk_mapname, "t1_fatal") == 0)
 		{
 			zyk_create_ctf_flag_spawn(-2366,-2561,4536,qtrue);
-			zyk_create_ctf_flag_spawn(1281,2943,4540,qfalse);
+			zyk_create_ctf_flag_spawn(2484,1732,4656,qfalse);
 		}
 		else if (Q_stricmp(zyk_mapname, "t1_surprise") == 0)
 		{
 			zyk_create_ctf_flag_spawn(1337,-6492,224,qtrue);
-			zyk_create_ctf_flag_spawn(2697,5443,1056,qfalse);
+			zyk_create_ctf_flag_spawn(2098,4966,800,qfalse);
 		}
 		else if (Q_stricmp(zyk_mapname, "t2_dpred") == 0)
 		{
-			zyk_create_ctf_flag_spawn(0,-4369,664,qtrue);
-			zyk_create_ctf_flag_spawn(-251,266,24,qfalse);
+			zyk_create_ctf_flag_spawn(3,-3974,664,qtrue);
+			zyk_create_ctf_flag_spawn(-701,126,24,qfalse);
 		}
 		else if (Q_stricmp(zyk_mapname, "t3_bounty") == 0)
 		{
@@ -851,21 +851,21 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 		if (level.gametype == GT_CTF)
 		{ // zyk: in CTF, add the team player spawns
-			zyk_create_ctf_player_spawn(-2110,-2453,4536,-90,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(-2618,-2453,4536,-90,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(-2371,-2783,4536,90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-3083,-2683,4696,-90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-2371,-3325,4536,90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-1726,-2957,4536,90,qtrue,qtrue);
 
-			zyk_create_ctf_player_spawn(1142,3081,4536,-45,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(1414,3075,4536,-135,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(1281,2747,4536,90,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(1277,2947,4540,-45,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(3740,482,4536,135,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(2489,1451,4536,135,qfalse,qtrue);
 
-			zyk_create_ctf_player_spawn(-2110,-2453,4536,-90,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(-2618,-2453,4536,-90,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(-2371,-2783,4536,90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-3083,-2683,4696,-90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-2371,-3325,4536,90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-1726,-2957,4536,90,qtrue,qfalse);
 
-			zyk_create_ctf_player_spawn(1142,3081,4536,-45,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(1414,3075,4536,-135,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(1281,2747,4536,90,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(1277,2947,4540,-45,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(3740,482,4536,135,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(2489,1451,4536,135,qfalse,qfalse);
 		}
 	}
 	else if (Q_stricmp(zyk_mapname, "t1_inter") == 0)
@@ -928,21 +928,21 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 		if (level.gametype == GT_CTF)
 		{ // zyk: in CTF, add the team player spawns
-			zyk_create_ctf_player_spawn(1782,-6041,216,117,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(1286,-5946,223,100,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(854,-5910,223,65,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(1948,-6020,222,138,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(1994,-4597,908,19,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(404,-4521,249,-21,qtrue,qtrue);
 
-			zyk_create_ctf_player_spawn(2654,5423,880,-90,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(2883,5431,1056,-179,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(2709,4680,1056,179,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(2341,4599,1056,83,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(1901,5425,916,-177,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(918,3856,944,0,qfalse,qtrue);
 
-			zyk_create_ctf_player_spawn(1782,-6041,216,117,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(1286,-5946,223,100,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(854,-5910,223,65,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(1948,-6020,222,138,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(1994,-4597,908,19,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(404,-4521,249,-21,qtrue,qfalse);
 
-			zyk_create_ctf_player_spawn(2654,5423,880,-90,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(2883,5431,1056,-179,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(2709,4680,1056,179,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(2341,4599,1056,83,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(1901,5425,916,-177,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(918,3856,944,0,qfalse,qfalse);
 		}
 	}
 	else if (Q_stricmp(zyk_mapname, "t2_rancor") == 0)
@@ -1079,21 +1079,21 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 		if (level.gametype == GT_CTF)
 		{ // zyk: in CTF, add the team player spawns
-			zyk_create_ctf_player_spawn(-168,-4253,664,90,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(177,-4253,664,90,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(0,-4035,664,90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(0,-4640,664,90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(485,-3721,632,-179,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-212,-3325,656,-179,qtrue,qtrue);
 
-			zyk_create_ctf_player_spawn(-929,119,24,0,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(130,263,24,-90,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(-378,-128,24,0,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(0,125,24,-90,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(-1242,128,24,0,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(369,67,296,-179,qfalse,qtrue);
 
-			zyk_create_ctf_player_spawn(-168,-4253,664,90,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(177,-4253,664,90,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(0,-4035,664,90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(0,-4640,664,90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(485,-3721,632,-179,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-212,-3325,656,-179,qtrue,qfalse);
 
-			zyk_create_ctf_player_spawn(-929,119,24,0,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(130,263,24,-90,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(-378,-128,24,0,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(0,125,24,-90,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(-1242,128,24,0,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(369,67,296,-179,qfalse,qfalse);
 		}
 	}
 	else if (Q_stricmp(zyk_mapname, "vjun1") == 0)
