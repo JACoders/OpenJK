@@ -4212,7 +4212,8 @@ qboolean npcs_on_same_team(gentity_t *attacker, gentity_t *target)
 qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target, int i, int min_distance, int max_distance, qboolean hit_breakable)
 {
 	if (attacker->s.number != i && target && target->client && target->health > 0 && zyk_can_hit_target(attacker, target) == qtrue && 
-		(i > MAX_CLIENTS || (target->client->pers.connected == CON_CONNECTED && target->client->sess.sessionTeam != TEAM_SPECTATOR)))
+		(i > MAX_CLIENTS || (target->client->pers.connected == CON_CONNECTED && target->client->sess.sessionTeam != TEAM_SPECTATOR && 
+		 target->client->ps.duelInProgress == qfalse)))
 	{ // zyk: target is a player or npc that can be hit by the attacker
 		int player_distance = (int)Distance(attacker->client->ps.origin,target->client->ps.origin);
 
