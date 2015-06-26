@@ -829,10 +829,10 @@ GL_CheckErrors
 ==================
 */
 void GL_CheckErrors( void ) {
-    int		err;
+#if defined(_DEBUG)
+    GLenum	err;
     char	s[64];
 
-#if defined(_DEBUG)
     err = qglGetError();
     if ( err == GL_NO_ERROR ) {
         return;
