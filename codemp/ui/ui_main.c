@@ -33,6 +33,8 @@ USER INTERFACE MAIN
 // use this to get a demo build without an explicit demo build, i.e. to get the demo ui files to build
 //#define PRE_RELEASE_TADEMO
 
+#include <stdlib.h>
+
 #include "ghoul2/G2.h"
 #include "ui_local.h"
 #include "qcommon/qfiles.h"
@@ -9674,15 +9676,22 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 		if (f)
 		{
-			char buffer[2048];
 			playerSpeciesInfo_t *species;
-			char	skinname[64];
-			int		numfiles;
-			int		iSkinParts=0;
+			char                 skinname[64];
+			int                  numfiles;
+			int                  iSkinParts=0;
+			char                *buffer = NULL;
 
-			trap->FS_Read(&buffer, filelen, f);
+			buffer = malloc(filelen + 1);
+			if(!buffer)
+			{
+				Com_Error(ERR_FATAL, "Could not allocate buffer to read %s", fpath);
+			}
+
+			trap->FS_Read(buffer, filelen, f);
 			trap->FS_Close(f);
-			buffer[filelen] = 0;	//ensure trailing NULL
+
+			buffer[filelen] = 0;
 
 			//record this species
 			if (uiInfo.playerSpeciesCount >= uiInfo.playerSpeciesMax)
@@ -9706,6 +9715,8 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			species->SkinHead = (skinName_t *)malloc(species->SkinHeadMax * sizeof(skinName_t));
 			species->SkinTorso = (skinName_t *)malloc(species->SkinTorsoMax * sizeof(skinName_t));
 			species->SkinLeg = (skinName_t *)malloc(species->SkinLegMax * sizeof(skinName_t));
+
+			free(buffer);
 
 			numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
 			fileptr  = filelist;
