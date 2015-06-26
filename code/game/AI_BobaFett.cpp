@@ -156,7 +156,7 @@ void	Boba_Printf(const char * format, ...)
 
 	// Print It To Debug Output Console
 	//----------------------------------
-	gi.Printf(buf);
+	Com_Printf(buf);
 }
 #else
 void	Boba_Printf(const char * format, ...)

@@ -428,7 +428,7 @@ void Com_StartupVariable( const char *match ) {
 			if((unsigned)Cvar_Flags(s) == CVAR_NONEXISTENT)
 				Cvar_Get(s, Cmd_Argv(2), CVAR_USER_CREATED);
 			else
-				Cvar_Set2(s, Cmd_Argv(2), qfalse);
+				Cvar_Set(s, Cmd_Argv(2));
 		}
 	}
 }

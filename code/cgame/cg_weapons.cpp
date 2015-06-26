@@ -30,6 +30,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../game/anims.h"
 
+// Get functions and structured exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern void CG_LightningBolt( centity_t *cent, vec3_t origin );
 
 #define	PHASER_HOLDFRAME	2
@@ -76,7 +79,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 	}
 	// if we couldn't find which weapon this is, give us an error
 	if ( !item->classname ) {
-		CG_Error( "Couldn't find item for weapon %s\nNeed to update Items.dat!", weaponData[weaponNum].classname);
+		Com_Error( ERR_DROP,  "Couldn't find item for weapon %s\nNeed to update Items.dat!", weaponData[weaponNum].classname);
 	}
 	CG_RegisterItemVisuals( item - bg_itemlist );
 
@@ -101,7 +104,7 @@ void CG_RegisterWeapon( int weaponNum ) {
 
 	if ( weaponInfo->weaponModel == 0 )
 	{
-		CG_Error( "Couldn't find weapon model %s for weapon %s\n", weaponData[weaponNum].weaponMdl, weaponData[weaponNum].classname);
+		Com_Error( ERR_DROP,  "Couldn't find weapon model %s for weapon %s\n", weaponData[weaponNum].weaponMdl, weaponData[weaponNum].classname);
 		return;
 	}
 
@@ -1033,7 +1036,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 	}
 
 	// allow the gun to be completely removed
-	if ( !cg_drawGun.integer || cg.zoomMode ) 
+	if ( !cg_drawGun->integer || cg.zoomMode )
 	{
 		vec3_t		origin;
 
@@ -1070,11 +1073,11 @@ void CG_AddViewWeapon( playerState_t *ps )
 		if ( cg.overrides.active & CG_OVERRIDE_FOV )
 			actualFOV = cg.overrides.fov;
 		else {
-			actualFOV = cg_fovViewmodel.integer ? cg_fovViewmodel.value : cg_fov.value;
+			actualFOV = cg_fovViewmodel->integer ? cg_fovViewmodel->value : cg_fov->value;
 		}
 	}
 
-	if ( cg_fovViewmodelAdjust.integer && actualFOV > 90 )
+	if ( cg_fovViewmodelAdjust->integer && actualFOV > 90 )
 		fovOffset = -0.1 * ( actualFOV - 80 );
 	else 
 		fovOffset = 0;
@@ -1116,9 +1119,9 @@ void CG_AddViewWeapon( playerState_t *ps )
 		extraOffset[2] = -6;
 	}
 
-	VectorMA( hand.origin, cg_gun_x.value+extraOffset[0], cg.refdef.viewaxis[0], hand.origin );
-	VectorMA( hand.origin, (cg_gun_y.value+leanOffset+extraOffset[1]), cg.refdef.viewaxis[1], hand.origin );
-	VectorMA( hand.origin, (cg_gun_z.value+fovOffset+extraOffset[2]), cg.refdef.viewaxis[2], hand.origin );
+	VectorMA( hand.origin, cg_gun_x->value+extraOffset[0], cg.refdef.viewaxis[0], hand.origin );
+	VectorMA( hand.origin, (cg_gun_y->value+leanOffset+extraOffset[1]), cg.refdef.viewaxis[1], hand.origin );
+	VectorMA( hand.origin, (cg_gun_z->value+fovOffset+extraOffset[2]), cg.refdef.viewaxis[2], hand.origin );
 	//VectorMA( hand.origin, 0, cg.refdef.viewaxis[0], hand.origin );
 	//VectorMA( hand.origin, (0+leanOffset), cg.refdef.viewaxis[1], hand.origin );
 	//VectorMA( hand.origin, (0+fovOffset), cg.refdef.viewaxis[2], hand.origin );
@@ -1126,7 +1129,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 	AnglesToAxis( angles, hand.axis );
 
 
-	if ( cg_fovViewmodel.integer ) {
+	if ( cg_fovViewmodel->integer ) {
 		float fracDistFOV = tanf( cg.refdef.fov_x * ( M_PI/180 ) * 0.5f );
 		float fracWeapFOV = (1.0f / fracDistFOV) * tanf( actualFOV * (M_PI / 180) * 0.5f );
 		VectorScale( hand.axis[0], fracWeapFOV, hand.axis[0] );
@@ -1134,10 +1137,10 @@ void CG_AddViewWeapon( playerState_t *ps )
 
 	// map torso animations to weapon animations
 #ifndef FINAL_BUILD
-	if ( cg_gun_frame.integer ) 
+	if ( cg_gun_frame->integer )
 	{
 		// development tool
-		hand.frame = hand.oldframe = cg_gun_frame.integer;
+		hand.frame = hand.oldframe = cg_gun_frame->integer;
 		hand.backlerp = 0;
 	} 
 	else 
@@ -1154,7 +1157,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 			hand.oldframe = CG_MapTorsoToWeaponFrame( ci,floor(currentFrame), torsoAnim, cent->currentState.weapon, ( cent->currentState.eFlags & EF_FIRING ) );
 			hand.frame = CG_MapTorsoToWeaponFrame( ci,ceil(currentFrame), torsoAnim, cent->currentState.weapon, ( cent->currentState.eFlags & EF_FIRING ) );
 			hand.backlerp=1.0f-(currentFrame-floor(currentFrame));
-			if ( cg_debugAnim.integer == 1 && cent->currentState.clientNum == 0 )
+			if ( cg_debugAnim->integer == 1 && cent->currentState.clientNum == 0 )
 			{
 				Com_Printf( "Torso frame %d to %d makes Weapon frame %d to %d\n", cent->pe.torso.oldFrame,  cent->pe.torso.frame, hand.oldframe, hand.frame );
 			}
@@ -2692,7 +2695,7 @@ void CG_OutOfAmmoChange( void ) {
 		}
 	}
 
-	if ( cg_autoswitch.integer != 1 )
+	if ( cg_autoswitch->integer != 1 )
 	{
 		// didn't have that, so try these. Start with thermal...
 		for ( i = WP_THERMAL; i <= WP_DET_PACK; i++ ) 
@@ -2749,7 +2752,7 @@ void CG_FireWeapon( centity_t *cent, qboolean alt_fire )
 		return;
 	}
 	if ( ent->weapon >= WP_NUM_WEAPONS ) {
-		CG_Error( "CG_FireWeapon: ent->weapon >= WP_NUM_WEAPONS" );
+		Com_Error( ERR_DROP,  "CG_FireWeapon: ent->weapon >= WP_NUM_WEAPONS" );
 		return;
 	}
 	if ( ent->weapon == WP_TUSKEN_RIFLE && cent->gent->client) 

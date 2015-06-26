@@ -1988,7 +1988,7 @@ void RB_SurfaceEntity( surfaceType_t *surfType ) {
 }
 
 void RB_SurfaceBad( surfaceType_t *surfType ) {
-	ri.Printf( PRINT_ALL, "Bad surface tesselated.\n" );
+	CL_RefPrintf( PRINT_ALL, "Bad surface tesselated.\n" );
 }
 
 

@@ -28,6 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_media.h"
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 /*
 ===================================================================
 
@@ -69,7 +72,7 @@ CG_FreeMarkPoly
 */
 void CG_FreeMarkPoly( markPoly_t *le ) {
 	if ( !le->prevMark ) {
-		CG_Error( "CG_FreeLocalEntity: not active" );
+		Com_Error( ERR_DROP,  "CG_FreeLocalEntity: not active" );
 	}
 
 	// remove from the doubly linked active list
@@ -143,12 +146,12 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 	vec3_t			markPoints[MAX_MARK_POINTS];
 	vec3_t			projection;
 
-	if ( !cg_addMarks.integer ) {
+	if ( !cg_addMarks->integer ) {
 		return;
 	}
 
 	if ( radius <= 0 ) {
-		CG_Error( "CG_ImpactMark called with <= 0 radius" );
+		Com_Error( ERR_DROP,  "CG_ImpactMark called with <= 0 radius" );
 	}
 
 	// create the texture axis
@@ -236,7 +239,7 @@ void CG_AddMarks( void ) {
 	int			t;
 	int			fade;
 
-	if ( !cg_addMarks.integer ) {
+	if ( !cg_addMarks->integer ) {
 		return;
 	}
 

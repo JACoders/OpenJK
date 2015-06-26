@@ -21,6 +21,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <chrono>
+
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
@@ -59,7 +61,7 @@ void GL_Bind( image_t *image ) {
 	int texnum;
 
 	if ( !image ) {
-		ri.Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
+		CL_RefPrintf(PRINT_WARNING, "GL_Bind: NULL image\n");
 		texnum = tr.defaultImage->texnum;
 	} else {
 		texnum = image->texnum;
@@ -612,7 +614,8 @@ static inline bool R_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, f
 //used by RF_DISTORTION
 static inline bool R_WorldCoordToScreenCoord( vec3_t worldCoord, int *x, int *y )
 {
-	float	xF, yF;
+	float xF = 0.0f;
+	float yF = 0.0f;
 	bool retVal = R_WorldCoordToScreenCoordFloat( worldCoord, &xF, &yF );
 	*x = (int)xF;
 	*y = (int)yF;
@@ -975,6 +978,10 @@ RB_SetGL2D
 ================
 */
 void	RB_SetGL2D (void) {
+	using std::chrono::duration_cast;
+	using hrc = std::chrono::high_resolution_clock;
+	using std::chrono::milliseconds;
+
 	backEnd.projection2D = qtrue;
 
 	// set 2D virtual screen size
@@ -994,7 +1001,8 @@ void	RB_SetGL2D (void) {
 	qglDisable( GL_CLIP_PLANE0 );
 
 	// set time for 2D shaders
-	backEnd.refdef.time = ri.Milliseconds();
+	auto now = hrc::now().time_since_epoch();
+	backEnd.refdef.time = duration_cast<milliseconds>(now).count();
 	backEnd.refdef.floatTime = backEnd.refdef.time * 0.001f;
 }
 
@@ -1604,9 +1612,11 @@ RB_ExecuteRenderCommands
 ====================
 */
 void RB_ExecuteRenderCommands( const void *data ) {
-	int		t1, t2;
+	using std::chrono::duration_cast;
+	using hrc = std::chrono::high_resolution_clock;
+	using std::chrono::milliseconds;
 
-	t1 = ri.Milliseconds ();
+	auto t1 = hrc::now();
 
 	while ( 1 ) {
 		data = PADP(data, sizeof(void *));
@@ -1641,9 +1651,9 @@ void RB_ExecuteRenderCommands( const void *data ) {
 			break;
 		case RC_END_OF_LIST:
 		default:
-			// stop rendering
-			t2 = ri.Milliseconds ();
-			backEnd.pc.msec = t2 - t1;
+			backEnd.pc.msec = duration_cast<milliseconds>(
+				hrc::now() - t1
+			).count();
 			return;
 		}
 	}

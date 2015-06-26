@@ -27,6 +27,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_media.h"
 
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 
 //int precacheWav_i;	// Current high index of precacheWav array
 //precacheWav_t precacheWav[MAX_PRECACHEWAV];
@@ -165,7 +168,7 @@ const char *CG_DisplayBoxedText(int iBoxX, int iBoxY, int iBoxWidth, int iBoxHei
 
 		// and echo to console in dev mode...
 		//
-		if ( cg_developer.integer )
+		if ( cg_developer->integer )
 		{
 //			Com_Printf( "%psCurrentTextReadPos\n", sLineForDisplay );
 		}
@@ -382,7 +385,7 @@ void CG_CaptionText( const char *str, int sound)
 	cg.scrollTextTime = 0;	// No scrolling during captions
 
 	//Echo to console in dev mode
-	if ( cg_developer.integer )
+	if ( cg_developer->integer )
 	{
 		Com_Printf( "%s\n", cg.captionText[0] );	// ste:  was [i], but surely sentence 0 is more useful than last?
 	}
@@ -402,7 +405,7 @@ void CG_DrawCaptionText(void)
 
 	const float fFontScale = cgi_Language_IsAsian() ? 0.8f : 1.0f;
 
-	if (cg_skippingcin.integer != 0)
+	if (cg_skippingcin->integer != 0)
 	{
 		cg.captionTextTime = 0;
 		return;

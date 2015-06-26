@@ -28,13 +28,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_media.h"
 
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern int drawnFx;
 extern int mParticles;
 extern int mOParticles;
 extern int mLines;
 extern int mTails;
 
-extern vmCvar_t	fx_expensivePhysics;
+extern cvar_t *fx_expensivePhysics;
 
 // Helper function
 //-------------------------
@@ -269,7 +272,7 @@ bool CParticle::UpdateOrigin()
 		bool solid;
 
 		if ( (mFlags&FX_EXPENSIVE_PHYSICS)
-			&& fx_expensivePhysics.integer )
+			&& fx_expensivePhysics->integer )
 		{
 			solid = true; // by setting this to true, we force a real trace to happen
 		}
@@ -1000,7 +1003,7 @@ bool CTail::Update()
 		return false;
 	}
 
-	if ( !fx_freeze.integer )
+	if ( !fx_freeze->integer )
 	{
 		VectorCopy( mOrigin1, mOldOrigin );
 	}
@@ -1401,7 +1404,7 @@ void CEmitter::Draw()
 				bool solid;
 
 				if ( (mFlags&FX_EXPENSIVE_PHYSICS)
-					&& fx_expensivePhysics.integer )
+					&& fx_expensivePhysics->integer )
 				{
 					solid = true; // by setting this to true, we force a real trace to happen
 				}

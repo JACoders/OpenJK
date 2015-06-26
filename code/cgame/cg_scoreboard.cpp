@@ -27,6 +27,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/objectives.h"
 #include "../game/b_local.h"
 
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 #define	SCOREBOARD_WIDTH	(26*BIGCHAR_WIDTH)
 
 
@@ -160,7 +163,7 @@ void CG_MissionFailed(void)
 					break;
 		}
 
-		gi.cvar_set("ui_missionfailed_text", text);
+		Cvar_Set("ui_missionfailed_text", text);
 	}
 //	w = cgi_R_Font_StrLenPixels(text, cgs.media.qhFontMedium, 1.2f);	
 //		cgi_R_Font_DrawString(320 - w/2, y+30, text, colorTable[CT_HUD_RED], cgs.media.qhFontMedium, -1, 1.2f);
@@ -370,7 +373,7 @@ return value is bool to NOT draw centerstring
 qboolean CG_DrawScoreboard( void ) 
 {
 	// don't draw anything if the menu is up
-	if ( cg_paused.integer ) 
+	if ( cg_paused->integer )
 	{
 		return qfalse;
 	}

@@ -28,6 +28,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "g_functions.h"
 
+#include "../qcommon/cvar_exports.hh"
+
 extern void G_NextTestAxes( void );
 extern void G_ChangePlayerModel( gentity_t *ent, const char *newModel );
 extern void G_InitPlayerFromCvars( gentity_t *ent );
@@ -70,59 +72,59 @@ void	Svcmd_EntityList_f (void) {
 		if ( !check->inuse ) {
 			continue;
 		}
-		gi.Printf("%3i:", e);
+		Com_Printf("%3i:", e);
 		switch ( check->s.eType ) {
 		case ET_GENERAL:
-			gi.Printf( "ET_GENERAL          " );
+			Com_Printf( "ET_GENERAL          " );
 			break;
 		case ET_PLAYER:
-			gi.Printf( "ET_PLAYER           " );
+			Com_Printf( "ET_PLAYER           " );
 			break;
 		case ET_ITEM:
-			gi.Printf( "ET_ITEM             " );
+			Com_Printf( "ET_ITEM             " );
 			break;
 		case ET_MISSILE:
-			gi.Printf( "ET_MISSILE          " );
+			Com_Printf( "ET_MISSILE          " );
 			break;
 		case ET_MOVER:
-			gi.Printf( "ET_MOVER            " );
+			Com_Printf( "ET_MOVER            " );
 			break;
 		case ET_BEAM:
-			gi.Printf( "ET_BEAM             " );
+			Com_Printf( "ET_BEAM             " );
 			break;
 		case ET_PORTAL:
-			gi.Printf( "ET_PORTAL           " );
+			Com_Printf( "ET_PORTAL           " );
 			break;
 		case ET_SPEAKER:
-			gi.Printf( "ET_SPEAKER          " );
+			Com_Printf( "ET_SPEAKER          " );
 			break;
 		case ET_PUSH_TRIGGER:
-			gi.Printf( "ET_PUSH_TRIGGER     " );
+			Com_Printf( "ET_PUSH_TRIGGER     " );
 			break;
 		case ET_TELEPORT_TRIGGER:
-			gi.Printf( "ET_TELEPORT_TRIGGER " );
+			Com_Printf( "ET_TELEPORT_TRIGGER " );
 			break;
 		case ET_INVISIBLE:
-			gi.Printf( "ET_INVISIBLE        " );
+			Com_Printf( "ET_INVISIBLE        " );
 			break;
 		case ET_THINKER:
-			gi.Printf( "ET_THINKER          " );
+			Com_Printf( "ET_THINKER          " );
 			break;
 		case ET_CLOUD:
-			gi.Printf( "ET_CLOUD            " );
+			Com_Printf( "ET_CLOUD            " );
 			break;
 		case ET_TERRAIN:
-			gi.Printf( "ET_TERRAIN          " );
+			Com_Printf( "ET_TERRAIN          " );
 			break;
 		default:
-			gi.Printf( "%-3i                ", check->s.eType );
+			Com_Printf( "%-3i                ", check->s.eType );
 			break;
 		}
 
 		if ( check->classname ) {
-			gi.Printf("%s", check->classname);
+			Com_Printf("%s", check->classname);
 		}
-		gi.Printf("\n");
+		Com_Printf("\n");
 	}
 }
 
@@ -187,12 +189,12 @@ static void Svcmd_Saber_f()
 
 	if ( gi.argc() < 2 )
 	{
-		gi.Printf( "Usage: saber <saber1> <saber2>\n" );
-		gi.Cvar_VariableStringBuffer( "g_saber", name, sizeof(name) );
-		gi.Printf("g_saber is set to %s\n", name);
-		gi.Cvar_VariableStringBuffer( "g_saber2", name, sizeof(name) );
+		Com_Printf( "Usage: saber <saber1> <saber2>\n" );
+		Cvar_VariableStringBuffer( "g_saber", name, sizeof(name) );
+		Com_Printf("g_saber is set to %s\n", name);
+		Cvar_VariableStringBuffer( "g_saber2", name, sizeof(name) );
 		if ( name[0] )
-			gi.Printf("g_saber2 is set to %s\n", name);
+			Com_Printf("g_saber2 is set to %s\n", name);
 		return;
 	}
 
@@ -201,16 +203,16 @@ static void Svcmd_Saber_f()
 		return;
 	}
 
-	gi.cvar_set( "g_saber", saber );
+	Cvar_Set("g_saber", saber);
 	WP_SetSaber( &g_entities[0], 0, saber );
 	if ( saber2 && saber2[0] && !(g_entities[0].client->ps.saber[0].saberFlags&SFL_TWO_HANDED) )
 	{//want to use a second saber and first one is not twoHanded
-		gi.cvar_set( "g_saber2", saber2 );
+		Cvar_Set("g_saber2", saber2);
 		WP_SetSaber( &g_entities[0], 1, saber2 );
 	}
 	else
 	{
-		gi.cvar_set( "g_saber2", "" );
+		Cvar_Set("g_saber2", "");
 		WP_RemoveSaber( &g_entities[0], 1 );
 	}
 }
@@ -219,7 +221,7 @@ static void Svcmd_SaberBlade_f()
 {
 	if ( gi.argc() < 2 )
 	{
-		gi.Printf( "USAGE: saberblade <sabernum> <bladenum> [0 = off, 1 = on, no arg = toggle]\n" );
+		Com_Printf( "USAGE: saberblade <sabernum> <bladenum> [0 = off, 1 = on, no arg = toggle]\n" );
 		return;
 	}
 	if ( &g_entities[0] == NULL || &g_entities[0].client == NULL )
@@ -267,9 +269,9 @@ static void Svcmd_SaberColor_f()
 
 	if ( !VALIDSTRING( color ) || saberNum < 1 || saberNum > 2 )
 	{
-		gi.Printf( "Usage:  saberColor <saberNum> <blade1 color> <blade2 color> ... <blade8 color> \n" );
-		gi.Printf( "valid saberNums:  1 or 2\n" );
-		gi.Printf( "valid colors:  red, orange, yellow, green, blue, and purple\n" );
+		Com_Printf( "Usage:  saberColor <saberNum> <blade1 color> <blade2 color> ... <blade8 color> \n" );
+		Com_Printf( "valid saberNums:  1 or 2\n" );
+		Com_Printf( "valid colors:  red, orange, yellow, green, blue, and purple\n" );
 
 		return;
 	}
@@ -291,11 +293,11 @@ static void Svcmd_SaberColor_f()
 
 	if ( saberNum == 0 )
 	{
-		gi.cvar_set( "g_saber_color", color[0] );
+		Cvar_Set("g_saber_color", color[0]);
 	}
 	else if ( saberNum == 1 )
 	{
-		gi.cvar_set( "g_saber2_color", color[0] );
+		Cvar_Set("g_saber2_color", color[0]);
 	}
 }
 
@@ -338,8 +340,8 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 	const char *newVal = gi.argv(1);
 	if ( !VALIDSTRING( newVal ) )
 	{
-		gi.Printf( "Current %s level is %d\n", SetForceTable[forcePower].desc, g_entities[0].client->ps.forcePowerLevel[forcePower] );
-		gi.Printf( "Usage:  %s <level> (0 - %i)\n", SetForceTable[forcePower].cmdname, SetForceTable[forcePower].maxlevel );
+		Com_Printf( "Current %s level is %d\n", SetForceTable[forcePower].desc, g_entities[0].client->ps.forcePowerLevel[forcePower] );
+		Com_Printf( "Usage:  %s <level> (0 - %i)\n", SetForceTable[forcePower].cmdname, SetForceTable[forcePower].maxlevel );
 		return;
 	}
 	int val = atoi(newVal);
@@ -557,35 +559,35 @@ void Svcmd_SaberAttackCycle_f( void )
 	switch ( saberAnimLevel )
 	{
 	case SS_FAST:
-		gi.Printf( S_COLOR_BLUE"Lightsaber Combat Style: Fast\n" );
+		Com_Printf( S_COLOR_BLUE"Lightsaber Combat Style: Fast\n" );
 		//LIGHTSABERCOMBATSTYLE_FAST
 		break;
 	case SS_MEDIUM:
-		gi.Printf( S_COLOR_YELLOW"Lightsaber Combat Style: Medium\n" );
+		Com_Printf( S_COLOR_YELLOW"Lightsaber Combat Style: Medium\n" );
 		//LIGHTSABERCOMBATSTYLE_MEDIUM
 		break;
 	case SS_STRONG:
-		gi.Printf( S_COLOR_RED"Lightsaber Combat Style: Strong\n" );
+		Com_Printf( S_COLOR_RED"Lightsaber Combat Style: Strong\n" );
 		//LIGHTSABERCOMBATSTYLE_STRONG
 		break;
 	case SS_DESANN:
-		gi.Printf( S_COLOR_CYAN"Lightsaber Combat Style: Desann\n" );
+		Com_Printf( S_COLOR_CYAN"Lightsaber Combat Style: Desann\n" );
 		//LIGHTSABERCOMBATSTYLE_DESANN
 		break;
 	case SS_TAVION:
-		gi.Printf( S_COLOR_MAGENTA"Lightsaber Combat Style: Tavion\n" );
+		Com_Printf( S_COLOR_MAGENTA"Lightsaber Combat Style: Tavion\n" );
 		//LIGHTSABERCOMBATSTYLE_TAVION
 		break;
 	case SS_DUAL:
-		gi.Printf( S_COLOR_MAGENTA"Lightsaber Combat Style: Dual\n" );
+		Com_Printf( S_COLOR_MAGENTA"Lightsaber Combat Style: Dual\n" );
 		//LIGHTSABERCOMBATSTYLE_TAVION
 		break;
 	case SS_STAFF:
-		gi.Printf( S_COLOR_MAGENTA"Lightsaber Combat Style: Staff\n" );
+		Com_Printf( S_COLOR_MAGENTA"Lightsaber Combat Style: Staff\n" );
 		//LIGHTSABERCOMBATSTYLE_TAVION
 		break;
 	}
-	//gi.Printf("\n");
+	//Com_Printf("\n");
 #endif
 }
 
@@ -864,7 +866,7 @@ qboolean	ConsoleCommand( void ) {
 				else
 				{
 					//can't find cmd2
-					gi.Printf( S_COLOR_RED"runscript: can't find targetname %s\n", cmd2 );
+					Com_Printf( S_COLOR_RED"runscript: can't find targetname %s\n", cmd2 );
 				}
 			}
 			else
@@ -874,7 +876,7 @@ qboolean	ConsoleCommand( void ) {
 		}
 		else
 		{
-			gi.Printf( S_COLOR_RED"usage: runscript <ent targetname> scriptname\n" );
+			Com_Printf( S_COLOR_RED"usage: runscript <ent targetname> scriptname\n" );
 		}
 		//FIXME: else warning
 		return qtrue;
@@ -892,11 +894,11 @@ qboolean	ConsoleCommand( void ) {
 
 		if ( !*cmd2 || !cmd2[0] )
 		{
-			gi.Printf( S_COLOR_RED"'playerteam' - change player team, requires a team name!\n" );
-			gi.Printf( S_COLOR_RED"Valid team names are:\n");
+			Com_Printf( S_COLOR_RED"'playerteam' - change player team, requires a team name!\n" );
+			Com_Printf( S_COLOR_RED"Valid team names are:\n");
 			for ( n = (TEAM_FREE + 1); n < TEAM_NUM_TEAMS; n++ )
 			{
-				gi.Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
+				Com_Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
 			}
 		}
 		else
@@ -906,11 +908,11 @@ qboolean	ConsoleCommand( void ) {
 			team = (team_t)GetIDForString( TeamTable, cmd2 );
 			if ( team == (team_t)-1 )
 			{
-				gi.Printf( S_COLOR_RED"'playerteam' unrecognized team name %s!\n", cmd2 );
-				gi.Printf( S_COLOR_RED"Valid team names are:\n");
+				Com_Printf( S_COLOR_RED"'playerteam' unrecognized team name %s!\n", cmd2 );
+				Com_Printf( S_COLOR_RED"Valid team names are:\n");
 				for ( n = TEAM_FREE; n < TEAM_NUM_TEAMS; n++ )
 				{
-					gi.Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
+					Com_Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
 				}
 			}
 			else
@@ -934,7 +936,7 @@ qboolean	ConsoleCommand( void ) {
 		{
 			if ( !G_ClearViewEntity( &g_entities[0] ) )
 			{
-				gi.Printf( S_COLOR_RED"control <NPC_targetname>\n", cmd2 );
+				Com_Printf( S_COLOR_RED"control <NPC_targetname>\n", cmd2 );
 			}
 		}
 		else
@@ -956,7 +958,7 @@ qboolean	ConsoleCommand( void ) {
 		{
 			if ( !G_ReleaseEntity( &g_entities[0] ) )
 			{
-				gi.Printf( S_COLOR_RED"grab <NPC_targetname>\n", cmd2 );
+				Com_Printf( S_COLOR_RED"grab <NPC_targetname>\n", cmd2 );
 			}
 		}
 		else
@@ -981,8 +983,8 @@ qboolean	ConsoleCommand( void ) {
 	{
 		if ( gi.argc() == 1 )
 		{
-			gi.Printf( S_COLOR_RED"USAGE: playerModel <NPC Name>\n       playerModel <g2model> <skinhead> <skintorso> <skinlower>\n       playerModel player (builds player from customized menu settings)\n" );
-			gi.Printf( "playerModel = %s ", va("%s %s %s %s\n", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string ) );
+			Com_Printf( S_COLOR_RED"USAGE: playerModel <NPC Name>\n       playerModel <g2model> <skinhead> <skintorso> <skinlower>\n       playerModel player (builds player from customized menu settings)\n" );
+			Com_Printf( "playerModel = %s ", va("%s %s %s %s\n", g_char_model->string, g_char_skin_head->string, g_char_skin_torso->string, g_char_skin_legs->string ) );
 		}
 		else if ( gi.argc() == 2 )
 		{
@@ -992,10 +994,10 @@ qboolean	ConsoleCommand( void ) {
 		{
 			//instead of setting it directly via a command, we now store it in cvars
 			//G_ChangePlayerModel( &g_entities[0], va("%s|%s|%s|%s", gi.argv(1), gi.argv(2), gi.argv(3), gi.argv(4)) );
-			gi.cvar_set("g_char_model", gi.argv(1) );
-			gi.cvar_set("g_char_skin_head", gi.argv(2) );
-			gi.cvar_set("g_char_skin_torso", gi.argv(3) );
-			gi.cvar_set("g_char_skin_legs", gi.argv(4) );
+			Cvar_Set("g_char_model", gi.argv(1));
+			Cvar_Set("g_char_skin_head", gi.argv(2));
+			Cvar_Set("g_char_skin_torso", gi.argv(3));
+			Cvar_Set("g_char_skin_legs", gi.argv(4));
 			G_InitPlayerFromCvars( &g_entities[0] );
 		}
 		return qtrue;
@@ -1008,14 +1010,14 @@ qboolean	ConsoleCommand( void ) {
 			g_entities[0].client->renderInfo.customRGBA[0] = atoi(gi.argv(1));
 			g_entities[0].client->renderInfo.customRGBA[1] = atoi(gi.argv(2));
 			g_entities[0].client->renderInfo.customRGBA[2] = atoi(gi.argv(3));
-			gi.cvar_set("g_char_color_red", gi.argv(1) );
-			gi.cvar_set("g_char_color_green", gi.argv(2) );
-			gi.cvar_set("g_char_color_blue", gi.argv(3) );
+			Cvar_Set("g_char_color_red", gi.argv(1));
+			Cvar_Set("g_char_color_green", gi.argv(2));
+			Cvar_Set("g_char_color_blue", gi.argv(3));
 		}
 		else
 		{
-			gi.Printf( S_COLOR_RED"USAGE: playerTint <red 0 - 255> <green 0 - 255> <blue 0 - 255>\n" );
-			gi.Printf( "playerTint = %s\n", va("%d %d %d", g_char_color_red->integer, g_char_color_green->integer, g_char_color_blue->integer ) );
+			Com_Printf( S_COLOR_RED"USAGE: playerTint <red 0 - 255> <green 0 - 255> <blue 0 - 255>\n" );
+			Com_Printf( "playerTint = %s\n", va("%d %d %d", g_char_color_red->integer, g_char_color_green->integer, g_char_color_blue->integer ) );
 		}
 		return qtrue;
 	}
@@ -1037,7 +1039,7 @@ qboolean	ConsoleCommand( void ) {
 			return qtrue;
 		}
 
-		gi.cvar_set( "g_debugMelee", "1" );
+		Cvar_Set("g_debugMelee", "1");
 		G_SetWeapon( &g_entities[0], WP_MELEE );
 		for ( int i = FP_FIRST; i < NUM_FORCE_POWERS; i++ )
 		{

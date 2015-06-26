@@ -247,7 +247,7 @@ void SP_fx_runner( gentity_t *ent )
 
 	if ( !ent->fxFile )
 	{
-		gi.Printf( S_COLOR_RED"ERROR: fx_runner %s at %s has no fxFile specified\n", ent->targetname, vtos(ent->s.origin) );
+		Com_Printf( S_COLOR_RED"ERROR: fx_runner %s at %s has no fxFile specified\n", ent->targetname, vtos(ent->s.origin) );
 		G_FreeEntity( ent );
 		return;
 	}
@@ -277,7 +277,7 @@ This world effect will spawn snow globally into the level.
 */
 void SP_CreateSnow( gentity_t *ent )
 {
-	cvar_t *r_weatherScale = gi.cvar( "r_weatherScale", "1", CVAR_ARCHIVE );
+	cvar_t *r_weatherScale = Cvar_Get("r_weatherScale", "1", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);
 	if ( r_weatherScale->value == 0.0f )
 	{
 		return;
@@ -326,7 +326,7 @@ SWIRLING  causes random swirls of wind
 */
 void SP_CreateWind( gentity_t *ent )
 {
-	cvar_t *r_weatherScale = gi.cvar( "r_weatherScale", "1", CVAR_ARCHIVE );
+	cvar_t *r_weatherScale = Cvar_Get("r_weatherScale", "1", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);
 	if ( r_weatherScale->value <= 0.0f )
 	{
 		return;
@@ -392,7 +392,7 @@ Generates local wind forces
 */
 void SP_CreateWindZone( gentity_t *ent )
 {
-	cvar_t *r_weatherScale = gi.cvar( "r_weatherScale", "1", CVAR_ARCHIVE );
+	cvar_t *r_weatherScale = Cvar_Get("r_weatherScale", "1", CVAR_ARCHIVE );
 	if ( r_weatherScale->value <= 0.0f )
 	{
 		return;
@@ -679,7 +679,7 @@ void SP_CreatePuffSystem( gentity_t *ent )
 
 	// Initialize the puff system to either 1000 particles or whatever they choose.
 	G_SpawnInt( "count", "1000", &ent->count );
-	cvar_t *r_weatherScale = gi.cvar( "r_weatherScale", "1", CVAR_ARCHIVE );
+	cvar_t *r_weatherScale = Cvar_Get("r_weatherScale", "1", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);
 
 	// See which puff system to use.
 	int iPuffSystem = 0;
@@ -897,7 +897,7 @@ void fx_explosion_trail_link( gentity_t *ent )
 
 		if ( !target )
 		{
-			gi.Printf( S_COLOR_RED"ERROR: fx_explosion_trail %s could not find target %s\n", ent->targetname, ent->target );
+			Com_Printf( S_COLOR_RED"ERROR: fx_explosion_trail %s could not find target %s\n", ent->targetname, ent->target );
 			G_FreeEntity( ent );
 			return;
 		}
@@ -944,7 +944,7 @@ void SP_fx_explosion_trail( gentity_t *ent )
 	// We have to be useable, otherwise we won't spawn in
 	if ( !ent->targetname )
 	{
-		gi.Printf( S_COLOR_RED"ERROR: fx_explosion_trail at %s has no targetname specified\n", vtos( ent->s.origin ));
+		Com_Printf( S_COLOR_RED"ERROR: fx_explosion_trail at %s has no targetname specified\n", vtos( ent->s.origin ));
 		G_FreeEntity( ent );
 		return;
 	}

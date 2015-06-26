@@ -36,7 +36,7 @@ void Com_Printf( const char *msg, ... )
 	Q_vsnprintf(text, sizeof(text), msg, argptr);
 	va_end(argptr);
 
-	ri.Printf(PRINT_ALL, "%s", text);
+	CL_RefPrintf(PRINT_ALL, "%s", text);
 }
 
 void Com_Error( int level, const char *error, ... )
@@ -48,7 +48,7 @@ void Com_Error( int level, const char *error, ... )
 	Q_vsnprintf(text, sizeof(text), error, argptr);
 	va_end(argptr);
 
-	ri.Error(level, "%s", text);
+	Com_Error(level, "%s", text);
 }
 
 /*
@@ -67,7 +67,7 @@ void Com_DPrintf(const char *format, ...)
 	Q_vsnprintf(text, sizeof(text), format, argptr);
 	va_end(argptr);
 
-	ri.Printf(PRINT_DEVELOPER, "%s", text);
+	CL_RefPrintf(PRINT_DEVELOPER, "%s", text);
 }
 
 // HUNK

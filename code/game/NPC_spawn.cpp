@@ -1510,7 +1510,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 
 	if ( newent == NULL ) 
 	{
-		gi.Printf ( S_COLOR_RED"ERROR: NPC G_Spawn failed\n" );
+		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Spawn failed\n" );
 		
 		if ( ent->spawnflags & NSF_DROP_TO_FLOOR )
 		{
@@ -1664,7 +1664,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 	//NOTE: on vehicles, anything in the .npc file will STOMP data on the NPC that's set by the vehicle
 	if ( !NPC_ParseParms( ent->NPC_type, newent ) )
 	{
-		gi.Printf ( S_COLOR_RED "ERROR: Couldn't spawn NPC %s\n", ent->NPC_type );
+		Com_Printf ( S_COLOR_RED "ERROR: Couldn't spawn NPC %s\n", ent->NPC_type );
 		G_FreeEntity( newent );
 		if ( ent->spawnflags & NSF_DROP_TO_FLOOR )
 		{
@@ -4106,7 +4106,7 @@ static void NPC_Spawn_f(void)
 	
 	if(!NPCspawner)
 	{
-		gi.Printf( S_COLOR_RED"NPC_Spawn Error: Out of entities!\n" );
+		Com_Printf( S_COLOR_RED"NPC_Spawn Error: Out of entities!\n" );
 		return;
 	}
 
@@ -4116,7 +4116,7 @@ static void NPC_Spawn_f(void)
 	char	*npc_type = gi.argv( 2 );
 	if (!npc_type || !npc_type[0] )
 	{
-		gi.Printf( S_COLOR_RED"Error, expected:\n NPC spawn [NPC type (from NCPCs.cfg)]\n" );
+		Com_Printf( S_COLOR_RED"Error, expected:\n NPC spawn [NPC type (from NCPCs.cfg)]\n" );
 		return;
 	}
 
@@ -4126,7 +4126,7 @@ static void NPC_Spawn_f(void)
 		npc_type = gi.argv( 3 );
 		if (!npc_type || !npc_type[0] )
 		{
-			gi.Printf( S_COLOR_RED"Error, expected:\n NPC spawn vehicle [NPC type (from NCPCs.cfg)]\n" );
+			Com_Printf( S_COLOR_RED"Error, expected:\n NPC spawn vehicle [NPC type (from NCPCs.cfg)]\n" );
 			return;
 		}
 	}
@@ -4211,12 +4211,12 @@ void NPC_Kill_f( void )
 
 	if ( !*name || !name[0] )
 	{
-		gi.Printf( S_COLOR_RED"Error, Expected:\n");
-		gi.Printf( S_COLOR_RED"NPC kill '[NPC targetname]' - kills NPCs with certain targetname\n" );
-		gi.Printf( S_COLOR_RED"or\n" );
-		gi.Printf( S_COLOR_RED"NPC kill 'all' - kills all NPCs\n" );
-		gi.Printf( S_COLOR_RED"or\n" );
-		gi.Printf( S_COLOR_RED"NPC team '[teamname]' - kills all NPCs of a certain team ('nonally' is all but your allies)\n" );
+		Com_Printf( S_COLOR_RED"Error, Expected:\n");
+		Com_Printf( S_COLOR_RED"NPC kill '[NPC targetname]' - kills NPCs with certain targetname\n" );
+		Com_Printf( S_COLOR_RED"or\n" );
+		Com_Printf( S_COLOR_RED"NPC kill 'all' - kills all NPCs\n" );
+		Com_Printf( S_COLOR_RED"or\n" );
+		Com_Printf( S_COLOR_RED"NPC team '[teamname]' - kills all NPCs of a certain team ('nonally' is all but your allies)\n" );
 		return;
 	}
 
@@ -4226,13 +4226,13 @@ void NPC_Kill_f( void )
 
 		if ( !*name || !name[0] )
 		{
-			gi.Printf( S_COLOR_RED"NPC_Kill Error: 'npc kill team' requires a team name!\n" );
-			gi.Printf( S_COLOR_RED"Valid team names are:\n");
+			Com_Printf( S_COLOR_RED"NPC_Kill Error: 'npc kill team' requires a team name!\n" );
+			Com_Printf( S_COLOR_RED"Valid team names are:\n");
 			for ( n = (TEAM_FREE + 1); n < TEAM_NUM_TEAMS; n++ )
 			{
-				gi.Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
+				Com_Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
 			}
-			gi.Printf( S_COLOR_RED"nonally - kills all but your teammates\n" );
+			Com_Printf( S_COLOR_RED"nonally - kills all but your teammates\n" );
 			return;
 		}
 
@@ -4246,13 +4246,13 @@ void NPC_Kill_f( void )
 
 			if ( killTeam == (team_t)-1 )
 			{
-				gi.Printf( S_COLOR_RED"NPC_Kill Error: team '%s' not recognized\n", name );
-				gi.Printf( S_COLOR_RED"Valid team names are:\n");
+				Com_Printf( S_COLOR_RED"NPC_Kill Error: team '%s' not recognized\n", name );
+				Com_Printf( S_COLOR_RED"Valid team names are:\n");
 				for ( n = (TEAM_FREE + 1); n < TEAM_NUM_TEAMS; n++ )
 				{
-					gi.Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
+					Com_Printf( S_COLOR_RED"%s\n", GetStringForID( TeamTable, n ) );
 				}
-				gi.Printf( S_COLOR_RED"nonally - kills all but your teammates\n" );
+				Com_Printf( S_COLOR_RED"nonally - kills all but your teammates\n" );
 				return;
 			}
 		}
@@ -4272,7 +4272,7 @@ void NPC_Kill_f( void )
 				{
 					if ( player->client->playerTeam != TEAM_PLAYER )
 					{
-						gi.Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+						Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
 						/*
 						if ( (player->flags&FL_UNDYING) )
 						{
@@ -4288,7 +4288,7 @@ void NPC_Kill_f( void )
 				}
 				else if ( player->NPC_type && player->classname && player->classname[0] && Q_stricmp( "NPC_starfleet", player->classname ) != 0 )
 				{//A spawner, remove it
-					gi.Printf( S_COLOR_GREEN"Removing NPC spawner %s with NPC named %s\n", player->NPC_type, player->NPC_targetname );
+					Com_Printf( S_COLOR_GREEN"Removing NPC spawner %s with NPC named %s\n", player->NPC_type, player->NPC_targetname );
 					G_FreeEntity( player );
 					//FIXME: G_UseTargets2(player, player, player->NPC_target & player->target);?
 				}
@@ -4300,7 +4300,7 @@ void NPC_Kill_f( void )
 			{
 				if ( player->client->playerTeam == killTeam )
 				{
-					gi.Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+					Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
 					/*
 					if ( (player->flags&FL_UNDYING) )
 					{
@@ -4317,7 +4317,7 @@ void NPC_Kill_f( void )
 			else if( (player->targetname && Q_stricmp( name, player->targetname ) == 0)
 				|| Q_stricmp( name, "all" ) == 0 )
 			{
-				gi.Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
+				Com_Printf( S_COLOR_GREEN"Killing NPC %s named %s\n", player->NPC_type, player->targetname );
 				player->client->ps.stats[STAT_HEALTH] = 0;
 				/*
 				if ( (player->flags&FL_UNDYING) )
@@ -4337,7 +4337,7 @@ void NPC_Kill_f( void )
 			if( (player->targetname && Q_stricmp( name, player->targetname ) == 0)
 				|| Q_stricmp( name, "all" ) == 0 )
 			{
-				gi.Printf( S_COLOR_GREEN"Removing NPC spawner %s named %s\n", player->NPC_type, player->targetname );
+				Com_Printf( S_COLOR_GREEN"Removing NPC spawner %s named %s\n", player->NPC_type, player->targetname );
 				G_FreeEntity( player );
 			}
 		}
@@ -4346,7 +4346,7 @@ void NPC_Kill_f( void )
 
 void NPC_PrintScore( gentity_t *ent )
 {
-	gi.Printf( "%s: %d\n", ent->targetname, ent->client->ps.persistant[PERS_SCORE] );
+	Com_Printf( "%s: %d\n", ent->targetname, ent->client->ps.persistant[PERS_SCORE] );
 }
 
 /*
@@ -4363,12 +4363,12 @@ void Svcmd_NPC_f( void )
 
 	if ( !*cmd ) 
 	{
-		gi.Printf( "Valid NPC commands are:\n" );
-		gi.Printf( " spawn [NPC type (from *.npc files)]\n" );
-		gi.Printf( " spawn vehicle [NPC type (from *.npc files, only for NPCs that are CLASS_VEHICLE and have a .veh file)]\n" );
-		gi.Printf( " kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n" );
-		gi.Printf( " showbounds (draws exact bounding boxes of NPCs)\n" );
-		gi.Printf( " score [NPC targetname] (prints number of kills per NPC)\n" );
+		Com_Printf( "Valid NPC commands are:\n" );
+		Com_Printf( " spawn [NPC type (from *.npc files)]\n" );
+		Com_Printf( " spawn vehicle [NPC type (from *.npc files, only for NPCs that are CLASS_VEHICLE and have a .veh file)]\n" );
+		Com_Printf( " kill [NPC targetname] or [all(kills all NPCs)] or 'team [teamname]'\n" );
+		Com_Printf( " showbounds (draws exact bounding boxes of NPCs)\n" );
+		Com_Printf( " score [NPC targetname] (prints number of kills per NPC)\n" );
 	}
 	else if ( Q_stricmp( cmd, "spawn" ) == 0 ) 
 	{
@@ -4389,7 +4389,7 @@ void Svcmd_NPC_f( void )
 
 		if ( !cmd2 || !cmd2[0] )
 		{//Show the score for all NPCs
-			gi.Printf( "SCORE LIST:\n" );
+			Com_Printf( "SCORE LIST:\n" );
 			for ( int i = 0; i < ENTITYNUM_WORLD; i++ )
 			{
 				ent = &g_entities[i];
@@ -4408,7 +4408,7 @@ void Svcmd_NPC_f( void )
 			}
 			else
 			{
-				gi.Printf( "ERROR: NPC score - no such NPC %s\n", cmd2 );
+				Com_Printf( "ERROR: NPC score - no such NPC %s\n", cmd2 );
 			}
 		}
 	}

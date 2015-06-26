@@ -458,7 +458,6 @@ void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, const char 
 // g_main.c
 //
 void G_RunThink (gentity_t *ent);
-void NORETURN G_Error( const char *fmt, ... );
 void SetInUse(gentity_t *ent);
 void ClearInUse(gentity_t *ent);
 qboolean PInUse(unsigned int entNum);

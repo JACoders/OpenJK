@@ -31,9 +31,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define irand	Q_irand
 #define flrand	Q_flrand
 
-extern vmCvar_t	fx_debug;
-extern vmCvar_t	fx_freeze;
-
 inline void Vector2Clear(vec2_t a)
 {
 	a[0] = 0.0f;

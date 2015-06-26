@@ -93,10 +93,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef QAGAME //we only want a few of these functions for BG
 
 extern float DotToSpot( vec3_t spot, vec3_t from, vec3_t fromAngles );
-extern vmCvar_t	cg_thirdPersonAlpha;
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
-extern cvar_t	*g_speederControlScheme;
 
 #ifdef _JK2MP
 #include "../namespace_begin.h"
@@ -321,14 +319,6 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		{
 			pVeh->m_ucmd.upmove = 0;
 		}
-
-		//pVeh->m_ucmd.rightmove = 0;
-
-		/*if ( !pVeh->m_pVehicleInfo->strafePerc
-			|| (!g_speederControlScheme->value && !parent->s.number) )
-		{//if in a strafe-capable vehicle, clear strafing unless using alternate control scheme
-			pVeh->m_ucmd.rightmove = 0;
-		}*/
 	}
 
 	fWalkSpeedMax = speedMax * 0.275f;

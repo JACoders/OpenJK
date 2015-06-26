@@ -2665,28 +2665,10 @@ static void G2_RagDollCurrentPosition(CGhoul2Info_v &ghoul2V,int g2Index,int fra
 
 void VectorAdvance( const vec3_t veca, const float scale, const vec3_t vecb, vec3_t vecc);
 
-#ifdef _DEBUG
-int ragTraceTime = 0;
-int ragSSCount = 0;
-int ragTraceCount = 0;
-#endif
 
 void Rag_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, const int passEntityNum, const int contentmask, const EG2_Collision eG2TraceType, const int useLod )
 {
-#ifdef _DEBUG
-	int ragPreTrace = ri.Milliseconds();
-#endif
 	ri.SV_Trace(results, start, mins, maxs, end, passEntityNum, contentmask, eG2TraceType, useLod);
-#ifdef _DEBUG
-	int ragPostTrace = ri.Milliseconds();
-
-	ragTraceTime += (ragPostTrace - ragPreTrace);
-	if (results->startsolid)
-	{
-		ragSSCount++;
-	}
-	ragTraceCount++;
-#endif
 }
 
 //run advanced physics on each bone indivudually

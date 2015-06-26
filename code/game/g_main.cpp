@@ -585,7 +585,7 @@ void G_FindTeams( void ) {
 		}
 	}
 
-	//gi.Printf ("%i teams with %i entities\n", c, c2);
+	//Com_Printf ("%i teams with %i entities\n", c, c2);
 }
 
 
@@ -597,98 +597,100 @@ G_InitCvars
 */
 void G_InitCvars( void ) {
 	// don't override the cheat state set by the system
-	g_cheats = gi.cvar ("helpUsObi", "", 0);
-	g_developer = gi.cvar ("developer", "", 0);
+	g_cheats = Cvar_Get("helpUsObi", "", CVAR_PLUGIN_CREATED);
+	g_developer = Cvar_Get("developer", "", CVAR_PLUGIN_CREATED);
 
 	// noset vars
-	gi.cvar( "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM );
-	gi.cvar( "gamedate", __DATE__ , CVAR_ROM );
-	g_skippingcin = gi.cvar ("skippingCinematic", "0", CVAR_ROM);
+	Cvar_Get("gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM | CVAR_PLUGIN_CREATED);
+	Cvar_Get("gamedate", __DATE__ , CVAR_ROM | CVAR_PLUGIN_CREATED);
+	g_skippingcin = Cvar_Get("skippingCinematic", "0", CVAR_ROM | CVAR_PLUGIN_CREATED);
 
 	// latched vars
 
 	// change anytime vars
-	g_speed = gi.cvar( "g_speed", "250", CVAR_CHEAT );
-	g_gravity = gi.cvar( "g_gravity", "800", CVAR_SAVEGAME|CVAR_ROM );
-	g_stepSlideFix = gi.cvar( "g_stepSlideFix", "1", CVAR_ARCHIVE );
-	g_sex = gi.cvar ("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_spskill = gi.cvar ("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME|CVAR_NORESTART);
-	g_knockback = gi.cvar( "g_knockback", "1000", CVAR_CHEAT );
-	g_dismemberment = gi.cvar ( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
+	g_speed = Cvar_Get("g_speed", "250", CVAR_CHEAT | CVAR_PLUGIN_CREATED);
+	g_gravity = Cvar_Get("g_gravity", "800", CVAR_SAVEGAME | CVAR_ROM | CVAR_PLUGIN_CREATED);
+	g_stepSlideFix = Cvar_Get("g_stepSlideFix", "1", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);
+	g_sex = Cvar_Get("sex", "f", CVAR_USERINFO | CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_spskill = Cvar_Get("g_spskill", "0", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_knockback = Cvar_Get("g_knockback", "1000", CVAR_CHEAT | CVAR_PLUGIN_CREATED);
+	g_dismemberment = Cvar_Get("g_dismemberment", "3", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
 	// for now I'm making default 10 seconds
-	g_corpseRemovalTime = gi.cvar ( "g_corpseRemovalTime", "10", CVAR_ARCHIVE );//number of seconds bodies stick around for, at least... 0 = never go away
-	g_synchSplitAnims = gi.cvar ( "g_synchSplitAnims", "1", 0 );
+	g_corpseRemovalTime = Cvar_Get("g_corpseRemovalTime", "10", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);//number of seconds bodies stick around for, at least... 0 = never go away
+	g_synchSplitAnims = Cvar_Get("g_synchSplitAnims", "1", CVAR_PLUGIN_CREATED);
+
+
 #ifndef FINAL_BUILD
-	g_AnimWarning = gi.cvar ( "g_AnimWarning", "1", 0 );
+	g_AnimWarning = Cvar_Get("g_AnimWarning", "1", CVAR_PLUGIN_CREATED);
 #endif
-	g_noFootSlide = gi.cvar ( "g_noFootSlide", "1", 0 );
-	g_noFootSlideRunScale = gi.cvar ( "g_noFootSlideRunScale", "150.0", 0 );
-	g_noFootSlideWalkScale = gi.cvar ( "g_noFootSlideWalkScale", "50.0", 0 );
 
-	g_nav1 = gi.cvar ( "g_nav1", "", 0 );
-	g_nav2 = gi.cvar ( "g_nav2", "", 0 );
+    g_noFootSlide = Cvar_Get("g_noFootSlide", "1", CVAR_PLUGIN_CREATED);
+	g_noFootSlideRunScale = Cvar_Get("g_noFootSlideRunScale", "150.0", CVAR_PLUGIN_CREATED);
+	g_noFootSlideWalkScale = Cvar_Get("g_noFootSlideWalkScale", "50.0", CVAR_PLUGIN_CREATED);
 
-	g_bobaDebug = gi.cvar ( "g_bobaDebug", "", 0 );
+	g_nav1 = Cvar_Get("g_nav1", "", CVAR_PLUGIN_CREATED);
+	g_nav2 = Cvar_Get("g_nav2", "", CVAR_PLUGIN_CREATED);
 
-	g_delayedShutdown = gi.cvar ( "g_delayedShutdown", "0", 0 );
+	g_bobaDebug = Cvar_Get("g_bobaDebug", "", CVAR_PLUGIN_CREATED);
 
-	g_inactivity = gi.cvar ("g_inactivity", "0", 0);
-	g_debugMove = gi.cvar ("g_debugMove", "0", CVAR_CHEAT );
-	g_debugDamage = gi.cvar ("g_debugDamage", "0", CVAR_CHEAT );
-	g_ICARUSDebug = gi.cvar( "g_ICARUSDebug", "0", CVAR_CHEAT );
-	g_timescale = gi.cvar( "timescale", "1", 0 );
-	g_npcdebug = gi.cvar( "g_npcdebug", "0", 0 );
-	g_navSafetyChecks = gi.cvar( "g_navSafetyChecks", "0", 0 );
+	g_delayedShutdown = Cvar_Get("g_delayedShutdown", "0", CVAR_PLUGIN_CREATED);
+
+	g_inactivity = Cvar_Get("g_inactivity", "0", CVAR_PLUGIN_CREATED);
+	g_debugMove = Cvar_Get("g_debugMove", "0", CVAR_PLUGIN_CREATED);
+	g_debugDamage = Cvar_Get("g_debugDamage", "0", CVAR_PLUGIN_CREATED);
+	g_ICARUSDebug = Cvar_Get("g_ICARUSDebug", "0", CVAR_PLUGIN_CREATED);
+	g_timescale = Cvar_Get("timescale", "1", CVAR_PLUGIN_CREATED);
+	g_npcdebug = Cvar_Get("g_npcdebug", "0", CVAR_PLUGIN_CREATED);
+	g_navSafetyChecks = Cvar_Get("g_navSafetyChecks", "0", CVAR_PLUGIN_CREATED);
 	// NOTE : I also create this is UI_Init()
-	g_subtitles = gi.cvar( "g_subtitles", "0", CVAR_ARCHIVE );
-	com_buildScript = gi.cvar ("com_buildscript", "0", 0);
+	g_subtitles = Cvar_Get("g_subtitles", "0", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);
+	com_buildScript = Cvar_Get("com_buildscript", "0", CVAR_PLUGIN_CREATED);
 
-	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_CHEAT );//must press +block button to do any blocking
-	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_CHEAT );//makes collision more precise, increases damage
-	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_CHEAT|CVAR_INIT );//debug for dismemberment
-	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_CHEAT );//0 = ignore probabilities, 1 = use probabilities
-	g_saberDamageCapping = gi.cvar( "g_saberDamageCapping", "1", CVAR_CHEAT );//caps damage of sabers vs players and NPC who use sabers
-	g_saberMoveSpeed = gi.cvar( "g_saberMoveSpeed", "1", CVAR_CHEAT );//how fast you run while attacking with a saber
-	g_saberAnimSpeed = gi.cvar( "g_saberAnimSpeed", "1", CVAR_CHEAT );//how fast saber animations run
-	g_saberAutoAim = gi.cvar( "g_saberAutoAim", "1", CVAR_CHEAT );//auto-aims at enemies when not moving or when just running forward
-	g_saberNewControlScheme = gi.cvar( "g_saberNewControlScheme", "0", CVAR_ARCHIVE );//use +forcefocus to pull off all the special moves
-	g_debugSaberLock = gi.cvar( "g_debugSaberLock", "0", CVAR_CHEAT );//just for debugging/development, makes saberlocks happen all the time
-	g_saberLockRandomNess = gi.cvar( "g_saberLockRandomNess", "2", CVAR_ARCHIVE );//just for debugging/development, controls frequency of saberlocks
-	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
-	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
-	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
+	g_saberAutoBlocking = Cvar_Get("g_saberAutoBlocking", "1", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//must press +block button to do any blocking
+	g_saberRealisticCombat = Cvar_Get("g_saberMoreRealistic", "0", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//makes collision more precise, increases damage
+	debug_subdivision = Cvar_Get("debug_subdivision", "0", CVAR_CHEAT | CVAR_INIT | CVAR_PLUGIN_CREATED);//debug for dismemberment
+	g_dismemberProbabilities = Cvar_Get("g_dismemberProbabilities", "1", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//0 = ignore probabilities, 1 = use probabilities
+	g_saberDamageCapping = Cvar_Get("g_saberDamageCapping", "1", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//caps damage of sabers vs players and NPC who use sabers
+	g_saberMoveSpeed = Cvar_Get("g_saberMoveSpeed", "1", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//how fast you run while attacking with a saber
+	g_saberAnimSpeed = Cvar_Get("g_saberAnimSpeed", "1", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//how fast saber animations run
+	g_saberAutoAim = Cvar_Get("g_saberAutoAim", "1", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//auto-aims at enemies when not moving or when just running forward
+	g_saberNewControlScheme = Cvar_Get("g_saberNewControlScheme", "0", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);//use +forcefocus to pull off all the special moves
+	g_debugSaberLock = Cvar_Get("g_debugSaberLock", "0", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//just for debugging/development, makes saberlocks happen all the time
+	g_saberLockRandomNess = Cvar_Get("g_saberLockRandomNess", "2", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);//just for debugging/development, controls frequency of saberlocks
+	g_debugMelee = Cvar_Get("g_debugMelee", "0", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//just for debugging/development, test kicks and grabs
+	g_saberRestrictForce = Cvar_Get("g_saberRestrictForce", "0", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);//restricts certain force powers when using a 2-handed saber or 2 sabers
+	g_saberPickuppableDroppedSabers = Cvar_Get("g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT | CVAR_PLUGIN_CREATED);//lets you pick up sabers that are dropped
 
-	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
-	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
+	g_AIsurrender = Cvar_Get("g_AIsurrender", "0", CVAR_CHEAT | CVAR_PLUGIN_CREATED);
+	g_numEntities = Cvar_Get("g_numEntities", "0", CVAR_PLUGIN_CREATED);
 
-	gi.cvar( "newTotalSecrets", "0", CVAR_ROM );
-	gi.cvar_set("newTotalSecrets", "0");//used to carry over the count from SP_target_secret to ClientBegin
-	//g_iscensored = gi.cvar( "ui_iscensored", "0", CVAR_ARCHIVE|CVAR_ROM|CVAR_INIT|CVAR_CHEAT|CVAR_NORESTART );
+	Cvar_Get("newTotalSecrets", "0", CVAR_ROM | CVAR_PLUGIN_CREATED);
+	Cvar_Set("newTotalSecrets", "0"); //used to carry over the count from SP_target_secret to ClientBegin
 
-	g_speederControlScheme = gi.cvar( "g_speederControlScheme", "2", CVAR_ARCHIVE );//2 is default, 1 is alternate
+	g_speederControlScheme = Cvar_Get("g_speederControlScheme", "2", CVAR_ARCHIVE | CVAR_PLUGIN_CREATED);//2 is default, 1 is alternate
 
-	g_char_model = gi.cvar( "g_char_model", "jedi_tf", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_char_skin_head = gi.cvar( "g_char_skin_head", "head_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_char_skin_torso = gi.cvar( "g_char_skin_torso", "torso_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_char_skin_legs = gi.cvar( "g_char_skin_legs", "lower_a1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_char_color_red = gi.cvar( "g_char_color_red", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_char_color_green = gi.cvar( "g_char_color_green", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_char_color_blue = gi.cvar( "g_char_color_blue", "255", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_saber = gi.cvar( "g_saber", "single_1", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_saber2 = gi.cvar( "g_saber2", "", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_saber_color = gi.cvar( "g_saber_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_saber2_color = gi.cvar( "g_saber2_color", "yellow", CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	g_saberDarkSideSaberColor = gi.cvar( "g_saberDarkSideSaberColor", "0", CVAR_ARCHIVE );	//when you turn evil, it turns your saber red!
+	g_char_model = Cvar_Get("g_char_model", "jedi_tf", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_char_skin_head = Cvar_Get("g_char_skin_head", "head_a1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_char_skin_torso = Cvar_Get("g_char_skin_torso", "torso_a1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_char_skin_legs = Cvar_Get("g_char_skin_legs", "lower_a1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_char_color_red = Cvar_Get("g_char_color_red", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_char_color_green = Cvar_Get("g_char_color_green", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_char_color_blue = Cvar_Get("g_char_color_blue", "255", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_saber = Cvar_Get("g_saber", "single_1", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_saber2 = Cvar_Get("g_saber2", "", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_saber_color = Cvar_Get("g_saber_color", "yellow", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_saber2_color = Cvar_Get("g_saber2_color", "yellow", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART | CVAR_PLUGIN_CREATED);
+	g_saberDarkSideSaberColor = Cvar_Get("g_saberDarkSideSaberColor", "0", CVAR_ARCHIVE  |  CVAR_PLUGIN_CREATED);	//when you turn evil, it turns your saber red!
 
-	g_broadsword = gi.cvar( "broadsword", "1", 0);
+	g_broadsword = Cvar_Get("broadsword", "1", CVAR_PLUGIN_CREATED);
 
-	gi.cvar( "tier_storyinfo", "0", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
-	gi.cvar( "tiers_complete", "", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get("tier_storyinfo", "0", CVAR_ROM | CVAR_SAVEGAME | CVAR_NORESTART| CVAR_PLUGIN_CREATED);
+	Cvar_Get("tiers_complete", "", CVAR_ROM | CVAR_SAVEGAME | CVAR_NORESTART| CVAR_PLUGIN_CREATED);
 
-	gi.cvar( "ui_prisonerobj_currtotal", "0", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
-	gi.cvar( "ui_prisonerobj_maxtotal", "0", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get("ui_prisonerobj_currtotal", "0", CVAR_ROM | CVAR_SAVEGAME | CVAR_NORESTART| CVAR_PLUGIN_CREATED);
+	Cvar_Get("ui_prisonerobj_maxtotal", "0", CVAR_ROM | CVAR_SAVEGAME | CVAR_NORESTART| CVAR_PLUGIN_CREATED);
 
-	gi.cvar( "g_clearstats", "1", CVAR_ROM|CVAR_NORESTART);
+	Cvar_Get("g_clearstats", "1", CVAR_ROM | CVAR_NORESTART| CVAR_PLUGIN_CREATED);
 
 }
 /*
@@ -707,7 +709,7 @@ qboolean g_qbLoadTransition = qfalse;
 void InitGame(  const char *mapname, const char *spawntarget, int checkSum, const char *entities, int levelTime, int randomSeed, int globalTime, SavedGameJustLoaded_e eSavedGameJustLoaded, qboolean qbLoadTransition )
 {
 	//rww - default this to 0, we will auto-set it to 1 if we run into a terrain ent
-	gi.cvar_set("RMG", "0");
+	Cvar_Set("RMG", "0");
 
 	g_bCollidableRoffs = false;
 
@@ -715,9 +717,9 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	g_eSavedGameJustLoaded = eSavedGameJustLoaded;
 	g_qbLoadTransition = qbLoadTransition;
 
-	gi.Printf ("------- Game Initialization -------\n");
-	gi.Printf ("gamename: %s\n", GAMEVERSION);
-	gi.Printf ("gamedate: %s\n", __DATE__);
+	Com_Printf ("------- Game Initialization -------\n");
+	Com_Printf ("gamename: %s\n", GAMEVERSION);
+	Com_Printf ("gamedate: %s\n", __DATE__);
 
 	srand( randomSeed );
 
@@ -784,7 +786,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 
 //	SaveRegisteredItems();
 
-	gi.Printf ("-----------------------------------\n");
+	Com_Printf ("-----------------------------------\n");
 
 	Rail_Initialize();
 	Troop_Initialize();
@@ -834,13 +836,6 @@ Ghoul2 Insert End
 	G_ASPreCacheFree();
 }
 
-
-
-//===================================================================
-
-static void G_Cvar_Create( const char *var_name, const char *var_value, int flags ) {
-	gi.cvar( var_name, var_value, flags );
-}
 
 //BEGIN GAMESIDE RMG
 qboolean G_ParseSpawnVars( const char **data );
@@ -899,68 +894,11 @@ extern "C" Q_EXPORT game_export_t* GetGameAPI( game_import_t *import ) {
 	gameinfo_import.FS_FOpenFile = gi.FS_FOpenFile;
 	gameinfo_import.FS_Read = gi.FS_Read;
 	gameinfo_import.FS_FCloseFile = gi.FS_FCloseFile;
-	gameinfo_import.Cvar_Set = gi.cvar_set;
-	gameinfo_import.Cvar_VariableStringBuffer = gi.Cvar_VariableStringBuffer;
-	gameinfo_import.Cvar_Create = G_Cvar_Create;
 
 	GI_Init( &gameinfo_import );
 
 	return &globals;
 }
-
-void G_Error( const char *fmt, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, fmt);
-	Q_vsnprintf (text, sizeof(text), fmt, argptr);
-	va_end (argptr);
-
-	gi.Error( ERR_DROP, "%s", text);
-}
-
-/*
--------------------------
-Com_Error
--------------------------
-*/
-
-void Com_Error ( int level, const char *error, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, error);
-	Q_vsnprintf (text, sizeof(text), error, argptr);
-	va_end (argptr);
-
-	gi.Error( level, "%s", text);
-}
-
-/*
--------------------------
-Com_Printf
--------------------------
-*/
-
-void Com_Printf( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
-	va_end (argptr);
-
-	gi.Printf ("%s", text);
-}
-
-/*
-========================================================================
-
-MAP CHANGING
-
-========================================================================
-*/
-
 
 /*
 ========================================================================
@@ -1441,7 +1379,7 @@ qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles)
 	vec3_t usedOrg;
 	qboolean inSomething = qfalse;
 	int ragAnim;
-	//int ragVar = gi.Cvar_VariableIntegerValue("broadsword");
+	//int ragVar = Cvar_VariableIntegerValue("broadsword");
 	int ragVar = g_broadsword->integer;
 
 	if (!ragVar)
@@ -2047,7 +1985,7 @@ void G_RunFrame( int levelTime ) {
 	}
 	if( g_numEntities->integer )
 	{
-		gi.Printf( S_COLOR_WHITE"Number of Entities in use : %d\n", ents_inuse );
+		Com_Printf( S_COLOR_WHITE"Number of Entities in use : %d\n", ents_inuse );
 	}
 	//DEBUG STUFF
 	NAV::ShowDebugInfo(ent->currentOrigin, ent->waypoint);
@@ -2059,27 +1997,27 @@ void G_RunFrame( int levelTime ) {
 	AITime -= navTime;
 	if ( AITime > 20 )
 	{
-		gi.Printf( S_COLOR_RED"ERROR: total AI time: %d\n", AITime );
+		Com_Printf( S_COLOR_RED"ERROR: total AI time: %d\n", AITime );
 	}
 	else if ( AITime > 10 )
 	{
-		gi.Printf( S_COLOR_YELLOW"WARNING: total AI time: %d\n", AITime );
+		Com_Printf( S_COLOR_YELLOW"WARNING: total AI time: %d\n", AITime );
 	}
 	else if ( AITime > 2 )
 	{
-		gi.Printf( S_COLOR_GREEN"total AI time: %d\n", AITime );
+		Com_Printf( S_COLOR_GREEN"total AI time: %d\n", AITime );
 	}
 	if ( navTime > 20 )
 	{
-		gi.Printf( S_COLOR_RED"ERROR: total nav time: %d\n", navTime );
+		Com_Printf( S_COLOR_RED"ERROR: total nav time: %d\n", navTime );
 	}
 	else if ( navTime > 10 )
 	{
-		gi.Printf( S_COLOR_YELLOW"WARNING: total nav time: %d\n", navTime );
+		Com_Printf( S_COLOR_YELLOW"WARNING: total nav time: %d\n", navTime );
 	}
 	else if ( navTime > 2 )
 	{
-		gi.Printf( S_COLOR_GREEN"total nav time: %d\n", navTime );
+		Com_Printf( S_COLOR_GREEN"total nav time: %d\n", navTime );
 	}
 #endif//	AI_TIMERS
 
@@ -2087,7 +2025,7 @@ extern int delayedShutDown;
 	if ( g_delayedShutdown->integer && delayedShutDown != 0 && delayedShutDown < level.time )
 	{
 		assert(0);
-		G_Error( "Game Errors. Scroll up the console to read them.\n" );
+		Com_Error(ERR_DROP,  "Game Errors. Scroll up the console to read them.\n" );
 	}
 
 #ifdef _DEBUG

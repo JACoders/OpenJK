@@ -1425,11 +1425,6 @@ qboolean G2API_RemoveBone(CGhoul2Info *ghlInfo, const char *boneName)
 }
 
 //rww - RAGDOLL_BEGIN
-#ifdef _DEBUG
-extern int ragTraceTime;
-extern int ragSSCount;
-extern int ragTraceCount;
-#endif
 
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
@@ -1439,12 +1434,6 @@ void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdat
 	int model;
 	int currentTime=G2API_GetTime(AcurrentTime);
 
-#ifdef _DEBUG
-	ragTraceTime = 0;
-	ragSSCount = 0;
-	ragTraceCount = 0;
-#endif
-
 	// Walk the list and find all models that are active
 	for (model = 0; model < ghoul2.size(); model++)
 	{
@@ -1453,12 +1442,6 @@ void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdat
 			G2_Animate_Bone_List(ghoul2,currentTime,model,params);
 		}
 	}
-#ifdef _DEBUG
-//	Com_Printf("Rag trace time: %i (%i STARTSOLID, %i TOTAL)\n", ragTraceTime, ragSSCount, ragTraceCount);
-
-//	assert(ragTraceTime < 15);
-	//assert(ragTraceCount < 600);
-#endif
 }
 //rww - RAGDOLL_END
 

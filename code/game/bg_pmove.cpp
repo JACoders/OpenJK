@@ -46,6 +46,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include <float.h>
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern qboolean G_DoDismemberment( gentity_t *self, vec3_t point, int mod, int damage, int hitLoc, qboolean force = qfalse );
 extern qboolean G_EntIsUnlockedDoor( int entityNum );
 extern qboolean G_EntIsDoor( int entityNum );
@@ -2709,7 +2712,7 @@ static void PM_FlyVehicleMove( void )
 		//--------------------------------------------------------------------------------------------
 		if ((fmove!=0.0f || smove!=0.0f) &&	VectorCompare(pm->ps->moveDir, vec3_origin))
 		{
-			//gi.Printf("Generating MoveDir\n");
+			//Com_Printf("Generating MoveDir\n");
 			for ( i = 0 ; i < 3 ; i++ )
 			{
 				wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
@@ -3185,7 +3188,7 @@ static void PM_WalkMove( void ) {
 		//--------------------------------------------------------------------------------------------
 		if ((fmove!=0.0f || smove!=0.0f) &&	VectorCompare(pm->ps->moveDir, vec3_origin))
 		{
-			//gi.Printf("Generating MoveDir\n");
+			//Com_Printf("Generating MoveDir\n");
 			for ( i = 0 ; i < 3 ; i++ )
 			{
 				wishvel[i] = pml.forward[i]*fmove + pml.right[i]*smove;
@@ -4608,7 +4611,7 @@ static void PM_SetVehicleAngles( vec3_t normal )
 		 			vAngles[ROLL] -= side;
 				}
 
-		 		//gi.Printf("VAngles(%f)", vAngles[2]);
+		 		//Com_Printf("VAngles(%f)", vAngles[2]);
 			}
 			if (fabsf(vAngles[ROLL])<0.001f)
 			{
@@ -4679,7 +4682,7 @@ static void PM_SetVehicleAngles( vec3_t normal )
 			}
 		}
 	}
- 	//gi.Printf("Orientation(%f)", pVeh->m_vOrientation[2]);
+ 	//Com_Printf("Orientation(%f)", pVeh->m_vOrientation[2]);
 }
 
 void BG_ExternThisSoICanRecompileInDebug( Vehicle_t *pVeh, playerState_t *riderPS )
@@ -8907,7 +8910,7 @@ static void PM_BeginWeaponChange( int weapon ) {
 	{
 		if ( pm->ps->clientNum < MAX_CLIENTS )
 		{
-			gi.cvar_set( "cg_thirdperson", "1" );
+			Cvar_Set("cg_thirdperson", "1" );
 		}
 	}
 	else if ( weapon == WP_SABER )
@@ -9014,7 +9017,7 @@ static void PM_FinishWeaponChange( void ) {
 			WP_SaberInitBladeData( pm->gent );
 			if ( (pm->ps->clientNum < MAX_CLIENTS||PM_ControlledByPlayer()) )
 			{
-				gi.cvar_set( "cg_thirdperson", "1" );
+				Cvar_Set("cg_thirdperson", "1" );
 			}
 		}
 		if ( trueSwitch )
@@ -9048,12 +9051,12 @@ static void PM_FinishWeaponChange( void ) {
 		}
 
 		if ( pm->ps->clientNum < MAX_CLIENTS
-			&& cg_gunAutoFirst.integer
+			&& cg_gunAutoFirst->integer
 			&& !PM_RidingVehicle()
 //			&& oldWeap == WP_SABER
 			&& weapon != WP_NONE )
 		{
-			gi.cvar_set( "cg_thirdperson", "0" );
+			Cvar_Set("cg_thirdperson", "0" );
 		}
 		pm->ps->saberMove = LS_NONE;
 		pm->ps->saberBlocking = BLK_NO;
@@ -9166,7 +9169,7 @@ void PM_SetSaberMove(saberMoveName_t newMove)
 		return;
 	}
 
-	if ( cg_debugSaber.integer&0x01 && (newMove != LS_READY) )
+	if ( cg_debugSaber->integer&0x01 && (newMove != LS_READY) )
 	{
 		Com_Printf("SetSaberMove:  From '%s' to '%s'\n",
 				saberMoveData[pm->ps->saberMove].name,
@@ -11719,7 +11722,7 @@ qboolean PM_SaberBlocking( void )
 				//clear the saberBounceMove
 				//pm->ps->saberBounceMove = LS_NONE;
 
-				if (cg_debugSaber.integer>=2)
+				if (cg_debugSaber->integer>=2)
 				{
 					Com_Printf("Saber Block: Bounce\n");
 				}
@@ -11736,7 +11739,7 @@ qboolean PM_SaberBlocking( void )
 					PM_SetSaberMove( LS_PARRY_UR );
 				}
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf( "Saber Block: Parry UR\n" );
 				}
@@ -11744,7 +11747,7 @@ qboolean PM_SaberBlocking( void )
 			case BLOCKED_UPPER_RIGHT_PROJ:
 				PM_SetSaberMove( LS_REFLECT_UR );
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Deflect UR\n");
 				}
@@ -11761,7 +11764,7 @@ qboolean PM_SaberBlocking( void )
 					PM_SetSaberMove( LS_PARRY_UL );
 				}
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf( "Saber Block: Parry UL\n" );
 				}
@@ -11769,7 +11772,7 @@ qboolean PM_SaberBlocking( void )
 			case BLOCKED_UPPER_LEFT_PROJ:
 				PM_SetSaberMove( LS_REFLECT_UL );
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Deflect UL\n");
 				}
@@ -11786,7 +11789,7 @@ qboolean PM_SaberBlocking( void )
 					PM_SetSaberMove( LS_PARRY_LR );
 				}
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Parry LR\n");
 				}
@@ -11794,7 +11797,7 @@ qboolean PM_SaberBlocking( void )
 			case BLOCKED_LOWER_RIGHT_PROJ:
 				PM_SetSaberMove( LS_REFLECT_LR );
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Deflect LR\n");
 				}
@@ -11811,7 +11814,7 @@ qboolean PM_SaberBlocking( void )
 					PM_SetSaberMove( LS_PARRY_LL );
 				}
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Parry LL\n");
 				}
@@ -11819,7 +11822,7 @@ qboolean PM_SaberBlocking( void )
 			case BLOCKED_LOWER_LEFT_PROJ:
 				PM_SetSaberMove( LS_REFLECT_LL);
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Deflect LL\n");
 				}
@@ -11836,7 +11839,7 @@ qboolean PM_SaberBlocking( void )
 					PM_SetSaberMove( LS_PARRY_UP );
 				}
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Parry Top\n");
 				}
@@ -11844,7 +11847,7 @@ qboolean PM_SaberBlocking( void )
 			case BLOCKED_TOP_PROJ:
 				PM_SetSaberMove( LS_REFLECT_UP );
 
-				if ( cg_debugSaber.integer >= 2 )
+				if ( cg_debugSaber->integer >= 2 )
 				{
 					Com_Printf("Saber Block: Deflect Top\n");
 				}

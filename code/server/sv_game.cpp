@@ -880,12 +880,8 @@ void SV_InitGameProgs (void) {
 	}
 
 	// load a new game dll
-	import.Printf = Com_Printf;
 	import.WriteCam = Com_WriteCam;
 	import.FlushCamFile = Com_FlushCamFile;
-	import.Error = Com_Error;
-
-	import.Milliseconds = Sys_Milliseconds2;
 
 	import.DropClient = SV_GameDropClient;
 
@@ -911,11 +907,6 @@ void SV_InitGameProgs (void) {
 	import.GetUserinfo = SV_GetUserinfo;
 
 	import.GetServerinfo = SV_GetServerinfo;
-
-	import.cvar = Cvar_Get;
-	import.cvar_set = Cvar_Set;
-	import.Cvar_VariableIntegerValue = Cvar_VariableIntegerValue;
-	import.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
 
 	import.argc = Cmd_Argc;
 	import.argv = Cmd_Argv;

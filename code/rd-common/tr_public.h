@@ -33,12 +33,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	REF_API_VERSION		15
 
 typedef struct {
-	void				(*Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-	void				(*Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
-
-	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
-	int					(*Milliseconds)						( void );
-
 	void				(*Hunk_ClearToMark)					( void );
 	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
 	int					(*Z_Free)							( void *memory );
@@ -52,15 +46,6 @@ typedef struct {
 	void				(*Cmd_ArgsBuffer)					( char *buffer, int bufferLength );
 	void				(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
 	void				(*Cmd_RemoveCommand)				( const char *cmd_name );
-	void				(*Cvar_Set)							( const char *var_name, const char *value );
-	cvar_t *			(*Cvar_Get)							( const char *var_name, const char *value, int flags );
-	void				(*Cvar_SetValue)					( const char *name, float value );
-	void				(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
-	void				(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
-	char *				(*Cvar_VariableString)				( const char *var_name );
-	float				(*Cvar_VariableValue)				( const char *var_name );
-	int					(*Cvar_VariableIntegerValue)		( const char *var_name );
-
 
 	qboolean			(*LowPhysicalMemory)				( void );
 	const char*			(*SE_GetString)						( const char *reference );

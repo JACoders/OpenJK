@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "objectives.h"
 
+#include "../qcommon/cvar_exports.hh"
 
 /*
 =======================================================================
@@ -50,7 +51,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 
 	s = va("%i", client->sess.sessionTeam );
 	var = va( "session%i", client - level.clients );
-	gi.cvar_set( var, s );
+	Cvar_Set(var, s);
 
 	s2 = "";
 	// Throw all status info into a string
@@ -63,7 +64,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 	s2 = va("%i %i", client->sess.mission_objectives[LIGHTSIDE_OBJ].display,	client->sess.mission_objectives[LIGHTSIDE_OBJ].status);
 
 	var = va( "sessionobj%i", client - level.clients );
-	gi.cvar_set( var, s2 );
+	Cvar_Set(var, s2);
 
 	// Throw all mission stats in to a string
 	s2 = va("%i %i %i %i %i %i %i %i %i %i %i %i",
@@ -82,7 +83,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 			);
 
 	var = va( "missionstats%i", client - level.clients );
-	gi.cvar_set( var, s2 );
+	Cvar_Set(var, s2);
 
 
 	s2 = "";
@@ -91,7 +92,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 		s2 = va("%s %i",s2, client->sess.missionStats.forceUsed[i]);
 	}
 	var = va( "sessionpowers%i", client - level.clients );
-	gi.cvar_set( var, s2 );
+	Cvar_Set(var, s2);
 
 
 	s2 = "";
@@ -100,7 +101,7 @@ void G_WriteClientSessionData( gclient_t *client ) {
 		s2 = va("%s %i",s2, client->sess.missionStats.weaponUsed[i]);
 	}
 	var = va( "sessionweapons%i", client - level.clients );
-	gi.cvar_set( var, s2 );
+	Cvar_Set(var, s2);
 
 
 }
@@ -118,13 +119,13 @@ void G_ReadSessionData( gclient_t *client ) {
 	int		i;
 
 	var = va( "session%i", client - level.clients );
-	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
+	Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
 	sscanf( s, "%i", &i );
 	client->sess.sessionTeam = (team_t)i;
 
 	var = va( "sessionobj%i", client - level.clients );
-	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
+	Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
 	var = s;
 //	var++;
@@ -149,7 +150,7 @@ void G_ReadSessionData( gclient_t *client ) {
 		&client->sess.mission_objectives[LIGHTSIDE_OBJ].status);
 
 	var = va( "missionstats%i", client - level.clients );
-	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
+	Cvar_VariableStringBuffer( var, s, sizeof(s) );
 	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i",
 		&client->sess.missionStats.secretsFound,
 		&client->sess.missionStats.totalSecrets,
@@ -166,7 +167,7 @@ void G_ReadSessionData( gclient_t *client ) {
 
 
 	var = va( "sessionpowers%i", client - level.clients );
-	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
+	Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
 	i=0;
 	var = strtok( s, " " );
@@ -180,7 +181,7 @@ void G_ReadSessionData( gclient_t *client ) {
 	assert (i==NUM_FORCE_POWERS);
 
 	var = va( "sessionweapons%i", client - level.clients );
-	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
+	Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
 	i=0;
 	var = strtok( s, " " );
@@ -231,7 +232,7 @@ G_WriteSessionData
 void G_WriteSessionData( void ) {
 	int		i;
 
-	gi.cvar_set( "session", 0) ;
+	Cvar_Set("session", 0);
 
 	for ( i = 0 ; i < level.maxclients ; i++ ) {
 		if ( level.clients[i].pers.connected == CON_CONNECTED ) {

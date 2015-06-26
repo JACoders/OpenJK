@@ -127,12 +127,12 @@ fopen_failed:
 void user_read_data( png_structp png_ptr, png_bytep data, png_size_t length );
 void png_print_error ( png_structp png_ptr, png_const_charp err )
 {
-	ri.Printf (PRINT_ERROR, "%s\n", err);
+	CL_RefPrintf (PRINT_ERROR, "%s\n", err);
 }
 
 void png_print_warning ( png_structp png_ptr, png_const_charp warning )
 {
-	ri.Printf (PRINT_WARNING, "%s\n", warning);
+	CL_RefPrintf (PRINT_WARNING, "%s\n", warning);
 }
 
 bool IsPowerOfTwo ( int i ) { return (i & (i - 1)) == 0; }
@@ -170,14 +170,14 @@ struct PNGFileReader
 
 		if ( !png_check_sig (ident, SIGNATURE_LEN) )
 		{
-			ri.Printf (PRINT_ERROR, "PNG signature not found in given image.");
+			CL_RefPrintf (PRINT_ERROR, "PNG signature not found in given image.");
 			return 0;
 		}
 
 		png_ptr = png_create_read_struct (PNG_LIBPNG_VER_STRING, NULL, png_print_error, png_print_warning);
 		if ( png_ptr == NULL )
 		{
-			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
+			CL_RefPrintf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
 			return 0;
 		}
 
@@ -210,7 +210,7 @@ struct PNGFileReader
 		// so that the graphics driver doesn't have to fiddle about with the texture when uploading.
 		if ( !IsPowerOfTwo (width_) || !IsPowerOfTwo (height_) )
 		{
-			ri.Printf (PRINT_ERROR, "Width or height is not a power-of-two.\n");
+			CL_RefPrintf (PRINT_ERROR, "Width or height is not a power-of-two.\n");
 			return 0;
 		}
 
@@ -220,7 +220,7 @@ struct PNGFileReader
 		// PNG_COLOR_TYPE_GRAY.
 		if ( colortype != PNG_COLOR_TYPE_RGB && colortype != PNG_COLOR_TYPE_RGBA )
 		{
-			ri.Printf (PRINT_ERROR, "Image is not 24-bit or 32-bit.");
+			CL_RefPrintf (PRINT_ERROR, "Image is not 24-bit or 32-bit.");
 			return 0;
 		}
 
@@ -237,7 +237,7 @@ struct PNGFileReader
 		byte *tempData = (byte *)ri.Z_Malloc (width_ * height_ * 4, TAG_TEMP_PNG, qfalse, 4);
 		if ( !tempData )
 		{
-			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
+			CL_RefPrintf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
 			return 0;
 		}
 
@@ -245,7 +245,7 @@ struct PNGFileReader
 		byte **row_pointers = (byte **)ri.Z_Malloc (sizeof (byte *) * height_, TAG_TEMP_PNG, qfalse, 4);
 		if ( !row_pointers )
 		{
-			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
+			CL_RefPrintf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
 
 			ri.Z_Free (tempData);
 			

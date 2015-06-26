@@ -25,12 +25,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "ui_local.h"
 
-float trap_Cvar_VariableValue( const char *var_name ) 
-{
-	return Cvar_VariableValue( var_name );
-}
-
-
 void trap_R_ClearScene( void )
 {
 	ui.R_ClearScene();
@@ -118,23 +112,6 @@ void Key_SetCatcher( int catcher );
 void trap_Key_SetCatcher( int catcher ) 
 {
 	Key_SetCatcher( catcher );
-}
-/*
-void trap_GetClipboardData( char *buf, int bufsize ) {
-	syscall( UI_GETCLIPBOARDDATA, buf, bufsize );
-}
-
-void trap_GetClientState( uiClientState_t *state ) {
-	syscall( UI_GETCLIENTSTATE, state );
-}
-*/
-
-void CL_GetGlconfig( glconfig_t *glconfig );
-
-void trap_GetGlconfig( glconfig_t *glconfig ) 
-{
-//	syscall( UI_GETGLCONFIG, glconfig );
-	CL_GetGlconfig( glconfig );
 }
 
 // this returns a handle.  arg0 is the name in the format "idlogo.roq", set arg1 to NULL, alteredstates to qfalse (do not alter gamestate)

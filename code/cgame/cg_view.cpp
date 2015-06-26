@@ -32,6 +32,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/wp_saber.h"
 #include "../game/g_vehicles.h"
 
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 #define MASK_CAMERACLIP (MASK_SOLID)
 #define CAMERA_SIZE	4
 
@@ -114,7 +117,7 @@ void CG_TestG2Model_f (void) {
 		cg.testModelEntity.oldframe = 0;
 	}
 	if (! cg.testModelEntity.hModel ) {
-		CG_Printf( "Can't register model\n" );
+		Com_Printf( "Can't register model\n" );
 		return;
 	}
 
@@ -231,7 +234,7 @@ void CG_TestModel_f (void) {
 		cg.testModelEntity.oldframe = 0;
 	}
 	if (! cg.testModelEntity.hModel ) {
-		CG_Printf( "Can't register model\n" );
+		Com_Printf( "Can't register model\n" );
 		return;
 	}
 
@@ -247,7 +250,7 @@ void CG_TestModel_f (void) {
 
 void CG_TestModelNextFrame_f (void) {
 	cg.testModelEntity.frame++;
-	CG_Printf( "frame %i\n", cg.testModelEntity.frame );
+	Com_Printf( "frame %i\n", cg.testModelEntity.frame );
 }
 
 void CG_TestModelPrevFrame_f (void) {
@@ -255,12 +258,12 @@ void CG_TestModelPrevFrame_f (void) {
 	if ( cg.testModelEntity.frame < 0 ) {
 		cg.testModelEntity.frame = 0;
 	}
-	CG_Printf( "frame %i\n", cg.testModelEntity.frame );
+	Com_Printf( "frame %i\n", cg.testModelEntity.frame );
 }
 
 void CG_TestModelNextSkin_f (void) {
 	cg.testModelEntity.skinNum++;
-	CG_Printf( "skin %i\n", cg.testModelEntity.skinNum );
+	Com_Printf( "skin %i\n", cg.testModelEntity.skinNum );
 }
 
 void CG_TestModelPrevSkin_f (void) {
@@ -268,14 +271,14 @@ void CG_TestModelPrevSkin_f (void) {
 	if ( cg.testModelEntity.skinNum < 0 ) {
 		cg.testModelEntity.skinNum = 0;
 	}
-	CG_Printf( "skin %i\n", cg.testModelEntity.skinNum );
+	Com_Printf( "skin %i\n", cg.testModelEntity.skinNum );
 }
 
 static void CG_AddTestModel (void) {
 	// re-register the model, because the level may have changed
 /*	cg.testModelEntity.hModel = cgi_R_RegisterModel( cg.testModelName );
 	if (! cg.testModelEntity.hModel ) {
-		CG_Printf ("Can't register model\n");
+		Com_Printf ("Can't register model\n");
 		return;
 	}
 */
@@ -400,7 +403,7 @@ static void CG_CalcIdealThirdPersonViewTarget(void)
 	{
 		// Add in a vertical offset from the viewpoint, which puts the actual target above the head, regardless of angle.
 		VectorCopy( cameraFocusLoc, cameraIdealTarget );
-		cameraIdealTarget[2] += cg_thirdPersonVertOffset.value;
+		cameraIdealTarget[2] += cg_thirdPersonVertOffset->value;
 		//VectorMA(cameraFocusLoc, cg_thirdPersonVertOffset.value, cameraup, cameraIdealTarget);
 	}
 
@@ -460,7 +463,7 @@ static void CG_CalcIdealThirdPersonViewLocation(void)
 	}
 	else
 	{
-		VectorMA(cameraIdealTarget, -(cg_thirdPersonRange.value), camerafwd, cameraIdealLoc);
+		VectorMA(cameraIdealTarget, -(cg_thirdPersonRange->value), camerafwd, cameraIdealLoc);
 	}
 
 	if ( cg.renderingThirdPerson && (cg.snap->ps.forcePowersActive&(1<<FP_SPEED)) && player->client->ps.forcePowerDuration[FP_SPEED] )
@@ -545,23 +548,23 @@ static void CG_UpdateThirdPersonTargetDamp(void)
 	{//if moving on a plat, camera is *tight*
 		VectorCopy(cameraIdealTarget, cameraCurTarget);
 	}
-	else if (cg_thirdPersonTargetDamp.value>=1.0)//||cg.thisFrameTeleport)
+	else if (cg_thirdPersonTargetDamp->value>=1.0)//||cg.thisFrameTeleport)
 	{	// No damping.
 		VectorCopy(cameraIdealTarget, cameraCurTarget);
 	}
-	else if (cg_thirdPersonTargetDamp.value>=0.0)
+	else if (cg_thirdPersonTargetDamp->value>=0.0)
 	{
 		// Calculate the difference from the current position to the new one.
 		VectorSubtract(cameraIdealTarget, cameraCurTarget, targetdiff);
 
 		// Now we calculate how much of the difference we cover in the time allotted.
 		// The equation is (Damp)^(time)
-		dampfactor = 1.0-cg_thirdPersonTargetDamp.value;	// We must exponent the amount LEFT rather than the amount bled off
-		dtime = (float)(cg.time-cameraLastFrame) * (1.0/cg_timescale.value) * (1.0/(float)CAMERA_DAMP_INTERVAL);	// Our dampfactor is geared towards a time interval equal to "1".
+		dampfactor = 1.0-cg_thirdPersonTargetDamp->value;	// We must exponent the amount LEFT rather than the amount bled off
+		dtime = (float)(cg.time-cameraLastFrame) * (1.0/cg_timescale->value) * (1.0/(float)CAMERA_DAMP_INTERVAL);	// Our dampfactor is geared towards a time interval equal to "1".
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible,
 		// the ratio should be initialized into a chart ultimately.
-		if ( cg_smoothCamera.integer )
+		if ( cg_smoothCamera->integer )
 			ratio = powf( dampfactor, dtime );
 		else
 			ratio = Q_powf( dampfactor, dtime );
@@ -629,7 +632,7 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 			dampfactor += cg.overrides.thirdPersonCameraDamp;
 		}
 	}
-	else if ( cg_thirdPersonCameraDamp.value != 0.0f )
+	else if ( cg_thirdPersonCameraDamp->value != 0.0f )
 	{
 		float pitch;
 
@@ -638,9 +641,9 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 
 		// The higher the pitch, the larger the factor, so as you look up, it damps a lot less.
 		pitch /= 115.0f;
-		dampfactor = (1.0-cg_thirdPersonCameraDamp.value)*(pitch*pitch);
+		dampfactor = (1.0-cg_thirdPersonCameraDamp->value)*(pitch*pitch);
 
-		dampfactor += cg_thirdPersonCameraDamp.value;
+		dampfactor += cg_thirdPersonCameraDamp->value;
 
 		// Now we also multiply in the stiff factor, so that faster yaw changes are stiffer.
 		if (cameraStiffFactor > 0.0f)
@@ -661,11 +664,11 @@ static void CG_UpdateThirdPersonCameraDamp(void)
 		// Now we calculate how much of the difference we cover in the time allotted.
 		// The equation is (Damp)^(time)
 		dampfactor = 1.0-dampfactor;	// We must exponent the amount LEFT rather than the amount bled off
-		dtime = (float)(cg.time-cameraLastFrame) * (1.0/cg_timescale.value) * (1.0/(float)CAMERA_DAMP_INTERVAL);	// Our dampfactor is geared towards a time interval equal to "1".
+		dtime = (float)(cg.time-cameraLastFrame) * (1.0/cg_timescale->value) * (1.0/(float)CAMERA_DAMP_INTERVAL);	// Our dampfactor is geared towards a time interval equal to "1".
 
 		// Note that since there are a finite number of "practical" delta millisecond values possible,
 		// the ratio should be initialized into a chart ultimately.
-		if ( cg_smoothCamera.integer )
+		if ( cg_smoothCamera->integer )
 			ratio = powf( dampfactor, dtime );
 		else
 			ratio = Q_powf( dampfactor, dtime );
@@ -765,7 +768,7 @@ static void CG_OffsetThirdPersonView( void )
 		}
 		else
 		{
-			cameraFocusAngles[YAW] += cg_thirdPersonAngle.value;
+			cameraFocusAngles[YAW] += cg_thirdPersonAngle->value;
 		}
 	}
 	else if ( cg.predicted_player_state.stats[STAT_HEALTH] <= 0 )
@@ -779,7 +782,7 @@ static void CG_OffsetThirdPersonView( void )
 			else
 			{
 				cameraFocusAngles[YAW] = cg.predicted_player_state.stats[STAT_DEAD_YAW];
-				cameraFocusAngles[YAW] += cg_thirdPersonAngle.value;
+				cameraFocusAngles[YAW] += cg_thirdPersonAngle->value;
 			}
 		}
 		else
@@ -795,7 +798,7 @@ static void CG_OffsetThirdPersonView( void )
 		}
 		else
 		{
-			cameraFocusAngles[YAW] += cg_thirdPersonAngle.value;
+			cameraFocusAngles[YAW] += cg_thirdPersonAngle->value;
 		}
 		if ( cg.overrides.active & CG_OVERRIDE_3RD_PERSON_POF )
 		{
@@ -803,7 +806,7 @@ static void CG_OffsetThirdPersonView( void )
 		}
 		else
 		{
-			cameraFocusAngles[PITCH] += cg_thirdPersonPitchOffset.value;
+			cameraFocusAngles[PITCH] += cg_thirdPersonPitchOffset->value;
 		}
 	}
 
@@ -879,11 +882,11 @@ static void CG_OffsetThirdPersonView( void )
 	vectoangles(diff, cg.refdefViewAngles);
 
 	// Temp: just move the camera to the side a bit
-	extern vmCvar_t cg_thirdPersonHorzOffset;
-	if ( cg_thirdPersonHorzOffset.value != 0.0f )
+	extern cvar_t *cg_thirdPersonHorzOffset;
+	if ( cg_thirdPersonHorzOffset->value != 0.0f )
 	{
 		AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
-		VectorMA( cameraCurLoc, cg_thirdPersonHorzOffset.value, cg.refdef.viewaxis[1], cameraCurLoc );
+		VectorMA( cameraCurLoc, cg_thirdPersonHorzOffset->value, cg.refdef.viewaxis[1], cameraCurLoc );
 	}
 
 	// ...and of course we should copy the new view location to the proper spot too.
@@ -943,7 +946,7 @@ static void CG_OffsetThirdPersonView( void ) {
 
 	AngleVectors( cg.refdefViewAngles, forward, right, up );
 
-	float tpAngle = cg.overrides.thirdPersonAngle ? cg.overrides.thirdPersonAngle : cg_thirdPersonAngle.value;
+	float tpAngle = cg.overrides.thirdPersonAngle ? cg.overrides.thirdPersonAngle : cg_thirdPersonAngle->value;
 	forwardScale = cos( tpAngle / 180 * M_PI );
 	sideScale = sin( tpAngle / 180 * M_PI );
 	VectorMA( view, -tpAngle * forwardScale, forward, view );
@@ -993,7 +996,7 @@ static void CG_OffsetThirdPersonOverheadView( void ) {
 
 	// Move straight up from the player, making sure to always go at least the min camera height,
 	//	otherwise, the camera will clip into the head of the player.
-	float tpRange = cg.overrides.thirdPersonRange ? cg.overrides.thirdPersonRange : cg_thirdPersonRange.value;
+	float tpRange = cg.overrides.thirdPersonRange ? cg.overrides.thirdPersonRange : cg_thirdPersonRange->value;
 	if ( tpRange < MIN_CAMERA_HEIGHT )
 	{
 		view[2] += MIN_CAMERA_HEIGHT;
@@ -1005,7 +1008,7 @@ static void CG_OffsetThirdPersonOverheadView( void ) {
 
 	// Now adjust the camera angles, but we shouldn't adjust the viewAngles...only the viewAxis
 	VectorCopy( cg.refdefViewAngles, angs );
-	angs[PITCH] = cg.overrides.thirdPersonAngle ? cg.overrides.thirdPersonAngle : cg_thirdPersonAngle.value;
+	angs[PITCH] = cg.overrides.thirdPersonAngle ? cg.overrides.thirdPersonAngle : cg_thirdPersonAngle->value;
 
 	// Simple clamp to weed out any really obviously nasty angles
 	if ( angs[PITCH] < MIN_CAMERA_PITCH )
@@ -1151,21 +1154,21 @@ static void CG_OffsetFirstPersonView( qboolean firstPersonSaber ) {
 	VectorCopy( cg.predicted_player_state.velocity, predictedVelocity );
 
 	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[0]);
-	angles[PITCH] += delta * cg_runpitch.value;
+	angles[PITCH] += delta * cg_runpitch->value;
 
 	delta = DotProduct ( predictedVelocity, cg.refdef.viewaxis[1]);
-	angles[ROLL] -= delta * cg_runroll.value;
+	angles[ROLL] -= delta * cg_runroll->value;
 
 	// add angles based on bob
 
 	// make sure the bob is visible even at low speeds
 	speed = cg.xyspeed > 200 ? cg.xyspeed : 200;
 
-	delta = cg.bobfracsin * cg_bobpitch.value * speed;
+	delta = cg.bobfracsin * cg_bobpitch->value * speed;
 	if (cg.predicted_player_state.pm_flags & PMF_DUCKED)
 		delta *= 3;		// crouching
 	angles[PITCH] += delta;
-	delta = cg.bobfracsin * cg_bobroll.value * speed;
+	delta = cg.bobfracsin * cg_bobroll->value * speed;
 	if (cg.predicted_player_state.pm_flags & PMF_DUCKED)
 		delta *= 3;		// crouching accentuates roll
 	if (cg.bobcycle & 1)
@@ -1203,7 +1206,7 @@ static void CG_OffsetFirstPersonView( qboolean firstPersonSaber ) {
 	}
 
 	// add bob height
-	bob = cg.bobfracsin * cg.xyspeed * cg_bobup.value;
+	bob = cg.bobfracsin * cg.xyspeed * cg_bobup->value;
 	if (bob > 6) {
 		bob = 6;
 	}
@@ -1263,7 +1266,7 @@ qboolean CG_CalcFOVFromX( float fov_x )
 	float	fov_y;
 	qboolean	inwater;
 
-	if ( cg_fovAspectAdjust.integer ) {
+	if ( cg_fovAspectAdjust->integer ) {
 		// Based on LordHavoc's code for Darkplaces
 		// http://www.quakeworld.nu/forum/topic/53/what-does-your-qw-look-like/page/30
 		const float baseAspect = 0.75f; // 3/4
@@ -1326,15 +1329,15 @@ float CG_ForceSpeedFOV( void )
 	float amt = forceSpeedFOVMod[player->client->ps.forcePowerLevel[FP_SPEED]];
 	if ( timeLeft < 500 )
 	{//start going back
-		fov = cg_fov.value + (timeLeft)/500*amt;
+		fov = cg_fov->value + (timeLeft)/500*amt;
 	}
 	else if ( length - timeLeft < 1000 )
 	{//start zooming in
-		fov = cg_fov.value + (length - timeLeft)/1000*amt;
+		fov = cg_fov->value + (length - timeLeft)/1000*amt;
 	}
 	else
 	{//stay at this FOV
-		fov = cg_fov.value+amt;
+		fov = cg_fov->value+amt;
 	}
 	return fov;
 }
@@ -1396,7 +1399,7 @@ static qboolean	CG_CalcFov( void ) {
 		}
 		else
 		{
-			fov_x = cg_fov.value;
+			fov_x = cg_fov->value;
 		}
 		if ( fov_x < 1 ) {
 			fov_x = 1;
@@ -1421,7 +1424,7 @@ static qboolean	CG_CalcFov( void ) {
 				}
 
 				// Clamp zoomFov
-				float actualFOV = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
+				float actualFOV = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov->value;
 				if ( cg_zoomFov < MAX_ZOOM_FOV )
 				{
 					cg_zoomFov = MAX_ZOOM_FOV;
@@ -1652,12 +1655,12 @@ static qboolean CG_CalcViewValues( void ) {
 	}
 
 	// add error decay
-	if ( cg_errorDecay.value > 0 ) {
+	if ( cg_errorDecay->value > 0 ) {
 		int		t;
 		float	f;
 
 		t = cg.time - cg.predictedErrorTime;
-		f = ( cg_errorDecay.value - t ) / cg_errorDecay.value;
+		f = ( cg_errorDecay->value - t ) / cg_errorDecay->value;
 		if ( f > 0 && f < 1 ) {
 			VectorMA( cg.refdef.vieworg, f, cg.predictedError, cg.refdef.vieworg );
 		} else {
@@ -1670,7 +1673,7 @@ static qboolean CG_CalcViewValues( void ) {
 		&& !viewEntIsCam )
 	{
 		// back away from character
-//		if ( cg_thirdPerson.integer == CG_CAM_ABOVE)
+//		if ( cg_thirdPerson->integer == CG_CAM_ABOVE)
 //		{			`
 //			CG_OffsetThirdPersonOverheadView();
 //		}
@@ -1809,21 +1812,21 @@ static void CG_DrawSkyBoxPortal(void)
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
-		CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+		Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
 	}
 	cg.refdef.vieworg[0] = atof(token);
 
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
-		CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+		Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
 	}
 	cg.refdef.vieworg[1] = atof(token);
 
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
-		CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
+		Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring\n");
 	}
 	cg.refdef.vieworg[2] = atof(token);
 
@@ -1831,7 +1834,7 @@ static void CG_DrawSkyBoxPortal(void)
 	token = COM_ParseExt(&cstr, qfalse);
 	if (!token || !token[0])
 	{
-		CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog state\n");
+		Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog state\n");
 	}
 	else
 	{
@@ -1839,17 +1842,17 @@ static void CG_DrawSkyBoxPortal(void)
 			// this camera has fog
 			token = COM_ParseExt( &cstr, qfalse );
 			if ( !VALIDSTRING( token ) ) {
-				CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[0]\n");
+				Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[0]\n");
 			}
 
 			token = COM_ParseExt(&cstr, qfalse);
 			if ( !VALIDSTRING( token ) ) {
-				CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[1]\n");
+				Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[1]\n");
 			}
 
 			token = COM_ParseExt(&cstr, qfalse);
 			if ( !VALIDSTRING( token ) ) {
-				CG_Error( "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[2]\n");
+				Com_Error( ERR_DROP,  "CG_DrawSkyBoxPortal: error parsing skybox configstring.  No fog[2]\n");
 			}
 
 			COM_ParseExt( &cstr, qfalse );
@@ -1868,7 +1871,7 @@ static void CG_DrawSkyBoxPortal(void)
 	if ( cg.predicted_player_state.pm_type == PM_INTERMISSION )
 	{
 		// if in intermission, use a fixed value
-		fov_x = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
+		fov_x = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov->value;
 	}
 	else
 	{
@@ -1878,7 +1881,7 @@ static void CG_DrawSkyBoxPortal(void)
 		}
 		else
 		{
-			fov_x = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov.value;
+			fov_x = (cg.overrides.active&CG_OVERRIDE_FOV) ? cg.overrides.fov : cg_fov->value;
 			if ( fov_x < 1 )
 			{
 				fov_x = 1;
@@ -1954,8 +1957,8 @@ void CG_RunEmplacedWeapon()
 		// don't let the player try and change this
 		cg.renderingThirdPerson = qtrue;
 
-//		cg.refdefViewAngles[PITCH] += cg.overrides.thirdPersonPitchOffset? cg.overrides.thirdPersonPitchOffset: cg_thirdPersonPitchOffset.value;
-//		cg.refdefViewAngles[YAW] += cg.overrides.thirdPersonAngle ? cg.overrides.thirdPersonAngle : cg_thirdPersonAngle.value;;
+//		cg.refdefViewAngles[PITCH] += cg.overrides.thirdPersonPitchOffset? cg.overrides.thirdPersonPitchOffset: cg_thirdPersonPitchOffset->value;
+//		cg.refdefViewAngles[YAW] += cg.overrides.thirdPersonAngle ? cg.overrides.thirdPersonAngle : cg_thirdPersonAngle->value;;
 
 		AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 
@@ -1992,9 +1995,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	qboolean	inwater = qfalse;
 
 	cg.time = serverTime;
-
-	// update cvars
-	CG_UpdateCvars();
 
 	// if we are only updating the screen as a loading
 	// pacifier, don't even try to read snapshots
@@ -2037,7 +2037,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	//FIXME: should really send forcePowersActive over network onto cg.snap->ps...
 	const int fpActive = cg_entities[0].gent->client->ps.forcePowersActive;
 	const bool matrixMode = !!(fpActive & ((1 << FP_SPEED) | (1 << FP_RAGE)));
-	float speed = cg.refdef.fov_y / 75.0 * (matrixMode ? 1.0f : cg_timescale.value);
+	float speed = cg.refdef.fov_y / 75.0 * (matrixMode ? 1.0f : cg_timescale->value);
 
 //FIXME: junk code, BUG:168
 
@@ -2087,7 +2087,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 		cg.zoomMode = 0;
 	}
 	// decide on third person view
-	cg.renderingThirdPerson = cg_thirdPerson.integer
+	cg.renderingThirdPerson = cg_thirdPerson->integer
 								|| (cg.snap->ps.stats[STAT_HEALTH] <= 0)
 								|| (cg.snap->ps.eFlags&EF_HELD_BY_SAND_CREATURE)
 								|| ((g_entities[0].client&&g_entities[0].client->NPC_class==CLASS_ATST)
@@ -2185,7 +2185,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 
 	// Don't draw the in-view weapon when in camera mode
 	if ( !in_camera
-		&& !cg_pano.integer
+		&& !cg_pano->integer
 		&& cg.snap->ps.weapon != WP_SABER
 		&& ( cg.snap->ps.viewEntity == 0 || cg.snap->ps.viewEntity >= ENTITYNUM_WORLD ) )
 	{
@@ -2199,7 +2199,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 		}
 	}
 
-	if ( !cg.hyperspace && fx_freeze.integer<2 )
+	if ( !cg.hyperspace && fx_freeze->integer<2 )
 	{
 		//Add all effects
 		theFxScheduler.AddScheduledEffects( false );
@@ -2241,10 +2241,10 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 	// warning sounds when powerup is wearing off
 	CG_PowerupTimerSounds();
 
-	if ( cg_pano.integer ) {	// let's grab a panorama!
+	if ( cg_pano->integer ) {	// let's grab a panorama!
 		cg.levelShot = qtrue;  //hide the 2d
 		VectorClear(cg.refdefViewAngles);
-		cg.refdefViewAngles[YAW] = -360 * cg_pano.integer/cg_panoNumShots.integer;	//choose angle
+		cg.refdefViewAngles[YAW] = -360 * cg_pano->integer/cg_panoNumShots->integer;	//choose angle
 		AnglesToAxis( cg.refdefViewAngles, cg.refdef.viewaxis );
 		CG_DrawActive( stereoView );
 		cg.levelShot = qfalse;
@@ -2253,7 +2253,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 		CG_DrawActive( stereoView );
 	}
 	/*
-	if ( in_camera && !cg_skippingcin.integer )
+	if ( in_camera && !cg_skippingcin->integer )
 	{
 		Com_Printf( S_COLOR_GREEN"ang: %s\n", vtos(cg.refdefViewAngles) );
 	}

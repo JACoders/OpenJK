@@ -399,7 +399,7 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 #ifdef _DEBUG
 	if ( self->waypoint == -1 )
 	{
-		gi.Printf( S_COLOR_RED"ERROR: no waypoint for emplaced_gun %s at %s\n", self->targetname, vtos(self->currentOrigin) );
+		Com_Printf( S_COLOR_RED"ERROR: no waypoint for emplaced_gun %s at %s\n", self->targetname, vtos(self->currentOrigin) );
 	}
 #endif
 
@@ -648,7 +648,7 @@ extern void ChangeWeapon( gentity_t *ent, int newWeapon );
 #ifdef _DEBUG
 		if ( self->waypoint == -1 )
 		{
-			gi.Printf( S_COLOR_RED"ERROR: no waypoint for emplaced_gun %s at %s\n", self->targetname, vtos(self->currentOrigin) );
+			Com_Printf( S_COLOR_RED"ERROR: no waypoint for emplaced_gun %s at %s\n", self->targetname, vtos(self->currentOrigin) );
 		}
 #endif
 
@@ -1014,7 +1014,7 @@ extern void CG_ChangeWeapon( int num );
 		}
 		if ( ent->s.number < MAX_CLIENTS )
 		{
-			gi.cvar_set( "cg_thirdperson", "1" );
+			Cvar_Set("cg_thirdperson", "1");
 		}
 	}
 	else
@@ -1043,11 +1043,11 @@ extern void CG_ChangeWeapon( int num );
 			{
 				if ( ent->client->ps.weapon == WP_SABER )
 				{
-					gi.cvar_set( "cg_thirdperson", "1" );
+					Cvar_Set("cg_thirdperson", "1");
 				}
-				else if ( ent->client->ps.weapon != WP_SABER && cg_gunAutoFirst.integer )
+				else if ( ent->client->ps.weapon != WP_SABER && cg_gunAutoFirst->integer )
 				{
-					gi.cvar_set( "cg_thirdperson", "0" );
+					Cvar_Set("cg_thirdperson", "0");
 				}
 			}
 		}

@@ -24,13 +24,22 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // cg_draw.c -- draw all of the graphical elements during
 // active (after loading) gameplay
 
+#include <algorithm>
+#include <chrono>
+
 #include "cg_headers.h"
 
 #include "cg_media.h"
 #include "../game/objectives.h"
 #include "../game/g_vehicles.h"
 
-extern vmCvar_t	cg_debugHealthBars;
+// Get functions exported by the platform abstraction layer.
+#include "../../shared/sys/sys_public.h"
+
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
+extern cvar_t* cg_debugHealthBars;
 
 extern Vehicle_t *G_IsRidingVehicle( gentity_t *ent );
 
@@ -1827,7 +1836,7 @@ static void CG_DrawHUD( centity_t *cent )
 	int value;
 	int	sectionXPos,sectionYPos,sectionWidth,sectionHeight;
 
-	if ( cg_hudFiles.integer )
+	if ( cg_hudFiles->integer )
 	{
 		int x = 0;
 		int y = SCREEN_HEIGHT - 80;
@@ -1853,7 +1862,7 @@ static void CG_DrawHUD( centity_t *cent )
 		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "lefthud" ), qtrue );
 
 		// Draw armor & health values
-		if ( cg_drawStatus.integer == 2 ) 
+		if ( cg_drawStatus->integer == 2 )
 		{
 			CG_DrawSmallStringColor(sectionXPos+5, sectionYPos - 60,va("Armor:%d",cg.snap->ps.stats[STAT_ARMOR]), colorTable[CT_HUD_GREEN] );
 			CG_DrawSmallStringColor(sectionXPos+5, sectionYPos - 40,va("Health:%d",cg.snap->ps.stats[STAT_HEALTH]), colorTable[CT_HUD_GREEN] );
@@ -1893,7 +1902,7 @@ static void CG_DrawHUD( centity_t *cent )
 		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "righthud" ), qtrue );
 
 		// Draw armor & health values
-		if ( cg_drawStatus.integer == 2 ) 
+		if ( cg_drawStatus->integer == 2 )
 		{
 			if ( cent->currentState.weapon != WP_SABER && cent->currentState.weapon != WP_STUN_BATON && cent->gent )
 			{
@@ -1947,15 +1956,10 @@ CG_ClearDataPadCvars
 */
 void CG_ClearDataPadCvars( void )
 {
-	cgi_Cvar_Set( "cg_updatedDataPadForcePower1", "0" );
-	cgi_Cvar_Update( &cg_updatedDataPadForcePower1 );
-	cgi_Cvar_Set( "cg_updatedDataPadForcePower2", "0" );
-	cgi_Cvar_Update( &cg_updatedDataPadForcePower2 );
-	cgi_Cvar_Set( "cg_updatedDataPadForcePower3", "0" );
-	cgi_Cvar_Update( &cg_updatedDataPadForcePower3 );
-
-	cgi_Cvar_Set( "cg_updatedDataPadObjective", "0" );
-	cgi_Cvar_Update( &cg_updatedDataPadObjective );
+	Cvar_Set("cg_updatedDataPadForcePower1", "0");
+	Cvar_Set("cg_updatedDataPadForcePower2", "0");
+	Cvar_Set("cg_updatedDataPadForcePower3", "0");
+	Cvar_Set("cg_updatedDataPadObjective", "0");
 }
 
 /*
@@ -1974,7 +1978,7 @@ void CG_DrawDataPadHUD( centity_t *cent )
 
 	x = 526;
 
-	if ((missionInfo_Updated) && ((cg_updatedDataPadForcePower1.integer) || (cg_updatedDataPadObjective.integer)))
+	if ((missionInfo_Updated) && ((cg_updatedDataPadForcePower1->integer) || (cg_updatedDataPadObjective->integer)))
 	{
 		// Stop flashing light
 		cg.missionInfoFlashTime = 0;
@@ -1983,9 +1987,9 @@ void CG_DrawDataPadHUD( centity_t *cent )
 		// Set which force power to show.
 		// cg_updatedDataPadForcePower is set from Q3_Interface, because force powers would only be given 
 		// from a script.
-		if (cg_updatedDataPadForcePower1.integer)
+		if (cg_updatedDataPadForcePower1->integer)
 		{
-			cg.DataPadforcepowerSelect = cg_updatedDataPadForcePower1.integer - 1; // Not pretty, I know
+			cg.DataPadforcepowerSelect = cg_updatedDataPadForcePower1->integer - 1; // Not pretty, I know
 			if (cg.DataPadforcepowerSelect >= MAX_DPSHOWPOWERS)
 			{	//duh
 				cg.DataPadforcepowerSelect = MAX_DPSHOWPOWERS-1;
@@ -2349,7 +2353,7 @@ static void CG_DrawStats( void )
 {
 	centity_t		*cent;
 
-	if ( cg_drawStatus.integer == 0 ) {
+	if ( cg_drawStatus->integer == 0 ) {
 		return;
 	}
 
@@ -2371,7 +2375,7 @@ static void CG_DrawStats( void )
 		drawHud = CG_DrawCustomHealthHud( cent );
 	}
 
-	if (( drawHud ) && ( cg_drawHUD.integer ))
+	if (( drawHud ) && ( cg_drawHUD->integer ))
 	{
 		CG_DrawHUD( cent );	
 	}
@@ -2418,10 +2422,10 @@ void CG_DrawCredits(void)
 		//
 		cg.creditsStart = qtrue;
 		CG_Credits_Init("CREDITS_RAVEN", &colorTable[CT_ICON_BLUE]);
-		if ( cg_skippingcin.integer )
+		if ( cg_skippingcin->integer )
 		{//Were skipping a cinematic and it's over now
-			gi.cvar_set("timescale", "1");
-			gi.cvar_set("skippingCinematic", "0");
+			Cvar_Set("timescale", "1");
+			Cvar_Set("skippingCinematic", "0");
 		}
 	}
 
@@ -2430,7 +2434,7 @@ void CG_DrawCredits(void)
 	{
 		if ( !CG_Credits_Running() ) 
 		{
-			cgi_Cvar_Set( "cg_endcredits", "0" );
+			Cvar_Set("cg_endcredits", "0");
 			CMD_CGCam_Disable();
 			cgi_SendConsoleCommand("disconnect\n");
 		}
@@ -2550,7 +2554,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 	float		f;
 	float		x, y;
 
-	if ( !cg_drawCrosshair.integer ) 
+	if ( !cg_drawCrosshair->integer )
 	{
 		return;
 	}
@@ -2566,7 +2570,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 	{
 		ecolor[0] = ecolor[1] = ecolor[2] = 1.0f;
 	}
-	else if ( cg_forceCrosshair && cg_crosshairForceHint.integer )
+	else if ( cg_forceCrosshair && cg_crosshairForceHint->integer )
 	{
 		ecolor[0] = 0.2f;
 		ecolor[1] = 0.5f;
@@ -2574,7 +2578,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 
 		corona = qtrue;
 	}
-	else if ( cg_crosshairIdentifyTarget.integer )
+	else if ( cg_crosshairIdentifyTarget->integer )
 	{
 		gentity_t *crossEnt = &g_entities[g_crosshairEntNum];
 
@@ -2726,7 +2730,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 		}
 	}
 
-	w = h = cg_crosshairSize.value;
+	w = h = cg_crosshairSize->value;
 
 	// pulse the size of the crosshair when picking up items
 	f = cg.time - cg.itemPickupBlendTime;
@@ -2748,8 +2752,8 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 	}
 	else
 	{
-		x = cg_crosshairX.integer;
-		y = cg_crosshairY.integer;
+		x = cg_crosshairX->integer;
+		y = cg_crosshairY->integer;
 	}
 
 	if ( cg.snap->ps.viewEntity > 0 && cg.snap->ps.viewEntity < ENTITYNUM_WORLD )
@@ -2765,14 +2769,14 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 	}
 	else 
 	{
-		hShader = cgs.media.crosshairShader[ cg_drawCrosshair.integer % NUM_CROSSHAIRS ];
+		hShader = cgs.media.crosshairShader[ cg_drawCrosshair->integer % NUM_CROSSHAIRS ];
 
 		cgi_R_DrawStretchPic( x + cg.refdef.x + 0.5 * (640 - w), 
 			y + cg.refdef.y + 0.5 * (480 - h), 
 			w, h, 0, 0, 1, 1, hShader );	
 	}
 
-	if ( cg.forceCrosshairStartTime && cg_crosshairForceHint.integer ) // drawing extra bits
+	if ( cg.forceCrosshairStartTime && cg_crosshairForceHint->integer ) // drawing extra bits
 	{
 		ecolor[0] = ecolor[1] = ecolor[2] = (1 - ecolor[3]) * ( sin( cg.time * 0.001f ) * 0.08f + 0.35f ); // don't draw full color
 		ecolor[3] = 1.0f;
@@ -2933,7 +2937,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	//FIXME: debounce this to about 10fps?
 
 	cg_forceCrosshair = qfalse;
-	if ( cg_entities[0].gent && cg_entities[0].gent->client ) // <-Mike said it should always do this   //if (cg_crosshairForceHint.integer &&
+	if ( cg_entities[0].gent && cg_entities[0].gent->client ) // <-Mike said it should always do this   //if (cg_crosshairForceHint->integer &&
 	{//try to check for force-affectable stuff first
 		vec3_t d_f, d_rt, d_up;
 
@@ -3033,7 +3037,7 @@ static void CG_ScanForCrosshairEntity( qboolean scanAll )
 	}
 	if ( !cg_forceCrosshair )
 	{
-		if ( cg_dynamicCrosshair.integer )
+		if ( cg_dynamicCrosshair->integer )
 		{//100% accurate
 			vec3_t d_f, d_rt, d_up;
 			// If you're riding a vehicle and not being drawn.
@@ -3179,7 +3183,7 @@ static void CG_DrawCrosshairNames( void )
 	qboolean	scanAll = qfalse;
 	centity_t	*player = &cg_entities[0];
 
-	if ( cg_dynamicCrosshair.integer )
+	if ( cg_dynamicCrosshair->integer )
 	{
 		// still need to scan for dynamic crosshair
 		CG_ScanForCrosshairEntity( scanAll );
@@ -3276,7 +3280,7 @@ static void CG_DrawRocketLocking( int lockEntNum, int lockTime )
 			}
 			else
 			{
-				sz -= ( cg_fov.value - cg_zoomFov ) / 80.0f;
+				sz -= ( cg_fov->value - cg_zoomFov ) / 80.0f;
 			}
 		}
 
@@ -3405,48 +3409,59 @@ static float CG_DrawSnapshot( float y ) {
 	return y + BIGCHAR_HEIGHT + 10;
 }
 
+static float CG_DrawFPS(float y)
+{
+    using std::chrono::duration_cast;
+    using hrc = std::chrono::high_resolution_clock;
+    using std::chrono::milliseconds;
+    using std::chrono::seconds;
 
-/*
-==================
-CG_DrawFPS
-==================
-*/
-#define	FPS_FRAMES	16
-static float CG_DrawFPS( float y ) {
-	char		*s;
-	static unsigned short previousTimes[FPS_FRAMES];
-	static unsigned short index;
-	static int	previous, lastupdate;
-	int		t, i, fps, total;
-	unsigned short frameTime;
-	const int		xOffset = 0;
+    static std::array<hrc::duration, 16> previous_frame_periods;
+    static size_t index = 0;
 
-	// don't use serverTime, because that will be drifting to
-	// correct for internet lag changes, timescales, timedemos, etc
-	t = cgi_Milliseconds();
-	frameTime = t - previous;
-	previous = t;
-	if (t - lastupdate > 50)	//don't sample faster than this
-	{
-		lastupdate = t;
-		previousTimes[index % FPS_FRAMES] = frameTime;
-		index++;
-	}
-	// average multiple frames together to smooth changes out a bit
-	total = 0;
-	for ( i = 0 ; i < FPS_FRAMES ; i++ ) {
-		total += previousTimes[i];
-	}
-	if ( !total ) {
-		total = 1;
-	}
-	fps = 1000 * FPS_FRAMES / total;
+    static auto previous   = hrc::now();
+    static auto lastupdate = hrc::now();
 
-	s = va( "%ifps", fps );
-	const int w = cgi_R_Font_StrLenPixels(s, cgs.media.qhFontMedium, 1.0f);	
-	cgi_R_Font_DrawString(635-xOffset - w, y+2, s, colorTable[CT_LTGOLD1], cgs.media.qhFontMedium, -1, 1.0f);
+    auto t = hrc::now();
 
-	return y + BIGCHAR_HEIGHT + 10;
+    // Don't sample faster than this.
+    if(t - lastupdate > milliseconds(50))
+    {
+        lastupdate = t;
+
+        previous_frame_periods[index] = t - previous;
+
+        index = (index + 1) % previous_frame_periods.size();
+    }
+
+    previous = t;
+
+    // average multiple frames together to smooth changes out a bit
+    hrc::duration total = std::accumulate(
+        previous_frame_periods.begin(),
+        previous_frame_periods.end(),
+        hrc::duration(0)
+    );
+    size_t total_millis = duration_cast<milliseconds>(total).count();
+
+    int fps = 1000 * previous_frame_periods.size() / total_millis;
+
+    char *s = va( "%ifps", fps );
+
+    const int w = cgi_R_Font_StrLenPixels(s, cgs.media.qhFontMedium, 1.0f);
+    const int xOffset = 0;
+
+    cgi_R_Font_DrawString(
+        635 - xOffset - w,
+        y + 2,
+        s,
+        colorTable[CT_LTGOLD1],
+        cgs.media.qhFontMedium,
+        -1,
+        1.0f
+    );
+
+    return y + BIGCHAR_HEIGHT + 10;
 }
 
 /*
@@ -3483,7 +3498,7 @@ static void CG_DrawAmmoWarning( void ) {
 	char text[1024]={0};
 	int			w;
 
-	if ( cg_drawAmmoWarning.integer == 0 ) {
+	if ( cg_drawAmmoWarning->integer == 0 ) {
 		return;
 	}
 
@@ -3919,7 +3934,7 @@ static void CG_Draw2D( void )
 		return;
 	}
 
-	if ( cg_draw2D.integer == 0 ) 
+	if ( cg_draw2D->integer == 0 )
 	{
 		return;
 	}
@@ -3933,7 +3948,7 @@ static void CG_Draw2D( void )
 	CG_Draw2DScreenTints();
 
 	//end credits
-	if (cg_endcredits.integer)
+	if (cg_endcredits->integer)
 	{
 		if (!CG_Credits_Draw())
 		{
@@ -3980,7 +3995,7 @@ static void CG_Draw2D( void )
 		CG_DrawPic( 0, 0, 640, 480, cgi_R_RegisterShader( "gfx/2d/jsense" ));
 		CG_DrawHealthBars();
 	}
-	else if ( cg_debugHealthBars.integer )
+	else if ( cg_debugHealthBars->integer )
 	{
 		CG_DrawHealthBars();
 	}
@@ -4003,7 +4018,7 @@ static void CG_Draw2D( void )
 		CG_DrawAmmoWarning();
 
 		//CROSSHAIR is now done from the crosshair ent trace
-		//if ( !cg.renderingThirdPerson && !cg_dynamicCrosshair.integer ) // disruptor draws it's own crosshair artwork; binocs draw nothing; third person draws its own crosshair
+		//if ( !cg.renderingThirdPerson && !cg_dynamicCrosshair->integer ) // disruptor draws it's own crosshair artwork; binocs draw nothing; third person draws its own crosshair
 		//{
 		//	CG_DrawCrosshair( NULL );
 		//}
@@ -4024,13 +4039,13 @@ static void CG_Draw2D( void )
 	CG_SaberClashFlare();
 
 	float y = 0;
-	if (cg_drawSnapshot.integer) {
+	if (cg_drawSnapshot->integer) {
 		y=CG_DrawSnapshot(y);
 	} 
-	if (cg_drawFPS.integer) {
+	if (cg_drawFPS->integer) {
 		y=CG_DrawFPS(y);
 	} 
-	if (cg_drawTimer.integer) {
+	if (cg_drawTimer->integer) {
 		y=CG_DrawTimer(y);
 	}
 
@@ -4050,7 +4065,7 @@ static void CG_Draw2D( void )
 		if (cg.predicted_player_state.pm_type != PM_DEAD)
 		{
 			// Was a objective given?
-/*			if ((cg_updatedDataPadForcePower.integer) || (cg_updatedDataPadObjective.integer))
+/*			if ((cg_updatedDataPadForcePower->integer) || (cg_updatedDataPadObjective->integer))
 			{
 				// How long has the game been running? If within 15 seconds of starting, throw up the datapad.
 				if (cg.dataPadLevelStartTime>cg.time)
@@ -4066,7 +4081,7 @@ static void CG_Draw2D( void )
 */
 			if (!cg.missionInfoFlashTime)
 			{
-				cg.missionInfoFlashTime	= cg.time + cg_missionInfoFlashTime.integer;
+				cg.missionInfoFlashTime	= cg.time + cg_missionInfoFlashTime->integer;
 			}
 
 			if (cg.missionInfoFlashTime < cg.time)	// Time's up.  They didn't read it.
@@ -4091,7 +4106,7 @@ static void CG_Draw2D( void )
 	{
 		int x_pos = 0;
 		y_pos = 5;
-		gi.Cvar_VariableStringBuffer( "cg_WeaponPickupText", text, sizeof(text) );
+		Cvar_VariableStringBuffer( "cg_WeaponPickupText", text, sizeof(text) );
 
 		w = cgi_R_Font_StrLenPixels(text,cgs.media.qhFontMedium, 0.8f);
 		x_pos = (SCREEN_WIDTH/2)-(w/2);
@@ -4115,13 +4130,13 @@ void CG_DrawIconBackground(void)
 	qhandle_t		background;
 	const float		shutdownTime = 130.0f;
 
-	if ( cg_hudFiles.integer )
+	if ( cg_hudFiles->integer )
 	{ //simple hud
 		return;
 	}
 
 	// Are we in zoom mode or the HUD is turned off?
-	if (( cg.zoomMode != 0 ) || !( cg_drawHUD.integer ))
+	if (( cg.zoomMode != 0 ) || !( cg_drawHUD->integer ))
 	{
 		return;
 	}
@@ -4252,14 +4267,14 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		separation = 0;
 		break;
 	case STEREO_LEFT:
-		separation = -cg_stereoSeparation.value / 2;
+		separation = -cg_stereoSeparation->value / 2;
 		break;
 	case STEREO_RIGHT:
-		separation = cg_stereoSeparation.value / 2;
+		separation = cg_stereoSeparation->value / 2;
 		break;
 	default:
 		separation = 0;
-		CG_Error( "CG_DrawActive: Undefined stereoView" );
+		Com_Error( ERR_DROP,  "CG_DrawActive: Undefined stereoView" );
 	}
 
 

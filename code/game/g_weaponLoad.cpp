@@ -528,7 +528,7 @@ void WPN_WeaponType( const char **holdBuf)
 	else
 	{
 		weaponNum = 0;
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad weapontype in external weapon data '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad weapontype in external weapon data '%s'\n", tokenStr);
 	}
 
 	wpnParms.weaponNum = weaponNum;
@@ -550,7 +550,7 @@ void WPN_WeaponClass(const char **holdBuf)
 	if (len > 32)
 	{
 		len = 32;
-		gi.Printf(S_COLOR_YELLOW"WARNING: weaponclass too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: weaponclass too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].classname,tokenStr,len);
@@ -573,7 +573,7 @@ void WPN_WeaponModel(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: weaponMdl too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: weaponMdl too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].weaponMdl,tokenStr,len);
@@ -595,7 +595,7 @@ void WPN_WeaponIcon(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: weaponIcon too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: weaponIcon too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].weaponIcon,tokenStr,len);
@@ -614,7 +614,7 @@ void WPN_AmmoType(const char **holdBuf)
 
 	if ((tokenInt < AMMO_NONE ) || (tokenInt >= AMMO_MAX ))
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad Ammotype in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad Ammotype in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 
@@ -634,7 +634,7 @@ void WPN_AmmoLowCnt(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 200 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad Ammolowcount in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad Ammolowcount in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 
@@ -657,7 +657,7 @@ void WPN_FiringSnd(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: firingSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: firingSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].firingSnd,tokenStr,len);
@@ -679,7 +679,7 @@ void WPN_AltFiringSnd( const char **holdBuf )
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: altFiringSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: altFiringSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].altFiringSnd,tokenStr,len);
@@ -701,7 +701,7 @@ void WPN_StopSnd( const char **holdBuf )
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: stopSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: stopSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].stopSnd,tokenStr,len);
@@ -723,7 +723,7 @@ void WPN_ChargeSnd(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: chargeSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: chargeSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].chargeSnd,tokenStr,len);
@@ -745,7 +745,7 @@ void WPN_AltChargeSnd(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: altChargeSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: altChargeSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].altChargeSnd,tokenStr,len);
@@ -768,7 +768,7 @@ void WPN_SelectSnd( const char **holdBuf )
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: selectSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: selectSnd too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz( weaponData[wpnParms.weaponNum].selectSnd,tokenStr,len);
@@ -787,7 +787,7 @@ void WPN_FireTime(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 10000 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad Firetime in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad Firetime in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 	weaponData[wpnParms.weaponNum].fireTime = tokenInt;
@@ -806,7 +806,7 @@ void WPN_Range(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 10000 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad Range in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad Range in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 
@@ -826,7 +826,7 @@ void WPN_EnergyPerShot(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 1000 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad EnergyPerShot in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad EnergyPerShot in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 	weaponData[wpnParms.weaponNum].energyPerShot = tokenInt;
@@ -845,7 +845,7 @@ void WPN_AltFireTime(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 10000 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad altFireTime in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad altFireTime in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 	weaponData[wpnParms.weaponNum].altFireTime = tokenInt;
@@ -864,7 +864,7 @@ void WPN_AltRange(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 10000 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad AltRange in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad AltRange in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 
@@ -884,7 +884,7 @@ void WPN_AltEnergyPerShot(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 1000 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad AltEnergyPerShot in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad AltEnergyPerShot in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 	weaponData[wpnParms.weaponNum].altEnergyPerShot = tokenInt;
@@ -922,7 +922,7 @@ void WPN_Ammo(const char **holdBuf)
 		wpnParms.ammoNum = AMMO_DETPACK;
 	else
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad ammotype in external weapon data '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad ammotype in external weapon data '%s'\n", tokenStr);
 		wpnParms.ammoNum = 0;
 	}
 }
@@ -943,7 +943,7 @@ void WPN_AmmoIcon(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: ammoicon too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: ammoicon too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(ammoData[wpnParms.ammoNum].icon,tokenStr,len);
@@ -963,7 +963,7 @@ void WPN_AmmoMax(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 1000 )) 
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad Ammo Max in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad Ammo Max in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 	ammoData[wpnParms.ammoNum].max = tokenInt;
@@ -982,7 +982,7 @@ void WPN_BarrelCount(const char **holdBuf)
 
 	if ((tokenInt < 0) || (tokenInt > 4 )) 
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad Range in external weapon data '%d'\n", tokenInt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad Range in external weapon data '%d'\n", tokenInt);
 		return;
 	}
 
@@ -1037,7 +1037,7 @@ void WPN_MissileName(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: MissileName too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: MissileName too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].missileMdl,tokenStr,len);
@@ -1060,7 +1060,7 @@ void WPN_AltMissileName(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: AltMissileName too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: AltMissileName too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].alt_missileMdl,tokenStr,len);
@@ -1084,7 +1084,7 @@ void WPN_MissileHitSound(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: MissileHitSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: MissileHitSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].missileHitSound,tokenStr,len);
@@ -1106,7 +1106,7 @@ void WPN_AltMissileHitSound(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: AltMissileHitSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: AltMissileHitSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].altmissileHitSound,tokenStr,len);
@@ -1128,7 +1128,7 @@ void WPN_MissileSound(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: MissileSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: MissileSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].missileSound,tokenStr,len);
@@ -1152,7 +1152,7 @@ void WPN_AltMissileSound(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: AltMissileSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: AltMissileSound too long in external WEAPONS.DAT '%s'\n", tokenStr);
 	}
 
 	Q_strncpyz(weaponData[wpnParms.weaponNum].alt_missileSound,tokenStr,len);
@@ -1175,7 +1175,7 @@ void WPN_MissileLightColor(const char **holdBuf)
 
 		if ((tokenFlt < 0) || (tokenFlt > 1 ))
 		{
-			gi.Printf(S_COLOR_YELLOW"WARNING: bad missilelightcolor in external weapon data '%f'\n", tokenFlt);
+			Com_Printf(S_COLOR_YELLOW"WARNING: bad missilelightcolor in external weapon data '%f'\n", tokenFlt);
 			continue;
 		}
 		weaponData[wpnParms.weaponNum].missileDlightColor[i] = tokenFlt;
@@ -1199,7 +1199,7 @@ void WPN_AltMissileLightColor(const char **holdBuf)
 
 		if ((tokenFlt < 0) || (tokenFlt > 1 ))
 		{
-			gi.Printf(S_COLOR_YELLOW"WARNING: bad altmissilelightcolor in external weapon data '%f'\n", tokenFlt);
+			Com_Printf(S_COLOR_YELLOW"WARNING: bad altmissilelightcolor in external weapon data '%f'\n", tokenFlt);
 			continue;
 		}
 		weaponData[wpnParms.weaponNum].alt_missileDlightColor[i] = tokenFlt;
@@ -1220,7 +1220,7 @@ void WPN_MissileLight(const char **holdBuf)
 
 	if ((tokenFlt < 0) || (tokenFlt > 255 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad missilelight in external weapon data '%f'\n", tokenFlt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad missilelight in external weapon data '%f'\n", tokenFlt);
 	}
 	weaponData[wpnParms.weaponNum].missileDlight = tokenFlt;
 }
@@ -1237,7 +1237,7 @@ void WPN_AltMissileLight(const char **holdBuf)
 
 	if ((tokenFlt < 0) || (tokenFlt > 255 )) // FIXME :What are the right values?
 	{
-		gi.Printf(S_COLOR_YELLOW"WARNING: bad altmissilelight in external weapon data '%f'\n", tokenFlt);
+		Com_Printf(S_COLOR_YELLOW"WARNING: bad altmissilelight in external weapon data '%f'\n", tokenFlt);
 	}
 	weaponData[wpnParms.weaponNum].alt_missileDlight = tokenFlt;
 }
@@ -1258,7 +1258,7 @@ void WPN_FuncName(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: FuncName '%s' too long in external WEAPONS.DAT\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: FuncName '%s' too long in external WEAPONS.DAT\n", tokenStr);
 	}
 
 	for ( func_t* s=funcs ; s->name ; s++ ) {
@@ -1268,7 +1268,7 @@ void WPN_FuncName(const char **holdBuf)
 			return;
 		}
 	}
-	gi.Printf(S_COLOR_YELLOW"WARNING: FuncName '%s' in external WEAPONS.DAT does not exist\n", tokenStr);
+	Com_Printf(S_COLOR_YELLOW"WARNING: FuncName '%s' in external WEAPONS.DAT does not exist\n", tokenStr);
 }
 
 
@@ -1287,7 +1287,7 @@ void WPN_AltFuncName(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: AltFuncName '%s' too long in external WEAPONS.DAT\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: AltFuncName '%s' too long in external WEAPONS.DAT\n", tokenStr);
 	}
 
 	for ( func_t* s=funcs ; s->name ; s++ ) {
@@ -1297,7 +1297,7 @@ void WPN_AltFuncName(const char **holdBuf)
 			return;
 		}
 	}
-	gi.Printf(S_COLOR_YELLOW"WARNING: AltFuncName %s in external WEAPONS.DAT does not exist\n", tokenStr);
+	Com_Printf(S_COLOR_YELLOW"WARNING: AltFuncName %s in external WEAPONS.DAT does not exist\n", tokenStr);
 }
 
 //--------------------------------------------
@@ -1315,7 +1315,7 @@ void WPN_MuzzleEffect(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: MuzzleEffect '%s' too long in external WEAPONS.DAT\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: MuzzleEffect '%s' too long in external WEAPONS.DAT\n", tokenStr);
 	}
 
 	G_EffectIndex( tokenStr );
@@ -1337,7 +1337,7 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 	if (len > 64)
 	{
 		len = 64;
-		gi.Printf(S_COLOR_YELLOW"WARNING: AltMuzzleEffect '%s' too long in external WEAPONS.DAT\n", tokenStr);
+		Com_Printf(S_COLOR_YELLOW"WARNING: AltMuzzleEffect '%s' too long in external WEAPONS.DAT\n", tokenStr);
 	}
 
 	G_EffectIndex( tokenStr );

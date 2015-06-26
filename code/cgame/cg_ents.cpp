@@ -32,6 +32,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../game/wp_saber.h"
 #include "../game/g_vehicles.h"
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles);
 extern void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles );
 extern void CG_ForcePushBlur( const vec3_t org, qboolean darkSide = qfalse );
@@ -906,7 +909,7 @@ static void CG_Item( centity_t *cent )
 	es = &cent->currentState;
 	if ( es->modelindex >= bg_numItems ) 
 	{
-		CG_Error( "Bad item index %i on entity", es->modelindex );
+		Com_Error( ERR_DROP,  "Bad item index %i on entity", es->modelindex );
 	}
 /*
 Ghoul2 Insert Start
@@ -928,7 +931,7 @@ Ghoul2 Insert End
 
 	item = &bg_itemlist[ es->modelindex ];
 
-	if ( cg_simpleItems.integer ) 
+	if ( cg_simpleItems->integer )
 	{
 		memset( &ent, 0, sizeof( ent ) );
 		ent.reType = RT_SPRITE;
@@ -1675,7 +1678,7 @@ Ghoul2 Insert End
 		// it would be an internal error to find an entity that interpolates without
 		// a snapshot ahead of the current one
 		if ( cg.nextSnap == NULL ) {
-			CG_Error( "CG_AddCEntity: cg.nextSnap == NULL" );
+			Com_Error( ERR_DROP,  "CG_AddCEntity: cg.nextSnap == NULL" );
 		}
 
 		f = cg.frameInterpolation;
@@ -1847,7 +1850,7 @@ OutputDebugString(va("[%3d] nonext %4.2f t=%6d  st = %6d  nst = %6d     b=%6.2f 
 		// a snapshot ahead of the current one
 		if ( cg.nextSnap == NULL ) 
 		{
-			CG_Error( "CG_AddCEntity: cg.nextSnap == NULL" );
+			Com_Error( ERR_DROP,  "CG_AddCEntity: cg.nextSnap == NULL" );
 		}
 
 		f = cg.frameInterpolation;
@@ -2162,13 +2165,13 @@ void CG_MatrixEffect ( centity_t *cent )
 			/*
 			if ( g_timescale->integer < 100 )
 			{//something messed up timescale, reset it?
-				cgi_Cvar_Set( "timescale", "100" );
+				Cvar_Set("timescale", "100" );
 			}
 			*/
 		}
 		else
 		{//set it back to 1
-			cgi_Cvar_Set( "timescale", "1.0" );
+			Cvar_Set("timescale", "1.0" );
 		}
 		MatrixMode = qfalse;
 		cent->gent->e_clThinkFunc = clThinkF_NULL;
@@ -2216,9 +2219,9 @@ void CG_MatrixEffect ( centity_t *cent )
 		}
 		cg.overrides.thirdPersonAngle		*= X;
 
- //		gi.Printf("%f\n", cg.overrides.thirdPersonAngle);
+ //		Com_Printf("%f\n", cg.overrides.thirdPersonAngle);
 		cg.overrides.thirdPersonPitchOffset	 = 0.0f;
-		cg.overrides.thirdPersonRange		 = cg_thirdPersonRange.value * 3.0f;
+		cg.overrides.thirdPersonRange		 = cg_thirdPersonRange->value * 3.0f;
 	}
 
 	if ( !(cent->currentState.boltInfo&MEF_NO_SPIN) )
@@ -2235,7 +2238,7 @@ void CG_MatrixEffect ( centity_t *cent )
 	//do all the slowdown and vert bob stuff
 	if ( cent->currentState.angles2[0] )
 	{
-		cgi_Cvar_Set( "timescale", va("%4.2f",cent->currentState.angles2[0]) );
+		Cvar_Set("timescale", va("%4.2f",cent->currentState.angles2[0]));
 	}
 	else if ( !(cent->currentState.boltInfo&MEF_NO_TIMESCALE) )
 	{//ramp the timescale
@@ -2245,12 +2248,12 @@ void CG_MatrixEffect ( centity_t *cent )
 		{
 			timescale = 0.01f;
 		}
-		cgi_Cvar_Set( "timescale", va("%4.2f",timescale) );
+		Cvar_Set("timescale", va("%4.2f",timescale));
 	}
 	else
 	{//FIXME: MEF_HIT_GROUND_STOP: if they're on the ground, stop spinning and stop timescale
 		//FIXME: if they go to the menu, restore timescale?
-		//cgi_Cvar_Set( "timescale", "1.0ff" );
+		//Cvar_Set("timescale", "1.0ff" );
 	}
 
 	if ( !(cent->currentState.boltInfo&MEF_NO_VERTBOB) )
@@ -2258,7 +2261,7 @@ void CG_MatrixEffect ( centity_t *cent )
 		//pitch
 		//dip - FIXME: use pitchOffet?
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_POF;
-		cg.overrides.thirdPersonPitchOffset = cg_thirdPersonPitchOffset.value;
+		cg.overrides.thirdPersonPitchOffset = cg_thirdPersonPitchOffset->value;
 		if ( elapsedTime < MATRIX_EFFECT_TIME*0.33f )
 		{
 			cg.overrides.thirdPersonPitchOffset -= 30.0f*elapsedTime/(MATRIX_EFFECT_TIME*0.33);
@@ -2277,7 +2280,7 @@ void CG_MatrixEffect ( centity_t *cent )
 	{//vary the camera range
 		//pull back
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_RNG;
-		cg.overrides.thirdPersonRange = cg_thirdPersonRange.value;
+		cg.overrides.thirdPersonRange = cg_thirdPersonRange->value;
 		if ( elapsedTime < MATRIX_EFFECT_TIME*0.33 )
 		{
 			cg.overrides.thirdPersonRange += 80.0f*elapsedTime/(MATRIX_EFFECT_TIME*0.33);
@@ -2384,7 +2387,7 @@ Ghoul2 Insert End
 
 	switch ( cent->currentState.eType ) {
 	default:
-		CG_Error( "Bad entity type: %i\n", cent->currentState.eType );
+		Com_Error( ERR_DROP,  "Bad entity type: %i\n", cent->currentState.eType );
 		break;
 	case ET_INVISIBLE:
 	case ET_PUSH_TRIGGER:

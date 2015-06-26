@@ -1,5 +1,6 @@
 /*
-===========================================================================
+================================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
 Copyright (C) 2013 - 2015, OpenJK contributors
@@ -17,26 +18,25 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
-===========================================================================
+================================================================================
 */
 
-#ifndef __GAMEINFO_H__
-#define __GAMEINFO_H__
+// Functions exported by the main engine to plugin modules.
+//
+// When the plugin is loaded at runtime, it will have access to all of these
+// functions, because they are marked with QEXPORT.  There is no security
+// mechanism --- the plugin can do whatever introspection it likes to find other
+// functions.  The functions in this file are those that used to be exposed
+// through the syscall interface.
+
+#ifndef ENGINE_EXPORTS_HH
+#define ENGINE_EXPORTS_HH
+
+namespace ojk_engine_exports
+{
 
 
-#include "../qcommon/q_shared.h"
-#include <stdio.h>
 
-
-typedef struct {
-	int			(*FS_FOpenFile)( const char *qpath, fileHandle_t *file, fsMode_t mode );
-	int 		(*FS_Read)( void *buffer, int len, fileHandle_t f );
-	void		(*FS_FCloseFile)( fileHandle_t f );
-	int			(*FS_ReadFile)( const char *name, void **buf );
-	void		(*FS_FreeFile)( void *buf );
-} gameinfo_import_t;
-
-
-void GI_Init( gameinfo_import_t *import );
+}
 
 #endif

@@ -32,6 +32,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../rd-common/tr_font.h"
 #include "tr_WorldEffects.h"
 
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 glconfig_t	glConfig;
 glstate_t	glState;
 window_t	window;
@@ -406,7 +409,7 @@ static void GLimp_InitExtensions( void )
 	{
 		Com_Printf ("*** IGNORING OPENGL EXTENSIONS ***\n" );
 		g_bDynamicGlowSupported = false;
-		ri.Cvar_Set( "r_DynamicGlow","0" );
+		Cvar_Set("r_DynamicGlow","0");
 		return;
 	}
 
@@ -450,16 +453,16 @@ static void GLimp_InitExtensions( void )
 		{
 			Com_Printf ("...ignoring GL_EXT_texture_filter_anisotropic\n" );
 		}
-		ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+		Cvar_SetValue("r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy);
 		if ( r_ext_texture_filter_anisotropic->value > glConfig.maxTextureFilterAnisotropy )
 		{
-			ri.Cvar_SetValue( "r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy );
+			Cvar_SetValue("r_ext_texture_filter_anisotropic_avail", glConfig.maxTextureFilterAnisotropy);
 		}
 	}
 	else
 	{
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic not found\n" );
-		ri.Cvar_Set( "r_ext_texture_filter_anisotropic_avail", "0" );
+		Cvar_Set("r_ext_texture_filter_anisotropic_avail", "0");
 	}
 
 	// GL_EXT_clamp_to_edge
@@ -677,7 +680,7 @@ static void GLimp_InitExtensions( void )
 	else
 	{
 		g_bDynamicGlowSupported = false;
-		ri.Cvar_Set( "r_DynamicGlow","0" );
+		Cvar_Set("r_DynamicGlow", "0");
 	}
 }
 
@@ -1231,37 +1234,37 @@ void GfxInfo_f( void )
 		"GL_EXT_texture_compression_s3tc",
 	};
 
-	int fullscreen = ri.Cvar_VariableIntegerValue("r_fullscreen");
-	int noborder = ri.Cvar_VariableIntegerValue("r_noborder");
+	int fullscreen = Cvar_VariableIntegerValue("r_fullscreen");
+	int noborder = Cvar_VariableIntegerValue("r_noborder");
 
-	ri.Printf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
-	ri.Printf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
-	ri.Printf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
+	CL_RefPrintf( PRINT_ALL, "\nGL_VENDOR: %s\n", glConfig.vendor_string );
+	CL_RefPrintf( PRINT_ALL, "GL_RENDERER: %s\n", glConfig.renderer_string );
+	CL_RefPrintf( PRINT_ALL, "GL_VERSION: %s\n", glConfig.version_string );
 	R_PrintLongString(glConfig.extensions_string);
 	Com_Printf ("\n");
-	ri.Printf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
-	ri.Printf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
-	ri.Printf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
-	ri.Printf( PRINT_ALL, "MODE: %d, %d x %d %s%s hz:",
-				ri.Cvar_VariableIntegerValue("r_mode"),
+	CL_RefPrintf( PRINT_ALL, "GL_MAX_TEXTURE_SIZE: %d\n", glConfig.maxTextureSize );
+	CL_RefPrintf( PRINT_ALL, "GL_MAX_ACTIVE_TEXTURES_ARB: %d\n", glConfig.maxActiveTextures );
+	CL_RefPrintf( PRINT_ALL, "\nPIXELFORMAT: color(%d-bits) Z(%d-bit) stencil(%d-bits)\n", glConfig.colorBits, glConfig.depthBits, glConfig.stencilBits );
+	CL_RefPrintf( PRINT_ALL, "MODE: %d, %d x %d %s%s hz:",
+				Cvar_VariableIntegerValue("r_mode"),
 				glConfig.vidWidth, glConfig.vidHeight,
 				fullscreen == 0 ? noborderstrings[noborder == 1] : noborderstrings[0],
 				fsstrings[fullscreen == 1] );
 	if ( glConfig.displayFrequency )
 	{
-		ri.Printf( PRINT_ALL, "%d\n", glConfig.displayFrequency );
+		CL_RefPrintf( PRINT_ALL, "%d\n", glConfig.displayFrequency );
 	}
 	else
 	{
-		ri.Printf( PRINT_ALL, "N/A\n" );
+		CL_RefPrintf( PRINT_ALL, "N/A\n" );
 	}
 	if ( glConfig.deviceSupportsGamma )
 	{
-		ri.Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
+		CL_RefPrintf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
 	}
 	else
 	{
-		ri.Printf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
+		CL_RefPrintf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
 	}
 
 	// rendering primitives
@@ -1269,7 +1272,7 @@ void GfxInfo_f( void )
 		int		primitives;
 
 		// default is to use triangles if compiled vertex arrays are present
-		ri.Printf( PRINT_ALL, "rendering primitives: " );
+		CL_RefPrintf( PRINT_ALL, "rendering primitives: " );
 		primitives = r_primitives->integer;
 		if ( primitives == 0 ) {
 			if ( qglLockArraysEXT ) {
@@ -1279,53 +1282,53 @@ void GfxInfo_f( void )
 			}
 		}
 		if ( primitives == -1 ) {
-			ri.Printf( PRINT_ALL, "none\n" );
+			CL_RefPrintf( PRINT_ALL, "none\n" );
 		} else if ( primitives == 2 ) {
-			ri.Printf( PRINT_ALL, "single glDrawElements\n" );
+			CL_RefPrintf( PRINT_ALL, "single glDrawElements\n" );
 		} else if ( primitives == 1 ) {
-			ri.Printf( PRINT_ALL, "multiple glArrayElement\n" );
+			CL_RefPrintf( PRINT_ALL, "multiple glArrayElement\n" );
 		} else if ( primitives == 3 ) {
-			ri.Printf( PRINT_ALL, "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n" );
+			CL_RefPrintf( PRINT_ALL, "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n" );
 		}
 	}
 
-	ri.Printf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
-	ri.Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
-	ri.Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
-	ri.Printf( PRINT_ALL, "lightmap texture bits: %d\n", r_texturebitslm->integer );
-	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
-	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
-	ri.Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
-	ri.Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );
-	ri.Printf( PRINT_ALL, "compressed lightmaps: %s\n", enablestrings[(r_ext_compressed_lightmaps->integer != 0 && glConfig.textureCompression != TC_NONE)] );
-	ri.Printf( PRINT_ALL, "texture compression method: %s\n", tc_table[glConfig.textureCompression] );
-	ri.Printf( PRINT_ALL, "anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
+	CL_RefPrintf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
+	CL_RefPrintf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
+	CL_RefPrintf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
+	CL_RefPrintf( PRINT_ALL, "lightmap texture bits: %d\n", r_texturebitslm->integer );
+	CL_RefPrintf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
+	CL_RefPrintf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
+	CL_RefPrintf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
+	CL_RefPrintf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression != TC_NONE] );
+	CL_RefPrintf( PRINT_ALL, "compressed lightmaps: %s\n", enablestrings[(r_ext_compressed_lightmaps->integer != 0 && glConfig.textureCompression != TC_NONE)] );
+	CL_RefPrintf( PRINT_ALL, "texture compression method: %s\n", tc_table[glConfig.textureCompression] );
+	CL_RefPrintf( PRINT_ALL, "anisotropic filtering: %s  ", enablestrings[(r_ext_texture_filter_anisotropic->integer != 0) && glConfig.maxTextureFilterAnisotropy] );
 	if (r_ext_texture_filter_anisotropic->integer != 0 && glConfig.maxTextureFilterAnisotropy)
 	{
 		if (Q_isintegral(r_ext_texture_filter_anisotropic->value))
-			ri.Printf( PRINT_ALL, "(%i of ", (int)r_ext_texture_filter_anisotropic->value);
+			CL_RefPrintf( PRINT_ALL, "(%i of ", (int)r_ext_texture_filter_anisotropic->value);
 		else
-			ri.Printf( PRINT_ALL, "(%f of ", r_ext_texture_filter_anisotropic->value);
+			CL_RefPrintf( PRINT_ALL, "(%f of ", r_ext_texture_filter_anisotropic->value);
 
 		if (Q_isintegral(glConfig.maxTextureFilterAnisotropy))
-			ri.Printf( PRINT_ALL, "%i)\n", (int)glConfig.maxTextureFilterAnisotropy);
+			CL_RefPrintf( PRINT_ALL, "%i)\n", (int)glConfig.maxTextureFilterAnisotropy);
 		else
-			ri.Printf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
+			CL_RefPrintf( PRINT_ALL, "%f)\n", glConfig.maxTextureFilterAnisotropy);
 	}
-	ri.Printf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer ? 1 : 0] );
+	CL_RefPrintf( PRINT_ALL, "Dynamic Glow: %s\n", enablestrings[r_DynamicGlow->integer ? 1 : 0] );
 	if (g_bTextureRectangleHack) Com_Printf ("Dynamic Glow ATI BAD DRIVER HACK %s\n", enablestrings[g_bTextureRectangleHack] );
 
 	if ( r_finish->integer ) {
-		ri.Printf( PRINT_ALL, "Forcing glFinish\n" );
+		CL_RefPrintf( PRINT_ALL, "Forcing glFinish\n" );
 	}
 
-	int displayRefresh = ri.Cvar_VariableIntegerValue("r_displayRefresh");
+	int displayRefresh = Cvar_VariableIntegerValue("r_displayRefresh");
 	if ( displayRefresh ) {
-		ri.Printf( PRINT_ALL, "Display refresh set to %d\n", displayRefresh);
+		CL_RefPrintf( PRINT_ALL, "Display refresh set to %d\n", displayRefresh);
 	}
 	if (tr.world)
 	{
-		ri.Printf( PRINT_ALL, "Light Grid size set to (%.2f %.2f %.2f)\n", tr.world->lightGridSize[0], tr.world->lightGridSize[1], tr.world->lightGridSize[2] );
+		CL_RefPrintf( PRINT_ALL, "Light Grid size set to (%.2f %.2f %.2f)\n", tr.world->lightGridSize[0], tr.world->lightGridSize[1], tr.world->lightGridSize[2] );
 	}
 }
 
@@ -1354,13 +1357,13 @@ void R_FogDistance_f(void)
 
 	if (!tr.world)
 	{
-		ri.Printf(PRINT_ALL, "R_FogDistance_f: World is not initialized\n");
+		CL_RefPrintf(PRINT_ALL, "R_FogDistance_f: World is not initialized\n");
 		return;
 	}
 
 	if (tr.world->globalFog == -1)
 	{
-		ri.Printf(PRINT_ALL, "R_FogDistance_f: World does not have a global fog\n");
+		CL_RefPrintf(PRINT_ALL, "R_FogDistance_f: World does not have a global fog\n");
 		return;
 	}
 
@@ -1376,13 +1379,13 @@ void R_FogDistance_f(void)
 			distance = 1.0 / (8.0 * tr.world->fogs[tr.world->globalFog].tcScale);
 		}
 
-		ri.Printf(PRINT_ALL, "R_FogDistance_f: Current Distance: %.0f\n", distance);
+		CL_RefPrintf(PRINT_ALL, "R_FogDistance_f: Current Distance: %.0f\n", distance);
 		return;
 	}
 
 	if (ri.Cmd_Argc() != 2)
 	{
-		ri.Printf(PRINT_ALL, "R_FogDistance_f: Invalid number of arguments to set distance\n");
+		CL_RefPrintf(PRINT_ALL, "R_FogDistance_f: Invalid number of arguments to set distance\n");
 		return;
 	}
 
@@ -1412,13 +1415,13 @@ void R_FogColor_f(void)
 {
 	if (!tr.world)
 	{
-		ri.Printf(PRINT_ALL, "R_FogColor_f: World is not initialized\n");
+		CL_RefPrintf(PRINT_ALL, "R_FogColor_f: World is not initialized\n");
 		return;
 	}
 
 	if (tr.world->globalFog == -1)
 	{
-		ri.Printf(PRINT_ALL, "R_FogColor_f: World does not have a global fog\n");
+		CL_RefPrintf(PRINT_ALL, "R_FogColor_f: World does not have a global fog\n");
 		return;
 	}
 
@@ -1426,7 +1429,7 @@ void R_FogColor_f(void)
 	{
 		unsigned	i = tr.world->fogs[tr.world->globalFog].colorInt;
 
-		ri.Printf(PRINT_ALL, "R_FogColor_f: Current Color: %0f %0f %0f\n",
+		CL_RefPrintf(PRINT_ALL, "R_FogColor_f: Current Color: %0f %0f %0f\n",
 			( (byte *)&i )[0] / 255.0,
 			( (byte *)&i )[1] / 255.0,
 			( (byte *)&i )[2] / 255.0);
@@ -1435,7 +1438,7 @@ void R_FogColor_f(void)
 
 	if (ri.Cmd_Argc() != 4)
 	{
-		ri.Printf(PRINT_ALL, "R_FogColor_f: Invalid number of arguments to set color\n");
+		CL_RefPrintf(PRINT_ALL, "R_FogColor_f: Invalid number of arguments to set color\n");
 		return;
 	}
 
@@ -1493,176 +1496,176 @@ void R_Register( void )
 	// latched and archived variables
 	//
 
-	r_allowExtensions = ri.Cvar_Get( "r_allowExtensions", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_compressed_textures = ri.Cvar_Get( "r_ext_compress_textures", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_compressed_lightmaps = ri.Cvar_Get( "r_ext_compress_lightmaps", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_preferred_tc_method = ri.Cvar_Get( "r_ext_preferred_tc_method", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_gamma_control = ri.Cvar_Get( "r_ext_gamma_control", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_multitexture = ri.Cvar_Get( "r_ext_multitexture", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_ext_compiled_vertex_array = ri.Cvar_Get( "r_ext_compiled_vertex_array", "1", CVAR_ARCHIVE | CVAR_LATCH);
-	r_ext_texture_env_add = ri.Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE | CVAR_LATCH);
-	r_ext_texture_filter_anisotropic = ri.Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
+	r_allowExtensions = Cvar_Get( "r_allowExtensions", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_compressed_textures = Cvar_Get( "r_ext_compress_textures", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_compressed_lightmaps = Cvar_Get( "r_ext_compress_lightmaps", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_preferred_tc_method = Cvar_Get( "r_ext_preferred_tc_method", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_gamma_control = Cvar_Get( "r_ext_gamma_control", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_multitexture = Cvar_Get( "r_ext_multitexture", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_ext_compiled_vertex_array = Cvar_Get( "r_ext_compiled_vertex_array", "1", CVAR_ARCHIVE | CVAR_LATCH);
+	r_ext_texture_env_add = Cvar_Get( "r_ext_texture_env_add", "1", CVAR_ARCHIVE | CVAR_LATCH);
+	r_ext_texture_filter_anisotropic = Cvar_Get( "r_ext_texture_filter_anisotropic", "16", CVAR_ARCHIVE );
 
-	r_DynamicGlow = ri.Cvar_Get( "r_DynamicGlow", "0", CVAR_ARCHIVE );
-	r_DynamicGlowPasses = ri.Cvar_Get( "r_DynamicGlowPasses", "5", CVAR_ARCHIVE );
-	r_DynamicGlowDelta  = ri.Cvar_Get( "r_DynamicGlowDelta", "0.8f", CVAR_ARCHIVE );
-	r_DynamicGlowIntensity = ri.Cvar_Get( "r_DynamicGlowIntensity", "1.13f", CVAR_ARCHIVE );
-	r_DynamicGlowSoft = ri.Cvar_Get( "r_DynamicGlowSoft", "1", CVAR_ARCHIVE );
-	r_DynamicGlowWidth = ri.Cvar_Get( "r_DynamicGlowWidth", "320", CVAR_ARCHIVE | CVAR_LATCH );
-	r_DynamicGlowHeight = ri.Cvar_Get( "r_DynamicGlowHeight", "240", CVAR_ARCHIVE | CVAR_LATCH );
+	r_DynamicGlow = Cvar_Get( "r_DynamicGlow", "0", CVAR_ARCHIVE );
+	r_DynamicGlowPasses = Cvar_Get( "r_DynamicGlowPasses", "5", CVAR_ARCHIVE );
+	r_DynamicGlowDelta  = Cvar_Get( "r_DynamicGlowDelta", "0.8f", CVAR_ARCHIVE );
+	r_DynamicGlowIntensity = Cvar_Get( "r_DynamicGlowIntensity", "1.13f", CVAR_ARCHIVE );
+	r_DynamicGlowSoft = Cvar_Get( "r_DynamicGlowSoft", "1", CVAR_ARCHIVE );
+	r_DynamicGlowWidth = Cvar_Get( "r_DynamicGlowWidth", "320", CVAR_ARCHIVE | CVAR_LATCH );
+	r_DynamicGlowHeight = Cvar_Get( "r_DynamicGlowHeight", "240", CVAR_ARCHIVE | CVAR_LATCH );
 
-	r_picmip = ri.Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	ri.Cvar_CheckRange( r_picmip, 0, 16, qtrue );
-	r_colorMipLevels = ri.Cvar_Get ("r_colorMipLevels", "0", CVAR_LATCH );
-	r_detailTextures = ri.Cvar_Get( "r_detailtextures", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_texturebits = ri.Cvar_Get( "r_texturebits", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_texturebitslm = ri.Cvar_Get( "r_texturebitslm", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_overBrightBits = ri.Cvar_Get ("r_overBrightBits", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_mapOverBrightBits = ri.Cvar_Get( "r_mapOverBrightBits", "0", CVAR_ARCHIVE|CVAR_LATCH );
-	r_simpleMipMaps = ri.Cvar_Get( "r_simpleMipMaps", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_vertexLight = ri.Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );
-	r_subdivisions = ri.Cvar_Get ("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
-	ri.Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
-	r_intensity = ri.Cvar_Get ("r_intensity", "1", CVAR_LATCH|CVAR_ARCHIVE );
+	r_picmip = Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	Cvar_CheckRange( r_picmip, 0, 16, qtrue );
+	r_colorMipLevels = Cvar_Get ("r_colorMipLevels", "0", CVAR_LATCH );
+	r_detailTextures = Cvar_Get( "r_detailtextures", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_texturebits = Cvar_Get( "r_texturebits", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_texturebitslm = Cvar_Get( "r_texturebitslm", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_overBrightBits = Cvar_Get ("r_overBrightBits", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_mapOverBrightBits = Cvar_Get( "r_mapOverBrightBits", "0", CVAR_ARCHIVE|CVAR_LATCH );
+	r_simpleMipMaps = Cvar_Get( "r_simpleMipMaps", "1", CVAR_ARCHIVE | CVAR_LATCH );
+	r_vertexLight = Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_subdivisions = Cvar_Get ("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
+	Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
+	r_intensity = Cvar_Get ("r_intensity", "1", CVAR_LATCH|CVAR_ARCHIVE );
 
 	//
 	// temporary latched variables that can only change over a restart
 	//
-	r_fullbright = ri.Cvar_Get ("r_fullbright", "0", CVAR_LATCH );
-	r_singleShader = ri.Cvar_Get ("r_singleShader", "0", CVAR_CHEAT | CVAR_LATCH );
+	r_fullbright = Cvar_Get ("r_fullbright", "0", CVAR_LATCH );
+	r_singleShader = Cvar_Get ("r_singleShader", "0", CVAR_CHEAT | CVAR_LATCH );
 
 	//
 	// archived variables that can change at any time
 	//
-	r_lodCurveError = ri.Cvar_Get( "r_lodCurveError", "250", CVAR_ARCHIVE );
-	r_lodbias = ri.Cvar_Get( "r_lodbias", "0", CVAR_ARCHIVE );
-	r_flares = ri.Cvar_Get ("r_flares", "1", CVAR_ARCHIVE );
-	r_lodscale = ri.Cvar_Get( "r_lodscale", "10", CVAR_ARCHIVE );
+	r_lodCurveError = Cvar_Get( "r_lodCurveError", "250", CVAR_ARCHIVE );
+	r_lodbias = Cvar_Get( "r_lodbias", "0", CVAR_ARCHIVE );
+	r_flares = Cvar_Get ("r_flares", "1", CVAR_ARCHIVE );
+	r_lodscale = Cvar_Get( "r_lodscale", "10", CVAR_ARCHIVE );
 
-	r_znear = ri.Cvar_Get( "r_znear", "4", CVAR_ARCHIVE );	//if set any lower, you lose a lot of precision in the distance
-	ri.Cvar_CheckRange( r_znear, 0.001f, 10, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
-	r_ignoreGLErrors = ri.Cvar_Get( "r_ignoreGLErrors", "1", CVAR_ARCHIVE );
-	r_fastsky = ri.Cvar_Get( "r_fastsky", "0", CVAR_ARCHIVE );
-	r_drawSun = ri.Cvar_Get( "r_drawSun", "0", CVAR_ARCHIVE );
-	r_dynamiclight = ri.Cvar_Get( "r_dynamiclight", "1", CVAR_ARCHIVE );
+	r_znear = Cvar_Get( "r_znear", "4", CVAR_ARCHIVE );	//if set any lower, you lose a lot of precision in the distance
+	Cvar_CheckRange( r_znear, 0.001f, 10, qfalse ); // was qtrue in JA, is qfalse properly in ioq3
+	r_ignoreGLErrors = Cvar_Get( "r_ignoreGLErrors", "1", CVAR_ARCHIVE );
+	r_fastsky = Cvar_Get( "r_fastsky", "0", CVAR_ARCHIVE );
+	r_drawSun = Cvar_Get( "r_drawSun", "0", CVAR_ARCHIVE );
+	r_dynamiclight = Cvar_Get( "r_dynamiclight", "1", CVAR_ARCHIVE );
 	// rjr - removed for hacking
-//	r_dlightBacks = ri.Cvar_Get( "r_dlightBacks", "0", CVAR_ARCHIVE );
-	r_finish = ri.Cvar_Get ("r_finish", "0", CVAR_ARCHIVE);
-	r_textureMode = ri.Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
-	r_gamma = ri.Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE );
-	r_facePlaneCull = ri.Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE );
+//	r_dlightBacks = Cvar_Get( "r_dlightBacks", "0", CVAR_ARCHIVE );
+	r_finish = Cvar_Get ("r_finish", "0", CVAR_ARCHIVE);
+	r_textureMode = Cvar_Get( "r_textureMode", "GL_LINEAR_MIPMAP_LINEAR", CVAR_ARCHIVE );
+	r_gamma = Cvar_Get( "r_gamma", "1", CVAR_ARCHIVE );
+	r_facePlaneCull = Cvar_Get ("r_facePlaneCull", "1", CVAR_ARCHIVE );
 
-	r_dlightStyle = ri.Cvar_Get ("r_dlightStyle", "1", CVAR_ARCHIVE);
-	r_surfaceSprites = ri.Cvar_Get ("r_surfaceSprites", "1", CVAR_ARCHIVE);
-	r_surfaceWeather = ri.Cvar_Get ("r_surfaceWeather", "0", CVAR_TEMP);
+	r_dlightStyle = Cvar_Get ("r_dlightStyle", "1", CVAR_ARCHIVE);
+	r_surfaceSprites = Cvar_Get ("r_surfaceSprites", "1", CVAR_ARCHIVE);
+	r_surfaceWeather = Cvar_Get ("r_surfaceWeather", "0", CVAR_TEMP);
 
-	r_windSpeed = ri.Cvar_Get ("r_windSpeed", "0", 0);
-	r_windAngle = ri.Cvar_Get ("r_windAngle", "0", 0);
-	r_windGust = ri.Cvar_Get ("r_windGust", "0", 0);
-	r_windDampFactor = ri.Cvar_Get ("r_windDampFactor", "0.1", 0);
-	r_windPointForce = ri.Cvar_Get ("r_windPointForce", "0", 0);
-	r_windPointX = ri.Cvar_Get ("r_windPointX", "0", 0);
-	r_windPointY = ri.Cvar_Get ("r_windPointY", "0", 0);
+	r_windSpeed = Cvar_Get ("r_windSpeed", "0", 0);
+	r_windAngle = Cvar_Get ("r_windAngle", "0", 0);
+	r_windGust = Cvar_Get ("r_windGust", "0", 0);
+	r_windDampFactor = Cvar_Get ("r_windDampFactor", "0.1", 0);
+	r_windPointForce = Cvar_Get ("r_windPointForce", "0", 0);
+	r_windPointX = Cvar_Get ("r_windPointX", "0", 0);
+	r_windPointY = Cvar_Get ("r_windPointY", "0", 0);
 
-	r_primitives = ri.Cvar_Get( "r_primitives", "0", CVAR_ARCHIVE );
-	ri.Cvar_CheckRange( r_primitives, MIN_PRIMITIVES, MAX_PRIMITIVES, qtrue );
+	r_primitives = Cvar_Get( "r_primitives", "0", CVAR_ARCHIVE );
+	Cvar_CheckRange( r_primitives, MIN_PRIMITIVES, MAX_PRIMITIVES, qtrue );
 
-	r_ambientScale = ri.Cvar_Get( "r_ambientScale", "0.5", CVAR_CHEAT );
-	r_directedScale = ri.Cvar_Get( "r_directedScale", "1", CVAR_CHEAT );
+	r_ambientScale = Cvar_Get( "r_ambientScale", "0.5", CVAR_CHEAT );
+	r_directedScale = Cvar_Get( "r_directedScale", "1", CVAR_CHEAT );
 
 	//
 	// temporary variables that can change at any time
 	//
-	r_showImages = ri.Cvar_Get( "r_showImages", "0", CVAR_CHEAT );
+	r_showImages = Cvar_Get( "r_showImages", "0", CVAR_CHEAT );
 
-	r_debugLight = ri.Cvar_Get( "r_debuglight", "0", CVAR_TEMP );
-	r_debugStyle = ri.Cvar_Get( "r_debugStyle", "-1", CVAR_CHEAT );
-	r_debugSort = ri.Cvar_Get( "r_debugSort", "0", CVAR_CHEAT );
+	r_debugLight = Cvar_Get( "r_debuglight", "0", CVAR_TEMP );
+	r_debugStyle = Cvar_Get( "r_debugStyle", "-1", CVAR_CHEAT );
+	r_debugSort = Cvar_Get( "r_debugSort", "0", CVAR_CHEAT );
 
-	r_nocurves = ri.Cvar_Get ("r_nocurves", "0", CVAR_CHEAT );
-	r_drawworld = ri.Cvar_Get ("r_drawworld", "1", CVAR_CHEAT );
+	r_nocurves = Cvar_Get ("r_nocurves", "0", CVAR_CHEAT );
+	r_drawworld = Cvar_Get ("r_drawworld", "1", CVAR_CHEAT );
 #ifdef JK2_MODE
-	r_drawfog = ri.Cvar_Get ("r_drawfog", "1", CVAR_CHEAT );
+	r_drawfog = Cvar_Get ("r_drawfog", "1", CVAR_CHEAT );
 #else
-	r_drawfog = ri.Cvar_Get ("r_drawfog", "2", CVAR_CHEAT );
+	r_drawfog = Cvar_Get ("r_drawfog", "2", CVAR_CHEAT );
 #endif
-	r_lightmap = ri.Cvar_Get ("r_lightmap", "0", CVAR_CHEAT );
-	r_portalOnly = ri.Cvar_Get ("r_portalOnly", "0", CVAR_CHEAT );
+	r_lightmap = Cvar_Get ("r_lightmap", "0", CVAR_CHEAT );
+	r_portalOnly = Cvar_Get ("r_portalOnly", "0", CVAR_CHEAT );
 
-	r_skipBackEnd = ri.Cvar_Get ("r_skipBackEnd", "0", CVAR_CHEAT);
+	r_skipBackEnd = Cvar_Get ("r_skipBackEnd", "0", CVAR_CHEAT);
 
-	r_measureOverdraw = ri.Cvar_Get( "r_measureOverdraw", "0", CVAR_CHEAT );
-	r_norefresh = ri.Cvar_Get ("r_norefresh", "0", CVAR_CHEAT);
-	r_drawentities = ri.Cvar_Get ("r_drawentities", "1", CVAR_CHEAT );
-	r_ignore = ri.Cvar_Get( "r_ignore", "1", CVAR_TEMP );
-	r_nocull = ri.Cvar_Get ("r_nocull", "0", CVAR_CHEAT);
-	r_novis = ri.Cvar_Get ("r_novis", "0", CVAR_CHEAT);
-	r_showcluster = ri.Cvar_Get ("r_showcluster", "0", CVAR_CHEAT);
-	r_speeds = ri.Cvar_Get ("r_speeds", "0", CVAR_CHEAT);
-	r_verbose = ri.Cvar_Get( "r_verbose", "0", CVAR_CHEAT );
-	r_logFile = ri.Cvar_Get( "r_logFile", "0", CVAR_CHEAT );
-	r_debugSurface = ri.Cvar_Get ("r_debugSurface", "0", CVAR_CHEAT);
-	r_nobind = ri.Cvar_Get ("r_nobind", "0", CVAR_CHEAT);
-	r_showtris = ri.Cvar_Get ("r_showtris", "0", CVAR_CHEAT);
-	r_showtriscolor = ri.Cvar_Get ("r_showtriscolor", "0", CVAR_ARCHIVE);
-	r_showsky = ri.Cvar_Get ("r_showsky", "0", CVAR_CHEAT);
-	r_shownormals = ri.Cvar_Get ("r_shownormals", "0", CVAR_CHEAT);
-	r_clear = ri.Cvar_Get ("r_clear", "0", CVAR_CHEAT);
-	r_offsetFactor = ri.Cvar_Get( "r_offsetfactor", "-1", CVAR_CHEAT );
-	r_offsetUnits = ri.Cvar_Get( "r_offsetunits", "-2", CVAR_CHEAT );
-	r_lockpvs = ri.Cvar_Get ("r_lockpvs", "0", CVAR_CHEAT);
-	r_noportals = ri.Cvar_Get ("r_noportals", "0", CVAR_CHEAT);
-	r_shadows = ri.Cvar_Get( "cg_shadows", "1", 0 );
-	r_shadowRange = ri.Cvar_Get( "r_shadowRange", "1000", CVAR_ARCHIVE );
+	r_measureOverdraw = Cvar_Get( "r_measureOverdraw", "0", CVAR_CHEAT );
+	r_norefresh = Cvar_Get ("r_norefresh", "0", CVAR_CHEAT);
+	r_drawentities = Cvar_Get ("r_drawentities", "1", CVAR_CHEAT );
+	r_ignore = Cvar_Get( "r_ignore", "1", CVAR_TEMP );
+	r_nocull = Cvar_Get ("r_nocull", "0", CVAR_CHEAT);
+	r_novis = Cvar_Get ("r_novis", "0", CVAR_CHEAT);
+	r_showcluster = Cvar_Get ("r_showcluster", "0", CVAR_CHEAT);
+	r_speeds = Cvar_Get ("r_speeds", "0", CVAR_CHEAT);
+	r_verbose = Cvar_Get( "r_verbose", "0", CVAR_CHEAT );
+	r_logFile = Cvar_Get( "r_logFile", "0", CVAR_CHEAT );
+	r_debugSurface = Cvar_Get ("r_debugSurface", "0", CVAR_CHEAT);
+	r_nobind = Cvar_Get ("r_nobind", "0", CVAR_CHEAT);
+	r_showtris = Cvar_Get ("r_showtris", "0", CVAR_CHEAT);
+	r_showtriscolor = Cvar_Get ("r_showtriscolor", "0", CVAR_ARCHIVE);
+	r_showsky = Cvar_Get ("r_showsky", "0", CVAR_CHEAT);
+	r_shownormals = Cvar_Get ("r_shownormals", "0", CVAR_CHEAT);
+	r_clear = Cvar_Get ("r_clear", "0", CVAR_CHEAT);
+	r_offsetFactor = Cvar_Get( "r_offsetfactor", "-1", CVAR_CHEAT );
+	r_offsetUnits = Cvar_Get( "r_offsetunits", "-2", CVAR_CHEAT );
+	r_lockpvs = Cvar_Get ("r_lockpvs", "0", CVAR_CHEAT);
+	r_noportals = Cvar_Get ("r_noportals", "0", CVAR_CHEAT);
+	r_shadows = Cvar_Get( "cg_shadows", "1", 0 );
+	r_shadowRange = Cvar_Get( "r_shadowRange", "1000", CVAR_ARCHIVE );
 
 /*
 Ghoul2 Insert Start
 */
-	r_noGhoul2 = ri.Cvar_Get( "r_noghoul2", "0", CVAR_CHEAT);
-	r_Ghoul2AnimSmooth = ri.Cvar_Get( "r_ghoul2animsmooth", "0.25", 0);
-	r_Ghoul2UnSqash = ri.Cvar_Get( "r_ghoul2unsquash", "1", 0);
-	r_Ghoul2TimeBase = ri.Cvar_Get( "r_ghoul2timebase", "2", 0);
-	r_Ghoul2NoLerp = ri.Cvar_Get( "r_ghoul2nolerp", "0", 0);
-	r_Ghoul2NoBlend = ri.Cvar_Get( "r_ghoul2noblend", "0", 0);
-	r_Ghoul2BlendMultiplier = ri.Cvar_Get( "r_ghoul2blendmultiplier", "1", 0);
-	r_Ghoul2UnSqashAfterSmooth = ri.Cvar_Get( "r_ghoul2unsquashaftersmooth", "1", 0);
+	r_noGhoul2 = Cvar_Get( "r_noghoul2", "0", CVAR_CHEAT);
+	r_Ghoul2AnimSmooth = Cvar_Get( "r_ghoul2animsmooth", "0.25", 0);
+	r_Ghoul2UnSqash = Cvar_Get( "r_ghoul2unsquash", "1", 0);
+	r_Ghoul2TimeBase = Cvar_Get( "r_ghoul2timebase", "2", 0);
+	r_Ghoul2NoLerp = Cvar_Get( "r_ghoul2nolerp", "0", 0);
+	r_Ghoul2NoBlend = Cvar_Get( "r_ghoul2noblend", "0", 0);
+	r_Ghoul2BlendMultiplier = Cvar_Get( "r_ghoul2blendmultiplier", "1", 0);
+	r_Ghoul2UnSqashAfterSmooth = Cvar_Get( "r_ghoul2unsquashaftersmooth", "1", 0);
 
-	broadsword = ri.Cvar_Get( "broadsword", "1", 0);
-	broadsword_kickbones = ri.Cvar_Get( "broadsword_kickbones", "1", 0);
-	broadsword_kickorigin = ri.Cvar_Get( "broadsword_kickorigin", "1", 0);
-	broadsword_dontstopanim = ri.Cvar_Get( "broadsword_dontstopanim", "0", 0);
-	broadsword_waitforshot = ri.Cvar_Get( "broadsword_waitforshot", "0", 0);
-	broadsword_playflop = ri.Cvar_Get( "broadsword_playflop", "1", 0);
-	broadsword_smallbbox = ri.Cvar_Get( "broadsword_smallbbox", "0", 0);
-	broadsword_extra1 = ri.Cvar_Get( "broadsword_extra1", "0", 0);
-	broadsword_extra2 = ri.Cvar_Get( "broadsword_extra2", "0", 0);
-	broadsword_effcorr = ri.Cvar_Get( "broadsword_effcorr", "1", 0);
-	broadsword_ragtobase = ri.Cvar_Get( "broadsword_ragtobase", "2", 0);
-	broadsword_dircap = ri.Cvar_Get( "broadsword_dircap", "64", 0);
+	broadsword = Cvar_Get( "broadsword", "1", 0);
+	broadsword_kickbones = Cvar_Get( "broadsword_kickbones", "1", 0);
+	broadsword_kickorigin = Cvar_Get( "broadsword_kickorigin", "1", 0);
+	broadsword_dontstopanim = Cvar_Get( "broadsword_dontstopanim", "0", 0);
+	broadsword_waitforshot = Cvar_Get( "broadsword_waitforshot", "0", 0);
+	broadsword_playflop = Cvar_Get( "broadsword_playflop", "1", 0);
+	broadsword_smallbbox = Cvar_Get( "broadsword_smallbbox", "0", 0);
+	broadsword_extra1 = Cvar_Get( "broadsword_extra1", "0", 0);
+	broadsword_extra2 = Cvar_Get( "broadsword_extra2", "0", 0);
+	broadsword_effcorr = Cvar_Get( "broadsword_effcorr", "1", 0);
+	broadsword_ragtobase = Cvar_Get( "broadsword_ragtobase", "2", 0);
+	broadsword_dircap = Cvar_Get( "broadsword_dircap", "64", 0);
 
 /*
 Ghoul2 Insert End
 */
 
-	sv_mapname = ri.Cvar_Get ( "mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM );
-	sv_mapChecksum = ri.Cvar_Get ( "sv_mapChecksum", "", CVAR_ROM );
-	se_language = ri.Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
+	sv_mapname = Cvar_Get ( "mapname", "nomap", CVAR_SERVERINFO | CVAR_ROM );
+	sv_mapChecksum = Cvar_Get ( "sv_mapChecksum", "", CVAR_ROM );
+	se_language = Cvar_Get ( "se_language", "english", CVAR_ARCHIVE | CVAR_NORESTART );
 #ifdef JK2_MODE
-	sp_language = ri.Cvar_Get ( "sp_language", va("%d", SP_LANGUAGE_ENGLISH), CVAR_ARCHIVE | CVAR_NORESTART );
+	sp_language = Cvar_Get ( "sp_language", va("%d", SP_LANGUAGE_ENGLISH), CVAR_ARCHIVE | CVAR_NORESTART );
 #endif
-	com_buildScript = ri.Cvar_Get ( "com_buildScript", "0", 0 );
+	com_buildScript = Cvar_Get ( "com_buildScript", "0", 0 );
 
-	r_modelpoolmegs = ri.Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
+	r_modelpoolmegs = Cvar_Get("r_modelpoolmegs", "20", CVAR_ARCHIVE);
 	if (ri.LowPhysicalMemory() )
 	{
-		ri.Cvar_Set("r_modelpoolmegs", "0");
+		Cvar_Set("r_modelpoolmegs", "0");
 	}
 
-	r_environmentMapping = ri.Cvar_Get( "r_environmentMapping", "1", CVAR_ARCHIVE );
+	r_environmentMapping = Cvar_Get( "r_environmentMapping", "1", CVAR_ARCHIVE );
 
-	r_screenshotJpegQuality				= ri.Cvar_Get( "r_screenshotJpegQuality",			"95",						CVAR_ARCHIVE );
+	r_screenshotJpegQuality				= Cvar_Get( "r_screenshotJpegQuality",			"95",						CVAR_ARCHIVE );
 
-	ri.Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
+	Cvar_CheckRange( r_screenshotJpegQuality, 10, 100, qtrue );
 
 	for ( size_t i = 0; i < numCommands; i++ )
 		ri.Cmd_AddCommand( commands[i].cmd, commands[i].func );
@@ -1685,7 +1688,7 @@ void R_Init( void ) {
 	int	err;
 	int i;
 
-	//ri.Printf( PRINT_ALL, "----- R_Init -----\n" );
+	//CL_RefPrintf( PRINT_ALL, "----- R_Init -----\n" );
 
 	ShaderEntryPtrs_Clear();
 
@@ -1751,13 +1754,13 @@ void R_Init( void ) {
 
 	err = qglGetError();
 	if ( err != GL_NO_ERROR )
-		ri.Printf (PRINT_ALL, "glGetError() = 0x%x\n", err);
+		CL_RefPrintf (PRINT_ALL, "glGetError() = 0x%x\n", err);
 
 	RestoreGhoul2InfoArray();
 	// print info
 	GfxInfo_f();
 
-	//ri.Printf( PRINT_ALL, "----- finished R_Init -----\n" );
+	//CL_RefPrintf( PRINT_ALL, "----- finished R_Init -----\n" );
 }
 
 /*
@@ -1965,7 +1968,7 @@ extern "C" Q_EXPORT refexport_t* GetRefAPI ( int apiVersion, refimport_t *refimp
 	memset( &re, 0, sizeof( re ) );
 
 	if ( apiVersion != REF_API_VERSION ) {
-		ri.Printf(PRINT_ALL, "Mismatched REF_API_VERSION: expected %i, got %i\n",
+		CL_RefPrintf(PRINT_ALL, "Mismatched REF_API_VERSION: expected %i, got %i\n",
 			REF_API_VERSION, apiVersion );
 		return NULL;
 	}

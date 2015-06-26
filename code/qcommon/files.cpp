@@ -2997,7 +2997,7 @@ void FS_InitFilesystem( void ) {
 		requestbase = true;
 
 	if ( requestbase )
-		Cvar_Set2( "fs_game", "", qtrue );
+		Cvar_Set("fs_game", "");
 
 	// try to start up normally
 	FS_Startup( BASEGAME );

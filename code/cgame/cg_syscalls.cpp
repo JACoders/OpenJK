@@ -23,49 +23,26 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_headers.h"
 
+// Access functions exported from the main engine.
+#include "../qcommon/cvar_exports.hh"
+#include "../qcommon/io_exports.hh"
+
 // this file is only included when building a dll
 
 //prototypes
 extern void CG_PreInit();
 
-static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
+static intptr_t (*Q_syscall)( intptr_t arg, ... ) = (intptr_t (*)( intptr_t, ...))-1;
 
-extern "C" Q_EXPORT void QDECL dllEntry( intptr_t (QDECL  *syscallptr)( intptr_t arg, ... ) ) {
+extern "C" Q_EXPORT void dllEntry( intptr_t (*syscallptr)( intptr_t arg, ... ) ) {
 	Q_syscall = syscallptr;
 	CG_PreInit();
 }
-
 
 inline int PASSFLOAT( float x ) {
 	byteAlias_t fi;
 	fi.f = x;
 	return fi.i;
-}
-
-void	cgi_Printf( const char *fmt ) {
-	Q_syscall( CG_PRINT, fmt );
-}
-
-void	cgi_Error( const char *fmt ) {
-	Q_syscall( CG_ERROR, fmt );
-	// shut up GCC warning about returning functions, because we know better
-	exit(1);
-}
-
-int		cgi_Milliseconds( void ) {
-	return Q_syscall( CG_MILLISECONDS ); 
-}
-
-void	cgi_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags ) {
-	Q_syscall( CG_CVAR_REGISTER, vmCvar, varName, defaultValue, flags );
-}
-
-void	cgi_Cvar_Update( vmCvar_t *vmCvar ) {
-	Q_syscall( CG_CVAR_UPDATE, vmCvar );
-}
-
-void	cgi_Cvar_Set( const char *var_name, const char *value ) {
-	Q_syscall( CG_CVAR_SET, var_name, value );
 }
 
 int		cgi_Argc( void ) {

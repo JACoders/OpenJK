@@ -28,8 +28,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_media.h"	//for cgs.model_draw for G2
 
-extern vmCvar_t	fx_debug;
-extern vmCvar_t	fx_freeze;
+// Get functions and structures exported by main engine.
+#include "../qcommon/cvar_exports.hh"
+
+extern cvar_t *fx_debug;
+extern cvar_t *fx_freeze;
 
 extern void CG_ExplosionEffects( vec3_t origin, float intensity, int radius, int time );
 
@@ -52,7 +55,7 @@ void SFxHelper::Print( const char *msg, ... )
 	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end( argptr );
  
-	gi.Printf( text );
+	Com_Printf( text );
 
 #endif
 }
@@ -60,7 +63,7 @@ void SFxHelper::Print( const char *msg, ... )
 //------------------------------------------------------
 void SFxHelper::AdjustTime( int frameTime )
 {
-	if ( fx_freeze.integer || ( frameTime <= 0 ))
+	if ( fx_freeze->integer || ( frameTime <= 0 ))
 	{
 		// Allow no time progression when we are paused.
 		mFrameTime = 0;
@@ -68,7 +71,7 @@ void SFxHelper::AdjustTime( int frameTime )
 	}
 	else
 	{
-		if ( !cg_paused.integer )
+		if ( !cg_paused->integer )
 		{
 			if ( frameTime > 300 ) // hack for returning from paused and time bursts
 			{

@@ -90,7 +90,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef QAGAME //we only want a few of these functions for BG
 
 extern float DotToSpot( vec3_t spot, vec3_t from, vec3_t fromAngles );
-extern vmCvar_t	cg_thirdPersonAlpha;
+extern cvar_t* cg_thirdPersonAlpha;
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern cvar_t	*g_speederControlScheme;

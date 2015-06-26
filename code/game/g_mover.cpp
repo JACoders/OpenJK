@@ -172,7 +172,7 @@ qboolean	G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, v
 
 	// save off the old position
 	if (pushed_p > &pushed[MAX_GENTITIES]) {
-		G_Error( "pushed_p > &pushed[MAX_GENTITIES]" );
+		Com_Error(ERR_DROP,  "pushed_p > &pushed[MAX_GENTITIES]" );
 	}
 	pushed_p->ent = check;
 	VectorCopy (check->s.pos.trBase, pushed_p->origin);
@@ -792,7 +792,7 @@ void Reached_BinaryMover( gentity_t *ent )
 	} 
 	else 
 	{
-		G_Error( "Reached_BinaryMover: bad moverState" );
+		Com_Error(ERR_DROP,  "Reached_BinaryMover: bad moverState" );
 	}
 }
 
@@ -1956,7 +1956,7 @@ void Think_SetupTrainTargets( gentity_t *ent ) {
 
 	ent->nextTrain = G_Find( NULL, FOFS(targetname), ent->target );
 	if ( !ent->nextTrain ) {
-		gi.Printf( "func_train at %s with an unfound target\n", vtos(ent->absmin) );
+		Com_Printf( "func_train at %s with an unfound target\n", vtos(ent->absmin) );
 		//Free me?`
 		return;
 	}
@@ -1972,14 +1972,14 @@ void Think_SetupTrainTargets( gentity_t *ent ) {
 	for ( path = ent->nextTrain ; path != start ; path = next ) {
 		if (!iterations--)
 		{
-			G_Error( "Think_SetupTrainTargets:  last path_corner doesn't link back to first on func_train(%s)", vtos(ent->absmin) );
+			Com_Error(ERR_DROP,  "Think_SetupTrainTargets:  last path_corner doesn't link back to first on func_train(%s)", vtos(ent->absmin) );
 		}
 		if (!start)
 		{
 			start = path;
 		}
 		if ( !path->target ) {
-//			gi.Printf( "Train corner at %s without a target\n", vtos(path->s.origin) );
+//			Com_Printf( "Train corner at %s without a target\n", vtos(path->s.origin) );
 			//end of path
 			break;
 		}
@@ -1991,7 +1991,7 @@ void Think_SetupTrainTargets( gentity_t *ent ) {
 		do {
 			next = G_Find( next, FOFS(targetname), path->target );
 			if ( !next ) {
-//				gi.Printf( "Train corner at %s without a target path_corner\n", vtos(path->s.origin) );
+//				Com_Printf( "Train corner at %s without a target path_corner\n", vtos(path->s.origin) );
 				//end of path
 				break;
 			}
@@ -2033,7 +2033,7 @@ Target: next path corner and other targets to fire
 */
 void SP_path_corner( gentity_t *self ) {
 	if ( !self->targetname ) {
-		gi.Printf ("path_corner with no targetname at %s\n", vtos(self->s.origin));
+		Com_Printf ("path_corner with no targetname at %s\n", vtos(self->s.origin));
 		G_FreeEntity( self );
 		return;
 	}
@@ -2096,7 +2096,7 @@ void SP_func_train (gentity_t *self) {
 	}
 
 	if ( !self->target ) {
-		gi.Printf ("func_train without a target at %s\n", vtos(self->absmin));
+		Com_Printf ("func_train without a target at %s\n", vtos(self->absmin));
 		G_FreeEntity( self );
 		return;
 	}

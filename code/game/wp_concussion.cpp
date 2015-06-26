@@ -119,7 +119,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 			VectorCopy( tr.endpos, start );
 			skip = tr.entityNum;
 #ifdef _DEBUG
-			gi.Printf( "BAD! Concussion gun shot somehow traced back and hit the owner!\n" );			
+			Com_Printf( "BAD! Concussion gun shot somehow traced back and hit the owner!\n" );
 #endif
 			continue;
 		}

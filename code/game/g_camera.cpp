@@ -69,7 +69,7 @@ void SP_misc_camera_focus (gentity_t *self)
 {
 	if(!self->targetname)
 	{
-		gi.Printf(S_COLOR_RED"ERROR: misc_camera_focus with no targetname\n");
+		Com_Printf(S_COLOR_RED"ERROR: misc_camera_focus with no targetname\n");
 		G_FreeEntity(self);
 		return;
 	}
@@ -185,7 +185,7 @@ void SP_misc_camera_track (gentity_t *self)
 {
 	if(!self->targetname || !self->targetname[0])
 	{
-		gi.Printf(S_COLOR_RED"ERROR: misc_camera_track with no targetname\n");
+		Com_Printf(S_COLOR_RED"ERROR: misc_camera_track with no targetname\n");
 		G_FreeEntity(self);
 		return;
 	}

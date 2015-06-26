@@ -31,6 +31,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "b_local.h"
 #include "g_nav.h"
 
+#include "../qcommon/cvar_exports.hh"
+
 #define ACT_ACTIVE		qtrue
 #define ACT_INACTIVE	qfalse
 extern void NPC_UseResponse ( gentity_t *self, gentity_t *user, qboolean useWhenDone );
@@ -73,7 +75,7 @@ int G_FindConfigstringIndex( const char *name, int start, int max, qboolean crea
 	}
 
 	if ( i == max ) {
-		G_Error( "G_FindConfigstringIndex: overflow adding %s to set %d-%d", name, start, max );
+		Com_Error(ERR_DROP,  "G_FindConfigstringIndex: overflow adding %s to set %d-%d", name, start, max );
 	}
 
 	gi.SetConfigstring( start + i, name );
@@ -575,7 +577,7 @@ gentity_t *G_PickTarget (char *targetname)
 
 	if (!targetname)
 	{
-		gi.Printf("G_PickTarget called with NULL targetname\n");
+		Com_Printf("G_PickTarget called with NULL targetname\n");
 		return NULL;
 	}
 
@@ -591,7 +593,7 @@ gentity_t *G_PickTarget (char *targetname)
 
 	if (!num_choices)
 	{
-		gi.Printf("G_PickTarget: target %s not found\n", targetname);
+		Com_Printf("G_PickTarget: target %s not found\n", targetname);
 		return NULL;
 	}
 
@@ -617,7 +619,7 @@ void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 
 			if (!ent->inuse)
 			{
-				gi.Printf("entity was removed while using targets\n");
+				Com_Printf("entity was removed while using targets\n");
 				return;
 			}
 		}
@@ -628,7 +630,7 @@ void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 			{
 				if (t == ent)
 				{
-	//				gi.Printf ("WARNING: Entity used itself.\n");
+	//				Com_Printf ("WARNING: Entity used itself.\n");
 				}
 				if (t->e_UseFunc != useF_NULL)	// check can be omitted
 				{
@@ -637,7 +639,7 @@ void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 
 				if (!ent->inuse)
 				{
-					gi.Printf("entity was removed while using targets\n");
+					Com_Printf("entity was removed while using targets\n");
 					return;
 				}
 			}
@@ -844,7 +846,7 @@ gentity_t *G_Spawn( void )
 		}
 */
 //FINAL_BUILD
-		G_Error( "G_Spawn: no free entities" );
+		Com_Error(ERR_DROP,  "G_Spawn: no free entities" );
 	}
 	
 	// open up a new slot
@@ -1098,7 +1100,7 @@ void G_AddEvent( gentity_t *ent, int event, int eventParm ) {
 	int		bits;
 
 	if ( !event ) {
-		gi.Printf( "G_AddEvent: zero event added for entity %i\n", ent->s.number );
+		Com_Printf( "G_AddEvent: zero event added for entity %i\n", ent->s.number );
 		return;
 	}
 
@@ -1109,7 +1111,7 @@ void G_AddEvent( gentity_t *ent, int event, int eventParm ) {
 		gentity_t	*temp;
 
 		// generate a temp entity that references the original entity
-		gi.Printf( "eventPush\n" );
+		Com_Printf( "eventPush\n" );
 
 		temp = G_Spawn();
 		temp->s.eType = ET_EVENT_ONLY;
@@ -1329,14 +1331,14 @@ void Svcmd_Use_f( void )
 	if ( !cmd1 || !cmd1[0] )
 	{
 		//FIXME: warning message
-		gi.Printf( "'use' takes targetname of ent or 'list' (lists all usable ents)\n" );
+		Com_Printf( "'use' takes targetname of ent or 'list' (lists all usable ents)\n" );
 		return;
 	}
 	else if ( !Q_stricmp("list", cmd1) )
 	{
 		gentity_t	*ent;
 
-		gi.Printf("Listing all usable entities:\n");
+		Com_Printf("Listing all usable entities:\n");
 
 		for ( int i = 1; i < ENTITYNUM_WORLD; i++ )
 		{
@@ -1349,18 +1351,18 @@ void Svcmd_Use_f( void )
 					 {
 						 if ( ent->NPC )
 						 {
-							gi.Printf( "%s (NPC)\n", ent->targetname );
+							Com_Printf( "%s (NPC)\n", ent->targetname );
 						 }
 						 else
 						 {
-							gi.Printf( "%s\n", ent->targetname );
+							Com_Printf( "%s\n", ent->targetname );
 						 }
 					 }
 				 }
 			 }
 		}
 
-		gi.Printf("End of list.\n");
+		Com_Printf("End of list.\n");
 	}
 	else
 	{
@@ -1846,7 +1848,7 @@ void TryUse( gentity_t *ent )
 extern int killPlayerTimer;
 void G_ChangeMap (const char *mapname, const char *spawntarget, qboolean hub)
 {
-//	gi.Printf("Loading...");
+//	Com_Printf("Loading...");
 	//ignore if player is dead
 	if (g_entities[0].client->ps.pm_type == PM_DEAD)
 		return;
@@ -1858,8 +1860,8 @@ void G_ChangeMap (const char *mapname, const char *spawntarget, qboolean hub)
 	if (mapname[0] == '+')	//fire up the menu instead
 	{
 		gi.SendConsoleCommand( va("uimenu %s\n", mapname+1) );
-		gi.cvar_set("skippingCinematic", "0");
-		gi.cvar_set("timescale", "1");
+		Cvar_Set("skippingCinematic", "0");
+		Cvar_Set("timescale", "1");
 		return;
 	}
 

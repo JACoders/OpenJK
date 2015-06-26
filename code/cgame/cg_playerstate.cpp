@@ -303,7 +303,7 @@ void CG_CheckLocalSounds( playerState_t *ps, playerState_t *ops ) {
 			break;
 
 		default:
-			CG_Error( "Bad reward_t" );
+			Com_Error( ERR_DROP,  "Bad reward_t" );
 		}
 	}
 

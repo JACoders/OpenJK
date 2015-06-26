@@ -356,33 +356,14 @@ modules of the program.
 
 */
 
-cvar_t *Cvar_Get( const char *var_name, const char *value, int flags );
-// creates the variable if it doesn't exist, or returns the existing one
-// if it exists, the value will not be changed, but flags will be ORed in
-// that allows variables to be unarchived without needing bitflags
-// if value is "", the value will not override a previously set value.
-
-void	Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
-// basically a slightly modified Cvar_Get for the interpreted modules
-
-void	Cvar_Update( vmCvar_t *vmCvar );
-// updates an interpreted modules' version of a cvar
-
-void 	Cvar_Set( const char *var_name, const char *value );
-// will create the variable with no flags if it doesn't exist
-
-cvar_t	*Cvar_Set2(const char *var_name, const char *value, qboolean force);
-// same as Cvar_Set, but allows more control over setting of cvar
-
-void	Cvar_SetValue( const char *var_name, float value );
-// expands value to a string and calls Cvar_Set
+// Pull in cvar-related functions that are exported from the engine.
+#include "cvar_exports.hh"
 
 float	Cvar_VariableValue( const char *var_name );
 int		Cvar_VariableIntegerValue( const char *var_name );
 // returns 0 if not defined or non numeric
 
 char	*Cvar_VariableString( const char *var_name );
-void	Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize );
 // returns an empty string if not defined
 
 int	Cvar_Flags(const char *var_name);
@@ -412,7 +393,6 @@ char	*Cvar_InfoString( int bit );
 // returns an info string containing all the cvars that have the given bit set
 // in their flags ( CVAR_USERINFO, CVAR_SERVERINFO, CVAR_SYSTEMINFO, etc )
 void	Cvar_InfoStringBuffer( int bit, char *buff, int buffsize );
-void Cvar_CheckRange( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 
 void	Cvar_Restart(qboolean unsetVM);
 void	Cvar_Restart_f( void );
@@ -592,14 +572,15 @@ MISC
 #define RoundUp(N, M) ((N) + ((unsigned int)(M)) - (((unsigned int)(N)) % ((unsigned int)(M))))
 #define RoundDown(N, M) ((N) - (((unsigned int)(N)) % ((unsigned int)(M))))
 
+// Include functions that were publicly exported.
+#include "io_exports.hh"
+
 char		*CopyString( const char *in );
 void		Info_Print( const char *s );
 
 void		Com_BeginRedirect (char *buffer, int buffersize, void (*flush)(char *));
 void		Com_EndRedirect( void );
-void 		Com_Printf( const char *fmt, ... );
 void 		Com_DPrintf( const char *fmt, ... );
-void 		NORETURN Com_Error( int code, const char *fmt, ... );
 void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly

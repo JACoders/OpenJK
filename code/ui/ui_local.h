@@ -223,9 +223,6 @@ extern char GoToMenu[];
 //
 int				trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits, const char *psAudioFile /* = NULL */);
 int				trap_CIN_StopCinematic(int handle); 
-void			trap_Cvar_Set( const char *var_name, const char *value );
-float			trap_Cvar_VariableValue( const char *var_name );
-void			trap_GetGlconfig( glconfig_t *glconfig );
 void			trap_Key_ClearStates( void );
 int				trap_Key_GetCatcher( void );
 qboolean		trap_Key_GetOverstrikeMode( void );

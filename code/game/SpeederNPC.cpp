@@ -92,7 +92,7 @@ extern void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlag
 
 extern float DotToSpot( vec3_t spot, vec3_t from, vec3_t fromAngles );
 #ifdef QAGAME //SP or gameside MP
-extern vmCvar_t	cg_thirdPersonAlpha;
+extern cvar_t* cg_thirdPersonAlpha;
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern cvar_t	*g_speederControlScheme;

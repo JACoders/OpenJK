@@ -494,7 +494,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	default:
-		G_Error ("EnumerateField: unknown field type");
+		Com_Error(ERR_DROP, "EnumerateField: unknown field type");
 		break;
 	}
 }
@@ -633,7 +633,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 		break;
 
 	default:
-		G_Error ("EvaluateField: unknown field type");
+		Com_Error(ERR_DROP, "EvaluateField: unknown field type");
 		break;
 	}
 }
@@ -748,14 +748,14 @@ static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOr
 				}
 				else
 				{//opps, not a saberInfo size mismatch, some other FUBAR-ness...
-					G_Error(va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
+					Com_Error(ERR_DROP, va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
 				}
 				break;
 
 			default:
 				// won't return...
 				//
-				G_Error(va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
+				Com_Error(ERR_DROP, va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
 				break;
 		}
 	}
