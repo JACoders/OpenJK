@@ -161,7 +161,9 @@ static int GetConfigString(int index, char *buf, int size)
 CL_ShutdownUI
 ====================
 */
+void UI_Shutdown( void );
 void CL_ShutdownUI( void ) {
+	UI_Shutdown();
 	Key_SetCatcher( Key_GetCatcher( ) & ~KEYCATCH_UI );
 	cls.uiStarted = qfalse;
 }
