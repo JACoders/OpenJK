@@ -2254,7 +2254,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 	COM_BeginParseSession();
 	species.ColorCount = 0;
 	species.ColorMax = 16;
-	species.Color = (playerColor_t *)calloc(species.ColorMax, sizeof(playerColor_t));
+	species.Color = (playerColor_t *)malloc(species.ColorMax * sizeof(playerColor_t));
 	
 	while ( p )
 	{
@@ -2271,6 +2271,8 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 			species.Color = (playerColor_t *)realloc(species.Color, species.ColorMax * sizeof(playerColor_t));
 		}
 		
+		memset(&species.Color[species.ColorCount], 0, sizeof(playerColor_t));
+
 		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH, qtrue );
 
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
@@ -2369,7 +2371,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
 	uiInfo.playerSpeciesMax = 8;
-	uiInfo.playerSpecies = (playerSpeciesInfo_t *)calloc(uiInfo.playerSpeciesMax, sizeof(playerSpeciesInfo_t));
+	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 	
 	// iterate directory of all player models
 	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, 2048 );
@@ -2419,9 +2421,9 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			species->SkinTorsoMax = 8;
 			species->SkinLegMax = 8;
 
-			species->SkinHead = (skinName_t *)calloc(species->SkinHeadMax, sizeof(skinName_t));
-			species->SkinTorso = (skinName_t *)calloc(species->SkinTorsoMax, sizeof(skinName_t));
-			species->SkinLeg = (skinName_t *)calloc(species->SkinLegMax, sizeof(skinName_t));
+			species->SkinHead = (skinName_t *)malloc(species->SkinHeadMax * sizeof(skinName_t));
+			species->SkinTorso = (skinName_t *)malloc(species->SkinTorsoMax * sizeof(skinName_t));
+			species->SkinLeg = (skinName_t *)malloc(species->SkinLegMax * sizeof(skinName_t));
 
 			int		j;
 			char	skinname[64];
@@ -2482,7 +2484,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			}
 			if (iSkinParts != 7)
 			{	//didn't get a skin for each, then skip this model.
-				UI_FreeSpecies(&uiInfo.playerSpecies[uiInfo.playerSpeciesCount]);
+				UI_FreeSpecies(species);
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
