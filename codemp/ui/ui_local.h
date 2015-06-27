@@ -141,7 +141,6 @@ typedef struct playerInfo_s {
 #define MAX_DEMOS				2048 // 256
 #define MAX_MOVIES				2048 // 256
 #define MAX_Q3PLAYERMODELS		1024 //256
-#define MAX_PLAYERMODELS		512 //32
 
 #define DEMO_DIRECTORY "demos"
 #define DEMO_EXTENSION "dm_"
@@ -256,17 +255,32 @@ typedef struct modInfo_s {
 	const char *modDescr;
 } modInfo_t;
 
+#define SKIN_LENGTH			16
+#define ACTION_BUFFER_SIZE	128
+
+typedef struct {
+	char name[SKIN_LENGTH];
+} skinName_t;
+
+typedef struct {
+	char shader[MAX_QPATH];
+	char actionText[ACTION_BUFFER_SIZE];
+} playerColor_t;
+
 typedef struct playerSpeciesInfo_s {
-	char		Name[64];
+	char		Name[MAX_QPATH];
 	int			SkinHeadCount;
-	char		SkinHeadNames[MAX_PLAYERMODELS][16];
+	int			SkinHeadMax;
+	skinName_t	*SkinHead;
 	int			SkinTorsoCount;
-	char		SkinTorsoNames[MAX_PLAYERMODELS][16];
+	int			SkinTorsoMax;
+	skinName_t	*SkinTorso;
 	int			SkinLegCount;
-	char		SkinLegNames[MAX_PLAYERMODELS][16];
-	char		ColorShader[MAX_PLAYERMODELS][64];
+	int			SkinLegMax;
+	skinName_t	*SkinLeg;
+	int			ColorMax;
 	int			ColorCount;
-	char		ColorActionText[MAX_PLAYERMODELS][128];
+	playerColor_t	*Color;
 } playerSpeciesInfo_t;
 
 typedef struct uiInfo_s {
@@ -360,8 +374,9 @@ typedef struct uiInfo_s {
 
 	qboolean				inGameLoad;
 
+	int						playerSpeciesMax;
 	int						playerSpeciesCount;
-	playerSpeciesInfo_t		playerSpecies[MAX_PLAYERMODELS];
+	playerSpeciesInfo_t		*playerSpecies;
 	int						playerSpeciesIndex;
 
 	short					movesTitleIndex;
