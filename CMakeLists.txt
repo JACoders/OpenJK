@@ -17,6 +17,12 @@
 #============================================================================
 
 cmake_minimum_required(VERSION 2.8.8)
+
+# Set CMake policies
+if(POLICY CMP0043)
+	cmake_policy(SET CMP0043 OLD) # Don't ignore COMPILE_DEFINITION_<build>
+endif()
+
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
