@@ -11830,6 +11830,12 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 
 		if (Q_stricmp(zyk_mapname, "t2_trip") == 0)
 		{
+			if (level.gametype == GT_CTF)
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"Races are not allowed in CTF.\n\"" );
+				return;
+			}
+
 			if (level.race_mode > 1)
 			{
 				trap->SendServerCommand( ent-g_entities, "print \"Race has already started. Try again at the next race!\n\"" );
