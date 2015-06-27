@@ -153,6 +153,12 @@ void G_CacheGametype( void )
 	trap->Cvar_Update( &g_gametype );
 }
 
+void G_CacheMapname( const vmCvar_t *mapname )
+{
+	Com_sprintf( level.mapname, sizeof( level.mapname ), "maps/%s.bsp", mapname->string );
+	Com_sprintf( level.rawmapname, sizeof( level.rawmapname ), "maps/%s", mapname->string );
+}
+
 /*
 ============
 G_InitGame
@@ -303,6 +309,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	InitSiegeMode();
 
 	trap->Cvar_Register( &mapname, "mapname", "", CVAR_SERVERINFO | CVAR_ROM );
+	G_CacheMapname( &mapname );
 	trap->Cvar_Register( &ckSum, "sv_mapChecksum", "", CVAR_ROM );
 
 	navCalculatePaths	= ( trap->Nav_Load( mapname.string, ckSum.integer ) == qfalse );
