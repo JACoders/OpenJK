@@ -392,7 +392,8 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
     if ( !r_ignoreGLErrors->integer ) {
 		R_IssuePendingRenderCommands();
 #if defined(_DEBUG)
-		if ( ( GLenum err = qglGetError() ) != GL_NO_ERROR ) {
+		 GLenum err = qglGetError();
+		if ( err != GL_NO_ERROR ) {
             Com_Error( ERR_FATAL, "RE_BeginFrame() - glGetError() failed (0x%x)!\n", err );
         }
 #endif
