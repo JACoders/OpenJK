@@ -646,6 +646,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.voting_player = -1;
 
+	level.server_empty_change_map_timer = 0;
+
 	if (1)
 	{
 		int zyk_iterator = 0;
@@ -3089,6 +3091,22 @@ void CheckExitRules( void ) {
 				}
 				LogExit( "Timelimit hit." );
 				return;
+			}
+		}
+
+		if (zyk_server_empty_change_map_time.integer > 0)
+		{
+			if (level.numConnectedClients == 0)
+			{ // zyk: changes map if server has no one for some time
+				if (level.server_empty_change_map_timer == 0)
+					level.server_empty_change_map_timer = level.time;
+
+				if ((level.time - level.server_empty_change_map_timer) > zyk_server_empty_change_map_time.integer)
+					ExitLevel();
+			}
+			else
+			{ // zyk: if someone connects, reset the counter
+				level.server_empty_change_map_timer = 0;
 			}
 		}
 	}
