@@ -863,7 +863,7 @@ static void IN_ProcessEvents( void )
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELUP, qtrue, 0, NULL );
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELUP, qfalse, 0, NULL );
 				}
-				else
+				else if( e.wheel.y < 0 )
 				{
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELDOWN, qtrue, 0, NULL );
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELDOWN, qfalse, 0, NULL );
