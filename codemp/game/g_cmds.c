@@ -3168,6 +3168,7 @@ validVote:
 	Q_strstrip( level.voteStringClean, "\"\n\r", NULL );
 
 	trap->SendServerCommand( -1, va( "print \"%s^7 %s (%s^7)\n\"", ent->client->pers.netname, G_GetStringEdString( "MP_SVGAME", "PLCALLEDVOTE" ), level.voteStringClean ) );
+	G_LogPrintf ("%s^7 %s (%s^7)\n",  ent->client->pers.netname, G_GetStringEdString( "MP_SVGAME", "PLCALLEDVOTE" ), level.voteStringClean);
 
 	// start the voting, the caller automatically votes yes
 	level.voteTime = level.time;
@@ -3267,18 +3268,20 @@ void Cmd_Vote_f( gentity_t *ent ) {
 		trap->SetConfigstring( CS_VOTE_YES, va("%i", level.voteYes ) );
 
 		if (g_tweakVote.integer & TV_SHOW_VOTES)
-			trap->SendServerCommand( -1, va("print \"%s^7 voted yes.\n\"", ent->client->pers.netname) );
+			trap->SendServerCommand( -1, va("print \"%s^7 voted yes\n\"", ent->client->pers.netname) );
 		else
 			trap->SendServerCommand( ent-g_entities, va("print \"%s (Yes)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
+		G_LogPrintf ( "%s^7 voted yes\n", ent->client->pers.netname );
 
 	} else {
 		level.voteNo++;
 		ent->client->pers.vote = 2;
 		trap->SetConfigstring( CS_VOTE_NO, va("%i", level.voteNo ) );	
 		if (g_tweakVote.integer & TV_SHOW_VOTES)
-			trap->SendServerCommand( -1, va("print \"%s^7 voted no.\n\"", ent->client->pers.netname) );
+			trap->SendServerCommand( -1, va("print \"%s^7 voted no\n\"", ent->client->pers.netname) );
 		else
 			trap->SendServerCommand( ent-g_entities, va("print \"%s (No)\n\"", G_GetStringEdString("MP_SVGAME", "PLVOTECAST")) );
+		G_LogPrintf ( "%s^7 voted no\n", ent->client->pers.netname );
 	}
 
 	// a majority will be determined in CheckVote, which will also account
