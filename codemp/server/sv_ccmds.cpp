@@ -1316,11 +1316,6 @@ static void SV_ForceToggle_f( void ) {
 	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
 	int i, val;
 	char *s;
-	const char *enablestrings[] =
-	{
-		"Disabled",
-		"Enabled"
-	};
 
 	// make sure server is running
 	if( !com_sv_running->integer ) {
@@ -1329,10 +1324,11 @@ static void SV_ForceToggle_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
-			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
 		}
-		Com_Printf ("Example usage: forcetoggle 3(toggles PUSH)\n");
+		Com_Printf( "Example usage: forcetoggle 3(toggles PUSH)\n" );
 		return;
 	}
 
@@ -1343,15 +1339,20 @@ static void SV_ForceToggle_f( void ) {
 		if( val >= 0 && val < NUM_FORCE_POWERS) {
 			bits ^= (1 << val);
 			Cvar_SetValue("g_forcePowerDisable", bits);
-			Com_Printf ("%s has been %s.\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "disabled" : "enabled");
+			Com_Printf( "%s %s^7\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "^2Enabled" : "^1Disabled" );
 		}
 		else {
+			for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+				if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+				else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+			}
 			Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 		}
 	}
 	else {
-		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
-			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
 		}
 		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 	}
