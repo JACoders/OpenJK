@@ -3751,7 +3751,7 @@ qboolean TryGrapple(gentity_t *ent)
 					}
 				}
 
-				if (ent->client->pers.cmd.forwardmove < 0 && ent->client->pers.universe_quest_progress >= 15)
+				if (ent->client->pers.cmd.forwardmove < 0 && ent->client->pers.universe_quest_progress >= 14)
 				{ // zyk: Ultimate Power
 					if (zyk_enable_ultra_drain.integer == 1 && ent->client->pers.universe_quest_counter & (1 << 0) && ent->client->pers.magic_power >= zyk_ultra_drain_mp_cost.integer)
 					{ // zyk: Ultra Drain
@@ -9019,7 +9019,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 13)
 					{
-						strcpy(universe_message, "^3\n14. The Hero's Choice\n\n^7Listen to the sages, guardians, Guardian of Time and the Master of Evil.\nAfter that, choose one of them that represents your choice and bring him to the center of the water inside the temple.");
+						strcpy(universe_message, "^3\n14. The Hero's Choice\n\n^7Listen to the sages, guardians, Guardian of Time and the Master of Evil.\nAfter that, press the Use key on the one you choose.");
 					}
 					else if (ent->client->pers.universe_quest_progress == 14)
 					{
@@ -9283,9 +9283,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				}
 				else if (Q_stricmp( arg1, "!" ) == 0)
 				{
-					if (ent->client->pers.universe_quest_progress < 15)
+					if (ent->client->pers.universe_quest_progress < 14)
 					{
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7You must finish the 15th mission of the ^2Universe Quest ^7to have this power\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultimate Power: ^7You must finish the 14th mission of the ^2Universe Quest ^7to have this power\n\"") );
 					}
 					else
 					{

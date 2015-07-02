@@ -7871,7 +7871,7 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 18)
 									trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7I will give you the ^1Chaos Power^7. I read about it in the Prophecy of Time.\"");
 								else if (ent->client->pers.universe_quest_messages == 19)
-									trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7The Guardian of Chaos has it, but after you defeat him I will give it to you.\"");
+									trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7The Guardian of Chaos has it, and I will give it to you.\"");
 								else if (ent->client->pers.universe_quest_messages == 20)
 									trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7Choose me and you won't regret it.\"");
 								else if (ent->client->pers.universe_quest_messages == 21)
@@ -7885,33 +7885,9 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 25)
 									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7It will allow you to paralyze enemies for a short time.\"");
 								else if (ent->client->pers.universe_quest_messages == 26)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Now, make your decision. After choosing someone...\"");
+									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Now, make your decision...\"");
 								else if (ent->client->pers.universe_quest_messages == 27)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Go with him to the center of the water in the temple.\"");
-								else if (ent->client->pers.universe_quest_messages == 30)
-								{
-									ent->client->pers.universe_quest_counter |= (1 << 0);
-									ent->client->pers.universe_quest_messages = 29;
-									trap->SendServerCommand( ent->s.number, "chat \"^2Sage of Universe: ^7Thank you for chosing us, hero.\"");
-								}
-								else if (ent->client->pers.universe_quest_messages == 31)
-								{
-									ent->client->pers.universe_quest_counter |= (1 << 1);
-									ent->client->pers.universe_quest_messages = 29;
-									trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7Hero, you chose well.\"");
-								}
-								else if (ent->client->pers.universe_quest_messages == 32)
-								{
-									ent->client->pers.universe_quest_counter |= (1 << 2);
-									ent->client->pers.universe_quest_messages = 29;
-									trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7That's it! Nicely done, hero. We will have the power now!\"");
-								}
-								else if (ent->client->pers.universe_quest_messages == 33)
-								{
-									ent->client->pers.universe_quest_counter |= (1 << 3);
-									ent->client->pers.universe_quest_messages = 29;
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7That is a wise choice, hero.\"");
-								}
+									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Remember, after choosing someone, you cannot regret it.\"");
 								else if (ent->client->pers.universe_quest_messages == 29)
 								{ // zyk: completed the mission
 									ent->client->pers.universe_quest_progress = 14;
@@ -8004,32 +7980,6 @@ void G_RunFrame( int levelTime ) {
 								{
 									ent->client->pers.hunter_quest_messages++;
 									ent->client->pers.hunter_quest_timer = level.time + 1500;
-								}
-							}
-
-							// zyk: player must take the chosen npc to the center of the temple
-							if (ent->client->pers.universe_quest_objective_control != -1 && ent->client->pers.universe_quest_messages == 28)
-							{
-								gentity_t *npc_ent = &g_entities[ent->client->pers.universe_quest_objective_control];
-
-								if ((int) npc_ent->client->ps.origin[0] > 12534 && (int) npc_ent->client->ps.origin[0] < 12834 && (int) npc_ent->client->ps.origin[1] > 8350 && (int) npc_ent->client->ps.origin[1] < 8650 && (int) npc_ent->client->ps.origin[2] == 1512)
-								{ // zyk: settings universe_quest_messages based on the choice made by the player
-									if (Q_stricmp( npc_ent->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( npc_ent->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( npc_ent->NPC_type, "sage_of_eternity" ) == 0 || Q_stricmp( npc_ent->NPC_type, "sage_of_universe" ) == 0)
-									{
-										ent->client->pers.universe_quest_messages = 30;
-									}
-									else if (Q_stricmp( npc_ent->NPC_type, "guardian_boss_9" ) == 0 || Q_stricmp( npc_ent->NPC_type, "guardian_of_darkness" ) == 0 || Q_stricmp( npc_ent->NPC_type, "guardian_of_eternity" ) == 0 || Q_stricmp( npc_ent->NPC_type, "guardian_of_universe" ) == 0)
-									{
-										ent->client->pers.universe_quest_messages = 31;
-									}
-									else if (Q_stricmp( npc_ent->NPC_type, "master_of_evil" ) == 0 )
-									{
-										ent->client->pers.universe_quest_messages = 32;
-									}
-									else if (Q_stricmp( npc_ent->NPC_type, "guardian_of_time" ) == 0 )
-									{
-										ent->client->pers.universe_quest_messages = 33;
-									}
 								}
 							}
 						}

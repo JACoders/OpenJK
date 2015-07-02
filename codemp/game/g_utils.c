@@ -1752,11 +1752,37 @@ void TryUse( gentity_t *ent )
 	else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.can_play_quest == 1)
 	{
 		if (target && target->client && target->NPC && ent->client->pers.universe_quest_progress == 13)
-		{ // zyk: player makes him choice near the end of the Universe Quest
+		{ // zyk: player makes his choice near the end of the Universe Quest
 			if (ent->client->pers.universe_quest_messages < 28)
 				return;
 			else
-				ent->client->pers.universe_quest_objective_control = target->s.number;
+			{
+				if (Q_stricmp( target->NPC_type, "sage_of_universe" ) == 0)
+				{
+					ent->client->pers.universe_quest_counter |= (1 << 0);
+					ent->client->pers.universe_quest_messages = 29;
+					trap->SendServerCommand( ent->s.number, "chat \"^2Sage of Universe: ^7Thank you for chosing us, hero.\"");
+				}
+				else if (Q_stricmp( target->NPC_type, "guardian_of_universe" ) == 0)
+				{
+					ent->client->pers.universe_quest_counter |= (1 << 1);
+					ent->client->pers.universe_quest_messages = 29;
+					trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7Hero, you chose well.\"");
+				}
+				else if (Q_stricmp( target->NPC_type, "sage_of_universe" ) == 0)
+				{
+					ent->client->pers.universe_quest_counter |= (1 << 2);
+					ent->client->pers.universe_quest_messages = 29;
+					trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7That's it! Nicely done, hero. We will have the power now!\"");
+				}
+				else if (Q_stricmp( target->NPC_type, "sage_of_universe" ) == 0)
+				{
+					ent->client->pers.universe_quest_counter |= (1 << 3);
+					ent->client->pers.universe_quest_messages = 29;
+					trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7That is a wise choice, hero.\"");
+				}
+				return;
+			}
 		}
 		else if (target && target->client && target->NPC && Q_stricmp( target->NPC_type, "guardian_of_universe" ) == 0 && ent->client->sess.amrpgmode == 2 && ent->client->pers.universe_quest_progress == 8 && level.quest_map == 12 && ent->client->pers.universe_quest_messages == 4)
 		{
