@@ -5736,9 +5736,7 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 15 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 10)))
 			found = 1;
-		else if (level.quest_map == 16 && ((next_player->client->pers.universe_quest_progress == 15 && zyk_number_of_completed_quests(next_player) == 3) || (next_player->client->pers.universe_quest_progress > 15 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)))
-			found = 1;
-		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < 15)))
+		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)))
 			found = 1;
 		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
 			found = 1;
@@ -9023,22 +9021,11 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 14)
 					{
-						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension and defeat the ^1Guardian of Chaos^7.");
+						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension in ^3t2_trip^7 by going through the gate in the temple.");
 					}
 					else if (ent->client->pers.universe_quest_progress == 15)
 					{
-						if (zyk_number_of_completed_quests(ent) < 3)
-							strcpy(universe_message, "^3\n16. Unforeseen Danger\n\n^7Complete Light, Dark and Eternity Quests.");
-						else
-							strcpy(universe_message, "^3\n16. Unforeseen Danger\n\n^7The chosen people are in ^3mp/duel7 ^7and called you through telepathy.\nSomething very serious is going on.\nGo there to find out what is happening.");
-					}
-					else if (ent->client->pers.universe_quest_progress == 16)
-					{
-						strcpy(universe_message, "^3\n17. A New Menace\n\n^7The Master of Death appears! You will now know what he wants.");
-					}
-					else if (ent->client->pers.universe_quest_progress == 17)
-					{
-						strcpy(universe_message, "^3\n18. The Final Battle\n\n^7Defeat the ^1Master of Death ^7at ^3mp/duel7 ^7to finish the quest.");
+						strcpy(universe_message, "^3\n16. The Final Battle\n\n^7Defeat the ^1Guardian of Chaos ^7at ^3t2_trip ^7to finish the quest.");
 					}
 				}
 				else

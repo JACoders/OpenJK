@@ -540,7 +540,7 @@ typedef enum {
 #define NUMBER_OF_ETERNITY_QUEST_OBJECTIVES 11
 
 // zyk: number of Universe Quest objectives
-#define NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES 18
+#define NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES 16
 
 // zyk: number of RPG Mode skills
 #define NUMBER_OF_SKILLS 56
@@ -893,7 +893,7 @@ typedef struct clientPersistant_s {
 	// 12 - Master of Evil
 	// 13 - Guardian of Universe
 	// 14 - Guardian of Chaos
-	// 15 - Master of Death
+	// 15 - Unused
 	// 16 - Guardian of Ice
 	int guardian_mode; 
 
