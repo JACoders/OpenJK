@@ -5349,7 +5349,6 @@ void ClearPlayerAlertEvents( void );
 void SiegeCheckTimers(void);
 void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd );
 extern void Jedi_Cloak( gentity_t *self );
-extern void Jedi_Decloak( gentity_t *self );
 qboolean G_PointInBounds( vec3_t point, vec3_t mins, vec3_t maxs );
 
 int g_siegeRespawnCheck = 0;
@@ -8965,15 +8964,10 @@ void G_RunFrame( int levelTime ) {
 							npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->health;
 						}
 
-						if (ent->client->ps.powerups[PW_CLOAKED])
-							Jedi_Decloak(ent);
-						else
-							Jedi_Cloak(ent);
-
-						immunity_power(ent,25000);
+						immunity_power(ent,20000);
 						trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Immunity Power!\"");
 
-						ent->client->pers.guardian_timer = level.time + 40000;
+						ent->client->pers.guardian_timer = level.time + 35000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 14)
@@ -9156,9 +9150,10 @@ void G_RunFrame( int levelTime ) {
 						{
 							vec3_t origin, angles;
 
-							origin[0] = -3136.0f;
-							origin[1] = -26946.0f;
-							origin[2] = 549.0f;
+							origin[0] = player_ent->client->ps.origin[0];
+							origin[1] = player_ent->client->ps.origin[1];
+							origin[2] = player_ent->client->ps.origin[2] + 200;
+
 							angles[0] = 0.0f;
 							angles[1] = 0.0f;
 							angles[2] = 0.0f;
