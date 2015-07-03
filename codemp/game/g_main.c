@@ -8991,7 +8991,6 @@ void G_RunFrame( int levelTime ) {
 							magic_shield(ent, 5000);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 1)
 						{
@@ -9000,7 +8999,6 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Blowing Wind!\"");
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 2)
 						{
@@ -9009,7 +9007,6 @@ void G_RunFrame( int levelTime ) {
 							healing_water(ent,200);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
@@ -9018,14 +9015,12 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Immunity Power!\"");
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 4)
 						{
 							sleeping_flowers(ent,4000,1000);
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Sleeping Flowers!\"");
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 5)
 						{
@@ -9033,7 +9028,7 @@ void G_RunFrame( int levelTime ) {
 
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Slap of Death!\"");
 							
-							if (distance < 1200)
+							if (distance < 1000)
 							{
 								if (player_ent->client->jetPackOn)
 								{
@@ -9050,77 +9045,66 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
 							ultra_drain(ent,450,60,8000);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Ultra Drain!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 7)
 						{
-							ice_stalagmite(ent,500,200);
+							ice_stalagmite(ent,2000,200);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Ice Stalagmite!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 8)
 						{
-							ice_boulder(ent,400,100);
+							ice_boulder(ent,1000,100);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Ice Boulder!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 9)
 						{
-							poison_mushrooms(ent,100,1600);
+							poison_mushrooms(ent,100,1800);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Poison Mushrooms!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 10)
 						{
 							ultra_speed(ent,15000);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Ultra Speed!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 11)
 						{
 							slow_motion(ent,500,10000);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Slow Motion!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
-							water_splash(ent,1000,100);
+							water_splash(ent,1200,100);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Water Splash!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 13)
 						{
 							rock_fall(ent,1500,55);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Rockfall!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 14)
 						{
 							ultra_flame(ent,2000,50);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Ultra Flame!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 15)
 						{
-							dome_of_doom(ent,1900,40);
+							dome_of_doom(ent,2000,40);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Dome of Damage!\""));
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 16)
 						{
@@ -9133,13 +9117,11 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 17)
 						{
-							hurricane(ent,1000,5000);
+							hurricane(ent,1200,5000);
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Hurricane!\"");
 						}
@@ -9153,7 +9135,6 @@ void G_RunFrame( int levelTime ) {
 							}
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
 						}
@@ -9161,16 +9142,13 @@ void G_RunFrame( int levelTime ) {
 						{
 							earthquake(ent,2000,500,3000);
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Earthquake!\"");
 						}
 						else if (ent->client->pers.hunter_quest_messages == 20)
 						{
 							time_power(ent,1600,6000);
-
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Time Power!\"");
 						}
@@ -9189,7 +9167,6 @@ void G_RunFrame( int levelTime ) {
 							zyk_TeleportPlayer(ent,origin,angles);
 
 							ent->client->pers.hunter_quest_messages++;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 22)
 						{
@@ -9198,8 +9175,9 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
 
 							ent->client->pers.hunter_quest_messages = 0;
-							ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
 						}
+
+						ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
 					}
 
 					if (ent->client->pers.flame_thrower > level.time && ent->client->cloakDebReduce < level.time)
