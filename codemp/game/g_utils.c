@@ -1769,13 +1769,13 @@ void TryUse( gentity_t *ent )
 					ent->client->pers.universe_quest_messages = 29;
 					trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7Hero, you chose well.\"");
 				}
-				else if (Q_stricmp( target->NPC_type, "sage_of_universe" ) == 0)
+				else if (Q_stricmp( target->NPC_type, "master_of_evil" ) == 0)
 				{
 					ent->client->pers.universe_quest_counter |= (1 << 2);
 					ent->client->pers.universe_quest_messages = 29;
 					trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7That's it! Nicely done, hero. We will have the power now!\"");
 				}
-				else if (Q_stricmp( target->NPC_type, "sage_of_universe" ) == 0)
+				else if (Q_stricmp( target->NPC_type, "guardian_of_time" ) == 0)
 				{
 					ent->client->pers.universe_quest_counter |= (1 << 3);
 					ent->client->pers.universe_quest_messages = 29;

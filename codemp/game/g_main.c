@@ -7473,33 +7473,27 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 17)
 									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7We were necessary here so you can make the decisive choice.\"");
 								else if (ent->client->pers.universe_quest_messages == 18)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7The sages have their own reasons to go to the Sacred Dimension.\"");
+									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Each one of the chosen people have his own reasons to go to the Sacred Dimension.\"");
 								else if (ent->client->pers.universe_quest_messages == 19)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7The guardians also have their own reasons to go to the Sacred Dimension.\"");
+									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7You will have to choose between four choices.\"");
 								else if (ent->client->pers.universe_quest_messages == 20)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7I also have my reasons.\"");
-								else if (ent->client->pers.universe_quest_messages == 21)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7And the Master of Evil also has his reasons.\"");
-								else if (ent->client->pers.universe_quest_messages == 22)
-									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7You will have to choose between these 4 choices.\"");
-								else if (ent->client->pers.universe_quest_messages == 23)
 									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Understand that, after choosing, the others will lose their powers.\"");
-								else if (ent->client->pers.universe_quest_messages == 24)
+								else if (ent->client->pers.universe_quest_messages == 21)
 									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7And these powers will be absorbed into the Amulet of Time.\"");
-								else if (ent->client->pers.universe_quest_messages == 25)
+								else if (ent->client->pers.universe_quest_messages == 22)
 									trap->SendServerCommand( ent->s.number, va("chat \"%s: ^7That is a difficult decision.\"", ent->client->pers.netname));
-								else if (ent->client->pers.universe_quest_messages == 26)
+								else if (ent->client->pers.universe_quest_messages == 23)
 									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7It is in the Prophecy of Time, there is no other way.\"");
-								else if (ent->client->pers.universe_quest_messages == 27)
+								else if (ent->client->pers.universe_quest_messages == 24)
 									trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7Your decision will set the fate of the Universe.\"");
-								else if (ent->client->pers.universe_quest_messages == 28)
+								else if (ent->client->pers.universe_quest_messages == 25)
 								{
 									ent->client->pers.universe_quest_progress = 13;
 									save_account(ent);
 									quest_get_new_player(ent);
 								}
 
-								if (ent->client->pers.universe_quest_progress == 12 && ent->client->pers.universe_quest_messages < 29)
+								if (ent->client->pers.universe_quest_progress == 12 && ent->client->pers.universe_quest_messages < 26)
 								{
 									ent->client->pers.universe_quest_messages++;
 									ent->client->pers.universe_quest_timer = level.time + 5000;
@@ -7921,13 +7915,13 @@ void G_RunFrame( int levelTime ) {
 								else if (ent->client->pers.universe_quest_messages == 24)
 								{
 									if (ent->client->pers.universe_quest_counter & (1 << 0))
-										trap->SendServerCommand( ent->s.number, "chat \"^2Sage of Universe: ^7Receive the ^2Ultra Drain ^7now. This will really be useful to you.\"");
+										trap->SendServerCommand( ent->s.number, "chat \"^2Sage of Universe: ^7Receive the ^2Resurrection Power ^7now. This will really be useful to you.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
-										trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Immunity Power. ^7Use it when necessary.\"");
+										trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7Now I will give you the ^3Resurrection Power. ^7Use it when necessary.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
-										trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7Now, you will become my instrument of conquest. Get this ^1Chaos Power^7.\"");
+										trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7Now, you will become my instrument of conquest. Get this ^1Resurrection Power^7.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 3))
-										trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7As I told you, you will now receive the Time Power. Use it wisely, hero.\"");
+										trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7As I told you, you will now receive the Resurrection Power. Use it wisely, hero.\"");
 								}
 								else if (ent->client->pers.universe_quest_messages == 25)
 								{
@@ -8111,7 +8105,7 @@ void G_RunFrame( int levelTime ) {
 								if (ent->client->pers.hunter_quest_messages < 10)
 								{
 									ent->client->pers.hunter_quest_messages++;
-									ent->client->pers.hunter_quest_timer = level.time + 1500;
+									ent->client->pers.hunter_quest_timer = level.time + 1200;
 								}
 							}
 						}
