@@ -1851,12 +1851,12 @@ static void CG_ZykMod( void )
 			else
 				trap->Cvar_Set("ui_zyk_universe_power","Universe Power - no");
 
-			if (universe_quest_progress >= 15)
+			if (universe_quest_progress >= 14)
 				trap->Cvar_Set("ui_zyk_ultimate_power","Ultimate Power - yes");
 			else
 				trap->Cvar_Set("ui_zyk_ultimate_power","Ultimate Power - no");
 
-			if (universe_quest_progress == 18)
+			if (universe_quest_progress == 15)
 				trap->Cvar_Set("ui_zyk_resurrection_power","Resurrection Power - yes");
 			else
 				trap->Cvar_Set("ui_zyk_resurrection_power","Resurrection Power - no");

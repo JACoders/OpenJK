@@ -4560,6 +4560,8 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			fscanf(account_file,"%s",content);
 			value = atoi(content);
 			ent->client->pers.universe_quest_progress = value;
+			if (value > NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+				ent->client->pers.universe_quest_progress = NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES;
 
 			// zyk: loading Universe Quest Counter value
 			fscanf(account_file,"%s",content);
@@ -9021,11 +9023,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 14)
 					{
-						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension in ^3t2_trip^7 by going through the gate in the temple.");
-					}
-					else if (ent->client->pers.universe_quest_progress == 15)
-					{
-						strcpy(universe_message, "^3\n16. The Final Battle\n\n^7Defeat the ^1Guardian of Chaos ^7at ^3t2_trip ^7to finish the quest.");
+						strcpy(universe_message, "^3\n15. The Fate of the Universe\n\n^7Go to the Sacred Dimension in ^3t2_trip^7 to fight the ^1Guardian of Chaos^7 and finish the quest.");
 					}
 				}
 				else
@@ -9288,7 +9286,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				}
 				else if (Q_stricmp( arg1, "r" ) == 0)
 				{
-					trap->SendServerCommand( ent-g_entities, va("print \"^4Resurrection Power: ^7Allows you to resurrect at the same spot after dying if you dont press anything. Will not work if your body is desintegrated\n\"") );
+					trap->SendServerCommand( ent-g_entities, va("print \"^4Resurrection Power: ^7Allows you to resurrect at the same spot after dying if you dont press anything. Will not work if your body is desintegrated. Finish the ^2Universe Quest ^7to have it\n\"") );
 				}
 				else if (Q_stricmp( arg1, "s" ) == 0)
 				{
