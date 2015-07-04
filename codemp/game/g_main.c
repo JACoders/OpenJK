@@ -8976,7 +8976,7 @@ void G_RunFrame( int levelTime ) {
 							if (!ent->client->ps.powerups[PW_CLOAKED])
 								Jedi_Cloak(ent);
 
-							magic_shield(ent, 5000);
+							magic_shield(ent,5000);
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Magic Shield!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -8994,13 +8994,13 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
-							immunity_power(ent, 10000);
+							immunity_power(ent,10000);
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Immunity Power!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 4)
 						{
-							sleeping_flowers(ent,4000,1000);
+							sleeping_flowers(ent,3500,1000);
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Sleeping Flowers!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -9042,7 +9042,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 11)
 						{
-							slow_motion(ent,500,10000);
+							slow_motion(ent,900,10000);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Slow Motion!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -9054,7 +9054,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 13)
 						{
-							rock_fall(ent,1500,55);
+							rock_fall(ent,1600,55);
 							trap->SendServerCommand( player_ent->s.number, va("chat \"^1Guardian of Chaos: ^7Rockfall!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -9094,7 +9094,7 @@ void G_RunFrame( int levelTime ) {
 
 							if (distance > 500)
 							{
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
+								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
 							}
 
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
@@ -9132,7 +9132,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 22)
 						{
-							chaos_power(ent,1600,350);
+							chaos_power(ent,1600,300);
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
 							ent->client->pers.hunter_quest_messages = 0;
 						}
