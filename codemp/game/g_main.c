@@ -8973,36 +8973,29 @@ void G_RunFrame( int levelTime ) {
 
 						if (ent->client->pers.hunter_quest_messages == 0)
 						{
-							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Magic Shield!\"");
 							if (!ent->client->ps.powerups[PW_CLOAKED])
 								Jedi_Cloak(ent);
 
 							magic_shield(ent, 5000);
-
+							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Magic Shield!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 1)
 						{
 							blowing_wind(ent,3000,5000);
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Blowing Wind!\"");
-
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 2)
 						{
-							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Healing Water!\"");
-
 							healing_water(ent,200);
-
+							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Healing Water!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
 							immunity_power(ent, 10000);
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Immunity Power!\"");
-
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 4)
@@ -9013,26 +9006,8 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 5)
 						{
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Slap of Death!\"");
-							
-							if (distance < 1000)
-							{
-								if (player_ent->client->jetPackOn)
-								{
-									Jetpack_Off(player_ent);
-								}
-
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,230,0,MOD_UNKNOWN);
-
-								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-								player_ent->client->ps.forceHandExtendTime = level.time + 3000;
-								player_ent->client->ps.velocity[2] += 800;
-								player_ent->client->ps.forceDodgeAnim = 0;
-								player_ent->client->ps.quickerGetup = qtrue;
-							}
-
+							ultra_strength(ent,10000);
+							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Ultra Strength!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
@@ -9110,9 +9085,8 @@ void G_RunFrame( int levelTime ) {
 						else if (ent->client->pers.hunter_quest_messages == 17)
 						{
 							hurricane(ent,1200,5000);
-							ent->client->pers.hunter_quest_messages++;
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Hurricane!\"");
+							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 18)
 						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
@@ -9123,23 +9097,20 @@ void G_RunFrame( int levelTime ) {
 								G_Damage(player_ent,NULL,NULL,NULL,NULL,250,0,MOD_UNKNOWN);
 							}
 
-							ent->client->pers.hunter_quest_messages++;
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
+							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 19)
 						{
 							earthquake(ent,2000,500,3000);
-							ent->client->pers.hunter_quest_messages++;
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Earthquake!\"");
+							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 20)
 						{
 							time_power(ent,1600,6000);
-							ent->client->pers.hunter_quest_messages++;
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Time Power!\"");
+							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 21)
 						{
@@ -9153,17 +9124,16 @@ void G_RunFrame( int levelTime ) {
 							angles[1] = 0.0f;
 							angles[2] = 0.0f;
 
-							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Teleport!\"");
 							zyk_TeleportPlayer(ent,origin,angles);
 
+							ultra_resistance(ent,10000);
+							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Ultra Resistance!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 22)
 						{
 							chaos_power(ent,1600,350);
-
 							trap->SendServerCommand( player_ent->s.number, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
-
 							ent->client->pers.hunter_quest_messages = 0;
 						}
 
