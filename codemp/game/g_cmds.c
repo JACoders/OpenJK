@@ -9362,12 +9362,6 @@ void Cmd_CallSeller_f( gentity_t *ent ) {
 		}
 	}
 
-	if (ent->client->pers.guardian_mode == 14)
-	{
-		trap->SendServerCommand( ent-g_entities, "chat \"You are in the Sacred Dimension. Cannot spawn the seller here.\"");
-		return;
-	}
-
 	if (seller_id == -1)
 	{
 		npc_ent = NPC_SpawnType(ent,"jawa_seller",NULL,qfalse);
