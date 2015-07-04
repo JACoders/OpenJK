@@ -4897,12 +4897,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage = (int)ceil(damage * 1.12);
 	}
 
+	if (attacker && attacker->client && (attacker->NPC || attacker->client->sess.amrpgmode == 2) && attacker->client->pers.quest_power_status & (1 << 3))
+	{ // zyk: gets bonus damage if using Ultra Strength
+		damage = (int)ceil(damage * 1.12);
+	}
+
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{ // zyk: bonus damage of each RPG class
-		// zyk: gets bonus damage if using Ultra Strength
-		if (attacker->client->pers.quest_power_status & (1 << 3))
-			damage = (int)ceil(damage * 1.1);
-
 		if (attacker->client->pers.rpg_class == 0)
 		{
 			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.other_skills_levels[10])));
@@ -4981,16 +4982,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		// zyk: Guardian of Darkness used her Dark Power. Increase damage
 		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
 			damage = (int)ceil(damage*1.15);
-
-		// zyk: Guardian of Resistance used his Ultra Strength. Increase damage
-		if (attacker->client->pers.guardian_mode == 11 && attacker->client->pers.light_quest_messages == 1)
-			damage = (int)ceil(damage*1.12);
-	}
-
-	// zyk: attacker is the Guardian of Map. If he is using his special ability, increase damage
-	if (attacker && attacker->client && attacker->NPC && level.guardian_quest == attacker->s.number && attacker->client->pers.hunter_quest_messages == 1)
-	{
-		damage *= 2;
 	}
 
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
@@ -5011,10 +5002,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			Jedi_Decloak(attacker);
 			attacker->client->cloakToggleTime = level.time + Q_irand( 5000, 10000 );
 		}
-
-		// zyk: Guardian of Resistance takes less damage after using Ultra Resistance
-		if (targ->client->pers.guardian_mode == 11 && targ->client->pers.hunter_quest_messages == 1)
-			damage = (int)ceil(damage * 0.7);
 
 		// zyk: Guardian of Eternity used her Eternity Power. Decrease damage taken
 		if (targ->client->pers.guardian_mode == 10 && targ->client->pers.hunter_quest_messages == 1)
@@ -5038,6 +5025,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 11))
 		damage = 1;
 
+	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 7))
+	{ // zyk: Ultra Resistance bonus resistance
+		damage = (int)ceil(damage * 0.88);
+	}
+
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{ // zyk: damage resistance of each class
 		
@@ -5055,10 +5047,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		// zyk: when player is in Hard Mode/Challenge Mode, he takes more damage
 		if (targ->client->pers.can_play_quest == 1 && targ->client->pers.player_settings & (1 << 15))
 			damage = (int)ceil(damage * 1.1);
-
-		// zyk: Ultra Resistance bonus resistance
-		if (targ->client->pers.quest_power_status & (1 << 7))
-			damage = (int)ceil(damage * 0.9);
 
 		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
 		{

@@ -5617,15 +5617,9 @@ void G_RunFrame( int levelTime ) {
 		if (level.validated_map_guardian == qtrue && npc_ent && npc_ent->client)
 		{		
 			npc_ent->client->ps.stats[STAT_WEAPONS] = level.initial_map_guardian_weapons;
-			// zyk: Guardian of Map special ability
-			if (npc_ent->client->pers.hunter_quest_messages == 0 && npc_ent->health < (npc_ent->client->ps.stats[STAT_MAX_HEALTH]/2))
-			{
-				npc_ent->client->pers.hunter_quest_messages = 1;
-				trap->SendServerCommand( -1, va("chat \"^3Guardian of Map: ^7Ultra Strength!\n\"") );
-			}
 		}
 
-		level.guardian_quest_timer = level.time + 3000;
+		level.guardian_quest_timer = level.time + 1000;
 	}
 
 	//
@@ -8873,16 +8867,17 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Resistance
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
 
-					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
-					{ // zyk: after losing half HP, uses his special ability
-						ent->client->pers.hunter_quest_messages = 1;
-						ent->flags |= FL_SHIELDED;
+					if (ent->client->pers.guardian_timer < level.time)
+					{
+						ultra_resistance(ent, 10000);
+						ent->client->pers.guardian_timer = level.time + 15000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Resistance!\"");
 					}
 
-					if (ent->client->pers.light_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/4))
-					{ // zyk: after losing 3/4 HP, uses his special ability
-						ent->client->pers.light_quest_messages = 1;
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						ultra_strength(ent, 10000);
+						ent->client->pers.light_quest_timer = level.time + 15000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Strength!\"");
 					}
 				}
