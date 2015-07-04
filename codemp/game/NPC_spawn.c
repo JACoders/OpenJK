@@ -4511,16 +4511,10 @@ void NPC_Spawn_f( gentity_t *ent )
 	if (Q_stricmp("guardian_of_chaos", npc_type) == 0)
 		return;
 
-	if (Q_stricmp("master_of_death", npc_type) == 0)
-		return;
-
 	if (Q_stricmp("jawa_seller", npc_type) == 0)
 		return;
 
 	if (Q_stricmp("map_guardian", npc_type) == 0)
-		return;
-
-	if (Q_stricmp("map_guardian_support", npc_type) == 0)
 		return;
 
 	NPC_SpawnType( ent, npc_type, targetname, isVehicle );
@@ -4719,17 +4713,7 @@ void NPC_Kill_f( void )
 				found = 1;
 			}
 
-			if (Q_stricmp( player->NPC_type, "master_of_death" ) == 0)
-			{
-				found = 1;
-			}
-
 			if (Q_stricmp( player->NPC_type, "map_guardian" ) == 0)
-			{
-				found = 1;
-			}
-
-			if (Q_stricmp( player->NPC_type, "map_guardian_support" ) == 0)
 			{
 				found = 1;
 			}
