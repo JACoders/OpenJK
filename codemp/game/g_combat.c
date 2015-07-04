@@ -4786,6 +4786,11 @@ qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, int mod)
 		return qtrue;
 	}
 
+	if (mod == MOD_MELEE && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.rpg_class == 4)
+	{ 
+		return qtrue;
+	}
+
 	return qfalse;
 }
 
