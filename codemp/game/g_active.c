@@ -3466,16 +3466,27 @@ void ClientThink_real( gentity_t *ent ) {
 
 									if (player_distance < 300)
 									{
-										if (this_ent->client->ps.weapon == WP_SABER)
+										int found = 0;
+
+										// zyk: allies will not be hit by this power
+										if (zyk_it < level.maxclients && (ent->client->sess.ally1 == zyk_it || ent->client->sess.ally2 == zyk_it || ent->client->sess.ally3 == zyk_it))
 										{
-											vel[0] = vecnorm[0]*100;
-											vel[1] = vecnorm[1]*100;
-											vel[2] = vecnorm[2]*100;
-											saberKnockOutOfHand(&g_entities[this_ent->client->ps.saberEntityNum],this_ent,vel);
+											found = 1;
 										}
-										else
+
+										if (found == 0)
 										{
-											TossClientWeapon(this_ent, vecnorm, 200);
+											if (this_ent->client->ps.weapon == WP_SABER)
+											{
+												vel[0] = vecnorm[0]*100;
+												vel[1] = vecnorm[1]*100;
+												vel[2] = vecnorm[2]*100;
+												saberKnockOutOfHand(&g_entities[this_ent->client->ps.saberEntityNum],this_ent,vel);
+											}
+											else
+											{
+												TossClientWeapon(this_ent, vecnorm, 200);
+											}
 										}
 									}
 								}
