@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -53,98 +52,6 @@ This file is part of Jedi Academy.
 
 void Sys_SetBinaryPath(const char *path);
 char *Sys_BinaryPath(void);
-
-/*
-==================
-Sys_GetFileTime()
-==================
-*/
-bool Sys_GetFileTime(LPCSTR psFileName, FILETIME &ft)
-{
-	bool bSuccess = false;
-	HANDLE hFile = INVALID_HANDLE_VALUE;	
-
-	hFile = CreateFile(	psFileName,	// LPCTSTR lpFileName,          // pointer to name of the file
-						GENERIC_READ,			// DWORD dwDesiredAccess,       // access (read-write) mode
-						FILE_SHARE_READ,		// DWORD dwShareMode,           // share mode
-						NULL,					// LPSECURITY_ATTRIBUTES lpSecurityAttributes,	// pointer to security attributes
-						OPEN_EXISTING,			// DWORD dwCreationDisposition,  // how to create
-						FILE_FLAG_NO_BUFFERING,// DWORD dwFlagsAndAttributes,   // file attributes
-						NULL					// HANDLE hTemplateFile          // handle to file with attributes to 
-						);
-
-	if (hFile != INVALID_HANDLE_VALUE)
-	{			
-		if (GetFileTime(hFile,	// handle to file
-						NULL,	// LPFILETIME lpCreationTime
-						NULL,	// LPFILETIME lpLastAccessTime
-						&ft		// LPFILETIME lpLastWriteTime
-						)
-			)
-		{
-			bSuccess = true;
-		}
-
-		CloseHandle(hFile);
-	}
-
-	return bSuccess;
-}
-
-
-/*
-==================
-Sys_FileOutOfDate
-==================
-*/
-qboolean Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName /* src */ )
-{
-	FILETIME ftFinalFile, ftDataFile;
-
-	if (Sys_GetFileTime(psFinalFileName, ftFinalFile) && Sys_GetFileTime(psDataFileName, ftDataFile))
-	{
-		// timer res only accurate to within 2 seconds on FAT, so can't do exact compare...
-		//
-		//LONG l = CompareFileTime( &ftFinalFile, &ftDataFile );
-		if (  ( abs( long( ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime) ) <= 20000000 ) &&
-				  ftFinalFile.dwHighDateTime == ftDataFile.dwHighDateTime				
-			)
-		{
-			return false;	// file not out of date, ie use it.
-		}
-		return true;	// flag return code to copy over a replacement version of this file
-	}
-
-
-	// extra error check, report as suspicious if you find a file locally but not out on the net.,.
-	//
-	if (com_developer->integer)
-	{
-		if (!Sys_GetFileTime(psDataFileName, ftDataFile))
-		{
-			Com_Printf( "Sys_FileOutOfDate: reading %s but it's not on the net!\n", psFinalFileName);
-		}
-	}
-
-	return false;
-}
-
-/*
-==================
-Sys_CopyFile
-==================
-*/
-qboolean Sys_CopyFile(LPCSTR lpExistingFileName, LPCSTR lpNewFileName, qboolean bOverWrite)
-{
-	qboolean bOk = qtrue;
-	if (!CopyFile( lpExistingFileName, lpNewFileName, !bOverWrite ) && bOverWrite)
-	{
-		DWORD dwAttrs = GetFileAttributes(lpNewFileName);
-		SetFileAttributes(lpNewFileName, dwAttrs & ~FILE_ATTRIBUTE_READONLY);
-		bOk = CopyFile( lpExistingFileName, lpNewFileName, FALSE );
-	}
-	return bOk;
-}
 
 /*
 ==================
@@ -681,6 +588,23 @@ successful:
 	return retVal;
 }
 
+static const char *GetErrorString( DWORD error ) {
+	static char buf[MAX_STRING_CHARS];
+	buf[0] = '\0';
+
+	if ( error ) {
+		LPVOID lpMsgBuf;
+		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
+		if ( bufLen ) {
+			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
+			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof( buf ) ) );
+			LocalFree( lpMsgBuf );
+		}
+	}
+	return buf;
+}
+
 /*
 =================
 Sys_GetGameAPI
@@ -705,18 +629,15 @@ void *Sys_GetGameAPI (void *parms)
 	game_library = Sys_RetrieveDLL(gamename);
 	if(!game_library)
 	{
-		char *buf;
-
-		FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &buf, 0, NULL );
-
 		Com_Printf( "LoadLibrary(\"%s\") failed\n", gamename);
-		Com_Printf( "...reason: '%s'\n", buf );
+		Com_Printf( "...reason: '%s'\n", GetErrorString( GetLastError() ) );
 		Com_Error( ERR_FATAL, "Couldn't load game" );
 	}
 
 	GetGameAPI = (void *(*)(void *))GetProcAddress (game_library, "GetGameAPI");
 	if (!GetGameAPI)
 	{
+		Com_Printf( "Sys_GetGameAPI: Entry point not found in %s. Failed with system error code 0x%X.\n", gamename, GetLastError() );
 		Sys_UnloadGame ();		
 		return NULL;
 	}
@@ -738,6 +659,11 @@ void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)
 	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
 	*entryPoint = (intptr_t (*)(int,...))GetProcAddress( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
+#ifdef JK2_MODE
+		Com_Printf( "Sys_LoadCgame: CGame Entry point not found in jk2game" ARCH_STRING DLL_EXT ". Failed with system error code 0x%X.\n", GetLastError() );
+#else
+		Com_Printf( "Sys_LoadCgame: CGame Entry point not found in jagame" ARCH_STRING DLL_EXT ". Failed with system error code 0x%X.\n", GetLastError() );
+#endif
 		FreeLibrary( game_library );
 		return NULL;
 	}

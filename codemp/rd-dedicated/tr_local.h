@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 typedef unsigned int GLuint;
@@ -934,10 +957,6 @@ typedef struct backEndState_s {
 
 #define NUM_SCRATCH_IMAGES 16
 
-#ifdef _WIN32
-	#include "../win32/win_local.h"
-#endif
-
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
@@ -1045,10 +1064,6 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 
@@ -1578,9 +1593,6 @@ ANIMATED MODELS
 /*
 Ghoul2 Insert Start
 */
-#ifdef _MSC_VER
-#pragma warning (disable: 4512)	//default assignment operator could not be gened
-#endif
 class CRenderableSurface
 {
 public:

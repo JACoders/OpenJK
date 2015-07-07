@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	stringed_interface.cpp
 //
@@ -35,17 +39,10 @@ This file is part of Jedi Academy.
 //
 //////////////////////////////////////////////////
 
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4511 )			// copy constructor could not be generated
-#pragma warning ( disable : 4512 )			// assignment operator could not be generated
-#pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
-#endif
 #include "stringed_interface.h"
 #include "stringed_ingame.h"
 
 #include <string>
-using namespace std;
 
 #ifdef _STRINGED
 #include <stdlib.h>
@@ -149,7 +146,7 @@ void SE_FreeFileDataAfterLoad( unsigned char *psLoadedFile )
 // quake-style method of doing things since their file-list code doesn't have a 'recursive' flag...
 //
 int giFilesFound;
-static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &strResults )
+static void SE_R_ListFiles( const char *psExtension, const char *psDir, std::string &strResults )
 {
 //	Com_Printf(va("Scanning Dir: %s\n",psDir));
 
@@ -209,7 +206,7 @@ static void SE_R_ListFiles( const char *psExtension, const char *psDir, string &
 //
 // expected result is a ';'-delineated string (including last one) containing file-list search results
 //
-int SE_BuildFileList( const char *psStartDir, string &strResults )
+int SE_BuildFileList( const char *psStartDir, std::string &strResults )
 {
 #ifndef _STRINGED
 	giFilesFound = 0;

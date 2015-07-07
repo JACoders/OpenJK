@@ -1,28 +1,30 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// g_weapon.c 
+// g_weapon.c
 // perform the server side effects of a weapon firing
 
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
-
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -83,7 +85,7 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t
 	gentity_t	*missile;
 
 	missile = G_Spawn();
-	
+
 	missile->nextthink = level.time + life;
 	missile->e_ThinkFunc = thinkF_G_FreeEntity;
 	missile->s.eType = ET_MISSILE;
@@ -114,7 +116,7 @@ void WP_Stick( gentity_t *missile, trace_t *trace, float fudge_distance )
 	VectorClear( missile->s.apos.trDelta );
 
 	// so we don't stick into the wall
-	VectorMA( trace->endpos, fudge_distance, trace->plane.normal, org ); 
+	VectorMA( trace->endpos, fudge_distance, trace->plane.normal, org );
 	G_SetOrigin( missile, org );
 
 	vectoangles( trace->plane.normal, ang );
@@ -145,7 +147,7 @@ void WP_Explode( gentity_t *self )
 	{
 		G_PlayEffect( self->fxID, self->currentOrigin, wpFwd );
 	}
-	
+
 	if ( self->owner )
 	{
 		attacker = self->owner;
@@ -255,7 +257,7 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 {
 	if ( mod != MOD_UNKNOWN )
 	{
-		switch( mod ) 
+		switch( mod )
 		{
 		//standard weapons
 		case MOD_BRYAR:
@@ -291,8 +293,8 @@ qboolean W_AccuracyLoggableWeapon( int weapon, qboolean alt_fire, int mod )
 		}
 	}
 	else if ( weapon != WP_NONE )
-	{	
-		switch( weapon ) 
+	{
+		switch( weapon )
 		{
 		case WP_BRYAR_PISTOL:
 		case WP_BLASTER:
@@ -358,13 +360,13 @@ qboolean LogAccuracyHit( gentity_t *target, gentity_t *attacker ) {
 }
 
 //---------------------------------------------------------
-void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t wpUp, vec3_t muzzlePoint, float lead_in ) 
+void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t wpUp, vec3_t muzzlePoint, float lead_in )
 //---------------------------------------------------------
 {
 	vec3_t		org;
 	mdxaBone_t	boltMatrix;
 
-	if( !lead_in ) //&& ent->s.number != 0 
+	if( !lead_in ) //&& ent->s.number != 0
 	{//Not players or melee
 		if( ent->client )
 		{
@@ -377,7 +379,7 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 	}
 
 	VectorCopy( ent->currentOrigin, muzzlePoint );
-	
+
 	switch( ent->s.weapon )
 	{
 	case WP_BRYAR_PISTOL:
@@ -431,7 +433,7 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 		if (ent->count > 0)
 		{
 			ent->count = 0;
-			gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, 
+			gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel,
 						ent->handLBolt,
 						&boltMatrix, ent->s.angles, ent->s.origin, (cg.time?cg.time:level.time),
 						NULL, ent->s.modelScale );
@@ -439,7 +441,7 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 		else
 		{
 			ent->count = 1;
-			gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, 
+			gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel,
 						ent->handRBolt,
 						&boltMatrix, ent->s.angles, ent->s.origin, (cg.time?cg.time:level.time),
 						NULL, ent->s.modelScale );
@@ -456,12 +458,12 @@ void CalcMuzzlePoint( gentity_t *const ent, vec3_t wpFwd, vec3_t right, vec3_t w
 }
 
 //---------------------------------------------------------
-void FireWeapon( gentity_t *ent, qboolean alt_fire ) 
+void FireWeapon( gentity_t *ent, qboolean alt_fire )
 //---------------------------------------------------------
 {
 	float alert = 256;
 
-	// track shots taken for accuracy tracking. 
+	// track shots taken for accuracy tracking.
 	ent->client->ps.persistant[PERS_ACCURACY_SHOTS]++;
 
 	// set aiming directions
@@ -473,7 +475,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 			AngleVectors( ent->lastAngles, wpFwd, wpVright, wpUp );
 		}
 	}
-	else if ( ent->s.weapon == WP_ATST_SIDE || ent->s.weapon == WP_ATST_MAIN ) 
+	else if ( ent->s.weapon == WP_ATST_SIDE || ent->s.weapon == WP_ATST_MAIN )
 	{
 		vec3_t	delta1, enemy_org1, muzzle1;
 		vec3_t	angleToEnemy1;
@@ -539,21 +541,21 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 		else
 		{//NPC, auto-aim at enemy
 			CalcEntitySpot( ent->enemy, SPOT_HEAD, enemy_org1 );
-			
+
 			VectorSubtract (enemy_org1, muzzle1, delta1);
 
 			vectoangles ( delta1, angleToEnemy1 );
 			AngleVectors (angleToEnemy1, wpFwd, wpVright, wpUp);
 		}
-	} 
-	else if ( ent->s.weapon == WP_BOT_LASER && ent->enemy ) 
+	}
+	else if ( ent->s.weapon == WP_BOT_LASER && ent->enemy )
 	{
 		vec3_t	delta1, enemy_org1, muzzle1;
 		vec3_t	angleToEnemy1;
 
 		CalcEntitySpot( ent->enemy, SPOT_HEAD, enemy_org1 );
 		CalcEntitySpot( ent, SPOT_WEAPON, muzzle1 );
-		
+
 		VectorSubtract (enemy_org1, muzzle1, delta1);
 
 		vectoangles ( delta1, angleToEnemy1 );
@@ -568,7 +570,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 	CalcMuzzlePoint ( ent, wpFwd, wpVright, wpUp, wpMuzzle , 0);
 
 	// fire the specific weapon
-	switch( ent->s.weapon ) 
+	switch( ent->s.weapon )
 	{
 	// Player weapons
 	//-----------------
@@ -671,7 +673,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 		// TEMP
 		if ( alt_fire )
 		{
-			WP_FireRepeater( ent, alt_fire );	
+			WP_FireRepeater( ent, alt_fire );
 		}
 		else
 		{
@@ -734,7 +736,7 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
  splashdamage - how much damage a blowing up gun deals ( default 80 )
  splashradius - radius for exploding damage ( default 128 )
 */
- 
+
 //----------------------------------------------------------
 void emplaced_gun_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 {
@@ -918,7 +920,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	// turn off any firing animations it may have been doing
 	self->s.frame = self->startFrame = self->endFrame = 0;
 	self->svFlags &= ~SVF_ANIMATING;
-			
+
 	self->health = 0;
 //	self->s.weapon = WP_EMPLACED_GUN; // we need to be able to switch back to the old weapon
 
@@ -969,7 +971,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	ugly[YAW] = 4;
 	ugly[PITCH] = self->lastAngles[PITCH] * 0.8f + crandom() * 6;
 	ugly[ROLL] = crandom() * 7;
-	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
+	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
 
 	VectorCopy( self->currentOrigin,  org );
 	org[2] += 20;
@@ -986,7 +988,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 
 		ent->fxID = G_EffectIndex( "emplaced/dead_smoke" );
 
-		ent->e_ThinkFunc = thinkF_fx_runner_think; 
+		ent->e_ThinkFunc = thinkF_fx_runner_think;
 		ent->nextthink = level.time + 50;
 
 		// move up above the gun origin
@@ -1053,7 +1055,7 @@ void SP_emplaced_gun( gentity_t *ent )
 	ent->dflags |= DAMAGE_CUSTOM_HUD; // dumb, but we draw a custom hud
 
 	ent->s.modelindex = G_ModelIndex( name );
-	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL, NULL, 0, 0 );
+	ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, name, ent->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 
 	// Activate our tags and bones
 	ent->headBolt = gi.G2API_AddBolt( &ent->ghoul2[0], "*seat" );
@@ -1061,7 +1063,7 @@ void SP_emplaced_gun( gentity_t *ent )
 	ent->handRBolt = gi.G2API_AddBolt( &ent->ghoul2[0], "*flash02" );
 	ent->rootBone = gi.G2API_GetBoneIndex( &ent->ghoul2[ent->playerModel], "base_bone", qtrue );
 	ent->lowerLumbarBone = gi.G2API_GetBoneIndex( &ent->ghoul2[0], "swivel_bone", qtrue );
-	gi.G2API_SetBoneAngles( &ent->ghoul2[0], "swivel_bone", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0); 
+	gi.G2API_SetBoneAngles( &ent->ghoul2[0], "swivel_bone", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0);
 
 	RegisterItem( FindItemForWeapon( WP_EMPLACED_GUN ));
 	ent->s.weapon = WP_EMPLACED_GUN;

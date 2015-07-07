@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_players.c -- handle the media and animation for player entities
 #include "cg_local.h"
 #include "ghoul2/G2.h"
@@ -933,7 +954,9 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 			// if the model didn't load use the sounds of the default model
 			if (soundpath[0])
 			{
-				ci->siegeSounds[i] = trap->S_RegisterSound( va("sound/%s/%s", soundpath, soundName) );
+				ci->siegeSounds[i] = trap->S_RegisterSound( va("sound/chars/%s/misc/%s", soundpath, soundName) );
+				if ( !ci->siegeSounds[i] )
+					ci->siegeSounds[i] = trap->S_RegisterSound( va( "sound/%s/%s", soundpath, soundName ) );
 			}
 			else
 			{
@@ -10575,9 +10598,9 @@ stillDoSaber:
 					savRGBA[0] = legs.shaderRGBA[0];
 					savRGBA[1] = legs.shaderRGBA[1];
 					savRGBA[2] = legs.shaderRGBA[2];
-					legs.shaderRGBA[0] = max(255-subLen/4,1);
-					legs.shaderRGBA[1] = max(255-subLen/4,1);
-					legs.shaderRGBA[2] = max(255-subLen/4,1);
+					legs.shaderRGBA[0] = Q_max(255-subLen/4,1);
+					legs.shaderRGBA[1] = Q_max(255-subLen/4,1);
+					legs.shaderRGBA[2] = Q_max(255-subLen/4,1);
 
 					legs.renderfx &= ~RF_RGB_TINT;
 					legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
@@ -10587,9 +10610,9 @@ stillDoSaber:
 
 					legs.customShader = 0;	//reset to player model
 
-					legs.shaderRGBA[0] = max(savRGBA[0]-subLen/8,1);
-					legs.shaderRGBA[1] = max(savRGBA[1]-subLen/8,1);
-					legs.shaderRGBA[2] = max(savRGBA[2]-subLen/8,1);
+					legs.shaderRGBA[0] = Q_max(savRGBA[0]-subLen/8,1);
+					legs.shaderRGBA[1] = Q_max(savRGBA[1]-subLen/8,1);
+					legs.shaderRGBA[2] = Q_max(savRGBA[2]-subLen/8,1);
 				}
 
 				if (subLen <= 1024)

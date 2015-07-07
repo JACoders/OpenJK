@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
@@ -37,7 +43,7 @@ int			delayedShutDown = 0;
 #include "../qcommon/sstring.h"
 
 //NOTENOTE: Be sure to change the mirrored code in cgmain.cpp
-typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
+typedef	std::map< sstring_t, unsigned char  >	namePrecache_m;
 namePrecache_m	*as_preCacheMap = NULL;
 
 char *G_AddSpawnVarToken( const char *string );
@@ -1225,25 +1231,26 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	while ( 1 ) {	
 		// parse key
 		com_token = COM_Parse( data );
-		if ( com_token[0] == '}' ) {
-			break;
-		}
-		if ( !data ) {
+		if ( !*data ) {
 			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
+		}
+
+		if ( com_token[0] == '}' ) {
+			break;
 		}
 
 		Q_strncpyz( keyname, com_token, sizeof(keyname) );
 		
 		// parse value	
 		com_token = COM_Parse( data );
+		if ( !*data ) {
+			COM_EndParseSession();
+			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
+		}
 		if ( com_token[0] == '}' ) {
 			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: closing brace without data" );
-		}
-		if ( !data ) {
-			COM_EndParseSession();
-			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 		if ( numSpawnVars == MAX_SPAWN_VARS ) {
 			COM_EndParseSession();

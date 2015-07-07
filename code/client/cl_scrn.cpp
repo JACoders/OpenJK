@@ -1,27 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cl_scrn.c -- master for refresh, status bar, console, chat, notify, etc
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "client.h"
 #include "client_ui.h"
@@ -414,16 +417,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	qboolean uiFullscreen = _UI_IsFullscreen();
 
-	// wide aspect ratio screens need to have the sides cleared
-	// unless they are displaying game renderings
-	if ( uiFullscreen || (cls.state != CA_ACTIVE && cls.state != CA_CINEMATIC) ) {
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			re.SetColor( g_color_table[0] );
-			re.DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, 0 );
-			re.SetColor( NULL );
-		}
-	}
-
 	// if the menu is going to cover the entire screen, we
 	// don't need to render anything under it
 	if ( !uiFullscreen ) {
@@ -501,18 +494,23 @@ void SCR_UpdateScreen( void ) {
 	}
 	recursive = qtrue;
 
-	// if running in stereo, we need to draw the frame twice
-	if ( cls.glconfig.stereoEnabled ) {
-		SCR_DrawScreenField( STEREO_LEFT );
-		SCR_DrawScreenField( STEREO_RIGHT );
-	} else {
-		SCR_DrawScreenField( STEREO_CENTER );
-	}
+	// If there is no VM, there are also no rendering commands issued. Stop the renderer in
+	// that case.
+	if ( cls.uiStarted )
+	{
+		// if running in stereo, we need to draw the frame twice
+		if ( cls.glconfig.stereoEnabled ) {
+			SCR_DrawScreenField( STEREO_LEFT );
+			SCR_DrawScreenField( STEREO_RIGHT );
+		} else {
+			SCR_DrawScreenField( STEREO_CENTER );
+		}
 
-	if ( com_speeds->integer ) {
-		re.EndFrame( &time_frontend, &time_backend );
-	} else {
-		re.EndFrame( NULL, NULL );
+		if ( com_speeds->integer ) {
+			re.EndFrame( &time_frontend, &time_backend );
+		} else {
+			re.EndFrame( NULL, NULL );
+		}
 	}
 
 	recursive = 0;
@@ -584,9 +582,10 @@ void SCR_SetScreenshot(const byte *pbData, int w, int h)
 }
 
 
+#ifdef JK2_MODE
 // This is just a client-side wrapper for the function RE_TempRawImage_ReadFromFile() in the renderer code...
 //
-/*
+
 byte* SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip)
 {
 	return re.TempRawImage_ReadFromFile(psLocalFilename, piWidth, piHeight, pbReSampleBuffer, qbVertFlip);
@@ -598,5 +597,6 @@ void  SCR_TempRawImage_CleanUp()
 {
 	re.TempRawImage_CleanUp();
 }
-*/
+#endif
+
 

@@ -1,21 +1,25 @@
-
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "cm_local.h"
 #include "cm_patch.h"
@@ -197,7 +201,7 @@ static qboolean	CM_NeedsSubdivision( vec3_t a, vec3_t b, vec3_t c ) {
 	// see if the curve is far enough away from the linear mid
 	VectorSubtract( cmid, lmid, delta );
 	dist = VectorLengthSquared( delta );
-	
+
 	return dist >= SUBDIVIDE_DISTANCE * SUBDIVIDE_DISTANCE;
 }
 
@@ -446,8 +450,8 @@ static	patchPlane_t	planes[MAX_PATCH_PLANES];
 //static	facet_t			facets[MAX_FACETS];	// Switched to MAX_FACETS = VV_FIXME, allocate these only during use
 static	facet_t			*facets = NULL;
 
-#define	NORMAL_EPSILON	0.0001
-#define	DIST_EPSILON	0.02
+#define	NORMAL_EPSILON	0.00015
+#define	DIST_EPSILON	0.0235
 
 int CM_PlaneEqual(patchPlane_t *p, float plane[4], int *flipped) {
 	float invplane[4];
@@ -811,7 +815,7 @@ static qboolean CM_ValidateFacet( facet_t *facet ) {
 	// see if the facet is unreasonably large
 	WindingBounds( w, bounds[0], bounds[1] );
 	FreeWinding( w );
-	
+
 	for ( j = 0 ; j < 3 ; j++ ) {
 		if ( bounds[1][j] - bounds[0][j] > MAX_MAP_BOUNDS ) {
 			return qfalse;		// we must be missing a plane
@@ -1042,13 +1046,13 @@ static void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) {
 	// create the borders for each facet
 	for ( i = 0 ; i < grid->width - 1 ; i++ ) {
 		for ( j = 0 ; j < grid->height - 1 ; j++ ) {
-			 
+
 			borders[EN_TOP] = -1;
 			if ( j > 0 ) {
 				borders[EN_TOP] = gridPlanes[i][j-1][1];
 			} else if ( grid->wrapHeight ) {
 				borders[EN_TOP] = gridPlanes[i][grid->height-2][1];
-			} 
+			}
 			noAdjust[EN_TOP] = ( borders[EN_TOP] == gridPlanes[i][j][0] );
 			if ( borders[EN_TOP] == -1 || noAdjust[EN_TOP] ) {
 				borders[EN_TOP] = CM_EdgePlaneNum( grid, gridPlanes, i, j, 0 );
@@ -1169,7 +1173,7 @@ static void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) {
 		pf->facets = (facet_t *) Z_Malloc( numFacets * sizeof( *pf->facets ), TAG_BSP, qfalse);
 		memcpy( pf->facets, facets, numFacets * sizeof( *pf->facets ) );
 	}
-	else 
+	else
 	{
 		pf->facets = 0;
 	}
@@ -1546,7 +1550,7 @@ void CM_TraceThroughPatchCollide( traceWork_t *tw, const struct patchCollide_s *
 	float offset, enterFrac, leaveFrac, t;
 	patchPlane_t *planes;
 	facet_t	*facet;
-	float plane[4], bestplane[4];
+	float plane[4] = { 0.0f }, bestplane[4] = { 0.0f };
 	vec3_t startp, endp;
 #ifndef BSPC
 	static cvar_t *cv;

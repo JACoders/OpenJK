@@ -1,154 +1,31 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "tr_local.h"
 #include "tr_stl.h"
-
-const int lightmapsNone[MAXLIGHTMAPS] = 
-{ 
-	LIGHTMAP_NONE,
-	LIGHTMAP_NONE,
-	LIGHTMAP_NONE,
-	LIGHTMAP_NONE 
-};
-
-const int lightmaps2d[MAXLIGHTMAPS] = 
-{ 
-	LIGHTMAP_2D,
-	LIGHTMAP_2D,
-	LIGHTMAP_2D,
-	LIGHTMAP_2D 
-};
-
-const int lightmapsVertex[MAXLIGHTMAPS] = 
-{ 
-	LIGHTMAP_BY_VERTEX,
-	LIGHTMAP_BY_VERTEX,
-	LIGHTMAP_BY_VERTEX,
-	LIGHTMAP_BY_VERTEX 
-};
-
-const int lightmapsFullBright[MAXLIGHTMAPS] = 
-{
-	LIGHTMAP_WHITEIMAGE,
-	LIGHTMAP_WHITEIMAGE,
-	LIGHTMAP_WHITEIMAGE,
-	LIGHTMAP_WHITEIMAGE
-};
-
-const byte stylesDefault[MAXLIGHTMAPS] = 
-{
-	LS_NORMAL,
-	LS_NONE,
-	LS_NONE,
-	LS_NONE
-};
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Vertex and Pixel Shader definitions.	- AReis
-/***********************************************************************************************************/
-// This vertex shader basically passes through most values and calculates no lighting. The only
-// unusual thing it does is add the inputed texel offsets to all four texture units (this allows
-// nearest neighbor pixel peeking).
-const unsigned char g_strGlowVShaderARB[] =
-{
-	"!!ARBvp1.0\
-	\
-	# Input.\n\
-	ATTRIB	iPos		= vertex.position;\
-	ATTRIB	iColor		= vertex.color;\
-	ATTRIB	iTex0		= vertex.texcoord[0];\
-	ATTRIB	iTex1		= vertex.texcoord[1];\
-	ATTRIB	iTex2		= vertex.texcoord[2];\
-	ATTRIB	iTex3		= vertex.texcoord[3];\
-	\
-	# Output.\n\
-	OUTPUT	oPos		= result.position;\
-	OUTPUT	oColor		= result.color;\
-	OUTPUT	oTex0		= result.texcoord[0];\
-	OUTPUT	oTex1		= result.texcoord[1];\
-	OUTPUT	oTex2		= result.texcoord[2];\
-	OUTPUT	oTex3		= result.texcoord[3];\
-	\
-	# Constants.\n\
-	PARAM	ModelViewProj[4]= { state.matrix.mvp };\
-	PARAM	TexelOffset0	= program.env[0];\
-	PARAM	TexelOffset1	= program.env[1];\
-	PARAM	TexelOffset2	= program.env[2];\
-	PARAM	TexelOffset3	= program.env[3];\
-	\
-	# Main.\n\
-	DP4		oPos.x, ModelViewProj[0], iPos;\
-	DP4		oPos.y, ModelViewProj[1], iPos;\
-	DP4		oPos.z, ModelViewProj[2], iPos;\
-	DP4		oPos.w, ModelViewProj[3], iPos;\
-	MOV		oColor, iColor;\
-	# Notice the optimization of using one texture coord instead of all four.\n\
-	ADD		oTex0, iTex0, TexelOffset0;\
-	ADD		oTex1, iTex0, TexelOffset1;\
-	ADD		oTex2, iTex0, TexelOffset2;\
-	ADD		oTex3, iTex0, TexelOffset3;\
-	\
-	END"
-};
-
-// This Pixel Shader loads four texture units and adds them all together (with a modifier
-// multiplied to each in the process). The final output is r0 = t0 + t1 + t2 + t3.
-const unsigned char g_strGlowPShaderARB[] =
-{
-	"!!ARBfp1.0\
-	\
-	# Input.\n\
-	ATTRIB	iColor	= fragment.color.primary;\
-	\
-	# Output.\n\
-	OUTPUT	oColor	= result.color;\
-	\
-	# Constants.\n\
-	PARAM	Weight	= program.env[0];\
-	TEMP	t0;\
-	TEMP	t1;\
-	TEMP	t2;\
-	TEMP	t3;\
-	TEMP	r0;\
-	\
-	# Main.\n\
-	TEX		t0, fragment.texcoord[0], texture[0], RECT;\
-	TEX		t1, fragment.texcoord[1], texture[1], RECT;\
-	TEX		t2, fragment.texcoord[2], texture[2], RECT;\
-	TEX		t3, fragment.texcoord[3], texture[3], RECT;\
-	\
-    MUL		r0, t0, Weight;\
-	MAD		r0, t1, Weight, r0;\
-	MAD		r0, t2, Weight, r0;\
-	MAD		r0, t3, Weight, r0;\
-	\
-	MOV		oColor, r0;\
-	\
-	END"
-};
-/***********************************************************************************************************/
 
 // tr_shader.c -- this file deals with the parsing and definition of shaders
 
@@ -160,8 +37,53 @@ static	shaderStage_t	stages[MAX_SHADER_STAGES];
 static	shader_t		shader;
 static	texModInfo_t	texMods[MAX_SHADER_STAGES][TR_MAX_TEXMODS];
 
+// Hash value (generated using the generateHashValueForText function) for the original
+// retail JKA shader for gfx/2d/wedge.
+#define RETAIL_ROCKET_WEDGE_SHADER_HASH (1217042)
+
+
 #define FILE_HASH_SIZE		1024
 static	shader_t*		sh_hashTable[FILE_HASH_SIZE];
+
+const int lightmapsNone[MAXLIGHTMAPS] =
+{
+	LIGHTMAP_NONE,
+	LIGHTMAP_NONE,
+	LIGHTMAP_NONE,
+	LIGHTMAP_NONE
+};
+
+const int lightmaps2d[MAXLIGHTMAPS] =
+{
+	LIGHTMAP_2D,
+	LIGHTMAP_2D,
+	LIGHTMAP_2D,
+	LIGHTMAP_2D
+};
+
+const int lightmapsVertex[MAXLIGHTMAPS] =
+{
+	LIGHTMAP_BY_VERTEX,
+	LIGHTMAP_BY_VERTEX,
+	LIGHTMAP_BY_VERTEX,
+	LIGHTMAP_BY_VERTEX
+};
+
+const int lightmapsFullBright[MAXLIGHTMAPS] =
+{
+	LIGHTMAP_WHITEIMAGE,
+	LIGHTMAP_WHITEIMAGE,
+	LIGHTMAP_WHITEIMAGE,
+	LIGHTMAP_WHITEIMAGE
+};
+
+const byte stylesDefault[MAXLIGHTMAPS] =
+{
+	LS_NORMAL,
+	LS_NONE,
+	LS_NONE,
+	LS_NONE
+};
 
 static void ClearGlobalShader(void)
 {
@@ -176,6 +98,19 @@ static void ClearGlobalShader(void)
 	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;
 }
 
+static uint32_t generateHashValueForText( const char *string, size_t length )
+{
+	int i = 0;
+	uint32_t hash = 0;
+
+	while ( length-- )
+	{
+		hash += string[i] * (i + 119);
+		i++;
+	}
+
+	return (hash ^ (hash >> 10) ^ (hash >> 20));
+}
 
 /* 
 ====================
@@ -337,7 +272,7 @@ NameToAFunc
 ===============
 */
 static unsigned NameToAFunc( const char *funcname )
-{	
+{
 	if ( !Q_stricmp( funcname, "GT0" ) )
 	{
 		return GLS_ATEST_GT_0;
@@ -918,7 +853,7 @@ static void ParseSurfaceSprites(const char *_text, shaderStage_t *stage )
 	stage->ss->fxDuration = 1000;		// 1 second
 	stage->ss->fxGrow[0] = 0.0;
 	stage->ss->fxGrow[1] = 0.0;
-	stage->ss->fxAlphaStart = 1.0;	
+	stage->ss->fxAlphaStart = 1.0;
 	stage->ss->fxAlphaEnd = 0.0;
 }
 
@@ -1507,6 +1442,8 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			{
 				vec3_t	color;
 
+				VectorClear( color );
+
 				ParseVector( text, 3, color );
 				stage->constantColor[0] = 255 * color[0];
 				stage->constantColor[1] = 255 * color[1];
@@ -1785,7 +1722,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	//
 	if ( stage->rgbGen == CGEN_BAD ) {
 		if ( //blendSrcBits == 0 ||
-			blendSrcBits == GLS_SRCBLEND_ONE || 
+			blendSrcBits == GLS_SRCBLEND_ONE ||
 			blendSrcBits == GLS_SRCBLEND_SRC_ALPHA ) {
 			stage->rgbGen = CGEN_IDENTITY_LIGHTING;
 		} else {
@@ -1797,7 +1734,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	//
 	// implicitly assume that a GL_ONE GL_ZERO blend mask disables blending
 	//
-	if ( ( blendSrcBits == GLS_SRCBLEND_ONE ) && 
+	if ( ( blendSrcBits == GLS_SRCBLEND_ONE ) &&
 		 ( blendDstBits == GLS_DSTBLEND_ZERO ) )
 	{
 		blendDstBits = blendSrcBits = 0;
@@ -1815,9 +1752,9 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	//
 	// compute state bits
 	//
-	stage->stateBits = depthMaskBits | 
-		               blendSrcBits | blendDstBits | 
-					   atestBits | 
+	stage->stateBits = depthMaskBits |
+		               blendSrcBits | blendDstBits |
+					   atestBits |
 					   depthFuncBits;
 
 	return qtrue;
@@ -1875,7 +1812,7 @@ static void ParseDeform( const char **text ) {
 
 	if ( !Q_stricmpn( token, "text", 4 ) ) {
 		int		n;
-		
+
 		n = token[4] - '0';
 		if ( n < 0 || n > 7 ) {
 			n = 0;
@@ -2027,7 +1964,6 @@ static void ParseSkyParms( const char **text ) {
 	}
 	R_InitSkyTexCoords( shader.sky->cloudHeight );
 
-
 	// innerbox
 	token = COM_ParseExt( text, qfalse );
 	if ( strcmp( token, "-" ) ) {
@@ -2041,7 +1977,7 @@ static void ParseSkyParms( const char **text ) {
 ParseSort
 =================
 */
-void ParseSort( const char **text ) 
+void ParseSort( const char **text )
 {
 	char	*token;
 
@@ -2057,7 +1993,7 @@ void ParseSort( const char **text )
 		shader.sort = SS_ENVIRONMENT;
 	} else if ( !Q_stricmp( token, "opaque" ) ) {
 		shader.sort = SS_OPAQUE;
-	}else if ( !Q_stricmp( token, "decal" ) ) {
+	} else if ( !Q_stricmp( token, "decal" ) ) {
 		shader.sort = SS_DECAL;
 	} else if ( !Q_stricmp( token, "seeThrough" ) ) {
 		shader.sort = SS_SEE_THROUGH;
@@ -2202,6 +2138,7 @@ will optimize it.
 static qboolean ParseShader( const char  **text )
 {
 	char *token;
+	const char *begin = *text;
 	int s = 0;
 
 	COM_BeginParseSession();
@@ -2233,6 +2170,12 @@ static qboolean ParseShader( const char  **text )
 		// stage definition
 		else if ( token[0] == '{' )
 		{
+			if ( s >= MAX_SHADER_STAGES ) {
+				ri.Printf( PRINT_WARNING, "WARNING: too many stages in shader %s (max is %i)\n", shader.name, MAX_SHADER_STAGES );
+				COM_EndParseSession();
+				return qfalse;
+			}
+
 			if ( !ParseStage( &stages[s], text ) )
 			{
 				COM_EndParseSession();
@@ -2244,57 +2187,11 @@ static qboolean ParseShader( const char  **text )
 			{
 				shader.hasGlow = true;
 			}
-
 			s++;
-			continue;
-		}
-		// sun parms
-		else if ( !Q_stricmp( token, "sun" ) || !Q_stricmp( token, "q3map_sun" ) || !Q_stricmp( token, "q3map_sunExt" ) ) {
-			float	a, b;
-
-			token = COM_ParseExt( text, qfalse );
-			tr.sunLight[0] = atof( token );
-			token = COM_ParseExt( text, qfalse );
-			tr.sunLight[1] = atof( token );
-			token = COM_ParseExt( text, qfalse );
-			tr.sunLight[2] = atof( token );
-			
-			VectorNormalize( tr.sunLight );
-
-			token = COM_ParseExt( text, qfalse );
-			a = atof( token );
-			VectorScale( tr.sunLight, a, tr.sunLight);
-
-			token = COM_ParseExt( text, qfalse );
-			a = atof( token );
-			a = a / 180 * M_PI;
-
-			token = COM_ParseExt( text, qfalse );
-			b = atof( token );
-			b = b / 180 * M_PI;
-
-			tr.sunDirection[0] = cos( a ) * cos( b );
-			tr.sunDirection[1] = sin( a ) * cos( b );
-			tr.sunDirection[2] = sin( b );
-
-			SkipRestOfLine( text );
-			continue;
-		}
-		else if ( !Q_stricmp( token, "deformVertexes" ) ) {
-			ParseDeform( text );
-			continue;
-		}
-		else if ( !Q_stricmp( token, "tesssize" ) ) {
-			SkipRestOfLine( text );
 			continue;
 		}
 		// skip stuff that only the QuakeEdRadient needs
 		else if ( !Q_stricmpn( token, "qer", 3 ) ) {
-			SkipRestOfLine( text );
-			continue;
-		}
-		// skip stuff that only the q3map needs
-		else if ( !Q_stricmpn( token, "q3map", 5 ) ) {
 			SkipRestOfLine( text );
 			continue;
 		}
@@ -2304,12 +2201,72 @@ static qboolean ParseShader( const char  **text )
 		{
 			ParseMaterial( text );
 		}
-		// skip stuff that JK2 doesn't use
-		else if ( !Q_stricmp( token, "lightColor") ) {
+		// sun parms
+		else if ( !Q_stricmp( token, "sun" ) || !Q_stricmp( token, "q3map_sun" ) || !Q_stricmp( token, "q3map_sunExt" ) )
+		{
+			token = COM_ParseExt( text, qfalse );
+			tr.sunLight[0] = atof( token );
+			token = COM_ParseExt( text, qfalse );
+			tr.sunLight[1] = atof( token );
+			token = COM_ParseExt( text, qfalse );
+			tr.sunLight[2] = atof( token );
+
+			VectorNormalize( tr.sunLight );
+
+			token = COM_ParseExt( text, qfalse );
+			float a = atof( token );
+			VectorScale( tr.sunLight, a, tr.sunLight);
+
+			token = COM_ParseExt( text, qfalse );
+			a = atof( token );
+			a = a / 180 * M_PI;
+
+			token = COM_ParseExt( text, qfalse );
+			float b = atof( token );
+			b = b / 180 * M_PI;
+
+			tr.sunDirection[0] = cos( a ) * cos( b );
+			tr.sunDirection[1] = sin( a ) * cos( b );
+			tr.sunDirection[2] = sin( b );
+
 			SkipRestOfLine( text );
 			continue;
 		}
-		// surface parms
+		// q3map_surfacelight deprecated as of 16 Jul 01
+		else if ( !Q_stricmp( token, "surfacelight" ) || !Q_stricmp( token, "q3map_surfacelight" ) )
+		{
+			token = COM_ParseExt( text, qfalse );
+			tr.sunSurfaceLight = atoi( token );
+		}
+		else if ( !Q_stricmp( token, "lightColor" ) )
+		{
+			/*
+			if ( !ParseVector( text, 3, tr.sunAmbient ) )
+			{
+				return qfalse;
+			}
+			*/
+			//SP skips this so I'm skipping it here too.
+			SkipRestOfLine( text );
+			continue;
+		}
+		else if ( !Q_stricmp( token, "deformvertexes" ) || !Q_stricmp( token, "deform" )) {
+			ParseDeform( text );
+			continue;
+		}
+		else if ( !Q_stricmp( token, "tesssize" ) ) {
+			SkipRestOfLine( text );
+			continue;
+		}
+		else if ( !Q_stricmp( token, "clampTime" ) ) {
+			SkipRestOfLine( text );
+		}
+		// skip stuff that only the q3map needs
+		else if ( !Q_stricmpn( token, "q3map", 5 ) ) {
+			SkipRestOfLine( text );
+			continue;
+		}
+		// skip stuff that only q3map or the server needs
 		else if ( !Q_stricmp( token, "surfaceParm" ) ) {
 			ParseSurfaceParm( text );
 			continue;
@@ -2327,13 +2284,17 @@ static qboolean ParseShader( const char  **text )
 			shader.noPicMip = true;
 			continue;
 		}
+		else if ( !Q_stricmp( token, "noglfog" ) )
+		{
+			shader.fogPass = FP_NONE;
+			continue;
+		}
 		// polygonOffset
 		else if ( !Q_stricmp( token, "polygonOffset" ) )
 		{
 			shader.polygonOffset = true;
 			continue;
 		}
-		// polygonOffset
 		else if ( !Q_stricmp( token, "noTC" ) )
 		{
 			shader.noTC = true;
@@ -2349,7 +2310,7 @@ static qboolean ParseShader( const char  **text )
 			continue;
 		}
 		// fogParms
-		else if ( !Q_stricmp( token, "fogParms" ) ) 
+		else if ( !Q_stricmp( token, "fogParms" ) )
 		{
 			shader.fogParms = (fogParms_t *)Hunk_Alloc( sizeof( fogParms_t ), qtrue );
 			if ( !ParseVector( text, 3, shader.fogParms->color ) ) {
@@ -2358,7 +2319,7 @@ static qboolean ParseShader( const char  **text )
 			}
 
 			token = COM_ParseExt( text, qfalse );
-			if ( !token[0] ) 
+			if ( !token[0] )
 			{
 				ri.Printf( PRINT_WARNING, "WARNING: missing parm for 'fogParms' keyword in shader '%s'\n", shader.name );
 				continue;
@@ -2382,13 +2343,13 @@ static qboolean ParseShader( const char  **text )
 			continue;
 		}
 		// light <value> determines flaring in q3map, not needed here
-		else if ( !Q_stricmp(token, "light") ) 
+		else if ( !Q_stricmp(token, "light") )
 		{
 			token = COM_ParseExt( text, qfalse );
 			continue;
 		}
 		// cull <face>
-		else if ( !Q_stricmp( token, "cull") ) 
+		else if ( !Q_stricmp( token, "cull") )
 		{
 			token = COM_ParseExt( text, qfalse );
 			if ( token[0] == 0 )
@@ -2467,6 +2428,22 @@ Ghoul2 Insert End
 	}
 
 	shader.explicitlyDefined = true;
+
+	// The basejka rocket lock wedge shader uses the incorrect blending mode.
+	// It only worked because the shader state was not being set, and relied
+	// on previous state to be multiplied by alpha. Since fixing RB_RotatePic,
+	// the shader needs to be fixed here to render correctly.
+	//
+	// We match against the retail version of gfx/2d/wedge by calculating the
+	// hash value of the shader text, and comparing it against a precalculated
+	// value.
+	uint32_t shaderHash = generateHashValueForText( begin, *text - begin );
+	if ( shaderHash == RETAIL_ROCKET_WEDGE_SHADER_HASH &&
+		Q_stricmp( shader.name, "gfx/2d/wedge" ) == 0 )
+	{
+		stages[0].stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
+		stages[0].stateBits |= GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+	}
 
 	COM_EndParseSession();
 	return qtrue;
@@ -3366,7 +3343,7 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 	} 
 
 	// sync up render thread, because we're going to have to load an image 
-	//R_SyncRenderThread(); 
+	R_IssuePendingRenderCommands(); //
 
 	// attempt to load an external lightmap 
 	Com_sprintf( fileName, sizeof(fileName), "%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex ); 
@@ -3453,7 +3430,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 
 	// make sure the render thread is stopped, because we are probably
 	// going to have to upload an image
-	//R_SyncRenderThread();
+	R_IssuePendingRenderCommands(); //
 
 	// clear the global shader
 	ClearGlobalShader();
@@ -3741,52 +3718,61 @@ static void ScanAndLoadShaderFiles( void )
 {
 	char **shaderFiles;
 	char *buffers[MAX_SHADER_FILES];
-	int bufferSizes[MAX_SHADER_FILES];
-	int numShaders;
+	char *textEnd;
+	int numShaderFiles;
 	int i;
-	long sum = 0;
+	long sum = 0, summand;
 
 	// scan for shader files
-	shaderFiles = ri.FS_ListFiles( "shaders", ".shader", &numShaders );
+	shaderFiles = ri.FS_ListFiles( "shaders", ".shader", &numShaderFiles );
 
-	if ( !shaderFiles || !numShaders )
+	if ( !shaderFiles || !numShaderFiles )
 	{
-		ri.Printf( PRINT_WARNING, "WARNING: no shader files found\n" );
+		ri.Error( ERR_FATAL, "WARNING: no shader files found\n" );
 		return;
 	}
 
-	if ( numShaders > MAX_SHADER_FILES ) {
-		numShaders = MAX_SHADER_FILES;
+	if ( numShaderFiles > MAX_SHADER_FILES ) {
+		numShaderFiles = MAX_SHADER_FILES;
 	}
 
 	// load and store shader files
-	for ( i = 0; i < numShaders; i++ )
+	for ( i = 0; i < numShaderFiles; i++ )
 	{
 		char filename[MAX_QPATH];
 
 		Com_sprintf( filename, sizeof( filename ), "shaders/%s", shaderFiles[i] );
 		//ri.Printf( PRINT_DEVELOPER, "...loading '%s'\n", filename );
 		// Looks like stripping out crap in the shaders will save about 200k
-		ri.FS_ReadFile( filename, (void **)&buffers[i] );
-		if ( !buffers[i] ) {
-			Com_Error( ERR_DROP, "Couldn't load %s", filename );
-		}
-		sum += (bufferSizes[i] = COM_Compress( buffers[i] ));
+		summand = ri.FS_ReadFile( filename, (void **)&buffers[i] );
+		if ( !buffers[i] )
+			ri.Error( ERR_DROP, "Couldn't load %s", filename );
+
+		if ( buffers[i] )
+			sum += summand;
 	}
+
+	// build single large buffer
+	s_shaderText = (char *) Hunk_Alloc( sum + numShaderFiles*2, qtrue );
+	s_shaderText[0] = '\0';
+	textEnd = s_shaderText;
+
+	// free in reverse order, so the temp files are all dumped
+	for ( i = numShaderFiles - 1; i >= 0 ; i-- )
+	{
+		if ( !buffers[i] )
+			continue;
+
+		strcat( textEnd, buffers[i] );
+		strcat( textEnd, "\n" );
+		textEnd += strlen( textEnd );
+		ri.FS_FreeFile( buffers[i] );
+	}
+
+	COM_Compress( s_shaderText );
 
 	// free up memory
 	ri.FS_FreeFileList( shaderFiles );
-
-	// build single large buffer
-	s_shaderText = (char *) Hunk_Alloc( sum + numShaders*2, qtrue );
-
-	// free in reverse order, so the temp files are all dumped
-	for ( i = numShaders - 1, sum = 0; i >= 0 ; i-- ) {
-		strcat( s_shaderText + sum, "\n" );
-		strcat( s_shaderText + sum, buffers[i] );
-		sum += bufferSizes[i];
-		ri.FS_FreeFile( buffers[i] );
-	}
 
 	#ifdef USE_STL_FOR_SHADER_LOOKUPS
 	SetupShaderEntryPtrs();
@@ -3830,86 +3816,7 @@ static void CreateInternalShaders( void ) {
 	tr.distortionShader = FinishShader();
 	shader.defaultShader = true;
 
-
-	#define GL_PROGRAM_ERROR_STRING_ARB						0x8874
-	#define GL_PROGRAM_ERROR_POSITION_ARB					0x864B
-
-	// Allocate and Load the global 'Glow' Vertex Program. - AReis
-	if ( qglGenProgramsARB )
-	{
-		qglGenProgramsARB( 1, &tr.glowVShader );
-		qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, tr.glowVShader );
-		qglProgramStringARB( GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, ( GLsizei ) strlen( ( char * ) g_strGlowVShaderARB ), g_strGlowVShaderARB );
-
-//		const GLubyte *strErr = qglGetString( GL_PROGRAM_ERROR_STRING_ARB );
-		int iErrPos = 0;
-		qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &iErrPos );
-		assert( iErrPos == -1 );
-	}
-
-	// NOTE: I make an assumption here. If you have (current) nvidia hardware, you obviously support register combiners instead of fragment
-	// programs, so use those. The problem with this is that nv30 WILL support fragment shaders, breaking this logic. The good thing is that
-	// if you always ask for regcoms before fragment shaders, you'll always just use regcoms (problem solved... for now). - AReis
-
-	// Load Pixel Shaders (either regcoms or fragprogs).
-	if ( qglCombinerParameteriNV )
-	{
-		// The purpose of this regcom is to blend all the pixels together from the 4 texture units, but with their
-		// texture coordinates offset by 1 (or more) texels, effectively letting us blend adjoining pixels. The weight is
-		// used to either strengthen or weaken the pixel intensity. The more it diffuses (the higher the radius of the glow),
-		// the higher the intensity should be for a noticable effect.
-		// Regcom result is: ( tex1 * fBlurWeight ) + ( tex2 * fBlurWeight ) + ( tex2 * fBlurWeight ) + ( tex2 * fBlurWeight )
-
-		// VV guys, this is the pixel shader you would use instead :-)
-		/*
-		// c0 is the blur weight.
-		ps 1.1
-		tex		t0
-		tex		t1
-		tex		t2
-		tex		t3
-
-		mul		r0, c0, t0;
-		madd	r0, c0, t1, r0;
-		madd	r0, c0, t2, r0;
-		madd	r0, c0, t3, r0;
-		*/
-		tr.glowPShader = qglGenLists( 1 );
-		qglNewList( tr.glowPShader, GL_COMPILE );
-			qglCombinerParameteriNV( GL_NUM_GENERAL_COMBINERS_NV, 2 );
-
-			// spare0 = fBlend * tex0 + fBlend * tex1.
-			qglCombinerInputNV( GL_COMBINER0_NV, GL_RGB, GL_VARIABLE_A_NV, GL_TEXTURE0_ARB, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerInputNV( GL_COMBINER0_NV, GL_RGB, GL_VARIABLE_B_NV, GL_CONSTANT_COLOR0_NV, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerInputNV( GL_COMBINER0_NV, GL_RGB, GL_VARIABLE_C_NV, GL_TEXTURE1_ARB, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerInputNV( GL_COMBINER0_NV, GL_RGB, GL_VARIABLE_D_NV, GL_CONSTANT_COLOR0_NV, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerOutputNV( GL_COMBINER0_NV, GL_RGB, GL_DISCARD_NV, GL_DISCARD_NV, GL_SPARE0_NV, GL_NONE, GL_NONE, GL_FALSE, GL_FALSE, GL_FALSE );
-
-			// spare1 = fBlend * tex2 + fBlend * tex3.
-			qglCombinerInputNV( GL_COMBINER1_NV, GL_RGB, GL_VARIABLE_A_NV, GL_TEXTURE2_ARB, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerInputNV( GL_COMBINER1_NV, GL_RGB, GL_VARIABLE_B_NV, GL_CONSTANT_COLOR0_NV, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerInputNV( GL_COMBINER1_NV, GL_RGB, GL_VARIABLE_C_NV, GL_TEXTURE3_ARB, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerInputNV( GL_COMBINER1_NV, GL_RGB, GL_VARIABLE_D_NV, GL_CONSTANT_COLOR0_NV, GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglCombinerOutputNV( GL_COMBINER1_NV, GL_RGB, GL_DISCARD_NV, GL_DISCARD_NV, GL_SPARE1_NV, GL_NONE, GL_NONE, GL_FALSE, GL_FALSE, GL_FALSE );
-
-			// ( A * B ) + ( ( 1 - A ) * C ) + D = ( spare0 * 1 ) + ( ( 1 - spare0 ) * 0 ) + spare1 == spare0 + spare1.
-			qglFinalCombinerInputNV( GL_VARIABLE_A_NV, GL_SPARE0_NV,    GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglFinalCombinerInputNV( GL_VARIABLE_B_NV, GL_ZERO,			GL_UNSIGNED_INVERT_NV, GL_RGB );
-			qglFinalCombinerInputNV( GL_VARIABLE_C_NV, GL_ZERO,			GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-			qglFinalCombinerInputNV( GL_VARIABLE_D_NV, GL_SPARE1_NV,	GL_UNSIGNED_IDENTITY_NV, GL_RGB );
-		qglEndList();
-	}
-	else if ( qglGenProgramsARB )
-	{
-		qglGenProgramsARB( 1, &tr.glowPShader );
-		qglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, tr.glowPShader );
-		qglProgramStringARB( GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, ( GLsizei ) strlen( ( char * ) g_strGlowPShaderARB ), g_strGlowPShaderARB );
-
-//		const GLubyte *strErr = qglGetString( GL_PROGRAM_ERROR_STRING_ARB );
-		int iErrPos = 0;
-		qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &iErrPos );
-		assert( iErrPos == -1 );
-	}
+	ARB_InitGlowShaders();
 }
 
 static void CreateExternalShaders( void ) {

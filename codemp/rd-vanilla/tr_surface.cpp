@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_surf.c
 #include "tr_local.h"
 
@@ -25,16 +48,10 @@ RB_CheckOverflow
 ==============
 */
 void RB_CheckOverflow( int verts, int indexes ) {
-	if ( tess.shader == tr.shadowShader ) {
-		if (tess.numVertexes + verts < SHADER_MAX_VERTEXES/2
-			&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
-			return;
-		}
-	} else
-		if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
-			&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
-			return;
-		}
+	if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
+		&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
+		return;
+	}
 
 	RB_EndSurface();
 
@@ -110,11 +127,15 @@ void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, byte *color, flo
 
 	// constant color all the way around
 	// should this be identity and let the shader specify from entity?
-	* ( unsigned int * ) &tess.vertexColors[ndx] =
-	* ( unsigned int * ) &tess.vertexColors[ndx+1] =
-	* ( unsigned int * ) &tess.vertexColors[ndx+2] =
-	* ( unsigned int * ) &tess.vertexColors[ndx+3] =
-		* ( unsigned int * )color;
+	byteAlias_t *baSource = (byteAlias_t *)color, *baDest;
+	baDest = (byteAlias_t *)&tess.vertexColors[ndx + 0];
+	baDest->ui = baSource->ui;
+	baDest = (byteAlias_t *)&tess.vertexColors[ndx + 1];
+	baDest->ui = baSource->ui;
+	baDest = (byteAlias_t *)&tess.vertexColors[ndx + 2];
+	baDest->ui = baSource->ui;
+	baDest = (byteAlias_t *)&tess.vertexColors[ndx + 3];
+	baDest->ui = baSource->ui;
 
 
 	tess.numVertexes += 4;
@@ -233,9 +254,9 @@ void RB_SurfacePolychain( srfPoly_t *p ) {
 		VectorCopy( p->verts[i].xyz, tess.xyz[numv] );
 		tess.texCoords[numv][0][0] = p->verts[i].st[0];
 		tess.texCoords[numv][0][1] = p->verts[i].st[1];
-		*(int *)&tess.vertexColors[numv] = *(int *)p->verts[ i ].modulate;
-
-		numv++;
+		byteAlias_t *baDest = (byteAlias_t *)&tess.vertexColors[numv++],
+			*baSource = (byteAlias_t *)&p->verts[ i ].modulate;
+		baDest->i = baSource->i;
 	}
 
 	// generate fan indexes into the tess array

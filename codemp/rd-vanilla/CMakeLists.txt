@@ -1,12 +1,35 @@
-cmake_minimum_required(VERSION 2.8.8)
+#============================================================================
+# Copyright (C) 2013 - 2015, OpenJK contributors
+# 
+# This file is part of the OpenJK source code.
+# 
+# OpenJK is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#============================================================================
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
+# Check for dependencies first
+
 set(MPVanillaRendererIncludeDirectories ${MPDir})
-set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${MPDir}/rd-vanilla")
+set(MPVanillaRendererIncludeDirectories
+	${MPVanillaRendererIncludeDirectories}
+	${SharedDir}
+	${MPDir}
+	"${MPDir}/rd-vanilla"
+	)
 
 set(MPVanillaRendererFiles
 	"${MPDir}/rd-vanilla/glext.h"
@@ -72,16 +95,22 @@ set(MPVanillaRendererRdCommonFiles
 source_group("rd-common" FILES ${MPVanillaRendererRdCommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererRdCommonFiles})
 
-set(MPVanillaRendererQcommonFiles
+set(MPVanillaRendererCommonFiles
 	"${MPDir}/qcommon/matcomp.cpp"
 	"${MPDir}/qcommon/q_math.cpp"
 	"${MPDir}/qcommon/q_shared.cpp")
-source_group("qcommon" FILES ${MPVanillaRendererQcommonFiles})
-set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererQcommonFiles})
+source_group("common" FILES ${MPVanillaRendererCommonFiles})
+set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonFiles})
 
-file(GLOB_RECURSE MPVanillaRendererJpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-source_group("jpeg-8c" FILES ${MPVanillaRendererJpegFiles})
-set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererJpegFiles})
+if(UseInternalJPEG)
+	file(GLOB_RECURSE MPVanillaRendererJpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
+	source_group("jpeg-8c" FILES ${MPVanillaRendererJpegFiles})
+	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererJpegFiles})
+else()
+	find_package(JPEG REQUIRED)
+	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${JPEG_INCLUDE_DIR})
+	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${JPEG_LIBRARIES})
+endif()
 
 if(UseInternalPNG)
 	set(MPVanillaRendererLibPngFiles
@@ -147,49 +176,37 @@ else()
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${ZLIB_LIBRARY})
 endif()
 
-if(NOT WIN32)
-	find_package(OpenGL REQUIRED)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${OPENGL_LIBRARIES})
-
-	set(SDL2_BUILDING_LIBRARY ON) # don't want main() in Renderer
-	find_package(SDL2 REQUIRED)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${SDL2_INCLUDE_DIR})
-	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${SDL2_LIBRARY})
-endif(NOT WIN32)
-
-
-if(WIN32)
-	set(MPVanillaRendererWin32Files
-		"${MPDir}/win32/win_gamma.cpp"
-		"${MPDir}/win32/win_glimp.cpp"
-		"${MPDir}/win32/win_qgl.cpp")
-	source_group("win32" FILES ${MPVanillaRendererWin32Files})
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererWin32Files})
-else(WIN32)
-	set(MPVanillaRendererSysFiles
-		"${MPDir}/sdl/sdl_glimp.cpp")
-	source_group("sys" FILES ${MPVanillaRendererSysFiles})
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererSysFiles})
-endif(WIN32)
+find_package(OpenGL REQUIRED)
+set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})
+set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${OPENGL_LIBRARIES})
 
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OpenJKLibDir})
 add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})
 
-if(NOT WIN32)
+if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${MPVanillaRenderer} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif()
 
 if(WIN32)
-	install(TARGETS ${MPVanillaRenderer} RUNTIME DESTINATION ".")
+	install(TARGETS ${MPVanillaRenderer}
+		RUNTIME
+		DESTINATION ${JKAInstallDir}
+		COMPONENT ${JKAMPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPVanillaRenderer} LIBRARY DESTINATION "${MPEngine}.app/Contents/MacOS/")
-	else(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPVanillaRenderer} LIBRARY DESTINATION ".")
-	endif(MakeApplicationBundles AND BuildMPEngine)
-endif(WIN32)
+		install(TARGETS ${MPVanillaRenderer}
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
+			COMPONENT ${JKAMPClientComponent})
+	else()
+		install(TARGETS ${MPVanillaRenderer}
+			LIBRARY
+			DESTINATION ${JKAInstallDir}
+			COMPONENT ${JKAMPClientComponent})
+	endif()
+endif()
+
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SharedDefines};${ReleaseDefines}")
 set_target_properties(${MPVanillaRenderer} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SharedDefines};${ReleaseDefines}")

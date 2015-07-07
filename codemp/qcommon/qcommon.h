@@ -1,8 +1,33 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 
 #include "qcommon/q_shared.h"
+#include "sys/sys_public.h"
 
 //============================================================================
 
@@ -73,8 +98,9 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 #endif
 void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to, qboolean isVehiclePS = qfalse );
 
-
+#ifndef FINAL_BUILD
 void MSG_ReportChangeVectors_f( void );
+#endif
 
 //============================================================================
 
@@ -101,25 +127,9 @@ NET
 #define	MAX_RELIABLE_COMMANDS	128			// max string commands buffered for restransmit
 
 typedef enum {
-	NA_BAD = 0,					// an address lookup failed
-	NA_BOT,
-	NA_LOOPBACK,
-	NA_BROADCAST,
-	NA_IP
-} netadrtype_t;
-
-typedef enum {
 	NS_CLIENT,
 	NS_SERVER
 } netsrc_t;
-
-typedef struct netadr_s {
-	netadrtype_t	type;
-
-	byte	ip[4];
-
-	unsigned short	port;
-} netadr_t;
 
 void		NET_Init( void );
 void		NET_Shutdown( void );
@@ -127,8 +137,8 @@ void		NET_Restart_f( void );
 void		NET_Config( qboolean enableNetworking );
 
 void		NET_SendPacket (netsrc_t sock, int length, const void *data, netadr_t to);
-void		QDECL NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
-void		QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
+void		NET_OutOfBandPrint( netsrc_t net_socket, netadr_t adr, const char *format, ...);
+void		NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len );
 
 qboolean	NET_CompareAdr (netadr_t a, netadr_t b);
 qboolean	NET_CompareBaseAdrMask( netadr_t a, netadr_t b, int netmask );
@@ -138,6 +148,12 @@ const char	*NET_AdrToString (netadr_t a);
 qboolean	NET_StringToAdr ( const char *s, netadr_t *a);
 qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_message);
 void		NET_Sleep(int msec);
+
+void		Sys_SendPacket( int length, const void *data, netadr_t to );
+//Does NOT parse port numbers, only base addresses.
+qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
+qboolean	Sys_IsLANAddress (netadr_t adr);
+void		Sys_ShowIP(void);
 
 
 #define	MAX_MSGLEN				49152		// max length of a message, which may
@@ -619,6 +635,15 @@ void	FS_ForceFlush( fileHandle_t f );
 void	FS_FreeFile( void *buffer );
 // frees the memory returned by FS_ReadFile
 
+class FS_AutoFreeFile {
+private:
+	FS_AutoFreeFile();
+	void *buffer;
+public:
+	FS_AutoFreeFile(void *inbuf) : buffer(inbuf) { };
+	~FS_AutoFreeFile() { if (buffer) FS_FreeFile(buffer); };
+};
+
 void	FS_WriteFile( const char *qpath, const void *buffer, int size );
 // writes a complete file, creating any subdirectories needed
 
@@ -722,8 +747,8 @@ void		Com_EndRedirect( void );
 void 		QDECL Com_Printf( const char *fmt, ... );
 void 		QDECL Com_DPrintf( const char *fmt, ... );
 void		QDECL Com_OPrintf( const char *fmt, ...); // Outputs to the VC / Windows Debug window (only in debug compile)
-void 		QDECL Com_Error( int code, const char *fmt, ... ) __attribute__((noreturn));
-void 		Com_Quit_f( void );
+void 		NORETURN QDECL Com_Error( int code, const char *fmt, ... );
+void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
 unsigned	Com_BlockChecksum( const void *buffer, int length );
@@ -746,14 +771,14 @@ extern	cvar_t	*com_speeds;
 extern	cvar_t	*com_timescale;
 extern	cvar_t	*com_sv_running;
 extern	cvar_t	*com_cl_running;
-extern	cvar_t	*com_viewlog;			// 0 = hidden, 1 = visible, 2 = minimized
 extern	cvar_t	*com_version;
 extern	cvar_t	*com_buildScript;		// for building release pak files
 extern	cvar_t	*com_journal;
 extern	cvar_t	*com_cameraMode;
-extern	cvar_t	*com_unfocused;
-extern	cvar_t	*com_minimized;
 extern	cvar_t	*com_homepath;
+#ifndef _WIN32
+extern	cvar_t	*com_ansiColor;
+#endif
 
 extern	cvar_t	*com_optvehtrace;
 
@@ -961,117 +986,6 @@ qboolean SV_GameCommand( void );
 //
 qboolean UI_GameCommand( void );
 
-/*
-==============================================================
-
-NON-PORTABLE SYSTEM SERVICES
-
-==============================================================
-*/
-
-typedef enum {
-	AXIS_SIDE,
-	AXIS_FORWARD,
-	AXIS_UP,
-	AXIS_ROLL,
-	AXIS_YAW,
-	AXIS_PITCH,
-	MAX_JOYSTICK_AXIS
-} joystickAxis_t;
-
-typedef enum {
-  // bk001129 - make sure SE_NONE is zero
-	SE_NONE = 0,	// evTime is still valid
-	SE_KEY,		// evValue is a key code, evValue2 is the down flag
-	SE_CHAR,	// evValue is an ascii char
-	SE_MOUSE,	// evValue and evValue2 are reletive signed x / y moves
-	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
-	SE_CONSOLE,	// evPtr is a char*
-	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
-} sysEventType_t;
-
-typedef struct sysEvent_s {
-	int				evTime;
-	sysEventType_t	evType;
-	int				evValue, evValue2;
-	int				evPtrLength;	// bytes of data pointed to by evPtr, for journaling
-	void			*evPtr;			// this must be manually freed if not NULL
-} sysEvent_t;
-
-sysEvent_t	Sys_GetEvent( void );
-
-void	Sys_Init (void);
-
-#ifdef _WIN32
-	#include <windows.h>
-	#define Sys_LoadLibrary(f) (void*)LoadLibrary(f)
-	#define Sys_UnloadLibrary(h) FreeLibrary((HMODULE)h)
-	#define Sys_LoadFunction(h,fn) (void*)GetProcAddress((HMODULE)h,fn)
-	#define Sys_LibraryError() "unknown"
-#endif // linux and mac use SDL in SDL_loadlibrary.h
-
-// general development dll loading for virtual machine testing
-void	* QDECL Sys_LoadDll(const char *name, qboolean useSystemLib);
-void	* QDECL Sys_LoadLegacyGameDll( const char *name, intptr_t (QDECL **vmMain)(int, ...), intptr_t (QDECL *systemcalls)(intptr_t, ...) );
-void	* QDECL Sys_LoadGameDll( const char *name, void *(QDECL **moduleAPI)(int, ...) );
-void	Sys_UnloadDll( void *dllHandle );
-
-char	*Sys_GetCurrentUser( void );
-
-void	QDECL Sys_Error( const char *error, ...) __attribute__((noreturn));
-void	Sys_Quit (void);
-char	*Sys_GetClipboardData( void );	// note that this isn't journaled...
-
-void	Sys_Print( const char *msg );
-
-// Sys_Milliseconds should only be used for profiling purposes,
-// any game related timing information should come from event timestamps
-int		Sys_Milliseconds (bool baseTime = false);
-int		Sys_Milliseconds2(void);
-void 	Sys_SetEnv(const char *name, const char *value);
-
-extern "C" void	Sys_SnapVector( float *v );
-
-qboolean Sys_RandomBytes( byte *string, int len );
-
-// the system console is shown when a dedicated server is running
-void	Sys_DisplaySystemConsole( qboolean show );
-
-void	Sys_ShowConsole( int level, qboolean quitOnClose );
-void	Sys_SetErrorText( const char *text );
-
-void	Sys_SendPacket( int length, const void *data, netadr_t to );
-
-qboolean	Sys_StringToAdr( const char *s, netadr_t *a );
-//Does NOT parse port numbers, only base addresses.
-
-qboolean	Sys_IsLANAddress (netadr_t adr);
-void		Sys_ShowIP(void);
-
-qboolean	Sys_Mkdir( const char *path );
-char	*Sys_Cwd( void );
-void	Sys_SetDefaultInstallPath(const char *path);
-char	*Sys_DefaultInstallPath(void);
-
-#ifdef MACOS_X
-char    *Sys_DefaultAppPath(void);
-#endif
-
-char	*Sys_DefaultHomePath(void);
-const char *Sys_Dirname( char *path );
-const char *Sys_Basename( char *path );
-
-bool Sys_PathCmp( const char *path1, const char *path2 );
-
-char **Sys_ListFiles( const char *directory, const char *extension, char *filter, int *numfiles, qboolean wantsubs );
-void	Sys_FreeFileList( char **fileList );
-//rwwRMG - changed to fileList to not conflict with list type
-
-qboolean Sys_LowPhysicalMemory();
-unsigned int Sys_ProcessorCount();
-
-void Sys_SetProcessorAffinity( void );
-
 /* This is based on the Adaptive Huffman algorithm described in Sayood's Data
  * Compression book.  The ranks are not actually stored, but implicitly defined
  * by the location of a node within a doubly-linked list */
@@ -1134,3 +1048,7 @@ inline int Round(float value)
 // Persistent data store API
 bool PD_Store ( const char *name, const void *data, size_t size );
 const void *PD_Load ( const char *name, size_t *size );
+
+uint32_t ConvertUTF8ToUTF32( char *utf8CurrentChar, char **utf8NextChar );
+
+#include "sys/sys_public.h"

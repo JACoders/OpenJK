@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // vmachine.h -- virtual machine header for client
 #ifndef __VMACHINE_H__
@@ -65,46 +70,14 @@ VIRTUAL MACHINE
 
 ==============================================================
 */
-struct vm_s {
+typedef struct vm_s {
 	intptr_t	(*entryPoint)( int callNum, ... );
-};
+} vm_t;
 
-typedef struct vm_s vm_t;
+extern vm_t cgvm;
 
-extern	vm_t	cgvm;	// interface to cgame dll or vm
-
-extern intptr_t	VM_Call( int callnum, ... );
-extern intptr_t VM_DllSyscall( intptr_t arg, ... );
-extern void CL_ShutdownCGame(void);
-
-/*
-================
-VM_Create
-
-it will attempt to load as a system dll
-================
-*/
-extern void *Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) );
-
-inline void *VM_Create( const char *module) 
-{
-	void *res;
-	// try to load as a system dll
-	if (!Q_stricmp("cl", module))
-	{
-		res = Sys_LoadCgame( &cgvm.entryPoint, VM_DllSyscall );
-		if ( !res) 
-		{
-			//Com_Printf( "Failed.\n" );
-			return 0;
-		}
-	}
-	else 
-	{
-		res = 0;
-	}
-
-	return res;
-}
+intptr_t	VM_Call( int callnum, ... );
+intptr_t	VM_DllSyscall( intptr_t arg, ... );
+void		CL_ShutdownCGame( void );
 
 #endif //__VMACHINE_H__

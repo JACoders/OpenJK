@@ -1,22 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every bg_xxxx CPP file
 #include "common_headers.h"
 
 #include "../qcommon/q_shared.h"
@@ -88,13 +92,13 @@ qboolean	PM_SlideMove( float gravMod ) {
 			}
 		}
 	}
-	
+
 	numbumps = 4;
 
 	VectorCopy (pm->ps->velocity, primal_velocity);
 	VectorCopy (pm->ps->velocity, endVelocity);
 
-	if ( gravMod ) 
+	if ( gravMod )
 	{
 		if ( !(pm->ps->eFlags&EF_FORCE_GRIPPED) && !(pm->ps->eFlags&EF_FORCE_DRAINED) )
 		{
@@ -102,11 +106,11 @@ qboolean	PM_SlideMove( float gravMod ) {
 		}
 		pm->ps->velocity[2] = ( pm->ps->velocity[2] + endVelocity[2] ) * 0.5;
 		primal_velocity[2] = endVelocity[2];
-		if ( pml.groundPlane ) 
+		if ( pml.groundPlane )
 		{
 			if ( PM_GroundSlideOkay( pml.groundTrace.plane.normal[2] ) )
 			{// slide along the ground plane
-				PM_ClipVelocity( pm->ps->velocity, pml.groundTrace.plane.normal, 
+				PM_ClipVelocity( pm->ps->velocity, pml.groundTrace.plane.normal,
 					pm->ps->velocity, OVERCLIP );
 			}
 		}
@@ -115,7 +119,7 @@ qboolean	PM_SlideMove( float gravMod ) {
 	time_left = pml.frametime;
 
 	// never turn against the ground plane
-	if ( pml.groundPlane ) 
+	if ( pml.groundPlane )
 	{
 		numplanes = 1;
 		VectorCopy( pml.groundTrace.plane.normal, planes[0] );
@@ -124,8 +128,8 @@ qboolean	PM_SlideMove( float gravMod ) {
 			planes[0][2] = 0;
 			VectorNormalize( planes[0] );
 		}
-	} 
-	else 
+	}
+	else
 	{
 		numplanes = 0;
 	}
@@ -155,18 +159,18 @@ qboolean	PM_SlideMove( float gravMod ) {
 			}
 		}
 
-		if ( trace.allsolid ) 
+		if ( trace.allsolid )
 		{// entity is completely trapped in another solid
 			pm->ps->velocity[2] = 0;	// don't build up falling damage, but allow sideways acceleration
 			return qtrue;
 		}
 
-		if ( trace.fraction > 0 ) 
+		if ( trace.fraction > 0 )
 		{// actually covered some distance
 			VectorCopy( trace.endpos, pm->ps->origin );
 		}
 
-		if ( trace.fraction == 1 ) 
+		if ( trace.fraction == 1 )
 		{
 			 break;		// moved the entire distance
 		}
@@ -195,7 +199,7 @@ qboolean	PM_SlideMove( float gravMod ) {
 			continue;
 		}
 
-		if (pm->gent->client && 
+		if (pm->gent->client &&
 			pm->gent->client->NPC_class == CLASS_VEHICLE &&
 			trace.plane.normal[2]<pm->gent->m_pVehicle->m_pVehicleInfo->maxSlope
 			)
@@ -205,7 +209,7 @@ qboolean	PM_SlideMove( float gravMod ) {
 
 		time_left -= time_left * trace.fraction;
 
-		if ( numplanes >= MAX_CLIP_PLANES ) 
+		if ( numplanes >= MAX_CLIP_PLANES )
 		{// this shouldn't really happen
 			VectorClear( pm->ps->velocity );
 			return qtrue;
@@ -331,14 +335,14 @@ PM_StepSlideMove
 
 ==================
 */
-void PM_StepSlideMove( float gravMod ) 
+void PM_StepSlideMove( float gravMod )
 {
 	vec3_t		start_o, start_v;
 	vec3_t		down_o, down_v;
 	vec3_t		slideMove, stepUpMove;
 	trace_t		trace;
 	vec3_t		up, down;
-	qboolean	cantStepUpFwd, isGiant = qfalse;;
+	qboolean	/*cantStepUpFwd, */isGiant = qfalse;;
 	int			stepSize = STEPSIZE;
 
 	VectorCopy (pm->ps->origin, start_o);
@@ -350,7 +354,7 @@ void PM_StepSlideMove( float gravMod )
 	}
 
 	if ( PM_SlideMove( gravMod ) == 0 ) {
-		return;		// we got exactly where we wanted to go first try	
+		return;		// we got exactly where we wanted to go first try
 	}//else Bumped into something, see if we can step over it
 
 	if ( pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_VEHICLE && pm->gent->m_pVehicle->m_pVehicleInfo->hoverHeight > 0 )
@@ -359,7 +363,7 @@ void PM_StepSlideMove( float gravMod )
 		return;
 	}
 
-	if ( pm->gent 
+	if ( pm->gent
 		&& pm->gent->client
 		&& (pm->gent->client->NPC_class == CLASS_ATST||pm->gent->client->NPC_class == CLASS_RANCOR) )
 	{
@@ -396,7 +400,7 @@ void PM_StepSlideMove( float gravMod )
 		return;
 	}
 
-	if ( !pm->ps->velocity[0] && !pm->ps->velocity[1] ) 
+	if ( !pm->ps->velocity[0] && !pm->ps->velocity[1] )
 	{//All our velocity was cancelled sliding
 		return;
 	}
@@ -419,14 +423,14 @@ void PM_StepSlideMove( float gravMod )
 
 	if ( pm->debugLevel )
 	{
-		G_DebugLine(start_o,trace.endpos,2000,0xffffff,qtrue); 
+		G_DebugLine(start_o,trace.endpos,2000,0xffffff,qtrue);
 	}
 
 //===Another slidemove forward================================================================================
 	// try slidemove from this position
 	VectorCopy( trace.endpos, pm->ps->origin );
 	VectorCopy( start_v, pm->ps->velocity );
-	cantStepUpFwd = PM_SlideMove( gravMod ); 
+	/*cantStepUpFwd = */PM_SlideMove( gravMod );
 //===Another slidemove forward================================================================================
 
 	if ( pm->debugLevel )
@@ -468,7 +472,7 @@ void PM_StepSlideMove( float gravMod )
 				//Then it might still be okay, so we figure out the slope of the entire move
 				//from (A) to (B) and if that slope is walk-upabble, then it's okay
 				VectorSubtract( trace.endpos, down_o, stepVec );
-				VectorNormalize( stepVec ); 
+				VectorNormalize( stepVec );
 				if ( stepVec[2] > (1.0f-MIN_WALK_NORMAL) )
 				{
 					if ( pm->debugLevel )
@@ -483,8 +487,8 @@ void PM_StepSlideMove( float gravMod )
 		if ( !trace.allsolid
 			&& !skipStep ) //normal players cannot step up slopes that are too steep to walk on!
 		{
-			if ( pm->ps->clientNum 
-				&& isGiant 
+			if ( pm->ps->clientNum
+				&& isGiant
 				&& g_entities[trace.entityNum].client
 				&& pm->gent
 				&& pm->gent->client
@@ -501,8 +505,8 @@ void PM_StepSlideMove( float gravMod )
 					VectorCopy (start_v, pm->ps->velocity);
 				}
 			}
-			else if ( pm->ps->clientNum 
-				&& isGiant 
+			else if ( pm->ps->clientNum
+				&& isGiant
 				&& g_entities[trace.entityNum].client
 				&& g_entities[trace.entityNum].client->playerTeam == pm->gent->client->playerTeam )
 			{//AT-ST's don't step up on allies
@@ -522,7 +526,7 @@ void PM_StepSlideMove( float gravMod )
 				VectorCopy( trace.endpos, pm->ps->origin );
 				if ( g_stepSlideFix->integer )
 				{
-					if ( trace.fraction < 1.0 ) 
+					if ( trace.fraction < 1.0 )
 					{
 						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
 					}
@@ -539,7 +543,7 @@ void PM_StepSlideMove( float gravMod )
 		}
 		if ( !g_stepSlideFix->integer )
 		{
-			if ( trace.fraction < 1.0 ) 
+			if ( trace.fraction < 1.0 )
 			{
 				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
 			}
@@ -565,7 +569,7 @@ void PM_StepSlideMove( float gravMod )
 		if ( pm->debugLevel ) {
 			Com_Printf("%i:bend\n", c_pmove);
 		}
-	} else 
+	} else
 #endif
 	{
 		// use the step move

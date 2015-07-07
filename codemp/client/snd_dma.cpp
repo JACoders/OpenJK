@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 /*****************************************************************************
  * name:		snd_dma.c
  *
@@ -11,6 +34,10 @@
 #include "client.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
 
 qboolean s_shutUp = qfalse;
 
@@ -2116,7 +2143,7 @@ S_RawSamples
 Music streaming
 ============
 */
-void S_RawSamples( int samples, int rate, int width, int s_channels, const byte *data, float volume, int bFirstOrOnlyUpdateThisFrame )
+void S_RawSamples( int samples, int rate, int width, int channels, const byte *data, float volume, int bFirstOrOnlyUpdateThisFrame )
 {
 	int		i;
 	int		src, dst;
@@ -2137,7 +2164,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 	scale = (float)rate / dma.speed;
 
 //Com_Printf ("%i < %i < %i\n", s_soundtime, s_paintedtime, s_rawend);
-	if (s_channels == 2 && width == 2)
+	if (channels == 2 && width == 2)
 	{
 		if (scale == 1.0)
 		{	// optimized case
@@ -2192,7 +2219,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 2)
+	else if (channels == 1 && width == 2)
 	{
 		if (bFirstOrOnlyUpdateThisFrame)
 		{
@@ -2221,7 +2248,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 2 && width == 1)
+	else if (channels == 2 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2252,7 +2279,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 1)
+	else if (channels == 1 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2773,8 +2800,8 @@ void S_GetSoundtime(void)
 
 	if( CL_VideoRecording( ) )
 	{
-		float fps = min(cl_aviFrameRate->value, 1000.0f);
-		float frameDuration = max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
+		float fps = Q_min(cl_aviFrameRate->value, 1000.0f);
+		float frameDuration = Q_max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
 		int msec = (int)frameDuration;
 		s_soundtime += msec;
 		clc.aviSoundFrameRemainder = frameDuration - msec;
@@ -6037,7 +6064,7 @@ void UpdateEAXListener()
 		float flSin = (float)sin(-flTheta);
 		float flCos = (float)cos(-flTheta);
 
-		for (i = 0; i < min(s_NumFXSlots,s_lNumEnvironments); i++)
+		for (i = 0; i < Q_min(s_NumFXSlots,s_lNumEnvironments); i++)
 		{
 			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
 			{

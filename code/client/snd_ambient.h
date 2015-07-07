@@ -1,50 +1,34 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef	__SND_AMBIENT__
 #define __SND_AMBIENT__
 
 // Includes
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4786 )
-#pragma warning ( disable : 4511 )	//copy constructor could not be gen
-#pragma warning ( disable : 4512 )	//assign constructor could not be gen
-
-//these don't work because stl re-sets them
-//#pragma warning ( disable : 4663 )	//spcialize class
-//#pragma warning ( disable : 4018 )	//signed/unsigned
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
-
 #include "../qcommon/sstring.h"	// #include <string>
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-
-using namespace std;
 
 // Defines
-
 #define	AMBIENT_SET_FILENAME	"sound/sound.txt"
 
 const	int	MAX_WAVES_PER_GROUP	= 8;
@@ -121,8 +105,8 @@ public:
 protected:
 
 	int								m_numSets;
-	vector < ambientSet_t * >		*m_ambientSets;
-	map	< sstring_t, ambientSet_t * >	*m_setMap;
+	std::vector < ambientSet_t * >		*m_ambientSets;
+	std::map	< sstring_t, ambientSet_t * >	*m_setMap;
 };
 
 // Prototypes

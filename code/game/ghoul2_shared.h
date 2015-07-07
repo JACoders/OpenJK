@@ -1,43 +1,31 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #pragma once
 #if !defined(GHOUL2_SHARED_H_INC)
 #define GHOUL2_SHARED_H_INC
 
-/*
-Ghoul2 Insert Start
-*/
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#pragma warning(disable:4702)	//unreachable code
-#endif
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-using namespace std;
-/*
-Ghoul2 Insert End
-*/
 
 #define G2T_SV_TIME (0)
 #define G2T_CG_TIME (1)
@@ -220,10 +208,10 @@ struct boltInfo_t{
 
 #define MAX_GHOUL_COUNT_BITS 8 // bits required to send across the MAX_G2_MODELS inside of the networking - this is the only restriction on ghoul models possible per entity
 
-typedef vector <surfaceInfo_t> surfaceInfo_v;
-typedef vector <boneInfo_t> boneInfo_v;
-typedef vector <boltInfo_t> boltInfo_v;
-typedef vector <mdxaBone_t> mdxaBone_v;
+typedef std::vector <surfaceInfo_t> surfaceInfo_v;
+typedef std::vector <boneInfo_t> boneInfo_v;
+typedef std::vector <boltInfo_t> boltInfo_v;
+typedef std::vector <mdxaBone_t> mdxaBone_v;
 
 // defines for stuff to go into the mflags
 #define		GHOUL2_NOCOLLIDE 0x001
@@ -338,8 +326,8 @@ public:
 	virtual int New()=0;
 	virtual void Delete(int handle)=0;
 	virtual bool IsValid(int handle) const=0;
-	virtual vector<CGhoul2Info> &Get(int handle)=0;
-	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
+	virtual std::vector<CGhoul2Info> &Get(int handle)=0;
+	virtual const std::vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
 #ifdef RENDERER
@@ -380,12 +368,12 @@ class CGhoul2Info_v
 			mItem=0;
 		}
 	}
-	vector<CGhoul2Info> &Array()
+	std::vector<CGhoul2Info> &Array()
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);
 	}
-	const vector<CGhoul2Info> &Array() const
+	const std::vector<CGhoul2Info> &Array() const
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);

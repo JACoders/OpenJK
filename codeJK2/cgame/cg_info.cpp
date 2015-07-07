@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "cg_local.h"
 #include "cg_media.h"
@@ -396,13 +401,16 @@ void CG_DrawInformation( void ) {
 	}
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
-	/*if ( !levelshot || g_eSavedGameJustLoaded == eFULL ) 
+#ifdef JK2_MODE
+	if ( !levelshot || g_eSavedGameJustLoaded == eFULL )
 	{
 		// keep whatever's in the screen buffer so far (either the last ingame rendered-image (eg for maptransition)
 		//	or the screenshot built-in to a loaded save game...
 		//
-		cgi_R_DrawScreenShot( 0, 480, 640, -480 );
-	} else*/ {
+		cgi_R_DrawScreenShot( 0, 0, 640, 480 );
+	} else
+#endif
+	{
 		// put up the pre-defined levelshot for this map...
 		//
 		cgi_R_SetColor( NULL );

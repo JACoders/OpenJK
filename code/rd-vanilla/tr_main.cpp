@@ -1,27 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_main.c -- main control flow for each frame
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "tr_local.h"
 
@@ -138,7 +141,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 	// check against frustum planes
 #ifdef JK2_MODE
 	// They used 4 frustrum planes in JK2, and 5 in JKA --eez
-	for (i = 0 ; i < 4 ; i++) 
+	for (i = 0 ; i < 4 ; i++)
 	{
 		frust = &tr.viewParms.frustum[i];
 
@@ -147,13 +150,13 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 		{
 			return CULL_OUT;
 		}
-		else if ( dist <= radius ) 
+		else if ( dist <= radius )
 		{
 			mightBeClipped = qtrue;
 		}
 	}
 #else
-	for (i = 0 ; i < 5 ; i++) 
+	for (i = 0 ; i < 5 ; i++)
 	{
 		frust = &tr.viewParms.frustum[i];
 
@@ -162,7 +165,7 @@ int R_CullPointAndRadius( const vec3_t pt, float radius )
 		{
 			return CULL_OUT;
 		}
-		else if ( dist <= radius ) 
+		else if ( dist <= radius )
 		{
 			mightBeClipped = qtrue;
 		}
@@ -228,11 +231,11 @@ void R_InvertMatrix(float *sourcemat, float *destmat)
 
 /*
 =================
-R_WorldNormalToEntity 
+R_WorldNormalToEntity
 
 =================
 */
-void R_WorldNormalToEntity (const vec3_t worldvec, vec3_t entvec) 
+void R_WorldNormalToEntity (const vec3_t worldvec, vec3_t entvec)
 {
 	entvec[0] = -worldvec[0] * preTransEntMatrix[0] - worldvec[1] * preTransEntMatrix[4] + worldvec[2] * preTransEntMatrix[8];
 	entvec[1] = -worldvec[0] * preTransEntMatrix[1] - worldvec[1] * preTransEntMatrix[5] + worldvec[2] * preTransEntMatrix[9];
@@ -241,7 +244,7 @@ void R_WorldNormalToEntity (const vec3_t worldvec, vec3_t entvec)
 
 /*
 =================
-R_WorldPointToEntity 
+R_WorldPointToEntity
 
 =================
 */
@@ -276,7 +279,7 @@ void R_TransformModelToClip( const vec3_t src, const float *modelMatrix, const f
 	int i;
 
 	for ( i = 0 ; i < 4 ; i++ ) {
-		eye[i] = 
+		eye[i] =
 			src[0] * modelMatrix[ i + 0 * 4 ] +
 			src[1] * modelMatrix[ i + 1 * 4 ] +
 			src[2] * modelMatrix[ i + 2 * 4 ] +
@@ -284,7 +287,7 @@ void R_TransformModelToClip( const vec3_t src, const float *modelMatrix, const f
 	}
 
 	for ( i = 0 ; i < 4 ; i++ ) {
-		dst[i] = 
+		dst[i] =
 			eye[0] * projectionMatrix[ i + 0 * 4 ] +
 			eye[1] * projectionMatrix[ i + 1 * 4 ] +
 			eye[2] * projectionMatrix[ i + 2 * 4 ] +
@@ -408,7 +411,7 @@ R_RotateForViewer
 Sets up the modelview matrix for a given viewParm
 =================
 */
-void R_RotateForViewer (void) 
+void R_RotateForViewer (void)
 {
 	float	viewerMatrix[16];
 	vec3_t	origin;
@@ -606,7 +609,7 @@ void R_SetupFrustum (void) {
 		if (i==4)
 		{
 			// far plane does not go through the view point, it goes alot farther..
-			tr.viewParms.frustum[i].dist -= tr.distanceCull*1.02f; // a little slack so we don't cull stuff 
+			tr.viewParms.frustum[i].dist -= tr.distanceCull*1.02f; // a little slack so we don't cull stuff
 		}
 		SetPlaneSignbits( &tr.viewParms.frustum[i] );
 	}
@@ -674,27 +677,27 @@ void R_PlaneForSurface (surfaceType_t *surfType, cplane_t *plane) {
 		v2 = tri->verts + tri->indexes[1];
 		v3 = tri->verts + tri->indexes[2];
 		PlaneFromPoints( plane4, v1->xyz, v2->xyz, v3->xyz );
-		VectorCopy( plane4, plane->normal ); 
+		VectorCopy( plane4, plane->normal );
 		plane->dist = plane4[3];
 		return;
 	case SF_POLY:
 		poly = (srfPoly_t *)surfType;
 		PlaneFromPoints( plane4, poly->verts[0].xyz, poly->verts[1].xyz, poly->verts[2].xyz );
-		VectorCopy( plane4, plane->normal ); 
+		VectorCopy( plane4, plane->normal );
 		plane->dist = plane4[3];
 		return;
-	case SF_GRID: 
+	case SF_GRID:
 		grid = (srfGridMesh_t *)surfType;
 		v1 = &grid->verts[0];
 		v2 = &grid->verts[1];
 		v3 = &grid->verts[2];
 		PlaneFromPoints( plane4, v3->xyz, v2->xyz, v1->xyz );
-		VectorCopy( plane4, plane->normal ); 
+		VectorCopy( plane4, plane->normal );
 		plane->dist = plane4[3];
 		return;
 	default:
 		memset (plane, 0, sizeof(*plane));
-		plane->normal[0] = 1;		
+		plane->normal[0] = 1;
 		return;
 	}
 }
@@ -709,7 +712,7 @@ be moving and rotating.
 Returns qtrue if it should be mirrored
 =================
 */
-qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum, 
+qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 							 orientation_t *surface, orientation_t *camera,
 							 vec3_t pvsOrigin, qboolean *mirror ) {
 	int			i;
@@ -762,8 +765,8 @@ qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 		VectorCopy( e->e.oldorigin, pvsOrigin );
 
 		// if the entity is just a mirror, don't use as a camera point
-		if ( e->e.oldorigin[0] == e->e.origin[0] && 
-			e->e.oldorigin[1] == e->e.origin[1] && 
+		if ( e->e.oldorigin[0] == e->e.origin[0] &&
+			e->e.oldorigin[1] == e->e.origin[1] &&
 			e->e.oldorigin[2] == e->e.origin[2] ) {
 			VectorScale( plane.normal, plane.dist, surface->origin );
 			VectorCopy( surface->origin, camera->origin );
@@ -779,7 +782,7 @@ qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 		// an origin point we can rotate around
 		d = DotProduct( e->e.origin, plane.normal ) - plane.dist;
 		VectorMA( e->e.origin, -d, surface->axis[0], surface->origin );
-			
+
 		// now get the camera origin and orientation
 		VectorCopy( e->e.oldorigin, camera->origin );
 		AxisCopy( e->e.axis, camera->axis );
@@ -830,7 +833,7 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 	R_PlaneForSurface( drawSurf->surface, &originalPlane );
 
 	// rotate the plane if necessary
-	if ( entityNum != REFENTITYNUM_WORLD ) 
+	if ( entityNum != REFENTITYNUM_WORLD )
 	{
 		tr.currentEntityNum = entityNum;
 		tr.currentEntity = &tr.refdef.entities[entityNum];
@@ -845,8 +848,8 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 
 		// translate the original plane
 		originalPlane.dist = originalPlane.dist + DotProduct( originalPlane.normal, tr.ori.origin );
-	} 
-	else 
+	}
+	else
 	{
 		plane = originalPlane;
 	}
@@ -854,7 +857,7 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 	// locate the portal entity closest to this plane.
 	// origin will be the origin of the portal, origin2 will be
 	// the origin of the camera
-	for ( i = 0 ; i < tr.refdef.num_entities ; i++ ) 
+	for ( i = 0 ; i < tr.refdef.num_entities ; i++ )
 	{
 		e = &tr.refdef.entities[i];
 		if ( e->e.reType != RT_PORTALSURFACE ) {
@@ -867,9 +870,9 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 		}
 
 		// if the entity is just a mirror, don't use as a camera point
-		if ( e->e.oldorigin[0] == e->e.origin[0] && 
-			e->e.oldorigin[1] == e->e.origin[1] && 
-			e->e.oldorigin[2] == e->e.origin[2] ) 
+		if ( e->e.oldorigin[0] == e->e.origin[0] &&
+			e->e.oldorigin[1] == e->e.origin[1] &&
+			e->e.oldorigin[2] == e->e.origin[2] )
 		{
 			return qtrue;
 		}
@@ -993,7 +996,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	orientation_t	surface, camera;
 
 	// don't recursively mirror
-	if (tr.viewParms.isPortal) 
+	if (tr.viewParms.isPortal)
 	{
 		ri.Printf( PRINT_DEVELOPER, "WARNING: recursive mirror/portal found\n" );
 		return qfalse;
@@ -1013,7 +1016,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 
 	newParms = tr.viewParms;
 	newParms.isPortal = qtrue;
-	if ( !R_GetPortalOrientations( drawSurf, entityNum, &surface, &camera, 
+	if ( !R_GetPortalOrientations( drawSurf, entityNum, &surface, &camera,
 		newParms.pvsOrigin, &newParms.isMirror ) ) {
 		return qfalse;		// bad portal, no portalentity
 	}
@@ -1022,7 +1025,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 
 	VectorSubtract( vec3_origin, camera.axis[0], newParms.portalPlane.normal );
 	newParms.portalPlane.dist = DotProduct( camera.origin, newParms.portalPlane.normal );
-	
+
 	R_MirrorVector (oldParms.ori.axis[0], &surface, &camera, newParms.ori.axis[0]);
 	R_MirrorVector (oldParms.ori.axis[1], &surface, &camera, newParms.ori.axis[1]);
 	R_MirrorVector (oldParms.ori.axis[2], &surface, &camera, newParms.ori.axis[2]);
@@ -1033,7 +1036,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	R_RenderView (&newParms);
 
 	tr.viewParms = oldParms;
-	
+
 	return qtrue;
 }
 
@@ -1060,12 +1063,12 @@ int R_SpriteFogNum( trRefEntity_t *ent ) {
 	int partialFog = 0;
 	for ( i = 1 ; i < tr.world->numfogs ; i++ ) {
 		fog = &tr.world->fogs[i];
-		if ( ent->e.origin[0] - ent->e.radius >= fog->bounds[0][0] 
-			&& ent->e.origin[0] + ent->e.radius <= fog->bounds[1][0] 
+		if ( ent->e.origin[0] - ent->e.radius >= fog->bounds[0][0]
+			&& ent->e.origin[0] + ent->e.radius <= fog->bounds[1][0]
 			&& ent->e.origin[1] - ent->e.radius >= fog->bounds[0][1]
-			&& ent->e.origin[1] + ent->e.radius <= fog->bounds[1][1] 
+			&& ent->e.origin[1] + ent->e.radius <= fog->bounds[1][1]
 			&& ent->e.origin[2] - ent->e.radius >= fog->bounds[0][2]
-			&& ent->e.origin[2] + ent->e.radius <= fog->bounds[1][2] ) 
+			&& ent->e.origin[2] + ent->e.radius <= fog->bounds[1][2] )
 		{//totally inside it
 			return i;
 			break;
@@ -1156,7 +1159,7 @@ static void R_RadixSort( drawSurf_t *source, int size )
 R_AddDrawSurf
 =================
 */
-void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fogIndex, int dlightMap ) 
+void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fogIndex, int dlightMap )
 {
 	int			index;
 
@@ -1176,7 +1179,7 @@ void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fo
 
 	// the sort data is packed into a single 32 bit value so it can be
 	// compared quickly during the qsorting process
-	tr.refdef.drawSurfs[index].sort = (shader->sortedIndex << QSORT_SHADERNUM_SHIFT) 
+	tr.refdef.drawSurfs[index].sort = (shader->sortedIndex << QSORT_SHADERNUM_SHIFT)
 		| tr.shiftedEntityNum | ( fogIndex << QSORT_FOGNUM_SHIFT ) | (int)dlightMap;
 	tr.refdef.drawSurfs[index].surface = (surfaceType_t *)surface;
 	tr.refdef.numDrawSurfs++;
@@ -1187,7 +1190,7 @@ void R_AddDrawSurf( const surfaceType_t *surface, const shader_t *shader, int fo
 R_DecomposeSort
 =================
 */
-void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader, 
+void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader,
 					 int *fogNum, int *dlightMap ) {
 	*fogNum = ( sort >> QSORT_FOGNUM_SHIFT ) & 31;
 	*shader = tr.sortedShaders[ ( sort >> QSORT_SHADERNUM_SHIFT ) & (MAX_SHADERS-1) ];
@@ -1263,8 +1266,8 @@ void R_AddEntitySurfaces (void) {
 		return;
 	}
 
-	for ( tr.currentEntityNum = 0; 
-	      tr.currentEntityNum < tr.refdef.num_entities; 
+	for ( tr.currentEntityNum = 0;
+	      tr.currentEntityNum < tr.refdef.num_entities;
 		  tr.currentEntityNum++ ) {
 		ent = tr.currentEntity = &tr.refdef.entities[tr.currentEntityNum];
 
@@ -1275,7 +1278,7 @@ void R_AddEntitySurfaces (void) {
 
 		if ((ent->e.renderfx & RF_ALPHA_FADE))
 		{
-			// we need to make sure this is not sorted before the world..in fact we 
+			// we need to make sure this is not sorted before the world..in fact we
 			// want this to be sorted quite late...like how about last.
 			// I don't want to use the highest bit, since no doubt someone fumbled
 			// handling that as an unsigned quantity somewhere
@@ -1283,7 +1286,7 @@ void R_AddEntitySurfaces (void) {
 		}
 		//
 		// the weapon model must be handled special --
-		// we don't want the hacked weapon position showing in 
+		// we don't want the hacked weapon position showing in
 		// mirrors, because the true body position will already be drawn
 		//
 		if ( (ent->e.renderfx & RF_FIRST_PERSON) && tr.viewParms.isPortal) {
@@ -1356,7 +1359,7 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
-					
+
 				default:
 					Com_Error( ERR_DROP, "R_AddEntitySurfaces: Bad modeltype" );
 					break;
@@ -1435,7 +1438,7 @@ void R_DebugGraphics( void ) {
 	}
 
 	// the render thread can't make callbacks to the main thread
-	//R_SyncRenderThread();
+	R_IssuePendingRenderCommands(); //
 
 	GL_Bind( tr.whiteImage);
 	GL_Cull( CT_FRONT_SIDED );
@@ -1462,20 +1465,20 @@ void R_SetViewFogIndex (void)
 		int contents = ri.SV_PointContents( tr.refdef.vieworg, 0 );
 		if ( (contents&CONTENTS_FOG) )
 		{//only take a tr.refdef.fogIndex if the tr.refdef.vieworg is actually *in* that fog brush (assumption: checks pointcontents for any CONTENTS_FOG, not that particular brush...)
-			for ( tr.refdef.fogIndex = 1 ; tr.refdef.fogIndex < tr.world->numfogs ; tr.refdef.fogIndex++ ) 
+			for ( tr.refdef.fogIndex = 1 ; tr.refdef.fogIndex < tr.world->numfogs ; tr.refdef.fogIndex++ )
 			{
-				fog = &tr.world->fogs[tr.refdef.fogIndex]; 
+				fog = &tr.world->fogs[tr.refdef.fogIndex];
 				if ( tr.refdef.vieworg[0] >= fog->bounds[0][0]
 					&& tr.refdef.vieworg[1] >= fog->bounds[0][1]
 					&& tr.refdef.vieworg[2] >= fog->bounds[0][2]
 					&& tr.refdef.vieworg[0] <= fog->bounds[1][0]
 					&& tr.refdef.vieworg[1] <= fog->bounds[1][1]
-					&& tr.refdef.vieworg[2] <= fog->bounds[1][2] ) 
+					&& tr.refdef.vieworg[2] <= fog->bounds[1][2] )
 				{
 					break;
 				}
 			}
-			if ( tr.refdef.fogIndex == tr.world->numfogs ) 
+			if ( tr.refdef.fogIndex == tr.world->numfogs )
 			{
 				tr.refdef.fogIndex = 0;
 			}
@@ -1513,11 +1516,12 @@ void R_RenderView (viewParms_t *parms) {
 		color4ub_t	whitecolor = {0xff, 0xff, 0xff, 0xff};
 		color4ub_t	blackcolor = {0x00, 0x00, 0x00, 0xff};
 
-		for(i=0;i<MAX_LIGHT_STYLES;i++)
-		{
-			RE_SetLightStyle(i,  *(int*)blackcolor);
+		byteAlias_t *ba = (byteAlias_t *)&blackcolor;
+		for ( i = 0; i < MAX_LIGHT_STYLES; i++ ) {
+			RE_SetLightStyle( i, ba->i );
 		}
-		RE_SetLightStyle(r_debugStyle->integer,  *(int*)whitecolor);
+		ba = (byteAlias_t *)&whitecolor;
+		RE_SetLightStyle( r_debugStyle->integer, ba->i );
 	}
 
 	tr.viewCount++;
@@ -1535,7 +1539,7 @@ void R_RenderView (viewParms_t *parms) {
 
 	R_SetupFrustum ();
 
-	if (!(tr.refdef.rdflags & RDF_NOWORLDMODEL)) 
+	if (!(tr.refdef.rdflags & RDF_NOWORLDMODEL))
 	{	// Trying to do this with no world is not good.
 		R_SetViewFogIndex ();
 	}

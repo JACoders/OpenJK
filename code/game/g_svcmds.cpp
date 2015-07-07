@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
@@ -68,25 +73,49 @@ void	Svcmd_EntityList_f (void) {
 		gi.Printf("%3i:", e);
 		switch ( check->s.eType ) {
 		case ET_GENERAL:
-			gi.Printf("ET_GENERAL ");
+			gi.Printf( "ET_GENERAL          " );
 			break;
 		case ET_PLAYER:
-			gi.Printf("ET_PLAYER  ");
+			gi.Printf( "ET_PLAYER           " );
 			break;
 		case ET_ITEM:
-			gi.Printf("ET_ITEM    ");
+			gi.Printf( "ET_ITEM             " );
 			break;
 		case ET_MISSILE:
-			gi.Printf("ET_MISSILE ");
+			gi.Printf( "ET_MISSILE          " );
 			break;
 		case ET_MOVER:
-			gi.Printf("ET_MOVER   ");
+			gi.Printf( "ET_MOVER            " );
 			break;
 		case ET_BEAM:
-			gi.Printf("ET_BEAM    ");
+			gi.Printf( "ET_BEAM             " );
+			break;
+		case ET_PORTAL:
+			gi.Printf( "ET_PORTAL           " );
+			break;
+		case ET_SPEAKER:
+			gi.Printf( "ET_SPEAKER          " );
+			break;
+		case ET_PUSH_TRIGGER:
+			gi.Printf( "ET_PUSH_TRIGGER     " );
+			break;
+		case ET_TELEPORT_TRIGGER:
+			gi.Printf( "ET_TELEPORT_TRIGGER " );
+			break;
+		case ET_INVISIBLE:
+			gi.Printf( "ET_INVISIBLE        " );
+			break;
+		case ET_THINKER:
+			gi.Printf( "ET_THINKER          " );
+			break;
+		case ET_CLOUD:
+			gi.Printf( "ET_CLOUD            " );
+			break;
+		case ET_TERRAIN:
+			gi.Printf( "ET_TERRAIN          " );
 			break;
 		default:
-			gi.Printf("#%i", check->s.eType);
+			gi.Printf( "%-3i                ", check->s.eType );
 			break;
 		}
 
@@ -95,43 +124,6 @@ void	Svcmd_EntityList_f (void) {
 		}
 		gi.Printf("\n");
 	}
-}
-
-gclient_t	*ClientForString( const char *s ) {
-	gclient_t	*cl;
-	int			i;
-	int			idnum;
-
-	// numeric values are just slot numbers
-	if ( s[0] >= '0' && s[0] <= '9' ) {
-		idnum = atoi( s );
-		if ( idnum < 0 || idnum >= level.maxclients ) {
-			Com_Printf( "Bad client slot: %i\n", idnum );
-			return NULL;
-		}
-
-		cl = &level.clients[idnum];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
-			gi.Printf( "Client %i is not connected\n", idnum );
-			return NULL;
-		}
-		return cl;
-	}
-
-	// check for a name match
-	for ( i=0 ; i < level.maxclients ; i++ ) {
-		cl = &level.clients[i];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
-			continue;
-		}
-		if ( !Q_stricmp( cl->pers.netname, s ) ) {
-			return cl;
-		}
-	}
-
-	gi.Printf( "User %s is not on the server\n", s );
-
-	return NULL;
 }
 
 //---------------------------
@@ -633,7 +625,6 @@ void G_GrabEntity( gentity_t *grabber, const char *target )
 /*
 =================
 ConsoleCommand
-// these are added in cg_main, CG_Init so they tab-complete
 =================
 */
 qboolean	ConsoleCommand( void ) {
@@ -651,11 +642,6 @@ qboolean	ConsoleCommand( void ) {
 		Svcmd_GameMem_f();
 		return qtrue;
 	}
-
-//	if (Q_stricmp (cmd, "addbot") == 0) {
-//		Svcmd_AddBot_f();
-//		return qtrue;
-//	}
 
 	if (Q_stricmp (cmd, "nav") == 0) 
 	{
@@ -735,7 +721,6 @@ qboolean	ConsoleCommand( void ) {
 		Svcmd_SaberBlade_f();
 		return qtrue;
 	}
-
 
 	if ( Q_stricmp( cmd, "setForceJump" ) == 0 )	
 	{

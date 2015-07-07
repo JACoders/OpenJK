@@ -1,26 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
 
 #include "server.h"
 #include "../game/weapons.h"
@@ -226,7 +227,9 @@ static void SV_MapTransition_f(void)
 {		
 	const char	*spawntarget;
 
-//	SCR_PrecacheScreenshot();
+#ifdef JK2_MODE
+	SCR_PrecacheScreenshot();
+#endif
 	SV_Player_EndOfLevelSave();
 
 	spawntarget = Cmd_Argv(2);
@@ -250,13 +253,18 @@ Restart the server on a different map, but clears a cvar so that typing "map bla
 player weapons/ammo/etc from the previous level that you haven't really exited (ie ignores KEEP_PREV on spawn points)
 ==================
 */
+#ifdef JK2_MODE
+extern void SCR_UnprecacheScreenshot();
+#endif
 static void SV_Map_f( void ) 
 {
 	Cvar_Set( sCVARNAME_PLAYERSAVE, "");
 	Cvar_Set( "spawntarget", "" );
 	Cvar_Set("tier_storyinfo", "0");
 	Cvar_Set("tiers_complete", "");
-//	SCR_UnprecacheScreenshot();
+#ifdef JK2_MODE
+	SCR_UnprecacheScreenshot();
+#endif
 
 	ForceReload_e eForceReload = eForceReload_NOTHING;	// default for normal load
 
@@ -304,7 +312,9 @@ void SV_LoadTransition_f(void)
 
 	qbLoadTransition = qtrue;
 
-//	SCR_PrecacheScreenshot();
+#ifdef JK2_MODE
+	SCR_PrecacheScreenshot();
+#endif
 	SV_Player_EndOfLevelSave();
 
 	//Save the full current state of the current map so we can return to it later

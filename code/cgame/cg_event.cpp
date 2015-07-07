@@ -1,24 +1,28 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_event.c -- handle entity events at snapshot or playerstate transitions
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"
@@ -91,11 +95,11 @@ void CG_ItemPickup( int itemNum, qboolean bHadItem ) {
 	cg.itemPickupBlendTime = cg.time;
 
 	if (bg_itemlist[itemNum].classname && bg_itemlist[itemNum].classname[0])
-	{ 
+	{
 
 		char text[1024], data[1024];
 		if (cgi_SP_GetStringTextString("SP_INGAME_PICKUPLINE",text, sizeof(text)) )
-		{			
+		{
 			if ( cgi_SP_GetStringTextString( va("SP_INGAME_%s",bg_itemlist[itemNum].classname ), data, sizeof( data )))
 			{
 //				Com_Printf("%s %s\n", text, data );
@@ -104,9 +108,9 @@ void CG_ItemPickup( int itemNum, qboolean bHadItem ) {
 			}
 		}
 	}
-	
+
 	// see if it should be the grabbed weapon
-	if ( bg_itemlist[itemNum].giType == IT_WEAPON ) 
+	if ( bg_itemlist[itemNum].giType == IT_WEAPON )
 	{
 		const int nCurWpn = cg.predicted_player_state.weapon;
 		const int nNewWpn = bg_itemlist[itemNum].giTag;
@@ -179,7 +183,7 @@ void UseItem(int itemNum)
 
 	cent = &cg_entities[cg.snap->ps.clientNum];
 
-	switch ( itemNum ) 
+	switch ( itemNum )
 	{
 	case INV_ELECTROBINOCULARS:
 		CG_ToggleBinoculars();
@@ -207,7 +211,7 @@ void UseItem(int itemNum)
 CG_UseForce
 ===============
 */
-static void CG_UseForce( centity_t *cent ) 
+static void CG_UseForce( centity_t *cent )
 {
 	//FIXME: sound or graphic change or something?
 	//actual force power action is on game/pm side
@@ -218,27 +222,27 @@ static void CG_UseForce( centity_t *cent )
 CG_UseItem
 ===============
 */
-static void CG_UseItem( centity_t *cent ) 
+static void CG_UseItem( centity_t *cent )
 {
 	int			itemNum;
 	entityState_t *es;
 
 	es = &cent->currentState;
-	
+
 	itemNum = cg.inventorySelect;
-	if ( itemNum < 0 || itemNum > INV_MAX ) 
+	if ( itemNum < 0 || itemNum > INV_MAX )
 	{
 		itemNum = 0;
 	}
 
 	// print a message if the local player
-	if ( es->number == cg.snap->ps.clientNum ) 
+	if ( es->number == cg.snap->ps.clientNum )
 	{
-		if ( !itemNum ) 
+		if ( !itemNum )
 		{
 //			CG_CenterPrint( "No item to use", SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
-		} 
-		else 
+		}
+		else
 		{
 //			item = BG_FindItemForHoldable( itemNum );
 //			CG_CenterPrint( va("Use %s", item->pickup_name), SCREEN_HEIGHT * 0.30, BIGCHAR_WIDTH );
@@ -322,12 +326,12 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_FALL_MEDIUM:
 		DEBUGNAME("EV_FALL_MEDIUM");
-		// use normal pain sound - 
-		if ( g_entities[es->number].health <= 0 ) 
+		// use normal pain sound -
+		if ( g_entities[es->number].health <= 0 )
 		{//dead
 			cgi_S_StartSound( NULL, es->number, CHAN_AUTO, cgs.media.landSound  );
 		}
-		else if ( g_entities[es->number].s.weapon == WP_SABER 
+		else if ( g_entities[es->number].s.weapon == WP_SABER
 			|| (g_entities[es->number].client && (g_entities[es->number].client->ps.forcePowersKnown&(1<<FP_LEVITATION))) )
 		{//jedi or someone who has force jump (so probably took no damage)
 			CG_TryPlayCustomSound( NULL, es->number, CHAN_BODY, "*land1.wav", CS_BASIC );
@@ -408,32 +412,32 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_LAVA_TOUCH");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.lavaInSound );
 		break;
-	
+
 	case EV_LAVA_LEAVE:
 		DEBUGNAME("EV_LAVA_LEAVE");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.lavaOutSound );
 		break;
-	
+
 	case EV_LAVA_UNDER:
 		DEBUGNAME("EV_LAVA_UNDER");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.lavaUnSound );
 		break;
-	
+
 	case EV_WATER_TOUCH:
 		DEBUGNAME("EV_WATER_TOUCH");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.watrInSound );
 		break;
-	
+
 	case EV_WATER_LEAVE:
 		DEBUGNAME("EV_WATER_LEAVE");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.watrOutSound );
 		break;
-	
+
 	case EV_WATER_UNDER:
 		DEBUGNAME("EV_WATER_UNDER");
 		cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.media.watrUnSound );
 		break;
-	
+
 	case EV_WATER_CLEAR:
 		DEBUGNAME("EV_WATER_CLEAR");
 		CG_TryPlayCustomSound(NULL, es->number, CHAN_AUTO, "*gasp.wav", CS_BASIC );
@@ -456,10 +460,10 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			gitem_t	*item;
 			int		index;
 			qboolean bHadItem = qfalse;
-					
+
 			index = es->eventParm;		// player predicted
 
-			if ( (char)index < 0 ) 
+			if ( (char)index < 0 )
 			{
 				index = -(char)index;
 				bHadItem = qtrue;
@@ -532,7 +536,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_DISRUPTOR_MAIN_SHOT:
 		DEBUGNAME("EV_DISRUPTOR_MAIN_SHOT");
-		FX_DisruptorMainShot( cent->currentState.origin2, cent->lerpOrigin ); 
+		FX_DisruptorMainShot( cent->currentState.origin2, cent->lerpOrigin );
 		break;
 
 	case EV_DISRUPTOR_SNIPER_SHOT:
@@ -561,7 +565,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 //	case EV_POWERUP_SEEKER_FIRE:
 //		DEBUGNAME("EV_POWERUP_SEEKER_FIRE");
-//		CG_FireSeeker( cent ); 
+//		CG_FireSeeker( cent );
 //		break;
 
 	case EV_POWERUP_BATTLESUIT:
@@ -577,11 +581,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_KOTHOS_BEAM");
 		if ( Q_irand( 0, 1 ) )
 		{
-			FX_KothosBeam( cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handRPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin ); 
+			FX_KothosBeam( cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handRPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin );
 		}
 		else
 		{
-			FX_KothosBeam( cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handLPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin ); 
+			FX_KothosBeam( cg_entities[cent->currentState.otherEntityNum].gent->client->renderInfo.handLPoint, cg_entities[cent->currentState.otherEntityNum2].lerpOrigin );
 		}
 		break;
 	//=================================================================
@@ -608,7 +612,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			int disintLength = 0;
 			qhandle_t disintSound1 = NULL_HANDLE;
 			qhandle_t disintSound2 = NULL_HANDLE;
-			qhandle_t disintSound3 = NULL_HANDLE;
+			//qhandle_t disintSound3 = NULL_HANDLE;
 
 			switch( disintPW )
 			{
@@ -616,7 +620,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				disintEffect = EF_DISINTEGRATION;//ef_
 				disintSound1 = cgs.media.disintegrateSound;//with scream
 				disintSound2 = cgs.media.disintegrate2Sound;//no scream
-				disintSound3 = cgs.media.disintegrate3Sound;//with inhuman scream
+				//disintSound3 = cgs.media.disintegrate3Sound;//with inhuman scream
 				disintLength = 2000;
 				makeNotSolid = qtrue;
 				break;
@@ -706,12 +710,24 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_MISSILE_HIT:
 		DEBUGNAME("EV_MISSILE_HIT");
-		CG_MissileHitPlayer( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		if ( CG_VehicleWeaponImpact( cent ) )
+		{
+		}
+		else
+		{
+			CG_MissileHitPlayer( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		}
 		break;
 
 	case EV_MISSILE_MISS:
 		DEBUGNAME("EV_MISSILE_MISS");
-		CG_MissileHitWall( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		if ( CG_VehicleWeaponImpact( cent ) )
+		{
+		}
+		else
+		{
+			CG_MissileHitWall( cent, es->weapon, position, cent->gent->pos1, cent->gent->alt_fire );
+		}
 		break;
 
 	case EV_BMODEL_SOUND:
@@ -721,11 +737,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	case EV_GENERAL_SOUND:
 		DEBUGNAME("EV_GENERAL_SOUND");
-		if ( cgs.sound_precache[ es->eventParm ] ) 
+		if ( cgs.sound_precache[ es->eventParm ] )
 		{
 			cgi_S_StartSound (NULL, es->number, CHAN_AUTO, cgs.sound_precache[ es->eventParm ] );
-		} 
-		else 
+		}
+		else
 		{
 			s = CG_ConfigString( CS_SOUNDS + es->eventParm );
 			CG_TryPlayCustomSound(NULL, es->number, CHAN_AUTO, s, CS_BASIC );
@@ -1075,12 +1091,12 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		DEBUGNAME("EV_USE_INV_LIGHTAMP_GOGGLES");
 		UseItem(INV_LIGHTAMP_GOGGLES );
 		break;
-	
+
 	case EV_USE_INV_SENTRY:
 		DEBUGNAME("EV_USE_INV_SENTRY");
 		UseItem(INV_SENTRY );
 		break;
-	
+
 	case EV_DEBUG_LINE:
 		DEBUGNAME("EV_DEBUG_LINE");
 		CG_TestLine(position, es->origin2, es->time, (unsigned int)(es->time2), es->weapon);

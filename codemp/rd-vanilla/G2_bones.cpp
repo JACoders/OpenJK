@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "qcommon/matcomp.h"
 
 #include "ghoul2/G2.h"
@@ -937,8 +959,8 @@ qboolean G2_Pause_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char 
 		// are we pausing or un pausing?
 		if (blist[index].pauseTime)
 		{
-			int		startFrame, endFrame, flags;
-			float	currentFrame, animSpeed;
+			int		startFrame = 0, endFrame = 0, flags = 0;
+			float	currentFrame = 0.0f, animSpeed = 1.0f;
 
 			// figure out what frame we are on now
 			G2_Get_Bone_Anim(ghlInfo, blist, boneName, blist[index].pauseTime, &currentFrame, &startFrame, &endFrame, &flags, &animSpeed, NULL, 0);
@@ -1231,7 +1253,7 @@ enum ERagState
 };
 static int				ragState;
 
-static vector<boneInfo_t *>		rag;  // once we get the dependents precomputed this can be local
+static std::vector<boneInfo_t *>		rag;  // once we get the dependents precomputed this can be local
 
 
 static void G2_Generate_MatrixRag(
@@ -1591,7 +1613,7 @@ void G2_ResetRagDoll(CGhoul2Info_v &ghoul2V)
 	boneInfo_v &blist = ghoul2.mBlist;
 #if 1
 	//Eh, screw it. Ragdoll does a lot of terrible things to the bones that probably aren't directly reversible, so just reset it all.
-	G2_Init_Bone_List(blist);
+	G2_Init_Bone_List(blist, ghoul2.aHeader->numBones);
 #else //The anims on every bone are messed up too, as are the angles. There's not really any way to get back to a normal state, so just clear the list
 	  //and let them re-set their anims/angles gameside.
 	int i = 0;
@@ -4836,9 +4858,10 @@ qboolean G2_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params
 }
 
 // set the bone list to all unused so the bone transformation routine ignores it.
-void G2_Init_Bone_List(boneInfo_v &blist)
+void G2_Init_Bone_List(boneInfo_v &blist, int numBones)
 {
 	blist.clear();
+	blist.reserve(numBones);
 }
 
 void G2_RemoveRedundantBoneOverrides(boneInfo_v &blist, int *activeBones)

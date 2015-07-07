@@ -1,5 +1,27 @@
-// leave this as first line for PCH reasons...
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "../server/exe_headers.h"
 
 #include "tr_common.h"
@@ -11,8 +33,12 @@
  * (stdio.h is sufficient on ANSI-conforming systems.)
  * You may also wish to include "jerror.h".
  */
+#ifdef USE_INTERNAL_JPEG
 #define JPEG_INTERNALS
 #include "jpeg-8c/jpeglib.h"
+#else
+#include <jpeglib.h>
+#endif
 
 static void R_JPGErrorExit(j_common_ptr cinfo)
 {
@@ -204,6 +230,157 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	/* And we're done! */
 }
 
+#ifdef JK2_MODE
+void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int *width, int *height ) {
+	/* This struct contains the JPEG decompression parameters and pointers to
+	 * working space (which is allocated as needed by the JPEG library).
+	 */
+	struct jpeg_decompress_struct cinfo = { NULL };
+	/* We use our private extension JPEG error handler.
+	 * Note that this struct must live as long as the main JPEG parameter
+	 * struct, to avoid dangling-pointer problems.
+	 */
+	/* This struct represents a JPEG error handler.  It is declared separately
+	 * because applications often want to supply a specialized error handler
+	 * (see the second half of this file for an example).  But here we just
+	 * take the easy way out and use the standard error handler, which will
+	 * print a message on stderr and call exit() if compression fails.
+	 * Note that this struct must live as long as the main JPEG parameter
+	 * struct, to avoid dangling-pointer problems.
+	 */
+	struct jpeg_error_mgr jerr;
+	/* More stuff */
+	JSAMPARRAY buffer;		/* Output row buffer */
+	unsigned int row_stride;  /* physical row width in output buffer */
+	unsigned int pixelcount, memcount;
+	unsigned int sindex, dindex;
+	byte *out;
+	byte  *buf;
+	
+	if (!inputBuffer) {
+		return;
+	}
+	
+	/* Step 1: allocate and initialize JPEG decompression object */
+	
+	/* We have to set up the error handler first, in case the initialization
+	 * step fails.  (Unlikely, but it could happen if you are out of memory.)
+	 * This routine fills in the contents of struct jerr, and returns jerr's
+	 * address which we place into the link field in cinfo.
+	 */
+	cinfo.err = jpeg_std_error(&jerr);
+	cinfo.err->error_exit = R_JPGErrorExit;
+	cinfo.err->output_message = R_JPGOutputMessage;
+	
+	/* Now we can initialize the JPEG decompression object. */
+	jpeg_create_decompress(&cinfo);
+	
+	/* Step 2: specify data source (eg, a file) */
+	
+	jpeg_mem_src(&cinfo, inputBuffer, len);
+	
+	/* Step 3: read file parameters with jpeg_read_header() */
+	
+	(void) jpeg_read_header(&cinfo, TRUE);
+	/* We can ignore the return value from jpeg_read_header since
+	 *   (a) suspension is not possible with the stdio data source, and
+	 *   (b) we passed TRUE to reject a tables-only JPEG file as an error.
+	 * See libjpeg.doc for more info.
+	 */
+	
+	/* Step 4: set parameters for decompression */
+	
+	
+	/* Make sure it always converts images to RGB color space. This will
+	 * automatically convert 8-bit greyscale images to RGB as well.	*/
+	cinfo.out_color_space = JCS_RGB;
+	
+	/* Step 5: Start decompressor */
+	
+	(void) jpeg_start_decompress(&cinfo);
+	/* We can ignore the return value since suspension is not possible
+	 * with the stdio data source.
+	 */
+	
+	/* We may need to do some setup of our own at this point before reading
+	 * the data.  After jpeg_start_decompress() we have the correct scaled
+	 * output image dimensions available, as well as the output colormap
+	 * if we asked for color quantization.
+	 * In this example, we need to make an output work buffer of the right size.
+	 */
+	/* JSAMPLEs per row in output buffer */
+	pixelcount = cinfo.output_width * cinfo.output_height;
+	
+	if(!cinfo.output_width || !cinfo.output_height
+	   || ((pixelcount * 4) / cinfo.output_width) / 4 != cinfo.output_height
+	   || pixelcount > 0x1FFFFFFF || cinfo.output_components != 3
+	   )
+	{
+		// Free the memory to make sure we don't leak memory
+		jpeg_destroy_decompress(&cinfo);
+		
+		ri.Printf( PRINT_ALL, "LoadJPG: invalid image format: %dx%d*4=%d, components: %d",
+				  cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
+		return;
+	}
+	
+	memcount = pixelcount * 4;
+	row_stride = cinfo.output_width * cinfo.output_components;
+	
+	out = (byte *)Z_Malloc(memcount, TAG_TEMP_WORKSPACE, qfalse);
+	
+	*width = cinfo.output_width;
+	*height = cinfo.output_height;
+	
+	/* Step 6: while (scan lines remain to be read) */
+	/*           jpeg_read_scanlines(...); */
+	
+	/* Here we use the library's state variable cinfo.output_scanline as the
+	 * loop counter, so that we don't have to keep track ourselves.
+	 */
+	while (cinfo.output_scanline < cinfo.output_height) {
+		/* jpeg_read_scanlines expects an array of pointers to scanlines.
+		 * Here the array is only one element long, but you could ask for
+		 * more than one scanline at a time if that's more convenient.
+		 */
+		buf = ((out+(row_stride*cinfo.output_scanline)));
+		buffer = &buf;
+		(void) jpeg_read_scanlines(&cinfo, buffer, 1);
+	}
+	
+	buf = out;
+	// Expand from RGB to RGBA
+	sindex = pixelcount * cinfo.output_components;
+	dindex = memcount;
+	
+	do {
+		buf[--dindex] = 255;
+		buf[--dindex] = buf[--sindex];
+		buf[--dindex] = buf[--sindex];
+		buf[--dindex] = buf[--sindex];
+	} while(sindex);
+	
+	*pic = out;
+	
+	/* Step 7: Finish decompression */
+	
+	(void) jpeg_finish_decompress(&cinfo);
+	/* We can ignore the return value since suspension is not possible
+	 * with the stdio data source.
+	 */
+	
+	/* Step 8: Release JPEG decompression object */
+	
+	/* This is an important step since it will release a good deal of memory. */
+	jpeg_destroy_decompress(&cinfo);
+	
+	/* At this point you may want to check to see whether any corrupt-data
+	 * warnings occurred (test whether jerr.pub.num_warnings is nonzero).
+	 */
+	
+	/* And we're done! */
+}
+#endif
 
 /* Expanded data destination object for stdio output */
 

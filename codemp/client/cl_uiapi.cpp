@@ -1,3 +1,23 @@
+/*
+===========================================================================
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cl_uiapi.c  -- client system interaction with client game
 #include "qcommon/RoffSystem.h"
 #include "qcommon/stringed_ingame.h"
@@ -138,16 +158,19 @@ static void CL_GetGlconfig( glconfig_t *config ) {
 }
 
 static void GetClipboardData( char *buf, int buflen ) {
-	char	*cbd;
+	char	*cbd, *c;
 
-	cbd = Sys_GetClipboardData();
-
+	c = cbd = Sys_GetClipboardData();
 	if ( !cbd ) {
 		*buf = 0;
 		return;
 	}
 
-	Q_strncpyz( buf, cbd, buflen );
+	for ( int i = 0, end = buflen - 1; *c && i < end; i++ )
+	{
+		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
+		buf[i] = ConvertUTF32ToExpectedCharset( utf32 );
+	}
 
 	Z_Free( cbd );
 }
@@ -1021,7 +1044,7 @@ void CL_BindUI( void ) {
 	static uiImport_t uii;
 	uiExport_t		*ret;
 	GetUIAPI_t		GetUIAPI;
-	char			dllName[MAX_OSPATH] = "ui"ARCH_STRING DLL_EXT;
+	char			dllName[MAX_OSPATH] = "ui" ARCH_STRING DLL_EXT;
 
 	memset( &uii, 0, sizeof( uii ) );
 

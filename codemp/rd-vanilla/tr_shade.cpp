@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_shade.c
 
 #include "tr_local.h"
@@ -596,9 +619,11 @@ static void ProjectDlightTexture2( void ) {
 			colorTemp[1] = Q_ftol(floatColor[1] * modulate);
 			colorTemp[2] = Q_ftol(floatColor[2] * modulate);
 			colorTemp[3] = 255;
-			colorArray[numIndexes]=*(unsigned int *)colorTemp;
-			colorArray[numIndexes+1]=*(unsigned int *)colorTemp;
-			colorArray[numIndexes+2]=*(unsigned int *)colorTemp;
+
+			byteAlias_t *ba = (byteAlias_t *)&colorTemp;
+			colorArray[numIndexes + 0] = ba->ui;
+			colorArray[numIndexes + 1] = ba->ui;
+			colorArray[numIndexes + 2] = ba->ui;
 
 			hitIndexes[numIndexes] = numIndexes;
 			hitIndexes[numIndexes+1] = numIndexes+1;
@@ -1085,7 +1110,8 @@ static void RB_FogPass( void ) {
 	fog = tr.world->fogs + tess.fogNum;
 
 	for ( i = 0; i < tess.numVertexes; i++ ) {
-		* ( int * )&tess.svars.colors[i] = fog->colorInt;
+		byteAlias_t *ba = (byteAlias_t *)&tess.svars.colors[i];
+		ba->i = fog->colorInt;
 	}
 
 	RB_CalcFogTexCoords( ( float * ) tess.svars.texcoords[0] );
@@ -1195,7 +1221,9 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 			break;
 		case CGEN_CONST:
 			for ( i = 0; i < tess.numVertexes; i++ ) {
-				*(int *)tess.svars.colors[i] = *(int *)pStage->constantColor;
+				byteAlias_t *baDest = (byteAlias_t *)&tess.svars.colors[i],
+					*baSource = (byteAlias_t *)&pStage->constantColor;
+				baDest->i = baSource->i;
 			}
 			break;
 		case CGEN_VERTEX:
@@ -1241,7 +1269,8 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 				fog = tr.world->fogs + tess.fogNum;
 
 				for ( i = 0; i < tess.numVertexes; i++ ) {
-					* ( int * )&tess.svars.colors[i] = fog->colorInt;
+					byteAlias_t *ba = (byteAlias_t *)&tess.svars.colors[i];
+					ba->i = fog->colorInt;
 				}
 			}
 			break;
@@ -1263,7 +1292,9 @@ static void ComputeColors( shaderStage_t *pStage, int forceRGBGen )
 		case CGEN_LIGHTMAPSTYLE:
 			for ( i = 0; i < tess.numVertexes; i++ )
 			{
-				*(unsigned *)&colors[i] = *(unsigned *)styleColors[pStage->lightmapStyle];
+				byteAlias_t *baDest = (byteAlias_t *)&tess.svars.colors[i],
+					*baSource = (byteAlias_t *)&styleColors[pStage->lightmapStyle];
+				baDest->i = baSource->i;
 			}
 			break;
 	}

@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_headers.h"
 
@@ -64,20 +68,20 @@ void thermal_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, in
 }
 
 //---------------------------------------------------------
-qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask, 
+qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, vec3_t maxs, int clipmask,
 				vec3_t velocity, qboolean tracePath, int ignoreEntNum, int enemyNum,
 				float minSpeed, float maxSpeed, float idealSpeed, qboolean mustHit )
 //---------------------------------------------------------
 {
-	float	targetDist, shotSpeed, speedInc = 100, travelTime, impactDist, bestImpactDist = Q3_INFINITE;//fireSpeed, 
-	vec3_t	targetDir, shotVel, failCase; 
+	float	targetDist, shotSpeed, speedInc = 100, travelTime, impactDist, bestImpactDist = Q3_INFINITE;//fireSpeed,
+	vec3_t	targetDir, shotVel, failCase = { 0.0f };
 	trace_t	trace;
 	trajectory_t	tr;
 	qboolean	blocked;
 	int		elapsedTime, skipNum, timeStep = 500, hitCount = 0, maxHits = 7;
 	vec3_t	lastPos, testPos;
 	gentity_t	*traceEnt;
-	
+
 	if ( !idealSpeed )
 	{
 		idealSpeed = 300;
@@ -105,7 +109,7 @@ qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, 
 		travelTime = targetDist/shotSpeed;
 		shotVel[2] += travelTime * 0.5 * g_gravity->value;
 
-		if ( !hitCount )		
+		if ( !hitCount )
 		{//save the first (ideal) one as the failCase (fallback value)
 			if ( !mustHit )
 			{//default is fine as a return value
@@ -123,7 +127,7 @@ qboolean WP_LobFire( gentity_t *self, vec3_t start, vec3_t target, vec3_t mins, 
 			tr.trTime = level.time;
 			travelTime *= 1000.0f;
 			VectorCopy( start, lastPos );
-			
+
 			//This may be kind of wasteful, especially on long throws... use larger steps?  Divide the travelTime into a certain hard number of slices?  Trace just to apex and down?
 			for ( elapsedTime = timeStep; elapsedTime < floor(travelTime)+timeStep; elapsedTime += timeStep )
 			{
@@ -273,7 +277,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 	VectorCopy( wpMuzzle, start );
 
 	bolt = G_Spawn();
-	
+
 	bolt->classname = "thermal_detonator";
 
 	if ( ent->s.number != 0 )
@@ -310,7 +314,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 	WP_TraceSetStart( ent, start, bolt->mins, bolt->maxs );//make sure our start point isn't on the other side of a wall
 
 	float chargeAmount = 1.0f; // default of full charge
-	
+
 	if ( ent->client )
 	{
 		chargeAmount = level.time - ent->client->ps.weaponChargeTime;
@@ -340,7 +344,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 		if ( ent->NPC && ent->enemy )
 		{//FIXME: we're assuming he's actually facing this direction...
 			vec3_t	target;
-			
+
 			VectorCopy( ent->enemy->currentOrigin, target );
 			if ( target[2] <= start[2] )
 			{
@@ -391,7 +395,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 
 	bolt->s.pos.trTime = level.time;		// move a bit on the very first frame
 	VectorCopy( start, bolt->s.pos.trBase );
-	
+
 	SnapVector( bolt->s.pos.trDelta );			// save net bandwidth
 	VectorCopy (start, bolt->currentOrigin);
 

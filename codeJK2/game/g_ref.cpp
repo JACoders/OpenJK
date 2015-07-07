@@ -1,26 +1,27 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Reference tag utility functions
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
-
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -85,7 +86,7 @@ void TAG_Init( void )
 		}
 
 		refTag_v::iterator		rti;
-		
+
 		//Delete all tags within the owner's scope
 		for ( rti = ((*rtoi).second)->tags.begin(); rti != ((*rtoi).second)->tags.end(); rti++ )
 		{
@@ -168,7 +169,7 @@ reference_tag_t	*TAG_Find( const char *owner, const char *name )
 		Q_strlwr( (char *) tempName );	//NOTENOTE: For case insensitive searches on a map
 
 		rti = tagOwner->tagMap.find( tempName );
-		
+
 		if ( rti == tagOwner->tagMap.end() )
 			return NULL;
 	}
@@ -186,7 +187,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 {
 	reference_tag_t	*tag = new reference_tag_t;
 	VALIDATEP( tag );
-	
+
 	//Copy the information
 	VectorCopy( origin, tag->origin );
 	VectorCopy( angles, tag->angles );
@@ -197,6 +198,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 	{
 		//gi.Error("Nameless ref_tag found at (%i %i %i)", (int)origin[0], (int)origin[1], (int)origin[2]);
 		gi.Printf(S_COLOR_RED"ERROR: Nameless ref_tag found at (%i %i %i)\n", (int)origin[0], (int)origin[1], (int)origin[2]);
+		delete tag;
 		return NULL;
 	}
 
@@ -208,6 +210,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 	if ( TAG_Find( owner, name ) )
 	{
 		gi.Printf(S_COLOR_RED"Duplicate tag name \"%s\"\n", name );
+		delete tag;
 		return NULL;
 	}
 
@@ -219,7 +222,7 @@ reference_tag_t	*TAG_Add( const char *name, const char *owner, vec3_t origin, ve
 	}
 
 	tagOwner_t	*tagOwner = TAG_FindOwner( owner );
-	
+
 	//If the owner is valid, add this tag to it
 	if VALID( tagOwner )
 	{
@@ -300,7 +303,7 @@ int	TAG_GetAngles( const char *owner, const char *name, vec3_t angles )
 	VALIDATEB( tag );
 
 	VectorCopy( tag->angles, angles );
-	
+
 	return true;
 }
 
@@ -354,12 +357,12 @@ If you target a ref_tag at an entity, that will set the ref_tag's
 angles toward that entity.
 
 If you set the ref_tag's ownername to the ownername of an entity,
-it makes that entity is the owner of the ref_tag.  This means 
+it makes that entity is the owner of the ref_tag.  This means
 that the owner, and only the owner, may refer to that tag.
 
 Tags may not have the same name as another tag with the same
 owner.  However, tags with different owners may have the same
-name as one another.  In this way, scripts can generically 
+name as one another.  In this way, scripts can generically
 refer to tags by name, and their owners will automatically
 specifiy which tag is being referred to.
 
@@ -370,8 +373,6 @@ target		- use to point the tag at something for angles
 
 void ref_link ( gentity_t *ent )
 {
-	reference_tag_t	*tag;
-
 	if ( ent->target )
 	{
 		//TODO: Find the target and set our angles to that direction
@@ -384,7 +385,7 @@ void ref_link ( gentity_t *ent )
 			VectorSubtract( target->s.origin, ent->s.origin, dir );
 			VectorNormalize( dir );
 			vectoangles( dir, ent->s.angles );
-			
+
 			//FIXME: Does pitch get flipped?
 		}
 		else
@@ -392,9 +393,9 @@ void ref_link ( gentity_t *ent )
 			gi.Printf( S_COLOR_RED"ERROR: ref_tag (%s) has invalid target (%s)\n", ent->targetname, ent->target );
 		}
 	}
-	
+
 	//Add the tag
-	tag = TAG_Add( ent->targetname, ent->ownername, ent->s.origin, ent->s.angles, 16, 0 );
+	TAG_Add( ent->targetname, ent->ownername, ent->s.origin, ent->s.angles, 16, 0 );
 
 	//Delete immediately, cannot be refered to as an entity again
 	//NOTE: this means if you wanted to link them in a chain for, say, a path, you can't

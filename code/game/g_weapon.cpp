@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // g_weapon.c 
 // perform the server side effects of a weapon firing
@@ -673,9 +678,13 @@ void WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWeaponIn
 		// HUGE HORRIBLE HACK
 		if (ent->owner && ent->owner->s.number==0)
 		{
-			missile->damage			*= 20.0f;
-			missile->splashDamage	*= 20.0f;
-			missile->splashRadius	*= 20.0f; 
+			//Should only be for speeders - mainly for t2_trip
+			if (ent->m_pVehicle->m_pVehicleInfo && ent->m_pVehicle->m_pVehicleInfo->type == VH_SPEEDER)
+			{
+				missile->damage			*= 20.0f;
+				missile->splashDamage	*= 20.0f;
+				missile->splashRadius	*= 20.0f;
+			}
 		}
 
 		//FIXME: externalize some of these properties?
@@ -743,6 +752,7 @@ void WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWeaponIn
 			missile->owner = ent;
 		}
 		missile->s.otherEntityNum = ent->s.number;
+		missile->s.otherEntityNum2 = (vehWeapon-&g_vehWeaponInfo[0]);
 
 		if ( vehWeapon->iLifeTime )
 		{//expire after a time
@@ -823,6 +833,17 @@ void WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWeaponIn
 	}
 }
 
+void WP_VehLeadCrosshairVeh( gentity_t *camTraceEnt, vec3_t newEnd, const vec3_t dir, const vec3_t shotStart, vec3_t shotDir )
+{
+	//FIXME: implement from MP?
+}
+
+qboolean WP_VehCheckTraceFromCamPos( gentity_t *ent, const vec3_t shotStart, vec3_t shotDir )
+{
+	//FIXME: implement from MP?
+	return qfalse;
+}
+
 //---------------------------------------------------------
 void FireVehicleWeapon( gentity_t *ent, qboolean alt_fire ) 
 //---------------------------------------------------------
@@ -850,13 +871,14 @@ void FireVehicleWeapon( gentity_t *ent, qboolean alt_fire )
 	// would actually have to press the 2 key or something like that (I doubt I'd get a graphic for it anyways though). -AReis
 
 	// If this is not the alternate fire, fire a normal blaster shot...
- 	if ( true )//(pVeh->m_ulFlags & VEH_FLYING) || (pVeh->m_ulFlags & VEH_WINGSOPEN) ) // NOTE: Wings open also denotes that it has already launched.
-	{
+	if ( pVeh->m_pVehicleInfo &&
+		(pVeh->m_pVehicleInfo->type != VH_FIGHTER || (pVeh->m_ulFlags&VEH_WINGSOPEN)) ) // NOTE: Wings open also denotes that it has already launched.
+	{//fighters can only fire when wings are open
 		int	weaponNum = 0, vehWeaponIndex = VEH_WEAPON_NONE;
 		int	delay = 1000;
 		qboolean aimCorrect = qfalse;
 		qboolean linkedFiring = qfalse;
-
+		
 		if ( !alt_fire )
 		{
 			weaponNum = 0;
@@ -865,92 +887,166 @@ void FireVehicleWeapon( gentity_t *ent, qboolean alt_fire )
 		{
 			weaponNum = 1;
 		}
+		
 		vehWeaponIndex = pVeh->m_pVehicleInfo->weapon[weaponNum].ID;
+		
+		if ( pVeh->weaponStatus[weaponNum].ammo <= 0 )
+		{//no ammo for this weapon
+			if ( pVeh->m_pPilot && pVeh->m_pPilot->s.number < MAX_CLIENTS )
+			{// let the client know he's out of ammo
+				int i;
+				//but only if one of the vehicle muzzles is actually ready to fire this weapon
+				for ( i = 0; i < MAX_VEHICLE_MUZZLES; i++ )
+				{
+					if ( pVeh->m_pVehicleInfo->weapMuzzle[i] != vehWeaponIndex )
+					{//this muzzle doesn't match the weapon we're trying to use
+						continue;
+					}
+					if ( pVeh->m_iMuzzleTag[i] != -1
+						&& pVeh->m_Muzzles[i].m_iMuzzleWait < level.time )
+					{//this one would have fired, send the no ammo message
+						G_AddEvent( (gentity_t*)pVeh->m_pPilot, EV_NOAMMO, weaponNum );
+						break;
+					}
+				}
+			}
+			return;
+		}
+		
 		delay = pVeh->m_pVehicleInfo->weapon[weaponNum].delay;
 		aimCorrect = pVeh->m_pVehicleInfo->weapon[weaponNum].aimCorrect;
-		if ( pVeh->m_pVehicleInfo->weapon[weaponNum].linkable == 1//optionally linkable
-			 && pVeh->weaponStatus[weaponNum].linked )//linked
+		if ( pVeh->m_pVehicleInfo->weapon[weaponNum].linkable == 2//always linked
+			|| ( pVeh->m_pVehicleInfo->weapon[weaponNum].linkable == 1//optionally linkable
+				&& pVeh->weaponStatus[weaponNum].linked ) )//linked
 		{//we're linking the primary or alternate weapons, so we'll do *all* the muzzles
 			linkedFiring = qtrue;
 		}
-
+		
 		if ( vehWeaponIndex <= VEH_WEAPON_BASE || vehWeaponIndex >= MAX_VEH_WEAPONS )
 		{//invalid vehicle weapon
 			return;
 		}
 		else
 		{
+			int i, numMuzzles = 0, numMuzzlesReady = 0, cumulativeDelay = 0, cumulativeAmmo = 0;
+			qboolean sentAmmoWarning = qfalse;
+			
 			vehWeaponInfo_t *vehWeapon = &g_vehWeaponInfo[vehWeaponIndex];
-			int i, cumulativeDelay = 0;
-
+			
+			if ( pVeh->m_pVehicleInfo->weapon[weaponNum].linkable == 2 )
+			{//always linked weapons don't accumulate delay, just use specified delay
+				cumulativeDelay = delay;
+			}
+			//find out how many we've got for this weapon
 			for ( i = 0; i < MAX_VEHICLE_MUZZLES; i++ )
 			{
 				if ( pVeh->m_pVehicleInfo->weapMuzzle[i] != vehWeaponIndex )
 				{//this muzzle doesn't match the weapon we're trying to use
 					continue;
 				}
-
+				if ( pVeh->m_iMuzzleTag[i] != -1 && pVeh->m_Muzzles[i].m_iMuzzleWait < level.time )
+				{
+					numMuzzlesReady++;
+				}
+				if ( pVeh->m_pVehicleInfo->weapMuzzle[pVeh->weaponStatus[weaponNum].nextMuzzle] != vehWeaponIndex )
+				{//Our designated next muzzle for this weapon isn't valid for this weapon (happens when ships fire for the first time)
+					//set the next to this one
+					pVeh->weaponStatus[weaponNum].nextMuzzle = i;
+				}
+				if ( linkedFiring )
+				{
+					cumulativeAmmo += vehWeapon->iAmmoPerShot;
+					if ( pVeh->m_pVehicleInfo->weapon[weaponNum].linkable != 2 )
+					{//always linked weapons don't accumulate delay, just use specified delay
+						cumulativeDelay += delay;
+					}
+				}
+				numMuzzles++;
+			}
+			
+			if ( linkedFiring )
+			{//firing all muzzles at once
+				if ( numMuzzlesReady != numMuzzles )
+				{//can't fire all linked muzzles yet
+					return;
+				}
+				else
+				{//can fire all linked muzzles, check ammo
+					if ( pVeh->weaponStatus[weaponNum].ammo < cumulativeAmmo )
+					{//can't fire, not enough ammo
+						if ( pVeh->m_pPilot && pVeh->m_pPilot->s.number < MAX_CLIENTS )
+						{// let the client know he's out of ammo
+							G_AddEvent( (gentity_t*)pVeh->m_pPilot, EV_NOAMMO, weaponNum );
+						}
+						return;
+					}
+				}
+			}
+			
+			for ( i = 0; i < MAX_VEHICLE_MUZZLES; i++ )
+			{
+				if ( pVeh->m_pVehicleInfo->weapMuzzle[i] != vehWeaponIndex )
+				{//this muzzle doesn't match the weapon we're trying to use
+					continue;
+				}
+				if ( !linkedFiring
+					&& i != pVeh->weaponStatus[weaponNum].nextMuzzle )
+				{//we're only firing one muzzle and this isn't it
+					continue;
+				}
+				
 				// Fire this muzzle.
 				if ( pVeh->m_iMuzzleTag[i] != -1 && pVeh->m_Muzzles[i].m_iMuzzleWait < level.time )
 				{
 					vec3_t	start, dir;
-					// Prepare weapon delay.
-					if ( linkedFiring )
-					{//linked firing, add the delay up for each muzzle, then apply to all of them at the end
-						cumulativeDelay += delay;
-					}
-					else
-					{//normal delay - NOTE: always-linked muzzles use normal delay, not cumulative
-						pVeh->m_Muzzles[i].m_iMuzzleWait = level.time + delay;
-					}
 					
 					if ( pVeh->weaponStatus[weaponNum].ammo < vehWeapon->iAmmoPerShot )
 					{//out of ammo!
+						if ( !sentAmmoWarning )
+						{
+							sentAmmoWarning = qtrue;
+							if ( pVeh->m_pPilot && pVeh->m_pPilot->s.number < MAX_CLIENTS )
+							{// let the client know he's out of ammo
+								G_AddEvent( (gentity_t*)pVeh->m_pPilot, EV_NOAMMO, weaponNum );
+							}
+						}
 					}
 					else
 					{//have enough ammo to shoot
-						//take the ammo
-						pVeh->weaponStatus[weaponNum].ammo -= vehWeapon->iAmmoPerShot;
 						//do the firing
-						//FIXME: do we still need to calc the muzzle here in SP?
 						//WP_CalcVehMuzzle(ent, i);
 						VectorCopy( pVeh->m_Muzzles[i].m_vMuzzlePos, start );
 						VectorCopy( pVeh->m_Muzzles[i].m_vMuzzleDir, dir );
-						if ( aimCorrect )
-						{//auto-aim the missile at the crosshair
+						if ( WP_VehCheckTraceFromCamPos( ent, start, dir ) )
+						{//auto-aim at whatever crosshair would be over from camera's point of view (if closer)
+						}
+						else if ( aimCorrect )
+						{//auto-aim the missile at the crosshair if there's anything there
 							trace_t trace;
 							vec3_t	end;
-							AngleVectors( pVeh->m_vOrientation, dir, NULL, NULL );
+							vec3_t	ang;
+							vec3_t	fixedDir;
+							
+							if (pVeh->m_pVehicleInfo->type == VH_SPEEDER)
+							{
+								VectorSet(ang, 0.0f, pVeh->m_vOrientation[1], 0.0f);
+							}
+							else
+							{
+								VectorCopy(pVeh->m_vOrientation, ang);
+							}
+							AngleVectors( ang, fixedDir, NULL, NULL );
 							//VectorMA( ent->currentOrigin, 32768, dir, end );
 							VectorMA( ent->currentOrigin, 8192, dir, end );
 							gi.trace( &trace, ent->currentOrigin, vec3_origin, vec3_origin, end, ent->s.number, MASK_SHOT, (EG2_Collision)0, 0 );
-							//if ( trace.fraction < 1.0f && !trace.allsolid && !trace.startsolid )
-							//bah, always point at end of trace
+							if ( trace.fraction < 1.0f && !trace.allsolid && !trace.startsolid )
 							{
-								VectorSubtract( trace.endpos, start, dir );
-								VectorNormalize( dir );
-							}
-
-							// Mounted lazer cannon auto aiming at enemy
-							//-------------------------------------------
-							if (ent->enemy)
-							{
-								Vehicle_t*	enemyVeh = G_IsRidingVehicle(ent->enemy);
-
-								// Don't Auto Aim At A Person Who Is Slide Breaking
-								if (!enemyVeh || !(enemyVeh->m_ulFlags&VEH_SLIDEBREAKING))
-								{
-									vec3_t dir2;
-									VectorSubtract( ent->enemy->currentOrigin, start, dir2 );
-									VectorNormalize( dir2 );
-									if (DotProduct(dir, dir2)>0.95f)
-									{
-										VectorCopy(dir2, dir);
-									}
-								}
+								vec3_t newEnd;
+								VectorCopy( trace.endpos, newEnd );
+								WP_VehLeadCrosshairVeh( &g_entities[trace.entityNum], newEnd, fixedDir, start, dir );
 							}
 						}
-
+						
 						//play the weapon's muzzle effect if we have one
 						if ( vehWeapon->iMuzzleFX )
 						{
@@ -958,13 +1054,58 @@ void FireVehicleWeapon( gentity_t *ent, qboolean alt_fire )
 						}
 						WP_FireVehicleWeapon( ent, start, dir, vehWeapon );
 					}
-
-					if ( pVeh->weaponStatus[weaponNum].linked )//NOTE: we don't check linkedFiring here because that does *not* get set if the cannons are *always* linked
+					
+					if ( linkedFiring )
 					{//we're linking the weapon, so continue on and fire all appropriate muzzles
 						continue;
 					}
-					//ok, just break, we'll get in here again next frame and try the next muzzle...
-					break;
+					//else just firing one
+					//take the ammo, set the next muzzle and set the delay on it
+					if ( numMuzzles > 1 )
+					{//more than one, look for it
+						int nextMuzzle = pVeh->weaponStatus[weaponNum].nextMuzzle;
+						while ( 1 )
+						{
+							nextMuzzle++;
+							if ( nextMuzzle >= MAX_VEHICLE_MUZZLES )
+							{
+								nextMuzzle = 0;
+							}
+							if ( nextMuzzle == pVeh->weaponStatus[weaponNum].nextMuzzle )
+							{//WTF?  Wrapped without finding another valid one!
+								break;
+							}
+							if ( pVeh->m_pVehicleInfo->weapMuzzle[nextMuzzle] == vehWeaponIndex )
+							{//this is the next muzzle for this weapon
+								pVeh->weaponStatus[weaponNum].nextMuzzle = nextMuzzle;
+								break;
+							}
+						}
+					}//else, just stay on the one we just fired
+					//set the delay on the next muzzle
+					pVeh->m_Muzzles[pVeh->weaponStatus[weaponNum].nextMuzzle].m_iMuzzleWait = level.time + delay;
+					//take away the ammo
+					pVeh->weaponStatus[weaponNum].ammo -= vehWeapon->iAmmoPerShot;
+					//NOTE: in order to send the vehicle's ammo info to the client, we copy the ammo into the first 2 ammo slots on the vehicle NPC's client->ps.ammo array
+					if ( pVeh->m_pParentEntity && ((gentity_t*)(pVeh->m_pParentEntity))->client )
+					{
+						((gentity_t*)(pVeh->m_pParentEntity))->client->ps.ammo[weaponNum] = pVeh->weaponStatus[weaponNum].ammo;
+					}
+					//done!
+					//we'll get in here again next frame and try the next muzzle...
+					//return;
+					return;
+				}
+			}
+			//we went through all the muzzles, so apply the cumulative delay and ammo cost
+			if ( cumulativeAmmo )
+			{//taking ammo one shot at a time
+				//take the ammo
+				pVeh->weaponStatus[weaponNum].ammo -= cumulativeAmmo;
+				//NOTE: in order to send the vehicle's ammo info to the client, we copy the ammo into the first 2 ammo slots on the vehicle NPC's client->ps.ammo array
+				if ( pVeh->m_pParentEntity && ((gentity_t*)(pVeh->m_pParentEntity))->client )
+				{
+					((gentity_t*)(pVeh->m_pParentEntity))->client->ps.ammo[weaponNum] = pVeh->weaponStatus[weaponNum].ammo;
 				}
 			}
 			if ( cumulativeDelay )

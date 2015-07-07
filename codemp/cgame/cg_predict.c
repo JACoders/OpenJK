@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_predict.c -- this file generates cg.predictedPlayerState by either
 // interpolating between snapshots from the server or locally predicting
 // ahead the client's movement.
@@ -199,11 +220,6 @@ static QINLINE qboolean CG_VehicleClipCheck(centity_t *ignored, trace_t *trace)
 	return qtrue;
 }
 
-//rww - I'm disabling this warning for this function. It complains about oldTrace but as you can see it
-//always gets set before use, and I am not wasting CPU memsetting it to shut the compiler up.
-#ifdef _MSC_VER
-#pragma warning(disable : 4701) //local variable may be used without having been initialized
-#endif
 /*
 ====================
 CG_ClipMoveToEntities
@@ -348,9 +364,6 @@ static void CG_ClipMoveToEntities ( const vec3_t start, const vec3_t mins, const
 		}
 	}
 }
-#ifdef _MSC_VER
-#pragma warning(default : 4701) //local variable may be used without having been initialized
-#endif
 
 /*
 ================
@@ -911,9 +924,6 @@ extern	vmCvar_t		cg_showVehBounds;
 pmove_t cg_vehPmove;
 qboolean cg_vehPmoveSet = qfalse;
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4701) //local variable may be used without having been initialized
-#endif
 void CG_PredictPlayerState( void ) {
 	int			cmdNum, current, i;
 	playerState_t	oldPlayerState;
@@ -1461,6 +1471,3 @@ revertES:
 		}
 	}
 }
-#ifdef _MSC_VER
-#pragma warning(default : 4701) //local variable may be used without having been initialized
-#endif

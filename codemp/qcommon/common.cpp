@@ -1,18 +1,43 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // common.c -- misc functions used in client and server
 
 #include "stringed_ingame.h"
 #include "qcommon/cm_public.h"
 #include "qcommon/game_version.h"
 #include "../server/NPCNav/navigator.h"
-
-#define	MAXPRINTMSG	4096
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 FILE *debuglogfile;
 fileHandle_t logfile;
 fileHandle_t	com_journalFile;			// events are written here
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_dedicated;
@@ -39,9 +64,10 @@ cvar_t	*com_bootlogo;
 cvar_t	*cl_paused;
 cvar_t	*sv_paused;
 cvar_t	*com_cameraMode;
-cvar_t	*com_unfocused;
-cvar_t	*com_minimized;
 cvar_t  *com_homepath;
+#ifndef _WIN32
+cvar_t	*com_ansiColor = NULL;
+#endif
 
 cvar_t *com_affinity;
 
@@ -218,7 +244,7 @@ Both client and server can use this, and it will
 do the appropriate things.
 =============
 */
-void QDECL Com_Error( int code, const char *fmt, ... ) {
+void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
 	static int	errorCount;
@@ -232,6 +258,13 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	// when we are running automated scripts, make sure we
 	// know if anything failed
 	if ( com_buildScript && com_buildScript->integer ) {
+		code = ERR_FATAL;
+	}
+
+	// ERR_DROPs on dedicated drop to an interactive console
+	// which doesn't make sense for dedicated as it's generally
+	// run unattended
+	if ( com_dedicated && com_dedicated->integer ) {
 		code = ERR_FATAL;
 	}
 
@@ -663,12 +696,9 @@ journaled file
 ===================================================================
 */
 
-// bk001129 - here we go again: upped from 64
 #define	MAX_PUSHED_EVENTS	            1024
-// bk001129 - init, also static
 static int		com_pushedEventsHead = 0;
 static int             com_pushedEventsTail = 0;
-// bk001129 - static
 static sysEvent_t	com_pushedEvents[MAX_PUSHED_EVENTS];
 
 /*
@@ -744,23 +774,20 @@ sysEvent_t	Com_GetRealEvent( void ) {
 	return ev;
 }
 
-
 /*
 =================
 Com_InitPushEvent
 =================
 */
-// bk001129 - added
 void Com_InitPushEvent( void ) {
-  // clear the static buffer array
-  // this requires SE_NONE to be accepted as a valid but NOP event
-  memset( com_pushedEvents, 0, sizeof(com_pushedEvents) );
-  // reset counters while we are at it
-  // beware: GetEvent might still return an SE_NONE from the buffer
-  com_pushedEventsHead = 0;
-  com_pushedEventsTail = 0;
+	// clear the static buffer array
+	// this requires SE_NONE to be accepted as a valid but NOP event
+	memset( com_pushedEvents, 0, sizeof(com_pushedEvents) );
+	// reset counters while we are at it
+	// beware: GetEvent might still return an SE_NONE from the buffer
+	com_pushedEventsHead = 0;
+	com_pushedEventsTail = 0;
 }
-
 
 /*
 =================
@@ -769,7 +796,7 @@ Com_PushEvent
 */
 void Com_PushEvent( sysEvent_t *event ) {
 	sysEvent_t		*ev;
-	static int printedWarning = 0; // bk001129 - init, bk001204 - explicit int
+	static int printedWarning = 0;
 
 	ev = &com_pushedEvents[ com_pushedEventsHead & (MAX_PUSHED_EVENTS-1) ];
 
@@ -869,7 +896,6 @@ int Com_EventLoop( void ) {
 
 		switch ( ev.evType ) {
 		default:
-		  // bk001129 - was ev.evTime
 			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evType );
 			break;
         case SE_NONE:
@@ -970,7 +996,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
+static void NORETURN Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -1014,8 +1040,10 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
+	/* that should crash already, but to reassure the compiler: */
+	abort();
 }
 
 /*
@@ -1223,13 +1251,9 @@ void Com_Init( char *commandLine ) {
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 
 		com_dropsim = Cvar_Get ("com_dropsim", "0", CVAR_CHEAT);
-		com_viewlog = Cvar_Get( "viewlog", "0", 0 );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		com_timedemo = Cvar_Get ("timedemo", "0", 0);
 		com_cameraMode = Cvar_Get ("com_cameraMode", "0", CVAR_CHEAT);
-
-		com_unfocused = Cvar_Get( "com_unfocused", "0", CVAR_ROM );
-		com_minimized = Cvar_Get( "com_minimized", "0", CVAR_ROM );
 
 		com_optvehtrace = Cvar_Get("com_optvehtrace", "0", 0);
 
@@ -1238,6 +1262,9 @@ void Com_Init( char *commandLine ) {
 		com_sv_running = Cvar_Get ("sv_running", "0", CVAR_ROM);
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+#ifndef _WIN32
+		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE );
+#endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
@@ -1246,12 +1273,6 @@ void Com_Init( char *commandLine ) {
 		com_affinity = Cvar_Get( "com_affinity", "1", CVAR_ARCHIVE );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
-
-		if ( com_dedicated->integer ) {
-			if ( !com_viewlog->integer ) {
-				Cvar_Set( "viewlog", "1" );
-			}
-		}
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
@@ -1272,7 +1293,6 @@ void Com_Init( char *commandLine ) {
 		com_dedicated->modified = qfalse;
 		if ( !com_dedicated->integer ) {
 			CL_Init();
-			Sys_ShowConsole( com_viewlog->integer, qfalse );
 		}
 
 		// set com_frameTime so that if a map is started on the
@@ -1455,31 +1475,14 @@ void Com_Frame( void ) {
 		int		msec, minMsec;
 		static int	lastTime = 0;
 
-		int		timeBeforeFirstEvents;
-		int           timeBeforeServer;
-		int           timeBeforeEvents;
-		int           timeBeforeClient;
-		int           timeAfter;
-
-
-		// bk001204 - init to zero.
-		//  also:  might be clobbered by `longjmp' or `vfork'
-		timeBeforeFirstEvents =0;
-		timeBeforeServer =0;
-		timeBeforeEvents =0;
-		timeBeforeClient = 0;
-		timeAfter = 0;
+		int		timeBeforeFirstEvents = 0;
+		int           timeBeforeServer = 0;
+		int           timeBeforeEvents = 0;
+		int           timeBeforeClient = 0;
+		int           timeAfter = 0;
 
 		// write config file if anything changed
 		Com_WriteConfiguration();
-
-		// if "viewlog" has been modified, show or hide the log console
-		if ( com_viewlog->modified ) {
-			if ( !com_dedicated->value ) {
-				Sys_ShowConsole( com_viewlog->integer, qfalse );
-			}
-			com_viewlog->modified = qfalse;
-		}
 
 		//
 		// main event loop
@@ -1528,11 +1531,9 @@ void Com_Frame( void ) {
 			com_dedicated->modified = qfalse;
 			if ( !com_dedicated->integer ) {
 				CL_Init();
-				Sys_ShowConsole( com_viewlog->integer, qfalse );
 				CL_StartHunkUsers();	//fire up the UI!
 			} else {
 				CL_Shutdown();
-				Sys_ShowConsole( 1, qtrue );
 			}
 		}
 
@@ -1605,6 +1606,12 @@ void Com_Frame( void ) {
 			c_pointcontents = 0;
 		}
 
+		if ( com_affinity->modified )
+		{
+			com_affinity->modified = qfalse;
+			Sys_SetProcessorAffinity();
+		}
+
 		com_frameNumber++;
 	}
 	catch (int code) {
@@ -1664,7 +1671,7 @@ Field_Clear
 ==================
 */
 void Field_Clear( field_t *edit ) {
-	edit->buffer[0] = 0;
+	memset(edit->buffer, 0, MAX_EDIT_LINE);
 	edit->cursor = 0;
 	edit->scroll = 0;
 }
@@ -1722,7 +1729,7 @@ PrintMatches
 */
 static void PrintMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"Cmd  "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "Cmd  " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1736,7 +1743,7 @@ PrintArgMatches
 // This is here for if ever commands with other argument completion
 static void PrintArgMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_WHITE"  %s\n", s );
+		Com_Printf( S_COLOR_WHITE "  %s\n", s );
 	}
 }
 #endif
@@ -1750,7 +1757,7 @@ PrintKeyMatches
 */
 static void PrintKeyMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"Key  "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "Key  " S_COLOR_WHITE "%s\n", s );
 	}
 }
 #endif
@@ -1763,7 +1770,7 @@ PrintFileMatches
 */
 static void PrintFileMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"File "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "File " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1778,7 +1785,7 @@ static void PrintCvarMatches( const char *s ) {
 
 	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
 		Com_TruncateLongString( value, Cvar_VariableString( s ) );
-		Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", s, value );
+		Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", s, value );
 	}
 }
 
@@ -1955,4 +1962,45 @@ void Com_RandomBytes( byte *string, int len )
 	Com_Printf( "Com_RandomBytes: using weak randomization\n" );
 	for( i = 0; i < len; i++ )
 		string[i] = (unsigned char)( rand() % 255 );
+}
+
+/*
+===============
+Converts a UTF-8 character to UTF-32.
+===============
+*/
+uint32_t ConvertUTF8ToUTF32( char *utf8CurrentChar, char **utf8NextChar )
+{
+	uint32_t utf32 = 0;
+	char *c = utf8CurrentChar;
+
+	if( ( *c & 0x80 ) == 0 )
+		utf32 = *c++;
+	else if( ( *c & 0xE0 ) == 0xC0 ) // 110x xxxx
+	{
+		utf32 |= ( *c++ & 0x1F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else if( ( *c & 0xF0 ) == 0xE0 ) // 1110 xxxx
+	{
+		utf32 |= ( *c++ & 0x0F ) << 12;
+		utf32 |= ( *c++ & 0x3F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else if( ( *c & 0xF8 ) == 0xF0 ) // 1111 0xxx
+	{
+		utf32 |= ( *c++ & 0x07 ) << 18;
+		utf32 |= ( *c++ & 0x3F ) << 12;
+		utf32 |= ( *c++ & 0x3F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else
+	{
+		Com_DPrintf( "Unrecognised UTF-8 lead byte: 0x%x\n", (unsigned int)*c );
+		c++;
+	}
+
+	*utf8NextChar = c;
+
+	return utf32;
 }

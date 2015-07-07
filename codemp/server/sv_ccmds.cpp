@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "server.h"
 #include "qcommon/stringed_ingame.h"
 #include "server/sv_gameapi.h"
@@ -324,7 +348,7 @@ static void SV_MapRestart_f( void ) {
 			// this generally shouldn't happen, because the client
 			// was connected before the level change
 			SV_DropClient( client, denied );
-			Com_Printf( "SV_MapRestart_f(%d): dropped client %i - denied!\n", delay, i ); // bk010125
+			Com_Printf( "SV_MapRestart_f(%d): dropped client %i - denied!\n", delay, i );
 			continue;
 		}
 
@@ -673,11 +697,10 @@ Remove a ban or an exception from the list.
 ==================
 */
 
-static qboolean SV_DelBanEntryFromList( int index )
-{
+static qboolean SV_DelBanEntryFromList( int index ) {
 	if ( index == serverBansCount - 1 )
 		serverBansCount--;
-	else if ( index < ARRAY_LEN( serverBans ) - 1 )
+	else if ( index < (int)ARRAY_LEN( serverBans ) - 1 )
 	{
 		memmove( serverBans + index, serverBans + index + 1, (serverBansCount - index - 1) * sizeof( *serverBans ) );
 		serverBansCount--;
@@ -760,7 +783,7 @@ static void SV_AddBanToList( qboolean isexception )
 		return;
 	}
 
-	if ( serverBansCount >= ARRAY_LEN( serverBans ) )
+	if ( serverBansCount >= (int)ARRAY_LEN( serverBans ) )
 	{
 		Com_Printf( "Error: Maximum number of bans/exceptions exceeded.\n" );
 		return;
@@ -1052,6 +1075,35 @@ static void SV_ExceptDel_f( void )
 	SV_DelBanFromList( qtrue );
 }
 
+static const char *SV_CalcUptime( void ) {
+	static char buf[MAX_STRING_CHARS / 4] = { '\0' };
+	char tmp[64] = { '\0' };
+	time_t currTime;
+
+	time( &currTime );
+
+	int secs = difftime( currTime, svs.startTime );
+	int mins = secs / 60;
+	int hours = mins / 60;
+	int days = hours / 24;
+
+	secs %= 60;
+	mins %= 60;
+	hours %= 24;
+	//days %= 365;
+
+	buf[0] = '\0';
+	if ( days > 0 ) {
+		Com_sprintf( tmp, sizeof(tmp), "%i days ", days );
+		Q_strcat( buf, sizeof(buf), tmp );
+	}
+
+	Com_sprintf( tmp, sizeof(tmp), "%ih%im%is", hours, mins, secs );
+	Q_strcat( buf, sizeof(buf), tmp );
+
+	return buf;
+}
+
 /*
 ================
 SV_Status_f
@@ -1111,39 +1163,33 @@ static void SV_Status_f( void )
 		"public dedicated",
 	};
 
-	char hostname[MAX_HOSTNAMELENGTH]={0};
+	char hostname[MAX_HOSTNAMELENGTH] = { 0 };
 
-	Q_strncpyz(hostname, sv_hostname->string, sizeof(hostname));
-	Q_StripColor(hostname);
+	Q_strncpyz( hostname, sv_hostname->string, sizeof(hostname) );
+	Q_StripColor( hostname );
 
-	Com_Printf ("hostname: %s^7\n", hostname );
-	Com_Printf ("version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
-	Com_Printf ("game    : %s\n", FS_GetCurrentGameDir() );
-	Com_Printf ("udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString("net_ip"), Cvar_VariableIntegerValue("net_port"), STATUS_OS, ded_table[com_dedicated->integer]);
-	Com_Printf ("map     : %s gametype(%i)\n", sv_mapname->string, sv_gametype->integer );
-	Com_Printf ("players : %i humans, %i bots (%i max)\n", humans, bots, sv_maxclients->integer - sv_privateClients->integer);
+	Com_Printf( "hostname: %s^7\n", hostname );
+	Com_Printf( "version : %s %i\n", VERSION_STRING_DOTTED, PROTOCOL_VERSION );
+	Com_Printf( "game    : %s\n", FS_GetCurrentGameDir() );
+	Com_Printf( "udp/ip  : %s:%i os(%s) type(%s)\n", Cvar_VariableString( "net_ip" ), Cvar_VariableIntegerValue( "net_port" ), STATUS_OS, ded_table[com_dedicated->integer] );
+	Com_Printf( "map     : %s gametype(%i)\n", sv_mapname->string, sv_gametype->integer );
+	Com_Printf( "players : %i humans, %i bots (%i max)\n", humans, bots, sv_maxclients->integer - sv_privateClients->integer );
+	Com_Printf( "uptime  : %s\n", SV_CalcUptime() );
 
-	Com_Printf ("num score ping name            lastmsg address               qport rate\n");
-	Com_Printf ("--- ----- ---- --------------- ------- --------------------- ----- -----\n");
+	Com_Printf ("cl score ping name            address                                 rate \n");
+	Com_Printf ("-- ----- ---- --------------- --------------------------------------- -----\n");
 	for (i=0,cl=svs.clients ; i < sv_maxclients->integer ; i++,cl++)
 	{
-		if (!cl->state)
-		{
+		if ( !cl->state )
 			continue;
-		}
 
-		if (cl->state == CS_CONNECTED)
-		{
-			strcpy(state, "CNCT ");
-		}
-		else if (cl->state == CS_ZOMBIE)
-		{
-			strcpy(state, "ZMBI ");
-		}
-		else
-		{
+		if ( cl->state == CS_CONNECTED )
+			Q_strncpyz( state, "CON ", sizeof( state ) );
+		else if ( cl->state == CS_ZOMBIE )
+			Q_strncpyz( state, "ZMB ", sizeof( state ) );
+		else {
 			ping = cl->ping < 9999 ? cl->ping : 9999;
-			Com_sprintf(state, sizeof(state), "%4i", ping);
+			Com_sprintf( state, sizeof(state), "%4i", ping );
 		}
 
 		ps = SV_GameClientNum( i );
@@ -1151,27 +1197,23 @@ static void SV_Status_f( void )
 
 		if (!avoidTruncation)
 		{
-			Com_Printf ("%3i %5i %s %-15.15s %7i %21s %5i %5i\n",
+			Com_Printf ("%2i %5i %s %-15.15s ^7%39s %5i\n",
 				i,
 				ps->persistant[PERS_SCORE],
 				state,
 				cl->name,
-				svs.time - cl->lastPacketTime,
 				s,
-				cl->netchan.qport,
 				cl->rate
 				);
 		}
 		else
 		{
-			Com_Printf ("%3i %5i %s %s %7i %21s %5i %5i\n",
+			Com_Printf ("%2i %5i %s %s ^7%39s %5i\n",
 				i,
 				ps->persistant[PERS_SCORE],
 				state,
 				cl->name,
-				svs.time - cl->lastPacketTime,
 				s,
-				cl->netchan.qport,
 				cl->rate
 				);
 		}
@@ -1207,8 +1249,8 @@ static void SV_ConSay_f(void) {
 
 	Cmd_ArgsBuffer( text, sizeof(text) );
 
-	Com_Printf ("broadcast: chat \""SVSAY_PREFIX"%s\\n\"\n", SV_ExpandNewlines((char *)text) );
-	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
+	Com_Printf ("broadcast: chat \"" SVSAY_PREFIX "%s\\n\"\n", SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(NULL, "chat \"" SVSAY_PREFIX "%s\"\n", text);
 }
 
 #define SVTELL_PREFIX "\x19[Server^7\x19]\x19: "
@@ -1245,8 +1287,8 @@ static void SV_ConTell_f(void) {
 
 	Cmd_ArgsFromBuffer( 2, text, sizeof(text) );
 
-	Com_Printf ("tell: svtell to %s"S_COLOR_WHITE": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
-	SV_SendServerCommand(cl, "chat \""SVTELL_PREFIX S_COLOR_MAGENTA"%s"S_COLOR_WHITE"\"\n", text);
+	Com_Printf ("tell: svtell to %s" S_COLOR_WHITE ": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(cl, "chat \"" SVTELL_PREFIX S_COLOR_MAGENTA "%s" S_COLOR_WHITE "\"\n", text);
 }
 
 const char *forceToggleNamePrints[NUM_FORCE_POWERS] = {
@@ -1594,6 +1636,7 @@ static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
 		return 0;
 	}
 	timeinfo.tm_year -= 1900;
+	timeinfo.tm_mon--;
 	return mktime( &timeinfo );
 }
 

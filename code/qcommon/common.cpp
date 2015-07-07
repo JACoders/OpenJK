@@ -1,33 +1,42 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // common.c -- misc functions used in client and server
 
 #include "q_shared.h"
 #include "qcommon.h"
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
+#include "stringed_ingame.h"
 #include "stv_version.h"
+#if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 // Because renderer.
 #include "../rd-common/tr_public.h"
 extern refexport_t re;
-
-#define	MAXPRINTMSG	4096
 
 static fileHandle_t	logfile;
 static fileHandle_t	speedslog;
@@ -35,7 +44,6 @@ static fileHandle_t	camerafile;
 fileHandle_t	com_journalFile;
 fileHandle_t	com_journalDataFile;		// config files are written here
 
-cvar_t	*com_viewlog;
 cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_timescale;
@@ -53,12 +61,15 @@ cvar_t	*sv_paused;
 cvar_t	*com_skippingcin;
 cvar_t	*com_speedslog;		// 1 = buffer log, 2 = flush after each print
 cvar_t  *com_homepath;
+#ifndef _WIN32
+cvar_t	*com_ansiColor = NULL;
+#endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
 #endif
 
-static cvar_t *com_affinity;
+cvar_t *com_affinity;
 
 // com_speeds times
 int		time_game;
@@ -140,9 +151,6 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 	}
 
 	CL_ConsolePrint( msg );
-
-	// Strip out color codes because these aren't needed in the log/viewlog or in the output window --eez
-	Q_StripColor( msg );
 
 	// echo to dedicated console and early console
 	Sys_Print( msg );
@@ -239,7 +247,10 @@ do the apropriate things.
 =============
 */
 void SG_Shutdown();
-void QDECL Com_Error( int code, const char *fmt, ... ) {
+#ifdef JK2_MODE
+extern void SCR_UnprecacheScreenshot();
+#endif
+void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;
 	static int	errorCount;
@@ -267,6 +278,10 @@ void QDECL Com_Error( int code, const char *fmt, ... ) {
 	}
 	lastErrorTime = currentTime;
 
+#ifdef JK2_MODE
+	SCR_UnprecacheScreenshot();
+#endif
+	
 	va_start (argptr,fmt);
 	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
 	va_end (argptr);	
@@ -298,7 +313,7 @@ Both client and server can use this, and it will
 do the apropriate things.
 =============
 */
-void Com_Quit_f( void ) {
+void NORETURN Com_Quit_f( void ) {
 	// don't try to shutdown if we are in a recursive error
 	if ( !com_errorEntered ) {
 		SV_Shutdown ("Server quit\n");
@@ -846,7 +861,7 @@ int Com_EventLoop( void ) {
 
 		switch ( ev.evType ) {
 		default:
-			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evTime );
+			Com_Error( ERR_FATAL, "Com_EventLoop: bad event type %i", ev.evType );
 			break;
         case SE_NONE:
             break;
@@ -926,7 +941,7 @@ Just throw a fatal error to
 test error shutdown procedures
 =============
 */
-static void Com_Error_f (void) {
+static void NORETURN Com_Error_f (void) {
 	if ( Cmd_Argc() > 1 ) {
 		Com_Error( ERR_DROP, "Testing drop error" );
 	} else {
@@ -970,8 +985,10 @@ Com_Crash_f
 A way to force a bus error for development reasons
 =================
 */
-static void Com_Crash_f( void ) {
+static void NORETURN Com_Crash_f( void ) {
 	* ( volatile int * ) 0 = 0x12345678;
+	/* that should crash already, but to reassure the compiler: */
+	abort();
 }
 
 /*
@@ -1044,37 +1061,6 @@ static void Com_CatchError ( int code )
 	}
 }
 
-#ifdef _WIN32
-static const char *GetErrorString( DWORD error ) {
-	static char buf[MAX_STRING_CHARS];
-	buf[0] = '\0';
-
-	if ( error ) {
-		LPVOID lpMsgBuf;
-		DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL, error, MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ), (LPTSTR)&lpMsgBuf, 0, NULL );
-		if ( bufLen ) {
-			LPCSTR lpMsgStr = (LPCSTR)lpMsgBuf;
-			Q_strncpyz( buf, lpMsgStr, min( (size_t)(lpMsgStr + bufLen), sizeof(buf) ) );
-			LocalFree( lpMsgBuf );
-		}
-	}
-	return buf;
-}
-#endif
-
-// based on Smod code
-static void Com_SetProcessorAffinity( void ) {
-#ifdef _WIN32
-	DWORD processMask;
-	if ( sscanf( com_affinity->string, "%X", &processMask ) != 1 )
-		processMask = 1; // set to first core only
-
-	if ( !SetProcessAffinityMask( GetCurrentProcess(), processMask ) )
-		Com_Printf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
-#endif
-}
-
 /*
 =================
 Com_Init
@@ -1138,7 +1124,6 @@ void Com_Init( char *commandLine ) {
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
-		com_viewlog = Cvar_Get( "viewlog", "0", CVAR_TEMP );
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -1175,15 +1160,13 @@ void Com_Init( char *commandLine ) {
 	
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
-		Com_SetProcessorAffinity();
+		Sys_SetProcessorAffinity();
 
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 //	VM_Init();
 		SV_Init();
 		
 		CL_Init();
-
-		Sys_ShowConsole( com_viewlog->integer, qfalse );
 		
 		// set com_frameTime so that if a map is started on the
 		// command line it will still be able to count on com_frameTime
@@ -1360,9 +1343,6 @@ void G2Time_ResetTimers(void);
 void G2Time_ReportTimers(void);
 #endif
 
-#ifdef _MSC_VER
-#pragma warning (disable: 4701)	//local may have been used without init (timing info vars)
-#endif
 void Com_Frame( void ) {
 	try 
 	{
@@ -1372,12 +1352,6 @@ void Com_Frame( void ) {
 
 		// write config file if anything changed
 		Com_WriteConfiguration(); 
-
-		// if "viewlog" has been modified, show or hide the log console
-		if ( com_viewlog->modified ) {
-			Sys_ShowConsole( com_viewlog->integer, qfalse );
-			com_viewlog->modified = qfalse;
-		}
 
 		//
 		// main event loop
@@ -1527,6 +1501,12 @@ void Com_Frame( void ) {
 			c_pointcontents = 0;
 		}
 
+		if ( com_affinity->modified )
+		{
+			com_affinity->modified = qfalse;
+			Sys_SetProcessorAffinity();
+		}
+
 		com_frameNumber++;
 	}
 	catch ( int code )
@@ -1545,10 +1525,6 @@ void Com_Frame( void ) {
 	re.G2Time_ResetTimers();
 #endif
 }
-
-#ifdef _MSC_VER
-#pragma warning (default: 4701)	//local may have been used without init
-#endif
 
 /*
 =================
@@ -1595,7 +1571,7 @@ Field_Clear
 ==================
 */
 void Field_Clear( field_t *edit ) {
-	edit->buffer[0] = 0;
+	memset(edit->buffer, 0, MAX_EDIT_LINE);
 	edit->cursor = 0;
 	edit->scroll = 0;
 }
@@ -1653,7 +1629,7 @@ PrintMatches
 */
 static void PrintMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"Cmd  "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "Cmd  " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1667,7 +1643,7 @@ PrintArgMatches
 // This is here for if ever commands with other argument completion
 static void PrintArgMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_WHITE"  %s\n", s );
+		Com_Printf( S_COLOR_WHITE "  %s\n", s );
 	}
 }
 #endif
@@ -1680,7 +1656,7 @@ PrintKeyMatches
 */
 static void PrintKeyMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"Key  "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "Key  " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1692,7 +1668,7 @@ PrintFileMatches
 */
 static void PrintFileMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"File "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "File " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1707,7 +1683,7 @@ static void PrintCvarMatches( const char *s ) {
 
 	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
 		Com_TruncateLongString( value, Cvar_VariableString( s ) );
-		Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", s, value );
+		Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", s, value );
 	}
 }
 
@@ -1861,4 +1837,46 @@ void Field_AutoComplete( field_t *field ) {
 	completionField = field;
 
 	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
+}
+
+
+/*
+===============
+Converts a UTF-8 character to UTF-32.
+===============
+*/
+uint32_t ConvertUTF8ToUTF32( char *utf8CurrentChar, char **utf8NextChar )
+{
+	uint32_t utf32 = 0;
+	char *c = utf8CurrentChar;
+
+	if( ( *c & 0x80 ) == 0 )
+		utf32 = *c++;
+	else if( ( *c & 0xE0 ) == 0xC0 ) // 110x xxxx
+	{
+		utf32 |= ( *c++ & 0x1F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else if( ( *c & 0xF0 ) == 0xE0 ) // 1110 xxxx
+	{
+		utf32 |= ( *c++ & 0x0F ) << 12;
+		utf32 |= ( *c++ & 0x3F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else if( ( *c & 0xF8 ) == 0xF0 ) // 1111 0xxx
+	{
+		utf32 |= ( *c++ & 0x07 ) << 18;
+		utf32 |= ( *c++ & 0x3F ) << 12;
+		utf32 |= ( *c++ & 0x3F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else
+	{
+		Com_DPrintf( "Unrecognised UTF-8 lead byte: 0x%x\n", (unsigned int)*c );
+		c++;
+	}
+
+	*utf8NextChar = c;
+
+	return utf32;
 }

@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // g_bot.c
 
 #include "g_local.h"
@@ -817,8 +838,8 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// get the botinfo from bots.txt
 	botinfo = G_GetBotInfoByName( name );
 	if ( !botinfo ) {
-		trap->BotFreeClient( clientNum );
 		trap->Print( S_COLOR_RED "Error: Bot '%s' not defined\n", name );
+		trap->BotFreeClient( clientNum );
 		return;
 	}
 
@@ -912,7 +933,7 @@ static void G_AddBot( const char *name, float skill, const char *team, int delay
 	// initialize the bot settings
 	if ( !team || !*team ) {
 		if ( level.gametype >= GT_TEAM ) {
-			if ( PickTeam( clientNum ) == TEAM_RED)
+			if ( PickTeam( clientNum ) == TEAM_RED )
 				team = "red";
 			else
 				team = "blue";
@@ -1135,7 +1156,7 @@ static void G_SpawnBots( char *botList, int baseDelay ) {
 		while( *p && *p == ' ' ) {
 			p++;
 		}
-		if( !p ) {
+		if( !*p ) {
 			break;
 		}
 

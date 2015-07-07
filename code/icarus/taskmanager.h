@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Task Manager header file
 
@@ -88,7 +92,7 @@ class CTaskGroup
 {
 public:
 
-	typedef map < int, bool > taskCallback_m;
+	typedef std::map < int, bool > taskCallback_m;
 
 	CTaskGroup( void );
 	~CTaskGroup( void );
@@ -134,11 +138,11 @@ class CSequencer;
 class CTaskManager
 {
 
-	typedef	map < int, CTask * >			taskID_m;
-	typedef map < string, CTaskGroup * >	taskGroupName_m;
-	typedef map < int, CTaskGroup * >		taskGroupID_m;
-	typedef vector < CTaskGroup * >			taskGroup_v;
-	typedef list < CTask *>					tasks_l;
+	typedef	std::map < int, CTask * >			taskID_m;
+	typedef std::map < std::string, CTaskGroup * >	taskGroupName_m;
+	typedef std::map < int, CTaskGroup * >		taskGroupID_m;
+	typedef std::vector < CTaskGroup * >			taskGroup_v;
+	typedef std::list < CTask *>					tasks_l;
 
 public:
 

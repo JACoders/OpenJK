@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cl.input.c  -- builds an intended movement command to send to the server
 
 #include "client.h"
@@ -948,18 +971,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		return;
 	}
 
-#ifdef _WIN32
-	if( in_joystick->integer == 2 )
-	{
-		if(abs(cl.joystickAxis[AXIS_FORWARD]) >= 30) cmd->forwardmove = cl.joystickAxis[AXIS_FORWARD];
-		if(abs(cl.joystickAxis[AXIS_SIDE]) >= 30) cmd->rightmove = cl.joystickAxis[AXIS_SIDE];
-		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
-		cl.viewangles[YAW] -= (cl_yawspeed->value / 100.0f) * (cl.joystickAxis[AXIS_YAW]/1024.0f);
-		cl.viewangles[PITCH] += (cl_pitchspeed->value / 100.0f) * (cl.joystickAxis[AXIS_PITCH]/1024.0f);
-	}
-	else
-	{
-#endif
 	if ( !(in_speed.active ^ cl_run->integer) ) {
 		cmd->buttons |= BUTTON_WALKING;
 	}
@@ -986,7 +997,8 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 		{
 			cl.viewangles[YAW] += anglespeed * (cl_yawspeed->value / 100.0f) * cl.joystickAxis[AXIS_SIDE];
 		}
-	} else
+	}
+	else
 	{
 		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
 	}
@@ -1013,9 +1025,6 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	}
 
 	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
-#ifdef _WIN32
-	}
-#endif
 }
 
 /*
@@ -1440,10 +1449,11 @@ qboolean CL_ReadyToSendPacket( void ) {
 	}
 
 	// check for exceeding cl_maxpackets
-	if ( cl_maxpackets->integer < 15 ) {
-		Cvar_Set( "cl_maxpackets", "15" );
-	} else if ( cl_maxpackets->integer > 100 ) {
-		Cvar_Set( "cl_maxpackets", "100" );
+	if ( cl_maxpackets->integer < 20 ) {
+		Cvar_Set( "cl_maxpackets", "20" );
+	}
+	else if ( cl_maxpackets->integer > 1000 ) {
+		Cvar_Set( "cl_maxpackets", "1000" );
 	}
 	oldPacketNum = (clc.netchan.outgoingSequence - 1) & PACKET_MASK;
 	delta = cls.realtime -  cl.outPackets[ oldPacketNum ].p_realtime;

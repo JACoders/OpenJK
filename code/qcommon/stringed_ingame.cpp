@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	stringed_ingame.cpp
 //
@@ -33,12 +37,6 @@ This file is part of Jedi Academy.
 //
 //////////////////////////////////////////////////
 
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4511 )			// copy constructor could not be generated
-#pragma warning ( disable : 4512 )			// assignment operator could not be generated
-#pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
-#endif
 #include "stringed_ingame.h"
 #include "stringed_interface.h"
 
@@ -48,15 +46,12 @@ This file is part of Jedi Academy.
 #ifdef _MSC_VER
 #pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
 #endif
-#include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
-using namespace std;
 
-typedef vector<string>	vStrings_t;
-typedef vector<int>		vInts_t;
+typedef std::vector<std::string>	vStrings_t;
+typedef std::vector<int>		vInts_t;
 //
 ///////////////////////////////////////////////
 
@@ -69,8 +64,8 @@ cvar_t  *sp_leet = NULL;	// kept as 'sp_' for JK2 compat.
 
 typedef struct SE_Entry_s
 {
-	string		m_strString;
-	string		m_strDebug;	// english and/or "#same", used for debugging only. Also prefixed by "SE:" to show which strings go through StringEd (ie aren't hardwired)
+	std::string		m_strString;
+	std::string		m_strDebug;	// english and/or "#same", used for debugging only. Also prefixed by "SE:" to show which strings go through StringEd (ie aren't hardwired)
 	int			m_iFlags;
 
 	SE_Entry_s()
@@ -81,17 +76,17 @@ typedef struct SE_Entry_s
 } SE_Entry_t;
 
 
-typedef map <string, SE_Entry_t> mapStringEntries_t;
+typedef std::map <std::string, SE_Entry_t> mapStringEntries_t;
 
 class CStringEdPackage
 {
 private:
 
 	SE_BOOL				m_bEndMarkerFound_ParseOnly;
-	string				m_strCurrentEntryRef_ParseOnly;
-	string				m_strCurrentEntryEnglish_ParseOnly;
-	string				m_strCurrentFileRef_ParseOnly;
-	string				m_strLoadingLanguage_ParseOnly;	// eg "german"
+	std::string				m_strCurrentEntryRef_ParseOnly;
+	std::string				m_strCurrentEntryEnglish_ParseOnly;
+	std::string				m_strCurrentFileRef_ParseOnly;
+	std::string				m_strLoadingLanguage_ParseOnly;	// eg "german"
 	SE_BOOL				m_bLoadingEnglish_ParseOnly;
 
 public:
@@ -111,8 +106,8 @@ public:
 	//
 	// flag stuff...
 	//
-	vector <string>		m_vstrFlagNames;
-	map	<string,int>	m_mapFlagMasks;
+	std::vector <std::string>		m_vstrFlagNames;
+	std::map	<std::string,int>	m_mapFlagMasks;
 
 	void	Clear( SE_BOOL bChangingLanguages );
 	void	SetupNewFileParse( const char *psFileName, SE_BOOL bLoadDebug );
@@ -296,7 +291,7 @@ SE_BOOL CStringEdPackage::CheckLineForKeyword( const char *psKeyword, const char
 //
 const char *CStringEdPackage::ConvertCRLiterals_Read( const char *psString )
 {
-	static string str;
+	static std::string str;
 	str = psString;
 	int iLoc;
 	while ( (iLoc = str.find("\\n")) != -1 )
@@ -412,7 +407,7 @@ const char *CStringEdPackage::InsideQuotes( const char *psLine )
 	// I *could* replace this string object with a declared array, but wasn't sure how big to leave it, and it'd have to
 	//	be static as well, hence permanent. (problem on consoles?)
 	//
-	static	string	str;
+	static	std::string	str;
 					str = "";	// do NOT join to above line
 
 	// skip any leading whitespace...
@@ -462,7 +457,7 @@ const char *CStringEdPackage::InsideQuotes( const char *psLine )
 //
 int CStringEdPackage::GetFlagMask( const char *psFlagName )
 {
-	map <string, int>::iterator itFlag = m_mapFlagMasks.find( psFlagName );
+	std::map <std::string, int>::iterator itFlag = m_mapFlagMasks.find( psFlagName );
 	if ( itFlag != m_mapFlagMasks.end() )
 	{
 		int &iMask = (*itFlag).second;
@@ -773,7 +768,7 @@ void CStringEdPackage::AddEntry( const char *psLocalReference )
 
 const char *Leetify( const char *psString )
 {
-	static string str;
+	static std::string str;
 	str = psString;
 	if (sp_leet->integer == 42)	// very specific test, so you won't hit it accidentally
 	{
@@ -894,7 +889,7 @@ static const char *SE_Load_Actual( const char *psFileName, SE_BOOL bLoadDebug, S
 	return psErrorMessage;
 }
 
-static const char *SE_GetFoundFile( string &strResult )
+static const char *SE_GetFoundFile( std::string &strResult )
 {
 	static char sTemp[1024/*MAX_PATH*/];
 
@@ -1096,12 +1091,12 @@ int SE_GetFlagMask( const char *psFlagName )
 // Groan, except for Bob. I mentioned that this was slow and only call it once, but he's calling it from 
 //	every level-load...  Ok, cacheing it is...
 //
-vector <string> gvLanguagesAvailable;
+std::vector <std::string> gvLanguagesAvailable;
 int SE_GetNumLanguages(void)
 {
 	if ( gvLanguagesAvailable.empty() )
 	{
-		string strResults;
+		std::string strResults;
 		/*int iFilesFound = */SE_BuildFileList( 
 												#ifdef _STRINGED
 													va("C:\\Source\\Tools\\StringEd\\test_data\\%s",sSE_STRINGS_DIR)
@@ -1111,7 +1106,7 @@ int SE_GetNumLanguages(void)
 												, strResults 
 											);
 
-		set<string> strUniqueStrings;	// laziness <g>
+		std::set<std::string> strUniqueStrings;	// laziness <g>
 		const char *p;
 		while ((p=SE_GetFoundFile (strResults)) != NULL)
 		{
@@ -1232,7 +1227,7 @@ const char *SE_LoadLanguage( const char *psLanguage, SE_BOOL bLoadDebug /* = SE_
 	{
 		SE_NewLanguage();
 
-		string strResults;
+		std::string strResults;
 		/*int iFilesFound = */SE_BuildFileList( 
 												#ifdef _STRINGED
 													va("C:\\Source\\Tools\\StringEd\\test_data\\%s",sSE_STRINGS_DIR)

@@ -1,8 +1,28 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "g_local.h"
-
 
 
 /*
@@ -1786,25 +1806,6 @@ void Reached_Train( gentity_t *ent ) {
 	length = VectorLength( move );
 
 	ent->s.pos.trDuration = length * 1000 / speed;
-
-	// Tequila comment: Be sure to send to clients after any fast move case
-	ent->r.svFlags &= ~SVF_NOCLIENT;
-
-	// Tequila comment: Fast move case
-	if ( ent->s.pos.trDuration < 1 ) {
-		// Tequila comment: As trDuration is used later in a division, we need to avoid that case now
-		// With null trDuration,
-		// the calculated rocks bounding box becomes infinite and the engine think for a short time
-		// any entity is riding that mover but not the world entity... In rare case, I found it
-		// can also stuck every map entities after func_door are used.
-		// The desired effect with very very big speed is to have instant move, so any not null duration
-		// lower than a frame duration should be sufficient.
-		// Afaik, the negative case don't have to be supported.
-		ent->s.pos.trDuration = 1;
-
-		// Tequila comment: Don't send entity to clients so it becomes really invisible 
-		ent->r.svFlags |= SVF_NOCLIENT;
-	}
 
 	// start it going
 	SetMoverState( ent, MOVER_1TO2, level.time );

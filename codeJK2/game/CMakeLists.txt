@@ -1,4 +1,20 @@
-cmake_minimum_required(VERSION 2.8.8)
+#============================================================================
+# Copyright (C) 2013 - 2015, OpenJK contributors
+# 
+# This file is part of the OpenJK source code.
+# 
+# OpenJK is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#============================================================================
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -139,6 +155,7 @@ set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/surfaceflags.h"
 	"${JK2SPDir}/game/teams.h"
 	"${JK2SPDir}/game/weapons.h"
+	"${JK2SPDir}/game/w_local.h"
 	"${JK2SPDir}/game/wp_saber.h"
 	)
 source_group("game" FILES ${JK2SPGameGameFiles})
@@ -211,6 +228,7 @@ set(JK2SPGameCommonFiles
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/q_platform.h"
+	"${SPDir}/qcommon/strippublic.h"
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
@@ -222,10 +240,14 @@ set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/TaskManager.cpp"
 	"${JK2SPDir}/icarus/Instance.cpp"
 	"${JK2SPDir}/icarus/blockstream.h"
+	"${JK2SPDir}/icarus/icarus.h"
+	"${JK2SPDir}/icarus/interface.h"
+	"${JK2SPDir}/icarus/interpreter.h"
 	"${JK2SPDir}/icarus/sequence.h"
 	"${JK2SPDir}/icarus/sequencer.h"
 	"${JK2SPDir}/icarus/taskmanager.h"
 	"${JK2SPDir}/icarus/instance.h"
+	"${JK2SPDir}/icarus/tokenizer.h"
 	)
 source_group("icarus" FILES ${JK2SPGameIcarusFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameIcarusFiles})
@@ -246,19 +268,19 @@ endif(WIN32)
 
 add_library(${JK2SPGame} SHARED ${JK2SPGameFiles})
 
-if(NOT WIN32)
+if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${JK2SPGame} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif()
 
 if(WIN32)
-	install(TARGETS ${JK2SPGame} RUNTIME DESTINATION "OpenJK")
+	install(TARGETS ${JK2SPGame} RUNTIME DESTINATION "${JK2InstallDir}/OpenJK")
 else(WIN32)
 	if(MakeApplicationBundles AND BuildJK2SPEngine)
-		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "${JK2SPEngine}.app/Contents/MacOS/OpenJK")
+		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "${JK2InstallDir}/${JK2SPEngine}.app/Contents/MacOS/OpenJK")
 	else(MakeApplicationBundles AND BuildJK2SPEngine)
-		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "OpenJK")
-	endif(MakeApplicationBundles AND BuildJK2SPEngine) 
+		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "${JK2InstallDir}/OpenJK")
+	endif(MakeApplicationBundles AND BuildJK2SPEngine)
 endif(WIN32)
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${JK2SPGameDefines};${ReleaseDefines}")
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${JK2SPGameDefines};${ReleaseDefines}")

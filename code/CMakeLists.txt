@@ -1,4 +1,20 @@
-cmake_minimum_required(VERSION 2.8)
+#============================================================================
+# Copyright (C) 2013 - 2015, OpenJK contributors
+# 
+# This file is part of the OpenJK source code.
+# 
+# OpenJK is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#============================================================================
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -22,19 +38,15 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	# Defines
 	set(SPEngineDefines ${SharedDefines} "_JK2EXE") # it's called JK2EXE but it really just means Singleplayer Exe
 
-	set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OpenJKLibDir})
+	set(SPEngineIncludeDirectories
+		${SPEngineIncludeDirectories}
+		${SharedDir}
+		${SPDir}
+		${OpenJKLibDir})
 	
 	#    Dependencies
-	
-	if (NOT WIN32)
-		# OpenGL
-		find_package(OpenGL REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${OPENGL_LIBRARIES})
-	endif()
-
 	# OpenAL (is optionally included for Windows)
-	if(WIN32 AND NOT WIN64)
+	if(MSVC AND NOT WIN64)
 		if(UseInternalOpenAL)
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?
@@ -57,12 +69,30 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineEAXFiles})
 	endif()
 
-	if(NOT WIN32)
+	if(UseInternalSDL2)
+		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+			set(SPEngineLibraries
+				${SPEngineLibraries}
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
+				)
+		else()
+			set(SPEngineLibraries
+				${SPEngineLibraries}
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
+				)
+		endif()
+		
+		set(SPEngineIncludeDirectories
+			${SPEngineIncludeDirectories}
+			${OpenJKLibDir}/SDL2/include
+			)
+	else()
 		find_package(SDL2 REQUIRED)
 		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
 		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
-	endif(NOT WIN32)
-
+	endif()
 	
 	#    Source Files
 
@@ -118,8 +148,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/common.cpp"
 		"${SPDir}/qcommon/cvar.cpp"
 
-		"${SPDir}/qcommon/files_common.cpp"
-		"${SPDir}/qcommon/files_pc.cpp"
+		"${SPDir}/qcommon/files.cpp"
 
 		"${SPDir}/qcommon/md4.cpp"
 		"${SPDir}/qcommon/msg.cpp"
@@ -141,7 +170,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/tags.h"
 		"${SPDir}/qcommon/z_memman_pc.cpp"
 		"${SPDir}/qcommon/qfiles.h"
-		"${SPDir}/qcommon/files.h"
 		"${SPDir}/qcommon/qcommon.h"
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
@@ -283,38 +311,46 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	source_group("cgame" FILES ${SPEngineCGameFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCGameFiles})
 
-
-	# 
 	if(WIN32)
 		set(SPEngineWin32Files
-			"${SPDir}/win32/afxres.h"
-			"${SPDir}/win32/win_input.cpp"
-			"${SPDir}/win32/win_main.cpp"
-			"${SPDir}/win32/win_shared.cpp"
-			"${SPDir}/win32/win_snd.cpp"
-			"${SPDir}/win32/win_syscon.cpp"
-			"${SPDir}/win32/win_wndproc.cpp"
-			"${SPDir}/win32/win_local.h"
-			"${SPDir}/win32/AutoVersion.h"
 			"${SPDir}/win32/resource.h"
-			"${SPDir}/win32/glw_win.h"
 			"${SPDir}/win32/winquake.rc"
 			)
 		source_group("win32" FILES ${SPEngineWin32Files})
 		set(SPEngineFiles ${SPEngineFiles} ${SPEngineWin32Files})
-	else(WIN32)
+	endif()
+
+	set(SPEngineSysFiles
+		"${SharedDir}/sys/sys_main.cpp"
+		"${SharedDir}/sys/sys_event.cpp"
+		"${SharedDir}/sys/sys_local.h"
+		"${SharedDir}/sys/sys_public.h"
+		"${SharedDir}/sys/sys_loadlib.h"
+		"${SharedDir}/sys/con_local.h"
+		"${SharedDir}/sys/con_log.cpp"
+		"${SharedDir}/sdl/sdl_qgl.h"
+		"${SharedDir}/sdl/sdl_sound.cpp"
+		"${SharedDir}/sdl/sdl_input.cpp"
+		"${SharedDir}/sdl/sdl_window.cpp"
+		"${SharedDir}/sdl/sdl_icon.h"
+		)
+
+	if(WIN32)
 		set(SPEngineSysFiles
-			"${SPDir}/sys/sys_main.cpp"
-			"${SPDir}/sys/sys_unix.cpp"
-			"${SPDir}/sys/sys_local.h"
-			"${SPDir}/sys/sys_loadlib.h"
-			"${SPDir}/sdl/sdl_qgl.h"
-			"${SPDir}/sdl/sdl_snd.cpp"
-			"${SPDir}/sdl/sdl_input.cpp"
+			${SPEngineSysFiles}
+			"${SharedDir}/sys/sys_win32.cpp"
+			"${SharedDir}/sys/con_passive.cpp"
 			)
-		source_group("sys" FILES ${SPEngineSysFiles})
-		set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
-	endif(WIN32)
+	else()
+		set(SPEngineSysFiles
+			${SPEngineSysFiles}
+			"${SharedDir}/sys/sys_unix.cpp"
+			"${SharedDir}/sys/con_tty.cpp"
+			)
+	endif()
+
+	source_group("sys" FILES ${SPEngineSysFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 
 	if(UseInternalZlib)
 		set(SPEngineZlibFiles
@@ -355,7 +391,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif(UseInternalZlib)
 	
 	# project macro so we can invoke it twice: for jk2 and for ja
-	function(add_sp_project ProjectName Label SPDirName)
+	function(add_sp_project ProjectName Label SPDirName InstallDir Component)
 		if(MakeApplicationBundles)
 			set_source_files_properties(${SPDirName}/macosx/OpenJK.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 			set(SPEngineFiles ${SPEngineFiles} ${SPDirName}/macosx/OpenJK.icns)
@@ -365,6 +401,17 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 		if(WIN32)
 			add_executable(${ProjectName} WIN32 ${SPEngineFiles})
+			if(UseInternalSDL2)
+				if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+					set(SPEngineExtraInstallFiles
+						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+						)
+				else()
+					set(SPEngineExtraInstallFiles
+						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+						)
+				endif()
+			endif()
 		else(WIN32)
 			if(MakeApplicationBundles)
 				add_executable(${ProjectName} MACOSX_BUNDLE ${SPEngineFiles})
@@ -375,9 +422,20 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		endif(WIN32)
 
 		if(MakeApplicationBundles)
-			install(TARGETS ${ProjectName} BUNDLE DESTINATION ".")
+			install(TARGETS ${ProjectName}
+				BUNDLE
+				DESTINATION ${InstallDir}
+				COMPONENT ${Component})
 		else(MakeApplicationBundles)
-			install(TARGETS ${ProjectName} RUNTIME DESTINATION ".")
+			install(TARGETS ${ProjectName}
+				RUNTIME
+				DESTINATION ${InstallDir}
+				COMPONENT ${Component})
+			if(SPEngineExtraInstallFiles)
+				install(FILES ${SPEngineExtraInstallFiles}
+					DESTINATION ${InstallDir}
+					COMPONENT ${Component})
+			endif()
 		endif(MakeApplicationBundles)
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPEngineDefines};${ReleaseDefines}")
@@ -391,11 +449,11 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		endif(SPEngineLibraries)
 	endfunction(add_sp_project)
 	if(BuildSPEngine)
-		add_sp_project(${SPEngine} "SP Client" ${SPDir})
+		add_sp_project(${SPEngine} "SP Client" ${SPDir} ${JKAInstallDir} ${JKASPClientComponent})
 	endif(BuildSPEngine)
 	if(BuildJK2SPEngine)
 		set(SPEngineDefines ${SPEngineDefines} "JK2_MODE")
-		add_sp_project(${JK2SPEngine} "JK2 SP Client" ${JK2SPDir})
+		add_sp_project(${JK2SPEngine} "JK2 SP Client" ${JK2SPDir} ${JK2InstallDir} ${JK2SPClientComponent})
 	endif(BuildJK2SPEngine)
 
 endif(BuildSPEngine OR BuildJK2SPEngine)

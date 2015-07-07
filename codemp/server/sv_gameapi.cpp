@@ -1,3 +1,23 @@
+/*
+===========================================================================
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // sv_gameapi.cpp  -- interface to the game dll
 //Anything above this #include will be ignored by the compiler
 
@@ -1509,8 +1529,12 @@ static qboolean SV_G2API_GetBoneAnim( void *ghoul2, const char *boneName, const 
 }
 
 static void SV_G2API_GetGLAName( void *ghoul2, int modelIndex, char *fillBuf ) {
+	assert( ghoul2 && "invalid g2 handle" );
+
 	char *tmp = re->G2API_GetGLAName( *((CGhoul2Info_v *)ghoul2), modelIndex );
-	strcpy( fillBuf, tmp );
+	if ( tmp ) {
+		strcpy( fillBuf, tmp );
+	}
 }
 
 static int SV_G2API_CopyGhoul2Instance( void *g2From, void *g2To, int modelIndex ) {
@@ -2858,7 +2882,7 @@ void SV_BindGame( void ) {
 	static gameImport_t gi;
 	gameExport_t		*ret;
 	GetGameAPI_t		GetGameAPI;
-	char				dllName[MAX_OSPATH] = "jampgame"ARCH_STRING DLL_EXT;
+	char				dllName[MAX_OSPATH] = "jampgame" ARCH_STRING DLL_EXT;
 
 	memset( &gi, 0, sizeof( gi ) );
 

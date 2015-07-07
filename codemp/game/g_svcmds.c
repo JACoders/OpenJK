@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // this file holds commands that can be executed by the server console, but not remote clients
 
@@ -111,7 +132,7 @@ static void UpdateIPBans( void ) {
 			if ( m.b[j] != 0xFF )
 				Q_strcat( ip, sizeof( ip ), "*" );
 			else
-				Q_strcat( ip, sizeof( ip ), va( "%i", (int)b.c[j] ) );
+				Q_strcat( ip, sizeof( ip ), va( "%i", b.b[j] ) );
 			Q_strcat( ip, sizeof( ip ), (j<3) ? "." : " " );
 		}
 		if ( strlen( iplist_final )+strlen( ip ) < MAX_CVAR_VALUE_STRING )

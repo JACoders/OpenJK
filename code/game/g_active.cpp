@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -4740,16 +4745,16 @@ extern void ForceHeal(gentity_t *ent);
 static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 {
 	switch(cmd) {
-	case 0:
+	default:
 		break;
-	case GENCMD_FORCE_DRAIN:
-		ForceDrain2(ent);
+	case GENCMD_FORCE_HEAL:
+		ForceHeal( ent );
+		break;
+	case GENCMD_FORCE_SPEED:
+		ForceSpeed( ent );
 		break;
 	case GENCMD_FORCE_THROW:
 		ForceThrow(ent, qfalse);
-		break;
-	case GENCMD_FORCE_SPEED:
-		ForceSpeed(ent);
 		break;
 	case GENCMD_FORCE_PULL:
 		ForceThrow(ent, qtrue);
@@ -4772,11 +4777,11 @@ static void ProcessGenericCmd(gentity_t *ent, byte cmd)
 	case GENCMD_FORCE_ABSORB:
 		ForceAbsorb(ent);
 		break;
+	case GENCMD_FORCE_DRAIN:
+		ForceDrain2( ent );
+		break;
 	case GENCMD_FORCE_SEEING:
 		ForceSeeing(ent);
-		break;
-	case GENCMD_FORCE_HEAL:
-		ForceHeal(ent);
 		break;
 	}
 }

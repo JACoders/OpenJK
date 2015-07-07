@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	g_savegame.cpp
 
@@ -73,11 +77,11 @@ static const save_field_t savefields_gEntity[] =
 	{strFOFS(behaviorSet),		F_BEHAVIORSET},
 	{strFOFS(script_targetname),F_STRING},
 	{strFOFS(m_iIcarusID),		F_NULL},
-	{strFOFS(NPC),				F_BOOLPTR},	
+	{strFOFS(NPC),				F_BOOLPTR},
 	{strFOFS(soundSet),			F_STRING},
 	{strFOFS(cameraGroup),		F_STRING},
-	{strFOFS(parms),			F_BOOLPTR},		
-	{strFOFS(m_pVehicle),		F_BOOLPTR},	
+	{strFOFS(parms),			F_BOOLPTR},
+	{strFOFS(m_pVehicle),		F_BOOLPTR},
 
 	{NULL, 0, F_IGNORE}
 };
@@ -106,10 +110,10 @@ static const save_field_t savefields_gNPC[] =
 
 static const save_field_t savefields_LevelLocals[] =
 {
-	{strLLOFS(locationHead),	F_GENTITY},	
+	{strLLOFS(locationHead),	F_GENTITY},
 	{strLLOFS(alertEvents),		F_ALERTEVENT},
-	{strLLOFS(groups),			F_AIGROUPS},	
-	{strLLOFS(knownAnimFileSets),F_ANIMFILESETS},	
+	{strLLOFS(groups),			F_AIGROUPS},
+	{strLLOFS(knownAnimFileSets),F_ANIMFILESETS},
 	{NULL, 0, F_IGNORE}
 };
 
@@ -119,7 +123,7 @@ static const save_field_t savefields_gVHIC[] =
 	{strVHICOFS(m_pOldPilot),		F_GENTITY},
 	{strVHICOFS(m_pDroidUnit),		F_GENTITY},
 	{strVHICOFS(m_pParentEntity),	F_GENTITY},
-	
+
 	//m_ppPassengers	//!ptr array?!
 	{strVHICOFS(m_pVehicleInfo),	F_VEHINFO}, //!another ptr! store name field instead and re-hook on load?
 
@@ -130,7 +134,7 @@ static const save_field_t savefields_gClient[] =
 {
 	// sabers are stomped over by specific code elsewhere, it seems, but the first two fields MUST be saved
 	//	or it crashes on reload
-	{strCLOFS(ps.saber[0].name),F_STRING},	
+	{strCLOFS(ps.saber[0].name),F_STRING},
 /*	{strCLOFS(ps.saber[0].model),F_STRING},
 	{strCLOFS(ps.saber[0].skin),F_STRING},
 	{strCLOFS(ps.saber[0].brokenSaber1),F_STRING},
@@ -151,7 +155,7 @@ static const save_field_t savefields_gClient[] =
 	{NULL, 0, F_IGNORE}
 };
 
-list<sstring_t> *strList = NULL;
+std::list<sstring_t> *strList = NULL;
 
 
 /////////// char * /////////////
@@ -181,7 +185,7 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 		sString[0]=0;
 
 		assert(iStrlen+1<=(int)sizeof(sString));
-		
+
 		gi.ReadFromSaveGame(INT_ID('S','T','R','G'), sString, iStrlen, NULL);
 
 		// TAG_G_ALLOC is always blown away, we can never recycle
@@ -224,7 +228,7 @@ static intptr_t GetGEntityNum(gentity_t* ent)
 	ptrdiff_t iReturnIndex = ent - g_entities;
 
 	if (iReturnIndex < 0 || iReturnIndex >= MAX_GENTITIES)
-	{	
+	{
 		iReturnIndex = -1;	// will get a NULL ptr on reload
 	}
 	return iReturnIndex;
@@ -257,7 +261,7 @@ static intptr_t GetGroupNumber(AIGroupInfo_t *pGroup)
 
 	int iReturnIndex = pGroup - level.groups;
 	if (iReturnIndex < 0 || iReturnIndex >= (int)(sizeof(level.groups) / sizeof(level.groups[0])) )
-	{	
+	{
 		iReturnIndex = -1;	// will get a NULL ptr on reload
 	}
 	return iReturnIndex;
@@ -290,10 +294,10 @@ static intptr_t GetGClientNum(gclient_t *c, gentity_t *ent)
 	{
 		return -1;
 	}
-	
+
 	if (ent->s.number < MAX_CLIENTS)
 	{	// regular client...
-		return (c - level.clients);	
+		return (c - level.clients);
 	}
 	else
 	{	// this must be an NPC or weapon_shooter, so mark it as special...
@@ -327,12 +331,12 @@ static gclient_t *GetGClientPtr(intptr_t c)
 static int GetGItemNum (gitem_t *pItem)
 {
 	assert(pItem != (gitem_t*) 0xcdcdcdcd);
-	
+
 	if (pItem == NULL)
 	{
 		return -1;
 	}
-	
+
 	return pItem - bg_itemlist;
 }
 
@@ -358,12 +362,12 @@ static gitem_t *GetGItemPtr(int iItem)
 static int GetVehicleInfoNum(vehicleInfo_t *pVehicleInfo)
 {
 	assert(pVehicleInfo != (vehicleInfo_t*) 0xcdcdcdcd);
-	
+
 	if (pVehicleInfo == NULL)
 	{
 		return -1;
 	}
-	
+
 	return pVehicleInfo - g_vehicleInfo;
 }
 
@@ -464,14 +468,14 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		{
 			animFileSet_t* p = (animFileSet_t *) pv;
 
-			for (int i=0; i<MAX_ANIM_FILES; i++)
-			{
-				for ( int j=0; j<MAX_ANIM_EVENTS; j++ )
-				{
+			for ( int i = 0; i < MAX_ANIM_FILES; i++ ) {
+				for ( int j = 0; j < MAX_ANIM_EVENTS; j++ ) {
+					byteAlias_t *baTorso = (byteAlias_t *)&p[i].torsoAnimEvents[j].stringData,
+						*baLegs = (byteAlias_t *)&p[i].legsAnimEvents[j].stringData;
 					const char *ptAnimEventStringData = p[i].torsoAnimEvents[j].stringData;
-					*(int *)(&p[i].torsoAnimEvents[j].stringData) = GetStringNum( ptAnimEventStringData );
+					baTorso->i = GetStringNum( ptAnimEventStringData );
 					const char *plAnimEventStringData = p[i].legsAnimEvents[j].stringData;
-					*(int *)(&p[i].legsAnimEvents[j].stringData) = GetStringNum( plAnimEventStringData );
+					baLegs->i = GetStringNum( plAnimEventStringData );
 				}
 			}
 		}
@@ -495,9 +499,9 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 	}
 }
 
-static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, int iLen)
+static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, size_t iLen)
 {
-	strList = new list<sstring_t>;
+	strList = new std::list<sstring_t>;
 
 	// enumerate all the fields...
 	//
@@ -509,19 +513,19 @@ static void EnumerateFields(const save_field_t *pFields, const byte *pbData, uns
 			EnumerateField(pField, pbData);
 		}
 	}
-	
+
 	// save out raw data...
 	//
 	gi.AppendToSaveGame(ulChid, pbData, iLen);
 
 	// save out any associated strings..
 	//
-	list<sstring_t>::iterator it = strList->begin();
+	std::list<sstring_t>::iterator it = strList->begin();
 	for (size_t i=0; i<strList->size(); i++, ++it)
 	{
 		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void *)(*it).c_str(), (*it).length() + 1);
 	}
-	
+
 	delete strList;
 	strList = NULL;
 }
@@ -582,7 +586,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 */
 
 	case F_ALERTEVENT:
-		{				
+		{
 			alertEvent_t* p = (alertEvent_t *) pv;
 
 			for (int i=0; i<MAX_ALERT_EVENTS; i++)
@@ -636,12 +640,12 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 
 // copy of function in sv_savegame
-static const char *SG_GetChidText(unsigned int chid)
-{
+static const char *SG_GetChidText( unsigned int chid ) {
 	static char	chidtext[5];
 
-	*(unsigned int *)chidtext = BigLong(chid);
-	chidtext[4] = 0;
+	byteAlias_t *ba = (byteAlias_t *)&chidtext;
+	ba->ui = BigLong( chid );
+	chidtext[4] = '\0';
 
 	return chidtext;
 }
@@ -717,28 +721,28 @@ static void SG_ConvertRetailSaberinfoToNewSaberinfo( void *sabData, saberInfo_t 
 		}
 		saberNew[saberNum].type = saberRetail[saberNum].type;
 	}
-} 
+}
 
 static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
-{	
+{
 	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize, NULL);
 
 	if (iReadSize != iSize)
 	{
-		// handle any chunks that are ok to change length (typically this is a last minute hack, 
+		// handle any chunks that are ok to change length (typically this is a last minute hack,
 		//	so hopefully we won't need it any more... ;-)
 		//
 		switch (ulChid)
 		{
 			// example chunk handler...
-			//				
+			//
 			case INT_ID('G','C','L','I'):
 				if ( iSize == (int)(iReadSize+((sizeof(saberInfo_t)-sizeof(saberInfoRetail_t))*2)) )
 				{
 					gclient_t newClient;
 					const int	preSaberDataSize = ((intptr_t)&newClient.ps.saber[0]-(intptr_t)&newClient);
 					memcpy( &newClient, pbData, preSaberDataSize );
-					SG_ConvertRetailSaberinfoToNewSaberinfo( ((void *)(&((gclient_t *)(pbData))->ps.saber[0])), &newClient.ps.saber[0] ); 
+					SG_ConvertRetailSaberinfoToNewSaberinfo( ((void *)(&((gclient_t *)(pbData))->ps.saber[0])), &newClient.ps.saber[0] );
 					memcpy( &newClient.ps.dualSabers, pbData+preSaberDataSize+(sizeof(saberInfoRetail_t)*2), sizeof(newClient)-(preSaberDataSize+(sizeof(saberInfo_t)*2)) );
 					memcpy( pbData, &newClient, sizeof(gclient_t) );
 				}
@@ -755,7 +759,7 @@ static void EvaluateFields(const save_field_t *pFields, byte *pbData, byte *pbOr
 				break;
 		}
 	}
-	
+
 	if (pFields)
 	{
 		for (const save_field_t *pField = pFields; pField->psName; pField++)
@@ -812,7 +816,7 @@ static void WriteGEntities(qboolean qbAutosave)
 	{
 		gentity_t* ent = &g_entities[i];
 
-		if ( ent->inuse ) 
+		if ( ent->inuse )
 		{
 			iCount++;
 		}
@@ -838,7 +842,7 @@ static void WriteGEntities(qboolean qbAutosave)
 				gi.linkentity( ent );
 			}
 
-			EnumerateFields(savefields_gEntity, (byte *)&tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));			
+			EnumerateFields(savefields_gEntity, (byte *)&tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
 
 			// now for any fiddly bits that would be rather awkward to build into the enumerator...
 			//
@@ -859,16 +863,16 @@ static void WriteGEntities(qboolean qbAutosave)
 			{
 				gi.AppendToSaveGame(INT_ID('P','A','R','M'), ent->parms, sizeof(*ent->parms));
 			}
-			
+
 			if (tempEnt.m_pVehicle)
 			{
 				Vehicle_t vehicle = *ent->m_pVehicle;	// NOT *tempEnt.m_pVehicle!!
 				EnumerateFields(savefields_gVHIC, (byte *)&vehicle, INT_ID('V','H','I','C'), sizeof(vehicle));
 			}
-			
+
 			// the scary ghoul2 saver stuff...  (fingers crossed)
 			//
-			gi.G2API_SaveGhoul2Models(tempEnt.ghoul2);								
+			gi.G2API_SaveGhoul2Models(tempEnt.ghoul2);
 			tempEnt.ghoul2.kill(); // this handle was shallow copied from an ent. We don't want it destroyed
 		}
 	}
@@ -881,8 +885,8 @@ static void WriteGEntities(qboolean qbAutosave)
 		//Save out ICARUS information
 		IIcarusInterface::GetIcarus()->Save();
 
-		// this marker needs to be here, it lets me know if Icarus doesn't load everything back later, 
-		//	which has happened, and doesn't always show up onscreen until certain game situations. 
+		// this marker needs to be here, it lets me know if Icarus doesn't load everything back later,
+		//	which has happened, and doesn't always show up onscreen until certain game situations.
 		//	This saves time debugging, and makes things easier to track.
 		//
 		static int iBlah = 1234;
@@ -890,7 +894,7 @@ static void WriteGEntities(qboolean qbAutosave)
 	}
 	if (!qbAutosave )//really shouldn't need to write these bits at all, just restore them from the ents...
 	{
-		WriteInUseBits();	
+		WriteInUseBits();
 	}
 }
 
@@ -898,7 +902,7 @@ static void ReadGEntities(qboolean qbAutosave)
 {
 	int		iCount;
 	int		i;
-	
+
 	gi.ReadFromSaveGame(INT_ID('N','M','E','D'), (void *)&iCount, sizeof(iCount), NULL);
 
 	int iPreviousEntRead = -1;
@@ -927,14 +931,14 @@ static void ReadGEntities(qboolean qbAutosave)
 		// slightly naff syntax here, but makes a few ops clearer later...
 		//
 		gentity_t  entity;
-		gentity_t* pEntOriginal	= &entity;	
+		gentity_t* pEntOriginal	= &entity;
 		gentity_t* pEnt			= &g_entities[iEntIndex];
 		*pEntOriginal = *pEnt;	// struct copy, so we can refer to original
-		
+
 		pEntOriginal->ghoul2.kill();
 		gi.unlinkentity(pEnt);
 		Quake3Game()->FreeEntity( pEnt );
-	
+
 		//
 		// sneaky:  destroy the ghoul2 object within this struct before binary-loading over the top of it...
 		//
@@ -950,7 +954,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			gNPC_t tempNPC;
 
 			EvaluateFields(savefields_gNPC, (byte *)&tempNPC,(byte *)pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
-			
+
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
 			if (pEntOriginal->NPC)
@@ -983,7 +987,7 @@ static void ReadGEntities(qboolean qbAutosave)
 
 		if (pEnt->client == (gclient_t*) -2)	// one of Mike G's NPC clients?
 		{
-			gclient_t tempGClient;			
+			gclient_t tempGClient;
 
 			EvaluateFields(savefields_gClient, (byte *)&tempGClient, (byte *)pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qtrue);//qfalse);
 
@@ -998,7 +1002,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			else
 			{
 				// original didn't have one (hmmm...) so make a new one...
-				//				
+				//
 				pEnt->client = (gclient_t *) G_Alloc(sizeof(*pEnt->client));
 			}
 
@@ -1017,7 +1021,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		if (pEnt->parms)	// will be qtrue/qfalse
 		{
 			parms_t tempParms;
-			
+
 			gi.ReadFromSaveGame(INT_ID('P','A','R','M'), &tempParms, sizeof(tempParms), NULL);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
@@ -1031,7 +1035,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			else
 			{
 				// original didn't have one, so make a new one...
-				//				
+				//
 				pEnt->parms = (parms_t *) G_Alloc(sizeof(*pEnt->parms));
 			}
 
@@ -1043,7 +1047,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		if (pEnt->m_pVehicle)	// will be qtrue/qfalse
 		{
 			Vehicle_t tempVehicle;
-			
+
 			EvaluateFields(savefields_gVHIC, (byte *)&tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'), sizeof (*pEnt->m_pVehicle),qfalse);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
@@ -1057,7 +1061,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			else
 			{
 				// original didn't have one, so make a new one...
-				//				
+				//
 				pEnt->m_pVehicle = (Vehicle_t *) gi.Malloc( sizeof(Vehicle_t), TAG_G_ALLOC, qfalse );
 			}
 
@@ -1075,14 +1079,14 @@ static void ReadGEntities(qboolean qbAutosave)
 			gi.Free(pGhoul2Data);
 		}
 
-//		gi.unlinkentity (pEntOriginal);		
+//		gi.unlinkentity (pEntOriginal);
 //		ICARUS_FreeEnt( pEntOriginal );
-//		*pEntOriginal = *pEnt;	// struct copy				
+//		*pEntOriginal = *pEnt;	// struct copy
 //		qboolean qbLinked = pEntOriginal->linked;
 //		pEntOriginal->linked = qfalse;
 //		if (qbLinked)
 //		{
-//			gi.linkentity (pEntOriginal);		
+//			gi.linkentity (pEntOriginal);
 //		}
 
 		// because the sytem stores sfx_t handles directly instead of the set, we have to reget the set's sfx_t...
@@ -1107,8 +1111,8 @@ static void ReadGEntities(qboolean qbAutosave)
 		pEnt->linked = qfalse;
 		if (qbLinked)
 		{
-			gi.linkentity (pEnt);		
-		}		
+			gi.linkentity (pEnt);
+		}
 	}
 
 	//Read in all the entity timers
@@ -1125,7 +1129,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			{
 				G_FreeEntity(&g_entities[i]);
 			}
-		}	
+		}
 
 		//Load ICARUS information
 		Quake3Game()->ClearEntityList();
@@ -1152,8 +1156,8 @@ void WriteLevel(qboolean qbAutosave)
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
 		gclient_t client = level.clients[0];
-		EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));	
-		WriteLevelLocals();	// level_locals_t level	
+		EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));
+		WriteLevelLocals();	// level_locals_t level
 	}
 
 	OBJ_SaveObjectiveData();
@@ -1189,18 +1193,18 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		//In a loadtransition, client data is carried over on the server and will be stomped later anyway.
 		//The objective info (in client->sess data), however, is read in from G_ReadSessionData which is called before this func,
 		//we do NOT want to stomp that session data when doing a load transition
-		
+
 		//However, we should still save this info out because these savegames may need to be
 		//loaded normally later- perhaps if you die and need to respawn, perhaps as some kind
 		//of emergency savegame for resuming, etc.
 
 		//SO: We read it in, but throw it away.
-		
+
 		//Read & throw away gclient info
 		gclient_t junkClient;
 		EvaluateFields(savefields_gClient, (byte *)&junkClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
 
-		ReadLevelLocals();	// level_locals_t level	
+		ReadLevelLocals();	// level_locals_t level
 
 		//Read & throw away objective info
 		objectives_t	junkObj[MAX_MISSION_OBJ];
@@ -1211,13 +1215,13 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		if (!qbAutosave )//always load the client unless it's an autosave
 		{
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
-		
+
 			gclient_t GClient;
 			EvaluateFields(savefields_gClient, (byte *)&GClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
 			level.clients[0] = GClient;	// struct copy
-			ReadLevelLocals();	// level_locals_t level	
+			ReadLevelLocals();	// level_locals_t level
 		}
-		
+
 		OBJ_LoadObjectiveData();//loads mission objectives AND tactical info
 	}
 
@@ -1312,7 +1316,7 @@ struct Vehicle_t
 	vec3_t		m_vOrientation;
 
 	// How long you have strafed left or right (increments every frame that you strafe to right, decrements every frame you strafe left)
-	int			m_fStrafeTime;	
+	int			m_fStrafeTime;
 
 	// Previous angles of this vehicle.
 	vec3_t		m_vPrevOrientation;
@@ -1327,7 +1331,7 @@ struct Vehicle_t
 	int			m_iShields;	//energy shielding - STAT_ARMOR on NPC
 
 	// Timer for all cgame-FX...? ex: exhaust?
-	int			m_iLastFXTime; 
+	int			m_iLastFXTime;
 
 	// When to die.
 	int			m_iDieTime;

@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 /*****************************************************************************
  * name:		snd_dma.c
@@ -23,8 +28,6 @@ This file is part of Jedi Academy.
  *
  *
  *****************************************************************************/
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
 #include "snd_local.h"
@@ -32,6 +35,9 @@ This file is part of Jedi Academy.
 #include "snd_music.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
 
 static void S_Play_f(void);
 static void S_SoundList_f(void);
@@ -554,9 +560,11 @@ void S_Init( void ) {
 
 				if (s_eaxSet(&EAXPROPERTYID_EAX40_Source, EAXSOURCE_FLAGS,
 							s_channels[i].alSource, &ulFlags, sizeof(ulFlags))!=AL_NO_ERROR)
-#ifdef _MSC_VER
-							OutputDebugString("Failed to to remove Source flags\n");
+				{
+#ifdef _WIN32
+					OutputDebugString("Failed to to remove Source flags\n");
 #endif
+				}
 			}
 
 			s_numChannels++;
@@ -2057,12 +2065,13 @@ S_RawSamples
 Music streaming
 ============
 */
-void S_RawSamples( int samples, int rate, int width, int s_channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame )
+void S_RawSamples( int samples, int rate, int width, int channels, const byte *data, float volume, qboolean bFirstOrOnlyUpdateThisFrame )
 {
 	int		i;
 	int		src, dst;
 	float	scale;
 	int		intVolume;
+	int		rawEndStart;
 
 	if ( !s_soundStarted || s_soundMuted ) {
 		return;
@@ -2074,11 +2083,13 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 		Com_DPrintf( "S_RawSamples: resetting minimum: %i < %i\n", s_rawend, s_soundtime );
 		s_rawend = s_soundtime;
 	}
+	
+	rawEndStart = s_rawend;
 
 	scale = (float)rate / dma.speed;
 
 //Com_Printf ("%i < %i < %i\n", s_soundtime, s_paintedtime, s_rawend);
-	if (s_channels == 2 && width == 2)
+	if (channels == 2 && width == 2)
 	{
 		if (scale == 1.0)
 		{	// optimized case
@@ -2114,6 +2125,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 						break;
 					dst = s_rawend&(MAX_RAW_SAMPLES-1);
 					s_rawend++;
+					//Don't overflow if resampling.
+					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+						break;
 					s_rawsamples[dst].left = ((short *)data)[src*2] * intVolume;
 					s_rawsamples[dst].right = ((short *)data)[src*2+1] * intVolume;
 				}
@@ -2127,13 +2141,16 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 						break;
 					dst = s_rawend&(MAX_RAW_SAMPLES-1);
 					s_rawend++;
+					//Don't overflow if resampling.
+					if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+						break;
 					s_rawsamples[dst].left  += ((short *)data)[src*2] * intVolume;
 					s_rawsamples[dst].right += ((short *)data)[src*2+1] * intVolume;
 				}
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 2)
+	else if (channels == 1 && width == 2)
 	{
 		if (bFirstOrOnlyUpdateThisFrame)
 		{
@@ -2144,6 +2161,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = ((short *)data)[src] * intVolume;
 				s_rawsamples[dst].right = ((short *)data)[src] * intVolume;
 			}
@@ -2157,12 +2177,15 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += ((short *)data)[src] * intVolume;
 				s_rawsamples[dst].right += ((short *)data)[src] * intVolume;
 			}
 		}
 	}
-	else if (s_channels == 2 && width == 1)
+	else if (channels == 2 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2175,6 +2198,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = ((char *)data)[src*2] * intVolume;
 				s_rawsamples[dst].right = ((char *)data)[src*2+1] * intVolume;
 			}
@@ -2188,12 +2214,15 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += ((char *)data)[src*2] * intVolume;
 				s_rawsamples[dst].right += ((char *)data)[src*2+1] * intVolume;
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 1)
+	else if (channels == 1 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2206,6 +2235,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left = (((byte *)data)[src]-128) * intVolume;
 				s_rawsamples[dst].right = (((byte *)data)[src]-128) * intVolume;
 			}
@@ -2219,6 +2251,9 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 					break;
 				dst = s_rawend&(MAX_RAW_SAMPLES-1);
 				s_rawend++;
+				//Don't overflow if resampling.
+				if (s_rawend > rawEndStart + MAX_RAW_SAMPLES)
+					break;
 				s_rawsamples[dst].left  += (((byte *)data)[src]-128) * intVolume;
 				s_rawsamples[dst].right += (((byte *)data)[src]-128) * intVolume;
 			}
@@ -6038,7 +6073,7 @@ static void UpdateEAXListener()
 		float flSin = (float)sin(-flTheta);
 		float flCos = (float)cos(-flTheta);
 
-		for (i = 0; i < min(s_NumFXSlots,s_lNumEnvironments); i++)
+		for (i = 0; i < Q_min(s_NumFXSlots,s_lNumEnvironments); i++)
 		{
 			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
 			{

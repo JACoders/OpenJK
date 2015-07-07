@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #pragma once
 
@@ -24,12 +30,7 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#ifdef _WIN32
-// down
-#include "../win32/win_local.h"
-#endif
-
-#define	REF_API_VERSION		13
+#define	REF_API_VERSION		15
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -68,10 +69,10 @@ typedef struct {
 	void				(*FS_FreeFile)						( void *buffer );
 	void				(*FS_FreeFileList)					( char **fileList );
 	int					(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	int					(*FS_ReadFile)						( const char *qpath, void **buffer );
+	long					(*FS_ReadFile)						( const char *qpath, void **buffer );
 	void				(*FS_FCloseFile)					( fileHandle_t f );
-	int					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
-	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath );
+	long					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath, qboolean safe );
 	int					(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean			(*FS_FileExists)					( const char *file );
 	int					(*FS_FileIsInPAK)					( const char *filename );
@@ -91,14 +92,14 @@ typedef struct {
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
 
-#ifdef _WIN32
-	WinVars_t *			(*GetWinVars)						( void ); //g_wv
-#endif
+	// window handling
+	window_t		(*WIN_Init)                         ( const windowDesc_t *desc, glconfig_t *glConfig );
+	void			(*WIN_SetGamma)						( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
+	void			(*WIN_Present)						( window_t *window );
+	void            (*WIN_Shutdown)                     ( void );
 
-    // input event handling
-	void            (*IN_Init)                          ( void *windowData );
-	void            (*IN_Shutdown)                      ( void );
-	void            (*IN_Restart)                       ( void );
+	// OpenGL-specific
+	void *			(*GL_GetProcAddress)				( const char *name );
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
@@ -206,6 +207,11 @@ typedef struct {
 
 	// for use with save-games mainly...
 	void	(*GetScreenShot)(byte *data, int w, int h);
+	
+#ifdef JK2_MODE
+	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
+	void	(*LoadJPGFromBuffer)( byte *inputBuffer, size_t len, byte **pic, int *width, int *height );
+#endif
 
 	// this is so you can get access to raw pixels from a graphics format (TGA/JPG/BMP etc), 
 	//	currently only the save game uses it (to make raw shots for the autosaves)

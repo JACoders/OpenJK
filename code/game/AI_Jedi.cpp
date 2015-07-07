@@ -4368,7 +4368,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				if ( !Q_irand( 0, 5 ) || !Jedi_Strafe( 300, 1000, 0, 1000, qfalse ) )
 				{//certain chance they will pick an alternative evasion
 					//if couldn't strafe, try a different kind of evasion...
-					if ( Jedi_DecideKick() && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE && enemy_dist <= 16 )
+					if ( Jedi_DecideKick() && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE )
 					{//kicked!
 						TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 					}
@@ -5806,7 +5806,6 @@ static void Jedi_Combat( void )
 {
 	vec3_t	enemy_dir, enemy_movedir, enemy_dest;
 	float	enemy_dist, enemy_movespeed;
-	qboolean	enemy_lost = qfalse;
 	trace_t	trace;
 
 	//See where enemy will be 300 ms from now
@@ -5911,7 +5910,6 @@ static void Jedi_Combat( void )
 						}
 					}*/
 
-					enemy_lost = qtrue;
 				}
 			}
 		}
@@ -6567,8 +6565,8 @@ qboolean Jedi_CheckKataAttack( void )
 							if ( enemy_in_striking_range ) //need to actually be close to the enemy
 						{
 							ucmd.upmove = 0;
-							VectorClear(NPC->client->ps.moveDir);
-							if (g_saberNewControlScheme->integer)
+							VectorClear( NPC->client->ps.moveDir );
+							if ( g_saberNewControlScheme->integer )
 							{
 								ucmd.buttons |= BUTTON_FORCE_FOCUS;
 							}

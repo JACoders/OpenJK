@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //b_spawn.cpp
 //added by MCG
 #include "b_local.h"
@@ -1397,7 +1419,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 
 	if ( newent == NULL )
 	{
-		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Spawn failed\n" );
+		Com_Printf ( S_COLOR_RED "ERROR: NPC G_Spawn failed\n" );
 		return NULL;
 	}
 
@@ -1406,7 +1428,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 	newent->NPC = New_NPC_t(newent->s.number);
 	if ( newent->NPC == NULL )
 	{
-		Com_Printf ( S_COLOR_RED"ERROR: NPC G_Alloc NPC failed\n" );
+		Com_Printf ( S_COLOR_RED "ERROR: NPC G_Alloc NPC failed\n" );
 		goto finish;
 	//	return NULL;
 	}
@@ -1429,7 +1451,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 
 	if ( newent->client == NULL )
 	{
-		Com_Printf ( S_COLOR_RED"ERROR: NPC BG_Alloc client failed\n" );
+		Com_Printf ( S_COLOR_RED "ERROR: NPC BG_Alloc client failed\n" );
 		goto finish;
 	//	return NULL;
 	}

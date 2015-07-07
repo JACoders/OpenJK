@@ -1,21 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-
 
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
@@ -279,23 +282,23 @@ bool CPrimitiveTemplate::ParseGroupFlags( const char *val, int *flags )
 			return true;
 		}
 
-		if ( !stricmp( flag[i], "linear" ))
+		if ( !Q_stricmp( flag[i], "linear" ))
 		{
 			*flags |= FX_LINEAR;
 		}
-		else if ( !stricmp( flag[i], "nonlinear" ))
+		else if ( !Q_stricmp( flag[i], "nonlinear" ))
 		{
 			*flags |= FX_NONLINEAR;
 		}
-		else if ( !stricmp( flag[i], "wave" ))
+		else if ( !Q_stricmp( flag[i], "wave" ))
 		{
 			*flags |= FX_WAVE;
 		}
-		else if ( !stricmp( flag[i], "random" ))
+		else if ( !Q_stricmp( flag[i], "random" ))
 		{
 			*flags |= FX_RAND;
 		}
-		else if ( !stricmp( flag[i], "clamp" ))
+		else if ( !Q_stricmp( flag[i], "clamp" ))
 		{
 			*flags |= FX_CLAMP;
 		}
@@ -699,47 +702,47 @@ bool CPrimitiveTemplate::ParseFlags( const char *val )
 			return true;
 		}
 
-		if ( !stricmp( flag[i], "useModel" ))
+		if ( !Q_stricmp( flag[i], "useModel" ))
 		{
 			mFlags |= FX_ATTACHED_MODEL;
 		}
-		else if ( !stricmp( flag[i], "useBBox" ))
+		else if ( !Q_stricmp( flag[i], "useBBox" ))
 		{
 			mFlags |= FX_USE_BBOX;
 		}
-		else if ( !stricmp( flag[i], "usePhysics" ))
+		else if ( !Q_stricmp( flag[i], "usePhysics" ))
 		{
 			mFlags |= FX_APPLY_PHYSICS;
 		}
-		else if ( !stricmp( flag[i], "expensivePhysics" ))
+		else if ( !Q_stricmp( flag[i], "expensivePhysics" ))
 		{
 			mFlags |= FX_EXPENSIVE_PHYSICS;
 		}
-		else if ( !stricmp( flag[i], "impactKills" ))
+		else if ( !Q_stricmp( flag[i], "impactKills" ))
 		{
 			mFlags |= FX_KILL_ON_IMPACT;
 		}
-		else if ( !stricmp( flag[i], "impactFx" ))
+		else if ( !Q_stricmp( flag[i], "impactFx" ))
 		{
 			mFlags |= FX_IMPACT_RUNS_FX;
 		}
-		else if ( !stricmp( flag[i], "deathFx" ))
+		else if ( !Q_stricmp( flag[i], "deathFx" ))
 		{
 			mFlags |= FX_DEATH_RUNS_FX;
 		}
-		else if ( !stricmp( flag[i], "useAlpha" ))
+		else if ( !Q_stricmp( flag[i], "useAlpha" ))
 		{
 			mFlags |= FX_USE_ALPHA;
 		}
-		else if ( !stricmp( flag[i], "emitFx" ))
+		else if ( !Q_stricmp( flag[i], "emitFx" ))
 		{
 			mFlags |= FX_EMIT_FX;
 		}
-		else if ( !stricmp( flag[i], "depthHack" ))
+		else if ( !Q_stricmp( flag[i], "depthHack" ))
 		{
 			mFlags |= FX_DEPTH_HACK;
 		}
-		else if ( !stricmp( flag[i], "setShaderTime" ))
+		else if ( !Q_stricmp( flag[i], "setShaderTime" ))
 		{
 			mFlags |= FX_SET_SHADER_TIME;
 		}
@@ -778,59 +781,59 @@ bool CPrimitiveTemplate::ParseSpawnFlags( const char *val )
 			return true;
 		}
 
-		if ( !stricmp( flag[i], "org2fromTrace" ))
+		if ( !Q_stricmp( flag[i], "org2fromTrace" ))
 		{
 			mSpawnFlags |= FX_ORG2_FROM_TRACE;
 		}
-		else if ( !stricmp( flag[i], "traceImpactFx" ))
+		else if ( !Q_stricmp( flag[i], "traceImpactFx" ))
 		{
 			mSpawnFlags |= FX_TRACE_IMPACT_FX;
 		}
-		else if ( !stricmp( flag[i], "org2isOffset" ))
+		else if ( !Q_stricmp( flag[i], "org2isOffset" ))
 		{
 			mSpawnFlags |= FX_ORG2_IS_OFFSET;
 		}
-		else if ( !stricmp( flag[i], "cheapOrgCalc" ))
+		else if ( !Q_stricmp( flag[i], "cheapOrgCalc" ))
 		{
 			mSpawnFlags |= FX_CHEAP_ORG_CALC;
 		}
-		else if ( !stricmp( flag[i], "cheapOrg2Calc" ))
+		else if ( !Q_stricmp( flag[i], "cheapOrg2Calc" ))
 		{
 			mSpawnFlags |= FX_CHEAP_ORG2_CALC;
 		}
-		else if ( !stricmp( flag[i], "absoluteVel" ))
+		else if ( !Q_stricmp( flag[i], "absoluteVel" ))
 		{
 			mSpawnFlags |= FX_VEL_IS_ABSOLUTE;
 		}
-		else if ( !stricmp( flag[i], "absoluteAccel" ))
+		else if ( !Q_stricmp( flag[i], "absoluteAccel" ))
 		{
 			mSpawnFlags |= FX_ACCEL_IS_ABSOLUTE;
 		}
-		else if ( !stricmp( flag[i], "orgOnSphere" )) // sphere/ellipsoid
+		else if ( !Q_stricmp( flag[i], "orgOnSphere" )) // sphere/ellipsoid
 		{
 			mSpawnFlags |= FX_ORG_ON_SPHERE;
 		}
-		else if ( !stricmp( flag[i], "orgOnCylinder" )) // cylinder/disk
+		else if ( !Q_stricmp( flag[i], "orgOnCylinder" )) // cylinder/disk
 		{
 			mSpawnFlags |= FX_ORG_ON_CYLINDER;
 		}
-		else if ( !stricmp( flag[i], "axisFromSphere" ))
+		else if ( !Q_stricmp( flag[i], "axisFromSphere" ))
 		{
 			mSpawnFlags |= FX_AXIS_FROM_SPHERE;
 		}
-		else if ( !stricmp( flag[i], "randrotaroundfwd" ))
+		else if ( !Q_stricmp( flag[i], "randrotaroundfwd" ))
 		{
 			mSpawnFlags |= FX_RAND_ROT_AROUND_FWD;
 		}
-		else if ( !stricmp( flag[i], "evenDistribution" ))
+		else if ( !Q_stricmp( flag[i], "evenDistribution" ))
 		{
 			mSpawnFlags |= FX_EVEN_DISTRIBUTION;
 		}
-		else if ( !stricmp( flag[i], "rgbComponentInterpolation" ))
+		else if ( !Q_stricmp( flag[i], "rgbComponentInterpolation" ))
 		{
 			mSpawnFlags |= FX_RGB_COMPONENT_INTERP;
 		}
-		else if ( !stricmp( flag[i], "lessAttenuation" ))
+		else if ( !Q_stricmp( flag[i], "lessAttenuation" ))
 		{
 			mSpawnFlags |= FX_SND_LESS_ATTENUATION;
 		}
@@ -1878,19 +1881,19 @@ bool CPrimitiveTemplate::ParseRGB( CGPGroup *grp )
 		val = pairs->GetTopValue();
 
 		// Huge stricmp lists suxor
-		if ( !stricmp( key, "start" ))
+		if ( !Q_stricmp( key, "start" ))
 		{
 			ParseRGBStart( val );
 		}
-		else if ( !stricmp( key, "end" ))
+		else if ( !Q_stricmp( key, "end" ))
 		{
 			ParseRGBEnd( val );
 		}
-		else if ( !stricmp( key, "parm" ) || !stricmp( key, "parms" ))
+		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
 		{
 			ParseRGBParm( val );
 		}
-		else if ( !stricmp( key, "flags" ) || !stricmp( key, "flag" ))
+		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
 		{
 			ParseRGBFlags( val );
 		}
@@ -1932,19 +1935,19 @@ bool CPrimitiveTemplate::ParseAlpha( CGPGroup *grp )
 		val = pairs->GetTopValue();
 
 		// Huge stricmp lists suxor
-		if ( !stricmp( key, "start" ))
+		if ( !Q_stricmp( key, "start" ))
 		{
 			ParseAlphaStart( val );
 		}
-		else if ( !stricmp( key, "end" ))
+		else if ( !Q_stricmp( key, "end" ))
 		{
 			ParseAlphaEnd( val );
 		}
-		else if ( !stricmp( key, "parm" ) || !stricmp( key, "parms" ))
+		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
 		{
 			ParseAlphaParm( val );
 		}
-		else if ( !stricmp( key, "flags" ) || !stricmp( key, "flag" ))
+		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
 		{
 			ParseAlphaFlags( val );
 		}
@@ -1985,20 +1988,20 @@ bool CPrimitiveTemplate::ParseSize( CGPGroup *grp )
 		key = pairs->GetName();
 		val = pairs->GetTopValue();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( key, "start" ))
+		// Huge Q_stricmp lists suxor
+		if ( !Q_stricmp( key, "start" ))
 		{
 			ParseSizeStart( val );
 		}
-		else if ( !stricmp( key, "end" ))
+		else if ( !Q_stricmp( key, "end" ))
 		{
 			ParseSizeEnd( val );
 		}
-		else if ( !stricmp( key, "parm" ) || !stricmp( key, "parms" ))
+		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
 		{
 			ParseSizeParm( val );
 		}
-		else if ( !stricmp( key, "flags" ) || !stricmp( key, "flag" ))
+		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
 		{
 			ParseSizeFlags( val );
 		}
@@ -2039,20 +2042,20 @@ bool CPrimitiveTemplate::ParseSize2( CGPGroup *grp )
 		key = pairs->GetName();
 		val = pairs->GetTopValue();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( key, "start" ))
+		// Huge Q_stricmp lists suxor
+		if ( !Q_stricmp( key, "start" ))
 		{
 			ParseSize2Start( val );
 		}
-		else if ( !stricmp( key, "end" ))
+		else if ( !Q_stricmp( key, "end" ))
 		{
 			ParseSize2End( val );
 		}
-		else if ( !stricmp( key, "parm" ) || !stricmp( key, "parms" ))
+		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
 		{
 			ParseSize2Parm( val );
 		}
-		else if ( !stricmp( key, "flags" ) || !stricmp( key, "flag" ))
+		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
 		{
 			ParseSize2Flags( val );
 		}
@@ -2093,20 +2096,20 @@ bool CPrimitiveTemplate::ParseLength( CGPGroup *grp )
 		key = pairs->GetName();
 		val = pairs->GetTopValue();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( key, "start" ))
+		// Huge Q_stricmp lists suxor
+		if ( !Q_stricmp( key, "start" ))
 		{
 			ParseLengthStart( val );
 		}
-		else if ( !stricmp( key, "end" ))
+		else if ( !Q_stricmp( key, "end" ))
 		{
 			ParseLengthEnd( val );
 		}
-		else if ( !stricmp( key, "parm" ) || !stricmp( key, "parms" ))
+		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
 		{
 			ParseLengthParm( val );
 		}
-		else if ( !stricmp( key, "flags" ) || !stricmp( key, "flag" ))
+		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
 		{
 			ParseLengthFlags( val );
 		}
@@ -2141,109 +2144,109 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 		key = pairs->GetName();
 		val = pairs->GetTopValue();
 
-		// Huge stricmp lists suxor
-		if ( !stricmp( key, "count" ))
+		// Huge Q_stricmp lists suxor
+		if ( !Q_stricmp( key, "count" ))
 		{
 			ParseCount( val );
 		}
-		else if ( !stricmp( key, "shaders" ) || !stricmp( key, "shader" ))
+		else if ( !Q_stricmp( key, "shaders" ) || !Q_stricmp( key, "shader" ))
 		{
 			ParseShaders( pairs );
 		}
-		else if ( !stricmp( key, "models" ) || !stricmp( key, "model" ))
+		else if ( !Q_stricmp( key, "models" ) || !Q_stricmp( key, "model" ))
 		{
 			ParseModels( pairs );
 		}
-		else if ( !stricmp( key, "sounds" ) || !stricmp( key, "sound" ))
+		else if ( !Q_stricmp( key, "sounds" ) || !Q_stricmp( key, "sound" ))
 		{
 			ParseSounds( pairs );
 		}
-		else if ( !stricmp( key, "impactfx" ))
+		else if ( !Q_stricmp( key, "impactfx" ))
 		{
 			ParseImpactFxStrings( pairs );
 		}
-		else if ( !stricmp( key, "deathfx" ))
+		else if ( !Q_stricmp( key, "deathfx" ))
 		{
 			ParseDeathFxStrings( pairs );
 		}
-		else if ( !stricmp( key, "emitfx" ))
+		else if ( !Q_stricmp( key, "emitfx" ))
 		{
 			ParseEmitterFxStrings( pairs );
 		}
-		else if ( !stricmp( key, "playfx" ))
+		else if ( !Q_stricmp( key, "playfx" ))
 		{
 			ParsePlayFxStrings( pairs );
 		}
-		else if ( !stricmp( key, "life" ))
+		else if ( !Q_stricmp( key, "life" ))
 		{
 			ParseLife( val );
 		}
-		else if ( !stricmp( key, "cullrange" ))
+		else if ( !Q_stricmp( key, "cullrange" ))
 		{
 			mCullRange = atoi( val );
 			mCullRange *= mCullRange; // Square
 		}
-		else if ( !stricmp( key, "delay" ))
+		else if ( !Q_stricmp( key, "delay" ))
 		{
 			ParseDelay( val );
 		}
-		else if ( !stricmp( key, "bounce" ) || !stricmp( key, "intensity" )) // me==bad for reusing this...but it shouldn't hurt anything)
+		else if ( !Q_stricmp( key, "bounce" ) || !Q_stricmp( key, "intensity" )) // me==bad for reusing this...but it shouldn't hurt anything)
 		{
 			ParseElasticity( val );
 		}
-		else if ( !stricmp( key, "min" ))
+		else if ( !Q_stricmp( key, "min" ))
 		{
 			ParseMin( val );
 		}
-		else if ( !stricmp( key, "max" ))
+		else if ( !Q_stricmp( key, "max" ))
 		{
 			ParseMax( val );
 		}
-		else if ( !stricmp( key, "angle" ) || !stricmp( key, "angles" ))
+		else if ( !Q_stricmp( key, "angle" ) || !Q_stricmp( key, "angles" ))
 		{
 			ParseAngle( val );
 		}
-		else if ( !stricmp( key, "angleDelta" ))
+		else if ( !Q_stricmp( key, "angleDelta" ))
 		{
 			ParseAngleDelta( val );
 		}
-		else if ( !stricmp( key, "velocity" ) || !stricmp( key, "vel" ))
+		else if ( !Q_stricmp( key, "velocity" ) || !Q_stricmp( key, "vel" ))
 		{
 			ParseVelocity( val );
 		}
-		else if ( !stricmp( key, "acceleration" ) || !stricmp( key, "accel" ))
+		else if ( !Q_stricmp( key, "acceleration" ) || !Q_stricmp( key, "accel" ))
 		{
 			ParseAcceleration( val );
 		}
-		else if ( !stricmp( key, "gravity" ))
+		else if ( !Q_stricmp( key, "gravity" ))
 		{
 			ParseGravity( val );
 		}
-		else if ( !stricmp( key, "density" ))
+		else if ( !Q_stricmp( key, "density" ))
 		{
 			ParseDensity( val );
 		}
-		else if ( !stricmp( key, "variance" ))
+		else if ( !Q_stricmp( key, "variance" ))
 		{
 			ParseVariance( val );
 		}
-		else if ( !stricmp( key, "origin" ))
+		else if ( !Q_stricmp( key, "origin" ))
 		{
 			ParseOrigin1( val );
 		}
-		else if ( !stricmp( key, "origin2" ))
+		else if ( !Q_stricmp( key, "origin2" ))
 		{
 			ParseOrigin2( val );
 		}
-		else if ( !stricmp( key, "radius" )) // part of ellipse/cylinder calcs.
+		else if ( !Q_stricmp( key, "radius" )) // part of ellipse/cylinder calcs.
 		{
 			ParseRadius( val );
 		}
-		else if ( !stricmp( key, "height" )) // part of ellipse/cylinder calcs.
+		else if ( !Q_stricmp( key, "height" )) // part of ellipse/cylinder calcs.
 		{
 			ParseHeight( val );
 		}
-		else if ( !stricmp( key, "rotation" ))
+		else if ( !Q_stricmp( key, "rotation" ))
 		{
 			ParseRotation( val );
 		}
@@ -2251,15 +2254,15 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 		{
 			ParseRotationDelta( val );
 		}
-		else if ( !stricmp( key, "flags" ) || !stricmp( key, "flag" ))
+		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
 		{ // these need to get passed on to the primitive
 			ParseFlags( val );
 		}
-		else if ( !stricmp( key, "spawnFlags" ) || !stricmp( key, "spawnFlag" ))
+		else if ( !Q_stricmp( key, "spawnFlags" ) || !Q_stricmp( key, "spawnFlag" ))
 		{ // these are used to spawn things in cool ways, but don't ever get passed on to prims.
 			ParseSpawnFlags( val );
 		}
-		else if ( !stricmp( key, "name" ))
+		else if ( !Q_stricmp( key, "name" ))
 		{
 			if ( val )
 			{
@@ -2282,23 +2285,23 @@ bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
 	{
 		key = subGrp->GetName();
 
-		if ( !stricmp( key, "rgb" ))
+		if ( !Q_stricmp( key, "rgb" ))
 		{
 			ParseRGB( subGrp );
 		}
-		else if ( !stricmp( key, "alpha" ))
+		else if ( !Q_stricmp( key, "alpha" ))
 		{
 			ParseAlpha( subGrp );
 		}
-		else if ( !stricmp( key, "size" ) || !stricmp( key, "width" ))
+		else if ( !Q_stricmp( key, "size" ) || !Q_stricmp( key, "width" ))
 		{
 			ParseSize( subGrp );
 		}
-		else if ( !stricmp( key, "size2" ) || !stricmp( key, "width2" ))
+		else if ( !Q_stricmp( key, "size2" ) || !Q_stricmp( key, "width2" ))
 		{
 			ParseSize2( subGrp );
 		}
-		else if ( !stricmp( key, "length" ) || !stricmp( key, "height" ))
+		else if ( !Q_stricmp( key, "length" ) || !Q_stricmp( key, "height" ))
 		{
 			ParseLength( subGrp );
 		}

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_arb.c -- this file deals with the arb shaders for dynamic glow
 
 #include "tr_local.h"
@@ -85,24 +107,39 @@ const unsigned char g_strGlowPShaderARB[] =
 	\
 	END"
 };
+
+static const char *gammaCorrectVtxShader =
+"!!ARBvp1.0\
+MOV result.position, vertex.position;\
+MOV result.texcoord[0], vertex.texcoord[0];\
+END";
+
+static const char *gammaCorrectPxShader =
+"!!ARBfp1.0\
+TEMP r0;\
+TEX r0, fragment.texcoord[0], texture[0], RECT;\
+TEX result.color, r0, texture[1], 3D;\
+END";
 /***********************************************************************************************************/
 
 #define GL_PROGRAM_ERROR_STRING_ARB						0x8874
 #define GL_PROGRAM_ERROR_POSITION_ARB					0x864B
 
-void ARB_InitGlowShaders(void) {
-	// Allocate and Load the global 'Glow' Vertex Program. - AReis
-	if ( qglGenProgramsARB )
+void ARB_InitGPUShaders(void) {
+	if ( !qglGenProgramsARB )
 	{
-		qglGenProgramsARB( 1, &tr.glowVShader );
-		qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, tr.glowVShader );
-		qglProgramStringARB( GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, ( GLsizei ) strlen( ( char * ) g_strGlowVShaderARB ), g_strGlowVShaderARB );
-
-//		const GLubyte *strErr = qglGetString( GL_PROGRAM_ERROR_STRING_ARB );
-		int iErrPos = 0;
-		qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &iErrPos );
-		assert( iErrPos == -1 );
+		return;
 	}
+
+	// Allocate and Load the global 'Glow' Vertex Program. - AReis
+	qglGenProgramsARB( 1, &tr.glowVShader );
+	qglBindProgramARB( GL_VERTEX_PROGRAM_ARB, tr.glowVShader );
+	qglProgramStringARB( GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, ( GLsizei ) strlen( ( char * ) g_strGlowVShaderARB ), g_strGlowVShaderARB );
+
+//	const GLubyte *strErr = qglGetString( GL_PROGRAM_ERROR_STRING_ARB );
+	int iErrPos = 0;
+	qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &iErrPos );
+	assert( iErrPos == -1 );
 
 	// NOTE: I make an assumption here. If you have (current) nvidia hardware, you obviously support register combiners instead of fragment
 	// programs, so use those. The problem with this is that nv30 WILL support fragment shaders, breaking this logic. The good thing is that
@@ -156,7 +193,7 @@ void ARB_InitGlowShaders(void) {
 			qglFinalCombinerInputNV( GL_VARIABLE_D_NV, GL_SPARE1_NV,	GL_UNSIGNED_IDENTITY_NV, GL_RGB );
 		qglEndList();
 	}
-	else if ( qglGenProgramsARB )
+	else
 	{
 		qglGenProgramsARB( 1, &tr.glowPShader );
 		qglBindProgramARB( GL_FRAGMENT_PROGRAM_ARB, tr.glowPShader );
@@ -166,5 +203,30 @@ void ARB_InitGlowShaders(void) {
 		int iErrPos = 0;
 		qglGetIntegerv( GL_PROGRAM_ERROR_POSITION_ARB, &iErrPos );
 		assert( iErrPos == -1 );
+	}
+
+	qglGenProgramsARB(1, &tr.gammaCorrectVtxShader);
+	qglBindProgramARB(GL_VERTEX_PROGRAM_ARB, tr.gammaCorrectVtxShader);
+	qglProgramStringARB(GL_VERTEX_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(gammaCorrectVtxShader), gammaCorrectVtxShader);
+
+	int errorChar;
+	qglGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errorChar);
+	if ( errorChar != -1 )
+	{
+		Com_Printf(S_COLOR_RED "ERROR: Failed to compile gamma correction vertex shader. Error at character %d\n", errorChar);
+		glConfigExt.doGammaCorrectionWithShaders = qfalse;
+	}
+	else
+	{
+		qglGenProgramsARB(1, &tr.gammaCorrectPxShader);
+		qglBindProgramARB(GL_FRAGMENT_PROGRAM_ARB, tr.gammaCorrectPxShader);
+		qglProgramStringARB(GL_FRAGMENT_PROGRAM_ARB, GL_PROGRAM_FORMAT_ASCII_ARB, strlen(gammaCorrectPxShader), gammaCorrectPxShader);
+
+		qglGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errorChar);
+		if ( errorChar != -1 )
+		{
+			Com_Printf(S_COLOR_RED "Failed to compile gamma correction pixel shader. Error at character %d\n", errorChar);
+			glConfigExt.doGammaCorrectionWithShaders = qfalse;
+		}
 	}
 }

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	snd_music.cpp
 //
@@ -25,9 +29,7 @@ This file is part of Jedi Academy.
 
 #include "../qcommon/sstring.h"
 #include <algorithm>
-#ifndef _WIN32
 #include <string>
-#endif
 
 #include "snd_local.h"
 #include "cl_mp3.h"
@@ -81,9 +83,9 @@ struct MusicExitTime_t	// need to declare this way for operator < below
 
 // it's possible for all 3 of these to be empty if it's boss or death music
 //
-typedef vector	<MusicExitPoint_t>	MusicExitPoints_t;
-typedef vector	<MusicExitTime_t>	MusicExitTimes_t;
-typedef map		<sstring_t, float>	MusicEntryTimes_t;	// key eg "marker1"
+typedef std::vector	<MusicExitPoint_t>	MusicExitPoints_t;
+typedef std::vector	<MusicExitTime_t>	MusicExitTimes_t;
+typedef std::map	<sstring_t, float>	MusicEntryTimes_t;	// key eg "marker1"
 
 typedef struct
 {
@@ -94,7 +96,7 @@ typedef struct
 
 } MusicFile_t;
 
-typedef map <sstring_t, MusicFile_t>	MusicData_t;			// string is "explore", "action", "boss" etc
+typedef std::map <sstring_t, MusicFile_t>	MusicData_t;			// string is "explore", "action", "boss" etc
 										MusicData_t* MusicData = NULL;
 // there are now 2 of these, because of the new "uses" keyword...
 //
@@ -347,7 +349,7 @@ static qboolean Music_ParseMusic(CGenericParser2 &Parser, MusicData_t *MusicData
 //
 static char *StripTrailingWhiteSpaceOnEveryLine(char *pText)
 {
-	string strNewText;
+	std::string strNewText;
 
 	while (*pText)
 	{
@@ -939,7 +941,7 @@ qboolean Music_AllowedToTransition( float			fPlayingTimeElapsed,
 
 		// since a MusicExitTimes_t item is a sorted array, we can use the equal_range algorithm...
 		//
-		pair <MusicExitTimes_t::iterator, MusicExitTimes_t::iterator> itp = equal_range( pMusicFile->MusicExitTimes.begin(), pMusicFile->MusicExitTimes.end(), T);
+		std::pair <MusicExitTimes_t::iterator, MusicExitTimes_t::iterator> itp = equal_range( pMusicFile->MusicExitTimes.begin(), pMusicFile->MusicExitTimes.end(), T);
 		if (itp.first != pMusicFile->MusicExitTimes.begin())
 			itp.first--;	// encompass the one before, in case we've just missed an exit point by < fTimeEpsilon
 		if (itp.second!= pMusicFile->MusicExitTimes.end())

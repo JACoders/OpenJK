@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #pragma once
 #if !defined(G2_H_INC)
@@ -26,7 +30,7 @@ class CMiniHeap;
 #define		ENTITY_WIDTH 12
 #define		MODEL_WIDTH	10
 #define		BOLT_WIDTH	10
- 
+
 #define		MODEL_AND	((1<<MODEL_WIDTH)-1)
 #define		BOLT_AND	((1<<BOLT_WIDTH)-1)
 #define		ENTITY_AND	((1<<ENTITY_WIDTH)-1)
@@ -46,7 +50,7 @@ qboolean	G2_SetRootSurface( CGhoul2Info_v &ghoul2, const int modelIndex,const ch
 int			G2_AddSurface(CGhoul2Info *ghoul2, int surfaceNumber, int polyNumber, float BarycentricI, float BarycentricJ, int lod );
 qboolean	G2_RemoveSurface(surfaceInfo_v &slist, const int index);
 const surfaceInfo_t *G2_FindOverrideSurface(int surfaceNum, const surfaceInfo_v &surfaceList);
-int			G2_IsSurfaceLegal(const model_s *, const char *surfaceName, int *flags);
+int			G2_IsSurfaceLegal(const model_s *, const char *surfaceName, uint32_t *flags);
 int			G2_GetParentSurface(CGhoul2Info *ghlInfo, const int index);
 int			G2_GetSurfaceIndex(CGhoul2Info *ghlInfo, const char *surfaceName);
 int			G2_IsSurfaceRendered(CGhoul2Info *ghlInfo, const char *surfaceName, surfaceInfo_v &slist);
@@ -57,9 +61,9 @@ qboolean	G2_Set_Bone_Angles(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char 
 							   const int blendTime, const int currentTime);
 qboolean	G2_Remove_Bone (CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName);
 qboolean	G2_Remove_Bone_Index (boneInfo_v &blist, int index);
-qboolean	G2_Set_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const int startFrame, 
+qboolean	G2_Set_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const int startFrame,
 							 const int endFrame, const int flags, const float animSpeed, const int currentTime, const float setFrame, const int blendTime);
-qboolean	G2_Get_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const int currentTime, 
+qboolean	G2_Get_Bone_Anim(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const int currentTime,
 						  float *currentFrame, int *startFrame, int *endFrame, int *flags, float *retAnimSpeed);
 qboolean	G2_Get_Bone_Anim_Range(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, int *startFrame, int *endFrame);
 qboolean	G2_Get_Bone_Anim_Range_Index(boneInfo_v &blist, const int boneIndex, int *startFrame, int *endFrame);
@@ -72,7 +76,7 @@ qboolean	G2_Stop_Bone_Angles(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char
 void		G2_Animate_Bone_List(CGhoul2Info_v &ghoul2, const int currentTime, const int index,CRagDollUpdateParams *params);
 //rww - RAGDOLL_END
 
-void		G2_Init_Bone_List(boneInfo_v &blist);
+void		G2_Init_Bone_List(boneInfo_v &blist, int numBones);
 int			G2_Find_Bone_In_List(boneInfo_v &blist, const int boneNum);
 qboolean	G2_Set_Bone_Angles_Matrix(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName, const mdxaBone_t &matrix,
 									  const int flags, const int blendTime, const int currentTime);
@@ -82,13 +86,13 @@ qboolean	G2_Set_Bone_Angles_Index(CGhoul2Info *ghlInfo, boneInfo_v &blist, const
 							const Eorientations pitch, const Eorientations roll,
 							const int blendTime, const int currentTime);
 qboolean	G2_Set_Bone_Angles_Matrix_Index(boneInfo_v &blist, const int index,
-								   const mdxaBone_t &matrix, const int flags, 
+								   const mdxaBone_t &matrix, const int flags,
 								   const int blendTime, const int currentTime);
 qboolean	G2_Stop_Bone_Anim_Index(boneInfo_v &blist, const int index);
 qboolean	G2_Stop_Bone_Angles_Index(boneInfo_v &blist, const int index);
-qboolean	G2_Set_Bone_Anim_Index(boneInfo_v &blist, const int index, const int startFrame, 
+qboolean	G2_Set_Bone_Anim_Index(boneInfo_v &blist, const int index, const int startFrame,
 						  const int endFrame, const int flags, const float animSpeed, const int currentTime, const float setFrame, const int blendTime,int numFrames);
-qboolean	G2_Get_Bone_Anim_Index( boneInfo_v &blist, const int index, const int currentTime, 
+qboolean	G2_Get_Bone_Anim_Index( boneInfo_v &blist, const int index, const int currentTime,
 						  float *currentFrame, int *startFrame, int *endFrame, int *flags, float *retAnimSpeed,int numFrames);
 
 // misc functions G2_misc.cpp

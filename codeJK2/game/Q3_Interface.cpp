@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // ICARUS Engine Interface File
 //
@@ -23,12 +27,7 @@ This file is part of Jedi Knight 2.
 //
 //	-- jweier
 
-// leave this line at the top for PCH reasons...
 #include "g_headers.h"
-
-
-
-
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -451,7 +450,7 @@ static void Q3_CenterPrint ( const char *format, ... )
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	// FIXME: added '!' so you can print something that's hasn't been precached, '@' searches only for precache text
@@ -705,7 +704,7 @@ static char *Q3_GetAnimBoth( gentity_t *ent )
 		return NULL;
 	}
 
-	if ( stricmp( lowerName, upperName ) )
+	if ( Q_stricmp( lowerName, upperName ) )
 	{
 #ifdef _DEBUG	// sigh, cut down on tester reports that aren't important
 		Q3_DebugPrint( WL_WARNING, "Q3_GetAnimBoth: legs and torso animations did not match : returning legs\n" );
@@ -1020,24 +1019,24 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	int soundHandle = G_SoundIndex( (char *) finalName );
 	bool bBroadcast = false;
 
-	if ( ( stricmp( channel, "CHAN_ANNOUNCER" ) == 0 ) || (ent->classname && Q_stricmp("target_scriptrunner", ent->classname ) == 0) ) {
+	if ( ( Q_stricmp( channel, "CHAN_ANNOUNCER" ) == 0 ) || (ent->classname && Q_stricmp("target_scriptrunner", ent->classname ) == 0) ) {
 		bBroadcast = true;
 	}
 
 
 	// moved here from further down so I can easily check channel-type without code dup...
 	//
-	if ( stricmp( channel, "CHAN_VOICE" ) == 0 )
+	if ( Q_stricmp( channel, "CHAN_VOICE" ) == 0 )
 	{
 		voice_chan = CHAN_VOICE;
 		type_voice = qtrue;
 	}
-	else if ( stricmp( channel, "CHAN_VOICE_ATTEN" ) == 0 )
+	else if ( Q_stricmp( channel, "CHAN_VOICE_ATTEN" ) == 0 )
 	{
 		voice_chan = CHAN_VOICE_ATTEN;
 		type_voice = qtrue;
 	}
-	else if ( stricmp( channel, "CHAN_VOICE_GLOBAL" ) == 0 ) // this should broadcast to everyone, put only casue animation on G_SoundOnEnt...
+	else if ( Q_stricmp( channel, "CHAN_VOICE_GLOBAL" ) == 0 ) // this should broadcast to everyone, put only casue animation on G_SoundOnEnt...
 	{
 		voice_chan = CHAN_VOICE_GLOBAL;
 		type_voice = qtrue;
@@ -6858,58 +6857,58 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_IGNOREPAIN:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetIgnorePain( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetIgnorePain( entID, qfalse);
 		break;
 
 	case SET_IGNOREENEMIES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetIgnoreEnemies( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetIgnoreEnemies( entID, qfalse);
 		break;
 
 	case SET_IGNOREALERTS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetIgnoreAlerts( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetIgnoreAlerts( entID, qfalse);
 		break;
 		
 	case SET_DONTSHOOT:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDontShoot( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetDontShoot( entID, qfalse);
 		break;
 	
 	case SET_DONTFIRE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDontFire( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetDontFire( entID, qfalse);
 		break;
 
 	case SET_LOCKED_ENEMY:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetLockedEnemy( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetLockedEnemy( entID, qfalse);
 		break;
 
 	case SET_NOTARGET:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoTarget( entID, qtrue);
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 			Q3_SetNoTarget( entID, qfalse);
 		break;
 
 	case SET_LEAN:
-		if(!stricmp("right", ((char *)data)))
+		if(!Q_stricmp("right", ((char *)data)))
 			Q3_SetLean( entID, LEAN_RIGHT);
-		else if(!stricmp("left", ((char *)data)))
+		else if(!Q_stricmp("left", ((char *)data)))
 			Q3_SetLean( entID, LEAN_LEFT);
 		else
 			Q3_SetLean( entID, LEAN_NONE);
@@ -7016,7 +7015,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_NO_MINDTRICK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoMindTrick( entID, qtrue);
 		else
 			Q3_SetNoMindTrick( entID, qfalse);
@@ -7033,133 +7032,133 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_CROUCHED:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetCrouched( entID, qtrue);
 		else
 			Q3_SetCrouched( entID, qfalse);
 		break;
 
 	case SET_WALKING:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetWalking( entID, qtrue);	
 		else
 			Q3_SetWalking( entID, qfalse);	
 		break;
 
 	case SET_RUNNING:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetRunning( entID, qtrue);	
 		else
 			Q3_SetRunning( entID, qfalse);	
 		break;
 
 	case SET_CHASE_ENEMIES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetChaseEnemies( entID, qtrue);	
 		else
 			Q3_SetChaseEnemies( entID, qfalse);	
 		break;
 
 	case SET_LOOK_FOR_ENEMIES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetLookForEnemies( entID, qtrue);	
 		else
 			Q3_SetLookForEnemies( entID, qfalse);	
 		break;
 
 	case SET_FACE_MOVE_DIR:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetFaceMoveDir( entID, qtrue);	
 		else
 			Q3_SetFaceMoveDir( entID, qfalse);	
 		break;
 
 	case SET_ALT_FIRE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetAltFire( entID, qtrue);	
 		else
 			Q3_SetAltFire( entID, qfalse);	
 		break;
 
 	case SET_DONT_FLEE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDontFlee( entID, qtrue);	
 		else
 			Q3_SetDontFlee( entID, qfalse);	
 		break;
 
 	case SET_FORCED_MARCH:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetForcedMarch( entID, qtrue);	
 		else
 			Q3_SetForcedMarch( entID, qfalse);	
 		break;
 
 	case SET_NO_RESPONSE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoResponse( entID, qtrue);	
 		else
 			Q3_SetNoResponse( entID, qfalse);	
 		break;
 
 	case SET_NO_COMBAT_TALK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetCombatTalk( entID, qtrue);	
 		else
 			Q3_SetCombatTalk( entID, qfalse);	
 		break;
 
 	case SET_NO_ALERT_TALK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetAlertTalk( entID, qtrue);	
 		else
 			Q3_SetAlertTalk( entID, qfalse);	
 		break;
 
 	case SET_USE_CP_NEAREST:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetUseCpNearest( entID, qtrue);	
 		else
 			Q3_SetUseCpNearest( entID, qfalse);	
 		break;
 
 	case SET_NO_FORCE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoForce( entID, qtrue);	
 		else
 			Q3_SetNoForce( entID, qfalse);	
 		break;
 
 	case SET_NO_ACROBATICS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoAcrobatics( entID, qtrue);	
 		else
 			Q3_SetNoAcrobatics( entID, qfalse);	
 		break;
 
 	case SET_USE_SUBTITLES:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetUseSubtitles( entID, qtrue);	
 		else
 			Q3_SetUseSubtitles( entID, qfalse);	
 		break;
 
 	case SET_NO_FALLTODEATH:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoFallToDeath( entID, qtrue);	
 		else
 			Q3_SetNoFallToDeath( entID, qfalse);	
 		break;
 
 	case SET_DISMEMBERABLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetDismemberable( entID, qtrue);	
 		else
 			Q3_SetDismemberable( entID, qfalse);	
 		break;
 
 	case SET_MORELIGHT:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetMoreLight( entID, qtrue);	
 		else
 			Q3_SetMoreLight( entID, qfalse);	
@@ -7175,28 +7174,28 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_UNDYING:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetUndying( entID, qtrue);	
 		else
 			Q3_SetUndying( entID, qfalse);	
 		break;
 
 	case SET_INVINCIBLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetInvincible( entID, qtrue);	
 		else
 			Q3_SetInvincible( entID, qfalse);	
 		break;
 
 	case SET_NOAVOID:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 			Q3_SetNoAvoid( entID, qtrue);	
 		else
 			Q3_SetNoAvoid( entID, qfalse);	
 		break;
 
 	case SET_SOLID:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			if ( !Q3_SetSolid( entID, qtrue) )
 			{
@@ -7211,49 +7210,49 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_INVISIBLE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetInvisible( entID, qtrue );
 		else
 			Q3_SetInvisible( entID, qfalse );
 		break;
 
 	case SET_VAMPIRE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetVampire( entID, qtrue );
 		else
 			Q3_SetVampire( entID, qfalse );
 		break;
 
 	case SET_FORCE_INVINCIBLE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetForceInvincible( entID, qtrue );
 		else
 			Q3_SetForceInvincible( entID, qfalse );
 		break;
 
 	case SET_GREET_ALLIES:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetGreetAllies( entID, qtrue );
 		else
 			Q3_SetGreetAllies( entID, qfalse );
 		break;
 
 	case SET_PLAYER_LOCKED:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetPlayerLocked( entID, qtrue );
 		else
 			Q3_SetPlayerLocked( entID, qfalse );
 		break;
 		
 	case SET_LOCK_PLAYER_WEAPONS:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetLockPlayerWeapons( entID, qtrue );
 		else
 			Q3_SetLockPlayerWeapons( entID, qfalse );
 		break;
 
 	case SET_NO_IMPACT_DAMAGE:
-		if( !stricmp("true", ((char *)data)) )
+		if( !Q_stricmp("true", ((char *)data)) )
 			Q3_SetNoImpactDamage( entID, qtrue );
 		else
 			Q3_SetNoImpactDamage( entID, qfalse );
@@ -7335,7 +7334,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_PLAYER_USABLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetPlayerUsable(entID, qtrue);
 		}
@@ -7365,7 +7364,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 		
 	case SET_LOOP_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetLoopAnim(entID, qtrue);
 		}
@@ -7376,7 +7375,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_INTERFACE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetInterface(entID, "1");
 		}
@@ -7388,7 +7387,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_SHIELDS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetShields(entID, qtrue);
 		}
@@ -7399,7 +7398,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 	
 	case SET_SABERACTIVE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetSaberActive( entID, qtrue );
 		}
@@ -7410,7 +7409,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_ADJUST_AREA_PORTALS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetAdjustAreaPortals( entID, qtrue );
 		}
@@ -7421,7 +7420,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 	
 	case SET_DMG_BY_HEAVY_WEAP_ONLY:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetDmgByHeavyWeapOnly( entID, qtrue );
 		}
@@ -7432,7 +7431,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_SHIELDED:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetShielded( entID, qtrue );
 		}
@@ -7443,7 +7442,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_NO_GROUPS:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetNoGroups( entID, qtrue );
 		}
@@ -7454,31 +7453,31 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 		break;
 
 	case SET_FIRE_WEAPON:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetFireWeapon( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetFireWeapon( entID, qfalse);
 		}
 		break;
 
 	case SET_INACTIVE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetInactive( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetInactive( entID, qfalse);
 		}
-		else if(!stricmp("unlocked", ((char *)data)))
+		else if(!Q_stricmp("unlocked", ((char *)data)))
 		{
 extern void UnLockDoors(gentity_t *const ent);
 			UnLockDoors(&g_entities[entID]);
 		}
-		else if(!stricmp("locked", ((char *)data)))
+		else if(!Q_stricmp("locked", ((char *)data)))
 		{
 extern void LockDoors(gentity_t *const ent);
 			LockDoors(&g_entities[entID]);
@@ -7494,18 +7493,18 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_FUNC_USABLE_VISIBLE:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetFuncUsableVisible( entID, qtrue);
 		}
-		else if(!stricmp("false", ((char *)data)))
+		else if(!Q_stricmp("false", ((char *)data)))
 		{
 			Q3_SetFuncUsableVisible( entID, qfalse);
 		}
 		break;
 
 	case SET_NO_KNOCKBACK:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetNoKnockback(entID, qtrue);
 		}
@@ -7527,7 +7526,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_VIDEO_FADE_IN:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			gi.cvar_set("cl_VidFadeUp", "1");
 		}
@@ -7538,7 +7537,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_VIDEO_FADE_OUT:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			gi.cvar_set("cl_VidFadeDown", "1");
 		}
@@ -7608,7 +7607,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_DISABLE_SHADER_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetDisableShaderAnims( entID, qtrue);
 		}
@@ -7619,7 +7618,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_SHADER_ANIM:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			Q3_SetShaderAnim( entID, qtrue);
 		}
@@ -7638,7 +7637,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_HUD:
-		if(!stricmp("true", ((char *)data)))
+		if(!Q_stricmp("true", ((char *)data)))
 		{
 			gi.cvar_set("cg_drawHUD", "1");
 		}
@@ -7689,11 +7688,11 @@ static void Q3_Kill( int entID, const char *name )
 	gentity_t	*victim = NULL;
 	int			o_health;
 
-	if( !stricmp( name, "self") )
+	if( !Q_stricmp( name, "self") )
 	{
 		victim = ent;
 	}
-	else if( !stricmp( name, "enemy" ) )
+	else if( !Q_stricmp( name, "enemy" ) )
 	{
 		victim = ent->enemy;
 	}
@@ -8979,7 +8978,7 @@ static int Q3_Evaluate( int p1Type, const char *p1, int p2Type, const char *p2, 
 
 		case TK_STRING:
 		case TK_IDENTIFIER:
-			return (int) !stricmp( c1, c2 );	//NOTENOTE: The script uses proper string comparison logic (ex. ( a == a ) == true )
+			return (int) !Q_stricmp( c1, c2 );	//NOTENOTE: The script uses proper string comparison logic (ex. ( a == a ) == true )
 			break;
 
 		default:
@@ -9079,7 +9078,7 @@ static int Q3_Evaluate( int p1Type, const char *p1, int p2Type, const char *p2, 
 
 		case TK_STRING:
 		case TK_IDENTIFIER:
-			return (int) stricmp( c1, c2 );
+			return (int) Q_stricmp( c1, c2 );
 			break;
 
 		default:
@@ -9144,7 +9143,7 @@ void Q3_DebugPrint( int level, const char *format, ... )
 	char		text[1024];
 
 	va_start (argptr, format);
-	vsprintf (text, format, argptr);
+	Q_vsnprintf (text, sizeof(text), format, argptr);
 	va_end (argptr);
 
 	//Add the color formatting
@@ -9193,7 +9192,7 @@ static void Q3_Play( int taskID, int entID, const char *type, const char *name )
 {
 	gentity_t *ent = &g_entities[entID];
 
-	if ( !stricmp( type, "PLAY_ROFF" ) )
+	if ( !Q_stricmp( type, "PLAY_ROFF" ) )
 	{
 		// Try to load the requested ROFF
 		if ( G_LoadRoff( name ) )

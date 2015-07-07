@@ -1,7 +1,4 @@
 #ifdef COMPILE_ME
-#ifdef _MSC_VER
-#pragma warning(disable:4206)	// nonstandard extension used : translation unit is empty
-#endif
 /*____________________________________________________________________________
 
 	FreeAmp - The Free MP3 Player
@@ -44,12 +41,6 @@ mod 11/15/95 for Layer I
 
 =========================================================*/
 /*-- compiler bug, floating constant overflow w/ansi --*/
-#ifdef _MSC_VER
-#pragma warning(disable:4056)
-#endif
-
-
-
 
 static const long steps[18] =
 {

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // Interpreter.h
@@ -111,6 +133,7 @@ enum
 };
 
 #ifdef __cplusplus
+
 typedef struct variable_s
 {
 	char	name[MAX_VAR_NAME];
@@ -118,8 +141,8 @@ typedef struct variable_s
 	void	*data;
 } variable_t;
 
-typedef map< string, variable_t * >	variable_m;
-typedef vector < variable_t * > variable_v;
+typedef std::map< std::string, variable_t * >	variable_m;
+typedef std::vector < variable_t * > variable_v;
 
 //CInterpreter
 
@@ -208,8 +231,8 @@ protected:
 	variable_v	m_vars;
 	variable_m	m_varMap;
 
-	string	m_sCurrentLine;				// used in IBIze error reporting for more clarity
-	string	m_sCurrentFile;				// full-pathed name of .TXT file (needed because of above, which affects parsestreams)
+	std::string	m_sCurrentLine;				// used in IBIze error reporting for more clarity
+	std::string	m_sCurrentFile;				// full-pathed name of .TXT file (needed because of above, which affects parsestreams)
 	int		m_iCurrentLine;				// also needed now because of 'm_sCurrentLine'
 	int		m_iBadCBlockNumber;			// used for final app return code (NZ = err)
 

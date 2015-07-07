@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // world.c -- world query functions
 
 #include "server.h"
@@ -511,9 +534,7 @@ static float VectorDistance(vec3_t p1, vec3_t p2)
 	return VectorLength(dir);
 }
 #endif
-#ifdef _MSC_VER
-#pragma warning(disable : 4701) //local variable used without having been init
-#endif
+
 static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 	static int	touchlist[MAX_GENTITIES];
 	int			i, num;
@@ -782,9 +803,6 @@ Ghoul2 Insert End
 */
 	}
 }
-#ifdef _MSC_VER
-#pragma warning(default : 4701) //local variable used without having been init
-#endif
 
 /*
 ==================

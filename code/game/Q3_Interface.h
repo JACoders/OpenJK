@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __Q3_INTERFACE__
 #define __Q3_INTERFACE__
@@ -133,6 +137,10 @@ typedef enum //# setType_e
 	SET_FACEBLINK,		//## %f="0.0" # Set face to Blink expression for number of seconds
 	SET_FACEBLINKFROWN,	//## %f="0.0" # Set face to Blinkfrown expression for number of seconds
 	SET_FACEFROWN,		//## %f="0.0" # Set face to Frown expression for number of seconds
+	SET_FACESMILE,		//## %f="0.0" # Set face to Smile expression for number of seconds
+	SET_FACEGLAD,		//## %f="0.0" # Set face to Glad expression for number of seconds
+	SET_FACEHAPPY,		//## %f="0.0" # Set face to Happy expression for number of seconds
+	SET_FACESHOCKED,		//## %f="0.0" # Set face to Shocked expression for number of seconds
 	SET_FACENORMAL,		//## %f="0.0" # Set face to Normal expression for number of seconds
 	SET_FACEEYESCLOSED,	//## %f="0.0" # Set face to Eyes closed
 	SET_FACEEYESOPENED,	//## %f="0.0" # Set face to Eyes open
@@ -544,12 +552,12 @@ typedef struct pscript_s
 } pscript_t;
 
 // STL map type definitions for the Entity List and Script Buffer List.
-typedef	map < string, int, less<string>, allocator<int> >		entitylist_t;
-typedef map < string, pscript_t*, less<string>, allocator<pscript_t*> >	scriptlist_t;
+typedef	std::map < std::string, int >		entitylist_t;
+typedef std::map < std::string, pscript_t* >	scriptlist_t;
 
 // STL map type definitions for the variable containers.
-typedef map < string, string >		varString_m;
-typedef map < string, float >		varFloat_m;
+typedef std::map < std::string, std::string >		varString_m;
+typedef std::map < std::string, float >		varFloat_m;
 
 
 // The Quake 3 Game Interface Class for Quake3 and Icarus to use.

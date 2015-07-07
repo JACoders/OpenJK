@@ -9,13 +9,13 @@ The purpose of this project is to maintain and improve the Jedi Academy and Jedi
 
 Major enhancement changes are very low priority at this time unless patches are made available and which do not alter the core functionality of gameplay or the stock renderer itself.
 
-Please use discretion when making issue requests on github. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
+Please use discretion when making issue requests on GitHub. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for support queries, discussions, and feature requests.
 
 ## Jedi Outcast Support ##
 
-_Do not make issues regarding Jedi Outcast support problems at this time.  It is considered mostly unfinished, broken and use at your own risk!_
+_Do not make issues regarding Jedi Outcast problems at this time. It is considered mostly unfinished, broken, and to be used at your own risk!_
 
-There is no Multiplayer code for JK2MP at all on our repository at this time.  The Singleplayer support must be explicitly turned on in your own compile.  The prebuilt versions will not include this.
+There is no Multiplayer code for JK2MP at all on our repository at this time. The Single-player support must be explicitly turned on in your own compile. The pre-built versions will not include this.
 
 ## 64-bit Support
 
@@ -43,6 +43,7 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 
 ## Dependencies ##
 
+* SDL2 (2.0.3+) (included on Windows)
 * OpenGL
 * OpenAL (included on Windows)
 * libpng (included on Windows)
@@ -51,23 +52,23 @@ First, install Jedi Academy. If you don't already own the game you can buy it fr
 
 ## Dedicated Server ##
 
-In order to run dedicated server, you must use the openjkded binary, running dedicated from the main executable is currently not allowed because it is broken with the addition of modular renderer.
+In order to run a dedicated server, you must use the openjkded binary. Running dedicated from the main executable is currently not possible because it was broken with the addition of modular renderer.
 
 ## Developer Notes ##
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
-Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code.
+Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code under the same GPLv2 licence.
 
 ### If you wish to contribute to OpenJK, please do the following ###
-* [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
+* [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Create a new branch and make your changes
 * Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (JACoders/OpenJK)
 
 ### If you wish to base your work off OpenJK (mod or engine) ###
-* [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
+* [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Change the GAMEVERSION define in codemp/game/g_local.h from "OpenJK" to your project name
-* If you make a nice change, please consider backporting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
+* If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
 
 ### Reserved renderer names ###
 * rd-vanilla (JA's original renderer)
@@ -79,8 +80,8 @@ Please be aware of the implications of the GPLv2 licence. In short, be prepared 
 * rd-palpatine (Maintainer: mrwonko)
 * rd-sidious (Maintainer: mrwonko)
 
-### Engine "hax" ###
-* You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
+### Engine hacks in existing mods ###
+Mods which make use of runtime memory patches may fail to run under OpenJK, and in the worst case will cause the program to crash. Consider forking OpenJK and adding your engine modifications directly, or applying these patches only if you are running on the retail engine.
 
 ### Links of Interest ###
 * [Buildbot](http://jk.xd.cm/)

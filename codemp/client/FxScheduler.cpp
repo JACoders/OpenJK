@@ -1,13 +1,33 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "FxScheduler.h"
 #include "qcommon/q_shared.h"
 
-#ifndef _WIN32
 #include <algorithm>
 #include <cmath>
 #include <string>
-#endif
 
 CFxScheduler	theFxScheduler;
 
@@ -216,7 +236,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 		{
 			// Clear the effect names, but first get the name of the effect to preserve,
 			// and restore it after clearing.
-			string str;
+			std::string str;
 			TEffectID::iterator iter;
 
 			for (iter = mEffectIDs.begin(); iter != mEffectIDs.end(); ++iter)
@@ -257,12 +277,9 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	char sfile[MAX_QPATH];
 
 	COM_StripExtension( file, sfile, sizeof( sfile ) );
-#ifdef _WIN32
-	strlwr(sfile);
-#else
-	string s = sfile;
+
+	std::string s = sfile;
 	transform(s.begin(), s.end(), s.begin(), ::tolower);
-#endif
 
 	Com_DPrintf("Registering effect : %s\n", sfile);
 
@@ -283,10 +300,10 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	char			*bufParse = 0;
 
 	// if our file doesn't have an extension, add one
-	string finalFilename = file;
-	string effectsSubstr = finalFilename.substr(0, 7);
+	std::string finalFilename = file;
+	std::string effectsSubstr = finalFilename.substr(0, 7);
 
-	if (finalFilename.find('.') == string::npos)
+	if (finalFilename.find('.') == std::string::npos)
 	{
 		// didn't find an extension so add one
 		finalFilename += ".efx";
@@ -296,7 +313,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	if (effectsSubstr.compare("effects") != 0)
 	{
 		//theFxHelper.Print("Hey!!! '%s' should be pathed from the base directory!!!\n", finalFilename.c_str());
-		string strTemp = finalFilename;
+		std::string strTemp = finalFilename;
 		finalFilename = "effects/";
 		finalFilename += strTemp;
 	}
@@ -994,7 +1011,7 @@ void CFxScheduler::PlayEffect( const char *file, vec3_t origin, int vol, int rad
 	char	sfile[MAX_QPATH];
 
 	// Get an extenstion stripped version of the file
-	COM_StripExtension( file, sfile );
+	COM_StripExtension( file, sfile, sizeof(sfile) );
 
 	PlayEffect( mEffectIDs[sfile], origin, vol, rad );
 }

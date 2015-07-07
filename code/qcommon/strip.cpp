@@ -1,46 +1,34 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifdef JK2_MODE
 // this include must remain at the top of every CPP file
 #include "../server/server.h"
 #include "q_shared.h"
 #include "qcommon.h"
-
-
 #include "stringed_ingame.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4510)	//default ctor could not be generated
-#pragma warning(disable:4511)
-#pragma warning(disable:4512)
-#pragma warning(disable:4610)	//user def ctor required
-#pragma warning(disable:4663)
-
-#pragma warning (push, 3)		//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <string>
 #include <list>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning(disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 
 cvar_t	*sp_language;
 static cvar_t	*sp_show_strip;
@@ -98,7 +86,7 @@ static cvar_t	*sp_leet;
 class cStringPackageID
 {
 private:
-	string	name;
+	std::string	name;
 	byte	reg;
 public:
 	cStringPackageID(const char *in_name, byte in_reg) { name = in_name; reg = in_reg; }
@@ -112,7 +100,7 @@ class cStringPackage
 protected:
 	unsigned char	ID;
 	unsigned char	Registration;
-	string			name;
+	std::string			name;
 	char			*Reference;
 
 public:
@@ -143,7 +131,7 @@ class cStringPackageSingle : public cStringPackage
 {
 private:
 	cStringsSingle		Strings[MAX_STRINGS];
-	map<string, int>	ReferenceTable;
+	std::map<std::string, int>	ReferenceTable;
 
 public:
 					cStringPackageSingle(const char *in, unsigned char initID = 0, char *initReference = NULL);
@@ -918,7 +906,7 @@ cStringsSingle *cStringPackageSingle::FindString(char *ReferenceLookup)
 
 int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 {
-	map<string, int>::iterator	i;
+	std::map<std::string, int>::iterator	i;
 	int							size;
 
 	if (!Reference)
@@ -937,7 +925,7 @@ int cStringPackageSingle::FindStringID(const char *ReferenceLookup)
 		return -1;
 	}
 
-	i = ReferenceTable.find(string(ReferenceLookup + size + 1));
+	i = ReferenceTable.find(std::string(ReferenceLookup + size + 1));
 	if (i != ReferenceTable.end())
 	{
 		return (*i).second;
@@ -971,7 +959,7 @@ bool cStringPackageSingle::UnderstandToken(char *&Data, int &Size, int token, ch
 				ReferenceLookup = Strings[pos].GetReference();
 				if (ReferenceLookup)
 				{
-					ReferenceTable[string(ReferenceLookup)] = pos;
+					ReferenceTable[std::string(ReferenceLookup)] = pos;
 				}
 			}
 			return true;
@@ -983,8 +971,8 @@ bool cStringPackageSingle::UnderstandToken(char *&Data, int &Size, int token, ch
 
 
 // A map of loaded string packages
-map<string, cStringPackageSingle *>		JK2SP_ListByName;
-map<byte, cStringPackageSingle *>		JK2SP_ListByID;
+std::map<std::string, cStringPackageSingle *>		JK2SP_ListByName;
+std::map<byte, cStringPackageSingle *>		JK2SP_ListByID;
 
 
 // Registration
@@ -1005,7 +993,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 	char											Package[MAX_QPATH];
 	int												size;
 	cStringPackageSingle							*new_sp;
-	map<string, cStringPackageSingle *>::iterator	i;
+	std::map<std::string, cStringPackageSingle *>::iterator	i;
 
 
 	assert(JK2SP_ListByName.size() == JK2SP_ListByID.size());
@@ -1061,8 +1049,8 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 // Unload all packages with the relevant registration bits
 void JK2SP_Unload(unsigned char Registration)
 {
-	map<string, cStringPackageSingle *>::iterator	i, next;
-	map<byte, cStringPackageSingle *>::iterator		id;
+	std::map<std::string, cStringPackageSingle *>::iterator	i, next;
+	std::map<byte, cStringPackageSingle *>::iterator		id;
 
 	assert(JK2SP_ListByName.size() == JK2SP_ListByID.size());
 
@@ -1088,7 +1076,7 @@ void JK2SP_Unload(unsigned char Registration)
 
 int JK2SP_GetStringID(const char *inReference)
 {
-	map<unsigned char,cStringPackageSingle *>::iterator	i;
+	std::map<unsigned char,cStringPackageSingle *>::iterator	i;
 	int													ID;
 	char Reference[MAX_QPATH];
 	Q_strncpyz(Reference, inReference, MAX_QPATH);
@@ -1120,7 +1108,7 @@ cStringsSingle *JK2SP_GetString(unsigned short ID)
 {
 	cStringPackageSingle								*sp;
 	cStringsSingle										*string;
-	map<unsigned char,cStringPackageSingle *>::iterator	i;
+	std::map<unsigned char,cStringPackageSingle *>::iterator	i;
 
 	i = JK2SP_ListByID.find(SP_GET_PACKAGE(ID));
 	if (i == JK2SP_ListByID.end())
@@ -1158,7 +1146,7 @@ cStringsSingle *JK2SP_GetString(const char *Reference)
 const char *JK2SP_GetReferenceText(unsigned short ID, const char *&psPackageName, const char *&psPackageReference, const char *&psText)
 {
 	cStringPackageSingle *sp;
-	map<unsigned char,cStringPackageSingle *>::iterator	i;
+	std::map<unsigned char,cStringPackageSingle *>::iterator	i;
 
 	i = JK2SP_ListByID.find(SP_GET_PACKAGE(ID));
 	if (i == JK2SP_ListByID.end())
@@ -1219,9 +1207,9 @@ const char *JK2SP_GetStringTextString(const char *Reference)
 
 static void JK2SP_UpdateLanguage(void)
 {
-	map<unsigned char, cStringPackageSingle *>::iterator	it;
-	list<cStringPackageID>									sps;
-	list<cStringPackageID>::iterator						spit;
+	std::map<unsigned char, cStringPackageSingle *>::iterator	it;
+	std::list<cStringPackageID>									sps;
+	std::list<cStringPackageID>::iterator						spit;
 
 	// Grab all SP ids
 	for(it = JK2SP_ListByID.begin(); it != JK2SP_ListByID.end(); it++)

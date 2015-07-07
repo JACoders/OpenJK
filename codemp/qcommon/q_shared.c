@@ -1,5 +1,27 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // q_shared.c -- stateless support routines that are included in each code dll
 #include "q_shared.h"
 
@@ -931,7 +953,6 @@ Safe strncpy that ensures a trailing zero
 =============
 */
 void Q_strncpyz( char *dest, const char *src, int destsize ) {
-	// bk001129 - also NULL dest
 	if ( !dest ) {
 		Com_Error( ERR_FATAL, "Q_strncpyz: NULL dest" );
 		return;
@@ -952,17 +973,14 @@ void Q_strncpyz( char *dest, const char *src, int destsize ) {
 int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 
-	// bk001129 - moved in 1.17 fix not in id codebase
-        if ( s1 == NULL ) {
-           if ( s2 == NULL )
-             return 0;
-           else
-             return -1;
-        }
-        else if ( s2==NULL )
-          return 1;
-
-
+	if ( s1 == NULL ) {
+		if ( s2 == NULL )
+			return 0;
+		else
+			return -1;
+	}
+	else if ( s2==NULL )
+		return 1;
 
 	do {
 		c1 = *s1++;
@@ -1011,7 +1029,6 @@ int Q_stricmp (const char *s1, const char *s2) {
 	return (s1 && s2) ? Q_stricmpn (s1, s2, 99999) : -1;
 }
 
-
 char *Q_strlwr( char *s1 ) {
     char	*s;
 
@@ -1049,33 +1066,32 @@ void Q_strcat( char *dest, int size, const char *src ) {
 /*
 * Find the first occurrence of find in s.
 */
-const char *Q_stristr( const char *s, const char *find)
-{
-  char c, sc;
-  size_t len;
+const char *Q_stristr( const char *s, const char *find ) {
+	char c, sc;
+	size_t len;
 
-  if ((c = *find++) != 0)
-  {
-    if (c >= 'a' && c <= 'z')
-    {
-      c -= ('a' - 'A');
-    }
-    len = strlen(find);
-    do
-    {
-      do
-      {
-        if ((sc = *s++) == 0)
-          return NULL;
-        if (sc >= 'a' && sc <= 'z')
-        {
-          sc -= ('a' - 'A');
-        }
-      } while (sc != c);
-    } while (Q_stricmpn(s, find, len) != 0);
-    s--;
-  }
-  return s;
+	if ((c = *find++) != 0)
+	{
+		if (c >= 'a' && c <= 'z')
+		{
+			c -= ('a' - 'A');
+		}
+		len = strlen(find);
+		do
+		{
+			do
+			{
+				if ((sc = *s++) == 0)
+					return NULL;
+				if (sc >= 'a' && sc <= 'z')
+				{
+					sc -= ('a' - 'A');
+				}
+			} while (sc != c);
+		} while (Q_stricmpn(s, find, len) != 0);
+		s--;
+	}
+	return s;
 }
 
 int Q_PrintStrlen( const char *string ) {
@@ -1724,4 +1740,16 @@ char *Com_SkipTokens( char *s, int numTokens, char *sep ) {
 		return p;
 	else
 		return s;
+}
+
+qboolean Q_InBitflags( const uint32_t *bits, int index, uint32_t bitsPerByte ) {
+	return ( bits[index / bitsPerByte] & (1 << (index % bitsPerByte)) ) ? qtrue : qfalse;
+}
+
+void Q_AddToBitflags( uint32_t *bits, int index, uint32_t bitsPerByte ) {
+	bits[index / bitsPerByte] |= (1 << (index % bitsPerByte));
+}
+
+void Q_RemoveFromBitflags( uint32_t *bits, int index, uint32_t bitsPerByte ) {
+	bits[index / bitsPerByte] &= ~(1 << (index % bitsPerByte));
 }

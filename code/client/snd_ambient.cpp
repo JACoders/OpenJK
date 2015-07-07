@@ -1,30 +1,28 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Ambient Sound System (ASS!)
-
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
-#ifdef _MSC_VER
-#pragma warning ( disable : 4710 )	//not inlined
-#endif
 #include "client.h"
 #include "snd_ambient.h"
 #include "snd_local.h"
@@ -56,7 +54,7 @@ static int		parsePos		= 0;
 static char	tempBuffer[1024];
 
 //NOTENOTE: Be sure to change the mirrored code in g_spawn.cpp, and cg_main.cpp
-typedef	map<sstring_t, unsigned char>	namePrecache_m;
+typedef	std::map<sstring_t, unsigned char>	namePrecache_m;
 static namePrecache_m	*pMap;
 
 // Used for enum / string matching
@@ -92,8 +90,8 @@ static const char	*keywordNames[NUM_AS_KEYWORDS]=
 
 CSetGroup::CSetGroup(void)
 {
-	m_ambientSets = new vector<ambientSet_t*>;
-	m_setMap = new map<sstring_t, ambientSet_t*>;
+	m_ambientSets = new std::vector<ambientSet_t*>;
+	m_setMap = new std::map<sstring_t, ambientSet_t*>;
 	m_numSets = 0;
 }
 
@@ -112,7 +110,7 @@ Free
 
 void CSetGroup::Free( void )
 {
-	vector<ambientSet_t *>::iterator	ai;
+	std::vector<ambientSet_t *>::iterator	ai;
 
 	for ( ai = m_ambientSets->begin(); ai != m_ambientSets->end(); ai++ )
 	{
@@ -122,8 +120,8 @@ void CSetGroup::Free( void )
 	//Do this in place of clear() so it *really* frees the memory.
 	delete m_ambientSets;
 	delete m_setMap;
-	m_ambientSets = new vector<ambientSet_t*>;
-	m_setMap = new map<sstring_t, ambientSet_t*>;
+	m_ambientSets = new std::vector<ambientSet_t*>;
+	m_setMap = new std::map<sstring_t, ambientSet_t*>;
 
 	m_numSets = 0;
 }
@@ -170,7 +168,7 @@ GetSet
 
 ambientSet_t *CSetGroup::GetSet( const char *name )
 {
-	map<sstring_t, ambientSet_t *>::iterator	mi;
+	std::map<sstring_t, ambientSet_t *>::iterator	mi;
 
 	if ( name == NULL )
 		return NULL;

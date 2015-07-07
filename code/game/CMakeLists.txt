@@ -1,4 +1,20 @@
-cmake_minimum_required(VERSION 2.8.8)
+#============================================================================
+# Copyright (C) 2013 - 2015, OpenJK contributors
+# 
+# This file is part of the OpenJK source code.
+# 
+# OpenJK is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
+#============================================================================
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -6,7 +22,12 @@ if(NOT InOpenJK)
 endif(NOT InOpenJK)
 
 set(SPGameDefines ${SharedDefines})
-set(SPGameIncludeDirectories "${SPDir}/game")
+set(SPGameIncludeDirectories
+	${SharedDir}
+	${SPDir}
+	"${SPDir}/game"
+	)
+
 if(WIN32)
 	set(SPGameLibraries "winmm")
 endif(WIN32)
@@ -157,6 +178,7 @@ set(SPGameGameFiles
 	"${SPDir}/game/surfaceflags.h"
 	"${SPDir}/game/teams.h"
 	"${SPDir}/game/weapons.h"
+	"${SPDir}/game/w_local.h"
 	"${SPDir}/game/wp_saber.h"
 	"${SPDir}/game/g_vehicles.h"
 	)
@@ -338,20 +360,30 @@ endif(WIN32)
 
 add_library(${SPGame} SHARED ${SPGameFiles})
 
-if(NOT WIN32)
+if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${SPGame} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif()
 
 if(WIN32)
-	install(TARGETS ${SPGame} RUNTIME DESTINATION "OpenJK")
+	install(TARGETS ${SPGame}
+		RUNTIME
+		DESTINATION "${JKAInstallDir}/OpenJK"
+		COMPONENT ${JKASPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildSPEngine)
-		install(TARGETS ${SPGame} LIBRARY DESTINATION "${SPEngine}.app/Contents/MacOS/OpenJK")
-	else(MakeApplicationBundles AND BuildSPEngine)
-		install(TARGETS ${SPGame} LIBRARY DESTINATION "OpenJK")
-	endif(MakeApplicationBundles AND BuildSPEngine) 
-endif(WIN32)
+		install(TARGETS ${SPGame}
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	else()
+		install(TARGETS ${SPGame}
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	endif() 
+endif()
+
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPGameDefines};${ReleaseDefines}")
 set_target_properties(${SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPGameDefines};${ReleaseDefines}")

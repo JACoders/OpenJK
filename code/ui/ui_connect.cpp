@@ -1,23 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this at the top of all UI_xxxx files for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
 #include "ui_local.h"
@@ -33,6 +36,17 @@ CONNECTION SCREEN
 char		connectionDialogString[1024];
 char		connectionMessageString[1024];
 
+#ifdef JK2_MODE
+/*
+ =================
+ UI_DrawThumbNail
+ =================
+ */
+void UI_DrawThumbNail( float x, float y, float w, float h, byte *pic )
+{
+	ui.DrawStretchRaw( x, y, w, h, SG_SCR_WIDTH, SG_SCR_HEIGHT, pic, 0, qtrue );
+}
+#endif
 
 /*
 ========================
@@ -52,17 +66,20 @@ void UI_DrawConnect( const char *servername, const char *updateInfoString ) {
 		return;
 	}
 #endif
-
-//	qboolean qValid;
-//	byte *levelPic = ui.SCR_GetScreenshot(&qValid);
+#ifdef JK2_MODE
+	qboolean qValid;
+	byte *levelPic = SCR_GetScreenshot(&qValid);
 	// draw the dialog background
-//	if (!qValid) 
+	if (!qValid)
 	{
 		UI_DrawHandlePic(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader );
 	} 
-//	else {
-//		UI_DrawThumbNail(0,SCREEN_HEIGHT, SCREEN_WIDTH, -SCREEN_HEIGHT, levelPic );
-//	}
+	else {
+		UI_DrawThumbNail(0,0, SCREEN_WIDTH, SCREEN_HEIGHT, levelPic );
+	}
+#else
+	UI_DrawHandlePic( 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, uis.menuBackShader );
+#endif
 }
 
 

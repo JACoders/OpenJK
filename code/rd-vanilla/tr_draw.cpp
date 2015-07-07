@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_draw.c
 // leave this as first line for PCH reasons...
@@ -38,7 +44,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 		return;
 	}
 
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 	if ( tess.numIndexes ) {
 		RB_EndSurface();
@@ -158,47 +164,6 @@ void RE_UploadCinematic (int cols, int rows, const byte *data, int client, qbool
 	}
 }
 
-
-
-#if 0
-void RE_GetScreenShot(byte *data, int w, int h)
-{
-	byte		*buffer;
-	int			offset;
-	int			x, y;
-	int			xc, yc;
-	int			xstep, ystep;
-	int			count = 0;
-
-	buffer = (byte *)R_Malloc(glConfig.vidWidth * glConfig.vidHeight * 3);
-	if(!buffer)
-	{
-		return;
-	}
-	qglReadPixels (0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_RGB, GL_UNSIGNED_BYTE, buffer ); 
-	
-	xstep = (glConfig.vidWidth << 16) / w;
-	ystep = (glConfig.vidHeight << 16) / h;
-	yc = 0;
-	for(y = 0; y < h; y++, yc += ystep)
-	{
-		xc = 0;
-		for(x = 0; x < w; x++, xc += xstep)
-		{
-			offset = ((glConfig.vidWidth * (yc >> 16)) + (xc >> 16)) * 3;
-			*data++ = buffer[offset++];
-			*data++ = buffer[offset++];
-			*data++ = buffer[offset++];
-			*data++ = 0xff;
-			count++;
-		}
-	}
-	assert(count == w * h);
-	R_Free(buffer);
-}
-
-#else
-
 extern byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen);
 void RE_GetScreenShot(byte *buffer, int w, int h)
 {
@@ -211,8 +176,8 @@ void RE_GetScreenShot(byte *buffer, int w, int h)
 	int			r, g, b;
 	float		xScale, yScale;
 	int			xx, yy;
-
-		
+	
+	
 	source = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	memcount = (glConfig.vidWidth * 3 + padlen) * glConfig.vidHeight;
 	
@@ -240,14 +205,9 @@ void RE_GetScreenShot(byte *buffer, int w, int h)
 			dst[2] = b / 12;
 		}
 	}
-
+	
 	ri.Z_Free(source);
 }
-
-#endif
-
-
-
 
 // this is just a chunk of code from RE_TempRawImage_ReadFromFile() below, subroutinised so I can call it
 //	from the screen dissolve code as well...
@@ -363,15 +323,15 @@ byte* RE_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, in
 
 	if (pbReturn && qbVertFlip)
 	{			
-		unsigned long *pSrcLine = (unsigned long *) pbReturn;
-		unsigned long *pDstLine = (unsigned long *) pbReturn + (*piHeight * *piWidth );	// *4 done by compiler (longs)		
+		unsigned int *pSrcLine = (unsigned int *) pbReturn;
+		unsigned int *pDstLine = (unsigned int *) pbReturn + (*piHeight * *piWidth );	// *4 done by compiler (longs)
 					   pDstLine-= *piWidth;	// point at start of last line, not first after buffer
 
 		for (int iLineCount=0; iLineCount<*piHeight/2; iLineCount++)
 		{
 			for (int x=0; x<*piWidth; x++)
 			{
-				unsigned long l = pSrcLine[x];
+				unsigned int l = pSrcLine[x];
 				pSrcLine[x] = pDstLine[x];
 				pDstLine[x] = l;
 			}
@@ -458,7 +418,7 @@ static void RE_Blit(float fX0, float fY0, float fX1, float fY1, float fX2, float
 	//
 	// some junk they had at the top of other StretchRaw code...
 	//
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 //	qglFinish();
 
 	GL_Bind( pImage );
@@ -799,7 +759,7 @@ qboolean RE_ProcessDissolve(void)
 //
 qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 {
-	R_SyncRenderThread();
+	R_IssuePendingRenderCommands();
 
 //	ri.Printf( PRINT_ALL, "RE_InitDissolve()\n");
 	qboolean bReturn = qfalse;

@@ -1,16 +1,33 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "qcommon/qfiles.h"
 #include "rd-common/tr_public.h"
 #include "rd-common/tr_common.h"
-
-#ifdef _WIN32
-	#include "qgl.h"
-#else
-	#include "../sdl/sdl_qgl.h"
-#endif
-
 #include "ghoul2/ghoul2_shared.h" //rwwRMG - added
+#include "qgl.h"
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
 typedef unsigned int glIndex_t;
@@ -925,12 +942,10 @@ typedef struct backEndState_s {
 
 #define NUM_SCRATCH_IMAGES 16
 
-#ifdef _WIN32
-	#include "../win32/win_local.h"
-#endif
-
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
+
+	window_t				window;
 
 	int						visCount;		// incremented every time a new vis cluster is entered
 	int						frameCount;		// incremented every frame
@@ -970,6 +985,11 @@ typedef struct trGlobals_s {
 
 	// Image used to downsample and blur scene to.	- AReis
 	GLuint					blurImage;
+
+	// Gamma correction using vertex/pixel programs
+	GLuint					gammaCorrectLUTImage;
+	GLuint					gammaCorrectVtxShader;
+	GLuint					gammaCorrectPxShader;
 
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
@@ -1036,16 +1056,13 @@ typedef struct trGlobals_s {
 
 	float					rangedFog;
 	float					distanceCull;
-
-#ifdef _WIN32
-	WinVars_t *wv;
-#endif
 } trGlobals_t;
 
 struct glconfigExt_t
 {
 	glconfig_t *glConfig;
 
+	qboolean doGammaCorrectionWithShaders;
 	const char *originalExtensionString;
 };
 
@@ -1061,6 +1078,7 @@ extern trGlobals_t	tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glconfigExt_t glConfigExt;
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
+extern window_t		window;
 
 
 //
@@ -1337,6 +1355,7 @@ image_t		*R_CreateImage( const char *name, const byte *pic, int width, int heigh
 qboolean	R_GetModeInfo( int *width, int *height, int mode );
 
 void		R_SetColorMappings( void );
+void		R_SetGammaCorrectionLUT();
 void		R_GammaCorrect( byte *buffer, int bufSize );
 
 void	R_ImageList_f( void );
@@ -1380,7 +1399,7 @@ void    R_RemapShader(const char *oldShader, const char *newShader, const char *
 //
 // tr_arb.c
 //
-void ARB_InitGlowShaders( void );
+void ARB_InitGPUShaders( void );
 
 
 /*
@@ -1391,14 +1410,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
-void		GLimp_Init( void );
-void		GLimp_Shutdown( void );
-void		GLimp_EndFrame( void );
-
-void		GLimp_LogComment( char *comment );
-void		GLimp_Minimize( void );
-
-void		GLimp_SetGamma( unsigned char red[256], unsigned char green[256], unsigned char blue[256] );
+static QINLINE void	GLimp_LogComment( char *comment ) {}
 
 /*
 ====================================================================
@@ -1451,7 +1463,7 @@ struct shaderCommands_s
 	bool		fading;
 };
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 	typedef __declspec(align(16)) shaderCommands_s	shaderCommands_t;
 #else
 	typedef struct shaderCommands_s  shaderCommands_t;
@@ -1603,9 +1615,6 @@ ANIMATED MODELS
 /*
 Ghoul2 Insert Start
 */
-#ifdef _MSC_VER
-#pragma warning (disable: 4512)	//default assignment operator could not be gened
-#endif
 class CRenderableSurface
 {
 public:

@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -249,6 +248,16 @@ static int MapKey (ulong key, word wParam)
 	extended = (key >> 24) & 1;
 	if(wParam > 0 && wParam <= VK_SCROLL)
 	{
+		// yeuch, but oh well...
+		//
+		if ( wParam >= VK_NUMPAD0 && wParam <= VK_NUMPAD9 )
+		{
+			bool bNumlockOn = !!(GetKeyState( VK_NUMLOCK ) & 1);
+			if ( bNumlockOn )
+			{
+				wParam = 0x30 + (wParam - VK_NUMPAD0);	// convert to standard 0..9
+			}
+		}
 		result = virtualKeyConvert[wParam][extended];
 	}
 	// Get the unshifted ascii code (if any)

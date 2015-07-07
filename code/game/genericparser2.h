@@ -1,35 +1,34 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	genericparser2.h
 
-
 #ifndef GENERICPARSER2_H
 #define GENERICPARSER2_H
-
 
 // conditional expression is constant
 // conversion from int to char, possible loss of data
 // unreferenced inline funciton has been removed
 #ifdef _MSC_VER
-#pragma warning( disable : 4127 4244 4514 )
-
-
 #ifdef DEBUG_LINKING
 	#pragma message("...including GenericParser2.h")
 #endif
@@ -76,6 +75,7 @@ protected:
 
 public:
 				CGPObject(const char *initName);
+		virtual	~CGPObject() {}
 
 	const char	*GetName(void) { return mName; }
 

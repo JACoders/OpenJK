@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "server.h"
 
 #include "ghoul2/ghoul2_shared.h"
@@ -61,7 +85,7 @@ Converts newlines to "\n" so a line prints nicer
 */
 char	*SV_ExpandNewlines( char *in ) {
 	static	char	string[1024];
-	unsigned int	l;
+	size_t	l;
 
 	l = 0;
 	while ( *in && l < sizeof(string) - 3 ) {
@@ -88,6 +112,11 @@ not have future snapshot_t executed before it is executed
 */
 void SV_AddServerCommand( client_t *client, const char *cmd ) {
 	int		index, i;
+
+	// do not send commands until the gamestate has been sent
+	if ( client->state < CS_PRIMED ) {
+		return;
+	}
 
 	client->reliableSequence++;
 	// if we would be losing an old command that hasn't been acknowledged,
@@ -147,9 +176,6 @@ void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 
 	// send the data to all relevent clients
 	for (j = 0, client = svs.clients; j < sv_maxclients->integer ; j++, client++) {
-		if ( client->state < CS_PRIMED ) {
-			continue;
-		}
 		SV_AddServerCommand( client, (char *)message );
 	}
 }
@@ -399,7 +425,7 @@ qboolean SVC_RateLimit( leakyBucket_t *bucket, int burst, int period ) {
 		int expired = interval / period;
 		int expiredRemainder = interval % period;
 
-		if ( expired > bucket->burst ) {
+		if ( expired > bucket->burst || interval < 0 ) {
 			bucket->burst = 0;
 			bucket->lastTime = now;
 		} else {
@@ -474,7 +500,7 @@ void SVC_Status( netadr_t from ) {
 	if(strlen(Cmd_Argv(1)) > 128)
 		return;
 
-	strcpy( infostring, Cvar_InfoString( CVAR_SERVERINFO ) );
+	Q_strncpyz( infostring, Cvar_InfoString( CVAR_SERVERINFO ), sizeof( infostring ) );
 
 	// echo back the parameter to status. so master servers can use it as a challenge
 	// to prevent timed spoofed reply packets that add ghost servers
@@ -796,7 +822,7 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		return;
 	}
 
-	// if we received a sequenced packet from an address we don't reckognize,
+	// if we received a sequenced packet from an address we don't recognize,
 	// send an out of band disconnect packet to it
 	NET_OutOfBandPrint( NS_SERVER, from, "disconnect" );
 }
@@ -976,7 +1002,7 @@ void SV_CheckCvars( void ) {
 		client_t *cl = NULL;
 		int i=0;
 		int minSnaps = Com_Clampi( 1, sv_snapsMax->integer, sv_snapsMin->integer ); // between 1 and sv_snapsMax ( 1 <-> 40 )
-		int maxSnaps = min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
+		int maxSnaps = Q_min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
 
 		lastModFramerate = sv_fps->modificationCount;
 		lastModSnapsMin = sv_snapsMin->modificationCount;

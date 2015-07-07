@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cmodel.c -- model loading
 #include "cm_local.h"
 #include "qcommon/qfiles.h"
@@ -432,7 +455,28 @@ void CMod_LoadBrushSides (lump_t *l, clipMap_t &cm)
 CMod_LoadEntityString
 =================
 */
-void CMod_LoadEntityString( lump_t *l, clipMap_t &cm ) {
+void CMod_LoadEntityString( lump_t *l, clipMap_t &cm, const char* name ) {
+	fileHandle_t h;
+	char entName[MAX_QPATH];
+
+	// Attempt to load entities from an external .ent file if available
+	Q_strncpyz(entName, name, sizeof(entName));
+	const int entNameLen = strlen(entName);
+	entName[entNameLen - 3] = 'e';
+	entName[entNameLen - 2] = 'n';
+	entName[entNameLen - 1] = 't';
+	const int iEntityFileLen = FS_FOpenFileRead(entName, &h, qfalse);
+	if (h)
+	{
+		cm.entityString = (char *)Hunk_Alloc(iEntityFileLen + 1, h_high);
+		cm.numEntityChars = iEntityFileLen + 1;
+		FS_Read(cm.entityString, iEntityFileLen, h);
+		FS_FCloseFile(h);
+		cm.entityString[iEntityFileLen] = '\0';
+		Com_Printf("Loaded entities from %s\n", entName);
+		return;
+	}
+	
 	cm.entityString = (char *)Hunk_Alloc( l->filelen, h_high );
 	cm.numEntityChars = l->filelen;
 	Com_Memcpy (cm.entityString, cmod_base + l->fileofs, l->filelen);
@@ -695,7 +739,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	CMod_LoadBrushes (&header.lumps[LUMP_BRUSHES], cm);
 	CMod_LoadSubmodels (&header.lumps[LUMP_MODELS], cm);
 	CMod_LoadNodes (&header.lumps[LUMP_NODES], cm);
-	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES], cm);
+	CMod_LoadEntityString (&header.lumps[LUMP_ENTITIES], cm, name);
 	CMod_LoadVisibility( &header.lumps[LUMP_VISIBILITY], cm );
 	CMod_LoadPatches( &header.lumps[LUMP_SURFACES], &header.lumps[LUMP_DRAWVERTS], cm );
 

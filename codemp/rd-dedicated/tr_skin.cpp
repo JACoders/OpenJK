@@ -1,14 +1,30 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // tr_image.c
 #include "tr_local.h"
 
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
-using namespace std;
+
 bool gServerSkinHack = false;
 
 shader_t *R_FindServerShader( const char *name, const int *lightmapIndex, const byte *styles, qboolean mipRawImage );
@@ -247,7 +263,7 @@ static char *CommaParse( char **data_p ) {
 
 	while ( 1 ) {
 		// skip whitespace
-		while( (c = *data) <= ' ') {
+		while( (c = *(const unsigned char* /*eurofix*/)data) <= ' ') {
 			if( !c ) {
 				break;
 			}
