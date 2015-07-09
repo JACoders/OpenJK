@@ -82,7 +82,7 @@ struct SOpenFile
 };
 typedef	ratl::handle_pool_vs<SOpenFile, MAX_OPEN_FILES>		TFilePool;
 
-TFilePool&	Pool()
+static TFilePool& Pool()
 {
 	static TFilePool TFP;
 	return TFP;

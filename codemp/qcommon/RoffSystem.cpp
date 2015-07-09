@@ -453,20 +453,12 @@ qboolean CROFFSystem::Unload( int id )
 
 	if ( itr != mROFFList.end() )
 	{ // requested item found in the list, free mem, then remove from list
-		delete ((CROFF *)(*itr).second);
+		delete itr->second;
 
-#ifdef _WIN32
-		itr = mROFFList.erase( itr );
-#else
-		// darn stl differences
-		TROFFList::iterator titr;
-		titr = itr;
-		++itr;
-		mROFFList.erase(titr);
-#endif
+		mROFFList.erase( itr++ );
 
 #ifdef _DEBUG
-		Com_Printf( S_COLOR_GREEN"roff unloaded\n" );
+		Com_Printf( S_COLOR_GREEN "roff unloaded\n" );
 #endif
 
 		return qtrue;
@@ -475,7 +467,7 @@ qboolean CROFFSystem::Unload( int id )
 	{ // not found
 
 #ifdef _DEBUG
-		Com_Printf( S_COLOR_RED"unload failed: roff <%i> does not exist\n", id );
+		Com_Printf( S_COLOR_RED "unload failed: roff <%i> does not exist\n", id );
 #endif
 		return qfalse;
 	}

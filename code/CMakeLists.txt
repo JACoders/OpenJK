@@ -16,8 +16,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 2.8)
-
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
@@ -48,7 +46,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
-	if(WIN32 AND NOT WIN64)
+	if(MSVC AND NOT WIN64)
 		if(UseInternalOpenAL)
 			# There's a libs/OpenAL32.lib
 			# (mrw) TODO Is this actually required on windows? It is loaded at runtime, should not be linked?

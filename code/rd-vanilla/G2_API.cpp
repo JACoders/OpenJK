@@ -22,35 +22,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../server/exe_headers.h"
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4786)
-#pragma warning( disable : 4100)
-#pragma warning( disable : 4511)
-
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <list>
 #include <string>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
 
-#ifndef __Q_SHARED_H
-	#include "../qcommon/q_shared.h"
-#endif
-
-#if !defined(TR_LOCAL_H)
-	#include "tr_local.h"
-#endif
-
-#if !defined(G2_H_INC)
-	#include "../ghoul2/G2.h"
-#endif
-
-#if !defined(MINIHEAP_H_INC)
-	#include "../qcommon/MiniHeap.h"
-#endif
-
+#include "../qcommon/q_shared.h"
+#include "tr_local.h"
+#include "../ghoul2/G2.h"
+#include "../qcommon/MiniHeap.h"
 
 #ifdef FINAL_BUILD
 #define G2API_DEBUG (0) // please don't change this

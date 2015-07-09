@@ -37,12 +37,6 @@ portable C
 #include <float.h>
 #include <math.h>
 
-
-/* disable precision loss warning on type conversion */
-#ifdef _MSC_VER
-#pragma warning(disable:4244 4056)
-#endif
-
 const float wincoef[264] =
 {				/* window coefs */
 #include "tableawd.h"

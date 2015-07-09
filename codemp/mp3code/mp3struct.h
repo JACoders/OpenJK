@@ -6,10 +6,6 @@
 #ifndef MP3STRUCT_H
 #define MP3STRUCT_H
 
-#ifdef _MSC_VER
-#pragma warning (disable : 4201 )	// nonstandard extension used : nameless struct/union
-#endif
-
 #include "small_header.h"	// for SAMPLE and IN_OUT
 #include "qcommon/q_shared.h"
 
@@ -133,11 +129,6 @@ typedef struct
 
 extern LP_MP3STREAM pMP3Stream;
 extern int bFastEstimateOnly;
-
-#ifdef _MSC_VER
-#pragma warning (default : 4201 )	// nonstandard extension used : nameless struct/union
-#pragma warning (disable : 4711 )	// function 'xxxx' selected for automatic inline expansion
-#endif
 
 #endif	// #ifndef MP3STRUCT_H
 

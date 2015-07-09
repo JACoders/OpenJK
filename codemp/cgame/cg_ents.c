@@ -3322,7 +3322,7 @@ Ghoul2 Insert Start
 */
 
 	// add local sound set if any
-	if ( cent->currentState.soundSetIndex && cent->currentState.eType != ET_MOVER && (!cg_noFXSoundSets.integer || cent->currentState.eType != ET_FX ) )
+	if ( cent->currentState.soundSetIndex && cent->currentState.eType != ET_MOVER )
 	{
 		const char *soundSet = CG_ConfigString( CS_AMBIENT_SET + cent->currentState.soundSetIndex );
 

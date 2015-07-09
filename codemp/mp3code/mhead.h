@@ -96,9 +96,4 @@ extern "C"
 }
 #endif
 
-#ifdef _MSC_VER
-#pragma warning(disable:4711)	// function 'xxxx' selected for automatic inline expansion
-#endif
-
 #endif	// #ifndef MHEAD_H
-

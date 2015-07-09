@@ -261,6 +261,13 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 		code = ERR_FATAL;
 	}
 
+	// ERR_DROPs on dedicated drop to an interactive console
+	// which doesn't make sense for dedicated as it's generally
+	// run unattended
+	if ( com_dedicated && com_dedicated->integer ) {
+		code = ERR_FATAL;
+	}
+
 	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
 	currentTime = Sys_Milliseconds();
 	if ( currentTime - lastErrorTime < 100 ) {
@@ -1954,7 +1961,7 @@ void Com_RandomBytes( byte *string, int len )
 
 	Com_Printf( "Com_RandomBytes: using weak randomization\n" );
 	for( i = 0; i < len; i++ )
-		string[i] = (unsigned char)( rand() % 255 );
+		string[i] = (unsigned char)( rand() % 256 );
 }
 
 /*

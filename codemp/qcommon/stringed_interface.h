@@ -27,9 +27,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // These are the functions that get replaced by game-specific ones (or StringEd code) so SGE can access files etc
 //
 
-#ifdef _MSC_VER
-#pragma warning ( disable : 4786 )			// disable the usual stupid and pointless STL warning
-#endif
 #include <string>
 
 unsigned char *	SE_LoadFileData			( const char *psFileName, int *piLoadedLength = 0);

@@ -24,9 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // vmachine.cpp -- wrapper to fake virtual machine for client
 
 #include "vmachine.h"
-#ifdef _MSC_VER
-#pragma warning (disable : 4514)
-#endif
+
 /*
 ==============================================================
 
