@@ -850,7 +850,8 @@ GL_CheckErrors
 ==================
 */
 void GL_CheckErrs( char *file, int line ) {
-	int		err;
+#if defined(_DEBUG)
+	GLenum	err;
 	char	s[64];
 
 	err = qglGetError();
@@ -885,6 +886,7 @@ void GL_CheckErrs( char *file, int line ) {
 	}
 
 	ri->Error( ERR_FATAL, "GL_CheckErrors: %s in %s at line %d", s , file, line);
+#endif
 }
 
 /*
@@ -1859,8 +1861,7 @@ void RE_SetLightStyle (int style, int color);
 R_Init
 ===============
 */
-void R_Init( void ) {	
-	int	err;
+void R_Init( void ) {
 	int i;
 	byte *ptr;
 
@@ -1943,9 +1944,11 @@ void R_Init( void ) {
 
 	GLSL_EndLoadGPUShaders (shadersStartTime);
 
-	err = qglGetError();
+#if defined(_DEBUG)
+	GLenum err = qglGetError();
 	if ( err != GL_NO_ERROR )
-		ri->Printf (PRINT_ALL, "glGetError() = 0x%x\n", err);
+		ri->Printf( PRINT_ALL, "glGetError() = 0x%x\n", err );
+#endif
 
 	RestoreGhoul2InfoArray();
 

@@ -101,7 +101,7 @@ static	void R_ColorShiftLightingBytes( byte in[4], byte out[4] ) {
 	int		shift, r, g, b;
 
 	// shift the color data based on overbright range
-	shift = r_mapOverBrightBits->integer - tr.overbrightBits;
+	shift = Q_max( 0, r_mapOverBrightBits->integer - tr.overbrightBits );
 
 	// shift the data based on overbright range
 	r = in[0] << shift;
