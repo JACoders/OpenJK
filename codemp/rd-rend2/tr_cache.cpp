@@ -4,7 +4,6 @@
 
 // This differs significantly from Raven's own caching code.
 // For starters, we are allowed to use ri-> whatever because we don't care about running on dedicated (use rd-vanilla!)
-using namespace std;
 
 CImageCacheManager *CImgCache = new CImageCacheManager();
 CModelCacheManager *CModelCache = new CModelCacheManager();
@@ -30,7 +29,7 @@ void CCacheManager::InsertLoaded( const char *fileName, qhandle_t handle )
 	FileHash_t fh;
 	fh.handle = handle;
 	Q_strncpyz( fh.fileName, fileName, sizeof(fh.fileName) );
-	loaded.insert(make_pair(fileName, fh));
+	loaded.insert(std::make_pair(fileName, fh));
 }
 
 static const byte FakeGLAFile[] = 
@@ -330,7 +329,7 @@ void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const 
 	int iNameOffset =		  psShaderName		- (char *)rFile.pDiskImage;
 	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)rFile.pDiskImage;
 
-	rFile.shaderCache.push_back( make_pair( iNameOffset, iPokeOffset ) );
+	rFile.shaderCache.push_back( std::make_pair( iNameOffset, iPokeOffset ) );
 }
 
 void CModelCacheManager::AllocateShaders( const char *psFileName )
