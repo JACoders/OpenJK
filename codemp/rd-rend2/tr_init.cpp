@@ -1598,7 +1598,7 @@ static consoleCommand_t	commands[] = {
 	{ "shaderlist",			R_ShaderList_f },
 	{ "skinlist",			R_SkinList_f },
 	{ "fontlist",			R_FontList_f },
-	{ "screenshot",			R_ScreenShotTGA_f },
+	{ "screenshot",			R_ScreenShotJPEG_f },
 	{ "screenshot_png",		R_ScreenShotPNG_f },
 	{ "screenshot_tga",		R_ScreenShotTGA_f },
 	{ "gfxinfo",			GfxInfo_f },
