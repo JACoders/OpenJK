@@ -8855,12 +8855,19 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (ent->client->pers.hunter_quest_messages == 1 && ent->client->pers.guardian_timer < level.time)
 					{
-						if ((ent->health + 5) < ent->client->ps.stats[STAT_MAX_HEALTH])
-							ent->health += 5;
+						if ((ent->health + 4) < ent->client->ps.stats[STAT_MAX_HEALTH])
+							ent->health += 4;
 						else
 							ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 
 						ent->client->pers.guardian_timer = level.time + 1000;
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						outer_area_damage(ent,500,3500,100);
+						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Outer Area Damage!\"");
+						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 9)
@@ -8870,6 +8877,13 @@ void G_RunFrame( int levelTime ) {
 						ent->client->pers.hunter_quest_messages = 1;
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Dark Power!\"");
 					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						inner_area_damage(ent,400,100);
+						trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Inner Area Damage!\"");
+						ent->client->pers.light_quest_timer = level.time + 14000;
+					}
 				}
 				else if (ent->client->pers.guardian_mode == 10)
 				{ // zyk: Guardian of Eternity
@@ -8877,6 +8891,13 @@ void G_RunFrame( int levelTime ) {
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Eternity Power!\"");
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						healing_area(ent,5,5000);
+						trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Healing Area!\"");
+						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 11)
