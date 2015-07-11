@@ -7136,14 +7136,7 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 				}
 				else
 				{
-					if (ent->client->pers.universe_quest_counter & (1 << 29))
-					{
-						strcpy(content,va("%sChallenge-",content));
-					}
-					else
-					{
-						strcpy(content,va("%sHard-",content));
-					}
+					strcpy(content,va("%sChallenge-",content));
 				}
 			}
 			else
@@ -11071,10 +11064,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (ent->client->pers.player_settings & (1 << 15))
 		{
-			if (ent->client->pers.universe_quest_counter & (1 << 29))
-				sprintf(message,"%s\n^315 - Difficulty ^1Challenge", message);
-			else
-				sprintf(message,"%s\n^315 - Difficulty ^3Hard", message);
+			sprintf(message,"%s\n^315 - Difficulty ^1Challenge", message);
 		}
 		else
 		{
@@ -11147,7 +11137,15 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 15)
 		{
-			if (ent->client->pers.player_settings & (1 << value))
+			if (!(ent->client->pers.player_settings & (1 << value)) && ent->client->pers.defeated_guardians == 0 && 
+				ent->client->pers.hunter_quest_progress == 0 && ent->client->pers.eternity_quest_progress == 0 && 
+				ent->client->pers.universe_quest_progress == 0 && ent->client->pers.can_play_quest == 0)
+			{ // zyk: player can only activate Challenge Mode if he did not complete any quest mission
+				ent->client->pers.player_settings |= (1 << value);
+				ent->client->pers.universe_quest_counter |= (1 << 29);
+				strcpy(new_status,"^1Challenge^7");
+			}
+			else
 			{ // zyk: setting Normal Mode removes the Challenge Mode flag
 				ent->client->pers.player_settings &= ~(1 << value);
 
@@ -11155,21 +11153,6 @@ void Cmd_Settings_f( gentity_t *ent ) {
 					ent->client->pers.universe_quest_counter &= ~(1 << 29);
 
 				strcpy(new_status,"^2Normal^7");
-			}
-			else
-			{
-				ent->client->pers.player_settings |= (1 << value);
-
-				if (ent->client->pers.defeated_guardians == 0 && ent->client->pers.hunter_quest_progress == 0 &&
-					ent->client->pers.eternity_quest_progress == 0 && ent->client->pers.universe_quest_progress == 0)
-				{ // zyk: player can only activate Challenge Mode if he did not complete any quest mission
-					ent->client->pers.universe_quest_counter |= (1 << 29);
-					strcpy(new_status,"^1Challenge^7");
-				}
-				else
-				{
-					strcpy(new_status,"^3Hard^7");
-				}
 			}
 		}
 		else
