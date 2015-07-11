@@ -3352,9 +3352,9 @@ void ClientThink_real( gentity_t *ent ) {
 					{
 						if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
 						{ // zyk: Force User
-							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
-								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
@@ -3367,9 +3367,9 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
 						{ // zyk: Monk
-							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
-								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
@@ -3382,11 +3382,11 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
 						{ // zyk: Duelist
-							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
 								int player_it = 0;
 
-								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								for (player_it = 0; player_it < level.num_entities; player_it++)
 								{
@@ -3492,7 +3492,7 @@ void ClientThink_real( gentity_t *ent ) {
 								}
 							}
 
-							if (ent->client->pers.secrets_found & (1 << 8) && ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2) && 
+							if (ent->client->pers.secrets_found & (1 << 8) && ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4) && 
 								ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
 							{ // zyk: Force Gunner Upgrade restores some shield by spending some force power
 								if ((ent->client->ps.stats[STAT_ARMOR] + 25) < ent->client->pers.max_rpg_shield)
@@ -3500,7 +3500,7 @@ void ClientThink_real( gentity_t *ent ) {
 								else
 									ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
-								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
 							}
