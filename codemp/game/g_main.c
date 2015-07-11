@@ -4457,6 +4457,22 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: Outer Area Damage
+void outer_area_damage(gentity_t *ent, int min_distance, int max_distance, int damage)
+{
+	int i = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse) == qtrue)
+		{
+			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
+		}
+	}
+}
+
 // zyk: Ultra Strength. Increases damage and resistance to damage
 void ultra_strength(gentity_t *ent, int duration)
 {
@@ -9089,14 +9105,8 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 18)
-						{ // zyk: Outer Area Damage ability damages the player if he is far from a certain distance
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
-							if (distance > 500)
-							{
-								G_Damage(player_ent,NULL,NULL,NULL,NULL,200,0,MOD_UNKNOWN);
-							}
-
+						{
+							outer_area_damage(ent,500,3500,200);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
