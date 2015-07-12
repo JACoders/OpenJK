@@ -8597,7 +8597,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else
 					sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^1no\n",message_content[3]);
 
-				if (ent->client->pers.universe_quest_progress >= 15)
+				if (ent->client->pers.universe_quest_progress >= 14)
 					sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[4]);
 				else
 					sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[4]);
