@@ -4196,11 +4196,20 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
 				int numWeights = G2_GetVertWeights (&v[k]);
-				for ( int w = 0; w < numWeights; w++ )
+				float lastWeight = 1.0f;
+				int lastInfluence = numWeights - 1;
+				for ( int w = 0; w < lastInfluence; w++ )
 				{
-					(*weights)[w] = G2_GetVertBoneWeightNotSlow (&v[k], w);
+					float weight = G2_GetVertBoneWeightNotSlow (&v[k], w);
+					(*weights)[w] = weight;
 					(*bonerefs)[w] = (float)G2_GetVertBoneIndex (&v[k], w);
+
+					lastWeight -= weight;
 				}
+
+				// Ensure that all the weights add up to 1.0
+				(*weights)[lastInfluence] = lastWeight;
+				(*bonerefs)[lastInfluence] = (float)G2_GetVertBoneIndex (&v[k], lastInfluence);
 
 				// Fill in the rest of the info with zeroes.
 				for ( int w = numWeights; w < 4; w++ )
@@ -4369,7 +4378,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 			vboMeshes[n].indexOffset = indexOffsets[n];
 			vboMeshes[n].minIndex = baseVertexes[n];
-			vboMeshes[n].maxIndex = baseVertexes[n + 1];
+			vboMeshes[n].maxIndex = baseVertexes[n + 1] - 1;
 			vboMeshes[n].numVertexes = surf->numVerts;
 			vboMeshes[n].numIndexes = surf->numTriangles * 3;
 
