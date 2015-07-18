@@ -9153,13 +9153,8 @@ void G_RunFrame( int levelTime ) {
 						{
 							vec3_t origin, angles;
 
-							origin[0] = player_ent->client->ps.origin[0];
-							origin[1] = player_ent->client->ps.origin[1];
-							origin[2] = player_ent->client->ps.origin[2] + 200;
-
-							angles[0] = 0.0f;
-							angles[1] = 0.0f;
-							angles[2] = 0.0f;
+							VectorSet(origin,-2836,-26946,500);
+							VectorSet(angles,0,0,0);
 
 							zyk_TeleportPlayer(ent,origin,angles);
 
