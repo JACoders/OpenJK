@@ -3445,9 +3445,10 @@ void ClientThink_real( gentity_t *ent ) {
 
 											if (found == 0)
 											{
-												if (!player_ent->NPC && player_ent->client->jetPackOn)
+												if (!player_ent->NPC)
 												{ //disable jetpack temporarily
-													Jetpack_Off(player_ent);
+													if (player_ent->client->jetPackOn)
+														Jetpack_Off(player_ent);
 													player_ent->client->jetPackToggleTime = level.time + 7000;
 												}
 												else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
