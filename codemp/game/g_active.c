@@ -3498,7 +3498,8 @@ void ClientThink_real( gentity_t *ent ) {
 							{ // zyk: finds enemies nearby and disarms them
 								this_ent = &g_entities[zyk_it];
 
-								if (this_ent && this_ent->client && (zyk_it < MAX_CLIENTS || (this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE)))
+								if (this_ent && this_ent->client && ((zyk_it < MAX_CLIENTS && this_ent->client->ps.duelInProgress == qfalse) || 
+									(this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE)))
 								{ // zyk: does not disarm a vehicle
 									int player_distance = (int)Distance(ent->client->ps.origin,this_ent->client->ps.origin);
 
