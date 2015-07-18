@@ -915,6 +915,7 @@ G_FreeEntity
 Marks the entity as free
 =================
 */
+extern qboolean EjectAll( Vehicle_t *pVeh );
 void G_FreeEntity( gentity_t *ed ) {
 	//gentity_t *te;
 
@@ -924,6 +925,12 @@ void G_FreeEntity( gentity_t *ed ) {
 		Com_Printf("Tried to remove JM saber!\n");
 #endif
 		return;
+	}
+
+	// zyk: if entity is a vehicle with a player inside, make player get out of vehicle first
+	if (ed->client && ed->NPC && ed->client->NPC_class == CLASS_VEHICLE && ed->m_pVehicle && ed->m_pVehicle->m_pPilot)
+	{
+		EjectAll(ed->m_pVehicle);
 	}
 
 	trap->UnlinkEntity ((sharedEntity_t *)ed);		// unlink from world
