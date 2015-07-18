@@ -7138,7 +7138,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 17)
 					{
-						if (ent->client->pers.universe_quest_progress == 8 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 2)) && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > -18584 && (int) ent->client->ps.origin[0] < -17585 && (int) ent->client->ps.origin[1] > 17752 && (int) ent->client->ps.origin[1] < 18681 && (int) ent->client->ps.origin[2] > 1505 && (int) ent->client->ps.origin[2] < 1550)
+						if (ent->client->pers.universe_quest_progress == 8 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 2)) && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > -18684 && (int) ent->client->ps.origin[0] < -17485 && (int) ent->client->ps.origin[1] > 17652 && (int) ent->client->ps.origin[1] < 18781 && (int) ent->client->ps.origin[2] > 1505 && (int) ent->client->ps.origin[2] < 1850)
 						{ // zyk: nineth Universe Quest mission. Guardian of Time part
 							if (ent->client->pers.universe_quest_messages == 1)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: This is the place of my dreams.\"", ent->client->pers.netname));
@@ -7232,7 +7232,7 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 
-						if (ent->client->pers.universe_quest_progress == 10 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > -18584 && (int) ent->client->ps.origin[0] < -17585 && (int) ent->client->ps.origin[1] > 17752 && (int) ent->client->ps.origin[1] < 18681 && (int) ent->client->ps.origin[2] > 1505 && (int) ent->client->ps.origin[2] < 1550)
+						if (ent->client->pers.universe_quest_progress == 10 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > -18684 && (int) ent->client->ps.origin[0] < -17485 && (int) ent->client->ps.origin[1] > 17652 && (int) ent->client->ps.origin[1] < 18781 && (int) ent->client->ps.origin[2] > 1505 && (int) ent->client->ps.origin[2] < 1850)
 						{ // zyk: eleventh objective of Universe Quest. Setting Guardian of Time free
 							gentity_t *npc_ent = NULL;
 
