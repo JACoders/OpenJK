@@ -12191,6 +12191,7 @@ Cmd_EntNear_f
 */
 void Cmd_EntNear_f( gentity_t *ent ) {
 	int i = 0;
+	int found_entities = 0;
 	char message[1024];
 	gentity_t *this_ent = NULL;
 
@@ -12205,10 +12206,15 @@ void Cmd_EntNear_f( gentity_t *ent ) {
 	for (i = 0; i < level.num_entities; i++)
 	{
 		this_ent = &g_entities[i];
-		if (ent != this_ent && (int)Distance(ent->client->ps.origin, this_ent->r.currentOrigin) < 200)
+		if (this_ent && ent != this_ent && (int)Distance(ent->client->ps.origin, this_ent->r.currentOrigin) < 200)
 		{
-			strcpy(message,va("%s\n%d - %s",message,this_ent->s.number,this_ent->classname));
+			strcpy(message,va("%s\n%d - %d - %s",message,i,this_ent->s.number,this_ent->classname));
+			found_entities++;
 		}
+
+		// zyk: max entities to list
+		if (found_entities == 10)
+			break;
 	}
 
 	trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"",message) );

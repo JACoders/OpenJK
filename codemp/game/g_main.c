@@ -4225,8 +4225,11 @@ qboolean npcs_on_same_team(gentity_t *attacker, gentity_t *target)
 }
 
 // zyk: tests if the target entity can be hit by the attacker special power
-qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target, int i, int min_distance, int max_distance, qboolean hit_breakable)
+qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target, int i, int min_distance, int max_distance, qboolean hit_breakable, int *targets_hit)
 {
+	if ((*targets_hit) >= zyk_max_special_power_targets.integer)
+		return qfalse;
+
 	if (attacker->s.number != i && target && target->client && target->health > 0 && zyk_can_hit_target(attacker, target) == qtrue && 
 		(i > MAX_CLIENTS || (target->client->pers.connected == CON_CONNECTED && target->client->sess.sessionTeam != TEAM_SPECTATOR && 
 		 target->client->ps.duelInProgress == qfalse)))
@@ -4250,16 +4253,20 @@ qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target
 
 			if (is_ally == 0 && !(target->client->pers.quest_power_status & (1 << 0)))
 			{ // zyk: target cannot be attacker ally and cannot be using Immunity Power
+				(*targets_hit)++;
+
 				return qtrue;
 			}
 		}
 	}
-	else if (hit_breakable == qtrue && target && !target->client && target->health > 0)
+	else if (i >= MAX_CLIENTS && hit_breakable == qtrue && target && !target->client && target->health > 0 && target->takedamage == qtrue)
 	{
 		int entity_distance = (int)Distance(attacker->client->ps.origin,target->r.currentOrigin);
 
 		if (entity_distance > min_distance && entity_distance < max_distance)
 		{
+			(*targets_hit)++;
+
 			return qtrue;
 		}
 	}
@@ -4282,12 +4289,13 @@ void healing_water(gentity_t *ent, int heal_amount)
 void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for ( i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			if (player_ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
 			{ // zyk: player can only be hit if he is on floor
@@ -4313,12 +4321,13 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 void blowing_wind(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for ( i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->pers.quest_power_user3_id = ent->s.number;
 			player_ent->client->pers.quest_power_status |= (1 << 8);
@@ -4334,12 +4343,13 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 			player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
@@ -4357,12 +4367,13 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->pers.quest_power_user2_id = ent->s.number;
 			player_ent->client->pers.quest_power_status |= (1 << 4);
@@ -4379,12 +4390,13 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 void time_power(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->pers.quest_power_status |= (1 << 2);
 			player_ent->client->pers.quest_target2_timer = level.time + duration;
@@ -4399,12 +4411,13 @@ void time_power(gentity_t *ent, int distance, int duration)
 void chaos_power(gentity_t *ent, int distance, int first_damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 					
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->pers.quest_power_user1_id = ent->s.number;
 			player_ent->client->pers.quest_power_status |= (1 << 1);
@@ -4433,12 +4446,13 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 void inner_area_damage(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue, &targets_hit) == qtrue)
 		{
 			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 		}
@@ -4449,12 +4463,13 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 void outer_area_damage(gentity_t *ent, int min_distance, int max_distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse, &targets_hit) == qtrue)
 		{
 			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
 		}
@@ -4541,12 +4556,13 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 void water_splash(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_watersplash", "0", "world/waterfall3", 0, 0, 0, 3000);
 
@@ -4563,12 +4579,13 @@ void water_splash(gentity_t *ent, int distance, int damage)
 void rock_fall(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_rockfall", "4", "env/rockfall_noshake", 0, damage, 100, 8000);
 		}
@@ -4579,12 +4596,13 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 void dome_of_doom(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_dome", "4", "env/dome", 1400, damage, 290, 10000);
 		}
@@ -4603,12 +4621,13 @@ void magic_shield(gentity_t *ent, int duration)
 void ice_stalagmite(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_ice_stalagmite", "0", "models/map_objects/hoth/stalagmite_small.md3", 0, 0, 0, 2000);
 
@@ -4621,12 +4640,13 @@ void ice_stalagmite(gentity_t *ent, int distance, int damage)
 void ice_boulder(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_ice_boulder", "1", "models/map_objects/hoth/rock_b.md3", 0, 20, 50, 4000);
 
@@ -4651,12 +4671,13 @@ void healing_area(gentity_t *ent, int damage, int duration)
 void slow_motion(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->pers.quest_power_status |= (1 << 6);
 			player_ent->client->pers.quest_target5_timer = level.time + duration;
@@ -4681,12 +4702,13 @@ void ultra_speed(gentity_t *ent, int duration)
 void ultra_flame(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_flame", "4", "env/flame_jet", 800, damage, 35, 50000);
 		}
@@ -4697,12 +4719,13 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 void hurricane(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
+	int targets_hit = 0;
 
 	for ( i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
 			player_ent->client->pers.quest_power_status |= (1 << 5);
 			player_ent->client->pers.quest_power_hit_counter = -179;
