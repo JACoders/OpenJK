@@ -857,6 +857,43 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		{ // zyk: show the screen message. The cp shows the message at least for 3 seconds
 			trap->SendServerCommand( ent->s.number, va("cp \"%s\"", zyk_screen_message.string) );
 		}
+
+		if (client->pers.send_event_timer > level.time)
+		{
+			if (!(client->pers.player_statuses & (1 << 2)))
+			{ // zyk: send this event after some seconds in map and if the player did not received this event yet
+				// must wait some seconds because after a map change, sometimes the event is not received by the client-side game right away
+				if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 2 && client->pers.secrets_found & (1 << 1))
+				{
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
+				}
+				else // zyk: removing rpg stuff from client-side game
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
+
+				client->pers.player_statuses |= (1 << 2);
+			}
+			else if (!(client->pers.player_statuses & (1 << 3)))
+			{
+				// zyk: event to set the blue jetpack flame
+				if (client->sess.amrpgmode == 2 && client->pers.secrets_found & (1 << 17))
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
+				else
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
+
+				client->pers.player_statuses |= (1 << 3);
+			}
+			else
+			{
+				// zyk: event to set the stealth attacker upgrade
+				if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 5 && client->pers.secrets_found & (1 << 7))
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 9);
+				else
+					G_AddEvent(ent, EV_ITEMUSEFAIL, 10);
+
+				client->pers.player_statuses &= ~(1 << 2);
+				client->pers.player_statuses &= ~(1 << 3);
+			}
+		}
 	}
 }
 
@@ -3967,46 +4004,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	// perform once-a-second actions
 	ClientTimerActions( ent, msec );
-
-	if (ent->client->pers.send_event_timer < level.time)
-	{
-		if (!(ent->client->pers.player_statuses & (1 << 2)))
-		{ // zyk: send this event after some seconds in map and if the player did not received this event yet
-			// must wait some seconds because after a map change, sometimes the event is not received by the client-side game right away
-			if (client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-			{
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 5);
-			}
-			else // zyk: removing rpg stuff from client-side game
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 6);
-
-			ent->client->pers.player_statuses |= (1 << 2);
-			ent->client->pers.player_statuses &= ~(1 << 3);
-		}
-		else if (!(ent->client->pers.player_statuses & (1 << 3)))
-		{
-			// zyk: event to set the blue jetpack flame
-			if (client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 17))
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 7);
-			else
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 8);
-
-			ent->client->pers.player_statuses |= (1 << 3);
-			ent->client->pers.player_statuses &= ~(1 << 4);
-		}
-		else if (!(ent->client->pers.player_statuses & (1 << 4)))
-		{
-			// zyk: event to set the stealth attacker upgrade
-			if (client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 5 && ent->client->pers.secrets_found & (1 << 7))
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 9);
-			else
-				G_AddEvent(ent, EV_ITEMUSEFAIL, 10);
-
-			ent->client->pers.player_statuses |= (1 << 4);
-		}
-
-		ent->client->pers.send_event_timer = level.time + 300;
-	}
 
 	G_UpdateClientBroadcasts ( ent );
 

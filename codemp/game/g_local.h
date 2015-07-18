@@ -593,7 +593,7 @@ typedef struct clientPersistant_s {
 	// 1 - using an emote
 	// 2 - Received Radar event - set after client-side receives the Bounty Hunter Upgrade event
 	// 3 - Received Jetpack Flame event - set after client-side receives the Jetpack Upgrade event
-	// 4 - Received Stealth Attacker Upgrade event - set after client-side receives the Stealth Attacker Upgrade event
+	// 4 - Unused
 	// 5 - Chat protection activated for this player
 	// 6 - Paralyzed by an admin
 	// 7 - using Force Armor

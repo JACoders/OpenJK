@@ -1759,6 +1759,7 @@ finish:
 		newent->client->pers.race_position = 0;
 		newent->client->pers.seller_invoked_by_id = -1;
 		newent->client->pers.stun_baton_less_speed_timer = 0;
+		newent->client->pers.send_event_timer = 0;
 
 		newent->client->sess.ally1 = -1;
 		newent->client->sess.ally2 = -1;

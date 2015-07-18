@@ -4146,10 +4146,12 @@ void send_rpg_events(int send_event_timer)
 	{
 		player_ent = &g_entities[i];
 
-		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2)
+		if (player_ent && player_ent->client && player_ent->client->pers.connected == CON_CONNECTED && 
+			player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{
 			player_ent->client->pers.send_event_timer = level.time + send_event_timer;
 			player_ent->client->pers.player_statuses &= ~(1 << 2);
+			player_ent->client->pers.player_statuses &= ~(1 << 3);
 		}
 	}
 }
@@ -5336,7 +5338,7 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
 		// zyk: update the rpg stuff info at the client-side game
-		send_rpg_events(3000);
+		send_rpg_events(10000);
 	}
 }
 
@@ -6054,7 +6056,7 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	WP_InitForcePowers( ent );
 
 	// zyk: update the rpg stuff info at the client-side game
-	send_rpg_events(0);
+	send_rpg_events(10000);
 			
 	trap->SendServerCommand( ent-g_entities, "print \"Account logout finished succesfully.\n\"" );
 }
@@ -9799,7 +9801,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 			ent->client->pers.secrets_found |= (1 << 7);
 
 			// zyk: update the rpg stuff info at the client-side game
-			send_rpg_events(0);
+			send_rpg_events(10000);
 		}
 		else if (value == 9)
 		{
@@ -9899,7 +9901,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 			}
 
 			// zyk: update the rpg stuff info at the client-side game
-			send_rpg_events(0);
+			send_rpg_events(10000);
 		}
 		else if (value == 30)
 		{
@@ -9971,7 +9973,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 			ent->client->pers.secrets_found |= (1 << 17);
 
 			// zyk: update the rpg stuff info at the client-side game
-			send_rpg_events(0);
+			send_rpg_events(10000);
 		}
 		else if (value == 47)
 		{
