@@ -74,11 +74,6 @@ void		DeleteGoreSet(int goreSetTag);
 //rww - RAGDOLL_BEGIN
 
 /// ragdoll stuff
-
-#ifdef _MSC_VER
-#pragma warning(disable: 4512)
-#endif
-
 struct SRagDollEffectorCollision
 {
 	vec3_t			effectorPosition;

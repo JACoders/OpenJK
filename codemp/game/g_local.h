@@ -1006,6 +1006,8 @@ typedef struct level_locals_s {
 	} locations;
 
 	gametype_t	gametype;
+	char		mapname[MAX_QPATH];
+	char		rawmapname[MAX_QPATH];
 } level_locals_t;
 
 

@@ -1647,7 +1647,7 @@ void CL_BindCGame( void ) {
 	static cgameImport_t cgi;
 	cgameExport_t		*ret;
 	GetCGameAPI_t		GetCGameAPI;
-	char				dllName[MAX_OSPATH] = "cgame"ARCH_STRING DLL_EXT;
+	char				dllName[MAX_OSPATH] = "cgame" ARCH_STRING DLL_EXT;
 
 	memset( &cgi, 0, sizeof( cgi ) );
 

@@ -36,12 +36,6 @@ ____________________________________________________________________________*/
 #include <math.h>
 #include "l3.h"
 
-/* get rid of precision loss warnings on conversion */
-#ifdef _MSC_VER
-#pragma warning(disable:4244 4056)
-#endif
-
-
 /*---------- quant ---------------------------------*/
 /* 8 bit lookup x = pow(2.0, 0.25*(global_gain-210)) */
 float *quant_init_global_addr();
@@ -257,7 +251,7 @@ void imdct_init()
 	   for (p = 0; p < n; p++)
 		  w[p] = (float) (2.0 * cos(t * (2 * p + 1)));
 	   for (p = 0; p < 9; p++)
-		  w2[p] = (float) 2.0 *cos(2 * t * (2 * p + 1));
+		  w2[p] = (float) (2.0 *cos(2 * t * (2 * p + 1)));
 
 	   t = pi / (2 * n);
 	   for (k = 0; k < 9; k++)
@@ -276,10 +270,10 @@ void imdct_init()
 	   pi = 4.0 * atan(1.0);
 	   t = pi / (4 * n);
 	   for (p = 0; p < n; p++)
-		  v[p] = (float) 2.0 *cos(t * (2 * p + 1));
+		  v[p] = (float) (2.0 *cos(t * (2 * p + 1)));
 
 	   for (p = 0; p < 3; p++)
-		  v2[p] = (float) 2.0 *cos(2 * t * (2 * p + 1));
+		  v2[p] = (float) (2.0 *cos(2 * t * (2 * p + 1)));
 
 	   t = pi / (2 * n);
 	   k = 1;
@@ -288,7 +282,7 @@ void imdct_init()
 	/* adjust scaling to save a few mults */
 	   for (p = 0; p < 6; p++)
 		  v[p] = v[p] / 2.0f;
-	   *coef87 = (float) 2.0 *(*coef87);
+	   *coef87 = (float) (2.0 *(*coef87));
 
    }   
 }

@@ -30,20 +30,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "taskmanager.h"
 #include "sequence.h"
 
-#ifdef _MSC_VER
-	#pragma warning(disable : 4786)	//identifier was truncated 
-
-	#pragma warning (push, 3)	//go back down to 3 for the stl include
-	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 #include <list>
 #include <vector>
 #include <map>
 #include <algorithm>
-#ifdef _MSC_VER
-	#pragma warning (pop)
-	#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
 
 //Defines
 

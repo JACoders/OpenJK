@@ -39,12 +39,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //////////////////////////////////////////////////
 
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4511 )			// copy constructor could not be generated
-#pragma warning ( disable : 4512 )			// assignment operator could not be generated
-#pragma warning ( disable : 4663 )			// C++ language change: blah blah template crap blah blah
-#endif
 #include "stringed_interface.h"
 #include "stringed_ingame.h"
 

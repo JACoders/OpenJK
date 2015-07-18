@@ -261,6 +261,13 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 		code = ERR_FATAL;
 	}
 
+	// ERR_DROPs on dedicated drop to an interactive console
+	// which doesn't make sense for dedicated as it's generally
+	// run unattended
+	if ( com_dedicated && com_dedicated->integer ) {
+		code = ERR_FATAL;
+	}
+
 	// if we are getting a solid stream of ERR_DROP, do an ERR_FATAL
 	currentTime = Sys_Milliseconds();
 	if ( currentTime - lastErrorTime < 100 ) {
@@ -1722,7 +1729,7 @@ PrintMatches
 */
 static void PrintMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"Cmd  "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "Cmd  " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1736,7 +1743,7 @@ PrintArgMatches
 // This is here for if ever commands with other argument completion
 static void PrintArgMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_WHITE"  %s\n", s );
+		Com_Printf( S_COLOR_WHITE "  %s\n", s );
 	}
 }
 #endif
@@ -1750,7 +1757,7 @@ PrintKeyMatches
 */
 static void PrintKeyMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"Key  "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "Key  " S_COLOR_WHITE "%s\n", s );
 	}
 }
 #endif
@@ -1763,7 +1770,7 @@ PrintFileMatches
 */
 static void PrintFileMatches( const char *s ) {
 	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY"File "S_COLOR_WHITE"%s\n", s );
+		Com_Printf( S_COLOR_GREY "File " S_COLOR_WHITE "%s\n", s );
 	}
 }
 
@@ -1778,7 +1785,7 @@ static void PrintCvarMatches( const char *s ) {
 
 	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
 		Com_TruncateLongString( value, Cvar_VariableString( s ) );
-		Com_Printf( S_COLOR_GREY"Cvar "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", s, value );
+		Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", s, value );
 	}
 }
 
@@ -1954,5 +1961,46 @@ void Com_RandomBytes( byte *string, int len )
 
 	Com_Printf( "Com_RandomBytes: using weak randomization\n" );
 	for( i = 0; i < len; i++ )
-		string[i] = (unsigned char)( rand() % 255 );
+		string[i] = (unsigned char)( rand() % 256 );
+}
+
+/*
+===============
+Converts a UTF-8 character to UTF-32.
+===============
+*/
+uint32_t ConvertUTF8ToUTF32( char *utf8CurrentChar, char **utf8NextChar )
+{
+	uint32_t utf32 = 0;
+	char *c = utf8CurrentChar;
+
+	if( ( *c & 0x80 ) == 0 )
+		utf32 = *c++;
+	else if( ( *c & 0xE0 ) == 0xC0 ) // 110x xxxx
+	{
+		utf32 |= ( *c++ & 0x1F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else if( ( *c & 0xF0 ) == 0xE0 ) // 1110 xxxx
+	{
+		utf32 |= ( *c++ & 0x0F ) << 12;
+		utf32 |= ( *c++ & 0x3F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else if( ( *c & 0xF8 ) == 0xF0 ) // 1111 0xxx
+	{
+		utf32 |= ( *c++ & 0x07 ) << 18;
+		utf32 |= ( *c++ & 0x3F ) << 12;
+		utf32 |= ( *c++ & 0x3F ) << 6;
+		utf32 |= ( *c++ & 0x3F );
+	}
+	else
+	{
+		Com_DPrintf( "Unrecognised UTF-8 lead byte: 0x%x\n", (unsigned int)*c );
+		c++;
+	}
+
+	*utf8NextChar = c;
+
+	return utf32;
 }

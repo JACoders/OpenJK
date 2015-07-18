@@ -1506,7 +1506,7 @@ Resend a connect message if the last one has timed out
 void CL_CheckForResend( void ) {
 	int		port;
 	char	info[MAX_INFO_STRING];
-	char	data[MAX_INFO_STRING];
+	char	data[MAX_INFO_STRING+10];
 
 	// don't send anything if playing back a demo
 	if ( clc.demoplaying ) {

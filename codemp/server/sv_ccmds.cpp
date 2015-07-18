@@ -1249,8 +1249,8 @@ static void SV_ConSay_f(void) {
 
 	Cmd_ArgsBuffer( text, sizeof(text) );
 
-	Com_Printf ("broadcast: chat \""SVSAY_PREFIX"%s\\n\"\n", SV_ExpandNewlines((char *)text) );
-	SV_SendServerCommand(NULL, "chat \""SVSAY_PREFIX"%s\"\n", text);
+	Com_Printf ("broadcast: chat \"" SVSAY_PREFIX "%s\\n\"\n", SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(NULL, "chat \"" SVSAY_PREFIX "%s\"\n", text);
 }
 
 #define SVTELL_PREFIX "\x19[Server^7\x19]\x19: "
@@ -1287,8 +1287,8 @@ static void SV_ConTell_f(void) {
 
 	Cmd_ArgsFromBuffer( 2, text, sizeof(text) );
 
-	Com_Printf ("tell: svtell to %s"S_COLOR_WHITE": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
-	SV_SendServerCommand(cl, "chat \""SVTELL_PREFIX S_COLOR_MAGENTA"%s"S_COLOR_WHITE"\"\n", text);
+	Com_Printf ("tell: svtell to %s" S_COLOR_WHITE ": %s\n", cl->name, SV_ExpandNewlines((char *)text) );
+	SV_SendServerCommand(cl, "chat \"" SVTELL_PREFIX S_COLOR_MAGENTA "%s" S_COLOR_WHITE "\"\n", text);
 }
 
 const char *forceToggleNamePrints[NUM_FORCE_POWERS] = {
@@ -1316,11 +1316,6 @@ static void SV_ForceToggle_f( void ) {
 	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
 	int i, val;
 	char *s;
-	const char *enablestrings[] =
-	{
-		"Disabled",
-		"Enabled"
-	};
 
 	// make sure server is running
 	if( !com_sv_running->integer ) {
@@ -1329,10 +1324,11 @@ static void SV_ForceToggle_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
-			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
 		}
-		Com_Printf ("Example usage: forcetoggle 3(toggles PUSH)\n");
+		Com_Printf( "Example usage: forcetoggle 3(toggles PUSH)\n" );
 		return;
 	}
 
@@ -1343,17 +1339,100 @@ static void SV_ForceToggle_f( void ) {
 		if( val >= 0 && val < NUM_FORCE_POWERS) {
 			bits ^= (1 << val);
 			Cvar_SetValue("g_forcePowerDisable", bits);
-			Com_Printf ("%s has been %s.\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "disabled" : "enabled");
+			Com_Printf( "%s %s^7\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "^2Enabled" : "^1Disabled" );
 		}
 		else {
+			for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+				if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+				else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+			}
 			Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 		}
 	}
 	else {
-		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
-			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
 		}
 		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
+	}
+}
+
+const char *weaponToggleNamePrints[WP_NUM_WEAPONS] = {
+	"NO WEAPON",
+	"STUN BATON",
+	"MELEE",
+	"SABER",
+	"BRYAR PISTOL",
+	"BLASTER",
+	"DISRUPTOR",
+	"BOWCASTER",
+	"REPEATER",
+	"DEMP2",
+	"FLECHETTE",
+	"ROCKET LAUNCHER",
+	"THERMAL",
+	"TRIP MINE",
+	"DET PACK",
+	"CONCUSSION",
+	"BRYAR OLD",
+	"EMPLACED GUN",
+	"TURRET"
+};
+
+static void SV_WeaponToggle_f( void ) {
+	int bits = 0;
+	int i, val;
+	char *s;
+	const char *cvarStr = NULL;
+
+	if ( sv_gametype->integer == GT_DUEL || sv_gametype->integer == GT_POWERDUEL ) {
+		cvarStr = "g_duelWeaponDisable";
+		bits = Cvar_VariableIntegerValue( "g_duelWeaponDisable" );
+	}
+	else {
+		cvarStr = "g_weaponDisable";
+		bits = Cvar_VariableIntegerValue( "g_weaponDisable" );
+	}
+
+	// make sure server is running
+	if( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	if ( Cmd_Argc() != 2 ) {
+		for ( i = 0; i<WP_NUM_WEAPONS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, weaponToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, weaponToggleNamePrints[i] );
+		}
+		Com_Printf ("Example usage: weapontoggle 3(toggles SABER)\n");
+		return;
+	}
+
+	s = Cmd_Argv(1);
+
+	if( Q_isanumber( s ) ) {
+		val = atoi(s);
+		if( val >= 0 && val < WP_NUM_WEAPONS) {
+			bits ^= (1 << val);
+			Cvar_SetValue(cvarStr, bits);
+			Com_Printf( "%s %s^7\n", weaponToggleNamePrints[val], (bits & (1 << val)) ? "^2Enabled" : "^1Disabled" );
+		}
+		else {
+			for ( i = 0; i<WP_NUM_WEAPONS; i++ ) {
+				if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, weaponToggleNamePrints[i] );
+				else							Com_Printf( "%2d [ ] %s\n", i, weaponToggleNamePrints[i] );
+			}
+			Com_Printf ("Specified a weapon that does not exist.\nExample usage: weapontoggle 3\n(toggles SABER)\n");
+		}
+	}
+	else {
+		for ( i = 0; i<WP_NUM_WEAPONS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, weaponToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, weaponToggleNamePrints[i] );
+		}
+		Com_Printf ("Specified a weapon that does not exist.\nExample usage: weapontoggle 3\n(toggles SABER)\n");
 	}
 }
 
@@ -1421,7 +1500,7 @@ static void SV_DumpUser_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		Com_Printf ("Usage: info <userid>\n");
+		Com_Printf ("Usage: dumpuser <userid>\n");
 		return;
 	}
 
@@ -1808,6 +1887,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("svsay", SV_ConSay_f);
 	Cmd_AddCommand ("svtell", SV_ConTell_f);
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
+	Cmd_AddCommand ("weapontoggle", SV_WeaponToggle_f);
 	Cmd_AddCommand ("svrecord", SV_Record_f);
 	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
 	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f);

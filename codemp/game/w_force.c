@@ -228,7 +228,7 @@ void WP_InitForcePowers( gentity_t *ent ) {
 
 	if ( strlen( forcePowers ) != DEFAULT_FORCEPOWERS_LEN ) {
 		Q_strncpyz( forcePowers, DEFAULT_FORCEPOWERS, sizeof( forcePowers ) );
-		trap->SendServerCommand( ent-g_entities, "print \""S_COLOR_RED"Invalid forcepowers string, setting default\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"" S_COLOR_RED "Invalid forcepowers string, setting default\n\"" );
 	}
 
 	//if it's a bot just copy the info directly from its personality

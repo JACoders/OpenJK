@@ -444,11 +444,11 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	// check for errors
 	if ( !r_ignoreGLErrors->integer )
 	{
-		int	err;
-
 		R_IssuePendingRenderCommands();
-		if ((err = qglGetError()) != GL_NO_ERROR)
-			ri->Error(ERR_FATAL, "RE_BeginFrame() - glGetError() failed (0x%x)!", err);
+
+		GLenum err = qglGetError();
+		if ( err != GL_NO_ERROR )
+			Com_Error( ERR_FATAL, "RE_BeginFrame() - glGetError() failed (0x%x)!\n", err );
 	}
 
 	if (glConfig.stereoEnabled) {

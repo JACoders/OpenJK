@@ -834,7 +834,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v **ghoul2Ptr, const char *fileName, int m
 	}
 	else
 	{
-		G2_Init_Bone_List(ghoul2[model].mBlist);
+		G2_Init_Bone_List(ghoul2[model].mBlist, ghoul2[model].aHeader->numBones);
 		G2_Init_Bolt_List(ghoul2[model].mBltlist);
 		ghoul2[model].mCustomShader = customShader;
 		ghoul2[model].mCustomSkin = customSkin;

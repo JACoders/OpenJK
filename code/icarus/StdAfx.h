@@ -23,19 +23,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __ICR_STDAFX__
 #define __ICR_STDAFX__
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4786 )  // identifier was truncated 
-
-#pragma warning (push, 3)
-#endif
 #include <string>
 #include <list>
 #include <vector>
 #include <map>
 #include <algorithm>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
 
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );

@@ -23,9 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Ambient Sound System (ASS!)
 #include "../server/exe_headers.h"
 
-#ifdef _MSC_VER
-#pragma warning ( disable : 4710 )	//not inlined
-#endif
 #include "client.h"
 #include "snd_ambient.h"
 #include "snd_local.h"
@@ -1018,7 +1015,7 @@ static void AS_PlayLocalSet( vec3_t listener_origin, vec3_t origin, ambientSet_t
 	unsigned char	volume;
 	vec3_t			dir;
 	float			volScale, dist, distScale;
-	int				time = cls.realtime;
+	int				time = cl.serverTime;
 
 	//Make sure it's valid
 	if ( set == NULL )
@@ -1141,7 +1138,7 @@ int S_AddLocalSet( const char *name, vec3_t listener_origin, vec3_t origin, int 
 	set = aSets->GetSet( name );
 
 	if ( set == NULL )
-		return cls.realtime;
+		return cl.serverTime;
 
 	currentTime = time;
 

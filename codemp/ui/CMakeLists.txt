@@ -16,8 +16,6 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 2.8.8)
-
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
@@ -86,10 +84,10 @@ set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
 add_library(${MPUI} SHARED ${MPUIFiles})
 
-if(NOT WIN32)
+if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${MPUI} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif()
 
 if(MakeApplicationBundles AND BuildMPEngine)
 	install(TARGETS ${MPUI}

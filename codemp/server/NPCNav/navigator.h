@@ -36,10 +36,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define EFLAG_BLOCKED	0x00000001
 #define EFLAG_FAILED	0x00000002
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4786)
-#endif
-
 #include <map>
 #include <vector>
 #include <list>

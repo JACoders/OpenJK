@@ -25,22 +25,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __INTERPRETED_BLOCK_STREAM__
 #define	__INTERPRETED_BLOCK_STREAM__
 
-#ifdef _MSC_VER
-	#pragma warning(disable : 4786)  //identifier was truncated 
-	#pragma warning(disable : 4514)  //unreffed inline func removed
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifdef _MSC_VER
-	#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
+#include <string.h>
 #include <list>
 #include <vector>
-#ifdef _MSC_VER
-	#pragma warning (pop)
-#endif
 
 #define IBI_HEADER_ID_LENGTH 4 // Length of IBI_HEADER_ID + 1 for the null terminating byte.
 #define	IBI_EXT			".IBI"	//(I)nterpreted (B)lock (I)nstructions

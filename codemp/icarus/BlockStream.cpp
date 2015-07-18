@@ -27,12 +27,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
 
-
-#ifdef _MSC_VER
-#pragma warning(disable : 4100)  //unref formal parm
-#pragma warning(disable : 4710)  //member not inlined
-#endif
-
 #include <string.h>
 #include "blockstream.h"
 

@@ -950,7 +950,6 @@ RB_StretchPic
 static const void *RB_StretchPic ( const void *data ) {
 	const stretchPicCommand_t	*cmd;
 	shader_t *shader;
-	int		numVerts, numIndexes;
 
 	cmd = (const stretchPicCommand_t *)data;
 
@@ -976,8 +975,8 @@ static const void *RB_StretchPic ( const void *data ) {
 	}
 
 	RB_CHECKOVERFLOW( 4, 6 );
-	numVerts = tess.numVertexes;
-	numIndexes = tess.numIndexes;
+	int numVerts = tess.numVertexes;
+	int numIndexes = tess.numIndexes;
 
 	tess.numVertexes += 4;
 	tess.numIndexes += 6;
@@ -1039,13 +1038,7 @@ RB_DrawRotatePic
 static const void *RB_RotatePic ( const void *data ) 
 {
 	const rotatePicCommand_t	*cmd;
-	image_t *image;
 	shader_t *shader;
-	int numVerts;
-	int numIndexes;
-	vec3_t point, rotatedPoint;
-	vec3_t axis = { 0.0f, 0.0f, 1.0f };
-	vec3_t xlat;
 
 	cmd = (const rotatePicCommand_t *)data;
 
@@ -1062,7 +1055,6 @@ static const void *RB_RotatePic ( const void *data )
 	RB_SetGL2D();
 
 	shader = cmd->shader;
-	image = shader->stages[0]->bundle[0].image[0];
 	if ( shader != tess.shader ) {
 		if ( tess.numIndexes ) {
 			RB_EndSurface();
@@ -1072,8 +1064,18 @@ static const void *RB_RotatePic ( const void *data )
 	}
 
 	RB_CHECKOVERFLOW( 4, 6 );
-	numVerts = tess.numVertexes;
-	numIndexes = tess.numIndexes;
+	int numVerts = tess.numVertexes;
+	int numIndexes = tess.numIndexes;
+
+	float angle = DEG2RAD( cmd->a );
+	float s = sinf( angle );
+	float c = cosf( angle );
+
+	matrix3_t m = {
+		{ c, s, 0.0f },
+		{ -s, c, 0.0f },
+		{ cmd->x + cmd->w, cmd->y, 1.0f }
+	};
 
 	tess.numVertexes += 4;
 	tess.numIndexes += 6;
@@ -1096,32 +1098,30 @@ static const void *RB_RotatePic ( const void *data )
 		VectorCopy4(color, tess.vertexColors[ numVerts + 3 ]);
 	}
 
-	VectorSet (xlat, cmd->x, cmd->y, 0.0f);
-
-	VectorSet (point, -cmd->w, 0.0f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts]);
+	tess.xyz[ numVerts ][0] = m[0][0] * (-cmd->w) + m[2][0];
+	tess.xyz[ numVerts ][1] = m[0][1] * (-cmd->w) + m[2][1];
+	tess.xyz[ numVerts ][2] = 0;
 
 	tess.texCoords[ numVerts ][0][0] = cmd->s1;
 	tess.texCoords[ numVerts ][0][1] = cmd->t1;
 
-	VectorSet (point, 0.0f, 0.0f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 1]);
+	tess.xyz[ numVerts + 1 ][0] = m[2][0];
+	tess.xyz[ numVerts + 1 ][1] = m[2][1];
+	tess.xyz[ numVerts + 1 ][2] = 0;
 
 	tess.texCoords[ numVerts + 1 ][0][0] = cmd->s2;
 	tess.texCoords[ numVerts + 1 ][0][1] = cmd->t1;
 
-	VectorSet (point, 0.0f, cmd->h, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 2]);
+	tess.xyz[ numVerts + 2 ][0] = m[1][0] * (cmd->h) + m[2][0];
+	tess.xyz[ numVerts + 2 ][1] = m[1][1] * (cmd->h) + m[2][1];
+	tess.xyz[ numVerts + 2 ][2] = 0;
 
 	tess.texCoords[ numVerts + 2 ][0][0] = cmd->s2;
 	tess.texCoords[ numVerts + 2 ][0][1] = cmd->t2;
 
-	VectorSet (point, -cmd->w, cmd->h, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 3]);
+	tess.xyz[ numVerts + 3 ][0] = m[0][0] * (-cmd->w) + m[1][0] * (cmd->h) + m[2][0];
+	tess.xyz[ numVerts + 3 ][1] = m[0][1] * (-cmd->w) + m[1][1] * (cmd->h) + m[2][1];
+	tess.xyz[ numVerts + 3 ][2] = 0;
 
 	tess.texCoords[ numVerts + 3 ][0][0] = cmd->s1;
 	tess.texCoords[ numVerts + 3 ][0][1] = cmd->t2;
@@ -1137,13 +1137,7 @@ RB_DrawRotatePic2
 static const void *RB_RotatePic2 ( const void *data ) 
 {
 	const rotatePicCommand_t	*cmd;
-	image_t *image;
 	shader_t *shader;
-	int numVerts;
-	int numIndexes;
-	vec3_t point, rotatedPoint;
-	vec3_t axis = { 0.0f, 0.0f, 1.0f };
-	vec3_t xlat;
 
 	cmd = (const rotatePicCommand_t *)data;
 
@@ -1160,7 +1154,6 @@ static const void *RB_RotatePic2 ( const void *data )
 	RB_SetGL2D();
 
 	shader = cmd->shader;
-	image = shader->stages[0]->bundle[0].image[0];
 	if ( shader != tess.shader ) {
 		if ( tess.numIndexes ) {
 			RB_EndSurface();
@@ -1170,8 +1163,18 @@ static const void *RB_RotatePic2 ( const void *data )
 	}
 
 	RB_CHECKOVERFLOW( 4, 6 );
-	numVerts = tess.numVertexes;
-	numIndexes = tess.numIndexes;
+	int numVerts = tess.numVertexes;
+	int numIndexes = tess.numIndexes;
+
+	float angle = DEG2RAD( cmd->a );
+	float s = sinf( angle );
+	float c = cosf( angle );
+
+	matrix3_t m = {
+		{ c, s, 0.0f },
+		{ -s, c, 0.0f },
+		{ cmd->x, cmd->y, 1.0f }
+	};
 
 	tess.numVertexes += 4;
 	tess.numIndexes += 6;
@@ -1194,32 +1197,30 @@ static const void *RB_RotatePic2 ( const void *data )
 		VectorCopy4(color, tess.vertexColors[ numVerts + 3 ]);
 	}
 
-	VectorSet (xlat, cmd->x, cmd->y, 0.0f);
-
-	VectorSet (point, -cmd->w * 0.5f, -cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts]);
+	tess.xyz[ numVerts ][0] = m[0][0] * (-cmd->w * 0.5f) + m[1][0] * (-cmd->h * 0.5f) + m[2][0];
+	tess.xyz[ numVerts ][1] = m[0][1] * (-cmd->w * 0.5f) + m[1][1] * (-cmd->h * 0.5f) + m[2][1];
+	tess.xyz[ numVerts ][2] = 0;
 
 	tess.texCoords[ numVerts ][0][0] = cmd->s1;
 	tess.texCoords[ numVerts ][0][1] = cmd->t1;
 
-	VectorSet (point, cmd->w * 0.5f, -cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 1]);
+	tess.xyz[ numVerts + 1 ][0] = m[0][0] * (cmd->w * 0.5f) + m[1][0] * (-cmd->h * 0.5f) + m[2][0];
+	tess.xyz[ numVerts + 1 ][1] = m[0][1] * (cmd->w * 0.5f) + m[1][1] * (-cmd->h * 0.5f) + m[2][1];
+	tess.xyz[ numVerts + 1 ][2] = 0;
 
 	tess.texCoords[ numVerts + 1 ][0][0] = cmd->s2;
 	tess.texCoords[ numVerts + 1 ][0][1] = cmd->t1;
 
-	VectorSet (point, cmd->w * 0.5f, cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 2]);
+	tess.xyz[ numVerts + 2 ][0] = m[0][0] * (cmd->w * 0.5f) + m[1][0] * (cmd->h * 0.5f) + m[2][0];
+	tess.xyz[ numVerts + 2 ][1] = m[0][1] * (cmd->w * 0.5f) + m[1][1] * (cmd->h * 0.5f) + m[2][1];
+	tess.xyz[ numVerts + 2 ][2] = 0;
 
 	tess.texCoords[ numVerts + 2 ][0][0] = cmd->s2;
 	tess.texCoords[ numVerts + 2 ][0][1] = cmd->t2;
 
-	VectorSet (point, -cmd->w * 0.5f, cmd->h * 0.5f, 0.0f);
-	RotatePointAroundVector (rotatedPoint, axis, point, -cmd->a);
-	VectorAdd (rotatedPoint, xlat, tess.xyz[numVerts + 3]);
+	tess.xyz[ numVerts + 3 ][0] = m[0][0] * (-cmd->w * 0.5f) + m[1][0] * (cmd->h * 0.5f) + m[2][0];
+	tess.xyz[ numVerts + 3 ][1] = m[0][1] * (-cmd->w * 0.5f) + m[1][1] * (cmd->h * 0.5f) + m[2][1];
+	tess.xyz[ numVerts + 3 ][2] = 0;
 
 	tess.texCoords[ numVerts + 3 ][0][0] = cmd->s1;
 	tess.texCoords[ numVerts + 3 ][0][1] = cmd->t2;

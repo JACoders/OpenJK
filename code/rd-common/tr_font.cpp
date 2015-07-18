@@ -22,10 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../server/exe_headers.h"
 
-#ifndef _WIN32
 #include <limits.h>
 #include <string>
-#endif
 #include "../qcommon/sstring.h"	// stl string class won't compile in here (MS shite), so use Gil's.
 #include "tr_local.h"
 #include "tr_font.h"

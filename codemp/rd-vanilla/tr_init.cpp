@@ -217,6 +217,10 @@ cvar_t *r_screenshotJpegQuality;
 PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
 PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
 PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
+#if !defined(__APPLE__)
+PFNGLTEXIMAGE3DPROC qglTexImage3D;
+PFNGLTEXSUBIMAGE3DPROC qglTexSubImage3D;
+#endif
 
 PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
 PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
@@ -433,6 +437,7 @@ GLimp_InitExtensions
 ===============
 */
 extern bool g_bDynamicGlowSupported;
+extern bool g_bARBShadersAvailable;
 static void GLimp_InitExtensions( void )
 {
 	if ( !r_allowExtensions->integer )
@@ -699,6 +704,21 @@ static void GLimp_InitExtensions( void )
 	if(bNVRegisterCombiners)
 		qglGetIntegerv( GL_MAX_GENERAL_COMBINERS_NV, &iNumGeneralCombiners );
 
+	glConfigExt.doGammaCorrectionWithShaders = qfalse;
+	if ( qglActiveTextureARB && bTexRectSupported && bARBVertexProgram && bARBFragmentProgram )
+	{
+#if !defined(__APPLE__)
+		qglTexImage3D = (PFNGLTEXIMAGE3DPROC)ri->GL_GetProcAddress("glTexImage3D");
+		qglTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)ri->GL_GetProcAddress("glTexSubImage3D");
+		if ( qglTexImage3D && qglTexSubImage3D )
+		{
+			glConfigExt.doGammaCorrectionWithShaders = qtrue;
+		}
+#else
+		glConfigExt.doGammaCorrectionWithShaders = qtrue;
+#endif
+	}
+	
 	// Only allow dynamic glows/flares if they have the hardware
 	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
@@ -768,6 +788,7 @@ static void InitOpenGL( void )
 	{
 		windowDesc_t windowDesc = { GRAPHICS_API_OPENGL };
 		memset(&glConfig, 0, sizeof(glConfig));
+		memset(&glConfigExt, 0, sizeof(glConfigExt));
 
 		window = ri->WIN_Init(&windowDesc, &glConfig);
 
@@ -808,7 +829,8 @@ GL_CheckErrors
 ==================
 */
 void GL_CheckErrors( void ) {
-    int		err;
+#if defined(_DEBUG)
+    GLenum	err;
     char	s[64];
 
     err = qglGetError();
@@ -843,6 +865,7 @@ void GL_CheckErrors( void ) {
     }
 
     Com_Error( ERR_FATAL, "GL_CheckErrors: %s", s );
+#endif
 }
 
 /*
@@ -946,7 +969,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	memcount = linelen * height;
 
 	// gamma correct
-	if(glConfig.deviceSupportsGamma)
+	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
 		R_GammaCorrect(allbuf + offset, memcount);
 
 	ri->FS_WriteFile(fileName, buffer, memcount + 18);
@@ -983,7 +1006,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 	memcount = (width * 3 + padlen) * height;
 
 	// gamma correct
-	if(glConfig.deviceSupportsGamma)
+	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
 		R_GammaCorrect(buffer + offset, memcount);
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
@@ -1062,7 +1085,7 @@ static void R_LevelShot( void ) {
 	}
 
 	// gamma correct
-	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
+	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders ) {
 		R_GammaCorrect( buffer + 18, LEVELSHOTSIZE * LEVELSHOTSIZE * 3 );
 	}
 
@@ -1227,7 +1250,7 @@ const void *RB_TakeVideoFrameCmd( const void *data )
 	memcount = padwidth * cmd->height;
 
 	// gamma correct
-	if(glConfig.deviceSupportsGamma)
+	if(glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders)
 		R_GammaCorrect(cBuf, memcount);
 
 	if(cmd->motionJpeg)
@@ -1394,7 +1417,7 @@ void GfxInfo_f( void )
 	{
 		ri->Printf( PRINT_ALL, "N/A\n" );
 	}
-	if ( glConfig.deviceSupportsGamma )
+	if ( glConfig.deviceSupportsGamma && !glConfigExt.doGammaCorrectionWithShaders )
 	{
 		ri->Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
 	}
@@ -1745,9 +1768,11 @@ void R_Init( void ) {
 
 	R_InitWorldEffects();
 
+#if defined(_DEBUG)
 	int	err = qglGetError();
 	if ( err != GL_NO_ERROR )
 		ri->Printf( PRINT_ALL,  "glGetError() = 0x%x\n", err);
+#endif
 
 	RestoreGhoul2InfoArray();
 	// print info
@@ -1791,11 +1816,23 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 			}
 		}
 
+		if ( tr.gammaCorrectVtxShader )
+		{
+			qglDeleteProgramsARB(1, &tr.gammaCorrectVtxShader);
+		}
+
+		if ( tr.gammaCorrectPxShader )
+		{
+			qglDeleteProgramsARB(1, &tr.gammaCorrectPxShader);
+		}
+
 		// Release the scene glow texture.
 		qglDeleteTextures( 1, &tr.screenGlow );
 
 		// Release the scene texture.
 		qglDeleteTextures( 1, &tr.sceneImage );
+
+		qglDeleteTextures(1, &tr.gammaCorrectLUTImage);
 
 		// Release the blur texture.
 		qglDeleteTextures( 1, &tr.blurImage );

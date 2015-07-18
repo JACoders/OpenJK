@@ -29,9 +29,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // conversion from int to char, possible loss of data
 // unreferenced inline funciton has been removed
 #ifdef _MSC_VER
-#pragma warning( disable : 4127 4244 4514 )
-
-
 #ifdef DEBUG_LINKING
 	#pragma message("...including GenericParser2.h")
 #endif
