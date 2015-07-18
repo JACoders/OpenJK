@@ -1482,6 +1482,9 @@ typedef struct level_locals_s {
 	// zyk: fix for vjun3 map. It crashs clients in MP because of the npc skin limit (16). It will not load the protocol_imp npc
 	qboolean is_vjun3_map;
 
+	// zyk: tests if it is a sp map in loading time
+	qboolean sp_map;
+
 	// zyk: level.time when the server becomes empty (no players)
 	int server_empty_change_map_timer;
 } level_locals_t;

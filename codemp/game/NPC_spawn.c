@@ -2002,6 +2002,26 @@ void SP_NPC_spawner( gentity_t *self)
 		return;
 	}
 
+	if (zyk_sp_npc_fix.integer)
+	{ // zyk: removing npcs from SP maps which are not that useful
+		if (level.sp_map == qtrue && (Q_stricmp(self->NPC_type, "player") == 0 || Q_stricmp(self->NPC_type, "r2d2_imp") == 0 || Q_stricmp(self->NPC_type, "r2d2") == 0 || 
+			 Q_stricmp(self->NPC_type, "protocol_imp") == 0 || Q_stricmp(self->NPC_type, "tavion_new") == 0 || Q_stricmp(self->NPC_type, "dkothos") == 0 || 
+			 Q_stricmp(self->NPC_type, "vkothos") == 0 || Q_stricmp(self->NPC_type, "rosh_penin") == 0 || Q_stricmp(self->NPC_type, "rosh_dark") == 0 || 
+			 Q_stricmp(self->NPC_type, "rosh_penin_noforce") == 0 || Q_stricmp(self->NPC_type, "tavion_scepter") == 0 || Q_stricmp(self->NPC_type, "tavion_sith_sword") == 0 || 
+			 Q_stricmp(self->NPC_type, "kyle") == 0 || Q_stricmp(self->NPC_type, "kyle_boss") == 0 || Q_stricmp(self->NPC_type, "luke") == 0 || 
+			 Q_stricmp(self->NPC_type, "chewie") == 0 || Q_stricmp(self->NPC_type, "alora") == 0 || Q_stricmp(self->NPC_type, "alora_dual") == 0 || 
+			 Q_stricmp(self->NPC_type, "boba_fett") == 0 || Q_stricmp(self->NPC_type, "saber_droid_training") == 0 || 
+			 Q_stricmp(self->NPC_type, "merchant") == 0 || Q_stricmp(self->NPC_type, "elder") == 0 || Q_stricmp(self->NPC_type, "mutant_rancor") == 0 || 
+			 Q_stricmp(self->NPC_type, "sand_creature") == 0 || Q_stricmp(self->NPC_type, "sand_creature_fast") == 0 || 
+			 Q_stricmp(self->NPC_type, "protocol") == 0 || Q_stricmp(self->NPC_type, "r5d2") == 0 || Q_stricmp(self->NPC_type, "r5d2_imp") == 0 || 
+			 Q_stricmp(self->NPC_type, "gonk") == 0))
+		{
+			self->think = G_FreeEntity;
+			self->nextthink = level.time;
+			return;
+		}
+	}
+
 	if ( !self->fullName || !self->fullName[0] )
 	{
 		//FIXME: make an index into an external string table for localization

@@ -456,6 +456,20 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		level.is_vjun3_map = qtrue;
 	}
 
+	if (Q_stricmp(zyk_mapname, "yavin1") == 0 || Q_stricmp(zyk_mapname, "yavin1b") == 0 || Q_stricmp(zyk_mapname, "yavin2") == 0 || 
+		Q_stricmp(zyk_mapname, "t1_danger") == 0 || Q_stricmp(zyk_mapname, "t1_fatal") == 0 || Q_stricmp(zyk_mapname, "t1_inter") == 0 ||
+		Q_stricmp(zyk_mapname, "t1_rail") == 0 || Q_stricmp(zyk_mapname, "t1_sour") == 0 || Q_stricmp(zyk_mapname, "t1_surprise") == 0 ||
+		Q_stricmp(zyk_mapname, "hoth2") == 0 || Q_stricmp(zyk_mapname, "hoth3") == 0 || Q_stricmp(zyk_mapname, "t2_dpred") == 0 ||
+		Q_stricmp(zyk_mapname, "t2_rancor") == 0 || Q_stricmp(zyk_mapname, "t2_rogue") == 0 || Q_stricmp(zyk_mapname, "t2_trip") == 0 ||
+		Q_stricmp(zyk_mapname, "t2_wedge") == 0 || Q_stricmp(zyk_mapname, "vjun1") == 0 || Q_stricmp(zyk_mapname, "vjun2") == 0 ||
+		Q_stricmp(zyk_mapname, "vjun3") == 0 || Q_stricmp(zyk_mapname, "t3_bounty") == 0 || Q_stricmp(zyk_mapname, "t3_byss") == 0 ||
+		Q_stricmp(zyk_mapname, "t3_hevil") == 0 || Q_stricmp(zyk_mapname, "t3_rift") == 0 || Q_stricmp(zyk_mapname, "t3_stamp") == 0 ||
+		Q_stricmp(zyk_mapname, "taspir1") == 0 || Q_stricmp(zyk_mapname, "taspir2") == 0 || Q_stricmp(zyk_mapname, "kor1") == 0 ||
+		Q_stricmp(zyk_mapname, "kor2") == 0)
+	{
+		level.sp_map = qtrue;
+	}
+
 	// parse the key/value pairs and spawn gentities
 	G_SpawnEntitiesFromString(qfalse);
 
@@ -1066,6 +1080,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{ // zyk: door after the teleports of the race mode
 				G_FreeEntity( ent );
 			}
+			else if (Q_stricmp( ent->targetname, "t547") == 0)
+			{ // zyk: removes swoop at end of map. Must be removed to prevent bug in racemode
+				G_FreeEntity( ent );
+			}
 		}
 		zyk_create_info_player_deathmatch(-5698,-22304,1705,90);
 		zyk_create_info_player_deathmatch(-5433,-22328,1705,90);
@@ -1479,6 +1497,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		zyk_create_info_player_deathmatch(2397,7403,1817,90);
 		zyk_create_info_player_deathmatch(2797,7403,1817,90);
 	}
+
+	level.sp_map = qfalse;
 
 	if (Q_stricmp(level.default_map_music, "") == 0)
 	{ // zyk: if the default map music is empty (the map has no music) then set a default music
