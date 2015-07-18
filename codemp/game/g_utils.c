@@ -933,6 +933,11 @@ void G_FreeEntity( gentity_t *ed ) {
 		EjectAll(ed->m_pVehicle);
 	}
 
+	if (level.chaos_portal_id != -1 && level.chaos_portal_id == ed->s.number)
+	{
+		level.chaos_portal_id = -1;
+	}
+
 	trap->UnlinkEntity ((sharedEntity_t *)ed);		// unlink from world
 
 	trap->ICARUS_FreeEnt( (sharedEntity_t *)ed );	//ICARUS information must be added after this point

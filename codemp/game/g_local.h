@@ -1441,6 +1441,9 @@ typedef struct level_locals_s {
 	// gets cleaned when the player arrives at it
 	int quest_effect_id;
 
+	// zyk: id of the portal effect entity at last universe quest mission, so players can go through the teleport
+	int chaos_portal_id;
+
 	// zyk: Guardian Quest. Default 0. If someone uses command to activate this quest, will have value 1
 	// after the guardian is spawned, sets the guardian npc id
 	int guardian_quest;

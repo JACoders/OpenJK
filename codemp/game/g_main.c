@@ -646,6 +646,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// zyk: initializing quest_effect_id value
 	level.quest_effect_id = -1;
 
+	level.chaos_portal_id = -1;
+
 	// zyk: initializing bounty_quest_target_id value
 	level.bounty_quest_target_id = 0;
 	level.bounty_quest_choose_target = qtrue;
@@ -4143,40 +4145,6 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	player_yaw[2] = 0;
 
 	zyk_TeleportPlayer(ent,player_origin,player_yaw);
-
-	if (guardian_mode == 14)
-	{ // zyk: teleporting allies in Guardian of Chaos battle
-		if (ent->client->sess.ally1 != -1)
-		{
-			player_origin[0] = x + 200;
-			player_origin[1] = y + 100;
-			player_origin[2] = z + 50;
-			player_yaw[0] = 0;
-			player_yaw[1] = yaw;
-			player_yaw[2] = 0;
-			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally1],player_origin,player_yaw);
-		}
-		if (ent->client->sess.ally2 != -1)
-		{
-			player_origin[0] = x + 200;
-			player_origin[1] = y;
-			player_origin[2] = z + 50;
-			player_yaw[0] = 0;
-			player_yaw[1] = yaw;
-			player_yaw[2] = 0;
-			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally2],player_origin,player_yaw);
-		}
-		if (ent->client->sess.ally3 != -1)
-		{
-			player_origin[0] = x + 200;
-			player_origin[1] = y - 100;
-			player_origin[2] = z + 50;
-			player_yaw[0] = 0;
-			player_yaw[1] = yaw;
-			player_yaw[2] = 0;
-			zyk_TeleportPlayer(&g_entities[ent->client->sess.ally3],player_origin,player_yaw);
-		}
-	}
 
 	if ((guardian_mode >= 1 && guardian_mode <= 7) || guardian_mode == 11 || guardian_mode >= 14)
 		npc_ent = Zyk_NPC_SpawnType(boss_name,gx,gy,gz,gyaw);
@@ -7757,6 +7725,37 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 
+						if (level.chaos_portal_id != -1)
+						{ // zyk: portal at the last universe quest mission. Teleports players to Sacred Dimension
+							gentity_t *chaos_portal = &g_entities[level.chaos_portal_id];
+
+							if (chaos_portal && (int)Distance(chaos_portal->s.origin,ent->client->ps.origin) < 50)
+							{
+								vec3_t origin;
+								vec3_t angles;
+								int npc_iterator = 0;
+								gentity_t *this_ent = NULL;
+
+								// zyk: cleaning vehicles to prevent some exploits
+								for (npc_iterator = level.maxclients; npc_iterator < level.num_entities; npc_iterator++)
+								{
+									this_ent = &g_entities[npc_iterator];
+
+									if (this_ent && this_ent->NPC && this_ent->client->NPC_class == CLASS_VEHICLE && this_ent->die)
+										this_ent->die(this_ent, this_ent, this_ent, 100, MOD_UNKNOWN);
+								}
+
+								origin[0] = -1915.0f;
+								origin[1] = -26945.0f;
+								origin[2] = 200.0f;
+								angles[0] = 0.0f;
+								angles[1] = -179.0f;
+								angles[2] = 0.0f;
+
+								zyk_TeleportPlayer(ent,origin,angles);
+							}
+						}
+
 						if (ent->client->pers.universe_quest_progress == 14 && ent->client->pers.can_play_quest == 1)
 						{ // zyk: Universe Quest final mission
 							if (ent->client->pers.guardian_mode == 0 && ent->client->pers.universe_quest_timer < level.time)
@@ -7790,33 +7789,13 @@ void G_RunFrame( int levelTime ) {
 								{
 									new_ent = load_effect(12668,8500,1512,0,"env/hevil_bolt");
 									G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/tractorbeam.mp3"));
+
+									level.chaos_portal_id = new_ent->s.number;
 								}
 								else if (ent->client->pers.universe_quest_messages == 9)
 								{ // zyk: teleports the quest player to the Sacred Dimension
-									if ((int) ent->client->ps.origin[0] > 12648 && (int) ent->client->ps.origin[0] < 12688 && (int) ent->client->ps.origin[1] > 8480 && (int) ent->client->ps.origin[1] < 8520 && (int) ent->client->ps.origin[2] > 1500 && (int) ent->client->ps.origin[2] < 1520)
+									if ((int) ent->client->ps.origin[0] > -2015 && (int) ent->client->ps.origin[0] < -1815 && (int) ent->client->ps.origin[1] > -27045 && (int) ent->client->ps.origin[1] < -26845 && (int) ent->client->ps.origin[2] > 100 && (int) ent->client->ps.origin[2] < 300)
 									{
-										vec3_t origin;
-										vec3_t angles;
-										int npc_iterator = 0;
-										gentity_t *this_ent = NULL;
-
-										// zyk: cleaning vehicles to prevent some exploits
-										for (npc_iterator = level.maxclients; npc_iterator < level.num_entities; npc_iterator++)
-										{
-											this_ent = &g_entities[npc_iterator];
-
-											if (this_ent && this_ent->NPC && this_ent->client->NPC_class == CLASS_VEHICLE && this_ent->die)
-												this_ent->die(this_ent, this_ent, this_ent, 100, MOD_UNKNOWN);
-										}
-
-										origin[0] = -1915.0f;
-										origin[1] = -26945.0f;
-										origin[2] = 200.0f;
-										angles[0] = 0.0f;
-										angles[1] = -179.0f;
-										angles[2] = 0.0f;
-
-										zyk_TeleportPlayer(ent,origin,angles);
 										ent->client->pers.universe_quest_messages = 10;
 									}
 								}
@@ -7989,7 +7968,10 @@ void G_RunFrame( int levelTime ) {
 								if (ent->client->pers.universe_quest_messages > 0 && ent->client->pers.universe_quest_messages < 9)
 								{
 									ent->client->pers.universe_quest_messages++;
-									ent->client->pers.universe_quest_timer = level.time + 2000;
+
+									// zyk: teleport can instantly teleport player, so no delay should be added
+									if (ent->client->pers.universe_quest_messages < 9)
+										ent->client->pers.universe_quest_timer = level.time + 2000;
 								}
 								else if (ent->client->pers.universe_quest_messages > 9 && ent->client->pers.universe_quest_messages < 19)
 								{
