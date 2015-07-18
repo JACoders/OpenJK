@@ -7858,8 +7858,10 @@ void G_RunFrame( int levelTime ) {
 									{
 										this_ent = &g_entities[npc_iterator];
 
-										if (this_ent && this_ent->NPC && this_ent->die && Q_stricmp( this_ent->NPC_type, "sage_of_light" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_darkness" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_eternity" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_universe" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_time" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_boss_9" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_darkness" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_eternity" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_universe" ) != 0 && Q_stricmp( this_ent->NPC_type, "master_of_evil" ) != 0)
+										if (this_ent && this_ent->NPC && this_ent->die && Q_stricmp( this_ent->NPC_type, "sage_of_light" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_darkness" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_eternity" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_universe" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_time" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_boss_9" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_darkness" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_eternity" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_universe" ) != 0 && Q_stricmp( this_ent->NPC_type, "master_of_evil" ) != 0 && Q_stricmp( this_ent->NPC_type, "jawa_seller" ) != 0)
 											this_ent->die(this_ent, this_ent, this_ent, 100, MOD_UNKNOWN);
+										else if (this_ent && this_ent->NPC && Q_stricmp( this_ent->NPC_type, "jawa_seller" ) == 0)
+											G_FreeEntity(this_ent);
 									}
 
 									spawn_boss(ent,-3136,-26946,200,179,"guardian_of_chaos",-4228,-26946,393,0,14);
