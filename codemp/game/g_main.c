@@ -8895,7 +8895,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						healing_area(ent,5,5000);
+						healing_area(ent,3,5000);
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Healing Area!\"");
 						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
@@ -9145,6 +9145,12 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 21)
 						{
+							healing_area(ent,3,5000);
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Healing Area!\"");
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 22)
+						{
 							vec3_t origin, angles;
 
 							origin[0] = player_ent->client->ps.origin[0];
@@ -9161,14 +9167,14 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Ultra Resistance!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
-						else if (ent->client->pers.hunter_quest_messages == 22)
+						else if (ent->client->pers.hunter_quest_messages == 23)
 						{
 							chaos_power(ent,1600,300);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");
 							ent->client->pers.hunter_quest_messages = 0;
 						}
 
-						ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2000;
+						ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2200;
 					}
 
 					if (ent->client->pers.flame_thrower > level.time && ent->client->cloakDebReduce < level.time)
