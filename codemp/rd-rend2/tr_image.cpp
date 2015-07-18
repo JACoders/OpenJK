@@ -2270,7 +2270,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 	}
 
 	image = tr.images[tr.numImages] = (image_t *)ri->Hunk_Alloc( sizeof( image_t ), h_low );
-	image->texnum = 1024 + tr.numImages;
+	qglGenTextures(1, &image->texnum);
 	tr.numImages++;
 
 	image->type = type;
