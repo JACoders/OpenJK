@@ -345,6 +345,12 @@ void Cmd_Emote_f( gentity_t *ent )
 		return;
 	}
 
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot use emotes in boss battles\n\"" );
+		return;
+	}
+
 	ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
 	ent->client->ps.forceDodgeAnim = anim_id;
 	ent->client->ps.forceHandExtendTime = level.time + 1000;

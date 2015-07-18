@@ -4351,6 +4351,13 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
+			// zyk: removing emotes to prevent exploits
+			if (player_ent->client->pers.player_statuses & (1 << 1))
+			{
+				player_ent->client->pers.player_statuses &= ~(1 << 1);
+				player_ent->client->ps.forceHandExtendTime = level.time;
+			}
+
 			player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 			player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
 			player_ent->client->ps.velocity[2] += 150;
@@ -4423,6 +4430,13 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 			player_ent->client->pers.quest_power_status |= (1 << 1);
 			player_ent->client->pers.quest_power_hit_counter = 1;
 			player_ent->client->pers.quest_target1_timer = level.time + 1000;
+
+			// zyk: removing emotes to prevent exploits
+			if (player_ent->client->pers.player_statuses & (1 << 1))
+			{
+				player_ent->client->pers.player_statuses &= ~(1 << 1);
+				player_ent->client->ps.forceHandExtendTime = level.time;
+			}
 
 			if (player_ent->client->jetPackOn)
 			{
