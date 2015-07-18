@@ -1300,7 +1300,8 @@ void ForceTeamHeal( gentity_t *self )
 			max_shield = ent->client->pers.max_rpg_shield;
 
 		if (ent && ent->client && self != ent && 
-			(!ent->NPC || (ent->client->playerTeam != NPCTEAM_ENEMY && ent->client->pers.guardian_invoked_by_id == -1 && ent->s.NPC_class != CLASS_VEHICLE)) && 
+			((!ent->NPC && ent->client->pers.connected == CON_CONNECTED && ent->client->sess.sessionTeam != TEAM_SPECTATOR) || 
+			 (ent->client->playerTeam != NPCTEAM_ENEMY && ent->client->pers.guardian_invoked_by_id == -1 && ent->s.NPC_class != CLASS_VEHICLE)) && 
 			 (ent->client->ps.stats[STAT_HEALTH] < ent->client->ps.stats[STAT_MAX_HEALTH] || 
 			 (self->client->sess.amrpgmode == 2 && self->client->pers.other_skills_levels[7] > 0 && 
 			 !ent->NPC && ent->client->ps.stats[STAT_HEALTH] >= ent->client->ps.stats[STAT_MAX_HEALTH] && 
@@ -1444,6 +1445,7 @@ void ForceTeamForceReplenish( gentity_t *self )
 		if (ent && ent->client && self != ent && 
 			(ent->client->ps.fd.forcePower < ent->client->ps.fd.forcePowerMax || 
 			 (self->client->sess.amrpgmode == 2 && self->client->pers.other_skills_levels[10] > 0 && !ent->NPC && 
+			  ent->client->pers.connected == CON_CONNECTED && ent->client->sess.sessionTeam != TEAM_SPECTATOR &&
 			  (ent->client->ps.ammo[AMMO_BLASTER] < max_blasterpack_ammo || ent->client->ps.ammo[AMMO_POWERCELL] < max_powercell_ammo)
 			 )
 			) && 
