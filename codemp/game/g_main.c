@@ -7677,10 +7677,6 @@ void G_RunFrame( int levelTime ) {
 									ent->client->pers.universe_quest_messages++;
 									ent->client->pers.universe_quest_timer = level.time + 5000;
 								}
-								else if (ent->client->pers.universe_quest_messages == 29)
-								{
-									ent->client->pers.universe_quest_timer = level.time + 2000;
-								}
 							}
 
 							if (ent->client->pers.hunter_quest_timer < level.time)

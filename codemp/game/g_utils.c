@@ -1753,7 +1753,7 @@ void TryUse( gentity_t *ent )
 	{
 		if (target && target->client && target->NPC && ent->client->pers.universe_quest_progress == 13)
 		{ // zyk: player makes his choice near the end of the Universe Quest
-			if (ent->client->pers.universe_quest_messages < 28)
+			if (ent->client->pers.universe_quest_messages != 28)
 				return;
 			else
 			{
@@ -1761,24 +1761,28 @@ void TryUse( gentity_t *ent )
 				{
 					ent->client->pers.universe_quest_counter |= (1 << 0);
 					ent->client->pers.universe_quest_messages = 29;
+					ent->client->pers.universe_quest_timer = level.time - 100;
 					trap->SendServerCommand( ent->s.number, "chat \"^2Sage of Universe: ^7Thank you for chosing us, hero.\"");
 				}
 				else if (Q_stricmp( target->NPC_type, "guardian_of_universe" ) == 0)
 				{
 					ent->client->pers.universe_quest_counter |= (1 << 1);
 					ent->client->pers.universe_quest_messages = 29;
+					ent->client->pers.universe_quest_timer = level.time - 100;
 					trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7Hero, you chose well.\"");
 				}
 				else if (Q_stricmp( target->NPC_type, "master_of_evil" ) == 0)
 				{
 					ent->client->pers.universe_quest_counter |= (1 << 2);
 					ent->client->pers.universe_quest_messages = 29;
+					ent->client->pers.universe_quest_timer = level.time - 100;
 					trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7That's it! Nicely done, hero. We will have the power now!\"");
 				}
 				else if (Q_stricmp( target->NPC_type, "guardian_of_time" ) == 0)
 				{
 					ent->client->pers.universe_quest_counter |= (1 << 3);
 					ent->client->pers.universe_quest_messages = 29;
+					ent->client->pers.universe_quest_timer = level.time - 100;
 					trap->SendServerCommand( ent->s.number, "chat \"^7Guardian of Time: ^7That is a wise choice, hero.\"");
 				}
 				return;
