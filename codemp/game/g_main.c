@@ -4166,10 +4166,11 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		npc_ent->client->pers.guardian_mode = guardian_mode;
 	}
 
-	clean_effect();
-
 	if (guardian_mode != 14)
+	{
+		clean_effect();
 		zyk_NPC_Kill_f("all");
+	}
 
 	// zyk: boss battle music
 	if (ent->client->pers.player_settings & (1 << 14)) // Custom
