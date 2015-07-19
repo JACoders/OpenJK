@@ -5097,7 +5097,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				force_tank_bonus_resistance += 0.1;
 			}
 
-			damage = (int)ceil(damage * (0.9 - force_tank_bonus_resistance - ((0.1 * targ->client->pers.other_skills_levels[10]))));
+			damage = (int)ceil(damage * (0.95 - force_tank_bonus_resistance - (0.1 * targ->client->pers.other_skills_levels[10])));
 		}
 	}
 
