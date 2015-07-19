@@ -646,9 +646,9 @@ void FBO_Init(void)
 		tr.renderCubeFbo = FBO_Create("_renderCubeFbo", tr.renderCubeImage->width, tr.renderCubeImage->height);
 		FBO_Bind(tr.renderCubeFbo);
 		
-		//FBO_AttachTextureImage(tr.renderCubeImage, 0);
 		R_AttachFBOTexture2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, tr.renderCubeImage->texnum, 0);
 		glState.currentFBO->colorImage[0] = tr.renderCubeImage;
+		glState.currentFBO->colorBuffers[0] = tr.renderCubeImage->texnum;
 
 		FBO_CreateBuffer(tr.renderCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
 
