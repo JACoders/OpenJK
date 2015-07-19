@@ -4970,6 +4970,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = (int)ceil(damage*1.15);
 	}
 
+	if (level.gametype == GT_SIEGE)
+	{
+		damage = (int)ceil(damage*zyk_scale_siege_damage.value);
+	}
+
 	if (attacker && attacker->client && attacker->NPC && attacker->client->pers.guardian_invoked_by_id != -1)
 	{ // zyk: attacker is a RPG boss. Increase damage based in the number of allies of the quest player
 		gentity_t *quest_player_ent = &g_entities[attacker->client->pers.guardian_invoked_by_id];
