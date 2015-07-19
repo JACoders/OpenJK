@@ -9207,7 +9207,7 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages = 0;
 						}
 
-						ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2500;
+						ent->client->pers.guardian_timer = level.time + (ent->health/2) + 2800;
 					}
 
 					if (ent->client->pers.flame_thrower > level.time && ent->client->cloakDebReduce < level.time)
