@@ -136,6 +136,26 @@ float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
 }
 #endif
 
+float CalcFresnel(float EH)
+{
+#if 1
+	// From http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
+	// not accurate, but fast
+	return exp2(-10.0 * EH);
+#elif 0
+	// From http://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/
+	return exp2((-5.55473 * EH - 6.98316) * EH);
+#elif 0
+	float blend = 1.0 - EH;
+	float blend2 = blend * blend;
+	blend *= blend2 * blend2;
+	
+	return blend;
+#else
+	return pow(1.0 - EH, 5.0);
+#endif
+}
+
 vec3 EnvironmentBRDF(float gloss, float NE, vec3 specular)
 {
   #if 1
@@ -160,26 +180,6 @@ float CalcGGX(float NH, float gloss)
 	float a_sq = exp2(gloss * -13.0 + 1.0);
 	float d = ((NH * NH) * (a_sq - 1.0) + 1.0);
 	return a_sq / (d * d);
-}
-
-float CalcFresnel(float EH)
-{
-#if 1
-	// From http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	// not accurate, but fast
-	return exp2(-10.0 * EH);
-#elif 0
-	// From http://seblagarde.wordpress.com/2012/06/03/spherical-gaussien-approximation-for-blinn-phong-phong-and-fresnel/
-	return exp2((-5.55473 * EH - 6.98316) * EH);
-#elif 0
-	float blend = 1.0 - EH;
-	float blend2 = blend * blend;
-	blend *= blend2 * blend2;
-	
-	return blend;
-#else
-	return pow(1.0 - EH, 5.0);
-#endif
 }
 
 float CalcVisibility(float NH, float NL, float NE, float EH, float gloss)
