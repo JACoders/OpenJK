@@ -7766,7 +7766,7 @@ void G_RunFrame( int levelTime ) {
 						{ // zyk: portal at the last universe quest mission. Teleports players to Sacred Dimension
 							gentity_t *chaos_portal = &g_entities[level.chaos_portal_id];
 
-							if (chaos_portal && (int)Distance(chaos_portal->s.origin,ent->client->ps.origin) < 50)
+							if (chaos_portal && (int)Distance(chaos_portal->s.origin,ent->client->ps.origin) < 40)
 							{
 								vec3_t origin;
 								vec3_t angles;
