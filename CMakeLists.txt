@@ -158,6 +158,10 @@ if (APPLE)
 	set(SharedDefines "MACOS_X")
 endif()
 
+if (NOT WIN32 AND NOT APPLE)
+	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
+endif()
+
 # Compiler settings
 if(MSVC)
 
