@@ -21,7 +21,7 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(JK2SPGameDefines ${JK2SPGameDefines} "JK2_MODE")
+set(JK2SPGameDefines ${SharedDefines} "JK2_MODE")
 
 set(JK2SPGameIncludeDirectories "${JK2SPDir}/game")
 if(WIN32)
