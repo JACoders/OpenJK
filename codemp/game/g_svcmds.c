@@ -431,7 +431,7 @@ Svcmd_GiveAdmin
 giveadmin <player>
 ===================
 */
-extern int zyk_get_client(char *arg);
+extern int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecting );
 extern void save_account(gentity_t *ent);
 void Svcmd_GiveAdmin_f ( void )
 {
@@ -446,10 +446,9 @@ void Svcmd_GiveAdmin_f ( void )
 
 	trap->Argv( 1,  arg1, sizeof( arg1 ) );
 
-	client_id = zyk_get_client( arg1 ); 
+	client_id = ClientNumberFromString( NULL, arg1, qfalse ); 
 	if (client_id == -1)
 	{
-		trap->Print("Player not found\n");
 		return;
 	}
 

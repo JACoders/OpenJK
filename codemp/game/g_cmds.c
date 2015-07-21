@@ -184,11 +184,16 @@ int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecti
 			if ( !allowconnecting || cl->pers.connected < CON_CONNECTING )
 				continue;
 
-		if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
+		// zyk: changed this so the player name must contain the search string
+		if ( Q_stristr( cl->pers.netname_nocolor, cleanInput ) ) // if ( !Q_stricmp( cl->pers.netname_nocolor, cleanInput ) )
 			return idnum;
 	}
 
-	trap->SendServerCommand( to-g_entities, va( "print \"User %s is not on the server\n\"", s ) );
+	if (to)
+		trap->SendServerCommand( to-g_entities, va( "print \"User %s is not on the server\n\"", s ) );
+	else
+		trap->Print(va( "User %s is not on the server\n", s ));
+
 	return -1;
 }
 
@@ -1777,64 +1782,6 @@ static void Cmd_SayTeam_f( gentity_t *ent ) {
 	G_Say( ent, NULL, (level.gametype>=GT_TEAM) ? SAY_TEAM : SAY_ALL, p );
 }
 
-// zyk: rmeoves color codes from string like ^1, ^2, ^3 etc
-char *zyk_remove_color_chars(char *arg)
-{
-	char new_string[1024] = {0};
-	int i = 0, len = 0;
-
-	len = strlen(arg);
-
-	while( i < len)
-	{
-		if (i < (len-1) && arg[i] == '^' && 
-			(arg[i+1] == '0' || arg[i+1] == '1' || arg[i+1] == '2' || arg[i+1] == '3' || 
-			arg[i+1] == '4' || arg[i+1] == '5' || arg[i+1] == '6' || arg[i+1] == '7'))
-		{
-			i += 2;
-		}
-		else
-		{
-			strcpy(new_string,va("%s%c",new_string,arg[i]));
-			i++;
-		}
-	}
-
-	return G_NewString(new_string);
-}
-
-// zyk: gets the client id from a string which contains the player name
-int zyk_get_client(char *arg)
-{
-	int i = 0;
-	int arg_num = atoi(arg);
-	gentity_t *this_ent = NULL;
-
-	if (Q_stricmp(arg,"0") == 0 || (arg_num > 0 && arg_num < level.maxclients))
-	{ // zyk: argument is the client id. Search for the player who has this id
-		for (i = 0; i < level.maxclients; i++)
-		{
-			this_ent = &g_entities[i];
-			if (this_ent && this_ent->client && this_ent->client->pers.connected == CON_CONNECTED && arg_num == this_ent->s.number)
-			{
-				return this_ent->s.number;
-			}
-		}
-	}
-	else
-	{ // zyk: argument is part or full player netname
-		for (i = 0; i < level.maxclients; i++)
-		{
-			this_ent = &g_entities[i];
-			if (this_ent && this_ent->client && this_ent->client->pers.connected == CON_CONNECTED && Q_stristr(zyk_remove_color_chars(this_ent->client->pers.netname),zyk_remove_color_chars(arg)))
-			{
-				return this_ent->s.number;
-			}
-		}
-	}
-	return -1;
-}
-
 /*
 ==================
 Cmd_Tell_f
@@ -1852,7 +1799,7 @@ static void Cmd_Tell_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	targetNum = zyk_get_client( arg ); // zyk: changed this. Now it will use new function
+	targetNum = ClientNumberFromString( ent, arg, qfalse ); // zyk: changed this. Now it will use new function
 	if ( targetNum == -1 ) {
 		return;
 	}
@@ -10472,11 +10419,10 @@ void Cmd_Teleport_f( gentity_t *ent )
 		{
 			vec3_t target_origin;
 
-			client_id = zyk_get_client( arg1 );
+			client_id = ClientNumberFromString( ent, arg1, qfalse );
 
 			if (client_id == -1)
 			{
-				trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 				return;
 			}
 
@@ -10509,12 +10455,11 @@ void Cmd_Teleport_f( gentity_t *ent )
 		trap->Argv( 1,  arg1, sizeof( arg1 ) );
 		trap->Argv( 2,  arg2, sizeof( arg2 ) );
 
-		client1_id = zyk_get_client( arg1 );
-		client2_id = zyk_get_client( arg2 );
+		client1_id = ClientNumberFromString( ent, arg1, qfalse );
+		client2_id = ClientNumberFromString( ent, arg2, qfalse );
 
 		if (client1_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 			return;
 		}
 
@@ -10532,7 +10477,6 @@ void Cmd_Teleport_f( gentity_t *ent )
 
 		if (client2_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 			return;
 		}
 
@@ -10593,12 +10537,11 @@ void Cmd_CreditGive_f( gentity_t *ent ) {
 	trap->Argv( 1,  arg1, sizeof( arg1 ) );
 	trap->Argv( 2,  arg2, sizeof( arg2 ) );
 
-	client_id = zyk_get_client( arg1 ); 
+	client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 	value = atoi(arg2);
 
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 		return;
 	}
 
@@ -10828,11 +10771,10 @@ void Cmd_AllyAdd_f( gentity_t *ent ) {
 		}
 
 		trap->Argv(1, arg1, sizeof( arg1 ));
-		client_id = zyk_get_client( arg1 ); 
+		client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 
 		if (client_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 			return;
 		}
 
@@ -10888,11 +10830,10 @@ void Cmd_AllyRemove_f( gentity_t *ent ) {
 		int client_id = -1;
 
 		trap->Argv(1, arg1, sizeof( arg1 ));
-		client_id = zyk_get_client( arg1 ); 
+		client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 
 		if (client_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 			return;
 		}
 
@@ -12383,11 +12324,10 @@ void Cmd_ClientPrint_f( gentity_t *ent ) {
 
 	if (atoi(arg1) != -1)
 	{ // zyk: -1 means all players will get the message
-		client_id = zyk_get_client( arg1 );
+		client_id = ClientNumberFromString( ent, arg1, qfalse );
 
 		if (client_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 			return;
 		}
 	}
@@ -12419,11 +12359,10 @@ void Cmd_Silence_f( gentity_t *ent ) {
 	}
 
 	trap->Argv( 1, arg, sizeof( arg ) );
-	client_id = zyk_get_client( arg );
+	client_id = ClientNumberFromString( ent, arg, qfalse );
 
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 		return;
 	}
 
@@ -12641,11 +12580,10 @@ void Cmd_AdminUp_f( gentity_t *ent ) {
 		}
 		trap->Argv( 1,  arg1, sizeof( arg1 ) );
 		trap->Argv( 2,  arg2, sizeof( arg2 ) );
-		client_id = zyk_get_client( arg1 );
+		client_id = ClientNumberFromString( ent, arg1, qfalse );
 
 		if (client_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 			return;
 		}
 
@@ -12700,11 +12638,10 @@ void Cmd_AdminDown_f( gentity_t *ent ) {
 		}
 		trap->Argv( 1,  arg1, sizeof( arg1 ) );
 		trap->Argv( 2,  arg2, sizeof( arg2 ) );
-		client_id = zyk_get_client( arg1 ); 
+		client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 				
 		if (client_id == -1)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 			return;
 		}
 
@@ -12798,11 +12735,10 @@ void Cmd_RpModeClass_f( gentity_t *ent ) {
 
 	trap->Argv( 1,  arg1, sizeof( arg1 ) );
 	trap->Argv( 2,  arg2, sizeof( arg2 ) );
-	client_id = zyk_get_client( arg1 ); 
+	client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 				
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 		return;
 	}
 
@@ -12840,11 +12776,10 @@ void Cmd_RpModeUp_f( gentity_t *ent ) {
 
 	trap->Argv( 1,  arg1, sizeof( arg1 ) );
 	trap->Argv( 2,  arg2, sizeof( arg2 ) );
-	client_id = zyk_get_client( arg1 ); 
+	client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 				
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 		return;
 	}
 
@@ -12882,11 +12817,10 @@ void Cmd_RpModeDown_f( gentity_t *ent ) {
 
 	trap->Argv( 1,  arg1, sizeof( arg1 ) );
 	trap->Argv( 2,  arg2, sizeof( arg2 ) );
-	client_id = zyk_get_client( arg1 ); 
+	client_id = ClientNumberFromString( ent, arg1, qfalse ); 
 				
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"Player not found\n\"") );
 		return;
 	}
 
@@ -12923,11 +12857,10 @@ void Cmd_LevelGive_f( gentity_t *ent ) {
 
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
 
-	client_id = zyk_get_client( arg1 );
+	client_id = ClientNumberFromString( ent, arg1, qfalse );
 
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 		return;
 	}
 
@@ -12996,11 +12929,10 @@ void Cmd_AdmKick_f( gentity_t *ent ) {
 
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
 
-	client_id = zyk_get_client( arg1 );
+	client_id = ClientNumberFromString( ent, arg1, qtrue );
 
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 		return;
 	}
 
@@ -13030,11 +12962,10 @@ void Cmd_Paralyze_f( gentity_t *ent ) {
 
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
 
-	client_id = zyk_get_client( arg1 );
+	client_id = ClientNumberFromString( ent, arg1, qfalse );
 
 	if (client_id == -1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"The player was not found\n\"") );
 		return;
 	}
 
