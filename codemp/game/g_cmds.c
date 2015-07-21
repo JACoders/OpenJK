@@ -474,6 +474,12 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (ent->client->ps.eFlags2 & EF2_HELD_BY_MONSTER)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot noclip while being eaten by a rancor.\n\"" );
+		return;
+	}
+
 	// zyk: deactivating saber
 	if ( ent->client->ps.saberHolstered < 2 )
 	{
