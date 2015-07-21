@@ -10379,6 +10379,7 @@ void Cmd_Teleport_f( gentity_t *ent )
 	char arg1[MAX_STRING_CHARS];
 	char arg2[MAX_STRING_CHARS];
 	char arg3[MAX_STRING_CHARS];
+	char arg4[MAX_STRING_CHARS];
 
 	if (!(ent->client->pers.bitvalue & (1 << ADM_TELE)))
 	{ // zyk: teleport admin command
@@ -10509,6 +10510,41 @@ void Cmd_Teleport_f( gentity_t *ent )
 		VectorSet(target_origin,atoi(arg1),atoi(arg2),atoi(arg3));
 
 		zyk_TeleportPlayer(ent,target_origin,ent->client->ps.viewangles);
+	}
+	else if (trap->Argc() == 5)
+	{
+		// zyk: teleporting a player to coordinates
+		vec3_t target_origin;
+		int client_id;
+
+		trap->Argv( 1,  arg1, sizeof( arg1 ) );
+
+		client_id = ClientNumberFromString( ent, arg1, qfalse );
+
+		if (client_id == -1)
+		{
+			return;
+		}
+
+		if (g_entities[client_id].client->sess.amrpgmode > 0 && g_entities[client_id].client->pers.bitvalue & (1 << ADM_ADMPROTECT) && !(g_entities[client_id].client->pers.player_settings & (1 << 13)))
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
+			return;
+		}
+
+		if (g_entities[client_id].client->sess.amrpgmode == 2 && g_entities[client_id].client->pers.guardian_mode > 0)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Cannot teleport a player in a guardian battle.\n\"" );
+			return;
+		}
+
+		trap->Argv( 2,  arg2, sizeof( arg2 ) );
+		trap->Argv( 3,  arg3, sizeof( arg3 ) );
+		trap->Argv( 4,  arg4, sizeof( arg4 ) );
+
+		VectorSet(target_origin,atoi(arg2),atoi(arg3),atoi(arg4));
+
+		zyk_TeleportPlayer(&g_entities[client_id],target_origin,g_entities[client_id].client->ps.viewangles);
 	}
 }
 
@@ -12526,7 +12562,7 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		}
 		else if (command_number == ADM_TELE)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\nThis command can be ^3/teleport^7 or ^3/tele^7. Use ^3/teleport point ^7to mark a spot in map, then use ^3/teleport ^7to go there. Use ^3/teleport <player name or ID> ^7to teleport to a player. Use ^3/teleport <player name or ID> <player name or ID> ^7to teleport a player to another. Use ^3/teleport <x> <y> <z> ^7to teleport to coordinates\n\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"\nThis command can be ^3/teleport^7 or ^3/tele^7. Use ^3/teleport point ^7to mark a spot in map, then use ^3/teleport ^7to go there. Use ^3/teleport <player name or ID> ^7to teleport to a player. Use ^3/teleport <player name or ID> <player name or ID> ^7to teleport a player to another. Use ^3/teleport <x> <y> <z> ^7to teleport to coordinates. Use ^3/teleport <player name or ID> <x> <y> <z> ^7to teleport a player to coordinates\n\n\"" );
 		}
 		else if (command_number == ADM_ADMPROTECT)
 		{
