@@ -4918,6 +4918,18 @@ void Cmd_NPC_f( gentity_t *ent )
 
 			if (thisent->NPC)
 			{
+				if (thisent->client && thisent->client->pers.guardian_invoked_by_id != -1)
+				{
+					trap->SendServerCommand( ent-g_entities, "print \"NPC team cannot be used in bosses.\n\"" );
+					return;
+				}
+
+				if (thisent->client && level.validated_map_guardian == qtrue && level.guardian_quest == thisent->s.number)
+				{
+					trap->SendServerCommand( ent-g_entities, "print \"NPC team cannot be used in the Guardian of Map.\n\"" );
+					return;
+				}
+
 				if (Q_stricmp(cmd2,"player") == 0)
 				{
 					thisent->client->playerTeam = NPCTEAM_PLAYER;
