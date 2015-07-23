@@ -289,18 +289,20 @@ void ImperialProbe_FireBlaster(void)
 		AngleVectors (NPCS.NPC->r.currentAngles, forward, vright, up);
 	}
 
-	missile = CreateMissile( muzzle1, forward, 1600, 10000, NPCS.NPC, qfalse );
+	// zyk: changed speed. Default 1600
+	missile = CreateMissile( muzzle1, forward, 3000, 10000, NPCS.NPC, qfalse );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
 
+	// zyk: doubled the damages
 	if ( g_npcspskill.integer <= 1 )
 	{
-		missile->damage = 5;
+		missile->damage = 10;
 	}
 	else
 	{
-		missile->damage = 10;
+		missile->damage = 20;
 	}
 
 
