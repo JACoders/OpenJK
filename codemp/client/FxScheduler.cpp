@@ -279,7 +279,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	COM_StripExtension( file, sfile, sizeof( sfile ) );
 
 	std::string s = sfile;
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
+	std::transform(s.begin(), s.end(), s.begin(), ::tolower);
 
 	Com_DPrintf("Registering effect : %s\n", sfile);
 
