@@ -7983,7 +7983,7 @@ void G_RunFrame( int levelTime ) {
 									vec3_t origin;
 									vec3_t angles;
 
-									origin[0] = 12658.0f;
+									origin[0] = 12500.0f;
 									origin[1] = 8500.0f;
 									origin[2] = 1520.0f;
 									angles[0] = 0.0f;
