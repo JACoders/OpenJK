@@ -423,8 +423,18 @@ static void SetViewportAndScissor( void ) {
 	// set the window clipping
 	qglViewport( backEnd.viewParms.viewportX, backEnd.viewParms.viewportY, 
 		backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
-	qglScissor( backEnd.viewParms.viewportX, backEnd.viewParms.viewportY, 
-		backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
+
+	if ( !backEnd.viewParms.scissorX && !backEnd.viewParms.scissorY &&
+			!backEnd.viewParms.scissorWidth && !backEnd.viewParms.scissorHeight )
+	{
+		qglScissor( backEnd.viewParms.viewportX, backEnd.viewParms.viewportY, 
+			backEnd.viewParms.viewportWidth, backEnd.viewParms.viewportHeight );
+	}
+	else
+	{
+		qglScissor( backEnd.viewParms.scissorX, backEnd.viewParms.scissorY, 
+			backEnd.viewParms.scissorWidth, backEnd.viewParms.scissorHeight );
+	}
 }
 
 /*
@@ -1516,16 +1526,6 @@ static const void	*RB_DrawBuffer( const void *data ) {
 	// finish any 2D drawing if needed
 	if(tess.numIndexes)
 		RB_EndSurface();
-
-	FBO_Bind(NULL);
-
-	qglDrawBuffer( cmd->buffer );
-
-	// clear screen for debugging
-	if ( r_clear->integer ) {
-		qglClearColor( 1, 0, 0.5, 1 );
-		qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-	}
 
 	return (const void *)(cmd + 1);
 }

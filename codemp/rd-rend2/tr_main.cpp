@@ -1210,7 +1210,7 @@ void R_PlaneForSurface (surfaceType_t *surfType, cplane_t *plane) {
 		return;
 	default:
 		Com_Memset (plane, 0, sizeof(*plane));
-		plane->normal[0] = 1;		
+		plane->normal[0] = 1;
 		return;
 	}
 }
@@ -1405,7 +1405,7 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 **
 ** Determines if a surface is completely offscreen.
 */
-static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128] ) {
+static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128], int *numVertices ) {
 	float shortest = 100000000;
 	int entityNum;
 	int numTriangles;
@@ -1424,7 +1424,14 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 	RB_BeginSurface( shader, fogNum, drawSurf->cubemapIndex );
 	rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
 
-	assert( tess.numVertexes < 128 );
+	if ( tess.numVertexes > 128 )
+	{
+		// Don't bother trying, just assume it's off-screen and make it look bad. Besides, artists
+		// shouldn't be using this many vertices on a mirror surface anyway :)
+		return qtrue;
+	}
+
+	*numVertices = tess.numVertexes;
 
 	for ( i = 0; i < tess.numVertexes; i++ )
 	{
@@ -1432,6 +1439,7 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 		unsigned int pointFlags = 0;
 
 		R_TransformModelToClip( tess.xyz[i], tr.ori.modelMatrix, tr.viewParms.projectionMatrix, eye, clip );
+		VectorCopy4(clip, clipDest[i]);
 
 		for ( j = 0; j < 3; j++ )
 		{
@@ -1511,6 +1519,7 @@ Returns qtrue if another view has been rendered
 */
 qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	vec4_t			clipDest[128];
+	int				numVertices;
 	viewParms_t		newParms;
 	viewParms_t		oldParms;
 	orientation_t	surface, camera;
@@ -1526,7 +1535,7 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	}
 
 	// trivially reject portal/mirror
-	if ( SurfIsOffscreen( drawSurf, clipDest ) ) {
+	if ( SurfIsOffscreen( drawSurf, clipDest, &numVertices ) ) {
 		return qfalse;
 	}
 
@@ -1545,6 +1554,67 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	if (newParms.isMirror)
 		newParms.flags |= VPF_NOVIEWMODEL;
 
+	// Calculate window coordinates of this surface to get tight fitting scissor rectangle
+	int minRectX = INT_MAX;
+	int minRectY = INT_MAX;
+	int maxRectX = 0;
+	int maxRectY = 0;
+
+	int viewportWidth = oldParms.viewportWidth;
+	int viewportHeight = oldParms.viewportHeight;
+	float viewportCenterX = oldParms.viewportX + 0.5f * viewportWidth;
+	float viewportCenterY = oldParms.viewportY + 0.5f * viewportHeight;
+
+	for ( int i = 0; i < numVertices; i++ )
+	{
+		float ndcX;
+		float ndcY;
+		float wdcX;
+		float wdcY;
+		int floorX;
+		int floorY;
+		int ceilX;
+		int ceilY;
+
+		if ( clipDest[i][0] <= -clipDest[i][3] )
+			ndcX = -1.0f;
+		else if ( clipDest[i][0] >= clipDest[i][3] )
+			ndcX = 1.0f;
+		else
+			ndcX = clipDest[i][0] / clipDest[i][3];
+
+		if ( clipDest[i][1] <= -clipDest[i][3] )
+			ndcY = -1.0f;
+		else if ( clipDest[i][1] >= clipDest[i][3] )
+			ndcY = 1.0f;
+		else
+			ndcY = clipDest[i][1] / clipDest[i][3];
+
+		wdcX = 0.5f * viewportWidth * ndcX + viewportCenterX;
+		wdcY = 0.5f * viewportHeight * ndcY + viewportCenterY;
+
+		floorX = (int)wdcX;
+		floorY = (int)wdcY;
+
+		ceilX = (int)(wdcX + 0.5f);
+		ceilY = (int)(wdcY + 0.5f);
+
+		minRectX = Q_min(minRectX, floorX);
+		minRectY = Q_min(minRectY, floorY);
+		maxRectX = Q_max(maxRectX, ceilX);
+		maxRectY = Q_max(maxRectY, ceilY);
+	}
+
+	minRectX = Q_max(minRectX, 0);
+	minRectY = Q_max(minRectY, 0);
+	maxRectX = Q_min(maxRectX, oldParms.viewportX + viewportWidth);
+	maxRectY = Q_min(maxRectY, oldParms.viewportY + viewportHeight);
+
+	newParms.scissorX = minRectX;
+	newParms.scissorY = minRectY;
+	newParms.scissorWidth = maxRectX - minRectX;
+	newParms.scissorHeight = maxRectY - minRectY;
+
 	R_MirrorPoint (oldParms.ori.origin, &surface, &camera, newParms.ori.origin );
 
 	VectorSubtract( vec3_origin, camera.axis[0], newParms.portalPlane.normal );
@@ -1554,7 +1624,9 @@ qboolean R_MirrorViewBySurface (drawSurf_t *drawSurf, int entityNum) {
 	R_MirrorVector (oldParms.ori.axis[1], &surface, &camera, newParms.ori.axis[1]);
 	R_MirrorVector (oldParms.ori.axis[2], &surface, &camera, newParms.ori.axis[2]);
 
-	// OPTIMIZE: restrict the viewport on the mirrored view
+	// OPTIMIZE further: restrict the viewport and set up the view and projection
+	// matrices so they only draw into the tightest screen-space aligned box required
+	// to fill the restricted viewport.
 
 	// render the mirror view
 	R_RenderView (&newParms);
@@ -2433,7 +2505,7 @@ static float CalcSplit(float n, float f, float i, float m)
 
 void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 {
-	viewParms_t		shadowParms;
+	viewParms_t shadowParms;
 	vec4_t lightDir, lightCol;
 	vec3_t lightViewAxis[3];
 	vec3_t lightOrigin;

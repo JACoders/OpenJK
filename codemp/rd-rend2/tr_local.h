@@ -1186,6 +1186,7 @@ typedef struct {
 	int			frameCount;			// copied from tr.frameCount
 	cplane_t	portalPlane;		// clip anything behind this if mirroring
 	int			viewportX, viewportY, viewportWidth, viewportHeight;
+	int			scissorX, scissorY, scissorWidth, scissorHeight;
 	FBO_t		*targetFbo;
 	int         targetFboLayer;
 	int         targetFboCubemapIndex;
