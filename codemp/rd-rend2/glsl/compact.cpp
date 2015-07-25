@@ -38,7 +38,6 @@ std::string& escape_string ( std::string& s )
 		char c = *it;
 		if ( should_be_escaped (c) )
 		{
-			std::cout << "escaped something\n";
 			it = s.insert (it, '\\');
 			it += 2;
 		}
