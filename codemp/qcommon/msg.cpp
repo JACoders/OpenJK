@@ -787,7 +787,7 @@ entityState_t communication
 
 typedef struct netField_s {
 	const char	*name;
-	int		offset;
+	size_t	offset;
 	int		bits;		// 0 = float
 #ifndef FINAL_BUILD
 	unsigned	mCount;
