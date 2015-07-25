@@ -171,7 +171,7 @@ void main()
 	vec4 originalNormal = vec4(attr_Normal - vec3 (0.5), 0.0);
 #if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
 	vec4 tangent4 = vec4(0.0);
-	vec4 originalTangent = vec4(attr_Tangent.xyz, 0.0);
+	vec4 originalTangent = vec4(attr_Tangent.xyz - vec3(0.5), 0.0);
 #endif
 
 	for (int i = 0; i < 4; i++)
