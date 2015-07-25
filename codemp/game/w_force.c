@@ -556,6 +556,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
+	if (forcePower == FP_DRAIN && attacker && attacker->client && other && other->client && attacker->client->sess.amrpgmode > 0 && 
+		other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && (attacker->client->sess.ally1 == other->s.number || 
+		attacker->client->sess.ally2 == other->s.number || attacker->client->sess.ally3 == other->s.number))
+	{ // zyk: allies wont be drained if they dont allow it
+		return 0;
+	}
+
 	if (attacker && attacker->client && !BG_CanUseFPNow(level.gametype, &attacker->client->ps, level.time, forcePower))
 	{
 		return 0;
@@ -2174,11 +2181,6 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					}
 				}
 				//G_Damage( traceEnt, self, self, dir, impactPoint, dmg, 0, MOD_FORCE_DARK );
-
-				if (self->client->sess.amrpgmode == 2 && traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.player_settings & (1 << 6) && (self->client->sess.ally1 == traceEnt->s.number || self->client->sess.ally2 == traceEnt->s.number || self->client->sess.ally3 == traceEnt->s.number))
-				{ // zyk: allies wont be drained if they dont allow it
-					dmg = 0;
-				}
 
 				if (dmg)
 				{
