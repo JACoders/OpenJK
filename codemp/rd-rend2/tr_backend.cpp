@@ -484,11 +484,8 @@ void RB_BeginDrawingView (void) {
 
 	// ensures that depth writes are enabled for the depth clear
 	GL_State( GLS_DEFAULT );
-
 	// clear relevant buffers
-	clearBits = GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT;
-
-	qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+	clearBits = GL_DEPTH_BUFFER_BIT;
 
 	if ( r_measureOverdraw->integer || r_shadows->integer == 2 )
 	{
@@ -497,6 +494,7 @@ void RB_BeginDrawingView (void) {
 
 	if ( r_fastsky->integer && !( backEnd.refdef.rdflags & RDF_NOWORLDMODEL ) )
 	{
+		clearBits |= GL_COLOR_BUFFER_BIT;	// FIXME: only if sky shaders have been used
 #ifdef _DEBUG
 		qglClearColor( 0.8f, 0.7f, 0.4f, 1.0f );	// FIXME: get color of sky
 #else
@@ -507,12 +505,14 @@ void RB_BeginDrawingView (void) {
 	// clear to white for shadow maps
 	if (backEnd.viewParms.flags & VPF_SHADOWMAP)
 	{
+		clearBits |= GL_COLOR_BUFFER_BIT;
 		qglClearColor( 1.0f, 1.0f, 1.0f, 1.0f );
 	}
 
 	// clear to black for cube maps
 	if (tr.renderCubeFbo != NULL && backEnd.viewParms.targetFbo == tr.renderCubeFbo)
 	{
+		clearBits |= GL_COLOR_BUFFER_BIT;
 		qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
 	}
 
@@ -1303,9 +1303,6 @@ static const void	*RB_DrawSurfs( const void *data ) {
 			qglViewport(box[0], box[1], box[2], box[3]);
 			qglScissor(box[0], box[1], box[2], box[3]);
 
-			GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			qglClearBufferfv(GL_COLOR, 0, black);
-
 			box[0] = backEnd.viewParms.viewportX               / (float)glConfig.vidWidth;
 			box[1] = backEnd.viewParms.viewportY               / (float)glConfig.vidHeight;
 			box[2] = box[0] + backEnd.viewParms.viewportWidth  / (float)glConfig.vidWidth;
@@ -1479,8 +1476,8 @@ static const void	*RB_DrawSurfs( const void *data ) {
 			FBO_t *oldFbo = glState.currentFBO;
 			FBO_Bind(tr.sunRaysFbo);
 			
-			GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-			qglClearBufferfv( GL_COLOR, 0, black );
+			qglClearColor( 0.0f, 0.0f, 0.0f, 1.0f );
+			qglClear( GL_COLOR_BUFFER_BIT );
 
 			tr.sunFlareQueryActive[tr.sunFlareQueryIndex] = qtrue;
 			qglBeginQuery(GL_SAMPLES_PASSED, tr.sunFlareQuery[tr.sunFlareQueryIndex]);
@@ -1493,7 +1490,7 @@ static const void	*RB_DrawSurfs( const void *data ) {
 		}
 
 		// darken down any stencil shadows
-		RB_ShadowFinish();
+		RB_ShadowFinish();		
 
 		// add light flares on lights that aren't obscured
 		RB_RenderFlares();
