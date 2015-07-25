@@ -109,7 +109,7 @@ int main ( int argc, char *argv[] )
 				continue;
 			}
 
-			output += escape_string (line) + "\\n\\\n";
+			output += escape_string (line) + "\\n\"\n\"";
 		}
 		output += "\";\n\n";
 	}
