@@ -149,7 +149,7 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_CubeMapInfo", GLSL_VEC4, 1 },
 
-	{ "u_BoneMatrices",			GLSL_MAT16, 80 },
+	{ "u_BoneMatrices",			GLSL_MAT16, 20 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
