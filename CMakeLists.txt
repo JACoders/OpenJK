@@ -241,6 +241,15 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "RELEASE")
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES "DEBUG" OR CMAKE_BUILD_TYPE MATCHES "Debug")
+	# CMake already defines _DEBUG for MSVC.
+	if (NOT MSVC)
+		set(SharedDefines ${SharedDefines} "_DEBUG")
+	endif()
+else()
+	set(SharedDefines ${SharedDefines} "FINAL_BUILD")
+endif()
+
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
@@ -255,13 +264,6 @@ if(UseInternalZlib)
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
-
-if(NOT MSVC)
-	# CMake already defines _DEBUG for MSVC.
-	set(DebugDefines ${DebugDefines} "_DEBUG")
-endif()
-
-set(ReleaseDefines "FINAL_BUILD")
 
 # Add projects
 add_subdirectory(${SPDir})
