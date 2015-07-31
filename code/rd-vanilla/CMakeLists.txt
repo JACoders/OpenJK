@@ -223,10 +223,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 			endif()
 		endif()
 
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPRDVanillaDefines};${ReleaseDefines}")
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPRDVanillaDefines};${ReleaseDefines}")
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPRDVanillaDefines};${ReleaseDefines}")
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPRDVanillaDefines};${DebugDefines}")
+		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPRDVanillaDefines}")
 		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 
