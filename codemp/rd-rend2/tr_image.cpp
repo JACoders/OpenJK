@@ -29,8 +29,37 @@ static unsigned char s_gammatable[256];
 int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
 int		gl_filter_max = GL_LINEAR;
 
-#define FILE_HASH_SIZE		1024
-static	image_t*		hashTable[FILE_HASH_SIZE];
+#define FILE_HASH_SIZE 1553 // Prime numbers are a good size for hash tables :)
+#define NUM_IMAGES_PER_POOL_ALLOC 512
+
+static struct ImagesPool
+{
+	image_t *pPool;
+	ImagesPool *pNext;
+} *imagesPool;
+
+static image_t *hashTable[FILE_HASH_SIZE];
+
+/*
+Extends the size of the images pool allocator
+*/
+static void R_ExtendImagesPool()
+{
+	ImagesPool *pool = (ImagesPool *)Z_Malloc(sizeof(*pool), TAG_GENERAL);
+	image_t *freeImages = (image_t *)Z_Malloc(sizeof(*freeImages) * NUM_IMAGES_PER_POOL_ALLOC, TAG_IMAGE_T);
+
+	for ( int i = 0; i < (NUM_IMAGES_PER_POOL_ALLOC - 1); i++ )
+	{
+		freeImages[i].poolNext = &freeImages[i + 1];
+	}
+	freeImages[NUM_IMAGES_PER_POOL_ALLOC - 1].poolNext = tr.imagesFreeList;
+
+	pool->pPool = freeImages;
+	pool->pNext = imagesPool;
+	imagesPool = pool;
+
+	tr.imagesFreeList = freeImages;
+}
 
 /*
 ** R_GammaCorrect
@@ -76,8 +105,8 @@ static long generateHashValue( const char *fname ) {
 		hash+=(long)(letter)*(i+119);
 		i++;
 	}
-	hash &= (FILE_HASH_SIZE-1);
-	return hash;
+
+	return hash % FILE_HASH_SIZE;
 }
 
 /*
@@ -110,8 +139,8 @@ void GL_TextureMode( const char *string ) {
 	}
 
 	// change all the existing mipmap texture objects
-	for ( i = 0 ; i < tr.numImages ; i++ ) {
-		glt = tr.images[ i ];
+	glt = tr.images;
+	for ( i = 0 ; i < tr.numImages ; i++, glt = glt->poolNext ) {
 		if ( glt->flags & IMGFLAG_MIPMAP ) {
 			GL_Bind (glt);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
@@ -159,12 +188,12 @@ R_ImageList_f
 void R_ImageList_f( void ) {
 	int i;
 	int estTotalSize = 0;
+	image_t *image = tr.images;
 
 	ri->Printf(PRINT_ALL, "\n      -w-- -h-- type  -size- --name-------\n");
 
-	for ( i = 0 ; i < tr.numImages ; i++ )
+	for ( i = 0 ; i < tr.numImages ; i++, image = image->poolNext )
 	{
-		image_t *image = tr.images[i];
 		char *format = "???? ";
 		char *sizeSuffix;
 		int estSize;
@@ -2244,6 +2273,58 @@ static void EmptyTexture( int width, int height, imgType_t type, int flags,
 	GL_CheckErrors();
 }
 
+static image_t *R_AllocImage()
+{
+	image_t *result;
+
+	if ( !tr.imagesFreeList )
+	{
+		R_ExtendImagesPool();
+	}
+
+	// Remove from free list
+	result = tr.imagesFreeList;
+	tr.imagesFreeList = tr.imagesFreeList->poolNext;
+
+	// Add to list of used images
+	result->poolNext = tr.images;
+	tr.images = result;
+
+	tr.numImages++;
+
+	return result;
+}
+
+static void R_FreeImage( image_t *imageToFree )
+{
+	if ( imageToFree )
+	{
+		// Images aren't deleted individually very often. Not a
+		// problem to do this really...
+		if ( imageToFree == tr.images )
+		{
+			tr.images = imageToFree->poolNext;
+			imageToFree->poolNext = tr.imagesFreeList;
+			tr.imagesFreeList = imageToFree;
+		}
+		else
+		{
+			image_t *image = tr.images;
+			while ( image )
+			{
+				if ( image->poolNext == imageToFree )
+				{
+					image->poolNext = imageToFree->poolNext;
+					imageToFree->poolNext = tr.imagesFreeList;
+					tr.imagesFreeList = imageToFree;
+					break;
+				}
+
+				image = image->poolNext;
+			}
+		}
+	}
+}
 
 /*
 ================
@@ -2265,13 +2346,8 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 		isLightmap = qtrue;
 	}
 
-	if ( tr.numImages == MAX_DRAWIMAGES ) {
-		ri->Error( ERR_DROP, "R_CreateImage: MAX_DRAWIMAGES hit");
-	}
-
-	image = tr.images[tr.numImages] = (image_t *)ri->Hunk_Alloc( sizeof( image_t ), h_low );
+	image = R_AllocImage();
 	qglGenTextures(1, &image->texnum);
-	tr.numImages++;
 
 	image->type = type;
 	image->flags = flags;
@@ -2294,7 +2370,6 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 	}
 
 	image->internalFormat = internalFormat;
-		
 
 	// lightmaps are always allocated on TMU 1
 	if ( isLightmap ) {
@@ -3028,12 +3103,23 @@ void R_SetColorMappings( void ) {
 }
 
 /*
+Initialise the images pool allocator
+*/
+void R_InitImagesPool()
+{
+	Com_Memset(hashTable, 0, sizeof(hashTable));
+
+	imagesPool = NULL;
+	tr.imagesFreeList = NULL;
+	R_ExtendImagesPool();
+}
+
+/*
 ===============
 R_InitImages
 ===============
 */
-void	R_InitImages( void ) {
-	Com_Memset(hashTable, 0, sizeof(hashTable));
+void R_InitImages( void ) {
 	// build brightness translation tables
 	R_SetColorMappings();
 
@@ -3047,14 +3133,24 @@ R_DeleteTextures
 ===============
 */
 void R_DeleteTextures( void ) {
-	int		i;
-
-	for ( i=0; i<tr.numImages ; i++ ) {
-		qglDeleteTextures( 1, &tr.images[i]->texnum );
+	image_t *image = tr.images;
+	while ( image )
+	{
+		qglDeleteTextures(1, &image->texnum);
+		image = image->poolNext;
 	}
-	Com_Memset( tr.images, 0, sizeof( tr.images ) );
 
 	tr.numImages = 0;
+
+	// Free pool and allocated images
+	while ( imagesPool )
+	{
+		ImagesPool *pNext = imagesPool->pNext;
+		Z_Free(imagesPool->pPool);
+		Z_Free(imagesPool);
+
+		imagesPool = pNext;
+	}
 
 	Com_Memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
 	GL_SelectTexture( 1 );
