@@ -169,11 +169,12 @@ R_SumOfUsedImages
 int R_SumOfUsedImages( void ) {
 	int	total;
 	int i;
+	image_t *image = tr.images;
 
 	total = 0;
-	for ( i = 0; i < tr.numImages; i++ ) {
-		if ( tr.images[i]->frameUsed == tr.frameCount ) {
-			total += tr.images[i]->uploadWidth * tr.images[i]->uploadHeight;
+	for ( i = 0; i < tr.numImages; i++, image = image->poolNext ) {
+		if ( image->frameUsed == tr.frameCount ) {
+			total += image->uploadWidth * image->uploadHeight;
 		}
 	}
 
