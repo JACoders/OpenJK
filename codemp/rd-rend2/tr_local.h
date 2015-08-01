@@ -354,7 +354,8 @@ typedef struct image_s {
 	imgType_t   type;
 	int			flags;
 
-	struct image_s*	next;
+	struct image_s *next;
+	struct image_s *poolNext;
 } image_t;
 
 typedef struct dlight_s {
@@ -2054,7 +2055,8 @@ typedef struct trGlobals_s {
 	int						numModels;
 
 	int						numImages;
-	image_t					*images[MAX_DRAWIMAGES];
+	image_t					*images;
+	image_t					*imagesFreeList;
 
 	int						numFBOs;
 	FBO_t					*fbos[MAX_FBOS];
@@ -2386,6 +2388,7 @@ void	R_ScreenShotJPEG_f( void );
 
 void	R_InitFogTable( void );
 float	R_FogFactor( float s, float t );
+void	R_InitImagesPool();
 void	R_InitImages( void );
 void	R_DeleteTextures( void );
 int		R_SumOfUsedImages( void );
