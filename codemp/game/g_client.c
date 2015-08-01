@@ -3106,6 +3106,10 @@ extern qboolean WP_HasForcePowers( const playerState_t *ps );
 extern void initialize_rpg_skills(gentity_t *ent);
 extern void quest_get_new_player(gentity_t *ent);
 extern void clean_guardians(gentity_t *ent);
+extern void zyk_add_force_powers( gentity_t *ent );
+extern void zyk_add_guns( gentity_t *ent );
+extern void zyk_remove_force_powers( gentity_t *ent );
+extern void zyk_remove_guns( gentity_t *ent );
 void ClientSpawn(gentity_t *ent) {
 	int					i = 0, index = 0, saveSaberNum = ENTITYNUM_NONE, wDisable = 0, savedSiegeIndex = 0, maxHealth = 100;
 	vec3_t				spawn_origin, spawn_angles;
@@ -3792,6 +3796,16 @@ void ClientSpawn(gentity_t *ent) {
 
 		// zyk: getting the player who can play a quest in this map
 		quest_get_new_player(ent);
+	}
+	else if (ent->client->pers.player_statuses & (1 << 12))
+	{ // zyk: player received force powers from admin
+		zyk_remove_guns(ent);
+		zyk_add_force_powers(ent);
+	}
+	else if (ent->client->pers.player_statuses & (1 << 13))
+	{ // zyk: player received guns from admin
+		zyk_remove_force_powers(ent);
+		zyk_add_guns(ent);
 	}
 
 	ent->client->pers.chat_protection_timer = 0;

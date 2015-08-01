@@ -524,6 +524,7 @@ typedef enum {
 	ADM_RPMODE,
 	ADM_KICK,
 	ADM_PARALYZE,
+	ADM_GIVE,
 	ADM_NUM_CMDS
 } zyk_admin_t;
 
@@ -601,6 +602,8 @@ typedef struct clientPersistant_s {
 	// 9 - using Gun Armor
 	// 10 - using Healing Crystal
 	// 11 - using Energy Crystal
+	// 12 - Give Command - Force
+	// 13 - Give Command - Guns
 	int player_statuses;
 
 	// zyk: chat protection cooldown timer. After this time, player will be protected against damage

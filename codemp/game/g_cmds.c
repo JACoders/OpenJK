@@ -197,139 +197,6 @@ int ClientNumberFromString( gentity_t *to, const char *s, qboolean allowconnecti
 	return -1;
 }
 
-/*
-==================
-Cmd_Give_f
-
-Give items to a client
-==================
-*/
-void G_Give( gentity_t *ent, const char *name, const char *args, int argc )
-{
-	gitem_t		*it;
-	int			i;
-	qboolean	give_all = qfalse;
-	gentity_t	*it_ent;
-	trace_t		trace;
-
-	if ( !Q_stricmp( name, "all" ) )
-		give_all = qtrue;
-
-	if ( give_all )
-	{
-		for ( i=0; i<HI_NUM_HOLDABLE; i++ )
-			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << i);
-	}
-
-	if ( give_all || !Q_stricmp( name, "health") )
-	{
-		if ( argc == 3 )
-			ent->health = Com_Clampi( 1, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
-		else
-		{
-			if ( level.gametype == GT_SIEGE && ent->client->siegeClass != -1 )
-				ent->health = bgSiegeClasses[ent->client->siegeClass].maxhealth;
-			else
-				ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-		}
-		if ( !give_all )
-			return;
-	}
-
-	if ( give_all || !Q_stricmp( name, "armor" ) || !Q_stricmp( name, "shield" ) )
-	{
-		if ( argc == 3 )
-			ent->client->ps.stats[STAT_ARMOR] = Com_Clampi( 0, ent->client->ps.stats[STAT_MAX_HEALTH], atoi( args ) );
-		else
-		{
-			if ( level.gametype == GT_SIEGE && ent->client->siegeClass != -1 )
-				ent->client->ps.stats[STAT_ARMOR] = bgSiegeClasses[ent->client->siegeClass].maxarmor;
-			else
-				ent->client->ps.stats[STAT_ARMOR] = ent->client->ps.stats[STAT_MAX_HEALTH];
-		}
-
-		if ( !give_all )
-			return;
-	}
-
-	if ( give_all || !Q_stricmp( name, "force" ) )
-	{
-		if ( argc == 3 )
-			ent->client->ps.fd.forcePower = Com_Clampi( 0, ent->client->ps.fd.forcePowerMax, atoi( args ) );
-		else
-			ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
-
-		if ( !give_all )
-			return;
-	}
-
-	if ( give_all || !Q_stricmp( name, "weapons" ) )
-	{
-		ent->client->ps.stats[STAT_WEAPONS] = (1 << (LAST_USEABLE_WEAPON+1)) - ( 1 << WP_NONE );
-		if ( !give_all )
-			return;
-	}
-
-	if ( !give_all && !Q_stricmp( name, "weaponnum" ) )
-	{
-		ent->client->ps.stats[STAT_WEAPONS] |= (1 << atoi( args ));
-		return;
-	}
-
-	if ( give_all || !Q_stricmp( name, "ammo" ) )
-	{
-		int num = 999;
-		if ( argc == 3 )
-			num = Com_Clampi( 0, 999, atoi( args ) );
-		for ( i=AMMO_BLASTER; i<AMMO_MAX; i++ )
-			ent->client->ps.ammo[i] = num;
-		if ( !give_all )
-			return;
-	}
-
-	if ( !Q_stricmp( name, "excellent" ) ) {
-		ent->client->ps.persistant[PERS_EXCELLENT_COUNT]++;
-		return;
-	}
-	if ( !Q_stricmp( name, "impressive" ) ) {
-		ent->client->ps.persistant[PERS_IMPRESSIVE_COUNT]++;
-		return;
-	}
-	if ( !Q_stricmp( name, "gauntletaward" ) ) {
-		ent->client->ps.persistant[PERS_GAUNTLET_FRAG_COUNT]++;
-		return;
-	}
-	if ( !Q_stricmp( name, "defend" ) ) {
-		ent->client->ps.persistant[PERS_DEFEND_COUNT]++;
-		return;
-	}
-	if ( !Q_stricmp( name, "assist" ) ) {
-		ent->client->ps.persistant[PERS_ASSIST_COUNT]++;
-		return;
-	}
-
-	// spawn a specific item right on the player
-	if ( !give_all ) {
-		it = BG_FindItem( name );
-		if ( !it )
-			return;
-
-		it_ent = G_Spawn();
-		VectorCopy( ent->r.currentOrigin, it_ent->s.origin );
-		it_ent->classname = it->classname;
-		G_SpawnItem( it_ent, it );
-		if ( !it_ent || !it_ent->inuse )
-			return;
-		FinishSpawningItem( it_ent );
-		if ( !it_ent || !it_ent->inuse )
-			return;
-		memset( &trace, 0, sizeof( trace ) );
-		Touch_Item( it_ent, ent, &trace );
-		if ( it_ent->inuse )
-			G_FreeEntity( it_ent );
-	}
-}
-
 // zyk: plays an animation from anims.h
 void Cmd_Emote_f( gentity_t *ent )
 {
@@ -363,47 +230,167 @@ void Cmd_Emote_f( gentity_t *ent )
 	ent->client->pers.player_statuses |= (1 << 1);
 }
 
-void Cmd_Give_f( gentity_t *ent )
-{
-	char name[MAX_TOKEN_CHARS] = {0};
+/*
+==================
+Cmd_Give_f
 
-	trap->Argv( 1, name, sizeof( name ) );
-	G_Give( ent, name, ConcatArgs( 2 ), trap->Argc() );
+Give items to a client
+==================
+*/
+void zyk_remove_force_powers( gentity_t *ent )
+{
+	int i = 0;
+
+	for (i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
+	{
+		ent->client->ps.fd.forcePowersKnown &= ~(1 << i);
+		ent->client->ps.fd.forcePowerLevel[i] = FORCE_LEVEL_0;
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
+	}
+
+	ent->client->ps.weapon = WP_MELEE;
 }
 
-void Cmd_GiveOther_f( gentity_t *ent )
+void zyk_remove_guns( gentity_t *ent )
 {
-	char		name[MAX_TOKEN_CHARS] = {0};
-	int			i;
-	char		otherindex[MAX_TOKEN_CHARS];
-	gentity_t	*otherEnt = NULL;
+	int i = 0;
 
-	if ( trap->Argc () < 3 ) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: giveother <player id> <givestring>\n\"" );
-		return;
-	}
-
-	trap->Argv( 1, otherindex, sizeof( otherindex ) );
-	i = ClientNumberFromString( ent, otherindex, qfalse );
-	if ( i == -1 ) {
-		return;
-	}
-
-	otherEnt = &g_entities[i];
-	if ( !otherEnt->inuse || !otherEnt->client ) {
-		return;
-	}
-
-	if ( (otherEnt->health <= 0 || otherEnt->client->tempSpectate >= level.time || otherEnt->client->sess.sessionTeam == TEAM_SPECTATOR) )
+	for (i = WP_STUN_BATON; i < WP_NUM_WEAPONS; i++)
 	{
-		// Intentionally displaying for the command user
-		trap->SendServerCommand( ent-g_entities, va( "print \"%s\n\"", G_GetStringEdString( "MP_SVGAME", "MUSTBEALIVE" ) ) );
+		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << i);
+	}
+
+	ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
+	ent->client->ps.weapon = WP_MELEE;
+
+	ent->client->ps.ammo[AMMO_BLASTER] = 0;
+	ent->client->ps.ammo[AMMO_POWERCELL] = 0;
+	ent->client->ps.ammo[AMMO_METAL_BOLTS] = 0;
+	ent->client->ps.ammo[AMMO_ROCKETS] = 0;
+	ent->client->ps.ammo[AMMO_THERMAL] = 0;
+	ent->client->ps.ammo[AMMO_TRIPMINE] = 0;
+	ent->client->ps.ammo[AMMO_DETPACK] = 0;
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] = (1 << HI_NONE);
+}
+
+void zyk_add_force_powers( gentity_t *ent )
+{
+	int i = 0;
+
+	for (i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
+	{
+		ent->client->ps.fd.forcePowersKnown |= (1 << i);
+		ent->client->ps.fd.forcePowerLevel[i] = FORCE_LEVEL_3;
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+	}
+}
+
+void zyk_add_guns( gentity_t *ent )
+{
+	int i = 0;
+
+	for (i = WP_STUN_BATON; i < WP_NUM_WEAPONS; i++)
+	{
+		if (i != WP_SABER && i != WP_EMPLACED_GUN && i != WP_TURRET)
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << i);
+	}
+
+	ent->client->ps.ammo[AMMO_BLASTER] = zyk_max_blaster_pack_ammo.integer;
+	ent->client->ps.ammo[AMMO_POWERCELL] = zyk_max_power_cell_ammo.integer;
+	ent->client->ps.ammo[AMMO_METAL_BOLTS] = zyk_max_metal_bolt_ammo.integer;
+	ent->client->ps.ammo[AMMO_ROCKETS] = zyk_max_rocket_ammo.integer;
+	ent->client->ps.ammo[AMMO_THERMAL] = zyk_max_thermal_ammo.integer;
+	ent->client->ps.ammo[AMMO_TRIPMINE] = zyk_max_tripmine_ammo.integer;
+	ent->client->ps.ammo[AMMO_DETPACK] = zyk_max_detpack_ammo.integer;
+
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_BINOCULARS);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SEEKER);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_EWEB);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC_BIG);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SHIELD);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_CLOAK);
+	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+}
+
+void Cmd_Give_f( gentity_t *ent )
+{
+	char arg1[MAX_TOKEN_CHARS] = {0};
+	char arg2[MAX_TOKEN_CHARS] = {0};
+	int client_id = -1;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_GIVE)))
+	{ // zyk: noclip admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
 	}
 
-	trap->Argv( 2, name, sizeof( name ) );
+	if (trap->Argc() != 3)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /give <player name or ID> <option>.\n\"" );
+		return;
+	}
 
-	G_Give( otherEnt, name, ConcatArgs( 3 ), trap->Argc()-1 );
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	trap->Argv( 2, arg2, sizeof( arg2 ) );
+
+	client_id = ClientNumberFromString( ent, arg1, qfalse );
+
+	if (client_id == -1)
+	{
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode == 2)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot give stuff to RPG players.\n\"" );
+		return;
+	}
+
+	if (Q_stricmp(arg2, "force") == 0)
+	{
+		if (g_entities[client_id].client->pers.player_statuses & (1 << 12))
+		{ // zyk: remove force powers
+			zyk_remove_force_powers(&g_entities[client_id]);
+
+			g_entities[client_id].client->pers.player_statuses &= ~(1 << 12);
+			trap->SendServerCommand( -1, va("print \"Removed force powers from %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		}
+		else
+		{ // zyk: add force powers
+			zyk_remove_guns(&g_entities[client_id]);
+			zyk_add_force_powers(&g_entities[client_id]);
+
+			g_entities[client_id].client->pers.player_statuses &= ~(1 << 13);
+			g_entities[client_id].client->pers.player_statuses |= (1 << 12);
+			trap->SendServerCommand( -1, va("print \"Added force powers to %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		}
+	}
+	else if (Q_stricmp(arg2, "guns") == 0)
+	{
+		if (g_entities[client_id].client->pers.player_statuses & (1 << 13))
+		{ // zyk: remove guns
+			zyk_remove_guns(&g_entities[client_id]);
+
+			g_entities[client_id].client->pers.player_statuses &= ~(1 << 13);
+			trap->SendServerCommand( -1, va("print \"Removed guns from %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		}
+		else
+		{ // zyk: add guns
+			zyk_remove_force_powers(&g_entities[client_id]);
+			zyk_add_guns(&g_entities[client_id]);
+
+			g_entities[client_id].client->pers.player_statuses &= ~(1 << 12);
+			g_entities[client_id].client->pers.player_statuses |= (1 << 13);
+			trap->SendServerCommand( -1, va("print \"Added guns to %s^7\n\"", g_entities[client_id].client->pers.netname) );
+		}
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Invalid option. Must be ^3force ^7or ^3guns^7.\n\"" );
+		return;
+	}
 }
 
 /*
@@ -4171,7 +4158,12 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			if (ent->client->sess.amrpgmode == 2)
 				ent->client->sess.amrpgmode = 1;
 			else
+			{
 				ent->client->sess.amrpgmode = 2;
+				// zyk: removing the /give stuff, which is not allowed to RPG players
+				ent->client->pers.player_statuses &= ~(1 << 12);
+				ent->client->pers.player_statuses &= ~(1 << 13);
+			}
 		}
 
 		if ((zyk_allow_rpg_mode.integer == 0 || (zyk_allow_rpg_in_other_gametypes.integer == 0 && g_gametype.integer != GT_FFA)) && ent->client->sess.amrpgmode == 2)
@@ -12421,7 +12413,7 @@ Cmd_AdminList_f
 */
 void Cmd_AdminList_f( gentity_t *ent ) {
 	char message[1024];
-	char message_content[ADM_NUM_CMDS + 1][150];
+	char message_content[ADM_NUM_CMDS + 1][100];
 	int i = 0;
 	strcpy(message,"");
 
@@ -12533,6 +12525,15 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^1no\n",ADM_PARALYZE));
 		}
 
+		if ((ent->client->pers.bitvalue & (1 << ADM_GIVE))) 
+		{
+			strcpy(message_content[11],va("^3 %d ^7- Give: ^2yes\n",ADM_GIVE));
+		}
+		else
+		{
+			strcpy(message_content[11],va("^3 %d ^7- Give: ^1no\n",ADM_GIVE));
+		}
+
 		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
@@ -12591,6 +12592,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_PARALYZE)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/paralyze <player name or ID> ^7to paralyze a player. Use it again so the target player will no longer be paralyzed\n\n\"" );
+		}
+		else if (command_number == ADM_GIVE)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/give <player name or ID> <option> ^7to give stuff to a player. Option may be ^3guns ^7or ^3force ^7\n\n\"" );
 		}
 	}
 }
@@ -13092,8 +13097,7 @@ command_t commands[] = {
 	{ "followprev",			Cmd_FollowPrev_f,			CMD_NOINTERMISSION },
 	{ "forcechanged",		Cmd_ForceChanged_f,			0 },
 	{ "gc",					Cmd_GameCommand_f,			CMD_NOINTERMISSION },
-	{ "give",				Cmd_Give_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "giveother",			Cmd_GiveOther_f,			CMD_CHEAT|CMD_NOINTERMISSION },
+	{ "give",				Cmd_Give_f,					CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "god",				Cmd_God_f,					CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "guardianquest",		Cmd_GuardianQuest_f,		CMD_ALIVE|CMD_RPG|CMD_NOINTERMISSION },
 	{ "jetpack",			Cmd_Jetpack_f,				CMD_ALIVE|CMD_NOINTERMISSION },
