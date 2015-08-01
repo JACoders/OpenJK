@@ -209,6 +209,12 @@ PFNGLTEXSTORAGE3DPROC qglTexStorage3D;
 // GL_ARB_buffer_storage
 PFNGLBUFFERSTORAGEPROC qglBufferStorage;
 
+// GL_ARB_debug_output
+PFNGLDEBUGMESSAGECONTROLARBPROC qglDebugMessageControlARB;
+PFNGLDEBUGMESSAGEINSERTARBPROC qglDebugMessageInsertARB;
+PFNGLDEBUGMESSAGECALLBACKARBPROC qglDebugMessageCallbackARB;
+PFNGLGETDEBUGMESSAGELOGARBPROC qglGetDebugMessageLogARB;
+
 static qboolean GLimp_HaveExtension(const char *ext)
 {
 	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
@@ -233,6 +239,43 @@ static qboolean GetGLFunction ( GLFuncType& glFunction, const char *glFunctionSt
 	}
 
 	return qtrue;
+}
+
+static void __stdcall GLimp_OnError(GLenum source, GLenum type, GLuint id, GLenum severity,
+									GLsizei length, const GLchar *message, const void *userParam)
+{
+	const char *severityText = "";
+	const char *typeText = "";
+	const char *sourceText = "";
+
+	switch ( source )
+	{
+		case GL_DEBUG_SOURCE_API_ARB: sourceText = "API"; break;
+		case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB: sourceText = "WS"; break;
+		case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB: sourceText = "SC"; break;
+		case GL_DEBUG_SOURCE_THIRD_PARTY_ARB: sourceText = "3rd"; break;
+		case GL_DEBUG_SOURCE_APPLICATION_ARB: sourceText = "App"; break;
+		case GL_DEBUG_SOURCE_OTHER_ARB: sourceText = "Oth"; break;
+	}
+
+	switch ( severity )
+	{
+		case GL_DEBUG_SEVERITY_HIGH_ARB: severityText = "High"; break;
+		case GL_DEBUG_SEVERITY_MEDIUM_ARB: severityText = "Medium"; break;
+		case GL_DEBUG_SEVERITY_LOW_ARB: severityText = "Low"; break;
+	}
+
+	switch ( type )
+	{
+		case GL_DEBUG_TYPE_ERROR_ARB: typeText = "Error"; break;
+		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB: typeText = "Deprecated"; break;
+		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB: typeText = "Undefined"; break;
+		case GL_DEBUG_TYPE_PORTABILITY_ARB: typeText = "Portability"; break;
+		case GL_DEBUG_TYPE_PERFORMANCE_ARB: typeText = "Performance"; break;
+		case GL_DEBUG_TYPE_OTHER_ARB: typeText = "Other"; break;
+	}
+
+	Com_Printf( S_COLOR_YELLOW "OpenGL -> [%s][%s][%s] %s\n", sourceText, severityText, typeText, message );
 }
 
 void GLW_InitTextureCompression( void );
@@ -550,6 +593,34 @@ void GLimp_InitExtensions()
 		ri->Printf(PRINT_ALL, result[2], extension);
 	}
 
+	// GL_ARB_debug_output
+	extension = "GL_ARB_debug_output";
+	if ( GLimp_HaveExtension( extension ) )
+	{
+		qboolean loaded = qtrue;
+
+		if ( r_debugContext->integer )
+		{
+			loaded = (qboolean)(loaded && GetGLFunction (qglDebugMessageControlARB, "glDebugMessageControlARB", qfalse));
+			loaded = (qboolean)(loaded && GetGLFunction (qglDebugMessageInsertARB, "glDebugMessageInsertARB", qfalse));
+			loaded = (qboolean)(loaded && GetGLFunction (qglDebugMessageCallbackARB, "glDebugMessageCallbackARB", qfalse));
+			loaded = (qboolean)(loaded && GetGLFunction (qglGetDebugMessageLogARB, "glGetDebugMessageLogARB", qfalse));
+		}
+		else
+		{
+			loaded = qfalse;
+		}
+
+		glRefConfig.debugContext = loaded;
+		ri->Printf(PRINT_ALL, result[loaded], extension);
+	}
+
 	// use float lightmaps?
 	glRefConfig.floatLightmap = (qboolean)(r_floatLightmap->integer && r_hdr->integer);
+
+	if ( glRefConfig.debugContext )
+	{
+		qglEnable( GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB );
+		qglDebugMessageCallbackARB(GLimp_OnError, NULL);
+	}
 }

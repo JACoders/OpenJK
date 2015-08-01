@@ -584,3 +584,9 @@ extern PFNGLTEXSTORAGE3DPROC qglTexStorage3D;
 
 // GL_ARB_buffer_storage
 extern PFNGLBUFFERSTORAGEPROC qglBufferStorage;
+
+// GL_ARB_debug_output
+extern PFNGLDEBUGMESSAGECONTROLARBPROC qglDebugMessageControlARB;
+extern PFNGLDEBUGMESSAGEINSERTARBPROC qglDebugMessageInsertARB;
+extern PFNGLDEBUGMESSAGECALLBACKARBPROC qglDebugMessageCallbackARB;
+extern PFNGLGETDEBUGMESSAGELOGARBPROC qglGetDebugMessageLogARB;

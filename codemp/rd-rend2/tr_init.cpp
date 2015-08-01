@@ -253,47 +253,8 @@ cvar_t	*r_dynamicGlowSoft;
 cvar_t	*r_dynamicGlowWidth;
 cvar_t	*r_dynamicGlowHeight;
 
-PFNGLACTIVETEXTUREARBPROC qglActiveTextureARB;
-PFNGLCLIENTACTIVETEXTUREARBPROC qglClientActiveTextureARB;
-PFNGLMULTITEXCOORD2FARBPROC qglMultiTexCoord2fARB;
+cvar_t *r_debugContext;
 
-PFNGLCOMBINERPARAMETERFVNVPROC qglCombinerParameterfvNV;
-PFNGLCOMBINERPARAMETERIVNVPROC qglCombinerParameterivNV;
-PFNGLCOMBINERPARAMETERFNVPROC qglCombinerParameterfNV;
-PFNGLCOMBINERPARAMETERINVPROC qglCombinerParameteriNV;
-PFNGLCOMBINERINPUTNVPROC qglCombinerInputNV;
-PFNGLCOMBINEROUTPUTNVPROC qglCombinerOutputNV;
-
-PFNGLFINALCOMBINERINPUTNVPROC qglFinalCombinerInputNV;
-PFNGLGETCOMBINERINPUTPARAMETERFVNVPROC qglGetCombinerInputParameterfvNV;
-PFNGLGETCOMBINERINPUTPARAMETERIVNVPROC qglGetCombinerInputParameterivNV;
-PFNGLGETCOMBINEROUTPUTPARAMETERFVNVPROC qglGetCombinerOutputParameterfvNV;
-PFNGLGETCOMBINEROUTPUTPARAMETERIVNVPROC qglGetCombinerOutputParameterivNV;
-PFNGLGETFINALCOMBINERINPUTPARAMETERFVNVPROC qglGetFinalCombinerInputParameterfvNV;
-PFNGLGETFINALCOMBINERINPUTPARAMETERIVNVPROC qglGetFinalCombinerInputParameterivNV;
-
-PFNGLPROGRAMSTRINGARBPROC qglProgramStringARB;
-PFNGLBINDPROGRAMARBPROC qglBindProgramARB;
-PFNGLDELETEPROGRAMSARBPROC qglDeleteProgramsARB;
-PFNGLGENPROGRAMSARBPROC qglGenProgramsARB;
-PFNGLPROGRAMENVPARAMETER4DARBPROC qglProgramEnvParameter4dARB;
-PFNGLPROGRAMENVPARAMETER4DVARBPROC qglProgramEnvParameter4dvARB;
-PFNGLPROGRAMENVPARAMETER4FARBPROC qglProgramEnvParameter4fARB;
-PFNGLPROGRAMENVPARAMETER4FVARBPROC qglProgramEnvParameter4fvARB;
-PFNGLPROGRAMLOCALPARAMETER4DARBPROC qglProgramLocalParameter4dARB;
-PFNGLPROGRAMLOCALPARAMETER4DVARBPROC qglProgramLocalParameter4dvARB;
-PFNGLPROGRAMLOCALPARAMETER4FARBPROC qglProgramLocalParameter4fARB;
-PFNGLPROGRAMLOCALPARAMETER4FVARBPROC qglProgramLocalParameter4fvARB;
-PFNGLGETPROGRAMENVPARAMETERDVARBPROC qglGetProgramEnvParameterdvARB;
-PFNGLGETPROGRAMENVPARAMETERFVARBPROC qglGetProgramEnvParameterfvARB;
-PFNGLGETPROGRAMLOCALPARAMETERDVARBPROC qglGetProgramLocalParameterdvARB;
-PFNGLGETPROGRAMLOCALPARAMETERFVARBPROC qglGetProgramLocalParameterfvARB;
-PFNGLGETPROGRAMIVARBPROC qglGetProgramivARB;
-PFNGLGETPROGRAMSTRINGARBPROC qglGetProgramStringARB;
-PFNGLISPROGRAMARBPROC qglIsProgramARB;
-
-PFNGLLOCKARRAYSEXTPROC qglLockArraysEXT;
-PFNGLUNLOCKARRAYSEXTPROC qglUnlockArraysEXT;
 extern void	RB_SetGL2D (void);
 void R_Splash()
 {
@@ -520,6 +481,8 @@ static void InitOpenGL( void )
 		windowDesc.api = GRAPHICS_API_OPENGL;
 		windowDesc.gl.majorVersion = 3;
 		windowDesc.gl.minorVersion = 2;
+		if ( r_debugContext->integer )
+			windowDesc.gl.contextFlags = GLCONTEXT_DEBUG;
 
 		window = ri->WIN_Init(&windowDesc, &glConfig);
 
@@ -1106,13 +1069,11 @@ void GL_SetDefaultState( void )
 
 	// initialize downstream texture unit if we're running
 	// in a multitexture environment
-	if ( qglActiveTextureARB ) {
-		GL_SelectTexture( 1 );
-		GL_TextureMode( r_textureMode->string );
-		GL_TexEnv( GL_MODULATE );
-		qglDisable( GL_TEXTURE_2D );
-		GL_SelectTexture( 0 );
-	}
+	GL_SelectTexture( 1 );
+	GL_TextureMode( r_textureMode->string );
+	GL_TexEnv( GL_MODULATE );
+	qglDisable( GL_TEXTURE_2D );
+	GL_SelectTexture( 0 );
 
 	qglEnable(GL_TEXTURE_2D);
 	GL_TextureMode( r_textureMode->string );
@@ -1355,6 +1316,8 @@ void R_Register( void )
 	r_dynamicGlowSoft					= ri->Cvar_Get( "r_dynamicGlowSoft",		"1",		CVAR_ARCHIVE );
 	r_dynamicGlowWidth					= ri->Cvar_Get( "r_dynamicGlowWidth",		"320",		CVAR_ARCHIVE|CVAR_LATCH );
 	r_dynamicGlowHeight					= ri->Cvar_Get( "r_dynamicGlowHeight",		"240",		CVAR_ARCHIVE|CVAR_LATCH );
+
+	r_debugContext						= ri->Cvar_Get( "r_debugContext",			"0",		CVAR_LATCH );
 
 	r_picmip = ri->Cvar_Get ("r_picmip", "0", CVAR_ARCHIVE | CVAR_LATCH );
 	ri->Cvar_CheckRange( r_picmip, 0, 16, qtrue );

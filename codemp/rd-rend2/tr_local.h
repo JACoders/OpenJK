@@ -1837,6 +1837,8 @@ typedef struct {
 	qboolean immutableTextures;
 	qboolean immutableBuffers;
 
+	qboolean debugContext;
+
 	qboolean floatLightmap;
 } glRefConfig_t;
 
@@ -2284,6 +2286,8 @@ extern cvar_t	*r_dynamicGlowIntensity;
 extern cvar_t	*r_dynamicGlowSoft;
 extern cvar_t	*r_dynamicGlowWidth;
 extern cvar_t	*r_dynamicGlowHeight;
+
+extern cvar_t	*r_debugContext;
 
 //====================================================================
 
