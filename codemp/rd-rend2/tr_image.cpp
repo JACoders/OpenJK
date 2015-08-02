@@ -181,6 +181,32 @@ int R_SumOfUsedImages( void ) {
 	return total;
 }
 
+static float GetReadableSize( int bytes, char **units )
+{
+	float result = bytes;
+	*units = "b ";
+
+	if (result >= 1024.0f)
+	{
+		result /= 1024.0f;
+		*units = "kb";
+	}
+
+	if (result >= 1024.0f)
+	{
+		result /= 1024.0f;
+		*units = "Mb";
+	}
+
+	if (result >= 1024.0f)
+	{
+		result /= 1024.0f;
+		*units = "Gb";
+	}
+
+	return result;
+}
+
 /*
 ===============
 R_ImageList_f
@@ -189,6 +215,7 @@ R_ImageList_f
 void R_ImageList_f( void ) {
 	int i;
 	int estTotalSize = 0;
+	char *sizeSuffix;
 	image_t *image = tr.images;
 
 	ri->Printf(PRINT_ALL, "\n      -w-- -h-- type  -size- --name-------\n");
@@ -196,9 +223,7 @@ void R_ImageList_f( void ) {
 	for ( i = 0 ; i < tr.numImages ; i++, image = image->poolNext )
 	{
 		char *format = "???? ";
-		char *sizeSuffix;
 		int estSize;
-		int displaySize;
 
 		estSize = image->uploadHeight * image->uploadWidth;
 
@@ -289,39 +314,26 @@ void R_ImageList_f( void ) {
 				// 2 byte per pixel?
 				estSize *= 2;
 				break;
+
+			case GL_DEPTH_COMPONENT24:
+				format = "D24  ";
+				break;
 		}
 
 		// mipmap adds about 50%
 		if (image->flags & IMGFLAG_MIPMAP)
 			estSize += estSize / 2;
 
-		sizeSuffix = "b ";
-		displaySize = estSize;
+		float printSize = GetReadableSize(estSize, &sizeSuffix); 
 
-		if (displaySize > 1024)
-		{
-			displaySize /= 1024;
-			sizeSuffix = "kb";
-		}
-
-		if (displaySize > 1024)
-		{
-			displaySize /= 1024;
-			sizeSuffix = "Mb";
-		}
-
-		if (displaySize > 1024)
-		{
-			displaySize /= 1024;
-			sizeSuffix = "Gb";
-		}
-
-		ri->Printf(PRINT_ALL, "%4i: %4ix%4i %s %4i%s %s\n", i, image->uploadWidth, image->uploadHeight, format, displaySize, sizeSuffix, image->imgName);
+		ri->Printf(PRINT_ALL, "%4i: %4ix%4i %s %7.2f%s %s\n", i, image->uploadWidth, image->uploadHeight, format, printSize, sizeSuffix, image->imgName);
 		estTotalSize += estSize;
 	}
 
+	float printSize = GetReadableSize(estTotalSize, &sizeSuffix);
+
 	ri->Printf (PRINT_ALL, " ---------\n");
-	ri->Printf (PRINT_ALL, " approx %i bytes\n", estTotalSize);
+	ri->Printf (PRINT_ALL, " approx %i bytes (%.2f%s)\n", estTotalSize, printSize, sizeSuffix);
 	ri->Printf (PRINT_ALL, " %i total images\n\n", tr.numImages );
 }
 
