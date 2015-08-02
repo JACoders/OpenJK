@@ -22,8 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "sys_local.h"
 #include <direct.h>
 #include <io.h>
-#include <ShlObj.h>
-#include <Windows.h>
+#include <shlobj.h>
+#include <windows.h>
 
 #define MEM_THRESHOLD (128*1024*1024)
 
