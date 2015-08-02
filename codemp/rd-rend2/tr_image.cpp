@@ -2307,6 +2307,8 @@ static void R_FreeImage( image_t *imageToFree )
 			tr.images = imageToFree->poolNext;
 			imageToFree->poolNext = tr.imagesFreeList;
 			tr.imagesFreeList = imageToFree;
+
+			tr.numImages--;
 		}
 		else
 		{
@@ -2318,6 +2320,8 @@ static void R_FreeImage( image_t *imageToFree )
 					image->poolNext = imageToFree->poolNext;
 					imageToFree->poolNext = tr.imagesFreeList;
 					tr.imagesFreeList = imageToFree;
+
+					tr.numImages--;
 					break;
 				}
 
