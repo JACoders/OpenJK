@@ -1791,10 +1791,10 @@ void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader,
 
 /*
 =================
-R_SortDrawSurfs
+R_SortAndSubmitDrawSurfs
 =================
 */
-void R_SortDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
+void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	shader_t		*shader;
 	int				fogNum;
 	int				entityNum;
@@ -2084,7 +2084,7 @@ void R_RenderView (viewParms_t *parms) {
 
 	R_GenerateDrawSurfs();
 
-	R_SortDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+	R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 
 	// draw main system development information (surface outlines, etc)
 	R_DebugGraphics();
@@ -2492,7 +2492,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 				R_AddEntitySurface(shadow->entityNums[j]);
 			}
 
-			R_SortDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+			R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 		}
 	}
 }
@@ -2768,7 +2768,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 
 			R_AddEntitySurfaces ();
 
-			R_SortDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+			R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 		}
 
 		Matrix16Multiply(tr.viewParms.projectionMatrix, tr.viewParms.world.modelViewMatrix, tr.refdef.sunShadowMvp[level]);
