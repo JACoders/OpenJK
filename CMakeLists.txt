@@ -76,6 +76,9 @@ endif()
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
+Include(CheckTypeSize)
+check_type_size("void*" CMAKE_SIZEOF_VOID_P)
+
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
 if(WIN32)
