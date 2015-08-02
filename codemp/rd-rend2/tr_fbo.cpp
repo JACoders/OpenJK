@@ -355,30 +355,13 @@ void FBO_Bind(FBO_t * fbo)
 	if (!fbo)
 	{
 		qglBindFramebuffer(GL_FRAMEBUFFER, 0);
-		//qglBindRenderbuffer(GL_RENDERBUFFER, 0);
 		glState.currentFBO = NULL;
-		
-		return;
 	}
-		
-	qglBindFramebuffer(GL_FRAMEBUFFER, fbo->frameBuffer);
-
-	/*
-	   if(fbo->colorBuffers[0])
-	   {
-	   qglBindRenderbuffer(GL_RENDERBUFFER, fbo->colorBuffers[0]);
-	   }
-	 */
-
-	/*
-	   if(fbo->depthBuffer)
-	   {
-	   qglBindRenderbuffer(GL_RENDERBUFFER, fbo->depthBuffer);
-	   qglFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, fbo->depthBuffer);
-	   }
-	 */
-
-	glState.currentFBO = fbo;
+	else
+	{
+		qglBindFramebuffer(GL_FRAMEBUFFER, fbo->frameBuffer);
+		glState.currentFBO = fbo;
+	}
 }
 
 /*
@@ -450,11 +433,9 @@ void FBO_Init(void)
 		tr.msaaResolveFbo = FBO_Create("_msaaResolve", tr.renderDepthImage->width, tr.renderDepthImage->height);
 		FBO_Bind(tr.msaaResolveFbo);
 
-		//FBO_CreateBuffer(tr.msaaResolveFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.renderImage, 0);
 		FBO_AttachTextureImage(tr.glowImage, 1);
 
-		//FBO_CreateBuffer(tr.msaaResolveFbo, GL_DEPTH_COMPONENT24, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
 
 		FBO_SetupDrawBuffers();
@@ -466,11 +447,9 @@ void FBO_Init(void)
 		tr.renderFbo = FBO_Create("_render", tr.renderDepthImage->width, tr.renderDepthImage->height);
 		FBO_Bind(tr.renderFbo);
 
-		//FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.renderImage, 0);
 		FBO_AttachTextureImage(tr.glowImage, 1);
 
-		//FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24, 0, 0);
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
 
 		FBO_SetupDrawBuffers();
