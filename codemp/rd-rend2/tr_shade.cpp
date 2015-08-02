@@ -138,7 +138,7 @@ static void DrawTris (shaderCommands_t *input) {
 		shaderProgram_t *sp = &tr.textureColorShader;
 		vec4_t color;
 
-		GLSL_VertexAttribsState(ATTR_POSITION);
+		GLSL_VertexAttribsState(ATTR_POSITION, NULL);
 		GLSL_BindProgram(sp);
 		
 		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
@@ -1137,7 +1137,7 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 	return vertexAttribs;
 }
 
-static void UpdateTexCoords ( const shaderStage_t *stage )
+static void UpdateTexCoords ( const shaderStage_t *stage, const VertexArraysProperties *vertexArrays )
 {
 	uint32_t updateAttribs = 0;
 	if ( stage->bundle[0].image[0] != NULL )
@@ -1206,11 +1206,11 @@ static void UpdateTexCoords ( const shaderStage_t *stage )
 
 	if ( updateAttribs != 0 )
 	{
-		GLSL_UpdateTexCoordVertexAttribPointers (updateAttribs);
+		GLSL_UpdateTexCoordVertexAttribPointers( updateAttribs, vertexArrays );
 	}
 }
 
-static void RB_IterateStagesGeneric( shaderCommands_t *input )
+static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
 {
 	int stage;
 	
@@ -1395,7 +1395,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 			}
 		}
 
-		UpdateTexCoords (pStage);
+		UpdateTexCoords (pStage, vertexArrays);
 
 		GL_State( stateBits );
 
@@ -1768,14 +1768,16 @@ void RB_StageIteratorGeneric( void )
 	//
 	// Set vertex attribs and pointers
 	//
-	GLSL_VertexAttribsState(vertexAttribs);
+
+	VertexArraysProperties vertexArrays;
+	GLSL_VertexAttribsState(vertexAttribs, &vertexArrays);
 
 	//
 	// render depth if in depthfill mode
 	//
 	if (backEnd.depthFill)
 	{
-		RB_IterateStagesGeneric( input );
+		RB_IterateStagesGeneric( input, &vertexArrays );
 
 		//
 		// reset polygon offset
@@ -1812,7 +1814,7 @@ void RB_StageIteratorGeneric( void )
 	//
 	// call shader function
 	//
-	RB_IterateStagesGeneric( input );
+	RB_IterateStagesGeneric( input, &vertexArrays );
 
 	//
 	// pshadows!

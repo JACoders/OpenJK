@@ -2680,9 +2680,9 @@ GLSL
 int GLSL_BeginLoadGPUShaders(void);
 void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
-void GLSL_VertexAttribsState(uint32_t stateBits);
-void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits );
-void GLSL_VertexAttribPointers(uint32_t attribBits);
+void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArrays);
+void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits, const VertexArraysProperties *vertexArrays );
+void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays);
 void GLSL_BindProgram(shaderProgram_t * program);
 void GLSL_BindNullProgram(void);
 

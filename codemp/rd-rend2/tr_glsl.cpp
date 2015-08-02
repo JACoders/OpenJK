@@ -1760,52 +1760,80 @@ void GLSL_BindNullProgram(void)
 }
 
 
-void GLSL_VertexAttribsState(uint32_t stateBits)
+void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArraysOut)
 {
-	uint32_t		diff;
+	VertexArraysProperties vertexArraysLocal;
+	VertexArraysProperties *vertexArrays = vertexArraysOut;
 
-	//Com_Printf("%d\n", stateBits);
-	GLSL_VertexAttribPointers(stateBits);
-
-	diff = stateBits ^ glState.vertexAttribsState;
-	if (!diff)
-		return;
-
-	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
+	if ( !vertexArrays )
 	{
-		// FIXME: Use BitScanForward?
-		if (diff & j)
-		{
-			if(stateBits & j)
-				qglEnableVertexAttribArray(i);
-			else
-				qglDisableVertexAttribArray(i);
-		}
+		vertexArrays = &vertexArraysLocal;
 	}
 
-	glState.vertexAttribsState = stateBits;
+	if ( tess.useInternalVBO )
+	{
+		CalculateVertexArraysProperties(stateBits, vertexArrays);
+		for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
+		{
+			int attributeIndex = vertexArrays->enabledAttributes[i];
+			vertexArrays->offsets[attributeIndex] += tess.internalVBOCommitOffset;
+		}
+
+		// Slight hack to make tc0 and tc1 offset from the same position.
+		vertexArrays->offsets[ATTR_INDEX_TEXCOORD1] = vertexArrays->offsets[ATTR_INDEX_TEXCOORD0];
+	}
+	else
+	{
+		CalculateVertexArraysFromVBO(stateBits, glState.currentVBO, vertexArrays);
+	}
+
+	GLSL_VertexAttribPointers(stateBits, vertexArrays);
+
+	uint32_t diff = stateBits ^ glState.vertexAttribsState;
+	if ( diff )
+	{
+		for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
+		{
+			// FIXME: Use BitScanForward?
+			if (diff & j)
+			{
+				if(stateBits & j)
+					qglEnableVertexAttribArray(i);
+				else
+					qglDisableVertexAttribArray(i);
+			}
+		}
+
+		glState.vertexAttribsState = stateBits;
+	}
 }
 
-void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits )
+void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits, const VertexArraysProperties *vertexArrays )
 {
-	VBO_t *vbo = glState.currentVBO;
-
 	if ( attribBits & ATTR_TEXCOORD0 )
 	{
 		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
 
-		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0, vbo->strides[ATTR_INDEX_TEXCOORD0], BUFFER_OFFSET(vbo->offsets[ATTR_INDEX_TEXCOORD0] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+		qglVertexAttribPointer(
+			ATTR_INDEX_TEXCOORD0,
+			2, GL_FLOAT,
+			0, vertexArrays->strides[ATTR_INDEX_TEXCOORD0],
+			BUFFER_OFFSET(vertexArrays->offsets[ATTR_INDEX_TEXCOORD0] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
 	}
 
 	if ( attribBits & ATTR_TEXCOORD1 )
 	{
 		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTCOORD )\n");
 
-		qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0, vbo->strides[ATTR_INDEX_TEXCOORD1], BUFFER_OFFSET(vbo->offsets[ATTR_INDEX_TEXCOORD1] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+		qglVertexAttribPointer(
+			ATTR_INDEX_TEXCOORD1,
+			2, GL_FLOAT,
+			0, vertexArrays->strides[ATTR_INDEX_TEXCOORD1],
+			BUFFER_OFFSET(vertexArrays->offsets[ATTR_INDEX_TEXCOORD1] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
 	}
 }
 
-void GLSL_VertexAttribPointers(uint32_t attribBits)
+void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays)
 {
 	VBO_t *vbo = glState.currentVBO;
 	
@@ -1819,21 +1847,6 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 	if (r_logFile->integer)
 	{
 		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
-	}
-
-	VertexArraysProperties vertexArrays;
-	if ( tess.useInternalVBO )
-	{
-		CalculateVertexArraysProperties(attribBits, &vertexArrays);
-		for ( int i = 0; i < vertexArrays.numVertexArrays; i++ )
-		{
-			int attributeIndex = vertexArrays.enabledAttributes[i];
-			vertexArrays.offsets[attributeIndex] += tess.internalVBOCommitOffset;
-		}
-	}
-	else
-	{
-		CalculateVertexArraysFromVBO(attribBits, vbo, &vertexArrays);
 	}
 
 	const struct
@@ -1858,19 +1871,17 @@ void GLSL_VertexAttribPointers(uint32_t attribBits)
 		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
 	};
 
-	for ( int i = 0, j = 1 ; i < ATTR_INDEX_MAX; i++, j <<= 1 )
+	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
-		if ( attribBits & j )
-		{
-			qglVertexAttribPointer(i,
-				attributes[i].numComponents,
-				attributes[i].type,
-				attributes[i].normalize,
-				vertexArrays.strides[i],
-				BUFFER_OFFSET(vertexArrays.offsets[i] + attributes[i].offset));
+		int attributeIndex = vertexArrays->enabledAttributes[i];
+		qglVertexAttribPointer(attributeIndex,
+			attributes[attributeIndex].numComponents,
+			attributes[attributeIndex].type,
+			attributes[attributeIndex].normalize,
+			vertexArrays->strides[attributeIndex],
+			BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
 
-			glState.vertexAttribPointersSet |= j;
-		}
+		glState.vertexAttribPointersSet |= (1 << attributeIndex);
 	}
 }
 

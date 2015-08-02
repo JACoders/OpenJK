@@ -442,7 +442,10 @@ void CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties
 			AddVertexArray(properties, ATTR_INDEX_POSITION, sizeof(tess.xyz[0]), 0, properties->vertexDataSize, tess.xyz);
 
 		if (attributes & ATTR_TEXCOORD0)
-			AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0]);
+			AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][0]);
+
+		if (attributes & ATTR_TEXCOORD1)
+			AddVertexArray(properties, ATTR_INDEX_TEXCOORD1, sizeof(tess.texCoords[0][1]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][1]);
 
 		if (attributes & ATTR_NORMAL)
 			AddVertexArray(properties, ATTR_INDEX_NORMAL, sizeof(tess.normal[0]), 0, properties->vertexDataSize, tess.normal);
@@ -459,7 +462,8 @@ void CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties
 	else
 	{
 		AddVertexArray(properties, ATTR_INDEX_POSITION, sizeof(tess.xyz[0]), 0, properties->vertexDataSize, tess.xyz);
-		AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0]);
+		AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][0]);
+		AddVertexArray(properties, ATTR_INDEX_TEXCOORD1, sizeof(tess.texCoords[0][1]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][1]);
 		AddVertexArray(properties, ATTR_INDEX_NORMAL, sizeof(tess.normal[0]), 0, properties->vertexDataSize, tess.normal);
 		AddVertexArray(properties, ATTR_INDEX_TANGENT, sizeof(tess.tangent[0]), 0, properties->vertexDataSize, tess.tangent);
 		AddVertexArray(properties, ATTR_INDEX_COLOR, sizeof(tess.vertexColors[0]), 0, properties->vertexDataSize, tess.vertexColors);
