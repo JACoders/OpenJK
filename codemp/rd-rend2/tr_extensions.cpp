@@ -562,6 +562,7 @@ void GLimp_InitExtensions()
 		loaded = (qboolean)(loaded && GetGLFunction (qglTexStorage2D, "glTexStorage2D", qfalse));
 
 		glRefConfig.immutableTextures = loaded;
+
 		ri->Printf(PRINT_ALL, result[loaded], extension);
 	}
 	else

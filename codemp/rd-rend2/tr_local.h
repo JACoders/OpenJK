@@ -1821,11 +1821,21 @@ typedef enum {
 	TCR_BPTC = 0x0002,
 } textureCompressionRef_t;
 
+typedef enum {
+	IHV_UNKNOWN,
+
+	IHV_NVIDIA,
+	IHV_AMD,
+	IHV_INTEL
+} gpuIhv_t;
+
 // We can't change glConfig_t without breaking DLL/vms compatibility, so
 // store extensions we have here.
 typedef struct {
 	int glslMajorVersion;
 	int glslMinorVersion;
+
+	gpuIhv_t hardwareVendor;
 
 	memInfo_t   memInfo;
 

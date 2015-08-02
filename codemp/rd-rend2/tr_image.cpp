@@ -1975,6 +1975,40 @@ static int CalcNumMipmapLevels ( int width, int height )
 	return static_cast<int>(ceil (log2 (Q_max (width, height))) + 1);
 }
 
+static qboolean IsBPTCTextureFormat( GLenum internalformat )
+{
+	switch ( internalformat )
+	{
+		case GL_COMPRESSED_RGBA_BPTC_UNORM_ARB:
+		case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_ARB:
+		case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB:
+		case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB:
+			return qtrue;
+
+		default:
+			return qfalse;
+	}
+}
+
+static qboolean ShouldUseImmutableTextures(int imageFlags, GLenum internalformat)
+{
+	if ( glRefConfig.hardwareVendor == IHV_AMD )
+	{
+		// Corrupted texture data is seen when using BPTC + immutable textures
+		if ( IsBPTCTextureFormat( internalformat ) )
+		{
+			return qfalse;
+		}
+	}
+
+	if ( imageFlags & IMGFLAG_MUTABLE )
+	{
+		return qfalse;
+	}
+
+	return glRefConfig.immutableTextures;
+}
+
 static void RawImage_UploadTexture( byte *data, int x, int y, int width, int height, GLenum internalFormat, imgType_t type, int flags, qboolean subtexture )
 {
 	int dataFormat, dataType;
@@ -2004,7 +2038,7 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 	}
 	else
 	{
-		if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
+		if ( ShouldUseImmutableTextures( flags, internalFormat ) )
 		{
 			int numLevels = (flags & IMGFLAG_MIPMAP) ? CalcNumMipmapLevels (width, height) : 1;
 
@@ -2022,7 +2056,7 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 	}
 
 	if ((flags & IMGFLAG_MIPMAP) &&
-		(data != NULL || !glRefConfig.immutableTextures || (flags & IMGFLAG_MUTABLE)))
+		(data != NULL || !ShouldUseImmutableTextures(flags, internalFormat) ))
 	{
 		// Don't need to generate mipmaps if we are generating an immutable texture and
 		// the data is NULL. All levels have already been allocated by glTexStorage2D.
@@ -2073,7 +2107,7 @@ static void RawImage_UploadTexture( byte *data, int x, int y, int width, int hei
 			}
 			else
 			{
-				if ( glRefConfig.immutableTextures && !(flags & IMGFLAG_MUTABLE) )
+				if ( ShouldUseImmutableTextures(flags, internalFormat) )
 				{
 					qglTexSubImage2D (GL_TEXTURE_2D, miplevel, 0, 0, width, height, dataFormat, dataType, data );
 				}
@@ -2414,7 +2448,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 		}
 		qglTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		if (glRefConfig.immutableTextures && !(image->flags & IMGFLAG_MUTABLE))
+		if ( ShouldUseImmutableTextures( image->flags, internalFormat ) )
 		{
 			int numLevels = (image->flags & IMGFLAG_MIPMAP) ? CalcNumMipmapLevels (width, height) : 1;
 
@@ -2723,7 +2757,7 @@ image_t	*R_FindImageFile( const char *name, imgType_t type, int flags )
 		R_CreateNormalMap( name, pic, width, height, flags );
 	}
 
-	image = R_CreateImage( name, pic, width, height, type, flags, GL_RGBA8 );
+	image = R_CreateImage( name, pic, width, height, type, flags, 0 );
 	Z_Free( pic );
 	
 	return image;

@@ -500,6 +500,24 @@ static void InitOpenGL( void )
 		// OpenGL driver constants
 		qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &glConfig.maxTextureSize );
 
+		// Determine GPU IHV
+		if ( Q_stristr( glConfig.vendor_string, "ATI Technologies Inc." ) )
+		{
+			glRefConfig.hardwareVendor = IHV_AMD;
+		}
+		else if ( Q_stristr( glConfig.vendor_string, "NVIDIA" ) )
+		{
+			glRefConfig.hardwareVendor = IHV_NVIDIA;
+		}
+		else if ( Q_stristr( glConfig.vendor_string, "INTEL") )
+		{
+			glRefConfig.hardwareVendor = IHV_INTEL;
+		}
+		else
+		{
+			glRefConfig.hardwareVendor = IHV_UNKNOWN;
+		}
+
 		// stubbed or broken drivers may have reported 0...
 		glConfig.maxTextureSize = Q_max(0, glConfig.maxTextureSize);
 
