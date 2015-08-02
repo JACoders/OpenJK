@@ -631,16 +631,16 @@ R_TransformModelToClip
 
 ==========================
 */
-void R_TransformModelToClip( const vec3_t src, const float *modelMatrix, const float *projectionMatrix,
+void R_TransformModelToClip( const vec3_t src, const float *modelViewMatrix, const float *projectionMatrix,
 							vec4_t eye, vec4_t dst ) {
 	int i;
 
 	for ( i = 0 ; i < 4 ; i++ ) {
 		eye[i] = 
-			src[0] * modelMatrix[ i + 0 * 4 ] +
-			src[1] * modelMatrix[ i + 1 * 4 ] +
-			src[2] * modelMatrix[ i + 2 * 4 ] +
-			1 * modelMatrix[ i + 3 * 4 ];
+			src[0] * modelViewMatrix[ i + 0 * 4 ] +
+			src[1] * modelViewMatrix[ i + 1 * 4 ] +
+			src[2] * modelViewMatrix[ i + 2 * 4 ] +
+			1 * modelViewMatrix[ i + 3 * 4 ];
 	}
 
 	for ( i = 0 ; i < 4 ; i++ ) {
@@ -738,8 +738,8 @@ void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms,
 	glMatrix[11] = 0;
 	glMatrix[15] = 1;
 
-	Matrix16Copy(glMatrix, ori->transformMatrix);
-	myGlMultMatrix( glMatrix, viewParms->world.modelMatrix, ori->modelMatrix );
+	Matrix16Copy(glMatrix, ori->modelMatrix);
+	myGlMultMatrix( glMatrix, viewParms->world.modelViewMatrix, ori->modelViewMatrix );
 
 	// calculate the viewer origin in the model's space
 	// needed for fog, specular, and environment mapping
@@ -805,7 +805,7 @@ void R_RotateForViewer (void)
 
 	// convert from our coordinate system (looking down X)
 	// to OpenGL's coordinate system (looking down -Z)
-	myGlMultMatrix( viewerMatrix, s_flipMatrix, tr.ori.modelMatrix );
+	myGlMultMatrix( viewerMatrix, s_flipMatrix, tr.ori.modelViewMatrix );
 
 	tr.viewParms.world = tr.ori;
 
@@ -1438,7 +1438,7 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 		int j;
 		unsigned int pointFlags = 0;
 
-		R_TransformModelToClip( tess.xyz[i], tr.ori.modelMatrix, tr.viewParms.projectionMatrix, eye, clip );
+		R_TransformModelToClip( tess.xyz[i], tr.ori.modelViewMatrix, tr.viewParms.projectionMatrix, eye, clip );
 		VectorCopy4(clip, clipDest[i]);
 
 		for ( j = 0; j < 3; j++ )
@@ -2771,7 +2771,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 			R_SortDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 		}
 
-		Matrix16Multiply(tr.viewParms.projectionMatrix, tr.viewParms.world.modelMatrix, tr.refdef.sunShadowMvp[level]);
+		Matrix16Multiply(tr.viewParms.projectionMatrix, tr.viewParms.world.modelViewMatrix, tr.refdef.sunShadowMvp[level]);
 	}
 }
 

@@ -389,8 +389,8 @@ typedef struct {
 	vec3_t		origin;			// in world coordinates
 	vec3_t		axis[3];		// orientation in world
 	vec3_t		viewOrigin;		// viewParms->or.origin in local coordinates
+	float		modelViewMatrix[16];
 	float		modelMatrix[16];
-	float		transformMatrix[16];
 } orientationr_t;
 
 typedef enum
@@ -2827,7 +2827,7 @@ Ghoul2 Insert End
 =============================================================
 =============================================================
 */
-void	R_TransformModelToClip( const vec3_t src, const float *modelMatrix, const float *projectionMatrix,
+void	R_TransformModelToClip( const vec3_t src, const float *modelViewMatrix, const float *projectionMatrix,
 							vec4_t eye, vec4_t dst );
 void	R_TransformClipToWindow( const vec4_t clip, const viewParms_t *view, vec4_t normalized, vec4_t window );
 

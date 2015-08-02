@@ -805,14 +805,14 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 		return;
 	}
 
-	//qglLoadMatrixf( backEnd.viewParms.world.modelMatrix );
+	//qglLoadMatrixf( backEnd.viewParms.world.modelViewMatrix );
 	//qglTranslatef (backEnd.viewParms.ori.origin[0], backEnd.viewParms.ori.origin[1], backEnd.viewParms.ori.origin[2]);
 	{
 		// FIXME: this could be a lot cleaner
 		matrix_t translation, modelview;
 
 		Matrix16Translation( backEnd.viewParms.ori.origin, translation );
-		Matrix16Multiply( backEnd.viewParms.world.modelMatrix, translation, modelview );
+		Matrix16Multiply( backEnd.viewParms.world.modelViewMatrix, translation, modelview );
 		GL_SetModelviewMatrix( modelview );
 	}
 

@@ -686,7 +686,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
 			}
 
-			GL_SetModelviewMatrix( backEnd.ori.modelMatrix );
+			GL_SetModelviewMatrix( backEnd.ori.modelViewMatrix );
 
 			//
 			// change depthrange. Also change projection matrix so first person weapon does not look like coming
@@ -763,7 +763,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	// go back to the world modelview matrix
 
-	GL_SetModelviewMatrix( backEnd.viewParms.world.modelMatrix );
+	GL_SetModelviewMatrix( backEnd.viewParms.world.modelViewMatrix );
 
 	// Restore depth range for subsequent rendering
 	qglDepthRange( 0.0f, 1.0f );

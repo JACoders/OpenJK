@@ -721,9 +721,9 @@ static void ComputeFogValues(vec4_t fogDistanceVector, vec4_t fogDepthVector, fl
 	fog = tr.world->fogs + tess.fogNum;
 
 	VectorSubtract( backEnd.ori.origin, backEnd.viewParms.ori.origin, local );
-	fogDistanceVector[0] = -backEnd.ori.modelMatrix[2];
-	fogDistanceVector[1] = -backEnd.ori.modelMatrix[6];
-	fogDistanceVector[2] = -backEnd.ori.modelMatrix[10];
+	fogDistanceVector[0] = -backEnd.ori.modelViewMatrix[2];
+	fogDistanceVector[1] = -backEnd.ori.modelViewMatrix[6];
+	fogDistanceVector[2] = -backEnd.ori.modelViewMatrix[10];
 	fogDistanceVector[3] = DotProduct( local, backEnd.viewParms.ori.axis[0] );
 
 	// scale the fog vectors based on the fog's thickness
@@ -894,7 +894,7 @@ static void ForwardDlight( void ) {
 		// where they aren't rendered
 		GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
 
-		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELMATRIX, backEnd.ori.transformMatrix);
+		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
 
 		if (pStage->bundle[TB_DIFFUSEMAP].image[0])
 			R_BindAnimatedImageToTMU( &pStage->bundle[TB_DIFFUSEMAP], TB_DIFFUSEMAP);
@@ -1473,7 +1473,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			GLSL_SetUniformVec3(sp, UNIFORM_TCGEN0VECTOR1, vec);
 		}
 
-		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELMATRIX, backEnd.ori.transformMatrix);
+		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
 
 		GLSL_SetUniformVec4(sp, UNIFORM_NORMALSCALE, pStage->normalScale);
 		GLSL_SetUniformVec4(sp, UNIFORM_SPECULARSCALE, pStage->specularScale);
@@ -1661,7 +1661,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input )
 
 		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 
-		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELMATRIX, backEnd.ori.transformMatrix);
+		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
 
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 

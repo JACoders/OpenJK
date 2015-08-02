@@ -149,7 +149,7 @@ void RB_AddFlare( void *surface, int fogNum, vec3_t point, vec3_t color, vec3_t 
 
 	// if the point is off the screen, don't bother adding it
 	// calculate screen coordinates and depth
-	R_TransformModelToClip( point, backEnd.ori.modelMatrix,
+	R_TransformModelToClip( point, backEnd.ori.modelViewMatrix,
 		backEnd.viewParms.projectionMatrix, eye, clip );
 
 	// check to see if the point is completely off screen
