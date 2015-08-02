@@ -1743,7 +1743,7 @@ static const void *RB_CaptureShadowMap(const void *data)
 			if (tr.shadowCubemaps[cmd->map] != NULL)
 			{
 				GL_Bind(tr.shadowCubemaps[cmd->map]);
-				qglCopyTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, 0, GL_RGBA8, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 0);
+				qglCopyTexSubImage2D( GL_TEXTURE_CUBE_MAP_POSITIVE_X + cmd->cubeSide, 0, 0, 0, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE );
 			}
 		}
 		else
@@ -1751,7 +1751,7 @@ static const void *RB_CaptureShadowMap(const void *data)
 			if (tr.pshadowMaps[cmd->map] != NULL)
 			{
 				GL_Bind(tr.pshadowMaps[cmd->map]);
-				qglCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, 0);
+				qglCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, backEnd.refdef.x, glConfig.vidHeight - ( backEnd.refdef.y + PSHADOW_MAP_SIZE ), PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE );
 			}
 		}
 	}
