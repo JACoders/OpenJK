@@ -67,7 +67,7 @@ else()
 	set(MakeApplicationBundles OFF)
 endif()
 
-if(MSVC)
+if(WIN32)
 	option(UseInternalSDL2 "Whether to use the included SDL2 library instead of a locally installed one" ON)
 else()
 	set(UseInternalSDL2 OFF)
