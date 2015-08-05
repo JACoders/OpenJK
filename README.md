@@ -1,13 +1,13 @@
 # JACoders "OpenJK" project #
 
-![License](https://img.shields.io/badge/license-GPLv2-orange.svg)
+[![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
 
 [![GitHub tag](https://img.shields.io/github/tag/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/tags)
 [![GitHub release](https://img.shields.io/github/release/JACoders/OpenJK.svg)](https://github.com/Unvanquished/JACoders/OpenJK/latest)
 [![Github release](https://img.shields.io/github/downloads/JACoders/OpenJK/latest/total.svg)](https://github.com/JACoders/OpenJK/releases/latest)
 
 [![IRC](https://img.shields.io/badge/irc-%23JACoders-brightgreen.svg)](http://unic0rn.github.io/tiramisu/jacoders/)
-[![Forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-lightgrey.svg)](http://jkhub.org/forum/51-discussion/)
+[![Forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-brightgreen.svg)](http://jkhub.org/forum/51-discussion/)
 
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/1153/badge.svg)](https://scan.coverity.com/projects/1153)
 
