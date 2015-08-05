@@ -1,6 +1,6 @@
 # JACoders "OpenJK" project #
 
-[![License](https://img.shields.io/badge/license-GPLv2-orange.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
+[![License](https://img.shields.io/github/license/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
 
 [![GitHub tag](https://img.shields.io/github/tag/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/tags)
 [![GitHub release](https://img.shields.io/github/release/JACoders/OpenJK.svg)](https://github.com/Unvanquished/JACoders/OpenJK/latest)
