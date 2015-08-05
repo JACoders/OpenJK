@@ -15,7 +15,7 @@
 
 | Windows | OSX | Linux x86 | Linux x64 |
 |---------|-----|-----------|-----------|
-| [![IRC](https://img.shields.io/badge/build-Windows-blue.svg)](http://jk.xd.cm/builders/windows) | [ ![IRC](https://img.shields.io/badge/build-OSX-blue.svg)](http://jk.xd.cm/builders/osx) | [ ![IRC](https://img.shields.io/badge/build-Linux%20x86-blue.svg)](http://jk.xd.cm/builders/linux) | [ ![IRC](https://img.shields.io/badge/build-Linux%20x64-blue.svg)](http://jk.xd.cm/builders/linux-64) |
+| [![Windows Build Status](http://jk.xd.cm/badge.svg?builder=windows)](http://jk.xd.cm/builders/windows) | [ ![OSX Build Status](http://jk.xd.cm/badge.svg?builder=osx)](http://jk.xd.cm/builders/osx) | [ ![Linux x86 Build Status](http://jk.xd.cm/badge.svg?builder=linux)](http://jk.xd.cm/builders/linux) | [ ![Linux x64 Build Status](http://jk.xd.cm/badge.svg?builder=linux-64)](http://jk.xd.cm/builders/linux-64) |
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software. This project does not attempt to rebalance or otherwise modify core gameplay.
 
