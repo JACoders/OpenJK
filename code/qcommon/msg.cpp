@@ -507,7 +507,7 @@ entityState_t communication
 
 typedef struct {
 	const char	*name;
-	int		offset;
+	size_t		offset;
 	int		bits;		// 0 = float
 } netField_t;
 
