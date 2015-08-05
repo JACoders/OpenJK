@@ -1,9 +1,21 @@
 # JACoders "OpenJK" project #
+
+![License](https://img.shields.io/badge/license-GPLv2-orange.svg)
+
+[![GitHub tag](https://img.shields.io/github/tag/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/tags)
+[![GitHub release](https://img.shields.io/github/release/JACoders/OpenJK.svg)](https://github.com/Unvanquished/JACoders/OpenJK/latest)
+[![Github release](https://img.shields.io/github/downloads/JACoders/OpenJK/latest/total.svg)](https://github.com/JACoders/OpenJK/releases/latest)
+
+[![IRC](https://img.shields.io/badge/irc-%23JACoders-brightgreen.svg)](http://unic0rn.github.io/tiramisu/jacoders/)
+[![Forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-lightgrey.svg)](http://jkhub.org/forum/51-discussion/)
+
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/1153/badge.svg)](https://scan.coverity.com/projects/1153)
 
-IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/jacoders/))
+### Build Status ###
 
-Forum: http://jkhub.org/forum/51-discussion/
+| Windows | OSX | Linux x86 | Linux x64 |
+|---------|-----|-----------|-----------|
+| [![IRC](https://img.shields.io/badge/build-Windows-blue.svg)](http://jk.xd.cm/builders/windows) | [ ![IRC](https://img.shields.io/badge/build-OSX-blue.svg)](http://jk.xd.cm/builders/osx) | [ ![IRC](https://img.shields.io/badge/build-Linux%20x86-blue.svg)](http://jk.xd.cm/builders/linux) | [ ![IRC](https://img.shields.io/badge/build-Linux%20x64-blue.svg)](http://jk.xd.cm/builders/linux-64) |
 
 The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software. This project does not attempt to rebalance or otherwise modify core gameplay.
 
