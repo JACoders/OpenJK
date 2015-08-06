@@ -321,7 +321,7 @@ void Cmd_Give_f( gentity_t *ent )
 	int client_id = -1;
 
 	if (!(ent->client->pers.bitvalue & (1 << ADM_GIVE)))
-	{ // zyk: noclip admin command
+	{ // zyk: give admin command
 		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
 		return;
 	}
@@ -397,6 +397,83 @@ void Cmd_Give_f( gentity_t *ent )
 		trap->SendServerCommand( ent-g_entities, "print \"Invalid option. Must be ^3force ^7or ^3guns^7.\n\"" );
 		return;
 	}
+}
+
+/*
+==================
+Cmd_Scale_f
+
+Scales player size
+==================
+*/
+void do_scale(gentity_t *ent, int new_size)
+{
+	ent->client->ps.iModelScale = new_size;
+	ent->client->pers.player_scale = new_size;
+
+	if (new_size == 100) // zyk: default size
+		ent->client->pers.player_statuses &= ~(1 << 4);
+	else
+		ent->client->pers.player_statuses |= (1 << 4);
+}
+
+void Cmd_Scale_f( gentity_t *ent ) {
+	char arg1[MAX_TOKEN_CHARS] = {0};
+	char arg2[MAX_TOKEN_CHARS] = {0};
+	int client_id = -1;
+	int new_size = 0;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_SCALE)))
+	{ // zyk: scale admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if (level.gametype != GT_FFA && zyk_allow_adm_in_other_gametypes.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Scale command not allowed in gametypes other than FFA.\n\"" );
+		return;
+	}
+
+	if (trap->Argc() != 3)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /scale <player name or ID> <size between 20 and 500>.\n\"" );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	trap->Argv( 2, arg2, sizeof( arg2 ) );
+
+	client_id = ClientNumberFromString( ent, arg1, qfalse );
+
+	if (client_id == -1)
+	{
+		return;
+	}
+
+	new_size = atoi(arg2);
+
+	if (new_size < 20 || new_size > 500)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Size must be between 20 and 500.\n\"" );
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode == 2 && g_entities[client_id].client->pers.can_play_quest == 1)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot scale players in quests.\n\"" );
+		return;
+	}
+
+	if (g_entities[client_id].client->sess.amrpgmode == 2 && g_entities[client_id].client->pers.guardian_mode > 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot scale players in boss battles.\n\"" );
+		return;
+	}
+
+	do_scale(&g_entities[client_id], new_size);
+	
+	trap->SendServerCommand( -1, va("print \"Scaled player %s ^7to ^3%d^7\n\"", g_entities[client_id].client->pers.netname, new_size) );
 }
 
 /*
@@ -5870,6 +5947,8 @@ void choose_new_player(gentity_t *next_player)
 		}
 
 		next_player->client->pers.can_play_quest = 1;
+
+		do_scale(next_player, 100);
 
 		trap->SendServerCommand( -1, va("chat \"^3Quest System: ^7%s ^7turn.\"",next_player->client->pers.netname));
 	}
@@ -12419,7 +12498,7 @@ Cmd_AdminList_f
 */
 void Cmd_AdminList_f( gentity_t *ent ) {
 	char message[1024];
-	char message_content[ADM_NUM_CMDS + 1][100];
+	char message_content[ADM_NUM_CMDS + 1][80];
 	int i = 0;
 	strcpy(message,"");
 
@@ -12540,6 +12619,15 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[11],va("^3 %d ^7- Give: ^1no\n",ADM_GIVE));
 		}
 
+		if ((ent->client->pers.bitvalue & (1 << ADM_SCALE))) 
+		{
+			strcpy(message_content[12],va("^3 %d ^7- Scale: ^2yes\n",ADM_SCALE));
+		}
+		else
+		{
+			strcpy(message_content[12],va("^3 %d ^7- Scale: ^1no\n",ADM_SCALE));
+		}
+
 		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
@@ -12602,6 +12690,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_GIVE)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/give <player name or ID> <option> ^7to give stuff to a player. Option may be ^3guns ^7or ^3force ^7\n\n\"" );
+		}
+		else if (command_number == ADM_SCALE)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/scale <player name or ID> <size between 20 and 500> ^7to change the player model size\n\n\"" );
 		}
 	}
 }
@@ -13133,6 +13225,7 @@ command_t commands[] = {
 	{ "rpmodeup",			Cmd_RpModeUp_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "say",				Cmd_Say_f,					0 },
 	{ "say_team",			Cmd_SayTeam_f,				0 },
+	{ "scale",				Cmd_Scale_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "score",				Cmd_Score_f,				0 },
 	{ "sell",				Cmd_Sell_f,					CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "settings",			Cmd_Settings_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },

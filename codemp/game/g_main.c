@@ -4112,6 +4112,7 @@ void zyk_NPC_Kill_f( char *name )
 // zyk: spawns a RPG quest boss and set his HP based in the quantity of allies the quest player has now
 extern void clean_effect();
 extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle ); // zyk: used in boss battles
+extern void do_scale(gentity_t *ent, int new_size);
 void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,int gy,int gz,int gyaw,int guardian_mode)
 {
 	vec3_t player_origin;
@@ -4122,16 +4123,19 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	if (ent->client->sess.ally1 != -1)
 	{
 		g_entities[ent->client->sess.ally1].client->pers.guardian_mode = guardian_mode;
+		do_scale(&g_entities[ent->client->sess.ally1], 100);
 		number_of_allies++;
 	}
 	if (ent->client->sess.ally2 != -1)
 	{
 		g_entities[ent->client->sess.ally2].client->pers.guardian_mode = guardian_mode;
+		do_scale(&g_entities[ent->client->sess.ally2], 100);
 		number_of_allies++;
 	}
 	if (ent->client->sess.ally3 != -1)
 	{
 		g_entities[ent->client->sess.ally3].client->pers.guardian_mode = guardian_mode;
+		do_scale(&g_entities[ent->client->sess.ally3], 100);
 		number_of_allies++;
 	}
 

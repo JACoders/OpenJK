@@ -3110,6 +3110,7 @@ extern void zyk_add_force_powers( gentity_t *ent );
 extern void zyk_add_guns( gentity_t *ent );
 extern void zyk_remove_force_powers( gentity_t *ent );
 extern void zyk_remove_guns( gentity_t *ent );
+extern void do_scale(gentity_t *ent, int new_size);
 void ClientSpawn(gentity_t *ent) {
 	int					i = 0, index = 0, saveSaberNum = ENTITYNUM_NONE, wDisable = 0, savedSiegeIndex = 0, maxHealth = 100;
 	vec3_t				spawn_origin, spawn_angles;
@@ -3806,6 +3807,11 @@ void ClientSpawn(gentity_t *ent) {
 	{ // zyk: player received guns from admin
 		zyk_remove_force_powers(ent);
 		zyk_add_guns(ent);
+	}
+
+	if (ent->client->pers.player_statuses & (1 << 4))
+	{ // zyk: player is scaled, set the scale factor
+		do_scale(ent, ent->client->pers.player_scale);
 	}
 
 	ent->client->pers.chat_protection_timer = 0;

@@ -525,6 +525,7 @@ typedef enum {
 	ADM_KICK,
 	ADM_PARALYZE,
 	ADM_GIVE,
+	ADM_SCALE,
 	ADM_NUM_CMDS
 } zyk_admin_t;
 
@@ -594,7 +595,7 @@ typedef struct clientPersistant_s {
 	// 1 - using an emote
 	// 2 - Received Radar event - set after client-side receives the Bounty Hunter Upgrade event
 	// 3 - Received Jetpack Flame event - set after client-side receives the Jetpack Upgrade event
-	// 4 - Unused
+	// 4 - Scaled player
 	// 5 - Chat protection activated for this player
 	// 6 - Paralyzed by an admin
 	// 7 - using Force Armor
@@ -605,6 +606,8 @@ typedef struct clientPersistant_s {
 	// 12 - Give Command - Force
 	// 13 - Give Command - Guns
 	int player_statuses;
+
+	int player_scale;
 
 	// zyk: chat protection cooldown timer. After this time, player will be protected against damage
 	int chat_protection_timer;
