@@ -1,13 +1,13 @@
 # OpenJK
 
-OpenJK is an effort by the JACoders group to maintain and improve the game engines on which the Jedi Academy (JA) and Jedi Outcast (JO) games run on. This project does not attempt to rebalance or otherwise modify core gameplay.
+OpenJK is an effort by the JACoders group to maintain and improve the game engines on which the Jedi Academy (JA) and Jedi Outcast (JO) games run on, while maintaining *full backwards compatibility* with the existing games. *This project does not attempt to rebalance or otherwise modify core gameplay*.
 
 Our aims are to:
 * Improve the stability of the engine by fixing bugs and improving performance.
 * Provide a clean base from which new JO and JA code modifications can be made.
-* Make available this engine to more operating systems. To date, we have successfully ported the JO/JA engine to Linux and OS X.
+* Make available this engine to more operating systems. To date, we have ports on Linux and OS X.
 
-Currently, the only stable portion of this project is the Jedi Academy multiplayer code, with the single player code in a reasonable state.
+Currently, the most stable portion of this project is the Jedi Academy multiplayer code, with the single player code in a reasonable state.
 
 Rough support for Jedi Outcast single player is also available, however this should be considered heavily work in progress. This is not currently actively worked on or tested. OpenJK does not have Jedi Outcast multiplayer support.
 
@@ -25,13 +25,15 @@ Please use discretion when making issue requests on GitHub. The [JKHub sub-forum
 ## License
 
 [![License](https://img.shields.io/github/license/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
+
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
 ## For players
 
-To install OpenJK, you will first need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search).
+To install OpenJK, you will first need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy).
 
 Installing and running OpenJK:
+
 1. [Download the latest build](http://builds.openjk.org) for your operating system.
 2. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
 3. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` application (OS X), depending on your operating system.
@@ -39,7 +41,8 @@ Installing and running OpenJK:
 ## For Developers
 
 ### Building OpenJK
-Follow the [compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide) found on our wiki. A [debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging) is also available.
+* [Compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
+* [Debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging)
 
 ### Contributing to OpenJK
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
