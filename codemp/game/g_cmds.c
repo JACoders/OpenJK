@@ -326,6 +326,12 @@ void Cmd_Give_f( gentity_t *ent )
 		return;
 	}
 
+	if (level.gametype != GT_FFA && zyk_allow_adm_in_other_gametypes.integer == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Give command not allowed in gametypes other than FFA.\n\"" );
+		return;
+	}
+
 	if (trap->Argc() != 3)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /give <player name or ID> <option>.\n\"" );
