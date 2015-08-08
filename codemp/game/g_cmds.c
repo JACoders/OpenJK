@@ -471,6 +471,13 @@ void Cmd_Scale_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (ent != &g_entities[client_id] && g_entities[client_id].client->sess.amrpgmode > 0 && 
+		g_entities[client_id].client->pers.bitvalue & (1 << ADM_ADMPROTECT) && !(g_entities[client_id].client->pers.player_settings & (1 << 13)))
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Target player is adminprotected\n\"") );
+		return;
+	}
+
 	do_scale(&g_entities[client_id], new_size);
 	
 	trap->SendServerCommand( -1, va("print \"Scaled player %s ^7to ^3%d^7\n\"", g_entities[client_id].client->pers.netname, new_size) );
