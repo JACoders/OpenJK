@@ -6,6 +6,8 @@
 # The bundled copy can be produced from a zlib tarball by copying the c and h
 # files from the root of the tarball to this folder, and then moving the public
 # header files (zlib.h, zconf.h) into the include/ subfolder.
+#
+# The current bundled copy comes from the zlib 1.2.8 release.
 
 include_directories(include/)
 
