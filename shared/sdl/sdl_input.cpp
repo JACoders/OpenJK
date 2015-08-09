@@ -176,7 +176,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 static bool IN_NumLockEnabled( void )
