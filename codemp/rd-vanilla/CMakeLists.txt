@@ -112,31 +112,10 @@ else()
 	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${JPEG_LIBRARIES})
 endif()
 
-if(UseInternalPNG)
-	set(MPVanillaRendererLibPngFiles
-		"${OpenJKLibDir}/libpng/png.c"
-		"${OpenJKLibDir}/libpng/pngerror.c"
-		"${OpenJKLibDir}/libpng/pngget.c"
-		"${OpenJKLibDir}/libpng/pngmem.c"
-		"${OpenJKLibDir}/libpng/pngpread.c"
-		"${OpenJKLibDir}/libpng/pngread.c"
-		"${OpenJKLibDir}/libpng/pngrio.c"
-		"${OpenJKLibDir}/libpng/pngrtran.c"
-		"${OpenJKLibDir}/libpng/pngrutil.c"
-		"${OpenJKLibDir}/libpng/pngset.c"
-		"${OpenJKLibDir}/libpng/pngtrans.c"
-		"${OpenJKLibDir}/libpng/pngwio.c"
-		"${OpenJKLibDir}/libpng/pngwrite.c"
-		"${OpenJKLibDir}/libpng/pngwtran.c"
-		"${OpenJKLibDir}/libpng/pngwutil.c")
-	source_group("libpng" FILES ${MPVanillaRendererLibPngFiles})
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} "${OpenJKLibDir}/libpng")
-	set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererLibPngFiles})
-else(UseInternalPNG)
-	find_package(PNG REQUIRED)
-	set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${PNG_INCLUDE_DIR})
-	set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${PNG_LIBRARIES})
-endif(UseInternalPNG)
+# Transparently use either bundled or system libpng.  Order is important --
+# libpng used zlib, so it must come before it on the linker command line.
+list(APPEND MPVanillaRendererIncludeDirectories ${PNG_INCLUDE_DIRS})
+list(APPEND MPVanillaRendererLibraries          ${PNG_LIBRARIES})
 
 # Transparently use either bundled or system zlib.
 list(APPEND MPVanillaRendererIncludeDirectories ${ZLIB_INCLUDE_DIR})

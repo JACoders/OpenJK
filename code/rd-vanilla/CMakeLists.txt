@@ -61,32 +61,11 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	source_group("ghoul2" FILES ${SPRDVanillaG2Files})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaG2Files})
 
-	if(UseInternalPNG)
-		set(SPRDVanillaLibPngFiles
-			"${OpenJKLibDir}/libpng/png.c"
-			"${OpenJKLibDir}/libpng/pngerror.c"
-			"${OpenJKLibDir}/libpng/pngget.c"
-			"${OpenJKLibDir}/libpng/pngmem.c"
-			"${OpenJKLibDir}/libpng/pngpread.c"
-			"${OpenJKLibDir}/libpng/pngread.c"
-			"${OpenJKLibDir}/libpng/pngrio.c"
-			"${OpenJKLibDir}/libpng/pngrtran.c"
-			"${OpenJKLibDir}/libpng/pngrutil.c"
-			"${OpenJKLibDir}/libpng/pngset.c"
-			"${OpenJKLibDir}/libpng/pngtrans.c"
-			"${OpenJKLibDir}/libpng/pngwio.c"
-			"${OpenJKLibDir}/libpng/pngwrite.c"
-			"${OpenJKLibDir}/libpng/pngwtran.c"
-			"${OpenJKLibDir}/libpng/pngwutil.c")
-		source_group("libpng" FILES ${SPRDVanillaLibPngFiles})
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${OpenJKLibDir}/libpng")
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaLibPngFiles})
-	else(UseInternalPNG)
-		find_package(PNG REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${PNG_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${PNG_LIBRARIES})
-	endif(UseInternalPNG)
-
+    # Transparently use either bundled or system libpng.  Order is important --
+    # libpng used zlib, so it must come before it on the linker command line.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${PNG_INCLUDE_DIRS})
+    list(APPEND SPRDVanillaRendererLibraries          ${PNG_LIBRARIES})
+    
     # Transparently use either bundled or system zlib.
     list(APPEND SPRDVanillaRendererIncludeDirectories ${ZLIB_INCLUDE_DIR})
     list(APPEND SPRDVanillaRendererLibraries          ${ZLIB_LIBRARIES})
