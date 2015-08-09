@@ -67,7 +67,7 @@ else()
 	set(MakeApplicationBundles OFF)
 endif()
 
-if(MSVC)
+if(WIN32)
 	option(UseInternalSDL2 "Whether to use the included SDL2 library instead of a locally installed one" ON)
 else()
 	set(UseInternalSDL2 OFF)
@@ -75,6 +75,9 @@ endif()
 
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
+
+Include(CheckTypeSize)
+check_type_size("void*" CMAKE_SIZEOF_VOID_P)
 
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
@@ -202,6 +205,13 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 			# -ioquake3 Makefile
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
+		endif()
+
+		if(WIN32)
+			# Link libgcc and libstdc++ statically
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++")
 		endif()
 	elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")

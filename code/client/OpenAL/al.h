@@ -80,7 +80,7 @@ ALAPI ALubyte*	ALAPIENTRY alGetString( ALenum param );
  * Error support.
  * Obtain the most recent error generated in the AL state machine.
  */
-ALAPI ALenum	ALAPIENTRY alGetError( ALvoid );
+ALAPI ALenum	ALAPIENTRY alGetError( void );
 
 /** 
  * Extension support.
@@ -305,7 +305,7 @@ ALAPI ALubyte*	ALAPIENTRY (*alGetString)( ALenum param );
  * Error support.
  * Obtain the most recent error generated in the AL state machine.
  */
-ALAPI ALenum	ALAPIENTRY (*alGetError)( ALvoid );
+ALAPI ALenum	ALAPIENTRY (*alGetError)( void );
 
 
 /** 

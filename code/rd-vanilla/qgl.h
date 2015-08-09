@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #	include <GL/gl.h>
 #elif defined( _WIN32 )
 #	include <windows.h>
-#	include <gl/gl.h>
+#	include <GL/gl.h>
 #elif defined(MACOS_X)
 // Prevent OS X headers from including its own glext header
 #	define GL_GLEXT_LEGACY
