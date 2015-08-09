@@ -286,6 +286,12 @@ else()
   find_package(ZLIB REQUIRED)
 endif()
 
+if(UseInternalPNG)
+  add_subdirectory(lib/libpng)
+else()
+  find_package(PNG REQUIRED)
+endif()
+
 # Always use bundled minizip (sets MINIZIP_{LIBRARIES,INCLUDE_DIR})
 add_subdirectory(lib/minizip)
 
