@@ -38,9 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_media.h"
 
-#ifndef _WIN32
-    #include <cmath>
-#endif
+#include <cmath>
 
 
 CFxScheduler	theFxScheduler;
