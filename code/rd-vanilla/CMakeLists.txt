@@ -37,17 +37,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 
 	# Files
 
-	# JPEG
-	if(UseInternalJPEG)
-		file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-		source_group("jpeg-8c" FILES ${J_SRC})
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
-	else()
-		find_package(JPEG REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${JPEG_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${JPEG_LIBRARIES})
-	endif()
-
 	# GHOUL 2
 	set(SPRDVanillaG2Files
 		"${SPDir}/ghoul2/G2.h"
@@ -60,6 +49,10 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		)
 	source_group("ghoul2" FILES ${SPRDVanillaG2Files})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaG2Files})
+
+    # Transparently use either bundled or system jpeg.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${JPEG_INCLUDE_DIR})
+    list(APPEND SPRDVanillaRendererLibraries          ${JPEG_LIBRARIES})
 
     # Transparently use either bundled or system libpng.  Order is important --
     # libpng used zlib, so it must come before it on the linker command line.
