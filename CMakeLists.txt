@@ -277,7 +277,9 @@ if(BuildPortableVersion)
 endif()
 
 if(UseInternalJPEG)
-	set(SharedDefines ${SharedDefines} "USE_INTERNAL_JPEG")
+  add_subdirectory(lib/jpeg-8c)
+else()
+  find_package(JPEG REQUIRED)
 endif()
 
 if(UseInternalZlib)
