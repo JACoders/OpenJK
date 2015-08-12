@@ -1341,6 +1341,7 @@ qboolean WP_SaberApplyDamage(gentity_t *ent, float baseDamage, int baseDFlags,
 	gentity_t	*victim;
 	int			dFlags = baseDFlags;
 	float		maxDmg;
+	float		saberDmgMultiplier = g_saberDamageScale->value;
 	saberType_t saberType = ent->client->ps.saber[saberNum].type;
 
 	if (!numVictims)
@@ -1642,14 +1643,14 @@ qboolean WP_SaberApplyDamage(gentity_t *ent, float baseDamage, int baseDFlags,
 						}
 						int damage = 0;
 						if (!WP_SaberBladeUseSecondBladeStyle(&ent->client->ps.saber[saberNum], bladeNum)
-							&& ent->client->ps.saber[saberNum].damageScale != 1.0f)
+							&& (ent->client->ps.saber[saberNum].damageScale != 1.0f || saberDmgMultiplier != 1.0f))
 						{
-							damage = ceil(totalDmg[i] * ent->client->ps.saber[saberNum].damageScale);
+							damage = ceil(totalDmg[i] * ent->client->ps.saber[saberNum].damageScale * saberDmgMultiplier);
 						}
 						else if (WP_SaberBladeUseSecondBladeStyle(&ent->client->ps.saber[saberNum], bladeNum)
-							&& ent->client->ps.saber[saberNum].damageScale2 != 1.0f)
+							&& (ent->client->ps.saber[saberNum].damageScale2 != 1.0f || saberDmgMultiplier != 1.0f))
 						{
-							damage = ceil(totalDmg[i] * ent->client->ps.saber[saberNum].damageScale2);
+							damage = ceil(totalDmg[i] * ent->client->ps.saber[saberNum].damageScale2 * saberDmgMultiplier);
 						}
 						else
 						{
@@ -4811,10 +4812,11 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 				//FIXME: more damage for higher attack power levels?
 				//		More damage based on length/color of saber?
 				//FIXME: Desann does double damage?
+
+				
+
 				if (g_saberNewCombat->integer) //new code
 				{
-					float saberDmgMultiplier = g_saberDamageScale->value;
-
 					if (g_saberRealisticCombat->integer)
 					{
 						switch ((ent->client->ps.saberAnimLevel))
@@ -4833,8 +4835,6 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 							baseDamage = 2.5f;
 							break;
 						}
-
-						baseDamage *= saberDmgMultiplier;
 					}
 					else
 					{
@@ -4845,7 +4845,7 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK7
 							|| ent->client->ps.torsoAnim == BOTH_LUNGE2_B__T_))
 						{//*sigh*, these anim do less damage since they're so easy to do
-							baseDamage = 2.5f * saberDmgMultiplier;
+							baseDamage = 2.5f;
 						}
 						else
 						{
@@ -4865,8 +4865,6 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 								baseDamage = 2.5f;
 								break;
 							}
-
-							baseDamage *= saberDmgMultiplier;
 						}
 					}
 				}
@@ -8126,7 +8124,7 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 		}
 	}
 
-	if (self->NPC->rank < RANK_LT) //lower rank melee users can't do this stuff
+	if (self->NPC->rank > RANK_LT) //lower rank melee users can't do this stuff
 	{
 		if (g_debugMelee->integer
 			&& (ucmd->buttons & BUTTON_USE)
@@ -13860,7 +13858,7 @@ qboolean WP_ForcePowerUsable(gentity_t *self, forcePowers_t forcePower, int over
 	else
 	{
 		if ((forcePower == FP_SABERTHROW && self->client->ps.saber[0].saberFlags&SFL_NOT_THROWABLE)
-			|| (forcePower == FP_SABERTHROW && self->client->buttons & BUTTON_USE))
+			|| (forcePower == FP_SABERTHROW && !self->client->buttons & BUTTON_USE))
 		{//cannot throw this type of saber or player is in kick mode
 			return qfalse;
 		}
