@@ -248,6 +248,11 @@ void Rancor_Swing( qboolean tryGrab )
 				}
 				NPCS.NPC->enemy = radiusEnt;//make him my new best friend
 				radiusEnt->client->ps.eFlags2 |= EF2_HELD_BY_MONSTER;
+
+				// zyk: remove noclip from player
+				if (radiusEnt->s.number < MAX_CLIENTS && radiusEnt->client->noclip == qtrue)
+					radiusEnt->client->noclip = qfalse;
+
 				//FIXME: this makes it so that the victim can't hit us with shots!  Just use activator or something
 				radiusEnt->client->ps.hasLookTarget = qtrue;
 				radiusEnt->client->ps.lookTarget = NPCS.NPC->s.number;
