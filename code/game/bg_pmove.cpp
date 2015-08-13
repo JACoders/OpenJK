@@ -11089,20 +11089,14 @@ qboolean PM_PickAutoMultiKick(qboolean allowSingles)
 
 qboolean PM_SaberThrowable(void)
 {
-	//player gets to kick if holding use
-	if ((pm->cmd.buttons&BUTTON_USE))
+	//can't throw staff unless we have ST 3
+	if (pm->ps->saberAnimLevel == SS_STAFF && pm->ps->forcePowerLevel[FP_SABERTHROW] < 3)
 	{
 		return qfalse;
 	}
 
-	//ugh, hard-coding this is bad...
-	if (pm->ps->saberAnimLevel == SS_STAFF)
-	{
-		return qfalse;
-	}
-
-	if (!(pm->ps->saber[0].saberFlags&SFL_NOT_THROWABLE) && !(pm->cmd.buttons&BUTTON_USE))
-	{//yes, this saber is throwable except if the player wants to kick
+	if (!(pm->ps->saber[0].saberFlags&SFL_NOT_THROWABLE))
+	{//yes, this saber is throwable
 		return qtrue;
 	}
 
@@ -11131,18 +11125,16 @@ qboolean PM_SaberThrowable(void)
 
 qboolean PM_CheckAltKickAttack(void)
 {
-	if (((pm->cmd.buttons&BUTTON_ALT_ATTACK)
+	if (pm->cmd.buttons&BUTTON_ALT_ATTACK
 		&& (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD) || PM_SaberInReturn(pm->ps->saberMove))
 		&& (!PM_FlippingAnim(pm->ps->legsAnim) || pm->ps->legsAnimTimer <= 250)
-		//&& PM_SaberThrowable()
-		&& (!WP_ForcePowerUsable(pm->gent, FP_SABERTHROW, 20)) //make sure saber throw is disabled before trying to kick
 		&& pm->ps->SaberActive()
 		&& !(pm->ps->saber[0].saberFlags&SFL_NO_KICKS)//okay to do kicks with this saber
 		&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_KICKS))//okay to do kicks with the 2nd saber
+		&& (!pm->cmd.buttons&BUTTON_USE || !PM_SaberThrowable /*kick by default if can't saber throw*/) 
+		//&& !PM_SaberThrowable()
+		//&& (!WP_ForcePowerUsable(pm->gent, FP_SABERTHROW, 20)) //make sure saber throw is disabled before trying to kick)
 		)
-		|| ((pm->cmd.buttons&BUTTON_ALT_ATTACK)
-		&& !(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD)
-		&& pm->cmd.buttons&BUTTON_USE))
 	{
 		return qtrue;
 	}
