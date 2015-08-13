@@ -1755,7 +1755,6 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 		}
 	}
 	int skin = gi.RE_RegisterSkin( skinName );
-	assert(skin);
 	//now generate the ghoul2 model this client should be.
 	if ( ent->client->NPC_class == CLASS_VEHICLE )
 	{//vehicles actually grab their model from the appropriate vehicle data entry
@@ -1776,7 +1775,6 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 		modelName = "stormtrooper";
 		Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/model_default.skin", modelName );
 		skin = gi.RE_RegisterSkin( skinName );
-		assert(skin);
 		ent->playerModel = gi.G2API_InitGhoul2Model( ent->ghoul2, va("models/players/%s/model.glm", modelName), G_ModelIndex( va("models/players/%s/model.glm", modelName) ), NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	}
 	if (ent->playerModel == -1)

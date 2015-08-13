@@ -610,6 +610,9 @@ bool CNavigator::Load( const char *filename, int checksum )
 {
 	fileHandle_t	file;
 
+	// Free previous map just in case. jampgame doesn't do this by default...
+	Free();
+
 	//Attempt to load the file
 	FS_FOpenFileByMode( va( "maps/%s.nav", filename ), &file, FS_READ );
 
