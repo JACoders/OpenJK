@@ -1825,10 +1825,11 @@ const void *RB_PostProcess(const void *data)
 	if (r_dynamicGlow->integer)
 	{
 		RB_BloomDownscale(tr.glowImage, tr.glowFboScaled[0]);
-		for ( int i = 1; i < ARRAY_LEN(tr.glowFboScaled); i++ )
+		int numPasses = Com_Clampi(1, ARRAY_LEN(tr.glowFboScaled), r_dynamicGlowPasses->integer);
+		for ( int i = 1; i < numPasses; i++ )
 			RB_BloomDownscale(tr.glowFboScaled[i - 1], tr.glowFboScaled[i]);
 
-		for ( int i = ARRAY_LEN(tr.glowFboScaled) - 2; i >= 0; i-- )
+		for ( int i = numPasses - 2; i >= 0; i-- )
 			RB_BloomUpscale(tr.glowFboScaled[i + 1], tr.glowFboScaled[i], r_dynamicGlowIntensity->value);
 	}
 	srcBox[0] = backEnd.viewParms.viewportX;
