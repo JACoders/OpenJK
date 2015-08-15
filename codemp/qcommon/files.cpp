@@ -1599,6 +1599,9 @@ qboolean FS_FindPureDLL(const char *name)
 	if(!fs_searchpaths)
 		Com_Error(ERR_FATAL, "Filesystem call made without initialization");
 
+	if ( !Cvar_VariableValue( "sv_pure" ) )
+		return qtrue;
+
 	Com_sprintf(dllName, sizeof(dllName), "%sx86.dll", name);
 
 	if(FS_FOpenFileRead(dllName, &h, qtrue) > 0)
