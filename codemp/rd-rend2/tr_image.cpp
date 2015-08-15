@@ -2999,10 +2999,15 @@ void R_CreateBuiltinImages( void ) {
 	tr.renderImage = R_CreateImage("_render", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
 
 	tr.glowImage = R_CreateImage("*glow", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-	tr.glowImageScaled[0] = R_CreateImage("*glowScaled0", NULL, width / 2, height / 2, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-	tr.glowImageScaled[1] = R_CreateImage("*glowScaled1", NULL, width / 4, height / 4, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-	tr.glowImageScaled[2] = R_CreateImage("*glowScaled2a", NULL, width / 8, height / 8, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-	tr.glowImageScaled[3] = R_CreateImage("*glowScaled2b", NULL, width / 8, height / 8, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+
+	int glowImageWidth = width;
+	int glowImageHeight = height;
+	for ( int i = 0; i < ARRAY_LEN(tr.glowImageScaled); i++ )
+	{
+		tr.glowImageScaled[i] = R_CreateImage(va("*glowScaled%d", i), NULL, glowImageWidth, glowImageHeight, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+		glowImageWidth = Q_max(1, glowImageWidth >> 1);
+		glowImageHeight = Q_max(1, glowImageHeight >> 1);
+	}
 
 	if (r_drawSunRays->integer)
 		tr.sunRaysImage = R_CreateImage("*sunRays", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, rgbFormat);

@@ -54,6 +54,10 @@ extern const char *fallbackShader_tonemap_vp;
 extern const char *fallbackShader_tonemap_fp;
 extern const char *fallbackShader_gaussian_blur_vp;
 extern const char *fallbackShader_gaussian_blur_fp;
+extern const char *fallbackShader_dglow_downsample_vp;
+extern const char *fallbackShader_dglow_downsample_fp;
+extern const char *fallbackShader_dglow_upsample_vp;
+extern const char *fallbackShader_dglow_upsample_fp;
 
 typedef struct uniformInfo_s
 {
@@ -1351,6 +1355,20 @@ int GLSL_BeginLoadGPUShaders(void)
 		ri->Error(ERR_FATAL, "Could not load gaussian_blur (Y-direction) shader!");
 	}
 
+	attribs = 0;
+	extradefines[0] = '\0';
+	if (!GLSL_BeginLoadGPUShader(&tr.dglowDownsample, "dglow_downsample", attribs, qtrue, extradefines, fallbackShader_dglow_downsample_vp, fallbackShader_dglow_downsample_fp))
+	{
+		ri->Error(ERR_FATAL, "Could not load dynamic glow downsample shader!");
+	}
+
+	attribs = 0;
+	extradefines[0] = '\0';
+	if (!GLSL_BeginLoadGPUShader(&tr.dglowUpsample, "dglow_upsample", attribs, qtrue, extradefines, fallbackShader_dglow_upsample_vp, fallbackShader_dglow_upsample_fp))
+	{
+		ri->Error(ERR_FATAL, "Could not load dynamic glow upsample shader!");
+	}
+
 	return startTime;
 }
 
@@ -1651,6 +1669,32 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 		numEtcShaders++;
 	}
+
+	if (!GLSL_EndLoadGPUShader(&tr.dglowDownsample))
+	{
+		ri->Error(ERR_FATAL, "Could not load dynamic glow downsample shader!");
+	}
+
+	GLSL_InitUniforms(&tr.dglowDownsample);
+
+#if defined(_DEBUG)
+	GLSL_FinishGPUShader(&tr.dglowDownsample);
+#endif
+
+	numEtcShaders++;
+
+	if (!GLSL_EndLoadGPUShader(&tr.dglowUpsample))
+	{
+		ri->Error(ERR_FATAL, "Could not load dynamic glow upsample shader!");
+	}
+
+	GLSL_InitUniforms(&tr.dglowUpsample);
+
+#if defined(_DEBUG)
+	GLSL_FinishGPUShader(&tr.dglowUpsample);
+#endif
+
+	numEtcShaders++;
 
 #if 0
 	attribs = ATTR_POSITION | ATTR_TEXCOORD0;

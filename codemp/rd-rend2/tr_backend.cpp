@@ -1824,29 +1824,12 @@ const void *RB_PostProcess(const void *data)
 
 	if (r_dynamicGlow->integer)
 	{
-		// Downscale 8x
-		FBO_BlitFromTexture (tr.glowImage, NULL, NULL, tr.glowFboScaled[0], NULL, &tr.textureColorShader, NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
-		FBO_FastBlit (tr.glowFboScaled[0], NULL, tr.glowFboScaled[1], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-		FBO_FastBlit (tr.glowFboScaled[1], NULL, tr.glowFboScaled[2], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+		RB_BloomDownscale(tr.glowImage, tr.glowFboScaled[0]);
+		for ( int i = 1; i < ARRAY_LEN(tr.glowFboScaled); i++ )
+			RB_BloomDownscale(tr.glowFboScaled[i - 1], tr.glowFboScaled[i]);
 
-		// Blur a few times
-		float spread = 1.0f;
-		for ( int i = 0, numPasses = r_dynamicGlowPasses->integer; i < numPasses; i++ )
-		{
-			RB_GaussianBlur (tr.glowFboScaled[2], tr.glowFboScaled[3], tr.glowFboScaled[2], spread);
-
-			spread += r_dynamicGlowDelta->value * 0.25f;
-		}
-
-		// Upscale 4x
-		qglScissor (0, 0, tr.glowFboScaled[1]->width, tr.glowFboScaled[1]->height);
-		FBO_FastBlit (tr.glowFboScaled[2], NULL, tr.glowFboScaled[1], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-		qglScissor (0, 0, tr.glowFboScaled[0]->width, tr.glowFboScaled[0]->height);
-		FBO_FastBlit (tr.glowFboScaled[1], NULL, tr.glowFboScaled[0], NULL, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-		// Restore scissor rect
-		qglScissor (0, 0, glConfig.vidWidth, glConfig.vidHeight);
+		for ( int i = ARRAY_LEN(tr.glowFboScaled) - 2; i >= 0; i-- )
+			RB_BloomUpscale(tr.glowFboScaled[i + 1], tr.glowFboScaled[i], r_dynamicGlowIntensity->value);
 	}
 	srcBox[0] = backEnd.viewParms.viewportX;
 	srcBox[1] = backEnd.viewParms.viewportY;

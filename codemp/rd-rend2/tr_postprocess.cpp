@@ -484,3 +484,48 @@ void RB_GaussianBlur(FBO_t *srcFbo, FBO_t *intermediateFbo, FBO_t *dstFbo, float
 	// Blur Y
 	FBO_Blit (intermediateFbo, NULL, scale, dstFbo, NULL, &tr.gaussianBlurShader[1], NULL, GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 }
+
+void RB_BloomDownscale(image_t *sourceImage, FBO_t *destFBO)
+{
+	vec2_t invTexRes = { 1.0f / sourceImage->width, 1.0f / sourceImage->height };
+
+	FBO_Bind(destFBO);
+	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+
+	qglClearBufferfv(GL_COLOR, 0, colorBlack);
+	qglViewport(0, 0, destFBO->width, destFBO->height);
+
+	GLSL_BindProgram(&tr.dglowDownsample);
+	GLSL_SetUniformVec2(&tr.dglowDownsample, UNIFORM_INVTEXRES, invTexRes);
+	GLSL_SetUniformVec4(&tr.dglowDownsample, UNIFORM_COLOR, colorWhite);
+	GL_BindToTMU(sourceImage, 0);
+
+	// Draw fullscreen triangle
+	qglDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void RB_BloomDownscale(FBO_t *sourceFBO, FBO_t *destFBO)
+{
+	RB_BloomDownscale(sourceFBO->colorImage[0], destFBO);
+}
+
+void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO, float intensity)
+{
+	image_t *sourceImage = sourceFBO->colorImage[0];
+	vec2_t invTexRes = { 1.0f / sourceImage->width, 1.0f / sourceImage->height };
+	float color[] = { intensity, intensity, intensity, 1.0f };
+
+	FBO_Bind(destFBO);
+	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+
+	qglClearBufferfv(GL_COLOR, 0, colorBlack);
+	glViewport(0, 0, destFBO->width, destFBO->height);
+
+	GLSL_BindProgram(&tr.dglowUpsample);
+	GLSL_SetUniformVec2(&tr.dglowUpsample, UNIFORM_INVTEXRES, invTexRes);
+	GLSL_SetUniformVec4(&tr.dglowUpsample, UNIFORM_COLOR, color);
+	GL_BindToTMU(sourceImage, 0);
+
+	// Draw fullscreen triangle
+	qglDrawArrays(GL_TRIANGLES, 0, 3);
+}
