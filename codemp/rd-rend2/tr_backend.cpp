@@ -1830,7 +1830,7 @@ const void *RB_PostProcess(const void *data)
 			RB_BloomDownscale(tr.glowFboScaled[i - 1], tr.glowFboScaled[i]);
 
 		for ( int i = numPasses - 2; i >= 0; i-- )
-			RB_BloomUpscale(tr.glowFboScaled[i + 1], tr.glowFboScaled[i], r_dynamicGlowIntensity->value);
+			RB_BloomUpscale(tr.glowFboScaled[i + 1], tr.glowFboScaled[i]);
 	}
 	srcBox[0] = backEnd.viewParms.viewportX;
 	srcBox[1] = backEnd.viewParms.viewportY;

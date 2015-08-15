@@ -492,12 +492,11 @@ void RB_BloomDownscale(image_t *sourceImage, FBO_t *destFBO)
 	FBO_Bind(destFBO);
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
-	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 	qglViewport(0, 0, destFBO->width, destFBO->height);
+	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 
 	GLSL_BindProgram(&tr.dglowDownsample);
 	GLSL_SetUniformVec2(&tr.dglowDownsample, UNIFORM_INVTEXRES, invTexRes);
-	GLSL_SetUniformVec4(&tr.dglowDownsample, UNIFORM_COLOR, colorWhite);
 	GL_BindToTMU(sourceImage, 0);
 
 	// Draw fullscreen triangle
@@ -509,21 +508,19 @@ void RB_BloomDownscale(FBO_t *sourceFBO, FBO_t *destFBO)
 	RB_BloomDownscale(sourceFBO->colorImage[0], destFBO);
 }
 
-void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO, float intensity)
+void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO)
 {
 	image_t *sourceImage = sourceFBO->colorImage[0];
 	vec2_t invTexRes = { 1.0f / sourceImage->width, 1.0f / sourceImage->height };
-	float color[] = { intensity, intensity, intensity, 1.0f };
 
 	FBO_Bind(destFBO);
 	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
-	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 	glViewport(0, 0, destFBO->width, destFBO->height);
+	qglClearBufferfv(GL_COLOR, 0, colorBlack);
 
 	GLSL_BindProgram(&tr.dglowUpsample);
 	GLSL_SetUniformVec2(&tr.dglowUpsample, UNIFORM_INVTEXRES, invTexRes);
-	GLSL_SetUniformVec4(&tr.dglowUpsample, UNIFORM_COLOR, color);
 	GL_BindToTMU(sourceImage, 0);
 
 	// Draw fullscreen triangle

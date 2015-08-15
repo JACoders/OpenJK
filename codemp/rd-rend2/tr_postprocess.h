@@ -34,6 +34,6 @@ void RB_HBlur(FBO_t *srcFbo, FBO_t *dstFbo, float strength);
 void RB_VBlur(FBO_t *srcFbo, FBO_t *dstFbo, float strength);
 void RB_BloomDownscale(image_t *sourceImage, FBO_t *destFBO);
 void RB_BloomDownscale(FBO_t *sourceFBO, FBO_t *destFBO);
-void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO, float intensity);
+void RB_BloomUpscale(FBO_t *sourceFBO, FBO_t *destFBO);
 
 #endif

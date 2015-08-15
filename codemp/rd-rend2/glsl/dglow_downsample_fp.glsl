@@ -1,6 +1,5 @@
 uniform sampler2D u_TextureMap;
-uniform vec4  u_Color;
-uniform vec2  u_InvTexRes;
+uniform vec2 u_InvTexRes;
 
 in vec2 var_TexCoords;
 
@@ -25,5 +24,5 @@ void main()
 	color += 0.5 * 0.25 * texture(u_TextureMap, var_TexCoords + (u_InvTexRes * vec2( 0.0,  2.0)));
 	color += 0.25 * 0.125 * texture(u_TextureMap, var_TexCoords + (u_InvTexRes * vec2( 2.0,  2.0)));
 
-	out_Color = color * u_Color;
+	out_Color = color;
 }
