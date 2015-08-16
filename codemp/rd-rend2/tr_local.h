@@ -1879,13 +1879,11 @@ typedef struct {
 	viewParms_t	viewParms;
 	orientationr_t	ori;
 	backEndCounters_t	pc;
-	qboolean	isHyperspace;
 	trRefEntity_t	*currentEntity;
 	qboolean	skyRenderedThisView;	// flag for drawing sun
 
 	qboolean	projection2D;	// if qtrue, drawstretchpic doesn't need to change modes
-	byte		color2D[4];
-	qboolean	vertexes2D;		// shader needs to be finished
+	float		color2D[4];
 	trRefEntity_t	entity2D;	// currentEntity will point at this when doing 2D rendering
 
 	FBO_t *last2DFBO;
@@ -1995,7 +1993,6 @@ typedef struct trGlobals_s {
 
 	trRefEntity_t			*currentEntity;
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
-	int						currentEntityNum;
 	model_t					*currentModel;
 
 	//
@@ -2296,9 +2293,9 @@ void R_RenderPshadowMaps(const refdef_t *fd);
 void R_RenderSunShadowMaps(const refdef_t *fd, int level);
 void R_RenderCubemapSide( int cubemapIndex, int cubemapSide, qboolean subscene );
 
-void R_AddMD3Surfaces( trRefEntity_t *e );
-void R_AddNullModelSurfaces( trRefEntity_t *e );
-void R_AddBeamSurfaces( trRefEntity_t *e );
+void R_AddMD3Surfaces( trRefEntity_t *e, int entityNum );
+void R_AddNullModelSurfaces( trRefEntity_t *e, int entityNum );
+void R_AddBeamSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddRailSurfaces( trRefEntity_t *e, qboolean isUnderwater );
 void R_AddLightningBoltSurfaces( trRefEntity_t *e );
 
@@ -2306,7 +2303,7 @@ void R_AddPolygonSurfaces( void );
 
 void R_DecomposeSort( uint32_t sort, shader_t **shader, int *fogNum, int *postRender );
 uint32_t R_CreateSortKey(int sortedShaderIndex, int fogIndex, int postRender);
-void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader, 
+void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
 bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity );
 
@@ -2532,7 +2529,7 @@ WORLD MAP
 ============================================================
 */
 
-void R_AddBrushModelSurfaces( trRefEntity_t *e );
+void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddWorldSurfaces( void );
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
 
@@ -2739,10 +2736,10 @@ ANIMATED MODELS
 =============================================================
 */
 
-void R_MDRAddAnimSurfaces( trRefEntity_t *ent );
+void R_MDRAddAnimSurfaces( trRefEntity_t *ent, int entityNum );
 void RB_MDRSurfaceAnim( mdrSurface_t *surface );
 qboolean R_LoadIQM (model_t *mod, void *buffer, int filesize, const char *name );
-void R_AddIQMSurfaces( trRefEntity_t *ent );
+void R_AddIQMSurfaces( trRefEntity_t *ent, int entityNum );
 void RB_IQMSurfaceAnim( surfaceType_t *surface );
 int R_IQMLerpTag( orientation_t *tag, iqmData_t *data,
                   int startFrame, int endFrame,
@@ -2813,7 +2810,7 @@ CRenderableSurface():
 #endif
 };
 
-void R_AddGhoulSurfaces( trRefEntity_t *ent );
+void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum );
 void RB_SurfaceGhoul( CRenderableSurface *surface );
 /*
 Ghoul2 Insert End

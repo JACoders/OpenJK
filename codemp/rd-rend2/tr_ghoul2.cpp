@@ -2382,7 +2382,7 @@ void G2_ProcessGeneratedSurfaceBolts(CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, m
 #endif
 }
 
-void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from SP.
+void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripping right from SP.
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_RenderSurfaces.Start();
@@ -2452,7 +2452,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 
-			R_AddDrawSurf ((surfaceType_t *)newSurf, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), cubemapIndex);
+			R_AddDrawSurf ((surfaceType_t *)newSurf, entityNum, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity (entityNum, tr.currentEntity), cubemapIndex);
 
 #ifdef _G2_GORE
 			if (RS.gore_set && drawGore)
@@ -2532,7 +2532,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 
 						last->goreChain=newSurf2;
 						last=newSurf2;
-						R_AddDrawSurf ((surfaceType_t *)newSurf2, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity (tr.currentEntityNum, tr.currentEntity), cubemapIndex);
+						R_AddDrawSurf ((surfaceType_t *)newSurf2, entityNum, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity (entityNum, tr.currentEntity), cubemapIndex);
 					}
 				}
 			}
@@ -2550,7 +2550,7 @@ void RenderSurfaces(CRenderSurface &RS) //also ended up just ripping right from 
 	for (i=0; i< surfInfo->numChildren; i++)
 	{
 		RS.surfaceNum = surfInfo->childIndexes[i];
-		RenderSurfaces(RS);
+		RenderSurfaces(RS, entityNum);
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -3164,7 +3164,7 @@ R_AddGHOULSurfaces
 ==============
 */
 
-void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
+void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum ) {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_R_AddGHOULSurfaces.Start();
 #endif
@@ -3328,7 +3328,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 				RS.renderfx |= RF_NOSHADOW;
 			}
 
-			RenderSurfaces(RS);
+			RenderSurfaces(RS, entityNum);
 		}
 	}
 	HackadelicOnClient=false;

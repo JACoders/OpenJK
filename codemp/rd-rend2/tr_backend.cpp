@@ -403,17 +403,9 @@ A player has predicted a teleport, but hasn't arrived yet
 ================
 */
 static void RB_Hyperspace( void ) {
-	float		c;
-
-	if ( !backEnd.isHyperspace ) {
-		// do initialization shit
-	}
-
-	c = ( backEnd.refdef.time & 255 ) / 255.0f;
-	qglClearColor( c, c, c, 1 );
-	qglClear( GL_COLOR_BUFFER_BIT );
-
-	backEnd.isHyperspace = qtrue;
+	float c = ( backEnd.refdef.time & 255 ) / 255.0f;
+	vec4_t v = { c, c, c, 1.0f };
+	qglClearBufferfv( GL_COLOR, 0, v );
 }
 
 
@@ -534,10 +526,6 @@ void RB_BeginDrawingView (void) {
 	{
 		RB_Hyperspace();
 		return;
-	}
-	else
-	{
-		backEnd.isHyperspace = qfalse;
 	}
 
 	glState.faceCulling = -1;		// force face culling to set next time
@@ -959,10 +947,10 @@ static const void	*RB_SetColor( const void *data ) {
 
 	cmd = (const setColorCommand_t *)data;
 
-	backEnd.color2D[0] = cmd->color[0] * 255;
-	backEnd.color2D[1] = cmd->color[1] * 255;
-	backEnd.color2D[2] = cmd->color[2] * 255;
-	backEnd.color2D[3] = cmd->color[3] * 255;
+	backEnd.color2D[0] = cmd->color[0];
+	backEnd.color2D[1] = cmd->color[1];
+	backEnd.color2D[2] = cmd->color[2];
+	backEnd.color2D[3] = cmd->color[3];
 
 	return (const void *)(cmd + 1);
 }
@@ -1013,16 +1001,10 @@ static const void *RB_StretchPic ( const void *data ) {
 	tess.indexes[ numIndexes + 4 ] = numVerts + 0;
 	tess.indexes[ numIndexes + 5 ] = numVerts + 1;
 
-	{
-		vec4_t color;
-
-		VectorScale4(backEnd.color2D, 1.0f / 255.0f, color);
-
-		VectorCopy4(color, tess.vertexColors[ numVerts ]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 1]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 2]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 3 ]);
-	}
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts ]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 1 ]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 2 ]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 3 ]);
 
 	tess.xyz[ numVerts ][0] = cmd->x;
 	tess.xyz[ numVerts ][1] = cmd->y;
@@ -1112,16 +1094,10 @@ static const void *RB_RotatePic ( const void *data )
 	tess.indexes[ numIndexes + 4 ] = numVerts + 0;
 	tess.indexes[ numIndexes + 5 ] = numVerts + 1;
 
-	{
-		vec4_t color;
-
-		VectorScale4(backEnd.color2D, 1.0f / 255.0f, color);
-
-		VectorCopy4(color, tess.vertexColors[ numVerts ]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 1]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 2]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 3 ]);
-	}
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts ]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 1]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 2]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 3 ]);
 
 	tess.xyz[ numVerts ][0] = m[0][0] * (-cmd->w) + m[2][0];
 	tess.xyz[ numVerts ][1] = m[0][1] * (-cmd->w) + m[2][1];
@@ -1618,8 +1594,7 @@ static const void *RB_ColorMask(const void *data)
 	const colorMaskCommand_t *cmd = (colorMaskCommand_t *)data;
 
 	// finish any 2D drawing if needed
-	if(tess.numIndexes)
-		RB_EndSurface();
+	RB_EndSurface();
 
 	// reverse color mask, so 0 0 0 0 is the default
 	backEnd.colorMask[0] = (qboolean)(!cmd->rgba[0]);

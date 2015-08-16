@@ -769,7 +769,7 @@ R_RotateForViewer
 Sets up the modelview matrix for a given viewParm
 =================
 */
-void R_RotateForViewer (void) 
+static void R_RotateForViewer(viewParms_t *viewParms) 
 {
 	float	viewerMatrix[16];
 	vec3_t	origin;
@@ -778,24 +778,24 @@ void R_RotateForViewer (void)
 	tr.ori.axis[0][0] = 1;
 	tr.ori.axis[1][1] = 1;
 	tr.ori.axis[2][2] = 1;
-	VectorCopy (tr.viewParms.ori.origin, tr.ori.viewOrigin);
+	VectorCopy (viewParms->ori.origin, tr.ori.viewOrigin);
 
 	// transform by the camera placement
-	VectorCopy( tr.viewParms.ori.origin, origin );
+	VectorCopy( viewParms->ori.origin, origin );
 
-	viewerMatrix[0] = tr.viewParms.ori.axis[0][0];
-	viewerMatrix[4] = tr.viewParms.ori.axis[0][1];
-	viewerMatrix[8] = tr.viewParms.ori.axis[0][2];
+	viewerMatrix[0] = viewParms->ori.axis[0][0];
+	viewerMatrix[4] = viewParms->ori.axis[0][1];
+	viewerMatrix[8] = viewParms->ori.axis[0][2];
 	viewerMatrix[12] = -origin[0] * viewerMatrix[0] + -origin[1] * viewerMatrix[4] + -origin[2] * viewerMatrix[8];
 
-	viewerMatrix[1] = tr.viewParms.ori.axis[1][0];
-	viewerMatrix[5] = tr.viewParms.ori.axis[1][1];
-	viewerMatrix[9] = tr.viewParms.ori.axis[1][2];
+	viewerMatrix[1] = viewParms->ori.axis[1][0];
+	viewerMatrix[5] = viewParms->ori.axis[1][1];
+	viewerMatrix[9] = viewParms->ori.axis[1][2];
 	viewerMatrix[13] = -origin[0] * viewerMatrix[1] + -origin[1] * viewerMatrix[5] + -origin[2] * viewerMatrix[9];
 
-	viewerMatrix[2] = tr.viewParms.ori.axis[2][0];
-	viewerMatrix[6] = tr.viewParms.ori.axis[2][1];
-	viewerMatrix[10] = tr.viewParms.ori.axis[2][2];
+	viewerMatrix[2] = viewParms->ori.axis[2][0];
+	viewerMatrix[6] = viewParms->ori.axis[2][1];
+	viewerMatrix[10] = viewParms->ori.axis[2][2];
 	viewerMatrix[14] = -origin[0] * viewerMatrix[2] + -origin[1] * viewerMatrix[6] + -origin[2] * viewerMatrix[10];
 
 	viewerMatrix[3] = 0;
@@ -807,7 +807,7 @@ void R_RotateForViewer (void)
 	// to OpenGL's coordinate system (looking down -Z)
 	myGlMultMatrix( viewerMatrix, s_flipMatrix, tr.ori.modelViewMatrix );
 
-	tr.viewParms.world = tr.ori;
+	viewParms->world = tr.ori;
 
 }
 
@@ -1239,7 +1239,6 @@ qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 
 	// rotate the plane if necessary
 	if ( entityNum != REFENTITYNUM_WORLD ) {
-		tr.currentEntityNum = entityNum;
 		tr.currentEntity = &tr.refdef.entities[entityNum];
 
 		// get the orientation of the entity
@@ -1357,7 +1356,6 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 	// rotate the plane if necessary
 	if ( entityNum != REFENTITYNUM_WORLD ) 
 	{
-		tr.currentEntityNum = entityNum;
 		tr.currentEntity = &tr.refdef.entities[entityNum];
 
 		// get the orientation of the entity
@@ -1417,7 +1415,7 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 	unsigned int pointOr = 0;
 	unsigned int pointAnd = (unsigned int)~0;
 
-	R_RotateForViewer();
+	R_RotateForViewer(&tr.viewParms);
 
 	R_DecomposeSort( drawSurf->sort, &shader, &fogNum, &postRender );
 	entityNum = drawSurf->entityNum;
@@ -1771,8 +1769,8 @@ uint32_t R_CreateSortKey(int sortedShaderIndex, int fogIndex, int postRender)
 R_AddDrawSurf
 =================
 */
-void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,  int fogIndex,
-					int dlightMap, int postRender, int cubemap) {
+void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,  int fogIndex,
+					int dlightMap, int postRender, int cubemap ) {
 	int index;
 	drawSurf_t *surf;
 
@@ -1792,7 +1790,7 @@ void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,  int fogIndex,
 	surf = tr.refdef.drawSurfs + index;
 
 	surf->sort = R_CreateSortKey(shader->sortedIndex, fogIndex, postRender);
-	surf->entityNum = tr.currentEntityNum;
+	surf->entityNum = entityNum;
 	surf->lit = (qboolean)dlightMap;
 	surf->cubemapIndex = cubemap;
 	surf->surface = surface;
@@ -1864,9 +1862,7 @@ static void R_AddEntitySurface (int entityNum)
 	trRefEntity_t	*ent;
 	shader_t		*shader;
 
-	tr.currentEntityNum = entityNum;
-
-	ent = tr.currentEntity = &tr.refdef.entities[tr.currentEntityNum];
+	ent = tr.currentEntity = &tr.refdef.entities[entityNum];
 
 	ent->needDlights = qfalse;
 
@@ -1898,7 +1894,7 @@ static void R_AddEntitySurface (int entityNum)
 			return;
 		}
 		shader = R_GetShaderByHandle( ent->e.customShader );
-		R_AddDrawSurf( &entitySurface, shader, R_SpriteFogNum( ent ), 0, R_IsPostRenderEntity (tr.currentEntityNum, ent), 0 /* cubeMap */ );
+		R_AddDrawSurf( &entitySurface, entityNum, shader, R_SpriteFogNum( ent ), 0, R_IsPostRenderEntity (entityNum, ent), 0 /* cubeMap */ );
 		break;
 
 	case RT_MODEL:
@@ -1907,24 +1903,24 @@ static void R_AddEntitySurface (int entityNum)
 
 		tr.currentModel = R_GetModelByHandle( ent->e.hModel );
 		if (!tr.currentModel) {
-			R_AddDrawSurf( &entitySurface, tr.defaultShader, 0, 0, R_IsPostRenderEntity (tr.currentEntityNum, ent), 0/* cubeMap */ );
+			R_AddDrawSurf( &entitySurface, entityNum, tr.defaultShader, 0, 0, R_IsPostRenderEntity (entityNum, ent), 0/* cubeMap */ );
 		} else {
 			switch ( tr.currentModel->type ) {
 			case MOD_MESH:
-				R_AddMD3Surfaces( ent );
+				R_AddMD3Surfaces( ent, entityNum );
 				break;
 			case MOD_MDR:
-				R_MDRAddAnimSurfaces( ent );
+				R_MDRAddAnimSurfaces( ent, entityNum );
 				break;
 			case MOD_IQM:
-				R_AddIQMSurfaces( ent );
+				R_AddIQMSurfaces( ent, entityNum );
 				break;
 			case MOD_BRUSH:
-				R_AddBrushModelSurfaces( ent );
+				R_AddBrushModelSurfaces( ent, entityNum );
 				break;
 			case MOD_MDXM:
 				if (ent->e.ghoul2)
-					R_AddGhoulSurfaces(ent);
+					R_AddGhoulSurfaces(ent, entityNum);
 				break;
 			case MOD_BAD:		// null model axis
 				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
@@ -1933,11 +1929,11 @@ static void R_AddEntitySurface (int entityNum)
 
 				if( ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
 				{
-					R_AddGhoulSurfaces( ent );
+					R_AddGhoulSurfaces( ent, entityNum );
 					break;
 				}
 
-				R_AddDrawSurf( &entitySurface, tr.defaultShader, 0, 0, R_IsPostRenderEntity (tr.currentEntityNum, ent), 0 /* cubeMap */ );
+				R_AddDrawSurf( &entitySurface, entityNum, tr.defaultShader, 0, 0, R_IsPostRenderEntity (entityNum, ent), 0 /* cubeMap */ );
 				break;
 			default:
 				ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad modeltype" );
@@ -1947,7 +1943,7 @@ static void R_AddEntitySurface (int entityNum)
 		break;
 	case RT_ENT_CHAIN:
 			shader = R_GetShaderByHandle( ent->e.customShader );
-			R_AddDrawSurf( &entitySurface, shader, R_SpriteFogNum( ent ), false, R_IsPostRenderEntity (tr.currentEntityNum, ent), 0 /* cubeMap */ );
+			R_AddDrawSurf( &entitySurface, entityNum, shader, R_SpriteFogNum( ent ), false, R_IsPostRenderEntity (entityNum, ent), 0 /* cubeMap */ );
 			break;
 	default:
 		ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );
@@ -2079,7 +2075,7 @@ void R_RenderView (viewParms_t *parms) {
 	tr.viewCount++;
 
 	// set viewParms.world
-	R_RotateForViewer ();
+	R_RotateForViewer(&tr.viewParms);
 
 	R_SetupProjection(&tr.viewParms, r_zproj->value, tr.viewParms.zFar, qtrue);
 
@@ -2427,7 +2423,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 			tr.viewCount++;
 
 			// set viewParms.world
-			R_RotateForViewer ();
+			R_RotateForViewer(&tr.viewParms);
 
 			{
 				float xmin, xmax, ymin, ymax, znear, zfar;
@@ -2759,7 +2755,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 			tr.viewCount++;
 
 			// set viewParms.world
-			R_RotateForViewer ();
+			R_RotateForViewer(&tr.viewParms);
 
 			R_SetupProjectionOrtho(&tr.viewParms, lightviewBounds);
 
