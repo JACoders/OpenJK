@@ -1411,7 +1411,6 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 	int numTriangles;
 	shader_t *shader;
 	int		fogNum;
-	int dlighted;
 	int postRender;
 	vec4_t clip, eye;
 	int i;
@@ -1420,7 +1419,9 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 
 	R_RotateForViewer();
 
-	R_DecomposeSort( drawSurf->sort, &entityNum, &shader, &fogNum, &dlighted, &postRender );
+	R_DecomposeSort( drawSurf->sort, &shader, &fogNum, &postRender );
+	entityNum = drawSurf->entityNum;
+
 	RB_BeginSurface( shader, fogNum, drawSurf->cubemapIndex );
 	rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
 
@@ -1744,13 +1745,36 @@ bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity )
 
 /*
 =================
+R_DecomposeSort
+=================
+*/
+void R_DecomposeSort( uint32_t sort, shader_t **shader, int *fogNum, int *postRender )
+{
+	*fogNum = (sort >> QSORT_FOGNUM_SHIFT) & QSORT_FOGNUM_MASK;
+	*shader = tr.sortedShaders[ ( sort >> QSORT_SHADERNUM_SHIFT ) & QSORT_SHADERNUM_MASK ];
+	*postRender = (sort >> QSORT_POSTRENDER_SHIFT ) & QSORT_POSTRENDER_MASK;
+}
+
+uint32_t R_CreateSortKey(int sortedShaderIndex, int fogIndex, int postRender)
+{
+	uint32_t key = 0;
+
+	key |= (sortedShaderIndex & QSORT_SHADERNUM_MASK) << QSORT_SHADERNUM_SHIFT;
+	key |= (fogIndex & QSORT_FOGNUM_MASK) << QSORT_FOGNUM_SHIFT;
+	key |= (postRender & QSORT_POSTRENDER_MASK) << QSORT_POSTRENDER_SHIFT;
+
+	return key;
+}
+
+/*
+=================
 R_AddDrawSurf
 =================
 */
-void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader, 
-				   int fogIndex, int dlightMap, int postRender,
-					int cubemap) {
-	int			index;
+void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,  int fogIndex,
+					int dlightMap, int postRender, int cubemap) {
+	int index;
+	drawSurf_t *surf;
 
 	if (tr.refdef.rdflags & RDF_NOFOG)
 	{
@@ -1765,28 +1789,15 @@ void R_AddDrawSurf( surfaceType_t *surface, shader_t *shader,
 	// instead of checking for overflow, we just mask the index
 	// so it wraps around
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
-	// the sort data is packed into a single 32 bit value so it can be
-	// compared quickly during the qsorting process
-	tr.refdef.drawSurfs[index].sort = (shader->sortedIndex << QSORT_SHADERNUM_SHIFT) 
-		| tr.shiftedEntityNum | ( fogIndex << QSORT_FOGNUM_SHIFT ) 
-		| ((int)postRender << QSORT_POSTRENDER_SHIFT) | (int)dlightMap;
-	tr.refdef.drawSurfs[index].cubemapIndex = cubemap;
-	tr.refdef.drawSurfs[index].surface = surface;
-	tr.refdef.numDrawSurfs++;
-}
+	surf = tr.refdef.drawSurfs + index;
 
-/*
-=================
-R_DecomposeSort
-=================
-*/
-void R_DecomposeSort( unsigned sort, int *entityNum, shader_t **shader, 
-					 int *fogNum, int *dlightMap, int *postRender ) {
-	*fogNum = ( sort >> QSORT_FOGNUM_SHIFT ) & 31;
-	*shader = tr.sortedShaders[ ( sort >> QSORT_SHADERNUM_SHIFT ) & (MAX_SHADERS-1) ];
-	*entityNum = ( sort >> QSORT_REFENTITYNUM_SHIFT ) & REFENTITYNUM_MASK;
-	*postRender = (sort >> QSORT_POSTRENDER_SHIFT ) & 1;
-	*dlightMap = sort & 1;
+	surf->sort = R_CreateSortKey(shader->sortedIndex, fogIndex, postRender);
+	surf->entityNum = tr.currentEntityNum;
+	surf->lit = (qboolean)dlightMap;
+	surf->cubemapIndex = cubemap;
+	surf->surface = surface;
+
+	tr.refdef.numDrawSurfs++;
 }
 
 /*
@@ -1795,11 +1806,6 @@ R_SortAndSubmitDrawSurfs
 =================
 */
 void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
-	shader_t		*shader;
-	int				fogNum;
-	int				entityNum;
-	int				dlighted;
-	int             postRender;
 	int				i;
 
 	//ri->Printf(PRINT_ALL, "firstDrawSurf %d numDrawSurfs %d\n", (int)(drawSurfs - tr.refdef.drawSurfs), numDrawSurfs);
@@ -1831,7 +1837,13 @@ void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	// check for any pass through drawing, which
 	// may cause another view to be rendered first
 	for ( i = 0 ; i < numDrawSurfs ; i++ ) {
-		R_DecomposeSort( (drawSurfs+i)->sort, &entityNum, &shader, &fogNum, &dlighted, &postRender );
+		int entityNum;
+		shader_t *shader;
+		int fogNum;
+		int postRender;
+
+		R_DecomposeSort( (drawSurfs+i)->sort, &shader, &fogNum, &postRender );
+		entityNum = drawSurfs[i].entityNum;
 
 		if ( shader->sort > SS_PORTAL ) {
 			break;
@@ -1865,9 +1877,6 @@ static void R_AddEntitySurface (int entityNum)
 	ent = tr.currentEntity = &tr.refdef.entities[tr.currentEntityNum];
 
 	ent->needDlights = qfalse;
-
-	// preshift the value we are going to OR into the drawsurf sort
-	tr.shiftedEntityNum = tr.currentEntityNum << QSORT_REFENTITYNUM_SHIFT;
 
 	//
 	// the weapon model must be handled special --

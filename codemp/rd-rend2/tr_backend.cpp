@@ -613,7 +613,18 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	backEnd.pc.c_surfaces += numDrawSurfs;
 
 	for (i = 0, drawSurf = drawSurfs ; i < numDrawSurfs ; i++, drawSurf++) {
-		if ( drawSurf->sort == oldSort && drawSurf->cubemapIndex == oldCubemapIndex) {
+		R_DecomposeSort( drawSurf->sort, &shader, &fogNum, &postRender );
+		entityNum = drawSurf->entityNum;
+		dlighted = drawSurf->lit;
+		cubemapIndex = drawSurf->cubemapIndex;
+
+		if ( shader == oldShader &&
+				fogNum == oldFogNum &&
+				postRender == oldPostRender &&
+				cubemapIndex == oldCubemapIndex &&
+				entityNum == oldEntityNum &&
+				dlighted == oldDlighted )
+		{
 			if (backEnd.depthFill && shader && shader->sort != SS_OPAQUE)
 				continue;
 
@@ -621,19 +632,25 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
 			continue;
 		}
+
 		oldSort = drawSurf->sort;
-		R_DecomposeSort( drawSurf->sort, &entityNum, &shader, &fogNum, &dlighted, &postRender );
-		cubemapIndex = drawSurf->cubemapIndex;
 
 		//
 		// change the tess parameters if needed
 		// a "entityMergable" shader is a shader that can have surfaces from seperate
 		// entities merged into a single batch, like smoke and blood puff sprites
-		if ( shader != NULL && ( shader != oldShader || fogNum != oldFogNum || dlighted != oldDlighted || postRender != oldPostRender || cubemapIndex != oldCubemapIndex
-			|| ( entityNum != oldEntityNum && !shader->entityMergable ) ) ) {
+		if ( shader != NULL &&
+				( shader != oldShader ||
+					fogNum != oldFogNum ||
+					dlighted != oldDlighted ||
+					postRender != oldPostRender ||
+					cubemapIndex != oldCubemapIndex ||
+					(entityNum != oldEntityNum && !shader->entityMergable)))
+		{
 			if (oldShader != NULL) {
 				RB_EndSurface();
 			}
+
 			RB_BeginSurface( shader, fogNum, cubemapIndex );
 			backEnd.pc.c_surfBatches++;
 			oldShader = shader;
