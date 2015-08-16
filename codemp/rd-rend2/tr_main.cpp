@@ -1806,61 +1806,53 @@ R_SortAndSubmitDrawSurfs
 =================
 */
 void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
-	int				i;
-
-	//ri->Printf(PRINT_ALL, "firstDrawSurf %d numDrawSurfs %d\n", (int)(drawSurfs - tr.refdef.drawSurfs), numDrawSurfs);
-
 	// it is possible for some views to not have any surfaces
-	if ( numDrawSurfs < 1 ) {
-		// we still need to add it for hyperspace cases
-		R_AddDrawSurfCmd( drawSurfs, numDrawSurfs );
-		return;
-	}
-
-	// if we overflowed MAX_DRAWSURFS, the drawsurfs
-	// wrapped around in the buffer and we will be missing
-	// the first surfaces, not the last ones
-	if ( numDrawSurfs > MAX_DRAWSURFS ) {
-		numDrawSurfs = MAX_DRAWSURFS;
-	}
-
-	// sort the drawsurfs by sort type, then orientation, then shader
-	R_RadixSort( drawSurfs, numDrawSurfs );
-
-	// skip pass through drawing if rendering a shadow map
-	if (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))
+	if ( numDrawSurfs >= 1 )
 	{
-		R_AddDrawSurfCmd( drawSurfs, numDrawSurfs );
-		return;
-	}
-
-	// check for any pass through drawing, which
-	// may cause another view to be rendered first
-	for ( i = 0 ; i < numDrawSurfs ; i++ ) {
-		int entityNum;
-		shader_t *shader;
-		int fogNum;
-		int postRender;
-
-		R_DecomposeSort( (drawSurfs+i)->sort, &shader, &fogNum, &postRender );
-		entityNum = drawSurfs[i].entityNum;
-
-		if ( shader->sort > SS_PORTAL ) {
-			break;
+		// if we overflowed MAX_DRAWSURFS, the drawsurfs
+		// wrapped around in the buffer and we will be missing
+		// the first surfaces, not the last ones
+		if ( numDrawSurfs > MAX_DRAWSURFS ) {
+			numDrawSurfs = MAX_DRAWSURFS;
 		}
 
-		// no shader should ever have this sort type
-		if ( shader->sort == SS_BAD ) {
-			ri->Error (ERR_DROP, "Shader '%s'with sort == SS_BAD", shader->name );
-		}
+		R_RadixSort( drawSurfs, numDrawSurfs );
 
-		// if the mirror was completely clipped away, we may need to check another surface
-		if ( R_MirrorViewBySurface( (drawSurfs+i), entityNum) ) {
-			// this is a debug option to see exactly what is being mirrored
-			if ( r_portalOnly->integer ) {
-				return;
+		// skip pass through drawing if rendering a shadow map
+		if (!(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW)))
+		{
+			// FIXME: Don't do this at submit time. Determine what surfaces are mirrors
+			// at RE_RenderScene or earlier.
+
+			// check for any pass through drawing, which
+			// may cause another view to be rendered first
+			for ( int i = 0 ; i < numDrawSurfs ; i++ ) {
+				int entityNum;
+				shader_t *shader;
+				int fogNum;
+				int postRender;
+
+				R_DecomposeSort( (drawSurfs+i)->sort, &shader, &fogNum, &postRender );
+				entityNum = drawSurfs[i].entityNum;
+
+				if ( shader->sort > SS_PORTAL ) {
+					break;
+				}
+
+				// no shader should ever have this sort type
+				if ( shader->sort == SS_BAD ) {
+					ri->Error (ERR_DROP, "Shader '%s'with sort == SS_BAD", shader->name );
+				}
+
+				// if the mirror was completely clipped away, we may need to check another surface
+				if ( R_MirrorViewBySurface( (drawSurfs+i), entityNum) ) {
+					// this is a debug option to see exactly what is being mirrored
+					if ( r_portalOnly->integer ) {
+						return;
+					}
+					break;		// only one mirror view at a time
+				}
 			}
-			break;		// only one mirror view at a time
 		}
 	}
 
