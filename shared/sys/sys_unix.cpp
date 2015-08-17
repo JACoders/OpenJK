@@ -531,6 +531,12 @@ bool Sys_UnpackDLL(const char *name)
 	return true;
 }
 
+bool Sys_DLLNeedsUnpacking(const char *name)
+{
+	return false;
+}
+
+
 /*
 =================
 Sys_AnsiColorPrint
