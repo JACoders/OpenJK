@@ -531,7 +531,7 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 	return UnpackDLLResult();
 }
 
-bool Sys_DLLNeedsUnpacking(const char *name)
+bool Sys_DLLNeedsUnpacking()
 {
 	return false;
 }
