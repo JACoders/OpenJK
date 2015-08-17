@@ -496,8 +496,6 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 	void *data;
 	int len = FS_ReadFile(name, &data);
 
-	result.failed = true;
-
 	if (len >= 1)
 	{ 
 		if (FS_FileIsInPAK(name, NULL) == 1)
@@ -506,7 +504,7 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 			if ( FS_WriteToTemporaryFile(data, len, &tempFileName) )
 			{
 				result.tempDLLPath = tempFileName;
-				result.failed = false;
+				result.succeeded = true;
 			}
 		}
 	}

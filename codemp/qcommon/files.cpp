@@ -289,10 +289,12 @@ static int		fs_numServerReferencedPaks;
 static int		fs_serverReferencedPaks[MAX_SEARCH_PATHS];			// checksums
 static char	*fs_serverReferencedPakNames[MAX_SEARCH_PATHS];		// pk3 names
 
+#if defined(_WIN32)
 // temporary files - store them in a circular buffer. We're pretty
 // much guaranteed to not need more than 8 temp files at a time.
 static int		fs_temporaryFileWriteIdx = 0;
 static char		fs_temporaryFileNames[8][MAX_OSPATH];
+#endif
 
 // last valid game folder used
 char lastValidBase[MAX_OSPATH];
@@ -3258,8 +3260,8 @@ void FS_Shutdown( qboolean closemfp ) {
 	searchpath_t	*p, *next;
 	int	i;
 
-	// Delete temporary files
 #if defined(_WIN32)
+	// Delete temporary files
 	fs_temporaryFileWriteIdx = 0;
 	for ( size_t i = 0; i < ARRAY_LEN(fs_temporaryFileNames); i++ )
 	{

@@ -3167,3 +3167,9 @@ const char *FS_GetCurrentGameDir(bool emptybase)
 
 	return emptybase ? "" : BASEGAME;
 }
+
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFilePath )
+{
+	// SP doesn't need to do this.
+	return qfalse;
+}

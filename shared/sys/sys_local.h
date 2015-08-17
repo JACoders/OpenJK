@@ -40,7 +40,7 @@ void		Sys_AnsiColorPrint( const char *msg );
 
 struct UnpackDLLResult
 {
-	bool failed;
+	bool succeeded;
 	char *tempDLLPath;
 };
 

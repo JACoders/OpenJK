@@ -554,6 +554,8 @@ qboolean	FS_MoveUserGenFile  ( const char *filename_src, const char *filename_ds
 qboolean FS_CheckDirTraversal(const char *checkdir);
 void FS_Rename( const char *from, const char *to );
 
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
+
 /*
 ==============================================================
 
