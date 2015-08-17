@@ -2417,8 +2417,6 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 	qboolean	isFighter = qfalse;
 #endif
 
-	Com_Printf("Hin\n");
-
 	if (cgQueueLoad)
 	{ //do this before you start messing around with adding ghoul2 refents and crap
 		CG_ActualLoadDeferredPlayers();
