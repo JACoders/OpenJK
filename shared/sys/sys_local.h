@@ -38,4 +38,11 @@ void		Sys_SigHandler( int signal );
 void		Sys_AnsiColorPrint( const char *msg );
 #endif
 
-bool		Sys_UnpackDLL( const char *name );
+struct UnpackDLLResult
+{
+	bool failed;
+	char *tempDLLPath;
+};
+
+UnpackDLLResult Sys_UnpackDLL( const char *name );
+bool Sys_DLLNeedsUnpacking();
