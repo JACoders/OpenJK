@@ -460,7 +460,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 #endif
 	{
 		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
-		if ( unpackResult.failed )
+		if ( !unpackResult.succeeded )
 		{
 			if ( !Sys_DLLNeedsUnpacking() )
 			{
@@ -591,7 +591,7 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 #endif
 	{
 		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
-		if ( unpackResult.failed )
+		if ( !unpackResult.succeeded )
 		{
 			if ( !Sys_DLLNeedsUnpacking() )
 			{

@@ -526,9 +526,9 @@ void Sys_SetProcessorAffinity( void ) {
 #endif
 }
 
-bool Sys_UnpackDLL(const char *name)
+UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
-	return true;
+	return UnpackDLLResult();
 }
 
 bool Sys_DLLNeedsUnpacking(const char *name)
