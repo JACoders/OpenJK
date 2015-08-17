@@ -3843,7 +3843,9 @@ void FS_InitFilesystem( void ) {
 	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
 	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
 
+#if defined(_WIN32)
 	Com_Memset(fs_temporaryFileNames, 0, sizeof(fs_temporaryFileNames));
+#endif
 
   // bk001208 - SafeMode see below, FIXME?
 }
