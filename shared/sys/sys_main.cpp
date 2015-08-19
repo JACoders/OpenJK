@@ -462,7 +462,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
 		if ( !unpackResult.succeeded )
 		{
-			if ( !Sys_DLLNeedsUnpacking() )
+			if ( Sys_DLLNeedsUnpacking() )
 			{
 				FreeUnpackDLLResult(&unpackResult);
 				Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
@@ -593,7 +593,7 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
 		if ( !unpackResult.succeeded )
 		{
-			if ( !Sys_DLLNeedsUnpacking() )
+			if ( Sys_DLLNeedsUnpacking() )
 			{
 				FreeUnpackDLLResult(&unpackResult);
 				Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
