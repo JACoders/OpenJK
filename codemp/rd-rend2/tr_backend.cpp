@@ -1187,16 +1187,10 @@ static const void *RB_RotatePic2 ( const void *data )
 	tess.indexes[ numIndexes + 4 ] = numVerts + 0;
 	tess.indexes[ numIndexes + 5 ] = numVerts + 1;
 
-	{
-		vec4_t color;
-
-		VectorScale4(backEnd.color2D, 1.0f / 255.0f, color);
-
-		VectorCopy4(color, tess.vertexColors[ numVerts ]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 1]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 2]);
-		VectorCopy4(color, tess.vertexColors[ numVerts + 3 ]);
-	}
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts ]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 1]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 2]);
+	VectorCopy4(backEnd.color2D, tess.vertexColors[ numVerts + 3 ]);
 
 	tess.xyz[ numVerts ][0] = m[0][0] * (-cmd->w * 0.5f) + m[1][0] * (-cmd->h * 0.5f) + m[2][0];
 	tess.xyz[ numVerts ][1] = m[0][1] * (-cmd->w * 0.5f) + m[1][1] * (-cmd->h * 0.5f) + m[2][1];
