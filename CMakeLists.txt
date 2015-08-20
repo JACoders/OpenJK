@@ -73,7 +73,11 @@ else()
 	set(MakeApplicationBundles OFF)
 endif()
 
+<<<<<<< HEAD
 if(MSVC)
+=======
+if(WIN32)
+>>>>>>> JACoders/master
 	option(UseInternalSDL2 "Whether to use the included SDL2 library instead of a locally installed one" ON)
 else()
 	set(UseInternalSDL2 OFF)
@@ -82,6 +86,12 @@ endif()
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
+<<<<<<< HEAD
+=======
+Include(CheckTypeSize)
+check_type_size("void*" CMAKE_SIZEOF_VOID_P)
+
+>>>>>>> JACoders/master
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
 if(WIN32)
@@ -158,6 +168,13 @@ if (APPLE)
 	set(SharedDefines "MACOS_X")
 endif()
 
+<<<<<<< HEAD
+=======
+if (NOT WIN32 AND NOT APPLE)
+	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
+endif()
+
+>>>>>>> JACoders/master
 # Compiler settings
 if(MSVC)
 
@@ -205,6 +222,16 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mstackrealign")
 			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
 		endif()
+<<<<<<< HEAD
+=======
+
+		if(WIN32)
+			# Link libgcc and libstdc++ statically
+			set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libgcc")
+			set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++")
+		endif()
+>>>>>>> JACoders/master
 	elseif("${CMAKE_C_COMPILER_ID}" STREQUAL "Clang")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-comment")
@@ -237,6 +264,15 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "RELEASE")
 endif()
 
+if(CMAKE_BUILD_TYPE MATCHES "DEBUG" OR CMAKE_BUILD_TYPE MATCHES "Debug")
+	# CMake already defines _DEBUG for MSVC.
+	if (NOT MSVC)
+		set(SharedDefines ${SharedDefines} "_DEBUG")
+	endif()
+else()
+	set(SharedDefines ${SharedDefines} "FINAL_BUILD")
+endif()
+
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
@@ -245,19 +281,21 @@ endif()
 if(UseInternalJPEG)
 	set(SharedDefines ${SharedDefines} "USE_INTERNAL_JPEG")
 endif()
+<<<<<<< HEAD
 
 if(UseInternalZlib)
 	set(SharedDefines ${SharedDefines} "USE_INTERNAL_ZLIB")
 endif()
 
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
+=======
+>>>>>>> JACoders/master
 
-if(NOT MSVC)
-	# CMake already defines _DEBUG for MSVC.
-	set(DebugDefines ${DebugDefines} "_DEBUG")
+if(UseInternalZlib)
+	set(SharedDefines ${SharedDefines} "USE_INTERNAL_ZLIB")
 endif()
 
-set(ReleaseDefines "FINAL_BUILD")
+set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
 # Add projects
 add_subdirectory(${SPDir})

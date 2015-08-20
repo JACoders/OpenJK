@@ -116,7 +116,9 @@ typedef struct {
 
 	// =========== getting save game picture ===============
 	void	(*DrawStretchRaw) (int x, int y, int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty);
-	//qboolean(*SG_GetSaveImage)( const char *psPathlessBaseName, void *pvAddress );
+#ifdef JK2_MODE
+	qboolean(*SG_GetSaveImage)( const char *psPathlessBaseName, void *pvAddress );
+#endif //Dusty - should this be JK2 mode only? This code piece was added by OpenJK and didn't even exist before...
 	int		(*SG_GetSaveGameComment)(const char *psPathlessBaseName, char *sComment, char *sMapName);
 	qboolean (*SG_GameAllowedToSaveHere)(qboolean inCamera);
 	void (*SG_StoreSaveGameComment)(const char *sComment);

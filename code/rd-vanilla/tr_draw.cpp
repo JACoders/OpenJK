@@ -23,8 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 // tr_draw.c
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 #include "tr_local.h"
 

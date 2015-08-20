@@ -280,6 +280,10 @@ void CL_InitUI( void ) {
 	uii.PrecacheScreenshot		= SCR_PrecacheScreenshot;
 #endif
 
+#ifdef JK2_MODE
+	uii.PrecacheScreenshot		= SCR_PrecacheScreenshot;
+#endif
+
 	uii.R_LerpTag				= re.LerpTag;
 
 	uii.S_StartLocalLoopingSound= S_StartLocalLoopingSound;

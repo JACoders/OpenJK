@@ -29,8 +29,9 @@ USER INTERFACE MAIN
 =======================================================================
 */
 
-// leave this at the top of all UI_xxxx files for PCH reasons...
-//
+#include <algorithm>
+#include <vector>
+
 #include "../server/exe_headers.h"
 
 #include "ui_local.h"
@@ -1459,6 +1460,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			String_Parse(args, &amount);
 			UI_GiveInventory(atoi(inventoryIndex),atoi(amount));
 		}
+
 		else if (Q_stricmp(name, "addinventoryselection") == 0)
 		{
 			const char *inventoryIndex;
@@ -1536,6 +1538,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_InitInventorySelect();
 		}
+
 		else if (Q_stricmp(name, "updatefightingstyle") == 0)
 		{
 			UI_UpdateFightingStyle();
@@ -2478,11 +2481,13 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 		if (f)
 		{
-			char buffer[2048];
-			playerSpeciesInfo_t *species;
-			ui.FS_Read(&buffer, filelen, f);
+			playerSpeciesInfo_t *species = NULL;
+
+			std::vector<char> buffer(filelen + 1);
+			ui.FS_Read(&buffer[0], filelen, f);
 			ui.FS_FCloseFile(f);
-			buffer[filelen] = 0;	//ensure trailing NULL
+
+			buffer[filelen] = 0;
 
 			//record this species
 			if (uiInfo.playerSpeciesCount >= uiInfo.playerSpeciesMax)
@@ -2493,8 +2498,8 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
 			memset(species, 0, sizeof(playerSpeciesInfo_t));
 			Q_strncpyz( species->Name, dirptr, MAX_QPATH, qtrue );
-
-			if (!UI_ParseColorData(buffer,*species))
+			
+			if (!UI_ParseColorData(buffer.data(),*species))
 			{
 				ui.Printf( "UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath );
 			}
@@ -4087,6 +4092,7 @@ UI_InGameMenu
 */
 void UI_InGameMenu(const char*menuID)
 {
+
 	ui.PrecacheScreenshot();
 
 	Menus_CloseByName("mainhud");

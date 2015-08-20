@@ -20,6 +20,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#if defined(_WIN32) && defined(__GNUC__)
+#include <x86intrin.h>  /* for __rdtsc() */
+#endif
+
 class timing_c
 {
 private:

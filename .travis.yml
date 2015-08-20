@@ -1,0 +1,22 @@
+language: cpp
+sudo: true
+
+install:
+  - ./tools/travis-install.sh "${host:-native}" "${flavour:-Release}" $opts
+
+script:
+  - ./tools/travis-build.sh "${host:-native}" "${flavour:-Release}" $opts
+
+compiler: gcc
+env:
+  - ""
+  - flavour=Debug
+  #- host=i686-linux-gnu
+  - host=i686-w64-mingw32
+  - host=x86_64-w64-mingw32
+
+# One extra build with clang, its warnings are often better
+matrix:
+  include:
+    - compiler: clang
+      env: ""

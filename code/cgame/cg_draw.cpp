@@ -2740,6 +2740,7 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 	{
 		if ( !CG_WorldCoordToScreenCoordFloat( worldPoint, &x, &y ) )
 		{//off screen, don't draw it
+			cgi_R_SetColor( NULL );
 			return;
 		}
 		x -= 320;//????
@@ -2786,6 +2787,8 @@ static void CG_DrawCrosshair( vec3_t worldPoint )
 								0, 0, 1, 1, 
 								cgs.media.forceCoronaShader ); 
 	}
+
+	cgi_R_SetColor( NULL );
 }
 
 /*

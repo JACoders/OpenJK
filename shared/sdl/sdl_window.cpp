@@ -190,7 +190,7 @@ static bool GLimp_DetectAvailableModes(void)
 {
 	int i, j;
 	char buf[ MAX_STRING_CHARS ] = { 0 };
-	SDL_Rect modes[ 128 ];
+	SDL_Rect *modes;
 	int numModes = 0;
 
 	int display = SDL_GetWindowDisplayIndex( screen );
@@ -203,6 +203,13 @@ static bool GLimp_DetectAvailableModes(void)
 	}
 
 	int numDisplayModes = SDL_GetNumDisplayModes( display );
+	if ( numDisplayModes < 0 )
+		Com_Error( ERR_FATAL, "SDL_GetNumDisplayModes() FAILED (%s)", SDL_GetError() );
+
+	modes = (SDL_Rect *)SDL_calloc( (size_t)numDisplayModes, sizeof( SDL_Rect ) );
+	if ( !modes )
+		Com_Error( ERR_FATAL, "Out of memory" );
+
 	for( i = 0; i < numDisplayModes; i++ )
 	{
 		SDL_DisplayMode mode;
@@ -213,6 +220,7 @@ static bool GLimp_DetectAvailableModes(void)
 		if( !mode.w || !mode.h )
 		{
 			Com_Printf( "Display supports any resolution\n" );
+			SDL_free( modes );
 			return true;
 		}
 
@@ -255,6 +263,7 @@ static bool GLimp_DetectAvailableModes(void)
 		Cvar_Set( "r_availableModes", buf );
 	}
 
+	SDL_free( modes );
 	return true;
 }
 

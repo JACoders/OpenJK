@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "OpenAL/al.h"
 #include "OpenAL/alc.h"
 #include "eax/eax.h"
-#include "eax/eaxman.h"
+#include "eax/EaxMan.h"
 /*#elif defined MACOS_X
 #include <OpenAL/al.h>
 #include <OpenAL/alc.h>

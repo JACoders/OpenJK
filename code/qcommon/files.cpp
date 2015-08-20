@@ -45,7 +45,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #if defined(_WIN32)
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 /*
@@ -960,14 +960,23 @@ void FS_Rename( const char *from, const char *to ) {
 }
 
 /*
-==============
+===========
 FS_FCloseFile
 
-If the FILE pointer is an open pak file, leave it open.
+Close a file.
 
-For some reason, other dll's can't just cal fclose()
-on files returned by FS_FOpenFile...
-==============
+There are three cases handled:
+
+  * normal file: closed with fclose.
+
+  * file in pak3 archive: subfile is closed with unzCloseCurrentFile, but the
+    minizip handle to the pak3 remains open.
+
+  * file in pak3 archive, opened with "unique" flag: This file did not use
+    the system minizip handle to the pak3 file, but its own dedicated one.
+    The dedicated handle is closed with unzClose.
+
+===========
 */
 void FS_FCloseFile( fileHandle_t f ) {
 	if ( !fs_searchpaths ) {
