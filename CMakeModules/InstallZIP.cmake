@@ -43,8 +43,6 @@ if(WIN32)
   endif()
   
   if(NOT ZIP_EXECUTABLE)
-<<<<<<< HEAD
-=======
     find_program(ZIP_EXECUTABLE wzzip PATHS "$ENV{ProgramW6432}/WinZip")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" -P "<ARCHIVE>" <FILES>)
@@ -52,7 +50,6 @@ if(WIN32)
   endif()
   
   if(NOT ZIP_EXECUTABLE)
->>>>>>> JACoders/master
     find_program(ZIP_EXECUTABLE 7z PATHS "$ENV{ProgramFiles}/7-Zip")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a -tzip "<ARCHIVE>" <FILES>)
@@ -60,8 +57,6 @@ if(WIN32)
   endif()
   
   if(NOT ZIP_EXECUTABLE)
-<<<<<<< HEAD
-=======
     find_program(ZIP_EXECUTABLE 7z PATHS "$ENV{ProgramW6432}/7-Zip")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a -tzip "<ARCHIVE>" <FILES>)
@@ -69,14 +64,11 @@ if(WIN32)
   endif()
   
   if(NOT ZIP_EXECUTABLE)
->>>>>>> JACoders/master
     find_program(ZIP_EXECUTABLE winrar PATHS "$ENV{ProgramFiles}/WinRAR")
     if(ZIP_EXECUTABLE)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a "<ARCHIVE>" <FILES>)
     endif()
   endif()
-<<<<<<< HEAD
-=======
   
   if(NOT ZIP_EXECUTABLE)
     find_program(ZIP_EXECUTABLE winrar PATHS "$ENV{ProgramW6432}/WinRAR")
@@ -84,7 +76,6 @@ if(WIN32)
       set(ZIP_COMMAND "${ZIP_EXECUTABLE}" a "<ARCHIVE>" <FILES>)
     endif()
   endif()
->>>>>>> JACoders/master
 endif()
 
 if(NOT ZIP_EXECUTABLE)
