@@ -87,6 +87,7 @@ typedef struct server_s {
 	char			*mSharedMemory;
 
 	time_t			realMapTimeStarted;	// time the current map was started
+	qboolean		demosPruned; // whether or not existing demos were cleaned up already
 } server_t;
 
 typedef struct clientSnapshot_s {
