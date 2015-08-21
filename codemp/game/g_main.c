@@ -3719,9 +3719,9 @@ void CheckVote( void ) {
 
 				if ((level.votingGametypeTo == GT_DUEL || level.votingGametypeTo == GT_POWERDUEL) && currentGT != GT_DUEL && currentGT != GT_POWERDUEL)
 				{
-					if (currentFL > 3 || !currentFL)
-					{ //if voting to duel, and fraglimit is more than 3 (or unlimited), then set it down to 3
-						trap->SendConsoleCommand(EXEC_APPEND, "fraglimit 3\n");
+					if (currentFL > 1 || !currentFL)
+					{ //if voting to duel, and fraglimit is more than 1 (or unlimited), then set it down to 1
+						trap->SendConsoleCommand(EXEC_APPEND, "fraglimit 1\n"); // zyk: changed from 3 to 1
 					}
 					if (currentTL)
 					{ //if voting to duel, and timelimit is set, make it unlimited
@@ -3731,9 +3731,9 @@ void CheckVote( void ) {
 				else if ((level.votingGametypeTo != GT_DUEL && level.votingGametypeTo != GT_POWERDUEL) &&
 					(currentGT == GT_DUEL || currentGT == GT_POWERDUEL))
 				{
-					if (currentFL && currentFL < 20)
-					{ //if voting from duel, an fraglimit is less than 20, then set it up to 20
-						trap->SendConsoleCommand(EXEC_APPEND, "fraglimit 20\n");
+					if (currentFL != 0)
+					{ //if voting from duel, an fraglimit is different than 0, then set it up to 0
+						trap->SendConsoleCommand(EXEC_APPEND, "fraglimit 0\n"); // zyk: changed from 20 to 0
 					}
 				}
 			}
