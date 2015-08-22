@@ -987,7 +987,8 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 static void WP_BowcasterMainFire( gentity_t *ent )
 //---------------------------------------------------------
 {
-	int			damage	= zyk_bowcaster_damage.integer, count;
+	int	damage	= zyk_bowcaster_damage.integer, count;
+	float bowcaster_spread = BOWCASTER_ALT_SPREAD;
 	float		vel;
 	vec3_t		angs, dir;
 	gentity_t	*missile;
@@ -1008,11 +1009,11 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 	}
 	else if ( count > 5 )
 	{
-		// zyk: Bowcaster 2/2 in RPG Mode can shoot up to 9 missiles
+		// zyk: Bowcaster 2/2 in RPG Mode can shoot more missiles
 		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
 		{
-			if (count > 9)
-				count = 9;
+			if (count > 7)
+				count = 7;
 		}
 		else
 		{
@@ -1026,6 +1027,11 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		count--;
 	}
 
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
+	{ // zyk: at level 2, decrease spread
+		bowcaster_spread = BOWCASTER_ALT_SPREAD * 0.7;
+	}
+
 	for (i = 0; i < count; i++ )
 	{
 		// create a range of different velocities
@@ -1034,8 +1040,8 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		vectoangles( forward, angs );
 
 		// add some slop to the alt-fire direction
-		angs[PITCH] += crandom() * BOWCASTER_ALT_SPREAD * 0.2f;
-		angs[YAW]	+= ((i+0.5f) * BOWCASTER_ALT_SPREAD - count * 0.5f * BOWCASTER_ALT_SPREAD );
+		angs[PITCH] += crandom() * bowcaster_spread * 0.2f;
+		angs[YAW]	+= ((i+0.5f) * bowcaster_spread - count * 0.5f * bowcaster_spread );
 
 		AngleVectors( angs, dir, NULL, NULL );
 

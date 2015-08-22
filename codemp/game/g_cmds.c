@@ -9229,7 +9229,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 22)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Disruptor: ^7the sniper, used by the rodians ingame. Normal fire is a shot that causes %d damage, alternate fire allows zoom and a charged shot that when fully charged, causes %d damage. At level 2 causes 25 per cent more damage and has a better fire rate\n\"", zyk_disruptor_damage.integer, zyk_disruptor_alt_damage.integer) );
 					if (i == 23)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Bowcaster: ^7the famous weapon used by Chewbacca. Normal fire can be charged to fire up to 5 shots at once or 9 at level 2. Alternate fire fires a bouncing shot. At level 2 increases number of bounces. It causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_bowcaster_damage.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Bowcaster: ^7the famous weapon used by Chewbacca. Normal fire can be charged to fire up to 5 shots at once. At level 2, shoots up to 7 shots with less spread. Alternate fire fires a bouncing shot. At level 2 increases number of bounces. It causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_bowcaster_damage.integer) );
 					if (i == 24)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Repeater: ^7a powerful weapon with a rapid fire and a plasma bomb. Normal fire shoots the rapid fire, and causes %d damage. Alt fire fires the plasma bomb and causes %d damage. At level 2 causes 25 per cent more damage and alternate fire has faster firerate and is more accurate\n\"", zyk_repeater_damage.integer, zyk_repeater_alt_damage.integer) );
 					if (i == 25)
