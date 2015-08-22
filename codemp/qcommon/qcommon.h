@@ -702,6 +702,8 @@ qboolean FS_idPak( char *pak, char *base );
 qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
 
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
+
 
 /*
 ==============================================================

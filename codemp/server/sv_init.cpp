@@ -604,6 +604,7 @@ Ghoul2 Insert End
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
 
 	time( &sv.realMapTimeStarted );
+	sv.demosPruned = qfalse;
 
 	// clear physics interaction links
 	SV_ClearWorld ();

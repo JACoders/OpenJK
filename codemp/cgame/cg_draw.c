@@ -1132,7 +1132,14 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 	if (focusItem)
 	{
 		// Print force amount
-		trap->R_SetColor( focusItem->window.foreColor );
+		if ( flash )
+		{
+			trap->R_SetColor( colorTable[CT_RED] );
+		}
+		else
+		{
+			trap->R_SetColor( focusItem->window.foreColor );
+		}
 
 		CG_DrawNumField (
 			focusItem->window.rect.x,
@@ -1144,6 +1151,168 @@ void CG_DrawForcePower( menuDef_t *menuHUD )
 			NUM_FONT_SMALL,
 			qfalse);
 	}
+}
+
+static void CG_DrawSimpleSaberStyle( const centity_t *cent )
+{
+	uint32_t	calcColor;
+	char		num[7] = { 0 };
+	int			weapX = 16;
+
+	if ( !cent->currentState.weapon ) // We don't have a weapon right now
+	{
+		return;
+	}
+
+	if ( cent->currentState.weapon != WP_SABER )
+	{
+		return;
+	}
+
+	switch ( cg.predictedPlayerState.fd.saberDrawAnimLevel )
+	{
+	default:
+	case SS_FAST:
+		Com_sprintf( num, sizeof( num ), "FAST" );
+		calcColor = CT_ICON_BLUE;
+		weapX = 0;
+		break;
+	case SS_MEDIUM:
+		Com_sprintf( num, sizeof( num ), "MEDIUM" );
+		calcColor = CT_YELLOW;
+		break;
+	case SS_STRONG:
+		Com_sprintf( num, sizeof( num ), "STRONG" );
+		calcColor = CT_HUD_RED;
+		break;
+	case SS_DESANN:
+		Com_sprintf( num, sizeof( num ), "DESANN" );
+		calcColor = CT_HUD_RED;
+		break;
+	case SS_TAVION:
+		Com_sprintf( num, sizeof( num ), "TAVION" );
+		calcColor = CT_ICON_BLUE;
+		break;
+	case SS_DUAL:
+		Com_sprintf( num, sizeof( num ), "AKIMBO" );
+		calcColor = CT_HUD_ORANGE;
+		break;
+	case SS_STAFF:
+		Com_sprintf( num, sizeof( num ), "STAFF" );
+		calcColor = CT_HUD_ORANGE;
+		break;
+	}
+
+	CG_DrawProportionalString( SCREEN_WIDTH - (weapX + 16 + 32), (SCREEN_HEIGHT - 80) + 40, num, UI_SMALLFONT | UI_DROPSHADOW, colorTable[calcColor] );
+}
+
+static void CG_DrawSimpleAmmo( const centity_t *cent )
+{
+	playerState_t	*ps;
+	uint32_t	calcColor;
+	int			currValue = 0;
+	char		num[16] = { 0 };
+
+	if ( !cent->currentState.weapon ) // We don't have a weapon right now
+	{
+		return;
+	}
+
+	ps = &cg.snap->ps;
+
+	currValue = ps->ammo[weaponData[cent->currentState.weapon].ammoIndex];
+
+	// No ammo
+	if ( currValue < 0 || (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0) )
+	{
+		CG_DrawProportionalString( SCREEN_WIDTH - (16 + 32), (SCREEN_HEIGHT - 80) + 40, "--", UI_SMALLFONT | UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
+		return;
+	}
+
+	//
+	// ammo
+	//
+	if ( cg.oldammo < currValue )
+	{
+		cg.oldAmmoTime = cg.time + 200;
+	}
+
+	cg.oldammo = currValue;
+
+	// Determine the color of the numeric field
+
+	// Firing or reloading?
+	if ( (cg.predictedPlayerState.weaponstate == WEAPON_FIRING
+		&& cg.predictedPlayerState.weaponTime > 100) )
+	{
+		calcColor = CT_LTGREY;
+	}
+	else
+	{
+		if ( currValue > 0 )
+		{
+			if ( cg.oldAmmoTime > cg.time )
+			{
+				calcColor = CT_YELLOW;
+			}
+			else
+			{
+				calcColor = CT_HUD_ORANGE;
+			}
+		}
+		else
+		{
+			calcColor = CT_RED;
+		}
+	}
+
+	Com_sprintf( num, sizeof( num ), "%i", currValue );
+
+	CG_DrawProportionalString( SCREEN_WIDTH - (16 + 32), (SCREEN_HEIGHT - 80) + 40, num, UI_SMALLFONT | UI_DROPSHADOW, colorTable[calcColor] );
+}
+
+static void CG_DrawSimpleForcePower( const centity_t *cent )
+{
+	uint32_t	calcColor;
+	char		num[16] = { 0 };
+	qboolean	flash = qfalse;
+
+	if ( !cg.snap->ps.fd.forcePowersKnown )
+	{
+		return;
+	}
+
+	// Make the hud flash by setting forceHUDTotalFlashTime above cg.time
+	if ( cg.forceHUDTotalFlashTime > cg.time )
+	{
+		flash = qtrue;
+		if ( cg.forceHUDNextFlashTime < cg.time )
+		{
+			cg.forceHUDNextFlashTime = cg.time + 400;
+			trap->S_StartSound( NULL, 0, CHAN_LOCAL, cgs.media.noforceSound );
+			if ( cg.forceHUDActive )
+			{
+				cg.forceHUDActive = qfalse;
+			}
+			else
+			{
+				cg.forceHUDActive = qtrue;
+			}
+
+		}
+	}
+	else	// turn HUD back on if it had just finished flashing time.
+	{
+		cg.forceHUDNextFlashTime = 0;
+		cg.forceHUDActive = qtrue;
+	}
+
+	// Determine the color of the numeric field
+	calcColor = flash ? CT_RED : CT_ICON_BLUE;
+
+	Com_sprintf( num, sizeof( num ), "%i", cg.snap->ps.fd.forcePower );
+
+	CG_DrawProportionalString( SCREEN_WIDTH - (18 + 14 + 32), (SCREEN_HEIGHT - 80) + 40 + 14, num, UI_SMALLFONT | UI_DROPSHADOW, colorTable[calcColor] );
 }
 
 /*
@@ -1163,8 +1332,6 @@ void CG_DrawHUD(centity_t	*cent)
 	{
 		int x = 0;
 		int y = SCREEN_HEIGHT-80;
-		char ammoString[64];
-		int weapX = x;
 
 		if (cg.predictedPlayerState.pm_type != PM_SPECTATOR)
 		{
@@ -1172,45 +1339,14 @@ void CG_DrawHUD(centity_t	*cent)
 
 			CG_DrawProportionalString( x+18+14, y+40+14, va( "%i", cg.snap->ps.stats[STAT_ARMOR] ), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_GREEN] );
 
-			if (cg.snap->ps.weapon == WP_SABER)
-			{
-				if (cg.snap->ps.fd.saberDrawAnimLevel == SS_DUAL)
-				{
-					Com_sprintf(ammoString, sizeof(ammoString), "AKIMBO");
-					weapX += 16;
-				}
-				else if (cg.snap->ps.fd.saberDrawAnimLevel == SS_STAFF)
-				{
-					Com_sprintf(ammoString, sizeof(ammoString), "STAFF");
-					weapX += 16;
-				}
-				else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_3)
-				{
-					Com_sprintf(ammoString, sizeof(ammoString), "STRONG");
-					weapX += 16;
-				}
-				else if (cg.snap->ps.fd.saberDrawAnimLevel == FORCE_LEVEL_2)
-				{
-					Com_sprintf(ammoString, sizeof(ammoString), "MEDIUM");
-					weapX += 16;
-				}
-				else
-				{
-					Com_sprintf(ammoString, sizeof(ammoString), "FAST");
-				}
-			}
-			else if (weaponData[cent->currentState.weapon].energyPerShot == 0 && weaponData[cent->currentState.weapon].altEnergyPerShot == 0)
-			{
-				Q_strncpyz(ammoString, "--", sizeof(ammoString));
-			}
+			CG_DrawSimpleForcePower( cent );
+
+			if ( cent->currentState.weapon == WP_SABER )
+				CG_DrawSimpleSaberStyle( cent );
 			else
-			{
-				Com_sprintf(ammoString, sizeof(ammoString), "%i", cg.snap->ps.ammo[weaponData[cent->currentState.weapon].ammoIndex]);
-			}
+				CG_DrawSimpleAmmo( cent );
 
-			CG_DrawProportionalString( SCREEN_WIDTH-(weapX+16+32), y+40, va( "%s", ammoString ), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_HUD_ORANGE] );
-
-			CG_DrawProportionalString( SCREEN_WIDTH-(x+18+14+32), y+40+14, va( "%i", cg.snap->ps.fd.forcePower), UI_SMALLFONT|UI_DROPSHADOW, colorTable[CT_ICON_BLUE] );
+			//TODO Add score line
 		}
 
 		return;
