@@ -306,7 +306,7 @@ weaponData_t weaponData[WP_NUM_WEAPONS] =
 //		"Bryar Pistol",			//	char	classname[32];		// Spawning name
 		AMMO_BLASTER,			//	int		ammoIndex;			// Index to proper ammo slot
 		15,						//	int		ammoLow;			// Count when ammo is low
-		2,						//	int		energyPerShot;		// Amount of energy used per shot
+		1, // 2					//	int		energyPerShot;		// Amount of energy used per shot
 		400,					//	int		fireTime;			// Amount of time between firings
 		8192,					//	int		range;				// Range of weapon
 		2,						//	int		altEnergyPerShot;	// Amount of energy used for alt-fire
