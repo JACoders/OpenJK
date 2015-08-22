@@ -3437,32 +3437,28 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-static void MDXABoneToMatrix ( const mdxaBone_t& bone, matrix_t& matrix )
+static void MDXABoneToMatrix ( const mdxaBone_t& bone, mat4x3_t& matrix )
 {
 	matrix[0] = bone.matrix[0][0];
 	matrix[1] = bone.matrix[1][0];
 	matrix[2] = bone.matrix[2][0];
-	matrix[3] = 0.0f;
 
-	matrix[4] = bone.matrix[0][1];
-	matrix[5] = bone.matrix[1][1];
-	matrix[6] = bone.matrix[2][1];
-	matrix[7] = 0.0f;
+	matrix[3] = bone.matrix[0][1];
+	matrix[4] = bone.matrix[1][1];
+	matrix[5] = bone.matrix[2][1];
 
-	matrix[8] = bone.matrix[0][2];
-	matrix[9] = bone.matrix[1][2];
-	matrix[10] = bone.matrix[2][2];
-	matrix[11] = 0.0f;
+	matrix[6] = bone.matrix[0][2];
+	matrix[7] = bone.matrix[1][2];
+	matrix[8] = bone.matrix[2][2];
 
-	matrix[12] = bone.matrix[0][3];
-	matrix[13] = bone.matrix[1][3];
-	matrix[14] = bone.matrix[2][3];
-	matrix[15] = 1.0f;
+	matrix[9] = bone.matrix[0][3];
+	matrix[10] = bone.matrix[1][3];
+	matrix[11] = bone.matrix[2][3];
 }
 
 void RB_SurfaceGhoul( CRenderableSurface *surf ) 
 {
-	static matrix_t boneMatrices[80] = {};
+	static mat4x3_t boneMatrices[20] = {};
 
 	mdxmSurface_t *surfData = surf->surfaceData;
 	mdxmVBOMesh_t *surface = surf->vboMesh;

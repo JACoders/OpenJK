@@ -56,7 +56,7 @@ uniform mat4 u_ModelMatrix;
 #if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4 u_BoneMatrices[20];
+uniform mat4x3 u_BoneMatrices[20];
 #endif
 
 #if defined(USE_LIGHT_VECTOR)
@@ -178,10 +178,17 @@ void main()
 	{
 		int boneIndex = int(attr_BoneIndexes[i]);
 
-		position4 += (u_BoneMatrices[boneIndex] * originalPosition) * attr_BoneWeights[i];
-		normal4 += (u_BoneMatrices[boneIndex] * originalNormal) * attr_BoneWeights[i];
+		mat4 boneMatrix = mat4(
+			vec4(u_BoneMatrices[boneIndex][0], 0.0),
+			vec4(u_BoneMatrices[boneIndex][1], 0.0),
+			vec4(u_BoneMatrices[boneIndex][2], 0.0),
+			vec4(u_BoneMatrices[boneIndex][3], 1.0)
+		);
+
+		position4 += (boneMatrix * originalPosition) * attr_BoneWeights[i];
+		normal4 += (boneMatrix * originalNormal) * attr_BoneWeights[i];
 #if defined(USE_VERT_TANGENT_SPACE) && defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
-		tangent4 += (u_BoneMatrices[boneIndex] * originalTangent) * attr_BoneWeights[i];
+		tangent4 += (boneMatrix * originalTangent) * attr_BoneWeights[i];
 #endif
 	}
 

@@ -445,7 +445,7 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 		GLSL_VertexAttribsState(ATTR_POSITION | ATTR_TEXCOORD0, NULL);
 		GLSL_BindProgram(sp);
 		
-		GLSL_SetUniformMatrix16(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 		
 		color[0] = 
 		color[1] = 

@@ -985,7 +985,8 @@ enum
 	GLSL_VEC2,
 	GLSL_VEC3,
 	GLSL_VEC4,
-	GLSL_MAT16
+	GLSL_MAT4x3,
+	GLSL_MAT4x4,
 };
 
 typedef enum
@@ -1784,7 +1785,7 @@ typedef struct glstate_s {
 	int				vertexAttribsTexCoordOffset[2];
 	qboolean        vertexAnimation;
 	qboolean		skeletalAnimation;
-	matrix_t       *boneMatrices;
+	mat4x3_t       *boneMatrices;
 	int				numBones;
 	shaderProgram_t *currentProgram;
 	FBO_t          *currentFBO;
@@ -2685,7 +2686,8 @@ void GLSL_SetUniformFloatN(shaderProgram_t *program, int uniformNum, const float
 void GLSL_SetUniformVec2(shaderProgram_t *program, int uniformNum, const vec2_t v);
 void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t v);
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
+void GLSL_SetUniformMatrix4x3(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
+void GLSL_SetUniformMatrix4x4(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
 
 shaderProgram_t *GLSL_GetGenericShaderProgram(int stage);
 

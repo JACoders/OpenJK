@@ -59,7 +59,7 @@ uniform float u_PortalRange;
 #if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
 #elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4 u_BoneMatrices[20];
+uniform mat4x3 u_BoneMatrices[20];
 #endif
 
 out vec2 var_DiffuseTex;
@@ -312,8 +312,15 @@ void main()
 	{
 		int boneIndex = int(attr_BoneIndexes[i]);
 
-		position4 += (u_BoneMatrices[boneIndex] * originalPosition) * attr_BoneWeights[i];
-		normal4 += (u_BoneMatrices[boneIndex] * originalNormal) * attr_BoneWeights[i];
+		mat4 boneMatrix = mat4(
+			vec4(u_BoneMatrices[boneIndex][0], 0.0),
+			vec4(u_BoneMatrices[boneIndex][1], 0.0),
+			vec4(u_BoneMatrices[boneIndex][2], 0.0),
+			vec4(u_BoneMatrices[boneIndex][3], 1.0)
+		);
+
+		position4 += (boneMatrix * originalPosition) * attr_BoneWeights[i];
+		normal4 += (boneMatrix * originalNormal) * attr_BoneWeights[i];
 	}
 
 	vec3 position = position4.xyz;

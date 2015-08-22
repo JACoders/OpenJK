@@ -87,9 +87,9 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_ShadowMap2", GLSL_INT, 1 },
 	{ "u_ShadowMap3", GLSL_INT, 1 },
 
-	{ "u_ShadowMvp",  GLSL_MAT16, 1 },
-	{ "u_ShadowMvp2", GLSL_MAT16, 1 },
-	{ "u_ShadowMvp3", GLSL_MAT16, 1 },
+	{ "u_ShadowMvp",  GLSL_MAT4x4, 1 },
+	{ "u_ShadowMvp2", GLSL_MAT4x4, 1 },
+	{ "u_ShadowMvp3", GLSL_MAT4x4, 1 },
 
 	{ "u_EnableTextures", GLSL_VEC4, 1 },
 	{ "u_DiffuseTexMatrix",  GLSL_VEC4, 1 },
@@ -127,8 +127,8 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_FogEyeT",      GLSL_FLOAT, 1 },
 	{ "u_FogColorMask", GLSL_VEC4, 1 },
 
-	{ "u_ModelMatrix",               GLSL_MAT16, 1 },
-	{ "u_ModelViewProjectionMatrix", GLSL_MAT16, 1 },
+	{ "u_ModelMatrix",               GLSL_MAT4x4, 1 },
+	{ "u_ModelViewProjectionMatrix", GLSL_MAT4x4, 1 },
 
 	{ "u_Time",          GLSL_FLOAT, 1 },
 	{ "u_VertexLerp" ,   GLSL_FLOAT, 1 },
@@ -153,7 +153,7 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_CubeMapInfo", GLSL_VEC4, 1 },
 
-	{ "u_BoneMatrices",			GLSL_MAT16, 20 },
+	{ "u_BoneMatrices",			GLSL_MAT4x3, 20 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
@@ -713,7 +713,10 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 			case GLSL_VEC4:
 				size += sizeof(float) * 4 * uniformsInfo[i].size;
 				break;
-			case GLSL_MAT16:
+			case GLSL_MAT4x3:
+				size += sizeof(float) * 12 * uniformsInfo[i].size;
+				break;
+			case GLSL_MAT4x4:
 				size += sizeof(float) * 16 * uniformsInfo[i].size;
 				break;
 			default:
@@ -885,7 +888,7 @@ void GLSL_SetUniformFloatN(shaderProgram_t *program, int uniformNum, const float
 	qglUniform1fv(uniforms[uniformNum], numFloats, v);
 }
 
-void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)
+void GLSL_SetUniformMatrix4x3(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)
 {
 	GLint *uniforms = program->uniforms;
 	float *compare;
@@ -893,9 +896,37 @@ void GLSL_SetUniformMatrix16(shaderProgram_t *program, int uniformNum, const flo
 	if (uniforms[uniformNum] == -1)
 		return;
 
-	if (uniformsInfo[uniformNum].type != GLSL_MAT16)
+	if (uniformsInfo[uniformNum].type != GLSL_MAT4x3)
 	{
-		ri->Printf( PRINT_WARNING, "GLSL_SetUniformMatrix16: wrong type for uniform %i in program %s\n", uniformNum, program->name);
+		ri->Printf( PRINT_WARNING, "GLSL_SetUniformMatrix4x3: wrong type for uniform %i in program %s\n", uniformNum, program->name);
+		return;
+	}
+
+	if (uniformsInfo[uniformNum].size < numElements)
+		return;
+
+	compare = (float *)(program->uniformBuffer + program->uniformBufferOffsets[uniformNum]);
+	if (memcmp (matrix, compare, sizeof (float) * 12 * numElements) == 0)
+	{
+		return;
+	}
+
+	Com_Memcpy (compare, matrix, sizeof (float) * 12 * numElements);
+
+	qglUniformMatrix4x3fv(uniforms[uniformNum], numElements, GL_FALSE, matrix);
+}
+
+void GLSL_SetUniformMatrix4x4(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements)
+{
+	GLint *uniforms = program->uniforms;
+	float *compare;
+
+	if (uniforms[uniformNum] == -1)
+		return;
+
+	if (uniformsInfo[uniformNum].type != GLSL_MAT4x4)
+	{
+		ri->Printf( PRINT_WARNING, "GLSL_SetUniformMatrix4x4: wrong type for uniform %i in program %s\n", uniformNum, program->name);
 		return;
 	}
 
