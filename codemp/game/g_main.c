@@ -5145,8 +5145,8 @@ void quest_power_events(gentity_t *ent)
 					G_Damage(ent,&g_entities[ent->client->pers.quest_power_user1_id],&g_entities[ent->client->pers.quest_power_user1_id],NULL,NULL,80,0,MOD_UNKNOWN);
 
 					ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-					ent->client->ps.forceHandExtendTime = level.time + 2000;
-					ent->client->ps.velocity[2] += 600;
+					ent->client->ps.forceHandExtendTime = level.time + 1500;
+					ent->client->ps.velocity[2] += 550;
 					ent->client->ps.forceDodgeAnim = 0;
 					ent->client->ps.quickerGetup = qtrue;
 
