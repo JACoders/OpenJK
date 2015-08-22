@@ -5,7 +5,7 @@ in vec3 attr_Normal;
 in vec3 attr_Position2;
 in vec3 attr_Normal2;
 #elif defined(USE_SKELETAL_ANIMATION)
-in vec4 attr_BoneIndexes;
+in uvec4 attr_BoneIndexes;
 in vec4 attr_BoneWeights;
 #endif
 
@@ -310,7 +310,7 @@ void main()
 
 	for (int i = 0; i < 4; i++)
 	{
-		int boneIndex = int(attr_BoneIndexes[i]);
+		uint boneIndex = attr_BoneIndexes[i];
 
 		mat4 boneMatrix = mat4(
 			vec4(u_BoneMatrices[boneIndex][0], 0.0),

@@ -1927,34 +1927,46 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 	const struct
 	{
 		int numComponents;
+		GLboolean integerAttribute;
 		GLenum type;
 		GLboolean normalize;
 		int offset;
 	} attributes[ATTR_INDEX_MAX] = {
-		{ 3, GL_FLOAT, GL_FALSE, 0 }, // position
-		{ 2, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0] },
-		{ 2, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1] },
-		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // tangent
-		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // normal
-		{ 4, GL_FLOAT, GL_FALSE, 0 }, // color
-		{ 0, GL_NONE, GL_FALSE, 0 }, // paint color
-		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // light direction
-		{ 4, GL_FLOAT, GL_FALSE, 0 }, // bon indices
-		{ 4, GL_FLOAT, GL_FALSE, 0 }, // bone weights
-		{ 3, GL_FLOAT, GL_FALSE, 0 }, // pos2
-		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
-		{ 4, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
+		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE, 0 }, // position
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0] },
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1] },
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // tangent
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // normal
+		{ 4, GL_FALSE, GL_FLOAT, GL_FALSE, 0 }, // color
+		{ 0, GL_FALSE, GL_NONE, GL_FALSE, 0 }, // paint color
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // light direction
+		{ 4, GL_TRUE,  GL_UNSIGNED_BYTE, GL_FALSE, 0 }, // bone indices
+		{ 4, GL_FALSE, GL_UNSIGNED_BYTE, GL_TRUE, 0 }, // bone weights
+		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE, 0 }, // pos2
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
 	};
 
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
 		int attributeIndex = vertexArrays->enabledAttributes[i];
-		qglVertexAttribPointer(attributeIndex,
-			attributes[attributeIndex].numComponents,
-			attributes[attributeIndex].type,
-			attributes[attributeIndex].normalize,
-			vertexArrays->strides[attributeIndex],
-			BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
+		if ( attributes[attributeIndex].integerAttribute )
+		{
+			qglVertexAttribIPointer(attributeIndex,
+				attributes[attributeIndex].numComponents,
+				attributes[attributeIndex].type,
+				vertexArrays->strides[attributeIndex],
+				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
+		}
+		else
+		{
+			qglVertexAttribPointer(attributeIndex,
+				attributes[attributeIndex].numComponents,
+				attributes[attributeIndex].type,
+				attributes[attributeIndex].normalize,
+				vertexArrays->strides[attributeIndex],
+				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
+		}
 
 		glState.vertexAttribPointersSet |= (1 << attributeIndex);
 	}

@@ -4096,8 +4096,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		vec3_t *verts;
 		uint32_t *normals;
 		vec2_t *texcoords;
-		vec4_t *bonerefs;
-		vec4_t *weights;
+		byte *bonerefs;
+		byte *weights;
 		uint32_t *tangents;
 
 		byte *data;
@@ -4141,8 +4141,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		dataSize += numVerts * sizeof (*verts);
 		dataSize += numVerts * sizeof (*normals);
 		dataSize += numVerts * sizeof (*texcoords);
-		dataSize += numVerts * sizeof (*weights);
-		dataSize += numVerts * sizeof (*bonerefs);
+		dataSize += numVerts * sizeof (*weights) * 4;
+		dataSize += numVerts * sizeof (*bonerefs) * 4;
 		dataSize += numVerts * sizeof (*tangents);
 
 		// Allocate and write to memory
@@ -4160,13 +4160,13 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		ofsTexcoords = stride;
 		stride += sizeof (*texcoords);
 
-		bonerefs = (vec4_t *)(data + stride);
+		bonerefs = data + stride;
 		ofsBoneRefs = stride;
-		stride += sizeof (*bonerefs);
+		stride += sizeof (*bonerefs) * 4;
 
-		weights = (vec4_t *)(data + stride);
+		weights = data + stride;
 		ofsWeights = stride;
-		stride += sizeof (*weights);
+		stride += sizeof (*weights) * 4;
 
 		tangents = (uint32_t *)(data + stride);
 		ofs_tangent = stride;
@@ -4192,30 +4192,32 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			for ( int k = 0; k < surf->numVerts; k++ )
 			{
 				int numWeights = G2_GetVertWeights (&v[k]);
-				float lastWeight = 1.0f;
+				int lastWeight = 255;
 				int lastInfluence = numWeights - 1;
 				for ( int w = 0; w < lastInfluence; w++ )
 				{
-					float weight = G2_GetVertBoneWeightNotSlow (&v[k], w);
-					(*weights)[w] = weight;
-					(*bonerefs)[w] = (float)G2_GetVertBoneIndex (&v[k], w);
+					float weight = G2_GetVertBoneWeightNotSlow(&v[k], w);
+					weights[w] = (byte)(weight * 255.0f);
+					bonerefs[w] = G2_GetVertBoneIndex(&v[k], w);
 
-					lastWeight -= weight;
+					lastWeight -= weights[w];
 				}
 
+				assert(lastWeight > 0);
+
 				// Ensure that all the weights add up to 1.0
-				(*weights)[lastInfluence] = lastWeight;
-				(*bonerefs)[lastInfluence] = (float)G2_GetVertBoneIndex (&v[k], lastInfluence);
+				weights[lastInfluence] = lastWeight;
+				bonerefs[lastInfluence] = G2_GetVertBoneIndex(&v[k], lastInfluence);
 
 				// Fill in the rest of the info with zeroes.
 				for ( int w = numWeights; w < 4; w++ )
 				{
-					(*weights)[w] = 0.0f;
-					(*bonerefs)[w] = 0.0f;
+					weights[w] = 0;
+					bonerefs[w] = 0;
 				}
 				
-				weights = (vec4_t *)((byte *)weights + stride);
-				bonerefs = (vec4_t *)((byte *)bonerefs + stride);
+				weights += stride;
+				bonerefs += stride;
 			}
 
 			// Texture coordinates
