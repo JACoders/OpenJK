@@ -4612,7 +4612,7 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 }
 
 // zyk: Dome of Damage
-void dome_of_doom(gentity_t *ent, int distance, int damage)
+void dome_of_damage(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
 	int targets_hit = 0;
@@ -8775,7 +8775,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						if (ent->client->pers.light_quest_messages == 0)
 						{
-							dome_of_doom(ent,1500,40);
+							dome_of_damage(ent,1500,40);
 							ent->client->pers.light_quest_messages = 1;
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
 						}
@@ -9145,7 +9145,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 15)
 						{
-							dome_of_doom(ent,2000,40);
+							dome_of_damage(ent,2000,40);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Dome of Damage!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}

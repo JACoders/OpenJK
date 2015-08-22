@@ -3525,7 +3525,7 @@ extern void chaos_power(gentity_t *ent, int distance, int first_damage);
 extern void water_splash(gentity_t *ent, int distance, int damage);
 extern void ultra_flame(gentity_t *ent, int distance, int damage);
 extern void rock_fall(gentity_t *ent, int distance, int damage);
-extern void dome_of_doom(gentity_t *ent, int distance, int damage);
+extern void dome_of_damage(gentity_t *ent, int distance, int damage);
 extern void ice_stalagmite(gentity_t *ent, int distance, int damage);
 extern void ice_boulder(gentity_t *ent, int distance, int damage);
 extern void hurricane(gentity_t *ent, int distance, int duration);
@@ -3913,7 +3913,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 9 && zyk_enable_dome_of_damage.integer == 1 && ent->client->pers.magic_power >= zyk_dome_of_damage_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						dome_of_doom(ent,500,35);
+						dome_of_damage(ent,500,35);
 						ent->client->pers.magic_power -= zyk_dome_of_damage_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
