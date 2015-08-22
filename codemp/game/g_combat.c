@@ -4899,11 +4899,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->ps.fd.forcePowersActive & (1 << FP_RAGE))
 	{ // zyk: new Force Rage code
 		if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 1)
-			damage = (int)ceil(damage * 1.04);
+			damage = (int)ceil(damage * 1.03);
 		else if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 2)
-			damage = (int)ceil(damage * 1.08);
+			damage = (int)ceil(damage * 1.06);
 		else if (attacker->client->ps.fd.forcePowerLevel[FP_RAGE] == 3)
-			damage = (int)ceil(damage * 1.12);
+			damage = (int)ceil(damage * 1.09);
 	}
 
 	if (attacker && attacker->client && (attacker->NPC || attacker->client->sess.amrpgmode == 2) && attacker->client->pers.quest_power_status & (1 << 3))
@@ -6060,11 +6060,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)) && (inflictor->client || attacker->client))
 		{ // zyk: new Force Rage code
 			if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 1)
-				take = (int)ceil(take*0.7);
+				take = (int)ceil(take*0.8);
 			else if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 2)
-				take = (int)ceil(take*0.5);
+				take = (int)ceil(take*0.6);
 			else if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 3)
-				take = (int)ceil(take*0.3);
+				take = (int)ceil(take*0.4);
 		}
 
 		if (!targ->NPC && targ->client && targ->client->sess.amrpgmode == 2)
