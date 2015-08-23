@@ -1999,6 +1999,7 @@ typedef struct trGlobals_s {
 	//
 	// GPU shader programs
 	//
+	shaderProgram_t splashScreenShader;
 	shaderProgram_t genericShader[GENERICDEF_COUNT];
 	shaderProgram_t textureColorShader;
 	shaderProgram_t fogShader[FOGDEF_COUNT];
@@ -2671,6 +2672,7 @@ GLSL
 ============================================================
 */
 
+void GLSL_InitSplashScreenShader();
 int GLSL_BeginLoadGPUShaders(void);
 void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
