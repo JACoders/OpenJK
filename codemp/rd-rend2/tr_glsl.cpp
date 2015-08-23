@@ -1928,24 +1928,38 @@ void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits, const Vertex
 {
 	if ( attribBits & ATTR_TEXCOORD0 )
 	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
+		int newOffset = vertexArrays->offsets[ATTR_INDEX_TEXCOORD0] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0];
+		if ( glState.currentVaoVbo[ATTR_INDEX_TEXCOORD0] != glState.currentVBO->vertexesVBO ||
+				glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD0] != newOffset ||
+				glState.currentVaoStrides[ATTR_INDEX_TEXCOORD0] != vertexArrays->strides[ATTR_INDEX_TEXCOORD0] )
+		{
+			GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
 
-		qglVertexAttribPointer(
-			ATTR_INDEX_TEXCOORD0,
-			2, GL_FLOAT,
-			0, vertexArrays->strides[ATTR_INDEX_TEXCOORD0],
-			BUFFER_OFFSET(vertexArrays->offsets[ATTR_INDEX_TEXCOORD0] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0]));
+			qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0,
+				vertexArrays->strides[ATTR_INDEX_TEXCOORD0], BUFFER_OFFSET(newOffset));
+
+			glState.currentVaoVbo[ATTR_INDEX_TEXCOORD0] = glState.currentVBO->vertexesVBO;
+			glState.currentVaoStrides[ATTR_INDEX_TEXCOORD0] = vertexArrays->strides[ATTR_INDEX_TEXCOORD0];
+			glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD0] = newOffset;
+		}
 	}
 
 	if ( attribBits & ATTR_TEXCOORD1 )
 	{
-		GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_LIGHTCOORD )\n");
+		int newOffset = vertexArrays->offsets[ATTR_INDEX_TEXCOORD1] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1];
+		if ( glState.currentVaoVbo[ATTR_INDEX_TEXCOORD1] != glState.currentVBO->vertexesVBO ||
+				glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD1] != newOffset ||
+				glState.currentVaoStrides[ATTR_INDEX_TEXCOORD1] != vertexArrays->strides[ATTR_INDEX_TEXCOORD1] )
+		{
+			GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD1 )\n");
 
-		qglVertexAttribPointer(
-			ATTR_INDEX_TEXCOORD1,
-			2, GL_FLOAT,
-			0, vertexArrays->strides[ATTR_INDEX_TEXCOORD1],
-			BUFFER_OFFSET(vertexArrays->offsets[ATTR_INDEX_TEXCOORD1] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1]));
+			qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0,
+				vertexArrays->strides[ATTR_INDEX_TEXCOORD1], BUFFER_OFFSET(newOffset));
+
+			glState.currentVaoVbo[ATTR_INDEX_TEXCOORD1] = glState.currentVBO->vertexesVBO;
+			glState.currentVaoStrides[ATTR_INDEX_TEXCOORD1] = vertexArrays->strides[ATTR_INDEX_TEXCOORD1];
+			glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD1] = newOffset;
+		}
 	}
 }
 
@@ -1991,6 +2005,15 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
 		int attributeIndex = vertexArrays->enabledAttributes[i];
+
+		if ( glState.currentVaoVbo[attributeIndex] == glState.currentVBO->vertexesVBO &&
+				glState.currentVaoOffsets[attributeIndex] == vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset &&
+				glState.currentVaoStrides[attributeIndex] == vertexArrays->strides[attributeIndex] )
+		{
+			// No change
+			continue;
+		}
+
 		if ( attributes[attributeIndex].integerAttribute )
 		{
 			qglVertexAttribIPointer(attributeIndex,
@@ -2009,6 +2032,9 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
 		}
 
+		glState.currentVaoVbo[attributeIndex] = glState.currentVBO->vertexesVBO;
+		glState.currentVaoStrides[attributeIndex] = vertexArrays->strides[attributeIndex];
+		glState.currentVaoOffsets[attributeIndex] = vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset;
 		glState.vertexAttribPointersSet |= (1 << attributeIndex);
 	}
 }

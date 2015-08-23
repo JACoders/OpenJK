@@ -1794,6 +1794,9 @@ typedef struct glstate_s {
 	matrix_t        modelview;
 	matrix_t        projection;
 	matrix_t		modelviewProjection;
+	int			currentVaoVbo[ATTR_INDEX_MAX];
+	int			currentVaoStrides[ATTR_INDEX_MAX];
+	int			currentVaoOffsets[ATTR_INDEX_MAX];
 } glstate_t;
 
 typedef enum {
