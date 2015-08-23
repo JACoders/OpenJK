@@ -1569,7 +1569,11 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				&& cgs.gametype != GT_POWERDUEL
 				&& es->eventParm == TAUNT_TAUNT )
 			{//normal taunt
-				soundIndex = CG_CustomSound( es->number, "*taunt.wav" );
+				// zyk: in FFA, use all taunts from FFA and duel
+				if (cgs.gametype == GT_FFA)
+					soundIndex = CG_CustomSound( es->number, "*zyk_taunt" );
+				else
+					soundIndex = CG_CustomSound( es->number, "*taunt.wav" );
 			}
 			else
 			{

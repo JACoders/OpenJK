@@ -38,6 +38,22 @@ char	*cg_customSoundNames[MAX_CUSTOM_SOUNDS] = {
 	"*gasp",
 	"*land1",
 	"*taunt",
+	// zyk: added new taunts for FFA
+	"*anger1",	//Say when acquire an enemy when didn't have one before
+	"*anger2",
+	"*anger3",
+	"*victory1",	//Say when killed an enemy
+	"*victory2",
+	"*victory3",
+	"*taunt1",
+	"*taunt2",
+	"*taunt3",
+	"*deflect1",
+	"*deflect2",
+	"*deflect3",
+	"*gloat1",
+	"*gloat2",
+	"*gloat3",
 	NULL
 };
 
@@ -182,7 +198,8 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		return trap->S_RegisterSound( soundName );
 	}
 
-	COM_StripExtension( soundName, lSoundName, sizeof( lSoundName ) );
+	if (strcmp( soundName, "*zyk_taunt" ))
+		COM_StripExtension( soundName, lSoundName, sizeof( lSoundName ) );
 
 	if ( clientNum < 0 )
 	{
@@ -201,6 +218,11 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 	if (!ci)
 	{
 		return 0;
+	}
+
+	if (cgs.gametype == GT_FFA && !strcmp( soundName, "*zyk_taunt" ))
+	{ // zyk: using all taunts in FFA
+		return ci->sounds[Q_irand(14,29)];
 	}
 
 	for (i = 0; i < MAX_CUSTOM_SOUNDS; i++)
