@@ -72,6 +72,23 @@ void R_PerformanceCounters( void ) {
 		ri->Printf( PRINT_ALL, "GLSL binds: %i  draws: gen %i light %i fog %i dlight %i\n",
 			backEnd.pc.c_glslShaderBinds, backEnd.pc.c_genericDraws, backEnd.pc.c_lightallDraws, backEnd.pc.c_fogDraws, backEnd.pc.c_dlightDraws);
 	}
+	else if (r_speeds->integer == 8)
+	{
+		ri->Printf( PRINT_ALL, "0-19: %d 20-49: %d 50-99: %d 100-299: %d\n",
+			backEnd.pc.c_triangleCountBins[TRI_BIN_0_19],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_20_49],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_50_99],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_100_299]);
+
+		ri->Printf( PRINT_ALL, "300-599: %d 600-999: %d 1000-1499: %d 1500-1999: %d\n",
+			backEnd.pc.c_triangleCountBins[TRI_BIN_300_599],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_600_999],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_1000_1499],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_1500_1999]);
+		ri->Printf( PRINT_ALL, "2000-2999: %d 3000+: %d\n",
+			backEnd.pc.c_triangleCountBins[TRI_BIN_2000_2999],
+			backEnd.pc.c_triangleCountBins[TRI_BIN_3000_PLUS]);
+	}
 
 	Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
 	Com_Memset( &backEnd.pc, 0, sizeof( backEnd.pc ) );

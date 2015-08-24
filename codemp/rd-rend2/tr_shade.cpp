@@ -32,6 +32,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 color4ub_t	styleColors[MAX_LIGHT_STYLES];
 
+void RB_BinTriangleCounts( void );
+
 
 /*
 ==================
@@ -479,6 +481,8 @@ static void ProjectDlightTexture( void ) {
 		backEnd.pc.c_totalIndexes += tess.numIndexes;
 		backEnd.pc.c_dlightIndexes += tess.numIndexes;
 		backEnd.pc.c_dlightVertexes += tess.numVertexes;
+
+		RB_BinTriangleCounts();
 	}
 }
 
@@ -955,6 +959,8 @@ static void ForwardDlight( void ) {
 		backEnd.pc.c_totalIndexes += tess.numIndexes;
 		backEnd.pc.c_dlightIndexes += tess.numIndexes;
 		backEnd.pc.c_dlightVertexes += tess.numVertexes;
+
+		RB_BinTriangleCounts();
 	}
 }
 
@@ -1025,6 +1031,7 @@ static void ProjectPshadowVBOGLSL( void ) {
 
 		backEnd.pc.c_totalIndexes += tess.numIndexes;
 		//backEnd.pc.c_dlightIndexes += tess.numIndexes;
+		RB_BinTriangleCounts();
 	}
 }
 
@@ -1859,6 +1866,28 @@ void RB_StageIteratorGeneric( void )
 	}
 }
 
+void RB_BinTriangleCounts( void )
+{
+	int numTriangles = tess.numIndexes / 3;
+	if ( numTriangles < 20 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_0_19]++;
+	else if ( numTriangles < 50 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_20_49]++;
+	else if ( numTriangles < 100 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_50_99]++;
+	else if ( numTriangles < 300 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_100_299]++;
+	else if ( numTriangles < 600 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_300_599]++;
+	else if ( numTriangles < 1000 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_1000_1499]++;
+	else if ( numTriangles < 1500 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_1500_1999]++;
+	else if ( numTriangles < 2000 )
+		backEnd.pc.c_triangleCountBins[TRI_BIN_2000_2999]++;
+	else
+		backEnd.pc.c_triangleCountBins[TRI_BIN_3000_PLUS]++;
+}
 
 /*
 ** RB_EndSurface
@@ -1896,6 +1925,8 @@ void RB_EndSurface( void ) {
 	backEnd.pc.c_vertexes += tess.numVertexes;
 	backEnd.pc.c_indexes += tess.numIndexes;
 	backEnd.pc.c_totalIndexes += tess.numIndexes * tess.numPasses;
+
+	RB_BinTriangleCounts();
 
 	//
 	// call off to shader specific tess end function

@@ -1842,6 +1842,21 @@ typedef struct {
 	qboolean floatLightmap;
 } glRefConfig_t;
 
+enum
+{
+	TRI_BIN_0_19,
+	TRI_BIN_20_49,
+	TRI_BIN_50_99,
+	TRI_BIN_100_299,
+	TRI_BIN_300_599,
+	TRI_BIN_600_999,
+	TRI_BIN_1000_1499,
+	TRI_BIN_1500_1999,
+	TRI_BIN_2000_2999,
+	TRI_BIN_3000_PLUS,
+
+	NUM_TRI_BINS,
+};
 
 typedef struct {
 	int		c_surfaces, c_shaders, c_vertexes, c_indexes, c_totalIndexes;
@@ -1872,6 +1887,8 @@ typedef struct {
 	int     c_lightallDraws;
 	int     c_fogDraws;
 	int     c_dlightDraws;
+
+	int		c_triangleCountBins[NUM_TRI_BINS];
 
 	int		msec;			// total msec for backend run
 } backEndCounters_t;
