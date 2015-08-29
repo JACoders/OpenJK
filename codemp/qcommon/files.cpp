@@ -4148,9 +4148,10 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 			HANDLE file = CreateFile(
 				tempFileName, GENERIC_WRITE, 0, NULL,
 				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-			if ( file )
+			if ( file != INVALID_HANDLE_VALUE )
 			{
-				if (WriteFile(file, data, dataLength, NULL, NULL))
+				DWORD bytesWritten = 0;
+				if (WriteFile(file, data, dataLength, &bytesWritten, NULL))
 				{
 					int deletesRemaining = ARRAY_LEN(fs_temporaryFileNames);
 
@@ -4167,7 +4168,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 
 						error = GetLastError();
 						Com_DPrintf("FS_WriteToTemporaryFile failed for '%s'. "
-									"Win32 error code: 0x08x",
+									"Win32 error code: 0x%08x\n",
 									fs_temporaryFileNames[fs_temporaryFileWriteIdx],
 									error);
 
@@ -4201,7 +4202,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 				{
 					error = GetLastError();
 					Com_DPrintf("FS_WriteToTemporaryFile failed to write '%s'. "
-								"Win32 error code: 0x08x",
+								"Win32 error code: 0x%08x\n",
 								tempFileName, error);
 				}
 			}
@@ -4209,7 +4210,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 			{
 				error = GetLastError();
 				Com_DPrintf("FS_WriteToTemporaryFile failed to create '%s'. "
-							"Win32 error code: 0x08x",
+							"Win32 error code: 0x%08x\n",
 							tempFileName, error);
 			}
 		}
@@ -4217,14 +4218,14 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 		{
 			error = GetLastError();
 			Com_DPrintf("FS_WriteToTemporaryFile failed to generate temporary file name. "
-						"Win32 error code: 0x08x", error);
+						"Win32 error code: 0x%08x\n", error);
 		}
 	}
 	else
 	{
 		error = GetLastError();
 		Com_DPrintf("FS_WriteToTemporaryFile failed to get temporary file folder. "
-						"Win32 error code: 0x08x", error);
+						"Win32 error code: 0x%08x\n", error);
 	}
 #endif
 
