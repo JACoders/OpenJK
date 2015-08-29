@@ -781,7 +781,7 @@ static void ComputeFogColorMask( shaderStage_t *pStage, vec4_t fogColorMask )
 	}
 }
 
-static void CaptureDrawData(shaderCommands_t *input)
+static void CaptureDrawData(shaderCommands_t *input, shaderStage_t *stage, int glslShaderIndex, int stageIndex )
 {
 	if ( !tr.numFramesToCapture )
 		return;
@@ -792,10 +792,11 @@ static void CaptureDrawData(shaderCommands_t *input)
 		for ( int i = 0; i < input->multiDrawPrimitives; i++ )
 			numIndexes += input->multiDrawNumIndexes[i];
 
-		const char *data = va("%d,%d,dlight,0,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,Y\n",
+		const char *data = va("%d,%d,%s,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,Y\n",
 				tr.frameCount,
 				backEnd.currentEntity == &tr.worldEntity ? -1 : (backEnd.currentEntity - tr.refdef.entities),
-				input->shader->name, 0, input->shader->sortedIndex, (int)input->shader->sort,
+				stage->glslShaderGroup ? "lightall" : "generic", glslShaderIndex,
+				input->shader->name, stageIndex, input->shader->sortedIndex, (int)input->shader->sort,
 				input->fogNum,
 				input->cubemapIndex,
 				glState.vertexAttribsState,
@@ -807,16 +808,17 @@ static void CaptureDrawData(shaderCommands_t *input)
 	}
 	else
 	{
-		const char *data = va("%d,%d,dlight,0,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,N\n",
+		const char *data = va("%d,%d,%s,%d,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,N\n",
 				tr.frameCount,
 				backEnd.currentEntity == &tr.worldEntity ? -1 : (backEnd.currentEntity - tr.refdef.entities),
-				input->shader->name, 0, input->shader->sortedIndex, (int)input->shader->sort,
+				stage->glslShaderGroup ? "lightall" : "generic", glslShaderIndex,
+				input->shader->name, stageIndex, input->shader->sortedIndex, (int)input->shader->sort,
 				input->fogNum,
 				input->cubemapIndex,
 				glState.vertexAttribsState,
 				glState.glStateBits,
-				input->vbo->vertexesVBO,
-				input->ibo->indexesVBO,
+				glState.currentVBO->vertexesVBO,
+				glState.currentIBO->indexesVBO,
 				input->numIndexes / 3);
 		ri->FS_Write(data, strlen(data), tr.debugFile);
 	}
@@ -987,7 +989,7 @@ static void ForwardDlight( void ) {
 		// draw
 		//
 
-		CaptureDrawData(input);
+		CaptureDrawData(input, pStage, 0, 0);
 
 		if (input->multiDrawPrimitives)
 		{
@@ -1415,7 +1417,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		stateBits = pStage->stateBits;
 
-		if ( backEnd.currentEntity )
+		if (backEnd.currentEntity)
 		{
 			assert(backEnd.currentEntity->e.renderfx >= 0);
 
@@ -1666,7 +1668,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			GLSL_SetUniformVec4(sp, UNIFORM_CUBEMAPINFO, vec);
 		}
 
-		CaptureDrawData(input);
+		CaptureDrawData(input, pStage, index, stage);
 
 		//
 		// draw
