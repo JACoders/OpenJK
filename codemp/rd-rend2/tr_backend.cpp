@@ -601,10 +601,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	backEnd.pc.c_surfaces += numDrawSurfs;
 
 	for (i = 0, drawSurf = drawSurfs ; i < numDrawSurfs ; i++, drawSurf++) {
-		R_DecomposeSort( drawSurf->sort, &shader, &fogNum, &postRender );
+		R_DecomposeSort( drawSurf->sort, &shader, &cubemapIndex, &fogNum, &postRender );
 		entityNum = drawSurf->entityNum;
 		dlighted = drawSurf->lit;
-		cubemapIndex = drawSurf->cubemapIndex;
 
 		if ( shader == oldShader &&
 				fogNum == oldFogNum &&
