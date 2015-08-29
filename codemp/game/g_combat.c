@@ -4917,7 +4917,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		{
 			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.other_skills_levels[10])));
 		}
-		else if (attacker->client->pers.rpg_class == 1 && mod == MOD_SABER)
+		else if (attacker->client->pers.rpg_class == 1 && (mod == MOD_SABER || mod == MOD_FORCE_DARK))
 			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.other_skills_levels[10])));
 		else if (attacker->client->pers.rpg_class == 2 && mod != MOD_SABER && mod != MOD_MELEE && mod != MOD_FORCE_DARK)
 			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.other_skills_levels[10])));
