@@ -781,6 +781,46 @@ static void ComputeFogColorMask( shaderStage_t *pStage, vec4_t fogColorMask )
 	}
 }
 
+static void CaptureDrawData(shaderCommands_t *input)
+{
+	if ( !tr.numFramesToCapture )
+		return;
+
+	if ( input->multiDrawPrimitives )
+	{
+		int numIndexes = 0;
+		for ( int i = 0; i < input->multiDrawPrimitives; i++ )
+			numIndexes += input->multiDrawNumIndexes[i];
+
+		const char *data = va("%d,%d,dlight,0,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,Y\n",
+				tr.frameCount,
+				backEnd.currentEntity == &tr.worldEntity ? -1 : (backEnd.currentEntity - tr.refdef.entities),
+				input->shader->name, 0, input->shader->sortedIndex, (int)input->shader->sort,
+				input->fogNum,
+				input->cubemapIndex,
+				glState.vertexAttribsState,
+				glState.glStateBits,
+				glState.currentVBO->vertexesVBO,
+				glState.currentIBO->indexesVBO,
+				numIndexes / 3);
+		ri->FS_Write(data, strlen(data), tr.debugFile);
+	}
+	else
+	{
+		const char *data = va("%d,%d,dlight,0,%s,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,N\n",
+				tr.frameCount,
+				backEnd.currentEntity == &tr.worldEntity ? -1 : (backEnd.currentEntity - tr.refdef.entities),
+				input->shader->name, 0, input->shader->sortedIndex, (int)input->shader->sort,
+				input->fogNum,
+				input->cubemapIndex,
+				glState.vertexAttribsState,
+				glState.glStateBits,
+				input->vbo->vertexesVBO,
+				input->ibo->indexesVBO,
+				input->numIndexes / 3);
+		ri->FS_Write(data, strlen(data), tr.debugFile);
+	}
+}
 
 static void ForwardDlight( void ) {
 	int		l;
@@ -946,6 +986,8 @@ static void ForwardDlight( void ) {
 		//
 		// draw
 		//
+
+		CaptureDrawData(input);
 
 		if (input->multiDrawPrimitives)
 		{
@@ -1241,6 +1283,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		int stateBits;
 		colorGen_t forceRGBGen = CGEN_BAD;
 		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
+		int index = 0;
 
 		if ( !pStage )
 		{
@@ -1256,7 +1299,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			if (pStage->glslShaderGroup == tr.lightallShader)
 			{
-				int index = 0;
+				index = 0;
 
 				if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 				{
@@ -1282,34 +1325,34 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			}
 			else
 			{
-				int shaderAttribs = 0;
+				index = 0;
 
 				if (tess.shader->numDeforms && !ShaderRequiresCPUDeforms(tess.shader))
 				{
-					shaderAttribs |= GENERICDEF_USE_DEFORM_VERTEXES;
+					index |= GENERICDEF_USE_DEFORM_VERTEXES;
 				}
 
 				if (glState.vertexAnimation)
 				{
-					shaderAttribs |= GENERICDEF_USE_VERTEX_ANIMATION;
+					index |= GENERICDEF_USE_VERTEX_ANIMATION;
 				}
 
 				if (glState.skeletalAnimation)
 				{
-					shaderAttribs |= GENERICDEF_USE_SKELETAL_ANIMATION;
+					index |= GENERICDEF_USE_SKELETAL_ANIMATION;
 				}
 
 				if (pStage->stateBits & GLS_ATEST_BITS)
 				{
-					shaderAttribs |= GENERICDEF_USE_TCGEN_AND_TCMOD;
+					index |= GENERICDEF_USE_TCGEN_AND_TCMOD;
 				}
 
-				sp = &tr.genericShader[shaderAttribs];
+				sp = &tr.genericShader[index];
 			}
 		}
 		else if (pStage->glslShaderGroup == tr.lightallShader)
 		{
-			int index = pStage->glslShaderIndex;
+			index = pStage->glslShaderIndex;
 
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
@@ -1626,6 +1669,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 			GLSL_SetUniformVec4(sp, UNIFORM_CUBEMAPINFO, vec);
 		}
+
+		CaptureDrawData(input);
 
 		//
 		// draw

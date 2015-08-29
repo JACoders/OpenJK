@@ -1696,6 +1696,17 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		}
 	}
 
+	if ( tr.numFramesToCapture > 0 )
+	{
+		tr.numFramesToCapture--;
+		if ( !tr.numFramesToCapture )
+		{
+			ri->Printf( PRINT_ALL, "Frames captured\n" );
+			ri->FS_FCloseFile(tr.debugFile);
+			tr.debugFile = 0;
+		}
+	}
+
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
 	ri->WIN_Present( &window );

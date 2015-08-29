@@ -1249,6 +1249,30 @@ void GfxMemInfo_f( void )
 	}
 }
 
+static void R_CaptureFrameData_f()
+{
+	int argc = ri->Cmd_Argc();
+	if ( argc <= 1 )
+	{
+		ri->Printf( PRINT_ALL, "Usage: %s <multi|single>\n", ri->Cmd_Argv(0));
+		return;
+	}
+
+
+	const char *cmd = ri->Cmd_Argv(1);
+	if ( Q_stricmp(cmd, "single") == 0 )
+		tr.numFramesToCapture = 1;
+	else if ( Q_stricmp(cmd, "multi") == 0 )
+		tr.numFramesToCapture = atoi(ri->Cmd_Argv(1));
+
+	int len = ri->FS_FOpenFileByMode("rend2.log", &tr.debugFile, FS_APPEND);
+	if ( len == -1 || !tr.debugFile )
+	{
+		ri->Printf( PRINT_ERROR, "Failed to open rend2 log file\n" );
+		tr.numFramesToCapture = 0;
+	}
+}
+
 typedef struct consoleCommand_s {
 	const char	*cmd;
 	xcommand_t	func;
@@ -1269,6 +1293,7 @@ static consoleCommand_t	commands[] = {
 	{ "modellist",			R_Modellist_f },
 	//{ "modelcacheinfo",		RE_RegisterModels_Info_f },
 	{ "vbolist",			R_VBOList_f },
+	{ "capframes",			R_CaptureFrameData_f },
 };
 
 static const size_t numCommands = ARRAY_LEN( commands );

@@ -1929,6 +1929,9 @@ typedef struct trGlobals_s {
 
 	window_t				window;
 
+	fileHandle_t			debugFile;
+	int						numFramesToCapture;
+
 	int						visIndex;
 	int						visClusters[MAX_VISCOUNTS];
 	int						visCounts[MAX_VISCOUNTS];	// incremented every time a new vis cluster is entered
