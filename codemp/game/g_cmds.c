@@ -1708,7 +1708,7 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	if ( mode == SAY_TEAM  && !OnSameTeam(ent, other) ) {
 		return;
 	}
-	if ( mode == SAY_ALLY && zyk_is_ally(ent, other) == qfalse) { // zyk: allychat. Send it only to allies
+	if ( mode == SAY_ALLY && ent != other && zyk_is_ally(ent, other) == qfalse) { // zyk: allychat. Send it only to allies and to the player himself
 		return;
 	}
 	/*
