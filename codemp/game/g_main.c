@@ -8785,7 +8785,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else
 						{
-							magic_shield(ent, 5000);
+							magic_shield(ent, 6000);
 							ent->client->pers.light_quest_messages = 0;
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Magic Shield!\"");
 						}
@@ -9059,7 +9059,7 @@ void G_RunFrame( int levelTime ) {
 							if (!ent->client->ps.powerups[PW_CLOAKED])
 								Jedi_Cloak(ent);
 
-							magic_shield(ent,5000);
+							magic_shield(ent,6000);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Magic Shield!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
