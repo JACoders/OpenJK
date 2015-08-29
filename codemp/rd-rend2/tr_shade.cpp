@@ -1241,11 +1241,7 @@ static void UpdateTexCoords ( const shaderStage_t *stage, const VertexArraysProp
 			}
 
 			case TCGEN_TEXTURE:
-				if (glState.vertexAttribsTexCoordOffset[1] != 0)
-				{
-					glState.vertexAttribsTexCoordOffset[1] = 0;
-					updateAttribs |= ATTR_TEXCOORD1;
-				}
+				assert(!"Invalid tcgen (TCGEN_TEXTURE) on lightmap bundle");
 				break;
 
 			default:
