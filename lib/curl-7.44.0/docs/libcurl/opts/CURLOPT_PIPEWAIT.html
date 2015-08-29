@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLOPT_PIPEWAIT man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLOPT_PIPEWAIT - wait for pipelining/multiplexing <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PIPEWAIT, long wait); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Set <span Class="emphasis">wait</span> to 1L to tell libcurl to prefer to wait for a connection to confirm or deny that it can do pipelining or multiplexing before continuing. 
+<p class="level0">When about to perform a new transfer that allows pipelining or multiplexing, libcurl will check for existing connections to re-use and pipeline on. If no such connection exists it will immediately continue and create a fresh new connection to use. 
+<p class="level0">By setting this option to 1 - and having <span Class="emphasis">CURLMOPT_PIPELINE</span> enabled for the multi handle this transfer is associated with - libcurl will instead wait for the connection to reveal if it is possible to pipeline/multiplex on before it continues. This enables libcurl to much better keep the number of connections to a minimum when using pipelining or multiplexing protocols. 
+<p class="level0">The effect thus becomes that with this option set, libcurl prefers to wait and re-use an existing connection for pipelining rather than the opposite: prefer to open a new connection rather than waiting. 
+<p class="level0">The waiting time is as long as it takes for the connection to get up and for libcurl to get the necessary response back that informs it about its protocol and support level. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">0 (off) <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">HTTP(S) <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0"><a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.43.0 <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLOPT_FORBID_REUSE.html">CURLOPT_FORBID_REUSE</a>, <a Class="manpage" href="./CURLOPT_FRESH_CONNECT.html">CURLOPT_FRESH_CONNECT</a>, <span Class="manpage"> </span> <a Class="manpage" href="./CURLMOPT_PIPELINING.html">CURLMOPT_PIPELINING</a>, <a Class="manpage" href="./CURLMOPT_MAX_HOST_CONNECTIONS.html">CURLMOPT_MAX_HOST_CONNECTIONS</a>, <span Class="manpage"> </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

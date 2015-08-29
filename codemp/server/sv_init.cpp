@@ -974,6 +974,7 @@ void SV_Init (void) {
 	Cvar_Get ("nextmap", "", CVAR_TEMP );
 
 	sv_allowDownload = Cvar_Get ("sv_allowDownload", "0", CVAR_SERVERINFO);
+	Cvar_Get( "sv_dlURL", "", CVAR_SERVERINFO | CVAR_ARCHIVE );
 	sv_master[0] = Cvar_Get ("sv_master1", MASTER_SERVER_NAME, CVAR_PROTECTED );
 	sv_master[1] = Cvar_Get ("sv_master2", JKHUB_MASTER_SERVER_NAME, CVAR_PROTECTED);
 	for(int index = 2; index < MAX_MASTER_SERVERS; index++)

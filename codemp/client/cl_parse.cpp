@@ -485,6 +485,12 @@ void CL_SystemInfoChanged( void ) {
 
 			gameSet = qtrue;
 		}
+		// Got a download url from JA+ or JA++ clients and none from the server engine is set
+		if ( (!Q_stricmp( key, "jp_DlBaseURL" ) || !Q_stricmp( key, "g_dlURL" )) && !*clc.sv_dlURL )
+		{
+			Q_strncpyz( clc.sv_dlURL, va("%s", value), sizeof( clc.sv_dlURL ) );
+		}
+
 		Cvar_Server_Set( key, value );
 	}
 	// if game folder should not be set and it is set at the client side
@@ -492,6 +498,22 @@ void CL_SystemInfoChanged( void ) {
 		Cvar_Set( "fs_game", "" );
 	}
 	cl_connectedToPureServer = Cvar_VariableValue( "sv_pure" );
+}
+
+/*
+==================
+CL_ParseServerInfo
+==================
+*/
+static void CL_ParseServerInfo( void )
+{
+	const char *serverInfo;
+
+	serverInfo = cl.gameState.stringData + cl.gameState.stringOffsets[CS_SERVERINFO];
+
+	//clc.sv_allowDownload = atoi( Info_ValueForKey( serverInfo, "sv_allowDownload" ) );
+	clc.sv_allowDownload = 1;
+	Q_strncpyz( clc.sv_dlURL, Info_ValueForKey( serverInfo, "sv_dlURL" ), sizeof( clc.sv_dlURL ) );
 }
 
 /*
@@ -602,6 +624,8 @@ void CL_ParseGamestate( msg_t *msg ) {
 	// Throw away the info for the old RMG system.
 	MSG_ReadShort (msg);
 
+	// parse useful values out of CS_SERVERINFO
+	CL_ParseServerInfo();
 
 	// parse serverId and other cvars
 	CL_SystemInfoChanged();

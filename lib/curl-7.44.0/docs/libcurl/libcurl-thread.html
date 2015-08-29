@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>libcurl-thread man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">libcurl-thread - libcurl thread safety <a name="Multi-threading"></a><h2 class="nroffsh">Multi-threading with libcurl</h2>
+<p class="level0">libcurl is thread safe but has no internal thread synchronization. You may have to provide your own locking should you meet any of the thread safety exceptions below. 
+<p class="level0"><span Class="bold">Handles.</span> You must <span Class="bold">never</span> share the same handle in multiple threads. You can pass the handles around among threads, but you must never use a single handle from more than one thread at any given time. 
+<p class="level0"><span Class="bold">Shared objects.</span> You can share certain data between multiple handles by using the share interface but you must provide your own locking and set <a Class="emphasis" href="./curl_share_setopt.html">curl_share_setopt</a> CURLSHOPT_LOCKFUNC and CURLSHOPT_UNLOCKFUNC. <a name="TLS"></a><h2 class="nroffsh">TLS</h2>
+<p class="level0">If you are accessing HTTPS or FTPS URLs in a multi-threaded manner, you are then of course using the underlying SSL library multi-threaded and those libs might have their own requirements on this issue.  You may need to provide one or two functions to allow it to function properly: 
+<p class="level0"><a name="OpenSSL"></a><span class="nroffip">OpenSSL</span> 
+<p class="level1"><a href="http://www.openssl.org/docs/crypto/threads.html">http://www.openssl.org/docs/crypto/threads.html</a>&#35;DESCRIPTION 
+<p class="level1"><a href="http://curl.haxx.se/libcurl/c/opensslthreadlock.html">http://curl.haxx.se/libcurl/c/opensslthreadlock.html</a> 
+<p class="level0"><a name="GnuTLS"></a><span class="nroffip">GnuTLS</span> 
+<p class="level1"><a href="http://gnutls.org/manual/html_node/Thread-safety.html">http://gnutls.org/manual/html_node/Thread-safety.html</a> 
+<p class="level0"><a name="NSS"></a><span class="nroffip">NSS</span> 
+<p class="level1">thread-safe already without anything required. 
+<p class="level0"><a name="PolarSSL"></a><span class="nroffip">PolarSSL</span> 
+<p class="level1">Required actions unknown. 
+<p class="level0"><a name="yassl"></a><span class="nroffip">yassl</span> 
+<p class="level1">Required actions unknown. 
+<p class="level0"><a name="axTLS"></a><span class="nroffip">axTLS</span> 
+<p class="level1">Required actions unknown. 
+<p class="level0"><a name="Secure-Transport"></a><span class="nroffip">Secure-Transport</span> 
+<p class="level1">The engine is used by libcurl in a way that is fully thread-safe. 
+<p class="level0"><a name="WinSSL"></a><span class="nroffip">WinSSL</span> 
+<p class="level1">The engine is used by libcurl in a way that is fully thread-safe. 
+<p class="level0"><a name="wolfSSL"></a><span class="nroffip">wolfSSL</span> 
+<p class="level1">The engine is used by libcurl in a way that is fully thread-safe. <a name="Other"></a><h2 class="nroffsh">Other areas of caution</h2>
+<p class="level0">
+<p class="level0"><a name="Signals"></a><span class="nroffip">Signals</span> 
+<p class="level1">Signals are used for timing out name resolves (during DNS lookup) - when built without using either the c-ares or threaded resolver backends. When using multiple threads you should set the <span Class="emphasis">CURLOPT_NOSIGNAL(3)</span> option to 1L for all handles. Everything will or might work fine except that timeouts are not honored during the DNS lookup - which you can work around by building libcurl with c-ares support. c-ares is a library that provides asynchronous name resolves. On some platforms, libcurl simply will not function properly multi-threaded unless this option is set. 
+<p class="level0"><a name="Name"></a><span class="nroffip">Name resolving</span> 
+<p class="level1"><span Class="bold">gethostby* functions and other system calls.</span> These functions, provided by your operating system, must be thread safe. It is very important that libcurl can find and use thread safe versions of these and other system calls, as otherwise it can't function fully thread safe. Some operating systems are known to have faulty thread implementations. We have previously received problem reports on *BSD (at least in the past, they may be working fine these days).  Some operating systems that are known to have solid and working thread support are Linux, Solaris and Windows. 
+<p class="level0"><a name="curlglobal"></a><span class="nroffip">curl_global_* functions</span> 
+<p class="level1">These functions are not thread safe. If you are using libcurl with multiple threads it is especially important that before use you call <a Class="emphasis" href="./curl_global_init.html">curl_global_init</a> or <a Class="emphasis" href="./curl_global_init_mem.html">curl_global_init_mem</a> to explicitly initialize the library and its dependents, rather than rely on the "lazy" fail-safe initialization that takes place the first time <a Class="emphasis" href="./curl_easy_init.html">curl_easy_init</a> is called. For an in-depth explanation refer to <a Class="emphasis" href="./libcurl.html">libcurl</a> section <span Class="bold">GLOBAL CONSTANTS</span>. 
+<p class="level0"><a name="Memory"></a><span class="nroffip">Memory functions</span> 
+<p class="level1">These functions, provided either by your operating system or your own replacements, must be thread safe. You can use <a Class="emphasis" href="./curl_global_init_mem.html">curl_global_init_mem</a> to set your own replacement memory functions. 
+<p class="level0"><a name="Non-safe"></a><span class="nroffip">Non-safe functions</span> 
+<p class="level1"><span Class="emphasis">CURLOPT_DNS_USE_GLOBAL_CACHE(3)</span> is not thread-safe. <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

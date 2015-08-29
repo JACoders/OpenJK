@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLOPT_ERRORBUFFER man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLOPT_ERRORBUFFER - set error buffer for error messages <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLcode curl_easy_setopt(CURL *handle, CURLOPT_ERRORBUFFER, char *buf); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Pass a char * to a buffer that the libcurl may store human readable error messages in on failures or problems. This may be more helpful than just the return code from <span Class="emphasis">curl_easy_perform(3)</span> and related functions. The buffer <span Class="bold">must be at least CURL_ERROR_SIZE bytes big</span>. 
+<p class="level0">You must keep the associated buffer available until libcurl no longer needs it. Failing to do so will cause very odd behavior or even crashes. libcurl will need it until you call <span Class="emphasis">curl_easy_cleanup(3)</span> or you set the same option again to use a different pointer. 
+<p class="level0">Consider <a Class="emphasis" href="./CURLOPT_VERBOSE.html">CURLOPT_VERBOSE</a> and <a Class="emphasis" href="./CURLOPT_DEBUGFUNCTION.html">CURLOPT_DEBUGFUNCTION</a> to better debug and trace why errors happen. 
+<p class="level0">If the library does not return an error, the buffer may not have been touched. Do not rely on the contents in those cases. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">NULL <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">All <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0"><pre class="level0">
+curl = curl_easy_init();
+if(curl) {
+&nbsp; CURLcode res;
+&nbsp; char errbuf[CURL_ERROR_SIZE];
+&nbsp;
+&nbsp; curl_easy_setopt(curl, CURLOPT_URL, "<a href="http://example.com">http://example.com</a>");
+&nbsp;
+&nbsp; /* provide a buffer to store errors in */
+&nbsp; curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, errbuf);
+&nbsp;
+&nbsp; /* set the error buffer as empty before performing a request */
+&nbsp; errbuf[0] = 0;
+&nbsp;
+&nbsp; /* perform the request */
+&nbsp; res = curl_easy_perform(curl);
+&nbsp;
+&nbsp; /* if the request did not complete correctly, show the error
+&nbsp; information. if no detailed error information was written to errbuf
+&nbsp; show the more generic information from curl_easy_strerror instead.
+&nbsp; */
+&nbsp; if(res != CURLE_OK) {
+&nbsp;   size_t len = strlen(errbuf);
+&nbsp;   fprintf(stderr, "\nlibcurl: (%d) ", res);
+&nbsp;   if(len)
+&nbsp;     fprintf(stderr, "%s%s", errbuf,
+&nbsp;             ((errbuf[len - 1] != '\n') ? "\n" : ""));
+&nbsp;   else
+&nbsp;     fprintf(stderr, "%s\n", curl_easy_strerror(res));
+&nbsp; }
+}
+</pre>
+
+<p class="level0"><a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Always <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLE_OK <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLOPT_DEBUGFUNCTION.html">CURLOPT_DEBUGFUNCTION</a>, <a Class="manpage" href="./CURLOPT_VERBOSE.html">CURLOPT_VERBOSE</a>, <span Class="manpage"> </span> <span Class="manpage">curl_easy_strerror (3)</span> <span Class="manpage">  curl_multi_strerror (3)</span> <span Class="manpage"> </span> <span Class="manpage">curl_share_strerror (3) </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

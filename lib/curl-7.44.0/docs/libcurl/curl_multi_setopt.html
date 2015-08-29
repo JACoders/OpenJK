@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>curl_multi_setopt man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">curl_multi_setopt - set options for a curl multi handle <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLMcode curl_multi_setopt(CURLM * multi_handle, CURLMoption option, param); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0"><a Class="emphasis" href="./curl_multi_setopt.html">curl_multi_setopt</a> is used to tell a libcurl multi handle how to behave. By using the appropriate options to <a Class="emphasis" href="./curl_multi_setopt.html">curl_multi_setopt</a>, you can change libcurl's behaviour when using that multi handle.  All options are set with the <span Class="emphasis">option</span> followed by the parameter <span Class="emphasis">param</span>. That parameter can be a <span Class="bold">long</span>, a <span Class="bold">function pointer</span>, an <span class="bold">object pointer</span> or a <span Class="bold">curl_off_t</span> type, depending on what the specific option expects. Read this manual carefully as bad input values may cause libcurl to behave badly!  You can only set one option in each function call. 
+<p class="level0"><a name="OPTIONS"></a><h2 class="nroffsh">OPTIONS</h2>
+<p class="level0">
+<p class="level0"><a name="CURLMOPTCHUNKLENGTHPENALTYSIZE"></a><span class="nroffip">CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE(3)</span> 
+<p class="level0"><a name="CURLMOPTCONTENTLENGTHPENALTYSIZE"></a><span class="nroffip">CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE(3)</span> 
+<p class="level0"><a name="CURLMOPTMAXHOSTCONNECTIONS"></a><span class="nroffip">CURLMOPT_MAX_HOST_CONNECTIONS</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_MAX_HOST_CONNECTIONS(3)</span> 
+<p class="level0"><a name="CURLMOPTMAXPIPELINELENGTH"></a><span class="nroffip">CURLMOPT_MAX_PIPELINE_LENGTH</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_MAX_PIPELINE_LENGTH(3)</span> 
+<p class="level0"><a name="CURLMOPTMAXTOTALCONNECTIONS"></a><span class="nroffip">CURLMOPT_MAX_TOTAL_CONNECTIONS</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_MAX_TOTAL_CONNECTIONS(3)</span> 
+<p class="level0"><a name="CURLMOPTMAXCONNECTS"></a><span class="nroffip">CURLMOPT_MAXCONNECTS</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_MAXCONNECTS(3)</span> 
+<p class="level0"><a name="CURLMOPTPIPELINING"></a><span class="nroffip">CURLMOPT_PIPELINING</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_PIPELINING(3)</span> 
+<p class="level0"><a name="CURLMOPTPIPELININGSITEBL"></a><span class="nroffip">CURLMOPT_PIPELINING_SITE_BL</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_PIPELINING_SITE_BL(3)</span> 
+<p class="level0"><a name="CURLMOPTPIPELININGSERVERBL"></a><span class="nroffip">CURLMOPT_PIPELINING_SERVER_BL</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_PIPELINING_SERVER_BL(3)</span> 
+<p class="level0"><a name="CURLMOPTPUSHFUNCTION"></a><span class="nroffip">CURLMOPT_PUSHFUNCTION</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_PUSHFUNCTION(3)</span> 
+<p class="level0"><a name="CURLMOPTPUSHDATA"></a><span class="nroffip">CURLMOPT_PUSHDATA</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_PUSHDATA(3)</span> 
+<p class="level0"><a name="CURLMOPTSOCKETFUNCTION"></a><span class="nroffip">CURLMOPT_SOCKETFUNCTION</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_SOCKETFUNCTION(3)</span> 
+<p class="level0"><a name="CURLMOPTSOCKETDATA"></a><span class="nroffip">CURLMOPT_SOCKETDATA</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_SOCKETDATA(3)</span> 
+<p class="level0"><a name="CURLMOPTTIMERFUNCTION"></a><span class="nroffip">CURLMOPT_TIMERFUNCTION</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_TIMERFUNCTION(3)</span> 
+<p class="level0"><a name="CURLMOPTTIMERDATA"></a><span class="nroffip">CURLMOPT_TIMERDATA</span> 
+<p class="level1">See <span Class="emphasis">CURLMOPT_TIMERDATA(3)</span> <a name="RETURNS"></a><h2 class="nroffsh">RETURNS</h2>
+<p class="level0">The standard CURLMcode for multi interface error codes. Note that it returns a CURLM_UNKNOWN_OPTION if you try setting an option that this version of libcurl doesn't know of. <a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">This function was added in libcurl 7.15.4. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./curl_multi_cleanup.html">curl_multi_cleanup</a>, <a Class="manpage" href="./curl_multi_init.html">curl_multi_init</a>, <span Class="manpage"> </span> <a Class="manpage" href="./curl_multi_socket.html">curl_multi_socket</a>, <a Class="manpage" href="./curl_multi_info_read.html">curl_multi_info_read</a>, <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

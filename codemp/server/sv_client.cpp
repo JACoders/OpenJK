@@ -876,7 +876,8 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 		cl->download = 0;
 
 		// We open the file here
-		if ( !sv_allowDownload->integer ||
+		if ( !(sv_allowDownload->integer & DLF_ENABLE) ||
+			(sv_allowDownload->integer & DLF_NO_UDP) ||
 			idPack || unreferenced ||
 			( cl->downloadSize = FS_SV_FOpenFileRead( cl->downloadName, &cl->download ) ) < 0 ) {
 			// cannot auto-download file
@@ -897,7 +898,8 @@ void SV_WriteDownloadToClient(client_t *cl, msg_t *msg)
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Cannot autodownload id pk3 file \"%s\"", cl->downloadName);
 				}
 			}
-			else if ( !sv_allowDownload->integer ) {
+			else if ( !(sv_allowDownload->integer & DLF_ENABLE) ||
+				(sv_allowDownload->integer & DLF_NO_UDP) ) {
 				Com_Printf("clientDownload: %d : \"%s\" download disabled\n", (int) (cl - svs.clients), cl->downloadName);
 				if (sv_pure->integer) {
 					Com_sprintf(errorMessage, sizeof(errorMessage), "Could not download \"%s\" because autodownloading is disabled on the server.\n\n"

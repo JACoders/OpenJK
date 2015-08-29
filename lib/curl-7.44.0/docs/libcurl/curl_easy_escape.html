@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>curl_easy_escape man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">curl_easy_escape - URL encodes the given string <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0"><span Class="bold">#include &lt;curl/curl.h&gt;</span> 
+<p class="level0"><span Class="bold">char *curl_easy_escape( CURL * curl , char * string , int length  );</span> 
+<p class="level0"><a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">This function converts the given input <span Class="emphasis">string</span> to a URL encoded string and returns that as a new allocated string. All input characters that are not a-z, A-Z, 0-9, '-', '.', '_' or '~' are converted to their "URL escaped" version (%NN where NN is a two-digit hexadecimal number). 
+<p class="level0">If <span Class="emphasis">length</span> is set to 0 (zero), <a Class="emphasis" href="./curl_easy_escape.html">curl_easy_escape</a> uses strlen() on the input <span Class="emphasis">string</span> to find out the size. 
+<p class="level0">You must <a Class="emphasis" href="./curl_free.html">curl_free</a> the returned string when you're done with it. <a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.15.4 and replaces the old <a Class="emphasis" href="./curl_escape.html">curl_escape</a> function. <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">A pointer to a zero terminated string or NULL if it failed. <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0"><pre class="level0">
+CURL *curl = curl_easy_init();
+if(curl) {
+&nbsp; char *output = curl_easy_escape(curl, "data to convert", 15);
+&nbsp; if(output) {
+&nbsp;   printf("Encoded: %sn", output);
+&nbsp;   curl_free(output);
+&nbsp; }
+}}
+</pre>
+
+<p class="level0"><a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./curl_easy_unescape.html">curl_easy_unescape</a>, <a Class="manpage" href="./curl_free.html">curl_free</a>, <span Class="manpage">  <a href="http://www.ietf.org/rfc/rfc3986.txt">RFC 3986</a></span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

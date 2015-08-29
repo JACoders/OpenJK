@@ -603,6 +603,10 @@ void CL_ShutdownAll( qboolean shutdownRef ) {
 	if(clc.demorecording)
 		CL_StopRecord_f();
 
+#ifdef USE_CURL
+	CL_cURL_Shutdown();
+#endif
+
 #if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
 	//so it doesn't barf on shutdown saying refentities belong to each other
 	tr.refdef.num_entities = 0;
@@ -1308,6 +1312,25 @@ Called when all downloading has been completed
 =================
 */
 void CL_DownloadsComplete( void ) {
+#ifdef USE_CURL
+	// if we downloaded with cURL
+	if ( clc.cURLUsed )
+	{
+		clc.cURLUsed = qfalse;
+		CL_cURL_Shutdown();
+		if ( clc.cURLDisconnected )
+		{
+			if ( clc.downloadRestart )
+			{
+				FS_Restart( clc.checksumFeed );
+				clc.downloadRestart = qfalse;
+			}
+			clc.cURLDisconnected = qfalse;
+			CL_Reconnect_f();
+			return;
+		}
+	}
+#endif
 
 	// if we downloaded files we need to restart the file system
 	if (clc.downloadRestart) {
@@ -1397,6 +1420,7 @@ A download completed or failed
 void CL_NextDownload(void) {
 	char *s;
 	char *remoteName, *localName;
+	qboolean useCURL = qfalse;
 
 	// A download has finished, check whether this matches a referenced checksum
 	if(*clc.downloadName)
@@ -1433,15 +1457,57 @@ void CL_NextDownload(void) {
 			*s++ = 0;
 		else
 			s = localName + strlen(localName); // point at the nul byte
-
-		if (!cl_allowDownload->integer) {
-			Com_Error(ERR_DROP, "UDP Downloads are disabled on your client. (cl_allowDownload is %d)", cl_allowDownload->integer);
-			return;
+#ifdef USE_CURL
+		if ( !(cl_allowDownload->integer & DLF_NO_REDIRECT) )
+		{
+			if ( clc.sv_allowDownload & DLF_NO_REDIRECT )
+			{
+				Com_Printf( "WARNING: server does not "
+					"allow download redirection "
+					"(sv_allowDownload is %d)\n",
+					clc.sv_allowDownload );
+			}
+			else if ( !*clc.sv_dlURL )
+			{
+				Com_Printf( "WARNING: server allows "
+					"download redirection, but does not "
+					"have sv_dlURL set\n" );
+			}
+			else if ( !CL_cURL_Init() )
+			{
+				Com_Printf( "WARNING: could not load "
+					"cURL library\n" );
+			}
+			else
+			{
+				CL_cURL_BeginDownload( localName, va( "%s%s",
+					clc.sv_dlURL, remoteName ) );
+				useCURL = qtrue;
+			}
 		}
-		else {
-			CL_BeginDownload( localName, remoteName );
+		else if ( !(clc.sv_allowDownload & DLF_NO_REDIRECT) )
+		{
+			Com_Printf( "WARNING: server allows download "
+				"redirection, but it disabled by client "
+				"configuration (cl_allowDownload is %d)\n",
+				cl_allowDownload->integer );
 		}
-
+#endif /* USE_CURL */
+		if ( !useCURL )
+		{
+			if ( (cl_allowDownload->integer & DLF_NO_UDP) )
+			{
+				Com_Error( ERR_DROP, "UDP Downloads are "
+					"disabled on your client. "
+					"(cl_allowDownload is %d)",
+					cl_allowDownload->integer );
+				return;
+			}
+			else
+			{
+				CL_BeginDownload( localName, remoteName );
+			}
+		}
 		clc.downloadRestart = qtrue;
 
 		// move over the rest
@@ -2119,6 +2185,32 @@ void CL_Frame ( int msec ) {
 									//	of course this still doesn't work for menus...
 
 	if ( cls.state == CA_DISCONNECTED && !( Key_GetCatcher( ) & KEYCATCH_UI )
+#ifdef USE_CURL
+	if ( clc.downloadCURLM )
+	{
+		CL_cURL_PerformDownload();
+		// we can't process frames normally when in disconnected
+		// download mode since the ui vm expects clc.state to be
+		// CA_CONNECTED
+		if ( clc.cURLDisconnected )
+		{
+			cls.realFrametime = msec;
+			cls.frametime = msec;
+			cls.realtime += cls.frametime;
+			SCR_UpdateScreen();
+			S_Update();
+			Con_RunConsole();
+			// reset the heap for Ghoul2 vert transform space gameside
+			if ( G2VertSpaceServer )
+			{
+				G2VertSpaceServer->ResetHeap();
+			}
+			cls.framecount++;
+			return;
+		}
+	}
+#endif
+
 		&& !com_sv_running->integer && cls.uiStarted ) {
 		// if disconnected, bring up the menu
 		S_StopAllSounds();
@@ -2706,6 +2798,9 @@ void CL_Init( void ) {
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE);
+#ifndef USE_INTERNAL_CURL
+	cl_cURLLib = Cvar_Get( "cl_cURLLib", DEFAULT_CURL_LIB, CVAR_ARCHIVE );
+#endif
 	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE);
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE );

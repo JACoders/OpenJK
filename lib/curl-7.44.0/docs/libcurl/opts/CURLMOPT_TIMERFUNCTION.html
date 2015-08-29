@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLMOPT_TIMERFUNCTION man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLMOPT_TIMERFUNCTION - set callback to receive timeout values <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0"><pre class="level0">
+&#35;include &lt;curl/curl.h&gt;
+&nbsp;
+int timer_callback(CURLM *multi,    /* multi handle */
+&nbsp;                  long timeout_ms, /* see above */
+&nbsp;                  void *userp);    /* private callback pointer */
+&nbsp;
+CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_TIMERFUNCTION, timer_callback);
+</pre>
+<a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Pass a pointer to your callback function, which should match the prototype shown above. 
+<p class="level0">Certain features, such as timeouts and retries, require you to call libcurl even when there is no activity on the file descriptors. 
+<p class="level0">Your callback function <span Class="bold">timer_callback</span> should install a non-repeating timer with an interval of <span Class="bold">timeout_ms</span>. Each time that timer fires, call either <span Class="emphasis">curl_multi_socket_action(3)</span> or <span Class="emphasis">curl_multi_perform(3)</span>, depending on which interface you use. 
+<p class="level0">A <span Class="bold">timeout_ms</span> value of -1 means you should delete your timer. 
+<p class="level0">A <span Class="bold">timeout_ms</span> value of 0 means you should call <span Class="emphasis">curl_multi_socket_action(3)</span> or <span Class="emphasis">curl_multi_perform(3)</span> (once) as soon as possible. 
+<p class="level0"><span Class="bold">timer_callback</span> will only be called when the <span Class="bold">timeout_ms</span> changes. 
+<p class="level0">The <span Class="bold">userp</span> pointer is set with <a Class="emphasis" href="./CURLMOPT_TIMERDATA.html">CURLMOPT_TIMERDATA</a>. 
+<p class="level0">The timer callback should return 0 on success, and -1 on error. This callback can be used instead of, or in addition to, <span Class="emphasis">curl_multi_timeout(3)</span>. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">NULL <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">All <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0"><pre class="level0">
+static gboolean timeout_cb(gpointer user_data) {
+&nbsp;   if (user_data) {
+&nbsp;       g_free(user_data);
+&nbsp;       curl_multi_setopt(curl_handle, CURLMOPT_TIMERDATA, NULL);
+&nbsp;   }
+&nbsp;   int running;
+&nbsp;   curl_multi_socket_action(multi, CURL_SOCKET_TIMEOUT, 0, &running);
+&nbsp;   return G_SOURCE_REMOVE;
+}
+&nbsp;
+static int timerfunc(CURLM *multi, long timeout_ms, void *userp) {
+&nbsp;   guint *id = userp;
+&nbsp;
+&nbsp;   if (id)
+&nbsp;       g_source_remove(*id);
+&nbsp;
+&nbsp;   // -1 means we should just delete our timer.
+&nbsp;   if (timeout_ms == -1) {
+&nbsp;       g_free(id);
+&nbsp;       id = NULL;
+&nbsp;   } else {
+&nbsp;       if (!id)
+&nbsp;           id = g_new(guint, 1);
+&nbsp;       *id = g_timeout_add(timeout_ms, timeout_cb, id);
+&nbsp;   }
+&nbsp;   curl_multi_setopt(multi, CURLMOPT_TIMERDATA, id);
+&nbsp;   return 0;
+}
+&nbsp;
+curl_multi_setopt(multi, CURLMOPT_TIMERFUNCTION, timerfunc);
+</pre>
+
+<p class="level0"><a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.16.0 <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLMOPT_TIMERDATA.html">CURLMOPT_TIMERDATA</a>, <a Class="manpage" href="./CURLMOPT_SOCKETFUNCTION.html">CURLMOPT_SOCKETFUNCTION</a>, <span Class="manpage"> </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

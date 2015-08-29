@@ -21,7 +21,17 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
+option(FEATURE_CURL "Enable auto-download support using cURL" ON)
+
 set(MPSharedDefines ${SharedDefines})
+
+if(FEATURE_CURL)
+	if(WIN32)
+		option(UseInternalCurl "Whether to use the included curl instead of a locally installed one" ON)
+	else()
+		option(UseInternalCurl "Whether to use the included curl instead of a locally installed one" OFF)
+	endif(WIN32)
+endif(FEATURE_CURL)
 
 #    Add Game Project
 if(BuildMPGame)
@@ -367,6 +377,26 @@ if(BuildMPEngine)
 		set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${OPENGL_INCLUDE_DIR})
 		set(MPEngineLibraries ${MPEngineLibraries} ${OPENGL_LIBRARIES})
 	endif()
+	
+	if (FEATURE_CURL)
+		set(MPEngineDefines ${MPSharedDefines} "USE_CURL")
+		#if(WIN32)
+		#	set(MPEngineDefines ${MPEngineDefines} "_WINSOCK_H")
+		#endif(WIN32)
+		if(UseInternalCurl)
+			find_library(CURL_LIBRARY NAMES libcurl PATHS ${OpenJKLibDir})
+			if(NOT CURL_LIBRARY)
+				message(FATAL_ERROR "UseInternalOpenAL enabled, but lib/OpenAL32.lib not found!")
+			endif(NOT CURL_LIBRARY)
+			set(MPEngineLibraries ${MPEngineLibraries} ${CURL_LIBRARY} "ws2_32")
+			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} "${OpenJKLibDir}/curl-7.44.0/include")
+			set(MPEngineDefines ${MPEngineDefines} "USE_INTERNAL_CURL" "CURL_STATICLIB")
+		else()
+			find_package(curl REQUIRED)
+			set(MPEngineIncludeDirectories ${MPEngineIncludeDirectories} ${CURL_INCLUDE_DIR})
+			set(MPEngineLibraries ${MPEngineLibraries} ${CURL_LIBRARY})
+		endif()
+	endif()
 
 	# OpenAL (is optionally included for Windows)
 	if (MSVC AND NOT WIN64)
@@ -462,6 +492,13 @@ if(BuildMPEngine)
 		"${MPDir}/client/snd_music.cpp"
 		"${MPDir}/client/snd_music.h"
 		)
+		
+		if(FEATURE_CURL)
+			set(MPEngineClientFiles ${MPEngineClientFiles}
+				"${MPDir}/client/cl_curl.cpp"
+				"${MPDir}/client/cl_curl.h"
+			)
+		endif(FEATURE_CURL)
 	source_group("client" FILES ${MPEngineClientFiles})
 	set(MPEngineFiles ${MPEngineFiles} ${MPEngineClientFiles})
 

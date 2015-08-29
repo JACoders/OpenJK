@@ -1,0 +1,96 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLOPT_PINNEDPUBLICKEY man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLOPT_PINNEDPUBLICKEY - set pinned public key <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PINNEDPUBLICKEY, char *pinnedpubkey); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Pass a pointer to a zero terminated string as parameter. The string can be the file name of your pinned public key. The file format expected is "PEM" or "DER". The string can also be any number of base64 encoded sha256 hashes preceded by "sha256//" and seperated by ";" 
+<p class="level0">When negotiating a TLS or SSL connection, the server sends a certificate indicating its identity. A public key is extracted from this certificate and if it does not exactly match the public key provided to this option, curl will abort the connection before sending or receiving any data. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">NULL <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">All TLS based protocols: HTTPS, FTPS, IMAPS, POP3, SMTPS etc. <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0"><pre class="level0">
+CURL *curl = curl_easy_init();
+if(curl) {
+&nbsp; curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
+&nbsp; curl_easy_setopt(curl, CURLOPT_PINNEDPUBLICKEY, "/etc/publickey.der");
+&nbsp; /* OR
+&nbsp; curl_easy_setopt(curl, CURLOPT_PINNEDPUBLICKEY, "sha256//YhKJKSzoTt2b5FP18fvpHo7fJYqQCjAa3HWY3tvRMwE=;sha256//t62CeU2tQiqkexU74Gxa2eg7fRbEgoChTociMee9wno=");
+&nbsp; */
+&nbsp;
+&nbsp; /* Perform the request */
+&nbsp; curl_easy_perform(curl);
+}
+</pre>
+
+<p class="level0"><a name="PUBLIC"></a><h2 class="nroffsh">PUBLIC KEY EXTRACTION</h2>
+<p class="level0">If you do not have the server's public key file you can extract it from the server's certificate. <pre class="level0">
+&#35; extract public key in pem format from certificate
+openssl x509 -in www.test.com.pem -pubkey -noout &gt; www.test.com.pubkey.pem
+&#35; convert public key from pem to der
+openssl asn1parse -noout -inform pem -in www.test.com.pubkey.pem -out www.test.com.pubkey.der
+&#35; sha256 hash and base64 encode der to string for use
+openssl dgst -sha256 -binary www.test.com.pubkey.der | openssl base64
+</pre>
+
+<p class="level0">The public key in PEM format contains a header, base64 data and a footer: <pre class="level0">
+-----BEGIN PUBLIC KEY-----
+[BASE 64 DATA]
+-----END PUBLIC KEY-----
+</pre>
+
+<p class="level0"><a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.39.0 for OpenSSL, GnuTLS and GSKit. Added in 7.43.0 for NSS and wolfSSL/CyaSSL. sha256 support added in 7.44.0 for OpenSSL, GnuTLS, NSS and wolfSSL/CyaSSL. Other SSL backends not supported. <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or CURLE_OUT_OF_MEMORY if there was insufficient heap space. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLOPT_SSL_VERIFYPEER.html">CURLOPT_SSL_VERIFYPEER</a>, <span Class="manpage"> </span> <a Class="manpage" href="./CURLOPT_SSL_VERIFYHOST.html">CURLOPT_SSL_VERIFYHOST</a>, <span Class="manpage"> </span> <a Class="manpage" href="./CURLOPT_CAINFO.html">CURLOPT_CAINFO</a>, <span Class="manpage"> </span> <a Class="manpage" href="./CURLOPT_CAPATH.html">CURLOPT_CAPATH</a>, <span Class="manpage"> </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

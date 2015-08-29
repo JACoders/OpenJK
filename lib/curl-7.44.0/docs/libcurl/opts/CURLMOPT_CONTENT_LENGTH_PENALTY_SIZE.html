@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE - size threshold for pipelining penalty <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE, long size); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Pass a long with a <span Class="bold">size</span> in bytes. If a pipelined connection is currently processing a request with a Content-Length larger than this <a Class="emphasis" href="./CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE.html">CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE</a>, that pipeline will then not be considered for additional requests, even if it is shorter than <a Class="emphasis" href="./CURLMOPT_MAX_PIPELINE_LENGTH.html">CURLMOPT_MAX_PIPELINE_LENGTH</a>. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">The default value is 0, which means that the size penalization is inactive. <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">HTTP(S) <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0">TODO <a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.30.0 <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLMOPT_PIPELINING.html">CURLMOPT_PIPELINING</a>, <a Class="manpage" href="./CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE.html">CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE</a>, <span Class="manpage"> </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

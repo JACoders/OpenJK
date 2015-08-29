@@ -34,6 +34,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cgame/cg_public.h"
 #include "ui/ui_public.h"
 
+#ifdef USE_CURL
+#include "cl_curl.h"
+#endif /* USE_CURL */
+
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
 // file full of random crap that gets used to create ja_guid
@@ -217,6 +221,16 @@ typedef struct clientConnection_s {
 	fileHandle_t download;
 	char		downloadTempName[MAX_OSPATH];
 	char		downloadName[MAX_OSPATH];
+#ifdef USE_CURL
+	qboolean	cURLEnabled;
+	qboolean	cURLUsed;
+	qboolean	cURLDisconnected;
+	char		downloadURL[MAX_OSPATH];
+	CURL		*downloadCURL;
+	CURLM		*downloadCURLM;
+#endif /* USE_CURL */
+	int			sv_allowDownload;
+	char		sv_dlURL[MAX_CVAR_VALUE_STRING];
 	int			downloadNumber;
 	int			downloadBlock;	// block we are waiting for
 	int			downloadCount;	// how many bytes we got

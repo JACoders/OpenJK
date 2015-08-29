@@ -1,0 +1,84 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLOPT_UNIX_SOCKET_PATH man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLOPT_UNIX_SOCKET_PATH - set Unix domain socket <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLcode curl_easy_setopt(CURL *handle, CURLOPT_UNIX_SOCKET_PATH, char *path); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Enables the use of Unix domain sockets as connection endpoint and sets the path to <span Class="emphasis">path</span>. If <span Class="emphasis">path</span> is NULL, then Unix domain sockets are disabled. An empty string will result in an error at some point, it will not disable use of Unix domain sockets. 
+<p class="level0">When enabled, cURL will connect to the Unix domain socket instead of establishing a TCP connection to a host. Since no TCP connection is created, cURL does not need to resolve the DNS hostname in the URL. 
+<p class="level0">The maximum path length on Cygwin, Linux and Solaris is 107. On other platforms it might be even less. 
+<p class="level0">Proxy and TCP options such as <a Class="manpage" href="./CURLOPT_TCP_NODELAY.html">CURLOPT_TCP_NODELAY</a>, are not supported. Proxy options such as <a Class="manpage" href="./CURLOPT_PROXY.html">CURLOPT_PROXY</a>, have no effect either as these are TCP-oriented, and asking a proxy server to connect to a certain Unix domain socket is not possible. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">Default is NULL, meaning that no Unix domain sockets are used. <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">All protocols except for file:// and FTP are supported in theory. HTTP, IMAP, POP3 and SMTP should in particular work (including their SSL/TLS variants). <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0">Given that you have an nginx server running, listening on /tmp/nginx.sock, you can request a HTTP resource with: 
+<p class="level0"><pre class="level0">
+&nbsp;   curl_easy_setopt(curl_handle, CURLOPT_UNIX_SOCKET_PATH, "/tmp/nginx.sock");
+&nbsp;   curl_easy_setopt(curl_handle, CURLOPT_URL, "<a href="http://localhost/">http://localhost/</a>");
+</pre>
+
+<p class="level0">
+<p class="level0">If you are on Linux and somehow have a need for paths larger than 107 bytes, you could use the proc filesystem to bypass the limitation: 
+<p class="level0"><pre class="level0">
+&nbsp;   int dirfd = open(long_directory_path_to_socket, O_DIRECTORY | O_RDONLY);
+&nbsp;   char path[108];
+&nbsp;   snprintf(path, sizeof(path), "/proc/self/fd/%d/nginx.sock", dirfd);
+&nbsp;   curl_easy_setopt(curl_handle, CURLOPT_UNIX_SOCKET_PATH, path);
+&nbsp;   /* Be sure to keep dirfd valid until you discard the handle */
+</pre>
+
+<p class="level0"><a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Since 7.40.0. <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLOPT_OPENSOCKETFUNCTION.html">CURLOPT_OPENSOCKETFUNCTION</a>, <span Class="manpage">  unix (7)</span> <span Class="manpage"> </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

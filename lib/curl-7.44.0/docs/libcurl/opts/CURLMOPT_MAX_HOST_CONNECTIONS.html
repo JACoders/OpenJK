@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLMOPT_MAX_HOST_CONNECTIONS man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLMOPT_MAX_HOST_CONNECTIONS - set max number of connections to a single host <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0">&#35;include &lt;curl/curl.h&gt; 
+<p class="level0">CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_MAX_HOST_CONNECTIONS, long max); <a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Pass a long to indicate <span Class="bold">max</span>. The set number will be used as the maximum amount of simultaneously open connections to a single host (a host being the same as a host name + port number pair). For each new session to a host, libcurl will open a new connection up to the limit set by <a Class="emphasis" href="./CURLMOPT_MAX_HOST_CONNECTIONS.html">CURLMOPT_MAX_HOST_CONNECTIONS</a>. When the limit is reached, the sessions will be pending until a connection becomes available. If <a Class="emphasis" href="./CURLMOPT_PIPELINING.html">CURLMOPT_PIPELINING</a> is enabled, libcurl will try to pipeline if the host is capable of it. 
+<p class="level0">The default <span Class="bold">max</span> value is 0, unlimited.  However, for backwards compatibility, setting it to 0 when <a Class="emphasis" href="./CURLMOPT_PIPELINING.html">CURLMOPT_PIPELINING</a> is 1 will not be treated as unlimited. Instead it will open only 1 connection and try to pipeline on it. 
+<p class="level0">This set limit is also used for proxy connections, and then the proxy is considered to be the host for which this limit counts. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">0 <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">HTTP(S) <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0">TODO <a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.30.0 <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLMOPT_MAXCONNECTS.html">CURLMOPT_MAXCONNECTS</a>, <a Class="manpage" href="./CURLMOPT_MAX_TOTAL_CONNECTIONS.html">CURLMOPT_MAX_TOTAL_CONNECTIONS</a>, <span Class="manpage"> </span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

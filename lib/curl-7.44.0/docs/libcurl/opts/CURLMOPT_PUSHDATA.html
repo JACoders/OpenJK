@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLMOPT_PUSHDATA man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLMOPT_PUSHDATA - pointer to pass to push callback <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0"><pre class="level0">
+&#35;include &lt;curl/curl.h&gt;
+&nbsp;
+CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_PUSHDATA, void *pointer);
+</pre>
+
+<p class="level0"><a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">Set <span Class="emphasis">pointer</span> to pass as the last argument to the <a Class="emphasis" href="./CURLMOPT_PUSHFUNCTION.html">CURLMOPT_PUSHFUNCTION</a> callback. The pointer will not be touched or used by libcurl itself, only passed on to the callback function. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">NULL <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">HTTP(S) <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0">TODO <a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.44.0 <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLMOPT_PUSHFUNCTION.html">CURLMOPT_PUSHFUNCTION</a>, <a Class="manpage" href="./CURLMOPT_PIPELINING.html">CURLMOPT_PIPELINING</a>, <span Class="manpage"> </span> <a Class="manpage" href="./CURLOPT_PIPEWAIT.html">CURLOPT_PIPEWAIT</a>, <span Class="manpage"> </span> <span Class="manpage"><a href="http://www.ietf.org/rfc/rfc7540.txt">RFC 7540</a></span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>

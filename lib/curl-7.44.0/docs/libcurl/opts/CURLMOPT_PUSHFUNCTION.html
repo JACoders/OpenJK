@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+ "http://www.w3.org/TR/html4/loose.dtd">
+<html><head>
+<title>CURLMOPT_PUSHFUNCTION man page</title>
+<meta name="generator" content="roffit">
+<STYLE type="text/css">
+pre {
+  overflow: auto;
+  margin: 0;
+}
+
+P.level0, pre.level0 {
+ padding-left: 2em;
+}
+
+P.level1, pre.level1 {
+ padding-left: 4em;
+}
+
+P.level2, pre.level2 {
+ padding-left: 6em;
+}
+
+span.emphasis {
+ font-style: italic;
+}
+
+span.bold {
+ font-weight: bold;
+}
+
+span.manpage {
+ font-weight: bold;
+}
+
+h2.nroffsh {
+ background-color: #e0e0e0;
+}
+
+span.nroffip {
+ font-weight: bold;
+ font-size: 120%;
+ font-family: monospace;
+}
+
+p.roffit {
+ text-align: center;
+ font-size: 80%;
+}
+</STYLE>
+</head><body>
+
+<p class="level0"><a name="NAME"></a><h2 class="nroffsh">NAME</h2>
+<p class="level0">CURLMOPT_PUSHFUNCTION - callback that approves or denies server pushes <a name="SYNOPSIS"></a><h2 class="nroffsh">SYNOPSIS</h2>
+<p class="level0"><pre class="level0">
+&#35;include &lt;curl/curl.h&gt;
+&nbsp;
+char *curl_pushheader_bynum(push_headers, int num);
+char *curl_pushheader_byname(push_headers, const char *name);
+&nbsp;
+int curl_push_callback(CURL *parent,
+&nbsp;                      CURL *easy,
+&nbsp;                      size_t num_headers,
+&nbsp;                      struct curl_pushheaders *headers,
+&nbsp;                      void *userp);
+&nbsp;
+CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_PUSHFUNCTION,
+&nbsp;                           curl_push_callback func);
+</pre>
+
+<p class="level0"><a name="DESCRIPTION"></a><h2 class="nroffsh">DESCRIPTION</h2>
+<p class="level0">This callback gets called when a new HTTP/2 stream is being pushed by the server (using the PUSH_PROMISE frame). If no push callback is set, all offered pushes will be denied automatically. <a name="CALLBACK"></a><h2 class="nroffsh">CALLBACK DESCRIPTION</h2>
+<p class="level0">The callback gets its arguments like this: 
+<p class="level0"><span Class="emphasis">parent</span> is the handle of the stream on which this push arrives. The new handle has been duphandle()d from the parent, meaning that it has gotten all its options inherited. It is then up to the application to alter any options if desired. 
+<p class="level0"><span Class="emphasis">easy</span> is a newly created handle that represents this upcoming transfer. 
+<p class="level0"><span Class="emphasis">num_headers</span> is the number of name+value pairs that was received and can be accessed 
+<p class="level0"><span Class="emphasis">headers</span> is a handle used to access push headers using the accessor functions described below. This only accesses and provides the PUSH_PROMISE headers, the normal response headers will be provided in the header callback as usual. 
+<p class="level0"><span Class="emphasis">userp</span> is the pointer set with <a Class="emphasis" href="./CURLMOPT_PUSHDATA.html">CURLMOPT_PUSHDATA</a> 
+<p class="level0">If the callback returns CURL_PUSH_OK, the 'easy' handle will be added to the multi handle, the callback must not do that by itself. 
+<p class="level0">The callback can access PUSH_PROMISE headers with two accessor functions. These functions can only be used from within this callback and they can only access the PUSH_PROMISE headers. The normal response headers will be pased to the header callback for pushed streams just as for normal streams. 
+<p class="level0"><a name="curlpushheaderbynum"></a><span class="nroffip">curl_pushheader_bynum</span> 
+<p class="level1">Returns the header at index 'num' (or NULL). The returned pointer points to a "name:value" string that will be freed when this callback returns. 
+<p class="level0"><a name="curlpushheaderbyname"></a><span class="nroffip">curl_pushheader_byname</span> 
+<p class="level1">Returns the value for the given header name (or NULL). This is a shortcut so that the application doesn't have to loop through all headers to find the one it is interested in. The data pointed will be freed when this callback returns. <a name="CALLBACK"></a><h2 class="nroffsh">CALLBACK RETURN VALUE</h2>
+<p class="level0">
+<p class="level0"><a name="CURLPUSHOK"></a><span class="nroffip">CURL_PUSH_OK (0)</span> 
+<p class="level1">The application has accepted the stream and it can now start receiving data, the ownership of the CURL handle has been taken over by the application. 
+<p class="level0"><a name="CURLPUSHDENY"></a><span class="nroffip">CURL_PUSH_DENY (1)</span> 
+<p class="level1">The callback denies the stream and no data for this will reach the application, the easy handle will be destroyed by libcurl. 
+<p class="level0"><a name=""></a><span class="nroffip">*</span> 
+<p class="level1">All other return codes are reserved for future use. <a name="DEFAULT"></a><h2 class="nroffsh">DEFAULT</h2>
+<p class="level0">NULL, no callback <a name="PROTOCOLS"></a><h2 class="nroffsh">PROTOCOLS</h2>
+<p class="level0">HTTP(S) (HTTP/2 only) <a name="EXAMPLE"></a><h2 class="nroffsh">EXAMPLE</h2>
+<p class="level0"><pre class="level0">
+/* only allow pushes for file names starting with "push-" */
+int push_callback(CURL *parent,
+&nbsp;                 CURL *easy,
+&nbsp;                 size_t num_headers,
+&nbsp;                 struct curl_pushheaders *headers,
+&nbsp;                 void *userp)
+{
+&nbsp; char *headp;
+&nbsp; int *transfers = (int *)userp;
+&nbsp; FILE *out;
+&nbsp; headp = curl_pushheader_byname(headers, ":path");
+&nbsp; if(headp && !strncmp(headp, "/push-", 6)) {
+&nbsp;   fprintf(stderr, "The PATH is %sn", headp);
+&nbsp;
+&nbsp;   /* save the push here */
+&nbsp;   out = fopen("pushed-stream", "wb");
+&nbsp;
+&nbsp;   /* write to this file */
+&nbsp;   curl_easy_setopt(easy, CURLOPT_WRITEDATA, out);
+&nbsp;
+&nbsp;   (*transfers)++; /* one more */
+&nbsp;
+&nbsp;   return CURL_PUSH_OK;
+&nbsp; }
+&nbsp; return CURL_PUSH_DENY;
+}
+&nbsp;
+curl_multi_setopt(multi, CURLMOPT_PUSHFUNCTION, push_callback);
+curl_multi_setopt(multi, CURLMOPT_PUSHDATA, &counter);
+</pre>
+
+<p class="level0"><a name="AVAILABILITY"></a><h2 class="nroffsh">AVAILABILITY</h2>
+<p class="level0">Added in 7.44.0 <a name="RETURN"></a><h2 class="nroffsh">RETURN VALUE</h2>
+<p class="level0">Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not. <a name="SEE"></a><h2 class="nroffsh">SEE ALSO</h2>
+<p class="level0"><a Class="manpage" href="./CURLMOPT_PUSHDATA.html">CURLMOPT_PUSHDATA</a>, <a Class="manpage" href="./CURLMOPT_PIPELINING.html">CURLMOPT_PIPELINING</a>, <a Class="manpage" href="./CURLOPT_PIPEWAIT.html">CURLOPT_PIPEWAIT</a>, <a class="manpage" href="#"> </a> <span Class="manpage"><a href="http://www.ietf.org/rfc/rfc7540.txt">RFC 7540</a></span> <p class="roffit">
+ This HTML page was made with <a href="http://daniel.haxx.se/projects/roffit/">roffit</a>.
+</body></html>
