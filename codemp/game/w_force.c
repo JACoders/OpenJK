@@ -137,6 +137,13 @@ void WP_InitForcePowers( gentity_t *ent ) {
 	int i, i_r, lastFPKnown = -1;
 	qboolean warnClient = qfalse, warnClientLimit = qfalse, didEvent = qfalse;
 	char userinfo[MAX_INFO_STRING], forcePowers[DEFAULT_FORCEPOWERS_LEN+1], readBuf[DEFAULT_FORCEPOWERS_LEN+1];
+	int force_powers_disabled = g_forcePowerDisable.integer; 
+
+	// zyk: if gametype is Duel or Power Duel, use zyk_duelForcePowerDisable instead
+	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
+	{
+		force_powers_disabled = zyk_duelForcePowerDisable.integer;
+	}
 
 	// if server has no max rank, default to max (50)
 	if ( g_maxForceRank.integer <= 0 || g_maxForceRank.integer >= NUM_FORCE_MASTERY_LEVELS ) {
@@ -215,14 +222,14 @@ void WP_InitForcePowers( gentity_t *ent ) {
 
 	if ( g_forceBasedTeams.integer ) {
 		if ( ent->client->sess.sessionTeam == TEAM_RED )
-			warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), FORCE_DARKSIDE, level.gametype, g_forcePowerDisable.integer ));
+			warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), FORCE_DARKSIDE, level.gametype, force_powers_disabled ));
 		else if ( ent->client->sess.sessionTeam == TEAM_BLUE )
-			warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), FORCE_LIGHTSIDE, level.gametype, g_forcePowerDisable.integer ));
+			warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), FORCE_LIGHTSIDE, level.gametype, force_powers_disabled ));
 		else
-			warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer ));
+			warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), 0, level.gametype, force_powers_disabled ));
 	}
 	else
-		warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), 0, level.gametype, g_forcePowerDisable.integer ));
+		warnClient = !(BG_LegalizedForcePowers( forcePowers, sizeof (forcePowers), g_maxForceRank.integer, HasSetSaberOnly(), 0, level.gametype, force_powers_disabled ));
 
 	//rww - parse through the string manually and eat out all the appropriate data
 	i = 0;
@@ -321,7 +328,7 @@ void WP_InitForcePowers( gentity_t *ent ) {
 			te->s.eventParm = 0;
 		}
 
-		if ( g_forcePowerDisable.integer ) {
+		if ( force_powers_disabled ) {
 			gentity_t *te = G_TempEntity( vec3_origin, EV_SET_FORCE_DISABLE );
 			te->r.svFlags |= SVF_BROADCAST;
 			te->s.eventParm = 1;
