@@ -12,7 +12,7 @@ in vec4 attr_BoneWeights;
 in vec4 attr_Color;
 in vec2 attr_TexCoord0;
 
-#if defined(USE_LIGHTMAP) || defined(USE_TCGEN)
+#if defined(USE_TCGEN)
 in vec2 attr_TexCoord1;
 #endif
 
@@ -63,9 +63,6 @@ uniform mat4x3 u_BoneMatrices[20];
 #endif
 
 out vec2 var_DiffuseTex;
-#if defined(USE_LIGHTMAP)
-out vec2 var_LightTex;
-#endif
 out vec4 var_Color;
 
 #if defined(USE_DEFORM_VERTEXES)
@@ -347,10 +344,6 @@ void main()
 	var_DiffuseTex = ModTexCoords(tex, position, u_DiffuseTexMatrix, u_DiffuseTexOffTurb);
 #else
     var_DiffuseTex = tex;
-#endif
-
-#if defined(USE_LIGHTMAP)
-	var_LightTex = attr_TexCoord1.st;
 #endif
 
 #if defined(USE_RGBAGEN)

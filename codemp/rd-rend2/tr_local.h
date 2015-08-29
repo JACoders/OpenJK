@@ -761,8 +761,6 @@ typedef struct shader_s {
 	float		portalRange;			// distance to fog out at
 	qboolean	isPortal;
 
-	int			multitextureEnv;		// 0, GL_MODULATE, GL_ADD (FIXME: put in stage)
-
 	cullType_t	cullType;				// CT_FRONT_SIDED, CT_BACK_SIDED, or CT_TWO_SIDED
 	qboolean	polygonOffset;			// set for decals and other items that must be offset 
 	qboolean	noMipMaps;				// for console fonts, 2D elements, etc.
@@ -938,11 +936,10 @@ enum
 	GENERICDEF_USE_VERTEX_ANIMATION = 0x0004,
 	GENERICDEF_USE_FOG              = 0x0008,
 	GENERICDEF_USE_RGBAGEN          = 0x0010,
-	GENERICDEF_USE_LIGHTMAP         = 0x0020,
-	GENERICDEF_USE_SKELETAL_ANIMATION = 0x0040,
-	GENERICDEF_USE_GLOW_BUFFER      = 0x0080,
-	GENERICDEF_ALL                  = 0x00FF,
-	GENERICDEF_COUNT                = 0x0100,
+	GENERICDEF_USE_SKELETAL_ANIMATION = 0x0020,
+	GENERICDEF_USE_GLOW_BUFFER      = 0x0040,
+	GENERICDEF_ALL                  = 0x007F,
+	GENERICDEF_COUNT                = 0x0080,
 };
 
 enum
@@ -1016,7 +1013,6 @@ typedef enum
 
 	UNIFORM_DIFFUSETEXMATRIX,
 	UNIFORM_DIFFUSETEXOFFTURB,
-	UNIFORM_TEXTURE1ENV,
 
 	UNIFORM_TCGEN0,
 	UNIFORM_TCGEN0VECTOR0,
