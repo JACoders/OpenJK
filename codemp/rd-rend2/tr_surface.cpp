@@ -2076,18 +2076,21 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 
 	refEnt = &backEnd.currentEntity->e;
 
-	if(refEnt->oldframe == refEnt->frame)
+	if ( refEnt->oldframe || refEnt->frame )
 	{
-		glState.vertexAttribsInterpolation = 0;
-	}
-	else
-	{
-		glState.vertexAttribsInterpolation = refEnt->backlerp;
-	}
+		if(refEnt->oldframe == refEnt->frame)
+		{
+			glState.vertexAttribsInterpolation = 0;
+		}
+		else
+		{
+			glState.vertexAttribsInterpolation = refEnt->backlerp;
+		}
 
-	glState.vertexAttribsOldFrame = refEnt->oldframe;
-	glState.vertexAttribsNewFrame = refEnt->frame;
-	glState.vertexAnimation = qtrue;
+		glState.vertexAttribsOldFrame = refEnt->oldframe;
+		glState.vertexAttribsNewFrame = refEnt->frame;
+		glState.vertexAnimation = qtrue;
+	}
 
 	RB_EndSurface();
 
