@@ -1708,6 +1708,9 @@ static void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, cons
 	if ( mode == SAY_TEAM  && !OnSameTeam(ent, other) ) {
 		return;
 	}
+	if ( mode == SAY_ALLY && zyk_is_ally(ent, other) == qfalse) { // zyk: allychat. Send it only to allies
+		return;
+	}
 	/*
 	// no chatting to players in tournaments
 	if ( (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
@@ -1802,6 +1805,16 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 			Com_sprintf (name, sizeof(name), EC"[%s%c%c"EC"]"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		}
 		color = COLOR_MAGENTA;
+		break;
+	case SAY_ALLY: // zyk: say to allies
+		// zyk: if player is silenced by an admin, he cannot say anything
+		if (ent->client->pers.player_statuses & (1 << 0))
+			return;
+
+		G_LogPrintf( "sayally: %s: %s\n", ent->client->pers.netname, text );
+		Com_sprintf (name, sizeof(name), EC"{%s%c%c"EC"}"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
+
+		color = COLOR_WHITE;
 		break;
 	}
 
@@ -10854,7 +10867,7 @@ void Cmd_AllyList_f( gentity_t *ent ) {
 
 	strcpy(message,"");
 
-	for (i = 0; i < MAX_CLIENTS; i++)
+	for (i = 0; i < level.maxclients; i++)
 	{
 		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
 		{
@@ -10919,6 +10932,27 @@ void Cmd_AllyAdd_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"Added ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
 		trap->SendServerCommand( client_id, va("print \"%s^7 added you as ally\n\"", ent->client->pers.netname) );
 	}
+}
+
+/*
+==================
+Cmd_AllyChat_f
+==================
+*/
+void Cmd_AllyChat_f( gentity_t *ent ) { // zyk: allows chatting with allies
+	char *p = NULL;
+
+	if ( trap->Argc () < 2 )
+		return;
+
+	p = ConcatArgs( 1 );
+
+	if ( strlen( p ) >= MAX_SAY_TEXT ) {
+		p[MAX_SAY_TEXT-1] = '\0';
+		G_SecurityLogPrintf( "Cmd_AllyChat_f from %d (%s) has been truncated: %s\n", ent->s.number, ent->client->pers.netname, p );
+	}
+
+	G_Say( ent, NULL, SAY_ALLY, p );
 }
 
 /*
@@ -13149,6 +13183,7 @@ command_t commands[] = {
 	{ "adminup",			Cmd_AdminUp_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "admkick",			Cmd_AdmKick_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "allyadd",			Cmd_AllyAdd_f,				CMD_NOINTERMISSION },
+	{ "allychat",			Cmd_AllyChat_f,				CMD_NOINTERMISSION },
 	{ "allylist",			Cmd_AllyList_f,				CMD_NOINTERMISSION },
 	{ "allyremove",			Cmd_AllyRemove_f,			CMD_NOINTERMISSION },
 	{ "answer",				Cmd_Answer_f,				CMD_RPG|CMD_ALIVE|CMD_NOINTERMISSION },

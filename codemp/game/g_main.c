@@ -4112,7 +4112,7 @@ void zyk_NPC_Kill_f( char *name )
 // zyk: tests if ent has other as ally
 qboolean zyk_is_ally(gentity_t *ent, gentity_t *other)
 {
-	if (ent && other && !ent->NPC && !other->NPC && ent != other)
+	if (ent && other && !ent->NPC && !other->NPC && ent != other && ent->client && other->client && other->client->pers.connected == CON_CONNECTED)
 	{
 		if (other->s.number > 15 && (ent->client->sess.ally2 & (1 << other->s.number)))
 		{
@@ -4133,7 +4133,7 @@ int zyk_number_of_allies(gentity_t *ent)
 	int i = 0;
 	int number_of_allies = 0;
 
-	for (i = 0; i < MAX_CLIENTS; i++)
+	for (i = 0; i < level.maxclients; i++)
 	{
 		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
 			number_of_allies++;

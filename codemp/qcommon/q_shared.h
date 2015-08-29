@@ -2260,6 +2260,7 @@ typedef enum {
 #define SAY_ALL		0
 #define SAY_TEAM	1
 #define SAY_TELL	2
+#define SAY_ALLY	3 // zyk: added new say mode
 
 #define QRAND_MAX 32768
 
