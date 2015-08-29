@@ -564,8 +564,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 	}
 
 	if (forcePower == FP_DRAIN && attacker && attacker->client && other && other->client && attacker->client->sess.amrpgmode > 0 && 
-		other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && (attacker->client->sess.ally1 == other->s.number || 
-		attacker->client->sess.ally2 == other->s.number || attacker->client->sess.ally3 == other->s.number))
+		other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && zyk_is_ally(attacker,other) == qtrue)
 	{ // zyk: allies wont be drained if they dont allow it
 		return 0;
 	}
@@ -588,7 +587,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 
 	if (forcePower == FP_GRIP)
 	{
-		if (other && other->client && (attacker->client->sess.ally1 == (other-g_entities) || attacker->client->sess.ally2 == (other-g_entities) || attacker->client->sess.ally3 == (other-g_entities)))
+		if (other && other->client && zyk_is_ally(attacker,other) == qtrue)
 		{ // zyk: allies cant be gripped
 			return 0;
 		}
@@ -2934,7 +2933,7 @@ void ForceTelepathy(gentity_t *self)
 			{
 				int can_use_mind_control = 1;
 
-				if (tricked_entity->client->sess.amrpgmode == 2 && tricked_entity->client->pers.player_settings & (1 << 6) && (self->client->sess.ally1 == tricked_entity->s.number || self->client->sess.ally2 == tricked_entity->s.number || self->client->sess.ally3 == tricked_entity->s.number))
+				if (tricked_entity->client->sess.amrpgmode == 2 && tricked_entity->client->pers.player_settings & (1 << 6) && zyk_is_ally(self,tricked_entity) == qtrue)
 				{ // zyk: cant use mind control on allies that dont allow it
 					can_use_mind_control = 0;
 				}
@@ -3047,7 +3046,7 @@ void ForceTelepathy(gentity_t *self)
 				{
 					int can_use_mind_control = 1;
 
-					if (ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6) && (self->client->sess.ally1 == ent->s.number || self->client->sess.ally2 == ent->s.number || self->client->sess.ally3 == ent->s.number))
+					if (ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6) && zyk_is_ally(self,ent) == qtrue)
 					{ // zyk: cant use mind control on allies that dont allow it
 						can_use_mind_control = 0;
 					}
@@ -3548,7 +3547,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 		if (self->client->sess.amrpgmode == 2 && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6))
 		{ // zyk: cannot push or pull allies if they dont allow it
-			if (self->client->sess.ally1 == ent->s.number || self->client->sess.ally2 == ent->s.number || self->client->sess.ally3 == ent->s.number)
+			if (zyk_is_ally(self,ent) == qtrue)
 				continue;
 		}
 
@@ -3955,8 +3954,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				else
 				{
 					// zyk: do not push missiles coming from allies
-					if (self->client->sess.ally1 != push_list[x]->r.ownerNum && self->client->sess.ally2 != push_list[x]->r.ownerNum &&
-						self->client->sess.ally3 != push_list[x]->r.ownerNum)
+					if (zyk_is_ally(self,push_list[x]) == qfalse)
 					{
 						G_ReflectMissile( self, push_list[x], forward );
 					}
@@ -5010,7 +5008,7 @@ void FindGenericEnemyIndex(gentity_t *self)
 
 		if (ent && ent->client && ent->s.number != self->s.number && ent->health > 0 && !OnSameTeam(self, ent) && ent->client->ps.pm_type != PM_INTERMISSION && ent->client->ps.pm_type != PM_SPECTATOR)
 		{
-			if (self->client->sess.ally1 != ent->s.number && self->client->sess.ally2 != ent->s.number && self->client->sess.ally3 != ent->s.number && 
+			if (zyk_is_ally(self,ent) == qfalse && 
 				(ent->NPC || (ent->client->pers.connected == CON_CONNECTED && ent->client->sess.sessionTeam != TEAM_SPECTATOR && 
 				 ent->client->ps.duelInProgress == qfalse)))
 			{ // zyk: allies and not connected players cant be attacked by seeker drone

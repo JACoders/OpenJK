@@ -1995,20 +1995,14 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 		}
 
 		G_Sound(ent,CHAN_VOICE,G_SoundIndex(va("sound/chars/%s/misc/%s.mp3",voice_dir,arg)));
-		if (ent->client->sess.ally1 != -1)
+
+		for (i = 0; i < MAX_CLIENTS; i++)
 		{
-			trap->SendServerCommand(ent->client->sess.ally1, va("chat \"%s: ^3%s\"",ent->client->pers.netname,arg));
-			G_Sound(&g_entities[ent->client->sess.ally1],CHAN_VOICE,G_SoundIndex(va("sound/chars/%s/misc/%s.mp3",voice_dir,arg)));
-		}
-		if (ent->client->sess.ally2 != -1)
-		{
-			trap->SendServerCommand(ent->client->sess.ally2, va("chat \"%s: ^3%s\"",ent->client->pers.netname,arg));
-			G_Sound(&g_entities[ent->client->sess.ally2],CHAN_VOICE,G_SoundIndex(va("sound/chars/%s/misc/%s.mp3",voice_dir,arg)));
-		}
-		if (ent->client->sess.ally3 != -1)
-		{
-			trap->SendServerCommand(ent->client->sess.ally3, va("chat \"%s: ^3%s\"",ent->client->pers.netname,arg));
-			G_Sound(&g_entities[ent->client->sess.ally3],CHAN_VOICE,G_SoundIndex(va("sound/chars/%s/misc/%s.mp3",voice_dir,arg)));
+			if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+			{
+				trap->SendServerCommand(i, va("chat \"%s: ^3%s\"",ent->client->pers.netname,arg));
+				G_Sound(&g_entities[i],CHAN_VOICE,G_SoundIndex(va("sound/chars/%s/misc/%s.mp3",voice_dir,arg)));
+			}
 		}
 	}
 }
@@ -10856,20 +10850,16 @@ Cmd_AllyList_f
 */
 void Cmd_AllyList_f( gentity_t *ent ) {
 	char message[1024];
+	int i = 0;
 
 	strcpy(message,"");
 
-	if (ent->client->sess.ally1 != -1)	
+	for (i = 0; i < MAX_CLIENTS; i++)
 	{
-		strcpy(message,va("%s^7%s\n",message,g_entities[ent->client->sess.ally1].client->pers.netname));
-	}
-	if (ent->client->sess.ally2 != -1)	
-	{
-		strcpy(message,va("%s^7%s\n",message,g_entities[ent->client->sess.ally2].client->pers.netname));
-	}
-	if (ent->client->sess.ally3 != -1)	
-	{
-		strcpy(message,va("%s^7%s\n",message,g_entities[ent->client->sess.ally3].client->pers.netname));
+		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+		{
+			strcpy(message,va("%s^7%s\n",message,g_entities[i].client->pers.netname));
+		}
 	}
 
 	trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", message) );
@@ -10910,29 +10900,20 @@ void Cmd_AllyAdd_f( gentity_t *ent ) {
 			return; 
 		}
 
-		if (ent->client->sess.ally1 == client_id || ent->client->sess.ally2 == client_id || ent->client->sess.ally3 == client_id)
+		if (zyk_is_ally(ent,&g_entities[client_id]) == qtrue)
 		{
 			trap->SendServerCommand( ent-g_entities, va("print \"You already have this ally.\n\"") );
 			return;
 		}
 
 		// zyk: add this player as an ally
-		if (ent->client->sess.ally1 == -1)
+		if (client_id > 15)
 		{
-			ent->client->sess.ally1 = client_id;
-		}
-		else if (ent->client->sess.ally2 == -1)
-		{
-			ent->client->sess.ally2 = client_id;
-		}
-		else if (ent->client->sess.ally3 == -1)
-		{ 
-			ent->client->sess.ally3 = client_id;
+			ent->client->sess.ally2 |= (1 << client_id);
 		}
 		else
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"You reached the max number of allies.\n\"") );
-			return;
+			ent->client->sess.ally1 |= (1 << client_id);
 		}
 
 		trap->SendServerCommand( ent-g_entities, va("print \"Added ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
@@ -10964,23 +10945,15 @@ void Cmd_AllyRemove_f( gentity_t *ent ) {
 		}
 
 		// zyk: removes this ally
-		if (ent->client->sess.ally1 == client_id)
+		if (client_id > 15)
 		{
-			ent->client->sess.ally1 = -1;
-		}
-		else if (ent->client->sess.ally2 == client_id)
-		{
-			ent->client->sess.ally2 = -1;
-		}
-		else if (ent->client->sess.ally3 == client_id)
-		{ 
-			ent->client->sess.ally3 = -1;
+			ent->client->sess.ally2 &= ~(1 << client_id);
 		}
 		else
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"You don't have this ally!\n\"") );
-			return;
+			ent->client->sess.ally1 &= ~(1 << client_id);
 		}
+
 		trap->SendServerCommand( ent-g_entities, va("print \"Removed ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
 		trap->SendServerCommand( client_id, va("print \"%s^7 removed you as ally\n\"", ent->client->pers.netname) );
 	}

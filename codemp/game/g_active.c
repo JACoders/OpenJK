@@ -3438,7 +3438,7 @@ void ClientThink_real( gentity_t *ent ) {
 											int found = 0;
 
 											// zyk: allies will not be hit by this power
-											if (player_it < level.maxclients && (ent->client->sess.ally1 == player_it || ent->client->sess.ally2 == player_it || ent->client->sess.ally3 == player_it))
+											if (player_it < level.maxclients && zyk_is_ally(ent,player_ent) == qtrue)
 											{
 												found = 1;
 											}
@@ -3508,7 +3508,7 @@ void ClientThink_real( gentity_t *ent ) {
 										int found = 0;
 
 										// zyk: allies will not be hit by this power
-										if (zyk_it < level.maxclients && (ent->client->sess.ally1 == zyk_it || ent->client->sess.ally2 == zyk_it || ent->client->sess.ally3 == zyk_it))
+										if (zyk_it < level.maxclients && zyk_is_ally(ent,this_ent) == qtrue)
 										{
 											found = 1;
 										}

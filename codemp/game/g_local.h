@@ -500,7 +500,6 @@ typedef struct clientSession_s {
 	// zyk: used to set the ally ids. The allies dont receive damage from this player
 	int ally1;
 	int ally2;
-	int ally3;
 } clientSession_t;
 
 // playerstate mGameFlags
@@ -1498,6 +1497,10 @@ typedef struct level_locals_s {
 	int server_empty_change_map_timer;
 } level_locals_t;
 
+
+// zyk: functions used in a lot of places
+qboolean zyk_is_ally(gentity_t *ent, gentity_t *other);
+int zyk_number_of_allies(gentity_t *ent);
 
 //
 // g_spawn.c

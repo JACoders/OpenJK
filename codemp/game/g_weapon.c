@@ -2365,7 +2365,7 @@ void touchLaserTrap( gentity_t *ent, gentity_t *other, trace_t *trace )
 		if ( ent->activator != other )
 		{
 			// zyk: allies dont activate proximity mine
-			if (ent->activator && ent->activator->client && ent->activator->client->sess.ally1 != other->s.number && ent->activator->client->sess.ally2 != other->s.number && ent->activator->client->sess.ally3 != other->s.number)
+			if (ent->activator && ent->activator->client && zyk_is_ally(ent->activator,other) == qfalse)
 			{
 				if (!(other->client) || other->client->noclip == qfalse)
 				{ // zyk: noclipped players will not activate mine
@@ -2429,7 +2429,7 @@ void proxMineThink(gentity_t *ent)
 				{
 					if (owner && owner->client)
 					{ // zyk: allies dont activate proximity mine
-						if (owner->client->sess.ally1 != cl->s.number && owner->client->sess.ally2 != cl->s.number && owner->client->sess.ally3 != cl->s.number)
+						if (zyk_is_ally(owner,cl) == qfalse)
 						{
 							if (cl->client->noclip == qfalse)
 							{ // zyk: noclipped players will not activate mine
@@ -3233,7 +3233,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 						if ( traceEnt->health > 0 )
 						{//alive
 							// zyk: allies cant be knocked back
-							if (ent->client->sess.ally1 == (traceEnt-g_entities) || ent->client->sess.ally2 == (traceEnt-g_entities) || ent->client->sess.ally3 == (traceEnt-g_entities))
+							if (zyk_is_ally(ent,traceEnt) == qtrue)
 							{
 								break;
 							}
@@ -3518,7 +3518,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3)
 				{
 					// zyk: allies cant be hit by it
-					if (ent->client->sess.ally1 == (tr_ent-g_entities) || ent->client->sess.ally2 == (tr_ent-g_entities) || ent->client->sess.ally3 == (tr_ent-g_entities))
+					if (zyk_is_ally(ent,tr_ent) == qtrue)
 					{
 						return;
 					}

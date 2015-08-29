@@ -4839,9 +4839,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		return;
 
 	// zyk: allies will not receive damage from attacker
-	if (attacker && attacker->client && !attacker->NPC && targ && targ->client)
+	if (attacker && attacker->client && targ && targ->client)
 	{
-		if (attacker->client->sess.ally1 == (targ-g_entities) || attacker->client->sess.ally2 == (targ-g_entities) || attacker->client->sess.ally3 == (targ-g_entities))
+		if (zyk_is_ally(attacker,targ) == qtrue)
 		{
 			return;
 		}
@@ -4982,16 +4982,8 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->NPC && attacker->client->pers.guardian_invoked_by_id != -1)
 	{ // zyk: attacker is a RPG boss. Increase damage based in the number of allies of the quest player
 		gentity_t *quest_player_ent = &g_entities[attacker->client->pers.guardian_invoked_by_id];
-		int number_of_allies = 0;
 
-		if (quest_player_ent->client->sess.ally1 != -1)
-			number_of_allies++;
-		if (quest_player_ent->client->sess.ally2 != -1)
-			number_of_allies++;
-		if (quest_player_ent->client->sess.ally3 != -1)
-			number_of_allies++;
-
-		damage += ((int)ceil(damage * 0.1 * number_of_allies));
+		damage += ((int)ceil(damage * 0.1 * zyk_number_of_allies(quest_player_ent)));
 
 		// zyk: Guardian of Darkness used her Dark Power. Increase damage
 		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
@@ -6408,8 +6400,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 					// zyk: if the power user and the target are allies (player or npc), or the target is the quest power user himself, heal him
 					if (quest_power_user && quest_power_user->client && ent && ent->client &&
 						(level.special_power_effects[attacker->s.number] == ent->s.number || OnSameTeam(quest_power_user, ent) == qtrue || 
-						npcs_on_same_team(quest_power_user, ent) == qtrue || quest_power_user->client->sess.ally1 == ent->s.number || 
-						quest_power_user->client->sess.ally2 == ent->s.number || quest_power_user->client->sess.ally3 == ent->s.number))
+						npcs_on_same_team(quest_power_user, ent) == qtrue || zyk_is_ally(quest_power_user,ent) == qtrue))
 					{
 						if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 							ent->health++;

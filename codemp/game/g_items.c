@@ -240,7 +240,7 @@ void ShieldTouch(gentity_t *self, gentity_t *other, trace_t *trace)
 		{
 			ShieldGoNotSolid(self);
 		}
-		else if (self->parent && self->parent->client && (self->parent->client->sess.ally1 == other->s.number || self->parent->client->sess.ally2 == other->s.number || self->parent->client->sess.ally3 == other->s.number))
+		else if (self->parent && self->parent->client && zyk_is_ally(self->parent,other) == qtrue)
 		{ // zyk: allies can pass through the force field
 			ShieldGoNotSolid(self);
 		}
@@ -641,7 +641,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 		}
 
 		// zyk: dont attack allies
-		if (self->parent && (self->parent->client->sess.ally1 == target->s.number || self->parent->client->sess.ally2 == target->s.number || self->parent->client->sess.ally3 == target->s.number))
+		if (self->parent && zyk_is_ally(self->parent,target) == qtrue)
 		{
 			continue;
 		}

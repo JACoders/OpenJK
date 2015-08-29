@@ -4109,6 +4109,39 @@ void zyk_NPC_Kill_f( char *name )
 	}
 }
 
+// zyk: tests if ent has other as ally
+qboolean zyk_is_ally(gentity_t *ent, gentity_t *other)
+{
+	if (ent && other && !ent->NPC && !other->NPC && ent != other)
+	{
+		if (other->s.number > 15 && (ent->client->sess.ally2 & (1 << other->s.number)))
+		{
+			return qtrue;
+		}
+		else if (ent->client->sess.ally1 & (1 << other->s.number))
+		{
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
+// zyk: counts how many allies this player has
+int zyk_number_of_allies(gentity_t *ent)
+{
+	int i = 0;
+	int number_of_allies = 0;
+
+	for (i = 0; i < MAX_CLIENTS; i++)
+	{
+		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+			number_of_allies++;
+	}
+
+	return number_of_allies;
+}
+
 // zyk: spawns a RPG quest boss and set his HP based in the quantity of allies the quest player has now
 extern void clean_effect();
 extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle ); // zyk: used in boss battles
@@ -4118,25 +4151,17 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	vec3_t player_origin;
 	vec3_t player_yaw;
 	gentity_t *npc_ent = NULL;
-	int number_of_allies = 0;
+	int i = 0;
 
-	if (ent->client->sess.ally1 != -1)
+	// zyk: removing scale from allies
+	for (i = 0; i < MAX_CLIENTS; i++)
 	{
-		g_entities[ent->client->sess.ally1].client->pers.guardian_mode = guardian_mode;
-		do_scale(&g_entities[ent->client->sess.ally1], 100);
-		number_of_allies++;
-	}
-	if (ent->client->sess.ally2 != -1)
-	{
-		g_entities[ent->client->sess.ally2].client->pers.guardian_mode = guardian_mode;
-		do_scale(&g_entities[ent->client->sess.ally2], 100);
-		number_of_allies++;
-	}
-	if (ent->client->sess.ally3 != -1)
-	{
-		g_entities[ent->client->sess.ally3].client->pers.guardian_mode = guardian_mode;
-		do_scale(&g_entities[ent->client->sess.ally3], 100);
-		number_of_allies++;
+		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+		{
+			g_entities[i].client->pers.guardian_mode = guardian_mode;
+			do_scale(&g_entities[i], 100);
+			g_entities[i].client->noclip = qfalse;
+		}
 	}
 
 	ent->client->pers.guardian_mode = guardian_mode;
@@ -4157,7 +4182,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	if (npc_ent)
 	{
-		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health/10 * number_of_allies);
+		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health/10 * zyk_number_of_allies(ent));
 		npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->NPC->stats.health;
 		npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
 
@@ -4188,14 +4213,6 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	// zyyk: removing noclip from the player
 	ent->client->noclip = qfalse;
-
-	// zyk: removing noclip from allies
-	if (ent->client->sess.ally1 != -1)
-		g_entities[ent->client->sess.ally1].client->noclip = qfalse;
-	if (ent->client->sess.ally2 != -1)
-		g_entities[ent->client->sess.ally2].client->noclip = qfalse;
-	if (ent->client->sess.ally3 != -1)
-		g_entities[ent->client->sess.ally3].client->noclip = qfalse;
 }
 
 // zyk: tests if the target player can be hit by the attacker gun/saber damage, force power or special power
@@ -4246,7 +4263,7 @@ qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target
 			int is_ally = 0;
 
 			if (i < level.maxclients && !attacker->NPC && 
-				(attacker->client->sess.ally1 == i || attacker->client->sess.ally2 == i || attacker->client->sess.ally3 == i))
+				zyk_is_ally(attacker,target) == qtrue)
 			{ // zyk: allies will not be hit by this power
 				is_ally = 1;
 			}
@@ -8715,6 +8732,7 @@ void G_RunFrame( int levelTime ) {
 					{ // zyk: uses sleeping flowers or poison mushrooms
 						int players_near = 0;
 						int players_far = 0;
+						int k = 0;
 						gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
 
 						if ((int)Distance(ent->client->ps.origin,player_ent->client->ps.origin) < 800 && (int)player_ent->client->ps.origin[2] < 162)
@@ -8726,32 +8744,18 @@ void G_RunFrame( int levelTime ) {
 							players_far++;
 						}
 
-						if (player_ent->client->sess.ally1 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally1].client->ps.origin) < 800 && (int)g_entities[player_ent->client->sess.ally1].client->ps.origin[2] < 162)
+						for (k = 0; k < level.maxclients; k++)
 						{
-							players_near++;
-						}
-						else if (player_ent->client->sess.ally1 != -1)
-						{
-							players_far++;
-						}
-
-						if (player_ent->client->sess.ally2 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally2].client->ps.origin) < 800 && (int)g_entities[player_ent->client->sess.ally1].client->ps.origin[2] < 162)
-						{
-							players_near++;
-						}
-						else if (player_ent->client->sess.ally2 != -1)
-						{
-							players_far++;
+							if (zyk_is_ally(player_ent,&g_entities[k]) == qtrue && (int)Distance(ent->client->ps.origin,g_entities[k].client->ps.origin) < 800 && (int)g_entities[k].client->ps.origin[2] < 162)
+							{
+								players_near++;
+							}
+							else
+							{
+								players_far++;
+							}
 						}
 
-						if (player_ent->client->sess.ally3 != -1 && (int)Distance(ent->client->ps.origin,g_entities[player_ent->client->sess.ally3].client->ps.origin) < 800 && (int)g_entities[player_ent->client->sess.ally1].client->ps.origin[2] < 162)
-						{
-							players_near++;
-						}
-						else if (player_ent->client->sess.ally3 != -1)
-						{
-							players_far++;
-						}
 
 						if (players_near > players_far)
 						{

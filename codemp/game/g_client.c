@@ -4130,9 +4130,8 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->sess.amrpgmode = 0;
 
 	// zyk: cleaning the ally ids
-	ent->client->sess.ally1 = -1;
-	ent->client->sess.ally2 = -1;
-	ent->client->sess.ally3 = -1;
+	ent->client->sess.ally1 = 0;
+	ent->client->sess.ally2 = 0;
 
 	// zyk: cleaning ally ids of other players who have this player as ally
 	for (i = 0; i < MAX_CLIENTS; i++)
@@ -4141,11 +4140,9 @@ void ClientDisconnect( int clientNum ) {
 		if (player_ent && player_ent->client)
 		{
 			if (player_ent->client->sess.ally1 == ent->s.number)
-				player_ent->client->sess.ally1 = -1;
+				player_ent->client->sess.ally1 = 0;
 			else if (player_ent->client->sess.ally2 == ent->s.number)
-				player_ent->client->sess.ally2 = -1;
-			else if (player_ent->client->sess.ally3 == ent->s.number)
-				player_ent->client->sess.ally3 = -1;
+				player_ent->client->sess.ally2 = 0;
 		}
 	}
 
