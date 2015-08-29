@@ -443,6 +443,12 @@ qboolean PlaceShield(gentity_t *playerent)
 			// Set team number.
 			shield->s.otherEntityNum2 = playerent->client->sess.sessionTeam;
 
+			if (level.gametype < GT_TEAM && playerent->client && playerent->client->sess.amrpgmode == 2 && playerent->client->pers.secrets_found & (1 << 0))
+			{
+				// zyk: setting shield red color if it has the upgrade
+				shield->s.otherEntityNum2 = TEAM_RED;
+			}
+
 			shield->s.eType = ET_SPECIAL;
 			shield->s.modelindex =  HI_SHIELD;	// this'll be used in CG_Useable() for rendering.
 			shield->classname = shieldItem->classname;
