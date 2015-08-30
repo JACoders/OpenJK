@@ -549,6 +549,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
+	// zyk: players that are not in boss battle cannot hit a boss
+	if (attacker && attacker->client && other && other->client && other->NPC && other->client->pers.guardian_invoked_by_id != -1 &&
+		(attacker->client->sess.amrpgmode != 2 || attacker->client->pers.guardian_mode == 0))
+	{
+		return 0;
+	}
+
 	if (other && other->client && (other->NPC || other->client->sess.amrpgmode == 2) && 
 		(forcePower == FP_PUSH || forcePower == FP_PULL || forcePower == FP_GRIP) && 
 		other->client->pers.quest_power_status & (1 << 11))

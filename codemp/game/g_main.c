@@ -4154,7 +4154,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	int i = 0;
 
 	// zyk: removing scale from allies
-	for (i = 0; i < MAX_CLIENTS; i++)
+	for (i = 0; i < level.maxclients; i++)
 	{
 		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
 		{
