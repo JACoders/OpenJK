@@ -4134,15 +4134,16 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->sess.ally2 = 0;
 
 	// zyk: cleaning ally ids of other players who have this player as ally
-	for (i = 0; i < MAX_CLIENTS; i++)
+	for (i = 0; i < level.maxclients; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
-		if (player_ent && player_ent->client)
+
+		if (zyk_is_ally(player_ent,ent) == qtrue)
 		{
-			if (player_ent->client->sess.ally1 == ent->s.number)
-				player_ent->client->sess.ally1 = 0;
-			else if (player_ent->client->sess.ally2 == ent->s.number)
-				player_ent->client->sess.ally2 = 0;
+			if (ent->s.number > 15)
+				player_ent->client->sess.ally2 &= ~(1 << ent->s.number);
+			else
+				player_ent->client->sess.ally1 &= ~(1 << ent->s.number);
 		}
 	}
 
