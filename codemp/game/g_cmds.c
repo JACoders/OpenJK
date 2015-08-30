@@ -10873,9 +10873,27 @@ void Cmd_AllyList_f( gentity_t *ent ) {
 
 	for (i = 0; i < level.maxclients; i++)
 	{
-		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+		int shown = 0;
+		gentity_t *this_ent = &g_entities[i];
+
+		if (zyk_is_ally(ent,this_ent) == qtrue)
 		{
-			strcpy(message,va("%s^7%s\n",message,g_entities[i].client->pers.netname));
+			strcpy(message,va("%s^7%s ^3(ally)",message,this_ent->client->pers.netname));
+			shown = 1;
+		}
+		if (this_ent && this_ent->client && this_ent->client->pers.connected == CON_CONNECTED && zyk_is_ally(this_ent,ent) == qtrue)
+		{
+			if (shown == 1)
+				strcpy(message,va("%s ^3(added you)",message));
+			else
+				strcpy(message,va("%s^7%s ^3(added you)",message,this_ent->client->pers.netname));
+
+			shown = 1;
+		}
+
+		if (shown == 1)
+		{
+			strcpy(message,va("%s\n",message));
 		}
 	}
 
