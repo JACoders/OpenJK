@@ -8746,13 +8746,18 @@ void G_RunFrame( int levelTime ) {
 
 						for (k = 0; k < level.maxclients; k++)
 						{
-							if (zyk_is_ally(player_ent,&g_entities[k]) == qtrue && (int)Distance(ent->client->ps.origin,g_entities[k].client->ps.origin) < 800 && (int)g_entities[k].client->ps.origin[2] < 162)
+							gentity_t *ally_ent = &g_entities[k];
+
+							if (zyk_is_ally(player_ent,ally_ent) == qtrue)
 							{
-								players_near++;
-							}
-							else
-							{
-								players_far++;
+								if ((int)Distance(ent->client->ps.origin,ally_ent->client->ps.origin) < 800 && (int)ally_ent->client->ps.origin[2] < 162)
+								{
+									players_near++;
+								}
+								else
+								{
+									players_far++;
+								}
 							}
 						}
 
