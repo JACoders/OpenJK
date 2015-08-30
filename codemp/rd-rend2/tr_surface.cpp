@@ -2098,12 +2098,6 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	glState.vertexAnimation = qfalse;
 }
 
-static void RB_SurfaceDisplayList( srfDisplayList_t *surf ) {
-	// all apropriate state must be set in RB_BeginSurface
-	// this isn't implemented yet...
-	qglCallList( surf->listNum );
-}
-
 static void RB_SurfaceSkip( void *surf ) {
 }
 
@@ -2121,7 +2115,6 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceGhoul,		// SF_MDX,
 	(void(*)(void*))RB_SurfaceFlare,		// SF_FLARE,
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
-	(void(*)(void*))RB_SurfaceDisplayList,		// SF_DISPLAY_LIST
 	(void(*)(void*))RB_SurfaceVBOMesh,	    // SF_VBO_MESH,
 	(void(*)(void*))RB_SurfaceVBOMDVMesh,   // SF_VBO_MDVMESH
 };

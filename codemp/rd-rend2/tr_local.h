@@ -1222,7 +1222,6 @@ typedef enum {
 	SF_MDX,
 	SF_FLARE,
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
-	SF_DISPLAY_LIST,
 	SF_VBO_MESH,
 	SF_VBO_MDVMESH,
 
@@ -1275,12 +1274,6 @@ typedef struct srfPoly_s {
 	int				numVerts;
 	polyVert_t		*verts;
 } srfPoly_t;
-
-typedef struct srfDisplayList_s {
-	surfaceType_t	surfaceType;
-	int				listNum;
-} srfDisplayList_t;
-
 
 typedef struct srfFlare_s {
 	surfaceType_t	surfaceType;
