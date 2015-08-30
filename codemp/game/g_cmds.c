@@ -2564,7 +2564,7 @@ validVote:
 
 	// start the voting, the caller automatically votes yes
 	level.voteTime = level.time;
-	level.voteYes = 1;
+	level.voteYes = 0; // zyk: the caller no longer counts as yes, because it may be a poll or the caller may regret the vote
 	level.voteNo = 0;
 
 	for ( i=0; i<level.maxclients; i++ ) {
@@ -2572,8 +2572,8 @@ validVote:
 		level.clients[i].pers.vote = 0;
 	}
 
-	ent->client->mGameFlags |= PSG_VOTED;
-	ent->client->pers.vote = 1;
+	//ent->client->mGameFlags |= PSG_VOTED; // zyk: no longer count the caller
+	//ent->client->pers.vote = 1; // zyk: no longer count the caller
 
 	trap->SetConfigstring( CS_VOTE_TIME,	va( "%i", level.voteTime ) );
 	trap->SetConfigstring( CS_VOTE_STRING,	level.voteDisplayString );

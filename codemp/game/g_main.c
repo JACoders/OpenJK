@@ -3745,7 +3745,7 @@ void CheckVote( void ) {
 	if ( !level.voteTime ) {
 		return;
 	}
-	if ( level.time-level.voteTime >= VOTE_TIME || level.voteYes + level.voteNo == 0 ) 
+	if ( level.time-level.voteTime >= VOTE_TIME) // || level.voteYes + level.voteNo == 0 ) zyk: no longer does this
 	{
 		if (level.voteYes > level.voteNo)
 		{ // zyk: now vote pass if number of Yes is greater than number of No
@@ -3753,7 +3753,9 @@ void CheckVote( void ) {
 			level.voteExecuteTime = level.time + level.voteExecuteDelay;
 		}
 		else
+		{
 			trap->SendServerCommand( -1, va("print \"%s (%s)\n\"", G_GetStringEdString("MP_SVGAME", "VOTEFAILED"), level.voteStringClean) );
+		}
 
 		// zyk: set the timer for the next vote of this player
 		if (zyk_vote_timer.integer > 0 && level.voting_player > -1)
