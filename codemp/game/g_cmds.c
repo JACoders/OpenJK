@@ -10978,6 +10978,12 @@ void Cmd_AllyRemove_f( gentity_t *ent ) {
 			return;
 		}
 
+		if (zyk_is_ally(ent,&g_entities[client_id]) == qfalse)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"You do not have this ally.\n\"") );
+			return;
+		}
+
 		// zyk: removes this ally
 		if (client_id > 15)
 		{
