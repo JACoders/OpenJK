@@ -121,7 +121,7 @@ XCVAR_DEF( g_saberRestrictForce,		"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_saberTraceSaberFirst,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_saberWallDamageScale,		"0.4",			NULL,				CVAR_NONE,										qfalse )
 XCVAR_DEF( g_securityLog,				"1",			NULL,				CVAR_ARCHIVE,									qfalse )
-XCVAR_DEF( g_showDuelHealths,			"0",			NULL,				CVAR_SERVERINFO,								qfalse )
+XCVAR_DEF( g_showDuelHealths,			"0",			NULL,				CVAR_NONE,										qfalse )
 XCVAR_DEF( g_siegeRespawn,				"20",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_siegeTeam1,				"none",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfalse )
 XCVAR_DEF( g_siegeTeam2,				"none",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfalse )
@@ -317,6 +317,6 @@ XCVAR_DEF( zyk_server_empty_change_map_time, "0",		NULL,				CVAR_ARCHIVE|CVAR_NO
 XCVAR_DEF( zyk_sp_npc_fix,					"0",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_max_special_power_targets,	"16",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_scale_siege_damage,		"0.7",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
-XCVAR_DEF( zyk_duelForcePowerDisable,	"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_LATCH,		qtrue )
+XCVAR_DEF( zyk_duelForcePowerDisable,	"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,		qtrue )
 
 #undef XCVAR_DEF
