@@ -10922,7 +10922,7 @@ void Cmd_AllyAdd_f( gentity_t *ent ) {
 		// zyk: add this player as an ally
 		if (client_id > 15)
 		{
-			ent->client->sess.ally2 |= (1 << client_id);
+			ent->client->sess.ally2 |= (1 << (client_id-16));
 		}
 		else
 		{
@@ -10987,7 +10987,7 @@ void Cmd_AllyRemove_f( gentity_t *ent ) {
 		// zyk: removes this ally
 		if (client_id > 15)
 		{
-			ent->client->sess.ally2 &= ~(1 << client_id);
+			ent->client->sess.ally2 &= ~(1 << (client_id-16));
 		}
 		else
 		{

@@ -4141,7 +4141,7 @@ void ClientDisconnect( int clientNum ) {
 		if (zyk_is_ally(player_ent,ent) == qtrue)
 		{
 			if (ent->s.number > 15)
-				player_ent->client->sess.ally2 &= ~(1 << ent->s.number);
+				player_ent->client->sess.ally2 &= ~(1 << (ent->s.number-16));
 			else
 				player_ent->client->sess.ally1 &= ~(1 << ent->s.number);
 		}

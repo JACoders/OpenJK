@@ -4114,7 +4114,7 @@ qboolean zyk_is_ally(gentity_t *ent, gentity_t *other)
 {
 	if (ent && other && !ent->NPC && !other->NPC && ent != other && ent->client && other->client && other->client->pers.connected == CON_CONNECTED)
 	{
-		if (other->s.number > 15 && (ent->client->sess.ally2 & (1 << other->s.number)))
+		if (other->s.number > 15 && (ent->client->sess.ally2 & (1 << (other->s.number-16))))
 		{
 			return qtrue;
 		}
