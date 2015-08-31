@@ -4089,6 +4089,24 @@ void ClientDisconnect( int clientNum ) {
 	G_ClearVote( ent );
 	G_ClearTeamVote( ent, ent->client->sess.sessionTeam );
 
+	// zyk: cleaning the ally ids
+	ent->client->sess.ally1 = 0;
+	ent->client->sess.ally2 = 0;
+
+	// zyk: cleaning ally ids of other players who have this player as ally
+	for (i = 0; i < level.maxclients; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_is_ally(player_ent,ent) == qtrue)
+		{
+			if (ent->s.number > 15)
+				player_ent->client->sess.ally2 &= ~(1 << (ent->s.number-16));
+			else
+				player_ent->client->sess.ally1 &= ~(1 << ent->s.number);
+		}
+	}
+
 	trap->UnlinkEntity ((sharedEntity_t *)ent);
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
@@ -4128,24 +4146,6 @@ void ClientDisconnect( int clientNum ) {
 	
 	// zyk: logout player from account
 	ent->client->sess.amrpgmode = 0;
-
-	// zyk: cleaning the ally ids
-	ent->client->sess.ally1 = 0;
-	ent->client->sess.ally2 = 0;
-
-	// zyk: cleaning ally ids of other players who have this player as ally
-	for (i = 0; i < level.maxclients; i++)
-	{
-		gentity_t *player_ent = &g_entities[i];
-
-		if (zyk_is_ally(player_ent,ent) == qtrue)
-		{
-			if (ent->s.number > 15)
-				player_ent->client->sess.ally2 &= ~(1 << (ent->s.number-16));
-			else
-				player_ent->client->sess.ally1 &= ~(1 << ent->s.number);
-		}
-	}
 
 	// zyk: if this was the target player, sets qtrue to choose another target
 	if (level.bounty_quest_choose_target == qfalse && level.bounty_quest_target_id == (ent-g_entities))
