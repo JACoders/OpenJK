@@ -3251,10 +3251,6 @@ float CG_DrawRadar ( float y )
 	{ // zyk: verify if this player has the Radar Upgrade in non-team gametypes. Show radar if in a vehicle
 		return y;
 	}
-	else if (cgs.gametype == GT_SIEGE && !cg.predictedPlayerState.m_iVehicleNum)
-	{ // zyk: in Siege, show radar only in vehicles
-		return y;
-	}
 
 	// Draw the radar background image
 	color[0] = color[1] = color[2] = 1.0f;
@@ -3768,6 +3764,23 @@ float CG_DrawRadar ( float y )
 					continue;
 				}
 
+				if (cgs.gametype == GT_SIEGE && cl->team != local->team)
+				{ // zyk: in Siege, shows on radar only players from the same team
+					continue;
+				}
+
+				if (cgs.gametype >= GT_TEAM && cgs.gametype != GT_SIEGE && cl->team != local->team && !(cg.rpg_stuff & (1 << 0)))
+				{ // zyk: in other team gametypes, shows all players if this is a Bounty Hunter with Upgrade
+					continue;
+				}
+
+				// zyk: shows red for enemies in non-team gametypes or if it is a team gametype and player is a Bounty Hunter with Upgrade
+				if (cgs.gametype < GT_TEAM || (cg.rpg_stuff & (1 << 0) && cl->team != local->team))
+				{
+					VectorCopy ( g_color_table[ColorIndex(COLOR_RED)], teamColor );
+					teamColor[3] = 1.0f;
+				}
+
 				VectorCopy4 ( teamColor, color );
 
 				arrowBaseScale = 16.0f;
@@ -3782,11 +3795,6 @@ float CG_DrawRadar ( float y )
 					color[1] = teamColor[1] + (1.0f - teamColor[1]) * f;
 					color[2] = teamColor[2] + (1.0f - teamColor[2]) * f;
 				}
-
-				//if (cl->team != local->team)
-				//{
-
-				//}
 					
 				trap->R_SetColor ( color );
 
