@@ -3251,6 +3251,10 @@ float CG_DrawRadar ( float y )
 	{ // zyk: verify if this player has the Radar Upgrade in non-team gametypes. Show radar if in a vehicle
 		return y;
 	}
+	else if (cgs.gametype == GT_SIEGE && !cg.predictedPlayerState.m_iVehicleNum)
+	{ // zyk: in Siege, show radar only in vehicles
+		return y;
+	}
 
 	// Draw the radar background image
 	color[0] = color[1] = color[2] = 1.0f;
@@ -3779,6 +3783,11 @@ float CG_DrawRadar ( float y )
 					color[2] = teamColor[2] + (1.0f - teamColor[2]) * f;
 				}
 
+				//if (cl->team != local->team)
+				//{
+
+				//}
+					
 				trap->R_SetColor ( color );
 
 				//we want to scale the thing up/down based on the relative Z (up/down) positioning
