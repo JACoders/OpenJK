@@ -9009,7 +9009,7 @@ void G_RunFrame( int levelTime ) {
 						if (!ent->client->ps.powerups[PW_CLOAKED])
 							Jedi_Cloak(ent);
 
-						ultra_drain(ent,450,60,8000);
+						ultra_drain(ent,450,55,8000);
 						trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Ultra Drain!\"");
 
 						ent->client->pers.guardian_timer = level.time + 25000;
@@ -9102,7 +9102,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 6)
 						{
-							ultra_drain(ent,450,60,8000);
+							ultra_drain(ent,450,55,8000);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ultra Drain!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
