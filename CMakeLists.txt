@@ -276,3 +276,7 @@ if(BuildJK2SPGame)
 	add_subdirectory("${JK2SPDir}/game")
 endif()
 add_subdirectory(${MPDir})
+# Windows Symbol Server tools
+if(WIN32 AND MSVC)
+	add_subdirectory("tools/WinSymbol")
+endif()
