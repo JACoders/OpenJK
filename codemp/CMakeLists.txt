@@ -715,7 +715,7 @@ set(GameLibFullPaths)
 		foreach(GameLib ${GameLibsBuilt})
 			set(GameLibFullPaths
 				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+				${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
 		endforeach(GameLib)
 	else()
 		foreach(GameLib ${GameLibsBuilt})
