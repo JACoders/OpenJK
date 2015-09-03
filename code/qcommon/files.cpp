@@ -1440,7 +1440,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 								FS_CreatePath( copypath );
 
 								bool bOk = true;
-								if (CopyFile( netpath, copypath, qtrue ))
+								if (!CopyFile( netpath, copypath, FALSE ))
 								{
 									DWORD dwAttrs = GetFileAttributes(copypath);
 									SetFileAttributes(copypath, dwAttrs & ~FILE_ATTRIBUTE_READONLY);
