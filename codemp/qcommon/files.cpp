@@ -3357,10 +3357,23 @@ static void FS_ReorderPurePaks()
 	}
 }
 
-/*
-================
-FS_Startup
-================
+/**
+	@brief Mount the asset archives (.pk3) and register commands.
+
+	Mounts in this order the archives from:
+
+	1.  <fs_cdpath>/<gameName>/
+	2.  <fs_basepath>/<gameName>/
+	3.  <fs_apppath>/<gameName>/ (Mac Only)
+	4.  <fs_homepath>/<gameName>/
+	5.  <fs_cdpath>/<fs_basegame>/
+	6.  <fs_basepath>/<fs_basegame>/
+	7.  <fs_homepath>/<fs_basegame>/
+	8.  <fs_cdpath>/<fs_game>/
+	9.  <fs_basepath>/<fs_game>/
+	10. <fs_homepath>/<fs_game>/
+
+	@param gameName Name of the default folder (i.e. always BASEGAME = "base" in OpenJK)
 */
 void FS_Startup( const char *gameName ) {
 	const char *homePath;
@@ -3383,7 +3396,7 @@ void FS_Startup( const char *gameName ) {
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED);
 
-	// add search path elements in reverse priority order
+	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
 		FS_AddGameDirectory( fs_cdpath->string, gameName );
 	}
