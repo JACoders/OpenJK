@@ -246,7 +246,6 @@ static cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directo
 static searchpath_t	*fs_searchpaths;
 static int			fs_readCount;			// total bytes read
 static int			fs_loadCount;			// total files read
-static int			fs_loadStack;			// total files in memory
 static int			fs_packFiles = 0;		// total number of files in packs
 
 static int			fs_fakeChkSum;
@@ -345,17 +344,6 @@ qboolean FS_PakIsPure( pack_t *pack ) {
 		return qfalse;	// not on the pure server pak list
 	}
 	return qtrue;
-}
-
-/*
-=================
-FS_LoadStack
-return load stack
-=================
-*/
-int FS_LoadStack( void )
-{
-	return fs_loadStack;
 }
 
 /*
@@ -1959,7 +1947,6 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 			}
 
 			fs_loadCount++;
-			fs_loadStack++;
 
 			// guarantee that it will have a trailing 0 for string operations
 			buf[len] = 0;
@@ -1997,8 +1984,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	}
 
 	fs_loadCount++;
-/*	fs_loadStack++;
-
+/*	
 	buf = (unsigned char *)Hunk_AllocateTempMemory(len+1);
 	*buffer = buf;*/
 
@@ -2037,14 +2023,8 @@ void FS_FreeFile( void *buffer ) {
 	if ( !buffer ) {
 		Com_Error( ERR_FATAL, "FS_FreeFile( NULL )" );
 	}
-	fs_loadStack--;
 
 	Hunk_FreeTempMemory( buffer );
-
-	// if all of our temp files are free, clear all of our space
-	if ( fs_loadStack == 0 ) {
-		Hunk_ClearTempMemory();
-	}
 	*/
 
 	if ( !fs_searchpaths ) {
