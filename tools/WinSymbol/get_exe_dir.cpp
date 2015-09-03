@@ -3,17 +3,16 @@
 #include <DbgHelp.h>
 
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <iomanip>
 
-using namespace std::string_literals;
-
 int main( int argc, char** argv )
 {
-	if( argc != 2 || argv[ 1 ] == "--help"s || argv[ 1 ] == "-h"s )
+	if( argc != 2 || strcmp( argv[ 1 ], "--help" ) == 0 || strcmp( argv[ 1 ], "-h" ) == 0 )
 	{
-		std::cerr << "Determines the directory to place an executable in on a symbol server.\nUsage: "s << argv[ 0 ] << " <filename.exe>"s << std::endl;
+		std::cerr << "Determines the directory to place an executable in on a symbol server.\nUsage: " << argv[ 0 ] << " <filename.exe>" << std::endl;
 		return EXIT_FAILURE;
 	}
 	const std::string filename = argv[ 1 ];
