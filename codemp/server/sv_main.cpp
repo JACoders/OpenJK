@@ -1141,6 +1141,9 @@ void SV_Frame( int msec ) {
 
 	// send a heartbeat to the master if needed
 	SV_MasterHeartbeat();
+
+	// generate new challenger keys if needed
+	SV_UpdateChallengers();
 }
 
 //============================================================================

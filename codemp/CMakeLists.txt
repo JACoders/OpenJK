@@ -315,6 +315,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/server/server.h"
 		"${MPDir}/server/sv_bot.cpp"
 		"${MPDir}/server/sv_ccmds.cpp"
+		"${MPDir}/server/sv_challenge.cpp"
 		"${MPDir}/server/sv_client.cpp"
 		"${MPDir}/server/sv_game.cpp"
 		"${MPDir}/server/sv_init.cpp"
@@ -343,6 +344,23 @@ if(BuildMPEngine OR BuildMPDed)
 		)
 	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
+
+	set(MPEngineAndDedMbedTLSFiles
+		"${OpenJKLibDir}/mbedtls/check_config.h"
+		"${OpenJKLibDir}/mbedtls/config.h"
+		"${OpenJKLibDir}/mbedtls/error.c"
+		"${OpenJKLibDir}/mbedtls/error.h"
+		"${OpenJKLibDir}/mbedtls/md.c"
+		"${OpenJKLibDir}/mbedtls/md.h"
+		"${OpenJKLibDir}/mbedtls/md_internal.h"
+		"${OpenJKLibDir}/mbedtls/md_wrap.c"
+		"${OpenJKLibDir}/mbedtls/platform.c"
+		"${OpenJKLibDir}/mbedtls/platform.h"
+		"${OpenJKLibDir}/mbedtls/sha1.c"
+		"${OpenJKLibDir}/mbedtls/sha1.h"
+		)
+	source_group("mbedtls" FILES ${MPEngineAndDedMbedTLSFiles})
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMbedTLSFiles})
 
 	set(MPEngineAndDedSysFiles
 		"${SharedDir}/sys/snapvector.cpp"
