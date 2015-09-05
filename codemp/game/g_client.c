@@ -3993,6 +3993,7 @@ void G_ClearTeamVote( gentity_t *ent, int team ) {
 	}
 }
 
+extern void try_finishing_race();
 void ClientDisconnect( int clientNum ) {
 	gentity_t	*ent;
 	gentity_t	*tent;
@@ -4110,6 +4111,11 @@ void ClientDisconnect( int clientNum ) {
 		}
 	}
 
+	// zyk: player is no longer part of the race, testing if it must be finished
+	ent->client->pers.race_position = 0;
+
+	try_finishing_race();
+
 	trap->UnlinkEntity ((sharedEntity_t *)ent);
 	ent->s.modelindex = 0;
 	ent->inuse = qfalse;
@@ -4154,8 +4160,6 @@ void ClientDisconnect( int clientNum ) {
 	// zyk: if this was the target player, sets qtrue to choose another target
 	if (level.bounty_quest_choose_target == qfalse && level.bounty_quest_target_id == (ent-g_entities))
 		level.bounty_quest_choose_target = qtrue;
-
-	ent->client->pers.race_position = 0;
 
 	// zyk: if this player was playing a quest, find a new one to play quests in this map
 	if (ent->client->pers.can_play_quest == 1)

@@ -6038,7 +6038,7 @@ void try_finishing_race()
 	int j = 0, has_someone_racing = 0;
 	gentity_t *this_ent = NULL;
 
-	for (j = 0; j < MAX_CLIENTS; j++)
+	for (j = 0; j < level.maxclients; j++)
 	{ 
 		this_ent = &g_entities[j];
 		if (this_ent && this_ent->client && this_ent->inuse && this_ent->health > 0 && this_ent->client->sess.sessionTeam != TEAM_SPECTATOR && this_ent->client->pers.race_position > 0)
