@@ -91,6 +91,9 @@ cvar_t	*cl_inGameVideo;
 cvar_t	*cl_serverStatusResendTime;
 cvar_t	*cl_framerate;
 
+// cvar to enable sending a "ja_guid" player identifier in userinfo to servers
+// ja_guid is a persistent "cookie" that allows servers to track players across game sessions
+cvar_t	*cl_enableGuid;
 cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cl_autolodscale;
@@ -724,17 +727,32 @@ update cl_guid using QKEY_FILE and optional prefix
 */
 static void CL_UpdateGUID( const char *prefix, int prefix_len )
 {
-	fileHandle_t f;
-	int len;
+	if (cl_enableGuid->integer) {
+		fileHandle_t f;
+		int len;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
 
-	if( len != QKEY_SIZE )
-		Cvar_Set( "ja_guid", "" );
-	else
-		Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
-			prefix, prefix_len ) );
+		// initialize the cvar here in case it's unset or was user-created
+		// while tracking was disabled (removes CVAR_USER_CREATED)
+		Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );
+
+		if( len != QKEY_SIZE ) {
+			Cvar_Set( "ja_guid", "" );
+		} else {
+			Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
+				prefix, prefix_len ) );
+		}
+	} else {
+		// Remove the cvar entirely if tracking is disabled
+		uint32_t flags = Cvar_Flags("ja_guid");
+		// keep the cvar if it's user-created, but destroy it otherwise
+		if (flags != CVAR_NONEXISTENT && !(flags & CVAR_USER_CREATED)) {
+			cvar_t *ja_guid = Cvar_Get("ja_guid", "", 0);
+			Cvar_Unset(ja_guid);
+		}
+	}
 }
 
 /*
@@ -2607,34 +2625,36 @@ it by filling it with 2048 bytes of random data.
 
 static void CL_GenerateQKey(void)
 {
-	int len = 0;
-	unsigned char buff[ QKEY_SIZE ];
-	fileHandle_t f;
+	if (cl_enableGuid->integer) {
+		int len = 0;
+		unsigned char buff[ QKEY_SIZE ];
+		fileHandle_t f;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
-	if( len == QKEY_SIZE ) {
-		Com_Printf( "QKEY found.\n" );
-		return;
-	}
-	else {
-		if( len > 0 ) {
-			Com_Printf( "QKEY file size != %d, regenerating\n",
-				QKEY_SIZE );
-		}
-
-		Com_Printf( "QKEY building random string\n" );
-		Com_RandomBytes( buff, sizeof(buff) );
-
-		f = FS_SV_FOpenFileWrite( QKEY_FILE );
-		if( !f ) {
-			Com_Printf( "QKEY could not open %s for write\n",
-				QKEY_FILE );
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
+		if( len == QKEY_SIZE ) {
+			Com_Printf( "QKEY found.\n" );
 			return;
 		}
-		FS_Write( buff, sizeof(buff), f );
-		FS_FCloseFile( f );
-		Com_Printf( "QKEY generated\n" );
+		else {
+			if( len > 0 ) {
+				Com_Printf( "QKEY file size != %d, regenerating\n",
+					QKEY_SIZE );
+			}
+
+			Com_Printf( "QKEY building random string\n" );
+			Com_RandomBytes( buff, sizeof(buff) );
+
+			f = FS_SV_FOpenFileWrite( QKEY_FILE );
+			if( !f ) {
+				Com_Printf( "QKEY could not open %s for write\n",
+					QKEY_FILE );
+				return;
+			}
+			FS_Write( buff, sizeof(buff), f );
+			FS_FCloseFile( f );
+			Com_Printf( "QKEY generated\n" );
+		}
 	}
 }
 
@@ -2737,6 +2757,8 @@ void CL_Init( void ) {
 
 	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE);
 
+	// enable the ja_guid player identifier in userinfo by default in OpenJK
+	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE);
 	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
 
 	// ~ and `, as keys and characters
@@ -2811,7 +2833,6 @@ void CL_Init( void ) {
 	G2VertSpaceClient = new CMiniHeap (G2_VERT_SPACE_CLIENT_SIZE * 1024);
 
 	CL_GenerateQKey();
-	Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );
 	CL_UpdateGUID( NULL, 0 );
 
 //	Com_Printf( "----- Client Initialization Complete -----\n" );
