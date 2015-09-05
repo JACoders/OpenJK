@@ -143,3 +143,4 @@ Key: - removed, + added, * modified
 [MP] + Add external lightmap support from SP
 [SP/MP] * General buffer safety cleanup
 [SP/MP] * Fix stencil shadows not working if a model has more than 500 vertexes.
+[MP] + Added ability to substitute BSP entities with ones from an external .ent file when loading a map
