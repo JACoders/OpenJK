@@ -570,9 +570,10 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
-	if (forcePower == FP_DRAIN && attacker && attacker->client && other && other->client && attacker->client->sess.amrpgmode > 0 && 
-		other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && zyk_is_ally(attacker,other) == qtrue)
-	{ // zyk: allies wont be drained if they dont allow it
+	if (forcePower != FP_TEAM_HEAL && forcePower != FP_TEAM_FORCE && attacker && attacker->client && other && other->client && 
+		attacker->client->sess.amrpgmode > 0 && other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && 
+		zyk_is_ally(attacker,other) == qtrue)
+	{ // zyk: allies wont be affected by force powers if they do not allow it
 		return 0;
 	}
 
@@ -594,11 +595,6 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 
 	if (forcePower == FP_GRIP)
 	{
-		if (other && other->client && zyk_is_ally(attacker,other) == qtrue)
-		{ // zyk: allies cant be gripped
-			return 0;
-		}
-
 		if (other && other->client &&
 			(other->client->ps.fd.forcePowersActive & (1<<FP_ABSORB)))
 		{ //don't allow gripping to begin with if they are absorbing
@@ -2927,6 +2923,11 @@ void ForceTelepathy(gentity_t *self)
 				return;
 			}
 
+			if (!ForcePowerUsableOn(self, tricked_entity, FP_TELEPATHY))
+			{
+				return;
+			}
+
 			if (!tricked_entity->NPC) // zyk: NPCs wont have the glowing head effect of mind trick because of how the game handles the tricked entities
 				WP_AddAsMindtricked(&self->client->ps.fd, tr.entityNum);
 
@@ -2938,22 +2939,12 @@ void ForceTelepathy(gentity_t *self)
 				((tricked_entity->client->sess.amrpgmode == 2 && self->client->pers.force_powers_levels[11] > tricked_entity->client->pers.force_powers_levels[4]) || 
 				(tricked_entity->client->sess.amrpgmode != 2 && self->client->pers.force_powers_levels[11] > tricked_entity->client->ps.fd.forcePowerLevel[FP_SEE])) && tricked_entity->health > 0)
 			{
-				int can_use_mind_control = 1;
-
-				if (tricked_entity->client->sess.amrpgmode == 2 && tricked_entity->client->pers.player_settings & (1 << 6) && zyk_is_ally(self,tricked_entity) == qtrue)
-				{ // zyk: cant use mind control on allies that dont allow it
-					can_use_mind_control = 0;
-				}
-
-				if (can_use_mind_control == 1)
+				if (self->client->pers.mind_controlled1_id == -1)
 				{
-					if (self->client->pers.mind_controlled1_id == -1)
-					{
-						self->client->pers.mind_controlled1_id = tricked_entity-g_entities;
-						tricked_entity->client->pers.being_mind_controlled = self-g_entities;
+					self->client->pers.mind_controlled1_id = tricked_entity-g_entities;
+					tricked_entity->client->pers.being_mind_controlled = self-g_entities;
 
-						trap->SendServerCommand( tricked_entity-g_entities, va("cp \"^7You are being Mind-Controlled by ^7%s\n\"", self->client->pers.netname ) );
-					}
+					trap->SendServerCommand( tricked_entity-g_entities, va("cp \"^7You are being Mind-Controlled by ^7%s\n\"", self->client->pers.netname ) );
 				}
 			}
 
@@ -3051,22 +3042,12 @@ void ForceTelepathy(gentity_t *self)
 					(ent->client->sess.amrpgmode != 2 && self->client->pers.force_powers_levels[11] > ent->client->ps.fd.forcePowerLevel[FP_SEE])) && 
 					ent->health > 0)
 				{
-					int can_use_mind_control = 1;
-
-					if (ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6) && zyk_is_ally(self,ent) == qtrue)
-					{ // zyk: cant use mind control on allies that dont allow it
-						can_use_mind_control = 0;
-					}
-
-					if (can_use_mind_control == 1)
+					if (self->client->pers.mind_controlled1_id == -1)
 					{
-						if (self->client->pers.mind_controlled1_id == -1)
-						{
-							self->client->pers.mind_controlled1_id = ent-g_entities;
-							ent->client->pers.being_mind_controlled = self-g_entities;
+						self->client->pers.mind_controlled1_id = ent-g_entities;
+						ent->client->pers.being_mind_controlled = self-g_entities;
 
-							trap->SendServerCommand( ent-g_entities, va("cp \"^7You are being Mind-Controlled by ^7%s\n\"", self->client->pers.netname ) );
-						}
+						trap->SendServerCommand( ent-g_entities, va("cp \"^7You are being Mind-Controlled by ^7%s\n\"", self->client->pers.netname ) );
 					}
 				}
 			}
@@ -3550,12 +3531,6 @@ void ForceThrow( gentity_t *self, qboolean pull )
 		if ( !(ent->inuse) )
 		{
 			continue;
-		}
-
-		if (self->client->sess.amrpgmode == 2 && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.player_settings & (1 << 6))
-		{ // zyk: cannot push or pull allies if they dont allow it
-			if (zyk_is_ally(self,ent) == qtrue)
-				continue;
 		}
 
 		// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
