@@ -3443,7 +3443,7 @@ void ClientThink_real( gentity_t *ent ) {
 												found = 1;
 											}
 
-											if (found == 0)
+											if (found == 0 && ent->client->pers.guardian_mode == player_ent->client->pers.guardian_mode)
 											{
 												if (!player_ent->NPC)
 												{ //disable jetpack temporarily
@@ -3513,7 +3513,7 @@ void ClientThink_real( gentity_t *ent ) {
 											found = 1;
 										}
 
-										if (found == 0)
+										if (found == 0 && ent->client->pers.guardian_mode == this_ent->client->pers.guardian_mode)
 										{
 											if (this_ent->client->ps.weapon == WP_SABER)
 											{
