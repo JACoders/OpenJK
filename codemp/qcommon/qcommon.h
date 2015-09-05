@@ -513,6 +513,8 @@ void 	Cvar_WriteVariables( fileHandle_t f );
 // writes lines containing "set variable value" for all variables
 // with the archive flag set to true.
 
+cvar_t *Cvar_Unset(cvar_t *cv);
+
 void	Cvar_Init( void );
 
 char	*Cvar_InfoString( int bit );
