@@ -416,17 +416,22 @@ if(BuildMPEngine)
 	endif()
 
 	if(UseInternalSDL2)
+		if(MSVC14)
+			set(MSVC_SUFFIX "_2015")
+		else()
+			set(MSVC_SUFFIX "")
+		endif()
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(MPEngineLibraries
 				${MPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2.lib
 				)
 		else()
 			set(MPEngineLibraries
 				${MPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2.lib
 				)
 		endif()
 		
@@ -606,11 +611,11 @@ if(BuildMPEngine)
 		if(UseInternalSDL2)
 			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+					${OpenJKLibDir}/SDL2/bin/x86${MSVC_SUFFIX}/SDL2.dll
 					)
 			else()
 				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+					${OpenJKLibDir}/SDL2/bin/x64${MSVC_SUFFIX}/SDL2.dll
 					)
 			endif()
 		endif()
@@ -752,7 +757,7 @@ set(GameLibFullPaths)
 		foreach(GameLib ${GameLibsBuilt})
 			set(GameLibFullPaths
 				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+				${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
 		endforeach(GameLib)
 	else()
 		foreach(GameLib ${GameLibsBuilt})
@@ -763,13 +768,13 @@ set(GameLibFullPaths)
 	endif()
 
 	include(InstallZIP)
-	add_zip_command(openjk.pk3
+	add_zip_command(${AssetsPk3}
 		FILES ${GameLibFullPaths}
 		DEPENDS "${GameLibsBuilt}")
 	add_custom_target(Assets
 		ALL
-		DEPENDS openjk.pk3)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openjk.pk3
+		DEPENDS ${AssetsPk3})
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
