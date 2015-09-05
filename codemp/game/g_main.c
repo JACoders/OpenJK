@@ -663,6 +663,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.voting_player = -1;
 
 	level.server_empty_change_map_timer = 0;
+	level.num_fully_connected_clients = 0;
 
 	if (1)
 	{
@@ -3114,7 +3115,7 @@ void CheckExitRules( void ) {
 
 		if (zyk_server_empty_change_map_time.integer > 0)
 		{
-			if (level.numConnectedClients == 0)
+			if (level.num_fully_connected_clients == 0)
 			{ // zyk: changes map if server has no one for some time
 				if (level.server_empty_change_map_timer == 0)
 					level.server_empty_change_map_timer = level.time;

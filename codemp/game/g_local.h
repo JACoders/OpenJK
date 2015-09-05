@@ -22,7 +22,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Zyk OpenJK Mod v3.16"
+#define	GAMEVERSION	"Zyk OpenJK Mod v3.17"
 
 #define SECURITY_LOG "security.log"
 
@@ -1495,6 +1495,9 @@ typedef struct level_locals_s {
 
 	// zyk: level.time when the server becomes empty (no players)
 	int server_empty_change_map_timer;
+
+	// zyk: used to cound how many clients are already connected
+	int num_fully_connected_clients;
 } level_locals_t;
 
 
