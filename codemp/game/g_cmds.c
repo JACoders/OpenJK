@@ -4273,12 +4273,12 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			}
 		}
 
-		if ((zyk_allow_rpg_mode.integer == 0 || (zyk_allow_rpg_in_other_gametypes.integer == 0 && g_gametype.integer != GT_FFA)) && ent->client->sess.amrpgmode == 2)
+		if ((zyk_allow_rpg_mode.integer == 0 || (zyk_allow_rpg_in_other_gametypes.integer == 0 && level.gametype != GT_FFA)) && ent->client->sess.amrpgmode == 2)
 		{ // zyk: RPG Mode not allowed. Change his account to Admin-Only Mode
 			ent->client->sess.amrpgmode = 1;
 		}
-		else if (g_gametype.integer == GT_SIEGE)
-		{ // zyk: Siege will never allow RPG Mode
+		else if (level.gametype == GT_SIEGE || level.gametype == GT_JEDIMASTER)
+		{ // zyk: Siege and Jedi Master will never allow RPG Mode
 			ent->client->sess.amrpgmode = 1;
 		}
 
@@ -12140,8 +12140,9 @@ Cmd_Jetpack_f
 void Cmd_Jetpack_f( gentity_t *ent ) {
 	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && zyk_allow_jetpack_command.integer && 
 		(ent->client->sess.amrpgmode < 2 || ent->client->pers.other_skills_levels[4] > 0) && 
-		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer))
+		(level.gametype != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && level.gametype != GT_JEDIMASTER)
 	{ // zyk: gets jetpack if player does not have it. RPG players need jetpack skill to get it
+		// zyk: Jedi Master gametype will not allow jetpack
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 	}
 	else
