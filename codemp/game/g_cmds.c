@@ -3548,6 +3548,7 @@ extern void immunity_power(gentity_t *ent, int duration);
 extern void ultra_drain(gentity_t *ent, int radius, int damage, int duration);
 extern void magic_shield(gentity_t *ent, int duration);
 extern void healing_area(gentity_t *ent, int damage, int duration);
+extern void outer_area_damage(gentity_t *ent, int min_distance, int max_distance, int damage);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3851,6 +3852,20 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_time_power_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
 					}
+				}
+				else if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && 
+					  ent->client->pers.universe_quest_counter & (1 << 29) && 
+					  ent->client->pers.cmd.forwardmove == 0 && ent->client->pers.cmd.rightmove == 0 && 
+					  ent->client->pers.magic_power >= 50)
+				{ // zyk: Outer Area Damage. Player can use it if he finishes Universe Quest in Challenge Difficulty
+					ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
+					outer_area_damage(ent,500,2500,200);
+					ent->client->pers.magic_power -= 50;
+					if (ent->client->pers.rpg_class == 8)
+						ent->client->pers.quest_power_usage_timer = level.time + (60000 * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+					else
+						ent->client->pers.quest_power_usage_timer = level.time + 60000;
+					trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Outer Area Damage!\"", ent->client->pers.netname));
 				}
 				else if (use_this_power > 0)
 				{ // zyk: Special Power
@@ -4917,10 +4932,6 @@ int zyk_max_magic_power(gentity_t *ent)
 	int max_mp = ent->client->pers.level * 2;
 
 	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
-		bonus_mp += 100;
-
-	// zyk: Challenge Mode. If player completed all quests, give more MP
-	if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && ent->client->pers.universe_quest_counter & (1 << 29))
 		bonus_mp += 100;
 
 	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
