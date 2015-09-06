@@ -822,6 +822,13 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 					client->ps.stats[STAT_ARMOR] += 1;
 			}
 
+			if (client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && client->pers.universe_quest_counter & (1 << 29) &&
+				!(ent->client->pers.player_settings & (1 << 5)) && client->pers.magic_power < zyk_max_magic_power(ent))
+			{
+				client->pers.magic_power += 1;
+				scale_magic_power(ent);
+			}
+
 			if (client->pers.player_statuses & (1 << 10))
 			{ // zyk: Healing Crystal
 				if (ent->health < client->pers.max_rpg_health)
