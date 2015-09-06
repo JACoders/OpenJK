@@ -7148,7 +7148,7 @@ void CG_DrawMagicPower(void)
 {
 	vec4_t aColor;
 	vec4_t cColor;
-	float x = 28.0;
+	float x = 20.0;
 	float y = JPFUELBAR_Y;
 	float scaled_magic_power = cg.magic_power;
 
