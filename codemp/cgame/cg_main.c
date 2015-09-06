@@ -2511,6 +2511,8 @@ Ghoul2 Insert End
 	// zyk: initialize this value, used by RPG Mode
 	cg.rpg_stuff = 0;
 
+	cg.magic_power = 100;
+
 	// zyk: initialize the blue jet players
 	for (j = 0; j < MAX_CLIENTS; j++)
 	{

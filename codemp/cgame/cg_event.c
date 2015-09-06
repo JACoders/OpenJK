@@ -2613,7 +2613,14 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_USE_ITEM8:
 		DEBUGNAME("EV_USE_ITEM8");
-		CG_UseItem( cent );
+		//CG_UseItem( cent ); zyk: commented this, not used in mod
+
+		if (cg.snap->ps.clientNum == es->number)
+		{
+			// zyk: current magic power
+			cg.magic_power = es->eventParm;
+		}
+
 		break;
 	case EV_USE_ITEM9:
 		DEBUGNAME("EV_USE_ITEM9");

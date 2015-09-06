@@ -3638,6 +3638,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/noghri/fire.mp3"));
 
 				ent->client->pers.magic_power -= zyk_magic_fist_mp_cost.integer;
+
+				scale_magic_power(ent);
 			}
 			else if ((ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 2)) || 
 					 (ent->client->sess.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 3)))
@@ -3713,6 +3715,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				}
 
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+
+				scale_magic_power(ent);
 			}
 		}
 

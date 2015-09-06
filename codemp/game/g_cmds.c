@@ -3525,6 +3525,29 @@ void display_yellow_bar(gentity_t *ent, int duration)
 	te->s.owner = ent->client->ps.clientNum;
 }
 
+// zyk: returns the max amount of Magic Power this player can have
+int zyk_max_magic_power(gentity_t *ent)
+{
+	int bonus_mp = 0;
+	int max_mp = ent->client->pers.level * 2;
+
+	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
+		bonus_mp += 100;
+
+	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
+		return (max_mp + bonus_mp + 50 + (50 * ent->client->pers.other_skills_levels[10]));
+	else
+		return (max_mp + bonus_mp);
+}
+
+// zyk: sends the current magic power to client-side, scaled in a value between 0 and 100
+void scale_magic_power(gentity_t *ent)
+{
+	int scaled_magic_power = ((float)ent->client->pers.magic_power/zyk_max_magic_power(ent)) * 100.0;
+
+	G_AddEvent(ent, EV_USE_ITEM8, scaled_magic_power);
+}
+
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
 extern void inner_area_damage(gentity_t *ent, int distance, int damage);
 extern void healing_water(gentity_t *ent, int heal_amount);
@@ -4097,6 +4120,8 @@ qboolean TryGrapple(gentity_t *ent)
 			{
 				trap->SendServerCommand( ent->s.number, va("chat \"^3Special Power: ^7%d seconds left!\"", ((ent->client->pers.quest_power_usage_timer - level.time)/1000)));
 			}
+
+			scale_magic_power(ent);
 		}
 
 		return qtrue;
@@ -4924,20 +4949,6 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 			rpg_score(ent, qfalse);
 		}
 	}
-}
-
-int zyk_max_magic_power(gentity_t *ent)
-{
-	int bonus_mp = 0;
-	int max_mp = ent->client->pers.level * 2;
-
-	if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4))) // zyk: Universe Power
-		bonus_mp += 100;
-
-	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
-		return (max_mp + bonus_mp + 50 + (50 * ent->client->pers.other_skills_levels[10]));
-	else
-		return (max_mp + bonus_mp);
 }
 
 // zyk: initialize RPG skills of this player
@@ -10034,6 +10045,8 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 44)
 		{
 			ent->client->pers.magic_power = zyk_max_magic_power(ent);
+
+			scale_magic_power(ent);
 		}
 		else if (value == 45)
 		{

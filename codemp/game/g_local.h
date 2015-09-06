@@ -1504,6 +1504,7 @@ typedef struct level_locals_s {
 // zyk: functions used in a lot of places
 qboolean zyk_is_ally(gentity_t *ent, gentity_t *other);
 int zyk_number_of_allies(gentity_t *ent);
+void scale_magic_power(gentity_t *ent);
 
 //
 // g_spawn.c

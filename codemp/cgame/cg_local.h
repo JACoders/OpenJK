@@ -1014,6 +1014,9 @@ Ghoul2 Insert End
 	// 1 - Blue Jetpack Flame
 	int rpg_stuff;
 
+	// zyk: current amount of Magic Power (MP) of this RPG player
+	int magic_power;
+
 	// zyk: sets clients which must have some RPG stuff set for this cg player to see the stuff on them
 	// Possible bitvalues:
 	// 0 - Blue Jet Flame

@@ -7143,6 +7143,38 @@ void CG_DrawEWebHealth(void)
 	CG_FillRect(x+1.0f, y+1.0f, EWEBHEALTH_W-1.0f, EWEBHEALTH_H-percent, cColor);
 }
 
+// zyk: draws the magic power bar
+void CG_DrawMagicPower(void)
+{
+	vec4_t aColor;
+	vec4_t cColor;
+	float x = 28.0;
+	float y = JPFUELBAR_Y;
+	float scaled_magic_power = cg.magic_power;
+
+	//color of the bar
+	aColor[0] = 0.0f;
+	aColor[1] = 0.7f;
+	aColor[2] = 0.0f;
+	aColor[3] = 0.8f;
+
+	//color of greyed out "missing fuel"
+	cColor[0] = 0.5f;
+	cColor[1] = 0.5f;
+	cColor[2] = 0.5f;
+	cColor[3] = 0.1f;
+
+	//draw the background (black)
+	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+
+	//now draw the part to show how much health there is in the color specified
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_magic_power), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_magic_power), aColor);
+
+	//then draw the other part greyed out
+	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_magic_power, cColor);
+}
+
+
 //draw meter showing cloak fuel when it's not full
 #define CLFUELBAR_H			100.0f
 #define CLFUELBAR_W			20.0f
@@ -8072,6 +8104,10 @@ static void CG_Draw2D( void ) {
 		{ //using an e-web, draw its health
 			CG_DrawEWebHealth();
 		}
+	}
+	if (cg.magic_power < 100)
+	{ // zyk: draw magic power bar if it is not full
+		CG_DrawMagicPower();
 	}
 
 	// Draw this before the text so that any text won't get clipped off

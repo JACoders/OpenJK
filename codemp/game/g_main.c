@@ -4882,7 +4882,6 @@ void clear_special_power_effect(gentity_t *ent)
 	}
 }
 
-extern int zyk_max_magic_power(gentity_t *ent);
 qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 {
 	if (selected_power == 2 && !(ent->client->pers.defeated_guardians & (1 << 4)) && 
@@ -4987,83 +4986,83 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 {
 	if (selected_power == 1)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Inner Area Damage   ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Inner Area Damage   ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 2)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Water       ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Water       ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 3)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Water Splash        ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Water Splash        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 4)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Earthquake          ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Earthquake          ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 5)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Rockfall            ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Rockfall            ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 6)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Sleeping Flowers    ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Sleeping Flowers    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 7)
 	{	
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Poison Mushrooms    ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Poison Mushrooms    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 8)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Shield        ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Shield        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 9)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Dome of Damage      ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Dome of Damage      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 10)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Speed         ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Speed         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 11)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Slow Motion         ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Slow Motion         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 12)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Flame Burst         ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Flame Burst         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 13)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Flame         ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Flame         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 14)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Blowing Wind        ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Blowing Wind        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 15)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Hurricane           ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Hurricane           ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 16)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Resistance    ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Resistance    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 17)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Strength      ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ultra Strength      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 18)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ice Stalagmite      ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ice Stalagmite      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 19)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ice Boulder         ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Ice Boulder         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 20)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Area        ^3MP: ^7%d/%d\"",direction,ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Area        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 }
 

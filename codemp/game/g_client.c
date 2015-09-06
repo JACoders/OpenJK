@@ -3114,6 +3114,7 @@ extern void zyk_add_guns( gentity_t *ent );
 extern void zyk_remove_force_powers( gentity_t *ent );
 extern void zyk_remove_guns( gentity_t *ent );
 extern void do_scale(gentity_t *ent, int new_size);
+extern int zyk_max_magic_power(gentity_t *ent);
 void ClientSpawn(gentity_t *ent) {
 	int					i = 0, index = 0, saveSaberNum = ENTITYNUM_NONE, wDisable = 0, savedSiegeIndex = 0, maxHealth = 100;
 	vec3_t				spawn_origin, spawn_angles;

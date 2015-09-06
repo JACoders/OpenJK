@@ -834,6 +834,8 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 					client->ps.fd.forcePower += 1;
 
 				client->ps.powerups[PW_SHIELDHIT] = level.time + 2000;
+
+				scale_magic_power(ent);
 			}
 
 			if (client->pers.player_statuses & (1 << 11))
@@ -3471,6 +3473,8 @@ void ClientThink_real( gentity_t *ent ) {
 								else
 									ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
+								scale_magic_power(ent);
+
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
 
 								ent->client->pers.unique_skill_timer = level.time + 45000;
@@ -3614,19 +3618,19 @@ void ClientThink_real( gentity_t *ent ) {
 
 					if (ent->client->sess.magic_fist_selection == 0)
 					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7Magic Fist            ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Magic Fist            ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 					else if (ent->client->sess.magic_fist_selection == 1)
 					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7Fist Charged Attack   ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Fist Charged Attack   ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 					else if (ent->client->sess.magic_fist_selection == 2)
 					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7Charged Faster Attack ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Charged Faster Attack ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 					else
 					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7None                  ^3MP: ^7%d/%d\"",ent->client->pers.magic_power,zyk_max_magic_power(ent)));
+						trap->SendServerCommand( ent->s.number, va("chat \"^7None                  ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 				}
 			}
