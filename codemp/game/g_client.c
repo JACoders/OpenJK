@@ -4113,9 +4113,12 @@ void ClientDisconnect( int clientNum ) {
 	}
 
 	// zyk: player is no longer part of the race, testing if it must be finished
-	ent->client->pers.race_position = 0;
+	if (level.quest_map == 17)
+	{
+		ent->client->pers.race_position = 0;
 
-	try_finishing_race();
+		try_finishing_race();
+	}
 
 	trap->UnlinkEntity ((sharedEntity_t *)ent);
 	ent->s.modelindex = 0;
