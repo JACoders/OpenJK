@@ -604,7 +604,7 @@ typedef struct clientPersistant_s {
 	// 11 - using Energy Crystal
 	// 12 - Give Command - Force
 	// 13 - Give Command - Guns
-	// 14 - Sending Magic Power duration event
+	// 14 - Sending current Magic Power event
 	int player_statuses;
 
 	int player_scale;

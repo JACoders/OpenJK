@@ -3543,9 +3543,7 @@ int zyk_max_magic_power(gentity_t *ent)
 // zyk: sends the current magic power to client-side, scaled in a value between 0 and 100
 void scale_magic_power(gentity_t *ent)
 {
-	int scaled_magic_power = ((float)ent->client->pers.magic_power/zyk_max_magic_power(ent)) * 100.0;
-
-	G_AddEvent(ent, EV_USE_ITEM8, scaled_magic_power);
+	ent->client->pers.send_event_timer = level.time + 1000;
 }
 
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
