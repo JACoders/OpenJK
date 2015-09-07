@@ -6012,6 +6012,11 @@ void quest_get_new_player(gentity_t *ent)
 	if (zyk_rp_mode.integer == 1)
 		return;
 
+	if (level.gametype != GT_FFA)
+	{ // zyk: quests can only be played at FFA gametype
+		return;
+	}
+
 	for (i = 0; i < level.maxclients; i++)
 	{ // zyk: verify if there is someone who is already playing a quest and is not in spectator mode
 		next_player = &g_entities[i];
