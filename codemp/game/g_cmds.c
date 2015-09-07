@@ -3514,7 +3514,7 @@ extern void DismembermentByNum(gentity_t *self, int num);
 extern void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel );
 #endif
 
-// zyk: displays the yellow bar that shows the power duration
+// zyk: displays the yellow bar that shows the cooldown time between magic powers
 void display_yellow_bar(gentity_t *ent, int duration)
 {
 	gentity_t *te = NULL;
@@ -3844,7 +3844,6 @@ qboolean TryGrapple(gentity_t *ent)
 					{ // zyk: Immunity Power
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK] = level.time + 1000;
 						immunity_power(ent,25000);
-						display_yellow_bar(ent,25000);
 						ent->client->pers.magic_power -= zyk_immunity_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
@@ -3892,7 +3891,6 @@ qboolean TryGrapple(gentity_t *ent)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ultra_strength(ent,30000);
-						display_yellow_bar(ent,30000);
 						ent->client->pers.magic_power -= zyk_ultra_strength_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
@@ -3981,7 +3979,6 @@ qboolean TryGrapple(gentity_t *ent)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ultra_resistance(ent,30000);
-						display_yellow_bar(ent,30000);
 						ent->client->pers.magic_power -= zyk_ultra_resistance_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
@@ -4100,6 +4097,8 @@ qboolean TryGrapple(gentity_t *ent)
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Area!\"", ent->client->pers.netname));
 					}
 				}
+
+				display_yellow_bar(ent,(ent->client->pers.quest_power_usage_timer - level.time));
 			}
 			else
 			{
