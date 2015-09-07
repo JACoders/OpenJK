@@ -911,8 +911,7 @@ void Jedi_Cloak( gentity_t *self )
 		{
 			if ( !self->client->ps.powerups[PW_CLOAKED] )
 			{//cloak
-				self->client->ps.powerups[PW_CLOAKED] = Q3_INFINITE;
-
+				self->client->ps.powerups[PW_CLOAKED] = 2147483647; // zyk: default Q3_INFINITE. This value was bugging cloak if server runs the same map for too long, so changed to a higher value
 				//FIXME: debounce attacks?
 				//FIXME: temp sound
 				G_Sound( self, CHAN_ITEM, G_SoundIndex("sound/chars/shadowtrooper/cloak.wav") );
