@@ -5775,7 +5775,7 @@ void choose_new_player(gentity_t *next_player)
 	int found = 0;
 	if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && !(next_player->client->pers.player_settings & (1 << 0)) && next_player->client->pers.can_play_quest == 0 && next_player->client->pers.connected == CON_CONNECTED && next_player->client->sess.sessionTeam != TEAM_SPECTATOR && next_player->inuse == qtrue)
 	{
-		if (level.quest_map == 1 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 4))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 2 && (!(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 3)))) || next_player->client->pers.universe_quest_progress == 3 || (next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
+		if (level.quest_map == 1 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 4))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 2 && (!(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 3)))) || next_player->client->pers.universe_quest_progress == 3))
 			found = 1;
 		else if (level.quest_map == 2 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 5)))
 			found = 1;
@@ -9046,25 +9046,21 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 						strcpy(universe_message, "^3\n8. The Guardian of Universe\n\n^7Defeat the ^2Guardian of Universe ^7at ^3mp/siege_korriban^7.");
 					else if (ent->client->pers.universe_quest_progress == 8)
 					{
-						strcpy(universe_message, "^3\n9. Revelations\n\n^7You had a strange dream of someone calling you from a sacred place. You must go there, talk to the sages and to the guardians about it.\n");
-						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							strcpy(universe_message, va("%s\n^3Sages - ^7Go to ^3yavin1b ^7at the temple and speak to the sages - ^2yes",universe_message));
-						else
-							strcpy(universe_message, va("%s\n^3Sages - ^7Go to ^3yavin1b ^7at the temple and speak to the sages - ^1no",universe_message));
-						
+						strcpy(universe_message, "^3\n9. Revelations\n\n^7You had a strange vision of someone calling you from a sacred place. You must talk to the sages and guardians about it, and you also have to go there.\n");
+
 						if (ent->client->pers.universe_quest_counter & (1 << 1))
-							strcpy(universe_message, va("%s\n^3Guardians - ^7Go to ^3mp/siege_korriban ^7at the ragnos tomb area and speak to the guardians - ^2yes",universe_message));
+							strcpy(universe_message, va("%s\n^3Guardians and Sages - ^7Go to ^3mp/siege_korriban ^7and speak to the guardians and the sages - ^2yes",universe_message));
 						else
-							strcpy(universe_message, va("%s\n^3Guardians - ^7Go to ^3mp/siege_korriban ^7at the ragnos tomb area and speak to the guardians - ^1no",universe_message));
+							strcpy(universe_message, va("%s\n^3Guardians and Sages - ^7Go to ^3mp/siege_korriban ^7and speak to the guardians and the sages - ^1no",universe_message));
 
 						if (ent->client->pers.universe_quest_counter & (1 << 2))
-							strcpy(universe_message, va("%s\n^3Sacred Monument - ^7Go to ^3t2_trip ^7at the sacred obelisk to find out about the dream - ^2yes",universe_message));
+							strcpy(universe_message, va("%s\n^3Sacred Monument - ^7Go to ^3t2_trip ^7, at the sacred obelisk, to find out the meaning of the vision - ^2yes",universe_message));
 						else
-							strcpy(universe_message, va("%s\n^3Sacred Monument - ^7Go to ^3t2_trip ^7at the sacred obelisk to find out about the dream - ^1no",universe_message));
+							strcpy(universe_message, va("%s\n^3Sacred Monument - ^7Go to ^3t2_trip ^7, at the sacred obelisk, to find out the meaning of the vision - ^1no",universe_message));
 					}
 					else if (ent->client->pers.universe_quest_progress == 9)
 					{
-						strcpy(universe_message, "^3\n10. The Sacred Crystals\n\n^7Find the sacred crystals in SP maps. You need them to free the Guardian of Time.\n");
+						strcpy(universe_message, "^3\n10. The Sacred Crystals\n\n^7Find the sacred crystals in ^3t2_trip^7. You need them to free the Guardian of Time.\n");
 						if (ent->client->pers.universe_quest_counter & (1 << 0))
 							strcpy(universe_message, va("%s\n^4Crystal of Destiny ^3- ^2yes",universe_message));
 						else
