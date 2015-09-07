@@ -1021,6 +1021,7 @@ Ghoul2 Insert End
 	// Possible bitvalues:
 	// 0 - Blue Jet Flame
 	// 1 - Stealth Attacker Upgrade, which makes Radar not see this player
+	// 2 - Player ally
 	int zyk_rpg_stuff[MAX_CLIENTS];
 } cg_t;
 

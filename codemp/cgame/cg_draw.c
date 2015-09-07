@@ -3775,7 +3775,8 @@ float CG_DrawRadar ( float y )
 				}
 
 				// zyk: shows red for enemies in non-team gametypes or if it is a team gametype and player is a Bounty Hunter with Upgrade
-				if (cgs.gametype < GT_TEAM || (cg.rpg_stuff & (1 << 0) && cl->team != local->team))
+				if ((cgs.gametype < GT_TEAM && !(cg.zyk_rpg_stuff[cent->currentState.number] & (1 << 2))) || 
+					(cgs.gametype >= GT_TEAM && cg.rpg_stuff & (1 << 0) && cl->team != local->team))
 				{
 					VectorCopy ( g_color_table[ColorIndex(COLOR_RED)], teamColor );
 					teamColor[3] = 1.0f;

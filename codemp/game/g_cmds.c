@@ -10973,6 +10973,9 @@ void Cmd_AllyAdd_f( gentity_t *ent ) {
 			ent->client->sess.ally1 |= (1 << client_id);
 		}
 
+		// zyk: sending event to update radar at client-side
+		G_AddEvent(ent, EV_USE_ITEM9, client_id);
+
 		trap->SendServerCommand( ent-g_entities, va("print \"Added ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
 		trap->SendServerCommand( client_id, va("print \"%s^7 added you as ally\n\"", ent->client->pers.netname) );
 	}
@@ -11037,6 +11040,9 @@ void Cmd_AllyRemove_f( gentity_t *ent ) {
 		{
 			ent->client->sess.ally1 &= ~(1 << client_id);
 		}
+
+		// zyk: sending event to update radar at client-side
+		G_AddEvent(ent, EV_USE_ITEM9, (client_id + MAX_CLIENTS));
 
 		trap->SendServerCommand( ent-g_entities, va("print \"Removed ally %s^7\n\"", g_entities[client_id].client->pers.netname) );
 		trap->SendServerCommand( client_id, va("print \"%s^7 removed you as ally\n\"", ent->client->pers.netname) );

@@ -2624,7 +2624,20 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_USE_ITEM9:
 		DEBUGNAME("EV_USE_ITEM9");
-		CG_UseItem( cent );
+		//CG_UseItem( cent ); zyk: commented this, not used in mod
+
+		if (cg.snap->ps.clientNum == es->number)
+		{
+			if (es->eventParm >= 0 && es->eventParm < MAX_CLIENTS)
+			{ // zyk: player id who is allied to the player
+				cg.zyk_rpg_stuff[es->eventParm] |= (1 << 2);
+			}
+			else if (es->eventParm >= MAX_CLIENTS && es->eventParm < (MAX_CLIENTS * 2))
+			{ // zyk: player id who is no longer allied to the player
+				cg.zyk_rpg_stuff[es->eventParm-MAX_CLIENTS] &= ~(1 << 2);
+			}
+		}
+
 		break;
 	case EV_USE_ITEM10:
 		DEBUGNAME("EV_USE_ITEM10");
