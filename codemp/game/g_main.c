@@ -6512,50 +6512,40 @@ void G_RunFrame( int levelTime ) {
 						{
 							gentity_t *npc_ent = NULL;
 							if (ent->client->pers.universe_quest_messages == 0)
-							{
-								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: Oh great, Master of Evil sent some of his soldiers here too.\"", ent->client->pers.netname));
-								Zyk_NPC_SpawnType("quest_reborn_blue",626,-1004,-742,-90);
-							}
+								Zyk_NPC_SpawnType("quest_reborn_red",785,-510,1177,-179);
 							else if (ent->client->pers.universe_quest_messages == 1)
-							{
-								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: I hope I can find the Sage of Universe before them.\"", ent->client->pers.netname));
-								Zyk_NPC_SpawnType("quest_reborn_blue",401,-1004,-742,-90);
-							}
+								Zyk_NPC_SpawnType("quest_reborn_red",253,-510,1177,-179);
 							else if (ent->client->pers.universe_quest_messages == 2)
-								Zyk_NPC_SpawnType("quest_reborn_red",985,-510,1177,-179);
-							else if (ent->client->pers.universe_quest_messages == 3)
-								Zyk_NPC_SpawnType("quest_reborn_red",53,-510,1177,-179);
-							else if (ent->client->pers.universe_quest_messages == 5)
 								Zyk_NPC_SpawnType("quest_reborn_boss",512,-315,1177,-90);
-							else if (ent->client->pers.universe_quest_messages == 6)
+							else if (ent->client->pers.universe_quest_messages == 3)
 								npc_ent = Zyk_NPC_SpawnType("sage_of_universe",507,-623,537,90);
-							else if (ent->client->pers.universe_quest_messages == 8)
+							else if (ent->client->pers.universe_quest_messages == 5)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: Greetings, %s^7. I am the Sage of Universe.\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 9)
+							else if (ent->client->pers.universe_quest_messages == 6)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: I finally found you!\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 10)
-								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: Ok, %s^7. I must tell you some things.\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 11)
+							else if (ent->client->pers.universe_quest_messages == 7)
+								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: Yes, %s^7. I must tell you some things.\"", ent->client->pers.netname));
+							else if (ent->client->pers.universe_quest_messages == 8)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: I will give you the amulet of Universe, but I must ask you a favor.\""));
-							else if (ent->client->pers.universe_quest_messages == 12)
+							else if (ent->client->pers.universe_quest_messages == 9)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: Thanks! Now what I can do for you.\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 13)
+							else if (ent->client->pers.universe_quest_messages == 10)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: You must find the other three amulets in the ^3City of the Merchants^7.\""));
-							else if (ent->client->pers.universe_quest_messages == 14)
+							else if (ent->client->pers.universe_quest_messages == 11)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: It is located at ^3mp/siege_desert^7. Now I will go to taspir1 to find the other sages.\""));
-							else if (ent->client->pers.universe_quest_messages == 15)
+							else if (ent->client->pers.universe_quest_messages == 12)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: Ok! But how did you know about the sages?\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 16)
+							else if (ent->client->pers.universe_quest_messages == 13)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: %s^7...the mysterious voice at the beginning of your quest was mine.\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 17)
+							else if (ent->client->pers.universe_quest_messages == 14)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: So you knew about me since the beginning!\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 18)
+							else if (ent->client->pers.universe_quest_messages == 15)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: yes %s^7. We will explain everything after you find all amulets.\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 19)
+							else if (ent->client->pers.universe_quest_messages == 16)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: After you found them, go to taspir1. We will be waiting for you.\""));
-							else if (ent->client->pers.universe_quest_messages == 20)
+							else if (ent->client->pers.universe_quest_messages == 17)
 								trap->SendServerCommand( ent->s.number, va("chat \"^2Sage of Universe^7: Now go %s^7! I wish you luck on your quest.\"", ent->client->pers.netname));
-							else if (ent->client->pers.universe_quest_messages == 21)
+							else if (ent->client->pers.universe_quest_messages == 18)
 							{
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: Thanks! Don't worry, I will find them in ^3mp/siege_desert ^7and meet you all in taspir1.\"", ent->client->pers.netname));
 
@@ -6565,7 +6555,10 @@ void G_RunFrame( int levelTime ) {
 									ent->client->pers.universe_quest_counter |= (1 << 29);
 								}
 								else
+								{
 									ent->client->pers.universe_quest_counter = 0;
+								}
+
 								ent->client->pers.universe_quest_progress = 5;
 								ent->client->pers.universe_quest_objective_control = -1;
 								ent->client->pers.universe_quest_messages = 0;
@@ -6580,7 +6573,7 @@ void G_RunFrame( int levelTime ) {
 								npc_ent->client->pers.universe_quest_objective_control = ent-g_entities;
 							}
 
-							if (ent->client->pers.universe_quest_messages != 7 && ent->client->pers.universe_quest_messages < 21)
+							if (ent->client->pers.universe_quest_messages != 4 && ent->client->pers.universe_quest_messages < 18)
 							{
 								ent->client->pers.universe_quest_messages++;
 							}

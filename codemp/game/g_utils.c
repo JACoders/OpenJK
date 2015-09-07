@@ -1849,10 +1849,10 @@ void TryUse( gentity_t *ent )
 			return;
 		}
 		else if (target && target->client && target->NPC && target->client->pers.universe_quest_objective_control != -1 && ent->client->sess.amrpgmode == 2 && 
-				 ent->client->pers.universe_quest_progress == 4 && ent->client->pers.universe_quest_messages == 7 && 
+				 ent->client->pers.universe_quest_progress == 4 && ent->client->pers.universe_quest_messages == 4 && 
 				 ent->client->pers.universe_quest_objective_control == 5)
 		{ // zyk: player found the Sage of Universe
-			ent->client->pers.universe_quest_messages = 8;
+			ent->client->pers.universe_quest_messages = 5;
 			ent->client->pers.universe_quest_timer = level.time + 500;
 			return;
 		}
