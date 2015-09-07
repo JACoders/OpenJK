@@ -7668,13 +7668,16 @@ static gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, v
 						G_Knockdown( hitEnt, ent, kickDir, kickPush, qtrue );
 					}
 					*/
-					if ( kickPush >= 75.0f && !Q_irand( 0, 2 ) )
-					{
-						G_TossTheMofo(hitEnt, kickDir, 300.0f);
-					}
-					else
-					{
-						G_TossTheMofo(hitEnt, kickDir, kickPush);
+					if (ent->client->pers.guardian_mode == hitEnt->client->pers.guardian_mode)
+					{ // zyk: non qust players cant hit quest players in boss battle and vice-versa
+						if ( kickPush >= 75.0f && !Q_irand( 0, 2 ) )
+						{
+							G_TossTheMofo(hitEnt, kickDir, 300.0f);
+						}
+						else
+						{
+							G_TossTheMofo(hitEnt, kickDir, kickPush);
+						}
 					}
 				}
 			}

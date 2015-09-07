@@ -1341,8 +1341,9 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 				}
 				if ( gent->client->ps.powerups[PW_CLOAKED] )
 				{//disable cloak temporarily
-					if (gent->client->sess.amrpgmode < 2 || gent->client->pers.rpg_class != 5)
-					{ // zyk: Stealth Attacker cloak does not decloak by DEMP2 attack
+					if (myOwner->client->pers.guardian_mode == gent->client->pers.guardian_mode && 
+						(gent->client->sess.amrpgmode < 2 || gent->client->pers.rpg_class != 5))
+					{ // zyk: Stealth Attacker cloak does not decloak by DEMP2 attack. Also, non-quest players cant decloak quest players in boss battle and vice-versa
 						Jedi_Decloak( gent );
 						gent->client->cloakToggleTime = level.time + Q_irand( 3000, 10000 );
 					}
@@ -3243,6 +3244,11 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 								break;
 							}
 
+							if (ent->client->pers.guardian_mode != traceEnt->client->pers.guardian_mode)
+							{ // zyk: non quest player cant hit quest players in boss battles and vice-versa
+								break;
+							}
+
 							//if ( G_HasKnockdownAnims( traceEnt ) )
 							if (!noKnockBack && !traceEnt->localAnimIndex && traceEnt->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN &&
 								BG_KnockDownable(&traceEnt->client->ps)) //just check for humanoids..
@@ -3508,6 +3514,11 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 			else
 			{
 				tr_ent->client->ps.electrifyTime = level.time + 700;
+
+				if (ent->client->pers.guardian_mode != tr_ent->client->pers.guardian_mode)
+				{ // zyk: non quest players cant hit quest players and vice-versa
+					return;
+				}
 
 				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] >= 2 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
 				{ // zyk: stun baton level 2 or 3 decloaks players except Stealth Attacker
