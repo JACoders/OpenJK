@@ -636,9 +636,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// zyk: initializing quest_map value
 	level.quest_map = 0;
 
-	// zyk: initializing quest_model_id value
-	level.quest_model_id = -1;
-
 	// zyk: initializing quest_note_id value
 	level.quest_note_id = -1;
 	level.universe_quest_note_id = -1;
@@ -684,6 +681,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		{
 			level.read_screen_message[zyk_iterator] = qfalse;
 			level.screen_message_timer[zyk_iterator] = 0;
+		}
+
+		// zyk: initializing quest_crystal_id value
+		for (zyk_iterator = 0; zyk_iterator < 3; zyk_iterator++)
+		{
+			level.quest_crystal_id[zyk_iterator] = -1;
 		}
 	}
 
@@ -5425,7 +5428,7 @@ extern void try_finishing_race();
 extern void quest_get_new_player(gentity_t *ent);
 extern void clean_note_model();
 extern gentity_t *load_crystal_model(int x,int y,int z, int yaw, int crystal_number);
-extern void clean_crystal_model();
+extern void clean_crystal_model(int crystal_number);
 extern qboolean dark_quest_collected_notes(gentity_t *ent);
 extern qboolean light_quest_defeated_guardians(gentity_t *ent);
 extern void set_max_health(gentity_t *ent);
@@ -6332,56 +6335,6 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 4)
 					{
-						if (ent->client->pers.universe_quest_progress == 9 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 2)) && ent->client->pers.universe_quest_timer < level.time)
-						{ // zyk: Crystal of Time
-							gentity_t *npc_ent = NULL;
-
-							if (ent->client->pers.universe_quest_messages == 0)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",291,-1110,-487,-136);
-							else if (ent->client->pers.universe_quest_messages == 1)
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",221,-1480,-487,150);
-							else if (ent->client->pers.universe_quest_messages == 2)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-240,-1755,-487,58);
-							else if (ent->client->pers.universe_quest_messages == 3)
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-174,-1585,-487,66);
-							else if (ent->client->pers.universe_quest_messages == 4)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",50,-1637,-487,100);
-							else if (ent->client->pers.universe_quest_messages == 5)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",258,-1612,-487,122);
-							else if (ent->client->pers.universe_quest_messages == 6)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",82,-1515,-487,126);
-							else if (ent->client->pers.universe_quest_messages == 7)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",262,-1343,-247,-178);
-							else if (ent->client->pers.universe_quest_messages == 8)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",173,-1177,-487,-127);
-							else if (ent->client->pers.universe_quest_messages == 9)
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-246,-1771,-103,45);
-							else if (ent->client->pers.universe_quest_messages == 10)
-							{
-								if (level.quest_model_id == -1)
-									load_crystal_model(456,-945,-507,-134,2);
-							}
-
-							if (ent->client->pers.universe_quest_messages < 11)
-							{
-								ent->client->pers.universe_quest_messages++;
-								ent->client->pers.universe_quest_timer = level.time + 1500;
-							}
-							else if (ent->client->pers.universe_quest_messages == 11 && (int) ent->client->ps.origin[0] > 441 && (int) ent->client->ps.origin[0] < 471 && (int) ent->client->ps.origin[1] > -960 && (int) ent->client->ps.origin[1] < -930 && (int) ent->client->ps.origin[2] > -507 && (int) ent->client->ps.origin[2] < -467)
-							{
-								ent->client->pers.universe_quest_messages = 12;
-							}
-							else if (ent->client->pers.universe_quest_messages > 11)
-							{
-								ent->client->pers.universe_quest_counter |= (1 << 2);
-								trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^2Crystal of Time^7.\"");
-								universe_crystals_check(ent);
-								save_account(ent);
-								clean_crystal_model();
-								quest_get_new_player(ent);
-							}
-						}
-
 						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 7)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > 2326 && (int) ent->client->ps.origin[0] < 2473 && (int) ent->client->ps.origin[1] > 2966 && (int) ent->client->ps.origin[1] < 3025 && (int) ent->client->ps.origin[2] == -2071)
 						{
 							trap->SendServerCommand( ent->s.number, "chat \"^3Quest System: ^7Found an ancient note.\"");
@@ -7230,47 +7183,131 @@ void G_RunFrame( int levelTime ) {
 								quest_get_new_player(ent);
 							}
 
-							ent->client->pers.universe_quest_messages++;
-							ent->client->pers.universe_quest_timer = level.time + 5000;
-						}
-
-						if (ent->client->pers.universe_quest_progress == 9 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 1)) && ent->client->pers.universe_quest_timer < level.time)
-						{ // zyk: Crystal of Truth
-							gentity_t *npc_ent = NULL;
-
-							if (ent->client->pers.universe_quest_messages == 0)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18057,-5515,1693,129);
-							else if (ent->client->pers.universe_quest_messages == 1)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18539,-5492,1693,34);
-							else if (ent->client->pers.universe_quest_messages == 2)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18495,-5740,1693,-41);
-							else if (ent->client->pers.universe_quest_messages == 3)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-17997,-5795,1693,-143);
-							else if (ent->client->pers.universe_quest_messages == 4)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18229,-5600,1693,-90);
-							else if (ent->client->pers.universe_quest_messages == 5)
-							{
-								if (level.quest_model_id == -1)
-									load_crystal_model(-18229,-5600,1672,-104,1);
-							}
-
-							if (ent->client->pers.universe_quest_messages < 6)
+							if (ent->client->pers.universe_quest_messages < 20)
 							{
 								ent->client->pers.universe_quest_messages++;
-								ent->client->pers.universe_quest_timer = level.time + 1500;
+								ent->client->pers.universe_quest_timer = level.time + 5000;
 							}
-							else if (ent->client->pers.universe_quest_messages == 6 && (int) ent->client->ps.origin[0] > -18259 && (int) ent->client->ps.origin[0] < -18199 && (int) ent->client->ps.origin[1] > -5630 && (int) ent->client->ps.origin[1] < -5570 && (int) ent->client->ps.origin[2] > 1680 && (int) ent->client->ps.origin[2] < 1700)
-							{
-								ent->client->pers.universe_quest_messages = 7;
+						}
+
+						if (ent->client->pers.universe_quest_progress == 9 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time)
+						{ // zyk: Universe Quest crystals mission
+							gentity_t *npc_ent = NULL;
+
+							if (!(ent->client->pers.universe_quest_counter & (1 << 0)))
+							{ // zyk: Crystal of Destiny
+								if (ent->client->pers.universe_quest_messages == 0)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-3702,-2251,2232,90);
+								else if (ent->client->pers.universe_quest_messages == 1)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-3697,-2191,2232,91);
+								else if (ent->client->pers.universe_quest_messages == 2)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-3692,-2335,2232,-91);
+								else if (ent->client->pers.universe_quest_messages == 3)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-3813,-2252,2488,179);
+								else if (ent->client->pers.universe_quest_messages == 4)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-2588,-2252,2488,4);
+								else if (ent->client->pers.universe_quest_messages == 5)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-3702,-2252,2488,100);
+								else if (ent->client->pers.universe_quest_messages == 6)
+								{
+									load_crystal_model(-3702,-2251,2211,90,0);
+								}
 							}
-							else if (ent->client->pers.universe_quest_messages > 6)
+							else if (ent->client->pers.universe_quest_messages == 0)
+							{ // zyk: if player has this crystal, try the next one
+								ent->client->pers.universe_quest_messages = 6;
+							}
+
+							if (!(ent->client->pers.universe_quest_counter & (1 << 1)))
+							{ // zyk: Crystal of Truth
+								if (ent->client->pers.universe_quest_messages == 7)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18057,-5515,1693,129);
+								else if (ent->client->pers.universe_quest_messages == 8)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18539,-5492,1693,34);
+								else if (ent->client->pers.universe_quest_messages == 9)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18495,-5740,1693,-41);
+								else if (ent->client->pers.universe_quest_messages == 10)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-17997,-5795,1693,-143);
+								else if (ent->client->pers.universe_quest_messages == 11)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18229,-5600,1693,-90);
+								else if (ent->client->pers.universe_quest_messages == 12)
+								{
+									load_crystal_model(-18229,-5600,1672,-104,1);
+								}
+							}
+							else if (ent->client->pers.universe_quest_messages == 6)
+							{ // zyk: if player has this crystal, try the next one
+								ent->client->pers.universe_quest_messages = 12;
+							}
+
+							if (!(ent->client->pers.universe_quest_counter & (1 << 2)))
+							{ // zyk: Crystal of Time
+								if (ent->client->pers.universe_quest_messages == 13)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",19904,-2740,1672,90);
+								else if (ent->client->pers.universe_quest_messages == 14)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",19903,-2684,1672,91);
+								else if (ent->client->pers.universe_quest_messages == 15)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",19751,-2669,1672,87);
+								else if (ent->client->pers.universe_quest_messages == 16)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",20039,-2674,1672,86);
+								else if (ent->client->pers.universe_quest_messages == 17)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",20073,-2326,1672,89);
+								else if (ent->client->pers.universe_quest_messages == 18)
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",19713,-2316,1672,83);
+								else if (ent->client->pers.universe_quest_messages == 19)
+								{
+									load_crystal_model(19904,-2740,1651,90,2);
+								}
+							}
+							else if (ent->client->pers.universe_quest_messages == 12)
+							{ // zyk: if player has this crystal, do the crystal check
+								ent->client->pers.universe_quest_messages = 19;
+							}
+
+							if (ent->client->pers.universe_quest_messages < 20)
+							{ // zyk: only increments to next step if npc was properly placed in the map or a crystal was placed
+								if (npc_ent || ent->client->pers.universe_quest_messages == 6 || ent->client->pers.universe_quest_messages == 12 ||
+									ent->client->pers.universe_quest_messages == 19)
+								{
+									ent->client->pers.universe_quest_messages++;
+								}
+
+								ent->client->pers.universe_quest_timer = level.time + 1200;
+							}
+							else
 							{
-								ent->client->pers.universe_quest_counter |= (1 << 1);
-								trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^1Crystal of Truth^7.\"");
-								universe_crystals_check(ent);
-								save_account(ent);
-								clean_crystal_model();
-								quest_get_new_player(ent);
+								ent->client->pers.universe_quest_timer = level.time + 200;
+
+								if (level.quest_crystal_id[0] != -1 && 
+									(int)Distance(ent->client->ps.origin,g_entities[level.quest_crystal_id[0]].r.currentOrigin) < 50)
+								{
+									ent->client->pers.universe_quest_counter |= (1 << 0);
+									trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^4Crystal of Destiny^7.\"");
+									universe_crystals_check(ent);
+									save_account(ent);
+									clean_crystal_model(0);
+									quest_get_new_player(ent);
+								}
+								else if (level.quest_crystal_id[1] != -1 && 
+									(int)Distance(ent->client->ps.origin,g_entities[level.quest_crystal_id[1]].r.currentOrigin) < 50)
+								{
+									ent->client->pers.universe_quest_counter |= (1 << 1);
+									trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^1Crystal of Truth^7.\"");
+									universe_crystals_check(ent);
+									save_account(ent);
+									clean_crystal_model(1);
+									quest_get_new_player(ent);
+								}
+								else if (level.quest_crystal_id[2] != -1 && 
+									(int)Distance(ent->client->ps.origin,g_entities[level.quest_crystal_id[2]].r.currentOrigin) < 50)
+								{
+									ent->client->pers.universe_quest_counter |= (1 << 2);
+									trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^2Crystal of Time^7.\"");
+									universe_crystals_check(ent);
+									save_account(ent);
+									clean_crystal_model(2);
+									quest_get_new_player(ent);
+								}
 							}
 						}
 
@@ -8182,56 +8219,6 @@ void G_RunFrame( int levelTime ) {
 							clean_note_model();
 							save_account(ent);
 							quest_get_new_player(ent);
-						}
-
-						if (ent->client->pers.universe_quest_progress == 9 && ent->client->pers.can_play_quest == 1 && !(ent->client->pers.universe_quest_counter & (1 << 0)) && ent->client->pers.universe_quest_timer < level.time)
-						{ // zyk: Crystal of Destiny
-							gentity_t *npc_ent = NULL;
-
-							if (ent->client->pers.universe_quest_messages == 0)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-4208,-1462,888,-51);
-							else if (ent->client->pers.universe_quest_messages == 1)
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-3119,-1300,1004,-124);
-							else if (ent->client->pers.universe_quest_messages == 2)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-2862,-1871,1102,-137);
-							else if (ent->client->pers.universe_quest_messages == 3)
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-3080,-2367,1103,-159);
-							else if (ent->client->pers.universe_quest_messages == 4)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",190,-1801,714,-141);
-							else if (ent->client->pers.universe_quest_messages == 5)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",353,-757,835,-177);
-							else if (ent->client->pers.universe_quest_messages == 6)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",442,-1360,608,179);
-							else if (ent->client->pers.universe_quest_messages == 7)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",475,-1502,596,170);
-							else if (ent->client->pers.universe_quest_messages == 8)
-								npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-343,-2760,918,-177);
-							else if (ent->client->pers.universe_quest_messages == 9)
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-1846,-2360,912,-178);
-							else if (ent->client->pers.universe_quest_messages == 10)
-							{
-								if (level.quest_model_id == -1)
-									load_crystal_model(-35,-1542,608,179,0);
-							}
-
-							if (ent->client->pers.universe_quest_messages < 11)
-							{
-								ent->client->pers.universe_quest_messages++;
-								ent->client->pers.universe_quest_timer = level.time + 1500;
-							}
-							else if (ent->client->pers.universe_quest_messages == 11 && (int) ent->client->ps.origin[0] > -65 && (int) ent->client->ps.origin[0] < -5 && (int) ent->client->ps.origin[1] > -1572 && (int) ent->client->ps.origin[1] < -1512 && (int) ent->client->ps.origin[2] > 588 && (int) ent->client->ps.origin[2] < 638)
-							{
-								ent->client->pers.universe_quest_messages = 12;
-							}
-							else if (ent->client->pers.universe_quest_messages > 11)
-							{
-								ent->client->pers.universe_quest_counter |= (1 << 0);
-								trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^4Crystal of Destiny^7.\"");
-								universe_crystals_check(ent);
-								save_account(ent);
-								clean_crystal_model();
-								quest_get_new_player(ent);
-							}
 						}
 
 						// zyk: Universe Quest artifact

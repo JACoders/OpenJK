@@ -1431,9 +1431,9 @@ typedef struct level_locals_s {
 	// zyk: sets the map in which the player must complete a quest objective
 	int quest_map;
 
-	// zyk: has the quest crystal id that a player must get. Default -1.
-	// gets cleaned when the player gets the crystal
-	int quest_model_id;
+	// zyk: has the quest crystal ids that a player must get. Default -1 for each position.
+	// crystal gets cleaned when the player gets the crystal
+	int quest_crystal_id[3];
 
 	// zyk: has the quest note id that a player must get. Default -1.
 	// gets cleaned when the player gets the note

@@ -5684,7 +5684,7 @@ gentity_t *load_crystal_model(int x,int y,int z, int yaw, int crystal_number)
 
 	zyk_spawn_entity(ent);
 
-	level.quest_model_id = ent->s.number;
+	level.quest_crystal_id[crystal_number] = ent->s.number;
 
 	return ent;
 }
@@ -5724,12 +5724,12 @@ void clean_note_model()
 }
 
 // zyk: cleans the crystal model if player gets it
-void clean_crystal_model()
+void clean_crystal_model(int crystal_number)
 {
-	if (level.quest_model_id != -1)
+	if (level.quest_crystal_id[crystal_number] != -1)
 	{
-		G_FreeEntity(&g_entities[level.quest_model_id]);
-		level.quest_model_id = -1;
+		G_FreeEntity(&g_entities[level.quest_crystal_id[crystal_number]]);
+		level.quest_crystal_id[crystal_number] = -1;
 	}
 }
 
@@ -5781,7 +5781,7 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 3 && next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 6)))
 			found = 1;
-		else if (level.quest_map == 4 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 7))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 2)))))
+		else if (level.quest_map == 4 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 7)))))
 			found = 1;
 		else if (level.quest_map == 5 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 12))) || (next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 9)))))
 			found = 1;
@@ -5805,9 +5805,9 @@ void choose_new_player(gentity_t *next_player)
 			found = 1;
 		else if (level.quest_map == 15 && next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 10)))
 			found = 1;
-		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 1))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < 14) || (next_player->client->pers.universe_quest_progress == 14 && zyk_number_of_completed_quests(next_player) == 3)))
+		else if (level.quest_map == 17 && ((next_player->client->pers.universe_quest_progress == 8 && !(next_player->client->pers.universe_quest_counter & (1 << 2))) || (next_player->client->pers.universe_quest_progress == 9 && (!(next_player->client->pers.universe_quest_counter & (1 << 0)) || !(next_player->client->pers.universe_quest_counter & (1 << 1)) || !(next_player->client->pers.universe_quest_counter & (1 << 2)))) || (next_player->client->pers.universe_quest_progress >= 10 && next_player->client->pers.universe_quest_progress < 14) || (next_player->client->pers.universe_quest_progress == 14 && zyk_number_of_completed_quests(next_player) == 3)))
 			found = 1;
-		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4))) || (next_player->client->pers.universe_quest_progress == 9 && !(next_player->client->pers.universe_quest_counter & (1 << 0)))))
+		else if (level.quest_map == 18 && ((next_player->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(next_player->client->pers.hunter_quest_progress & (1 << 11))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 4)))))
 			found = 1;
 		else if (level.quest_map == 20 && ((next_player->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(next_player->client->pers.defeated_guardians & (1 << 8))) || (next_player->client->pers.universe_quest_progress == 2 && !(next_player->client->pers.universe_quest_counter & (1 << 7)))))
 			found = 1;
@@ -5889,10 +5889,23 @@ void choose_new_player(gentity_t *next_player)
 			next_player->client->pers.universe_quest_timer = level.time + 3000;
 			next_player->client->pers.universe_quest_objective_control = -7;
 		}
-		else if (level.quest_map == 17 && next_player->client->pers.universe_quest_progress == 11)
-		{ // zyk: Universe Quest. Player must defeat this quantity of quest_super_soldier npcs in this mission
-			next_player->client->pers.universe_quest_timer = level.time + 3000;
-			next_player->client->pers.universe_quest_objective_control = 20;
+		else if (level.quest_map == 17)
+		{ // zyk: Universe Quest
+			if (next_player->client->pers.universe_quest_progress == 9)
+			{ // zyk: cleaning crystals that were in the map
+				int zyk_it = 0;
+
+				for (zyk_it = 0; zyk_it < 3; zyk_it++)
+				{
+					clean_crystal_model(zyk_it);
+				}
+			}
+
+			if (next_player->client->pers.universe_quest_progress == 11)
+			{ // zyk: player must defeat this quantity of quest_super_soldier npcs in this mission
+				next_player->client->pers.universe_quest_timer = level.time + 3000;
+				next_player->client->pers.universe_quest_objective_control = 20;
+			}
 		}
 
 		// zyk: loading note models if player must find a Dark Quest note
