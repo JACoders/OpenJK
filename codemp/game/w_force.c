@@ -2084,7 +2084,7 @@ void ForceShootLightning( gentity_t *self )
 	}
 	else
 	{//trace-line
-		VectorMA( self->client->ps.origin, 2048, forward, end );
+		VectorMA( self->client->ps.origin, 1024, forward, end ); // zyk: changed scale factor from 2048 to 1024
 
 		trap->Trace( &tr, self->client->ps.origin, vec3_origin, vec3_origin, end, self->s.number, MASK_SHOT, qfalse, 0, 0 );
 		if ( tr.entityNum == ENTITYNUM_NONE || tr.fraction == 1.0 || tr.allsolid || tr.startsolid )
