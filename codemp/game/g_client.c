@@ -2688,9 +2688,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	client->pers.enterTime = level.time;
 	client->pers.teamState.state = TEAM_BEGIN;
 
-	// zyk: counting this player as connected
-	level.num_fully_connected_clients++;
-
 	// save eflags around this, because changing teams will
 	// cause this to happen with a valid entity, and we
 	// want to make sure the teleport bit is set right
@@ -4130,7 +4127,6 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->sess.sessionTeam = TEAM_FREE;
 	ent->r.contents = 0;
 
-	level.num_fully_connected_clients--;
 	level.read_screen_message[ent->s.number] = qfalse;
 
 	// zyk: if player was fighting a guardian, allow other players to fight the guardian now

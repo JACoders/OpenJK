@@ -2156,6 +2156,7 @@ void CalculateRanks( void ) {
 	level.follow1 = -1;
 	level.follow2 = -1;
 	level.numConnectedClients = 0;
+	level.num_fully_connected_clients = 0;
 	level.numNonSpectatorClients = 0;
 	level.numPlayingClients = 0;
 	level.numVotingClients = 0;		// don't count bots
@@ -2167,6 +2168,11 @@ void CalculateRanks( void ) {
 		if ( level.clients[i].pers.connected != CON_DISCONNECTED ) {
 			level.sortedClients[level.numConnectedClients] = i;
 			level.numConnectedClients++;
+
+			if (level.clients[i].pers.connected == CON_CONNECTED)
+			{
+				level.num_fully_connected_clients++;
+			}
 
 			if ( level.clients[i].sess.sessionTeam != TEAM_SPECTATOR || level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL )
 			{
