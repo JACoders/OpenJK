@@ -2011,6 +2011,8 @@ void TryUse( gentity_t *ent )
 	{ // zyk: setting the npc leader so he follows the player
 		if (!target->client->leader)
 		{
+			target->client->pers.player_statuses &= ~(1 << 18);
+			target->client->pers.player_statuses &= ~(1 << 19);
 			target->client->leader = ent;
 			target->NPC->tempBehavior = BS_FOLLOW_LEADER;
 		}
