@@ -608,6 +608,8 @@ typedef struct clientPersistant_s {
 	// 15 - Sending Immunity Power event
 	// 16 - Sending Ultra Strength event
 	// 17 - Sending Ultra Resistance event
+	// 18 - NPC has the guard order
+	// 19 - NPC has the cover order
 	int player_statuses;
 
 	int player_scale;

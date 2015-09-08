@@ -2016,6 +2016,8 @@ void TryUse( gentity_t *ent )
 		}
 		else
 		{
+			target->client->pers.player_statuses &= ~(1 << 18);
+			target->client->pers.player_statuses &= ~(1 << 19);
 			target->client->leader = NULL;
 			target->NPC->tempBehavior = BS_STAND_GUARD;
 		}

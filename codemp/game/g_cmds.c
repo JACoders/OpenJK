@@ -13159,6 +13159,78 @@ void Cmd_AdmKick_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_Order_f
+==================
+*/
+void Cmd_Order_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS];
+	int i = 0;
+   
+	if ( trap->Argc() == 1) 
+	{ 
+		trap->SendServerCommand( ent-g_entities, "print \"^3/order follow: ^7npc will follow the leader\n^3/order guard: ^7npc will stand still shooting at everyone except the leader and his allies\n^3/order cover: ^7npc will follow the leader shooting at everyone except the leader and his allies\n\"" );
+	}
+	else
+	{
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+		if (Q_stricmp(arg1, "follow") == 0)
+		{
+			for (i = MAX_CLIENTS; i < level.num_entities; i++)
+			{
+				gentity_t *this_ent = &g_entities[i];
+
+				if (this_ent && this_ent->client && this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE && 
+					this_ent->client->leader == ent)
+				{
+					this_ent->client->pers.player_statuses &= ~(1 << 18);
+					this_ent->client->pers.player_statuses &= ~(1 << 19);
+					this_ent->NPC->tempBehavior = BS_FOLLOW_LEADER;
+				}
+			}
+			trap->SendServerCommand( ent-g_entities, "print \"Order given.\n\"" );
+		}
+		else if (Q_stricmp(arg1, "guard") == 0)
+		{
+			for (i = MAX_CLIENTS; i < level.num_entities; i++)
+			{
+				gentity_t *this_ent = &g_entities[i];
+
+				if (this_ent && this_ent->client && this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE && 
+					this_ent->client->leader == ent)
+				{
+					this_ent->NPC->tempBehavior = BS_STAND_GUARD;
+					this_ent->client->pers.player_statuses &= ~(1 << 19);
+					this_ent->client->pers.player_statuses |= (1 << 18);
+				}
+			}
+			trap->SendServerCommand( ent-g_entities, "print \"Order given.\n\"" );
+		}
+		else if (Q_stricmp(arg1, "cover") == 0)
+		{
+			for (i = MAX_CLIENTS; i < level.num_entities; i++)
+			{
+				gentity_t *this_ent = &g_entities[i];
+
+				if (this_ent && this_ent->client && this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE && 
+					this_ent->client->leader == ent)
+				{
+					this_ent->NPC->tempBehavior = BS_FOLLOW_LEADER;
+					this_ent->client->pers.player_statuses &= ~(1 << 18);
+					this_ent->client->pers.player_statuses |= (1 << 19);
+				}
+			}
+			trap->SendServerCommand( ent-g_entities, "print \"Order given.\n\"" );
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid npc order.\n\"" );
+		}
+	}
+}
+
+/*
+==================
 Cmd_Paralyze_f
 ==================
 */
@@ -13294,6 +13366,7 @@ command_t commands[] = {
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "npc",				Cmd_NPC_f,					CMD_LOGGEDIN|CMD_ALIVE },
 	{ "npclist",			Cmd_NpcList_f,				CMD_NOINTERMISSION },
+	{ "order",				Cmd_Order_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "paralyze",			Cmd_Paralyze_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "playermode",			Cmd_PlayerMode_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },

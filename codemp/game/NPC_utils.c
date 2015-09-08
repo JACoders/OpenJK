@@ -1176,7 +1176,16 @@ qboolean NPC_ValidEnemy( gentity_t *ent )
 	}
 	//Can't be on the same team
 	if ( ent->client->playerTeam == NPCS.NPC->client->playerTeam )
+	{
+		// zyk: npc received order to guard or cover, attack anyone besides the player or his allies
+		if (NPCS.NPC->client->pers.player_statuses & (1 << 18) || NPCS.NPC->client->pers.player_statuses & (1 << 19))
+		{
+			if ((ent->NPC && ent->client && ent->client->leader != NPCS.NPC->client->leader) || (NPCS.NPC->client->leader != ent && zyk_is_ally(NPCS.NPC->client->leader,ent) == qfalse))
+				return qtrue;
+		}
+			
 		return qfalse;
+	}
 
 	//if haven't seen him in a while, give up
 	//if ( NPCInfo->enemyLastSeenTime != 0 && level.time - NPCInfo->enemyLastSeenTime > 7000 )//FIXME: make a stat?
