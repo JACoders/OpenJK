@@ -3540,12 +3540,6 @@ int zyk_max_magic_power(gentity_t *ent)
 		return (max_mp + bonus_mp);
 }
 
-// zyk: sends the current magic power to client-side, scaled in a value between 0 and 100
-void scale_magic_power(gentity_t *ent)
-{
-	ent->client->pers.send_event_timer = level.time + 1000;
-}
-
 extern void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance);
 extern void inner_area_damage(gentity_t *ent, int distance, int damage);
 extern void healing_water(gentity_t *ent, int heal_amount);
@@ -4112,7 +4106,7 @@ qboolean TryGrapple(gentity_t *ent)
 				trap->SendServerCommand( ent->s.number, va("chat \"^3Special Power: ^7%d seconds left!\"", ((ent->client->pers.quest_power_usage_timer - level.time)/1000)));
 			}
 
-			scale_magic_power(ent);
+			send_rpg_events(2000);
 		}
 
 		return qtrue;
@@ -4226,7 +4220,7 @@ void send_rpg_events(int send_event_timer)
 	int i = 0;
 	gentity_t *player_ent = NULL;
 
-	for (i = 0; i < MAX_CLIENTS; i++)
+	for (i = 0; i < level.maxclients; i++)
 	{
 		player_ent = &g_entities[i];
 
@@ -4234,6 +4228,7 @@ void send_rpg_events(int send_event_timer)
 			player_ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{
 			player_ent->client->pers.send_event_timer = level.time + send_event_timer;
+			player_ent->client->pers.send_event_interval = level.time + 100;
 			player_ent->client->pers.player_statuses &= ~(1 << 2);
 			player_ent->client->pers.player_statuses &= ~(1 << 3);
 		}
@@ -10051,7 +10046,7 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
-			scale_magic_power(ent);
+			send_rpg_events(2000);
 		}
 		else if (value == 45)
 		{

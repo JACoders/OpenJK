@@ -3802,8 +3802,6 @@ void ClientSpawn(gentity_t *ent) {
 
 		// zyk: getting the player who can play a quest in this map
 		quest_get_new_player(ent);
-
-		scale_magic_power(ent);
 	}
 	else if (ent->client->pers.player_statuses & (1 << 12))
 	{ // zyk: player received force powers from admin

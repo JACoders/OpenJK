@@ -1258,7 +1258,7 @@ void ItemUse_MedPack(gentity_t *ent)
 	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 0))
 	{
 		ent->client->pers.magic_power = zyk_max_magic_power(ent);
-		scale_magic_power(ent);
+		send_rpg_events(2000);
 	}
 	
 	MedPackGive(ent, MAX_MEDPACK_HEAL_AMOUNT);

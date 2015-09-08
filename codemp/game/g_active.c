@@ -826,7 +826,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				!(ent->client->pers.player_settings & (1 << 5)) && client->pers.magic_power < zyk_max_magic_power(ent))
 			{
 				client->pers.magic_power += 1;
-				scale_magic_power(ent);
+				send_rpg_events(1000);
 			}
 
 			if (client->pers.player_statuses & (1 << 10))
@@ -842,7 +842,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 				client->ps.powerups[PW_SHIELDHIT] = level.time + 2000;
 
-				scale_magic_power(ent);
+				send_rpg_events(1000);
 			}
 
 			if (client->pers.player_statuses & (1 << 11))
@@ -3509,7 +3509,7 @@ void ClientThink_real( gentity_t *ent ) {
 								else
 									ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
-								scale_magic_power(ent);
+								send_rpg_events(2000);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
 
