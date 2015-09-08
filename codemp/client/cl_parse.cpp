@@ -649,6 +649,8 @@ void CL_ParseGamestate( msg_t *msg ) {
 
 //=====================================================================
 
+qboolean FS_BlackListedZipFile( const char *zipfile );
+
 /*
 =====================
 CL_ParseDownload
@@ -727,6 +729,15 @@ void CL_ParseDownload ( msg_t *msg ) {
 		if (clc.download) {
 			FS_FCloseFile( clc.download );
 			clc.download = 0;
+
+			char *zippath = FS_BuildOSPath( Cvar_VariableString( "fs_homepath" ), clc.downloadTempName, "" );
+			zippath[strlen( zippath ) - 1] = '\0';
+
+			if ( FS_BlackListedZipFile( zippath ) )
+			{
+				Com_Error( ERR_DROP, "Download contains executable code!\nOnly download from sources you trust.\nManual rename required!" );
+				return;
+			}
 
 			// rename the file
 			FS_SV_Rename ( clc.downloadTempName, clc.downloadName, qfalse );

@@ -2183,6 +2183,44 @@ static pack_t *FS_LoadZipFile( const char *zipfile, const char *basename )
 	return pack;
 }
 
+qboolean FS_BlackListedZipFile( const char *zipfile )
+{
+	unzFile			uf;
+	char			filename[MAX_ZPATH];
+
+	uf = unzOpen( zipfile );
+
+	if ( unzGoToFirstFile( uf ) != UNZ_OK )
+	{
+		unzClose( uf );
+		return qfalse;
+	}
+
+	unzGetCurrentFileInfo( uf, NULL, filename, sizeof( filename ), NULL, 0, NULL, 0 );
+	if ( COM_CompareExtension( filename, DLL_EXT ) )
+	{
+		unzCloseCurrentFile( uf );
+		unzClose( uf );
+		return qtrue;
+	}
+	unzCloseCurrentFile( uf );
+
+	while ( unzGoToNextFile( uf ) != UNZ_END_OF_LIST_OF_FILE )
+	{
+		unzGetCurrentFileInfo( uf, NULL, filename, sizeof( filename ), NULL, 0, NULL, 0 );
+		if ( COM_CompareExtension( filename, DLL_EXT ) )
+		{
+			unzCloseCurrentFile( uf );
+			unzClose( uf );
+			return qtrue;
+		}
+		unzCloseCurrentFile( uf );
+	}
+
+	unzClose( uf );
+	return qfalse;
+}
+
 /*
 =================
 FS_FreePak

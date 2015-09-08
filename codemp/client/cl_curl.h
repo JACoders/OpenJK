@@ -1,25 +1,23 @@
 /*
 ===========================================================================
 Copyright (C) 2006 Tony J. White (tjw@tjw.org)
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-This file is part of Quake III Arena source code.
+This file is part of the OpenJK source code.
 
-Quake III Arena source code is free software; you can redistribute it
-and/or modify it under the terms of the GNU General Public License as
-published by the Free Software Foundation; either version 2 of the License,
-or (at your option) any later version.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-Quake III Arena source code is distributed in the hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Quake III Arena source code; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
-
 
 #ifndef __QCURL_H__
 #define __QCURL_H__
@@ -52,25 +50,14 @@ extern CURL* (*qcurl_easy_init)(void);
 extern CURLcode (*qcurl_easy_setopt)(CURL *curl, CURLoption option, ...);
 extern CURLcode (*qcurl_easy_perform)(CURL *curl);
 extern void (*qcurl_easy_cleanup)(CURL *curl);
-extern CURLcode (*qcurl_easy_getinfo)(CURL *curl, CURLINFO info, ...);
-extern void (*qcurl_easy_reset)(CURL *curl);
 extern const char *(*qcurl_easy_strerror)(CURLcode);
 
 extern CURLM* (*qcurl_multi_init)(void);
-extern CURLMcode (*qcurl_multi_add_handle)(CURLM *multi_handle,
-						CURL *curl_handle);
-extern CURLMcode (*qcurl_multi_remove_handle)(CURLM *multi_handle,
-						CURL *curl_handle);
-extern CURLMcode (*qcurl_multi_fdset)(CURLM *multi_handle,
-						fd_set *read_fd_set,
-						fd_set *write_fd_set,
-						fd_set *exc_fd_set,
-						int *max_fd);
-extern CURLMcode (*qcurl_multi_perform)(CURLM *multi_handle,
-						int *running_handles);
+extern CURLMcode (*qcurl_multi_add_handle)(CURLM *multi_handle, CURL *curl_handle);
+extern CURLMcode (*qcurl_multi_remove_handle)(CURLM *multi_handle, CURL *curl_handle);
+extern CURLMcode (*qcurl_multi_perform)(CURLM *multi_handle, int *running_handles);
 extern CURLMcode (*qcurl_multi_cleanup)(CURLM *multi_handle);
-extern CURLMsg *(*qcurl_multi_info_read)(CURLM *multi_handle,
-						int *msgs_in_queue);
+extern CURLMsg *(*qcurl_multi_info_read)(CURLM *multi_handle, int *msgs_in_queue);
 extern const char *(*qcurl_multi_strerror)(CURLMcode);
 #else
 #define qcurl_version curl_version
