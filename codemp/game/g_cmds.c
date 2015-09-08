@@ -3847,6 +3847,9 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_immunity_power_cooldown.integer;
+
+						ent->client->pers.player_statuses |= (1 << 15);
+
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Immunity Power!\"", ent->client->pers.netname));
 					}
 					else if (zyk_enable_chaos_power.integer == 1 && ent->client->pers.universe_quest_counter & (1 << 2) && ent->client->pers.magic_power >= zyk_chaos_power_mp_cost.integer)
@@ -3894,6 +3897,9 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_strength_cooldown.integer;
+
+						ent->client->pers.player_statuses |= (1 << 16);
+
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 7 && zyk_enable_poison_mushrooms.integer == 1 && ent->client->pers.magic_power >= zyk_poison_mushrooms_mp_cost.integer)
@@ -3982,6 +3988,9 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_resistance_cooldown.integer;
+
+						ent->client->pers.player_statuses |= (1 << 17);
+
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 6 && zyk_enable_sleeping_flowers.integer == 1 && ent->client->pers.magic_power >= zyk_sleeping_flowers_mp_cost.integer)

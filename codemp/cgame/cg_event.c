@@ -2617,8 +2617,22 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 		if (cg.snap->ps.clientNum == es->number)
 		{
-			// zyk: current magic power
-			cg.magic_power = es->eventParm;
+			if (es->eventParm <= 100)
+			{ // zyk: current magic power
+				cg.magic_power = es->eventParm;
+			}
+			else if (es->eventParm == 101)
+			{ // zyk: Immunity Power
+				cg.immunity_power_duration = cg.time + 25000;
+			}
+			else if (es->eventParm == 102)
+			{ // zyk: Ultra Strength
+				cg.ultra_strength_duration = cg.time + 30000;
+			}
+			else if (es->eventParm == 103)
+			{ // zyk: Ultra Resistance
+				cg.ultra_resistance_duration = cg.time + 30000;
+			}
 		}
 
 		break;

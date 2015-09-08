@@ -605,6 +605,9 @@ typedef struct clientPersistant_s {
 	// 12 - Give Command - Force
 	// 13 - Give Command - Guns
 	// 14 - Sending current Magic Power event
+	// 15 - Sending Immunity Power event
+	// 16 - Sending Ultra Strength event
+	// 17 - Sending Ultra Resistance event
 	int player_statuses;
 
 	int player_scale;
@@ -617,6 +620,7 @@ typedef struct clientPersistant_s {
 
 	// zyk: timer to send events to client game
 	int send_event_timer;
+	int send_event_interval;
 
 	// zyk: point marked in map so player can teleport to this point
 	vec3_t teleport_point;

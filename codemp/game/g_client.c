@@ -2661,6 +2661,7 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 	// zyk: sending events to client game
 	client->pers.send_event_timer = level.time + 3000;
+	client->pers.send_event_interval = level.time + 100;
 
 	client->pers.skill_counter = 0;
 

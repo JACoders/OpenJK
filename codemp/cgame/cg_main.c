@@ -2513,6 +2513,10 @@ Ghoul2 Insert End
 
 	cg.magic_power = 100;
 
+	cg.immunity_power_duration = 0;
+	cg.ultra_strength_duration = 0;
+	cg.ultra_resistance_duration = 0;
+
 	// zyk: initialize the blue jet players
 	for (j = 0; j < MAX_CLIENTS; j++)
 	{

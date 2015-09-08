@@ -7175,6 +7175,116 @@ void CG_DrawMagicPower(void)
 	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_magic_power, cColor);
 }
 
+// zyk: draws the Immunity Power bar
+void CG_DrawImmunityPower(void)
+{
+	vec4_t aColor;
+	vec4_t cColor;
+	float x = 45.0;
+	float y = JPFUELBAR_Y;
+	float scaled_duration = (((cg.immunity_power_duration - cg.time) * 1.0)/25000) * 100.0;
+
+	if (scaled_duration < 0.0)
+	{
+		cg.immunity_power_duration = 0;
+		return;
+	}
+
+	//color of the bar
+	aColor[0] = 0.9f;
+	aColor[1] = 0.9f;
+	aColor[2] = 0.9f;
+	aColor[3] = 0.8f;
+
+	//color of greyed out "missing fuel"
+	cColor[0] = 0.5f;
+	cColor[1] = 0.5f;
+	cColor[2] = 0.5f;
+	cColor[3] = 0.1f;
+
+	//draw the background (black)
+	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+
+	//now draw the part to show how much health there is in the color specified
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
+
+	//then draw the other part greyed out
+	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_duration, cColor);
+}
+
+// zyk: draws the Ultra Strength bar
+void CG_DrawUltraStrength(void)
+{
+	vec4_t aColor;
+	vec4_t cColor;
+	float x = 70.0;
+	float y = JPFUELBAR_Y;
+	float scaled_duration = (((cg.ultra_strength_duration - cg.time) * 1.0)/30000) * 100.0;
+
+	if (scaled_duration < 0.0)
+	{
+		cg.ultra_strength_duration = 0;
+		return;
+	}
+
+	//color of the bar
+	aColor[0] = 0.9f;
+	aColor[1] = 0.1f;
+	aColor[2] = 0.1f;
+	aColor[3] = 0.8f;
+
+	//color of greyed out "missing fuel"
+	cColor[0] = 0.5f;
+	cColor[1] = 0.5f;
+	cColor[2] = 0.5f;
+	cColor[3] = 0.1f;
+
+	//draw the background (black)
+	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+
+	//now draw the part to show how much health there is in the color specified
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
+
+	//then draw the other part greyed out
+	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_duration, cColor);
+}
+
+// zyk: draws the Ultra Resistance bar
+void CG_DrawUltraResistance(void)
+{
+	vec4_t aColor;
+	vec4_t cColor;
+	float x = 95.0;
+	float y = JPFUELBAR_Y;
+	float scaled_duration = (((cg.ultra_resistance_duration - cg.time) * 1.0)/30000) * 100.0;
+
+	if (scaled_duration < 0.0)
+	{
+		cg.ultra_resistance_duration = 0;
+		return;
+	}
+
+	//color of the bar
+	aColor[0] = 0.1f;
+	aColor[1] = 0.1f;
+	aColor[2] = 0.9f;
+	aColor[3] = 0.8f;
+
+	//color of greyed out "missing fuel"
+	cColor[0] = 0.5f;
+	cColor[1] = 0.5f;
+	cColor[2] = 0.5f;
+	cColor[3] = 0.1f;
+
+	//draw the background (black)
+	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+
+	//now draw the part to show how much health there is in the color specified
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
+
+	//then draw the other part greyed out
+	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_duration, cColor);
+}
 
 //draw meter showing cloak fuel when it's not full
 #define CLFUELBAR_H			100.0f
@@ -8109,6 +8219,20 @@ static void CG_Draw2D( void ) {
 	if (cg.magic_power < 100)
 	{ // zyk: draw magic power bar if it is not full
 		CG_DrawMagicPower();
+	}
+
+	// zyk: draw magic power duration bars
+	if (cg.immunity_power_duration > 0)
+	{
+		CG_DrawImmunityPower();
+	}
+	if (cg.ultra_strength_duration > 0)
+	{
+		CG_DrawUltraStrength();
+	}
+	if (cg.ultra_resistance_duration > 0)
+	{
+		CG_DrawUltraResistance();
 	}
 
 	// Draw this before the text so that any text won't get clipped off

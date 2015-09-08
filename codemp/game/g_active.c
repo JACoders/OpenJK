@@ -868,9 +868,29 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		}
 	}
 
-	if (client->pers.send_event_timer > level.time)
+	if (client->pers.send_event_timer > level.time && client->pers.send_event_interval < level.time)
 	{
-		if (!(client->pers.player_statuses & (1 << 14)))
+		client->pers.send_event_interval = level.time + 100;
+
+		if (client->pers.player_statuses & (1 << 15))
+		{ // zyk: Immunity Power
+			G_AddEvent(ent, EV_USE_ITEM8, 101);
+
+			client->pers.player_statuses &= ~(1 << 15);
+		}
+		else if (client->pers.player_statuses & (1 << 16))
+		{ // zyk: Ultra Strength
+			G_AddEvent(ent, EV_USE_ITEM8, 102);
+
+			client->pers.player_statuses &= ~(1 << 16);
+		}
+		else if (client->pers.player_statuses & (1 << 17))
+		{ // zyk: Ultra Resistance
+			G_AddEvent(ent, EV_USE_ITEM8, 103);
+
+			client->pers.player_statuses &= ~(1 << 17);
+		}
+		else if (!(client->pers.player_statuses & (1 << 14)))
 		{
 			int scaled_magic_power = ((float)client->pers.magic_power/zyk_max_magic_power(ent)) * 100.0;
 
