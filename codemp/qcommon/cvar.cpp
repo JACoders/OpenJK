@@ -1147,6 +1147,9 @@ cvar_t *Cvar_Unset(cvar_t *cv)
 {
 	cvar_t *next = cv->next;
 
+	// note what types of cvars have been modified (userinfo, archive, serverinfo, systeminfo)
+	cvar_modifiedFlags |= cv->flags;
+
 	if(cv->name)
 		Cvar_FreeString(cv->name);
 	if(cv->string)
