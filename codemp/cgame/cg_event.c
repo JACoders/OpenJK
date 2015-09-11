@@ -2667,11 +2667,43 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 		break;
 	case EV_USE_ITEM13:
 		DEBUGNAME("EV_USE_ITEM13");
-		CG_UseItem( cent );
+		//CG_UseItem( cent );zyk: commented this, not used in mod
+
+		if (cg.snap->ps.clientNum == es->number)
+		{
+			if (es->eventParm <= 100)
+			{ // zyk: current magic power
+				cg.magic_power = es->eventParm;
+			}
+			else if (es->eventParm == 101)
+			{ // zyk: Immunity Power
+				cg.immunity_power_duration = cg.time + 25000;
+			}
+			else if (es->eventParm == 102)
+			{ // zyk: Ultra Strength
+				cg.ultra_strength_duration = cg.time + 30000;
+			}
+			else if (es->eventParm == 103)
+			{ // zyk: Ultra Resistance
+				cg.ultra_resistance_duration = cg.time + 30000;
+			}
+		}
 		break;
 	case EV_USE_ITEM14:
 		DEBUGNAME("EV_USE_ITEM14");
-		CG_UseItem( cent );
+		//CG_UseItem( cent );zyk: commented this, not used in mod
+
+		if (cg.snap->ps.clientNum == es->number)
+		{
+			if (es->eventParm >= 0 && es->eventParm < MAX_CLIENTS)
+			{ // zyk: player id who is allied to the player
+				cg.zyk_rpg_stuff[es->eventParm] |= (1 << 2);
+			}
+			else if (es->eventParm >= MAX_CLIENTS && es->eventParm < (MAX_CLIENTS * 2))
+			{ // zyk: player id who is no longer allied to the player
+				cg.zyk_rpg_stuff[es->eventParm-MAX_CLIENTS] &= ~(1 << 2);
+			}
+		}
 		break;
 
 	case EV_ITEMUSEFAIL:
