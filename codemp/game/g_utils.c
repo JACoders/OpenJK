@@ -2008,16 +2008,16 @@ void TryUse( gentity_t *ent )
 	}
 
 	if (target->NPC && target->client && target->s.NPC_class != CLASS_VEHICLE && OnSameTeam(ent,target))
-	{ // zyk: setting the npc leader so he follows the player
+	{
 		if (!target->client->leader)
-		{
+		{ // zyk: setting the npc leader so he follows the player
 			target->client->pers.player_statuses &= ~(1 << 18);
 			target->client->pers.player_statuses &= ~(1 << 19);
 			target->client->leader = ent;
 			target->NPC->tempBehavior = BS_FOLLOW_LEADER;
 		}
-		else
-		{
+		else if (target->client->leader == ent)
+		{ // zyk: npc will stop follow the player, which is the leader
 			target->client->pers.player_statuses &= ~(1 << 18);
 			target->client->pers.player_statuses &= ~(1 << 19);
 			target->client->leader = NULL;
