@@ -90,7 +90,7 @@ void	Sys_Init (void);
 
 // general development dll loading for virtual machine testing
 typedef void *GetGameAPIProc( void  *);
-typedef intptr_t QDECL VMMainProc( int, ... );
+typedef intptr_t QDECL VMMainProc( int, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t );
 typedef intptr_t QDECL SystemCallProc( intptr_t, ... );
 typedef void * QDECL GetModuleAPIProc( int, ... );
 
