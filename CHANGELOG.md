@@ -28,9 +28,9 @@ Key: [-] removed, [+] added, [\*] modified
 * [\*] `OpenJK` folder is now searched as a fallback location if `base` and `fs_game` folders do not contain the appropriate gamecode to load.
 * [\*] Error log on crashing exits are now reported to a crashlog text file in your OpenJK homepath.
 * [-] Removed `r_allowSoftwareGL` cvar as it is no longer useful or needed.
-* [+] Added filename completeion to `cinematic` command.
+* [+] Added filename completion to `cinematic` command.
 * [\*] No more viewlog console for client or server.
-* [+] Added improved dedicated server console with color (0-7) support and arrow key support and tab completeion that functions the same as in-game console.
+* [+] Added improved dedicated server console with color (0-7) support and arrow key support and tab completion that functions the same as in-game console.
 * [-] Removed blackbars around screen when rendering in widescreen.
 * [\*] Fixed white screen during load with aformentioned black bar removal.
 
