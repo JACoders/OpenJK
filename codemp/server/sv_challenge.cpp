@@ -184,11 +184,14 @@ Create a challenge for the given client address using a specific challenger.
 */
 static int SV_CreateChallenge(int challengerIndex, netadr_t from)
 {
-	// Create an unforgeable, temporal challenge for this client using HMAC(secretKey, from)
+	const char *clientParams = NET_AdrToString(from);
+	size_t clientParamsLen = strlen(clientParams);
+
+	// Create an unforgeable, temporal challenge for this client using HMAC(secretKey, clientParams)
 	int errorNum;
 	byte digest[HMAC_DIGEST_LENGTH];
 	mbedtls_md_context_t *challenger = &challengers[challengerIndex];
-	if ((errorNum = mbedtls_md_hmac_update(challenger, (byte*)&from, sizeof(from))) != 0 ||
+	if ((errorNum = mbedtls_md_hmac_update(challenger, (byte*)clientParams, clientParamsLen)) != 0 ||
 		(errorNum = mbedtls_md_hmac_finish(challenger, digest)) != 0 ||
 		(errorNum = mbedtls_md_hmac_reset(challenger)) != 0) {
 		Com_Error(ERR_FATAL, "SV_UpdateChallengers: failed - %s", SV_mbedTLS_ErrString(errorNum));
