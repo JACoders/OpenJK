@@ -2003,7 +2003,7 @@ void ForceShootLightning( gentity_t *self )
 		// zyk: Lightning 4/4 has more range
 		if (self->client->sess.amrpgmode == 2 && self->client->pers.force_powers_levels[13] > 3)
 		{
-			radius = FORCE_LIGHTNING_RADIUS * 2;
+			radius = FORCE_LIGHTNING_RADIUS * 1.8;
 		}
 
 		for ( i = 0 ; i < 3 ; i++ )
