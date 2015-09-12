@@ -4880,6 +4880,10 @@ void rpg_score(gentity_t *ent, qboolean admin_rp_mode)
 			// zyk: got a new level, so change the max health and max shield
 			set_max_health(ent);
 			set_max_shield(ent);
+
+			// zyk: mp also increased, so send event to client-side to display the magic power bar
+			send_rpg_events(2000);
+
 			send_message = 1;
 		}
 	}
