@@ -8216,8 +8216,8 @@ static void CG_Draw2D( void ) {
 			CG_DrawEWebHealth();
 		}
 	}
-	if (cg.magic_power < 100)
-	{ // zyk: draw magic power bar if it is not full
+	if (cg.magic_power < 100 && cg.snap->ps.stats[STAT_MAX_HEALTH] > 100)
+	{ // zyk: draw magic power bar if it is not full and it is a rpg player
 		CG_DrawMagicPower();
 	}
 
