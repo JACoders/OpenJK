@@ -16,10 +16,23 @@ Key: [-] removed, [+] added, [\*] modified
 * [\*] Shift-Escape will now also open the console as an alternate (e.g.: keyboard doesn't support the normal console key)
 * [\*] Escape key will now close the console before anything else if the console is open
 * [\*] Removed shift key requirement to open console
-* [+] Raw Mouse Input added to windows (in_mouse 2). An in_restart required if changed while game is running.
+* [+] Raw Mouse Input is now available on all platforms with the in_mouse cvar at the current default value. (SDL2 uses raw mouse input by default)
 * [\*] Drastically improved command/cvar tab-completion including auto-completion of arguments (e.g. `map mp/ffa1`)
-* [+] Clipboard paste support added to the platforms which use SDL2
+* [+] Clipboard paste support added to all supported platforms now with SDL2.
 * [+] Add `stopmusic` command
+* [\*] Fixed segfault crashing in ragdoll code.
+* [\*] Fixed `r_overbrightbits 1` resulting in blackness.
+* [\*] Made the md4 (filesys) checksum code compatible with 64-bit operating systems.
+* [\*] Fixed radar and rocket locking drawing not rendering properly.  Can now support all types of shaders with multiple images if wanted too.
+* [\*] MAX_PATCH_PLANES does not occur on some maps anymore with OpenJK (this isn't related because OpenJK specifically changed something to cause the error, but because of newer compilers affecting optimizations on decimal numbers)
+* [\*] `OpenJK` folder is now searched as a fallback location if `base` and `fs_game` folders do not contain the appropriate gamecode to load.
+* [\*] Error log on crashing exits are now reported to a crashlog text file in your OpenJK homepath.
+* [-] Removed `r_allowSoftwareGL` cvar as it is no longer useful or needed.
+* [+] Added filename completeion to `cinematic` command.
+* [\*] No more viewlog console for client or server.
+* [+] Added improved dedicated server console with color (0-7) support and arrow key support and tab completeion that functions the same as in-game console.
+* [-] Removed blackbars around screen when rendering in widescreen.
+* [\*] Fixed white screen during load with aformentioned black bar removal.
 
 ## Singleplayer only
 
@@ -28,16 +41,21 @@ Key: [-] removed, [+] added, [\*] modified
 * [\*] Fallback location for jagame mod bin is now `OpenJK` instead of `base`
 * [+] Add `modelscale` and `modelscale_vec` support to `misc_model_ghoul`
 * [\*] Fix external lightmap support
+* [\*] `r_flares` defaults to 1 now like Multiplayer.
 
 ### Gamecode (only available in `fs_game openjk` and derived mods)
 
 * [+] Added `cg_smoothCamera` (default 1)
 * [+] Added `cg_dynamicCrosshair` (default 1)
+* [+] Added simple hud from multiplayer with tweaks to match real HUD options. `cg_hudFiles 1`
 
 ## Multiplayer only
 
+* [\*] Gamecode DLL files on Windows are no longer extracted to homepath or basepath, but a temporary file path.
 * [\*] Drastically improved status (server) command
 * [\*] Tweaked `forcetoggle` rcon command.
+* [+] Added `weapontoggle` rcon server command similar to `forcetoggle` command.
+* [\*] Fixed memory leak related to NPC navigation on map changes.
 * [+] Cheats are now defaulted to 1 in menu. Do not be alarmed, starting normally will disable them or connecting to a non-cheat server. This allows cheats to work properly while playing back demos.
 * [+] Add `sv_lanForceRate` (Defaults to 1) Feature was already enabled, but not toggleable.
 * [\*] `globalservers` master server command now supports multiple master servers with the `sv_master1..5` cvars
@@ -51,7 +69,7 @@ Key: [-] removed, [+] added, [\*] modified
 * [+] Added `s_doppler` sound effect for moving sound sources (rockets)
 * [+] Added support for `surfaceSprites flattened` in MP.  (Fixes surface sprites on t2_trip)
 * [+] Added in-engine ban code from ioquake3. Cmds: `sv_rehashbans`, `sv_listbans`, `sv_banaddr`, `sv_exceptaddr`, `sv_bandel`, `sv_exceptdel`, `sv_flushbans`. CVar: `sv_banFile`
-* [+] `addFavorite`
+* [+] `addFavorite` command added to add current or specified server to favorites list.
 * [+] Add ability to paste in text files in the UI
 * [+] Add `cl_motdServer1..5` cvars. `cl_motd` points to which one is used or 0 to turn off
 * [+] Add QuakeLive style mouse accel option (`cl_mouseAccelStyle`, `cl_mouseAccelOffset`)
@@ -62,6 +80,7 @@ Key: [-] removed, [+] added, [\*] modified
 
 ### Gamecode (only available in `fs_game openjk` and derived mods)
 
+* [\*] Tweaked simple hud with adjustments to match real HUD options. `cg_hudFiles 1`
 * [+] Added `pmove_float` cvar (default off) for no velocity snapping resulting in framerate-dependent jump heights.
 * [+] `clientlist` displays clients by id/name and if they are a bot. (Shows real client id unlike `serverstatus`)
 * [+] Added `cg_fovAspectAdjust` to correct field of view on non-4:3 aspect ratios
@@ -177,6 +196,8 @@ Key: [-] removed, [+] added, [\*] modified
 * [+] Filter out servers with invalid chars in their information from the browser (`ui_browserFilterInvalidInfo`)
 * [+] UI now supports multiple master servers
 * [\*] Fix teamoverlay not making you look dead in siege when in limbo
+* [\*] Fix glowing lights bugs on players and dead spectators in siege (in client mod)
+* [\*] Properly load siege sounds for all models that have them, fallback to old broken location if necessary.
 
 
 # Cleanup
@@ -185,7 +206,9 @@ Key: [-] removed, [+] added, [\*] modified
 
 * [-] MPlayer code removed.
 * [-] Removed force feedback code (requires unavailable commercial library)
-* [+] Updated the JPG library
+* [\*] Updated the JPG library
+* [\*] Updated the PNG library
+* [\*] Updated the zLib and minizip libraries
 * [\*] Refactor binds code in the UI
 * [-] Removed (unused) RMG code
 * [\*] General buffer safety cleanup
@@ -193,8 +216,9 @@ Key: [-] removed, [+] added, [\*] modified
 ## Multiplayer only
 
 * [\*] Tweaked serverbrowser client engine code.
-* [\*] Pure server code cleanups client and server.
+* [\*] Pure server code cleanups in client and server.
 
 ### Gamecode (only available in fs_game openjk and derived mods)
 
 * [\*] Optimised .sab parsing and fixed some potential memory corruption
+* [\*] Optimised .veh and .vwp parsing
