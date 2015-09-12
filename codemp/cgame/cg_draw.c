@@ -7144,13 +7144,15 @@ void CG_DrawEWebHealth(void)
 	CG_FillRect(x+1.0f, y+1.0f, EWEBHEALTH_W-1.0f, EWEBHEALTH_H-percent, cColor);
 }
 
+#define RPG_BAR_Y 180.0
+#define RPG_BAR_WIDTH 10.0
 // zyk: draws the magic power bar
 void CG_DrawMagicPower(void)
 {
 	vec4_t aColor;
 	vec4_t cColor;
-	float x = 20.0;
-	float y = JPFUELBAR_Y;
+	float x = 10.0;
+	float y = RPG_BAR_Y;
 	float scaled_magic_power = cg.magic_power;
 
 	//color of the bar
@@ -7166,13 +7168,13 @@ void CG_DrawMagicPower(void)
 	cColor[3] = 0.1f;
 
 	//draw the background (black)
-	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+	CG_DrawRect(x, y, RPG_BAR_WIDTH, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
 
 	//now draw the part to show how much health there is in the color specified
-	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_magic_power), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_magic_power), aColor);
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_magic_power), RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_magic_power), aColor);
 
 	//then draw the other part greyed out
-	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_magic_power, cColor);
+	CG_FillRect(x+1.0f, y+1.0f, RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-scaled_magic_power, cColor);
 }
 
 // zyk: draws the Immunity Power bar
@@ -7180,8 +7182,8 @@ void CG_DrawImmunityPower(void)
 {
 	vec4_t aColor;
 	vec4_t cColor;
-	float x = 45.0;
-	float y = JPFUELBAR_Y;
+	float x = 25.0;
+	float y = RPG_BAR_Y;
 	float scaled_duration = (((cg.immunity_power_duration - cg.time) * 1.0)/25000) * 100.0;
 
 	if (scaled_duration < 0.0)
@@ -7203,13 +7205,13 @@ void CG_DrawImmunityPower(void)
 	cColor[3] = 0.1f;
 
 	//draw the background (black)
-	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+	CG_DrawRect(x, y, RPG_BAR_WIDTH, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
 
 	//now draw the part to show how much health there is in the color specified
-	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
 
 	//then draw the other part greyed out
-	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_duration, cColor);
+	CG_FillRect(x+1.0f, y+1.0f, RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-scaled_duration, cColor);
 }
 
 // zyk: draws the Ultra Strength bar
@@ -7217,8 +7219,8 @@ void CG_DrawUltraStrength(void)
 {
 	vec4_t aColor;
 	vec4_t cColor;
-	float x = 70.0;
-	float y = JPFUELBAR_Y;
+	float x = 40.0;
+	float y = RPG_BAR_Y;
 	float scaled_duration = (((cg.ultra_strength_duration - cg.time) * 1.0)/30000) * 100.0;
 
 	if (scaled_duration < 0.0)
@@ -7240,13 +7242,13 @@ void CG_DrawUltraStrength(void)
 	cColor[3] = 0.1f;
 
 	//draw the background (black)
-	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+	CG_DrawRect(x, y, RPG_BAR_WIDTH, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
 
 	//now draw the part to show how much health there is in the color specified
-	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
 
 	//then draw the other part greyed out
-	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_duration, cColor);
+	CG_FillRect(x+1.0f, y+1.0f, RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-scaled_duration, cColor);
 }
 
 // zyk: draws the Ultra Resistance bar
@@ -7254,8 +7256,8 @@ void CG_DrawUltraResistance(void)
 {
 	vec4_t aColor;
 	vec4_t cColor;
-	float x = 95.0;
-	float y = JPFUELBAR_Y;
+	float x = 55.0;
+	float y = RPG_BAR_Y;
 	float scaled_duration = (((cg.ultra_resistance_duration - cg.time) * 1.0)/30000) * 100.0;
 
 	if (scaled_duration < 0.0)
@@ -7277,13 +7279,13 @@ void CG_DrawUltraResistance(void)
 	cColor[3] = 0.1f;
 
 	//draw the background (black)
-	CG_DrawRect(x, y, JPFUELBAR_W, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
+	CG_DrawRect(x, y, RPG_BAR_WIDTH, JPFUELBAR_H, 1.0f, colorTable[CT_BLACK]);
 
 	//now draw the part to show how much health there is in the color specified
-	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), JPFUELBAR_W-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
+	CG_FillRect(x+1.0f, y+1.0f+(JPFUELBAR_H-scaled_duration), RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-1.0f-(JPFUELBAR_H-scaled_duration), aColor);
 
 	//then draw the other part greyed out
-	CG_FillRect(x+1.0f, y+1.0f, JPFUELBAR_W-1.0f, JPFUELBAR_H-scaled_duration, cColor);
+	CG_FillRect(x+1.0f, y+1.0f, RPG_BAR_WIDTH-1.0f, JPFUELBAR_H-scaled_duration, cColor);
 }
 
 //draw meter showing cloak fuel when it's not full
@@ -8216,23 +8218,27 @@ static void CG_Draw2D( void ) {
 			CG_DrawEWebHealth();
 		}
 	}
-	if (cg.magic_power < 100 && cg.snap->ps.stats[STAT_MAX_HEALTH] > 100)
-	{ // zyk: draw magic power bar if it is not full and it is a rpg player
-		CG_DrawMagicPower();
-	}
 
-	// zyk: draw magic power duration bars
-	if (cg.immunity_power_duration > 0)
+	if (cg_drawStatus.integer && cg.snap->ps.stats[STAT_MAX_HEALTH] > 100)
 	{
-		CG_DrawImmunityPower();
-	}
-	if (cg.ultra_strength_duration > 0)
-	{
-		CG_DrawUltraStrength();
-	}
-	if (cg.ultra_resistance_duration > 0)
-	{
-		CG_DrawUltraResistance();
+		if (cg.magic_power < 100)
+		{ // zyk: draw magic power bar if it is not full and it is a rpg player
+			CG_DrawMagicPower();
+		}
+
+		// zyk: draw magic power duration bars
+		if (cg.immunity_power_duration > 0)
+		{
+			CG_DrawImmunityPower();
+		}
+		if (cg.ultra_strength_duration > 0)
+		{
+			CG_DrawUltraStrength();
+		}
+		if (cg.ultra_resistance_duration > 0)
+		{
+			CG_DrawUltraResistance();
+		}
 	}
 
 	// Draw this before the text so that any text won't get clipped off
