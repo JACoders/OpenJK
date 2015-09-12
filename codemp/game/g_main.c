@@ -7945,7 +7945,7 @@ void G_RunFrame( int levelTime ) {
 									if (ent->client->pers.universe_quest_counter & (1 << 0))
 										trap->SendServerCommand( ent->s.number, "chat \"^2Sage of Universe: ^7Go now and enjoy your life, my friend.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 1))
-										trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7You have to go now hero. Be the Keeper as I told you before.\"");
+										trap->SendServerCommand( ent->s.number, "chat \"^2Guardian of Universe: ^7You have to go now hero. Be in peace.\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 2))
 										trap->SendServerCommand( ent->s.number, "chat \"^1Master of Evil: ^7Now go and conquer everything. Destroy all the weak!\"");
 									else if (ent->client->pers.universe_quest_counter & (1 << 3))
