@@ -194,7 +194,7 @@ static int SV_CreateChallenge(int challengerIndex, netadr_t from)
 	if ((errorNum = mbedtls_md_hmac_update(challenger, (byte*)clientParams, clientParamsLen)) != 0 ||
 		(errorNum = mbedtls_md_hmac_finish(challenger, digest)) != 0 ||
 		(errorNum = mbedtls_md_hmac_reset(challenger)) != 0) {
-		Com_Error(ERR_FATAL, "SV_UpdateChallengers: failed - %s", SV_mbedTLS_ErrString(errorNum));
+		Com_Error(ERR_FATAL, "SV_CreateChallenge: failed - %s", SV_mbedTLS_ErrString(errorNum));
 	}
 
 	// Use first 4 bytes of the HMAC digest as an int (client only deals with numeric challenges)
