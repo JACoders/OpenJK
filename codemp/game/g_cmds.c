@@ -10317,6 +10317,14 @@ void Cmd_Sell_f( gentity_t *ent ) {
 		ent->client->ps.powerups[PW_FORCE_BOON] = 0;
 		sold = 1;
 	}
+
+	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_BINOCULARS)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_MEDPAC)) && 
+		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SENTRY_GUN)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SEEKER)) && 
+		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_EWEB)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_MEDPAC_BIG)) && 
+		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SHIELD)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_CLOAK)))
+	{ // zyk: if player sold an holdable item and no longer has no items left, deselect the held item
+		ent->client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
+	}
 			
 	if (sold == 1)
 	{
