@@ -7129,7 +7129,12 @@ Cmd_ZykMod_f
 ==================
 */
 void Cmd_ZykMod_f( gentity_t *ent ) {
-	// zyk: sends info to the client-side menu
+	// zyk: sends info to the client-side menu if player has the client-side plugin
+	if (Q_stricmp(ent->client->pers.guid, "NOGUID") == 0)
+	{
+		return;
+	}
+
 	if (ent->client->sess.amrpgmode == 2)
 	{
 		int i = 0;
