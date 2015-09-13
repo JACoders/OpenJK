@@ -10862,6 +10862,7 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->cmd.upmove = 0;
 		}
 	}
+	/* zyk: now you can
 	else if (pm->ps->weapon == WP_DISRUPTOR && pm->ps->zoomMode == 1)
 	{ //can't jump
 		if (pm->cmd.upmove > 0)
@@ -10869,6 +10870,7 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->cmd.upmove = 0;
 		}
 	}
+	*/
 
 	if (stiffenedUp)
 	{
