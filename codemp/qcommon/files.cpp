@@ -246,7 +246,6 @@ static cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directo
 static searchpath_t	*fs_searchpaths;
 static int			fs_readCount;			// total bytes read
 static int			fs_loadCount;			// total files read
-static int			fs_loadStack;			// total files in memory
 static int			fs_packFiles = 0;		// total number of files in packs
 
 static int			fs_fakeChkSum;
@@ -345,17 +344,6 @@ qboolean FS_PakIsPure( pack_t *pack ) {
 		return qfalse;	// not on the pure server pak list
 	}
 	return qtrue;
-}
-
-/*
-=================
-FS_LoadStack
-return load stack
-=================
-*/
-int FS_LoadStack( void )
-{
-	return fs_loadStack;
 }
 
 /*
@@ -1959,7 +1947,6 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 			}
 
 			fs_loadCount++;
-			fs_loadStack++;
 
 			// guarantee that it will have a trailing 0 for string operations
 			buf[len] = 0;
@@ -1997,8 +1984,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	}
 
 	fs_loadCount++;
-/*	fs_loadStack++;
-
+/*	
 	buf = (unsigned char *)Hunk_AllocateTempMemory(len+1);
 	*buffer = buf;*/
 
@@ -2037,14 +2023,8 @@ void FS_FreeFile( void *buffer ) {
 	if ( !buffer ) {
 		Com_Error( ERR_FATAL, "FS_FreeFile( NULL )" );
 	}
-	fs_loadStack--;
 
 	Hunk_FreeTempMemory( buffer );
-
-	// if all of our temp files are free, clear all of our space
-	if ( fs_loadStack == 0 ) {
-		Hunk_ClearTempMemory();
-	}
 	*/
 
 	if ( !fs_searchpaths ) {
@@ -3377,10 +3357,23 @@ static void FS_ReorderPurePaks()
 	}
 }
 
-/*
-================
-FS_Startup
-================
+/**
+	@brief Mount the asset archives (.pk3) and register commands.
+
+	Mounts in this order the archives from:
+
+	1.  <fs_cdpath>/<gameName>/
+	2.  <fs_basepath>/<gameName>/
+	3.  <fs_apppath>/<gameName>/ (Mac Only)
+	4.  <fs_homepath>/<gameName>/
+	5.  <fs_cdpath>/<fs_basegame>/
+	6.  <fs_basepath>/<fs_basegame>/
+	7.  <fs_homepath>/<fs_basegame>/
+	8.  <fs_cdpath>/<fs_game>/
+	9.  <fs_basepath>/<fs_game>/
+	10. <fs_homepath>/<fs_game>/
+
+	@param gameName Name of the default folder (i.e. always BASEGAME = "base" in OpenJK)
 */
 void FS_Startup( const char *gameName ) {
 	const char *homePath;
@@ -3403,7 +3396,7 @@ void FS_Startup( const char *gameName ) {
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED);
 
-	// add search path elements in reverse priority order
+	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
 		FS_AddGameDirectory( fs_cdpath->string, gameName );
 	}
@@ -4148,9 +4141,10 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 			HANDLE file = CreateFile(
 				tempFileName, GENERIC_WRITE, 0, NULL,
 				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-			if ( file )
+			if ( file != INVALID_HANDLE_VALUE )
 			{
-				if (WriteFile(file, data, dataLength, NULL, NULL))
+				DWORD bytesWritten = 0;
+				if (WriteFile(file, data, dataLength, &bytesWritten, NULL))
 				{
 					int deletesRemaining = ARRAY_LEN(fs_temporaryFileNames);
 
@@ -4167,7 +4161,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 
 						error = GetLastError();
 						Com_DPrintf("FS_WriteToTemporaryFile failed for '%s'. "
-									"Win32 error code: 0x08x",
+									"Win32 error code: 0x%08x\n",
 									fs_temporaryFileNames[fs_temporaryFileWriteIdx],
 									error);
 
@@ -4201,7 +4195,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 				{
 					error = GetLastError();
 					Com_DPrintf("FS_WriteToTemporaryFile failed to write '%s'. "
-								"Win32 error code: 0x08x",
+								"Win32 error code: 0x%08x\n",
 								tempFileName, error);
 				}
 			}
@@ -4209,7 +4203,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 			{
 				error = GetLastError();
 				Com_DPrintf("FS_WriteToTemporaryFile failed to create '%s'. "
-							"Win32 error code: 0x08x",
+							"Win32 error code: 0x%08x\n",
 							tempFileName, error);
 			}
 		}
@@ -4217,14 +4211,14 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 		{
 			error = GetLastError();
 			Com_DPrintf("FS_WriteToTemporaryFile failed to generate temporary file name. "
-						"Win32 error code: 0x08x", error);
+						"Win32 error code: 0x%08x\n", error);
 		}
 	}
 	else
 	{
 		error = GetLastError();
 		Com_DPrintf("FS_WriteToTemporaryFile failed to get temporary file folder. "
-						"Win32 error code: 0x08x", error);
+						"Win32 error code: 0x%08x\n", error);
 	}
 #endif
 

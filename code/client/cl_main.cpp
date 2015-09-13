@@ -71,6 +71,7 @@ cvar_t	*m_filter;
 
 cvar_t	*cl_activeAction;
 
+cvar_t	*cl_allowAltEnter;
 
 cvar_t	*cl_inGameVideo;
 
@@ -1250,6 +1251,7 @@ void CL_Init( void ) {
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
+	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE);
 	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 

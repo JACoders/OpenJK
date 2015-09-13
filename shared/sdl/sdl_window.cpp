@@ -150,8 +150,44 @@ void WIN_Present( window_t *window )
 		if ( r_swapInterval->modified )
 		{
 			r_swapInterval->modified = qfalse;
-			SDL_GL_SetSwapInterval( r_swapInterval->integer );
+			if ( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
+			{
+				Com_DPrintf( "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError() );
+			}
 		}
+	}
+
+	if ( r_fullscreen->modified )
+	{
+		bool	fullscreen;
+		bool	needToToggle;
+		bool	sdlToggled = qfalse;
+
+		// Find out the current state
+		fullscreen = (SDL_GetWindowFlags( screen ) & SDL_WINDOW_FULLSCREEN) != 0;
+
+		if ( r_fullscreen->integer && Cvar_VariableIntegerValue( "in_nograb" ) )
+		{
+			Com_Printf( "Fullscreen not allowed with in_nograb 1\n" );
+			Cvar_Set( "r_fullscreen", "0" );
+			r_fullscreen->modified = qfalse;
+		}
+
+		// Is the state we want different from the current state?
+		needToToggle = !!r_fullscreen->integer != fullscreen;
+
+		if ( needToToggle )
+		{
+			sdlToggled = SDL_SetWindowFullscreen( screen, r_fullscreen->integer ) >= 0;
+
+			// SDL_WM_ToggleFullScreen didn't work, so do it the slow way
+			if ( !sdlToggled )
+				Cbuf_AddText( "vid_restart\n" );
+
+			IN_Restart();
+		}
+
+		r_fullscreen->modified = qfalse;
 	}
 }
 
@@ -305,10 +341,16 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 		);
 
 	// If a window exists, note its display index
-	if( screen != NULL )
+	if ( screen != NULL )
+	{
 		display = SDL_GetWindowDisplayIndex( screen );
+		if ( display < 0 )
+		{
+			Com_DPrintf( "SDL_GetWindowDisplayIndex() failed: %s\n", SDL_GetError() );
+		}
+	}
 
-	if( SDL_GetDesktopDisplayMode( display, &desktopMode ) == 0 )
+	if( display >= 0 && SDL_GetDesktopDisplayMode( display, &desktopMode ) == 0 )
 	{
 		displayAspect = (float)desktopMode.w / (float)desktopMode.h;
 
@@ -558,7 +600,10 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 				continue;
 			}
 
-			SDL_GL_SetSwapInterval( r_swapInterval->integer );
+			if ( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
+			{
+				Com_DPrintf( "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError() );
+			}
 
 			glConfig->colorBits = testColorBits;
 			glConfig->depthBits = testDepthBits;

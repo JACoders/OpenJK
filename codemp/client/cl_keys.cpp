@@ -1307,12 +1307,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 		kg.anykeydown = qtrue;
 	}
 
-	/*if( kg.keys[A_ALT].down && key == A_ENTER )
+	if ( cl_allowAltEnter->integer && kg.keys[A_ALT].down && key == A_ENTER )
 	{
-		Cvar_SetValue( "r_fullscreen",
-			!Cvar_VariableIntegerValue( "r_fullscreen" ) );
+		Cvar_SetValue( "r_fullscreen", !Cvar_VariableIntegerValue( "r_fullscreen" ) );
 		return;
-	}*/
+	}
 
 	// console key is hardcoded, so the user can never unbind it
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
