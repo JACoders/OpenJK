@@ -3113,6 +3113,7 @@ extern void zyk_remove_force_powers( gentity_t *ent );
 extern void zyk_remove_guns( gentity_t *ent );
 extern void do_scale(gentity_t *ent, int new_size);
 extern int zyk_max_magic_power(gentity_t *ent);
+extern void zyk_load_common_settings(gentity_t *ent);
 void ClientSpawn(gentity_t *ent) {
 	int					i = 0, index = 0, saveSaberNum = ENTITYNUM_NONE, wDisable = 0, savedSiegeIndex = 0, maxHealth = 100;
 	vec3_t				spawn_origin, spawn_angles;
@@ -3809,6 +3810,11 @@ void ClientSpawn(gentity_t *ent) {
 	{ // zyk: player received guns from admin
 		zyk_remove_force_powers(ent);
 		zyk_add_guns(ent);
+	}
+
+	if (ent->client->sess.amrpgmode == 1)
+	{ // zyk: loading Admin-Only settings
+		zyk_load_common_settings(ent);
 	}
 
 	if (ent->client->pers.player_statuses & (1 << 4))

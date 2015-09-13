@@ -4264,6 +4264,88 @@ void remove_credits(gentity_t *ent, int credits)
 		ent->client->pers.credits = 0;
 }
 
+// zyk: loads settings valid both to Admin-Only Mode and to RPG Mode
+void zyk_load_common_settings(gentity_t *ent)
+{
+	// zyk: loading the starting weapon based in player settings
+	if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
+	{
+		ent->client->ps.weapon = WP_SABER;
+	}
+	else
+	{
+		ent->client->ps.weapon = WP_MELEE;
+	}
+		
+	// zyk: player starts with jetpack if it is enabled in player settings and is not in Siege Mode
+	if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
+		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && 
+		((ent->client->sess.amrpgmode == 2 && ent->client->pers.other_skills_levels[4] > 0) || ent->client->sess.amrpgmode == 1))
+	{
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+	}
+	else
+	{
+		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
+		if (ent->client->jetPackOn)
+		{
+			Jetpack_Off(ent);
+		}
+	}
+
+	// zyk: loading the saber style based in the player settings
+	if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
+	{ // zyk: Duals
+		ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_DUAL;
+				
+		if (ent->client->pers.player_settings & (1 << 9) && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
+		{
+			ent->client->ps.saberHolstered = 1;
+		}
+	}
+	else if (ent->client->saber[0].saberFlags&SFL_TWO_HANDED)
+	{ // zyk: Staff
+		ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_STAFF;
+
+		if (ent->client->pers.player_settings & (1 << 10) && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
+		{
+			ent->client->ps.saberHolstered = 1;
+		}
+	}
+	else
+	{ // zyk: Single Saber
+		ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE];
+
+		if (ent->client->pers.player_settings & (1 << 26) && 
+			((ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 2) || 
+			 (ent->client->sess.amrpgmode == 1 && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))))
+		{
+			// ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = SS_MEDIUM;
+			// ent->client->saberCycleQueue = ent->client->ps.fd.saberAnimLevel;
+			ent->client->ps.fd.saberAnimLevel = SS_MEDIUM;
+		}
+		else if (ent->client->pers.player_settings & (1 << 27) && 
+				((ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 3) || 
+				 (ent->client->sess.amrpgmode == 1 && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))))
+		{
+			ent->client->ps.fd.saberAnimLevel = SS_STRONG;
+		}
+		else if (ent->client->pers.player_settings & (1 << 28) && ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 4)
+		{
+			ent->client->ps.fd.saberAnimLevel = SS_DESANN;
+		}
+		else if (ent->client->pers.player_settings & (1 << 29) && ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] == 5)
+		{
+			ent->client->ps.fd.saberAnimLevel = SS_TAVION;
+		}
+		else if (((ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 1) || 
+				  (ent->client->sess.amrpgmode == 1 && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))))
+		{
+			ent->client->ps.fd.saberAnimLevel = SS_FAST;
+		}
+	}
+}
+
 // zyk: loads the player account
 void load_account(gentity_t *ent, qboolean change_mode)
 {
@@ -4666,31 +4748,6 @@ void load_account(gentity_t *ent, qboolean change_mode)
 		}
 		else if (ent->client->sess.amrpgmode == 1)
 		{
-			// zyk: loading the starting weapon based in player settings
-			if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
-			{
-				ent->client->ps.weapon = WP_SABER;
-			}
-			else
-			{
-				ent->client->ps.weapon = WP_MELEE;
-			}
-		
-			// zyk: player starts with jetpack if it is enabled in player settings and is not in Siege Mode
-			if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
-				(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer))
-			{
-				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-			}
-			else
-			{
-				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
-				if (ent->client->jetPackOn)
-				{
-					Jetpack_Off(ent);
-				}
-			}
-
 			ent->client->ps.fd.forcePowerMax = zyk_max_force_power.integer;
 
 			// zyk: setting default max hp and shield
@@ -4704,6 +4761,8 @@ void load_account(gentity_t *ent, qboolean change_mode)
 
 			// zyk: reset the force powers of this player
 			WP_InitForcePowers( ent );
+
+			zyk_load_common_settings(ent);
 		}
 
 		fclose(account_file);
@@ -5015,63 +5074,6 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 		ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
 
-		// zyk: loading the saber style based in the player settings
-		if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
-		{ // zyk: Duals
-			ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_DUAL;
-				
-			if (ent->client->pers.player_settings & (1 << 9) && ent->client->pers.force_powers_levels[5] >= 1)
-			{
-				ent->client->ps.saberHolstered = 1;
-			}
-		}
-		else if (ent->client->saber[0].saberFlags&SFL_TWO_HANDED)
-		{ // zyk: Staff
-			ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = SS_STAFF;
-
-			if (ent->client->pers.player_settings & (1 << 10) && ent->client->pers.force_powers_levels[5] >= 1)
-			{
-				ent->client->ps.saberHolstered = 1;
-			}
-		}
-		else
-		{ // zyk: Single Saber
-			ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE];
-
-			if (ent->client->pers.player_settings & (1 << 26) && ent->client->pers.force_powers_levels[5] >= 2)
-			{
-				// ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = SS_MEDIUM;
-				// ent->client->saberCycleQueue = ent->client->ps.fd.saberAnimLevel;
-				ent->client->ps.fd.saberAnimLevel = SS_MEDIUM;
-			}
-			else if (ent->client->pers.player_settings & (1 << 27) && ent->client->pers.force_powers_levels[5] >= 3)
-			{
-				ent->client->ps.fd.saberAnimLevel = SS_STRONG;
-			}
-			else if (ent->client->pers.player_settings & (1 << 28) && ent->client->pers.force_powers_levels[5] >= 4)
-			{
-				ent->client->ps.fd.saberAnimLevel = SS_DESANN;
-			}
-			else if (ent->client->pers.player_settings & (1 << 29) && ent->client->pers.force_powers_levels[5] == 5)
-			{
-				ent->client->ps.fd.saberAnimLevel = SS_TAVION;
-			}
-			else if (ent->client->pers.force_powers_levels[5] >= 1)
-			{
-				ent->client->ps.fd.saberAnimLevel = SS_FAST;
-			}
-		}
-
-		// zyk: loading the starting weapon based in player settings
-		if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
-		{
-			ent->client->ps.weapon = WP_SABER;
-		}
-		else
-		{
-			ent->client->ps.weapon = WP_MELEE;
-		}
-
 		// zyk: loading Saber Defense value
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && ent->client->pers.force_powers_levels[6] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
@@ -5176,19 +5178,7 @@ void initialize_rpg_skills(gentity_t *ent)
 		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_MELEE)))
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_MELEE);
 
-		// zyk: player starts with jetpack if he has the skill and it is enabled in settings
-		if (ent->client->pers.other_skills_levels[4] > 0 && !(ent->client->pers.player_settings & (1 << 12)))
-		{
-			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-		}
-		else
-		{
-			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
-			if (ent->client->jetPackOn)
-			{
-				Jetpack_Off(ent);
-			}
-		}
+		zyk_load_common_settings(ent);
 
 		ent->client->pers.sense_health_timer = 0;
 
@@ -11145,32 +11135,32 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		// zyk: Saber Style flags
 		if (ent->client->pers.player_settings & (1 << 26))
-			sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^3Yellow", message);
+			sprintf(message,"%s\n^3 8 - Starting Single Saber Style - ^3Yellow", message);
 		else if (ent->client->pers.player_settings & (1 << 27))
-			sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^1Red", message);
+			sprintf(message,"%s\n^3 8 - Starting Single Saber Style - ^1Red", message);
 		else if (ent->client->pers.player_settings & (1 << 28))
-			sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^1Desann", message);
+			sprintf(message,"%s\n^3 8 - Starting Single Saber Style - ^1Desann", message);
 		else if (ent->client->pers.player_settings & (1 << 29))
-			sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^5Tavion", message);
+			sprintf(message,"%s\n^3 8 - Starting Single Saber Style - ^5Tavion", message);
 		else
-			sprintf(message,"%s\n^3 8 - RPG Starting Single Saber Style - ^5Blue", message);
+			sprintf(message,"%s\n^3 8 - Starting Single Saber Style - ^5Blue", message);
 
 		if (ent->client->pers.player_settings & (1 << 9))
 		{
-			sprintf(message,"%s\n^3 9 - RPG Starting Dual Sabers Style - ^1OFF", message);
+			sprintf(message,"%s\n^3 9 - Starting Dual Sabers Style - ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^3 9 - RPG Starting Dual Sabers Style - ^2ON", message);
+			sprintf(message,"%s\n^3 9 - Starting Dual Sabers Style - ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 10))
 		{
-			sprintf(message,"%s\n^310 - RPG Starting Staff Style - ^1OFF", message);
+			sprintf(message,"%s\n^310 - Starting Staff Style - ^1OFF", message);
 		}
 		else
 		{
-			sprintf(message,"%s\n^310 - RPG Starting Staff Style - ^2ON", message);
+			sprintf(message,"%s\n^310 - Starting Staff Style - ^2ON", message);
 		}
 
 		if (ent->client->pers.player_settings & (1 << 11))
@@ -11380,15 +11370,15 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 8)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"RPG Starting Single Saber Style %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Starting Single Saber Style %s\n\"", new_status) );
 		}
 		else if (value == 9)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"RPG Starting Dual Sabers Style %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Starting Dual Sabers Style %s\n\"", new_status) );
 		}
 		else if (value == 10)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"RPG Starting Staff Style %s\n\"", new_status) );
+			trap->SendServerCommand( ent-g_entities, va("print \"Starting Staff Style %s\n\"", new_status) );
 		}
 		else if (value == 11)
 		{
