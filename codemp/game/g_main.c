@@ -5410,13 +5410,18 @@ void universe_crystals_check(gentity_t *ent)
 
 extern void quest_get_new_player(gentity_t *ent);
 extern void clean_note_model();
-void zyk_get_dark_quest_note(gentity_t *ent, int note_bitvalue)
+void zyk_try_get_dark_quest_note(gentity_t *ent, int note_bitvalue)
 {
-	trap->SendServerCommand( ent->s.number, "chat \"^3Quest System: ^7Found an ancient note.\"");
-	ent->client->pers.hunter_quest_progress |= (1 << note_bitvalue);
-	clean_note_model();
-	save_account(ent);
-	quest_get_new_player(ent);
+	if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && ent->client->pers.guardian_mode == 0 && 
+		!(ent->client->pers.hunter_quest_progress & (1 << note_bitvalue)) && ent->client->pers.can_play_quest == 1 &&
+		level.quest_note_id != -1 && (int)Distance(ent->client->ps.origin, g_entities[level.quest_note_id].r.currentOrigin) < 40)
+	{
+		trap->SendServerCommand( ent->s.number, "chat \"^3Quest System: ^7Found an ancient note.\"");
+		ent->client->pers.hunter_quest_progress |= (1 << note_bitvalue);
+		clean_note_model();
+		save_account(ent);
+		quest_get_new_player(ent);
+	}
 }
 
 /*
@@ -6084,10 +6089,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (level.quest_map == 1)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && ent->client->pers.guardian_mode == 0 && !(ent->client->pers.hunter_quest_progress & (1 << 4)) && ent->client->pers.can_play_quest == 1 && (int) ent->r.currentOrigin[0] > 2311 && (int) ent->r.currentOrigin[0] < 2458 && (int) ent->r.currentOrigin[1] > 4503 && (int) ent->r.currentOrigin[1] < 4697 && (int) ent->r.currentOrigin[2] == 1832)
-						{
-							zyk_get_dark_quest_note(ent, 4);
-						}
+						zyk_try_get_dark_quest_note(ent, 4);
 
 						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 4)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->r.currentOrigin[0] > 1962 && (int) ent->r.currentOrigin[0] < 2162 && (int) ent->r.currentOrigin[1] > 3989 && (int) ent->r.currentOrigin[1] < 4189 && (int) ent->r.currentOrigin[2] >= 360 && (int) ent->r.currentOrigin[2] <= 369)
 						{
@@ -6237,31 +6239,20 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 2)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 5)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > 7447 && (int) ent->client->ps.origin[0] < 7552 && (int) ent->client->ps.origin[1] > -816 && (int) ent->client->ps.origin[1] < -728 && (int) ent->client->ps.origin[2] == 24)
-						{
-							zyk_get_dark_quest_note(ent, 5);
-						}
+						zyk_try_get_dark_quest_note(ent, 5);
 					}
 					else if (level.quest_map == 3)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 6)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > -830 && (int) ent->client->ps.origin[0] < -700 && (int) ent->client->ps.origin[1] > 4755 && (int) ent->client->ps.origin[1] < 4839 && (int) ent->client->ps.origin[2] > 215 && (int) ent->client->ps.origin[2] < 222)
-						{
-							zyk_get_dark_quest_note(ent, 6);
-						}
+						zyk_try_get_dark_quest_note(ent, 6);
 					}
 					else if (level.quest_map == 4)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 7)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > 2326 && (int) ent->client->ps.origin[0] < 2473 && (int) ent->client->ps.origin[1] > 2966 && (int) ent->client->ps.origin[1] < 3025 && (int) ent->client->ps.origin[2] == -2071)
-						{
-							zyk_get_dark_quest_note(ent, 7);
-						}
+						zyk_try_get_dark_quest_note(ent, 7);
 					}
 					else if (level.quest_map == 5)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 8)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > -710 && (int) ent->client->ps.origin[0] < -336 && (int) ent->client->ps.origin[1] > -4857 && (int) ent->client->ps.origin[1] < -4504 && (int) ent->client->ps.origin[2] > 940 && (int) ent->client->ps.origin[2] < 951)
-						{ // zyk: Dark Quest Note
-							zyk_get_dark_quest_note(ent, 8);
-						}
+						// zyk: Dark Quest Note
+						zyk_try_get_dark_quest_note(ent, 8);
 
 						if (ent->client->pers.universe_quest_progress == 2 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_objective_control == 3 && !(ent->client->pers.universe_quest_counter & (1 << 9)) && ent->client->pers.universe_quest_timer < level.time)
 						{
@@ -6303,10 +6294,8 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 6)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 9)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > -9888 && (int) ent->client->ps.origin[0] < -9788 && (int) ent->client->ps.origin[1] > -1597 && (int) ent->client->ps.origin[1] < -1497 && (int) ent->client->ps.origin[2] == 24)
-						{ // zyk: Dark Quest Note
-							zyk_get_dark_quest_note(ent, 9);
-						}
+						// zyk: Dark Quest Note
+						zyk_try_get_dark_quest_note(ent, 9);
 
 						if (ent->client->pers.universe_quest_progress == 2 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_objective_control == 3 && !(ent->client->pers.universe_quest_counter & (1 << 6)) && ent->client->pers.universe_quest_timer < level.time)
 						{ // zyk: Universe Quest artifact
@@ -6339,10 +6328,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 7)
 					{
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && ent->client->pers.guardian_mode == 0 && !(ent->client->pers.hunter_quest_progress & (1 << 10)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > 1809 && (int) ent->client->ps.origin[0] < 2025 && (int) ent->client->ps.origin[1] > 1082 && (int) ent->client->ps.origin[1] < 1281 && (int) ent->client->ps.origin[2] == 728)
-						{
-							zyk_get_dark_quest_note(ent, 10);
-						}
+						zyk_try_get_dark_quest_note(ent, 10);
 
 						if (ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS && !(ent->client->pers.defeated_guardians & (1 << 7)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > 2400 && (int) ent->client->ps.origin[0] < 2600 && (int) ent->client->ps.origin[1] > 2040 && (int) ent->client->ps.origin[1] < 2240 && (int) ent->client->ps.origin[2] == -551)
 						{
@@ -6619,9 +6605,9 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 12)) && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_messages < 5 && (int) ent->client->ps.origin[0] > 972 && (int) ent->client->ps.origin[0] < 1012 && (int) ent->client->ps.origin[1] > 972 && (int) ent->client->ps.origin[1] < 1012 && (int) ent->client->ps.origin[2] > 646 && (int) ent->client->ps.origin[2] < 650)
+						if (ent->client->pers.universe_quest_messages < 5)
 						{ // zyk: universe_quest_messages must be less than 5. If it is at least 5, player is in the universe quest missions in this map
-							zyk_get_dark_quest_note(ent, 12);
+							zyk_try_get_dark_quest_note(ent, 12);
 						}
 					}
 					else if (level.quest_map == 10)
@@ -8109,10 +8095,7 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (level.quest_map == 18)
 					{ 
-						if (ent->client->pers.hunter_quest_progress != NUMBER_OF_OBJECTIVES && !(ent->client->pers.hunter_quest_progress & (1 << 11)) && ent->client->pers.can_play_quest == 1 && (int) ent->client->ps.origin[0] > -1168 && (int) ent->client->ps.origin[0] < -1128 && (int) ent->client->ps.origin[1] > -1478 && (int) ent->client->ps.origin[1] < -1438 && (int) ent->client->ps.origin[2] > 610 && (int) ent->client->ps.origin[2] < 620)
-						{
-							zyk_get_dark_quest_note(ent, 11);
-						}
+						zyk_try_get_dark_quest_note(ent, 11);
 
 						// zyk: Universe Quest artifact
 						if (ent->client->pers.universe_quest_progress == 2 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_objective_control == 3 && !(ent->client->pers.universe_quest_counter & (1 << 4)) && ent->client->pers.universe_quest_timer < level.time)
