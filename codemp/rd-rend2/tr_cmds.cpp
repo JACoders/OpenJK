@@ -27,10 +27,14 @@ R_PerformanceCounters
 =====================
 */
 void R_PerformanceCounters( void ) {
+	gpuFrame_t *currentFrame = backEndData->frames + (backEndData->realFrameNumber % MAX_FRAMES);
+
 	if ( !r_speeds->integer ) {
 		// clear the counters even if we aren't printing
 		Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
 		Com_Memset( &backEnd.pc, 0, sizeof( backEnd.pc ) );
+		currentFrame->numTimedBlocks = 0;
+		currentFrame->numTimers = 0;
 		return;
 	}
 
@@ -89,9 +93,41 @@ void R_PerformanceCounters( void ) {
 			backEnd.pc.c_triangleCountBins[TRI_BIN_2000_2999],
 			backEnd.pc.c_triangleCountBins[TRI_BIN_3000_PLUS]);
 	}
+	else if ( r_speeds->integer == 100 )
+	{
+		gpuFrame_t *frame = backEndData->frames + (backEndData->realFrameNumber % MAX_FRAMES);
+
+		// TODO: We want to draw this as text on the screen...
+		// Print to console for now
+
+		int numTimedBlocks = frame->numTimedBlocks;
+		for ( int i = 0; i < numTimedBlocks; i++ )
+		{
+			gpuTimedBlock_t *timedBlock = frame->timedBlocks + i;
+			GLuint64 startTime, endTime, diffInNs;
+			float diffInMs;
+
+			qglGetQueryObjectui64v( timedBlock->beginTimer, GL_QUERY_RESULT, &startTime);
+			qglGetQueryObjectui64v( timedBlock->endTimer, GL_QUERY_RESULT, &endTime);
+
+			diffInNs = endTime - startTime;
+			diffInMs = diffInNs / 1e6f;
+
+			ri->Printf( PRINT_ALL, "%s: %.3fms ", timedBlock->name, diffInMs );
+
+			if ( (i % 7) == 6 )
+			{
+				ri->Printf( PRINT_ALL, "\n" );
+			}
+		}
+
+		ri->Printf( PRINT_ALL, "\n" );
+	}
 
 	Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
 	Com_Memset( &backEnd.pc, 0, sizeof( backEnd.pc ) );
+	currentFrame->numTimedBlocks = 0;
+	currentFrame->numTimers = 0;
 }
 
 
@@ -225,6 +261,47 @@ void	R_AddPostProcessCmd( ) {
 
 	cmd->refdef = tr.refdef;
 	cmd->viewParms = tr.viewParms;
+}
+
+qhandle_t R_BeginTimedBlockCmd( const char *name )
+{
+	beginTimedBlockCommand_t *cmd;
+
+	cmd = (beginTimedBlockCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
+	if ( !cmd )
+	{
+		return (qhandle_t)-1;
+	}
+
+	if ( tr.numTimedBlocks >= (MAX_GPU_TIMERS / 2) )
+	{
+		return (qhandle_t)-1;
+	}
+
+	cmd->commandId = RC_BEGIN_TIMED_BLOCK;
+	cmd->name = name;
+	cmd->timerHandle = tr.numTimedBlocks++;
+
+	return (qhandle_t)cmd->timerHandle;
+}
+
+void R_EndTimedBlockCmd( qhandle_t timerHandle )
+{
+	endTimedBlockCommand_t *cmd;
+
+	cmd = (endTimedBlockCommand_t *)R_GetCommandBuffer( sizeof( *cmd ) );
+	if ( !cmd )
+	{
+		return;
+	}
+
+	if ( cmd->timerHandle == -1 )
+	{
+		return;
+	}
+
+	cmd->commandId = RC_END_TIMED_BLOCK;
+	cmd->timerHandle = timerHandle;
 }
 
 /*
@@ -395,6 +472,36 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 	if ( !tr.registered ) {
 		return;
+	}
+
+	int frameNumber = backEndData->realFrameNumber;
+	gpuFrame_t *thisFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+	if ( thisFrame->sync )
+	{
+		GLsync sync = thisFrame->sync;
+		GLenum result = qglClientWaitSync( sync, 0, 0 );
+		if ( result != GL_ALREADY_SIGNALED )
+		{
+			ri->Printf( PRINT_DEVELOPER, "OpenGL: GPU is more than %d frames behind! Waiting for this frame to finish...\n", MAX_FRAMES );
+
+			static const GLuint64 HALF_SECOND = 500 * 1000 * 1000;
+			do
+			{
+				result = qglClientWaitSync( sync, GL_SYNC_FLUSH_COMMANDS_BIT, HALF_SECOND);
+				if ( result == GL_WAIT_FAILED )
+				{
+					// FIXME: Doesn't this mean the frame will never render?
+					qglDeleteSync( sync );
+					thisFrame->sync = NULL;
+
+					ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "OpenGL: Failed to wait for frame to finish! Aborting frame.\n" );
+					return;
+				}
+			}
+			while ( result != GL_ALREADY_SIGNALED && result != GL_CONDITION_SATISFIED );
+		}
+		qglDeleteSync( sync );
+		thisFrame->sync = NULL;
 	}
 
 	tr.frameCount++;

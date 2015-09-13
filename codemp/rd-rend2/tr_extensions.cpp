@@ -201,6 +201,12 @@ PFNGLGETQUERYIVPROC qglGetQueryiv;
 PFNGLGETQUERYOBJECTIVPROC qglGetQueryObjectiv;
 PFNGLGETQUERYOBJECTUIVPROC qglGetQueryObjectuiv;
 
+// Sync objects and fences
+PFNGLFENCESYNCPROC qglFenceSync;
+PFNGLDELETESYNCPROC qglDeleteSync;
+PFNGLCLIENTWAITSYNCPROC qglClientWaitSync;
+PFNGLWAITSYNCPROC qglWaitSync;
+
 // GL_ARB_texture_storage
 PFNGLTEXSTORAGE1DPROC qglTexStorage1D;
 PFNGLTEXSTORAGE2DPROC qglTexStorage2D;
@@ -214,6 +220,11 @@ PFNGLDEBUGMESSAGECONTROLARBPROC qglDebugMessageControlARB;
 PFNGLDEBUGMESSAGEINSERTARBPROC qglDebugMessageInsertARB;
 PFNGLDEBUGMESSAGECALLBACKARBPROC qglDebugMessageCallbackARB;
 PFNGLGETDEBUGMESSAGELOGARBPROC qglGetDebugMessageLogARB;
+
+// GL_ARB_timer_query
+PFNGLQUERYCOUNTERPROC qglQueryCounter;
+PFNGLGETQUERYOBJECTI64VPROC qglGetQueryObjecti64v;
+PFNGLGETQUERYOBJECTUI64VPROC qglGetQueryObjectui64v;
 
 static qboolean GLimp_HaveExtension(const char *ext)
 {
@@ -477,6 +488,12 @@ void GLimp_InitExtensions()
 	GetGLFunction (qglGetQueryObjectiv, "glGetQueryObjectiv", qtrue);
 	GetGLFunction (qglGetQueryObjectuiv, "glGetQueryObjectuiv", qtrue);
 
+	// Sync objects and fences
+	GetGLFunction (qglFenceSync, "glFenceSync", qtrue);
+	GetGLFunction (qglDeleteSync, "glDeleteSync", qtrue);
+	GetGLFunction (qglClientWaitSync, "glClientWaitSync", qtrue);
+	GetGLFunction (qglWaitSync, "glWaitSync", qtrue);
+
 	Com_Printf ("Initializing OpenGL extensions\n" );
 
 	// Select our tc scheme
@@ -613,6 +630,21 @@ void GLimp_InitExtensions()
 		}
 
 		glRefConfig.debugContext = loaded;
+		ri->Printf(PRINT_ALL, result[loaded], extension);
+	}
+
+	// GL_ARB_timer_query
+	extension = "GL_ARB_timer_query";
+	if ( GLimp_HaveExtension( extension ) )
+	{
+		qboolean loaded = qtrue;
+
+		loaded = (qboolean)(loaded && GetGLFunction(qglQueryCounter, "glQueryCounter", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction(qglGetQueryObjecti64v, "glGetQueryObjecti64v", qfalse));
+		loaded = (qboolean)(loaded && GetGLFunction(qglGetQueryObjectui64v, "glGetQueryObjectui64v", qfalse));
+
+		glRefConfig.timerQuery = loaded;
+
 		ri->Printf(PRINT_ALL, result[loaded], extension);
 	}
 

@@ -1546,15 +1546,50 @@ void R_ShutDownQueries(void)
 
 void RE_SetLightStyle (int style, int color);
 
+static void R_InitBackEndFrameData()
+{
+	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
+	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
+
+	for ( int i = 0; i < MAX_FRAMES; i++ )
+	{
+		gpuFrame_t *frame = backEndData->frames + i;
+
+		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
+		{
+			gpuTimer_t *timer = frame->timers + j;
+			timer->queryName = timerQueries[i*MAX_GPU_TIMERS + j];
+		}
+	}
+}
+
+static void R_ShutdownBackEndFrameData()
+{
+	if ( !backEndData )
+		return;
+
+	for ( int i = 0; i < MAX_FRAMES; i++ )
+	{
+		gpuFrame_t *frame = backEndData->frames + i;
+
+		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
+		{
+			gpuTimer_t *timer = frame->timers + j;
+			Com_Printf( "Deleting query %d\n", timer->queryName );
+			qglDeleteQueries(1, &timer->queryName);
+		}
+	}
+}
+
 /*
 ===============
 R_Init
 ===============
 */
 void R_Init( void ) {
-	int i;
 	byte *ptr;
-
+	int i;
+	
 	ri->Printf( PRINT_ALL, "----- R_Init -----\n" );
 
 	// clear all our internal state
@@ -1603,6 +1638,7 @@ void R_Init( void ) {
 	backEndData = (backEndData_t *) ptr;
 	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
 	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
+
 	R_InitNextFrame();
 
 	for ( int i = 0; i < MAX_LIGHT_STYLES; i++ )
@@ -1614,6 +1650,7 @@ void R_Init( void ) {
 
 	InitOpenGL();
 
+	R_InitBackEndFrameData();
 	R_InitImages();
 
 	FBO_Init();
@@ -1654,12 +1691,14 @@ void R_Init( void ) {
 RE_Shutdown
 ===============
 */
-void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {	
+void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 	ri->Printf( PRINT_ALL, "RE_Shutdown( %i )\n", destroyWindow );
 
 	for ( size_t i = 0; i < numCommands; i++ )
 		ri->Cmd_RemoveCommand( commands[i].cmd );
+
+	R_ShutdownBackEndFrameData();
 
 	R_ShutdownFonts();
 	if ( tr.registered ) {
@@ -1682,6 +1721,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 	}
 
 	tr.registered = qfalse;
+	backEndData = NULL;
 }
 
 /*

@@ -558,6 +558,12 @@ extern PFNGLGETQUERYIVPROC qglGetQueryiv;
 extern PFNGLGETQUERYOBJECTIVPROC qglGetQueryObjectiv;
 extern PFNGLGETQUERYOBJECTUIVPROC qglGetQueryObjectuiv;
 
+// Sync objects and fences
+extern PFNGLFENCESYNCPROC qglFenceSync;
+extern PFNGLDELETESYNCPROC qglDeleteSync;
+extern PFNGLCLIENTWAITSYNCPROC qglClientWaitSync;
+extern PFNGLWAITSYNCPROC qglWaitSync;
+
 #ifndef GL_EXT_texture_compression_latc
 #define GL_EXT_texture_compression_latc
 #define GL_COMPRESSED_LUMINANCE_LATC1_EXT                 0x8C70
@@ -590,3 +596,8 @@ extern PFNGLDEBUGMESSAGECONTROLARBPROC qglDebugMessageControlARB;
 extern PFNGLDEBUGMESSAGEINSERTARBPROC qglDebugMessageInsertARB;
 extern PFNGLDEBUGMESSAGECALLBACKARBPROC qglDebugMessageCallbackARB;
 extern PFNGLGETDEBUGMESSAGELOGARBPROC qglGetDebugMessageLogARB;
+
+// GL_ARB_timer_query
+extern PFNGLQUERYCOUNTERPROC qglQueryCounter;
+extern PFNGLGETQUERYOBJECTI64VPROC qglGetQueryObjecti64v;
+extern PFNGLGETQUERYOBJECTUI64VPROC qglGetQueryObjectui64v;

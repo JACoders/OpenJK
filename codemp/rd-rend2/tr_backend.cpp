@@ -1707,6 +1707,14 @@ static const void	*RB_SwapBuffers( const void *data ) {
 		}
 	}
 
+	int frameNumber = backEndData->realFrameNumber;
+	gpuFrame_t *currentFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+
+	assert( !currentFrame->sync );
+	currentFrame->sync = qglFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE, 0 );
+
+	backEndData->realFrameNumber = frameNumber + 1;
+
 	GLimp_LogComment( "***************** RB_SwapBuffers *****************\n\n\n" );
 
 	ri->WIN_Present( &window );
@@ -1935,6 +1943,49 @@ const void *RB_PostProcess(const void *data)
 	return (const void *)(cmd + 1);
 }
 
+static const void *RB_BeginTimedBlock( const void *data )
+{
+	const beginTimedBlockCommand_t *cmd = (const beginTimedBlockCommand_t *)data;
+	if ( glRefConfig.timerQuery )
+	{
+		gpuFrame_t *currentFrame = &backEndData->frames[backEndData->realFrameNumber % MAX_FRAMES];
+		gpuTimer_t *timer = currentFrame->timers + currentFrame->numTimers++;
+
+		if ( cmd->timerHandle >= 0 && currentFrame->numTimers <= MAX_GPU_TIMERS )
+		{
+			gpuTimedBlock_t *timedBlock = currentFrame->timedBlocks + cmd->timerHandle;
+			timedBlock->beginTimer = timer->queryName;
+			timedBlock->name = cmd->name;
+
+			currentFrame->numTimedBlocks++;
+
+			qglQueryCounter( timer->queryName, GL_TIMESTAMP );
+		}
+	}
+
+	return (const void *)(cmd + 1);
+}
+
+static const void *RB_EndTimedBlock( const void *data )
+{
+	const endTimedBlockCommand_t *cmd = (const endTimedBlockCommand_t *)data;
+	if ( glRefConfig.timerQuery )
+	{
+		gpuFrame_t *currentFrame = &backEndData->frames[backEndData->realFrameNumber % MAX_FRAMES];
+		gpuTimer_t *timer = currentFrame->timers + currentFrame->numTimers++;
+
+		if ( cmd->timerHandle >= 0 && currentFrame->numTimers <= MAX_GPU_TIMERS )
+		{
+			gpuTimedBlock_t *timedBlock = currentFrame->timedBlocks + cmd->timerHandle;
+			timedBlock->endTimer = timer->queryName;
+
+			qglQueryCounter( timer->queryName, GL_TIMESTAMP );
+		}
+	}
+
+	return (const void *)(cmd + 1);
+}
+
 
 /*
 ====================
@@ -1988,6 +2039,12 @@ void RB_ExecuteRenderCommands( const void *data ) {
 			break;
 		case RC_POSTPROCESS:
 			data = RB_PostProcess(data);
+			break;
+		case RC_BEGIN_TIMED_BLOCK:
+			data = RB_BeginTimedBlock(data);
+			break;
+		case RC_END_TIMED_BLOCK:
+			data = RB_EndTimedBlock(data);
 			break;
 		case RC_END_OF_LIST:
 		default:

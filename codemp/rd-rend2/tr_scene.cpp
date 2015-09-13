@@ -45,6 +45,8 @@ R_InitNextFrame
 void R_InitNextFrame( void ) {
 	backEndData->commands.used = 0;
 
+	tr.numTimedBlocks = 0;
+
 	r_firstSceneDrawSurf = 0;
 
 	r_numdlights = 0;
@@ -494,21 +496,27 @@ void RE_RenderScene( const refdef_t *fd ) {
 	// SmileTheory: playing with shadow mapping
 	if (!( fd->rdflags & RDF_NOWORLDMODEL ) && tr.refdef.num_dlights && r_dlightMode->integer >= 2)
 	{
+		qhandle_t timer = R_BeginTimedBlockCmd( "Dlight cubemaps" );
 		R_RenderDlightCubemaps(fd);
+		R_EndTimedBlockCmd( timer );
 	}
 
 	/* playing with more shadows */
 	if(!( fd->rdflags & RDF_NOWORLDMODEL ) && r_shadows->integer == 4)
 	{
+		qhandle_t timer = R_BeginTimedBlockCmd( "PShadow Maps" );
 		R_RenderPshadowMaps(fd);
+		R_EndTimedBlockCmd( timer );
 	}
 
 	// playing with even more shadows
 	if(r_sunlightMode->integer && !( fd->rdflags & RDF_NOWORLDMODEL ) && (r_forceSun->integer || tr.sunShadows))
 	{
+		qhandle_t timer = R_BeginTimedBlockCmd( "Shadow cascades" );
 		R_RenderSunShadowMaps(fd, 0);
 		R_RenderSunShadowMaps(fd, 1);
 		R_RenderSunShadowMaps(fd, 2);
+		R_EndTimedBlockCmd( timer );
 	}
 
 	// playing with cube maps
@@ -556,10 +564,16 @@ void RE_RenderScene( const refdef_t *fd ) {
 		parms.flags = VPF_USESUNLIGHT;
 	}
 
+	qhandle_t timer = R_BeginTimedBlockCmd( "Main Render" );
 	R_RenderView( &parms );
+	R_EndTimedBlockCmd( timer );
 
 	if(!( fd->rdflags & RDF_NOWORLDMODEL ))
+	{
+		qhandle_t timer = R_BeginTimedBlockCmd( "Post processing" );
 		R_AddPostProcessCmd();
+		R_EndTimedBlockCmd( timer );
+	}
 
 	RE_EndScene();
 

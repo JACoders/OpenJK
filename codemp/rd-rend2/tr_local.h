@@ -1830,6 +1830,7 @@ typedef struct {
 	qboolean immutableBuffers;
 
 	qboolean debugContext;
+	qboolean timerQuery;
 
 	qboolean floatLightmap;
 } glRefConfig_t;
@@ -2059,6 +2060,8 @@ typedef struct trGlobals_s {
 
 	frontEndCounters_t		pc;
 	int						frontEndMsec;		// not in pc due to clearing issue
+
+	int						numTimedBlocks;
 
 	//
 	// put large tables at the end, so most elements will be
@@ -2984,6 +2987,17 @@ typedef struct postProcessCommand_s {
 	viewParms_t	viewParms;
 } postProcessCommand_t;
 
+typedef struct beginTimedBlockCommand_s {
+	int commandId;
+	qhandle_t timerHandle;
+	const char *name;
+} beginTimedBlockCommand_t;
+
+typedef struct endTimedBlockCommand_s {
+	int commandId;
+	qhandle_t timerHandle;
+} endTimedBlockCommand_t;
+
 typedef enum {
 	RC_END_OF_LIST,
 	RC_SET_COLOR,
@@ -2998,13 +3012,43 @@ typedef enum {
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
 	RC_CAPSHADOWMAP,
-	RC_POSTPROCESS
+	RC_POSTPROCESS,
+	RC_BEGIN_TIMED_BLOCK,
+	RC_END_TIMED_BLOCK
 } renderCommand_t;
 
+struct gpuTimer_t
+{
+	const char *name;
+	GLuint queryName;
+};
+
+struct gpuTimedBlock_t
+{
+	const char *name;
+	GLuint beginTimer;
+	GLuint endTimer;
+};
+
+#define MAX_GPU_TIMERS (512)
+struct gpuFrame_t
+{
+	GLsync sync;
+
+	int numTimers;
+	int numTimedBlocks;
+
+	gpuTimer_t timers[MAX_GPU_TIMERS];
+	gpuTimedBlock_t timedBlocks[MAX_GPU_TIMERS / 2]; // Each block will need 2 timer queries.
+};
 
 // all of the information needed by the back end must be
 // contained in a backEndData_t.
+#define MAX_FRAMES (2)
 typedef struct backEndData_s {
+	unsigned realFrameNumber;
+	gpuFrame_t frames[MAX_FRAMES];
+
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 	dlight_t	dlights[MAX_DLIGHTS];
 	trRefEntity_t	entities[MAX_REFENTITIES];
@@ -3028,6 +3072,9 @@ void R_IssuePendingRenderCommands( void );
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 void R_AddCapShadowmapCmd( int dlight, int cubeSide );
 void R_AddPostProcessCmd (void);
+qhandle_t R_BeginTimedBlockCmd( const char *name );
+void R_EndTimedBlockCmd( qhandle_t timerHandle );
+
 
 void RE_SetColor( const float *rgba );
 void RE_StretchPic ( float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t hShader );
