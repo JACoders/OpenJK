@@ -1781,6 +1781,9 @@ void PM_GrabWallForJump( int anim )
 PM_CheckJump
 =============
 */
+#if defined( _GAME )
+extern void rpg_skill_counter(gentity_t *ent, int amount);
+#endif
 static qboolean PM_CheckJump( void )
 {
 	qboolean allowFlips = qtrue;
@@ -1843,6 +1846,14 @@ static qboolean PM_CheckJump( void )
 	{ //Force jump is already active.. continue draining power appropriately until we land.
 		if (pm->ps->fd.forcePowerDebounce[FP_LEVITATION] < pm->cmd.serverTime)
 		{
+#if defined (_GAME)
+			gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+			if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2)
+			{
+				rpg_skill_counter(player_ent, 5);
+			}
+#endif
+
 			if ( pm->gametype == GT_DUEL
 				|| pm->gametype == GT_POWERDUEL )
 			{//jump takes less power
@@ -2772,6 +2783,17 @@ static qboolean PM_CheckJump( void )
 		PM_JumpForDir();
 	}
 
+#if defined (_GAME)
+	if (1)
+	{
+		gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2)
+		{
+			rpg_skill_counter(player_ent, 5);
+		}
+	}
+#endif
+
 	return qtrue;
 }
 /*
@@ -3612,9 +3634,6 @@ static int PM_FootstepForSurface( void )
 }
 
 extern qboolean PM_CanRollFromSoulCal( playerState_t *ps );
-#if defined( _GAME )
-extern void rpg_skill_counter(gentity_t *ent, int amount);
-#endif
 static int PM_TryRoll( void )
 {
 	trace_t	trace;
