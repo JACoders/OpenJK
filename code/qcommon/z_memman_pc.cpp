@@ -177,14 +177,14 @@ int Z_Validate(void)
 #pragma pack(1)
 typedef struct
 {
-	zoneHeader_t	Header;	
+	zoneHeader_t	Header;
 //	byte mem[0];
 	zoneTail_t		Tail;
 } StaticZeroMem_t;
 
 typedef struct
 {
-	zoneHeader_t	Header;	
+	zoneHeader_t	Header;
 	byte mem[2];
 	zoneTail_t		Tail;
 } StaticMem_t;
@@ -709,12 +709,11 @@ static void Z_Details_f(void)
 			float	fSize		= (float)(iThisSize) / 1024.0f / 1024.0f;
 			int		iSize		= fSize;
 			int		iRemainder 	= 100.0f * (fSize - floor(fSize));
-			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d Bytes/block)\n", 
-					    psTagStrings[i], 
-							  iThisSize, 
-								iSize,iRemainder,
-								           iThisCount, iThisSize / iThisCount
-					   );
+			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d Bytes/block)\n",
+				psTagStrings[i],
+				iThisSize,
+				iSize, iRemainder,
+				iThisCount, iThisSize / iThisCount);
 		}
 	}
 	Com_Printf("---------------------------------------------------------------------------\n");
@@ -910,7 +909,10 @@ void Com_InitZoneMemory( void )
 
 	memset(&TheZone, 0, sizeof(TheZone)); 
 	TheZone.Header.iMagic = ZONE_MAGIC;
+}
 
+void Com_InitZoneMemoryVars( void)
+{
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 
 	Cmd_AddCommand("zone_stats",	Z_Stats_f);
@@ -919,7 +921,6 @@ void Com_InitZoneMemory( void )
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
 #endif
-
 
 #ifdef DEBUG_ZONE_ALLOCS
 	Cmd_AddCommand("zone_tagdebug",	Z_TagDebug_f);
