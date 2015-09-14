@@ -694,6 +694,8 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if t
 
 #endif
 
+void Com_InitZoneMemory(void);
+void Com_InitZoneMemoryVars(void);
 
 void Hunk_Clear( void );
 void Hunk_ClearToMark( void );

@@ -1066,13 +1066,13 @@ static void Com_CatchError ( int code )
 Com_Init
 =================
 */
-extern void Com_InitZoneMemory();
 void Com_Init( char *commandLine ) {
 	char	*s;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 
 	try {
+		Com_InitZoneMemory();
 		Cvar_Init ();
 
 		// prepare enough of the subsystems to handle
@@ -1082,8 +1082,7 @@ void Com_Init( char *commandLine ) {
 		//Swap_Init ();
 		Cbuf_Init ();
 
-		Com_InitZoneMemory();
-
+		Com_InitZoneMemoryVars();
 		Cmd_Init ();
 
 		// override anything from the config files with command line args
