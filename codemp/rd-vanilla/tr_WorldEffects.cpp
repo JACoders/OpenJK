@@ -898,7 +898,7 @@ public:
 		mRotation.mMin		= -0.7f;
 		mRotation.mMax		=  0.7f;
 		mRotationChangeTimer.mMin = 500;
-		mRotationChangeTimer.mMin = 2000;
+		mRotationChangeTimer.mMax = 2000;
 
 		mMass.mMin			= 5.0f;
 		mMass.mMax			= 10.0f;
