@@ -710,11 +710,10 @@ static void Z_Details_f(void)
 			int		iSize		= fSize;
 			int		iRemainder 	= 100.0f * (fSize - floor(fSize));
 			Com_Printf("%20s %9d (%2d.%02dMB) in %6d blocks (%9d Bytes/block)\n",
-					    psTagStrings[i],
-							  iThisSize,
-								iSize,iRemainder,
-								           iThisCount, iThisSize / iThisCount
-					   );
+				psTagStrings[i],
+				iThisSize,
+				iSize, iRemainder,
+				iThisCount, iThisSize / iThisCount);
 		}
 	}
 	Com_Printf("---------------------------------------------------------------------------\n");
@@ -910,7 +909,10 @@ void Com_InitZoneMemory( void )
 
 	memset(&TheZone, 0, sizeof(TheZone));
 	TheZone.Header.iMagic = ZONE_MAGIC;
+}
 
+void Com_InitZoneMemoryVars( void )
+{
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 
 	Cmd_AddCommand("zone_stats",	Z_Stats_f);
@@ -919,7 +921,6 @@ void Com_InitZoneMemory( void )
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
 #endif
-
 
 #ifdef DEBUG_ZONE_ALLOCS
 	Cmd_AddCommand("zone_tagdebug",	Z_TagDebug_f);
