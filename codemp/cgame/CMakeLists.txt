@@ -129,7 +129,7 @@ set(MPCGameGFiles
 source_group("ghoul2" FILES ${MPCGameG2Files})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameG2Files})
 
-add_library(${MPCGame} SHARED ${MPCGameFiles})
+add_library(${MPCGame} MODULE ${MPCGameFiles})
 
 if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
@@ -147,14 +147,14 @@ if(MakeApplicationBundles AND BuildMPEngine)
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
 	install(TARGETS ${MPCGame}
-		RUNTIME
+		LIBRARY
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 	if (WIN64)
 		# Don't do this on 32-bit Windows to avoid overwriting
 		# vanilla JKA's DLLs
 		install(TARGETS ${MPCGame}
-			RUNTIME
+			LIBRARY
 			DESTINATION "${JKAInstallDir}/base"
 			COMPONENT ${JKAMPCoreComponent})
 	endif()

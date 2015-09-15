@@ -140,7 +140,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OpenJKLibDir})
 	
 	function(add_sp_renderer_project ProjectName Label EngineName InstallDir Component)
-		add_library(${ProjectName} SHARED ${SPRDVanillaFiles})
+		add_library(${ProjectName} MODULE ${SPRDVanillaFiles})
 		if(NOT MSVC)
 			# remove "lib" prefix for .so/.dylib files
 			set_target_properties(${ProjectName} PROPERTIES PREFIX "")
@@ -148,7 +148,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 
 		if(WIN32)
 			install(TARGETS ${ProjectName}
-				RUNTIME
+				LIBRARY
 				DESTINATION ${InstallDir}
 				COMPONENT ${Component})
 		else(WIN32)

@@ -197,7 +197,7 @@ set(MPGameUiFiles
 source_group("ui" FILES ${MPGameUiFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameUiFiles})
 
-add_library(${MPGame} SHARED ${MPGameFiles})
+add_library(${MPGame} MODULE ${MPGameFiles})
 
 if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
@@ -215,14 +215,14 @@ if(MakeApplicationBundles AND BuildMPEngine)
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
 	install(TARGETS ${MPGame}
-		RUNTIME
+		LIBRARY
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 	if (WIN64)
 		# Don't do this on 32-bit Windows to avoid overwriting
 		# vanilla JKA's DLLs
 		install(TARGETS ${MPGame}
-			RUNTIME
+			LIBRARY
 			DESTINATION "${JKAInstallDir}/base"
 			COMPONENT ${JKAMPCoreComponent})
 	endif()

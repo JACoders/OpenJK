@@ -82,7 +82,7 @@ set(MPUIRendererFiles
 source_group("rd-common" FILES ${MPUIRendererFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUIRendererFiles})
 
-add_library(${MPUI} SHARED ${MPUIFiles})
+add_library(${MPUI} MODULE ${MPUIFiles})
 
 if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
@@ -100,14 +100,14 @@ if(MakeApplicationBundles AND BuildMPEngine)
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
 	install(TARGETS ${MPUI}
-		RUNTIME
+		LIBRARY
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 	if (WIN64)
 		# Don't do this on 32-bit Windows to avoid overwriting
 		# vanilla JKA's DLLs
 		install(TARGETS ${MPUI}
-			RUNTIME
+			LIBRARY
 			DESTINATION "${JKAInstallDir}/base"
 			COMPONENT ${JKAMPCoreComponent})
 	endif()
