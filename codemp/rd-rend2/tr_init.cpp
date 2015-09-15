@@ -1074,20 +1074,17 @@ void GL_SetDefaultState( void )
 	//qglShadeModel( GL_SMOOTH );
 	qglDepthFunc( GL_LEQUAL );
 
+	Com_Memset(&glState, 0, sizeof(glState));
+
 	//
 	// make sure our GL state vector is set correctly
 	//
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
 
-	glState.vertexAttribsState = 0;
-	glState.vertexAttribPointersSet = 0;
-	glState.currentProgram = 0;
 	qglUseProgram(0);
 
 	qglBindBuffer(GL_ARRAY_BUFFER, 0);
 	qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glState.currentVBO = NULL;
-	glState.currentIBO = NULL;
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	qglDepthMask( GL_TRUE );
