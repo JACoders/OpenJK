@@ -123,11 +123,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 		#define OS_STRING "kFreeBSD"
 	#endif
 
-	#ifdef __clang__
-		#define QINLINE static inline
-	#else
-		#define QINLINE inline
-	#endif
+	#define QINLINE inline
 
 	#define PATH_SEP '/'
 
