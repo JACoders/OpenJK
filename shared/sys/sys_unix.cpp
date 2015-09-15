@@ -527,6 +527,37 @@ void Sys_SetProcessorAffinity( void ) {
 #endif
 }
 
+#ifdef _DEBUG
+
+#include <sys/resource.h>
+/*
+=================
+Sys_LimitAvailableMemory
+
+Limit the maximum size of the process's virtual memory (in bytes).
+Returns the original limit.
+=================
+*/
+size_t Sys_LimitAvailableMemory(size_t limit)
+{
+	struct rlimit rlim;
+	size_t available;
+
+	if (getrlimit(RLIMIT_AS, &rlim))
+	{
+		return 0;
+	}
+	available = rlim.rlim_cur;
+	rlim.rlim_cur = limit;
+	if (setrlimit(RLIMIT_AS, &rlim))
+	{
+		return 0;
+	}
+	return available;
+}
+
+#endif
+
 UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
 	return UnpackDLLResult();

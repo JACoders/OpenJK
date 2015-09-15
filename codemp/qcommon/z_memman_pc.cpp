@@ -87,9 +87,9 @@ std::map <void*,int> mapAllocatedZones;
 
 typedef struct zoneStats_s
 {
-	int		iCount;
-	int		iCurrent;
-	int		iPeak;
+	size_t		iCount;
+	size_t		iCurrent;
+	size_t		iPeak;
 
 	// I'm keeping these updated on the fly, since it's quicker for cache-pool
 	//	purposes rather than recalculating each time...
@@ -226,6 +226,7 @@ void *D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFil
 void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 #endif
 {
+	int loopCount = 0;
 	gbMemFreeupOccured = qfalse;
 
 	if (iSize == 0)
@@ -243,6 +244,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 	zoneHeader_t *pMemory = NULL;
 	while (pMemory == NULL)
 	{
+		loopCount++;
 		if (gbMemFreeupOccured)
 		{
 			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
@@ -253,10 +255,14 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 		} else {
 			pMemory = (zoneHeader_t *) malloc ( iRealSize );
 		}
-		if (!pMemory)
+
+		if (pMemory)
+			break;
+
+		if (loopCount < 10)
 		{
 			// new bit, if we fail to malloc memory, try dumping some of the cached stuff that's non-vital and try again...
-			//
+			// Aditionally, limit the number of retrials.
 
 			// ditch the BSP cache...
 			//
@@ -289,11 +295,13 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 
 			// ditch the model-binaries cache...  (must be getting desperate here!)
 			//
+#ifndef DEDICATED
 			if ( re->RegisterModels_LevelLoadEnd(qtrue) )
 			{
 				gbMemFreeupOccured = qtrue;
 				continue;
 			}
+#endif
 
 			// as a last panic measure, dump all the audio memory, but not if we're in the audio loader
 			//	(which is annoying, but I'm not sure how to ensure we're not dumping any memory needed by the sound
@@ -323,16 +331,24 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 					continue;
 				}
 			}
+		}
 
-			// sigh, dunno what else to try, I guess we'll have to give up and report this as an out-of-mem error...
-			//
-			// findlabel:  "recovermem"
-
-			Com_Printf(S_COLOR_RED"Z_Malloc(): Failed to alloc %d bytes (TAG_%s) !!!!!\n", iSize, psTagStrings[eTag]);
-			Z_Details_f();
-			Com_Error(ERR_FATAL,"(Repeat): Z_Malloc(): Failed to alloc %d bytes (TAG_%s) !!!!!\n", iSize, psTagStrings[eTag]);
+#ifdef _DEBUG
+		// If the tag is TAG_SPECIAL_MEM_TEST tag, that means we are in a test and we can safely return NULL.
+		if (eTag == TAG_SPECIAL_MEM_TEST)
+		{
 			return NULL;
 		}
+#endif
+
+		// sigh, dunno what else to try, I guess we'll have to give up and report this as an out-of-mem error...
+		//
+		// findlabel:  "recovermem"
+
+		Com_Printf(S_COLOR_RED"Z_Malloc(): Failed to alloc %d bytes (TAG_%s) !!!!!\n", iSize, psTagStrings[eTag]);
+		Z_Details_f();
+		Com_Error(ERR_FATAL,"(Repeat): Z_Malloc(): Failed to alloc %d bytes (TAG_%s) !!!!!\n", iSize, psTagStrings[eTag]);
+		return NULL;
 	}
 
 #ifdef DEBUG_ZONE_ALLOCS
@@ -596,18 +612,32 @@ void *S_Malloc( int iSize )
 }
 #endif
 
-
 #ifdef _DEBUG
 static void Z_MemRecoverTest_f(void)
 {
-	// needs to be in _DEBUG only, not good for final game!
-	// fixme: findmeste: Remove this sometime
-	//
-	int iTotalMalloc = 0;
+	//default amount of available memory
+	float fgb = 4;
+	if (Cmd_Argc() > 2) {
+		Com_Printf("usage: %s [<maximum in GiB>]\n", Cmd_Argv(0));
+		return;
+	}
+	if (Cmd_Argc() == 2) {
+		errno = 0;
+		fgb = strtof(Cmd_Argv(1), 0);
+		if (errno)
+		{
+			fgb = 4;
+		}
+		fgb = fabs(fgb);
+	}
+	size_t origLimit = Sys_LimitAvailableMemory(fgb * 1024 * 1024 * 1024);
+	size_t iTotalMalloc = 0;
 	while (1)
 	{
-		int iThisMalloc = 5* (1024 * 1024);
-		Z_Malloc(iThisMalloc, TAG_SPECIAL_MEM_TEST, qfalse);	// and lose, just to consume memory
+		int iThisMalloc = 5 * (1024 * 1024);
+		void *mem = Z_Malloc(iThisMalloc, TAG_SPECIAL_MEM_TEST, qfalse);	// and lose, just to consume memory
+		if (!mem)
+			break;
 		iTotalMalloc += iThisMalloc;
 
 		if (gbMemFreeupOccured)
@@ -615,6 +645,12 @@ static void Z_MemRecoverTest_f(void)
 	}
 
 	Z_TagFree(TAG_SPECIAL_MEM_TEST);
+
+	Com_Printf("Memory garbage collector did %srun.\n", gbMemFreeupOccured ? "" : "NOT ");
+
+	Com_Printf("Maximum allocated memory = %0.03f GiB\n", (float)iTotalMalloc / 1024 / 1024 / 1024);
+
+	Sys_LimitAvailableMemory(origLimit);
 }
 #endif
 
@@ -624,13 +660,13 @@ static void Z_MemRecoverTest_f(void)
 
 static void Z_Stats_f(void)
 {
-	Com_Printf("\nThe zone is using %d bytes (%.2fMB) in %d memory blocks\n",
+	Com_Printf("\nThe zone is using %ld bytes (%.2fMB) in %d memory blocks\n",
 								  TheZone.Stats.iCurrent,
 									        (float)TheZone.Stats.iCurrent / 1024.0f / 1024.0f,
 													  TheZone.Stats.iCount
 				);
 
-	Com_Printf("The zone peaked at %d bytes (%.2fMB)\n",
+	Com_Printf("The zone peaked at %ld bytes (%.2fMB)\n",
 									TheZone.Stats.iPeak,
 									         (float)TheZone.Stats.iPeak / 1024.0f / 1024.0f
 				);
@@ -836,7 +872,7 @@ void Com_ShutdownZoneMemory(void)
 
 	if(TheZone.Stats.iCount)
 	{
-		Com_Printf("Automatically freeing %d blocks making up %d bytes\n", TheZone.Stats.iCount, TheZone.Stats.iCurrent);
+		Com_Printf("Automatically freeing %d blocks making up %ld bytes\n", TheZone.Stats.iCount, TheZone.Stats.iCurrent);
 		Z_TagFree(TAG_ALL);
 
 		assert(!TheZone.Stats.iCount);
@@ -892,6 +928,9 @@ char *CopyString( const char *in ) {
 
 	out = (char *) S_Malloc (strlen(in)+1);
 	strcpy (out, in);
+
+	Z_Label(out,in);
+
 	return out;
 }
 

@@ -154,6 +154,12 @@ qboolean Sys_LowPhysicalMemory();
 
 void Sys_SetProcessorAffinity( void );
 
+#ifdef _DEBUG
+
+size_t Sys_LimitAvailableMemory(size_t limit);
+
+#endif
+
 typedef enum graphicsApi_e
 {
 	GRAPHICS_API_GENERIC,
