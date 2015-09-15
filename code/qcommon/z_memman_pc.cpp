@@ -24,9 +24,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "q_shared.h"
 #include "qcommon.h"
-#include "sstring.h"
 
 #ifdef DEBUG_ZONE_ALLOCS
+#include "sstring.h"
 int giZoneSnaphotNum=0;
 #define DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE 256
 typedef sstring<DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE> sDebugString_t;
@@ -81,7 +81,7 @@ static inline zoneTail_t *ZoneTailFromHeader(zoneHeader_t *pHeader)
 }
 
 #ifdef DETAILED_ZONE_DEBUG_CODE
-map <void*,int> mapAllocatedZones;
+std::map <void*,int> mapAllocatedZones;
 #endif
 
 
@@ -217,13 +217,39 @@ const static StaticMem_t gNumberString[] = {
 
 qboolean gbMemFreeupOccured = qfalse;
 
+#ifdef DEBUG_ZONE_ALLOCS
+// returns actual filename only, no path
+// (copes with either slash-scheme for names)
+//
+// (normally I'd call another function for this, but this is supposed to be engine-independent,
+//	 so a certain amount of re-invention of the wheel is to be expected...)
+//
+char *_D_Z_Filename_WithoutPath(const char *psFilename)
+{
+	static char sString[ MAX_QPATH ];
+
+	const char *psCopyPos = psFilename;
+
+	while (*psFilename)
+	{
+		if (*psFilename == PATH_SEP)
+			psCopyPos = psFilename+1;
+		psFilename++;
+	}
+
+	strcpy(sString,psCopyPos);
+
+	return sString;
+}
+#endif
+
 #include "../rd-common/tr_public.h"	// sorta hack sorta not
 extern refexport_t re;
 
 #ifdef DEBUG_ZONE_ALLOCS
 void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
 #else
-void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
+void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /*unusedAlign*/)
 #endif
 {
 	gbMemFreeupOccured = qfalse;
@@ -337,9 +363,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int unusedAlign)
 
 
 #ifdef DEBUG_ZONE_ALLOCS
-	extern char *Filename_WithoutPath(const char *psFilename);
-
-	Q_strncpyz(pMemory->sSrcFileBaseName, Filename_WithoutPath(psFile), sizeof(pMemory->sSrcFileBaseName));
+	Q_strncpyz(pMemory->sSrcFileBaseName, _D_Z_Filename_WithoutPath(psFile), sizeof(pMemory->sSrcFileBaseName));
 	pMemory->iSrcFileLineNum	= iLine;
 	pMemory->sOptionalLabel[0]	= '\0';
 	pMemory->iSnapshotNumber	= giZoneSnaphotNum;
@@ -391,7 +415,7 @@ extern "C" Q_EXPORT int openjk_minizip_free(void* to_free);
 
 void* openjk_minizip_malloc(int size)
 {
-    return Z_Malloc(size, TAG_MINIZIP, qfalse, 0);
+    return Z_Malloc(size, TAG_MINIZIP, qfalse);
 }
 
 int openjk_minizip_free(void *to_free)
@@ -525,7 +549,7 @@ int Z_Size(void *pvAddress)
 
 
 #ifdef DEBUG_ZONE_ALLOCS
-void _D_Z_Label(const void *pvAddress, const char *psLabel)
+void Z_Label(const void *pvAddress, const char *psLabel)
 {
 	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
 
@@ -722,11 +746,11 @@ static void Z_Details_f(void)
 }
 
 #ifdef DEBUG_ZONE_ALLOCS
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-typedef map <sDebugString_t,int> LabelRefCount_t;	// yet another place where Gil's tring class works and MS's doesn't
-typedef map <sDebugString_t,LabelRefCount_t>	TagBlockLabels_t;
-										TagBlockLabels_t AllTagBlockLabels;
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
+typedef std::map <sDebugString_t, int> LabelRefCount_t;	// yet another place where Gil's string class works and MS's doesn't
+typedef std::map <sDebugString_t, LabelRefCount_t>	TagBlockLabels_t;
+
+static TagBlockLabels_t AllTagBlockLabels;
+
 static void Z_Snapshot_f(void)
 {
 	AllTagBlockLabels.clear();
@@ -911,7 +935,7 @@ void Com_InitZoneMemory( void )
 	TheZone.Header.iMagic = ZONE_MAGIC;
 }
 
-void Com_InitZoneMemoryVars( void )
+void Com_InitZoneMemoryVars( void)
 {
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 
@@ -997,7 +1021,4 @@ void Com_TouchMemory( void ) {
 	//Com_Printf( "Com_TouchMemory: %i bytes, %i msec\n", totalTouched, end - start );
 }
 
-void *Hunk_Alloc( int size, qboolean bZeroIt )
-{
-  return Z_Malloc(size, TAG_HUNKALLOC, bZeroIt);
-}
+
