@@ -230,11 +230,11 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 
 	if (ent && ent->client && ent->client->sess.amrpgmode == 2)
 	{ // zyk: Blaster Pack Weapons Upgrade increases damage of the pistols
-		if (ent->client->pers.weapons_levels[0] == 2 && weapon == WP_BRYAR_PISTOL)
+		if (ent->client->pers.skill_levels[19] == 2 && weapon == WP_BRYAR_PISTOL)
 		{
 			damage = damage * 1.25;
 		}
-		else if (ent->client->pers.weapons_levels[9] == 2 && weapon == WP_BRYAR_OLD)
+		else if (ent->client->pers.skill_levels[28] == 2 && weapon == WP_BRYAR_OLD)
 		{
 			damage = damage * 1.25;
 		}
@@ -385,7 +385,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 	missile->classname = "blaster_proj";
 	missile->s.weapon = WP_BLASTER;
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[1] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[20] == 2)
 	{
 		damage = damage * 1.25;
 	}
@@ -475,7 +475,7 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire )
 	if ( altFire )
 	{
 		// add some slop to the alt-fire direction
-		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[1] == 2)
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[20] == 2)
 		{ // zyk: E11 2/2 in RPG Mode is more accurate
 			angs[PITCH] += crandom() * (BLASTER_SPREAD/2.0);
 			angs[YAW]       += crandom() * (BLASTER_SPREAD/2.0);
@@ -620,7 +620,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 				ent->client->accuracy_hits++;
 			}
 
-			if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[2] == 2)
+			if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[21] == 2)
 			{ // zyk: Disruptor 2/2 causes more damage
 				damage = damage * 1.25;
 			}
@@ -840,7 +840,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 				 {
 					if ( traceEnt->takedamage )
 					{
-						if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[2] == 2)
+						if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[21] == 2)
 							damage = damage * 1.25;
 
 						G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage,
@@ -878,7 +878,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 					VectorCopy(traceEnt->client->ps.viewangles, preAng);
 				}
 
-				if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[2] == 2)
+				if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[21] == 2)
 					damage = damage * 1.25;
 
 				G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NO_KNOCKBACK, MOD_DISRUPTOR_SNIPER );
@@ -966,7 +966,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 	VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
 	VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-	if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
+	if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[22] == 2)
 		damage = damage * 1.25;
 
 	missile->damage = damage;
@@ -977,7 +977,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 	missile->flags |= FL_BOUNCE;
 	// zyk: this is the bounce count used to count how many times the shot bounces, default: 3. In RPG Mode bounces more times with Bowcaster 2/2
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[22] == 2)
 		missile->bounceCount = 18;  
 	else
 		missile->bounceCount = 3;  
@@ -1010,7 +1010,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 	else if ( count > 5 )
 	{
 		// zyk: Bowcaster 2/2 in RPG Mode can shoot more missiles
-		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[22] == 2)
 		{
 			if (count > 7)
 				count = 7;
@@ -1027,7 +1027,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		count--;
 	}
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[22] == 2)
 	{ // zyk: at level 2, decrease spread
 		bowcaster_spread = BOWCASTER_ALT_SPREAD * 0.7;
 	}
@@ -1053,7 +1053,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
 		VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-		if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[3] == 2)
+		if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[22] == 2)
 			damage = damage * 1.25;
 
 		missile->damage = damage;
@@ -1101,7 +1101,7 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[4] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[23] == 2)
 		damage = damage * 1.25;
 
 	missile->damage = damage;
@@ -1130,7 +1130,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 	missile->s.pos.trType = TR_GRAVITY;
 	missile->s.pos.trDelta[2] += 40.0f; //give a slight boost in the upward direction
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[4] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[23] == 2)
 	{
 		damage = damage * 1.25;
 		splash_damage = splash_damage * 1.25;
@@ -1170,7 +1170,7 @@ static void WP_FireRepeater( gentity_t *ent, qboolean altFire )
 	else
 	{
 		// add some slop to the alt-fire direction
-		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[4] == 2)
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[23] == 2)
 		{ // zyk: Repeater 2/2 in RPG Mode is more accurate
 			angs[PITCH] += crandom() * (REPEATER_SPREAD/2);
 			angs[YAW]	+= crandom() * (REPEATER_SPREAD/2);
@@ -1943,7 +1943,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	VectorSet( missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE );
 	VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[7] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[26] == 2)
 	{
 		damage = damage * 1.25;
 	}
@@ -1969,7 +1969,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 
 	missile->clipmask = MASK_SHOT;
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[7] == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[26] == 2)
 	{
 		splash_damage = splash_damage * 1.25;
 	}
@@ -3487,11 +3487,11 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 		G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 
 		// zyk: if stun baton is in level 2 in RPG mode, does double damage
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 2)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] == 2)
 		{
 			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 2, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3)
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] == 3)
 		{ // zyk: if in level 3, causes triple damage
 			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 3, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
@@ -3520,13 +3520,13 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 					return;
 				}
 
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] >= 2 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] >= 2 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
 				{ // zyk: stun baton level 2 or 3 decloaks players except Stealth Attacker
 					Jedi_Decloak(tr_ent);
 				}
 
 				// zyk: if the player has stun baton at level 3 in RPG mode, enemy has its speed decreased
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.weapons_levels[10] == 3)
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] == 3)
 				{
 					// zyk: allies cant be hit by it
 					if (zyk_is_ally(ent,tr_ent) == qtrue)

@@ -1852,13 +1852,13 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 	// zyk: Bounty Hunter class has more max ammo
 	if (activator->client->sess.amrpgmode == 2 && activator->client->pers.rpg_class == 2)
 	{
-		max_blasterpack_ammo += max_blasterpack_ammo/6 * activator->client->pers.other_skills_levels[10];
-		max_powercell_ammo += max_powercell_ammo/6 * activator->client->pers.other_skills_levels[10];
-		max_metalbolt_ammo += max_metalbolt_ammo/6 * activator->client->pers.other_skills_levels[10];
-		max_rocket_ammo += max_rocket_ammo/6 * activator->client->pers.other_skills_levels[10];
-		max_thermal_ammo += max_thermal_ammo/6 * activator->client->pers.other_skills_levels[10];
-		max_tripmine_ammo += max_tripmine_ammo/6 * activator->client->pers.other_skills_levels[10];
-		max_detpack_ammo += max_detpack_ammo/6 * activator->client->pers.other_skills_levels[10];
+		max_blasterpack_ammo += max_blasterpack_ammo/6 * activator->client->pers.skill_levels[55];
+		max_powercell_ammo += max_powercell_ammo/6 * activator->client->pers.skill_levels[55];
+		max_metalbolt_ammo += max_metalbolt_ammo/6 * activator->client->pers.skill_levels[55];
+		max_rocket_ammo += max_rocket_ammo/6 * activator->client->pers.skill_levels[55];
+		max_thermal_ammo += max_thermal_ammo/6 * activator->client->pers.skill_levels[55];
+		max_tripmine_ammo += max_tripmine_ammo/6 * activator->client->pers.skill_levels[55];
+		max_detpack_ammo += max_detpack_ammo/6 * activator->client->pers.skill_levels[55];
 	}
 
 	if (!activator || !activator->client)

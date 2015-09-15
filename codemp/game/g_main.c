@@ -5895,15 +5895,15 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: RPG Mode jetpack skill. Each level decreases fuel debounce
 					if (ent->client->pers.rpg_class == 2)
 					{ // zyk: Bounty Hunter can have a more efficient jetpack
-						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10]));
+						jetpack_debounce_amount -= ((ent->client->pers.skill_levels[34] * 3) + (ent->client->pers.skill_levels[55]));
 					}
 					else if (ent->client->pers.rpg_class == 8)
 					{ // zyk: Magic Master has the best jetpack
-						jetpack_debounce_amount -= ((ent->client->pers.other_skills_levels[4] * 3) + (ent->client->pers.other_skills_levels[10] * 2));
+						jetpack_debounce_amount -= ((ent->client->pers.skill_levels[34] * 3) + (ent->client->pers.skill_levels[55] * 2));
 					}
 					else
 					{
-						jetpack_debounce_amount -= (ent->client->pers.other_skills_levels[4] * 3);
+						jetpack_debounce_amount -= (ent->client->pers.skill_levels[34] * 3);
 					}
 
 					if (ent->client->pers.secrets_found & (1 << 17)) // zyk: Jetpack Upgrade decreases fuel usage
@@ -6039,12 +6039,12 @@ void G_RunFrame( int levelTime ) {
 			if (ent->client->sess.amrpgmode == 2 && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ // zyk: RPG Mode skills and quests actions. Must be done if player is not at Spectator Mode
 				// zyk: Weapon Upgrades
-				if (ent->client->ps.weapon == WP_DISRUPTOR && ent->client->pers.weapons_levels[2] == 2 && ent->client->ps.weaponTime > (weaponData[WP_DISRUPTOR].fireTime * 1.0)/1.4)
+				if (ent->client->ps.weapon == WP_DISRUPTOR && ent->client->pers.skill_levels[21] == 2 && ent->client->ps.weaponTime > (weaponData[WP_DISRUPTOR].fireTime * 1.0)/1.4)
 				{
 					ent->client->ps.weaponTime = (weaponData[WP_DISRUPTOR].fireTime * 1.0)/1.4;
 				}
 
-				if (ent->client->ps.weapon == WP_REPEATER && ent->client->pers.weapons_levels[4] == 2 && ent->client->ps.weaponTime > weaponData[WP_REPEATER].altFireTime/2)
+				if (ent->client->ps.weapon == WP_REPEATER && ent->client->pers.skill_levels[23] == 2 && ent->client->ps.weaponTime > weaponData[WP_REPEATER].altFireTime/2)
 				{
 					ent->client->ps.weaponTime = weaponData[WP_REPEATER].altFireTime/2;
 				}
@@ -6052,13 +6052,13 @@ void G_RunFrame( int levelTime ) {
 				// zyk: Monk class has a faster melee fireTime and altFireTime
 				if (ent->client->pers.rpg_class == 4 && ent->client->ps.weapon == WP_MELEE)
 				{
-					if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1))
+					if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1))
 					{
-						ent->client->ps.weaponTime = (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1);
+						ent->client->ps.weaponTime = (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1);
 					}
-					else if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1))
+					else if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1))
 					{
-						ent->client->ps.weaponTime = (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.other_skills_levels[10] + 1);
+						ent->client->ps.weaponTime = (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1);
 					}
 				}
 

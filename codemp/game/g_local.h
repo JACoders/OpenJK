@@ -687,15 +687,11 @@ typedef struct clientPersistant_s {
 	// zyk: when a bounty hunter is using the thermal vision, it is set to qtrue
 	qboolean thermal_vision;
 
-	int force_powers_levels[18]; // zyk: RPG mode level of each force power
-	int ammo_levels[7]; // zyk: RPG mode level of each type of ammo
-	// zyk: weapons_levels[10] is stun baton, weapons_levels[11] is melee
-	int weapons_levels[12]; // zyk: RPG mode level of each weapon, including melee and stun baton, and excluding saber (which is in force_powers_levels)
-	int holdable_items_levels[8]; // zyk: RPG mode level of each Holdable Item
-	int other_skills_levels[11]; // zyk: RPG mode level of each skill in the other category of /list command
+	// zyk: RPG skills
+	int skill_levels[NUMBER_OF_SKILLS];
 
 	int max_rpg_health; // zyk: max health the player can have in RPG Mode. This is set to STAT_MAX_HEALTH for RPG players
-	int max_rpg_shield; // zyk: max shield the player can have in RPG Mode based in the other_skills_levels[0] value
+	int max_rpg_shield; // zyk: max shield the player can have in RPG Mode based in the skill_levels[30] value
 
 	int jetpack_fuel; // zyk: now this is the fuel that is spent. Then we scale this value to the 0 - 100 range to set it in the jetpackFuel attribute to show the fuel bar correctly to the client
 
@@ -739,7 +735,7 @@ typedef struct clientPersistant_s {
 	// zyk: amount of sentries placed in map
 	int bounty_hunter_placed_sentries;
 
-	int max_force_power; // zyk: max force power the player can have based on other_skills_levels[9] value
+	int max_force_power; // zyk: max force power the player can have based on skill_levels[54] value
 
 	int score_modifier; // zyk: sets the amount of extra score a player can get by defeating some npcs
 

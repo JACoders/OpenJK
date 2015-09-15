@@ -1166,7 +1166,7 @@ void ItemUse_Sentry( gentity_t *ent )
 	// zyk: Bounty Hunter sentry gun has more HP and with the Upgrade, player can place more sentry guns
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2)
 	{
-		sentry->health = 100 * (ent->client->pers.other_skills_levels[10] + 2);
+		sentry->health = 100 * (ent->client->pers.skill_levels[55] + 2);
 
 		// zyk: validating quantity of sentry guns that the Bounty Hunter can place
 		ent->client->pers.bounty_hunter_placed_sentries++;
@@ -2037,7 +2037,7 @@ gentity_t *EWeb_Create(gentity_t *spawner)
 	// zyk: Bounty Hunter EWeb has more health
 	if (spawner->client->sess.amrpgmode == 2 && spawner->client->pers.rpg_class == 2)
 	{
-		eweb_health = eweb_health * (spawner->client->pers.other_skills_levels[10] + 1);
+		eweb_health = eweb_health * (spawner->client->pers.skill_levels[55] + 1);
 	}
 
 	if (spawner->client->ewebHealth <= 0)
@@ -2250,13 +2250,13 @@ void Add_Ammo (gentity_t *ent, int weapon, int count)
 	// zyk: Bounty Hunter class has more max ammo
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2)
 	{
-		max_blasterpack_ammo += max_blasterpack_ammo/6 * ent->client->pers.other_skills_levels[10];
-		max_powercell_ammo += max_powercell_ammo/6 * ent->client->pers.other_skills_levels[10];
-		max_metalbolt_ammo += max_metalbolt_ammo/6 * ent->client->pers.other_skills_levels[10];
-		max_rocket_ammo += max_rocket_ammo/6 * ent->client->pers.other_skills_levels[10];
-		max_thermal_ammo += max_thermal_ammo/6 * ent->client->pers.other_skills_levels[10];
-		max_tripmine_ammo += max_tripmine_ammo/6 * ent->client->pers.other_skills_levels[10];
-		max_detpack_ammo += max_detpack_ammo/6 * ent->client->pers.other_skills_levels[10];
+		max_blasterpack_ammo += max_blasterpack_ammo/6 * ent->client->pers.skill_levels[55];
+		max_powercell_ammo += max_powercell_ammo/6 * ent->client->pers.skill_levels[55];
+		max_metalbolt_ammo += max_metalbolt_ammo/6 * ent->client->pers.skill_levels[55];
+		max_rocket_ammo += max_rocket_ammo/6 * ent->client->pers.skill_levels[55];
+		max_thermal_ammo += max_thermal_ammo/6 * ent->client->pers.skill_levels[55];
+		max_tripmine_ammo += max_tripmine_ammo/6 * ent->client->pers.skill_levels[55];
+		max_detpack_ammo += max_detpack_ammo/6 * ent->client->pers.skill_levels[55];
 	}
 
 	if (weapon == AMMO_BLASTER){

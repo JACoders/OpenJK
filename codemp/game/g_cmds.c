@@ -3535,7 +3535,7 @@ int zyk_max_magic_power(gentity_t *ent)
 		bonus_mp += 100;
 
 	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
-		return (max_mp + bonus_mp + 50 + (50 * ent->client->pers.other_skills_levels[10]));
+		return (max_mp + bonus_mp + 50 + (50 * ent->client->pers.skill_levels[55]));
 	else
 		return (max_mp + bonus_mp);
 }
@@ -3827,7 +3827,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_drain(ent,450,55,8000);
 						ent->client->pers.magic_power -= zyk_ultra_drain_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_drain_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Drain!\"", ent->client->pers.netname));
@@ -3838,7 +3838,7 @@ qboolean TryGrapple(gentity_t *ent)
 						immunity_power(ent,25000);
 						ent->client->pers.magic_power -= zyk_immunity_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_immunity_power_cooldown.integer;
 
@@ -3852,7 +3852,7 @@ qboolean TryGrapple(gentity_t *ent)
 						chaos_power(ent,400,80);
 						ent->client->pers.magic_power -= zyk_chaos_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_chaos_power_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_chaos_power_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_chaos_power_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
@@ -3863,7 +3863,7 @@ qboolean TryGrapple(gentity_t *ent)
 						time_power(ent,400,6000);
 						ent->client->pers.magic_power -= zyk_time_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_time_power_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_time_power_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_time_power_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
@@ -3877,7 +3877,7 @@ qboolean TryGrapple(gentity_t *ent)
 						inner_area_damage(ent,400,90);
 						ent->client->pers.magic_power -= zyk_inner_area_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_inner_area_damage_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
@@ -3888,7 +3888,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_strength(ent,30000);
 						ent->client->pers.magic_power -= zyk_ultra_strength_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_strength_cooldown.integer;
 
@@ -3902,7 +3902,7 @@ qboolean TryGrapple(gentity_t *ent)
 						poison_mushrooms(ent,100,600);
 						ent->client->pers.magic_power -= zyk_poison_mushrooms_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_poison_mushrooms_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
@@ -3913,7 +3913,7 @@ qboolean TryGrapple(gentity_t *ent)
 						water_splash(ent,400,100);
 						ent->client->pers.magic_power -= zyk_water_splash_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_water_splash_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
@@ -3924,7 +3924,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_flame(ent,500,50);
 						ent->client->pers.magic_power -= zyk_ultra_flame_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_flame_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
@@ -3935,7 +3935,7 @@ qboolean TryGrapple(gentity_t *ent)
 						rock_fall(ent,500,55);
 						ent->client->pers.magic_power -= zyk_rockfall_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_rockfall_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
@@ -3946,7 +3946,7 @@ qboolean TryGrapple(gentity_t *ent)
 						dome_of_damage(ent,500,35);
 						ent->client->pers.magic_power -= zyk_dome_of_damage_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_dome_of_damage_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
@@ -3957,7 +3957,7 @@ qboolean TryGrapple(gentity_t *ent)
 						hurricane(ent,600,5000);
 						ent->client->pers.magic_power -= zyk_hurricane_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_hurricane_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
@@ -3968,7 +3968,7 @@ qboolean TryGrapple(gentity_t *ent)
 						slow_motion(ent,400,15000);
 						ent->client->pers.magic_power -= zyk_slow_motion_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_slow_motion_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
@@ -3979,7 +3979,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_resistance(ent,30000);
 						ent->client->pers.magic_power -= zyk_ultra_resistance_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_resistance_cooldown.integer;
 
@@ -3993,7 +3993,7 @@ qboolean TryGrapple(gentity_t *ent)
 						sleeping_flowers(ent,3000,400);
 						ent->client->pers.magic_power -= zyk_sleeping_flowers_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0)) + (500 * ent->client->pers.other_skills_levels[10]);
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (500 * ent->client->pers.skill_levels[55]);
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_sleeping_flowers_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
@@ -4004,7 +4004,7 @@ qboolean TryGrapple(gentity_t *ent)
 						healing_water(ent,120);
 						ent->client->pers.magic_power -= zyk_healing_water_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_water_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
@@ -4015,7 +4015,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ent->client->pers.flame_thrower = level.time + 7000;
 						ent->client->pers.magic_power -= zyk_flame_burst_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_flame_burst_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
@@ -4026,7 +4026,7 @@ qboolean TryGrapple(gentity_t *ent)
 						earthquake(ent,2000,300,500);
 						ent->client->pers.magic_power -= zyk_earthquake_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_earthquake_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
@@ -4037,7 +4037,7 @@ qboolean TryGrapple(gentity_t *ent)
 						magic_shield(ent, 6000);
 						ent->client->pers.magic_power -= zyk_magic_shield_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0)) + (1000 * ent->client->pers.other_skills_levels[10]);
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (1000 * ent->client->pers.skill_levels[55]);
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_magic_shield_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Magic Shield!\"", ent->client->pers.netname));
@@ -4048,7 +4048,7 @@ qboolean TryGrapple(gentity_t *ent)
 						blowing_wind(ent,800,5000);
 						ent->client->pers.magic_power -= zyk_blowing_wind_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_blowing_wind_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
@@ -4059,7 +4059,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_speed(ent,15000);
 						ent->client->pers.magic_power -= zyk_ultra_speed_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_speed_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
@@ -4070,7 +4070,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ice_stalagmite(ent,500,160);
 						ent->client->pers.magic_power -= zyk_ice_stalagmite_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_stalagmite_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_stalagmite_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_stalagmite_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Stalagmite!\"", ent->client->pers.netname));
@@ -4081,7 +4081,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ice_boulder(ent,400,80);
 						ent->client->pers.magic_power -= zyk_ice_boulder_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_boulder_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_boulder_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_boulder_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Boulder!\"", ent->client->pers.netname));
@@ -4092,7 +4092,7 @@ qboolean TryGrapple(gentity_t *ent)
 						healing_area(ent,2,5000);
 						ent->client->pers.magic_power -= zyk_healing_area_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_area_cooldown.integer * ((4.0 - ent->client->pers.other_skills_levels[10])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_area_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_area_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Area!\"", ent->client->pers.netname));
@@ -4245,7 +4245,7 @@ void set_max_health(gentity_t *ent)
 // zyk: sets the Max Shield a player can have in RPG Mode
 void set_max_shield(gentity_t *ent)
 {
-	ent->client->pers.max_rpg_shield = (int)ceil(((ent->client->pers.other_skills_levels[0] * 1.0)/5) * ent->client->pers.max_rpg_health);
+	ent->client->pers.max_rpg_shield = (int)ceil(((ent->client->pers.skill_levels[30] * 1.0)/5) * ent->client->pers.max_rpg_health);
 }
 
 // zyk: gives credits to the player
@@ -4280,7 +4280,7 @@ void zyk_load_common_settings(gentity_t *ent)
 	// zyk: player starts with jetpack if it is enabled in player settings and is not in Siege Mode
 	if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
 		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && 
-		((ent->client->sess.amrpgmode == 2 && ent->client->pers.other_skills_levels[4] > 0) || ent->client->sess.amrpgmode == 1))
+		((ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[34] > 0) || ent->client->sess.amrpgmode == 1))
 	{
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 	}
@@ -4317,7 +4317,7 @@ void zyk_load_common_settings(gentity_t *ent)
 		ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE];
 
 		if (ent->client->pers.player_settings & (1 << 26) && 
-			((ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 2) || 
+			((ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[5] >= 2) || 
 			 (ent->client->sess.amrpgmode == 1 && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))))
 		{
 			// ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = SS_MEDIUM;
@@ -4325,20 +4325,20 @@ void zyk_load_common_settings(gentity_t *ent)
 			ent->client->ps.fd.saberAnimLevel = SS_MEDIUM;
 		}
 		else if (ent->client->pers.player_settings & (1 << 27) && 
-				((ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 3) || 
+				((ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[5] >= 3) || 
 				 (ent->client->sess.amrpgmode == 1 && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))))
 		{
 			ent->client->ps.fd.saberAnimLevel = SS_STRONG;
 		}
-		else if (ent->client->pers.player_settings & (1 << 28) && ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 4)
+		else if (ent->client->pers.player_settings & (1 << 28) && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[5] >= 4)
 		{
 			ent->client->ps.fd.saberAnimLevel = SS_DESANN;
 		}
-		else if (ent->client->pers.player_settings & (1 << 29) && ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] == 5)
+		else if (ent->client->pers.player_settings & (1 << 29) && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[5] == 5)
 		{
 			ent->client->ps.fd.saberAnimLevel = SS_TAVION;
 		}
-		else if (((ent->client->sess.amrpgmode == 2 && ent->client->pers.force_powers_levels[5] >= 1) || 
+		else if (((ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[5] >= 1) || 
 				  (ent->client->sess.amrpgmode == 1 && ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))))
 		{
 			ent->client->ps.fd.saberAnimLevel = SS_FAST;
@@ -4352,8 +4352,6 @@ void load_account(gentity_t *ent, qboolean change_mode)
 	FILE *account_file;
 	char content[128];
 	char file_content[1024];
-	int value = 0;
-	int i = 0;
 	strcpy(content,"");
 	strcpy(file_content,"");
 	account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
@@ -4365,8 +4363,7 @@ void load_account(gentity_t *ent, qboolean change_mode)
 
 		// zyk: loading the amrpgmode value
 		fscanf(account_file,"%s",content);
-		value = atoi(content);
-		ent->client->sess.amrpgmode = value;
+		ent->client->sess.amrpgmode = atoi(content);
 
 		if (change_mode == qtrue)
 		{
@@ -4392,21 +4389,21 @@ void load_account(gentity_t *ent, qboolean change_mode)
 
 		// zyk: initializing mind control attributes used in RPG mode
 		ent->client->pers.being_mind_controlled = -1;
-		ent->client->pers.other_skills_levels[8] = 0;
+		ent->client->pers.skill_levels[38] = 0;
 		ent->client->pers.mind_controlled1_id = -1;
 
 		// zyk: loading player_settings value
 		fscanf(account_file,"%s",content);
-		value = atoi(content);
-		ent->client->pers.player_settings = value;
+		ent->client->pers.player_settings = atoi(content);
 
 		// zyk: loading the admin command bit value
 		fscanf(account_file,"%s",content);
-		value = atoi(content);
-		ent->client->pers.bitvalue = value;
+		ent->client->pers.bitvalue = atoi(content);
 
 		if (ent->client->sess.amrpgmode == 2)
 		{
+			int i = 0;
+
 			// zyk: loading level up score value
 			fscanf(account_file,"%s",content);
 			ent->client->pers.level_up_score = atoi(content);
@@ -4419,291 +4416,17 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			fscanf(account_file,"%s",content);
 			ent->client->pers.skillpoints = atoi(content);
 
-			// zyk: loading Jump value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[0] = value;
-
-			// zyk: loading Push value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[1] = value;
-
-			// zyk: loading Pull value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[2] = value;
-
-			// zyk: loading Speed value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[3] = value;
-
-			// zyk: loading Sense value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[4] = value;
-
-			// zyk: loading Saber Offense value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[5] = value;
-
-			// zyk: loading Saber Defense value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[6] = value;
-
-			// zyk: loading Saber Throw value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[7] = value;
-
-			// zyk: loading Absorb value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[8] = value;
-
-			// zyk: loading Heal value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[9] = value;
-
-			// zyk: loading Protect value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[10] = value;
-
-			// zyk: loading Mind Trick value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[11] = value;
-
-			// zyk: loading Team Heal value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[12] = value;
-
-			// zyk: loading Lightning value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[13] = value;
-
-			// zyk: loading Grip value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[14] = value;
-
-			// zyk: loading Drain value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[15] = value;
-
-			// zyk: loading Rage value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[16] = value;
-
-			// zyk: loading Team Energize value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.force_powers_levels[17] = value;
-
-			// zyk: loading Stun Baton value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[10] = value;
-
-			// zyk: loading Blaster Pistol value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[0] = value;
-
-			// zyk: loading E11 Blaster Rifle value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[1] = value;
-
-			// zyk: loading Sniper value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[2] = value;
-
-			// zyk: loading Bowcaster value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[3] = value;
-
-			// zyk: loading Repeater value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[4] = value;
-
-			// zyk: loading Demp2 value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[5] = value;
-
-			// zyk: loading Flechette value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[6] = value;
-
-			// zyk: loading Rocket Launcher value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[7] = value;
-
-			// zyk: loading Concussion value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[8] = value;
-
-			// zyk: loading Bryar Old value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[9] = value;
-
-			// zyk: loading Melee value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.weapons_levels[11] = value;
-
-			// zyk: loading Max Shield value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[0] = value;
-
-			// zyk: loading Shield Strength value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[1] = value;
-
-			// zyk: loading Health Strength value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[2] = value;
-
-			// zyk: loading Drain Shield value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[3] = value;
-
-			// zyk: loading jetpack value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[4] = value;
-
-			// zyk: loading Sense Health value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[5] = value;
-
-			// zyk: loading Shield value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[6] = value;
-
-			// zyk: loading Team Shield value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[7] = value;
-
-			// zyk: loading Mind Control value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[8] = value;
-
-			// zyk: loading blaster pack ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[0] = value;
-
-			// zyk: loading power cell ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[1] = value;
-
-			// zyk: loading metallic bolts ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[2] = value;
-
-			// zyk: loading rocket ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[3] = value;
-
-			// zyk: loading thermal ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[4] = value;
-
-			// zyk: loading trip mine ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[5] = value;
-
-			// zyk: loading det pack ammo value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.ammo_levels[6] = value;
-
-			// zyk: loading Binoculars value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[0] = value;
-
-			// zyk: loading Bacta Canister value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[1] = value;
-
-			// zyk: loading Sentry Gun value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[2] = value;
-
-			// zyk: loading Seeker Drone value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[3] = value;
-
-			// zyk: loading E-Web value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[4] = value;
-
-			// zyk: loading Big Bacta value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[5] = value;
-
-			// zyk: loading Force Field value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[6] = value;
-
-			// zyk: loading Cloak Item value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.holdable_items_levels[7] = value;
-
-			// zyk: loading Force Power level skill value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[9] = value;
-
-			// zyk: loading Improvements level skill value
-			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.other_skills_levels[10] = value;
+			// zyk: loading skill levels
+			for (i = 0; i < NUMBER_OF_SKILLS; i++)
+			{
+				fscanf(account_file,"%s",content);
+				ent->client->pers.skill_levels[i] = atoi(content);
+			}
 
 			// zyk: Other RPG attributes
 			// zyk: loading Light Quest Defeated Guardians number value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.defeated_guardians = value;
+			ent->client->pers.defeated_guardians = atoi(content);
 
 			// zyk: compability with old mod versions, in which the players who completed the quest had a value of 9
 			if (ent->client->pers.defeated_guardians == 9)
@@ -4711,40 +4434,33 @@ void load_account(gentity_t *ent, qboolean change_mode)
 
 			// zyk: loading Dark Quest completed objectives value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.hunter_quest_progress = value;
+			ent->client->pers.hunter_quest_progress = atoi(content);
 
 			// zyk: loading Eternity Quest progress value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.eternity_quest_progress = value;
+			ent->client->pers.eternity_quest_progress = atoi(content);
 
 			// zyk: loading secrets found value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.secrets_found = value;
+			ent->client->pers.secrets_found = atoi(content);
 
 			// zyk: loading Universe Quest Progress value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.universe_quest_progress = value;
-			if (value > NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+			ent->client->pers.universe_quest_progress = atoi(content);
+			if (ent->client->pers.universe_quest_progress > NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
 				ent->client->pers.universe_quest_progress = NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES;
 
 			// zyk: loading Universe Quest Counter value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.universe_quest_counter = value;
+			ent->client->pers.universe_quest_counter = atoi(content);
 
 			// zyk: loading credits value
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.credits = value;
+			ent->client->pers.credits = atoi(content);
 
 			// zyk: loading RPG class
 			fscanf(account_file,"%s",content);
-			value = atoi(content);
-			ent->client->pers.rpg_class = value;
+			ent->client->pers.rpg_class = atoi(content);
 		}
 		else if (ent->client->sess.amrpgmode == 1)
 		{
@@ -4786,14 +4502,14 @@ void save_account(gentity_t *ent)
 			client = ent->client;
 			account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"w");
 			fprintf(account_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",
-			client->pers.password,client->sess.amrpgmode,client->pers.player_settings,client->pers.bitvalue,client->pers.level_up_score,client->pers.level,client->pers.skillpoints,client->pers.force_powers_levels[0],client->pers.force_powers_levels[1],client->pers.force_powers_levels[2]
-			,client->pers.force_powers_levels[3],client->pers.force_powers_levels[4],client->pers.force_powers_levels[5],client->pers.force_powers_levels[6],client->pers.force_powers_levels[7],client->pers.force_powers_levels[8]
-			,client->pers.force_powers_levels[9],client->pers.force_powers_levels[10],client->pers.force_powers_levels[11],client->pers.force_powers_levels[12],client->pers.force_powers_levels[13],client->pers.force_powers_levels[14]
-			,client->pers.force_powers_levels[15],client->pers.force_powers_levels[16],client->pers.force_powers_levels[17],client->pers.weapons_levels[10],client->pers.weapons_levels[0],client->pers.weapons_levels[1],client->pers.weapons_levels[2],client->pers.weapons_levels[3]
-			,client->pers.weapons_levels[4],client->pers.weapons_levels[5],client->pers.weapons_levels[6],client->pers.weapons_levels[7],client->pers.weapons_levels[8],client->pers.weapons_levels[9],client->pers.weapons_levels[11],client->pers.other_skills_levels[0],client->pers.other_skills_levels[1]
-			,client->pers.other_skills_levels[2],client->pers.other_skills_levels[3],client->pers.other_skills_levels[4],client->pers.other_skills_levels[5],client->pers.other_skills_levels[6],client->pers.other_skills_levels[7],client->pers.other_skills_levels[8],client->pers.ammo_levels[0],client->pers.ammo_levels[1],client->pers.ammo_levels[2]
-			,client->pers.ammo_levels[3],client->pers.ammo_levels[4],client->pers.ammo_levels[5],client->pers.ammo_levels[6],client->pers.holdable_items_levels[0],client->pers.holdable_items_levels[1],client->pers.holdable_items_levels[2],client->pers.holdable_items_levels[3]
-			,client->pers.holdable_items_levels[4],client->pers.holdable_items_levels[5],client->pers.holdable_items_levels[6],client->pers.holdable_items_levels[7],client->pers.other_skills_levels[9],client->pers.other_skills_levels[10],client->pers.defeated_guardians,client->pers.hunter_quest_progress
+			client->pers.password,client->sess.amrpgmode,client->pers.player_settings,client->pers.bitvalue,client->pers.level_up_score,client->pers.level,client->pers.skillpoints,client->pers.skill_levels[0],client->pers.skill_levels[1],client->pers.skill_levels[2]
+			,client->pers.skill_levels[3],client->pers.skill_levels[4],client->pers.skill_levels[5],client->pers.skill_levels[6],client->pers.skill_levels[7],client->pers.skill_levels[8]
+			,client->pers.skill_levels[9],client->pers.skill_levels[10],client->pers.skill_levels[11],client->pers.skill_levels[12],client->pers.skill_levels[13],client->pers.skill_levels[14]
+			,client->pers.skill_levels[15],client->pers.skill_levels[16],client->pers.skill_levels[17],client->pers.skill_levels[18],client->pers.skill_levels[19],client->pers.skill_levels[20],client->pers.skill_levels[21],client->pers.skill_levels[22]
+			,client->pers.skill_levels[23],client->pers.skill_levels[24],client->pers.skill_levels[25],client->pers.skill_levels[26],client->pers.skill_levels[27],client->pers.skill_levels[28],client->pers.skill_levels[29],client->pers.skill_levels[30],client->pers.skill_levels[31]
+			,client->pers.skill_levels[32],client->pers.skill_levels[33],client->pers.skill_levels[34],client->pers.skill_levels[35],client->pers.skill_levels[36],client->pers.skill_levels[37],client->pers.skill_levels[38],client->pers.skill_levels[39],client->pers.skill_levels[40],client->pers.skill_levels[41]
+			,client->pers.skill_levels[42],client->pers.skill_levels[43],client->pers.skill_levels[44],client->pers.skill_levels[45],client->pers.skill_levels[46],client->pers.skill_levels[47],client->pers.skill_levels[48],client->pers.skill_levels[49]
+			,client->pers.skill_levels[50],client->pers.skill_levels[51],client->pers.skill_levels[52],client->pers.skill_levels[53],client->pers.skill_levels[54],client->pers.skill_levels[55],client->pers.defeated_guardians,client->pers.hunter_quest_progress
 			,client->pers.eternity_quest_progress,client->pers.secrets_found,client->pers.universe_quest_progress,client->pers.universe_quest_counter,client->pers.credits,client->pers.rpg_class);
 			fclose(account_file);
 		}
@@ -5010,32 +4726,32 @@ void initialize_rpg_skills(gentity_t *ent)
 			return;
 
 		// zyk: loading Jump value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)) && ent->client->pers.force_powers_levels[0] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)) && ent->client->pers.skill_levels[0] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
-		if (ent->client->pers.force_powers_levels[0] == 0)
+		if (ent->client->pers.skill_levels[0] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LEVITATION);
-		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
+		ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.skill_levels[0];
 
 		// zyk: loading Push value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)) && ent->client->pers.force_powers_levels[1] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)) && ent->client->pers.skill_levels[1] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
-		if (ent->client->pers.force_powers_levels[1] == 0)
+		if (ent->client->pers.skill_levels[1] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PUSH);
-		ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+		ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.skill_levels[1];
 
 		// zyk: loading Pull value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)) && ent->client->pers.force_powers_levels[2] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)) && ent->client->pers.skill_levels[2] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
-		if (ent->client->pers.force_powers_levels[2] == 0)
+		if (ent->client->pers.skill_levels[2] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PULL);
-		ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+		ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.skill_levels[2];
 
 		// zyk: loading Speed value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)) && ent->client->pers.force_powers_levels[3] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)) && ent->client->pers.skill_levels[3] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
-		if (ent->client->pers.force_powers_levels[3] == 0)
+		if (ent->client->pers.skill_levels[3] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SPEED);
-		ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+		ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.skill_levels[3];
 
 		// zyk: loading Sense value
 		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
@@ -5053,126 +4769,126 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 		else
 		{
-			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && ent->client->pers.force_powers_levels[4] > 0)
+			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)) && ent->client->pers.skill_levels[4] > 0)
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-			if (ent->client->pers.force_powers_levels[4] == 0)
+			if (ent->client->pers.skill_levels[4] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
-			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+			ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.skill_levels[4];
 		}
 
 		// zyk: loading Saber Offense value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && ent->client->pers.force_powers_levels[5] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && ent->client->pers.skill_levels[5] > 0)
 		{
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 		}
-		if (ent->client->pers.force_powers_levels[5] == 0)
+		if (ent->client->pers.skill_levels[5] == 0)
 		{
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_OFFENSE);
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
 			ent->client->ps.weapon = WP_MELEE;
 		}
-		ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+		ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.skill_levels[5];
 
 		// zyk: loading Saber Defense value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && ent->client->pers.force_powers_levels[6] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && ent->client->pers.skill_levels[6] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
-		if (ent->client->pers.force_powers_levels[6] == 0)
+		if (ent->client->pers.skill_levels[6] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE);
-		ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+		ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.skill_levels[6];
 
 		// zyk: loading Saber Throw value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)) && ent->client->pers.force_powers_levels[7] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)) && ent->client->pers.skill_levels[7] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
-		if (ent->client->pers.force_powers_levels[7] == 0)
+		if (ent->client->pers.skill_levels[7] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABERTHROW);
-		ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+		ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.skill_levels[7];
 
 		// zyk: loading Absorb value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)) && ent->client->pers.force_powers_levels[8] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)) && ent->client->pers.skill_levels[8] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
-		if (ent->client->pers.force_powers_levels[8] == 0)
+		if (ent->client->pers.skill_levels[8] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_ABSORB);
 
-		if (ent->client->pers.force_powers_levels[8] < 4)
-			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+		if (ent->client->pers.skill_levels[8] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.skill_levels[8];
 		else
 			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
 
 		// zyk: loading Heal value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)) && ent->client->pers.force_powers_levels[9] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)) && ent->client->pers.skill_levels[9] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
-		if (ent->client->pers.force_powers_levels[9] == 0)
+		if (ent->client->pers.skill_levels[9] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_HEAL);
-		ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+		ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.skill_levels[9];
 
 		// zyk: loading Protect value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)) && ent->client->pers.force_powers_levels[10] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)) && ent->client->pers.skill_levels[10] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
-		if (ent->client->pers.force_powers_levels[10] == 0)
+		if (ent->client->pers.skill_levels[10] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
 
-		if (ent->client->pers.force_powers_levels[10] < 4)
-			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+		if (ent->client->pers.skill_levels[10] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.skill_levels[10];
 		else
 			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = FORCE_LEVEL_3;
 
 		// zyk: loading Mind Trick value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)) && ent->client->pers.force_powers_levels[11] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)) && ent->client->pers.skill_levels[11] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
-		if (ent->client->pers.force_powers_levels[11] == 0)
+		if (ent->client->pers.skill_levels[11] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TELEPATHY);
-		ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+		ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.skill_levels[11];
 
 		// zyk: loading Team Heal value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)) && ent->client->pers.force_powers_levels[12] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)) && ent->client->pers.skill_levels[12] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
-		if (ent->client->pers.force_powers_levels[12] == 0)
+		if (ent->client->pers.skill_levels[12] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_HEAL);
-		ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+		ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.skill_levels[12];
 
 		// zyk: loading Lightning value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)) && ent->client->pers.force_powers_levels[13] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)) && ent->client->pers.skill_levels[13] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
-		if (ent->client->pers.force_powers_levels[13] == 0)
+		if (ent->client->pers.skill_levels[13] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
 
-		if (ent->client->pers.force_powers_levels[13] < 4)
-			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+		if (ent->client->pers.skill_levels[13] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.skill_levels[13];
 		else
 			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
 
 		// zyk: loading Grip value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)) && ent->client->pers.force_powers_levels[14] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)) && ent->client->pers.skill_levels[14] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
-		if (ent->client->pers.force_powers_levels[14] == 0)
+		if (ent->client->pers.skill_levels[14] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_GRIP);
-		ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+		ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.skill_levels[14];
 
 		// zyk: loading Drain value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && ent->client->pers.force_powers_levels[15] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)) && ent->client->pers.skill_levels[15] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
-		if (ent->client->pers.force_powers_levels[15] == 0)
+		if (ent->client->pers.skill_levels[15] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_DRAIN);
-		ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+		ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.skill_levels[15];
 
 		// zyk: loading Rage value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)) && ent->client->pers.force_powers_levels[16] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)) && ent->client->pers.skill_levels[16] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
-		if (ent->client->pers.force_powers_levels[16] == 0)
+		if (ent->client->pers.skill_levels[16] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_RAGE);
 
-		if (ent->client->pers.force_powers_levels[16] < 4)
-			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+		if (ent->client->pers.skill_levels[16] < 4)
+			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.skill_levels[16];
 		else
 			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
 
 		// zyk: loading Team Energize value
-		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)) && ent->client->pers.force_powers_levels[17] > 0)
+		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)) && ent->client->pers.skill_levels[17] > 0)
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
-		if (ent->client->pers.force_powers_levels[17] == 0)
+		if (ent->client->pers.skill_levels[17] == 0)
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_FORCE);
-		ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+		ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.skill_levels[17];
 
 		// zyk: loading Melee
 		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_MELEE)))
@@ -5185,7 +4901,7 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: used to add a cooldown between each flame
 		ent->client->cloakDebReduce = 0;
 
-		ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.other_skills_levels[9]);
+		ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.skill_levels[54]);
 		ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
 		ent->client->ps.fd.forcePower = ent->client->ps.fd.forcePowerMax;
 
@@ -5245,84 +4961,84 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->pers.hunter_quest_messages = 0;
 
 		// zyk: loading initial RPG weapons
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_STUN_BATON)) && ent->client->pers.weapons_levels[10] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_STUN_BATON)) && ent->client->pers.skill_levels[18] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_STUN_BATON);
-		if (ent->client->pers.weapons_levels[10] == 0)
+		if (ent->client->pers.skill_levels[18] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_STUN_BATON);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL)) && ent->client->pers.weapons_levels[0] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_PISTOL)) && ent->client->pers.skill_levels[19] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
-		if (ent->client->pers.weapons_levels[0] == 0)
+		if (ent->client->pers.skill_levels[19] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_PISTOL);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BLASTER)) && ent->client->pers.weapons_levels[1] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BLASTER)) && ent->client->pers.skill_levels[20] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BLASTER);
-		if (ent->client->pers.weapons_levels[1] == 0)
+		if (ent->client->pers.skill_levels[20] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BLASTER);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DISRUPTOR)) && ent->client->pers.weapons_levels[2] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DISRUPTOR)) && ent->client->pers.skill_levels[21] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DISRUPTOR);
-		if (ent->client->pers.weapons_levels[2] == 0)
+		if (ent->client->pers.skill_levels[21] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DISRUPTOR);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BOWCASTER)) && ent->client->pers.weapons_levels[3] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BOWCASTER)) && ent->client->pers.skill_levels[22] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BOWCASTER);
-		if (ent->client->pers.weapons_levels[3] == 0)
+		if (ent->client->pers.skill_levels[22] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BOWCASTER);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_REPEATER)) && ent->client->pers.weapons_levels[4] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_REPEATER)) && ent->client->pers.skill_levels[23] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_REPEATER);
-		if (ent->client->pers.weapons_levels[4] == 0)
+		if (ent->client->pers.skill_levels[23] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_REPEATER);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DEMP2)) && ent->client->pers.weapons_levels[5] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DEMP2)) && ent->client->pers.skill_levels[24] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DEMP2);
-		if (ent->client->pers.weapons_levels[5] == 0)
+		if (ent->client->pers.skill_levels[24] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DEMP2);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_FLECHETTE)) && ent->client->pers.weapons_levels[6] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_FLECHETTE)) && ent->client->pers.skill_levels[25] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_FLECHETTE);
-		if (ent->client->pers.weapons_levels[6] == 0)
+		if (ent->client->pers.skill_levels[25] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_FLECHETTE);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_ROCKET_LAUNCHER)) && ent->client->pers.weapons_levels[7] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_ROCKET_LAUNCHER)) && ent->client->pers.skill_levels[26] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_ROCKET_LAUNCHER);
-		if (ent->client->pers.weapons_levels[7] == 0)
+		if (ent->client->pers.skill_levels[26] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_ROCKET_LAUNCHER);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_CONCUSSION)) && ent->client->pers.weapons_levels[8] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_CONCUSSION)) && ent->client->pers.skill_levels[27] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_CONCUSSION);
-		if (ent->client->pers.weapons_levels[8] == 0)
+		if (ent->client->pers.skill_levels[27] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_CONCUSSION);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)) && ent->client->pers.weapons_levels[9] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_BRYAR_OLD)) && ent->client->pers.skill_levels[28] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_OLD);
-		if (ent->client->pers.weapons_levels[9] == 0)
+		if (ent->client->pers.skill_levels[28] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_BRYAR_OLD);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_THERMAL)) && ent->client->pers.ammo_levels[4] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_THERMAL)) && ent->client->pers.skill_levels[43] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
-		if (ent->client->pers.ammo_levels[4] == 0)
+		if (ent->client->pers.skill_levels[43] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_THERMAL);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_TRIP_MINE)) && ent->client->pers.ammo_levels[5] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_TRIP_MINE)) && ent->client->pers.skill_levels[44] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_TRIP_MINE);
-		if (ent->client->pers.ammo_levels[5] == 0)
+		if (ent->client->pers.skill_levels[44] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_TRIP_MINE);
 
-		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DET_PACK)) && ent->client->pers.ammo_levels[6] > 0)
+		if (!(ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_DET_PACK)) && ent->client->pers.skill_levels[45] > 0)
 			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DET_PACK);
-		if (ent->client->pers.ammo_levels[6] == 0)
+		if (ent->client->pers.skill_levels[45] == 0)
 			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_DET_PACK);
 
 		// zyk: loading initial RPG ammo at spawn
-		ent->client->ps.ammo[AMMO_BLASTER] = ((int)ceil(zyk_max_blaster_pack_ammo.value/3.0) * ent->client->pers.ammo_levels[0]);
-		ent->client->ps.ammo[AMMO_POWERCELL] = ((int)ceil(zyk_max_power_cell_ammo.value/3.0) * ent->client->pers.ammo_levels[1]);
-		ent->client->ps.ammo[AMMO_METAL_BOLTS] = ((int)ceil(zyk_max_metal_bolt_ammo.value/3.0) * ent->client->pers.ammo_levels[2]);
-		ent->client->ps.ammo[AMMO_ROCKETS] = ((int)ceil(zyk_max_rocket_ammo.value/3.0) * ent->client->pers.ammo_levels[3]);
-		ent->client->ps.ammo[AMMO_THERMAL] = ((int)ceil(zyk_max_thermal_ammo.value/3.0) * ent->client->pers.ammo_levels[4]);
-		ent->client->ps.ammo[AMMO_TRIPMINE] = ((int)ceil(zyk_max_tripmine_ammo.value/3.0) * ent->client->pers.ammo_levels[5]);
-		ent->client->ps.ammo[AMMO_DETPACK] = ((int)ceil(zyk_max_detpack_ammo.value/3.0) * ent->client->pers.ammo_levels[6]);
+		ent->client->ps.ammo[AMMO_BLASTER] = ((int)ceil(zyk_max_blaster_pack_ammo.value/3.0) * ent->client->pers.skill_levels[39]);
+		ent->client->ps.ammo[AMMO_POWERCELL] = ((int)ceil(zyk_max_power_cell_ammo.value/3.0) * ent->client->pers.skill_levels[40]);
+		ent->client->ps.ammo[AMMO_METAL_BOLTS] = ((int)ceil(zyk_max_metal_bolt_ammo.value/3.0) * ent->client->pers.skill_levels[41]);
+		ent->client->ps.ammo[AMMO_ROCKETS] = ((int)ceil(zyk_max_rocket_ammo.value/3.0) * ent->client->pers.skill_levels[42]);
+		ent->client->ps.ammo[AMMO_THERMAL] = ((int)ceil(zyk_max_thermal_ammo.value/3.0) * ent->client->pers.skill_levels[43]);
+		ent->client->ps.ammo[AMMO_TRIPMINE] = ((int)ceil(zyk_max_tripmine_ammo.value/3.0) * ent->client->pers.skill_levels[44]);
+		ent->client->ps.ammo[AMMO_DETPACK] = ((int)ceil(zyk_max_detpack_ammo.value/3.0) * ent->client->pers.skill_levels[45]);
 		
 		if (ent->client->pers.rpg_class == 2)
 		{ // zyk: modifying max ammo if the player is a Bounty Hunter
@@ -5330,7 +5046,7 @@ void initialize_rpg_skills(gentity_t *ent)
 			int sentry_guns_iterator = 0;
 
 			// zyk: Bounty Hunter starts with 5 sentries if he has the Upgrade
-			if (ent->client->pers.holdable_items_levels[2] > 0)
+			if (ent->client->pers.skill_levels[48] > 0)
 			{
 				if (ent->client->pers.secrets_found & (1 << 1))
 					ent->client->pers.bounty_hunter_sentries = MAX_BOUNTY_HUNTER_SENTRIES;
@@ -5352,40 +5068,40 @@ void initialize_rpg_skills(gentity_t *ent)
 					ent->client->pers.bounty_hunter_placed_sentries++;
 			}
 
-			ent->client->ps.ammo[AMMO_BLASTER] += ent->client->ps.ammo[AMMO_BLASTER]/6 * ent->client->pers.other_skills_levels[10];
-			ent->client->ps.ammo[AMMO_POWERCELL] += ent->client->ps.ammo[AMMO_POWERCELL]/6 * ent->client->pers.other_skills_levels[10];
-			ent->client->ps.ammo[AMMO_METAL_BOLTS] += ent->client->ps.ammo[AMMO_METAL_BOLTS]/6 * ent->client->pers.other_skills_levels[10];
-			ent->client->ps.ammo[AMMO_ROCKETS] += ent->client->ps.ammo[AMMO_ROCKETS]/6 * ent->client->pers.other_skills_levels[10];
-			ent->client->ps.ammo[AMMO_THERMAL] += ent->client->ps.ammo[AMMO_THERMAL]/6 * ent->client->pers.other_skills_levels[10];
-			ent->client->ps.ammo[AMMO_TRIPMINE] += ent->client->ps.ammo[AMMO_TRIPMINE]/6 * ent->client->pers.other_skills_levels[10];
-			ent->client->ps.ammo[AMMO_DETPACK] += ent->client->ps.ammo[AMMO_DETPACK]/6 * ent->client->pers.other_skills_levels[10];
+			ent->client->ps.ammo[AMMO_BLASTER] += ent->client->ps.ammo[AMMO_BLASTER]/6 * ent->client->pers.skill_levels[55];
+			ent->client->ps.ammo[AMMO_POWERCELL] += ent->client->ps.ammo[AMMO_POWERCELL]/6 * ent->client->pers.skill_levels[55];
+			ent->client->ps.ammo[AMMO_METAL_BOLTS] += ent->client->ps.ammo[AMMO_METAL_BOLTS]/6 * ent->client->pers.skill_levels[55];
+			ent->client->ps.ammo[AMMO_ROCKETS] += ent->client->ps.ammo[AMMO_ROCKETS]/6 * ent->client->pers.skill_levels[55];
+			ent->client->ps.ammo[AMMO_THERMAL] += ent->client->ps.ammo[AMMO_THERMAL]/6 * ent->client->pers.skill_levels[55];
+			ent->client->ps.ammo[AMMO_TRIPMINE] += ent->client->ps.ammo[AMMO_TRIPMINE]/6 * ent->client->pers.skill_levels[55];
+			ent->client->ps.ammo[AMMO_DETPACK] += ent->client->ps.ammo[AMMO_DETPACK]/6 * ent->client->pers.skill_levels[55];
 		}
 
 		// zyk: reseting initial holdable items of the player
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_SEEKER) & ~(1 << HI_BINOCULARS) & ~(1 << HI_SENTRY_GUN) & ~(1 << HI_EWEB) & ~(1 << HI_CLOAK) & ~(1 << HI_SHIELD) & ~(1 << HI_MEDPAC) & ~(1 << HI_MEDPAC_BIG);
 
-		if (ent->client->pers.holdable_items_levels[0] > 0)
+		if (ent->client->pers.skill_levels[46] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_BINOCULARS);
 
-		if (ent->client->pers.holdable_items_levels[1] > 0)
+		if (ent->client->pers.skill_levels[47] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC);
 
-		if (ent->client->pers.holdable_items_levels[2] > 0)
+		if (ent->client->pers.skill_levels[48] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
 
-		if (ent->client->pers.holdable_items_levels[3] > 0)
+		if (ent->client->pers.skill_levels[49] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SEEKER);
 
-		if (ent->client->pers.holdable_items_levels[4] > 0)
+		if (ent->client->pers.skill_levels[50] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_EWEB);
 
-		if (ent->client->pers.holdable_items_levels[5] > 0)
+		if (ent->client->pers.skill_levels[51] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_MEDPAC_BIG);
 
-		if (ent->client->pers.holdable_items_levels[6] > 0)
+		if (ent->client->pers.skill_levels[52] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SHIELD);
 
-		if (ent->client->pers.holdable_items_levels[7] > 0)
+		if (ent->client->pers.skill_levels[53] > 0)
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_CLOAK);
 
 		// zyk: loading initial health of the player
@@ -6130,7 +5846,6 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 
 	// zyk: initializing mind control attributes used in RPG mode
 	ent->client->pers.being_mind_controlled = -1;
-	ent->client->pers.other_skills_levels[8] = 0;
 	ent->client->pers.mind_controlled1_id = -1;
 
 	// zyk: resetting the forcePowerMax to the cvar value
@@ -6158,12 +5873,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 {
 	if (upgrade_value == 1)
 	{
-		if (ent->client->pers.force_powers_levels[0] < 5)
+		if (ent->client->pers.skill_levels[0] < 5)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LEVITATION)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LEVITATION);
-			ent->client->pers.force_powers_levels[0]++;
-			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
+			ent->client->pers.skill_levels[0]++;
+			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.skill_levels[0];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6176,12 +5891,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 			
 	if (upgrade_value == 2)
 	{
-		if (ent->client->pers.force_powers_levels[1] < 3)
+		if (ent->client->pers.skill_levels[1] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PUSH)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PUSH);
-			ent->client->pers.force_powers_levels[1]++;
-			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+			ent->client->pers.skill_levels[1]++;
+			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.skill_levels[1];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6194,12 +5909,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 3)
 	{
-		if (ent->client->pers.force_powers_levels[2] < 3)
+		if (ent->client->pers.skill_levels[2] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PULL)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PULL);
-			ent->client->pers.force_powers_levels[2]++;
-			ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+			ent->client->pers.skill_levels[2]++;
+			ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.skill_levels[2];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6212,12 +5927,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 4)
 	{
-		if (ent->client->pers.force_powers_levels[3] < 4)
+		if (ent->client->pers.skill_levels[3] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SPEED)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SPEED);
-			ent->client->pers.force_powers_levels[3]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+			ent->client->pers.skill_levels[3]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.skill_levels[3];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6230,9 +5945,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 5)
 	{
-		if (ent->client->pers.force_powers_levels[4] < 3)
+		if (ent->client->pers.skill_levels[4] < 3)
 		{
-			ent->client->pers.force_powers_levels[4]++;
+			ent->client->pers.skill_levels[4]++;
 			ent->client->pers.skillpoints--;
 
 			if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
@@ -6252,7 +5967,7 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 			{
 				if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SEE)))
 					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.skill_levels[4];
 			}
 		}
 		else
@@ -6265,18 +5980,18 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 6)
 	{
-		if (ent->client->pers.force_powers_levels[5] < 5)
+		if (ent->client->pers.skill_levels[5] < 5)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)))
 			{
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
 				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 			}
-			ent->client->pers.force_powers_levels[5]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+			ent->client->pers.skill_levels[5]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.skill_levels[5];
 			if (ent->client->saber[0].type == SABER_SINGLE && ent->client->saber[1].type == SABER_NONE)
 			{
-				ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
+				ent->client->ps.fd.saberAnimLevel = ent->client->pers.skill_levels[5];
 			}
 			ent->client->pers.skillpoints--;
 		}
@@ -6290,12 +6005,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 7)
 	{
-		if (ent->client->pers.force_powers_levels[6] < 3)
+		if (ent->client->pers.skill_levels[6] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_DEFENSE);
-			ent->client->pers.force_powers_levels[6]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+			ent->client->pers.skill_levels[6]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.skill_levels[6];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6308,12 +6023,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 8)
 	{
-		if (ent->client->pers.force_powers_levels[7] < 3)
+		if (ent->client->pers.skill_levels[7] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
-			ent->client->pers.force_powers_levels[7]++;
-			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+			ent->client->pers.skill_levels[7]++;
+			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.skill_levels[7];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6326,14 +6041,14 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 9)
 	{
-		if (ent->client->pers.force_powers_levels[8] < 4)
+		if (ent->client->pers.skill_levels[8] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_ABSORB)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_ABSORB);
-			ent->client->pers.force_powers_levels[8]++;
+			ent->client->pers.skill_levels[8]++;
 
-			if (ent->client->pers.force_powers_levels[8] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+			if (ent->client->pers.skill_levels[8] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.skill_levels[8];
 			else
 				ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = FORCE_LEVEL_3;
 
@@ -6349,12 +6064,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 10)
 	{
-		if (ent->client->pers.force_powers_levels[9] < 3)
+		if (ent->client->pers.skill_levels[9] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_HEAL)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_HEAL);
-			ent->client->pers.force_powers_levels[9]++;
-			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+			ent->client->pers.skill_levels[9]++;
+			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.skill_levels[9];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6367,14 +6082,14 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 11)
 	{
-		if (ent->client->pers.force_powers_levels[10] < 4)
+		if (ent->client->pers.skill_levels[10] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_PROTECT)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_PROTECT);
-			ent->client->pers.force_powers_levels[10]++;
+			ent->client->pers.skill_levels[10]++;
 
-			if (ent->client->pers.force_powers_levels[10] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+			if (ent->client->pers.skill_levels[10] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.skill_levels[10];
 			else
 				ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = FORCE_LEVEL_3;
 			ent->client->pers.skillpoints--;
@@ -6389,12 +6104,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 12)
 	{
-		if (ent->client->pers.force_powers_levels[11] < 3)
+		if (ent->client->pers.skill_levels[11] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TELEPATHY)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TELEPATHY);
-			ent->client->pers.force_powers_levels[11]++;
-			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+			ent->client->pers.skill_levels[11]++;
+			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.skill_levels[11];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6407,12 +6122,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 13)
 	{
-		if (ent->client->pers.force_powers_levels[12] < 3)
+		if (ent->client->pers.skill_levels[12] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_HEAL)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_HEAL);
-			ent->client->pers.force_powers_levels[12]++;
-			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+			ent->client->pers.skill_levels[12]++;
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.skill_levels[12];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6425,14 +6140,14 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 14)
 	{
-		if (ent->client->pers.force_powers_levels[13] < 4)
+		if (ent->client->pers.skill_levels[13] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_LIGHTNING)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_LIGHTNING);
-			ent->client->pers.force_powers_levels[13]++;
+			ent->client->pers.skill_levels[13]++;
 
-			if (ent->client->pers.force_powers_levels[13] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+			if (ent->client->pers.skill_levels[13] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.skill_levels[13];
 			else
 				ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = FORCE_LEVEL_3;
 			ent->client->pers.skillpoints--;
@@ -6447,12 +6162,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 15)
 	{
-		if (ent->client->pers.force_powers_levels[14] < 3)
+		if (ent->client->pers.skill_levels[14] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_GRIP)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_GRIP);
-			ent->client->pers.force_powers_levels[14]++;
-			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+			ent->client->pers.skill_levels[14]++;
+			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.skill_levels[14];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6465,12 +6180,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 16)
 	{
-		if (ent->client->pers.force_powers_levels[15] < 3)
+		if (ent->client->pers.skill_levels[15] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_DRAIN)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_DRAIN);
-			ent->client->pers.force_powers_levels[15]++;
-			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+			ent->client->pers.skill_levels[15]++;
+			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.skill_levels[15];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6483,14 +6198,14 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 17)
 	{
-		if (ent->client->pers.force_powers_levels[16] < 4)
+		if (ent->client->pers.skill_levels[16] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_RAGE)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_RAGE);
-			ent->client->pers.force_powers_levels[16]++;
+			ent->client->pers.skill_levels[16]++;
 
-			if (ent->client->pers.force_powers_levels[16] < 4)
-				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+			if (ent->client->pers.skill_levels[16] < 4)
+				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.skill_levels[16];
 			else
 				ent->client->ps.fd.forcePowerLevel[FP_RAGE] = FORCE_LEVEL_3;
 
@@ -6506,12 +6221,12 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 18)
 	{
-		if (ent->client->pers.force_powers_levels[17] < 3)
+		if (ent->client->pers.skill_levels[17] < 3)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_TEAM_FORCE)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_TEAM_FORCE);
-			ent->client->pers.force_powers_levels[17]++;
-			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+			ent->client->pers.skill_levels[17]++;
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.skill_levels[17];
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6524,9 +6239,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 19)
 	{
-		if (ent->client->pers.weapons_levels[10] < 3)
+		if (ent->client->pers.skill_levels[18] < 3)
 		{
-			ent->client->pers.weapons_levels[10]++;
+			ent->client->pers.skill_levels[18]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6539,9 +6254,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 20)
 	{
-		if (ent->client->pers.weapons_levels[0] < 2)
+		if (ent->client->pers.skill_levels[19] < 2)
 		{
-			ent->client->pers.weapons_levels[0]++;
+			ent->client->pers.skill_levels[19]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6554,9 +6269,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 21)
 	{
-		if (ent->client->pers.weapons_levels[1] < 2)
+		if (ent->client->pers.skill_levels[20] < 2)
 		{
-			ent->client->pers.weapons_levels[1]++;
+			ent->client->pers.skill_levels[20]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6569,9 +6284,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 22)
 	{
-		if (ent->client->pers.weapons_levels[2] < 2)
+		if (ent->client->pers.skill_levels[21] < 2)
 		{
-			ent->client->pers.weapons_levels[2]++;
+			ent->client->pers.skill_levels[21]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6584,9 +6299,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 23)
 	{
-		if (ent->client->pers.weapons_levels[3] < 2)
+		if (ent->client->pers.skill_levels[22] < 2)
 		{
-			ent->client->pers.weapons_levels[3]++;
+			ent->client->pers.skill_levels[22]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6599,9 +6314,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 24)
 	{
-		if (ent->client->pers.weapons_levels[4] < 2)
+		if (ent->client->pers.skill_levels[23] < 2)
 		{
-			ent->client->pers.weapons_levels[4]++;
+			ent->client->pers.skill_levels[23]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6614,9 +6329,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 25)
 	{
-		if (ent->client->pers.weapons_levels[5] < 2)
+		if (ent->client->pers.skill_levels[24] < 2)
 		{
-			ent->client->pers.weapons_levels[5]++;
+			ent->client->pers.skill_levels[24]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6629,9 +6344,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 26)
 	{
-		if (ent->client->pers.weapons_levels[6] < 2)
+		if (ent->client->pers.skill_levels[25] < 2)
 		{
-			ent->client->pers.weapons_levels[6]++;
+			ent->client->pers.skill_levels[25]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6644,9 +6359,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 27)
 	{
-		if (ent->client->pers.weapons_levels[7] < 2)
+		if (ent->client->pers.skill_levels[26] < 2)
 		{
-			ent->client->pers.weapons_levels[7]++;
+			ent->client->pers.skill_levels[26]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6659,9 +6374,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 28)
 	{
-		if (ent->client->pers.weapons_levels[8] < 2)
+		if (ent->client->pers.skill_levels[27] < 2)
 		{
-			ent->client->pers.weapons_levels[8]++;
+			ent->client->pers.skill_levels[27]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6674,9 +6389,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 29)
 	{
-		if (ent->client->pers.weapons_levels[9] < 2)
+		if (ent->client->pers.skill_levels[28] < 2)
 		{
-			ent->client->pers.weapons_levels[9]++;
+			ent->client->pers.skill_levels[28]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6689,9 +6404,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 30)
 	{
-		if (ent->client->pers.weapons_levels[11] < 3)
+		if (ent->client->pers.skill_levels[29] < 3)
 		{
-			ent->client->pers.weapons_levels[11]++;
+			ent->client->pers.skill_levels[29]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6704,9 +6419,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 31)
 	{
-		if (ent->client->pers.other_skills_levels[0] < 5)
+		if (ent->client->pers.skill_levels[30] < 5)
 		{
-			ent->client->pers.other_skills_levels[0]++;
+			ent->client->pers.skill_levels[30]++;
 			set_max_shield(ent);
 			ent->client->pers.skillpoints--;
 		}
@@ -6720,9 +6435,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 32)
 	{
-		if (ent->client->pers.other_skills_levels[1] < 4)
+		if (ent->client->pers.skill_levels[31] < 4)
 		{
-			ent->client->pers.other_skills_levels[1]++;
+			ent->client->pers.skill_levels[31]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6735,9 +6450,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 33)
 	{
-		if (ent->client->pers.other_skills_levels[2] < 4)
+		if (ent->client->pers.skill_levels[32] < 4)
 		{
-			ent->client->pers.other_skills_levels[2]++;
+			ent->client->pers.skill_levels[32]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6750,9 +6465,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 34)
 	{
-		if (ent->client->pers.other_skills_levels[3] < 1)
+		if (ent->client->pers.skill_levels[33] < 1)
 		{
-			ent->client->pers.other_skills_levels[3]++;
+			ent->client->pers.skill_levels[33]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6765,9 +6480,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 35)
 	{
-		if (ent->client->pers.other_skills_levels[4] < 3)
+		if (ent->client->pers.skill_levels[34] < 3)
 		{
-			ent->client->pers.other_skills_levels[4]++;
+			ent->client->pers.skill_levels[34]++;
 			if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)))
 				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 			ent->client->pers.skillpoints--;
@@ -6782,9 +6497,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 36)
 	{
-		if (ent->client->pers.other_skills_levels[5] < 3)
+		if (ent->client->pers.skill_levels[35] < 3)
 		{
-			ent->client->pers.other_skills_levels[5]++;
+			ent->client->pers.skill_levels[35]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6797,9 +6512,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 37)
 	{
-		if (ent->client->pers.other_skills_levels[6] < 3)
+		if (ent->client->pers.skill_levels[36] < 3)
 		{
-			ent->client->pers.other_skills_levels[6]++;
+			ent->client->pers.skill_levels[36]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6812,9 +6527,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 38)
 	{
-		if (ent->client->pers.other_skills_levels[7] < 3)
+		if (ent->client->pers.skill_levels[37] < 3)
 		{
-			ent->client->pers.other_skills_levels[7]++;
+			ent->client->pers.skill_levels[37]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6827,9 +6542,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 39)
 	{
-		if (ent->client->pers.other_skills_levels[8] < 1)
+		if (ent->client->pers.skill_levels[38] < 1)
 		{
-			ent->client->pers.other_skills_levels[8]++;
+			ent->client->pers.skill_levels[38]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6842,9 +6557,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 40)
 	{
-		if (ent->client->pers.ammo_levels[0] < 3)
+		if (ent->client->pers.skill_levels[39] < 3)
 		{
-			ent->client->pers.ammo_levels[0]++;
+			ent->client->pers.skill_levels[39]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6857,9 +6572,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 41)
 	{
-		if (ent->client->pers.ammo_levels[1] < 3)
+		if (ent->client->pers.skill_levels[40] < 3)
 		{
-			ent->client->pers.ammo_levels[1]++;
+			ent->client->pers.skill_levels[40]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6872,9 +6587,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 42)
 	{
-		if (ent->client->pers.ammo_levels[2] < 3)
+		if (ent->client->pers.skill_levels[41] < 3)
 		{
-			ent->client->pers.ammo_levels[2]++;
+			ent->client->pers.skill_levels[41]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6887,9 +6602,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 43)
 	{
-		if (ent->client->pers.ammo_levels[3] < 3)
+		if (ent->client->pers.skill_levels[42] < 3)
 		{
-			ent->client->pers.ammo_levels[3]++;
+			ent->client->pers.skill_levels[42]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6902,9 +6617,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 44)
 	{
-		if (ent->client->pers.ammo_levels[4] < 3)
+		if (ent->client->pers.skill_levels[43] < 3)
 		{
-			ent->client->pers.ammo_levels[4]++;
+			ent->client->pers.skill_levels[43]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6917,9 +6632,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 45)
 	{
-		if (ent->client->pers.ammo_levels[5] < 3)
+		if (ent->client->pers.skill_levels[44] < 3)
 		{
-			ent->client->pers.ammo_levels[5]++;
+			ent->client->pers.skill_levels[44]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6932,9 +6647,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 46)
 	{
-		if (ent->client->pers.ammo_levels[6] < 3)
+		if (ent->client->pers.skill_levels[45] < 3)
 		{
-			ent->client->pers.ammo_levels[6]++;
+			ent->client->pers.skill_levels[45]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6947,9 +6662,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 47)
 	{
-		if (ent->client->pers.holdable_items_levels[0] < 1)
+		if (ent->client->pers.skill_levels[46] < 1)
 		{
-			ent->client->pers.holdable_items_levels[0]++;
+			ent->client->pers.skill_levels[46]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6962,9 +6677,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 48)
 	{
-		if (ent->client->pers.holdable_items_levels[1] < 1)
+		if (ent->client->pers.skill_levels[47] < 1)
 		{
-			ent->client->pers.holdable_items_levels[1]++;
+			ent->client->pers.skill_levels[47]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6977,9 +6692,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 49)
 	{
-		if (ent->client->pers.holdable_items_levels[2] < 1)
+		if (ent->client->pers.skill_levels[48] < 1)
 		{
-			ent->client->pers.holdable_items_levels[2]++;
+			ent->client->pers.skill_levels[48]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -6992,9 +6707,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 50)
 	{
-		if (ent->client->pers.holdable_items_levels[3] < 1)
+		if (ent->client->pers.skill_levels[49] < 1)
 		{
-			ent->client->pers.holdable_items_levels[3]++;
+			ent->client->pers.skill_levels[49]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7007,9 +6722,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 51)
 	{
-		if (ent->client->pers.holdable_items_levels[4] < 1)
+		if (ent->client->pers.skill_levels[50] < 1)
 		{
-			ent->client->pers.holdable_items_levels[4]++;
+			ent->client->pers.skill_levels[50]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7022,9 +6737,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 52)
 	{
-		if (ent->client->pers.holdable_items_levels[5] < 1)
+		if (ent->client->pers.skill_levels[51] < 1)
 		{
-			ent->client->pers.holdable_items_levels[5]++;
+			ent->client->pers.skill_levels[51]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7037,9 +6752,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 53)
 	{
-		if (ent->client->pers.holdable_items_levels[6] < 1)
+		if (ent->client->pers.skill_levels[52] < 1)
 		{
-			ent->client->pers.holdable_items_levels[6]++;
+			ent->client->pers.skill_levels[52]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7052,9 +6767,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 54)
 	{
-		if (ent->client->pers.holdable_items_levels[7] < 1)
+		if (ent->client->pers.skill_levels[53] < 1)
 		{
-			ent->client->pers.holdable_items_levels[7]++;
+			ent->client->pers.skill_levels[53]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7067,10 +6782,10 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 55)
 	{
-		if (ent->client->pers.other_skills_levels[9] < 5)
+		if (ent->client->pers.skill_levels[54] < 5)
 		{
-			ent->client->pers.other_skills_levels[9]++;
-			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.other_skills_levels[9]);
+			ent->client->pers.skill_levels[54]++;
+			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.skill_levels[54]);
 			ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
 			ent->client->pers.skillpoints--;
 		}
@@ -7084,9 +6799,9 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 56)
 	{
-		if (ent->client->pers.other_skills_levels[10] < 3)
+		if (ent->client->pers.skill_levels[55] < 3)
 		{
-			ent->client->pers.other_skills_levels[10]++;
+			ent->client->pers.skill_levels[55]++;
 			ent->client->pers.skillpoints--;
 		}
 		else
@@ -7145,54 +6860,18 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 
 		strcpy(content,"");
 
-		for (i = 0; i < 18; i++)
+		for (i = 0; i < NUMBER_OF_SKILLS; i++)
 		{
-			if (i == 0 || i == 5)
-				strcpy(content,va("%s%d/5-",content,ent->client->pers.force_powers_levels[i]));
-			else if (i == 3 || i == 8 || i == 10 || i == 13 || i == 16)
-				strcpy(content,va("%s%d/4-",content,ent->client->pers.force_powers_levels[i]));
+			if (i == 0 || i == 5 || i == 30 || i == 54)
+				strcpy(content,va("%s%d/5-",content,ent->client->pers.skill_levels[i]));
+			else if (i == 3 || i == 8 || i == 10 || i == 13 || i == 16 || i == 31 || i == 32)
+				strcpy(content,va("%s%d/4-",content,ent->client->pers.skill_levels[i]));
+			else if (i > 18 && i < 29)
+				strcpy(content,va("%s%d/2-",content,ent->client->pers.skill_levels[i]));
+			else if ((i > 45 && i < 54) || i == 33 || i == 38)
+				strcpy(content,va("%s%d/1-",content,ent->client->pers.skill_levels[i]));
 			else
-				strcpy(content,va("%s%d/3-",content,ent->client->pers.force_powers_levels[i]));
-		}
-
-		strcpy(content,va("%s%d/3-",content,ent->client->pers.weapons_levels[10]));
-
-		for (i = 0; i < 12; i++)
-		{
-			if (i == 11)
-				strcpy(content,va("%s%d/3-",content,ent->client->pers.weapons_levels[i]));
-			else if (i != 10)
-				strcpy(content,va("%s%d/2-",content,ent->client->pers.weapons_levels[i]));
-		}
-
-		for (i = 0; i < 9; i++)
-		{
-			if (i == 0)
-				strcpy(content,va("%s%d/5-",content,ent->client->pers.other_skills_levels[i]));
-			else if (i == 1 || i == 2)
-				strcpy(content,va("%s%d/4-",content,ent->client->pers.other_skills_levels[i]));
-			else if (i == 3 || i == 8)
-				strcpy(content,va("%s%d/1-",content,ent->client->pers.other_skills_levels[i]));
-			else
-				strcpy(content,va("%s%d/3-",content,ent->client->pers.other_skills_levels[i]));
-		}
-
-		for (i = 0; i < 7; i++)
-		{
-			strcpy(content,va("%s%d/3-",content,ent->client->pers.ammo_levels[i]));
-		}
-
-		for (i = 0; i < 8; i++)
-		{
-			strcpy(content,va("%s%d/1-",content,ent->client->pers.holdable_items_levels[i]));
-		}
-
-		for (i = 9; i < 11; i++)
-		{
-			if (i == 9)
-				strcpy(content,va("%s%d/5-",content,ent->client->pers.other_skills_levels[i]));
-			else
-				strcpy(content,va("%s%d/3-",content,ent->client->pers.other_skills_levels[i]));
+				strcpy(content,va("%s%d/3-",content,ent->client->pers.skill_levels[i]));
 		}
 
 		for (i = 0; i < 17; i++)
@@ -7353,70 +7032,70 @@ qboolean validate_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont
 	}
 
 	// zyk: validation on skills that require certain conditions to be upgraded
-	if (upgrade_value == 20 && ent->client->pers.weapons_levels[0] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
+	if (upgrade_value == 20 && ent->client->pers.skill_levels[19] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in Blaster Pistol.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 21 && ent->client->pers.weapons_levels[1] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
+	if (upgrade_value == 21 && ent->client->pers.skill_levels[20] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in E11 Blaster Rifle.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 22 && ent->client->pers.weapons_levels[2] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
+	if (upgrade_value == 22 && ent->client->pers.skill_levels[21] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in Disruptor.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 23 && ent->client->pers.weapons_levels[3] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
+	if (upgrade_value == 23 && ent->client->pers.skill_levels[22] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in Bowcaster.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 24 && ent->client->pers.weapons_levels[4] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
+	if (upgrade_value == 24 && ent->client->pers.skill_levels[23] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Repeater.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 25 && ent->client->pers.weapons_levels[5] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
+	if (upgrade_value == 25 && ent->client->pers.skill_levels[24] == 1 && !(ent->client->pers.secrets_found & (1 << 11)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Power Cell Weapons Upgrade to get 2/2 in DEMP2.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 26 && ent->client->pers.weapons_levels[6] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
+	if (upgrade_value == 26 && ent->client->pers.skill_levels[25] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Flechette.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 27 && ent->client->pers.weapons_levels[7] == 1 && !(ent->client->pers.secrets_found & (1 << 14)))
+	if (upgrade_value == 27 && ent->client->pers.skill_levels[26] == 1 && !(ent->client->pers.secrets_found & (1 << 14)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Rocket Upgrade to get 2/2 in Rocket Launcher.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 28 && ent->client->pers.weapons_levels[8] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
+	if (upgrade_value == 28 && ent->client->pers.skill_levels[27] == 1 && !(ent->client->pers.secrets_found & (1 << 13)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Metal Bolts Weapons Upgrade to get 2/2 in Concussion Rifle.\n\"" );
 		return qfalse;
 	}
 
-	if (upgrade_value == 29 && ent->client->pers.weapons_levels[9] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
+	if (upgrade_value == 29 && ent->client->pers.skill_levels[28] == 1 && !(ent->client->pers.secrets_found & (1 << 12)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"You must buy the Blaster Pack Weapons Upgrade to get 2/2 in Bryar Pistol.\n\"" );
@@ -7528,10 +7207,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 	// zyk: the downgrade is done if it doesnt go below the minimum level of the skill
 	if (downgrade_value == 1)
 	{
-		if (ent->client->pers.force_powers_levels[0] > 0)
+		if (ent->client->pers.skill_levels[0] > 0)
 		{
-			ent->client->pers.force_powers_levels[0]--;
-			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.force_powers_levels[0];
+			ent->client->pers.skill_levels[0]--;
+			ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] = ent->client->pers.skill_levels[0];
 			if (ent->client->ps.fd.forcePowerLevel[FP_LEVITATION] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LEVITATION);
 			ent->client->pers.skillpoints++;
@@ -7545,10 +7224,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 			
 	if (downgrade_value == 2)
 	{
-		if (ent->client->pers.force_powers_levels[1] > 0)
+		if (ent->client->pers.skill_levels[1] > 0)
 		{
-			ent->client->pers.force_powers_levels[1]--;
-			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.force_powers_levels[1];
+			ent->client->pers.skill_levels[1]--;
+			ent->client->ps.fd.forcePowerLevel[FP_PUSH] = ent->client->pers.skill_levels[1];
 			if (ent->client->ps.fd.forcePowerLevel[FP_PUSH] == 0)
 				ent->client->ps.fd.forcePowersKnown  &= ~(1 << FP_PUSH);
 			ent->client->pers.skillpoints++;
@@ -7562,10 +7241,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 3)
 	{
-		if (ent->client->pers.force_powers_levels[2] > 0)
+		if (ent->client->pers.skill_levels[2] > 0)
 		{
-			ent->client->pers.force_powers_levels[2]--;
-			ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.force_powers_levels[2];
+			ent->client->pers.skill_levels[2]--;
+			ent->client->ps.fd.forcePowerLevel[FP_PULL] = ent->client->pers.skill_levels[2];
 			if (ent->client->ps.fd.forcePowerLevel[FP_PULL] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PULL);
 			ent->client->pers.skillpoints++;
@@ -7579,10 +7258,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 4)
 	{
-		if (ent->client->pers.force_powers_levels[3] > 0)
+		if (ent->client->pers.skill_levels[3] > 0)
 		{
-			ent->client->pers.force_powers_levels[3]--;
-			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.force_powers_levels[3];
+			ent->client->pers.skill_levels[3]--;
+			ent->client->ps.fd.forcePowerLevel[FP_SPEED] = ent->client->pers.skill_levels[3];
 			if (ent->client->ps.fd.forcePowerLevel[FP_SPEED] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SPEED);
 			ent->client->pers.skillpoints++;
@@ -7596,9 +7275,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 5)
 	{
-		if (ent->client->pers.force_powers_levels[4] > 0)
+		if (ent->client->pers.skill_levels[4] > 0)
 		{
-			ent->client->pers.force_powers_levels[4]--;
+			ent->client->pers.skill_levels[4]--;
 			ent->client->pers.skillpoints++;
 
 			if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
@@ -7616,7 +7295,7 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 			}
 			else
 			{
-				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.force_powers_levels[4];
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = ent->client->pers.skill_levels[4];
 				if (ent->client->ps.fd.forcePowerLevel[FP_SEE] == 0)
 					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
 			}
@@ -7630,14 +7309,14 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 6)
 	{
-		if (ent->client->pers.force_powers_levels[5] > 0)
+		if (ent->client->pers.skill_levels[5] > 0)
 		{
-			ent->client->pers.force_powers_levels[5]--;
-			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.force_powers_levels[5];
+			ent->client->pers.skill_levels[5]--;
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.skill_levels[5];
 			if (ent->client->saber[0].model[0] && !ent->client->saber[1].model[0])
 			{
-				ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->pers.force_powers_levels[5];
-				ent->client->ps.fd.saberAnimLevel = ent->client->pers.force_powers_levels[5];
+				ent->client->ps.fd.saberAnimLevelBase = ent->client->ps.fd.saberAnimLevel = ent->client->ps.fd.saberDrawAnimLevel = ent->client->sess.saberLevel = ent->client->pers.skill_levels[5];
+				ent->client->ps.fd.saberAnimLevel = ent->client->pers.skill_levels[5];
 			}
 			if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] == 0)
 			{
@@ -7656,10 +7335,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 7)
 	{
-		if (ent->client->pers.force_powers_levels[6] > 0)
+		if (ent->client->pers.skill_levels[6] > 0)
 		{
-			ent->client->pers.force_powers_levels[6]--;
-			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.force_powers_levels[6];
+			ent->client->pers.skill_levels[6]--;
+			ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] = ent->client->pers.skill_levels[6];
 			if (ent->client->ps.fd.forcePowerLevel[FP_SABER_DEFENSE] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_DEFENSE);
 			ent->client->pers.skillpoints++;
@@ -7673,10 +7352,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 8)
 	{
-		if (ent->client->pers.force_powers_levels[7] > 0)
+		if (ent->client->pers.skill_levels[7] > 0)
 		{
-			ent->client->pers.force_powers_levels[7]--;
-			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.force_powers_levels[7];
+			ent->client->pers.skill_levels[7]--;
+			ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] = ent->client->pers.skill_levels[7];
 			if (ent->client->ps.fd.forcePowerLevel[FP_SABERTHROW] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABERTHROW);
 			ent->client->pers.skillpoints++;
@@ -7690,10 +7369,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 9)
 	{
-		if (ent->client->pers.force_powers_levels[8] > 0)
+		if (ent->client->pers.skill_levels[8] > 0)
 		{
-			ent->client->pers.force_powers_levels[8]--;
-			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.force_powers_levels[8];
+			ent->client->pers.skill_levels[8]--;
+			ent->client->ps.fd.forcePowerLevel[FP_ABSORB] = ent->client->pers.skill_levels[8];
 			if (ent->client->ps.fd.forcePowerLevel[FP_ABSORB] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_ABSORB);
 			ent->client->pers.skillpoints++;
@@ -7707,10 +7386,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 10)
 	{
-		if (ent->client->pers.force_powers_levels[9] > 0)
+		if (ent->client->pers.skill_levels[9] > 0)
 		{
-			ent->client->pers.force_powers_levels[9]--;
-			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.force_powers_levels[9];
+			ent->client->pers.skill_levels[9]--;
+			ent->client->ps.fd.forcePowerLevel[FP_HEAL] = ent->client->pers.skill_levels[9];
 			if (ent->client->ps.fd.forcePowerLevel[FP_HEAL] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_HEAL);
 			ent->client->pers.skillpoints++;
@@ -7724,10 +7403,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 11)
 	{
-		if (ent->client->pers.force_powers_levels[10] > 0)
+		if (ent->client->pers.skill_levels[10] > 0)
 		{
-			ent->client->pers.force_powers_levels[10]--;
-			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.force_powers_levels[10];
+			ent->client->pers.skill_levels[10]--;
+			ent->client->ps.fd.forcePowerLevel[FP_PROTECT] = ent->client->pers.skill_levels[10];
 			if (ent->client->ps.fd.forcePowerLevel[FP_PROTECT] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_PROTECT);
 			ent->client->pers.skillpoints++;
@@ -7741,10 +7420,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 12)
 	{
-		if (ent->client->pers.force_powers_levels[11] > 0)
+		if (ent->client->pers.skill_levels[11] > 0)
 		{
-			ent->client->pers.force_powers_levels[11]--;
-			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.force_powers_levels[11];
+			ent->client->pers.skill_levels[11]--;
+			ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] = ent->client->pers.skill_levels[11];
 			if (ent->client->ps.fd.forcePowerLevel[FP_TELEPATHY] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TELEPATHY);
 			ent->client->pers.skillpoints++;
@@ -7758,10 +7437,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 13)
 	{
-		if (ent->client->pers.force_powers_levels[12] > 0)
+		if (ent->client->pers.skill_levels[12] > 0)
 		{
-			ent->client->pers.force_powers_levels[12]--;
-			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.force_powers_levels[12];
+			ent->client->pers.skill_levels[12]--;
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] = ent->client->pers.skill_levels[12];
 			if (ent->client->ps.fd.forcePowerLevel[FP_TEAM_HEAL] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_HEAL);
 			ent->client->pers.skillpoints++;
@@ -7775,10 +7454,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 14)
 	{
-		if (ent->client->pers.force_powers_levels[13] > 0)
+		if (ent->client->pers.skill_levels[13] > 0)
 		{
-			ent->client->pers.force_powers_levels[13]--;
-			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.force_powers_levels[13];
+			ent->client->pers.skill_levels[13]--;
+			ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] = ent->client->pers.skill_levels[13];
 			if (ent->client->ps.fd.forcePowerLevel[FP_LIGHTNING] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_LIGHTNING);
 			ent->client->pers.skillpoints++;
@@ -7792,10 +7471,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 15)
 	{
-		if (ent->client->pers.force_powers_levels[14] > 0)
+		if (ent->client->pers.skill_levels[14] > 0)
 		{
-			ent->client->pers.force_powers_levels[14]--;
-			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.force_powers_levels[14];
+			ent->client->pers.skill_levels[14]--;
+			ent->client->ps.fd.forcePowerLevel[FP_GRIP] = ent->client->pers.skill_levels[14];
 			if (ent->client->ps.fd.forcePowerLevel[FP_GRIP] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_GRIP);
 			ent->client->pers.skillpoints++;
@@ -7809,10 +7488,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 16)
 	{
-		if (ent->client->pers.force_powers_levels[15] > 0)
+		if (ent->client->pers.skill_levels[15] > 0)
 		{
-			ent->client->pers.force_powers_levels[15]--;
-			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.force_powers_levels[15];
+			ent->client->pers.skill_levels[15]--;
+			ent->client->ps.fd.forcePowerLevel[FP_DRAIN] = ent->client->pers.skill_levels[15];
 			if (ent->client->ps.fd.forcePowerLevel[FP_DRAIN] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_DRAIN);
 			ent->client->pers.skillpoints++;
@@ -7826,10 +7505,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 17)
 	{
-		if (ent->client->pers.force_powers_levels[16] > 0)
+		if (ent->client->pers.skill_levels[16] > 0)
 		{
-			ent->client->pers.force_powers_levels[16]--;
-			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.force_powers_levels[16];
+			ent->client->pers.skill_levels[16]--;
+			ent->client->ps.fd.forcePowerLevel[FP_RAGE] = ent->client->pers.skill_levels[16];
 			if (ent->client->ps.fd.forcePowerLevel[FP_RAGE] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_RAGE);
 			ent->client->pers.skillpoints++;
@@ -7843,10 +7522,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 18)
 	{
-		if (ent->client->pers.force_powers_levels[17] > 0)
+		if (ent->client->pers.skill_levels[17] > 0)
 		{
-			ent->client->pers.force_powers_levels[17]--;
-			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.force_powers_levels[17];
+			ent->client->pers.skill_levels[17]--;
+			ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] = ent->client->pers.skill_levels[17];
 			if (ent->client->ps.fd.forcePowerLevel[FP_TEAM_FORCE] == 0)
 				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_TEAM_FORCE);
 			ent->client->pers.skillpoints++;
@@ -7860,9 +7539,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 19)
 	{
-		if (ent->client->pers.weapons_levels[10] > 0)
+		if (ent->client->pers.skill_levels[18] > 0)
 		{
-			ent->client->pers.weapons_levels[10]--;
+			ent->client->pers.skill_levels[18]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7874,9 +7553,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 20)
 	{
-		if (ent->client->pers.weapons_levels[0] > 0)
+		if (ent->client->pers.skill_levels[19] > 0)
 		{
-			ent->client->pers.weapons_levels[0]--;
+			ent->client->pers.skill_levels[19]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7888,9 +7567,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 21)
 	{
-		if (ent->client->pers.weapons_levels[1] > 0)
+		if (ent->client->pers.skill_levels[20] > 0)
 		{
-			ent->client->pers.weapons_levels[1]--;
+			ent->client->pers.skill_levels[20]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7902,9 +7581,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 22)
 	{
-		if (ent->client->pers.weapons_levels[2] > 0)
+		if (ent->client->pers.skill_levels[21] > 0)
 		{
-			ent->client->pers.weapons_levels[2]--;
+			ent->client->pers.skill_levels[21]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7916,9 +7595,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 23)
 	{
-		if (ent->client->pers.weapons_levels[3] > 0)
+		if (ent->client->pers.skill_levels[22] > 0)
 		{
-			ent->client->pers.weapons_levels[3]--;
+			ent->client->pers.skill_levels[22]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7930,9 +7609,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 24)
 	{
-		if (ent->client->pers.weapons_levels[4] > 0)
+		if (ent->client->pers.skill_levels[23] > 0)
 		{
-			ent->client->pers.weapons_levels[4]--;
+			ent->client->pers.skill_levels[23]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7944,9 +7623,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 25)
 	{
-		if (ent->client->pers.weapons_levels[5] > 0)
+		if (ent->client->pers.skill_levels[24] > 0)
 		{
-			ent->client->pers.weapons_levels[5]--;
+			ent->client->pers.skill_levels[24]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7958,9 +7637,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 26)
 	{
-		if (ent->client->pers.weapons_levels[6] > 0)
+		if (ent->client->pers.skill_levels[25] > 0)
 		{
-			ent->client->pers.weapons_levels[6]--;
+			ent->client->pers.skill_levels[25]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7972,9 +7651,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 27)
 	{
-		if (ent->client->pers.weapons_levels[7] > 0)
+		if (ent->client->pers.skill_levels[26] > 0)
 		{
-			ent->client->pers.weapons_levels[7]--;
+			ent->client->pers.skill_levels[26]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -7986,9 +7665,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 28)
 	{
-		if (ent->client->pers.weapons_levels[8] > 0)
+		if (ent->client->pers.skill_levels[27] > 0)
 		{
-			ent->client->pers.weapons_levels[8]--;
+			ent->client->pers.skill_levels[27]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8000,9 +7679,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 29)
 	{
-		if (ent->client->pers.weapons_levels[9] > 0)
+		if (ent->client->pers.skill_levels[28] > 0)
 		{
-			ent->client->pers.weapons_levels[9]--;
+			ent->client->pers.skill_levels[28]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8014,9 +7693,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 30)
 	{
-		if (ent->client->pers.weapons_levels[11] > 0)
+		if (ent->client->pers.skill_levels[29] > 0)
 		{
-			ent->client->pers.weapons_levels[11]--;
+			ent->client->pers.skill_levels[29]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8028,9 +7707,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 31)
 	{
-		if (ent->client->pers.other_skills_levels[0] > 0)
+		if (ent->client->pers.skill_levels[30] > 0)
 		{
-			ent->client->pers.other_skills_levels[0]--;
+			ent->client->pers.skill_levels[30]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8042,9 +7721,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 32)
 	{
-		if (ent->client->pers.other_skills_levels[1] > 0)
+		if (ent->client->pers.skill_levels[31] > 0)
 		{
-			ent->client->pers.other_skills_levels[1]--;
+			ent->client->pers.skill_levels[31]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8056,9 +7735,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 33)
 	{
-		if (ent->client->pers.other_skills_levels[2] > 0)
+		if (ent->client->pers.skill_levels[32] > 0)
 		{
-			ent->client->pers.other_skills_levels[2]--;
+			ent->client->pers.skill_levels[32]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8070,9 +7749,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 34)
 	{
-		if (ent->client->pers.other_skills_levels[3] > 0)
+		if (ent->client->pers.skill_levels[33] > 0)
 		{
-			ent->client->pers.other_skills_levels[3]--;
+			ent->client->pers.skill_levels[33]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8084,10 +7763,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 35)
 	{
-		if (ent->client->pers.other_skills_levels[4] > 0)
+		if (ent->client->pers.skill_levels[34] > 0)
 		{
-			ent->client->pers.other_skills_levels[4]--;
-			if (ent->client->pers.other_skills_levels[4] == 0)
+			ent->client->pers.skill_levels[34]--;
+			if (ent->client->pers.skill_levels[34] == 0)
 			{
 				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
 				if (ent->client->jetPackOn)
@@ -8106,9 +7785,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 36)
 	{
-		if (ent->client->pers.other_skills_levels[5] > 0)
+		if (ent->client->pers.skill_levels[35] > 0)
 		{
-			ent->client->pers.other_skills_levels[5]--;
+			ent->client->pers.skill_levels[35]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8120,9 +7799,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 37)
 	{
-		if (ent->client->pers.other_skills_levels[6] > 0)
+		if (ent->client->pers.skill_levels[36] > 0)
 		{
-			ent->client->pers.other_skills_levels[6]--;
+			ent->client->pers.skill_levels[36]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8134,9 +7813,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 38)
 	{
-		if (ent->client->pers.other_skills_levels[7] > 0)
+		if (ent->client->pers.skill_levels[37] > 0)
 		{
-			ent->client->pers.other_skills_levels[7]--;
+			ent->client->pers.skill_levels[37]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8148,9 +7827,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 39)
 	{
-		if (ent->client->pers.other_skills_levels[8] > 0)
+		if (ent->client->pers.skill_levels[38] > 0)
 		{
-			ent->client->pers.other_skills_levels[8]--;
+			ent->client->pers.skill_levels[38]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8162,9 +7841,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 40)
 	{
-		if (ent->client->pers.ammo_levels[0] > 0)
+		if (ent->client->pers.skill_levels[39] > 0)
 		{
-			ent->client->pers.ammo_levels[0]--;
+			ent->client->pers.skill_levels[39]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8176,9 +7855,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 41)
 	{
-		if (ent->client->pers.ammo_levels[1] > 0)
+		if (ent->client->pers.skill_levels[40] > 0)
 		{
-			ent->client->pers.ammo_levels[1]--;
+			ent->client->pers.skill_levels[40]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8190,9 +7869,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 42)
 	{
-		if (ent->client->pers.ammo_levels[2] > 0)
+		if (ent->client->pers.skill_levels[41] > 0)
 		{
-			ent->client->pers.ammo_levels[2]--;
+			ent->client->pers.skill_levels[41]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8204,9 +7883,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 43)
 	{
-		if (ent->client->pers.ammo_levels[3] > 0)
+		if (ent->client->pers.skill_levels[42] > 0)
 		{
-			ent->client->pers.ammo_levels[3]--;
+			ent->client->pers.skill_levels[42]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8218,9 +7897,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 44)
 	{
-		if (ent->client->pers.ammo_levels[4] > 0)
+		if (ent->client->pers.skill_levels[43] > 0)
 		{
-			ent->client->pers.ammo_levels[4]--;
+			ent->client->pers.skill_levels[43]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8232,9 +7911,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 45)
 	{
-		if (ent->client->pers.ammo_levels[5] > 0)
+		if (ent->client->pers.skill_levels[44] > 0)
 		{
-			ent->client->pers.ammo_levels[5]--;
+			ent->client->pers.skill_levels[44]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8246,9 +7925,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 46)
 	{
-		if (ent->client->pers.ammo_levels[6] > 0)
+		if (ent->client->pers.skill_levels[45] > 0)
 		{
-			ent->client->pers.ammo_levels[6]--;
+			ent->client->pers.skill_levels[45]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8260,9 +7939,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 47)
 	{
-		if (ent->client->pers.holdable_items_levels[0] > 0)
+		if (ent->client->pers.skill_levels[46] > 0)
 		{
-			ent->client->pers.holdable_items_levels[0]--;
+			ent->client->pers.skill_levels[46]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8274,9 +7953,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 48)
 	{
-		if (ent->client->pers.holdable_items_levels[1] > 0)
+		if (ent->client->pers.skill_levels[47] > 0)
 		{
-			ent->client->pers.holdable_items_levels[1]--;
+			ent->client->pers.skill_levels[47]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8288,9 +7967,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 49)
 	{
-		if (ent->client->pers.holdable_items_levels[2] > 0)
+		if (ent->client->pers.skill_levels[48] > 0)
 		{
-			ent->client->pers.holdable_items_levels[2]--;
+			ent->client->pers.skill_levels[48]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8302,9 +7981,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 50)
 	{
-		if (ent->client->pers.holdable_items_levels[3] > 0)
+		if (ent->client->pers.skill_levels[49] > 0)
 		{
-			ent->client->pers.holdable_items_levels[3]--;
+			ent->client->pers.skill_levels[49]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8316,9 +7995,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 51)
 	{
-		if (ent->client->pers.holdable_items_levels[4] > 0)
+		if (ent->client->pers.skill_levels[50] > 0)
 		{
-			ent->client->pers.holdable_items_levels[4]--;
+			ent->client->pers.skill_levels[50]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8330,9 +8009,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 52)
 	{
-		if (ent->client->pers.holdable_items_levels[5] > 0)
+		if (ent->client->pers.skill_levels[51] > 0)
 		{
-			ent->client->pers.holdable_items_levels[5]--;
+			ent->client->pers.skill_levels[51]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8344,9 +8023,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 53)
 	{
-		if (ent->client->pers.holdable_items_levels[6] > 0)
+		if (ent->client->pers.skill_levels[52] > 0)
 		{
-			ent->client->pers.holdable_items_levels[6]--;
+			ent->client->pers.skill_levels[52]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8358,9 +8037,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 54)
 	{
-		if (ent->client->pers.holdable_items_levels[7] > 0)
+		if (ent->client->pers.skill_levels[53] > 0)
 		{
-			ent->client->pers.holdable_items_levels[7]--;
+			ent->client->pers.skill_levels[53]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8372,10 +8051,10 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 55)
 	{
-		if (ent->client->pers.other_skills_levels[9] > 0)
+		if (ent->client->pers.skill_levels[54] > 0)
 		{
-			ent->client->pers.other_skills_levels[9]--;
-			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.other_skills_levels[9]);
+			ent->client->pers.skill_levels[54]--;
+			ent->client->pers.max_force_power = (int)ceil((zyk_max_force_power.value/4.0) * ent->client->pers.skill_levels[54]);
 			ent->client->ps.fd.forcePowerMax = ent->client->pers.max_force_power;
 			ent->client->pers.skillpoints++;
 		}
@@ -8388,9 +8067,9 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 	if (downgrade_value == 56)
 	{
-		if (ent->client->pers.other_skills_levels[10] > 0)
+		if (ent->client->pers.skill_levels[55] > 0)
 		{
-			ent->client->pers.other_skills_levels[10]--;
+			ent->client->pers.skill_levels[55]--;
 			ent->client->pers.skillpoints++;
 		}
 		else
@@ -8476,91 +8155,91 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			else if (Q_stricmp( arg1, "force" ) == 0)
 			{
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[0],"^0 1 - Jump: %d/5          ",ent->client->pers.force_powers_levels[0]);
+					sprintf(message_content[0],"^0 1 - Jump: %d/5          ",ent->client->pers.skill_levels[0]);
 				else
-					sprintf(message_content[0],"^7 1 - Jump: %d/5          ",ent->client->pers.force_powers_levels[0]);
+					sprintf(message_content[0],"^7 1 - Jump: %d/5          ",ent->client->pers.skill_levels[0]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[1],"^0 2 - Push: %d/3          ",ent->client->pers.force_powers_levels[1]);
+					sprintf(message_content[1],"^0 2 - Push: %d/3          ",ent->client->pers.skill_levels[1]);
 				else
-					sprintf(message_content[1],"^7 2 - Push: %d/3          ",ent->client->pers.force_powers_levels[1]);
+					sprintf(message_content[1],"^7 2 - Push: %d/3          ",ent->client->pers.skill_levels[1]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[2],"^0 3 - Pull: %d/3          ",ent->client->pers.force_powers_levels[2]);
+					sprintf(message_content[2],"^0 3 - Pull: %d/3          ",ent->client->pers.skill_levels[2]);
 				else
-					sprintf(message_content[2],"^7 3 - Pull: %d/3          ",ent->client->pers.force_powers_levels[2]);
+					sprintf(message_content[2],"^7 3 - Pull: %d/3          ",ent->client->pers.skill_levels[2]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"^0 4 - Speed: %d/4         ",ent->client->pers.force_powers_levels[3]);
+					sprintf(message_content[3],"^0 4 - Speed: %d/4         ",ent->client->pers.skill_levels[3]);
 				else
-					sprintf(message_content[3],"^7 4 - Speed: %d/4         ",ent->client->pers.force_powers_levels[3]);
+					sprintf(message_content[3],"^7 4 - Speed: %d/4         ",ent->client->pers.skill_levels[3]);
 				
-				sprintf(message_content[4],"^7 5 - Sense: %d/3         ",ent->client->pers.force_powers_levels[4]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[5],"^0 6 - Saber Attack: %d/5  ",ent->client->pers.force_powers_levels[5]);
-				else
-					sprintf(message_content[5],"^3 6 - Saber Attack: %d/5  ",ent->client->pers.force_powers_levels[5]);
+				sprintf(message_content[4],"^7 5 - Sense: %d/3         ",ent->client->pers.skill_levels[4]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[6],"^0 7 - Saber Defense: %d/3 ",ent->client->pers.force_powers_levels[6]);
+					sprintf(message_content[5],"^0 6 - Saber Attack: %d/5  ",ent->client->pers.skill_levels[5]);
 				else
-					sprintf(message_content[6],"^3 7 - Saber Defense: %d/3 ",ent->client->pers.force_powers_levels[6]);
+					sprintf(message_content[5],"^3 6 - Saber Attack: %d/5  ",ent->client->pers.skill_levels[5]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[7],"^0 8 - Saber Throw: %d/3   ",ent->client->pers.force_powers_levels[7]);
+					sprintf(message_content[6],"^0 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
 				else
-					sprintf(message_content[7],"^3 8 - Saber Throw: %d/3   ",ent->client->pers.force_powers_levels[7]);
+					sprintf(message_content[6],"^3 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
+				
+				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+					sprintf(message_content[7],"^0 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
+				else
+					sprintf(message_content[7],"^3 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[8],"^0 9 - Absorb: %d/4        ",ent->client->pers.force_powers_levels[8]);
+					sprintf(message_content[8],"^0 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
 				else
-					sprintf(message_content[8],"^5 9 - Absorb: %d/4        ",ent->client->pers.force_powers_levels[8]);
+					sprintf(message_content[8],"^5 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[0],"%s^010 - Heal: %d/3\n",message_content[0],ent->client->pers.force_powers_levels[9]);
+					sprintf(message_content[0],"%s^010 - Heal: %d/3\n",message_content[0],ent->client->pers.skill_levels[9]);
 				else
-					sprintf(message_content[0],"%s^510 - Heal: %d/3\n",message_content[0],ent->client->pers.force_powers_levels[9]);
+					sprintf(message_content[0],"%s^510 - Heal: %d/3\n",message_content[0],ent->client->pers.skill_levels[9]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[1],"%s^011 - Protect: %d/4\n",message_content[1],ent->client->pers.force_powers_levels[10]);
+					sprintf(message_content[1],"%s^011 - Protect: %d/4\n",message_content[1],ent->client->pers.skill_levels[10]);
 				else
-					sprintf(message_content[1],"%s^511 - Protect: %d/4\n",message_content[1],ent->client->pers.force_powers_levels[10]);
+					sprintf(message_content[1],"%s^511 - Protect: %d/4\n",message_content[1],ent->client->pers.skill_levels[10]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[2],"%s^012 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.force_powers_levels[11]);
+					sprintf(message_content[2],"%s^012 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.skill_levels[11]);
 				else
-					sprintf(message_content[2],"%s^512 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.force_powers_levels[11]);
+					sprintf(message_content[2],"%s^512 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.skill_levels[11]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"%s^013 - Team Heal: %d/3\n",message_content[3],ent->client->pers.force_powers_levels[12]);
+					sprintf(message_content[3],"%s^013 - Team Heal: %d/3\n",message_content[3],ent->client->pers.skill_levels[12]);
 				else
-					sprintf(message_content[3],"%s^513 - Team Heal: %d/3\n",message_content[3],ent->client->pers.force_powers_levels[12]);
+					sprintf(message_content[3],"%s^513 - Team Heal: %d/3\n",message_content[3],ent->client->pers.skill_levels[12]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"%s^014 - Lightning: %d/4\n",message_content[4],ent->client->pers.force_powers_levels[13]);
+					sprintf(message_content[4],"%s^014 - Lightning: %d/4\n",message_content[4],ent->client->pers.skill_levels[13]);
 				else
-					sprintf(message_content[4],"%s^114 - Lightning: %d/4\n",message_content[4],ent->client->pers.force_powers_levels[13]);
+					sprintf(message_content[4],"%s^114 - Lightning: %d/4\n",message_content[4],ent->client->pers.skill_levels[13]);
 				
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[5],"%s^015 - Grip: %d/3\n",message_content[5],ent->client->pers.force_powers_levels[14]);
+					sprintf(message_content[5],"%s^015 - Grip: %d/3\n",message_content[5],ent->client->pers.skill_levels[14]);
 				else
-					sprintf(message_content[5],"%s^115 - Grip: %d/3\n",message_content[5],ent->client->pers.force_powers_levels[14]);
+					sprintf(message_content[5],"%s^115 - Grip: %d/3\n",message_content[5],ent->client->pers.skill_levels[14]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[6],"%s^016 - Drain: %d/3\n",message_content[6],ent->client->pers.force_powers_levels[15]);
+					sprintf(message_content[6],"%s^016 - Drain: %d/3\n",message_content[6],ent->client->pers.skill_levels[15]);
 				else
-					sprintf(message_content[6],"%s^116 - Drain: %d/3\n",message_content[6],ent->client->pers.force_powers_levels[15]);
+					sprintf(message_content[6],"%s^116 - Drain: %d/3\n",message_content[6],ent->client->pers.skill_levels[15]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[7],"%s^017 - Rage: %d/4\n",message_content[7],ent->client->pers.force_powers_levels[16]);
+					sprintf(message_content[7],"%s^017 - Rage: %d/4\n",message_content[7],ent->client->pers.skill_levels[16]);
 				else
-					sprintf(message_content[7],"%s^117 - Rage: %d/4\n",message_content[7],ent->client->pers.force_powers_levels[16]);
+					sprintf(message_content[7],"%s^117 - Rage: %d/4\n",message_content[7],ent->client->pers.skill_levels[16]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[8],"%s^018 - Team Energize: %d/3\n",message_content[8],ent->client->pers.force_powers_levels[17]);
+					sprintf(message_content[8],"%s^018 - Team Energize: %d/3\n",message_content[8],ent->client->pers.skill_levels[17]);
 				else
-					sprintf(message_content[8],"%s^118 - Team Energize: %d/3\n",message_content[8],ent->client->pers.force_powers_levels[17]);
+					sprintf(message_content[8],"%s^118 - Team Energize: %d/3\n",message_content[8],ent->client->pers.skill_levels[17]);
 
 				for (i = 0; i < 9; i++)
 				{
@@ -8571,59 +8250,59 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "weapons" ) == 0)
 			{
-				sprintf(message_content[0],"^319 - Stun Baton: %d/3        ",ent->client->pers.weapons_levels[10]);
+				sprintf(message_content[0],"^319 - Stun Baton: %d/3        ",ent->client->pers.skill_levels[18]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[1],"^020 - Blaster Pistol: %d/2    ",ent->client->pers.weapons_levels[0]);
+					sprintf(message_content[1],"^020 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
 				else
-					sprintf(message_content[1],"^320 - Blaster Pistol: %d/2    ",ent->client->pers.weapons_levels[0]);
+					sprintf(message_content[1],"^320 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
 							
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[2],"^021 - E11 Blaster Rifle: %d/2 ",ent->client->pers.weapons_levels[1]);
+					sprintf(message_content[2],"^021 - E11 Blaster Rifle: %d/2 ",ent->client->pers.skill_levels[20]);
 				else
-					sprintf(message_content[2],"^321 - E11 Blaster Rifle: %d/2 ",ent->client->pers.weapons_levels[1]);
+					sprintf(message_content[2],"^321 - E11 Blaster Rifle: %d/2 ",ent->client->pers.skill_levels[20]);
 							
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"^022 - Disruptor: %d/2         ",ent->client->pers.weapons_levels[2]);
+					sprintf(message_content[3],"^022 - Disruptor: %d/2         ",ent->client->pers.skill_levels[21]);
 				else
-					sprintf(message_content[3],"^322 - Disruptor: %d/2         ",ent->client->pers.weapons_levels[2]);
+					sprintf(message_content[3],"^322 - Disruptor: %d/2         ",ent->client->pers.skill_levels[21]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"^023 - Bowcaster: %d/2         ",ent->client->pers.weapons_levels[3]);
+					sprintf(message_content[4],"^023 - Bowcaster: %d/2         ",ent->client->pers.skill_levels[22]);
 				else
-					sprintf(message_content[4],"^323 - Bowcaster: %d/2         ",ent->client->pers.weapons_levels[3]);
+					sprintf(message_content[4],"^323 - Bowcaster: %d/2         ",ent->client->pers.skill_levels[22]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[5],"^024 - Repeater: %d/2          ",ent->client->pers.weapons_levels[4]);
+					sprintf(message_content[5],"^024 - Repeater: %d/2          ",ent->client->pers.skill_levels[23]);
 				else
-					sprintf(message_content[5],"^324 - Repeater: %d/2          ",ent->client->pers.weapons_levels[4]);
+					sprintf(message_content[5],"^324 - Repeater: %d/2          ",ent->client->pers.skill_levels[23]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[0],"%s^025 - DEMP2: %d/2\n",message_content[0],ent->client->pers.weapons_levels[5]);
+					sprintf(message_content[0],"%s^025 - DEMP2: %d/2\n",message_content[0],ent->client->pers.skill_levels[24]);
 				else
-					sprintf(message_content[0],"%s^325 - DEMP2: %d/2\n",message_content[0],ent->client->pers.weapons_levels[5]);
+					sprintf(message_content[0],"%s^325 - DEMP2: %d/2\n",message_content[0],ent->client->pers.skill_levels[24]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[1],"%s^026 - Flechette: %d/2\n",message_content[1],ent->client->pers.weapons_levels[6]);
+					sprintf(message_content[1],"%s^026 - Flechette: %d/2\n",message_content[1],ent->client->pers.skill_levels[25]);
 				else
-					sprintf(message_content[1],"%s^326 - Flechette: %d/2\n",message_content[1],ent->client->pers.weapons_levels[6]);
+					sprintf(message_content[1],"%s^326 - Flechette: %d/2\n",message_content[1],ent->client->pers.skill_levels[25]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[2],"%s^027 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.weapons_levels[7]);
+					sprintf(message_content[2],"%s^027 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.skill_levels[26]);
 				else
-					sprintf(message_content[2],"%s^327 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.weapons_levels[7]);
+					sprintf(message_content[2],"%s^327 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.skill_levels[26]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"%s^028 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.weapons_levels[8]);
+					sprintf(message_content[3],"%s^028 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.skill_levels[27]);
 				else
-					sprintf(message_content[3],"%s^328 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.weapons_levels[8]);
+					sprintf(message_content[3],"%s^328 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.skill_levels[27]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"%s^029 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.weapons_levels[9]);
+					sprintf(message_content[4],"%s^029 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.skill_levels[28]);
 				else
-					sprintf(message_content[4],"%s^329 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.weapons_levels[9]);
+					sprintf(message_content[4],"%s^329 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.skill_levels[28]);
 
-				sprintf(message_content[5],"%s^330 - Melee: %d/3\n",message_content[5],ent->client->pers.weapons_levels[11]);
+				sprintf(message_content[5],"%s^330 - Melee: %d/3\n",message_content[5],ent->client->pers.skill_levels[29]);
 
 				for (i = 0; i < 6; i++)
 				{
@@ -8634,48 +8313,48 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "other" ) == 0)
 			{
-				sprintf(message_content[0],"^231 - Max Shield: %d/5       ", ent->client->pers.other_skills_levels[0]);
+				sprintf(message_content[0],"^231 - Max Shield: %d/5       ", ent->client->pers.skill_levels[30]);
 
-				sprintf(message_content[1],"^232 - Shield Strength: %d/4  ", ent->client->pers.other_skills_levels[1]);
+				sprintf(message_content[1],"^232 - Shield Strength: %d/4  ", ent->client->pers.skill_levels[31]);
 
-				sprintf(message_content[2],"^133 - Health Strength: %d/4  ", ent->client->pers.other_skills_levels[2]);
+				sprintf(message_content[2],"^133 - Health Strength: %d/4  ", ent->client->pers.skill_levels[32]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"^034 - Drain Shield: %d/1     ", ent->client->pers.other_skills_levels[3]);
+					sprintf(message_content[3],"^034 - Drain Shield: %d/1     ", ent->client->pers.skill_levels[33]);
 				else
-					sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.other_skills_levels[3]);
+					sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.skill_levels[33]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"^035 - Jetpack: %d/3          ", ent->client->pers.other_skills_levels[4]);
+					sprintf(message_content[4],"^035 - Jetpack: %d/3          ", ent->client->pers.skill_levels[34]);
 				else
-					sprintf(message_content[4],"^335 - Jetpack: %d/3          ", ent->client->pers.other_skills_levels[4]);
+					sprintf(message_content[4],"^335 - Jetpack: %d/3          ", ent->client->pers.skill_levels[34]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[5],"^036 - Sense Health: %d/3     ", ent->client->pers.other_skills_levels[5]);
+					sprintf(message_content[5],"^036 - Sense Health: %d/3     ", ent->client->pers.skill_levels[35]);
 				else
-					sprintf(message_content[5],"^636 - Sense Health: %d/3     ", ent->client->pers.other_skills_levels[5]);
+					sprintf(message_content[5],"^636 - Sense Health: %d/3     ", ent->client->pers.skill_levels[35]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[6],"^037 - Shield Heal: %d/3      ", ent->client->pers.other_skills_levels[6]);
+					sprintf(message_content[6],"^037 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
 				else
-					sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.other_skills_levels[6]);
+					sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.other_skills_levels[7]);
+					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
 				else
-					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.other_skills_levels[7]);
+					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.other_skills_levels[8]);
+					sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
 				else
-					sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.other_skills_levels[8]);
+					sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
 
 				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[9],"^055 - Force Power: %d/5\n", ent->client->pers.other_skills_levels[9]);
+					sprintf(message_content[9],"^055 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
 				else
-					sprintf(message_content[9],"^555 - Force Power: %d/5\n", ent->client->pers.other_skills_levels[9]);
+					sprintf(message_content[9],"^555 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
 
-				sprintf(message_content[10],"^356 - Improvements: %d/3\n", ent->client->pers.other_skills_levels[10]);
+				sprintf(message_content[10],"^356 - Improvements: %d/3\n", ent->client->pers.skill_levels[55]);
 
 				if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
 					sprintf(message_content[0],"%s^3l  ^7- Light Power: ^2yes\n",message_content[0]);
@@ -8768,83 +8447,83 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			else if (Q_stricmp( arg1, "ammo" ) == 0)
 			{
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^040 - Blaster Pack: %d/3\n",message, ent->client->pers.ammo_levels[0]);
+					sprintf(message,"%s^040 - Blaster Pack: %d/3\n",message, ent->client->pers.skill_levels[39]);
 				else
-					sprintf(message,"%s^340 - Blaster Pack: %d/3\n",message, ent->client->pers.ammo_levels[0]);
+					sprintf(message,"%s^340 - Blaster Pack: %d/3\n",message, ent->client->pers.skill_levels[39]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^041 - Power Cell: %d/3\n",message, ent->client->pers.ammo_levels[1]);
+					sprintf(message,"%s^041 - Power Cell: %d/3\n",message, ent->client->pers.skill_levels[40]);
 				else
-					sprintf(message,"%s^341 - Power Cell: %d/3\n",message, ent->client->pers.ammo_levels[1]);
+					sprintf(message,"%s^341 - Power Cell: %d/3\n",message, ent->client->pers.skill_levels[40]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^042 - Metallic Bolt: %d/3\n",message, ent->client->pers.ammo_levels[2]);
+					sprintf(message,"%s^042 - Metallic Bolt: %d/3\n",message, ent->client->pers.skill_levels[41]);
 				else
-					sprintf(message,"%s^342 - Metallic Bolt: %d/3\n",message, ent->client->pers.ammo_levels[2]);
+					sprintf(message,"%s^342 - Metallic Bolt: %d/3\n",message, ent->client->pers.skill_levels[41]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^043 - Rockets: %d/3\n",message, ent->client->pers.ammo_levels[3]);
+					sprintf(message,"%s^043 - Rockets: %d/3\n",message, ent->client->pers.skill_levels[42]);
 				else
-					sprintf(message,"%s^343 - Rockets: %d/3\n",message, ent->client->pers.ammo_levels[3]);
+					sprintf(message,"%s^343 - Rockets: %d/3\n",message, ent->client->pers.skill_levels[42]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^044 - Thermals: %d/3\n",message, ent->client->pers.ammo_levels[4]);
+					sprintf(message,"%s^044 - Thermals: %d/3\n",message, ent->client->pers.skill_levels[43]);
 				else
-					sprintf(message,"%s^344 - Thermals: %d/3\n",message, ent->client->pers.ammo_levels[4]);
+					sprintf(message,"%s^344 - Thermals: %d/3\n",message, ent->client->pers.skill_levels[43]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^045 - Trip Mines: %d/3\n",message, ent->client->pers.ammo_levels[5]);
+					sprintf(message,"%s^045 - Trip Mines: %d/3\n",message, ent->client->pers.skill_levels[44]);
 				else
-					sprintf(message,"%s^345 - Trip Mines: %d/3\n",message, ent->client->pers.ammo_levels[5]);
+					sprintf(message,"%s^345 - Trip Mines: %d/3\n",message, ent->client->pers.skill_levels[44]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^046 - Det Packs: %d/3\n",message, ent->client->pers.ammo_levels[6]);
+					sprintf(message,"%s^046 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
 				else
-					sprintf(message,"%s^346 - Det Packs: %d/3\n",message, ent->client->pers.ammo_levels[6]);
+					sprintf(message,"%s^346 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
 
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
 			}
 			else if (Q_stricmp( arg1, "items" ) == 0)
 			{
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^047 - Binoculars: %d/1\n",message, ent->client->pers.holdable_items_levels[0]);
+					sprintf(message,"%s^047 - Binoculars: %d/1\n",message, ent->client->pers.skill_levels[46]);
 				else
-					sprintf(message,"%s^347 - Binoculars: %d/1\n",message, ent->client->pers.holdable_items_levels[0]);
+					sprintf(message,"%s^347 - Binoculars: %d/1\n",message, ent->client->pers.skill_levels[46]);
 					
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^048 - Bacta Canister: %d/1\n",message, ent->client->pers.holdable_items_levels[1]);
+					sprintf(message,"%s^048 - Bacta Canister: %d/1\n",message, ent->client->pers.skill_levels[47]);
 				else
-					sprintf(message,"%s^348 - Bacta Canister: %d/1\n",message, ent->client->pers.holdable_items_levels[1]);
+					sprintf(message,"%s^348 - Bacta Canister: %d/1\n",message, ent->client->pers.skill_levels[47]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^049 - Sentry Gun: %d/1\n",message, ent->client->pers.holdable_items_levels[2]);
+					sprintf(message,"%s^049 - Sentry Gun: %d/1\n",message, ent->client->pers.skill_levels[48]);
 				else
-					sprintf(message,"%s^349 - Sentry Gun: %d/1\n",message, ent->client->pers.holdable_items_levels[2]);
+					sprintf(message,"%s^349 - Sentry Gun: %d/1\n",message, ent->client->pers.skill_levels[48]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^050 - Seeker Drone: %d/1\n",message, ent->client->pers.holdable_items_levels[3]);
+					sprintf(message,"%s^050 - Seeker Drone: %d/1\n",message, ent->client->pers.skill_levels[49]);
 				else
-					sprintf(message,"%s^350 - Seeker Drone: %d/1\n",message, ent->client->pers.holdable_items_levels[3]);
+					sprintf(message,"%s^350 - Seeker Drone: %d/1\n",message, ent->client->pers.skill_levels[49]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^051 - E-Web: %d/1\n",message, ent->client->pers.holdable_items_levels[4]);
+					sprintf(message,"%s^051 - E-Web: %d/1\n",message, ent->client->pers.skill_levels[50]);
 				else
-					sprintf(message,"%s^351 - E-Web: %d/1\n",message, ent->client->pers.holdable_items_levels[4]);
+					sprintf(message,"%s^351 - E-Web: %d/1\n",message, ent->client->pers.skill_levels[50]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^052 - Big Bacta: %d/1\n",message, ent->client->pers.holdable_items_levels[5]);
+					sprintf(message,"%s^052 - Big Bacta: %d/1\n",message, ent->client->pers.skill_levels[51]);
 				else
-					sprintf(message,"%s^352 - Big Bacta: %d/1\n",message, ent->client->pers.holdable_items_levels[5]);
+					sprintf(message,"%s^352 - Big Bacta: %d/1\n",message, ent->client->pers.skill_levels[51]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^053 - Force Field: %d/1\n",message, ent->client->pers.holdable_items_levels[6]);
+					sprintf(message,"%s^053 - Force Field: %d/1\n",message, ent->client->pers.skill_levels[52]);
 				else
-					sprintf(message,"%s^353 - Force Field: %d/1\n",message, ent->client->pers.holdable_items_levels[6]);
+					sprintf(message,"%s^353 - Force Field: %d/1\n",message, ent->client->pers.skill_levels[52]);
 
 				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^054 - Cloak Item: %d/1\n",message, ent->client->pers.holdable_items_levels[7]);
+					sprintf(message,"%s^054 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
 				else
-					sprintf(message,"%s^354 - Cloak Item: %d/1\n",message, ent->client->pers.holdable_items_levels[7]);
+					sprintf(message,"%s^354 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
 
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
 			}
@@ -10406,20 +10085,8 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 	{
 		int i = 0;
 
-		for (i = 0; i < 18; i++)
-			ent->client->pers.force_powers_levels[i] = 0;
-
-		for (i = 0; i < 12; i++)
-			ent->client->pers.weapons_levels[i] = 0;
-
-		for (i = 0; i < 7; i++)
-			ent->client->pers.ammo_levels[i] = 0;
-
-		for (i = 0; i < 8; i++)
-			ent->client->pers.holdable_items_levels[i] = 0;
-
-		for (i = 0; i < 11; i++)
-			ent->client->pers.other_skills_levels[i] = 0;
+		for (i = 0; i < NUMBER_OF_SKILLS; i++)
+			ent->client->pers.skill_levels[i] = 0;
 
 		ent->client->pers.max_rpg_shield = 0;
 		ent->client->pers.secrets_found = 0;
@@ -10471,20 +10138,8 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 	{
 		int i = 0;
 
-		for (i = 0; i < 18; i++)
-			ent->client->pers.force_powers_levels[i] = 0;
-
-		for (i = 0; i < 12; i++)
-			ent->client->pers.weapons_levels[i] = 0;
-
-		for (i = 0; i < 7; i++)
-			ent->client->pers.ammo_levels[i] = 0;
-
-		for (i = 0; i < 8; i++)
-			ent->client->pers.holdable_items_levels[i] = 0;
-
-		for (i = 0; i < 11; i++)
-			ent->client->pers.other_skills_levels[i] = 0;
+		for (i = 0; i < NUMBER_OF_SKILLS; i++)
+			ent->client->pers.skill_levels[i] = 0;
 
 		ent->client->pers.max_rpg_shield = 0;
 		ent->client->pers.secrets_found = 0;
@@ -11539,14 +11194,14 @@ void save_config(gentity_t *ent)
 	if (config_file != NULL)
 	{
 		fprintf(config_file,"%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",
-		client->pers.level,client->pers.force_powers_levels[0],client->pers.force_powers_levels[1],client->pers.force_powers_levels[2]
-		,client->pers.force_powers_levels[3],client->pers.force_powers_levels[4],client->pers.force_powers_levels[5],client->pers.force_powers_levels[6],client->pers.force_powers_levels[7],client->pers.force_powers_levels[8]
-		,client->pers.force_powers_levels[9],client->pers.force_powers_levels[10],client->pers.force_powers_levels[11],client->pers.force_powers_levels[12],client->pers.force_powers_levels[13],client->pers.force_powers_levels[14]
-		,client->pers.force_powers_levels[15],client->pers.force_powers_levels[16],client->pers.force_powers_levels[17],client->pers.weapons_levels[10],client->pers.weapons_levels[0],client->pers.weapons_levels[1],client->pers.weapons_levels[2],client->pers.weapons_levels[3]
-		,client->pers.weapons_levels[4],client->pers.weapons_levels[5],client->pers.weapons_levels[6],client->pers.weapons_levels[7],client->pers.weapons_levels[8],client->pers.weapons_levels[9],client->pers.weapons_levels[11],client->pers.other_skills_levels[0],client->pers.other_skills_levels[1]
-		,client->pers.other_skills_levels[2],client->pers.other_skills_levels[3],client->pers.other_skills_levels[4],client->pers.other_skills_levels[5],client->pers.other_skills_levels[6],client->pers.other_skills_levels[7],client->pers.other_skills_levels[8],client->pers.ammo_levels[0],client->pers.ammo_levels[1],client->pers.ammo_levels[2]
-		,client->pers.ammo_levels[3],client->pers.ammo_levels[4],client->pers.ammo_levels[5],client->pers.ammo_levels[6],client->pers.holdable_items_levels[0],client->pers.holdable_items_levels[1],client->pers.holdable_items_levels[2],client->pers.holdable_items_levels[3]
-		,client->pers.holdable_items_levels[4],client->pers.holdable_items_levels[5],client->pers.holdable_items_levels[6],client->pers.holdable_items_levels[7],client->pers.other_skills_levels[9],client->pers.other_skills_levels[10]);
+		client->pers.level,client->pers.skill_levels[0],client->pers.skill_levels[1],client->pers.skill_levels[2]
+			,client->pers.skill_levels[3],client->pers.skill_levels[4],client->pers.skill_levels[5],client->pers.skill_levels[6],client->pers.skill_levels[7],client->pers.skill_levels[8]
+			,client->pers.skill_levels[9],client->pers.skill_levels[10],client->pers.skill_levels[11],client->pers.skill_levels[12],client->pers.skill_levels[13],client->pers.skill_levels[14]
+			,client->pers.skill_levels[15],client->pers.skill_levels[16],client->pers.skill_levels[17],client->pers.skill_levels[18],client->pers.skill_levels[19],client->pers.skill_levels[20],client->pers.skill_levels[21],client->pers.skill_levels[22]
+			,client->pers.skill_levels[23],client->pers.skill_levels[24],client->pers.skill_levels[25],client->pers.skill_levels[26],client->pers.skill_levels[27],client->pers.skill_levels[28],client->pers.skill_levels[29],client->pers.skill_levels[30],client->pers.skill_levels[31]
+			,client->pers.skill_levels[32],client->pers.skill_levels[33],client->pers.skill_levels[34],client->pers.skill_levels[35],client->pers.skill_levels[36],client->pers.skill_levels[37],client->pers.skill_levels[38],client->pers.skill_levels[39],client->pers.skill_levels[40],client->pers.skill_levels[41]
+			,client->pers.skill_levels[42],client->pers.skill_levels[43],client->pers.skill_levels[44],client->pers.skill_levels[45],client->pers.skill_levels[46],client->pers.skill_levels[47],client->pers.skill_levels[48],client->pers.skill_levels[49]
+			,client->pers.skill_levels[50],client->pers.skill_levels[51],client->pers.skill_levels[52],client->pers.skill_levels[53],client->pers.skill_levels[54],client->pers.skill_levels[55]);
 		
 		fclose(config_file);
 	}
@@ -11595,47 +11250,11 @@ void do_change_class(gentity_t *ent, int value)
 	ent->client->pers.rpg_class = value;
 
 	// zyk: resetting skills
-	for (i = 0; i < 18; i++)
+	for (i = 0; i < NUMBER_OF_SKILLS; i++)
 	{
-		while (ent->client->pers.force_powers_levels[i] > 0)
+		while (ent->client->pers.skill_levels[i] > 0)
 		{
-			ent->client->pers.force_powers_levels[i]--;
-			ent->client->pers.skillpoints++;
-		}
-	}
-
-	for (i = 0; i < 12; i++)
-	{
-		while (ent->client->pers.weapons_levels[i] > 0)
-		{
-			ent->client->pers.weapons_levels[i]--;
-			ent->client->pers.skillpoints++;
-		}
-	}
-
-	for (i = 0; i < 7; i++)
-	{
-		while (ent->client->pers.ammo_levels[i] > 0)
-		{
-			ent->client->pers.ammo_levels[i]--;
-			ent->client->pers.skillpoints++;
-		}
-	}
-
-	for (i = 0; i < 8; i++)
-	{
-		while (ent->client->pers.holdable_items_levels[i] > 0)
-		{
-			ent->client->pers.holdable_items_levels[i]--;
-			ent->client->pers.skillpoints++;
-		}
-	}
-
-	for (i = 0; i < 11; i++)
-	{
-		while (ent->client->pers.other_skills_levels[i] > 0)
-		{
-			ent->client->pers.other_skills_levels[i]--;
+			ent->client->pers.skill_levels[i]--;
 			ent->client->pers.skillpoints++;
 		}
 	}
@@ -12189,7 +11808,7 @@ Cmd_Jetpack_f
 */
 void Cmd_Jetpack_f( gentity_t *ent ) {
 	if (!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && zyk_allow_jetpack_command.integer && 
-		(ent->client->sess.amrpgmode < 2 || ent->client->pers.other_skills_levels[4] > 0) && 
+		(ent->client->sess.amrpgmode < 2 || ent->client->pers.skill_levels[34] > 0) && 
 		(level.gametype != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && level.gametype != GT_JEDIMASTER)
 	{ // zyk: gets jetpack if player does not have it. RPG players need jetpack skill to get it
 		// zyk: Jedi Master gametype will not allow jetpack

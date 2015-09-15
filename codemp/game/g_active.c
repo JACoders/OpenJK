@@ -2626,7 +2626,7 @@ void ClientThink_real( gentity_t *ent ) {
 		if (client->sess.amrpgmode == 2)
 		{ 
 			if (client->pers.rpg_class == 4) // zyk: each Improvements level increases the Monk speed
-				zyk_player_speed *= (client->pers.other_skills_levels[10] * 0.3 + 1);
+				zyk_player_speed *= (client->pers.skill_levels[55] * 0.3 + 1);
 			else if (client->pers.rpg_class == 7 && client->pers.secrets_found & (1 << 8)) // zyk: Force Gunner with Upgrade has more run speed
 				zyk_player_speed *= 1.2;
 		}
