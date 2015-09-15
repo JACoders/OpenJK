@@ -575,7 +575,6 @@ void Z_Label(const void *pvAddress, const char *psLabel)
 	}
 
 	Q_strncpyz(	pMemory->sOptionalLabel, psLabel, sizeof(pMemory->sOptionalLabel));
-				pMemory->sOptionalLabel[ sizeof(pMemory->sOptionalLabel)-1 ] = '\0';
 }
 #endif
 
