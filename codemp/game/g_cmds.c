@@ -5584,6 +5584,19 @@ void clean_guardians(gentity_t *ent)
 		this_ent = &g_entities[i];
 		if (this_ent && this_ent->client && this_ent->NPC && this_ent->client->pers.guardian_invoked_by_id != -1 && this_ent->client->pers.guardian_invoked_by_id == (ent-g_entities))
 		{
+			// zyk: if quest player dies in boss battle, makes the boss stop using force powers
+			int j = 0;
+
+			while (j < NUM_FORCE_POWERS)
+			{
+				if (this_ent->client->ps.fd.forcePowersActive & (1 << j))
+				{
+					WP_ForcePowerStop(this_ent, j);
+				}
+
+				j++;
+			}
+
 			G_FreeEntity(this_ent);
 		}
 	}
