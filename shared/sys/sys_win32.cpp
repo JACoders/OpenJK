@@ -218,6 +218,23 @@ void Sys_SetProcessorAffinity( void ) {
 		Com_DPrintf( "Setting affinity mask failed (%s)\n", GetErrorString( GetLastError() ) );
 }
 
+#ifdef _DEBUG
+
+/*
+=================
+Sys_LimitAvailableMemory
+
+Limit the maximum size of the process's virtual memory (in bytes).
+=================
+*/
+size_t Sys_LimitAvailableMemory(size_t /*limit*/)
+{
+	//FIXME: Use Windows Job Objects
+	return 0;
+}
+
+#endif
+
 /*
 ==================
 Sys_LowPhysicalMemory()
