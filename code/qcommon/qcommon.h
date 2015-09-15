@@ -666,6 +666,7 @@ temp file loading
 --- high memory ---
 
 */
+
 int  Z_Validate( void );			// also used to insure all of these are paged in
 int   Z_MemSize	( memtag_t eTag );
 void  Z_TagFree	( memtag_t eTag );
@@ -676,22 +677,19 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if t
 
 #ifdef DEBUG_ZONE_ALLOCS
 
-	void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
-	void *_D_S_Malloc ( int iSize, const char *psFile, int iLine );	
-	void  _D_Z_Label  ( const void *pvAddress, const char *pslabel );
+void *_D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign, const char *psFile, int iLine );
+void *_D_S_Malloc( int iSize, const char *psFile, int iLine );
+void  _D_Z_Label( const void *pvAddress, const char *pslabel );
 
-	#define Z_Malloc(_iSize, _eTag, _bZeroit)	_D_Z_Malloc (_iSize, _eTag, _bZeroit, __FILE__, __LINE__)
-	#define S_Malloc(_iSize)					_D_S_Malloc	(_iSize, __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations	
-	
-	#define Z_Label(_ptr, _label)				_D_Z_Label	(_ptr, _label)
+#define Z_Malloc(_iSize, _eTag, _bZeroit)	_D_Z_Malloc (_iSize, _eTag, _bZeroit, 4, __FILE__, __LINE__)
+#define S_Malloc(_iSize)			_D_S_Malloc	(_iSize, __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
+#define Z_Label(_ptr, _label)			_D_Z_Label	(_ptr, _label)
 
 #else
 
-	void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
-	void *S_Malloc	( int iSize );									// NOT 0 filled memory only for small allocations
-
-	#define Z_Label(_ptr, _label)	/* */
-
+void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
+void *S_Malloc( int iSize );									// NOT 0 filled memory only for small allocations
+#define Z_Label(_ptr, _label)
 #endif
 
 void Com_InitZoneMemory(void);

@@ -1844,4 +1844,8 @@ Ghoul2 Insert End
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
 
 // tr_subs.cpp
+#ifdef DEBUG_ZONE_ALLOCS
+void *_D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign, const char *psFile, int iLine );
+#else
 void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign );
+#endif

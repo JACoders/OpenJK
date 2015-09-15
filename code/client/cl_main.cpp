@@ -1143,7 +1143,11 @@ void CL_InitRef( void ) {
 	RIT(SV_Trace);
 	RIT(S_RestartMusic);
 	RIT(Z_Free);
+#ifdef DEBUG_ZONE_ALLOCS
+	RIT(_D_Z_Malloc);
+#else
 	RIT(Z_Malloc);
+#endif
 	RIT(Z_MemSize);
 	RIT(Z_MorphMallocTag);
 

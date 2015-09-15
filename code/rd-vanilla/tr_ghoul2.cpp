@@ -241,8 +241,8 @@ public:
 
 		mNumBones = header->numBones;
 		mBones = new SBoneCalc[mNumBones];
-		mFinalBones = (CTransformBone*)Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue, 16);
-		mSmoothBones = (CTransformBone*)Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue, 16);
+		mFinalBones = (CTransformBone*) Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue);
+		mSmoothBones = (CTransformBone*) Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue);
 		mSkels = new mdxaSkel_t*[mNumBones];
 		mdxaSkelOffsets_t *offsets;
 		mdxaSkel_t		*skel;

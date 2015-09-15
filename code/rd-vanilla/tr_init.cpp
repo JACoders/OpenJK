@@ -816,7 +816,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *)ri.Z_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse, 4);
+	buffer = (byte *) Z_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse);
 
 	bufstart = (byte *)PADP((intptr_t) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -964,7 +964,7 @@ static void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = (byte *)ri.Z_Malloc(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse, 4);
+	buffer = (byte *) Z_Malloc(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;

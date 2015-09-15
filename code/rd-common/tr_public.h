@@ -40,7 +40,11 @@ typedef struct {
 	int					(*Milliseconds)						( void );
 
 	void				(*Hunk_ClearToMark)					( void );
+#ifdef DEBUG_ZONE_ALLOCS
+	void*				(*_D_Z_Malloc)						( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign, const char *psFile, int iLine );
+#else
 	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
+#endif
 	int					(*Z_Free)							( void *memory );
 	int					(*Z_MemSize)						( memtag_t eTag );
 	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );

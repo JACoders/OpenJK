@@ -77,9 +77,16 @@ void Com_DPrintf(const char *format, ...)
 //}
 
 // ZONE
+
+#ifdef DEBUG_ZONE_ALLOCS
+void *_D_Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign, const char *psFile, int iLine ) {
+	return ri._D_Z_Malloc( iSize, eTag, bZeroit, iAlign, psFile, iLine );
+}
+#else
 void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
 	return ri.Z_Malloc( iSize, eTag, bZeroit, iAlign );
 }
+#endif
 
 int Z_Free( void *ptr ) {
 	return ri.Z_Free( ptr );
