@@ -3018,20 +3018,21 @@ static void SortNewShader( void ) {
 		numStagesInNewShader++;
 
 	for ( i = tr.numShaders - 2 ; i >= 0 ; i-- ) {
+		shader_t *shader = tr.sortedShaders[i];
 		int numStages = 0;
-		while ( tr.sortedShaders[numStages] )
+		while ( shader->stages[numStages] )
 			numStages++;
 
-		if ( tr.sortedShaders[ i ]->sort < sort ) {
+		if ( shader->sort < sort ) {
 			break;
 		}
 
-		if ( tr.sortedShaders[ i ]->sort == sort && numStages <= numStagesInNewShader )
+		if ( shader->sort == sort && numStages <= numStagesInNewShader )
 		{
 			break;
 		}
 	
-		tr.sortedShaders[i+1] = tr.sortedShaders[i];
+		tr.sortedShaders[i+1] = shader;
 		tr.sortedShaders[i+1]->sortedIndex++;
 	}
 
