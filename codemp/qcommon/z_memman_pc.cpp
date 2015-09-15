@@ -24,15 +24,22 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "client/client.h" // hi i'm bad
 
+#ifdef DEBUG_ZONE_ALLOCS
+#include "sstring.h"
+int giZoneSnaphotNum=0;
+#define DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE 256
+typedef sstring<DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE> sDebugString_t;
+#endif
+
 ////////////////////////////////////////////////
 //
 #ifdef TAGDEF	// itu?
 #undef TAGDEF
 #endif
 #define TAGDEF(blah) #blah
-const static char *psTagStrings[TAG_COUNT+1]=	// +1 because TAG_COUNT will itself become a string here. Oh well.
+static const char *psTagStrings[TAG_COUNT+1]=	// +1 because TAG_COUNT will itself become a string here. Oh well.
 {
-	#include "qcommon/tags.h"
+	#include "tags.h"
 };
 //
 ////////////////////////////////////////////////
@@ -46,13 +53,20 @@ void CIN_CloseAllVideos();
 
 #define ZONE_MAGIC			0x21436587
 
+// if you change ANYTHING in this structure, be sure to update the tables below using DEF_STATIC...
 typedef struct zoneHeader_s
 {
-		int					iMagic;
-		memtag_t			eTag;
-		int					iSize;
-struct	zoneHeader_s		*pNext;
-struct	zoneHeader_s		*pPrev;
+		int						iMagic;
+		memtag_t				eTag;
+		int						iSize;
+		struct zoneHeader_s		*pNext;
+		struct zoneHeader_s		*pPrev;
+#ifdef DEBUG_ZONE_ALLOCS
+		const char		*sSrcFileBaseName;
+		int				iSrcFileLineNum;
+		char				sOptionalLabel[DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE];
+		int				iSnapshotNumber;
+#endif
 } zoneHeader_t;
 
 typedef struct
@@ -67,7 +81,7 @@ static inline zoneTail_t *ZoneTailFromHeader(zoneHeader_t *pHeader)
 }
 
 #ifdef DETAILED_ZONE_DEBUG_CODE
-map <void*,int> mapAllocatedZones;
+std::map <void*,int> mapAllocatedZones;
 #endif
 
 
@@ -155,23 +169,62 @@ typedef struct StaticMem_s {
 
 StaticZeroMem_t gZeroMalloc  =
 	{ {ZONE_MAGIC, TAG_STATIC,0,NULL,NULL},{ZONE_MAGIC}};
-StaticMem_t gEmptyString =
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'\0','\0'},{ZONE_MAGIC}};
-StaticMem_t gNumberString[] = {
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'0','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'1','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'2','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'3','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'4','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'5','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'6','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'7','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'8','\0'},{ZONE_MAGIC}},
-	{ {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL},{'9','\0'},{ZONE_MAGIC}},
+
+#ifdef DEBUG_ZONE_ALLOCS
+#define DEF_STATIC(_char) {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL, "<static>",0,"",0},{_char,'\0'},{ZONE_MAGIC}
+#else
+#define DEF_STATIC(_char) {ZONE_MAGIC, TAG_STATIC,2,NULL,NULL			        },{_char,'\0'},{ZONE_MAGIC}
+#endif
+
+const static StaticMem_t gEmptyString =
+	{ DEF_STATIC('\0') };
+
+const static StaticMem_t gNumberString[] = {
+	{ DEF_STATIC('0') },
+	{ DEF_STATIC('1') },
+	{ DEF_STATIC('2') },
+	{ DEF_STATIC('3') },
+	{ DEF_STATIC('4') },
+	{ DEF_STATIC('5') },
+	{ DEF_STATIC('6') },
+	{ DEF_STATIC('7') },
+	{ DEF_STATIC('8') },
+	{ DEF_STATIC('9') },
 };
 
+#ifdef DEBUG_ZONE_ALLOCS
+// returns actual filename only, no path
+// (copes with either slash-scheme for names)
+//
+// (normally I'd call another function for this, but this is supposed to be engine-independent,
+//	 so a certain amount of re-invention of the wheel is to be expected...)
+//
+const char *D_Z_Filename_WithoutPath(const char *psFilename)
+{
+	const char *psCopyPos = psFilename;
+
+	while (*psFilename)
+	{
+		if (*psFilename == PATH_SEP)
+			psCopyPos = psFilename+1;
+		psFilename++;
+	}
+
+	if (*psCopyPos == PATH_SEP)
+	{
+		psCopyPos++;
+	}
+
+	return psCopyPos;
+}
+#endif
+
 qboolean gbMemFreeupOccured = qfalse;
-void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iUnusedAlign /* = 4 */)
+#ifdef DEBUG_ZONE_ALLOCS
+void *D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
+#else
+void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
+#endif
 {
 	gbMemFreeupOccured = qfalse;
 
@@ -282,6 +335,13 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 		}
 	}
 
+#ifdef DEBUG_ZONE_ALLOCS
+	pMemory->sSrcFileBaseName = D_Z_Filename_WithoutPath(psFile);
+	pMemory->iSrcFileLineNum	= iLine;
+	pMemory->sOptionalLabel[0]	= '\0';
+	pMemory->iSnapshotNumber	= giZoneSnaphotNum;
+#endif
+
 	// Link in
 	pMemory->iMagic	= ZONE_MAGIC;
 	pMemory->eTag	= eTag;
@@ -391,8 +451,8 @@ static void Zone_FreeBlock(zoneHeader_t *pMemory)
 		{
 			pMemory->pNext->pPrev = pMemory->pPrev;
 		}
-		free (pMemory);
 
+		free (pMemory);
 
 		#ifdef DETAILED_ZONE_DEBUG_CODE
 		// this has already been checked for in execution order, but wtf?
@@ -427,6 +487,24 @@ int Z_Size(void *pvAddress)
 	return pMemory->iSize;
 }
 
+#ifdef DEBUG_ZONE_ALLOCS
+void Z_Label(const void *pvAddress, const char *psLabel)
+{
+	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
+
+	if (pMemory->eTag == TAG_STATIC)
+	{
+		return;
+	}
+
+	if (pMemory->iMagic != ZONE_MAGIC)
+	{
+		Com_Error(ERR_FATAL, "D_Z_Label(): Not a valid zone header!");
+	}
+
+	Q_strncpyz(	pMemory->sOptionalLabel, psLabel, sizeof(pMemory->sOptionalLabel));
+}
+#endif
 
 // Frees a block of memory...
 //
@@ -506,9 +584,17 @@ void Z_TagFree(memtag_t eTag)
 }
 
 
-void *S_Malloc( int iSize ) {
-	return Z_Malloc( iSize, TAG_SMALL );
+#ifdef DEBUG_ZONE_ALLOCS
+void *D_S_Malloc ( int iSize, const char *psFile, int iLine)
+{
+	return D_Z_Malloc( iSize, TAG_SMALL, qfalse, psFile, iLine );
 }
+#else
+void *S_Malloc( int iSize )
+{
+	return Z_Malloc( iSize, TAG_SMALL, qfalse, 4);
+}
+#endif
 
 
 #ifdef _DEBUG
@@ -582,6 +668,154 @@ static void Z_Details_f(void)
 
 	Z_Stats_f();
 }
+#ifdef DEBUG_ZONE_ALLOCS
+typedef std::map <sDebugString_t, int> LabelRefCount_t;	// yet another place where Gil's string class works and MS's doesn't
+typedef std::map <sDebugString_t, LabelRefCount_t>	TagBlockLabels_t;
+
+static TagBlockLabels_t AllTagBlockLabels;
+
+static void Z_Snapshot_f(void)
+{
+	AllTagBlockLabels.clear();
+
+	zoneHeader_t *pMemory = TheZone.Header.pNext;
+	while (pMemory)
+	{
+		AllTagBlockLabels[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel]++;
+		pMemory = pMemory->pNext;
+	}
+
+	giZoneSnaphotNum++;
+	Com_Printf("Ok.    ( Current snapshot num is now %d )\n",giZoneSnaphotNum);
+}
+
+static void Z_TagDebug_f(void)
+{
+	TagBlockLabels_t AllTagBlockLabels_Local;
+	qboolean bSnapShotTestActive = qfalse;
+
+	memtag_t eTag = TAG_ALL;
+
+	const char *psTAGName = Cmd_Argv(1);
+	if (psTAGName[0])
+	{
+		// check optional arg...
+		//
+		if (!Q_stricmp(psTAGName,"#snap"))
+		{
+			bSnapShotTestActive = qtrue;
+
+			AllTagBlockLabels_Local = AllTagBlockLabels;	// horrible great STL copy
+
+			psTAGName = Cmd_Argv(2);
+		}
+
+		if (psTAGName[0])
+		{
+			// skip over "tag_" if user supplied it...
+			//
+			if (!Q_stricmpn(psTAGName,"TAG_",4))
+			{
+				psTAGName += 4;
+			}
+
+			// see if the user specified a valid tag...
+			//
+			for (int i=0; i<TAG_COUNT; i++)
+			{
+				if (!Q_stricmp(psTAGName,psTagStrings[i]))
+				{
+					eTag = (memtag_t) i;
+					break;
+				}
+			}
+		}
+	}
+	else
+	{
+		Com_Printf("Usage: 'zone_tagdebug [#snap] <tag>', e.g. TAG_GHOUL2, TAG_ALL (careful!)\n");
+		return;
+	}
+
+	Com_Printf("Dumping debug data for tag \"%s\"...%s\n\n",psTagStrings[eTag], bSnapShotTestActive?"( since snapshot only )":"");
+
+	Com_Printf("%8s"," ");	// to compensate for code further down:   Com_Printf("(%5d) ",iBlocksListed);
+	if (eTag == TAG_ALL)
+	{
+		Com_Printf("%20s ","Zone Tag");
+	}
+	Com_Printf("%9s\n","Bytes");
+	Com_Printf("%8s"," ");
+	if (eTag == TAG_ALL)
+	{
+		Com_Printf("%20s ","--------");
+	}
+	Com_Printf("%9s\n","-----");
+
+
+	if (bSnapShotTestActive)
+	{
+		// dec ref counts in last snapshot for all current blocks (which will make new stuff go negative)
+		//
+		zoneHeader_t *pMemory = TheZone.Header.pNext;
+		while (pMemory)
+		{
+			if (pMemory->eTag == eTag || eTag == TAG_ALL)
+			{
+				AllTagBlockLabels_Local[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel]--;
+			}
+			pMemory = pMemory->pNext;
+		}
+	}
+
+	// now dump them out...
+	//
+	int iBlocksListed = 0;
+	int iTotalSize = 0;
+	zoneHeader_t *pMemory = TheZone.Header.pNext;
+	while (pMemory)
+	{
+		if (	(pMemory->eTag == eTag	|| eTag == TAG_ALL)
+			&&  (!bSnapShotTestActive	|| (pMemory->iSnapshotNumber == giZoneSnaphotNum && AllTagBlockLabels_Local[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel] <0) )
+			)
+		{
+			float	fSize		= (float)(pMemory->iSize) / 1024.0f / 1024.0f;
+			int		iSize		= fSize;
+			int		iRemainder 	= 100.0f * (fSize - floor(fSize));
+
+			Com_Printf("(%5d) ",iBlocksListed);
+
+			if (eTag == TAG_ALL)
+			{
+				Com_Printf("%20s",psTagStrings[pMemory->eTag]);
+			}
+
+			Com_Printf(" %9d (%2d.%02dMB) File: \"%s\", Line: %d\n",
+						  pMemory->iSize,
+							  iSize,iRemainder,
+												pMemory->sSrcFileBaseName,
+															pMemory->iSrcFileLineNum
+					   );
+			if (pMemory->sOptionalLabel[0])
+			{
+				Com_Printf("( Label: \"%s\" )\n",pMemory->sOptionalLabel);
+			}
+			iBlocksListed++;
+			iTotalSize += pMemory->iSize;
+
+			if (bSnapShotTestActive)
+			{
+				// bump ref count so we only 1 warning per new string, not for every one sharing that label...
+				//
+				AllTagBlockLabels_Local[psTagStrings[pMemory->eTag]][pMemory->sOptionalLabel]++;
+			}
+		}
+		pMemory = pMemory->pNext;
+	}
+
+	Com_Printf("( %d blocks listed, %d bytes (%.2fMB) total )\n",iBlocksListed, iTotalSize, (float)iTotalSize / 1024.0f / 1024.0f);
+}
+#endif
 
 // Shuts down the zone memory system and frees up all memory
 void Com_ShutdownZoneMemory(void)
@@ -590,6 +824,15 @@ void Com_ShutdownZoneMemory(void)
 
 	Cmd_RemoveCommand("zone_stats");
 	Cmd_RemoveCommand("zone_details");
+
+#ifdef _DEBUG
+	Cmd_RemoveCommand("zone_memrecovertest");
+#endif
+
+#ifdef DEBUG_ZONE_ALLOCS
+	Cmd_RemoveCommand("zone_tagdebug");
+	Cmd_RemoveCommand("zone_snapshot");
+#endif
 
 	if(TheZone.Stats.iCount)
 	{
@@ -610,17 +853,18 @@ void Com_InitZoneMemory( void )
 }
 
 void Com_InitZoneMemoryVars( void ) {
-	//#ifdef _DEBUG
-//	com_validateZone = Cvar_Get("com_validateZone", "1", 0);
-//#else
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
-//#endif
 
 	Cmd_AddCommand("zone_stats", Z_Stats_f, "Prints out zone memory stats" );
 	Cmd_AddCommand("zone_details", Z_Details_f, "Prints out full detailed zone memory info" );
 
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
+#endif
+
+#ifdef DEBUG_ZONE_ALLOCS
+	Cmd_AddCommand("zone_tagdebug",	Z_TagDebug_f);
+	Cmd_AddCommand("zone_snapshot",	Z_Snapshot_f);
 #endif
 }
 

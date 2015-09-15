@@ -109,7 +109,7 @@ char *Sys_GetClipboardData( void ) {
 	char *cbText = SDL_GetClipboardText();
 	size_t len = strlen( cbText ) + 1;
 
-	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD );
+	char *buf = (char *)Z_Malloc( len, TAG_CLIPBOARD, qfalse );
 	Q_strncpyz( buf, cbText, len );
 
 	SDL_free( cbText );

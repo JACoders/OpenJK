@@ -607,7 +607,7 @@ static void SV_RehashBans_f( void )
 			return;
 		}
 
-		curpos = textbuf = (char *)Z_Malloc( filelen, TAG_TEMP_WORKSPACE );
+		curpos = textbuf = (char *)Z_Malloc( filelen, TAG_TEMP_WORKSPACE, qfalse );
 
 		filelen = FS_Read( textbuf, filelen, readfrom );
 		FS_FCloseFile( readfrom );
@@ -1742,7 +1742,7 @@ static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2
 
 // returns number of folders found.  pass NULL result pointer for just a count.
 static int SV_FindLeafFolders( const char *baseFolder, char *result, int maxResults, int maxFolderLength ) {
-	char *fileList = (char *)Z_Malloc( MAX_OSPATH * maxResults, TAG_FILESYS ); // too big for stack since this is recursive
+	char *fileList = (char *)Z_Malloc( MAX_OSPATH * maxResults, TAG_FILESYS, qfalse ); // too big for stack since this is recursive
 	char fullFolder[MAX_OSPATH];
 	int resultCount = 0;
 	char *fileName;

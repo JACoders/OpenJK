@@ -2382,7 +2382,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 		return NULL;
 	}
 
-	listCopy = (char **)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ), TAG_FILESYS );
+	listCopy = (char **)Z_Malloc( ( nfiles + 1 ) * sizeof( *listCopy ), TAG_FILESYS, qfalse );
 	for ( i = 0 ; i < nfiles ; i++ ) {
 		listCopy[i] = list[i];
 	}
@@ -4154,7 +4154,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 					if ( tempFilePath )
 					{
 						size_t fileNameLen = strlen(tempFileName);
-						*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS);
+						*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS, qfalse);
 						Q_strncpyz(*tempFilePath, tempFileName, fileNameLen + 1);
 					}
 

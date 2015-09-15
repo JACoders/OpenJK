@@ -29,6 +29,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/q_shared.h"
 #include "sys/sys_public.h"
 
+// some zone mem debugging stuff
+#ifndef FINAL_BUILD
+	#ifdef _DEBUG
+	//
+	// both of these should be REM'd unless you specifically need them...
+	//
+	//#define DEBUG_ZONE_ALLOCS			// adds __FILE__ and __LINE__ info to zone blocks, to see who's leaking
+	//#define DETAILED_ZONE_DEBUG_CODE	// this slows things down a LOT, and is only for tracking nasty double-freeing Z_Malloc bugs
+	#endif
+#endif
+
 //============================================================================
 
 //
@@ -823,65 +834,34 @@ typedef enum {
 } memtag_t;
 */
 
-/*
-
---- low memory ----
-server vm
-server clipmap
----mark---
-renderer initialization (shaders, etc)
-UI vm
-cgame vm
-renderer map
-renderer models
-
----free---
-
-temp file loading
---- high memory ---
-
-*/
-
-#if defined(_DEBUG) && !defined(BSPC)
-	#define DEBUG_ZONE_ALLOCS
-#endif
-
-/*
 #ifdef DEBUG_ZONE_ALLOCS
-	#define Z_TagMalloc(size, tag)			Z_TagMallocDebug(size, tag, #size, __FILE__, __LINE__)
-	#define Z_Malloc(size)					Z_MallocDebug(size, #size, __FILE__, __LINE__)
-	#define S_Malloc(size)					S_MallocDebug(size, #size, __FILE__, __LINE__)
-	void *Z_TagMallocDebug( int size, int tag, char *label, char *file, int line );	// NOT 0 filled memory
-	void *Z_MallocDebug( int size, char *label, char *file, int line );			// returns 0 filled memory
-	void *S_MallocDebug( int size, char *label, char *file, int line );			// returns 0 filled memory
+
+void *D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
+void *D_S_Malloc ( int iSize, const char *psFile, int iLine );
+void  Z_Label  ( const void *pvAddress, const char *pslabel );
+
+#define Z_Malloc(_iSize, _eTag, _bZeroit, ...)	D_Z_Malloc (_iSize, _eTag, _bZeroit, __FILE__, __LINE__)
+#define S_Malloc(_iSize)						D_S_Malloc	(_iSize, __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
+
 #else
-	void *Z_TagMalloc( int size, int tag );	// NOT 0 filled memory
-	void *Z_Malloc( int size );			// returns 0 filled memory
-	void *S_Malloc( int size );			// NOT 0 filled memory only for small allocations
-#endif
-void Z_Free( void *ptr );
-void Z_FreeTags( int tag );
-int Z_AvailableMemory( void );
-void Z_LogHeap( void );
-*/
 
-// later on I'll re-implement __FILE__, __LINE__ etc, but for now...
-//
-#ifdef DEBUG_ZONE_ALLOCS
 void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
 void *S_Malloc	( int iSize );					// NOT 0 filled memory only for small allocations
-#else
-void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
-void *S_Malloc	( int iSize );					// NOT 0 filled memory only for small allocations
+
+#define Z_Label(_ptr, _label)
 #endif
-void  Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag );
+
 void  Z_Validate( void );
 int   Z_MemSize	( memtag_t eTag );
 void  Z_TagFree	( memtag_t eTag );
 void  Z_Free	( void *ptr );
 int	  Z_Size	( void *pvAddress);
+void  Z_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag );
+qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if true
+
 void Com_InitZoneMemory(void);
 void Com_InitZoneMemoryVars(void);
+
 void Com_InitHunkMemory(void);
 void Com_ShutdownZoneMemory(void);
 void Com_ShutdownHunkMemory(void);

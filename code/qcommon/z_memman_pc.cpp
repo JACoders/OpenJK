@@ -919,7 +919,7 @@ void Com_ShutdownZoneMemory(void)
 											// by like 10 bytes / 1 block, which isn't a real problem --eez
 		if(TheZone.Stats.iCount < 0) {
 			Com_Printf(S_COLOR_YELLOW"WARNING: Freeing %d extra blocks (%d bytes) not tracked by the zone manager\n",
-				abs(TheZone.Stats.iCount), abs(TheZone.Stats.iCurrent));
+				TheZone.Stats.iCount, TheZone.Stats.iCurrent);
 		}
 	}
 }
