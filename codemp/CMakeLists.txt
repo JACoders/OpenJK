@@ -143,6 +143,10 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibServerFiles})
 
 	add_library(${MPBotLib} STATIC ${MPBotlibFiles})
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPBotLib} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 	set_target_properties(${MPBotLib} PROPERTIES COMPILE_DEFINITIONS "${MPBotlibDefines}")
 	set_target_properties(${MPBotLib} PROPERTIES INCLUDE_DIRECTORIES "${MPBotlibIncludeDirectories}")
 	set_target_properties(${MPBotLib} PROPERTIES PROJECT_LABEL "Bot Library")
@@ -155,46 +159,17 @@ if(BuildMPEngine OR BuildMPDed)
 	if(WIN32)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} "winmm" "wsock32")
 	endif(WIN32)
-	# Include directories
-	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 
-	if(UseInternalZlib)
-		set(MPEngineAndDedZLibFiles
-			"${OpenJKLibDir}/zlib/adler32.c"
-			"${OpenJKLibDir}/zlib/compress.c"
-			"${OpenJKLibDir}/zlib/crc32.c"
-			"${OpenJKLibDir}/zlib/deflate.c"
-			"${OpenJKLibDir}/zlib/gzclose.c"
-			"${OpenJKLibDir}/zlib/gzlib.c"
-			"${OpenJKLibDir}/zlib/gzread.c"
-			"${OpenJKLibDir}/zlib/gzwrite.c"
-			"${OpenJKLibDir}/zlib/infback.c"
-			"${OpenJKLibDir}/zlib/inffast.c"
-			"${OpenJKLibDir}/zlib/inflate.c"
-			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/trees.c"
-			"${OpenJKLibDir}/zlib/uncompr.c"
-			"${OpenJKLibDir}/zlib/zutil.c"
-			"${OpenJKLibDir}/zlib/crc32.h"
-			"${OpenJKLibDir}/zlib/deflate.h"
-			"${OpenJKLibDir}/zlib/gzguts.h"
-			"${OpenJKLibDir}/zlib/inffast.h"
-			"${OpenJKLibDir}/zlib/inffixed.h"
-			"${OpenJKLibDir}/zlib/inflate.h"
-			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/trees.h"
-			"${OpenJKLibDir}/zlib/zconf.h"
-			"${OpenJKLibDir}/zlib/zlib.h"
-			"${OpenJKLibDir}/zlib/zutil.h")
-		source_group("zlib" FILES ${MPEngineAndDedZLibFiles})
-		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedZLibFiles})
-		
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
-	else()
-		find_package(ZLIB REQUIRED)
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
-	endif()
+	# Include directories
+	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir}) # codemp folder, since includes are not always relative in the files
+
+	# Transparently use our bundled minizip.
+	list(APPEND MPEngineAndDedIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+	list(APPEND MPEngineAndDedLibraries          ${MINIZIP_LIBRARIES})
+
+	# Transparently use either bundled or system zlib.
+	list(APPEND MPEngineAndDedIncludeDirectories ${ZLIB_INCLUDE_DIR})
+	list(APPEND MPEngineAndDedLibraries          ${ZLIB_LIBRARIES})
 
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -334,15 +309,6 @@ if(BuildMPEngine OR BuildMPDed)
 		)
 	source_group("ui" FILES ${MPEngineAndDedUiFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedUiFiles})
-
-	set(MPEngineAndDedMinizipFiles
-		"${OpenJKLibDir}/minizip/ioapi.c"
-		"${OpenJKLibDir}/minizip/ioapi.h"
-		"${OpenJKLibDir}/minizip/unzip.cpp"
-		"${OpenJKLibDir}/minizip/unzip.h"
-		)
-	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
 
 	set(MPEngineAndDedSysFiles
 		"${SharedDir}/sys/snapvector.cpp"
@@ -609,6 +575,10 @@ if(BuildMPEngine)
 	endif(MakeApplicationBundles)
 
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines}")
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPEngine} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client")
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
@@ -695,7 +665,12 @@ if(BuildMPDed)
 		RUNTIME
 		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPServerComponent})
+
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines}")
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPDed} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server")
 	target_link_libraries(${MPDed} ${MPDedLibraries})

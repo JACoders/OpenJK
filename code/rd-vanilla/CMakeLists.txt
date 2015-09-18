@@ -37,17 +37,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 
 	# Files
 
-	# JPEG
-	if(UseInternalJPEG)
-		file(GLOB_RECURSE J_SRC "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-		source_group("jpeg-8c" FILES ${J_SRC})
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${J_SRC})
-	else()
-		find_package(JPEG REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${JPEG_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${JPEG_LIBRARIES})
-	endif()
-
 	# GHOUL 2
 	set(SPRDVanillaG2Files
 		"${SPDir}/ghoul2/G2.h"
@@ -61,69 +50,22 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	source_group("ghoul2" FILES ${SPRDVanillaG2Files})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaG2Files})
 
-	if(UseInternalPNG)
-		set(SPRDVanillaLibPngFiles
-			"${OpenJKLibDir}/libpng/png.c"
-			"${OpenJKLibDir}/libpng/pngerror.c"
-			"${OpenJKLibDir}/libpng/pngget.c"
-			"${OpenJKLibDir}/libpng/pngmem.c"
-			"${OpenJKLibDir}/libpng/pngpread.c"
-			"${OpenJKLibDir}/libpng/pngread.c"
-			"${OpenJKLibDir}/libpng/pngrio.c"
-			"${OpenJKLibDir}/libpng/pngrtran.c"
-			"${OpenJKLibDir}/libpng/pngrutil.c"
-			"${OpenJKLibDir}/libpng/pngset.c"
-			"${OpenJKLibDir}/libpng/pngtrans.c"
-			"${OpenJKLibDir}/libpng/pngwio.c"
-			"${OpenJKLibDir}/libpng/pngwrite.c"
-			"${OpenJKLibDir}/libpng/pngwtran.c"
-			"${OpenJKLibDir}/libpng/pngwutil.c")
-		source_group("libpng" FILES ${SPRDVanillaLibPngFiles})
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${OpenJKLibDir}/libpng")
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaLibPngFiles})
-	else(UseInternalPNG)
-		find_package(PNG REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${PNG_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${PNG_LIBRARIES})
-	endif(UseInternalPNG)
+    # Transparently use either bundled or system jpeg.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${JPEG_INCLUDE_DIR})
+    list(APPEND SPRDVanillaRendererLibraries          ${JPEG_LIBRARIES})
 
-	if(UseInternalZlib)
-		set(SPRDVanillaRendererZlibFiles
-			"${OpenJKLibDir}/zlib/adler32.c"
-			"${OpenJKLibDir}/zlib/compress.c"
-			"${OpenJKLibDir}/zlib/crc32.c"
-			"${OpenJKLibDir}/zlib/deflate.c"
-			"${OpenJKLibDir}/zlib/gzclose.c"
-			"${OpenJKLibDir}/zlib/gzlib.c"
-			"${OpenJKLibDir}/zlib/gzread.c"
-			"${OpenJKLibDir}/zlib/gzwrite.c"
-			"${OpenJKLibDir}/zlib/infback.c"
-			"${OpenJKLibDir}/zlib/inffast.c"
-			"${OpenJKLibDir}/zlib/inflate.c"
-			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/trees.c"
-			"${OpenJKLibDir}/zlib/uncompr.c"
-			"${OpenJKLibDir}/zlib/zutil.c"
-			"${OpenJKLibDir}/zlib/crc32.h"
-			"${OpenJKLibDir}/zlib/deflate.h"
-			"${OpenJKLibDir}/zlib/gzguts.h"
-			"${OpenJKLibDir}/zlib/inffast.h"
-			"${OpenJKLibDir}/zlib/inffixed.h"
-			"${OpenJKLibDir}/zlib/inflate.h"
-			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/trees.h"
-			"${OpenJKLibDir}/zlib/zconf.h"
-			"${OpenJKLibDir}/zlib/zlib.h"
-			"${OpenJKLibDir}/zlib/zutil.h")
-		source_group("zlib" FILES ${SPRDVanillaRendererZlibFiles})
-		set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaRendererZlibFiles})
-		
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} "${OpenJKLibDir}/zlib")
-	else(UseInternalZlib)
-		find_package(ZLIB REQUIRED)
-		set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-		set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${ZLIB_LIBRARY})
-	endif(UseInternalZlib)
+    # Transparently use either bundled or system libpng.  Order is important --
+    # libpng used zlib, so it must come before it on the linker command line.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${PNG_INCLUDE_DIRS})
+    list(APPEND SPRDVanillaRendererLibraries          ${PNG_LIBRARIES})
+    
+    # Transparently use either bundled or system zlib.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${ZLIB_INCLUDE_DIR})
+    list(APPEND SPRDVanillaRendererLibraries          ${ZLIB_LIBRARIES})
+
+    # Transparently use our bundled minizip.
+    list(APPEND SPRDVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+    list(APPEND SPRDVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
 
 	# Misc files
 	set(SPRDVanillaCommonFiles
@@ -224,6 +166,10 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		endif()
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPRDVanillaDefines}")
+
+		# Hide symbols not explicitly marked public.
+		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPRDVanillaRendererIncludeDirectories}")
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 

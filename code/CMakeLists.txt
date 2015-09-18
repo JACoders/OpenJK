@@ -41,8 +41,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineIncludeDirectories
 		${SPEngineIncludeDirectories}
 		${SharedDir}
-		${SPDir}
-		${OpenJKLibDir})
+		${SPDir})
 	
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
@@ -182,15 +181,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
-
-	set(SPEngineMinizipFiles
-		"${OpenJKLibDir}/minizip/ioapi.c"
-		"${OpenJKLibDir}/minizip/ioapi.h"
-		"${OpenJKLibDir}/minizip/unzip.cpp"
-		"${OpenJKLibDir}/minizip/unzip.h"
-		)
-	source_group("minizip" FILES ${SPEngineMinizipFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMinizipFiles})
 
 
 	# Server files
@@ -357,44 +347,14 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	source_group("sys" FILES ${SPEngineSysFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 
-	if(UseInternalZlib)
-		set(SPEngineZlibFiles
-			"${OpenJKLibDir}/zlib/adler32.c"
-			"${OpenJKLibDir}/zlib/compress.c"
-			"${OpenJKLibDir}/zlib/crc32.c"
-			"${OpenJKLibDir}/zlib/deflate.c"
-			"${OpenJKLibDir}/zlib/gzclose.c"
-			"${OpenJKLibDir}/zlib/gzlib.c"
-			"${OpenJKLibDir}/zlib/gzread.c"
-			"${OpenJKLibDir}/zlib/gzwrite.c"
-			"${OpenJKLibDir}/zlib/infback.c"
-			"${OpenJKLibDir}/zlib/inffast.c"
-			"${OpenJKLibDir}/zlib/inflate.c"
-			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/trees.c"
-			"${OpenJKLibDir}/zlib/uncompr.c"
-			"${OpenJKLibDir}/zlib/zutil.c"
-			"${OpenJKLibDir}/zlib/crc32.h"
-			"${OpenJKLibDir}/zlib/deflate.h"
-			"${OpenJKLibDir}/zlib/gzguts.h"
-			"${OpenJKLibDir}/zlib/inffast.h"
-			"${OpenJKLibDir}/zlib/inffixed.h"
-			"${OpenJKLibDir}/zlib/inflate.h"
-			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/trees.h"
-			"${OpenJKLibDir}/zlib/zconf.h"
-			"${OpenJKLibDir}/zlib/zlib.h"
-			"${OpenJKLibDir}/zlib/zutil.h")
-		source_group("zlib" FILES ${SPEngineZlibFiles})
-		set(SPEngineFiles ${SPEngineFiles} ${SPEngineZlibFiles})
-		
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} "${OpenJKLibDir}/zlib")
-	else(UseInternalZlib)
-		find_package(ZLIB REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${ZLIB_LIBRARY})
-	endif(UseInternalZlib)
-	
+    # Transparently use our bundled minizip.
+    list(APPEND SPEngineIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+    list(APPEND SPEngineLibraries          ${MINIZIP_LIBRARIES})
+
+    # Transparently use either bundled or system zlib.
+    list(APPEND SPEngineIncludeDirectories ${ZLIB_INCLUDE_DIR})
+    list(APPEND SPEngineLibraries          ${ZLIB_LIBRARIES})
+
 	# project macro so we can invoke it twice: for jk2 and for ja
 	function(add_sp_project ProjectName Label SPDirName InstallDir Component)
 		if(MakeApplicationBundles)
@@ -444,6 +404,10 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		endif(MakeApplicationBundles)
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPEngineDefines}")
+
+		# Hide symbols not explicitly marked public.
+		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPEngineIncludeDirectories}")
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 		if(SPEngineLibraries)
