@@ -2098,6 +2098,10 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	glState.vertexAnimation = qfalse;
 }
 
+static void RB_SurfaceSprites( void *surfaceSprites )
+{
+}
+
 static void RB_SurfaceSkip( void *surf ) {
 }
 
@@ -2117,4 +2121,5 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
 	(void(*)(void*))RB_SurfaceVBOMesh,	    // SF_VBO_MESH,
 	(void(*)(void*))RB_SurfaceVBOMDVMesh,   // SF_VBO_MDVMESH
+	(void(*)(void*))RB_SurfaceSprites,   // SF_SURFACE_SPRITES
 };

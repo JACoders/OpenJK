@@ -700,6 +700,333 @@ static void ParseTexMod( const char *_text, shaderStage_t *stage )
 	}
 }
 
+static void InitSurfaceSprite( surfaceSprite_t *surfaceSprite )
+{
+	*surfaceSprite = {};
+
+	surfaceSprite->fadeDistance = 1.33f;
+	surfaceSprite->fxDuration = 1000.0f;
+}
+
+// surfaceSprites <type> <width> <height> <density> <fade distance>
+static void ParseSurfaceSprites( const char *buffer, shaderStage_t *stage )
+{
+	const char *token;
+	const char **text = &buffer;
+	surfaceSprite_t surfaceSprite;
+
+	InitSurfaceSprite( &surfaceSprite );
+
+	// <type>
+	token = COM_ParseExt( text, qfalse );
+	if ( token[0] == '\0' )
+	{
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW "WARNING: missing surfaceSprites 'type' param in shader '%s'\n", shader.name );
+		return;
+	}
+
+	if ( !Q_stricmp( token, "vertical" ) )
+		surfaceSprite.type = SS_TYPE_VERTICAL;
+	else if ( !Q_stricmp( token, "oriented" ) )
+		surfaceSprite.type = SS_TYPE_BILLBOARD;
+	else if ( !Q_stricmp( token, "effect" ) )
+		surfaceSprite.type = SS_TYPE_EFFECT;
+	else if ( !Q_stricmp( token, "flattened" ) )
+		surfaceSprite.type = SS_TYPE_FLATTENED;
+	else
+	{
+		surfaceSprite.type = SS_TYPE_VERTICAL;
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW, "WARNING: unknown surfaceSprites 'type' given (%s). Defaulting to 'vertical'.\n", token );
+	}
+
+	// <width>
+	token = COM_ParseExt( text, qfalse );
+	if ( token[0] == '\0' )
+	{
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW "WARNING: missing surfaceSprites 'width' param in shader '%s'\n", shader.name );
+		return;
+	}
+	surfaceSprite.width = atof( token );
+
+	// <height>
+	token = COM_ParseExt( text, qfalse );
+	if ( token[0] == '\0' )
+	{
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW "WARNING: missing surfaceSprites 'height' param in shader '%s'\n", shader.name );
+		return;
+	}
+	surfaceSprite.height = atof( token );
+
+	// <density>
+	token = COM_ParseExt( text, qfalse );
+	if ( token[0] == '\0' )
+	{
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW "WARNING: missing surfaceSprites 'density' param in shader '%s'\n", shader.name );
+		return;
+	}
+	surfaceSprite.density = atof( token );
+
+	// <fade distance>
+	token = COM_ParseExt( text, qfalse );
+	if ( token[0] == '\0' )
+	{
+		ri->Printf( PRINT_ALL, S_COLOR_YELLOW "WARNING: missing surfaceSprites 'fade distance' param in shader '%s'\n", shader.name );
+		return;
+	}
+	surfaceSprite.fadeDistance = atof( token );
+
+	if ( !stage->surfaceSprite )
+	{
+		stage->surfaceSprite = (surfaceSprite_t *)Hunk_Alloc( sizeof(*stage->surfaceSprite), h_low );
+	}
+
+	*stage->surfaceSprite = surfaceSprite;
+}
+
+//
+// ssFadeMax <fade max>
+// ssFadeScale <fade scale>
+// ssVariance <width variance> <height variance>
+// ssHangdown
+// ssFaceup
+// ssAnyAngle
+// ssWind <normalized wind strength>
+// ssWindIdle <normalized windidle strength>
+// ssVertSkew <skew factor>
+// ssFXDuration <duration in ms>
+// ssFXGrow <grow width> <grow height>
+// ssFXAlphaRange <alpha start> <alpha end>
+// ssWeather 
+//
+static void ParseSurfaceSpriteOptions( const char *keyword, const char *buffer, shaderStage_t *stage )
+{
+	const char *token;
+	const char **text = &keyword;
+	float value;
+	surfaceSprite_t *surfaceSprite = stage->surfaceSprite;
+
+	if ( !surfaceSprite )
+	{
+		stage->surfaceSprite = (surfaceSprite_t *)Hunk_Alloc( sizeof(*stage->surfaceSprite), h_low );
+		InitSurfaceSprite( stage->surfaceSprite );
+		surfaceSprite = stage->surfaceSprite;
+	}
+
+	if ( !Q_stricmp( keyword, "ssFadeMax" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFadeMax missing value in shader '%s'\n", shader.name );
+			return;
+		}
+		value = atof( token );
+
+		if ( value <= surfaceSprite->fadeDistance )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFadeMax value (%.2f) less than or equal to fade distance (%.2f) in shader '%s'.\n", value, stage->surfaceSprite->fadeDistance, shader.name );
+			return;
+		}
+
+		surfaceSprite->maxFadeDistance = value;
+	}
+	else if ( !Q_stricmp( keyword, "ssFadeScale" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFadeScale missing value in shader '%s'\n", shader.name );
+			return;
+		}
+		surfaceSprite->fadeScale = atof( token );
+	}
+	else if ( !Q_stricmp( keyword, "ssVariance" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssVariance missing 'width variance' in shader '%s'\n", shader.name );
+			return;
+		}
+		surfaceSprite->widthVariance = atof( token );
+
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssVariance missing 'height variance' in shader '%s'\n", shader.name );
+			return;
+		}
+		surfaceSprite->heightVariance = atof( token );
+	}
+	else if ( !Q_stricmp( keyword, "ssHangdown" ) )
+	{
+		surfaceSprite->orientation = SS_ORIENTATION_DOWN;
+	}
+	else if ( !Q_stricmp( keyword, "ssFaceup" ) )
+	{
+		surfaceSprite->orientation = SS_ORIENTATION_UP;
+	}
+	else if ( !Q_stricmp( keyword, "ssAnyAngle" ) )
+	{
+		surfaceSprite->orientation = SS_ORIENTATION_ANY;
+	}
+	else if ( !Q_stricmp( keyword, "ssWind" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssWind missing value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssWind value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		surfaceSprite->windStrength = value;
+
+		if ( surfaceSprite->idleWindStrength <= 0.0f )
+		{
+			surfaceSprite->idleWindStrength = value;
+		}
+	}
+	else if ( !Q_stricmp( keyword, "ssWindIdle" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssWindIdle missing value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssWindIdle value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		surfaceSprite->idleWindStrength = value;
+	}
+	else if ( !Q_stricmp( keyword, "ssVertSkew" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssVertSkew missing value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssVertSkew value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		surfaceSprite->verticalSkew = value;
+	}
+	else if ( !Q_stricmp( keyword, "ssFXDuration" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXDuration missing value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXDuration value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		surfaceSprite->fxDuration = value;
+	}
+	else if ( !Q_stricmp( keyword, "ssFXGrow" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXGrow missing 'grow width' value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXGrow 'grow width' value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		surfaceSprite->fxGrowWidth = value;
+
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXGrow missing 'grow height' value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXGrow 'grow height' value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		surfaceSprite->fxGrowHeight = value;
+	}
+	else if ( !Q_stricmp( keyword, "ssFXAlphaRange" ) )
+	{
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXAlphaRange missing 'start alpha' value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXAlphaRange 'start alpha' value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		else if ( value > 1.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXAlphaRange 'start alpha' value is greater than 1 in shader '%s'. Clamping to 1.\n", shader.name );
+			value = 1.0f;
+		}
+		surfaceSprite->fxStartAlpha = value;
+
+		token = COM_ParseExt( text, qfalse );
+		if ( token[0] == '\0' )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXAlphaRange missing 'end alpha' value in shader '%s'\n", shader.name );
+			return;
+		}
+
+		value = atof( token );
+		if ( value < 0.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXAlphaRange 'end alpha' value is less than 0 in shader '%s'. Clamping to 0.\n", shader.name );
+			value = 0.0f;
+		}
+		else if ( value > 1.0f )
+		{
+			ri->Printf( PRINT_ALL, S_COLOR_YELLOW  "WARNING: ssFXAlphaRange 'end alpha' value is greater than 1 in shader '%s'. Clamping to 1.\n", shader.name );
+			value = 1.0f;
+		}
+		surfaceSprite->fxEndAlpha = value;
+	}
+	else if ( !Q_stricmp( keyword, "ssWeather" ) )
+	{
+		surfaceSprite->type = SS_TYPE_WEATHER;
+	}
+	else
+	{
+		ri->Printf( PRINT_ALL, "WARNING: invalid shader keyword '%s' in shader '%s'.\n", keyword, shader.name );
+	}
+}
+
 static animMapType_t AnimMapType( const char *token )
 {
 	if ( !Q_stricmp( token, "clampanimMap" ) ) { return ANIMMAP_CLAMP; }
@@ -1474,9 +1801,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		else if ( !Q_stricmp( token, "surfaceSprites" ) )
 		{
 			// Mark this stage as a surface sprite so we can skip it for now
-			stage->isSurfaceSprite = qtrue;
-			SkipRestOfLine( text );
-			/*char buffer[1024] = "";
+			char buffer[1024] = {};
 
 			while ( 1 )
 			{
@@ -1487,7 +1812,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
-			ParseSurfaceSprites( buffer, stage );*/
+			ParseSurfaceSprites( buffer, stage );
 
 			continue;
 		}
@@ -1506,8 +1831,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		else if (!Q_stricmpn(token, "ss", 2))	// <--- NOTE ONLY COMPARING FIRST TWO LETTERS
 		{
-			SkipRestOfLine( text );
-			/*char buffer[1024] = "";
+			char buffer[1024] = "";
 			char param[128];
 			strcpy(param,token);
 
@@ -1520,7 +1844,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				Q_strcat( buffer, sizeof( buffer ), " " );
 			}
 
-			ParseSurfaceSpritesOptional( param, buffer, stage );*/
+			ParseSurfaceSpriteOptions( param, buffer, stage );
 
 			continue;
 		}

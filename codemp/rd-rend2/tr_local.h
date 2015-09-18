@@ -667,6 +667,49 @@ typedef enum
 	ST_GLSL
 } stageType_t;
 
+enum surfaceSpriteType_t
+{
+	SS_TYPE_VERTICAL,
+	SS_TYPE_BILLBOARD,
+	SS_TYPE_EFFECT,
+	SS_TYPE_FLATTENED,
+	SS_TYPE_WEATHER,
+};
+
+enum surfaceSpriteOrientation_t
+{
+	SS_ORIENTATION_NORMAL,
+	SS_ORIENTATION_UP,
+	SS_ORIENTATION_DOWN,
+	SS_ORIENTATION_ANY,
+};
+
+struct surfaceSprite_t
+{
+	surfaceSpriteType_t type;
+	surfaceSpriteOrientation_t orientation;
+
+	float width;
+	float height;
+	float density;
+	float fadeDistance;
+
+	float maxFadeDistance;
+	float fadeScale;
+	float widthVariance;
+	float heightVariance;
+
+	float windStrength;
+	float idleWindStrength;
+	float verticalSkew;
+
+	float fxDuration;
+	float fxGrowWidth;
+	float fxGrowHeight;
+	float fxStartAlpha;
+	float fxEndAlpha;
+};
+
 // any change in the LIGHTMAP_* defines here MUST be reflected in
 // R_FindShader() in tr_bsp.c
 #define LIGHTMAP_2D         -4	// shader is for 2D rendering
@@ -702,7 +745,7 @@ typedef struct {
 	vec4_t normalScale;
 	vec4_t specularScale;
 
-	qboolean		isSurfaceSprite;
+	surfaceSprite_t *surfaceSprite;
 
 } shaderStage_t;
 
@@ -1224,6 +1267,7 @@ typedef enum {
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
 	SF_VBO_MESH,
 	SF_VBO_MDVMESH,
+	SF_SURFACE_SPRITES,
 
 	SF_NUM_SURFACE_TYPES,
 	SF_MAX = 0x7fffffff			// ensures that sizeof( surfaceType_t ) == sizeof( int )
@@ -1407,6 +1451,17 @@ typedef struct srfVBOMDVMesh_s
 	VBO_t          *vbo;
 	IBO_t          *ibo;
 } srfVBOMDVMesh_t;
+
+struct srfSprites_t
+{
+	surfaceType_t surfaceType;
+
+	surfaceSprite_t *spriteData;
+
+	int numSprites;
+
+	// ubo containing positions
+};
 
 extern	void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])(void *);
 

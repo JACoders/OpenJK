@@ -1288,7 +1288,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			break;
 		}
 
-		if ( pStage->isSurfaceSprite )
+		if ( pStage->surfaceSprite )
 		{
 			continue;
 		}
@@ -1894,6 +1894,16 @@ void RB_StageIteratorGeneric( void )
 	if ( input->shader->polygonOffset )
 	{
 		qglDisable( GL_POLYGON_OFFSET_FILL );
+	}
+
+	// Draw surface sprites
+	for ( int i = 0; i < input->shader->numUnfoggedPasses; i++ )
+	{
+		shaderStage_t *stage = input->shader->stages[i];
+		if ( stage->surfaceSprite )
+		{
+			// Draw surface sprites
+		}
 	}
 }
 
