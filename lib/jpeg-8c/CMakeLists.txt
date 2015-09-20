@@ -4,7 +4,7 @@
 # requires it.
 
 # This only has effect in this directory (lib/jpeg-8c).
-include_directories(include/)
+include_directories(. include/)
 
 add_library(bundled_libjpeg STATIC include/jpeglib.h
                                    include/jconfig.h
