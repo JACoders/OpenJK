@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "client/client.h"
 #endif
 #endif
-#include "minizip/unzip.h"
+#include <minizip/unzip.h>
 
 #if defined(_WIN32)
 #include <windows.h>
