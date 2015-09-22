@@ -11094,6 +11094,20 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 			{//still on ground?
 				vec3_t yawAngles, backDir;
 
+
+#ifdef _GAME
+			gclient_t *client = NULL;
+			{
+				int clientNum = pm->ps->clientNum;
+				if (0 <= clientNum && clientNum < MAX_CLIENTS) {
+						client = g_entities[clientNum].client;
+				}
+			}
+	
+			if (client->lastKickTime + 50 < level.time) //japro serverside flood protect on staff dfa, use the same debouncer as flipkick i guess
+#endif
+				{
+
 				//push backwards some?
 				VectorSet( yawAngles, 0, pm->ps->viewangles[YAW]+180, 0 );
 				AngleVectors( yawAngles, backDir, 0, 0 );
@@ -11108,6 +11122,14 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 				PM_AddEvent(EV_JUMP);
 				//G_SoundOnEnt( ent, CHAN_BODY, "sound/weapons/force/jump.wav" );
 				ucmd->upmove = 0; //clear any actual jump command
+
+#ifdef _GAME
+				client->lastKickTime = level.time;
+#endif
+
+				}
+
+
 			}
 		}
 		ucmd->forwardmove = ucmd->rightmove = ucmd->upmove = 0;
