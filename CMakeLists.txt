@@ -278,7 +278,7 @@ if(BuildPortableVersion)
 endif()
 
 if(UseInternalJPEG)
-  add_subdirectory(lib/jpeg-8c)
+  add_subdirectory(lib/jpeg-9a)
 else()
   find_package(JPEG REQUIRED)
 endif()
