@@ -1037,7 +1037,7 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 	}
 
 	//Head
-	if(ri->headModelName && ri->headModelName[0])
+	if(ri->headModelName[0])
 	{
 		Q_strncpyz( headModelName, ri->headModelName, sizeof( headModelName ) );
 		//Head skin
