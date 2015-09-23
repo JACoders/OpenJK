@@ -259,17 +259,12 @@ IN_TranslateSDLToJKKey
 static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	fakeAscii_t key = A_NULL;
 
-	if( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
-	{
-		// These happen to match the ASCII chars
-		// SDL2 only passes ASCII letters as lowercase, but the UI etc expects uppercase
-		if ( keysym->sym >= SDLK_a && keysym->sym <= SDLK_z )
-		{
-			key = (fakeAscii_t)('A' + (keysym->sym - SDLK_a));
-		}
-		else
-			key = (fakeAscii_t)keysym->sym;
-	}
+	if ( keysym->sym >= A_LOW_A && keysym->sym <= A_LOW_Z )
+		key = (fakeAscii_t)(A_CAP_A + (keysym->sym - A_LOW_A));
+	else if ( keysym->sym >= A_LOW_AGRAVE && keysym->sym <= A_LOW_THORN && keysym->sym != A_DIVIDE )
+		key = (fakeAscii_t)(A_CAP_AGRAVE + (keysym->sym - A_LOW_AGRAVE));
+	else if ( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
+		key = (fakeAscii_t)keysym->sym;
 	else
 	{
 		IN_TranslateNumpad( keysym, &key );
@@ -798,8 +793,8 @@ static void IN_ProcessEvents( void )
 
 				if ( key == A_BACKSPACE )
 					Sys_QueEvent( 0, SE_CHAR, CTRL('h'), qfalse, 0, NULL);
-				else if ( kg.keys[A_CTRL].down && key >= 'a' && key <= 'z' )
-					Sys_QueEvent( 0, SE_CHAR, CTRL(key), qfalse, 0, NULL );
+				else if ( kg.keys[A_CTRL].down && key >= A_CAP_A && key <= A_CAP_Z )
+					Sys_QueEvent( 0, SE_CHAR, CTRL(tolower(key)), qfalse, 0, NULL );
 
 				lastKeyDown = key;
 				break;
