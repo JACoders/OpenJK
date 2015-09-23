@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "client/client.h"
 #endif
 #endif
-#include "minizip/unzip.h"
+#include <minizip/unzip.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -4070,7 +4070,7 @@ bool FS_LoadMachOBundle( const char *name )
 	byte* buf;
 	char    dllName[MAX_QPATH];
 	char    *tempName;
-	unz_s   *zfi;
+	unz_file_info   zfi;
 
 	//read zipped bundle from pk3
 	len = FS_ReadFile(name, &data);
@@ -4130,9 +4130,9 @@ bool FS_LoadMachOBundle( const char *name )
 		return false;
 	}
 
-	zfi = (unz_s *)dll;
+	unzGetCurrentFileInfo( dll, &zfi, NULL, 0, NULL, 0, NULL, 0 );
 
-	len = zfi->cur_file_info.uncompressed_size;
+	len = zfi.uncompressed_size;
 
 	buf = (byte*)Z_Malloc( len+1, TAG_FILESYS, qfalse);
 
