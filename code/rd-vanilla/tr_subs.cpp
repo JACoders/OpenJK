@@ -88,8 +88,8 @@ void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign ) {
 }
 #endif
 
-int Z_Free( void *ptr ) {
-	return ri.Z_Free( ptr );
+void Z_Free( void *ptr ) {
+	ri.Z_Free( ptr );
 }
 
 int Z_MemSize( memtag_t eTag ) {

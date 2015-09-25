@@ -107,12 +107,11 @@ zone_t	TheZone = {};
 
 // Scans through the linked list of mallocs and makes sure no data has been overwritten
 
-int Z_Validate(void)
+void Z_Validate(void)
 {
-	int ret=0;
 	if(!com_validateZone || !com_validateZone->integer)
 	{
-		return ret;
+		return;
 	}
 
 	zoneHeader_t *pMemory = TheZone.Header.pNext;
@@ -124,14 +123,14 @@ int Z_Validate(void)
 		if (iAllocCount <= 0)
 		{
 			Com_Error(ERR_FATAL, "Z_Validate(): Bad block allocation count!");
-			return ret;
+			return;
 		}
 		#endif
 
 		if(pMemory->iMagic != ZONE_MAGIC)
 		{
 			Com_Error(ERR_FATAL, "Z_Validate(): Corrupt zone header!");
-			return ret;
+			return;
 		}
 
 		// this block of code is intended to make sure all of the data is paged in
@@ -142,10 +141,11 @@ int Z_Validate(void)
 		{
 			unsigned char *memstart = (unsigned char *)pMemory;
 			int totalSize = pMemory->iSize;
+			int tmp = 0;
 			while (totalSize > 4096)
 			{
 				memstart += 4096;
-				ret += (int)(*memstart); // this fools the optimizer
+				tmp += (int)(*memstart); // this fools the optimizer
 				totalSize -= 4096;
 			}
 		}
@@ -154,12 +154,11 @@ int Z_Validate(void)
 		if (ZoneTailFromHeader(pMemory)->iMagic != ZONE_MAGIC)
 		{
 			Com_Error(ERR_FATAL, "Z_Validate(): Corrupt zone tail!");
-			return ret;
+			return;
 		}
 
 		pMemory = pMemory->pNext;
 	}
-	return ret;
 }
 
 // static mem blocks to reduce a lot of small zone overhead
@@ -407,16 +406,16 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /*iAlign*/)
 // code and the bundled minizip library.
 
 extern "C" Q_EXPORT void* openjk_minizip_malloc(int size);
-extern "C" Q_EXPORT int openjk_minizip_free(void* to_free);
+extern "C" Q_EXPORT void openjk_minizip_free(void* to_free);
 
 void* openjk_minizip_malloc(int size)
 {
     return Z_Malloc(size, TAG_MINIZIP, qfalse, 0);
 }
 
-int openjk_minizip_free(void *to_free)
+void openjk_minizip_free(void *to_free)
 {
-    return Z_Free(to_free);
+	Z_Free(to_free);
 }
 
 // used during model cacheing to save an extra malloc, lets us morph the disk-load buffer then
@@ -451,9 +450,8 @@ void Z_MorphMallocTag( void *pvAddress, memtag_t eDesiredTag )
 	TheZone.Stats.iCountsPerTag	[pMemory->eTag]++;
 }
 
-static int Zone_FreeBlock(zoneHeader_t *pMemory)
+static void Zone_FreeBlock(zoneHeader_t *pMemory)
 {
-	const int iSize = pMemory->iSize;
 	if (pMemory->eTag != TAG_STATIC)	// belt and braces, should never hit this though
 	{
 		// Update stats...
@@ -488,12 +486,11 @@ static int Zone_FreeBlock(zoneHeader_t *pMemory)
 		if (iAllocCount == 0)
 		{
 			Com_Error(ERR_FATAL, "Zone_FreeBlock(): Double-freeing block!");
-			return -1;
+			return;
 		}
 		iAllocCount--;
 #endif
 	}
-	return iSize;
 }
 
 // stats-query function to to see if it's our malloc
@@ -565,17 +562,17 @@ void _D_Z_Label(const void *pvAddress, const char *psLabel)
 
 // Frees a block of memory...
 //
-int Z_Free(void *pvAddress)
+void Z_Free(void *pvAddress)
 {
 	if (pvAddress == NULL)
 	{
 		//Com_Error(ERR_FATAL, "Z_Free(): NULL arg");
-		return -1;
+		return;
 	}
 	if (!TheZone.Stats.iCount)
 	{
 		Com_Printf("Z_Free(%x): Zone has been cleared already!\n",pvAddress);
-		return -1;
+		return;
 	}
 
 	zoneHeader_t *pMemory = ((zoneHeader_t *)pvAddress) - 1;
@@ -584,13 +581,13 @@ int Z_Free(void *pvAddress)
 	if (pMemory->iMagic == INT_ID('F','R','E','E'))
 	{
 		Com_Error(ERR_FATAL, "Z_Free(%s): Block already-freed, or not allocated through Z_Malloc!",pvAddress);
-		return -1;
+		return;
 	}
 #endif
 
 	if (pMemory->eTag == TAG_STATIC)
 	{
-		return 0;
+		return;
 	}
 
 	#ifdef DETAILED_ZONE_DEBUG_CODE
@@ -601,22 +598,22 @@ int Z_Free(void *pvAddress)
 	if (iAllocCount <= 0)
 	{
 		Com_Error(ERR_FATAL, "Z_Free(): Block already-freed, or not allocated through Z_Malloc!");
-		return -1;
+		return;
 	}
 	#endif
 
 	if (pMemory->iMagic != ZONE_MAGIC)
 	{
 		Com_Error(ERR_FATAL, "Z_Free(): Corrupt zone header!");
-		return -1;
+		return;
 	}
 	if (ZoneTailFromHeader(pMemory)->iMagic != ZONE_MAGIC)
 	{
 		Com_Error(ERR_FATAL, "Z_Free(): Corrupt zone tail!");
-		return -1;
+		return;
 	}
 
-	return Zone_FreeBlock(pMemory);
+	Zone_FreeBlock(pMemory);
 }
 
 

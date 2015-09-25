@@ -45,7 +45,7 @@ typedef struct {
 #else
 	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
 #endif
-	int					(*Z_Free)							( void *memory );
+	void				(*Z_Free)							( void *memory );
 	int					(*Z_MemSize)						( memtag_t eTag );
 	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
 
