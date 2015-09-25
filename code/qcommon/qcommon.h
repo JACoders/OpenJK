@@ -26,10 +26,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __QCOMMON_H__
 #define __QCOMMON_H__
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "stringed_ingame.h"
 #include "strippublic.h"
-#include "cm_public.h"
+#include "qcommon/cm_public.h"
 #include "sys/sys_public.h"
 
 
@@ -662,10 +662,10 @@ temp file loading
 --- high memory ---
 
 */
-int  Z_Validate( void );			// also used to insure all of these are paged in
+void  Z_Validate( void );			// also used to insure all of these are paged in
 int   Z_MemSize	( memtag_t eTag );
 void  Z_TagFree	( memtag_t eTag );
-int   Z_Free	( void *ptr );	//returns bytes freed
+void  Z_Free	( void *ptr );
 int	  Z_Size	( void *pvAddress);
 void  Z_MorphMallocTag( void *pvAddress, memtag_t eDesiredTag );
 qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if true
@@ -676,7 +676,7 @@ void *D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile
 void *D_S_Malloc( int iSize, const char *psFile, int iLine );
 void  Z_Label( const void *pvAddress, const char *pslabel );
 
-#define Z_Malloc(iSize, eTag, bZeroit)	D_Z_Malloc ((iSize), (eTag), (bZeroit), __FILE__, __LINE__)
+#define Z_Malloc(iSize, eTag, bZeroit, ...)	D_Z_Malloc ((iSize), (eTag), (bZeroit), __FILE__, __LINE__)
 #define S_Malloc(iSize)			D_S_Malloc	((iSize), __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
 
 #else

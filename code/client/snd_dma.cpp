@@ -5121,21 +5121,24 @@ static int SND_FreeSFXMem(sfx_t *sfx)
 
 		if (sfx->lipSyncData)
 		{
-			iBytesFreed +=	Z_Free(	sfx->lipSyncData);
+			iBytesFreed +=	Z_Size(	sfx->lipSyncData);
+							Z_Free(	sfx->lipSyncData);
 									sfx->lipSyncData = NULL;
 		}
 	}
 #endif
 
 	if (						sfx->pSoundData) {
-		iBytesFreed +=	Z_Free(	sfx->pSoundData );
+		iBytesFreed +=	Z_Size(	sfx->pSoundData );
+						Z_Free(	sfx->pSoundData );
 								sfx->pSoundData = NULL;
 	}
 
 	sfx->bInMemory = false;
 
 	if (						sfx->pMP3StreamHeader) {
-		iBytesFreed +=	Z_Free(	sfx->pMP3StreamHeader );
+		iBytesFreed +=	Z_Size(	sfx->pMP3StreamHeader );
+						Z_Free(	sfx->pMP3StreamHeader );
 								sfx->pMP3StreamHeader = NULL;
 	}
 

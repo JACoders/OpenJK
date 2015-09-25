@@ -21,12 +21,12 @@ namespace Zone
 			return gi.Malloc( iSize, eTag, bZeroit );
 #endif
 		}
-		inline int Free( void* pvAddress )
+		inline void Free( void* pvAddress )
 		{
 #ifdef _JK2EXE
-			return Z_Free( pvAddress );
+			Z_Free( pvAddress );
 #else
-			return gi.Free( pvAddress );
+			gi.Free( pvAddress );
 #endif
 		}
 	}

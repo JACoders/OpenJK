@@ -41,7 +41,7 @@ typedef struct {
 
 	void				(*Hunk_ClearToMark)					( void );
 	void*				(*Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
-	int					(*Z_Free)							( void *memory );
+	void				(*Z_Free)							( void *memory );
 	int					(*Z_MemSize)						( memtag_t eTag );
 	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
 

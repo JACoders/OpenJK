@@ -373,6 +373,19 @@ typedef union byteAlias_u {
 	#define PLATFORM_STRING OS_STRING "-" ARCH_STRING "-debug"
 #endif
 
+//printf format flags for size_t and ssize_t
+#if defined(_MSC_VER)
+#define SIZE_T_FLAG "%Iu"
+#define SSIZE_T_FLAG "%Id"
+#define SIZE_T_FLAG_NB(NB) "%" NB "Iu"
+#define SSIZE_T_FLAG_NB(NB) "%" NB "Id"
+#else
+#define SIZE_T_FLAG "%zu"
+#define SSIZE_T_FLAG "%zd"
+#define SIZE_T_FLAG_NB(NB) "%" NB "zu"
+#define SSIZE_T_FLAG_NB(NB) "%" NB "zd"
+#endif
+
 // to support https://reproducible-builds.org/specs/source-date-epoch/
 #ifndef SOURCE_DATE
 #define SOURCE_DATE __DATE__

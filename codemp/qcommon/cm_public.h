@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/q_shared.h"
 #include "qfiles.h"
 
+qboolean	CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete);
 void		CM_LoadMap( const char *name, qboolean clientload, int *checksum);
 
 void		CM_ClearMap( void );
