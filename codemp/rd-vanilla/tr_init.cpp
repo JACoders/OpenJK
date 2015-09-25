@@ -335,6 +335,16 @@ static void GLW_InitTextureCompression( void )
 		Com_Printf ("...GL_EXT_texture_compression_s3tc available\n" );
 	}
 
+	// Disable texture compressino method if no preferred texture compression method is defined
+	// and we are using the MESA opengl library.
+	if ((r_ext_preferred_tc_method->integer == TC_NONE)
+		&& (Q_stristr(glConfig.renderer_string, "mesa dri")))
+	{
+		Com_Printf("...MESA video driver detected, disabling texture compression.\n" );
+		Com_Printf(".....Set r_ext_preferred_tc_method to disable override.\n" );
+		ri->Cvar_Set("r_ext_compress_textures", "0");
+	}
+
 	if ( !r_ext_compressed_textures->value )
 	{
 		// Compressed textures are off
