@@ -26,10 +26,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __QCOMMON_H__
 #define __QCOMMON_H__
 
-#include "q_shared.h"
+#include "qcommon/q_shared.h"
 #include "stringed_ingame.h"
 #include "strippublic.h"
-#include "cm_public.h"
+#include "qcommon/cm_public.h"
 #include "sys/sys_public.h"
 
 

@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // qcommon.h -- definitions common between client and server, but not game.or ref modules
 
 #include "qcommon/q_shared.h"
+#include "qcommon/cm_public.h"
 #include "sys/sys_public.h"
 
 // some zone mem debugging stuff
