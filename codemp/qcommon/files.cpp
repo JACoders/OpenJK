@@ -23,7 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 /*****************************************************************************
-
  * name:		files.cpp
  *
  * desc:		file code
@@ -39,15 +38,15 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 #include <minizip/unzip.h>
 
-#if defined(_WIN32)
-#include <windows.h>
-#endif
-
 // for rmdir
 #if defined (_MSC_VER)
 	#include <direct.h>
 #else
 	#include <unistd.h>
+#endif
+
+#if defined(_WIN32)
+#include <windows.h>
 #endif
 
 /*
@@ -1992,7 +1991,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	buf[len]='\0';	// because we're not calling Z_Malloc with optional trailing 'bZeroIt' bool
 	*buffer = buf;
 
-//	Z_Label(buf, qpath);
+	Z_Label(buf, qpath);
 
 	FS_Read (buf, len, h);
 
@@ -3465,7 +3464,9 @@ void FS_Startup( const char *gameName ) {
 
 #ifdef FS_MISSING
 	if (missingFiles == NULL) {
-		missingFiles = fopen( "\\missing.txt", "ab" );
+		char filename[MAX_OSPATH];
+		Com_sprintf(filename, sizeof(filename), "%s/%s", homePath, "missing.log");
+		missingFiles = fopen( filename, "ab" );
 	}
 #endif
 	Com_Printf( "%d files in pk3 files\n", fs_packFiles );
