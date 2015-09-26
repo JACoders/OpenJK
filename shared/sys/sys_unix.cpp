@@ -582,16 +582,16 @@ void Sys_AnsiColorPrint( const char *msg )
 	int         length = 0;
 	static int  q3ToAnsi[Q_COLOR_BITS+1] =
 	{
-		30, // COLOR_BLACK
-		31, // COLOR_RED
-		32, // COLOR_GREEN
-		33, // COLOR_YELLOW
-		34, // COLOR_BLUE
-		36, // COLOR_CYAN
-		35, // COLOR_MAGENTA
-		0,  // COLOR_WHITE
-		33, // COLOR_ORANGE // FIXME
-		30, // COLOR_GREY
+		16,  // COLOR_BLACK
+		196, // COLOR_RED
+		46,  // COLOR_GREEN
+		226, // COLOR_YELLOW
+		21,  // COLOR_BLUE
+		51,  // COLOR_CYAN
+		200, // COLOR_MAGENTA
+		231, // COLOR_WHITE
+		208, // COLOR_ORANGE
+		244, // COLOR_GREY
 	};
 
 	while ( *msg )
@@ -615,7 +615,7 @@ void Sys_AnsiColorPrint( const char *msg )
 			else
 			{
 				// Print the color code
-				Com_sprintf( buffer, sizeof( buffer ), "\033[%dm",
+				Com_sprintf( buffer, sizeof( buffer ), "\033[38;5;%dm",
 					q3ToAnsi[ColorIndex( *(msg + 1) )] );
 				fputs( buffer, stderr );
 				msg += 2;
