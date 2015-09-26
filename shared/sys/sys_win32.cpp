@@ -167,7 +167,7 @@ char *Sys_DefaultHomePath( void )
 		if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, homeDirectory ) ) )
 		{
 			Com_Printf( "Unable to determine your home directory.\n" );
-			return false;
+			return NULL;
 		}
 
 		Com_sprintf( homePath, sizeof( homePath ), "%s%cMy Games%c", homeDirectory, PATH_SEP, PATH_SEP );
@@ -595,4 +595,79 @@ void Sys_Sleep( int msec )
 
 	Sleep( msec );
 #endif
+}
+
+/*
+================
+Sys_TemporaryFilePath
+
+Platform-specific random file paths.
+====
+*/
+const char *Sys_TemporaryFilePath()
+{
+	TCHAR tempPath[MAX_PATH];
+	DWORD error;
+	DWORD tempPathResult = GetTempPath(MAX_PATH, tempPath);
+	if ( !tempPathResult )
+	{
+		error = GetLastError();
+		Com_DPrintf("Sys_TemporaryFilePath failed to get temporary file folder. "
+						"Win32 error code: 0x%08x\n", error);
+		return NULL;
+	}
+
+	static TCHAR tempFileName[MAX_PATH];
+	UINT tempFileNameResult = GetTempFileName(tempPath, "OJK", 0, tempFileName);
+	if ( !tempFileNameResult )
+	{
+		error = GetLastError();
+		Com_DPrintf("Sys_TemporaryFilePath failed to generate temporary file name. "
+					"Win32 error code: 0x%08x\n", error);
+		return NULL;
+	}
+	return tempFileName;
+}
+
+/*
+================
+Sys_WriteDataToPath
+
+Platform-specific write data to a file in path.
+====
+*/
+bool Sys_WriteDataToPath(const char *path, const void *data, size_t length)
+{
+	DWORD error;
+	HANDLE file = CreateFile(
+		path, GENERIC_WRITE, 0, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	if ( file == INVALID_HANDLE_VALUE )
+	{
+		error = GetLastError();
+		Com_DPrintf("Sys_WriteDataToPath failed to create '%s'. "
+					"Win32 error code: 0x%08x\n",
+					path, error);
+		return false;
+	}
+
+	DWORD bytesWritten = 0;
+	if (!WriteFile(file, data, length, &bytesWritten, NULL))
+	{
+		error = GetLastError();
+		Com_DPrintf("Sys_WriteDataToPath failed to write '%s'. "
+					"Win32 error code: 0x%08x\n",
+					path, error);
+		CloseHandle(file);
+		return false;
+	}
+	if (size_t(bytesWritten) != length)
+	{
+		Com_DPrintf("Sys_WriteDataToPath could not write all data to '%s'.",
+					path);
+		CloseHandle(file);
+		return false;
+	}
+	CloseHandle(file);
+	return true;
 }

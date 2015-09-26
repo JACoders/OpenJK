@@ -153,6 +153,10 @@ qboolean Sys_LowPhysicalMemory();
 
 void Sys_SetProcessorAffinity( void );
 
+const char *Sys_TemporaryFilePath();
+
+bool Sys_WriteDataToPath(const char *path, const void *data, size_t length);
+
 #ifdef _DEBUG
 
 size_t Sys_LimitAvailableMemory(size_t limit);

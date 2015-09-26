@@ -640,3 +640,63 @@ void Sys_AnsiColorPrint( const char *msg )
 		fputs( buffer, stderr );
 	}
 }
+
+/*
+================
+Sys_TemporaryFilePath
+
+Platform-specific random file paths.
+====
+*/
+const char *Sys_TemporaryFilePath( )
+{
+	static char tempFileName[MAX_OSPATH];
+	const char *templ = "/tmp/XXXXXX";
+	Q_strncpyz(tempFileName, templ, sizeof(tempFileName));
+
+	int fd = mkstemp(tempFileName);
+	if (fd == -1)
+	{
+		Com_DPrintf("Sys_TemporaryFilePath failed to create temporary file. (%s)\n",
+						strerror(errno));
+		return NULL;
+	}
+	close(fd);
+	return tempFileName;
+}
+
+/*
+================
+Sys_WriteDataToPath
+
+Platform-specific write data to a file in path.
+====
+*/
+bool Sys_WriteDataToPath(const char *path, const void *data, size_t length)
+{
+	int fd = open(path, O_CREAT | S_IWUSR);
+	if (fd == -1)
+	{
+		Com_DPrintf("Sys_WriteDataToPath failed to create '%s' in write mode. (%s)",
+					path, strerror(errno));
+		return false;
+	}
+
+	ssize_t nb = write(fd, data, length);
+	if (nb == -1)
+	{
+		Com_DPrintf("Sys_WriteDataToPath failed to write '%s'. (%s)",
+					path, strerror(errno));
+		close(fd);
+		return false;
+	}
+	if (size_t(nb) != length)
+	{
+		Com_DPrintf("Sys_WriteDataToPath could not write all data to '%s'.",
+					path);
+		close(fd);
+		return false;
+	}
+	close(fd);
+	return true;
+}
