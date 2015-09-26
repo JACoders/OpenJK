@@ -3431,7 +3431,9 @@ void FS_Startup( const char *gameName ) {
 
 #ifdef FS_MISSING
 	if (missingFiles == NULL) {
-		missingFiles = fopen( "\\missing.txt", "ab" );
+		char filename[MAX_OSPATH];
+		Com_sprintf(filename, sizeof(filename), "%s/%s", homePath, "missing.log");
+		missingFiles = fopen( filename, "ab" );
 	}
 #endif
 	Com_Printf( "%d files in pk3 files\n", fs_packFiles );

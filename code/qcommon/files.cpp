@@ -29,11 +29,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  *****************************************************************************/
 
-#include "q_shared.h"
-#include "qcommon.h"
+#include "qcommon/qcommon.h"
 
 #ifndef FINAL_BUILD
-#include "../client/client.h"
+#include "client/client.h"
 #endif
 #include <minizip/unzip.h>
 
@@ -275,6 +274,10 @@ static fileHandleData_t	fsh[MAX_FILE_HANDLES];
 // last valid game folder used
 char lastValidBase[MAX_OSPATH];
 char lastValidGame[MAX_OSPATH];
+
+#ifdef FS_MISSING
+FILE*		missingFiles = NULL;
+#endif
 
 /* C99 defines __func__ */
 #if __STDC_VERSION__ < 199901L
@@ -1469,6 +1472,11 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 	while ( bFasterToReOpenUsingNewLocalFile );
 
 	Com_DPrintf ("Can't find %s\n", filename);
+#ifdef FS_MISSING
+	if (missingFiles) {
+		fprintf(missingFiles, "%s\n", filename);
+	}
+#endif
 	*file = 0;
 	return -1;
 }
@@ -2850,6 +2858,12 @@ void FS_Shutdown( void ) {
 	Cmd_RemoveCommand( "fdir" );
 	Cmd_RemoveCommand( "touchFile" );
 	Cmd_RemoveCommand( "which" );
+
+#ifdef FS_MISSING
+	if (closemfp) {
+		fclose(missingFiles);
+	}
+#endif
 }
 
 /*
@@ -2942,6 +2956,14 @@ void FS_Startup( const char *gameName ) {
 	fs_gamedirvar->modified = qfalse; // We just loaded, it's not modified
 
 	Com_Printf( "----------------------\n" );
+
+#ifdef FS_MISSING
+	if (missingFiles == NULL) {
+		char filename[MAX_OSPATH];
+		Com_sprintf(filename, sizeof(filename), "%s/%s", homePath, "missing.log");
+		missingFiles = fopen( filename, "ab" );
+	}
+#endif
 	Com_Printf( "%d files in pk3 files\n", fs_packFiles );
 }
 
