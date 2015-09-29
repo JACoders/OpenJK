@@ -2343,7 +2343,6 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 	if ( isVehiclePS )
 	{//a vehicle playerstate
 		numFields = (int)ARRAY_LEN( vehPlayerStateFields );
-		numFieldsCheck = numFields;
 		PSFields = vehPlayerStateFields;
 	}
 	else
@@ -2366,7 +2365,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 
 	lc = MSG_ReadByte(msg);
 
-	if ( lc > numFieldsCheck || lc < 0 )
+	if ( lc > numFields || lc < 0 )
 		Com_Error( ERR_DROP, "invalid playerState field count (got: %i, expecting: %i)", lc, numFields );
 
 	for ( i = 0, field = PSFields ; i < lc ; i++, field++ ) {
