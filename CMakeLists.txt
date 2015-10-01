@@ -66,7 +66,7 @@ set(UseInternalPNGDefault    OFF)
 set(UseInternalJPEGDefault   OFF)
 set(UseInternalSDL2Default   OFF)
 
-if(WIN32)
+if(WIN32 AND NOT CMAKE_CROSSCOMPILING)
   set(UseInternalOpenALDefault ON)
   set(UseInternalZlibDefault   ON)
   set(UseInternalPNGDefault    ON)

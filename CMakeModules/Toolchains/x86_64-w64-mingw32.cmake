@@ -1,17 +1,19 @@
-set(GNU_HOST x86_64-w64-mingw32)
-set(CMAKE_SYSTEM_PROCESSOR "x86_64")
+set(GNU_HOST "x86_64-w64-mingw32")
+set(CMAKE_SYSTEM_PROCESSOR "x86_64)"):
 
 set(COMPILER_PREFIX "${GNU_HOST}-")
 
 set(CMAKE_SYSTEM_NAME "Windows")
-set(CMAKE_CROSSCOMPILING TRUE)
 set(WIN32 TRUE)
 set(MINGW TRUE)
 
-include(CMakeForceCompiler)
-cmake_force_c_compiler(${COMPILER_PREFIX}gcc GNU)
-cmake_force_cxx_compiler(${COMPILER_PREFIX}g++ GNU)
-set(CMAKE_RC_COMPILER ${COMPILER_PREFIX}windres)
+set(CMAKE_C_COMPILER ${COMPILER_PREFIX}gcc CACHE STRING "C compiler")
+set(CMAKE_CXX_COMPILER ${COMPILER_PREFIX}g++ CACHE STRING "C++ compiler")
+set(CMAKE_RC_COMPILER ${COMPILER_PREFIX}windres CACHE STRING "Resource compiler")
+
+include(${CMAKE_CURRENT_LIST_DIR}/GetCompilerRootPath.cmake)
+GetCompilerRootPath(_CMAKE_FIND_ROOT_PATH ${CMAKE_C_COMPILER} c)
+set(CMAKE_FIND_ROOT_PATH "${_CMAKE_FIND_ROOT_PATH}" CACHE FILEPATH "List of root paths to search on the filesystem.")
 
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
