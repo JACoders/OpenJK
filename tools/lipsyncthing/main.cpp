@@ -2,10 +2,12 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <direct.h>
-#include <io.h>
-#include <windows.h>
 
+#ifndef _MSC_VER
+#include <stdint.h>
+
+typedef uint8_t byte;
+#endif
 #define VV_CONSOLE
 
 /*********
@@ -25,8 +27,8 @@ typedef struct
 /**********
 Prototypes
 **********/
-static void FindNextChunk(char *name);
-static void FindChunk(char *name);
+static void FindNextChunk(const char *name);
+static void FindChunk(const char *name);
 static wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength);
 static byte* Process(const char* name);
 static byte* ProcessData(byte* buffer, wavinfo_t* info);
@@ -34,15 +36,14 @@ static int GetLittleLong(void);
 static short GetLittleShort(void);
 static void PrintHeader(wavinfo_t *info);
 static void StripExtension( const char *in, char *out );
-static void WriteDataToFile(char *name);
 
 /**********
 Global Variables
 **********/
 static	byte	*data_p;
-static	byte 	*iff_end;
-static	byte 	*last_chunk;
-static	byte 	*iff_data;
+static	byte	*iff_end;
+static	byte	*last_chunk;
+static	byte	*iff_data;
 static	int 	iff_chunk_len;
 
 static	float	cutoff1		= 0.5f;		// cutoffs
@@ -96,7 +97,7 @@ static int GetLittleLong(void)
 /*********
 FindNextChunk
 *********/
-static void FindNextChunk(char *name)
+static void FindNextChunk(const char *name)
 {
 	while (1)
 	{
@@ -125,7 +126,7 @@ static void FindNextChunk(char *name)
 /*********
 FindChunk
 *********/
-static void FindChunk(char *name)
+static void FindChunk(const char *name)
 {
 	last_chunk = iff_data;
 	FindNextChunk (name);
@@ -149,7 +150,7 @@ static void PrintHeader(wavinfo_t *info)
 /*********
 GetWavinfo
 *********/
-static wavinfo_t GetWavinfo (const char *name, byte *wav, int wavlength)
+static wavinfo_t GetWavinfo (const char *, byte *wav, int wavlength)
 {
 	wavinfo_t	info;
 
