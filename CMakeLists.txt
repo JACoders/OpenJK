@@ -64,10 +64,6 @@ if(WIN32)
   set(UseInternalSDL2Default   ON)
 endif()
 
-if(MSVC)
-  set(UseInternalSDL2Default ON)
-endif()
-
 if(APPLE)
   set(UseInternalJPEGDefault ON)
 endif()
