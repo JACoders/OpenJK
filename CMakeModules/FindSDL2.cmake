@@ -83,6 +83,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#Find sdl2-config
+find_program(SDL2_CONFIG sdl2-config ONLY_CMAKE_FIND_ROOT_PATH)
+
+if (NOT SDL2_CONFIG)
+#If sdl2-config is not found, use the classic way (Can be removed?)
+
 SET(SDL2_SEARCH_PATHS
 	~/Library/Frameworks
 	/Library/Frameworks
@@ -180,3 +186,71 @@ ENDIF(SDL2_LIBRARY_TEMP)
 INCLUDE(FindPackageHandleStandardArgs)
 
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2 REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR)
+
+else(NOT SDL2_CONFIG)
+#sdl2-config is found, use it to get all information
+
+#Determine the version of the installed SDL2 library
+execute_process(COMMAND "${SDL2_CONFIG}" "--version"
+	OUTPUT_VARIABLE _SDL2_VERSION_STRING
+	RESULT_VARIABLE _SDL2_CONFIG_RESULT
+)
+
+if (_SDL2_CONFIG_RESULT)
+	message(FATAL_ERROR "'sdl2-config --version' did not run correctly. (${_SDL2_CONFIG_RESULT})")
+endif()
+
+string(REGEX MATCH [a-zA-Z0-9.]* SDL2_VERSION_STRING ${_SDL2_VERSION_STRING})
+
+#Determine the location of the include dirs
+execute_process(COMMAND "${SDL2_CONFIG}" --cflags
+	OUTPUT_VARIABLE _SDL2_CFLAGS
+	RESULT_VARIABLE _SDL2_CONFIG_RESULT
+)
+
+if (_SDL2_CONFIG_RESULT)
+	message(FATAL_ERROR "'sdl2-config --cflags' did not run correctly. (${_SDL2_CONFIG_RESULT})")
+endif()
+
+string(REGEX MATCHALL "-I([^ ]+)" _SDL2_INCDIRS ${_SDL2_CFLAGS})
+
+#Clean up each include path
+set(SDL2_INCLUDE_DIRS "")
+foreach(_SDL2_INCDIR ${_SDL2_INCDIRS})
+	string(SUBSTRING "${_SDL2_INCDIR}" 2 -1 _SDL2_TMP_INC)
+	list(APPEND SDL2_INCLUDE_DIRS "${_SDL2_TMP_INC}")
+endforeach()
+
+#Check whether the include path is installed
+find_path(SDL2_INCLUDE_DIR SDL.h
+	PATHS ${SDL2_INCLUDE_DIRS}
+	NO_CMAKE_FIND_ROOT_PATH)
+
+#Determine the needed libs
+execute_process(COMMAND "${SDL2_CONFIG}" --libs
+	OUTPUT_VARIABLE _SDL2_LIBS
+	RESULT_VARIABLE _SDL2_CONFIG_RESULT
+)
+
+if (_SDL2_CONFIG_RESULT)
+	message(FATAL_ERROR "'sdl2-config --libs' dit not run correctly. (${_SDL2_CONFIG_RESULT})")
+endif()
+
+string(REGEX MATCHALL "([ ]*)-l([^ \n\r]+)" _SDL2_LIBS ${_SDL2_LIBS})
+
+#Clean up library path + check whether the library is installed
+set(SDL2_LIBRARY "")
+foreach(_SDL2_LIB ${_SDL2_LIBS})
+	string(STRIP ${_SDL2_LIB} _SDL2_LIB)
+	string(SUBSTRING "${_SDL2_LIB}" 2 -1 _SDL2_TMP_LIB)
+	find_library("_SDL2_LIB_${_SDL2_TMP_LIB}" "${_SDL2_TMP_LIB}")
+	list(APPEND SDL2_LIBRARY "${_SDL2_LIB_${_SDL2_TMP_LIB}}")
+endforeach()
+
+
+include(FindPackageHandleStandardArgs)
+
+find_package_handle_standard_args(SDL2
+	REQUIRED_VARS SDL2_LIBRARY SDL2_INCLUDE_DIR SDL2_CONFIG
+	VERSION_VAR SDL2_VERSION_STRING)
+endif(NOT SDL2_CONFIG)
