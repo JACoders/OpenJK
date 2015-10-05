@@ -28,6 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../game/g_roff.h"
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 bool		in_camera = false;
 camera_t	client_camera={};
 extern qboolean	player_locked;
@@ -155,10 +158,10 @@ void CGCam_Disable( void )
 
 	gi.SendServerCommand( 0, "cts");
 
-	//if ( cg_skippingcin.integer )
+	//if ( cg_skippingcin->integer )
 	{//We're skipping the cinematic and it's over now
-		gi.cvar_set("timescale", "1");
-		gi.cvar_set("skippingCinematic", "0");
+		Cvar_Set("timescale", "1");
+		Cvar_Set("skippingCinematic", "0");
 	}
 
 	//we just came out of camera, so update cg.refdef.vieworg out of the camera's origin so the snapshot will know our new ori
@@ -543,7 +546,7 @@ void CG_CameraAutoAim( const char *name )
 
 	if(!aimEnt)
 	{
-		gi.Printf(S_COLOR_RED"ERROR: %s camera aim target not found\n", name);
+		Com_Printf(S_COLOR_RED"ERROR: %s camera aim target not found\n", name);
 		return;
 	}
 
@@ -576,7 +579,7 @@ void CGCam_Track( const char *trackName, float speed, float initLerp )
 
 	if ( !trackEnt )
 	{
-		gi.Printf(S_COLOR_RED"ERROR: %s camera track target not found\n", trackName);
+		Com_Printf(S_COLOR_RED"ERROR: %s camera track target not found\n", trackName);
 		return;
 	}
 
@@ -655,7 +658,7 @@ void CG_CameraAutoTrack( const char *name )
 
 	if(!trackEnt)
 	{
-		gi.Printf(S_COLOR_RED"ERROR: %s camera track target not found\n", name);
+		Com_Printf(S_COLOR_RED"ERROR: %s camera track target not found\n", name);
 		return;
 	}
 
@@ -711,7 +714,7 @@ void CGCam_FollowUpdate ( void )
 
 			if ( num_subjects >= MAX_CAMERA_GROUP_SUBJECTS )
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Too many subjects in shot composition %s", client_camera.cameraGroup);
+				Com_Printf(S_COLOR_RED"ERROR: Too many subjects in shot composition %s", client_camera.cameraGroup);
 				break;
 			}
 
@@ -773,7 +776,7 @@ void CGCam_FollowUpdate ( void )
 		if ( !num_subjects )	// Bad cameragroup 
 		{
 #ifndef FINAL_BUILD
-			gi.Printf(S_COLOR_RED"ERROR: Camera Focus unable to locate cameragroup: %s\n", client_camera.cameraGroup);
+			Com_Printf(S_COLOR_RED"ERROR: Camera Focus unable to locate cameragroup: %s\n", client_camera.cameraGroup);
 #endif
 			return;
 		}
@@ -798,7 +801,7 @@ void CGCam_FollowUpdate ( void )
 	client_camera.subjectSpeed = VectorLengthSquared( vec ) * 100.0f / cg.frametime;
 
 	/*
-	if ( !cg_skippingcin.integer )
+	if ( !cg_skippingcin->integer )
 	{
 		Com_Printf( S_COLOR_RED"org: %s\n", vtos(center) );
 	}
@@ -838,7 +841,7 @@ void CGCam_FollowUpdate ( void )
 
 	//Point camera to lerp angles
 	/*
-	if ( !cg_skippingcin.integer )
+	if ( !cg_skippingcin->integer )
 	{
 		Com_Printf( "ang: %s\n", vtos(cameraAngles) );
 	}
@@ -1107,9 +1110,9 @@ void CGCam_Update( void )
 		float	fovDuration = client_camera.FOV_duration;
 
 #ifndef FINAL_BUILD
-		if (cg_roffval4.integer)
+		if (cg_roffval4->integer)
 		{
-			fovDuration = cg_roffval4.integer;
+			fovDuration = cg_roffval4->integer;
 		}
 #endif
 		if ( client_camera.FOV_time + fovDuration < cg.time )
@@ -1123,19 +1126,19 @@ void CGCam_Update( void )
 			float	accVal = client_camera.FOV_acc;
 
 #ifndef FINAL_BUILD
-			if (cg_roffdebug.integer)
+			if (cg_roffdebug->integer)
 			{
-				if (fabs(cg_roffval1.value) > 0.001f)
+				if (fabs(cg_roffval1->value) > 0.001f)
 				{
-					initialPosVal = cg_roffval1.value;
+					initialPosVal = cg_roffval1->value;
 				}
-				if (fabs(cg_roffval2.value) > 0.001f)
+				if (fabs(cg_roffval2->value) > 0.001f)
 				{
-					velVal = cg_roffval2.value;
+					velVal = cg_roffval2->value;
 				}
-				if (fabs(cg_roffval3.value) > 0.001f)
+				if (fabs(cg_roffval3->value) > 0.001f)
 				{
-					accVal = cg_roffval3.value;
+					accVal = cg_roffval3->value;
 				}
 			}
 #endif
@@ -1144,7 +1147,7 @@ void CGCam_Update( void )
 			float	acc = 0.5*accVal*t*t;
 
 			actualFOV_X = initialPos + vel + acc;
-			if (cg_roffdebug.integer)
+			if (cg_roffdebug->integer)
 			{
 				Com_Printf("%d: fovaccel from %2.1f using vel = %2.4f, acc = %2.4f (current fov calc = %5.6f)\n",
 					cg.time, initialPosVal, velVal, accVal, actualFOV_X);
@@ -1476,15 +1479,15 @@ void CGCam_NotetrackProcessFov(const char *addlArg)
 		// now the contents of t represent our desired fov 
 		float newFov = atof(t);
 #ifndef FINAL_BUILD
-		if (cg_roffdebug.integer)
+		if (cg_roffdebug->integer)
 		{
-			if (fabs(cg_roffval1.value) > 0.001f)
+			if (fabs(cg_roffval1->value) > 0.001f)
 			{
-				newFov = cg_roffval1.value;
+				newFov = cg_roffval1->value;
 			}
 		}
 #endif
-		if (cg_roffdebug.integer)
+		if (cg_roffdebug->integer)
 		{
 			Com_Printf("notetrack: 'fov %2.2f' on frame %d\n", newFov, client_camera.roff_frame);
 		}
@@ -1562,23 +1565,23 @@ void CGCam_NotetrackProcessFovZoom(const char *addlArg)
 			return;
 		}
 #ifndef FINAL_BUILD
-		if (cg_roffdebug.integer)
+		if (cg_roffdebug->integer)
 		{
-			if (fabs(cg_roffval1.value) > 0.001f)
+			if (fabs(cg_roffval1->value) > 0.001f)
 			{
-				beginFOV = cg_roffval1.value;
+				beginFOV = cg_roffval1->value;
 			}
-			if (fabs(cg_roffval2.value) > 0.001f)
+			if (fabs(cg_roffval2->value) > 0.001f)
 			{
-				endFOV = cg_roffval2.value;
+				endFOV = cg_roffval2->value;
 			}
-			if (fabs(cg_roffval3.value) > 0.001f)
+			if (fabs(cg_roffval3->value) > 0.001f)
 			{
-				fovTime = cg_roffval3.value;
+				fovTime = cg_roffval3->value;
 			}
 		}
 #endif
-		if (cg_roffdebug.integer)
+		if (cg_roffdebug->integer)
 		{
 			Com_Printf("notetrack: 'fovzoom %2.2f %2.2f %5.1f' on frame %d\n", beginFOV, endFOV, fovTime, client_camera.roff_frame);
 		}
@@ -1677,7 +1680,7 @@ void CGCam_NotetrackProcessFovAccel(const char *addlArg)
 				Com_Printf("camera roff 'fovaccel' notetrack missing 'time' argument\n", addlArg);
 				return;
 			}
-			if (cg_roffdebug.integer)
+			if (cg_roffdebug->integer)
 			{
 				Com_Printf("notetrack: 'fovaccel %2.2f %3.5f %3.5f %d' on frame %d\n", beginFOV, fovDelta, fovDelta2, fovTime, client_camera.roff_frame);
 			}
@@ -1761,7 +1764,7 @@ static void CG_RoffNotetrackCallback(const char *notetrack)
 	if (strcmp(type, "cut") == 0)
 	{
 		client_camera.info_state |= CAMERA_CUT;
-		if (cg_roffdebug.integer)
+		if (cg_roffdebug->integer)
 		{
 			Com_Printf("notetrack: 'cut' on frame %d\n", client_camera.roff_frame);
 		}
@@ -1903,7 +1906,7 @@ static void CGCam_Roff( void )
 	ang[ROLL]	= -ang[ROLL];
 	// might need to to yaw as well.  need a test...
 
-	if ( cg_developer.integer )
+	if ( cg_developer->integer )
 	{
 		Com_Printf( S_COLOR_GREEN"CamROFF: frame: %d o:<%.2f %.2f %.2f> a:<%.2f %.2f %.2f>\n", 
 					client_camera.roff_frame,

@@ -30,6 +30,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "b_local.h"
 #include "g_navigator.h"
 
+#include "../qcommon/cvar_exports.hh"
+
 #ifdef _DEBUG
 	#include <float.h>
 #endif //_DEBUG
@@ -119,8 +121,8 @@ extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_speederControlScheme;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_debugMelee;
-extern vmCvar_t	cg_thirdPersonAlpha;
-extern vmCvar_t	cg_thirdPersonAutoAlpha;
+extern cvar_t*	cg_thirdPersonAlpha;
+extern cvar_t*	cg_thirdPersonAutoAlpha;
 
 void ClientEndPowerUps( gentity_t *ent );
 
@@ -1795,7 +1797,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 		case EV_FIRE_WEAPON:
 #ifndef FINAL_BUILD
 			if ( fired ) {
-				gi.Printf( "DOUBLE EV_FIRE_WEAPON AND-OR EV_ALT_FIRE!!\n" );
+				Com_Printf( "DOUBLE EV_FIRE_WEAPON AND-OR EV_ALT_FIRE!!\n" );
 			}
 			fired = qtrue;
 #endif
@@ -1805,7 +1807,7 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 		case EV_ALT_FIRE:
 #ifndef FINAL_BUILD
 			if ( fired ) {
-				gi.Printf( "DOUBLE EV_FIRE_WEAPON AND-OR EV_ALT_FIRE!!\n" );
+				Com_Printf( "DOUBLE EV_FIRE_WEAPON AND-OR EV_ALT_FIRE!!\n" );
 			}
 			fired = qtrue;
 #endif
@@ -2210,7 +2212,7 @@ void G_CamPullBackForLegsAnim( gentity_t *ent, qboolean useTorso = qfalse )
 			backDist = ((animLength-elapsedTime)/animLength)*120.0f;
 		}
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_RNG;
-		cg.overrides.thirdPersonRange = cg_thirdPersonRange.value+backDist;
+		cg.overrides.thirdPersonRange = cg_thirdPersonRange->value+backDist;
 	}
 }
 
@@ -2223,7 +2225,7 @@ void G_CamCircleForLegsAnim( gentity_t *ent )
 		float angle = 0;
 		angle = (elapsedTime/animLength)*360.0f;
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ANG;
-		cg.overrides.thirdPersonAngle = cg_thirdPersonAngle.value+angle;
+		cg.overrides.thirdPersonAngle = cg_thirdPersonAngle->value+angle;
 	}
 }
 
@@ -2845,12 +2847,12 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 				float elapsedTime = (float)(animLength-ent->client->ps.legsAnimTimer);
 				float angle = (elapsedTime/animLength)*forceDrainAngle;
 				cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ANG;
-				cg.overrides.thirdPersonAngle = cg_thirdPersonAngle.value+angle;
+				cg.overrides.thirdPersonAngle = cg_thirdPersonAngle->value+angle;
 			}
 			else if ( ent->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_HOLD )
 			{//draining
 				cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ANG;
-				cg.overrides.thirdPersonAngle = cg_thirdPersonAngle.value+forceDrainAngle;
+				cg.overrides.thirdPersonAngle = cg_thirdPersonAngle->value+forceDrainAngle;
 			}
 			else if ( ent->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_END )
 			{//ending drain
@@ -2858,7 +2860,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 				float elapsedTime = (float)(animLength-ent->client->ps.legsAnimTimer);
 				float angle = forceDrainAngle-((elapsedTime/animLength)*forceDrainAngle);
 				cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_ANG;
-				cg.overrides.thirdPersonAngle = cg_thirdPersonAngle.value+angle;
+				cg.overrides.thirdPersonAngle = cg_thirdPersonAngle->value+angle;
 			}
 		}
 
@@ -3810,8 +3812,8 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			}
 			//back off and look down
 			cg.overrides.active |= (CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_POF);
-			cg.overrides.thirdPersonRange = cg_thirdPersonRange.value+backDist;
-			cg.overrides.thirdPersonPitchOffset = cg_thirdPersonPitchOffset.value+(backDist/2.0f);
+			cg.overrides.thirdPersonRange = cg_thirdPersonRange->value+backDist;
+			cg.overrides.thirdPersonPitchOffset = cg_thirdPersonPitchOffset->value+(backDist/2.0f);
 		}
 		overridAngles = (PM_AdjustAnglesForSpinProtect( ent, ucmd )?qtrue:overridAngles);
 	}
@@ -4283,8 +4285,8 @@ void G_HeldByMonster( gentity_t *ent, usercmd_t **ucmd )
 // yes...   so stop skipping...
 void G_StopCinematicSkip( void )
 {
-	gi.cvar_set("skippingCinematic", "0");
-	gi.cvar_set("timescale", "1");
+	Cvar_Set("skippingCinematic", "0");
+	Cvar_Set("timescale", "1");
 }
 
 void G_StartCinematicSkip( void )
@@ -4295,14 +4297,14 @@ void G_StartCinematicSkip( void )
 		Quake3Game()->RunScript( &g_entities[0], cinematicSkipScript );
 
 		cinematicSkipScript[0] = 0;
-		gi.cvar_set("skippingCinematic", "1");
-		gi.cvar_set("timescale", "100");
+		Cvar_Set("skippingCinematic", "1");
+		Cvar_Set("timescale", "100");
 	}
 	else 
 	{
 		// no... so start skipping...
-		gi.cvar_set("skippingCinematic", "1");
-		gi.cvar_set("timescale", "100");
+		Cvar_Set("skippingCinematic", "1");
+		Cvar_Set("timescale", "100");
 	}
 }
 
@@ -4883,8 +4885,8 @@ extern cvar_t	*g_skippingcin;
 		{
 			if ( g_skippingcin->integer )
 			{//We're skipping the cinematic and it's over now
-				gi.cvar_set("timescale", "1");
-				gi.cvar_set("skippingCinematic", "0");
+				Cvar_Set("timescale", "1");
+				Cvar_Set("skippingCinematic", "0");
 			}
 			if ( ent->client->ps.pm_type == PM_DEAD && cg.missionStatusDeadTime < level.time )
 			{//mission status screen is up because player is dead, stop all scripts
@@ -4893,7 +4895,7 @@ extern cvar_t	*g_skippingcin;
 		}
 
 //		// Don't allow the player to adjust the pitch when they are in third person overhead cam.
-//extern vmCvar_t cg_thirdPerson;
+//extern cvar_t* cg_thirdPerson;
 //		if ( cg_thirdPerson.integer == 2 )
 //		{
 //			ucmd->angles[PITCH] = 0;
@@ -5347,7 +5349,7 @@ extern cvar_t	*g_skippingcin;
 	{
 		cg.overrides.active |= (CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_POF|CG_OVERRIDE_3RD_PERSON_VOF);
 		cg.overrides.thirdPersonRange = 240;
-		if ( cg_thirdPersonAutoAlpha.integer )
+		if ( cg_thirdPersonAutoAlpha->integer )
 		{
 			if ( ent->health > 0 && ent->client->ps.viewangles[PITCH] < 15 && ent->client->ps.viewangles[PITCH] > 0 )
 			{
@@ -5363,17 +5365,17 @@ extern cvar_t	*g_skippingcin;
 			}
 			else if ( cg.overrides.active&CG_OVERRIDE_3RD_PERSON_APH )
 			{
-				if ( cg.overrides.thirdPersonAlpha > cg_thirdPersonAlpha.value )
+				if ( cg.overrides.thirdPersonAlpha > cg_thirdPersonAlpha->value )
 				{
 					cg.overrides.active &= ~CG_OVERRIDE_3RD_PERSON_APH;
 				}
-				else if ( cg.overrides.thirdPersonAlpha < cg_thirdPersonAlpha.value-0.1f )
+				else if ( cg.overrides.thirdPersonAlpha < cg_thirdPersonAlpha->value-0.1f )
 				{
 					cg.overrides.thirdPersonAlpha += 0.1f;
 				}
-				else if ( cg.overrides.thirdPersonAlpha < cg_thirdPersonAlpha.value )
+				else if ( cg.overrides.thirdPersonAlpha < cg_thirdPersonAlpha->value )
 				{
-					cg.overrides.thirdPersonAlpha = cg_thirdPersonAlpha.value;
+					cg.overrides.thirdPersonAlpha = cg_thirdPersonAlpha->value;
 					cg.overrides.active &= ~CG_OVERRIDE_3RD_PERSON_APH;
 				}
 			}
@@ -5466,7 +5468,7 @@ extern cvar_t	*g_skippingcin;
 	VectorCopy(ent->client->ps.viewangles , ent->currentAngles );
 //	if (pVeh)
 //	{
-//		gi.Printf("%d\n", ucmd->angles[2]);
+//		Com_Printf("%d\n", ucmd->angles[2]);
 //	}
 
 	VectorCopy( pm.mins, ent->mins );

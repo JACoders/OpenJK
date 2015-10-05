@@ -735,7 +735,7 @@ static void R_MarkLeaves (void) {
 	if ( r_showcluster->modified || r_showcluster->integer ) {
 		r_showcluster->modified = qfalse;
 		if ( r_showcluster->integer ) {
-			ri.Printf( PRINT_ALL, "cluster:%i  area:%i\n", cluster, leaf->area );
+			CL_RefPrintf( PRINT_ALL, "cluster:%i  area:%i\n", cluster, leaf->area );
 		}
 	}
 

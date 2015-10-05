@@ -175,7 +175,7 @@ static void CG_CenterPrint_f( void ) {
 }
 
 static void CG_Print_f( void ) {
-	CG_Printf( "%s", CG_Argv( 1 ) );
+	Com_Printf( "%s", CG_Argv( 1 ) );
 }
 
 static void CG_CaptionText_f( void ) {
@@ -189,7 +189,7 @@ static void CG_ScrollText_f( void ) {
 }
 
 static void CG_LCARSText_f( void ) {
-	CG_Printf( "CG_LCARSText() being called. Tell Ste\n" "String: \"%s\"\n", CG_Argv( 1 ) );
+	Com_Printf( "CG_LCARSText() being called. Tell Ste\n" "String: \"%s\"\n", CG_Argv( 1 ) );
 }
 
 static void CG_ClientLevelShot_f( void ) {
@@ -246,7 +246,7 @@ static void CG_ServerCommand( void ) {
 		return;
 	}
 
-	CG_Printf( "Unknown client game command: %s\n", cmd );
+	Com_Printf( "Unknown client game command: %s\n", cmd );
 }
 
 

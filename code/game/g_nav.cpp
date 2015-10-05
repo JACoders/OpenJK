@@ -192,10 +192,10 @@ void SP_waypoint ( gentity_t *ent )
 			ent->maxs[2] = CROUCH_MAXS_2;
 			if(G_CheckInSolid (ent, qtrue))
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
+				Com_Printf(S_COLOR_RED"ERROR: Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
 				assert(0 && "Waypoint in solid!");
 //				if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
-//					G_Error("Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
+//					Com_Error(ERR_DROP, "Waypoint %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
 //				}
 				delayedShutDown = level.time + 100;
 				G_FreeEntity(ent);
@@ -233,11 +233,11 @@ void SP_waypoint_small (gentity_t *ent)
 			ent->maxs[2] = CROUCH_MAXS_2;
 			if ( G_CheckInSolid( ent, qtrue ) )
 			{
-				gi.Printf(S_COLOR_RED"ERROR: Waypoint_small %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
+				Com_Printf(S_COLOR_RED"ERROR: Waypoint_small %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
 				assert(0);
 #ifndef FINAL_BUILD
 				if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
-					G_Error("Waypoint_small %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
+					Com_Error(ERR_DROP, "Waypoint_small %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
 				}
 #endif
 				G_FreeEntity(ent);
@@ -282,11 +282,11 @@ void SP_waypoint_navgoal( gentity_t *ent )
 	ent->s.origin[2] += 0.125;
 	if ( !(ent->spawnflags&1) && G_CheckInSolid( ent, qfalse ) )
 	{
-		gi.Printf(S_COLOR_RED"ERROR: Waypoint_navgoal %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
+		Com_Printf(S_COLOR_RED"ERROR: Waypoint_navgoal %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
 		assert(0);
 #ifndef FINAL_BUILD
 		if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
-			G_Error("Waypoint_navgoal %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
+			Com_Error(ERR_DROP, "Waypoint_navgoal %s at %s in solid!\n", ent->targetname, vtos(ent->currentOrigin));
 		}
 #endif
 	}

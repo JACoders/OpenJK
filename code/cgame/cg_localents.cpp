@@ -62,7 +62,7 @@ CG_FreeLocalEntity
 */
 void CG_FreeLocalEntity( localEntity_t *le ) {
 	if ( !le->prev ) {
-		CG_Error( "CG_FreeLocalEntity: not active" );
+		Com_Error( ERR_DROP,  "CG_FreeLocalEntity: not active" );
 	}
 
 	// remove from the doubly linked active list
@@ -569,7 +569,7 @@ void CG_AddLocalEntities( void )
 		}
 		switch ( le->leType ) {
 		default:
-			CG_Error( "Bad leType: %i", le->leType );
+			Com_Error( ERR_DROP,  "Bad leType: %i", le->leType );
 			break;
 
 		case LE_MARK:

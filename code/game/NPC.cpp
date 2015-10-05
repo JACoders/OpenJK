@@ -2391,7 +2391,7 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 
 		if(la != -1 && ta != -1)
 		{//FIXME: should never play same frame twice or restart an anim before finishing it
-			gi.Printf("LegsAnim: %s(%d) TorsoAnim: %s(%d)\n", animTable[la].name, NPC->renderInfo.legsFrame, animTable[ta].name, NPC->client->renderInfo.torsoFrame);
+			Com_Printf("LegsAnim: %s(%d) TorsoAnim: %s(%d)\n", animTable[la].name, NPC->renderInfo.legsFrame, animTable[ta].name, NPC->client->renderInfo.torsoFrame);
 		}
 	}*/
 }
@@ -2412,7 +2412,7 @@ void NPC_CheckInSolid(void)
 	{
 		if(VectorLengthSquared(NPCInfo->lastClearOrigin))
 		{
-//			gi.Printf("%s stuck in solid at %s: fixing...\n", NPC->script_targetname, vtos(NPC->currentOrigin));
+//			Com_Printf("%s stuck in solid at %s: fixing...\n", NPC->script_targetname, vtos(NPC->currentOrigin));
 			G_SetOrigin(NPC, NPCInfo->lastClearOrigin);
 			gi.linkentity(NPC);
 		}
@@ -2561,7 +2561,7 @@ void NPC_Think ( gentity_t *self)//, int msec )
 		int addTime = GetTime( startTime );
 		if ( addTime > 50 )
 		{
-			gi.Printf( S_COLOR_RED"ERROR: NPC number %d, %s %s at %s, weaponnum: %d, using %d of AI time!!!\n", NPC->s.number, NPC->NPC_type, NPC->targetname, vtos(NPC->currentOrigin), NPC->s.weapon, addTime );
+			Com_Printf( S_COLOR_RED"ERROR: NPC number %d, %s %s at %s, weaponnum: %d, using %d of AI time!!!\n", NPC->s.number, NPC->NPC_type, NPC->targetname, vtos(NPC->currentOrigin), NPC->s.weapon, addTime );
 		}
 		AITime += addTime;
 #endif//	AI_TIMERS
@@ -2601,11 +2601,11 @@ void NPC_Think ( gentity_t *self)//, int msec )
 
 void NPC_InitAI ( void ) 
 {
-	debugNPCAI = gi.cvar ( "d_npcai", "0", CVAR_CHEAT );
-	debugNPCFreeze = gi.cvar ( "d_npcfreeze", "0", CVAR_CHEAT);
-	d_JediAI = gi.cvar ( "d_JediAI", "0", CVAR_CHEAT );
-	d_noGroupAI = gi.cvar ( "d_noGroupAI", "0", CVAR_CHEAT );
-	d_asynchronousGroupAI = gi.cvar ( "d_asynchronousGroupAI", "1", CVAR_CHEAT );
+	debugNPCAI = Cvar_Get("d_npcai", "0", CVAR_CHEAT );
+	debugNPCFreeze = Cvar_Get("d_npcfreeze", "0", CVAR_CHEAT);
+	d_JediAI = Cvar_Get("d_JediAI", "0", CVAR_CHEAT );
+	d_noGroupAI = Cvar_Get("d_noGroupAI", "0", CVAR_CHEAT );
+	d_asynchronousGroupAI = Cvar_Get("d_asynchronousGroupAI", "1", CVAR_CHEAT );
 
 	//0 = never (BORING)
 	//1 = kyle only
@@ -2615,9 +2615,9 @@ void NPC_InitAI ( void )
 	//5 = kyle and any enemy
 	//6 = also when kyle takes pain or enemy jedi dodges player saber swing or does an acrobatic evasion
 	// NOTE : I also create this in UI_Init()
-	d_slowmodeath = gi.cvar ( "d_slowmodeath", "3", CVAR_ARCHIVE );//save this setting
+	d_slowmodeath = Cvar_Get("d_slowmodeath", "3", CVAR_ARCHIVE );//save this setting
 
-	d_saberCombat = gi.cvar ( "d_saberCombat", "0", CVAR_CHEAT );
+	d_saberCombat = Cvar_Get("d_saberCombat", "0", CVAR_CHEAT );
 }
 
 /*
@@ -2650,7 +2650,7 @@ extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0
 void NPC_InitGame( void ) 
 {
 //	globals.NPCs = (gNPC_t *) gi.TagMalloc(game.maxclients * sizeof(game.bots[0]), TAG_GAME);
-	debugNPCName = gi.cvar ( "d_npc", "", 0  );
+	debugNPCName = Cvar_Get("d_npc", "", 0  );
 	NPC_LoadParms();
 	NPC_InitAI();
 	NPC_InitAnimTable();

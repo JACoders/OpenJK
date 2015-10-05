@@ -621,7 +621,7 @@ int Pickup_Holocron( gentity_t *ent, gentity_t *other )
 	// check if out of range
 	if( forceLevel < 0 || forceLevel >= NUM_FORCE_POWER_LEVELS )
 	{
-		gi.Printf(" Pickup_Holocron : count %d not in valid range\n", forceLevel );
+		Com_Printf(" Pickup_Holocron : count %d not in valid range\n", forceLevel );
 		return 1;
 	}
 	 
@@ -639,12 +639,12 @@ int Pickup_Holocron( gentity_t *ent, gentity_t *other )
 	other->client->ps.forcePowersKnown |= ( 1 << forcePower );
 	
 	missionInfo_Updated = qtrue;	// Activate flashing text
-	gi.cvar_set("cg_updatedDataPadForcePower1", va("%d",forcePower+1)); // The +1 is offset in the print routine. 
-	cg_updatedDataPadForcePower1.integer = forcePower+1;
-	gi.cvar_set("cg_updatedDataPadForcePower2", "0"); // The +1 is offset in the print routine. 
-	cg_updatedDataPadForcePower2.integer = 0;
-	gi.cvar_set("cg_updatedDataPadForcePower3", "0"); // The +1 is offset in the print routine. 
-	cg_updatedDataPadForcePower3.integer = 0;
+	Cvar_Set("cg_updatedDataPadForcePower1", va("%d",forcePower+1)); // The +1 is offset in the print routine. 
+	cg_updatedDataPadForcePower1->integer = forcePower+1;
+	Cvar_Set("cg_updatedDataPadForcePower2", "0"); // The +1 is offset in the print routine.
+	cg_updatedDataPadForcePower2->integer = 0;
+	Cvar_Set("cg_updatedDataPadForcePower3", "0"); // The +1 is offset in the print routine.
+	cg_updatedDataPadForcePower3->integer = 0;
 	
 	return 1;
 }
@@ -802,7 +802,7 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		}
 	}
 	if (!ent->item) {		//not an item!
-		gi.Printf( "Touch_Item: %s is not an item!\n", ent->classname);
+		Com_Printf( "Touch_Item: %s is not an item!\n", ent->classname);
 		return;
 	}
 
@@ -1200,11 +1200,11 @@ void FinishSpawningItem( gentity_t *ent ) {
 		{
 			if ( &g_entities[tr.entityNum] != NULL )
 			{
-				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin), g_entities[tr.entityNum].classname );
+				Com_Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin), g_entities[tr.entityNum].classname );
 			}
 			else
 			{
-				gi.Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin) );
+				Com_Printf (S_COLOR_RED"FinishSpawningItem: removing %s startsolid at %s (in a %s)\n", ent->classname, vtos(ent->s.origin) );
 			}
 			assert( 0 && "item starting in solid");
 			if (!g_entities[ENTITYNUM_WORLD].s.radius){	//not a region
@@ -1288,7 +1288,7 @@ The item will be added to the precache list
 */
 void RegisterItem( gitem_t *item ) {
 	if ( !item ) {
-		G_Error( "RegisterItem: NULL" );
+		Com_Error(ERR_DROP,  "RegisterItem: NULL" );
 	}
 	itemRegistered[ item - bg_itemlist ] = '1';
 	gi.SetConfigstring(CS_ITEMS, itemRegistered);	//Write the needed items to a config string
@@ -1319,7 +1319,7 @@ void SaveRegisteredItems( void ) {
 	}
 	string[ bg_numItems ] = 0;
 
-	gi.Printf( "%i items registered\n", count );
+	Com_Printf( "%i items registered\n", count );
 	gi.SetConfigstring(CS_ITEMS, string);
 */
 	gi.SetConfigstring(CS_ITEMS, itemRegistered);
@@ -1381,7 +1381,7 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 		ent->noDamageTeam = (team_t)GetIDForString( TeamTable, ent->team );
 		if ( ent->noDamageTeam == TEAM_FREE )
 		{
-			G_Error("team name %s not recognized\n", ent->team);
+			Com_Error(ERR_DROP, "team name %s not recognized\n", ent->team);
 		}
 	}
 

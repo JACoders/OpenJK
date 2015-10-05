@@ -329,15 +329,15 @@ void RE_RegisterModels_Info_f( void )
 	{	
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
-		ri.Printf( PRINT_ALL, "%d/%d: \"%s\" (%d bytes)",iModel,iModels,(*itModel).first.c_str(),CachedModel.iAllocSize );
+		CL_RefPrintf( PRINT_ALL, "%d/%d: \"%s\" (%d bytes)",iModel,iModels,(*itModel).first.c_str(),CachedModel.iAllocSize );
 
 		#ifdef _DEBUG
-		ri.Printf( PRINT_ALL, ", lvl %d\n",CachedModel.iLastLevelUsedOn);
+		CL_RefPrintf( PRINT_ALL, ", lvl %d\n",CachedModel.iLastLevelUsedOn);
 		#endif
 
 		iTotalBytes += CachedModel.iAllocSize;
 	}
-	ri.Printf( PRINT_ALL, "%d bytes total (%.2fMB)\n",iTotalBytes, (float)iTotalBytes / 1024.0f / 1024.0f);
+	CL_RefPrintf( PRINT_ALL, "%d bytes total (%.2fMB)\n",iTotalBytes, (float)iTotalBytes / 1024.0f / 1024.0f);
 }
 
 
@@ -558,12 +558,12 @@ Ghoul2 Insert End
 */
 
 	if ( !name || !name[0] ) {
-		ri.Printf( PRINT_WARNING, "RE_RegisterModel: NULL name\n" );
+		CL_RefPrintf( PRINT_WARNING, "RE_RegisterModel: NULL name\n" );
 		return 0;
 	}
 
 	if ( strlen( name ) >= MAX_QPATH ) {
-		ri.Printf( PRINT_DEVELOPER, "Model name exceeds MAX_QPATH\n" );
+		CL_RefPrintf( PRINT_DEVELOPER, "Model name exceeds MAX_QPATH\n" );
 		return 0;
 	}
 
@@ -571,7 +571,7 @@ Ghoul2 Insert End
 Ghoul2 Insert Start
 */
 //	if (!tr.registered) {
-//		ri.Printf( PRINT_WARNING, "RE_RegisterModel (%s) called before ready!\n",name );
+//		CL_RefPrintf( PRINT_WARNING, "RE_RegisterModel (%s) called before ready!\n",name );
 //		return 0;
 //	}
 	//
@@ -621,7 +621,7 @@ Ghoul2 Insert End
 	// allocate a new model_t
 
 	if ( ( mod = R_AllocModel() ) == NULL ) {
-		ri.Printf( PRINT_WARNING, "RE_RegisterModel: R_AllocModel() failed for '%s'\n", name);
+		CL_RefPrintf( PRINT_WARNING, "RE_RegisterModel: R_AllocModel() failed for '%s'\n", name);
 		return 0;
 	}
 
@@ -701,7 +701,7 @@ Ghoul2 Insert End
 
 			default:
 
-				ri.Printf (PRINT_WARNING,"RE_RegisterModel: unknown fileid for %s\n", filename);
+				CL_RefPrintf (PRINT_WARNING,"RE_RegisterModel: unknown fileid for %s\n", filename);
 				goto fail;
 		}
 		
@@ -711,7 +711,7 @@ Ghoul2 Insert End
 
 		if ( !loaded ) {
 			if ( lod == 0 ) {
-				ri.Printf (PRINT_WARNING,"RE_RegisterModel: cannot load %s\n", filename);
+				CL_RefPrintf (PRINT_WARNING,"RE_RegisterModel: cannot load %s\n", filename);
 				goto fail;
 			} else {
 				break;
@@ -813,7 +813,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	}
 	
 	if (version != MD3_VERSION) {
-		ri.Printf( PRINT_WARNING, "R_LoadMD3: %s has wrong version (%i should be %i)\n",
+		CL_RefPrintf( PRINT_WARNING, "R_LoadMD3: %s has wrong version (%i should be %i)\n",
 				 mod_name, version, MD3_VERSION);
 		return qfalse;
 	}
@@ -850,7 +850,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	}
 
 	if ( mod->md3[lod]->numFrames < 1 ) {
-		ri.Printf( PRINT_WARNING, "R_LoadMD3: %s has no frames\n", mod_name );
+		CL_RefPrintf( PRINT_WARNING, "R_LoadMD3: %s has no frames\n", mod_name );
 		return qfalse;
 	}
 
@@ -1045,25 +1045,25 @@ void R_Modellist_f( void ) {
 		{
 			default:
 				assert(0);
-				ri.Printf( PRINT_ALL, "UNKNOWN  :      %s\n", mod->name );
+				CL_RefPrintf( PRINT_ALL, "UNKNOWN  :      %s\n", mod->name );
 				break;
 
 			case MOD_BAD:
-				ri.Printf( PRINT_ALL, "MOD_BAD  :      %s\n", mod->name );
+				CL_RefPrintf( PRINT_ALL, "MOD_BAD  :      %s\n", mod->name );
 				break;
 
 			case MOD_BRUSH:
-				ri.Printf( PRINT_ALL, "%8i : (%i) %s\n", mod->dataSize, mod->numLods, mod->name );
+				CL_RefPrintf( PRINT_ALL, "%8i : (%i) %s\n", mod->dataSize, mod->numLods, mod->name );
 				break;
 
 			case MOD_MDXA:
 
-				ri.Printf( PRINT_ALL, "%8i : (%i) %s\n", mod->dataSize, mod->numLods, mod->name );								
+				CL_RefPrintf( PRINT_ALL, "%8i : (%i) %s\n", mod->dataSize, mod->numLods, mod->name );
 				break;
 		
 			case MOD_MDXM:
 				
-				ri.Printf( PRINT_ALL, "%8i : (%i) %s\n", mod->dataSize, mod->numLods, mod->name );								
+				CL_RefPrintf( PRINT_ALL, "%8i : (%i) %s\n", mod->dataSize, mod->numLods, mod->name );
 				break;
 
 			case MOD_MESH:
@@ -1074,16 +1074,16 @@ void R_Modellist_f( void ) {
 						lods++;
 					}
 				}				
-				ri.Printf( PRINT_ALL, "%8i : (%i) %s\n",mod->dataSize, lods, mod->name );
+				CL_RefPrintf( PRINT_ALL, "%8i : (%i) %s\n",mod->dataSize, lods, mod->name );
 				break;		
 		}
 		total += mod->dataSize;
 	}
-	ri.Printf( PRINT_ALL, "%8i : Total models\n", total );
+	CL_RefPrintf( PRINT_ALL, "%8i : Total models\n", total );
 
 /*	this doesn't work with the new hunks
 	if ( tr.world ) {
-		ri.Printf( PRINT_ALL, "%8i : %s\n", tr.world->dataSize, tr.world->name );
+		CL_RefPrintf( PRINT_ALL, "%8i : %s\n", tr.world->dataSize, tr.world->name );
 	} */
 }
 

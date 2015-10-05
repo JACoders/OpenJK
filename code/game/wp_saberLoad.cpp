@@ -2036,7 +2036,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 	while ( 1 ) {
 		token = COM_ParseExt( &p, qtrue );
 		if ( !token[0] ) {
-			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s' (WP_SaberParseParms)\n", SaberName );
+			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s' (WP_SaberParseParms)\n", SaberName );
 			return qfalse;
 		}
 
@@ -2049,7 +2049,7 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 			continue;
 		}
 
-		gi.Printf( "WARNING: unknown keyword '%s' while parsing '%s'\n", token, SaberName );
+		Com_Printf( "WARNING: unknown keyword '%s' while parsing '%s'\n", token, SaberName );
 		SkipRestOfLine( &p );
 	}
 
@@ -2288,7 +2288,7 @@ void WP_SaberLoadParms( void )
 	char		*buffer, *holdChar, *marker;
 	char		saberExtensionListBuf[2048];			//	The list of file names read in
 
-	//gi.Printf( "Parsing *.sab saber definitions\n" );
+	//Com_Printf( "Parsing *.sab saber definitions\n" );
 
 	//set where to store the first one
 	totallen = 0;
@@ -2307,7 +2307,7 @@ void WP_SaberLoadParms( void )
 
 		if ( len == -1 ) 
 		{
-			gi.Printf( "WP_SaberLoadParms: error reading %s\n", holdChar );
+			Com_Printf( "WP_SaberLoadParms: error reading %s\n", holdChar );
 		}
 		else
 		{
@@ -2320,7 +2320,7 @@ void WP_SaberLoadParms( void )
 			len = COM_Compress( buffer );
 
 			if ( totallen + len >= MAX_SABER_DATA_SIZE ) {
-				G_Error( "WP_SaberLoadParms: ran out of space before reading %s\n(you must make the .sab files smaller)", holdChar  );
+				Com_Error(ERR_DROP,  "WP_SaberLoadParms: ran out of space before reading %s\n(you must make the .sab files smaller)", holdChar  );
 			}
 			strcat( marker, buffer );
 			gi.FS_FreeFile( buffer );

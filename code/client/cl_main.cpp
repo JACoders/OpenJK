@@ -985,7 +985,7 @@ CL_RefPrintf
 DLL glue
 ================
 */
-void QDECL CL_RefPrintf( int print_level, const char *fmt, ...) {
+void CL_RefPrintf( int print_level, const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
 	
@@ -1116,14 +1116,6 @@ void CL_InitRef( void ) {
 	RIT(CM_DeleteCachedMap);
 	RIT(CM_DrawDebugSurface);
 	RIT(CM_PointContents);
-	RIT(Cvar_Get);
-	RIT(Cvar_Set);
-	RIT(Cvar_SetValue);
-	RIT(Cvar_CheckRange);
-	RIT(Cvar_VariableIntegerValue);
-	RIT(Cvar_VariableString);
-	RIT(Cvar_VariableStringBuffer);
-	RIT(Cvar_VariableValue);
 	RIT(FS_FCloseFile);
 	RIT(FS_FileIsInPAK);
 	RIT(FS_FOpenFileByMode);
@@ -1158,12 +1150,9 @@ void CL_InitRef( void ) {
 	rit.PD_Load = PD_Load;
 	rit.PD_Store = PD_Store;
 
-	rit.Error = Com_Error;
 	rit.FS_FileExists = S_FileExists;
 	rit.GetG2VertSpaceServer = GetG2VertSpaceServer;
 	rit.LowPhysicalMemory = Sys_LowPhysicalMemory;
-	rit.Milliseconds = Sys_Milliseconds2;
-	rit.Printf = CL_RefPrintf;
 	rit.SE_GetString = String_GetStringValue;
 
 	rit.SV_Trace = SV_Trace;

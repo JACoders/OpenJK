@@ -921,7 +921,7 @@ void NPC_BSJump (void)
 
 		assert(z >= 0);
 
-//		gi.Printf("apex is %4.2f percent from p1: ", (xy-z)*0.5/xy*100.0f);
+//		Com_Printf("apex is %4.2f percent from p1: ", (xy-z)*0.5/xy*100.0f);
 
 		// Don't need to set apex xy if NPC is jumping directly up.
 		if ( xy > 0.0f )
@@ -942,7 +942,7 @@ void NPC_BSJump (void)
 		time = sqrt( height / ( .5 * NPC->client->ps.gravity ) );
 		if ( !time )
 		{
-//			gi.Printf("ERROR no time in jump\n");
+//			Com_Printf("ERROR no time in jump\n");
 			return;
 		}
 
@@ -956,7 +956,7 @@ void NPC_BSJump (void)
 
 		NPC->client->ps.velocity[2] = time * NPC->client->ps.gravity;
 
-//		gi.Printf( "%s jumping %s, gravity at %4.0f percent\n", NPC->targetname, vtos(NPC->client->ps.velocity), NPC->client->ps.gravity/8.0f );
+//		Com_Printf( "%s jumping %s, gravity at %4.0f percent\n", NPC->targetname, vtos(NPC->client->ps.velocity), NPC->client->ps.gravity/8.0f );
 
 		NPCInfo->jumpState = JS_JUMPING;
 		//FIXME: jumpsound?
@@ -1126,8 +1126,8 @@ void NPC_BSSearch (void)
 
 			}
 
-			//gi.Printf("Got there.\n");
-			//gi.Printf("Looking...");
+			//Com_Printf("Got there.\n");
+			//Com_Printf("Looking...");
 			if( !Q_irand(0, 1) )
 			{
 				NPC_SetAnim(NPC, SETANIM_BOTH, BOTH_GUARD_LOOKAROUND1, SETANIM_FLAG_NORMAL);
@@ -1163,7 +1163,7 @@ void NPC_BSSearch (void)
 					NPCInfo->desiredYaw = AngleNormalize360( vectoyaw( lookDir ) + Q_flrand( -45, 45 ) );
 				}
 			}
-			//gi.Printf(".");
+			//Com_Printf(".");
 		}
 		else
 		{//Just finished waiting
@@ -1209,7 +1209,7 @@ void NPC_BSSearchStart( int homeWp, bState_t bState )
 	NPCInfo->investigateDebounceTime = 0;
 	NAV::GetNodePosition(homeWp, NPCInfo->tempGoal->currentOrigin);
 	NPCInfo->tempGoal->waypoint = homeWp;
-	//gi.Printf("\nHeading for wp %d...\n", NPCInfo->homeWp);
+	//Com_Printf("\nHeading for wp %d...\n", NPCInfo->homeWp);
 }
 
 /*

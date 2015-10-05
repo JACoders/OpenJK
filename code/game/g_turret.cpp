@@ -1187,7 +1187,7 @@ void laser_arm_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 	case 0:
 	default:
 		//Fire
-		//gi.Printf("FIRE!\n");
+		//Com_Printf("FIRE!\n");
 //		self->lastEnemy->lastEnemy->e_ThinkFunc = thinkF_laser_arm_fire;
 //		self->lastEnemy->lastEnemy->nextthink = level.time + FRAMETIME;
 		//For 3 seconds
@@ -1197,7 +1197,7 @@ void laser_arm_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 		break;
 	case 1:
 		//Yaw left
-		//gi.Printf("LEFT...\n");
+		//Com_Printf("LEFT...\n");
 		VectorCopy( self->lastEnemy->currentAngles, newAngles );
 		newAngles[1] += self->speed;
 		G_SetAngles( self->lastEnemy, newAngles );
@@ -1206,7 +1206,7 @@ void laser_arm_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 		break;
 	case 2:
 		//Yaw right
-		//gi.Printf("RIGHT...\n");
+		//Com_Printf("RIGHT...\n");
 		VectorCopy( self->lastEnemy->currentAngles, newAngles );
 		newAngles[1] -= self->speed;
 		G_SetAngles( self->lastEnemy, newAngles );
@@ -1215,7 +1215,7 @@ void laser_arm_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 		break;
 	case 3:
 		//pitch up
-		//gi.Printf("UP...\n");
+		//Com_Printf("UP...\n");
 		//FIXME: Clamp
 		VectorCopy( self->lastEnemy->lastEnemy->currentAngles, newAngles );
 		newAngles[0] -= self->speed;
@@ -1228,7 +1228,7 @@ void laser_arm_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 		break;
 	case 4:
 		//pitch down
-		//gi.Printf("DOWN...\n");
+		//Com_Printf("DOWN...\n");
 		//FIXME: Clamp
 		VectorCopy( self->lastEnemy->lastEnemy->currentAngles, newAngles );
 		newAngles[0] += self->speed;

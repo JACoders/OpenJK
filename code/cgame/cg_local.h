@@ -26,6 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 
+// One day, q_shared will die.  Then we will need this import.
+#include "../qcommon/cvar_exports.hh"
+
 // define GAME_INCLUDE so that g_public.h does not define the
 // short, server-visible gclient_t and gentity_t structures,
 // because we define the full size ones in this file
@@ -563,97 +566,100 @@ extern	weaponInfo_t	cg_weapons[MAX_WEAPONS];
 extern	itemInfo_t		cg_items[MAX_ITEMS];
 extern	markPoly_t		cg_markPolys[MAX_MARK_POLYS];
 
+extern cvar_t* cg_runpitch;
+extern cvar_t* cg_runroll;
+extern cvar_t* cg_bobup;
+extern cvar_t* cg_bobpitch;
+extern cvar_t* cg_bobroll;
+extern cvar_t* cg_shadows;
+extern cvar_t* cg_renderToTextureFX;
+extern cvar_t* cg_shadowCullDistance;
+extern cvar_t* cg_paused;
+extern cvar_t* cg_drawTimer;
+extern cvar_t* cg_drawFPS;
+extern cvar_t* cg_drawSnapshot;
+extern cvar_t* cg_drawAmmoWarning;
+extern cvar_t* cg_drawCrosshair;
+extern cvar_t* cg_dynamicCrosshair;
+extern cvar_t* cg_crosshairForceHint;
+extern cvar_t* cg_crosshairIdentifyTarget;
+extern cvar_t* cg_crosshairX;
+extern cvar_t* cg_crosshairY;
+extern cvar_t* cg_crosshairSize;
+extern cvar_t* cg_drawStatus;
+extern cvar_t* cg_drawHUD;
+extern cvar_t* cg_draw2D;
+extern cvar_t* cg_debugAnim;
 
-extern	vmCvar_t		cg_runpitch;
-extern	vmCvar_t		cg_runroll;
-extern	vmCvar_t		cg_bobup;
-extern	vmCvar_t		cg_bobpitch;
-extern	vmCvar_t		cg_bobroll;
-extern	vmCvar_t		cg_shadows;
-extern	vmCvar_t		cg_renderToTextureFX;
-extern	vmCvar_t		cg_shadowCullDistance;
-extern	vmCvar_t		cg_paused;
-extern	vmCvar_t		cg_drawTimer;
-extern	vmCvar_t		cg_drawFPS;
-extern	vmCvar_t		cg_drawSnapshot;
-extern	vmCvar_t		cg_drawAmmoWarning;
-extern	vmCvar_t		cg_drawCrosshair;
-extern	vmCvar_t		cg_dynamicCrosshair;
-extern	vmCvar_t		cg_crosshairForceHint;
-extern	vmCvar_t		cg_crosshairIdentifyTarget;
-extern	vmCvar_t		cg_crosshairX;
-extern	vmCvar_t		cg_crosshairY;
-extern	vmCvar_t		cg_crosshairSize;
-extern	vmCvar_t		cg_drawStatus;
-extern	vmCvar_t		cg_drawHUD;
-extern	vmCvar_t		cg_draw2D;
-extern	vmCvar_t		cg_debugAnim;
 #ifndef FINAL_BUILD
-extern	vmCvar_t		cg_debugAnimTarget;
-extern	vmCvar_t		cg_gun_frame;
+extern cvar_t* cg_debugAnimTarget;
+extern cvar_t* cg_gun_frame;
 #endif
-extern	vmCvar_t		cg_gun_x;
-extern	vmCvar_t		cg_gun_y;
-extern	vmCvar_t		cg_gun_z;
-extern	vmCvar_t		cg_debugSaber;
-extern	vmCvar_t		cg_debugEvents;
-extern	vmCvar_t		cg_errorDecay;
-extern	vmCvar_t		cg_footsteps;
-extern	vmCvar_t		cg_addMarks;
-extern	vmCvar_t		cg_drawGun;
-extern	vmCvar_t		cg_autoswitch;
-extern	vmCvar_t		cg_simpleItems;
-extern	vmCvar_t		cg_fov;
-extern	vmCvar_t		cg_fovAspectAdjust;
-extern	vmCvar_t		cg_endcredits;
-extern	vmCvar_t		cg_updatedDataPadForcePower1;
-extern	vmCvar_t		cg_updatedDataPadForcePower2;
-extern	vmCvar_t		cg_updatedDataPadForcePower3;
-extern	vmCvar_t		cg_updatedDataPadObjective;
-extern	vmCvar_t		cg_drawBreath;
-extern	vmCvar_t		cg_roffdebug;
+
+extern cvar_t* cg_gun_x;
+extern cvar_t* cg_gun_y;
+extern cvar_t* cg_gun_z;
+extern cvar_t* cg_debugSaber;
+extern cvar_t* cg_debugEvents;
+extern cvar_t* cg_errorDecay;
+extern cvar_t* cg_footsteps;
+extern cvar_t* cg_addMarks;
+extern cvar_t* cg_drawGun;
+extern cvar_t* cg_autoswitch;
+extern cvar_t* cg_simpleItems;
+extern cvar_t* cg_fov;
+extern cvar_t* cg_fovAspectAdjust;
+extern cvar_t* cg_endcredits;
+extern cvar_t* cg_updatedDataPadForcePower1;
+extern cvar_t* cg_updatedDataPadForcePower2;
+extern cvar_t* cg_updatedDataPadForcePower3;
+extern cvar_t* cg_updatedDataPadObjective;
+extern cvar_t* cg_drawBreath;
+extern cvar_t* cg_roffdebug;
+
 #ifndef FINAL_BUILD
-extern	vmCvar_t		cg_roffval1;
-extern	vmCvar_t		cg_roffval2;
-extern	vmCvar_t		cg_roffval3;
-extern	vmCvar_t		cg_roffval4;
+extern cvar_t* cg_roffval1;
+extern cvar_t* cg_roffval2;
+extern cvar_t* cg_roffval3;
+extern cvar_t* cg_roffval4;
 #endif
-extern	vmCvar_t		cg_thirdPerson;
-extern	vmCvar_t		cg_thirdPersonRange;
-extern	vmCvar_t		cg_thirdPersonMaxRange;
-extern	vmCvar_t		cg_thirdPersonAngle;
-extern	vmCvar_t		cg_thirdPersonPitchOffset;
-extern	vmCvar_t		cg_thirdPersonVertOffset;
-extern	vmCvar_t		cg_thirdPersonCameraDamp;
-extern	vmCvar_t		cg_thirdPersonTargetDamp;
-extern	vmCvar_t		cg_gunAutoFirst;
 
-extern	vmCvar_t		cg_stereoSeparation;
-extern	vmCvar_t		cg_developer;
-extern	vmCvar_t		cg_timescale;
-extern	vmCvar_t		cg_skippingcin;
+extern cvar_t* cg_thirdPerson;
+extern cvar_t* cg_thirdPersonRange;
+extern cvar_t* cg_thirdPersonMaxRange;
+extern cvar_t* cg_thirdPersonAngle;
+extern cvar_t* cg_thirdPersonPitchOffset;
+extern cvar_t* cg_thirdPersonVertOffset;
+extern cvar_t* cg_thirdPersonCameraDamp;
+extern cvar_t* cg_thirdPersonTargetDamp;
+extern cvar_t* cg_gunAutoFirst;
 
-extern	vmCvar_t		cg_pano;
-extern	vmCvar_t		cg_panoNumShots;
+extern cvar_t* cg_stereoSeparation;
+extern cvar_t* cg_developer;
+extern cvar_t* cg_timescale;
+extern cvar_t* cg_skippingcin;
 
-extern	vmCvar_t		fx_freeze;
-extern	vmCvar_t		fx_debug;
+extern cvar_t* cg_pano;
+extern cvar_t* cg_panoNumShots;
 
-extern	vmCvar_t		cg_missionInfoFlashTime;
-extern	vmCvar_t		cg_hudFiles;
+extern cvar_t* fx_freeze;
+extern cvar_t* fx_debug;
 
-extern	vmCvar_t		cg_turnAnims;
-extern	vmCvar_t		cg_motionBoneComp;
-extern	vmCvar_t		cg_reliableAnimSounds;
+extern cvar_t* cg_missionInfoFlashTime;
+extern cvar_t* cg_hudFiles;
 
-extern	vmCvar_t		cg_smoothPlayerPos;
-extern	vmCvar_t		cg_smoothPlayerPlat;
-extern	vmCvar_t		cg_smoothPlayerPlatAccel;
+extern cvar_t* cg_turnAnims;
+extern cvar_t* cg_motionBoneComp;
+extern cvar_t* cg_reliableAnimSounds;
 
-extern	vmCvar_t		cg_smoothCamera;
-extern	vmCvar_t		cg_speedTrail;
-extern	vmCvar_t		cg_fovViewmodel;
-extern	vmCvar_t		cg_fovViewmodelAdjust;
+extern cvar_t* cg_smoothPlayerPos;
+extern cvar_t* cg_smoothPlayerPlat;
+extern cvar_t* cg_smoothPlayerPlatAccel;
+
+extern cvar_t* cg_smoothCamera;
+extern cvar_t* cg_speedTrail;
+extern cvar_t* cg_fovViewmodel;
+extern cvar_t* cg_fovViewmodelAdjust;
 
 void CG_NewClientinfo( int clientNum );
 //
@@ -662,12 +668,7 @@ void CG_NewClientinfo( int clientNum );
 const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 
-void QDECL CG_Printf( const char *msg, ... );
-void QDECL CG_Error( const char *msg, ... );
-
 void CG_StartMusic( qboolean bForceStart );
-
-void CG_UpdateCvars( void );
 
 int CG_CrosshairPlayer( void );
 void CG_LoadMenus(const char *menuFile);
@@ -914,22 +915,6 @@ qboolean CG_Credits_Draw( void );
 // system calls
 // These functions are how the cgame communicates with the main game system
 //
-
-// print message on the local console
-void	cgi_Printf( const char *fmt );
-
-// abort the game
-void	cgi_Error( const char *fmt );
-
-// milliseconds should only be used for performance tuning, never
-// for anything game related.  Get time from the CG_DrawActiveFrame parameter
-int		cgi_Milliseconds( void );
-
-// console variable interaction
-void	cgi_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags );
-void	cgi_Cvar_Update( vmCvar_t *vmCvar );
-void	cgi_Cvar_Set( const char *var_name, const char *value );
-
 
 // ServerCommand and ConsoleCommand parameter access
 int		cgi_Argc( void );

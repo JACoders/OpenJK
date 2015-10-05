@@ -26,6 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "FxScheduler.h"
 #endif
 
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 vec3_t	WHITE = {1.0f, 1.0f, 1.0f};
 
 struct SEffectList
@@ -242,12 +245,12 @@ void FX_Add( bool portal )
 			}
 		}
 	}
-	if ( fx_debug.integer == 2 && !portal )
+	if ( fx_debug->integer == 2 && !portal )
 	{
 		if (theFxHelper.mFrameTime > 100 || theFxHelper.mFrameTime < 5)
 		theFxHelper.Print( "theFxHelper.mFrameTime = %i\n", theFxHelper.mFrameTime );
 	}
-	if ( fx_debug.integer == 1 && !portal )
+	if ( fx_debug->integer == 1 && !portal )
 	{
 		if ( theFxHelper.mTime > mMaxTime )
 		{

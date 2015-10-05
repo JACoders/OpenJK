@@ -41,6 +41,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "g_navigator.h"
 
+// Get functions exported by the main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern	cvar_t	*com_buildScript;
 
 extern void InitMover( gentity_t *ent );
@@ -2897,7 +2900,7 @@ static void Q3_SetTimeScale( int entID, const char *data )
 		return;
 	}
 
-	gi.cvar_set("timescale", data);
+	Cvar_Set("timescale", data);
 }
 
 
@@ -3975,23 +3978,23 @@ static void Q3_SetForcePowerLevel ( int entID, int forcePower, int forceLevel )
 	{
 		if (0)
 		{
-			if (!cg_updatedDataPadForcePower1.integer)
+			if (!cg_updatedDataPadForcePower1->integer)
 			{
 				missionInfo_Updated = qtrue;	// Activate flashing text
-				gi.cvar_set("cg_updatedDataPadForcePower1", va("%d",forcePower+1)); // The +1 is offset in the print routine. It ain't pretty, I know.
-				cg_updatedDataPadForcePower1.integer = forcePower+1;
+				Cvar_Set("cg_updatedDataPadForcePower1", va("%d",forcePower+1)); // The +1 is offset in the print routine. It ain't pretty, I know.
+				cg_updatedDataPadForcePower1->integer = forcePower+1;
 			}
-			else if (!cg_updatedDataPadForcePower2.integer)
+			else if (!cg_updatedDataPadForcePower2->integer)
 			{
 				missionInfo_Updated = qtrue;	// Activate flashing text
-				gi.cvar_set("cg_updatedDataPadForcePower2", va("%d",forcePower+1)); // The +1 is offset in the print routine. It ain't pretty, I know.
-				cg_updatedDataPadForcePower2.integer = forcePower+1;
+				Cvar_Set("cg_updatedDataPadForcePower2", va("%d",forcePower+1)); // The +1 is offset in the print routine. It ain't pretty, I know.
+				cg_updatedDataPadForcePower2->integer = forcePower+1;
 			}
-			else if (!cg_updatedDataPadForcePower3.integer)
+			else if (!cg_updatedDataPadForcePower3->integer)
 			{
 				missionInfo_Updated = qtrue;	// Activate flashing text
-				gi.cvar_set("cg_updatedDataPadForcePower3", va("%d",forcePower+1)); // The +1 is offset in the print routine. It ain't pretty, I know.
-				cg_updatedDataPadForcePower3.integer = forcePower+1;
+				Cvar_Set("cg_updatedDataPadForcePower3", va("%d",forcePower+1)); // The +1 is offset in the print routine. It ain't pretty, I know.
+				cg_updatedDataPadForcePower3->integer = forcePower+1;
 			}
 		}
 	}
@@ -6594,7 +6597,7 @@ Q3_SetInterface
 */
 static void Q3_SetInterface( int entID, const char *data )
 {
-	gi.cvar_set("cg_drawStatus", data);
+	Cvar_Set("cg_drawStatus", data);
 }
 
 /*
@@ -8165,7 +8168,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	if(!Q_stricmpn(type_name, "cvar_", 5) &&
 		strlen(type_name) > 5)
 	{
-		cgi_Cvar_Set(type_name+5, data);
+		Cvar_Set(type_name+5, data);
 		return;
 	}
 
@@ -9237,22 +9240,22 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_VIDEO_FADE_IN:
 		if(!Q_stricmp("true", ((char *)data)))
 		{
-			gi.cvar_set("cl_VidFadeUp", "1");
+			Cvar_Set("cl_VidFadeUp", "1");
 		}
 		else
 		{
-			gi.cvar_set("cl_VidFadeUp", "0");
+			Cvar_Set("cl_VidFadeUp", "0");
 		}
 		break;
 
 	case SET_VIDEO_FADE_OUT:
 		if(!Q_stricmp("true", ((char *)data)))
 		{
-			gi.cvar_set("cl_VidFadeDown", "1");
+			Cvar_Set("cl_VidFadeDown", "1");
 		}
 		else
 		{
-			gi.cvar_set("cl_VidFadeDown", "0");
+			Cvar_Set("cl_VidFadeDown", "0");
 		}
 		break;
 	case SET_REMOVE_TARGET:
@@ -9270,7 +9273,7 @@ extern void LockDoors(gentity_t *const ent);
 
 	case SET_OBJECTIVE_SHOW:
 		missionInfo_Updated = qtrue;	// Activate flashing text
-		gi.cvar_set("cg_updatedDataPadObjective", "1");
+		Cvar_Set("cg_updatedDataPadObjective", "1");
 
 		Q3_SetObjective((const char *) data ,SET_OBJ_SHOW);
 		Q3_SetObjective((const char *) data ,SET_OBJ_PENDING);
@@ -9280,7 +9283,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 	case SET_OBJECTIVE_SUCCEEDED:
 		missionInfo_Updated = qtrue;	// Activate flashing text
-		gi.cvar_set("cg_updatedDataPadObjective", "1");
+		Cvar_Set("cg_updatedDataPadObjective", "1");
 		Q3_SetObjective((const char *) data ,SET_OBJ_SUCCEEDED);
 		break;
 	case SET_OBJECTIVE_SUCCEEDED_NO_UPDATE:
@@ -9308,7 +9311,7 @@ extern void LockDoors(gentity_t *const ent);
 		break;
 
 	case SET_CLOSINGCREDITS:
-		gi.cvar_set("cg_endcredits", "1");
+		Cvar_Set("cg_endcredits", "1");
 		break;
 
 	case SET_SKILL:
@@ -9348,11 +9351,11 @@ extern void LockDoors(gentity_t *const ent);
 	case SET_HUD:
 		if(!Q_stricmp("true", ((char *)data)))
 		{
-			gi.cvar_set("cg_drawHUD", "1");
+			Cvar_Set("cg_drawHUD", "1");
 		}
 		else
 		{
-			gi.cvar_set("cg_drawHUD", "0");
+			Cvar_Set("cg_drawHUD", "0");
 		}
 		break;
 
@@ -9539,11 +9542,11 @@ void CQuake3GameInterface::PrisonerObjCheck(const char *name,const char *data)
 	{
 		GetFloatVariable( name, &float_data );
 		holdData = (int) float_data;
-		gi.cvar_set("ui_prisonerobj_currtotal", va("%d",holdData));
+		Cvar_Set("ui_prisonerobj_currtotal", va("%d",holdData));
 	}
 	else if (!Q_stricmp("ui_prisonerobj_maxtotal",name))
 	{
-		gi.cvar_set("ui_prisonerobj_maxtotal", data);
+		Cvar_Set("ui_prisonerobj_maxtotal", data);
 	}
 
 }
@@ -9802,7 +9805,7 @@ int		CQuake3GameInterface::GetFloat( int entID, const char *name, float *value )
 	if( !Q_stricmpn(name, "cvar_", 5) &&
 		strlen(name) > 5 )
 	{
-		*value = (float)gi.Cvar_VariableIntegerValue(name+5);
+		*value = (float)Cvar_VariableIntegerValue(name+5);
 		return true;
 	}
 
@@ -10503,7 +10506,7 @@ int		CQuake3GameInterface::GetString( int entID, const char *name, char **value 
 	if( !Q_stricmpn(name, "cvar_", 5) &&
 		strlen(name) > 5 )
 	{
-		gi.Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
+		Cvar_VariableStringBuffer(name+5, *value, strlen(*value));
 		return true;
 	}
 

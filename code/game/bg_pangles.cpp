@@ -35,6 +35,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_vehicles.h"
 #include "../ghoul2/ghoul2_gore.h"
 
+// Get functions exported by main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern void CG_SetClientViewAngles( vec3_t angles, qboolean overrideViewEnt );
 extern qboolean PM_InAnimForSaberMove( int anim, int saberMove );
 extern qboolean PM_InForceGetUp( playerState_t *ps );
@@ -668,7 +671,7 @@ qboolean PM_AdjustAnglesForSpinningFlip( gentity_t *ent, usercmd_t *ucmd, qboole
 			viewDip = ((animLength-elapsedTime)/animLength)*-120.0f;
 		}
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_VOF;
-		cg.overrides.thirdPersonVertOffset = cg_thirdPersonVertOffset.value+viewDip;
+		cg.overrides.thirdPersonVertOffset = cg_thirdPersonVertOffset->value+viewDip;
 		//pm->ps->viewheight = standheight + viewDip;
 	}
 	return qtrue;

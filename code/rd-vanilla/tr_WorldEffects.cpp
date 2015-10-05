@@ -648,7 +648,7 @@ public:
 		}
 		else
 		{
-			ri.Printf( PRINT_WARNING, "(Unable to open weather file \"%s\" for writing!)\n",GenCachedWeatherFilename());
+			CL_RefPrintf( PRINT_WARNING, "(Unable to open weather file \"%s\" for writing!)\n",GenCachedWeatherFilename());
 		}
 
 		return 0;
@@ -676,12 +676,12 @@ public:
 				return f;
 			}
 
-            ri.Printf( PRINT_WARNING, "( Cached weather file \"%s\" out of date, regenerating... )\n",GenCachedWeatherFilename());
+            CL_RefPrintf( PRINT_WARNING, "( Cached weather file \"%s\" out of date, regenerating... )\n",GenCachedWeatherFilename());
 			ri.FS_FCloseFile( f );
 		}
 		else
 		{
-			ri.Printf( PRINT_WARNING, "( No cached weather file found, generating... )\n");
+			CL_RefPrintf( PRINT_WARNING, "( No cached weather file found, generating... )\n");
 		}
 
 		return 0;
@@ -1664,7 +1664,7 @@ void RB_RenderWorldEffects(void)
 
 void R_WorldEffect_f(void)
 {
-	if (ri.Cvar_VariableIntegerValue("helpUsObi"))
+	if (Cvar_VariableIntegerValue("helpUsObi"))
 	{
 		char	temp[2048];
 		ri.Cmd_ArgsBuffer(temp, sizeof(temp));

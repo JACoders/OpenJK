@@ -50,6 +50,11 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 #include "../qcommon/stv_version.h"
 #include "../qcommon/q_shared.h"
 
+// Get functions and structures exported from the main engine.  This is part of
+// the main engine, though...
+#include "../client/gl_exports.hh"
+#include "../qcommon/cvar_exports.hh"
+
 extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName );
 extern qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name );
 extern qboolean ItemParse_model_g2skin_go( itemDef_t *item, const char *skinName );
@@ -156,7 +161,6 @@ static void		UI_OwnerDraw(float x, float y, float w, float h, float text_x, floa
 static qboolean UI_OwnerDrawVisible(int flags);
 int				UI_OwnerDrawWidth(int ownerDraw, float scale);
 static void		UI_Update(const char *name);
-void			UI_UpdateCvars( void );
 void			UI_ResetDefaults( void );
 void			UI_AdjustSaveGameListBox( int currentLine );
 
@@ -348,30 +352,29 @@ void UI_Load(void);
 
 
 typedef struct {
-	vmCvar_t	*vmCvar;
-	const char		*cvarName;
-	const char		*defaultString;
-	int			cvarFlags;
+	cvar_t **cvar;
+	const char *name;
+	const char *default_value;
+	int flags;
 } cvarTable_t;
 
+cvar_t* ui_menuFiles;
+cvar_t* ui_hudFiles;
 
-vmCvar_t	ui_menuFiles;
-vmCvar_t	ui_hudFiles;
-
-vmCvar_t	ui_char_anim;
-vmCvar_t	ui_char_model;
-vmCvar_t	ui_char_skin_head;
-vmCvar_t	ui_char_skin_torso;
-vmCvar_t	ui_char_skin_legs;
-vmCvar_t	ui_saber_type;
-vmCvar_t	ui_saber;
-vmCvar_t	ui_saber2;
-vmCvar_t	ui_saber_color;
-vmCvar_t	ui_saber2_color;
-vmCvar_t	ui_char_color_red;
-vmCvar_t	ui_char_color_green;
-vmCvar_t	ui_char_color_blue;
-vmCvar_t	ui_PrecacheModels;
+cvar_t* ui_char_anim;
+cvar_t* ui_char_model;
+cvar_t* ui_char_skin_head;
+cvar_t* ui_char_skin_torso;
+cvar_t* ui_char_skin_legs;
+cvar_t* ui_saber_type;
+cvar_t* ui_saber;
+cvar_t* ui_saber2;
+cvar_t* ui_saber_color;
+cvar_t* ui_saber2_color;
+cvar_t* ui_char_color_red;
+cvar_t* ui_char_color_green;
+cvar_t* ui_char_color_blue;
+cvar_t* ui_PrecacheModels;
 
 static cvarTable_t cvarTable[] =
 {
@@ -405,7 +408,16 @@ static cvarTable_t cvarTable[] =
 #define FP_UPDATED_NONE -1
 #define NOWEAPON -1
 
-static int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
+static void UI_RegisterCvars()
+{
+	const int size = sizeof(cvarTable) / sizeof(cvarTable[0]);
+
+	for(cvarTable_t* cv = cvarTable; cv < cvarTable + size; ++cv)
+	{
+		int flags = cv->flags | CVAR_PLUGIN_CREATED;
+		*(cv->cvar) = Cvar_Get(cv->name, cv->default_value, flags);
+	}
+}
 
 void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, int iMaxPixelWidth, int style, int iFontIndex);
 int Key_GetCatcher( void );
@@ -452,10 +464,6 @@ void _UI_Refresh( int realtime )
 		}
 		uiInfo.uiDC.FPS = 1000 * UI_FPS_FRAMES / total;
 	}
-
-
-
-	UI_UpdateCvars();
 
 	if (Menu_Count() > 0)
 	{
@@ -509,21 +517,6 @@ static void UI_LoadMods() {
 	}
 
 }
-
-/*
-================
-vmMain
-
-This is the only way control passes into the module.
-This must be the very first function compiled into the .qvm file
-================
-*/
-extern "C" Q_EXPORT intptr_t QDECL vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  )
-{
-	return 0;
-}
-
-
 
 /*
 ================
@@ -872,7 +865,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			if (s_savedata[s_savegame.currentLine].currentSaveFileName)	// A line was chosen
 			{
 #ifndef FINAL_BUILD
-				ui.Printf( va("%s\n","Attempting to delete game"));
+				Com_Printf("Attempting to delete game\n");
 #endif
 
 				ui.Cmd_ExecuteText( EXEC_NOW, va("wipe %s\n", s_savedata[s_savegame.currentLine].currentSaveFileName));
@@ -911,7 +904,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 			}
 
 			// Save description line
-			ui.Cvar_VariableStringBuffer("ui_gameDesc",description,sizeof(description));
+			Cvar_VariableStringBuffer("ui_gameDesc", description, sizeof(description));
 			ui.SG_StoreSaveGameComment(description);
 
 			ui.Cmd_ExecuteText( EXEC_APPEND, va("save %s\n", fileName));
@@ -1488,7 +1481,7 @@ static qboolean UI_RunMenuScript ( const char **args )
 		}
 		else if (Q_stricmp(name, "getmousepitch") == 0)
 		{
-			Cvar_Set("ui_mousePitch", (trap_Cvar_VariableValue("m_pitch") >= 0) ? "0" : "1");
+			Cvar_Set("ui_mousePitch", (Cvar_VariableValue("m_pitch") >= 0) ? "0" : "1");
 		}
 		else if (Q_stricmp(name, "resetcharacterlistboxes") == 0)
 		{
@@ -1505,16 +1498,6 @@ static qboolean UI_RunMenuScript ( const char **args )
 	}
 
 	return qtrue;
-}
-
-/*
-=================
-UI_GetValue
-=================
-*/
-static float UI_GetValue(int ownerDraw)
-{
-  return 0;
 }
 
 //Force Warnings
@@ -2417,7 +2400,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 			if (!UI_ParseColorData(buffer.data(),*species))
 			{
-				ui.Printf( "UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath );
+				Com_Printf("UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath);
 			}
 			
 			species->SkinHeadMax = 8;
@@ -2491,7 +2474,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				continue;
 			}
 			uiInfo.playerSpeciesCount++;
-			if (!inGameLoad && ui_PrecacheModels.integer)
+			if (!inGameLoad && ui_PrecacheModels->integer)
 			{
 				CGhoul2Info_v ghoul2;
 				Com_sprintf( fpath, sizeof( fpath ), "models/players/%s/model.glm", dirptr );
@@ -2543,7 +2526,7 @@ void _UI_Init( qboolean inGameLoad )
 	UI_InitMemory();
 
 	// cache redundant calulations
-	trap_GetGlconfig( &uiInfo.uiDC.glconfig );
+	GetGLConfig(&uiInfo.uiDC.glconfig);
 
 	// for 640x480 virtualized screen
 	uiInfo.uiDC.yscale = uiInfo.uiDC.glconfig.vidHeight * (1.0/480.0);
@@ -2572,16 +2555,12 @@ void _UI_Init( qboolean inGameLoad )
 	uiInfo.uiDC.feederSelection		= &UI_FeederSelection;
 	uiInfo.uiDC.fillRect			= &UI_FillRect;
 	uiInfo.uiDC.getBindingBuf		= &Key_GetBindingBuf;
-	uiInfo.uiDC.getCVarString		= Cvar_VariableStringBuffer;
-	uiInfo.uiDC.getCVarValue		= trap_Cvar_VariableValue;
 	uiInfo.uiDC.getOverstrikeMode	= &trap_Key_GetOverstrikeMode;
-	uiInfo.uiDC.getValue			= &UI_GetValue;
 	uiInfo.uiDC.keynumToStringBuf	= &Key_KeynumToStringBuf;
 	uiInfo.uiDC.modelBounds			= &trap_R_ModelBounds;
 	uiInfo.uiDC.ownerDrawVisible	= &UI_OwnerDrawVisible;
 	uiInfo.uiDC.ownerDrawWidth		= &UI_OwnerDrawWidth;
 	uiInfo.uiDC.ownerDrawItem		= &UI_OwnerDraw;
-	uiInfo.uiDC.Print				= &Com_Printf;
 	uiInfo.uiDC.registerSound		= &trap_S_RegisterSound;
 	uiInfo.uiDC.registerModel		= ui.R_RegisterModel;
 	uiInfo.uiDC.clearScene			= &trap_R_ClearScene;
@@ -2591,7 +2570,6 @@ void _UI_Init( qboolean inGameLoad )
 	uiInfo.uiDC.deferScript			= &UI_DeferMenuScript;
 	uiInfo.uiDC.setBinding			= &trap_Key_SetBinding;
 	uiInfo.uiDC.setColor			= &UI_SetColor;
-	uiInfo.uiDC.setCVar				= Cvar_Set;
 	uiInfo.uiDC.setOverstrikeMode	= &trap_Key_SetOverstrikeMode;
 	uiInfo.uiDC.startLocalSound		= &trap_S_StartLocalSound;
 	uiInfo.uiDC.stopCinematic		= &UI_StopCinematic;
@@ -2645,14 +2623,14 @@ void _UI_Init( qboolean inGameLoad )
 	uis.debugMode = qfalse;
 
 	// sets defaults for ui temp cvars
-	uiInfo.effectsColor = (int)trap_Cvar_VariableValue("color")-1;
+	uiInfo.effectsColor = (int)Cvar_VariableValue("color")-1;
 	if (uiInfo.effectsColor < 0)
 	{
 		uiInfo.effectsColor = 0;
 	}
 	uiInfo.effectsColor = gamecodetoui[uiInfo.effectsColor];
-	uiInfo.currentCrosshair = (int)trap_Cvar_VariableValue("cg_drawCrosshair");
-	Cvar_Set("ui_mousePitch", (trap_Cvar_VariableValue("m_pitch") >= 0) ? "0" : "1");
+	uiInfo.currentCrosshair = (int)Cvar_VariableValue("cg_drawCrosshair");
+	Cvar_Set("ui_mousePitch", (Cvar_VariableValue("m_pitch") >= 0) ? "0" : "1");
 
 	Cvar_Set("cg_endcredits", "0");	// Reset value
 	Cvar_Set("ui_missionfailed","0"); // reset
@@ -2669,23 +2647,6 @@ void _UI_Init( qboolean inGameLoad )
 	trap_S_RegisterSound("sound/interface/weapon_deselect", qfalse);
 #endif
 
-}
-
-
-/*
-=================
-UI_RegisterCvars
-=================
-*/
-static void UI_RegisterCvars( void )
-{
-	int			i;
-	cvarTable_t	*cv;
-
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ )
-	{
-		Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
-	}
 }
 
 /*
@@ -3335,7 +3296,7 @@ UI_Update
 */
 static void UI_Update(const char *name)
 {
-	int	val = trap_Cvar_VariableValue(name);
+	int	val = Cvar_VariableValue(name);
 
 
 	if (Q_stricmp(name, "s_khz") == 0)
@@ -3543,22 +3504,6 @@ void _UI_DrawRect( float x, float y, float width, float height, float size, cons
 	_UI_DrawSides(x, y, width, height, size);
 
 	trap_R_SetColor( NULL );
-}
-
-/*
-=================
-UI_UpdateCvars
-=================
-*/
-void UI_UpdateCvars( void )
-{
-	int			i;
-	cvarTable_t	*cv;
-
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ )
-	{
-		Cvar_Update( cv->vmCvar );
-	}
 }
 
 /*
@@ -3982,8 +3927,8 @@ void UI_DataPadMenu(void)
 
 	Menus_CloseByName("mainhud");
 
-	newForcePower = (int)trap_Cvar_VariableValue("cg_updatedDataPadForcePower1");
-	newObjective = (int)trap_Cvar_VariableValue("cg_updatedDataPadObjective");
+	newForcePower = (int)Cvar_VariableValue("cg_updatedDataPadForcePower1");
+	newObjective = (int)Cvar_VariableValue("cg_updatedDataPadObjective");
 
 	if (newForcePower)
 	{
@@ -4050,7 +3995,7 @@ and that local cinematics are killed
 void UI_MainMenu(void)
 {
 	char buf[256];
-	ui.Cvar_Set("sv_killserver", "1");	// let the demo server know it should shut down
+	Cvar_Set("sv_killserver", "1"); // let the demo server know it should shut down
 
 	ui.Key_SetCatcher( KEYCATCH_UI );
 
@@ -4059,7 +4004,7 @@ void UI_MainMenu(void)
 	{	//wha? try again
 		UI_LoadMenus("ui/menus.txt",qfalse);
 	}
-	ui.Cvar_VariableStringBuffer("com_errorMessage", buf, sizeof(buf));
+	Cvar_VariableStringBuffer("com_errorMessage", buf, sizeof(buf));
 	if (strlen(buf)) {
 		Menus_ActivateByName("error_popmenu");
 	}
@@ -4120,43 +4065,43 @@ interface versions of the cvars.
 */
 void UI_GetVideoSetup ( void )
 {
-	Cvar_Register ( NULL, "ui_r_glCustom",				"4", CVAR_ARCHIVE );
+	Cvar_Get ( "ui_r_glCustom",				"4", CVAR_ARCHIVE );
 
 	// Make sure the cvars are registered as read only.
-	Cvar_Register ( NULL, "ui_r_mode",					"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_fullscreen",			"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_colorbits",				"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_lodbias",				"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_picmip",				"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_texturebits",			"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_texturemode",			"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_detailtextures",		"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_ext_compress_textures",	"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_depthbits",				"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_subdivisions",			"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_fastSky",				"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_inGameVideo",			"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_allowExtensions",		"0", CVAR_ROM );
-//	Cvar_Register ( NULL, "ui_cg_shadows",				"0", CVAR_ROM );
-	Cvar_Register ( NULL, "ui_r_modified",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_mode",					"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_fullscreen",			"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_colorbits",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_lodbias",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_picmip",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_texturebits",			"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_texturemode",			"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_detailtextures",		"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_ext_compress_textures",	"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_depthbits",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_subdivisions",			"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_fastSky",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_inGameVideo",			"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_allowExtensions",		"0", CVAR_ROM );
+//	Cvar_Get ( "ui_cg_shadows",				"0", CVAR_ROM );
+	Cvar_Get ( "ui_r_modified",				"0", CVAR_ROM );
 
 	// Copy over the real video cvars into their temporary counterparts
-	Cvar_Set ( "ui_r_mode", Cvar_VariableString ( "r_mode" ) );
-	Cvar_Set ( "ui_r_colorbits", Cvar_VariableString ( "r_colorbits" ) );
-	Cvar_Set ( "ui_r_fullscreen", Cvar_VariableString ( "r_fullscreen" ) );
-	Cvar_Set ( "ui_r_lodbias", Cvar_VariableString ( "r_lodbias" ) );
-	Cvar_Set ( "ui_r_picmip", Cvar_VariableString ( "r_picmip" ) );
-	Cvar_Set ( "ui_r_texturebits", Cvar_VariableString ( "r_texturebits" ) );
-	Cvar_Set ( "ui_r_texturemode", Cvar_VariableString ( "r_texturemode" ) );
-	Cvar_Set ( "ui_r_detailtextures", Cvar_VariableString ( "r_detailtextures" ) );
-	Cvar_Set ( "ui_r_ext_compress_textures", Cvar_VariableString ( "r_ext_compress_textures" ) );
-	Cvar_Set ( "ui_r_depthbits", Cvar_VariableString ( "r_depthbits" ) );
-	Cvar_Set ( "ui_r_subdivisions", Cvar_VariableString ( "r_subdivisions" ) );
-	Cvar_Set ( "ui_r_fastSky", Cvar_VariableString ( "r_fastSky" ) );
-	Cvar_Set ( "ui_r_inGameVideo", Cvar_VariableString ( "r_inGameVideo" ) );
-	Cvar_Set ( "ui_r_allowExtensions", Cvar_VariableString ( "r_allowExtensions" ) );
-//	Cvar_Set ( "ui_cg_shadows", Cvar_VariableString ( "cg_shadows" ) );
-	Cvar_Set ( "ui_r_modified", "0" );
+	Cvar_Set ( "ui_r_mode", Cvar_VariableString ( "r_mode" ));
+	Cvar_Set ( "ui_r_colorbits", Cvar_VariableString ( "r_colorbits" ));
+	Cvar_Set ( "ui_r_fullscreen", Cvar_VariableString ( "r_fullscreen" ));
+	Cvar_Set ( "ui_r_lodbias", Cvar_VariableString ( "r_lodbias" ));
+	Cvar_Set ( "ui_r_picmip", Cvar_VariableString ( "r_picmip" ));
+	Cvar_Set ( "ui_r_texturebits", Cvar_VariableString ( "r_texturebits" ));
+	Cvar_Set ( "ui_r_texturemode", Cvar_VariableString ( "r_texturemode" ));
+	Cvar_Set ( "ui_r_detailtextures", Cvar_VariableString ( "r_detailtextures" ));
+	Cvar_Set ( "ui_r_ext_compress_textures", Cvar_VariableString ( "r_ext_compress_textures" ));
+	Cvar_Set ( "ui_r_depthbits", Cvar_VariableString ( "r_depthbits" ));
+	Cvar_Set ( "ui_r_subdivisions", Cvar_VariableString ( "r_subdivisions" ));
+	Cvar_Set ( "ui_r_fastSky", Cvar_VariableString ( "r_fastSky" ));
+	Cvar_Set ( "ui_r_inGameVideo", Cvar_VariableString ( "r_inGameVideo" ));
+	Cvar_Set ( "ui_r_allowExtensions", Cvar_VariableString ( "r_allowExtensions" ));
+//	Cvar_Set ( "ui_cg_shadows", Cvar_VariableString ( "cg_shadows" ));
+	Cvar_Set ( "ui_r_modified", "0");
 }
 
 static void UI_SetSexandSoundForModel(const char* char_model)
@@ -4212,26 +4157,26 @@ static void UI_UpdateCharacterCvars ( void )
 {
 	const char *char_model = Cvar_VariableString ( "ui_char_model" );
 	UI_SetSexandSoundForModel(char_model);
-	Cvar_Set ( "g_char_model", char_model );
-	Cvar_Set ( "g_char_skin_head", Cvar_VariableString ( "ui_char_skin_head" ) );
-	Cvar_Set ( "g_char_skin_torso", Cvar_VariableString ( "ui_char_skin_torso" ) );
-	Cvar_Set ( "g_char_skin_legs", Cvar_VariableString ( "ui_char_skin_legs" ) );
-	Cvar_Set ( "g_char_color_red", Cvar_VariableString ( "ui_char_color_red" ) );
-	Cvar_Set ( "g_char_color_green", Cvar_VariableString ( "ui_char_color_green" ) );
-	Cvar_Set ( "g_char_color_blue", Cvar_VariableString ( "ui_char_color_blue" ) );
+	Cvar_Set ( "g_char_model", char_model);
+	Cvar_Set ( "g_char_skin_head", Cvar_VariableString ( "ui_char_skin_head" ));
+	Cvar_Set ( "g_char_skin_torso", Cvar_VariableString ( "ui_char_skin_torso" ));
+	Cvar_Set ( "g_char_skin_legs", Cvar_VariableString ( "ui_char_skin_legs" ));
+	Cvar_Set ( "g_char_color_red", Cvar_VariableString ( "ui_char_color_red" ));
+	Cvar_Set ( "g_char_color_green", Cvar_VariableString ( "ui_char_color_green" ));
+	Cvar_Set ( "g_char_color_blue", Cvar_VariableString ( "ui_char_color_blue" ));
 }
 
 static void UI_GetCharacterCvars ( void )
 {
-	Cvar_Set ( "ui_char_skin_head", Cvar_VariableString ( "g_char_skin_head" ) );
-	Cvar_Set ( "ui_char_skin_torso", Cvar_VariableString ( "g_char_skin_torso" ) );
-	Cvar_Set ( "ui_char_skin_legs", Cvar_VariableString ( "g_char_skin_legs" ) );
-	Cvar_Set ( "ui_char_color_red", Cvar_VariableString ( "g_char_color_red" ) );
-	Cvar_Set ( "ui_char_color_green", Cvar_VariableString ( "g_char_color_green" ) );
-	Cvar_Set ( "ui_char_color_blue", Cvar_VariableString ( "g_char_color_blue" ) );
+	Cvar_Set ( "ui_char_skin_head", Cvar_VariableString ( "g_char_skin_head" ));
+	Cvar_Set ( "ui_char_skin_torso", Cvar_VariableString ( "g_char_skin_torso" ));
+	Cvar_Set ( "ui_char_skin_legs", Cvar_VariableString ( "g_char_skin_legs" ));
+	Cvar_Set ( "ui_char_color_red", Cvar_VariableString ( "g_char_color_red" ));
+	Cvar_Set ( "ui_char_color_green", Cvar_VariableString ( "g_char_color_green" ));
+	Cvar_Set ( "ui_char_color_blue", Cvar_VariableString ( "g_char_color_blue" ));
 
 	const char* model = Cvar_VariableString ( "g_char_model" );
-	Cvar_Set ( "ui_char_model", model );
+	Cvar_Set("ui_char_model", model);
 
 	for (int i = 0; i < uiInfo.playerSpeciesCount; i++)
 	{
@@ -4244,11 +4189,11 @@ static void UI_GetCharacterCvars ( void )
 
 static void UI_UpdateSaberCvars ( void )
 {
-	Cvar_Set ( "g_saber_type", Cvar_VariableString ( "ui_saber_type" ) );
-	Cvar_Set ( "g_saber", Cvar_VariableString ( "ui_saber" ) );
-	Cvar_Set ( "g_saber2", Cvar_VariableString ( "ui_saber2" ) );
-	Cvar_Set ( "g_saber_color", Cvar_VariableString ( "ui_saber_color" ) );
-	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ) );
+	Cvar_Set ( "g_saber_type", Cvar_VariableString ( "ui_saber_type" ));
+	Cvar_Set ( "g_saber", Cvar_VariableString ( "ui_saber" ));
+	Cvar_Set ( "g_saber2", Cvar_VariableString ( "ui_saber2" ));
+	Cvar_Set ( "g_saber_color", Cvar_VariableString ( "ui_saber_color" ));
+	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ));
 }
 
 static void UI_UpdateFightingStyleChoices ( void )
@@ -4256,13 +4201,13 @@ static void UI_UpdateFightingStyleChoices ( void )
 	//
 	if (!Q_stricmp("staff",Cvar_VariableString ( "ui_saber_type" )))
 	{
-		Cvar_Set ( "ui_fightingstylesallowed", "0" );
-		Cvar_Set ( "ui_newfightingstyle", "4" );		// SS_STAFF
+		Cvar_Set("ui_fightingstylesallowed", "0");
+		Cvar_Set("ui_newfightingstyle", "4");		// SS_STAFF
 	}
 	else if (!Q_stricmp("dual",Cvar_VariableString ( "ui_saber_type" )))
 	{
-		Cvar_Set ( "ui_fightingstylesallowed", "0" );
-		Cvar_Set ( "ui_newfightingstyle", "3" );		// SS_DUAL
+		Cvar_Set("ui_fightingstylesallowed", "0");
+		Cvar_Set("ui_newfightingstyle", "3");		// SS_DUAL
 	}
 	else
 	{
@@ -4281,13 +4226,13 @@ static void UI_UpdateFightingStyleChoices ( void )
 				// And Medium?
 				if (pState->saberStylesKnown & (1<<SS_MEDIUM))
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "6" );	// Has FAST and MEDIUM, so can only choose STRONG
-					Cvar_Set ( "ui_newfightingstyle", "2" );		// STRONG
+					Cvar_Set("ui_fightingstylesallowed", "6");	// Has FAST and MEDIUM, so can only choose STRONG
+					Cvar_Set("ui_newfightingstyle", "2");		// STRONG
 				}
 				else
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "1" );	// Has FAST, so can choose from MEDIUM and STRONG
-					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
+					Cvar_Set("ui_fightingstylesallowed", "1");	// Has FAST, so can choose from MEDIUM and STRONG
+					Cvar_Set("ui_newfightingstyle", "1");		// MEDIUM
 				}
 			}
 			// Knows Medium style?
@@ -4296,13 +4241,13 @@ static void UI_UpdateFightingStyleChoices ( void )
 				// And Strong?
 				if (pState->saberStylesKnown & (1<<SS_STRONG))
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "4" );	// Has MEDIUM and STRONG, so can only choose FAST
-					Cvar_Set ( "ui_newfightingstyle", "0" );		// FAST
+					Cvar_Set("ui_fightingstylesallowed", "4");	// Has MEDIUM and STRONG, so can only choose FAST
+					Cvar_Set("ui_newfightingstyle", "0");		// FAST
 				}
 				else
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "2" );	// Has MEDIUM, so can choose from FAST and STRONG
-					Cvar_Set ( "ui_newfightingstyle", "0" );		// FAST
+					Cvar_Set("ui_fightingstylesallowed", "2");	// Has MEDIUM, so can choose from FAST and STRONG
+					Cvar_Set("ui_newfightingstyle", "0");		// FAST
 				}
 			}
 			// Knows Strong style?
@@ -4311,41 +4256,41 @@ static void UI_UpdateFightingStyleChoices ( void )
 				// And Fast
 				if (pState->saberStylesKnown & (1<<SS_FAST))
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "5" );	// Has STRONG and FAST, so can only take MEDIUM
-					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
+					Cvar_Set("ui_fightingstylesallowed", "5");	// Has STRONG and FAST, so can only take MEDIUM
+					Cvar_Set("ui_newfightingstyle", "1");		// MEDIUM
 				}
 				else
 				{
-					Cvar_Set ( "ui_fightingstylesallowed", "3" );	// Has STRONG, so can choose from FAST and MEDIUM
-					Cvar_Set ( "ui_newfightingstyle", "1" );		// MEDIUM
+					Cvar_Set("ui_fightingstylesallowed", "3");	// Has STRONG, so can choose from FAST and MEDIUM
+					Cvar_Set("ui_newfightingstyle", "1");		// MEDIUM
 				}
 			}
 			else		// They have nothing, which should not happen
 			{
-				Cvar_Set ( "ui_currentfightingstyle", "1" );		// Default MEDIUM
-				Cvar_Set ( "ui_newfightingstyle", "0" );			// FAST??
-				Cvar_Set ( "ui_fightingstylesallowed", "0" );		// Default to no new styles allowed
+				Cvar_Set("ui_currentfightingstyle", "1");		// Default MEDIUM
+				Cvar_Set("ui_newfightingstyle", "0");			// FAST??
+				Cvar_Set("ui_fightingstylesallowed", "0");		// Default to no new styles allowed
 			}
 
 			// Determine current style
 			if (pState->saberAnimLevel == SS_FAST)
 			{
-				Cvar_Set ( "ui_currentfightingstyle", "0" );			// FAST
+				Cvar_Set("ui_currentfightingstyle", "0");			// FAST
 			}
 			else if (pState->saberAnimLevel == SS_STRONG)
 			{
-				Cvar_Set ( "ui_currentfightingstyle", "2" );			// STRONG
+				Cvar_Set("ui_currentfightingstyle", "2");			// STRONG
 			}
 			else
 			{
-				Cvar_Set ( "ui_currentfightingstyle", "1" );			// default MEDIUM
+				Cvar_Set("ui_currentfightingstyle", "1");			// default MEDIUM
 			}
 		}
 		else	// No client so this must be first time
 		{
-			Cvar_Set ( "ui_currentfightingstyle", "1" );		// Default to MEDIUM
-			Cvar_Set ( "ui_fightingstylesallowed", "0" );		// Default to no new styles allowed
-			Cvar_Set ( "ui_newfightingstyle", "1" );			// MEDIUM
+			Cvar_Set("ui_currentfightingstyle", "1");		// Default to MEDIUM
+			Cvar_Set("ui_fightingstylesallowed", "0");		// Default to no new styles allowed
+			Cvar_Set("ui_newfightingstyle", "1");			// MEDIUM
 		}
 	}
 }
@@ -4522,7 +4467,7 @@ static void UI_ForcePowerWeaponsButton(qboolean activeFlag)
 	}
 
 	// Cheats are on so lets always let us pass
-	if(trap_Cvar_VariableValue("helpUsObi") != 0)
+	if(Cvar_VariableValue("helpUsObi") != 0)
 		activeFlag = qtrue;
 
 	// Find weaponsbutton
@@ -4622,7 +4567,7 @@ static void	UI_DemoSetForceLevels( void )
 		pState = cl->gentity->client;
 	}
 
-	ui.Cvar_VariableStringBuffer( "ui_demo_level", buffer, sizeof(buffer));
+	Cvar_VariableStringBuffer("ui_demo_level", buffer, sizeof(buffer));
 	if( Q_stricmp( buffer, "t1_sour")==0 )
 	{// NOTE : always set the uiInfo powers
 		// level 1 in all core powers
@@ -5479,7 +5424,7 @@ static void UI_EquipWeapon ( const int weaponIndex )
 
 static void	UI_LoadMissionSelectMenu( const char *cvarName )
 {
-	int holdLevel = (int)trap_Cvar_VariableValue(cvarName);
+	int holdLevel = (int)Cvar_VariableValue(cvarName);
 
 	// Figure out which tier menu to load
 	if ((holdLevel > 0) && (holdLevel < 5))
@@ -6118,7 +6063,7 @@ static void UI_UpdateCharacter( qboolean changedModel )
 		Com_Error( ERR_FATAL, "UI_UpdateCharacter: Could not find item (character) in menu (%s)", menu->window.name);
 	}
 
-	ItemParse_model_g2anim_go( item, ui_char_anim.string );
+	ItemParse_model_g2anim_go( item, ui_char_anim->string );
 
 	Com_sprintf( modelPath, sizeof( modelPath ), "models/players/%s/model.glm", Cvar_VariableString ( "ui_char_model" ) );
 	ItemParse_asset_model_go( item, modelPath );
@@ -6137,11 +6082,11 @@ static void UI_UpdateCharacter( qboolean changedModel )
 void UI_UpdateSaberType( void )
 {
 	char sType[MAX_QPATH];
-	DC->getCVarString( "ui_saber_type", sType, sizeof(sType) );
+	Cvar_VariableStringBuffer("ui_saber_type", sType, sizeof(sType));
 	if ( Q_stricmp( "single", sType ) == 0 ||
 		Q_stricmp( "staff", sType ) == 0 )
 	{
-		DC->setCVar( "ui_saber2", "" );
+		Cvar_Set("ui_saber2", "");
 	}
 }
 
@@ -6178,7 +6123,7 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 	{
 		Com_Error( ERR_FATAL, "UI_UpdateSaberHilt: Could not find item (%s) in menu (%s)", itemName, menu->window.name);
 	}
-	DC->getCVarString( saberCvarName, model, sizeof(model) );
+	Cvar_VariableStringBuffer(saberCvarName, model, sizeof(model));
 	//read this from the sabers.cfg
 	if ( UI_SaberModelForSaber( model, modelPath ) )
 	{//successfully found a model

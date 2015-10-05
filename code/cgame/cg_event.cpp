@@ -30,6 +30,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../game/anims.h"
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern qboolean CG_TryPlayCustomSound( vec3_t origin, int entityNum, soundChannel_t channel, const char *soundName, int customSoundSet );
 extern void FX_KothosBeam( vec3_t start, vec3_t end );
 
@@ -102,8 +105,7 @@ void CG_ItemPickup( int itemNum, qboolean bHadItem ) {
 		{
 			if ( cgi_SP_GetStringTextString( va("SP_INGAME_%s",bg_itemlist[itemNum].classname ), data, sizeof( data )))
 			{
-//				Com_Printf("%s %s\n", text, data );
-				cgi_Cvar_Set( "cg_WeaponPickupText", va("%s %s\n", text, data));
+				Cvar_Set("cg_WeaponPickupText", va("%s %s\n", text, data));
 				cg.weaponPickupTextTime	= cg.time + 5000;
 			}
 		}
@@ -134,11 +136,11 @@ void CG_ItemPickup( int itemNum, qboolean bHadItem ) {
 			SetWeaponSelectTime();
 			cg.weaponSelect = nNewWpn;
 		}
-		else if (0 == cg_autoswitch.integer)
+		else if (0 == cg_autoswitch->integer)
 		{
 			// don't switch
 		}
-		else if (1 == cg_autoswitch.integer)
+		else if (1 == cg_autoswitch->integer)
 		{
 			// safe switching
 			if (	(nNewWpn > nCurWpn) &&
@@ -154,7 +156,7 @@ void CG_ItemPickup( int itemNum, qboolean bHadItem ) {
 				cg.weaponSelect = nNewWpn;
 			}
 		}
-		else if (2 == cg_autoswitch.integer)
+		else if (2 == cg_autoswitch->integer)
 		{
 			// best
 			if (nNewWpn > nCurWpn)
@@ -261,7 +263,7 @@ CG_EntityEvent
 An entity has an event value
 ==============
 */
-#define	DEBUGNAME(x) if(cg_debugEvents.integer){CG_Printf(x"\n");}
+#define	DEBUGNAME(x) if(cg_debugEvents->integer){Com_Printf(x"\n");}
 void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	entityState_t	*es;
 	int				event;
@@ -273,8 +275,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	es = &cent->currentState;
 	event = es->event & ~EV_EVENT_BITS;
 
-	if ( cg_debugEvents.integer ) {
-		CG_Printf( "ent:%3i  event:%3i ", es->number, event );
+	if ( cg_debugEvents->integer ) {
+		Com_Printf( "ent:%3i  event:%3i ", es->number, event );
 	}
 
 	if ( !event ) {
@@ -296,19 +298,19 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	//
 	case EV_FOOTSPLASH:
 		DEBUGNAME("EV_FOOTSPLASH");
-		if (cg_footsteps.integer) {
+		if (cg_footsteps->integer) {
 			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_SPLASH ][rand()&3] );
 		}
 		break;
 	case EV_FOOTWADE:
 		DEBUGNAME("EV_FOOTWADE");
-		if (cg_footsteps.integer) {
+		if (cg_footsteps->integer) {
 			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_WADE ][rand()&3] );
 		}
 		break;
 	case EV_SWIM:
 		DEBUGNAME("EV_SWIM");
-		if (cg_footsteps.integer) {
+		if (cg_footsteps->integer) {
 			cgi_S_StartSound (NULL, es->number, CHAN_BODY, cgs.media.footsteps[ FOOTSTEP_SWIM ][rand()&3] );
 		}
 		break;
@@ -374,7 +376,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 			break;
 		}
 		// if we are interpolating, we don't need to smooth steps
-		if ( cg_timescale.value >= 1.0f )
+		if ( cg_timescale->value >= 1.0f )
 		{
 			break;
 		}
@@ -1104,7 +1106,7 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 	default:
 		DEBUGNAME("UNKNOWN");
-		CG_Error( "Unknown event: %i", event );
+		Com_Error( ERR_DROP,  "Unknown event: %i", event );
 		break;
 	}
 

@@ -32,6 +32,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../game/g_vehicles.h"
 
+// Get functions and structures exported by main engine.
+#include "../qcommon/cvar_exports.hh"
+
 static	pmove_t		cg_pmove;
 
 static	int			cg_numSolidEntities;
@@ -440,18 +443,18 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 
 	if (
 		cg.validPPS && 
-		cg_smoothPlayerPos.value>0.0f && 
-		cg_smoothPlayerPos.value<1.0f &&
+		cg_smoothPlayerPos->value>0.0f &&
+		cg_smoothPlayerPos->value<1.0f &&
 		!onPlat
 		)
 	{
 		// 0 = no smoothing, 1 = no movement
 		for (i=0;i<3;i++)
 		{
-			out->origin[i]=cg_smoothPlayerPos.value*(oldOrg[i]-out->origin[i])+out->origin[i];
+			out->origin[i]=cg_smoothPlayerPos->value*(oldOrg[i]-out->origin[i])+out->origin[i];
 		}
 	}
-	else if (onPlat&&cg_smoothPlayerPlat.value>0.0f&&cg_smoothPlayerPlat.value<1.0f)
+	else if (onPlat&&cg_smoothPlayerPlat->value>0.0f&&cg_smoothPlayerPlat->value<1.0f)
 	{
 //		if (cg.frametime<150)
 //		{
@@ -472,7 +475,7 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 			lerpTime=50.0f;
 		}
 
-		float accel=cg_smoothPlayerPlatAccel.value*cg.frametime/lerpTime;
+		float accel=cg_smoothPlayerPlatAccel->value*cg.frametime/lerpTime;
 
 		if (accel>20.0f)
 		{
@@ -487,14 +490,14 @@ void CG_InterpolatePlayerState( qboolean grabAngles ) {
 		VectorAdd(out->origin,vel,out->origin);
 
 		if (cg.validPPS && 
-			cg_smoothPlayerPlat.value>0.0f && 
-			cg_smoothPlayerPlat.value<1.0f
+			cg_smoothPlayerPlat->value>0.0f &&
+			cg_smoothPlayerPlat->value<1.0f
 			)
 		{
 			// 0 = no smoothing, 1 = no movement
 			for (i=0;i<3;i++)
 			{
-				out->origin[i]=cg_smoothPlayerPlat.value*(oldOrg[i]-out->origin[i])+out->origin[i];
+				out->origin[i]=cg_smoothPlayerPlat->value*(oldOrg[i]-out->origin[i])+out->origin[i];
 			}
 		}
 //		}
@@ -652,7 +655,7 @@ void CG_PredictPlayerState( void ) {
 	}
 
 
-	if ( 1 )//cg_timescale.value >= 1.0f )
+	if ( 1 )//cg_timescale->value >= 1.0f )
 	{
 		// demo playback just copies the moves
 		/*
@@ -718,12 +721,12 @@ void CG_PredictPlayerState( void ) {
 				VectorSubtract( oldPlayerState.origin, adjusted, delta );
 				len = VectorLength( delta );
 				if ( len > 0.1 ) {
-					if ( cg_errorDecay.integer ) {
+					if ( cg_errorDecay->integer ) {
 						int		t;
 						float	f;
 
 						t = cg.time - cg.predictedErrorTime;
-						f = ( cg_errorDecay.value - t ) / cg_errorDecay.value;
+						f = ( cg_errorDecay->value - t ) / cg_errorDecay->value;
 						if ( f < 0 ) {
 							f = 0;
 						}

@@ -3785,7 +3785,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 #ifndef FINAL_BUILD
 	if ( d_saberCombat->integer && attacker && attacker->client )
 	{
-		gi.Printf( S_COLOR_YELLOW"combatant %s died, killer anim = %s\n", self->targetname, animTable[attacker->client->ps.torsoAnim].name );
+		Com_Printf( S_COLOR_YELLOW"combatant %s died, killer anim = %s\n", self->targetname, animTable[attacker->client->ps.torsoAnim].name );
 	}
 #endif//FINAL_BUILD
 	if ( self->NPC )
@@ -4672,7 +4672,7 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 	self->client->respawnTime = level.time + 2000;//self->client->ps.legsAnimTimer;
 
 //rww - RAGDOLL_BEGIN
-	if (gi.Cvar_VariableIntegerValue("broadsword"))
+	if (Cvar_VariableIntegerValue("broadsword"))
 	{
 		if ( self->client && (!self->NPC || !G_StandardHumanoid( self ) ) )
 		{
@@ -6468,7 +6468,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 	}
 
 	if ( g_debugDamage->integer ) {
-		gi.Printf( "[%d]client:%i health:%i damage:%i armor:%i hitloc:%s\n", level.time, targ->s.number, targ->health, take, asave, hitLocName[hitLoc] );
+		Com_Printf( "[%d]client:%i health:%i damage:%i armor:%i hitloc:%s\n", level.time, targ->s.number, targ->health, take, asave, hitLocName[hitLoc] );
 	}
 
 	// add to the damage inflicted on a player this frame

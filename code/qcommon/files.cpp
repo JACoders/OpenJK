@@ -1584,7 +1584,7 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 }
 
 #define	MAXPRINTMSG	4096
-void QDECL FS_Printf( fileHandle_t h, const char *fmt, ... ) {
+void FS_Printf( fileHandle_t h, const char *fmt, ... ) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
 
@@ -2710,7 +2710,7 @@ void FS_Which_f( void ) {
 
 //===========================================================================
 
-static int QDECL paksort( const void *a, const void *b ) {
+static int paksort( const void *a, const void *b ) {
 	char	*aa, *bb;
 
 	aa = *(char **)a;
@@ -2997,7 +2997,7 @@ void FS_InitFilesystem( void ) {
 		requestbase = true;
 
 	if ( requestbase )
-		Cvar_Set2( "fs_game", "", qtrue );
+		Cvar_Set("fs_game", "");
 
 	// try to start up normally
 	FS_Startup( BASEGAME );

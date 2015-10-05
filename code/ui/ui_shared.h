@@ -180,8 +180,6 @@ typedef struct {
 	void		(*feederSelection)(float feederID, int index, struct itemDef_s *item);
 	void		(*fillRect) ( float x, float y, float w, float h, const vec4_t color);
 	void		(*getBindingBuf)( int keynum, char *buf, int buflen );
-	void		(*getCVarString)(const char *cvar, char *buffer, int bufsize);
-	float		(*getCVarValue)(const char *cvar);
 	qboolean	(*getOverstrikeMode)();
 	float		(*getValue) (int ownerDraw);
 	void		(*keynumToStringBuf)( int keynum, char *buf, int buflen );
@@ -191,7 +189,6 @@ typedef struct {
 	qboolean	(*ownerDrawVisible) (int flags);
 	int			(*ownerDrawWidth)(int ownerDraw, float scale);
 	void		(*Pause)(qboolean b);
-	void		(*Print)(const char *msg, ...);
 	int			(*registerFont) (const char *pFontname);
 	qhandle_t	(*registerModel) (const char *p);
 	qhandle_t	(*registerShaderNoMip) (const char *p);	
@@ -201,7 +198,6 @@ typedef struct {
 	qboolean	(*deferScript)(const char **p);
 	void		(*setBinding)( int keynum, const char *binding );
 	void		(*setColor) (const vec4_t v);
-	void		(*setCVar)(const char *cvar, const char *value);
 	void		(*setOverstrikeMode)(qboolean b);
 	void		(*startLocalSound)( sfxHandle_t sfx, int channelNum );
 	void		(*stopCinematic)(int handle);

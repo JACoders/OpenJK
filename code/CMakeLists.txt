@@ -386,6 +386,9 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			endif(MakeApplicationBundles)
 		endif(WIN32)
 
+		# Export visibility=default symbols for use by plugins.
+		set_property(TARGET ${ProjectName} PROPERTY ENABLE_EXPORTS TRUE)
+
 		if(MakeApplicationBundles)
 			install(TARGETS ${ProjectName}
 				BUNDLE

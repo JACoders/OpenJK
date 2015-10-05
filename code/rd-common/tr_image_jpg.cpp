@@ -158,7 +158,7 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 		ri.FS_FreeFile (fbuffer.v); 
 		jpeg_destroy_decompress(&cinfo); 
 
-		ri.Printf( PRINT_ALL, "LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename, 
+		CL_RefPrintf( PRINT_ALL, "LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename, 
 			cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
 		return;
 	}
@@ -315,7 +315,7 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 		// Free the memory to make sure we don't leak memory
 		jpeg_destroy_decompress(&cinfo);
 		
-		ri.Printf( PRINT_ALL, "LoadJPG: invalid image format: %dx%d*4=%d, components: %d",
+		CL_RefPrintf( PRINT_ALL, "LoadJPG: invalid image format: %dx%d*4=%d, components: %d",
 				  cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
 		return;
 	}

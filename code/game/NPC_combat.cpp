@@ -2616,7 +2616,7 @@ void SP_point_combat( gentity_t *self )
 	if(level.numCombatPoints >= MAX_COMBAT_POINTS)
 	{
 #ifndef FINAL_BUILD
-		gi.Printf(S_COLOR_RED"ERROR:  Too many combat points, limit is %d\n", MAX_COMBAT_POINTS);
+		Com_Printf(S_COLOR_RED"ERROR:  Too many combat points, limit is %d\n", MAX_COMBAT_POINTS);
 #endif
 		G_FreeEntity(self);
 		return;
@@ -2629,7 +2629,7 @@ void SP_point_combat( gentity_t *self )
 	if ( G_CheckInSolid( self, qtrue ) )
 	{
 #ifndef FINAL_BUILD
-		gi.Printf( S_COLOR_RED"ERROR: combat point at %s in solid!\n", vtos(self->currentOrigin) );
+		Com_Printf( S_COLOR_RED"ERROR: combat point at %s in solid!\n", vtos(self->currentOrigin) );
 #endif
 	}
 
@@ -2654,7 +2654,7 @@ void CP_FindCombatPointWaypoints( void )
 		{
 			assert(0);
 			level.combatPoints[i].waypoint = NAV::GetNearestNode(level.combatPoints[i].origin);
-			gi.Printf( S_COLOR_RED"ERROR: Combat Point at %s has no waypoint!\n", vtos(level.combatPoints[i].origin) );
+			Com_Printf( S_COLOR_RED"ERROR: Combat Point at %s has no waypoint!\n", vtos(level.combatPoints[i].origin) );
 			delayedShutDown = level.time + 100;
 		}
 	}

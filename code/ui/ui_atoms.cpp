@@ -33,6 +33,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "gameinfo.h"
 #include "../qcommon/stv_version.h"
 
+// Get functions and structures exported from the main engine.
+#include "../client/gl_exports.hh"
+
 uiimport_t	ui;
 uiStatic_t	uis;
 
@@ -52,7 +55,7 @@ void UI_ForceMenuOff (void)
 {
 	ui.Key_SetCatcher( ui.Key_GetCatcher() & ~KEYCATCH_UI );
 	ui.Key_ClearStates();
-	ui.Cvar_Set( "cl_paused", "0" );
+	Cvar_Set("cl_paused", "0");
 }
 
 
@@ -93,14 +96,14 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 
 	if ( Q_stricmp (menuname, "ingame") == 0 ) 
 	{
-		ui.Cvar_Set( "cl_paused", "1" );
+		Cvar_Set("cl_paused", "1");
 		UI_InGameMenu(menuID);
 		return;
 	}
 
 	if ( Q_stricmp (menuname, "datapad") == 0 ) 
 	{
-		ui.Cvar_Set( "cl_paused", "1" );
+		Cvar_Set("cl_paused", "1");
 		UI_DataPadMenu();
 		return;
 	}
@@ -140,7 +143,7 @@ char *UI_Cvar_VariableString( const char *var_name )
 {
 	static char	buffer[MAX_STRING_CHARS];
 
-	ui.Cvar_VariableStringBuffer( var_name, buffer, sizeof( buffer ) );
+	Cvar_VariableStringBuffer(var_name, buffer, sizeof(buffer));
 
 	return buffer;
 }
@@ -259,55 +262,55 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui = *uiimport;
 
 	if ( apiVersion != UI_API_VERSION ) {
-		ui.Error( ERR_FATAL, "Bad UI_API_VERSION: expected %i, got %i\n", UI_API_VERSION, apiVersion );
+		Com_Error(ERR_FATAL, "Bad UI_API_VERSION: expected %i, got %i\n", UI_API_VERSION, apiVersion);
 	}
 
 	// get static data (glconfig, media)
-	ui.GetGlconfig( &uis.glconfig );
+	GetGLConfig(&uis.glconfig);
 
 	uis.scaley = uis.glconfig.vidHeight * (1.0/480.0);
 	uis.scalex = uis.glconfig.vidWidth * (1.0/640.0);
 
 	Menu_Cache( );
 
-	ui.Cvar_Create( "cg_drawCrosshair", "1", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_marks", "1", CVAR_ARCHIVE );
-	ui.Cvar_Create ("s_language",			"english",	CVAR_ARCHIVE | CVAR_NORESTART);
+	Cvar_Get( "cg_drawCrosshair", "1", CVAR_ARCHIVE );
+	Cvar_Get( "cg_marks", "1", CVAR_ARCHIVE );
+	Cvar_Get ("s_language",			"english",	CVAR_ARCHIVE | CVAR_NORESTART);
 #ifndef JK2_MODE
-	ui.Cvar_Create( "g_char_model",			"jedi_tf",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_char_skin_head",		"head_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_char_skin_torso",	"torso_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_char_skin_legs",		"lower_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_char_color_red",		"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_char_color_green",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_char_color_blue",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_saber_type",			"single",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_saber",				"single_1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_saber2",				"",			CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_saber_color",		"yellow",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	ui.Cvar_Create( "g_saber2_color",		"yellow",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_model",			"jedi_tf",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_skin_head",		"head_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_skin_torso",	"torso_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_skin_legs",		"lower_a1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_color_red",		"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_color_green",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_char_color_blue",	"255",		CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_saber_type",			"single",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_saber",				"single_1",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_saber2",				"",			CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_saber_color",		"yellow",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
+	Cvar_Get( "g_saber2_color",		"yellow",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	
-	ui.Cvar_Create( "ui_forcepower_inc",	"0",		CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
-	ui.Cvar_Create( "tier_storyinfo",		"0",		CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
-	ui.Cvar_Create( "tiers_complete",		"",			CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
-	ui.Cvar_Create( "ui_prisonerobj_currtotal", "0",	CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
-	ui.Cvar_Create( "ui_prisonerobj_mintotal",  "0",	CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get( "ui_forcepower_inc",	"0",		CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get( "tier_storyinfo",		"0",		CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get( "tiers_complete",		"",			CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get( "ui_prisonerobj_currtotal", "0",	CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
+	Cvar_Get( "ui_prisonerobj_mintotal",  "0",	CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 
-	ui.Cvar_Create( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
-	ui.Cvar_Create( "cg_gunAutoFirst", "1", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_crosshairIdentifyTarget", "1", CVAR_ARCHIVE );
-	ui.Cvar_Create( "g_subtitles", "0", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_marks", "1", CVAR_ARCHIVE );
-	ui.Cvar_Create( "d_slowmodeath", "3", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_shadows", "1", CVAR_ARCHIVE );
+	Cvar_Get( "g_dismemberment", "3", CVAR_ARCHIVE );//0 = none, 1 = arms and hands, 2 = legs, 3 = waist and head
+	Cvar_Get( "cg_gunAutoFirst", "1", CVAR_ARCHIVE );
+	Cvar_Get( "cg_crosshairIdentifyTarget", "1", CVAR_ARCHIVE );
+	Cvar_Get( "g_subtitles", "0", CVAR_ARCHIVE );
+	Cvar_Get( "cg_marks", "1", CVAR_ARCHIVE );
+	Cvar_Get( "d_slowmodeath", "3", CVAR_ARCHIVE );
+	Cvar_Get( "cg_shadows", "1", CVAR_ARCHIVE );
 
-	ui.Cvar_Create( "cg_runpitch", "0.002", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_runroll", "0.005", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_bobup", "0.005", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_bobpitch", "0.002", CVAR_ARCHIVE );
-	ui.Cvar_Create( "cg_bobroll", "0.002", CVAR_ARCHIVE );
+	Cvar_Get( "cg_runpitch", "0.002", CVAR_ARCHIVE );
+	Cvar_Get( "cg_runroll", "0.005", CVAR_ARCHIVE );
+	Cvar_Get( "cg_bobup", "0.005", CVAR_ARCHIVE );
+	Cvar_Get( "cg_bobpitch", "0.002", CVAR_ARCHIVE );
+	Cvar_Get( "cg_bobroll", "0.002", CVAR_ARCHIVE );
 
-	ui.Cvar_Create( "ui_disableWeaponSway", "0", CVAR_ARCHIVE );
+	Cvar_Get( "ui_disableWeaponSway", "0", CVAR_ARCHIVE );
 #endif
 
 	

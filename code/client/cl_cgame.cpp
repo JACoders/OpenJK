@@ -809,23 +809,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 	args[0] = (intptr_t)CL_ConvertJK2SysCall((cgameJK2Import_t)args[0]);
 #endif
 	switch( args[0] ) {
-	case CG_PRINT:
-		Com_Printf( "%s", VMA(1) );
-		return 0;
-	case CG_ERROR:
-		Com_Error( ERR_DROP, S_COLOR_RED"%s", VMA(1) );
-		return 0;
-	case CG_MILLISECONDS:
-		return Sys_Milliseconds();
-	case CG_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *) VMA(1), (const char *) VMA(2), (const char *) VMA(3), args[4] );
-		return 0;
-	case CG_CVAR_UPDATE:
-		Cvar_Update( (vmCvar_t *) VMA(1) );
-		return 0;
-	case CG_CVAR_SET:
-		Cvar_Set( (const char *) VMA(1), (const char *) VMA(2) );
-		return 0;
+
 	case CG_ARGC:
 		return Cmd_Argc();
 	case CG_ARGV:
@@ -1588,7 +1572,7 @@ void CL_FirstSnapshot( void ) {
 	// after loading
 	if ( cl_activeAction->string[0] ) {
 		Cbuf_AddText( cl_activeAction->string );
-		Cvar_Set( "activeAction", "" );
+		Cvar_Set("activeAction", "");
 	}
 }
 

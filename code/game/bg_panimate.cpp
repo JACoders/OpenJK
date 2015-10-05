@@ -38,6 +38,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern pmove_t	*pm;
 extern pml_t	pml;
 extern cvar_t	*g_ICARUSDebug;
@@ -4644,11 +4647,11 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 		{
 			if (anim<0 || anim>=MAX_ANIMATIONS)
 			{
-				gi.Printf(S_COLOR_RED"PM_SetAnimFinal: Invalid Anim Index (%d)!\n", anim);
+				Com_Printf(S_COLOR_RED"PM_SetAnimFinal: Invalid Anim Index (%d)!\n", anim);
 			}
 			else
 			{
-				gi.Printf(S_COLOR_RED"PM_SetAnimFinal: Invalid Anim File Index (%d)!\n", gent->client->clientInfo.animFileIndex);
+				Com_Printf(S_COLOR_RED"PM_SetAnimFinal: Invalid Anim File Index (%d)!\n", gent->client->clientInfo.animFileIndex);
 			}
 		}
 		#endif
@@ -4671,13 +4674,13 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 		static int	LastAnimWarningNum=0;
 		if (LastAnimWarningNum!=anim)
 		{
-			if ((cg_debugAnim.integer==3)	||												// 3 = do everyone
- 				(cg_debugAnim.integer==1 && gent->s.number==0) ||							// 1 = only the player
-				(cg_debugAnim.integer==2 && gent->s.number!=0) ||							// 2 = only everyone else
-				(cg_debugAnim.integer==4 && gent->s.number!=cg_debugAnimTarget.integer) 	// 4 = specific entnum
+			if ((cg_debugAnim->integer==3)	||												// 3 = do everyone
+ 				(cg_debugAnim->integer==1 && gent->s.number==0) ||							// 1 = only the player
+				(cg_debugAnim->integer==2 && gent->s.number!=0) ||							// 2 = only everyone else
+				(cg_debugAnim->integer==4 && gent->s.number!=cg_debugAnimTarget->integer) 	// 4 = specific entnum
 				)
 			{
-				gi.Printf(S_COLOR_RED"PM_SetAnimFinal: Anim %s does not exist in this model (%s)!\n", animTable[anim].name, gent->NPC_type );
+				Com_Printf(S_COLOR_RED"PM_SetAnimFinal: Anim %s does not exist in this model (%s)!\n", animTable[anim].name, gent->NPC_type );
 			}
 		}
 		LastAnimWarningNum = anim;
@@ -4741,7 +4744,7 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 		{
 			if (animFlags&BONE_ANIM_OVERRIDE_LOOP)
 			{
-				gi.Printf(S_COLOR_YELLOW"PM_SetAnimFinal: WARNING: Anim (%s) looping backwards!\n", animTable[anim].name);
+				Com_Printf(S_COLOR_YELLOW"PM_SetAnimFinal: WARNING: Anim (%s) looping backwards!\n", animTable[anim].name);
 			}
 		}
 	#endif
@@ -4891,10 +4894,10 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 	}
 
 #ifndef FINAL_BUILD
-	if ((cg_debugAnim.integer==3)	||												// 3 = do everyone
-		(cg_debugAnim.integer==1 && gent->s.number==0) ||							// 1 = only the player
-		(cg_debugAnim.integer==2 && gent->s.number!=0) ||							// 2 = only everyone else
-		(cg_debugAnim.integer==4 && gent->s.number!=cg_debugAnimTarget.integer) 	// 4 = specific entnum
+	if ((cg_debugAnim->integer==3)	||												// 3 = do everyone
+		(cg_debugAnim->integer==1 && gent->s.number==0) ||							// 1 = only the player
+		(cg_debugAnim->integer==2 && gent->s.number!=0) ||							// 2 = only everyone else
+		(cg_debugAnim->integer==4 && gent->s.number!=cg_debugAnimTarget->integer) 	// 4 = specific entnum
 		)
 	{
 		if (bodyPlay || torsPlay)
@@ -5030,22 +5033,22 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 //==========================================
 	if (false)
 	{
-		gi.Printf("PLAYANIM: (%3d) Speed(%4.2f) ", anim, animSpeed);
+		Com_Printf("PLAYANIM: (%3d) Speed(%4.2f) ", anim, animSpeed);
 		if (bodyAnimating)
 		{
-			gi.Printf("BODY: (%4.2f) (%4.2f) ", bodyCurrent,  bodySpeed);
+			Com_Printf("BODY: (%4.2f) (%4.2f) ", bodyCurrent,  bodySpeed);
 		}
 		else
 		{
-			gi.Printf("                      ");
+			Com_Printf("                      ");
 		}
 		if (torsAnimating)
 		{
-			gi.Printf("TORS: (%4.2f) (%4.2f)\n", torsCurrent,  torsSpeed);
+			Com_Printf("TORS: (%4.2f) (%4.2f)\n", torsCurrent,  torsSpeed);
 		}
 		else
 		{
-			gi.Printf("\n");
+			Com_Printf("\n");
 		}
 	}
 }

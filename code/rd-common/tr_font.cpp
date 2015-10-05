@@ -20,6 +20,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <chrono>
+
 #include "../server/exe_headers.h"
 
 #include <limits.h>
@@ -29,6 +31,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_font.h"
 
 #include "../qcommon/stringed_ingame.h"
+
+// Get functions and structures exported from the main engine.
+#include "../qcommon/cvar_exports.hh"
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -1136,7 +1141,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 							{
 								// failed to load a needed file, reset to English...
 								//
-								ri.Cvar_Set("se_language", "english");
+								Cvar_Set("se_language", "english");
 								Com_Error( ERR_DROP, psFailureReason );
 							}
 						}
@@ -1769,7 +1774,16 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 
 	if(iFontHandle & STYLE_BLINK)
 	{
-		if((ri.Milliseconds() >> 7) & 1)
+        using std::chrono::duration_cast;
+        using hrc = std::chrono::high_resolution_clock;
+        using std::chrono::milliseconds;
+
+        size_t millis = duration_cast<milliseconds>(
+            hrc::now().time_since_epoch()
+        ).count();
+
+        // This seems unlikely... Does this actually work?
+        if((millis / 128) == 1)
 		{
 			return;
 		}

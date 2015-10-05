@@ -3,6 +3,7 @@
 Copyright (C) 1999 - 2005, Id Software, Inc.
 Copyright (C) 2000 - 2013, Raven Software, Inc.
 Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
 Copyright (C) 2013 - 2015, OpenJK contributors
 
 This file is part of the OpenJK source code.
@@ -21,39 +22,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-//
-// g_mem.c
-//
+// IO-related functions that the engine provides to plugin modules.
 
-#include "g_local.h"
+#ifndef OPENJK_IO_EXPORTS_HH
+#define OPENJK_IO_EXPORTS_HH
 
-// Get functions and structures exported by the main engine.
-#include "../qcommon/cvar_exports.hh"
+// Cross-platform abstraction of function attributes.
+#include "../../shared/sys/sys_attributes.h"
 
+void Q_EXPORT Com_Printf(const char *fmt, ...);
+void Q_EXPORT NORETURN Com_Error(int code, const char *fmt, ...);
+void Q_EXPORT CL_RefPrintf(int print_level, const char *fmt, ...);
 
-/*#define POOLSIZE	(2 * 1024 * 1024)
-
-static char		memoryPool[POOLSIZE];
-*/
-static int		allocPoint;
-static cvar_t	*g_debugalloc;
-
-void *G_Alloc( int size ) {
-	if ( g_debugalloc->integer ) {
-		Com_Printf( "G_Alloc of %i bytes\n", size );
-	}
-
-
-	allocPoint += size;
-	
-	return gi.Malloc(size, TAG_G_ALLOC, qfalse);
-}
-
-void G_InitMemory( void ) {
-	allocPoint = 0;
-	g_debugalloc = Cvar_Get("g_debugalloc", "0", CVAR_PLUGIN_CREATED);
-}
-
-void Svcmd_GameMem_f( void ) {
-	Com_Printf( "Game memory status: %i allocated\n", allocPoint );
-}
+#endif

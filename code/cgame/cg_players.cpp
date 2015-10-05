@@ -37,10 +37,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "animtable.h"
 
+// Get functions and structures exported by main engine.
+#include "../qcommon/cvar_exports.hh"
+
 extern qboolean WP_SaberBladeUseSecondBladeStyle( saberInfo_t *saber, int bladeNum );
 extern void WP_SaberSwingSound( gentity_t *ent, int saberNum, swingType_t swingType );
 
-extern vmCvar_t	cg_debugHealthBars;
+extern cvar_t *cg_debugHealthBars;
 /*
 
 player entities generate a great deal of information from implicit ques
@@ -49,11 +52,11 @@ taken from the entityState_t
 */
 
 //rww - generic function for applying a shader to the skin.
-extern vmCvar_t	cg_g2Marks;
+extern cvar_t* cg_g2Marks;
 void CG_AddGhoul2Mark(int type, float size, vec3_t hitloc, vec3_t hitdirection,
 				int entnum, vec3_t entposition, float entangle, CGhoul2Info_v &ghoul2, vec3_t modelScale, int lifeTime, int firstModel, vec3_t uaxis )
 {
-	if ( !cg_g2Marks.integer )
+	if ( !cg_g2Marks->integer )
 	{//don't want these
 		return;
 	}
@@ -262,10 +265,8 @@ const char	*cg_customJediSoundNames[MAX_CUSTOM_JEDI_SOUNDS] =
 //
 static const char *GetCustomSound_VariantCapped(const char *ppsTable[], int iEntryNum, qboolean bForceVariant1)
 {
-	extern vmCvar_t	cg_VariantSoundCap;
-
-//	const int iVariantCap = 2;	// test
-	const int &iVariantCap = cg_VariantSoundCap.integer;
+	extern cvar_t* cg_VariantSoundCap;
+	const int &iVariantCap = cg_VariantSoundCap->integer;
 
 	if (iVariantCap || bForceVariant1)
 	{
@@ -387,7 +388,7 @@ static sfxHandle_t	CG_CustomSound( int entityNum, const char *soundName, int cus
 	{
 		// No client, this should never happen, so just don't
 #ifndef FINAL_BUILD
-//		CG_Printf( "custom sound not on client: %s", soundName );
+//		Com_Printf( "custom sound not on client: %s", soundName );
 #endif
 		return 0;
 	}
@@ -490,9 +491,9 @@ static sfxHandle_t	CG_CustomSound( int entityNum, const char *soundName, int cus
 	}
 
 #ifdef FINAL_BUILD
-	CG_Printf( "Unknown custom sound: %s", soundName );
+	Com_Printf( "Unknown custom sound: %s", soundName );
 #else
-	CG_Error( "Unknown custom sound: %s", soundName );
+	Com_Error( ERR_DROP,  "Unknown custom sound: %s", soundName );
 #endif
 	return 0;
 }
@@ -719,7 +720,7 @@ static void CG_SetLerpFrameAnimation( clientInfo_t *ci, lerpFrame_t *lf, int new
 #ifdef FINAL_BUILD
 		newAnimation = 0;
 #else
-		CG_Error( "Bad animation number: %i for ", newAnimation, ci->name );
+		Com_Error( ERR_DROP,  "Bad animation number: %i for ", newAnimation, ci->name );
 #endif
 	}
 
@@ -730,7 +731,7 @@ static void CG_SetLerpFrameAnimation( clientInfo_t *ci, lerpFrame_t *lf, int new
 #ifdef FINAL_BUILD
 		ci->animFileIndex = 0;
 #else
-		CG_Error( "Bad animFileIndex: %i for %s", ci->animFileIndex, ci->name);
+		Com_Error( ERR_DROP,  "Bad animFileIndex: %i for %s", ci->animFileIndex, ci->name);
 #endif
 	}
 
@@ -1667,7 +1668,7 @@ CG_BreathPuffs
 Description: Makes the player appear to have breath puffs (from the cold).
 Added 11/06/02 by Aurelio Reis.
 */
-extern vmCvar_t	cg_drawBreath;
+extern cvar_t *cg_drawBreath;
 static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 {
 	gclient_s *client = cent->gent->client;
@@ -1678,7 +1679,7 @@ static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 								== 3 - Draw only under water bubbles (when under water)	*/
 
 	if ( !client
-		|| cg_drawBreath.integer == 0
+		|| cg_drawBreath->integer == 0
 		|| !cg.renderingThirdPerson
 		|| client->ps.pm_type == PM_DEAD
 		|| client->breathPuffTime > cg.time )
@@ -1705,12 +1706,12 @@ static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 	}
 
 	// Show bubbles effect if we're under water.
-	if ( (contents & CONTENTS_WATER) && ( cg_drawBreath.integer == 1 || cg_drawBreath.integer == 3 ) )
+	if ( (contents & CONTENTS_WATER) && ( cg_drawBreath->integer == 1 || cg_drawBreath->integer == 3 ) )
 	{
 		CG_PlayEffectBolted( "misc/waterbreath", cent->gent->playerModel, bolt, cent->currentState.clientNum, vEffectOrigin );
 	}
 	// Draw cold breath effect.
-	else if ( cg_drawBreath.integer == 1 || cg_drawBreath.integer == 2 )
+	else if ( cg_drawBreath->integer == 1 || cg_drawBreath->integer == 2 )
 	{
 		CG_PlayEffectBolted( "misc/breath", cent->gent->playerModel, bolt, cent->currentState.clientNum, vEffectOrigin );
 	}
@@ -1766,7 +1767,7 @@ static qboolean CG_CheckLookTarget( centity_t *cent, vec3_t	lookAngles, float *l
 
 				//FIXME: Ignore small deltas from current angles so we don't bob our head in synch with theirs?
 
-				if ( cent->gent->client->renderInfo.lookTarget == 0 && !cg.renderingThirdPerson )//!cg_thirdPerson.integer )
+				if ( cent->gent->client->renderInfo.lookTarget == 0 && !cg.renderingThirdPerson )//!cg_thirdPerson->integer )
 				{//Special case- use cg.refdef.vieworg if looking at player and not in third person view
 					VectorCopy( cg.refdef.vieworg, lookOrg );
 				}
@@ -1921,7 +1922,7 @@ static qboolean CG_PlayerLegsYawFromMovement( centity_t *cent, const vec3_t velo
 	if ( cent->gent && cent->gent->client && cent->gent->client->ps.forcePowersActive & (1 << FP_SPEED) )
 	{//using force speed
 		//scale up the turning speed
-		turnRate /= cg_timescale.value;
+		turnRate /= cg_timescale->value;
 	}
 	//lerp the legs angle to the new angle
 	angleDiff = AngleDelta( cent->pe.legs.yawAngle, (*yaw+addAngle) );
@@ -2067,7 +2068,7 @@ static void CG_G2ClientSpineAngles( centity_t *cent, vec3_t viewAngles, const ve
 		return;
 	}
 
-	if ( cg_motionBoneComp.integer
+	if ( cg_motionBoneComp->integer
 		&& !PM_FlippingAnim( cent->currentState.legsAnim )
 		&& !PM_SpinningSaberAnim( cent->currentState.legsAnim )
 		&& !PM_SpinningSaberAnim( cent->currentState.torsoAnim )
@@ -2076,7 +2077,7 @@ static void CG_G2ClientSpineAngles( centity_t *cent, vec3_t viewAngles, const ve
 	{//FIXME: no need to do this if legs and torso on are same frame
 		mdxaBone_t	boltMatrix;
 
-		if ( cg_motionBoneComp.integer > 2 && cent->gent->rootBone >= 0 && cent->gent->lowerLumbarBone >= 0 )
+		if ( cg_motionBoneComp->integer > 2 && cent->gent->rootBone >= 0 && cent->gent->lowerLumbarBone >= 0 )
 		{//expensive version
 			//have a local ghoul2 instance to mess with for this stuff... :/
 			//remember the frame the lower is on
@@ -2133,7 +2134,7 @@ static void CG_G2ClientSpineAngles( centity_t *cent, vec3_t viewAngles, const ve
 			gi.G2API_GetBoltMatrix( cent->gent->ghoul2, cent->gent->playerModel, cent->gent->motionBolt, &boltMatrix, vec3_origin, cent->lerpOrigin, cg.time, cgs.model_draw, cent->currentState.modelScale );
 			gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_Y, motionFwd );
 			vectoangles( motionFwd, motionAngles );
-			if ( cg_motionBoneComp.integer > 1 )
+			if ( cg_motionBoneComp->integer > 1 )
 			{//do roll, too
 				vec3_t motionRt, tempAng;
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_X, motionRt );
@@ -2690,7 +2691,7 @@ static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 		}
 		else
 		{
-			if ( cg_turnAnims.integer && !in_camera && cent->gent->hipsBone >= 0 )
+			if ( cg_turnAnims->integer && !in_camera && cent->gent->hipsBone >= 0 )
 			{
 				//override the hips bone with a turn anim when turning
 				//and clear it when we're not... does blend from and to parent actually work?
@@ -3478,8 +3479,8 @@ static qboolean _PlayerShadow( const vec3_t origin, const float orientation, flo
 	*shadowPlane = trace.endpos[2] + 1;
 
 	// no mark for stencil or projection shadows
-	if ( cg_shadows.integer == 1
-		|| (in_camera && cg_shadows.integer == 2) )//don't want stencil shadows during a cinematic
+	if ( cg_shadows->integer == 1
+		|| (in_camera && cg_shadows->integer == 2) )//don't want stencil shadows during a cinematic
 	{
 		// fade the shadow out with height
 		alpha = 1.0 - trace.fraction;
@@ -3504,7 +3505,7 @@ Returns the Z component of the surface being shadowed
 static qboolean CG_PlayerShadow( centity_t *const cent, float *const shadowPlane ) {
 	*shadowPlane = 0;
 
-	if ( cg_shadows.integer == 0 ) {
+	if ( cg_shadows->integer == 0 ) {
 		return qfalse;
 	}
 
@@ -3537,7 +3538,7 @@ static qboolean CG_PlayerShadow( centity_t *const cent, float *const shadowPlane
 		VectorCopy(cent->lerpOrigin,rootOrigin);
 	}
 
-	if ( DistanceSquared( cg.refdef.vieworg, rootOrigin ) > cg_shadowCullDistance.value * cg_shadowCullDistance.value )
+	if ( DistanceSquared( cg.refdef.vieworg, rootOrigin ) > cg_shadowCullDistance->value * cg_shadowCullDistance->value )
 	{
 		// Shadow is too far away, don't do any traces, don't do any marks...blah
 		return qfalse;
@@ -3750,9 +3751,9 @@ static void _PlayerFootStep( const vec3_t origin,
 	 	cgi_S_StartSound( NULL, cent->currentState.clientNum, CHAN_BODY, cgs.media.footsteps[soundType][Q_irand( 0, 3)] );
 	}
 
-	if ( cg_footsteps.integer < 4 )
+	if ( cg_footsteps->integer < 4 )
 	{//debugging - 4 always does footstep effect
-		if ( cg_footsteps.integer < 2 )	//1 for sounds, 2 for effects, 3 for marks
+		if ( cg_footsteps->integer < 2 )	//1 for sounds, 2 for effects, 3 for marks
 		{
 			return;
 		}
@@ -3763,9 +3764,9 @@ static void _PlayerFootStep( const vec3_t origin,
 		theFxScheduler.PlayEffect( effectID, trace.endpos, trace.plane.normal );
 	}
 
-	if ( cg_footsteps.integer < 4 )
+	if ( cg_footsteps->integer < 4 )
 	{//debugging - 4 always does footprint decal
-		if (!bMark || cg_footsteps.integer < 3)	//1 for sounds, 2 for effects, 3 for marks
+		if (!bMark || cg_footsteps->integer < 3)	//1 for sounds, 2 for effects, 3 for marks
 		{
 			return;
 		}
@@ -3807,10 +3808,10 @@ static void _PlayerFootStep( const vec3_t origin,
 		orientation, 1,1,1, 1.0f, qfalse, radius, qfalse );
 }
 
-extern vmCvar_t	cg_footsteps;
+extern cvar_t* cg_footsteps;
 static void CG_PlayerFootsteps( centity_t *const cent, footstepType_t footStepType )
 {
-	if ( cg_footsteps.integer == 0 )
+	if ( cg_footsteps->integer == 0 )
 	{
 		return;
 	}
@@ -3929,7 +3930,7 @@ Draw a mark at the water surface
 */
 static void CG_PlayerSplash( centity_t *cent )
 {
-	if ( !cg_shadows.integer )
+	if ( !cg_shadows->integer )
 	{
 		return;
 	}
@@ -4067,7 +4068,7 @@ static void CG_ForcePushRefraction( vec3_t org, centity_t *cent )
 	float alpha;
 	int tDif;
 
-	if (!cg_renderToTextureFX.integer)
+	if (!cg_renderToTextureFX->integer)
 	{
 		CG_ForcePushBlur(org);
 		return;
@@ -4687,7 +4688,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 		ent->customShader = 0;
 		cgi_R_AddRefEntityToScene( ent );
 
-		if ( cg.time - ent->endTime < 1000 && (cg_timescale.value * cg_timescale.value * random()) > 0.05f )
+		if ( cg.time - ent->endTime < 1000 && (cg_timescale->value * cg_timescale->value * random()) > 0.05f )
 		{
 			vec3_t fxOrg;
 			mdxaBone_t	boltMatrix;
@@ -4755,7 +4756,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 		}
 		else
 		{
-			if (cg_renderToTextureFX.integer && cg_shadows.integer != 2 && cgs.glconfig.stencilBits >= 4)
+			if (cg_renderToTextureFX->integer && cg_shadows->integer != 2 && cgs.glconfig.stencilBits >= 4)
 			{
 				cgi_R_SetRefractProp(1.0f, 0.0f, qfalse, qfalse); //don't need to do this every frame.. but..
 				ent->customShader = 2; //crazy "refractive" shader
@@ -4810,7 +4811,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 
 	// FORCE speed does blur trails
 	//------------------------------------------------------
-	if ( cg_speedTrail.integer
+	if ( cg_speedTrail->integer
 		&& (gent->client->ps.forcePowersActive & (1 << FP_SPEED) //in force speed
 		|| cent->gent->client->ps.legsAnim == BOTH_FORCELONGLEAP_START//or force long jump - FIXME: only 1st half of that anim?
 		|| cent->gent->client->ps.legsAnim == BOTH_FORCELONGLEAP_ATTACK )//or force long jump attack
@@ -5117,8 +5118,8 @@ static void CG_G2SetHeadAnim( centity_t *cent, int anim )
 	const animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
 	int	animFlags = BONE_ANIM_OVERRIDE ;//| BONE_ANIM_BLEND;
 	// animSpeed is 1.0 if the frameLerp (ms/frame) is 50 (20 fps).
-//	float		timeScaleMod = (cg_timescale.value&&gent&&gent->s.clientNum==0&&!player_locked&&!MatrixMode&&gent->client->ps.forcePowersActive&(1<<FP_SPEED))?(1.0/cg_timescale.value):1.0;
-	const float		timeScaleMod = (cg_timescale.value)?(1.0/cg_timescale.value):1.0;
+//	float		timeScaleMod = (cg_timescale->value&&gent&&gent->s.clientNum==0&&!player_locked&&!MatrixMode&&gent->client->ps.forcePowersActive&(1<<FP_SPEED))?(1.0/cg_timescale->value):1.0;
+	const float		timeScaleMod = (cg_timescale->value)?(1.0/cg_timescale->value):1.0;
 	float animSpeed = 50.0f / animations[anim].frameLerp * timeScaleMod;
 
 	if (animations[anim].numFrames <= 0)
@@ -5875,7 +5876,7 @@ static void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 	markPoly_t		*mark;
 	markFragment_t	markFragments[MAX_MARK_FRAGMENTS], *mf;
 
-	if ( !cg_addMarks.integer ) {
+	if ( !cg_addMarks->integer ) {
 		return;
 	}
 
@@ -6415,7 +6416,7 @@ Ghoul2 Insert End
 	}
 	else
 	{
-		extern vmCvar_t cg_saberEntMarks;
+		extern cvar_t *cg_saberEntMarks;
 		int traceMask = MASK_SOLID;
 		qboolean noMarks = qfalse;
 
@@ -6433,7 +6434,7 @@ Ghoul2 Insert End
 				noMarks = qtrue;
 			}
 		}
-		if ( cg_saberEntMarks.integer )
+		if ( cg_saberEntMarks->integer )
 		{
 			if ( cent->gent->client->ps.saberInFlight
 				|| PM_SaberInAttack( cent->gent->client->ps.saberMove )
@@ -6870,7 +6871,7 @@ void CG_Player( centity_t *cent ) {
 		return;
 	}
 
-	if(cent->currentState.number == 0 && !cg.renderingThirdPerson )//!cg_thirdPerson.integer )
+	if(cent->currentState.number == 0 && !cg.renderingThirdPerson )//!cg_thirdPerson->integer )
 	{
 		calcedMp = qtrue;
 	}
@@ -6940,12 +6941,12 @@ Ghoul2 Insert Start
 		{//ghost!
 			ent.renderfx = RF_THIRD_PERSON;			// only draw in mirrors
 		}
-		else if (cg_shadows.integer == 2 && (ent.renderfx & RF_THIRD_PERSON))
+		else if (cg_shadows->integer == 2 && (ent.renderfx & RF_THIRD_PERSON))
 		{ //show stencil shadow in first person now because we can -rww
 			ent.renderfx |= RF_SHADOW_ONLY;
 		}
 
-		if ( (cg_shadows.integer == 2 && !in_camera) || (cg_shadows.integer == 3 && shadow) )
+		if ( (cg_shadows->integer == 2 && !in_camera) || (cg_shadows->integer == 3 && shadow) )
 		{
 			ent.renderfx |= RF_SHADOW_PLANE;
 		}
@@ -7228,7 +7229,7 @@ Ghoul2 Insert Start
 		*/
 //HACK - add swoop model
 
-extern vmCvar_t	cg_thirdPersonAlpha;
+        extern cvar_t *cg_thirdPersonAlpha;
 
 		if ( (cent->gent->s.number == 0 || G_ControlledByPlayer( cent->gent )) )
 		{
@@ -7239,7 +7240,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 			}
 			else
 			{
-				alpha = cg_thirdPersonAlpha.value;
+				alpha = cg_thirdPersonAlpha->value;
 			}
 
 			if ( alpha < 1.0f )
@@ -7249,7 +7250,7 @@ extern vmCvar_t	cg_thirdPersonAlpha;
 			}
 		}
 
-		if ( cg_debugHealthBars.integer )
+		if ( cg_debugHealthBars->integer )
 		{
 			if ( cent->gent && cent->gent->health > 0 && cent->gent->max_health > 0 )
 			{//draw a health bar over them
@@ -7937,7 +7938,7 @@ extern qboolean PM_KickingAnim( int anim );
 			if ( !PM_KickingAnim( cent->gent->client->ps.torsoAnim )
 				|| cent->gent->client->ps.torsoAnim == BOTH_A7_KICK_S )
 			{//not kicking (unless it's the spinning kick)
-				if ( cg_timescale.value < 1.0f && (cent->gent->client->ps.forcePowersActive&(1<<FP_SPEED)) )
+				if ( cg_timescale->value < 1.0f && (cent->gent->client->ps.forcePowersActive&(1<<FP_SPEED)) )
 				{
 					int wait = floor( (float)FRAMETIME/2.0f );
 					//sanity check
@@ -7952,7 +7953,7 @@ extern void WP_SaberUpdateOldBladeData( gentity_t *ent );
 						//FIXME: this causes an ASSLOAD of effects
 						WP_SabersDamageTrace( cent->gent, qtrue );
 						WP_SaberUpdateOldBladeData( cent->gent );
-						cent->gent->client->ps.saberDamageDebounceTime = cg.time + floor((float)wait*cg_timescale.value);
+						cent->gent->client->ps.saberDamageDebounceTime = cg.time + floor((float)wait*cg_timescale->value);
 					}
 				}
 			}
@@ -8032,7 +8033,7 @@ Ghoul2 Insert End
 		}
 	}
 
-	if ( (cg_shadows.integer == 2) || (cg_shadows.integer == 3 && shadow) )
+	if ( (cg_shadows->integer == 2) || (cg_shadows->integer == 3 && shadow) )
 	{
 		renderfx |= RF_SHADOW_PLANE;
 	}

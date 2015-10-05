@@ -294,7 +294,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec
 	{//we have a spawnpoint specified, try to find it
 		if ( (nearestSpot = spot = G_Find( NULL, FOFS(targetname), level.spawntarget )) == NULL )
 		{//you HAVE to be able to find the desired spot
-			G_Error( "Couldn't find spawntarget %s\n", level.spawntarget );
+			Com_Error(ERR_DROP,  "Couldn't find spawntarget %s\n", level.spawntarget );
 			return NULL;
 		}
 	}
@@ -311,7 +311,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec
 
 	// find a single player start spot
 	if (!spot) {
-		G_Error( "Couldn't find a spawn point\n" );
+		Com_Error(ERR_DROP,  "Couldn't find a spawn point\n" );
 	}
 
 
@@ -607,10 +607,10 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 		_VectorCopy( cmd->angles, client->pers.cmd_angles );
 
 		memset( &client->ps, 0, sizeof( client->ps ) );
-		if( gi.Cvar_VariableIntegerValue( "g_clearstats" ) )
+		if( Cvar_VariableIntegerValue( "g_clearstats" ) )
 		{
 			memset( &client->sess.missionStats, 0, sizeof( client->sess.missionStats ) );
-			client->sess.missionStats.totalSecrets = gi.Cvar_VariableIntegerValue("newTotalSecrets");
+			client->sess.missionStats.totalSecrets = Cvar_VariableIntegerValue("newTotalSecrets");
 		}
 		
 		// locate ent at a spawn point
@@ -638,7 +638,7 @@ void Player_CacheFromPrevLevel(void)
 	char	s[MAX_STRING_CHARS];
 	int i;
 	
-	gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
+	Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
 	
 	if (s[0])	// actually this would be safe anyway because of the way sscanf() works, but this is clearer
 	{
@@ -692,7 +692,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 		char	saber1Name[MAX_QPATH];
 		const char	*var;
 						
-		gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
+		Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
 
 		if (strlen(s))	// actually this would be safe anyway because of the way sscanf() works, but this is clearer
 		{//				|general info				  |-force powers |-saber 1										   |-saber 2										  |-general saber
@@ -798,7 +798,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 //			SetClientViewAngle( ent, ent->client->ps.viewangles);
 
 			//ammo
-			gi.Cvar_VariableStringBuffer( "playerammo", s, sizeof(s) );
+			Cvar_VariableStringBuffer( "playerammo", s, sizeof(s) );
 			i=0;
 			var = strtok( s, " " );
 			while( var != NULL )
@@ -811,7 +811,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 			assert (i==AMMO_MAX);
 
 			//inventory
-			gi.Cvar_VariableStringBuffer( "playerinv", s, sizeof(s) );
+			Cvar_VariableStringBuffer( "playerinv", s, sizeof(s) );
 			i=0;
 			var = strtok( s, " " );
 			while( var != NULL )
@@ -826,7 +826,7 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 
 			// the new JK2 stuff - force powers, etc...
 			//
-			gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
+			Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
 			i=0;
 			var = strtok( s, " " );
 			while( var != NULL )
@@ -1771,7 +1771,7 @@ void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const cha
 	}
 	if (ent->playerModel == -1)
 	{//try the stormtrooper as a default
-		gi.Printf( S_COLOR_RED"G_SetG2PlayerModel: cannot load model %s\n", modelName );
+		Com_Printf( S_COLOR_RED"G_SetG2PlayerModel: cannot load model %s\n", modelName );
 		modelName = "stormtrooper";
 		Com_sprintf( skinName, sizeof( skinName ), "models/players/%s/model_default.skin", modelName );
 		skin = gi.RE_RegisterSkin( skinName );
@@ -1949,7 +1949,7 @@ void G_InitPlayerFromCvars( gentity_t *ent )
 	}
 
 	char snd[512];
-	gi.Cvar_VariableStringBuffer( "snd", snd, sizeof(snd) );
+	Cvar_VariableStringBuffer( "snd", snd, sizeof(snd) );
 
 	ent->client->clientInfo.customBasicSoundDir = G_NewString(snd);	//copy current cvar
 
@@ -2032,7 +2032,7 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 		}
 		else
 		{
-			gi.Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );
+			Com_Printf( S_COLOR_RED"G_ChangePlayerModel: cannot find NPC %s\n", newModel );
 			G_ChangePlayerModel( ent, "stormtrooper" );	//need a better fallback?
 		}
 	}
@@ -2288,7 +2288,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			client->ps.dualSabers = qfalse;
 			WP_SaberParseParms( g_saber->string, &client->ps.saber[0] );//get saber info
 
-			client->ps.saberStylesKnown |= (1<<gi.Cvar_VariableIntegerValue("g_fighting_style"));
+			client->ps.saberStylesKnown |= (1<<Cvar_VariableIntegerValue("g_fighting_style"));
 
 //			if ( client->ps.saber[0].stylesLearned )
 //			{

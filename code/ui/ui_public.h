@@ -32,23 +32,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 typedef struct {
-	//============== general Quake services ==================
-
-	// print message on the local console
-	void		(*Printf)( const char *fmt, ... );
-
-	// abort the game
-	void		(*Error)( int level, const char *fmt, ... );
-
-	// console variable interaction
-	void		(*Cvar_Set)( const char *name, const char *value );
-	float		(*Cvar_VariableValue)( const char *var_name );
-	void		(*Cvar_VariableStringBuffer)( const char *var_name, char *buffer, int bufsize );
-	void		(*Cvar_SetValue)( const char *var_name, float value );
-	void		(*Cvar_Reset)( const char *name );
-	void		(*Cvar_Create)( const char *var_name, const char *var_value, int flags );
-	void		(*Cvar_InfoStringBuffer)( int bit, char *buffer, int bufsize );
-
 	// console command interaction
 	int			(*Argc)( void );
 	void		(*Argv)( int n, char *buffer, int bufferLength );
@@ -146,13 +129,10 @@ typedef struct {
 #endif
 	void		(*GetClipboardData)( char *buf, int bufsize );
 
-	void		(*GetGlconfig)( glconfig_t *config );
-
 	connstate_t	(*GetClientState)( void );
 
 	void		(*GetConfigString)( int index, char* buff, int buffsize );
-
-	int			(*Milliseconds)( void );
+    
 	void		(*Draw_DataPad)(int HUDType);
 } uiimport_t;
 

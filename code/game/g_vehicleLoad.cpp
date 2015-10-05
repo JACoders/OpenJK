@@ -263,7 +263,7 @@ static void G_ParseVehicleParms( vehicleInfo_t *vehicle, const char **holdBuf )
 		token = COM_ParseExt( holdBuf, qtrue );
 		if ( !token[0] ) 
 		{
-			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing vehicles!\n" );
+			Com_Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing vehicles!\n" );
 			return;
 		}
 
@@ -298,7 +298,7 @@ static void G_ParseVehicleParms( vehicleInfo_t *vehicle, const char **holdBuf )
 					assert(_iFieldsRead==3 );
 					if (_iFieldsRead!=3)
 					{
-						gi.Printf (S_COLOR_YELLOW"G_ParseVehicleParms: VEC3 sscanf() failed to read 3 floats ('angle' key bug?)\n");
+						Com_Printf (S_COLOR_YELLOW"G_ParseVehicleParms: VEC3 sscanf() failed to read 3 floats ('angle' key bug?)\n");
 					}
 					((float *)(b+vehFields[i].ofs))[0] = vec[0];
 					((float *)(b+vehFields[i].ofs))[1] = vec[1];
@@ -348,7 +348,7 @@ static void G_VehicleStoreParms( const char *p )
 		{//found one, parse out the goodies
 			if ( numVehicles >= MAX_VEHICLES )
 			{//sorry, no more vehicle slots!
-				gi.Printf( S_COLOR_RED"Too many vehicles in *.veh (limit %d)\n", MAX_VEHICLES );
+				Com_Printf( S_COLOR_RED"Too many vehicles in *.veh (limit %d)\n", MAX_VEHICLES );
 				break;
 			}
 			//token = token;
@@ -388,7 +388,7 @@ void G_VehicleLoadParms( void )
 	#define MAX_VEHICLE_DATA_SIZE 0x20000
 	char	VehicleParms[MAX_VEHICLE_DATA_SIZE]={0};
 
-	//	gi.Printf( "Parsing *.veh vehicle definitions\n" );
+	//	Com_Printf( "Parsing *.veh vehicle definitions\n" );
 
 	//set where to store the first one
 	totallen = 0;
@@ -402,13 +402,13 @@ void G_VehicleLoadParms( void )
 	{
 		vehExtFNLen = strlen( holdChar );
 
-		//gi.Printf( "Parsing %s\n", holdChar );
+		//Com_Printf( "Parsing %s\n", holdChar );
 
 		len = gi.FS_ReadFile( va( "ext_data/vehicles/%s", holdChar), (void **) &buffer );
 
 		if ( len == -1 ) 
 		{
-			gi.Printf( "G_VehicleLoadParms: error reading file %s\n", holdChar );
+			Com_Printf( "G_VehicleLoadParms: error reading file %s\n", holdChar );
 		}
 		else
 		{
@@ -419,7 +419,7 @@ void G_VehicleLoadParms( void )
 				marker++; 
 			}
 			if ( totallen + len >= MAX_VEHICLE_DATA_SIZE ) {
-				G_Error( "G_VehicleLoadParms: ran out of space before reading %s\n(you must make the .npc files smaller)", holdChar );
+				Com_Error(ERR_DROP,  "G_VehicleLoadParms: ran out of space before reading %s\n(you must make the .npc files smaller)", holdChar );
 			}
 			strcat( marker, buffer );
 			gi.FS_FreeFile( buffer );

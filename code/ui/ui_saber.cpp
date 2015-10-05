@@ -74,13 +74,13 @@ qboolean UI_ParseLiteral( const char **data, const char *string )
 	token = COM_ParseExt( data, qtrue );
 	if ( token[0] == 0 ) 
 	{
-		ui.Printf( "unexpected EOF\n" );
+		Com_Printf("unexpected EOF\n");
 		return qtrue;
 	}
 
 	if ( Q_stricmp( token, string ) ) 
 	{
-		ui.Printf( "required string '%s' missing\n", string );
+		Com_Printf("required string '%s' missing\n", string);
 		return qtrue;
 	}
 
@@ -137,7 +137,7 @@ qboolean UI_SaberParseParm( const char *saberName, const char *parmname, char *s
 		token = COM_ParseExt( &p, qtrue );
 		if ( !token[0] ) 
 		{
-			ui.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName );
+			Com_Printf(S_COLOR_RED"ERROR: unexpected EOF while parsing '%s'\n", saberName);
 			COM_EndParseSession(  );
 			return qfalse;
 		}
@@ -291,8 +291,6 @@ void UI_SaberLoadParms( void )
 	int			len, totallen, saberExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
 	char		saberExtensionListBuf[2048];			//	The list of file names read in
-
-	//ui.Printf( "UI Parsing *.sab saber definitions\n" );
 	
 	ui_saber_parms_parsed = qtrue;
 	UI_CacheSaberGlowGraphics();
@@ -314,7 +312,7 @@ void UI_SaberLoadParms( void )
 
 		if ( len == -1 ) 
 		{
-			ui.Printf( "UI_SaberLoadParms: error reading %s\n", holdChar );
+			Com_Printf("UI_SaberLoadParms: error reading %s\n", holdChar);
 		}
 		else
 		{
@@ -549,11 +547,11 @@ void UI_SaberDrawBlade( itemDef_t *item, char *saberName, int saberModel, saberT
 
 	if ( (item->flags&ITF_ISSABER) && saberModel < 2 )
 	{
-		DC->getCVarString( "ui_saber_color", bladeColorString, sizeof(bladeColorString) );
+		Cvar_VariableStringBuffer("ui_saber_color", bladeColorString, sizeof(bladeColorString));
 	}
 	else//if ( item->flags&ITF_ISSABER2 ) - presumed
 	{
-		DC->getCVarString( "ui_saber2_color", bladeColorString, sizeof(bladeColorString) );
+		Cvar_VariableStringBuffer("ui_saber2_color", bladeColorString, sizeof(bladeColorString));
 	}
 	saber_colors_t bladeColor = TranslateSaberColor( bladeColorString );
 
@@ -762,11 +760,11 @@ void UI_GetSaberForMenu( char *saber, int saberNum )
 
 	if ( saberNum == 0 )
 	{
-		DC->getCVarString( "g_saber", saber, MAX_QPATH );
+		Cvar_VariableStringBuffer("g_saber", saber, MAX_QPATH);
 	}
 	else
 	{
-		DC->getCVarString( "g_saber2", saber, MAX_QPATH );
+		Cvar_VariableStringBuffer("g_saber2", saber, MAX_QPATH);
 	}
 	//read this from the sabers.cfg
 	UI_SaberTypeForSaber( saber, saberTypeString );
@@ -826,12 +824,12 @@ void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, float curYaw )
 		}
 		else if ( (item->flags&ITF_ISSABER) )
 		{
-			DC->getCVarString( "ui_saber", saber, sizeof(saber) );
+			Cvar_VariableStringBuffer("ui_saber", saber, sizeof(saber));
 			saberModel = 0;
 		}
 		else if ( (item->flags&ITF_ISSABER2) )
 		{
-			DC->getCVarString( "ui_saber2", saber, sizeof(saber) );
+			Cvar_VariableStringBuffer("ui_saber2", saber, sizeof(saber));
 			saberModel = 0;
 		}
 		else

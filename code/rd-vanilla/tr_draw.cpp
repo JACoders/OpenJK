@@ -23,6 +23,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 // tr_draw.c
+
+#include <chrono>
+
 #include "../server/exe_headers.h"
 #include "tr_local.h"
 
@@ -372,6 +375,8 @@ typedef enum
 
 typedef struct
 {
+	using hrc = std::chrono::high_resolution_clock;
+
 	int			iWidth;
 	int			iHeight;
 	int			iUploadWidth;
@@ -380,8 +385,10 @@ typedef struct
 	image_t		*pImage;	// old image screen
 	image_t		*pDissolve;	// fuzzy thing
 	image_t		*pBlack;	// small black image for clearing
-	int			iStartTime;	// 0 = not processing
-	Dissolve_e	eDissolveType;	
+
+	hrc::time_point start_time;
+
+	Dissolve_e	eDissolveType;
 	qboolean	bTouchNeeded;
 
 } Dissolve_t;
@@ -457,7 +464,8 @@ static void RE_Blit(float fX0, float fY0, float fX1, float fY1, float fX2, float
 
 static void RE_KillDissolve(void)
 {
-	Dissolve.iStartTime = 0;
+	using hrc = std::chrono::high_resolution_clock;
+	Dissolve.start_time = hrc::time_point(hrc::duration(0));
 
 	if (Dissolve.pImage)
 	{
@@ -472,7 +480,11 @@ static void RE_KillDissolve(void)
 #define iSAFETY_SPRITE_OVERLAP 2	// #pixels to overlap blit region by, in case some drivers leave onscreen seams
 qboolean RE_ProcessDissolve(void)
 {
-	if (Dissolve.iStartTime)
+	using std::chrono::duration_cast;
+	using hrc = std::chrono::high_resolution_clock;
+	using std::chrono::milliseconds;
+
+	if (Dissolve.start_time != hrc::time_point(hrc::duration(0)))
 	{
 		if (Dissolve.bTouchNeeded)
 		{
@@ -487,10 +499,15 @@ qboolean RE_ProcessDissolve(void)
 			//	should let things work properly...
 			//
 			Dissolve.bTouchNeeded = qfalse;
-			Dissolve.iStartTime = ri.Milliseconds();
+			Dissolve.start_time = hrc::now();
 		}
-		
-		int iDissolvePercentage = ((ri.Milliseconds() - Dissolve.iStartTime)*100) / (1000.0f * fDISSOLVE_SECONDS);
+
+		auto run_time = duration_cast<milliseconds>(
+			hrc::now() - Dissolve.start_time
+		).count();
+
+		// FIXME: This really ought to be a float.
+		int iDissolvePercentage = (run_time * 100) / (1000.0f * fDISSOLVE_SECONDS);
 
 //		ri.Printf(PRINT_ALL,"iDissolvePercentage %d\n",iDissolvePercentage);
 
@@ -762,10 +779,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 //	ri.Printf( PRINT_ALL, "RE_InitDissolve()\n");
 	qboolean bReturn = qfalse;
 
-	if (//Dissolve.iStartTime == 0	// no point in interruping an existing one
-		//&&
-		tr.registered == qtrue		// ... stops it crashing during first cinematic before the menus... :-)
-		)
+	if(tr.registered == qtrue) // ... stops it crashing during first cinematic before the menus... :-)
 	{
 		RE_KillDissolve();	// kill any that are already running
 
@@ -1007,7 +1021,10 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 			//
 			if (Dissolve.pDissolve)	// test if image was found, if not, don't do dissolves
 			{
-				Dissolve.iStartTime = ri.Milliseconds();	// gets overwritten first time, but MUST be set to NZ
+				using hrc = std::chrono::high_resolution_clock;
+
+				Dissolve.start_time = hrc::now();
+
 				Dissolve.bTouchNeeded = qtrue;
 				bReturn = qtrue;
 			}

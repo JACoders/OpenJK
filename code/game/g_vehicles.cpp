@@ -75,7 +75,7 @@ extern float DotToSpot( vec3_t spot, vec3_t from, vec3_t fromAngles );
 extern qboolean Q3_TaskIDPending( gentity_t *ent, taskID_t taskType );
 extern void SetClientViewAngle( gentity_t *ent, vec3_t angle );
 
-extern vmCvar_t	cg_thirdPersonAlpha;
+extern cvar_t* cg_thirdPersonAlpha;
 extern vec3_t playerMins;
 extern vec3_t playerMaxs;
 extern cvar_t	*g_speederControlScheme;
@@ -425,9 +425,9 @@ void G_DriveATST( gentity_t *pEnt, gentity_t *atst )
 		{
 			CG_ChangeWeapon( WP_BLASTER );
 			//camera
-			if ( cg_gunAutoFirst.integer )
+			if ( cg_gunAutoFirst->integer )
 			{//go back to first person
-				gi.cvar_set( "cg_thirdperson", "0" );
+				Cvar_Set("cg_thirdperson", "0");
 			}
 		}
 		else
@@ -436,7 +436,7 @@ void G_DriveATST( gentity_t *pEnt, gentity_t *atst )
 		}
 		cg.overrides.active &= ~(CG_OVERRIDE_3RD_PERSON_RNG|CG_OVERRIDE_3RD_PERSON_VOF|CG_OVERRIDE_3RD_PERSON_POF|CG_OVERRIDE_3RD_PERSON_APH);
 		cg.overrides.thirdPersonRange = cg.overrides.thirdPersonVertOffset = cg.overrides.thirdPersonPitchOffset = 0;
-		cg.overrides.thirdPersonAlpha = cg_thirdPersonAlpha.value;
+		cg.overrides.thirdPersonAlpha = cg_thirdPersonAlpha->value;
 		pEnt->client->ps.viewheight = pEnt->maxs[2] + STANDARD_VIEWHEIGHT_OFFSET;
 		//pEnt->mass = 10;
 	}
@@ -493,7 +493,7 @@ void G_DriveATST( gentity_t *pEnt, gentity_t *atst )
 		//HACKHACKHACKTEMP
 		//FIXME: these get lost in load/save!  Must use variables that are set every frame or saved/loaded
 		//camera
-		gi.cvar_set( "cg_thirdperson", "1" );
+		Cvar_Set("cg_thirdperson", "1");
 		cg.overrides.active |= CG_OVERRIDE_3RD_PERSON_RNG;
 		cg.overrides.thirdPersonRange = 240;
 		//cg.overrides.thirdPersonVertOffset = 100;
@@ -726,7 +726,7 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 #endif
 
 #ifndef _JK2MP
-		gi.cvar_set( "cg_thirdperson", "1" );								//go to third person
+		Cvar_Set("cg_thirdperson", "1");								//go to third person
 		CG_CenterPrint( "@SP_INGAME_EXIT_VIEW", SCREEN_HEIGHT * 0.86 );		//tell them how to get out!
 #endif
 
@@ -1295,7 +1295,7 @@ getItOutOfMe:
 /*	if ( !ent->s.number && ent->client->ps.weapon != WP_SABER
 		&& cg_gunAutoFirst.value )
 	{
-		gi.cvar_set( "cg_thirdperson", "0" );
+		Cvar_Set("cg_thirdperson", "0");
 	}*/
 #ifdef _JK2MP
 	BG_SetLegsAnimTimer( &ent->client->ps, 0 );

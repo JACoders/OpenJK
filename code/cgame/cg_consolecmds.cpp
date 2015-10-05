@@ -28,6 +28,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cg_media.h"	//just for cgs....
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 void CG_TargetCommand_f( void );
 extern qboolean	player_locked;
 extern void CMD_CGCam_Disable( void );
@@ -63,7 +66,7 @@ Debugging command to print the current position
 =============
 */
 static void CG_Viewpos_f (void) {
-	CG_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
+	Com_Printf ("%s (%i %i %i) : %i\n", cgs.mapname, (int)cg.refdef.vieworg[0],
 		(int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], 
 		(int)cg.refdefViewAngles[YAW]);
 }
@@ -83,8 +86,8 @@ void CG_WriteCam_f (void)
 		targetname = "nameme!";
 	}
 
-	CG_Printf( "Camera #%d ('%s') written to: ", numCams, targetname );
-	Com_sprintf( text, sizeof(text), "//entity %d\n{\n\"classname\"	\"ref_tag\"\n\"targetname\"	\"%s\"\n\"origin\" \"%i %i %i\"\n\"angles\" \"%i %i %i\"\n\"fov\" \"%i\"\n}\n", numCams, targetname, (int)cg.refdef.vieworg[0], (int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[0], (int)cg.refdefViewAngles[1], (int)cg.refdefViewAngles[2], cg_fov.integer );
+	Com_Printf( "Camera #%d ('%s') written to: ", numCams, targetname );
+	Com_sprintf( text, sizeof(text), "//entity %d\n{\n\"classname\"	\"ref_tag\"\n\"targetname\"	\"%s\"\n\"origin\" \"%i %i %i\"\n\"angles\" \"%i %i %i\"\n\"fov\" \"%i\"\n}\n", numCams, targetname, (int)cg.refdef.vieworg[0], (int)cg.refdef.vieworg[1], (int)cg.refdef.vieworg[2], (int)cg.refdefViewAngles[0], (int)cg.refdefViewAngles[1], (int)cg.refdefViewAngles[2], cg_fov->integer );
 	gi.WriteCam( text );
 }
 
@@ -135,7 +138,7 @@ void CG_ToggleBinoculars( void )
 		}
 		else
 		{
-			cg_zoomFov = cg_fov.value;
+			cg_zoomFov = cg_fov->value;
 		}
 
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomStart );
@@ -183,7 +186,7 @@ void CG_ToggleLAGoggles( void )
 		}
 		else
 		{
-			cg_zoomFov = cg_fov.value; // does not zoom!!
+			cg_zoomFov = cg_fov->value; // does not zoom!!
 		}
 
 		cgi_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.zoomStart );
@@ -200,7 +203,7 @@ void CG_LoadHud_f( void )
 {
 	const char *hudSet;
 
-	hudSet = cg_hudFiles.string;
+	hudSet = cg_hudFiles->string;
 	if (hudSet[0] == '\0') 
 	{
 		hudSet = "ui/jahud.txt";

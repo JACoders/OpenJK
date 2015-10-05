@@ -1106,7 +1106,7 @@ void SP_target_interest( gentity_t *self )
 {//FIXME: rename point_interest
 	if(level.numInterestPoints >= MAX_INTEREST_POINTS)
 	{
-		gi.Printf("ERROR:  Too many interest points, limit is %d\n", MAX_INTEREST_POINTS);
+		Com_Printf("ERROR:  Too many interest points, limit is %d\n", MAX_INTEREST_POINTS);
 		G_FreeEntity(self);
 		return;
 	}

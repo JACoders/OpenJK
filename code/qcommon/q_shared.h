@@ -109,45 +109,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <stddef.h>
 
-//Ignore __attribute__ on non-gcc platforms
-#if !defined(__GNUC__) && !defined(__attribute__)
-	#define __attribute__(x)
-#endif
-
-#if defined(__GNUC__)
-	#define UNUSED_VAR __attribute__((unused))
-#else
-	#define UNUSED_VAR
-#endif
-
-#if (defined _MSC_VER)
-	#define Q_EXPORT __declspec(dllexport)
-#elif (defined __SUNPRO_C)
-	#define Q_EXPORT __global
-#elif ((__GNUC__ >= 3) && (!__EMX__) && (!sun))
-	#define Q_EXPORT __attribute__((visibility("default")))
-#else
-	#define Q_EXPORT
-#endif
-
-#if defined(__GNUC__)
-#define NORETURN __attribute__((noreturn))
-#elif defined(_MSC_VER)
-#define NORETURN __declspec(noreturn)
-#endif
-
-// this is the define for determining if we have an asm version of a C function
-#if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
-	#define id386	1
-#else
-	#define id386	0
-#endif
-
-#if (defined(powerc) || defined(powerpc) || defined(ppc) || defined(__ppc) || defined(__ppc__)) && !defined(C_ONLY)
-	#define idppc	1
-#else
-	#define idppc	0
-#endif
+// Cross-platform abstraction of functions attributes.
+#include "../../shared/sys/sys_attributes.h"
 
 short ShortSwap( short l );
 int LongSwap( int l );
@@ -1017,7 +980,7 @@ void Parse2DMatrix (const char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (const char **buf_p, int z, int y, int x, float *m);
 int Com_HexStrToInt( const char *str );
 
-int	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+int	Com_sprintf (char *dest, int size, const char *fmt, ...);
 
 char *Com_SkipTokens( char *s, int numTokens, char *sep );
 char *Com_SkipCharset( char *s, char *sep );
@@ -1098,7 +1061,7 @@ float	LittleFloat (const float *l);
 void	Swap_Init (void);
 */
 
-char	* QDECL va(const char *format, ...);
+char	* va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
 void Com_TruncateLongString( char *buffer, const char *s );
@@ -1115,8 +1078,8 @@ qboolean Info_Validate( const char *s );
 void Info_NextPair( const char **s, char key[MAX_INFO_KEY], char value[MAX_INFO_VALUE] );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-void	NORETURN QDECL Com_Error( int level, const char *error, ... );
-void	QDECL Com_Printf( const char *msg, ... );
+void NORETURN Com_Error( int level, const char *error, ... );
+void Com_Printf( const char *msg, ... );
 
 
 /*
@@ -1130,68 +1093,13 @@ default values.
 ==========================================================
 */
 
-#define	CVAR_TEMP			0	// can be set even when cheats are disabled, but is not archived
-#define	CVAR_ARCHIVE		1	// set to cause it to be saved to vars.rc
-								// used for system variables, not for player
-								// specific configurations
-#define	CVAR_USERINFO		2	// sent to server on connect or change
-#define	CVAR_SERVERINFO		4	// sent in response to front end requests
-#define	CVAR_SYSTEMINFO		8	// these cvars will be duplicated on all clients
-#define	CVAR_INIT			16	// don't allow change from console at all,
-								// but can be set from the command line
-#define	CVAR_LATCH			32	// will only change when C code next does
-								// a Cvar_Get(), so it can't be changed
-								// without proper initialization.  modified
-								// will be set, even though the value hasn't
-								// changed yet
-#define	CVAR_ROM			64	// display only, cannot be set by user at all
-#define	CVAR_USER_CREATED	128	// created by a set command
-#define	CVAR_SAVEGAME		256	// store this in the savegame
-#define CVAR_CHEAT			512	// can not be changed if cheats are disabled
-#define CVAR_NORESTART		1024	// do not clear when a cvar_restart is issued
-
-#define CVAR_SERVER_CREATED	2048	// cvar was created by a server the client connected to.
-#define CVAR_VM_CREATED		4096	// cvar was created exclusively in one of the VMs.
-#define CVAR_PROTECTED		8192	// prevent modifying this var from VMs or the server
-// These flags are only returned by the Cvar_Flags() function
-#define CVAR_MODIFIED		0x40000000		// Cvar was modified
-#define CVAR_NONEXISTENT	0x80000000		// Cvar doesn't exist.
-
-// nothing outside the Cvar_*() functions should modify these fields!
-typedef struct cvar_s {
-	char		*name;
-	char		*string;
-	char		*resetString;		// cvar_restart will reset to this value
-	char		*latchedString;		// for CVAR_LATCH vars
-	int			flags;
-	qboolean	modified;			// set each time the cvar is changed
-	int			modificationCount;	// incremented each time the cvar is changed
-	float		value;				// atof( string )
-	int			integer;			// atoi( string )
-	qboolean	validate;
-	qboolean	integral;
-	float		min;
-	float		max;
-	struct cvar_s *next;
-	struct cvar_s *prev;
-	struct cvar_s *hashNext;
-	struct cvar_s *hashPrev;
-	int			hashIndex;
-} cvar_t;
+// Pull in functions and structure definitions that the engine exposes to plugin
+// modules.
+#include "cvar_exports.hh"
 
 #define	MAX_CVAR_VALUE_STRING	256
 
 typedef int	cvarHandle_t;
-
-// the modules that run in the virtual machine can't access the cvar_t directly,
-// so they must ask for structured updates
-typedef struct {
-	cvarHandle_t	handle;
-	int			modificationCount;
-	float		value;
-	int			integer;
-	char		string[MAX_CVAR_VALUE_STRING];
-} vmCvar_t;
 
 /*
 ==============================================================

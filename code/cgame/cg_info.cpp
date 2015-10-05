@@ -26,6 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_media.h"
 #include "../game/objectives.h"
 
+// Get functions exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 
 // For printing objectives
 static const short objectiveStartingYpos = 75;		// Y starting position for objective text
@@ -81,9 +84,9 @@ static void ObjectivePrint_Line(const int color, const int objectIndex, int &mis
 		char value[64];
 		int	currTotal, minTotal;
 
-		gi.Cvar_VariableStringBuffer("ui_prisonerobj_currtotal",value,sizeof(value));
+		Cvar_VariableStringBuffer("ui_prisonerobj_currtotal",value,sizeof(value));
 		currTotal = atoi(value);
-		gi.Cvar_VariableStringBuffer("ui_prisonerobj_maxtotal",value,sizeof(value));
+		Cvar_VariableStringBuffer("ui_prisonerobj_maxtotal",value,sizeof(value));
 		minTotal = atoi(value);
 
 		Q_strncpyz(finalText, va(finalText,currTotal,minTotal), sizeof(finalText));
@@ -326,7 +329,7 @@ static void CG_DrawForceCount( const int force, int x, float *y, const int pad,q
 	int		val, textColor;
 	char	text[1024]={0};
 
-	gi.Cvar_VariableStringBuffer( va("playerfplvl%d", force ),s, sizeof(s) );
+	Cvar_VariableStringBuffer( va("playerfplvl%d", force ),s, sizeof(s) );
 
 	sscanf( s, "%d",&val );
 
@@ -669,7 +672,7 @@ static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 	float	fDummy;
 	const char	*var;
 
-	gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
+	Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
 
 	// Get player weapons and force powers known
 	if (s[0])	
@@ -695,7 +698,7 @@ static void CG_GetLoadScreenInfo(int *weaponBits,int *forceBits)
 
 	// the new JK2 stuff - force powers, etc...
 	//
-	gi.Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
+	Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
 	i=0;
 	var = strtok( s, " " );
 	while( var != NULL )
@@ -724,11 +727,11 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName)
 	// Get mission briefing for load screen
 	if (cgi_SP_GetStringTextString( va("BRIEFINGS_%s",mapName), NULL, 0 ) == 0)
 	{
-		cgi_Cvar_Set( "ui_missionbriefing", "@BRIEFINGS_NONE" );
+		Cvar_Set("ui_missionbriefing", "@BRIEFINGS_NONE");
 	}
 	else
 	{
-		cgi_Cvar_Set( "ui_missionbriefing", va("@BRIEFINGS_%s",mapName) );
+		Cvar_Set("ui_missionbriefing", va("@BRIEFINGS_%s",mapName));
 	}
 
 	// Print background

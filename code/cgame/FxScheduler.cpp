@@ -700,7 +700,7 @@ SEffectTemplate *CFxScheduler::GetEffectCopy( int fxHandle, int *newHandle )
 	}
 
 	// never get a copy when time is frozen
-	if ( fx_freeze.integer )
+	if ( fx_freeze->integer )
 	{
 		return 0;
 	}
@@ -1157,7 +1157,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 	}
 
 	// Don't bother scheduling the effect if the system is currently frozen
-	if ( fx_freeze.integer )
+	if ( fx_freeze->integer )
 	{
 		return;
 	}

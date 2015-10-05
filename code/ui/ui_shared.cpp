@@ -43,9 +43,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 void		UI_LoadMenus(const char *menuFile, qboolean reset);
 
-extern vmCvar_t	ui_char_color_red;
-extern vmCvar_t	ui_char_color_green;
-extern vmCvar_t	ui_char_color_blue;
+extern cvar_t*	ui_char_color_red;
+extern cvar_t*	ui_char_color_green;
+extern cvar_t*	ui_char_color_blue;
 
 void *UI_Alloc( int size );
 
@@ -1320,10 +1320,7 @@ void *UI_Alloc( int size )
 	if ( allocPoint + size > MEM_POOL_SIZE )
 	{
 		outOfMemory = qtrue;
-		if (DC->Print)
-		{
-			DC->Print("UI_Alloc: Failure. Out of memory!\n");
-		}
+		Com_Printf("UI_Alloc: Failure. Out of memory!\n");
 		return NULL;
 	}
 
@@ -1712,7 +1709,7 @@ void Menu_SetItemText(const menuDef_t *menu,const char *itemName, const char *te
 
 					if (item->cvar)
 					{
-						DC->getCVarString(item->cvar, cvartext, sizeof(cvartext));
+						Cvar_VariableStringBuffer(item->cvar, cvartext, sizeof(cvartext));
 						item->text = cvartext;
 					}
 					else
@@ -2700,10 +2697,10 @@ qboolean Script_SetCvar(itemDef_t *item, const char **args)
 	{
 		if(!Q_stricmp(val,"(NULL)"))
 		{
-			DC->setCVar(cvar, "");
+			Cvar_Set(cvar, "");
 		}
 		else {
-			DC->setCVar(cvar, val);
+			Cvar_Set(cvar, val);
 		}
 	}
 
@@ -2883,7 +2880,7 @@ const char *Item_Multi_Setting(itemDef_t *item)
 		{
 			if (item->cvar)
 			{
-			    DC->getCVarString(item->cvar, buff, sizeof(buff));
+			    Cvar_VariableStringBuffer(item->cvar, buff, sizeof(buff));
 			}
 			else
 			{
@@ -2894,7 +2891,7 @@ const char *Item_Multi_Setting(itemDef_t *item)
 		{
 			if (item->cvar)	// Was a cvar given?
 			{
-				value = DC->getCVarValue(item->cvar);
+				value = Cvar_VariableValue(item->cvar);
 			}
 			else
 			{
@@ -5766,7 +5763,7 @@ PC_ParseWarning
 */
 void PC_ParseWarning(const char *message)
 {
-	ui.Printf(S_COLOR_YELLOW "WARNING: %s Line #%d of File '%s'\n", message,parseData[parseDataCount].com_lines,parseData[parseDataCount].fileName);
+	Com_Printf(S_COLOR_YELLOW "WARNING: %s Line #%d of File '%s'\n", message,parseData[parseDataCount].com_lines,parseData[parseDataCount].fileName);
 }
 
 char *PC_ParseExt(void)
@@ -5992,12 +5989,12 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 
 			COM_EndParseSession();
 			Q_strncpyz(buff, val, sizeof(buff), qtrue);
-			DC->getCVarString(item->cvarTest, script, sizeof(script));
+			Cvar_VariableStringBuffer(item->cvarTest, script, sizeof(script));
 			p = script;
 		}
 		else
 		{
-			DC->getCVarString(item->cvarTest, buff, sizeof(buff));
+			Cvar_VariableStringBuffer(item->cvarTest, buff, sizeof(buff));
 			Q_strncpyz(script, item->enableCvar, sizeof(script), qtrue);
 			p = script;
 		}
@@ -6092,7 +6089,7 @@ void Item_SetTextExtents(itemDef_t *item, int *width, int *height, const char *t
 		else if (item->type == ITEM_TYPE_EDITFIELD && item->textalignment == ITEM_ALIGN_CENTER && item->cvar)
 		{
 			char buff[256];
-			DC->getCVarString(item->cvar, buff, 256);
+			Cvar_VariableStringBuffer(item->cvar, buff, 256);
 			originalWidth += DC->textWidth(buff, item->textscale, item->font);
 		}
 
@@ -6197,7 +6194,7 @@ void Item_Text_Wrapped_Paint(itemDef_t *item)
 		}
 		else
 		{
-			DC->getCVarString(item->cvar, text, sizeof(text));
+			Cvar_VariableStringBuffer(item->cvar, text, sizeof(text));
 			textPtr = text;
 		}
 	}
@@ -6267,7 +6264,7 @@ void Item_Text_Paint(itemDef_t *item)
 		}
 		else
 		{
-			DC->getCVarString(item->cvar, text, sizeof(text));
+			Cvar_VariableStringBuffer(item->cvar, text, sizeof(text));
 			textPtr = text;
 		}
 	}
@@ -6361,7 +6358,7 @@ void Item_TextField_Paint(itemDef_t *item)
 
 	if (item->cvar)
 	{
-		DC->getCVarString(item->cvar, buff, sizeof(buff));
+		Cvar_VariableStringBuffer(item->cvar, buff, sizeof(buff));
 	}
 
 	if (item->window.flags & WINDOW_HASFOCUS)
@@ -6402,7 +6399,7 @@ void Item_TextScroll_Paint(itemDef_t *item)
 	// Still a little iffy - BTO (VV)
 	if (item->cvar)
 	{
-		DC->getCVarString(item->cvar, cvartext, sizeof(cvartext));
+		Cvar_VariableStringBuffer(item->cvar, cvartext, sizeof(cvartext));
 		item->text = cvartext;
 	}
 
@@ -6544,9 +6541,9 @@ void Item_ListBox_Paint(itemDef_t *item)
 					if (item->window.flags & WINDOW_PLAYERCOLOR)
 					{
 						vec4_t	color;
-						color[0] = ui_char_color_red.integer/255.0f;
-						color[1] = ui_char_color_green.integer/255.0f;
-						color[2] = ui_char_color_blue.integer/255.0f;
+						color[0] = ui_char_color_red->integer/255.0f;
+						color[1] = ui_char_color_green->integer/255.0f;
+						color[2] = ui_char_color_blue->integer/255.0f;
 						color[3] = 1;
 						ui.R_SetColor(color);
 					}
@@ -6799,7 +6796,7 @@ void Item_Bind_Paint(itemDef_t *item)
 		maxChars = editPtr->maxPaintChars;
 	}
 
-	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
+	value = (item->cvar) ? Cvar_VariableValue(item->cvar) : 0;
 
 	if (item->window.flags & WINDOW_HASFOCUS)
 	{
@@ -7214,9 +7211,9 @@ void Item_Model_Paint(itemDef_t *item)
 
 		if ( (item->flags&ITF_ISCHARACTER) )
 		{
-			ent.shaderRGBA[0] = ui_char_color_red.integer;
-			ent.shaderRGBA[1] = ui_char_color_green.integer;
-			ent.shaderRGBA[2] = ui_char_color_blue.integer;
+			ent.shaderRGBA[0] = ui_char_color_red->integer;
+			ent.shaderRGBA[1] = ui_char_color_green->integer;
+			ent.shaderRGBA[2] = ui_char_color_blue->integer;
 			ent.shaderRGBA[3] = 255;
 			UI_TalkingHead(item);
 		}
@@ -7321,7 +7318,7 @@ void Item_YesNo_Paint(itemDef_t *item)
 	float value;
 	menuDef_t *parent = (menuDef_t*)item->parent;
 
-	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
+	value = (item->cvar) ? Cvar_VariableValue(item->cvar) : 0;
 
 	if (item->window.flags & WINDOW_HASFOCUS)
 	{
@@ -7589,7 +7586,7 @@ float Item_Slider_ThumbPosition(itemDef_t *item)
 		return x;
 	}
 
-	value = DC->getCVarValue(item->cvar);
+	value = Cvar_VariableValue(item->cvar);
 
 	if (value < editDef->minVal)
 	{
@@ -8387,9 +8384,9 @@ void Window_Paint(Window *w, float fadeAmount, float fadeClamp, float fadeCycle)
 		if (w->flags & WINDOW_PLAYERCOLOR)
 		{
 			vec4_t	color;
-			color[0] = ui_char_color_red.integer/255.0f;
-			color[1] = ui_char_color_green.integer/255.0f;
-			color[2] = ui_char_color_blue.integer/255.0f;
+			color[0] = ui_char_color_red->integer/255.0f;
+			color[1] = ui_char_color_green->integer/255.0f;
+			color[2] = ui_char_color_blue->integer/255.0f;
 			color[3] = 1;
 			ui.R_SetColor(color);
 		}
@@ -8502,7 +8499,7 @@ void Item_Text_AutoWrapped_Paint(itemDef_t *item)
 		}
 		else
 		{
-			DC->getCVarString(item->cvar, text, sizeof(text));
+			Cvar_VariableStringBuffer(item->cvar, text, sizeof(text));
 			textPtr = text;
 		}
 	}
@@ -9624,7 +9621,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 	{
 
 		memset(buff, 0, sizeof(buff));
-		DC->getCVarString(item->cvar, buff, sizeof(buff));
+		Cvar_VariableStringBuffer(item->cvar, buff, sizeof(buff));
 		len = strlen(buff);
 		if (editPtr->maxChars && len > editPtr->maxChars)
 		{
@@ -9647,7 +9644,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 						editPtr->paintOffset--;
 					}
 				}
-				DC->setCVar(item->cvar, buff);
+				Cvar_Set(item->cvar, buff);
 	    		return qtrue;
 			}
 
@@ -9685,7 +9682,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 
 			buff[item->cursorPos] = key;
 
-			DC->setCVar(item->cvar, buff);
+			Cvar_Set(item->cvar, buff);
 
 			if (item->cursorPos < len + 1)
 			{
@@ -9705,7 +9702,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 				if ( item->cursorPos < len )
 				{
 					memmove( buff + item->cursorPos, buff + item->cursorPos + 1, len - item->cursorPos);
-					DC->setCVar(item->cvar, buff);
+					Cvar_Set(item->cvar, buff);
 				}
 				return qtrue;
 			}
@@ -10507,7 +10504,7 @@ static void Scroll_Slider_ThumbFunc(void *p)
 	value /= SLIDER_WIDTH;
 	value *= (editDef->maxVal - editDef->minVal);
 	value += editDef->minVal;
-	DC->setCVar(si->item->cvar, va("%f", value));
+	Cvar_Set(si->item->cvar, va("%f", value));
 }
 /*
 =================
@@ -10605,7 +10602,7 @@ qboolean Item_YesNo_HandleKey(itemDef_t *item, int key)
 	{
 		if (key == A_MOUSE1 || key == A_ENTER || key == A_MOUSE2 || key == A_MOUSE3)
 		{
-			DC->setCVar(item->cvar, va("%i", !DC->getCVarValue(item->cvar)));
+			Cvar_Set(item->cvar, va("%i", !Cvar_VariableValue(item->cvar)));
 			return qtrue;
 		}
 	}
@@ -10629,11 +10626,11 @@ int Item_Multi_FindCvarByValue(itemDef_t *item)
 	{
 		if (multiPtr->strDef)
 		{
-			DC->getCVarString(item->cvar, buff, sizeof(buff));
+			Cvar_VariableStringBuffer(item->cvar, buff, sizeof(buff));
 		}
 		else
 		{
-			value = DC->getCVarValue(item->cvar);
+			value = Cvar_VariableValue(item->cvar);
 		}
 		for (i = 0; i < multiPtr->count; i++)
 		{
@@ -10764,18 +10761,18 @@ qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
 
 					if (multiPtr->strDef)
 					{
-						DC->setCVar(item->cvar, multiPtr->cvarStr[current]);
+						Cvar_Set(item->cvar, multiPtr->cvarStr[current]);
 					}
 					else
 					{
 						float value = multiPtr->cvarValue[current];
 						if (((float)((int) value)) == value)
 						{
-							DC->setCVar(item->cvar, va("%i", (int) value ));
+							Cvar_Set(item->cvar, va("%i", (int) value));
 						}
 						else
 						{
-							DC->setCVar(item->cvar, va("%f", value ));
+							Cvar_Set(item->cvar, va("%f", value));
 						}
 					}
 					if (item->special)
@@ -10862,7 +10859,7 @@ qboolean Item_Slider_HandleKey(itemDef_t *item, int key, qboolean down)
 					// vm fuckage
 					// value = (((float)(DC->cursorx - x)/ SLIDER_WIDTH) * (editDef->maxVal - editDef->minVal));
 					value += editDef->minVal;
-					DC->setCVar(item->cvar, va("%f", value));
+					Cvar_Set(item->cvar, va("%f", value));
 					return qtrue;
 				}
 			}
@@ -11135,14 +11132,14 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 	switch ( key )
 	{
 		case A_F11:
-			if (DC->getCVarValue("developer"))
+			if (Cvar_VariableValue("developer"))
 			{
 				uis.debugMode ^= 1;
 			}
 			break;
 
 		case A_F12:
-			if (DC->getCVarValue("developer"))
+			if (Cvar_VariableValue("developer"))
 			{
 				DC->executeText(EXEC_APPEND, "screenshot\n");
 			}

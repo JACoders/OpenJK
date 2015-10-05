@@ -336,7 +336,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 		|| (ent->e.oldframe >= tr.currentModel->md3[0]->numFrames)
 		|| (ent->e.oldframe < 0) ) 
 	{
-			ri.Printf (PRINT_ALL, "R_AddMD3Surfaces: no such frame %d to %d for '%s'\n",
+			CL_RefPrintf (PRINT_ALL, "R_AddMD3Surfaces: no such frame %d to %d for '%s'\n",
 				ent->e.oldframe, ent->e.frame,
 				tr.currentModel->name );
 			ent->e.frame = 0;

@@ -28,6 +28,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 
 #include "../qcommon/sstring.h"
+
+// Get functions and structures exported from main engine.
+#include "../qcommon/cvar_exports.hh"
+
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	std::map< sstring_t, unsigned char  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;
@@ -99,7 +103,7 @@ This is the only way control passes into the cgame module.
 This must be the very first function compiled into the .q3vm file
 ================
 */
-extern "C" Q_EXPORT intptr_t QDECL vmMain( intptr_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7  ) {
+extern "C" Q_EXPORT intptr_t vmMain( intptr_t command, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7  ) {
 	centity_t		*cent;
 
 	switch ( command ) {
@@ -234,115 +238,120 @@ typedef struct {
 
 inventoryInfo_t		cg_inventory[INV_MAX];
 
-vmCvar_t	cg_runpitch;
-vmCvar_t	cg_runroll;
-vmCvar_t	cg_bobup;
-vmCvar_t	cg_bobpitch;
-vmCvar_t	cg_bobroll;
-vmCvar_t	cg_shadows;
-vmCvar_t	cg_renderToTextureFX;
-vmCvar_t	cg_shadowCullDistance;
-vmCvar_t	cg_footsteps;
-vmCvar_t	cg_saberEntMarks;
-vmCvar_t	cg_paused;
-vmCvar_t	cg_drawTimer;
-vmCvar_t	cg_drawFPS;
-vmCvar_t	cg_drawSnapshot;
-vmCvar_t	cg_drawAmmoWarning;
-vmCvar_t	cg_drawCrosshair;
-vmCvar_t	cg_crosshairIdentifyTarget;
-vmCvar_t	cg_dynamicCrosshair;
-vmCvar_t	cg_crosshairForceHint;
-vmCvar_t	cg_crosshairX;
-vmCvar_t	cg_crosshairY;
-vmCvar_t	cg_crosshairSize;
-vmCvar_t	cg_draw2D;
-vmCvar_t	cg_drawStatus;
-vmCvar_t	cg_drawHUD;
-vmCvar_t	cg_debugAnim;
+cvar_t* cg_runpitch;
+cvar_t* cg_runroll;
+cvar_t* cg_bobup;
+cvar_t* cg_bobpitch;
+cvar_t* cg_bobroll;
+cvar_t* cg_shadows;
+cvar_t* cg_renderToTextureFX;
+cvar_t* cg_shadowCullDistance;
+cvar_t* cg_footsteps;
+cvar_t* cg_saberEntMarks;
+cvar_t* cg_paused;
+cvar_t* cg_drawTimer;
+cvar_t* cg_drawFPS;
+cvar_t* cg_drawSnapshot;
+cvar_t* cg_drawAmmoWarning;
+cvar_t* cg_drawCrosshair;
+cvar_t* cg_crosshairIdentifyTarget;
+cvar_t* cg_dynamicCrosshair;
+cvar_t* cg_crosshairForceHint;
+cvar_t* cg_crosshairX;
+cvar_t* cg_crosshairY;
+cvar_t* cg_crosshairSize;
+cvar_t* cg_draw2D;
+cvar_t* cg_drawStatus;
+cvar_t* cg_drawHUD;
+cvar_t* cg_debugAnim;
+
 #ifndef FINAL_BUILD
-vmCvar_t	cg_debugAnimTarget;
-vmCvar_t	cg_gun_frame;
+cvar_t* cg_debugAnimTarget;
+cvar_t* cg_gun_frame;
 #endif
-vmCvar_t	cg_gun_x;
-vmCvar_t	cg_gun_y;
-vmCvar_t	cg_gun_z;
-vmCvar_t	cg_debugSaber;
-vmCvar_t	cg_debugEvents;
-vmCvar_t	cg_errorDecay;
-vmCvar_t	cg_addMarks;
-vmCvar_t	cg_drawGun;
-vmCvar_t	cg_autoswitch;
-vmCvar_t	cg_simpleItems;
-vmCvar_t	cg_fov;
-vmCvar_t	cg_fovAspectAdjust;
-vmCvar_t	cg_endcredits;
-vmCvar_t	cg_updatedDataPadForcePower1;
-vmCvar_t	cg_updatedDataPadForcePower2;
-vmCvar_t	cg_updatedDataPadForcePower3;
-vmCvar_t	cg_updatedDataPadObjective;
-vmCvar_t	cg_drawBreath;
-vmCvar_t	cg_roffdebug;
+
+cvar_t* cg_gun_x;
+cvar_t* cg_gun_y;
+cvar_t* cg_gun_z;
+cvar_t* cg_debugSaber;
+cvar_t* cg_debugEvents;
+cvar_t* cg_errorDecay;
+cvar_t* cg_addMarks;
+cvar_t* cg_drawGun;
+cvar_t* cg_autoswitch;
+cvar_t* cg_simpleItems;
+cvar_t* cg_fov;
+cvar_t* cg_fovAspectAdjust;
+cvar_t* cg_endcredits;
+cvar_t* cg_updatedDataPadForcePower1;
+cvar_t* cg_updatedDataPadForcePower2;
+cvar_t* cg_updatedDataPadForcePower3;
+cvar_t* cg_updatedDataPadObjective;
+cvar_t* cg_drawBreath;
+cvar_t* cg_roffdebug;
+
 #ifndef FINAL_BUILD
-vmCvar_t	cg_roffval1;
-vmCvar_t	cg_roffval2;
-vmCvar_t	cg_roffval3;
-vmCvar_t	cg_roffval4;
+cvar_t* cg_roffval1;
+cvar_t* cg_roffval2;
+cvar_t* cg_roffval3;
+cvar_t* cg_roffval4;
 #endif
-vmCvar_t	cg_thirdPerson;
-vmCvar_t	cg_thirdPersonRange;
-vmCvar_t	cg_thirdPersonMaxRange;
-vmCvar_t	cg_thirdPersonAngle;
-vmCvar_t	cg_thirdPersonPitchOffset;
-vmCvar_t	cg_thirdPersonVertOffset;
-vmCvar_t	cg_thirdPersonCameraDamp;
-vmCvar_t	cg_thirdPersonTargetDamp;
-vmCvar_t	cg_gunAutoFirst;
 
-vmCvar_t	cg_thirdPersonAlpha;
-vmCvar_t	cg_thirdPersonAutoAlpha;
-vmCvar_t	cg_thirdPersonHorzOffset;
+cvar_t* cg_thirdPerson;
+cvar_t* cg_thirdPersonRange;
+cvar_t* cg_thirdPersonMaxRange;
+cvar_t* cg_thirdPersonAngle;
+cvar_t* cg_thirdPersonPitchOffset;
+cvar_t* cg_thirdPersonVertOffset;
+cvar_t* cg_thirdPersonCameraDamp;
+cvar_t* cg_thirdPersonTargetDamp;
+cvar_t* cg_gunAutoFirst;
 
-vmCvar_t	cg_stereoSeparation;
-vmCvar_t 	cg_developer;
-vmCvar_t 	cg_timescale;
-vmCvar_t	cg_skippingcin;
+cvar_t* cg_thirdPersonAlpha;
+cvar_t* cg_thirdPersonAutoAlpha;
+cvar_t* cg_thirdPersonHorzOffset;
 
-vmCvar_t	cg_pano;
-vmCvar_t	cg_panoNumShots;
+cvar_t* cg_stereoSeparation;
+cvar_t*  cg_developer;
+cvar_t*  cg_timescale;
+cvar_t* cg_skippingcin;
 
-vmCvar_t	fx_freeze;
-vmCvar_t	fx_debug;
+cvar_t* cg_pano;
+cvar_t* cg_panoNumShots;
 
-vmCvar_t	cg_missionInfoFlashTime;
-vmCvar_t	cg_hudFiles;
+cvar_t* fx_freeze;
+cvar_t* fx_debug;
 
-vmCvar_t	cg_neverHearThatDumbBeepingSoundAgain;
+cvar_t* cg_missionInfoFlashTime;
+cvar_t* cg_hudFiles;
 
-vmCvar_t	cg_VariantSoundCap;	// 0 = no capping, else cap to (n) max (typically just 1, but allows more)
-vmCvar_t	cg_turnAnims;
-vmCvar_t	cg_motionBoneComp;
-vmCvar_t	cg_distributeMBCorrection;
-vmCvar_t	cg_reliableAnimEvents;
+cvar_t* cg_neverHearThatDumbBeepingSoundAgain;
 
-vmCvar_t	cg_smoothPlayerPos;
-vmCvar_t	cg_smoothPlayerPlat;
-vmCvar_t	cg_smoothPlayerPlatAccel;
-vmCvar_t	cg_g2Marks;
-vmCvar_t	fx_expensivePhysics;
-vmCvar_t	cg_debugHealthBars;
+cvar_t* cg_VariantSoundCap; // 0 = no capping, else cap to (n) max (typically just 1, but allows more)
+cvar_t* cg_turnAnims;
+cvar_t* cg_motionBoneComp;
+cvar_t* cg_distributeMBCorrection;
+cvar_t* cg_reliableAnimEvents;
 
-vmCvar_t	cg_smoothCamera;
-vmCvar_t	cg_speedTrail;
-vmCvar_t	cg_fovViewmodel;
-vmCvar_t	cg_fovViewmodelAdjust;
+cvar_t* cg_smoothPlayerPos;
+cvar_t* cg_smoothPlayerPlat;
+cvar_t* cg_smoothPlayerPlatAccel;
+cvar_t* cg_g2Marks;
+cvar_t* fx_expensivePhysics;
+cvar_t* cg_debugHealthBars;
 
-typedef struct {
-	vmCvar_t	*vmCvar;
-	const char	*cvarName;
-	const char	*defaultString;
-	int			cvarFlags;
-} cvarTable_t;
+cvar_t* cg_smoothCamera;
+cvar_t* cg_speedTrail;
+cvar_t* cg_fovViewmodel;
+cvar_t* cg_fovViewmodelAdjust;
+
+struct cvarTable_t
+{
+	cvar_t **cvar;
+	const char *name;
+	const char *default_value;
+	int flags;
+};
 
 static cvarTable_t cvarTable[] = {
 	{ &cg_autoswitch, "cg_autoswitch", "1", CVAR_ARCHIVE },
@@ -455,36 +464,14 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_fovViewmodelAdjust, "cg_fovViewmodelAdjust", "1", CVAR_ARCHIVE },
 };
 
-static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
-
-/*
-=================
-CG_RegisterCvars
-=================
-*/
-void CG_RegisterCvars( void ) {
-	size_t		i;
-	cvarTable_t	*cv;
-
-	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
-		cgi_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
-	}
-}
-
-/*
-=================
-CG_UpdateCvars
-=================
-*/
-void CG_UpdateCvars( void ) {
-	size_t		i;
-	cvarTable_t	*cv;
-
-	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
-		if ( cv->vmCvar ) {
-			cgi_Cvar_Update( cv->vmCvar );
-		}
-	}
+void CG_RegisterCvars()
+{
+    size_t size = ARRAY_LEN(cvarTable);
+    for(cvarTable_t *cv = cvarTable; cv < cvarTable + size; ++cv)
+    {
+        int flags = cv->flags | CVAR_PLUGIN_CREATED;
+        *(cv->cvar) = Cvar_Get(cv->name, cv->default_value, flags);
+    }
 }
 
 int CG_CrosshairPlayer( void )
@@ -553,28 +540,6 @@ int CG_GetCameraAng( vec3_t cameraang )
 	}
 }
 
-void CG_Printf( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
-	va_end (argptr);
-
-	cgi_Printf( text );
-}
-
-void CG_Error( const char *msg, ... ) {
-	va_list		argptr;
-	char		text[1024];
-
-	va_start (argptr, msg);
-	Q_vsnprintf (text, sizeof(text), msg, argptr);
-	va_end (argptr);
-
-	cgi_Error( text );
-}
-
 /*
 ================
 CG_Argv
@@ -623,7 +588,7 @@ void CG_RegisterItemSounds( int itemNum ) {
 
 		len = s-start;
 		if (len >= MAX_QPATH || len < 5) {
-			CG_Error( "PrecacheItem: %s has bad precache string",
+			Com_Error( ERR_DROP,  "PrecacheItem: %s has bad precache string",
 				item->classname);
 			return;
 		}
@@ -1063,7 +1028,7 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 	{
 		if ( !CG_RegisterClientModelname( ci, DEFAULT_HEADMODEL, "default", DEFAULT_TORSOMODEL, "default", DEFAULT_LEGSMODEL, "default" ) )
 		{
-			CG_Error( "DEFAULT_MODELS failed to register");
+			Com_Error( ERR_DROP,  "DEFAULT_MODELS failed to register");
 		}
 	}
 }
@@ -1103,7 +1068,7 @@ static void CG_RegisterEffects( void )
 	if (numFailed && g_delayedShutdown->integer)
 	{
 		//assert(0);
-		//CG_Error( "CG_RegisterEffects: %i Effects failed to load.  Please fix, or ask Aurelio.", numFailed );
+		//Com_Error( ERR_DROP,  "CG_RegisterEffects: %i Effects failed to load.  Please fix, or ask Aurelio.", numFailed );
 	}
 
 	// Start world effects
@@ -1761,7 +1726,7 @@ CG_ConfigString
 */
 const char *CG_ConfigString( int index ) {
 	if ( index < 0 || index >= MAX_CONFIGSTRINGS ) {
-		CG_Error( "CG_ConfigString: bad index: %i", index );
+		Com_Error( ERR_DROP,  "CG_ConfigString: bad index: %i", index );
 	}
 	return cgs.gameState.stringData + cgs.gameState.stringOffsets[ index ];
 }
@@ -2085,7 +2050,7 @@ Called after every level change or subsystem restart
 void CG_Init( int serverCommandSequence ) {
 	cgs.serverCommandSequence = serverCommandSequence;
 
-	cgi_Cvar_Set( "cg_drawHUD", "1" );
+	Cvar_Set("cg_drawHUD", "1");
 
 	// fonts...
 	//
@@ -2860,27 +2825,25 @@ void CG_LoadMenus(const char *menuFile)
 	fileHandle_t	f;
 	char buf[MAX_MENUDEFFILE];
 
-	//start = cgi_Milliseconds();
-
 	len = cgi_FS_FOpenFile( menuFile, &f, FS_READ );
 	if ( !f )
 	{
 		if ( Q_isanumber( menuFile ) ) // cg_hudFiles 1
-			CG_Printf( S_COLOR_GREEN "hud menu file skipped, using default\n" );
+			Com_Printf( S_COLOR_GREEN "hud menu file skipped, using default\n" );
 		else
-			CG_Printf( S_COLOR_YELLOW "hud menu file not found: %s, using default\n", menuFile );
+			Com_Printf( S_COLOR_YELLOW "hud menu file not found: %s, using default\n", menuFile );
 
 		len = cgi_FS_FOpenFile( "ui/jahud.txt", &f, FS_READ );
 		if (!f)
 		{
-			cgi_Error( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n" );
+			Com_Error( ERR_DROP, S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n" );
 		}
 	}
 
 	if ( len >= MAX_MENUDEFFILE )
 	{
 		cgi_FS_FCloseFile( f );
-		cgi_Error( va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
+		Com_Error( ERR_DROP, va( S_COLOR_RED "menu file too large: %s is %i, max allowed is %i", menuFile, len, MAX_MENUDEFFILE ) );
 		return;
 	}
 
@@ -2921,8 +2884,6 @@ void CG_LoadMenus(const char *menuFile)
 		}
 	}
 	COM_EndParseSession();
-
-	//Com_Printf("UI menu load time = %d milli seconds\n", cgi_Milliseconds() - start);
 }
 
 /*
@@ -2934,57 +2895,8 @@ CG_LoadHudMenu();
 void CG_LoadHudMenu(void)
 {
 	const char *hudSet;
-/*
-	cgDC.registerShaderNoMip = &trap_R_RegisterShaderNoMip;
-	cgDC.setColor = &trap_R_SetColor;
-	cgDC.drawHandlePic = &CG_DrawPic;
-	cgDC.drawStretchPic = &trap_R_DrawStretchPic;
-	cgDC.drawText = &CG_Text_Paint;
-	cgDC.textWidth = &CG_Text_Width;
-	cgDC.textHeight = &CG_Text_Height;
-	cgDC.registerModel = &trap_R_RegisterModel;
-	cgDC.modelBounds = &trap_R_ModelBounds;
-	cgDC.fillRect = &CG_FillRect;
-	cgDC.drawRect = &CG_DrawRect;
-	cgDC.drawSides = &CG_DrawSides;
-	cgDC.drawTopBottom = &CG_DrawTopBottom;
-	cgDC.clearScene = &trap_R_ClearScene;
-	cgDC.addRefEntityToScene = &trap_R_AddRefEntityToScene;
-	cgDC.renderScene = &trap_R_RenderScene;
-	cgDC.registerFont = &trap_R_RegisterFont;
-	cgDC.ownerDrawItem = &CG_OwnerDraw;
-	cgDC.getValue = &CG_GetValue;
-	cgDC.ownerDrawVisible = &CG_OwnerDrawVisible;
-	cgDC.runScript = &CG_RunMenuScript;
-	cgDC.getTeamColor = &CG_GetTeamColor;
-	cgDC.setCVar = trap_Cvar_Set;
-	cgDC.getCVarString = trap_Cvar_VariableStringBuffer;
-	cgDC.getCVarValue = CG_Cvar_Get;
-	cgDC.drawTextWithCursor = &CG_Text_PaintWithCursor;
-	cgDC.startLocalSound = &trap_S_StartLocalSound;
-	cgDC.ownerDrawHandleKey = &CG_OwnerDrawHandleKey;
-	cgDC.feederCount = &CG_FeederCount;
-	cgDC.feederItemImage = &CG_FeederItemImage;
-	cgDC.feederItemText = &CG_FeederItemText;
-	cgDC.feederSelection = &CG_FeederSelection;
-	cgDC.Error = &Com_Error;
-	cgDC.Print = &Com_Printf;
-	cgDC.ownerDrawWidth = &CG_OwnerDrawWidth;
-	cgDC.registerSound = &trap_S_RegisterSound;
-	cgDC.startBackgroundTrack = &trap_S_StartBackgroundTrack;
-	cgDC.stopBackgroundTrack = &trap_S_StopBackgroundTrack;
-	cgDC.playCinematic = &CG_PlayCinematic;
-	cgDC.stopCinematic = &CG_StopCinematic;
-	cgDC.drawCinematic = &CG_DrawCinematic;
-	cgDC.runCinematicFrame = &CG_RunCinematicFrame;
-*/
-//	Init_Display(&cgDC);
 
-//	cgi_UI_String_Init();
-
-//	cgi_UI_Menu_Reset();
-
-	hudSet = cg_hudFiles.string;
+	hudSet = cg_hudFiles->string;
 	if (hudSet[0] == '\0')
 	{
 		hudSet = "ui/jahud.txt";
@@ -4233,9 +4145,9 @@ void CG_DrawDataPadForceSelect( void )
 		}
 
 		// A new force power
-		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[i]) ||
-			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[i]) ||
-			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[i]))
+		if (((cg_updatedDataPadForcePower1->integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower2->integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower3->integer - 1) == showDataPadPowers[i]))
 		{
 			CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, cgs.media.DPForcePowerOverlay );
 		}
@@ -4254,9 +4166,9 @@ void CG_DrawDataPadForceSelect( void )
 		CG_DrawPic( centerXPos-(bigIconSize/2), (graphicYPos-((bigIconSize-smallIconSize)/2)), bigIconSize, bigIconSize, force_icons[showDataPadPowers[cg.DataPadforcepowerSelect]] );
 
 		// New force power
-		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
-			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
-			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]))
+		if (((cg_updatedDataPadForcePower1->integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
+			((cg_updatedDataPadForcePower2->integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]) ||
+			((cg_updatedDataPadForcePower3->integer - 1) == showDataPadPowers[cg.DataPadforcepowerSelect]))
 		{
 			CG_DrawPic( centerXPos-(bigIconSize/2), (graphicYPos-((bigIconSize-smallIconSize)/2)), bigIconSize, bigIconSize, cgs.media.DPForcePowerOverlay );
 		}
@@ -4293,9 +4205,9 @@ void CG_DrawDataPadForceSelect( void )
 		}
 
 		// A new force power
-		if (((cg_updatedDataPadForcePower1.integer - 1) == showDataPadPowers[i]) ||
-			((cg_updatedDataPadForcePower2.integer - 1) == showDataPadPowers[i]) ||
-			((cg_updatedDataPadForcePower3.integer - 1) == showDataPadPowers[i]))
+		if (((cg_updatedDataPadForcePower1->integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower2->integer - 1) == showDataPadPowers[i]) ||
+			((cg_updatedDataPadForcePower3->integer - 1) == showDataPadPowers[i]))
 		{
 			CG_DrawPic( holdX, graphicYPos, smallIconSize, smallIconSize, cgs.media.DPForcePowerOverlay );
 		}

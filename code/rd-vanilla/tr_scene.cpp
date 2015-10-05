@@ -22,6 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <chrono>
+
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
@@ -141,7 +143,7 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
       since we don't plan on changing the const and making for room for those effects
       simply cut this message to developer only
       */
-		ri.Printf( PRINT_DEVELOPER, S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
+		CL_RefPrintf( PRINT_DEVELOPER, S_COLOR_YELLOW  "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
 		return;
 	}
 
@@ -213,7 +215,7 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 	}
 	if ( r_numentities >= MAX_REFENTITIES ) {
 #ifndef FINAL_BUILD
-		ri.Printf( PRINT_WARNING, "WARNING: RE_AddRefEntityToScene: too many entities\n");
+		CL_RefPrintf( PRINT_WARNING, "WARNING: RE_AddRefEntityToScene: too many entities\n");
 #endif
 		return;
 	}
@@ -268,9 +270,11 @@ to handle mirrors,
 */
 extern int	recursivePortalCount;
 void RE_RenderScene( const refdef_t *fd ) {
-	viewParms_t		parms;
-	int				startTime;
-	static int		lastTime = 0;
+	using std::chrono::duration_cast;
+	using hrc = std::chrono::high_resolution_clock;
+	using std::chrono::milliseconds;
+
+	static hrc::time_point last_time = hrc::time_point(milliseconds(0));
 
 	if ( !tr.registered ) {
 		return;
@@ -281,7 +285,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 		return;
 	}
 
-	startTime = ri.Milliseconds();
+	auto start_time = hrc::now();
 
 	if (!tr.world && !( fd->rdflags & RDF_NOWORLDMODEL ) ) {
 		Com_Error (ERR_DROP, "R_RenderScene: NULL worldmodel");
@@ -302,7 +306,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 	VectorCopy( fd->viewaxis[2], tr.refdef.viewaxis[2] );
 
 	tr.refdef.time = fd->time;
-	tr.refdef.frametime = fd->time - lastTime;
+	tr.refdef.frametime = fd->time - duration_cast<milliseconds>(last_time.time_since_epoch()).count();
 	tr.refdef.rdflags = fd->rdflags;
 	// Ignore my last there. This actually breaks the rest of the game as well, causing massive issues.
 	// We need to figure out what's going on in fd->rdflags first :S .. I'm half-tempted to just revert
@@ -315,7 +319,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 	else
 	{
 		// cdr - only change last time for the real render, not the portal
-		lastTime = fd->time;
+		last_time = hrc::time_point(milliseconds(fd->time));
 	}
 
 	if (fd->rdflags & RDF_DRAWSKYBOX)
@@ -384,6 +388,7 @@ void RE_RenderScene( const refdef_t *fd ) {
 	// The refdef takes 0-at-the-top y coordinates, so
 	// convert to GL's 0-at-the-bottom space
 	//
+	viewParms_t parms;
 	memset( &parms, 0, sizeof( parms ) );
 	parms.viewportX = tr.refdef.x;
 	parms.viewportY = glConfig.vidHeight - ( tr.refdef.y + tr.refdef.height );
@@ -410,6 +415,9 @@ void RE_RenderScene( const refdef_t *fd ) {
 	r_firstSceneDlight = r_numdlights;
 	r_firstScenePoly = r_numpolys;
 
-	tr.frontEndMsec += ri.Milliseconds() - startTime;
+	tr.frontEndMsec += duration_cast<milliseconds>(
+		hrc::now() - start_time
+	).count();
+
 	RE_RenderWorldEffects();
 }

@@ -56,12 +56,8 @@ static connstate_t GetClientState( void ) {
 	return cls.state;
 }
 
-/*
-====================
-CL_GetGlConfig
-====================
-*/
-static void UI_GetGlconfig( glconfig_t *config ) {
+void GetGLConfig(glconfig_t *config)
+{
 	*config = cls.glconfig;
 }
 
@@ -136,10 +132,6 @@ static int FloatAsInt( float f )
 	return fi.i;
 }
 
-static void UI_Cvar_Create( const char *var_name, const char *var_value, int flags ) {
-	Cvar_Register( NULL, var_name, var_value, flags );
-}
-
 static int GetConfigString(int index, char *buf, int size)
 {
 	int		offset;
@@ -209,17 +201,6 @@ void CL_InitUI( void ) {
 	uiimport_t	uii;
 
 	memset( &uii, 0, sizeof( uii ) );
-
-	uii.Printf = Com_Printf;
-	uii.Error = Com_Error;
-
-	uii.Cvar_Set				= Cvar_Set;
-	uii.Cvar_VariableValue		= Cvar_VariableValue;
-	uii.Cvar_VariableStringBuffer = Cvar_VariableStringBuffer;
-	uii.Cvar_SetValue			= Cvar_SetValue;
-	uii.Cvar_Reset				= Cvar_Reset;
-	uii.Cvar_Create				= UI_Cvar_Create;
-	uii.Cvar_InfoStringBuffer	= Cvar_InfoStringBuffer;
 
 	uii.Draw_DataPad			= CL_DrawDatapad;
 
@@ -303,11 +284,7 @@ void CL_InitUI( void ) {
 
 	uii.GetClientState			= GetClientState;
 
-	uii.GetGlconfig				= UI_GetGlconfig;
-
 	uii.GetConfigString			= (void (*)(int, char *, int))GetConfigString;
-
-	uii.Milliseconds			= Sys_Milliseconds2;
 
 	UI_Init(UI_API_VERSION, &uii, (cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
 
@@ -349,19 +326,6 @@ void CL_DataPad_f(void)
 
 /*
 ====================
-CL_GetGlConfig
-====================
-*/
-static void CL_GetGlconfig( glconfig_t *config ) 
-{
-	*config = cls.glconfig;
-}
-/*
-int PC_ReadTokenHandle(int handle, pc_token_t *pc_token);
-int PC_SourceFileAndLine(int handle, char *filename, int *line);
-*/
-/*
-====================
 CL_UISystemCalls
 
 The ui module is making a system call
@@ -376,31 +340,11 @@ intptr_t CL_UISystemCalls( intptr_t *args )
 		Com_Error( ERR_DROP, "%s", VMA(1) );
 		return 0;
 
-	case UI_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1),(const char *) VMA(2),(const char *) VMA(3), args[4] ); 
-		return 0;
-
-	case UI_CVAR_SET:
-		Cvar_Set( (const char *) VMA(1), (const char *) VMA(2) );
-		return 0;
-
-	case UI_CVAR_SETVALUE:
-		Cvar_SetValue( (const char *) VMA(1), VMF(2) );
-		return 0;
-
-	case UI_CVAR_UPDATE:
-		Cvar_Update( (vmCvar_t *) VMA(1) );
-		return 0;
-
 	case UI_R_REGISTERMODEL:
 		return re.RegisterModel((const char *) VMA(1) );
 
 	case UI_R_REGISTERSHADERNOMIP:
 		return re.RegisterShaderNoMip((const char *) VMA(1) );
-
-	case UI_GETGLCONFIG:
-		CL_GetGlconfig( ( glconfig_t *) VMA(1) );
-		return 0;
 
 	case UI_CMD_EXECUTETEXT:
 		Cbuf_ExecuteText( args[1], (const char *) VMA(2) );

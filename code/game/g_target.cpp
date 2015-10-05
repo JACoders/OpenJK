@@ -25,6 +25,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "Q3_Interface.h"
 #include "g_local.h"
 #include "g_functions.h"
+
+#include "../qcommon/cvar_exports.hh"
+
 extern void G_SetEnemy( gentity_t *self, gentity_t *enemy );
 
 //==========================================================
@@ -221,7 +224,7 @@ void SP_target_speaker( gentity_t *ent ) {
 	if(!ent->sounds)
 	{
 		if ( !G_SpawnString( "noise", "*NOSOUND*", &s ) ) {
-			G_Error( "target_speaker without a noise key at %s", vtos( ent->s.origin ) );
+			Com_Error(ERR_DROP,  "target_speaker without a noise key at %s", vtos( ent->s.origin ) );
 		}
 
 		Q_strncpyz( buffer, s, sizeof(buffer) );
@@ -332,7 +335,7 @@ void target_laser_start (gentity_t *self)
 	if (self->target) {
 		ent = G_Find (NULL, FOFS(targetname), self->target);
 		if (!ent) {
-			gi.Printf ("%s at %s: %s is a bad target\n", self->classname, vtos(self->s.origin), self->target);
+			Com_Printf ("%s at %s: %s is a bad target\n", self->classname, vtos(self->s.origin), self->target);
 		}
 		G_SetEnemy( self, ent );
 	} else {
@@ -372,7 +375,7 @@ void target_teleporter_use( gentity_t *self, gentity_t *other, gentity_t *activa
 
 	dest = 	G_PickTarget( self->target );
 	if (!dest) {
-		gi.Printf ("Couldn't find teleporter destination\n");
+		Com_Printf ("Couldn't find teleporter destination\n");
 		return;
 	}
 
@@ -384,7 +387,7 @@ The activator will be teleported away.
 */
 void SP_target_teleporter( gentity_t *self ) {
 	if (!self->targetname)
-		gi.Printf("untargeted %s at %s\n", self->classname, vtos(self->s.origin));
+		Com_Printf("untargeted %s at %s\n", self->classname, vtos(self->s.origin));
 
 	self->e_UseFunc = useF_target_teleporter_use;
 }
@@ -583,7 +586,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 		return;
 	}
 	
-	//gi.Printf("target_counter %s used by %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
+	//Com_Printf("target_counter %s used by %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
 	self->count--;
 
 	if ( activator )
@@ -595,7 +598,7 @@ void target_counter_use( gentity_t *self, gentity_t *other, gentity_t *activator
 	{
 		if ( self->target2 )
 		{
-			//gi.Printf("target_counter %s firing target2 from %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
+			//Com_Printf("target_counter %s firing target2 from %s, entnum %d\n", self->targetname, activator->targetname, activator->s.number );
 			G_UseTargets2( self, activator, self->target2 );
 		}
 		return;
@@ -651,7 +654,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 	int			t_count = 0, pick;
 	gentity_t	*t = NULL;
 
-	//gi.Printf("target_random %s used by %s (entnum %d)\n", self->targetname, activator->targetname, activator->s.number );
+	//Com_Printf("target_random %s used by %s (entnum %d)\n", self->targetname, activator->targetname, activator->s.number );
 	G_ActivateBehavior(self,BSET_USE);
 
 	if(self->spawnflags & 1)
@@ -694,7 +697,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 		
 		if (t == self)
 		{
-//				gi.Printf ("WARNING: Entity used itself.\n");
+//				Com_Printf ("WARNING: Entity used itself.\n");
 		}
 		else if(t_count == pick)
 		{
@@ -707,7 +710,7 @@ void target_random_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 
 		if (!self->inuse)
 		{
-			gi.Printf("entity was removed while using targets\n");
+			Com_Printf("entity was removed while using targets\n");
 			return;
 		}
 	}
@@ -831,7 +834,7 @@ void SP_target_scriptrunner( gentity_t *self )
 {
 	if (!self->behaviorSet[BSET_USE])
 	{
-		gi.Printf(S_COLOR_RED "SP_target_scriptrunner %s has no USESCRIPT\n", self->targetname );
+		Com_Printf(S_COLOR_RED "SP_target_scriptrunner %s has no USESCRIPT\n", self->targetname );
 	}
 	if ( self->spawnflags & 128 )
 	{
@@ -865,7 +868,7 @@ void target_gravity_change_use(gentity_t *self, gentity_t *other, gentity_t *act
 
 	if ( self->spawnflags & 1 )
 	{
-		gi.cvar_set("g_gravity", va("%f", self->speed));
+		Cvar_Set("g_gravity", va("%f", self->speed));
 	}
 	else if ( activator->client )
 	{
@@ -873,7 +876,7 @@ void target_gravity_change_use(gentity_t *self, gentity_t *other, gentity_t *act
 		/*
 		if ( activator->client->ps.gravity != grav )
 		{
-			gi.Printf("%s gravity changed to %d\n", activator->targetname, grav );
+			Com_Printf("%s gravity changed to %d\n", activator->targetname, grav );
 		}
 		*/
 		activator->client->ps.gravity = grav;
@@ -932,19 +935,24 @@ void set_mission_stats_cvars( void )
 		return;
 	}
 
-	gi.cvar_set("ui_stats_enemieskilled", va("%d",client->sess.missionStats.enemiesKilled));	//pass this on to the menu
+	Cvar_Set("ui_stats_enemieskilled", va("%d",client->sess.missionStats.enemiesKilled));	//pass this on to the menu
 
 	if (cg_entities[0].gent->client->sess.missionStats.totalSecrets)
 	{
 		cgi_SP_GetStringTextString( "SP_INGAME_SECRETAREAS_OF", text, sizeof(text) );
-		gi.cvar_set("ui_stats_secretsfound", va("%d %s %d",
-			cg_entities[0].gent->client->sess.missionStats.secretsFound,
-			text,
-			cg_entities[0].gent->client->sess.missionStats.totalSecrets));
+		Cvar_Set(
+            "ui_stats_secretsfound",
+            va(
+                "%d %s %d",
+                cg_entities[0].gent->client->sess.missionStats.secretsFound,
+                text,
+                cg_entities[0].gent->client->sess.missionStats.totalSecrets
+            )
+        );
 	}
 	else	// Setting ui_stats_secretsfound to 0 will hide the text on screen 
 	{
-		gi.cvar_set("ui_stats_secretsfound", "0");
+		Cvar_Set("ui_stats_secretsfound", "0");
 	}
 
 	// Find the favorite weapon
@@ -963,41 +971,41 @@ void set_mission_stats_cvars( void )
 	{
 		gitem_t	*wItem= FindItemForWeapon( (weapon_t)wpn);
 		cgi_SP_GetStringTextString( va("SP_INGAME_%s",wItem->classname ), text, sizeof( text ));
-		gi.cvar_set("ui_stats_fave", va("%s",text));	//pass this on to the menu
+		Cvar_Set("ui_stats_fave", va("%s",text));	//pass this on to the menu
 	}
 
-	gi.cvar_set("ui_stats_shots", va("%d",client->sess.missionStats.shotsFired));				//pass this on to the menu
+	Cvar_Set("ui_stats_shots", va("%d",client->sess.missionStats.shotsFired));				//pass this on to the menu
 
-	gi.cvar_set("ui_stats_hits", va("%d",client->sess.missionStats.hits));						//pass this on to the menu
+	Cvar_Set("ui_stats_hits", va("%d",client->sess.missionStats.hits));						//pass this on to the menu
 
 	const float percent = cg_entities[0].gent->client->sess.missionStats.shotsFired? 100.0f * (float)cg_entities[0].gent->client->sess.missionStats.hits / cg_entities[0].gent->client->sess.missionStats.shotsFired : 0;
-	gi.cvar_set("ui_stats_accuracy", va("%.2f%%",percent));						//pass this on to the menu
+	Cvar_Set("ui_stats_accuracy", va("%.2f%%",percent));						//pass this on to the menu
 
-	gi.cvar_set("ui_stats_thrown", va("%d",client->sess.missionStats.saberThrownCnt));						//pass this on to the menu
+	Cvar_Set("ui_stats_thrown", va("%d",client->sess.missionStats.saberThrownCnt));						//pass this on to the menu
 
-	gi.cvar_set("ui_stats_blocks", va("%d",client->sess.missionStats.saberBlocksCnt));
-	gi.cvar_set("ui_stats_legattacks", va("%d",client->sess.missionStats.legAttacksCnt));
-	gi.cvar_set("ui_stats_armattacks", va("%d",client->sess.missionStats.armAttacksCnt));
-	gi.cvar_set("ui_stats_bodyattacks", va("%d",client->sess.missionStats.torsoAttacksCnt));
+	Cvar_Set("ui_stats_blocks", va("%d",client->sess.missionStats.saberBlocksCnt));
+	Cvar_Set("ui_stats_legattacks", va("%d",client->sess.missionStats.legAttacksCnt));
+	Cvar_Set("ui_stats_armattacks", va("%d",client->sess.missionStats.armAttacksCnt));
+	Cvar_Set("ui_stats_bodyattacks", va("%d",client->sess.missionStats.torsoAttacksCnt));
 
-	gi.cvar_set("ui_stats_absorb", va("%d",client->sess.missionStats.forceUsed[FP_ABSORB]));
-	gi.cvar_set("ui_stats_heal", va("%d",client->sess.missionStats.forceUsed[FP_HEAL]));
-	gi.cvar_set("ui_stats_mindtrick", va("%d",client->sess.missionStats.forceUsed[FP_TELEPATHY]));
-	gi.cvar_set("ui_stats_protect", va("%d",client->sess.missionStats.forceUsed[FP_PROTECT]));
+	Cvar_Set("ui_stats_absorb", va("%d",client->sess.missionStats.forceUsed[FP_ABSORB]));
+	Cvar_Set("ui_stats_heal", va("%d",client->sess.missionStats.forceUsed[FP_HEAL]));
+	Cvar_Set("ui_stats_mindtrick", va("%d",client->sess.missionStats.forceUsed[FP_TELEPATHY]));
+	Cvar_Set("ui_stats_protect", va("%d",client->sess.missionStats.forceUsed[FP_PROTECT]));
 
-	gi.cvar_set("ui_stats_jump", va("%d",client->sess.missionStats.forceUsed[FP_LEVITATION]));
-	gi.cvar_set("ui_stats_pull", va("%d",client->sess.missionStats.forceUsed[FP_PULL]));
-	gi.cvar_set("ui_stats_push", va("%d",client->sess.missionStats.forceUsed[FP_PUSH]));
-	gi.cvar_set("ui_stats_sense", va("%d",client->sess.missionStats.forceUsed[FP_SEE]));
-	gi.cvar_set("ui_stats_speed", va("%d",client->sess.missionStats.forceUsed[FP_SPEED]));
-	gi.cvar_set("ui_stats_defense", va("%d",client->sess.missionStats.forceUsed[FP_SABER_DEFENSE]));
-	gi.cvar_set("ui_stats_offense", va("%d",client->sess.missionStats.forceUsed[FP_SABER_OFFENSE]));
-	gi.cvar_set("ui_stats_throw", va("%d",client->sess.missionStats.forceUsed[FP_SABERTHROW]));
+	Cvar_Set("ui_stats_jump", va("%d",client->sess.missionStats.forceUsed[FP_LEVITATION]));
+	Cvar_Set("ui_stats_pull", va("%d",client->sess.missionStats.forceUsed[FP_PULL]));
+	Cvar_Set("ui_stats_push", va("%d",client->sess.missionStats.forceUsed[FP_PUSH]));
+	Cvar_Set("ui_stats_sense", va("%d",client->sess.missionStats.forceUsed[FP_SEE]));
+	Cvar_Set("ui_stats_speed", va("%d",client->sess.missionStats.forceUsed[FP_SPEED]));
+	Cvar_Set("ui_stats_defense", va("%d",client->sess.missionStats.forceUsed[FP_SABER_DEFENSE]));
+	Cvar_Set("ui_stats_offense", va("%d",client->sess.missionStats.forceUsed[FP_SABER_OFFENSE]));
+	Cvar_Set("ui_stats_throw", va("%d",client->sess.missionStats.forceUsed[FP_SABERTHROW]));
 
-	gi.cvar_set("ui_stats_drain", va("%d",client->sess.missionStats.forceUsed[FP_DRAIN]));
-	gi.cvar_set("ui_stats_grip", va("%d",client->sess.missionStats.forceUsed[FP_GRIP]));
-	gi.cvar_set("ui_stats_lightning", va("%d",client->sess.missionStats.forceUsed[FP_LIGHTNING]));
-	gi.cvar_set("ui_stats_rage", va("%d",client->sess.missionStats.forceUsed[FP_RAGE]));
+	Cvar_Set("ui_stats_drain", va("%d",client->sess.missionStats.forceUsed[FP_DRAIN]));
+	Cvar_Set("ui_stats_grip", va("%d",client->sess.missionStats.forceUsed[FP_GRIP]));
+	Cvar_Set("ui_stats_lightning", va("%d",client->sess.missionStats.forceUsed[FP_LIGHTNING]));
+	Cvar_Set("ui_stats_rage", va("%d",client->sess.missionStats.forceUsed[FP_RAGE]));
 
 }
 
@@ -1017,20 +1025,20 @@ void target_level_change_use(gentity_t *self, gentity_t *other, gentity_t *activ
 	}
 	if (self->count>=0)
 	{
-		gi.cvar_set("tier_storyinfo", va("%i",self->count));
+		Cvar_Set("tier_storyinfo", va("%i",self->count));
 		if (level.mapname[0] == 't' && level.mapname[2] == '_'
 			&& ( level.mapname[1] == '1' || level.mapname[1] == '2' || level.mapname[1] == '3' ) 
 			)
 		{
 			char s[2048];
-			gi.Cvar_VariableStringBuffer("tiers_complete", s, sizeof(s));	//get the current list
+			Cvar_VariableStringBuffer("tiers_complete", s, sizeof(s));	//get the current list
 			if (*s)
 			{
-				gi.cvar_set("tiers_complete", va("%s %s", s, level.mapname));	//strcat this level into the existing list
+				Cvar_Set("tiers_complete", va("%s %s", s, level.mapname));	//strcat this level into the existing list
 			}
 			else
 			{
-				gi.cvar_set("tiers_complete", level.mapname);	//set this level into the list
+				Cvar_Set("tiers_complete", level.mapname);	//set this level into the list
 			}
 		}
 		if (self->noise_index)
@@ -1059,7 +1067,7 @@ void SP_target_level_change( gentity_t *self )
 {
 	if ( !self->message )
 	{
-		G_Error( "target_level_change with no mapname!\n");
+		Com_Error(ERR_DROP,  "target_level_change with no mapname!\n");
 		return;
 	}
 	
@@ -1069,7 +1077,7 @@ void SP_target_level_change( gentity_t *self )
 		if (*s == '+')
 		{
 			self->noise_index = G_SoundIndex(va("sound/chars/tiervictory/%s.mp3",level.mapname) );
-			self->count = gi.Cvar_VariableIntegerValue("tier_storyinfo")+1;
+			self->count = Cvar_VariableIntegerValue("tier_storyinfo")+1;
 								G_SoundIndex(va("sound/chars/storyinfo/%d.mp3",self->count));	//cache for menu
 		}
 		else
@@ -1083,25 +1091,25 @@ void SP_target_level_change( gentity_t *self )
 
 		if (G_SpawnString( "storyhead", "", &s ))
 		{	//[luke, kyle, or prot]
-			gi.cvar_set("storyhead", s);	//pass this on to the menu
+			Cvar_Set("storyhead", s);	//pass this on to the menu
 		}
 		else
 		{	//show head based on mapname
-			gi.cvar_set("storyhead", level.mapname);	//pass this on to the menu
+			Cvar_Set("storyhead", level.mapname);	//pass this on to the menu
 		}
 	}
 	if (G_SpawnString( "saber_menu", "", &s )) 
 	{
-		gi.cvar_set("saber_menu", s);	//pass this on to the menu
+		Cvar_Set("saber_menu", s);	//pass this on to the menu
 	}
 
 	if (G_SpawnString( "weapon_menu", "1", &s )) 
 	{
-		gi.cvar_set("weapon_menu", s);	//pass this on to the menu
+		Cvar_Set("weapon_menu", s);	//pass this on to the menu
 	}
 	else
 	{
-		gi.cvar_set("weapon_menu", "0");	//pass this on to the menu
+		Cvar_Set("weapon_menu", "0");	//pass this on to the menu
 	}
 
 	G_SetOrigin( self, self->s.origin );
@@ -1180,7 +1188,7 @@ void SP_target_play_music( gentity_t *self )
 	char *s;
 	G_SetOrigin( self, self->s.origin );
 	if (!G_SpawnString( "music", "", &s )) {
-		G_Error( "target_play_music without a music key at %s", vtos( self->s.origin ) );
+		Com_Error(ERR_DROP,  "target_play_music without a music key at %s", vtos( self->s.origin ) );
 	}
 	self->message = G_NewString (s);
 	self->e_UseFunc = useF_target_play_music_use;
@@ -1250,6 +1258,6 @@ void SP_target_secret( gentity_t *self )
 	self->noise_index = G_SoundIndex("sound/interface/secret_area");
 	if (self->count)
 	{
-		gi.cvar_set("newTotalSecrets", va("%i",self->count));
+		Cvar_Set("newTotalSecrets", va("%i",self->count));
 	}
 }

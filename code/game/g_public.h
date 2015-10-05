@@ -144,28 +144,9 @@ Ghoul2 Insert End
 typedef struct {
 	//============== general Quake services ==================
 
-	// print message on the local console
-	void	(*Printf)( const char *fmt, ... );
-
 	// Write a camera ref_tag to cameras.map
 	void	(*WriteCam)( const char *text );
 	void	(*FlushCamFile)();
-
-	// abort the game
-	// (this is not NORETURN because MSVC's version of NORETURN is not
-	// supported for function pointers)
-	__attribute__((noreturn)) void	(*Error)( int, const char *fmt, ... );
-
-	// get current time for profiling reasons
-	// this should NOT be used for any game related tasks,
-	// because it is not journaled
-	int		(*Milliseconds)( void );
-
-	// console variable interaction
-	cvar_t	*(*cvar)( const char *var_name, const char *value, int flags );
-	void	(*cvar_set)( const char *var_name, const char *value );
-	int		(*Cvar_VariableIntegerValue)( const char *var_name );
-	void	(*Cvar_VariableStringBuffer)( const char *var_name, char *buffer, int bufsize );
 
 	// ClientCommand and ServerCommand parameter access
 	int		(*argc)( void );
