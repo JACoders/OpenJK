@@ -2094,13 +2094,17 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	if (mode == SAY_TEAM) {
 		if (ent->client->sess.sayteammod == 1)//clanpass
 			mode = SAY_CLAN;
-		if (ent->client->sess.sayteammod == 2)//clanpass
+		else if (ent->client->sess.sayteammod == 2)//clanpass
 			mode = SAY_ADMIN;
 	}
 
 	Q_strncpyz( text, chatText, sizeof(text) );
 
 	Q_strstrip( text, "\n\r", "  " );
+
+
+	//Check chatText to see if it has a filtered word in it
+	//Replace filtered word
 
 	switch ( mode ) {
 	default:
@@ -7678,6 +7682,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Shocklance stun baton\n");
 		if (g_tweakWeapons.integer & PROJECTILE_GRAVITY)
 			Q_strcat(buf, sizeof(buf), "   ^5Gravity affected projectiles\n");
+		if (g_tweakWeapons.integer & PROJ_SNIPER)
+			Q_strcat(buf, sizeof(buf), "   ^5Projectile sniper enabled\n");
 		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT)
 			Q_strcat(buf, sizeof(buf), "   ^5Allowed center muzzlepoint setting\n");
 		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)

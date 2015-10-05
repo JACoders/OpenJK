@@ -139,6 +139,8 @@ void CVU_TweakWeapons(void) {
 		(jcinfo.integer |= JAPRO_CINFO_SHOCKLANCE) : (jcinfo.integer &= ~JAPRO_CINFO_SHOCKLANCE);
 	(g_tweakWeapons.integer & ALLOW_GUNROLL) ?
 		(jcinfo.integer |= JAPRO_CINFO_GUNROLL) : (jcinfo.integer &= ~JAPRO_CINFO_GUNROLL);
+	(g_tweakWeapons.integer & PROJ_SNIPER) ?
+		(jcinfo.integer |= JAPRO_CINFO_PROJSNIPER) : (jcinfo.integer &= ~JAPRO_CINFO_PROJSNIPER);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 

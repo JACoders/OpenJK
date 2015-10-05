@@ -3515,7 +3515,7 @@ void ClientThink_real( gentity_t *ent ) {
 			if (client->sess.movementStyle == 2 || client->sess.movementStyle == 3 || client->sess.movementStyle == 4 || client->sess.movementStyle == 6 || client->sess.movementStyle == 7 || client->sess.movementStyle == 8) {  //loda double check idk...
 				client->ps.speed *= 1.28f;//bring it up to 320 on g_speed 250 for vq3/wsw physics mode
 				if (client->pers.haste)
-					client->ps.speed *= 1.3;
+					client->ps.speed *= 1.3f;
 			}
 		}
 

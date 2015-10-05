@@ -1128,6 +1128,12 @@ void SV_BeginAutoRecordDemos() {
 				for ( client_t *client = svs.clients; client - svs.clients < sv_maxclients->integer; client++ ) {
 					if ( client->state == CS_ACTIVE && !client->demo.demorecording ) {
 						if ( client->netchan.remoteAddress.type == NA_BOT && !Q_stricmp(client->name, "RECORDER") ) { //Only record a bot named RECORDER who is in spectate
+
+							//client->gentity->playerState->fd.forcePowersActive
+							//client->gentity->r.broadcastClients 
+
+							//client->gentity->playerState->
+
 							SV_AutoRecordDemo( client );
 							break;
 						}

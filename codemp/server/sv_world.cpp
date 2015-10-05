@@ -565,7 +565,7 @@ static void SV_ClipMoveToEntities( moveclip_t *clip ) {
 				}
 				else
 				{
-					continue;	// don't clip against own missiles
+					continue;	// don't clip against own missiles - here it is
 				}
 			}
 			if ( touch->r.ownerNum == passOwnerNum &&

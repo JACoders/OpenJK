@@ -1052,6 +1052,9 @@ void PM_ClipVelocity( vec3_t in, vec3_t normal, vec3_t out, float overbounce ) {
 	float	oldInZ;
 	int		i;
 	
+	//pass in entitynum of hit entity?
+	//dotproduct instead of clipvelocity to the normal?
+	
 	if ( (pm->ps->pm_flags&PMF_STUCK_TO_WALL) )
 	{//no sliding!
 		VectorCopy( in, out );
@@ -11104,7 +11107,7 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 				}
 			}
 	
-			if (client->lastKickTime + 50 < level.time) //japro serverside flood protect on staff dfa, use the same debouncer as flipkick i guess
+			if (client && client->lastKickTime + 50 < level.time) //japro serverside flood protect on staff dfa, use the same debouncer as flipkick i guess
 #endif
 				{
 
@@ -11124,7 +11127,9 @@ static QINLINE void PM_CmdForSaberMoves(usercmd_t *ucmd)
 				ucmd->upmove = 0; //clear any actual jump command
 
 #ifdef _GAME
-				client->lastKickTime = level.time;
+				if (client) {
+					client->lastKickTime = level.time;
+				}
 #endif
 
 				}

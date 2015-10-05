@@ -707,6 +707,38 @@ qboolean G_CanDisruptify(gentity_t *ent)
 	return qfalse;
 }
 
+void WP_DisruptorProjectileFire( gentity_t *ent, qboolean altFire)
+{
+	int	damage	= 35;
+	gentity_t *missile;
+
+	if (altFire)
+		damage = 70;
+
+	damage *= g_weaponDamageScale.value;
+
+	VectorMA( muzzle, -6, vright, muzzle );
+		
+	missile = CreateMissileInheritance( muzzle, forward, 10000, 10000, ent, altFire);
+
+	missile->classname = "blaster_proj";
+	missile->s.weapon = WP_BLASTER;
+
+	//VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
+	//VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+	missile->damage = damage;
+	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+	missile->methodOfDeath = MOD_BLASTER;
+	missile->clipmask = MASK_SHOT;// | CONTENTS_LIGHTSABER;
+
+	//missile->flags |= FL_BOUNCE;
+	missile->bounceCount = 8;//was 3
+
+	//if (g_tweakWeapons.integer & PROJECTILE_GRAVITY) //JAPRO - Serverside - Give bullets gravity!
+	missile->s.pos.trType = TR_GRAVITY;
+}
+
 //---------------------------------------------------------
 void WP_DisruptorAltFire( gentity_t *ent )
 //---------------------------------------------------------
@@ -997,11 +1029,21 @@ static void WP_FireDisruptor( gentity_t *ent, qboolean altFire )
 
 	if ( altFire )
 	{
-		WP_DisruptorAltFire( ent );
+		if (g_tweakWeapons.integer & PROJ_SNIPER) {
+			WP_DisruptorProjectileFire(ent, qtrue);
+		}
+		else {
+			WP_DisruptorAltFire( ent );
+		}
 	}
 	else
 	{
-		WP_DisruptorMainFire( ent );
+		if (g_tweakWeapons.integer & PROJ_SNIPER) {
+			WP_DisruptorProjectileFire(ent, qfalse);
+		}
+		else {
+			WP_DisruptorMainFire( ent );
+		}
 	}
 }
 

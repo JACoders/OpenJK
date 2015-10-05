@@ -1861,6 +1861,11 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 		return;
 	}
 
+	//Look at dest->speed, and.. dest->spawnflags?   if spawnflags & quake style, multiply their current speed
+	//if not spawnflags & quake style, set their speed to specified speed
+	//if neither, set their speed to 450 or whatever?
+
+
 	TeleportPlayer( other, dest->s.origin, dest->s.angles );
 }
 

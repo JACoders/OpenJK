@@ -192,6 +192,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 
 #define JAPRO_CINFO_ROLLCANCEL		(1<<27)	//option for only bhop mode
 #define JAPRO_CINFO_NOREDCHAIN		(1<<28)	//option for only bhop mode
+#define JAPRO_CINFO_PROJSNIPER		(1<<29)	//option for only bhop mode
 
 //JAPRO - Serverside - Tweak Weapons bitvalues
 #define DEMP2_RANDOM		(1<<0)
@@ -221,6 +222,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define STAKE_GUN			(1<<23)
 #define	FIX_MINEAMMO		(1<<24)
 #define	JK2_STYLE_ALT_TRIPMINE	(1<<25)
+#define	PROJ_SNIPER			(1<<26)
 
 /*
 //#define REDUCE_SABERBLOCK	(1<<20) //s
@@ -342,7 +344,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime );
 
 //NT - client origin trails
 #define NUM_CLIENT_TRAILS 10
-typedef struct {
+typedef struct { //Should this store their g2 anim? for proper g2 sync?
 	vec3_t	mins, maxs;
 	vec3_t	currentOrigin, currentAngles;
 	int		time, leveltime;

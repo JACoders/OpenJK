@@ -681,8 +681,9 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd ) {
 	// call the game begin function
 	GVM_ClientBegin( client - svs.clients, qfalse );
 
-	if (sv_autoDemo->integer == 1) //Bots dont trigger this so whatever
+	if (sv_autoDemo->integer == 1) { //Bots dont trigger this so whatever
 		SV_BeginAutoRecordDemos();
+	}	
 }
 
 /*
