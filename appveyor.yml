@@ -8,15 +8,15 @@ environment:
       COMPILER_VERSION: "14.0"
       TARGET: x86
       GENERATOR: "Visual Studio 14"
-    - COMPILER: msvc
-      COMPILER_VERSION: "14.0"
-      TARGET: x64
-      GENERATOR: "Visual Studio 14"
+#    - COMPILER: msvc
+#      COMPILER_VERSION: "14.0"
+#      TARGET: x64
+#      GENERATOR: "Visual Studio 14"
 
 matrix:
   fast_finish: false
 
-configuration: Debug Release
+configuration: Debug
 
 build:
   parallel: true
@@ -36,4 +36,4 @@ build_script:
           }
           popd
       }
-	  cmake -G "${env:GENERATOR}" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install ..
+      cmake -G "${env:GENERATOR}" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install ..
