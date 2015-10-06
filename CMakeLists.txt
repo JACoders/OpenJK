@@ -120,12 +120,12 @@ else()
 	endif()
 endif()
 
-message("Architecture is ${Architecture}")
+#message("Architecture is ${Architecture}")
 
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-message("Git revision is ${GIT_SHA1}")
+#message("Git revision is ${GIT_SHA1}")
 
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
