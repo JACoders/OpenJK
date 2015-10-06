@@ -38,7 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool BubbleShield_IsOn()
 {
@@ -46,7 +46,7 @@ bool BubbleShield_IsOn()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_TurnOn()
 {
@@ -59,7 +59,7 @@ void BubbleShield_TurnOn()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_TurnOff()
 {
@@ -77,7 +77,7 @@ void BubbleShield_TurnOff()
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_PushEnt(gentity_t* pushed, vec3_t smackDir)
 {
-	G_Damage(pushed, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE); 
+	G_Damage(pushed, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE);
 	G_Throw(pushed, smackDir, 10);
 
 	// Make Em Electric
@@ -143,7 +143,7 @@ void BubbleShield_PushRadiusEnts()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_Update()
 {
@@ -180,15 +180,15 @@ void BubbleShield_Update()
 		{
 			TIMER_Set(NPC, "ShieldsDown", 2000);		// Drop Shields
 			TIMER_Set(NPC, "ShieldsUp", Q_irand(4000, 5000));	// Then Bring Them Back Up For At Least 3 sec
-		} 
+		}
 
 		BubbleShield_TurnOn();
 		if (BubbleShield_IsOn())
 		{
 			// Update Our Shader Value
 			//-------------------------
-	 	 	NPC->client->renderInfo.customRGBA[0] = 
-			NPC->client->renderInfo.customRGBA[1] = 
+	 	 	NPC->client->renderInfo.customRGBA[0] =
+			NPC->client->renderInfo.customRGBA[1] =
 			NPC->client->renderInfo.customRGBA[2] =
   			NPC->client->renderInfo.customRGBA[3] = (NPC->client->ps.stats[STAT_ARMOR] - 100);
 

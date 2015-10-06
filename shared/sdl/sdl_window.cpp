@@ -270,7 +270,7 @@ static bool GLimp_DetectAvailableModes(void)
 			if( mode.w == modes[ j ].w && mode.h == modes[ j ].h )
 				break;
 		}
-		
+
 		if( j != numModes )
 			continue;
 
@@ -771,7 +771,7 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	SDL_VERSION(&info.version);
 
 	if ( SDL_GetWindowWMInfo(screen, &info) )
-	{	
+	{
 		switch(info.subsystem) {
 			case SDL_SYSWM_WINDOWS:
 				window.handle = info.info.win.window;

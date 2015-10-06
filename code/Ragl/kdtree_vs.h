@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		CAPACITY	= SIZE,
 		NULL_NODE	= SIZE+2,		// Invalid Node ID
@@ -134,7 +134,7 @@ public:
 
 		// LINK: (nNew)->(Parent)
 		//--------------------------------------------
-		mPool[nNew].mParent			= find_index(data, mRoot, 0, true, true); 
+		mPool[nNew].mParent			= find_index(data, mRoot, 0, true, true);
 
 
 		// LINK: (Parent)->(nNew)
@@ -184,7 +184,7 @@ public:
 
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	class		range_query
 	{
@@ -198,7 +198,7 @@ public:
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	void		find(range_query& query)
 	{
@@ -217,7 +217,7 @@ public:
 
 private:
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	class node
 	{
@@ -230,7 +230,7 @@ private:
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	class		range_bounds
 	{
@@ -262,7 +262,7 @@ private:
 			nextDimension = 0;
 		}
 
-		
+
 		// Search Recursivly Down The Tree Either Left (For Data > Current Node), Or Right
 		//---------------------------------------------------------------------------------
 		int		findRecursive;
@@ -328,7 +328,7 @@ private:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	void		tree_search(range_query& query, int curNode, int curDimension, range_bounds bounds)
 	{
@@ -409,12 +409,12 @@ private:
 			{
 				return false;
 			}
-		}		
+		}
 		return true;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	ESide		tree_search_bounds_in_range(range_query& query, range_bounds& bounds)
 	{
@@ -430,7 +430,7 @@ private:
 
 			// Check To See If They Intersect At All?
 			//----------------------------------------
-			if ((mPool[bounds.mMaxs[dim]].mData[dim]<query.mMins[dim]) || 
+			if ((mPool[bounds.mMaxs[dim]].mData[dim]<query.mMins[dim]) ||
 				(query.mMaxs[dim]<mPool[bounds.mMins[dim]].mData[dim]))
 			{
 				return Side_None;
@@ -438,12 +438,12 @@ private:
 
 			// Check To See If It Is Contained
 			//---------------------------------
-			if ((mPool[bounds.mMins[dim]].mData[dim]<query.mMins[dim]) || 
+			if ((mPool[bounds.mMins[dim]].mData[dim]<query.mMins[dim]) ||
 				(query.mMaxs[dim]<mPool[bounds.mMaxs[dim]].mData[dim]))
 			{
 				S = Side_In;
 			}
-		}		
+		}
 		return S;
 	}
 

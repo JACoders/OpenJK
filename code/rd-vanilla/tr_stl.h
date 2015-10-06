@@ -38,5 +38,5 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	void ShaderEntryPtrs_Insert(const char  *token, const char  *p);
 #else
 
-	#define ShaderEntryPtrs_Clear()	
+	#define ShaderEntryPtrs_Clear()
 #endif	// #ifdef USE_STL_FOR_SHADER_LOOKUPS

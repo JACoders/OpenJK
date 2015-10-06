@@ -50,7 +50,7 @@ ALCAPI ALCenum	  ALCAPIENTRY alcGetError(ALCdevice *device);
 ALCAPI ALCboolean ALCAPIENTRY alcIsExtensionPresent(ALCdevice *device,ALCubyte *extName);
 ALCAPI ALCvoid *  ALCAPIENTRY alcGetProcAddress(ALCdevice *device,ALCubyte *funcName);
 ALCAPI ALCenum	  ALCAPIENTRY alcGetEnumValue(ALCdevice *device,ALCubyte *enumName);
-				
+
 #else /* AL_NO_PROTOTYPES */
 
 ALCAPI ALCubyte*  ALCAPIENTRY (*alcGetString)(ALCdevice *device,ALCenum param);

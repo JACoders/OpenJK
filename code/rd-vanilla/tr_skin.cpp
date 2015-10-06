@@ -140,7 +140,7 @@ static char *CommaParse( char **data_p ) {
 class CStringComparator
 {
 public:
-	bool operator()(const char *s1, const char *s2) const { return(stricmp(s1, s2) < 0); } 
+	bool operator()(const char *s1, const char *s2) const { return(stricmp(s1, s2) < 0); }
 };
 */
 typedef std::map<sstring_t,char * /*, CStringComparator*/ >	AnimationCFGs_t;
@@ -150,7 +150,7 @@ typedef std::map<sstring_t,char * /*, CStringComparator*/ >	AnimationCFGs_t;
 //	with our use of cached models but uncached animation.cfg files (so frame sequences are out of sync
 //	if someone rebuild the model while you're ingame and you change levels)...
 //
-// Usage:  call with psDest == NULL for a size enquire (for malloc), 
+// Usage:  call with psDest == NULL for a size enquire (for malloc),
 //				then with NZ ptr for it to copy to your supplied buffer...
 //
 int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
@@ -264,7 +264,7 @@ bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *sk
 }
 
 // given a name, go get the skin we want and return
-qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin) 
+qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 {
 	skin_t		*skin;
 	skinSurface_t	*surf;
@@ -349,7 +349,7 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	qhandle_t	hSkin;
 	skin_t		*skin;
 
-//	if (!cls.cgameStarted && !cls.uiStarted)		
+//	if (!cls.cgameStarted && !cls.uiStarted)
 //	{
 		//rww - added uiStarted exception because we want ghoul2 models in the menus.
 		// gwg well we need our skins to set surfaces on and off, so we gotta get em
@@ -476,7 +476,7 @@ void	R_SkinList_f (void) {
 		skin = tr.skins[i];
 		ri.Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
 		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
-			ri.Printf( PRINT_ALL, "       %s = %s\n", 
+			ri.Printf( PRINT_ALL, "       %s = %s\n",
 				skin->surfaces[j]->name, skin->surfaces[j]->shader->name );
 		}
 	}

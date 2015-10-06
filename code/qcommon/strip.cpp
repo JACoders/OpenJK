@@ -190,17 +190,17 @@ enum
 };
 
 
-const char *Tokens[TK_END] = 
+const char *Tokens[TK_END] =
 {
 	"TEXT_LANGUAGE1",
-	"TEXT_LANGUAGE2", 
-	"TEXT_LANGUAGE3", 
-	"TEXT_LANGUAGE4", 
-	"TEXT_LANGUAGE5", 
-	"TEXT_LANGUAGE6", 
-	"TEXT_LANGUAGE7", 
-	"TEXT_LANGUAGE8", 
-	"TEXT_LANGUAGE9", 
+	"TEXT_LANGUAGE2",
+	"TEXT_LANGUAGE3",
+	"TEXT_LANGUAGE4",
+	"TEXT_LANGUAGE5",
+	"TEXT_LANGUAGE6",
+	"TEXT_LANGUAGE7",
+	"TEXT_LANGUAGE8",
+	"TEXT_LANGUAGE9",
 	"TEXT_LANGUAGE10",
 	"VERSION",
 	"ID",
@@ -329,7 +329,7 @@ bool ReadData(char *&Data, int &Size, char *Result, int Result_Size)
 	} while(Size > 0 && Result_Size > 0 && *(Data-1) != '\n');
 
 	*pos = 0;
-  
+
 	return true;
 }
 
@@ -377,7 +377,7 @@ void GetLine(char *&Data, int &Size, int &token, char *&data)
 		pos++;
 	}
 	token = FindToken(test_token, true);
-	
+
 	while((*pos) && strchr(" \n\r", *pos))
 	{	// remove white space
 		pos++;
@@ -388,7 +388,7 @@ void GetLine(char *&Data, int &Size, int &token, char *&data)
 		pos++;
 		test_token = save_data;
 		memset(save_data, 0, sizeof(save_data));
-		
+
 		while(((*pos) != '\"' || !strchr("\n\r", (*(pos+1)))) && (*pos))
 		{
 			if ((*pos) == '\\' && (*(pos+1)) == 'n')
@@ -481,9 +481,9 @@ void cStrings::Clear(void)
  * return:
  *
  ************************************************************************************************/
-void cStrings::SetFlags(unsigned int newFlags) 
-{ 
-	Flags = newFlags; 
+void cStrings::SetFlags(unsigned int newFlags)
+{
+	Flags = newFlags;
 }
 
 
@@ -544,7 +544,7 @@ bool cStrings::UnderstandToken(int token, char *data )
 
 /************************************************************************************************
  * Load - Load the given string packet file
- *		
+ *
  * inputs:
  *	buffer to load line in
  *	size of final text string area
@@ -637,7 +637,7 @@ void cStringsSingle::SetText(const char *newText)
 	}
 	strcpy(Dest, newText);
 }
-	
+
 
 // fix problems caused by fucking morons entering clever "rich" chars in to new text files *after* the auto-stripper
 //	removed them all in the first place...
@@ -1008,7 +1008,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 	}
 	else
 	{
-		
+
 		size = FS_ReadFile(va("strip/%s.sp", Package), (void **)&buffer);
 		if (size == -1)
 		{
@@ -1018,12 +1018,12 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 			}
 			return qfalse;
 		}
-		
+
 		// Create the new string package
 		new_sp = new cStringPackageSingle(Package);
 		new_sp->Load(buffer, size );
 		FS_FreeFile(buffer);
-		
+
 		if (Registration & SP_REGISTER_CLIENT)
 		{
 			Com_DPrintf(S_COLOR_YELLOW "JK2SP_Register: Registered client string package '%s' with ID %02x\n", Package, (int)new_sp->GetID());
@@ -1032,7 +1032,7 @@ qboolean JK2SP_Register(const char *inPackage, unsigned char Registration)
 		{
 			Com_DPrintf(S_COLOR_YELLOW "JK2SP_Register: Registered string package '%s' with ID %02x\n", Package, (int)new_sp->GetID());
 		}
-		
+
 		// Insert into the name vs package map
 		JK2SP_ListByName[Package] = new_sp;
 		// Insert into the id vs package map
@@ -1222,7 +1222,7 @@ static void JK2SP_UpdateLanguage(void)
 	// Reinitialise with new language
 	for(spit = sps.begin(); spit != sps.end(); spit++)
 	{
-		JK2SP_Register((*spit).GetName(), (*spit).GetReg());	
+		JK2SP_Register((*spit).GetName(), (*spit).GetReg());
 	}
 	sps.clear();
 }

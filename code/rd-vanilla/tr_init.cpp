@@ -246,7 +246,7 @@ void R_Splash()
 	{
 		extern void	RB_SetGL2D (void);
 		RB_SetGL2D();
-		
+
 		GL_Bind( pImage );
 		GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
