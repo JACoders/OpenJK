@@ -5165,7 +5165,7 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 				{
 					if ( g_bindKeys[id][0] != -1 )
 						DC->setBinding(g_bindKeys[id][0], "");
-					
+
 					if ( g_bindKeys[id][1] != -1 )
 						DC->setBinding(g_bindKeys[id][1], "");
 

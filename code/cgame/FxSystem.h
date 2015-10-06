@@ -53,7 +53,7 @@ inline void Vector2Copy(vec2_t src,vec2_t dst)
 }
 
 
-extern void	CG_CalcEntityLerpPositions( centity_t * );	
+extern void	CG_CalcEntityLerpPositions( centity_t * );
 
 
 struct SFxHelper

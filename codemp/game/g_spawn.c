@@ -1591,7 +1591,7 @@ void G_PrecacheSoundsets( void )
 void G_LinkLocations( void ) {
 	int i, n;
 
-	if ( level.locations.linked ) 
+	if ( level.locations.linked )
 		return;
 
 	level.locations.linked = qtrue;

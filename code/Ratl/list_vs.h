@@ -34,7 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -196,7 +196,7 @@ public:
 		//---------------------
 		void		operator= (const iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mLoc	= t.mLoc;
 		}
 
@@ -207,14 +207,14 @@ public:
 		{
 			return (mLoc!=t.mLoc  || mOwner!=t.mOwner);
 		}
-		bool		operator==(const iterator &t)	const				
+		bool		operator==(const iterator &t)	const
 		{
 			return (mLoc==t.mLoc && mOwner==t.mOwner);
 		}
 
 		// DeReference Operator
 		//----------------------
-		TTValue&			operator* ()	const			
+		TTValue&			operator* ()	const
 		{
 			assert(mLoc>=0 && mLoc<T::CAPACITY);
 			return (mOwner->mPool[mLoc]);
@@ -222,7 +222,7 @@ public:
 
 		// DeReference Operator
 		//----------------------
-		TTValue&			value()	const			
+		TTValue&			value()	const
 		{
 			assert(mLoc>=0 && mLoc<T::CAPACITY);
 			return (mOwner->mPool[mLoc]);
@@ -230,7 +230,7 @@ public:
 
 		// DeReference Operator
 		//----------------------
-		TTValue*			operator-> ()	const			
+		TTValue*			operator-> ()	const
 		{
 			assert(mLoc>=0 && mLoc<T::CAPACITY);
 			return (&mOwner->mPool[mLoc]);
@@ -302,14 +302,14 @@ public:
 		//---------------------
 		void		operator= (const const_iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mLoc	= t.mLoc;
 		}
 		// Assignment Operator
 		//---------------------
 		void		operator= (const iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mLoc	= t.mLoc;
 		}
 
@@ -321,7 +321,7 @@ public:
 		{
 			return (mLoc!=t.mLoc  || mOwner!=t.mOwner);
 		}
-		bool		operator==(const iterator &t)		const				
+		bool		operator==(const iterator &t)		const
 		{
 			return (mLoc==t.mLoc && mOwner==t.mOwner);
 		}
@@ -332,7 +332,7 @@ public:
 		{
 			return (mLoc!=t.mLoc || mOwner!=t.mOwner);
 		}
-		bool		operator==(const const_iterator &t)		const				
+		bool		operator==(const const_iterator &t)		const
 		{
 			return (mLoc==t.mLoc  && mOwner==t.mOwner);
 		}
@@ -355,7 +355,7 @@ public:
 
 		// DeReference Operator
 		//----------------------
-		const TTValue&			value()	const			
+		const TTValue&			value()	const
 		{
 			assert(mLoc>=0 && mLoc<T::CAPACITY);
 			return (mOwner->mPool[mLoc]);

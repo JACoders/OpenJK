@@ -1776,7 +1776,7 @@ static int SV_FindLeafFolders( const char *baseFolder, char *result, int maxResu
 	}
 
 	Z_Free( fileList );
-	
+
 	return resultCount;
 }
 

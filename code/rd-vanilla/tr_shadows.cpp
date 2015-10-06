@@ -188,7 +188,7 @@ void RB_ShadowTessEnd( void )
 			backEnd.currentEntity->directedLight[1] ||
 			backEnd.currentEntity->directedLight[2]))
 	{ //an ent that has its light set for it
-		RB_DoShadowTessEnd(NULL); 
+		RB_DoShadowTessEnd(NULL);
 		return;
 	}
 
@@ -209,7 +209,7 @@ void RB_ShadowTessEnd( void )
 
 			RB_DoShadowTessEnd(dl->transformed);
 		}
-        
+
 		i++;
 	}
 	*/

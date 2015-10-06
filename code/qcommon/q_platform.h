@@ -95,7 +95,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#endif
 
 	#define OS_STRING "macosx"
-	#define QINLINE /*inline*/ 
+	#define QINLINE /*inline*/
 	#define	PATH_SEP '/'
 
 	#if defined(__ppc__)
@@ -152,11 +152,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 	#include <sys/types.h>
 	#include <machine/endian.h>
-	
+
 	#ifndef __BSD__
 		#define __BSD__
 	#endif
-	
+
 	#if defined(__FreeBSD__)
 		#define OS_STRING "freebsd"
 	#elif defined(__OpenBSD__)
@@ -164,7 +164,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#elif defined(__NetBSD__)
 		#define OS_STRING "netbsd"
 	#endif
-	
+
 	#define QINLINE inline
 	#define PATH_SEP '/'
 
@@ -181,7 +181,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#else
 		#define Q3_LITTLE_ENDIAN
 	#endif
-	
+
 	#define DLL_EXT ".so"
 #endif
 

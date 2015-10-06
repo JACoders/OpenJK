@@ -624,7 +624,7 @@ void FS_HomeRemove( const char *homePath ) {
 			fs_gamedir, homePath ) );
 }
 
-// The following functions with "UserGen" in them were added for savegame handling, 
+// The following functions with "UserGen" in them were added for savegame handling,
 //	since outside functions aren't supposed to know about full paths/dirs
 
 // "filename" is local to the current gamedir (eg "saves/blah.sav")
@@ -1799,7 +1799,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	*buffer = buf;
 
 	Z_Label(buf, qpath);
-	
+
 	// PRECACE CHECKER!
 #ifndef FINAL_BUILD
 	if (com_sv_running && com_sv_running->integer && cls.state >= CA_ACTIVE) {	//com_cl_running

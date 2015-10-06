@@ -308,7 +308,7 @@ bool CBBox::HitTest(CBTrace& Tr) const
 			{
 				Tr.mRangeMax=tmax;
 			}
-	
+
 			// Adjust Range Min
 			//------------------
 			if (tmin>Tr.mRange)

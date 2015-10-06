@@ -1531,7 +1531,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	}
 
 	// a bad cp command was sent, drop the client
-	if (sv_pure->integer != 0 && cl->pureAuthentic == 0) {		
+	if (sv_pure->integer != 0 && cl->pureAuthentic == 0) {
 		SV_DropClient( cl, "Cannot validate pure client!");
 		return;
 	}

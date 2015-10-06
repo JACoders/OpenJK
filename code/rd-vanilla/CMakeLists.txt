@@ -1,17 +1,17 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
@@ -58,7 +58,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
     # libpng used zlib, so it must come before it on the linker command line.
     list(APPEND SPRDVanillaRendererIncludeDirectories ${PNG_INCLUDE_DIRS})
     list(APPEND SPRDVanillaRendererLibraries          ${PNG_LIBRARIES})
-    
+
     # Transparently use either bundled or system zlib.
     list(APPEND SPRDVanillaRendererIncludeDirectories ${ZLIB_INCLUDE_DIR})
     list(APPEND SPRDVanillaRendererLibraries          ${ZLIB_LIBRARIES})
@@ -138,7 +138,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	set(SPRDVanillaRendererLibraries ${SPRDVanillaRendererLibraries} ${OPENGL_LIBRARIES})
 
 	set(SPRDVanillaRendererIncludeDirectories ${SPRDVanillaRendererIncludeDirectories} ${OpenJKLibDir})
-	
+
 	function(add_sp_renderer_project ProjectName Label EngineName InstallDir Component)
 		add_library(${ProjectName} SHARED ${SPRDVanillaFiles})
 		if(NOT MSVC)
@@ -183,5 +183,5 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		set(SPRDVanillaDefines ${SPRDVanillaDefines} "JK2_MODE")
 		add_sp_renderer_project(${JK2SPVanillaRenderer} "JK2 SP Vanilla Renderer" ${JK2SPEngine} ${JK2InstallDir} ${JK2SPClientComponent})
 	endif(BuildJK2SPRdVanilla)
-	
+
 endif(BuildSPRdVanilla OR BuildJK2SPRdVanilla)

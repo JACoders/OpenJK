@@ -170,7 +170,7 @@ R_LoadLightmaps
 ===============
 */
 #define	LIGHTMAP_SIZE	128
-static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldData ) 
+static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldData )
 {
 	byte				*buf, *buf_p;
 	int					len;
@@ -246,7 +246,7 @@ static	void R_LoadLightmaps( lump_t *l, const char *psMapName, world_t &worldDat
 				image[j*4+3] = 255;
 			}
 		}
-		tr.lightmaps[worldData.startLightMapIndex+i] = R_CreateImage( va("$%s/lightmap%d",sMapName,worldData.startLightMapIndex+i), image, 
+		tr.lightmaps[worldData.startLightMapIndex+i] = R_CreateImage( va("$%s/lightmap%d",sMapName,worldData.startLightMapIndex+i), image,
 			LIGHTMAP_SIZE, LIGHTMAP_SIZE, GL_RGBA, qfalse, qfalse, r_ext_compressed_lightmaps->integer, GL_CLAMP );
 	}
 
@@ -330,13 +330,13 @@ static shader_t *ShaderForShaderNum( int shaderNum, const int *lightmapNum, cons
 		styles = vertexStyles;
 	}
 
-	if ( r_vertexLight->integer ) 
+	if ( r_vertexLight->integer )
 	{
 		lightmapNum = lightmapsVertex;
 		styles = vertexStyles;
 	}
 
-/*	if ( r_fullbright->integer ) 
+/*	if ( r_fullbright->integer )
 	{
 		lightmapNum = lightmapsFullBright;
 		styles = vertexStyles;
@@ -664,23 +664,23 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 	if ( indexLump->filelen % sizeof(*indexes))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 
-	out = (struct msurface_s *) Hunk_Alloc ( count * sizeof(*out), qtrue );	
+	out = (struct msurface_s *) Hunk_Alloc ( count * sizeof(*out), qtrue );
 
 	worldData.surfaces = out;
 	worldData.numsurfaces = count;
 
 	// new bit, the face code on our biggest map requires over 15,000 mallocs, which was no problem on the hunk,
-	//	bit hits the zone pretty bad (even the tagFree takes about 9 seconds for that many memblocks), 
+	//	bit hits the zone pretty bad (even the tagFree takes about 9 seconds for that many memblocks),
 	//	so special-case pre-alloc enough space for this data (the patches etc can stay as they are)...
 	//
 	int iFaceDataSizeRequired = 0;
-	for ( i = 0 ; i < count ; i++, in++) 
+	for ( i = 0 ; i < count ; i++, in++)
 	{
-		switch ( LittleLong( in->surfaceType ) ) 
+		switch ( LittleLong( in->surfaceType ) )
 		{
 			case MST_PLANAR:
-				
-				int sfaceSize = ( intptr_t ) &((srfSurfaceFace_t *)0)->points[LittleLong(in->numVerts)];	
+
+				int sfaceSize = ( intptr_t ) &((srfSurfaceFace_t *)0)->points[LittleLong(in->numVerts)];
 					sfaceSize += sizeof( int ) * LittleLong(in->numIndexes);
 
 				iFaceDataSizeRequired += sfaceSize;
@@ -692,7 +692,7 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 	// since this ptr is to hunk data, I can pass it in and have it advanced without worrying about losing
 	//	the original alloc ptr...
 	//
-	byte *pFaceDataBuffer	= (byte *)Hunk_Alloc( iFaceDataSizeRequired, qtrue );	
+	byte *pFaceDataBuffer	= (byte *)Hunk_Alloc( iFaceDataSizeRequired, qtrue );
 
 	// now do regular loop...
 	//
@@ -718,8 +718,8 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 			Com_Error( ERR_DROP, "Bad surfaceType" );
 		}
 	}
-	
-	ri.Printf( PRINT_ALL, "...loaded %d faces, %i meshes, %i trisurfs, %i flares\n", 
+
+	ri.Printf( PRINT_ALL, "...loaded %d faces, %i meshes, %i trisurfs, %i flares\n",
 		numFaces, numMeshes, numTriSurfs, numFlares );
 }
 
@@ -820,7 +820,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 	numNodes = nodeLump->filelen / sizeof(dnode_t);
 	numLeafs = leafLump->filelen / sizeof(dleaf_t);
 
-	out = (struct mnode_s *) Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), qtrue );	
+	out = (struct mnode_s *) Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), qtrue );
 
 	worldData.nodes = out;
 	worldData.numnodes = numNodes + numLeafs;
@@ -883,7 +883,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 R_LoadShaders
 =================
 */
-static	void R_LoadShaders( lump_t *l, world_t &worldData ) {	
+static	void R_LoadShaders( lump_t *l, world_t &worldData ) {
 	int		i, count;
 	dshader_t	*in, *out;
 
@@ -920,7 +920,7 @@ static	void R_LoadMarksurfaces (lump_t *l, world_t &worldData)
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (struct msurface_s **) Hunk_Alloc ( count*sizeof(*out), qtrue );	
+	out = (struct msurface_s **) Hunk_Alloc ( count*sizeof(*out), qtrue );
 
 	worldData.marksurfaces = out;
 	worldData.nummarksurfaces = count;
@@ -949,7 +949,7 @@ static	void R_LoadPlanes( lump_t *l, world_t &worldData ) {
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (struct cplane_s *) Hunk_Alloc ( count*2*sizeof(*out), qtrue );	
+	out = (struct cplane_s *) Hunk_Alloc ( count*2*sizeof(*out), qtrue );
 
 	worldData.planes = out;
 	worldData.numplanes = count;
@@ -1095,8 +1095,8 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 		{
 			out->parms = *shader->fogParms;
 		}
-		out->colorInt = ColorBytes4 ( out->parms.color[0], 
-			out->parms.color[1], 
+		out->colorInt = ColorBytes4 ( out->parms.color[0],
+			out->parms.color[1],
 			out->parms.color[2], 1.0 );
 
 		d = out->parms.depthForOpaque < 1 ? 1 : out->parms.depthForOpaque;
@@ -1120,7 +1120,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 	if (!index)
 	{
 		// Initialise the last fog so we can use it with the LA Goggles
-		// NOTE: We are might appear to be off the end of the array, but we allocated an extra memory slot above but [purposely] didn't 
+		// NOTE: We are might appear to be off the end of the array, but we allocated an extra memory slot above but [purposely] didn't
 		//	increment the total world numFogs to match our array size
 		VectorSet(out->bounds[0], MIN_WORLD_COORD, MIN_WORLD_COORD, MIN_WORLD_COORD);
 		VectorSet(out->bounds[1], MAX_WORLD_COORD, MAX_WORLD_COORD, MAX_WORLD_COORD);
@@ -1242,7 +1242,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	}
 
 	// only parse the world spawn
-	while ( 1 ) {	
+	while ( 1 ) {
 		// parse key
 		token = COM_ParseExt( &p, qtrue );
 
@@ -1376,7 +1376,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	}
 
 	tr.worldDir[0] = '\0';
-	
+
 	if (buffer == NULL)
 	{
 		// still needs loading...
@@ -1401,8 +1401,8 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index ) {
 	fileBase = (byte *)header;
 
 	header->version = LittleLong (header->version);
-	
-	if ( header->version != BSP_VERSION ) 
+
+	if ( header->version != BSP_VERSION )
 	{
 		Com_Error (ERR_DROP, "RE_LoadWorldMap: %s has wrong version number (%i should be %i)", name, header->version, BSP_VERSION);
 	}

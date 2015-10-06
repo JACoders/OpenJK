@@ -497,9 +497,9 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 	int len = FS_ReadFile(name, &data);
 
 	if (len >= 1)
-	{ 
+	{
 		if (FS_FileIsInPAK(name, NULL) == 1)
-		{ 
+		{
 			char *tempFileName;
 			if ( FS_WriteToTemporaryFile(data, len, &tempFileName) )
 			{
