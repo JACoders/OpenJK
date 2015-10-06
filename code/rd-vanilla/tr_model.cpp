@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../server/exe_headers.h"
 
+#include "tr_common.h"
 #include "tr_local.h"
 #include "qcommon/matcomp.h"
 #include "../qcommon/sstring.h"
@@ -155,7 +156,7 @@ qboolean RE_RegisterModels_GetDiskFile( const char *psModelFileName, void **ppvB
 			{
 				// return fake params as though it was found on disk...
 				//
-				void *pvFakeGLAFile = Z_Malloc( sizeof(FakeGLAFile), TAG_FILESYS, qfalse );
+				void *pvFakeGLAFile = R_Malloc( sizeof(FakeGLAFile), TAG_FILESYS, qfalse );
 				memcpy(pvFakeGLAFile, &FakeGLAFile[0],  sizeof(FakeGLAFile));
 				*ppvBuffer = pvFakeGLAFile;
 				*pqbAlreadyCached = qfalse;	// faking it like this should mean that it works fine on the Mac as well
@@ -193,18 +194,18 @@ void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const 
 	{
 		// ... then this entry has only just been created, ie we need to load it fully...
 		//
-		// new, instead of doing a Z_Malloc and assigning that we just morph the disk buffer alloc
+		// new, instead of doing a R_Malloc and assigning that we just morph the disk buffer alloc
 		//	then don't thrown it away on return - cuts down on mem overhead
 		//
 		// ... groan, but not if doing a limb hierarchy creation (some VV stuff?), in which case it's NULL
 		//
 		if ( pvDiskBufferIfJustLoaded )
 		{
-			Z_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
+			R_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
 		}
 		else
 		{
-			pvDiskBufferIfJustLoaded =  Z_Malloc(iSize,eTag, qfalse );
+			pvDiskBufferIfJustLoaded =  R_Malloc(iSize,eTag, qfalse );
 		}
 
 		ModelBin.pModelDiskImage= pvDiskBufferIfJustLoaded;
@@ -246,9 +247,9 @@ void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const 
 //
 static int GetModelDataAllocSize(void)
 {
-	return	Z_MemSize( TAG_MODEL_MD3) +
-			Z_MemSize( TAG_MODEL_GLM) +
-			Z_MemSize( TAG_MODEL_GLA);
+	return	R_MemSize( TAG_MODEL_MD3) +
+			R_MemSize( TAG_MODEL_GLM) +
+			R_MemSize( TAG_MODEL_GLA);
 }
 extern cvar_t *r_modelpoolmegs;
 //
@@ -294,7 +295,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 	#endif
 
 				if (CachedModel.pModelDiskImage) {
-					Z_Free(CachedModel.pModelDiskImage);
+					R_Free(CachedModel.pModelDiskImage);
 					//CachedModel.pModelDiskImage = NULL;	// REM for reference, erase() call below negates the need for it.
 					bAtLeastoneModelFreed = qtrue;
 				}
@@ -352,7 +353,7 @@ static void RE_RegisterModels_DeleteAll(void)
 		CachedEndianedModelBinary_t &CachedModel = (*itModel).second;
 
 		if (CachedModel.pModelDiskImage) {
-			Z_Free(CachedModel.pModelDiskImage);
+			R_Free(CachedModel.pModelDiskImage);
 		}
 
 		CachedModels->erase(itModel++);
@@ -472,7 +473,7 @@ model_t *R_AllocModel( void ) {
 		return NULL;
 	}
 
-	mod = (model_t*) Hunk_Alloc( sizeof( *tr.models[tr.numModels] ), qtrue );
+	mod = (model_t*) R_Hunk_Alloc( sizeof( *tr.models[tr.numModels] ), qtrue );
 	mod->index= tr.numModels;
 	tr.models[tr.numModels] = mod;
 	tr.numModels++;
@@ -515,7 +516,7 @@ void RE_InsertModelIntoHash(const char *name, model_t *mod)
 	hash = generateHashValue(name, FILE_HASH_SIZE);
 
 	// insert this file into the hash table so we can look it up faster later
-	mh = (modelHash_t*)Hunk_Alloc( sizeof( modelHash_t ), qtrue );
+	mh = (modelHash_t*)R_Hunk_Alloc( sizeof( modelHash_t ), qtrue );
 
 	mh->next = mhHashTable[hash];	// I have the breakpoint triggered here where mhHashTable[986] would be assigned
 	mh->handle = mod->index;

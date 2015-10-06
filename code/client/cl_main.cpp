@@ -1049,6 +1049,11 @@ int get_com_frameTime( void )
 	return com_frameTime;
 }
 
+void *CL_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign)
+{
+    return Z_Malloc(iSize, eTag, bZeroit);
+}
+
 /*
 ============
 CL_InitRef
@@ -1091,7 +1096,7 @@ void CL_InitRef( void ) {
 	}
 
 	if ( !rendererLib ) {
-		Com_Error( ERR_FATAL, "Failed to load renderer" );
+		Com_Error( ERR_FATAL, "Failed to load renderer\n" );
 	}
 
 	memset( &rit, 0, sizeof( rit ) );
@@ -1143,7 +1148,7 @@ void CL_InitRef( void ) {
 	RIT(SV_Trace);
 	RIT(S_RestartMusic);
 	RIT(Z_Free);
-	RIT(Z_Malloc);
+	rit.Malloc=CL_Malloc;
 	RIT(Z_MemSize);
 	RIT(Z_MorphMallocTag);
 

@@ -173,7 +173,7 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 			return 0;
 		}
 
-		psText = (char *) ri.Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse, 4 );
+		psText = (char *) R_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse );
 
 		ri.FS_Read( psText, iLen, f );
 		psText[iLen] = '\0';
@@ -202,7 +202,7 @@ void RE_AnimationCFGs_DeleteAll(void)
 	for (AnimationCFGs_t::iterator it = AnimationCFGs.begin(); it != AnimationCFGs.end(); ++it)
 	{
 		char *psText = (*it).second;
-		Z_Free(psText);
+		R_Free(psText);
 	}
 
 	AnimationCFGs.clear();
@@ -322,7 +322,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterSkin( '%s' ) more than %u surfaces!\n", name, (unsigned int)ARRAY_LEN(skin->surfaces) );
 			break;
 		}
-		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
+		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) R_Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
 		surf->shader = R_FindShader( token, lightmapsNone, stylesDefault, qtrue );
 		skin->numSurfaces++;
@@ -388,7 +388,7 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	}
 	// allocate a new skin
 	tr.numSkins++;
-	skin = (skin_t*) Hunk_Alloc( sizeof( skin_t ), qtrue );
+	skin = (skin_t*) R_Hunk_Alloc( sizeof( skin_t ), qtrue );
 	tr.skins[hSkin] = skin;
 	Q_strncpyz( skin->name, name, sizeof( skin->name ) );	//always make one so it won't search for it again
 
@@ -396,12 +396,12 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
 #ifdef JK2_MODE
 		skin->numSurfaces = 1;
-		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
+		skin->surfaces[0] = (skinSurface_t *) R_Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
 		return hSkin;
 #endif
 /*		skin->numSurfaces = 1;
-		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
+		skin->surfaces[0] = (skinSurface_t *) R_Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
 		return hSkin;
 */
@@ -442,10 +442,10 @@ void	R_InitSkins( void ) {
 	tr.numSkins = 1;
 
 	// make the default skin have all default shaders
-	skin = tr.skins[0] = (skin_t*) Hunk_Alloc( sizeof( skin_t ), qtrue );
+	skin = tr.skins[0] = (skin_t*) R_Hunk_Alloc( sizeof( skin_t ), qtrue );
 	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
 	skin->numSurfaces = 1;
-	skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
+	skin->surfaces[0] = (skinSurface_t *) R_Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 

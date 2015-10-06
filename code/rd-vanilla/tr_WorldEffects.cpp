@@ -560,7 +560,7 @@ public:
 
 		for (int wz=0; wz<mWeatherZones.size(); wz++)
 		{
-			Z_Free(mWeatherZones[wz].mPointCache);
+			R_Free(mWeatherZones[wz].mPointCache);
 			mWeatherZones[wz].mPointCache = 0;
 			mWeatherZones[wz].miPointCacheByteSize = 0;	// not really necessary because of .clear() below, but keeps things together in case stuff changes
 		}
@@ -609,7 +609,7 @@ public:
 			Wz.mDepth		= ((int)(Wz.mSize.mMaxs[2] - Wz.mSize.mMins[2]) + 31) >> 5;
 
 			Wz.miPointCacheByteSize = (Wz.mWidth * Wz.mHeight * Wz.mDepth) * sizeof(uint32_t);
-			Wz.mPointCache  = (uint32_t *)Z_Malloc( Wz.miPointCacheByteSize, TAG_POINTCACHE, qtrue );
+			Wz.mPointCache  = (uint32_t *)R_Malloc( Wz.miPointCacheByteSize, TAG_POINTCACHE, qtrue );
 		}
 		else
 		{

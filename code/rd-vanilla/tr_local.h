@@ -26,8 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qfiles.h"
-#include "../rd-common/tr_public.h"
-#include "../rd-common/mdx_format.h"
+#include "tr_common.h"
+#include "tr_public.h"
+#include "mdx_format.h"
 #include "qgl.h"
 
 #define GL_INDEX_TYPE		GL_UNSIGNED_INT
@@ -1842,6 +1843,3 @@ Ghoul2 Insert End
 
 // tr_surfacesprites
 void RB_DrawSurfaceSprites( shaderStage_t *stage, shaderCommands_t *input);
-
-// tr_subs.cpp
-void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, int iAlign );
