@@ -1,6 +1,8 @@
 branches:
   except:
     - release/1.0
+	
+os: Visual Studio 2015
 
 environment:
   matrix:
