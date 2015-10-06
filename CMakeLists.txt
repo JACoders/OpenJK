@@ -120,12 +120,12 @@ else()
 	endif()
 endif()
 
-#message("Architecture is ${Architecture}")
+message("Architecture is ${Architecture}")
 
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-#message("Git revision is ${GIT_SHA1}")
+message("Git revision is ${GIT_SHA1}")
 
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
@@ -152,7 +152,9 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
-include(InstallConfig)
+if(NOT NO_INSTALL)
+	include(InstallConfig)
+endif(NOT NO_INSTALL)
 
 # Operating settings
 if(WIN64)
