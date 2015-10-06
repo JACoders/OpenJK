@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // tr_models.c -- model loading and caching
 
 #include "tr_local.h"
+#include "tr_common.h"
 #include "qcommon/disablewarnings.h"
 #include "qcommon/sstring.h"	// #include <string>
 
@@ -157,7 +158,7 @@ qboolean RE_RegisterModels_GetDiskFile( const char *psModelFileName, void **ppvB
 			{
 				// return fake params as though it was found on disk...
 				//
-				void *pvFakeGLAFile = Z_Malloc( sizeof(FakeGLAFile), TAG_FILESYS, qfalse );
+				void *pvFakeGLAFile = R_Malloc( sizeof(FakeGLAFile), TAG_FILESYS, qfalse );
 				memcpy(pvFakeGLAFile, &FakeGLAFile[0],  sizeof(FakeGLAFile));
 				*ppvBuffer = pvFakeGLAFile;
 				*pqbAlreadyCached = qfalse;	// faking it like this should mean that it works fine on the Mac as well
@@ -203,18 +204,18 @@ void *RE_RegisterModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, const 
 	{
 		// ... then this entry has only just been created, ie we need to load it fully...
 		//
-		// new, instead of doing a Z_Malloc and assigning that we just morph the disk buffer alloc
+		// new, instead of doing a R_Malloc and assigning that we just morph the disk buffer alloc
 		//	then don't thrown it away on return - cuts down on mem overhead
 		//
 		// ... groan, but not if doing a limb hierarchy creation (some VV stuff?), in which case it's NULL
 		//
 		if ( pvDiskBufferIfJustLoaded )
 		{
-			Z_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
+			R_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
 		}
 		else
 		{
-			pvDiskBufferIfJustLoaded =  Z_Malloc(iSize,eTag, qfalse );
+			pvDiskBufferIfJustLoaded =  R_Malloc(iSize,eTag, qfalse );
 		}
 
 		ModelBin.pModelDiskImage	= pvDiskBufferIfJustLoaded;
@@ -253,18 +254,18 @@ void *RE_RegisterServerModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, 
 
 	if (ModelBin.pModelDiskImage == NULL)
 	{
-		// new, instead of doing a Z_Malloc and assigning that we just morph the disk buffer alloc
+		// new, instead of doing a R_Malloc and assigning that we just morph the disk buffer alloc
 		//	then don't thrown it away on return - cuts down on mem overhead
 		//
 		// ... groan, but not if doing a limb hierarchy creation (some VV stuff?), in which case it's NULL
 		//
 		if ( pvDiskBufferIfJustLoaded )
 		{
-			Z_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
+			R_MorphMallocTag( pvDiskBufferIfJustLoaded, eTag );
 		}
 		else
 		{
-			pvDiskBufferIfJustLoaded =  Z_Malloc(iSize,eTag, qfalse );
+			pvDiskBufferIfJustLoaded =  R_Malloc(iSize,eTag, qfalse );
 		}
 
 		ModelBin.pModelDiskImage	= pvDiskBufferIfJustLoaded;
@@ -315,13 +316,13 @@ void *RE_RegisterServerModels_Malloc(int iSize, void *pvDiskBufferIfJustLoaded, 
 //
 static int GetModelDataAllocSize(void)
 {
-	return	Z_MemSize( TAG_MODEL_MD3) +
-			Z_MemSize( TAG_MODEL_GLM) +
-			Z_MemSize( TAG_MODEL_GLA);
+	return	R_MemSize( TAG_MODEL_MD3) +
+			R_MemSize( TAG_MODEL_GLM) +
+			R_MemSize( TAG_MODEL_GLA);
 }
 extern cvar_t *r_modelpoolmegs;
 //
-// return qtrue if at least one cached model was freed (which tells z_malloc()-fail recoveryt code to try again)
+// return qtrue if at least one cached model was freed (which tells R_Malloc()-fail recoveryt code to try again)
 //
 extern qboolean gbInsideRegisterModel;
 qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel /* = qfalse */)
@@ -334,7 +335,7 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 
 	if (gbInsideRegisterModel)
 	{
-		ri->Printf( PRINT_DEVELOPER, "(Inside RE_RegisterModel (z_malloc recovery?), exiting...\n");
+		ri->Printf( PRINT_DEVELOPER, "(Inside RE_RegisterModel (R_Malloc recovery?), exiting...\n");
 	}
 	else
 	{
@@ -569,7 +570,7 @@ model_t *R_AllocModel( void ) {
 		return NULL;
 	}
 
-	mod = (struct model_s *)Hunk_Alloc( sizeof( *tr.models[tr.numModels] ), h_low );
+	mod = (struct model_s *)R_Hunk_Alloc( sizeof( *tr.models[tr.numModels] ), h_low );
 	mod->index = tr.numModels;
 	tr.models[tr.numModels] = mod;
 	tr.numModels++;
@@ -612,7 +613,7 @@ void RE_InsertModelIntoHash(const char *name, model_t *mod)
 	hash = generateHashValue(name, FILE_HASH_SIZE);
 
 	// insert this file into the hash table so we can look it up faster later
-	mh = (modelHash_t*)Hunk_Alloc( sizeof( modelHash_t ), h_low );
+	mh = (modelHash_t*)R_Hunk_Alloc( sizeof( modelHash_t ), h_low );
 
 	mh->next = mhHashTable[hash];
 	mh->handle = mod->index;
@@ -668,7 +669,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 	mod->dataSize  += size;
 
 	qboolean bAlreadyFound = qfalse;
-	mdxa = mod->mdxa = (mdxaHeader_t*) //Hunk_Alloc( size );
+	mdxa = mod->mdxa = (mdxaHeader_t*) //R_Hunk_Alloc( size );
 										RE_RegisterServerModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA);
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
@@ -791,7 +792,7 @@ qboolean ServerLoadMDXM( model_t *mod, void *buffer, const char *mod_name, qbool
 	mod->dataSize += size;
 
 	qboolean bAlreadyFound = qfalse;
-	mdxm = mod->mdxm = (mdxmHeader_t*) //Hunk_Alloc( size );
+	mdxm = mod->mdxm = (mdxmHeader_t*) //R_Hunk_Alloc( size );
 										RE_RegisterServerModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
@@ -1342,7 +1343,7 @@ fail:
 
 
 // wrapper function needed to avoid problems with mid-function returns so I can safely use this bool to tell the
-//	z_malloc-fail recovery code whether it's safe to ditch any model caches...
+//	R_Malloc-fail recovery code whether it's safe to ditch any model caches...
 //
 qboolean gbInsideRegisterModel = qfalse;
 qhandle_t RE_RegisterModel( const char *name )
@@ -1404,7 +1405,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 	mod->dataSize += size;
 
 	qboolean bAlreadyFound = qfalse;
-	mod->md3[lod] = (md3Header_t *) //Hunk_Alloc( size );
+	mod->md3[lod] = (md3Header_t *) //R_Hunk_Alloc( size );
 										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_MD3);
 
 	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?

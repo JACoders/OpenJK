@@ -485,7 +485,7 @@ public:
 		SWeatherZone::mMarkedOutside = false;
 		for (int wz=0; wz<mWeatherZones.size(); wz++)
 		{
-			Z_Free(mWeatherZones[wz].mPointCache);
+			R_Free(mWeatherZones[wz].mPointCache);
 			mWeatherZones[wz].mPointCache = 0;
 		}
 		mWeatherZones.clear();
@@ -529,7 +529,7 @@ public:
 			Wz.mDepth		= ((int)(Wz.mSize.mMaxs[2] - Wz.mSize.mMins[2]) + 31) >> 5;
 
 			int arraySize	= (Wz.mWidth * Wz.mHeight * Wz.mDepth);
-			Wz.mPointCache  = (uint32_t *)Z_Malloc(arraySize*sizeof(uint32_t), TAG_POINTCACHE, qtrue);
+			Wz.mPointCache  = (uint32_t *)R_Malloc(arraySize*sizeof(uint32_t), TAG_POINTCACHE, qtrue);
 		}
 	}
 

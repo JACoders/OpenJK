@@ -26,6 +26,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "server/server.h"
 #include "ghoul2/g2_local.h"
 
+#include "tr_common.h"
+
 #ifdef _G2_GORE
 #include "ghoul2/G2_gore.h"
 
@@ -1000,7 +1002,7 @@ void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const mdxmSu
 			sizeof(float)*2*newNumVerts+ // texture coordinates
 			sizeof(int)*newNumTris*3;  // new indecies
 
-		int *data=(int *)Z_Malloc ( sizeof(int)*size, TAG_GHOUL2_GORE, qtrue );
+		int *data=(int *)R_Malloc ( sizeof(int)*size, TAG_GHOUL2_GORE, qtrue );
 
 		if ( gore->tex[TS.lod] )
 		{
@@ -1698,7 +1700,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 	// is there anything to save?
 	if (!ghoul2.size())
 	{
-		*buffer = (char *)Z_Malloc(4, TAG_GHOUL2, qtrue);
+		*buffer = (char *)R_Malloc(4, TAG_GHOUL2, qtrue);
 		int *tempBuffer = (int *)*buffer;
 		*tempBuffer = 0;
 		*size = 4;
@@ -1730,7 +1732,7 @@ qboolean G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2, char **buffer, int *size)
 	}
 
 	// ok, we should know how much space we need now
-	*buffer = (char*)Z_Malloc(*size, TAG_GHOUL2, qtrue);
+	*buffer = (char*)R_Malloc(*size, TAG_GHOUL2, qtrue);
 
 	// now lets start putting the data we care about into the buffer
 	char *tempBuffer = *buffer;

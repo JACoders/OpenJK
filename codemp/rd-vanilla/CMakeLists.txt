@@ -90,6 +90,7 @@ set(MPVanillaRendererRdCommonFiles
 	"${MPDir}/rd-common/tr_image_jpg.cpp"
 	"${MPDir}/rd-common/tr_image_tga.cpp"
 	"${MPDir}/rd-common/tr_image_png.cpp"
+	"${MPDir}/rd-common/tr_mem.cpp"
 	"${MPDir}/rd-common/tr_noise.cpp"
 	"${MPDir}/rd-common/tr_public.h"
 	"${MPDir}/rd-common/tr_types.h")
@@ -126,6 +127,9 @@ list(APPEND MPVanillaRendererLibraries          ${ZLIB_LIBRARIES})
 # Transparently use our bundled minizip.
 list(APPEND MPVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
 list(APPEND MPVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
+
+# Transparently use the common renderer.
+list(APPEND MPVanillaRendererIncludeDirectories "${MPDir}/rd-common")
 
 find_package(OpenGL REQUIRED)
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OPENGL_INCLUDE_DIR})

@@ -823,6 +823,11 @@ static IHeapAllocator *GetG2VertSpaceServer( void ) {
 	return G2VertSpaceServer;
 }
 
+void *SV_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign)
+{
+	return Z_Malloc(iSize, eTag, bZeroit);
+}
+
 refexport_t	*re = NULL;
 
 static void SV_InitRef( void ) {
@@ -842,7 +847,7 @@ static void SV_InitRef( void ) {
 	ri.Hunk_FreeTempMemory = Hunk_FreeTempMemory;
 	ri.Hunk_Alloc = Hunk_Alloc;
 	ri.Hunk_MemoryRemaining = Hunk_MemoryRemaining;
-	ri.Z_Malloc = Z_Malloc;
+	ri.Malloc = SV_Malloc;
 	ri.Z_Free = Z_Free;
 	ri.Z_MemSize = Z_MemSize;
 	ri.Z_MorphMallocTag = Z_MorphMallocTag;

@@ -795,7 +795,7 @@ static void ParseSurfaceSprites( const char *_text, shaderStage_t *stage )
 
 	if (!stage->ss)
 	{
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
+		stage->ss = (surfaceSprite_t *)R_Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
 	}
 
 	// These are all set by the command lines.
@@ -859,7 +859,7 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 
 	if (!stage->ss)
 	{
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
+		stage->ss = (surfaceSprite_t *)R_Hunk_Alloc( sizeof( surfaceSprite_t ), h_low );
 	}
 	//
 	// fademax
@@ -1281,7 +1281,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 			}
 			// Copy image ptrs into an array of ptrs
-			stage->bundle[0].image = (image_t*) Hunk_Alloc( stage->bundle[0].numImageAnimations * sizeof( image_t* ), h_low );
+			stage->bundle[0].image = (image_t*) R_Hunk_Alloc( stage->bundle[0].numImageAnimations * sizeof( image_t* ), h_low );
 			memcpy( stage->bundle[0].image,	images,			stage->bundle[0].numImageAnimations * sizeof( image_t* ) );
 		}
 		else if ( !Q_stricmp( token, "videoMap" ) )
@@ -1575,7 +1575,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 			else if ( !Q_stricmp( token, "vector" ) )
 			{
-				stage->bundle[0].tcGenVectors = ( vec3_t *) Hunk_Alloc( 2 * sizeof( vec3_t ), h_low );
+				stage->bundle[0].tcGenVectors = ( vec3_t *) R_Hunk_Alloc( 2 * sizeof( vec3_t ), h_low );
 				ParseVector( text, 3, stage->bundle[0].tcGenVectors[0] );
 				ParseVector( text, 3, stage->bundle[0].tcGenVectors[1] );
 
@@ -1755,7 +1755,7 @@ static void ParseDeform( const char **text ) {
 		return;
 	}
 
-	shader.deforms[ shader.numDeforms ] = (deformStage_t *)Hunk_Alloc( sizeof( deformStage_t ), h_low );
+	shader.deforms[ shader.numDeforms ] = (deformStage_t *)R_Hunk_Alloc( sizeof( deformStage_t ), h_low );
 
 	ds = shader.deforms[ shader.numDeforms ];
 	shader.numDeforms++;
@@ -1895,7 +1895,7 @@ static void ParseSkyParms( const char **text ) {
 	char		pathname[MAX_QPATH];
 	int			i;
 
-	shader.sky = (skyParms_t *)Hunk_Alloc( sizeof( skyParms_t ), h_low );
+	shader.sky = (skyParms_t *)R_Hunk_Alloc( sizeof( skyParms_t ), h_low );
 
 	// outerbox
 	token = COM_ParseExt( text, qfalse );
@@ -2270,7 +2270,7 @@ static qboolean ParseShader( const char **text )
 		// fogParms
 		else if ( !Q_stricmp( token, "fogParms" ) )
 		{
-			shader.fogParms = (fogParms_t *)Hunk_Alloc( sizeof( fogParms_t ), h_low );
+			shader.fogParms = (fogParms_t *)R_Hunk_Alloc( sizeof( fogParms_t ), h_low );
 			if ( !ParseVector( text, 3, shader.fogParms->color ) ) {
 				return qfalse;
 			}
@@ -2682,7 +2682,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = (struct shader_s *)ri->Hunk_Alloc( sizeof( shader_t ), h_low );
+	newShader = (struct shader_s *)R_Hunk_Alloc( sizeof( shader_t ), h_low );
 
 	*newShader = shader;
 
@@ -2701,7 +2701,7 @@ static shader_t *GeneratePermanentShader( void ) {
 	tr.numShaders++;
 
 	size = newShader->numUnfoggedPasses ? newShader->numUnfoggedPasses * sizeof( stages[0] ) : sizeof( stages[0] );
-	newShader->stages = (shaderStage_t *) Hunk_Alloc( size, h_low );
+	newShader->stages = (shaderStage_t *) R_Hunk_Alloc( size, h_low );
 
 	for ( i = 0 ; i < newShader->numUnfoggedPasses ; i++ ) {
 		if ( !stages[i].active ) {
@@ -2713,7 +2713,7 @@ static shader_t *GeneratePermanentShader( void ) {
 			if (newShader->stages[i].bundle[b].numTexMods)
 			{
 				size = newShader->stages[i].bundle[b].numTexMods * sizeof( texModInfo_t );
-				newShader->stages[i].bundle[b].texMods = (texModInfo_t *)Hunk_Alloc( size, h_low );
+				newShader->stages[i].bundle[b].texMods = (texModInfo_t *)R_Hunk_Alloc( size, h_low );
 				memcpy( newShader->stages[i].bundle[b].texMods, stages[i].bundle[b].texMods, size );
 			}
 			else
@@ -4053,7 +4053,7 @@ static void ScanAndLoadShaderFiles( void )
 	}
 
 	// build single large buffer
-	s_shaderText = (char *)ri->Hunk_Alloc( sum + numShaderFiles*2, h_low );
+	s_shaderText = (char *)R_Hunk_Alloc( sum + numShaderFiles*2, h_low );
 	s_shaderText[ 0 ] = '\0';
 	textEnd = s_shaderText;
 
@@ -4099,7 +4099,7 @@ static void ScanAndLoadShaderFiles( void )
 
 	size += MAX_SHADERTEXT_HASH;
 
-	hashMem = (char *)ri->Hunk_Alloc( size * sizeof(char *), h_low );
+	hashMem = (char *)R_Hunk_Alloc( size * sizeof(char *), h_low );
 
 	for (i = 0; i < MAX_SHADERTEXT_HASH; i++) {
 		shaderTextHashTable[i] = (char **) hashMem;

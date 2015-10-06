@@ -612,11 +612,15 @@ if(BuildMPDed)
 	set(MPDedFiles ${MPEngineAndDedFiles})
 	set(MPDedDefines ${MPSharedDefines} "_CONSOLE" "DEDICATED")
 
+	list(APPEND MPDedIncludeDirectories "${MPDir}/rd-common")
+
 	# Dedicated renderer is compiled with the server.
 	set(MPDedicatedRendererFiles
 		"${MPDir}/ghoul2/G2_gore.cpp"
 		"${MPDir}/rd-common/mdx_format.h"
+		"${MPDir}/rd-common/tr_common.h"
 		"${MPDir}/rd-common/tr_public.h"
+		"${MPDir}/rd-common/tr_mem.cpp"
 		"${MPDir}/rd-dedicated/tr_local.h"
 		"${MPDir}/rd-dedicated/G2_API.cpp"
 		"${MPDir}/rd-dedicated/G2_bolts.cpp"

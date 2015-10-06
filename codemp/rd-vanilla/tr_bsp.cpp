@@ -276,7 +276,7 @@ static	void R_LoadVisibility( lump_t *l, world_t &worldData ) {
 	byte	*buf;
 
 	len = ( worldData.numClusters + 63 ) & ~63;
-	worldData.novis = (unsigned char *)Hunk_Alloc( len, h_low );
+	worldData.novis = (unsigned char *)R_Hunk_Alloc( len, h_low );
 	memset( worldData.novis, 0xff, len );
 
     len = l->filelen;
@@ -295,7 +295,7 @@ static	void R_LoadVisibility( lump_t *l, world_t &worldData ) {
 	} else {
 		byte	*dest;
 
-		dest = (unsigned char *)Hunk_Alloc( len - 8, h_low );
+		dest = (unsigned char *)R_Hunk_Alloc( len - 8, h_low );
 		memcpy( dest, buf + 8, len - 8 );
 		worldData.vis = dest;
 	}
@@ -387,7 +387,7 @@ static void ParseFace( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, int *
 	ofsIndexes = sfaceSize;
 	sfaceSize += sizeof( int ) * numIndexes;
 
-	cv = (srfSurfaceFace_t *)Hunk_Alloc( sfaceSize, h_low );
+	cv = (srfSurfaceFace_t *)R_Hunk_Alloc( sfaceSize, h_low );
 	cv->surfaceType = SF_FACE;
 	cv->numPoints = numPoints;
 	cv->numIndices = numIndexes;
@@ -541,7 +541,7 @@ static void ParseTriSurf( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, in
 		Com_Error(ERR_DROP, "ParseTriSurf: indices > MAX (%d > %d) on misc_model %s", numIndexes, SHADER_MAX_INDEXES, surf->shader->name );
 	}
 
-	tri = (srfTriangles_t *)Hunk_Alloc( sizeof( *tri ) + numVerts * sizeof( tri->verts[0] )
+	tri = (srfTriangles_t *)R_Hunk_Alloc( sizeof( *tri ) + numVerts * sizeof( tri->verts[0] )
 		+ numIndexes * sizeof( tri->indexes[0] ), h_low );
 	tri->surfaceType = SF_TRIANGLES;
 	tri->numVerts = numVerts;
@@ -607,7 +607,7 @@ static void ParseFlare( dsurface_t *ds, mapVert_t *verts, msurface_t *surf, int 
 		surf->shader = tr.defaultShader;
 	}
 
-	flare = (struct srfFlare_s *)Hunk_Alloc( sizeof( *flare ), h_low );
+	flare = (struct srfFlare_s *)R_Hunk_Alloc( sizeof( *flare ), h_low );
 	flare->surfaceType = SF_FLARE;
 
 	surf->data = (surfaceType_t *)flare;
@@ -1316,13 +1316,13 @@ void R_MovePatchSurfacesToHunk(world_t &worldData) {
 			continue;
 		//
 		size = (grid->width * grid->height - 1) * sizeof( drawVert_t ) + sizeof( *grid );
-		hunkgrid = (struct srfGridMesh_s *)Hunk_Alloc( size, h_low );
+		hunkgrid = (struct srfGridMesh_s *)R_Hunk_Alloc( size, h_low );
 		memcpy(hunkgrid, grid, size);
 
-		hunkgrid->widthLodError = (float *)Hunk_Alloc( grid->width * 4, h_low );
+		hunkgrid->widthLodError = (float *)R_Hunk_Alloc( grid->width * 4, h_low );
 		memcpy( hunkgrid->widthLodError, grid->widthLodError, grid->width * 4 );
 
-		hunkgrid->heightLodError = (float *)Hunk_Alloc( grid->height * 4, h_low );
+		hunkgrid->heightLodError = (float *)R_Hunk_Alloc( grid->height * 4, h_low );
 		memcpy( grid->heightLodError, grid->heightLodError, grid->height * 4 );
 
 		R_FreeSurfaceGridMesh( grid );
@@ -1363,7 +1363,7 @@ static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump, wor
 	if ( indexLump->filelen % sizeof(*indexes))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 
-	out = (struct msurface_s *)Hunk_Alloc ( count * sizeof(*out), h_low );
+	out = (struct msurface_s *)R_Hunk_Alloc ( count * sizeof(*out), h_low );
 
 	worldData.surfaces = out;
 	worldData.numsurfaces = count;
@@ -1421,7 +1421,7 @@ static	void R_LoadSubmodels( lump_t *l, world_t &worldData, int index ) {
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
 
-	worldData.bmodels = out = (bmodel_t *)Hunk_Alloc( count * sizeof(*out), h_low );
+	worldData.bmodels = out = (bmodel_t *)R_Hunk_Alloc( count * sizeof(*out), h_low );
 
 	for ( i=0 ; i<count ; i++, in++, out++ ) {
 		model_t *model;
@@ -1500,7 +1500,7 @@ static	void R_LoadNodesAndLeafs (lump_t *nodeLump, lump_t *leafLump, world_t &wo
 	numNodes = nodeLump->filelen / sizeof(dnode_t);
 	numLeafs = leafLump->filelen / sizeof(dleaf_t);
 
-	out = (struct mnode_s *)Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);
+	out = (struct mnode_s *)R_Hunk_Alloc ( (numNodes + numLeafs) * sizeof(*out), h_low);
 
 	worldData.nodes = out;
 	worldData.numnodes = numNodes + numLeafs;
@@ -1571,7 +1571,7 @@ static	void R_LoadShaders( lump_t *l, world_t &worldData ) {
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (dshader_t *)Hunk_Alloc ( count*sizeof(*out), h_low );
+	out = (dshader_t *)R_Hunk_Alloc ( count*sizeof(*out), h_low );
 
 	worldData.shaders = out;
 	worldData.numShaders = count;
@@ -1600,7 +1600,7 @@ static	void R_LoadMarksurfaces (lump_t *l, world_t &worldData)
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (struct msurface_s **)Hunk_Alloc ( count*sizeof(*out), h_low);
+	out = (struct msurface_s **)R_Hunk_Alloc ( count*sizeof(*out), h_low);
 
 	worldData.marksurfaces = out;
 	worldData.nummarksurfaces = count;
@@ -1629,7 +1629,7 @@ static	void R_LoadPlanes( lump_t *l, world_t &worldData ) {
 	if (l->filelen % sizeof(*in))
 		Com_Error (ERR_DROP, "LoadMap: funny lump size in %s",worldData.name);
 	count = l->filelen / sizeof(*in);
-	out = (struct cplane_s *)Hunk_Alloc ( count*2*sizeof(*out), h_low);
+	out = (struct cplane_s *)R_Hunk_Alloc ( count*2*sizeof(*out), h_low);
 
 	worldData.planes = out;
 	worldData.numplanes = count;
@@ -1677,7 +1677,7 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump, world
 
 	// create fog strucutres for them
 	worldData.numfogs = count + 1;
-	worldData.fogs = (fog_t *)Hunk_Alloc ( worldData.numfogs*sizeof(*out), h_low);
+	worldData.fogs = (fog_t *)R_Hunk_Alloc ( worldData.numfogs*sizeof(*out), h_low);
 	worldData.globalFog = -1;
 	out = worldData.fogs + 1;
 
@@ -1828,7 +1828,7 @@ void R_LoadLightGrid( lump_t *l, world_t &worldData ) {
 
 	int numGridDataElements = l->filelen / sizeof(*w->lightGridData);
 
-	w->lightGridData = (mgrid_t *)Hunk_Alloc( l->filelen, h_low );
+	w->lightGridData = (mgrid_t *)R_Hunk_Alloc( l->filelen, h_low );
 	memcpy( w->lightGridData, (void *)(fileBase + l->fileofs), l->filelen );
 
 	// deal with overbright bits
@@ -1864,7 +1864,7 @@ void R_LoadLightGridArray( lump_t *l, world_t &worldData ) {
 		return;
 	}
 
-	w->lightGridArray = (unsigned short *)Hunk_Alloc( l->filelen, h_low );
+	w->lightGridArray = (unsigned short *)R_Hunk_Alloc( l->filelen, h_low );
 	memcpy( w->lightGridArray, (void *)(fileBase + l->fileofs), l->filelen );
 #ifdef Q3_BIG_ENDIAN
 	for ( i = 0 ; i < w->numGridArrayElements ; i++ ) {
@@ -1897,7 +1897,7 @@ void R_LoadEntities( lump_t *l, world_t &worldData ) {
 	p = (char *)(fileBase + l->fileofs);
 
 	// store for reference by the cgame
-	w->entityString = (char *)Hunk_Alloc( l->filelen + 1, h_low );
+	w->entityString = (char *)R_Hunk_Alloc( l->filelen + 1, h_low );
 	strcpy( w->entityString, p );
 	w->entityParsePoint = w->entityString;
 
@@ -2058,7 +2058,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 	COM_StripExtension( worldData.baseName, worldData.baseName, sizeof( worldData.baseName ) );
 	COM_StripExtension( tr.worldDir, tr.worldDir, sizeof( tr.worldDir ) );
 
-	startMarker = (byte *)Hunk_Alloc(0, h_low);
+	startMarker = (byte *)R_Hunk_Alloc(0, h_low);
 	c_gridVerts = 0;
 
 	header = (dheader_t *)buffer;
@@ -2086,7 +2086,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 	R_LoadSubmodels (&header->lumps[LUMP_MODELS], worldData, index);
 	R_LoadVisibility( &header->lumps[LUMP_VISIBILITY], worldData );
 
-	worldData.dataSize = (byte *)Hunk_Alloc(0, h_low) - startMarker;
+	worldData.dataSize = (byte *)R_Hunk_Alloc(0, h_low) - startMarker;
 
 	if (!index)
 	{
@@ -2100,7 +2100,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 
 	if (ri->CM_GetCachedMapDiskImage())
 	{
-		Z_Free( ri->CM_GetCachedMapDiskImage() );
+		R_Free( ri->CM_GetCachedMapDiskImage() );
 		ri->CM_SetCachedMapDiskImage( NULL );
 	}
 	else
@@ -2110,7 +2110,7 @@ void RE_LoadWorldMap_Actual( const char *name, world_t &worldData, int index )
 }
 
 
-// new wrapper used for convenience to tell z_malloc()-fail recovery code whether it's safe to dump the cached-bsp or not.
+// new wrapper used for convenience to tell R_Malloc()-fail recovery code whether it's safe to dump the cached-bsp or not.
 //
 void RE_LoadWorldMap( const char *name )
 {

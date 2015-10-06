@@ -200,7 +200,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	if (height)
 		*height = pHeader->wImageHeight;
 
-	pRGBA	= (byte *) Z_Malloc (pHeader->wImageWidth * pHeader->wImageHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
+	pRGBA	= (byte *) R_Malloc (pHeader->wImageWidth * pHeader->wImageHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
 	*pic	= pRGBA;
 	pOut	= pRGBA;
 	pIn		= pTempLoadedBuffer + sizeof(*pHeader);

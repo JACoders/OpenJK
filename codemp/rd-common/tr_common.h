@@ -24,8 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef TR_COMMON_H
 #define TR_COMMON_H
 
-#include "../rd-common/tr_public.h"
-#include "../rd-common/tr_font.h"
+#include "tr_public.h"
+#include "tr_font.h"
 
 extern refimport_t *ri;
 
@@ -83,5 +83,15 @@ void RE_SaveJPG( const char * filename, int quality, int image_width, int image_
 
 // Save raw image data as PNG image file.
 int RE_SavePNG( const char *filename, byte *buf, size_t width, size_t height, int byteDepth );
+
+void *R_Malloc( int iSize, memtag_t eTag, qboolean bZeroit=qfalse );
+void R_Free( void *ptr );
+int R_MemSize( memtag_t eTag );
+void R_MorphMallocTag( void *pvBuffer, memtag_t eDesiredTag );
+
+void *R_Hunk_Alloc( int iSize, ha_pref preference );
+void *R_Hunk_AllocateTempMemory( int size );
+void R_Hunk_FreeTempMemory( void *buf );
+int R_Hunk_MemoryRemaining( void );
 
 #endif

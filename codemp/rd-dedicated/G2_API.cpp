@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "ghoul2/G2_gore.h"
 
 #include "tr_local.h"
+#include "tr_common.h"
 
 #include <set>
 #include <list>
@@ -2029,7 +2030,7 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 					//if we have a pointer, but not a ghoul2_zonetransalloc flag, then that means
 					//it is a miniheap pointer. Just stomp over it.
 					int iSize = g2.currentModel->mdxm->numSurfaces * 4;
-					g2.mTransformedVertsArray = (size_t *)Z_Malloc(iSize, TAG_GHOUL2, qtrue);
+					g2.mTransformedVertsArray = (size_t *)R_Malloc(iSize, TAG_GHOUL2, qtrue);
 				}
 
 				g2.mFlags |= GHOUL2_ZONETRANSALLOC;
@@ -2054,7 +2055,7 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 				CGhoul2Info &g2 = ghoul2[i];
 				int iSize = g2.currentModel->mdxm->numSurfaces * 4;
 
-				int *zoneMem = (int *)Z_Malloc(iSize, TAG_GHOUL2, qtrue);
+				int *zoneMem = (int *)R_Malloc(iSize, TAG_GHOUL2, qtrue);
 				memcpy(zoneMem, g2.mTransformedVertsArray, iSize);
 				g2.mTransformedVertsArray = zoneMem;
 				g2.mFlags |= GHOUL2_ZONETRANSALLOC;

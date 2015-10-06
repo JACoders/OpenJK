@@ -307,22 +307,22 @@ srfGridMesh_t *R_CreateSurfaceGridMesh(int width, int height,
 	size = (width * height - 1) * sizeof( drawVert_t ) + sizeof( *grid );
 
 #ifdef PATCH_STITCHING
-	grid = (struct srfGridMesh_s *)/*Hunk_Alloc*/ Z_Malloc( size, TAG_GRIDMESH, qfalse );
+	grid = (struct srfGridMesh_s *)/*R_Hunk_Alloc*/ R_Malloc( size, TAG_GRIDMESH, qfalse );
 	memset(grid, 0, size);
 
-	grid->widthLodError = (float *)/*Hunk_Alloc*/ Z_Malloc( width * 4, TAG_GRIDMESH, qfalse );
+	grid->widthLodError = (float *)/*R_Hunk_Alloc*/ R_Malloc( width * 4, TAG_GRIDMESH, qfalse );
 	memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = (float *)/*Hunk_Alloc*/ Z_Malloc( height * 4, TAG_GRIDMESH, qfalse );
+	grid->heightLodError = (float *)/*R_Hunk_Alloc*/ R_Malloc( height * 4, TAG_GRIDMESH, qfalse );
 	memcpy( grid->heightLodError, errorTable[1], height * 4 );
 #else
-	grid = Hunk_Alloc( size );
+	grid = R_Hunk_Alloc( size );
 	memset(grid, 0, size);
 
-	grid->widthLodError = Hunk_Alloc( width * 4 );
+	grid->widthLodError = R_Hunk_Alloc( width * 4 );
 	memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = Hunk_Alloc( height * 4 );
+	grid->heightLodError = R_Hunk_Alloc( height * 4 );
 	memcpy( grid->heightLodError, errorTable[1], height * 4 );
 #endif
 
@@ -356,9 +356,9 @@ R_FreeSurfaceGridMesh
 =================
 */
 void R_FreeSurfaceGridMesh( srfGridMesh_t *grid ) {
-	Z_Free(grid->widthLodError);
-	Z_Free(grid->heightLodError);
-	Z_Free(grid);
+	R_Free(grid->widthLodError);
+	R_Free(grid->heightLodError);
+	R_Free(grid);
 }
 
 /*

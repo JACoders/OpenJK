@@ -750,7 +750,7 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 		extensionsLen = p - extensionsString - 1;
 	}
 
-	truncatedExtensions = (char *)Hunk_Alloc(extensionsLen + 1, h_low);
+	truncatedExtensions = (char *)R_Hunk_Alloc(extensionsLen + 1, h_low);
 	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
 
 	return truncatedExtensions;
@@ -882,7 +882,7 @@ alignment of packAlign to ensure efficient copying.
 
 Stores the length of padding after a line of pixels to address padlen
 
-Return value must be freed with Hunk_FreeTempMemory()
+Return value must be freed with R_Hunk_FreeTempMemory()
 ==================
 */
 
@@ -898,7 +898,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *)Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
+	buffer = (byte *)R_Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
 
 	bufstart = (byte *)PADP((intptr_t) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -966,7 +966,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 
 	ri->FS_WriteFile(fileName, buffer, memcount + 18);
 
-	ri->Hunk_FreeTempMemory(allbuf);
+	R_Hunk_FreeTempMemory(allbuf);
 }
 
 /*
@@ -981,7 +981,7 @@ void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) 
 
 	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
 	RE_SavePNG( fileName, buffer, width, height, 3 );
-	ri->Hunk_FreeTempMemory( buffer );
+	R_Hunk_FreeTempMemory( buffer );
 }
 
 /*
@@ -1002,7 +1002,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 		R_GammaCorrect(buffer + offset, memcount);
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
-	ri->Hunk_FreeTempMemory(buffer);
+	R_Hunk_FreeTempMemory(buffer);
 }
 
 /*
@@ -1046,7 +1046,7 @@ static void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = (byte *)ri->Hunk_AllocateTempMemory(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18);
+	buffer = (byte *)R_Hunk_AllocateTempMemory(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;
@@ -1083,8 +1083,8 @@ static void R_LevelShot( void ) {
 
 	ri->FS_WriteFile( checkname, buffer, LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18 );
 
-	ri->Hunk_FreeTempMemory( buffer );
-	ri->Hunk_FreeTempMemory( allsource );
+	R_Hunk_FreeTempMemory( buffer );
+	R_Hunk_FreeTempMemory( allsource );
 
 	ri->Printf( PRINT_ALL, "[skipnotify]Wrote %s\n", checkname );
 }
@@ -1754,7 +1754,7 @@ void R_Init( void ) {
 	max_polys = Q_min( r_maxpolys->integer, DEFAULT_MAX_POLYS );
 	max_polyverts = Q_min( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
-	ptr = (byte *)Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
+	ptr = (byte *)R_Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
 	backEndData = (backEndData_t *) ptr;
 	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
 	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);

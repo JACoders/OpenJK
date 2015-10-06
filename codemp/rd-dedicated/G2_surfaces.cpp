@@ -21,6 +21,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "rd-common/tr_types.h"
+#include "tr_common.h"
+
 #include "ghoul2/G2.h"
 #include "ghoul2/g2_local.h"
 #include "tr_local.h"
@@ -374,9 +376,9 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 		// firstly, generate a list of active / on surfaces below the root point
 
 		// gimme some space to put this list into
-		activeSurfaces = (int *)Z_Malloc(mod_m->mdxm->numSurfaces * 4, TAG_GHOUL2, qtrue);
+		activeSurfaces = (int *)R_Malloc(mod_m->mdxm->numSurfaces * 4, TAG_GHOUL2, qtrue);
 		memset(activeSurfaces, 0, (mod_m->mdxm->numSurfaces * 4));
-		activeBones = (int *)Z_Malloc(mod_a->mdxa->numBones * 4, TAG_GHOUL2, qtrue);
+		activeBones = (int *)R_Malloc(mod_a->mdxa->numBones * 4, TAG_GHOUL2, qtrue);
 		memset(activeBones, 0, (mod_a->mdxa->numBones * 4));
 
 		G2_FindRecursiveSurface(mod_m, surf, ghoul2[modelIndex].mSlist, activeSurfaces);
@@ -458,9 +460,9 @@ qboolean G2_SetRootSurface(CGhoul2Info_v &ghoul2, const int modelIndex, const ch
 			// firstly, generate a list of active / on surfaces below the root point
 
 			// gimme some space to put this list into
-			activeSurfaces = (int *)Z_Malloc(mod_m->mdxm->numSurfaces * 4, TAG_GHOUL2, qtrue);
+			activeSurfaces = (int *)R_Malloc(mod_m->mdxm->numSurfaces * 4, TAG_GHOUL2, qtrue);
 			memset(activeSurfaces, 0, (mod_m->mdxm->numSurfaces * 4));
-			activeBones = (int *)Z_Malloc(mod_a->mdxa->numBones * 4, TAG_GHOUL2, qtrue);
+			activeBones = (int *)R_Malloc(mod_a->mdxa->numBones * 4, TAG_GHOUL2, qtrue);
 			memset(activeBones, 0, (mod_a->mdxa->numBones * 4));
 
 			G2_FindRecursiveSurface(mod_m, surf, ghoul2[modelIndex].mSlist, activeSurfaces);

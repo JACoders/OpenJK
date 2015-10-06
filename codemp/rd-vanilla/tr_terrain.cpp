@@ -844,17 +844,17 @@ CTRLandScape::~CTRLandScape(void)
 {
 	if(mTRPatches)
 	{
-		Z_Free(mTRPatches);
+		R_Free(mTRPatches);
 		mTRPatches = NULL;
 	}
 	if (mSortedPatches)
 	{
-		Z_Free(mSortedPatches);
+		R_Free(mSortedPatches);
 		mSortedPatches = 0;
 	}
 	if(mRenderMap)
 	{
-		Z_Free(mRenderMap);
+		R_Free(mRenderMap);
 		mRenderMap = NULL;
 	}
 }
@@ -882,7 +882,7 @@ CTRLandScape::CTRLandScape(const char *configstring)
 	mMaxNode = (Q_log2(common->GetTerxels()) << 1) - 1;
 
 	// Allocate space for the renderer specific data
-	mRenderMap = (CTerVert *)Z_Malloc(sizeof(CTerVert) * common->GetRealArea(), TAG_R_TERRAIN);
+	mRenderMap = (CTerVert *)R_Malloc(sizeof(CTerVert) * common->GetRealArea(), TAG_R_TERRAIN);
 
 	// Copy byte heightmap to rendermap to speed up calcs
 	CopyHeightMap();
@@ -901,10 +901,10 @@ CTRLandScape::CTRLandScape(const char *configstring)
 
 	ri->Printf( PRINT_ALL, "R_Terrain: Creating renderer patches.....\n");
 	// Initialise all terrain patches
-	mTRPatches = (CTRPatch *)Z_Malloc(sizeof(CTRPatch) * common->GetBlockCount(), TAG_R_TERRAIN);
+	mTRPatches = (CTRPatch *)R_Malloc(sizeof(CTRPatch) * common->GetBlockCount(), TAG_R_TERRAIN);
 
 	mSortedCount = 2 * common->GetBlockCount();
-	mSortedPatches = (TPatchInfo *)Z_Malloc(sizeof(TPatchInfo) * mSortedCount, TAG_R_TERRAIN);
+	mSortedPatches = (TPatchInfo *)R_Malloc(sizeof(TPatchInfo) * mSortedCount, TAG_R_TERRAIN);
 
 	ri->CM_TerrainPatchIterate(common, InitRendererPatches, this);
 

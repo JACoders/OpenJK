@@ -383,7 +383,7 @@ static void R_MipMap2( unsigned *in, int inWidth, int inHeight ) {
 
 	outWidth = inWidth >> 1;
 	outHeight = inHeight >> 1;
-	temp = (unsigned int *)Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
+	temp = (unsigned int *)R_Hunk_AllocateTempMemory( outWidth * outHeight * 4 );
 
 	inWidthMask = inWidth - 1;
 	inHeightMask = inHeight - 1;
@@ -418,7 +418,7 @@ static void R_MipMap2( unsigned *in, int inWidth, int inHeight ) {
 	}
 
 	memcpy( in, temp, outWidth * outHeight * 4 );
-	Hunk_FreeTempMemory( temp );
+	R_Hunk_FreeTempMemory( temp );
 }
 
 /*
@@ -556,7 +556,7 @@ static void R_Images_DeleteImageContents( image_t *pImage )
 	if (pImage)
 	{
 		qglDeleteTextures( 1, &pImage->texnum );
-		Z_Free(pImage);
+		R_Free(pImage);
 	}
 }
 
@@ -1008,7 +1008,7 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 		return image;
 	}
 
-	image = (image_t*) Z_Malloc( sizeof( image_t ), TAG_IMAGE_T, qtrue );
+	image = (image_t*) R_Malloc( sizeof( image_t ), TAG_IMAGE_T, qtrue );
 //	memset(image,0,sizeof(*image));	// qtrue above does this
 
 	image->texnum = 1024 + giTextureBindNum++;	// ++ is of course staggeringly important...
@@ -1120,7 +1120,7 @@ image_t	*R_FindImageFile( const char *name, qboolean mipmap, qboolean allowPicmi
 	}
 
 	image = R_CreateImage( ( char * ) name, pic, width, height, GL_RGBA, mipmap, allowPicmip, allowTC, glWrapClampMode );
-	Z_Free( pic );
+	R_Free( pic );
 	return image;
 }
 
@@ -1140,7 +1140,7 @@ static void R_CreateDlightImage( void )
 	if (pic)
 	{
 		tr.dlightImage = R_CreateImage("*dlight", pic, width, height, GL_RGBA, qfalse, qfalse, qfalse, GL_CLAMP );
-		Z_Free(pic);
+		R_Free(pic);
 	}
 	else
 	{	// if we dont get a successful load
@@ -1239,7 +1239,7 @@ static void R_CreateFogImage( void ) {
 	float	d;
 	float	borderColor[4];
 
-	data = (unsigned char *)Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
+	data = (unsigned char *)R_Hunk_AllocateTempMemory( FOG_S * FOG_T * 4 );
 
 	// S is distance, T is depth
 	for (x=0 ; x<FOG_S ; x++) {
@@ -1256,7 +1256,7 @@ static void R_CreateFogImage( void ) {
 	// the border color at the edges.  OpenGL 1.2 has clamp-to-edge, which does
 	// what we want.
 	tr.fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, GL_RGBA, qfalse, qfalse, qfalse, GL_CLAMP );
-	Hunk_FreeTempMemory( data );
+	R_Hunk_FreeTempMemory( data );
 
 	borderColor[0] = 1.0;
 	borderColor[1] = 1.0;
@@ -1502,7 +1502,7 @@ void R_SetGammaCorrectionLUT()
 			gammaCorrected[i] = Com_Clampi(0, 255, inf << shift);
 		}
 
-		byte *lutTable = (byte *)ri->Hunk_AllocateTempMemory(64 * 64 * 64 * 3);
+		byte *lutTable = (byte *)R_Hunk_AllocateTempMemory(64 * 64 * 64 * 3);
 		byte *write = lutTable;
 		for ( int z = 0; z < 64; z++ )
 		{
@@ -1521,7 +1521,7 @@ void R_SetGammaCorrectionLUT()
 		qglPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		qglTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, 64, 64, 64, GL_RGB, GL_UNSIGNED_BYTE, lutTable);
 
-		ri->Hunk_FreeTempMemory(lutTable);
+		R_Hunk_FreeTempMemory(lutTable);
 	}
 }
 

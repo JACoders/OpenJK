@@ -721,7 +721,7 @@ static inline wireframeMapSurf_t *R_GetNewWireframeMapSurf(void)
 	}
 
 	//allocate memory for it and pass it back
-	(*next) = (wireframeMapSurf_t *)Z_Malloc(sizeof(wireframeMapSurf_t), TAG_ALL, qtrue);
+	(*next) = (wireframeMapSurf_t *)R_Malloc(sizeof(wireframeMapSurf_t), TAG_ALL, qtrue);
 	g_autoMapNextFree = &(*next)->next;
 	return (*next);
 }
@@ -768,7 +768,7 @@ static inline void R_EvaluateWireframeSurf(msurface_t *surf)
 #endif
 
 			//now go through the indices and add a point for each
-			nextSurf->points = (wireframeSurfPoint_t *)Z_Malloc(sizeof(wireframeSurfPoint_t)*face->numIndices, TAG_ALL, qtrue);
+			nextSurf->points = (wireframeSurfPoint_t *)R_Malloc(sizeof(wireframeSurfPoint_t)*face->numIndices, TAG_ALL, qtrue);
 			nextSurf->numPoints = face->numIndices;
 			while (i < face->numIndices)
 			{
@@ -933,14 +933,14 @@ void R_DestroyWireframeMap(void)
 	while (next)
 	{
 		//free memory allocated for points on this surface
-		Z_Free(next->points);
+		R_Free(next->points);
 
 		//get the next surface
 		last = next;
 		next = next->next;
 
 		//free memory for this surface
-		Z_Free(last);
+		R_Free(last);
 	}
 
 	//invalidate everything
@@ -983,7 +983,7 @@ qboolean R_WriteWireframeMapToFile(void)
 	}
 
 	//allocate the memory we will need
-    out = (byte *)Z_Malloc(requiredSize, TAG_ALL, qtrue);
+    out = (byte *)R_Malloc(requiredSize, TAG_ALL, qtrue);
 	rOut = out;
 
 	//now go through and put the data into the memory
@@ -1003,7 +1003,7 @@ qboolean R_WriteWireframeMapToFile(void)
 
 	//now write the buffer, and close
 	ri->FS_Write(rOut, requiredSize, f);
-	Z_Free(rOut);
+	R_Free(rOut);
 	ri->FS_FCloseFile(f);
 
 	return qtrue;
@@ -1025,14 +1025,14 @@ qboolean R_GetWireframeMapFromFile(void)
 		return qfalse;
 	}
 
-	surfs = (wireframeMapSurf_t *)Z_Malloc(len, TAG_ALL, qtrue);
+	surfs = (wireframeMapSurf_t *)R_Malloc(len, TAG_ALL, qtrue);
 	rSurfs = surfs;
 	ri->FS_Read(surfs, len, f);
 
 	while (i < len)
 	{
 		newSurf = R_GetNewWireframeMapSurf();
-		newSurf->points = (wireframeSurfPoint_t *)Z_Malloc(sizeof(wireframeSurfPoint_t)*surfs->numPoints, TAG_ALL, qtrue);
+		newSurf->points = (wireframeSurfPoint_t *)R_Malloc(sizeof(wireframeSurfPoint_t)*surfs->numPoints, TAG_ALL, qtrue);
 
 		//copy the surf data into the new surf
 		//note - the surfs->points pointer is NOT pointing to valid memory, a pointer to that
@@ -1052,7 +1052,7 @@ qboolean R_GetWireframeMapFromFile(void)
 	assert(i == len);
 
 	ri->FS_FCloseFile(f);
-	Z_Free(rSurfs);
+	R_Free(rSurfs);
 	return qtrue;
 }
 
