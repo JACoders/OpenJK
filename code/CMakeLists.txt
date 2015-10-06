@@ -1,17 +1,17 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
@@ -42,7 +42,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		${SPEngineIncludeDirectories}
 		${SharedDir}
 		${SPDir})
-	
+
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
 	if(MSVC AND NOT WIN64)
@@ -59,7 +59,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
 			set(SPEngineLibraries ${SPEngineLibraries} ${OPENAL_LIBRARY})
 		endif(UseInternalOpenAL)
-	
+
 		set(SPEngineEAXFiles
 			"${SPDir}/client/eax/eax.h"
 			"${SPDir}/client/eax/EaxMan.h"
@@ -87,7 +87,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2.lib
 				)
 		endif()
-		
+
 		set(SPEngineIncludeDirectories
 			${SPEngineIncludeDirectories}
 			${OpenJKLibDir}/SDL2/include
@@ -97,7 +97,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
 		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
 	endif()
-	
+
 	#    Source Files
 
 	# Client files
@@ -292,7 +292,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	# Ghoul2 files
 	set(SPEngineGhoul2Files
 		"${SPDir}/ghoul2/G2.h"
-		"${SPDir}/ghoul2/ghoul2_gore.h"	
+		"${SPDir}/ghoul2/ghoul2_gore.h"
 		)
 	source_group("ghoul2" FILES ${SPEngineGhoul2Files})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineGhoul2Files})

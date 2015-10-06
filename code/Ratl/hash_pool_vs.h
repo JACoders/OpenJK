@@ -33,7 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +91,7 @@ class	hash_pool
 		{
 			if (mem::eql((void*)(&mData[mHandles[handle]]), data, datasize))
 			{
-				return true;						// found 
+				return true;						// found
 			}
 			handle=(handle+1)&(SIZE_HANDLES-1);		// incriment the handle
 
@@ -99,7 +99,7 @@ class	hash_pool
 			mCurrentCollisions ++;
 			mTotalCollisions ++;
 
-			//assert(mCurrentCollisions < 16);		// If We Had 16+ Collisions, Hash May Be Inefficient.  
+			//assert(mCurrentCollisions < 16);		// If We Had 16+ Collisions, Hash May Be Inefficient.
 													// Evaluate SIZE and SIZEHANDLES
 			#endif
 		}
@@ -131,7 +131,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// The Number Of Bytes Allocated
     ////////////////////////////////////////////////////////////////////////////////////
-	int			size()	 const													
+	int			size()	 const
 	{
 		return mDataAlloc;
 	}
@@ -139,7 +139,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Is Empty
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		empty()	 const													
+	bool		empty()	 const
 	{
 		return (mDataAlloc==1);
 	}
@@ -147,7 +147,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Has Enough Space Left For (minimum) Bytes
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		full(int minimum)	 const													
+	bool		full(int minimum)	 const
 	{
 		return ((SIZE - mDataAlloc)<minimum);
 	}

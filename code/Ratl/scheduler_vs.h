@@ -34,7 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // parameter.
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +189,7 @@ public:
 			mEvents[Next.mEvent].Fire();
 			mEvents.free(Next.mEvent);
 		}
-	}	
+	}
 };
 
 

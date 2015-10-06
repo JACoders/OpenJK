@@ -47,9 +47,9 @@ static int TIMER_GetCount(int num)
 		count++;
 		p = p->next;
 	}
-	
+
 	return count;
-}	
+}
 
 
 /*
@@ -172,7 +172,7 @@ void TIMER_Save( void )
 
 		//Write out the timer information
 		gi.AppendToSaveGame(INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers));
-	
+
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
 
@@ -277,9 +277,9 @@ gtimer_t *TIMER_GetExisting(int num, const char *identifier)
 
 		p = p->next;
 	}
-	
+
 	return NULL;
-}	
+}
 
 
 
@@ -341,8 +341,8 @@ qboolean TIMER_Done( gentity_t *ent, const char *identifier )
 -------------------------
 TIMER_Done2
 
-Returns false if timer has been 
-started but is not done...or if 
+Returns false if timer has been
+started but is not done...or if
 timer was never started
 -------------------------
 */

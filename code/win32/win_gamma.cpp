@@ -148,7 +148,7 @@ void WG_RestoreGamma( void )
 	if ( glConfig.deviceSupportsGamma )
 	{
 		HDC hDC;
-		
+
 		hDC = GetDC( GetDesktopWindow() );
 		SetDeviceGammaRamp( hDC, s_oldHardwareGamma );
 		ReleaseDC( GetDesktopWindow(), hDC );

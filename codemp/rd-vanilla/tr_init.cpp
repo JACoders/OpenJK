@@ -719,7 +719,7 @@ static void GLimp_InitExtensions( void )
 		glConfigExt.doGammaCorrectionWithShaders = qtrue;
 #endif
 	}
-	
+
 	// Only allow dynamic glows/flares if they have the hardware
 	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
@@ -1570,7 +1570,7 @@ void R_Register( void )
 	r_uiFullScreen						= ri->Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE );
 	r_subdivisions						= ri->Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH );
 	ri->Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
-	
+
 	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
 	r_intensity							= ri->Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
 	r_singleShader						= ri->Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );

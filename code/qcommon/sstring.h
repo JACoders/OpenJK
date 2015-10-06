@@ -47,7 +47,7 @@ public:
 		assert(strlen(o.mStorage.data)<MaxSize);
 		strcpy(mStorage.data,o.mStorage.data);
 	}
-*/	
+*/
 	sstring(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
@@ -71,7 +71,7 @@ public:
 		strcpy(mStorage.data,o.mStorage.data);
 		return *this;
 	}
-*/	
+*/
 	sstring<MaxSize> & operator=(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
@@ -88,11 +88,11 @@ public:
 	char *c_str()
 	{
 		return mStorage.data;
-	}	
+	}
 	const char *c_str() const
 	{
 		return mStorage.data;
-	}	
+	}
 	int capacity() const
 	{
 		return MaxSize;	// not sure if this should be MaxSize-1? depends if talking bytes or strlen space I guess

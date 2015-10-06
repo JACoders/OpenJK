@@ -257,7 +257,7 @@ inline qboolean NPC_ClearLOS( const vec3_t end )
 {
 	return G_ClearLOS( NPC, end );
 }
-inline qboolean NPC_ClearLOS( gentity_t *ent ) 
+inline qboolean NPC_ClearLOS( gentity_t *ent )
 {
 	return G_ClearLOS( NPC, ent );
 }
@@ -273,11 +273,11 @@ inline qboolean NPC_ClearLOS( gentity_t *ent, const vec3_t end )
 extern qboolean NPC_ClearShot( gentity_t *ent );
 
 extern int NPC_FindCombatPoint( const vec3_t position, const vec3_t avoidPosition, vec3_t enemyPosition, const int flags, const float avoidDist, const int ignorePoint = -1 );
-extern int NPC_FindCombatPointRetry( const vec3_t position, 
-							 const vec3_t avoidPosition, 
-							 vec3_t enemyPosition, 
-							 int *cpFlags, 
-							 float avoidDist, 
+extern int NPC_FindCombatPointRetry( const vec3_t position,
+							 const vec3_t avoidPosition,
+							 vec3_t enemyPosition,
+							 int *cpFlags,
+							 float avoidDist,
 							 const int ignorePoint );
 
 

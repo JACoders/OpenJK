@@ -93,7 +93,7 @@ typedef enum {
 } pmtype_t;
 
 typedef enum {
-	WEAPON_READY, 
+	WEAPON_READY,
 	WEAPON_RAISING,
 	WEAPON_DROPPING,
 	WEAPON_FIRING,
@@ -153,7 +153,7 @@ typedef struct {
 
 	// callbacks to test the world
 	// these will be different functions during game and cgame
-	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+	void		(*trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 						const int passEntityNum, const int contentMask, const EG2_Collision eG2TraceType, const int useLod );
 	int			(*pointcontents)( const vec3_t point, int passEntityNum );
 } pmove_t;
@@ -191,7 +191,7 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,int type,int anim,int priority
 typedef enum {
 	PERS_SCORE,						// !!! MUST NOT CHANGE, SERVER AND GAME BOTH REFERENCE !!!
 	PERS_HITS,						// total points damage inflicted so damage beeps can sound on change
-	PERS_TEAM,				
+	PERS_TEAM,
 	PERS_SPAWN_COUNT,				// incremented every respawn
 //	PERS_REWARD_COUNT,				// incremented for each reward sound
 	PERS_ATTACKER,					// clientnum of last damage inflicter
@@ -200,7 +200,7 @@ typedef enum {
 	PERS_ACCURACY_SHOTS,			// scoreboard - number of player shots
 	PERS_ACCURACY_HITS,				// scoreboard - number of player shots that hit an enemy
 	PERS_ENEMIES_KILLED,			// scoreboard - number of enemies player killed
-	PERS_TEAMMATES_KILLED			// scoreboard - number of teammates killed 
+	PERS_TEAMMATES_KILLED			// scoreboard - number of teammates killed
 } persEnum_t;
 
 
@@ -278,7 +278,7 @@ typedef enum {
 
 typedef enum {
 	EV_NONE,
- 
+
 	EV_FOOTSTEP,
 	EV_FOOTSTEP_METAL,
 	EV_FOOTSPLASH,
@@ -458,10 +458,10 @@ typedef enum {
 typedef struct animation_s {
 	unsigned short		firstFrame;
 	unsigned short		numFrames;
-	short			frameLerp;			// msec between frames	
+	short			frameLerp;			// msec between frames
 	//initial lerp is abs(frameLerp)
 	signed char		loopFrames;			// 0 to numFrames, -1 = no loop
-	unsigned char	glaIndex;			
+	unsigned char	glaIndex;
 } animation_t;
 #pragma pack(pop)
 
@@ -500,7 +500,7 @@ typedef struct animation_s {
 //indices for AEV_SABER_SPIN data
 #define	AED_SABER_SPIN_SABERNUM		0
 #define	AED_SABER_SPIN_TYPE			1	//0 = saberspinoff, 1 = saberspin, 2-4 = saberspin1-saberspin3
-#define	AED_SABER_SPIN_PROBABILITY	2	
+#define	AED_SABER_SPIN_PROBABILITY	2
 
 typedef enum
 {//NOTENOTE:  Be sure to update animEventTypeTable and ParseAnimationEvtBlock(...) if you change this enum list!
@@ -510,13 +510,13 @@ typedef enum
 	AEV_EFFECT,		//# animID AEV_EFFECT framenum effectpath boltName chancetoplay
 	AEV_FIRE,		//# animID AEV_FIRE framenum altfire chancetofire
 	AEV_MOVE,		//# animID AEV_MOVE framenum forwardpush rightpush uppush
-	AEV_SOUNDCHAN,  //# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay 
-	AEV_SABER_SWING,  //# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay 
-	AEV_SABER_SPIN,  //# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay 
+	AEV_SOUNDCHAN,  //# animID AEV_SOUNDCHAN framenum CHANNEL soundpath randomlow randomhi chancetoplay
+	AEV_SABER_SWING,  //# animID AEV_SABER_SWING framenum CHANNEL randomlow randomhi chancetoplay
+	AEV_SABER_SPIN,  //# animID AEV_SABER_SPIN framenum CHANNEL chancetoplay
 	AEV_NUM_AEV
 } animEventType_t;
 
-typedef struct animevent_s 
+typedef struct animevent_s
 {
 	animEventType_t	eventType;
 	signed short	modelOnly;			//event is specific to a modelname to skeleton
@@ -599,7 +599,7 @@ typedef enum {
 //---------------------------------------------------------
 
 // gitem_t->type
-typedef enum 
+typedef enum
 {
 	IT_BAD,
 	IT_WEAPON,
@@ -609,7 +609,7 @@ typedef enum
 	IT_HOLDABLE,
 	IT_BATTERY,
 	IT_HOLOCRON,
-							
+
 } itemType_t;
 
 
@@ -640,7 +640,7 @@ extern	const int		bg_numItems;
 //==============================================================================
 
 /*
-typedef struct ginfoitem_s 
+typedef struct ginfoitem_s
 {
 	char				*infoString;// Text message
 	vec3_t				color;		// Text color

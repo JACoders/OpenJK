@@ -256,7 +256,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 		//Unknown type?
 		return qfalse;
 	}
-	
+
 	return qtrue;
 }
 

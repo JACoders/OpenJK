@@ -34,7 +34,7 @@ const char *svc_strings[256] = {
 	"svc_nop",
 	"svc_gamestate",
 	"svc_configstring",
-	"svc_baseline",	
+	"svc_baseline",
 	"svc_serverCommand",
 	"svc_download",
 	"svc_snapshot"
@@ -127,7 +127,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 				Com_Printf ("%3i:  unchanged: %i\n", msg->readcount, oldnum);
 			}
 			CL_DeltaEntity( msg, newframe );
-			
+
 			oldindex++;
 
 			if ( oldindex >= oldframe->numEntities ) {
@@ -175,7 +175,7 @@ void CL_ParsePacketEntities( msg_t *msg, clSnapshot_t *oldframe, clSnapshot_t *n
 			Com_Printf ("%3i:  unchanged: %i\n", msg->readcount, oldnum);
 		}
 		CL_DeltaEntity( msg, newframe );
-		
+
 		oldindex++;
 
 		if ( oldindex >= oldframe->numEntities ) {
@@ -234,7 +234,7 @@ void CL_ParseSnapshot( msg_t *msg ) {
 	// If the frame is delta compressed from data that we
 	// no longer have available, we must suck up the rest of
 	// the frame, but not use it, then ask for a non-compressed
-	// message 
+	// message
 	if ( newSnap.deltaNum <= 0 ) {
 		newSnap.valid = qtrue;		// uncompressed frame
 		old = NULL;
@@ -386,7 +386,7 @@ void CL_ParseGamestate( msg_t *msg ) {
 		if ( cmd <= 0 ) {
 			break;
 		}
-		
+
 		if ( cmd == svc_configstring ) {
 			int		len;
 
@@ -516,12 +516,12 @@ void CL_ParseServerMessage( msg_t *msg ) {
 				SHOWNET( msg, svc_strings[cmd] );
 			}
 		}
-	
+
 	// other commands
 		switch ( cmd ) {
 		default:
 			Com_Error (ERR_DROP,"CL_ParseServerMessage: Illegible server message\n");
-			break;			
+			break;
 		case svc_nop:
 			break;
 		case svc_serverCommand:

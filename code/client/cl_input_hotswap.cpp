@@ -1,4 +1,4 @@
-/* 
+/*
 	TODO: finalize item support
 
 	1) Make ItemSelectUp() work.
@@ -99,7 +99,7 @@ void HotSwapManager::Bind(void)
 		HotSwapBind(uniqueID, HOTSWAP_CAT_WEAPON, cg.weaponSelect);
 	} else if(ForceSelectUp()) {
 		forceBound = true;
-		HotSwapBind(uniqueID, HOTSWAP_CAT_FORCE, 
+		HotSwapBind(uniqueID, HOTSWAP_CAT_FORCE,
 #ifdef _JK2MP
 				cg.FORCESELECT
 #else
