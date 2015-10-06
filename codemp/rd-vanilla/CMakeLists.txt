@@ -131,22 +131,24 @@ if(NOT MSVC)
 	set_target_properties(${MPVanillaRenderer} PROPERTIES PREFIX "")
 endif()
 
-if(WIN32)
-	install(TARGETS ${MPVanillaRenderer}
-		RUNTIME
-		DESTINATION ${JKAInstallDir}
-		COMPONENT ${JKAMPClientComponent})
-else(WIN32)
-	if(MakeApplicationBundles AND BuildMPEngine)
+if(NOT NO_INSTALL)
+	if(WIN32)
 		install(TARGETS ${MPVanillaRenderer}
-			LIBRARY
-			DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
-			COMPONENT ${JKAMPClientComponent})
-	else()
-		install(TARGETS ${MPVanillaRenderer}
-			LIBRARY
+			RUNTIME
 			DESTINATION ${JKAInstallDir}
 			COMPONENT ${JKAMPClientComponent})
+	else(WIN32)
+		if(MakeApplicationBundles AND BuildMPEngine)
+			install(TARGETS ${MPVanillaRenderer}
+				LIBRARY
+				DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
+				COMPONENT ${JKAMPClientComponent})
+		else()
+			install(TARGETS ${MPVanillaRenderer}
+				LIBRARY
+				DESTINATION ${JKAInstallDir}
+				COMPONENT ${JKAMPClientComponent})
+		endif()
 	endif()
 endif()
 

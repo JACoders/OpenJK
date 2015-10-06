@@ -386,22 +386,24 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			endif(MakeApplicationBundles)
 		endif(WIN32)
 
-		if(MakeApplicationBundles)
-			install(TARGETS ${ProjectName}
-				BUNDLE
-				DESTINATION ${InstallDir}
-				COMPONENT ${Component})
-		else(MakeApplicationBundles)
-			install(TARGETS ${ProjectName}
-				RUNTIME
-				DESTINATION ${InstallDir}
-				COMPONENT ${Component})
-			if(SPEngineExtraInstallFiles)
-				install(FILES ${SPEngineExtraInstallFiles}
+		if(NOT NO_INSTALL)
+			if(MakeApplicationBundles)
+				install(TARGETS ${ProjectName}
+					BUNDLE
 					DESTINATION ${InstallDir}
 					COMPONENT ${Component})
-			endif()
-		endif(MakeApplicationBundles)
+			else(MakeApplicationBundles)
+				install(TARGETS ${ProjectName}
+					RUNTIME
+					DESTINATION ${InstallDir}
+					COMPONENT ${Component})
+				if(SPEngineExtraInstallFiles)
+					install(FILES ${SPEngineExtraInstallFiles}
+						DESTINATION ${InstallDir}
+						COMPONENT ${Component})
+				endif()
+			endif(MakeApplicationBundles)
+		endif(NOT NO_INSTALL)
 
 		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPEngineDefines}")
 
