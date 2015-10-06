@@ -996,4 +996,7 @@ void Com_TouchMemory( void ) {
 	//Com_Printf( "Com_TouchMemory: %i bytes, %i msec\n", totalTouched, end - start );
 }
 
-
+void *Hunk_Alloc( int size, qboolean bZeroIt )
+{
+  return Z_Malloc(size, TAG_HUNKALLOC, bZeroIt);
+}

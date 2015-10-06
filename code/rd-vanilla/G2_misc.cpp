@@ -26,6 +26,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "../qcommon/q_shared.h"
 #endif
 
+#include "tr_common.h"
+
 #if !defined(TR_LOCAL_H)
 	#include "tr_local.h"
 #endif
@@ -1048,10 +1050,10 @@ static void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const
 			sizeof(float)*2*newNumVerts+ // texture coordinates
 			sizeof(int)*newNumTris*3;  // new indecies
 
-		int *data=(int *)Z_Malloc ( sizeof(int)*size, TAG_GHOUL2, qtrue );
+		int *data=(int *)R_Malloc ( sizeof(int)*size, TAG_GHOUL2, qtrue );
 
 		if ( gore->tex[TS.lod] )
-			Z_Free(gore->tex[TS.lod]);
+			R_Free(gore->tex[TS.lod]);
 
 		gore->tex[TS.lod]=(float *)data;
 		*data++=newNumVerts;
@@ -1795,7 +1797,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	}
 
 	// ok, we should know how much space we need now
-	pGhoul2Data = (char*)Z_Malloc(iGhoul2Size, TAG_GHOUL2, qfalse);
+	pGhoul2Data = (char*)R_Malloc(iGhoul2Size, TAG_GHOUL2, qfalse);
 
 	// now lets start putting the data we care about into the buffer
 	char *tempBuffer = pGhoul2Data;
@@ -1846,7 +1848,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	}
 
 	ri.SG_Append(INT_ID('G','H','L','2'),pGhoul2Data, iGhoul2Size);
-	Z_Free(pGhoul2Data);
+	R_Free(pGhoul2Data);
 }
 
 void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)

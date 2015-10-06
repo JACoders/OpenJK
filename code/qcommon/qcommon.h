@@ -700,10 +700,7 @@ void Hunk_ClearToMark( void );
 void Hunk_SetMark( void );
 // note the opposite default for 'bZeroIt' in Hunk_Alloc to Z_Malloc, since Hunk_Alloc always used to memset(0)...
 //
-inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue)
-{
-	return Z_Malloc(size, TAG_HUNKALLOC, bZeroIt);
-}
+inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue);
 
 
 void Com_TouchMemory( void );

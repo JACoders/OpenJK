@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // tr_draw.c
 #include "../server/exe_headers.h"
+#include "tr_common.h"
 #include "tr_local.h"
 
 /*
@@ -204,7 +205,7 @@ void RE_GetScreenShot(byte *buffer, int w, int h)
 		}
 	}
 
-	ri.Z_Free(source);
+	R_Free(source);
 }
 
 // this is just a chunk of code from RE_TempRawImage_ReadFromFile() below, subroutinised so I can call it
@@ -345,7 +346,7 @@ void RE_TempRawImage_CleanUp(void)
 {
 	if ( pbLoadedPic )
 	{
-		Z_Free( pbLoadedPic );
+		R_Free( pbLoadedPic );
 		pbLoadedPic = NULL;
 	}
 }
@@ -773,7 +774,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 		int iPow2VidHeight	= PowerOf2( glConfig.vidHeight);
 
 		int iBufferBytes	= iPow2VidWidth * iPow2VidHeight * 4;
-		byte *pBuffer = (byte *) Z_Malloc( iBufferBytes, TAG_TEMP_WORKSPACE, qfalse);
+		byte *pBuffer = (byte *) R_Malloc( iBufferBytes, TAG_TEMP_WORKSPACE, qfalse);
 		if (pBuffer)
 		{
 			// read current screen image...  (GL_RGBA should work even on 3DFX in that the RGB parts will be valid at least)
@@ -811,7 +812,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 			//	but of course the damn thing's upside down (thanks, GL), so invert it, but only within
 			//	the picture pixels, NOT the upload texture as a whole...
 			//
-			byte *pbSwapLineBuffer = (byte *)Z_Malloc( iCopyBytes, TAG_TEMP_WORKSPACE, qfalse);
+			byte *pbSwapLineBuffer = (byte *)R_Malloc( iCopyBytes, TAG_TEMP_WORKSPACE, qfalse);
 			pbSrc = &pBuffer[0];
 			pbDst = &pBuffer[(glConfig.vidHeight-1) * iPow2VidWidth * 4];
 			for (int y = 0; y < glConfig.vidHeight/2; y++)
@@ -822,7 +823,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 				pbDst -= iPow2VidWidth*4;
 				pbSrc += iPow2VidWidth*4;
 			}
-			Z_Free(pbSwapLineBuffer);
+			R_Free(pbSwapLineBuffer);
 
 			//
 			// Now, in case of busted drivers, 3DFX cards, etc etc we stomp the alphas to 255...
@@ -860,7 +861,7 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 											iPow2VidHeight == Dissolve.iUploadHeight
 										)?
 										NULL :
-										(byte*) Z_Malloc( iPow2VidWidth * iPow2VidHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
+										(byte*) R_Malloc( iPow2VidWidth * iPow2VidHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
 
 			// re-sample screen...
 			//
@@ -902,9 +903,9 @@ qboolean RE_InitDissolve(qboolean bForceCircularExtroWipe)
 
 			if (pbReSampleBuffer)
 			{
-				Z_Free(pbReSampleBuffer);
+				R_Free(pbReSampleBuffer);
 			}
-			Z_Free(pBuffer);
+			R_Free(pBuffer);
 
 			// pick dissolve type...
 			//

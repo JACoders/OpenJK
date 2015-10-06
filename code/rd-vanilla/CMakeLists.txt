@@ -67,6 +67,10 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
     list(APPEND SPRDVanillaRendererIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
     list(APPEND SPRDVanillaRendererLibraries          ${MINIZIP_LIBRARIES})
 
+    # Transparantly make use of all renderer directories
+    list(APPEND SPRDVanillaRendererIncludeDirectories "${SPDir}/rd-common")
+    list(APPEND SPRDVanillaRendererIncludeDirectories "${SPDir}/rd-vanilla")
+
 	# Misc files
 	set(SPRDVanillaCommonFiles
 		"${SPDir}/qcommon/matcomp.cpp"
