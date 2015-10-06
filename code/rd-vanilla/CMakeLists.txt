@@ -150,22 +150,24 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 			set_target_properties(${ProjectName} PROPERTIES PREFIX "")
 		endif()
 
-		if(WIN32)
-			install(TARGETS ${ProjectName}
-				RUNTIME
-				DESTINATION ${InstallDir}
-				COMPONENT ${Component})
-		else(WIN32)
-			if(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
+		if(NOT NO_INSTALL)
+			if(WIN32)
 				install(TARGETS ${ProjectName}
-					LIBRARY
-					DESTINATION "${InstallDir}/${EngineName}.app/Contents/MacOS/"
-					COMPONENT ${Component})
-			else()
-				install(TARGETS ${ProjectName}
-					LIBRARY
+					RUNTIME
 					DESTINATION ${InstallDir}
 					COMPONENT ${Component})
+			else(WIN32)
+				if(MakeApplicationBundles AND (BuildSPEngine OR BuildJK2SPEngine))
+					install(TARGETS ${ProjectName}
+						LIBRARY
+						DESTINATION "${InstallDir}/${EngineName}.app/Contents/MacOS/"
+						COMPONENT ${Component})
+				else()
+					install(TARGETS ${ProjectName}
+						LIBRARY
+						DESTINATION ${InstallDir}
+						COMPONENT ${Component})
+				endif()
 			endif()
 		endif()
 

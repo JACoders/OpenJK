@@ -557,22 +557,24 @@ if(BuildMPEngine)
 		endif(MakeApplicationBundles)
 	endif(WIN32)
 
-	if(MakeApplicationBundles)
-		install(TARGETS ${MPEngine}
-			BUNDLE
-			DESTINATION ${JKAInstallDir}
-			COMPONENT ${JKAMPClientComponent})
-	else(MakeApplicationBundles)
-		install(TARGETS ${MPEngine}
-			RUNTIME
-			DESTINATION ${JKAInstallDir}
-			COMPONENT ${JKAMPClientComponent})
-		if(MPEngineExtraInstallFiles)
-			install(FILES ${MPEngineExtraInstallFiles}
+	if(NOT NO_INSTALL)
+		if(MakeApplicationBundles)
+			install(TARGETS ${MPEngine}
+				BUNDLE
 				DESTINATION ${JKAInstallDir}
 				COMPONENT ${JKAMPClientComponent})
-		endif()
-	endif(MakeApplicationBundles)
+		else(MakeApplicationBundles)
+			install(TARGETS ${MPEngine}
+				RUNTIME
+				DESTINATION ${JKAInstallDir}
+				COMPONENT ${JKAMPClientComponent})
+			if(MPEngineExtraInstallFiles)
+				install(FILES ${MPEngineExtraInstallFiles}
+					DESTINATION ${JKAInstallDir}
+					COMPONENT ${JKAMPClientComponent})
+			endif()
+		endif(MakeApplicationBundles)
+	endif()
 
 	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines}")
 
@@ -661,10 +663,12 @@ if(BuildMPDed)
 	endif(WIN32)
 
 	add_executable(${MPDed} ${MPDedFiles})
-	install(TARGETS ${MPDed}
-		RUNTIME
-		DESTINATION ${JKAInstallDir}
-		COMPONENT ${JKAMPServerComponent})
+	if(NOT NO_INSTALL)
+		install(TARGETS ${MPDed}
+			RUNTIME
+			DESTINATION ${JKAInstallDir}
+			COMPONENT ${JKAMPServerComponent})
+	endif()
 
 	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines}")
 
@@ -676,43 +680,45 @@ if(BuildMPDed)
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)
 
-set(GameLibsBuilt)
-if(BuildMPGame)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
-endif()
-
-if(BuildMPCGame)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-endif()
-
-if(BuildMPUI)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
-endif()
-
-if(WIN32)
-set(GameLibFullPaths)
-	if(MSVC)
-		foreach(GameLib ${GameLibsBuilt})
-			set(GameLibFullPaths
-				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
-		endforeach(GameLib)
-	else()
-		foreach(GameLib ${GameLibsBuilt})
-			set(GameLibFullPaths
-				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
-		endforeach(GameLib)
+if(NOT NO_INSTALL)
+	set(GameLibsBuilt)
+	if(BuildMPGame)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
 	endif()
 
-	include(InstallZIP)
-	add_zip_command(${AssetsPk3}
-		FILES ${GameLibFullPaths}
-		DEPENDS "${GameLibsBuilt}")
-	add_custom_target(Assets
-		ALL
-		DEPENDS ${AssetsPk3})
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
-		DESTINATION "${JKAInstallDir}/OpenJK"
-		COMPONENT ${JKAMPCoreComponent})
+	if(BuildMPCGame)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
+	endif()
+
+	if(BuildMPUI)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
+	endif()
+
+	if(WIN32)
+	set(GameLibFullPaths)
+		if(MSVC)
+			foreach(GameLib ${GameLibsBuilt})
+				set(GameLibFullPaths
+					${GameLibFullPaths}
+					${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+			endforeach(GameLib)
+		else()
+			foreach(GameLib ${GameLibsBuilt})
+				set(GameLibFullPaths
+					${GameLibFullPaths}
+					${CMAKE_BINARY_DIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+			endforeach(GameLib)
+		endif()
+
+		include(InstallZIP)
+		add_zip_command(${AssetsPk3}
+			FILES ${GameLibFullPaths}
+			DEPENDS "${GameLibsBuilt}")
+		add_custom_target(Assets
+			ALL
+			DEPENDS ${AssetsPk3})
+		install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
+			DESTINATION "${JKAInstallDir}/OpenJK"
+			COMPONENT ${JKAMPCoreComponent})
+	endif()
 endif()
