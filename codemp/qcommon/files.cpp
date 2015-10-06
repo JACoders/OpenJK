@@ -1984,7 +1984,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	}
 
 	fs_loadCount++;
-/*	
+/*
 	buf = (unsigned char *)Hunk_AllocateTempMemory(len+1);
 	*buffer = buf;*/
 
@@ -4188,7 +4188,7 @@ qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **te
 						*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS);
 						Q_strncpyz(*tempFilePath, tempFileName, fileNameLen + 1);
 					}
-					
+
 					return qtrue;
 				}
 				else

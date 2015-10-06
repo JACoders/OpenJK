@@ -103,7 +103,7 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 				angs[YAW]	+= ( crandom() * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f) );
 			}
 		}
-		
+
 		AngleVectors( angs, dir, NULL, NULL );
 
 		missile = CreateMissile( start, dir, vel, 10000, ent );

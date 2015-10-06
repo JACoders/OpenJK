@@ -2359,7 +2359,7 @@ void CL_InitRef( void ) {
 	}
 
 	if ( !rendererLib ) {
-		Com_Error( ERR_FATAL, "Failed to load renderer" );
+		Com_Error( ERR_FATAL, "Failed to load renderer\n" );
 	}
 
 	memset( &ri, 0, sizeof( ri ) );

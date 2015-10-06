@@ -499,7 +499,7 @@ class PagedPoolAllocator
 
 				delete[] pages;
 				pages = newPages;
-				
+
 				ptr = pages[numPages].Alloc ();
 				if ( ptr == NULL )
 				{
