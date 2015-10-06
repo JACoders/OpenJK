@@ -1,0 +1,39 @@
+branches:
+  except:
+    - release/1.0
+
+environment:
+  matrix:
+    - COMPILER: msvc
+      COMPILER_VERSION: "14.0"
+      TARGET: x86
+      GENERATOR: "Visual Studio 14"
+    - COMPILER: msvc
+      COMPILER_VERSION: "14.0"
+      TARGET: x64
+      GENERATOR: "Visual Studio 14"
+
+matrix:
+  fast_finish: false
+
+configuration: Debug Release
+
+build:
+  parallel: true
+
+build_script:
+  - cmd: cmake --version
+  - cmd: mkdir build
+  - cmd: cd build
+  - ps: |
+      if ($env:COMPILER -eq "msvc") {
+          pushd "${env:ProgramFiles(x86)}/Microsoft Visual Studio ${env:COMPILER_VERSION}/VC/"
+          cmd /c "vcvarsall.bat $env:TARGET & set" |
+          foreach {
+              if ($_ -match "=") {
+                  $v = $_.split("="); set-item -force -path "ENV:\$($v[0])"  -value "$($v[1])"
+              }
+          }
+          popd
+      }
+	  cmake -G "${env:GENERATOR}" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install ..
