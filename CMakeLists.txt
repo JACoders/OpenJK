@@ -59,12 +59,9 @@ set(UseInternalSDL2Default   OFF)
 if(WIN32)
   set(UseInternalOpenALDefault ON)
   set(UseInternalZlibDefault   ON)
+  set(UseInternalPNGDefault    ON)
   set(UseInternalJPEGDefault   ON)
   set(UseInternalSDL2Default   ON)
-endif()
-
-if(MSVC)
-  set(UseInternalSDL2Default ON)
 endif()
 
 if(APPLE)
