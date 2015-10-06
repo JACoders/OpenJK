@@ -676,7 +676,7 @@ void RestoreGhoul2InfoArray()
 void SaveGhoul2InfoArray()
 {
 	size_t size = singleton->GetSerializedSize();
-	void *data = Z_Malloc (size, TAG_GHOUL2);
+	void *data = Z_Malloc (size, TAG_GHOUL2, qfalse);
 #ifdef _DEBUG
 	size_t written =
 #endif

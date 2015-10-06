@@ -124,7 +124,7 @@ set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} $
 set(MPVanillaRendererLibraries ${MPVanillaRendererLibraries} ${OPENGL_LIBRARIES})
 
 set(MPVanillaRendererIncludeDirectories ${MPVanillaRendererIncludeDirectories} ${OpenJKLibDir})
-add_library(${MPVanillaRenderer} SHARED ${MPVanillaRendererFiles})
+add_library(${MPVanillaRenderer} MODULE ${MPVanillaRendererFiles})
 
 if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
@@ -133,7 +133,7 @@ endif()
 
 if(WIN32)
 	install(TARGETS ${MPVanillaRenderer}
-		RUNTIME
+		LIBRARY
 		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPClientComponent})
 else(WIN32)

@@ -305,6 +305,18 @@ static void GLW_InitTextureCompression( void )
 		Com_Printf ("...GL_EXT_texture_compression_s3tc available\n" );
 	}
 
+#ifndef _WIN32
+	// Disable texture compressino method if no preferred texture compression method is defined
+	// and we are using the MESA opengl library.
+	if ((r_ext_preferred_tc_method->integer == TC_NONE)
+		&& (Q_stristr(glConfig.renderer_string, "mesa")))
+	{
+		Com_Printf("...MESA video driver detected, disabling texture compression.\n" );
+		Com_Printf(".....Set r_ext_preferred_tc_method to disable override.\n" );
+		ri.Cvar_Set("r_ext_compress_textures", "0");
+	}
+#endif
+
 	if ( !r_ext_compressed_textures->value )
 	{
 		// Compressed textures are off
@@ -727,6 +739,7 @@ static void InitOpenGL( void )
 		// set default state
 		GL_SetDefaultState();
 		R_Splash();	//get something on screen asap
+
 	}
 	else
 	{
@@ -816,7 +829,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *)ri.Z_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse, 4);
+	buffer = (byte *) Z_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse);
 
 	bufstart = (byte *)PADP((intptr_t) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -964,7 +977,7 @@ static void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = (byte *)ri.Z_Malloc(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse, 4);
+	buffer = (byte *) Z_Malloc(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;

@@ -528,6 +528,37 @@ void Sys_SetProcessorAffinity( void ) {
 #endif
 }
 
+#ifdef _DEBUG
+
+#include <sys/resource.h>
+/*
+=================
+Sys_LimitAvailableMemory
+
+Limit the maximum size of the process's virtual memory (in bytes).
+Returns the original limit.
+=================
+*/
+size_t Sys_LimitAvailableMemory(size_t limit)
+{
+	struct rlimit rlim;
+	size_t available;
+
+	if (getrlimit(RLIMIT_AS, &rlim))
+	{
+		return 0;
+	}
+	available = rlim.rlim_cur;
+	rlim.rlim_cur = limit;
+	if (setrlimit(RLIMIT_AS, &rlim))
+	{
+		return 0;
+	}
+	return available;
+}
+
+#endif
+
 UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
 	return UnpackDLLResult();
@@ -552,16 +583,16 @@ void Sys_AnsiColorPrint( const char *msg )
 	int         length = 0;
 	static int  q3ToAnsi[Q_COLOR_BITS+1] =
 	{
-		30, // COLOR_BLACK
-		31, // COLOR_RED
-		32, // COLOR_GREEN
-		33, // COLOR_YELLOW
-		34, // COLOR_BLUE
-		36, // COLOR_CYAN
-		35, // COLOR_MAGENTA
-		0,  // COLOR_WHITE
-		33, // COLOR_ORANGE // FIXME
-		30, // COLOR_GREY
+		16,  // COLOR_BLACK
+		196, // COLOR_RED
+		46,  // COLOR_GREEN
+		226, // COLOR_YELLOW
+		21,  // COLOR_BLUE
+		51,  // COLOR_CYAN
+		200, // COLOR_MAGENTA
+		231, // COLOR_WHITE
+		208, // COLOR_ORANGE
+		244, // COLOR_GREY
 	};
 
 	while ( *msg )
@@ -585,7 +616,7 @@ void Sys_AnsiColorPrint( const char *msg )
 			else
 			{
 				// Print the color code
-				Com_sprintf( buffer, sizeof( buffer ), "\033[%dm",
+				Com_sprintf( buffer, sizeof( buffer ), "\033[38;5;%dm",
 					q3ToAnsi[ColorIndex( *(msg + 1) )] );
 				fputs( buffer, stderr );
 				msg += 2;
@@ -608,4 +639,64 @@ void Sys_AnsiColorPrint( const char *msg )
 		buffer[length] = '\0';
 		fputs( buffer, stderr );
 	}
+}
+
+/*
+================
+Sys_TemporaryFilePath
+
+Platform-specific random file paths.
+====
+*/
+const char *Sys_TemporaryFilePath( )
+{
+	static char tempFileName[MAX_OSPATH];
+	const char *templ = "/tmp/XXXXXX";
+	Q_strncpyz(tempFileName, templ, sizeof(tempFileName));
+
+	int fd = mkstemp(tempFileName);
+	if (fd == -1)
+	{
+		Com_DPrintf("Sys_TemporaryFilePath failed to create temporary file. (%s)\n",
+						strerror(errno));
+		return NULL;
+	}
+	close(fd);
+	return tempFileName;
+}
+
+/*
+================
+Sys_WriteDataToPath
+
+Platform-specific write data to a file in path.
+====
+*/
+bool Sys_WriteDataToPath(const char *path, const void *data, size_t length)
+{
+	int fd = open(path, O_CREAT | S_IWUSR);
+	if (fd == -1)
+	{
+		Com_DPrintf("Sys_WriteDataToPath failed to create '%s' in write mode. (%s)",
+					path, strerror(errno));
+		return false;
+	}
+
+	ssize_t nb = write(fd, data, length);
+	if (nb == -1)
+	{
+		Com_DPrintf("Sys_WriteDataToPath failed to write '%s'. (%s)",
+					path, strerror(errno));
+		close(fd);
+		return false;
+	}
+	if (size_t(nb) != length)
+	{
+		Com_DPrintf("Sys_WriteDataToPath could not write all data to '%s'.",
+					path);
+		close(fd);
+		return false;
+	}
+	close(fd);
+	return true;
 }

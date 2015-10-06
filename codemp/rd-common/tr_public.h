@@ -258,7 +258,11 @@ typedef struct refimport_s {
 	void			(*Hunk_FreeTempMemory)				( void *buf );
 	void *			(*Hunk_Alloc)						( int size, ha_pref preference );
 	int				(*Hunk_MemoryRemaining)				( void );
+#ifdef DEBUG_ZONE_ALLOCS
+	void *			(*_D_Z_Malloc)						( int iSize, memtag_t eTag, qboolean bZeroit /*= qfalse*/, int iAlign /*= 4*/, const char *psFile, int iLine); // return memory NOT zero-filled by default
+#else
 	void *			(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean bZeroit /*= qfalse*/, int iAlign /*= 4*/); // return memory NOT zero-filled by default
+#endif
 	void			(*Z_Free)							( void *ptr );
 	int				(*Z_MemSize)						( memtag_t eTag );
 	void			(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );

@@ -688,7 +688,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 	const int iBSPLen = FS_FOpenFileRead( name, &h, qfalse );
 	if (h)
 	{
-		newBuff = Z_Malloc( iBSPLen, TAG_BSP_DISKIMAGE );
+		newBuff = Z_Malloc( iBSPLen, TAG_BSP_DISKIMAGE, qfalse );
 		FS_Read( newBuff, iBSPLen, h);
 		FS_FCloseFile( h );
 

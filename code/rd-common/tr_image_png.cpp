@@ -234,7 +234,7 @@ struct PNGFileReader
 		png_read_update_info (png_ptr, info_ptr);
 
 		// We always assume there are 4 channels. RGB channels are expanded to RGBA when read.
-		byte *tempData = (byte *)ri.Z_Malloc (width_ * height_ * 4, TAG_TEMP_PNG, qfalse, 4);
+		byte *tempData = (byte *) Z_Malloc (width_ * height_ * 4, TAG_TEMP_PNG, qfalse);
 		if ( !tempData )
 		{
 			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
@@ -242,7 +242,7 @@ struct PNGFileReader
 		}
 
 		// Dynamic array of row pointers, with 'height' elements, initialized to NULL.
-		byte **row_pointers = (byte **)ri.Z_Malloc (sizeof (byte *) * height_, TAG_TEMP_PNG, qfalse, 4);
+		byte **row_pointers = (byte **) Z_Malloc (sizeof (byte *) * height_, TAG_TEMP_PNG, qfalse);
 		if ( !row_pointers )
 		{
 			ri.Printf (PRINT_ERROR, "Could not allocate enough memory to load the image.");
