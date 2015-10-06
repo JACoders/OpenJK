@@ -38,4 +38,4 @@ build_script:
           }
           popd
       }
-      cmake -G "${env:GENERATOR}" -DNO_INSTALL -DCMAKE_BUILD_TYPE=Debug ..
+      cmake -G "${env:GENERATOR}" -D NO_INSTALL=1 -D CMAKE_BUILD_TYPE=Debug ..
