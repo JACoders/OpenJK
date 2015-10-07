@@ -368,24 +368,22 @@ if(NOT MSVC)
 	set_target_properties(${SPGame} PROPERTIES PREFIX "")
 endif()
 
-if(NOT NO_INSTALL)
-	if(WIN32)
+if(WIN32)
+	install(TARGETS ${SPGame}
+		RUNTIME
+		DESTINATION "${JKAInstallDir}/OpenJK"
+		COMPONENT ${JKASPClientComponent})
+else(WIN32)
+	if(MakeApplicationBundles AND BuildSPEngine)
 		install(TARGETS ${SPGame}
-			RUNTIME
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/OpenJK"
+			COMPONENT ${JKASPClientComponent})
+	else()
+		install(TARGETS ${SPGame}
+			LIBRARY
 			DESTINATION "${JKAInstallDir}/OpenJK"
 			COMPONENT ${JKASPClientComponent})
-	else(WIN32)
-		if(MakeApplicationBundles AND BuildSPEngine)
-			install(TARGETS ${SPGame}
-				LIBRARY
-				DESTINATION "${JKAInstallDir}/${SPEngine}.app/Contents/MacOS/OpenJK"
-				COMPONENT ${JKASPClientComponent})
-		else()
-			install(TARGETS ${SPGame}
-				LIBRARY
-				DESTINATION "${JKAInstallDir}/OpenJK"
-				COMPONENT ${JKASPClientComponent})
-		endif()
 	endif()
 endif()
 
