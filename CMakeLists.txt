@@ -152,9 +152,7 @@ set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 
-if(NOT NO_INSTALL)
-	include(InstallConfig)
-endif(NOT NO_INSTALL)
+include(InstallConfig)
 
 # Operating settings
 if(WIN64)

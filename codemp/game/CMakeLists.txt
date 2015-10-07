@@ -204,7 +204,6 @@ if(NOT MSVC)
 	set_target_properties(${MPGame} PROPERTIES PREFIX "")
 endif()
 
-if(NOT NO_INSTALL)
 if(MakeApplicationBundles AND BuildMPEngine)
 	install(TARGETS ${MPGame}
 		LIBRARY
@@ -236,7 +235,6 @@ else()
 		LIBRARY
 		DESTINATION "${JKAInstallDir}/base"
 		COMPONENT ${JKAMPCoreComponent})
-endif()
 endif()
 
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS "${MPGameDefines}")
