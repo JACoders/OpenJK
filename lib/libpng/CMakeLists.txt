@@ -9,6 +9,10 @@ if(WIN32)
 	include_directories(../zlib/include/)
 endif()
 
+if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 add_library(bundled_libpng STATIC include/png.h
                                   include/pngconf.h
                                   include/pnglibconf.h

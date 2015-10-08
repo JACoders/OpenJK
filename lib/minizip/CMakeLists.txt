@@ -22,6 +22,10 @@
 include_directories(${ZLIB_INCLUDE_DIR})
 include_directories(include/minizip)
 
+if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 add_library(bundled_minizip STATIC ioapi.c unzip.c)
 
 # Let consumers get at our bundled copy in the standard CMake way.  These
