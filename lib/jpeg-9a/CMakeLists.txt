@@ -6,6 +6,10 @@
 # This only has effect in this directory (lib/jpeg-9a).
 include_directories(. include/)
 
+if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 add_library(bundled_libjpeg STATIC include/jconfig.h
                                    include/jmorecfg.h
                                    include/jpegint.h

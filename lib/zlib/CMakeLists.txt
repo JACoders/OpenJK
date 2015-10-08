@@ -11,6 +11,10 @@
 
 include_directories(include/)
 
+if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif(MSVC)
+
 add_library(bundled_zlib STATIC adler32.c
                                 compress.c
                                 crc32.c
