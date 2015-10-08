@@ -45,7 +45,7 @@ struct GoreTextureCoordinates
 		{
 			if ( tex[i] )
 			{
-				extern int R_Free(void *pvAddress);
+				extern void R_Free(void *pvAddress);
 				R_Free(tex[i]);
 				tex[i] = 0;
 			}
