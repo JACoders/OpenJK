@@ -607,3 +607,117 @@ void Sys_Sleep( int msec )
 	Sleep( msec );
 #endif
 }
+
+/*
+=================
+Sys_TemporaryFilePath
+
+Platform-specific random file paths.
+=================
+*/
+const char *Sys_TemporaryFilePath()
+{
+	TCHAR tempPath[MAX_PATH];
+	DWORD error;
+	DWORD tempPathResult = GetTempPath(MAX_PATH, tempPath);
+	if ( !tempPathResult )
+	{
+		error = GetLastError();
+		Com_DPrintf("%s failed to get temporary file folder. "
+						"Win32 error code: 0x%08x\n", __FUNCTION__, error);
+		return NULL;
+	}
+
+	static TCHAR tempFileName[MAX_PATH];
+	UINT tempFileNameResult = GetTempFileName(tempPath, "OJK", 0, tempFileName);
+	if ( !tempFileNameResult )
+	{
+		error = GetLastError();
+		Com_DPrintf("%s failed to generate temporary file name. "
+					"Win32 error code: 0x%08x\n", __FUNCTION__, error);
+		return NULL;
+	}
+	return tempFileName;
+}
+
+/*
+=================
+Sys_WriteDataToPath
+
+Platform-specific write data to a file in path.
+=================
+*/
+bool Sys_WriteDataToPath(const char *path, const void *data, size_t length)
+{
+	DWORD error;
+	HANDLE file = CreateFile(
+		path, GENERIC_WRITE, 0, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+	if ( file == INVALID_HANDLE_VALUE )
+	{
+		error = GetLastError();
+		Com_DPrintf("%s failed to create '%s'. "
+					"Win32 error code: 0x%08x\n",
+					__FUNCTION__, path, error);
+		return false;
+	}
+
+	DWORD bytesWritten = 0;
+	if (!WriteFile(file, data, length, &bytesWritten, NULL))
+	{
+		error = GetLastError();
+		Com_DPrintf("%s failed to write '%s'. "
+					"Win32 error code: 0x%08x\n",
+					__FUNCTION__, path, error);
+		CloseHandle(file);
+		return false;
+	}
+	if (size_t(bytesWritten) != length)
+	{
+		Com_DPrintf("%s could not write all data to '%s'.",
+					__FUNCTION__, path);
+		CloseHandle(file);
+		return false;
+	}
+	CloseHandle(file);
+	return true;
+}
+
+
+/*
+=================
+Sys_LastError
+
+Returns last error number code
+=================
+*/
+int Sys_LastError( void )
+{
+        return GetLastError();
+}
+
+/*
+=================
+Sys_ErrorString
+
+Returns the error string corresponding with an error code.
+=================
+*/
+const char *Sys_ErrorString( char *buf, size_t buflen, int errcode )
+{
+        DWORD retLen = FormatMessage(
+                FORMAT_MESSAGE_FROM_SYSTEM |
+                FORMAT_MESSAGE_IGNORE_INSERTS,
+                NULL,
+                errcode,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                (LPTSTR) &buf,
+                buflen,
+                NULL);
+        if (!retLen)
+        {
+                Com_Printf("%s: Call to FormatMessageA failed\n", __FUNCTION__);
+                buf[0] = 0;
+        }
+        return buf;
+}

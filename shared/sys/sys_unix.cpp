@@ -639,3 +639,88 @@ void Sys_AnsiColorPrint( const char *msg )
 		fputs( buffer, stderr );
 	}
 }
+
+/*
+=================
+Sys_TemporaryFilePath
+
+Platform-specific random file paths.
+=================
+*/
+const char *Sys_TemporaryFilePath( )
+{
+	static char tempFileName[MAX_OSPATH];
+	const char *templ = "/tmp/XXXXXX";
+	Q_strncpyz(tempFileName, templ, sizeof(tempFileName));
+
+	int fd = mkstemp(tempFileName);
+	if (fd == -1)
+	{
+		Com_DPrintf("%s failed to create temporary file. (%s)\n",
+					__FUNCTION__, strerror(errno));
+		return NULL;
+	}
+	close(fd);
+	return tempFileName;
+}
+
+/*
+=================
+Sys_WriteDataToPath
+
+Platform-specific write data to a file in path.
+=================
+*/
+bool Sys_WriteDataToPath(const char *path, const void *data, size_t length)
+{
+	int fd = open(path, O_CREAT | S_IWUSR);
+	if (fd == -1)
+	{
+		Com_DPrintf("%s failed to create '%s' in write mode. (%s)",
+					__FUNCTION__, path, strerror(errno));
+		return false;
+	}
+
+	ssize_t nb = write(fd, data, length);
+	if (nb == -1)
+	{
+		Com_DPrintf("%s failed to write '%s'. (%s)",
+					__FUNCTION__, path, strerror(errno));
+		close(fd);
+		return false;
+	}
+	if (size_t(nb) != length)
+	{
+		Com_DPrintf("%s could not write all data to '%s'.",
+					__FUNCTION__, path);
+		close(fd);
+		return false;
+	}
+	close(fd);
+	return true;
+}
+
+/*
+=================
+Sys_LastError
+
+Returns last error number code
+=================
+*/
+int Sys_LastError( void )
+{
+	return errno;
+}
+
+/*
+=================
+Sys_ErrorString
+
+Returns the error string corresponding with an error code.
+=================
+*/
+const char *Sys_ErrorString( char *buf, size_t buflen, int errcode )
+{
+	Q_strncpyz(buf, strerror(errcode), buflen);
+	return buf;
+}

@@ -602,7 +602,7 @@ char	**FS_ListFiles( const char *directory, const char *extension, int *numfiles
 void	FS_FreeFileList( char **fileList );
 //rwwRMG - changed to fileList to not conflict with list type
 
-void FS_Remove( const char *osPath );
+bool FS_Remove( const char *osPath );
 void FS_HomeRemove( const char *homePath );
 
 void FS_Rmdir( const char *osPath, qboolean recursive );
@@ -716,7 +716,6 @@ qboolean FS_ComparePaks( char *neededpaks, int len, qboolean dlstring );
 void FS_Rename( const char *from, const char *to );
 
 qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
-
 
 /*
 ==============================================================

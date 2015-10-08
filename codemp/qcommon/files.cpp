@@ -23,7 +23,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 /*****************************************************************************
-
  * name:		files.cpp
  *
  * desc:		file code
@@ -288,12 +287,10 @@ static int		fs_numServerReferencedPaks;
 static int		fs_serverReferencedPaks[MAX_SEARCH_PATHS];			// checksums
 static char	*fs_serverReferencedPakNames[MAX_SEARCH_PATHS];		// pk3 names
 
-#if defined(_WIN32)
 // temporary files - store them in a circular buffer. We're pretty
 // much guaranteed to not need more than 8 temp files at a time.
 static int		fs_temporaryFileWriteIdx = 0;
 static char		fs_temporaryFileNames[8][MAX_OSPATH];
-#endif
 
 // last valid game folder used
 char lastValidBase[MAX_OSPATH];
@@ -651,12 +648,13 @@ void FS_CopyFile( char *fromOSPath, char *toOSPath ) {
 ===========
 FS_Remove
 
+Return true on success
 ===========
 */
-void FS_Remove( const char *osPath ) {
+bool FS_Remove( const char *osPath ) {
 	FS_CheckFilenameIsMutable( osPath, __func__ );
 
-	remove( osPath );
+	return remove( osPath ) == 0;
 }
 
 /*
@@ -1976,7 +1974,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	buf[len]='\0';	// because we're not calling Z_Malloc with optional trailing 'bZeroIt' bool
 	*buffer = buf;
 
-//	Z_Label(buf, qpath);
+	Z_Label(buf, qpath);
 
 	FS_Read (buf, len, h);
 
@@ -3209,26 +3207,25 @@ void FS_Shutdown( qboolean closemfp ) {
 	searchpath_t	*p, *next;
 	int	i;
 
-#if defined(_WIN32)
 	// Delete temporary files
 	fs_temporaryFileWriteIdx = 0;
 	for ( size_t i = 0; i < ARRAY_LEN(fs_temporaryFileNames); i++ )
 	{
 		if (fs_temporaryFileNames[i][0] != '\0')
 		{
-			if ( !DeleteFile(fs_temporaryFileNames[i]) )
+			if ( !FS_Remove(fs_temporaryFileNames[i]) )
 			{
-				DWORD error = GetLastError();
-				Com_DPrintf("FS_Shutdown: failed to delete '%s'. "
-							"Win32 error code: 0x08x",
+				char buf[256];
+				int error = Sys_LastError();
+				Com_DPrintf("%s: failed to delete '%s' (0x%x:%s)\n",
+							__FUNCTION__,
 							fs_temporaryFileNames[i],
-							error);
+							error, Sys_ErrorString(buf, sizeof(buf), error));
 			}
 
 			fs_temporaryFileNames[i][0] = '\0';
 		}
 	}
-#endif
 
 	for(i = 0; i < MAX_FILE_HANDLES; i++) {
 		if (fsh[i].fileSize) {
@@ -3805,9 +3802,7 @@ void FS_InitFilesystem( void ) {
 	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
 	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
 
-#if defined(_WIN32)
 	Com_Memset(fs_temporaryFileNames, 0, sizeof(fs_temporaryFileNames));
-#endif
 
   // bk001208 - SafeMode see below, FIXME?
 }
@@ -4097,99 +4092,51 @@ bool FS_LoadMachOBundle( const char *name )
 
 qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFilePath )
 {
-#if defined(_WIN32)
-	DWORD error;
-	TCHAR tempPath[MAX_PATH];
-	DWORD tempPathResult = GetTempPath(MAX_PATH, tempPath);
-	if ( tempPathResult )
+	const char *tempFileName = Sys_TemporaryFilePath();
+	if (!tempFileName)
 	{
-		TCHAR tempFileName[MAX_PATH];
-		UINT tempFileNameResult = GetTempFileName(tempPath, "OJK", 0, tempFileName);
-		if ( tempFileNameResult )
-		{
-			HANDLE file = CreateFile(
-				tempFileName, GENERIC_WRITE, 0, NULL,
-				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
-			if ( file != INVALID_HANDLE_VALUE )
-			{
-				DWORD bytesWritten = 0;
-				if (WriteFile(file, data, dataLength, &bytesWritten, NULL))
-				{
-					int deletesRemaining = ARRAY_LEN(fs_temporaryFileNames);
-
-					CloseHandle(file);
-
-					while ( deletesRemaining > 0 &&
-							fs_temporaryFileNames[fs_temporaryFileWriteIdx][0] != '\0' )
-					{
-						// Delete old temporary file as we need to
-						if ( DeleteFile(fs_temporaryFileNames[fs_temporaryFileWriteIdx]) )
-						{
-							break;
-						}
-
-						error = GetLastError();
-						Com_DPrintf("FS_WriteToTemporaryFile failed for '%s'. "
-									"Win32 error code: 0x%08x\n",
-									fs_temporaryFileNames[fs_temporaryFileWriteIdx],
-									error);
-
-						// Failed to delete, possibly because DLL was still in use. This can
-						// happen when running a listen server and you continually restart
-						// the map. The game DLL is reloaded, but cgame and ui DLLs are not.
-						fs_temporaryFileWriteIdx =
-							(fs_temporaryFileWriteIdx + 1) % ARRAY_LEN(fs_temporaryFileNames);
-						deletesRemaining--;
-					}
-
-					// If this happened, then all slots are used and we some how have 8 DLLs
-					// loaded at once?!
-					assert(deletesRemaining > 0);
-
-					Q_strncpyz(fs_temporaryFileNames[fs_temporaryFileWriteIdx],
-								tempFileName, sizeof(fs_temporaryFileNames[0]));
-					fs_temporaryFileWriteIdx =
-						(fs_temporaryFileWriteIdx + 1) % ARRAY_LEN(fs_temporaryFileNames);
-
-					if ( tempFilePath )
-					{
-						size_t fileNameLen = strlen(tempFileName);
-						*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS, qfalse);
-						Q_strncpyz(*tempFilePath, tempFileName, fileNameLen + 1);
-					}
-
-					return qtrue;
-				}
-				else
-				{
-					error = GetLastError();
-					Com_DPrintf("FS_WriteToTemporaryFile failed to write '%s'. "
-								"Win32 error code: 0x%08x\n",
-								tempFileName, error);
-				}
-			}
-			else
-			{
-				error = GetLastError();
-				Com_DPrintf("FS_WriteToTemporaryFile failed to create '%s'. "
-							"Win32 error code: 0x%08x\n",
-							tempFileName, error);
-			}
-		}
-		else
-		{
-			error = GetLastError();
-			Com_DPrintf("FS_WriteToTemporaryFile failed to generate temporary file name. "
-						"Win32 error code: 0x%08x\n", error);
-		}
+		return qfalse;
 	}
-	else
+
+	if ( !Sys_WriteDataToPath(tempFileName, data, dataLength) )
 	{
-		error = GetLastError();
-		Com_DPrintf("FS_WriteToTemporaryFile failed to get temporary file folder. "
-						"Win32 error code: 0x%08x\n", error);
+		return qfalse;
 	}
-#endif
 
-	return qfalse;
+	int deletesRemaining = ARRAY_LEN(fs_temporaryFileNames);
+
+	while ( deletesRemaining > 0 &&
+			fs_temporaryFileNames[fs_temporaryFileWriteIdx][0] != '\0' )
+	{
+		// Delete old temporary file as we need to
+		if (FS_Remove(fs_temporaryFileNames[fs_temporaryFileWriteIdx]))
+		{
+			break;
+		}
+
+		// WIN32: Failed to delete, possibly because DLL was still in use. This can
+		// happen when running a listen server and you continually restart
+		// the map. The game DLL is reloaded, but cgame and ui DLLs are not.
+		fs_temporaryFileWriteIdx =
+			(fs_temporaryFileWriteIdx + 1) % ARRAY_LEN(fs_temporaryFileNames);
+		deletesRemaining--;
+	}
+
+	// If this happened, then all slots are used and we somehow have 8 DLLs
+	// loaded at once?!
+	assert(deletesRemaining > 0);
+
+	Q_strncpyz(fs_temporaryFileNames[fs_temporaryFileWriteIdx],
+				tempFileName, sizeof(fs_temporaryFileNames[0]));
+	fs_temporaryFileWriteIdx =
+		(fs_temporaryFileWriteIdx + 1) % ARRAY_LEN(fs_temporaryFileNames);
+
+	if ( tempFilePath )
+	{
+		size_t fileNameLen = strlen(tempFileName);
+		*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS, qfalse);
+		Q_strncpyz(*tempFilePath, tempFileName, fileNameLen + 1);
+	}
+
+	return qtrue;
 }
