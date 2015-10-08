@@ -202,10 +202,14 @@ if(MSVC)
 	set(SharedDefines ${SharedDefines} "_SCL_SECURE_NO_WARNINGS")
 	set(SharedDefines ${SharedDefines} "_CRT_NONSTDC_NO_DEPRECATE")
 
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
+	if (NOT WIN64)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /arch:SSE2")
+	endif(NOT WIN64)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
 
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
+	if (NOT WIN64)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
+	endif(NOT WIN64)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 
 	# We don't try to control symbol visibility under MSVC.
