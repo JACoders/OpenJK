@@ -672,12 +672,12 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if t
 
 #ifdef DEBUG_ZONE_ALLOCS
 
-void *_D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
-void *_D_S_Malloc( int iSize, const char *psFile, int iLine );
+void *D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
+void *D_S_Malloc( int iSize, const char *psFile, int iLine );
 void  Z_Label( const void *pvAddress, const char *pslabel );
 
-#define Z_Malloc(iSize, eTag, bZeroit)	_D_Z_Malloc ((iSize), (eTag), (bZeroit), __FILE__, __LINE__)
-#define S_Malloc(iSize)			_D_S_Malloc	((iSize), __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
+#define Z_Malloc(iSize, eTag, bZeroit)	D_Z_Malloc ((iSize), (eTag), (bZeroit), __FILE__, __LINE__)
+#define S_Malloc(iSize)			D_S_Malloc	((iSize), __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
 
 #else
 

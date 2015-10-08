@@ -224,7 +224,7 @@ qboolean gbMemFreeupOccured = qfalse;
 // (normally I'd call another function for this, but this is supposed to be engine-independent,
 //	 so a certain amount of re-invention of the wheel is to be expected...)
 //
-char *_D_Z_Filename_WithoutPath(const char *psFilename)
+char *D_Z_Filename_WithoutPath(const char *psFilename)
 {
 	static char sString[ MAX_QPATH ];
 
@@ -247,7 +247,7 @@ char *_D_Z_Filename_WithoutPath(const char *psFilename)
 extern refexport_t re;
 
 #ifdef DEBUG_ZONE_ALLOCS
-void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
+void *D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
 #else
 void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /*unusedAlign*/)
 #endif
@@ -363,7 +363,7 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /*unusedAlign*/)
 
 
 #ifdef DEBUG_ZONE_ALLOCS
-	Q_strncpyz(pMemory->sSrcFileBaseName, _D_Z_Filename_WithoutPath(psFile), sizeof(pMemory->sSrcFileBaseName));
+	Q_strncpyz(pMemory->sSrcFileBaseName, D_Z_Filename_WithoutPath(psFile), sizeof(pMemory->sSrcFileBaseName));
 	pMemory->iSrcFileLineNum	= iLine;
 	pMemory->sOptionalLabel[0]	= '\0';
 	pMemory->iSnapshotNumber	= giZoneSnaphotNum;
@@ -560,7 +560,7 @@ void Z_Label(const void *pvAddress, const char *psLabel)
 
 	if (pMemory->iMagic != ZONE_MAGIC)
 	{
-		Com_Error(ERR_FATAL, "_D_Z_Label(): Not a valid zone header!");
+		Com_Error(ERR_FATAL, "D_Z_Label(): Not a valid zone header!");
 	}
 
 	Q_strncpyz(	pMemory->sOptionalLabel, psLabel, sizeof(pMemory->sOptionalLabel));
@@ -657,9 +657,9 @@ void Z_TagFree(memtag_t eTag)
 
 
 #ifdef DEBUG_ZONE_ALLOCS
-void *_D_S_Malloc ( int iSize, const char *psFile, int iLine)
+void *D_S_Malloc ( int iSize, const char *psFile, int iLine)
 {
-	return _D_Z_Malloc( iSize, TAG_SMALL, qfalse, psFile, iLine );
+	return D_Z_Malloc( iSize, TAG_SMALL, qfalse, psFile, iLine );
 }
 #else
 void *S_Malloc( int iSize )
