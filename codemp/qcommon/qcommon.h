@@ -35,7 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	//
 	// both of these should be REM'd unless you specifically need them...
 	//
-	//#define DEBUG_ZONE_ALLOCS			// adds __FILE__ and __LINE__ info to zone blocks, to see who's leaking
+	#define DEBUG_ZONE_ALLOCS			// adds __FILE__ and __LINE__ info to zone blocks, to see who's leaking
 	//#define DETAILED_ZONE_DEBUG_CODE	// this slows things down a LOT, and is only for tracking nasty double-freeing Z_Malloc bugs
 	#endif
 #endif
