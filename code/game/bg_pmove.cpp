@@ -148,6 +148,8 @@ extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_stepSlideFix;
 extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_autoRoll;
+extern cvar_t	*g_saberForceDrainAmount;
+extern cvar_t	*g_saberLockSuperBreaks;
 
 static void PM_SetWaterLevelAtPoint(vec3_t org, int *waterlevel, int *watertype);
 
@@ -10222,7 +10224,12 @@ void PM_SaberLockBreak(gentity_t *gent, gentity_t *genemy, saberLockResult_t res
 		}
 		else
 		{
-			breakType = SABERLOCK_SUPERBREAK;
+			if (g_saberLockSuperBreaks->integer) {
+				breakType = SABERLOCK_SUPERBREAK;
+			}
+			else {
+				breakType = SABERLOCK_BREAK;
+			}
 		}
 	}
 	else
@@ -11037,21 +11044,28 @@ saberMoveName_t G_PickAutoMultiKick(gentity_t *self, qboolean allowSingles, qboo
 	if (self->client->ps.groundEntityNum != ENTITYNUM_NONE)
 	{//can't do the multikicks in air
 		if (enemiesFront && enemiesBack
-			&& (enemiesFront + enemiesBack) - (enemiesRight + enemiesLeft)>1)
+			&& (enemiesFront + enemiesBack) - (enemiesRight + enemiesLeft)>1
+			&& self->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > 2)
 		{//more enemies in front/back than left/right
 			kickMove = LS_KICK_BF;
 		}
-		else if (enemiesRight && enemiesLeft
+		else if ((enemiesRight && enemiesLeft
 			&& (enemiesRight + enemiesLeft) - (enemiesFront + enemiesBack)>1)
+			&& self->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > 2)
 		{//more enemies on left & right than front/back
 			kickMove = LS_KICK_RL;
 		}
-		else if ((enemiesFront || enemiesBack) && (enemiesRight || enemiesLeft))
-		{//at least 2 enemies around us, not aligned
+		else if ((((enemiesFront || enemiesBack) && (enemiesRight || enemiesLeft))
+			|| pm->cmd.buttons&BUTTON_USE)
+			&& self->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > 2)
+		{//at least 2 enemies around us, not aligned, or doing a special
+			G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, g_saberForceDrainAmount->integer);
 			kickMove = LS_KICK_S;
 		}
-		else if (enemiesSpin > 1)
-		{//at least 2 enemies around us, not aligned
+		else if ((enemiesSpin > 1 || pm->cmd.buttons&BUTTON_USE)
+			&& self->client->ps.forcePowerLevel[FP_SABER_OFFENSE] > 2)
+		{//at least 2 enemies around us, not aligned, or doing a special
+			G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, g_saberForceDrainAmount->integer);
 			kickMove = LS_KICK_S;
 		}
 	}
@@ -11131,7 +11145,7 @@ qboolean PM_CheckAltKickAttack(void)
 		&& pm->ps->SaberActive()
 		&& !(pm->ps->saber[0].saberFlags&SFL_NO_KICKS)//okay to do kicks with this saber
 		&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_KICKS))//okay to do kicks with the 2nd saber
-		&& (!pm->cmd.buttons&BUTTON_USE || !PM_SaberThrowable /*kick by default if can't saber throw*/) 
+		&& !(pm->cmd.buttons&BUTTON_FORCE_FOCUS)
 		//&& !PM_SaberThrowable()
 		//&& (!WP_ForcePowerUsable(pm->gent, FP_SABERTHROW, 20)) //make sure saber throw is disabled before trying to kick)
 		)
@@ -12087,7 +12101,7 @@ void PM_WeaponLightsaber(void)
 						PM_SetSaberMove(LS_ROLL_STAB);
 						if (pm->gent)
 						{
-							G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, SABER_ALT_ATTACK_POWER_FB);
+							G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, g_saberForceDrainAmount->integer);//SABER_ALT_ATTACK_POWER_FB);
 						}
 					}
 				}
@@ -13689,15 +13703,15 @@ static void PM_Weapon(void)
 					{
 						int anim = -1;
 						if ((pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
-							&& g_debugMelee->integer)
-						{
+							/*&& g_debugMelee->integer*/)
+						{//saber offense
 							if ((pm->cmd.buttons&BUTTON_ALT_ATTACK))
 							{
-								if ((pm->cmd.buttons&BUTTON_ATTACK))
+								if ((pm->cmd.buttons&BUTTON_ATTACK) && pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 1)
 								{
 									PM_TryGrab();
 								}
-								else if (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD))
+								else if (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD) && pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 0)
 								{
 									PM_CheckKick();
 								}
@@ -14454,8 +14468,9 @@ void PM_AdjustAttackStates(pmove_t *pm)
 
 	if (pm->ps->weapon == WP_SABER && (!cg.zoomMode || pm->ps->clientNum))
 	{//don't let the alt-attack be interpreted as an actual attack command
-		if (pm->ps->saberInFlight)
-		{
+		if (pm->ps->saberInFlight) 
+		{ //no kicks with saber in flight
+			//FIXME: Can kick/use melee if saber throw is knocked to ground?
 			pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			//FIXME: what about alt-attack modifier button?
 			if ((!pm->ps->dualSabers || !pm->ps->saber[1].Active()))
@@ -14464,6 +14479,7 @@ void PM_AdjustAttackStates(pmove_t *pm)
 			}
 		}
 		//saber staff alt-attack does a special attack anim, non-throwable sabers do kicks
+		/* ack let me kick with single
 		if (pm->ps->saberAnimLevel != SS_STAFF
 			&& !(pm->ps->saber[0].saberFlags&SFL_NOT_THROWABLE))
 		{//using a throwable saber, so remove the saber throw button
@@ -14475,7 +14491,7 @@ void PM_AdjustAttackStates(pmove_t *pm)
 			{//new control scheme - alt-attack doesn't have anything to do with katas, safe to clear it here
 				pm->cmd.buttons &= ~BUTTON_ALT_ATTACK;
 			}
-		}
+		}*/
 	}
 
 	// disruptor alt-fire should toggle the zoom mode, but only bother doing this for the player?

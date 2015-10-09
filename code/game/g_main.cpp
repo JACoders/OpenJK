@@ -203,18 +203,24 @@ cvar_t	*g_saber2_color;
 cvar_t	*g_saberDarkSideSaberColor;
 
 //new cvars - Dusty
+cvar_t  *g_autoRoll;
 cvar_t	*g_saberNewCombat; 
 cvar_t  *g_saberLocksEnabled;
 cvar_t	*g_saberDamageScale;
 cvar_t  *g_saberWalkAnims;
-cvar_t  *g_autoRoll;
+cvar_t	*g_saberForceDrains;
+cvar_t	*g_saberForceDrainAmount;
+cvar_t	*g_saberLockSuperBreaks;
+cvar_t	*g_saberLockStyle;
 
-cvar_t	*g_char_forcepoints;
-cvar_t	*g_char_ParryBonus;
-cvar_t	*g_char_BreakParryBonus;
-cvar_t	*g_char_ForceAffinity;
-cvar_t	*g_char_ForceFocus;
-cvar_t	*g_char_ForceSensitivity;
+//for character stats
+cvar_t	*g_char_forcePowerMax; //only applies after re-loading level
+cvar_t  *g_char_forceRegen; //only applies after re-loading level
+cvar_t	*g_char_parryBonus; //fix this, doesn't apply correctly in all cases
+cvar_t	*g_char_breakParryBonus; //fix this, doesn't apply correctly in all cases
+cvar_t	*g_char_forceAffinity; //make into ui_cvars?
+cvar_t	*g_char_forceFocus;
+cvar_t	*g_char_forceSensitivity;
 
 
 // kef -- used with DebugTraceForNPC
@@ -705,11 +711,19 @@ void G_InitCvars( void ) {
 	gi.cvar( "g_clearstats", "1", CVAR_ROM|CVAR_NORESTART);
 
 	//new cvars yay - Dusty
+	g_autoRoll = gi.cvar("g_autoRoll", "1", CVAR_ARCHIVE);
 	g_saberNewCombat = gi.cvar("g_saberNewCombat", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberLocksEnabled = gi.cvar("g_saberLocksEnabled", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberLockStyle = gi.cvar("g_saberLockStyle", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberLockSuperBreaks = gi.cvar("g_saberLockSuperBreaks", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberForceDrains = gi.cvar("g_saberForceDrains", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberForceDrainAmount = gi.cvar("g_saberForceDrainAmount", "10", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberDamageScale = gi.cvar("g_saberDamageScale", "1", CVAR_SAVEGAME | CVAR_CHEAT);
-	g_char_forcepoints = gi.cvar("g_char_forcepoints", "100", CVAR_CHEAT | CVAR_SAVEGAME );
-	g_autoRoll = gi.cvar("g_autoRoll", "1", CVAR_ARCHIVE );
+	g_char_forcePowerMax = gi.cvar("g_char_forcePowerMax", "100", CVAR_CHEAT | CVAR_SAVEGAME );
+	g_char_forceRegen = gi.cvar("g_char_forceRegen", "100", CVAR_CHEAT | CVAR_SAVEGAME);
+	g_char_parryBonus = gi.cvar("g_char_parryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
+	g_char_breakParryBonus = gi.cvar("g_char_breakParryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
+	
 }
 /*
 ============

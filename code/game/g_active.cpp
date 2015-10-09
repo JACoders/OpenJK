@@ -2254,7 +2254,11 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 	int			numEnts;
 	const float	radius = 100.0f;
 	const float	radiusSquared = (radius*radius);
-	float		bestDistSq = (radiusSquared+1.0f), distSq;
+	float		bestDistSq = (radiusSquared + 1.0f), distSq;
+	const float radiusP = 50.0f; //player's non-cheat range = 0.5x radius
+	const float radiusSquaredP = (radiusP*radiusP);
+	float		bestDistSqP = (radiusSquaredP + 1.0f);
+	
 	int			i;
 	vec3_t		boltOrg;
 
@@ -2304,21 +2308,54 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 			continue;
 		}
 
-		if ( fabs(radiusEnts[i]->currentOrigin[2]-ent->currentOrigin[2])>8.0f )
-		{//have to be close in Z
-			continue;
+		if (ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS))
+		{//either I'm an kyle_boss (an NPC) or player and using cheats = less precise aim
+			if (fabs(radiusEnts[i]->currentOrigin[2] - ent->currentOrigin[2]) > 8.0f)
+			{//have to be close in Z
+				continue;
+			}
 		}
+		else {//more precise aim if not cheating or a boss
+			if (fabs(radiusEnts[i]->currentOrigin[2] - ent->currentOrigin[2]) > 1.0f)
+			{//have to be close in Z
+				continue;
+			}
+		}
+		
 
 		if ( !PM_HasAnimation( radiusEnts[i], BOTH_PLAYER_PA_1 ) )
 		{//doesn't have matching anims
 			continue;
 		}
 
+		if (((radiusEnts[i]->client->ps.weapon == WP_SABER 
+			&& radiusEnts[i]->client->ps.forcePowersKnown&(1 << FP_SABER_OFFENSE) 
+			&& radiusEnts[i]->client->ps.forcePowersKnown&(1 << FP_SABER_DEFENSE)) //not on saber-wielders who have skillz
+			|| radiusEnts[i]->client->NPC_class == CLASS_REBORN //melee force users? Should we allow kataing?
+			|| radiusEnts[i]->client->NPC_class == CLASS_BOBAFETT //he's too leet
+			|| radiusEnts[i]->NPC->aiFlags&NPCAI_BOSS_CHARACTER)
+			|| !Q_stricmp("chewie", radiusEnts[i]->NPC_type)
+			&& !(ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS)))
+		{ //FIXME: Some kind of kata resist animation?
+			continue;
+		}
+
 		distSq = DistanceSquared( radiusEnts[i]->currentOrigin, boltOrg );
-		if ( distSq < bestDistSq )
-		{
-			bestDistSq = distSq;
-			bestEnt = radiusEnts[i];
+		if (ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS))
+		{//either I'm an kyle_boss (an NPC) or player and using cheats = longer range for grabs
+			if (distSq < bestDistSq)
+			{
+				bestDistSq = distSq;
+				bestEnt = radiusEnts[i];
+			}
+		}
+		else { //player without cheats = 0.5x range
+			if (distSq < (bestDistSq * 0.5))
+			{
+				bestDistSq *= 0.5;
+				bestDistSq = distSq;
+				bestEnt = radiusEnts[i];
+			}
 		}
 	}
 

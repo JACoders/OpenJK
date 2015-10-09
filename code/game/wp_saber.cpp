@@ -62,6 +62,12 @@ extern cvar_t	*g_saberRestrictForce;
 extern cvar_t	*g_saberPickuppableDroppedSabers;
 extern cvar_t	*debug_subdivision;
 
+//new character cvars
+extern cvar_t	*g_char_forcePowerMax;
+extern cvar_t	*g_char_forceRegen;
+extern cvar_t	*g_char_parryBonus;
+extern cvar_t	*g_char_breakParryBonus;
+
 
 extern qboolean WP_SaberBladeUseSecondBladeStyle(saberInfo_t *saber, int bladeNum);
 extern qboolean WP_SaberBladeDoTransitionDamage(saberInfo_t *saber, int bladeNum);
@@ -165,6 +171,9 @@ extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*g_saberDamageCapping;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_saberNewCombat;
+extern cvar_t	*g_saberForceDrains;
+extern cvar_t	*g_saberLockStyle;
+extern cvar_t	*g_saberLockSuperBreaks;
 extern cvar_t	*g_saberLocksEnabled;
 extern cvar_t	*g_saberDamageScale;
 extern int g_crosshairEntNum;
@@ -174,7 +183,7 @@ qboolean g_noClashFlare = qfalse;
 int		g_saberFlashTime = 0;
 
 //new variables - Dusty
-const int		hitOwnerRecoveryInterval = 1500; //interval at which defense points are recovered, 1.5 seconds
+const int		HITOWNER_RECOVERY_INTERVAL = 1500; //interval at which defense points are recovered, 1.5 seconds
 /*extern int		hitOwnerBreakLimit;
 extern int		hitOwnerRecoveryTime; //how long left to recover a defense point
 extern int		hitOwnerBreakCounter; //keeping track of how many strong attacks the defender blocks in a											//a short time period*/
@@ -4385,7 +4394,7 @@ void G_DrainPowerForSpecialMove(gentity_t *self, forcePowers_t fp, int cost, qbo
 	{
 		return;
 	}
-	if (g_saberNewControlScheme->integer || kataMove)
+	if (g_saberNewControlScheme->integer || g_saberForceDrains->integer || kataMove)
 	{//special moves cost power
 		WP_ForcePowerDrain(self, fp, cost);//drain the required force power
 	}
@@ -5354,10 +5363,18 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						if (!WP_SaberBladeUseSecondBladeStyle(&ent->client->ps.saber[saberNum], bladeNum))
 						{
 							entPowerLevel += ent->client->ps.saber[saberNum].breakParryBonus;
+
+							if (ent->s.number < MAX_CLIENTS) {//player
+								entPowerLevel += g_char_breakParryBonus->integer;
+							}
 						}
 						else if (WP_SaberBladeUseSecondBladeStyle(&ent->client->ps.saber[saberNum], bladeNum))
 						{
 							entPowerLevel += ent->client->ps.saber[saberNum].breakParryBonus2;
+
+							if (ent->s.number < MAX_CLIENTS) {//player
+								entPowerLevel += g_char_breakParryBonus->integer;
+							}
 						}
 					}
 					else if (entDefending)
@@ -5369,6 +5386,10 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						}*/
 						//FIXME: what about second saber if dualSabers?
 						entPowerLevel += ent->client->ps.saber[saberNum].parryBonus;
+
+						if (ent->s.number < MAX_CLIENTS) {//player
+							entPowerLevel += g_char_parryBonus->integer;
+						}
 					}
 
 					if (PM_SaberInAttack(hitOwner->client->ps.saberMove) || PM_SaberInSpecialAttack(hitOwner->client->ps.torsoAnim))
@@ -5401,6 +5422,11 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						hitOwnerPowerLevel++;
 						}*/
 						hitOwnerPowerLevel += hitOwner->client->ps.saber[0].breakParryBonus;
+						
+						if (hitOwner->s.number < MAX_CLIENTS) {//player
+							hitOwnerPowerLevel += g_char_breakParryBonus->integer;
+						}
+
 						if (hitOwner->client->ps.dualSabers && Q_irand(0, 1))
 						{//FIXME: assumes both sabers are hitting at same time...?
 							//what the heck is this extra 1 for?! - Dusty
@@ -5415,6 +5441,11 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						hitOwnerPowerLevel++;
 						}*/
 						hitOwnerPowerLevel += hitOwner->client->ps.saber[0].parryBonus;
+						
+						if (hitOwner->s.number < MAX_CLIENTS) {//player
+							hitOwnerPowerLevel += g_char_parryBonus->integer;
+						}
+
 						if (hitOwner->client->ps.dualSabers && Q_irand(0, 1))
 						{//FIXME: assumes both sabers are defending at same time...?
 							//what the heck is this extra 1 for?! - Dusty
@@ -5487,7 +5518,7 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 								if (!PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))
 								{ //special attacks just break, no counters
 									hitOwner->breakCounter += (entPowerLevel - hitOwnerPowerLevel);
-									hitOwner->breakRecoveryTime = level.time + hitOwnerRecoveryInterval;
+									hitOwner->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 								}
 							}
 							//base parry breaks on animation (saber attack level), not FP_SABER_OFFENSE
@@ -5537,7 +5568,7 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 								|| PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))//they are defending, but their defense strength is lower than my attack...
 								//or they are doing a special which has slightly
 								//different rules
-								/*|| (!deflected && Q_irand(0, QMax(0, PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]PM_PowerLevelForSaberAnim( &hitOwner->client->ps ))) > 0))*/
+								/*|| (!deflected && Q_irand(0, Q_max(0, PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]PM_PowerLevelForSaberAnim( &hitOwner->client->ps ))) > 0))*/
 								//^um what does that do anyway? Just add randomness? 
 								//^Fixed per latest OpenJK update not to divide by zero incase want to uncomment
 							{//broke their parry altogether
@@ -5842,10 +5873,20 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						if (!WP_SaberBladeUseSecondBladeStyle(&ent->client->ps.saber[saberNum], bladeNum))
 						{
 							entPowerLevel += ent->client->ps.saber[saberNum].breakParryBonus;
+
+							if (ent->s.number < MAX_CLIENTS) 
+							{//player
+								entPowerLevel += g_char_breakParryBonus->integer;
+							}
 						}
 						else if (WP_SaberBladeUseSecondBladeStyle(&ent->client->ps.saber[saberNum], bladeNum))
 						{
 							entPowerLevel += ent->client->ps.saber[saberNum].breakParryBonus2;
+
+							if (ent->s.number < MAX_CLIENTS)
+							{//player
+								entPowerLevel += g_char_breakParryBonus->integer;
+							}
 						}
 					}
 					else if (entDefending)
@@ -5857,6 +5898,11 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						}
 						//FIXME: what about second saber if dualSabers?
 						entPowerLevel += ent->client->ps.saber[saberNum].parryBonus;
+
+						if (ent->s.number < MAX_CLIENTS) 
+						{//player
+							entPowerLevel += g_char_parryBonus->integer;
+						}
 					}
 
 					if (PM_SaberInAttack(hitOwner->client->ps.saberMove) || PM_SaberInSpecialAttack(hitOwner->client->ps.torsoAnim))
@@ -5888,7 +5934,14 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						{
 							hitOwnerPowerLevel++;
 						}
+						
 						hitOwnerPowerLevel += hitOwner->client->ps.saber[0].breakParryBonus;
+						
+						if (hitOwner->s.number < MAX_CLIENTS)
+						{//player
+							hitOwnerPowerLevel += g_char_breakParryBonus->integer;
+						}
+
 						if (hitOwner->client->ps.dualSabers && Q_irand(0, 1))
 						{//FIXME: assumes both sabers are hitting at same time...?
 							hitOwnerPowerLevel += 1 + hitOwner->client->ps.saber[1].breakParryBonus;
@@ -5901,7 +5954,14 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 						{
 							hitOwnerPowerLevel++;
 						}
+						
 						hitOwnerPowerLevel += hitOwner->client->ps.saber[0].parryBonus;
+
+						if (hitOwner->s.number < MAX_CLIENTS)
+						{//player
+							hitOwnerPowerLevel += g_char_parryBonus->integer;
+						}
+
 						if (hitOwner->client->ps.dualSabers && Q_irand(0, 1))
 						{//FIXME: assumes both sabers are defending at same time...?
 							hitOwnerPowerLevel += 1 + hitOwner->client->ps.saber[1].parryBonus;
@@ -6007,9 +6067,9 @@ void WP_SaberDamageTrace(gentity_t *ent, int saberNum, int bladeNum)
 							else if (!activeDefense//they're not defending
 								|| (entPowerLevel > FORCE_LEVEL_2 //I hit hard
 								&& hitOwnerPowerLevel < entPowerLevel)//they are defending, but their defense strength is lower than my attack...
-								|| (!deflected && Q_irand(0, QMax(0, PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE])/*PM_PowerLevelForSaberAnim( &hitOwner->client->ps )*/) > 0))
+								|| (!deflected && Q_irand(0, Q_max(0, PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE])/*PM_PowerLevelForSaberAnim( &hitOwner->client->ps )*/) > 0))
 							{//broke their parry altogether
-								if (entPowerLevel > FORCE_LEVEL_2 || Q_irand(0, QMax(0, ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE])))
+								if (entPowerLevel > FORCE_LEVEL_2 || Q_irand(0, Q_max(0, ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE])))
 								{//chance of continuing with the attack (not bouncing back)
 									ent->client->ps.saberEventFlags &= ~SEF_BLOCKED;
 									ent->client->ps.saberBounceMove = LS_NONE;
@@ -8092,37 +8152,6 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 	if (Rosh_BeingHealed(self))
 	{
 		return;
-	}
-
-	if (self->client->NPC_class == CLASS_ROCKETTROOPER)
-	{//rockettrooper
-		if (self->client->ps.groundEntityNum != ENTITYNUM_NONE)
-		{//must be in air
-			return;
-		}
-		if (Q_irand(0, 4 - (g_spskill->integer * 2)))
-		{//easier level guys do this less
-			return;
-		}
-		if (Q_irand(0, 3))
-		{//base level: 25% chance of looking for something to dodge
-			if (Q_irand(0, 1))
-			{//dodge sabers twice as frequently as other projectiles
-				dodgeOnlySabers = qtrue;
-			}
-			else
-			{
-				return;
-			}
-		}
-	}
-
-	if (self->client->NPC_class == CLASS_BOBAFETT)
-	{//Boba doesn't dodge quite as much
-		if (Q_irand(0, 2 - g_spskill->integer))
-		{//easier level guys do this less
-			return;
-		}
 	}
 
 	if (self->NPC->rank > RANK_LT) //lower rank melee users can't do this stuff
@@ -13609,7 +13638,7 @@ void WP_BlockPointsRegenerate(gentity_t *self)
 			if (level.time >= self->breakRecoveryTime)
 			{
 				self->breakCounter -= 1;
-				self->breakRecoveryTime = level.time + hitOwnerRecoveryInterval;
+				self->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 			}
 		}
 	}
@@ -13917,7 +13946,7 @@ qboolean WP_ForcePowerUsable(gentity_t *self, forcePowers_t forcePower, int over
 	else
 	{
 		if ((forcePower == FP_SABERTHROW && self->client->ps.saber[0].saberFlags&SFL_NOT_THROWABLE)
-			|| (forcePower == FP_SABERTHROW && !self->client->buttons & BUTTON_USE))
+			|| (forcePower == FP_SABERTHROW && !(self->client->buttons & BUTTON_FORCE_FOCUS)))
 		{//cannot throw this type of saber or player is in kick mode
 			return qfalse;
 		}
@@ -15442,11 +15471,25 @@ void WP_InitForcePowers(gentity_t *ent)
 
 	if (!ent->client->ps.forcePowerMax)
 	{
-		ent->client->ps.forcePowerMax = FORCE_POWER_MAX;
+		if (ent->s.number < MAX_CLIENTS)
+		{//player
+			ent->client->ps.forcePowerMax = g_char_forcePowerMax->integer;
+		}
+		else 
+		{
+			ent->client->ps.forcePowerMax = FORCE_POWER_MAX;
+		}
 	}
 	if (!ent->client->ps.forcePowerRegenRate)
 	{
-		ent->client->ps.forcePowerRegenRate = 100;
+		if (ent->s.number < MAX_CLIENTS)
+		{//player
+			ent->client->ps.forcePowerRegenRate = g_char_forceRegen->integer;
+		}
+		else
+		{
+			ent->client->ps.forcePowerRegenRate = 100;
+		}		
 	}
 	ent->client->ps.forcePower = ent->client->ps.forcePowerMax;
 	ent->client->ps.forcePowerRegenDebounceTime = level.time;

@@ -472,11 +472,11 @@ void ClientUserinfoChanged( int clientNum ) {
 	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
 
 	// set max health
-	maxHealth = 100;
-	health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	maxHealth = 200;
+	health = Com_Clampi( 1, 200, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
 	client->pers.maxHealth = health;
 	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
-		client->pers.maxHealth = 100;
+		client->pers.maxHealth = 200;
 	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds

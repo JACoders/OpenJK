@@ -49,6 +49,8 @@ extern cvar_t	*g_saberAutoAim;
 extern cvar_t	*g_speederControlScheme;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_saberNewCombat;
+extern cvar_t	*g_saberForceDrains;
+extern cvar_t	*g_saberForceDrainAmount;
 
 extern qboolean InFront(vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f);
 extern void WP_ForcePowerDrain(gentity_t *self, forcePowers_t forcePower, int overrideAmt);
@@ -3024,7 +3026,7 @@ qboolean PM_InSecondaryStyle(void)
 
 saberMoveName_t PM_SaberLungeAttackMove(qboolean fallbackToNormalLunge)
 {
-	G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, SABER_ALT_ATTACK_POWER_FB);
+	G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, g_saberForceDrainAmount->integer); //SABER_ALT_ATTACK_POWER_FB);
 
 	//see if we have an overridden (or cancelled) lunge move
 	if (pm->ps->saber[0].lungeAtkMove != LS_INVALID)
@@ -3179,7 +3181,7 @@ qboolean PM_CheckLungeAttackMove(void)
 
 saberMoveName_t PM_SaberJumpForwardAttackMove(void)
 {
-	G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_FB);
+	G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, g_saberForceDrainAmount->integer);//SABER_ALT_ATTACK_POWER_FB);
 
 	//see if we have an overridden (or cancelled) kata move
 	if (pm->ps->saber[0].jumpAtkFwdMove != LS_INVALID)
@@ -3385,6 +3387,8 @@ qboolean PM_CheckJumpForwardAttackMove(void)
 
 saberMoveName_t PM_SaberFlipOverAttackMove(void)
 {
+	G_DrainPowerForSpecialMove(pm->gent, FP_SABER_OFFENSE, g_saberForceDrainAmount->integer);
+
 	//see if we have an overridden (or cancelled) kata move
 	if (pm->ps->saber[0].jumpAtkFwdMove != LS_INVALID)
 	{
@@ -3457,7 +3461,7 @@ saberMoveName_t PM_SaberFlipOverAttackMove(void)
 
 	pm->gent->angle = pm->ps->viewangles[YAW];//so we know what yaw we started this at
 
-	G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_FB);
+	G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, g_saberForceDrainAmount->integer);//SABER_ALT_ATTACK_POWER_FB);
 
 	if (Q_irand(0, 1))
 	{
@@ -4029,8 +4033,8 @@ saberMoveName_t PM_SaberAttackForMovement(int forwardmove, int rightmove, int cu
 		{//cartwheel right
 			vec3_t right, fwdAngles = { 0, pm->ps->viewangles[YAW], 0 };
 			if (pm->gent)
-			{
-				G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_LR);
+			{//seems to drain twice for some reason so 1/2 the drain amount
+				G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, 0.5 * g_saberForceDrainAmount->integer);//SABER_ALT_ATTACK_POWER_LR);
 			}
 			pm->cmd.upmove = 0;
 			if (overrideJumpRightAttackMove != LS_INVALID)
@@ -4111,8 +4115,8 @@ saberMoveName_t PM_SaberAttackForMovement(int forwardmove, int rightmove, int cu
 		{//cartwheel left
 			vec3_t right, fwdAngles = { 0, pm->ps->viewangles[YAW], 0 };
 			if (pm->gent)
-			{
-				G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, SABER_ALT_ATTACK_POWER_LR);
+			{//seems to drain twice for some reason so 1/2 the drain amount
+				G_DrainPowerForSpecialMove(pm->gent, FP_LEVITATION, 0.5 * g_saberForceDrainAmount->integer);//SABER_ALT_ATTACK_POWER_LR);
 			}
 			pm->cmd.upmove = 0;
 			if (overrideJumpRightAttackMove != LS_INVALID)
