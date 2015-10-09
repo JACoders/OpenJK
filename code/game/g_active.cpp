@@ -2255,10 +2255,7 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 	const float	radius = 100.0f;
 	const float	radiusSquared = (radius*radius);
 	float		bestDistSq = (radiusSquared + 1.0f), distSq;
-	const float radiusP = 50.0f; //player's non-cheat range = 0.5x radius
-	const float radiusSquaredP = (radiusP*radiusP);
-	float		bestDistSqP = (radiusSquaredP + 1.0f);
-	
+		
 	int			i;
 	vec3_t		boltOrg;
 
@@ -2309,13 +2306,13 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 		}
 
 		if (ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS))
-		{//either I'm an kyle_boss (an NPC) or player and using cheats = less precise aim
+		{//either I'm an kyle_boss (an NPC) or player and using cheats = less precise aim necessary
 			if (fabs(radiusEnts[i]->currentOrigin[2] - ent->currentOrigin[2]) > 8.0f)
 			{//have to be close in Z
 				continue;
 			}
 		}
-		else {//more precise aim if not cheating or a boss
+		else {//more precise aim needed if not cheating or a boss
 			if (fabs(radiusEnts[i]->currentOrigin[2] - ent->currentOrigin[2]) > 1.0f)
 			{//have to be close in Z
 				continue;
