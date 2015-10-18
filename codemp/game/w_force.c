@@ -4045,7 +4045,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				float dirLen = 0;
 
 				// zyk: do not push/pull ctf flags
-				if (push_list[x]->item && (push_list[x]->item->giTag == PW_REDFLAG || push_list[x]->item->giTag == PW_BLUEFLAG))
+				if (push_list[x]->item && push_list[x]->item->giType == IT_TEAM && 
+					(push_list[x]->item->giTag == PW_REDFLAG || push_list[x]->item->giTag == PW_BLUEFLAG))
 				{
 					continue;
 				}
