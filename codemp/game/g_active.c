@@ -3437,7 +3437,7 @@ void ClientThink_real( gentity_t *ent ) {
 							}
 							else
 							{
-								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/2)));
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
@@ -3452,7 +3452,7 @@ void ClientThink_real( gentity_t *ent ) {
 							}
 							else
 							{
-								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/2)));
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
@@ -3517,7 +3517,7 @@ void ClientThink_real( gentity_t *ent ) {
 							}
 							else
 							{
-								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/2)));
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
