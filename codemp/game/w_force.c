@@ -5635,7 +5635,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	i = 0;
 
 	// zyk: added the rpg mode condition, because RPG Mode players cant get power ups
-	if (self->client->sess.amrpgmode < 2 && self->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] || self->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK])
+	if (self->client->sess.amrpgmode < 2 && (self->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] || self->client->ps.powerups[PW_FORCE_ENLIGHTENED_DARK]))
 	{ //enlightenment
 		if (!self->client->ps.fd.forceUsingAdded)
 		{
