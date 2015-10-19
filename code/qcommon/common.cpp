@@ -162,7 +162,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile ) {
+		if ( !logfile && FS_Initialized() ) {
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
 			if ( com_logfile->integer > 1 ) {
 				// force it to not buffer so we get valid
