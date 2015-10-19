@@ -908,9 +908,6 @@ typedef struct clientPersistant_s {
 	// zyk: used by the last guardians in quests for their special abilities
 	int guardian_timer;
 
-	// zyk: backup of the guardians weapons. Some guardians can get his weapons back if the player pulls them
-	int guardian_weapons_backup;
-
 	// zyk: player id that is fighting this guardian
 	int guardian_invoked_by_id;
 } clientPersistant_t;

@@ -4195,7 +4195,6 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
 
 		npc_ent->client->pers.guardian_invoked_by_id = ent-g_entities;
-		npc_ent->client->pers.guardian_weapons_backup = npc_ent->client->ps.stats[STAT_WEAPONS];
 		npc_ent->client->pers.hunter_quest_messages = 0;
 		npc_ent->client->pers.light_quest_messages = 0;
 		npc_ent->client->pers.light_quest_timer = level.time + 7000;
@@ -8568,8 +8567,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 2)
 				{ // zyk: Guardian of Earth
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: uses earthquake ability
 						earthquake(ent,2000,((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/20),3000);
@@ -8636,8 +8633,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 4)
 				{ // zyk: Guardian of Intelligence
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						if (ent->client->pers.light_quest_messages == 0)
@@ -8658,8 +8653,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 5)
 				{ // zyk: Guardian of Agility
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					// zyk: adding jetpack to this boss
 					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 
@@ -8679,8 +8672,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 6)
 				{ // zyk: Guardian of Fire
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					// zyk: take him back if he falls
 					if (ent->client->ps.origin[2] < -600)
 					{
@@ -8740,8 +8731,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 16)
 				{ // zyk: Guardian of Ice
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						ice_stalagmite(ent,500,160);
@@ -8814,8 +8803,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 11)
 				{ // zyk: Guardian of Resistance
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						ultra_resistance(ent, 10000);
@@ -8832,8 +8819,6 @@ void G_RunFrame( int levelTime ) {
 				}
 				else if (ent->client->pers.guardian_mode == 12)
 				{ // zyk: Master of Evil
-					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
-
 					// zyk: adding jetpack to this boss
 					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 
