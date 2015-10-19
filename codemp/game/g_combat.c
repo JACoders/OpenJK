@@ -6398,7 +6398,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 					gentity_t *quest_power_user = &g_entities[level.special_power_effects[attacker->s.number]];
 
 					// zyk: if the power user and the target are allies (player or npc), or the target is the quest power user himself, heal him
-					if (quest_power_user && quest_power_user->client && ent && ent->client &&
+					if (quest_power_user && quest_power_user->client && ent && ent->client && ent->health > 0 && 
 						(level.special_power_effects[attacker->s.number] == ent->s.number || OnSameTeam(quest_power_user, ent) == qtrue || 
 						npcs_on_same_team(quest_power_user, ent) == qtrue || zyk_is_ally(quest_power_user,ent) == qtrue))
 					{
@@ -6431,7 +6431,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							}
 						}
 
-						// zyk: target will not be knocked back by Rockfall, Dome of Damage, Ultra Flame or Ultra Drain
+						// zyk: target will not be knocked back by Rockfall, Dome of Damage, Ultra Flame, Ultra Drain or Healing Area
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_flame") == 0 || 
