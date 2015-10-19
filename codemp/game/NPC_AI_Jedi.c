@@ -391,7 +391,7 @@ qboolean Boba_Flying( gentity_t *self )
 
 void Boba_FireFlameThrower( gentity_t *self )
 {
-	int		damage	= Q_irand( 20, 30 );
+	int		damage	= Q_irand( 15, 20 ); // zyk: setting damage to something not too weak and not too strong. Default 20, 30
 	trace_t		tr;
 	gentity_t	*traceEnt = NULL;
 	mdxaBone_t	boltMatrix;
