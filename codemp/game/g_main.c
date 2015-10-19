@@ -8660,6 +8660,9 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Agility
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
 
+					// zyk: adding jetpack to this boss
+					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+
 					if (ent->client->pers.light_quest_timer < level.time)
 					{ // zyk: after losing half HP, uses his special ability
 						ultra_speed(ent,10000);
@@ -8830,6 +8833,9 @@ void G_RunFrame( int levelTime ) {
 				else if (ent->client->pers.guardian_mode == 12)
 				{ // zyk: Master of Evil
 					ent->client->ps.stats[STAT_WEAPONS] = ent->client->pers.guardian_weapons_backup;
+
+					// zyk: adding jetpack to this boss
+					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 
 					// zyk: take him back if he falls
 					if (ent->client->ps.origin[0] < 500 || ent->client->ps.origin[0] > 3500 || ent->client->ps.origin[1] < -4350 || ent->client->ps.origin[1] > -1350 || ent->client->ps.origin[2] < 2500 || ent->client->ps.origin[2] > 4000)
