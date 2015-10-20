@@ -3077,6 +3077,7 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 	}
 }
 
+extern qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target);
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam
 	int			damage = zyk_concussion_alt_damage.integer, skip, traces = DISRUPTOR_ALT_TRACES;
@@ -3246,7 +3247,14 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 
 							if (ent->client->pers.guardian_mode != traceEnt->client->pers.guardian_mode)
 							{ // zyk: non quest player cant hit quest players in boss battles and vice-versa
-								break;
+								if (!((ent->client->pers.guardian_mode == 12 || ent->client->pers.guardian_mode == 13) && traceEnt->NPC && 
+									   (Q_stricmp(traceEnt->NPC_type, "guardian_of_universe") || Q_stricmp(traceEnt->NPC_type, "quest_reborn") || 
+									    Q_stricmp(traceEnt->NPC_type, "quest_reborn_blue") || Q_stricmp(traceEnt->NPC_type, "quest_reborn_red") || 
+										Q_stricmp(traceEnt->NPC_type, "quest_reborn_boss")))
+									)
+								{
+									break;
+								}
 							}
 
 							//if ( G_HasKnockdownAnims( traceEnt ) )
@@ -3517,7 +3525,14 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 
 				if (ent->client->pers.guardian_mode != tr_ent->client->pers.guardian_mode)
 				{ // zyk: non quest players cant hit quest players and vice-versa
-					return;
+					if (!((ent->client->pers.guardian_mode == 12 || ent->client->pers.guardian_mode == 13) && tr_ent->NPC && 
+							(Q_stricmp(tr_ent->NPC_type, "guardian_of_universe") || Q_stricmp(tr_ent->NPC_type, "quest_reborn") || 
+							Q_stricmp(tr_ent->NPC_type, "quest_reborn_blue") || Q_stricmp(tr_ent->NPC_type, "quest_reborn_red") || 
+							Q_stricmp(tr_ent->NPC_type, "quest_reborn_boss")))
+						)
+					{
+						return;
+					}
 				}
 
 				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] >= 2 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
