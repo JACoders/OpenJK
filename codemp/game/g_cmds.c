@@ -4694,18 +4694,36 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 			// zyk: some classes, after reaching level 10, get the Unique Skill
 			if (ent->client->pers.level >= 10)
 			{
-				if (ent->client->pers.rpg_class == 1)
+				if (ent->client->pers.rpg_class == 1 && !(ent->client->pers.secrets_found & (1 << 2)))
+				{
 					ent->client->pers.secrets_found |= (1 << 2);
-				else if (ent->client->pers.rpg_class == 4)
+					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Force User Unique Skill!\"");
+				}
+				else if (ent->client->pers.rpg_class == 4 && !(ent->client->pers.secrets_found & (1 << 3)))
+				{
 					ent->client->pers.secrets_found |= (1 << 3);
-				else if (ent->client->pers.rpg_class == 6)
+					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Monk Unique Skill!\"");
+				}
+				else if (ent->client->pers.rpg_class == 6 && !(ent->client->pers.secrets_found & (1 << 4)))
+				{
 					ent->client->pers.secrets_found |= (1 << 4);
-				else if (ent->client->pers.rpg_class == 7)
+					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Duelist Unique Skill!\"");
+				}
+				else if (ent->client->pers.rpg_class == 7 && !(ent->client->pers.secrets_found & (1 << 5)))
+				{
 					ent->client->pers.secrets_found |= (1 << 5);
-				else if (ent->client->pers.rpg_class == 8)
+					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Force Gunner Unique Skill!\"");
+				}
+				else if (ent->client->pers.rpg_class == 8 && !(ent->client->pers.secrets_found & (1 << 6)))
+				{
 					ent->client->pers.secrets_found |= (1 << 6);
-				else if (ent->client->pers.rpg_class == 9)
+					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Magic Master Unique Skill!\"");
+				}
+				else if (ent->client->pers.rpg_class == 9 && !(ent->client->pers.secrets_found & (1 << 18)))
+				{
 					ent->client->pers.secrets_found |= (1 << 18);
+					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Force Tank Unique Skill!\"");
+				}
 			}
 
 			// zyk: skill counter does not give credits, only Level Up Score
