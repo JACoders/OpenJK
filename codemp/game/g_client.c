@@ -4113,6 +4113,9 @@ void ClientDisconnect( int clientNum ) {
 				player_ent->client->sess.ally2 &= ~(1 << (ent->s.number-16));
 			else
 				player_ent->client->sess.ally1 &= ~(1 << ent->s.number);
+
+			// zyk: sending event to update radar at client-side
+			G_AddEvent(player_ent, EV_USE_ITEM14, (ent->s.number + MAX_CLIENTS));
 		}
 	}
 
