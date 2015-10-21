@@ -3823,6 +3823,11 @@ void ForceThrow( gentity_t *self, qboolean pull )
 							canPullWeapon = qfalse;
 						}
 
+						if (push_list[x]->NPC && push_list[x]->client->NPC_class == CLASS_VEHICLE)
+						{ // zyk: cannot pull anything from vehicles
+							canPullWeapon = qfalse;
+						}
+
 						if (!OnSameTeam(self, push_list[x]) && Q_irand(1, 10) <= randfact && canPullWeapon)
 						{
 							vec3_t uorg, vecnorm;
