@@ -484,12 +484,10 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 		return;
 	}
 
-	if (weapon <= WP_BRYAR_PISTOL)
-	{ //can't have this
-		return;
-	}
-
-	if (weapon == WP_EMPLACED_GUN ||
+	if (weapon == WP_NONE ||
+		weapon == WP_MELEE ||
+		weapon == WP_SABER ||
+		weapon == WP_EMPLACED_GUN ||
 		weapon == WP_TURRET)
 	{
 		return;
