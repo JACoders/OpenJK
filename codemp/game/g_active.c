@@ -3522,77 +3522,92 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
 						{ // zyk: Force Gunner
-							int zyk_it = 0;
-							gentity_t *this_ent = NULL;
-							vec3_t uorg, vecnorm, thispush_org, vel;
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
+							{
+								int zyk_it = 0;
+								gentity_t *this_ent = NULL;
+								vec3_t uorg, vecnorm, thispush_org, vel;
 
-							VectorCopy(ent->client->ps.origin, thispush_org);
+								VectorCopy(ent->client->ps.origin, thispush_org);
 
-							VectorCopy(ent->client->ps.origin, uorg);
-							uorg[2] += 64;
+								VectorCopy(ent->client->ps.origin, uorg);
+								uorg[2] += 64;
 
-							VectorSubtract(uorg, thispush_org, vecnorm);
-							VectorNormalize(vecnorm);
+								VectorSubtract(uorg, thispush_org, vecnorm);
+								VectorNormalize(vecnorm);
 
-							for (zyk_it = 0; zyk_it < level.num_entities; zyk_it++)
-							{ // zyk: finds enemies nearby and disarms them
-								this_ent = &g_entities[zyk_it];
+								for (zyk_it = 0; zyk_it < level.num_entities; zyk_it++)
+								{ // zyk: finds enemies nearby and disarms them
+									this_ent = &g_entities[zyk_it];
 
-								if (this_ent && this_ent->client && ((zyk_it < MAX_CLIENTS && this_ent->client->ps.duelInProgress == qfalse) || 
-									(this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE)))
-								{ // zyk: does not disarm a vehicle
-									int player_distance = (int)Distance(ent->client->ps.origin,this_ent->client->ps.origin);
+									if (this_ent && this_ent->client && ((zyk_it < MAX_CLIENTS && this_ent->client->ps.duelInProgress == qfalse) || 
+										(this_ent->NPC && this_ent->client->NPC_class != CLASS_VEHICLE)))
+									{ // zyk: does not disarm a vehicle
+										int player_distance = (int)Distance(ent->client->ps.origin,this_ent->client->ps.origin);
 
-									if (player_distance < 300)
-									{
-										int found = 0;
-
-										// zyk: allies will not be hit by this power
-										if (zyk_it < level.maxclients && zyk_is_ally(ent,this_ent) == qtrue)
+										if (player_distance < 300)
 										{
-											found = 1;
-										}
+											int found = 0;
 
-										if (found == 0 && ent->client->pers.guardian_mode == this_ent->client->pers.guardian_mode)
-										{
-											if (this_ent->client->ps.weapon == WP_SABER)
+											// zyk: allies will not be hit by this power
+											if (zyk_it < level.maxclients && zyk_is_ally(ent,this_ent) == qtrue)
 											{
-												vel[0] = vecnorm[0]*100;
-												vel[1] = vecnorm[1]*100;
-												vel[2] = vecnorm[2]*100;
-												saberKnockOutOfHand(&g_entities[this_ent->client->ps.saberEntityNum],this_ent,vel);
+												found = 1;
 											}
-											else
+
+											if (found == 0 && ent->client->pers.guardian_mode == this_ent->client->pers.guardian_mode)
 											{
-												TossClientWeapon(this_ent, vecnorm, 200);
+												if (this_ent->client->ps.weapon == WP_SABER)
+												{
+													vel[0] = vecnorm[0]*100;
+													vel[1] = vecnorm[1]*100;
+													vel[2] = vecnorm[2]*100;
+													saberKnockOutOfHand(&g_entities[this_ent->client->ps.saberEntityNum],this_ent,vel);
+												}
+												else
+												{
+													TossClientWeapon(this_ent, vecnorm, 200);
+												}
 											}
 										}
 									}
 								}
-							}
 
-							if (ent->client->pers.secrets_found & (1 << 8) && ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4) && 
-								ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
-							{ // zyk: Force Gunner Upgrade restores some shield by spending some force power
-								if ((ent->client->ps.stats[STAT_ARMOR] + 25) < ent->client->pers.max_rpg_shield)
-									ent->client->ps.stats[STAT_ARMOR] += 25;
-								else
-									ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+								if (ent->client->pers.secrets_found & (1 << 8) && ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)
+								{ // zyk: Force Gunner Upgrade restores some shield by spending some force power
+									if ((ent->client->ps.stats[STAT_ARMOR] + 25) < ent->client->pers.max_rpg_shield)
+										ent->client->ps.stats[STAT_ARMOR] += 25;
+									else
+										ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+
+									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
+								}
 
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
-								G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
+
+								ent->client->pers.unique_skill_timer = level.time + 40000;
 							}
-
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
-
-							ent->client->pers.unique_skill_timer = level.time + 40000;
+							else
+							{
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
+							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 6) && ent->client->pers.rpg_class == 8)
 						{ // zyk: Magic Master
-							ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+							if (ent->client->pers.magic_power > 0)
+							{
+								ent->client->pers.magic_power--;
 
-							ent->client->pers.unique_skill_timer = level.time + 50000;
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								ent->client->pers.unique_skill_timer = level.time + 50000;
+							}
+							else
+							{
+								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs at least 1 MP to use it\"");
+							}
 						}
 						else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
 						{ // zyk: Force Tank
