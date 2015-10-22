@@ -133,9 +133,9 @@ field_t fields[] = {
 	{ "idealclass",				FOFS( idealclass ),						F_STRING },//for siege spawnpoints
 	{ "linear",					FOFS( alt_fire ),						F_INT },//for movers to use linear movement
 	{ "lostenemyscript",		FOFS( behaviorSet[BSET_LOSTENEMY] ),	F_STRING },//name of script to run
+	{ "maxs",					FOFS( r.maxs ),							F_VECTOR }, // zyk: added this field
 	{ "message",				FOFS( message ),						F_STRING },
 	{ "mindtrickscript",		FOFS( behaviorSet[BSET_MINDTRICK] ),	F_STRING },//name of script to run
-	{ "maxs",					FOFS( r.maxs ),							F_VECTOR }, // zyk: added this field
 	{ "mins",					FOFS( r.mins ),							F_VECTOR }, // zyk: added this field
 	{ "model",					FOFS( model ),							F_STRING },
 	{ "model2",					FOFS( model2 ),							F_STRING },
