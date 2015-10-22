@@ -9,7 +9,11 @@ void InitTrigger( gentity_t *self ) {
 	if (!VectorCompare (self->s.angles, vec3_origin))
 		G_SetMovedir (self->s.angles, self->movedir);
 
-	trap->SetBrushModel( (sharedEntity_t *)self, self->model );
+	if (self->model) // zyk: added this condition
+		trap->SetBrushModel( (sharedEntity_t *)self, self->model );
+	else // zyk: if no model is set, show message in server console
+		Com_Printf( S_COLOR_RED"ERROR: trigger %s at %s has no brush model specified\n", self->targetname, vtos(self->s.origin) );
+
 	self->r.contents = CONTENTS_TRIGGER;		// replaces the -1 from trap->SetBrushModel
 	self->r.svFlags = SVF_NOCLIENT;
 
