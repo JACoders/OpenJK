@@ -4497,7 +4497,14 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue, &targets_hit) == qtrue)
 		{
-			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
+			if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+			{ // zyk: Magic Master Unique Skill increases damage
+				G_Damage(player_ent,ent,ent,NULL,NULL,damage * 2,0,MOD_UNKNOWN);
+			}
+			else
+			{
+				G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
+			}
 		}
 	}
 }
@@ -4707,7 +4714,14 @@ void ultra_drain(gentity_t *ent, int radius, int damage, int duration)
 // zyk: Healing Area
 void healing_area(gentity_t *ent, int damage, int duration)
 {
-	zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing", "4", "env/red_cyc", 0, damage, 228, duration);
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+	{ // zyk: Magic Master Unique Skill increases damage
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing", "4", "env/red_cyc", 0, damage * 2, 228, duration);
+	}
+	else
+	{
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing", "4", "env/red_cyc", 0, damage, 228, duration);
+	}
 }
 
 // zyk: Slow Motion
