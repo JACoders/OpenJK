@@ -3625,7 +3625,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 				{
-					missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+					missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
 
 					missile->classname = "demp2_proj";
 					missile->s.weapon = WP_DEMP2;
@@ -3642,7 +3642,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				}
 				else
 				{
-					missile = CreateMissile( origin, zyk_forward, 5000.0, 10000, ent, qfalse);
+					missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
 
 					missile->classname = "bowcaster_proj";
 					missile->s.weapon = WP_BOWCASTER;
@@ -3674,10 +3674,10 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
 				int i;
-				float bolt_speed = 5000.0;
+				float bolt_speed = zyk_magic_fist_velocity.integer;
 
 				if (ent->client->sess.magic_fist_selection == 2)
-					bolt_speed = 7500.0;
+					bolt_speed = zyk_magic_fist_velocity.integer * 1.5;
 
 				for (i = 0; i < count; i++ )
 				{
