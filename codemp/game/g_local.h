@@ -525,6 +525,7 @@ typedef enum {
 	ADM_PARALYZE,
 	ADM_GIVE,
 	ADM_SCALE,
+	ADM_PLAYERS,
 	ADM_NUM_CMDS
 } zyk_admin_t;
 

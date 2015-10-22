@@ -12364,6 +12364,15 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 			strcpy(message_content[12],va("^3 %d ^7- Scale: ^1no\n",ADM_SCALE));
 		}
 
+		if ((ent->client->pers.bitvalue & (1 << ADM_PLAYERS))) 
+		{
+			strcpy(message_content[13],va("^3 %d ^7- Players: ^2yes\n",ADM_PLAYERS));
+		}
+		else
+		{
+			strcpy(message_content[13],va("^3 %d ^7- Players: ^1no\n",ADM_PLAYERS));
+		}
+
 		for (i = 0; i < ADM_NUM_CMDS; i++)
 		{
 			sprintf(message,"%s%s",message,message_content[i]);
@@ -12430,6 +12439,10 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_SCALE)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/scale <player name or ID> <size between 20 and 500> ^7to change the player model size\n\n\"" );
+		}
+		else if (command_number == ADM_PLAYERS)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/players ^7to see info about the players\n\n\"" );
 		}
 	}
 }
@@ -12942,6 +12955,48 @@ void Cmd_Paralyze_f( gentity_t *ent ) {
 }
 
 /*
+==================
+Cmd_Players_f
+==================
+*/
+void Cmd_Players_f( gentity_t *ent ) {
+	char content[MAX_STRING_CHARS];
+	int i = 0;
+
+	strcpy(content,"ID - Name - IP - Type\n");
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_PLAYERS)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	for (i = 0; i < level.maxclients; i++)
+	{
+		gentity_t *player = &g_entities[i];
+
+		if (player && player->client && player->client->pers.connected != CON_DISCONNECTED)
+		{
+			strcpy(content, va("%s%d - %s ^7- %s - ",content,player->s.number,player->client->pers.netname,player->client->sess.IP));
+
+			if (player->client->sess.amrpgmode > 0 && player->client->pers.bitvalue > 0)
+			{
+				strcpy(content, va("%s^3(admin)",content));
+			}
+
+			if (player->client->sess.amrpgmode == 2)
+			{
+				strcpy(content, va("%s ^3(rpg)",content));
+			}
+
+			strcpy(content, va("%s^7\n",content));
+		}
+	}
+
+	trap->SendServerCommand( ent-g_entities, va("print \"%s\"", content) );
+}
+
+/*
 =================
 ClientCommand
 =================
@@ -13026,6 +13081,7 @@ command_t commands[] = {
 	{ "order",				Cmd_Order_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "paralyze",			Cmd_Paralyze_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "playermode",			Cmd_PlayerMode_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "players",			Cmd_Players_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "rpgclass",			Cmd_RpgClass_f,				CMD_RPG|CMD_NOINTERMISSION },
