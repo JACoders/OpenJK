@@ -3662,7 +3662,7 @@ void ClientThink_real( gentity_t *ent ) {
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master Fist attacks
-					if (ent->client->sess.magic_fist_selection < 3)
+					if (ent->client->sess.magic_fist_selection < 2)
 						ent->client->sess.magic_fist_selection++;
 					else
 						ent->client->sess.magic_fist_selection = 0;
@@ -3674,10 +3674,6 @@ void ClientThink_real( gentity_t *ent ) {
 					else if (ent->client->sess.magic_fist_selection == 1)
 					{
 						trap->SendServerCommand( ent->s.number, va("chat \"^7Fist Charged Attack   ^3MP: ^7%d\"",ent->client->pers.magic_power));
-					}
-					else if (ent->client->sess.magic_fist_selection == 2)
-					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7Charged Faster Attack ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 					else
 					{

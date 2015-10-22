@@ -3667,17 +3667,12 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				send_rpg_events(2000);
 			}
-			else if ((ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 2)) || 
-					 (ent->client->sess.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 3)))
-			{ // zyk: Magic Fist Charged Attack and Faster Attack
+			else if (ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 2))
+			{ // zyk: Magic Fist Charged Attack
 				int count = 2;
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
 				int i;
-				float bolt_speed = zyk_magic_fist_velocity.integer;
-
-				if (ent->client->sess.magic_fist_selection == 2)
-					bolt_speed = zyk_magic_fist_velocity.integer * 1.5;
 
 				for (i = 0; i < count; i++ )
 				{
@@ -3694,7 +3689,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 					{
-						missile = CreateMissile( origin, zyk_forward, bolt_speed, 10000, ent, qfalse);
+						missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
 
 						missile->classname = "demp2_proj";
 						missile->s.weapon = WP_DEMP2;
@@ -3711,7 +3706,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					}
 					else
 					{
-						missile = CreateMissile( origin, zyk_forward, bolt_speed, 10000, ent, qfalse);
+						missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
 
 						missile->classname = "bowcaster_proj";
 						missile->s.weapon = WP_BOWCASTER;
@@ -3729,16 +3724,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					}
 				}
 
-				if (ent->client->sess.magic_fist_selection == 1)
-				{
-					rpg_skill_counter(ent, 20);
-					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 2);
-				}
-				else
-				{
-					rpg_skill_counter(ent, 30);
-					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 3);
-				}
+				rpg_skill_counter(ent, 20);
+				ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 2);
 
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
 
