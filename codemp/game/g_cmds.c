@@ -11988,6 +11988,104 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_EntSave_f
+==================
+*/
+void Cmd_EntSave_f( gentity_t *ent ) {
+	int number_of_args = trap->Argc();
+	char arg1[MAX_STRING_CHARS];
+	int i = 0;
+	char serverinfo[MAX_INFO_STRING] = {0};
+	char zyk_mapname[128] = {0};
+	FILE *this_file = NULL;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( number_of_args < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a file name.\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	// zyk: getting mapname
+	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
+	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
+
+	// zyk: creating directories where the entity files will be saved
+#if defined(__linux__)
+	system(va("mkdir -p entities/%s",zyk_mapname));
+#else
+	system(va("mkdir \"entities/%s\"",zyk_mapname));
+#endif
+
+	// zyk: cleaning the old file
+	this_file = fopen(va("entities/%s/%s.txt",zyk_mapname,arg1),"w");
+	fprintf(this_file,"");
+	fclose(this_file);
+
+	// zyk: saving the entities into the file
+	this_file = fopen(va("entities/%s/%s.txt",zyk_mapname,arg1),"a");
+
+	for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
+	{
+		gentity_t *this_ent = &g_entities[i];
+
+		if (this_ent)
+		{
+			if (Q_stricmp(this_ent->classname, "info_player_deathmatch") == 0)
+			{
+				fprintf(this_file,"info_player_deathmatch\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags);
+			}
+			else if (Q_stricmp(this_ent->classname, "target_position") == 0)
+			{
+				fprintf(this_file,"target_position\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->targetname);
+			}
+			else if (Q_stricmp(this_ent->classname, "trigger_teleport") == 0)
+			{
+				fprintf(this_file,"trigger_teleport\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],
+					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
+					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
+					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]);
+			}
+			else if (Q_stricmp(this_ent->classname, "trigger_multiple") == 0)
+			{
+				fprintf(this_file,"trigger_multiple\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],
+					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
+					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
+					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]);
+			}
+			else if (Q_stricmp(this_ent->classname, "misc_model_breakable") == 0)
+			{
+				fprintf(this_file,"misc_model_breakable\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",(int)this_ent->s.origin[0],
+					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
+					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
+					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->model);
+			}
+			else if (Q_stricmp(this_ent->classname, "fx_runner") == 0)
+			{
+				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->targetname,this_ent->target,this_ent->s.modelindex);
+			}
+		}
+	}
+
+	fclose(this_file);
+
+	trap->SendServerCommand( ent-g_entities, va("print \"Entities saved in %s.txt file\n\"", arg1) );
+}
+
+/*
+==================
 Cmd_EntNear_f
 ==================
 */
@@ -13054,6 +13152,7 @@ command_t commands[] = {
 	{ "entlist",			Cmd_EntList_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entnear",			Cmd_EntNear_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entremove",			Cmd_EntRemove_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "entsave",			Cmd_EntSave_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "follow",				Cmd_Follow_f,				CMD_NOINTERMISSION },
 	{ "follownext",			Cmd_FollowNext_f,			CMD_NOINTERMISSION },
 	{ "followprev",			Cmd_FollowPrev_f,			CMD_NOINTERMISSION },
