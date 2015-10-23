@@ -5735,9 +5735,12 @@ void G_RunFrame( int levelTime ) {
 		// zyk: loading the entities from the file
 		this_file = fopen(level.load_entities_file,"r");
 
-		while (fscanf(this_file,"%s",content) != EOF)
+		while (fgets(content,sizeof(content),this_file) != NULL)
 		{
 			gentity_t *new_ent = G_Spawn();
+
+			if (content[strlen(content) - 1] == '\n')
+				content[strlen(content) - 1] = '\0';
 
 			if (new_ent)
 			{
@@ -5745,23 +5748,37 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","info_player_deathmatch");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
 					zyk_spawn_entity(new_ent);
@@ -5770,24 +5787,43 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","target_position");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					zyk_set_entity_field(new_ent,"targetname",content);
 
 					zyk_spawn_entity(new_ent);
 				}
@@ -5795,26 +5831,47 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","target_print");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"message",content);
 
 					zyk_spawn_entity(new_ent);
@@ -5823,44 +5880,74 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","trigger_teleport");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"targetname",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"target",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
 
@@ -5870,44 +5957,74 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","trigger_multiple");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"targetname",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"target",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
 
@@ -5917,44 +6034,74 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","trigger_once");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"targetname",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"target",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
 
@@ -5964,48 +6111,80 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","misc_model_breakable");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"targetname",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"target",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"model",content);
 
 					zyk_spawn_entity(new_ent);
@@ -6014,32 +6193,52 @@ void G_RunFrame( int levelTime ) {
 				{
 					zyk_set_entity_field(new_ent,"classname","fx_runner");
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					x = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					y = atoi(content);
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					z = atoi(content);
 					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"spawnflags",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"targetname",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					zyk_set_entity_field(new_ent,"target",content);
 
-					fscanf(this_file,"%s",content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
 					new_ent->s.modelindex = G_EffectIndex( G_NewString(content) );
 					new_ent->message = G_NewString(content); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
 
