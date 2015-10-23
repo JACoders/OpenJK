@@ -11883,9 +11883,14 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 		{
 			trap->Argv( 3, arg3, sizeof( arg3 ) );
 			if ((Q_stricmp (arg1, "fx_runner") == 0))
+			{
 				new_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
+				new_ent->message = G_NewString(arg3); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
+			}
 			else
+			{
 				zyk_set_entity_field(new_ent,"model",G_NewString(arg3));
+			}
 		}
 
 		zyk_spawn_entity(new_ent);
@@ -11958,8 +11963,9 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 		trap->Argv( 3, arg3, sizeof( arg3 ) );
 
 		if (Q_stricmp (this_ent->classname, "fx_runner") == 0 && Q_stricmp (arg2, "fxFile") == 0)
-		{ // yk: to change the fxFile, we must change the modelIndex
+		{ // zyk: to change the fxFile, we must change the modelIndex
 			this_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
+			this_ent->message = G_NewString(arg3); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
 		}
 		else
 		{
@@ -12072,9 +12078,9 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "fx_runner") == 0)
 			{
-				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
-					this_ent->targetname,this_ent->target,this_ent->s.modelindex);
+					this_ent->targetname,this_ent->target,this_ent->message);
 			}
 		}
 	}
@@ -12136,9 +12142,9 @@ void Cmd_EntLoad_f( gentity_t *ent ) {
 
 	strcpy(level.load_entities_file, va("entities/%s/%s.txt",zyk_mapname,arg1));
 
-	level.load_entities_timer = level.time + 1200;
+	level.load_entities_timer = level.time + 1050;
 
-	trap->SendServerCommand( ent-g_entities, va("print \"Entities loaded from %s file\n\"", arg1) );
+	trap->SendServerCommand( ent-g_entities, va("print \"Loading entities from %s file\n\"", arg1) );
 }
 
 /*

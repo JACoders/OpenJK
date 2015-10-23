@@ -5965,7 +5965,7 @@ void G_RunFrame( int levelTime ) {
 					zyk_set_entity_field(new_ent,"target",content);
 
 					fscanf(this_file,"%s",content);
-					new_ent->s.modelindex = atoi(content);
+					new_ent->s.modelindex = G_EffectIndex( G_NewString(content) );
 
 					zyk_spawn_entity(new_ent);
 				}
