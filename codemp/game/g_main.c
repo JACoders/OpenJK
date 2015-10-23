@@ -662,6 +662,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.server_empty_change_map_timer = 0;
 	level.num_fully_connected_clients = 0;
 
+	level.load_entities_timer = 0;
+	strcpy(level.load_entities_file,"");
+
 	if (1)
 	{
 		int zyk_iterator = 0;
@@ -5719,6 +5722,259 @@ void G_RunFrame( int levelTime ) {
 		}
 
 		level.guardian_quest_timer = level.time + 1000;
+	}
+
+	if (level.load_entities_timer != 0 && level.load_entities_timer < level.time)
+	{ // zyk: loading entities from the file specified in entload command
+		char content[256];
+		int x = 0, y = 0, z = 0;
+		FILE *this_file = NULL;
+
+		strcpy(content,"");
+
+		// zyk: loading the entities from the file
+		this_file = fopen(level.load_entities_file,"r");
+
+		while (fscanf(this_file,"%s",content) != EOF)
+		{
+			gentity_t *new_ent = G_Spawn();
+
+			if (new_ent)
+			{
+				if (Q_stricmp(content, "info_player_deathmatch") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","info_player_deathmatch");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					zyk_spawn_entity(new_ent);
+				}
+				else if (Q_stricmp(content, "target_position") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","target_position");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					zyk_spawn_entity(new_ent);
+				}
+				else if (Q_stricmp(content, "trigger_teleport") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","trigger_teleport");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"target",content);
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
+
+					zyk_spawn_entity(new_ent);
+				}
+				else if (Q_stricmp(content, "trigger_multiple") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","trigger_multiple");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"target",content);
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
+
+					zyk_spawn_entity(new_ent);
+				}
+				else if (Q_stricmp(content, "misc_model_breakable") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","misc_model_breakable");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"target",content);
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"model",content);
+
+					zyk_spawn_entity(new_ent);
+				}
+				else if (Q_stricmp(content, "fx_runner") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","fx_runner");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"target",content);
+
+					fscanf(this_file,"%s",content);
+					new_ent->s.modelindex = atoi(content);
+
+					zyk_spawn_entity(new_ent);
+				}
+			}
+		}
+
+		fclose(this_file);
+
+		level.load_entities_timer = 0;
 	}
 
 	//

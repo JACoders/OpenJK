@@ -1496,6 +1496,10 @@ typedef struct level_locals_s {
 
 	// zyk: used to cound how many clients are already connected
 	int num_fully_connected_clients;
+
+	// zyk: entities will be loaded after sometime so the server will reused the entities that were just removed
+	int load_entities_timer;
+	char load_entities_file[512];
 } level_locals_t;
 
 
