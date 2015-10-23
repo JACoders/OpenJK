@@ -1025,7 +1025,17 @@ void G_SpawnGEntityFromSpawnVars( qboolean inSubBSP ) {
 
 // zyk: set an entity field with a value
 void zyk_set_entity_field(gentity_t *ent, char *key, char *value) {
-	G_ParseField(key, value, ent);
+	if (Q_stricmp(value,"(null)") == 0)
+	{ // zyk: initializing correctly the fields with null value
+		if (Q_stricmp(key,"targetname") == 0)
+			ent->targetname = NULL;
+		else if (Q_stricmp(key,"target") == 0)
+			ent->target = NULL;
+	}
+	else
+	{
+		G_ParseField(key, value, ent);
+	}
 }
 
 // zyk: spawns the entity

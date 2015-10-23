@@ -5966,6 +5966,7 @@ void G_RunFrame( int levelTime ) {
 
 					fscanf(this_file,"%s",content);
 					new_ent->s.modelindex = G_EffectIndex( G_NewString(content) );
+					new_ent->message = G_NewString(content); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
 
 					zyk_spawn_entity(new_ent);
 				}
