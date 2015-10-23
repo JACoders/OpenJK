@@ -5791,6 +5791,34 @@ void G_RunFrame( int levelTime ) {
 
 					zyk_spawn_entity(new_ent);
 				}
+				else if (Q_stricmp(content, "target_print") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","target_print");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"message",content);
+
+					zyk_spawn_entity(new_ent);
+				}
 				else if (Q_stricmp(content, "trigger_teleport") == 0)
 				{
 					zyk_set_entity_field(new_ent,"classname","trigger_teleport");
@@ -5841,6 +5869,53 @@ void G_RunFrame( int levelTime ) {
 				else if (Q_stricmp(content, "trigger_multiple") == 0)
 				{
 					zyk_set_entity_field(new_ent,"classname","trigger_multiple");
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fscanf(this_file,"%s",content);
+					zyk_set_entity_field(new_ent,"target",content);
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
+
+					fscanf(this_file,"%s",content);
+					x = atoi(content);
+					fscanf(this_file,"%s",content);
+					y = atoi(content);
+					fscanf(this_file,"%s",content);
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
+
+					zyk_spawn_entity(new_ent);
+				}
+				else if (Q_stricmp(content, "trigger_once") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","trigger_once");
 
 					fscanf(this_file,"%s",content);
 					x = atoi(content);
