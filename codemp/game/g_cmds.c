@@ -12137,7 +12137,7 @@ void Cmd_EntLoad_f( gentity_t *ent ) {
 	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
 	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
 
-	// zyk: creating directories where the entity files will be saved
+	// zyk: creating directories where the entity files will be loaded from
 #if defined(__linux__)
 	system(va("mkdir -p entities/%s",zyk_mapname));
 #else

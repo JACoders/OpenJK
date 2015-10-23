@@ -305,6 +305,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	char serverinfo[MAX_INFO_STRING] = {0};
 	// zyk: variable used in the SP buged maps fix
 	char zyk_mapname[128] = {0};
+	FILE *zyk_entities_file = NULL;
 
 	//Init RMG to 0, it will be autoset to 1 if there is terrain on the level.
 	trap->Cvar_Set("RMG", "0");
@@ -1517,6 +1518,34 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			strcpy(level.default_map_music,"music/t1_fatal/tunnels_explore.mp3");
 		else
 			strcpy(level.default_map_music,"music/hoth2/hoth2_explore.mp3");
+	}
+
+	// zyk: creating directories where the entity files will be loaded from
+#if defined(__linux__)
+	system(va("mkdir -p entities/%s",zyk_mapname));
+#else
+	system(va("mkdir \"entities/%s\"",zyk_mapname));
+#endif
+
+	// zyk: loading entities set as default (Entity System)
+	zyk_entities_file = fopen(va("entities/%s/default.txt",zyk_mapname),"r");
+
+	if (zyk_entities_file != NULL)
+	{ // zyk: default file exists. Load entities from it
+		fclose(zyk_entities_file);
+
+		// zyk: cleaning entities. Only the ones from the file will be in the map
+		for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
+		{
+			gentity_t *target_ent = &g_entities[i];
+
+			if (target_ent)
+				G_FreeEntity( target_ent );
+		}
+
+		strcpy(level.load_entities_file, va("entities/%s/default.txt",zyk_mapname));
+
+		level.load_entities_timer = level.time + 1050;
 	}
 }
 
