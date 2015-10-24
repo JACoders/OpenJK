@@ -4770,7 +4770,7 @@ void G_Knockdown( gentity_t *victim )
 }
 
 // zyk: tests if this rpg player can damage saber-only damage things
-qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, int mod)
+qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, gentity_t *inflictor, int mod)
 {
 	if ((mod == MOD_ROCKET || mod == MOD_ROCKET_HOMING || mod == MOD_ROCKET_SPLASH || mod == MOD_ROCKET_HOMING_SPLASH) && attacker && 
 		attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.skill_levels[26] == 2)
@@ -4785,7 +4785,13 @@ qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, int mod)
 	}
 
 	if (mod == MOD_MELEE && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.rpg_class == 4)
-	{ 
+	{ // zyk: Monk melee
+		return qtrue;
+	}
+
+	if (mod == MOD_MELEE && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.rpg_class == 8 &&
+		inflictor && inflictor->s.weapon == WP_CONCUSSION)
+	{ // zyk: Magic Master bolts, the Master Bolt
 		return qtrue;
 	}
 
@@ -4947,7 +4953,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 8 && mod == MOD_MELEE)
 		{ // zyk: Magic Master bonus melee damage
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.skill_levels[55])));
-			if (inflictor && (inflictor->s.weapon == WP_BOWCASTER || inflictor->s.weapon == WP_DEMP2))
+			if (inflictor && (inflictor->s.weapon == WP_BOWCASTER || inflictor->s.weapon == WP_DEMP2 || inflictor->s.weapon == WP_CONCUSSION))
 				can_damage_heavy_things = qtrue;
 		}
 	}
@@ -5130,13 +5136,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if ( (targ->flags&FL_SHIELDED) && mod != MOD_SABER  && !targ->client)
 	{//magnetically protected, this thing can only be damaged by lightsabers
-		if (zyk_can_damage_saber_only_entities(attacker, mod) == qfalse)
+		if (zyk_can_damage_saber_only_entities(attacker, inflictor, mod) == qfalse)
 			return;
 	}
 
 	if ((targ->flags & FL_DMG_BY_SABER_ONLY) && mod != MOD_SABER)
 	{ //saber-only damage
-		if (zyk_can_damage_saber_only_entities(attacker, mod) == qfalse)
+		if (zyk_can_damage_saber_only_entities(attacker, inflictor, mod) == qfalse)
 			return;
 	}
 
