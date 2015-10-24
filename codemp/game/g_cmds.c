@@ -11849,6 +11849,8 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 	gentity_t *new_ent = NULL;
 	qboolean worked = qfalse;
 	int number_of_args = trap->Argc();
+	int i = 0;
+	char key[64];
 	char arg1[MAX_STRING_CHARS];
 	char arg2[MAX_STRING_CHARS];
 	char arg3[MAX_STRING_CHARS];
@@ -11859,9 +11861,15 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 		return;
 	}
 
-	if ( number_of_args < 2)
+	if ( number_of_args < 3)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"You must specify at least the entity class. Ex: ^3/entadd info_player_deathmatch^7, which spawns a spawn point in the map\n\"") );
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify at least the entity class and spawnflags. Ex: ^3/entadd info_player_deathmatch 0^7, which spawns a spawn point in the map with spawnflags 0\n\"") );
+		return;
+	}
+
+	if ( number_of_args % 2 == 0)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify an even number of arguments after the spawnflags, because they are key/value pairs\n\"") );
 		return;
 	}
 
@@ -11872,31 +11880,34 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 
 	if (new_ent)
 	{
+		strcpy(key,"");
+
 		zyk_set_entity_field(new_ent,"classname",G_NewString(arg1));
 
-		if (number_of_args > 2)
-		{
-			trap->Argv( 2, arg2, sizeof( arg2 ) );
-			zyk_set_entity_field(new_ent,"spawnflags",G_NewString(arg2));
-		}
-		if (number_of_args > 3)
-		{
-			trap->Argv( 3, arg3, sizeof( arg3 ) );
-			if (Q_stricmp (arg1, "fx_runner") == 0)
-			{
-				new_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
-				new_ent->message = G_NewString(arg3); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
-			}
-			else if (Q_stricmp (arg1, "npc_spawner") == 0)
-			{ // zyk: in this case, player must set the npc_type. The origin and angles will be the player ones
-				new_ent->NPC_type = G_NewString(arg3);
+		trap->Argv( 2, arg2, sizeof( arg2 ) );
 
-				zyk_set_entity_field(new_ent,"origin",va("%d %d %d", (int)ent->client->ps.origin[0], (int)ent->client->ps.origin[1], (int)ent->client->ps.origin[2]));
-				zyk_set_entity_field(new_ent,"angles",va("%d %d %d", (int)ent->client->ps.viewangles[0], (int)ent->client->ps.viewangles[1], (int)ent->client->ps.viewangles[2]));
+		zyk_set_entity_field(new_ent,"spawnflags",G_NewString(arg2));
+
+		for(i = 3; i < number_of_args; i++)
+		{
+			if (i % 2 != 0)
+			{ // zyk: key
+				trap->Argv( i, arg3, sizeof( arg3 ) );
+				strcpy(key, G_NewString(arg3));
 			}
 			else
-			{
-				zyk_set_entity_field(new_ent,"model",G_NewString(arg3));
+			{ // zyk: value
+				trap->Argv( i, arg3, sizeof( arg3 ) );
+
+				if (Q_stricmp (arg1, "fx_runner") == 0 && Q_stricmp (key, "fxfile") == 0)
+				{ // zyk: setting the modelindex of the fx_runner
+					new_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
+					new_ent->message = G_NewString(arg3); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
+				}
+				else
+				{
+					zyk_set_entity_field(new_ent,G_NewString(key),G_NewString(arg3));
+				}
 			}
 		}
 
@@ -11921,11 +11932,10 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 	qboolean worked = qfalse;
 	int number_of_args = trap->Argc();
 	int entity_id = -1;
+	int i = 0;
+	char key[64];
 	char arg1[MAX_STRING_CHARS];
 	char arg2[MAX_STRING_CHARS];
-	char arg3[MAX_STRING_CHARS];
-	char arg4[MAX_STRING_CHARS];
-	char arg5[MAX_STRING_CHARS];
 
 	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
@@ -11960,37 +11970,35 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 	}
 	else
 	{
-		if ( number_of_args == 3)
+		if ( number_of_args % 2 != 0)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"You must specify an attribute and the value for it. Ex: /entedit 150 targetname test.\n\"") );
+			trap->SendServerCommand( ent-g_entities, va("print \"You must specify an even number of arguments, because they are key/value pairs.\n\"") );
 			return;
 		}
 
-		trap->Argv( 2, arg2, sizeof( arg2 ) );
-		trap->Argv( 3, arg3, sizeof( arg3 ) );
+		strcpy(key,"");
 
-		if (Q_stricmp (this_ent->classname, "fx_runner") == 0 && Q_stricmp (arg2, "fxFile") == 0)
-		{ // zyk: to change the fxFile, we must change the modelIndex
-			this_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
-			this_ent->message = G_NewString(arg3); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
-		}
-		else
+		for(i = 2; i < number_of_args; i++)
 		{
-			if (Q_stricmp (arg2, "origin") == 0 || Q_stricmp (arg2, "angles") == 0 || Q_stricmp (arg2, "mins") == 0 || Q_stricmp (arg2, "maxs") == 0)
-			{
-				if ( number_of_args < 6)
-				{
-					trap->SendServerCommand( ent-g_entities, va("print \"You must specify the x, y and z axis for this attribute. Ex: 0 0 0.\n\"") );
-					return;
-				}
-
-				trap->Argv( 4, arg4, sizeof( arg4 ) );
-				trap->Argv( 5, arg5, sizeof( arg5 ) );
-
-				strcpy(arg3,va("%s %s %s",arg3,arg4,arg5));
+			if (i % 2 == 0)
+			{ // zyk: key
+				trap->Argv( i, arg2, sizeof( arg2 ) );
+				strcpy(key, G_NewString(arg2));
 			}
+			else
+			{ // zyk: value
+				trap->Argv( i, arg2, sizeof( arg2 ) );
 
-			zyk_set_entity_field(this_ent,G_NewString(arg2),G_NewString(arg3));
+				if (Q_stricmp (this_ent->classname, "fx_runner") == 0 && Q_stricmp (key, "fxfile") == 0)
+				{ // zyk: setting the modelindex of the fx_runner
+					this_ent->s.modelindex = G_EffectIndex( G_NewString(arg2) );
+					this_ent->message = G_NewString(arg2); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
+				}
+				else
+				{
+					zyk_set_entity_field(this_ent,G_NewString(key),G_NewString(arg2));
+				}
+			}
 		}
 
 		zyk_spawn_entity(this_ent);
@@ -13034,7 +13042,7 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 		return;
 	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model, fxFile or npc_type]: ^7adds a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n\n\"") );
+	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> <spawnflags> <key value key value ... etc>: ^7adds a new entity in the map\n^3/entedit <entity id> [key value key value ... etc]: ^7shows entity info or edits the entity fields\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n\n\"") );
 }
 
 /*
