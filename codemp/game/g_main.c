@@ -533,19 +533,17 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	trap->SetConfigstring ( CS_CLIENT_DUELWINNER, va("-1") );
 
 	if (1)
-	{
-		gitem_t *this_item = BG_FindItemForPowerup(PW_FORCE_BOON);
+	{ // zyk: registering all items because of entity system
+		int item_it = 0;
 
-		// zyk: registers Force Boon item so the artifacts in the quests will be shown properly
-		RegisterItem(this_item);
-
-		// zyk: also registers Bowcaster so players can see Magic Fist
-		this_item = BG_FindItemForWeapon(WP_BOWCASTER);
-		RegisterItem(this_item);
-
-		// zyk: registers DEMP2 so people can see the electric bolts shot by  Magic Master
-		this_item = BG_FindItemForWeapon(WP_DEMP2);
-		RegisterItem(this_item);
+		for (item_it = 0; item_it < bg_numItems; item_it++)
+		{
+			gitem_t *this_item = &bg_itemlist[item_it];
+			if (this_item)
+			{
+				RegisterItem(this_item);
+			}
+		}
 	}
 
 	SaveRegisteredItems();
