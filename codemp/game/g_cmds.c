@@ -12113,11 +12113,8 @@ void Cmd_EntLoad_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	char serverinfo[MAX_INFO_STRING] = {0};
 	char zyk_mapname[128] = {0};
-	char content[256];
-	int i = 0, x = 0, y = 0, z = 0;
+	int i = 0;
 	FILE *this_file = NULL;
-
-	strcpy(content,"");
 
 	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
@@ -12158,6 +12155,58 @@ void Cmd_EntLoad_f( gentity_t *ent ) {
 	level.load_entities_timer = level.time + 1050;
 
 	trap->SendServerCommand( ent-g_entities, va("print \"Loading entities from %s file\n\"", arg1) );
+}
+
+/*
+==================
+Cmd_EntDeleteFile_f
+==================
+*/
+void Cmd_EntDeleteFile_f( gentity_t *ent ) {
+	int number_of_args = trap->Argc();
+	char arg1[MAX_STRING_CHARS];
+	char serverinfo[MAX_INFO_STRING] = {0};
+	char zyk_mapname[128] = {0};
+	FILE *this_file = NULL;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( number_of_args < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a file name.\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	// zyk: getting mapname
+	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
+	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
+
+	// zyk: creating directories where the entity files will be loaded from
+#if defined(__linux__)
+	system(va("mkdir -p entities/%s",zyk_mapname));
+#else
+	system(va("mkdir \"entities/%s\"",zyk_mapname));
+#endif
+
+	this_file = fopen(va("entities/%s/%s.txt",zyk_mapname,arg1),"r");
+	if (this_file)
+	{
+		fclose(this_file);
+
+		remove(va("entities/%s/%s.txt",zyk_mapname,arg1));
+
+		trap->SendServerCommand( ent-g_entities, va("print \"File %s deleted from server\n\"", arg1) );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"File %s does not exist\n\"", arg1) );
+	}
 }
 
 /*
@@ -12965,7 +13014,7 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 		return;
 	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model or fxFile]: ^7places a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n\n\"") );
+	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model or fxFile]: ^7places a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n\n\"") );
 }
 
 /*
@@ -13223,6 +13272,7 @@ command_t commands[] = {
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "emote",				Cmd_Emote_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "entadd",				Cmd_EntAdd_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "entdeletefile",		Cmd_EntDeleteFile_f,		CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entedit",			Cmd_EntEdit_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entitysystem",		Cmd_EntitySystem_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entlist",			Cmd_EntList_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
