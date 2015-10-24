@@ -3610,7 +3610,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8)
 		{ // zyk: Magic Master fist attacks
 			if (ent->client->sess.magic_fist_selection == 0 && ent->client->pers.magic_power >= zyk_magic_fist_mp_cost.integer)
-			{ // zyk: Magic Fist
+			{ // zyk: Magic Bolt
 				vec3_t origin, dir, zyk_forward;
 				gentity_t *missile = NULL;
 
@@ -3623,41 +3623,25 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				AngleVectors( dir, zyk_forward, NULL, NULL );
 
-				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-				{
-					missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
+				missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
 
-					missile->classname = "demp2_proj";
-					missile->s.weapon = WP_DEMP2;
+				missile->classname = "bowcaster_proj";
+				missile->s.weapon = WP_BOWCASTER;
 
-					VectorSet( missile->r.maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
-					VectorScale( missile->r.maxs, -1, missile->r.mins );
+				VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
 					missile->damage = zyk_magic_fist_damage.integer * 2;
-					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-					missile->methodOfDeath = MOD_MELEE;
-					missile->clipmask = MASK_SHOT;
-
-					// we don't want it to ever bounce
-					missile->bounceCount = 0;
-				}
 				else
-				{
-					missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
-
-					missile->classname = "bowcaster_proj";
-					missile->s.weapon = WP_BOWCASTER;
-
-					VectorSet( missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );
-					VectorScale( missile->r.maxs, -1, missile->r.mins );
-
 					missile->damage = zyk_magic_fist_damage.integer;
-					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-					missile->methodOfDeath = MOD_MELEE;
-					missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-					// we don't want it to bounce
-					missile->bounceCount = 0;
-				}
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				// we don't want it to bounce
+				missile->bounceCount = 0;
 
 				rpg_skill_counter(ent, 10);
 
@@ -3668,66 +3652,303 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				send_rpg_events(2000);
 			}
 			else if (ent->client->sess.magic_fist_selection == 1 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 2))
-			{ // zyk: Magic Fist Charged Attack
-				int count = 2;
+			{ // zyk: Electric Bolt
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
-				int i;
 
-				for (i = 0; i < count; i++ )
-				{
-					if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
-						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 9 + (i * 3));
-					else
-						VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 33 + (i * 3));
+				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+				else
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 			
-					VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+				VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
 
-					AngleVectors( dir, zyk_forward, NULL, NULL );
+				AngleVectors( dir, zyk_forward, NULL, NULL );
 
-					VectorNormalize(zyk_forward);
+				VectorNormalize(zyk_forward);
 
-					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-					{
-						missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
+				missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
 
-						missile->classname = "demp2_proj";
-						missile->s.weapon = WP_DEMP2;
+				missile->classname = "demp2_proj";
+				missile->s.weapon = WP_DEMP2;
 
-						VectorSet( missile->r.maxs, 2, 2, 2 );
-						VectorScale( missile->r.maxs, -1, missile->r.mins );
-						missile->damage = zyk_magic_fist_damage.integer * 2;
-						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-						missile->methodOfDeath = MOD_MELEE;
-						missile->clipmask = MASK_SHOT;
+				VectorSet( missile->r.maxs, 2, 2, 2 );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-						// we don't want it to ever bounce
-						missile->bounceCount = 0;
-					}
-					else
-					{
-						missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+					missile->damage = zyk_magic_fist_damage.integer * 4;
+				else
+					missile->damage = zyk_magic_fist_damage.integer * 2;
 
-						missile->classname = "bowcaster_proj";
-						missile->s.weapon = WP_BOWCASTER;
+				missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT;
 
-						VectorSet( missile->r.maxs, 2, 2, 2 );
-						VectorScale( missile->r.maxs, -1, missile->r.mins );
-
-						missile->damage = zyk_magic_fist_damage.integer;
-						missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-						missile->methodOfDeath = MOD_MELEE;
-						missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
-						// we don't want it to bounce
-						missile->bounceCount = 0;
-					}
-				}
+				// we don't want it to ever bounce
+				missile->bounceCount = 0;
 
 				rpg_skill_counter(ent, 20);
 				ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 2);
 
+				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/demp2/fire.mp3"));
+
+				send_rpg_events(2000);
+			}
+			else if (ent->client->sess.magic_fist_selection == 2 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 3))
+			{ // zyk: Instant-Hit Bolt
+				int skip, traces = DISRUPTOR_ALT_TRACES;
+				qboolean	render_impact = qtrue;
+				vec3_t		start, end;
+				vec3_t		muzzle2, dir;
+				trace_t		tr;
+				gentity_t	*traceEnt, *tent;
+				float		shotRange = 8192.0f;
+				vec3_t shot_mins, shot_maxs;
+				int			i;
+				int damage = zyk_magic_fist_damage.integer * 1.5;
+
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+					damage *= 2;
+
+				VectorCopy( muzzle, muzzle2 ); // making a backup copy
+
+				VectorCopy( muzzle, start );
+				WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );
+
+				skip = ent->s.number;
+
+				//Make it a little easier to hit guys at long range
+				VectorSet( shot_mins, -1, -1, -1 );
+				VectorSet( shot_maxs, 1, 1, 1 );
+
+				for ( i = 0; i < traces; i++ )
+				{
+					VectorMA( start, shotRange, forward, end );
+
+					//NOTE: if you want to be able to hit guys in emplaced guns, use "G2_COLLIDE, 10" instead of "G2_RETURNONHIT, 0"
+					//alternately, if you end up hitting an emplaced_gun that has a sitter, just redo this one trace with the "G2_COLLIDE, 10" to see if we it the sitter
+					//trap->trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, G2_COLLIDE, 10 );//G2_RETURNONHIT, 0 );
+					if (d_projectileGhoul2Collision.integer)
+					{
+						trap->Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
+					}
+					else
+					{
+						trap->Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, 0, 0 );
+					}
+
+					traceEnt = &g_entities[tr.entityNum];
+
+					if (d_projectileGhoul2Collision.integer && traceEnt->inuse && traceEnt->client)
+					{ //g2 collision checks -rww
+						if (traceEnt->inuse && traceEnt->client && traceEnt->ghoul2)
+						{ //since we used G2TRFLAG_GETSURFINDEX, tr.surfaceFlags will actually contain the index of the surface on the ghoul2 model we collided with.
+							traceEnt->client->g2LastSurfaceHit = tr.surfaceFlags;
+							traceEnt->client->g2LastSurfaceTime = level.time;
+						}
+
+						if (traceEnt->ghoul2)
+						{
+							tr.surfaceFlags = 0; //clear the surface flags after, since we actually care about them in here.
+						}
+					}
+					if ( tr.surfaceFlags & SURF_NOIMPACT )
+					{
+						render_impact = qfalse;
+					}
+
+					if ( tr.entityNum == ent->s.number )
+					{
+						// should never happen, but basically we don't want to consider a hit to ourselves?
+						// Get ready for an attempt to trace through another person
+						VectorCopy( tr.endpos, muzzle2 );
+						VectorCopy( tr.endpos, start );
+						skip = tr.entityNum;
+
+						continue;
+					}
+
+					if ( tr.fraction >= 1.0f )
+					{
+						// draw the beam but don't do anything else
+						break;
+					}
+
+					if ( render_impact )
+					{
+						if (( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
+							|| !Q_stricmp( traceEnt->classname, "misc_model_breakable" )
+							|| traceEnt->s.eType == ET_MOVER )
+						{
+							qboolean noKnockBack;
+
+							if ( traceEnt->client && LogAccuracyHit( traceEnt, ent ))
+							{//NOTE: hitting multiple ents can still get you over 100% accuracy
+								ent->client->accuracy_hits++;
+							}
+
+							noKnockBack = (traceEnt->flags&FL_NO_KNOCKBACK);//will be set if they die, I want to know if it was on *before* they died
+
+							G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, MOD_MELEE );
+
+							//do knockback and knockdown manually
+							if ( traceEnt->client )
+							{//only if we hit a client
+								vec3_t pushDir;
+								VectorCopy( forward, pushDir );
+								if ( pushDir[2] < 0.2f )
+								{
+									pushDir[2] = 0.2f;
+								}//hmm, re-normalize?  nah...
+
+								if ( traceEnt->health > 0 )
+								{//alive
+									// zyk: allies cant be knocked back
+									if (zyk_is_ally(ent,traceEnt) == qtrue)
+									{
+										break;
+									}
+
+									if (traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 9)
+									{ // zyk Force Tank cannot be knocked down
+										break;
+									}
+
+									if (ent->client->pers.guardian_mode != traceEnt->client->pers.guardian_mode)
+									{ // zyk: non quest player cant hit quest players in boss battles and vice-versa
+										if (!((ent->client->pers.guardian_mode == 12 || ent->client->pers.guardian_mode == 13) && traceEnt->NPC && 
+												(Q_stricmp(traceEnt->NPC_type, "guardian_of_universe") || Q_stricmp(traceEnt->NPC_type, "quest_reborn") || 
+												Q_stricmp(traceEnt->NPC_type, "quest_reborn_blue") || Q_stricmp(traceEnt->NPC_type, "quest_reborn_red") || 
+												Q_stricmp(traceEnt->NPC_type, "quest_reborn_boss")))
+											)
+										{
+											break;
+										}
+									}
+
+									//if ( G_HasKnockdownAnims( traceEnt ) )
+									if (!noKnockBack && !traceEnt->localAnimIndex && traceEnt->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN &&
+										BG_KnockDownable(&traceEnt->client->ps)) //just check for humanoids..
+									{//knock-downable
+										//G_Knockdown( traceEnt, ent, pushDir, 400, qtrue );
+										vec3_t plPDif;
+										float pStr;
+
+										//cap it and stuff, base the strength and whether or not we can knockdown on the distance
+										//from the shooter to the target
+										VectorSubtract(traceEnt->client->ps.origin, ent->client->ps.origin, plPDif);
+										pStr = 500.0f-VectorLength(plPDif);
+										if (pStr < 150.0f)
+										{
+											pStr = 150.0f;
+										}
+										if (pStr > 200.0f)
+										{
+											traceEnt->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+											traceEnt->client->ps.forceHandExtendTime = level.time + 1100;
+											traceEnt->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
+										}
+										traceEnt->client->ps.otherKiller = ent->s.number;
+										traceEnt->client->ps.otherKillerTime = level.time + 5000;
+										traceEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+
+										traceEnt->client->ps.velocity[0] += pushDir[0]*pStr;
+										traceEnt->client->ps.velocity[1] += pushDir[1]*pStr;
+										traceEnt->client->ps.velocity[2] = pStr;
+									}
+								}
+							}
+
+							if ( traceEnt->s.eType == ET_MOVER )
+							{//stop the traces on any mover
+								break;
+							}
+						}
+						else
+						{
+							//mmm..no..don't do this more than once for no reason whatsoever.
+							break; // hit solid, but doesn't take damage, so stop the shot...we _could_ allow it to shoot through walls, might be cool?
+						}
+					}
+					else // not rendering impact, must be a skybox or other similar thing?
+					{
+						break; // don't try anymore traces
+					}
+
+					// Get ready for an attempt to trace through another person
+					VectorCopy( tr.endpos, muzzle2 );
+					VectorCopy( tr.endpos, start );
+					skip = tr.entityNum;
+				}
+
+				// now go along the trail and make sight events
+				VectorSubtract( tr.endpos, muzzle, dir );
+
+				//let's pack all this junk into a single tempent, and send it off.
+				tent = G_TempEntity(tr.endpos, EV_CONC_ALT_IMPACT);
+				tent->s.eventParm = DirToByte(tr.plane.normal);
+				tent->s.owner = ent->s.number;
+				VectorCopy(dir, tent->s.angles);
+				VectorCopy(muzzle, tent->s.origin2);
+				VectorCopy(forward, tent->s.angles2);
+
+				rpg_skill_counter(ent, 30);
+				ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 3);
+
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/movers/objects/green_beam_start.mp3"));
+
+				send_rpg_events(2000);
+			}
+			else if (ent->client->sess.magic_fist_selection == 3 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 4))
+			{ // zyk: Master Bolt
+				gentity_t	*missile;
+				vec3_t origin, dir, zyk_forward;
+
+				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+				else
+					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+			
+				VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+
+				AngleVectors( dir, zyk_forward, NULL, NULL );
+
+				VectorNormalize(zyk_forward);
+
+				missile = CreateMissile( origin, zyk_forward, zyk_magic_fist_velocity.integer, 10000, ent, qfalse);
+
+				missile->classname = "conc_proj";
+				missile->s.weapon = WP_CONCUSSION;
+				missile->mass = 10;
+
+				// Make it easier to hit things
+				VectorSet( missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE );
+				VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+					missile->damage = zyk_magic_fist_damage.integer * 4;
+				else
+					missile->damage = zyk_magic_fist_damage.integer * 2;
+
+				missile->dflags = DAMAGE_EXTRA_KNOCKBACK;
+				missile->methodOfDeath = MOD_MELEE;
+				missile->splashMethodOfDeath = MOD_MELEE;
+				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+					missile->splashDamage = zyk_magic_fist_damage.integer * 4;
+				else
+					missile->splashDamage = zyk_magic_fist_damage.integer * 2;
+
+				missile->splashRadius = CONC_SPLASH_RADIUS;
+
+				// we don't want it to ever bounce
+				missile->bounceCount = 0;
+
+				rpg_skill_counter(ent, 40);
+				ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 4);
+
+				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/concussion/fire.mp3"));
 
 				send_rpg_events(2000);
 			}
