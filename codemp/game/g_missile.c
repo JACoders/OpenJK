@@ -430,7 +430,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			int cannot_deflect = 0;
 
 			// zyk: Magic Fist can hit anything!
-			if (ent->methodOfDeath == MOD_MELEE && (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_DEMP2))
+			if (ent->methodOfDeath == MOD_MELEE && (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_DEMP2 || ent->s.weapon == WP_CONCUSSION))
 			{
 				cannot_deflect = 1;
 			}
@@ -489,7 +489,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		}
 
 		// zyk: Magic Fist can hit anything!
-		if (ent->methodOfDeath == MOD_MELEE && (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_DEMP2))
+		if (ent->methodOfDeath == MOD_MELEE && (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_DEMP2 || ent->s.weapon == WP_CONCUSSION))
 		{
 			cannot_deflect = 1;
 		}

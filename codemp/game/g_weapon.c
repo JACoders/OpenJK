@@ -3705,7 +3705,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				float		shotRange = 8192.0f;
 				vec3_t shot_mins, shot_maxs;
 				int			i;
-				int damage = zyk_magic_fist_damage.integer * 1.5;
+				int damage = zyk_magic_fist_damage.integer * 1.3;
 
 				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
 					damage *= 2;
@@ -3903,6 +3903,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			{ // zyk: Master Bolt
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
+				int damage = zyk_magic_fist_damage.integer * 1.7;
 
 				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
@@ -3926,9 +3927,9 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				VectorScale( missile->r.maxs, -1, missile->r.mins );
 
 				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
-					missile->damage = zyk_magic_fist_damage.integer * 4;
-				else
-					missile->damage = zyk_magic_fist_damage.integer * 2;
+					damage *= 2;
+
+				missile->damage = damage;
 
 				missile->dflags = DAMAGE_EXTRA_KNOCKBACK;
 				missile->methodOfDeath = MOD_MELEE;
@@ -3940,7 +3941,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				else
 					missile->splashDamage = zyk_magic_fist_damage.integer * 2;
 
-				missile->splashRadius = CONC_SPLASH_RADIUS;
+				missile->splashRadius = CONC_SPLASH_RADIUS/2;
 
 				// we don't want it to ever bounce
 				missile->bounceCount = 0;
