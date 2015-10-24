@@ -6413,6 +6413,16 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 								ent->health += 2;
 							else
 								ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+							if (ent->health == ent->client->ps.stats[STAT_MAX_HEALTH])
+							{ // zyk: Unique Skill makes it possible to heal shield too, if hp is full
+								if (!ent->NPC && ((ent->client->sess.amrpgmode < 2 && 
+									 ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH]) || 
+									(ent->client->sess.amrpgmode == 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)))
+								{
+									ent->client->ps.stats[STAT_ARMOR]++;
+								}
+							}
 						}
 						else if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 						{
