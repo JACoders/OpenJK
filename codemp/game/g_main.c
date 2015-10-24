@@ -6271,6 +6271,60 @@ void G_RunFrame( int levelTime ) {
 
 					zyk_spawn_entity(new_ent);
 				}
+				else if (Q_stricmp(content, "npc_spawner") == 0)
+				{
+					zyk_set_entity_field(new_ent,"classname","npc_spawner");
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					x = atoi(content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					y = atoi(content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					x = atoi(content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					y = atoi(content);
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					z = atoi(content);
+					zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					zyk_set_entity_field(new_ent,"spawnflags",content);
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					zyk_set_entity_field(new_ent,"targetname",content);
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					zyk_set_entity_field(new_ent,"target",content);
+
+					fgets(content,sizeof(content),this_file);
+					if (content[strlen(content) - 1] == '\n')
+						content[strlen(content) - 1] = '\0';
+					new_ent->NPC_type = G_NewString(content);
+
+					zyk_spawn_entity(new_ent);
+				}
 				else if (strncmp(content, "weapon_", 7) == 0 || strncmp(content, "ammo_", 5) == 0 || 
 						 strncmp(content, "item_", 5) == 0)
 				{

@@ -11882,10 +11882,17 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 		if (number_of_args > 3)
 		{
 			trap->Argv( 3, arg3, sizeof( arg3 ) );
-			if ((Q_stricmp (arg1, "fx_runner") == 0))
+			if (Q_stricmp (arg1, "fx_runner") == 0)
 			{
 				new_ent->s.modelindex = G_EffectIndex( G_NewString(arg3) );
 				new_ent->message = G_NewString(arg3); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
+			}
+			else if (Q_stricmp (arg1, "npc_spawner") == 0)
+			{ // zyk: in this case, player must set the npc_type. The origin and angles will be the player ones
+				new_ent->NPC_type = G_NewString(arg3);
+
+				zyk_set_entity_field(new_ent,"origin",va("%d %d %d", (int)ent->client->ps.origin[0], (int)ent->client->ps.origin[1], (int)ent->client->ps.origin[2]));
+				zyk_set_entity_field(new_ent,"angles",va("%d %d %d", (int)ent->client->ps.viewangles[0], (int)ent->client->ps.viewangles[1], (int)ent->client->ps.viewangles[2]));
 			}
 			else
 			{
@@ -12094,6 +12101,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->target,this_ent->message);
+			}
+			else if (Q_stricmp(this_ent->classname, "npc") == 0 || Q_stricmp(this_ent->classname, "npc_spawner") == 0)
+			{
+				fprintf(this_file,"npc_spawner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->targetname,this_ent->target,this_ent->NPC_type);
 			}
 			else if (strncmp(this_ent->classname, "weapon_", 7) == 0 || strncmp(this_ent->classname, "ammo_", 5) == 0 || 
 					 strncmp(this_ent->classname, "item_", 5) == 0)
@@ -13021,7 +13034,7 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 		return;
 	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model or fxFile]: ^7places a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n\n\"") );
+	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> [spawnflags] [model, fxFile or npc_type]: ^7adds a new entity in the map\n^3/entedit <entity id> [attribute] [value]: ^7edits the entity attributes\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n\n\"") );
 }
 
 /*
