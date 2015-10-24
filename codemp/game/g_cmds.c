@@ -3328,6 +3328,12 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 		return;
 	}
 
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	{ // zyk: cannot accept duel during boss battles
+		trap->SendServerCommand( ent->s.number, "chat \"^3Duel System: ^7cannot duel during a boss battle!\"");
+		return;
+	}
+
 	//New: Don't let a player duel if he just did and hasn't waited 10 seconds yet (note: If someone challenges him, his duel timer will reset so he can accept)
 	/*if (ent->client->ps.fd.privateDuelTime > level.time)
 	{

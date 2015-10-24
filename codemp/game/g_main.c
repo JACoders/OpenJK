@@ -6751,8 +6751,8 @@ void G_RunFrame( int levelTime ) {
 					}
 				}
 
-				if (level.quest_map > 0)
-				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now
+				if (level.quest_map > 0 && ent->client->ps.duelInProgress == qfalse)
+				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now and is not in a private duel
 					// zyk: fixing exploit in boss battles. If player is in a vehicle, kill the player
 					if (ent->client->pers.guardian_mode > 0 && ent->client->ps.m_iVehicleNum > 0)
 						G_Kill( ent );

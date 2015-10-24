@@ -3899,7 +3899,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 
 				send_rpg_events(2000);
 			}
-			else if (ent->client->sess.magic_fist_selection == 3 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 4))
+			else if (ent->client->sess.magic_fist_selection == 3 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 3))
 			{ // zyk: Master Bolt
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
@@ -3946,8 +3946,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				// we don't want it to ever bounce
 				missile->bounceCount = 0;
 
-				rpg_skill_counter(ent, 40);
-				ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 4);
+				rpg_skill_counter(ent, 30);
+				ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 3);
 
 				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/concussion/fire.mp3"));
 
