@@ -3673,7 +3673,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 					if (ent->client->sess.magic_fist_selection == 0)
 					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7Magic Bolt        ^3MP: ^7%d\"",ent->client->pers.magic_power));
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Normal Bolt       ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 					else if (ent->client->sess.magic_fist_selection == 1)
 					{
@@ -3685,7 +3685,7 @@ void ClientThink_real( gentity_t *ent ) {
 					}
 					else if (ent->client->sess.magic_fist_selection == 3)
 					{
-						trap->SendServerCommand( ent->s.number, va("chat \"^7Master Bolt       ^3MP: ^7%d\"",ent->client->pers.magic_power));
+						trap->SendServerCommand( ent->s.number, va("chat \"^7Ultra Bolt        ^3MP: ^7%d\"",ent->client->pers.magic_power));
 					}
 					else
 					{

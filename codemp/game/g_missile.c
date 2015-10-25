@@ -517,6 +517,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		ent->s.weapon != WP_TRIP_MINE &&
 		ent->s.weapon != WP_DET_PACK &&
 		ent->s.weapon != WP_DEMP2 &&
+		!(ent->s.weapon == WP_CONCUSSION && ent->methodOfDeath == MOD_MELEE) && // zyk: cannot be Ultra Bolt
 		ent->methodOfDeath != MOD_REPEATER_ALT &&
 		ent->methodOfDeath != MOD_FLECHETTE_ALT_SPLASH &&
 		ent->methodOfDeath != MOD_CONC &&
@@ -589,6 +590,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->s.weapon != WP_TRIP_MINE &&
 			ent->s.weapon != WP_DET_PACK &&
 			ent->s.weapon != WP_DEMP2 &&
+			!(ent->s.weapon == WP_CONCUSSION && ent->methodOfDeath == MOD_MELEE) && // zyk: cannot be Ultra Bolt
 			ent->methodOfDeath != MOD_REPEATER_ALT &&
 			ent->methodOfDeath != MOD_FLECHETTE_ALT_SPLASH &&
 			ent->methodOfDeath != MOD_CONC &&

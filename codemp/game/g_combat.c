@@ -4791,7 +4791,7 @@ qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, gentity_t *infl
 
 	if (mod == MOD_MELEE && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.rpg_class == 8 &&
 		inflictor && inflictor->s.weapon == WP_CONCUSSION)
-	{ // zyk: Magic Master bolts, the Master Bolt
+	{ // zyk: Magic Master bolts, the Ultra Bolt
 		return qtrue;
 	}
 

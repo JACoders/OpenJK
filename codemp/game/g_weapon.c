@@ -3900,10 +3900,10 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				send_rpg_events(2000);
 			}
 			else if (ent->client->sess.magic_fist_selection == 3 && ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 3))
-			{ // zyk: Master Bolt
+			{ // zyk: Ultra Bolt
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
-				int damage = zyk_magic_fist_damage.integer * 1.7;
+				int damage = zyk_magic_fist_damage.integer * 1.8;
 
 				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
@@ -3936,10 +3936,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				missile->splashMethodOfDeath = MOD_MELEE;
 				missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
 
-				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
-					missile->splashDamage = zyk_magic_fist_damage.integer * 4;
-				else
-					missile->splashDamage = zyk_magic_fist_damage.integer * 2;
+				missile->splashDamage = damage;
 
 				missile->splashRadius = CONC_SPLASH_RADIUS/2;
 
