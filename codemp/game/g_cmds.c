@@ -12110,6 +12110,18 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
 					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->model);
 			}
+			else if (Q_stricmp(this_ent->classname, "emplaced_gun") == 0)
+			{
+				fprintf(this_file,"emplaced_gun\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->targetname);
+			}
+			else if (Q_stricmp(this_ent->classname, "misc_ammo_floor_unit") == 0 || Q_stricmp(this_ent->classname, "misc_shield_floor_unit") == 0)
+			{
+				fprintf(this_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",this_ent->classname,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->targetname);
+			}
 			else if (Q_stricmp(this_ent->classname, "fx_runner") == 0)
 			{
 				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
