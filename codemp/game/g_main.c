@@ -8571,8 +8571,6 @@ void G_RunFrame( int levelTime ) {
 
 										if (this_ent && this_ent->NPC && this_ent->die && Q_stricmp( this_ent->NPC_type, "sage_of_light" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_darkness" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_eternity" ) != 0 && Q_stricmp( this_ent->NPC_type, "sage_of_universe" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_time" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_boss_9" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_darkness" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_eternity" ) != 0 && Q_stricmp( this_ent->NPC_type, "guardian_of_universe" ) != 0 && Q_stricmp( this_ent->NPC_type, "master_of_evil" ) != 0 && Q_stricmp( this_ent->NPC_type, "jawa_seller" ) != 0)
 											this_ent->die(this_ent, this_ent, this_ent, 100, MOD_UNKNOWN);
-										else if (this_ent && this_ent->NPC && Q_stricmp( this_ent->NPC_type, "jawa_seller" ) == 0)
-											G_FreeEntity(this_ent);
 									}
 
 									spawn_boss(ent,-3136,-26946,200,179,"guardian_of_chaos",-4228,-26946,393,0,14);
@@ -8727,14 +8725,16 @@ void G_RunFrame( int levelTime ) {
 									gentity_t *this_ent = NULL;
 
 									// zyk: cleaning the crystals and effects if they are already spawned
-									for (effect_iterator = 0; effect_iterator < level.num_entities; effect_iterator++)
+									for (effect_iterator = (MAX_CLIENTS + BODY_QUEUE_SIZE); effect_iterator < level.num_entities; effect_iterator++)
 									{
 										this_ent = &g_entities[effect_iterator];
 
-										if (Q_stricmp(this_ent->targetname, "zyk_quest_models") == 0)
+										if (this_ent && (this_ent->NPC || Q_stricmp(this_ent->targetname, "zyk_quest_models") == 0 || 
+											Q_stricmp(this_ent->classname, "npc_spawner") == 0 || Q_stricmp(this_ent->classname, "npc_vehicle") == 0 || 
+											Q_stricmp(this_ent->classname, "npc_human_merc") == 0))
+										{ // zyk: cleaning quest models, npcs and vehicles
 											G_FreeEntity(this_ent);
-										else if (this_ent && this_ent->NPC) // zyk: this will clean the npc and vehicles in the Sacred Dimension area
-											G_FreeEntity(this_ent);
+										}
 									}
 
 									if (ent->client->pers.universe_quest_counter & (1 << 3))
