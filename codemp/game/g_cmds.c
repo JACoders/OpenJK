@@ -4947,7 +4947,7 @@ void initialize_rpg_skills(gentity_t *ent)
 			magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse || 
 			magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse || 
 			ent->client->sess.magic_fist_selection < 0 || 
-			ent->client->sess.magic_fist_selection > 3)
+			ent->client->sess.magic_fist_selection > 4)
 		{ // zyk: this will allow Magic Master selected powers to persist between respawns and to prevent exploits when logging in another account
 			ent->client->sess.selected_special_power = 1;
 			ent->client->sess.selected_left_special_power = 1;

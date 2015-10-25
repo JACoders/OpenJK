@@ -3705,7 +3705,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				float		shotRange = 8192.0f;
 				vec3_t shot_mins, shot_maxs;
 				int			i;
-				int damage = zyk_magic_fist_damage.integer * 1.3;
+				int damage = zyk_magic_fist_damage.integer * 1.2;
 
 				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
 					damage *= 2;
