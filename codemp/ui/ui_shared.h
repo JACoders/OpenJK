@@ -485,6 +485,10 @@ typedef struct displayContextDef_s {
 	qhandle_t		gradientImage;
 	qhandle_t		cursor;
 	float			FPS;
+
+	struct {
+		float			(*Font_StrLenPixels)				( const char *text, const int iFontIndex, const float scale );
+	} ext;
 } displayContextDef_t;
 
 
