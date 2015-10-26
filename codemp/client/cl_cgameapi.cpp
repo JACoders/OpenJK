@@ -1858,6 +1858,8 @@ void CL_BindCGame( void ) {
 		cgi.G2API_OverrideServer				= CL_G2API_OverrideServer;
 		cgi.G2API_GetSurfaceName				= CL_G2API_GetSurfaceName;
 
+		cgi.ext.R_Font_StrLenPixels				= re->ext.Font_StrLenPixels;
+
 		GetCGameAPI = (GetCGameAPI_t)cgvm->GetModuleAPI;
 		ret = GetCGameAPI( CGAME_API_VERSION, &cgi );
 		if ( !ret ) {
