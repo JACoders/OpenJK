@@ -511,15 +511,6 @@ void	FS_ForceFlush( fileHandle_t f );
 void	FS_FreeFile( void *buffer );
 // frees the memory returned by FS_ReadFile
 
-class FS_AutoFreeFile {
-private:
-	FS_AutoFreeFile();
-	void *buffer;
-public:
-	FS_AutoFreeFile(void *inbuf) : buffer(inbuf) { };
-	~FS_AutoFreeFile() { if (buffer) FS_FreeFile(buffer); };
-};
-
 void	FS_WriteFile( const char *qpath, const void *buffer, int size );
 // writes a complete file, creating any subdirectories needed
 

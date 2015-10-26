@@ -3,11 +3,54 @@
 #include <cstddef>
 #include <cassert>
 
+/**
+@file RAII C++ bindings for filesystem operations
+*/
+
 namespace FS
 {
+	class FileBuffer
+	{
+		friend FileBuffer ReadFile( const char* );
+		// called by ReadFile()
+		FileBuffer( void* buffer, const long size ) noexcept;
+	public:
+		FileBuffer() noexcept = default;
+		~FileBuffer() noexcept;
+		// noncopyable
+		FileBuffer( const FileBuffer& ) = delete;
+		FileBuffer& operator=( const FileBuffer& ) = delete;
+		// movable
+		FileBuffer( FileBuffer&& rhs ) noexcept;
+		FileBuffer& operator=( FileBuffer&& rhs ) noexcept;
+
+		/// nullptr if no such file
+		const char* begin() const noexcept
+		{
+			return static_cast< const char* >( _buffer );
+		}
+		const char* end() const noexcept
+		{
+			return static_cast< const char* >( _buffer ) + _size;
+		}
+		long size() const noexcept
+		{
+			return _size;
+		}
+
+	private:
+		// TODO: ought to be const; would have to fix FS_ReadFile though.
+		void* _buffer = nullptr;
+		long _size = 0;
+	};
+
+	FileBuffer ReadFile( const char* path );
+
 	class FileList
 	{
 		friend FileList ListFiles( const char*, const char* );
+		// called by ListFiles()
+		FileList( char** files, int numFiles ) noexcept;
 	public:
 		FileList() noexcept = default;
 		~FileList() noexcept;
@@ -30,10 +73,6 @@ namespace FS
 		{
 			return static_cast< std::size_t >( _end - _begin );
 		}
-
-	private:
-		// called by ListFiles(), which is a friend.
-		FileList( char** files, int numFiles ) noexcept;
 		
 	private:
 		// TODO: this should really be const; it's a matter of making FS_ListFiles' result const.
