@@ -93,6 +93,11 @@ qboolean G_CanBeEnemy( gentity_t *self, gentity_t *enemy )
 		return qfalse;
 	}
 
+	if (self->client->pers.guardian_mode == 0 && enemy->client->pers.guardian_mode > 0)
+	{ // zyk: cannot grab quest player or bosses if self is not in quest
+		return qfalse;
+	}
+
 	if (level.gametype < GT_TEAM)
 		return qtrue;
 
