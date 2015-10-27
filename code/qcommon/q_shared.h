@@ -109,6 +109,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+#include <cmath>
+#endif
+
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
 	#define __attribute__(x)
@@ -777,8 +781,10 @@ inline vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
 int Q_log2(int val);
 
 inline qboolean Q_isnan ( float f ) {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	return _isnan (f);
+#elif defined(__cplusplus)
+        return std::isnan (f);
 #else
 	return isnan (f);
 #endif
