@@ -2041,7 +2041,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
 	style = RaceNameToInteger(styleString);
 
 	if (style < 0) {
-		trap->SendServerCommand(ent-g_entities, "print \"Usage: /personalBest <username> <full coursename> <style>.\n\"");
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /best <username> <full coursename> <style>.\n\"");
 		return;
 	}
 

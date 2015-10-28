@@ -719,7 +719,7 @@ void WP_DisruptorProjectileFire( gentity_t *ent, qboolean altFire)
 
 	VectorMA( muzzle, -6, vright, muzzle );
 		
-	missile = CreateMissileInheritance( muzzle, forward, 10000, 10000, ent, altFire);
+	missile = CreateMissileInheritance( muzzle, forward, 10000*g_projectileVelocityScale.value, 10000, ent, altFire);
 
 	missile->classname = "blaster_proj";
 	missile->s.weapon = WP_BLASTER;

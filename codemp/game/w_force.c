@@ -2201,7 +2201,8 @@ int ForceShootDrain( gentity_t *self )
 			//must be within the forward cone
 			VectorSubtract( ent_org, center, dir );
 			VectorNormalize( dir );
-			if ( (dot = DotProduct( dir, forward )) < 0.5 )
+			//if ( (dot = DotProduct( dir, forward )) < 0.5 ) //Loda - change this for drain cone of fire?
+			if ( (dot = DotProduct( dir, forward )) < g_drainCOF.value ) 
 				continue;
 
 			//must be close enough
