@@ -247,6 +247,13 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(WIN32)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonFiles})
+	
+	set(MPEngineAndDedCommonSafeFiles
+		"${SharedDir}/qcommon/safe/files.cpp"
+		"${SharedDir}/qcommon/safe/files.h"
+		)
+	source_group("common/safe" FILES ${MPEngineAndDedCommonSafeFiles})
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonSafeFiles})
 
 	set(MPEngineAndDedG2Files
 		"${MPDir}/ghoul2/G2.h"
