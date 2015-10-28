@@ -212,6 +212,7 @@ cvar_t	*g_saberForceDrains;
 cvar_t	*g_saberForceDrainAmount;
 cvar_t	*g_saberLockSuperBreaks;
 cvar_t	*g_saberLockStyle;
+cvar_t  *g_forceNewPowers;
 
 //for character stats
 cvar_t	*g_char_forcePowerMax; //only applies after re-loading level
@@ -719,6 +720,7 @@ void G_InitCvars( void ) {
 	g_saberForceDrains = gi.cvar("g_saberForceDrains", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberForceDrainAmount = gi.cvar("g_saberForceDrainAmount", "10", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberDamageScale = gi.cvar("g_saberDamageScale", "1", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_forceNewPowers = gi.cvar("g_forceNewPowers", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_char_forcePowerMax = gi.cvar("g_char_forcePowerMax", "100", CVAR_CHEAT | CVAR_SAVEGAME );
 	g_char_forceRegen = gi.cvar("g_char_forceRegen", "100", CVAR_CHEAT | CVAR_SAVEGAME);
 	g_char_parryBonus = gi.cvar("g_char_parryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);

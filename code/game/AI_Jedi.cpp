@@ -96,7 +96,9 @@ extern qboolean G_ClearLineOfSight(const vec3_t point1, const vec3_t point2, int
 extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_saberNewControlScheme;
+extern cvar_t	*g_forceNewPowers;
 extern int parryDebounce[];
+//extern int forcePowerNeeded[]; //FIXME doesn't point to anything
 
 //Locals
 static void Jedi_Aggression( gentity_t *self, int change );
@@ -2137,18 +2139,69 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 	}
 	else
 	{//the player
-		if ( !(self->client->ps.forcePowersActive&(1<<FP_SPEED)) )
-		{//not already in speed
-			if ( !WP_ForcePowerUsable( self, FP_SPEED, 0 ) )
-			{//make sure we have it and have enough force power
+		if (g_forceNewPowers->integer) {
+			if (self->client->ps.forcePowerLevel[FP_SPEED] < 2) {
+				return qfalse;
+			}
+			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED) || ))
+			{//not already in speed
+				if (!(self->client->ps.forcePower >= FORCE_POWER_MAX - 20))
+				{//make sure we have adequate force power
+					return qfalse;
+				}
+			}
+			if (self->client->ps.forcePowersActive&(1 << FP_SPEED))
+			{//in speed so drains are further reduced
+				if (self->client->ps.forcePowersActive&(1 << FP_SEE)) {
+					if (!(self->client->ps.forcePowerLevel[FP_SPEED] == 3
+						&& self->client->ps.forcePowerLevel[FP_SEE] == 3)) {
+						//we have both Sense 3 and Speed 3 active so no drain
+					}
+				}				
+				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3) {
+					if (!(self->client->ps.forcePower > forcePowerNeeded[FP_SPEED] * 0.25))
+					{//make sure we have it and have enough force power
+						return qfalse;
+					}
+				}
+				else if (self->client->ps.forcePowerLevel[FP_SPEED] > 1) {
+					if (!(self->client->ps.forcePower > forcePowerNeeded[FP_SPEED] * 0.5))
+					{//make sure we have it and have enough force power
+						return qfalse;
+					}
+				}				
+			}
+			//check force speed power level to determine if I should be able to dodge it
+			if (self->client->ps.forcePowersActive&(1 << FP_SPEED)
+				&& self->client->ps.forcePowersActive&(1 << FP_SEE)
+				&& self->client->ps.forcePowerLevel[FP_SPEED] == 3
+				&& self->client->ps.forcePowerLevel[FP_SEE] == 3) {
+				//always dodge
+			}
+			else if (self->client->ps.forcePowersActive&(1 << FP_SPEED)
+				&& ucmd.buttons&BUTTON_USE) {
+				//dodge if holding use and in speed
+			}
+			else if (Q_irand(1, 10) > self->client->ps.forcePowerLevel[FP_SPEED]) //auto-dodge
+			{//more likely to fail on lower force speed level
 				return qfalse;
 			}
 		}
-		//check force speed power level to determine if I should be able to dodge it
-		if ( Q_irand( 1, 10 ) > self->client->ps.forcePowerLevel[FP_SPEED] )
-		{//more likely to fail on lower force speed level
-			return qfalse;
+		else {
+			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
+			{//not already in speed
+				if (!WP_ForcePowerUsable(self, FP_SPEED, 0))
+				{//make sure we have it and have enough force power
+					return qfalse;
+				}
+			}
+			//check force speed power level to determine if I should be able to dodge it
+			if (Q_irand(1, 10) > self->client->ps.forcePowerLevel[FP_SPEED])
+			{//more likely to fail on lower force speed level
+				return qfalse;
+			}
 		}
+		
 	}
 
 	if ( hitLoc == HL_NONE )
@@ -2299,7 +2352,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		}
 		else
 		{//player
-			ForceSpeed( self, 500 );
+			ForceSpeed(self, 500);
 		}
 
 		WP_ForcePowerStop( self, FP_GRIP );
@@ -6717,6 +6770,18 @@ static void Jedi_Attack( void )
 							Jedi_EvasionSaber( enemy_movedir, enemy_dist, enemy_dir );
 						}
 						return;
+					}
+				}
+				else {
+					if (NPC->enemy && NPC->enemy->health > 0)
+					{
+						if (NPC->enemy->s.weapon == WP_SABER)
+						{//be sure to continue evasion even if can't pull back saber yet
+							vec3_t	enemy_dir, enemy_movedir, enemy_dest;
+							float	enemy_dist, enemy_movespeed;
+							Jedi_SetEnemyInfo(enemy_dest, enemy_dir, &enemy_dist, enemy_movedir, &enemy_movespeed, 300);
+							Jedi_EvasionSaber(enemy_movedir, enemy_dist, enemy_dir);
+						}
 					}
 				}
 			}

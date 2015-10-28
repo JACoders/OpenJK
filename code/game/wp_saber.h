@@ -161,6 +161,7 @@ extern float forceJumpHeight[];
 extern float forceJumpHeightMax[];
 
 extern float forcePushPullRadius[];
+extern int forcePowerNeeded[]; //new
 
 extern void ForceSpeed( gentity_t *self, int duration = 0 );
 extern float forceSpeedValue[];

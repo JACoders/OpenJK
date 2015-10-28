@@ -62,6 +62,8 @@ extern cvar_t	*g_saberRestrictForce;
 extern cvar_t	*g_saberPickuppableDroppedSabers;
 extern cvar_t	*debug_subdivision;
 
+extern cvar_t	*g_forceNewPowers;
+
 //new character cvars
 extern cvar_t	*g_char_forcePowerMax;
 extern cvar_t	*g_char_forceRegen;
@@ -176,6 +178,8 @@ extern cvar_t	*g_saberLockStyle;
 extern cvar_t	*g_saberLockSuperBreaks;
 extern cvar_t	*g_saberLocksEnabled;
 extern cvar_t	*g_saberDamageScale;
+extern cvar_t	*g_forceNewPowers;
+extern qboolean PM_DodgeAnim(int anim);
 extern int g_crosshairEntNum;
 
 qboolean g_saberNoEffects = qfalse;
@@ -9616,7 +9620,16 @@ void WP_ForceKnockdown(gentity_t *self, gentity_t *pusher, qboolean pull, qboole
 				}
 				else
 				{
-					addTime = Q_irand(-300, 300);
+					if (g_spskill->integer > 1 && self->NPC->rank > RANK_ENSIGN
+						&& (self->client->NPC_class == CLASS_REBORN	|| self->client->NPC_class == CLASS_JEDI)) {
+						addTime = Q_irand(-400, 100);
+					}
+					else if (g_spskill->integer > 1 && self->NPC->aiFlags&NPCAI_BOSS_CHARACTER) {
+						addTime = Q_irand(-700, 0);
+					}
+					else {
+						addTime = Q_irand(-300, 300);
+					}
 				}
 				self->client->ps.legsAnimTimer += addTime;
 				self->client->ps.torsoAnimTimer += addTime;
@@ -13689,7 +13702,34 @@ void WP_ForcePowerDrain(gentity_t *self, forcePowers_t forcePower, int overrideA
 	int	drain = overrideAmt;
 	if (!drain)
 	{
-		drain = forcePowerNeeded[forcePower];
+		if (g_forceNewPowers->integer) {
+			if (self->s.number < MAX_CLIENTS) { //player
+				if (PM_DodgeAnim(self->client->ps.torsoAnim)) { //we're doing a force speed dodge
+					if (self->client->ps.forcePowersActive&(1 << FP_SPEED)) {
+						if (self->client->ps.forcePowersActive&(1 << FP_SEE)
+							&& self->client->ps.forcePowerLevel[FP_SPEED] == 3
+							&& self->client->ps.forcePowerLevel[FP_SEE] == 3)
+							drain = 0; //no drain if using Speed 3 + Sense 3
+					}
+					else {
+						if (self->client->ps.forcePowerLevel[FP_SPEED] == 3) {
+							drain = forcePowerNeeded[forcePower] * 0.5;
+						}
+						else { //force speed 2
+							drain = forcePowerNeeded[forcePower];
+						}
+					}
+				}
+			}
+			else {
+				drain = forcePowerNeeded[forcePower];
+			}
+		}
+		else {
+			drain = forcePowerNeeded[forcePower];
+		}
+		
+		
 	}
 	if (!drain)
 	{

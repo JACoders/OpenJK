@@ -685,7 +685,8 @@ Ghoul2 Insert End
 	int			saberReactivateTime; //time after something deactivates a saber for AI to turn it back on
 	int			breakLimit;
 	int			breakRecoveryTime; //how long left to recover a defense point
-	int			breakCounter; //keeping track of how many strong attacks the defender blocks in a											//a short time period
+	int			breakCounter; //keeping track of how many strong attacks the defender blocks in a short time period
+	qboolean	saberDropped; //did we drop our saber throw?
 
 //Unions for miscellaneous fields used under very specific circumstances
 	union

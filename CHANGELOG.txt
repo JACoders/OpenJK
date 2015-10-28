@@ -1,4 +1,35 @@
 (Dusty's Patch changelog)
+10/9/15 -
+new cvars:
+g_autoRoll - been there for a while, now works 100% correctly, if 1
+default JA behavior, if 0 you have to be holding USE to roll
+g_char_forcePowerMax - requires level restart
+g_char_forceRegen - requires level restart
+g_char_parryBonus -
+g_char_breakParryBonus -
+all these affect the player's stats
+g_saberForceDrains - if 1 special moves drain the amount of FP from the
+next cvar, katas not affected
+g_saberForceDrainAmount - if g_saberForceDrains is 1, special moves
+drain this amount of FP, katas not affected
+g_saberLockSuperBreaks - if 1 default JA behavior of saber locks, if 0
+no super breaks (1-hit KOs) ever happen after saber locks
+g_saberLockStyle - dummy cvar. Later maybe make it so superbreaks happen
+under certain conditions.
+
+Melee changes:
+- Player gets a weaker version of melee katas now based on saber offense level (1 - punches and kicks, 2 - katas, 3 - spin kicks)
+- Player melee katas have less range, must be aimed more precisely, and do not work on certain types of enemies unless g_debugmelee is on
+- Spin kicks and the like are enabled for Saber Offense 3
+- Can do spin kicks on demand by holding Use and pressing the kick button, however this costs Force power
+
+other changes:
+- QMax bugs and crashes fixed (wasn't ported properly from OpenJK)
+- melee force users push back and dodge explosives better now, still
+don't dodge saber throws yet...
+- All sabers kick by default for their alternate attack, +forcefocus must be held to use Saber Throw
+
+-----------------------------------------------------------------------
 Only larger/more important changes recorded here:
 Gameplay mechanics -
 - Force Jump height for all levels increased by 25%
@@ -20,12 +51,14 @@ Game additions -
 
 
 Things to do -
-- Kick-Saber Throw alternate and Kata switch button
-- Saber Offense controlling melee and kicking abilities
+- Kick-Saber Throw alternate and Kata switch button - partial done
+- Saber Offense controlling melee and kicking abilities - done
 - Savegame screenshots working in the loading screen
-- handicap cvar going past 100, separate cvar for player HP and Shields
-- g_autoRoll cvar, g_charForcePoints cvar, g_charForceRegen cvar
-- have r_dynamicglowintensity cvar be archived
+- handicap cvar going past 100, separate cvar for player HP and Shields - partial done
+- g_autoRoll cvar, g_charForcePoints cvar, g_charForceRegen cvar - done
+- have r_dynamicglowintensity cvar be archived - done
+- NPCs surrender bettur
+- Jedi saber throw evasion
 
 -------------------------------------------------------------------------------------------------------------------------
 (OpenJK changelog)
