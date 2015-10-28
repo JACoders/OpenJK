@@ -1447,25 +1447,17 @@ typedef struct level_locals_s {
 	// zyk: id of the portal effect entity at last universe quest mission, so players can go through the teleport
 	int chaos_portal_id;
 
-	// zyk: Guardian Quest. Default 0. If someone uses command to activate this quest, will have value 1
-	// after the guardian is spawned, sets the guardian npc id
+	// zyk: Guardian Quest. Default 0. After the guardian is spawned, guardian_quest will have the guardian npc id
 	int guardian_quest;
-	int guardian_quest_timer;
 
-	// zyk: used to test if the map guardian npc is stuck in the spawn area
-	vec3_t initial_guardian_origin;
-
-	// zyk: if npc is not stuck, set this as qtrue
-	qboolean validated_map_guardian;
+	// zyk: allows guardian of map to get his weapons back
+	int initial_map_guardian_weapons;
 
 	// zyk: default map music. After a boss battle, resets music to this one
 	char default_map_music[128];
 
 	// zyk: timer to reset boss song after battle ends
 	int boss_battle_music_reset_timer;
-
-	// zyk: allows guardian of map to get his weapons back
-	int initial_map_guardian_weapons;
 
 	// zyk: each index has the effect id. The value is the owner of the effect used in Special Powers
 	int special_power_effects[ENTITYNUM_MAX_NORMAL];

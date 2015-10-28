@@ -2188,7 +2188,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			attacker->client->pers.score_modifier = 1;
 		}
 
-		if (level.guardian_quest > 1 && self->NPC && self->s.number == level.guardian_quest)
+		if (level.guardian_quest > 0 && self->NPC && self->s.number == level.guardian_quest)
 		{ // zyk: if player defeated the map guardian npc
 			attacker->client->pers.score_modifier = 2;
 			attacker->client->pers.credits_modifier = 990;
@@ -2219,7 +2219,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		}
 	}
 
-	if (level.guardian_quest > 1 && self->NPC && self->s.number == level.guardian_quest)
+	if (level.guardian_quest > 0 && self->NPC && self->s.number == level.guardian_quest)
 	{ // zyk: map guardian npc defeated by a non-rpg player
 		trap->SendServerCommand( -1, va("chat \"^3Guardian Quest:^7Map Guardian not defeated by rpg player\n\"") );
 		level.guardian_quest = 0;

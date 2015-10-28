@@ -4923,7 +4923,7 @@ void Cmd_NPC_f( gentity_t *ent )
 					return;
 				}
 
-				if (thisent->client && level.validated_map_guardian == qtrue && level.guardian_quest == thisent->s.number)
+				if (thisent->client && level.guardian_quest > 0 && level.guardian_quest == thisent->s.number)
 				{
 					trap->SendServerCommand( ent-g_entities, "print \"NPC team cannot be used in the Guardian of Map.\n\"" );
 					return;

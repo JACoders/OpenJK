@@ -650,8 +650,6 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	// zyk: initializing guardian quest values
 	level.guardian_quest = 0;
-	level.guardian_quest_timer = 0;
-	level.validated_map_guardian = qfalse;
 	level.initial_map_guardian_weapons = 0;
 
 	level.boss_battle_music_reset_timer = 0;
@@ -5698,57 +5696,39 @@ void G_RunFrame( int levelTime ) {
 		}
 	}
 
-	// zyk: Guardian Quest. Randomly spawns an npc in the map
-	if (level.guardian_quest == 1 && level.guardian_quest_timer < level.time)
-	{
-		int random_number = Q_irand(0,level.numConnectedClients);
-
-		if (random_number == level.numConnectedClients)
-			random_number--;
-
-		if (random_number >= 0 && random_number < level.numConnectedClients)
-		{
-			gentity_t *npc_ent = NULL;
-			gentity_t *player_ent = &g_entities[random_number];
-
-			if (player_ent && player_ent->client)
-			{
-				npc_ent = Zyk_NPC_SpawnType("map_guardian",player_ent->client->ps.origin[0],player_ent->client->ps.origin[1],(player_ent->client->ps.origin[2] + 150),0);
-
-				if (npc_ent)
-				{
-					npc_ent->client->pers.hunter_quest_messages = 0;
-					npc_ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-					level.initial_map_guardian_weapons = npc_ent->client->ps.stats[STAT_WEAPONS];
-					VectorCopy(npc_ent->client->ps.origin,level.initial_guardian_origin);
-					level.guardian_quest = npc_ent->s.number;
-				}
-			}
-		}
-
-		level.guardian_quest_timer = level.time + 5000;
-	}
-	else if (level.guardian_quest > 1 && level.guardian_quest_timer < level.time)
+	// zyk: Guardian of Map abilities
+	if (level.guardian_quest > 0)
 	{
 		gentity_t *npc_ent = &g_entities[level.guardian_quest];
 
-		if (level.validated_map_guardian == qfalse && VectorCompare(npc_ent->client->ps.origin,level.initial_guardian_origin) == 1)
-		{
-			level.guardian_quest = 0;
-			zyk_NPC_Kill_f("map_guardian");
-			trap->SendServerCommand( -1, va("print \"Map guardian was stuck, try again later.\n\"") );
-		}
-		else
-		{
-			level.validated_map_guardian = qtrue;
-		}
-
-		if (level.validated_map_guardian == qtrue && npc_ent && npc_ent->client)
+		if (npc_ent && npc_ent->client && npc_ent->health > 0)
 		{		
 			npc_ent->client->ps.stats[STAT_WEAPONS] = level.initial_map_guardian_weapons;
-		}
 
-		level.guardian_quest_timer = level.time + 1000;
+			if (npc_ent->client->pers.hunter_quest_timer < level.time)
+			{
+				if (npc_ent->client->pers.hunter_quest_messages == 0)
+				{
+					outer_area_damage(npc_ent,300,3000,120);
+					trap->SendServerCommand( -1, "chat \"^3Guardian of Map: ^7Outer Area Damage!\"");
+					npc_ent->client->pers.hunter_quest_messages++;
+				}
+				else if (npc_ent->client->pers.hunter_quest_messages == 1)
+				{
+					inner_area_damage(npc_ent,400,120);
+					trap->SendServerCommand( -1, "chat \"^3Guardian of Map: ^7Inner Area Damage!\"");
+					npc_ent->client->pers.hunter_quest_messages++;
+				}
+				else if (npc_ent->client->pers.hunter_quest_messages == 2)
+				{
+					healing_area(npc_ent,5,10000);
+					trap->SendServerCommand( -1, "chat \"^3Guardian of Map: ^7Healing Area!\"");
+					npc_ent->client->pers.hunter_quest_messages = 0;
+				}
+
+				npc_ent->client->pers.hunter_quest_timer = level.time + Q_irand(5000,10000);
+			}
+		}
 	}
 
 	if (level.load_entities_timer != 0 && level.load_entities_timer < level.time)

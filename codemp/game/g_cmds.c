@@ -8836,7 +8836,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "guardian" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, va("print \"\n^3Guardian Quest\n^7Use ^3/guardianquest ^7so the server spawns the map guardian somewhere. If the player defeats it, he gets 5 experience points (Level Up Score) and 1000 credits.\n\n\"") );
+				trap->SendServerCommand( ent-g_entities, va("print \"\n^3Guardian Quest\n^7Use ^3/guardianquest ^7so the server spawns the map guardian somewhere. If the player defeats it, he gets 3 experience points (Level Up Score) and 1000 credits.\n\n\"") );
 			}
 			else if (Q_stricmp( arg1, "commands" ) == 0)
 			{
@@ -11329,16 +11329,19 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 Cmd_GuardianQuest_f
 ==================
 */
+extern gentity_t *Zyk_NPC_SpawnType( char *npc_type, int x, int y, int z, int yaw );
 void Cmd_GuardianQuest_f( gentity_t *ent ) {
 	if (level.guardian_quest == 0)
 	{
-		int j = 0;
+		int i = 0, j = 0, num_spawn_points = 0, chosen_spawn_point = -1;
 		gentity_t *this_ent = NULL;
+		gentity_t *npc_ent = NULL;
+		vec3_t npc_origin, npc_angles;
 
 		// zyk: player cant spawn if someone is fighting a guardian
-		for (j = 0; j < level.maxclients; j++)
+		for (i = 0; i < level.maxclients; i++)
 		{
-			this_ent = &g_entities[j];
+			this_ent = &g_entities[i];
 			if (this_ent && this_ent->client && this_ent->client->sess.amrpgmode == 2 && this_ent->client->pers.guardian_mode > 0)
 			{
 				trap->SendServerCommand( ent-g_entities, "print \"You can't start this quest while a player is fighting a guardian.\n\"" );
@@ -11346,13 +11349,50 @@ void Cmd_GuardianQuest_f( gentity_t *ent ) {
 			}
 		}
 
-		level.guardian_quest_timer = level.time + 3000;
-		level.guardian_quest = 1;
-		trap->SendServerCommand( -1, va("print \"Guardian Quest activated.\n\"") );
+		for (i = 0; i < level.num_entities; i++)
+		{
+			this_ent = &g_entities[i];
+			if (this_ent && Q_stricmp(this_ent->classname, "info_player_deathmatch") == 0)
+			{
+				num_spawn_points++;
+			}
+		}
+
+		chosen_spawn_point = Q_irand(1,num_spawn_points) - 1;
+
+		// zyk: finds the chosen spawn point entity and gets its origin, which will be the guardian origin
+		for (i = 0; i < level.num_entities; i++)
+		{
+			this_ent = &g_entities[i];
+			if (this_ent && Q_stricmp(this_ent->classname, "info_player_deathmatch") == 0)
+			{
+				if (chosen_spawn_point == j)
+				{
+					VectorCopy(this_ent->s.origin, npc_origin);
+					VectorCopy(this_ent->s.angles, npc_angles);
+					break;
+				}
+
+				j++;
+			}
+		}
+
+		npc_ent = Zyk_NPC_SpawnType("map_guardian",(int)npc_origin[0],(int)npc_origin[1],(int)npc_origin[2],(int)npc_angles[1]);
+
+		if (npc_ent)
+		{
+			npc_ent->client->pers.hunter_quest_messages = 0;
+			npc_ent->client->pers.hunter_quest_timer = level.time + 5000;
+			npc_ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
+			level.initial_map_guardian_weapons = npc_ent->client->ps.stats[STAT_WEAPONS];
+			level.guardian_quest = npc_ent->s.number;
+		}
+
+		trap->SendServerCommand( -1, va("chat \"The ^3Guardian Quest ^7is activated!\"") );
 	}
 	else
 	{
-		trap->SendServerCommand( -1, va("print \"Guardian Quest is already active.\n\"") );
+		trap->SendServerCommand( ent->s.number, va("print \"Guardian Quest is already active.\n\"") );
 	}
 }
 
