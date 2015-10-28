@@ -181,6 +181,13 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
+	
+	set(SPEngineSafeCommonFiles
+		"${SharedDir}/qcommon/safe/files.cpp"
+		"${SharedDir}/qcommon/safe/files.h"
+		)
+	source_group("common/safe" FILES ${SPEngineCommonSafeFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonSafeFiles})
 
 
 	# Server files
