@@ -703,19 +703,22 @@ bool CGPGroup::Parse(const char **dataPtr, CTextPool **textPool)
 		token = GetToken(dataPtr, true);
 
 		if (!token[0])
-		{	// end of data - error!
+		{
 			if (mParent)
 			{
+				// end of data - error!
 				return false;
 			}
 			else
 			{
-				break;
+				// top level parse; there was no opening "{", so there should be no closing one either.
+				return true;
 			}
 		}
 		else if (Q_stricmp(token, "}") == 0)
-		{	// ending brace for this group
-			break;
+		{
+			// ending brace for this group
+			return true;
 		}
 
 		strcpy(lastToken, token);
@@ -743,8 +746,6 @@ bool CGPGroup::Parse(const char **dataPtr, CTextPool **textPool)
 			AddPair(lastToken, token, textPool);
 		}
 	}
-
-	return true;
 }
 
 bool CGPGroup::Write(CTextPool **textPool, int depth)
