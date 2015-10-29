@@ -3569,6 +3569,7 @@ extern void immunity_power(gentity_t *ent, int duration);
 extern void ultra_drain(gentity_t *ent, int radius, int damage, int duration);
 extern void magic_shield(gentity_t *ent, int duration);
 extern void healing_area(gentity_t *ent, int damage, int duration);
+extern void lightning_dome(gentity_t *ent, int damage);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3628,98 +3629,6 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (ent->client->pers.cmd.rightmove < 0)
 					{ // zyk: Special Power Left direction
 						use_this_power = ent->client->sess.selected_left_special_power;
-					}
-
-					// zyk: can use the power if he beat a specific light quest boss
-					if (use_this_power == 17 && !(ent->client->pers.defeated_guardians & (1 << 11) || 
-						ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 7 && !(ent->client->pers.defeated_guardians & (1 << 6) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 3 && !(ent->client->pers.defeated_guardians & (1 << 4) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 13 && !(ent->client->pers.defeated_guardians & (1 << 9) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 5 && !(ent->client->pers.defeated_guardians & (1 << 5) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 9 && !(ent->client->pers.defeated_guardians & (1 << 7) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 15 && !(ent->client->pers.defeated_guardians & (1 << 10) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 11 && !(ent->client->pers.defeated_guardians & (1 << 8) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 16 && !(ent->client->pers.defeated_guardians & (1 << 11) || 
-						ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 6 && !(ent->client->pers.defeated_guardians & (1 << 6) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 2 && !(ent->client->pers.defeated_guardians & (1 << 4) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 12 && !(ent->client->pers.defeated_guardians & (1 << 9) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 4 && !(ent->client->pers.defeated_guardians & (1 << 5) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 8 && !(ent->client->pers.defeated_guardians & (1 << 7) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 14 && !(ent->client->pers.defeated_guardians & (1 << 10) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 10 && !(ent->client->pers.defeated_guardians & (1 << 8) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 18 && !(ent->client->pers.defeated_guardians & (1 << 12) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
-					}
-					else if (use_this_power == 19 && !(ent->client->pers.defeated_guardians & (1 << 12) || 
-							 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					{
-						use_this_power = 0;
 					}
 				}
 				else
@@ -4102,6 +4011,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_area_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Area!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 21 && zyk_enable_lightning_dome.integer == 1 && ent->client->pers.magic_power >= zyk_lightning_dome_mp_cost.integer)
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						lightning_dome(ent,120);
+						ent->client->pers.magic_power -= zyk_lightning_dome_mp_cost.integer;
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_lightning_dome_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + zyk_lightning_dome_cooldown.integer;
+						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Lightning Dome!\"", ent->client->pers.netname));
 					}
 				}
 
@@ -8095,6 +8015,13 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 		{
 			ent->client->pers.skill_levels[55]--;
 			ent->client->pers.skillpoints++;
+
+			if (ent->client->pers.rpg_class == 8)
+			{ // zyk: resetting selected powers
+				ent->client->sess.selected_special_power = 1;
+				ent->client->sess.selected_left_special_power = 1;
+				ent->client->sess.selected_right_special_power = 1;
+			}
 		}
 		else
 		{
@@ -9043,7 +8970,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 55)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Force Power: ^7increases the max force power you have. Necessary to allow you to use force powers and force-based skills\n\"") );
 					if (i == 56)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Improvements:\n^7Free Warrior gets more damage and more resistance to damage\nForce User gets more saber damage and force regens faster\nBounty Hunter gets more gun damage, max ammo, credits in battle, jetpack fuel, sentry gun health, and E-Web health\nArmored Soldier gets more resistance to damage\nMonk gets more run speed, melee damage and melee attack speed\nStealth Attacker gets more gun damage and more resistance to electric attacks\nDuelist gets more saber and melee damage and faster force regen\nForce Gunner gets more damage and more resistance to damage\nMagic Master gets more melee damage, spends less jetpack fuel, gets more Magic Power, gives new magic bolt types will have less special power cooldown\nForce Tank gets more resistance to damage\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Improvements:\n^7Free Warrior gets more damage and more resistance to damage\nForce User gets more saber damage and force regens faster\nBounty Hunter gets more gun damage, max ammo, credits in battle, jetpack fuel, sentry gun health, and E-Web health\nArmored Soldier gets more resistance to damage\nMonk gets more run speed, melee damage and melee attack speed\nStealth Attacker gets more gun damage and more resistance to electric attacks\nDuelist gets more saber and melee damage and faster force regen\nForce Gunner gets more damage and more resistance to damage\nMagic Master gets more melee damage, spends less jetpack fuel, gets more Magic Power, gives new magic bolt types, gives new magic powers and has less special power cooldown\nForce Tank gets more resistance to damage\n\"") );
 				}
 				else if (Q_stricmp( arg1, "l" ) == 0)
 				{
@@ -9102,7 +9029,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.rpg_class == 7)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power. MP cost: %d\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power. MP cost: %d\n\"", zyk_ultra_speed_mp_cost.integer, zyk_slow_motion_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 8)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages everyone near you. MP cost: %d\n^3Healing Area: ^7creates an energy area that heals you and your allies and damage enemies. MP cost: %d\nThis class can use any of the Light Quest special powers. Use A, W or D and melee kata to use a power. You can set each of A, W and D powers with the force power keys (usually the F3, F4, F5, F6, F7 and F8 keys)\n\"", zyk_inner_area_mp_cost.integer, zyk_healing_area_mp_cost.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages everyone near you. MP cost: %d\n^3Healing Area: ^7creates an energy area that heals you and your allies and damage enemies. MP cost: %d\n^3Lightning Dome: ^7creates a dome that does lightning damage. MP cost: %d\n\nThis class can use any of the Light Quest special powers. Use A, W or D and melee kata to use a power. You can set each of A, W and D powers with the force power keys (usually the F3, F4, F5, F6, F7 and F8 keys)\n\"", zyk_inner_area_mp_cost.integer, zyk_healing_area_mp_cost.integer, zyk_lightning_dome_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 9)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ice Boulder: ^7creates a boulder that damages and traps enemies nearby for some seconds. Attack with D + special melee to use this power. MP cost: %d\n^3Ice Stalagmite: ^7greatly damages enemies nearby with a stalagmite. Attack with A + special melee to use this power. MP cost: %d\n\"", zyk_ice_boulder_mp_cost.integer, zyk_ice_stalagmite_mp_cost.integer) );
 				}

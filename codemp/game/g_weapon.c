@@ -1477,7 +1477,180 @@ static void WP_FireDEMP2( gentity_t *ent, qboolean altFire )
 	}
 }
 
+void zyk_lightning_dome_radius_damage( gentity_t *ent )
+{
+	float		frac = ( level.time - ent->genericValue5 ) / 800.0f; // / 1600.0f; // synchronize with demp2 effect
+	float		dist, radius, fact;
+	gentity_t	*gent;
+	int			iEntityList[MAX_GENTITIES];
+	gentity_t	*entityList[MAX_GENTITIES];
+	gentity_t	*myOwner = NULL;
+	int			numListedEntities, i, e;
+	vec3_t		mins, maxs;
+	vec3_t		v, dir;
 
+	if (ent->r.ownerNum >= 0 &&
+		ent->r.ownerNum < /*MAX_CLIENTS ... let npc's/shooters use it*/MAX_GENTITIES)
+	{
+		myOwner = &g_entities[ent->r.ownerNum];
+	}
+
+	if (!myOwner || !myOwner->inuse || !myOwner->client)
+	{
+		ent->think = G_FreeEntity;
+		ent->nextthink = level.time;
+		return;
+	}
+
+	frac *= frac * frac; // yes, this is completely ridiculous...but it causes the shell to grow slowly then "explode" at the end
+
+	radius = frac * 200.0f; // 200 is max radius...the model is aprox. 100 units tall...the fx draw code mults. this by 2.
+
+	fact = ent->count*0.6;
+
+	if (fact < 1)
+	{
+		fact = 1;
+	}
+
+	radius *= fact;
+
+	for ( i = 0 ; i < 3 ; i++ )
+	{
+		mins[i] = ent->r.currentOrigin[i] - radius;
+		maxs[i] = ent->r.currentOrigin[i] + radius;
+	}
+
+	numListedEntities = trap->EntitiesInBox( mins, maxs, iEntityList, MAX_GENTITIES );
+
+	i = 0;
+	while (i < numListedEntities)
+	{
+		entityList[i] = &g_entities[iEntityList[i]];
+		i++;
+	}
+
+	for ( e = 0 ; e < numListedEntities ; e++ )
+	{
+		gent = entityList[ e ];
+
+		if ( !gent || !gent->takedamage || !gent->r.contents )
+		{
+			continue;
+		}
+
+		// find the distance from the edge of the bounding box
+		for ( i = 0 ; i < 3 ; i++ )
+		{
+			if ( ent->r.currentOrigin[i] < gent->r.absmin[i] )
+			{
+				v[i] = gent->r.absmin[i] - ent->r.currentOrigin[i];
+			}
+			else if ( ent->r.currentOrigin[i] > gent->r.absmax[i] )
+			{
+				v[i] = ent->r.currentOrigin[i] - gent->r.absmax[i];
+			}
+			else
+			{
+				v[i] = 0;
+			}
+		}
+
+		// shape is an ellipsoid, so cut vertical distance in half`
+		v[2] *= 0.5f;
+
+		dist = VectorLength( v );
+
+		if ( dist >= radius )
+		{
+			// shockwave hasn't hit them yet
+			continue;
+		}
+
+		if (dist+(16*ent->count) < ent->genericValue6)
+		{
+			// shockwave has already hit this thing...
+			continue;
+		}
+
+		VectorCopy( gent->r.currentOrigin, v );
+		VectorSubtract( v, ent->r.currentOrigin, dir);
+
+		// push the center of mass higher than the origin so players get knocked into the air more
+		dir[2] += 12;
+
+		if (gent != myOwner)
+		{
+			G_Damage( gent, myOwner, myOwner, dir, ent->r.currentOrigin, ent->damage, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
+			if ( gent->takedamage
+				&& gent->client )
+			{
+				if ( gent->client->ps.electrifyTime < level.time )
+				{//electrocution effect
+					if (gent->s.eType == ET_NPC && gent->s.NPC_class == CLASS_VEHICLE &&
+						gent->m_pVehicle && (gent->m_pVehicle->m_pVehicleInfo->type == VH_SPEEDER || gent->m_pVehicle->m_pVehicleInfo->type == VH_WALKER))
+					{ //do some extra stuff to speeders/walkers
+						gent->client->ps.electrifyTime = level.time + Q_irand( 3000, 4000 );
+					}
+					else if ( gent->s.NPC_class != CLASS_VEHICLE
+						|| (gent->m_pVehicle && gent->m_pVehicle->m_pVehicleInfo->type != VH_FIGHTER) )
+					{//don't do this to fighters
+						gent->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
+					}
+				}
+				if ( gent->client->ps.powerups[PW_CLOAKED] )
+				{//disable cloak temporarily
+					if (myOwner->client->pers.guardian_mode == gent->client->pers.guardian_mode && 
+						(gent->client->sess.amrpgmode < 2 || gent->client->pers.rpg_class != 5))
+					{ // zyk: Stealth Attacker cloak does not decloak by DEMP2 attack. Also, non-quest players cant decloak quest players in boss battle and vice-versa
+						Jedi_Decloak( gent );
+						gent->client->cloakToggleTime = level.time + Q_irand( 3000, 10000 );
+					}
+				}
+			}
+		}
+	}
+
+	// store the last fraction so that next time around we can test against those things that fall between that last point and where the current shockwave edge is
+	ent->genericValue6 = radius;
+
+	if ( frac < 1.0f )
+	{
+		// shock is still happening so continue letting it expand
+		ent->nextthink = level.time + 50;
+	}
+	else
+	{ //don't just leave the entity around
+		ent->think = G_FreeEntity;
+		ent->nextthink = level.time;
+	}
+}
+
+//---------------------------------------------------------
+void zyk_lightning_dome_detonate( gentity_t *ent )
+//---------------------------------------------------------
+{
+	gentity_t *efEnt;
+
+	G_SetOrigin( ent, ent->r.currentOrigin );
+	if (!ent->pos1[0] && !ent->pos1[1] && !ent->pos1[2])
+	{ //don't play effect with a 0'd out directional vector
+		ent->pos1[1] = 1;
+	}
+	//Let's just save ourself some bandwidth and play both the effect and sphere spawn in 1 event
+	efEnt = G_PlayEffect( EFFECT_EXPLOSION_DEMP2ALT, ent->r.currentOrigin, ent->pos1 );
+
+	if (efEnt)
+	{
+		efEnt->s.weapon = ent->count*2;
+	}
+
+	ent->genericValue5 = level.time;
+	ent->genericValue6 = 0;
+	ent->nextthink = level.time + 50;
+	ent->think = zyk_lightning_dome_radius_damage;
+	ent->s.eType = ET_GENERAL; // make us a missile no longer
+}
 
 /*
 ======================================================================

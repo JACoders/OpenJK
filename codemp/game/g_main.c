@@ -4537,21 +4537,48 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 	}
 }
 
-// zyk: Outer Area Damage
-void outer_area_damage(gentity_t *ent, int min_distance, int max_distance, int damage)
+// zyk: Lightning Dome
+extern void zyk_lightning_dome_detonate( gentity_t *ent );
+void lightning_dome(gentity_t *ent, int damage)
 {
-	int i = 0;
-	int targets_hit = 0;
+	gentity_t *missile;
+	vec3_t origin;
+	trace_t	tr;
 
-	for (i = 0; i < level.num_entities; i++)
-	{
-		gentity_t *player_ent = &g_entities[i];
+	VectorSet(origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] - 22);
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse, &targets_hit) == qtrue)
-		{
-			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
-		}
-	}
+	trap->Trace( &tr, ent->client->ps.origin, NULL, NULL, origin, ent->s.number, MASK_SHOT, qfalse, 0, 0);
+
+	missile = G_Spawn();
+
+	G_SetOrigin(missile, origin);
+	//In SP the impact actually travels as a missile based on the trace fraction, but we're
+	//just going to be instant. -rww
+
+	VectorCopy( tr.plane.normal, missile->pos1 );
+
+	missile->count = 9;
+
+	missile->classname = "demp2_alt_proj";
+	missile->s.weapon = WP_DEMP2;
+
+	missile->think = zyk_lightning_dome_detonate;
+	missile->nextthink = level.time;
+
+	missile->splashDamage = missile->damage = damage;
+	missile->splashMethodOfDeath = missile->methodOfDeath = MOD_DEMP2;
+	missile->splashRadius = 768;
+
+	missile->r.ownerNum = ent->s.number;
+
+	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+	// we don't want it to ever bounce
+	missile->bounceCount = 0;
+
+	if (ent->s.number < level.maxclients)
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/ambience/thunder_close1.mp3"));
 }
 
 // zyk: Ultra Strength. Increases damage and resistance to damage
@@ -5020,7 +5047,15 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
-	else if (selected_power < 1 || selected_power > 20)
+	else if (selected_power == 20 && ent->client->pers.skill_levels[55] < 2)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 3)
+	{
+		return qfalse;
+	}
+	else if (selected_power < 1 || selected_power > 21)
 	{ // zyk: if, for some reason, there is an invalid selected power value, does not allow it
 		return qfalse;
 	}
@@ -5110,6 +5145,10 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Area        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
+	else if (selected_power == 21)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
 }
 
 void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
@@ -5119,7 +5158,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_special_power++;
-			if (ent->client->sess.selected_special_power == 21)
+			if (ent->client->sess.selected_special_power == 22)
 				ent->client->sess.selected_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
@@ -5129,7 +5168,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_special_power--;
 			if (ent->client->sess.selected_special_power == 0)
-				ent->client->sess.selected_special_power = 20;
+				ent->client->sess.selected_special_power = 21;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 
@@ -5143,7 +5182,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_left_special_power++;
-			if (ent->client->sess.selected_left_special_power == 21)
+			if (ent->client->sess.selected_left_special_power == 22)
 				ent->client->sess.selected_left_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
@@ -5153,7 +5192,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_left_special_power--;
 			if (ent->client->sess.selected_left_special_power == 0)
-				ent->client->sess.selected_left_special_power = 20;
+				ent->client->sess.selected_left_special_power = 21;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 
@@ -5167,7 +5206,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_right_special_power++;
-			if (ent->client->sess.selected_right_special_power == 21)
+			if (ent->client->sess.selected_right_special_power == 22)
 				ent->client->sess.selected_right_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
@@ -5177,7 +5216,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_right_special_power--;
 			if (ent->client->sess.selected_right_special_power == 0)
-				ent->client->sess.selected_right_special_power = 20;
+				ent->client->sess.selected_right_special_power = 21;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 
@@ -5709,8 +5748,8 @@ void G_RunFrame( int levelTime ) {
 			{
 				if (npc_ent->client->pers.hunter_quest_messages == 0)
 				{
-					outer_area_damage(npc_ent,300,3000,120);
-					trap->SendServerCommand( -1, "chat \"^3Guardian of Map: ^7Outer Area Damage!\"");
+					lightning_dome(npc_ent,150);
+					trap->SendServerCommand( -1, "chat \"^3Guardian of Map: ^7Lightning Dome!\"");
 					npc_ent->client->pers.hunter_quest_messages++;
 				}
 				else if (npc_ent->client->pers.hunter_quest_messages == 1)
@@ -9505,8 +9544,8 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						outer_area_damage(ent,500,3500,100);
-						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Outer Area Damage!\"");
+						lightning_dome(ent,150);
+						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Lightning Dome!\"");
 						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
 				}
@@ -9766,8 +9805,8 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 18)
 						{
-							outer_area_damage(ent,500,3500,200);
-							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Outer Area Damage!\"");
+							lightning_dome(ent,200);
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Lightning Dome!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 19)
