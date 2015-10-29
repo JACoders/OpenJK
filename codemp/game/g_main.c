@@ -4565,6 +4565,10 @@ void lightning_dome(gentity_t *ent, int damage)
 	missile->think = zyk_lightning_dome_detonate;
 	missile->nextthink = level.time;
 
+	// zyk: Magic Master Unique Skill increases damage
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+		damage *= 2;
+
 	missile->splashDamage = missile->damage = damage;
 	missile->splashMethodOfDeath = missile->methodOfDeath = MOD_DEMP2;
 	missile->splashRadius = 768;
