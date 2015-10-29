@@ -443,7 +443,7 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	char			*data;
 	char			temp[MAX_QPATH];
 	const char		*pfile;
-	char			*bufParse = 0;
+	const char		*bufParse = 0;
 
 	if (bHasCorrectPath)
 	{

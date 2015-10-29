@@ -31,9 +31,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define MAX_TOKEN_SIZE	1024
 static char	token[MAX_TOKEN_SIZE];
 
-static char *GetToken(char **text, bool allowLineBreaks, bool readUntilEOL = false)
+static char *GetToken(const char **text, bool allowLineBreaks, bool readUntilEOL = false)
 {
-	char	*pointer = *text;
+	const char	*pointer = *text;
 	int		length = 0;
 	int		c = 0;
 	bool	foundLineBreak;
@@ -378,7 +378,7 @@ void CGPValue::AddValue(const char *newValue, CTextPool **textPool)
 	}
 }
 
-bool CGPValue::Parse(char **dataPtr, CTextPool **textPool)
+bool CGPValue::Parse(const char **dataPtr, CTextPool **textPool)
 {
 	char		*token;
 	char		*value;
@@ -691,7 +691,7 @@ CGPGroup *CGPGroup::FindSubGroup(const char *name)
 	return(NULL);
 }
 
-bool CGPGroup::Parse(char **dataPtr, CTextPool **textPool)
+bool CGPGroup::Parse(const char **dataPtr, CTextPool **textPool)
 {
 	char		*token;
 	char		lastToken[MAX_TOKEN_SIZE];
@@ -846,7 +846,7 @@ CGenericParser2::~CGenericParser2(void)
 	Clean();
 }
 
-bool CGenericParser2::Parse(char **dataPtr, bool cleanFirst)
+bool CGenericParser2::Parse(const char **dataPtr, bool cleanFirst)
 {
 	CTextPool	*topPool;
 
@@ -890,7 +890,7 @@ bool CGenericParser2::Write(CTextPool *textPool)
 // C++ users should just use the objects as normally and not call these routines below
 //
 // CGenericParser2 (void *) routines
-TGenericParser2 GP_Parse(char **dataPtr, bool cleanFirst)
+TGenericParser2 GP_Parse(const char **dataPtr, bool cleanFirst)
 {
 	CGenericParser2		*parse;
 

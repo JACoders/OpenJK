@@ -150,7 +150,7 @@ public:
 	CGPGroup	*AddGroup(const char *name, CTextPool **textPool = 0);
 	void		AddGroup(CGPGroup *NewGroup);
 	CGPGroup	*FindSubGroup(const char *name);
-	bool		Parse(char **dataPtr, CTextPool **textPool);
+	bool		Parse(const char **dataPtr, CTextPool **textPool);
 	bool		Write(CTextPool **textPool, int depth);
 
 	CGPValue	*FindPair(const char *key);
@@ -169,8 +169,8 @@ public:
 
 	CGPGroup	*GetBaseParseGroup(void) { return &mTopLevel; }
 
-	bool	Parse(char **dataPtr, bool cleanFirst = true);
-	bool	Parse(char *dataPtr, bool cleanFirst = true)
+	bool	Parse(const char **dataPtr, bool cleanFirst = true);
+	bool	Parse(const char *dataPtr, bool cleanFirst = true)
 	{
 		return Parse(&dataPtr, cleanFirst);
 	}
@@ -190,7 +190,7 @@ typedef		void	*TGPGroup;
 typedef		void	*TGPValue;
 
 // CGenericParser2 (void *) routines
-TGenericParser2		GP_Parse(char **dataPtr, bool cleanFirst);
+TGenericParser2		GP_Parse(const char **dataPtr, bool cleanFirst);
 void				GP_Clean(TGenericParser2 GP2);
 void				GP_Delete(TGenericParser2 *GP2);
 TGPGroup			GP_GetBaseParseGroup(TGenericParser2 GP2);

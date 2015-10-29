@@ -442,7 +442,7 @@ static qboolean Music_ParseLeveldata(const char *psLevelName)
 	{
 		char *psStrippedText = StripTrailingWhiteSpaceOnEveryLine(pText);
 		CGenericParser2 Parser;
-		char *psDataPtr = psStrippedText;	// because ptr gets advanced, so we supply a clone that GP can alter
+		const char *psDataPtr = psStrippedText;	// because ptr gets advanced, so we supply a clone that GP can alter
 		if (Parser.Parse(&psDataPtr, true))
 		{
 			CGPGroup *pFileGroup = Parser.GetBaseParseGroup();
