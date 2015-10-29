@@ -124,7 +124,6 @@ private:
 	CGPGroup			*mSubGroups, *mInOrderSubGroups;
 	CGPGroup			*mCurrentSubGroup;
 	CGPGroup			*mParent;
-	bool				mWriteable;
 
 	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList,
 					   CGPObject **lastObject);
@@ -141,7 +140,6 @@ public:
 	void		Clean(void);
 	CGPGroup	*Duplicate(CTextPool **textPool = 0, CGPGroup *initParent = 0);
 
-	void		SetWriteable(const bool writeable) { mWriteable = writeable; }
 	CGPValue	*GetPairs(void) { return mPairs; }
 	CGPValue	*GetInOrderPairs(void) { return mInOrderPairs; }
 	CGPGroup	*GetSubGroups(void) { return mSubGroups; }
@@ -164,19 +162,17 @@ class CGenericParser2
 private:
 	CGPGroup		mTopLevel;
 	CTextPool		*mTextPool;
-	bool			mWriteable;
 
 public:
 	CGenericParser2(void);
 	~CGenericParser2(void);
 
-	void		SetWriteable(const bool writeable) { mWriteable = writeable; }
 	CGPGroup	*GetBaseParseGroup(void) { return &mTopLevel; }
 
-	bool	Parse(char **dataPtr, bool cleanFirst = true, bool writeable = false);
-	bool	Parse(char *dataPtr, bool cleanFirst = true, bool writeable = false)
+	bool	Parse(char **dataPtr, bool cleanFirst = true);
+	bool	Parse(char *dataPtr, bool cleanFirst = true)
 	{
-		return Parse(&dataPtr, cleanFirst, writeable);
+		return Parse(&dataPtr, cleanFirst);
 	}
 	void	Clean(void);
 
@@ -194,7 +190,7 @@ typedef		void	*TGPGroup;
 typedef		void	*TGPValue;
 
 // CGenericParser2 (void *) routines
-TGenericParser2		GP_Parse(char **dataPtr, bool cleanFirst, bool writeable);
+TGenericParser2		GP_Parse(char **dataPtr, bool cleanFirst);
 void				GP_Clean(TGenericParser2 GP2);
 void				GP_Delete(TGenericParser2 *GP2);
 TGPGroup			GP_GetBaseParseGroup(TGenericParser2 GP2);
