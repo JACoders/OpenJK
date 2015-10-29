@@ -717,8 +717,16 @@ bool CGPGroup::Parse(const char **dataPtr, CTextPool **textPool)
 		}
 		else if (Q_stricmp(token, "}") == 0)
 		{
-			// ending brace for this group
-			return true;
+			if( mParent )
+			{
+				// ending brace for this group
+				return true;
+			}
+			else
+			{
+				// top-level group; there was no opening "{" so there should be no closing one, either.
+				return false;
+			}
 		}
 
 		strcpy(lastToken, token);
