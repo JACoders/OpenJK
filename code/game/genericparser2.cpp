@@ -482,8 +482,7 @@ CGPGroup::CGPGroup(const char *initName, CGPGroup *initParent) :
 	mSubGroups(0),
 	mInOrderSubGroups(0),
 	mCurrentSubGroup(0),
-	mParent(initParent),
-	mWriteable(false)
+	mParent(initParent)
 {
 }
 
@@ -543,7 +542,6 @@ void CGPGroup::Clean(void)
 	mPairs = mInOrderPairs = mCurrentPair = 0;
 	mSubGroups = mInOrderSubGroups = mCurrentSubGroup = 0;
 	mParent = 0;
-	mWriteable = false;
 }
 
 CGPGroup *CGPGroup::Duplicate(CTextPool **textPool, CGPGroup *initParent)
@@ -727,7 +725,6 @@ bool CGPGroup::Parse(char **dataPtr, CTextPool **textPool)
 		if (Q_stricmp(token, "{") == 0)
 		{	// new sub group
 			newSubGroup = AddGroup(lastToken, textPool);
-			newSubGroup->SetWriteable(mWriteable);
 			if (!newSubGroup->Parse(dataPtr, textPool))
 			{
 				return false;
@@ -840,8 +837,7 @@ const char *CGPGroup::FindPairValue(const char *key, const char *defaultVal)
 
 
 CGenericParser2::CGenericParser2(void) :
-	mTextPool(0),
-	mWriteable(false)
+	mTextPool(0)
 {
 }
 
@@ -850,7 +846,7 @@ CGenericParser2::~CGenericParser2(void)
 	Clean();
 }
 
-bool CGenericParser2::Parse(char **dataPtr, bool cleanFirst, bool writeable)
+bool CGenericParser2::Parse(char **dataPtr, bool cleanFirst)
 {
 	CTextPool	*topPool;
 
@@ -864,8 +860,6 @@ bool CGenericParser2::Parse(char **dataPtr, bool cleanFirst, bool writeable)
 		mTextPool = new CTextPool;
 	}
 
-	SetWriteable(writeable);
-	mTopLevel.SetWriteable(writeable);
 	topPool = mTextPool;
 	bool ret = mTopLevel.Parse(dataPtr, &topPool);
 	return ret;
@@ -896,12 +890,12 @@ bool CGenericParser2::Write(CTextPool *textPool)
 // C++ users should just use the objects as normally and not call these routines below
 //
 // CGenericParser2 (void *) routines
-TGenericParser2 GP_Parse(char **dataPtr, bool cleanFirst, bool writeable)
+TGenericParser2 GP_Parse(char **dataPtr, bool cleanFirst)
 {
 	CGenericParser2		*parse;
 
 	parse = new CGenericParser2;
-	if (parse->Parse(dataPtr, cleanFirst, writeable))
+	if (parse->Parse(dataPtr, cleanFirst))
 	{
 		return parse;
 	}
