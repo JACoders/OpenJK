@@ -2576,7 +2576,4 @@ typedef enum
 
 } ForceReload_e;
 
-
-#include "../game/genericparser2.h"
-
 #endif	// __Q_SHARED_H
