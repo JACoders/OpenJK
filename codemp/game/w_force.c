@@ -2120,6 +2120,8 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 	}
 }
 
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);//loda
+
 int ForceShootDrain( gentity_t *self )
 {
 	trace_t	tr;
@@ -2136,13 +2138,21 @@ int ForceShootDrain( gentity_t *self )
 
 	if ( self->client->ps.fd.forcePowerLevel[FP_DRAIN] > FORCE_LEVEL_2 )
 	{//arc
-		vec3_t	center, mins, maxs, dir, ent_org, size, v;
-		float	radius = MAX_DRAIN_DISTANCE, dot, dist;
+		vec3_t	center, mins, maxs, dir, ent_org, size, v, behind;
+		float	radius = MAX_DRAIN_DISTANCE, dot, dist, cof;
 		gentity_t	*entityList[MAX_GENTITIES];
 		int			iEntityList[MAX_GENTITIES];
 		int		e, numListedEntities, i;
 
 		VectorCopy( self->client->ps.origin, center );
+		VectorCopy( self->client->ps.origin, behind );
+
+		if (g_fixDrainCOF.integer) {
+			VectorMA( behind, -16, forward, behind ); //Push it behind us a bit to stop problem of missing drains when we are right up against someone
+			center[2] += 8; //So the drain origin point was actually lower than the comparison point on the target, meaning the min/max drain offset viewangles were not equal.
+			behind[2] += 8;
+		}
+
 		for ( i = 0 ; i < 3 ; i++ ) 
 		{
 			mins[i] = center[i] - radius;
@@ -2197,13 +2207,36 @@ int ForceShootDrain( gentity_t *self )
 			VectorSubtract( traceEnt->r.absmax, traceEnt->r.absmin, size );
 			VectorMA( traceEnt->r.absmin, 0.5, size, ent_org );
 
+			if (g_fixDrainCOF.integer) {
+				cof = 0.1;
+				VectorSubtract( ent_org, behind, dir );
+				VectorNormalize( dir );
+				if ( (dot = DotProduct( dir, forward )) < 0.825 ) {//test if they are infront of us
+					if (g_fixDrainCOF.integer > 1)
+						trap->SendServerCommand( -1, "print \"thing failed at behind check\n\"" );
+					continue;
+				}
+			}
+			else {
+				cof = 0.5;
+			}
+
 			//see if they're in front of me
 			//must be within the forward cone
 			VectorSubtract( ent_org, center, dir );
 			VectorNormalize( dir );
-			//if ( (dot = DotProduct( dir, forward )) < 0.5 ) //Loda - change this for drain cone of fire?
-			if ( (dot = DotProduct( dir, forward )) < g_drainCOF.value ) 
+			if ( (dot = DotProduct( dir, forward )) < cof ) { //test if they are in cone
+				if (g_fixDrainCOF.integer > 1)
+					trap->SendServerCommand( -1, "print \"thing failed at center check\n\"" );
 				continue;
+			}
+
+			//
+			if (g_fixDrainCOF.integer > 1) {
+				G_TestLine(ent_org, center, 0x0000ff, 2000); //check trace.fraction? ehh trace.startsolid or whatever?
+				G_TestLine(ent_org, behind, 0x0000ff, 2000); //check trace.fraction? ehh trace.startsolid or whatever?
+			}
+			//
 
 			//must be close enough
 			dist = VectorLength( v );
