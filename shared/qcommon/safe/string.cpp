@@ -1,4 +1,5 @@
 #include "string.h"
+#include "sscanf.h"
 
 #include <cctype>
 #include <algorithm>
@@ -40,43 +41,15 @@ namespace Q
 
 	int svtoi( const gsl::cstring_view& view )
 	{
-		gsl::cstring_view::iterator end = view.end();
-		// skip whitespace
-		gsl::cstring_view::iterator it = std::find_if_not<gsl::cstring_view::iterator, int( *)( int )>( view.begin(), end, std::isspace );
-		if( it == end )
-		{
-			return 0;
-		}
-		bool negate = false;
-		if( *it == '+' )
-		{
-			++it;
-		}
-		else if( *it == '-' )
-		{
-			negate = true;
-			++it;
-		}
 		int result = 0;
-		while( it != end )
-		{
-			if( *it < '0' || *it > '9' )
-			{
-				break;
-			}
-			const int digit = *it - '0';
-			result *= 10;
-			// not negating after the fact so we don't lose MIN_INT
-			if( negate )
-			{
-				result -= digit;
-			}
-			else
-			{
-				result += digit;
-			}
-			++it;
-		}
+		Q::sscanf( view, result );
+		return result;
+	}
+
+	float svtof( const gsl::cstring_view& view )
+	{
+		float result = 0.f;
+		Q::sscanf( view, result );
 		return result;
 	}
 }
