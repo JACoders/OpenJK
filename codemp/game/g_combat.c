@@ -6409,24 +6409,27 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						if (quest_power_user->client->sess.amrpgmode == 2 && quest_power_user->client->pers.rpg_class == 8 && 
 							quest_power_user->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 						{ // zyk: Magic Master Unique Skill increases amount of health recovered
-							if ((ent->health + 2) < ent->client->ps.stats[STAT_MAX_HEALTH])
-								ent->health += 2;
+							if ((ent->health + 3) < ent->client->ps.stats[STAT_MAX_HEALTH])
+								ent->health += 3;
 							else
 								ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 
 							if (ent->health == ent->client->ps.stats[STAT_MAX_HEALTH])
 							{ // zyk: Unique Skill makes it possible to heal shield too, if hp is full
-								if (!ent->NPC && ((ent->client->sess.amrpgmode < 2 && 
-									 ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH]) || 
+								if (!ent->NPC && 
+									((ent->client->sess.amrpgmode < 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH]) || 
 									(ent->client->sess.amrpgmode == 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)))
 								{
 									ent->client->ps.stats[STAT_ARMOR]++;
 								}
 							}
 						}
-						else if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
+						else
 						{
-							ent->health++;
+							if ((ent->health + 2) < ent->client->ps.stats[STAT_MAX_HEALTH])
+								ent->health += 2;
+							else
+								ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 						}
 					}
 				}
