@@ -7786,6 +7786,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, and target can turn on/off lightsaber in grip\n");
 		else if (g_fixSaberInGrip.integer > 2)
 			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, target can turn on/off lightsaber in grip, and target can switch weapons in grip\n");
+		if (g_tweakForce.integer & FT_FIXDRAINCOF)
+			Q_strcat(buf, sizeof(buf), "   ^5Force drain cone of fire is narrower, matching that of the visual effect\n");
 		if (g_tweakForce.integer & FT_PUSHPULLKD)
 			Q_strcat(buf, sizeof(buf), "   ^5Knocked down players are affected by push/pull\n");
 		if ((!(g_forcePowerDisable.integer & FP_PULL) || !(g_forcePowerDisable.integer & FP_PUSH)) && g_unlagged.integer & UNLAGGED_PUSHPULL)

@@ -2147,7 +2147,7 @@ int ForceShootDrain( gentity_t *self )
 		VectorCopy( self->client->ps.origin, center );
 		VectorCopy( self->client->ps.origin, behind );
 
-		if (g_fixDrainCOF.integer) {
+		if (g_tweakForce.integer & FT_FIXDRAINCOF) {
 			VectorMA( behind, -16, forward, behind ); //Push it behind us a bit to stop problem of missing drains when we are right up against someone
 			center[2] += 8; //So the drain origin point was actually lower than the comparison point on the target, meaning the min/max drain offset viewangles were not equal.
 			behind[2] += 8;
@@ -2207,13 +2207,11 @@ int ForceShootDrain( gentity_t *self )
 			VectorSubtract( traceEnt->r.absmax, traceEnt->r.absmin, size );
 			VectorMA( traceEnt->r.absmin, 0.5, size, ent_org );
 
-			if (g_fixDrainCOF.integer) {
+			if (g_tweakForce.integer & FT_FIXDRAINCOF) {
 				cof = 0.1;
 				VectorSubtract( ent_org, behind, dir );
 				VectorNormalize( dir );
-				if ( (dot = DotProduct( dir, forward )) < 0.825 ) {//test if they are infront of us
-					if (g_fixDrainCOF.integer > 1)
-						trap->SendServerCommand( -1, "print \"thing failed at behind check\n\"" );
+				if ( (dot = DotProduct( dir, forward )) < 0.8 ) {//test if they are infront of us
 					continue;
 				}
 			}
@@ -2226,17 +2224,8 @@ int ForceShootDrain( gentity_t *self )
 			VectorSubtract( ent_org, center, dir );
 			VectorNormalize( dir );
 			if ( (dot = DotProduct( dir, forward )) < cof ) { //test if they are in cone
-				if (g_fixDrainCOF.integer > 1)
-					trap->SendServerCommand( -1, "print \"thing failed at center check\n\"" );
 				continue;
 			}
-
-			//
-			if (g_fixDrainCOF.integer > 1) {
-				G_TestLine(ent_org, center, 0x0000ff, 2000); //check trace.fraction? ehh trace.startsolid or whatever?
-				G_TestLine(ent_org, behind, 0x0000ff, 2000); //check trace.fraction? ehh trace.startsolid or whatever?
-			}
-			//
 
 			//must be close enough
 			dist = VectorLength( v );

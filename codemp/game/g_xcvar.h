@@ -317,8 +317,6 @@ XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfal
 XCVAR_DEF( g_fixFlipKick,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
-XCVAR_DEF( g_fixDrainCOF,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-
 #if _retardedsabertest
 XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 #endif
