@@ -3789,7 +3789,7 @@ qboolean TryGrapple(gentity_t *ent)
 					if (use_this_power == 1 && zyk_enable_inner_area.integer == 1 && ent->client->pers.magic_power >= zyk_inner_area_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						inner_area_damage(ent,400,90);
+						inner_area_damage(ent,400,80);
 						ent->client->pers.magic_power -= zyk_inner_area_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
@@ -4015,7 +4015,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 21 && zyk_enable_lightning_dome.integer == 1 && ent->client->pers.magic_power >= zyk_lightning_dome_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						lightning_dome(ent,120);
+						lightning_dome(ent,100);
 						ent->client->pers.magic_power -= zyk_lightning_dome_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_lightning_dome_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
