@@ -5752,7 +5752,7 @@ void G_RunFrame( int levelTime ) {
 			{
 				if (npc_ent->client->pers.hunter_quest_messages == 0)
 				{
-					lightning_dome(npc_ent,100);
+					lightning_dome(npc_ent,90);
 					trap->SendServerCommand( -1, "chat \"^3Guardian of Map: ^7Lightning Dome!\"");
 					npc_ent->client->pers.hunter_quest_messages++;
 				}
@@ -9548,7 +9548,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						lightning_dome(ent,100);
+						lightning_dome(ent,90);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Lightning Dome!\"");
 						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
@@ -9809,7 +9809,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 18)
 						{
-							lightning_dome(ent,150);
+							lightning_dome(ent,140);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Lightning Dome!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
