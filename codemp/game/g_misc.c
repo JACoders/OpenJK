@@ -360,8 +360,11 @@ void SP_misc_model_breakable( gentity_t *ent )
 	}
 	else
 	{
-		G_SpawnVector("mins", "-16 -16 -16", ent->r.mins);
-		G_SpawnVector("maxs", "16 16 16", ent->r.maxs);
+		if (!ent->r.mins[0] && !!ent->r.mins[1] && !ent->r.mins[2] && !ent->r.maxs[0] && !ent->r.maxs[1] && !ent->r.maxs[2])
+		{
+			G_SpawnVector("mins", "-16 -16 -16", ent->r.mins);
+			G_SpawnVector("maxs", "16 16 16", ent->r.maxs);
+		}
 	}
 
 	if (!bHasScale)
