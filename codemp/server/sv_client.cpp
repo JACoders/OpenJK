@@ -1503,6 +1503,10 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	for ( i = 0 ; i < cmdCount ; i++ ) {
 		cmd = &cmds[i];
 		MSG_ReadDeltaUsercmdKey( msg, key, oldcmd, cmd );
+		if ( sv_legacyFixForceSelect->integer && (cmd->forcesel == FP_LEVITATION || cmd->forcesel >= NUM_FORCE_POWERS) )
+		{
+			cmd->forcesel = 0xFFu;
+		}
 		oldcmd = cmd;
 	}
 
