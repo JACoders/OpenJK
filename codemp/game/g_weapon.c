@@ -1581,6 +1581,11 @@ void zyk_lightning_dome_radius_damage( gentity_t *ent )
 
 		if (gent != myOwner)
 		{
+			if (gent->client && gent->client->pers.quest_power_status & (1 << 0))
+			{ // zyk: Immunity Power users cannot be hit by Lightning Dome
+				continue;
+			}
+
 			G_Damage( gent, myOwner, myOwner, dir, ent->r.currentOrigin, ent->damage, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
 			if ( gent->takedamage
 				&& gent->client )
