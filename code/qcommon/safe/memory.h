@@ -68,6 +68,12 @@ namespace Zone
 		{
 			return false;
 		}
+		// I think the standard guarantees automatic generation of this, but MSVC can't handle it.
+		template< typename U >
+		struct rebind
+		{
+			using other = Allocator< U, tag >;
+		};
 	};
 
 	/**
