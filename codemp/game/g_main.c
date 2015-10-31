@@ -4308,7 +4308,14 @@ qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target
 				is_ally = 1;
 			}
 
-			if (is_ally == 0 && !(target->client->pers.quest_power_status & (1 << 0)) && attacker->client->pers.guardian_mode == target->client->pers.guardian_mode)
+			if (is_ally == 0 && !(target->client->pers.quest_power_status & (1 << 0)) && 
+				(attacker->client->pers.guardian_mode == target->client->pers.guardian_mode || 
+				  ((attacker->client->pers.guardian_mode == 12 || attacker->client->pers.guardian_mode == 13) && target->NPC && 
+					(Q_stricmp(target->NPC_type, "guardian_of_universe") || Q_stricmp(target->NPC_type, "quest_reborn") || 
+					Q_stricmp(target->NPC_type, "quest_reborn_blue") || Q_stricmp(target->NPC_type, "quest_reborn_red") || 
+					Q_stricmp(target->NPC_type, "quest_reborn_boss"))
+				  )
+				))
 			{ // zyk: target cannot be attacker ally and cannot be using Immunity Power. Also, non-quest players cannot hit quest players and his allies or bosses and vice-versa
 				(*targets_hit)++;
 
