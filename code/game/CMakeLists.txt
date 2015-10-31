@@ -26,6 +26,7 @@ set(SPGameIncludeDirectories
 	${SharedDir}
 	${SPDir}
 	"${SPDir}/game"
+	"${OpenJKLibDir}/gsl-lite/include"
 	)
 
 if(WIN32)

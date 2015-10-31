@@ -41,7 +41,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineIncludeDirectories
 		${SPEngineIncludeDirectories}
 		${SharedDir}
-		${SPDir})
+		${SPDir}
+		"${OpenJKLibDir}/gsl-lite/include")
 
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
