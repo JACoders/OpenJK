@@ -24,7 +24,7 @@ endif(NOT InOpenJK)
 set(MPGameIncludeDirectories
 	"${MPDir}"
 	"${SharedDir}"
-	"${OpenJKLibDir}/gsl-lite/include"
+	"${GSLIncludeDirectory}"
 	)
 if(WIN32)
 	set(MPGameLibraries "winmm")

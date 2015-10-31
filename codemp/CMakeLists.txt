@@ -52,7 +52,7 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPBotlibIncludeDirectories
 		${SharedDir}
 		${MPDir}
-		"${OpenJKLibDir}/gsl-lite/include"
+		"${GSLIncludeDirectory}"
 		)
 	set(MPBotlibBotlibFiles
 		"${MPDir}/botlib/aasfile.h"

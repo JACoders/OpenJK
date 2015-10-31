@@ -26,7 +26,7 @@ set(JK2SPGameDefines ${SharedDefines} "JK2_MODE")
 set(JK2SPGameIncludeDirectories
 	"${JK2SPDir}/game"
 	"${SharedDir}"
-	"${OpenJKLibDir}/gsl-lite/include"
+	"${GSLIncludeDirectory}"
 	)
 if(WIN32)
 	set(JK2SPGameLibraries "winmm")

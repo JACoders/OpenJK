@@ -151,6 +151,7 @@ set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
 set(JK2SPDir "${CMAKE_SOURCE_DIR}/codeJK2")
 set(SharedDir ${CMAKE_SOURCE_DIR}/shared)
 set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
+set(GSLIncludeDirectory "${OpenJKLibDir}/gsl-lite/include")
 
 include(InstallConfig)
 
