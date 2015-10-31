@@ -56,7 +56,7 @@ namespace Zone
 		}
 		void deallocate( T* mem, std::size_t n ) const noexcept
 		{
-			ZoneDeleter{}( mem );
+			Deleter{}( mem );
 		}
 		template< typename T2, memtag_t tag2 >
 		bool operator==( const Allocator< T2, tag2 >& ) const noexcept
