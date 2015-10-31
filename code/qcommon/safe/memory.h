@@ -64,7 +64,7 @@ namespace Zone
 			return true; // free works regardless of size and tag
 		}
 		template< typename T2, memtag_t tag2 >
-		bool operator==( const Allocator< T2, tag2 >& ) const noexcept
+		bool operator!=( const Allocator< T2, tag2 >& ) const noexcept
 		{
 			return false;
 		}
