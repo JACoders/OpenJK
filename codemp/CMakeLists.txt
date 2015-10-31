@@ -49,7 +49,11 @@ if(BuildMPEngine OR BuildMPDed)
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
 	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
-	set(MPBotlibIncludeDirectories ${SharedDir} ${MPDir})
+	set(MPBotlibIncludeDirectories
+		${SharedDir}
+		${MPDir}
+		"${OpenJKLibDir}/gsl-lite/include"
+		)
 	set(MPBotlibBotlibFiles
 		"${MPDir}/botlib/aasfile.h"
 		"${MPDir}/botlib/be_aas.h"
@@ -135,6 +139,12 @@ if(BuildMPEngine OR BuildMPDed)
 		)
 	source_group("common" FILES ${MPBotlibCommonFiles})
 	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibCommonFiles})
+
+	set(MPBotlibCommonSafeFiles
+		"${SharedDir}/qcommon/safe/gsl.h"
+		)
+	source_group("common/safe" FILES ${MPBotlibCommonSafeFiles})
+	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibCommonSafeFiles})
 
 	set(MPBotlibServerFiles
 		"${MPDir}/server/server.h"
@@ -251,6 +261,7 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPEngineAndDedCommonSafeFiles
 		"${SharedDir}/qcommon/safe/files.cpp"
 		"${SharedDir}/qcommon/safe/files.h"
+		"${SharedDir}/qcommon/safe/gsl.h"
 		)
 	source_group("common/safe" FILES ${MPEngineAndDedCommonSafeFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonSafeFiles})

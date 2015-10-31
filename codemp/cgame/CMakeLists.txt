@@ -21,7 +21,11 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPCGameIncludeDirectories "${MPDir}")
+set(MPCGameIncludeDirectories
+	"${MPDir}"
+	"${SharedDir}"
+	"${OpenJKLibDir}/gsl-lite/include"
+	)
 if(WIN32)
 	set(MPCGameLibraries "odbc32" "odbccp32") # what are these even?
 endif(WIN32)
@@ -107,6 +111,12 @@ set(MPCGameCommonFiles
 	)
 source_group("common" FILES ${MPCGameCommonFiles})
 set(MPCGameFiles ${MPCGameFiles} ${MPCGameCommonFiles})
+
+set(MPCGameCommonSafeFiles
+	"${SharedDir}/qcommon/safe/gsl.h"
+	)
+source_group("common/safe" FILES ${MPCGameCommonSafeFiles})
+set(MPCGameFiles ${MPCGameFiles} ${MPCGameCommonSafeFiles})
 
 set(MPCGameUiFiles
 	"${MPDir}/ui/ui_shared.c"
