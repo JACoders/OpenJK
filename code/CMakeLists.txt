@@ -185,6 +185,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineCommonSafeFiles
 		"${SharedDir}/qcommon/safe/files.cpp"
 		"${SharedDir}/qcommon/safe/files.h"
+		"${SPDir}/qcommon/safe/memory.h"
 		)
 	source_group("common/safe" FILES ${SPEngineCommonSafeFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonSafeFiles})
