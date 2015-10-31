@@ -264,6 +264,12 @@ set(SPGameCommonFiles
 source_group("common" FILES ${SPGameCommonFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
 
+set(SPGameCommonSafeFiles
+	"${SPDir}/qcommon/safe/memory.h"
+	)
+source_group("common/safe" FILES ${SPGameCommonSafeFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameCommonSafeFiles})
+
 set(SPGameIcarusFiles
 	"${SPDir}/icarus/BlockStream.cpp"
 	"${SPDir}/icarus/IcarusImplementation.cpp"
