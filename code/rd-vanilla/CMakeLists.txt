@@ -28,7 +28,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		${SharedDir}
 		${SPRDVanillaRendererIncludeDirectories}
 		"${SPDir}/rd-vanilla"
-		"${OpenJKLibDir}/gsl-lite/include"
+		"${GSLIncludeDirectory}"
 		)
 
 	# Modular Renderer crap (let's hope this works..)

@@ -29,7 +29,7 @@ set(MPVanillaRendererIncludeDirectories
 	${SharedDir}
 	${MPDir}
 	"${MPDir}/rd-vanilla"
-	"${OpenJKLibDir}/gsl-lite/include"
+	"${GSLIncludeDirectory}"
 	)
 
 set(MPVanillaRendererFiles

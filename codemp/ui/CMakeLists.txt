@@ -24,7 +24,7 @@ endif(NOT InOpenJK)
 set(MPUIIncludeDirectories
 	"${MPDir}"
 	"${SharedDir}"
-	"${OpenJKLibDir}/gsl-lite/include"
+	"${GSLIncludeDirectory}"
 	)
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
