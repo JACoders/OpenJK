@@ -220,11 +220,10 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 ) {
 		return qfalse;
 	}
 
-	/* zyk: now this function works in other gamemodes
-	if ( level.gametype < GT_TEAM ) {
+	// zyk: FFA can use this function too
+	if ( level.gametype < GT_TEAM && level.gametype != GT_FFA) {
 		return qfalse;
 	}
-	*/
 
 	if (ent1->s.eType == ET_NPC &&
 		ent1->s.NPC_class == CLASS_VEHICLE &&
