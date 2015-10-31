@@ -71,7 +71,7 @@ namespace FS
 		}
 		std::size_t size() const noexcept
 		{
-			return static_cast< std::size_t >( _end - _begin );
+			return static_cast< std::size_t >( _end - begin() );
 		}
 		
 	private:
