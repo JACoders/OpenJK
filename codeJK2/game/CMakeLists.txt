@@ -23,7 +23,11 @@ endif(NOT InOpenJK)
 
 set(JK2SPGameDefines ${SharedDefines} "JK2_MODE")
 
-set(JK2SPGameIncludeDirectories "${JK2SPDir}/game")
+set(JK2SPGameIncludeDirectories
+	"${JK2SPDir}/game"
+	"${SharedDir}"
+	"${OpenJKLibDir}/gsl-lite/include"
+	)
 if(WIN32)
 	set(JK2SPGameLibraries "winmm")
 endif(WIN32)
@@ -232,6 +236,13 @@ set(JK2SPGameCommonFiles
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
+
+set(JK2SPGameCommonSafeFiles
+	#We only have JKA qcommon files now.
+	"${SharedDir}/qcommon/safe/gsl.h"
+	)
+source_group("common/safe" FILES ${JK2SPGameCommonSafeFiles})
+set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonSafeFiles})
 
 set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/BlockStream.cpp"

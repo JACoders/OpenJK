@@ -266,6 +266,7 @@ source_group("common" FILES ${SPGameCommonFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
 
 set(SPGameCommonSafeFiles
+	"${SharedDir}/qcommon/safe/gsl.h"
 	"${SPDir}/qcommon/safe/memory.h"
 	)
 source_group("common/safe" FILES ${SPGameCommonSafeFiles})
