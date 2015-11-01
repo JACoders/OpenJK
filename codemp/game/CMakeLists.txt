@@ -21,7 +21,11 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPGameIncludeDirectories "${MPDir}")
+set(MPGameIncludeDirectories
+	"${MPDir}"
+	"${SharedDir}"
+	"${GSLIncludeDirectory}"
+	)
 if(WIN32)
 	set(MPGameLibraries "winmm")
 endif(WIN32)
@@ -150,6 +154,12 @@ set(MPGameCommonFiles
 	)
 source_group("common" FILES ${MPGameCommonFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCommonFiles})
+
+set(MPGameCommonSafeFiles
+	"${SharedDir}/qcommon/safe/gsl.h"
+	)
+source_group("common/safe" FILES ${MPGameCommonSafeFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameCommonSafeFiles})
 
 set(MPGameCgameFiles
 	"${MPDir}/cgame/animtable.h"

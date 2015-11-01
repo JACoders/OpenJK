@@ -29,6 +29,7 @@ set(MPVanillaRendererIncludeDirectories
 	${SharedDir}
 	${MPDir}
 	"${MPDir}/rd-vanilla"
+	"${GSLIncludeDirectory}"
 	)
 
 set(MPVanillaRendererFiles
@@ -101,6 +102,12 @@ set(MPVanillaRendererCommonFiles
 	"${MPDir}/qcommon/q_shared.cpp")
 source_group("common" FILES ${MPVanillaRendererCommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonFiles})
+
+set(MPVanillaRendererCommonSafeFiles
+	"${SharedDir}/qcommon/safe/gsl.h"
+	)
+source_group("common/safe" FILES ${MPVanillaRendererCommonSafeFiles})
+set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonSafeFiles})
 
 # Transparently use either bundled or system libjpeg.
 list(APPEND MPVanillaRendererIncludeDirectories ${JPEG_INCLUDE_DIR})

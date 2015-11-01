@@ -41,7 +41,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineIncludeDirectories
 		${SPEngineIncludeDirectories}
 		${SharedDir}
-		${SPDir})
+		${SPDir}
+		"${GSLIncludeDirectory}")
 
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
@@ -185,6 +186,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineCommonSafeFiles
 		"${SharedDir}/qcommon/safe/files.cpp"
 		"${SharedDir}/qcommon/safe/files.h"
+		"${SharedDir}/qcommon/safe/gsl.h"
 		"${SPDir}/qcommon/safe/memory.h"
 		)
 	source_group("common/safe" FILES ${SPEngineCommonSafeFiles})
