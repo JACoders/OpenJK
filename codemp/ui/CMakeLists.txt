@@ -21,7 +21,11 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPUIIncludeDirectories "${MPDir}")
+set(MPUIIncludeDirectories
+	"${MPDir}"
+	"${SharedDir}"
+	"${GSLIncludeDirectory}"
+	)
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
 endif(WIN32)
@@ -55,6 +59,12 @@ set(MPUICommonFiles
 	)
 source_group("common" FILES ${MPUICommonFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUICommonFiles})
+
+set(MPUICommonSafeFiles
+	"${SharedDir}/qcommon/safe/gsl.h"
+	)
+source_group("common/safe" FILES ${MPUICommonSafeFiles})
+set(MPUIFiles ${MPUIFiles} ${MPUICommonSafeFiles})
 
 set(MPUIUIFiles
 	"${MPDir}/ui/ui_atoms.c"

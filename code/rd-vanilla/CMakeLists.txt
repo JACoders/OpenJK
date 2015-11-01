@@ -28,6 +28,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		${SharedDir}
 		${SPRDVanillaRendererIncludeDirectories}
 		"${SPDir}/rd-vanilla"
+		"${GSLIncludeDirectory}"
 		)
 
 	# Modular Renderer crap (let's hope this works..)
@@ -81,6 +82,13 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		)
 	source_group("common" FILES ${SPRDVanillaCommonFiles})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
+
+	# Misc files
+	set(SPRDVanillaCommonSafeFiles
+		"${SharedDir}/qcommon/safe/gsl.h"
+		)
+	source_group("common/safe" FILES ${SPRDVanillaCommonSafeFiles})
+	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonSafeFiles})
 
 	# main files
 	set(SPRDVanillaMainFiles
