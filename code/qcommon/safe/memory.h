@@ -47,6 +47,11 @@ namespace Zone
 	template< typename T, memtag_t tag >
 	struct Allocator
 	{
+		Allocator() = default;
+		template< typename U >
+		Allocator( const Allocator< U, tag >& )
+		{
+		};
 		using value_type = T;
 		using is_always_equal = std::true_type;
 		T* allocate( std::size_t n ) const
