@@ -12291,19 +12291,41 @@ void Cmd_EntList_f( gentity_t *ent ) {
 
 	if ( trap->Argc() < 2)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a page number greater than 0. Example: ^3/entlist 1^7.\n\"") );
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a page number greater than 0, or an entity classname. Example: ^3/entlist 5^7 or ^3/entlist info_player_deathmatch^7\n\"") );
 		return;
 	}
 
 	trap->Argv( 1, arg1, sizeof( arg1 ) );
 	page_number = atoi(arg1);
 
-	for (i = 0; i < level.num_entities; i++)
+	if (page_number > 0)
 	{
-		if (i >= ((page_number - 1) * 10) && i < (page_number * 10))
-		{ // zyk: this command lists 10 entities per page
+		for (i = 0; i < level.num_entities; i++)
+		{
+			if (i >= ((page_number - 1) * 10) && i < (page_number * 10))
+			{ // zyk: this command lists 10 entities per page
+				target_ent = &g_entities[i];
+				sprintf(message,"%s\n%d - %s - %s - %s",message,(target_ent-g_entities),target_ent->classname,target_ent->targetname,target_ent->target);
+			}
+		}
+	}
+	else
+	{ // zyk: search by classname
+		int found_entities = 0;
+
+		for (i = 0; i < level.num_entities; i++)
+		{
 			target_ent = &g_entities[i];
-			sprintf(message,"%s\n%d - %s - %s - %s",message,(target_ent-g_entities),target_ent->classname,target_ent->targetname,target_ent->target);
+
+			if (target_ent && Q_stricmp(target_ent->classname, arg1) == 0)
+			{
+				sprintf(message,"%s\n%d - %s - %s - %s",message,i,target_ent->classname,target_ent->targetname,target_ent->target);
+				found_entities++;
+			}
+
+			// zyk: max entities to list
+			if (found_entities == 14)
+				break;
 		}
 	}
 
