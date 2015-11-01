@@ -12155,20 +12155,30 @@ void Cmd_EntLoad_f( gentity_t *ent ) {
 	system(va("mkdir \"entities/%s\"",zyk_mapname));
 #endif
 
-	// zyk: cleaning entities. Only the ones from the file will be in the map
-	for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
-	{
-		gentity_t *target_ent = &g_entities[i];
-
-		if (target_ent)
-			G_FreeEntity( target_ent );
-	}
-
 	strcpy(level.load_entities_file, va("entities/%s/%s.txt",zyk_mapname,arg1));
 
-	level.load_entities_timer = level.time + 1050;
+	this_file = fopen(level.load_entities_file,"r");
+	if (this_file)
+	{ // zyk: loads entities from the file if it exists
+		fclose(this_file);
 
-	trap->SendServerCommand( ent-g_entities, va("print \"Loading entities from %s file\n\"", arg1) );
+		// zyk: cleaning entities. Only the ones from the file will be in the map
+		for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
+		{
+			gentity_t *target_ent = &g_entities[i];
+
+			if (target_ent)
+				G_FreeEntity( target_ent );
+		}
+
+		level.load_entities_timer = level.time + 1050;
+
+		trap->SendServerCommand( ent-g_entities, va("print \"Loading entities from %s file\n\"", arg1) );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"File %s does not exist\n\"", arg1) );
+	}
 }
 
 /*
