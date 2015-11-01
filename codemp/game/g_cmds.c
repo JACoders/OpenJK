@@ -12049,23 +12049,10 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->message);
 			}
-			else if (Q_stricmp(this_ent->classname, "trigger_teleport") == 0)
+			else if (Q_stricmp(this_ent->classname, "trigger_teleport") == 0 || Q_stricmp(this_ent->classname, "trigger_multiple") == 0 ||
+					 Q_stricmp(this_ent->classname, "trigger_once") == 0 || Q_stricmp(this_ent->classname, "trigger_hurt") == 0)
 			{
-				fprintf(this_file,"trigger_teleport\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],
-					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
-					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
-					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]);
-			}
-			else if (Q_stricmp(this_ent->classname, "trigger_multiple") == 0)
-			{
-				fprintf(this_file,"trigger_multiple\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],
-					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
-					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
-					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]);
-			}
-			else if (Q_stricmp(this_ent->classname, "trigger_once") == 0)
-			{
-				fprintf(this_file,"trigger_once\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],
+				fprintf(this_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n",this_ent->classname,(int)this_ent->s.origin[0],
 					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
 					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
 					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2]);
