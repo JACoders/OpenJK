@@ -12257,12 +12257,12 @@ void Cmd_EntNear_f( gentity_t *ent ) {
 		this_ent = &g_entities[i];
 		if (this_ent && ent != this_ent && (int)Distance(ent->client->ps.origin, this_ent->r.currentOrigin) < 200)
 		{
-			strcpy(message,va("%s\n%d - %d - %s",message,i,this_ent->s.number,this_ent->classname));
+			strcpy(message,va("%s\n%d - %s",message,i,this_ent->classname));
 			found_entities++;
 		}
 
 		// zyk: max entities to list
-		if (found_entities == 10)
+		if (found_entities == 14)
 			break;
 	}
 
