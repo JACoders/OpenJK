@@ -9218,7 +9218,7 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, va("chat \"^2Guardian of Forest: ^7Poison Mushrooms!\""));
 						}
 
-						ent->client->pers.guardian_timer = level.time + 11000;
+						ent->client->pers.guardian_timer = level.time + 12000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 4)
