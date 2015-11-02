@@ -260,12 +260,14 @@ static void Svcmd_SaberColor_f()
 	const char *color[MAX_BLADES];
 	int bladeNum;
 
+	bool validColors = true;
 	for ( bladeNum = 0; bladeNum < MAX_BLADES; bladeNum++ )
 	{
 		color[bladeNum] = gi.argv(2+bladeNum);
+		validColors = validColors && VALIDSTRING( color[ bladeNum ] );
 	}
 
-	if ( !VALIDSTRING( color ) || saberNum < 1 || saberNum > 2 )
+	if ( !validColors || saberNum < 1 || saberNum > 2 )
 	{
 		gi.Printf( "Usage:  saberColor <saberNum> <blade1 color> <blade2 color> ... <blade8 color> \n" );
 		gi.Printf( "valid saberNums:  1 or 2\n" );
