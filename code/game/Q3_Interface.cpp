@@ -10514,7 +10514,7 @@ int		CQuake3GameInterface::GetString( int entID, const char *name, char **value 
 	case SET_ANIM_BOTH:
 		*value = (char *) Q3_GetAnimBoth( ent );
 
-		if ( VALIDSTRING( value ) == false )
+		if ( VALIDSTRING( *value ) == false )
 			return false;
 
 		break;
