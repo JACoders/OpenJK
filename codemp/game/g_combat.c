@@ -4866,6 +4866,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->s.number < MAX_CLIENTS && attacker->client->noclip == qtrue)
 		return;
 
+	// zyk: Race Mode. Players in the race waiting for it to start cannot be hit or hit anyone
+	if (level.race_mode > 0 && level.race_mode < 3 && attacker && attacker->client && targ && targ->client && 
+		((attacker->client->pers.race_position > 0 && targ->client->pers.race_position == 0) || 
+		 (attacker->client->pers.race_position == 0 && targ->client->pers.race_position > 0)))
+	{
+		return;
+	}
+
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && mod == MOD_SABER)
 	{ // zyk: player in RPG mode, with duals or staff, has a better damage depending on Saber Attack level
 		if (attacker->client->saber[0].saberFlags&SFL_TWO_HANDED || (attacker->client->saber[0].model[0] && attacker->client->saber[1].model[0]))

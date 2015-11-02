@@ -5707,39 +5707,21 @@ void G_RunFrame( int levelTime ) {
 
 	if (level.race_mode == 1 && level.race_start_timer < level.time)
 	{ // zyk: Race Mode. Tests if we should start the race
-		level.race_countdown = 5;
-		level.race_countdown_timer = level.time + 5100;
+		level.race_countdown = 3;
+		level.race_countdown_timer = level.time;
 		level.race_last_player_position = 0;
 		level.race_mode = 2;
 	}
-	else if (level.race_mode == 2)
+	else if (level.race_mode == 2 && level.race_countdown_timer < level.time)
 	{ // zyk: Race Mode. Shows the countdown messages in players screens and starts the race
-		if (level.race_countdown_timer < (level.time + 5000) && level.race_countdown == 5)
+		level.race_countdown_timer = level.time + 1000;
+
+		if (level.race_countdown > 0)
 		{
-			level.race_countdown = 4;
-			trap->SendServerCommand( -1, "cp \"^7Race starts in ^35\"");
+			trap->SendServerCommand( -1, va("cp \"^7Race starts in ^3%d\"", level.race_countdown));
+			level.race_countdown--;
 		}
-		else if (level.race_countdown_timer < (level.time + 4000) && level.race_countdown == 4)
-		{
-			level.race_countdown = 3;
-			trap->SendServerCommand( -1, "cp \"^7Race starts in ^34\"");
-		}
-		else if (level.race_countdown_timer < (level.time + 3000) && level.race_countdown == 3)
-		{
-			level.race_countdown = 2;
-			trap->SendServerCommand( -1, "cp \"^7Race starts in ^33\"");
-		}
-		else if (level.race_countdown_timer < (level.time + 2000) && level.race_countdown == 2)
-		{
-			level.race_countdown = 1;
-			trap->SendServerCommand( -1, "cp \"^7Race starts in ^32\"");
-		}
-		else if (level.race_countdown_timer < (level.time + 1000) && level.race_countdown == 1)
-		{
-			level.race_countdown = 0;
-			trap->SendServerCommand( -1, "cp \"^7Race starts in ^31\"");
-		}
-		else if (level.race_countdown_timer < level.time)
+		else if (level.race_countdown == 0)
 		{
 			level.race_mode = 3;
 			trap->SendServerCommand( -1, "cp \"^2Go!\"");
