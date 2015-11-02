@@ -9207,50 +9207,18 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Forest
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: uses sleeping flowers or poison mushrooms
-						int players_near = 0;
-						int players_far = 0;
-						int k = 0;
-						gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-
-						if ((int)Distance(ent->client->ps.origin,player_ent->client->ps.origin) < 800 && (int)player_ent->client->ps.origin[2] < 162)
+						if (Q_irand(0,3) != 0)
 						{
-							players_near++;
-						}
-						else
-						{
-							players_far++;
-						}
-
-						for (k = 0; k < level.maxclients; k++)
-						{
-							gentity_t *ally_ent = &g_entities[k];
-
-							if (zyk_is_ally(player_ent,ally_ent) == qtrue)
-							{
-								if ((int)Distance(ent->client->ps.origin,ally_ent->client->ps.origin) < 800 && (int)ally_ent->client->ps.origin[2] < 162)
-								{
-									players_near++;
-								}
-								else
-								{
-									players_far++;
-								}
-							}
-						}
-
-
-						if (players_near > players_far)
-						{
-							sleeping_flowers(ent,3500,800);
+							sleeping_flowers(ent,3000,900);
 							trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7Sleeping Flowers!\"");
-							ent->client->pers.guardian_timer = level.time + 12000;
 						}
 						else
 						{
-							poison_mushrooms(ent,100,1700);
+							poison_mushrooms(ent,100,1800);
 							trap->SendServerCommand( -1, va("chat \"^2Guardian of Forest: ^7Poison Mushrooms!\""));
-							ent->client->pers.guardian_timer = level.time + 12000;
 						}
+
+						ent->client->pers.guardian_timer = level.time + 11000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 4)
