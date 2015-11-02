@@ -5637,6 +5637,7 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	self->genericValue5 = 0;
 }
 
+// zyk: added spawnflag 65536. This one makes the z-axis position exactly the one in s.origin (allowing players to place emplaced_gun with entity system properly)
 void SP_emplaced_gun( gentity_t *ent )
 {
 	const char *name = "models/map_objects/mp/turret_chair.glm";
@@ -5662,7 +5663,8 @@ void SP_emplaced_gun( gentity_t *ent )
 
 	if (tr.fraction != 1 && !tr.allsolid && !tr.startsolid)
 	{
-		VectorCopy(tr.endpos, ent->s.origin);
+		if (!(ent->spawnflags & 65536)) // zyk: only update origin if this entity does not have the spawnflag 65536 set
+			VectorCopy(tr.endpos, ent->s.origin);
 	}
 
 	ent->spawnflags |= 4; // deadsolid
