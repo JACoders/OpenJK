@@ -175,6 +175,8 @@ field_t fields[] = {
 	{ "spawnflags",				FOFS( spawnflags ),						F_INT },
 	{ "spawnscript",			FOFS( behaviorSet[BSET_SPAWN] ),		F_STRING },//name of script to run
 	{ "speed",					FOFS( speed ),							F_FLOAT },
+	{ "splashdamage",			FOFS( splashDamage ),					F_INT }, // zyk: added this field
+	{ "splashradius",			FOFS( splashRadius ),					F_INT }, // zyk: added this field
 	{ "target",					FOFS( target ),							F_STRING },
 	{ "target2",				FOFS( target2 ),						F_STRING },
 	{ "target3",				FOFS( target3 ),						F_STRING },

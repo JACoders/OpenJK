@@ -2922,8 +2922,12 @@ void SP_fx_runner( gentity_t *ent )
 	// Get our defaults
 	G_SpawnInt( "delay", "200", &ent->delay );
 	G_SpawnFloat( "random", "0", &ent->random );
-	G_SpawnInt( "splashRadius", "16", &ent->splashRadius );
-	G_SpawnInt( "splashDamage", "5", &ent->splashDamage );
+
+	if (!ent->splashRadius) // zyk: set this only if it has not been set yet
+		G_SpawnInt( "splashRadius", "16", &ent->splashRadius );
+
+	if (!ent->splashDamage) // zyk: set this only if it has not been set yet
+		G_SpawnInt( "splashDamage", "5", &ent->splashDamage );
 
 	if (!ent->s.angles[0] && !ent->s.angles[1] && !ent->s.angles[2])
 	{
