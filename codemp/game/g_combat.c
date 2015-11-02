@@ -4868,7 +4868,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	// zyk: Race Mode. Players in the race waiting for it to start cannot be hit or hit anyone
 	if (level.race_mode > 0 && level.race_mode < 3 && attacker && attacker->client && targ && targ->client && 
-		((attacker->client->pers.race_position > 0 && targ->client->pers.race_position == 0) || 
+		((attacker->client->pers.race_position > 0) || 
 		 (attacker->client->pers.race_position == 0 && targ->client->pers.race_position > 0)))
 	{
 		return;

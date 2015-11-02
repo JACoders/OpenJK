@@ -578,7 +578,7 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 	}
 
 	if (level.race_mode > 0 && level.race_mode < 3 && attacker && attacker->client && other && other->client && 
-		((attacker->client->pers.race_position > 0 && other->client->pers.race_position == 0) || 
+		((attacker->client->pers.race_position > 0) || 
 		 (attacker->client->pers.race_position == 0 && other->client->pers.race_position > 0)))
 	{ // zyk: Race Mode. Cannot use force powers on targets waiting for race to start 
 		return 0;
