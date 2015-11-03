@@ -105,6 +105,7 @@ set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonFi
 
 set(MPVanillaRendererCommonSafeFiles
 	"${SharedDir}/qcommon/safe/gsl.h"
+	"${SharedDir}/qcommon/safe/sscanf.h"
 	)
 source_group("common/safe" FILES ${MPVanillaRendererCommonSafeFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonSafeFiles})
