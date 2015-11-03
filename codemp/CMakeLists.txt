@@ -132,7 +132,7 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/cm_public.h"
 		"${MPDir}/qcommon/disablewarnings.h"
 		"${MPDir}/qcommon/q_shared.h"
-		"${MPDir}/qcommon/q_platform.h"
+		"${SharedDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/qcommon.h"
 		"${MPDir}/qcommon/qfiles.h"
 		"${MPDir}/qcommon/tags.h"
@@ -209,7 +209,7 @@ if(BuildMPEngine OR BuildMPDed)
 
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
-		"${MPDir}/qcommon/q_platform.h"
+		"${SharedDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/cm_load.cpp"
 		"${MPDir}/qcommon/cm_local.h"
 		"${MPDir}/qcommon/cm_patch.cpp"
