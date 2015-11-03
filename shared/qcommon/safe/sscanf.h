@@ -68,6 +68,26 @@ namespace Q
 			}
 		}
 
+		//    Whitespace-terminated string
+		template< typename... Tail >
+		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, gsl::cstring_view& string, Tail&&... tail )
+		{
+			// skip leading whitespace
+			auto begin = skipWhitespace( input.begin(), input.end() );
+			// string is whitespace-terminated
+			auto end = std::find_if< gsl::cstring_view::const_iterator, int( *)( int ) >(
+				begin, input.end(),
+				std::isspace
+				);
+			if( begin == end )
+			{
+				// empty string is not accepted
+				return accumulator;
+			}
+			string = { begin, end };
+			return sscanf_impl( { end, input.end() }, accumulator + 1, std::forward< Tail >( tail )... );
+		}
+
 		/**
 		A non-owning stream buffer; for adapting a gsl::cstring_view to std::istream
 		*/
