@@ -154,7 +154,7 @@ int LongSwap( int l );
 float FloatSwap( const float *f );
 
 
-#include "../qcommon/q_platform.h"
+#include "qcommon/q_platform.h"
 
 // ================================================================
 // TYPE DEFINITIONS

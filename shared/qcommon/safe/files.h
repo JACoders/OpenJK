@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cassert>
 
+#include "qcommon/q_platform.h"
+
 /**
 @file RAII C++ bindings for filesystem operations
 */
@@ -13,27 +15,27 @@ namespace FS
 	{
 		friend FileBuffer ReadFile( const char* );
 		// called by ReadFile()
-		FileBuffer( void* buffer, const long size ) noexcept;
+		FileBuffer( void* buffer, const long size ) NOEXCEPT;
 	public:
-		FileBuffer() noexcept = default;
-		~FileBuffer() noexcept;
+		FileBuffer() NOEXCEPT = default;
+		~FileBuffer() NOEXCEPT;
 		// noncopyable
 		FileBuffer( const FileBuffer& ) = delete;
 		FileBuffer& operator=( const FileBuffer& ) = delete;
 		// movable
-		FileBuffer( FileBuffer&& rhs ) noexcept;
-		FileBuffer& operator=( FileBuffer&& rhs ) noexcept;
+		FileBuffer( FileBuffer&& rhs ) NOEXCEPT;
+		FileBuffer& operator=( FileBuffer&& rhs ) NOEXCEPT;
 
 		/// nullptr if no such file
-		const char* begin() const noexcept
+		const char* begin() const NOEXCEPT
 		{
 			return static_cast< const char* >( _buffer );
 		}
-		const char* end() const noexcept
+		const char* end() const NOEXCEPT
 		{
 			return static_cast< const char* >( _buffer ) + _size;
 		}
-		long size() const noexcept
+		long size() const NOEXCEPT
 		{
 			return _size;
 		}
@@ -50,26 +52,26 @@ namespace FS
 	{
 		friend FileList ListFiles( const char*, const char* );
 		// called by ListFiles()
-		FileList( char** files, int numFiles ) noexcept;
+		FileList( char** files, int numFiles ) NOEXCEPT;
 	public:
-		FileList() noexcept = default;
-		~FileList() noexcept;
+		FileList() NOEXCEPT = default;
+		~FileList() NOEXCEPT;
 		// noncopyable
 		FileList( const FileList& ) = delete;
 		FileList& operator=( const FileList& ) = delete;
 		// movable
-		FileList( FileList&& rhs ) noexcept;
-		FileList& operator=( FileList&& rhs ) noexcept;
+		FileList( FileList&& rhs ) NOEXCEPT;
+		FileList& operator=( FileList&& rhs ) NOEXCEPT;
 
-		const char *const *begin() const noexcept
+		const char *const *begin() const NOEXCEPT
 		{
 			return _begin;
 		}
-		const char *const *end() const noexcept
+		const char *const *end() const NOEXCEPT
 		{
 			return _end;
 		}
-		std::size_t size() const noexcept
+		std::size_t size() const NOEXCEPT
 		{
 			return static_cast< std::size_t >( _end - begin() );
 		}
