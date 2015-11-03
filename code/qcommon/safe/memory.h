@@ -3,7 +3,7 @@
 #ifdef _JK2EXE
 # include "qcommon/qcommon.h"
 #else
-# include "qcommon/q_shared.h"
+# include "game/g_shared.h"
 #endif
 
 #include <type_traits>
