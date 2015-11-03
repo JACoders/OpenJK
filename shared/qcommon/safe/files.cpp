@@ -6,7 +6,7 @@ namespace FS
 {
 	//    FileBuffer
 
-	FileBuffer::FileBuffer( void* buffer, const long size ) noexcept
+	FileBuffer::FileBuffer( void* buffer, const long size ) NOEXCEPT
 		: _buffer( buffer )
 		, _size( size )
 	{
@@ -14,7 +14,7 @@ namespace FS
 		assert( size >= 0 );
 	}
 
-	FileBuffer::~FileBuffer() noexcept
+	FileBuffer::~FileBuffer() NOEXCEPT
 	{
 		if( _buffer )
 		{
@@ -22,7 +22,7 @@ namespace FS
 		}
 	}
 
-	FileBuffer::FileBuffer( FileBuffer&& rhs ) noexcept
+	FileBuffer::FileBuffer( FileBuffer&& rhs ) NOEXCEPT
 		: _buffer( rhs._buffer )
 		, _size( rhs._size )
 	{
@@ -30,7 +30,7 @@ namespace FS
 		rhs._size = 0;
 	}
 
-	FileBuffer& FileBuffer::operator=( FileBuffer&& rhs ) noexcept
+	FileBuffer& FileBuffer::operator=( FileBuffer&& rhs ) NOEXCEPT
 	{
 		if( _buffer )
 		{
@@ -52,14 +52,14 @@ namespace FS
 
 	//    FileList
 
-	FileList::FileList( char** files, int numFiles ) noexcept
+	FileList::FileList( char** files, int numFiles ) NOEXCEPT
 		: _begin( files )
 		, _end( files + numFiles )
 	{
 		assert( numFiles >= 0 );
 	}
 
-	FileList::~FileList() noexcept
+	FileList::~FileList() NOEXCEPT
 	{
 		if( _begin )
 		{
@@ -67,7 +67,7 @@ namespace FS
 		}
 	}
 
-	FileList::FileList( FileList&& rhs ) noexcept
+	FileList::FileList( FileList&& rhs ) NOEXCEPT
 		: _begin( rhs._begin )
 		, _end( rhs._end )
 	{
@@ -75,7 +75,7 @@ namespace FS
 		rhs._end = nullptr;
 	}
 
-	FileList& FileList::operator=( FileList&& rhs ) noexcept
+	FileList& FileList::operator=( FileList&& rhs ) NOEXCEPT
 	{
 		if( _begin != nullptr )
 		{

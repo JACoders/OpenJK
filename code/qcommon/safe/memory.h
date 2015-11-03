@@ -35,7 +35,7 @@ namespace Zone
 	*/
 	struct Deleter
 	{
-		void operator()( void* memory ) const noexcept
+		void operator()( void* memory ) const NOEXCEPT
 		{
 			detail::Free( memory );
 		}
@@ -59,17 +59,17 @@ namespace Zone
 			void* mem = detail::Malloc( n * sizeof( T ), tag );
 			return static_cast< T* >( mem );
 		}
-		void deallocate( T* mem, std::size_t n ) const noexcept
+		void deallocate( T* mem, std::size_t n ) const NOEXCEPT
 		{
 			Deleter{}( mem );
 		}
 		template< typename T2, memtag_t tag2 >
-		bool operator==( const Allocator< T2, tag2 >& ) const noexcept
+		bool operator==( const Allocator< T2, tag2 >& ) const NOEXCEPT
 		{
 			return true; // free works regardless of size and tag
 		}
 		template< typename T2, memtag_t tag2 >
-		bool operator!=( const Allocator< T2, tag2 >& ) const noexcept
+		bool operator!=( const Allocator< T2, tag2 >& ) const NOEXCEPT
 		{
 			return false;
 		}

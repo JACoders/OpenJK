@@ -185,6 +185,18 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define DLL_EXT ".so"
 #endif
 
+#if defined( _MSC_VER ) && (_MSC_VER < 1900)
+// VS2013, which for some reason we still support, does not support noexcept
+#define NOEXCEPT
+#define NOEXCEPT_IF(x)
+#define IS_NOEXCEPT(x) false
+#else
+#define NOEXCEPT noexcept
+#define NOEXCEPT_IF(x) noexcept(x)
+#define IS_NOEXCEPT(x) noexcept(x)
+#endif
+
+
 // catch missing defines in above blocks
 #if !defined(OS_STRING)
 	#error "Operating system not supported"
