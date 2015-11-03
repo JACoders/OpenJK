@@ -86,6 +86,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	# Misc files
 	set(SPRDVanillaCommonSafeFiles
 		"${SharedDir}/qcommon/safe/gsl.h"
+		"${SharedDir}/qcommon/safe/sscanf.h"
 		)
 	source_group("common/safe" FILES ${SPRDVanillaCommonSafeFiles})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonSafeFiles})

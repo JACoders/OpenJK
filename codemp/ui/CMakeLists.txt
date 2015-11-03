@@ -62,6 +62,7 @@ set(MPUIFiles ${MPUIFiles} ${MPUICommonFiles})
 
 set(MPUICommonSafeFiles
 	"${SharedDir}/qcommon/safe/gsl.h"
+	"${SharedDir}/qcommon/safe/sscanf.h"
 	)
 source_group("common/safe" FILES ${MPUICommonSafeFiles})
 set(MPUIFiles ${MPUIFiles} ${MPUICommonSafeFiles})
