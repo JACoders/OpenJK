@@ -8165,7 +8165,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	if(!Q_stricmpn(type_name, "cvar_", 5) &&
 		strlen(type_name) > 5)
 	{
-		cgi_Cvar_Set(type_name+5, data);
+		gi.cvar_set(type_name+5, data);
 		return;
 	}
 
