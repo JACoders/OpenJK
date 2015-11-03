@@ -19,6 +19,14 @@ namespace Q
 			return accumulator;
 		}
 
+		inline gsl::cstring_view::const_iterator skipWhitespace( gsl::cstring_view::const_iterator begin, gsl::cstring_view::const_iterator end )
+		{
+			return std::find_if_not< gsl::cstring_view::const_iterator, int( *)( int ) >(
+				begin, end,
+				std::isspace
+				);
+		}
+
 		//    Verbatim string
 		// Try to consume the given string; whitespace means consume all available consecutive whitespace. (So format `"    "_v` also accepts input `""_v` and vice-versa.)
 		template< typename... Tail >
@@ -37,16 +45,10 @@ namespace Q
 				{
 					// whitespace -> skip all input whitespace
 					// this check is done before the end-of-input check because that's valid here.
-					inputIt = std::find_if_not< gsl::cstring_view::const_iterator, int( *)(int) >(
-						inputIt, input.end(),
-						std::isspace
-						);
+					inputIt = skipWhitespace( inputIt, input.end() );
 					// might as well skip expected whitespace; we already consumed all input whitespace.
 					++expectedIt;
-					expectedIt = std::find_if_not< gsl::cstring_view::const_iterator, int( *)( int ) >(
-						expectedIt, expected.end(),
-						std::isspace
-						);
+					expectedIt = skipWhitespace( expectedIt, expected.end() );
 				}
 				else if( inputIt == input.end() )
 				{
