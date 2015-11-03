@@ -81,6 +81,31 @@ namespace Q
 				char* data = const_cast< CharT* >( view.data() );
 				setg( data, data, data + view.size() );
 			}
+
+		protected:
+			/// @note required by istream.tellg()
+			virtual pos_type seekoff( off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which )
+			{
+				const pos_type errVal{ -1 };
+				if( which != std::ios_base::in )
+				{
+					// only input pointer can be moved
+					return errVal;
+				}
+				char* newPos = ( which == std::ios_base::beg ) ? eback()
+					: ( which == std::ios_base::cur ) ? gptr()
+					: egptr();
+				newPos += off;
+				if( eback() <= newPos && newPos < egptr() )
+				{
+					setg( eback(), newPos, egptr() );
+					return newPos - eback();
+				}
+				else
+				{
+					return errVal;
+				}
+			}
 		};
 
 		/// For deducing ArrayViewStreambuf's template type
@@ -105,7 +130,9 @@ namespace Q
 			stream >> value;
 			if( stream )
 			{
-				return sscanf_impl( { input.begin() + stream.gcount(), input.end() }, accumulator + 1, std::forward< Tail >( tail )... );
+				auto pos = stream.tellg();
+				gsl::cstring_view::const_iterator end = input.begin() + static_cast< int >( pos );
+				return sscanf_impl( { end, input.end() }, accumulator + 1, std::forward< Tail >( tail )... );
 			}
 			else
 			{
