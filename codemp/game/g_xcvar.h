@@ -324,6 +324,10 @@ XCVAR_DEF( g_antiWallhack,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 XCVAR_DEF( g_blockDuelHealthSpec,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
+//drain fuck around cvars
+XCVAR_DEF( g_forceDrainDamage,			"4",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_forceDrainRegenDelay,		"800",			NULL,				CVAR_ARCHIVE,									qtrue )
+
 #if _retardedsabertest
 XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 #endif

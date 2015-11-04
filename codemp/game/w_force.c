@@ -2027,7 +2027,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 				}
 				else if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_3)
 				{
-					dmg = 4;
+					dmg = g_forceDrainDamage.integer;//4
 				}
 			
 				if (traceEnt->client)
@@ -2072,7 +2072,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					self->client->ps.stats[STAT_HEALTH] = self->health;
 				}
 
-				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + 800; //don't let the client being drained get force power back right away
+				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainRegenDelay.integer;//800 //don't let the client being drained get force power back right away
 
 				//Drain the standard amount since we just drained someone else
 
@@ -2119,8 +2119,6 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 		}
 	}
 }
-
-extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);//loda
 
 int ForceShootDrain( gentity_t *self )
 {

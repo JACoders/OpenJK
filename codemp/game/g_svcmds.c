@@ -885,7 +885,8 @@ static bitInfo_T forceTweaks[] = {
 	{"Fix pull strength"},//6
 	{"JK2 grip"},//7
 	{"Fast grip runspeed"},//8
-	{"Push/pull items"}//9
+	{"Push/pull items"},//9
+	{"Smaller Drain COF"}//10
 };
 static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
 
