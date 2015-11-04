@@ -5589,6 +5589,11 @@ void SpectatorClientEndFrame( gentity_t *ent ) {
 				ent->client->ps = cl->ps;
 				ent->client->ps.pm_flags |= PMF_FOLLOW;
 
+				if (g_blockDuelHealthSpec.integer && ent->client->ps.duelInProgress) {
+					ent->client->ps.stats[STAT_ARMOR] = 0;
+					ent->client->ps.stats[STAT_HEALTH] = 0;
+				}
+
 				//ent->client->ps.fd.forcePowersActive |= ( 1 << FP_SEE ); //spectator force sight wallhack
 				//ent->client->ps.fd.forcePowerLevel[FP_SEE] = 2;
 
