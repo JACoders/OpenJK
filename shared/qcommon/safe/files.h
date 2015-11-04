@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "qcommon/q_platform.h"
+#include "qcommon/safe/gsl.h"
 
 /**
 @file RAII C++ bindings for filesystem operations
@@ -38,6 +39,10 @@ namespace FS
 		long size() const NOEXCEPT
 		{
 			return _size;
+		}
+		gsl::cstring_view view() const NOEXCEPT
+		{
+			return{ begin(), end() };
 		}
 
 	private:
