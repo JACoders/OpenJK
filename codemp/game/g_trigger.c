@@ -1235,7 +1235,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 		return qfalse;
 	if (!g_smoothClients.integer)
 		return qfalse;
-	if (sv_fps.integer != 20 && sv_fps.integer != 30)//Dosnt really make a difference.. but eh.... loda fixme
+	if (sv_fps.integer != 20 && sv_fps.integer != 30 && sv_fps.integer != 40)//Dosnt really make a difference.. but eh.... loda fixme
 		return qfalse;
 	if (sv_pluginKey.integer > 0) {//RESTRICT PLUGIN
 		if (!player->client->pers.validPlugin && player->client->pers.userName[0]) { //Meh.. only do this if they are logged in to keep the print colors working right i guess..
