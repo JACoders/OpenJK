@@ -1,10 +1,26 @@
 #include "files.h"
 
-#include "qcommon/qcommon.h"
+#if defined( SP_GAME )
+# include "game/g_shared.h" // gi
+#else
+# include "qcommon/qcommon.h"
+#endif
 
 namespace FS
 {
 	//    FileBuffer
+
+	static void freeFileBuffer( void* buffer )
+	{
+		if( buffer )
+		{
+#if defined( SP_GAME )
+			gi.FS_FreeFile( buffer );
+#else
+			FS_FreeFile( buffer );
+#endif
+		}
+	}
 
 	FileBuffer::FileBuffer( void* buffer, const long size ) NOEXCEPT
 		: _buffer( buffer )
@@ -16,10 +32,7 @@ namespace FS
 
 	FileBuffer::~FileBuffer() NOEXCEPT
 	{
-		if( _buffer )
-		{
-			FS_FreeFile( _buffer );
-		}
+		freeFileBuffer( _buffer );
 	}
 
 	FileBuffer::FileBuffer( FileBuffer&& rhs ) NOEXCEPT
@@ -34,7 +47,7 @@ namespace FS
 	{
 		if( _buffer )
 		{
-			FS_FreeFile( _buffer );
+			freeFileBuffer( _buffer );
 		}
 		_buffer = rhs._buffer;
 		rhs._buffer = nullptr;
@@ -46,10 +59,15 @@ namespace FS
 	FileBuffer ReadFile( const char* path )
 	{
 		void* buffer;
+#if defined( SP_GAME )
+		const long size = gi.FS_ReadFile( path, &buffer );
+#else
 		const long size = FS_ReadFile( path, &buffer );
+#endif
 		return size >= 0 ? FileBuffer{ buffer, size } : FileBuffer{};
 	}
 
+#if !defined( SP_GAME )
 	//    FileList
 
 	FileList::FileList( char** files, int numFiles ) NOEXCEPT
@@ -94,4 +112,5 @@ namespace FS
 		auto files = FS_ListFiles( directory, extension, &numFiles );
 		return FileList{ files, numFiles };
 	}
+#endif
 }

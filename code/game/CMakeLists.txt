@@ -21,7 +21,7 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(SPGameDefines ${SharedDefines})
+set(SPGameDefines ${SharedDefines} "SP_GAME")
 set(SPGameIncludeDirectories
 	${SharedDir}
 	${SPDir}
@@ -268,6 +268,8 @@ set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
 set(SPGameCommonSafeFiles
 	"${SharedDir}/qcommon/safe/gsl.h"
 	"${SharedDir}/qcommon/safe/sscanf.h"
+	"${SharedDir}/qcommon/safe/files.h"
+	"${SharedDir}/qcommon/safe/files.cpp"
 	"${SPDir}/qcommon/safe/memory.h"
 	)
 source_group("common/safe" FILES ${SPGameCommonSafeFiles})

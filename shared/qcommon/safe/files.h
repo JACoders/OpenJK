@@ -48,6 +48,9 @@ namespace FS
 
 	FileBuffer ReadFile( const char* path );
 
+	// FileList only available in Client; Library exclusively uses FS_GetFileList(), which by supplying a buffer avoids dynamic allocations.
+	// TODO: investigate making FS_ListFiles available in Library Code?
+#if !defined( SP_GAME )
 	class FileList
 	{
 		friend FileList ListFiles( const char*, const char* );
@@ -93,4 +96,5 @@ namespace FS
 	@param extension if "/", only subdirectories will be returned
 	*/
 	FileList ListFiles( const char* directory, const char* extension );
+#endif
 }
