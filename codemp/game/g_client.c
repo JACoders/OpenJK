@@ -2308,6 +2308,19 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			client->pers.maxFPS = 1000;
 	}
 
+	s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
+	client->pers.thirdPerson = atoi(s);
+
+	s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
+	client->pers.thirdPersonRange = atoi(s);
+	if (!client->pers.thirdPersonRange)
+		client->pers.thirdPersonRange = 80;
+
+	s = Info_ValueForKey( userinfo, "cg_displayThirdPersonVertOffset" );
+	client->pers.thirdPersonVertOffset = atoi(s);
+	if (!client->pers.thirdPersonVertOffset)
+		client->pers.thirdPersonVertOffset = 16;
+
 	s = Info_ValueForKey( userinfo, "cl_maxPackets" );
 	client->pers.maxPackets = atoi(s);
 	if (client->pers.maxPackets > 1000)

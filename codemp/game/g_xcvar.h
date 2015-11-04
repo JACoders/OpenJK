@@ -315,7 +315,12 @@ XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfal
 //XCVAR_DEF( r_primitives,				"0",			NULL,				CVAR_SYSTEMINFO,								qtrue ) //not needed anymore, RIP jaiko
 
 XCVAR_DEF( g_fixFlipKick,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //If the difference is greater than X percent of the frag limit... then end match.
+
+#define _ANTIWALLHACK 1
+#if _ANTIWALLHACK
+XCVAR_DEF( g_antiWallhack,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+#endif
 
 #if _retardedsabertest
 XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

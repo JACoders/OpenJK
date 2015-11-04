@@ -795,6 +795,9 @@ typedef struct clientPersistant_s {
 	int			timenudge;
 	int			maxFPS;
 	int			maxPackets;
+	int			thirdPerson;
+	int			thirdPersonRange;
+	int			thirdPersonVertOffset;
 
 	//int			aimSamples[64];//japro anti yawspeed?
 	//int			aimCount;
