@@ -360,8 +360,8 @@ void SP_misc_model_breakable( gentity_t *ent )
 	}
 	else
 	{
-		if (!ent->r.mins[0] && !!ent->r.mins[1] && !ent->r.mins[2] && !ent->r.maxs[0] && !ent->r.maxs[1] && !ent->r.maxs[2])
-		{
+		if (!(ent->spawnflags & 65536))
+		{ // zyk: do not set default mins and maxs if this spawnflag is set
 			G_SpawnVector("mins", "-16 -16 -16", ent->r.mins);
 			G_SpawnVector("maxs", "16 16 16", ent->r.maxs);
 		}
