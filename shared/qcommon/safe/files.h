@@ -40,6 +40,10 @@ namespace FS
 		{
 			return _size;
 		}
+		bool valid() const NOEXCEPT
+		{
+			return _buffer != nullptr;
+		}
 		gsl::cstring_view view() const NOEXCEPT
 		{
 			return{ begin(), end() };
