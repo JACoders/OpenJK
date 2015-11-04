@@ -1,6 +1,7 @@
 #include "files.h"
 
 #if defined( SP_GAME )
+# define GAME_INCLUDE // so centity_t is defined in g_shared.h (alternatively include g_public.h?)
 # include "game/g_shared.h" // gi
 #else
 # include "qcommon/qcommon.h"
