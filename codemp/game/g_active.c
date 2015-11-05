@@ -3110,6 +3110,8 @@ void TryTargettingLaser( gentity_t *ent ) {
 	//BUTTON_TARGET
 	//Only gets called if we are ingame i think
 	//Check if we are alive
+	//This should really be a clientside FX based on players viewangles, idk.
+
 	vec3_t start, end, view;
 	trace_t trace;
 
@@ -3117,17 +3119,21 @@ void TryTargettingLaser( gentity_t *ent ) {
 		return;
 	if (ent->health <= 0)
 		return;
+	if (ent->client->lastTargetLaserTime > level.time)
+		return;
+
+	ent->client->lastTargetLaserTime = level.time + 250;
 
 	AngleVectors( ent->client->ps.viewangles, view, NULL, NULL );
 
 	VectorCopy( ent->client->ps.origin, start );
 	start[2] += ent->client->ps.viewheight;
-	VectorMA( start, 32, view, start ); //znear
+	VectorMA( start, 16, view, start ); //znear
 	VectorMA( start, 8192, view, end ); //max distance
 
 	trap->Trace(&trace, start, NULL, NULL, end, ent->s.number, CONTENTS_SOLID, qfalse, 0, 0);
 
-	G_TestLine(start, trace.endpos, 0x0000ff, 50); //check trace.fraction? ehh trace.startsolid or whatever?
+	G_TestLine(start, trace.endpos, 0x00ff00, 250); //check trace.fraction? ehh trace.startsolid or whatever?
 }
 
 void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_hp, int winner_shield);

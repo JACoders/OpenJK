@@ -2072,7 +2072,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					self->client->ps.stats[STAT_HEALTH] = self->health;
 				}
 
-				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainRegenDelay.integer;//800 //don't let the client being drained get force power back right away
+				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainTargetRegenDelay.integer;//800 //don't let the client being drained get force power back right away
 
 				//Drain the standard amount since we just drained someone else
 
@@ -2269,7 +2269,7 @@ int ForceShootDrain( gentity_t *self )
 
 	BG_ForcePowerDrain( &self->client->ps, FP_DRAIN, 5 ); //used to be 1, but this did, too, anger the God of Balance.
 
-	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + 500;
+	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainSelfRegenDelay.integer;//500; //oh, interesting	
 
 	return gotOneOrMore;
 }
@@ -3986,7 +3986,7 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		}
 		else
 		{
-			self->client->ps.fd.forcePowerDebounce[FP_DRAIN] = level.time + 1500;
+			self->client->ps.fd.forcePowerDebounce[FP_DRAIN] = level.time + g_forceDrainRestartDelay.integer;//1500;
 		}
 
 		if (self->client->ps.forceHandExtend == HANDEXTEND_FORCE_HOLD)

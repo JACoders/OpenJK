@@ -4823,7 +4823,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			}
 			else
 			{
-				self->client->ps.saberAttackWound = level.time + 100;
+				self->client->ps.saberAttackWound = level.time + 100; //This should be configurable?
 			}
 		}
 	}
