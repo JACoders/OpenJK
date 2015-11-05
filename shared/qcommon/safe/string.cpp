@@ -40,9 +40,9 @@ namespace Q
 
 	int svtoi( const gsl::cstring_view& view )
 	{
-		auto end = view.end();
+		gsl::cstring_view::iterator end = view.end();
 		// skip whitespace
-		auto it = std::find_if_not( view.begin(), end, std::isspace );
+		gsl::cstring_view::iterator it = std::find_if_not( view.begin(), end, std::isspace );
 		if( it == end )
 		{
 			return 0;
