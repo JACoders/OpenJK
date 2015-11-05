@@ -12095,6 +12095,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->target,this_ent->NPC_type);
 			}
+			else if (strncmp(this_ent->classname, "NPC_", 4) == 0 || strncmp(this_ent->classname, "npc_", 4) == 0)
+			{
+				fprintf(this_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",this_ent->classname,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->targetname,this_ent->target,this_ent->NPC_type);
+			}
 			else if (strncmp(this_ent->classname, "weapon_", 7) == 0 || strncmp(this_ent->classname, "ammo_", 5) == 0 || 
 					 strncmp(this_ent->classname, "item_", 5) == 0)
 			{

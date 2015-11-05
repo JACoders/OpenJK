@@ -6265,9 +6265,9 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
-					else if (Q_stricmp(content, "npc_spawner") == 0)
+					else if (strncmp(content, "NPC_", 4) == 0 || strncmp(content, "npc_", 4) == 0)
 					{
-						zyk_set_entity_field(new_ent,"classname","npc_spawner");
+						zyk_set_entity_field(new_ent,"classname",va("%s", content));
 
 						fgets(content,sizeof(content),this_file);
 						if (content[strlen(content) - 1] == '\n')
