@@ -3,6 +3,7 @@
 // central point of include to simplify possible future swap for Microsoft's implementation
 #include <gsl/gsl-lite.h>
 
+// the default cstring_view constructor from string literals includes the terminating null; this one does not.
 #if defined( _MSC_VER ) && _MSC_VER < 1900
 // VS2013 needs a workaround for its lack of user-defined literals. Fuck VS2013.
 // TODO: eradicate VS2013
