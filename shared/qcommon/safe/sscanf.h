@@ -13,7 +13,7 @@ namespace Q
 {
 	namespace detail
 	{
-		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator )
+		inline std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator )
 		{
 			// Scan successful, all format arguments satisfied
 			return accumulator;
