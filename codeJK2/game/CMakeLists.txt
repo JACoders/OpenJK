@@ -240,6 +240,8 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
 set(JK2SPGameCommonSafeFiles
 	#We only have JKA qcommon files now.
 	"${SharedDir}/qcommon/safe/gsl.h"
+	"${SharedDir}/qcommon/safe/string.cpp"
+	"${SharedDir}/qcommon/safe/string.h"
 	"${SharedDir}/qcommon/safe/sscanf.h"
 	)
 source_group("common/safe" FILES ${JK2SPGameCommonSafeFiles})

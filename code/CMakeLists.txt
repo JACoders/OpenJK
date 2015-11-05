@@ -187,6 +187,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SharedDir}/qcommon/safe/files.cpp"
 		"${SharedDir}/qcommon/safe/files.h"
 		"${SharedDir}/qcommon/safe/gsl.h"
+		"${SharedDir}/qcommon/safe/string.cpp"
+		"${SharedDir}/qcommon/safe/string.h"
 		"${SharedDir}/qcommon/safe/sscanf.h"
 		"${SPDir}/qcommon/safe/memory.h"
 		)
