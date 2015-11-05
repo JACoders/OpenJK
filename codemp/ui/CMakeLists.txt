@@ -29,7 +29,7 @@ set(MPUIIncludeDirectories
 if(WIN32)
 	set(MPUILibraries "odbc32" "odbccp32") # what are these even?
 endif(WIN32)
-set(MPUIDefines ${MPSharedDefines} "_UI")
+set(MPUIDefines ${MPSharedDefines} "UI_BUILD")
 
 set(MPUIGameFiles
 	"${MPDir}/game/bg_misc.c"
