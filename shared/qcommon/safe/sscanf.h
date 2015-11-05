@@ -96,6 +96,8 @@ namespace Q
 		template< typename CharT >
 		class ArrayViewStreambuf : public std::basic_streambuf< CharT >
 		{
+			using Base = std::basic_streambuf< CharT >;
+			using pos_type = typename Base::pos_type;
 		public:
 			ArrayViewStreambuf( const gsl::array_view< const CharT >& view )
 			{
@@ -106,7 +108,7 @@ namespace Q
 
 		protected:
 			/// @note required by istream.tellg()
-			virtual typename std::basic_streambuf<CharT>::pos_type seekoff( typename std::basic_streambuf<CharT>::pos_type off, std::ios_base::seekdir dir, std::ios_base::openmode which )
+			virtual pos_type seekoff( pos_type off, std::ios_base::seekdir dir, std::ios_base::openmode which )
 			{
 				const pos_type errVal{ -1 };
 				if( which != std::ios_base::in )
@@ -114,14 +116,14 @@ namespace Q
 					// only input pointer can be moved
 					return errVal;
 				}
-				char* newPos = ( which == std::ios_base::beg ) ? eback()
-					: ( which == std::ios_base::cur ) ? gptr()
-					: egptr();
-				newPos += off;
-				if( eback() <= newPos && newPos <= egptr() )
+				char* newPos = ( dir == std::ios_base::beg ) ? Base::eback()
+					: ( dir == std::ios_base::cur ) ? Base::gptr()
+					: Base::egptr();
+				newPos += static_cast< int >( off );
+				if( Base::eback() <= newPos && newPos <= Base::egptr() )
 				{
-					setg( eback(), newPos, egptr() );
-					return newPos - eback();
+					setg( Base::eback(), newPos, Base::egptr() );
+					return newPos - Base::eback();
 				}
 				else
 				{
@@ -159,7 +161,6 @@ namespace Q
 					assert( stream.eof() );
 					pos = input.size();
 				}
-				assert( pos != std::istream::pos_type{ -1 } );
 				gsl::cstring_view::const_iterator end = input.begin() + static_cast< int >( pos );
 				return sscanf_impl( { end, input.end() }, accumulator + 1, std::forward< Tail >( tail )... );
 			}

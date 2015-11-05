@@ -42,7 +42,7 @@ namespace Q
 	{
 		gsl::cstring_view::iterator end = view.end();
 		// skip whitespace
-		gsl::cstring_view::iterator it = std::find_if_not( view.begin(), end, std::isspace );
+		gsl::cstring_view::iterator it = std::find_if_not<gsl::cstring_view::iterator, int( *)( int )>( view.begin(), end, std::isspace );
 		if( it == end )
 		{
 			return 0;
