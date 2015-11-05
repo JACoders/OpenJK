@@ -106,7 +106,7 @@ namespace Q
 
 		protected:
 			/// @note required by istream.tellg()
-			virtual pos_type seekoff( off_type off, std::ios_base::seekdir dir, std::ios_base::openmode which )
+			virtual typename std::basic_streambuf<CharT>::pos_type seekoff( typename std::basic_streambuf<CharT>::pos_type off, std::ios_base::seekdir dir, std::ios_base::openmode which )
 			{
 				const pos_type errVal{ -1 };
 				if( which != std::ios_base::in )
