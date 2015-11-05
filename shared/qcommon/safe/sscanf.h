@@ -6,6 +6,7 @@
 #include <istream>
 #include <streambuf>
 #include <utility>
+#include <cassert>
 
 #include "gsl.h"
 
@@ -116,7 +117,7 @@ namespace Q
 					: ( which == std::ios_base::cur ) ? gptr()
 					: egptr();
 				newPos += off;
-				if( eback() <= newPos && newPos < egptr() )
+				if( eback() <= newPos && newPos <= egptr() )
 				{
 					setg( eback(), newPos, egptr() );
 					return newPos - eback();
@@ -148,9 +149,16 @@ namespace Q
 				stream >> std::noskipws;
 			}
 			stream >> value;
-			if( stream )
+			if( !stream.fail() )
 			{
 				auto pos = stream.tellg();
+				// tellg() fails on eof, returning -1
+				if( pos == std::istream::pos_type{ -1 } )
+				{
+					assert( stream.eof() );
+					pos = input.size();
+				}
+				assert( pos != std::istream::pos_type{ -1 } );
 				gsl::cstring_view::const_iterator end = input.begin() + static_cast< int >( pos );
 				return sscanf_impl( { end, input.end() }, accumulator + 1, std::forward< Tail >( tail )... );
 			}
