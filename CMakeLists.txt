@@ -44,6 +44,8 @@ option(BuildJK2SPEngine "Whether to create projects for the jk2 SP engine (openj
 option(BuildJK2SPGame "Whether to create projects for the jk2 sp gamecode mod (jk2gamex86.dll)" OFF)
 option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (rdjosp-vanilla_x86.dll)" OFF)
 
+option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
+
 # Configure the use of bundled libraries.  By default, we assume the user is on
 # a platform that does not require any bundling.
 #
@@ -308,4 +310,7 @@ add_subdirectory(${MPDir})
 # Windows Symbol Server tools
 if(WIN32 AND MSVC)
 	add_subdirectory("tools/WinSymbol")
+endif()
+if(BuildTests)
+	add_subdirectory("tests")
 endif()
