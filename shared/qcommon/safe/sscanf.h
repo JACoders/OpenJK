@@ -7,6 +7,7 @@
 #include <streambuf>
 #include <utility>
 #include <cassert>
+#include <type_traits>
 
 #include "gsl.h"
 
@@ -131,7 +132,7 @@ namespace Q
 
 		/// For deducing ArrayViewStreambuf's template type
 		template< typename CharT >
-		inline ArrayViewStreambuf< CharT > MakeStreambuf( const gsl::array_view< const CharT >& view )
+		inline ArrayViewStreambuf< typename std::remove_cv< CharT >::type > MakeStreambuf( const gsl::array_view< const CharT >& view )
 		{
 			return{ view };
 		}
