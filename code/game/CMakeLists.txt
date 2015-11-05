@@ -267,6 +267,8 @@ set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
 
 set(SPGameCommonSafeFiles
 	"${SharedDir}/qcommon/safe/gsl.h"
+	"${SharedDir}/qcommon/safe/string.cpp"
+	"${SharedDir}/qcommon/safe/string.h"
 	"${SharedDir}/qcommon/safe/sscanf.h"
 	"${SharedDir}/qcommon/safe/files.h"
 	"${SharedDir}/qcommon/safe/files.cpp"

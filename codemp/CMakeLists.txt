@@ -142,6 +142,8 @@ if(BuildMPEngine OR BuildMPDed)
 
 	set(MPBotlibCommonSafeFiles
 		"${SharedDir}/qcommon/safe/gsl.h"
+		"${SharedDir}/qcommon/safe/string.cpp"
+		"${SharedDir}/qcommon/safe/string.h"
 		"${SharedDir}/qcommon/safe/sscanf.h"
 		)
 	source_group("common/safe" FILES ${MPBotlibCommonSafeFiles})
