@@ -2006,6 +2006,10 @@ qboolean ScoreIsTied( void ) {
 	return a == b;
 }
 
+const char *int_to_string(int i, char *buf, size_t bufSize) {
+	Com_sprintf(buf, bufSize, "%i", i);
+	return buf;
+}
 
 void PrintStats(int client) {
 	int			i, j = 0, gametype = level.gametype;
@@ -2108,45 +2112,45 @@ void PrintStats(int client) {
 			if (cl->pers.stats.enemyDrainDamage + cl->pers.stats.teamDrainDamage)
 				drainRatio = 100.0f * (float)cl->pers.stats.enemyDrainDamage / (float)(cl->pers.stats.enemyDrainDamage + cl->pers.stats.teamDrainDamage);
 
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lKills), itoa((level.gametype == GT_CTF) ? cl->pers.stats.kills : cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides, numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lKills), int_to_string((level.gametype == GT_CTF) ? cl->pers.stats.kills : cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDeaths), itoa((level.gametype == GT_CTF) ? cl->ps.persistant[PERS_KILLED] - cl->ps.fd.suicides : cl->ps.persistant[PERS_KILLED], numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDeaths), int_to_string((level.gametype == GT_CTF) ? cl->ps.persistant[PERS_KILLED] - cl->ps.fd.suicides : cl->ps.persistant[PERS_KILLED], numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lNet), itoa((level.gametype == GT_CTF) ? cl->pers.stats.kills - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides :cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides - cl->ps.persistant[PERS_KILLED], numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lNet), int_to_string((level.gametype == GT_CTF) ? cl->pers.stats.kills - cl->ps.persistant[PERS_KILLED] + cl->ps.fd.suicides :cl->ps.persistant[PERS_SCORE] + cl->pers.stats.teamKills + cl->ps.fd.suicides - cl->ps.persistant[PERS_KILLED], numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgGiven), itoa(cl->pers.stats.damageGiven, numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgGiven), int_to_string(cl->pers.stats.damageGiven, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgTaken), itoa(cl->pers.stats.damageTaken, numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgTaken), int_to_string(cl->pers.stats.damageTaken, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgNet), itoa(cl->pers.stats.damageGiven - cl->pers.stats.damageTaken, numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgNet), int_to_string(cl->pers.stats.damageGiven - cl->pers.stats.damageTaken, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgPerDeath), itoa(dmgPerDeath, numbuf, 10));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgPerDeath), int_to_string(dmgPerDeath, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);		
 			if (level.gametype == GT_TEAM) {
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTK), itoa(cl->pers.stats.teamKills, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTK), int_to_string(cl->pers.stats.teamKills, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			}
 			else if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lCaptures), itoa(cl->pers.teamState.captures, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lCaptures), int_to_string(cl->pers.teamState.captures, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lReturns), itoa(cl->pers.teamState.flagrecovery, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lReturns), int_to_string(cl->pers.teamState.flagrecovery, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lFragCarrier), itoa(cl->pers.teamState.fragcarrier, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lFragCarrier), int_to_string(cl->pers.teamState.fragcarrier, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 
 			}	
 			if (showAccuracy) {
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lAccuracy), itoa(accuracy, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lAccuracy), int_to_string(accuracy, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			}
 			if (showTeamPowers) {
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTE), itoa(cl->pers.stats.teamEnergizeGiven, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTE), int_to_string(cl->pers.stats.teamEnergizeGiven, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTH), itoa(cl->pers.stats.teamHealGiven, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTH), int_to_string(cl->pers.stats.teamHealGiven, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			}
 			if (showDrain) {
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDrain), itoa(drainRatio, numbuf, 10));
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDrain), int_to_string(drainRatio, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			}	
 			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s\n", strlen(lName), cl->pers.netname);
