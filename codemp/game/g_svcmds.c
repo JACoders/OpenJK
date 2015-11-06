@@ -533,6 +533,8 @@ void Svcmd_ResetScores_f (void) {
 			ent->client->pers.stats.kills = 0;
 			ent->client->pers.stats.teamHealGiven = 0;
 			ent->client->pers.stats.teamEnergizeGiven = 0;
+			ent->client->pers.stats.enemyDrainDamage = 0;
+			ent->client->pers.stats.teamDrainDamage = 0;
 			//Cmd_ForceChange_f(ent);
 			//WP_InitForcePowers( ent );
 		}

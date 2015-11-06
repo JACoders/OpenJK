@@ -2017,6 +2017,8 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 			{
 				int modPowerLevel = -1;
 				int	dmg = 0; //Q_irand( 1, 3 );
+				int dmg2 = 0;
+
 				if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_1)
 				{
 					dmg = 2; //because it's one-shot
@@ -2055,10 +2057,20 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 				if (dmg)
 				{
 					traceEnt->client->ps.fd.forcePower -= (dmg);
+					dmg2 = dmg;
+
 				}
 				if (traceEnt->client->ps.fd.forcePower < 0)
 				{
 					traceEnt->client->ps.fd.forcePower = 0;
+					dmg2 = 0;
+				}
+
+				if (g_gametype.integer >= GT_TEAM) {
+					if (self->client->sess.sessionTeam == traceEnt->client->sess.sessionTeam) 
+						self->client->pers.stats.teamDrainDamage += dmg2;
+					else
+						self->client->pers.stats.enemyDrainDamage += dmg2;
 				}
 
 				if (self->client->ps.stats[STAT_HEALTH] < self->client->ps.stats[STAT_MAX_HEALTH] &&
