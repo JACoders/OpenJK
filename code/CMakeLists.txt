@@ -162,7 +162,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
-		"${SharedDir}/qcommon/q_platform.h"
 
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
@@ -179,6 +178,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
 		"${SPDir}/qcommon/MiniHeap.h"
+		
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
@@ -186,10 +187,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineCommonSafeFiles
 		"${SharedDir}/qcommon/safe/files.cpp"
 		"${SharedDir}/qcommon/safe/files.h"
-		"${SharedDir}/qcommon/safe/gsl.h"
-		"${SharedDir}/qcommon/safe/string.cpp"
-		"${SharedDir}/qcommon/safe/string.h"
-		"${SharedDir}/qcommon/safe/sscanf.h"
+		${SharedCommonSafeFiles}
 		"${SPDir}/qcommon/safe/memory.h"
 		)
 	source_group("common/safe" FILES ${SPEngineCommonSafeFiles})
