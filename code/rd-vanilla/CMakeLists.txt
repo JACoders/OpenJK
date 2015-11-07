@@ -78,17 +78,15 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
-		"${SharedDir}/qcommon/q_platform.h"
+		
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPRDVanillaCommonFiles})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
 
 	# Misc files
 	set(SPRDVanillaCommonSafeFiles
-		"${SharedDir}/qcommon/safe/gsl.h"
-		"${SharedDir}/qcommon/safe/string.cpp"
-		"${SharedDir}/qcommon/safe/string.h"
-		"${SharedDir}/qcommon/safe/sscanf.h"
+		${SharedCommonSafeFiles}
 		)
 	source_group("common/safe" FILES ${SPRDVanillaCommonSafeFiles})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonSafeFiles})
