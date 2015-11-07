@@ -24,6 +24,7 @@ endif(NOT InOpenJK)
 set(TestFiles
 	"main.cpp"
 	"safe/string.cpp"
+	"safe/limited_vector.cpp"
 	"${SharedDir}/qcommon/safe/string.cpp"
 	)
 if(MSVC)

@@ -312,6 +312,7 @@ set(SharedCommonSafeFiles
 	"${SharedDir}/qcommon/safe/string.cpp"
 	"${SharedDir}/qcommon/safe/string.h"
 	"${SharedDir}/qcommon/safe/sscanf.h"
+	"${SharedDir}/qcommon/safe/limited_vector.h"
 	)
 
 
