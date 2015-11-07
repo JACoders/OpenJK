@@ -5,7 +5,7 @@
 
 namespace Q
 {
-	Ordering stricmp( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs )
+	Ordering stricmp( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs ) NOEXCEPT
 	{
 		auto lIt = lhs.begin();
 		auto rIt = rhs.begin();

@@ -15,9 +15,9 @@ namespace Q
 		EQ = 0,
 		GT = 1
 	};
-	Ordering stricmp( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs );
+	Ordering stricmp( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs ) NOEXCEPT;
 	/// Case-insensitive less comparator for cstring_view
-	struct CCStringViewILess
+	struct CStringViewILess
 	{
 		bool operator()( const gsl::cstring_view& lhs, const gsl::cstring_view& rhs ) const NOEXCEPT
 		{

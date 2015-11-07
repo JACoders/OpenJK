@@ -2,8 +2,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-// verifying that the compiler implements the standard correctly
-
 BOOST_AUTO_TEST_SUITE( safe )
 
 BOOST_AUTO_TEST_SUITE( string )
