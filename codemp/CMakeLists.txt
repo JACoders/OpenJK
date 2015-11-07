@@ -132,10 +132,11 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/cm_public.h"
 		"${MPDir}/qcommon/disablewarnings.h"
 		"${MPDir}/qcommon/q_shared.h"
-		"${SharedDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/qcommon.h"
 		"${MPDir}/qcommon/qfiles.h"
 		"${MPDir}/qcommon/tags.h"
+		
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${MPBotlibCommonFiles})
 	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibCommonFiles})

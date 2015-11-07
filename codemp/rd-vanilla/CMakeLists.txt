@@ -99,15 +99,14 @@ set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererRdCommon
 set(MPVanillaRendererCommonFiles
 	"${MPDir}/qcommon/matcomp.cpp"
 	"${MPDir}/qcommon/q_math.cpp"
-	"${MPDir}/qcommon/q_shared.cpp")
+	"${MPDir}/qcommon/q_shared.cpp"
+	
+	${SharedCommonFiles})
 source_group("common" FILES ${MPVanillaRendererCommonFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonFiles})
 
 set(MPVanillaRendererCommonSafeFiles
-	"${SharedDir}/qcommon/safe/gsl.h"
-	"${SharedDir}/qcommon/safe/string.cpp"
-	"${SharedDir}/qcommon/safe/string.h"
-	"${SharedDir}/qcommon/safe/sscanf.h"
+	${SharedCommonSafeFiles}
 	)
 source_group("common/safe" FILES ${MPVanillaRendererCommonSafeFiles})
 set(MPVanillaRendererFiles ${MPVanillaRendererFiles} ${MPVanillaRendererCommonSafeFiles})

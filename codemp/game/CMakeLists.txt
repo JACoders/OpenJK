@@ -149,17 +149,15 @@ set(MPGameCommonFiles
 	"${MPDir}/qcommon/q_shared.c"
 	"${MPDir}/qcommon/disablewarnings.h"
 	"${MPDir}/qcommon/q_shared.h"
-	"${SharedDir}/qcommon/q_platform.h"
 	"${MPDir}/qcommon/tags.h"
+	
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${MPGameCommonFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCommonFiles})
 
 set(MPGameCommonSafeFiles
-	"${SharedDir}/qcommon/safe/gsl.h"
-	"${SharedDir}/qcommon/safe/string.cpp"
-	"${SharedDir}/qcommon/safe/string.h"
-	"${SharedDir}/qcommon/safe/sscanf.h"
+	${SharedCommonSafeFiles}
 	)
 source_group("common/safe" FILES ${MPGameCommonSafeFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCommonSafeFiles})

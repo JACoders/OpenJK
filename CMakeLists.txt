@@ -21,11 +21,15 @@ cmake_minimum_required(VERSION 2.8.9)
 # For checks in subdirectories
 set(InOpenJK TRUE)
 
+
+
 # Project name
 set(ProjectName "OpenJK" CACHE STRING "Project Name")
 project(${ProjectName})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+
+
 
 # Customizable options
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" OFF)
@@ -81,11 +85,15 @@ if(APPLE)
   option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 endif()
 
+
+
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
 Include(CheckTypeSize)
 check_type_size("void*" CMAKE_SIZEOF_VOID_P)
+
+
 
 # ${Architecture} must match ARCH_STRING in q_platform.h,
 # and is used in DLL names (jagamex86.dll, jagamex86.dylib, jagamei386.so).
@@ -124,10 +132,14 @@ endif()
 
 message("Architecture is ${Architecture}")
 
+
+
 # Current Git SHA1 hash
 include(GetGitRevisionDescription)
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 message("Git revision is ${GIT_SHA1}")
+
+
 
 # Binary names
 set(SPEngine "openjk_sp.${Architecture}")
@@ -147,6 +159,8 @@ set(AssetsPk3 "openjk-${Architecture}.pk3")
 set(MPBotLib "botlib")
 set(SharedLib "shared")
 
+
+
 # Paths
 set(SPDir "${CMAKE_SOURCE_DIR}/code")
 set(MPDir "${CMAKE_SOURCE_DIR}/codemp")
@@ -156,6 +170,8 @@ set(OpenJKLibDir "${CMAKE_SOURCE_DIR}/lib")
 set(GSLIncludeDirectory "${OpenJKLibDir}/gsl-lite/include")
 
 include(InstallConfig)
+
+
 
 # Operating settings
 if(WIN64)
@@ -169,6 +185,8 @@ endif()
 if (NOT WIN32 AND NOT APPLE)
 	set(SharedDefines "ARCH_STRING=\"${Architecture}\"")
 endif()
+
+
 
 # Compiler settings
 if(MSVC)
@@ -275,10 +293,27 @@ else()
 	set(SharedDefines ${SharedDefines} "FINAL_BUILD")
 endif()
 
+
+
 # Settings
 if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
 endif()
+
+
+
+
+# Files shared across all projects
+set(SharedCommonFiles
+	"${SharedDir}/qcommon/q_platform.h"
+	)
+set(SharedCommonSafeFiles
+	"${SharedDir}/qcommon/safe/gsl.h"
+	"${SharedDir}/qcommon/safe/string.cpp"
+	"${SharedDir}/qcommon/safe/string.h"
+	"${SharedDir}/qcommon/safe/sscanf.h"
+	)
+
 
 if(UseInternalJPEG)
   add_subdirectory(lib/jpeg-9a)

@@ -260,16 +260,14 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	"${SharedDir}/qcommon/q_platform.h"
+	
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${SPGameCommonFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
 
 set(SPGameCommonSafeFiles
-	"${SharedDir}/qcommon/safe/gsl.h"
-	"${SharedDir}/qcommon/safe/string.cpp"
-	"${SharedDir}/qcommon/safe/string.h"
-	"${SharedDir}/qcommon/safe/sscanf.h"
+	${SharedCommonSafeFiles}
 	"${SharedDir}/qcommon/safe/files.h"
 	"${SharedDir}/qcommon/safe/files.cpp"
 	"${SPDir}/qcommon/safe/memory.h"
