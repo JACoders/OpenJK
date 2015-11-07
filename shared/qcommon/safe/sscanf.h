@@ -112,7 +112,7 @@ namespace Q
 				std::ios_base::openmode which
 				) override
 			{
-				const pos_type errVal{ -1 };
+				const typename std::basic_streambuf< CharT >::pos_type errVal{ -1 };
 				if( which != std::ios_base::in )
 				{
 					// only input pointer can be moved
