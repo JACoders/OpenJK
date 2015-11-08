@@ -12093,9 +12093,9 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "fx_runner") == 0)
 			{
-				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+				fprintf(this_file,"fx_runner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
-					this_ent->targetname,this_ent->target,this_ent->message);
+					this_ent->targetname,this_ent->target,this_ent->message,this_ent->soundSet);
 			}
 			else if (Q_stricmp(this_ent->classname, "npc") == 0 || Q_stricmp(this_ent->classname, "npc_spawner") == 0)
 			{

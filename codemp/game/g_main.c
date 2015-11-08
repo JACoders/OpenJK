@@ -6308,6 +6308,11 @@ void G_RunFrame( int levelTime ) {
 						new_ent->s.modelindex = G_EffectIndex( G_NewString(content) );
 						new_ent->message = G_NewString(content); // zyk: used by Entity System to save the effect fxFile, so the effect is loaded properly by entload command
 
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"soundset",content);
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (strncmp(content, "NPC_", 4) == 0 || strncmp(content, "npc_", 4) == 0)
