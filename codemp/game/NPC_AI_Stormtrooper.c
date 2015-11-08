@@ -1913,8 +1913,8 @@ void ST_Commander( void )
 		}
 
 		//see if this member should start running (only if have no officer... FIXME: should always run from AEL_DANGER_GREAT?)
-		if ( !group->commander || group->commander->NPC->rank < RANK_ENSIGN )
-		{
+		if ( !group->commander || (group->commander->NPC && group->commander->NPC->rank < RANK_ENSIGN) )
+		{ // zyk: bug fix. Must test NPC. It was crashing server in t2_rogue map when the four assassin_droids appear
 			if ( NPC_CheckForDanger( NPC_CheckAlertEvents( qtrue, qtrue, -1, qfalse, AEL_DANGER ) ) )
 			{//going to run
 				ST_Speech( NPCS.NPC, SPEECH_COVER, 0 );
@@ -1969,8 +1969,8 @@ void ST_Commander( void )
 				}
 				if ( NPCS.NPC->health <= 10 )
 				{
-					if ( !group->commander || group->commander->NPC->rank < RANK_ENSIGN )
-					{
+					if ( !group->commander || (group->commander->NPC && group->commander->NPC->rank < RANK_ENSIGN) )
+					{ // zyk: bug fix. Must test NPC. It was crashing server in t2_rogue map when the four assassin_droids appear
 						cpFlags |= (CP_FLEE|CP_AVOID|CP_RETREAT);
 						squadState = SQUAD_RETREAT;
 					}
