@@ -5731,20 +5731,23 @@ void try_finishing_race()
 	int j = 0, has_someone_racing = 0;
 	gentity_t *this_ent = NULL;
 
-	for (j = 0; j < level.maxclients; j++)
-	{ 
-		this_ent = &g_entities[j];
-		if (this_ent && this_ent->client && this_ent->inuse && this_ent->health > 0 && this_ent->client->sess.sessionTeam != TEAM_SPECTATOR && this_ent->client->pers.race_position > 0)
-		{ // zyk: searches for the players who are still racing to see if we must finish the race
-			has_someone_racing = 1;
+	if (level.race_mode != 0)
+	{
+		for (j = 0; j < level.maxclients; j++)
+		{ 
+			this_ent = &g_entities[j];
+			if (this_ent && this_ent->client && this_ent->inuse && this_ent->health > 0 && this_ent->client->sess.sessionTeam != TEAM_SPECTATOR && this_ent->client->pers.race_position > 0)
+			{ // zyk: searches for the players who are still racing to see if we must finish the race
+				has_someone_racing = 1;
+			}
 		}
-	}
 
-	if (has_someone_racing == 0)
-	{ // zyk: no one is racing, so finish the race
-		level.race_mode = 0;
+		if (has_someone_racing == 0)
+		{ // zyk: no one is racing, so finish the race
+			level.race_mode = 0;
 
-		trap->SendServerCommand( -1, va("chat \"^3Race System: ^7The race is over!\""));
+			trap->SendServerCommand( -1, va("chat \"^3Race System: ^7The race is over!\""));
+		}
 	}
 }
 
