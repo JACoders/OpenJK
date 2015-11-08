@@ -1088,8 +1088,8 @@ void SetTeam( gentity_t *ent, char *s ) {
 	if ( !ClientUserinfoChanged( clientNum ) )
 		return;
 
-	if (!g_preventTeamBegin)
-	{
+	if (!g_preventTeamBegin && level.load_entities_timer == 0)
+	{ // zyk: do not call this while entities are being placed in map
 		ClientBegin( clientNum, qfalse );
 	}
 }

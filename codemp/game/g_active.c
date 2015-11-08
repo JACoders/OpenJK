@@ -4034,7 +4034,7 @@ void ClientThink_real( gentity_t *ent ) {
 	// check for respawning
 	if ( client->ps.stats[STAT_HEALTH] <= 0
 		&& !(client->ps.eFlags2&EF2_HELD_BY_MONSTER)//can't respawn while being eaten
-		&& ent->s.eType != ET_NPC ) {
+		&& ent->s.eType != ET_NPC && level.load_entities_timer == 0) { // zyk: cannot respawn while entities are being loaded
 		// wait for the attack button to be pressed
 		if ( level.time > client->respawnTime && !gDoSlowMoDuel ) {
 			// forcerespawn is to prevent users from waiting out powerups
