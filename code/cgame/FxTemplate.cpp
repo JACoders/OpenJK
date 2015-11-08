@@ -256,7 +256,7 @@ namespace detail
 	struct ScanStrings
 	{
 		template< std::size_t count, typename... Args >
-		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args... args )
+		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
 		{
 			return ScanStrings< remaining - 1 >::call( val, arr, arr[ remaining - 1 ], args... );
 		}
@@ -266,7 +266,7 @@ namespace detail
 	struct ScanStrings< 0 >
 	{
 		template< std::size_t count, typename... Args >
-		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args... args )
+		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
 		{
 			return Q::sscanf( val, args... );
 		}
