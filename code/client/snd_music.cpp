@@ -408,7 +408,11 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 	{
 		const CGPGroup& pFileGroup = Parser.GetBaseParseGroup();
 		const CGPGroup* pgMusicFiles = pFileGroup.FindSubGroup( sKEY_MUSICFILES );
-		if( pgMusicFiles )
+		if( !pgMusicFiles )
+		{
+			Music_Parse_Error(filename, build_string( "Unable to find subgroup \"", sKEY_MUSICFILES ,"\"\n" ) );
+		}
+		else
 		{
 			const CGPGroup* pgLevelMusic = pFileGroup.FindSubGroup( sKEY_LEVELMUSIC );
 
@@ -422,10 +426,11 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 				//
 				// check for new USE keyword...
 				//
-				int iSanityLimit = 0;
+				int steps = 0;
 				gsl::cstring_view searchName{ &sLevelName[ 0 ], &sLevelName[ strlen( &sLevelName[ 0 ] ) ] };
 
-				while( !searchName.empty() && iSanityLimit < 10 )
+				constexpr int sanityLimit = 10;
+				while( !searchName.empty() && steps < sanityLimit )
 				{
 					gsLevelNameForLoad = StringViewToSString( searchName );
 					gsLevelNameForBossLoad = gsLevelNameForLoad;
@@ -439,7 +444,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 							// re-search using the USE param...
 							//
 							searchName = pValue->GetTopValue();
-							iSanityLimit++;
+							steps++;
 							//									Com_DPrintf("Using \"%s\"\n",sSearchName.c_str());
 						}
 						else
@@ -459,7 +464,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 
 				// now go ahead and use the final music set we've decided on...
 				//
-				if( pgThisLevelMusic && iSanityLimit < 10 )
+				if( !pgThisLevelMusic || steps >= sanityLimit )
 				{
 					Music_Parse_Warning( build_string( "Unable to find entry for \"", sLevelName, "\" in \"", filename, "\"\n" ) );
 				}
