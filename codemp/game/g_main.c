@@ -5917,6 +5917,41 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
+					else if (Q_stricmp(content, "target_speaker") == 0)
+					{
+						zyk_set_entity_field(new_ent,"classname","target_speaker");
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						x = atoi(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						y = atoi(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						z = atoi(content);
+						zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"spawnflags",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"targetname",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"message",content);
+
+						zyk_spawn_entity(new_ent);
+					}
 					else if (Q_stricmp(content, "trigger_teleport") == 0 || Q_stricmp(content, "trigger_multiple") == 0 ||
 							 Q_stricmp(content, "trigger_once") == 0 || Q_stricmp(content, "trigger_hurt") == 0)
 					{

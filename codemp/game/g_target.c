@@ -292,8 +292,15 @@ void SP_target_speaker( gentity_t *ent ) {
 	G_SpawnFloat( "wait", "0", &ent->wait );
 	G_SpawnFloat( "random", "0", &ent->random );
 
-	if ( G_SpawnString ( "soundSet", "", &s ) )
+	if ( ent->spawnflags & 65536 || G_SpawnString ( "soundSet", "", &s ) )
 	{	// this is a sound set
+		// zyk: for entadd to work. Using this spawnflag so we know message is the soundSet string
+		if (ent->spawnflags & 65536)
+			s = G_NewString(ent->message);
+
+		ent->spawnflags |= 65536;
+		ent->message = G_NewString(s);
+
 		ent->s.soundSetIndex = G_SoundSetIndex(s);
 		ent->s.eFlags = EF_PERMANENT;
 		VectorCopy( ent->s.origin, ent->s.pos.trBase );
@@ -301,15 +308,23 @@ void SP_target_speaker( gentity_t *ent ) {
 		return;
 	}
 
-	if ( !G_SpawnString( "noise", "NOSOUND", &s ) ) {
+	if (!(ent->spawnflags & 32768) && !G_SpawnString( "noise", "NOSOUND", &s ) ) {
 		trap->Error( ERR_DROP, "target_speaker without a noise key at %s", vtos( ent->s.origin ) );
 	}
+
+	// zyk: adding spawnflag to know this case when using the mod entity system
+	if (ent->spawnflags & 32768)
+		s = G_NewString(ent->message);
 
 	// force all client reletive sounds to be "activator" speakers that
 	// play on the entity that activates it
 	if ( s[0] == '*' ) {
 		ent->spawnflags |= 8;
 	}
+
+	// zyk: setting noise string so entadd can work
+	ent->spawnflags |= 32768;
+	ent->message = G_NewString(s);
 
 	Q_strncpyz( buffer, s, sizeof(buffer) );
 
