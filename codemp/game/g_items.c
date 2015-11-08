@@ -3335,7 +3335,10 @@ void G_SpawnItem (gentity_t *ent, gitem_t *item) {
 	int wDisable = 0;
 
 	G_SpawnFloat( "random", "0", &ent->random );
-	G_SpawnFloat( "wait", "0", &ent->wait );
+
+	// zyk: this spawnflags allow setting wait with entadd command
+	if (!(ent->spawnflags & 65536))
+		G_SpawnFloat( "wait", "0", &ent->wait );
 
 	if (level.gametype == GT_DUEL || level.gametype == GT_POWERDUEL)
 	{
