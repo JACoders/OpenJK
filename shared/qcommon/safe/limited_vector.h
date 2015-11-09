@@ -86,20 +86,6 @@ namespace Q
 			return maximum;
 		}
 
-		bool push_back( const T& value ) NOEXCEPT_IF( IS_NOEXCEPT(
-			emplace_back( static_cast< const T& >( std::declval< T >() ) )
-			) )
-		{
-			return emplace_back( value );
-		}
-
-		bool push_back( T&& value ) NOEXCEPT_IF( IS_NOEXCEPT(
-			emplace_back( std::move( std::declval< T >() ) )
-			) )
-		{
-			return emplace_back( std::move( value ) );
-		}
-
 		template< typename... Args >
 		bool emplace_back( Args&&... args ) NOEXCEPT_IF( IS_NOEXCEPT(
 			T{ std::forward< Args >( std::declval< Args >() )... }
@@ -114,6 +100,20 @@ namespace Q
 			new( memory ) T( std::forward< Args >( args )... );
 			++_size;
 			return true;
+		}
+
+		bool push_back( const T& value ) NOEXCEPT_IF( IS_NOEXCEPT(
+			emplace_back( static_cast< const T& >( std::declval< T >() ) )
+			) )
+		{
+			return emplace_back( value );
+		}
+
+		bool push_back( T&& value ) NOEXCEPT_IF( IS_NOEXCEPT(
+			emplace_back( std::move( std::declval< T >() ) )
+			) )
+		{
+			return emplace_back( std::move( value ) );
 		}
 
 		void pop_back() NOEXCEPT
