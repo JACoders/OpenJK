@@ -3012,6 +3012,24 @@ void SP_CreateRain( gentity_t *ent )
 	G_EffectIndex(va("*rain init %i", ent->count));
 }
 
+/*QUAKED fx_weather (1 0 0) (-16 -16 -16) (16 16 16)
+This world effect will spawn rain globally into the level.
+
+"message" the weather type
+"mins" weather zone mins
+"maxs" weather zone maxs
+*/
+//----------------------------------------------------------
+void SP_CreateWeather( gentity_t *ent )
+{
+	if (Q_stricmp(ent->message, "rain") == 0)
+		G_EffectIndex(va("*rain init 500"));
+	else if (Q_stricmp(ent->message, "spacedust") == 0)
+		G_EffectIndex(va("*spacedust 1000"));
+	else
+		G_EffectIndex(va("*%s", ent->message));
+}
+
 qboolean gEscaping = qfalse;
 int gEscapeTime = 0;
 

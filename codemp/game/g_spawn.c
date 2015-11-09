@@ -438,6 +438,7 @@ void SP_waypoint_navgoal_1 (gentity_t *ent);
 void SP_CreateSpaceDust( gentity_t *ent );
 void SP_CreateSnow( gentity_t *ent );
 void SP_CreateRain( gentity_t *ent );
+void SP_CreateWeather( gentity_t *ent ); // zyk: added this function
 
 void SP_point_combat( gentity_t *self );
 
@@ -728,6 +729,7 @@ spawn_t	spawns[] = {
 	{ "waypoint_navgoal_4",					SP_waypoint_navgoal_4 },
 	{ "waypoint_navgoal_8",					SP_waypoint_navgoal_8 },
 	{ "waypoint_small",						SP_waypoint_small },
+	{ "zyk_weather",						SP_CreateWeather }, // zyk: added this code
 };
 
 static int sortspawn( const void *a, const void *b ) {
