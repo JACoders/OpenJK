@@ -37,7 +37,9 @@ source_group( "tests" REGULAR_EXPRESSION ".*")
 source_group( "tests\\safe" REGULAR_EXPRESSION "safe/.*" )
 source_group( "qcommon\\safe" REGULAR_EXPRESSION "${SharedDir}/qcommon/safe/.*" )
 
-set( Boost_USE_STATIC_LIBS ON )
+if(MSVC)
+	set( Boost_USE_STATIC_LIBS ON )
+endif()
 find_package( Boost COMPONENTS unit_test_framework REQUIRED )
 
 set(TestTarget "UnitTests")
@@ -49,10 +51,16 @@ set(TestIncludeDirectories
 	)
 set(TestDefines "${SharedDefines}")
 
-
 add_executable(${TestTarget} ${TestFiles})
 set_target_properties(${TestTarget} PROPERTIES COMPILE_DEFINITIONS "${TestDefines}")
 set_target_properties(${TestTarget} PROPERTIES INCLUDE_DIRECTORIES "${TestIncludeDirectories}")
 set_target_properties(${TestTarget} PROPERTIES PROJECT_LABEL "Unit Tests")
 target_link_libraries(${TestTarget} ${TestLibraries})
 install(TARGETS ${TestTarget} DESTINATION ".")
+
+if(NOT MSVC)
+	#Generate a main function
+	target_compile_definitions(${TestTarget} PRIVATE BOOST_TEST_DYN_LINK)
+endif()
+
+add_test(NAME unittests COMMAND ${TestTarget})
