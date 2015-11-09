@@ -58,4 +58,9 @@ set_target_properties(${TestTarget} PROPERTIES PROJECT_LABEL "Unit Tests")
 target_link_libraries(${TestTarget} ${TestLibraries})
 install(TARGETS ${TestTarget} DESTINATION ".")
 
+if(NOT MSVC)
+	#Generate a main function
+	target_compile_definitions(${TestTarget} PRIVATE BOOST_TEST_DYN_LINK)
+endif()
+
 add_test(NAME unittests COMMAND ${TestTarget})
