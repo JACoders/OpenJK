@@ -6,8 +6,6 @@
 
 #include <boost/test/unit_test.hpp>
 
-using namespace std::string_literals;
-
 using IntVector = Q::LimitedVector< int, 10 >;
 using StringVector = Q::LimitedVector< std::string, 10 >;
 using IntPtrVector = Q::LimitedVector< std::unique_ptr< int >, 10 >;
@@ -44,18 +42,18 @@ BOOST_AUTO_TEST_CASE( fill_and_copy )
 
 	BOOST_CHECK( it != stringVec.end() );
 	BOOST_CHECK( cit != stringVec.end() );
-	BOOST_CHECK_EQUAL( *it, "hello world"s );
-	BOOST_CHECK_EQUAL( *cit, "hello world"s );
-	BOOST_CHECK_EQUAL( stringVec[ 0 ], "hello world"s );
+	BOOST_CHECK_EQUAL( *it, "hello world" );
+	BOOST_CHECK_EQUAL( *cit, "hello world" );
+	BOOST_CHECK_EQUAL( stringVec[ 0 ], "hello world" );
 
 	++it;
 	++cit;
 
 	BOOST_CHECK( it != stringVec.end() );
 	BOOST_CHECK( cit != stringVec.end() );
-	BOOST_CHECK_EQUAL( *it, "emplaced"s );
-	BOOST_CHECK_EQUAL( *cit, "emplaced"s );
-	BOOST_CHECK_EQUAL( stringVec[ 1 ], "emplaced"s );
+	BOOST_CHECK_EQUAL( *it, "emplaced" );
+	BOOST_CHECK_EQUAL( *cit, "emplaced" );
+	BOOST_CHECK_EQUAL( stringVec[ 1 ], "emplaced" );
 
 	++it;
 	++cit;
@@ -92,9 +90,9 @@ BOOST_AUTO_TEST_CASE( fill_and_copy )
 BOOST_AUTO_TEST_CASE( fill_and_move )
 {
 	IntPtrVector vec1, vec2;
-	BOOST_CHECK( vec1.push_back( std::make_unique< int >( 42 ) ) );
-	BOOST_CHECK( vec1.push_back( std::make_unique< int >( 1337 ) ) );
-	BOOST_CHECK( vec2.push_back( std::make_unique< int >( 0 ) ) );
+	BOOST_CHECK( vec1.push_back( std::unique_ptr< int >( new int(42) ) ) );
+	BOOST_CHECK( vec1.push_back( std::unique_ptr< int >( new int(1337) ) ) );
+	BOOST_CHECK( vec2.push_back( std::unique_ptr< int >( new int(0) ) ) );
 	BOOST_CHECK( vec2.emplace_back() ); // nullptr3
 
 	BOOST_CHECK_EQUAL( vec1.size(), 2 );
