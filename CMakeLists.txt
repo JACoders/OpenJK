@@ -85,8 +85,6 @@ if(APPLE)
   option(MakeApplicationBundles "Whether to build .app application bundles for engines built" ON)
 endif()
 
-
-
 # Custom CMake Modules needed
 list(INSERT CMAKE_MODULE_PATH 0 "${CMAKE_SOURCE_DIR}/CMakeModules")
 
@@ -348,5 +346,6 @@ if(WIN32 AND MSVC)
 	add_subdirectory("tools/WinSymbol")
 endif()
 if(BuildTests)
+	enable_testing()
 	add_subdirectory("tests")
 endif()
