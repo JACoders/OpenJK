@@ -185,8 +185,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define DLL_EXT ".so"
 #endif
 
-#if defined( _MSC_VER ) && (_MSC_VER < 1900)
+#if (defined( _MSC_VER ) && (_MSC_VER < 1900)) || (defined(__GNUC__))
 // VS2013, which for some reason we still support, does not support noexcept
+// GCC GNU has the same problem: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52869
 #define NOEXCEPT
 #define NOEXCEPT_IF(x)
 #define IS_NOEXCEPT(x) false
