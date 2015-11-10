@@ -4777,6 +4777,19 @@ void ultra_drain(gentity_t *ent, int radius, int damage, int duration)
 	zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_drain", "4", "misc/possession", 1000, damage, radius, duration);
 }
 
+// zyk: Magic Explosion
+void magic_explosion(gentity_t *ent, int radius, int damage, int duration)
+{
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+	{ // zyk: Magic Master Unique Skill increases damage
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 1000, damage * 2, radius, duration);
+	}
+	else
+	{
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 1000, damage, radius, duration);
+	}
+}
+
 // zyk: Healing Area
 void healing_area(gentity_t *ent, int damage, int duration)
 {
@@ -5058,15 +5071,19 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 20 && ent->client->pers.skill_levels[55] < 2)
+	else if (selected_power == 20 && ent->client->pers.skill_levels[55] < 1)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 3)
+	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 2)
 	{
 		return qfalse;
 	}
-	else if (selected_power < 1 || selected_power > 21)
+	else if (selected_power == 22 && ent->client->pers.skill_levels[55] < 3)
+	{
+		return qfalse;
+	}
+	else if (selected_power < 1 || selected_power > 22)
 	{ // zyk: if, for some reason, there is an invalid selected power value, does not allow it
 		return qfalse;
 	}
@@ -5160,6 +5177,10 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
+	else if (selected_power == 22)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Explosion     ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
 }
 
 void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
@@ -5169,7 +5190,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_special_power++;
-			if (ent->client->sess.selected_special_power == 22)
+			if (ent->client->sess.selected_special_power == 23)
 				ent->client->sess.selected_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
@@ -5179,7 +5200,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_special_power--;
 			if (ent->client->sess.selected_special_power == 0)
-				ent->client->sess.selected_special_power = 21;
+				ent->client->sess.selected_special_power = 22;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 
@@ -5193,7 +5214,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_left_special_power++;
-			if (ent->client->sess.selected_left_special_power == 22)
+			if (ent->client->sess.selected_left_special_power == 23)
 				ent->client->sess.selected_left_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
@@ -5203,7 +5224,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_left_special_power--;
 			if (ent->client->sess.selected_left_special_power == 0)
-				ent->client->sess.selected_left_special_power = 21;
+				ent->client->sess.selected_left_special_power = 22;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 
@@ -5217,7 +5238,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_right_special_power++;
-			if (ent->client->sess.selected_right_special_power == 22)
+			if (ent->client->sess.selected_right_special_power == 23)
 				ent->client->sess.selected_right_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
@@ -5227,7 +5248,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_right_special_power--;
 			if (ent->client->sess.selected_right_special_power == 0)
-				ent->client->sess.selected_right_special_power = 21;
+				ent->client->sess.selected_right_special_power = 22;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 
@@ -9801,6 +9822,12 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 23)
+						{
+							magic_explosion(ent,300,250,1600);
+							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Magic Explosion!\""));
+							ent->client->pers.hunter_quest_messages++;
+						}
+						else if (ent->client->pers.hunter_quest_messages == 24)
 						{
 							chaos_power(ent,1600,300);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Chaos Power!\"");

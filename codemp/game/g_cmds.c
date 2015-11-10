@@ -3570,6 +3570,7 @@ extern void ultra_drain(gentity_t *ent, int radius, int damage, int duration);
 extern void magic_shield(gentity_t *ent, int duration);
 extern void healing_area(gentity_t *ent, int damage, int duration);
 extern void lightning_dome(gentity_t *ent, int damage);
+extern void magic_explosion(gentity_t *ent, int radius, int damage, int duration);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -4022,6 +4023,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_lightning_dome_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Lightning Dome!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 22 && zyk_enable_magic_explosion.integer == 1 && ent->client->pers.magic_power >= zyk_magic_explosion_mp_cost.integer)
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						magic_explosion(ent,300,200,1600);
+						ent->client->pers.magic_power -= zyk_magic_explosion_mp_cost.integer;
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_explosion_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + zyk_magic_explosion_cooldown.integer;
+						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Magic Explosion!\"", ent->client->pers.netname));
 					}
 				}
 
@@ -9032,13 +9044,13 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.rpg_class == 7)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Speed: ^7increases your run speed. Attack with D + special melee to use this power. MP cost: %d\n^3Slow Motion: ^7decreases the run speed of enemies nearby. Attack with A + special melee to use this power. MP cost: %d\n\"", zyk_ultra_speed_mp_cost.integer, zyk_slow_motion_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 8)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages everyone near you. MP cost: %d\n^3Healing Area: ^7creates an energy area that heals you and your allies and damage enemies. MP cost: %d\n^3Lightning Dome: ^7creates a dome that does lightning damage. MP cost: %d\n\nThis class can use any of the Light Quest special powers. Use A, W or D and melee kata to use a power. You can set each of A, W and D powers with the force power keys (usually the F3, F4, F5, F6, F7 and F8 keys)\n\"", zyk_inner_area_mp_cost.integer, zyk_healing_area_mp_cost.integer, zyk_lightning_dome_mp_cost.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages everyone near you. MP cost: %d\n^3Healing Area: ^7creates an energy area that heals you and your allies and damage enemies. MP cost: %d\n^3Lightning Dome: ^7creates a dome that does lightning damage. MP cost: %d\n^3Magic Explosion: ^7creates a short explosion that does a lot of damage. MP cost: %d\n\nThis class can use any of the Light Quest special powers. Use A, W or D and melee kata to use a power. You can set each of A, W and D powers with the force power keys (usually the F3, F4, F5, F6, F7 and F8 keys)\n\"", zyk_inner_area_mp_cost.integer, zyk_healing_area_mp_cost.integer, zyk_lightning_dome_mp_cost.integer, zyk_magic_explosion_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 9)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ice Boulder: ^7creates a boulder that damages and traps enemies nearby for some seconds. Attack with D + special melee to use this power. MP cost: %d\n^3Ice Stalagmite: ^7greatly damages enemies nearby with a stalagmite. Attack with A + special melee to use this power. MP cost: %d\n\"", zyk_ice_boulder_mp_cost.integer, zyk_ice_stalagmite_mp_cost.integer) );
 				}
 				else if (Q_stricmp( arg1, "#" ) == 0)
 				{
-					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: increases magic bolts damage. Inner Area Damage and Lightning Dome have more damage and Healing Area has more damage and heals more\nForce Tank: increases resistance to damage for some seconds\n\"") );
+					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nForce User: faster force regen\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: increases magic bolts damage. Inner Area Damage, Lightning Dome and Magic Explosion have more damage and Healing Area has more damage and heals more\nForce Tank: increases resistance to damage for some seconds\n\"") );
 				}
 				else
 				{
