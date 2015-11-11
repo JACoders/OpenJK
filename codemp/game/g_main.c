@@ -4782,11 +4782,11 @@ void magic_explosion(gentity_t *ent, int radius, int damage, int duration)
 {
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 	{ // zyk: Magic Master Unique Skill increases damage
-		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 1000, damage * 2, radius, duration);
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 500, damage * 2, radius, duration);
 	}
 	else
 	{
-		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 1000, damage, radius, duration);
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 500, damage, radius, duration);
 	}
 }
 
@@ -5075,11 +5075,11 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 2)
+	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 3)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 22 && ent->client->pers.skill_levels[55] < 3)
+	else if (selected_power == 22 && ent->client->pers.skill_levels[55] < 2)
 	{
 		return qfalse;
 	}
@@ -9823,7 +9823,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 23)
 						{
-							magic_explosion(ent,300,250,1600);
+							magic_explosion(ent,300,200,900);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Magic Explosion!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
