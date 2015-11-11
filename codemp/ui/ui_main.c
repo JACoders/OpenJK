@@ -5484,6 +5484,15 @@ static void UI_UpdateSaberCvars ( void )
 {
 	saber_colors_t colorI;
 
+	if ( !Q_stricmpn( UI_Cvar_VariableString( "ui_saber_color" ), "rgb", 3 ) )
+		trap->Cvar_Set( "cp_sbRGB1", va( "%i", ui_sab1_r.integer | ((ui_sab1_g.integer | (ui_sab1_b.integer << 8)) << 8) ) );
+	else
+		trap->Cvar_Set( "cp_sbRGB1", "0" );
+	if ( !Q_stricmpn( UI_Cvar_VariableString( "ui_saber2_color" ), "rgb", 3 ) )
+		trap->Cvar_Set( "cp_sbRGB2", va( "%i", ui_sab2_r.integer | ((ui_sab2_g.integer | (ui_sab2_b.integer << 8)) << 8) ) );
+	else
+		trap->Cvar_Set( "cp_sbRGB2", "0" );
+
 	trap->Cvar_Set ( "saber1", UI_Cvar_VariableString ( "ui_saber" ) );
 	trap->Cvar_Set ( "saber2", UI_Cvar_VariableString ( "ui_saber2" ) );
 
@@ -5646,11 +5655,21 @@ static void UI_UpdateSaberHilt( qboolean secondSaber )
 	}
 }
 
-static void UI_UpdateSaberColor( qboolean secondSaber )
-{
+static void UI_UpdateSaberColor( qboolean secondSaber ) {
+	//Raz: Reverse engineered JA+ code. Kill me.
+	if ( !Q_stricmpn( UI_Cvar_VariableString( "ui_saber_color" ), "rgb", 3 ) )
+		trap->Cvar_Set( "cp_sbRGB1", va( "%i", ui_sab1_r.integer | ((ui_sab1_g.integer | (ui_sab1_b.integer << 8)) << 8) ) );
+	else
+		trap->Cvar_Set( "cp_sbRGB1", "0" );
+	if ( !Q_stricmpn( UI_Cvar_VariableString( "ui_saber2_color" ), "rgb", 3 ) )
+		trap->Cvar_Set( "cp_sbRGB2", va( "%i", ui_sab2_r.integer | ((ui_sab2_g.integer | (ui_sab2_b.integer << 8)) << 8) ) );
+	else
+		trap->Cvar_Set( "cp_sbRGB2", "0" );
 }
 
 const char *SaberColorToString( saber_colors_t color );
+
+void ParseRGBSaber( char * str, vec3_t c );
 
 static void UI_GetSaberCvars ( void )
 {

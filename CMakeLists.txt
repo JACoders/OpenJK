@@ -33,7 +33,7 @@ option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)"
 option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-vanilla_x86.dll)" OFF)
 option(BuildMPDed "Whether to create projects for the MP dedicated server (openjkded.exe)" OFF)
 option(BuildMPGame "Whether to create projects for the MP server-side gamecode (jampgamex86.dll)" OFF)
-option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" OFF)
+option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" ON)
 option(BuildMPUI "Whether to create projects for the MP UI code (uix86.dll)" ON)
 option(BuildSPEngine "Whether to create projects for the SP engine (openjk_sp.exe)" OFF)
 option(BuildSPGame "Whether to create projects for the SP gamecode (jagamex86.dll)" OFF)
