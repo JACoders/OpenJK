@@ -4048,13 +4048,13 @@ void ClientThink_real( gentity_t *ent ) {
 		if (!duelAgainst || !duelAgainst->client || !duelAgainst->inuse ||
 			duelAgainst->client->ps.duelIndex != ent->s.number)
 		{
-			ent->client->ps.duelInProgress = 0;
+			ent->client->ps.duelInProgress = qfalse;
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 		}
 		else if (duelAgainst->health < 1 || duelAgainst->client->ps.stats[STAT_HEALTH] < 1)
 		{
-			ent->client->ps.duelInProgress = 0;
-			duelAgainst->client->ps.duelInProgress = 0;
+			ent->client->ps.duelInProgress = qfalse;
+			duelAgainst->client->ps.duelInProgress = qfalse;
 
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 			G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 0);
@@ -4066,12 +4066,17 @@ void ClientThink_real( gentity_t *ent ) {
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - Start]
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
-				if (dueltypes[ent->client->ps.clientNum] == 0)//Saber
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Saber)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
-				else if (dueltypes[ent->client->ps.clientNum] == 1)//Force
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i/^4%i^7) (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR], ent->client->ps.fd.forcePower));
+				if (dueltypes[ent->client->ps.clientNum] == 0) {//Saber
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Saber)\n\"", 
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));
+				}
+				else if (dueltypes[ent->client->ps.clientNum] == 1) {//Force
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i/^4%i^7/^5%i^7/^3%i^7) (Force)\n\"", 
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR], ent->client->ps.fd.forcePower, ent->client->pers.stats.duelDamageGiven, duelAgainst->client->pers.stats.duelDamageGiven));
+				}
 				else {
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));			
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^1%i^7/^2%i^7) (Gun)\n\"", 
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER"), duelAgainst->client->pers.netname, ent->client->ps.stats[STAT_HEALTH], ent->client->ps.stats[STAT_ARMOR]));			
 					if (dueltypes[ent->client->ps.clientNum] > 2) {
 						int weapon = dueltypes[ent->client->ps.clientNum] - 2;
 						if (weapon == LAST_USEABLE_WEAPON + 2) { //All weapons
@@ -4099,14 +4104,22 @@ void ClientThink_real( gentity_t *ent ) {
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
-				if (dueltypes[ent->client->ps.clientNum] == 0)//Saber
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
-				else if (dueltypes[ent->client->ps.clientNum] == 1)//Force
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
-				else 
-					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
+				if (dueltypes[ent->client->ps.clientNum] == 0) {//Saber
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Saber)\n\"", 
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
+				}
+				else if (dueltypes[ent->client->ps.clientNum] == 1) {//Force
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (^4%i^7/^5%i^7/^3%i^7) (Force)\n\"", 
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname, ent->client->ps.fd.forcePower, ent->client->pers.stats.duelDamageGiven, duelAgainst->client->pers.stats.duelDamageGiven));
+				}
+				else {
+					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"",
+						ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
+				}
 				G_LogPrintf("Duel end: %s^7 tied %s^7 in type %i\n", ent->client->pers.netname,  duelAgainst->client->pers.netname, dueltypes[ent->client->ps.clientNum]);
 			}
+			ent->client->pers.stats.duelDamageGiven = 0;
+			duelAgainst->client->pers.stats.duelDamageGiven = 0;
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - End]
 		}
 		else

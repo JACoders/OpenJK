@@ -5626,8 +5626,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 		}
 	} //JAPRO - Serverside - Damage numbers - End
-
-	if (level.gametype == GT_TEAM || level.gametype == GT_CTF) {//JAPRO STATS
+	
+	if (attacker && attacker->client->ps.duelInProgress && targ && targ->client && targ->client->ps.duelInProgress) {
+			attacker->client->pers.stats.duelDamageGiven += (((take + asave) > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take + asave);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
+	}
+	else if (level.gametype == GT_TEAM || level.gametype == GT_CTF) {//JAPRO STATS
 		if (attacker && attacker->client && targ && targ->client) {
 			if (!OnSameTeam(targ, attacker)) //Subtract damage given for teamkills? or just ignore it..
 				attacker->client->pers.stats.damageGiven += (((take + asave) > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take + asave);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
