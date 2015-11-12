@@ -4095,6 +4095,7 @@ void ClientThink_real( gentity_t *ent ) {
 					ent->client->ps.eFlags |= EF_INVULNERABLE;
 					ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
 				}
+				G_LogPrintf("Duel end: %s^7 defeated %s^7 in type %i\n", ent->client->pers.netname,  duelAgainst->client->pers.netname, dueltypes[ent->client->ps.clientNum]);
 			}
 			else
 			{ //it was a draw, because we both managed to die in the same frame
@@ -4104,6 +4105,7 @@ void ClientThink_real( gentity_t *ent ) {
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Force)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
 				else 
 					trap->SendServerCommand(-1, va("print \"%s^7 %s %s^7! (Gun)\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELTIE"), duelAgainst->client->pers.netname));
+				G_LogPrintf("Duel end: %s^7 tied %s^7 in type %i\n", ent->client->pers.netname,  duelAgainst->client->pers.netname, dueltypes[ent->client->ps.clientNum]);
 			}
 //[JAPRO - Serverside - Duel - Improve/fix duel end print - End]
 		}

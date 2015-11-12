@@ -2198,7 +2198,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	char		*s=NULL,						*value=NULL,
 				userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},		oldClientinfo[MAX_INFO_STRING]={0},
 				model[MAX_QPATH]={0},			forcePowers[MAX_QPATH]={0},		oldname[MAX_NETNAME]={0},
-				className[MAX_QPATH]={0},		color1[MAX_INFO_STRING]={0},	color2[MAX_INFO_STRING]={0};
+				className[MAX_QPATH]={0},		color1[MAX_INFO_STRING]={0},	color2[MAX_INFO_STRING]={0}, cp_sbRGB1[MAX_INFO_STRING]={0}, cp_sbRGB2[MAX_INFO_STRING]={0};
 	qboolean	modelChanged = qfalse, female = qfalse;
 
 	trap->GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
@@ -2525,6 +2525,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	// colors
 	Q_strncpyz( color1, Info_ValueForKey( userinfo, "color1" ), sizeof( color1 ) );
 	Q_strncpyz( color2, Info_ValueForKey( userinfo, "color2" ), sizeof( color2 ) );
+	Q_strncpyz( cp_sbRGB1, Info_ValueForKey( userinfo, "cp_sbRGB1" ), sizeof(cp_sbRGB1) );//rgbsabers
+	Q_strncpyz( cp_sbRGB2, Info_ValueForKey( userinfo, "cp_sbRGB2" ), sizeof(cp_sbRGB2) );//rgbsabers
 
 	// gender hints
 	s = Info_ValueForKey( userinfo, "sex" );
@@ -2542,6 +2544,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strcat( buf, sizeof( buf ), va( "st2\\%s\\", client->pers.saber2 ) );
 	Q_strcat( buf, sizeof( buf ), va( "c1\\%s\\", color1 ) );
 	Q_strcat( buf, sizeof( buf ), va( "c2\\%s\\", color2 ) );
+	Q_strcat( buf, sizeof(buf), va( "c3\\%s\\", cp_sbRGB1 ) );//rgbsabers
+	Q_strcat( buf, sizeof(buf), va( "c4\\%s\\", cp_sbRGB2 ) );//rgbsabers
 	Q_strcat( buf, sizeof( buf ), va( "hc\\%i\\", client->pers.maxHealth ) );
 	if ( ent->r.svFlags & SVF_BOT )
 		Q_strcat( buf, sizeof( buf ), va( "skill\\%s\\", Info_ValueForKey( userinfo, "skill" ) ) );
