@@ -5461,6 +5461,9 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			blade = cgs.media.purpleSaberCoreShader;
 			break;
 		default:
+			glow = cgs.media.blueSaberGlowShader;
+			blade = cgs.media.blueSaberCoreShader;
+			break;
 		case SABER_RGB:
 			glow = cgs.media.rgbSaberGlowShader;
 			blade = cgs.media.rgbSaberCoreShader;
@@ -5555,6 +5558,9 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 //	saber.radius = (1.0 + crandom() * 0.2f)*radiusmult;
 
 	saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
+	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
+
+	trap->R_AddRefEntityToScene( &saber );
 
 	memcpy( &sbak, &saber, sizeof(sbak) );
 
