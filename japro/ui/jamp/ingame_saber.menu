@@ -742,7 +742,7 @@
 			group				rgbcolormenu
 			type				ITEM_TYPE_SLIDER
 			text				"Red "
-			cvarfloat			"ui_sbRed1" 255 1 255
+			cvarfloat			"ui_sab1_r" 255 1 255
 			rect				58 80 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -767,7 +767,7 @@
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
-			cvar 				"ui_sbRed1"
+			cvar 				"ui_sab1_r"
 			maxchars 			3
 			maxPaintChars 		3 
 			rect 				155 80 30 20
@@ -790,7 +790,7 @@
 			group				rgbcolormenu
 			type				ITEM_TYPE_SLIDER
 			text				"Green"
-			cvarfloat			"ui_sbGreen1" 255 1 255
+			cvarfloat			"ui_sab1_g" 255 1 255
 			rect				58 100 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -815,7 +815,7 @@
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
-			cvar 				"ui_sbGreen1"
+			cvar 				"ui_sab1_g"
 			maxchars 			3
 			maxPaintChars 		3 
 			rect 				155 100 30 20
@@ -838,7 +838,7 @@
 			group				rgbcolormenu
 			type				ITEM_TYPE_SLIDER
 			text				"Blue "
-			cvarfloat			"ui_sbBlue1" 255 1 255
+			cvarfloat			"ui_sab1_b" 255 1 255
 			rect				58 120 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -863,7 +863,7 @@
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
-			cvar 				"ui_sbBlue1"
+			cvar 				"ui_sab1_b"
 			maxchars 			3
 			maxPaintChars 		3 
 			rect 				155 120 30 20
@@ -949,7 +949,7 @@
 			group				rgbcolormenu
 			type				ITEM_TYPE_SLIDER
 			text				"Red "
-			cvarfloat			"ui_sbRed2" 255 1 255
+			cvarfloat			"ui_sab2_r" 255 1 255
 			rect				265 80 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -976,7 +976,7 @@
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
-			cvar 				"ui_sbRed2"
+			cvar 				"ui_sab2_r"
 			maxchars 			3
 			maxPaintChars 		3 
 			rect 				360 80 30 20
@@ -1001,7 +1001,7 @@
 			group				rgbcolormenu
 			type				ITEM_TYPE_SLIDER
 			text				"Green"
-			cvarfloat			"ui_sbGreen2" 255 1 255
+			cvarfloat			"ui_sab2_g" 255 1 255
 			rect				265 100 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -1028,7 +1028,7 @@
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
-			cvar 				"ui_sbGreen2"
+			cvar 				"ui_sab2_g"
 			maxchars 			3
 			maxPaintChars 		3 
 			rect 				360 100 30 20
@@ -1053,7 +1053,7 @@
 			group				rgbcolormenu
 			type				ITEM_TYPE_SLIDER
 			text				"Blue "
-			cvarfloat			"ui_sbBlue2" 255 1 255
+			cvarfloat			"ui_sab2_b" 255 1 255
 			rect				265 120 105 18
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			0
@@ -1080,7 +1080,7 @@
 			style 			0
 			text				@MENU
 			descText			@MENU_DESC
-			cvar 				"ui_sbBlue2"
+			cvar 				"ui_sab2_b"
 			maxchars 			3
 			maxPaintChars 		3 
 			rect 				360 120 30 20

@@ -5302,6 +5302,7 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb, int cnum, int
 			VectorSet( rgb, 0.2f, 1.0f, 0.2f );
 			break;
 		case SABER_BLUE:
+		default:
 			VectorSet( rgb, 0.2f, 0.4f, 1.0f );
 			break;
 		case SABER_PURPLE:
@@ -5310,7 +5311,6 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb, int cnum, int
 		case SABER_BLACK:
 			VectorSet( rgb, 1.0f, 1.0f, 1.0f );
 			break;
-		default:
 		case SABER_RGB:
 			if ( cnum < MAX_CLIENTS ) {
 				int i;
@@ -5460,10 +5460,6 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			glow = cgs.media.purpleSaberGlowShader;
 			blade = cgs.media.purpleSaberCoreShader;
 			break;
-		default:
-			glow = cgs.media.blueSaberGlowShader;
-			blade = cgs.media.blueSaberCoreShader;
-			break;
 		case SABER_RGB:
 			glow = cgs.media.rgbSaberGlowShader;
 			blade = cgs.media.rgbSaberCoreShader;
@@ -5488,6 +5484,10 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			glow = cgs.media.blackSaberGlowShader;
 			blade = cgs.media.blackSaberCoreShader;
 			doLight = qfalse;
+		default:
+			glow = cgs.media.blueSaberGlowShader;
+			blade = cgs.media.blueSaberCoreShader;
+			break;
 	}
 
 	if (doLight)
@@ -5566,8 +5566,8 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 
 	if ( color >= SABER_RGB ) {
 		switch ( color ) {
-		default:
 		case SABER_RGB:
+		default:
 			sbak.customShader = cgs.media.rgbSaberCoreShader;
 			break;
 		case SABER_FLAME1:
