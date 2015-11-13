@@ -1216,7 +1216,8 @@ static bitInfo_T voteOptions[] = {
 	{"timelimit"},//12
 	{"vstr"},//13
 	{"poll"},//14
-	{"pause"}//15
+	{"pause"},//15
+	{"score_restart"}//16
 };
 static const int MAX_VOTE_OPTIONS = ARRAY_LEN( voteOptions );
 

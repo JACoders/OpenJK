@@ -5627,7 +5627,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	} //JAPRO - Serverside - Damage numbers - End
 	
-	if (attacker && attacker->client->ps.duelInProgress && targ && targ->client && targ->client->ps.duelInProgress) {
+	if (attacker && attacker->client && attacker->client->ps.duelInProgress && targ && targ->client && targ->client->ps.duelInProgress) {
 			attacker->client->pers.stats.duelDamageGiven += (((take + asave) > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take + asave);//Cap damage given e.g. if you do 99 dmg to someone with 1hp, its really only 1hp dmg.
 	}
 	else if (level.gametype == GT_TEAM || level.gametype == GT_CTF) {//JAPRO STATS
@@ -5640,7 +5640,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				targ->client->pers.stats.damageTaken += (((take + asave) > (targ->health + targ->client->ps.stats[STAT_ARMOR])) ? (targ->health + targ->client->ps.stats[STAT_ARMOR]) : take + asave);//Cap damage taken e.g. if you take 99 with 1hp, its really only 1hp taken.
 		}
 	}
-
 
 	// add to the damage inflicted on a player this frame
 	// the total will be turned into screen blends and view angle kicks
