@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "stv_version.h"
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 // Because renderer.
@@ -162,7 +162,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile ) {
+		if ( !logfile && FS_Initialized() ) {
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
 			if ( com_logfile->integer > 1 ) {
 				// force it to not buffer so we get valid
@@ -187,7 +187,7 @@ A Com_Printf that only shows up if the "developer" cvar is set
 void QDECL Com_DPrintf( const char *fmt, ...) {
 	va_list		argptr;
 	char		msg[MAXPRINTMSG];
-		
+
 	if ( !com_developer || !com_developer->integer ) {
 		return;			// don't confuse non-developers with techie stuff...
 	}
@@ -195,7 +195,7 @@ void QDECL Com_DPrintf( const char *fmt, ...) {
 	va_start (argptr,fmt);
 	Q_vsnprintf (msg, sizeof(msg), fmt, argptr);
 	va_end (argptr);
-	
+
 	Com_Printf ("%s", msg);
 }
 
@@ -203,7 +203,7 @@ void Com_WriteCam ( const char *text )
 {
 	static	char	mapname[MAX_QPATH];
 	// camerafile
-	if ( !camerafile ) 
+	if ( !camerafile )
 	{
 		extern	cvar_t	*sv_mapname;
 
@@ -212,7 +212,7 @@ void Com_WriteCam ( const char *text )
 		camerafile = FS_FOpenFileWrite( mapname );
 	}
 
-	if ( camerafile ) 
+	if ( camerafile )
 	{
 		FS_Printf( camerafile, "%s", text );
 	}
@@ -281,10 +281,10 @@ void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 #ifdef JK2_MODE
 	SCR_UnprecacheScreenshot();
 #endif
-	
+
 	va_start (argptr,fmt);
 	Q_vsnprintf (com_errorMessage, sizeof(com_errorMessage), fmt, argptr);
-	va_end (argptr);	
+	va_end (argptr);
 
 	if ( code != ERR_DISCONNECT ) {
 		Cvar_Get("com_errorMessage", "", CVAR_ROM);	//give com_errorMessage a default so it won't come back to life after a resetDefaults
@@ -681,7 +681,7 @@ Hunk_SetMark
 The server calls this after the level and game VM have been loaded
 ===================
 */
-void Hunk_SetMark( void ) 
+void Hunk_SetMark( void )
 {
 }
 
@@ -694,9 +694,9 @@ Hunk_ClearToMark
 The client calls this before starting a vid_restart or snd_restart
 =================
 */
-void Hunk_ClearToMark( void ) 
+void Hunk_ClearToMark( void )
 {
-	Z_TagFree(TAG_HUNKALLOC);	
+	Z_TagFree(TAG_HUNKALLOC);
 	Z_TagFree(TAG_HUNKMISCMODELS);
 }
 
@@ -709,7 +709,7 @@ Hunk_Clear
 The server calls this before shutting down or loading a new map
 =================
 */
-void Hunk_Clear( void ) 
+void Hunk_Clear( void )
 {
 	Z_TagFree(TAG_HUNKALLOC);
 	Z_TagFree(TAG_HUNKMISCMODELS);
@@ -927,7 +927,7 @@ int Com_Milliseconds (void) {
 			Com_PushEvent( &ev );
 		}
 	} while ( ev.evType != SE_NONE );
-	
+
 	return ev.evTime;
 }
 
@@ -1066,13 +1066,13 @@ static void Com_CatchError ( int code )
 Com_Init
 =================
 */
-extern void Com_InitZoneMemory();
 void Com_Init( char *commandLine ) {
 	char	*s;
 
 	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 
 	try {
+		Com_InitZoneMemory();
 		Cvar_Init ();
 
 		// prepare enough of the subsystems to handle
@@ -1082,8 +1082,7 @@ void Com_Init( char *commandLine ) {
 		//Swap_Init ();
 		Cbuf_Init ();
 
-		Com_InitZoneMemory();
-
+		Com_InitZoneMemoryVars();
 		Cmd_Init ();
 
 		// override anything from the config files with command line args
@@ -1096,36 +1095,36 @@ void Com_Init( char *commandLine ) {
 
 		FS_InitFilesystem ();	//uses z_malloc
 		//re.R_InitWorldEffects();   // this doesn't do much but I want to be sure certain variables are intialized.
-		
+
 		Com_ExecuteCfg();
 
 		// override anything from the config files with command line args
 		Com_StartupVariable( NULL );
-		
+
 		// allocate the stack based hunk allocator
 		Com_InitHunkMemory();
 
 		// if any archived cvars are modified after this, we will trigger a writing
 		// of the config file
 		cvar_modifiedFlags &= ~CVAR_ARCHIVE;
-		
+
 		//
 		// init commands and vars
 		//
 		Cmd_AddCommand ("quit", Com_Quit_f);
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
-		
+
 		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
-		
+
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 		com_speedslog = Cvar_Get ("speedslog", "0", CVAR_TEMP );
-		
+
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
-		
+
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
 #endif
@@ -1137,16 +1136,16 @@ void Com_Init( char *commandLine ) {
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
-		com_affinity = Cvar_Get( "com_affinity", "1", CVAR_ARCHIVE );
+		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE );
-		
+
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
 			Cmd_AddCommand ("crash", Com_Crash_f );
 			Cmd_AddCommand ("freeze", Com_Freeze_f);
 		}
-		
+
 		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
@@ -1157,7 +1156,7 @@ void Com_Init( char *commandLine ) {
 		SE_Init();	// Initialize StringEd
 		Com_Printf("Running Jedi Academy Mode\n");
 #endif
-	
+
 		Sys_Init();	// this also detects CPU type, so I can now do this CPU check below...
 
 		Sys_SetProcessorAffinity();
@@ -1165,9 +1164,9 @@ void Com_Init( char *commandLine ) {
 		Netchan_Init( Com_Milliseconds() & 0xffff );	// pick a port value that should be nice and random
 //	VM_Init();
 		SV_Init();
-		
+
 		CL_Init();
-		
+
 		// set com_frameTime so that if a map is started on the
 		// command line it will still be able to count on com_frameTime
 		// being random enough for a serverid
@@ -1184,7 +1183,7 @@ void Com_Init( char *commandLine ) {
 		com_fullyInitialized = qtrue;
 		Com_Printf ("--- Common Initialization Complete ---\n");
 
-//HACKERY FOR THE DEUTSCH		
+//HACKERY FOR THE DEUTSCH
 		//if ( (Cvar_VariableIntegerValue("ui_iscensored") == 1) 	//if this was on before, set it again so it gets its flags
 		//	)
 		//{
@@ -1278,7 +1277,7 @@ Com_ModifyMsec
 */
 
 
-int Com_ModifyMsec( int msec, float &fraction ) 
+int Com_ModifyMsec( int msec, float &fraction )
 {
 	int		clampTime;
 
@@ -1287,20 +1286,20 @@ int Com_ModifyMsec( int msec, float &fraction )
 	//
 	// modify time for debugging values
 	//
-	if ( com_fixedtime->integer ) 
+	if ( com_fixedtime->integer )
 	{
 		msec = com_fixedtime->integer;
-	} 
-	else if ( com_timescale->value ) 
+	}
+	else if ( com_timescale->value )
 	{
 		fraction=(float)msec;
 		fraction*=com_timescale->value;
 		msec=(int)floor(fraction);
 		fraction-=(float)msec;
 	}
-	
+
 	// don't let it scale below 1 msec
-	if ( msec < 1 ) 
+	if ( msec < 1 )
 	{
 		msec = 1;
 		fraction=0.0f;
@@ -1344,14 +1343,14 @@ void G2Time_ReportTimers(void);
 #endif
 
 void Com_Frame( void ) {
-	try 
+	try
 	{
 		int		timeBeforeFirstEvents = 0, timeBeforeServer = 0, timeBeforeEvents = 0, timeBeforeClient = 0, timeAfter = 0;
 		int		msec, minMsec;
 		static int	lastTime = 0;
 
 		// write config file if anything changed
-		Com_WriteConfiguration(); 
+		Com_WriteConfiguration();
 
 		//
 		// main event loop
@@ -1381,7 +1380,7 @@ void Com_Frame( void ) {
 		com_frameMsec = msec;
 		float fractionMsec=0.0f;
 		msec = Com_ModifyMsec( msec, fractionMsec);
-	
+
 		//
 		// server side
 		//
@@ -1397,7 +1396,7 @@ void Com_Frame( void ) {
 		//
 
 
-	//	if ( !com_dedicated->integer ) 
+	//	if ( !com_dedicated->integer )
 		{
 			//
 			// run event loop a second time to get server to client packets
@@ -1438,7 +1437,7 @@ void Com_Frame( void ) {
 			sv -= time_game;
 			cl -= time_frontend + time_backend;
 
-			Com_Printf("fr:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i tr:%3i pvs:%3i rf:%3i bk:%3i\n", 
+			Com_Printf("fr:%i all:%3i sv:%3i ev:%3i cl:%3i gm:%3i tr:%3i pvs:%3i rf:%3i bk:%3i\n",
 						com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
 
 			// speedslog
@@ -1449,7 +1448,7 @@ void Com_Frame( void ) {
 					speedslog = FS_FOpenFileWrite("speeds.log");
 					FS_Write("data={\n", strlen("data={\n"), speedslog);
 					bComma=false;
-					if ( com_speedslog->integer > 1 ) 
+					if ( com_speedslog->integer > 1 )
 					{
 						// force it to not buffer so we get valid
 						// data even if we are crashing
@@ -1470,7 +1469,7 @@ void Com_Frame( void ) {
 								"%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,%8.4f,",corg[0],corg[1],corg[2],cangles[0],cangles[1],cangles[2]);
 					FS_Write(msg, strlen(msg), speedslog);
 					Com_sprintf(msg,sizeof(msg),
-						"%i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i}", 
+						"%i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i,%3i}",
 						com_frameNumber, all, sv, ev, cl, time_game, timeInTrace, timeInPVSCheck, time_frontend, time_backend);
 					FS_Write(msg, strlen(msg), speedslog);
 					bComma=true;
@@ -1492,7 +1491,7 @@ void Com_Frame( void ) {
 			timeInTrace = numTraces = 0;
 			c_traces = 0;
 			*/
-		
+
 			Com_Printf ("%4i traces  (%ib %ip) %4i points\n", c_traces,
 				c_brush_traces, c_patch_traces, c_pointcontents);
 			c_traces = 0;
@@ -1794,7 +1793,7 @@ void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars )
 		if( ( p = Field_FindFirstSeparator( cmd ) ) )
 			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
 		else
-			Cmd_CompleteArgument( baseCmd, cmd, completionArgument ); 
+			Cmd_CompleteArgument( baseCmd, cmd, completionArgument );
 	}
 	else {
 		if ( completionString[0] == '\\' || completionString[0] == '/' )

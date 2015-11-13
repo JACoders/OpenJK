@@ -2400,6 +2400,8 @@ void CG_LoadHudMenu()
 	cgDC.stopCinematic					= &CG_StopCinematic;
 	cgDC.drawCinematic					= &CG_DrawCinematic;
 	cgDC.runCinematicFrame				= &CG_RunCinematicFrame;
+	cgDC.ext.Font_StrLenPixels			= trap->ext.R_Font_StrLenPixels;
+
 
 	Init_Display(&cgDC);
 

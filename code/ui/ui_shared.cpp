@@ -2562,7 +2562,7 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadCount;
 		for ( i = 0; i < max ; i++)
 		{
-			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHeadNames[i]))
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinHead[i].name))
 			{
 				return i;
 			}
@@ -2577,7 +2577,7 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoCount;
 		for ( i = 0; i < max ; i++)
 		{
-			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorsoNames[i]))
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinTorso[i].name))
 			{
 				return i;
 			}
@@ -2592,7 +2592,7 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegCount;
 		for ( i = 0; i < max ; i++)
 		{
-			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLegNames[i]))
+			if (!Q_stricmp(name, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].SkinLeg[i].name))
 			{
 				return i;
 			}
@@ -2619,7 +2619,7 @@ int GetCurrentFeederIndex(itemDef_t * item)
 		max = uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorCount;
 		for ( i = 0; i < max ; i++)
 		{
-			Item_RunScript(item, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].ColorActionText[i]);
+			Item_RunScript(item, uiInfo.playerSpecies[uiInfo.playerSpeciesIndex].Color[i].actionText);
 			newR = Cvar_VariableIntegerValue( "ui_char_color_red");
 			newG = Cvar_VariableIntegerValue( "ui_char_color_green");
 			newB = Cvar_VariableIntegerValue( "ui_char_color_blue");
@@ -9460,8 +9460,14 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down)
 
 			case A_BACKSPACE:
 				id = BindingIDFromName(item->cvar);
-				if (id != -1)
+				if ( id != -1 )
 				{
+					if ( g_bindKeys[id][0] != -1 )
+						DC->setBinding( g_bindKeys[id][0], "" );
+
+					if ( g_bindKeys[id][1] != -1 )
+						DC->setBinding( g_bindKeys[id][1], "" );
+
 					g_bindKeys[id][0] = -1;
 					g_bindKeys[id][1] = -1;
 				}

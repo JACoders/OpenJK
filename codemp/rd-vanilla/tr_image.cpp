@@ -1356,17 +1356,21 @@ void R_CreateBuiltinImages( void ) {
 	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_S, GL_CLAMP );
 	qglTexParameteri( GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_WRAP_T, GL_CLAMP );
 	qglDisable( GL_TEXTURE_RECTANGLE_ARB );
-	qglEnable( GL_TEXTURE_3D );
 
-	tr.gammaCorrectLUTImage = 1024 + giTextureBindNum++;
-	qglBindTexture(GL_TEXTURE_3D, tr.gammaCorrectLUTImage);
-	qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, 64, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	qglDisable(GL_TEXTURE_3D);
+	if ( glConfigExt.doGammaCorrectionWithShaders )
+	{
+		qglEnable( GL_TEXTURE_3D );
+		tr.gammaCorrectLUTImage = 1024 + giTextureBindNum++;
+		qglBindTexture(GL_TEXTURE_3D, tr.gammaCorrectLUTImage);
+		qglTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA8, 64, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		qglDisable(GL_TEXTURE_3D);
+	}
+
 	qglEnable(GL_TEXTURE_2D);
 
 	// with overbright bits active, we need an image which is some fraction of full color,

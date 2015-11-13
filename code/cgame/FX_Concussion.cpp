@@ -77,19 +77,19 @@ static vec3_t WHITE	={1.0f,1.0f,1.0f};
 void FX_ConcAltShot( vec3_t start, vec3_t end )
 {
 	//"concussion/beam"
-	FX_AddLine( -1, start, end, 0.1f, 10.0f, 0.0f, 
+	FX_AddLine( -1, start, end, 0.1f, 10.0f, 0.0f,
 							1.0f, 0.0f, 0.0f,
 							WHITE, WHITE, 0.0f,
-							175, cgi_R_RegisterShader( "gfx/effects/blueLine" ), 
+							175, cgi_R_RegisterShader( "gfx/effects/blueLine" ),
 							0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 
 	vec3_t	BRIGHT={0.75f,0.5f,1.0f};
 
 	// add some beef
-	FX_AddLine( -1, start, end, 0.1f, 7.0f, 0.0f, 
+	FX_AddLine( -1, start, end, 0.1f, 7.0f, 0.0f,
 						1.0f, 0.0f, 0.0f,
 						BRIGHT, BRIGHT, 0.0f,
-						150, cgi_R_RegisterShader( "gfx/misc/whiteline2" ), 
+						150, cgi_R_RegisterShader( "gfx/misc/whiteline2" ),
 						0, FX_SIZE_LINEAR | FX_ALPHA_LINEAR );
 }
 
@@ -108,7 +108,7 @@ void FX_ConcAltMiss( vec3_t origin, vec3_t normal )
 	VectorCopy( c1, c2 );
 	c1[2] += 4;
 	c2[2] += 12;
-	
+
 	VectorAdd( origin, normal, pos );
 	pos[2] += 28;
 

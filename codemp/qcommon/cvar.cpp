@@ -1146,6 +1146,9 @@ cvar_t *Cvar_Unset(cvar_t *cv)
 {
 	cvar_t *next = cv->next;
 
+	// note what types of cvars have been modified (userinfo, archive, serverinfo, systeminfo)
+	cvar_modifiedFlags |= cv->flags;
+
 	if(cv->name)
 		Cvar_FreeString(cv->name);
 	if(cv->string)
@@ -1373,9 +1376,9 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 		return;		// variable might have been cleared by a cvar_restart
 	}
 	vmCvar->modificationCount = cv->modificationCount;
-	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING ) 
+	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING )
 		Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING", cv->string, (unsigned int) strlen(cv->string));
-	Q_strncpyz( vmCvar->string, cv->string, MAX_CVAR_VALUE_STRING ); 
+	Q_strncpyz( vmCvar->string, cv->string, MAX_CVAR_VALUE_STRING );
 
 	vmCvar->value = cv->value;
 	vmCvar->integer = cv->integer;

@@ -1,22 +1,20 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
-
-cmake_minimum_required(VERSION 2.8)
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -44,8 +42,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		${SPEngineIncludeDirectories}
 		${SharedDir}
 		${SPDir}
-		${OpenJKLibDir})
-	
+		"${GSLIncludeDirectory}")
+
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
 	if(MSVC AND NOT WIN64)
@@ -62,7 +60,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${OPENAL_INCLUDE_DIR})
 			set(SPEngineLibraries ${SPEngineLibraries} ${OPENAL_LIBRARY})
 		endif(UseInternalOpenAL)
-	
+
 		set(SPEngineEAXFiles
 			"${SPDir}/client/eax/eax.h"
 			"${SPDir}/client/eax/EaxMan.h"
@@ -72,20 +70,25 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif()
 
 	if(UseInternalSDL2)
+		if(MSVC14)
+			set(MSVC_SUFFIX "_2015")
+		else()
+			set(MSVC_SUFFIX "")
+		endif()
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(SPEngineLibraries
 				${SPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2.lib
 				)
 		else()
 			set(SPEngineLibraries
 				${SPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2.lib
 				)
 		endif()
-		
+
 		set(SPEngineIncludeDirectories
 			${SPEngineIncludeDirectories}
 			${OpenJKLibDir}/SDL2/include
@@ -95,7 +98,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${SDL2_INCLUDE_DIR})
 		set(SPEngineLibraries ${SPEngineLibraries} ${SDL2_LIBRARY})
 	endif()
-	
+
 	#    Source Files
 
 	# Client files
@@ -159,7 +162,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
-		"${SPDir}/qcommon/q_platform.h"
 
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
@@ -176,18 +178,20 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
 		"${SPDir}/qcommon/MiniHeap.h"
+		
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
-
-	set(SPEngineMinizipFiles
-		"${OpenJKLibDir}/minizip/ioapi.c"
-		"${OpenJKLibDir}/minizip/ioapi.h"
-		"${OpenJKLibDir}/minizip/unzip.cpp"
-		"${OpenJKLibDir}/minizip/unzip.h"
+	
+	set(SPEngineCommonSafeFiles
+		"${SharedDir}/qcommon/safe/files.cpp"
+		"${SharedDir}/qcommon/safe/files.h"
+		${SharedCommonSafeFiles}
+		"${SPDir}/qcommon/safe/memory.h"
 		)
-	source_group("minizip" FILES ${SPEngineMinizipFiles})
-	set(SPEngineFiles ${SPEngineFiles} ${SPEngineMinizipFiles})
+	source_group("common/safe" FILES ${SPEngineCommonSafeFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonSafeFiles})
 
 
 	# Server files
@@ -299,7 +303,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	# Ghoul2 files
 	set(SPEngineGhoul2Files
 		"${SPDir}/ghoul2/G2.h"
-		"${SPDir}/ghoul2/ghoul2_gore.h"	
+		"${SPDir}/ghoul2/ghoul2_gore.h"
 		)
 	source_group("ghoul2" FILES ${SPEngineGhoul2Files})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineGhoul2Files})
@@ -354,44 +358,14 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	source_group("sys" FILES ${SPEngineSysFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineSysFiles})
 
-	if(UseInternalZlib)
-		set(SPEngineZlibFiles
-			"${OpenJKLibDir}/zlib/adler32.c"
-			"${OpenJKLibDir}/zlib/compress.c"
-			"${OpenJKLibDir}/zlib/crc32.c"
-			"${OpenJKLibDir}/zlib/deflate.c"
-			"${OpenJKLibDir}/zlib/gzclose.c"
-			"${OpenJKLibDir}/zlib/gzlib.c"
-			"${OpenJKLibDir}/zlib/gzread.c"
-			"${OpenJKLibDir}/zlib/gzwrite.c"
-			"${OpenJKLibDir}/zlib/infback.c"
-			"${OpenJKLibDir}/zlib/inffast.c"
-			"${OpenJKLibDir}/zlib/inflate.c"
-			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/trees.c"
-			"${OpenJKLibDir}/zlib/uncompr.c"
-			"${OpenJKLibDir}/zlib/zutil.c"
-			"${OpenJKLibDir}/zlib/crc32.h"
-			"${OpenJKLibDir}/zlib/deflate.h"
-			"${OpenJKLibDir}/zlib/gzguts.h"
-			"${OpenJKLibDir}/zlib/inffast.h"
-			"${OpenJKLibDir}/zlib/inffixed.h"
-			"${OpenJKLibDir}/zlib/inflate.h"
-			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/trees.h"
-			"${OpenJKLibDir}/zlib/zconf.h"
-			"${OpenJKLibDir}/zlib/zlib.h"
-			"${OpenJKLibDir}/zlib/zutil.h")
-		source_group("zlib" FILES ${SPEngineZlibFiles})
-		set(SPEngineFiles ${SPEngineFiles} ${SPEngineZlibFiles})
-		
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} "${OpenJKLibDir}/zlib")
-	else(UseInternalZlib)
-		find_package(ZLIB REQUIRED)
-		set(SPEngineIncludeDirectories ${SPEngineIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-		set(SPEngineLibraries ${SPEngineLibraries} ${ZLIB_LIBRARY})
-	endif(UseInternalZlib)
-	
+    # Transparently use our bundled minizip.
+    list(APPEND SPEngineIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+    list(APPEND SPEngineLibraries          ${MINIZIP_LIBRARIES})
+
+    # Transparently use either bundled or system zlib.
+    list(APPEND SPEngineIncludeDirectories ${ZLIB_INCLUDE_DIR})
+    list(APPEND SPEngineLibraries          ${ZLIB_LIBRARIES})
+
 	# project macro so we can invoke it twice: for jk2 and for ja
 	function(add_sp_project ProjectName Label SPDirName InstallDir Component)
 		if(MakeApplicationBundles)
@@ -406,11 +380,11 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			if(UseInternalSDL2)
 				if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 					set(SPEngineExtraInstallFiles
-						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+						${OpenJKLibDir}/SDL2/bin/x86${MSVC_SUFFIX}/SDL2.dll
 						)
 				else()
 					set(SPEngineExtraInstallFiles
-						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+						${OpenJKLibDir}/SDL2/bin/x64${MSVC_SUFFIX}/SDL2.dll
 						)
 				endif()
 			endif()
@@ -440,10 +414,11 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			endif()
 		endif(MakeApplicationBundles)
 
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SPEngineDefines};${ReleaseDefines}")
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SPEngineDefines};${ReleaseDefines}")
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SPEngineDefines};${ReleaseDefines}")
-		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SPEngineDefines};${DebugDefines}")
+		set_target_properties(${ProjectName} PROPERTIES COMPILE_DEFINITIONS "${SPEngineDefines}")
+
+		# Hide symbols not explicitly marked public.
+		set_property(TARGET ${ProjectName} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 		set_target_properties(${ProjectName} PROPERTIES INCLUDE_DIRECTORIES "${SPEngineIncludeDirectories}")
 		set_target_properties(${ProjectName} PROPERTIES PROJECT_LABEL ${Label})
 		if(SPEngineLibraries)

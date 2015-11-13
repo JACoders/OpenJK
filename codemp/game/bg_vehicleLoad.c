@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "g_local.h"
 #elif _CGAME
 	#include "cgame/cg_local.h"
-#elif _UI
+#elif UI_BUILD
 	#include "ui/ui_local.h"
 #endif
 
@@ -227,14 +227,14 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 #endif
 		break;
 	case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
-#ifdef _UI
+#ifdef UI_BUILD
 		*(int *)(b+vehWeaponField->ofs) = trap->R_RegisterShaderNoMip( value );
 #elif CGAME
 		*(int *)(b+vehWeaponField->ofs) = trap->R_RegisterShader( value );
 #endif
 		break;
 	case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
-#if defined(_CGAME) || defined(_UI)
+#if defined(_CGAME) || defined(UI_BUILD)
 		*(int *)(b+vehWeaponField->ofs) = trap->R_RegisterShaderNoMip( value );
 #endif
 		break;
@@ -256,7 +256,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 		//Unknown type?
 		return qfalse;
 	}
-	
+
 	return qtrue;
 }
 
@@ -874,14 +874,14 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 #endif
 		break;
 	case VF_SHADER:	// (cgame only) take the string, call trap_R_RegisterShader
-#ifdef _UI
+#ifdef UI_BUILD
 		*(int *)(b+vehField->ofs) = trap->R_RegisterShaderNoMip( value );
 #elif _CGAME
 		*(int *)(b+vehField->ofs) = trap->R_RegisterShader( value );
 #endif
 		break;
 	case VF_SHADER_NOMIP:// (cgame only) take the string, call trap_R_RegisterShaderNoMip
-#if defined(_CGAME) || defined(_UI)
+#if defined(_CGAME) || defined(UI_BUILD)
 		*(int *)(b+vehField->ofs) = trap->R_RegisterShaderNoMip( value );
 #endif
 		break;
@@ -1189,7 +1189,7 @@ int VEH_LoadVehicle( const char *vehicleName )
 		#endif
 	}
 
-	#if defined(_CGAME) || defined(_UI)
+	#if defined(_CGAME) || defined(UI_BUILD)
 		if ( VALIDSTRING( vehicle->skin ) )
 			trap->R_RegisterSkin( va( "models/players/%s/model_%s.skin", vehicle->model, vehicle->skin) );
 	#endif

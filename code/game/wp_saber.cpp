@@ -5344,9 +5344,9 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 						else if ( !activeDefense//they're not defending
 							|| (entPowerLevel > FORCE_LEVEL_2 //I hit hard
 								&& hitOwnerPowerLevel < entPowerLevel)//they are defending, but their defense strength is lower than my attack...
-							|| (!deflected && Q_irand( 0, PM_PowerLevelForSaberAnim( &ent->client->ps, saberNum ) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]/*PM_PowerLevelForSaberAnim( &hitOwner->client->ps )*/ ) > 0 ) )
+							|| (!deflected && Q_irand( 0, Q_max(0, PM_PowerLevelForSaberAnim( &ent->client->ps, saberNum ) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE])/*PM_PowerLevelForSaberAnim( &hitOwner->client->ps )*/ ) > 0 ) )
 						{//broke their parry altogether
-							if ( entPowerLevel > FORCE_LEVEL_2 || Q_irand( 0, ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] ) )
+							if ( entPowerLevel > FORCE_LEVEL_2 || Q_irand( 0, Q_max(0, ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) ) )
 							{//chance of continuing with the attack (not bouncing back)
 								ent->client->ps.saberEventFlags &= ~SEF_BLOCKED;
 								ent->client->ps.saberBounceMove = LS_NONE;
@@ -8863,6 +8863,85 @@ qboolean WP_ForceThrowable( gentity_t *ent, gentity_t *forwardEnt, gentity_t *se
 	return qtrue;
 }
 
+static qboolean ShouldPlayerResistForceThrow( gentity_t *player, gentity_t *attacker, qboolean pull )
+{
+	if ( player->health <= 0 )
+	{
+		return qfalse;
+	}
+
+	if ( !player->client )
+	{
+		return qfalse;
+	}
+
+	if ( player->client->ps.forceRageRecoveryTime >= level.time )
+	{
+		return qfalse;
+	}
+
+	//wasn't trying to grip/drain anyone
+	if ( player->client->ps.torsoAnim == BOTH_FORCEGRIP_HOLD ||
+			player->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_START ||
+			player->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_HOLD )
+	{
+		return qfalse;
+	}
+
+	//only 30% chance of resisting a Desann or yoda push
+	if ( (attacker->client->NPC_class == CLASS_DESANN || Q_stricmp("Yoda",attacker->NPC_type) == 0) && Q_irand( 0, 2 ) > 0 )
+	{
+		return qfalse;
+	}
+
+	//on the ground
+	if ( player->client->ps.groundEntityNum == ENTITYNUM_NONE )
+	{
+		return qfalse;
+	}
+
+	//not knocked down already
+	if ( PM_InKnockDown( &player->client->ps ) )
+	{
+		return qfalse;
+	}
+
+	//not involved in a saberLock
+	if ( player->client->ps.saberLockTime >= level.time )
+	{
+		return qfalse;
+	}
+
+	//not attacking or otherwise busy
+	if ( player->client->ps.weaponTime >= level.time )
+	{
+		return qfalse;
+	}
+
+	//using saber or fists
+	if ( player->client->ps.weapon != WP_SABER && player->client->ps.weapon != WP_MELEE )
+	{
+		return qfalse;
+	}
+
+	forcePowers_t forcePower = (pull ? FP_PULL : FP_PUSH);
+	int attackingForceLevel = attacker->client->ps.forcePowerLevel[forcePower];
+	int defendingForceLevel = player->client->ps.forcePowerLevel[forcePower];
+
+	if ( player->client->ps.powerups[PW_FORCE_PUSH] > level.time ||
+		Q_irand( 0, Q_max(0, defendingForceLevel - attackingForceLevel)*2 + 1 ) > 0 )
+	{
+		// player was pushing, or player's force push/pull is high enough to try to stop me
+		if ( InFront( attacker->currentOrigin, player->client->renderInfo.eyePoint, player->client->ps.viewangles, 0.3f ) )
+		{
+			//I'm in front of player
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
 void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 {//FIXME: pass in a target ent so we (an NPC) can push/pull just one targeted ent.
 	//shove things in front of you away
@@ -9249,33 +9328,12 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 				}
 				else if ( !push_list[x]->s.number )
 				{//player
-					if ( !noResist
-						&& push_list[x]->health > 0 //alive
-						&& push_list[x]->client //client
-						&& push_list[x]->client->ps.forceRageRecoveryTime < level.time //not recobering from rage
-						&& push_list[x]->client->ps.torsoAnim != BOTH_FORCEGRIP_HOLD// BOTH_FORCEGRIP1//wasn't trying to grip anyone
-						//&& push_list[x]->client->ps.torsoAnim != BOTH_HUGGER1// wasn't trying to grip-drain anyone
-						&& push_list[x]->client->ps.torsoAnim != BOTH_FORCE_DRAIN_GRAB_START// wasn't trying to grip-drain anyone
-						&& push_list[x]->client->ps.torsoAnim != BOTH_FORCE_DRAIN_GRAB_HOLD// wasn't trying to grip-drain anyone
-						&& ((self->client->NPC_class != CLASS_DESANN&&Q_stricmp("Yoda",self->NPC_type)) || !Q_irand( 0, 2 ) )//only 30% chance of resisting a Desann push
-						&& push_list[x]->client->ps.groundEntityNum != ENTITYNUM_NONE//on the ground
-						&& !PM_InKnockDown( &push_list[x]->client->ps )//not knocked down already
-						&& push_list[x]->client->ps.saberLockTime < level.time//not involved in a saberLock
-						&& push_list[x]->client->ps.weaponTime < level.time//not attacking or otherwise busy
-						&& (push_list[x]->client->ps.weapon == WP_SABER||push_list[x]->client->ps.weapon == WP_MELEE) )//using saber or fists
-					{//trying to push or pull the player!
-						if ( push_list[x]->client->ps.powerups[PW_FORCE_PUSH] > level.time//player was pushing/pulling too
-							||( pull && Q_irand( 0, (push_list[x]->client->ps.forcePowerLevel[FP_PULL] - self->client->ps.forcePowerLevel[FP_PULL])*2+1 ) > 0 )//player's pull is high enough
-							||( !pull && Q_irand( 0, (push_list[x]->client->ps.forcePowerLevel[FP_PUSH] - self->client->ps.forcePowerLevel[FP_PUSH])*2+1 ) > 0 ) )//player's push is high enough
-						{//player's force push/pull is high enough to try to stop me
-							if ( InFront( self->currentOrigin, push_list[x]->client->renderInfo.eyePoint, push_list[x]->client->ps.viewangles, 0.3f ) )
-							{//I'm in front of player
-								WP_ResistForcePush( push_list[x], self, qfalse );
-								push_list[x]->client->ps.saberMove = push_list[x]->client->ps.saberBounceMove = LS_READY;//don't finish whatever saber anim you may have been in
-								push_list[x]->client->ps.saberBlocked = BLOCKED_NONE;
-								continue;
-							}
-						}
+					if ( !noResist && ShouldPlayerResistForceThrow(push_list[x], self, pull) )
+					{
+						WP_ResistForcePush( push_list[x], self, qfalse );
+						push_list[x]->client->ps.saberMove = push_list[x]->client->ps.saberBounceMove = LS_READY;//don't finish whatever saber anim you may have been in
+						push_list[x]->client->ps.saberBlocked = BLOCKED_NONE;
+						continue;
 					}
 				}
 				else if ( push_list[x]->client && Jedi_WaitingAmbush( push_list[x] ) )

@@ -530,7 +530,7 @@ void CG_NewClientinfo( int clientNum )
 		return;		// player just left
 	}
 	//ci = &cgs.clientinfo[clientNum];
-	if ( !(&g_entities[clientNum].client) )
+	if ( !(g_entities[clientNum].client) )
 	{
 		return;
 	}

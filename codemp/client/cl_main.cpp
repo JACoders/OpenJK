@@ -1079,9 +1079,8 @@ CL_Rcon_f
 void CL_Rcon_f( void ) {
 	char	message[MAX_RCON_MESSAGE];
 
-	if ( !rcon_client_password->string ) {
-		Com_Printf ("You must set 'rconpassword' before\n"
-					"issuing an rcon command.\n");
+	if ( !rcon_client_password->string[0] ) {
+		Com_Printf( "You must set 'rconpassword' before issuing an rcon command.\n" );
 		return;
 	}
 
@@ -1506,7 +1505,7 @@ Resend a connect message if the last one has timed out
 void CL_CheckForResend( void ) {
 	int		port;
 	char	info[MAX_INFO_STRING];
-	char	data[MAX_INFO_STRING];
+	char	data[MAX_INFO_STRING+10];
 
 	// don't send anything if playing back a demo
 	if ( clc.demoplaying ) {
@@ -2360,7 +2359,7 @@ void CL_InitRef( void ) {
 	}
 
 	if ( !rendererLib ) {
-		Com_Error( ERR_FATAL, "Failed to load renderer" );
+		Com_Error( ERR_FATAL, "Failed to load renderer\n" );
 	}
 
 	memset( &ri, 0, sizeof( ri ) );

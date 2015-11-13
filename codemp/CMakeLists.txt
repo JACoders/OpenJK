@@ -1,22 +1,20 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
-
-cmake_minimum_required(VERSION 2.8.8)
 
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
@@ -51,7 +49,11 @@ if(BuildMPEngine OR BuildMPDed)
 	#    Botlib
 	# the files could arguably just be put into the engine and dedicated projects without having a library for it.
 	set(MPBotlibDefines ${SharedDefines} "BOTLIB")
-	set(MPBotlibIncludeDirectories ${SharedDir} ${MPDir})
+	set(MPBotlibIncludeDirectories
+		${SharedDir}
+		${MPDir}
+		"${GSLIncludeDirectory}"
+		)
 	set(MPBotlibBotlibFiles
 		"${MPDir}/botlib/aasfile.h"
 		"${MPDir}/botlib/be_aas.h"
@@ -130,14 +132,24 @@ if(BuildMPEngine OR BuildMPDed)
 		"${MPDir}/qcommon/cm_public.h"
 		"${MPDir}/qcommon/disablewarnings.h"
 		"${MPDir}/qcommon/q_shared.h"
-		"${MPDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/qcommon.h"
 		"${MPDir}/qcommon/qfiles.h"
 		"${MPDir}/qcommon/tags.h"
+		
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${MPBotlibCommonFiles})
 	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibCommonFiles})
-	
+
+	set(MPBotlibCommonSafeFiles
+		"${SharedDir}/qcommon/safe/gsl.h"
+		"${SharedDir}/qcommon/safe/string.cpp"
+		"${SharedDir}/qcommon/safe/string.h"
+		"${SharedDir}/qcommon/safe/sscanf.h"
+		)
+	source_group("common/safe" FILES ${MPBotlibCommonSafeFiles})
+	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibCommonSafeFiles})
+
 	set(MPBotlibServerFiles
 		"${MPDir}/server/server.h"
 		)
@@ -145,6 +157,10 @@ if(BuildMPEngine OR BuildMPDed)
 	set(MPBotlibFiles ${MPBotlibFiles} ${MPBotlibServerFiles})
 
 	add_library(${MPBotLib} STATIC ${MPBotlibFiles})
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPBotLib} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 	set_target_properties(${MPBotLib} PROPERTIES COMPILE_DEFINITIONS "${MPBotlibDefines}")
 	set_target_properties(${MPBotLib} PROPERTIES INCLUDE_DIRECTORIES "${MPBotlibIncludeDirectories}")
 	set_target_properties(${MPBotLib} PROPERTIES PROJECT_LABEL "Bot Library")
@@ -157,46 +173,17 @@ if(BuildMPEngine OR BuildMPDed)
 	if(WIN32)
 		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} "winmm" "wsock32")
 	endif(WIN32)
-	# Include directories
-	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${OpenJKLibDir}) # codemp folder, since includes are not always relative in the files
 
-	if(UseInternalZlib)
-		set(MPEngineAndDedZLibFiles
-			"${OpenJKLibDir}/zlib/adler32.c"
-			"${OpenJKLibDir}/zlib/compress.c"
-			"${OpenJKLibDir}/zlib/crc32.c"
-			"${OpenJKLibDir}/zlib/deflate.c"
-			"${OpenJKLibDir}/zlib/gzclose.c"
-			"${OpenJKLibDir}/zlib/gzlib.c"
-			"${OpenJKLibDir}/zlib/gzread.c"
-			"${OpenJKLibDir}/zlib/gzwrite.c"
-			"${OpenJKLibDir}/zlib/infback.c"
-			"${OpenJKLibDir}/zlib/inffast.c"
-			"${OpenJKLibDir}/zlib/inflate.c"
-			"${OpenJKLibDir}/zlib/inftrees.c"
-			"${OpenJKLibDir}/zlib/trees.c"
-			"${OpenJKLibDir}/zlib/uncompr.c"
-			"${OpenJKLibDir}/zlib/zutil.c"
-			"${OpenJKLibDir}/zlib/crc32.h"
-			"${OpenJKLibDir}/zlib/deflate.h"
-			"${OpenJKLibDir}/zlib/gzguts.h"
-			"${OpenJKLibDir}/zlib/inffast.h"
-			"${OpenJKLibDir}/zlib/inffixed.h"
-			"${OpenJKLibDir}/zlib/inflate.h"
-			"${OpenJKLibDir}/zlib/inftrees.h"
-			"${OpenJKLibDir}/zlib/trees.h"
-			"${OpenJKLibDir}/zlib/zconf.h"
-			"${OpenJKLibDir}/zlib/zlib.h"
-			"${OpenJKLibDir}/zlib/zutil.h")
-		source_group("zlib" FILES ${MPEngineAndDedZLibFiles})
-		set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedZLibFiles})
-		
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} "${OpenJKLibDir}/zlib")
-	else()
-		find_package(ZLIB REQUIRED)
-		set(MPEngineAndDedIncludeDirectories ${MPEngineAndDedIncludeDirectories} ${ZLIB_INCLUDE_DIR})
-		set(MPEngineAndDedLibraries ${MPEngineAndDedLibraries} ${ZLIB_LIBRARY})
-	endif()
+	# Include directories
+	set(MPEngineAndDedIncludeDirectories ${MPDir} ${SharedDir} ${GSLIncludeDirectory}) # codemp folder, since includes are not always relative in the files
+
+	# Transparently use our bundled minizip.
+	list(APPEND MPEngineAndDedIncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+	list(APPEND MPEngineAndDedLibraries          ${MINIZIP_LIBRARIES})
+
+	# Transparently use either bundled or system zlib.
+	list(APPEND MPEngineAndDedIncludeDirectories ${ZLIB_INCLUDE_DIR})
+	list(APPEND MPEngineAndDedLibraries          ${ZLIB_LIBRARIES})
 
 	set(MPEngineAndDedCgameFiles
 		"${MPDir}/cgame/cg_public.h"
@@ -225,7 +212,7 @@ if(BuildMPEngine OR BuildMPDed)
 
 	set(MPEngineAndDedCommonFiles
 		"${MPDir}/qcommon/q_shared.h"
-		"${MPDir}/qcommon/q_platform.h"
+		"${SharedDir}/qcommon/q_platform.h"
 		"${MPDir}/qcommon/cm_load.cpp"
 		"${MPDir}/qcommon/cm_local.h"
 		"${MPDir}/qcommon/cm_patch.cpp"
@@ -274,6 +261,14 @@ if(BuildMPEngine OR BuildMPDed)
 	endif(WIN32)
 	source_group("common" FILES ${MPEngineAndDedCommonFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonFiles})
+	
+	set(MPEngineAndDedCommonSafeFiles
+		"${SharedDir}/qcommon/safe/files.cpp"
+		"${SharedDir}/qcommon/safe/files.h"
+		"${SharedDir}/qcommon/safe/gsl.h"
+		)
+	source_group("common/safe" FILES ${MPEngineAndDedCommonSafeFiles})
+	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedCommonSafeFiles})
 
 	set(MPEngineAndDedG2Files
 		"${MPDir}/ghoul2/G2.h"
@@ -337,15 +332,6 @@ if(BuildMPEngine OR BuildMPDed)
 	source_group("ui" FILES ${MPEngineAndDedUiFiles})
 	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedUiFiles})
 
-	set(MPEngineAndDedMinizipFiles
-		"${OpenJKLibDir}/minizip/ioapi.c"
-		"${OpenJKLibDir}/minizip/ioapi.h"
-		"${OpenJKLibDir}/minizip/unzip.cpp"
-		"${OpenJKLibDir}/minizip/unzip.h"
-		)
-	source_group("minizip" FILES ${MPEngineAndDedMinizipFiles})
-	set(MPEngineAndDedFiles ${MPEngineAndDedFiles} ${MPEngineAndDedMinizipFiles})
-
 	set(MPEngineAndDedSysFiles
 		"${SharedDir}/sys/snapvector.cpp"
 		)
@@ -388,20 +374,25 @@ if(BuildMPEngine)
 	endif()
 
 	if(UseInternalSDL2)
+		if(MSVC14)
+			set(MSVC_SUFFIX "_2015")
+		else()
+			set(MSVC_SUFFIX "")
+		endif()
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(MPEngineLibraries
 				${MPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
-				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2.lib
 				)
 		else()
 			set(MPEngineLibraries
 				${MPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
-				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2.lib
 				)
 		endif()
-		
+
 		set(MPEngineIncludeDirectories
 			${MPEngineIncludeDirectories}
 			${OpenJKLibDir}/SDL2/include
@@ -571,11 +562,11 @@ if(BuildMPEngine)
 		if(UseInternalSDL2)
 			if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
+					${OpenJKLibDir}/SDL2/bin/x86${MSVC_SUFFIX}/SDL2.dll
 					)
 			else()
 				set(MPEngineExtraInstallFiles
-					${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
+					${OpenJKLibDir}/SDL2/bin/x64${MSVC_SUFFIX}/SDL2.dll
 					)
 			endif()
 		endif()
@@ -605,10 +596,11 @@ if(BuildMPEngine)
 		endif()
 	endif(MakeApplicationBundles)
 
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPEngineDefines};${ReleaseDefines}")
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPEngineDefines};${ReleaseDefines}")
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPEngineDefines};${ReleaseDefines}")
-	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPEngineDefines};${DebugDefines}")
+	set_target_properties(${MPEngine} PROPERTIES COMPILE_DEFINITIONS "${MPEngineDefines}")
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPEngine} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 	set_target_properties(${MPEngine} PROPERTIES INCLUDE_DIRECTORIES "${MPEngineIncludeDirectories}")
 	set_target_properties(${MPEngine} PROPERTIES PROJECT_LABEL "MP Client")
 	target_link_libraries(${MPEngine} ${MPEngineLibraries})
@@ -695,27 +687,29 @@ if(BuildMPDed)
 		RUNTIME
 		DESTINATION ${JKAInstallDir}
 		COMPONENT ${JKAMPServerComponent})
-	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${MPDedDefines};${ReleaseDefines}")
-	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${MPDedDefines};${ReleaseDefines}")
-	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${MPDedDefines};${ReleaseDefines}")
-	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${MPDedDefines};${DebugDefines}")
+
+	set_target_properties(${MPDed} PROPERTIES COMPILE_DEFINITIONS "${MPDedDefines}")
+
+	# Hide symbols not explicitly marked public.
+	set_property(TARGET ${MPDed} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 	set_target_properties(${MPDed} PROPERTIES INCLUDE_DIRECTORIES "${MPDedIncludeDirectories}")
 	set_target_properties(${MPDed} PROPERTIES PROJECT_LABEL "MP Dedicated Server")
 	target_link_libraries(${MPDed} ${MPDedLibraries})
 endif(BuildMPDed)
 
-set(GameLibsBuilt)
-if(BuildMPGame)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
-endif()
+	set(GameLibsBuilt)
+	if(BuildMPGame)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPGame})
+	endif()
 
-if(BuildMPCGame)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
-endif()
+	if(BuildMPCGame)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPCGame})
+	endif()
 
-if(BuildMPUI)
-	set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
-endif()
+	if(BuildMPUI)
+		set(GameLibsBuilt ${GameLibsBuilt} ${MPUI})
+	endif()
 
 if(WIN32)
 set(GameLibFullPaths)
@@ -723,7 +717,7 @@ set(GameLibFullPaths)
 		foreach(GameLib ${GameLibsBuilt})
 			set(GameLibFullPaths
 				${GameLibFullPaths}
-				${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
+				${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${GameLib}${CMAKE_SHARED_LIBRARY_SUFFIX})
 		endforeach(GameLib)
 	else()
 		foreach(GameLib ${GameLibsBuilt})
@@ -734,13 +728,13 @@ set(GameLibFullPaths)
 	endif()
 
 	include(InstallZIP)
-	add_zip_command(openjk.pk3
+	add_zip_command(${AssetsPk3}
 		FILES ${GameLibFullPaths}
 		DEPENDS "${GameLibsBuilt}")
 	add_custom_target(Assets
 		ALL
-		DEPENDS openjk.pk3)
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/openjk.pk3
+		DEPENDS ${AssetsPk3})
+	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
 		DESTINATION "${JKAInstallDir}/OpenJK"
 		COMPONENT ${JKAMPCoreComponent})
 endif()

@@ -16,16 +16,18 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
 
-cmake_minimum_required(VERSION 2.8.8)
-
 # Make sure the user is not executing this script directly
 if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(JK2SPGameDefines ${JK2SPGameDefines} "JK2_MODE")
+set(JK2SPGameDefines ${SharedDefines} "JK2_MODE")
 
-set(JK2SPGameIncludeDirectories "${JK2SPDir}/game")
+set(JK2SPGameIncludeDirectories
+	"${JK2SPDir}/game"
+	"${SharedDir}"
+	"${GSLIncludeDirectory}"
+	)
 if(WIN32)
 	set(JK2SPGameLibraries "winmm")
 endif(WIN32)
@@ -229,11 +231,18 @@ set(JK2SPGameCommonFiles
 	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	"${SPDir}/qcommon/q_platform.h"
 	"${SPDir}/qcommon/strippublic.h"
+	
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
+
+set(JK2SPGameCommonSafeFiles
+	${SharedCommonSafeFiles}
+	)
+source_group("common/safe" FILES ${JK2SPGameCommonSafeFiles})
+set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonSafeFiles})
 
 set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/BlockStream.cpp"
@@ -284,10 +293,12 @@ else(WIN32)
 		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "${JK2InstallDir}/OpenJK")
 	endif(MakeApplicationBundles AND BuildJK2SPEngine)
 endif(WIN32)
-set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${JK2SPGameDefines};${ReleaseDefines}")
-set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${JK2SPGameDefines};${ReleaseDefines}")
-set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${JK2SPGameDefines};${ReleaseDefines}")
-set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${JK2SPGameDefines};${DebugDefines}")
+
+set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS "${JK2SPGameDefines}")
+
+# Hide symbols not explicitly marked public.
+set_property(TARGET ${JK2SPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 set_target_properties(${JK2SPGame} PROPERTIES INCLUDE_DIRECTORIES "${JK2SPGameIncludeDirectories}")
 set_target_properties(${JK2SPGame} PROPERTIES PROJECT_LABEL "JK2 SP Game Library")
 # no libraries used

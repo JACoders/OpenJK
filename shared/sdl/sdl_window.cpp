@@ -150,8 +150,44 @@ void WIN_Present( window_t *window )
 		if ( r_swapInterval->modified )
 		{
 			r_swapInterval->modified = qfalse;
-			SDL_GL_SetSwapInterval( r_swapInterval->integer );
+			if ( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
+			{
+				Com_DPrintf( "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError() );
+			}
 		}
+	}
+
+	if ( r_fullscreen->modified )
+	{
+		bool	fullscreen;
+		bool	needToToggle;
+		bool	sdlToggled = qfalse;
+
+		// Find out the current state
+		fullscreen = (SDL_GetWindowFlags( screen ) & SDL_WINDOW_FULLSCREEN) != 0;
+
+		if ( r_fullscreen->integer && Cvar_VariableIntegerValue( "in_nograb" ) )
+		{
+			Com_Printf( "Fullscreen not allowed with in_nograb 1\n" );
+			Cvar_Set( "r_fullscreen", "0" );
+			r_fullscreen->modified = qfalse;
+		}
+
+		// Is the state we want different from the current state?
+		needToToggle = !!r_fullscreen->integer != fullscreen;
+
+		if ( needToToggle )
+		{
+			sdlToggled = SDL_SetWindowFullscreen( screen, r_fullscreen->integer ) >= 0;
+
+			// SDL_WM_ToggleFullScreen didn't work, so do it the slow way
+			if ( !sdlToggled )
+				Cbuf_AddText( "vid_restart\n" );
+
+			IN_Restart();
+		}
+
+		r_fullscreen->modified = qfalse;
 	}
 }
 
@@ -190,7 +226,7 @@ static bool GLimp_DetectAvailableModes(void)
 {
 	int i, j;
 	char buf[ MAX_STRING_CHARS ] = { 0 };
-	SDL_Rect modes[ 128 ];
+	SDL_Rect *modes;
 	int numModes = 0;
 
 	int display = SDL_GetWindowDisplayIndex( screen );
@@ -203,6 +239,13 @@ static bool GLimp_DetectAvailableModes(void)
 	}
 
 	int numDisplayModes = SDL_GetNumDisplayModes( display );
+	if ( numDisplayModes < 0 )
+		Com_Error( ERR_FATAL, "SDL_GetNumDisplayModes() FAILED (%s)", SDL_GetError() );
+
+	modes = (SDL_Rect *)SDL_calloc( (size_t)numDisplayModes, sizeof( SDL_Rect ) );
+	if ( !modes )
+		Com_Error( ERR_FATAL, "Out of memory" );
+
 	for( i = 0; i < numDisplayModes; i++ )
 	{
 		SDL_DisplayMode mode;
@@ -213,6 +256,7 @@ static bool GLimp_DetectAvailableModes(void)
 		if( !mode.w || !mode.h )
 		{
 			Com_Printf( "Display supports any resolution\n" );
+			SDL_free( modes );
 			return true;
 		}
 
@@ -226,7 +270,7 @@ static bool GLimp_DetectAvailableModes(void)
 			if( mode.w == modes[ j ].w && mode.h == modes[ j ].h )
 				break;
 		}
-		
+
 		if( j != numModes )
 			continue;
 
@@ -255,6 +299,7 @@ static bool GLimp_DetectAvailableModes(void)
 		Cvar_Set( "r_availableModes", buf );
 	}
 
+	SDL_free( modes );
 	return true;
 }
 
@@ -296,10 +341,16 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 		);
 
 	// If a window exists, note its display index
-	if( screen != NULL )
+	if ( screen != NULL )
+	{
 		display = SDL_GetWindowDisplayIndex( screen );
+		if ( display < 0 )
+		{
+			Com_DPrintf( "SDL_GetWindowDisplayIndex() failed: %s\n", SDL_GetError() );
+		}
+	}
 
-	if( SDL_GetDesktopDisplayMode( display, &desktopMode ) == 0 )
+	if( display >= 0 && SDL_GetDesktopDisplayMode( display, &desktopMode ) == 0 )
 	{
 		displayAspect = (float)desktopMode.w / (float)desktopMode.h;
 
@@ -549,7 +600,10 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 				continue;
 			}
 
-			SDL_GL_SetSwapInterval( r_swapInterval->integer );
+			if ( SDL_GL_SetSwapInterval( r_swapInterval->integer ) == -1 )
+			{
+				Com_DPrintf( "SDL_GL_SetSwapInterval failed: %s\n", SDL_GetError() );
+			}
 
 			glConfig->colorBits = testColorBits;
 			glConfig->depthBits = testDepthBits;
@@ -717,7 +771,7 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	SDL_VERSION(&info.version);
 
 	if ( SDL_GetWindowWMInfo(screen, &info) )
-	{	
+	{
 		switch(info.subsystem) {
 			case SDL_SYSWM_WINDOWS:
 				window.handle = info.info.win.window;

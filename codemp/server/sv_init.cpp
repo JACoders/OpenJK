@@ -604,6 +604,7 @@ Ghoul2 Insert End
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
 
 	time( &sv.realMapTimeStarted );
+	sv.demosPruned = qfalse;
 
 	// clear physics interaction links
 	SV_ClearWorld ();
@@ -993,7 +994,7 @@ void SV_Init (void) {
 	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE );
 	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE );
 
-	sv_blockJumpSelect = Cvar_Get( "sv_blockJumpSelect", "1", CVAR_ARCHIVE );
+	sv_legacyFixForceSelect = Cvar_Get( "sv_legacyFixForceSelect", "1", CVAR_ARCHIVE );
 
 	sv_banFile = Cvar_Get( "sv_banFile", "serverbans.dat", CVAR_ARCHIVE );
 

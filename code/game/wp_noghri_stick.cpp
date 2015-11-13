@@ -89,6 +89,6 @@ void WP_FireNoghriStick( gentity_t *ent )
 	missile->splashDamage = 0;
 	missile->splashRadius = 100;
 	missile->splashMethodOfDeath = MOD_GAS;
-	
+
 	//Hmm: maybe spew gas on impact?
 }

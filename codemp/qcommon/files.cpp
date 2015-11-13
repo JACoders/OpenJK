@@ -37,10 +37,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "client/client.h"
 #endif
 #endif
-#include "minizip/unzip.h"
+#include <minizip/unzip.h>
 
 #if defined(_WIN32)
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 // for rmdir
@@ -246,7 +246,6 @@ static cvar_t		*fs_dirbeforepak; //rww - when building search path, keep directo
 static searchpath_t	*fs_searchpaths;
 static int			fs_readCount;			// total bytes read
 static int			fs_loadCount;			// total files read
-static int			fs_loadStack;			// total files in memory
 static int			fs_packFiles = 0;		// total number of files in packs
 
 static int			fs_fakeChkSum;
@@ -288,6 +287,13 @@ static char		*fs_serverPakNames[MAX_SEARCH_PATHS];			// pk3 names
 static int		fs_numServerReferencedPaks;
 static int		fs_serverReferencedPaks[MAX_SEARCH_PATHS];			// checksums
 static char	*fs_serverReferencedPakNames[MAX_SEARCH_PATHS];		// pk3 names
+
+#if defined(_WIN32)
+// temporary files - store them in a circular buffer. We're pretty
+// much guaranteed to not need more than 8 temp files at a time.
+static int		fs_temporaryFileWriteIdx = 0;
+static char		fs_temporaryFileNames[8][MAX_OSPATH];
+#endif
 
 // last valid game folder used
 char lastValidBase[MAX_OSPATH];
@@ -338,17 +344,6 @@ qboolean FS_PakIsPure( pack_t *pack ) {
 		return qfalse;	// not on the pure server pak list
 	}
 	return qtrue;
-}
-
-/*
-=================
-FS_LoadStack
-return load stack
-=================
-*/
-int FS_LoadStack( void )
-{
-	return fs_loadStack;
 }
 
 /*
@@ -971,14 +966,23 @@ void FS_Rename( const char *from, const char *to ) {
 }
 
 /*
-==============
+===========
 FS_FCloseFile
 
-If the FILE pointer is an open pak file, leave it open.
+Close a file.
 
-For some reason, other dll's can't just cal fclose()
-on files returned by FS_FOpenFile...
-==============
+There are three cases handled:
+
+  * normal file: closed with fclose.
+
+  * file in pak3 archive: subfile is closed with unzCloseCurrentFile, but the
+    minizip handle to the pak3 remains open.
+
+  * file in pak3 archive, opened with "unique" flag: This file did not use
+    the system minizip handle to the pak3 file, but its own dedicated one.
+    The dedicated handle is closed with unzClose.
+
+===========
 */
 void FS_FCloseFile( fileHandle_t f ) {
 	if ( !fs_searchpaths ) {
@@ -1214,7 +1218,7 @@ bool Sys_FileOutOfDate( LPCSTR psFinalFileName /* dest */, LPCSTR psDataFileName
 		// timer res only accurate to within 2 seconds on FAT, so can't do exact compare...
 		//
 		//LONG l = CompareFileTime( &ftFinalFile, &ftDataFile );
-		if (  (abs((double)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
+		if (  (fabs((double)(ftFinalFile.dwLowDateTime - ftDataFile.dwLowDateTime)) <= 20000000 ) &&
 				  ftFinalFile.dwHighDateTime == ftDataFile.dwHighDateTime
 			)
 		{
@@ -1590,6 +1594,9 @@ qboolean FS_FindPureDLL(const char *name)
 	if(!fs_searchpaths)
 		Com_Error(ERR_FATAL, "Filesystem call made without initialization");
 
+	if ( !Cvar_VariableValue( "sv_pure" ) )
+		return qtrue;
+
 	Com_sprintf(dllName, sizeof(dllName), "%sx86.dll", name);
 
 	if(FS_FOpenFileRead(dllName, &h, qtrue) > 0)
@@ -1940,7 +1947,6 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 			}
 
 			fs_loadCount++;
-			fs_loadStack++;
 
 			// guarantee that it will have a trailing 0 for string operations
 			buf[len] = 0;
@@ -1978,8 +1984,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	}
 
 	fs_loadCount++;
-/*	fs_loadStack++;
-
+/*
 	buf = (unsigned char *)Hunk_AllocateTempMemory(len+1);
 	*buffer = buf;*/
 
@@ -2018,14 +2023,8 @@ void FS_FreeFile( void *buffer ) {
 	if ( !buffer ) {
 		Com_Error( ERR_FATAL, "FS_FreeFile( NULL )" );
 	}
-	fs_loadStack--;
 
 	Hunk_FreeTempMemory( buffer );
-
-	// if all of our temp files are free, clear all of our space
-	if ( fs_loadStack == 0 ) {
-		Hunk_ClearTempMemory();
-	}
 	*/
 
 	if ( !fs_searchpaths ) {
@@ -3241,6 +3240,27 @@ void FS_Shutdown( qboolean closemfp ) {
 	searchpath_t	*p, *next;
 	int	i;
 
+#if defined(_WIN32)
+	// Delete temporary files
+	fs_temporaryFileWriteIdx = 0;
+	for ( size_t i = 0; i < ARRAY_LEN(fs_temporaryFileNames); i++ )
+	{
+		if (fs_temporaryFileNames[i][0] != '\0')
+		{
+			if ( !DeleteFile(fs_temporaryFileNames[i]) )
+			{
+				DWORD error = GetLastError();
+				Com_DPrintf("FS_Shutdown: failed to delete '%s'. "
+							"Win32 error code: 0x08x",
+							fs_temporaryFileNames[i],
+							error);
+			}
+
+			fs_temporaryFileNames[i][0] = '\0';
+		}
+	}
+#endif
+
 	for(i = 0; i < MAX_FILE_HANDLES; i++) {
 		if (fsh[i].fileSize) {
 			FS_FCloseFile(i);
@@ -3337,10 +3357,23 @@ static void FS_ReorderPurePaks()
 	}
 }
 
-/*
-================
-FS_Startup
-================
+/**
+	@brief Mount the asset archives (.pk3) and register commands.
+
+	Mounts in this order the archives from:
+
+	1.  <fs_cdpath>/<gameName>/
+	2.  <fs_basepath>/<gameName>/
+	3.  <fs_apppath>/<gameName>/ (Mac Only)
+	4.  <fs_homepath>/<gameName>/
+	5.  <fs_cdpath>/<fs_basegame>/
+	6.  <fs_basepath>/<fs_basegame>/
+	7.  <fs_homepath>/<fs_basegame>/
+	8.  <fs_cdpath>/<fs_game>/
+	9.  <fs_basepath>/<fs_game>/
+	10. <fs_homepath>/<fs_game>/
+
+	@param gameName Name of the default folder (i.e. always BASEGAME = "base" in OpenJK)
 */
 void FS_Startup( const char *gameName ) {
 	const char *homePath;
@@ -3363,7 +3396,7 @@ void FS_Startup( const char *gameName ) {
 
 	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED);
 
-	// add search path elements in reverse priority order
+	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
 		FS_AddGameDirectory( fs_cdpath->string, gameName );
 	}
@@ -3803,6 +3836,10 @@ void FS_InitFilesystem( void ) {
 	Q_strncpyz(lastValidBase, fs_basepath->string, sizeof(lastValidBase));
 	Q_strncpyz(lastValidGame, fs_gamedirvar->string, sizeof(lastValidGame));
 
+#if defined(_WIN32)
+	Com_Memset(fs_temporaryFileNames, 0, sizeof(fs_temporaryFileNames));
+#endif
+
   // bk001208 - SafeMode see below, FIXME?
 }
 
@@ -3995,7 +4032,7 @@ bool FS_LoadMachOBundle( const char *name )
 	byte* buf;
 	char    dllName[MAX_QPATH];
 	char    *tempName;
-	unz_s   *zfi;
+	unz_file_info   zfi;
 
 	//read zipped bundle from pk3
 	len = FS_ReadFile(name, &data);
@@ -4055,9 +4092,9 @@ bool FS_LoadMachOBundle( const char *name )
 		return false;
 	}
 
-	zfi = (unz_s *)dll;
+	unzGetCurrentFileInfo( dll, &zfi, NULL, 0, NULL, 0, NULL, 0 );
 
-	len = zfi->cur_file_info.uncompressed_size;
+	len = zfi.uncompressed_size;
 
 	buf = (byte*)Z_Malloc( len+1, TAG_FILESYS, qfalse);
 
@@ -4088,3 +4125,102 @@ bool FS_LoadMachOBundle( const char *name )
 	return true;
 }
 #endif
+
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFilePath )
+{
+#if defined(_WIN32)
+	DWORD error;
+	TCHAR tempPath[MAX_PATH];
+	DWORD tempPathResult = GetTempPath(MAX_PATH, tempPath);
+	if ( tempPathResult )
+	{
+		TCHAR tempFileName[MAX_PATH];
+		UINT tempFileNameResult = GetTempFileName(tempPath, "OJK", 0, tempFileName);
+		if ( tempFileNameResult )
+		{
+			HANDLE file = CreateFile(
+				tempFileName, GENERIC_WRITE, 0, NULL,
+				CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, 0);
+			if ( file != INVALID_HANDLE_VALUE )
+			{
+				DWORD bytesWritten = 0;
+				if (WriteFile(file, data, dataLength, &bytesWritten, NULL))
+				{
+					int deletesRemaining = ARRAY_LEN(fs_temporaryFileNames);
+
+					CloseHandle(file);
+
+					while ( deletesRemaining > 0 &&
+							fs_temporaryFileNames[fs_temporaryFileWriteIdx][0] != '\0' )
+					{
+						// Delete old temporary file as we need to
+						if ( DeleteFile(fs_temporaryFileNames[fs_temporaryFileWriteIdx]) )
+						{
+							break;
+						}
+
+						error = GetLastError();
+						Com_DPrintf("FS_WriteToTemporaryFile failed for '%s'. "
+									"Win32 error code: 0x%08x\n",
+									fs_temporaryFileNames[fs_temporaryFileWriteIdx],
+									error);
+
+						// Failed to delete, possibly because DLL was still in use. This can
+						// happen when running a listen server and you continually restart
+						// the map. The game DLL is reloaded, but cgame and ui DLLs are not.
+						fs_temporaryFileWriteIdx =
+							(fs_temporaryFileWriteIdx + 1) % ARRAY_LEN(fs_temporaryFileNames);
+						deletesRemaining--;
+					}
+
+					// If this happened, then all slots are used and we some how have 8 DLLs
+					// loaded at once?!
+					assert(deletesRemaining > 0);
+
+					Q_strncpyz(fs_temporaryFileNames[fs_temporaryFileWriteIdx],
+								tempFileName, sizeof(fs_temporaryFileNames[0]));
+					fs_temporaryFileWriteIdx =
+						(fs_temporaryFileWriteIdx + 1) % ARRAY_LEN(fs_temporaryFileNames);
+
+					if ( tempFilePath )
+					{
+						size_t fileNameLen = strlen(tempFileName);
+						*tempFilePath = (char *)Z_Malloc(fileNameLen + 1, TAG_FILESYS);
+						Q_strncpyz(*tempFilePath, tempFileName, fileNameLen + 1);
+					}
+
+					return qtrue;
+				}
+				else
+				{
+					error = GetLastError();
+					Com_DPrintf("FS_WriteToTemporaryFile failed to write '%s'. "
+								"Win32 error code: 0x%08x\n",
+								tempFileName, error);
+				}
+			}
+			else
+			{
+				error = GetLastError();
+				Com_DPrintf("FS_WriteToTemporaryFile failed to create '%s'. "
+							"Win32 error code: 0x%08x\n",
+							tempFileName, error);
+			}
+		}
+		else
+		{
+			error = GetLastError();
+			Com_DPrintf("FS_WriteToTemporaryFile failed to generate temporary file name. "
+						"Win32 error code: 0x%08x\n", error);
+		}
+	}
+	else
+	{
+		error = GetLastError();
+		Com_DPrintf("FS_WriteToTemporaryFile failed to get temporary file folder. "
+						"Win32 error code: 0x%08x\n", error);
+	}
+#endif
+
+	return qfalse;
+}

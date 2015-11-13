@@ -87,6 +87,7 @@ typedef struct server_s {
 	char			*mSharedMemory;
 
 	time_t			realMapTimeStarted;	// time the current map was started
+	qboolean		demosPruned; // whether or not existing demos were cleaned up already
 } server_t;
 
 typedef struct clientSnapshot_s {
@@ -288,7 +289,7 @@ extern	cvar_t	*sv_filterCommands;
 extern	cvar_t	*sv_autoDemo;
 extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
-extern	cvar_t	*sv_blockJumpSelect;
+extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];

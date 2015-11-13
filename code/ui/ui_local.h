@@ -33,7 +33,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "ui_public.h"
 #include "ui_shared.h"
 
-#define MAX_PLAYERMODELS 32
 #define MAX_DEFERRED_SCRIPT		1024
 
 //
@@ -91,7 +90,7 @@ typedef struct {
 	int					realtime;
 	int					cursorx;
 	int					cursory;
-	
+
 	glconfig_t			glconfig;
 	qboolean			debugMode;
 	qhandle_t			whiteShader;
@@ -105,7 +104,7 @@ typedef struct {
 
 extern void			UI_FillRect( float x, float y, float width, float height, const float *color );
 extern void			UI_DrawString( int x, int y, const char* str, int style, vec4_t color );
-extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
+extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader );
 extern void			UI_UpdateScreen( void );
 extern int			UI_RegisterFont(const char *fontName);
 extern void			UI_SetColor( const float *rgba );
@@ -123,20 +122,32 @@ typedef struct {
 	const char *modDescr;
 } modInfo_t;
 
+#define SKIN_LENGTH			16
+#define ACTION_BUFFER_SIZE	128
+
+typedef struct {
+	char name[SKIN_LENGTH];
+} skinName_t;
+
+typedef struct {
+	char shader[MAX_QPATH];
+	char actionText[ACTION_BUFFER_SIZE];
+} playerColor_t;
+
 typedef struct {
 	char		Name[64];
 	int			SkinHeadCount;
-//	qhandle_t	SkinHeadIcons[MAX_PLAYERMODELS];
-	char		SkinHeadNames[MAX_PLAYERMODELS][16];
+	int			SkinHeadMax;
+	skinName_t	*SkinHead;
 	int			SkinTorsoCount;
-//	qhandle_t	SkinTorsoIcons[MAX_PLAYERMODELS];
-	char		SkinTorsoNames[MAX_PLAYERMODELS][16];
+	int			SkinTorsoMax;
+	skinName_t	*SkinTorso;
 	int			SkinLegCount;
-//	qhandle_t	SkinLegIcons[MAX_PLAYERMODELS];
-	char		SkinLegNames[MAX_PLAYERMODELS][16];
-	char		ColorShader[MAX_PLAYERMODELS][64];
+	int			SkinLegMax;
+	skinName_t	*SkinLeg;
+	int			ColorMax;
 	int			ColorCount;
-	char		ColorActionText[MAX_PLAYERMODELS][128];
+	playerColor_t	*Color;
 } playerSpeciesInfo_t;
 
 typedef struct {
@@ -149,8 +160,9 @@ typedef struct {
 	int modIndex;
 	int modCount;
 
+	int					playerSpeciesMax;
 	int					playerSpeciesCount;
-	playerSpeciesInfo_t	playerSpecies[MAX_PLAYERMODELS];
+	playerSpeciesInfo_t	*playerSpecies;
 	int					playerSpeciesIndex;
 
 
@@ -210,7 +222,7 @@ extern char GoToMenu[];
 // ui_syscalls.c
 //
 int				trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits, const char *psAudioFile /* = NULL */);
-int				trap_CIN_StopCinematic(int handle); 
+int				trap_CIN_StopCinematic(int handle);
 void			trap_Cvar_Set( const char *var_name, const char *value );
 float			trap_Cvar_VariableValue( const char *var_name );
 void			trap_GetGlconfig( glconfig_t *glconfig );

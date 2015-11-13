@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 #include "tr_local.h"
+#include "tr_common.h"
 #include "../ghoul2/G2.h"
 #include "../qcommon/MiniHeap.h"
 
@@ -728,7 +729,7 @@ void RestoreGhoul2InfoArray()
 		size_t read =
 #endif // _DEBUG
 			singleton->Deserialize ((const char *)data, size);
-		Z_Free ((void *)data);
+		R_Free ((void *)data);
 
 		assert (read == size);
 	}
@@ -737,7 +738,7 @@ void RestoreGhoul2InfoArray()
 void SaveGhoul2InfoArray()
 {
 	size_t size = singleton->GetSerializedSize();
-	void *data = Z_Malloc (size, TAG_GHOUL2, qfalse);
+	void *data = R_Malloc (size, TAG_GHOUL2, qfalse);
 #ifdef _DEBUG
 	size_t written =
 #endif // _DEBUG

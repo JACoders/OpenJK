@@ -1194,6 +1194,8 @@ void CL_BindUI( void ) {
 		uii.G2API_GetSurfaceName				= CL_G2API_GetSurfaceName;
 		uii.G2API_AttachG2Model					= CL_G2API_AttachG2Model;
 
+		uii.ext.R_Font_StrLenPixels				= re->ext.Font_StrLenPixels;
+
 		GetUIAPI = (GetUIAPI_t)uivm->GetModuleAPI;
 		ret = GetUIAPI( UI_API_VERSION, &uii );
 		if ( !ret ) {

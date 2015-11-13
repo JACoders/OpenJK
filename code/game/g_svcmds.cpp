@@ -166,9 +166,9 @@ extern cvar_t	*g_skippingcin;
 
 gentity_t *G_GetSelfForPlayerCmd( void )
 {
-	if ( g_entities[0].client->ps.viewEntity > 0 
-		&& g_entities[0].client->ps.viewEntity < ENTITYNUM_WORLD 
-		&& g_entities[g_entities[0].client->ps.viewEntity].client 
+	if ( g_entities[0].client->ps.viewEntity > 0
+		&& g_entities[0].client->ps.viewEntity < ENTITYNUM_WORLD
+		&& g_entities[g_entities[0].client->ps.viewEntity].client
 		&& g_entities[g_entities[0].client->ps.viewEntity].s.weapon == WP_SABER )
 	{//you're controlling another NPC
 		return (&g_entities[g_entities[0].client->ps.viewEntity]);
@@ -260,12 +260,14 @@ static void Svcmd_SaberColor_f()
 	const char *color[MAX_BLADES];
 	int bladeNum;
 
+	bool validColors = true;
 	for ( bladeNum = 0; bladeNum < MAX_BLADES; bladeNum++ )
 	{
 		color[bladeNum] = gi.argv(2+bladeNum);
+		validColors = validColors && VALIDSTRING( color[ bladeNum ] );
 	}
 
-	if ( !VALIDSTRING( color ) || saberNum < 1 || saberNum > 2 )
+	if ( !validColors || saberNum < 1 || saberNum > 2 )
 	{
 		gi.Printf( "Usage:  saberColor <saberNum> <blade1 color> <blade2 color> ... <blade8 color> \n" );
 		gi.Printf( "valid saberNums:  1 or 2\n" );
@@ -274,7 +276,7 @@ static void Svcmd_SaberColor_f()
 		return;
 	}
 	saberNum--;
-	
+
 	gentity_t *self = G_GetSelfForPlayerCmd();
 
 	for ( bladeNum = 0; bladeNum < MAX_BLADES; bladeNum++ )
@@ -330,7 +332,7 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 	{
 		return;
 	}
-	if ( !g_cheats->integer ) 
+	if ( !g_cheats->integer )
 	{
 		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 		return;
@@ -380,10 +382,10 @@ void Svcmd_SaberAttackCycle_f( void )
 		return;
 	}
 
-	if ( self->client->ps.dualSabers ) 
+	if ( self->client->ps.dualSabers )
 	{//can't cycle styles with dualSabers, so just toggle second saber on/off
 		if ( WP_SaberCanTurnOffSomeBlades( &self->client->ps.saber[1] ) )
-		{//can turn second saber off 
+		{//can turn second saber off
 			if ( self->client->ps.saber[1].ActiveManualOnly() )
 			{//turn it off
 				qboolean skipThisBlade;
@@ -425,7 +427,7 @@ void Svcmd_SaberAttackCycle_f( void )
 			return;
 		}
 	}
-	else if ( self->client->ps.saber[0].numBlades > 1 
+	else if ( self->client->ps.saber[0].numBlades > 1
 		&& WP_SaberCanTurnOffSomeBlades( &self->client->ps.saber[0] ) )//self->client->ps.saber[0].type == SABER_STAFF )
 	{//can't cycle styles with saberstaff, so just toggles saber blades on/off
 		if ( self->client->ps.saberInFlight )
@@ -491,7 +493,7 @@ void Svcmd_SaberAttackCycle_f( void )
 	{
 		allowedStyles |= (1<<SS_DUAL);
 		for ( int styleNum = SS_NONE+1; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
-		{ 
+		{
 			if ( styleNum == SS_TAVION
 				&& ((self->client->ps.saber[0].stylesLearned&(1<<SS_TAVION))||(self->client->ps.saber[1].stylesLearned&(1<<SS_TAVION)))//was given this style by one of my sabers
 				&& !(self->client->ps.saber[0].stylesForbidden&(1<<SS_TAVION))
@@ -526,7 +528,7 @@ void Svcmd_SaberAttackCycle_f( void )
 	}
 	saberAnimLevel++;
 	int sanityCheck = 0;
-	while ( self->client->ps.saberAnimLevel != saberAnimLevel 
+	while ( self->client->ps.saberAnimLevel != saberAnimLevel
 		&& !(allowedStyles&(1<<saberAnimLevel))
 		&& sanityCheck < SS_NUM_SABER_STYLES+1 )
 	{
@@ -632,7 +634,7 @@ qboolean	ConsoleCommand( void ) {
 
 	cmd = gi.argv(0);
 
-	if ( Q_stricmp (cmd, "entitylist") == 0 ) 
+	if ( Q_stricmp (cmd, "entitylist") == 0 )
 	{
 		Svcmd_EntityList_f();
 		return qtrue;
@@ -643,9 +645,9 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if (Q_stricmp (cmd, "nav") == 0) 
+	if (Q_stricmp (cmd, "nav") == 0)
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -654,9 +656,9 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if (Q_stricmp (cmd, "npc") == 0) 
+	if (Q_stricmp (cmd, "npc") == 0)
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -665,9 +667,9 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if (Q_stricmp (cmd, "use") == 0) 
+	if (Q_stricmp (cmd, "use") == 0)
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -676,9 +678,9 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if ( Q_stricmp( cmd, "ICARUS" ) == 0 )	
+	if ( Q_stricmp( cmd, "ICARUS" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -689,9 +691,9 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if ( Q_stricmp( cmd, "saberColor" ) == 0 )	
+	if ( Q_stricmp( cmd, "saberColor" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -702,7 +704,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp( cmd, "saber" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -713,7 +715,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp( cmd, "saberblade" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -722,89 +724,89 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if ( Q_stricmp( cmd, "setForceJump" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceJump" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_LEVITATION );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setSaberThrow" ) == 0 )	
+	if ( Q_stricmp( cmd, "setSaberThrow" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_SABERTHROW );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceHeal" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceHeal" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_HEAL );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForcePush" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForcePush" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_PUSH );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForcePull" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForcePull" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_PULL );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceSpeed" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceSpeed" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_SPEED );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceGrip" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceGrip" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_GRIP );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceLightning" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceLightning" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_LIGHTNING );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setMindTrick" ) == 0 )	
+	if ( Q_stricmp( cmd, "setMindTrick" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_TELEPATHY );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setSaberDefense" ) == 0 )	
+	if ( Q_stricmp( cmd, "setSaberDefense" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_SABER_DEFENSE );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setSaberOffense" ) == 0 )	
+	if ( Q_stricmp( cmd, "setSaberOffense" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_SABER_OFFENSE );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceRage" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceRage" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_RAGE );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceDrain" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceDrain" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_DRAIN );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceProtect" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceProtect" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_PROTECT );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceAbsorb" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceAbsorb" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_ABSORB );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceSight" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceSight" ) == 0 )
 	{
 		Svcmd_ForceSetLevel_f( FP_SEE );
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setForceAll" ) == 0 )	
+	if ( Q_stricmp( cmd, "setForceAll" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -820,9 +822,9 @@ qboolean	ConsoleCommand( void ) {
 		}
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "setSaberAll" ) == 0 )	
+	if ( Q_stricmp( cmd, "setSaberAll" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -837,14 +839,14 @@ qboolean	ConsoleCommand( void ) {
 		}
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "saberAttackCycle" ) == 0 )	
+	if ( Q_stricmp( cmd, "saberAttackCycle" ) == 0 )
 	{
 		Svcmd_SaberAttackCycle_f();
 		return qtrue;
 	}
-	if ( Q_stricmp( cmd, "runscript" ) == 0 ) 
+	if ( Q_stricmp( cmd, "runscript" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -880,9 +882,9 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-	if ( Q_stricmp( cmd, "playerteam" ) == 0 ) 
+	if ( Q_stricmp( cmd, "playerteam" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -924,7 +926,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp( cmd, "control" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -946,7 +948,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp( cmd, "grab" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -968,7 +970,7 @@ qboolean	ConsoleCommand( void ) {
 
 	if ( Q_stricmp( cmd, "knockdown" ) == 0 )
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;
@@ -1028,10 +1030,10 @@ qboolean	ConsoleCommand( void ) {
 	{
 		Svcmd_ExitView_f();
 	}
-	
+
 	if (Q_stricmp (cmd, "iknowkungfu") == 0)
 	{
-		if ( !g_cheats->integer ) 
+		if ( !g_cheats->integer )
 		{
 			gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 			return qtrue;

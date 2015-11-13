@@ -296,6 +296,7 @@ static void SV_MapRestart_f( void ) {
 	Cvar_Set( "sv_serverid", va("%i", sv.serverId ) );
 
 	time( &sv.realMapTimeStarted );
+	sv.demosPruned = qfalse;
 
 	// if a map_restart occurs while a client is changing maps, we need
 	// to give them the correct time so that when they finish loading
@@ -1316,11 +1317,6 @@ static void SV_ForceToggle_f( void ) {
 	int bits = Cvar_VariableIntegerValue("g_forcePowerDisable");
 	int i, val;
 	char *s;
-	const char *enablestrings[] =
-	{
-		"Disabled",
-		"Enabled"
-	};
 
 	// make sure server is running
 	if( !com_sv_running->integer ) {
@@ -1329,10 +1325,11 @@ static void SV_ForceToggle_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
-			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
 		}
-		Com_Printf ("Example usage: forcetoggle 3(toggles PUSH)\n");
+		Com_Printf( "Example usage: forcetoggle 3(toggles PUSH)\n" );
 		return;
 	}
 
@@ -1343,17 +1340,100 @@ static void SV_ForceToggle_f( void ) {
 		if( val >= 0 && val < NUM_FORCE_POWERS) {
 			bits ^= (1 << val);
 			Cvar_SetValue("g_forcePowerDisable", bits);
-			Com_Printf ("%s has been %s.\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "disabled" : "enabled");
+			Com_Printf( "%s %s^7\n", forceToggleNamePrints[val], (bits & (1<<val)) ? "^2Enabled" : "^1Disabled" );
 		}
 		else {
+			for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+				if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+				else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
+			}
 			Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
 		}
 	}
 	else {
-		for(i = 0; i < NUM_FORCE_POWERS; i++ ) {
-			Com_Printf ("%i - %s - Status: %s\n", i, forceToggleNamePrints[i], enablestrings[!(bits & (1<<i))]);
+		for ( i = 0; i<NUM_FORCE_POWERS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, forceToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, forceToggleNamePrints[i] );
 		}
 		Com_Printf ("Specified a power that does not exist.\nExample usage: forcetoggle 3\n(toggles PUSH)\n");
+	}
+}
+
+const char *weaponToggleNamePrints[WP_NUM_WEAPONS] = {
+	"NO WEAPON",
+	"STUN BATON",
+	"MELEE",
+	"SABER",
+	"BRYAR PISTOL",
+	"BLASTER",
+	"DISRUPTOR",
+	"BOWCASTER",
+	"REPEATER",
+	"DEMP2",
+	"FLECHETTE",
+	"ROCKET LAUNCHER",
+	"THERMAL",
+	"TRIP MINE",
+	"DET PACK",
+	"CONCUSSION",
+	"BRYAR OLD",
+	"EMPLACED GUN",
+	"TURRET"
+};
+
+static void SV_WeaponToggle_f( void ) {
+	int bits = 0;
+	int i, val;
+	char *s;
+	const char *cvarStr = NULL;
+
+	if ( sv_gametype->integer == GT_DUEL || sv_gametype->integer == GT_POWERDUEL ) {
+		cvarStr = "g_duelWeaponDisable";
+		bits = Cvar_VariableIntegerValue( "g_duelWeaponDisable" );
+	}
+	else {
+		cvarStr = "g_weaponDisable";
+		bits = Cvar_VariableIntegerValue( "g_weaponDisable" );
+	}
+
+	// make sure server is running
+	if( !com_sv_running->integer ) {
+		Com_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	if ( Cmd_Argc() != 2 ) {
+		for ( i = 0; i<WP_NUM_WEAPONS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, weaponToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, weaponToggleNamePrints[i] );
+		}
+		Com_Printf ("Example usage: weapontoggle 3(toggles SABER)\n");
+		return;
+	}
+
+	s = Cmd_Argv(1);
+
+	if( Q_isanumber( s ) ) {
+		val = atoi(s);
+		if( val >= 0 && val < WP_NUM_WEAPONS) {
+			bits ^= (1 << val);
+			Cvar_SetValue(cvarStr, bits);
+			Com_Printf( "%s %s^7\n", weaponToggleNamePrints[val], (bits & (1 << val)) ? "^2Enabled" : "^1Disabled" );
+		}
+		else {
+			for ( i = 0; i<WP_NUM_WEAPONS; i++ ) {
+				if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, weaponToggleNamePrints[i] );
+				else							Com_Printf( "%2d [ ] %s\n", i, weaponToggleNamePrints[i] );
+			}
+			Com_Printf ("Specified a weapon that does not exist.\nExample usage: weapontoggle 3\n(toggles SABER)\n");
+		}
+	}
+	else {
+		for ( i = 0; i<WP_NUM_WEAPONS; i++ ) {
+			if ( (bits & (1 << i)) )		Com_Printf( "%2d [X] %s\n", i, weaponToggleNamePrints[i] );
+			else							Com_Printf( "%2d [ ] %s\n", i, weaponToggleNamePrints[i] );
+		}
+		Com_Printf ("Specified a weapon that does not exist.\nExample usage: weapontoggle 3\n(toggles SABER)\n");
 	}
 }
 
@@ -1421,7 +1501,7 @@ static void SV_DumpUser_f( void ) {
 	}
 
 	if ( Cmd_Argc() != 2 ) {
-		Com_Printf ("Usage: info <userid>\n");
+		Com_Printf ("Usage: dumpuser <userid>\n");
 		return;
 	}
 
@@ -1601,6 +1681,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	char *demoNames[] = { demoFolderName, demoFileName };
 	char date[MAX_OSPATH];
 	char folderDate[MAX_OSPATH];
+	char folderTreeDate[MAX_OSPATH];
 	char demoPlayerName[MAX_NAME_LENGTH];
 	time_t rawtime;
 	struct tm * timeinfo;
@@ -1609,6 +1690,7 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	strftime( date, sizeof( date ), "%Y-%m-%d_%H-%M-%S", timeinfo );
 	timeinfo = localtime( &sv.realMapTimeStarted );
 	strftime( folderDate, sizeof( folderDate ), "%Y-%m-%d_%H-%M-%S", timeinfo );
+	strftime( folderTreeDate, sizeof( folderTreeDate ), "%Y/%m/%d", timeinfo );
 	Q_strncpyz( demoPlayerName, cl->name, sizeof( demoPlayerName ) );
 	Q_CleanStr( demoPlayerName );
 	Com_sprintf( demoFileName, sizeof( demoFileName ), "%d %s %s %s",
@@ -1618,11 +1700,15 @@ void SV_AutoRecordDemo( client_t *cl ) {
 	for ( char **start = demoNames; start - demoNames < (ptrdiff_t)ARRAY_LEN( demoNames ); start++ ) {
 		Q_strstrip( *start, "\n\r;:.?*<>|\\/\"", NULL );
 	}
-	Com_sprintf( demoName, sizeof( demoName ), "autorecord/%s/%s", demoFolderName, demoFileName );
+	Com_sprintf( demoName, sizeof( demoName ), "autorecord/%s/%s/%s", folderTreeDate, demoFolderName, demoFileName );
 	SV_RecordDemo( cl, demoName );
 }
 
 static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
+	char *slash = strrchr( folder, '/' );
+	if ( slash ) {
+		folder = slash + 1;
+	}
 	size_t timeLen = strlen( "0000-00-00_00-00-00" );
 	if ( strlen( folder ) < timeLen ) {
 		return 0;
@@ -1641,7 +1727,57 @@ static time_t SV_ExtractTimeFromDemoFolder( char *folder ) {
 }
 
 static int QDECL SV_DemoFolderTimeComparator( const void *arg1, const void *arg2 ) {
-	return SV_ExtractTimeFromDemoFolder( (char *)arg2 ) - SV_ExtractTimeFromDemoFolder( (char *)arg1 );
+	char *left = (char *)arg1, *right = (char *)arg2;
+	time_t leftTime = SV_ExtractTimeFromDemoFolder( left );
+	time_t rightTime = SV_ExtractTimeFromDemoFolder( right );
+	if ( leftTime == 0 && rightTime == 0 ) {
+		return -strcmp( left, right );
+	} else if ( leftTime == 0 ) {
+		return 1;
+	} else if ( rightTime == 0 ) {
+		return -1;
+	}
+	return rightTime - leftTime;
+}
+
+// returns number of folders found.  pass NULL result pointer for just a count.
+static int SV_FindLeafFolders( const char *baseFolder, char *result, int maxResults, int maxFolderLength ) {
+	char *fileList = (char *)Z_Malloc( MAX_OSPATH * maxResults, TAG_FILESYS ); // too big for stack since this is recursive
+	char fullFolder[MAX_OSPATH];
+	int resultCount = 0;
+	char *fileName;
+	int i;
+	int numFiles = FS_GetFileList( baseFolder, "/", fileList, MAX_OSPATH * maxResults );
+
+	fileName = fileList;
+	for ( i = 0; i < numFiles; i++ ) {
+		if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) ) {
+			char *nextResult = NULL;
+			Com_sprintf( fullFolder, sizeof( fullFolder ), "%s/%s", baseFolder, fileName );
+			if ( result != NULL ) {
+				nextResult = &result[maxFolderLength * resultCount];
+			}
+			int newResults = SV_FindLeafFolders( fullFolder, nextResult, maxResults - resultCount, maxFolderLength );
+			resultCount += newResults;
+			if ( result != NULL && resultCount >= maxResults ) {
+				break;
+			}
+			if ( newResults == 0 ) {
+				if ( result != NULL ) {
+					Q_strncpyz( &result[maxFolderLength * resultCount], fullFolder, maxFolderLength );
+				}
+				resultCount++;
+				if ( result != NULL && resultCount >= maxResults ) {
+					break;
+				}
+			}
+		}
+		fileName += strlen( fileName ) + 1;
+	}
+
+	Z_Free( fileList );
+
+	return resultCount;
 }
 
 // starts demo recording on all active clients
@@ -1654,26 +1790,38 @@ void SV_BeginAutoRecordDemos() {
 				}
 			}
 		}
-		if ( sv_autoDemoMaxMaps->integer > 0 ) {
-			char fileList[MAX_QPATH * 500];
-			char autorecordDirList[500][MAX_QPATH];
-			int autorecordDirListCount = 0;
-			char *fileName;
+		if ( sv_autoDemoMaxMaps->integer > 0 && sv.demosPruned == qfalse ) {
+			char autorecordDirList[500 * MAX_OSPATH], tmpFileList[5 * MAX_OSPATH];
+			int autorecordDirListCount = SV_FindLeafFolders( "demos/autorecord", autorecordDirList, 500, MAX_OSPATH );
 			int i;
-			int numFiles = FS_GetFileList( "demos/autorecord", "/", fileList, sizeof( fileList ) );
 
-			fileName = fileList;
-			for ( i = 0; i < numFiles; i++ )
-			{
-				if ( Q_stricmp( fileName, "." ) && Q_stricmp( fileName, ".." ) ) {
-					Q_strncpyz( autorecordDirList[autorecordDirListCount++], fileName, MAX_QPATH );
-				}
-				fileName += strlen( fileName ) + 1;
-			}
-			qsort( autorecordDirList, autorecordDirListCount, sizeof( autorecordDirList[0] ), SV_DemoFolderTimeComparator );
+			qsort( autorecordDirList, autorecordDirListCount, MAX_OSPATH, SV_DemoFolderTimeComparator );
 			for ( i = sv_autoDemoMaxMaps->integer; i < autorecordDirListCount; i++ ) {
-				FS_HomeRmdir( va( "demos/autorecord/%s", autorecordDirList[i] ), qtrue );
+				char *folder = &autorecordDirList[i * MAX_OSPATH], *slash = NULL;
+				FS_HomeRmdir( folder, qtrue );
+				// if this folder was the last thing in its parent folder (and its parent isn't the root folder),
+				// also delete the parent.
+				for (;;) {
+					slash = strrchr( folder, '/' );
+					if ( slash == NULL ) {
+						break;
+					}
+					slash[0] = '\0';
+					if ( !strcmp( folder, "demos/autorecord" ) ) {
+						break;
+					}
+					int numFiles = FS_GetFileList( folder, "", tmpFileList, sizeof( tmpFileList ) );
+					int numFolders = FS_GetFileList( folder, "/", tmpFileList, sizeof( tmpFileList ) );
+					// numFolders will include . and ..
+					if ( numFiles == 0 && numFolders == 2 ) {
+						// dangling empty folder, delete
+						FS_HomeRmdir( folder, qfalse );
+					} else {
+						break;
+					}
+				}
 			}
+			sv.demosPruned = qtrue;
 		}
 	}
 }
@@ -1808,6 +1956,7 @@ void SV_AddOperatorCommands( void ) {
 	Cmd_AddCommand ("svsay", SV_ConSay_f);
 	Cmd_AddCommand ("svtell", SV_ConTell_f);
 	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
+	Cmd_AddCommand ("weapontoggle", SV_WeaponToggle_f);
 	Cmd_AddCommand ("svrecord", SV_Record_f);
 	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
 	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f);

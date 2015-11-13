@@ -119,6 +119,8 @@ bool Sys_RandomBytes( byte *string, int len )
 	if( !fp )
 		return false;
 
+	setvbuf( fp, NULL, _IONBF, 0 ); // don't buffer reads from /dev/urandom
+
 	if( !fread( string, sizeof( byte ), len, fp ) )
 	{
 		fclose( fp );
@@ -526,10 +528,16 @@ void Sys_SetProcessorAffinity( void ) {
 #endif
 }
 
-bool Sys_UnpackDLL(const char *name)
+UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
-	return true;
+	return UnpackDLLResult();
 }
+
+bool Sys_DLLNeedsUnpacking()
+{
+	return false;
+}
+
 
 /*
 =================

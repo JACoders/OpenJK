@@ -48,7 +48,7 @@ void charge_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 	VectorScale( self->maxs, -1, self->mins );
 
 	self->activator = self->owner;
-	self->owner = NULL; 
+	self->owner = NULL;
 
 	self->e_TouchFunc = touchF_NULL;
 	self->e_ThinkFunc = thinkF_NULL;
@@ -58,7 +58,7 @@ void charge_stick( gentity_t *self, gentity_t *other, trace_t *trace )
 }
 
 //---------------------------------------------------------
-static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir ) 
+static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 //---------------------------------------------------------
 {
 	// Chucking a new one
@@ -81,7 +81,7 @@ static void WP_DropDetPack( gentity_t *self, vec3_t start, vec3_t dir )
 
 	missile->s.eFlags |= EF_MISSILE_STICK;
 	missile->e_TouchFunc = touchF_charge_stick;
-	
+
 	missile->damage = weaponData[WP_DET_PACK].damage;
 	missile->methodOfDeath = MOD_DETPACK;
 

@@ -94,7 +94,7 @@ void MSG_ReadDeltaUsercmd( msg_t *msg, struct usercmd_s *from, struct usercmd_s 
 
 void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to
 						   , qboolean force );
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 						 int number );
 void MSG_ReadEntity( msg_t *msg, entityState_t *to);
 void MSG_WriteEntity( msg_t *msg, entityState_t *to, int removeNum);
@@ -173,7 +173,7 @@ typedef struct {
 
 	// incoming fragment assembly buffer
 	int			fragmentSequence;
-	int			fragmentLength;	
+	int			fragmentLength;
 	byte		fragmentBuffer[MAX_MSGLEN];
 } netchan_t;
 
@@ -217,7 +217,7 @@ enum svc_ops_e {
 //
 enum clc_ops_e {
 	clc_bad,
-	clc_nop, 		
+	clc_nop,
 	clc_move,				// [[usercmd_t]
 	clc_clientCommand		// [string] message
 };
@@ -511,15 +511,6 @@ void	FS_ForceFlush( fileHandle_t f );
 void	FS_FreeFile( void *buffer );
 // frees the memory returned by FS_ReadFile
 
-class FS_AutoFreeFile {
-private:
-	FS_AutoFreeFile();
-	void *buffer;
-public:
-	FS_AutoFreeFile(void *inbuf) : buffer(inbuf) { };
-	~FS_AutoFreeFile() { if (buffer) FS_FreeFile(buffer); };
-};
-
 void	FS_WriteFile( const char *qpath, const void *buffer, int size );
 // writes a complete file, creating any subdirectories needed
 
@@ -553,6 +544,8 @@ qboolean	FS_MoveUserGenFile  ( const char *filename_src, const char *filename_ds
 
 qboolean FS_CheckDirTraversal(const char *checkdir);
 void FS_Rename( const char *from, const char *to );
+
+qboolean FS_WriteToTemporaryFile( const void *data, size_t dataLength, char **tempFileName );
 
 /*
 ==============================================================
@@ -674,34 +667,30 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag);	//returns size if t
 
 #ifdef DEBUG_ZONE_ALLOCS
 
-	void *_D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
-	void *_D_S_Malloc ( int iSize, const char *psFile, int iLine );	
-	void  _D_Z_Label  ( const void *pvAddress, const char *pslabel );
+void *_D_Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine );
+void *_D_S_Malloc( int iSize, const char *psFile, int iLine );
+void  Z_Label( const void *pvAddress, const char *pslabel );
 
-	#define Z_Malloc(_iSize, _eTag, _bZeroit)	_D_Z_Malloc (_iSize, _eTag, _bZeroit, __FILE__, __LINE__)
-	#define S_Malloc(_iSize)					_D_S_Malloc	(_iSize, __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations	
-	
-	#define Z_Label(_ptr, _label)				_D_Z_Label	(_ptr, _label)
+#define Z_Malloc(iSize, eTag, bZeroit)	_D_Z_Malloc ((iSize), (eTag), (bZeroit), __FILE__, __LINE__)
+#define S_Malloc(iSize)			_D_S_Malloc	((iSize), __FILE__, __LINE__)	// NOT 0 filled memory only for small allocations
 
 #else
 
-	void *Z_Malloc  ( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
-	void *S_Malloc	( int iSize );									// NOT 0 filled memory only for small allocations
-
-	#define Z_Label(_ptr, _label)	/* */
+void *Z_Malloc( int iSize, memtag_t eTag, qboolean bZeroit = qfalse, int iAlign = 4);	// return memory NOT zero-filled by default
+void *S_Malloc( int iSize );									// NOT 0 filled memory only for small allocations
+#define Z_Label(_ptr, _label)
 
 #endif
 
+void Com_InitZoneMemory(void);
+void Com_InitZoneMemoryVars(void);
 
 void Hunk_Clear( void );
 void Hunk_ClearToMark( void );
 void Hunk_SetMark( void );
 // note the opposite default for 'bZeroIt' in Hunk_Alloc to Z_Malloc, since Hunk_Alloc always used to memset(0)...
 //
-inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue) 
-{
-	return Z_Malloc(size, TAG_HUNKALLOC, bZeroIt);
-}
+inline void *Hunk_Alloc( int size, qboolean bZeroIt = qtrue);
 
 
 void Com_TouchMemory( void );

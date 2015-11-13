@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #ifdef _CGAME
 	#include "cgame/cg_local.h"
-#elif _UI
+#elif UI_BUILD
 	#include "ui/ui_local.h"
 #endif
 
@@ -75,7 +75,7 @@ typedef struct scrollInfo_s {
 	qboolean scrollDir;
 } scrollInfo_t;
 
-#ifdef _UI // Defined in ui_main.c, not in the namespace
+#ifdef UI_BUILD // Defined in ui_main.c, not in the namespace
 	// Some extern functions hoisted from the middle of this file to get all the non-cgame,
 	// non-namespace stuff together
 	extern void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles );
@@ -3448,7 +3448,7 @@ void Leaving_EditField(itemDef_t *item)
 	}
 }
 
-#ifdef _UI
+#ifdef UI_BUILD
 qboolean Item_TextField_HandleKey( itemDef_t *item, int key );
 void Item_TextField_Paste( itemDef_t *item ) {
 	int		pasteLen, i;
@@ -3485,7 +3485,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 		if ( key & K_CHAR_FLAG ) {
 			key &= ~K_CHAR_FLAG;
 
-#ifdef _UI
+#ifdef UI_BUILD
 			if ( key == 'v' - 'a' + 1 ) {	// ctrl-v is paste
 				Item_TextField_Paste( item );
 				return qtrue;
@@ -5173,6 +5173,12 @@ qboolean Item_Bind_HandleKey(itemDef_t *item, int key, qboolean down) {
 				id = BindingIDFromName(item->cvar);
 				if (id != -1)
 				{
+					if ( g_bindKeys[id][0] != -1 )
+						DC->setBinding(g_bindKeys[id][0], "");
+
+					if ( g_bindKeys[id][1] != -1 )
+						DC->setBinding(g_bindKeys[id][1], "");
+
 					g_bindKeys[id][0] = -1;
 					g_bindKeys[id][1] = -1;
 				}
@@ -5268,7 +5274,7 @@ void Item_Model_Paint(itemDef_t *item)
 	}
 
 	// a moves datapad anim is playing
-#ifdef _UI
+#ifdef UI_BUILD
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{
 		if (modelPtr)
@@ -7088,7 +7094,7 @@ ItemParse_asset_model
 */
 qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTimeLength )
 {
-#ifdef _UI
+#ifdef UI_BUILD
 	int g2Model;
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
@@ -7188,7 +7194,7 @@ qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 		return qfalse;
 	}
 
-#ifdef _UI
+#ifdef UI_BUILD
 	if (!Q_stricmp(token.string,"ui_char_model") )
 	{
 		char modelPath[MAX_QPATH] = {0};
@@ -8070,7 +8076,7 @@ qboolean ItemParse_cvarFloat( itemDef_t *item, int handle ) {
 	return qfalse;
 }
 
-#ifdef _UI
+#ifdef UI_BUILD
 char currLanguage[32][128];
 static const char languageString[32] = "@MENUS_MYLANGUAGE";
 #endif
@@ -8108,7 +8114,7 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	// languages
 	if (!Q_stricmp(token.string,"feeder") && item->special == FEEDER_LANGUAGES)
 	{
-#ifdef _UI
+#ifdef UI_BUILD
 		for (; multiPtr->count < uiInfo.languageCount; multiPtr->count++)
 		{
 			// The displayed text

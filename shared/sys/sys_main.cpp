@@ -437,8 +437,14 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 			Com_Printf( "%s(%s) failed: \"%s\"\n", callerName, fn, Sys_LibraryError() );
 		}
 	}
-		
+
 	return NULL;
+}
+
+static void FreeUnpackDLLResult(UnpackDLLResult *result)
+{
+	if ( result->tempDLLPath )
+		Z_Free((void *)result->tempDLLPath);
 }
 
 void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallProc *systemcalls )
@@ -448,40 +454,60 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
-	if (!Sys_UnpackDLL(filename))
+#if defined(_DEBUG)
+	libHandle = Sys_LoadLibrary( name );
+	if ( !libHandle )
+#endif
 	{
-		Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
-		return NULL;
-	}
+		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
+		if ( !unpackResult.succeeded )
+		{
+			if ( Sys_DLLNeedsUnpacking() )
+			{
+				FreeUnpackDLLResult(&unpackResult);
+				Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
+				return NULL;
+			}
+		}
+		else
+		{
+			libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
+		}
 
-#if defined(MACOS_X) && !defined(_JK2EXE)
-    //First, look for the old-style mac .bundle that's inside a pk3
-    //It's actually zipped, and the zipfile has the same name as 'name'
-    libHandle = Sys_LoadMachOBundle( name );
-#endif
+		FreeUnpackDLLResult(&unpackResult);
 
-	if (!libHandle) {
-		char *basepath = Cvar_VariableString( "fs_basepath" );
-		char *homepath = Cvar_VariableString( "fs_homepath" );
-		char *cdpath = Cvar_VariableString( "fs_cdpath" );
-		char *gamedir = Cvar_VariableString( "fs_game" );
-#ifdef MACOS_X
-        char *apppath = Cvar_VariableString( "fs_apppath" );
-#endif
-
-		const char *searchPaths[] = {
-			homepath,
-#ifdef MACOS_X
-			apppath,
-#endif
-			basepath,
-			cdpath,
-		};
-		size_t numPaths = ARRAY_LEN( searchPaths );
-
-		libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths, SEARCH_PATH_BASE | SEARCH_PATH_MOD, __FUNCTION__ );
 		if ( !libHandle )
-			return NULL;
+		{
+#if defined(MACOS_X) && !defined(_JK2EXE)
+			//First, look for the old-style mac .bundle that's inside a pk3
+			//It's actually zipped, and the zipfile has the same name as 'name'
+			libHandle = Sys_LoadMachOBundle( name );
+#endif
+
+			if (!libHandle) {
+				char *basepath = Cvar_VariableString( "fs_basepath" );
+				char *homepath = Cvar_VariableString( "fs_homepath" );
+				char *cdpath = Cvar_VariableString( "fs_cdpath" );
+				char *gamedir = Cvar_VariableString( "fs_game" );
+		#ifdef MACOS_X
+				char *apppath = Cvar_VariableString( "fs_apppath" );
+		#endif
+
+				const char *searchPaths[] = {
+					homepath,
+		#ifdef MACOS_X
+					apppath,
+		#endif
+					basepath,
+					cdpath,
+				};
+				size_t numPaths = ARRAY_LEN( searchPaths );
+
+				libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths, SEARCH_PATH_BASE | SEARCH_PATH_MOD, __FUNCTION__ );
+				if ( !libHandle )
+					return NULL;
+			}
+		}
 	}
 
 	typedef void QDECL DllEntryProc( SystemCallProc *syscallptr );
@@ -559,40 +585,60 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
-	if (!Sys_UnpackDLL(filename))
+#if defined(_DEBUG)
+	libHandle = Sys_LoadLibrary( name );
+	if ( !libHandle )
+#endif
 	{
-		Com_DPrintf( "Sys_LoadGameDll: Failed to unpack %s from PK3.\n", filename );
-		return NULL;
-	}
+		UnpackDLLResult unpackResult = Sys_UnpackDLL(filename);
+		if ( !unpackResult.succeeded )
+		{
+			if ( Sys_DLLNeedsUnpacking() )
+			{
+				FreeUnpackDLLResult(&unpackResult);
+				Com_DPrintf( "Sys_LoadLegacyGameDll: Failed to unpack %s from PK3.\n", filename );
+				return NULL;
+			}
+		}
+		else
+		{
+			libHandle = Sys_LoadLibrary(unpackResult.tempDLLPath);
+		}
 
-#if defined(MACOS_X) && !defined(_JK2EXE)
-    //First, look for the old-style mac .bundle that's inside a pk3
-    //It's actually zipped, and the zipfile has the same name as 'name'
-    libHandle = Sys_LoadMachOBundle( name );
-#endif
+		FreeUnpackDLLResult(&unpackResult);
 
-	if (!libHandle) {
-		char *basepath = Cvar_VariableString( "fs_basepath" );
-		char *homepath = Cvar_VariableString( "fs_homepath" );
-		char *cdpath = Cvar_VariableString( "fs_cdpath" );
-		char *gamedir = Cvar_VariableString( "fs_game" );
-#ifdef MACOS_X
-        char *apppath = Cvar_VariableString( "fs_apppath" );
-#endif
-
-		const char *searchPaths[] = {
-			homepath,
-#ifdef MACOS_X
-			apppath,
-#endif
-			basepath,
-			cdpath,
-		};
-		size_t numPaths = ARRAY_LEN( searchPaths );
-
-		libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths, SEARCH_PATH_BASE | SEARCH_PATH_MOD, __FUNCTION__ );
 		if ( !libHandle )
-			return NULL;
+		{
+#if defined(MACOS_X) && !defined(_JK2EXE)
+			//First, look for the old-style mac .bundle that's inside a pk3
+			//It's actually zipped, and the zipfile has the same name as 'name'
+			libHandle = Sys_LoadMachOBundle( name );
+#endif
+
+			if (!libHandle) {
+				char *basepath = Cvar_VariableString( "fs_basepath" );
+				char *homepath = Cvar_VariableString( "fs_homepath" );
+				char *cdpath = Cvar_VariableString( "fs_cdpath" );
+				char *gamedir = Cvar_VariableString( "fs_game" );
+#ifdef MACOS_X
+				char *apppath = Cvar_VariableString( "fs_apppath" );
+#endif
+
+				const char *searchPaths[] = {
+					homepath,
+#ifdef MACOS_X
+					apppath,
+#endif
+					basepath,
+					cdpath,
+				};
+				size_t numPaths = ARRAY_LEN( searchPaths );
+
+				libHandle = Sys_LoadDllFromPaths( filename, gamedir, searchPaths, numPaths, SEARCH_PATH_BASE | SEARCH_PATH_MOD, __FUNCTION__ );
+				if ( !libHandle )
+					return NULL;
+			}
+		}
 	}
 
 	*moduleAPI = (GetModuleAPIProc *)Sys_LoadFunction( libHandle, "GetModuleAPI" );

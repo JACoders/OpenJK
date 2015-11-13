@@ -132,7 +132,7 @@ typedef struct md3Tag_s {
 ** XyzNormals		sizeof( md3XyzNormal_t ) * numVerts * numFrames
 */
 typedef struct {
-	int		ident;				// 
+	int		ident;				//
 
 	char	name[MAX_QPATH];	// polyset name
 
@@ -179,7 +179,7 @@ typedef struct {
 	int			flags;
 
 	int			numFrames;
-	int			numTags;			
+	int			numTags;
 	int			numSurfaces;
 
 	int			numSkins;
@@ -401,7 +401,7 @@ typedef struct {
 
 typedef enum //# hunkAllocType_e
 {
-	HA_MISC,	
+	HA_MISC,
 	HA_MAP,
 	HA_SHADERS,
 	HA_LIGHTING,
@@ -426,13 +426,13 @@ typedef enum //# hunkAllocType_e
 #define STYLE_BLINK			0x40000000
 #define	SET_MASK			0x00ffffff
 
-typedef struct 
+typedef struct
 {
 	short		width;					// number of pixels wide
 	short		height;					// number of scan lines
 	short		horizAdvance;			// number of pixels to advance to the next char
 	short		horizOffset;			// x offset into space to render glyph
-	int			baseline;				// y offset 
+	int			baseline;				// y offset
 	float		s;						// x start tex coord
 	float		t;						// y start tex coord
 	float		s2;						// x end tex coord

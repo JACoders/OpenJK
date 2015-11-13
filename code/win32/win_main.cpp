@@ -58,7 +58,7 @@ char *Sys_BinaryPath(void);
 Sys_LowPhysicalMemory
 ==================
 */
-qboolean Sys_LowPhysicalMemory() 
+qboolean Sys_LowPhysicalMemory()
 {
 	static MEMORYSTATUSEX stat;
 	static qboolean bAsked = qfalse;
@@ -379,7 +379,7 @@ char *Sys_GetClipboardData( void ) {
 				data = (char *) Z_Malloc( GlobalSize( hClipboardData ) + 1, TAG_CLIPBOARD, qfalse);
 				Q_strncpyz( data, cliptext, GlobalSize( hClipboardData )+1 );
 				GlobalUnlock( hClipboardData );
-				
+
 				strtok( data, "\n\r\b" );
 			}
 		}
@@ -427,41 +427,41 @@ void *Sys_LoadDll(const char *name, qboolean useSystemLib)
 
 	if(useSystemLib)
 		Com_Printf("Trying to load \"%s\"...\n", name);
-	
+
 	if(!useSystemLib || !(dllhandle = Sys_LoadLibrary(name)))
 	{
 		const char *topDir;
 		char libPath[MAX_OSPATH];
-        
+
 		topDir = Sys_BinaryPath();
-        
+
 		if(!*topDir)
 			topDir = ".";
-        
+
 		Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, topDir);
 		Com_sprintf(libPath, sizeof(libPath), "%s%c%s", topDir, PATH_SEP, name);
-        
+
 		if(!(dllhandle = Sys_LoadLibrary(libPath)))
 		{
 			const char *basePath = Cvar_VariableString("fs_basepath");
-			
+
 			if(!basePath || !*basePath)
 				basePath = ".";
-			
+
 			if(FS_FilenameCompare(topDir, basePath))
 			{
 				Com_Printf("Trying to load \"%s\" from \"%s\"...\n", name, basePath);
 				Com_sprintf(libPath, sizeof(libPath), "%s%c%s", basePath, PATH_SEP, name);
 				dllhandle = Sys_LoadLibrary(libPath);
 			}
-			
+
 			if(!dllhandle)
 			{
 				Com_Printf("Loading \"%s\" failed\n", name);
 			}
 		}
 	}
-	
+
 	return dllhandle;
 }
 
@@ -638,7 +638,7 @@ void *Sys_GetGameAPI (void *parms)
 	if (!GetGameAPI)
 	{
 		Com_Printf( "Sys_GetGameAPI: Entry point not found in %s. Failed with system error code 0x%X.\n", gamename, GetLastError() );
-		Sys_UnloadGame ();		
+		Sys_UnloadGame ();
 		return NULL;
 	}
 	return GetGameAPI (parms);
@@ -652,11 +652,11 @@ Sys_LoadCgame
 Used to hook up a development dll
 =================
 */
-void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) ) 
+void * Sys_LoadCgame( intptr_t (**entryPoint)(int, ...), intptr_t (*systemcalls)(intptr_t, ...) )
 {
 	void	(*dllEntry)( intptr_t (*syscallptr)(intptr_t, ...) );
 
-	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )GetProcAddress( game_library, "dllEntry" ); 
+	dllEntry = ( void (*)( intptr_t (*)( intptr_t, ... ) ) )GetProcAddress( game_library, "dllEntry" );
 	*entryPoint = (intptr_t (*)(int,...))GetProcAddress( game_library, "vmMain" );
 	if ( !*entryPoint || !dllEntry ) {
 #ifdef JK2_MODE
@@ -845,7 +845,7 @@ static void QuickMemTest(void)
 //	if (!Sys_LowPhysicalMemory())
 	{
 		const int iMemTestMegs = 128;	// useful search label
-		// special test, 
+		// special test,
 		void *pvData = malloc(iMemTestMegs * 1024 * 1024);
 		if (pvData)
 		{
@@ -855,9 +855,9 @@ static void QuickMemTest(void)
 		{
 			// err...
 			//
-			LPCSTR psContinue = re.Language_IsAsian() ? 
+			LPCSTR psContinue = re.Language_IsAsian() ?
 								"Your machine failed to allocate %dMB in a memory test, which may mean you'll have problems running this game all the way through.\n\nContinue anyway?"
-								: 
+								:
 								SE_GetString("CON_TEXT_FAILED_MEMTEST");
 								// ( since it's too much hassle doing MBCS code pages and decodings etc for MessageBox command )
 

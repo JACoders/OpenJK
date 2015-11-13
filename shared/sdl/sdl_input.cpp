@@ -176,7 +176,7 @@ static qboolean IN_IsConsoleKey( fakeAscii_t key, int character )
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <windows.h>
 #endif
 
 static bool IN_NumLockEnabled( void )
@@ -259,11 +259,12 @@ IN_TranslateSDLToJKKey
 static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	fakeAscii_t key = A_NULL;
 
-	if( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
-	{
-		// These happen to match the ASCII chars
+	if ( keysym->sym >= A_LOW_A && keysym->sym <= A_LOW_Z )
+		key = (fakeAscii_t)(A_CAP_A + (keysym->sym - A_LOW_A));
+	else if ( keysym->sym >= A_LOW_AGRAVE && keysym->sym <= A_LOW_THORN && keysym->sym != A_DIVIDE )
+		key = (fakeAscii_t)(A_CAP_AGRAVE + (keysym->sym - A_LOW_AGRAVE));
+	else if ( keysym->sym >= SDLK_SPACE && keysym->sym < SDLK_DELETE )
 		key = (fakeAscii_t)keysym->sym;
-	}
 	else
 	{
 		IN_TranslateNumpad( keysym, &key );
@@ -553,6 +554,8 @@ static void IN_InitJoystick( void )
 
 	in_joystickUseAnalog = Cvar_Get( "in_joystickUseAnalog", "0", CVAR_ARCHIVE );
 
+	in_joystickThreshold = Cvar_Get( "joy_threshold", "0.15", CVAR_ARCHIVE );
+
 	stick = SDL_JoystickOpen( in_joystickNo->integer );
 
 	if (stick == NULL) {
@@ -567,6 +570,7 @@ static void IN_InitJoystick( void )
 	Com_DPrintf( "Buttons:    %d\n", SDL_JoystickNumButtons(stick) );
 	Com_DPrintf( "Balls:      %d\n", SDL_JoystickNumBalls(stick) );
 	Com_DPrintf( "Use Analog: %s\n", in_joystickUseAnalog->integer ? "Yes" : "No" );
+	Com_DPrintf( "Threshold: %f\n", in_joystickThreshold->value );
 
 	SDL_JoystickEventState(SDL_QUERY);
 }
@@ -587,7 +591,6 @@ void IN_Init( void *windowData )
 	in_keyboardDebug = Cvar_Get( "in_keyboardDebug", "0", CVAR_ARCHIVE );
 
 	in_joystick = Cvar_Get( "in_joystick", "0", CVAR_ARCHIVE|CVAR_LATCH );
-	in_joystickThreshold = Cvar_Get( "joy_threshold", "0.15", CVAR_ARCHIVE );
 
 	// mouse variables
 	in_mouse = Cvar_Get( "in_mouse", "1", CVAR_ARCHIVE );
@@ -790,8 +793,8 @@ static void IN_ProcessEvents( void )
 
 				if ( key == A_BACKSPACE )
 					Sys_QueEvent( 0, SE_CHAR, CTRL('h'), qfalse, 0, NULL);
-				else if ( kg.keys[A_CTRL].down && key >= 'a' && key <= 'z' )
-					Sys_QueEvent( 0, SE_CHAR, CTRL(key), qfalse, 0, NULL );
+				else if ( kg.keys[A_CTRL].down && key >= A_CAP_A && key <= A_CAP_Z )
+					Sys_QueEvent( 0, SE_CHAR, CTRL(tolower(key)), qfalse, 0, NULL );
 
 				lastKeyDown = key;
 				break;
@@ -863,7 +866,7 @@ static void IN_ProcessEvents( void )
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELUP, qtrue, 0, NULL );
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELUP, qfalse, 0, NULL );
 				}
-				else
+				else if( e.wheel.y < 0 )
 				{
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELDOWN, qtrue, 0, NULL );
 					Sys_QueEvent( 0, SE_KEY, A_MWHEELDOWN, qfalse, 0, NULL );

@@ -215,7 +215,7 @@ qboolean CGVM_NoUseableForce( void ) {
 
 void CGVM_GetOrigin( int entID, vec3_t out ) {
 	if ( cgvm->isLegacy ) {
-		VM_Call( cgvm, CG_GET_ORIGIN, entID, out );
+		VM_Call( cgvm, CG_GET_ORIGIN, entID, reinterpret_cast< intptr_t >( out ) );
 		return;
 	}
 	VMSwap v( cgvm );
@@ -225,7 +225,7 @@ void CGVM_GetOrigin( int entID, vec3_t out ) {
 
 void CGVM_GetAngles( int entID, vec3_t out ) {
 	if ( cgvm->isLegacy ) {
-		VM_Call( cgvm, CG_GET_ANGLES, entID, out );
+		VM_Call( cgvm, CG_GET_ANGLES, entID, reinterpret_cast< intptr_t >( out ) );
 		return;
 	}
 	VMSwap v( cgvm );
@@ -253,7 +253,7 @@ trajectory_t *CGVM_GetAngleTrajectory( int entID ) {
 
 void CGVM_ROFF_NotetrackCallback( int entID, const char *notetrack ) {
 	if ( cgvm->isLegacy ) {
-		VM_Call( cgvm, CG_ROFF_NOTETRACK_CALLBACK, entID, notetrack );
+		VM_Call( cgvm, CG_ROFF_NOTETRACK_CALLBACK, entID, reinterpret_cast< intptr_t >( notetrack ) );
 		return;
 	}
 	VMSwap v( cgvm );
@@ -1857,6 +1857,8 @@ void CL_BindCGame( void ) {
 		cgi.G2API_CleanEntAttachments			= CL_G2API_CleanEntAttachments;
 		cgi.G2API_OverrideServer				= CL_G2API_OverrideServer;
 		cgi.G2API_GetSurfaceName				= CL_G2API_GetSurfaceName;
+
+		cgi.ext.R_Font_StrLenPixels				= re->ext.Font_StrLenPixels;
 
 		GetCGameAPI = (GetCGameAPI_t)cgvm->GetModuleAPI;
 		ret = GetCGameAPI( CGAME_API_VERSION, &cgi );
