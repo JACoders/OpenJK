@@ -2122,7 +2122,7 @@ void PrintStats(int client) {
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgTaken), int_to_string(cl->pers.stats.damageTaken, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgNet), int_to_string(cl->pers.stats.damageGiven - cl->pers.stats.damageTaken, numbuf, sizeof(numbuf)));
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgNet), int_to_string(cl->pers.stats.damageGiven - cl->pers.stats.damageTaken - cl->pers.stats.teamDamageGiven, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgPerDeath), int_to_string(dmgPerDeath, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);		
@@ -2153,8 +2153,9 @@ void PrintStats(int client) {
 				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDrain), int_to_string(drainRatio, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			}	
-			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s\n", strlen(lName), cl->pers.netname);
+			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lName), cl->pers.netname);
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), "\n");
 
 			tmpMsg = partialTmpMsg;
 

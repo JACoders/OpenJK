@@ -736,6 +736,7 @@ typedef struct {//JAPRO - Serverside - Stats
 	int teamKills;
 	int damageTaken;
 	int damageGiven;
+	int teamDamageGiven;
 	int	duelDamageGiven;
 
 	int startTimeFlag;//could be float?
