@@ -3457,7 +3457,7 @@ void ClientThink_real( gentity_t *ent ) {
 		trap->Cvar_Set("pmove_msec", "66");
 	}
 
-	if (client->sess.sessionTeam == TEAM_FREE && !g_raceMode.integer) {
+	if (!isNPC && client->sess.sessionTeam == TEAM_FREE && !g_raceMode.integer) {
 		if (client->ps.stats[STAT_RACEMODE] || level.gametype >= GT_TEAM) {
 			SetTeam ( ent, "spectator", qtrue );
 			client->sess.raceMode = qfalse;
