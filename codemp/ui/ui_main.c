@@ -5673,8 +5673,6 @@ static void UI_UpdateSaberColor( qboolean secondSaber ) {
 
 const char *SaberColorToString( saber_colors_t color );
 
-void ParseRGBSaber( char * str, vec3_t c );
-
 static void UI_GetSaberCvars ( void )
 {
 //	trap->Cvar_Set ( "ui_saber_type", UI_Cvar_VariableString ( "g_saber_type" ) );
