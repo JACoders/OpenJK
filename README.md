@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# jaPRO User Interface #
-=======
 # OpenJK
 
 OpenJK is an effort by the JACoders group to maintain and improve the game engines on which the Jedi Academy (JA) and Jedi Outcast (JO) games run on, while maintaining *full backwards compatibility* with the existing games. *This project does not attempt to rebalance or otherwise modify core gameplay*.
@@ -32,23 +29,15 @@ Please use discretion when making issue requests on GitHub. The [JKHub sub-forum
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
 ## For players
->>>>>>> upstream/master
 
 To install OpenJK, you will first need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy).
 
-<<<<<<< HEAD
-* dan2077 (eternal)
-=======
 Installing and running OpenJK:
->>>>>>> upstream/master
 
 1. [Download the latest build](http://builds.openjk.org) for your operating system.
 2. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
 3. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` application (OS X), depending on your operating system.
 
-<<<<<<< HEAD
-* videoP (loda)
-=======
 
 **OS X Instructions**
 
@@ -59,7 +48,6 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 3. Extract the content of the OpenJK DMG ([Download the latest build](http://builds.openjk.org)) into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
 4. Run `openJK.app` or `openJK SP.app` 
 5. Savegames, Config Files and Log Files are stored in `/Users/<USER>/Library/Application Support/OpenJK/`
->>>>>>> upstream/master
 
 
 ## For Developers
@@ -68,12 +56,6 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 * [Compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
 * [Debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging)
 
-<<<<<<< HEAD
-### Links of Interest ###
-* [Server-side GitHub](https://github.com/videoP/jaPRO)
-* [Website](http://upsgaming.com/japro/)
-* [Forums](http://upsgaming.com/forums/)
-=======
 ### Contributing to OpenJK
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Create a new branch and make your changes
@@ -105,4 +87,3 @@ If you have the Mac App Store Version of Jedi Academy, follow these steps to get
 * Scooper
 * Sil
 * smcv
->>>>>>> upstream/master
