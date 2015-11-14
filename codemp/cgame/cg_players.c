@@ -5310,8 +5310,8 @@ static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb, int cnum, int
 		case SABER_BLACK:
 			VectorSet( rgb, 1.0f, 1.0f, 1.0f );
 			break;
-		default:
 		case SABER_RGB:
+		default:
 			if ( cnum < MAX_CLIENTS ) {
 				int i;
 				clientInfo_t *ci = &cgs.clientinfo[cnum];
@@ -5416,20 +5416,15 @@ static void CG_DoSaberLight( saberInfo_t *saber, int cnum, int bnum )
 
 void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float radius, saber_colors_t color, int rfx, qboolean doLight, int cnum, int bnum )
 {
-	vec3_t		mid, rgb;
+	vec3_t		mid, rgb = { 1,1,1 };
 	qhandle_t	blade = 0, glow = 0;
 	refEntity_t saber, sbak;
-	float radiusmult;
-	float radiusRange;
-	float radiusStart;
-	float pulse;
+	float radiusmult, radiusRange, radiusStart, pulse;
 	int i;
 
+	// if the thing is so short, just forget even adding me.
 	if ( length < 0.5f )
-	{
-		// if the thing is so short, just forget even adding me.
 		return;
-	}
 
 	// Find the midpoint of the saber for lighting purposes
 	VectorMA( origin, length * 0.5f, dir, mid );
@@ -5460,11 +5455,8 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			glow = cgs.media.purpleSaberGlowShader;
 			blade = cgs.media.purpleSaberCoreShader;
 			break;
-		default:
-			glow = cgs.media.blueSaberGlowShader;
-			blade = cgs.media.blueSaberCoreShader;
-			break;
 		case SABER_RGB:
+		default:
 			glow = cgs.media.rgbSaberGlowShader;
 			blade = cgs.media.rgbSaberCoreShader;
 			break;
@@ -5488,6 +5480,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 			glow = cgs.media.blackSaberGlowShader;
 			blade = cgs.media.blackSaberCoreShader;
 			doLight = qfalse;
+			break;
 	}
 
 	if (doLight)
@@ -5506,18 +5499,13 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	// Jeff, I did this because I foolishly wished to have a bright halo as the saber is unleashed.
 	// It's not quite what I'd hoped tho.  If you have any ideas, go for it!  --Pat
 	if (length < lengthMax)
-	{
 		radiusmult = 1.0 + (2.0 / length);		// Note this creates a curve, and length cannot be < 0.5.
-	}
 	else
-	{
 		radiusmult = 1.0;
-	}
 
+	//draw the blade as a post-render so it doesn't get in the cap...
 	if (cg_saberTrail.integer == 2 && cg_shadows.integer != 2 && cgs.glconfig.stencilBits >= 4)
-	{ //draw the blade as a post-render so it doesn't get in the cap...
 		rfx |= RF_FORCEPOST;
-	}
 
 	for ( i=0; i<3; i++ )
 		rgb[i] *= 255;
@@ -5560,8 +5548,6 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
 
-	trap->R_AddRefEntityToScene( &saber );
-
 	memcpy( &sbak, &saber, sizeof(sbak) );
 
 	if ( color >= SABER_RGB ) {
@@ -5593,7 +5579,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	pulse = Q_fabs( sinf( (float)cg.time / 400.0f ) ) * 0.1f;
 	sbak.radius = pulse + 0.8f;
 
-	trap->R_AddRefEntityToScene( &saber );
+	trap->R_AddRefEntityToScene( &sbak );
 }
 
 //--------------------------------------------------------------
