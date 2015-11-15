@@ -3521,7 +3521,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle lead indicator to account for yoru ping on the server."
+			descText			"Toggle lead indicator to account for your ping on the server."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight3 }
 			mouseexit			{ hide highlight3 }
