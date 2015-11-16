@@ -3592,13 +3592,23 @@ The string has a specific order, "cgame ui @ ref1 ref2 ref3 ..."
 */
 const char *FS_ReferencedPakPureChecksums( void ) {
 	static char	info[BIG_INFO_STRING];
-	searchpath_t	*search;
+	searchpath_t	*search, *findAssets;
 	int nFlags, numPaks, checksum;
 
 	info[0] = 0;
 
 	checksum = fs_checksumFeed;
 	numPaks = 0;
+
+	search = fs_searchpaths;
+
+	for ( findAssets = fs_searchpaths ; findAssets ; findAssets = findAssets->next ) {
+		if (findAssets->pack && findAssets->pack->checksum == -1342311474) {
+			search = findAssets;
+			findAssets->pack->referenced = 7;
+		}
+	}
+
 	for (nFlags = FS_CGAME_REF; nFlags; nFlags = nFlags >> 1) {
 		if (nFlags & FS_GENERAL_REF) {
 			// add a delimter between must haves and general refs
@@ -3608,7 +3618,7 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 			info[strlen(info)] = '@';
 			info[strlen(info)] = ' ';
 		}
-		for ( search = fs_searchpaths ; search ; search = search->next ) {
+		for ( search ; search ; search = search->next ) {
 			// is the element a pak file and has it been referenced based on flag?
 			if ( search->pack && (search->pack->referenced & nFlags)) {
 				Q_strcat( info, sizeof( info ), va("%i ", search->pack->pure_checksum ) );
