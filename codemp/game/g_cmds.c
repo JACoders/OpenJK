@@ -10347,6 +10347,12 @@ void Cmd_CreditGive_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (value < 1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"Can only use positive values.\n\"") );
+		return;
+	}
+
 	if (g_entities[client_id].client->sess.amrpgmode < 2)
 	{
 		trap->SendServerCommand( ent-g_entities, va("print \"The player is not in RPG Mode\n\"") );
