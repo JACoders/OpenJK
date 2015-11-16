@@ -6334,6 +6334,16 @@ void G_RunFrame( int levelTime ) {
 							content[strlen(content) - 1] = '\0';
 						zyk_set_entity_field(new_ent,"soundset",content);
 
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"splashdamage",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"splashradius",content);
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (strncmp(content, "NPC_", 4) == 0 || strncmp(content, "npc_", 4) == 0)
