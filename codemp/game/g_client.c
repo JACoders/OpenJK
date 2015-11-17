@@ -2280,51 +2280,93 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	client->pers.rate = atoi(s);
 	if (client->pers.rate > 90000)
 		client->pers.rate = 90000;
+	else if (client->pers.rate < 0)
+		client->pers.rate = 0;
 
 	s = Info_ValueForKey( userinfo, "snaps" );
 	client->pers.snaps = atoi(s);
 	if (client->pers.snaps > 1000)
 		client->pers.snaps = 1000;
+	else if (client->pers.snaps < 0)
+		client->pers.snaps = 0;
 
-	s = Info_ValueForKey( userinfo, "cl_timenudge" );
-	client->pers.timenudge = atoi(s);
-	if (client->pers.timenudge > 5000)
-		client->pers.timenudge = 5000;
-	else if (client->pers.timenudge < -5000)
-		client->pers.timenudge = -5000;
-	else if (!Q_stricmp(s, ""))
-		client->pers.timenudge = Q3_INFINITE;
-
-	s = Info_ValueForKey( userinfo, "com_MaxFPS" );
-	if (!atoi(s)) {
-		s = Info_ValueForKey( userinfo, "cg_displayMaxFPS" );
-		client->pers.maxFPS = atoi(s);
-		if (client->pers.maxFPS > 1000)
-			client->pers.maxFPS = 1000;
+	s = Info_ValueForKey( userinfo, "cg_displayNetSettings" );
+	if (Q_stricmp(s, "")) { //if s is set
+		char * pch;
+		int i = 0;
+		pch = strtok (s, " ");
+		while (pch != NULL) {
+			if (i == 0)
+				client->pers.maxPackets = atoi(pch);
+			else if (i == 1)
+				client->pers.timenudge = atoi(pch);
+			else if (i == 2)
+				client->pers.maxFPS = atoi(pch);
+			else 
+				break;
+			pch = strtok (NULL, " ");
+			i++;
+		}
 	}
 	else {
-		client->pers.maxFPS = atoi(s);
-		if (client->pers.maxFPS > 1000)
-			client->pers.maxFPS = 1000;
+		s = Info_ValueForKey( userinfo, "com_MaxFPS" );
+		if (!atoi(s)) {
+			s = Info_ValueForKey( userinfo, "cg_displayMaxFPS" );
+			client->pers.maxFPS = atoi(s);
+		}
+		else {
+			client->pers.maxFPS = atoi(s);
+		}
+
+		s = Info_ValueForKey( userinfo, "cl_timenudge" );
+		client->pers.timenudge = atoi(s);
+
+		s = Info_ValueForKey( userinfo, "cl_maxPackets" );
+		client->pers.maxPackets = atoi(s);
 	}
 
-	s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
-	client->pers.thirdPerson = atoi(s);
+	s = Info_ValueForKey( userinfo, "cg_displayCameraPosition" );
+	if (Q_stricmp(s, "")) { //if s is set
+		char * pch;
+		int i = 0;
+		pch = strtok (s, " ");
+		while (pch != NULL) {
+			if (i == 0)
+				client->pers.thirdPerson = atoi(pch);
+			else if (i == 1)
+				client->pers.thirdPersonRange = atoi(pch);
+			else if (i == 2)
+				client->pers.thirdPersonVertOffset = atoi(pch);
+			else 
+				break;
+			pch = strtok (NULL, " ");
+			i++;
+		}
+	}
+	else {
+		Com_Printf("camer pos not found\n");
+		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
+		client->pers.thirdPerson = atoi(s);
 
-	s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
-	client->pers.thirdPersonRange = atoi(s);
-	if (!client->pers.thirdPersonRange)
-		client->pers.thirdPersonRange = 80;
+		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonRange" );
+		client->pers.thirdPersonRange = atoi(s);
 
-	s = Info_ValueForKey( userinfo, "cg_displayThirdPersonVertOffset" );
-	client->pers.thirdPersonVertOffset = atoi(s);
-	if (!client->pers.thirdPersonVertOffset)
-		client->pers.thirdPersonVertOffset = 16;
+		s = Info_ValueForKey( userinfo, "cg_displayThirdPersonVertOffset" );
+		client->pers.thirdPersonVertOffset = atoi(s);
+	}
 
-	s = Info_ValueForKey( userinfo, "cl_maxPackets" );
-	client->pers.maxPackets = atoi(s);
+	if (client->pers.timenudge > 200)
+		client->pers.timenudge = 200;
+	else if (client->pers.timenudge < -1200)
+		client->pers.timenudge = -1200;
 	if (client->pers.maxPackets > 1000)
 		client->pers.maxPackets = 1000;
+	else if (client->pers.maxPackets < 0)
+		client->pers.maxPackets = 0;
+	if (client->pers.maxFPS > 1000)
+		client->pers.maxFPS = 1000;
+	else if (client->pers.maxFPS < 0)
+		client->pers.maxFPS = 0;
 
 //JAPRO - Serverside - Get Clients Mod version, if any - End
 

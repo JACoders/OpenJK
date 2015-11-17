@@ -4646,74 +4646,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			}
 		}
 	}
-	
-	if ((g_tweakWeapons.integer & ANTI_VEHICLE) && (targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) {
-		switch (mod)
-		{
-			//Bullets do ~5x dmg..
-			//Splash does ~3x dmg..
-			//Hitscan does less dmg..?
-
-			case MOD_STUN_BATON:
-				damage *= 7;
-				break;
-			case MOD_BRYAR_PISTOL:
-			case MOD_BRYAR_PISTOL_ALT:
-				damage *= 5;
-				break;
-			case MOD_BLASTER:
-				damage *= 5;
-				break;
-			case MOD_DISRUPTOR:
-				damage *= 1;
-				break;
-			case MOD_DISRUPTOR_SNIPER:
-				damage *= 1;
-				break;
-			case MOD_BOWCASTER:
-				damage *= 5;
-				break;
-			case MOD_REPEATER:
-				damage *= 5;
-				break;
-			case MOD_REPEATER_ALT:
-			case MOD_REPEATER_ALT_SPLASH:
-				damage *= 5;
-				break;
-			case MOD_FLECHETTE:
-				damage *= 4;
-				break;
-			case MOD_FLECHETTE_ALT_SPLASH:
-				damage *= 4;
-				break;
-			case MOD_ROCKET:
-			case MOD_ROCKET_SPLASH:
-				damage *= 6;
-				break;
-			case MOD_ROCKET_HOMING:
-			case MOD_ROCKET_HOMING_SPLASH:
-				damage *= 8;
-				break;
-			case MOD_THERMAL:
-			case MOD_THERMAL_SPLASH:
-				damage *= 7;
-				break;
-			case MOD_TRIP_MINE_SPLASH:
-			case MOD_TIMED_MINE_SPLASH:
-			case MOD_DET_PACK_SPLASH:
-				damage *= 5;
-				break;
-			case MOD_CONC:
-				damage *= 4;
-				break;
-			case MOD_CONC_ALT:
-				damage *= 1;
-				break;
-			default:
-				break;
-		}
-	}
-
 
 	if (level.gametype == GT_SIEGE &&
 		!gSiegeRoundBegun)
@@ -4851,6 +4783,86 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage *= 0.5;
 		}
 	}
+
+	if ((g_tweakWeapons.integer & ANTI_VEHICLE) && (targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) {
+		switch (mod)
+		{
+			//Bullets do ~5x dmg..
+			//Splash does ~3x dmg..
+			//Hitscan does less dmg..?
+
+			case MOD_STUN_BATON:
+				damage *= 7;
+				break;
+			case MOD_BRYAR_PISTOL:
+			case MOD_BRYAR_PISTOL_ALT:
+				damage *= 5;
+				break;
+			case MOD_BLASTER:
+				damage *= 5;
+				break;
+			case MOD_DISRUPTOR:
+				damage *= 1;
+				break;
+			case MOD_DISRUPTOR_SNIPER:
+				damage *= 1;
+				break;
+			case MOD_BOWCASTER:
+				damage *= 5;
+				break;
+			case MOD_REPEATER:
+				damage *= 5;
+				break;
+			case MOD_REPEATER_ALT:
+			case MOD_REPEATER_ALT_SPLASH:
+				damage *= 5;
+				break;
+			case MOD_FLECHETTE:
+				damage *= 4;
+				break;
+			case MOD_FLECHETTE_ALT_SPLASH:
+				damage *= 4;
+				break;
+			case MOD_ROCKET:
+			case MOD_ROCKET_SPLASH:
+				damage *= 6;
+				break;
+			case MOD_ROCKET_HOMING:
+			case MOD_ROCKET_HOMING_SPLASH:
+				damage *= 8;
+				break;
+			case MOD_THERMAL:
+			case MOD_THERMAL_SPLASH:
+				damage *= 7;
+				break;
+			case MOD_TRIP_MINE_SPLASH:
+			case MOD_TIMED_MINE_SPLASH:
+			case MOD_DET_PACK_SPLASH:
+				damage *= 5;
+				break;
+			case MOD_CONC:
+				damage *= 4;
+				break;
+			case MOD_CONC_ALT:
+				damage *= 1;
+				break;
+			default:
+				break;
+		}
+	}
+
+	//JAPRO - check for same frame dmg fix here?
+	//Melee, or saber, or hitscan.  If attackers health is below 0, and attackers attacker is our target.. (:S), and attackers health is lower than targets, forget the dmg.
+	//just ignore who the attackers attacker was i guess. dont think ive ever seen a same-frame kill involving 3 people
+
+	//reall though, same frame kills are fine? why wouldnt you want to allow it.. if both people really do saber eachother at same time.
+	//so why doesnt it happen in baseJK? i really doubt its based on health/dmg, so its probably just only awarded to person with lowest clientnum or something?
+#if 0
+	if (g_sameFrameKillFix.integer && mod == MOD_SABER || mod == MOD_MELEE) { //dunno what the point of adding this is if it cant be tested/reproduced
+		if (attacker && attacker->client && (attacker->health < 0) && (attacker->health < (targ->health - damage))) //We hit the attacker stronger than they hit us that frame.
+			return;
+	}
+#endif
 
 	// the intermission has allready been qualified for, so don't
 	// allow any extra scoring

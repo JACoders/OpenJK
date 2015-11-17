@@ -12,7 +12,7 @@
 #endif
 
 #define LOCAL_DB_PATH "japro/data.db"
-#define GLOBAL_DB_PATH sv_globalDBPath.string
+//#define GLOBAL_DB_PATH sv_globalDBPath.string
 #define MAX_TMP_RACELOG_SIZE 80 * 1024
 
 #define CALL_SQLITE(f) {                                        \
@@ -1408,6 +1408,12 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 	time_t	rawtime;
 	int s;
 	unsigned int ip;
+
+	if (!g_allowRegistration.integer) {
+		trap->SendServerCommand(ent-g_entities, "print \"This server does not allow registration\n\"");
+		return;
+	}
+		
 
 	if (trap->Argc() != 3) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /register <username> <password>\n\"");
