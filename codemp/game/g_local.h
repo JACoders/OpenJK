@@ -1147,7 +1147,6 @@ struct gclient_s {
 	qboolean	iAmALoser;
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
-	int			lastKickedByTime;
 	int			lastTargetLaserTime;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
 	qboolean	emote_freeze;//JAPRO - Amfreeze Anim

@@ -5003,8 +5003,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			float dur = 5000;
 			float dur2 = 100;
 //JAPRO - Serverside - Fixkillcredit - Start
-			if (g_fixKillCredit.integer)
+			if (g_fixKillCredit.integer) {
 				dur = 2000;
+			}
 			if (targ->client && targ->s.eType == ET_NPC && targ->s.NPC_class == CLASS_VEHICLE) {
 				if (!g_fixKillCredit.integer) {
 					dur = 25000;

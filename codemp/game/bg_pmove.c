@@ -2514,7 +2514,7 @@ static qboolean PM_CheckJump( void )
 							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
 							anim = BOTH_WALL_FLIP_RIGHT;
 						}
-						else if ((g_flipKick.integer == 2) && allowWallFlips && client->lastKickTime + 50 < level.time)
+						else if ((g_flipKick.integer == 2) && allowWallFlips && (client->lastKickTime + 50 < level.time))
 						{
 							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
 							anim = BOTH_WALL_FLIP_RIGHT;
@@ -2559,7 +2559,7 @@ static qboolean PM_CheckJump( void )
 							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
 							anim = BOTH_WALL_FLIP_LEFT;
 						}
-						else if ((g_flipKick.integer == 2) && allowWallFlips && client->lastKickTime + 50 < level.time)
+						else if ((g_flipKick.integer == 2) && allowWallFlips && (client->lastKickTime + 50 < level.time))
 						{
 							vertPush = forceJumpStrength[FORCE_LEVEL_2]/2.25f;
 							anim = BOTH_WALL_FLIP_LEFT;
@@ -2867,7 +2867,8 @@ static qboolean PM_CheckJump( void )
 				}
 			}
 
-			else if ( pm->cmd.forwardmove > 0 //pushing forward
+#if 1
+			else if ( pm->cmd.forwardmove > 0 //pushing forward -- this is used for forward flipkicks i guess
 				&& pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1
 				&& pm->ps->velocity[2] > 200
 				&& PM_GroundDistance() <= 80 //unfortunately we do not have a happy ground timer like SP (this would use up more bandwidth if we wanted prediction workign right), so we'll just use the actual ground distance.
@@ -2892,17 +2893,8 @@ static qboolean PM_CheckJump( void )
 				kickedEnt = PM_BGEntForNum(trace.entityNum);
 
 				if (GetFlipkick(pm->ps) >= 1) {
-					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || (kickedEnt->s.eType == ET_NPC)))
-
-/*
-#ifdef _GAME
-				if (g_flipKick.integer >= 1) {
-					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || (g_flipKick.integer && kickedEnt->s.eType == ET_NPC)))
-#else
-				if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK)) {
-					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC)))
-#endif
-*/
+					if ( trace.fraction < 1.0f && ((trace.entityNum < MAX_CLIENTS) || (kickedEnt->s.eType == ET_NPC)) && (!pm->ps->stats[STAT_DASHTIME]))
+					//Dont allow frontkicking within 200ms of being frontkicked?
 
 //JAPRO - Serverside + Clientside - Re add flipkick and flipkickable npcs- End
 					{//there is a wall there
@@ -2931,7 +2923,7 @@ static qboolean PM_CheckJump( void )
 						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 
 //JAPRO - Serverside + Clientside - Re add flipkick - Start
-						if ((trace.entityNum < MAX_CLIENTS) || (GetFlipkick(pm->ps) && kickedEnt->s.eType == ET_NPC))
+						//if ((trace.entityNum < MAX_CLIENTS) || (GetFlipkick(pm->ps) && kickedEnt->s.eType == ET_NPC)) //well we already tested for this
 
 /*
 #ifdef _GAME
@@ -2940,15 +2932,16 @@ static qboolean PM_CheckJump( void )
 						if ((trace.entityNum < MAX_CLIENTS) || ((cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK) && kickedEnt->s.eType == ET_NPC))
 #endif	
 */
-						{
-							pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
-						}
+						pm->ps->forceKickFlip = trace.entityNum+1; //let the server know that this person gets kicked by this client
 					}
 //JAPRO - Serverside + Clientside - Re add flipkick - End
 				}
 			}
 //JAPRO - Serverside + Clientside - Re add flipkick - End
-			else if ( pm->cmd.forwardmove > 0 //pushing forward
+#endif
+
+#if 1
+			else if ( pm->cmd.forwardmove > 0 //pushing forward -- this is used for wallruns i guess?
 				//&& pm->ps->fd.forceRageRecoveryTime < pm->cmd.serverTime	//not in a force Rage recovery period //JAPRO - Serverside + Clientside - Allow wallrun in rage recovery
 				&& pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1 
 				&& PM_WalkableGroundDistance() <= 80 //unfortunately we do not have a happy ground timer like SP (this would use up more bandwidth if we wanted prediction workign right), so we'll just use the actual ground distance.
@@ -2959,8 +2952,7 @@ static qboolean PM_CheckJump( void )
 					int wallWalkAnim = BOTH_WALL_FLIP_BACK1;
 					int parts = SETANIM_LEGS;
 					int contents = MASK_SOLID;//MASK_PLAYERSOLID;//CONTENTS_SOLID;
-					qboolean kick = qtrue;//JAPRO - Serverside + Clientside - Re add flipkick
-
+					//qboolean kick = qtrue;//JAPRO - Serverside + Clientside - Re add flipkick
 					vec3_t fwd, traceto, mins, maxs, fwdAngles;
 					trace_t	trace;
 					vec3_t	idealNormal;
@@ -2969,7 +2961,7 @@ static qboolean PM_CheckJump( void )
 					if ( pm->ps->fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_2 ) {
 						wallWalkAnim = BOTH_FORCEWALLRUNFLIP_START;
 						parts = SETANIM_BOTH;
-						kick = qfalse;//JAPRO - Serverside + Clientside - Re add flipkick
+						//kick = qfalse;//JAPRO - Serverside + Clientside - Re add flipkick
 					}
 					else {
 						if ( !pm->ps->weaponTime )
@@ -2988,8 +2980,7 @@ static qboolean PM_CheckJump( void )
 					VectorNormalize( idealNormal );
 					traceEnt = PM_BGEntForNum(trace.entityNum);
 						
-					if ( trace.fraction < 1.0f
-						&&((trace.entityNum<ENTITYNUM_WORLD&&traceEnt&&traceEnt->s.solid!=SOLID_BMODEL)||DotProduct(trace.plane.normal,idealNormal)>0.7) )
+					if ( trace.fraction < 1.0f && ((trace.entityNum < ENTITYNUM_WORLD && traceEnt && traceEnt->s.solid != SOLID_BMODEL) || DotProduct(trace.plane.normal,idealNormal) > 0.7))
 					{//there is a wall there
 						pm->ps->velocity[0] = pm->ps->velocity[1] = 0;
 						if ( wallWalkAnim == BOTH_FORCEWALLRUNFLIP_START )
@@ -3007,8 +2998,8 @@ static qboolean PM_CheckJump( void )
 						pm->ps->fd.forceJumpSound = 1;
 						BG_ForcePowerDrain( pm->ps, FP_LEVITATION, 5 );
 //JAPRO - Serverside + Clientside - Re add flipkick - Start
+#if 0
 						if (GetFlipkick(pm->ps) >= 1) {
-
 /*
 #ifdef _GAME
 						if (g_flipKick.integer >= 1) {
@@ -3016,14 +3007,19 @@ static qboolean PM_CheckJump( void )
 						if ((cgs.isJAPlus && cgs.cinfo & JAPLUS_CINFO_FLIPKICK) || (cgs.isJAPro && cgs.jcinfo & JAPRO_CINFO_FLIPKICK)) {
 #endif
 */
-							if (kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC))
+							if (kick && traceEnt && (traceEnt->s.eType == ET_PLAYER || traceEnt->s.eType == ET_NPC)) {
 								pm->ps->forceKickFlip = traceEnt->s.number+1;
+								trap->SendServerCommand( -1, va("chat \"SPOT TWO Flipkick by %s, at time %i, his time %i, last kick time is %i, diff is %i\n\"", client->pers.netname, level.time, client->pers.cmd.serverTime, client->lastKickedByTime, client->lastKickedByTime - level.time));
+							}
 						}
+#endif
 //JAPRO - Serverside + Clientside - Re add flipkick - End
 							pm->cmd.rightmove = pm->cmd.forwardmove= 0;
 					}
 				}
 			}
+
+#endif 
 
 			else if ( (!BG_InSpecialJump( legsAnim )//not in a special jump anim 
 						||BG_InReboundJump( legsAnim )//we're already in a rebound

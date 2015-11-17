@@ -2086,6 +2086,14 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainTargetRegenDelay.integer;//800 //don't let the client being drained get force power back right away
 
+				//JAPRO - Serverside - Fixkillcredit - Start
+				if (dmg && g_fixKillCredit.integer) {
+					traceEnt->client->ps.otherKiller = self->s.number;
+					traceEnt->client->ps.otherKillerTime = level.time + 2000;
+					traceEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+				}
+				//JAPRO - Serverside - Fixkillcredit - End
+
 				//Drain the standard amount since we just drained someone else
 
 				/*
@@ -4090,6 +4098,12 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		{
 			WP_ForcePowerStop(self, forcePower);
 		}
+		if (g_fixKillCredit.integer)//JAPRO fixkillcredit
+		{
+			gripEnt->client->ps.otherKiller = self->s.number;
+			gripEnt->client->ps.otherKillerTime = level.time + 2000;
+			gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
+		}
 		return;
 	}
 
@@ -4105,12 +4119,12 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		}
 
 //JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - Start
-		if (!g_fixKillCredit.integer)
-		{
-			gripEnt->client->ps.otherKiller = self->s.number;
+		gripEnt->client->ps.otherKiller = self->s.number;
+		if (g_fixKillCredit.integer)
+			gripEnt->client->ps.otherKillerTime = level.time + 2000;
+		else
 			gripEnt->client->ps.otherKillerTime = level.time + 5000;
-			gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
-		}
+		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
 //JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - End
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;
@@ -4143,12 +4157,12 @@ void DoGripAction(gentity_t *self, forcePowers_t forcePower)
 		gripEnt->client->ps.fd.forceGripBeingGripped = level.time + 1000;
 
 //JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - Start
-		if (!g_fixKillCredit.integer)
-		{
-			gripEnt->client->ps.otherKiller = self->s.number;
+		gripEnt->client->ps.otherKiller = self->s.number;
+		if (g_fixKillCredit.integer)
+			gripEnt->client->ps.otherKillerTime = level.time + 2000;
+		else
 			gripEnt->client->ps.otherKillerTime = level.time + 5000;
-			gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
-		}
+		gripEnt->client->ps.otherKillerDebounceTime = level.time + 100;
 //JAPRO - Serverside - Remove otherkiller info if fixkillcredit is not on, since we are adding it to g_damage - End
 
 		gripEnt->client->ps.forceGripChangeMovetype = PM_FLOAT;

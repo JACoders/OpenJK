@@ -2037,8 +2037,8 @@ void PrintStats(int client) {
 	Q_strncpyz(lDmgTaken, va("Dmg Taken%s", whitespace), sizeof(lDmgTaken));
 	Q_strncpyz(lDmgNet, va("Net Dmg%s", whitespace), sizeof(lDmgNet));
 	Q_strncpyz(lDmgPerDeath, va("Dmg/Death%s", whitespace), sizeof(lDmgPerDeath));
-	if (level.gametype == GT_TEAM)
-		Q_strncpyz(lTK, va("TKs%s", whitespace), sizeof(lTK));
+	if (level.gametype == GT_TEAM && g_friendlyFire.integer)
+		Q_strncpyz(lTK, va("Team Dmgs%s", whitespace), sizeof(lTK));
 	if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
 		Q_strncpyz(lCaptures, va("Caps%s", whitespace), sizeof(lCaptures));
 		Q_strncpyz(lReturns, va("Rets%s", whitespace), sizeof(lReturns));
@@ -2125,9 +2125,9 @@ void PrintStats(int client) {
 			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgNet), int_to_string(cl->pers.stats.damageGiven - cl->pers.stats.damageTaken - cl->pers.stats.teamDamageGiven, numbuf, sizeof(numbuf)));
 			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lDmgPerDeath), int_to_string(dmgPerDeath, numbuf, sizeof(numbuf)));
-			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);		
-			if (level.gametype == GT_TEAM) {
-				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTK), int_to_string(cl->pers.stats.teamKills, numbuf, sizeof(numbuf)));
+			Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);	
+			if (level.gametype == GT_TEAM && g_friendlyFire.integer) {
+				Com_sprintf (partialTmpMsg2, sizeof(partialTmpMsg2), "%-*s", strlen(lTK), int_to_string(cl->pers.stats.teamDamageGiven, numbuf, sizeof(numbuf)));
 				Q_strcat(partialTmpMsg, sizeof(partialTmpMsg), partialTmpMsg2);
 			}
 			else if (level.gametype == GT_CTF || level.gametype == GT_CTY) {
