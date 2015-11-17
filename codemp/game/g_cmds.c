@@ -2078,16 +2078,11 @@ Cmd_Where_f
 ==================
 */
 void Cmd_Where_f( gentity_t *ent ) {
-	//JAC: This wasn't working for non-spectators since s.origin doesn't update for active players.
-	if(ent->client && ent->client->sess.sessionTeam != TEAM_SPECTATOR )
-	{//active players use currentOrigin
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->r.currentOrigin ) ) );
-	}
-	else
+	// zyk: changed code, so it will always use ps.origin and the ps.viewangles
+	if(ent->client)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
+		trap->SendServerCommand( ent-g_entities, va("print \"origin: %s angles: %s\n\"", vtos(ent->client->ps.origin), vtos(ent->client->ps.viewangles)));
 	}
-	//trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
 }
 
 static const char *gameNames[] = {
