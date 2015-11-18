@@ -12134,6 +12134,14 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 				fprintf(this_file,"zyk_weather\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",this_ent->spawnflags,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
 					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->message);
 			}
+			else if (Q_stricmp(this_ent->classname, "func_door") == 0)
+			{
+				fprintf(this_file,"func_door\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%f\n%f\n%f\n%f\n%f\n%f\n%s\n%s\n%s\n%f\n%d\n%f\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],this_ent->s.angles[2],
+					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->r.mins[0],
+					this_ent->r.mins[1],this_ent->r.mins[2],this_ent->r.maxs[0],this_ent->r.maxs[1],this_ent->r.maxs[2],
+					this_ent->model,this_ent->model2,this_ent->soundSet,this_ent->wait,this_ent->delay,this_ent->speed);
+			}
 		}
 	}
 

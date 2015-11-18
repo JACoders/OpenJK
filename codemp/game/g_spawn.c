@@ -1036,6 +1036,12 @@ void zyk_set_entity_field(gentity_t *ent, char *key, char *value) {
 			ent->targetname = NULL;
 		else if (Q_stricmp(key,"target") == 0)
 			ent->target = NULL;
+		else if (Q_stricmp(key,"target2") == 0)
+			ent->target2 = NULL;
+		else if (Q_stricmp(key,"model2") == 0)
+			ent->model2 = NULL;
+		else if (Q_stricmp(key,"soundSet") == 0)
+			ent->soundSet = NULL;
 	}
 	else
 	{

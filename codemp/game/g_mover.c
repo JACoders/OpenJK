@@ -1397,6 +1397,7 @@ void SP_func_door (gentity_t *ent)
 	float	distance;
 	vec3_t	size;
 	float	lip;
+	vec3_t old_angles; // zyk: used to have the angles value, so after G_SetMovedir clears it, we can set it back
 
 	G_SpawnInt("vehopen", "0", &ent->genericValue14);
 
@@ -1430,6 +1431,10 @@ void SP_func_door (gentity_t *ent)
 
 	// calculate second position
 	trap->SetBrushModel( (sharedEntity_t *)ent, ent->model );
+
+	// zyk: saving the angles value so we can recover it later
+	VectorCopy(ent->s.angles, old_angles);
+
 	G_SetMovedir( ent->s.angles, ent->movedir );
 	abs_movedir[0] = fabs( ent->movedir[0] );
 	abs_movedir[1] = fabs( ent->movedir[1] );
@@ -1483,6 +1488,9 @@ void SP_func_door (gentity_t *ent)
 			ent->think = Think_SpawnNewDoorTrigger;
 		}
 	}
+
+	// zyk: recovering the angles value, so we can save it into the entity file
+	VectorCopy(old_angles, ent->s.angles);
 }
 
 /*

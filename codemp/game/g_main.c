@@ -6519,6 +6519,120 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
+					else if (Q_stricmp(content, "func_door") == 0)
+					{
+						float fx, fy, fz;
+
+						zyk_set_entity_field(new_ent,"classname","func_door");
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fx = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fy = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fz = atof(content);
+						zyk_set_entity_field(new_ent,"origin",va("%f %f %f",fx,fy,fz));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fx = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fy = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fz = atof(content);
+						zyk_set_entity_field(new_ent,"angles",va("%f %f %f",fx,fy,fz));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"spawnflags",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"targetname",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"target",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"target2",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fx = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fy = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fz = atof(content);
+						zyk_set_entity_field(new_ent,"mins",va("%f %f %f",fx,fy,fz));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fx = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fy = atof(content);
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						fz = atof(content);
+						zyk_set_entity_field(new_ent,"maxs",va("%f %f %f",fx,fy,fz));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"model",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"model2",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"soundset",content);
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"wait",va("%f",atof(content)/1000));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"delay",va("%d",atoi(content)/1000));
+
+						fgets(content,sizeof(content),this_file);
+						if (content[strlen(content) - 1] == '\n')
+							content[strlen(content) - 1] = '\0';
+						zyk_set_entity_field(new_ent,"speed",content);
+
+						zyk_spawn_entity(new_ent);
+					}
 				}
 			}
 
