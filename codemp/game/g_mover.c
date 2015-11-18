@@ -2257,10 +2257,23 @@ void SP_func_bobbing (gentity_t *ent) {
 	float		height;
 	float		phase;
 
-	G_SpawnFloat( "speed", "4", &ent->speed );
-	G_SpawnFloat( "height", "32", &height );
-	G_SpawnInt( "dmg", "2", &ent->damage );
-	G_SpawnFloat( "phase", "0", &phase );
+	if (!(ent->spawnflags & 65536))
+	{
+		G_SpawnFloat( "speed", "4", &ent->speed );
+		G_SpawnFloat( "height", "32", &height );
+		G_SpawnInt( "dmg", "2", &ent->damage );
+		G_SpawnFloat( "phase", "0", &phase );
+
+		// zyk: used by entity system
+		ent->spawnflags |= 65536;
+		ent->message = G_NewString(va("%f",height));
+		trap->Print(ent->message);
+	}
+	else
+	{ // zyk: loading fields that are not real entity fields
+		phase = ((float)ent->s.pos.trTime) / (ent->speed * 1000);
+		height = atof(ent->message);
+	}
 
 	trap->SetBrushModel( (sharedEntity_t *)ent, ent->model );
 	InitMover( ent );
