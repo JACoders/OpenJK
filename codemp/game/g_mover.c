@@ -2765,6 +2765,7 @@ void SP_func_breakable( gentity_t *self )
 	if (s && s[0])
 	{ //should we play a special death effect?
 		self->genericValue15 = G_EffectIndex(s);
+		self->message = G_NewString(s); // zyk: used to save it in entity file
 	}
 	else
 	{
@@ -2807,7 +2808,13 @@ void SP_func_breakable( gentity_t *self )
 
 	G_SoundIndex("sound/weapons/explosions/cargoexplode.wav");//precaching
 	G_SpawnFloat( "radius", "1", &self->radius ); // used to scale chunk code if desired by a designer
-	G_SpawnInt( "material", "0", (int*)&self->material );
+
+	// zyk: allows passing material with entadd
+	if (!(self->spawnflags & 65536))
+	{
+		G_SpawnInt( "material", "0", (int*)&self->material );
+		self->spawnflags |= 65536;
+	}
 
 	G_SpawnInt( "splashDamage", "0", &self->splashDamage );
 	G_SpawnInt( "splashRadius", "0", &self->splashRadius );
