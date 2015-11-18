@@ -6227,6 +6227,8 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"material",zyk_get_file_value(this_file));
 
+						new_ent->health = atoi(zyk_get_file_value(this_file));
+
 						zyk_spawn_entity(new_ent);
 					}
 				}
