@@ -1104,6 +1104,9 @@ void	Q_strncpyz( char *dest, const char *src, int destsize );
 void	Q_strcat( char *dest, int size, const char *src );
 
 const char *Q_stristr( const char *s, const char *find);
+#define STRIP_COLOR	(0x00000001u)
+#define STRIP_EXTASCII	(0x00000002u)
+void Q_CleanString(char *string, uint32_t flags);
 
 // strlen that discounts Quake color sequences
 int Q_PrintStrlen( const char *string );

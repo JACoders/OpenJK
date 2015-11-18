@@ -2496,6 +2496,22 @@ void CG_PmoveClientPointerUpdate();
 void WP_SaberLoadParms( void );
 void BG_VehicleLoadParms( void );
 
+static void CG_OpenLog(const char *filename, fileHandle_t *f, qboolean sync) {
+	trap->FS_Open(filename, f, sync ? FS_APPEND_SYNC : FS_APPEND);
+	if (*f)
+		trap->Print("Logging to %s\n", filename);
+	else
+		trap->Print("WARNING: Couldn't open logfile: %s\n", filename);
+}
+
+static void CG_CloseLog(fileHandle_t *f) {
+	if (!*f)
+		return;
+
+	trap->FS_Close(*f);
+	*f = NULL_FILE;
+}
+
 /*
 =================
 CG_Init
@@ -2647,6 +2663,12 @@ Ghoul2 Insert End
 	CG_RegisterCvars();
 
 	CG_InitConsoleCommands();
+
+	// chatlogs
+	if (cg_logChat.integer)
+		CG_OpenLog( "cl_chat.log", &cg.log.chat, cg_logChat.integer == 2);
+	else
+		trap->Print("Not logging chat to disk.\n");
 
 	cg.renderingThirdPerson = cg_thirdPerson.integer;
 
@@ -2814,6 +2836,11 @@ void CG_Shutdown( void )
 
 	// some mods may need to do cleanup work here,
 	// like closing files or archiving session data
+
+	// close chat log file
+	CG_LogPrintf( cg.log.chat, "End logging\n------------------------------------------------------------\n\n" );
+	CG_CloseLog( &cg.log.chat );
+
 }
 
 /*
@@ -2974,6 +3001,39 @@ static void _CG_MouseEvent( int x, int y ) {
 	cgDC.cursorx = cgs.cursorX;
 	cgDC.cursory = cgs.cursorY;
 	CG_MouseEvent( x, y );
+}
+
+// Print to the logfile with a time stamp if it is open
+void QDECL CG_LogPrintf( fileHandle_t fileHandle, const char *fmt, ... ) {
+	va_list argptr;
+	char string[1024] = { 0 };
+	size_t len;
+
+	if (cg_logFormat.integer == 0) {
+		int msec = cg.time - cgs.levelStartTime;
+		int secs = msec / 1000;
+		int mins = secs / 60;
+		secs %= 60;
+		msec %= 1000;
+
+		Com_sprintf(string, sizeof(string), "%i:%02i ", mins, secs);
+	}
+	else {
+		time_t rawtime;
+		time(&rawtime);
+		strftime(string, sizeof(string), "[%Y-%m-%d] [%H:%M:%S] ", gmtime(&rawtime));
+	}
+
+	len = strlen(string);
+
+	va_start(argptr, fmt);
+	Q_vsnprintf(string + len, sizeof(string) - len, fmt, argptr);
+	va_end(argptr);
+
+	if (!fileHandle)
+		return;
+
+	trap->FS_Write(string, strlen(string), fileHandle);
 }
 
 static qboolean CG_IncomingConsoleCommand( void ) {
