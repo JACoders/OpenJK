@@ -2284,7 +2284,6 @@ void SP_func_bobbing (gentity_t *ent) {
 		// zyk: used by entity system
 		ent->spawnflags |= 65536;
 		ent->message = G_NewString(va("%f",height));
-		trap->Print(ent->message);
 	}
 	else
 	{ // zyk: loading fields that are not real entity fields
@@ -2338,9 +2337,20 @@ void SP_func_pendulum(gentity_t *ent) {
 	float		phase;
 	float		speed;
 
-	G_SpawnFloat( "speed", "30", &speed );
-	G_SpawnInt( "dmg", "2", &ent->damage );
-	G_SpawnFloat( "phase", "0", &phase );
+	if (!(ent->spawnflags & 65536))
+	{
+		G_SpawnFloat( "speed", "30", &speed );
+		G_SpawnInt( "dmg", "2", &ent->damage );
+		G_SpawnFloat( "phase", "0", &phase );
+
+		ent->spawnflags |= 65536;
+		ent->message = G_NewString(va("%f",phase));
+	}
+	else
+	{ // zyk: loading values that are not real entity fields
+		speed = ent->s.apos.trDelta[2];
+		phase = atof(ent->message);
+	}
 
 	trap->SetBrushModel( (sharedEntity_t *)ent, ent->model );
 
