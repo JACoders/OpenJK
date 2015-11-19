@@ -2213,7 +2213,11 @@ void SP_func_rotating (gentity_t *ent) {
 		trap->LinkEntity( (sharedEntity_t *)ent );
 	}
 
-	G_SpawnInt("model2scale", "0", &ent->s.iModelScale);
+	if (!(ent->spawnflags & 65536))
+	{
+		G_SpawnInt("model2scale", "0", &ent->s.iModelScale);
+	}
+
 	if (ent->s.iModelScale < 0)
 	{
 		ent->s.iModelScale = 0;
@@ -2223,7 +2227,7 @@ void SP_func_rotating (gentity_t *ent) {
 		ent->s.iModelScale = 1023;
 	}
 
-	if ( G_SpawnVector( "spinangles", "0 0 0", spinangles ) )
+	if (G_SpawnVector( "spinangles", "0 0 0", spinangles ) )
 	{
 		ent->speed = VectorLength( spinangles );
 		// set the axis of rotation
@@ -2231,6 +2235,8 @@ void SP_func_rotating (gentity_t *ent) {
 	}
 	else
 	{
+		// zyk: in this case, it is possible to use trdelta as an argument of entadd or entedit
+
 		if ( !ent->speed ) {
 			ent->speed = 100;
 		}
@@ -2243,6 +2249,9 @@ void SP_func_rotating (gentity_t *ent) {
 			ent->s.apos.trDelta[1] = ent->speed;
 		}
 	}
+
+	ent->spawnflags |= 65536;
+
 	ent->s.apos.trType = TR_LINEAR;
 
 	if (!ent->damage) {

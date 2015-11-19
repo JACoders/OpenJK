@@ -193,6 +193,7 @@ field_t fields[] = {
 	{ "teamnodmg",				FOFS( teamnodmg ),						F_INT },
 	{ "teamowner",				FOFS( s.teamowner ),					F_INT },
 	{ "teamuser",				FOFS( alliedTeam ),						F_INT },
+	{ "trdelta",				FOFS( s.apos.trDelta ),					F_VECTOR }, // zyk: added this field
 	{ "usescript",				FOFS( behaviorSet[BSET_USE] ),			F_STRING },//name of script to run
 	{ "victoryscript",			FOFS( behaviorSet[BSET_VICTORY] ),		F_STRING },//name of script to run
 	{ "wait",					FOFS( wait ),							F_FLOAT },
