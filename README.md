@@ -11,13 +11,13 @@
 * To add support for a race gametype, similar to racesow in warsow or defrag in quake 3, with player isolation, accounts, and persistent highscores.
 * To add other gameplay enhancing features.
 
-[![jaPRO README](https://img.shields.io/badge/readme-videoP%20japro-blue.svg)](https://github.com/videoP/jaPRO/blob/master/README.md)
+[![jaPRO README](https://img.shields.io/badge/readme-videoP-lightgrey.svg)](https://github.com/videoP/jaPRO/blob/master/README.md)
 
 This branch focuses on the UI Library and Client Engine modifications for the jaPRO multiplayer mod. You can find the server-side Game Library in [videoP's OpenJK fork](https://github.com/videoP/jaPRO). To prevent cheating, the source code for the Client Game Library is not publicly available.
 
 If you have any suggestions or would like to submit a bug report, please post them on our website's forums.
 
-[![Website](https://img.shields.io/badge/website-upsgaming.com-brightgreen.svg)](http://upsgaming.com)
+[![Website](https://img.shields.io/badge/website-upsgaming.com-brightgreen.svg)](http://upsgaming.com) [![Fork](https://img.shields.io/badge/repository-japro%20server--side-blue.svg)](https://github.com/videoP/jaPRO)
 
 ## License
 
