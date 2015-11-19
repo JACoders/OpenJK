@@ -12208,6 +12208,13 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->model,this_ent->model2,this_ent->s.iModelScale,this_ent->speed,this_ent->material,this_ent->health,
 					this_ent->s.apos.trDelta[0],this_ent->s.apos.trDelta[1],this_ent->s.apos.trDelta[2]);
 			}
+			else if (Q_stricmp(this_ent->classname, "func_timer") == 0)
+			{
+				fprintf(this_file,"func_timer\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%f\n%f\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],
+					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,
+					this_ent->random,this_ent->wait);
+			}
 		}
 	}
 

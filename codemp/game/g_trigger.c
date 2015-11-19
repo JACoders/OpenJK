@@ -1773,8 +1773,13 @@ void func_timer_use( gentity_t *self, gentity_t *other, gentity_t *activator ) {
 }
 
 void SP_func_timer( gentity_t *self ) {
-	G_SpawnFloat( "random", "1", &self->random);
-	G_SpawnFloat( "wait", "1", &self->wait );
+	if (!(self->spawnflags & 65536))
+	{ // zyk: added this spawnflags to allow setting these fields with entadd and entedit
+		G_SpawnFloat( "random", "1", &self->random);
+		G_SpawnFloat( "wait", "1", &self->wait );
+
+		self->spawnflags |= 65536;
+	}
 
 	self->use = func_timer_use;
 	self->think = func_timer_think;
