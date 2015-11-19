@@ -1603,19 +1603,31 @@ void SP_func_plat (gentity_t *ent) {
 
 	VectorClear (ent->s.angles);
 
-	G_SpawnFloat( "speed", "200", &ent->speed );
-	G_SpawnInt( "dmg", "2", &ent->damage );
-	G_SpawnFloat( "wait", "1", &ent->wait );
-	G_SpawnFloat( "lip", "8", &lip );
+	if (!(ent->spawnflags & 65536))
+	{ // zyk: only use spawnstring if this flag is not set
+		G_SpawnFloat( "speed", "200", &ent->speed );
+		G_SpawnInt( "dmg", "2", &ent->damage );
+		G_SpawnFloat( "wait", "1", &ent->wait );
+		G_SpawnFloat( "lip", "8", &lip );
+		
+		ent->message = G_NewString(va("%f",lip));
+	}
+	else
+	{
+		height = ent->pos1[2];
+		lip = atof(ent->message);
+	}
 
 	ent->wait = 1000;
 
 	// create second position
 	trap->SetBrushModel( (sharedEntity_t *)ent, ent->model );
 
-	if ( !G_SpawnFloat( "height", "0", &height ) ) {
+	if ( !(ent->spawnflags & 65536) && !G_SpawnFloat( "height", "0", &height ) ) {
 		height = (ent->r.maxs[2] - ent->r.mins[2]) - lip;
 	}
+
+	ent->spawnflags |= 65536;
 
 	// pos1 is the rest (bottom) position, pos2 is the top
 	VectorCopy( ent->s.origin, ent->pos2 );
