@@ -2030,7 +2030,21 @@ void SP_func_static( gentity_t *ent )
 		ent->s.bolt1 = 1;
 	}
 
-	G_SpawnInt("model2scale", "0", &ent->s.iModelScale);
+	if (!(ent->spawnflags & 65536))
+	{ // zyk: if this flag is set, no need to do this stuff
+		G_SpawnInt("model2scale", "0", &ent->s.iModelScale);
+
+		G_SpawnInt( "hyperspace", "0", &test );
+
+		ent->message = G_NewString(va("%d",test));
+
+		ent->spawnflags |= 65536;
+	}
+	else
+	{
+		test = atoi(ent->message);
+	}
+
 	if (ent->s.iModelScale < 0)
 	{
 		ent->s.iModelScale = 0;
@@ -2039,8 +2053,7 @@ void SP_func_static( gentity_t *ent )
 	{
 		ent->s.iModelScale = 1023;
 	}
-
-	G_SpawnInt( "hyperspace", "0", &test );
+	
 	if ( test )
 	{
 		ent->r.svFlags |= SVF_BROADCAST; // I need to rotate something that is huge and it's touching too many area portals...
