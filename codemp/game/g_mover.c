@@ -3240,7 +3240,12 @@ void SP_func_usable( gentity_t *self )
 	VectorCopy( self->s.origin, self->r.currentOrigin );
 	VectorCopy( self->s.origin, self->pos1 );
 
-	G_SpawnInt("endframe", "0", &self->genericValue5);
+	if (!(self->spawnflags & 65536))
+	{
+		G_SpawnInt("endframe", "0", &self->genericValue5);
+
+		self->spawnflags |= 65536;
+	}
 
 	if ( self->model2 && self->model2[0] )
 	{
