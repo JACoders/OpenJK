@@ -12253,6 +12253,18 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->r.mins[1],this_ent->r.mins[2],this_ent->r.maxs[0],this_ent->r.maxs[1],this_ent->r.maxs[2],
 					this_ent->model,this_ent->model2,this_ent->s.angles2[0],this_ent->s.angles2[1],this_ent->s.angles2[2]);
 			}
+			else if (Q_stricmp(this_ent->classname, "target_activate") == 0)
+			{
+				fprintf(this_file,"target_activate\n%f\n%f\n%f\n%d\n%s\n%s\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,this_ent->targetname,
+					this_ent->target);
+			}
+			else if (Q_stricmp(this_ent->classname, "target_deactivate") == 0)
+			{
+				fprintf(this_file,"target_activate\n%f\n%f\n%f\n%d\n%s\n%s\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,this_ent->targetname,
+					this_ent->target);
+			}
 		}
 	}
 
