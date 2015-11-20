@@ -5198,7 +5198,7 @@ qboolean G_SpecialRollGetup(gentity_t *self)
 
 void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 {
-	int			i, holo, holoregen;
+	int			i;//, holo, holoregen;
 	int			prepower = 0;
 	//see if any force powers are running
 	if ( !self )
@@ -5652,10 +5652,57 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	if ( !(self->client->ps.fd.forcePowersActive & (1<<FP_LIGHTNING)) )
 		self->client->force.lightningDebounce = level.time;
 
-	if ( (!self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN)) &&
+	if ( (!self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN)) && //whats up with fp_drain being mentioned here
 			!self->client->ps.saberInFlight && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
 	{//when not using the force, regenerate at 1 point per half second
-		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time )
+		int overrideAmt = 0, debounce = max(g_forceRegenTime.integer, 1), holo = 0;
+
+		if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)	{
+			if ( self->client->ps.powerups[PW_FORCE_BOON] )
+				overrideAmt = 6;
+			else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
+				overrideAmt = 4;
+		}
+		else {
+			while (holo < NUM_FORCE_POWERS) {
+				if (self->client->ps.holocronsCarried[holo])
+					overrideAmt++;
+				holo++;
+			}
+		}
+
+		//When should it be other than g_forceregentime ?
+		if (level.gametype == GT_SIEGE) {
+			if ( self->client->holdingObjectiveItem && g_entities[self->client->holdingObjectiveItem].inuse && g_entities[self->client->holdingObjectiveItem].genericValue15 )
+				debounce = 7000;
+			else if (self->client->siegeClass != -1 && (bgSiegeClasses[self->client->siegeClass].classflags & (1<<CFL_FASTFORCEREGEN)))
+				debounce = max(g_forceRegenTime.integer*0.2, 1); //if this is siege and our player class has the fast force regen ability, then recharge with 1/5th the usual delay
+		}
+		else {
+			if ( level.gametype == GT_POWERDUEL && self->client->sess.duelTeam == DUELTEAM_LONE ) {
+				if ( duel_fraglimit.integer )
+					debounce = max(g_forceRegenTime.integer * (0.6 + (.3 * (float)self->client->sess.wins / (float)duel_fraglimit.integer)), 1);
+				else
+					debounce = max(g_forceRegenTime.integer*0.7, 1);
+			}
+			else if (self->client->ps.stats[STAT_RACEMODE]) {
+				debounce = 25;//Hardcoded regentime of 25ms for racers.. idk.. 25 is lowest you can go without horribly broken cartwheel climb
+			}
+			else if (self->client->ps.duelInProgress) {
+				if (dueltypes[self->client->ps.clientNum] == 0)//NF Duel
+					debounce = max(g_saberDuelForceRegenTime.integer, 1);
+				else if (dueltypes[self->client->ps.clientNum] == 1)//FF Duel
+					debounce = max(g_forceDuelForceRegenTime.integer, 1);
+			}
+		}
+
+		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time ) {
+			WP_ForcePowerRegenerate(self, overrideAmt);
+			self->client->ps.fd.forcePowerRegenDebounceTime += debounce;
+		}
+
+#if 0
+		while ( self->client->ps.fd.forcePowerRegenDebounceTime < level.time ) //it might be a good idea to do all the conditional stuff outside of this loop and come up with the set number to regen here?
 		{
 			if (level.gametype != GT_HOLOCRON || g_maxHolocronCarry.value)
 			{
@@ -5714,6 +5761,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 				}
 			}
 		}
+#endif
 	}
 	else
 	{

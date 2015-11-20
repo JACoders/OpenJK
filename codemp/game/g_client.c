@@ -2344,7 +2344,6 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 		}
 	}
 	else {
-		Com_Printf("camer pos not found\n");
 		s = Info_ValueForKey( userinfo, "cg_displayThirdPerson" );
 		client->pers.thirdPerson = atoi(s);
 
