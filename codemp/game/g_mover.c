@@ -1415,16 +1415,27 @@ void SP_func_door (gentity_t *ent)
 	ent->delay *= 1000;
 
 	// default lip of 8 units
-	G_SpawnFloat( "lip", "8", &lip );
+	if (!(ent->spawnflags & 65536))
+	{
+		G_SpawnFloat( "lip", "8", &lip );
 
-	// default damage of 2 points
-	G_SpawnInt( "dmg", "2", &ent->damage );
+		// default damage of 2 points
+		G_SpawnInt( "dmg", "2", &ent->damage );
+
+		G_SpawnInt( "teamallow", "0", &ent->alliedTeam );
+
+		ent->spawnflags |= 65536;
+		ent->random = lip;
+	}
+	else
+	{
+		lip = ent->random;
+	}
+
 	if ( ent->damage < 0 )
 	{
 		ent->damage = 0;
 	}
-
-	G_SpawnInt( "teamallow", "0", &ent->alliedTeam );
 
 	// first position at start
 	VectorCopy( ent->s.origin, ent->pos1 );

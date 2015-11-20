@@ -6181,6 +6181,10 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
 
+						zyk_set_entity_field(new_ent,"random",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"dmg",zyk_get_file_value(this_file));
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (Q_stricmp(content, "func_breakable") == 0)
