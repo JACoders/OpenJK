@@ -6485,7 +6485,7 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"model2",zyk_get_file_value(this_file));
 
-						new_ent->pos1[2] = new_ent->s.origin[2] - atof(zyk_get_file_value(this_file));
+						new_ent->random = atof(zyk_get_file_value(this_file));
 
 						zyk_set_entity_field(new_ent,"dmg",zyk_get_file_value(this_file));
 

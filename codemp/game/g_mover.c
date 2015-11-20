@@ -1614,7 +1614,7 @@ void SP_func_plat (gentity_t *ent) {
 	}
 	else
 	{
-		height = ent->pos1[2];
+		height = ent->random;
 		lip = atof(ent->message);
 	}
 
