@@ -21,7 +21,7 @@
   http://www.altdevblogaday.com/2011/02/12/alternatives-to-malloc-and-new/
 */
 
-#define POOLSIZE	(512 * 1024) // zyk: increased from 256 to 512
+#define POOLSIZE	(1024 * 1024) // zyk: increased from 256 to 1024
 
 static char		memoryPool[POOLSIZE];
 static int		allocPoint;
