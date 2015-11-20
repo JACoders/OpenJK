@@ -109,6 +109,7 @@ field_t fields[] = {
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
 	{ "angle",					FOFS( s.angles ),						F_ANGLEHACK },
 	{ "angles",					FOFS( s.angles ),						F_VECTOR },
+	{ "angles2",				FOFS( s.angles2 ),						F_VECTOR }, // zyk: added this field
 	{ "attackscript",			FOFS( behaviorSet[BSET_ATTACK] ),		F_STRING },//name of script to run
 	{ "awakescript",			FOFS( behaviorSet[BSET_AWAKE] ),		F_STRING },//name of script to run
 	{ "blockedscript",			FOFS( behaviorSet[BSET_BLOCKED] ),		F_STRING },//name of script to run
