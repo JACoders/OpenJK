@@ -969,7 +969,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			{ // zyk: elevator inside sand crawler near the wall fire
 				G_FreeEntity( ent );
 			}
-			if (Q_stricmp( ent->classname, "func_door") == 0 && i > 200 && ent->spawnflags == 16 && Q_stricmp( ent->model, "*63") == 0)
+			if (Q_stricmp( ent->classname, "func_door") == 0 && i > 200 && Q_stricmp( ent->model, "*63") == 0)
 			{ // zyk: tube door in which the droid goes in SP
 				G_FreeEntity( ent );
 			}
