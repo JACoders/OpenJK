@@ -154,6 +154,13 @@ namespace Q
 			return sscanf_impl_stream( input, accumulator, f, std::forward< Tail >( tail )... );
 		}
 
+		//    Int
+		template< typename... Tail >
+		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, int& i, Tail&&... tail )
+		{
+			return sscanf_impl_stream( input, accumulator, i, std::forward< Tail >( tail )... );
+		}
+
 		/**
 		Conversion using std::istream's operator>>
 		*/
