@@ -444,6 +444,8 @@ void SP_CreateSnow( gentity_t *ent );
 void SP_CreateRain( gentity_t *ent );
 void SP_CreateWeather( gentity_t *ent ); // zyk: added this function
 
+void SP_ZykRegenUnit( gentity_t *self); // zyk: added this function
+
 void SP_point_combat( gentity_t *self );
 
 void SP_shooter_blaster( gentity_t *ent );
@@ -733,6 +735,7 @@ spawn_t	spawns[] = {
 	{ "waypoint_navgoal_4",					SP_waypoint_navgoal_4 },
 	{ "waypoint_navgoal_8",					SP_waypoint_navgoal_8 },
 	{ "waypoint_small",						SP_waypoint_small },
+	{ "zyk_regen_unit",						SP_ZykRegenUnit }, // zyk: added this code
 	{ "zyk_weather",						SP_CreateWeather }, // zyk: added this code
 };
 

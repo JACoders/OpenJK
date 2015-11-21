@@ -3030,6 +3030,103 @@ void SP_CreateWeather( gentity_t *ent )
 		G_EffectIndex(va("*%s", ent->message));
 }
 
+/* zyk: regens many things
+spawnflags:
+1 -  regens health
+2 -  regens shield
+4 -  regens force
+8 -  regens mp (magic)
+
+"count" amount to regen
+"wait" amount of time between regens (in miliseconds)
+"mins" bounding box
+"maxs" bounding box
+*/
+extern int zyk_max_magic_power(gentity_t *ent);
+void zyk_regen_unit_think(gentity_t *ent)
+{
+	gentity_t *this_ent = NULL;
+	int entity_ids[MAX_GENTITIES];
+	int numListedEntities = 0;
+	int i = 0;
+	vec3_t mins, maxs;
+
+	VectorSet(mins, ent->s.origin[0] + ent->r.mins[0], ent->s.origin[1] + ent->r.mins[1], ent->s.origin[2] + ent->r.mins[2]);
+	VectorSet(maxs, ent->s.origin[0] + ent->r.maxs[0], ent->s.origin[1] + ent->r.maxs[1], ent->s.origin[2] + ent->r.maxs[2]);
+
+	numListedEntities = trap->EntitiesInBox( mins, maxs, entity_ids, MAX_GENTITIES );
+
+	i = 0;
+	while (i < numListedEntities)
+	{
+		this_ent = &g_entities[entity_ids[i]];
+
+		if (this_ent && this_ent->client && this_ent->s.number < MAX_CLIENTS)
+		{ // zyk: must be a player
+			if (ent->spawnflags & 1)
+			{
+				if ((this_ent->health + ent->count) < this_ent->client->ps.stats[STAT_MAX_HEALTH])
+					this_ent->health += ent->count;
+				else
+					this_ent->health = this_ent->client->ps.stats[STAT_MAX_HEALTH];
+			}
+
+			if (ent->spawnflags & 2)
+			{
+				int max_shield = this_ent->client->ps.stats[STAT_MAX_HEALTH];
+				if (this_ent->client->sess.amrpgmode == 2)
+					max_shield = this_ent->client->pers.max_rpg_shield;
+
+				if ((this_ent->client->ps.stats[STAT_ARMOR] + ent->count) < max_shield)
+					this_ent->client->ps.stats[STAT_ARMOR] += ent->count;
+				else
+					this_ent->client->ps.stats[STAT_ARMOR] = max_shield;
+			}
+
+			if (ent->spawnflags & 4)
+			{
+				if ((this_ent->client->ps.fd.forcePower + ent->count) < this_ent->client->ps.fd.forcePowerMax)
+					this_ent->client->ps.fd.forcePower += ent->count;
+				else
+					this_ent->client->ps.fd.forcePower = this_ent->client->ps.fd.forcePowerMax;
+			}
+
+			if (ent->spawnflags & 8 && this_ent->client->sess.amrpgmode == 2)
+			{
+				int max_magic_power = zyk_max_magic_power(this_ent);
+
+				if ((this_ent->client->pers.magic_power + ent->count) < max_magic_power)
+				{
+					this_ent->client->pers.magic_power += ent->count;
+					send_rpg_events(2000);
+				}
+				else if (this_ent->client->pers.magic_power < max_magic_power)
+				{
+					this_ent->client->pers.magic_power = max_magic_power;
+					send_rpg_events(2000);
+				}
+			}
+		}
+
+		i++;
+	}
+
+	ent->nextthink = level.time + ent->wait;
+}
+
+void SP_ZykRegenUnit( gentity_t *ent)
+{
+	ent->think = zyk_regen_unit_think;
+	ent->nextthink = level.time + ent->wait;
+
+	ent->s.eType = ET_GENERAL;
+
+	// Save our position and link us up!
+	G_SetOrigin( ent, ent->s.origin );
+
+	trap->LinkEntity( (sharedEntity_t *)ent );
+}
+
 qboolean gEscaping = qfalse;
 int gEscapeTime = 0;
 
