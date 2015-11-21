@@ -93,7 +93,7 @@ static gsl::cstring_view removeTrailingWhitespace( const gsl::cstring_view& text
 		text.begin(),
 		std::find_if_not(
 			std::reverse_iterator< const char *>( text.end() ), std::reverse_iterator< const char* >( text.begin() ),
-			std::isspace
+			static_cast< int( *)( int ) >( std::isspace )
 			).base()
 	};
 }
@@ -157,7 +157,7 @@ static gsl::cstring_view GetToken( gsl::cstring_view& text, bool allowLineBreaks
 	else
 	{
 		// consume until first whitespace (if allowLineBreaks == false, that may be text.begin(); in that case token is empty.)
-		auto tokenEnd = std::find_if( text.begin(), text.end(), std::isspace );
+		auto tokenEnd = std::find_if( text.begin(), text.end(), static_cast< int( *)( int ) >( std::isspace ) );
 		gsl::cstring_view token{ text.begin(), tokenEnd };
 		text = { tokenEnd, text.end() };
 		return token;
@@ -295,7 +295,8 @@ bool CGenericParser2::Parse( gsl::czstring filename )
 	{
 		return false;
 	}
-	return mTopLevel.Parse( mFileContent.view() );
+	auto view = mFileContent.view();
+	return mTopLevel.Parse( view );
 }
 
 void CGenericParser2::Clear() NOEXCEPT

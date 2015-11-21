@@ -54,12 +54,12 @@ public:
 
 	CGPProperty( gsl::cstring_view initKey, gsl::cstring_view initValue = {} );
 
-	gsl::cstring_view GetName() const { return mKey; }
+	const gsl::cstring_view& GetName() const { return mKey; }
 	bool IsList() const NOEXCEPT
 	{
 		return mValues.size() > 1;
 	}
-	gsl::cstring_view GetTopValue() const NOEXCEPT
+	const gsl::cstring_view& GetTopValue() const NOEXCEPT
 	{
 		return mValues.empty() ? gsl::cstring_view{} : mValues.front();
 	}
