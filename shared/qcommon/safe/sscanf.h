@@ -101,7 +101,7 @@ namespace Q
 			{
 				// it is not written to, but the basic_streambuf interface still wants a non-const CharT.
 				char* data = const_cast< CharT* >( view.data() );
-				setg( data, data, data + view.size() );
+				this->setg( data, data, data + view.size() );
 			}
 
 		protected:
@@ -124,7 +124,7 @@ namespace Q
 				newPos += static_cast< int >( off );
 				if( this->eback() <= newPos && newPos <= this->egptr() )
 				{
-					setg( this->eback(), newPos, this->egptr() );
+					this->setg( this->eback(), newPos, this->egptr() );
 					return newPos - this->eback();
 				}
 				else
@@ -142,9 +142,29 @@ namespace Q
 		}
 
 		/**
-		Conversion using std::istream's operator>>
+		Forward declaration.
 		*/
 		template< bool skipws = true, typename T, typename... Tail >
+		std::size_t sscanf_impl_stream( const gsl::cstring_view& input, const std::size_t accumulator, T& value, Tail&&... tail );
+
+		//    Float
+		template< typename... Tail >
+		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, float& f, Tail&&... tail )
+		{
+			return sscanf_impl_stream( input, accumulator, f, std::forward< Tail >( tail )... );
+		}
+
+		//    Int
+		template< typename... Tail >
+		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, int& i, Tail&&... tail )
+		{
+			return sscanf_impl_stream( input, accumulator, i, std::forward< Tail >( tail )... );
+		}
+
+		/**
+		Conversion using std::istream's operator>>
+		*/
+		template< bool skipws, typename T, typename... Tail >
 		std::size_t sscanf_impl_stream( const gsl::cstring_view& input, const std::size_t accumulator, T& value, Tail&&... tail )
 		{
 			auto buf = MakeStreambuf( input );
@@ -170,20 +190,6 @@ namespace Q
 			{
 				return accumulator;
 			}
-		}
-
-		//    Float
-		template< typename... Tail >
-		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, float& f, Tail&&... tail )
-		{
-			return sscanf_impl_stream( input, accumulator, f, std::forward< Tail >( tail )... );
-		}
-
-		//    Int
-		template< typename... Tail >
-		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, int& i, Tail&&... tail )
-		{
-			return sscanf_impl_stream( input, accumulator, i, std::forward< Tail >( tail )... );
 		}
 	}
 

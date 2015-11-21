@@ -80,17 +80,20 @@ namespace Zone
 			using other = Allocator< U, tag >;
 		};
 	};
+	
+	template< typename T >
+	using UniquePtr = std::unique_ptr< T, Deleter >;
 
 	/**
 	make_unique using Zone Allocations (with appropriate deleter)
 	*/
 	template< typename T, memtag_t tag, typename... Args >
-	inline std::unique_ptr< T, Deleter > make_unique( Args&&... args )
+	inline UniquePtr< T > make_unique( Args&&... args )
 	{
-		std::unique_ptr< void, Deleter > memory( Allocator< T, tag >{}.allocate( 1 ) );
+		UniquePtr< void > memory( Allocator< T, tag >{}.allocate( 1 ) );
 		// placement new. may throw, in which case the unique_ptr will take care of freeing the memory.
 		T* obj = new( memory )T( std::forward< Args >( args )... );
 		memory.release();
-		return std::unique_ptr< T, Deleter >( obj );
+		return UniquePtr< T >( obj );
 	}
 }
