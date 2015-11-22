@@ -113,6 +113,7 @@ field_t fields[] = {
 	{ "attackscript",			FOFS( behaviorSet[BSET_ATTACK] ),		F_STRING },//name of script to run
 	{ "awakescript",			FOFS( behaviorSet[BSET_AWAKE] ),		F_STRING },//name of script to run
 	{ "blockedscript",			FOFS( behaviorSet[BSET_BLOCKED] ),		F_STRING },//name of script to run
+	{ "bouncecount",			FOFS( bounceCount ),					F_INT }, // zyk: added this field
 	{ "chunksize",				FOFS( mass ),							F_FLOAT },//for func_breakables
 	{ "classname",				FOFS( classname ),						F_STRING },
 	{ "closetarget",			FOFS( closetarget ),					F_STRING },//for doors

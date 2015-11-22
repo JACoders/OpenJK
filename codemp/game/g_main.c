@@ -5902,6 +5902,18 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
+					else if (Q_stricmp(content, "target_counter") == 0)
+					{
+						zyk_set_entity_field(new_ent,"classname","target_counter");
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"count",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"bouncecount",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
 					else if (Q_stricmp(content, "trigger_hurt") == 0)
 					{
 						float fx, fy, fz;

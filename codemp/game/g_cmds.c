@@ -12072,6 +12072,10 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 				fprintf(this_file,"target_speaker\n%d\n%d\n%d\n%d\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],this_ent->spawnflags,this_ent->targetname,this_ent->message);
 			}
+			else if (Q_stricmp(this_ent->classname, "target_counter") == 0)
+			{
+				fprintf(this_file,"target_counter\n%d\n%d\n%d\n",this_ent->spawnflags,this_ent->count,this_ent->bounceCount);
+			}
 			else if (Q_stricmp(this_ent->classname, "trigger_hurt") == 0)
 			{
 				fprintf(this_file,"%s\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%s\n%d\n",
