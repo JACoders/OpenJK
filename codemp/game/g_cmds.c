@@ -12072,8 +12072,16 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 				fprintf(this_file,"target_speaker\n%d\n%d\n%d\n%d\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],this_ent->spawnflags,this_ent->targetname,this_ent->message);
 			}
+			else if (Q_stricmp(this_ent->classname, "trigger_hurt") == 0)
+			{
+				fprintf(this_file,"%s\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%s\n%d\n",
+					this_ent->classname,this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],
+					this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->r.mins[0],this_ent->r.mins[1],
+					this_ent->r.mins[2],this_ent->r.maxs[0],this_ent->r.maxs[1],this_ent->r.maxs[2],this_ent->wait,this_ent->model,
+					this_ent->damage);
+			}
 			else if (Q_stricmp(this_ent->classname, "trigger_teleport") == 0 || Q_stricmp(this_ent->classname, "trigger_multiple") == 0 ||
-					 Q_stricmp(this_ent->classname, "trigger_once") == 0 || Q_stricmp(this_ent->classname, "trigger_hurt") == 0)
+					 Q_stricmp(this_ent->classname, "trigger_once") == 0)
 			{
 				fprintf(this_file,"%s\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n%f\n%f\n%f\n%f\n%f\n%f\n%f\n%s\n",this_ent->classname,this_ent->s.origin[0],
 					this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],
