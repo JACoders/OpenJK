@@ -5433,6 +5433,7 @@ qboolean G_SpecialRollGetup(gentity_t *self)
 
 extern void rpg_skill_counter(gentity_t *ent, int amount);
 extern char *zyk_rpg_class(gentity_t *ent);
+extern int zyk_max_magic_power(gentity_t *ent);
 void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 {
 	int			i, holo, holoregen;
@@ -5886,7 +5887,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					}
 					else if (self->client->pers.skill_levels[35] == 3)
 					{
-						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^1%d\nShield: ^20^3/^20\n^7Force: ^5%d^3/^5%d\n^7Type: NPC\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax) );
+						trap->SendServerCommand( self-g_entities, va("cp \"%s\n^7Health: ^1%d^3/^1%d\nShield: ^20^3/^20\n^7Force: ^5%d^3/^5%d\n^7MP: 0/0\n^7Type: NPC\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax) );
 					}
 				}
 				else if (g_entities[client_id].client)
@@ -5895,6 +5896,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					int client_armor = g_entities[client_id].client->ps.stats[STAT_ARMOR];
 					int client_max_armor = g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH];
 					char *client_name = g_entities[client_id].client->pers.netname;
+					int magic_power = 0;
+					int max_magic_power = 0;
 					char player_type[32];
 
 					strcpy(player_type,"Normal Player");
@@ -5919,9 +5922,12 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 
 							// zyk: calculating the max armor of this player
 							client_max_armor = g_entities[client_id].client->pers.max_rpg_shield;
+
+							magic_power = g_entities[client_id].client->pers.magic_power;
+							max_magic_power = zyk_max_magic_power(&g_entities[client_id]);
 						}
 
-						trap->SendServerCommand( self-g_entities, va("cp \"%s\n\n^7Health: ^1%d^3/^1%d\nShield: ^2%d^3/^2%d\n^7Force: ^5%d^3/^5%d\n^7Type: %s\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], client_armor, client_max_armor, g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax, player_type) );
+						trap->SendServerCommand( self-g_entities, va("cp \"%s\n^7Health: ^1%d^3/^1%d\nShield: ^2%d^3/^2%d\n^7Force: ^5%d^3/^5%d\n^7MP: %d/%d\n^7Type: %s\n\"", client_name, client_health, g_entities[client_id].client->ps.stats[STAT_MAX_HEALTH], client_armor, client_max_armor, g_entities[client_id].client->ps.fd.forcePower, g_entities[client_id].client->ps.fd.forcePowerMax, magic_power, max_magic_power, player_type) );
 					}
 				}
 				self->client->pers.sense_health_timer = level.time + 3000; // zyk: show health each 5 seconds
