@@ -3012,8 +3012,8 @@ void SP_CreateRain( gentity_t *ent )
 	G_EffectIndex(va("*rain init %i", ent->count));
 }
 
-/*QUAKED fx_weather (1 0 0) (-16 -16 -16) (16 16 16)
-This world effect will spawn rain globally into the level.
+/*QUAKED zyk_weather (1 0 0) (-16 -16 -16) (16 16 16)
+This world effect will spawn weather globally into the level.
 
 "message" the weather type
 "mins" weather zone mins

@@ -12135,6 +12135,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,(int)this_ent->wait,this_ent->count);
 			}
+			else if (Q_stricmp(this_ent->classname, "fx_rain") == 0 || Q_stricmp(this_ent->classname, "fx_snow") == 0 ||
+					 Q_stricmp(this_ent->classname, "fx_spacedust") == 0)
+			{
+				fprintf(this_file,"%s\n%d\n%d\n",
+					this_ent->classname,this_ent->spawnflags,this_ent->count);
+			}
 			else if (Q_stricmp(this_ent->classname, "zyk_weather") == 0)
 			{
 				fprintf(this_file,"zyk_weather\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",this_ent->spawnflags,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],

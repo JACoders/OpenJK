@@ -6168,6 +6168,17 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
+					else if (Q_stricmp(content, "fx_rain") == 0 || Q_stricmp(content, "fx_snow") == 0 ||
+							 Q_stricmp(content, "fx_spacedust") == 0)
+					{
+						zyk_set_entity_field(new_ent,"classname",va("%s", content));
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"count",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
 					else if (Q_stricmp(content, "zyk_weather") == 0)
 					{
 						zyk_set_entity_field(new_ent,"classname","zyk_weather");
