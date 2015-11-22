@@ -12110,7 +12110,7 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->target,this_ent->message,this_ent->soundSet,this_ent->splashDamage,this_ent->splashRadius);
 			}
-			else if (Q_stricmp(this_ent->classname, "npc") == 0 || Q_stricmp(this_ent->classname, "npc_spawner") == 0)
+			else if (Q_stricmp(this_ent->classname, "npc_spawner") == 0)
 			{
 				fprintf(this_file,"npc_spawner\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
@@ -12122,9 +12122,10 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->target,this_ent->NPC_type);
 			}
-			else if (strncmp(this_ent->classname, "weapon_", 7) == 0 || strncmp(this_ent->classname, "ammo_", 5) == 0 || 
-					 strncmp(this_ent->classname, "item_", 5) == 0)
-			{
+			else if ((strncmp(this_ent->classname, "weapon_", 7) == 0 || strncmp(this_ent->classname, "ammo_", 5) == 0 || 
+					strncmp(this_ent->classname, "item_", 5) == 0) && 
+					!(this_ent->flags & FL_DROPPED_ITEM) && !(this_ent->s.eFlags & EF_DROPPEDWEAPON))
+			{ // zyk: do not save dropped items and dropped weapons
 				fprintf(this_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%d\n%d\n",this_ent->classname,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname,(int)this_ent->wait,this_ent->count);
@@ -12271,6 +12272,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,this_ent->r.mins[0],
 					this_ent->r.mins[1],this_ent->r.mins[2],this_ent->r.maxs[0],this_ent->r.maxs[1],this_ent->r.maxs[2],
 					this_ent->count,this_ent->wait);
+			}
+			else if (Q_stricmp(this_ent->classname, "misc_model_ammo_rack") == 0 || Q_stricmp(this_ent->classname, "misc_model_gun_rack") == 0)
+			{
+				fprintf(this_file,"%s\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n",
+					this_ent->classname,this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],
+					this_ent->s.angles[1],this_ent->s.angles[2],this_ent->spawnflags);
 			}
 		}
 	}
