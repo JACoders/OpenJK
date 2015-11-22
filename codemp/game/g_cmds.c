@@ -12048,10 +12048,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 
 		if (this_ent)
 		{
-			if (Q_stricmp(this_ent->classname, "info_player_deathmatch") == 0)
+			if (strncmp(this_ent->classname, "info_player", 11) == 0 || Q_stricmp(this_ent->classname, "info_notnull") == 0 || 
+				Q_stricmp(this_ent->classname, "info_null") == 0 || Q_stricmp(this_ent->classname, "func_group") == 0)
 			{
-				fprintf(this_file,"info_player_deathmatch\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
-					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags);
+				fprintf(this_file,"%s\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n",
+					this_ent->classname,this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],
+					this_ent->s.angles[1],this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target);
 			}
 			else if (Q_stricmp(this_ent->classname, "target_position") == 0)
 			{
