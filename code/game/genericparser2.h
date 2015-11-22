@@ -61,7 +61,8 @@ public:
 	}
 	const gsl::cstring_view& GetTopValue() const NOEXCEPT
 	{
-		return mValues.empty() ? gsl::cstring_view{} : mValues.front();
+		static gsl::cstring_view empty{};
+		return mValues.empty() ? empty : mValues.front();
 	}
 	const Values& GetValues() const NOEXCEPT
 	{
