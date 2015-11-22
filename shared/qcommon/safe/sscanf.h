@@ -103,6 +103,20 @@ namespace Q
 				char* data = const_cast< CharT* >( view.data() );
 				this->setg( data, data, data + view.size() );
 			}
+			// alas no default move constructors on VS2013.
+			// TODO DELETEME once we drop VS2013 (because fuck that).
+#if defined( _MSC_VER ) && _MSC_VER < 1900
+			ArrayViewStreambuf( ArrayViewStreambuf&& rhs )
+				: std::basic_streambuf< CharT >( std::move( rhs ) )
+			{
+			}
+			ArrayViewStreambuf& operator=( ArrayViewStreambuf&& rhs )
+			{
+				std::basic_streambuf< CharT >& self = *this;
+				self = std::move( rhs );
+				return self;
+			}
+#endif
 
 		protected:
 			/// @note required by istream.tellg()
