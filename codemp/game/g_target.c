@@ -92,13 +92,19 @@ void Use_Target_Delay( gentity_t *ent, gentity_t *other, gentity_t *activator ) 
 
 void SP_target_delay( gentity_t *ent ) {
 	// check delay for backwards compatability
-	if ( !G_SpawnFloat( "delay", "0", &ent->wait ) ) {
-		G_SpawnFloat( "wait", "1", &ent->wait );
+	if (!(ent->spawnflags & 65536))
+	{ // zyk: this will make it work properly with entity system
+		if ( !G_SpawnFloat( "delay", "0", &ent->wait ) ) {
+			G_SpawnFloat( "wait", "1", &ent->wait );
+		}
+
+		if ( !ent->wait ) {
+			ent->wait = 1;
+		}
 	}
 
-	if ( !ent->wait ) {
-		ent->wait = 1;
-	}
+	ent->spawnflags |= 65536;
+
 	ent->use = Use_Target_Delay;
 }
 

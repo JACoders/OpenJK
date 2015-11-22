@@ -12074,7 +12074,13 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "target_counter") == 0)
 			{
-				fprintf(this_file,"target_counter\n%d\n%d\n%d\n",this_ent->spawnflags,this_ent->count,this_ent->bounceCount);
+				fprintf(this_file,"target_counter\n%d\n%s\n%s\n%s\n%d\n%d\n",
+					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->count,this_ent->bounceCount);
+			}
+			else if (Q_stricmp(this_ent->classname, "target_delay") == 0)
+			{
+				fprintf(this_file,"target_delay\n%d\n%s\n%s\n%s\n%f\n%f\n",
+					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait,this_ent->random);
 			}
 			else if (Q_stricmp(this_ent->classname, "trigger_hurt") == 0)
 			{

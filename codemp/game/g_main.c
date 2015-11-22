@@ -5908,9 +5908,33 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
 
+						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target2",zyk_get_file_value(this_file));
+
 						zyk_set_entity_field(new_ent,"count",zyk_get_file_value(this_file));
 
 						zyk_set_entity_field(new_ent,"bouncecount",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
+					else if (Q_stricmp(content, "target_delay") == 0)
+					{
+						zyk_set_entity_field(new_ent,"classname","target_delay");
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target2",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"wait",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"random",zyk_get_file_value(this_file));
 
 						zyk_spawn_entity(new_ent);
 					}
