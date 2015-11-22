@@ -9836,10 +9836,13 @@ void G_RunFrame( int levelTime ) {
 				if (ent->client->pers.guardian_mode == 1)
 				{ // zyk: Guardian of Water
 					if (ent->client->pers.guardian_timer < level.time)
-					{ // zyk: healing ability. Uses it when in water
-						if ((int)ent->client->ps.origin[2] < 321)
+					{
+						gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
+						int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
+
+						if (distance > 400)
 						{
-							healing_water(ent,500);
+							healing_water(ent,200);
 							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Healing Water!\"");
 						}
 						else
@@ -10263,8 +10266,6 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 16)
 						{
-							int distance = (int)Distance(ent->client->ps.origin,player_ent->client->ps.origin);
-
 							if (ent->client->pers.flame_thrower < level.time)
 							{
 								ent->client->pers.flame_thrower = level.time + 5000;
