@@ -152,7 +152,7 @@ namespace Q
 		template< typename CharT >
 		inline ArrayViewStreambuf< typename std::remove_cv< CharT >::type > MakeStreambuf( const gsl::array_view< const CharT >& view )
 		{
-			return{ view };
+			return std::move( ArrayViewStreambuf< typename std::remove_cv< CharT >::type >( view ) );
 		}
 
 		/**
