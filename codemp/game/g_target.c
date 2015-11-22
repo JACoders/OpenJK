@@ -1002,10 +1002,12 @@ void SP_target_play_music( gentity_t *self )
 	char *s;
 
 	G_SetOrigin( self, self->s.origin );
-	if (!G_SpawnString( "music", "", &s ))
+	if (!(self->spawnflags & 65536) && !G_SpawnString( "music", "", &s ))
 	{
 		trap->Error( ERR_DROP, "target_play_music without a music key at %s", vtos( self->s.origin ) );
 	}
+
+	self->spawnflags |= 65536;
 
 	self->message = G_NewString(s);
 
