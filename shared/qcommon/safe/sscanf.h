@@ -103,20 +103,6 @@ namespace Q
 				char* data = const_cast< CharT* >( view.data() );
 				this->setg( data, data, data + view.size() );
 			}
-			// alas no default move constructors on VS2013.
-			// TODO DELETEME once we drop VS2013 (because fuck that).
-#if defined( _MSC_VER ) && _MSC_VER < 1900
-			ArrayViewStreambuf( ArrayViewStreambuf&& rhs )
-				: std::basic_streambuf< CharT >( std::move( rhs ) )
-			{
-			}
-			ArrayViewStreambuf& operator=( ArrayViewStreambuf&& rhs )
-			{
-				std::basic_streambuf< CharT >& self = *this;
-				self = std::move( rhs );
-				return self;
-			}
-#endif
 
 		protected:
 			/// @note required by istream.tellg()
@@ -148,13 +134,6 @@ namespace Q
 			}
 		};
 
-		/// For deducing ArrayViewStreambuf's template type
-		template< typename CharT >
-		inline ArrayViewStreambuf< typename std::remove_cv< CharT >::type > MakeStreambuf( const gsl::array_view< const CharT >& view )
-		{
-			return std::move( ArrayViewStreambuf< typename std::remove_cv< CharT >::type >( view ) );
-		}
-
 		/**
 		Forward declaration.
 		*/
@@ -181,7 +160,7 @@ namespace Q
 		template< bool skipws, typename T, typename... Tail >
 		std::size_t sscanf_impl_stream( const gsl::cstring_view& input, const std::size_t accumulator, T& value, Tail&&... tail )
 		{
-			auto buf = MakeStreambuf( input );
+			ArrayViewStreambuf< char > buf{ input };
 			std::istream stream( &buf );
 			if( !skipws )
 			{
