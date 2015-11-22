@@ -6016,7 +6016,8 @@ void G_RunFrame( int levelTime ) {
 						zyk_spawn_entity(new_ent);
 					}
 					else if (Q_stricmp(content, "misc_ammo_floor_unit") == 0 || Q_stricmp(content, "misc_shield_floor_unit") == 0 ||
-							 Q_stricmp(content, "misc_model_health_power_converter") == 0)
+							 Q_stricmp(content, "misc_model_health_power_converter") == 0 || 
+							 Q_stricmp(content, "misc_model_shield_power_converter") == 0)
 					{
 						zyk_set_entity_field(new_ent,"classname",va("%s",content));
 

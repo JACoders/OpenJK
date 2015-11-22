@@ -12108,7 +12108,8 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->targetname,(int)this_ent->mass,this_ent->damage,this_ent->health,(int)this_ent->radius,this_ent->count,(int)this_ent->wait);
 			}
 			else if (Q_stricmp(this_ent->classname, "misc_ammo_floor_unit") == 0 || Q_stricmp(this_ent->classname, "misc_shield_floor_unit") == 0 || 
-					 Q_stricmp(this_ent->classname, "misc_model_health_power_converter") == 0)
+					 Q_stricmp(this_ent->classname, "misc_model_health_power_converter") == 0 || 
+					 Q_stricmp(this_ent->classname, "misc_model_shield_power_converter") == 0)
 			{
 				fprintf(this_file,"%s\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",this_ent->classname,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,

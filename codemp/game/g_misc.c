@@ -2150,6 +2150,10 @@ void SP_misc_model_shield_power_converter( gentity_t *ent )
 	VectorSet (ent->r.mins, -16, -16, -16);
 	VectorSet (ent->r.maxs, 16, 16, 16);
 
+	// zyk: if no model is set, use default model
+	if (!ent->model)
+		ent->model = "models/items/psd_sm.md3";
+
 	ent->s.modelindex = G_ModelIndex( ent->model );
 
 	ent->s.eFlags = 0;
