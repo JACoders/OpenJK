@@ -145,9 +145,15 @@ void SP_light( gentity_t *self ) {
 		return;
 	}
 
-	G_SpawnInt( "style", "0", &self->count );
-	G_SpawnInt( "switch_style", "0", &self->bounceCount );
-	G_SpawnInt( "style_off", "0", &self->fly_sound_debounce_time );
+	if (!(self->spawnflags & 65536))
+	{
+		G_SpawnInt( "style", "0", &self->count );
+		G_SpawnInt( "switch_style", "0", &self->bounceCount );
+		G_SpawnInt( "style_off", "0", &self->fly_sound_debounce_time );
+
+		self->spawnflags |= 65536;
+	}
+
 	G_SetOrigin( self, self->s.origin );
 	trap->LinkEntity( (sharedEntity_t *)self );
 

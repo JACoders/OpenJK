@@ -126,6 +126,7 @@ field_t fields[] = {
 	{ "ffdeathscript",			FOFS( behaviorSet[BSET_FFDEATH] ),		F_STRING },//name of script to run
 	{ "ffirescript",			FOFS( behaviorSet[BSET_FFIRE] ),		F_STRING },//name of script to run
 	{ "fleescript",				FOFS( behaviorSet[BSET_FLEE] ),			F_STRING },//name of script to run
+	{ "fly_sound_debounce_time",FOFS( fly_sound_debounce_time ),		F_INT }, // zyk: added this field
 	{ "fullname",				FOFS( fullName ),						F_STRING },
 	{ "goaltarget",				FOFS( goaltarget ),						F_STRING },//for siege
 	{ "healingclass",			FOFS( healingclass ),					F_STRING },
