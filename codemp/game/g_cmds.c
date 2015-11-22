@@ -12063,9 +12063,9 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "target_print") == 0)
 			{
-				fprintf(this_file,"target_print\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
-					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
-					this_ent->targetname,this_ent->message);
+				fprintf(this_file,"target_print\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],
+					this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->message);
 			}
 			else if (Q_stricmp(this_ent->classname, "target_speaker") == 0)
 			{
@@ -12081,6 +12081,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			{
 				fprintf(this_file,"target_delay\n%d\n%s\n%s\n%s\n%f\n%f\n",
 					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait,this_ent->random);
+			}
+			else if (Q_stricmp(this_ent->classname, "target_kill") == 0)
+			{
+				fprintf(this_file,"target_kill\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],
+					this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname);
 			}
 			else if (Q_stricmp(this_ent->classname, "trigger_hurt") == 0)
 			{
