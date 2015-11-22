@@ -12078,6 +12078,18 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->message);
 			}
+			else if (Q_stricmp(this_ent->classname, "target_random") == 0)
+			{
+				fprintf(this_file,"target_random\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,
+					this_ent->targetname,this_ent->target,this_ent->target2);
+			}
+			else if (Q_stricmp(this_ent->classname, "target_relay") == 0)
+			{
+				fprintf(this_file,"target_relay\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%f\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,
+					this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait);
+			}
 			else if (Q_stricmp(this_ent->classname, "target_counter") == 0)
 			{
 				fprintf(this_file,"target_counter\n%d\n%s\n%s\n%s\n%d\n%d\n",
