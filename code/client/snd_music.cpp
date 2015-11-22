@@ -429,7 +429,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 				int steps = 0;
 				gsl::cstring_view searchName{ &sLevelName[ 0 ], &sLevelName[ strlen( &sLevelName[ 0 ] ) ] };
 
-				constexpr int sanityLimit = 10;
+				const int sanityLimit = 10;
 				while( !searchName.empty() && steps < sanityLimit )
 				{
 					gsLevelNameForLoad = StringViewToSString( searchName );
