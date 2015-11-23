@@ -12138,10 +12138,11 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "misc_model_breakable") == 0)
 			{
-				fprintf(this_file,"misc_model_breakable\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n%s\n%d\n%d\n%d\n%d\n%d\n%d\n%s\n",(int)this_ent->s.origin[0],
-					(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],
-					(int)this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],
-					(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->model);
+				fprintf(this_file,"misc_model_breakable\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n%f\n%f\n%f\n%f\n%f\n%f\n%s\n%s\n%s\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],
+					this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->r.mins[0],this_ent->r.mins[1],
+					this_ent->r.mins[2],this_ent->r.maxs[0],this_ent->r.maxs[1],this_ent->r.maxs[2],this_ent->model,
+					this_ent->script_targetname,this_ent->behaviorSet[BSET_USE]);
 			}
 			else if (Q_stricmp(this_ent->classname, "emplaced_gun") == 0)
 			{

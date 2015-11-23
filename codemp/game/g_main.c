@@ -6211,6 +6211,10 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"model",zyk_get_file_value(this_file));
 
+						zyk_set_entity_field(new_ent,"script_targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"usescript",zyk_get_file_value(this_file));
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (Q_stricmp(content, "misc_ammo_floor_unit") == 0 || Q_stricmp(content, "misc_shield_floor_unit") == 0 ||
