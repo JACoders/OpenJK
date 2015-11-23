@@ -7097,6 +7097,33 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
+					else if (Q_stricmp(content, "target_scriptrunner") == 0)
+					{
+						float fx, fy, fz;
+
+						zyk_set_entity_field(new_ent,"classname","target_scriptrunner");
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"origin",va("%f %f %f",fx,fy,fz));
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"script_targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"usescript",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"count",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"delay",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"wait",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
 					else if (Q_stricmp(content, "zyk_regen_unit") == 0)
 					{
 						float fx, fy, fz;

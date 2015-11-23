@@ -12326,6 +12326,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,this_ent->targetname,
 					this_ent->target);
 			}
+			else if (Q_stricmp(this_ent->classname, "target_scriptrunner") == 0)
+			{
+				fprintf(this_file,"target_scriptrunner\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%d\n%d\n%f\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,this_ent->targetname,
+					this_ent->script_targetname,this_ent->behaviorSet[BSET_USE],this_ent->count,this_ent->delay,this_ent->wait);
+			}
 			else if (Q_stricmp(this_ent->classname, "zyk_regen_unit") == 0)
 			{
 				fprintf(this_file,"zyk_regen_unit\n%f\n%f\n%f\n%d\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%f\n",
