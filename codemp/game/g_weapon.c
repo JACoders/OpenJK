@@ -4087,7 +4087,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			{ // zyk: Ultra Bolt
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
-				int damage = zyk_magic_fist_damage.integer * 1.8;
+				int damage = zyk_magic_fist_damage.integer * 1.9;
 
 				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
