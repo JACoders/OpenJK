@@ -128,6 +128,7 @@ field_t fields[] = {
 	{ "fleescript",				FOFS( behaviorSet[BSET_FLEE] ),			F_STRING },//name of script to run
 	{ "fly_sound_debounce_time",FOFS( fly_sound_debounce_time ),		F_INT }, // zyk: added this field
 	{ "fullname",				FOFS( fullName ),						F_STRING },
+	{ "genericvalue7",			FOFS( genericValue7 ),					F_INT }, // zyk: added this field
 	{ "goaltarget",				FOFS( goaltarget ),						F_STRING },//for siege
 	{ "healingclass",			FOFS( healingclass ),					F_STRING },
 	{ "healingrate",			FOFS( healingrate ),					F_INT },

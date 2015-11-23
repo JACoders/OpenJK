@@ -6093,8 +6093,55 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
-					else if (Q_stricmp(content, "trigger_teleport") == 0 || Q_stricmp(content, "trigger_multiple") == 0 ||
-							 Q_stricmp(content, "trigger_once") == 0)
+					else if (Q_stricmp(content, "trigger_multiple") == 0)
+					{
+						float fx, fy, fz;
+
+						zyk_set_entity_field(new_ent,"classname",va("%s", content));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"origin",va("%f %f %f",fx,fy,fz));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"angles",va("%f %f %f",fx,fy,fz));
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target2",zyk_get_file_value(this_file));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"mins",va("%f %f %f",fx,fy,fz));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"maxs",va("%f %f %f",fx,fy,fz));
+
+						zyk_set_entity_field(new_ent,"wait",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"model",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"speed",va("%f",atof(zyk_get_file_value(this_file))/1000));
+
+						zyk_set_entity_field(new_ent,"delay",va("%d",atoi(zyk_get_file_value(this_file))/1000));
+
+						zyk_set_entity_field(new_ent,"genericvalue7",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"message",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
+					else if (Q_stricmp(content, "trigger_teleport") == 0 || Q_stricmp(content, "trigger_once") == 0)
 					{
 						float fx, fy, fz;
 
