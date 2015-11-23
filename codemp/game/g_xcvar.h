@@ -228,6 +228,8 @@ XCVAR_DEF( g_fixHighFPSAbuse,			"0",			CVU_HighFPS,		CVAR_ARCHIVE,									qtrue
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
 
+XCVAR_DEF( g_fixGlitchKickDamage,				"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
+
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_duelStartArmor,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )

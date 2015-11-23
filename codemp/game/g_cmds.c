@@ -7745,6 +7745,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Floodprotected flipkick\n");
 	else if (g_flipKick.integer > 2)
 		Q_strcat(buf, sizeof(buf), "   ^5Flipkick enabled with JK2 style\n");
+	if (g_fixGlitchKickDamage.integer > 0)
+		Q_strcat(buf, sizeof(buf), va("   ^5Glitch kick randomness removed, now does ^3%i ^5bonus damage\n", g_fixGlitchKickDamage.integer));
 	if (g_nonRandomKnockdown.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flipkick knockdowns\n");
 	else if (g_nonRandomKnockdown.integer == 2)
@@ -7785,7 +7787,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		else if (g_fixSaberInGrip.integer == 2)
 			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, and target can turn on/off lightsaber in grip\n");
 		else if (g_fixSaberInGrip.integer > 2)
-			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, target can turn on/off lightsaber in grip, and target can switch weapons in grip\n");
+			Q_strcat(buf, sizeof(buf), "   ^5Grip does not turn off targets lightsaber, target can turn on/off lightsaber in grip, and target can toggle saber style in grip\n");
 		if (g_tweakForce.integer & FT_FIXDRAINCOF)
 			Q_strcat(buf, sizeof(buf), "   ^5Force drain cone of fire is narrower, matching that of the visual effect\n");
 		if (g_tweakForce.integer & FT_PUSHPULLKD)

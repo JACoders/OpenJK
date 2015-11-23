@@ -482,6 +482,8 @@ void WP_SpawnInitForcePowers( gentity_t *ent )
 	ent->client->ps.fd.forceDrainEntNum = ENTITYNUM_NONE;
 	ent->client->ps.fd.forceDrainTime = 0;
 
+	ent->client->didGlitchKick = qfalse;
+
 	i = 0;
 	while (i < NUM_FORCE_POWERS)
 	{
@@ -5501,6 +5503,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	else
 	{
 		self->client->ps.fd.forceGripCripple = 0;
+		self->client->didGlitchKick = qfalse;
 	}
 
 	if (self->client->ps.fd.forceJumpSound)

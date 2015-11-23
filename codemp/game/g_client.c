@@ -2717,15 +2717,13 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 			char strIP[NET_ADDRSTRMAXLEN] = {0}; //not sure man..
 			char *p = NULL;
 
+			Q_strncpyz(strIP, tmpIP, sizeof(strIP));
+			p = strchr(strIP, ':');
+			if (p)
+				*p = 0;
+
 			for ( i=0; i<sv_maxclients.integer; i++ )
 			{
-
-				Q_strncpyz(strIP, tmpIP, sizeof(strIP));
-				p = strchr(strIP, ':');
-				if (p)
-					*p = 0;
-
-
 				//trap->Print("Theirs: %s, ours: %s\n", strIP, level.clients[i].sess.IP);
 				#if 0
 					if ( level.clients[i].pers.connected != CON_DISCONNECTED && i != clientNum )

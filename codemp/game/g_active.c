@@ -5127,12 +5127,14 @@ void ClientThink_real( gentity_t *ent ) {
 
 		if (faceKicked && faceKicked->client && (!OnSameTeam(ent, faceKicked) || g_friendlyFire.integer) &&
 			(!faceKicked->client->ps.duelInProgress || faceKicked->client->ps.duelIndex == ent->s.number) &&
-			(!ent->client->ps.duelInProgress || ent->client->ps.duelIndex == faceKicked->s.number))
+			(!ent->client->ps.duelInProgress || ent->client->ps.duelIndex == faceKicked->s.number)
+			&& ((!ent->client->didGlitchKick || !ent->client->ps.fd.forceGripCripple) || g_fixGlitchKickDamage.integer <= 0))
 		{
 			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && !faceKicked->client->sess.raceMode && !faceKicked->client->noclip)
 			{//push them away and do pain
 				vec3_t oppDir;
 				int strength = (int)VectorNormalize2( client->ps.velocity, oppDir );
+				int glitchKickBonus = 0;
 
 				strength *= 0.05;
 
@@ -5140,21 +5142,26 @@ void ClientThink_real( gentity_t *ent ) {
 
 				if (faceKicked->client->sess.movementStyle = MV_JKA) //gross hack to use dashtime as lastKickedByTime for jka (flipkick) physics
 					faceKicked->client->ps.stats[STAT_DASHTIME] = 200;
+
+				if (ent->client->ps.fd.forceGripCripple && g_fixGlitchKickDamage.integer > 0) {
+					ent->client->didGlitchKick = qtrue;
+					glitchKickBonus = 30;
+				}
 				
 //JAPRO - Serverside - New flipkick damage options - Start
 				if (g_flipKick.integer < 2 && g_flipKickDamageScale.value)
-					G_Damage( faceKicked, ent, ent, oppDir, client->ps.origin, (strength * g_flipKickDamageScale.value), DAMAGE_NO_ARMOR, MOD_MELEE );//default flipkick dmg
+					G_Damage( faceKicked, ent, ent, oppDir, client->ps.origin, ((strength + glitchKickBonus) * g_flipKickDamageScale.value), DAMAGE_NO_ARMOR, MOD_MELEE );//default flipkick dmg
 				else if (g_flipKick.integer == 2 && g_flipKickDamageScale.value)
 				{
 					//int damageStrength = strength; //Revert this and use damageStrength here if we want to have flipkick knockback strength "random" i.e. give slight advantage to wait 2 kick scripters..
 					if (strength > 10)
 					{
-						strength = 20;
+						strength = 20 + glitchKickBonus;
 					}
 					G_Damage( faceKicked, ent, ent, 0, 0, (strength * g_flipKickDamageScale.value), DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg
 				}
 				else if (g_flipKickDamageScale.value)
-					G_Damage( faceKicked, ent, ent, 0, 0, 20, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg (20)
+					G_Damage( faceKicked, ent, ent, 0, 0, 20 + glitchKickBonus, DAMAGE_NO_ARMOR, MOD_MELEE ); //new japro flipkick dmg (20)
 
 				if (g_fixKillCredit.integer) {//JAPRO - Serverside - fix flipkick not giving killcredit..?
 					faceKicked->client->ps.otherKillerTime = level.time + 2000;
