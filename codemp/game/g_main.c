@@ -6653,6 +6653,8 @@ void G_RunFrame( int levelTime ) {
 						fz = atof(zyk_get_file_value(this_file));
 						zyk_set_entity_field(new_ent,"angles2",va("%f %f %f",fx,fy,fz));
 
+						zyk_set_entity_field(new_ent,"script_targetname",zyk_get_file_value(this_file));
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (Q_stricmp(content, "func_glass") == 0)
