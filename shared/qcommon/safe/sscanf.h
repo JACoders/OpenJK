@@ -134,13 +134,6 @@ namespace Q
 			}
 		};
 
-		/// For deducing ArrayViewStreambuf's template type
-		template< typename CharT >
-		inline ArrayViewStreambuf< typename std::remove_cv< CharT >::type > MakeStreambuf( const gsl::array_view< const CharT >& view )
-		{
-			return{ view };
-		}
-
 		/**
 		Forward declaration.
 		*/
@@ -154,13 +147,20 @@ namespace Q
 			return sscanf_impl_stream( input, accumulator, f, std::forward< Tail >( tail )... );
 		}
 
+		//    Int
+		template< typename... Tail >
+		std::size_t sscanf_impl( const gsl::cstring_view& input, const std::size_t accumulator, int& i, Tail&&... tail )
+		{
+			return sscanf_impl_stream( input, accumulator, i, std::forward< Tail >( tail )... );
+		}
+
 		/**
 		Conversion using std::istream's operator>>
 		*/
 		template< bool skipws, typename T, typename... Tail >
 		std::size_t sscanf_impl_stream( const gsl::cstring_view& input, const std::size_t accumulator, T& value, Tail&&... tail )
 		{
-			auto buf = MakeStreambuf( input );
+			ArrayViewStreambuf< char > buf{ input };
 			std::istream stream( &buf );
 			if( !skipws )
 			{

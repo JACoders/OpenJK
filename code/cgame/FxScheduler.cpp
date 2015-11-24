@@ -39,6 +39,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "../qcommon/q_shared.h"
 #endif
 
+#include "qcommon/safe/string.h"
 #include <cmath>
 
 
@@ -395,7 +396,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 // Return:
 //	int handle to the effect
 //------------------------------------------------------
-int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= false*/ )
+int CFxScheduler::RegisterEffect( const char *path, bool bHasCorrectPath /*= false*/ )
 {
 	// Dealing with file names:
 	// File names can come from two places - the editor, in which case we should use the given
@@ -403,93 +404,69 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 	// In either case we create a stripped file name to use for naming effects.
 	//
 
-	char sfile[MAX_QPATH];
+	// FIXME: this could maybe be a cstring_view, if mEffectIDs were to use a transparent comparator, but those were only added in C++14, which we don't support yet (sigh)
+	char filenameNoExt[MAX_QPATH];
 
 	// Get an extension stripped version of the file
 	if (bHasCorrectPath)
 	{
-		const char *last = file, *p = file;
-
+		// FIXME: this is basically COM_SkipPath, except it also accepts '\\' instead of '/'
+		const char *last = path, *p = path;
 		while (*p != '\0')
 		{
 			if ((*p == '/') || (*p == '\\'))
 			{
 				last = p + 1;
 			}
-
 			p++;
 		}
 
-		COM_StripExtension( last, sfile, sizeof(sfile) );
+		COM_StripExtension( last, filenameNoExt, sizeof( filenameNoExt ) );
 	}
 	else
 	{
-		COM_StripExtension( file, sfile, sizeof(sfile) );
+		COM_StripExtension( path, filenameNoExt, sizeof( filenameNoExt ) );
 	}
 
 	// see if the specified file is already registered.  If it is, just return the id of that file
 	TEffectID::iterator itr;
 
-	itr = mEffectIDs.find( sfile );
+	itr = mEffectIDs.find( filenameNoExt );
 
 	if ( itr != mEffectIDs.end() )
 	{
 		return (*itr).second;
 	}
 
-	CGenericParser2	parser;
-	int				len = 0;
-	fileHandle_t	fh;
-	char			*data;
-	char			temp[MAX_QPATH];
+	char			correctFilenameBuffer[MAX_QPATH];
 	const char		*pfile;
-	char			*bufParse = 0;
-
 	if (bHasCorrectPath)
 	{
-		pfile = file;
+		pfile = path;
 	}
 	else
 	{
 		// Add on our extension and prepend the file with the default path
-		Com_sprintf( temp, sizeof(temp), "%s/%s.efx", FX_FILE_PATH, sfile );
-		pfile = temp;
+		Com_sprintf( correctFilenameBuffer, sizeof( correctFilenameBuffer ), "%s/%s.efx", FX_FILE_PATH, filenameNoExt );
+		pfile = correctFilenameBuffer;
 	}
-
-	len = theFxHelper.OpenFile( pfile, &fh, FS_READ );
-
-	if ( len < 0 )
-	{
-		theFxHelper.Print( "RegisterEffect: failed to load: %s\n", pfile );
-		return 0;
-	}
-
-	if (len == 0)
-	{
-		theFxHelper.Print( "RegisterEffect: INVALID file: %s\n", pfile );
-		theFxHelper.CloseFile( fh );
-		return 0;
-	}
-
-	// Allocate enough space to hold the file
-	// This should be flagged temp, but it seems ok as is.
-	data = new char[len+1];
-
-	// Get the goods and ensure Null termination
-	theFxHelper.ReadFile( data, len, fh );
-	data[len] = '\0';
-	bufParse = data;
 
 	// Let the generic parser process the whole file
-	parser.Parse( &bufParse );
-
-	theFxHelper.CloseFile( fh );
-
-	// Delete our temp copy of the file
-	delete [] data;
-
+	CGenericParser2	parser;
+	if( !parser.Parse( pfile ) )
+	{
+		if( !parser.ValidFile() )
+		{
+			theFxHelper.Print( "RegisterEffect: INVALID file: %s\n", pfile );
+		}
+		return false;
+		if( parser.ValidFile() )
+		{
+			return false;
+		}
+	}
 	// Lets convert the effect file into something that we can work with
-	return ParseEffect( sfile, parser.GetBaseParseGroup() );
+	return ParseEffect( filenameNoExt, parser.GetBaseParseGroup() );
 }
 
 
@@ -507,34 +484,10 @@ int CFxScheduler::RegisterEffect( const char *file, bool bHasCorrectPath /*= fal
 //	int handle of the effect
 //------------------------------------------------------
 
-struct primitiveType_s { const char *name; EPrimType type; } primitiveTypes[] = {
-	{ "particle", Particle },
-	{ "line", Line },
-	{ "tail", Tail },
-	{ "sound", Sound },
-	{ "cylinder", Cylinder },
-	{ "electricity", Electricity },
-	{ "emitter", Emitter },
-	{ "decal", Decal },
-	{ "orientedparticle", OrientedParticle },
-	{ "fxrunner", FxRunner },
-	{ "light", Light },
-	{ "cameraShake", CameraShake },
-	{ "flash", ScreenFlash },
-};
-static const size_t numPrimitiveTypes = ARRAY_LEN( primitiveTypes );
-
-int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
+int CFxScheduler::ParseEffect( const char *file, const CGPGroup& base )
 {
-	CGPGroup			*primitiveGroup;
-	CPrimitiveTemplate	*prim;
-	const char			*grpName;
-	SEffectTemplate		*effect = 0;
-	EPrimType			type;
-	int					handle;
-	CGPValue			*pair;
-
-	effect = GetNewEffectTemplate( &handle, file );
+	int handle;
+	SEffectTemplate* effect = GetNewEffectTemplate( &handle, file );
 
 	if ( !handle || !effect )
 	{
@@ -542,45 +495,42 @@ int CFxScheduler::ParseEffect( const char *file, CGPGroup *base )
 		return 0;
 	}
 
-	if ((pair = base->GetPairs())!=0)
+	for( auto& property : base.GetProperties() )
 	{
-		grpName = pair->GetName();
-		if ( !Q_stricmp( grpName, "repeatDelay" ))
+		if( Q::stricmp( property.GetName(), CSTRING_VIEW( "repeatDelay" ) ) == Q::Ordering::EQ )
 		{
-			effect->mRepeatDelay = atoi(pair->GetTopValue());
-		}
-		else
-		{//unknown
-
+			effect->mRepeatDelay = Q::svtoi( property.GetTopValue() );
 		}
 	}
 
-	primitiveGroup = base->GetSubGroups();
-
-	while ( primitiveGroup )
+	for( const auto& primitiveGroup : base.GetSubGroups() )
 	{
-		grpName = primitiveGroup->GetName();
-
-		type = None;
-		for ( size_t i=0; i<numPrimitiveTypes; i++ ) {
-			if ( !Q_stricmp( grpName, primitiveTypes[i].name ) ) {
-				type = primitiveTypes[i].type;
-				break;
-			}
-		}
-
-		if ( type != None )
+		static std::map< gsl::cstring_view, EPrimType, Q::CStringViewILess > primitiveTypes{
+			{ CSTRING_VIEW( "particle" ), Particle },
+			{ CSTRING_VIEW( "line" ), Line },
+			{ CSTRING_VIEW( "tail" ), Tail },
+			{ CSTRING_VIEW( "sound" ), Sound },
+			{ CSTRING_VIEW( "cylinder" ), Cylinder },
+			{ CSTRING_VIEW( "electricity" ), Electricity },
+			{ CSTRING_VIEW( "emitter" ), Emitter },
+			{ CSTRING_VIEW( "decal" ), Decal },
+			{ CSTRING_VIEW( "orientedparticle" ), OrientedParticle },
+			{ CSTRING_VIEW( "fxrunner" ), FxRunner },
+			{ CSTRING_VIEW( "light" ), Light },
+			{ CSTRING_VIEW( "cameraShake" ), CameraShake },
+			{ CSTRING_VIEW( "flash" ), ScreenFlash }
+		};
+		auto pos = primitiveTypes.find( primitiveGroup.GetName() );
+		if( pos != primitiveTypes.end() )
 		{
-			prim = new CPrimitiveTemplate;
+			CPrimitiveTemplate *prim = new CPrimitiveTemplate;
 
-			prim->mType = type;
+			prim->mType = pos->second;
 			prim->ParsePrimitive( primitiveGroup );
 
 			// Add our primitive template to the effect list
 			AddPrimitiveToEffect( effect, prim );
 		}
-
-		primitiveGroup = (CGPGroup *)primitiveGroup->GetNext();
 	}
 
 	return handle;
@@ -654,7 +604,7 @@ SEffectTemplate *CFxScheduler::GetNewEffectTemplate( int *id, const char *file )
 
 	theFxHelper.Print( "FxScheduler:  Error--reached max effects\n" );
 	*id = 0;
-	return 0;
+	return nullptr;
 }
 
 //------------------------------------------------------
