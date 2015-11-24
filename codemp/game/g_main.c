@@ -10102,7 +10102,7 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Magic Shield!\"");
 						}
 
-						ent->client->pers.guardian_timer = level.time + ent->health + 2000 + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
+						ent->client->pers.guardian_timer = level.time + ent->health + 2500 + (ent->client->ps.stats[STAT_MAX_HEALTH]/2);
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 5)
