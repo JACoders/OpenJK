@@ -6444,9 +6444,9 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"soundset",zyk_get_file_value(this_file));
 
-						zyk_set_entity_field(new_ent,"wait",va("%f",atof(zyk_get_file_value(this_file))/1000));
+						zyk_set_entity_field(new_ent,"wait",zyk_get_file_value(this_file));
 
-						zyk_set_entity_field(new_ent,"delay",va("%d",atoi(zyk_get_file_value(this_file))/1000));
+						zyk_set_entity_field(new_ent,"delay",zyk_get_file_value(this_file));
 
 						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
 

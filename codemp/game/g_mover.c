@@ -1410,13 +1410,14 @@ void SP_func_door (gentity_t *ent)
 	// default wait of 2 seconds
 	if (!ent->wait)
 		ent->wait = 2;
-	ent->wait *= 1000;
-
-	ent->delay *= 1000;
 
 	// default lip of 8 units
 	if (!(ent->spawnflags & 65536))
 	{
+		ent->wait *= 1000;
+
+		ent->delay *= 1000;
+
 		G_SpawnFloat( "lip", "8", &lip );
 
 		// default damage of 2 points
