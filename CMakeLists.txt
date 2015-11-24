@@ -152,7 +152,7 @@ set(MPUI "ui${Architecture}")
 set(JK2SPEngine "openjo_sp.${Architecture}")
 set(JK2SPGame "jospgame${Architecture}")
 set(JK2SPVanillaRenderer "rdjosp-vanilla_${Architecture}")
-set(AssetsPk3 "openjk-${Architecture}.pk3")
+set(AssetsPk3 "japro-${Architecture}.pk3")
 # Library names
 set(MPBotLib "botlib")
 set(SharedLib "shared")
