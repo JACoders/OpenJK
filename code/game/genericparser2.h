@@ -61,7 +61,8 @@ public:
 	}
 	const gsl::cstring_view& GetTopValue() const NOEXCEPT
 	{
-		return mValues.empty() ? gsl::cstring_view{} : mValues.front();
+		static gsl::cstring_view empty{};
+		return mValues.empty() ? empty : mValues.front();
 	}
 	const Values& GetValues() const NOEXCEPT
 	{
@@ -90,8 +91,26 @@ public:
 	CGPGroup( const CGPGroup& ) = delete;
 	CGPGroup& operator=( const CGPGroup& ) = delete;
 	// movable
+#if defined( _MSC_VER ) && _MSC_VER < 1900
+	// alas no default move constructors on VS2013.
+	// TODO DELETEME once we drop VS2013 (because fuck that).
+	CGPGroup( CGPGroup&& rhs )
+		: mProperties( std::move( rhs.mProperties ) )
+		, mName( std::move( rhs.mName ) )
+		, mSubGroups( std::move( rhs.mSubGroups ) )
+	{
+	}
+	CGPGroup& operator=( CGPGroup&& rhs )
+	{
+		mProperties = std::move( rhs.mProperties );
+		mName = std::move( rhs.mName );
+		mSubGroups = std::move( rhs.mSubGroups );
+		return *this;
+	}
+#else
 	CGPGroup( CGPGroup&& ) = default;
 	CGPGroup& operator=( CGPGroup&& ) = default;
+#endif
 
 	const Properties& GetProperties() const NOEXCEPT
 	{
