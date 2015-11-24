@@ -6181,17 +6181,19 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (Q_stricmp(content, "misc_model_breakable") == 0)
 					{
+						float fx, fy, fz;
+
 						zyk_set_entity_field(new_ent,"classname","misc_model_breakable");
 
-						x = atoi(zyk_get_file_value(this_file));
-						y = atoi(zyk_get_file_value(this_file));
-						z = atoi(zyk_get_file_value(this_file));
-						zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"origin",va("%f %f %f",fx,fy,fz));
 
-						x = atoi(zyk_get_file_value(this_file));
-						y = atoi(zyk_get_file_value(this_file));
-						z = atoi(zyk_get_file_value(this_file));
-						zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"angles",va("%f %f %f",fx,fy,fz));
 
 						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
 
@@ -6199,15 +6201,15 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
 
-						x = atoi(zyk_get_file_value(this_file));
-						y = atoi(zyk_get_file_value(this_file));
-						z = atoi(zyk_get_file_value(this_file));
-						zyk_set_entity_field(new_ent,"mins",va("%d %d %d",x,y,z));
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"mins",va("%f %f %f",fx,fy,fz));
 
-						x = atoi(zyk_get_file_value(this_file));
-						y = atoi(zyk_get_file_value(this_file));
-						z = atoi(zyk_get_file_value(this_file));
-						zyk_set_entity_field(new_ent,"maxs",va("%d %d %d",x,y,z));
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"maxs",va("%f %f %f",fx,fy,fz));
 
 						zyk_set_entity_field(new_ent,"model",zyk_get_file_value(this_file));
 
