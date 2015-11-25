@@ -6217,6 +6217,8 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"usescript",zyk_get_file_value(this_file));
 
+						zyk_set_entity_field(new_ent,"zykmodelscale",zyk_get_file_value(this_file));
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (Q_stricmp(content, "misc_ammo_floor_unit") == 0 || Q_stricmp(content, "misc_shield_floor_unit") == 0 ||
@@ -6459,6 +6461,8 @@ void G_RunFrame( int levelTime ) {
 						fz = atof(zyk_get_file_value(this_file));
 						zyk_set_entity_field(new_ent,"angles2",va("%f %f %f",fx,fy,fz));
 
+						zyk_set_entity_field(new_ent,"zykmodelscale",zyk_get_file_value(this_file));
+
 						zyk_spawn_entity(new_ent);
 					}
 					else if (Q_stricmp(content, "func_breakable") == 0)
@@ -6652,7 +6656,7 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"message",zyk_get_file_value(this_file));
 
-						zyk_set_entity_field(new_ent,"modelscale",zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"zykmodelscale",zyk_get_file_value(this_file));
 
 						fx = atof(zyk_get_file_value(this_file));
 						fy = atof(zyk_get_file_value(this_file));
@@ -6850,7 +6854,7 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"model2",zyk_get_file_value(this_file));
 
-						zyk_set_entity_field(new_ent,"modelscale",zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"zykmodelscale",zyk_get_file_value(this_file));
 
 						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
 

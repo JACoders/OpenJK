@@ -145,7 +145,6 @@ field_t fields[] = {
 	{ "mins",					FOFS( r.mins ),							F_VECTOR }, // zyk: added this field
 	{ "model",					FOFS( model ),							F_STRING },
 	{ "model2",					FOFS( model2 ),							F_STRING },
-	{ "modelscale",				FOFS( s.iModelScale ),					F_INT }, // zyk: added this field
 	{ "npc_target",				FOFS( NPC_target ),						F_STRING },
 	{ "npc_target2",			FOFS( target2 ),						F_STRING },//NPC_spawner only
 	{ "npc_target4",			FOFS( target4 ),						F_STRING },//NPC_spawner only
@@ -201,6 +200,7 @@ field_t fields[] = {
 	{ "usescript",				FOFS( behaviorSet[BSET_USE] ),			F_STRING },//name of script to run
 	{ "victoryscript",			FOFS( behaviorSet[BSET_VICTORY] ),		F_STRING },//name of script to run
 	{ "wait",					FOFS( wait ),							F_FLOAT },
+	{ "zykmodelscale",			FOFS( s.iModelScale ),					F_INT }, // zyk: added this field
 };
 
 static int sortfield( const void *a, const void *b ) {
