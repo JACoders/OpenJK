@@ -411,6 +411,7 @@ typedef struct clientInfo_s {
 	sfxHandle_t		extraSounds[MAX_CUSTOM_EXTRA_SOUNDS];
 	sfxHandle_t		jediSounds[MAX_CUSTOM_JEDI_SOUNDS];
 	sfxHandle_t		siegeSounds[MAX_CUSTOM_SIEGE_SOUNDS];
+	sfxHandle_t		VGSSounds[MAX_CUSTOM_VGS_SOUNDS];
 	sfxHandle_t		duelSounds[MAX_CUSTOM_DUEL_SOUNDS];
 
 	int				legsAnim;

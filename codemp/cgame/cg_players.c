@@ -196,6 +196,7 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 	int			numCExSounds = 0;
 	int			numCJediSounds = 0;
 	int			numCSiegeSounds = 0;
+	int			numCVGSSounds = 0;
 	int			numCDuelSounds = 0;
 	char		lSoundName[MAX_QPATH];
 
@@ -275,6 +276,15 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		}
 	}
 
+	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
+	{
+		if (!bg_customVGSSoundNames[i])
+		{
+			numCVGSSounds = i;
+			break;
+		}
+	}
+
     if (cgs.gametype == GT_DUEL
 		|| cgs.gametype == GT_POWERDUEL
 		|| com_buildScript.integer)
@@ -298,6 +308,10 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		else if ( (cgs.gametype >= GT_TEAM || com_buildScript.integer) && i < numCSiegeSounds && !strcmp( lSoundName, bg_customSiegeSoundNames[i] ) )
 		{ //siege only
 			return ci->siegeSounds[i];
+		}
+		else if ( i < numCVGSSounds && !strcmp(lSoundName, bg_customVGSSoundNames[i]))
+		{ //siege only
+			return ci->VGSSounds[i];
 		}
 		else if ( (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL || com_buildScript.integer) && i < numCDuelSounds && !strcmp( lSoundName, cg_customDuelSoundNames[i] ) )
 		{ //siege only

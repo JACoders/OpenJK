@@ -383,6 +383,15 @@ void IN_AutoMapToggle(void)
 	*/
 }
 
+void IN_VGSButton(void)
+{
+	if (!cls.uiStarted)
+	{ //ui not loaded so this command is useless
+		return;
+	}
+	UIVM_SetActiveMenu(UIMENU_VGS);
+}
+
 void IN_VoiceChatButton(void)
 {
 	if (!cls.uiStarted)
@@ -1823,6 +1832,7 @@ static const cmdList_t inputCmds[] =
 	{ "useGivenForce", "Use specified force power", IN_UseGivenForce, NULL },
 	{ "automap_button", "Show/hide automap", IN_AutoMapButton, NULL },
 	{ "automap_toggle", "Show/hide radar", IN_AutoMapToggle, NULL },
+	{ "vgs", "Open VGS chat menu", IN_VGSButton, NULL },
 	{ "voicechat", "Open voice chat menu", IN_VoiceChatButton, NULL },
 	{ NULL, NULL, NULL, NULL }
 };

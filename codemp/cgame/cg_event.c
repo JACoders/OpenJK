@@ -1266,6 +1266,11 @@ const char	*cg_stringEdVoiceChatTable[MAX_CUSTOM_SIEGE_SOUNDS] =
 	NULL
 };
 
+const char *cg_stringEdVGSTable[MAX_CUSTOM_VGS_SOUNDS] = {
+	"VGS_GLOBAL_HI",
+	NULL
+};
+
 //stupid way of figuring out what string to use for voice chats
 const char *CG_GetStringForVoiceSound(const char *s)
 {
@@ -1277,6 +1282,18 @@ const char *CG_GetStringForVoiceSound(const char *s)
 		{ //get the matching reference name
 			assert(cg_stringEdVoiceChatTable[i]);
 			return CG_GetStringEdString("MENUS", (char *)cg_stringEdVoiceChatTable[i]);
+		}
+		i++;
+	}
+
+	i = 0;
+	while (i < MAX_CUSTOM_VGS_SOUNDS)
+	{
+		if (bg_customVGSSoundNames[i] &&
+			!Q_stricmp(bg_customVGSSoundNames[i], s))
+		{ //get the matching reference name
+			assert(cg_stringEdVGSTable[i]);
+			return CG_GetStringEdString("VGS", (char *)cg_stringEdVGSTable[i]);
 		}
 		i++;
 	}

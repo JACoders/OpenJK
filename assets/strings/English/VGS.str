@@ -1,0 +1,9 @@
+VERSION             "1"
+CONFIG              "W:\bin\stringed.cfg"
+FILENOTES           ""
+
+REFERENCE           VGS_GLOBAL_HI
+LANG_ENGLISH        "1.  Hey there!"
+
+
+ENDMARKER

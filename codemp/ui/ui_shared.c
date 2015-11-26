@@ -4873,6 +4873,7 @@ static const char *g_bindCommands[] = {
 	"use_field",
 	"use_seeker",
 	"use_sentry",
+	"vgs",
 	"voicechat",
 	"weapnext",
 	"weapon 1",
