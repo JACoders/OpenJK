@@ -951,6 +951,47 @@ void CG_LoadCISounds(clientInfo_t *ci, qboolean modelloaded)
 		}
 	}
 
+	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
+	{
+		s = bg_customVGSSoundNames[i];
+		if (!s)
+		{
+			break;
+		}
+
+		Com_sprintf(soundName, sizeof(soundName), "%s", s + 1);
+		COM_StripExtension(soundName, soundName, sizeof(soundName));
+		//strip the extension because we might want .mp3's
+
+		ci->VGSSounds[i] = 0;
+		// if the model didn't load use the sounds of the default model
+		if (soundpath[0])
+		{
+			ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/chars/%s/misc/%s", soundpath, soundName));
+			if (!ci->VGSSounds[i])
+				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", soundpath, soundName));
+		}
+		else
+		{
+			if (modelloaded)
+			{
+				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/chars/%s/misc/%s", dir, soundName));
+			}
+		}
+
+		if (!ci->VGSSounds[i])
+		{ //failed the load, try one out of the generic path
+			if (isFemale)
+			{
+				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", DEFAULT_FEMALE_SOUNDPATH, soundName));
+			}
+			else
+			{
+				ci->VGSSounds[i] = trap->S_RegisterSound(va("sound/%s/%s", DEFAULT_MALE_SOUNDPATH, soundName));
+			}
+		}
+	}
+
 	if (cgs.gametype >= GT_TEAM || com_buildScript.integer)
 	{ //load the siege sounds then
 		for ( i = 0 ; i < MAX_CUSTOM_SIEGE_SOUNDS; i++ )
