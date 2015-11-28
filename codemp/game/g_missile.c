@@ -279,7 +279,7 @@ void G_BounceProjectile( vec3_t start, vec3_t impact, vec3_t dir, vec3_t endout 
 	VectorMA(impact, 8192, newv, endout);
 }
 
-
+/*
 //-----------------------------------------------------------------------------
 gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, 
 							gentity_t *owner, qboolean altFire)
@@ -321,14 +321,18 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life,
 	return missile;
 }
 
+*/
+
 //[JAPRO - Serverside - Weapons - Add missile inheritance function - Start]
 //-----------------------------------------------------------------------------
-gentity_t *CreateMissileInheritance( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire)
+gentity_t *CreateMissileNew( vec3_t org, vec3_t dir, float vel, int life, gentity_t *owner, qboolean altFire, qboolean inheritance, qboolean unlagged)
 //-----------------------------------------------------------------------------
 {
 	gentity_t	*missile;
-	//gclient_t	*client;//JAPRO - Unlagged
-	float dspeed;
+	float newVel = vel;
+	vec3_t newDir;
+
+	VectorCopy(dir, newDir);
 
 	missile = G_Spawn(qfalse);
 
@@ -347,33 +351,39 @@ gentity_t *CreateMissileInheritance( vec3_t org, vec3_t dir, float vel, int life
 		missile->s.eFlags |= EF_ALT_FIRING;
 
 	missile->s.pos.trType = TR_LINEAR;
-	missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2
-	missile->target_ent = NULL;
 
-//[JAPRO - Serverside - Weapons - Unlagged - Start]
-	if (owner->client->pers.isJAPRO)
-	{
-		if (owner->client->ps.ping > 150)
-			missile->s.eventParm = 135;
-		else
-			missile->s.eventParm = owner->client->ps.ping * 0.9; //fixme
+	if (owner->client && owner->client->sess.raceMode) {
+		missile->s.pos.trTime -= MISSILE_PRESTEP_TIME;//this be why rocketjump fucks up at high speed
 	}
-	else
-		missile->s.eventParm = 0;
-//[JAPRO - Serverside - Weapons - Unlagged - End]
+	else if (g_unlagged.integer & UNLAGGED_PROJ_NUDGE && owner->client) {
+		int amount = owner->client->ps.ping * 0.9;
+
+		if (amount > 135)
+			amount = 135;
+		else if (amount < 0) //dunno
+			amount = 0;
+
+		missile->s.pos.trTime = level.time - amount; //fixmer;
+	}
+	else {
+		missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2 - do unlagged stuff here?
+	}
+
+	missile->target_ent = NULL;
 
 	SnapVector(org);
 	VectorCopy( org, missile->s.pos.trBase );
 
-	if (g_fullInheritance.integer) {
-		VectorMA(dir, g_projectileInheritance.value/vel, owner->client->ps.velocity, dir);
-		VectorScale( dir, vel, missile->s.pos.trDelta );
-	}
-	else {
-		dspeed = DotProduct( dir, owner->client->ps.velocity );
-		VectorScale( dir, vel + dspeed*g_projectileInheritance.value, missile->s.pos.trDelta );
+	if (inheritance && owner->client) {
+		if (g_fullInheritance.integer) {
+			VectorMA(newDir, g_projectileInheritance.value/vel, owner->client->ps.velocity, newDir);
+		}
+		else {
+			newVel = newVel + DotProduct(newDir, owner->client->ps.velocity)*g_projectileInheritance.value;
+		}
 	}
 
+	VectorScale( newDir, newVel, missile->s.pos.trDelta );
 	VectorCopy( org, missile->r.currentOrigin);
 	SnapVector(missile->s.pos.trDelta);
 
@@ -934,12 +944,7 @@ void G_RunMissile( gentity_t *ent ) {
 	}
 
 	// get current position
-//[JAPRO - Serverside - Weapons - Unlagged - Start]
-	if (g_unlagged.integer & UNLAGGED_PROJ_NUDGE)
-		BG_EvaluateTrajectory( &ent->s.pos, level.time + ent->s.eventParm, origin );
-	else
-		BG_EvaluateTrajectory( &ent->s.pos, level.time, origin );
-//[JAPRO - Serverside - Weapons - Unlagged - End]
+	BG_EvaluateTrajectory( &ent->s.pos, level.time, origin );
 
 	// if this missile bounced off an invulnerability sphere
 	if ( ent->target_ent ) {

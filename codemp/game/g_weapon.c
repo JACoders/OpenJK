@@ -236,7 +236,7 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire )
 	int damage = BRYAR_PISTOL_DAMAGE;
 	int count;
 
-	gentity_t	*missile = CreateMissileInheritance( muzzle, forward, BRYAR_PISTOL_VEL, 10000, ent, altFire );
+	gentity_t	*missile = CreateMissileNew( muzzle, forward, BRYAR_PISTOL_VEL, 10000, ent, altFire, qtrue, qtrue );
 
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
@@ -306,7 +306,7 @@ void WP_FireTurretMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean al
 {
 	gentity_t *missile;
 
-	missile = CreateMissile( start, dir, velocity, 10000, ent, altFire );
+	missile = CreateMissileNew( start, dir, velocity, 10000, ent, altFire, qfalse, qfalse );
 
 	missile->classname = "generic_proj";
 	missile->s.weapon = WP_TURRET;
@@ -386,7 +386,7 @@ void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qbo
 {
 	gentity_t *missile;
 
-	missile = CreateMissile( start, dir, velocity, 10000, ent, altFire );
+	missile = CreateMissileNew( start, dir, velocity, 10000, ent, altFire, qfalse, qfalse );
 
 	missile->classname = "generic_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
@@ -421,7 +421,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 		damage = 10;
 	}
 
-	missile = CreateMissileInheritance( start, dir, velocity, 10000, ent, altFire );
+	missile = CreateMissileNew( start, dir, velocity, 10000, ent, altFire, qtrue, qtrue );
 
 	missile->classname = "blaster_proj";
 	missile->s.weapon = WP_BLASTER;
@@ -445,7 +445,7 @@ void WP_FireTurboLaserMissile( gentity_t *ent, vec3_t start, vec3_t dir )
 	int velocity	= ent->mass; //FIXME: externalize
 	gentity_t *missile;
 
-	missile = CreateMissile( start, dir, velocity, 10000, ent, qfalse );
+	missile = CreateMissileNew( start, dir, velocity, 10000, ent, qfalse, qfalse, qfalse );
 	
 	//use a custom shot effect
 	missile->s.otherEntityNum2 = ent->genericValue14;
@@ -482,7 +482,7 @@ void WP_FireEmplacedMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean 
 	int	damage		= BLASTER_DAMAGE;
 	gentity_t *missile;
 
-	missile = CreateMissile( start, dir, velocity, 10000, ent, altFire );
+	missile = CreateMissileNew( start, dir, velocity, 10000, ent, altFire, qfalse, qfalse );
 
 	missile->classname = "emplaced_gun_proj";
 	missile->s.weapon = WP_TURRET;//WP_EMPLACED_GUN;
@@ -719,7 +719,7 @@ void WP_DisruptorProjectileFire( gentity_t *ent, qboolean altFire)
 
 	VectorMA( muzzle, -6, vright, muzzle );
 		
-	missile = CreateMissileInheritance( muzzle, forward, 10000*g_projectileVelocityScale.value, 10000, ent, altFire);
+	missile = CreateMissileNew( muzzle, forward, 10000*g_projectileVelocityScale.value, 10000, ent, altFire, qtrue, qtrue);
 
 	missile->classname = "blaster_proj";
 	missile->s.weapon = WP_BLASTER;
@@ -1060,7 +1060,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 {
 	int	damage	= BOWCASTER_DAMAGE;
 
-	gentity_t *missile = CreateMissileInheritance( muzzle, forward, BOWCASTER_VELOCITY, 10000, ent, qfalse);
+	gentity_t *missile = CreateMissileNew( muzzle, forward, BOWCASTER_VELOCITY, 10000, ent, qfalse, qtrue, qtrue);
 
 	missile->classname = "bowcaster_proj";
 	missile->s.weapon = WP_BOWCASTER;
@@ -1181,7 +1181,7 @@ static void WP_BowcasterMainFire( gentity_t *ent, int seed )
 		AngleVectors( angs, dir, NULL, NULL );
 
 //[JAPRO - Serverside - Weapons - Add inheritance to bowcaster primary fire - Start]
-		missile = CreateMissileInheritance( muzzle, dir, vel, 10000, ent, qtrue );
+		missile = CreateMissileNew( muzzle, dir, vel, 10000, ent, qtrue, qtrue, qtrue );
 //[JAPRO - Serverside - Weapons - Add inheritance to bowcaster primary fire - End]
 
 		missile->classname = "bowcaster_alt_proj";
@@ -1234,7 +1234,7 @@ static void WP_RepeaterMainFire( gentity_t *ent, vec3_t dir )
 	int	damage	= REPEATER_DAMAGE;
 
 //[JAPRO - Serverside - Weapons - Add inheritance to repeater main fire]
-	gentity_t *missile = CreateMissileInheritance( muzzle, dir, REPEATER_VELOCITY, 10000, ent, qfalse );
+	gentity_t *missile = CreateMissileNew( muzzle, dir, REPEATER_VELOCITY, 10000, ent, qfalse, qtrue, qtrue );
 
 	missile->classname = "repeater_proj";
 	missile->s.weapon = WP_REPEATER;
@@ -1256,7 +1256,7 @@ static void WP_RepeaterAltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
 //[JAPRO - Serverside - Weapons - Add inheritance to repeater alt fire]
-	gentity_t *missile = CreateMissileInheritance( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue );
+	gentity_t *missile = CreateMissileNew( muzzle, forward, REPEATER_ALT_VELOCITY, 10000, ent, qtrue, qtrue, qtrue );
 
 	missile->damage = REPEATER_ALT_DAMAGE;
 	missile->splashDamage = REPEATER_ALT_SPLASH_DAMAGE;
@@ -1336,7 +1336,7 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 	int	damage	= DEMP2_DAMAGE;
 
 	//[JAPRO - Serverside - Weapons - Add inheritance to demp2 primary fire]
-	gentity_t *missile = CreateMissileInheritance( muzzle, forward, DEMP2_VELOCITY, 10000, ent, qfalse);
+	gentity_t *missile = CreateMissileNew( muzzle, forward, DEMP2_VELOCITY, 10000, ent, qfalse, qtrue, qtrue);
 
 	missile->classname = "demp2_proj";
 	missile->s.weapon = WP_DEMP2;
@@ -1675,7 +1675,7 @@ static void WP_FlechetteMainFire( gentity_t *ent, int seed )
 		AngleVectors( angs, fwd, NULL, NULL );
 
 //[JAPRO - Serverside - Weapons - Add inheritance to flechette primary fire]
-		missile = CreateMissileInheritance( muzzle, fwd, FLECHETTE_VEL, 10000, ent, qfalse);
+		missile = CreateMissileNew( muzzle, fwd, FLECHETTE_VEL, 10000, ent, qfalse, qtrue, qtrue);
 
 		missile->classname = "flech_proj";
 		missile->s.weapon = WP_FLECHETTE;
@@ -2031,9 +2031,9 @@ static void WP_CreateFlechetteBouncyThing( vec3_t start, vec3_t fwd, gentity_t *
 {
 	gentity_t	*missile;
 	if (g_tweakWeapons.integer & FLECHETTE_ALT_SPRD)
-		missile = CreateMissileInheritance( start, fwd, ((1000 + 100*(i)) * g_projectileVelocityScale.value), 1500 + random() * 2000, self, qtrue ); //mean of 1050
+		missile = CreateMissileNew( start, fwd, ((1000 + 100*(i)) * g_projectileVelocityScale.value), 1500 + random() * 2000, self, qtrue, qtrue, qtrue ); //mean of 1050
 	else 
-		missile = CreateMissileInheritance( start, fwd, (700 * g_projectileVelocityScale.value) + random() * 700, 1500 + random() * 2000, self, qtrue );
+		missile = CreateMissileNew( start, fwd, (700 * g_projectileVelocityScale.value) + random() * 700, 1500 + random() * 2000, self, qtrue, qtrue, qtrue );
 	
 	missile->think = WP_flechette_alt_blow;
 
@@ -2403,13 +2403,13 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 		vectoangles( forward, temp );
 		temp[1] += 180;
 		AngleVectors( temp, temp, NULL, NULL );
-		missile = CreateMissile( muzzle, temp, vel, 15000, ent, altFire );
+		missile = CreateMissileNew( muzzle, temp, vel, 15000, ent, altFire, qfalse, qfalse );
 	}
 	else if (q3style) {
-		missile = CreateMissile( muzzle, forward, vel, 15000, ent, altFire );
+		missile = CreateMissileNew( muzzle, forward, vel, 15000, ent, altFire, qfalse, qfalse );
 	}
 	else 
-		missile = CreateMissileInheritance( muzzle, forward, vel, 10000, ent, altFire );
+		missile = CreateMissileNew( muzzle, forward, vel, 10000, ent, altFire, qtrue, qtrue );
 
 //[JAPRO - Serverside - Weapons - Add inheritance to rocket]
 
@@ -2499,7 +2499,7 @@ static void WP_CreateMortar( vec3_t start, vec3_t fwd, gentity_t *self)
 	float velocity = 1400 * g_projectileVelocityScale.value;
 	int lifetime = 3500, damage = 140 * g_weaponDamageScale.value, splashdamage = 140 * g_weaponDamageScale.value, splashradius = 384;
 
-	missile = CreateMissileInheritance( start, fwd, velocity, lifetime, self, qtrue );
+	missile = CreateMissileNew( start, fwd, velocity, lifetime, self, qtrue, qtrue, qtrue );
 
 	missile->think = WP_flechette_alt_blow;
 
@@ -3993,7 +3993,7 @@ static void WP_FireConcussion( gentity_t *ent )
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
-	missile = CreateMissileInheritance( start, forward, vel, 10000, ent, qfalse );
+	missile = CreateMissileNew( start, forward, vel, 10000, ent, qfalse, qtrue, qtrue );
 
 	missile->classname = "conc_proj";
 	missile->s.weapon = WP_CONCUSSION;
@@ -4601,7 +4601,7 @@ gentity_t *WP_FireVehicleWeapon( gentity_t *ent, vec3_t start, vec3_t dir, vehWe
 		
 		//FIXME: CUSTOM MODEL?
 		//QUERY: alt_fire true or not?  Does it matter?
-		missile = CreateMissile( start, dir, vehWeapon->fSpeed, 10000, ent, qfalse );
+		missile = CreateMissileNew( start, dir, vehWeapon->fSpeed, 10000, ent, qfalse, qfalse, qfalse );
 
 		missile->classname = "vehicle_proj";
 		
