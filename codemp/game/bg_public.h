@@ -173,7 +173,7 @@ typedef enum {
 #define MAX_CUSTOM_SIEGE_SOUNDS 30
 #define MAX_CUSTOM_VGS_SOUNDS 131//vgs
 
-#define MAX_CUSTOM_VGS_SOUNDS 2
+#define MAX_CUSTOM_VGS_SOUNDS 131
 
 extern const char *bg_customSiegeSoundNames[MAX_CUSTOM_SIEGE_SOUNDS];
 extern const char *bg_customVGSSoundNames[MAX_CUSTOM_VGS_SOUNDS];

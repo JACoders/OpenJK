@@ -309,10 +309,6 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		{ //siege only
 			return ci->siegeSounds[i];
 		}
-		else if ( i < numCVGSSounds && !strcmp(lSoundName, bg_customVGSSoundNames[i]))
-		{ //siege only
-			return ci->VGSSounds[i];
-		}
 		else if ( (cgs.gametype == GT_DUEL || cgs.gametype == GT_POWERDUEL || com_buildScript.integer) && i < numCDuelSounds && !strcmp( lSoundName, cg_customDuelSoundNames[i] ) )
 		{ //siege only
 			return ci->duelSounds[i];
@@ -329,6 +325,11 @@ sfxHandle_t	CG_CustomSound( int clientNum, const char *soundName ) {
 		{ //npc only
 			return ci->jediSounds[i];
 		}
+	}
+
+	for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++) {
+		if (i < numCVGSSounds && !strcmp(lSoundName, bg_customVGSSoundNames[i]))
+			return ci->VGSSounds[i];
 	}
 
 	//trap->Error( ERR_DROP, "Unknown custom sound: %s", lSoundName );

@@ -3373,6 +3373,102 @@ static qboolean UI_Handicap_HandleKey(int flags, float *special, int key) {
 
 extern void	Item_RunScript(itemDef_t *item, const char *s);		//from ui_shared;
 
+static qboolean UI_VGS_HandleKey(int key) {
+	menuDef_t *menu;
+	itemDef_t *item = NULL;
+
+	menu = Menu_GetFocused();
+
+	if (!menu) {
+		return (qfalse);
+	}
+
+	switch (key) {
+	case A_CAP_A:
+	case A_LOW_A:
+		item = Menu_FindItemByName(menu, "buttonA");
+		break;
+	case A_CAP_B:
+	case A_LOW_B:
+		item = Menu_FindItemByName(menu, "buttonB");
+		break;
+	case A_CAP_C:
+	case A_LOW_C:
+		item = Menu_FindItemByName(menu, "buttonC");
+		break;
+	case A_CAP_D:
+	case A_LOW_D:
+		item = Menu_FindItemByName(menu, "buttonD");
+		break;
+	case A_CAP_E:
+	case A_LOW_E:
+		item = Menu_FindItemByName(menu, "buttonE");
+		break;
+	case A_CAP_F:
+	case A_LOW_F:
+		item = Menu_FindItemByName(menu, "buttonF");
+		break;
+	case A_CAP_G:
+	case A_LOW_G:
+		item = Menu_FindItemByName(menu, "buttonG");
+		break;
+	case A_CAP_H:
+	case A_LOW_H:
+		item = Menu_FindItemByName(menu, "buttonH");
+		break;
+	case A_CAP_N:
+	case A_LOW_N:
+		item = Menu_FindItemByName(menu, "buttonN");
+		break;
+	case A_CAP_O:
+	case A_LOW_O:
+		item = Menu_FindItemByName(menu, "buttonO");
+		break;
+	case A_CAP_Q:
+	case A_LOW_Q:
+		item = Menu_FindItemByName(menu, "buttonQ");
+		break;
+	case A_CAP_R:
+	case A_LOW_R:
+		item = Menu_FindItemByName(menu, "buttonR");
+		break;
+	case A_CAP_S:
+	case A_LOW_S:
+		item = Menu_FindItemByName(menu, "buttonS");
+		break;
+	case A_CAP_T:
+	case A_LOW_T:
+		item = Menu_FindItemByName(menu, "buttonT");
+		break;
+	case A_CAP_U:
+	case A_LOW_U:
+		item = Menu_FindItemByName(menu, "buttonU");
+		break;
+	case A_CAP_V:
+	case A_LOW_V:
+		item = Menu_FindItemByName(menu, "buttonV");
+		break;
+	case A_CAP_W:
+	case A_LOW_W:
+		item = Menu_FindItemByName(menu, "buttonW");
+		break;
+	case A_CAP_Y:
+	case A_LOW_Y:
+		item = Menu_FindItemByName(menu, "buttonY");
+		break;
+	default:
+		return (qfalse);
+	}
+
+	if (item) {
+		Item_RunScript(item, item->action);
+		return (qtrue);
+	}
+	else {
+		return (qfalse);
+	}
+}
+
 // For hot keys on the chat main menu.
 static qboolean UI_Chat_Main_HandleKey(int key)
 {
@@ -4188,6 +4284,9 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
       return UI_ForceMaxRank_HandleKey(flags, special, key, uiForceRank, 1, MAX_FORCE_RANK, ownerDraw);
       break;
     case UI_FORCE_RANK:
+		break;
+	case UI_VGS:
+		return UI_VGS_HandleKey(key);
 		break;
 	case UI_CHAT_MAIN:
 		return UI_Chat_Main_HandleKey(key);
