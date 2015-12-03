@@ -280,6 +280,8 @@ XCVAR_DEF( g_allowSpotting,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowTargetLaser,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_voteTimeout,				"180",			NULL,				CVAR_ARCHIVE,									qfalse )//Time in seconds to lockout callvote after a failed vote
 
+XCVAR_DEF( g_allowVGS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
 XCVAR_DEF( g_pauseTime,					"120",			NULL,				CVAR_NONE,										qfalse )
 XCVAR_DEF( g_unpauseTime,				"5",			NULL,				CVAR_NONE,										qfalse )
 

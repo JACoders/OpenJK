@@ -2374,6 +2374,65 @@ static void Cmd_VoiceCommand_f(gentity_t *ent)
 	te->r.svFlags |= SVF_BROADCAST;
 }
 
+//vgs command
+static void Cmd_VGSCommand_f(gentity_t *ent)
+{
+	gentity_t *te;
+	char arg[MAX_TOKEN_CHARS];
+	char *s;
+	int i = 0;
+
+	if (trap->Argc() < 2)
+	{
+		return;
+	}
+
+	if (!g_allowVGS.integer) {
+		return;
+	}
+
+	if (ent->client->sess.sessionTeam == TEAM_SPECTATOR ||
+		ent->client->tempSpectate >= level.time)
+	{
+		trap->SendServerCommand(ent - g_entities, va("print \"%s\n\"", G_GetStringEdString("MP_SVGAME", "NOVOICECHATASSPEC")));
+		return;
+	}
+
+	trap->Argv(1, arg, sizeof(arg));
+
+	if (arg[0] == '*')
+	{ //hmm.. don't expect a * to be prepended already. maybe someone is trying to be sneaky.
+		return;
+	}
+
+	s = va("*%s", arg);
+
+	//now, make sure it's a valid sound to be playing like this.. so people can't go around
+	//screaming out death sounds or whatever.
+	while (i < MAX_CUSTOM_VGS_SOUNDS)
+	{
+		if (!bg_customVGSSoundNames[i])
+		{
+			break;
+		}
+		if (!Q_stricmp(bg_customVGSSoundNames[i], s))
+		{ //it matches this one, so it's ok
+			break;
+		}
+		i++;
+	}
+
+	if (i == MAX_CUSTOM_VGS_SOUNDS || !bg_customVGSSoundNames[i])
+	{ //didn't find it in the list
+		return;
+	}
+
+	te = G_TempEntity(vec3_origin, EV_VOICECMD_SOUND);
+	te->s.groundEntityNum = ent->s.number;
+	te->s.eventParm = G_SoundIndex((char *)bg_customVGSSoundNames[i]);
+	te->r.svFlags |= SVF_BROADCAST;
+}
+//vgs
 
 static char	*gc_orders[] = {
 	"hold your position",
@@ -8140,6 +8199,7 @@ command_t commands[] = {
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "throwflag",			Cmd_Throwflag_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
+	{ "vgs_cmd",			Cmd_VGSCommand_f,			CMD_NOINTERMISSION },//vgs
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "warp",				Cmd_Warp_f,					CMD_NOINTERMISSION|CMD_ALIVE },
