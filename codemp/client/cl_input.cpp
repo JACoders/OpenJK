@@ -383,15 +383,6 @@ void IN_AutoMapToggle(void)
 	*/
 }
 
-void IN_VGSButton(void)
-{
-	if (!cls.uiStarted)
-	{ //ui not loaded so this command is useless
-		return;
-	}
-	UIVM_SetActiveMenu(UIMENU_VGS);
-}
-
 void IN_VoiceChatButton(void)
 {
 	if (!cls.uiStarted)

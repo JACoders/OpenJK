@@ -153,5 +153,6 @@ XCVAR_DEF( ui_sha_b,						"0",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL 
 XCVAR_DEF( ui_sha_a,						"200",					CVU_StrafeHelper,	CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_username,						"",						NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_password,						"",						NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_voicechat,					"0",					NULL,				CVAR_ARCHIVE)
 
 #undef XCVAR_DEF

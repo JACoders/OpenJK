@@ -984,23 +984,19 @@ void UI_SetActiveMenu( uiMenuCommand_t menu ) {
 			Menus_CloseAll();
 			Menus_ActivateByName("ingame_siegeobjectives");
 			return;
-		case UIMENU_VGS:
-			trap->Key_SetCatcher(KEYCATCH_UI);
-			Menus_CloseAll();
-			Menus_ActivateByName("ingame_vgs");
-			return;
 		case UIMENU_VOICECHAT:
 			// trap->Cvar_Set( "cl_paused", "1" );
 			// No chatin non-siege games.
-
-			if (trap->Cvar_VariableValue( "g_gametype" ) < GT_TEAM)//loda fixme?
-			{
-				return;
-			}
-
 			trap->Key_SetCatcher( KEYCATCH_UI );
 			Menus_CloseAll();
-			Menus_ActivateByName("ingame_voicechat");
+
+			if (trap->Cvar_VariableValue("g_gametype") < GT_TEAM || trap->Cvar_VariableValue("ui_voicechat")) {
+				Menus_ActivateByName("ingame_vgs");
+			}
+			else {
+				Menus_ActivateByName("ingame_voicechat");
+			}
+
 			return;
 		case UIMENU_CLOSEALL:
 			Menus_CloseAll();
