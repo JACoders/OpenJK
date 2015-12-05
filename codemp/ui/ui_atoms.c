@@ -88,7 +88,6 @@ int cmdcmp( const void *a, const void *b ) {
 }
 
 static consoleCommand_t	commands[] = {
-	{ "ui_modversion",		UI_Modversion_f },
 	{ "ui_cache",			UI_Cache_f },
 	{ "ui_load",			UI_Load },
 	{ "ui_modversion",		UI_Modversion_f },
