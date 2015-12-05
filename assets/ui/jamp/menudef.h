@@ -363,8 +363,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //extra, for patch
 #define UI_JEDI_NONJEDI 289
 
-#define UI_VGS				290
-
 #define UI_CHAT_MAIN		291
 #define UI_CHAT_ATTACK		292
 #define UI_CHAT_DEFEND		293
@@ -372,6 +370,30 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define UI_CHAT_REPLY		295
 #define UI_CHAT_SPOT		296
 #define UI_CHAT_TACTICAL	297
+
+#define UI_VGS_MAIN			300
+#define UI_VGS_GLOBAL		301
+#define UI_VGS_COMPLIMENT	302
+#define UI_VGS_RESPOND		303
+#define UI_VGS_TAUNT		304
+#define UI_VGS_ATTACK		305
+#define UI_VGS_DEFEND		306
+#define UI_VGS_REPAIR		307
+#define UI_VGS_BASE			308
+#define UI_VGS_COMMAND		309
+#define UI_VGS_ENEMY		310
+#define UI_VGS_FLAG			312
+#define UI_VGS_NEED			313
+#define UI_VGS_SELF			314
+#define UI_VGS_SELFATTACK	315
+#define UI_VGS_SELFDEFEND	316
+#define UI_VGS_SELFREPAIR	317
+#define UI_VGS_SELFTASK		318
+#define UI_VGS_SELFUPGRADE	319
+#define UI_VGS_TARGET		320
+#define UI_VGS_UPGRADE		321
+#define UI_VGS_WARNING		322
+#define UI_VGS_TEAM			323
 
 #define VOICECHAT_GETFLAG			"getflag"				// command someone to get the flag
 #define VOICECHAT_OFFENSE			"offense"				// command someone to go on offense
