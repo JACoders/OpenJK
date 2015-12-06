@@ -749,7 +749,7 @@ bool CPrimitiveTemplate::ParseFlags( const gsl::cstring_view& val )
 			{ CSTRING_VIEW( "impactKills" ), FX_KILL_ON_IMPACT },
 			{ CSTRING_VIEW( "impactFx" ), FX_IMPACT_RUNS_FX },
 			{ CSTRING_VIEW( "deathFx" ), FX_DEATH_RUNS_FX },
-			{ CSTRING_VIEW( "useAlpha" ), FX_CLAMP },
+			{ CSTRING_VIEW( "useAlpha" ), FX_USE_ALPHA },
 			{ CSTRING_VIEW( "emitFx" ), FX_EMIT_FX },
 			{ CSTRING_VIEW( "depthHack" ), FX_DEPTH_HACK },
 			{ CSTRING_VIEW( "setShaderTime" ), FX_SET_SHADER_TIME },
