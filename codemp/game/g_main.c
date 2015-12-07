@@ -451,6 +451,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	if (level.gametype == GT_SIEGE)
 	{ //just get these configstrings registered now...
+		/*
 		while (i < MAX_CUSTOM_SIEGE_SOUNDS)
 		{
 			if (!bg_customSiegeSoundNames[i])
@@ -459,6 +460,26 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 			}
 			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
 			i++;
+		}
+		*/
+		for (i = 0; i < MAX_CUSTOM_SIEGE_SOUNDS; i++)
+		{
+			if (!bg_customSiegeSoundNames[i])
+			{
+				break;
+			}
+			G_SoundIndex((char *)bg_customSiegeSoundNames[i]);
+		}
+	}
+
+	if (g_allowVGS.integer) {
+		for (i = 0; i < MAX_CUSTOM_VGS_SOUNDS; i++)
+		{
+			if (!bg_customVGSSoundNames[i])
+			{
+				break;
+			}
+			G_SoundIndex((char *)bg_customVGSSoundNames[i]);
 		}
 	}
 

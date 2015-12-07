@@ -6088,7 +6088,7 @@ void Cmd_Clanwhois_f( gentity_t *ent ) { //Should this only show logged in peopl
 //[JAPRO - Serverside - All - Clanwhois Function - End]
 
 static void Cmd_ModVersion_f(gentity_t *ent) {
-	trap->SendServerCommand(ent-g_entities, va("print \"^5The servers version of the mod was compiled on %s\n\"", __DATE__)); 
+	trap->SendServerCommand(ent-g_entities, va("print \"^5The servers version of the mod was compiled on %s at %s\n\"", __DATE__, __TIME__)); 
 }
 
 extern qboolean BG_InKnockDown( int anim ); //bg_pmove.c
