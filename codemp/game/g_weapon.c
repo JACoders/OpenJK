@@ -514,7 +514,11 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire, int seed )
 	if ( altFire )
 	{
 		// add some slop to the alt-fire direction
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
+		if (g_tweakWeapons.integer & NO_SPREAD) {
+			angs[PITCH]	+= crandom() * BLASTER_SPREAD * 0.1;
+			angs[YAW]       += crandom() * BLASTER_SPREAD * 0.1;
+		}
+		else if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
 		{
 			//angs[PITCH] += Q_crandom(&seed) * BLASTER_SPREAD;
 			//angs[YAW]       += Q_crandom(&seed) * BLASTER_SPREAD;
@@ -1310,7 +1314,11 @@ static void WP_FireRepeater( gentity_t *ent, qboolean altFire, int seed )
 	else
 	{
 		// add some slop to the alt-fire direction
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
+		if (g_tweakWeapons.integer & NO_SPREAD) {
+			angs[PITCH]	+= crandom() * BLASTER_SPREAD * 0.1;
+			angs[YAW]       += crandom() * BLASTER_SPREAD * 0.1;
+		}
+		else if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
 			//angs[PITCH] += Q_crandom(&seed) * REPEATER_SPREAD;
 			//angs[YAW]	+= Q_crandom(&seed) * REPEATER_SPREAD;
 

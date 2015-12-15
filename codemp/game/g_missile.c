@@ -785,6 +785,28 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 				velocity[2] = 1;	// stepped on a grenade
 			}
 
+
+			//
+			if ((g_tweakWeapons.integer & NO_SPREAD) &&
+				((ent->s.weapon == WP_BLASTER && (ent->s.eFlags & EF_ALT_FIRING)) ||
+				(ent->s.weapon == WP_REPEATER && !(ent->s.eFlags & EF_ALT_FIRING))	
+				))
+			{ //If the weapon has spread, just reduce damage based on distance for nospread tweak.
+				float lifetime = (10000 - ent->nextthink + level.time) * 0.001;
+				float scale = powf(2, -lifetime);
+
+				if (scale < 0.1)
+					scale = 0.1;
+				else if (scale > 1) 
+					scale = 1;
+
+				ent->damage *= scale;
+
+				//trap->SendServerCommand(-1, va("chat \"Missile has been alive for %.2f s new dmg is %i\n\"", lifetime, ent->damage));
+			}
+			//
+
+
 			if (ent->s.weapon == WP_BOWCASTER || ent->s.weapon == WP_FLECHETTE ||
 				ent->s.weapon == WP_ROCKET_LAUNCHER)
 			{
