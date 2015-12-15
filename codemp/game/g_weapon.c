@@ -5359,7 +5359,7 @@ FireWeapon
 int BG_EmplacedView(vec3_t baseAngles, vec3_t angles, float *newYaw, float constraint);
 
 void FireWeapon( gentity_t *ent, qboolean altFire ) {
-	int seed = ent->client->pers.cmd.serverTime % 256; //JAPRO seed
+	int seed = ent->client->pers.cmd.serverTime % 10000;// % 256; //JAPRO seed
 
 	if (ent->client && ent->client->pers.amfreeze)
 		return;
