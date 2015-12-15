@@ -4539,8 +4539,12 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 		loop = intro;
 	}
 
-	Q_strncpyz(gsIntroMusic,intro, sizeof(gsIntroMusic));
-	Q_strncpyz(gsLoopMusic, loop,  sizeof(gsLoopMusic));
+	if ( intro != gsIntroMusic ) {
+		Q_strncpyz( gsIntroMusic, intro, sizeof(gsIntroMusic) );
+	}
+	if ( loop != gsLoopMusic ) {
+		Q_strncpyz( gsLoopMusic, loop, sizeof(gsLoopMusic) );
+	}
 
 	char sNameIntro[MAX_QPATH];
 	char sNameLoop [MAX_QPATH];
