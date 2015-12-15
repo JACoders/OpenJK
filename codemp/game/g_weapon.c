@@ -516,8 +516,14 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire, int seed )
 		// add some slop to the alt-fire direction
 		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
 		{
-			angs[PITCH] += Q_crandom(&seed) * BLASTER_SPREAD;
-			angs[YAW]       += Q_crandom(&seed) * BLASTER_SPREAD;
+			//angs[PITCH] += Q_crandom(&seed) * BLASTER_SPREAD;
+			//angs[YAW]       += Q_crandom(&seed) * BLASTER_SPREAD;
+
+			float theta = M_PI * Q_crandom(&seed); //Lets use circular spread instead of the shitty box spread?
+			float r = Q_random(&seed) * BLASTER_SPREAD;
+
+			angs[PITCH] += r * sin(theta);
+			angs[YAW] += r * cos(theta);
 		}
 		else
 		{
@@ -1139,10 +1145,7 @@ static void WP_BowcasterMainFire( gentity_t *ent, int seed )
 	for (i = 0; i < count; i++ )
 	{
 		// create a range of different velocities
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
-			vel = BOWCASTER_VELOCITY * ( Q_crandom(&seed) * BOWCASTER_VEL_RANGE + 1.0f );
-		else
-			vel = BOWCASTER_VELOCITY * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );
+		vel = BOWCASTER_VELOCITY * ( crandom() * BOWCASTER_VEL_RANGE + 1.0f );//velocity does not need to be syncd with client
 
 		vectoangles( forward, angs );
 
@@ -1308,8 +1311,14 @@ static void WP_FireRepeater( gentity_t *ent, qboolean altFire, int seed )
 	{
 		// add some slop to the alt-fire direction
 		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE) {
-			angs[PITCH] += Q_crandom(&seed) * REPEATER_SPREAD;
-			angs[YAW]	+= Q_crandom(&seed) * REPEATER_SPREAD;
+			//angs[PITCH] += Q_crandom(&seed) * REPEATER_SPREAD;
+			//angs[YAW]	+= Q_crandom(&seed) * REPEATER_SPREAD;
+
+			float theta = M_PI * Q_crandom(&seed); //Lets use circular spread instead of the shitty box spread?
+			float r = Q_random(&seed) * REPEATER_SPREAD;
+
+			angs[PITCH] += r * sin(theta);
+			angs[YAW] += r * cos(theta);
 		}
 		else {
 			angs[PITCH] += crandom() * REPEATER_SPREAD;
