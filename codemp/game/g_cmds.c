@@ -3364,7 +3364,6 @@ int cmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((command_t*)b)->name );
 }
 
-/* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
 	{ "addbot",				Cmd_AddBot_f,				0 },
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
@@ -3426,7 +3425,7 @@ void ClientCommand( int clientNum ) {
 		return;
 	//end rww
 
-	command = (command_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), cmdcmp );
+	command = (command_t *)Q_LinearSearch( cmd, commands, numCommands, sizeof( commands[0] ), cmdcmp );
 	if ( !command )
 	{
 		trap->SendServerCommand( clientNum, va( "print \"Unknown command %s\n\"", cmd ) );
