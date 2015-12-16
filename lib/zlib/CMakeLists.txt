@@ -13,6 +13,7 @@ include_directories(include/)
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4996")
 endif(MSVC)
 
 add_library(bundled_zlib STATIC adler32.c
