@@ -122,8 +122,6 @@ typedef struct field_s {
 	fieldtype_t	type;
 } field_t;
 
-/* This array MUST be sorted correctly by alphabetical name field */
-/* for conformity, use lower-case names too */
 field_t fields[] = {
 	{ "alliedteam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
@@ -210,25 +208,6 @@ field_t fields[] = {
 	{ "victoryscript",			FOFS( behaviorSet[BSET_VICTORY] ),		F_STRING },//name of script to run
 	{ "wait",					FOFS( wait ),							F_FLOAT },
 };
-
-static int sortfield( const void *a, const void *b ) {
-	return Q_stricmp( ((field_t*)a)->name, ((field_t*)b)->name );
-}
-
-void G_CheckFields( void ) {
-	field_t sorted[ARRAY_LEN(fields)];
-	int i;
-
-	for ( i = 0 ; i < ARRAY_LEN(fields) ; i++ ) {
-		sorted[i] = fields[i];
-	}
-
-	qsort( sorted, ARRAY_LEN(sorted), sizeof( sorted[0] ), sortfield );
-
-	for ( i = 0; i < ARRAY_LEN(fields) ; i++ ) {
-		trap->Print("%s%s %s\n", Q_stricmp(fields[i].name, sorted[i].name) != 0 ? "*" : "", fields[i].name, sorted[i].name);
-	}
-}
 
 typedef struct spawn_s {
 	const char	*name;
@@ -514,8 +493,6 @@ void SP_gametype_item ( gentity_t* ent )
 
 void SP_emplaced_gun( gentity_t *ent );
 
-/* This array MUST be sorted correctly by alphabetical name field */
-/* for conformity, use lower-case names too */
 spawn_t	spawns[] = {
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
@@ -708,25 +685,6 @@ spawn_t	spawns[] = {
 	{ "waypoint_small",						SP_waypoint_small },
 };
 
-static int sortspawn( const void *a, const void *b ) {
-	return Q_stricmp( ((spawn_t*)a)->name, ((spawn_t*)b)->name );
-}
-
-void G_CheckSpawns( void ) {
-	spawn_t sorted[ARRAY_LEN(spawns)];
-	int i;
-
-	for ( i = 0 ; i < ARRAY_LEN(spawns) ; i++ ) {
-		sorted[i] = spawns[i];
-	}
-
-	qsort( sorted, ARRAY_LEN(sorted), sizeof( sorted[0] ), sortspawn );
-
-	for ( i = 0; i < ARRAY_LEN(spawns) ; i++ ) {
-		trap->Print("%s%s %s\n", Q_stricmp(spawns[i].name, sorted[i].name) != 0 ? "*" : "", sorted[i].name, spawns[i].name, sorted[i].name);
-	}
-}
-
 /*
 ===============
 G_CallSpawn
@@ -758,7 +716,7 @@ qboolean G_CallSpawn( gentity_t *ent ) {
 	}
 
 	// check normal spawn functions
-	s = (spawn_t *)bsearch( ent->classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
+	s = (spawn_t *)Q_LinearSearch( ent->classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
 	if ( s )
 	{// found it
 		if ( VALIDSTRING( ent->healingsound ) )
@@ -858,7 +816,7 @@ void G_ParseField( const char *key, const char *value, gentity_t *ent )
 	float	v;
 	vec3_t	vec;
 
-	f = (field_t *)bsearch( key, fields, ARRAY_LEN( fields ), sizeof( field_t ), fieldcmp );
+	f = (field_t *)Q_LinearSearch( key, fields, ARRAY_LEN( fields ), sizeof( field_t ), fieldcmp );
 	if ( f )
 	{// found it
 		b = (byte *)ent;
