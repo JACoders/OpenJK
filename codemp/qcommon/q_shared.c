@@ -1757,7 +1757,8 @@ void Q_RemoveFromBitflags( uint32_t *bits, int index, uint32_t bitsPerByte ) {
 void *Q_LinearSearch( const void *key, const void *ptr, size_t count,
 	size_t size, cmpFunc_t cmp )
 {
-	for ( size_t i = 0; i < count; i++ )
+	size_t i;
+	for ( i = 0; i < count; i++ )
 	{
 		if ( cmp( key, ptr ) == 0 ) return (void *)ptr;
 		ptr = (const char *)ptr + size;
