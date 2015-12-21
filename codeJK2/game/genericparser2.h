@@ -63,7 +63,7 @@ public:
 	char		*GetPool(void) { return mPool; }
 	int			GetUsed(void) { return mUsed; }
 
-	char		*AllocText(char *text, bool addNULL = true, CTextPool **poolPtr = 0);
+	char		*AllocText(const char *text, bool addNULL = true, CTextPool **poolPtr = 0);
 };
 
 void CleanTextPool(CTextPool *pool);

@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 #include "../../code/qcommon/sstring.h"
+#include "../game/genericparser2.h"
 typedef sstring_t fxString_t;
 
 #ifndef FX_SCHEDULER_H_INC

@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #else
 #include "g_headers.h"
 #endif
+#include "genericparser2.h"
 
 #define MAX_TOKEN_SIZE	1024
 static char	token[MAX_TOKEN_SIZE];
