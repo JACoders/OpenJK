@@ -161,6 +161,8 @@ void WPN_SplashDamage(const char **holdBuf);
 void WPN_SplashRadius(const char **holdBuf);
 void WPN_AltSplashDamage(const char **holdBuf);
 void WPN_AltSplashRadius(const char **holdBuf);
+void WPN_Velocity(const char **holdBuf);
+void WPN_AltVelocity(const char **holdBuf);
 
 // Legacy weapons.dat force fields
 void WPN_FuncSkip(const char **holdBuf);
@@ -188,7 +190,7 @@ const int defaultDamage[] = {
 	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK			// HACK, this is what the code sez.
 	CONC_DAMAGE,				// WP_CONCUSSION
 
-	0,							// WP_MELEE				// handled by the melee attack function
+	0,							// WP_MELEE				//right punch damage
 
 	ATST_MAIN_DAMAGE,			// WP_ATST_MAIN
 	ATST_SIDE_MAIN_DAMAGE,		// WP_ATST_SIDE
@@ -394,6 +396,73 @@ const float defaultAltSplashRadius[] = {
 	0.0f,							// WP_NOGHRI_STICK
 };
 
+const int velocity[WP_NUM_WEAPONS] =
+{
+	0,//WP_NONE,
+	0,//WP_SABER,				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
+	BRYAR_PISTOL_VEL,//WP_BLASTER_PISTOL,
+	BLASTER_VELOCITY,//WP_BLASTER,
+	Q3_INFINITE,//WP_DISRUPTOR,
+	BOWCASTER_VELOCITY,//WP_BOWCASTER,
+	REPEATER_VELOCITY,//WP_REPEATER,
+	DEMP2_VELOCITY,WP_DEMP2,
+	FLECHETTE_VEL,//WP_FLECHETTE,
+	ROCKET_VELOCITY,//WP_ROCKET_LAUNCHER,
+	TD_VELOCITY,//WP_THERMAL,
+	0,//WP_TRIP_MINE,
+	0,//WP_DET_PACK,
+	CONC_VELOCITY,//WP_CONCUSSION,
+	0,//WP_MELEE,			// Any ol' melee attack
+	0,//WP_STUN_BATON,
+	BRYAR_PISTOL_VEL,//WP_BRYAR_PISTOL,
+	EMPLACED_VEL,//WP_EMPLACED_GUN,
+	BRYAR_PISTOL_VEL,//WP_BOT_LASER,		// Probe droid	- Laser blast
+	0,//WP_TURRET,			// turret guns 
+	ATST_MAIN_VEL,//WP_ATST_MAIN,
+	ATST_SIDE_MAIN_VELOCITY,//WP_ATST_SIDE,
+	EMPLACED_VEL,//WP_TIE_FIGHTER,
+	EMPLACED_VEL,//WP_RAPID_FIRE_CONC,
+	0,//WP_JAWA,
+	TUSKEN_RIFLE_VEL,//WP_TUSKEN_RIFLE,
+	0,//WP_TUSKEN_STAFF,
+	0,//WP_SCEPTER,
+	0,//WP_NOGHRI_STICK,
+};
+
+const int defaultAltVelocity[WP_NUM_WEAPONS] =
+{
+	0,//WP_NONE,
+	0,//WP_SABER,				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
+	BRYAR_PISTOL_VEL,//WP_BLASTER_PISTOL,
+	BLASTER_VELOCITY,//WP_BLASTER,
+	Q3_INFINITE,//WP_DISRUPTOR,
+	BOWCASTER_VELOCITY,//WP_BOWCASTER,
+	REPEATER_ALT_VELOCITY,//WP_REPEATER,
+	DEMP2_ALT_RANGE,//WP_DEMP2,
+	FLECHETTE_MINE_VEL,//WP_FLECHETTE,
+	ROCKET_ALT_VELOCITY,//WP_ROCKET_LAUNCHER,
+	TD_ALT_VELOCITY,//WP_THERMAL,
+	0,//WP_TRIP_MINE,
+	0,//WP_DET_PACK,
+	Q3_INFINITE,//WP_CONCUSSION,
+	0,//WP_MELEE,			// Any ol' melee attack
+	0,//WP_STUN_BATON,
+	BRYAR_PISTOL_VEL,//WP_BRYAR_PISTOL,
+	EMPLACED_VEL,//WP_EMPLACED_GUN,
+	BRYAR_PISTOL_VEL,//WP_BOT_LASER,		// Probe droid	- Laser blast
+	0,//WP_TURRET,			// turret guns 
+	ATST_MAIN_VEL,//WP_ATST_MAIN,
+	ATST_SIDE_ALT_NPC_VELOCITY,//WP_ATST_SIDE,
+	EMPLACED_VEL,//WP_TIE_FIGHTER,
+	REPEATER_ALT_VELOCITY,//WP_RAPID_FIRE_CONC,
+	0,//WP_JAWA,
+	TUSKEN_RIFLE_VEL,//WP_TUSKEN_RIFLE,
+	0,//WP_TUSKEN_STAFF,
+	0,//WP_SCEPTER,
+	0,//WP_NOGHRI_STICK,
+};
+
+
 wpnParms_t WpnParms[] = 
 {
 	{ "ammo",				WPN_Ammo },	//ammo
@@ -441,6 +510,9 @@ wpnParms_t WpnParms[] =
 	{ "splashRadius",		WPN_SplashRadius },
 	{ "altSplashDamage",	WPN_AltSplashDamage },
 	{ "altSplashRadius",	WPN_AltSplashRadius },
+	{ "velocity", WPN_Velocity },
+	{ "altVelocity", WPN_AltVelocity },
+
 
 	// Old legacy files contain these, so we skip them to shut up warnings
 	{ "firingforce",		WPN_FuncSkip },
@@ -1435,6 +1507,36 @@ void WPN_AltSplashRadius(const char **holdBuf)
 }
 
 //--------------------------------------------
+
+void WPN_Velocity(const char **holdBuf)
+{
+	float	tokenFlt;
+
+	if (COM_ParseFloat(holdBuf, &tokenFlt))
+	{
+		SkipRestOfLine(holdBuf);
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].velocity = tokenFlt;
+}
+
+//--------------------------------------------
+
+void WPN_AltVelocity(const char **holdBuf)
+{
+	float	tokenFlt;
+
+	if (COM_ParseFloat(holdBuf, &tokenFlt))
+	{
+		SkipRestOfLine(holdBuf);
+		return;
+	}
+
+	weaponData[wpnParms.weaponNum].altVelocity = tokenFlt;
+}
+
+//--------------------------------------------
 static void WP_ParseParms(const char *buffer)
 {
 	const char	*holdBuf;
@@ -1483,6 +1585,8 @@ void WP_LoadWeaponParms (void)
 		weaponData[i].altSplashDamage = defaultAltSplashDamage[i];
 		weaponData[i].splashRadius = defaultSplashRadius[i];
 		weaponData[i].altSplashRadius = defaultAltSplashRadius[i];
+		weaponData[i].velocity = defaultVelocity[i];
+		weaponData[i].altVelocity = defaultAltVelocity[i];
 	}
 
 	WP_ParseParms(buffer);

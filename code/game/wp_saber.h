@@ -25,6 +25,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "b_public.h"
 
+#define	S2_AUTODODGE_FP 50
+#define S3_AUTODODGE_FP 25
+#define S2_DODGE_FP	10
+#define S3_DODGE_FP 5
+
 #define ARMOR_EFFECT_TIME	500
 
 #define JSF_AMBUSH		16	//ambusher Jedi
@@ -164,6 +169,8 @@ extern float forcePushPullRadius[];
 extern int forcePowerNeeded[]; //new
 
 extern void ForceSpeed( gentity_t *self, int duration = 0 );
+extern void ForceSpeed( gentity_t *self, int duration, int drain);
+extern void ForceSpeed_dodge(gentity_t *self, int drain);
 extern float forceSpeedValue[];
 extern float forceSpeedRangeMod[];
 extern float forceSpeedFOVMod[];

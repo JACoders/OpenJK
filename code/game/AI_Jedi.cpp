@@ -2100,6 +2100,7 @@ FIXME: possibly let player do this too?
 qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, int hitLoc )
 {
 	int	dodgeAnim = -1;
+	qboolean playerNoDrain = false;
 
 	if ( !self || !self->client || self->health <= 0 )
 	{
@@ -2139,13 +2140,20 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 	}
 	else
 	{//the player
-		if (g_forceNewPowers->integer) {
+		if (g_forceNewPowers->integer) 
+		{
 			if (self->client->ps.forcePowerLevel[FP_SPEED] < 2) {
 				return qfalse;
 			}
-			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED) || ))
+			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
 			{//not already in speed
-				if (!(self->client->ps.forcePower >= FORCE_POWER_MAX - 20))
+				if (self->client->ps.forcePowerLevel[FP_SPEED] == 2
+					&& !(self->client->ps.forcePower >= S2_AUTODODGE_FP))
+				{//make sure we have adequate force power
+					return qfalse;
+				}
+				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3
+					&& !(self->client->ps.forcePower >= S3_AUTODODGE_FP))
 				{//make sure we have adequate force power
 					return qfalse;
 				}
@@ -2156,17 +2164,18 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 					if (!(self->client->ps.forcePowerLevel[FP_SPEED] == 3
 						&& self->client->ps.forcePowerLevel[FP_SEE] == 3)) {
 						//we have both Sense 3 and Speed 3 active so no drain
+						playerNoDrain = qtrue;
 					}
 				}				
 				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3) {
-					if (!(self->client->ps.forcePower > forcePowerNeeded[FP_SPEED] * 0.25))
-					{//make sure we have it and have enough force power
+					if (!(self->client->ps.forcePower > S3_DODGE_FP))
+					{//make sure we have it and have enough force power (5 fp)
 						return qfalse;
 					}
 				}
-				else if (self->client->ps.forcePowerLevel[FP_SPEED] > 1) {
-					if (!(self->client->ps.forcePower > forcePowerNeeded[FP_SPEED] * 0.5))
-					{//make sure we have it and have enough force power
+				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 2) {
+					if (!(self->client->ps.forcePower > S2_DODGE_FP))
+					{//make sure we have it and have enough force power (10 fp)
 						return qfalse;
 					}
 				}				
@@ -2175,11 +2184,13 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			if (self->client->ps.forcePowersActive&(1 << FP_SPEED)
 				&& self->client->ps.forcePowersActive&(1 << FP_SEE)
 				&& self->client->ps.forcePowerLevel[FP_SPEED] == 3
-				&& self->client->ps.forcePowerLevel[FP_SEE] == 3) {
+				&& self->client->ps.forcePowerLevel[FP_SEE] == 3) 
+			{
 				//always dodge
 			}
 			else if (self->client->ps.forcePowersActive&(1 << FP_SPEED)
-				&& ucmd.buttons&BUTTON_USE) {
+				&& ucmd.buttons&BUTTON_USE) 
+			{
 				//dodge if holding use and in speed
 			}
 			else if (Q_irand(1, 10) > self->client->ps.forcePowerLevel[FP_SPEED]) //auto-dodge
@@ -2187,7 +2198,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 				return qfalse;
 			}
 		}
-		else {
+		else { //old force power version
 			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
 			{//not already in speed
 				if (!WP_ForcePowerUsable(self, FP_SPEED, 0))
@@ -2352,7 +2363,40 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		}
 		else
 		{//player
-			ForceSpeed(self, 500);
+			if (g_forceNewPowers->integer)
+			{//this version is more complex, player may or may not be in Force Speed at this point
+				if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
+				{//not in speed
+					if (self->client->ps.forcePowerLevel[FP_SPEED] == 3)
+					{
+						ForceSpeed(self, 500, S3_AUTODODGE_FP);
+					}
+					else
+					{
+						ForceSpeed(self, 500 /*, S2_AUTODODGE_FP*/);
+					}
+				}
+				else
+				{//player is in Speed, see if we should still drain some force power
+					if (playerNoDrain) //Speed 3, Sense 3, and both are active
+					{
+						ForceSpeed_dodge(self, 0);
+					}
+					else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3)
+					{ //causes Force Speed to end early since player already using Speed
+						ForceSpeed(self, 500, S3_DODGE_FP);
+					}
+					else //Speed 2
+					{
+						ForceSpeed(self, 500, S2_DODGE_FP);
+					}
+				}
+			}
+			else
+			{//base JA version much simpler
+				ForceSpeed(self, 500);
+			}
+					
 		}
 
 		WP_ForcePowerStop( self, FP_GRIP );

@@ -11723,6 +11723,7 @@ qboolean PM_SaberBlocking(void)
 					}
 					else
 					{//player
+						//forces the player to have a cooldown between deflections
 						if (saberMoveData[pm->ps->saberMove].startQuad == Q_T)
 						{
 							nextMove = LS_R_BL2TR;
@@ -14032,6 +14033,12 @@ static void PM_Weapon(void)
 					pm->ps->weaponTime = pm->ps->torsoAnimTimer - 500;
 				}
 			}
+			break;
+		case WP_MELEE:
+			//addTime *= ((trueCount < 3) ? 0.35f : 1.0f);//slightly faster if high offense level, speed punching
+			if (pm->ps->forcePowerLevel[FP_SABER_OFFENSE] <= 1) addTime *= 1.2;
+			else if (pm->ps->forcePowerLevel[FP_SABER_OFFENSE] == 3) addTime *= 0.85;
+			if (pm->ps->forcePowersActive&(1 << FP_SPEED) && pm->ps->forcePowerLevel[FP_SPEED] > 1) addTime *= 0.5; //speed punching bonus
 			break;
 		}
 	}

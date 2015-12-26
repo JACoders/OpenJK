@@ -32,7 +32,7 @@ void WP_Melee( gentity_t *ent )
 	gentity_t	*tr_ent;
 	trace_t		tr;
 	vec3_t		mins, maxs, end;
-	int			damage = ent->s.number ? 5 : 5;
+	int			damage = 5;
 	float		range = ent->s.number ? 64 : 32;
 
 	VectorMA( muzzle, range, forwardVec, end );
@@ -65,7 +65,8 @@ void WP_Melee( gentity_t *ent )
 		//G_Sound( tr_ent, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
 		if ( ent->NPC && (ent->NPC->aiFlags&NPCAI_HEAVY_MELEE) )
 		{ //4x damage for heavy melee class
-			damage *= 4;
+			damage = 5;
+			damage *= 4 + Q_irand(-3, 3);
 			dflags &= ~DAMAGE_NO_KNOCKBACK;
 			dflags |= DAMAGE_DISMEMBER;
 		}

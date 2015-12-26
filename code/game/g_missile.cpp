@@ -315,7 +315,7 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward, force
 				}
 			}
 			else if ( owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] <= FORCE_LEVEL_1 )
-			{// at level 1
+			{// at level 1 or below
 				for ( i = 0; i < 3; i++ )
 				{
 					bounce_dir[i] += Q_flrand( -0.4f, 0.4f );
@@ -1451,7 +1451,7 @@ void G_RunMissile( gentity_t *ent )
 				if ( other->owner 
 					&& other->owner->client 
 					&& !other->owner->client->ps.saberInFlight 
-					&& ( Q_irand( 0, (other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]*other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]) ) == 0 
+					&& ((Q_irand(0, (other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] * other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE])) == 0 && other->owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] != 0)
 						|| !InFront( ent->currentOrigin, other->owner->currentOrigin, other->owner->client->ps.viewangles, SABER_REFLECT_MISSILE_CONE ) ) )//other->owner->s.number == 0 &&
 				{//Jedi cannot block shots from behind!
 					//re-trace from here, ignoring the lightsaber

@@ -141,6 +141,7 @@ extern qboolean Boba_Flying(gentity_t *self);
 extern void JET_FlyStart(gentity_t *self);
 extern void Boba_DoFlameThrower(gentity_t *self);
 extern void Boba_StopFlameThrower(gentity_t *self);
+extern void NPC_EvasionSaber();
 
 extern Vehicle_t *G_IsRidingVehicle(gentity_t *ent);
 extern int SaberDroid_PowerLevelForSaberAnim(gentity_t *self);
@@ -4407,6 +4408,16 @@ void G_DrainPowerForSpecialMove(gentity_t *self, forcePowers_t fp, int cost, qbo
 	}
 }
 
+void G_DrainPowerForDodge(gentity_t *self, int cost)
+{//hack for draining some force power for a sniper shot dodge while Speed is active
+	if (!self || !self->client || self->s.number >= MAX_CLIENTS)
+	{
+		return;
+	}
+	
+	WP_ForcePowerDrain(self, FP_SPEED, cost);//drain the required force power	
+}
+
 int G_CostForSpecialMove(int cost, qboolean kataMove)
 {
 	if (g_saberNewControlScheme->integer || kataMove)
@@ -8143,13 +8154,7 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 	}
 
 	if (PM_InKnockDown(&self->client->ps))
-	{//can't block when knocked down
-		return;
-	}
-
-	if (PM_SuperBreakLoseAnim(self->client->ps.torsoAnim)
-		|| PM_SuperBreakWinAnim(self->client->ps.torsoAnim))
-	{//can't block while in break anim
+	{//can't dodge when knocked down
 		return;
 	}
 
@@ -8374,6 +8379,74 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 					}
 				}
 			}
+
+			//Reactions to Thrown Sabers
+			if (ent->s.weapon != WP_SABER)
+			{//only block shots coming from behind
+				if ((dot1 = DotProduct(dir, forward)) < SABER_REFLECT_MISSILE_CONE)
+					continue;
+			}
+			else if (!self->s.number)
+			{//player never auto-blocks thrown sabers
+				continue;
+			}//NPCs always try to block sabers coming from behind!
+
+			//see if they're heading towards me
+			VectorCopy(ent->s.pos.trDelta, missile_dir);
+			VectorNormalize(missile_dir);
+			if ((dot2 = DotProduct(dir, missile_dir)) > 0)
+				continue;
+
+			//FIXME: must have a clear trace to me, too...
+			if (dist < closestDist)
+			{
+				VectorCopy(self->currentOrigin, traceTo);
+				traceTo[2] = self->absmax[2] - 4;
+				gi.trace(&trace, ent->currentOrigin, ent->mins, ent->maxs, traceTo, ent->s.number, ent->clipmask, (EG2_Collision)0, 0);
+				if (trace.allsolid || trace.startsolid || (trace.fraction < 1.0f && trace.entityNum != self->s.number && trace.entityNum != self->client->ps.saberEntityNum))
+				{//okay, try one more check
+					VectorNormalize2(ent->s.pos.trDelta, entDir);
+					VectorMA(ent->currentOrigin, radius, entDir, traceTo);
+					gi.trace(&trace, ent->currentOrigin, ent->mins, ent->maxs, traceTo, ent->s.number, ent->clipmask, (EG2_Collision)0, 0);
+					if (trace.allsolid || trace.startsolid || (trace.fraction < 1.0f && trace.entityNum != self->s.number && trace.entityNum != self->client->ps.saberEntityNum))
+					{//can't hit me, ignore it
+						continue;
+					}
+				}
+				if (self->s.number != 0)
+				{//An NPC
+					if (self->NPC && !self->enemy && ent->owner)
+					{
+						if (ent->owner->health >= 0 && (!ent->owner->client || ent->owner->client->playerTeam != self->client->playerTeam))
+						{
+							G_SetEnemy(self, ent->owner);
+						}
+					}
+				}
+				//FIXME: if NPC, predict the intersection between my current velocity/path and the missile's, see if it intersects my bounding box (+/-saberLength?), don't try to deflect unless it does?
+				closestDist = dist;
+				incoming = ent;
+			}
+
+
+			if (incoming)
+			{
+				if (self->NPC && !G_ControlledByPlayer(self))
+				{
+					if (Jedi_WaitingAmbush(self))
+					{
+						Jedi_Ambush(self);
+					}
+				}
+
+				if (incoming->owner && incoming->owner->client && (!self->enemy || self->enemy->s.weapon != WP_SABER))//keep enemy jedi over shooters
+				{
+					self->enemy = incoming->owner;
+					NPC_SetLookTarget(self, incoming->owner->s.number, level.time + 1000);
+
+					NPC_EvasionSaber(); //Get out of the way!
+				}				
+			}					
 		}
 	}
 }
@@ -8487,19 +8560,56 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			}
 
 			if ((self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING))
-			{//can't actively block with this saber type
+			{//can't actively block with this saber type...
 				return;
 			}
 		}
 
-		if (!self->s.number)
-		{//don't do this if already attacking!
+		if (!self->s.number) //player
+		{			
+			int totalReboundTime = 0;
+			int baseReboundTime = 0;
+
 			if (ucmd->buttons & BUTTON_ATTACK
 				|| PM_SaberInAttack(self->client->ps.saberMove)
-				|| PM_SaberInSpecialAttack(self->client->ps.torsoAnim)
-				|| PM_SaberInTransitionAny(self->client->ps.saberMove))
-			{
+				|| PM_SaberInSpecialAttack(self->client->ps.torsoAnim))
+			{//can't block if already attacking!
 				return;
+			}
+			else if (PM_SaberInTransitionAny(self->client->ps.saberMove)
+				&& !PM_SaberInReturn(self->client->ps.saberMove))
+			{//can't block if transitioning between saber moves
+				return;
+			}
+			else if (PM_SaberInReturn(self->client->ps.saberMove))
+			{//we're in a return, probably triggered after a previous deflection
+				//FIXME: Make sure it's a return from a deflection, not a slash?
+				if (self->client->ps.saberAnimLevel = 1 || self->client->ps.saberAnimLevel > 3) 
+				{ //only Medium and Strong get a break because their return anims take so long
+					return;
+				}
+				
+				totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * 2 * g_spskill->integer;
+				baseReboundTime = totalReboundTime;
+
+				switch (self->client->ps.saberAnimLevel) 
+				{
+				case SS_FAST:
+				case SS_TAVION:
+				case SS_MEDIUM:
+				case SS_STAFF:
+				case SS_DUAL:
+				case SS_DESANN:
+					break;
+				case SS_STRONG:
+					totalReboundTime += 2 * baseReboundTime * g_spskill->integer;
+					break;
+				}
+				
+				if (totalReboundTime > self->client->ps.torsoAnimTimer) 
+				{//we haven't been in the cooldown (return) animation long enough
+					return;
+				}
 			}
 		}
 
@@ -8720,7 +8830,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 				}
 			}
 		}
-
+		
 		if (ent->s.weapon != WP_SABER)
 		{//only block shots coming from behind
 			if ((dot1 = DotProduct(dir, forward)) < SABER_REFLECT_MISSILE_CONE)
@@ -8964,6 +9074,21 @@ void WP_SaberUpdate(gentity_t *self, usercmd_t *ucmd)
 				self->client->ps.saberBlocking = BLK_TIGHT;
 			}
 		}
+
+		if (self->s.number == 0
+			&& (!(self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING) || self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] == 0))
+		{
+			if (self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING)
+			{//so player can't take advantage of wide block angle
+				self->client->ps.saberBlocking = BLK_TIGHT;
+			}
+			if (self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] == 0)
+			{//sloppy fix for SD 0 blocking everything instead of nothing
+				noBlocking = qtrue;
+			}
+		}
+
+
 		if (noBlocking)
 		{
 			//VectorClear(saberent->mins);
@@ -8991,7 +9116,8 @@ void WP_SaberUpdate(gentity_t *self, usercmd_t *ucmd)
 
 				saberent->contents = CONTENTS_LIGHTSABER;
 
-				G_SetOrigin(saberent, saberOrg);
+				G_SetOrigin(saberent, saberOrg);			
+				
 			}
 			else
 			{
@@ -9620,12 +9746,21 @@ void WP_ForceKnockdown(gentity_t *self, gentity_t *pusher, qboolean pull, qboole
 				}
 				else
 				{
-					if (g_spskill->integer > 1 && self->NPC->rank > RANK_ENSIGN
-						&& (self->client->NPC_class == CLASS_REBORN	|| self->client->NPC_class == CLASS_JEDI)) {
-						addTime = Q_irand(-400, 100);
+					if (g_spskill->integer > 1 
+						&& self->NPC->rank >= RANK_ENSIGN
+						&& (self->client->NPC_class == CLASS_REBORN	|| self->client->NPC_class == CLASS_JEDI)) 
+					{//you must have Jedi reflexes...
+						if (self->NPC->rank >= RANK_ENSIGN && self->NPC->rank < RANK_LT_COMM)
+						{
+							addTime = Q_irand(-400, 200);
+						}
+						if (self->NPC->rank >= RANK_LT_COMM)
+						{
+							addTime = Q_irand(-600, 0);
+						}						
 					}
 					else if (g_spskill->integer > 1 && self->NPC->aiFlags&NPCAI_BOSS_CHARACTER) {
-						addTime = Q_irand(-700, 0);
+						addTime = Q_irand(-600, 0);
 					}
 					else {
 						addTime = Q_irand(-300, 300);
@@ -11074,6 +11209,56 @@ void ForceSpeed(gentity_t *self, int duration)
 	{
 		self->client->ps.forcePowerDuration[FP_SPEED] = level.time + duration;
 	}
+	G_Sound(self, G_SoundIndex("sound/weapons/force/speed.wav"));
+}
+
+void ForceSpeed(gentity_t *self, int duration, int drain)
+{
+	if (self->health <= 0)
+	{
+		return;
+	}
+	if (self->client->ps.forceAllowDeactivateTime < level.time &&
+		(self->client->ps.forcePowersActive & (1 << FP_SPEED)))
+	{//stop using it
+		WP_ForcePowerStop(self, FP_SPEED);
+		return;
+	}
+	if (!WP_ForcePowerUsable(self, FP_SPEED, 0))
+	{
+		return;
+	}
+	if (self->client->ps.saberLockTime > level.time)
+	{//FIXME: can this be a way to break out?
+		return;
+	}
+
+	WP_DebounceForceDeactivateTime(self);
+
+	WP_ForcePowerStart(self, FP_SPEED, drain);
+	if (duration)
+	{
+		self->client->ps.forcePowerDuration[FP_SPEED] = level.time + duration;
+	}
+	G_Sound(self, G_SoundIndex("sound/weapons/force/speed.wav"));
+}
+
+void ForceSpeed_dodge(gentity_t *self, int drain)
+{//player is dodging mid-Force Speed
+	if (self->health <= 0)
+	{
+		return;
+	}
+	if (!WP_ForcePowerUsable(self, FP_SPEED, drain))
+	{
+		return;
+	}
+	if (self->client->ps.saberLockTime > level.time)
+	{//FIXME: can this be a way to break out?
+		return;
+	}
+
+	G_DrainPowerForDodge(self, drain);
 	G_Sound(self, G_SoundIndex("sound/weapons/force/speed.wav"));
 }
 
@@ -13701,35 +13886,8 @@ void WP_ForcePowerDrain(gentity_t *self, forcePowers_t forcePower, int overrideA
 	//take away the power
 	int	drain = overrideAmt;
 	if (!drain)
-	{
-		if (g_forceNewPowers->integer) {
-			if (self->s.number < MAX_CLIENTS) { //player
-				if (PM_DodgeAnim(self->client->ps.torsoAnim)) { //we're doing a force speed dodge
-					if (self->client->ps.forcePowersActive&(1 << FP_SPEED)) {
-						if (self->client->ps.forcePowersActive&(1 << FP_SEE)
-							&& self->client->ps.forcePowerLevel[FP_SPEED] == 3
-							&& self->client->ps.forcePowerLevel[FP_SEE] == 3)
-							drain = 0; //no drain if using Speed 3 + Sense 3
-					}
-					else {
-						if (self->client->ps.forcePowerLevel[FP_SPEED] == 3) {
-							drain = forcePowerNeeded[forcePower] * 0.5;
-						}
-						else { //force speed 2
-							drain = forcePowerNeeded[forcePower];
-						}
-					}
-				}
-			}
-			else {
-				drain = forcePowerNeeded[forcePower];
-			}
-		}
-		else {
-			drain = forcePowerNeeded[forcePower];
-		}
-		
-		
+	{		
+		drain = forcePowerNeeded[forcePower];		
 	}
 	if (!drain)
 	{

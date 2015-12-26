@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam
 	int			damage = weaponData[WP_CONCUSSION].altDamage, skip, traces = DISRUPTOR_ALT_TRACES;
+	//int			velocity = weaponData[WP_CONCUSSION].altVelocity;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	vec3_t		muzzle2, spot, dir;
@@ -254,7 +255,7 @@ static void WP_FireConcussion( gentity_t *ent )
 {//a fast rocket-like projectile
 	vec3_t	start;
 	int		damage	= weaponData[WP_CONCUSSION].damage;
-	float	vel = CONC_VELOCITY;
+	float	vel = weaponData[WP_CONCUSSION].velocity;
 
 	if (ent->s.number >= MAX_CLIENTS)
 	{

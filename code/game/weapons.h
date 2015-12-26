@@ -156,6 +156,8 @@ typedef struct weaponData_s
 	int		altSplashDamage;
 	float	splashRadius;
 	float	altSplashRadius;
+	int		velocity;
+	int		altVelocity;
 
 } weaponData_t;
 
@@ -165,6 +167,19 @@ typedef struct ammoData_s
 	char	icon[64];	// Name of ammo icon file
 	int		max;		// Max amount player can hold of ammo
 } ammoData_t;
+
+// Melee
+//--------
+#define RIGHT_PUNCH_DAMAGE			6
+#define	LEFT_PUNCH_DAMAGE			3
+#define KICK_DAMAGE					14
+#define HEAVY_RIGHT_DAMAGE			24
+
+// Lightsaber
+//--------
+#define IGNITION_TIME				1800
+#define BRYAR_PISTOL_DAMAGE			14
+#define BRYAR_CHARGE_UNIT			200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
 
 // Bryar Pistol
 //--------
