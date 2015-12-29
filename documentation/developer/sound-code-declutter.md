@@ -25,7 +25,7 @@ OpenAL Interface split off into its own interface file:
 - https://github.com/ioquake/ioq3/blob/master/code/client/snd_openal.c
 
 "Q3" sound interface by itself:
-- https://github.com/ioquake/ioq3/blob/master/code/client/snd_openal.c
+- https://github.com/ioquake/ioq3/blob/master/code/client/snd_dma.c
 
 Other stuff:
 - The ambient sound code could be rewritten and spun off probably with some of wonko's new file and string parsing code (it does not use the genericparser class though)
