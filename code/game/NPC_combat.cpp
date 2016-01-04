@@ -2794,7 +2794,7 @@ int NPC_FindCombatPoint( const vec3_t position, const vec3_t avoidPosition, vec3
 	}
 	NPC_CollectCombatPoints( destPosition, collRad, points, flags );//position
 
-	for ( cpi = points.begin(); cpi != points.end(); cpi++ )
+	for ( cpi = points.begin(); cpi != points.end(); ++cpi )
 	{
 		const int i = (*cpi).second;
 
