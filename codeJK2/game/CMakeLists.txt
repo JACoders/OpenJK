@@ -21,9 +21,10 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(JK2SPGameDefines ${SharedDefines} "JK2_MODE")
+set(JK2SPGameDefines ${SharedDefines} "JK2_MODE" "SP_GAME")
 
 set(JK2SPGameIncludeDirectories
+	"${JK2SPDir}"
 	"${JK2SPDir}/game"
 	"${SharedDir}"
 	"${GSLIncludeDirectory}"
@@ -240,6 +241,9 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
 
 set(JK2SPGameCommonSafeFiles
 	${SharedCommonSafeFiles}
+	"${SharedDir}/qcommon/safe/files.h"
+	"${SharedDir}/qcommon/safe/files.cpp"
+	"${JK2SPDir}/qcommon/safe/memory.h"
 	)
 source_group("common/safe" FILES ${JK2SPGameCommonSafeFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonSafeFiles})
