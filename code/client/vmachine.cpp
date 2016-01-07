@@ -66,7 +66,7 @@ intptr_t	VM_Call( int callnum, ... )
 //	thrown away.
 extern intptr_t CL_CgameSystemCalls( intptr_t *args );
 
-intptr_t VM_DllSyscall( intptr_t arg, ... ) {
+NO_SANITIZE_ADDRESS intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 #if !id386 || defined __clang__ || defined MACOS_X
 	// rcg010206 - see commentary above
 	intptr_t args[16];

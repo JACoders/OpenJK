@@ -28,6 +28,23 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
+// Macro that'll allow compiler not to apply address sanitizer on fuction (if it's enabled and supported)
+// Check for Clang's flags
+#if defined(__has_feature)
+	#if __has_feature(address_sanitizer)
+		#define HAVE_SANITIZE_ADDRESS
+	#endif
+// Check for gcc 4.8+ flags
+#elif defined(__SANITIZE_ADDRESS__)
+	#define HAVE_SANITIZE_ADDRESS
+#endif
+
+#ifdef HAVE_SANITIZE_ADDRESS
+	#define NO_SANITIZE_ADDRESS __attribute__ ((noinline)) __attribute__((no_sanitize_address))
+#else
+	#define NO_SANITIZE_ADDRESS
+#endif
+
 #ifdef _MSC_VER
 
 #pragma warning(disable : 4018)     // signed/unsigned mismatch
