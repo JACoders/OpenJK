@@ -904,7 +904,12 @@ void Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooL
     dest[destsize-1] = 0;
 }
 #if 1
-int Q_stricmpn (const char *s1, const char *s2, int n) {
+// We disable Address sanitize here, because in case if s1 or s2 will be '\0' we'll have
+// invalid read at
+//   c1 = *s1++;
+//   c2 = *s2++;
+// but that won't do any harm and ok for now.
+NO_SANITIZE_ADDRESS int Q_stricmpn (const char *s1, const char *s2, int n) {
 	int		c1, c2;
 
 	if ( s1 == NULL ) {
