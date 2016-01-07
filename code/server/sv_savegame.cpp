@@ -106,7 +106,7 @@ static const char *GetString_FailedToOpenSaveGame(const char *psFilename, qboole
 #else
 	const char *psReference = bOpen ? "MENUS_FAILED_TO_OPEN_SAVEGAME" : "MENUS3_FAILED_TO_CREATE_SAVEGAME";
 #endif
-	Q_strncpyz(sTemp + strlen(sTemp), va( SE_GetString(psReference), psFilename),sizeof(sTemp));
+	Q_strncpyz(sTemp + strlen(sTemp), va( SE_GetString(psReference), psFilename),sizeof(sTemp) - strlen(sTemp));
 	strcat(sTemp,"\n");
 	return sTemp;
 }
