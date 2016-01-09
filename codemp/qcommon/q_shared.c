@@ -966,7 +966,11 @@ void Q_strncpyz( char *dest, const char *src, int destsize ) {
 		return;
 	}
 
-	strncpy( dest, src, destsize-1 );
+	int srcsize = strnlen(src, destsize);
+	memcpy( dest, src, srcsize );
+	if ( srcsize != destsize ) {
+		memset( dest + srcsize, '\0', destsize - srcsize);
+	}
 	dest[destsize-1] = 0;
 }
 
