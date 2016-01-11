@@ -214,6 +214,7 @@ cvar_t	*g_saberLockSuperBreaks;
 cvar_t	*g_saberLockStyle;
 cvar_t  *g_forceNewPowers;
 cvar_t	*g_weaponVelocity;
+cvar_t	*g_weaponAltVelocity;
 
 //for character stats
 cvar_t	*g_char_forcePowerMax; //only applies after re-loading level
@@ -726,7 +727,8 @@ void G_InitCvars( void ) {
 	g_char_forceRegen = gi.cvar("g_char_forceRegen", "100", CVAR_CHEAT | CVAR_SAVEGAME);
 	g_char_parryBonus = gi.cvar("g_char_parryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
 	g_char_breakParryBonus = gi.cvar("g_char_breakParryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
-	g_weaponVelocity = gi.cvar("g_weaponVelocity", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_weaponVelocity = gi.cvar("g_weaponVelocity", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_weaponAltVelocity = gi.cvar("g_weaponAltVelocity", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
 	
 }
 /*

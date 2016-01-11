@@ -1562,8 +1562,9 @@ void NPC_Surrender( void )
 			//----------------------------------------------------------
 			else
 			{
-				NPC_SetAnim( NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
-				NPC->client->ps.torsoAnimTimer = Q_irand(3000, 8000);				// Pretend the anim lasts longer
+				NPC_SetAnim(NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
+				NPC->client->ps.torsoAnimTimer = 1000;
+				NPCInfo->surrenderTime = level.time + 1000;
 			}
 		}
 	 	NPCInfo->surrenderTime = level.time + NPC->client->ps.torsoAnimTimer + 1000;
@@ -1631,6 +1632,7 @@ qboolean NPC_CheckSurrender( void )
 					{//player is the guy I'm running from
 						if ( g_crosshairEntNum == NPC->s.number )
 						{//give up if player is aiming at me
+							NPC_FaceEnemy();
 							NPC_Surrender();
 							NPC_UpdateAngles( qtrue, qtrue );
 							return qtrue;
@@ -1643,6 +1645,7 @@ qboolean NPC_CheckSurrender( void )
 								{//they're close
 									if ( gi.inPVS( NPC->currentOrigin, player->currentOrigin ) )
 									{//they're in the same room
+										NPC_FaceEnemy();
 										NPC_Surrender();
 										NPC_UpdateAngles( qtrue, qtrue );
 										return qtrue;
@@ -1663,6 +1666,7 @@ qboolean NPC_CheckSurrender( void )
 								if ( gi.inPVS( NPC->currentOrigin, NPC->enemy->currentOrigin ) )
 								{//they're in the same room
 									//FIXME: should player-team NPCs not fire on surrendered NPCs?
+									NPC_FaceEnemy();
 									NPC_Surrender();
 									NPC_UpdateAngles( qtrue, qtrue );
 									return qtrue;
@@ -1855,7 +1859,7 @@ qboolean NPC_BSFlee( void )
 		{
 			//done panicking, time to realize we're dogmeat, if we haven't been able to flee for a few seconds
 			if ((level.time-NPC->lastMoveTime)>3000
-				&& (level.time-NPCInfo->surrenderTime) > 3000 )//and haven't just finished surrendering
+				&& (level.time-NPCInfo->surrenderTime) > 1000 )//and haven't just finished surrendering
 			{
 				NPC_FaceEnemy();
 				NPC_Surrender();

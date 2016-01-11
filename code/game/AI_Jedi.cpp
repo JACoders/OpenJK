@@ -106,7 +106,11 @@ qboolean Jedi_WaitingAmbush( gentity_t *self );
 void Tavion_SithSwordRecharge( void );
 qboolean Rosh_BeingHealed( gentity_t *self );
 
-static qboolean enemy_in_striking_range = qfalse;
+//for approximating the distance of an enemy Jedi
+static qboolean enemy_in_range = qfalse;
+static qboolean enemy_near = qfalse;
+static qboolean enemy_approaching = qfalse;
+
 static int	jediSpeechDebounceTime[TEAM_NUM_TEAMS];//used to stop several jedi from speaking all at once
 
 void NPC_CultistDestroyer_Precache( void )
@@ -1249,10 +1253,10 @@ static void Jedi_CheckDecreaseSaberAnimLevel( void )
 	}
 }
 
-static qboolean Jedi_DecideKick( void )
+static qboolean Jedi_DecideKick( int enemy_dist )
 { 
-	if ( !enemy_in_striking_range )
-	{ //more distance checks before calls too, this is just some redundancy
+	if ( enemy_dist > 0 )
+	{
 		return qfalse;
 	} 
 	if ( PM_InKnockDown( &NPC->client->ps ) )
@@ -1557,7 +1561,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			}
 			else
 			{
-				if ( Jedi_DecideKick() && enemy_dist <= 16 )
+				if ( Jedi_DecideKick(enemy_dist) )
 				{//let's try a kick
 					if ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
 						|| (G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE ) )
@@ -1597,7 +1601,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			Tavion_StartScepterSlam();
 			return;
 		}
-		if ( Jedi_DecideKick() )
+		if ( Jedi_DecideKick(enemy_dist) )
 		{//let's try a kick
 			if ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
 				|| (G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE ) )
@@ -1625,7 +1629,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 				Tavion_StartScepterSlam();
 				return;
 			}
-			if ( Jedi_DecideKick() )
+			if ( Jedi_DecideKick(enemy_dist) )
 			{//let's try a kick
 				if ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
 					|| (G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE ) )
@@ -1958,8 +1962,8 @@ static void Jedi_CombatDistance( int enemy_dist )
 		}
 		if ( NPCInfo->stats.aggression < 4 )
 		{//back off and defend
-			if ( Jedi_DecideKick() )
-			{//let's try a kick, only if enemy is at least in striking range by now
+			if ( Jedi_DecideKick(enemy_dist) )
+			{//let's try a kick
 				if ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
 					|| (G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE ) )
 				{//kicked!
@@ -2101,6 +2105,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 {
 	int	dodgeAnim = -1;
 	qboolean playerNoDrain = false;
+	qboolean playerPerfectDodge = false;
 
 	if ( !self || !self->client || self->health <= 0 )
 	{
@@ -2145,58 +2150,35 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			if (self->client->ps.forcePowerLevel[FP_SPEED] < 2) {
 				return qfalse;
 			}
-			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
-			{//not already in speed
-				if (self->client->ps.forcePowerLevel[FP_SPEED] == 2
-					&& !(self->client->ps.forcePower >= S2_AUTODODGE_FP))
-				{//make sure we have adequate force power
-					return qfalse;
+			if (self->client->ps.forcePowersActive&(1 << FP_SPEED)) {
+				return qfalse; //you're already moving so fast, player should just dodge manually
+			}
+			
+			if (self->client->ps.forcePowerLevel[FP_SPEED] == 2
+				&& !(self->client->ps.forcePower >= S2_AUTODODGE_FP))
+			{//make sure we have adequate force power
+				return qfalse;
+			}
+			else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3
+				&& !(self->client->ps.forcePower >= S3_AUTODODGE_FP))
+			{//make sure we have adequate force power
+				return qfalse;
+			}
+			
+			if (self->client->ps.forcePowersActive&(1 << FP_SEE)) {
+				if (!(self->client->ps.forcePowerLevel[FP_SPEED] == 3
+					&& self->client->ps.forcePowerLevel[FP_SEE] == 3)) {
+					//we have both Sense 3 and Speed 3 so no drain
+					playerNoDrain = qtrue;
+					playerPerfectDodge = qtrue;
 				}
-				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3
-					&& !(self->client->ps.forcePower >= S3_AUTODODGE_FP))
-				{//make sure we have adequate force power
-					return qfalse;
-				}
 			}
-			if (self->client->ps.forcePowersActive&(1 << FP_SPEED))
-			{//in speed so drains are further reduced
-				if (self->client->ps.forcePowersActive&(1 << FP_SEE)) {
-					if (!(self->client->ps.forcePowerLevel[FP_SPEED] == 3
-						&& self->client->ps.forcePowerLevel[FP_SEE] == 3)) {
-						//we have both Sense 3 and Speed 3 active so no drain
-						playerNoDrain = qtrue;
-					}
-				}				
-				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3) {
-					if (!(self->client->ps.forcePower > S3_DODGE_FP))
-					{//make sure we have it and have enough force power (5 fp)
-						return qfalse;
-					}
-				}
-				else if (self->client->ps.forcePowerLevel[FP_SPEED] == 2) {
-					if (!(self->client->ps.forcePower > S2_DODGE_FP))
-					{//make sure we have it and have enough force power (10 fp)
-						return qfalse;
-					}
-				}				
-			}
-			//check force speed power level to determine if I should be able to dodge it
-			if (self->client->ps.forcePowersActive&(1 << FP_SPEED)
-				&& self->client->ps.forcePowersActive&(1 << FP_SEE)
-				&& self->client->ps.forcePowerLevel[FP_SPEED] == 3
-				&& self->client->ps.forcePowerLevel[FP_SEE] == 3) 
-			{
-				//always dodge
-			}
-			else if (self->client->ps.forcePowersActive&(1 << FP_SPEED)
-				&& ucmd.buttons&BUTTON_USE) 
-			{
-				//dodge if holding use and in speed
-			}
-			else if (Q_irand(1, 10) > self->client->ps.forcePowerLevel[FP_SPEED]) //auto-dodge
+
+			if (!playerPerfectDodge && Q_irand(1, 10) > self->client->ps.forcePowerLevel[FP_SPEED]) //auto-dodge
 			{//more likely to fail on lower force speed level
 				return qfalse;
 			}
+
 		}
 		else { //old force power version
 			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
@@ -2364,31 +2346,19 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		else
 		{//player
 			if (g_forceNewPowers->integer)
-			{//this version is more complex, player may or may not be in Force Speed at this point
+			{//this version is more complex
 				if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
 				{//not in speed
-					if (self->client->ps.forcePowerLevel[FP_SPEED] == 3)
+					if (playerNoDrain) {
+						ForceSpeed(self, 500, 0);
+					}
+					else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3)
 					{
 						ForceSpeed(self, 500, S3_AUTODODGE_FP);
 					}
 					else
 					{
 						ForceSpeed(self, 500 /*, S2_AUTODODGE_FP*/);
-					}
-				}
-				else
-				{//player is in Speed, see if we should still drain some force power
-					if (playerNoDrain) //Speed 3, Sense 3, and both are active
-					{
-						ForceSpeed_dodge(self, 0);
-					}
-					else if (self->client->ps.forcePowerLevel[FP_SPEED] == 3)
-					{ //causes Force Speed to end early since player already using Speed
-						ForceSpeed(self, 500, S3_DODGE_FP);
-					}
-					else //Speed 2
-					{
-						ForceSpeed(self, 500, S2_DODGE_FP);
 					}
 				}
 			}
@@ -4436,12 +4406,9 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 			case 3:
 				//use jedi force push? or kick?
 				//FIXME: try to do this if health low or enemy back to a cliff?
-				if ( Jedi_DecideKick()//let's try a kick
+				if ( Jedi_DecideKick(enemy_dist)//let's try a kick
 					&& ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE 
-						|| (G_CanKickEntity(NPC, NPC->enemy )&&G_PickAutoKick( NPC, NPC->enemy, qtrue )!=LS_NONE
-					&& enemy_dist <= 16 ) // lets be close if we're kicking
-						)
-					)
+						|| (G_CanKickEntity(NPC, NPC->enemy )&&G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE)))
 				{//kicked
 					TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 				}
@@ -4469,7 +4436,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				if ( !Q_irand( 0, 5 ) || !Jedi_Strafe( 300, 1000, 0, 1000, qfalse ) )
 				{//certain chance they will pick an alternative evasion
 					//if couldn't strafe, try a different kind of evasion...
-					if ( Jedi_DecideKick() && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE )
+					if ( Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE )
 					{//kicked!
 						TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 					}
@@ -4685,23 +4652,26 @@ static void Jedi_SetEnemyInfo( vec3_t enemy_dest, vec3_t enemy_dir, float *enemy
 		//		two enemies, use lightning spread when fighting multiple enemies, etc.
 		//		Also, when kill one, check rest of group instead of walking up to victim.
 	}
+	
 	//init this to false
-	enemy_in_striking_range = qfalse;
+	enemy_in_range = qfalse;
+	enemy_near = qfalse;
+	enemy_approaching = qfalse;
+
 	if ( *enemy_dist <= 0.0f )
 	{
-		enemy_in_striking_range = qtrue;
+		enemy_in_range = qtrue;
 	}
 	else
 	{//if he's too far away, see if he's at least facing us or coming towards us
 		if ( *enemy_dist <= 32.0f )
-		{//has to be facing us
-			vec3_t eAngles = {0,NPC->currentAngles[YAW],0};
-			if ( InFOV( NPC->currentOrigin, NPC->enemy->currentOrigin, eAngles, 30, 90 ) )
-			{//in striking range
-				enemy_in_striking_range = qtrue;
-			}
+		{
+			enemy_in_range = qtrue;
 		}
-		if ( *enemy_dist >= 64.0f )
+		if (*enemy_dist < 64.0f) {
+			enemy_near = qtrue;
+		}
+		else if ( *enemy_dist >= 64.0f || enemy_near )
 		{//we have to be approaching each other
 			float vDot = 1.0f;
 			if ( !VectorCompare( NPC->client->ps.velocity, vec3_origin ) )
@@ -4722,9 +4692,10 @@ static void Jedi_SetEnemyInfo( vec3_t enemy_dest, vec3_t enemy_dir, float *enemy
 			{//neither of us is moving, below check will fail, so just return
 				return;
 			}
+
 			if ( vDot >= *enemy_dist )
 			{//moving towards each other
-				enemy_in_striking_range = qtrue;
+				enemy_approaching = qtrue;
 			}
 		}
 	}
@@ -5448,7 +5419,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 	}
 
 	//try to hit them if we can
-	if ( !enemy_in_striking_range )
+	if ( !enemy_in_range )
 	{
 		return qfalse;
 	}
@@ -6663,20 +6634,20 @@ qboolean Jedi_CheckKataAttack( void )
 						if ( Q_irand( 0, g_spskill->integer+1 ) //50% chance on easy, 66% on medium, 75% on hard
 							&& !Q_irand( 0, 9 ) )//10% chance overall
 						{//base on skill level
-							if ( enemy_in_striking_range ) //need to actually be close to the enemy
-						{
-							ucmd.upmove = 0;
-							VectorClear( NPC->client->ps.moveDir );
-							if ( g_saberNewControlScheme->integer )
+							if ( enemy_in_range || (enemy_near && enemy_approaching)  ) //need to actually be close to the enemy
 							{
-								ucmd.buttons |= BUTTON_FORCE_FOCUS;
+								ucmd.upmove = 0;
+								VectorClear( NPC->client->ps.moveDir );
+								if ( g_saberNewControlScheme->integer )
+								{
+									ucmd.buttons |= BUTTON_FORCE_FOCUS;
+								}
+								else
+								{
+									ucmd.buttons |= BUTTON_ALT_ATTACK;
+								}
+								return qtrue;
 							}
-							else
-							{
-								ucmd.buttons |= BUTTON_ALT_ATTACK;
-							}
-							return qtrue;
-						}
 						}
 					}
 				}
@@ -6829,7 +6800,18 @@ static void Jedi_Attack( void )
 					}
 				}
 			}
-		}
+
+			if (NPC->enemy && NPC->enemy->health > 0)
+			{
+				if (NPC->enemy->s.weapon == WP_SABER)
+				{//be sure to continue evasion even if can't pull back saber yet
+					vec3_t	enemy_dir, enemy_movedir, enemy_dest;
+					float	enemy_dist, enemy_movespeed;
+					Jedi_SetEnemyInfo(enemy_dest, enemy_dir, &enemy_dist, enemy_movedir, &enemy_movespeed, 300);
+					Jedi_EvasionSaber(enemy_movedir, enemy_dist, enemy_dir);
+				}
+			}
+		}		
 	}
 	//see if our enemy was killed by us, gloat and turn off saber after cool down.
 	//FIXME: don't do this if we have other enemies to fight...?

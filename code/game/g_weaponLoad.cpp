@@ -25,6 +25,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // this is excluded from PCH usage 'cos it looks kinda scary to me, being game and ui.... -Ste
 #include "g_local.h"
+//extern cvar_t *g_weaponVelocity;
+//extern cvar_t *g_weaponAltVelocity;
 
 typedef struct {
 	const char	*name;
@@ -396,7 +398,7 @@ const float defaultAltSplashRadius[] = {
 	0.0f,							// WP_NOGHRI_STICK
 };
 
-const int velocity[WP_NUM_WEAPONS] =
+const int defaultVelocity[WP_NUM_WEAPONS] =
 {
 	0,//WP_NONE,
 	0,//WP_SABER,				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
@@ -405,7 +407,7 @@ const int velocity[WP_NUM_WEAPONS] =
 	Q3_INFINITE,//WP_DISRUPTOR,
 	BOWCASTER_VELOCITY,//WP_BOWCASTER,
 	REPEATER_VELOCITY,//WP_REPEATER,
-	DEMP2_VELOCITY,WP_DEMP2,
+	DEMP2_VELOCITY, //WP_DEMP2,
 	FLECHETTE_VEL,//WP_FLECHETTE,
 	ROCKET_VELOCITY,//WP_ROCKET_LAUNCHER,
 	TD_VELOCITY,//WP_THERMAL,
@@ -1589,7 +1591,7 @@ void WP_LoadWeaponParms (void)
 		weaponData[i].altVelocity = defaultAltVelocity[i];
 	}
 
-	WP_ParseParms(buffer);
+	WP_ParseParms(buffer);	
 
 	gi.FS_FreeFile( buffer );	//let go of the buffer
 }

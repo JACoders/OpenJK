@@ -11145,7 +11145,8 @@ qboolean PM_CheckAltKickAttack(void)
 		&& pm->ps->SaberActive()
 		&& !(pm->ps->saber[0].saberFlags&SFL_NO_KICKS)//okay to do kicks with this saber
 		&& (!pm->ps->dualSabers || !(pm->ps->saber[1].saberFlags&SFL_NO_KICKS))//okay to do kicks with the 2nd saber
-		&& !(pm->cmd.buttons&BUTTON_FORCE_FOCUS)
+		&& ((!(pm->cmd.buttons&BUTTON_FORCE_FOCUS) && pm->ps->clientNum < MAX_CLIENTS) || pm->ps->clientNum >= MAX_CLIENTS)
+		//if we are the player we have to press Force Focus to saber throw
 		//&& !PM_SaberThrowable()
 		//&& (!WP_ForcePowerUsable(pm->gent, FP_SABERTHROW, 20)) //make sure saber throw is disabled before trying to kick)
 		)

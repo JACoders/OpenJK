@@ -2116,6 +2116,14 @@ void NPC_RunBehavior( int team, int bState )
 				}
 				else
 				{
+					/*if (level.time - NPCInfo->surrenderTime < 10000) 
+					{ //I was just surrendering a short time ago and the enemy is nearby
+						NPC_CheckSurrender();
+					}
+					else {
+						NPC_BSFlee(); //I haven't been surrendering for a while, see if I can escape before surrendering
+					}*/
+
 					NPC_BSFlee();
 				}
 				return;

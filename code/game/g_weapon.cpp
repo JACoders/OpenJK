@@ -38,6 +38,8 @@ vec3_t	muzzle;
 
 gentity_t *ent_list[MAX_GENTITIES];
 extern cvar_t	*g_debugMelee;
+extern cvar_t	*g_weaponVelocity;
+extern cvar_t	*g_weaponAltVelocity;
 
 // some naughty little things that are used cg side
 int g_rocketLockEntNum = ENTITYNUM_NONE;
@@ -138,6 +140,9 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t
 	Vehicle_t*	pVeh = G_IsRidingVehicle(owner);
 
 	missile->alt_fire = altFire;
+
+	if (altFire) vel *= g_weaponAltVelocity->value;
+	else vel *= g_weaponVelocity->value;
 
 	missile->s.pos.trType = TR_LINEAR;
 	missile->s.pos.trTime = level.time;// - 10;	// move a bit on the very first frame
