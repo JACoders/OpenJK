@@ -10052,7 +10052,7 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Water Splash!\"");
 						}
 
-						ent->client->pers.guardian_timer = level.time + 12000;
+						ent->client->pers.guardian_timer = level.time + 11000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 2)
@@ -10066,7 +10066,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						rock_fall(ent,2000,40);
+						rock_fall(ent,2000,55);
 						ent->client->pers.light_quest_timer = level.time + 10000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Rockfall!\"");
 					}
@@ -10264,14 +10264,14 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						ultra_resistance(ent, 10000);
-						ent->client->pers.guardian_timer = level.time + 15000;
+						ent->client->pers.guardian_timer = level.time + 14000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Resistance!\"");
 					}
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
 						ultra_strength(ent, 10000);
-						ent->client->pers.light_quest_timer = level.time + 15000;
+						ent->client->pers.light_quest_timer = level.time + 14000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Strength!\"");
 					}
 				}
@@ -10437,13 +10437,13 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 11)
 						{
-							slow_motion(ent,900,10000);
+							slow_motion(ent,1000,10000);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Slow Motion!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
-							water_splash(ent,1200,100);
+							water_splash(ent,1400,100);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Water Splash!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -10455,7 +10455,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 14)
 						{
-							ultra_flame(ent,2000,50);
+							ultra_flame(ent,2200,50);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ultra Flame!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
