@@ -1084,7 +1084,11 @@ void finish_spawning_turretG2( gentity_t *base )
 	if ( (base->spawnflags&2) )
 	{
 		base->s.angles[ROLL] += 180;
-		base->s.origin[2] -= 22.0f;
+
+		if (base->spawnflags & 32768)
+		{ // zyk: if upside-down, and with this spawnflags, do not make decrease the z position
+			base->s.origin[2] -= 22.0f;
+		}
 	}
 
 	G_SetAngles( base, base->s.angles );
