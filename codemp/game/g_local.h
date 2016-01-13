@@ -841,6 +841,7 @@ typedef struct clientPersistant_s {
 	//  9 - using Ultra Speed
 	// 10 - using Resurrection Power
 	// 11 - using Magic Shield
+	// 12 - using Flame Burst
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses

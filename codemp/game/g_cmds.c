@@ -3566,6 +3566,7 @@ extern void magic_shield(gentity_t *ent, int duration);
 extern void healing_area(gentity_t *ent, int damage, int duration);
 extern void lightning_dome(gentity_t *ent, int damage);
 extern void magic_explosion(gentity_t *ent, int radius, int damage, int duration);
+extern void flame_burst(gentity_t *ent, int duration);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3923,7 +3924,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 12 && zyk_enable_flame_burst.integer == 1 && ent->client->pers.magic_power >= zyk_flame_burst_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						ent->client->pers.flame_thrower = level.time + 7000;
+						flame_burst(ent, 5000);
 						ent->client->pers.magic_power -= zyk_flame_burst_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));

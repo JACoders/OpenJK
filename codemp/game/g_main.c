@@ -4381,6 +4381,13 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 	}
 }
 
+// zyk: Flame Burst
+void flame_burst(gentity_t *ent, int duration)
+{
+	ent->client->pers.flame_thrower = level.time + duration;
+	ent->client->pers.quest_power_status |= (1 << 12);
+}
+
 // zyk: Blowing Wind
 void blowing_wind(gentity_t *ent, int distance, int duration)
 {
@@ -4882,6 +4889,7 @@ void Player_FireFlameThrower( gentity_t *self )
 	int entityList[MAX_GENTITIES];
 	int numListedEntities;
 	int e = 0;
+	int damage = zyk_flame_thrower_damage.integer;
 
 	vec3_t	tfrom, tto, fwd;
 	vec3_t thispush_org, a;
@@ -4893,6 +4901,10 @@ void Player_FireFlameThrower( gentity_t *self )
 	float radius = 144;
 
 	self->client->cloakDebReduce = level.time + zyk_flame_thrower_cooldown.integer;
+
+	// zyk: Flame Burst magic power has more damage
+	if (self->client->pers.quest_power_status & (1 << 12))
+		damage += 2;
 
 	origin[0] = self->r.currentOrigin[0];
 	origin[1] = self->r.currentOrigin[1];
@@ -4958,7 +4970,7 @@ void Player_FireFlameThrower( gentity_t *self )
 		traceEnt = &g_entities[entityList[e]];
 		if (traceEnt && traceEnt != self)
 		{
-			G_Damage( traceEnt, self, self, self->client->ps.viewangles, tr.endpos, zyk_flame_thrower_damage.integer, DAMAGE_NO_KNOCKBACK|DAMAGE_IGNORE_TEAM, MOD_LAVA );
+			G_Damage( traceEnt, self, self, self->client->ps.viewangles, tr.endpos, damage, DAMAGE_NO_KNOCKBACK|DAMAGE_IGNORE_TEAM, MOD_LAVA );
 		}
 		e++;
 	}
@@ -5423,6 +5435,19 @@ void quest_power_events(gentity_t *ent)
 					ent->client->ps.eFlags |= EF_INVULNERABLE;
 					ent->client->invulnerableTimer = ent->client->pers.quest_power4_timer;
 				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 12))
+			{ // zyk: Flame Burst
+				if (ent->client->pers.flame_thrower < level.time)
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 12);
+				}
+				else if (ent->client->cloakDebReduce < level.time)
+				{ // zyk: fires the flame thrower
+					Player_FireFlameThrower(ent);
+				}
+
 			}
 		}
 		else if (!ent->NPC && ent->client->pers.quest_power_status & (1 << 10) && ent->client->pers.quest_power1_timer < level.time && 
@@ -10147,17 +10172,9 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: fire ability
-						if (ent->client->pers.flame_thrower < level.time)
-						{
-							ent->client->pers.flame_thrower = level.time + 5000;
-							trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7Flame Burst!\"");
-						}
-
-						if (ent->client->cloakDebReduce < level.time)
-							Player_FireFlameThrower(ent);
-
-						if (ent->client->pers.flame_thrower < (level.time + 100))
-							ent->client->pers.guardian_timer = level.time + 15000;
+						flame_burst(ent, 5000);
+						trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7Flame Burst!\"");
+						ent->client->pers.guardian_timer = level.time + 18000;
 					}
 
 					if (ent->client->pers.light_quest_timer < level.time)
@@ -10467,12 +10484,8 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 16)
 						{
-							if (ent->client->pers.flame_thrower < level.time)
-							{
-								ent->client->pers.flame_thrower = level.time + 5000;
-								trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Flame Burst!\"");
-							}
-
+							flame_burst(ent, 5000);
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Flame Burst!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 17)
@@ -10533,9 +10546,6 @@ void G_RunFrame( int levelTime ) {
 
 						ent->client->pers.guardian_timer = level.time + (ent->health/2) + 3000;
 					}
-
-					if (ent->client->pers.flame_thrower > level.time && ent->client->cloakDebReduce < level.time)
-						Player_FireFlameThrower(ent);
 				}
 			}
 		}
