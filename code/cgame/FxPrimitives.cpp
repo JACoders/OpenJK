@@ -307,9 +307,12 @@ bool CParticle::UpdateOrigin()
 				}
 			}
 
-			// Hit something
-			if ( trace.fraction < 1.0f )//|| trace.startsolid || trace.allsolid )
+			if ( trace.startsolid || trace.allsolid || trace.fraction == 1.0)
 			{
+			}
+			else
+			{
+				// Hit something
 				if ( mFlags & FX_IMPACT_RUNS_FX && !(trace.surfaceFlags & SURF_NOIMPACT ))
 				{
 					theFxScheduler.PlayEffect( mImpactFxID, trace.endpos, trace.plane.normal );
