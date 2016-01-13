@@ -125,6 +125,11 @@ extern qboolean PM_InOnGroundAnim(playerState_t *ps);
 extern qboolean PM_KnockDownAnim(int anim);
 extern qboolean PM_SaberInKata(saberMoveName_t saberMove);
 extern qboolean PM_StabDownAnim(int anim);
+extern qboolean PM_StandingAnim(int anim);
+extern qboolean PM_CrouchingAnim(int anim);
+extern qboolean PM_WalkingAnim(int anim);
+extern qboolean	PM_RunningAnim(int anim);
+extern qboolean	PM_RollingAnim(int anim);
 extern int PM_PowerLevelForSaberAnim(playerState_t *ps, int saberNum = 0);
 extern void PM_VelocityForSaberMove(playerState_t *ps, vec3_t throwDir);
 extern qboolean PM_VelocityForBlockedMove(playerState_t *ps, vec3_t throwDir);
@@ -234,6 +239,52 @@ qboolean NPC_JediClassBoss(gentity_t *self) {
 	case CLASS_MORGANKATARN:
 	default:
 		return qfalse;
+	}
+}
+
+qboolean PM_WalkingOrIdle(gentity_t *self)
+{ //mainly for checking if we can guard well or regen block points
+	if ((PM_WalkingAnim(self->client->ps.legsAnim)
+		|| PM_StandingAnim(self->client->ps.legsAnim)
+		|| PM_CrouchingAnim(self->client->ps.legsAnim)
+		|| self->client->ps.torsoAnim == BOTH_MEDITATE)
+		&& (self->client->ps.saberMove == LS_NONE || self->client->ps.saberMove == LS_READY))
+	{
+		return qtrue;
+	}
+
+	return qfalse;
+}
+
+qboolean WP_SaberBlockCooldownDone(gentity_t *self)
+{
+	if (PM_SaberInReturn(self->client->ps.saberMove))
+	{//we're in a return, probably triggered after a previous deflection
+		//FIXME: Make sure it's a return from a deflection, not a slash?
+		if (self->client->ps.saberAnimLevel == SS_FAST || self->client->ps.saberAnimLevel == SS_TAVION
+			//|| self->client->ps.saberAnimLevel == SS_DUAL
+			)
+		{ //only non-fast deflecting styles get a break
+			return qfalse;
+		}
+
+		int totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_SPEED;
+		int baseReboundTime = totalReboundTime;
+
+		switch (self->client->ps.saberAnimLevel)
+		{
+		case SS_DESANN:
+		case SS_STRONG:
+			totalReboundTime *= SLOW_BLOCK_FACTOR;
+			break;
+		}
+
+		if (totalReboundTime > self->client->ps.torsoAnimTimer)
+		{//we haven't been in the cooldown (return) animation long enough
+			return qfalse;
+		}
+
+		return qtrue;
 	}
 }
 
@@ -6046,11 +6097,12 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 	{
 		entPowerLevel = (2 * ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE]) + stylePowerModifier;
 	}
-
+	/*
 	if (PM_SaberInSpecialAttack(ent->client->ps.saberMove)) //now for special moves
 	{ //special moves get a 2nd boost on top of the one in bg_panimate
 		entPowerLevel += 2;
 	}
+	*/
 
 	//now for modifiers based on any enhancement powers active
 	if (!ent->s.number && (ent->client->ps.forcePowersActive&(1 << FP_SPEED)))
@@ -6197,17 +6249,43 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 				//		More damage based on length/color of saber?
 				//FIXME: Desann does double damage?
 
-
-
-				if (g_saberNewCombat->integer) //new code
+				if (g_saberRealisticCombat->integer)
 				{
-					if (g_saberRealisticCombat->integer)
+					switch ((ent->client->ps.saberAnimLevel))
+					{
+					default:
+					case FORCE_LEVEL_5:
+						baseDamage = 10.0f;
+						break;
+					case FORCE_LEVEL_4: //Staff, medium, duals all do same damage
+					case FORCE_LEVEL_3:
+					case FORCE_LEVEL_2:
+						baseDamage = 5.0f;
+						break;
+					case FORCE_LEVEL_0:
+					case FORCE_LEVEL_1: //FIXME: Fast damage is so low...
+						baseDamage = 2.5f;
+						break;
+					}
+				}
+				else
+				{
+					if (g_spskill->integer > 0
+						&& ent->s.number < MAX_CLIENTS
+						&& (ent->client->ps.torsoAnim == BOTH_ROLL_STAB
+						|| ent->client->ps.torsoAnim == BOTH_SPINATTACK6
+						|| ent->client->ps.torsoAnim == BOTH_SPINATTACK7
+						|| ent->client->ps.torsoAnim == BOTH_LUNGE2_B__T_))
+					{//*sigh*, these anim do less damage since they're so easy to do
+						baseDamage = 2.5f;
+					}
+					else
 					{
 						switch ((ent->client->ps.saberAnimLevel))
 						{
 						default:
 						case FORCE_LEVEL_5:
-							baseDamage = 10.0f;
+							baseDamage = 7.5f;
 							break;
 						case FORCE_LEVEL_4: //Staff, medium, duals all do same damage
 						case FORCE_LEVEL_3:
@@ -6220,38 +6298,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							break;
 						}
 					}
-					else
-					{
-						if (g_spskill->integer > 0
-							&& ent->s.number < MAX_CLIENTS
-							&& (ent->client->ps.torsoAnim == BOTH_ROLL_STAB
-							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK6
-							|| ent->client->ps.torsoAnim == BOTH_SPINATTACK7
-							|| ent->client->ps.torsoAnim == BOTH_LUNGE2_B__T_))
-						{//*sigh*, these anim do less damage since they're so easy to do
-							baseDamage = 2.5f;
-						}
-						else
-						{
-							switch ((ent->client->ps.saberAnimLevel))
-							{
-							default:
-							case FORCE_LEVEL_5:
-								baseDamage = 7.5f;
-								break;
-							case FORCE_LEVEL_4: //Staff, medium, duals all do same damage
-							case FORCE_LEVEL_3:
-							case FORCE_LEVEL_2:
-								baseDamage = 5.0f;
-								break;
-							case FORCE_LEVEL_0:
-							case FORCE_LEVEL_1: //FIXME: Fast damage is so low...
-								baseDamage = 2.5f;
-								break;
-							}
-						}
-					}
-				}
+				}				
 			}
 			else
 			{//saber is transitioning, defending or idle, don't do as much damage
@@ -6577,20 +6624,21 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 		gentity_t *hitEnt = &g_entities[saberHitEntity];
 		gentity_t *hitOwner = NULL;
 
+		//the "power" level of the anims
+		int entAnimLevel = PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum);
+		int hitOwnerAnimLevel = PM_PowerLevelForSaberAnim(&hitOwner->client->ps, saberNum);
+
 		int hitOwnerPowerLevel = FORCE_LEVEL_0;
 
-		if (g_saberNewCombat->integer) //Dusty, new code start.
+		if (hitEnt)
 		{
-			if (hitEnt)
-			{
-				hitOwner = hitEnt->owner;
-			}
-			if (hitOwner && hitOwner->client)
-			{
-				hitOwnerPowerLevel = 2 * hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
-				hitOwner->breakLimit = hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
-			}
+			hitOwner = hitEnt->owner;
 		}
+		if (hitOwner && hitOwner->client)
+		{
+			hitOwnerPowerLevel = 2 * hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
+			hitOwner->breakLimit = hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
+		}		
 
 		/* //old crud here
 		if ( entPowerLevel >= FORCE_LEVEL_3
@@ -6656,8 +6704,8 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						entAttacking = qtrue;
 					}
-					else if (PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) > FORCE_LEVEL_3)
-					{//now it checks specifically for style, and only strong, staff, and desann styles get this, before it only looked at ent's strength
+					else if (entAnimLevel > FORCE_LEVEL_3)
+					{//stronger styles count as attacking even if in a transition
 						if (PM_SaberInTransitionAny(ent->client->ps.saberMove))
 						{
 							entAttacking = qtrue;
@@ -6669,12 +6717,14 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 						entDefending = qtrue;
 					}
 
-					/*if (ent->client->ps.torsoAnim == BOTH_A1_SPECIAL
+					if (ent->client->ps.torsoAnim == BOTH_A1_SPECIAL
 					|| ent->client->ps.torsoAnim == BOTH_A2_SPECIAL
-					|| ent->client->ps.torsoAnim == BOTH_A3_SPECIAL)
-					{//parry/block/break-parry bonus for single-style kata moves
-					entPowerLevel += 2;
-					}*/
+					|| ent->client->ps.torsoAnim == BOTH_A3_SPECIAL
+					|| ent->client->ps.torsoAnim == BOTH_A7_SOULCAL
+					|| ent->client->ps.torsoAnim == BOTH_A6_SABERPROTECT)
+					{//parry/block/break-parry bonus for katas
+						entPowerLevel++;
+					}
 					if (entAttacking) //I'm removing all two-handed power bonuses, now it's purely for force power stuff - Dusty
 					{//add twoHanded bonus and breakParryBonus to entPowerLevel here
 						//This makes staff too powerful
@@ -6719,7 +6769,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						hitOwnerAttacking = qtrue;
 					}
-					else if (hitOwnerPowerLevel > FORCE_LEVEL_2)
+					else if (hitOwnerAnimLevel > FORCE_LEVEL_3)
 					{//stronger styles count as attacking even if in a transition
 						if (PM_SaberInTransitionAny(hitOwner->client->ps.saberMove))
 						{
@@ -6731,13 +6781,20 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						hitOwnerDefending = qtrue;
 					}
+					if (!hitOwner->s.number && WP_SaberBlockCooldownDone(hitOwner) && PM_WalkingOrIdle(hitOwner))
+					{//player gets a special break
+						hitOwner->client->ps.saberMove = LS_READY; //kind of hacky
+						hitOwnerDefending = qtrue;
+					}
 
-					/*if (hitOwner->client->ps.torsoAnim == BOTH_A1_SPECIAL
+					if (hitOwner->client->ps.torsoAnim == BOTH_A1_SPECIAL
 					|| hitOwner->client->ps.torsoAnim == BOTH_A2_SPECIAL
-					|| hitOwner->client->ps.torsoAnim == BOTH_A3_SPECIAL)
-					{//parry/block/break-parry bonus for single-style kata moves
-					hitOwnerPowerLevel += 2;
-					}*/
+					|| hitOwner->client->ps.torsoAnim == BOTH_A3_SPECIAL
+					|| hitOwner->client->ps.torsoAnim == BOTH_A7_SOULCAL
+					|| hitOwner->client->ps.torsoAnim == BOTH_A6_SABERPROTECT)
+					{//parry/block/break-parry bonus for katas
+						hitOwnerPowerLevel++;
+					}
 					if (hitOwnerAttacking)
 					{//add twoHanded bonus and breakParryBonus to entPowerLevel here
 						/*if ((hitOwner->client->ps.saber[0].saberFlags&SFL_TWO_HANDED))
@@ -6775,9 +6832,6 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							hitOwnerPowerLevel += 1 + hitOwner->client->ps.saber[1].parryBonus;
 						}
 					}
-
-					int entAnimLevel = PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum);
-					int hitOwnerAnimLevel = PM_PowerLevelForSaberAnim(&hitOwner->client->ps, saberNum);
 
 					//Saber Locks
 					if (PM_SuperBreakLoseAnim(ent->client->ps.torsoAnim)
@@ -6842,6 +6896,10 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 								if (!PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))
 								{ //special attacks just break, no counters
 									hitOwner->breakCounter += (entPowerLevel - hitOwnerPowerLevel);
+									if (hitOwner->breakCounter > -2)
+									{
+										hitOwner->breakCounter = -2;
+									}
 									hitOwner->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 								}
 							}
@@ -6854,31 +6912,34 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							{//knockaways can make fast-attacker go into a broken parry anim if the ent is using fast or med (but not Tavion)
 								//make me parry
 								WP_SaberParry(hitOwner, ent, saberNum, bladeNum);
-								//turn the parry into a knockaway
-								hitOwner->client->ps.saberBounceMove = PM_KnockawayForParry(hitOwner->client->ps.saberBlocked);
-								//make them go into a broken parry
-								ent->client->ps.saberBounceMove = PM_BrokenParryForAttack(ent->client->ps.saberMove);
-								ent->client->ps.saberBlocked = BLOCKED_PARRY_BROKEN;
-								if (saberNum == 0)
-								{//FIXME: can only lose right-hand saber for now
-									if (!(ent->client->ps.saber[saberNum].saberFlags&SFL_NOT_DISARMABLE)
-										&& ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] < FORCE_LEVEL_2
-										//^changed DEFENSE to OFFENSE
-										//&& (ent->s.number||g_saberRealisticCombat->integer) 
-										&& Q_irand(0, hitOwner->client->ps.SaberDisarmBonus(0)) > 0
-										&& (hitOwner->s.number || g_saberAutoBlocking->integer || !Q_irand(0, 2)))//if player defending and autoblocking is on, this is less likely to happen, so don't do the random check
-									{//knocked the saber right out of his hand! (never happens to player)
-										//Get a good velocity to send the saber in based on my parry move
-										vec3_t	throwDir;
-										if (!PM_VelocityForBlockedMove(&hitOwner->client->ps, throwDir))
-										{
-											PM_VelocityForSaberMove(&ent->client->ps, throwDir);
+								if (!PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))								
+								{//special attacks can't be interrupted... just semi-blocked...
+									//turn the parry into a knockaway
+									hitOwner->client->ps.saberBounceMove = PM_KnockawayForParry(hitOwner->client->ps.saberBlocked);
+									//make them go into a broken parry
+									ent->client->ps.saberBounceMove = PM_BrokenParryForAttack(ent->client->ps.saberMove);
+									ent->client->ps.saberBlocked = BLOCKED_PARRY_BROKEN;
+									if (saberNum == 0)
+									{//FIXME: can only lose right-hand saber for now
+										if (!(ent->client->ps.saber[saberNum].saberFlags&SFL_NOT_DISARMABLE)
+											&& ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] < FORCE_LEVEL_2
+											//^changed DEFENSE to OFFENSE
+											//&& (ent->s.number||g_saberRealisticCombat->integer) 
+											&& Q_irand(0, hitOwner->client->ps.SaberDisarmBonus(0)) > 0
+											&& (hitOwner->s.number || g_saberAutoBlocking->integer || !Q_irand(0, 2)))//if player defending and autoblocking is on, this is less likely to happen, so don't do the random check
+										{//knocked the saber right out of his hand! (never happens to player)
+											//Get a good velocity to send the saber in based on my parry move
+											vec3_t	throwDir;
+											if (!PM_VelocityForBlockedMove(&hitOwner->client->ps, throwDir))
+											{
+												PM_VelocityForSaberMove(&ent->client->ps, throwDir);
+											}
+											WP_SaberLose(ent, throwDir);
 										}
-										WP_SaberLose(ent, throwDir);
 									}
-								}
-								//just so Jedi knows that he was blocked
-								ent->client->ps.saberEventFlags |= SEF_BLOCKED;
+									//just so Jedi knows that he was blocked
+									ent->client->ps.saberEventFlags |= SEF_BLOCKED;
+								}								
 #ifndef FINAL_BUILD
 								if (d_saberCombat->integer)
 								{
@@ -14648,19 +14709,25 @@ int WP_AbsorbConversion(gentity_t *attacked, int atdAbsLevel, gentity_t *attacke
 	return getLevel;
 }
 
-extern qboolean PM_WalkingAnim(int anim);
-extern qboolean PM_SaberStanceAnim(int anim);
-void WP_BlockPointsRegenerate(gentity_t *self)
+void WP_SaberBlockPointsRegenerate(gentity_t *self)
 {
-	if (g_saberNewCombat->integer)
+	qboolean canRegen = qfalse;
+	if (PM_WalkingOrIdle(self))
 	{
-		if (self->breakCounter) //must have block points that need to be regained
+		canRegen = qtrue;
+	}
+	if (!canRegen)
+	{
+		self->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
+		return;
+	}
+
+	if (self->breakCounter) //must have block points that need to be regained
+	{
+		if (level.time >= self->breakRecoveryTime)
 		{
-			if (level.time >= self->breakRecoveryTime /*&& PM_WalkingAnim*/)
-			{
-				self->breakCounter -= 1;
-				self->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
-			}
+			self->breakCounter -= 1;
+			self->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 		}
 	}
 
@@ -14697,6 +14764,11 @@ void WP_ForcePowerRegenerate(gentity_t *self, int overrideAmt)
 		{
 			self->client->ps.forcePower = self->client->ps.forcePowerMax;
 		}
+	}
+
+	if (g_saberNewCombat->integer)
+	{
+		WP_SaberBlockPointsRegenerate(self);
 	}
 }
 

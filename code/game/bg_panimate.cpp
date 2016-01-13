@@ -2582,18 +2582,110 @@ qboolean PM_SaberKataDone(int curmove = LS_NONE, int newmove = LS_NONE)
 			}
 		}
 	}
-	else if (g_saberNewCombat->integer) //new code
+	else
 	{//FIXME: have chainAngle influence fast and medium chains as well?
-		if ((pm->ps->saberAnimLevel == FORCE_LEVEL_3 || pm->ps->saberAnimLevel == SS_DUAL)
+		if ((pm->ps->saberAnimLevel == FORCE_LEVEL_2 || pm->ps->saberAnimLevel == SS_DUAL)
 			&& pm->ps->saberAttackChainCount > Q_irand(2, 5))
 		{
 			return qtrue;
 		}
 	}
-	else //old code
+	return qfalse;
+}
+
+qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
+{
+	if (pm->ps->forceRageRecoveryTime > level.time)
+	{//rage recovery, only 1 swing at a time (tired)
+		if (pm->ps->saberAttackChainCount > 0)
+		{//swung once
+			return qtrue;
+		}
+		else
+		{//allow one attack
+			return qfalse;
+		}
+	}
+	else if ((pm->ps->forcePowersActive&(1 << FP_RAGE)))
+	{//infinite chaining when raged
+		return qfalse;
+	}
+	else if (pm->ps->saber[0].maxChain == -1)
+	{
+		return qfalse;
+	}
+	else if (pm->ps->saber[0].maxChain != 0)
+	{
+		if (pm->ps->saberAttackChainCount >= pm->ps->saber[0].maxChain)
+		{
+			return qtrue;
+		}
+		else
+		{
+			return qfalse;
+		}
+	}
+
+	if (pm->ps->saberAnimLevel == SS_DESANN && pm->ps->saberAttackChainCount > Q_irand(2, 4))
+	{
+		return qtrue;
+	}
+		
+	if (pm->ps->saberAnimLevel == SS_TAVION && pm->ps->saberAttackChainCount > Q_irand(2, 5))
+	{//desann and tavion can link up as many attacks as they want
+		return qtrue;
+	}
+	//FIXME: instead of random, apply some sort of logical conditions to whether or 
+	//		not you can chain?  Like if you were completely missed, you can't chain as much, or...?
+	//		And/Or based on FP_SABER_OFFENSE level?  So number of attacks you can chain
+	//		increases with your FP_SABER_OFFENSE skill?
+	if (pm->ps->saberAnimLevel == SS_STAFF && pm->ps->saberAttackChainCount > Q_irand(2, 5))
+	{
+		return qtrue;
+	}
+	else if (pm->ps->saberAnimLevel == SS_DUAL && pm->ps->saberAttackChainCount > Q_irand(2, 5))
+	{
+		return qtrue;
+	}
+	else if (pm->ps->saberAnimLevel == SS_STRONG)
+	{
+		if (curmove == LS_NONE || newmove == LS_NONE)
+		{
+			if (pm->ps->saberAnimLevel >= SS_STRONG && pm->ps->saberAttackChainCount > Q_irand(0, 1))
+			{
+				return qtrue;
+			}
+		}
+		else if (pm->ps->saberAttackChainCount > Q_irand(2, 3))
+		{
+			return qtrue;
+		}
+		else if (pm->ps->saberAttackChainCount > 0)
+		{
+			int chainAngle = PM_SaberAttackChainAngle(curmove, newmove);
+			if (chainAngle < 135 || chainAngle > 215)
+			{//if trying to chain to a move that doesn't continue the momentum
+				return qtrue;
+			}
+			else if (chainAngle == 180)
+			{//continues the momentum perfectly, allow it to chain 66% of the time
+				if (pm->ps->saberAttackChainCount > 1)
+				{
+					return qtrue;
+				}
+			}
+			else
+			{//would continue the movement somewhat, 50% chance of continuing
+				if (pm->ps->saberAttackChainCount > 2)
+				{
+					return qtrue;
+				}
+			}
+		}
+	}
+	else
 	{//FIXME: have chainAngle influence fast and medium chains as well?
-		if ((pm->ps->saberAnimLevel == FORCE_LEVEL_2 || pm->ps->saberAnimLevel == SS_DUAL)
-			&& pm->ps->saberAttackChainCount > Q_irand(2, 5))
+		if (pm->ps->saberAnimLevel == SS_MEDIUM	&& pm->ps->saberAttackChainCount > Q_irand(2, 5))
 		{
 			return qtrue;
 		}
@@ -4437,7 +4529,8 @@ saberMoveName_t PM_SaberAttackForMovement(int forwardmove, int rightmove, int cu
 				{//player uses chain-attack
 					newmove = saberMoveData[curmove].chain_attack;
 				}
-				if (PM_SaberKataDone(curmove, newmove))
+				if ((!g_saberNewCombat->integer && PM_SaberKataDone(curmove, newmove))
+					|| (g_saberNewCombat->integer && PM_SaberKataDoneNew(curmove, newmove)))
 				{
 					return saberMoveData[curmove].chain_idle;
 				}
@@ -4472,7 +4565,8 @@ saberMoveName_t PM_SaberAttackForMovement(int forwardmove, int rightmove, int cu
 						newmove = saberMoveData[curmove].chain_attack;
 					}
 				}
-				if (PM_SaberKataDone(curmove, newmove))
+				if ((!g_saberNewCombat->integer && PM_SaberKataDone(curmove, newmove))
+					|| (g_saberNewCombat->integer && PM_SaberKataDoneNew(curmove, newmove)))
 				{
 					return saberMoveData[curmove].chain_idle;
 				}
@@ -4597,7 +4691,8 @@ saberMoveName_t PM_SaberAnimTransitionMove(saberMoveName_t curmove, saberMoveNam
 				//going into another attack...
 				//allow endless chaining in level 1 attacks, several in level 2 and only one or a few in level 3
 				//FIXME: don't let strong attacks chain to an attack in the opposite direction ( > 45 degrees?)
-				if (PM_SaberKataDone(curmove, newmove))
+				if ((!g_saberNewCombat->integer && PM_SaberKataDone(curmove, newmove))
+					|| (g_saberNewCombat->integer && PM_SaberKataDoneNew(curmove, curmove)))
 				{//done with this kata, must return to ready before attack again
 					retmove = LS_R_TL2BR + (newmove - LS_A_TL2BR);
 				}

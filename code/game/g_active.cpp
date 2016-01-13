@@ -48,7 +48,7 @@ extern void WP_SaberReflectCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_SaberUpdate( gentity_t *self, usercmd_t *ucmd );
 extern void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd );
-extern void WP_BlockPointsRegenerate( gentity_t *self );
+extern void WP_SaberBlockPointsRegenerate(gentity_t * self);
 extern void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd);
 
 extern gentity_t *SeekerAcquiresTarget ( gentity_t *ent, vec3_t pos );
@@ -124,6 +124,7 @@ extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_debugMelee;
 extern vmCvar_t	cg_thirdPersonAlpha;
 extern vmCvar_t	cg_thirdPersonAutoAlpha;
+extern cvar_t	*g_saberNewCombat;
 
 void ClientEndPowerUps( gentity_t *ent );
 
@@ -5317,9 +5318,7 @@ extern cvar_t	*g_skippingcin;
 
 	G_CheckClampUcmd( ent, ucmd );
 
-	WP_ForcePowersUpdate( ent, ucmd );
-
-	WP_BlockPointsRegenerate( ent );
+	WP_ForcePowersUpdate( ent, ucmd );	
 
 	//if we have the saber in hand, check for starting a block to reflect shots
 	if ((ent->s.number < MAX_CLIENTS//player 

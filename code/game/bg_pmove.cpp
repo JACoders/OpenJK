@@ -75,6 +75,7 @@ extern qboolean PM_SaberInIdle(int move);
 extern qboolean PM_SaberInStart(int move);
 extern qboolean PM_SaberInReturn(int move);
 extern qboolean PM_SaberKataDone(int curmove, int newmove);
+extern qboolean	PM_SaberKataDoneNew(int curmove, int newmove);
 extern qboolean PM_SaberInSpecial(int move);
 extern qboolean PM_InDeathAnim(void);
 extern qboolean PM_StandingAnim(int anim);
@@ -150,6 +151,7 @@ extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_autoRoll;
 extern cvar_t	*g_saberForceDrainAmount;
 extern cvar_t	*g_saberLockSuperBreaks;
+extern cvar_t	*g_saberNewCombat;
 
 static void PM_SetWaterLevelAtPoint(vec3_t org, int *waterlevel, int *watertype);
 
@@ -12540,7 +12542,8 @@ void PM_WeaponLightsaber(void)
 				{//NPCs must play sequential attack
 					//going into another attack...
 					//allow endless chaining in level 1 attacks, several in level 2 and only one or a few in level 3
-					if (PM_SaberKataDone(LS_NONE, LS_NONE))
+					if ((!g_saberNewCombat->integer && PM_SaberKataDone(LS_NONE, LS_NONE))
+						|| (g_saberNewCombat->integer && PM_SaberKataDoneNew(LS_NONE, LS_NONE)))
 					{//done with this kata, must return to ready before attack again
 						newmove = saberMoveData[curmove].chain_idle;
 					}
@@ -12680,7 +12683,8 @@ void PM_WeaponLightsaber(void)
 							newmove = saberMoveData[curmove].chain_attack;
 						}
 					}
-					if (PM_SaberKataDone(curmove, newmove))
+					if ((!g_saberNewCombat->integer && PM_SaberKataDone(curmove, newmove))
+						|| (g_saberNewCombat->integer && PM_SaberKataDoneNew(curmove, newmove)))
 					{//cannot chain this time
 						newmove = saberMoveData[curmove].chain_idle;
 					}
