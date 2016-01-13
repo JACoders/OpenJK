@@ -2180,7 +2180,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		else if (self->NPC && self->client->pers.guardian_invoked_by_id != -1)
 		{ // zyk: guardians give more score and credits
 			attacker->client->pers.credits_modifier = 190;
-			attacker->client->pers.score_modifier = 2;
+			attacker->client->pers.score_modifier = 4;
 		}
 		else if (self->NPC && self->client->ps.fd.forcePowerMax > 0 && self->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
 		{ // zyk: force-user saber npcs give more score and credits
