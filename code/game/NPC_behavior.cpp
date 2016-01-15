@@ -1563,8 +1563,7 @@ void NPC_Surrender( void )
 			else
 			{
 				NPC_SetAnim(NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
-				NPC->client->ps.torsoAnimTimer = 1000;
-				NPCInfo->surrenderTime = level.time + 1000;
+				NPC->client->ps.torsoAnimTimer = Q_irand(4000, 7000);				
 			}
 		}
 	 	NPCInfo->surrenderTime = level.time + NPC->client->ps.torsoAnimTimer + 1000;
@@ -1859,7 +1858,7 @@ qboolean NPC_BSFlee( void )
 		{
 			//done panicking, time to realize we're dogmeat, if we haven't been able to flee for a few seconds
 			if ((level.time-NPC->lastMoveTime)>3000
-				&& (level.time-NPCInfo->surrenderTime) > 1000 )//and haven't just finished surrendering
+				&& (level.time-NPCInfo->surrenderTime) > 2000 )//and haven't just finished surrendering
 			{
 				NPC_FaceEnemy();
 				NPC_Surrender();

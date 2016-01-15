@@ -126,7 +126,7 @@ extern qboolean PM_KnockDownAnim(int anim);
 extern qboolean PM_SaberInKata(saberMoveName_t saberMove);
 extern qboolean PM_StabDownAnim(int anim);
 extern qboolean PM_StandingAnim(int anim);
-extern qboolean PM_CrouchingAnim(int anim);
+extern qboolean PM_CrouchAnim(int anim);
 extern qboolean PM_WalkingAnim(int anim);
 extern qboolean	PM_RunningAnim(int anim);
 extern qboolean	PM_RollingAnim(int anim);
@@ -173,6 +173,7 @@ qboolean WP_ForcePowerAvailable(gentity_t *self, forcePowers_t forcePower, int o
 void WP_ForcePowerDrain(gentity_t *self, forcePowers_t forcePower, int overrideAmt);
 void WP_DeactivateSaber(gentity_t *self, qboolean clearLength = qfalse);
 qboolean FP_ForceDrainGrippableEnt(gentity_t *victim);
+qboolean WP_SaberBlockCooldownDone(gentity_t *self);
 
 extern cvar_t	*g_saberAutoBlocking;
 extern cvar_t	*g_saberRealisticCombat;
@@ -193,9 +194,9 @@ qboolean g_noClashFlare = qfalse;
 int		g_saberFlashTime = 0;
 
 //new variables - Dusty
-const int		HITOWNER_RECOVERY_INTERVAL = 1500; //interval at which defense points are recovered, 1.5 seconds
-const float			BLOCK_SPEED = 4.5; //affects player's blocking speed
-const float			SLOW_BLOCK_FACTOR = 1.5;
+const int		HITOWNER_RECOVERY_INTERVAL = 1000; //interval at which defense points are recovered, 1.5 seconds
+const float			BLOCK_SPEED = 5; //affects player's blocking speed
+const float			SLOW_BLOCK_FACTOR = 1.75;
 const float			RUN_BLOCK_FACTOR = 1.5;
 /*extern int		hitOwnerBreakLimit;
 extern int		hitOwnerRecoveryTime; //how long left to recover a defense point
@@ -222,21 +223,30 @@ qboolean NPC_JediClassNonBoss(gentity_t *self) {
 	switch (self->client->NPC_class) {
 	case CLASS_JEDI:
 	case CLASS_REBORN:
-	case CLASS_SHADOWTROOPER: //semi-boss
 		return qtrue;
 	default:
 		return qfalse;
 	}
 }
 
+qboolean NPC_JediClassSemiBoss(gentity_t *self) {
+	switch (self->client->NPC_class) {
+	case CLASS_ALORA:
+	case CLASS_SHADOWTROOPER:
+		return qtrue;	
+	}
+
+	return qfalse;
+}
+
 qboolean NPC_JediClassBoss(gentity_t *self) {
 	switch (self->client->NPC_class) {
-	case CLASS_ALORA: //semi-boss
 	case CLASS_DESANN:
 	case CLASS_LUKE:
 	case CLASS_KYLE:
 	case CLASS_TAVION:
 	case CLASS_MORGANKATARN:
+		return qtrue;
 	default:
 		return qfalse;
 	}
@@ -246,7 +256,7 @@ qboolean PM_WalkingOrIdle(gentity_t *self)
 { //mainly for checking if we can guard well or regen block points
 	if ((PM_WalkingAnim(self->client->ps.legsAnim)
 		|| PM_StandingAnim(self->client->ps.legsAnim)
-		|| PM_CrouchingAnim(self->client->ps.legsAnim)
+		|| PM_CrouchAnim(self->client->ps.legsAnim)
 		|| self->client->ps.torsoAnim == BOTH_MEDITATE)
 		&& (self->client->ps.saberMove == LS_NONE || self->client->ps.saberMove == LS_READY))
 	{
@@ -256,37 +266,7 @@ qboolean PM_WalkingOrIdle(gentity_t *self)
 	return qfalse;
 }
 
-qboolean WP_SaberBlockCooldownDone(gentity_t *self)
-{
-	if (PM_SaberInReturn(self->client->ps.saberMove))
-	{//we're in a return, probably triggered after a previous deflection
-		//FIXME: Make sure it's a return from a deflection, not a slash?
-		if (self->client->ps.saberAnimLevel == SS_FAST || self->client->ps.saberAnimLevel == SS_TAVION
-			//|| self->client->ps.saberAnimLevel == SS_DUAL
-			)
-		{ //only non-fast deflecting styles get a break
-			return qfalse;
-		}
 
-		int totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_SPEED;
-		int baseReboundTime = totalReboundTime;
-
-		switch (self->client->ps.saberAnimLevel)
-		{
-		case SS_DESANN:
-		case SS_STRONG:
-			totalReboundTime *= SLOW_BLOCK_FACTOR;
-			break;
-		}
-
-		if (totalReboundTime > self->client->ps.torsoAnimTimer)
-		{//we haven't been in the cooldown (return) animation long enough
-			return qfalse;
-		}
-
-		return qtrue;
-	}
-}
 
 vec3_t	g_saberFlashPos = { 0, 0, 0 };
 
@@ -4185,63 +4165,61 @@ qboolean WP_SaberParry(gentity_t *victim, gentity_t *attacker, int saberNum, int
 		return qfalse;
 	}
 	if (victim->s.number || g_saberAutoBlocking->integer || victim->client->ps.saberBlockingTime > level.time)
-	{//either an NPC or a player who is blocking
-		if (g_saberNewCombat->integer)
-		{
-			if (!PM_SaberInBounce(victim->client->ps.saberMove)
-				&& !PM_SaberInKnockaway(victim->client->ps.saberMove))
-			{
-				if (!PM_SaberInTransitionAny(victim->client->ps.saberMove))
-				{//Not attacking, in transition or in a bounce or knockaway, so play a parry
-					WP_SaberBlockNonRandom(victim, saberHitLocation, qfalse);
-				}
-				else if (!victim->s.number && (PM_SaberInReturn(victim->client->ps.saberMove)))
-				{//Player potentially gets an extra break because he always does return anims
-					int totalReboundTime = parryDebounce[victim->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_SPEED;
-					int baseReboundTime = totalReboundTime;
-
-					switch (victim->client->ps.saberAnimLevel)
-					{
-					case SS_DESANN:
-					case SS_STRONG:
-						totalReboundTime *= SLOW_BLOCK_FACTOR;
-						break;
-					}
-
-					if (totalReboundTime < victim->client->ps.torsoAnimTimer)
-					{//we have been in the cooldown (return) animation long enough
-						WP_SaberBlockNonRandom(victim, saberHitLocation, qfalse);
-					}
-				}
-
-			}
-			else if ((!PM_SaberInTransitionAny(victim->client->ps.saberMove) || PM_SaberInReturn(victim->client->ps.saberMove))
-				&& !PM_SaberInBounce(victim->client->ps.saberMove)
-				&& !PM_SaberInKnockaway(victim->client->ps.saberMove)
-				&& !victim->s.number)
-			{//Player that's not attacking, in transition or in a bounce or knockaway, so play a parry
-				if (PM_SaberInReturn(victim->client->ps.saberMove) 
-					&& victim->client->ps.saberAnimLevel != SS_FAST 
-					&& victim->client->ps.saberAnimLevel != SS_TAVION)
-				{//if we're in a return see how long we've been in it
-					
-				}
-				else
-				{
-					WP_SaberBlockNonRandom(victim, saberHitLocation, qfalse);
-				}
-			}
-		}
-		else
-		{
-			if (!PM_SaberInTransitionAny(victim->client->ps.saberMove)
-				&& !PM_SaberInBounce(victim->client->ps.saberMove)
-				&& !PM_SaberInKnockaway(victim->client->ps.saberMove))
-			{//I'm not attacking, in transition or in a bounce or knockaway, so play a parry			
-				WP_SaberBlockNonRandom(victim, saberHitLocation, qfalse);
-			}
-		}
+	{//either an NPC or a player who is blocking		
+		if (!PM_SaberInTransitionAny(victim->client->ps.saberMove)
+			&& !PM_SaberInBounce(victim->client->ps.saberMove)
+			&& !PM_SaberInKnockaway(victim->client->ps.saberMove))
+		{//I'm not attacking, in transition or in a bounce or knockaway, so play a parry			
+			WP_SaberBlockNonRandom(victim, saberHitLocation, qfalse);
+		}		
 		
+		victim->client->ps.saberEventFlags |= SEF_PARRIED;
+
+		//since it was parried, take away any damage done
+		//FIXME: what if the damage was done before the parry?
+		WP_SaberClearDamageForEntNum(attacker, victim->s.number, saberNum, bladeNum);
+
+		//tell the victim to get mad at me
+		if (victim->enemy != attacker && victim->client->playerTeam != attacker->client->playerTeam)
+		{//they're not mad at me and they're not on my team
+			G_ClearEnemy(victim);
+			G_SetEnemy(victim, attacker);
+		}
+		return qtrue;
+	}
+	return qfalse;
+}
+
+qboolean WP_SaberParryNew(gentity_t *victim, gentity_t *attacker, int saberNum, int bladeNum)
+{
+	return qfalse;
+
+	if (!victim || !victim->client || !attacker)
+	{
+		return qfalse;
+	}
+	if (Rosh_BeingHealed(victim))
+	{
+		return qfalse;
+	}
+	if (G_InCinematicSaberAnim(victim))
+	{
+		return qfalse;
+	}
+	if (PM_SuperBreakLoseAnim(victim->client->ps.torsoAnim)
+		|| PM_SuperBreakWinAnim(victim->client->ps.torsoAnim))
+	{
+		return qfalse;
+	}
+	if (victim->s.number || g_saberAutoBlocking->integer || victim->client->ps.saberBlockingTime > level.time)
+	{//either an NPC or a player who is blocking		
+		if ((!PM_SaberInTransitionAny(victim->client->ps.saberMove) || (!victim->s.number && WP_SaberBlockCooldownDone(victim)))
+			&& !PM_SaberInBounce(victim->client->ps.saberMove)
+			&& !PM_SaberInKnockaway(victim->client->ps.saberMove))
+		{//I'm not attacking, in transition or in a bounce or knockaway, so play a parry			
+			WP_SaberBlockNonRandom(victim, saberHitLocation, qfalse);
+		}
+
 		victim->client->ps.saberEventFlags |= SEF_PARRIED;
 
 		//since it was parried, take away any damage done
@@ -6622,13 +6600,13 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 		qboolean deflected = qfalse;
 
 		gentity_t *hitEnt = &g_entities[saberHitEntity];
-		gentity_t *hitOwner = NULL;
-
-		//the "power" level of the anims
-		int entAnimLevel = PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum);
-		int hitOwnerAnimLevel = PM_PowerLevelForSaberAnim(&hitOwner->client->ps, saberNum);
+		gentity_t *hitOwner = NULL;		
 
 		int hitOwnerPowerLevel = FORCE_LEVEL_0;
+		
+		//the "power" level of the anims
+		int entAnimLevel = PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum);
+		int hitOwnerAnimLevel = FORCE_LEVEL_0;
 
 		if (hitEnt)
 		{
@@ -6637,7 +6615,8 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 		if (hitOwner && hitOwner->client)
 		{
 			hitOwnerPowerLevel = 2 * hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
-			hitOwner->breakLimit = hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
+			hitOwner->breakLimit = 1 + hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
+			hitOwnerAnimLevel = PM_PowerLevelForSaberAnim(&hitOwner->client->ps, saberNum);
 		}		
 
 		/* //old crud here
@@ -6716,6 +6695,11 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						entDefending = qtrue;
 					}
+					/*else if (!ent->s.number && WP_SaberBlockCooldownDone(ent) && PM_WalkingOrIdle(ent))
+					{//player can cheat on the return animation a bit
+						//hitOwner->client->ps.saberMove = LS_READY; //kind of hacky
+						entDefending = qtrue;
+					}*/
 
 					if (ent->client->ps.torsoAnim == BOTH_A1_SPECIAL
 					|| ent->client->ps.torsoAnim == BOTH_A2_SPECIAL
@@ -6781,11 +6765,11 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						hitOwnerDefending = qtrue;
 					}
-					if (!hitOwner->s.number && WP_SaberBlockCooldownDone(hitOwner) && PM_WalkingOrIdle(hitOwner))
-					{//player gets a special break
-						hitOwner->client->ps.saberMove = LS_READY; //kind of hacky
+					/*else if (!hitOwner->s.number && WP_SaberBlockCooldownDone(hitOwner) && PM_WalkingOrIdle(hitOwner))
+					{//player can cheat on the return animation a bit
+						//hitOwner->client->ps.saberMove = LS_READY; //kind of hacky
 						hitOwnerDefending = qtrue;
-					}
+					}*/
 
 					if (hitOwner->client->ps.torsoAnim == BOTH_A1_SPECIAL
 					|| hitOwner->client->ps.torsoAnim == BOTH_A2_SPECIAL
@@ -6912,7 +6896,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							{//knockaways can make fast-attacker go into a broken parry anim if the ent is using fast or med (but not Tavion)
 								//make me parry
 								WP_SaberParry(hitOwner, ent, saberNum, bladeNum);
-								if (!PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))								
+								if (!PM_SaberInSpecialAttack(ent->client->ps.saberMove))								
 								{//special attacks can't be interrupted... just semi-blocked...
 									//turn the parry into a knockaway
 									hitOwner->client->ps.saberBounceMove = PM_KnockawayForParry(hitOwner->client->ps.saberBlocked);
@@ -6950,7 +6934,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							else if (!activeDefense//they're not defending i.e. not holding +block with auto-blocking turned off?
 								|| (hitOwner->breakCounter > hitOwner->breakLimit //too tired to defend strong attacks
 								&& hitOwnerPowerLevel < entPowerLevel)
-								|| PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))//they are defending, but their defense strength is lower than my attack...
+								|| PM_SaberInSpecialAttack(ent->client->ps.saberMove))//they are defending, but their defense strength is lower than my attack...
 								//or they are doing a special which has slightly
 								//different rules
 								/*|| (!deflected && Q_irand(0, Q_max(0, PM_PowerLevelForSaberAnim(&ent->client->ps, saberNum) - hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]PM_PowerLevelForSaberAnim( &hitOwner->client->ps ))) > 0))*/
@@ -9461,44 +9445,11 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 		}
 
 		if (!self->s.number) //player
-		{			
-			int totalReboundTime = 0;
-			int baseReboundTime = 0;
-
-			if (ucmd->buttons & BUTTON_ATTACK
-				|| PM_SaberInAttack(self->client->ps.saberMove)
-				|| PM_SaberInSpecialAttack(self->client->ps.torsoAnim))
-			{//can't block if already attacking!
-				return;
-			}
-			else if (PM_SaberInTransitionAny(self->client->ps.saberMove)
-				&& !PM_SaberInReturn(self->client->ps.saberMove))
-			{//can't block if transitioning between saber moves
-				return;
-			}
-			else if (PM_SaberInReturn(self->client->ps.saberMove))
-			{//we're in a return, probably triggered after a previous deflection
-				//FIXME: Make sure it's a return from a deflection, not a slash?
-				if (self->client->ps.saberAnimLevel == SS_FAST || self->client->ps.saberAnimLevel == SS_TAVION
-					//|| self->client->ps.saberAnimLevel == SS_DUAL
-					)
-				{ //only non-fast deflecting styles get a break
-					return;
-				}
-				
-				totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_SPEED;
-				baseReboundTime = totalReboundTime;
-
-				switch (self->client->ps.saberAnimLevel) 
+		{
+			if (PM_SaberInTransitionAny(self->client->ps.saberMove))
+			{
+				if (!WP_SaberBlockCooldownDone(self) || !PM_WalkingOrIdle(self))
 				{
-				case SS_DESANN:
-				case SS_STRONG:
-					totalReboundTime *= SLOW_BLOCK_FACTOR;
-					break;
-				}
-				
-				if (totalReboundTime > self->client->ps.torsoAnimTimer) 
-				{//we haven't been in the cooldown (return) animation long enough
 					return;
 				}
 			}
@@ -14741,6 +14692,41 @@ void WP_SaberBlockPointsRegenerate(gentity_t *self)
 			}
 		}
 	}
+}
+
+qboolean WP_SaberBlockCooldownDone(gentity_t *self)
+{//lets you cheat on the return animations for better defense
+	if (PM_SaberInReturn(self->client->ps.saberMove))
+	{//we're in a return, probably triggered after a previous deflection
+		//FIXME: Make sure it's a return from a deflection, not a slash?
+		/*if (self->client->ps.saberAnimLevel == SS_FAST || self->client->ps.saberAnimLevel == SS_TAVION
+			//|| self->client->ps.saberAnimLevel == SS_DUAL
+			)
+		{ //only non-fast deflecting styles get a break
+			return qfalse;
+		}
+		*/
+
+		int totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_SPEED;
+		int baseReboundTime = totalReboundTime;
+
+		switch (self->client->ps.saberAnimLevel)
+		{
+		case SS_DESANN:
+		case SS_STRONG:
+			totalReboundTime *= SLOW_BLOCK_FACTOR;
+			break;
+		}
+
+		if (totalReboundTime > self->client->ps.torsoAnimTimer)
+		{//we haven't been in the cooldown (return) animation long enough
+			return qfalse;
+		}
+
+		return qtrue;
+	}
+
+	return qfalse;
 }
 
 void WP_ForcePowerRegenerate(gentity_t *self, int overrideAmt)

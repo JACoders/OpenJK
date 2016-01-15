@@ -2606,6 +2606,17 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 			return qfalse;
 		}
 	}
+	else if (PM_RunningAnim(pm->ps->legsAnim))
+	{//can only chain two attacks if running
+		if (pm->ps->saberAttackChainCount > 1)
+		{
+			return qtrue;
+		}
+		else
+		{
+			return qfalse;
+		}
+	}
 	else if ((pm->ps->forcePowersActive&(1 << FP_RAGE)))
 	{//infinite chaining when raged
 		return qfalse;
@@ -2626,12 +2637,12 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 		}
 	}
 
-	if (pm->ps->saberAnimLevel == SS_DESANN && pm->ps->saberAttackChainCount > Q_irand(2, 4))
+	if (pm->ps->saberAnimLevel == SS_DESANN && pm->ps->saberAttackChainCount > Q_irand(2, 3))
 	{
 		return qtrue;
 	}
 		
-	if (pm->ps->saberAnimLevel == SS_TAVION && pm->ps->saberAttackChainCount > Q_irand(2, 5))
+	if (pm->ps->saberAnimLevel == SS_TAVION && pm->ps->saberAttackChainCount > Q_irand(4, 5))
 	{//desann and tavion can link up as many attacks as they want
 		return qtrue;
 	}
@@ -2639,11 +2650,11 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 	//		not you can chain?  Like if you were completely missed, you can't chain as much, or...?
 	//		And/Or based on FP_SABER_OFFENSE level?  So number of attacks you can chain
 	//		increases with your FP_SABER_OFFENSE skill?
-	if (pm->ps->saberAnimLevel == SS_STAFF && pm->ps->saberAttackChainCount > Q_irand(2, 5))
+	if (pm->ps->saberAnimLevel == SS_STAFF && pm->ps->saberAttackChainCount > Q_irand(4, 5))
 	{
 		return qtrue;
 	}
-	else if (pm->ps->saberAnimLevel == SS_DUAL && pm->ps->saberAttackChainCount > Q_irand(2, 5))
+	else if (pm->ps->saberAnimLevel == SS_DUAL && pm->ps->saberAttackChainCount > Q_irand(4, 5))
 	{
 		return qtrue;
 	}
@@ -2685,11 +2696,12 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 	}
 	else
 	{//FIXME: have chainAngle influence fast and medium chains as well?
-		if (pm->ps->saberAnimLevel == SS_MEDIUM	&& pm->ps->saberAttackChainCount > Q_irand(2, 5))
+		if (pm->ps->saberAnimLevel == SS_MEDIUM	&& pm->ps->saberAttackChainCount > Q_irand(4, 5))
 		{
 			return qtrue;
 		}
 	}
+
 	return qfalse;
 }
 
