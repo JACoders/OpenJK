@@ -10516,7 +10516,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 23)
 						{
-							magic_explosion(ent,300,200,900);
+							magic_explosion(ent,320,200,900);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Magic Explosion!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
