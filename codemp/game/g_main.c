@@ -7686,12 +7686,6 @@ void G_RunFrame( int levelTime ) {
 								npc_ent = Zyk_NPC_SpawnType("sage_of_darkness",2780,3904,1583,0);
 							else if (ent->client->pers.universe_quest_messages == 6)
 								trap->SendServerCommand( ent->s.number, "chat \"^5Sage of Light: ^7Your quest is very difficult, but at the end you will see it was worthy the effort...\"");
-							else if (ent->client->pers.universe_quest_messages == 7)
-							{
-								trap->SendServerCommand( ent->s.number, "chat \"^3Sage of Eternity: ^7Complete one of the side quests and come back so I can give you an artifact.\"");
-
-								change_player = 1;
-							}
 							else if (ent->client->pers.universe_quest_messages == 8)
 							{
 								ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 3000;
@@ -8009,7 +8003,7 @@ void G_RunFrame( int levelTime ) {
 									ent->client->pers.universe_quest_timer = level.time + 1200;
 							}
 						}
-						else if (ent->client->pers.universe_quest_progress == 1 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && ent->client->pers.universe_quest_messages < 42 && ent->client->pers.universe_quest_objective_control > -1)
+						else if (ent->client->pers.universe_quest_progress == 1 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && ent->client->pers.universe_quest_objective_control > -1)
 						{ // zyk: second Universe Quest mission
 							gentity_t *npc_ent = NULL;
 							if (ent->client->pers.universe_quest_messages == 0)
@@ -8079,10 +8073,8 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 33)
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Sage of Eternity: ^7Thank you, brave hero!\""));
 							else if (ent->client->pers.universe_quest_messages == 34)
-								trap->SendServerCommand( ent->s.number, va("chat \"^3Sage of Eternity: ^7You can visit us at yavin1b.\""));
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Sage of Eternity: ^7We have an artifact, come to yavin1b and talk to us to get it.\""));
 							else if (ent->client->pers.universe_quest_messages == 35)
-								trap->SendServerCommand( ent->s.number, va("chat \"^3Sage of Eternity: ^7We have an artifact, but we will give you only after you complete one of the side quests.\""));
-							else if (ent->client->pers.universe_quest_messages == 36)
 							{
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Sage of Eternity: ^7Now go, legendary hero! Courage in your quest!\""));
 								

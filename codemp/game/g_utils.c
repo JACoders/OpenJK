@@ -1571,21 +1571,6 @@ qboolean TryHeal(gentity_t *ent, gentity_t *target)
 	return qfalse;
 }
 
-// zyk: tests how many side quests completed by the player
-int zyk_number_of_completed_quests(gentity_t *ent)
-{
-	int number_of_completed_quests = 0;
-
-	if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
-		number_of_completed_quests++;
-	if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
-		number_of_completed_quests++;
-	if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
-		number_of_completed_quests++;
-
-	return number_of_completed_quests;
-}
-
 /*
 ==============
 TryUse
@@ -1824,17 +1809,13 @@ void TryUse( gentity_t *ent )
 			}
 			else if (target->client->pers.universe_quest_objective_control == 1)
 			{ // zyk: Sage of Eternity
-				if (zyk_number_of_completed_quests(ent) >= 1 && !(ent->client->pers.universe_quest_counter & (1 << 1)))
-				{ // zyk: player completed one of the side quests but does not have the artifact yet
+				if (!(ent->client->pers.universe_quest_counter & (1 << 1)))
+				{ // zyk: player does not have the artifact yet
 					ent->client->pers.universe_quest_messages = 8;
 				}
-				else if (zyk_number_of_completed_quests(ent) >= 1)
-				{ // zyk: player completed one of the side quests and already has the artifact
-					ent->client->pers.universe_quest_messages = 9;
-				}
 				else
-				{ // zyk: player must complete a side quest to get the artifact
-					ent->client->pers.universe_quest_messages = 7;
+				{ // zyk: player already has the artifact
+					ent->client->pers.universe_quest_messages = 9;
 				}
 			}
 			else if (target->client->pers.universe_quest_objective_control == 2)

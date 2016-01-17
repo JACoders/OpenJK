@@ -5444,8 +5444,22 @@ void got_all_amulets(gentity_t *ent)
 	}
 }
 
+// zyk: tests how many side quests completed by the player
+int zyk_number_of_completed_quests(gentity_t *ent)
+{
+	int number_of_completed_quests = 0;
+
+	if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
+		number_of_completed_quests++;
+	if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
+		number_of_completed_quests++;
+	if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
+		number_of_completed_quests++;
+
+	return number_of_completed_quests;
+}
+
 // zyk: used by the quest_get_new_player function to actually get the new player based on his quest settings
-extern int zyk_number_of_completed_quests(gentity_t *ent);
 void choose_new_player(gentity_t *next_player)
 {
 	int found = 0;
@@ -8692,7 +8706,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					else if (ent->client->pers.universe_quest_progress == 1)
 						strcpy(universe_message, "^3\n2. The Rise of an Evil Force\n\n^7Talk to the sages at ^3mp/duel6 ^7to know more about your quest.");
 					else if (ent->client->pers.universe_quest_progress == 2)
-						strcpy(universe_message, va("^3\n3. The Life-Force Artifacts\n\n^7Find the 8 artifacts in SP maps and talk to the sages at ^3yavin1b^7.\nCollected artifacts: ^3%d^7",number_of_artifacts(ent)));
+						strcpy(universe_message, va("^3\n3. The Life-Force Artifacts\n\n^7Find the 8 artifacts in SP maps. One of them is with the sages at ^3yavin1b^7.\nCollected artifacts: ^3%d^7",number_of_artifacts(ent)));
 					else if (ent->client->pers.universe_quest_progress == 3)
 						strcpy(universe_message, "^3\n4. In Search for Answers\n\n^7Go to ^3yavin1b ^7to talk to the sages about the mysterious voice you heard at the beginning of the quest.");
 					else if (ent->client->pers.universe_quest_progress == 4)
