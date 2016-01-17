@@ -10182,10 +10182,7 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Wind
 					if (ent->client->pers.guardian_timer < level.time)
 					{
-						int blowing_wind_duration = ((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/2) + 1000;
-
-						blowing_wind(ent,2500,blowing_wind_duration);
-
+						blowing_wind(ent,2500,5000);
 						ent->client->pers.guardian_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];
 						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Blowing Wind!\"");
 					}
@@ -10193,7 +10190,6 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
 						hurricane(ent,700,5000);
-
 						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Hurricane!\"");
 						ent->client->pers.light_quest_timer = level.time + ent->client->ps.stats[STAT_MAX_HEALTH];
 					}
