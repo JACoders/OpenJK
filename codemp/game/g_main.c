@@ -5460,6 +5460,7 @@ void quest_power_events(gentity_t *ent)
 			ent->client->ps.eFlags &= ~EF_NODRAW;
 			ent->client->ps.eFlags2 &= ~EF2_HELD_BY_MONSTER;
 			ent->flags = 0;
+			ent->die = player_die; // zyk: must set this function again
 			initialize_rpg_skills(ent);
 			ent->client->pers.quest_power_status &= ~(1 << 10);
 		}
