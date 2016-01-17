@@ -7711,7 +7711,7 @@ static void G_KickSomeMofos(gentity_t *ent)
 	// zyk: Monk class in RPG Mode causes more kick damage
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 4)
 	{
-		kickDamage = kickDamage * 2;
+		kickDamage = kickDamage * 2.5;
 	}
 
 	//HMM... or maybe trace from origin to footRBolt/footLBolt?  Which one?  G2 trace?  Will do hitLoc, if so...

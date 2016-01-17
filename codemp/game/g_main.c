@@ -7560,17 +7560,11 @@ void G_RunFrame( int levelTime ) {
 					ent->client->ps.weaponTime = weaponData[WP_REPEATER].altFireTime/2;
 				}
 
-				// zyk: Monk class has a faster melee fireTime and altFireTime
-				if (ent->client->pers.rpg_class == 4 && ent->client->ps.weapon == WP_MELEE)
+				// zyk: Monk class has a faster melee fireTime
+				if (ent->client->pers.rpg_class == 4 && ent->client->ps.weapon == WP_MELEE && ent->client->pers.skill_levels[55] > 0 && 
+					ent->client->ps.weaponTime > (weaponData[WP_MELEE].fireTime * 1.8)/(ent->client->pers.skill_levels[55] + 1))
 				{
-					if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1))
-					{
-						ent->client->ps.weaponTime = (weaponData[WP_MELEE].fireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1);
-					}
-					else if (ent->client->ps.weaponTime > (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1))
-					{
-						ent->client->ps.weaponTime = (weaponData[WP_MELEE].altFireTime * 1.5)/(ent->client->pers.skill_levels[55] + 1);
-					}
+					ent->client->ps.weaponTime = (weaponData[WP_MELEE].fireTime * 1.8)/(ent->client->pers.skill_levels[55] + 1);
 				}
 
 				if (ent->client->pers.flame_thrower > level.time && ent->client->cloakDebReduce < level.time)

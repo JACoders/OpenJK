@@ -6084,7 +6084,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (targ->client->pers.rpg_class == 2 && targ->client->pers.secrets_found & (1 << 1))
 				bonus_resistance = 0.05;
 			else if (targ->client->pers.rpg_class == 4 && targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Monk damage resistance
-				bonus_resistance = 0.12;
+				bonus_resistance = 0.14;
 
 			take = (int)ceil(take * (1.0 - bonus_resistance - (0.1 * targ->client->pers.skill_levels[32])));
 		}
