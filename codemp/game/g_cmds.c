@@ -8935,7 +8935,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 25)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3DEMP2: ^7a very powerful weapon against machine npc and some vehicles, causing more damage to them and stunning them. Normal fire causes %d damage and alt fire can be charged and causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_demp2_damage.integer, zyk_demp2_alt_damage.integer) );
 					if (i == 26)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Flechette: ^7this weapon is similar to a shotgun. Normal fire causes %d damage. Alt fire shoots 2 bombs and causes %d damage. At level 2 causes 25 per cent more damage\n\"", zyk_flechette_damage.integer, zyk_flechette_alt_damage.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Flechette: ^7this weapon is similar to a shotgun. Normal fire causes %d damage. Alt fire shoots 2 bombs and causes %d damage. At level 2 causes 25 per cent more damage and normal fire has less spread\n\"", zyk_flechette_damage.integer, zyk_flechette_alt_damage.integer) );
 					if (i == 27)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Rocket Launcher: ^7a powerful explosive weapon. Normal fire shoots a rocket causing %d damage. Alt fire shoots a homing missile. At level 2 causes 25 per cent more damage and destroys objects which could only be damaged by saber\n\"", zyk_rocket_damage.integer) );
 					if (i == 28)

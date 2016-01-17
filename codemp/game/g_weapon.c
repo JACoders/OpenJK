@@ -1685,8 +1685,16 @@ static void WP_FlechetteMainFire( gentity_t *ent )
 
 		if (i != 0)
 		{ //do nothing on the first shot, it will hit the crosshairs
-			angs[PITCH] += crandom() * FLECHETTE_SPREAD;
-			angs[YAW]	+= crandom() * FLECHETTE_SPREAD;
+			if (ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[25] == 2)
+			{ // zyk: Flechette 2/2 has less spread
+				angs[PITCH] += crandom() * FLECHETTE_SPREAD * 0.5;
+				angs[YAW]	+= crandom() * FLECHETTE_SPREAD * 0.5;
+			}
+			else
+			{
+				angs[PITCH] += crandom() * FLECHETTE_SPREAD;
+				angs[YAW]	+= crandom() * FLECHETTE_SPREAD;
+			}
 		}
 
 		AngleVectors( angs, fwd, NULL, NULL );
