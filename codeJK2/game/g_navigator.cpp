@@ -931,7 +931,7 @@ ShowEdges
 -------------------------
 */
 
-typedef	std::map < int, bool >		drawMap_m;
+typedef std::map < int, bool >		drawMap_m;
 
 void CNavigator::ShowEdges( void )
 {
