@@ -26,7 +26,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "FxScheduler.h"
 
 #include "../../code/client/vmachine.h"
-#include "../game/characters.h"
 
 #include "../../code/qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h

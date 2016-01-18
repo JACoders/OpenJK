@@ -28,7 +28,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "b_local.h"
 #include "anims.h"
 #include "g_functions.h"
-#include "characters.h"
 #include "wp_saber.h"
 
 extern qboolean G_CheckForStrongAttackMomentum( gentity_t *self );
