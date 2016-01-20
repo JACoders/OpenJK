@@ -5462,6 +5462,9 @@ void quest_power_events(gentity_t *ent)
 			ent->flags = 0;
 			ent->die = player_die; // zyk: must set this function again
 			initialize_rpg_skills(ent);
+			ent->client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
+			ent->client->ps.jetpackFuel = 100;
+			ent->client->ps.cloakFuel = 100;
 			ent->client->pers.quest_power_status &= ~(1 << 10);
 		}
 	}
