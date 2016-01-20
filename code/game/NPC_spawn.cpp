@@ -699,17 +699,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 	switch(team)
 	{
 	// no longer exists
-//	case TEAM_BORG:
-//		break;
-
-//	case TEAM_HIROGEN:
-//		if( Q_stricmp( "hirogenalpha", NPC_type ) == 0 )
-//			return ( 1 << WP_BLASTER);
-		//Falls through
-
-//	case TEAM_KLINGON:
-
-		//NOTENOTE: Falls through
 
 //	case TEAM_IMPERIAL:
 	case TEAM_ENEMY:
@@ -721,8 +710,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 //			return ( 1 << WP_IMPERIAL_BLADE);
 		//NOTENOTE: Falls through if not a knife user
 
-//	case TEAM_SCAVENGERS:
-//	case TEAM_MALON:
 		//FIXME: default weapon in npc config?
 		if ( Q_stricmpn( "stofficer", NPC_type, 9 ) == 0 )
 		{
@@ -847,9 +834,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		break;
 
 	case TEAM_PLAYER:
-
-//		if(spawnflags & SFB_TRICORDER)
-//			return ( 1 << WP_TRICORDER);
 
 		if(spawnflags & SFB_RIFLEMAN)
 			return ( 1 << WP_REPEATER);
