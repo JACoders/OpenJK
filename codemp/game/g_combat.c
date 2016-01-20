@@ -5046,7 +5046,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	// zyk: player or npc with Magic Shield takes very little damage
 	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 11))
-		damage = 1;
+		damage = (int)ceil(damage*0.05);
 
 	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 7))
 	{ // zyk: Ultra Resistance bonus resistance

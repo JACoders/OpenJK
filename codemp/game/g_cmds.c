@@ -3946,7 +3946,7 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (use_this_power == 8 && zyk_enable_magic_shield.integer == 1 && ent->client->pers.magic_power >= zyk_magic_shield_mp_cost.integer)
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
-						magic_shield(ent, 6000);
+						magic_shield(ent, 7000);
 						ent->client->pers.magic_power -= zyk_magic_shield_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (1000 * ent->client->pers.skill_levels[55]);
