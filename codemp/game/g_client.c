@@ -2659,6 +2659,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	client->pers.mind_controlled1_id = -1;
 	client->pers.guardian_invoked_by_id = -1;
 
+	// zyk: cooldown time between magic powers
+	client->pers.quest_power_usage_timer = 0;
+
 	// zyk: sending events to client game
 	client->pers.send_event_timer = level.time + 3000;
 	client->pers.send_event_interval = level.time + 100;

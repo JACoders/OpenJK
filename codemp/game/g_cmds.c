@@ -4884,7 +4884,6 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 
 		ent->client->pers.quest_power_status = 0;
-		ent->client->pers.quest_power_usage_timer = 0;
 
 		ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
