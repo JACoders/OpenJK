@@ -388,7 +388,7 @@ CBlock *CBlock::Duplicate( CIcarus* icarus )
 	newblock->Create( m_id );
 
 	//Duplicate entire block and return the cc
-	for ( mi = m_members.begin(); mi != m_members.end(); mi++ )
+	for ( mi = m_members.begin(); mi != m_members.end(); ++mi )
 	{
 		newblock->AddMember( (*mi)->Duplicate(icarus) );
 	}

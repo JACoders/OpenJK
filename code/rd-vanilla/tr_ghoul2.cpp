@@ -2342,7 +2342,7 @@ void RenderSurfaces(CRenderSurface &RS)
 				for (k=range.first;k!=range.second;)
 				{
 					kcur=k;
-					k++;
+					++k;
 					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
 					if (!tex ||											 // it is gone, lets get rid of it
 						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
