@@ -747,11 +747,6 @@ void G_SetMissionStatusText( gentity_t *attacker, int mod )
 	{//crushed
 		statusTextIndex = STAT_JUDGEMENTMUCHDESIRED;
 	}
-	// borg no longer exist
-//	else if ( attacker && attacker->client && attacker->client->playerTeam == TEAM_BORG )
-//	{//assimilated
-//		statusTextIndex = Q_irand( IGT_RESISTANCEISFUTILE, IGT_NAMEIS8OF12 );
-//	}
 	else if ( attacker && Q_stricmp( "trigger_hurt", attacker->classname ) == 0 )
 	{//Killed by something that should have been clearly dangerous
 //		statusTextIndex = Q_irand( IGT_JUDGEMENTDESIRED, IGT_JUDGEMENTMUCHDESIRED );
@@ -761,49 +756,6 @@ void G_SetMissionStatusText( gentity_t *attacker, int mod )
 	{//killed by a teammate
 		statusTextIndex = STAT_INSUBORDINATION;
 	}
-	/*
-	else if ()
-	{//killed a teammate- note: handled above
-		if ( Q_irand( 0, 1 ) )
-		{
-			statusTextIndex = IGT_YOUCAUSEDDEATHOFTEAMMATE;
-		}
-		else
-		{
-			statusTextIndex = IGT_KILLEDANINNOCENTCREWMAN;
-		}
-	}
-	else
-	{
-		//This next block is not contiguous
-		IGT_INADEQUATE,
-		IGT_RESPONSETIME,
-		IGT_SHOOTINRANGE,
-		IGT_TRYAGAIN,
-		IGT_TRAINONHOLODECK,
-		IGT_WHATCOLORSHIRT,
-		IGT_NOTIMPRESS7OF9,
-		IGT_NEELIXFAREDBETTER,
-		IGT_THATMUSTHURT,
-		IGT_TUVOKDISAPPOINTED,
-		IGT_STARFLEETNOTIFYFAMILY,
-		IGT_TEAMMATESWILLMISSYOU,
-		IGT_LESSTHANEXEMPLARY,
-		IGT_SACRIFICEDFORTHEWHOLE,
-		IGT_NOTLIVELONGANDPROSPER,
-		IGT_BETTERUSEOFSIMULATIONS,
-	}
-	*/
-
-	/*
-	//These can be set by designers
-	IGT_INSUBORDINATION,
-	IGT_YOUCAUSEDDEATHOFTEAMMATE,
-	IGT_DIDNTPROTECTTECH,
-	IGT_DIDNTPROTECT7OF9,
-	IGT_NOTSTEALTHYENOUGH,
-	IGT_STEALTHTACTICSNECESSARY,
-	*/
 }
 
 void G_MakeTeamVulnerable( void )
