@@ -689,10 +689,6 @@ void FireWeapon( gentity_t *ent, qboolean alt_fire )
 		WP_FireBryarPistol( ent, qfalse ); // never an alt-fire?
 		break;
 
-//	case WP_TRICORDER:
-//		WP_TricorderScan( ent, alt_fire );
-//		break;
-
 	default:
 		return;
 		break;
