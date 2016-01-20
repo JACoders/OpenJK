@@ -158,14 +158,10 @@ void NPC_SetPainEvent( gentity_t *self )
 {
 	if ( !self->NPC || !(self->NPC->aiFlags&NPCAI_DIE_ON_IMPACT) )
 	{
-	// no more borg
-	//	if( self->client->playerTeam != TEAM_BORG )
-	//	{
-			if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
-			{
-				G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
-			}
-	//	}
+        if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
+        {
+            G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
+        }
 	}
 }
 

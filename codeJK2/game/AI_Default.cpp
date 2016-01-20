@@ -132,12 +132,6 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 //			{//Medic is on the way, get down!
 //				duck_ok = qtrue;
 //			}
-			// no more borg
-///			if ( NPC->client->playerTeam!= TEAM_BORG )
-//			{//Borg don't care if they're about to die
-				//attack_scale will be a max of .66
-//				attack_scale = NPC->health/60;
-//			}
 		}
 	}
 
@@ -549,7 +543,6 @@ void NPC_BSPointShoot (qboolean shoot)
 	switch( NPC->client->ps.weapon )
 	{
 	case WP_NONE:
-//	case WP_TRICORDER:
 	case WP_MELEE:
 	case WP_SABER:
 		//don't do any pitch change if not holding a firing weapon
