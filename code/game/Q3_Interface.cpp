@@ -7420,7 +7420,7 @@ CQuake3GameInterface::~CQuake3GameInterface()
 	}
 
 	// Clear out all precached script's.
-	for ( iterScript = m_ScriptList.begin(); iterScript != m_ScriptList.end(); iterScript++ )
+	for ( iterScript = m_ScriptList.begin(); iterScript != m_ScriptList.end(); ++iterScript )
 	{
 		Free( (*iterScript).second->buffer );
 		delete (*iterScript).second;

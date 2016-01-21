@@ -95,7 +95,7 @@ int CSequencer::Free( void )
 	sequence_l::iterator	sli;
 
 	//Flush the sequences
-	for ( sli = m_sequences.begin(); sli != m_sequences.end(); sli++ )
+	for ( sli = m_sequences.begin(); sli != m_sequences.end(); ++sli )
 	{
 		m_owner->DeleteSequence( (*sli) );
 	}
@@ -138,7 +138,7 @@ int CSequencer::Flush( CSequence *owner )
 	{
 		if ( ( (*sli) == owner ) || ( owner->HasChild( (*sli) ) ) || ( (*sli)->HasFlag( SQ_PENDING ) ) || ( (*sli)->HasFlag( SQ_TASK ) ) )
 		{
-			sli++;
+			++sli;
 			continue;
 		}
 

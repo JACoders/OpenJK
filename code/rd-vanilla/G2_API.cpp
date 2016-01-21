@@ -83,7 +83,7 @@ public:
 		Com_DPrintf(mess);
 
 		std::map<std::string,int>::iterator i;
-		for (i=mErrors.begin();i!=mErrors.end();i++)
+		for (i=mErrors.begin();i!=mErrors.end();++i)
 		{
 			total+=(*i).second;
 			sprintf(mess,"%s (hits %d)\n",(*i).first.c_str(),(*i).second);
@@ -571,7 +571,7 @@ public:
 			for (i=0;i<MAX_G2_MODELS;i++)
 			{
 				std::list<int>::iterator j;
-				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();j++)
+				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();++j)
 				{
 					if (*j==i)
 						break;

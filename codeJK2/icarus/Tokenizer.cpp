@@ -210,7 +210,7 @@ void CSymbolTable::Init()
 
 void CSymbolTable::DiscardSymbols()
 {
-	for (symbolmap_t::iterator isymbol = m_symbols.begin(); isymbol != m_symbols.end(); isymbol++)
+	for (symbolmap_t::iterator isymbol = m_symbols.begin(); isymbol != m_symbols.end(); ++isymbol)
 	{
 		(*isymbol).second->Delete();
 	}

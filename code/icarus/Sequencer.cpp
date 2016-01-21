@@ -118,7 +118,7 @@ void CSequencer::Free( CIcarus* icarus )
 
 	// OLD STUFF!
 	sequence_l::iterator	sli;
-	for ( sli = m_sequences.begin(); sli != m_sequences.end(); sli++ )
+	for ( sli = m_sequences.begin(); sli != m_sequences.end(); ++sli )
 	{
 		icarus->DeleteSequence( (*sli) );
 	}
@@ -181,7 +181,7 @@ int CSequencer::Flush( CSequence *owner, CIcarus* icarus )
 	{
 		if ( ( (*sli) == owner ) || ( owner->HasChild( (*sli) ) ) || ( (*sli)->HasFlag( CSequence::SQ_PENDING ) ) || ( (*sli)->HasFlag( CSequence::SQ_TASK ) ) )
 		{
-			sli++;
+			++sli;
 			continue;
 		}
 
