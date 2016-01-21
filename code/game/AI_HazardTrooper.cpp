@@ -1120,7 +1120,7 @@ void		Troop_Initialize()
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Troop_Update()
 {
-	for (TTroopPool::iterator i=mTroops.begin(); i!=mTroops.end(); i++)
+	for (TTroopPool::iterator i=mTroops.begin(); i!=mTroops.end(); ++i)
 	{
 		i->Update();
 	}
@@ -1141,7 +1141,7 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 		TTroopPool::iterator	closestTroop = mTroops.end();
 		trace_t					trace;
 
-		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); iTroop++)
+		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); ++iTroop)
 		{
 			if (iTroop->Team()==actor->client->playerTeam)
 			{
@@ -1196,7 +1196,7 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 		float					closestDist = 0;
 		TTroopPool::iterator	closestTroop = mTroops.end();
 
-		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); iTroop++)
+		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); ++iTroop)
 		{
 			curDist = iTroop->DistanceSq(actor);
 			if ((curDist<MAX_TROOP_MERGE_DIST2) &&
