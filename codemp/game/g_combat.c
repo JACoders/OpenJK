@@ -4992,7 +4992,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = damage * 1.25;
 	}
 
-	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(attacker->client->pers.player_settings & (1 << 2)))
+	if (attacker && attacker->client && (attacker->NPC || attacker->client->sess.amrpgmode == 2) && attacker->client->pers.quest_power_status & (1 << 15))
 	{ // zyk: Dark Power increases damage of every attack
 		damage = (int)ceil(damage*1.15);
 	}
@@ -5007,10 +5007,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		gentity_t *quest_player_ent = &g_entities[attacker->client->pers.guardian_invoked_by_id];
 
 		damage += ((int)ceil(damage * 0.1 * zyk_number_of_allies(quest_player_ent)));
-
-		// zyk: Guardian of Darkness used her Dark Power. Increase damage
-		if (attacker->client->pers.guardian_mode == 9 && attacker->client->pers.hunter_quest_messages == 1)
-			damage = (int)ceil(damage*1.12);
 	}
 
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
@@ -5031,10 +5027,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			Jedi_Decloak(attacker);
 			attacker->client->cloakToggleTime = level.time + Q_irand( 5000, 10000 );
 		}
-
-		// zyk: Guardian of Eternity used her Eternity Power. Decrease damage taken
-		if (targ->client->pers.guardian_mode == 10 && targ->client->pers.hunter_quest_messages == 1)
-			damage = (int)ceil(damage*0.88);
 	}
 
 	if (targ && targ->client && targ->NPC)
@@ -5045,7 +5037,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if (targ && targ->client && targ->client->sess.amrpgmode == 2 && targ->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(targ->client->pers.player_settings & (1 << 3)))
+	if (targ && targ->client && (targ->NPC || targ->client->sess.amrpgmode == 2) && targ->client->pers.quest_power_status & (1 << 16))
 	{ // zyk: Eternity Power reduces damage of every attack
 		damage = (int)ceil(damage*0.85);
 	}

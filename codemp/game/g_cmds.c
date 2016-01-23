@@ -5071,14 +5071,31 @@ void initialize_rpg_skills(gentity_t *ent)
 		if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)))
 		{
 			ent->client->pers.magic_power--;
+			ent->client->pers.quest_power_status |= (1 << 14);
 		}
+		else
+		{
+			ent->client->pers.quest_power_status &= ~(1 << 14);
+		}
+
 		if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 2)))
 		{
 			ent->client->pers.magic_power--;
+			ent->client->pers.quest_power_status |= (1 << 15);
 		}
+		else
+		{
+			ent->client->pers.quest_power_status &= ~(1 << 15);
+		}
+
 		if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 3)))
 		{
 			ent->client->pers.magic_power--;
+			ent->client->pers.quest_power_status |= (1 << 16);
+		}
+		else
+		{
+			ent->client->pers.quest_power_status &= ~(1 << 16);
 		}
 
 		// zyk: Universe Power
@@ -10931,11 +10948,34 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			if (ent->client->pers.player_settings & (1 << value))
 			{
 				ent->client->pers.player_settings &= ~(1 << value);
+
+				if ((value == 1 || value == 2 || value == 3) && ent->client->pers.magic_power > 0)
+				{
+					ent->client->pers.magic_power--;
+
+					if (value == 1)
+						ent->client->pers.quest_power_status |= (1 << 14);
+					else if (value == 2)
+						ent->client->pers.quest_power_status |= (1 << 15);
+					else if (value == 3)
+						ent->client->pers.quest_power_status |= (1 << 16);
+
+					send_rpg_events(1000);
+				}
+
 				strcpy(new_status,"^2ON^7");
 			}
 			else
 			{
 				ent->client->pers.player_settings |= (1 << value);
+
+				if (value == 1)
+					ent->client->pers.quest_power_status &= ~(1 << 14);
+				else if (value == 2)
+					ent->client->pers.quest_power_status &= ~(1 << 15);
+				else if (value == 3)
+					ent->client->pers.quest_power_status &= ~(1 << 16);
+
 				strcpy(new_status,"^1OFF^7");
 			}
 		}

@@ -10359,23 +10359,15 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]))
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
+						ent->client->pers.quest_power_status |= (1 << 14);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Light Power!\"");
 					}
-					else if (ent->client->pers.hunter_quest_messages == 1 && ent->client->pers.guardian_timer < level.time)
-					{
-						if ((ent->health + 4) < ent->client->ps.stats[STAT_MAX_HEALTH])
-							ent->health += 4;
-						else
-							ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 
-						ent->client->pers.guardian_timer = level.time + 1000;
-					}
-
-					if (ent->client->pers.light_quest_timer < level.time)
+					if (ent->client->pers.guardian_timer < level.time)
 					{
 						lightning_dome(ent,90);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Light: ^7Lightning Dome!\"");
-						ent->client->pers.light_quest_timer = level.time + 14000;
+						ent->client->pers.guardian_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 9)
@@ -10383,14 +10375,15 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]))
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
+						ent->client->pers.quest_power_status |= (1 << 15);
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Dark Power!\"");
 					}
 
-					if (ent->client->pers.light_quest_timer < level.time)
+					if (ent->client->pers.guardian_timer < level.time)
 					{
-						inner_area_damage(ent,400,100);
+						inner_area_damage(ent,400,90);
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Darkness: ^7Inner Area Damage!\"");
-						ent->client->pers.light_quest_timer = level.time + 14000;
+						ent->client->pers.guardian_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 10)
@@ -10398,14 +10391,15 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.hunter_quest_messages == 0 && ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]))
 					{ // zyk: after losing half HP, uses his special ability
 						ent->client->pers.hunter_quest_messages = 1;
+						ent->client->pers.quest_power_status |= (1 << 16);
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Eternity Power!\"");
 					}
 
-					if (ent->client->pers.light_quest_timer < level.time)
+					if (ent->client->pers.guardian_timer < level.time)
 					{
-						healing_area(ent,3,5000);
+						healing_area(ent,2,5000);
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Eternity: ^7Healing Area!\"");
-						ent->client->pers.light_quest_timer = level.time + 14000;
+						ent->client->pers.guardian_timer = level.time + 14000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 11)
@@ -10507,6 +10501,20 @@ void G_RunFrame( int levelTime ) {
 						trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Immunity Power!\"");
 
 						ent->client->pers.guardian_timer = level.time + 35000;
+					}
+
+					if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2) && ent->client->pers.light_quest_messages == 0)
+					{
+						ent->client->pers.light_quest_messages = 1;
+						ent->client->pers.quest_power_status |= (1 << 13);
+						trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Universe Power!\"");
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						magic_explosion(ent,320,170,900);
+						trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Magic Explosion!\"");
+						ent->client->pers.light_quest_timer = level.time + 15000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 14)
