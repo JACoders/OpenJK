@@ -4927,7 +4927,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (attacker && attacker->client && (attacker->NPC || attacker->client->sess.amrpgmode == 2) && attacker->client->pers.quest_power_status & (1 << 3))
 	{ // zyk: gets bonus damage if using Ultra Strength
-		damage = (int)ceil(damage * 1.12);
+		// zyk: Universe Power
+		if (attacker->client->pers.quest_power_status & (1 << 13))
+			damage = (int)ceil(damage * 1.15);
+		else
+			damage = (int)ceil(damage * 1.12);
 	}
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
@@ -5052,7 +5056,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (targ && targ->client && (targ->client->sess.amrpgmode == 2 || targ->NPC) && targ->client->pers.quest_power_status & (1 << 7))
 	{ // zyk: Ultra Resistance bonus resistance
-		damage = (int)ceil(damage * 0.88);
+		// zyk: Universe Power
+		if (targ->client->pers.quest_power_status & (1 << 13))
+			damage = (int)ceil(damage * 0.85);
+		else
+			damage = (int)ceil(damage * 0.88);
 	}
 
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
@@ -6424,8 +6432,18 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						if (quest_power_user->client->sess.amrpgmode == 2 && quest_power_user->client->pers.rpg_class == 8 && 
 							quest_power_user->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 						{ // zyk: Magic Master Unique Skill increases amount of health recovered
-							if ((ent->health + 3) < ent->client->ps.stats[STAT_MAX_HEALTH])
-								ent->health += 3;
+							int heal_amount = 3;
+							int shield_amount = 1;
+
+							// zyk: Universe Power
+							if (quest_power_user->client->pers.quest_power_status & (1 << 13))
+							{
+								heal_amount += 1;
+								shield_amount += 1;
+							}
+
+							if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+								ent->health += heal_amount;
 							else
 								ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 
@@ -6435,14 +6453,22 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 									((ent->client->sess.amrpgmode < 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH]) || 
 									(ent->client->sess.amrpgmode == 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)))
 								{
-									ent->client->ps.stats[STAT_ARMOR]++;
+									ent->client->ps.stats[STAT_ARMOR] += shield_amount;
 								}
 							}
 						}
 						else
 						{
-							if ((ent->health + 2) < ent->client->ps.stats[STAT_MAX_HEALTH])
-								ent->health += 2;
+							int heal_amount = 2;
+
+							// zyk: Universe Power
+							if (quest_power_user->client->pers.quest_power_status & (1 << 13))
+							{
+								heal_amount += 1;
+							}
+
+							if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+								ent->health += heal_amount;
 							else
 								ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 						}

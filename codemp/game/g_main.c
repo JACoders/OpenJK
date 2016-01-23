@@ -4341,6 +4341,10 @@ qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target
 // zyk: Healing Water
 void healing_water(gentity_t *ent, int heal_amount)
 {
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+		heal_amount += 30;
+
 	if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
 		ent->health += heal_amount;
 	else
@@ -4354,6 +4358,10 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+		distance += (distance/2);
 
 	for ( i = 0; i < level.num_entities; i++)
 	{
@@ -4384,6 +4392,12 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 // zyk: Flame Burst
 void flame_burst(gentity_t *ent, int duration)
 {
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 3000;
+	}
+
 	ent->client->pers.flame_thrower = level.time + duration;
 	ent->client->pers.quest_power_status |= (1 << 12);
 }
@@ -4393,6 +4407,12 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 200;
+	}
 
 	for ( i = 0; i < level.num_entities; i++)
 	{
@@ -4415,6 +4435,12 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 100;
+	}
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4446,6 +4472,10 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+		min_distance = 0;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4532,6 +4562,10 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+		damage += 10;
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4681,6 +4715,12 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	int i = 0;
 	int targets_hit = 0;
 
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		damage += 20;
+	}
+
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
@@ -4690,7 +4730,7 @@ void water_splash(gentity_t *ent, int distance, int damage)
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_watersplash", "0", "world/waterfall3", 0, 0, 0, 3000);
 
 			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
-			healing_water(ent,damage);
+			healing_water(ent,damage-30);
 
 			if (i < level.maxclients)
 				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/player/watr_un.wav"));
@@ -4703,6 +4743,12 @@ void rock_fall(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += (distance/2);
+	}
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4721,6 +4767,13 @@ void dome_of_damage(gentity_t *ent, int distance, int damage)
 	int i = 0;
 	int targets_hit = 0;
 
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 50;
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_dome", "4", "env/dome", 1200, damage, 290, 10000);
+	}
+
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
@@ -4735,6 +4788,12 @@ void dome_of_damage(gentity_t *ent, int distance, int damage)
 // zyk: Magic Shield
 void magic_shield(gentity_t *ent, int duration)
 {
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 1500;
+	}
+
 	ent->client->pers.quest_power_status |= (1 << 11);
 	ent->client->pers.quest_power4_timer = level.time + duration;
 	ent->client->invulnerableTimer = level.time + duration;
@@ -4745,12 +4804,20 @@ void ice_stalagmite(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
 	int targets_hit = 0;
+	int min_distance = 50;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		damage += 20;
+		min_distance = 0;
+	}
 
 	for (i = 0; i < level.num_entities; i++)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 50, distance, qfalse, &targets_hit) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, distance, qfalse, &targets_hit) == qtrue)
 		{
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_ice_stalagmite", "0", "models/map_objects/hoth/stalagmite_small.md3", 0, 0, 0, 2000);
 
@@ -4764,6 +4831,12 @@ void ice_boulder(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 100;
+	}
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4787,6 +4860,12 @@ void ultra_drain(gentity_t *ent, int radius, int damage, int duration)
 // zyk: Magic Explosion
 void magic_explosion(gentity_t *ent, int radius, int damage, int duration)
 {
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 1500, damage, radius, duration + 1000);
+	}
+
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 	{ // zyk: Magic Master Unique Skill increases damage
 		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 500, damage * 2, radius, duration);
@@ -4800,6 +4879,12 @@ void magic_explosion(gentity_t *ent, int radius, int damage, int duration)
 // zyk: Healing Area
 void healing_area(gentity_t *ent, int damage, int duration)
 {
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		damage += 1;
+	}
+
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 	{ // zyk: Magic Master Unique Skill increases damage
 		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing", "4", "env/red_cyc", 0, damage * 2, 228, duration);
@@ -4815,6 +4900,12 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 3000;
+	}
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4834,6 +4925,12 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 // zyk: Ultra Speed
 void ultra_speed(gentity_t *ent, int duration)
 {
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 3000;
+	}
+
 	ent->client->pers.quest_power_status |= (1 << 9);
 	ent->client->pers.quest_power3_timer = level.time + duration;
 
@@ -4841,11 +4938,47 @@ void ultra_speed(gentity_t *ent, int duration)
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh1.mp3"));
 }
 
+// zyk: spawns the circle of fire around the player
+void ultra_flame_circle(gentity_t *ent, char *targetname, char *spawnflags, char *effect_path, int start_time, int damage, int radius, int duration, int xoffset, int yoffset)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent,"classname","fx_runner");
+	zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
+	zyk_set_entity_field(new_ent,"targetname",targetname);
+	zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)ent->r.currentOrigin[0] + xoffset,(int)ent->r.currentOrigin[1] + yoffset,(int)ent->r.currentOrigin[2]));
+
+	new_ent->s.modelindex = G_EffectIndex( effect_path );
+
+	zyk_spawn_entity(new_ent);
+
+	if (damage > 0)
+		new_ent->splashDamage = damage;
+
+	if (radius > 0)
+		new_ent->splashRadius = radius;
+
+	if (start_time > 0) 
+		new_ent->nextthink = level.time + start_time;
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+}
+
 // zyk: Ultra Flame
 void ultra_flame(gentity_t *ent, int distance, int damage)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		ultra_flame_circle(ent,"zyk_quest_effect_flame","4", "env/flame_jet", 800, damage, 35, 5000, 30, 30);
+		ultra_flame_circle(ent,"zyk_quest_effect_flame","4", "env/flame_jet", 800, damage, 35, 5000, -30, 30);
+		ultra_flame_circle(ent,"zyk_quest_effect_flame","4", "env/flame_jet", 800, damage, 35, 5000, 30, -30);
+		ultra_flame_circle(ent,"zyk_quest_effect_flame","4", "env/flame_jet", 800, damage, 35, 5000, -30, -30);
+	}
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -4863,6 +4996,13 @@ void hurricane(gentity_t *ent, int distance, int duration)
 {
 	int i = 0;
 	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 100;
+		duration += 1000;
+	}
 
 	for ( i = 0; i < level.num_entities; i++)
 	{
@@ -4904,7 +5044,9 @@ void Player_FireFlameThrower( gentity_t *self )
 
 	// zyk: Flame Burst magic power has more damage
 	if (self->client->pers.quest_power_status & (1 << 12))
+	{
 		damage += 2;
+	}
 
 	origin[0] = self->r.currentOrigin[0];
 	origin[1] = self->r.currentOrigin[1];
@@ -5320,7 +5462,11 @@ void quest_power_events(gentity_t *ent)
 
 					if (poison_mushrooms_user && poison_mushrooms_user->client)
 					{
-						G_Damage(ent,poison_mushrooms_user,poison_mushrooms_user,NULL,NULL,40,0,MOD_UNKNOWN);
+						// zyk: Universe Power
+						if (ent->client->pers.quest_power_status & (1 << 13))
+							G_Damage(ent,poison_mushrooms_user,poison_mushrooms_user,NULL,NULL,45,0,MOD_UNKNOWN);
+						else
+							G_Damage(ent,poison_mushrooms_user,poison_mushrooms_user,NULL,NULL,40,0,MOD_UNKNOWN);
 					}
 
 					ent->client->pers.quest_power_hit_counter--;
