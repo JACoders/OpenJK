@@ -3110,7 +3110,6 @@ Initializes all non-persistant parts of playerState
 ============
 */
 extern qboolean WP_HasForcePowers( const playerState_t *ps );
-extern void initialize_rpg_skills(gentity_t *ent);
 extern void quest_get_new_player(gentity_t *ent);
 extern void clean_guardians(gentity_t *ent);
 extern void zyk_add_force_powers( gentity_t *ent );

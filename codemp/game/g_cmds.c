@@ -4037,7 +4037,7 @@ qboolean TryGrapple(gentity_t *ent)
 			}
 			else
 			{
-				trap->SendServerCommand( ent->s.number, va("chat \"^3Special Power: ^7%d seconds left!\"", ((ent->client->pers.quest_power_usage_timer - level.time)/1000)));
+				trap->SendServerCommand( ent->s.number, va("chat \"^3Magic Power: ^7%d seconds left!\"", ((ent->client->pers.quest_power_usage_timer - level.time)/1000)));
 			}
 
 			send_rpg_events(2000);
@@ -5063,6 +5063,20 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: loading initial shield of the player
 		set_max_shield(ent);
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+
+		// zyk: Light Power, Dark Power and Eternity Power use mp
+		if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)))
+		{
+			ent->client->pers.magic_power--;
+		}
+		if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 2)))
+		{
+			ent->client->pers.magic_power--;
+		}
+		if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 3)))
+		{
+			ent->client->pers.magic_power--;
+		}
 
 		// zyk: update the rpg stuff info at the client-side game
 		send_rpg_events(10000);
@@ -8363,35 +8377,35 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 
 				if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
 					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) || 
 						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else if (ent->client->pers.rpg_class == 8)
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^2yes\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 				else
-					sprintf(message_content[6],"%s^3s  ^6- Special Powers: ^1no\n",message_content[6]);
+					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^1no\n",message_content[6]);
 
 				if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
 					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
