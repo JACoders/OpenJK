@@ -261,6 +261,7 @@ XCVAR_DEF( zyk_ultra_drain_mp_cost,	"35",				NULL,				CVAR_ARCHIVE|CVAR_NORESTAR
 XCVAR_DEF( zyk_immunity_power_mp_cost,	"30",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_chaos_power_mp_cost,	"40",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_time_power_mp_cost,	"35",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_universe_mp_cost_factor,	"1.5",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_inner_area,	"1",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_healing_area,	"1",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_lightning_dome,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )

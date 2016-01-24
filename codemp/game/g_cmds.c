@@ -3607,11 +3607,11 @@ qboolean TryGrapple(gentity_t *ent)
 		
 		if (ent->client->sess.amrpgmode == 2 && !(ent->client->pers.player_settings & (1 << 5)))
 		{ // zyk: if this is a RPG player, tests if he can use a special power
-			int universe_mp_cost = 0; // zyk: if player has universe power, increases mp cost
+			float universe_mp_cost_factor = 1.0; // zyk: if player has universe power, increases mp cost by this factor
 
-			if (ent->client->pers.quest_power_status & (1 << 13))
-			{ // zyk: Universe Power is active
-				universe_mp_cost = 10;
+			if (ent->client->pers.quest_power_status & (1 << 13) && zyk_universe_mp_cost_factor.value > 1.0)
+			{ // zyk: Universe Power is active and this cvar is higher than 1.0
+				universe_mp_cost_factor = zyk_universe_mp_cost_factor.value;
 			}
 
 			if (ent->client->pers.quest_power_usage_timer < level.time)
@@ -3786,22 +3786,22 @@ qboolean TryGrapple(gentity_t *ent)
 				}
 				else if (use_this_power > 0)
 				{ // zyk: Magic Power
-					if (use_this_power == 1 && zyk_enable_inner_area.integer == 1 && ent->client->pers.magic_power >= (zyk_inner_area_mp_cost.integer + universe_mp_cost))
+					if (use_this_power == 1 && zyk_enable_inner_area.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_inner_area_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						inner_area_damage(ent,400,80);
-						ent->client->pers.magic_power -= (zyk_inner_area_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_inner_area_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_inner_area_damage_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 17 && zyk_enable_ultra_strength.integer == 1 && ent->client->pers.magic_power >= (zyk_ultra_strength_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 17 && zyk_enable_ultra_strength.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_strength_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ultra_strength(ent,30000);
-						ent->client->pers.magic_power -= (zyk_ultra_strength_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_strength_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
@@ -3811,88 +3811,88 @@ qboolean TryGrapple(gentity_t *ent)
 
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Strength!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 7 && zyk_enable_poison_mushrooms.integer == 1 && ent->client->pers.magic_power >= (zyk_poison_mushrooms_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 7 && zyk_enable_poison_mushrooms.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_poison_mushrooms_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						poison_mushrooms(ent,100,600);
-						ent->client->pers.magic_power -= (zyk_poison_mushrooms_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_poison_mushrooms_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_poison_mushrooms_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 3 && zyk_enable_water_splash.integer == 1 && ent->client->pers.magic_power >= (zyk_water_splash_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 3 && zyk_enable_water_splash.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_water_splash_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						water_splash(ent,400,100);
-						ent->client->pers.magic_power -= (zyk_water_splash_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_water_splash_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_water_splash_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 13 && zyk_enable_ultra_flame.integer == 1 && ent->client->pers.magic_power >= (zyk_ultra_flame_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 13 && zyk_enable_ultra_flame.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_flame_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ultra_flame(ent,500,50);
-						ent->client->pers.magic_power -= (zyk_ultra_flame_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_flame_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_flame_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 5 && zyk_enable_rockfall.integer == 1 && ent->client->pers.magic_power >= (zyk_rockfall_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 5 && zyk_enable_rockfall.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_rockfall_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						rock_fall(ent,500,55);
-						ent->client->pers.magic_power -= (zyk_rockfall_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_rockfall_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_rockfall_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 9 && zyk_enable_dome_of_damage.integer == 1 && ent->client->pers.magic_power >= (zyk_dome_of_damage_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 9 && zyk_enable_dome_of_damage.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_dome_of_damage_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						dome_of_damage(ent,500,35);
-						ent->client->pers.magic_power -= (zyk_dome_of_damage_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_dome_of_damage_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_dome_of_damage_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 15 && zyk_enable_hurricane.integer == 1 && ent->client->pers.magic_power >= (zyk_hurricane_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 15 && zyk_enable_hurricane.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_hurricane_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						hurricane(ent,600,5000);
-						ent->client->pers.magic_power -= (zyk_hurricane_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_hurricane_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_hurricane_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 11 && zyk_enable_slow_motion.integer == 1 && ent->client->pers.magic_power >= (zyk_slow_motion_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 11 && zyk_enable_slow_motion.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_slow_motion_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						slow_motion(ent,400,15000);
-						ent->client->pers.magic_power -= (zyk_slow_motion_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_slow_motion_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_slow_motion_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 16 && zyk_enable_ultra_resistance.integer == 1 && ent->client->pers.magic_power >= (zyk_ultra_resistance_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 16 && zyk_enable_ultra_resistance.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_resistance_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ultra_resistance(ent,30000);
-						ent->client->pers.magic_power -= (zyk_ultra_resistance_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_resistance_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
@@ -3902,132 +3902,132 @@ qboolean TryGrapple(gentity_t *ent)
 
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Resistance!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 6 && zyk_enable_sleeping_flowers.integer == 1 && ent->client->pers.magic_power >= (zyk_sleeping_flowers_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 6 && zyk_enable_sleeping_flowers.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_sleeping_flowers_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						sleeping_flowers(ent,3000,350);
-						ent->client->pers.magic_power -= (zyk_sleeping_flowers_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_sleeping_flowers_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (500 * ent->client->pers.skill_levels[55]);
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_sleeping_flowers_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 2 && zyk_enable_healing_water.integer == 1 && ent->client->pers.magic_power >= (zyk_healing_water_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 2 && zyk_enable_healing_water.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_healing_water_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						healing_water(ent,120);
-						ent->client->pers.magic_power -= (zyk_healing_water_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_healing_water_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_water_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 12 && zyk_enable_flame_burst.integer == 1 && ent->client->pers.magic_power >= (zyk_flame_burst_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 12 && zyk_enable_flame_burst.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_flame_burst_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						flame_burst(ent, 5000);
-						ent->client->pers.magic_power -= (zyk_flame_burst_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_flame_burst_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_flame_burst_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 4 && zyk_enable_earthquake.integer == 1 && ent->client->pers.magic_power >= (zyk_earthquake_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 4 && zyk_enable_earthquake.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_earthquake_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						earthquake(ent,2000,300,500);
-						ent->client->pers.magic_power -= (zyk_earthquake_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_earthquake_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_earthquake_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 8 && zyk_enable_magic_shield.integer == 1 && ent->client->pers.magic_power >= (zyk_magic_shield_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 8 && zyk_enable_magic_shield.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_magic_shield_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						magic_shield(ent, 6000);
-						ent->client->pers.magic_power -= (zyk_magic_shield_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_magic_shield_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (1000 * ent->client->pers.skill_levels[55]);
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_magic_shield_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Magic Shield!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 14 && zyk_enable_blowing_wind.integer == 1 && ent->client->pers.magic_power >= (zyk_blowing_wind_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 14 && zyk_enable_blowing_wind.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_blowing_wind_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						blowing_wind(ent,700,5000);
-						ent->client->pers.magic_power -= (zyk_blowing_wind_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_blowing_wind_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_blowing_wind_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 10 && zyk_enable_ultra_speed.integer == 1 && ent->client->pers.magic_power >= (zyk_ultra_speed_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 10 && zyk_enable_ultra_speed.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_speed_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ultra_speed(ent,15000);
-						ent->client->pers.magic_power -= (zyk_ultra_speed_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_speed_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_speed_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 18 && zyk_enable_ice_stalagmite.integer == 1 && ent->client->pers.magic_power >= (zyk_ice_stalagmite_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 18 && zyk_enable_ice_stalagmite.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ice_stalagmite_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ice_stalagmite(ent,500,160);
-						ent->client->pers.magic_power -= (zyk_ice_stalagmite_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ice_stalagmite_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_stalagmite_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_stalagmite_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Stalagmite!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 19 && zyk_enable_ice_boulder.integer == 1 && ent->client->pers.magic_power >= (zyk_ice_boulder_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 19 && zyk_enable_ice_boulder.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ice_boulder_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						ice_boulder(ent,400,80);
-						ent->client->pers.magic_power -= (zyk_ice_boulder_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ice_boulder_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_boulder_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_boulder_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Boulder!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 20 && zyk_enable_healing_area.integer == 1 && ent->client->pers.magic_power >= (zyk_healing_area_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 20 && zyk_enable_healing_area.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_healing_area_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						healing_area(ent,2,5000);
-						ent->client->pers.magic_power -= (zyk_healing_area_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_healing_area_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_area_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_area_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Area!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 21 && zyk_enable_lightning_dome.integer == 1 && ent->client->pers.magic_power >= (zyk_lightning_dome_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 21 && zyk_enable_lightning_dome.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_lightning_dome_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						lightning_dome(ent,90);
-						ent->client->pers.magic_power -= (zyk_lightning_dome_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_lightning_dome_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_lightning_dome_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + zyk_lightning_dome_cooldown.integer;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Lightning Dome!\"", ent->client->pers.netname));
 					}
-					else if (use_this_power == 22 && zyk_enable_magic_explosion.integer == 1 && ent->client->pers.magic_power >= (zyk_magic_explosion_mp_cost.integer + universe_mp_cost))
+					else if (use_this_power == 22 && zyk_enable_magic_explosion.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_magic_explosion_mp_cost.integer * universe_mp_cost_factor)))
 					{
 						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
 						magic_explosion(ent,320,170,900);
-						ent->client->pers.magic_power -= (zyk_magic_explosion_mp_cost.integer + universe_mp_cost);
+						ent->client->pers.magic_power -= (int)ceil((zyk_magic_explosion_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
 							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_explosion_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
