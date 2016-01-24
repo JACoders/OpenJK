@@ -4228,6 +4228,11 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		npc_ent->client->pers.light_quest_timer = level.time + 7000;
 		npc_ent->client->pers.guardian_timer = level.time + 5000;
 		npc_ent->client->pers.guardian_mode = guardian_mode;
+
+		if (ent->client->pers.universe_quest_counter & (1 << 29))
+		{ // zyk: if quest player is in Challenge Mode, bosses always use the improved version of powers (Universe Power)
+			npc_ent->client->pers.quest_power_status |= (1 << 13);
+		}
 	}
 
 	if (guardian_mode != 14)
