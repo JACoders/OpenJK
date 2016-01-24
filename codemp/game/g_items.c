@@ -2619,6 +2619,10 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 		{
 			return;
 		}
+		else if (other->client->pers.rpg_class == 8 && (ent->item->giType == IT_WEAPON || ent->item->giType == IT_AMMO))
+		{ // zyk: Magic Master can only pickup items
+			return;
+		}
 
 		if (Q_stricmp(ent->targetname, "zyk_quest_artifact") == 0 && ent->item->giType == IT_POWERUP && ent->item->giTag == PW_FORCE_BOON)
 		{
