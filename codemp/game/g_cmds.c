@@ -10949,18 +10949,27 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			{
 				ent->client->pers.player_settings &= ~(1 << value);
 
-				if ((value == 1 || value == 2 || value == 3) && ent->client->pers.magic_power > 0)
+				if (value == 1 && ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
 				{
 					ent->client->pers.magic_power--;
-
-					if (value == 1)
-						ent->client->pers.quest_power_status |= (1 << 14);
-					else if (value == 2)
-						ent->client->pers.quest_power_status |= (1 << 15);
-					else if (value == 3)
-						ent->client->pers.quest_power_status |= (1 << 16);
-
+					ent->client->pers.quest_power_status |= (1 << 14);
 					send_rpg_events(1000);
+				}
+				else if (value == 2 && ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
+				{
+					ent->client->pers.magic_power--;
+					ent->client->pers.quest_power_status |= (1 << 15);
+					send_rpg_events(1000);
+				}
+				else if (value == 3 && ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
+				{
+					ent->client->pers.magic_power--;
+					ent->client->pers.quest_power_status |= (1 << 16);
+					send_rpg_events(1000);
+				}
+				else if (value == 4 && ent->client->pers.universe_quest_progress > 7)
+				{
+					ent->client->pers.quest_power_status |= (1 << 13);
 				}
 
 				strcpy(new_status,"^2ON^7");
@@ -10975,6 +10984,8 @@ void Cmd_Settings_f( gentity_t *ent ) {
 					ent->client->pers.quest_power_status &= ~(1 << 15);
 				else if (value == 3)
 					ent->client->pers.quest_power_status &= ~(1 << 16);
+				else if (value == 4)
+					ent->client->pers.quest_power_status &= ~(1 << 13);
 
 				strcpy(new_status,"^1OFF^7");
 			}
