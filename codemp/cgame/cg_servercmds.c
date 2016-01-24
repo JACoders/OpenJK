@@ -1800,29 +1800,29 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_light_power","Light Power - no");
 
 			if (light_quest_progress == 10)
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Free Warrior") == 0 && light_quest_progress & (1 << 11))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Force User") == 0 && light_quest_progress & (1 << 6))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Bounty Hunter") == 0 && light_quest_progress & (1 << 10))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Armored Soldier") == 0 && light_quest_progress & (1 << 5))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Monk") == 0 && light_quest_progress & (1 << 9))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Stealth Attacker") == 0 && light_quest_progress & (1 << 4))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Duelist") == 0 && light_quest_progress & (1 << 7))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Force Gunner") == 0 && light_quest_progress & (1 << 8))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Force Tank") == 0 && light_quest_progress & (1 << 12))
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else if (Q_stricmp(rpg_class, "Magic Master") == 0)
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - yes");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else
-				trap->Cvar_Set("ui_zyk_special_powers","Special Powers - no");
+				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - no");
 		}
 		else if (j == 82)
 		{
