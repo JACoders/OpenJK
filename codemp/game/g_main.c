@@ -4814,7 +4814,7 @@ void ice_stalagmite(gentity_t *ent, int distance, int damage)
 	// zyk: Universe Power
 	if (ent->client->pers.quest_power_status & (1 << 13))
 	{
-		damage += 20;
+		damage += 30;
 		min_distance = 0;
 	}
 
@@ -10232,7 +10232,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else
 						{
-							water_splash(ent,400,100);
+							water_splash(ent,400,90);
 							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Water Splash!\"");
 						}
 
