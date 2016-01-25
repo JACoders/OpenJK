@@ -2343,7 +2343,14 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		if (quest_player->client->pers.guardian_mode == 8)
 		{ // zyk: defeated the Guardian of Light
 			quest_player->client->pers.defeated_guardians = NUMBER_OF_GUARDIANS;
-			trap->SendServerCommand( quest_player->s.number, "chat \"^5Guardian of Light: ^7Well done, brave warrior! Now i shall grant you the ^5Light Power^7!\"");
+
+			if (quest_player->client->pers.magic_power > 0)
+			{
+				quest_player->client->pers.magic_power--;
+				quest_player->client->pers.quest_power_status |= (1 << 14);
+			}
+
+			trap->SendServerCommand( quest_player->s.number, "chat \"^5Guardian of Light: ^7Well done, brave warrior! Now I shall grant you the ^5Light Power^7!\"");
 		}
 		else
 		{
@@ -2412,6 +2419,12 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 		save_account(quest_player);
 
+		if (quest_player->client->pers.magic_power > 0)
+		{
+			quest_player->client->pers.magic_power--;
+			quest_player->client->pers.quest_power_status |= (1 << 15);
+		}
+
 		trap->SendServerCommand( quest_player->s.number, "chat \"^1Guardian of Darkness: ^7Well done, mighty warrior... now I shall grant you the ^1Dark Power^7!\"");
 
 		quest_get_new_player(quest_player);
@@ -2422,6 +2435,12 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		quest_player->client->pers.eternity_quest_progress = NUMBER_OF_ETERNITY_QUEST_OBJECTIVES;
 
 		save_account(quest_player);
+
+		if (quest_player->client->pers.magic_power > 0)
+		{
+			quest_player->client->pers.magic_power--;
+			quest_player->client->pers.quest_power_status |= (1 << 16);
+		}
 
 		trap->SendServerCommand( quest_player->s.number, "chat \"^3Guardian of Eternity: ^7Very well...you are a worthy warrior...you deserve my ^3Eternity Power^7!\"");
 

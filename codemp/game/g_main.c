@@ -8596,6 +8596,8 @@ void G_RunFrame( int levelTime ) {
 
 								save_account(ent);
 
+								ent->client->pers.quest_power_status |= (1 << 13);
+
 								quest_get_new_player(ent);
 							}
 
