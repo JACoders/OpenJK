@@ -9471,22 +9471,26 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	}
 
 	// zyk: class validations. Some items require certain conditions to be bought
-	if (ent->client->pers.rpg_class == 1 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
+	if (ent->client->pers.rpg_class == 1 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || 
+		(value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Force User can't buy this item.\n\"" );
 		return;
 	}
-	else if (ent->client->pers.rpg_class == 4 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
+	else if (ent->client->pers.rpg_class == 4 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || 
+			(value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Monk can't buy this item.\n\"" );
 		return;
 	}
-	else if (ent->client->pers.rpg_class == 6 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || (value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
+	else if (ent->client->pers.rpg_class == 6 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || 
+			(value >= 17 && value <= 24) || (value >= 34 && value <= 38) || (value >= 41 && value <= 42)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Duelist can't buy this item.\n\"" );
 		return;
 	}
-	else if (ent->client->pers.rpg_class == 8 && ((value >= 1 && value <= 7) || (value >= 17 && value <= 24) || (value >= 36 && value <= 37)))
+	else if (ent->client->pers.rpg_class == 8 && ((value >= 1 && value <= 7) || (value >= 10 && value <= 13) || 
+			(value >= 17 && value <= 24) || (value >= 35 && value <= 38)))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Magic Master can't buy this item.\n\"" );
 		return;
