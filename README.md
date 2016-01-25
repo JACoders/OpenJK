@@ -43,9 +43,9 @@ Installing and running OpenJK:
 
 If you have the Mac App Store Version of Jedi Academy, follow these steps to get OpenJK runnning under OS X:  
 
-1. Download the latest SDL2 Framework from [libsdl.org](https://www.libsdl.org/download-2.0.php)
-2. Extract the content or open the file and put `SDL2.framework` in `/Library/Frameworks/` or `/Users/<USER>/Library/Frameworks/`  If this directory does not exist, create it.
-3. Extract the content of the OpenJK DMG ([Download the latest build](http://builds.openjk.org)) into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
+1. Install [Homebrew](http://brew.sh/) if you don't have it.
+2. Open the Terminal app, and enter the command `brew install sdl2`.
+3. Extract the contents of the OpenJK DMG ([Download the latest build](http://builds.openjk.org)) into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
 4. Run `openJK.app` or `openJK SP.app` 
 5. Savegames, Config Files and Log Files are stored in `/Users/<USER>/Library/Application Support/OpenJK/`
 
