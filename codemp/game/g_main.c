@@ -10707,24 +10707,28 @@ void G_RunFrame( int levelTime ) {
 						if (ent->client->pers.light_quest_messages == 0)
 						{
 							ent->client->pers.light_quest_messages = 1;
-							ent->client->pers.quest_power_status |= (1 << 14);
-							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Light Power!\"");
 						}
 						else if (ent->client->pers.light_quest_messages == 1)
 						{
 							ent->client->pers.light_quest_messages = 2;
-							ent->client->pers.quest_power_status |= (1 << 15);
-							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Dark Power!\"");
+							ent->client->pers.quest_power_status |= (1 << 14);
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Light Power!\"");
 						}
 						else if (ent->client->pers.light_quest_messages == 2)
 						{
 							ent->client->pers.light_quest_messages = 3;
-							ent->client->pers.quest_power_status |= (1 << 16);
-							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Eternity Power!\"");
+							ent->client->pers.quest_power_status |= (1 << 15);
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Dark Power!\"");
 						}
 						else if (ent->client->pers.light_quest_messages == 3)
 						{
 							ent->client->pers.light_quest_messages = 4;
+							ent->client->pers.quest_power_status |= (1 << 16);
+							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Eternity Power!\"");
+						}
+						else if (ent->client->pers.light_quest_messages == 4)
+						{
+							ent->client->pers.light_quest_messages = 5;
 							ent->client->pers.quest_power_status |= (1 << 13);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Universe Power!\"");
 						}
