@@ -5113,6 +5113,10 @@ void Player_FireFlameThrower( gentity_t *self )
 			{ //only bother with arc rules if the victim is a client
 				entityList[e] = ENTITYNUM_NONE;
 			}
+			else if (traceEnt->client && (traceEnt->client->sess.amrpgmode == 2 || traceEnt->NPC) && traceEnt->client->pers.quest_power_status & (1 << 0))
+			{ // zyk: Immunity Power protects from Flame Burst
+				entityList[e] = ENTITYNUM_NONE;
+			}
 		}
 		traceEnt = &g_entities[entityList[e]];
 		if (traceEnt && traceEnt != self)
