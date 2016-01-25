@@ -1706,7 +1706,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 			}
 			else if ( (NPCS.NPC->client->ps.fd.forcePowersKnown&(1<<FP_TELEPATHY)) != 0
 				&& (NPCS.NPC->client->ps.fd.forcePowersActive&(1<<FP_TELEPATHY)) == 0
-				&& Q_irand( 0, 1 ) )
+				&& !Q_irand( 0, 2 ) )
 			{ // zyk: npcs can now use Mind Trick
 				ForceTelepathy( NPCS.NPC );
 				usedForce = qtrue;
