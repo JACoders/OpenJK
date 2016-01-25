@@ -3532,7 +3532,7 @@ int zyk_max_magic_power(gentity_t *ent)
 	int max_mp = ent->client->pers.level * 3;
 
 	if (ent->client->pers.rpg_class == 8) // zyk: Magic Master has more Magic Power
-		return (max_mp + 50 + (50 * ent->client->pers.skill_levels[55]));
+		return (max_mp + (75 * (ent->client->pers.skill_levels[55] + 1)));
 	else
 		return max_mp;
 }
