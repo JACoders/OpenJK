@@ -514,25 +514,11 @@ void ItemUse_Binoculars(gentity_t *ent)
 		ent->client->ps.zoomMode = 2;
 		ent->client->ps.zoomLocked = qfalse;
 		ent->client->ps.zoomFov = 40.0f;
-
-		// zyk: if this RPG player is a Bounty Hunter and has the Bounty Hunter Upgrade, activate the Thermal Vision
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-		{
-			ent->client->pers.thermal_vision = qtrue;
-			ent->client->ps.fd.forcePowersActive |= (1 << FP_SEE);
-		}
 	}
 	else if (ent->client->ps.zoomMode == 2)
 	{
 		ent->client->ps.zoomMode = 0;
 		ent->client->ps.zoomTime = level.time;
-
-		// zyk: if this RPG player is a Bounty Hunter and has the Bounty Hunter Upgrade, deactivate the Thermal Vision
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-		{
-			ent->client->pers.thermal_vision = qfalse;
-			ent->client->ps.fd.forcePowersActive &= ~(1 << FP_SEE);
-		}
 	}
 }
 

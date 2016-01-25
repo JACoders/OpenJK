@@ -4711,16 +4711,8 @@ void initialize_rpg_skills(gentity_t *ent)
 		// zyk: loading Sense value
 		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
 		{ // zyk: these classes have no force, so they do not need Sense (although they can have the skill to resist Mind Control)
-			if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-			{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
-			}
-			else
-			{
-				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
-				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
-			}
+			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+			ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
 		}
 		else
 		{
@@ -5964,16 +5956,8 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 			if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
 			{ // zyk: these classes have no force, so they do not need Sense (although they can have the skill to resist Mind Control)
-				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-				{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
-					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
-				}
-				else
-				{
-					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
-					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
-				}
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
 			}
 			else
 			{
@@ -7294,16 +7278,8 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 
 			if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
 			{ // zyk: these classes have no force, so they do not need Sense (although they can have the skill to resist Mind Control)
-				if (ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
-				{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
-					ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
-				}
-				else
-				{
-					ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
-					ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
-				}
+				ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
 			}
 			else
 			{
@@ -9695,11 +9671,6 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		else if (value == 29)
 		{
 			ent->client->pers.secrets_found |= (1 << 1);
-			if (ent->client->pers.rpg_class == 2)
-			{ // zyk: Bounty Hunter with Upgrade needs Sense 3 for his Thermal Vision to work
-				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
-				ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
-			}
 
 			// zyk: update the rpg stuff info at the client-side game
 			send_rpg_events(10000);

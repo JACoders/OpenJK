@@ -7733,11 +7733,19 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.bounty_hunter_sentries > 0)
 						ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_SENTRY_GUN);
 
-					// zyk: if the bounty hunter stops using binoculars, stop the thermal vision
 					if (ent->client->pers.thermal_vision == qtrue && ent->client->ps.zoomMode == 0)
-					{
+					{ // zyk: if the bounty hunter stops using binoculars, stop the Thermal Vision
 						ent->client->pers.thermal_vision = qfalse;
 						ent->client->ps.fd.forcePowersActive &= ~(1 << FP_SEE);
+						ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+						ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
+					}
+					else if (ent->client->pers.thermal_vision == qfalse && ent->client->ps.zoomMode == 2 && ent->client->pers.secrets_found & (1 << 1))
+					{ // zyk: Bounty Hunter with Upgrade, activate the Thermal Vision
+						ent->client->pers.thermal_vision = qtrue;
+						ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+						ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_3;
+						ent->client->ps.fd.forcePowersActive |= (1 << FP_SEE);
 					}
 				}
 
