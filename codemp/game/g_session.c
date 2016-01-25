@@ -70,6 +70,7 @@ void G_WriteClientSessionData( gclient_t *client )
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.selected_left_special_power ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.selected_right_special_power ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.magic_fist_selection ) );
+	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.magic_master_disabled_powers ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally1 ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.ally2 ) );
 	Q_strcat( s, sizeof( s ), va( "%i ", client->sess.vote_timer ) );
@@ -98,7 +99,7 @@ void G_ReadSessionData( gclient_t *client )
 	var = va( "session%i", client - level.clients );
 	trap->Cvar_VariableStringBuffer( var, s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %s %s",
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %s %s %s",
 		&tempSessionTeam, //&client->sess.sessionTeam,
 		&client->sess.spectatorNum,
 		&tempSpectatorState, //&client->sess.spectatorState,
@@ -116,6 +117,7 @@ void G_ReadSessionData( gclient_t *client )
 		&client->sess.selected_left_special_power,
 		&client->sess.selected_right_special_power,
 		&client->sess.magic_fist_selection,
+		&client->sess.magic_master_disabled_powers,
 		&client->sess.ally1,
 		&client->sess.ally2,
 		&client->sess.vote_timer,
@@ -257,6 +259,7 @@ void G_InitSessionData( gclient_t *client, char *userinfo, qboolean isBot ) {
 	strcpy(sess->filename,"");
 
 	sess->magic_fist_selection = 0;
+	sess->magic_master_disabled_powers = 0;
 	sess->selected_special_power = 1;
 	sess->selected_left_special_power = 1;
 	sess->selected_right_special_power = 1;

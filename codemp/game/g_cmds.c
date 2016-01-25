@@ -13573,6 +13573,51 @@ void Cmd_Players_f( gentity_t *ent ) {
 }
 
 /*
+==================
+Cmd_MagicShown_f
+==================
+*/
+void Cmd_MagicShown_f( gentity_t *ent ) {
+	char arg1[MAX_STRING_CHARS];
+
+	if (ent->client->pers.rpg_class != 8)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"You must be a Magic Master to use this command.\n\"" );
+		return;
+	}
+
+	if (trap->Argc() == 1)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"\n 1 - Inner Area Damage\n 2 - Healing Water\n 3 - Water Splash\n 4 - Earthquake\n 5 - Rockfall\n 6 - Sleeping Flowers\n 7 - Poison Mushrooms\n 8 - Magic Shield\n 9 - Dome of Damage\n10 - Ultra Speed\n11 - Slow Motion\n12 - Flame Burst\n13 - Ultra Flame\n14 - Blowing Wind\n15 - Hurricane\n16 - Ultra Resistance\n17 - Ultra Strength\n18 - Ice Stalagmite\n19 - Ice Boulder\n20 - Healing Area\n21 - Lightning Dome\n22 - Magic Explosion\n\"" );
+	}
+	else
+	{
+		int magic_power = 0;
+
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+		magic_power = atoi(arg1);
+
+		if (magic_power < 1 || magic_power > 22)
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid magic power.\n\"" );
+			return;
+		}
+
+		if (ent->client->sess.magic_master_disabled_powers & (1 << magic_power))
+		{
+			ent->client->sess.magic_master_disabled_powers &= ~(1 << magic_power);
+			trap->SendServerCommand( ent-g_entities, "print \"Enabled a magic power.\n\"" );
+		}
+		else
+		{
+			ent->client->sess.magic_master_disabled_powers |= (1 << magic_power);
+			trap->SendServerCommand( ent-g_entities, "print \"Disabled a magic power.\n\"" );
+		}
+	}
+}
+
+/*
 =================
 ClientCommand
 =================
@@ -13650,6 +13695,7 @@ command_t commands[] = {
 	{ "list",				Cmd_ListAccount_f,			CMD_NOINTERMISSION },
 	{ "login",				Cmd_LoginAccount_f,			CMD_NOINTERMISSION },
 	{ "logout",				Cmd_LogoutAccount_f,		CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "magicshown",			Cmd_MagicShown_f,			CMD_RPG|CMD_NOINTERMISSION },
 	{ "maplist",			Cmd_MapList_f,				CMD_NOINTERMISSION },
 	{ "new",				Cmd_NewAccount_f,			CMD_NOINTERMISSION },
 	{ "news",				Cmd_News_f,					CMD_NOINTERMISSION },
