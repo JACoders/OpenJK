@@ -216,7 +216,7 @@ XCVAR_DEF( zyk_poison_mushrooms_cooldown,	"10000",	NULL,				CVAR_ARCHIVE|CVAR_NO
 XCVAR_DEF( zyk_water_splash_cooldown,	"11000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ultra_flame_cooldown,	"10000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_rockfall_cooldown,	"9000",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
-XCVAR_DEF( zyk_dome_of_damage_cooldown,	"12000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_dome_of_damage_cooldown,	"14000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ice_stalagmite_cooldown,	"19000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ice_boulder_cooldown,	"19000",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_hurricane_cooldown,	"10000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
