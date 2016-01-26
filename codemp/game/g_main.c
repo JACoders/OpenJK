@@ -5238,11 +5238,11 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 3)
+	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 2)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 22 && ent->client->pers.skill_levels[55] < 2)
+	else if (selected_power == 22 && ent->client->pers.skill_levels[55] < 3)
 	{
 		return qfalse;
 	}
@@ -5342,11 +5342,11 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	}
 	else if (selected_power == 21)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Explosion     ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 	else if (selected_power == 22)
 	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Explosion     ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 }
 
