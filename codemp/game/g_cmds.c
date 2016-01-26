@@ -13538,6 +13538,8 @@ Cmd_Players_f
 void Cmd_Players_f( gentity_t *ent ) {
 	char content[MAX_STRING_CHARS];
 	int i = 0;
+	char arg1[MAX_STRING_CHARS];
+	int client_id = -1;
 
 	strcpy(content,"ID - Name - IP - Type\n");
 
@@ -13547,29 +13549,57 @@ void Cmd_Players_f( gentity_t *ent ) {
 		return;
 	}
 
-	for (i = 0; i < level.maxclients; i++)
+	if (trap->Argc() == 1)
 	{
-		gentity_t *player = &g_entities[i];
-
-		if (player && player->client && player->client->pers.connected != CON_DISCONNECTED)
+		for (i = 0; i < level.maxclients; i++)
 		{
-			strcpy(content, va("%s%d - %s ^7- %s - ",content,player->s.number,player->client->pers.netname,player->client->sess.IP));
+			gentity_t *player = &g_entities[i];
 
-			if (player->client->sess.amrpgmode > 0 && player->client->pers.bitvalue > 0)
+			if (player && player->client && player->client->pers.connected != CON_DISCONNECTED)
 			{
-				strcpy(content, va("%s^3(admin)",content));
-			}
+				strcpy(content, va("%s%d - %s ^7- %s - ",content,player->s.number,player->client->pers.netname,player->client->sess.IP));
 
-			if (player->client->sess.amrpgmode == 2)
-			{
-				strcpy(content, va("%s ^3(rpg)",content));
-			}
+				if (player->client->sess.amrpgmode > 0 && player->client->pers.bitvalue > 0)
+				{
+					strcpy(content, va("%s^3(admin)",content));
+				}
 
-			strcpy(content, va("%s^7\n",content));
+				if (player->client->sess.amrpgmode == 2)
+				{
+					strcpy(content, va("%s ^3(rpg)",content));
+				}
+
+				strcpy(content, va("%s^7\n",content));
+			}
 		}
-	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"%s\"", content) );
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", content) );
+	}
+	else
+	{
+		gentity_t *player_ent = NULL;
+
+		trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+		client_id = ClientNumberFromString( ent, arg1, qfalse );
+
+		if (client_id == -1)
+		{
+			return;
+		}
+
+		player_ent = &g_entities[client_id];
+
+		if (player_ent->client->sess.amrpgmode != 2)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"Player %s ^7is not in RPG Mode.\n\"", player_ent->client->pers.netname) );
+			return;
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n\"", 
+			player_ent->client->pers.netname, player_ent->client->pers.level, player_ent->client->pers.level_up_score, player_ent->client->pers.skillpoints, 
+			player_ent->client->pers.credits, player_ent->client->pers.skill_counter) );
+	}
 }
 
 /*
