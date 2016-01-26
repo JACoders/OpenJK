@@ -13644,9 +13644,9 @@ void Cmd_Players_f( gentity_t *ent ) {
 			return;
 		}
 
-		trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n\"", 
+		trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n^3RPG Class: ^7%s\n\"", 
 			player_ent->client->pers.netname, player_ent->client->pers.level, player_ent->client->pers.level_up_score, player_ent->client->pers.skillpoints, 
-			player_ent->client->pers.credits, player_ent->client->pers.skill_counter) );
+			player_ent->client->pers.credits, player_ent->client->pers.skill_counter, zyk_rpg_class(player_ent)) );
 	}
 }
 
