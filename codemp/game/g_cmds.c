@@ -12803,160 +12803,166 @@ void Cmd_Silence_f( gentity_t *ent ) {
 	}
 }
 
+// zyk: shows admin commands of this player. Shows info to the target_ent player
+void zyk_show_admin_commands(gentity_t *ent, gentity_t *target_ent)
+{
+	char message[1024];
+	char message_content[ADM_NUM_CMDS + 1][80];
+	int i = 0;
+	strcpy(message,"");
+
+	while (i < ADM_NUM_CMDS)
+	{
+		strcpy(message_content[i],"");
+		i++;
+	}
+	message_content[ADM_NUM_CMDS][0] = '\0';
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_NPC))) 
+	{
+		strcpy(message_content[0],va("^3  %d ^7- NPC: ^2yes\n",ADM_NPC));
+	}
+	else
+	{
+		strcpy(message_content[0],va("^3  %d ^7- NPC: ^1no\n",ADM_NPC));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_NOCLIP))) 
+	{
+		strcpy(message_content[1],va("^3  %d ^7- NoClip: ^2yes\n",ADM_NOCLIP));
+	}
+	else
+	{
+		strcpy(message_content[1],va("^3  %d ^7- NoClip: ^1no\n",ADM_NOCLIP));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_GIVEADM))) 
+	{
+		strcpy(message_content[2],va("^3  %d ^7- GiveAdmin: ^2yes\n",ADM_GIVEADM));
+	}
+	else
+	{
+		strcpy(message_content[2],va("^3  %d ^7- GiveAdmin: ^1no\n",ADM_GIVEADM));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_TELE))) 
+	{
+		strcpy(message_content[3],va("^3  %d ^7- Teleport: ^2yes\n",ADM_TELE));
+	}
+	else
+	{
+		strcpy(message_content[3],va("^3  %d ^7- Teleport: ^1no\n",ADM_TELE));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_ADMPROTECT))) 
+	{
+		strcpy(message_content[4],va("^3  %d ^7- AdminProtect: ^2yes\n",ADM_ADMPROTECT));
+	}
+	else
+	{
+		strcpy(message_content[4],va("^3  %d ^7- AdminProtect: ^1no\n",ADM_ADMPROTECT));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM))) 
+	{
+		strcpy(message_content[5],va("^3  %d ^7- EntitySystem: ^2yes\n",ADM_ENTITYSYSTEM));
+	}
+	else
+	{
+		strcpy(message_content[5],va("^3  %d ^7- EntitySystem: ^1no\n",ADM_ENTITYSYSTEM));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_SILENCE))) 
+	{
+		strcpy(message_content[6],va("^3  %d ^7- Silence: ^2yes\n",ADM_SILENCE));
+	}
+	else
+	{
+		strcpy(message_content[6],va("^3  %d ^7- Silence: ^1no\n",ADM_SILENCE));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_CLIENTPRINT))) 
+	{
+		strcpy(message_content[7],va("^3  %d ^7- ClientPrint: ^2yes\n",ADM_CLIENTPRINT));
+	}
+	else
+	{
+		strcpy(message_content[7],va("^3  %d ^7- ClientPrint: ^1no\n",ADM_CLIENTPRINT));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_RPMODE))) 
+	{
+		strcpy(message_content[8],va("^3  %d ^7- RP Mode: ^2yes\n",ADM_RPMODE));
+	}
+	else
+	{
+		strcpy(message_content[8],va("^3  %d ^7- RP Mode: ^1no\n",ADM_RPMODE));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_KICK))) 
+	{
+		strcpy(message_content[9],va("^3  %d ^7- Kick: ^2yes\n",ADM_KICK));
+	}
+	else
+	{
+		strcpy(message_content[9],va("^3  %d ^7- Kick: ^1no\n",ADM_KICK));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_PARALYZE))) 
+	{
+		strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^2yes\n",ADM_PARALYZE));
+	}
+	else
+	{
+		strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^1no\n",ADM_PARALYZE));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_GIVE))) 
+	{
+		strcpy(message_content[11],va("^3 %d ^7- Give: ^2yes\n",ADM_GIVE));
+	}
+	else
+	{
+		strcpy(message_content[11],va("^3 %d ^7- Give: ^1no\n",ADM_GIVE));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_SCALE))) 
+	{
+		strcpy(message_content[12],va("^3 %d ^7- Scale: ^2yes\n",ADM_SCALE));
+	}
+	else
+	{
+		strcpy(message_content[12],va("^3 %d ^7- Scale: ^1no\n",ADM_SCALE));
+	}
+
+	if ((ent->client->pers.bitvalue & (1 << ADM_PLAYERS))) 
+	{
+		strcpy(message_content[13],va("^3 %d ^7- Players: ^2yes\n",ADM_PLAYERS));
+	}
+	else
+	{
+		strcpy(message_content[13],va("^3 %d ^7- Players: ^1no\n",ADM_PLAYERS));
+	}
+
+	for (i = 0; i < ADM_NUM_CMDS; i++)
+	{
+		sprintf(message,"%s%s",message,message_content[i]);
+	}
+
+	trap->SendServerCommand( target_ent-g_entities, va("print \"\n%s^7\n%s\n^7Use ^3/adminlist <number> ^7to see command info\n\n\"", ent->client->pers.netname, message) );
+}
+
 /*
 ==================
 Cmd_AdminList_f
 ==================
 */
 void Cmd_AdminList_f( gentity_t *ent ) {
-	char message[1024];
-	char message_content[ADM_NUM_CMDS + 1][80];
-	int i = 0;
-	strcpy(message,"");
-
 	if (trap->Argc() == 1)
 	{
-		while (i < ADM_NUM_CMDS)
-		{
-			strcpy(message_content[i],"");
-			i++;
-		}
-		message_content[ADM_NUM_CMDS][0] = '\0';
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_NPC))) 
-		{
-			strcpy(message_content[0],va("^3  %d ^7- NPC: ^2yes\n",ADM_NPC));
-		}
-		else
-		{
-			strcpy(message_content[0],va("^3  %d ^7- NPC: ^1no\n",ADM_NPC));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_NOCLIP))) 
-		{
-			strcpy(message_content[1],va("^3  %d ^7- NoClip: ^2yes\n",ADM_NOCLIP));
-		}
-		else
-		{
-			strcpy(message_content[1],va("^3  %d ^7- NoClip: ^1no\n",ADM_NOCLIP));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_GIVEADM))) 
-		{
-			strcpy(message_content[2],va("^3  %d ^7- GiveAdmin: ^2yes\n",ADM_GIVEADM));
-		}
-		else
-		{
-			strcpy(message_content[2],va("^3  %d ^7- GiveAdmin: ^1no\n",ADM_GIVEADM));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_TELE))) 
-		{
-			strcpy(message_content[3],va("^3  %d ^7- Teleport: ^2yes\n",ADM_TELE));
-		}
-		else
-		{
-			strcpy(message_content[3],va("^3  %d ^7- Teleport: ^1no\n",ADM_TELE));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_ADMPROTECT))) 
-		{
-			strcpy(message_content[4],va("^3  %d ^7- AdminProtect: ^2yes\n",ADM_ADMPROTECT));
-		}
-		else
-		{
-			strcpy(message_content[4],va("^3  %d ^7- AdminProtect: ^1no\n",ADM_ADMPROTECT));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM))) 
-		{
-			strcpy(message_content[5],va("^3  %d ^7- EntitySystem: ^2yes\n",ADM_ENTITYSYSTEM));
-		}
-		else
-		{
-			strcpy(message_content[5],va("^3  %d ^7- EntitySystem: ^1no\n",ADM_ENTITYSYSTEM));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_SILENCE))) 
-		{
-			strcpy(message_content[6],va("^3  %d ^7- Silence: ^2yes\n",ADM_SILENCE));
-		}
-		else
-		{
-			strcpy(message_content[6],va("^3  %d ^7- Silence: ^1no\n",ADM_SILENCE));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_CLIENTPRINT))) 
-		{
-			strcpy(message_content[7],va("^3  %d ^7- ClientPrint: ^2yes\n",ADM_CLIENTPRINT));
-		}
-		else
-		{
-			strcpy(message_content[7],va("^3  %d ^7- ClientPrint: ^1no\n",ADM_CLIENTPRINT));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_RPMODE))) 
-		{
-			strcpy(message_content[8],va("^3  %d ^7- RP Mode: ^2yes\n",ADM_RPMODE));
-		}
-		else
-		{
-			strcpy(message_content[8],va("^3  %d ^7- RP Mode: ^1no\n",ADM_RPMODE));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_KICK))) 
-		{
-			strcpy(message_content[9],va("^3  %d ^7- Kick: ^2yes\n",ADM_KICK));
-		}
-		else
-		{
-			strcpy(message_content[9],va("^3  %d ^7- Kick: ^1no\n",ADM_KICK));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_PARALYZE))) 
-		{
-			strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^2yes\n",ADM_PARALYZE));
-		}
-		else
-		{
-			strcpy(message_content[10],va("^3 %d ^7- Paralyze: ^1no\n",ADM_PARALYZE));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_GIVE))) 
-		{
-			strcpy(message_content[11],va("^3 %d ^7- Give: ^2yes\n",ADM_GIVE));
-		}
-		else
-		{
-			strcpy(message_content[11],va("^3 %d ^7- Give: ^1no\n",ADM_GIVE));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_SCALE))) 
-		{
-			strcpy(message_content[12],va("^3 %d ^7- Scale: ^2yes\n",ADM_SCALE));
-		}
-		else
-		{
-			strcpy(message_content[12],va("^3 %d ^7- Scale: ^1no\n",ADM_SCALE));
-		}
-
-		if ((ent->client->pers.bitvalue & (1 << ADM_PLAYERS))) 
-		{
-			strcpy(message_content[13],va("^3 %d ^7- Players: ^2yes\n",ADM_PLAYERS));
-		}
-		else
-		{
-			strcpy(message_content[13],va("^3 %d ^7- Players: ^1no\n",ADM_PLAYERS));
-		}
-
-		for (i = 0; i < ADM_NUM_CMDS; i++)
-		{
-			sprintf(message,"%s%s",message,message_content[i]);
-		}
-
-		trap->SendServerCommand( ent-g_entities, va("print \"\n%s\n^7Use ^3/adminlist <number> ^7to see command info\n\n\"", message) );
+		zyk_show_admin_commands(ent, ent);
 	}
-	else
+	else if (trap->Argc() == 2)
 	{ // zyk: display help info for an admin command
 		char arg1[MAX_STRING_CHARS];
 		int command_number = 0;
@@ -13019,6 +13025,48 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		else if (command_number == ADM_PLAYERS)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/players ^7to see info about the players\n\n\"" );
+		}
+	}
+	else
+	{
+		char arg1[MAX_STRING_CHARS];
+		char arg2[MAX_STRING_CHARS];
+		int client_id = -1;
+		
+		trap->Argv( 1,  arg1, sizeof( arg1 ) );
+
+		if (Q_stricmp(arg1, "show") == 0)
+		{
+			gentity_t *player_ent = NULL;
+
+			if (!(ent->client->pers.bitvalue & (1 << ADM_GIVEADM)))
+			{ // zyk: admin command
+				trap->SendServerCommand( ent-g_entities, "print \"You must have GiveAdmin to use this admin command.\n\"" );
+				return;
+			}
+
+			trap->Argv( 2,  arg2, sizeof( arg2 ) );
+
+			client_id = ClientNumberFromString( ent, arg2, qfalse );
+			if (client_id == -1)
+			{
+				return;
+			}
+
+			player_ent = &g_entities[client_id];
+
+			if (player_ent->client->sess.amrpgmode == 0)
+			{
+				trap->SendServerCommand( ent-g_entities, va("print \"Player %s ^7is not logged in.\n\"", player_ent->client->pers.netname) );
+				return;
+			}
+
+			// zyk: player is logged in. Show his admin commands
+			zyk_show_admin_commands(player_ent, ent);
+		}
+		else
+		{
+			trap->SendServerCommand( ent-g_entities, "print \"Invalid option.\n\"" );
 		}
 	}
 }
