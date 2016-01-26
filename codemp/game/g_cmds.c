@@ -12980,7 +12980,7 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		}
 		else if (command_number == ADM_GIVEADM)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\nThis flag allows admins to give or remove admin commands from a player with ^3/adminup <name> <command number> ^7and ^3/admindown <name> <command number>^7\n\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"\nThis flag allows admins to give or remove admin commands from a player with ^3/adminup <name> <command number> ^7and ^3/admindown <name> <command number>^7. Use ^3/adminlist show <player name or ID> ^7to see admin commands of a player\n\n\"" );
 		}
 		else if (command_number == ADM_TELE)
 		{
@@ -13024,7 +13024,7 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		}
 		else if (command_number == ADM_PLAYERS)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/players ^7to see info about the players\n\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/players ^7to see info about the players. Use ^3/players <player name or ID> ^7to see RPG info of a player\n\n\"" );
 		}
 	}
 	else
