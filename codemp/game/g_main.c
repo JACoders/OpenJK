@@ -4723,7 +4723,7 @@ void water_splash(gentity_t *ent, int distance, int damage)
 	// zyk: Universe Power
 	if (ent->client->pers.quest_power_status & (1 << 13))
 	{
-		damage += 20;
+		damage += 5;
 	}
 
 	for (i = 0; i < level.num_entities; i++)
@@ -4732,13 +4732,9 @@ void water_splash(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_watersplash", "0", "world/waterfall3", 0, 0, 0, 3000);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_watersplash", "4", "world/waterfall3", 0, damage, 200, 2500);
 
-			G_Damage(player_ent,ent,ent,NULL,NULL,damage,0,MOD_UNKNOWN);
-			healing_water(ent,damage-30);
-
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/player/watr_un.wav"));
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/ambience/yavin/waterfall_medium_lp.wav"));
 		}
 	}
 }
@@ -10232,7 +10228,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else
 						{
-							water_splash(ent,400,90);
+							water_splash(ent,400,15);
 							trap->SendServerCommand( -1, "chat \"^4Guardian of Water: ^7Water Splash!\"");
 						}
 
@@ -10623,7 +10619,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
-							water_splash(ent,1400,100);
+							water_splash(ent,1400,20);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Water Splash!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}

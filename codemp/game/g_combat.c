@@ -6495,9 +6495,11 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							continue;
 						}
 
-						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0)
+						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0 || 
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_watersplash") == 0)
 						{ // zyk: Ultra Drain heals the power user
-							if (quest_power_user && quest_power_user->client && quest_power_user->health > 0 && zyk_can_hit_target(quest_power_user, ent) == qtrue)
+							if (quest_power_user && quest_power_user->client && quest_power_user->health > 0 && 
+								zyk_can_hit_target(quest_power_user, ent) == qtrue && ent->health > 0)
 							{
 								int heal_amount = (int)points;
 
@@ -6508,8 +6510,9 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							}
 						}
 
-						// zyk: target will not be knocked back by Rockfall, Dome of Damage, Ultra Flame, Ultra Drain or Healing Area
+						// zyk: target will not be knocked back by Rockfall, Dome of Damage, Ultra Flame, Ultra Drain, Water Splash and Healing Area
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0 || 
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_watersplash") == 0 ||
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_flame") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0 ||
