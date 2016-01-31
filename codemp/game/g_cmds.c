@@ -4192,8 +4192,8 @@ void set_max_shield(gentity_t *ent)
 void add_credits(gentity_t *ent, int credits)
 {
 	ent->client->pers.credits += credits;
-	if (ent->client->pers.credits > 500000)
-		ent->client->pers.credits = 500000;
+	if (ent->client->pers.credits > MAX_RPG_CREDITS)
+		ent->client->pers.credits = MAX_RPG_CREDITS;
 }
 
 // zyk: removes credits from the player
@@ -4438,6 +4438,16 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			// zyk: loading credits value
 			fscanf(account_file,"%s",content);
 			ent->client->pers.credits = atoi(content);
+
+			// zyk: validating credits
+			if (ent->client->pers.credits > MAX_RPG_CREDITS)
+			{
+				ent->client->pers.credits = MAX_RPG_CREDITS;
+			}
+			else if (ent->client->pers.credits < 0)
+			{
+				ent->client->pers.credits = 0;
+			}
 
 			// zyk: loading RPG class
 			fscanf(account_file,"%s",content);
