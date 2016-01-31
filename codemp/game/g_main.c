@@ -8154,7 +8154,11 @@ void G_RunFrame( int levelTime ) {
 								quest_get_new_player(ent);
 							}
 
-							if (ent->client->pers.universe_quest_progress == 0)
+							if (ent->client->pers.universe_quest_messages == 12)
+							{ // zyk: pass the rurn if one of the sages died
+								quest_get_new_player(ent);
+							}
+							else if (ent->client->pers.universe_quest_progress == 0)
 							{
 								if (npc_ent)
 								{ // zyk: sets the player id who must kill this quest reborn, or protect this sage

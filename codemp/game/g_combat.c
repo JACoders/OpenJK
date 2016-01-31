@@ -2106,6 +2106,7 @@ extern void quest_get_new_player(gentity_t *ent);
 extern void try_finishing_race();
 extern void save_account(gentity_t *ent);
 extern void remove_credits(gentity_t *ent, int credits);
+extern void zyk_NPC_Kill_f( char *name );
 void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	gentity_t	*ent;
 	int			anim;
@@ -2282,14 +2283,19 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 				the_old_player->client->pers.universe_quest_messages = 65;
 			}
 		}
-		else if ((Q_stricmp( self->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_eternity" ) == 0) && the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9) // zyk: if its a Sage, player fails the objective
+		else if ((Q_stricmp( self->NPC_type, "sage_of_light" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_darkness" ) == 0 || Q_stricmp( self->NPC_type, "sage_of_eternity" ) == 0) && 
+				 the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9 && 
+				 the_old_player->client->pers.universe_quest_messages != 12) // zyk: if its a Sage, player fails the objective
 		{
 			trap->SendServerCommand( the_old_player->s.number, va("chat \"%s^7: Oh no! One of the sages is dead! I failed to protect them...\"", the_old_player->client->pers.netname));
 
 			// zyk: if player fails the first Universe Quest objective, pass the turn to another player
-			quest_get_new_player(the_old_player);
+			the_old_player->client->pers.universe_quest_messages = 12;
+			the_old_player->client->pers.universe_quest_timer = level.time + 3000;
+			zyk_NPC_Kill_f("all");
 		}
-		else if (the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_objective_control != -1 && the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9)
+		else if (the_old_player->client->sess.amrpgmode == 2 && the_old_player->client->pers.universe_quest_objective_control != -1 && 
+				 the_old_player->client->pers.universe_quest_progress == 0 && level.quest_map == 9 && the_old_player->client->pers.universe_quest_messages != 12)
 		{
 			if (the_old_player->client->pers.universe_quest_objective_control > 1 || Q_stricmp( self->NPC_type, "quest_reborn_boss" ) == 0)
 			{
