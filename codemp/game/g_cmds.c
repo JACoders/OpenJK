@@ -11388,6 +11388,13 @@ Cmd_GuardianQuest_f
 */
 extern gentity_t *Zyk_NPC_SpawnType( char *npc_type, int x, int y, int z, int yaw );
 void Cmd_GuardianQuest_f( gentity_t *ent ) {
+
+	if (zyk_allow_mini_quests.integer != 1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("chat \"^3Guardian Quest: ^7this quest is not allowed in this server\n\"") );
+		return;
+	}
+
 	if (level.guardian_quest == 0)
 	{
 		int i = 0, j = 0, num_spawn_points = 0, chosen_spawn_point = -1;
@@ -11460,6 +11467,12 @@ Cmd_BountyQuest_f
 */
 void Cmd_BountyQuest_f( gentity_t *ent ) {
 	gentity_t *this_ent = NULL;
+
+	if (zyk_allow_mini_quests.integer != 1)
+	{
+		trap->SendServerCommand( ent-g_entities, va("chat \"^3Bounty Quest: ^7this quest is not allowed in this server\n\"") );
+		return;
+	}
 
 	// zyk: reached MAX_CLIENTS, reset it to 0
 	if (level.bounty_quest_target_id == level.maxclients)
