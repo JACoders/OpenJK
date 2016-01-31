@@ -4292,6 +4292,7 @@ void load_account(gentity_t *ent, qboolean change_mode)
 	FILE *account_file;
 	char content[128];
 	char file_content[1024];
+
 	strcpy(content,"");
 	strcpy(file_content,"");
 	account_file = fopen(va("accounts/%s.txt",ent->client->sess.filename),"r");
@@ -4343,6 +4344,11 @@ void load_account(gentity_t *ent, qboolean change_mode)
 		if (ent->client->sess.amrpgmode == 2)
 		{
 			int i = 0;
+			// zyk: this variable will validate the skillpoints this player has
+			// if he has more than the max skillpoints defined, then server must remove the exceeding ones
+			int validate_skillpoints = 0;
+			int max_skillpoints = 0;
+			int j = 0;
 
 			// zyk: loading level up score value
 			fscanf(account_file,"%s",content);
@@ -4356,11 +4362,46 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			fscanf(account_file,"%s",content);
 			ent->client->pers.skillpoints = atoi(content);
 
+			if (ent->client->pers.level > MAX_RPG_LEVEL)
+			{ // zyk: validating level
+				ent->client->pers.level = MAX_RPG_LEVEL;
+			}
+			else if (ent->client->pers.level < 1)
+			{
+				ent->client->pers.level = 1;
+			}
+
+			for (j = 1; j <= ent->client->pers.level; j++)
+			{
+				if ((j % 10) == 0)
+				{ // zyk: level divisible by 10 has more skillpoints
+					max_skillpoints += (1 + j/10);
+				}
+				else
+				{
+					max_skillpoints++;
+				}
+			}
+
+			validate_skillpoints = ent->client->pers.skillpoints;
 			// zyk: loading skill levels
 			for (i = 0; i < NUMBER_OF_SKILLS; i++)
 			{
 				fscanf(account_file,"%s",content);
 				ent->client->pers.skill_levels[i] = atoi(content);
+				validate_skillpoints += ent->client->pers.skill_levels[i];
+			}
+
+			// zyk: validating skillpoints
+			if (validate_skillpoints != max_skillpoints)
+			{
+				// zyk: if not valid, reset all skills and set the max skillpoints he can have in this level
+				for (i = 0; i < NUMBER_OF_SKILLS; i++)
+				{
+					ent->client->pers.skill_levels[i] = 0;
+				}
+
+				ent->client->pers.skillpoints = max_skillpoints;
 			}
 
 			// zyk: Other RPG attributes
