@@ -280,7 +280,10 @@ void zyk_add_force_powers( gentity_t *ent )
 	for (i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
 	{
 		ent->client->ps.fd.forcePowersKnown |= (1 << i);
-		ent->client->ps.fd.forcePowerLevel[i] = FORCE_LEVEL_3;
+		if (i == FP_SABER_OFFENSE) // zyk: gives Desann and Tavion styles
+			ent->client->ps.fd.forcePowerLevel[i] = FORCE_LEVEL_5;
+		else
+			ent->client->ps.fd.forcePowerLevel[i] = FORCE_LEVEL_3;
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 	}
 }
