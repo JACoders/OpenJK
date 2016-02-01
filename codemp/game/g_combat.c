@@ -2206,9 +2206,11 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		if (level.bounty_quest_choose_target == qfalse && attacker != self && self->client->sess.amrpgmode == 2)
 		{
 			if (level.bounty_quest_target_id == (attacker-g_entities))
-			{ // zyk: attacker was the target, so the attacker receives 200 bonus credits
-				attacker->client->pers.credits_modifier += 200;
-				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s ^7was defeated by the target player, ^3200 ^7bonus credits\n\"", self->client->pers.netname) );
+			{ // zyk: attacker was the target, so the attacker receives bonus credits
+				int bonus_credits = self->client->pers.level * 2;
+
+				attacker->client->pers.credits_modifier += bonus_credits;
+				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s ^7was defeated by the target player, ^3%d ^7bonus credits\n\"", self->client->pers.netname, bonus_credits) );
 			}
 			else if (level.bounty_quest_target_id == (self-g_entities))
 			{ // zyk: target player was defeated. Gives the reward to the attacker
