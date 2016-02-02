@@ -1568,14 +1568,15 @@ static void CG_ZykMod( void )
 	char value[64] = {0};
 	char rpg_class[32] = {0};
 	int i = 0, j = 0, k = 0;
+	int universe_quest_progress = 0;
 
 	trap->Cmd_Argv( 1, arg, sizeof( arg ) );
 
-	while (j < 85)
+	while (j < 86)
 	{ // zyk: parsing info from the server and setting the respective cvars
 		k = 0;
 
-		while(arg[i] != '-')
+		while(arg[i] != '-' && arg[i] != '\0')
 		{
 			value[k] = arg[i];
 			i++;
@@ -1841,10 +1842,27 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_eternity_power","Eternity Power - yes");
 			else
 				trap->Cvar_Set("ui_zyk_eternity_power","Eternity Power - no");
+
+			// zyk: Setting the mission the player must complete
+			if (eternity_quest_progress < 10)
+			{
+				trap->Cvar_Set("ui_zyk_eternity_text", "Find the ^3riddles ^7near the waterfall");
+				trap->Cvar_Set("ui_zyk_eternity_text2",va("in ^3yavin2^7. Use ^2/answer^7. Answered: ^3%d", eternity_quest_progress));
+			}
+			else if (eternity_quest_progress == 10)
+			{
+				trap->Cvar_Set("ui_zyk_eternity_text","Defeat the ^3Guardian of Eternity ^7near");
+				trap->Cvar_Set("ui_zyk_eternity_text2","the waterfall in ^3yavin2");
+			}
+			else
+			{
+				trap->Cvar_Set("ui_zyk_eternity_text","Completed");
+				trap->Cvar_Set("ui_zyk_eternity_text2","");
+			}
 		}
 		else if (j == 84)
 		{
-			int universe_quest_progress = atoi(value);
+			universe_quest_progress = atoi(value);
 
 			if (universe_quest_progress >= 8)
 				trap->Cvar_Set("ui_zyk_universe_power","Universe Power - yes");
@@ -1860,6 +1878,23 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_resurrection_power","Resurrection Power - yes");
 			else
 				trap->Cvar_Set("ui_zyk_resurrection_power","Resurrection Power - no");
+		}
+		else if (j == 85)
+		{ // zyk: Universe Quest counter, has the amount of artifacts, amulets and crystals
+			int amount_of_stuff = atoi(value);
+
+			if (universe_quest_progress == 2)
+			{
+				trap->Cvar_Set("ui_zyk_universe_text",va("Artifacts: %d", amount_of_stuff));
+			}
+			else if (universe_quest_progress == 5)
+			{
+				trap->Cvar_Set("ui_zyk_universe_text",va("Amulets: %d", amount_of_stuff));
+			}
+			else if (universe_quest_progress == 9)
+			{
+				trap->Cvar_Set("ui_zyk_universe_text",va("Crystals: %d", amount_of_stuff));
+			}
 		}
 
 		j++;

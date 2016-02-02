@@ -4725,6 +4725,57 @@ void rpg_skill_counter(gentity_t *ent, int amount)
 	}
 }
 
+// zyk: number of artifacts collected by the player in Universe Quest
+int number_of_artifacts(gentity_t *ent)
+{
+	int i = 0, collected_artifacts = 0;
+
+	if (ent->client->pers.universe_quest_progress == 2)
+	{
+		for (i = 0; i < 10; i++)
+		{
+			if (ent->client->pers.universe_quest_counter & (1 << i))
+			{
+				collected_artifacts++;
+			}
+		}
+	}
+
+	return collected_artifacts;
+}
+
+// zyk: amount of amulets got by the player in Amulets Mission of Universe Quest
+int number_of_amulets(gentity_t *ent)
+{
+	int i = 0, number_of_amulets = 0;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (ent->client->pers.universe_quest_counter & (1 << i))
+		{
+			number_of_amulets++;
+		}
+	}
+
+	return number_of_amulets;
+}
+
+// zyk: amount of crystals got by the player in Crystals mission of Universe Quest
+int number_of_crystals(gentity_t *ent)
+{
+	int i = 0, number_of_crystals = 0;
+
+	for (i = 0; i < 3; i++)
+	{
+		if (ent->client->pers.universe_quest_counter & (1 << i))
+		{
+			number_of_crystals++;
+		}
+	}
+
+	return number_of_crystals;
+}
+
 // zyk: initialize RPG skills of this player
 extern qboolean magic_master_has_this_power(gentity_t *ent, int selected_power);
 void initialize_rpg_skills(gentity_t *ent)
@@ -5359,25 +5410,6 @@ void clean_guardians(gentity_t *ent)
 	}
 }
 
-// zyk: number of artifacts collected by the player in Universe Quest
-int number_of_artifacts(gentity_t *ent)
-{
-	int i = 0, collected_artifacts = 0;
-
-	if (ent->client->pers.universe_quest_progress == 2)
-	{
-		for (i = 0; i < 10; i++)
-		{
-			if (ent->client->pers.universe_quest_counter & (1 << i))
-			{
-				collected_artifacts++;
-			}
-		}
-	}
-
-	return collected_artifacts;
-}
-
 // zyk: tests if the player has beaten the guardians before the Guardian of Light in Light Quest
 qboolean light_quest_defeated_guardians(gentity_t *ent)
 {
@@ -5506,20 +5538,6 @@ void clean_effect()
 		G_FreeEntity(&g_entities[level.quest_effect_id]);
 		level.quest_effect_id = -1;
 	}
-}
-
-// zyk: amount of amulets got by the player in Amulets Mission of Universe Quest
-int number_of_amulets(gentity_t *ent)
-{
-	int i = 0, number_of_amulets = 0;
-	for (i = 0; i < 3; i++)
-	{
-		if (ent->client->pers.universe_quest_counter & (1 << i))
-		{
-			number_of_amulets++;
-		}
-	}
-	return number_of_amulets;
 }
 
 // zyk: tests if player got all 3 amulets in Amulets Mission of Universe Quest
@@ -6898,6 +6916,8 @@ Cmd_ZykMod_f
 */
 void Cmd_ZykMod_f( gentity_t *ent ) {
 	// zyk: sends info to the client-side menu if player has the client-side plugin
+	int universe_quest_counter_value = 0;
+
 	if (Q_stricmp(ent->client->pers.guid, "NOGUID") == 0)
 	{
 		return;
@@ -6993,8 +7013,21 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 			}
 		}
 
-		strcpy(content,va("%s%d-%d-%d-%d-%d-",content,ent->client->pers.secrets_found,ent->client->pers.defeated_guardians,ent->client->pers.hunter_quest_progress,
-			ent->client->pers.eternity_quest_progress,ent->client->pers.universe_quest_progress));
+		if (ent->client->pers.universe_quest_progress == 2)
+		{
+			universe_quest_counter_value = number_of_artifacts(ent);
+		}
+		else if (ent->client->pers.universe_quest_progress == 5)
+		{
+			universe_quest_counter_value = number_of_amulets(ent);
+		}
+		else if (ent->client->pers.universe_quest_progress == 9)
+		{
+			universe_quest_counter_value = number_of_crystals(ent);
+		}
+
+		strcpy(content,va("%s%d-%d-%d-%d-%d-%d-",content,ent->client->pers.secrets_found,ent->client->pers.defeated_guardians,ent->client->pers.hunter_quest_progress,
+			ent->client->pers.eternity_quest_progress,ent->client->pers.universe_quest_progress,universe_quest_counter_value));
 
 		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-%s\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent),content));
 	}

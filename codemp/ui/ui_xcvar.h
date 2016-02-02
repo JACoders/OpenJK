@@ -212,5 +212,9 @@ XCVAR_DEF( ui_zyk_ultimate_power,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL
 XCVAR_DEF( ui_zyk_resurrection_power,		"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_special_powers,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_unique_skill,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_zyk_universe_chapter,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_zyk_universe_text,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_zyk_eternity_text,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_zyk_eternity_text2,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 
 #undef XCVAR_DEF
