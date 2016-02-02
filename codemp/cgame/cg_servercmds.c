@@ -1562,6 +1562,20 @@ static void CG_ClientLevelShot_f( void ) {
 	cg.levelShot = qtrue;
 }
 
+static qboolean dark_quest_collected_notes(int dark_quest_progress)
+{
+	if (dark_quest_progress & (1 << 4) && dark_quest_progress & (1 << 5) && dark_quest_progress & (1 << 6) && dark_quest_progress & (1 << 7) && 
+		dark_quest_progress & (1 << 8) && dark_quest_progress & (1 << 9) && dark_quest_progress & (1 << 10) && dark_quest_progress & (1 << 11) && 
+		dark_quest_progress & (1 << 12))
+	{
+		return qtrue;
+	}
+	else
+	{
+		return qfalse;
+	}
+}
+
 static void CG_ZykMod( void )
 { // zyk: receives account info of logged players
 	char arg[512] = {0};
@@ -1833,6 +1847,89 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_dark_power","Dark Power - yes");
 			else
 				trap->Cvar_Set("ui_zyk_dark_power","Dark Power - no");
+
+			if (dark_quest_progress != 10)
+			{
+				// zyk: Setting the mission the player must complete
+				if (dark_quest_collected_notes(dark_quest_progress) == qtrue)
+				{
+					trap->Cvar_Set("ui_zyk_dark_text", "Defeat the Guardian of Darkness");
+					trap->Cvar_Set("ui_zyk_dark_text2","in the dark room in ^3yavin2");
+					trap->Cvar_Set("ui_zyk_dark_text3","");
+					trap->Cvar_Set("ui_zyk_dark_text4","");
+					trap->Cvar_Set("ui_zyk_dark_text5","");
+					trap->Cvar_Set("ui_zyk_dark_text6","");
+					trap->Cvar_Set("ui_zyk_dark_text7","");
+					trap->Cvar_Set("ui_zyk_dark_text8","");
+					trap->Cvar_Set("ui_zyk_dark_text9","");
+					trap->Cvar_Set("ui_zyk_dark_text10","");
+					trap->Cvar_Set("ui_zyk_dark_text11","");
+				}
+				else
+				{
+					trap->Cvar_Set("ui_zyk_dark_text", "Find the notes in their respective maps");
+					trap->Cvar_Set("ui_zyk_dark_text2","");
+
+					if (dark_quest_progress & (1 << 4))
+						trap->Cvar_Set("ui_zyk_dark_text3", "in the temple of the forest - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text3", "in the temple of the forest - ^1no");
+
+					if (dark_quest_progress & (1 << 5))
+						trap->Cvar_Set("ui_zyk_dark_text4", "in a spaceport of a desert planet - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text4", "in a spaceport of a desert planet - ^1no");
+
+					if (dark_quest_progress & (1 << 6))
+						trap->Cvar_Set("ui_zyk_dark_text5", "in the desert with the people of the sands - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text5", "in the desert with the people of the sands - ^1no");
+
+					if (dark_quest_progress & (1 << 7))
+						trap->Cvar_Set("ui_zyk_dark_text6", "in a very deep burial location - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text6", "in a very deep burial location - ^1no");
+
+					if (dark_quest_progress & (1 << 8))
+						trap->Cvar_Set("ui_zyk_dark_text7", "in a very cold place - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text7", "in a very cold place - ^1no");
+
+					if (dark_quest_progress & (1 << 9))
+						trap->Cvar_Set("ui_zyk_dark_text8", "in an abandoned and forgotten city - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text8", "in an abandoned and forgotten city - ^1no");
+
+					if (dark_quest_progress & (1 << 10))
+						trap->Cvar_Set("ui_zyk_dark_text9", "in the office of a crime lord - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text9", "in the office of a crime lord - ^1no");
+
+					if (dark_quest_progress & (1 << 11))
+						trap->Cvar_Set("ui_zyk_dark_text10", "in the sand worm desert - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text10", "in the sand worm desert - ^1no");
+
+					if (dark_quest_progress & (1 << 12))
+						trap->Cvar_Set("ui_zyk_dark_text11", "in the sanctuary of the sages - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_dark_text11", "in the sanctuary of the sages - ^1no");
+				}
+			}
+			else
+			{
+				trap->Cvar_Set("ui_zyk_dark_text","Completed");
+				trap->Cvar_Set("ui_zyk_dark_text2","");
+				trap->Cvar_Set("ui_zyk_dark_text3","");
+				trap->Cvar_Set("ui_zyk_dark_text4","");
+				trap->Cvar_Set("ui_zyk_dark_text5","");
+				trap->Cvar_Set("ui_zyk_dark_text6","");
+				trap->Cvar_Set("ui_zyk_dark_text7","");
+				trap->Cvar_Set("ui_zyk_dark_text8","");
+				trap->Cvar_Set("ui_zyk_dark_text9","");
+				trap->Cvar_Set("ui_zyk_dark_text10","");
+				trap->Cvar_Set("ui_zyk_dark_text11","");
+			}
 		}
 		else if (j == 83)
 		{
