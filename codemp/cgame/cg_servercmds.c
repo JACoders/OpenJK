@@ -2125,8 +2125,8 @@ static void CG_ZykMod( void )
 				else if (universe_quest_progress == 5)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^36. The Guardian Amulets");
-					trap->Cvar_Set("ui_zyk_universe_text","Find the three amulets at the City of the Merchants");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
+					trap->Cvar_Set("ui_zyk_universe_text","Find the three guardian amulets");
+					trap->Cvar_Set("ui_zyk_universe_text2","at the City of the Merchants");
 					trap->Cvar_Set("ui_zyk_universe_text4","");
 				}
 				else if (universe_quest_progress == 6)
@@ -2229,7 +2229,7 @@ static void CG_ZykMod( void )
 			}
 			else if (universe_quest_progress == 5)
 			{
-				trap->Cvar_Set("ui_zyk_universe_text2",va("in ^3mp/siege_desert. ^7Amulets: ^3%d", amount_of_stuff));
+				trap->Cvar_Set("ui_zyk_universe_text3",va("in ^3mp/siege_desert. ^7Amulets: ^3%d", amount_of_stuff));
 			}
 			else if (universe_quest_progress == 8)
 			{
