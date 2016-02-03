@@ -7021,6 +7021,10 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 		{
 			universe_quest_counter_value = number_of_amulets(ent);
 		}
+		else if (ent->client->pers.universe_quest_progress == 8)
+		{
+			universe_quest_counter_value = ent->client->pers.universe_quest_counter;
+		}
 		else if (ent->client->pers.universe_quest_progress == 9)
 		{
 			universe_quest_counter_value = number_of_crystals(ent);
