@@ -1562,6 +1562,24 @@ static void CG_ClientLevelShot_f( void ) {
 	cg.levelShot = qtrue;
 }
 
+static qboolean light_quest_defeated_guardians(int light_quest_progress)
+{
+	int j = 0, number_of_guardians_defeated = 0;
+
+	for (j = 4; j <= 12; j++)
+	{
+		if (light_quest_progress & (1 << j))
+		{
+			number_of_guardians_defeated++;
+		}
+	}
+
+	if (number_of_guardians_defeated == 9)
+		return qtrue;
+	else
+		return qfalse;
+}
+
 static qboolean dark_quest_collected_notes(int dark_quest_progress)
 {
 	if (dark_quest_progress & (1 << 4) && dark_quest_progress & (1 << 5) && dark_quest_progress & (1 << 6) && dark_quest_progress & (1 << 7) && 
@@ -1838,6 +1856,89 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - yes");
 			else
 				trap->Cvar_Set("ui_zyk_special_powers","Magic Powers - no");
+
+			if (light_quest_progress != 10)
+			{
+				// zyk: Setting the mission the player must complete
+				if (light_quest_defeated_guardians(light_quest_progress) == qtrue)
+				{
+					trap->Cvar_Set("ui_zyk_light_text", "Go to the sacred monument in ^3yavin2");
+					trap->Cvar_Set("ui_zyk_light_text2","and defeat the Guardian of Light");
+					trap->Cvar_Set("ui_zyk_light_text3","");
+					trap->Cvar_Set("ui_zyk_light_text4","");
+					trap->Cvar_Set("ui_zyk_light_text5","");
+					trap->Cvar_Set("ui_zyk_light_text6","");
+					trap->Cvar_Set("ui_zyk_light_text7","");
+					trap->Cvar_Set("ui_zyk_light_text8","");
+					trap->Cvar_Set("ui_zyk_light_text9","");
+					trap->Cvar_Set("ui_zyk_light_text10","");
+					trap->Cvar_Set("ui_zyk_light_text11","");
+				}
+				else
+				{
+					trap->Cvar_Set("ui_zyk_light_text", "Defeat the guardians in their respective maps");
+					trap->Cvar_Set("ui_zyk_light_text2","");
+
+					if (light_quest_progress & (1 << 4))
+						trap->Cvar_Set("ui_zyk_light_text3", "^4Guardian of Water ^7(yavin1b) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text3", "^4Guardian of Water ^7(yavin1b) - ^1no");
+
+					if (light_quest_progress & (1 << 5))
+						trap->Cvar_Set("ui_zyk_light_text4", "^3Guardian of Earth ^7(t1_fatal) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text4", "^3Guardian of Earth ^7(t1_fatal) - ^1no");
+
+					if (light_quest_progress & (1 << 6))
+						trap->Cvar_Set("ui_zyk_light_text5", "^2Guardian of Forest ^7(yavin2) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text5", "^2Guardian of Forest ^7(yavin2) - ^1no");
+
+					if (light_quest_progress & (1 << 7))
+						trap->Cvar_Set("ui_zyk_light_text6", "^5Guardian of Intelligence ^7(t2_rogue) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text6", "^5Guardian of Intelligence ^7(t2_rogue) - ^1no");
+
+					if (light_quest_progress & (1 << 8))
+						trap->Cvar_Set("ui_zyk_light_text7", "^6Guardian of Agility ^7(hoth3) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text7", "^6Guardian of Agility ^7(hoth3) - ^1no");
+
+					if (light_quest_progress & (1 << 9))
+						trap->Cvar_Set("ui_zyk_light_text8", "^1Guardian of Fire ^7(mp/duel5) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text8", "^1Guardian of Fire ^7(mp/duel5) - ^1no");
+
+					if (light_quest_progress & (1 << 10))
+						trap->Cvar_Set("ui_zyk_light_text9", "^7Guardian of Wind ^7(mp/duel9) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text9", "^7Guardian of Wind ^7(mp/duel9) - ^1no");
+
+					if (light_quest_progress & (1 << 11))
+						trap->Cvar_Set("ui_zyk_light_text10", "^3Guardian of Resistance ^7(mp/duel8) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text10", "^3Guardian of Resistance ^7(mp/duel8) - ^1no");
+
+					if (light_quest_progress & (1 << 12))
+						trap->Cvar_Set("ui_zyk_light_text11", "^5Guardian of Ice ^7(hoth2) - ^2yes");
+					else
+						trap->Cvar_Set("ui_zyk_light_text11", "^5Guardian of Ice ^7(hoth2) - ^1no");
+				}
+			}
+			else
+			{
+				trap->Cvar_Set("ui_zyk_light_text","Completed");
+				trap->Cvar_Set("ui_zyk_light_text2","");
+				trap->Cvar_Set("ui_zyk_light_text3","");
+				trap->Cvar_Set("ui_zyk_light_text4","");
+				trap->Cvar_Set("ui_zyk_light_text5","");
+				trap->Cvar_Set("ui_zyk_light_text6","");
+				trap->Cvar_Set("ui_zyk_light_text7","");
+				trap->Cvar_Set("ui_zyk_light_text8","");
+				trap->Cvar_Set("ui_zyk_light_text9","");
+				trap->Cvar_Set("ui_zyk_light_text10","");
+				trap->Cvar_Set("ui_zyk_light_text11","");
+			}
 		}
 		else if (j == 82)
 		{
@@ -1881,9 +1982,9 @@ static void CG_ZykMod( void )
 						trap->Cvar_Set("ui_zyk_dark_text4", "in a spaceport of a desert planet - ^1no");
 
 					if (dark_quest_progress & (1 << 6))
-						trap->Cvar_Set("ui_zyk_dark_text5", "in the desert with the people of the sands - ^2yes");
+						trap->Cvar_Set("ui_zyk_dark_text5", "in the desert with the sand people - ^2yes");
 					else
-						trap->Cvar_Set("ui_zyk_dark_text5", "in the desert with the people of the sands - ^1no");
+						trap->Cvar_Set("ui_zyk_dark_text5", "in the desert with the sand people - ^1no");
 
 					if (dark_quest_progress & (1 << 7))
 						trap->Cvar_Set("ui_zyk_dark_text6", "in a very deep burial location - ^2yes");

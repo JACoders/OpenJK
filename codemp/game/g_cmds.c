@@ -8735,9 +8735,9 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 							strcpy(dark_quest_message, va("%s\n^7Note ^3in a spaceport of a desert planet - ^1no",dark_quest_message));
 
 						if (ent->client->pers.hunter_quest_progress & (1 << 6))
-							strcpy(dark_quest_message, va("%s\n^7Note ^3in the desert with the people of the sands - ^2yes",dark_quest_message));
+							strcpy(dark_quest_message, va("%s\n^7Note ^3in the desert with the sand people - ^2yes",dark_quest_message));
 						else
-							strcpy(dark_quest_message, va("%s\n^7Note ^3in the desert with the people of the sands - ^1no",dark_quest_message));
+							strcpy(dark_quest_message, va("%s\n^7Note ^3in the desert with the sand people - ^1no",dark_quest_message));
 
 						if (ent->client->pers.hunter_quest_progress & (1 << 7))
 							strcpy(dark_quest_message, va("%s\n^7Note ^3in a very deep burial location - ^2yes",dark_quest_message));
