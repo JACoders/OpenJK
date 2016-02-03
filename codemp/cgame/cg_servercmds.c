@@ -2110,8 +2110,8 @@ static void CG_ZykMod( void )
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^34. In Search for Answers");
 					trap->Cvar_Set("ui_zyk_universe_text","Go to ^3yavin1b ^7to talk to the sages about the");
-					trap->Cvar_Set("ui_zyk_universe_text2","mysterious voice at the beginning of the quest");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
+					trap->Cvar_Set("ui_zyk_universe_text2","mysterious voice at the");
+					trap->Cvar_Set("ui_zyk_universe_text3","beginning of the quest");
 					trap->Cvar_Set("ui_zyk_universe_text4","");
 				}
 				else if (universe_quest_progress == 4)
