@@ -217,6 +217,7 @@ XCVAR_DEF( ui_zyk_universe_text,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL 
 XCVAR_DEF( ui_zyk_universe_text2,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_universe_text3,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_universe_text4,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
+XCVAR_DEF( ui_zyk_universe_text5,			"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_light_text,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_light_text2,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
 XCVAR_DEF( ui_zyk_light_text3,				"0",					NULL,				CVAR_ARCHIVE|CVAR_INTERNAL )
