@@ -2140,8 +2140,8 @@ static void CG_ZykMod( void )
 				else if (universe_quest_progress == 7)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^38. The Guardian of Universe");
-					trap->Cvar_Set("ui_zyk_universe_text","Defeat the ^2Guardian of Universe ^7at ^3mp/siege_korriban");
-					trap->Cvar_Set("ui_zyk_universe_text2","");
+					trap->Cvar_Set("ui_zyk_universe_text","Defeat the ^2Guardian of Universe");
+					trap->Cvar_Set("ui_zyk_universe_text2","at ^3mp/siege_korriban");
 					trap->Cvar_Set("ui_zyk_universe_text3","");
 					trap->Cvar_Set("ui_zyk_universe_text4","");
 				}
@@ -2149,7 +2149,7 @@ static void CG_ZykMod( void )
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^39. Revelations");
 					trap->Cvar_Set("ui_zyk_universe_text","You had a strange vision of someone calling you from a");
-					trap->Cvar_Set("ui_zyk_universe_text2","sacred place. You must talk to sages and guardians and go there");
+					trap->Cvar_Set("ui_zyk_universe_text2","sacred place. Talk to sages and guardians and go there");
 				}
 				else if (universe_quest_progress == 9)
 				{
@@ -2234,14 +2234,14 @@ static void CG_ZykMod( void )
 			else if (universe_quest_progress == 8)
 			{
 				if (amount_of_stuff & (1 << 1))
-					trap->Cvar_Set("ui_zyk_universe_text3", "^3Guardians and Sages - ^7at ^3mp/siege_korriban ^7- ^2yes");
+					trap->Cvar_Set("ui_zyk_universe_text3", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^2yes");
 				else
-					trap->Cvar_Set("ui_zyk_universe_text3", "^3Guardians and Sages - ^7at ^3mp/siege_korriban ^7- ^1no");
+					trap->Cvar_Set("ui_zyk_universe_text3", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^2yes");
 
 				if (amount_of_stuff & (1 << 2))
-					trap->Cvar_Set("ui_zyk_universe_text4", "^3Sacred Monument - ^7sacred obelisk at ^3t2_trip ^7- ^2yes");
+					trap->Cvar_Set("ui_zyk_universe_text4", "^3Sacred obelisk at ^3t2_trip ^7- ^2yes");
 				else
-					trap->Cvar_Set("ui_zyk_universe_text4", "^3Sacred Monument - ^7sacred obelisk at ^3t2_trip ^7- ^1no");
+					trap->Cvar_Set("ui_zyk_universe_text4", "^3Sacred obelisk at ^3t2_trip ^7- ^1no");
 			}
 			else if (universe_quest_progress == 9)
 			{
