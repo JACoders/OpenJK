@@ -2157,7 +2157,7 @@ static void CG_ZykMod( void )
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^39. Revelations");
 					trap->Cvar_Set("ui_zyk_universe_text","You had a strange vision of someone");
-					trap->Cvar_Set("ui_zyk_universe_text2","calling you from a sacred place.");
+					trap->Cvar_Set("ui_zyk_universe_text2","calling you from a sacred place");
 					trap->Cvar_Set("ui_zyk_universe_text3","Talk to sages and guardians and go there");
 					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
@@ -2181,9 +2181,9 @@ static void CG_ZykMod( void )
 				else if (universe_quest_progress == 11)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^312. Battle for the Temple");
-					trap->Cvar_Set("ui_zyk_universe_text","Master of Evil sent his entire army to the temple");
-					trap->Cvar_Set("ui_zyk_universe_text2","Defeat all of them with the help of your allies");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
+					trap->Cvar_Set("ui_zyk_universe_text","Master of Evil sent his entire army");
+					trap->Cvar_Set("ui_zyk_universe_text2","to the temple. Defeat all of them");
+					trap->Cvar_Set("ui_zyk_universe_text3","with the help of your allies");
 					trap->Cvar_Set("ui_zyk_universe_text4","");
 					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
@@ -2199,10 +2199,10 @@ static void CG_ZykMod( void )
 				else if (universe_quest_progress == 13)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^314. The Hero's Choice");
-					trap->Cvar_Set("ui_zyk_universe_text","Listen to sages, guardians, Guardian of Time and Master of Evil");
-					trap->Cvar_Set("ui_zyk_universe_text2","After that, press the Use key on the one you choose");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
+					trap->Cvar_Set("ui_zyk_universe_text","Listen to sages, guardians,");
+					trap->Cvar_Set("ui_zyk_universe_text2","Guardian of Time and Master of Evil");
+					trap->Cvar_Set("ui_zyk_universe_text3","After that, press the Use key");
+					trap->Cvar_Set("ui_zyk_universe_text4","on the one you choose");
 					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 14)
@@ -2210,17 +2210,17 @@ static void CG_ZykMod( void )
 					if (light_quest_progress == 10 && dark_quest_progress == 10 && eternity_quest_progress == 11)
 					{
 						trap->Cvar_Set("ui_zyk_universe_chapter","^315. The Fate of the Universe");
-						trap->Cvar_Set("ui_zyk_universe_text","Go to the Sacred Dimension in ^3t2_trip^7 to fight");
-						trap->Cvar_Set("ui_zyk_universe_text2","the ^1Guardian of Chaos^7 and finish the quest");
-						trap->Cvar_Set("ui_zyk_universe_text3","");
+						trap->Cvar_Set("ui_zyk_universe_text","Go to the Sacred Dimension in ^3t2_trip");
+						trap->Cvar_Set("ui_zyk_universe_text2","to fight the ^1Guardian of Chaos");
+						trap->Cvar_Set("ui_zyk_universe_text3","and finish the quest");
 						trap->Cvar_Set("ui_zyk_universe_text4","");
 						trap->Cvar_Set("ui_zyk_universe_text5","");
 					}
 					else
 					{
 						trap->Cvar_Set("ui_zyk_universe_chapter","^3Requirements");
-						trap->Cvar_Set("ui_zyk_universe_text","Complete Light, Dark and Eternity quests");
-						trap->Cvar_Set("ui_zyk_universe_text2","");
+						trap->Cvar_Set("ui_zyk_universe_text","Complete Light, Dark");
+						trap->Cvar_Set("ui_zyk_universe_text2","and Eternity quests");
 						trap->Cvar_Set("ui_zyk_universe_text3","");
 						trap->Cvar_Set("ui_zyk_universe_text4","");
 						trap->Cvar_Set("ui_zyk_universe_text5","");
@@ -2253,7 +2253,7 @@ static void CG_ZykMod( void )
 				if (amount_of_stuff & (1 << 1))
 					trap->Cvar_Set("ui_zyk_universe_text4", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^2yes");
 				else
-					trap->Cvar_Set("ui_zyk_universe_text4", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^2yes");
+					trap->Cvar_Set("ui_zyk_universe_text4", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^1no");
 
 				if (amount_of_stuff & (1 << 2))
 					trap->Cvar_Set("ui_zyk_universe_text5", "^3Sacred obelisk at ^3t2_trip ^7- ^2yes");
