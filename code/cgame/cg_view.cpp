@@ -2053,7 +2053,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 
 	float mPitchOverride = 0.0f;
 	float mYawOverride = 0.0f;
-	if ( cg.snap->ps.clientNum == 0 )
+	if ( cg.snap->ps.clientNum == 0 && cg_scaleVehicleSensitivity.integer )
 	{//pointless check, but..
 		if ( cg_entities[0].gent->s.eFlags & EF_LOCKED_TO_WEAPON )
 		{

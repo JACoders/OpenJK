@@ -655,6 +655,8 @@ extern	vmCvar_t		cg_speedTrail;
 extern	vmCvar_t		cg_fovViewmodel;
 extern	vmCvar_t		cg_fovViewmodelAdjust;
 
+extern	vmCvar_t		cg_scaleVehicleSensitivity;
+
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c
