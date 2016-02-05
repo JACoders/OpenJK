@@ -280,7 +280,6 @@ int cmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((consoleCommand_t*)b)->cmd );
 }
 
-/* This array MUST be sorted correctly by alphabetical name field */
 static consoleCommand_t	commands[] = {
 	{ "+scores",					CG_ScoresDown_f },
 	{ "-scores",					CG_ScoresUp_f },
@@ -325,9 +324,9 @@ Cmd_Argc() / Cmd_Argv()
 qboolean CG_ConsoleCommand( void ) {
 	consoleCommand_t	*command = NULL;
 
-	command = (consoleCommand_t *)bsearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
+	command = (consoleCommand_t *)Q_LinearSearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
 
-	if ( !command )
+	if ( !command || !command->func )
 		return qfalse;
 
 	command->func();
@@ -379,7 +378,7 @@ so it can perform tab completion
 void CG_InitConsoleCommands( void ) {
 	size_t i;
 
-	for ( i = 0 ; i < numCommands ; i++ )
+	for ( i = 0; i < numCommands; i++ )
 		trap->AddCommand( commands[i].cmd );
 
 	//

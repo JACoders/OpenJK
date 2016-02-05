@@ -125,15 +125,9 @@ vehField_t vehWeaponFields[] =
 
 static const size_t numVehWeaponFields = ARRAY_LEN( vehWeaponFields );
 
-static vehField_t *FindVehWeaponParm( const char *parmName )
+int vfieldcmp( const void *a, const void *b )
 {
-	size_t i;
-	for ( i = 0; i<numVehWeaponFields; i++ )
-	{
-		if ( vehWeaponFields[i].name && !Q_stricmp( vehWeaponFields[i].name, parmName ) )
-			return &vehWeaponFields[i];
-	}
-	return NULL;
+	return Q_stricmp( (const char *)a, ((vehField_t*)b)->name );
 }
 
 static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *parmName, char *pValue )
@@ -148,7 +142,7 @@ static qboolean BG_ParseVehWeaponParm( vehWeaponInfo_t *vehWeapon, const char *p
 	Q_strncpyz( value, pValue, sizeof(value) );
 
 	// Loop through possible parameters
-	vehWeaponField = FindVehWeaponParm( parmName );
+	vehWeaponField = (vehField_t *)Q_LinearSearch( parmName, vehWeaponFields, numVehWeaponFields, sizeof( vehWeaponFields[0] ), vfieldcmp );
 
 	if ( !vehWeaponField )
 		return qfalse;
@@ -770,17 +764,6 @@ void BG_VehicleClampData( vehicleInfo_t *vehicle )
 	}
 }
 
-static vehField_t *FindVehicleParm( const char *parmName )
-{
-	size_t i;
-	for ( i = 0; i<numVehicleFields; i++ )
-	{
-		if ( vehicleFields[i].name && !Q_stricmp( vehicleFields[i].name, parmName ) )
-			return &vehicleFields[i];
-	}
-	return NULL;
-}
-
 static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmName, char *pValue )
 {
 	vehField_t *vehField;
@@ -793,7 +776,7 @@ static qboolean BG_ParseVehicleParm( vehicleInfo_t *vehicle, const char *parmNam
 	Q_strncpyz( value, pValue, sizeof(value) );
 
 	// Loop through possible parameters
-	vehField = FindVehicleParm( parmName );
+	vehField = (vehField_t *)Q_LinearSearch( parmName, vehicleFields, numVehicleFields, sizeof( vehicleFields[0] ), vfieldcmp );
 
 	if ( !vehField )
 		return qfalse;

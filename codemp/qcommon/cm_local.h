@@ -45,10 +45,10 @@ typedef struct cLeaf_s {
 	int			cluster;
 	int			area;
 
-	int			firstLeafBrush;
+	intptr_t	firstLeafBrush;
 	int			numLeafBrushes;
 
-	int			firstLeafSurface;
+	intptr_t	firstLeafSurface;
 	int			numLeafSurfaces;
 } cLeaf_t;
 
