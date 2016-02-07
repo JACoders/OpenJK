@@ -9429,7 +9429,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 39)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Armored Soldier Upgrade: ^7increases damage resistance by 5 per cent, cuts flame thrower fuel usage by half, resists to force Push and Pull, has less chance of losing gun to force pull, has a chance of setting ysalamiri for some seconds if attacked by force powers. It also protects from drowning, lava and slime damages\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Armored Soldier Upgrade: ^7increases damage resistance by 5 per cent, cuts flame thrower fuel usage by half, has less chance of losing gun to force pull, has a chance of setting ysalamiri for some seconds if attacked by force powers. It also protects from drowning, lava and slime damages\n\n\"");
 		}
 		else if (i == 40)
 		{

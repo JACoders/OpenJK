@@ -3721,11 +3721,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 				// zyk: Armored Soldier can resist Push and Pull if he has the Upgrade
 				if (push_list[x]->client->sess.amrpgmode == 2 && push_list[x]->client->pers.rpg_class == 3 && 
-					push_list[x]->client->pers.secrets_found & (1 << 16))
+					push_list[x]->client->pers.secrets_found & (1 << 16) && Q_irand(0,3) == 0)
 				{
-					pushPower /= 4;
-					if (Q_irand(0,3) == 0)
-						canPullWeapon = qfalse;
+					canPullWeapon = qfalse;
 				}
 
 				pushPowerMod = pushPower;
