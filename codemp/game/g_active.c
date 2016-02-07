@@ -3118,6 +3118,14 @@ void ClientThink_real( gentity_t *ent ) {
 		ucmd->buttons &= ~BUTTON_USE;
 	}
 
+	// zyk: If Bounty Hunter with Upgrade pressed button_forcepower with binoculars on, deactivate it
+	if (ucmd->buttons & BUTTON_FORCEPOWER && !ent->NPC && ent->client->ps.zoomMode == 2 && ent->client->sess.amrpgmode == 2 &&
+		ent->client->pers.rpg_class == 2 && ent->client->pers.secrets_found & (1 << 1))
+	{
+		ucmd->buttons &= ~BUTTON_FORCEPOWER;
+		ucmd->buttons |= BUTTON_USE_HOLDABLE;
+	}
+
 	//FIXME: need to do this before check to avoid walls and cliffs (or just cliffs?)
 	G_AddPushVecToUcmd( ent, ucmd );
 
