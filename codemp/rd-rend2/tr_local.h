@@ -2359,7 +2359,7 @@ void	GL_CheckErrs( char *file, int line );
 void	GL_State( uint32_t stateVector );
 void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
-void	GL_TexEnv( int env );
+//void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )

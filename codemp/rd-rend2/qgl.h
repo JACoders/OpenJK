@@ -6,9 +6,7 @@
 #	include <windows.h>
 #	include <gl/gl.h>
 #elif defined(MACOS_X)
-// Prevent OS X from including its own out-of-date glext.h
-#	define GL_GLEXT_LEGACY
-#	include <OpenGL/gl.h>
+#	include <OpenGL/gl3.h>
 #elif defined( __linux__ )
 #	include <GL/gl.h>
 #	include <GL/glx.h>
@@ -29,7 +27,7 @@
 #include "glext.h"
 
 #define qglAccum glAccum
-#define qglAlphaFunc glAlphaFunc
+//#define qglAlphaFunc glAlphaFunc
 #define qglAreTexturesResident glAreTexturesResident
 #define qglArrayElement glArrayElement
 #define qglBegin glBegin

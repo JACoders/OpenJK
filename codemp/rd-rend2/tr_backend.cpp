@@ -151,39 +151,6 @@ void GL_Cull( int cullType ) {
 }
 
 /*
-** GL_TexEnv
-*/
-void GL_TexEnv( int env )
-{
-	if ( env == glState.texEnv[glState.currenttmu] )
-	{
-		return;
-	}
-
-	glState.texEnv[glState.currenttmu] = env;
-
-
-	switch ( env )
-	{
-	case GL_MODULATE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
-		break;
-	case GL_REPLACE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
-		break;
-	case GL_DECAL:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
-		break;
-	case GL_ADD:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
-		break;
-	default:
-		ri->Error( ERR_DROP, "GL_TexEnv: invalid env '%d' passed", env );
-		break;
-	}
-}
-
-/*
 ** GL_State
 **
 ** This routine is responsible for setting the most commonly changed state
@@ -348,6 +315,7 @@ void GL_State( uint32_t stateBits )
 	//
 	// alpha test
 	//
+#if 0
 	if ( diff & GLS_ATEST_BITS )
 	{
 		switch ( stateBits & GLS_ATEST_BITS )
@@ -376,6 +344,7 @@ void GL_State( uint32_t stateBits )
 			break;
 		}
 	}
+#endif
 
 	glState.glStateBits = stateBits;
 }
@@ -823,7 +792,6 @@ void	RB_SetGL2D (void) {
 			  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
 
 	qglDisable( GL_CULL_FACE );
-	qglDisable( GL_CLIP_PLANE0 );
 
 	// set time for 2D shaders
 	backEnd.refdef.time = ri->Milliseconds();

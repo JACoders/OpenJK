@@ -258,11 +258,14 @@ cvar_t *r_debugContext;
 extern void	RB_SetGL2D (void);
 void R_Splash()
 {
-	GLSL_InitSplashScreenShader();
+	const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	qglViewport( 0, 0, glConfig.vidWidth, glConfig.vidHeight );
+	qglClearBufferfv(GL_COLOR, 0, black);
+
+	GLSL_InitSplashScreenShader();
+
 	qglDisable( GL_CULL_FACE );
-	qglDisable( GL_CLIP_PLANE0 );
 
 	image_t *pImage = R_FindImageFile( "menu/splash", IMGTYPE_COLORALPHA, IMGFLAG_NONE);
 	if (pImage )
@@ -426,6 +429,34 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 	return truncatedExtensions;
 }
 
+static const char *GetGLExtensionsString()
+{
+	GLint numExtensions;
+	glGetIntegerv(GL_NUM_EXTENSIONS, &numExtensions);
+	size_t extensionStringLen = 0;
+
+	for ( int i = 0; i < numExtensions; i++ )
+	{
+		extensionStringLen += strlen((const char *)glGetStringi(GL_EXTENSIONS, i)) + 1;
+	}
+
+	char *extensionString = (char *)Hunk_Alloc(extensionStringLen + 1, h_low);
+	char *p = extensionString;
+	for ( int i = 0; i < numExtensions; i++ )
+	{
+		const char *extension = (const char *)glGetStringi(GL_EXTENSIONS, i);
+		while ( *extension != '\0' )
+			*p++ = *extension++;
+
+		*p++ = ' ';
+	}
+
+	*p = '\0';
+	assert((p - extensionString) == extensionStringLen);
+
+	return extensionString;
+}
+
 /*
 ** InitOpenGL
 **
@@ -455,6 +486,7 @@ static void InitOpenGL( void )
 		windowDesc.api = GRAPHICS_API_OPENGL;
 		windowDesc.gl.majorVersion = 3;
 		windowDesc.gl.minorVersion = 2;
+		windowDesc.gl.profile = GLPROFILE_CORE;
 		if ( r_debugContext->integer )
 			windowDesc.gl.contextFlags = GLCONTEXT_DEBUG;
 
@@ -466,7 +498,7 @@ static void InitOpenGL( void )
 		glConfig.vendor_string = (const char *)qglGetString (GL_VENDOR);
 		glConfig.renderer_string = (const char *)qglGetString (GL_RENDERER);
 		glConfig.version_string = (const char *)qglGetString (GL_VERSION);
-		glConfig.extensions_string = (const char *)qglGetString (GL_EXTENSIONS);
+		glConfig.extensions_string = GetGLExtensionsString();
 
 		glConfigExt.originalExtensionString = glConfig.extensions_string;
 		glConfig.extensions_string = TruncateGLExtensionsString(glConfigExt.originalExtensionString, 128);
@@ -500,11 +532,17 @@ static void InitOpenGL( void )
 
 		// set default state
 		GL_SetDefaultState();
+		GLuint vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
 		R_Splash();	//get something on screen asap
 	}
 	else
 	{
 		// set default state
+		GLuint vao;
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
 		GL_SetDefaultState();
 	}
 }
@@ -535,12 +573,6 @@ void GL_CheckErrs( char *file, int line ) {
 			break;
 		case GL_INVALID_OPERATION:
 			strcpy( s, "GL_INVALID_OPERATION" );
-			break;
-		case GL_STACK_OVERFLOW:
-			strcpy( s, "GL_STACK_OVERFLOW" );
-			break;
-		case GL_STACK_UNDERFLOW:
-			strcpy( s, "GL_STACK_UNDERFLOW" );
 			break;
 		case GL_OUT_OF_MEMORY:
 			strcpy( s, "GL_OUT_OF_MEMORY" );
@@ -1057,19 +1089,15 @@ void GL_SetDefaultState( void )
 
 	qglCullFace(GL_FRONT);
 
-	qglColor4f (1,1,1,1);
-
 	// initialize downstream texture unit if we're running
 	// in a multitexture environment
 	GL_SelectTexture( 1 );
 	GL_TextureMode( r_textureMode->string );
-	GL_TexEnv( GL_MODULATE );
-	qglDisable( GL_TEXTURE_2D );
+	//GL_TexEnv( GL_MODULATE );
 	GL_SelectTexture( 0 );
 
-	qglEnable(GL_TEXTURE_2D);
 	GL_TextureMode( r_textureMode->string );
-	GL_TexEnv( GL_MODULATE );
+	//GL_TexEnv( GL_MODULATE );
 
 	//qglShadeModel( GL_SMOOTH );
 	qglDepthFunc( GL_LEQUAL );
@@ -1572,7 +1600,6 @@ static void R_ShutdownBackEndFrameData()
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{
 			gpuTimer_t *timer = frame->timers + j;
-			Com_Printf( "Deleting query %d\n", timer->queryName );
 			qglDeleteQueries(1, &timer->queryName);
 		}
 	}

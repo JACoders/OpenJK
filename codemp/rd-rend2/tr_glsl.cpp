@@ -357,8 +357,8 @@ static void GLSL_GetShaderHeader( GLenum shaderType, const GLcharARB *extra, cha
 								"#define TEXENV_ADD %i\n"
 								"#define TEXENV_REPLACE %i\n"
 								"#endif\n",
-								GL_MODULATE,
-								GL_ADD,
+								0x2100/* GL_MODULATE */,
+								0x0104/* GL_ADD */,
 								GL_REPLACE));
 
 	fbufWidthScale = 1.0f / ((float)glConfig.vidWidth);
@@ -468,21 +468,6 @@ static void GLSL_LinkProgram(GLuint program)
 		GLSL_PrintProgramInfoLog(program, qfalse);
 		ri->Printf(PRINT_ALL, "\n");
 		ri->Error(ERR_DROP, "shaders failed to link");
-	}
-}
-
-static void GLSL_ValidateProgram(GLuint program)
-{
-	GLint           validated;
-
-	qglValidateProgram(program);
-
-	qglGetProgramiv(program, GL_VALIDATE_STATUS, &validated);
-	if(!validated)
-	{
-		GLSL_PrintProgramInfoLog(program, qfalse);
-		ri->Printf(PRINT_ALL, "\n");
-		ri->Error(ERR_DROP, "shaders failed to validate");
 	}
 }
 
@@ -728,7 +713,6 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 
 void GLSL_FinishGPUShader(shaderProgram_t *program)
 {
-	GLSL_ValidateProgram(program->program);
 	GLSL_ShowProgramUniforms(program->program);
 	GL_CheckErrors();
 }
