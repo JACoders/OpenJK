@@ -187,9 +187,8 @@ void P_WorldEffects( gentity_t *ent ) {
 	//
 	if ( waterlevel && (ent->watertype & (CONTENTS_LAVA|CONTENTS_SLIME)) )
 	{
-		if ( ent->health > 0 && ent->client->tempSpectate < level.time && ent->pain_debounce_time <= level.time && 
-			!(ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 3 && ent->client->pers.secrets_found & (1 << 16)))
-		{ // zyk: Armored Soldier Upgrade protects from lava and slime
+		if ( ent->health > 0 && ent->client->tempSpectate < level.time && ent->pain_debounce_time <= level.time)
+		{
 		#ifdef BASE_COMPAT
 			if ( envirosuit )
 				G_AddEvent( ent, EV_POWERUP_BATTLESUIT, 0 );
