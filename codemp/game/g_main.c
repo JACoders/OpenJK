@@ -8336,7 +8336,7 @@ void G_RunFrame( int levelTime ) {
 							}
 						}
 
-						if (ent->client->pers.eternity_quest_progress < NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && ent->client->pers.eternity_quest_timer < level.time && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > -566 && (int) ent->client->ps.origin[0] < -406 && (int) ent->client->ps.origin[1] > 1393 && (int) ent->client->ps.origin[1] < 1550 && (int) ent->client->ps.origin[2] == 88)
+						if (ent->client->pers.eternity_quest_progress < NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && ent->client->pers.eternity_quest_timer < level.time && ent->client->pers.can_play_quest == 1 && ent->client->pers.guardian_mode == 0 && (int) ent->client->ps.origin[0] > -576 && (int) ent->client->ps.origin[0] < -396 && (int) ent->client->ps.origin[1] > 1383 && (int) ent->client->ps.origin[1] < 1560 && (int) ent->client->ps.origin[2] > 84 && (int) ent->client->ps.origin[2] < 92)
 						{
 							if (ent->client->pers.eternity_quest_progress == 0)
 							{
@@ -8393,7 +8393,7 @@ void G_RunFrame( int levelTime ) {
 
 							if (ent->client->pers.eternity_quest_progress < (NUMBER_OF_ETERNITY_QUEST_OBJECTIVES - 1))
 							{
-								ent->client->pers.eternity_quest_timer = level.time + 45000;
+								ent->client->pers.eternity_quest_timer = level.time + 30000;
 							}
 						}
 

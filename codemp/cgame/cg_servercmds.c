@@ -2048,7 +2048,7 @@ static void CG_ZykMod( void )
 			if (eternity_quest_progress < 10)
 			{
 				trap->Cvar_Set("ui_zyk_eternity_text", "Find the ^3riddles ^7near the waterfall");
-				trap->Cvar_Set("ui_zyk_eternity_text2",va("in ^3yavin2^7. Use ^2/answer^7. Answered: ^3%d", eternity_quest_progress));
+				trap->Cvar_Set("ui_zyk_eternity_text2",va("in ^3yavin2^7. Use chat to answer. Answered: ^3%d", eternity_quest_progress));
 			}
 			else if (eternity_quest_progress == 10)
 			{
