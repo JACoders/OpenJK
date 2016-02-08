@@ -8983,21 +8983,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					}
 					else if (ent->client->pers.universe_quest_progress == 9)
 					{
-						strcpy(universe_message, "^3\n10. The Sacred Crystals\n\n^7Find the sacred crystals in ^3t2_trip^7. You need them to free the Guardian of Time.\n");
-						if (ent->client->pers.universe_quest_counter & (1 << 0))
-							strcpy(universe_message, va("%s\n^4Crystal of Destiny ^3- ^2yes",universe_message));
-						else
-							strcpy(universe_message, va("%s\n^4Crystal of Destiny ^3- ^1no",universe_message));
-						
-						if (ent->client->pers.universe_quest_counter & (1 << 1))
-							strcpy(universe_message, va("%s\n^1Crystal of Truth ^3- ^2yes",universe_message));
-						else
-							strcpy(universe_message, va("%s\n^1Crystal of Truth ^3- ^1no",universe_message));
-
-						if (ent->client->pers.universe_quest_counter & (1 << 2))
-							strcpy(universe_message, va("%s\n^2Crystal of Time ^3- ^2yes",universe_message));
-						else
-							strcpy(universe_message, va("%s\n^2Crystal of Time ^3- ^1no",universe_message));
+						strcpy(universe_message, va("^3\n10. The Sacred Crystals\n\n^7Find the sacred crystals in ^3t2_trip^7. You need them to free the Guardian of Time. Crystals: %d\n", number_of_crystals(ent)));
 					}
 					else if (ent->client->pers.universe_quest_progress == 10)
 					{

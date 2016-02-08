@@ -5680,18 +5680,11 @@ void universe_quest_artifacts_checker(gentity_t *ent)
 }
 
 // zyk: checks if the player got all crystals
+extern int number_of_crystals(gentity_t *ent);
+extern void quest_get_new_player(gentity_t *ent);
 void universe_crystals_check(gentity_t *ent)
 {
-	int i = 0;
-	int count = 0;
-
-	for (i = 0; i < 3; i++)
-	{
-		if (ent->client->pers.universe_quest_counter & (1 << i))
-			count++;
-	}
-
-	if (count == 3)
+	if (number_of_crystals(ent) == 3)
 	{
 		ent->client->pers.universe_quest_progress = 10;
 		if (ent->client->pers.universe_quest_counter & (1 << 29))
@@ -5701,10 +5694,16 @@ void universe_crystals_check(gentity_t *ent)
 		}
 		else
 			ent->client->pers.universe_quest_counter = 0;
+
+		save_account(ent);
+		quest_get_new_player(ent);
+	}
+	else
+	{
+		save_account(ent);
 	}
 }
 
-extern void quest_get_new_player(gentity_t *ent);
 extern void clean_note_model();
 void zyk_try_get_dark_quest_note(gentity_t *ent, int note_bitvalue)
 {
@@ -8836,30 +8835,24 @@ void G_RunFrame( int levelTime ) {
 								{
 									ent->client->pers.universe_quest_counter |= (1 << 0);
 									trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^4Crystal of Destiny^7.\"");
-									universe_crystals_check(ent);
-									save_account(ent);
 									clean_crystal_model(0);
-									quest_get_new_player(ent);
+									universe_crystals_check(ent);
 								}
 								else if (level.quest_crystal_id[1] != -1 && 
 									(int)Distance(ent->client->ps.origin,g_entities[level.quest_crystal_id[1]].r.currentOrigin) < 50)
 								{
 									ent->client->pers.universe_quest_counter |= (1 << 1);
 									trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^1Crystal of Truth^7.\"");
-									universe_crystals_check(ent);
-									save_account(ent);
 									clean_crystal_model(1);
-									quest_get_new_player(ent);
+									universe_crystals_check(ent);
 								}
 								else if (level.quest_crystal_id[2] != -1 && 
 									(int)Distance(ent->client->ps.origin,g_entities[level.quest_crystal_id[2]].r.currentOrigin) < 50)
 								{
 									ent->client->pers.universe_quest_counter |= (1 << 2);
 									trap->SendServerCommand( ent->s.number, "chat \"^3Quest System^7: Got the ^2Crystal of Time^7.\"");
-									universe_crystals_check(ent);
-									save_account(ent);
 									clean_crystal_model(2);
-									quest_get_new_player(ent);
+									universe_crystals_check(ent);
 								}
 							}
 						}
