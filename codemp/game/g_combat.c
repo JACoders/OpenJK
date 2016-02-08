@@ -5084,16 +5084,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2)
 	{ // zyk: damage resistance of each class
-		
 		if (targ->client->pers.player_statuses & (1 << 8) && mod == MOD_SABER)
 		{ // zyk: using the Saber Armor, reduces saber damage
-			damage = (int)ceil(damage * 0.8);
+			damage = (int)ceil(damage * 0.85);
 		}
 
 		if (targ->client->pers.player_statuses & (1 << 9) && mod != MOD_SABER && mod != MOD_UNKNOWN && mod != MOD_TRIGGER_HURT && 
 			mod != MOD_FORCE_DARK && mod != MOD_WATER && mod != MOD_FALLING && mod != MOD_SUICIDE && mod != MOD_TELEFRAG && mod != MOD_SLIME)
 		{ // zyk: using the Gun Armor, reduces gun and melee damage
-			damage = (int)ceil(damage * 0.8);
+			damage = (int)ceil(damage * 0.85);
 		}
 
 		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
