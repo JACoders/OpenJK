@@ -5095,7 +5095,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage = (int)ceil(damage * 0.85);
 		}
 
-		if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
+		if (targ->client->pers.rpg_class == 1 && targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Force User damage resistance
+		{ // zyk: Unique Skill of Force User
+			damage = (int)ceil(damage * 0.25);
+		}
+		else if (targ->client->pers.rpg_class == 3) // zyk: Armored Soldier damage resistance
 		{
 			float armored_soldier_bonus_resistance = 0.0;
 			// zyk: Armored Soldier Upgrade increases damage resistance

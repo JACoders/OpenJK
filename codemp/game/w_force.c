@@ -563,6 +563,12 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
+	if (other && other->client && other->client->sess.amrpgmode == 2 && 
+		other->client->pers.rpg_class == 1 && other->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+	{ // zyk: Force User Unique Skill protects against force powers
+		return 0;
+	}
+
 	if (forcePower != FP_TEAM_HEAL && forcePower != FP_TEAM_FORCE && attacker && attacker->client && other && other->client && 
 		attacker->client->sess.amrpgmode > 0 && other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && 
 		zyk_is_ally(attacker,other) == qtrue)
@@ -5949,8 +5955,6 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 			{
 				if ( self->client->ps.powerups[PW_FORCE_BOON] )
 					WP_ForcePowerRegenerate( self, 6 );
-				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1 && self->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-					WP_ForcePowerRegenerate( self, 5 ); // zyk: Force User in RPG Mode regenerates force faster when using his Unique Skill
 				else if ( self->client->ps.isJediMaster && level.gametype == GT_JEDIMASTER )
 					WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 				else if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
