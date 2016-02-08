@@ -604,7 +604,7 @@ typedef struct clientPersistant_s {
 	// 4 - Scaled player
 	// 5 - Chat protection activated for this player
 	// 6 - Paralyzed by an admin
-	// 7 - using Force Armor
+	// 7 - unused
 	// 8 - using Saber Armor
 	// 9 - using Gun Armor
 	// 10 - using Healing Crystal

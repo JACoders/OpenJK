@@ -563,13 +563,6 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
-	if (other && other->client && other->client->sess.amrpgmode == 2 && other->client->pers.player_statuses & (1 << 7) &&
-		(forcePower == FP_PUSH || forcePower == FP_PULL || forcePower == FP_TELEPATHY || forcePower == FP_LIGHTNING || 
-		 forcePower == FP_GRIP || forcePower == FP_DRAIN))
-	{ // zyk: RPG player using the Force Armor cant be hit by these force powers
-		return 0;
-	}
-
 	if (forcePower != FP_TEAM_HEAL && forcePower != FP_TEAM_FORCE && attacker && attacker->client && other && other->client && 
 		attacker->client->sess.amrpgmode > 0 && other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && 
 		zyk_is_ally(attacker,other) == qtrue)
