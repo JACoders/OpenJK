@@ -8773,18 +8773,18 @@ void G_RunFrame( int levelTime ) {
 							if (!(ent->client->pers.universe_quest_counter & (1 << 1)))
 							{ // zyk: Crystal of Truth
 								if (ent->client->pers.universe_quest_messages == 7)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18057,-5515,1693,129);
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-14365,-696,1554,-179);
 								else if (ent->client->pers.universe_quest_messages == 8)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18539,-5492,1693,34);
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-14358,-284,1565,-179);
 								else if (ent->client->pers.universe_quest_messages == 9)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18495,-5740,1693,-41);
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-13880,-520,1557,-179);
 								else if (ent->client->pers.universe_quest_messages == 10)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-17997,-5795,1693,-143);
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-15361,-600,1851,-179);
 								else if (ent->client->pers.universe_quest_messages == 11)
-									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-18229,-5600,1693,-90);
+									npc_ent = Zyk_NPC_SpawnType("quest_super_soldier",-14152,-523,1455,-179);
 								else if (ent->client->pers.universe_quest_messages == 12)
 								{
-									load_crystal_model(-18229,-5600,1672,-104,1);
+									load_crystal_model(-14152,-523,1455,-179,1);
 								}
 							}
 							else if (ent->client->pers.universe_quest_messages == 6)
