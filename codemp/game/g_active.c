@@ -802,6 +802,17 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	{
 		client->timeResidual -= 1000;
 
+		// zyk: if out of trip mines or thermals, remove them from weapon selection
+		if (client->ps.ammo[AMMO_THERMAL] == 0)
+		{
+			client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_THERMAL);
+		}
+
+		if (client->ps.ammo[AMMO_TRIPMINE] == 0)
+		{
+			client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_TRIP_MINE);
+		}
+
 		if ((ent->NPC || client->sess.amrpgmode == 2) && client->pers.quest_power_status & (1 << 14) && ent->health > 0)
 		{ // zyk: Light Power
 			if (ent->NPC)
