@@ -10569,19 +10569,19 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 3)
 						{
-							immunity_power(ent,10000);
+							immunity_power(ent,15000);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Immunity Power!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 4)
 						{
-							sleeping_flowers(ent,3500,1000);
+							sleeping_flowers(ent,3200,1000);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Sleeping Flowers!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 5)
 						{
-							ultra_strength(ent,10000);
+							ultra_strength(ent,12000);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Ultra Strength!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -10593,13 +10593,13 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 7)
 						{
-							ice_stalagmite(ent,2000,200);
+							ice_stalagmite(ent,2000,180);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ice Stalagmite!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 8)
 						{
-							ice_boulder(ent,1000,100);
+							ice_boulder(ent,1000,90);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Ice Boulder!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -10623,7 +10623,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 12)
 						{
-							water_splash(ent,1400,20);
+							water_splash(ent,1400,18);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Water Splash!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -10659,7 +10659,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 18)
 						{
-							lightning_dome(ent,140);
+							lightning_dome(ent,120);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Lightning Dome!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -10690,13 +10690,13 @@ void G_RunFrame( int levelTime ) {
 
 							zyk_TeleportPlayer(ent,origin,angles);
 
-							ultra_resistance(ent,10000);
+							ultra_resistance(ent,12000);
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Ultra Resistance!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 23)
 						{
-							magic_explosion(ent,320,200,900);
+							magic_explosion(ent,320,190,900);
 							trap->SendServerCommand( -1, va("chat \"^1Guardian of Chaos: ^7Magic Explosion!\""));
 							ent->client->pers.hunter_quest_messages++;
 						}
@@ -10741,7 +10741,7 @@ void G_RunFrame( int levelTime ) {
 							trap->SendServerCommand( -1, "chat \"^1Guardian of Chaos: ^7Universe Power!\"");
 						}
 
-						ent->client->pers.light_quest_timer = level.time + 21000;
+						ent->client->pers.light_quest_timer = level.time + 25000;
 					}
 				}
 			}
