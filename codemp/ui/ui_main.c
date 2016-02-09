@@ -7702,7 +7702,7 @@ UI_BuildServerDisplayList
 ==================
 */
 static void UI_BuildServerDisplayList(int force) {
-	int i, count, clients, maxClients, ping, game, len, passw/*, visible*/;
+	int i, count, maxClients, ping, game, len, passw/*, visible*/;
 	char info[MAX_STRING_CHARS];
 //	qboolean startRefresh = qtrue; TTimo: unused
 	static int numinvisible;
@@ -7769,6 +7769,10 @@ static void UI_BuildServerDisplayList(int force) {
 		ping = trap->LAN_GetServerPing(lanSource, i);
 		if (ping > 0 || ui_netSource.integer == UIAS_FAVORITES) {
 
+			int realPlayers;
+			int clients;
+			int bots;
+
 			trap->LAN_GetServerInfo(lanSource, i, info, MAX_STRING_CHARS);
 
 			// don't list servers with invalid info
@@ -7778,7 +7782,9 @@ static void UI_BuildServerDisplayList(int force) {
 			}
 
 			clients = atoi(Info_ValueForKey(info, "clients"));
-			uiInfo.serverStatus.numPlayersOnServers += clients;
+			bots = atoi(Info_ValueForKey(info, "bots"));
+			realPlayers = clients - bots;
+			uiInfo.serverStatus.numPlayersOnServers += realPlayers;
 
 			if (ui_browserShowEmpty.integer == 0) {
 				if (clients == 0) {

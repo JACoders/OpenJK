@@ -1550,6 +1550,8 @@ void CL_CheckForResend( void ) {
 		// The challenge request shall be followed by a client challenge so no malicious server can hijack this connection.
 		Com_sprintf(data, sizeof(data), "getchallenge %d", clc.challenge);
 
+		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getinfo");
+		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getstatus");
 		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, data);
 		break;
 
@@ -1646,6 +1648,7 @@ CL_InitServerInfo
 void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->adr = *address;
 	server->clients = 0;
+	server->bots = 0;
 	server->hostName[0] = '\0';
 	server->mapName[0] = '\0';
 	server->maxClients = 0;
@@ -2960,6 +2963,37 @@ static void CL_SetServerInfoByAddress(netadr_t from, const char *info, int ping)
 	}
 }
 
+void CL_SetServerFakeInfoByAddress(netadr_t from, int clients, int bots) {
+	int i;
+
+	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
+		if (NET_CompareAdr(from, cls.localServers[i].adr)) {
+			if (clients != -1) {
+				cls.localServers[i].clients = clients;
+				cls.localServers[i].bots = bots;
+			}
+		}
+	}
+
+	for (i = 0; i < MAX_GLOBAL_SERVERS; i++) {
+		if (NET_CompareAdr(from, cls.globalServers[i].adr)) {
+			if (clients != -1) {
+				cls.globalServers[i].clients = clients;
+				cls.globalServers[i].bots = bots;
+			}
+		}
+	}
+
+	for (i = 0; i < MAX_OTHER_SERVERS; i++) {
+		if (NET_CompareAdr(from, cls.favoriteServers[i].adr)) {
+			if (clients != -1) {
+				cls.favoriteServers[i].clients = clients;
+				cls.favoriteServers[i].bots = bots;
+			}
+		}
+	}
+}
+
 /*
 ===================
 CL_ServerInfoPacket
@@ -3153,7 +3187,10 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 	char	info[MAX_INFO_STRING];
 	int		i, l, score, ping;
 	int		len;
+	int		bots;
 	serverStatus_t *serverStatus;
+
+	CL_SetServerFakeInfoByAddress(from, -1, -1);
 
 	serverStatus = NULL;
 	for (i = 0; i < MAX_SERVERSTATUSREQUESTS; i++) {
@@ -3209,24 +3246,34 @@ void CL_ServerStatusResponse( netadr_t from, msg_t *msg ) {
 		Com_Printf("\nPlayers:\n");
 		Com_Printf("num: score: ping: name:\n");
 	}
+
+	bots = 0;
 	for (i = 0, s = MSG_ReadStringLine( msg ); *s; s = MSG_ReadStringLine( msg ), i++) {
 
 		len = strlen(serverStatus->string);
 		Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\%s", s);
 
+		score = ping = 0;
+		sscanf(s, "%d %d", &score, &ping);
+		s = strchr(s, ' ');
+		if (s)
+			s = strchr(s+1, ' ');
+		if (s)
+			s++;
+		else
+			s = "unknown";
+
+		if (ping == 0) {
+			bots++;
+		}
+
 		if (serverStatus->print) {
-			score = ping = 0;
-			sscanf(s, "%d %d", &score, &ping);
-			s = strchr(s, ' ');
-			if (s)
-				s = strchr(s+1, ' ');
-			if (s)
-				s++;
-			else
-				s = "unknown";
 			Com_Printf("%-2d   %-3d    %-3d   %s\n", i, score, ping, s );
 		}
 	}
+
+	CL_SetServerFakeInfoByAddress(from, i, bots);
+
 	len = strlen(serverStatus->string);
 	Com_sprintf(&serverStatus->string[len], sizeof(serverStatus->string)-len, "\\");
 
@@ -3589,6 +3636,16 @@ qboolean CL_UpdateVisiblePings_f(int source) {
 						cl_pinglist[j].start = Sys_Milliseconds();
 						cl_pinglist[j].time = 0;
 						NET_OutOfBandPrint( NS_CLIENT, cl_pinglist[j].adr, "getinfo xxx" );
+
+						serverStatus_t *serverStatus = CL_GetServerStatus(cl_pinglist[j].adr);
+						serverStatus->address = cl_pinglist[j].adr;
+						serverStatus->print = qfalse;
+						serverStatus->pending = qtrue;
+						serverStatus->retrieved = qfalse;
+						serverStatus->startTime = Com_Milliseconds();
+						serverStatus->time = 0;
+						NET_OutOfBandPrint(NS_CLIENT, cl_pinglist[j].adr, "getstatus");
+
 						slots++;
 					}
 				}
