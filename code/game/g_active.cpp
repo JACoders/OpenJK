@@ -50,6 +50,7 @@ extern void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd );
 extern void WP_SaberBlockPointsRegenerate(gentity_t * self);
 extern void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd);
+extern void WP_CheckPlayerSaberEvents(gentity_t *self);
 
 extern gentity_t *SeekerAcquiresTarget ( gentity_t *ent, vec3_t pos );
 extern void FireSeeker( gentity_t *owner, gentity_t *target, vec3_t origin, vec3_t dir );
@@ -2121,11 +2122,13 @@ gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, vec3_t k
 						{
 							G_Throw( hitEnt, kickDir, kickPush );
 						}
-						if ( kickPush >= 150.0f/*75.0f*/ && !Q_irand( 0, 2 ) )
-						{
+						if ( kickPush >= 150.0f/*75.0f*/ 
+							&& !Q_irand( 0, 2 )
+							&& ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] >= hitEnt->client->ps.forcePowerLevel[FP_SABER_DEFENSE])
+						{							
 							G_Knockdown( hitEnt, ent, kickDir, 300, qtrue );
 						}
-						else
+						else if (ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] >= hitEnt->client->ps.forcePowerLevel[FP_SABER_DEFENSE])
 						{
 							G_Knockdown( hitEnt, ent, kickDir, kickPush, qtrue );
 						}
@@ -3221,8 +3224,23 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 		float remainingTime = (animLength-elapsedTime);
 		float kickDist = (ent->maxs[0]*1.5f)+STAFF_KICK_RANGE+8.0f;//fudge factor of 8
 		float kickDist2 = kickDist;
-		int	  kickDamage = Q_irand( 3, 8 );
-		int	  kickDamage2 = Q_irand( 3, 8 );
+		int	  kickDamage; //= Q_irand( 3, 8 );
+		int	  kickDamage2; //= Q_irand( 3, 8 );
+
+		switch (ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE])
+		{
+		case FORCE_LEVEL_0:
+		case FORCE_LEVEL_1:
+			kickDamage = Q_irand(3, 6);
+			kickDamage2 = Q_irand(3, 6);
+		case FORCE_LEVEL_2:
+			kickDamage = Q_irand(4, 7);
+			kickDamage2 = Q_irand(4, 7);
+		case FORCE_LEVEL_3:
+			kickDamage = Q_irand(5, 9);
+			kickDamage2 = Q_irand(5, 9);
+		}
+
 		int	  kickPush = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
 		int	  kickPush2 = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
 		qboolean doKick = qfalse;
@@ -5318,7 +5336,7 @@ extern cvar_t	*g_skippingcin;
 
 	G_CheckClampUcmd( ent, ucmd );
 
-	WP_ForcePowersUpdate( ent, ucmd );	
+	WP_ForcePowersUpdate( ent, ucmd );
 
 	//if we have the saber in hand, check for starting a block to reflect shots
 	if ((ent->s.number < MAX_CLIENTS//player 

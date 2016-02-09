@@ -219,6 +219,18 @@ qboolean NPC_JediClass(gentity_t *self) {
 	}
 }
 
+qboolean NPC_JediClassGood(gentity_t *self) {
+	switch (self->client->NPC_class) {
+	case CLASS_JEDI:
+	case CLASS_LUKE:
+	case CLASS_KYLE:
+	case CLASS_MORGANKATARN:
+		return qtrue;
+	default:
+		return qfalse;
+	}
+}
+
 qboolean NPC_JediClassNonBoss(gentity_t *self) {
 	switch (self->client->NPC_class) {
 	case CLASS_JEDI:
@@ -265,6 +277,24 @@ qboolean PM_WalkingOrIdle(gentity_t *self)
 
 	return qfalse;
 }
+
+void WP_CheckPlayerSaberEvents(gentity_t *self)
+{//the player needs this because his saberEventFlags aren't cleared by the code in AI_Jedi.cpp like for NPCs
+	if (self->s.number)
+	{
+		return;
+	}
+
+	if (PM_SaberInAttack(self->client->ps.saberMove))
+	{//make sure code knows player is attacking and not doing any kind of block
+		self->client->ps.saberEventFlags &= ~SEF_EVENTS;
+	}
+	else if (PM_SaberInIdle(self->client->ps.saberMove) && self->client->ps.torsoAnimTimer > 100)
+	{
+		self->client->ps.saberEventFlags &= ~SEF_EVENTS;
+	}
+}
+	
 
 
 
@@ -375,7 +405,7 @@ float forcePullConeNew[NUM_FORCE_POWER_LEVELS] =
 	1.0f,//none
 	1.0f,
 	1.0f,
-	0.8f
+	0.9f
 };
 
 float forceSpeedValue[NUM_FORCE_POWER_LEVELS] =
@@ -4145,8 +4175,6 @@ qboolean WP_SabersCheckLock(gentity_t *ent1, gentity_t *ent2)
 
 qboolean WP_SaberParry(gentity_t *victim, gentity_t *attacker, int saberNum, int bladeNum)
 {
-	return qfalse;
-
 	if (!victim || !victim->client || !attacker)
 	{
 		return qfalse;
@@ -4192,8 +4220,6 @@ qboolean WP_SaberParry(gentity_t *victim, gentity_t *attacker, int saberNum, int
 
 qboolean WP_SaberParryNew(gentity_t *victim, gentity_t *attacker, int saberNum, int bladeNum)
 {
-	return qfalse;
-
 	if (!victim || !victim->client || !attacker)
 	{
 		return qfalse;
@@ -5985,10 +6011,14 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 	{
 		return;
 	}
-
+	
 	if (!ent->s.number)
-	{//player never uses these
-		ent->client->ps.saberEventFlags &= ~SEF_EVENTS;
+	{//player only uses saberEventFlags in WP_SaberBlockCooldownDone
+		if (PM_SaberInAttack(ent->client->ps.saberMove))
+		{//make sure code knows player is attacking and not doing any kind of block
+			ent->client->ps.saberEventFlags &= ~SEF_PARRIED;
+			ent->client->ps.saberEventFlags &= ~SEF_DEFLECTED;
+		}		
 	}
 
 	if (ent->client->ps.saber[saberNum].blade[bladeNum].length <= 1)//cen get down to 1 when in a wall
@@ -6695,11 +6725,11 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						entDefending = qtrue;
 					}
-					/*else if (!ent->s.number && WP_SaberBlockCooldownDone(ent) && PM_WalkingOrIdle(ent))
+					else if (!(ent->s.number) && WP_SaberBlockCooldownDone(ent))
 					{//player can cheat on the return animation a bit
 						//hitOwner->client->ps.saberMove = LS_READY; //kind of hacky
 						entDefending = qtrue;
-					}*/
+					}
 
 					if (ent->client->ps.torsoAnim == BOTH_A1_SPECIAL
 					|| ent->client->ps.torsoAnim == BOTH_A2_SPECIAL
@@ -6765,11 +6795,11 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 					{
 						hitOwnerDefending = qtrue;
 					}
-					/*else if (!hitOwner->s.number && WP_SaberBlockCooldownDone(hitOwner) && PM_WalkingOrIdle(hitOwner))
+					else if (!(hitOwner->s.number) && WP_SaberBlockCooldownDone(hitOwner))
 					{//player can cheat on the return animation a bit
 						//hitOwner->client->ps.saberMove = LS_READY; //kind of hacky
 						hitOwnerDefending = qtrue;
-					}*/
+					}
 
 					if (hitOwner->client->ps.torsoAnim == BOTH_A1_SPECIAL
 					|| hitOwner->client->ps.torsoAnim == BOTH_A2_SPECIAL
@@ -6895,7 +6925,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 								&& (hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] >= FORCE_LEVEL_3 || (hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]>FORCE_LEVEL_1&&Q_irand(0, 1)))) // 50% chance for knockaway with saber defense 2
 							{//knockaways can make fast-attacker go into a broken parry anim if the ent is using fast or med (but not Tavion)
 								//make me parry
-								WP_SaberParry(hitOwner, ent, saberNum, bladeNum);
+								WP_SaberParryNew(hitOwner, ent, saberNum, bladeNum);
 								if (!PM_SaberInSpecialAttack(ent->client->ps.saberMove))								
 								{//special attacks can't be interrupted... just semi-blocked...
 									//turn the parry into a knockaway
@@ -6999,7 +7029,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							}
 							else
 							{//just a parry, possibly the hitOwner can knockaway the ent
-								WP_SaberParry(hitOwner, ent, saberNum, bladeNum);
+								WP_SaberParryNew(hitOwner, ent, saberNum, bladeNum);
 								if (PM_SaberInBounce(ent->client->ps.saberMove) //FIXME: saberMove not set until pmove!
 									&& activeDefense
 									&& hitOwner->client->ps.saberAnimLevel != SS_FAST //&& hitOwner->client->ps.saberAnimLevel != FORCE_LEVEL_5
@@ -7149,7 +7179,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 						{//saber collided when not attacking, parry it
 							if (!PM_SaberInBrokenParry(hitOwner->client->ps.saberMove))
 							{//not currently in a broken parry
-								if (!WP_SaberParry(hitOwner, ent, saberNum, bladeNum))
+								if (!WP_SaberParryNew(hitOwner, ent, saberNum, bladeNum))
 								{//FIXME: hitOwner can't parry, do some time-consuming saber-knocked-aside broken parry anim?
 									//hitOwner->client->ps.saberBlocked = BLOCKED_PARRY_BROKEN;
 								}
@@ -9044,6 +9074,7 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 
 	if (self->NPC->rank > RANK_LT) //lower rank melee users can't do this stuff
 	{
+		/*
 		if (g_debugMelee->integer
 			&& (ucmd->buttons & BUTTON_USE)
 			&& cg.renderingThirdPerson
@@ -9053,7 +9084,7 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 		}
 		else
 		{
-
+			
 			if (self->client->ps.forcePowersActive&(1 << FP_LIGHTNING))
 			{//can't block while zapping
 				return;
@@ -9073,7 +9104,9 @@ void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd)
 			{//can't block while gripping (FIXME: or should it break the grip?  Pain should break the grip, I think...)
 				return;
 			}
+			
 		}
+		*/
 
 		fwdangles[1] = self->client->ps.viewangles[1];
 		AngleVectors(fwdangles, forward, NULL, NULL);
@@ -9446,12 +9479,19 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 
 		if (!self->s.number) //player
 		{
+			if (ucmd->buttons & BUTTON_ATTACK
+				|| PM_SaberInAttack(self->client->ps.saberMove)
+				|| PM_SaberInSpecialAttack(self->client->ps.torsoAnim))
+			{
+				return;
+			}
+
 			if (PM_SaberInTransitionAny(self->client->ps.saberMove))
 			{
-				if (!WP_SaberBlockCooldownDone(self) || !PM_WalkingOrIdle(self))
+				if (!WP_SaberBlockCooldownDone(self))
 				{
 					return;
-				}
+				}				
 			}
 		}
 
@@ -9760,7 +9800,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			{
 				WP_SaberBlockNonRandom(self, incoming->currentOrigin, qtrue);
 			}
-			else
+			/*else
 			{
 				vec3_t diff, start, end;
 				float dist;
@@ -9773,7 +9813,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 				gi.trace(&trace, start, incoming->mins, incoming->maxs, end, incoming->s.number, MASK_SHOT, G2_COLLIDE, 10);
 
 				Jedi_DodgeEvasion(self, incoming->owner, &trace, HL_NONE);
-			}
+			}*/
 			if (incoming->owner && incoming->owner->client && (!self->enemy || self->enemy->s.weapon != WP_SABER))//keep enemy jedi over shooters
 			{
 				self->enemy = incoming->owner;
@@ -9917,10 +9957,9 @@ void WP_SaberUpdate(gentity_t *self, usercmd_t *ucmd)
 			}
 		}
 
-		if (self->s.number == 0
-			&& (!(self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING) || self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] == 0))
+		if (self->s.number == 0)
 		{
-			if (self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING)
+			if (self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING || ucmd->buttons & BUTTON_USE)
 			{//so player can't take advantage of wide block angle
 				self->client->ps.saberBlocking = BLK_TIGHT;
 			}
@@ -10001,10 +10040,23 @@ void WP_SaberUpdate(gentity_t *self, usercmd_t *ucmd)
 							saberent->mins[i] = saberTip[i] - saberOrg[i] - 8;//self->client->ps.saber[saberNum].blade[bladeNum].muzzlePoint[i];
 							}
 							*/
+							
 							float newSizeTip = (saberTip[i] - saberOrg[i]);
-							newSizeTip += (newSizeTip >= 0) ? 8 : -8;
-							float newSizeBase = (saberBase[i] - saberOrg[i]);
-							newSizeBase += (newSizeBase >= 0) ? 8 : -8;
+							float newSizeBase = (saberBase[i] - saberOrg[i]);							
+
+							if (self->s.number == 0 
+								&& (self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING && PM_SaberInIdle(self->client->ps.saberMove)
+									|| ucmd->buttons & BUTTON_USE))
+							{//player with non-blocking saber doesn't get such a generous fudge factor for easy blocking animations						 
+								newSizeTip += (newSizeTip >= 0) ? -64 : 64;								
+								newSizeBase += (newSizeBase >= 0) ? -64 : 64;
+							}
+							else
+							{
+								newSizeTip += (newSizeTip >= 0) ? 8 : -8;
+								newSizeBase += (newSizeBase >= 0) ? 8 : -8;
+							}
+							
 							if (newSizeTip > saberent->maxs[i])
 							{
 								saberent->maxs[i] = newSizeTip;
@@ -10529,8 +10581,21 @@ void WP_ForceKnockdown(gentity_t *self, gentity_t *pusher, qboolean pull, qboole
 			}
 			if (!self->s.number
 				&& !strongKnockdown
-				&& ((!pull && (self->client->ps.forcePowerLevel[FP_PUSH]>FORCE_LEVEL_1 || !g_spskill->integer)) || (pull && (self->client->ps.forcePowerLevel[FP_PULL]>FORCE_LEVEL_1 || !g_spskill->integer))))
+				&& ((!pull && (self->client->ps.forcePowerLevel[FP_PUSH]>FORCE_LEVEL_1 || !g_spskill->integer)) || (pull && (self->client->ps.forcePowerLevel[FP_PULL]>FORCE_LEVEL_1 || !g_spskill->integer || (pusher->client->ps.forcePowerLevel[FP_PULL]<FORCE_LEVEL_3 && g_forceNewPowers->integer)))))
 			{//player only knocked down if pushed *hard*
+				if (self->s.weapon == WP_SABER)
+				{//temp HACK: these are the only 2 pain anims that look good when holding a saber
+					knockAnim = PM_PickAnim(self, BOTH_PAIN2, BOTH_PAIN3);
+				}
+				else
+				{
+					knockAnim = PM_PickAnim(self, BOTH_PAIN1, BOTH_PAIN18);
+				}
+			}
+			else if (g_forceNewPowers->integer 
+					&& self->s.number
+					&& pull && (pusher->client->ps.forcePowerLevel[FP_PULL]==FORCE_LEVEL_1))
+			{//pull 1 only staggers if new powers
 				if (self->s.weapon == WP_SABER)
 				{//temp HACK: these are the only 2 pain anims that look good when holding a saber
 					knockAnim = PM_PickAnim(self, BOTH_PAIN2, BOTH_PAIN3);
@@ -11052,14 +11117,30 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 	AngleVectors(fwdangles, forward, right, NULL);
 	VectorCopy(self->currentOrigin, center);
 
-	if (pull)
+	if (g_forceNewPowers->integer)
 	{
-		cone = forcePullCone[self->client->ps.forcePowerLevel[FP_PULL]];
+		if (pull)
+		{
+			cone = forcePullConeNew[self->client->ps.forcePowerLevel[FP_PULL]];
+		}
+		else
+		{
+			cone = forcePushCone[self->client->ps.forcePowerLevel[FP_PUSH]];
+		}
 	}
 	else
 	{
-		cone = forcePushCone[self->client->ps.forcePowerLevel[FP_PUSH]];
+		if (pull)
+		{
+			cone = forcePullCone[self->client->ps.forcePowerLevel[FP_PULL]];
+		}
+		else
+		{
+			cone = forcePushCone[self->client->ps.forcePowerLevel[FP_PUSH]];
+		}
 	}
+
+	
 
 	//	if ( cone >= 1.0f )
 	{//must be pointing right at them
@@ -11437,7 +11518,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 							&& (push_list[x]->NPC->scriptFlags&SCF_DONT_FLEE))
 						{//*SIGH*... if an NPC can't flee, they can't run after and pick up their weapon, do don't drop it
 						}
-						else if (self->client->ps.forcePowerLevel[FP_PULL] > FORCE_LEVEL_1
+						else if ((self->client->ps.forcePowerLevel[FP_PULL] > FORCE_LEVEL_1 || g_forceNewPowers->integer)
 							&& push_list[x]->client->NPC_class != CLASS_ROCKETTROOPER//rockettroopers never drop their weapon
 							&& push_list[x]->client->NPC_class != CLASS_VEHICLE
 							&& push_list[x]->client->NPC_class != CLASS_BOBAFETT
@@ -11461,10 +11542,25 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 						{
 							knockback = 200;
 						}
-						if (self->client->ps.forcePowerLevel[FP_PULL] < FORCE_LEVEL_3)
-						{//maybe just knock them down
-							knockback /= 3;
+						if (g_forceNewPowers->integer)
+						{
+							if (self->client->ps.forcePowerLevel[FP_PULL] == FORCE_LEVEL_1)
+							{//just barely move them
+								knockback /= 4;
+							}
+							else if (self->client->ps.forcePowerLevel[FP_PULL] == FORCE_LEVEL_2)
+							{//maybe just knock them down
+								knockback /= 3;
+							}
 						}
+						else
+						{
+							if (self->client->ps.forcePowerLevel[FP_PULL] < FORCE_LEVEL_3)
+							{//maybe just knock them down
+								knockback /= 3;
+							}
+						}
+						
 					}
 					else
 					{
@@ -12189,7 +12285,8 @@ int FP_MaxForceHeal(gentity_t *self)
 {
 	if (self->s.number >= MAX_CLIENTS)
 	{
-		return MAX_FORCE_HEAL_HARD;
+		if (g_forceNewPowers->integer) return MAX_FORCE_HEAL_MEDIUM; //because NPCS have so much HP
+		else return MAX_FORCE_HEAL_HARD;
 	}
 	switch (g_spskill->integer)
 	{
@@ -14696,6 +14793,17 @@ void WP_SaberBlockPointsRegenerate(gentity_t *self)
 
 qboolean WP_SaberBlockCooldownDone(gentity_t *self)
 {//lets you cheat on the return animations for better defense
+	if (!PM_WalkingOrIdle(self))
+	{
+		return qfalse;
+	}
+
+	if (!(self->client->ps.saberEventFlags&SEF_PARRIED)
+		&& !(self->client->ps.saberEventFlags&SEF_DEFLECTED))
+	{//we weren't transitioning from a block
+		return qfalse;
+	}
+
 	if (PM_SaberInReturn(self->client->ps.saberMove))
 	{//we're in a return, probably triggered after a previous deflection
 		//FIXME: Make sure it's a return from a deflection, not a slash?
@@ -15524,10 +15632,9 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 		}
 		else if (self->client->ps.forcePowerDebounce[FP_HEAL] < level.time)
 		{//time to heal again
-			if (g_forceNewPowers) {
-				if ((WP_ForcePowerAvailable(self, forcePower, 4) && self->client->ps.forcePowerLevel[FP_HEAL] < 2)
-					|| (WP_ForcePowerAvailable(self, forcePower, 3) && self->client->ps.forcePowerLevel[FP_HEAL] >= 2
-					&& forcePower))
+			if (g_forceNewPowers) 
+			{
+				if (WP_ForcePowerAvailable(self, forcePower, 4))
 				{//have available power
 					int healInterval = FP_ForceHealInterval(self);
 					int	healAmount = 1;//hard, normal healing rate
@@ -15549,14 +15656,23 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 					self->health += healAmount;
 					self->client->ps.forceHealCount += healAmount;
 					self->client->ps.forcePowerDebounce[FP_HEAL] = level.time + healInterval;
-					WP_ForcePowerDrain(self, forcePower, 4);
+
+					if (self->client->ps.forceHealCount > 20 && self->client->ps.forcePowerLevel[FP_HEAL] == 3)
+					{
+						WP_ForcePowerDrain(self, forcePower, 2);
+					}
+					else
+					{
+						WP_ForcePowerDrain(self, forcePower, 4);
+					}
 				}
 				else
 				{//stop
 					WP_ForcePowerStop(self, forcePower);
 				}
 			}
-			else { //old heal
+			else 
+			{ //old heal
 				if (WP_ForcePowerAvailable(self, forcePower, 4))
 				{//have available power
 					int healInterval = FP_ForceHealInterval(self);

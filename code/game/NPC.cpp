@@ -56,6 +56,7 @@ extern bool Boba_Flee();
 extern bool Boba_Tactics();
 extern void BubbleShield_Update();
 extern qboolean PM_LockedAnim( int anim );
+extern qboolean NPC_JediClassGood(gentity_t *self);
 
 extern cvar_t	*g_dismemberment;
 extern cvar_t	*g_saberRealisticCombat;
@@ -2116,15 +2117,8 @@ void NPC_RunBehavior( int team, int bState )
 				}
 				else
 				{
-					/*if (level.time - NPCInfo->surrenderTime < 10000) 
-					{ //I was just surrendering a short time ago and the enemy is nearby
-						NPC_CheckSurrender();
-					}
-					else {
-						NPC_BSFlee(); //I haven't been surrendering for a while, see if I can escape before surrendering
-					}*/
-
 					NPC_BSFlee();
+									
 				}
 				return;
 			}
@@ -2305,10 +2299,17 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 		else if ( NPC->client->playerTeam != TEAM_ENEMY //not an enemy
 			&& (NPC->client->playerTeam != TEAM_FREE || (NPC->client->NPC_class == CLASS_TUSKEN && Q_irand( 0, 4 )))//not a rampaging creature or I'm a tusken and I feel generous (temporarily)
 			&& NPC->enemy->NPC 
-			&& (NPC->enemy->NPC->surrenderTime > level.time || (NPC->enemy->NPC->scriptFlags&SCF_FORCED_MARCH)) )
-		{//don't shoot someone who's surrendering if you're a good guy
+			&& (NPC->enemy->NPC->surrenderTime > level.time || (NPC->enemy->NPC->scriptFlags&SCF_FORCED_MARCH)
+				|| (NPC_JediClassGood(NPC) && (NPC->enemy->s.weapon == WP_NONE || (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy))))
+				)
+		{//don't shoot someone who's surrendering if you're a good guy, especially if you're a Jedi
 			ucmd.buttons &= ~BUTTON_ATTACK;
 			ucmd.buttons &= ~BUTTON_ALT_ATTACK;
+
+			if (NPC_JediClassGood(NPC))
+			{
+				NPC_CheckEnemy(qtrue, qfalse);
+			}
 		}
 
 		if(client->ps.weaponstate == WEAPON_IDLE)

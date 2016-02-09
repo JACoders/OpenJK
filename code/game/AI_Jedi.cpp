@@ -2056,8 +2056,8 @@ static qboolean Jedi_Strafe( int strafeTimeMin, int strafeTimeMax, int nextStraf
 		if ( strafed )
 		{
 			TIMER_Set( NPC, "noStrafe", strafeTime + Q_irand( nextStrafeTimeMin, nextStrafeTimeMax ) );
-			if ( walking )
-			{//should be a slow strafe
+			if ( walking && NPC->s.weapon == WP_SABER )
+			{//should be a slow strafe if we are a saber-wielder
 				TIMER_Set( NPC, "walking", strafeTime );
 			}
 			return qtrue;
@@ -2147,10 +2147,13 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 	{//the player
 		if (g_forceNewPowers->integer) 
 		{
-			if (self->client->ps.forcePowerLevel[FP_SPEED] < 2) {
+			if (self->client->ps.forcePowerLevel[FP_SPEED] < 2) 
+			{
 				return qfalse;
 			}
-			if (self->client->ps.forcePowersActive&(1 << FP_SPEED)) {
+			
+			if (self->client->ps.forcePowersActive&(1 << FP_SPEED)) 
+			{
 				return qfalse; //you're already moving so fast, player should just dodge manually
 			}
 			
@@ -3931,6 +3934,11 @@ static qboolean Jedi_SaberBlock( void )
 	}
 	*/
 
+	if (NPC->s.weapon != WP_SABER)
+	{//we are not a saber wielder
+		return qfalse;
+	}
+
 	if ( !TIMER_Done( NPC, "parryReCalcTime" ) )
 	{//can't do our own re-think of which parry to use yet
 		return qfalse;
@@ -4266,9 +4274,13 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 	if ( NPC->enemy->client->ps.saberInFlight 
 		&& NPC->enemy->client->ps.saberEntityNum != ENTITYNUM_NONE 
 		&& NPC->enemy->client->ps.saberEntityState != SES_RETURNING )
-	{//enemy is shooting lightning
+	{//enemy is saber throwing
 		enemy_attacking = qtrue;
 		throwing_saber = qtrue;
+		if (NPC->s.weapon == WP_MELEE)
+		{//melee users are more aware they need to evade
+			evasionChance += 5;
+		}
 	}
 
 	//FIXME: this needs to take skill and rank(reborn type) into account much more
@@ -4392,7 +4404,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 
 			if ( whichDefense >= 4 && whichDefense <= 12 )
 			{//would try to block
-				if ( NPC->client->ps.saberInFlight )
+				if ( NPC->client->ps.saberInFlight || NPC->s.weapon != WP_SABER )
 				{//can't, saber in not in hand, so fall back to strafe/jump
 					whichDefense = 100;
 				}
@@ -4482,7 +4494,17 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 						}
 						else if ( enemy_attacking )
 						{
-							Jedi_SaberBlock();
+							if (NPC->s.weapon == WP_MELEE)
+							{//melee users try to kick as a last resort
+								if (Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy) && G_PickAutoKick(NPC, NPC->enemy, qtrue) != LS_NONE)
+								{//kicked!
+									TIMER_Set(NPC, "kickDebounce", Q_irand(3000, 10000));
+								}
+							}
+							else
+							{
+								Jedi_SaberBlock();
+							}							
 						}
 					}
 				}

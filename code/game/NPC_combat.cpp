@@ -36,6 +36,7 @@ extern void NPC_Jedi_RateNewEnemy( gentity_t *self, gentity_t *enemy );
 extern qboolean PM_DroidMelee( int npc_class );
 extern int delayedShutDown;
 extern qboolean G_ValidEnemy( gentity_t *self, gentity_t *enemy );
+extern qboolean NPC_JediClassGood(gentity_t *self);
 
 void ChangeWeapon( gentity_t *ent, int newWeapon );
 
@@ -1982,6 +1983,18 @@ gentity_t *NPC_PickAlly ( qboolean facingEachOther, float range, qboolean ignore
 	return closestAlly;
 }
 
+qboolean NPC_JediClassGoodGuy(class_t npc_class) {
+	switch (npc_class) {
+	case CLASS_JEDI:
+	case CLASS_LUKE:
+	case CLASS_KYLE:
+	case CLASS_MORGANKATARN:
+		return qtrue;
+	default:
+		return qfalse;
+	}
+}
+
 gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnemy )
 {
 	qboolean	forcefindNew = qfalse;
@@ -2016,6 +2029,19 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 			G_ClearEnemy( NPC );
 		}
 		return NULL;
+	}
+
+	if (NPC->enemy
+		&& NPC->enemy->NPC
+		&& (NPC->enemy->NPC->surrenderTime > level.time || NPC->enemy->s.weapon == WP_NONE 
+			|| (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy))
+		&& NPC->client->playerTeam == TEAM_PLAYER
+		&& NPC_JediClassGoodGuy(NPC->client->NPC_class))
+	{//enemy is surrendering or not attacking and I'm a good guy Jedi
+		if (setEnemy)
+		{
+			G_ClearEnemy(NPC);
+		}
 	}
 
 	// Kyle does not get new enemies if not close to his leader

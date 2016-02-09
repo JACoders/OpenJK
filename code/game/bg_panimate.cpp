@@ -877,7 +877,7 @@ int PM_PowerLevelForSaberAnim(playerState_t *ps, int saberNum)
 			{//end of anim
 				return FORCE_LEVEL_0;
 			}
-			return FORCE_LEVEL_5;
+			return FORCE_LEVEL_3;
 			break;
 		case BOTH_PULL_IMPALE_SWING:
 			if (ps->torsoAnimTimer < 500)//750 )
@@ -888,7 +888,7 @@ int PM_PowerLevelForSaberAnim(playerState_t *ps, int saberNum)
 			{//beginning of anim
 				return FORCE_LEVEL_0;
 			}
-			return FORCE_LEVEL_5;
+			return FORCE_LEVEL_3;
 			break;
 		case BOTH_ALORA_SPIN_SLASH:
 			if (ps->torsoAnimTimer < 900)

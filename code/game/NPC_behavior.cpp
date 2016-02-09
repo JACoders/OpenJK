@@ -1538,6 +1538,13 @@ void NPC_Surrender( void )
 			NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_COWER1_STOP, SETANIM_FLAG_HOLD|SETANIM_FLAG_OVERRIDE );
 		 	NPCInfo->surrenderTime = level.time + NPC->client->ps.torsoAnimTimer;
 		}
+		else
+		{
+			NPC_SetAnim(NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
+			NPC->client->ps.torsoAnimTimer = 1000;
+			NPCInfo->surrenderTime = level.time + 1000;//stay surrendered for at least 1 second
+			//FIXME: while surrendering, make a big sight/sound alert? Or G_AlertTeam?
+		}
 	}
 
 	// New To The Surrender, So Start The Animation
@@ -1563,7 +1570,7 @@ void NPC_Surrender( void )
 			else
 			{
 				NPC_SetAnim(NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
-				NPC->client->ps.torsoAnimTimer = Q_irand(4000, 7000);				
+				NPC->client->ps.torsoAnimTimer = 1000;			
 			}
 		}
 	 	NPCInfo->surrenderTime = level.time + NPC->client->ps.torsoAnimTimer + 1000;
@@ -1706,7 +1713,10 @@ qboolean NPC_BSFlee( void )
 	bool		moveSuccess			= false;
 	bool		inSurrender			= (level.time<NPCInfo->surrenderTime);
 
-
+	if (NPC_CheckSurrender())
+	{
+		return qfalse;
+	}
 
 	// Check For Enemies And Alert Events
 	//------------------------------------
@@ -1858,7 +1868,7 @@ qboolean NPC_BSFlee( void )
 		{
 			//done panicking, time to realize we're dogmeat, if we haven't been able to flee for a few seconds
 			if ((level.time-NPC->lastMoveTime)>3000
-				&& (level.time-NPCInfo->surrenderTime) > 2000 )//and haven't just finished surrendering
+				/*&& (level.time-NPCInfo->surrenderTime) > 2000*/)//and haven't just finished surrendering
 			{
 				NPC_FaceEnemy();
 				NPC_Surrender();

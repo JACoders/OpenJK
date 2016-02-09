@@ -12230,7 +12230,7 @@ void PM_WeaponLightsaber(void)
 	if (PM_SaberBlocking())
 	{//busy blocking, don't do attacks
 		return;
-	}
+	}	
 
 	// check for weapon change
 	// can't change if weapon is firing, but can change again if lowering or raising
@@ -12527,6 +12527,11 @@ void PM_WeaponLightsaber(void)
 			if (curmove >= LS_S_TL2BR && curmove <= LS_S_T2B)
 			{//started a swing, must continue from here
 				newmove = LS_A_TL2BR + (curmove - LS_S_TL2BR);
+
+				if (!(pm->ps->clientNum))
+				{
+					pm->ps->saberEventFlags &= ~SEF_EVENTS;
+				}
 			}
 			else if (curmove >= LS_A_TL2BR && curmove <= LS_A_T2B)
 			{//finished an attack, must continue from here
@@ -12705,6 +12710,14 @@ void PM_WeaponLightsaber(void)
 						if (PM_HasAnimation(pm->gent, saberMoveData[newmove].animToUse))
 						{
 							anim = saberMoveData[newmove].animToUse;
+						}
+
+						if (!(pm->ps->clientNum))
+						{
+							if (PM_SaberInAttack(curmove))
+							{//clear parry status from player here
+								pm->ps->saberEventFlags &= ~SEF_EVENTS;
+							}
 						}
 					}
 				}

@@ -50,6 +50,7 @@ extern cvar_t		*d_slowmodeath;
 extern gentity_t *player;
 extern cvar_t	*debug_subdivision;
 extern cvar_t	*g_dismemberProbabilities;
+extern cvar_t	*g_forceNewPowers;
 
 gentity_t *g_lastClientDamaged;
 
@@ -5931,6 +5932,61 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_EXPLOSIVE:
 				case MOD_EXPLOSIVE_SPLASH:
 				case MOD_SABER:
+					if (g_forceNewPowers->integer)
+					{
+						doSound = (Q_irand(0, 4) == 0);
+						switch (targ->client->ps.forcePowerLevel[FP_PROTECT])
+						{
+						case FORCE_LEVEL_4:
+							//je suis invincible!!!
+							if (targ->client
+								&& attacker->client
+								&& targ->client->playerTeam == attacker->client->playerTeam
+								&& (!targ->NPC || !targ->NPC->charmedTime))
+							{//complain, but don't turn on them
+								G_FriendlyFireReaction(targ, attacker, dflags);
+							}
+							return;
+							break;
+						case FORCE_LEVEL_3:
+							//one-half damage
+							if (damage <= 1)
+							{
+								damage = 0;
+							}
+							else
+							{
+								damage = ceil((float)damage*0.5f);//was 0.1f);
+							}
+							break;
+						case FORCE_LEVEL_2:
+							//three-quarters damage
+							if (damage <= 1)
+							{
+								damage = 0;
+							}
+							else
+							{
+								damage = ceil((float)damage*0.75f);
+							}
+							break;
+						case FORCE_LEVEL_1:
+							//a little bit of protection
+							if (damage <= 1)
+							{
+								damage = 0;
+							}
+							else
+							{
+								damage = ceil((float)damage*0.9f);
+							}
+							break;
+						}
+						break;
+					}
+					else 
+					{//overflow to normal behavior
+					}					
 				case MOD_DISRUPTOR:
 				case MOD_SNIPER:
 				case MOD_CONC_ALT:

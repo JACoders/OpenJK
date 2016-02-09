@@ -25,6 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // this is excluded from PCH usage 'cos it looks kinda scary to me, being game and ui.... -Ste
 #include "g_local.h"
+//extern float forceJumpHeight[];
 //extern cvar_t *g_weaponVelocity;
 //extern cvar_t *g_weaponAltVelocity;
 
