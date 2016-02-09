@@ -4162,6 +4162,13 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		if (wasActive & (1 << FP_SEE))
 		{
 			G_MuteSound(self->client->ps.fd.killSoundEntIndex[TRACK_CHANNEL_5-50], CHAN_VOICE);
+
+			if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 2 && self->client->pers.secrets_found & (1 << 1) && 
+				self->client->ps.zoomMode == 2)
+			{ // zyk: Bounty Hunter with Upgrade that stops Thermal Vision. In this case, stop binoculars
+				self->client->ps.zoomMode = 0;
+				self->client->ps.zoomTime = level.time;
+			}
 		}
 		break;
 	case FP_GRIP:
