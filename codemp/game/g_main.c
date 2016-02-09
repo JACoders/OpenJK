@@ -681,6 +681,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		{
 			level.read_screen_message[zyk_iterator] = qfalse;
 			level.screen_message_timer[zyk_iterator] = 0;
+			level.ignored_players[zyk_iterator][0] = 0;
+			level.ignored_players[zyk_iterator][1] = 0;
 		}
 
 		// zyk: initializing quest_crystal_id value

@@ -1503,6 +1503,9 @@ typedef struct level_locals_s {
 	// zyk: entities will be loaded after sometime so the server will reused the entities that were just removed
 	int load_entities_timer;
 	char load_entities_file[512];
+
+	// zyk: has the player_ids that are ignored for each player
+	int ignored_players[32][2];
 } level_locals_t;
 
 
