@@ -13781,9 +13781,9 @@ void Cmd_Ignore_f( gentity_t *ent ) {
 		level.ignored_players[ent->s.number][0] |= (1 << client_id);
 		trap->SendServerCommand( ent-g_entities, va("print \"Ignored player %s^7\n\"", player->client->pers.netname) );
 	}
-	else if (client_id >= 30 && !(level.ignored_players[ent->s.number][0] & (1 << (client_id-30))))
+	else if (client_id >= 30 && !(level.ignored_players[ent->s.number][1] & (1 << (client_id - 30))))
 	{
-		level.ignored_players[ent->s.number][1] |= (1 << (client_id-30));
+		level.ignored_players[ent->s.number][1] |= (1 << (client_id - 30));
 		trap->SendServerCommand( ent-g_entities, va("print \"Ignored player %s^7\n\"", player->client->pers.netname) );
 	}
 	else if (client_id < 30 && level.ignored_players[ent->s.number][0] & (1 << client_id))
@@ -13791,9 +13791,9 @@ void Cmd_Ignore_f( gentity_t *ent ) {
 		level.ignored_players[ent->s.number][0] &= ~(1 << client_id);
 		trap->SendServerCommand( ent-g_entities, va("print \"No longer ignore player %s^7\n\"", player->client->pers.netname) );
 	}
-	else if (client_id >= 30 && level.ignored_players[ent->s.number][0] & (1 << (client_id-30)))
+	else if (client_id >= 30 && level.ignored_players[ent->s.number][1] & (1 << (client_id - 30)))
 	{
-		level.ignored_players[ent->s.number][1] &= ~(1 << (client_id-30));
+		level.ignored_players[ent->s.number][1] &= ~(1 << (client_id - 30));
 		trap->SendServerCommand( ent-g_entities, va("print \"No longer ignore player %s^7\n\"", player->client->pers.netname) );
 	}
 }
