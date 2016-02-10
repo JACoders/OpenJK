@@ -1333,7 +1333,7 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	// normal to spam a lot of commands when downloading
 	if ( !com_cl_running->integer &&
 		cl->state >= CS_ACTIVE &&
-		sv_floodProtect->integer &&
+		sv_floodProtect->value > 0.0 && // zyk: changed this code so sv_floodProtect allows a time between 0 and 1 second. Old code: sv_floodProtect->integer && 
 		svs.time < cl->nextReliableTime ) {
 		// ignore any other text messages from this client but let them keep playing
 		// TTimo - moved the ignored verbose to the actual processing in SV_ExecuteClientCommand, only printing if the core doesn't intercept
@@ -1341,7 +1341,7 @@ static qboolean SV_ClientCommand( client_t *cl, msg_t *msg ) {
 	}
 
 	// don't allow another command for one second
-	cl->nextReliableTime = svs.time + 1000;
+	cl->nextReliableTime = svs.time + (sv_floodProtect->value * 1000); // zyk: changed this code so sv_floodProtect allows a time between 0 and 1 second. Old code: cl->nextReliableTime = svs.time + 1000
 
 	SV_ExecuteClientCommand( cl, s, clientOk );
 
