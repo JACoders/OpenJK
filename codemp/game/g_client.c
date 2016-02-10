@@ -2488,6 +2488,9 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 	client->pers.connected = CON_CONNECTING;
 	client->pers.connectTime = level.time;
 
+	// zyk: initializing player_statuses value
+	client->pers.player_statuses = 0;
+
 	// read or initialize the session data
 	if ( firstTime || level.newSession ) {
 		G_InitSessionData( client, userinfo, isBot );
@@ -2672,9 +2675,6 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 	VectorSet(client->pers.teleport_point,0,0,0);
 	VectorCopy(client->ps.viewangles,client->pers.teleport_angles);
-
-	// zyk: initializing player_statuses value
-	client->pers.player_statuses = 0;
 
 	if (ent->client->sess.amrpgmode > 0)
 	{

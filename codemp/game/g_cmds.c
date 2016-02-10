@@ -4364,9 +4364,9 @@ void zyk_load_common_settings(gentity_t *ent)
 		ent->client->ps.weapon = WP_MELEE;
 	}
 		
-	// zyk: player starts with jetpack if it is enabled in player settings and is not in Siege Mode
+	// zyk: player starts with jetpack if it is enabled in player settings, is not in Siege Mode, and does not have all force powers through /give command
 	if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
-		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && 
+		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && !(ent->client->pers.player_statuses & (1 << 12)) &&
 		((ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[34] > 0) || ent->client->sess.amrpgmode == 1))
 	{
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
