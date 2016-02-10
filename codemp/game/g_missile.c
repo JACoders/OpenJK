@@ -409,6 +409,16 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		}
 	}
 
+	// zyk: rockets and concussion, both with upgrade, can use force pushable/pullable entities, like the rock at start of t3_rift map
+	if (Q_stricmp(other->classname, "func_static") == 0 && (other->spawnflags & 1 || other->spawnflags & 2) && 
+		ent->parent && ent->parent->client && ent->parent->client->sess.amrpgmode == 2 && 
+		((ent->s.weapon == WP_ROCKET_LAUNCHER && ent->parent->client->pers.skill_levels[26] == 2) || 
+		(ent->s.weapon == WP_CONCUSSION && ent->parent->client->pers.skill_levels[27] == 2)))
+	{
+		GlobalUse(other, ent->parent, ent->parent);
+		goto killProj;
+	}
+
 	if (other->flags & FL_DMG_BY_HEAVY_WEAP_ONLY)
 	{
 		if (ent->methodOfDeath != MOD_REPEATER_ALT &&
