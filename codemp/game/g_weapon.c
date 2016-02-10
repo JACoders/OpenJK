@@ -3637,11 +3637,11 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 
 	trap->Trace ( &tr, muzzleStun, mins, maxs, end, ent->s.number, MASK_SHOT, qfalse, 0, 0 );
 
-	// zyk: starts flamethrower
+	// zyk: starts flame thrower
 	if (ent->client && ent->client->sess.amrpgmode == 2 && alt_fire == qtrue && ent->client->pers.rpg_class != 1 && ent->client->pers.rpg_class != 4 && 
 		ent->client->pers.rpg_class != 6 && ent->client->pers.rpg_class != 8 && ent->client->pers.rpg_class != 9 && 
-		ent->client->pers.secrets_found & (1 << 10) && ent->client->ps.cloakFuel > 0)
-	{
+		ent->client->pers.secrets_found & (1 << 10) && ent->client->ps.cloakFuel > 0 && ent->waterlevel < 3)
+	{ // zyk: do not use flame thrower when underwater
 		int flame_thrower_fuel_usage = 2;
 		G_Sound( ent, CHAN_WEAPON, G_SoundIndex("sound/effects/fireout.mp3") );
 
