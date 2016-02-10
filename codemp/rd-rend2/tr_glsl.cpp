@@ -98,6 +98,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_TCGen0",        GLSL_INT, 1 },
 	{ "u_TCGen0Vector0", GLSL_VEC3, 1 },
 	{ "u_TCGen0Vector1", GLSL_VEC3, 1 },
+	{ "u_TCGen1",        GLSL_INT, 1 },
 
 	{ "u_DeformType",    GLSL_INT, 1 },
 	{ "u_DeformFunc",    GLSL_INT, 1 },
@@ -573,6 +574,15 @@ static bool GLSL_EndLoadGPUShader (shaderProgram_t *program)
 	if(attribs & ATTR_TEXCOORD1)
 		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD1, "attr_TexCoord1");
 
+	if(attribs & ATTR_TEXCOORD2)
+		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD2, "attr_TexCoord2");
+
+	if(attribs & ATTR_TEXCOORD3)
+		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD3, "attr_TexCoord3");
+
+	if(attribs & ATTR_TEXCOORD4)
+		qglBindAttribLocation(program->program, ATTR_INDEX_TEXCOORD4, "attr_TexCoord4");
+
 	if(attribs & ATTR_TANGENT)
 		qglBindAttribLocation(program->program, ATTR_INDEX_TANGENT, "attr_Tangent");
 
@@ -1021,6 +1031,58 @@ int GLSL_BeginLoadGPUShaders(void)
 	int i;
 	char extradefines[1024];
 	int attribs;
+
+#if 0
+	// vertex size = 48 bytes
+	VertexFormat bspVertexFormat = {
+		{
+			{ 3, false, GL_FLOAT, false, 0 }, // position
+			{ 2, false, GL_HALF_FLOAT, false, 12 }, // tc0
+			{ 2, false, GL_HALF_FLOAT, false, 16 }, // tc1
+			{ 2, false, GL_HALF_FLOAT, false, 20 }, // tc2
+			{ 2, false, GL_HALF_FLOAT, false, 24 }, // tc3
+			{ 2, false, GL_HALF_FLOAT, false, 28 }, // tc4
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 32 }, // tangent
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 36 }, // normal
+			{ 4, false, GL_FLOAT, false, 40 }, // color
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 44 }, // light dir
+		}
+	};
+
+	// vertex size = 32 bytes
+	VertexFormat rectVertexFormat = {
+		{
+			{ 3, false, GL_FLOAT, false, 0 }, // position
+			{ 2, false, GL_HALF_FLOAT, false, 12 }, // tc0
+			{ 4, false, GL_FLOAT, false, 16 } // color
+		}
+	};
+
+	// vertex size = 32 bytes
+	VertexFormat g2VertexFormat = {
+		{
+			{ 3, false, GL_FLOAT, false, 0 }, // position
+			{ 2, false, GL_HALF_FLOAT, false, 12 }, // tc0
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16 }, // tangent
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 20 }, // normal
+			{ 4, true,  GL_UNSIGNED_BYTE, false, 24 }, // bone indices
+			{ 4, false, GL_UNSIGNED_BYTE, true, 28 }, // bone weights
+		}
+	};
+
+	// vertex size = 44 bytes
+	VertexFormat md3VertexFormat = {
+		{
+			{ 3, false, GL_FLOAT, false, 0 }, // position
+			{ 2, false, GL_HALF_FLOAT, false, 12 }, // tc0
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 16 }, // tangent
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 20 }, // normal
+			{ 3, false, GL_FLOAT, false, 24 }, // pos2
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 36 }, // tangent
+			{ 4, false, GL_UNSIGNED_INT_2_10_10_10_REV, true, 40 }, // normal
+		}
+	};
+#endif
 
 	ri->Printf(PRINT_ALL, "------- GLSL_InitGPUShaders -------\n");
 
@@ -1898,45 +1960,6 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 	}
 }
 
-void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits, const VertexArraysProperties *vertexArrays )
-{
-	if ( attribBits & ATTR_TEXCOORD0 )
-	{
-		int newOffset = vertexArrays->offsets[ATTR_INDEX_TEXCOORD0] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0];
-		if ( glState.currentVaoVbo[ATTR_INDEX_TEXCOORD0] != glState.currentVBO->vertexesVBO ||
-				glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD0] != newOffset ||
-				glState.currentVaoStrides[ATTR_INDEX_TEXCOORD0] != vertexArrays->strides[ATTR_INDEX_TEXCOORD0] )
-		{
-			GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD )\n");
-
-			qglVertexAttribPointer(ATTR_INDEX_TEXCOORD0, 2, GL_FLOAT, 0,
-				vertexArrays->strides[ATTR_INDEX_TEXCOORD0], BUFFER_OFFSET(newOffset));
-
-			glState.currentVaoVbo[ATTR_INDEX_TEXCOORD0] = glState.currentVBO->vertexesVBO;
-			glState.currentVaoStrides[ATTR_INDEX_TEXCOORD0] = vertexArrays->strides[ATTR_INDEX_TEXCOORD0];
-			glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD0] = newOffset;
-		}
-	}
-
-	if ( attribBits & ATTR_TEXCOORD1 )
-	{
-		int newOffset = vertexArrays->offsets[ATTR_INDEX_TEXCOORD1] + sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1];
-		if ( glState.currentVaoVbo[ATTR_INDEX_TEXCOORD1] != glState.currentVBO->vertexesVBO ||
-				glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD1] != newOffset ||
-				glState.currentVaoStrides[ATTR_INDEX_TEXCOORD1] != vertexArrays->strides[ATTR_INDEX_TEXCOORD1] )
-		{
-			GLimp_LogComment("qglVertexAttribPointer( ATTR_INDEX_TEXCOORD1 )\n");
-
-			qglVertexAttribPointer(ATTR_INDEX_TEXCOORD1, 2, GL_FLOAT, 0,
-				vertexArrays->strides[ATTR_INDEX_TEXCOORD1], BUFFER_OFFSET(newOffset));
-
-			glState.currentVaoVbo[ATTR_INDEX_TEXCOORD1] = glState.currentVBO->vertexesVBO;
-			glState.currentVaoStrides[ATTR_INDEX_TEXCOORD1] = vertexArrays->strides[ATTR_INDEX_TEXCOORD1];
-			glState.currentVaoOffsets[ATTR_INDEX_TEXCOORD1] = newOffset;
-		}
-	}
-}
-
 void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays)
 {
 	VBO_t *vbo = glState.currentVBO;
@@ -1959,21 +1982,23 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		GLboolean integerAttribute;
 		GLenum type;
 		GLboolean normalize;
-		int offset;
 	} attributes[ATTR_INDEX_MAX] = {
-		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE, 0 }, // position
-		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[0] },
-		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE, sizeof (vec2_t) * glState.vertexAttribsTexCoordOffset[1] },
-		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // tangent
-		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // normal
-		{ 4, GL_FALSE, GL_FLOAT, GL_FALSE, 0 }, // color
-		{ 0, GL_FALSE, GL_NONE, GL_FALSE, 0 }, // paint color
-		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 }, // light direction
-		{ 4, GL_TRUE,  GL_UNSIGNED_BYTE, GL_FALSE, 0 }, // bone indices
-		{ 4, GL_FALSE, GL_UNSIGNED_BYTE, GL_TRUE, 0 }, // bone weights
-		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE, 0 }, // pos2
-		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
-		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE, 0 },	   
+		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE }, // position
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE }, // tc0
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE }, // tc1
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE }, // tc2
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE }, // tc3
+		{ 2, GL_FALSE, GL_FLOAT, GL_FALSE }, // tc4
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // tangent
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal
+		{ 4, GL_FALSE, GL_FLOAT, GL_FALSE }, // color
+		{ 0, GL_FALSE, GL_NONE, GL_FALSE }, // paint color
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // light direction
+		{ 4, GL_TRUE,  GL_UNSIGNED_BYTE, GL_FALSE }, // bone indices
+		{ 4, GL_FALSE, GL_UNSIGNED_BYTE, GL_TRUE }, // bone weights
+		{ 3, GL_FALSE, GL_FLOAT, GL_FALSE }, // pos2
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // tangent2
+		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
 	};
 
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
@@ -1981,7 +2006,7 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		int attributeIndex = vertexArrays->enabledAttributes[i];
 
 		if ( glState.currentVaoVbo[attributeIndex] == glState.currentVBO->vertexesVBO &&
-				glState.currentVaoOffsets[attributeIndex] == vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset &&
+				glState.currentVaoOffsets[attributeIndex] == vertexArrays->offsets[attributeIndex] &&
 				glState.currentVaoStrides[attributeIndex] == vertexArrays->strides[attributeIndex] )
 		{
 			// No change
@@ -1994,7 +2019,7 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 				attributes[attributeIndex].numComponents,
 				attributes[attributeIndex].type,
 				vertexArrays->strides[attributeIndex],
-				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
+				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex]));
 		}
 		else
 		{
@@ -2003,12 +2028,12 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 				attributes[attributeIndex].type,
 				attributes[attributeIndex].normalize,
 				vertexArrays->strides[attributeIndex],
-				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset));
+				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex]));
 		}
 
 		glState.currentVaoVbo[attributeIndex] = glState.currentVBO->vertexesVBO;
 		glState.currentVaoStrides[attributeIndex] = vertexArrays->strides[attributeIndex];
-		glState.currentVaoOffsets[attributeIndex] = vertexArrays->offsets[attributeIndex] + attributes[attributeIndex].offset;
+		glState.currentVaoOffsets[attributeIndex] = vertexArrays->offsets[attributeIndex];
 		glState.vertexAttribPointersSet |= (1 << attributeIndex);
 	}
 }

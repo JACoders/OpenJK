@@ -1,6 +1,9 @@
 in vec2 attr_TexCoord0;
 #if defined(USE_LIGHTMAP) || defined(USE_TCGEN)
 in vec2 attr_TexCoord1;
+in vec2 attr_TexCoord2;
+in vec2 attr_TexCoord3;
+in vec2 attr_TexCoord4;
 #endif
 in vec4 attr_Color;
 
@@ -33,11 +36,12 @@ uniform vec4   u_EnableTextures; // x = normal, y = deluxe, z = specular, w = cu
 uniform vec3 u_ViewOrigin;
 #endif
 
-#if defined(USE_TCGEN)
+#if defined(USE_TCGEN) || defined(USE_LIGHTMAP)
 uniform int u_TCGen0;
 uniform vec3 u_TCGen0Vector0;
 uniform vec3 u_TCGen0Vector1;
 uniform vec3 u_LocalViewOrigin;
+uniform int u_TCGen1;
 #endif
 
 #if defined(USE_TCMOD)
@@ -96,25 +100,43 @@ out vec4 var_LightDir;
 out vec4 var_PrimaryLightDir;
 #endif
 
-#if defined(USE_TCGEN)
+#if defined(USE_TCGEN) || defined(USE_LIGHTMAP)
 vec2 GenTexCoords(int TCGen, vec3 position, vec3 normal, vec3 TCGenVector0, vec3 TCGenVector1)
 {
-	vec2 tex = attr_TexCoord0.st;
+	vec2 tex = attr_TexCoord0;
 
-	if (TCGen >= TCGEN_LIGHTMAP && TCGen <= TCGEN_LIGHTMAP3)
+	switch (TCGen)
 	{
-		tex = attr_TexCoord1.st;
-	}
-	else if (TCGen == TCGEN_ENVIRONMENT_MAPPED)
-	{
-		vec3 viewer = normalize(u_LocalViewOrigin - position);
-		vec2 ref = reflect(viewer, normal).yz;
-		tex.s = ref.x * -0.5 + 0.5;
-		tex.t = ref.y *  0.5 + 0.5;
-	}
-	else if (TCGen == TCGEN_VECTOR)
-	{
-		tex = vec2(dot(position, TCGenVector0), dot(position, TCGenVector1));
+		case TCGEN_LIGHTMAP:
+			tex = attr_TexCoord1;
+		break;
+
+		case TCGEN_LIGHTMAP1:
+			tex = attr_TexCoord2;
+		break;
+
+		case TCGEN_LIGHTMAP2:
+			tex = attr_TexCoord3;
+		break;
+
+		case TCGEN_LIGHTMAP3:
+			tex = attr_TexCoord4;
+		break;
+
+		case TCGEN_ENVIRONMENT_MAPPED:
+		{
+			vec3 viewer = normalize(u_LocalViewOrigin - position);
+			vec2 ref = reflect(viewer, normal).yz;
+			tex.s = ref.x * -0.5 + 0.5;
+			tex.t = ref.y *  0.5 + 0.5;
+		}
+		break;
+
+		case TCGEN_VECTOR:
+		{
+			tex = vec2(dot(position, TCGenVector0), dot(position, TCGenVector1));
+		}
+		break;
 	}
 
 	return tex;
@@ -248,7 +270,7 @@ void main()
 #endif
 
 #if defined(USE_LIGHTMAP)
-	var_TexCoords.zw = attr_TexCoord1.st;
+	var_TexCoords.zw = GenTexCoords(u_TCGen1, vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 #endif
 
 	var_Color = u_VertColor * attr_Color + u_BaseColor;

@@ -324,6 +324,9 @@ enum
 	ATTR_INDEX_POSITION,
 	ATTR_INDEX_TEXCOORD0,
 	ATTR_INDEX_TEXCOORD1,
+	ATTR_INDEX_TEXCOORD2,
+	ATTR_INDEX_TEXCOORD3,
+	ATTR_INDEX_TEXCOORD4,
 	ATTR_INDEX_TANGENT,
 	ATTR_INDEX_NORMAL,
 	ATTR_INDEX_COLOR,
@@ -895,38 +898,59 @@ enum
 	GLS_DEFAULT							= GLS_DEPTHMASK_TRUE
 };
 
+struct Attribute
+{
+	int numComponents;
+	bool integerAttribute;
+	GLenum type;
+	bool normalize;
+	int offset;
+};
+
+const int MAX_ATTRIBUTES = 8;
+struct VertexFormat
+{
+	Attribute attributes[MAX_ATTRIBUTES];
+};
+
 enum
 {
-	ATTR_POSITION =       0x0001,
-	ATTR_TEXCOORD0 =       0x0002,
-	ATTR_TEXCOORD1 =     0x0004,
-	ATTR_TANGENT =        0x0008,
-	ATTR_NORMAL =         0x0010,
-	ATTR_COLOR =          0x0020,
-	ATTR_PAINTCOLOR =     0x0040,
-	ATTR_LIGHTDIRECTION = 0x0080,
-	ATTR_BONE_INDEXES =   0x0100,
-	ATTR_BONE_WEIGHTS =   0x0200,
+	ATTR_POSITION		= 0x0001,
+	ATTR_TEXCOORD0		= 0x0002,
+	ATTR_TEXCOORD1		= 0x0004,
+	ATTR_TEXCOORD2		= 0x0008,
+	ATTR_TEXCOORD3		= 0x0010,
+	ATTR_TEXCOORD4		= 0x0020,
+	ATTR_TANGENT		= 0x0040,
+	ATTR_NORMAL			= 0x0080,
+	ATTR_COLOR			= 0x0100,
+	ATTR_PAINTCOLOR		= 0x0200,
+	ATTR_LIGHTDIRECTION = 0x0400,
+	ATTR_BONE_INDEXES	= 0x0800,
+	ATTR_BONE_WEIGHTS	= 0x1000,
 
 	// for .md3 interpolation
-	ATTR_POSITION2 =      0x0400,
-	ATTR_TANGENT2 =       0x0800,
-	ATTR_NORMAL2 =        0x1000,
+	ATTR_POSITION2		= 0x2000,
+	ATTR_TANGENT2		= 0x4000,
+	ATTR_NORMAL2		= 0x8000,
 
-	ATTR_DEFAULT = ATTR_POSITION,
-	ATTR_BITS =	ATTR_POSITION |
-				ATTR_TEXCOORD0 |
-				ATTR_TEXCOORD1 |
-				ATTR_TANGENT |
-				ATTR_NORMAL |
-				ATTR_COLOR |
-				ATTR_PAINTCOLOR |
-				ATTR_LIGHTDIRECTION |
-				ATTR_BONE_INDEXES |
-				ATTR_BONE_WEIGHTS |
-				ATTR_POSITION2 |
-				ATTR_TANGENT2 |
-				ATTR_NORMAL2
+	ATTR_DEFAULT		= ATTR_POSITION,
+	ATTR_BITS			= ATTR_POSITION |
+							ATTR_TEXCOORD0 |
+							ATTR_TEXCOORD1 |
+							ATTR_TEXCOORD2 |
+							ATTR_TEXCOORD3 |
+							ATTR_TEXCOORD4 |
+							ATTR_TANGENT |
+							ATTR_NORMAL |
+							ATTR_COLOR |
+							ATTR_PAINTCOLOR |
+							ATTR_LIGHTDIRECTION |
+							ATTR_BONE_INDEXES |
+							ATTR_BONE_WEIGHTS |
+							ATTR_POSITION2 |
+							ATTR_TANGENT2 |
+							ATTR_NORMAL2
 };
 
 enum
@@ -1017,6 +1041,7 @@ typedef enum
 	UNIFORM_TCGEN0,
 	UNIFORM_TCGEN0VECTOR0,
 	UNIFORM_TCGEN0VECTOR1,
+	UNIFORM_TCGEN1,
 
 	UNIFORM_DEFORMTYPE,
 	UNIFORM_DEFORMFUNC,
@@ -2695,7 +2720,6 @@ int GLSL_BeginLoadGPUShaders(void);
 void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArrays);
-void GLSL_UpdateTexCoordVertexAttribPointers ( uint32_t attribBits, const VertexArraysProperties *vertexArrays );
 void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays);
 void GLSL_BindProgram(shaderProgram_t * program);
 void GLSL_BindNullProgram(void);

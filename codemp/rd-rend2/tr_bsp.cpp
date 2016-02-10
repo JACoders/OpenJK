@@ -2063,7 +2063,10 @@ static void R_CreateWorldVBOs(void)
 		vbo->offsets[ATTR_INDEX_NORMAL] = offsetof(packedVertex_t, normal);
 		vbo->offsets[ATTR_INDEX_TANGENT] = offsetof(packedVertex_t, tangent);
 		vbo->offsets[ATTR_INDEX_TEXCOORD0] = offsetof(packedVertex_t, texcoords[0]);
-		vbo->offsets[ATTR_INDEX_TEXCOORD1] = offsetof(packedVertex_t, texcoords[0]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD1] = offsetof(packedVertex_t, texcoords[1]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD2] = offsetof(packedVertex_t, texcoords[2]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD3] = offsetof(packedVertex_t, texcoords[3]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD4] = offsetof(packedVertex_t, texcoords[4]);
 		vbo->offsets[ATTR_INDEX_COLOR] = offsetof(packedVertex_t, colors);
 		vbo->offsets[ATTR_INDEX_LIGHTDIRECTION] = offsetof(packedVertex_t, lightDirection);
 
@@ -2073,6 +2076,9 @@ static void R_CreateWorldVBOs(void)
 		vbo->strides[ATTR_INDEX_TANGENT] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_TEXCOORD0] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_TEXCOORD1] = packedVertexSize;
+		vbo->strides[ATTR_INDEX_TEXCOORD2] = packedVertexSize;
+		vbo->strides[ATTR_INDEX_TEXCOORD3] = packedVertexSize;
+		vbo->strides[ATTR_INDEX_TEXCOORD4] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_COLOR] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_LIGHTDIRECTION] = packedVertexSize;
 
@@ -2080,6 +2086,9 @@ static void R_CreateWorldVBOs(void)
 		vbo->sizes[ATTR_INDEX_NORMAL] = sizeof(verts->normal);
 		vbo->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(verts->texcoords[0]);
 		vbo->sizes[ATTR_INDEX_TEXCOORD1] = sizeof(verts->texcoords[0]);
+		vbo->sizes[ATTR_INDEX_TEXCOORD2] = sizeof(verts->texcoords[0]);
+		vbo->sizes[ATTR_INDEX_TEXCOORD3] = sizeof(verts->texcoords[0]);
+		vbo->sizes[ATTR_INDEX_TEXCOORD4] = sizeof(verts->texcoords[0]);
 		vbo->sizes[ATTR_INDEX_TANGENT] = sizeof(verts->tangent);
 		vbo->sizes[ATTR_INDEX_LIGHTDIRECTION] = sizeof(verts->lightDirection);
 		vbo->sizes[ATTR_INDEX_COLOR] = sizeof(verts->colors);
@@ -3473,196 +3482,6 @@ void RE_LoadWorldMap( const char *name ) {
 	
 	// determine vertex light directions
 	R_CalcVertexLightDirs();
-
-	// determine which parts of the map are in sunlight
-#if 0
-	if (0)
-	{
-		world_t	*w;
-
-		uint8_t *primaryLightGrid, *data;
-		int lightGridSize;
-		int i;
-
-		w = &s_worldData;
-
-		lightGridSize = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
-		primaryLightGrid = (uint8_t *)Z_Malloc(lightGridSize * sizeof(*primaryLightGrid), TAG_GENERAL);
-
-		memset(primaryLightGrid, 0, lightGridSize * sizeof(*primaryLightGrid));
-
-		data = w->lightGridData;
-		for (i = 0; i < lightGridSize; i++, data += 8)
-		{
-			int lat, lng;
-			vec3_t gridLightDir, gridLightCol;
-
-			// skip samples in wall
-			if (!(data[0]+data[1]+data[2]+data[3]+data[4]+data[5]) )
-				continue;
-
-			gridLightCol[0] = ByteToFloat(data[3]);
-			gridLightCol[1] = ByteToFloat(data[4]);
-			gridLightCol[2] = ByteToFloat(data[5]);
-			(void)gridLightCol; // Suppress unused-but-set-variable warning
-
-			lat = data[7];
-			lng = data[6];
-			lat *= (FUNCTABLE_SIZE/256);
-			lng *= (FUNCTABLE_SIZE/256);
-
-			// decode X as cos( lat ) * sin( long )
-			// decode Y as sin( lat ) * sin( long )
-			// decode Z as cos( long )
-
-			gridLightDir[0] = tr.sinTable[(lat+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK] * tr.sinTable[lng];
-			gridLightDir[1] = tr.sinTable[lat] * tr.sinTable[lng];
-			gridLightDir[2] = tr.sinTable[(lng+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK];
-
-			// FIXME: magic number for determining if light direction is close enough to sunlight
-			if (DotProduct(gridLightDir, tr.sunDirection) > 0.75f)
-			{
-				primaryLightGrid[i] = 1;
-			}
-			else
-			{
-				primaryLightGrid[i] = 255;
-			}
-		}
-
-		if (0)
-		{
-			int i;
-			byte *buffer = (byte *)Z_Malloc(w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18, TAG_GENERAL);
-			byte *out;
-			uint8_t *in;
-			char fileName[MAX_QPATH];
-			
-			Com_Memset (buffer, 0, 18);
-			buffer[2] = 2;		// uncompressed type
-			buffer[12] = w->lightGridBounds[0] & 255;
-			buffer[13] = w->lightGridBounds[0] >> 8;
-			buffer[14] = w->lightGridBounds[1] & 255;
-			buffer[15] = w->lightGridBounds[1] >> 8;
-			buffer[16] = 24;	// pixel size
-
-			in = primaryLightGrid;
-			for (i = 0; i < w->lightGridBounds[2]; i++)
-			{
-				int j;
-
-				sprintf(fileName, "primarylg%d.tga", i);
-
-				out = buffer + 18;
-				for (j = 0; j < w->lightGridBounds[0] * w->lightGridBounds[1]; j++)
-				{
-					if (*in == 1)
-					{
-						*out++ = 255;
-						*out++ = 255;
-						*out++ = 255;
-					}
-					else if (*in == 255)
-					{
-						*out++ = 64;
-						*out++ = 64;
-						*out++ = 64;
-					}
-					else
-					{
-						*out++ = 0;
-						*out++ = 0;
-						*out++ = 0;
-					}
-					in++;
-				}
-
-				ri->FS_WriteFile(fileName, buffer, w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18);
-			}
-
-			Z_Free(buffer);
-		}
-
-		for (i = 0; i < w->numWorldSurfaces; i++)
-		{
-			msurface_t *surf = w->surfaces + i;
-			cullinfo_t *ci = &surf->cullinfo;
-
-			if(ci->type & CULLINFO_PLANE)
-			{
-				if (DotProduct(ci->plane.normal, tr.sunDirection) <= 0.0f)
-				{
-					//ri->Printf(PRINT_ALL, "surface %d is not oriented towards sunlight\n", i);
-					continue;
-				}
-			}
-
-			if(ci->type & CULLINFO_BOX)
-			{
-				int ibounds[2][3], x, y, z, goodSamples, numSamples;
-				vec3_t lightOrigin;
-
-				VectorSubtract( ci->bounds[0], w->lightGridOrigin, lightOrigin );
-
-				ibounds[0][0] = floor(lightOrigin[0] * w->lightGridInverseSize[0]);
-				ibounds[0][1] = floor(lightOrigin[1] * w->lightGridInverseSize[1]);
-				ibounds[0][2] = floor(lightOrigin[2] * w->lightGridInverseSize[2]);
-
-				VectorSubtract( ci->bounds[1], w->lightGridOrigin, lightOrigin );
-
-				ibounds[1][0] = ceil(lightOrigin[0] * w->lightGridInverseSize[0]);
-				ibounds[1][1] = ceil(lightOrigin[1] * w->lightGridInverseSize[1]);
-				ibounds[1][2] = ceil(lightOrigin[2] * w->lightGridInverseSize[2]);
-
-				ibounds[0][0] = CLAMP(ibounds[0][0], 0, w->lightGridSize[0]);
-				ibounds[0][1] = CLAMP(ibounds[0][1], 0, w->lightGridSize[1]);
-				ibounds[0][2] = CLAMP(ibounds[0][2], 0, w->lightGridSize[2]);
-
-				ibounds[1][0] = CLAMP(ibounds[1][0], 0, w->lightGridSize[0]);
-				ibounds[1][1] = CLAMP(ibounds[1][1], 0, w->lightGridSize[1]);
-				ibounds[1][2] = CLAMP(ibounds[1][2], 0, w->lightGridSize[2]);
-
-				/*
-				ri->Printf(PRINT_ALL, "surf %d bounds (%f %f %f)-(%f %f %f) ibounds (%d %d %d)-(%d %d %d)\n", i,
-					ci->bounds[0][0], ci->bounds[0][1], ci->bounds[0][2],
-					ci->bounds[1][0], ci->bounds[1][1], ci->bounds[1][2],
-					ibounds[0][0], ibounds[0][1], ibounds[0][2],
-					ibounds[1][0], ibounds[1][1], ibounds[1][2]);
-				*/
-
-				goodSamples = 0;
-				numSamples = 0;
-				for (x = ibounds[0][0]; x <= ibounds[1][0]; x++)
-				{
-					for (y = ibounds[0][1]; y <= ibounds[1][1]; y++)
-					{
-						for (z = ibounds[0][2]; z <= ibounds[1][2]; z++)
-						{
-							uint8_t primaryLight = primaryLightGrid[x * 8 + y * 8 * w->lightGridBounds[0] + z * 8 * w->lightGridBounds[0] * w->lightGridBounds[2]];
-
-							if (primaryLight == 0)
-								continue;
-
-							numSamples++;
-
-							if (primaryLight == 1)
-								goodSamples++;
-						}
-					}
-				}
-
-				// FIXME: magic number for determining whether object is mostly in sunlight
-				if (goodSamples > numSamples * 0.75f)
-				{
-					//ri->Printf(PRINT_ALL, "surface %d is in sunlight\n", i);
-					//surf->primaryLight = 1;
-				}
-			}
-		}
-
-		Z_Free(primaryLightGrid);
-	}
-#endif
 
 	// load cubemaps
 	if (r_cubeMapping->integer)
