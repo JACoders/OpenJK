@@ -5312,7 +5312,8 @@ void initialize_rpg_skills(gentity_t *ent)
 		ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
 		// zyk: Light Power, Dark Power and Eternity Power use mp
-		if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)))
+		if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && !(ent->client->pers.player_settings & (1 << 1)) && 
+			zyk_enable_light_power.integer == 1)
 		{
 			ent->client->pers.magic_power--;
 			ent->client->pers.quest_power_status |= (1 << 14);
@@ -5322,7 +5323,8 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->pers.quest_power_status &= ~(1 << 14);
 		}
 
-		if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 2)))
+		if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 2)) && 
+			zyk_enable_dark_power.integer == 1)
 		{
 			ent->client->pers.magic_power--;
 			ent->client->pers.quest_power_status |= (1 << 15);
@@ -5332,7 +5334,8 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->pers.quest_power_status &= ~(1 << 15);
 		}
 
-		if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 3)))
+		if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && !(ent->client->pers.player_settings & (1 << 3)) && 
+			zyk_enable_eternity_power.integer == 1)
 		{
 			ent->client->pers.magic_power--;
 			ent->client->pers.quest_power_status |= (1 << 16);
@@ -5343,7 +5346,8 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 
 		// zyk: Universe Power
-		if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4)))
+		if (ent->client->pers.universe_quest_progress > 7 && !(ent->client->pers.player_settings & (1 << 4)) && 
+			zyk_enable_universe_power.integer == 1)
 		{
 			ent->client->pers.quest_power_status |= (1 << 13);
 		}
@@ -11015,25 +11019,25 @@ void Cmd_Settings_f( gentity_t *ent ) {
 			{
 				ent->client->pers.player_settings &= ~(1 << value);
 
-				if (value == 1 && ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
+				if (value == 1 && ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS && zyk_enable_light_power.integer == 1)
 				{
 					ent->client->pers.magic_power--;
 					ent->client->pers.quest_power_status |= (1 << 14);
 					send_rpg_events(1000);
 				}
-				else if (value == 2 && ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
+				else if (value == 2 && ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES && zyk_enable_dark_power.integer == 1)
 				{
 					ent->client->pers.magic_power--;
 					ent->client->pers.quest_power_status |= (1 << 15);
 					send_rpg_events(1000);
 				}
-				else if (value == 3 && ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
+				else if (value == 3 && ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES && zyk_enable_eternity_power.integer == 1)
 				{
 					ent->client->pers.magic_power--;
 					ent->client->pers.quest_power_status |= (1 << 16);
 					send_rpg_events(1000);
 				}
-				else if (value == 4 && ent->client->pers.universe_quest_progress > 7)
+				else if (value == 4 && ent->client->pers.universe_quest_progress > 7 && zyk_enable_universe_power.integer == 1)
 				{
 					ent->client->pers.quest_power_status |= (1 << 13);
 				}
