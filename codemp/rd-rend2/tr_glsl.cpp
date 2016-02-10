@@ -1930,9 +1930,6 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 			int attributeIndex = vertexArrays->enabledAttributes[i];
 			vertexArrays->offsets[attributeIndex] += tess.internalVBOCommitOffset;
 		}
-
-		// Slight hack to make tc0 and tc1 offset from the same position.
-		vertexArrays->offsets[ATTR_INDEX_TEXCOORD1] = vertexArrays->offsets[ATTR_INDEX_TEXCOORD0];
 	}
 	else
 	{
