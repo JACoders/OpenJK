@@ -1867,20 +1867,10 @@ static void CG_ZykMod( void )
 				{
 					trap->Cvar_Set("ui_zyk_light_text", "Go to the sacred monument in ^3yavin2");
 					trap->Cvar_Set("ui_zyk_light_text2","and defeat the Guardian of Light");
-					trap->Cvar_Set("ui_zyk_light_text3","");
-					trap->Cvar_Set("ui_zyk_light_text4","");
-					trap->Cvar_Set("ui_zyk_light_text5","");
-					trap->Cvar_Set("ui_zyk_light_text6","");
-					trap->Cvar_Set("ui_zyk_light_text7","");
-					trap->Cvar_Set("ui_zyk_light_text8","");
-					trap->Cvar_Set("ui_zyk_light_text9","");
-					trap->Cvar_Set("ui_zyk_light_text10","");
-					trap->Cvar_Set("ui_zyk_light_text11","");
 				}
 				else
 				{
 					trap->Cvar_Set("ui_zyk_light_text", "Defeat the guardians in their respective maps");
-					trap->Cvar_Set("ui_zyk_light_text2","");
 
 					if (light_quest_progress & (1 << 4))
 						trap->Cvar_Set("ui_zyk_light_text3", "^4Guardian of Water ^7(yavin1b) - ^2yes");
@@ -1931,16 +1921,6 @@ static void CG_ZykMod( void )
 			else
 			{
 				trap->Cvar_Set("ui_zyk_light_text","Completed");
-				trap->Cvar_Set("ui_zyk_light_text2","");
-				trap->Cvar_Set("ui_zyk_light_text3","");
-				trap->Cvar_Set("ui_zyk_light_text4","");
-				trap->Cvar_Set("ui_zyk_light_text5","");
-				trap->Cvar_Set("ui_zyk_light_text6","");
-				trap->Cvar_Set("ui_zyk_light_text7","");
-				trap->Cvar_Set("ui_zyk_light_text8","");
-				trap->Cvar_Set("ui_zyk_light_text9","");
-				trap->Cvar_Set("ui_zyk_light_text10","");
-				trap->Cvar_Set("ui_zyk_light_text11","");
 			}
 		}
 		else if (j == 82)
@@ -1959,20 +1939,10 @@ static void CG_ZykMod( void )
 				{
 					trap->Cvar_Set("ui_zyk_dark_text", "Defeat the Guardian of Darkness");
 					trap->Cvar_Set("ui_zyk_dark_text2","in the dark room in ^3yavin2");
-					trap->Cvar_Set("ui_zyk_dark_text3","");
-					trap->Cvar_Set("ui_zyk_dark_text4","");
-					trap->Cvar_Set("ui_zyk_dark_text5","");
-					trap->Cvar_Set("ui_zyk_dark_text6","");
-					trap->Cvar_Set("ui_zyk_dark_text7","");
-					trap->Cvar_Set("ui_zyk_dark_text8","");
-					trap->Cvar_Set("ui_zyk_dark_text9","");
-					trap->Cvar_Set("ui_zyk_dark_text10","");
-					trap->Cvar_Set("ui_zyk_dark_text11","");
 				}
 				else
 				{
 					trap->Cvar_Set("ui_zyk_dark_text", "Find the notes in their respective maps");
-					trap->Cvar_Set("ui_zyk_dark_text2","");
 
 					if (dark_quest_progress & (1 << 4))
 						trap->Cvar_Set("ui_zyk_dark_text3", "in the temple of the forest - ^2yes");
@@ -2023,16 +1993,6 @@ static void CG_ZykMod( void )
 			else
 			{
 				trap->Cvar_Set("ui_zyk_dark_text","Completed");
-				trap->Cvar_Set("ui_zyk_dark_text2","");
-				trap->Cvar_Set("ui_zyk_dark_text3","");
-				trap->Cvar_Set("ui_zyk_dark_text4","");
-				trap->Cvar_Set("ui_zyk_dark_text5","");
-				trap->Cvar_Set("ui_zyk_dark_text6","");
-				trap->Cvar_Set("ui_zyk_dark_text7","");
-				trap->Cvar_Set("ui_zyk_dark_text8","");
-				trap->Cvar_Set("ui_zyk_dark_text9","");
-				trap->Cvar_Set("ui_zyk_dark_text10","");
-				trap->Cvar_Set("ui_zyk_dark_text11","");
 			}
 		}
 		else if (j == 83)
@@ -2058,7 +2018,6 @@ static void CG_ZykMod( void )
 			else
 			{
 				trap->Cvar_Set("ui_zyk_eternity_text","Completed");
-				trap->Cvar_Set("ui_zyk_eternity_text2","");
 			}
 		}
 		else if (j == 84)
@@ -2088,26 +2047,17 @@ static void CG_ZykMod( void )
 					trap->Cvar_Set("ui_zyk_universe_chapter","^31. The Hero's Quest Begins");
 					trap->Cvar_Set("ui_zyk_universe_text","Defeat the reborn attack at ^3mp/duel6");
 					trap->Cvar_Set("ui_zyk_universe_text2","to save the Guardian Sages");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 1)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^32. The Rise of an Evil Force");
 					trap->Cvar_Set("ui_zyk_universe_text","Talk to the sages at ^3mp/duel6");
 					trap->Cvar_Set("ui_zyk_universe_text2","to know more about your quest");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 2)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^33. The Life-Force Artifacts");
 					trap->Cvar_Set("ui_zyk_universe_text","Find the 8 artifacts in SP maps. One of them");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 3)
 				{
@@ -2115,68 +2065,46 @@ static void CG_ZykMod( void )
 					trap->Cvar_Set("ui_zyk_universe_text","Go to ^3yavin1b ^7to talk to the sages about the");
 					trap->Cvar_Set("ui_zyk_universe_text2","mysterious voice at the");
 					trap->Cvar_Set("ui_zyk_universe_text3","beginning of the quest");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 4)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^35. The Hidden Sage");
 					trap->Cvar_Set("ui_zyk_universe_text","Find the Sage of Universe at ^3t3_hevil");
-					trap->Cvar_Set("ui_zyk_universe_text2","");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 5)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^36. The Guardian Amulets");
 					trap->Cvar_Set("ui_zyk_universe_text","Find the three guardian amulets");
 					trap->Cvar_Set("ui_zyk_universe_text2","at the City of the Merchants");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 6)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^37. The Decisive Battle");
 					trap->Cvar_Set("ui_zyk_universe_text","Defeat the ^1Master of Evil ^7at ^3taspir1");
-					trap->Cvar_Set("ui_zyk_universe_text2","");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 7)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^38. The Guardian of Universe");
 					trap->Cvar_Set("ui_zyk_universe_text","Defeat the ^2Guardian of Universe");
 					trap->Cvar_Set("ui_zyk_universe_text2","at ^3mp/siege_korriban");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 8)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^39. Revelations");
-					trap->Cvar_Set("ui_zyk_universe_text","You had a strange vision of someone");
-					trap->Cvar_Set("ui_zyk_universe_text2","calling you from a sacred place");
-					trap->Cvar_Set("ui_zyk_universe_text3","Talk to sages and guardians and go there");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
+					trap->Cvar_Set("ui_zyk_universe_text","You had a vision of a calling from a sacred place");
+					trap->Cvar_Set("ui_zyk_universe_text2","Talk to sages and guardians and go there");
 				}
 				else if (universe_quest_progress == 9)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^310. The Sacred Crystals");
 					trap->Cvar_Set("ui_zyk_universe_text","Find the sacred crystals in ^3t2_trip");
 					trap->Cvar_Set("ui_zyk_universe_text2","You need them to free the Guardian of Time");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 10)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^311. Finally Free");
 					trap->Cvar_Set("ui_zyk_universe_text","You have the sacred crystals. Go to ^3t2_trip");
 					trap->Cvar_Set("ui_zyk_universe_text2","and free the Guardian of Time");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 11)
 				{
@@ -2184,17 +2112,12 @@ static void CG_ZykMod( void )
 					trap->Cvar_Set("ui_zyk_universe_text","Master of Evil sent his entire army");
 					trap->Cvar_Set("ui_zyk_universe_text2","to the temple. Defeat all of them");
 					trap->Cvar_Set("ui_zyk_universe_text3","with the help of your allies");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 12)
 				{
 					trap->Cvar_Set("ui_zyk_universe_chapter","^313. The Final Revelation");
 					trap->Cvar_Set("ui_zyk_universe_text","Listen to the revelation that will be");
 					trap->Cvar_Set("ui_zyk_universe_text2","decisive to the fate of the Universe");
-					trap->Cvar_Set("ui_zyk_universe_text3","");
-					trap->Cvar_Set("ui_zyk_universe_text4","");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 13)
 				{
@@ -2203,7 +2126,6 @@ static void CG_ZykMod( void )
 					trap->Cvar_Set("ui_zyk_universe_text2","Guardian of Time and Master of Evil");
 					trap->Cvar_Set("ui_zyk_universe_text3","After that, press the Use key");
 					trap->Cvar_Set("ui_zyk_universe_text4","on the one you choose");
-					trap->Cvar_Set("ui_zyk_universe_text5","");
 				}
 				else if (universe_quest_progress == 14)
 				{
@@ -2213,27 +2135,18 @@ static void CG_ZykMod( void )
 						trap->Cvar_Set("ui_zyk_universe_text","Go to the Sacred Dimension in ^3t2_trip");
 						trap->Cvar_Set("ui_zyk_universe_text2","to fight the ^1Guardian of Chaos");
 						trap->Cvar_Set("ui_zyk_universe_text3","and finish the quest");
-						trap->Cvar_Set("ui_zyk_universe_text4","");
-						trap->Cvar_Set("ui_zyk_universe_text5","");
 					}
 					else
 					{
 						trap->Cvar_Set("ui_zyk_universe_chapter","^3Requirements");
 						trap->Cvar_Set("ui_zyk_universe_text","Complete Light, Dark");
 						trap->Cvar_Set("ui_zyk_universe_text2","and Eternity quests");
-						trap->Cvar_Set("ui_zyk_universe_text3","");
-						trap->Cvar_Set("ui_zyk_universe_text4","");
-						trap->Cvar_Set("ui_zyk_universe_text5","");
 					}
 				}
 			}
 			else
 			{
-				trap->Cvar_Set("ui_zyk_universe_chapter","");
-				trap->Cvar_Set("ui_zyk_universe_text","Completed");
-				trap->Cvar_Set("ui_zyk_universe_text2","");
-				trap->Cvar_Set("ui_zyk_universe_text3","");
-				trap->Cvar_Set("ui_zyk_universe_text4","");
+				trap->Cvar_Set("ui_zyk_universe_chapter","Completed");
 			}
 		}
 		else if (j == 85)
@@ -2251,14 +2164,14 @@ static void CG_ZykMod( void )
 			else if (universe_quest_progress == 8)
 			{
 				if (amount_of_stuff & (1 << 1))
-					trap->Cvar_Set("ui_zyk_universe_text4", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^2yes");
+					trap->Cvar_Set("ui_zyk_universe_text3", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^2yes");
 				else
-					trap->Cvar_Set("ui_zyk_universe_text4", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^1no");
+					trap->Cvar_Set("ui_zyk_universe_text3", "^3Guardians/Sages at ^3mp/siege_korriban ^7- ^1no");
 
 				if (amount_of_stuff & (1 << 2))
-					trap->Cvar_Set("ui_zyk_universe_text5", "^3Sacred obelisk at ^3t2_trip ^7- ^2yes");
+					trap->Cvar_Set("ui_zyk_universe_text4", "^3Sacred obelisk at ^3t2_trip ^7- ^2yes");
 				else
-					trap->Cvar_Set("ui_zyk_universe_text5", "^3Sacred obelisk at ^3t2_trip ^7- ^1no");
+					trap->Cvar_Set("ui_zyk_universe_text4", "^3Sacred obelisk at ^3t2_trip ^7- ^1no");
 			}
 			else if (universe_quest_progress == 9)
 			{
