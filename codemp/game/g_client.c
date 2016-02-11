@@ -4108,6 +4108,10 @@ void ClientDisconnect( int clientNum ) {
 	ent->client->sess.ally1 = 0;
 	ent->client->sess.ally2 = 0;
 
+	// zyk: removing ignored players
+	level.ignored_players[ent->s.number][0] = 0;
+	level.ignored_players[ent->s.number][1] = 0;
+
 	// zyk: cleaning ally ids of other players who have this player as ally
 	for (i = 0; i < level.maxclients; i++)
 	{
