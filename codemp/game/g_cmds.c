@@ -11914,7 +11914,7 @@ void Cmd_Drop_f( gentity_t *ent ) {
 	}
 
 	// find the item type for this weapon
-	item = BG_FindItemForWeapon( weapon );
+	item = BG_FindItemForWeapon( (weapon_t) weapon );
 
 	vel[0] = vecnorm[0]*500;
 	vel[1] = vecnorm[1]*500;
@@ -11951,33 +11951,10 @@ void Cmd_Drop_f( gentity_t *ent ) {
 	if ((ent->client->ps.ammo[weaponData[weapon].ammoIndex] < 1 && weapon != WP_DET_PACK) ||
 		(weapon != WP_THERMAL && weapon != WP_DET_PACK && weapon != WP_TRIP_MINE))
 	{
-		int i = 0;
-		int weap = -1;
-
 		ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << weapon);
 
-		while (i < WP_NUM_WEAPONS)
-		{
-			if ((ent->client->ps.stats[STAT_WEAPONS] & (1 << i)) && i != WP_NONE)
-			{ //this one's good
-				weap = i;
-				break;
-			}
-			i++;
-		}
-
-		if (weap != -1)
-		{
-			ent->s.weapon = weap;
-			ent->client->ps.weapon = weap;
-		}
-		else
-		{
-			ent->s.weapon = 0;
-			ent->client->ps.weapon = 0;
-		}
-
-		G_AddEvent(ent, EV_NOAMMO, weapon);
+		ent->s.weapon = WP_MELEE;
+		ent->client->ps.weapon = WP_MELEE;
 	}
 }
 
