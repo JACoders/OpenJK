@@ -8351,6 +8351,399 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 	do_downgrade_skill(ent, downgrade_value);
 }
 
+void zyk_list_player_skills(gentity_t *ent, char *arg1)
+{
+	char message[1024];
+	char message_content[12][100];
+	int i = 0;
+
+	strcpy(message,"");
+				
+	while (i < 11)
+	{
+		strcpy(message_content[i],"");
+		i++;
+	}
+	message_content[11][0] = '\0';
+	i = 0;
+
+	if (Q_stricmp( arg1, "force" ) == 0)
+	{
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[0],"^0 1 - Jump: %d/5          ",ent->client->pers.skill_levels[0]);
+		else
+			sprintf(message_content[0],"^7 1 - Jump: %d/5          ",ent->client->pers.skill_levels[0]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[1],"^0 2 - Push: %d/3          ",ent->client->pers.skill_levels[1]);
+		else
+			sprintf(message_content[1],"^7 2 - Push: %d/3          ",ent->client->pers.skill_levels[1]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[2],"^0 3 - Pull: %d/3          ",ent->client->pers.skill_levels[2]);
+		else
+			sprintf(message_content[2],"^7 3 - Pull: %d/3          ",ent->client->pers.skill_levels[2]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[3],"^0 4 - Speed: %d/4         ",ent->client->pers.skill_levels[3]);
+		else
+			sprintf(message_content[3],"^7 4 - Speed: %d/4         ",ent->client->pers.skill_levels[3]);
+				
+		sprintf(message_content[4],"^7 5 - Sense: %d/3         ",ent->client->pers.skill_levels[4]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[5],"^0 6 - Saber Attack: %d/5  ",ent->client->pers.skill_levels[5]);
+		else
+			sprintf(message_content[5],"^3 6 - Saber Attack: %d/5  ",ent->client->pers.skill_levels[5]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[6],"^0 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
+		else
+			sprintf(message_content[6],"^3 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[7],"^0 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
+		else
+			sprintf(message_content[7],"^3 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[8],"^0 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
+		else
+			sprintf(message_content[8],"^5 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[0],"%s^010 - Heal: %d/3\n",message_content[0],ent->client->pers.skill_levels[9]);
+		else
+			sprintf(message_content[0],"%s^510 - Heal: %d/3\n",message_content[0],ent->client->pers.skill_levels[9]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[1],"%s^011 - Protect: %d/4\n",message_content[1],ent->client->pers.skill_levels[10]);
+		else
+			sprintf(message_content[1],"%s^511 - Protect: %d/4\n",message_content[1],ent->client->pers.skill_levels[10]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[2],"%s^012 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.skill_levels[11]);
+		else
+			sprintf(message_content[2],"%s^512 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.skill_levels[11]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[3],"%s^013 - Team Heal: %d/3\n",message_content[3],ent->client->pers.skill_levels[12]);
+		else
+			sprintf(message_content[3],"%s^513 - Team Heal: %d/3\n",message_content[3],ent->client->pers.skill_levels[12]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[4],"%s^014 - Lightning: %d/4\n",message_content[4],ent->client->pers.skill_levels[13]);
+		else
+			sprintf(message_content[4],"%s^114 - Lightning: %d/4\n",message_content[4],ent->client->pers.skill_levels[13]);
+				
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[5],"%s^015 - Grip: %d/3\n",message_content[5],ent->client->pers.skill_levels[14]);
+		else
+			sprintf(message_content[5],"%s^115 - Grip: %d/3\n",message_content[5],ent->client->pers.skill_levels[14]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[6],"%s^016 - Drain: %d/3\n",message_content[6],ent->client->pers.skill_levels[15]);
+		else
+			sprintf(message_content[6],"%s^116 - Drain: %d/3\n",message_content[6],ent->client->pers.skill_levels[15]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[7],"%s^017 - Rage: %d/4\n",message_content[7],ent->client->pers.skill_levels[16]);
+		else
+			sprintf(message_content[7],"%s^117 - Rage: %d/4\n",message_content[7],ent->client->pers.skill_levels[16]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[8],"%s^018 - Team Energize: %d/3\n",message_content[8],ent->client->pers.skill_levels[17]);
+		else
+			sprintf(message_content[8],"%s^118 - Team Energize: %d/3\n",message_content[8],ent->client->pers.skill_levels[17]);
+
+		for (i = 0; i < 9; i++)
+		{
+			sprintf(message,"%s%s",message,message_content[i]);
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+	}
+	else if (Q_stricmp( arg1, "weapons" ) == 0)
+	{
+		sprintf(message_content[0],"^319 - Stun Baton: %d/3        ",ent->client->pers.skill_levels[18]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[1],"^020 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
+		else
+			sprintf(message_content[1],"^320 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
+							
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[2],"^021 - E11 Blaster Rifle: %d/2 ",ent->client->pers.skill_levels[20]);
+		else
+			sprintf(message_content[2],"^321 - E11 Blaster Rifle: %d/2 ",ent->client->pers.skill_levels[20]);
+							
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[3],"^022 - Disruptor: %d/2         ",ent->client->pers.skill_levels[21]);
+		else
+			sprintf(message_content[3],"^322 - Disruptor: %d/2         ",ent->client->pers.skill_levels[21]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[4],"^023 - Bowcaster: %d/2         ",ent->client->pers.skill_levels[22]);
+		else
+			sprintf(message_content[4],"^323 - Bowcaster: %d/2         ",ent->client->pers.skill_levels[22]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[5],"^024 - Repeater: %d/2          ",ent->client->pers.skill_levels[23]);
+		else
+			sprintf(message_content[5],"^324 - Repeater: %d/2          ",ent->client->pers.skill_levels[23]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[0],"%s^025 - DEMP2: %d/2\n",message_content[0],ent->client->pers.skill_levels[24]);
+		else
+			sprintf(message_content[0],"%s^325 - DEMP2: %d/2\n",message_content[0],ent->client->pers.skill_levels[24]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[1],"%s^026 - Flechette: %d/2\n",message_content[1],ent->client->pers.skill_levels[25]);
+		else
+			sprintf(message_content[1],"%s^326 - Flechette: %d/2\n",message_content[1],ent->client->pers.skill_levels[25]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[2],"%s^027 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.skill_levels[26]);
+		else
+			sprintf(message_content[2],"%s^327 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.skill_levels[26]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[3],"%s^028 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.skill_levels[27]);
+		else
+			sprintf(message_content[3],"%s^328 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.skill_levels[27]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[4],"%s^029 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.skill_levels[28]);
+		else
+			sprintf(message_content[4],"%s^329 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.skill_levels[28]);
+
+		sprintf(message_content[5],"%s^330 - Melee: %d/3\n",message_content[5],ent->client->pers.skill_levels[29]);
+
+		for (i = 0; i < 6; i++)
+		{
+			sprintf(message,"%s%s",message,message_content[i]);
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+	}
+	else if (Q_stricmp( arg1, "other" ) == 0)
+	{
+		sprintf(message_content[0],"^231 - Max Shield: %d/5       ", ent->client->pers.skill_levels[30]);
+
+		sprintf(message_content[1],"^232 - Shield Strength: %d/4  ", ent->client->pers.skill_levels[31]);
+
+		sprintf(message_content[2],"^133 - Health Strength: %d/4  ", ent->client->pers.skill_levels[32]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[3],"^034 - Drain Shield: %d/1     ", ent->client->pers.skill_levels[33]);
+		else
+			sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.skill_levels[33]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[4],"^035 - Jetpack: %d/3          ", ent->client->pers.skill_levels[34]);
+		else
+			sprintf(message_content[4],"^335 - Jetpack: %d/3          ", ent->client->pers.skill_levels[34]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[5],"^036 - Sense Health: %d/3     ", ent->client->pers.skill_levels[35]);
+		else
+			sprintf(message_content[5],"^636 - Sense Health: %d/3     ", ent->client->pers.skill_levels[35]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[6],"^037 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
+		else
+			sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
+		else
+			sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
+		else
+			sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
+
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
+			sprintf(message_content[9],"^055 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
+		else
+			sprintf(message_content[9],"^555 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
+
+		sprintf(message_content[10],"^356 - Improvements: %d/3\n", ent->client->pers.skill_levels[55]);
+
+		if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
+			sprintf(message_content[0],"%s^3l  ^7- Light Power: ^2yes\n",message_content[0]);
+		else
+			sprintf(message_content[0],"%s^3l  ^7- Light Power: ^1no\n",message_content[0]);
+
+		if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
+			sprintf(message_content[1],"%s^3d  ^1- Dark Power: ^2yes\n",message_content[1]);
+		else
+			sprintf(message_content[1],"%s^3d  ^1- Dark Power: ^1no\n",message_content[1]);
+
+		if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
+			sprintf(message_content[2],"%s^3e  - Eternity Power: ^2yes\n",message_content[2]);
+		else
+			sprintf(message_content[2],"%s^3e  - Eternity Power: ^1no\n",message_content[2]);
+
+		if (ent->client->pers.universe_quest_progress >= 8)
+			sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^2yes\n",message_content[3]);
+		else
+			sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^1no\n",message_content[3]);
+
+		if (ent->client->pers.universe_quest_progress >= 14)
+			sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[4]);
+		else
+			sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[4]);
+
+		if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
+			sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^2yes\n",message_content[5]);
+		else
+			sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[5]);
+
+		if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
+			ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) || 
+					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else if (ent->client->pers.rpg_class == 8)
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
+		else
+			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^1no\n",message_content[6]);
+
+		if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+		else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+		else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+		else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+		else if (ent->client->pers.secrets_found & (1 << 6) && ent->client->pers.rpg_class == 8)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+		else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
+		else if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || 
+					ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 ||
+					ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^1no\n",message_content[7]);
+		else
+			sprintf(message_content[7],"%s^0#  ^0- Unique Skill: no\n",message_content[7]);
+
+		for (i = 0; i < 11; i++)
+		{
+			sprintf(message,"%s%s",message,message_content[i]);
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", message) );
+	}
+	else if (Q_stricmp( arg1, "ammo" ) == 0)
+	{
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^040 - Blaster Pack: %d/3\n",message, ent->client->pers.skill_levels[39]);
+		else
+			sprintf(message,"%s^340 - Blaster Pack: %d/3\n",message, ent->client->pers.skill_levels[39]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^041 - Power Cell: %d/3\n",message, ent->client->pers.skill_levels[40]);
+		else
+			sprintf(message,"%s^341 - Power Cell: %d/3\n",message, ent->client->pers.skill_levels[40]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^042 - Metallic Bolt: %d/3\n",message, ent->client->pers.skill_levels[41]);
+		else
+			sprintf(message,"%s^342 - Metallic Bolt: %d/3\n",message, ent->client->pers.skill_levels[41]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^043 - Rockets: %d/3\n",message, ent->client->pers.skill_levels[42]);
+		else
+			sprintf(message,"%s^343 - Rockets: %d/3\n",message, ent->client->pers.skill_levels[42]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^044 - Thermals: %d/3\n",message, ent->client->pers.skill_levels[43]);
+		else
+			sprintf(message,"%s^344 - Thermals: %d/3\n",message, ent->client->pers.skill_levels[43]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^045 - Trip Mines: %d/3\n",message, ent->client->pers.skill_levels[44]);
+		else
+			sprintf(message,"%s^345 - Trip Mines: %d/3\n",message, ent->client->pers.skill_levels[44]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^046 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
+		else
+			sprintf(message,"%s^346 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
+
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+	}
+	else if (Q_stricmp( arg1, "items" ) == 0)
+	{
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^047 - Binoculars: %d/1\n",message, ent->client->pers.skill_levels[46]);
+		else
+			sprintf(message,"%s^347 - Binoculars: %d/1\n",message, ent->client->pers.skill_levels[46]);
+					
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^048 - Bacta Canister: %d/1\n",message, ent->client->pers.skill_levels[47]);
+		else
+			sprintf(message,"%s^348 - Bacta Canister: %d/1\n",message, ent->client->pers.skill_levels[47]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^049 - Sentry Gun: %d/1\n",message, ent->client->pers.skill_levels[48]);
+		else
+			sprintf(message,"%s^349 - Sentry Gun: %d/1\n",message, ent->client->pers.skill_levels[48]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^050 - Seeker Drone: %d/1\n",message, ent->client->pers.skill_levels[49]);
+		else
+			sprintf(message,"%s^350 - Seeker Drone: %d/1\n",message, ent->client->pers.skill_levels[49]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^051 - E-Web: %d/1\n",message, ent->client->pers.skill_levels[50]);
+		else
+			sprintf(message,"%s^351 - E-Web: %d/1\n",message, ent->client->pers.skill_levels[50]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^052 - Big Bacta: %d/1\n",message, ent->client->pers.skill_levels[51]);
+		else
+			sprintf(message,"%s^352 - Big Bacta: %d/1\n",message, ent->client->pers.skill_levels[51]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^053 - Force Field: %d/1\n",message, ent->client->pers.skill_levels[52]);
+		else
+			sprintf(message,"%s^353 - Force Field: %d/1\n",message, ent->client->pers.skill_levels[52]);
+
+		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
+			sprintf(message,"%s^054 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
+		else
+			sprintf(message,"%s^354 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
+
+		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+	}
+}
+
 /*
 ==================
 Cmd_ListAccount_f
@@ -8370,18 +8763,10 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 		else if (trap->Argc() == 2)
 		{
 			char message[1024];
-			char message_content[12][100];
 			char arg1[MAX_STRING_CHARS];
 			int i = 0;
+
 			strcpy(message,"");
-				
-			while (i < 11)
-			{
-				strcpy(message_content[i],"");
-				i++;
-			}
-			message_content[11][0] = '\0';
-			i = 0;
 
 			trap->Argv(1, arg1, sizeof( arg1 ));
 
@@ -8389,380 +8774,10 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent-g_entities, "print \"\n^2/list force: ^7lists force power skills\n^2/list weapons: ^7lists weapon skills\n^2/list other: ^7lists miscellaneous skills\n^2/list ammo: ^7lists ammo skills\n^2/list items: ^7lists holdable items skills\n^2/list [skill number]: ^7lists info about a skill\n^2/list quests: ^7lists the quests\n^2/list commands: ^7lists the RPG Mode console commands\n^2/list classes: ^7lists the RPG classes\n^2/list stuff: ^7lists stuff bought from the seller\n^2/list info: ^7lists info about the RPG Mode\n\n\"");
 			}
-			else if (Q_stricmp( arg1, "force" ) == 0)
+			else if (Q_stricmp( arg1, "force" ) == 0 || Q_stricmp( arg1, "weapons" ) == 0 || Q_stricmp( arg1, "other" ) == 0 || 
+					 Q_stricmp( arg1, "ammo" ) == 0 || Q_stricmp( arg1, "items" ) == 0)
 			{
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[0],"^0 1 - Jump: %d/5          ",ent->client->pers.skill_levels[0]);
-				else
-					sprintf(message_content[0],"^7 1 - Jump: %d/5          ",ent->client->pers.skill_levels[0]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[1],"^0 2 - Push: %d/3          ",ent->client->pers.skill_levels[1]);
-				else
-					sprintf(message_content[1],"^7 2 - Push: %d/3          ",ent->client->pers.skill_levels[1]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[2],"^0 3 - Pull: %d/3          ",ent->client->pers.skill_levels[2]);
-				else
-					sprintf(message_content[2],"^7 3 - Pull: %d/3          ",ent->client->pers.skill_levels[2]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"^0 4 - Speed: %d/4         ",ent->client->pers.skill_levels[3]);
-				else
-					sprintf(message_content[3],"^7 4 - Speed: %d/4         ",ent->client->pers.skill_levels[3]);
-				
-				sprintf(message_content[4],"^7 5 - Sense: %d/3         ",ent->client->pers.skill_levels[4]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[5],"^0 6 - Saber Attack: %d/5  ",ent->client->pers.skill_levels[5]);
-				else
-					sprintf(message_content[5],"^3 6 - Saber Attack: %d/5  ",ent->client->pers.skill_levels[5]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[6],"^0 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
-				else
-					sprintf(message_content[6],"^3 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[7],"^0 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
-				else
-					sprintf(message_content[7],"^3 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[8],"^0 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
-				else
-					sprintf(message_content[8],"^5 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[0],"%s^010 - Heal: %d/3\n",message_content[0],ent->client->pers.skill_levels[9]);
-				else
-					sprintf(message_content[0],"%s^510 - Heal: %d/3\n",message_content[0],ent->client->pers.skill_levels[9]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[1],"%s^011 - Protect: %d/4\n",message_content[1],ent->client->pers.skill_levels[10]);
-				else
-					sprintf(message_content[1],"%s^511 - Protect: %d/4\n",message_content[1],ent->client->pers.skill_levels[10]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[2],"%s^012 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.skill_levels[11]);
-				else
-					sprintf(message_content[2],"%s^512 - Mind Trick: %d/3\n",message_content[2],ent->client->pers.skill_levels[11]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"%s^013 - Team Heal: %d/3\n",message_content[3],ent->client->pers.skill_levels[12]);
-				else
-					sprintf(message_content[3],"%s^513 - Team Heal: %d/3\n",message_content[3],ent->client->pers.skill_levels[12]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"%s^014 - Lightning: %d/4\n",message_content[4],ent->client->pers.skill_levels[13]);
-				else
-					sprintf(message_content[4],"%s^114 - Lightning: %d/4\n",message_content[4],ent->client->pers.skill_levels[13]);
-				
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[5],"%s^015 - Grip: %d/3\n",message_content[5],ent->client->pers.skill_levels[14]);
-				else
-					sprintf(message_content[5],"%s^115 - Grip: %d/3\n",message_content[5],ent->client->pers.skill_levels[14]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[6],"%s^016 - Drain: %d/3\n",message_content[6],ent->client->pers.skill_levels[15]);
-				else
-					sprintf(message_content[6],"%s^116 - Drain: %d/3\n",message_content[6],ent->client->pers.skill_levels[15]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[7],"%s^017 - Rage: %d/4\n",message_content[7],ent->client->pers.skill_levels[16]);
-				else
-					sprintf(message_content[7],"%s^117 - Rage: %d/4\n",message_content[7],ent->client->pers.skill_levels[16]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[8],"%s^018 - Team Energize: %d/3\n",message_content[8],ent->client->pers.skill_levels[17]);
-				else
-					sprintf(message_content[8],"%s^118 - Team Energize: %d/3\n",message_content[8],ent->client->pers.skill_levels[17]);
-
-				for (i = 0; i < 9; i++)
-				{
-					sprintf(message,"%s%s",message,message_content[i]);
-				}
-
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
-			}
-			else if (Q_stricmp( arg1, "weapons" ) == 0)
-			{
-				sprintf(message_content[0],"^319 - Stun Baton: %d/3        ",ent->client->pers.skill_levels[18]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[1],"^020 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
-				else
-					sprintf(message_content[1],"^320 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
-							
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[2],"^021 - E11 Blaster Rifle: %d/2 ",ent->client->pers.skill_levels[20]);
-				else
-					sprintf(message_content[2],"^321 - E11 Blaster Rifle: %d/2 ",ent->client->pers.skill_levels[20]);
-							
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"^022 - Disruptor: %d/2         ",ent->client->pers.skill_levels[21]);
-				else
-					sprintf(message_content[3],"^322 - Disruptor: %d/2         ",ent->client->pers.skill_levels[21]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"^023 - Bowcaster: %d/2         ",ent->client->pers.skill_levels[22]);
-				else
-					sprintf(message_content[4],"^323 - Bowcaster: %d/2         ",ent->client->pers.skill_levels[22]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[5],"^024 - Repeater: %d/2          ",ent->client->pers.skill_levels[23]);
-				else
-					sprintf(message_content[5],"^324 - Repeater: %d/2          ",ent->client->pers.skill_levels[23]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[0],"%s^025 - DEMP2: %d/2\n",message_content[0],ent->client->pers.skill_levels[24]);
-				else
-					sprintf(message_content[0],"%s^325 - DEMP2: %d/2\n",message_content[0],ent->client->pers.skill_levels[24]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[1],"%s^026 - Flechette: %d/2\n",message_content[1],ent->client->pers.skill_levels[25]);
-				else
-					sprintf(message_content[1],"%s^326 - Flechette: %d/2\n",message_content[1],ent->client->pers.skill_levels[25]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[2],"%s^027 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.skill_levels[26]);
-				else
-					sprintf(message_content[2],"%s^327 - Rocket Launcher: %d/2\n",message_content[2],ent->client->pers.skill_levels[26]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"%s^028 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.skill_levels[27]);
-				else
-					sprintf(message_content[3],"%s^328 - Concussion Rifle: %d/2\n",message_content[3],ent->client->pers.skill_levels[27]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"%s^029 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.skill_levels[28]);
-				else
-					sprintf(message_content[4],"%s^329 - Bryar Pistol: %d/2\n",message_content[4],ent->client->pers.skill_levels[28]);
-
-				sprintf(message_content[5],"%s^330 - Melee: %d/3\n",message_content[5],ent->client->pers.skill_levels[29]);
-
-				for (i = 0; i < 6; i++)
-				{
-					sprintf(message,"%s%s",message,message_content[i]);
-				}
-
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
-			}
-			else if (Q_stricmp( arg1, "other" ) == 0)
-			{
-				sprintf(message_content[0],"^231 - Max Shield: %d/5       ", ent->client->pers.skill_levels[30]);
-
-				sprintf(message_content[1],"^232 - Shield Strength: %d/4  ", ent->client->pers.skill_levels[31]);
-
-				sprintf(message_content[2],"^133 - Health Strength: %d/4  ", ent->client->pers.skill_levels[32]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[3],"^034 - Drain Shield: %d/1     ", ent->client->pers.skill_levels[33]);
-				else
-					sprintf(message_content[3],"^334 - Drain Shield: %d/1     ", ent->client->pers.skill_levels[33]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[4],"^035 - Jetpack: %d/3          ", ent->client->pers.skill_levels[34]);
-				else
-					sprintf(message_content[4],"^335 - Jetpack: %d/3          ", ent->client->pers.skill_levels[34]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[5],"^036 - Sense Health: %d/3     ", ent->client->pers.skill_levels[35]);
-				else
-					sprintf(message_content[5],"^636 - Sense Health: %d/3     ", ent->client->pers.skill_levels[35]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[6],"^037 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
-				else
-					sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
-				else
-					sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
-				else
-					sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
-
-				if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
-					sprintf(message_content[9],"^055 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
-				else
-					sprintf(message_content[9],"^555 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
-
-				sprintf(message_content[10],"^356 - Improvements: %d/3\n", ent->client->pers.skill_levels[55]);
-
-				if (ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS)
-					sprintf(message_content[0],"%s^3l  ^7- Light Power: ^2yes\n",message_content[0]);
-				else
-					sprintf(message_content[0],"%s^3l  ^7- Light Power: ^1no\n",message_content[0]);
-
-				if (ent->client->pers.hunter_quest_progress == NUMBER_OF_OBJECTIVES)
-					sprintf(message_content[1],"%s^3d  ^1- Dark Power: ^2yes\n",message_content[1]);
-				else
-					sprintf(message_content[1],"%s^3d  ^1- Dark Power: ^1no\n",message_content[1]);
-
-				if (ent->client->pers.eternity_quest_progress == NUMBER_OF_ETERNITY_QUEST_OBJECTIVES)
-					sprintf(message_content[2],"%s^3e  - Eternity Power: ^2yes\n",message_content[2]);
-				else
-					sprintf(message_content[2],"%s^3e  - Eternity Power: ^1no\n",message_content[2]);
-
-				if (ent->client->pers.universe_quest_progress >= 8)
-					sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^2yes\n",message_content[3]);
-				else
-					sprintf(message_content[3],"%s^3u  ^2- Universe Power: ^1no\n",message_content[3]);
-
-				if (ent->client->pers.universe_quest_progress >= 14)
-					sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^2yes\n",message_content[4]);
-				else
-					sprintf(message_content[4],"%s^3!  ^5- Ultimate Power: ^1no\n",message_content[4]);
-
-				if (ent->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES)
-					sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^2yes\n",message_content[5]);
-				else
-					sprintf(message_content[5],"%s^3r  ^4- Resurrection Power: ^1no\n",message_content[5]);
-
-				if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) || 
-					ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 7 && (ent->client->pers.defeated_guardians & (1 << 8) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) || 
-						 ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else if (ent->client->pers.rpg_class == 8)
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
-				else
-					sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^1no\n",message_content[6]);
-
-				if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (ent->client->pers.secrets_found & (1 << 6) && ent->client->pers.rpg_class == 8)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-				else if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || 
-						 ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 ||
-						 ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^1no\n",message_content[7]);
-				else
-					sprintf(message_content[7],"%s^0#  ^0- Unique Skill: no\n",message_content[7]);
-
-				for (i = 0; i < 11; i++)
-				{
-					sprintf(message,"%s%s",message,message_content[i]);
-				}
-
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", message) );
-			}
-			else if (Q_stricmp( arg1, "ammo" ) == 0)
-			{
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^040 - Blaster Pack: %d/3\n",message, ent->client->pers.skill_levels[39]);
-				else
-					sprintf(message,"%s^340 - Blaster Pack: %d/3\n",message, ent->client->pers.skill_levels[39]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^041 - Power Cell: %d/3\n",message, ent->client->pers.skill_levels[40]);
-				else
-					sprintf(message,"%s^341 - Power Cell: %d/3\n",message, ent->client->pers.skill_levels[40]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^042 - Metallic Bolt: %d/3\n",message, ent->client->pers.skill_levels[41]);
-				else
-					sprintf(message,"%s^342 - Metallic Bolt: %d/3\n",message, ent->client->pers.skill_levels[41]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^043 - Rockets: %d/3\n",message, ent->client->pers.skill_levels[42]);
-				else
-					sprintf(message,"%s^343 - Rockets: %d/3\n",message, ent->client->pers.skill_levels[42]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^044 - Thermals: %d/3\n",message, ent->client->pers.skill_levels[43]);
-				else
-					sprintf(message,"%s^344 - Thermals: %d/3\n",message, ent->client->pers.skill_levels[43]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^045 - Trip Mines: %d/3\n",message, ent->client->pers.skill_levels[44]);
-				else
-					sprintf(message,"%s^345 - Trip Mines: %d/3\n",message, ent->client->pers.skill_levels[44]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^046 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
-				else
-					sprintf(message,"%s^346 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
-
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
-			}
-			else if (Q_stricmp( arg1, "items" ) == 0)
-			{
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^047 - Binoculars: %d/1\n",message, ent->client->pers.skill_levels[46]);
-				else
-					sprintf(message,"%s^347 - Binoculars: %d/1\n",message, ent->client->pers.skill_levels[46]);
-					
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^048 - Bacta Canister: %d/1\n",message, ent->client->pers.skill_levels[47]);
-				else
-					sprintf(message,"%s^348 - Bacta Canister: %d/1\n",message, ent->client->pers.skill_levels[47]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^049 - Sentry Gun: %d/1\n",message, ent->client->pers.skill_levels[48]);
-				else
-					sprintf(message,"%s^349 - Sentry Gun: %d/1\n",message, ent->client->pers.skill_levels[48]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^050 - Seeker Drone: %d/1\n",message, ent->client->pers.skill_levels[49]);
-				else
-					sprintf(message,"%s^350 - Seeker Drone: %d/1\n",message, ent->client->pers.skill_levels[49]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^051 - E-Web: %d/1\n",message, ent->client->pers.skill_levels[50]);
-				else
-					sprintf(message,"%s^351 - E-Web: %d/1\n",message, ent->client->pers.skill_levels[50]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^052 - Big Bacta: %d/1\n",message, ent->client->pers.skill_levels[51]);
-				else
-					sprintf(message,"%s^352 - Big Bacta: %d/1\n",message, ent->client->pers.skill_levels[51]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^053 - Force Field: %d/1\n",message, ent->client->pers.skill_levels[52]);
-				else
-					sprintf(message,"%s^353 - Force Field: %d/1\n",message, ent->client->pers.skill_levels[52]);
-
-				if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-					sprintf(message,"%s^054 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
-				else
-					sprintf(message,"%s^354 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
-
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+				zyk_list_player_skills(ent, G_NewString(arg1));
 			}
 			else if (Q_stricmp( arg1, "quests" ) == 0)
 			{
@@ -13104,7 +13119,7 @@ void Cmd_AdminList_f( gentity_t *ent ) {
 		}
 		else if (command_number == ADM_PLAYERS)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/players ^7to see info about the players. Use ^3/players <player name or ID> ^7to see RPG info of a player\n\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"\nUse ^3/players ^7to see info about the players. Use ^3/players <player name or ID> ^7to see RPG info of a player. Use ^3/players <player name or ID> ^7and a third argument (^3force,weapons,other,ammo,items^7) to see skill levels of the player\n\n\"" );
 		}
 	}
 	else
@@ -13668,6 +13683,7 @@ void Cmd_Players_f( gentity_t *ent ) {
 	int i = 0;
 	char arg1[MAX_STRING_CHARS];
 	int client_id = -1;
+	int number_of_args = trap->Argc();
 
 	strcpy(content,"ID - Name - IP - Type\n");
 
@@ -13677,7 +13693,7 @@ void Cmd_Players_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (trap->Argc() == 1)
+	if (number_of_args == 1)
 	{
 		for (i = 0; i < level.maxclients; i++)
 		{
@@ -13724,9 +13740,28 @@ void Cmd_Players_f( gentity_t *ent ) {
 			return;
 		}
 
-		trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n^3RPG Class: ^7%s\n\"", 
-			player_ent->client->pers.netname, player_ent->client->pers.level, player_ent->client->pers.level_up_score, player_ent->client->pers.skillpoints, 
-			player_ent->client->pers.credits, player_ent->client->pers.skill_counter, zyk_rpg_class(player_ent)) );
+		if (number_of_args == 2)
+		{
+			trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n^3RPG Class: ^7%s\n\"", 
+				player_ent->client->pers.netname, player_ent->client->pers.level, player_ent->client->pers.level_up_score, player_ent->client->pers.skillpoints, 
+				player_ent->client->pers.credits, player_ent->client->pers.skill_counter, zyk_rpg_class(player_ent)) );
+		}
+		else
+		{
+			char arg2[MAX_STRING_CHARS];
+
+			trap->Argv( 2, arg2, sizeof( arg2 ) );
+
+			if (Q_stricmp(arg2, "force") == 0 || Q_stricmp(arg2, "weapons") == 0 || Q_stricmp(arg2, "other") == 0 || 
+				Q_stricmp(arg2, "ammo") == 0 || Q_stricmp(arg2, "items") == 0)
+			{ // zyk: show skills of the player
+				zyk_list_player_skills(player_ent, G_NewString(arg2));
+			}
+			else
+			{
+				trap->SendServerCommand( ent-g_entities, "print \"Invalid option.\n\"" );
+			}
+		}
 	}
 }
 
