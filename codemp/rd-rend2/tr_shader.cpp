@@ -239,30 +239,39 @@ static qboolean ParseVector( const char **text, int count, float *v ) {
 
 /*
 ===============
-NameToAFunc
+ParseAlphaTestFunc
 ===============
 */
-static unsigned NameToAFunc( const char *funcname )
+static void ParseAlphaTestFunc( shaderStage_t *stage, const char *funcname )
 {	
+	stage->alphaTestCmp = ATEST_CMP_NONE;
+
 	if ( !Q_stricmp( funcname, "GT0" ) )
 	{
-		return GLS_ATEST_GT_0;
+		stage->alphaTestCmp = ATEST_CMP_GT;
+		stage->alphaTestValue = 0.0f;
 	}
 	else if ( !Q_stricmp( funcname, "LT128" ) )
 	{
-		return GLS_ATEST_LT_128;
+		stage->alphaTestCmp = ATEST_CMP_LT;
+		stage->alphaTestValue = 0.5f;
 	}
 	else if ( !Q_stricmp( funcname, "GE128" ) )
 	{
-		return GLS_ATEST_GE_128;
+		stage->alphaTestCmp = ATEST_CMP_GE;
+		stage->alphaTestValue = 0.5f;
 	}
 	else if ( !Q_stricmp( funcname, "GE192" ) )
 	{
-		return GLS_ATEST_GE_192;
+		stage->alphaTestCmp = ATEST_CMP_GE;
+		stage->alphaTestValue = 0.75f;
 	}
-
-	ri->Printf( PRINT_WARNING, "WARNING: invalid alphaFunc name '%s' in shader '%s'\n", funcname, shader.name );
-	return 0;
+	else
+	{
+		ri->Printf( PRINT_WARNING,
+				"WARNING: invalid alphaFunc name '%s' in shader '%s'\n",
+				funcname, shader.name );
+	}
 }
 
 
@@ -721,7 +730,7 @@ ParseStage
 static qboolean ParseStage( shaderStage_t *stage, const char **text )
 {
 	char *token;
-	unsigned depthMaskBits = GLS_DEPTHMASK_TRUE, blendSrcBits = 0, blendDstBits = 0, atestBits = 0, depthFuncBits = 0;
+	unsigned depthMaskBits = GLS_DEPTHMASK_TRUE, blendSrcBits = 0, blendDstBits = 0, depthFuncBits = 0;
 	qboolean depthMaskExplicit = qfalse;
 
 	stage->active = qtrue;
@@ -967,7 +976,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
-			atestBits = NameToAFunc( token );
+			ParseAlphaTestFunc( stage, token );
 		}
 		//
 		// depthFunc <func>
@@ -1568,7 +1577,6 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 	//
 	stage->stateBits = depthMaskBits | 
 		               blendSrcBits | blendDstBits | 
-					   atestBits | 
 					   depthFuncBits;
 
 	return qtrue;
@@ -2534,6 +2542,19 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 
 	if (diffuse->glow)
 		defs |= LIGHTDEF_USE_GLOW_BUFFER;
+
+	switch ( diffuse->alphaTestCmp )
+	{
+		case ATEST_CMP_LT:
+			defs |= LIGHTDEF_USE_ATEST_LT;
+			break;
+		case ATEST_CMP_GT:
+			defs |= LIGHTDEF_USE_ATEST_GT;
+			break;
+		case ATEST_CMP_GE:
+			defs |= LIGHTDEF_USE_ATEST_GE;
+			break;
+	}
 
 	//ri->Printf(PRINT_ALL, ".\n");
 

@@ -423,20 +423,40 @@ static void ProjectDlightTexture( void ) {
 		}
 
 		dl = &backEnd.refdef.dlights[l];
+
+		GL_Bind( tr.dlightImage );
+
+		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
+		// where they aren't rendered
+		uint32_t shaderCaps = 0;
+		if ( dl->additive ) {
+			GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
+			shaderCaps |= DLIGHTDEF_USE_ATEST_GT;
+		}
+		else {
+			GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
+			shaderCaps |= DLIGHTDEF_USE_ATEST_GT;
+		}
+
+		if ( deformGen != DGEN_NONE )
+		{
+			shaderCaps |= DLIGHTDEF_USE_DEFORM_VERTEXES;
+		}
+
+		backEnd.pc.c_dlightDraws++;
+
+		sp = &tr.dlightShader[shaderCaps];
+		GLSL_BindProgram(sp);
+
 		VectorCopy( dl->transformed, origin );
 		radius = dl->radius;
 		scale = 1.0f / radius;
 
-		sp = &tr.dlightShader[deformGen == DGEN_NONE ? 0 : 1];
-
-		backEnd.pc.c_dlightDraws++;
-
-		GLSL_BindProgram(sp);
+		vec4_t color = {dl->color[0], dl->color[1], dl->color[2], 1.0f};
+		vec4_t dlightInfo = {origin[0], origin[1], origin[2], scale};
 
 		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-
 		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
-		
 		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
 		if (deformType != DEFORM_NONE)
 		{
@@ -445,28 +465,8 @@ static void ProjectDlightTexture( void ) {
 			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
 		}
 
-		vector[0] = dl->color[0];
-		vector[1] = dl->color[1];
-		vector[2] = dl->color[2];
-		vector[3] = 1.0f;
-		GLSL_SetUniformVec4(sp, UNIFORM_COLOR, vector);
-
-		vector[0] = origin[0];
-		vector[1] = origin[1];
-		vector[2] = origin[2];
-		vector[3] = scale;
-		GLSL_SetUniformVec4(sp, UNIFORM_DLIGHTINFO, vector);
-	  
-		GL_Bind( tr.dlightImage );
-
-		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
-		// where they aren't rendered
-		if ( dl->additive ) {
-			GL_State( GLS_ATEST_GT_0 | GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
-		}
-		else {
-			GL_State( GLS_ATEST_GT_0 | GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
-		}
+		GLSL_SetUniformVec4(sp, UNIFORM_COLOR, color);
+		GLSL_SetUniformVec4(sp, UNIFORM_DLIGHTINFO, dlightInfo);
 
 		if (tess.multiDrawPrimitives)
 		{
@@ -1214,6 +1214,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		colorGen_t forceRGBGen = CGEN_BAD;
 		alphaGen_t forceAlphaGen = AGEN_IDENTITY;
 		int index = 0;
+		bool useAlphaTestGE192 = false;
 
 		if ( !pStage )
 		{
@@ -1224,6 +1225,37 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			continue;
 		}
+
+		stateBits = pStage->stateBits;
+
+		if (backEnd.currentEntity)
+		{
+			assert(backEnd.currentEntity->e.renderfx >= 0);
+
+			if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
+			{
+				// we want to be able to rip a hole in the thing being disintegrated, and by doing the depth-testing it avoids some kinds of artefacts, but will probably introduce others?
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE;
+				useAlphaTestGE192 = true;
+			}
+
+			if ( backEnd.currentEntity->e.renderfx & RF_RGB_TINT )
+			{//want to use RGBGen from ent
+				forceRGBGen = CGEN_ENTITY;
+			}
+
+			if ( backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA )
+			{
+				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+				if ( backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH )
+				{ //depth write, so faces through the model will be stomped over by nearer ones. this works because
+					//we draw RF_FORCE_ENT_ALPHA stuff after everything else, including standard alpha surfs.
+					stateBits |= GLS_DEPTHMASK_TRUE;
+				}
+			}
+		}
+
+		GL_State( stateBits );
 
 		if (backEnd.depthFill)
 		{
@@ -1246,9 +1278,28 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					}
 				}
 
-				if (pStage->stateBits & GLS_ATEST_BITS)
+				if ( !useAlphaTestGE192 )
 				{
-					index |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
+					if (pStage->alphaTestCmp != ATEST_CMP_NONE)
+					{
+						index |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
+						switch ( pStage->alphaTestCmp )
+						{
+							case ATEST_CMP_LT:
+								index |= LIGHTDEF_USE_ATEST_LT;
+								break;
+							case ATEST_CMP_GT:
+								index |= LIGHTDEF_USE_ATEST_GT;
+								break;
+							case ATEST_CMP_GE:
+								index |= LIGHTDEF_USE_ATEST_GE;
+								break;
+						}
+					}
+				}
+				else
+				{
+					index |= LIGHTDEF_USE_ATEST_GE;
 				}
 
 				sp = &pStage->glslShaderGroup[index];
@@ -1272,9 +1323,28 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 					index |= GENERICDEF_USE_SKELETAL_ANIMATION;
 				}
 
-				if (pStage->stateBits & GLS_ATEST_BITS)
+				if ( !useAlphaTestGE192 )
 				{
-					index |= GENERICDEF_USE_TCGEN_AND_TCMOD;
+					if (pStage->alphaTestCmp != ATEST_CMP_NONE)
+					{
+						index |= GENERICDEF_USE_TCGEN_AND_TCMOD;
+						switch ( pStage->alphaTestCmp )
+						{
+							case ATEST_CMP_LT:
+								index |= GENERICDEF_USE_ATEST_LT;
+								break;
+							case ATEST_CMP_GT:
+								index |= GENERICDEF_USE_ATEST_GT;
+								break;
+							case ATEST_CMP_GE:
+								index |= GENERICDEF_USE_ATEST_GE;
+								break;
+						}
+					}
+				}
+				else
+				{
+					index |= GENERICDEF_USE_ATEST_GE;
 				}
 
 				sp = &tr.genericShader[index];
@@ -1284,29 +1354,58 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		{
 			index = pStage->glslShaderIndex;
 
-			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
-			{
-				index |= LIGHTDEF_ENTITY;
-
-				if (glState.vertexAnimation)
-				{
-					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
-				}
-
-				if (glState.skeletalAnimation)
-				{
-					index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
-				} 
-			}
-
-			if (r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) && (index & LIGHTDEF_LIGHTTYPE_MASK))
-			{
-				index |= LIGHTDEF_USE_SHADOWMAP;
-			}
-
-			if (r_lightmap->integer && index & LIGHTDEF_USE_LIGHTMAP)
+			if (r_lightmap->integer && (index & LIGHTDEF_USE_LIGHTMAP))
 			{
 				index = LIGHTDEF_USE_LIGHTMAP;
+			}
+			else
+			{
+				if (backEnd.currentEntity &&
+						backEnd.currentEntity != &tr.worldEntity)
+				{
+					index |= LIGHTDEF_ENTITY;
+
+					if (glState.vertexAnimation)
+					{
+						index |= LIGHTDEF_USE_VERTEX_ANIMATION;
+					}
+
+					if (glState.skeletalAnimation)
+					{
+						index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
+					} 
+				}
+
+				if (r_sunlightMode->integer &&
+						(backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
+						(index & LIGHTDEF_LIGHTTYPE_MASK))
+				{
+					index |= LIGHTDEF_USE_SHADOWMAP;
+				}
+
+				if ( !useAlphaTestGE192 )
+				{
+					if (pStage->alphaTestCmp != ATEST_CMP_NONE)
+					{
+						index |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
+						switch ( pStage->alphaTestCmp )
+						{
+							case ATEST_CMP_LT:
+								index |= LIGHTDEF_USE_ATEST_LT;
+								break;
+							case ATEST_CMP_GT:
+								index |= LIGHTDEF_USE_ATEST_GT;
+								break;
+							case ATEST_CMP_GE:
+								index |= LIGHTDEF_USE_ATEST_GE;
+								break;
+						}
+					}
+				}
+				else
+				{
+					index |= LIGHTDEF_USE_ATEST_GE;
+				}
 			}
 
 			sp = &pStage->glslShaderGroup[index];
@@ -1347,35 +1446,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			GLSL_SetUniformFloat(sp, UNIFORM_FOGEYET, eyeT);
 		}
 
-		stateBits = pStage->stateBits;
-
-		if (backEnd.currentEntity)
-		{
-			assert(backEnd.currentEntity->e.renderfx >= 0);
-
-			if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
-			{
-				// we want to be able to rip a hole in the thing being disintegrated, and by doing the depth-testing it avoids some kinds of artefacts, but will probably introduce others?
-				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE | GLS_ATEST_GE_192;
-			}
-
-			if ( backEnd.currentEntity->e.renderfx & RF_RGB_TINT )
-			{//want to use RGBGen from ent
-				forceRGBGen = CGEN_ENTITY;
-			}
-
-			if ( backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA )
-			{
-				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
-				if ( backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH )
-				{ //depth write, so faces through the model will be stomped over by nearer ones. this works because
-					//we draw RF_FORCE_ENT_ALPHA stuff after everything else, including standard alpha surfs.
-					stateBits |= GLS_DEPTHMASK_TRUE;
-				}
-			}
-		}
-
-		GL_State( stateBits );
 
 		{
 			vec4_t baseColor;
@@ -1457,6 +1527,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		GLSL_SetUniformVec4(sp, UNIFORM_NORMALSCALE, pStage->normalScale);
 		GLSL_SetUniformVec4(sp, UNIFORM_SPECULARSCALE, pStage->specularScale);
 
+		float alphaTestValue = useAlphaTestGE192 ? 0.75f : pStage->alphaTestValue;
+		GLSL_SetUniformFloat(sp, UNIFORM_ALPHA_TEST_VALUE, alphaTestValue);
+
 		//GLSL_SetUniformFloat(sp, UNIFORM_MAPLIGHTSCALE, backEnd.refdef.mapLightScale);
 
 		//
@@ -1464,7 +1537,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		//
 		if ( backEnd.depthFill )
 		{
-			if (!(pStage->stateBits & GLS_ATEST_BITS))
+			if (pStage->alphaTestCmp == ATEST_CMP_NONE)
 				GL_BindToTMU( tr.whiteImage, 0 );
 			else if ( pStage->bundle[TB_COLORMAP].image[0] != 0 )
 				R_BindAnimatedImageToTMU( &pStage->bundle[TB_COLORMAP], TB_COLORMAP );

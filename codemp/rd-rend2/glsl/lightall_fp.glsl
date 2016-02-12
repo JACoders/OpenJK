@@ -50,6 +50,10 @@ uniform vec4 u_CubeMapInfo;
 #endif
 #endif
 
+#if defined(USE_ATEST)
+uniform float u_AlphaTestValue;
+#endif
+
 
 in vec4 var_TexCoords;
 in vec4 var_Color;
@@ -290,6 +294,16 @@ void main()
 #endif
 
 	vec4 diffuse = texture(u_DiffuseMap, texCoords);
+#if defined(USE_ATEST)
+#  if USE_ATEST == ATEST_CMP_LT
+	if (diffuse.a >= u_AlphaTestValue)
+#  elif USE_ATEST == ATEST_CMP_GT
+	if (diffuse.a <= u_AlphaTestValue)
+#  elif USE_ATEST == ATEST_CMP_GE
+	if (diffuse.a < u_AlphaTestValue)
+#  endif
+		discard;
+#endif
 
 #if defined(USE_LIGHT) && !defined(USE_FAST_LIGHT)
   #if defined(USE_LIGHTMAP)
