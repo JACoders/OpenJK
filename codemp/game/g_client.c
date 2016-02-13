@@ -3894,6 +3894,16 @@ void ClientSpawn(gentity_t *ent) {
 					level.screen_message_timer[ent->s.number] = level.time + zyk_screen_message_timer.integer;
 				}
 			}
+
+			// zyk: if player is paralyzed by an admin, keeps him that way
+			if (ent->client->pers.player_statuses & (1 << 6))
+			{
+				ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+				ent->client->ps.forceHandExtendTime = level.time + 500;
+				ent->client->ps.velocity[2] += 150;
+				ent->client->ps.forceDodgeAnim = 0;
+				ent->client->ps.quickerGetup = qtrue;
+			}
 		}
 	} else {
 		// move players to intermission
