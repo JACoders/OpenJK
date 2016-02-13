@@ -2376,7 +2376,9 @@ static void ComputeVertexAttribs(void)
 		{
 			shader.vertexAttribs |= ATTR_NORMAL;
 
-			if ((pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) && !(r_normalMapping->integer == 0 && r_specularMapping->integer == 0))
+			if ((pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) &&
+					(r_normalMapping->integer != 0 ||
+					 r_specularMapping->integer != 0))
 			{
 				shader.vertexAttribs |= ATTR_TANGENT;
 			}
@@ -2408,7 +2410,8 @@ static void ComputeVertexAttribs(void)
 				case TCGEN_LIGHTMAP1:
 				case TCGEN_LIGHTMAP2:
 				case TCGEN_LIGHTMAP3:
-					shader.vertexAttribs |= ATTR_TEXCOORD1;
+					shader.vertexAttribs |= (ATTR_TEXCOORD1 | ATTR_TEXCOORD2 |
+											 ATTR_TEXCOORD3 | ATTR_TEXCOORD4);
 					break;
 				case TCGEN_ENVIRONMENT_MAPPED:
 					shader.vertexAttribs |= ATTR_NORMAL;

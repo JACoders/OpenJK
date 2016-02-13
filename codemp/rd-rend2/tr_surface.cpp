@@ -470,7 +470,10 @@ static qboolean RB_SurfaceVbo(
 		return qfalse;
 	}
 
-	if (shaderCheck && (ShaderRequiresCPUDeforms(tess.shader) || tess.shader->isSky || tess.shader->isPortal))
+	if (shaderCheck &&
+			(ShaderRequiresCPUDeforms(tess.shader) ||
+			 tess.shader->isSky ||
+			 tess.shader->isPortal))
 	{
 		return qfalse;
 	}
