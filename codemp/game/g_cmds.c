@@ -8357,7 +8357,7 @@ void Cmd_DownSkill_f( gentity_t *ent ) {
 	do_downgrade_skill(ent, downgrade_value);
 }
 
-void zyk_list_player_skills(gentity_t *ent, char *arg1)
+void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 {
 	char message[1024];
 	char message_content[12][100];
@@ -8467,7 +8467,7 @@ void zyk_list_player_skills(gentity_t *ent, char *arg1)
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
 
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+		trap->SendServerCommand( target_ent-g_entities, va("print \"%s\"", message) );
 	}
 	else if (Q_stricmp( arg1, "weapons" ) == 0)
 	{
@@ -8530,7 +8530,7 @@ void zyk_list_player_skills(gentity_t *ent, char *arg1)
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
 
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+		trap->SendServerCommand( target_ent-g_entities, va("print \"%s\"", message) );
 	}
 	else if (Q_stricmp( arg1, "other" ) == 0)
 	{
@@ -8663,7 +8663,7 @@ void zyk_list_player_skills(gentity_t *ent, char *arg1)
 			sprintf(message,"%s%s",message,message_content[i]);
 		}
 
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"", message) );
+		trap->SendServerCommand( target_ent-g_entities, va("print \"%s\n\"", message) );
 	}
 	else if (Q_stricmp( arg1, "ammo" ) == 0)
 	{
@@ -8702,7 +8702,7 @@ void zyk_list_player_skills(gentity_t *ent, char *arg1)
 		else
 			sprintf(message,"%s^346 - Det Packs: %d/3\n",message, ent->client->pers.skill_levels[45]);
 
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+		trap->SendServerCommand( target_ent-g_entities, va("print \"%s\"", message) );
 	}
 	else if (Q_stricmp( arg1, "items" ) == 0)
 	{
@@ -8746,7 +8746,7 @@ void zyk_list_player_skills(gentity_t *ent, char *arg1)
 		else
 			sprintf(message,"%s^354 - Cloak Item: %d/1\n",message, ent->client->pers.skill_levels[53]);
 
-		trap->SendServerCommand( ent-g_entities, va("print \"%s\"", message) );
+		trap->SendServerCommand( target_ent-g_entities, va("print \"%s\"", message) );
 	}
 }
 
@@ -8783,7 +8783,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			else if (Q_stricmp( arg1, "force" ) == 0 || Q_stricmp( arg1, "weapons" ) == 0 || Q_stricmp( arg1, "other" ) == 0 || 
 					 Q_stricmp( arg1, "ammo" ) == 0 || Q_stricmp( arg1, "items" ) == 0)
 			{
-				zyk_list_player_skills(ent, G_NewString(arg1));
+				zyk_list_player_skills(ent, ent, G_NewString(arg1));
 			}
 			else if (Q_stricmp( arg1, "quests" ) == 0)
 			{
@@ -13749,7 +13749,7 @@ void Cmd_Players_f( gentity_t *ent ) {
 			if (Q_stricmp(arg2, "force") == 0 || Q_stricmp(arg2, "weapons") == 0 || Q_stricmp(arg2, "other") == 0 || 
 				Q_stricmp(arg2, "ammo") == 0 || Q_stricmp(arg2, "items") == 0)
 			{ // zyk: show skills of the player
-				zyk_list_player_skills(player_ent, G_NewString(arg2));
+				zyk_list_player_skills(player_ent, ent, G_NewString(arg2));
 			}
 			else
 			{
