@@ -530,19 +530,20 @@ static void InitOpenGL( void )
 		// initialize extensions
 		GLimp_InitExtensions();
 
-		// set default state
-		GL_SetDefaultState();
+		// Create the default VAO
 		GLuint vao;
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
+		tr.globalVao = vao;
+
+		// set default state
+		GL_SetDefaultState();
+
 		R_Splash();	//get something on screen asap
 	}
 	else
 	{
 		// set default state
-		GLuint vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
 		GL_SetDefaultState();
 	}
 }
@@ -1735,6 +1736,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 		if ( destroyWindow && restarting )
 		{
+			glDeleteVertexArrays(1, &tr.globalVao);
 			SaveGhoul2InfoArray();
 		}
 	}
