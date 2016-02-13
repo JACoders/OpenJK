@@ -1234,7 +1234,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 			if ( backEnd.currentEntity->e.renderfx & RF_DISINTEGRATE1 )
 			{
-				// we want to be able to rip a hole in the thing being disintegrated, and by doing the depth-testing it avoids some kinds of artefacts, but will probably introduce others?
+				// we want to be able to rip a hole in the thing being
+				// disintegrated, and by doing the depth-testing it avoids some
+				// kinds of artefacts, but will probably introduce others?
 				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHMASK_TRUE;
 				useAlphaTestGE192 = true;
 			}
@@ -1248,8 +1250,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			{
 				stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 				if ( backEnd.currentEntity->e.renderfx & RF_ALPHA_DEPTH )
-				{ //depth write, so faces through the model will be stomped over by nearer ones. this works because
-					//we draw RF_FORCE_ENT_ALPHA stuff after everything else, including standard alpha surfs.
+				{
+					// depth write, so faces through the model will be stomped
+					// over by nearer ones. this works because we draw
+					// RF_FORCE_ENT_ALPHA stuff after everything else, including
+					// standard alpha surfs.
 					stateBits |= GLS_DEPTHMASK_TRUE;
 				}
 			}
@@ -1547,7 +1552,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			int i;
 			vec4_t enableTextures;
 
-			if (r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT) && (pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
+			if (r_sunlightMode->integer &&
+					(backEnd.viewParms.flags & VPF_USESUNLIGHT) &&
+					(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK))
 			{
 				GL_BindToTMU(tr.screenShadowImage, TB_SHADOWMAP);
 				GLSL_SetUniformVec3(sp, UNIFORM_PRIMARYLIGHTAMBIENT, backEnd.refdef.sunAmbCol);
@@ -1556,7 +1563,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			}
 
 			VectorSet4(enableTextures, 0, 0, 0, 0);
-			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) && pStage->bundle[TB_LIGHTMAP].image[0])
+			if ((r_lightmap->integer == 1 || r_lightmap->integer == 2) &&
+					pStage->bundle[TB_LIGHTMAP].image[0])
 			{
 				for (i = 0; i < NUM_TEXTURE_BUNDLES; i++)
 				{
@@ -1644,7 +1652,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		//
 		// testing cube map
 		//
-		if (!(tr.viewParms.flags & VPF_NOCUBEMAPS) && input->cubemapIndex && r_cubeMapping->integer)
+		if (!(tr.viewParms.flags & VPF_NOCUBEMAPS) &&
+				input->cubemapIndex &&
+				r_cubeMapping->integer)
 		{
 			vec4_t vec;
 
