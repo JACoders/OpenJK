@@ -4351,19 +4351,9 @@ void remove_credits(gentity_t *ent, int credits)
 		ent->client->pers.credits = 0;
 }
 
-// zyk: loads settings valid both to Admin-Only Mode and to RPG Mode
-void zyk_load_common_settings(gentity_t *ent)
+// zyk: gives or removes jetpack from player
+void zyk_jetpack(gentity_t *ent)
 {
-	// zyk: loading the starting weapon based in player settings
-	if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
-	{
-		ent->client->ps.weapon = WP_SABER;
-	}
-	else
-	{
-		ent->client->ps.weapon = WP_MELEE;
-	}
-		
 	// zyk: player starts with jetpack if it is enabled in player settings, is not in Siege Mode, and does not have all force powers through /give command
 	if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
 		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && !(ent->client->pers.player_statuses & (1 << 12)) &&
@@ -4379,6 +4369,22 @@ void zyk_load_common_settings(gentity_t *ent)
 			Jetpack_Off(ent);
 		}
 	}
+}
+
+// zyk: loads settings valid both to Admin-Only Mode and to RPG Mode
+void zyk_load_common_settings(gentity_t *ent)
+{
+	// zyk: loading the starting weapon based in player settings
+	if (ent->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER) && !(ent->client->pers.player_settings & (1 << 11)))
+	{
+		ent->client->ps.weapon = WP_SABER;
+	}
+	else
+	{
+		ent->client->ps.weapon = WP_MELEE;
+	}
+		
+	zyk_jetpack(ent);
 
 	// zyk: loading the saber style based in the player settings
 	if (ent->client->saber[0].model[0] && ent->client->saber[1].model[0])
@@ -11204,19 +11210,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 		}
 		else if (value == 12)
 		{
-			// zyk: player starts with jetpack if it is enabled in player settings
-			if (!(ent->client->pers.player_settings & (1 << 12)))
-			{
-				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
-			}
-			else
-			{
-				ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK);
-				if (ent->client->jetPackOn)
-				{
-					Jetpack_Off(ent);
-				}
-			}
+			zyk_jetpack(ent);
 			trap->SendServerCommand( ent-g_entities, va("print \"Jetpack %s\n\"", new_status) );
 		}
 		else if (value == 13)
