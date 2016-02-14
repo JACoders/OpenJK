@@ -730,7 +730,10 @@ ParseStage
 static qboolean ParseStage( shaderStage_t *stage, const char **text )
 {
 	char *token;
-	unsigned depthMaskBits = GLS_DEPTHMASK_TRUE, blendSrcBits = 0, blendDstBits = 0, depthFuncBits = 0;
+	unsigned depthMaskBits = GLS_DEPTHMASK_TRUE;
+	unsigned blendSrcBits = 0;
+	unsigned blendDstBits = 0;
+	unsigned depthFuncBits = 0;
 	qboolean depthMaskExplicit = qfalse;
 
 	stage->active = qtrue;
@@ -3267,84 +3270,6 @@ static shader_t *FinishShader( void ) {
 		shader.sort = SS_DECAL;
 	}
 
-#if 0
-	int firstLightmapStage;
-	shaderStage_t *lmStage;
-
-	firstLightmapStage = FindFirstLightmapStage (stages, MAX_SHADER_STAGES);
-	lmStage = &stages[firstLightmapStage];
-
-	if ( firstLightmapStage != MAX_SHADER_STAGES )
-	{
-		if ( shader.lightmapIndex[0] == LIGHTMAP_BY_VERTEX )
-		{
-			if ( firstLightmapStage == 0 )
-			{
-				/*// Shift all stages above it down 1.
-				memmove (lmStage,
-					lmStage + 1,
-					sizeof (shaderStage_t) * (MAX_SHADER_STAGES - firstLightmapStage - 1));
-				memset (stages + MAX_SHADER_STAGES - 1, 0, sizeof (shaderStage_t));
-
-				// Set state bits back to default on the over-written stage.
-				 lmStage->stateBits = GLS_DEFAULT;*/
-				ri->Printf (PRINT_ALL, "Shader '%s' has first stage as lightmap by vertex.\n", shader.name);
-			}
-
-			/*lmStage->rgbGen = CGEN_EXACT_VERTEX_LIT;
-			lmStage->alphaGen = AGEN_SKIP;
-
-			firstLightmapStage = MAX_SHADER_STAGES;*/
-		}
-	}
-
-	if ( firstLightmapStage != MAX_SHADER_STAGES )
-	{
-		int numStyles = GetNumStylesInShader (&shader);
-
-		ri->Printf (PRINT_ALL, "Shader '%s' has %d stages with light styles.\n", shader.name, numStyles);
-		/*if ( numStyles > 0 )
-		{
-			// Move back all stages, after the first lightmap stage, by 'numStyles' elements.
-			memmove (lmStage + numStyles,
-				lmStage + 1,
-				sizeof (shaderStage_t) * (MAX_SHADER_STAGES - firstLightmapStage - numStyles - 1));
-
-			// Insert new shader stages after first lightmap stage
-			for ( int i = 1; i <= numStyles; i++ )
-			{
-				shaderStage_t *stage = lmStage + i;
-
-				// Duplicate first lightmap stage into this stage.
-				*stage = *lmStage;
-
-				if ( shader.lightmapIndex[i] == LIGHTMAP_BY_VERTEX )
-				{
-					stage->bundle[0].image[0] = tr.whiteImage;
-				}
-				else if ( shader.lightmapIndex[i] < 0 )
-				{
-					Com_Error (ERR_DROP, "FinishShader: light style with no lightmap or vertex style in shader %s.\n", shader.name);
-				}
-				else
-				{
-					stage->bundle[0].image[0] = tr.lightmaps[shader.lightmapIndex[i]];
-					stage->bundle[0].tcGen = (texCoordGen_t)(TCGEN_LIGHTMAP + i);
-				}
-
-				stage->rgbGen = CGEN_LIGHTMAPSTYLE;
-				stage->stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
-				stage->stateBits |= GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE;
-			}
-		}
-
-		// Set all the light styles for the lightmap stages.
-		for ( int i = 0; i <= numStyles; i++ )
-		{
-			lmStage[i].lightmapStyle = shader.styles[i];
-		}*/
-	}
-#else
 	int lmStage;
 	for(lmStage = 0; lmStage < MAX_SHADER_STAGES; lmStage++)
 	{
@@ -3420,7 +3345,6 @@ static shader_t *FinishShader( void ) {
 			stages[lmStage+i].lightmapStyle = shader.styles[i];
 		}
 	}
-#endif
 
 	//
 	// set appropriate stage information
@@ -3432,12 +3356,20 @@ static shader_t *FinishShader( void ) {
 			break;
 		}
 
-    // check for a missing texture
+		// check for a missing texture
 		if ( !pStage->bundle[0].image[0] ) {
-			ri->Printf( PRINT_WARNING, "Shader %s has a stage with no image\n", shader.name );
+			ri->Printf( PRINT_WARNING, "Shader %s, stage %d has no image. This stage will be ignored\n", shader.name, stage + 1 );
 			pStage->active = qfalse;
 			stage++;
 			continue;
+		}
+
+		//
+		// add additional state bits
+		//
+		if ( shader.polygonOffset )
+		{
+			pStage->stateBits |= GLS_POLYGON_OFFSET_FILL;
 		}
 
 		//

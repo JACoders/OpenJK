@@ -1760,11 +1760,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input )
 */
 void RB_StageIteratorGeneric( void )
 {
-	shaderCommands_t *input;
-	uint32_t vertexAttribs = 0;
-
-	input = &tess;
-	
+	shaderCommands_t *input = &tess;
 	if (!input->numVertexes || !input->numIndexes)
 	{
 		return;
@@ -1780,8 +1776,10 @@ void RB_StageIteratorGeneric( void )
 		GLimp_LogComment( va("--- RB_StageIteratorGeneric( %s ) ---\n", tess.shader->name) );
 	}
 
-	vertexAttribs = RB_CalcShaderVertexAttribs( input->shader );
-
+	//
+	// update vertex buffer data
+	// 
+	uint32_t vertexAttribs = RB_CalcShaderVertexAttribs( input->shader );
 	if (tess.useInternalVBO)
 	{
 		RB_DeformTessGeometry();
@@ -1797,8 +1795,6 @@ void RB_StageIteratorGeneric( void )
 	//
 	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW))
 	{
-		//GL_Cull( CT_TWO_SIDED );
-		
 		if (input->shader->cullType == CT_TWO_SIDED)
 			GL_Cull( CT_TWO_SIDED );
 		else if (input->shader->cullType == CT_FRONT_SIDED)
@@ -1810,109 +1806,76 @@ void RB_StageIteratorGeneric( void )
 	else
 		GL_Cull( input->shader->cullType );
 
-	// set polygon offset if necessary
-	if ( input->shader->polygonOffset )
-	{
-		qglEnable( GL_POLYGON_OFFSET_FILL );
-		qglPolygonOffset( r_offsetFactor->value, r_offsetUnits->value );
-	}
-
 	//
-	// Set vertex attribs and pointers
+	// set vertex attribs and pointers
 	//
-
 	VertexArraysProperties vertexArrays;
 	GLSL_VertexAttribsState(vertexAttribs, &vertexArrays);
 
-	//
-	// render depth if in depthfill mode
-	//
 	if (backEnd.depthFill)
 	{
+		//
+		// render depth if in depthfill mode
+		//
 		RB_IterateStagesGeneric( input, &vertexArrays );
-
-		//
-		// reset polygon offset
-		//
-		if ( input->shader->polygonOffset )
-		{
-			qglDisable( GL_POLYGON_OFFSET_FILL );
-		}
-
-		return;
 	}
-
-	//
-	// render shadowmap if in shadowmap mode
-	//
-	if (backEnd.viewParms.flags & VPF_SHADOWMAP)
+	else if (backEnd.viewParms.flags & VPF_SHADOWMAP)
 	{
+		//
+		// render shadowmap if in shadowmap mode
+		//
 		if ( input->shader->sort == SS_OPAQUE )
 		{
 			RB_RenderShadowmap( input );
 		}
-		//
-		// reset polygon offset
-		//
-		if ( input->shader->polygonOffset )
-		{
-			qglDisable( GL_POLYGON_OFFSET_FILL );
-		}
-
-		return;
 	}
-
-	//
-	//
-	// call shader function
-	//
-	RB_IterateStagesGeneric( input, &vertexArrays );
-
-	//
-	// pshadows!
-	//
-	if (r_shadows->integer == 4 && tess.pshadowBits &&
-		tess.shader->sort <= SS_OPAQUE && !(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY))) {
-		ProjectPshadowVBOGLSL();
-	}
-
-
-	// 
-	// now do any dynamic lighting needed
-	//
-	if ( tess.dlightBits &&
-			tess.shader->sort <= SS_OPAQUE &&
-			!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY) ) )
+	else
 	{
-		if (tess.shader->numUnfoggedPasses == 1 &&
-				tess.xstages[0]->glslShaderGroup == tr.lightallShader &&
-				(tess.xstages[0]->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) &&
-				r_dlightMode->integer)
-		{
-			ForwardDlight();
-		}
-		else
-		{
-			ProjectDlightTexture();
-		}
-	}
+		//
+		// call shader function
+		//
+		RB_IterateStagesGeneric( input, &vertexArrays );
 
-	//
-	// now do fog
-	//
-	if ( tess.fogNum && tess.shader->fogPass ) {
-		RB_FogPass();
+		//
+		// pshadows!
+		//
+		if (r_shadows->integer == 4 &&
+				tess.pshadowBits &&
+				tess.shader->sort <= SS_OPAQUE &&
+				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY)))
+		{
+			ProjectPshadowVBOGLSL();
+		}
+
+		// 
+		// now do any dynamic lighting needed
+		//
+		if ( tess.dlightBits &&
+				tess.shader->sort <= SS_OPAQUE &&
+				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY) ) )
+		{
+			if (tess.shader->numUnfoggedPasses == 1 &&
+					tess.xstages[0]->glslShaderGroup == tr.lightallShader &&
+					(tess.xstages[0]->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) &&
+					r_dlightMode->integer)
+			{
+				ForwardDlight();
+			}
+			else
+			{
+				ProjectDlightTexture();
+			}
+		}
+
+		//
+		// now do fog
+		//
+		if ( tess.fogNum && tess.shader->fogPass ) {
+			RB_FogPass();
+		}
 	}
 
 	RB_CommitInternalBufferData();
-
-	//
-	// reset polygon offset
-	//
-	if ( input->shader->polygonOffset )
-	{
-		qglDisable( GL_POLYGON_OFFSET_FILL );
-	}
 }
 
 void RB_BinTriangleCounts( void )

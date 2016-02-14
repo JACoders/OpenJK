@@ -896,6 +896,8 @@ enum
 
 	GLS_STENCILTEST_ENABLE				= (1 << 27),
 
+	GLS_POLYGON_OFFSET_FILL				= (1 << 28),
+
 	GLS_DEFAULT							= GLS_DEPTHMASK_TRUE
 };
 
@@ -2414,6 +2416,7 @@ void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
 //void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
+void	GL_PolygonOffset( qboolean enabled );
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
@@ -2564,6 +2567,11 @@ struct shaderCommands_s
 	int			numPasses;
 	void		(*currentStageIteratorFunc)( void );
 	shaderStage_t	**xstages;
+};
+
+struct drawState_t
+{
+	uint32_t stateBits;
 };
 
 #ifdef _WIN32

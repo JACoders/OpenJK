@@ -110,7 +110,6 @@ void GL_BindToTMU( image_t *image, int tmu )
 	}
 }
 
-
 /*
 ** GL_Cull
 */
@@ -312,39 +311,18 @@ void GL_State( uint32_t stateBits )
 		}
 	}
 
-	//
-	// alpha test
-	//
-#if 0
-	if ( diff & GLS_ATEST_BITS )
+	if ( diff & GLS_POLYGON_OFFSET_FILL )
 	{
-		switch ( stateBits & GLS_ATEST_BITS )
+		if ( stateBits & GLS_POLYGON_OFFSET_FILL )
 		{
-		case 0:
-			qglDisable( GL_ALPHA_TEST );
-			break;
-		case GLS_ATEST_GT_0:
-			qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_GREATER, 0.0f );
-			break;
-		case GLS_ATEST_LT_128:
-			qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_LESS, 0.5f );
-			break;
-		case GLS_ATEST_GE_128:
-			qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_GEQUAL, 0.5f );
-			break;
-		case GLS_ATEST_GE_192:
-			qglEnable( GL_ALPHA_TEST );
-			qglAlphaFunc( GL_GEQUAL, 0.75f );
-			break;
-		default:
-			assert( 0 );
-			break;
+			qglEnable( GL_POLYGON_OFFSET_FILL );
+			qglPolygonOffset( r_offsetFactor->value, r_offsetUnits->value );
+		}
+		else
+		{
+			qglDisable( GL_POLYGON_OFFSET_FILL );
 		}
 	}
-#endif
 
 	glState.glStateBits = stateBits;
 }
