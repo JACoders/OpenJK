@@ -801,7 +801,7 @@ typedef struct shader_s {
 	struct	shader_s	*next;
 } shader_t;
 
-static QINLINE qboolean ShaderRequiresCPUDeforms(const shader_t * shader)
+QINLINE qboolean ShaderRequiresCPUDeforms(const shader_t * shader)
 {
 	if ( shader->numDeforms > 1 )
 	{
@@ -2495,7 +2495,7 @@ IMPLEMENTATION SPECIFIC FUNCTIONS
 ====================================================================
 */
 
-static QINLINE void	GLimp_LogComment( char *comment ) {}
+QINLINE void	GLimp_LogComment( char *comment ) {}
 void GLimp_InitExtensions();
 
 /*
