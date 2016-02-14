@@ -7066,6 +7066,85 @@ char *zyk_rpg_class(gentity_t *ent)
 		return "";
 }
 
+char *zyk_get_settings_values(gentity_t *ent)
+{
+	int i = 0;
+	char content[1024];
+
+	strcpy(content,"");
+
+	for (i = 0; i < 17; i++)
+	{ // zyk: settings values
+		if (i != 8 && i != 14 && i != 15)
+		{
+			if (!(ent->client->pers.player_settings & (1 << i)))
+			{
+				strcpy(content,va("%sON-",content));
+			}
+			else
+			{
+				strcpy(content,va("%sOFF-",content));
+			}
+		}
+		else if (i == 14)
+		{
+			if (ent->client->pers.player_settings & (1 << 24))
+			{
+				strcpy(content,va("%sKorriban Action-",content));
+			}
+			else if (ent->client->pers.player_settings & (1 << 25))
+			{
+				strcpy(content,va("%sMP Duel-",content));
+			}
+			else if (ent->client->pers.player_settings & (1 << 14))
+			{
+				strcpy(content,va("%sCustom-",content));
+			}
+			else 
+			{
+				strcpy(content,va("%sHoth2 Action-",content));
+			}
+
+		}
+		else if (i == 15)
+		{
+			if (!(ent->client->pers.player_settings & (1 << i)))
+			{
+				strcpy(content,va("%sNormal-",content));
+			}
+			else
+			{
+				strcpy(content,va("%sChallenge-",content));
+			}
+		}
+		else
+		{ // zyk: starting saber style has its own handling code
+			if (ent->client->pers.player_settings & (1 << 27))
+			{
+				strcpy(content,va("%sRed-",content));
+			}
+			else if (ent->client->pers.player_settings & (1 << 28))
+			{
+				strcpy(content,va("%sDesann-",content));
+			}
+			else if (ent->client->pers.player_settings & (1 << 29))
+			{
+				strcpy(content,va("%sTavion-",content));
+			}
+			else if (ent->client->pers.player_settings & (1 << 26))
+			{
+				strcpy(content,va("%sYellow-",content));
+			}
+			else
+			{
+				strcpy(content,va("%sBlue-",content));
+			}
+		}
+	}
+
+	return G_NewString(content);
+}
+
 /*
 ==================
 Cmd_ZykMod_f
@@ -7101,74 +7180,7 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 				strcpy(content,va("%s%d/3-",content,ent->client->pers.skill_levels[i]));
 		}
 
-		for (i = 0; i < 17; i++)
-		{ // zyk: settings values
-			if (i != 8 && i != 14 && i != 15)
-			{
-				if (!(ent->client->pers.player_settings & (1 << i)))
-				{
-					strcpy(content,va("%sON-",content));
-				}
-				else
-				{
-					strcpy(content,va("%sOFF-",content));
-				}
-			}
-			else if (i == 14)
-			{
-				if (ent->client->pers.player_settings & (1 << 24))
-				{
-					strcpy(content,va("%sKorriban Action-",content));
-				}
-				else if (ent->client->pers.player_settings & (1 << 25))
-				{
-					strcpy(content,va("%sMP Duel-",content));
-				}
-				else if (ent->client->pers.player_settings & (1 << 14))
-				{
-					strcpy(content,va("%sCustom-",content));
-				}
-				else 
-				{
-					strcpy(content,va("%sHoth2 Action-",content));
-				}
-
-			}
-			else if (i == 15)
-			{
-				if (!(ent->client->pers.player_settings & (1 << i)))
-				{
-					strcpy(content,va("%sNormal-",content));
-				}
-				else
-				{
-					strcpy(content,va("%sChallenge-",content));
-				}
-			}
-			else
-			{ // zyk: starting saber style has its own handling code
-				if (ent->client->pers.player_settings & (1 << 27))
-				{
-					strcpy(content,va("%sRed-",content));
-				}
-				else if (ent->client->pers.player_settings & (1 << 28))
-				{
-					strcpy(content,va("%sDesann-",content));
-				}
-				else if (ent->client->pers.player_settings & (1 << 29))
-				{
-					strcpy(content,va("%sTavion-",content));
-				}
-				else if (ent->client->pers.player_settings & (1 << 26))
-				{
-					strcpy(content,va("%sYellow-",content));
-				}
-				else
-				{
-					strcpy(content,va("%sBlue-",content));
-				}
-			}
-		}
+		strcpy(content, va("%s%s", content, zyk_get_settings_values(ent)));
 
 		if (ent->client->pers.universe_quest_progress == 2)
 		{
@@ -7191,6 +7203,23 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 			ent->client->pers.eternity_quest_progress,ent->client->pers.universe_quest_progress,universe_quest_counter_value));
 
 		trap->SendServerCommand( ent-g_entities, va("zykmod \"%d/%d-%d/%d-%d-%d/%d-%d/%d-%d-%s-%s\"",ent->client->pers.level,MAX_RPG_LEVEL,ent->client->pers.level_up_score,ent->client->pers.level,ent->client->pers.skillpoints,ent->client->pers.skill_counter,MAX_SKILL_COUNTER,ent->client->pers.magic_power,zyk_max_magic_power(ent),ent->client->pers.credits,zyk_rpg_class(ent),content));
+	}
+	else if (ent->client->sess.amrpgmode == 1)
+	{ // zyk: just sends the player settings
+		int i = 0;
+		char content[1024];
+
+		strcpy(content,"");
+
+		for (i = 0; i < 69; i++)
+		{
+			if (i != 63)
+				strcpy(content, va("%s0-", content));
+			else
+				strcpy(content, va("%s%s", content, zyk_get_settings_values(ent)));
+		}
+
+		trap->SendServerCommand( ent-g_entities, va("zykmod \"%s\"", content));
 	}
 }
 
@@ -13984,7 +14013,7 @@ command_t commands[] = {
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
 	{ "vote",				Cmd_Vote_f,					CMD_NOINTERMISSION },
 	{ "where",				Cmd_Where_f,				CMD_NOINTERMISSION },
-	{ "zykmod",				Cmd_ZykMod_f,				CMD_RPG|CMD_NOINTERMISSION },
+	{ "zykmod",				Cmd_ZykMod_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 };
 static const size_t numCommands = ARRAY_LEN( commands );
 
