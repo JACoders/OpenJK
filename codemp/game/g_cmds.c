@@ -13977,7 +13977,7 @@ command_t commands[] = {
 	{ "news",				Cmd_News_f,					CMD_NOINTERMISSION },
 	{ "noclip",				Cmd_Noclip_f,				CMD_LOGGEDIN|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "notarget",			Cmd_Notarget_f,				CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
-	{ "npc",				Cmd_NPC_f,					CMD_LOGGEDIN|CMD_ALIVE },
+	{ "npc",				Cmd_NPC_f,					CMD_LOGGEDIN },
 	{ "npclist",			Cmd_NpcList_f,				CMD_NOINTERMISSION },
 	{ "order",				Cmd_Order_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "paralyze",			Cmd_Paralyze_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
