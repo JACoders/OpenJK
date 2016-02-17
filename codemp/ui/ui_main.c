@@ -7782,7 +7782,7 @@ static void UI_BuildServerDisplayList(int force) {
 			}
 
 			clients = atoi(Info_ValueForKey(info, "clients"));
-			bots = atoi(Info_ValueForKey(info, "bots"));
+			bots = atoi(Info_ValueForKey(info, "filterBots"));
 			realPlayers = clients - bots;
 			uiInfo.serverStatus.numPlayersOnServers += realPlayers;
 
@@ -8678,8 +8678,17 @@ static const char *UI_FeederItemText(float feederID, int index, int column,
 				case SORT_MAP :
 					return Info_ValueForKey(info, "mapname");
 				case SORT_CLIENTS :
-					Com_sprintf( clientBuff, sizeof(clientBuff), "%s (%s)", Info_ValueForKey(info, "clients"), Info_ValueForKey(info, "sv_maxclients"));
+				{
+					int clients = atoi(Info_ValueForKey(info, "clients"));
+					int bots = atoi(Info_ValueForKey(info, "filterBots"));
+					int maxclients = atoi(Info_ValueForKey(info, "sv_maxclients"));
+
+					int realPlayers;
+					realPlayers = clients - bots;
+
+					Com_sprintf(clientBuff, sizeof(clientBuff), "%i (%i)", realPlayers, maxclients);
 					return clientBuff;
+				}
 				case SORT_GAME :
 					game = atoi(Info_ValueForKey(info, "gametype"));
 					if (game >= 0 && game < numGameTypes) {

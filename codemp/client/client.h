@@ -270,6 +270,7 @@ typedef struct serverInfo_s {
 	int			netType;
 	int			gameType;
 	int		  	clients;
+	int			filterBots;
 	int		  	maxClients;
 	int			minPing;
 	int			maxPing;

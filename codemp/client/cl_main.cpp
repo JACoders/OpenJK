@@ -1648,6 +1648,7 @@ CL_InitServerInfo
 void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->adr = *address;
 	server->clients = 0;
+	server->filterBots = 0;
 	server->bots = 0;
 	server->hostName[0] = '\0';
 	server->mapName[0] = '\0';
@@ -2970,7 +2971,7 @@ void CL_SetServerFakeInfoByAddress(netadr_t from, int clients, int bots) {
 		if (NET_CompareAdr(from, cls.localServers[i].adr)) {
 			if (clients != -1) {
 				cls.localServers[i].clients = clients;
-				cls.localServers[i].bots = bots;
+				cls.localServers[i].filterBots = bots;
 			}
 		}
 	}
@@ -2979,7 +2980,7 @@ void CL_SetServerFakeInfoByAddress(netadr_t from, int clients, int bots) {
 		if (NET_CompareAdr(from, cls.globalServers[i].adr)) {
 			if (clients != -1) {
 				cls.globalServers[i].clients = clients;
-				cls.globalServers[i].bots = bots;
+				cls.globalServers[i].filterBots = bots;
 			}
 		}
 	}
@@ -2988,7 +2989,7 @@ void CL_SetServerFakeInfoByAddress(netadr_t from, int clients, int bots) {
 		if (NET_CompareAdr(from, cls.favoriteServers[i].adr)) {
 			if (clients != -1) {
 				cls.favoriteServers[i].clients = clients;
-				cls.favoriteServers[i].bots = bots;
+				cls.favoriteServers[i].filterBots = bots;
 			}
 		}
 	}
