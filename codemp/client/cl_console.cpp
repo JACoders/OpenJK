@@ -470,6 +470,8 @@ void CL_ConsolePrint( const char *txt) {
 	}
 
 	color = ColorIndex(COLOR_WHITE);
+	
+	// Xethioz: Buggy fix for timestamp in console
 
 	if (timeString) {
 		time_t rawtime;
@@ -481,8 +483,10 @@ void CL_ConsolePrint( const char *txt) {
 		txt = timedText;
 	}
 
+	qboolean last = qfalse;
 	while ( (c = (unsigned char) *txt) != 0 ) {
 		if ( Q_IsColorString( (unsigned char*) txt ) ) {
+			last = qfalse;
 			color = ColorIndex( *(txt+1) );
 			txt += 2;
 			continue;
@@ -491,6 +495,7 @@ void CL_ConsolePrint( const char *txt) {
 		// count word length
 		for (l=0 ; l< con.linewidth ; l++) {
 			if ( txt[l] <= ' ') {
+				timeString = qfalse;
 				break;
 			}
 		}
@@ -507,6 +512,7 @@ void CL_ConsolePrint( const char *txt) {
 		{
 		case '\n':
 			Con_Linefeed (skipnotify);
+			last = qtrue;
 			break;
 		case '\r':
 			con.x = 0;
@@ -520,6 +526,7 @@ void CL_ConsolePrint( const char *txt) {
 			}
 			break;
 		}
+		timeString = last;
 	}
 
 
