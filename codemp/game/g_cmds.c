@@ -12237,7 +12237,8 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 		if (this_ent)
 		{
 			if (strncmp(this_ent->classname, "info_player", 11) == 0 || Q_stricmp(this_ent->classname, "info_notnull") == 0 || 
-				Q_stricmp(this_ent->classname, "info_null") == 0 || Q_stricmp(this_ent->classname, "func_group") == 0)
+				Q_stricmp(this_ent->classname, "info_null") == 0 || Q_stricmp(this_ent->classname, "func_group") == 0 || 
+				strncmp(this_ent->classname, "team_", 5) == 0)
 			{
 				fprintf(this_file,"%s\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n",
 					this_ent->classname,this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],

@@ -6005,7 +6005,8 @@ void G_RunFrame( int levelTime ) {
 				if (new_ent)
 				{
 					if (strncmp(content, "info_player", 11) == 0 || Q_stricmp(content, "info_notnull") == 0 || 
-						Q_stricmp(content, "info_null") == 0 || Q_stricmp(content, "func_group") == 0)
+						Q_stricmp(content, "info_null") == 0 || Q_stricmp(content, "func_group") == 0 || 
+						strncmp(content, "team_", 5) == 0)
 					{
 						float fx, fy, fz;
 
