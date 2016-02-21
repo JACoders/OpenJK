@@ -1858,6 +1858,11 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 	int max_tripmine_ammo = zyk_max_tripmine_ammo.integer;
 	int max_detpack_ammo = zyk_max_detpack_ammo.integer;
 
+	if (!activator || !activator->client)
+	{
+		return;
+	}
+
 	// zyk: Bounty Hunter class has more max ammo
 	if (activator->client->sess.amrpgmode == 2 && activator->client->pers.rpg_class == 2)
 	{
@@ -1868,11 +1873,6 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 		max_thermal_ammo += max_thermal_ammo/6 * activator->client->pers.skill_levels[55];
 		max_tripmine_ammo += max_tripmine_ammo/6 * activator->client->pers.skill_levels[55];
 		max_detpack_ammo += max_detpack_ammo/6 * activator->client->pers.skill_levels[55];
-	}
-
-	if (!activator || !activator->client)
-	{
-		return;
 	}
 
 	if (self->setTime < level.time)
@@ -1918,6 +1918,26 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 			{
 				// zyk: changed this. Now it will use Add_Ammo function
 				// activator->client->ps.ammo[i] += add;
+
+				// zyk: some RPG classes cannot get ammo
+				if (activator->client->sess.amrpgmode == 2 && (activator->client->pers.rpg_class == 1 || activator->client->pers.rpg_class == 4 || 
+					activator->client->pers.rpg_class == 6 || activator->client->pers.rpg_class == 8))
+				{
+					break;
+				}
+
+				if (i == AMMO_THERMAL)
+				{
+					activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
+				}
+				else if (i == AMMO_TRIPMINE)
+				{
+					activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_TRIP_MINE);
+				}
+				else if (i == AMMO_DETPACK)
+				{
+					activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DET_PACK);
+				}
 				Add_Ammo(activator, i, add);
 				stop = 0;
 			}
