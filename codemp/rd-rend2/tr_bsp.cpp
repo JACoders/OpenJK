@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_map.c
 
 #include "tr_local.h"
+#include <vector>
 
 /*
 
@@ -679,6 +680,9 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
 	}
 
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
+
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
@@ -837,6 +841,9 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
 	}
 
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
+
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
@@ -936,6 +943,9 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 	glIndex_t  *tri;
 	int             i, j;
 	int             numVerts, numIndexes, badTriangles;
+
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -1066,6 +1076,9 @@ ParseFlare
 static void ParseFlare( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, int *indexes ) {
 	srfFlare_t		*flare;
 	int				i;
+
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -1830,33 +1843,6 @@ static int BSPSurfaceCompare(const void *a, const void *b)
 
 
 	return 0;
-}
-
-
-static void CopyVert(const srfVert_t * in, srfVert_t * out)
-{
-	int             j;
-
-	for(j = 0; j < 3; j++)
-	{
-		out->xyz[j]       = in->xyz[j];
-		out->tangent[j]   = in->tangent[j];
-		out->normal[j]    = in->normal[j];
-		out->lightdir[j]  = in->lightdir[j];
-	}
-
-	out->tangent[3] = in->tangent[3];
-
-	for(j = 0; j < 2; j++)
-	{
-		out->st[j] = in->st[j];
-		Com_Memcpy (out->lightmap[j], in->lightmap[j], sizeof (out->lightmap[0]));
-	}
-
-	for(j = 0; j < 4; j++)
-	{
-		Com_Memcpy (out->vertexColors[j], in->vertexColors[j], sizeof (out->vertexColors[0]));
-	}
 }
 
 struct packedVertex_t
@@ -3042,7 +3028,7 @@ R_MergeLeafSurfaces
 Merges surfaces that share a common leaf
 =================
 */
-void R_MergeLeafSurfaces(void)
+static void R_MergeLeafSurfaces(void)
 {
 	int i, j, k;
 	int numWorldSurfaces;
@@ -3379,7 +3365,11 @@ static void R_CalcVertexLightDirs( void )
 			case SF_GRID:
 			case SF_TRIANGLES:
 				for(i = 0; i < bspSurf->numVerts; i++)
-					R_LightDirForPoint( bspSurf->verts[i].xyz, bspSurf->verts[i].lightdir, bspSurf->verts[i].normal, &s_worldData );
+					R_LightDirForPoint(
+							bspSurf->verts[i].xyz,
+							bspSurf->verts[i].lightdir,
+							bspSurf->verts[i].normal,
+							&s_worldData );
 
 				break;
 
@@ -3389,6 +3379,190 @@ static void R_CalcVertexLightDirs( void )
 	}
 }
 
+struct sprite_t
+{
+	vec3_t position;
+	vec3_t normal;
+};
+
+static uint32_t UpdateHash( const char *text, uint32_t hash )
+{
+	for ( int i = 0; text[i]; ++i )
+	{
+		char letter = tolower((unsigned char)text[i]);
+		if (letter == '.') break;				// don't include extension
+		if (letter == '\\') letter = '/';		// damn path names
+		if (letter == PATH_SEP) letter = '/';		// damn path names
+
+		hash += (uint32_t)(letter)*(i+119);
+	}
+
+	return (hash ^ (hash >> 10) ^ (hash >> 20));
+}
+
+static void R_GenerateSurfaceSprites(
+		const srfBspSurface_t *bspSurf,
+		const shaderStage_t *stage,
+		srfSprites_t *out)
+{
+	const surfaceSprite_t *surfaceSprite = stage->ss;
+	const textureBundle_t *bundle = &stage->bundle[0];
+
+	const float density = surfaceSprite->density;
+	const srfVert_t *verts = bspSurf->verts;
+	const glIndex_t *indexes = bspSurf->indexes;
+
+	std::vector<sprite_t> sprites;
+	sprites.reserve(10000);
+	for ( int i = 0, numIndexes = bspSurf->numIndexes; i < numIndexes; i += 3 )
+	{
+		const srfVert_t *v0 = verts + indexes[i + 0];
+		const srfVert_t *v1 = verts + indexes[i + 1];
+		const srfVert_t *v2 = verts + indexes[i + 2];
+
+		vec3_t p0, p1, p2;
+		VectorCopy(v0->xyz, p0);
+		VectorCopy(v1->xyz, p1);
+		VectorCopy(v2->xyz, p2);
+
+		vec3_t n0, n1, n2;
+		VectorCopy(v0->normal, n0);
+		VectorCopy(v1->normal, n1);
+		VectorCopy(v2->normal, n2);
+
+		const vec2_t p01 = {p1[0] - p0[0], p1[1] - p0[1]};
+		const vec2_t p02 = {p2[0] - p0[0], p2[1] - p0[1]};
+
+		const float zarea = std::fabsf(p02[0]*p01[1] - p02[1]*p01[0]);
+		if ( zarea <= 1.0 )
+		{
+			// Triangle's area is too small to consider.
+			continue;
+		}
+
+		// Generate the positions of the surface sprites.
+		//
+		// Pick random points inside of each triangle, using barycentric
+		// coordinates.
+		const float step = density * Q_rsqrt(zarea);
+		for ( float a = 0.0f; a < 1.0f; a += step )
+		{
+			for ( float b = 0.0f, bend = (1.0f - a); b < bend; b += step )
+			{
+				float x = random()*step + a;
+				float y = random()*step + b;
+				float z = 1.0f - x - y;
+
+				// Ensure we're inside the triangle bounds.
+				if ( x > 1.0f ) continue;
+				if ( (x + y ) > 1.0f ) continue;
+
+				// Calculate position inside triangle.
+				// pos = (((p0*x) + p1*y) + p2*z)
+				sprite_t sprite = {};
+				VectorMA(sprite.position, x, p0, sprite.position);
+				VectorMA(sprite.position, y, p1, sprite.position);
+				VectorMA(sprite.position, z, p2, sprite.position);
+
+				VectorMA(sprite.normal, x, n0, sprite.normal);
+				VectorMA(sprite.normal, y, n1, sprite.normal);
+				VectorMA(sprite.normal, z, n2, sprite.normal);
+				VectorNormalize(sprite.normal);
+
+				// We have 4 copies for each corner of the quad
+				sprites.push_back(sprite);
+			}
+		}
+	}
+
+	uint32_t hash = 0;
+	for ( int i = 0; bundle->image[i]; ++i )
+	{
+		hash = UpdateHash(bundle->image[i]->imgName, hash);
+	}
+
+	out->surfaceType = SF_SPRITES;
+	out->spriteType = surfaceSprite->type;
+	out->numSprites = sprites.size();
+	out->vbo = R_CreateVBO((byte *)sprites.data(),
+			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
+	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
+			bundle, stage->stateBits);
+	out->shader->stages[0]->glslShaderGroup = &tr.spriteShader;
+	out->numAttributes = 2;
+	out->attributes = (vertexAttribute_t *)ri->Hunk_Alloc(
+			sizeof(vertexAttribute_t) * 2, h_low);
+
+	out->attributes[0].vbo = out->vbo;
+	out->attributes[0].index = 0;
+	out->attributes[0].numComponents = 3;
+	out->attributes[0].integerAttribute = qfalse;
+	out->attributes[0].type = GL_FLOAT;
+	out->attributes[0].normalize = GL_FALSE;
+	out->attributes[0].stride = sizeof(sprite_t);
+	out->attributes[0].offset = offsetof(sprite_t, position);
+	out->attributes[0].stepRate = 1;
+
+	out->attributes[1].vbo = out->vbo;
+	out->attributes[1].index = 1;
+	out->attributes[1].numComponents = 3;
+	out->attributes[1].integerAttribute = qfalse;
+	out->attributes[1].type = GL_FLOAT;
+	out->attributes[1].normalize = GL_FALSE;
+	out->attributes[1].stride = sizeof(sprite_t);
+	out->attributes[1].stepRate = 1;
+}
+
+static void R_GenerateSurfaceSprites( const world_t *world )
+{
+	msurface_t *surfaces = world->surfaces;
+	for ( int i = 0, numSurfaces = world->numsurfaces; i < numSurfaces; ++i )
+	{
+		msurface_t *surf = surfaces + i;
+		const srfBspSurface_t *bspSurf = (srfBspSurface_t *)surf->data;
+		switch ( bspSurf->surfaceType )
+		{
+			case SF_FACE:
+			case SF_GRID:
+			case SF_TRIANGLES:
+			{
+				const shader_t *shader = surf->shader;
+				if ( !shader->numSurfaceSpriteStages )
+				{
+					continue;
+				}
+
+				surf->numSurfaceSprites = shader->numSurfaceSpriteStages;
+				surf->surfaceSprites = (srfSprites_t *)ri->Hunk_Alloc(
+						sizeof(srfSprites_t) * surf->numSurfaceSprites, h_low);
+
+				int surfaceSpriteNum = 0;
+				for ( int j = 0, numStages = shader->numUnfoggedPasses;
+						j < numStages; ++j )
+				{
+					const shaderStage_t *stage = shader->stages[j];
+					if ( !stage )
+					{
+						break;
+					}
+
+					if ( !stage->ss || stage->ss->type == SURFSPRITE_NONE )
+					{
+						continue;
+					}
+
+					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
+					R_GenerateSurfaceSprites(bspSurf, stage, sprite);
+					++surfaceSpriteNum;
+				}
+				break;
+			}
+
+			default:
+				break;
+		}
+	}
+}
 
 /*
 =================
@@ -3479,6 +3653,8 @@ void RE_LoadWorldMap( const char *name ) {
 	R_LoadVisibility( &header->lumps[LUMP_VISIBILITY] );
 	R_LoadLightGrid( &header->lumps[LUMP_LIGHTGRID] );
 	R_LoadLightGridArray( &header->lumps[LUMP_LIGHTARRAY] );
+
+	R_GenerateSurfaceSprites(&s_worldData);
 	
 	// determine vertex light directions
 	R_CalcVertexLightDirs();

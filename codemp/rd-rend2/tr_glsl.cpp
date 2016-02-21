@@ -58,6 +58,8 @@ extern const char *fallbackShader_dglow_downsample_vp;
 extern const char *fallbackShader_dglow_downsample_fp;
 extern const char *fallbackShader_dglow_upsample_vp;
 extern const char *fallbackShader_dglow_upsample_fp;
+extern const char *fallbackShader_surface_sprites_vp;
+extern const char *fallbackShader_surface_sprites_fp;
 
 typedef struct uniformInfo_s
 {
@@ -1594,6 +1596,15 @@ int GLSL_BeginLoadGPUShaders(void)
 		ri->Error(ERR_FATAL, "Could not load dynamic glow upsample shader!");
 	}
 
+	attribs = ATTR_POSITION | ATTR_NORMAL;
+	extradefines[0] = '\0';
+	if (!GLSL_BeginLoadGPUShader(&tr.spriteShader, "surface_sprites", attribs,
+				qtrue, extradefines, fallbackShader_surface_sprites_vp,
+				fallbackShader_surface_sprites_fp))
+	{
+		ri->Error(ERR_FATAL, "Could not load surface sprites shader!");
+	}
+
 	return startTime;
 }
 
@@ -1889,6 +1900,13 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 	numEtcShaders++;
 
+	if (!GLSL_EndLoadGPUShader(&tr.spriteShader))
+		ri->Error(ERR_FATAL, "Could not compile surface sprites shader!");
+
+	GLSL_InitUniforms(&tr.spriteShader);
+	GLSL_FinishGPUShader(&tr.spriteShader);
+	numEtcShaders++;
+
 #if 0
 	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
@@ -2025,23 +2043,6 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 
 	GLSL_VertexAttribPointers(stateBits, vertexArrays);
 
-	uint32_t diff = stateBits ^ glState.vertexAttribsState;
-	if ( diff )
-	{
-		for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
-		{
-			// FIXME: Use BitScanForward?
-			if (diff & j)
-			{
-				if(stateBits & j)
-					qglEnableVertexAttribArray(i);
-				else
-					qglDisableVertexAttribArray(i);
-			}
-		}
-
-		glState.vertexAttribsState = stateBits;
-	}
 }
 
 void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays)
@@ -2060,7 +2061,7 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
 	}
 
-	const struct
+	static const struct
 	{
 		int numComponents;
 		GLboolean integerAttribute;
@@ -2085,41 +2086,24 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
 	};
 
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
 		int attributeIndex = vertexArrays->enabledAttributes[i];
+		vertexAttribute_t& attrib = attribs[i];
 
-		if ( glState.currentVaoVbo[attributeIndex] == glState.currentVBO->vertexesVBO &&
-				glState.currentVaoOffsets[attributeIndex] == vertexArrays->offsets[attributeIndex] &&
-				glState.currentVaoStrides[attributeIndex] == vertexArrays->strides[attributeIndex] )
-		{
-			// No change
-			continue;
-		}
-
-		if ( attributes[attributeIndex].integerAttribute )
-		{
-			qglVertexAttribIPointer(attributeIndex,
-				attributes[attributeIndex].numComponents,
-				attributes[attributeIndex].type,
-				vertexArrays->strides[attributeIndex],
-				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex]));
-		}
-		else
-		{
-			qglVertexAttribPointer(attributeIndex,
-				attributes[attributeIndex].numComponents,
-				attributes[attributeIndex].type,
-				attributes[attributeIndex].normalize,
-				vertexArrays->strides[attributeIndex],
-				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex]));
-		}
-
-		glState.currentVaoVbo[attributeIndex] = glState.currentVBO->vertexesVBO;
-		glState.currentVaoStrides[attributeIndex] = vertexArrays->strides[attributeIndex];
-		glState.currentVaoOffsets[attributeIndex] = vertexArrays->offsets[attributeIndex];
-		glState.vertexAttribPointersSet |= (1 << attributeIndex);
+		attrib.vbo = glState.currentVBO;
+		attrib.index = attributeIndex;
+		attrib.numComponents = attributes[attributeIndex].numComponents;
+		attrib.integerAttribute = attributes[attributeIndex].integerAttribute;
+		attrib.type = attributes[attributeIndex].type;
+		attrib.normalize = attributes[attributeIndex].normalize;
+		attrib.stride = vertexArrays->strides[attributeIndex];
+		attrib.offset = vertexArrays->offsets[attributeIndex];
+		attrib.stepRate = 0;
 	}
+
+	GL_VertexAttribPointers(vertexArrays->numVertexArrays, attribs);
 }
 
 

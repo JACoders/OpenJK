@@ -246,6 +246,7 @@ extern cvar_t	*r_marksOnTriangleMeshes;
 
 extern cvar_t	*r_aviMotionJpegQuality;
 extern cvar_t	*r_screenshotJpegQuality;
+extern cvar_t	*r_surfaceSprites;
 
 extern cvar_t	*r_maxpolys;
 extern int		max_polys;
@@ -623,6 +624,46 @@ typedef struct {
 
 } texModInfo_t;
 
+enum surfaceSpriteType_t
+{
+	SURFSPRITE_NONE,
+	SURFSPRITE_VERTICAL,
+	SURFSPRITE_ORIENTED,
+	SURFSPRITE_EFFECT,
+	SURFSPRITE_WEATHERFX,
+	SURFSPRITE_FLATTENED,
+};
+
+enum surfaceSpriteOrientation_t
+{
+	SURFSPRITE_FACING_NORMAL,
+	SURFSPRITE_FACING_UP,
+	SURFSPRITE_FACING_DOWN,
+	SURFSPRITE_FACING_ANY,
+};
+
+struct surfaceSprite_t
+{
+	surfaceSpriteType_t type;
+
+	float width;
+	float height;
+	float density;
+	float wind;
+	float windIdle;
+	float fadeDist;
+	float fadeMax;
+	float fadeScale;
+	float fxAlphaStart;
+	float fxAlphaEnd;
+	float fxDuration;
+	float vertSkew;
+
+	vec2_t variance;
+	vec2_t fxGrow;
+	surfaceSpriteOrientation_t facing;
+};
+
 #define	MAX_IMAGE_ANIMATIONS	(32)
 
 typedef struct {
@@ -716,7 +757,7 @@ typedef struct {
 	vec4_t normalScale;
 	vec4_t specularScale;
 
-	qboolean		isSurfaceSprite;
+	surfaceSprite_t	*ss;
 
 } shaderStage_t;
 
@@ -789,6 +830,7 @@ typedef struct shader_s {
 	deformStage_t	deforms[MAX_SHADER_DEFORMS];
 
 	int			numUnfoggedPasses;
+	int			numSurfaceSpriteStages;
 	shaderStage_t	*stages[MAX_SHADER_STAGES];		
 
 	void		(*optimalStageIteratorFunc)( void );
@@ -1147,6 +1189,13 @@ typedef struct shaderProgram_s
 	char  *uniformBuffer;
 } shaderProgram_t;
 
+struct technique_t
+{
+	shaderProgram_t *depthPrepass;
+	shaderProgram_t *shadow;
+	shaderProgram_t *forward;
+};
+
 // trRefdef_t holds everything that comes in refdef_t,
 // as well as the locally generated scene information
 typedef struct {
@@ -1277,6 +1326,7 @@ typedef enum {
 	SF_ENTITY,				// beams, rails, lightning, etc that can be determined by entity
 	SF_VBO_MESH,
 	SF_VBO_MDVMESH,
+	SF_SPRITES,
 
 	SF_NUM_SURFACE_TYPES,
 	SF_MAX = 0x7fffffff			// ensures that sizeof( surfaceType_t ) == sizeof( int )
@@ -1334,6 +1384,21 @@ typedef struct srfFlare_s {
 	vec3_t			normal;
 	vec3_t			color;
 } srfFlare_t;
+
+struct vertexAttribute_t;
+struct srfSprites_t
+{
+	surfaceType_t surfaceType;
+
+	shader_t *shader;
+	surfaceSpriteType_t spriteType;
+	int numSprites;
+	VBO_t *vbo;
+	IBO_t *ibo;
+
+	int numAttributes;
+	vertexAttribute_t *attributes;
+};
 
 typedef struct
 {
@@ -1526,6 +1591,9 @@ typedef struct msurface_s {
 	int					fogIndex;
 	int                 cubemapIndex;
 	cullinfo_t          cullinfo;
+
+	int					numSurfaceSprites;
+	srfSprites_t		*surfaceSprites;
 
 	surfaceType_t		*data;			// any of srf*_t
 } msurface_t;
@@ -1814,6 +1882,18 @@ typedef struct {
 #define FUNCTABLE_SIZE2		10
 #define FUNCTABLE_MASK		(FUNCTABLE_SIZE-1)
 
+struct vertexAttribute_t
+{
+	VBO_t *vbo;
+	int index;
+	int numComponents;
+	GLboolean integerAttribute;
+	GLenum type;
+	GLboolean normalize;
+	int stride;
+	int offset;
+	int stepRate;
+};
 
 // the renderer front end should never modify glstate_t
 typedef struct glstate_s {
@@ -1823,7 +1903,7 @@ typedef struct glstate_s {
 	int			faceCulling;
 	uint32_t	glStateBits;
 	uint32_t		vertexAttribsState;
-	uint32_t		vertexAttribPointersSet;
+	vertexAttribute_t currentVaoAttribs[ATTR_INDEX_MAX];
 	uint32_t        vertexAttribsNewFrame;
 	uint32_t        vertexAttribsOldFrame;
 	float           vertexAttribsInterpolation;
@@ -1839,9 +1919,6 @@ typedef struct glstate_s {
 	matrix_t        modelview;
 	matrix_t        projection;
 	matrix_t		modelviewProjection;
-	int			currentVaoVbo[ATTR_INDEX_MAX];
-	int			currentVaoStrides[ATTR_INDEX_MAX];
-	int			currentVaoOffsets[ATTR_INDEX_MAX];
 } glstate_t;
 
 typedef enum {
@@ -2090,7 +2167,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t glowCompositeShader;
 	shaderProgram_t dglowDownsample;
 	shaderProgram_t dglowUpsample;
-
+	shaderProgram_t spriteShader;
 
 	// -----------------------------------------
 
@@ -2400,6 +2477,7 @@ int R_CullLocalPointAndRadius( const vec3_t origin, float radius );
 
 void R_SetupProjection(viewParms_t *dest, float zProj, float zFar, qboolean computeFrustum);
 void R_RotateForEntity( const trRefEntity_t *ent, const viewParms_t *viewParms, orientationr_t *ori );
+void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu );
 
 /*
 ** GL wrapper/helper functions
@@ -2417,6 +2495,12 @@ void    GL_SetModelviewMatrix(matrix_t matrix);
 //void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
 void	GL_PolygonOffset( qboolean enabled );
+void	GL_VertexAttribPointers(size_t numAttributes,
+								vertexAttribute_t *attributes);
+void	GL_DrawIndexed(GLenum primitiveType, int numIndices, int offset,
+						int numInstances, int baseVertex);
+void	GL_MultiDrawIndexed(GLenum primitiveType, int *numIndices,
+							glIndex_t **offsets, int numDraws);
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
@@ -2489,6 +2573,10 @@ shader_t *R_FindShaderByName( const char *name );
 void		R_InitShaders( qboolean server );
 void		R_ShaderList_f( void );
 void    R_RemapShader(const char *oldShader, const char *newShader, const char *timeOffset);
+shader_t *R_CreateShaderFromTextureBundle(
+		const char *name,
+		const textureBundle_t *bundle,
+		uint32_t stateBits);
 
 /*
 ====================================================================

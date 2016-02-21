@@ -2109,6 +2109,29 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 static void RB_SurfaceSkip( void *surf ) {
 }
 
+static void RB_SurfaceSprites( srfSprites_t *surf )
+{
+	if ( !r_surfaceSprites->integer )
+	{
+		return;
+	}
+
+	RB_EndSurface();
+
+	// TODO: Check which pass (z-prepass/shadow/forward) we're rendering for?
+	shader_t *shader = surf->shader;
+	shaderStage_t *firstStage = shader->stages[0];
+	shaderProgram_t *program = firstStage->glslShaderGroup;
+
+	GLSL_BindProgram(program);
+	GL_State(firstStage->stateBits);
+	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
+	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
+	GLSL_SetUniformMatrix4x4(program,
+			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	//GL_DrawIndexed(GL_TRIANGLES, 6, 0, surf->numSprites, 0);
+	qglDrawArraysInstanced(GL_TRIANGLES, 0, 6, surf->numSprites);
+}
 
 void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceBad,			// SF_BAD, 
@@ -2125,4 +2148,5 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
 	(void(*)(void*))RB_SurfaceVBOMesh,	    // SF_VBO_MESH,
 	(void(*)(void*))RB_SurfaceVBOMDVMesh,   // SF_VBO_MDVMESH
+	(void(*)(void*))RB_SurfaceSprites,      // SF_SPRITES
 };

@@ -223,7 +223,6 @@ void R_BindVBO(VBO_t * vbo)
 	if(glState.currentVBO != vbo)
 	{
 		glState.currentVBO = vbo;
-		glState.vertexAttribPointersSet = 0;
 
 		glState.vertexAttribsInterpolation = 0;
 		glState.vertexAttribsOldFrame = 0;
@@ -299,7 +298,6 @@ void R_BindNullIBO(void)
 	{
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glState.currentIBO = NULL;
-		glState.vertexAttribPointersSet = 0;
 	}
 }
 

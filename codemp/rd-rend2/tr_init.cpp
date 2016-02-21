@@ -235,6 +235,7 @@ cvar_t	*r_marksOnTriangleMeshes;
 
 cvar_t	*r_aviMotionJpegQuality;
 cvar_t	*r_screenshotJpegQuality;
+cvar_t	*r_surfaceSprites;
 
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
@@ -1094,11 +1095,9 @@ void GL_SetDefaultState( void )
 	// in a multitexture environment
 	GL_SelectTexture( 1 );
 	GL_TextureMode( r_textureMode->string );
-	//GL_TexEnv( GL_MODULATE );
 	GL_SelectTexture( 0 );
 
 	GL_TextureMode( r_textureMode->string );
-	//GL_TexEnv( GL_MODULATE );
 
 	//qglShadeModel( GL_SMOOTH );
 	qglDepthFunc( GL_LEQUAL );
@@ -1523,6 +1522,7 @@ void R_Register( void )
 
 	r_aviMotionJpegQuality = ri->Cvar_Get("r_aviMotionJpegQuality", "90", CVAR_ARCHIVE);
 	r_screenshotJpegQuality = ri->Cvar_Get("r_screenshotJpegQuality", "90", CVAR_ARCHIVE);
+	r_surfaceSprites = ri->Cvar_Get("r_surfaceSprites", "1", CVAR_ARCHIVE);
 
 	r_maxpolys = ri->Cvar_Get( "r_maxpolys", XSTRING( DEFAULT_MAX_POLYS ), 0);
 	r_maxpolyverts = ri->Cvar_Get( "r_maxpolyverts", XSTRING( DEFAULT_MAX_POLYVERTS ), 0 );
