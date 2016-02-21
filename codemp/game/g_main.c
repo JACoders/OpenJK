@@ -1532,12 +1532,12 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	{ // zyk: default file exists. Load entities from it
 		fclose(zyk_entities_file);
 
-		// zyk: cleaning entities. Only the ones from the file will be in the map
+		// zyk: cleaning entities. Only the ones from the file will be in the map. Do not remove CTF flags
 		for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
 		{
 			gentity_t *target_ent = &g_entities[i];
 
-			if (target_ent)
+			if (target_ent && Q_stricmp(target_ent->classname, "team_CTF_redflag") != 0 && Q_stricmp(target_ent->classname, "team_CTF_blueflag") != 0)
 				G_FreeEntity( target_ent );
 		}
 
@@ -7376,6 +7376,15 @@ void G_RunFrame( int levelTime ) {
 			}
 
 			fclose(this_file);
+		}
+
+		// zyk: CTF need to have the flags spawned again when an entity file is loaded
+		// general initialization
+		G_FindTeams();
+
+		// make sure we have flags for CTF, etc
+		if( level.gametype >= GT_TEAM ) {
+			G_CheckTeamItems();
 		}
 
 		level.load_entities_timer = 0;
