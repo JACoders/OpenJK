@@ -2129,7 +2129,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
 	GLSL_SetUniformMatrix4x4(program,
 			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-	//GL_DrawIndexed(GL_TRIANGLES, 6, 0, surf->numSprites, 0);
+	GLSL_SetUniformVec3(program,
+			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 	qglDrawArraysInstanced(GL_TRIANGLES, 0, 6, surf->numSprites);
 }
 
