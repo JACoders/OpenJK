@@ -4349,21 +4349,6 @@ qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target
 	return qfalse;
 }
 
-// zyk: Healing Water
-void healing_water(gentity_t *ent, int heal_amount)
-{
-	// zyk: Universe Power
-	if (ent->client->pers.quest_power_status & (1 << 13))
-		heal_amount += 30;
-
-	if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
-		ent->health += heal_amount;
-	else
-		ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
-
-	G_Sound( ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
-}
-
 // zyk: Earthquake
 void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 {
@@ -4393,9 +4378,10 @@ void earthquake(gentity_t *ent, int stun_time, int strength, int distance)
 
 			if (i < level.maxclients)
 			{
-				G_ScreenShake(player_ent->client->ps.origin, player_ent,  10.0f, 4000, qtrue); 
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/stone_break1.mp3"));
+				G_ScreenShake(player_ent->client->ps.origin, player_ent,  10.0f, 4000, qtrue);
 			}
+			
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/stone_break1.mp3"));
 		}
 	}
 }
@@ -4435,8 +4421,7 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 			player_ent->client->pers.quest_power_status |= (1 << 8);
 			player_ent->client->pers.quest_target6_timer = level.time + duration;
 							
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
 		}
 	}
 }
@@ -4472,8 +4457,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 			player_ent->client->ps.forceDodgeAnim = 0;
 			player_ent->client->ps.quickerGetup = qtrue;
 
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
 		}
 	}
 }
@@ -4499,29 +4483,7 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 			player_ent->client->pers.quest_target3_timer = level.time + 1000;
 			player_ent->client->pers.quest_power_hit_counter = 10;
 
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
-		}
-	}
-}
-
-// zyk: Time Power
-void time_power(gentity_t *ent, int distance, int duration)
-{
-	int i = 0;
-	int targets_hit = 0;
-
-	for (i = 0; i < level.num_entities; i++)
-	{
-		gentity_t *player_ent = &g_entities[i];
-					
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
-		{
-			player_ent->client->pers.quest_power_status |= (1 << 2);
-			player_ent->client->pers.quest_target2_timer = level.time + duration;
-
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/electric_beam_lp.wav"));
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
 		}
 	}
 }
@@ -4717,6 +4679,45 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 
 		level.special_power_effects[new_ent->s.number] = ent->s.number;
 		level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+	}
+}
+
+// zyk: Healing Water
+void healing_water(gentity_t *ent, int heal_amount)
+{
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+		heal_amount += 30;
+
+	if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+		ent->health += heal_amount;
+	else
+		ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+	zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing_water", "0", "force/heal2", 0, 0, 0, 500);
+
+	G_Sound( ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
+}
+
+// zyk: Time Power
+void time_power(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+	int targets_hit = 0;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+					
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			player_ent->client->pers.quest_power_status |= (1 << 2);
+			player_ent->client->pers.quest_target2_timer = level.time + duration;
+
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_time", "0", "misc/genrings", 0, 0, 0, duration);
+
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/electric_beam_lp.wav"));
+		}
 	}
 }
 
@@ -4923,8 +4924,7 @@ void slow_motion(gentity_t *ent, int distance, int duration)
 			player_ent->client->pers.quest_power_status |= (1 << 6);
 			player_ent->client->pers.quest_target5_timer = level.time + duration;
 
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
 		}
 	}
 }
@@ -4941,8 +4941,7 @@ void ultra_speed(gentity_t *ent, int duration)
 	ent->client->pers.quest_power_status |= (1 << 9);
 	ent->client->pers.quest_power3_timer = level.time + duration;
 
-	if (ent->s.number < level.maxclients)
-		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh1.mp3"));
+	G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh1.mp3"));
 }
 
 // zyk: spawns the circle of fire around the player
@@ -5021,8 +5020,7 @@ void hurricane(gentity_t *ent, int distance, int duration)
 			player_ent->client->pers.quest_power_hit_counter = -179;
 			player_ent->client->pers.quest_target4_timer = level.time + duration;
 							
-			if (i < level.maxclients)
-				G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
 		}
 	}
 }
