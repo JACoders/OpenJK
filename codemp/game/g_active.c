@@ -2139,6 +2139,7 @@ extern void Boba_FlyStop( gentity_t *self );
 extern void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power);
 extern void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power);
 extern void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power);
+extern void zyk_save_magic_master_config(gentity_t *ent);
 extern void TossClientWeapon(gentity_t *self, vec3_t direction, float speed);
 extern qboolean saberKnockOutOfHand(gentity_t *saberent, gentity_t *saberOwner, vec3_t velocity);
 void ClientThink_real( gentity_t *ent ) {
@@ -3682,34 +3683,40 @@ void ClientThink_real( gentity_t *ent ) {
 					}
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_SEEING && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
-				{ // zyk: Magic Master, selects previous power
+				{ // zyk: Magic Master, selects next power
 					// zyk: Magic Master can choose his power here
 					zyk_show_left_magic_master_powers(ent, qtrue);
+					zyk_save_magic_master_config(ent);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_SPEED && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
 					// zyk: Magic Master can choose his power here
 					zyk_show_left_magic_master_powers(ent, qfalse);
+					zyk_save_magic_master_config(ent);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_PROTECT && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
-				{ // zyk: Magic Master, selects previous power
+				{ // zyk: Magic Master, selects next power
 					// zyk: Magic Master can choose his power here
 					zyk_show_magic_master_powers(ent, qtrue);
+					zyk_save_magic_master_config(ent);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_HEAL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
 					// zyk: Magic Master can choose his power here
 					zyk_show_magic_master_powers(ent, qfalse);
+					zyk_save_magic_master_config(ent);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_DISTRACT && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
-				{ // zyk: Magic Master, selects previous power
+				{ // zyk: Magic Master, selects next power
 					// zyk: Magic Master can choose his power here
 					zyk_show_right_magic_master_powers(ent, qtrue);
+					zyk_save_magic_master_config(ent);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_FORCE_ABSORB && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master, selects previous power
 					// zyk: Magic Master can choose his power here
 					zyk_show_right_magic_master_powers(ent, qfalse);
+					zyk_save_magic_master_config(ent);
 				}
 				else if (pmove.cmd.generic_cmd == GENCMD_ENGAGE_DUEL && ent->client->ps.weapon == WP_MELEE && ent->client->pers.rpg_class == 8)
 				{ // zyk: Magic Master Fist attacks
@@ -3719,6 +3726,8 @@ void ClientThink_real( gentity_t *ent ) {
 						ent->client->sess.magic_fist_selection = 0;
 					else
 						ent->client->sess.magic_fist_selection = 4;
+
+					zyk_save_magic_master_config(ent);
 
 					if (ent->client->sess.magic_fist_selection == 0)
 					{

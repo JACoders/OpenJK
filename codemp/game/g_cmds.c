@@ -5458,6 +5458,64 @@ void Cmd_NewAccount_f( gentity_t *ent ) {
 	initialize_rpg_skills(ent);
 }
 
+// zyk: loads Magic Master class config (selected magic powers, selected bolt type, allowed magic powers)
+void zyk_load_magic_master_config(gentity_t *ent)
+{
+	if (ent->client->pers.rpg_class == 8)
+	{
+		char content[16];
+		FILE *config_file = NULL;
+
+		strcpy(content,"");
+
+		system("mkdir configs");
+
+		config_file = fopen(va("configs/%s_magicmaster_config.txt", ent->client->sess.filename),"r");
+		if (config_file != NULL)
+		{
+			fscanf(config_file,"%s",content);
+			ent->client->sess.magic_fist_selection = atoi(content);
+
+			fscanf(config_file,"%s",content);
+			ent->client->sess.magic_master_disabled_powers = atoi(content);
+
+			fscanf(config_file,"%s",content);
+			ent->client->sess.selected_special_power = atoi(content);
+
+			fscanf(config_file,"%s",content);
+			ent->client->sess.selected_left_special_power = atoi(content);
+
+			fscanf(config_file,"%s",content);
+			ent->client->sess.selected_right_special_power = atoi(content);
+
+			fclose(config_file);
+		}
+		else
+		{ // zyk: if the file does not exist yet, load default Magic Master config
+			ent->client->sess.magic_fist_selection = 0;
+			ent->client->sess.magic_master_disabled_powers = 0;
+			ent->client->sess.selected_special_power = 1;
+			ent->client->sess.selected_left_special_power = 1;
+			ent->client->sess.selected_right_special_power = 1;
+		}
+	}
+}
+
+void zyk_save_magic_master_config(gentity_t *ent)
+{
+	if (ent->client->pers.rpg_class == 8)
+	{
+		FILE *config_file = fopen(va("configs/%s_magicmaster_config.txt", ent->client->sess.filename),"w");
+
+		if (config_file)
+		{
+			fprintf(config_file, "%d\n%d\n%d\n%d\n%d\n", ent->client->sess.magic_fist_selection, ent->client->sess.magic_master_disabled_powers,
+					ent->client->sess.selected_special_power, ent->client->sess.selected_left_special_power, ent->client->sess.selected_right_special_power);
+			fclose(config_file);
+		}
+	}
+}
+
 /*
 ==================
 Cmd_LoginAccount_f
@@ -5521,6 +5579,8 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2Admin-Only Mode^7. Use command ^3/list^7.\n\"" );
 		else if (ent->client->sess.amrpgmode == 2)
 		{
+			zyk_load_magic_master_config(ent);
+
 			initialize_rpg_skills(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"^7Account loaded succesfully in ^2RPG Mode^7. Use command ^3/list^7.\n\"" );
 
@@ -11436,6 +11496,8 @@ void do_change_class(gentity_t *ent, int value)
 		add_credits(ent, 10);
 		G_Kill(ent);
 	}
+
+	zyk_load_magic_master_config(ent);
 }
 
 /*
@@ -13884,11 +13946,13 @@ void Cmd_Magic_f( gentity_t *ent ) {
 		if (ent->client->sess.magic_master_disabled_powers & (1 << magic_power))
 		{
 			ent->client->sess.magic_master_disabled_powers &= ~(1 << magic_power);
+			zyk_save_magic_master_config(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"Enabled a magic power.\n\"" );
 		}
 		else
 		{
 			ent->client->sess.magic_master_disabled_powers |= (1 << magic_power);
+			zyk_save_magic_master_config(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"Disabled a magic power.\n\"" );
 		}
 	}
