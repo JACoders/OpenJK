@@ -4426,42 +4426,6 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 	}
 }
 
-// zyk: Sleeping Flowers
-void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
-{
-	int i = 0;
-	int targets_hit = 0;
-
-	// zyk: Universe Power
-	if (ent->client->pers.quest_power_status & (1 << 13))
-	{
-		distance += 100;
-	}
-
-	for (i = 0; i < level.num_entities; i++)
-	{
-		gentity_t *player_ent = &g_entities[i];
-
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
-		{
-			// zyk: removing emotes to prevent exploits
-			if (player_ent->client->pers.player_statuses & (1 << 1))
-			{
-				player_ent->client->pers.player_statuses &= ~(1 << 1);
-				player_ent->client->ps.forceHandExtendTime = level.time;
-			}
-
-			player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-			player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
-			player_ent->client->ps.velocity[2] += 150;
-			player_ent->client->ps.forceDodgeAnim = 0;
-			player_ent->client->ps.quickerGetup = qtrue;
-
-			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
-		}
-	}
-}
-
 // zyk: Poison Mushrooms
 void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 {
@@ -4694,9 +4658,45 @@ void healing_water(gentity_t *ent, int heal_amount)
 	else
 		ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
 
-	zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing_water", "0", "force/heal2", 0, 0, 0, 500);
-
 	G_Sound( ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
+}
+
+// zyk: Sleeping Flowers
+void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
+{
+	int i = 0;
+	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 100;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			// zyk: removing emotes to prevent exploits
+			if (player_ent->client->pers.player_statuses & (1 << 1))
+			{
+				player_ent->client->pers.player_statuses &= ~(1 << 1);
+				player_ent->client->ps.forceHandExtendTime = level.time;
+			}
+
+			player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+			player_ent->client->ps.forceHandExtendTime = level.time + stun_time;
+			player_ent->client->ps.velocity[2] += 150;
+			player_ent->client->ps.forceDodgeAnim = 0;
+			player_ent->client->ps.quickerGetup = qtrue;
+
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_sleeping", "0", "force/heal2", 0, 0, 0, stun_time);
+
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
+		}
+	}
 }
 
 // zyk: Time Power
