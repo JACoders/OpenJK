@@ -1029,6 +1029,10 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		for (i = 0; i < level.num_entities; i++)
 		{
 			ent = &g_entities[i];
+			if (Q_stricmp( ent->targetname, "t475") == 0)
+			{ // zyk: remove the invisible wall at the end of the bridge at start
+				G_FreeEntity( ent );
+			}
 			if (Q_stricmp( ent->target, "field_counter1") == 0)
 			{
 				G_FreeEntity( ent );
