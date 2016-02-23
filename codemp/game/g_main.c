@@ -4692,7 +4692,7 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 			player_ent->client->ps.forceDodgeAnim = 0;
 			player_ent->client->ps.quickerGetup = qtrue;
 
-			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_sleeping", "0", "force/heal2", 0, 0, 0, stun_time);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_sleeping", "0", "force/heal2", 0, 0, 0, 800);
 
 			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/air_burst.mp3"));
 		}
