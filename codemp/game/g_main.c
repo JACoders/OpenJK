@@ -4184,6 +4184,19 @@ int zyk_number_of_allies(gentity_t *ent)
 	return number_of_allies;
 }
 
+// zyk: starts the boss battle music
+void zyk_start_boss_battle_music(gentity_t *ent)
+{
+	if (ent->client->pers.player_settings & (1 << 14)) // Custom
+		trap->SetConfigstring( CS_MUSIC, "music/boss_custom.mp3" );
+	else if (ent->client->pers.player_settings & (1 << 24)) // Korriban Action
+		trap->SetConfigstring( CS_MUSIC, "music/kor_lite/korrib_action.mp3" );
+	else if (ent->client->pers.player_settings & (1 << 25)) // MP Duel
+		trap->SetConfigstring( CS_MUSIC, "music/mp/duel.mp3" );
+	else // Hoth2 Action
+		trap->SetConfigstring( CS_MUSIC, "music/hoth2/hoth2_action.mp3" );
+}
+
 // zyk: spawns a RPG quest boss and set his HP based in the quantity of allies the quest player has now
 extern void clean_effect();
 extern gentity_t *NPC_SpawnType( gentity_t *ent, char *npc_type, char *targetname, qboolean isVehicle ); // zyk: used in boss battles
@@ -4248,14 +4261,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	}
 
 	// zyk: boss battle music
-	if (ent->client->pers.player_settings & (1 << 14)) // Custom
-		trap->SetConfigstring( CS_MUSIC, "music/boss_custom.mp3" );
-	else if (ent->client->pers.player_settings & (1 << 24)) // Korriban Action
-		trap->SetConfigstring( CS_MUSIC, "music/kor_lite/korrib_action.mp3" );
-	else if (ent->client->pers.player_settings & (1 << 25)) // MP Duel
-		trap->SetConfigstring( CS_MUSIC, "music/mp/duel.mp3" );
-	else // Hoth2 Action
-		trap->SetConfigstring( CS_MUSIC, "music/hoth2/hoth2_action.mp3" );
+	zyk_start_boss_battle_music(ent);
 
 	// zyyk: removing noclip from the player
 	ent->client->noclip = qfalse;

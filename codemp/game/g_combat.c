@@ -2195,6 +2195,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			attacker->client->pers.credits_modifier = 990;
 			trap->SendServerCommand( -1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the map guardian\n\"", attacker->client->pers.netname) );
 			level.guardian_quest = 0;
+			level.boss_battle_music_reset_timer = level.time + 1000;
 		}
 
 		if (attacker->client->pers.rpg_class == 2)
@@ -2226,6 +2227,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	{ // zyk: map guardian npc defeated by a non-rpg player
 		trap->SendServerCommand( -1, va("chat \"^3Guardian Quest:^7Map Guardian not defeated by rpg player\n\"") );
 		level.guardian_quest = 0;
+		level.boss_battle_music_reset_timer = level.time + 1000;
 	}
 
 	// zyk: if player dies being mind controlled or controlling someone, stop mind control

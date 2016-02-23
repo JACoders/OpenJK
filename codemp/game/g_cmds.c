@@ -11532,6 +11532,7 @@ void Cmd_RpgClass_f( gentity_t *ent ) {
 Cmd_GuardianQuest_f
 ==================
 */
+extern void zyk_start_boss_battle_music(gentity_t *ent);
 extern gentity_t *Zyk_NPC_SpawnType( char *npc_type, int x, int y, int z, int yaw );
 void Cmd_GuardianQuest_f( gentity_t *ent ) {
 
@@ -11597,6 +11598,8 @@ void Cmd_GuardianQuest_f( gentity_t *ent ) {
 			level.initial_map_guardian_weapons = npc_ent->client->ps.stats[STAT_WEAPONS];
 			level.guardian_quest = npc_ent->s.number;
 		}
+
+		zyk_start_boss_battle_music(ent);
 
 		trap->SendServerCommand( -1, va("chat \"The ^3Guardian Quest ^7is activated!\"") );
 	}
