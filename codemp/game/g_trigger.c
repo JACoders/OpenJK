@@ -898,7 +898,13 @@ This trigger will always fire.  It is activated by the world.
 */
 void SP_trigger_always (gentity_t *ent) {
 	// we must have some delay to make sure our use targets are present
-	ent->nextthink = level.time + 300;
+
+	// zyk: added a wait time so it will be possible to save it in entity file (before it gets removed)
+	if (ent->spawnflags & 65536)
+		ent->nextthink = level.time + ent->count;
+	else
+		ent->nextthink = level.time + 300;
+
 	ent->think = trigger_always_think;
 }
 

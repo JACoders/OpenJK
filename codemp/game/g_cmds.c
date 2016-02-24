@@ -12206,9 +12206,9 @@ void Cmd_EntEdit_f( gentity_t *ent ) {
 	{
 		// zyk: players have their origin and yaw set in ps struct
 		if (entity_id < MAX_CLIENTS)
-			trap->SendServerCommand( ent-g_entities, va("print \"^2Entity %d\n^3classname: ^7%s\n^3targetname: ^7%s\n^3target: ^7%s\n^3target2: ^7%s\n^3target3: ^7%s\n^3target4: ^7%s\n^3spawnflags: ^7%d\n^3count: ^70\n^3bouncecount: ^70\n^3fly_sound_debounce_time: ^70\n^3wait: ^7%f\n^3delay: ^7%d\n^3message: ^7%s\n^3model: ^7%s\n^3model2: ^7%s\n^3origin(x y z): ^7%d %d %d\n^3angles(x y z): ^7%d %d %d\n^3mins(x y z): ^7%d %d %d\n^3maxs(x y z): ^7%d %d %d\n^3soundSet: ^7%s\n^3material: ^7%d\n^3script_targetname: ^7(null)\n^3usescript: ^7(null)\n^3radius: ^70\n\"",this_ent->s.number,this_ent->classname,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->target3,this_ent->target4,this_ent->spawnflags,this_ent->wait,this_ent->delay,this_ent->message,this_ent->model,this_ent->model2,(int)this_ent->client->ps.origin[0],(int)this_ent->client->ps.origin[1],(int)this_ent->client->ps.origin[2],(int)this_ent->client->ps.viewangles[0],(int)this_ent->client->ps.viewangles[1],(int)this_ent->client->ps.viewangles[2],(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->soundSet,this_ent->material) );
+			trap->SendServerCommand( ent-g_entities, va("print \"^2Entity %d\n^3classname: ^7%s\n^3targetname: ^7%s\n^3target: ^7%s\n^3target2: ^7%s\n^3target3: ^7%s\n^3target4: ^7%s\n^3spawnflags: ^7%d\n^3count: ^70\n^3bouncecount: ^70\n^3fly_sound_debounce_time: ^70\n^3wait: ^7%f\n^3delay: ^7%d\n^3message: ^7%s\n^3model: ^7%s\n^3model2: ^7%s\n^3origin(x y z): ^7%d %d %d\n^3angles(x y z): ^7%d %d %d\n^3mins(x y z): ^7%d %d %d\n^3maxs(x y z): ^7%d %d %d\n^3soundSet: ^7%s\n^3material: ^7%d\n^3script_targetname: ^7(null)\n^3usescript: ^7(null)\n^3radius: ^70\n^3targetShaderName: ^7(null)\n^3targetShaderNewName: ^7(null)\n\"",this_ent->s.number,this_ent->classname,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->target3,this_ent->target4,this_ent->spawnflags,this_ent->wait,this_ent->delay,this_ent->message,this_ent->model,this_ent->model2,(int)this_ent->client->ps.origin[0],(int)this_ent->client->ps.origin[1],(int)this_ent->client->ps.origin[2],(int)this_ent->client->ps.viewangles[0],(int)this_ent->client->ps.viewangles[1],(int)this_ent->client->ps.viewangles[2],(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->soundSet,this_ent->material) );
 		else
-			trap->SendServerCommand( ent-g_entities, va("print \"^2Entity %d\n^3classname: ^7%s\n^3targetname: ^7%s\n^3target: ^7%s\n^3target2: ^7%s\n^3target3: ^7%s\n^3target4: ^7%s\n^3spawnflags: ^7%d\n^3count: ^7%d\n^3bouncecount: ^7%d\n^3fly_sound_debounce_time: ^7%d\n^3wait: ^7%f\n^3delay: ^7%d\n^3message: ^7%s\n^3model: ^7%s\n^3model2: ^7%s\n^3origin(x y z): ^7%d %d %d\n^3angles(x y z): ^7%d %d %d\n^3mins(x y z): ^7%d %d %d\n^3maxs(x y z): ^7%d %d %d\n^3soundSet: ^7%s\n^3material: ^7%d\n^3script_targetname: ^7%s\n^3usescript: ^7%s\n^3radius: ^7%f\n\"",this_ent->s.number,this_ent->classname,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->target3,this_ent->target4,this_ent->spawnflags,this_ent->count,this_ent->bounceCount,this_ent->fly_sound_debounce_time,this_ent->wait,this_ent->delay,this_ent->message,this_ent->model,this_ent->model2,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->soundSet,this_ent->material,this_ent->script_targetname,this_ent->behaviorSet[BSET_USE],this_ent->radius) );
+			trap->SendServerCommand( ent-g_entities, va("print \"^2Entity %d\n^3classname: ^7%s\n^3targetname: ^7%s\n^3target: ^7%s\n^3target2: ^7%s\n^3target3: ^7%s\n^3target4: ^7%s\n^3spawnflags: ^7%d\n^3count: ^7%d\n^3bouncecount: ^7%d\n^3fly_sound_debounce_time: ^7%d\n^3wait: ^7%f\n^3delay: ^7%d\n^3message: ^7%s\n^3model: ^7%s\n^3model2: ^7%s\n^3origin(x y z): ^7%d %d %d\n^3angles(x y z): ^7%d %d %d\n^3mins(x y z): ^7%d %d %d\n^3maxs(x y z): ^7%d %d %d\n^3soundSet: ^7%s\n^3material: ^7%d\n^3script_targetname: ^7%s\n^3usescript: ^7%s\n^3radius: ^7%f\n^3targetShaderName: ^7%s\n^3targetShaderNewName: ^7%s\n\"",this_ent->s.number,this_ent->classname,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->target3,this_ent->target4,this_ent->spawnflags,this_ent->count,this_ent->bounceCount,this_ent->fly_sound_debounce_time,this_ent->wait,this_ent->delay,this_ent->message,this_ent->model,this_ent->model2,(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],(int)this_ent->r.mins[0],(int)this_ent->r.mins[1],(int)this_ent->r.mins[2],(int)this_ent->r.maxs[0],(int)this_ent->r.maxs[1],(int)this_ent->r.maxs[2],this_ent->soundSet,this_ent->material,this_ent->script_targetname,this_ent->behaviorSet[BSET_USE],this_ent->radius,this_ent->targetShaderName,this_ent->targetShaderNewName) );
 	}
 	else
 	{
@@ -12340,9 +12340,9 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "target_relay") == 0)
 			{
-				fprintf(this_file,"target_relay\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%f\n",
+				fprintf(this_file,"target_relay\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%f\n%s\n%s\n",
 					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,
-					this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait);
+					this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait,this_ent->targetShaderName,this_ent->targetShaderNewName);
 			}
 			else if (Q_stricmp(this_ent->classname, "target_counter") == 0)
 			{
@@ -12351,8 +12351,9 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "target_delay") == 0)
 			{
-				fprintf(this_file,"target_delay\n%d\n%s\n%s\n%s\n%f\n%f\n",
-					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait,this_ent->random);
+				fprintf(this_file,"target_delay\n%d\n%s\n%s\n%s\n%f\n%f\n%s\n%s\n",
+					this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->target2,this_ent->wait,this_ent->random,
+					this_ent->targetShaderName,this_ent->targetShaderNewName);
 			}
 			else if (Q_stricmp(this_ent->classname, "target_kill") == 0)
 			{
@@ -12389,6 +12390,13 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					this_ent->s.origin[1],this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],
 					this_ent->s.angles[2],this_ent->spawnflags,this_ent->targetname,this_ent->target,this_ent->r.mins[0],this_ent->r.mins[1],
 					this_ent->r.mins[2],this_ent->r.maxs[0],this_ent->r.maxs[1],this_ent->r.maxs[2],this_ent->wait,this_ent->model);
+			}
+			else if (Q_stricmp(this_ent->classname, "trigger_always") == 0)
+			{
+				fprintf(this_file,"target_random\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%s\n%s\n%d\n",
+					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,
+					this_ent->targetname,this_ent->target,this_ent->target2,
+					this_ent->targetShaderName,this_ent->targetShaderNewName,this_ent->count);
 			}
 			else if (Q_stricmp(this_ent->classname, "misc_model_breakable") == 0)
 			{
