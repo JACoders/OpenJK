@@ -12315,6 +12315,12 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname);
 			}
+			else if (Q_stricmp(this_ent->classname, "misc_bsp") == 0)
+			{
+				fprintf(this_file,"misc_bsp\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n",this_ent->s.origin[0],this_ent->s.origin[1],
+					this_ent->s.origin[2],this_ent->s.angles[0],this_ent->s.angles[1],this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->message);
+			}
 			else if (Q_stricmp(this_ent->classname, "target_print") == 0)
 			{
 				fprintf(this_file,"target_print\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n%s\n",
@@ -12393,7 +12399,7 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp(this_ent->classname, "trigger_always") == 0)
 			{
-				fprintf(this_file,"target_random\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%s\n%s\n%d\n",
+				fprintf(this_file,"trigger_always\n%f\n%f\n%f\n%d\n%s\n%s\n%s\n%s\n%s\n%d\n",
 					this_ent->s.origin[0],this_ent->s.origin[1],this_ent->s.origin[2],this_ent->spawnflags,
 					this_ent->targetname,this_ent->target,this_ent->target2,
 					this_ent->targetShaderName,this_ent->targetShaderNewName,this_ent->count);

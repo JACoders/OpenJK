@@ -1059,7 +1059,11 @@ void SP_misc_bsp(gentity_t *ent)
 	ent->s.angles[0] = 0.0;
 	ent->s.angles[2] = 0.0;
 
-	G_SpawnString("bspmodel", "", &out);
+	// zyk: allows player to pass the bsp model name with entity system
+	if (ent->spawnflags & 65536)
+		out = G_NewString(ent->message);
+	else
+		G_SpawnString("bspmodel", "", &out);
 
 	ent->s.eFlags = EF_PERMANENT;
 
