@@ -627,3 +627,17 @@ void RB_CommitInternalBufferData()
 	tess.internalIBOCommitOffset = tess.internalIBOWriteOffset;
 	tess.internalVBOCommitOffset = tess.internalVBOWriteOffset;
 }
+
+void RB_UpdateUniformBlock(uniformBlock_t block, void *data)
+{
+	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
+	gpuFrame_t *thisFrame = backEndData->currentFrame;
+
+	qglBufferSubData(GL_UNIFORM_BUFFER,
+			thisFrame->uboWriteOffset, blockInfo->size, data);
+	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
+			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
+
+	size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
+	thisFrame->uboWriteOffset += alignedBlockSize;
+}

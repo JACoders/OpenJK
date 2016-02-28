@@ -2854,6 +2854,7 @@ void            R_VBOList_f(void);
 
 void            RB_UpdateVBOs(unsigned int attribBits);
 void			RB_CommitInternalBufferData();
+void			RB_UpdateUniformBlock(uniformBlock_t block, void *data);
 void			CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties);
 void			CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties);
 

@@ -2142,19 +2142,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	GL_State(firstStage->stateBits);
 	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
 	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
-
-	qglBufferSubData(GL_UNIFORM_BUFFER,
-			backEndData->currentFrame->uboWriteOffset, sizeof(data), 
-			&data);
-	qglBindBufferRange(GL_UNIFORM_BUFFER,
-			uniformBlocksInfo[UNIFORM_BLOCK_SURFACESPRITE].slot,
-			backEndData->currentFrame->ubo,
-			backEndData->currentFrame->uboWriteOffset,
-			sizeof(data));
-
-	size_t alignedBlockSize = (sizeof(data) + 255) & ~255;
-	backEndData->currentFrame->uboWriteOffset += alignedBlockSize;
-
+	RB_UpdateUniformBlock(UNIFORM_BLOCK_SURFACESPRITE, &data);
 	GLSL_SetUniformMatrix4x4(program,
 			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 	GLSL_SetUniformVec3(program,
