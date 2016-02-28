@@ -1615,9 +1615,15 @@ int GLSL_BeginLoadGPUShaders(void)
 	{
 		extradefines[0] = '\0';
 
+		if ( (i & SSDEF_FACE_CAMERA) && (i & SSDEF_FACE_UP) )
+			continue;
+
 		if ( i & SSDEF_FACE_CAMERA )
 			Q_strcat(extradefines, sizeof(extradefines),
 					"#define FACE_CAMERA\n");
+		else if ( i & SSDEF_FACE_UP )
+			Q_strcat(extradefines, sizeof(extradefines),
+					"#define FACE_UP\n");
 
 		if ( i & SSDEF_ALPHA_TEST )
 			Q_strcat(extradefines, sizeof(extradefines),
@@ -1929,6 +1935,9 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 	for ( int i = 0; i < SSDEF_COUNT; ++i )
 	{
+		if ( (i & SSDEF_FACE_CAMERA) && (i & SSDEF_FACE_UP) )
+			continue;
+
 		shaderProgram_t *program = tr.spriteShader + i;
 		if (!GLSL_EndLoadGPUShader(program))
 			ri->Error(ERR_FATAL, "Could not compile surface sprites shader!");

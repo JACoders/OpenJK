@@ -54,6 +54,9 @@ void main()
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
 	offset.xy = offset.x*vec2(toCamera.y, -toCamera.x);
+#elif defined(FACE_UP)
+	// Make this sprite face upwards
+	offset = offset.xxy;
 #else
 	// Make this sprite face in some direction
 	offset.xy = offset.x*attr_Normal.xy;

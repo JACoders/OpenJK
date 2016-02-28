@@ -3465,6 +3465,9 @@ static void R_GenerateSurfaceSprites(
 				VectorMA(sprite.position, y, p1, sprite.position);
 				VectorMA(sprite.position, z, p2, sprite.position);
 
+				// x*x + y*y = 1.0
+				// => y*y = 1.0 - x*x
+				// => y = -/+sqrt(1.0 - x*x)
 				float nx = flrand(-1.0f, 1.0f);
 				float ny = std::sqrtf(1.0f - nx*nx);
 				ny *= irand(0, 1) ? -1 : 1;

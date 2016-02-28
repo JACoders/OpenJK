@@ -1084,8 +1084,9 @@ enum
 {
 	SSDEF_FACE_CAMERA					= 0x01,
 	SSDEF_ALPHA_TEST					= 0x02,
+	SSDEF_FACE_UP						= 0x03,
 
-	SSDEF_ALL							= 0x03,
+	SSDEF_ALL							= 0x07,
 	SSDEF_COUNT							= SSDEF_ALL + 1
 };
 
