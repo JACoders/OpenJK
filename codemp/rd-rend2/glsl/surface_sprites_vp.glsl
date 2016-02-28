@@ -31,13 +31,23 @@ void main()
 						distanceToCamera);
 	width += u_FadeScale * fadeScale * u_Width;
 
+	float halfWidth = width * 0.5;
 	vec3 offsets[] = vec3[](
-		vec3(-width * 0.5, 0.0, 0.0),
-		vec3( width * 0.5, 0.0, 0.0),
-		vec3(-width * 0.5, 0.0, height),
-		vec3( width * 0.5, 0.0, 0.0),
-		vec3( width * 0.5, 0.0, height),
-		vec3(-width * 0.5, 0.0, height)
+#if defined(FACE_UP)
+		vec3(-halfWidth, -halfWidth, 0.0),
+		vec3( halfWidth, -halfWidth, 0.0),
+		vec3(-halfWidth,  halfWidth, 0.0),
+		vec3( halfWidth, -halfWidth, 0.0),
+		vec3( halfWidth,  halfWidth, 0.0),
+		vec3(-halfWidth,  halfWidth, 0.0)
+#else
+		vec3(-halfWidth, 0.0, 0.0),
+		vec3( halfWidth, 0.0, 0.0),
+		vec3(-halfWidth, 0.0, height),
+		vec3( halfWidth, 0.0, 0.0),
+		vec3( halfWidth, 0.0, height),
+		vec3(-halfWidth, 0.0, height)
+#endif
 	);
 
 	const vec2 texcoords[] = vec2[](
@@ -54,10 +64,7 @@ void main()
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
 	offset.xy = offset.x*vec2(toCamera.y, -toCamera.x);
-#elif defined(FACE_UP)
-	// Make this sprite face upwards
-	offset = offset.xxy;
-#else
+#elif !defined(FACE_UP)
 	// Make this sprite face in some direction
 	offset.xy = offset.x*attr_Normal.xy;
 #endif
