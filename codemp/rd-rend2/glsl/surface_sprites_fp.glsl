@@ -1,6 +1,7 @@
 uniform sampler2D u_DiffuseMap;
 
 in vec2 var_TexCoords;
+in float var_Alpha;
 
 #if defined(ALPHA_TEST)
 uniform float u_AlphaTestValue;
@@ -22,9 +23,12 @@ out vec4 out_Glow;
 
 void main()
 {
+	const float alphaTestValue = 0.5;
 	out_Color = texture(u_DiffuseMap, var_TexCoords);
+	out_Color.a *= var_Alpha*(1.0 - alphaTestValue) + alphaTestValue;
+
 //#if defined(ALPHA_TEST)
-	if ( out_Color.a < 0.5 )
+	if ( out_Color.a < alphaTestValue )
 		discard;
 //#endif
 

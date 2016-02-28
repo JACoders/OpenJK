@@ -16,6 +16,7 @@ layout(std140) uniform SurfaceSprite
 };
 
 out vec2 var_TexCoords;
+out float var_Alpha;
 
 void main()
 {
@@ -26,9 +27,9 @@ void main()
 	float height = u_Height * (1.0 + u_HeightVariance*0.5);
 
 	float distanceToCamera = length(V);
-	float widthScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
+	float fadeScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
 						distanceToCamera);
-	width += u_FadeScale * widthScale * u_Width;
+	width += u_FadeScale * fadeScale * u_Width;
 
 	vec3 offsets[] = vec3[](
 		vec3(-width * 0.5, 0.0, 0.0),
@@ -49,7 +50,6 @@ void main()
 	);
 
 	vec3 preOffset = offsets[gl_VertexID];
-	preOffset.x += width;
 
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
@@ -62,4 +62,5 @@ void main()
 	vec4 worldPos = vec4(attr_Position + offset, 1.0);
 	gl_Position = u_ModelViewProjectionMatrix * worldPos;
 	var_TexCoords = texcoords[gl_VertexID];
+	var_Alpha = 1.0 - fadeScale;
 }
