@@ -1079,6 +1079,16 @@ enum
 	LIGHTDEF_COUNT               		= 0x0800
 };
 
+// Surface sprite shader flags
+enum
+{
+	SSDEF_FACE_CAMERA					= 0x01,
+	SSDEF_ALPHA_TEST					= 0x02,
+
+	SSDEF_ALL							= 0x03,
+	SSDEF_COUNT							= SSDEF_ALL + 1
+};
+
 enum
 {
 	GLSL_INT,
@@ -2194,7 +2204,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t glowCompositeShader;
 	shaderProgram_t dglowDownsample;
 	shaderProgram_t dglowUpsample;
-	shaderProgram_t spriteShader;
+	shaderProgram_t spriteShader[SSDEF_COUNT];
 
 	// -----------------------------------------
 

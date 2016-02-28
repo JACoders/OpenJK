@@ -2124,14 +2124,23 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	// TODO: Check which pass (z-prepass/shadow/forward) we're rendering for?
 	shader_t *shader = surf->shader;
 	shaderStage_t *firstStage = shader->stages[0];
-	shaderProgram_t *program = firstStage->glslShaderGroup;
+	shaderProgram_t *programGroup = firstStage->glslShaderGroup;
+	const surfaceSprite_t *ss = surf->sprite;
 
+	uint32_t shaderFlags = 0;
+	if ( firstStage->alphaTestCmp != ATEST_CMP_NONE )
+		shaderFlags |= SSDEF_ALPHA_TEST;
+
+	if ( ss->type == SURFSPRITE_ORIENTED )
+		shaderFlags |= SSDEF_FACE_CAMERA;
+
+	shaderProgram_t *program = programGroup + shaderFlags;
 	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
 
-	const surfaceSprite_t *ss = surf->sprite;
 	SurfaceSpriteBlock data = {};
 	data.width = ss->width;
-	data.height = ss->height;
+	data.height = (ss->facing == SURFSPRITE_FACING_DOWN)
+					? -ss->height : ss->height;
 	data.fadeStartDistance = ss->fadeDist;
 	data.fadeEndDistance = ss->fadeMax;
 	data.fadeScale = ss->fadeScale;
@@ -2140,6 +2149,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 
 	GLSL_BindProgram(program);
 	GL_State(firstStage->stateBits);
+	GL_Cull(CT_TWO_SIDED);
 	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
 	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
 	RB_UpdateUniformBlock(UNIFORM_BLOCK_SURFACESPRITE, &data);

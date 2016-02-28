@@ -3402,6 +3402,7 @@ static uint32_t UpdateHash( const char *text, uint32_t hash )
 
 static void R_GenerateSurfaceSprites(
 		const srfBspSurface_t *bspSurf,
+		const shader_t *shader,
 		const shaderStage_t *stage,
 		srfSprites_t *out)
 {
@@ -3488,7 +3489,10 @@ static void R_GenerateSurfaceSprites(
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
 			bundle, stage->stateBits);
-	out->shader->stages[0]->glslShaderGroup = &tr.spriteShader;
+	// FIXME: Need a better way to handle this.
+	out->shader->cullType = shader->cullType;
+	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
+	out->shader->stages[0]->alphaTestCmp = stage->alphaTestCmp;
 	out->numAttributes = 2;
 	out->attributes = (vertexAttribute_t *)ri->Hunk_Alloc(
 			sizeof(vertexAttribute_t) * 2, h_low);
@@ -3552,7 +3556,7 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 					}
 
 					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
-					R_GenerateSurfaceSprites(bspSurf, stage, sprite);
+					R_GenerateSurfaceSprites(bspSurf, shader, stage, sprite);
 					++surfaceSpriteNum;
 				}
 				break;

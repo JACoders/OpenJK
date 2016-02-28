@@ -27,10 +27,10 @@ void main()
 	out_Color = texture(u_DiffuseMap, var_TexCoords);
 	out_Color.a *= var_Alpha*(1.0 - alphaTestValue) + alphaTestValue;
 
-//#if defined(ALPHA_TEST)
+#if defined(ALPHA_TEST)
 	if ( out_Color.a < alphaTestValue )
 		discard;
-//#endif
+#endif
 
 	out_Glow = vec4(0.0);
 }

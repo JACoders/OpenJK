@@ -638,6 +638,7 @@ void RB_UpdateUniformBlock(uniformBlock_t block, void *data)
 	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
 			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
 
+	// FIXME: Use actual ubo alignment
 	size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
 	thisFrame->uboWriteOffset += alignedBlockSize;
 }

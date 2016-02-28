@@ -49,14 +49,14 @@ void main()
 		vec2(0.0, 0.0)
 	);
 
-	vec3 preOffset = offsets[gl_VertexID];
+	vec3 offset = offsets[gl_VertexID];
 
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
-	vec2 perp = vec2(toCamera.y, -toCamera.x);
-	vec3 offset = vec3(perp*preOffset.x, preOffset.z);
+	offset.xy *= vec2(toCamera.y, -toCamera.x);
 #else
-	vec3 offset = preOffset;
+	// Make this sprite face in some direction
+	//offset.xy *= attr_Normal.xy;
 #endif
 
 	vec4 worldPos = vec4(attr_Position + offset, 1.0);

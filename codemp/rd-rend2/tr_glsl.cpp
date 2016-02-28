@@ -1611,12 +1611,25 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 
 	attribs = ATTR_POSITION | ATTR_NORMAL;
-	extradefines[0] = '\0';
-	if (!GLSL_BeginLoadGPUShader(&tr.spriteShader, "surface_sprites", attribs,
-				qtrue, extradefines, fallbackShader_surface_sprites_vp,
-				fallbackShader_surface_sprites_fp))
+	for ( int i = 0; i < SSDEF_COUNT; ++i )
 	{
-		ri->Error(ERR_FATAL, "Could not load surface sprites shader!");
+		extradefines[0] = '\0';
+
+		if ( i & SSDEF_FACE_CAMERA )
+			Q_strcat(extradefines, sizeof(extradefines),
+					"#define FACE_CAMERA\n");
+
+		if ( i & SSDEF_ALPHA_TEST )
+			Q_strcat(extradefines, sizeof(extradefines),
+					"#define ALPHA_TEST\n");
+
+		if (!GLSL_BeginLoadGPUShader(tr.spriteShader + i, "surface_sprites",
+					attribs, qtrue, extradefines,
+					fallbackShader_surface_sprites_vp,
+					fallbackShader_surface_sprites_fp))
+		{
+			ri->Error(ERR_FATAL, "Could not load surface sprites shader!");
+		}
 	}
 
 	return startTime;
@@ -1914,12 +1927,16 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 	numEtcShaders++;
 
-	if (!GLSL_EndLoadGPUShader(&tr.spriteShader))
-		ri->Error(ERR_FATAL, "Could not compile surface sprites shader!");
+	for ( int i = 0; i < SSDEF_COUNT; ++i )
+	{
+		shaderProgram_t *program = tr.spriteShader + i;
+		if (!GLSL_EndLoadGPUShader(program))
+			ri->Error(ERR_FATAL, "Could not compile surface sprites shader!");
 
-	GLSL_InitUniforms(&tr.spriteShader);
-	GLSL_FinishGPUShader(&tr.spriteShader);
-	numEtcShaders++;
+		GLSL_InitUniforms(program);
+		GLSL_FinishGPUShader(program);
+		numEtcShaders++;
+	}
 
 #if 0
 	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
