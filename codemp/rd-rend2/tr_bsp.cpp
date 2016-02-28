@@ -3487,12 +3487,14 @@ static void R_GenerateSurfaceSprites(
 	out->numSprites = sprites.size();
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
+
+	// FIXME: Need a better way to handle this.
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
 			bundle, stage->stateBits);
-	// FIXME: Need a better way to handle this.
 	out->shader->cullType = shader->cullType;
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
 	out->shader->stages[0]->alphaTestCmp = stage->alphaTestCmp;
+
 	out->numAttributes = 2;
 	out->attributes = (vertexAttribute_t *)ri->Hunk_Alloc(
 			sizeof(vertexAttribute_t) * 2, h_low);

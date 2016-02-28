@@ -3734,6 +3734,7 @@ from the current global working shader
 */
 static shader_t *FinishShader( void ) {
 	int stage;
+	uint32_t shaderStateBits = 0;
 	qboolean hasLightmapStage = qfalse;
 
 	//
@@ -3748,6 +3749,7 @@ static shader_t *FinishShader( void ) {
 	//
 	if ( shader.polygonOffset && !shader.sort ) {
 		shader.sort = SS_DECAL;
+		shaderStateBits |= GLS_POLYGON_OFFSET_FILL;
 	}
 
 	int lmStage;
@@ -3845,14 +3847,6 @@ static shader_t *FinishShader( void ) {
 		}
 
 		//
-		// add additional state bits
-		//
-		if ( shader.polygonOffset )
-		{
-			pStage->stateBits |= GLS_POLYGON_OFFSET_FILL;
-		}
-
-		//
 		// ditch this stage if it's detail and detail textures are disabled
 		//
 		if ( pStage->isDetail && !r_detailTextures->integer )
@@ -3877,6 +3871,8 @@ static shader_t *FinishShader( void ) {
 			
 			continue;
 		}
+
+		pStage->stateBits |= shaderStateBits;
 
 		//
 		// default texture coordinate generation
