@@ -2118,19 +2118,48 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 
 	RB_EndSurface();
 
+	// TODO: Do we want a 2-level lod system where far away sprites are
+	// just flat surfaces?
+	
 	// TODO: Check which pass (z-prepass/shadow/forward) we're rendering for?
 	shader_t *shader = surf->shader;
 	shaderStage_t *firstStage = shader->stages[0];
 	shaderProgram_t *program = firstStage->glslShaderGroup;
 
+	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
+
+	const surfaceSprite_t *ss = surf->sprite;
+	SurfaceSpriteBlock data = {};
+	data.width = ss->width;
+	data.height = ss->height;
+	data.fadeStartDistance = ss->fadeDist;
+	data.fadeEndDistance = ss->fadeMax;
+	data.fadeScale = ss->fadeScale;
+	data.widthVariance = ss->variance[0];
+	data.heightVariance = ss->variance[1];
+
 	GLSL_BindProgram(program);
 	GL_State(firstStage->stateBits);
 	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
 	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
+
+	qglBufferSubData(GL_UNIFORM_BUFFER,
+			backEndData->currentFrame->uboWriteOffset, sizeof(data), 
+			&data);
+	qglBindBufferRange(GL_UNIFORM_BUFFER,
+			uniformBlocksInfo[UNIFORM_BLOCK_SURFACESPRITE].slot,
+			backEndData->currentFrame->ubo,
+			backEndData->currentFrame->uboWriteOffset,
+			sizeof(data));
+
+	size_t alignedBlockSize = (sizeof(data) + 255) & ~255;
+	backEndData->currentFrame->uboWriteOffset += alignedBlockSize;
+
 	GLSL_SetUniformMatrix4x4(program,
 			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 	GLSL_SetUniformVec3(program,
 			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
+
 	qglDrawArraysInstanced(GL_TRIANGLES, 0, 6, surf->numSprites);
 }
 

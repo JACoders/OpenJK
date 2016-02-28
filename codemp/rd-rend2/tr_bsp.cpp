@@ -3482,7 +3482,7 @@ static void R_GenerateSurfaceSprites(
 	}
 
 	out->surfaceType = SF_SPRITES;
-	out->spriteType = surfaceSprite->type;
+	out->sprite = surfaceSprite;
 	out->numSprites = sprites.size();
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);

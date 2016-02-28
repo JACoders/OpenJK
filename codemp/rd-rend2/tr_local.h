@@ -642,6 +642,17 @@ enum surfaceSpriteOrientation_t
 	SURFSPRITE_FACING_ANY,
 };
 
+struct SurfaceSpriteBlock
+{
+	float width;
+	float height;
+	float fadeStartDistance;
+	float fadeEndDistance;
+	float fadeScale;
+	float widthVariance;
+	float heightVariance;
+};
+
 struct surfaceSprite_t
 {
 	surfaceSpriteType_t type;
@@ -1079,6 +1090,20 @@ enum
 	GLSL_MAT4x4,
 };
 
+enum uniformBlock_t
+{
+	UNIFORM_BLOCK_SURFACESPRITE,
+	UNIFORM_BLOCK_COUNT
+};
+
+struct uniformBlockInfo_t
+{
+	int slot;
+	const char *name;
+	size_t size;
+};
+extern const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT];
+
 typedef enum
 {
 	UNIFORM_DIFFUSEMAP = 0,
@@ -1183,10 +1208,12 @@ typedef struct shaderProgram_s
 	uint32_t        attribs;	// vertex array attributes
 
 	// uniform parameters
-	int numUniforms;
 	GLint *uniforms;
 	short *uniformBufferOffsets;
 	char  *uniformBuffer;
+
+	// uniform blocks
+	uint32_t uniformBlocks;
 } shaderProgram_t;
 
 struct technique_t
@@ -1391,7 +1418,7 @@ struct srfSprites_t
 	surfaceType_t surfaceType;
 
 	shader_t *shader;
-	surfaceSpriteType_t spriteType;
+	const surfaceSprite_t *sprite;
 	int numSprites;
 	VBO_t *vbo;
 	IBO_t *ibo;
@@ -3182,6 +3209,8 @@ struct gpuTimedBlock_t
 struct gpuFrame_t
 {
 	GLsync sync;
+	GLuint ubo;
+	size_t uboWriteOffset;
 
 	int numTimers;
 	int numTimedBlocks;
@@ -3196,6 +3225,7 @@ struct gpuFrame_t
 typedef struct backEndData_s {
 	unsigned realFrameNumber;
 	gpuFrame_t frames[MAX_FRAMES];
+	gpuFrame_t *currentFrame;
 
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 	dlight_t	dlights[MAX_DLIGHTS];

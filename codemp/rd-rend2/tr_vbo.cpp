@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 
 
+
 uint32_t R_VboPackTangent(vec4_t v)
 {
 	return (((uint32_t)(v[3] * 1.5f   + 2.0f  )) << 30)

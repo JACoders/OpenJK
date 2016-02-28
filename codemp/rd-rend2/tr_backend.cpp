@@ -1746,7 +1746,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 	}
 
 	int frameNumber = backEndData->realFrameNumber;
-	gpuFrame_t *currentFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+	gpuFrame_t *currentFrame = backEndData->currentFrame;
 
 	assert( !currentFrame->sync );
 	currentFrame->sync = qglFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE, 0 );

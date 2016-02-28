@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ghoul2/g2_local.h"
 #include <algorithm>
 
+static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
+
 glconfig_t  glConfig;
 glconfigExt_t glConfigExt;
 glRefConfig_t glRefConfig;
@@ -1577,9 +1579,20 @@ static void R_InitBackEndFrameData()
 	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
 	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
 
+	GLuint ubos[MAX_FRAMES];
+	qglGenBuffers(MAX_FRAMES, ubos);
+
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
+
+		frame->ubo = ubos[i];
+		frame->uboWriteOffset = 0;
+		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
+
+		// TODO: persistently mapped UBOs
+		qglBufferData(GL_UNIFORM_BUFFER, FRAME_UNIFORM_BUFFER_SIZE,
+				nullptr, GL_DYNAMIC_DRAW);
 
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{
@@ -1587,6 +1600,8 @@ static void R_InitBackEndFrameData()
 			timer->queryName = timerQueries[i*MAX_GPU_TIMERS + j];
 		}
 	}
+
+	backEndData->currentFrame = backEndData->frames;
 }
 
 static void R_ShutdownBackEndFrameData()
@@ -1597,6 +1612,8 @@ static void R_ShutdownBackEndFrameData()
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
+
+		qglDeleteBuffers(1, &frame->ubo);
 
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{

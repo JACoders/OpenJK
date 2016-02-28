@@ -4,18 +4,39 @@ in vec3 attr_Normal;
 uniform mat4 u_ModelViewProjectionMatrix;
 uniform vec3 u_ViewOrigin;
 
+layout(std140) uniform SurfaceSprite
+{
+	float u_Width;
+	float u_Height;
+	float u_FadeStartDistance;
+	float u_FadeEndDistance;
+	float u_FadeScale;
+	float u_WidthVariance;
+	float u_HeightVariance;
+};
+
 out vec2 var_TexCoords;
 
 void main()
 {
+	vec3 V = u_ViewOrigin - attr_Position;
 	int vertexID = gl_VertexID;
-	const vec3 offsets[] = vec3[](
-		vec3(-10.0, 0.0,  0.0),
-		vec3( 10.0, 0.0,  0.0),
-		vec3(-10.0, 0.0, 40.0),
-		vec3( 10.0, 0.0,  0.0),
-		vec3( 10.0, 0.0, 40.0),
-		vec3(-10.0, 0.0, 40.0)
+
+	float width = u_Width * (1.0 + u_WidthVariance*0.5);
+	float height = u_Height * (1.0 + u_HeightVariance*0.5);
+
+	float distanceToCamera = length(V);
+	float widthScale = smoothstep(u_FadeStartDistance, u_FadeEndDistance,
+						distanceToCamera);
+	width += u_FadeScale * widthScale * u_Width;
+
+	vec3 offsets[] = vec3[](
+		vec3(-width * 0.5, 0.0, 0.0),
+		vec3( width * 0.5, 0.0, 0.0),
+		vec3(-width * 0.5, 0.0, height),
+		vec3( width * 0.5, 0.0, 0.0),
+		vec3( width * 0.5, 0.0, height),
+		vec3(-width * 0.5, 0.0, height)
 	);
 
 	const vec2 texcoords[] = vec2[](
@@ -27,12 +48,15 @@ void main()
 		vec2(0.0, 0.0)
 	);
 
-#if 1
-	vec2 toCamera = normalize(u_ViewOrigin.xy - attr_Position.xy);
+	vec3 preOffset = offsets[gl_VertexID];
+	preOffset.x += width;
+
+#if defined(FACE_CAMERA)
+	vec2 toCamera = normalize(V.xy);
 	vec2 perp = vec2(toCamera.y, -toCamera.x);
-	vec3 offset = vec3(perp*offsets[gl_VertexID].x, offsets[gl_VertexID].z);
+	vec3 offset = vec3(perp*preOffset.x, preOffset.z);
 #else
-	vec3 offset = offsets[gl_VertexID];
+	vec3 offset = preOffset;
 #endif
 
 	vec4 worldPos = vec4(attr_Position + offset, 1.0);

@@ -476,6 +476,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 	int frameNumber = backEndData->realFrameNumber;
 	gpuFrame_t *thisFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+	backEndData->currentFrame = thisFrame;
 	if ( thisFrame->sync )
 	{
 		GLsync sync = thisFrame->sync;
@@ -502,6 +503,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		}
 		qglDeleteSync( sync );
 		thisFrame->sync = NULL;
+
+		// Set the frame uniform buffer
+		qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo);
+		thisFrame->uboWriteOffset = 0;
 	}
 
 	tr.frameCount++;

@@ -61,6 +61,10 @@ extern const char *fallbackShader_dglow_upsample_fp;
 extern const char *fallbackShader_surface_sprites_vp;
 extern const char *fallbackShader_surface_sprites_fp;
 
+const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
+	{ 10, "SurfaceSprite", sizeof(SurfaceSpriteBlock) }
+};
+
 typedef struct uniformInfo_s
 {
 	char *name;
@@ -682,25 +686,20 @@ static int GLSL_BeginLoadGPUShader(shaderProgram_t * program, const char *name,
 
 void GLSL_InitUniforms(shaderProgram_t *program)
 {
-	int i, size;
+	program->uniforms = (GLint *)Z_Malloc(
+			UNIFORM_COUNT * sizeof(*program->uniforms), TAG_GENERAL);
+	program->uniformBufferOffsets = (short *)Z_Malloc(
+			UNIFORM_COUNT * sizeof(*program->uniformBufferOffsets), TAG_GENERAL);
 
-	GLint *uniforms;
-	
-	program->uniforms = (GLint *)Z_Malloc (UNIFORM_COUNT * sizeof (*program->uniforms), TAG_GENERAL);
-	program->uniformBufferOffsets = (short *)Z_Malloc (UNIFORM_COUNT * sizeof (*program->uniformBufferOffsets), TAG_GENERAL);
-
-	uniforms = program->uniforms;
-
-	size = 0;
-	for (i = 0; i < UNIFORM_COUNT; i++)
+	GLint *uniforms = program->uniforms;
+	int size = 0;
+	for (int i = 0; i < UNIFORM_COUNT; i++)
 	{
 		uniforms[i] = qglGetUniformLocation(program->program, uniformsInfo[i].name);
-
 		if (uniforms[i] == -1)
 			continue;
 		 
 		program->uniformBufferOffsets[i] = size;
-
 		switch(uniformsInfo[i].type)
 		{
 			case GLSL_INT:
@@ -730,6 +729,21 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 	}
 
 	program->uniformBuffer = (char *)Z_Malloc(size, TAG_SHADERTEXT, qtrue);
+
+	program->uniformBlocks = 0;
+	for ( int i = 0; i < UNIFORM_BLOCK_COUNT; ++i )
+	{
+		GLuint blockIndex = qglGetUniformBlockIndex(program->program,
+								uniformBlocksInfo[i].name);
+		if ( blockIndex == GL_INVALID_INDEX )
+		{
+			continue;
+		}
+
+		qglUniformBlockBinding(program->program, blockIndex,
+				uniformBlocksInfo[i].slot);
+		program->uniformBlocks |= (1u << i);
+	}
 }
 
 void GLSL_FinishGPUShader(shaderProgram_t *program)
