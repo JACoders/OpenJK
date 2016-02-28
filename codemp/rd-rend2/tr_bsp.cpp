@@ -3450,8 +3450,8 @@ static void R_GenerateSurfaceSprites(
 		{
 			for ( float b = 0.0f, bend = (1.0f - a); b < bend; b += step )
 			{
-				float x = random()*step + a;
-				float y = random()*step + b;
+				float x = flrand(0.0f, 1.0f)*step + a;
+				float y = flrand(0.0f, 1.0f)*step + b;
 				float z = 1.0f - x - y;
 
 				// Ensure we're inside the triangle bounds.
@@ -3465,10 +3465,11 @@ static void R_GenerateSurfaceSprites(
 				VectorMA(sprite.position, y, p1, sprite.position);
 				VectorMA(sprite.position, z, p2, sprite.position);
 
-				VectorMA(sprite.normal, x, n0, sprite.normal);
-				VectorMA(sprite.normal, y, n1, sprite.normal);
-				VectorMA(sprite.normal, z, n2, sprite.normal);
-				VectorNormalize(sprite.normal);
+				float nx = flrand(-1.0f, 1.0f);
+				float ny = std::sqrtf(1.0f - nx*nx);
+				ny *= irand(0, 1) ? -1 : 1;
+
+				VectorSet(sprite.normal, nx, ny, 0.0f);
 
 				// We have 4 copies for each corner of the quad
 				sprites.push_back(sprite);
@@ -3500,7 +3501,7 @@ static void R_GenerateSurfaceSprites(
 			sizeof(vertexAttribute_t) * 2, h_low);
 
 	out->attributes[0].vbo = out->vbo;
-	out->attributes[0].index = 0;
+	out->attributes[0].index = ATTR_INDEX_POSITION;
 	out->attributes[0].numComponents = 3;
 	out->attributes[0].integerAttribute = qfalse;
 	out->attributes[0].type = GL_FLOAT;
@@ -3510,12 +3511,13 @@ static void R_GenerateSurfaceSprites(
 	out->attributes[0].stepRate = 1;
 
 	out->attributes[1].vbo = out->vbo;
-	out->attributes[1].index = 1;
+	out->attributes[1].index = ATTR_INDEX_NORMAL;
 	out->attributes[1].numComponents = 3;
 	out->attributes[1].integerAttribute = qfalse;
 	out->attributes[1].type = GL_FLOAT;
 	out->attributes[1].normalize = GL_FALSE;
 	out->attributes[1].stride = sizeof(sprite_t);
+	out->attributes[1].offset = offsetof(sprite_t, normal);
 	out->attributes[1].stepRate = 1;
 }
 

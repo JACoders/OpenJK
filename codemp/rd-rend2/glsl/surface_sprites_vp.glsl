@@ -53,10 +53,10 @@ void main()
 
 #if defined(FACE_CAMERA)
 	vec2 toCamera = normalize(V.xy);
-	offset.xy *= vec2(toCamera.y, -toCamera.x);
+	offset.xy = offset.x*vec2(toCamera.y, -toCamera.x);
 #else
 	// Make this sprite face in some direction
-	//offset.xy *= attr_Normal.xy;
+	offset.xy = offset.x*attr_Normal.xy;
 #endif
 
 	vec4 worldPos = vec4(attr_Position + offset, 1.0);
