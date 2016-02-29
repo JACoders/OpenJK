@@ -1550,8 +1550,6 @@ void CL_CheckForResend( void ) {
 		// The challenge request shall be followed by a client challenge so no malicious server can hijack this connection.
 		Com_sprintf(data, sizeof(data), "getchallenge %d", clc.challenge);
 
-		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getinfo");
-		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, "getstatus");
 		NET_OutOfBandPrint(NS_CLIENT, clc.serverAddress, data);
 		break;
 
@@ -1647,9 +1645,8 @@ CL_InitServerInfo
 */
 void CL_InitServerInfo( serverInfo_t *server, netadr_t *address ) {
 	server->adr = *address;
-	server->clients = 0;
-	server->filterBots = 0;
-	server->bots = 0;
+	//server->clients = 0;
+	//server->filterBots = 0;
 	server->hostName[0] = '\0';
 	server->mapName[0] = '\0';
 	server->maxClients = 0;
@@ -2920,7 +2917,7 @@ qboolean CL_ConnectedToRemoteServer( void ) {
 static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 	if (server) {
 		if (info) {
-			server->clients = atoi(Info_ValueForKey(info, "clients"));
+			//server->clients = atoi(Info_ValueForKey(info, "clients"));
 			Q_strncpyz(server->hostName,Info_ValueForKey(info, "hostname"), MAX_NAME_LENGTH);
 			Q_strncpyz(server->mapName, Info_ValueForKey(info, "mapname"), MAX_NAME_LENGTH);
 			server->maxClients = atoi(Info_ValueForKey(info, "sv_maxclients"));
@@ -3160,6 +3157,7 @@ int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int ma
 			serverStatus->retrieved = qfalse;
 			serverStatus->time = 0;
 			serverStatus->startTime = Com_Milliseconds();
+			NET_OutOfBandPrint(NS_CLIENT, to, "getinfo");
 			NET_OutOfBandPrint( NS_CLIENT, to, "getstatus" );
 			return qfalse;
 		}
@@ -3172,6 +3170,7 @@ int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int ma
 		serverStatus->retrieved = qfalse;
 		serverStatus->startTime = Com_Milliseconds();
 		serverStatus->time = 0;
+		NET_OutOfBandPrint(NS_CLIENT, to, "getinfo");
 		NET_OutOfBandPrint( NS_CLIENT, to, "getstatus" );
 		return qfalse;
 	}
