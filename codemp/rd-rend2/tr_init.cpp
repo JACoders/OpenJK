@@ -426,7 +426,7 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 		extensionsLen = p - extensionsString - 1;
 	}
 
-	truncatedExtensions = (char *)Hunk_Alloc(extensionsLen + 1, h_low);
+	truncatedExtensions = (char *)Z_Malloc(extensionsLen + 1, TAG_GENERAL);
 	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
 
 	return truncatedExtensions;
@@ -443,7 +443,7 @@ static const char *GetGLExtensionsString()
 		extensionStringLen += strlen((const char *)glGetStringi(GL_EXTENSIONS, i)) + 1;
 	}
 
-	char *extensionString = (char *)Hunk_Alloc(extensionStringLen + 1, h_low);
+	char *extensionString = (char *)Z_Malloc(extensionStringLen + 1, TAG_GENERAL);
 	char *p = extensionString;
 	for ( int i = 0; i < numExtensions; i++ )
 	{
@@ -1753,6 +1753,9 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 		if ( destroyWindow && restarting )
 		{
+			ri->Z_Free((void *)glConfig.extensions_string);
+			ri->Z_Free((void *)glConfigExt.originalExtensionString);
+
 			glDeleteVertexArrays(1, &tr.globalVao);
 			SaveGhoul2InfoArray();
 		}
