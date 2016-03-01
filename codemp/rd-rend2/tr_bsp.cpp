@@ -3501,7 +3501,7 @@ static void R_GenerateSurfaceSprites(
 
 	out->numAttributes = 2;
 	out->attributes = (vertexAttribute_t *)ri->Hunk_Alloc(
-			sizeof(vertexAttribute_t) * 2, h_low);
+			sizeof(vertexAttribute_t) * out->numAttributes, h_low);
 
 	out->attributes[0].vbo = out->vbo;
 	out->attributes[0].index = ATTR_INDEX_POSITION;
