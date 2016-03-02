@@ -11664,7 +11664,11 @@ void Cmd_PlayerMode_f( gentity_t *ent ) {
 	if (ent->client->sess.amrpgmode == 1)
 		trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2Admin-Only mode^7.\n\"" );
 	else
+	{
+		zyk_load_magic_master_config(ent);
+
 		trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2RPG mode^7.\n\"" );
+	}
 
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.amrpgmode == 2)
 	{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
