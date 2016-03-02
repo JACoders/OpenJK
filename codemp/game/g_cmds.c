@@ -271,6 +271,11 @@ void zyk_remove_guns( gentity_t *ent )
 	ent->client->ps.ammo[AMMO_TRIPMINE] = 0;
 	ent->client->ps.ammo[AMMO_DETPACK] = 0;
 	ent->client->ps.stats[STAT_HOLDABLE_ITEMS] = (1 << HI_NONE);
+
+	if (ent->client->jetPackOn)
+	{
+		Jetpack_Off(ent);
+	}
 }
 
 void zyk_add_force_powers( gentity_t *ent )
