@@ -4147,17 +4147,6 @@ void ClientDisconnect( int clientNum ) {
 		try_finishing_race();
 	}
 
-	trap->UnlinkEntity ((sharedEntity_t *)ent);
-	ent->s.modelindex = 0;
-	ent->inuse = qfalse;
-	ent->classname = "disconnected";
-	ent->client->pers.connected = CON_DISCONNECTED;
-	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
-	ent->client->sess.sessionTeam = TEAM_FREE;
-	ent->r.contents = 0;
-
-	level.read_screen_message[ent->s.number] = qfalse;
-
 	// zyk: if player was fighting a guardian, allow other players to fight the guardian now
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
 	{
@@ -4168,6 +4157,26 @@ void ClientDisconnect( int clientNum ) {
 		clean_guardians(ent);
 		ent->client->pers.guardian_mode = 0;
 	}
+
+	// zyk: logout player from account
+	ent->client->sess.amrpgmode = 0;
+
+	// zyk: if this player was playing a quest, find a new one to play quests in this map
+	if (ent->client->pers.can_play_quest == 1)
+	{
+		quest_get_new_player(ent);
+	}
+
+	trap->UnlinkEntity ((sharedEntity_t *)ent);
+	ent->s.modelindex = 0;
+	ent->inuse = qfalse;
+	ent->classname = "disconnected";
+	ent->client->pers.connected = CON_DISCONNECTED;
+	ent->client->ps.persistant[PERS_TEAM] = TEAM_FREE;
+	ent->client->sess.sessionTeam = TEAM_FREE;
+	ent->r.contents = 0;
+
+	level.read_screen_message[ent->s.number] = qfalse;
 
 	ent->client->pers.universe_quest_objective_control = -1;
 
@@ -4183,19 +4192,11 @@ void ClientDisconnect( int clientNum ) {
 
 		ent->client->pers.being_mind_controlled = -1;
 	}
-	
-	// zyk: logout player from account
-	ent->client->sess.amrpgmode = 0;
 
 	// zyk: if this was the target player, sets qtrue to choose another target
 	if (level.bounty_quest_choose_target == qfalse && level.bounty_quest_target_id == (ent-g_entities))
 		level.bounty_quest_choose_target = qtrue;
 
-	// zyk: if this player was playing a quest, find a new one to play quests in this map
-	if (ent->client->pers.can_play_quest == 1)
-	{
-		quest_get_new_player(ent);
-	}
 	ent->client->pers.bitvalue = 0;
 	ent->client->pers.player_statuses = 0;
 

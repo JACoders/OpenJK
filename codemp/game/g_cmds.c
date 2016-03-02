@@ -6053,7 +6053,7 @@ void quest_get_new_player(gentity_t *ent)
 
 		choose_new_player(next_player);
 
-		if (next_player && next_player->client && next_player->client->pers.can_play_quest == 1) // zyk: found the player
+		if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && next_player->client->pers.can_play_quest == 1) // zyk: found the player
 			return;
 	}
 
@@ -6063,7 +6063,7 @@ void quest_get_new_player(gentity_t *ent)
 
 		choose_new_player(next_player);
 
-		if (next_player && next_player->client && next_player->client->pers.can_play_quest == 1) // zyk: found the player
+		if (next_player && next_player->client && next_player->client->sess.amrpgmode == 2 && next_player->client->pers.can_play_quest == 1) // zyk: found the player
 			return;
 	}
 
