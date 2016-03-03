@@ -255,6 +255,8 @@ void zyk_remove_force_powers( gentity_t *ent )
 
 	if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+
+	ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
 }
 
 void zyk_remove_guns( gentity_t *ent )
@@ -288,6 +290,8 @@ void zyk_remove_guns( gentity_t *ent )
 
 	if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+
+	ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
 }
 
 void zyk_add_force_powers( gentity_t *ent )
@@ -4646,6 +4650,11 @@ void load_account(gentity_t *ent, qboolean change_mode)
 
 			// zyk: reset the force powers of this player
 			WP_InitForcePowers( ent );
+
+			if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
+				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
 
 			zyk_load_common_settings(ent);
 		}
