@@ -82,7 +82,7 @@ int adjustRespawnTime(float preRespawnTime, int itemType, int itemTag)
 }
 
 
-#define SHIELD_HEALTH				5000     // zyk: force field shield health changed from 250 to 5000
+#define SHIELD_HEALTH				4000     // zyk: force field shield health changed from 250 to 4000
 #define SHIELD_HEALTH_DEC			1		// 25 seconds zyk: changed from 10 to 1	
 #define MAX_SHIELD_HEIGHT			254
 #define MAX_SHIELD_HALFWIDTH		255
