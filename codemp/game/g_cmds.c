@@ -249,6 +249,12 @@ void zyk_remove_force_powers( gentity_t *ent )
 	}
 
 	ent->client->ps.weapon = WP_MELEE;
+
+	// zyk: reset the force powers of this player
+	WP_InitForcePowers( ent );
+
+	if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 }
 
 void zyk_remove_guns( gentity_t *ent )
@@ -276,6 +282,12 @@ void zyk_remove_guns( gentity_t *ent )
 	{
 		Jetpack_Off(ent);
 	}
+
+	// zyk: reset the force powers of this player
+	WP_InitForcePowers( ent );
+
+	if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 }
 
 void zyk_add_force_powers( gentity_t *ent )
@@ -296,6 +308,14 @@ void zyk_add_force_powers( gentity_t *ent )
 void zyk_add_guns( gentity_t *ent )
 {
 	int i = 0;
+
+	for (i = FP_HEAL; i < NUM_FORCE_POWERS; i++)
+	{
+		ent->client->ps.fd.forcePowersKnown &= ~(1 << i);
+		ent->client->ps.fd.forcePowerLevel[i] = FORCE_LEVEL_0;
+	}
+
+	ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
 
 	for (i = WP_STUN_BATON; i < WP_NUM_WEAPONS; i++)
 	{
