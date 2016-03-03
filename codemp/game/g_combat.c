@@ -5326,7 +5326,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.skill_levels[13] > 3 && 
 		attacker->client->ps.fd.forcePowersActive & (1 << FP_LIGHTNING) && mod == MOD_FORCE_DARK)
 	{
-		knockback *= 8;
+		knockback *= 6;
 	}
 
 	if ( knockback > 200 ) {
