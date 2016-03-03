@@ -1916,7 +1916,7 @@ void ForceLightningDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec
 					dmg *= 2;
 				}
 				*/
-				// zyk: Lightning level 4 in RPG Mode causes double dmage
+				// zyk: Lightning level 4 in RPG Mode causes double damage
 				if (self->client->sess.amrpgmode == 2 && self->client->pers.skill_levels[13] > 3)
 				{
 					dmg *= 2;
