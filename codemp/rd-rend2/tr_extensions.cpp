@@ -39,6 +39,7 @@ PFNGLMULTIDRAWELEMENTSBASEVERTEXPROC qglMultiDrawElementsBaseVertex;
 // Vertex arrays
 PFNGLVERTEXATTRIBPOINTERPROC qglVertexAttribPointer;
 PFNGLVERTEXATTRIBIPOINTERPROC qglVertexAttribIPointer;
+PFNGLVERTEXATTRIBDIVISORPROC qglVertexAttribDivisor;
 PFNGLENABLEVERTEXATTRIBARRAYPROC qglEnableVertexAttribArray;
 PFNGLDISABLEVERTEXATTRIBARRAYPROC qglDisableVertexAttribArray;
 
@@ -311,6 +312,7 @@ void GLimp_InitExtensions()
 	// Vertex arrays
 	GetGLFunction (qglVertexAttribPointer, "glVertexAttribPointer", qtrue);
 	GetGLFunction (qglVertexAttribIPointer, "glVertexAttribIPointer", qtrue);
+	GetGLFunction (qglVertexAttribDivisor, "glVertexAttribDivisor", qtrue);
 	GetGLFunction (qglEnableVertexAttribArray, "glEnableVertexAttribArray", qtrue);
 	GetGLFunction (qglDisableVertexAttribArray, "glDisableVertexAttribArray", qtrue);
 

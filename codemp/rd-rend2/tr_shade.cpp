@@ -44,14 +44,21 @@ R_DrawElements
 
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex )
 {
-	qglDrawRangeElements(GL_TRIANGLES, minIndex, maxIndex, numIndexes, GL_INDEX_TYPE, BUFFER_OFFSET(firstIndex * sizeof(glIndex_t)) + (tess.useInternalVBO ? tess.internalIBOCommitOffset : 0));
+	int offset = firstIndex * sizeof(glIndex_t) +
+		(tess.useInternalVBO ? tess.internalIBOCommitOffset : 0);
+
+	GL_DrawIndexed(GL_TRIANGLES, numIndexes, offset, 1, 0);
 }
 
 
 static void R_DrawMultiElementsVBO( int multiDrawPrimitives, glIndex_t *multiDrawMinIndex, glIndex_t *multiDrawMaxIndex, 
 	GLsizei *multiDrawNumIndexes, glIndex_t **multiDrawFirstIndex)
 {
-	qglMultiDrawElements(GL_TRIANGLES, multiDrawNumIndexes, GL_INDEX_TYPE, (const GLvoid **)multiDrawFirstIndex, multiDrawPrimitives);
+	GL_MultiDrawIndexed(
+			GL_TRIANGLES,
+			multiDrawNumIndexes,
+			multiDrawFirstIndex,
+			multiDrawPrimitives);
 }
 
 
@@ -72,7 +79,7 @@ R_BindAnimatedImageToTMU
 
 =================
 */
-static void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
+void R_BindAnimatedImageToTMU( textureBundle_t *bundle, int tmu ) {
 	int		index;
 
 	if ( bundle->isVideoMap ) {
@@ -1221,7 +1228,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			break;
 		}
 
-		if ( pStage->isSurfaceSprite )
+		if ( pStage->ss )
 		{
 			continue;
 		}
@@ -1752,8 +1759,6 @@ static void RB_RenderShadowmap( shaderCommands_t *input )
 		}
 	}
 }
-
-
 
 /*
 ** RB_StageIteratorGeneric

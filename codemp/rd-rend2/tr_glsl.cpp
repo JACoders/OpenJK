@@ -58,6 +58,12 @@ extern const char *fallbackShader_dglow_downsample_vp;
 extern const char *fallbackShader_dglow_downsample_fp;
 extern const char *fallbackShader_dglow_upsample_vp;
 extern const char *fallbackShader_dglow_upsample_fp;
+extern const char *fallbackShader_surface_sprites_vp;
+extern const char *fallbackShader_surface_sprites_fp;
+
+const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
+	{ 10, "SurfaceSprite", sizeof(SurfaceSpriteBlock) }
+};
 
 typedef struct uniformInfo_s
 {
@@ -680,25 +686,20 @@ static int GLSL_BeginLoadGPUShader(shaderProgram_t * program, const char *name,
 
 void GLSL_InitUniforms(shaderProgram_t *program)
 {
-	int i, size;
+	program->uniforms = (GLint *)Z_Malloc(
+			UNIFORM_COUNT * sizeof(*program->uniforms), TAG_GENERAL);
+	program->uniformBufferOffsets = (short *)Z_Malloc(
+			UNIFORM_COUNT * sizeof(*program->uniformBufferOffsets), TAG_GENERAL);
 
-	GLint *uniforms;
-	
-	program->uniforms = (GLint *)Z_Malloc (UNIFORM_COUNT * sizeof (*program->uniforms), TAG_GENERAL);
-	program->uniformBufferOffsets = (short *)Z_Malloc (UNIFORM_COUNT * sizeof (*program->uniformBufferOffsets), TAG_GENERAL);
-
-	uniforms = program->uniforms;
-
-	size = 0;
-	for (i = 0; i < UNIFORM_COUNT; i++)
+	GLint *uniforms = program->uniforms;
+	int size = 0;
+	for (int i = 0; i < UNIFORM_COUNT; i++)
 	{
 		uniforms[i] = qglGetUniformLocation(program->program, uniformsInfo[i].name);
-
 		if (uniforms[i] == -1)
 			continue;
 		 
 		program->uniformBufferOffsets[i] = size;
-
 		switch(uniformsInfo[i].type)
 		{
 			case GLSL_INT:
@@ -728,6 +729,21 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 	}
 
 	program->uniformBuffer = (char *)Z_Malloc(size, TAG_SHADERTEXT, qtrue);
+
+	program->uniformBlocks = 0;
+	for ( int i = 0; i < UNIFORM_BLOCK_COUNT; ++i )
+	{
+		GLuint blockIndex = qglGetUniformBlockIndex(program->program,
+								uniformBlocksInfo[i].name);
+		if ( blockIndex == GL_INVALID_INDEX )
+		{
+			continue;
+		}
+
+		qglUniformBlockBinding(program->program, blockIndex,
+				uniformBlocksInfo[i].slot);
+		program->uniformBlocks |= (1u << i);
+	}
 }
 
 void GLSL_FinishGPUShader(shaderProgram_t *program)
@@ -1594,6 +1610,34 @@ int GLSL_BeginLoadGPUShaders(void)
 		ri->Error(ERR_FATAL, "Could not load dynamic glow upsample shader!");
 	}
 
+	attribs = ATTR_POSITION | ATTR_NORMAL;
+	for ( int i = 0; i < SSDEF_COUNT; ++i )
+	{
+		extradefines[0] = '\0';
+
+		if ( (i & SSDEF_FACE_CAMERA) && (i & SSDEF_FACE_UP) )
+			continue;
+
+		if ( i & SSDEF_FACE_CAMERA )
+			Q_strcat(extradefines, sizeof(extradefines),
+					"#define FACE_CAMERA\n");
+		else if ( i & SSDEF_FACE_UP )
+			Q_strcat(extradefines, sizeof(extradefines),
+					"#define FACE_UP\n");
+
+		if ( i & SSDEF_ALPHA_TEST )
+			Q_strcat(extradefines, sizeof(extradefines),
+					"#define ALPHA_TEST\n");
+
+		if (!GLSL_BeginLoadGPUShader(tr.spriteShader + i, "surface_sprites",
+					attribs, qtrue, extradefines,
+					fallbackShader_surface_sprites_vp,
+					fallbackShader_surface_sprites_fp))
+		{
+			ri->Error(ERR_FATAL, "Could not load surface sprites shader!");
+		}
+	}
+
 	return startTime;
 }
 
@@ -1889,6 +1933,20 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 
 	numEtcShaders++;
 
+	for ( int i = 0; i < SSDEF_COUNT; ++i )
+	{
+		if ( (i & SSDEF_FACE_CAMERA) && (i & SSDEF_FACE_UP) )
+			continue;
+
+		shaderProgram_t *program = tr.spriteShader + i;
+		if (!GLSL_EndLoadGPUShader(program))
+			ri->Error(ERR_FATAL, "Could not compile surface sprites shader!");
+
+		GLSL_InitUniforms(program);
+		GLSL_FinishGPUShader(program);
+		numEtcShaders++;
+	}
+
 #if 0
 	attribs = ATTR_POSITION | ATTR_TEXCOORD0;
 	extradefines[0] = '\0';
@@ -2025,23 +2083,6 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 
 	GLSL_VertexAttribPointers(stateBits, vertexArrays);
 
-	uint32_t diff = stateBits ^ glState.vertexAttribsState;
-	if ( diff )
-	{
-		for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
-		{
-			// FIXME: Use BitScanForward?
-			if (diff & j)
-			{
-				if(stateBits & j)
-					qglEnableVertexAttribArray(i);
-				else
-					qglDisableVertexAttribArray(i);
-			}
-		}
-
-		glState.vertexAttribsState = stateBits;
-	}
 }
 
 void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays)
@@ -2060,7 +2101,7 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
 	}
 
-	const struct
+	static const struct
 	{
 		int numComponents;
 		GLboolean integerAttribute;
@@ -2085,41 +2126,24 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
 	};
 
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
 		int attributeIndex = vertexArrays->enabledAttributes[i];
+		vertexAttribute_t& attrib = attribs[i];
 
-		if ( glState.currentVaoVbo[attributeIndex] == glState.currentVBO->vertexesVBO &&
-				glState.currentVaoOffsets[attributeIndex] == vertexArrays->offsets[attributeIndex] &&
-				glState.currentVaoStrides[attributeIndex] == vertexArrays->strides[attributeIndex] )
-		{
-			// No change
-			continue;
-		}
-
-		if ( attributes[attributeIndex].integerAttribute )
-		{
-			qglVertexAttribIPointer(attributeIndex,
-				attributes[attributeIndex].numComponents,
-				attributes[attributeIndex].type,
-				vertexArrays->strides[attributeIndex],
-				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex]));
-		}
-		else
-		{
-			qglVertexAttribPointer(attributeIndex,
-				attributes[attributeIndex].numComponents,
-				attributes[attributeIndex].type,
-				attributes[attributeIndex].normalize,
-				vertexArrays->strides[attributeIndex],
-				BUFFER_OFFSET(vertexArrays->offsets[attributeIndex]));
-		}
-
-		glState.currentVaoVbo[attributeIndex] = glState.currentVBO->vertexesVBO;
-		glState.currentVaoStrides[attributeIndex] = vertexArrays->strides[attributeIndex];
-		glState.currentVaoOffsets[attributeIndex] = vertexArrays->offsets[attributeIndex];
-		glState.vertexAttribPointersSet |= (1 << attributeIndex);
+		attrib.vbo = glState.currentVBO;
+		attrib.index = attributeIndex;
+		attrib.numComponents = attributes[attributeIndex].numComponents;
+		attrib.integerAttribute = attributes[attributeIndex].integerAttribute;
+		attrib.type = attributes[attributeIndex].type;
+		attrib.normalize = attributes[attributeIndex].normalize;
+		attrib.stride = vertexArrays->strides[attributeIndex];
+		attrib.offset = vertexArrays->offsets[attributeIndex];
+		attrib.stepRate = 0;
 	}
+
+	GL_VertexAttribPointers(vertexArrays->numVertexArrays, attribs);
 }
 
 

@@ -25,6 +25,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ghoul2/g2_local.h"
 #include <algorithm>
 
+static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
+
 glconfig_t  glConfig;
 glconfigExt_t glConfigExt;
 glRefConfig_t glRefConfig;
@@ -235,6 +237,7 @@ cvar_t	*r_marksOnTriangleMeshes;
 
 cvar_t	*r_aviMotionJpegQuality;
 cvar_t	*r_screenshotJpegQuality;
+cvar_t	*r_surfaceSprites;
 
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
@@ -423,7 +426,7 @@ static const char *TruncateGLExtensionsString (const char *extensionsString, int
 		extensionsLen = p - extensionsString - 1;
 	}
 
-	truncatedExtensions = (char *)Hunk_Alloc(extensionsLen + 1, h_low);
+	truncatedExtensions = (char *)Z_Malloc(extensionsLen + 1, TAG_GENERAL);
 	Q_strncpyz (truncatedExtensions, extensionsString, extensionsLen + 1);
 
 	return truncatedExtensions;
@@ -440,7 +443,7 @@ static const char *GetGLExtensionsString()
 		extensionStringLen += strlen((const char *)glGetStringi(GL_EXTENSIONS, i)) + 1;
 	}
 
-	char *extensionString = (char *)Hunk_Alloc(extensionStringLen + 1, h_low);
+	char *extensionString = (char *)Z_Malloc(extensionStringLen + 1, TAG_GENERAL);
 	char *p = extensionString;
 	for ( int i = 0; i < numExtensions; i++ )
 	{
@@ -1094,11 +1097,9 @@ void GL_SetDefaultState( void )
 	// in a multitexture environment
 	GL_SelectTexture( 1 );
 	GL_TextureMode( r_textureMode->string );
-	//GL_TexEnv( GL_MODULATE );
 	GL_SelectTexture( 0 );
 
 	GL_TextureMode( r_textureMode->string );
-	//GL_TexEnv( GL_MODULATE );
 
 	//qglShadeModel( GL_SMOOTH );
 	qglDepthFunc( GL_LEQUAL );
@@ -1523,6 +1524,7 @@ void R_Register( void )
 
 	r_aviMotionJpegQuality = ri->Cvar_Get("r_aviMotionJpegQuality", "90", CVAR_ARCHIVE);
 	r_screenshotJpegQuality = ri->Cvar_Get("r_screenshotJpegQuality", "90", CVAR_ARCHIVE);
+	r_surfaceSprites = ri->Cvar_Get("r_surfaceSprites", "1", CVAR_ARCHIVE);
 
 	r_maxpolys = ri->Cvar_Get( "r_maxpolys", XSTRING( DEFAULT_MAX_POLYS ), 0);
 	r_maxpolyverts = ri->Cvar_Get( "r_maxpolyverts", XSTRING( DEFAULT_MAX_POLYVERTS ), 0 );
@@ -1577,9 +1579,20 @@ static void R_InitBackEndFrameData()
 	GLuint timerQueries[MAX_GPU_TIMERS*MAX_FRAMES];
 	qglGenQueries(MAX_GPU_TIMERS*MAX_FRAMES, timerQueries);
 
+	GLuint ubos[MAX_FRAMES];
+	qglGenBuffers(MAX_FRAMES, ubos);
+
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
+
+		frame->ubo = ubos[i];
+		frame->uboWriteOffset = 0;
+		qglBindBuffer(GL_UNIFORM_BUFFER, frame->ubo);
+
+		// TODO: persistently mapped UBOs
+		qglBufferData(GL_UNIFORM_BUFFER, FRAME_UNIFORM_BUFFER_SIZE,
+				nullptr, GL_DYNAMIC_DRAW);
 
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{
@@ -1587,6 +1600,8 @@ static void R_InitBackEndFrameData()
 			timer->queryName = timerQueries[i*MAX_GPU_TIMERS + j];
 		}
 	}
+
+	backEndData->currentFrame = backEndData->frames;
 }
 
 static void R_ShutdownBackEndFrameData()
@@ -1597,6 +1612,8 @@ static void R_ShutdownBackEndFrameData()
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
+
+		qglDeleteBuffers(1, &frame->ubo);
 
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{
@@ -1736,6 +1753,9 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 
 		if ( destroyWindow && restarting )
 		{
+			ri->Z_Free((void *)glConfig.extensions_string);
+			ri->Z_Free((void *)glConfigExt.originalExtensionString);
+
 			glDeleteVertexArrays(1, &tr.globalVao);
 			SaveGhoul2InfoArray();
 		}

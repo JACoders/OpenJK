@@ -375,6 +375,7 @@ extern PFNGLMULTIDRAWELEMENTSBASEVERTEXPROC qglMultiDrawElementsBaseVertex;
 // Vertex arrays
 extern PFNGLVERTEXATTRIBPOINTERPROC qglVertexAttribPointer;
 extern PFNGLVERTEXATTRIBIPOINTERPROC qglVertexAttribIPointer;
+extern PFNGLVERTEXATTRIBDIVISORPROC qglVertexAttribDivisor;
 extern PFNGLENABLEVERTEXATTRIBARRAYPROC qglEnableVertexAttribArray;
 extern PFNGLDISABLEVERTEXATTRIBARRAYPROC qglDisableVertexAttribArray;
 

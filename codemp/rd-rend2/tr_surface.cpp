@@ -2109,6 +2109,57 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 static void RB_SurfaceSkip( void *surf ) {
 }
 
+static void RB_SurfaceSprites( srfSprites_t *surf )
+{
+	if ( !r_surfaceSprites->integer )
+	{
+		return;
+	}
+
+	RB_EndSurface();
+
+	// TODO: Do we want a 2-level lod system where far away sprites are
+	// just flat surfaces?
+	
+	// TODO: Check which pass (z-prepass/shadow/forward) we're rendering for?
+	shader_t *shader = surf->shader;
+	shaderStage_t *firstStage = shader->stages[0];
+	shaderProgram_t *programGroup = firstStage->glslShaderGroup;
+	const surfaceSprite_t *ss = surf->sprite;
+
+	uint32_t shaderFlags = 0;
+	if ( firstStage->alphaTestCmp != ATEST_CMP_NONE )
+		shaderFlags |= SSDEF_ALPHA_TEST;
+
+	if ( ss->type == SURFSPRITE_ORIENTED )
+		shaderFlags |= SSDEF_FACE_CAMERA;
+
+	shaderProgram_t *program = programGroup + shaderFlags;
+	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
+
+	SurfaceSpriteBlock data = {};
+	data.width = ss->width;
+	data.height = (ss->facing == SURFSPRITE_FACING_DOWN)
+					? -ss->height : ss->height;
+	data.fadeStartDistance = ss->fadeDist;
+	data.fadeEndDistance = ss->fadeMax;
+	data.fadeScale = ss->fadeScale;
+	data.widthVariance = ss->variance[0];
+	data.heightVariance = ss->variance[1];
+
+	GLSL_BindProgram(program);
+	GL_State(firstStage->stateBits);
+	GL_Cull(CT_TWO_SIDED);
+	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
+	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
+	RB_UpdateUniformBlock(UNIFORM_BLOCK_SURFACESPRITE, &data);
+	GLSL_SetUniformMatrix4x4(program,
+			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	GLSL_SetUniformVec3(program,
+			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
+
+	qglDrawArraysInstanced(GL_TRIANGLES, 0, 6, surf->numSprites);
+}
 
 void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceBad,			// SF_BAD, 
@@ -2125,4 +2176,5 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
 	(void(*)(void*))RB_SurfaceVBOMesh,	    // SF_VBO_MESH,
 	(void(*)(void*))RB_SurfaceVBOMDVMesh,   // SF_VBO_MDVMESH
+	(void(*)(void*))RB_SurfaceSprites,      // SF_SPRITES
 };

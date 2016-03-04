@@ -327,6 +327,98 @@ void GL_State( uint32_t stateBits )
 	glState.glStateBits = stateBits;
 }
 
+void GL_VertexAttribPointers(
+		size_t numAttributes,
+		vertexAttribute_t *attributes )
+{
+	assert(attributes != nullptr || numAttributes == 0);
+
+	uint32_t newAttribs = 0;
+	for ( int i = 0; i < numAttributes; i++ )
+	{
+		vertexAttribute_t& attrib = attributes[i];
+
+		newAttribs |= (1 << attrib.index);
+		if ( memcmp(&glState.currentVaoAttribs[attrib.index], &attrib,
+					sizeof(glState.currentVaoAttribs[attrib.index])) == 0 )
+		{
+			// No change
+			continue;
+		}
+
+		R_BindVBO(attrib.vbo);
+		if ( attrib.integerAttribute )
+		{
+			qglVertexAttribIPointer(attrib.index,
+				attrib.numComponents,
+				attrib.type,
+				attrib.stride,
+				BUFFER_OFFSET(attrib.offset));
+		}
+		else
+		{
+			qglVertexAttribPointer(attrib.index,
+				attrib.numComponents,
+				attrib.type,
+				attrib.normalize,
+				attrib.stride,
+				BUFFER_OFFSET(attrib.offset));
+		}
+		qglVertexAttribDivisor(attrib.index, attrib.stepRate);
+
+		glState.currentVaoAttribs[attrib.index] = attrib;
+	}
+
+	uint32_t diff = newAttribs ^ glState.vertexAttribsState;
+	if ( diff )
+	{
+		for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
+		{
+			// FIXME: Use BitScanForward?
+			if (diff & j)
+			{
+				if(newAttribs & j)
+					qglEnableVertexAttribArray(i);
+				else
+					qglDisableVertexAttribArray(i);
+			}
+		}
+
+		glState.vertexAttribsState = newAttribs;
+	}
+}
+
+void GL_DrawIndexed(
+		GLenum primitiveType,
+		int numIndices,
+		int offset,
+		int numInstances,
+		int baseVertex)
+{
+	assert(numInstances > 0);
+	qglDrawElementsInstancedBaseVertex(
+			primitiveType,
+			numIndices,
+			GL_INDEX_TYPE,
+			BUFFER_OFFSET(offset),
+			numInstances,
+			baseVertex);
+}
+
+void GL_MultiDrawIndexed(
+		GLenum primitiveType,
+		int *numIndices,
+		glIndex_t **offsets,
+		int numDraws)
+{
+	assert(numDraws > 0);
+	qglMultiDrawElements(
+			primitiveType,
+			numIndices,
+			GL_INDEX_TYPE,
+			(const GLvoid **)offsets,
+			numDraws);
+}
 
 void GL_SetProjectionMatrix(matrix_t matrix)
 {
@@ -1654,7 +1746,7 @@ static const void	*RB_SwapBuffers( const void *data ) {
 	}
 
 	int frameNumber = backEndData->realFrameNumber;
-	gpuFrame_t *currentFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+	gpuFrame_t *currentFrame = backEndData->currentFrame;
 
 	assert( !currentFrame->sync );
 	currentFrame->sync = qglFenceSync( GL_SYNC_GPU_COMMANDS_COMPLETE, 0 );

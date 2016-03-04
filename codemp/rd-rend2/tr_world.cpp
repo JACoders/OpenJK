@@ -341,7 +341,21 @@ static void R_AddWorldSurface( msurface_t *surf, int entityNum, int dlightBits, 
 		pshadowBits = ( pshadowBits != 0 );
 	}*/
 
-	R_AddDrawSurf( surf->data, entityNum, surf->shader, surf->fogIndex, dlightBits, R_IsPostRenderEntity (entityNum, tr.currentEntity), surf->cubemapIndex );
+	bool isPostRenderEntity =
+		R_IsPostRenderEntity(entityNum, tr.currentEntity);
+	R_AddDrawSurf( surf->data, entityNum, surf->shader, surf->fogIndex,
+			dlightBits, isPostRenderEntity, surf->cubemapIndex );
+
+	if ( surf->numSurfaceSprites )
+	{
+		for ( int i = 0, numSprites = surf->numSurfaceSprites; 
+				i < numSprites; ++i )
+		{
+			srfSprites_t *sprites = surf->surfaceSprites + i;
+			R_AddDrawSurf((surfaceType_t *)sprites, entityNum, sprites->shader,
+					surf->fogIndex, dlightBits, isPostRenderEntity, 0);
+		}
+	}
 }
 
 /*
