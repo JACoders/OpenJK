@@ -2917,8 +2917,10 @@ qboolean CL_ConnectedToRemoteServer( void ) {
 static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 	if (server) {
 		if (info) {
+			char * filteredHostName = Info_ValueForKey(info, "hostname");
+			if (Q_stricmp(filteredHostName, "")) { Q_strstrip(filteredHostName, "€¬", NULL); }
 			//server->clients = atoi(Info_ValueForKey(info, "clients"));
-			Q_strncpyz(server->hostName,Info_ValueForKey(info, "hostname"), MAX_NAME_LENGTH);
+			Q_strncpyz(server->hostName, filteredHostName, MAX_NAME_LENGTH);
 			Q_strncpyz(server->mapName, Info_ValueForKey(info, "mapname"), MAX_NAME_LENGTH);
 			server->maxClients = atoi(Info_ValueForKey(info, "sv_maxclients"));
 			Q_strncpyz(server->game,Info_ValueForKey(info, "game"), MAX_NAME_LENGTH);
@@ -3009,6 +3011,11 @@ void CL_ServerInfoPacket( netadr_t from, msg_t *msg ) {
 	prot = atoi( Info_ValueForKey( infoString, "protocol" ) );
 	if ( prot != PROTOCOL_VERSION ) {
 		Com_DPrintf( "Different protocol info packet: %s\n", infoString );
+		return;
+	}
+
+	// if this is an MB2 server, ignore it
+	if (!Q_stricmp(Info_ValueForKey(infoString, "game"), "mbii")) {
 		return;
 	}
 
