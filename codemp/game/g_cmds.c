@@ -203,8 +203,14 @@ void Cmd_Emote_f( gentity_t *ent )
 	char arg[MAX_TOKEN_CHARS] = {0};
 	int anim_id = -1;
 
+	if (zyk_allow_emotes.integer < 1)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot use emotes in this server\n\"" );
+		return;
+	}
+
 	if ( trap->Argc () < 2 ) {
-		trap->SendServerCommand( ent-g_entities, va("print \"Usage: emote <anim id between 0 and %d>\n\"",MAX_ANIMATIONS) );
+		trap->SendServerCommand( ent-g_entities, va("print \"Usage: emote <anim id between 0 and %d>\n\"",MAX_ANIMATIONS-1) );
 		return;
 	}
 
@@ -213,7 +219,7 @@ void Cmd_Emote_f( gentity_t *ent )
 
 	if (anim_id < 0 || anim_id >= MAX_ANIMATIONS)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"Usage: anim ID must be between 0 and %d>\n\"",MAX_ANIMATIONS) );
+		trap->SendServerCommand( ent-g_entities, va("print \"Usage: anim ID must be between 0 and %d>\n\"",MAX_ANIMATIONS-1) );
 		return;
 	}
 
