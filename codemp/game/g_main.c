@@ -498,8 +498,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		}
 		else if (Q_stricmp(zyk_mapname, "t2_trip") == 0)
 		{
-			zyk_create_ctf_flag_spawn(-18235,-5646,1692,qtrue);
-			zyk_create_ctf_flag_spawn(12078,7383,1592,qfalse);
+			zyk_create_ctf_flag_spawn(-20421,18244,1704,qtrue);
+			zyk_create_ctf_flag_spawn(19903,-2638,1672,qfalse);
 		}
 		else if (Q_stricmp(zyk_mapname, "t3_bounty") == 0)
 		{
@@ -1102,21 +1102,21 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 		if (level.gametype == GT_CTF)
 		{ // zyk: in CTF, add the team player spawns
-			zyk_create_ctf_player_spawn(-18606,-5924,1692,90,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(-17858,-6324,1692,-179,qtrue,qtrue);
-			zyk_create_ctf_player_spawn(-17183,-5155,1692,90,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-20705,18794,1704,0,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-20729,17692,1704,0,qtrue,qtrue);
+			zyk_create_ctf_player_spawn(-20204,18736,1503,0,qtrue,qtrue);
 
-			zyk_create_ctf_player_spawn(12081,7754,1592,-90,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(11145,8494,1592,179,qfalse,qtrue);
-			zyk_create_ctf_player_spawn(13789,8505,1592,179,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(20494,-2922,1672,90,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(19321,-2910,1672,90,qfalse,qtrue);
+			zyk_create_ctf_player_spawn(19428,-2404,1470,90,qfalse,qtrue);
 
-			zyk_create_ctf_player_spawn(-18606,-5924,1692,90,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(-17858,-6324,1692,-179,qtrue,qfalse);
-			zyk_create_ctf_player_spawn(-17183,-5155,1692,90,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-20705,18794,1704,0,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-20729,17692,1704,0,qtrue,qfalse);
+			zyk_create_ctf_player_spawn(-20204,18736,1503,0,qtrue,qfalse);
 
-			zyk_create_ctf_player_spawn(12081,7754,1592,-90,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(11145,8494,1592,179,qfalse,qfalse);
-			zyk_create_ctf_player_spawn(13789,8505,1592,179,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(20494,-2922,1672,90,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(19321,-2910,1672,90,qfalse,qfalse);
+			zyk_create_ctf_player_spawn(19428,-2404,1470,90,qfalse,qfalse);
 		}
 	}
 	else if (Q_stricmp(zyk_mapname, "t2_wedge") == 0)
