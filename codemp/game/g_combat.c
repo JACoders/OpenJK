@@ -5000,7 +5000,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (attacker->client->pers.rpg_class == 8 && mod == MOD_MELEE)
 		{ // zyk: Magic Master bonus melee damage
 			damage = (int)ceil(damage * (1.2 + (0.1 * attacker->client->pers.skill_levels[55])));
-			if (inflictor && (inflictor->s.weapon == WP_BOWCASTER || inflictor->s.weapon == WP_DEMP2 || inflictor->s.weapon == WP_CONCUSSION))
+			if (inflictor && inflictor->s.weapon == WP_CONCUSSION)
 				can_damage_heavy_things = qtrue;
 		}
 	}
@@ -5150,7 +5150,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	if ((mod == MOD_DEMP2 || (mod == MOD_MELEE && inflictor && inflictor->s.weapon == WP_DEMP2)) && targ && targ->inuse && targ->client)
-	{ // zyk: added the MOD_MELEE condition because of Magic Master Unique Skill
+	{ // zyk: added the MOD_MELEE condition because of Magic Master Electric Bolts
 		if ( targ->client->ps.electrifyTime < level.time )
 		{//electrocution effect
 			if (targ->s.eType == ET_NPC && targ->s.NPC_class == CLASS_VEHICLE &&
@@ -5882,7 +5882,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	// zyk: Unique Skill of Magic Master can disable jetpacks
+	// zyk: Electric Bolts of Magic Master can disable jetpacks
 	if (mod == MOD_MELEE && inflictor && inflictor->s.weapon == WP_DEMP2 && client)
 	{
 		if (client->jetPackOn)
