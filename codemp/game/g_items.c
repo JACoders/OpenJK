@@ -2641,6 +2641,11 @@ void Touch_Item (gentity_t *ent, gentity_t *other, trace_t *trace) {
 			}
 		}
 	}
+	else if (other->client->pers.player_statuses & (1 << 12) && (ent->item->giType == IT_WEAPON || ent->item->giType == IT_AMMO || 
+			ent->item->giType == IT_HOLDABLE))
+	{ // zyk: players with all force powers given by admin cannot pickup some things
+		return;
+	}
 
 	if (ent->item->giType == IT_POWERUP &&
 		(ent->item->giTag == PW_FORCE_ENLIGHTENED_LIGHT || ent->item->giTag == PW_FORCE_ENLIGHTENED_DARK))
