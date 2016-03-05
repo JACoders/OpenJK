@@ -271,6 +271,19 @@ static void CG_SiegeCompleteCvarUpdate_f(void)
 	CG_SiegeBriefingDisplay(SIEGETEAM_TEAM2, 1);
 }
 
+static void CG_Afk_f(void) {
+	const char *prefix = "[AFK] ";
+	const size_t prefixLen = strlen(prefix);
+	char name[MAX_TOKEN_CHARS];
+	trap->Cvar_VariableStringBuffer("name", name, sizeof(name));
+	if (!Q_strncmp(name, prefix, prefixLen)) {
+		trap->Cvar_Set("name", name + prefixLen);
+	}
+	else {
+		trap->Cvar_Set("name", va("%s %s", prefix, name));
+	}
+}
+
 typedef struct consoleCommand_s {
 	const char	*cmd;
 	void		(*func)(void);
@@ -283,6 +296,7 @@ int cmdcmp( const void *a, const void *b ) {
 static consoleCommand_t	commands[] = {
 	{ "+scores",					CG_ScoresDown_f },
 	{ "-scores",					CG_ScoresUp_f },
+	{ "afk",						CG_Afk_f },
 	{ "briefing",					CG_SiegeBriefing_f },
 	{ "clientlist",					CG_ClientList_f },
 	{ "forcenext",					CG_NextForcePower_f },
