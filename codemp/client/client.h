@@ -348,6 +348,7 @@ typedef struct console_s {
 
 	float	displayFrac;	// aproaches finalFrac at scr_conspeed
 	float	finalFrac;		// 0.0 to 1.0 lines of console to display
+	float	tempFrac;
 
 	int		vislines;		// in scanlines
 
@@ -517,6 +518,8 @@ void Con_PageDown( void );
 void Con_Top( void );
 void Con_Bottom( void );
 void Con_Close( void );
+
+void Con_SetFrac(const float conFrac);
 
 
 //

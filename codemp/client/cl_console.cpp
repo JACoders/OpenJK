@@ -878,7 +878,7 @@ Scroll it up or down
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
 	if ( Key_GetCatcher( ) & KEYCATCH_CONSOLE )
-		con.finalFrac = 0.5;		// half screen
+		con.finalFrac = con.tempFrac;		// visibility
 	else
 		con.finalFrac = 0;				// none visible
 
@@ -899,6 +899,9 @@ void Con_RunConsole (void) {
 
 }
 
+void Con_SetFrac(const float conFrac) {
+	con.tempFrac = conFrac;
+}
 
 void Con_PageUp( void ) {
 	con.display -= 2;

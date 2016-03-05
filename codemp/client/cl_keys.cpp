@@ -1315,10 +1315,31 @@ void CL_KeyDownEvent( int key, unsigned time )
 
 	// console key is hardcoded, so the user can never unbind it
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
+		Con_SetFrac(0.5f);
+		if (key == A_CONSOLE) {
+			if (kg.keys[A_CTRL].down)
+				Con_SetFrac(1.0f);
+			else if (kg.keys[A_SHIFT].down)
+				Con_SetFrac(0.25f);
+		}
 		Con_ToggleConsole_f();
 		Key_ClearStates ();
 		return;
 	}
+
+	/*if (kg.keys[A_CTRL].down && key == A_CONSOLE) {
+		Con_SetFrac(1.0f);
+		Con_ToggleConsole_f();
+		Key_ClearStates();
+		return;
+	}
+
+	if (kg.keys[A_SHIFT].down && key == A_CONSOLE) {
+		Con_SetFrac(0.25f);
+		Con_ToggleConsole_f();
+		Key_ClearStates();
+		return;
+	}*/
 
 	// keys can still be used for bound actions
 	if ( cls.state == CA_CINEMATIC && !Key_GetCatcher() ) {
