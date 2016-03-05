@@ -2612,6 +2612,19 @@ static void CL_AddFavorite_f( void ) {
 	}
 }
 
+static void CL_Afk_f(void) {
+	const char *prefix = "[AFK]";
+	const size_t prefixLen = strlen(prefix);
+	char name[MAX_TOKEN_CHARS];
+	Cvar_VariableStringBuffer("name", name, sizeof(name));
+	if (!Q_strncmp(name, prefix, prefixLen)) {
+		Cvar_Set("name", name + prefixLen);
+	}
+	else {
+		Cvar_Set("name", va("%s%s", prefix, name));
+	}
+}
+
 #define G2_VERT_SPACE_CLIENT_SIZE 256
 
 /*
@@ -2822,6 +2835,8 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("video", CL_Video_f );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
 
+	Cmd_AddCommand("afk", CL_Afk_f);
+
 	CL_InitRef();
 
 	SCR_Init ();
@@ -2895,6 +2910,8 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("forcepowers");
 	Cmd_RemoveCommand ("video");
 	Cmd_RemoveCommand ("stopvideo");
+
+	Cmd_RemoveCommand("afk");
 
 	CL_ShutdownInput();
 	Con_Shutdown();
