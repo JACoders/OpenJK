@@ -1289,7 +1289,7 @@ typedef struct {
 } locationData_t;
 
 // zyk: Max racers in the map
-#define MAX_RACERS 12
+#define MAX_RACERS 16
 
 typedef struct level_locals_s {
 	struct gclient_s	*clients;		// [maxclients]
