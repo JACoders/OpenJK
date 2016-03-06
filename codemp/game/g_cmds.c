@@ -11987,6 +11987,17 @@ void Cmd_RaceMode_f( gentity_t *ent ) {
 
 			if (swoop_number < MAX_RACERS)
 			{
+				// zyk: removing a possible swoop that was in the same position by a player who tried to race before in this position
+				if (level.race_mode_vehicle[swoop_number] != -1)
+				{
+					gentity_t *vehicle_ent = &g_entities[level.race_mode_vehicle[swoop_number]];
+
+					if (vehicle_ent && vehicle_ent->NPC && Q_stricmp(vehicle_ent->NPC_type, "swoop") == 0)
+					{
+						G_FreeEntity(vehicle_ent);
+					}
+				}
+
 				// zyk: teleporting player to the swoop area
 				zyk_TeleportPlayer( ent, origin, yaw);
 
