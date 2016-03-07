@@ -557,6 +557,9 @@ extern PFNGLGETQUERYIVPROC qglGetQueryiv;
 extern PFNGLGETQUERYOBJECTIVPROC qglGetQueryObjectiv;
 extern PFNGLGETQUERYOBJECTUIVPROC qglGetQueryObjectuiv;
 
+// GL state
+extern PFNGLGETSTRINGIPROC qglGetStringi;
+
 // Sync objects and fences
 extern PFNGLFENCESYNCPROC qglFenceSync;
 extern PFNGLDELETESYNCPROC qglDeleteSync;

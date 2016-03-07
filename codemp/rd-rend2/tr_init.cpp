@@ -440,14 +440,14 @@ static const char *GetGLExtensionsString()
 
 	for ( int i = 0; i < numExtensions; i++ )
 	{
-		extensionStringLen += strlen((const char *)glGetStringi(GL_EXTENSIONS, i)) + 1;
+		extensionStringLen += strlen((const char *)qglGetStringi(GL_EXTENSIONS, i)) + 1;
 	}
 
 	char *extensionString = (char *)Z_Malloc(extensionStringLen + 1, TAG_GENERAL);
 	char *p = extensionString;
 	for ( int i = 0; i < numExtensions; i++ )
 	{
-		const char *extension = (const char *)glGetStringi(GL_EXTENSIONS, i);
+		const char *extension = (const char *)qglGetStringi(GL_EXTENSIONS, i);
 		while ( *extension != '\0' )
 			*p++ = *extension++;
 
@@ -495,6 +495,8 @@ static void InitOpenGL( void )
 
 		window = ri->WIN_Init(&windowDesc, &glConfig);
 
+		GLimp_InitCoreFunctions();
+
 		Com_Printf( "GL_RENDERER: %s\n", (char *)qglGetString (GL_RENDERER) );
 
 		// get our config strings
@@ -535,8 +537,8 @@ static void InitOpenGL( void )
 
 		// Create the default VAO
 		GLuint vao;
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
+		qglGenVertexArrays(1, &vao);
+		qglBindVertexArray(vao);
 		tr.globalVao = vao;
 
 		// set default state
@@ -1756,7 +1758,7 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 			ri->Z_Free((void *)glConfig.extensions_string);
 			ri->Z_Free((void *)glConfigExt.originalExtensionString);
 
-			glDeleteVertexArrays(1, &tr.globalVao);
+			qglDeleteVertexArrays(1, &tr.globalVao);
 			SaveGhoul2InfoArray();
 		}
 	}

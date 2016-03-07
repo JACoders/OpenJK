@@ -202,6 +202,9 @@ PFNGLGETQUERYIVPROC qglGetQueryiv;
 PFNGLGETQUERYOBJECTIVPROC qglGetQueryObjectiv;
 PFNGLGETQUERYOBJECTUIVPROC qglGetQueryObjectuiv;
 
+// GL state
+PFNGLGETSTRINGIPROC qglGetStringi;
+
 // Sync objects and fences
 PFNGLFENCESYNCPROC qglFenceSync;
 PFNGLDELETESYNCPROC qglDeleteSync;
@@ -290,12 +293,8 @@ static void __stdcall GLimp_OnError(GLenum source, GLenum type, GLuint id, GLenu
 	Com_Printf( S_COLOR_YELLOW "OpenGL -> [%s][%s][%s] %s\n", sourceText, severityText, typeText, message );
 }
 
-void GLW_InitTextureCompression( void );
-void GLimp_InitExtensions()
+void GLimp_InitCoreFunctions()
 {
-	char *extension;
-	const char* result[3] = { "...ignoring %s\n", "...using %s\n", "...%s not found\n" };
-
 	Com_Printf("Initializing OpenGL 3.2 functions\n");
 
 	// Drawing commands
@@ -446,9 +445,7 @@ void GLimp_InitExtensions()
 	// GLSL
 	{
 		char version[256];
-
 		Q_strncpyz( version, (const char *) qglGetString (GL_SHADING_LANGUAGE_VERSION), sizeof( version ) );
-
 		sscanf(version, "%d.%d", &glRefConfig.glslMajorVersion, &glRefConfig.glslMinorVersion);
 
 		ri->Printf(PRINT_ALL, "...using GLSL version %s\n", version);
@@ -490,11 +487,21 @@ void GLimp_InitExtensions()
 	GetGLFunction (qglGetQueryObjectiv, "glGetQueryObjectiv", qtrue);
 	GetGLFunction (qglGetQueryObjectuiv, "glGetQueryObjectuiv", qtrue);
 
+	// GL state
+	GetGLFunction (qglGetStringi, "glGetStringi", qtrue);
+
 	// Sync objects and fences
 	GetGLFunction (qglFenceSync, "glFenceSync", qtrue);
 	GetGLFunction (qglDeleteSync, "glDeleteSync", qtrue);
 	GetGLFunction (qglClientWaitSync, "glClientWaitSync", qtrue);
 	GetGLFunction (qglWaitSync, "glWaitSync", qtrue);
+}
+
+void GLW_InitTextureCompression( void );
+void GLimp_InitExtensions()
+{
+	char *extension;
+	const char* result[3] = { "...ignoring %s\n", "...using %s\n", "...%s not found\n" };
 
 	Com_Printf ("Initializing OpenGL extensions\n" );
 
