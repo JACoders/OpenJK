@@ -729,7 +729,7 @@ set(GameLibFullPaths)
 
 	include(InstallZIP)
 	add_zip_command(${AssetsPk3}
-		FILES ${GameLibFullPaths}
+		FILES ${GameLibFullPaths} ${CMAKE_SOURCE_DIR}/assets/*
 		DEPENDS "${GameLibsBuilt}")
 	add_custom_target(Assets
 		ALL
