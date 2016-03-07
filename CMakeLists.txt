@@ -139,7 +139,7 @@ set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
 set(MPCGame "cgame${Architecture}")
 set(MPUI "ui${Architecture}")
-set(AssetsPk3 "japro-${Architecture}.pk3")
+set(AssetsPk3 "japro3-ui-${Architecture}.pk3")
 # Library names
 set(MPBotLib "botlib")
 set(SharedLib "shared")
