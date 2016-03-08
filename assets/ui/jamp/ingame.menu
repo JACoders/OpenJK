@@ -687,7 +687,7 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav" ;
-				open			browsermenu
+				open			japrobrowsermenu
 			}
 			mouseenter 
 			{ 
