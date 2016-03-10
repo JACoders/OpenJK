@@ -102,6 +102,9 @@ cvar_t	*cl_consoleKeys;
 
 cvar_t  *cl_lanForcePackets;
 
+cvar_t *cl_stringColors;
+cvar_t *cl_stringColorsCount;
+
 vec3_t cl_windVec;
 
 
@@ -2117,6 +2120,19 @@ void CL_CheckUserinfo( void ) {
 
 }
 
+static int lastModifiedColors = -1;
+static void CL_CheckCvarUpdate(void) {
+	if (lastModifiedColors != cl_stringColors->modificationCount) {
+		// recalculate cl_stringColorsCount
+		lastModifiedColors = cl_stringColors->modificationCount;
+		int count = cl_stringColors->integer;
+		count = count - ((count >> 1) & 0x55555555);
+		count = (count & 0x33333333) + ((count >> 2) & 0x33333333);
+		count = (((count + (count >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
+		Cvar_Set("cl_stringColorsCount", va("%i", count));
+	}
+}
+
 /*
 ==================
 CL_Frame
@@ -2128,6 +2144,8 @@ static float avgFrametime=0.0;
 extern void SE_CheckForLanguageUpdates(void);
 void CL_Frame ( int msec ) {
 	qboolean takeVideoFrame = qfalse;
+
+	CL_CheckCvarUpdate();
 
 	if ( !com_cl_running->integer ) {
 		return;
@@ -2625,6 +2643,56 @@ static void CL_Afk_f(void) {
 	}
 }
 
+typedef struct bitInfo_S {
+	const char	*string;
+} bitInfo_T;
+
+static bitInfo_T colors[] = {
+	{ "BLACK" },
+	{ "RED" },
+	{ "GREEN" },
+	{ "YELLOW" },
+	{ "BLUE" },
+	{ "CYAN" },
+	{ "MAGENTA" },
+	{ "WHITE" },
+	{ "ORANGE" },
+	{ "GRAY" }
+};
+
+static void CL_ColorString_f(void) {
+	if (Cmd_Argc() == 1) {
+		int i = 0;
+		for (i = 0; i < 10; i++) {
+			if ((cl_stringColors->integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", i, colors[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", i, colors[i].string);
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << 10) - 1;
+		
+		Cmd_ArgvBuffer(1, arg, sizeof(arg));
+		index = atoi(arg);
+
+		if (index < 0 || index >= 10) {
+			Com_Printf("colorString: Invalid range: %i [0, %i]\n", index, 9);
+			return;
+		}
+
+		Cvar_Set("cl_stringColors", va("%i", (1 << index) ^ (cl_stringColors->integer & mask)));
+
+		Com_Printf("%s %s^7\n", colors[index].string, ((cl_stringColors->integer & (1 << index))
+			? "^2Enabled" : "^1Disabled"));
+	}
+}
+
 #define G2_VERT_SPACE_CLIENT_SIZE 256
 
 /*
@@ -2804,6 +2872,9 @@ void CL_Init( void ) {
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
 
+	cl_stringColors = Cvar_Get("cl_stringColors", "0", CVAR_ARCHIVE);
+	cl_stringColorsCount = Cvar_Get("cl_stringColorsCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
+
 	//
 	// register our commands
 	//
@@ -2836,6 +2907,7 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
 
 	Cmd_AddCommand("afk", CL_Afk_f);
+	Cmd_AddCommand("colorstring", CL_ColorString_f);
 
 	CL_InitRef();
 
@@ -2912,6 +2984,7 @@ void CL_Shutdown( void ) {
 	Cmd_RemoveCommand ("stopvideo");
 
 	Cmd_RemoveCommand("afk");
+	Cmd_RemoveCommand("colorstring");
 
 	CL_ShutdownInput();
 	Con_Shutdown();
