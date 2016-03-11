@@ -814,33 +814,9 @@ void Message_Key( int key ) {
 
 	if ( key == A_ENTER || key == A_KP_ENTER ) {
 		if ( chatField.buffer[0] && cls.state == CA_ACTIVE ) {
-			int count = cl_stringColorsCount->integer;
-			int i, random, j=0, store=0;
-			char out[MAX_EDIT_LINE], *s = out, *p = chatField.buffer, c;
-			while ((c=*p++)) {
-				if (c == '^' && *p != '\0' && *p >= '0' && *p <= '9') {
-					*s++ = c;
-					*s++ = *p++;
-					c = *p++;
-					store = 0;
-				}
-				else if (store != (random = irand(1, count))) {
-					for (i = 0; i < 10; i++) {
-						if ((cl_stringColors->integer & (1 << i)) && (random - 1) == j++) {
-							store = random;
-							*s++ = '^';
-							*s++ = i + '0';
-						}
-					}
-					j = 0;
-				}
-				*s++ = c;
-			}
-			*s = '\0';
-
-				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, out );
-			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", out );
-			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", out );
+				 if ( chat_playerNum != -1 )	Com_sprintf( buffer, sizeof( buffer ), "tell %i \"%s\"\n", chat_playerNum, chatField.buffer);
+			else if ( chat_team )				Com_sprintf( buffer, sizeof( buffer ), "say_team \"%s\"\n", chatField.buffer);
+			else								Com_sprintf( buffer, sizeof( buffer ), "say \"%s\"\n", CL_RandomizeColors(chatField.buffer) );
 
 			CL_AddReliableCommand( buffer, qfalse );
 		}

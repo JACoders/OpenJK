@@ -2693,6 +2693,42 @@ static void CL_ColorString_f(void) {
 	}
 }
 
+char* CL_RandomizeColors(const char* in) {
+	int count = cl_stringColorsCount->integer;
+	int i, random, j = 0, store = 0;
+	const char *p = in;
+	char out[MAX_EDIT_LINE], *s = out, c;
+	
+	while ((c = *p++)) {
+		if (c == '^' && *p != '\0' && *p >= '0' && *p <= '9') {
+			*s++ = c;
+			*s++ = *p++;
+			c = *p++;
+			store = 0;
+		}
+		else if (store != (random = irand(1, count))) {
+			for (i = 0; i < 10; i++) {
+				if ((cl_stringColors->integer & (1 << i)) && (random - 1) == j++) {
+					store = random;
+					*s++ = '^';
+					*s++ = i + '0';
+				}
+			}
+			j = 0;
+		}
+		*s++ = c;
+	}
+	*s = '\0';
+	return out;
+}
+
+static void CL_ColorName_f(void) {
+	char name[MAX_TOKEN_CHARS];
+	Cvar_VariableStringBuffer("name", name, sizeof(name));
+	Q_StripColor(name);
+	Cvar_Set("name", va("%s", CL_RandomizeColors(name)));
+}
+
 #define G2_VERT_SPACE_CLIENT_SIZE 256
 
 /*
@@ -2908,6 +2944,7 @@ void CL_Init( void ) {
 
 	Cmd_AddCommand("afk", CL_Afk_f);
 	Cmd_AddCommand("colorstring", CL_ColorString_f);
+	Cmd_AddCommand("colorname", CL_ColorName_f);
 
 	CL_InitRef();
 
@@ -2985,6 +3022,7 @@ void CL_Shutdown( void ) {
 
 	Cmd_RemoveCommand("afk");
 	Cmd_RemoveCommand("colorstring");
+	Cmd_RemoveCommand("colorname");
 
 	CL_ShutdownInput();
 	Con_Shutdown();
