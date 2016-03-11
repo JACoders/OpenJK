@@ -36,7 +36,9 @@ Installing and running OpenJK:
 
 1. [Download the latest build](http://builds.openjk.org) for your operating system.
 2. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
+*Note:* The archive might unzip into `install/JediAcademy/` and in there is all the data. Actually *this* data should be in `GameData/` folder.
 3. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` application (OS X), depending on your operating system.
+The executable `openjk` is the multiplayer mode, `openjk_sp` is the single player/story mode and `openjkded` is a standalone server for multiplayer games.
 
 
 **OS X Instructions**
