@@ -598,6 +598,7 @@ unsigned	Com_BlockChecksum( const void *buffer, int length );
 int			Com_Filter(const char *filter, const char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, const char *name, int casesensitive);
 qboolean	Com_SafeMode( void );
+void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
 
 void		Com_StartupVariable( const char *match );
 // checks for and removes command line "+set var arg" constructs
@@ -617,6 +618,7 @@ extern	cvar_t	*com_ansiColor;
 #endif
 
 extern	cvar_t	*com_affinity;
+extern	cvar_t	*com_busyWait;
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -632,7 +634,6 @@ extern	int		timeInPVSCheck;
 extern	int		numTraces;
 
 extern	int		com_frameTime;
-extern	int		com_frameMsec;
 
 extern	qboolean	com_errorEntered;
 
