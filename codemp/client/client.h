@@ -457,7 +457,7 @@ void CL_InitRef( void );
 
 int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen );
 
-char * CL_RandomizeColors(const char*);
+void CL_RandomizeColors(const char*, char*);
 
 qboolean CL_CheckPaused(void);
 

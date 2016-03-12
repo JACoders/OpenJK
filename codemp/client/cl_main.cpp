@@ -2694,11 +2694,11 @@ static void CL_ColorString_f(void) {
 	}
 }
 
-char* CL_RandomizeColors(const char* in) {
+void CL_RandomizeColors(const char* in, char *out) {
 	int count = cl_stringColorsCount->integer;
 	int i, random, j = 0, store = 0;
 	const char *p = in;
-	char out[MAX_EDIT_LINE], *s = out, c;
+	char *s = out, c;
 	
 	while ((c = *p++)) {
 		if (c == '^' && *p != '\0' && *p >= '0' && *p <= '9') {
@@ -2707,7 +2707,7 @@ char* CL_RandomizeColors(const char* in) {
 			c = *p++;
 			store = 0;
 		}
-		else if (store != (random = irand(1, count*Cvar_VariableIntegerValue("cl_stringColorsRandom"))) && random <= count) {
+		else if (store != (random = irand(1, count*(store == 0 ? 1 : Cvar_VariableIntegerValue("cl_stringColorsRandom")))) && random <= count) {
 			for (i = 0; i < 10; i++) {
 				if ((cl_stringColors->integer & (1 << i)) && (random - 1) == j++) {
 					store = random;
@@ -2720,14 +2720,15 @@ char* CL_RandomizeColors(const char* in) {
 		*s++ = c;
 	}
 	*s = '\0';
-	return out;
 }
 
 static void CL_ColorName_f(void) {
 	char name[MAX_TOKEN_CHARS];
+	char coloredName[MAX_TOKEN_CHARS];
 	Cvar_VariableStringBuffer("name", name, sizeof(name));
 	Q_StripColor(name);
-	Cvar_Set("name", va("%s", CL_RandomizeColors(name)));
+	CL_RandomizeColors(name, coloredName);
+	Cvar_Set("name", va("%s", coloredName));
 }
 
 #define G2_VERT_SPACE_CLIENT_SIZE 256
