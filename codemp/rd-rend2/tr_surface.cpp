@@ -2158,7 +2158,8 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	GLSL_SetUniformVec3(program,
 			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 
-	qglDrawArraysInstanced(GL_TRIANGLES, 0, 6, surf->numSprites);
+	R_BindIBO(surf->ibo);
+	qglDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0, surf->numSprites);
 }
 
 void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {

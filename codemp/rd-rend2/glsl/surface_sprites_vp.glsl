@@ -21,7 +21,6 @@ out float var_Alpha;
 void main()
 {
 	vec3 V = u_ViewOrigin - attr_Position;
-	int vertexID = gl_VertexID;
 
 	float width = u_Width * (1.0 + u_WidthVariance*0.5);
 	float height = u_Height * (1.0 + u_HeightVariance*0.5);
@@ -34,29 +33,23 @@ void main()
 	float halfWidth = width * 0.5;
 	vec3 offsets[] = vec3[](
 #if defined(FACE_UP)
-		vec3(-halfWidth, -halfWidth, 0.0),
-		vec3( halfWidth, -halfWidth, 0.0),
-		vec3(-halfWidth,  halfWidth, 0.0),
 		vec3( halfWidth, -halfWidth, 0.0),
 		vec3( halfWidth,  halfWidth, 0.0),
-		vec3(-halfWidth,  halfWidth, 0.0)
+		vec3(-halfWidth,  halfWidth, 0.0),
+		vec3(-halfWidth, -halfWidth, 0.0)
 #else
-		vec3(-halfWidth, 0.0, 0.0),
-		vec3( halfWidth, 0.0, 0.0),
-		vec3(-halfWidth, 0.0, height),
 		vec3( halfWidth, 0.0, 0.0),
 		vec3( halfWidth, 0.0, height),
-		vec3(-halfWidth, 0.0, height)
+		vec3(-halfWidth, 0.0, height),
+		vec3(-halfWidth, 0.0, 0.0)
 #endif
 	);
 
 	const vec2 texcoords[] = vec2[](
-		vec2(0.0, 1.0),
-		vec2(1.0, 1.0),
-		vec2(0.0, 0.0),
 		vec2(1.0, 1.0),
 		vec2(1.0, 0.0),
-		vec2(0.0, 0.0)
+		vec2(0.0, 0.0),
+		vec2(0.0, 1.0)
 	);
 
 	vec3 offset = offsets[gl_VertexID];

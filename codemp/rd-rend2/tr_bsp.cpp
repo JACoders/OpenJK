@@ -3486,11 +3486,15 @@ static void R_GenerateSurfaceSprites(
 		hash = UpdateHash(bundle->image[i]->imgName, hash);
 	}
 
+	uint16_t indices[] = { 0, 1, 2, 0, 2, 3 };
+
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
 	out->numSprites = sprites.size();
 	out->vbo = R_CreateVBO((byte *)sprites.data(),
 			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
+
+	out->ibo = R_CreateIBO((byte *)indices, sizeof(indices), VBO_USAGE_STATIC);
 
 	// FIXME: Need a better way to handle this.
 	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
