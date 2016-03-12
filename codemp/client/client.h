@@ -416,6 +416,7 @@ extern  cvar_t  *cl_lanForcePackets;
 
 extern cvar_t	*cl_stringColors;
 extern cvar_t	*cl_stringColorsCount;
+extern cvar_t	*cl_stringColorsRandom;
 
 //=================================================
 

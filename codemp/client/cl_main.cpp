@@ -104,6 +104,7 @@ cvar_t  *cl_lanForcePackets;
 
 cvar_t *cl_stringColors;
 cvar_t *cl_stringColorsCount;
+cvar_t *cl_stringColorsRandom;
 
 vec3_t cl_windVec;
 
@@ -2706,7 +2707,7 @@ char* CL_RandomizeColors(const char* in) {
 			c = *p++;
 			store = 0;
 		}
-		else if (store != (random = irand(1, count))) {
+		else if (store != (random = irand(1, count*Cvar_VariableIntegerValue("cl_stringColorsRandom"))) && random <= count) {
 			for (i = 0; i < 10; i++) {
 				if ((cl_stringColors->integer & (1 << i)) && (random - 1) == j++) {
 					store = random;
@@ -2910,6 +2911,7 @@ void CL_Init( void ) {
 
 	cl_stringColors = Cvar_Get("cl_stringColors", "0", CVAR_ARCHIVE);
 	cl_stringColorsCount = Cvar_Get("cl_stringColorsCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
+	cl_stringColorsRandom = Cvar_Get("cl_stringColorsRandom", "2", CVAR_ARCHIVE);
 
 	//
 	// register our commands
