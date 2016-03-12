@@ -37,7 +37,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/q_shared.h"
 #include "sys_local.h"
 
-qboolean stdin_active = qtrue;
 qboolean stdinIsATTY = qfalse;
 
 // Used to determine where to store user-specific files
