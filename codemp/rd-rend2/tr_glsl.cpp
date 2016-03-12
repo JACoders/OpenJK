@@ -689,7 +689,7 @@ void GLSL_InitUniforms(shaderProgram_t *program)
 	program->uniforms = (GLint *)Z_Malloc(
 			UNIFORM_COUNT * sizeof(*program->uniforms), TAG_GENERAL);
 	program->uniformBufferOffsets = (short *)Z_Malloc(
-			UNIFORM_COUNT * sizeof(*program->uniformBufferOffsets), TAG_GENERAL);
+			UNIFORM_BLOCK_COUNT * sizeof(*program->uniformBufferOffsets), TAG_GENERAL);
 
 	GLint *uniforms = program->uniforms;
 	int size = 0;
