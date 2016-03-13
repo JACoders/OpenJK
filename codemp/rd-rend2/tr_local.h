@@ -1374,11 +1374,7 @@ typedef enum {
 the drawsurf sort data is packed into a single 32 bit value so it can be
 compared quickly during the qsorting process
 */
-#define	QSORT_FOGNUM_SHIFT		0
-#define QSORT_FOGNUM_BITS		5
-#define QSORT_FOGNUM_MASK		((1 << QSORT_FOGNUM_BITS) - 1)
-
-#define	QSORT_CUBEMAP_SHIFT		(QSORT_FOGNUM_SHIFT + QSORT_FOGNUM_BITS)
+#define	QSORT_CUBEMAP_SHIFT		0
 #define QSORT_CUBEMAP_BITS		6
 #define QSORT_CUBEMAP_MASK		((1 << QSORT_CUBEMAP_BITS) - 1)
 
@@ -1399,6 +1395,7 @@ typedef struct drawSurf_s {
 	int entityNum;
 	qboolean lit;
 	surfaceType_t *surface; // any of surface*_t
+	int fogIndex;
 } drawSurf_t;
 
 #define	MAX_FACE_POINTS		64
@@ -2491,8 +2488,8 @@ void R_AddLightningBoltSurfaces( trRefEntity_t *e );
 
 void R_AddPolygonSurfaces( void );
 
-void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *fogNum, int *postRender );
-uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int fogIndex, int postRender);
+void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender );
+uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender);
 void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
 bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity );
