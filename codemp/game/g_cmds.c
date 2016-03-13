@@ -13888,9 +13888,12 @@ void Cmd_Players_f( gentity_t *ent ) {
 			{
 				strcpy(content, va("%s%d - %s ^7- %s - ",content,player->s.number,player->client->pers.netname,player->client->sess.IP));
 
-				if (player->client->sess.amrpgmode > 0 && player->client->pers.bitvalue > 0)
+				if (player->client->sess.amrpgmode > 0)
 				{
-					strcpy(content, va("%s^3(admin)",content));
+					if (player->client->pers.bitvalue > 0)
+						strcpy(content, va("%s^3(admin)",content));
+					else
+						strcpy(content, va("%s^3(logged)",content));
 				}
 
 				if (player->client->sess.amrpgmode == 2)
