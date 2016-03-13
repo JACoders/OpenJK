@@ -5025,15 +5025,22 @@ void initialize_rpg_skills(gentity_t *ent)
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_OFFENSE)) && ent->client->pers.skill_levels[5] > 0)
 		{
 			ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABER_OFFENSE);
-			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 		}
 		if (ent->client->pers.skill_levels[5] == 0)
 		{
 			ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SABER_OFFENSE);
-			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
-			ent->client->ps.weapon = WP_MELEE;
 		}
 		ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] = ent->client->pers.skill_levels[5];
+
+		// zyk: giving the saber if he has Saber Attack skill level greater than 0
+		if (ent->client->pers.skill_levels[5] > 0)
+		{
+			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
+		}
+		else
+		{
+			ent->client->ps.stats[STAT_WEAPONS] &= ~(1 << WP_SABER);
+		}
 
 		// zyk: loading Saber Defense value
 		if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABER_DEFENSE)) && ent->client->pers.skill_levels[6] > 0)
