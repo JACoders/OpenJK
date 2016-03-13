@@ -3592,7 +3592,7 @@ The string has a specific order, "cgame ui @ ref1 ref2 ref3 ..."
 */
 const char *FS_ReferencedPakPureChecksums( void ) {
 	static char	info[BIG_INFO_STRING];
-	searchpath_t	*search, *findAssets;
+	searchpath_t	*search;
 	int nFlags, numPaks, checksum;
 
 	info[0] = 0;
@@ -3600,12 +3600,10 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 	checksum = fs_checksumFeed;
 	numPaks = 0;
 
-	search = fs_searchpaths;
-
-	for ( findAssets = fs_searchpaths ; findAssets ; findAssets = findAssets->next ) {
-		if (findAssets->pack && findAssets->pack->checksum == -1342311474) {
-			search = findAssets;
-			findAssets->pack->referenced = 7;
+	for ( search = fs_searchpaths ; search ; search = search->next ) {
+		if (search->pack && search->pack->checksum == -1342311474) {
+			search->pack->referenced = 7;
+			break;
 		}
 	}
 
@@ -3627,6 +3625,9 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 				}
 				checksum ^= search->pack->pure_checksum;
 				numPaks++;
+				if (search->pack && search->pack->checksum == 1767559464) {
+					break;
+				}
 			}
 		}
 		if (fs_fakeChkSum != 0) {
