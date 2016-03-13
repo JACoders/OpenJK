@@ -1836,6 +1836,38 @@ void stub_RE_WorldEffectCommand ( const char *cmd ){}
 void stub_RE_AddWeatherZone ( vec3_t mins, vec3_t maxs ) {}
 static void RE_SetRefractionProperties ( float distortionAlpha, float distortionStretch, qboolean distortionPrePost, qboolean distortionNegate ) { }
 
+void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload)
+{
+	static char sPrevMapName[MAX_QPATH]={0};
+	bool bDeleteModels = eForceReload == eForceReload_MODELS || eForceReload == eForceReload_ALL;
+
+	if( bDeleteModels )
+		CModelCache->DeleteAll();
+	else if( ri->Cvar_VariableIntegerValue( "sv_pure" ) )
+		CModelCache->DumpNonPure();
+
+	tr.numBSPModels = 0;
+
+	/* If we're switching to the same level, don't increment current level */
+	if (Q_stricmp( psMapName,sPrevMapName ))
+	{
+		Q_strncpyz( sPrevMapName, psMapName, sizeof(sPrevMapName) );
+		tr.currentLevel++;
+	}
+}
+
+int C_GetLevel( void )
+{
+	return tr.currentLevel;
+}
+
+void C_LevelLoadEnd( void )
+{
+	CModelCache->LevelLoadEnd( qfalse );
+	ri->SND_RegisterAudio_LevelLoadEnd( qfalse );
+	ri->S_RestartMusic();
+}
+
 /*
 @@@@@@@@@@@@@@@@@@@@@
 GetRefAPI

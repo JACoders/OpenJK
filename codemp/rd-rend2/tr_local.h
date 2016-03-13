@@ -3304,16 +3304,7 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height, imgT
 float ProjectRadius( float r, vec3_t location );
 void RE_RegisterModels_StoreShaderRequest(const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke);
 qboolean ShaderHashTableExists(void);
-extern void R_ImageLoader_Init(void);
-
-// tr_cache.cpp
-
-
-
-
-void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload);
-int C_GetLevel( void );
-void C_LevelLoadEnd( void );
+void R_ImageLoader_Init(void);
 
 void RB_SurfaceGhoul( CRenderableSurface *surf );
 
