@@ -19,7 +19,6 @@ void NormalizePath( char *out, const char *path, size_t outSize )
 // This differs significantly from Raven's own caching code.
 // For starters, we are allowed to use ri-> whatever because we don't care about running on dedicated (use rd-vanilla!)
 
-CImageCacheManager *CImgCache = new CImageCacheManager();
 CModelCacheManager *CModelCache = new CModelCacheManager();
 
 CachedFile::CachedFile()
@@ -30,7 +29,7 @@ CachedFile::CachedFile()
 {
 }
 
-CCacheManager::FileCache::iterator CCacheManager::FindFile( const char *path )
+CModelCacheManager::FileCache::iterator CModelCacheManager::FindFile( const char *path )
 {
 	return std::find_if(
 		std::begin(files), std::end(files), [path]( const CachedFile& file )
@@ -62,7 +61,7 @@ static const byte FakeGLAFile[] =
 	0x00, 0x80, 0x00, 0x80, 0x00, 0x80
 };
 
-qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached )
+qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached )
 {
 	char path[MAX_QPATH];
 	NormalizePath(path, pFileName, sizeof(path));
@@ -102,7 +101,7 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 }
 
 
-void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag )
+void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag )
 {
 	int		iChecksum;
 	char	sModelName[MAX_QPATH];
@@ -157,7 +156,7 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
  * CCacheManager::DeleteAll
  * Clears out the cache (done on renderer shutdown I suppose)
  */
-void CCacheManager::DeleteAll( void )
+void CModelCacheManager::DeleteAll( void )
 {
 	for ( auto& file : files )
 	{
@@ -165,28 +164,7 @@ void CCacheManager::DeleteAll( void )
 	}
 
 	files.swap(FileCache());
-
-	DeleteRemaining();
-}
-
-void CImageCacheManager::DeleteLightMaps( void )
-{
-	for( auto it = files.begin(); it != files.end(); /* empty */ )
-	{
-		CachedFile& pFile = *it;
-		if( (pFile.path[0] == '*' && strstr(pFile.path, "lightmap")) ||
-			(pFile.path[0] == '_' && strstr(pFile.path, "fatlightmap")) )
-		{
-			if( pFile.pDiskImage )
-				Z_Free( pFile.pDiskImage );
-
-			it = files.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
+	assets.swap(AssetCache());
 }
 
 /*
@@ -194,7 +172,7 @@ void CImageCacheManager::DeleteLightMaps( void )
  * Scans the cache for assets which don't match the checksum, and dumps
  * those that don't match.
  */
-void CCacheManager::DumpNonPure( void )
+void CModelCacheManager::DumpNonPure( void )
 {
 	ri->Printf( PRINT_DEVELOPER,  "CCacheManager::DumpNonPure():\n");
 
@@ -291,16 +269,6 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 	return bAtLeastOneModelFreed;
 }
 
-void CModelCacheManager::DeleteRemaining()
-{
-	assets.swap(AssetCache());
-}
-
-qboolean CImageCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel /* unused */ )
-{
-	return qtrue;
-}
-
 /*
  * Wrappers for the above funcs so they export properly.
  */
@@ -312,7 +280,7 @@ qboolean C_Models_LevelLoadEnd( qboolean deleteUnusedByLevel )
 
 qboolean C_Images_LevelLoadEnd()
 {
-	return CImgCache->LevelLoadEnd( qfalse );
+	return qtrue;
 }
 
 /*
@@ -395,9 +363,6 @@ void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload)
 
 	tr.numBSPModels = 0;
 
-	CImgCache->DeleteLightMaps();
-	//R_Images_DeleteLightMaps();
-
 	/* If we're switching to the same level, don't increment current level */
 	if (Q_stricmp( psMapName,sPrevMapName ))
 	{
@@ -414,7 +379,6 @@ int C_GetLevel( void )
 void C_LevelLoadEnd( void )
 {
 	CModelCache->LevelLoadEnd( qfalse );
-	CImgCache->LevelLoadEnd( qfalse );
 	ri->SND_RegisterAudio_LevelLoadEnd( qfalse );
 	ri->S_RestartMusic();
 }

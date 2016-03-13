@@ -4,16 +4,6 @@
 #include <vector>
 
 /*
- * Cache information specific to each file (FIXME: do we need?)
- */
-enum CacheType
-{
-	CACHE_NONE,
-	CACHE_IMAGE,
-	CACHE_MODEL
-};
-
-/*
  * This stores the loaded file information that we need on retrieval
  */
 struct Asset
@@ -43,82 +33,52 @@ struct CachedFile
 	CachedFile();
 };
 
-/* The actual manager itself, which is used in the model and image loading routines. */
-class CCacheManager
+class CModelCacheManager
 {
 public:
+	typedef std::vector<Asset> AssetCache;
 	typedef std::vector<CachedFile> FileCache;
 
 public:
-	virtual ~CCacheManager() {}
+	/*
+	 * Return -1 if asset not currently loaded, return positive qhandle_t if found
+	 */
+	qhandle_t	GetModelHandle( const char *fileName );
+
+	/*
+	 * We have a loaded model, let's insert it into the list of loaded models
+	 */
+	void		InsertModelHandle( const char *fileName, qhandle_t handle );
+
+	qboolean	LevelLoadEnd( qboolean deleteUnusedByLevel );
+	void		StoreShaderRequest( const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke );
+	void		AllocateShaders( const char *psFileName );
+
 
 	/*
 	 * Load the file and chuck the contents into ppFileBuffer, OR
 	 * if we're cached already, chuck cached contents into ppFileBuffer
 	 * and set *pbAlreadyCached to qtrue (otherwise, *pbAlreadyCached = false)
 	 */
-	qboolean			LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached );
+	qboolean	LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached );
 
 	/*
 	 * Allocate appropriate memory for stuff dealing with cached images
 	 * FIXME: only applies to models?
 	*/
-	void				*Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag );
-	void				DeleteAll( void );
-	void				DumpNonPure( void );
-
-	virtual qboolean	LevelLoadEnd( qboolean deleteUnusedByLevel ) = 0;
-
-protected:
-	virtual void		DeleteRemaining() {}
-
-	Asset *				AddAsset( const Asset& asset );
-	CachedFile *		AddFile( const CachedFile& file );
-
-	FileCache::iterator	FindFile( const char *name );
-
-protected:
-	FileCache files;
-};
-
-class CImageCacheManager : public CCacheManager
-{
-public:
-	virtual qboolean	LevelLoadEnd( qboolean deleteUnusedByLevel );
-
-	void				DeleteLightMaps( void );
-};
-
-class CModelCacheManager : public CCacheManager
-{
-public:
-	typedef std::vector<Asset> AssetCache;
-
-public:
-	/*
-	 * Return -1 if asset not currently loaded, return positive qhandle_t if found
-	 */
-	qhandle_t			GetModelHandle( const char *fileName );
-
-	/*
-	 * We have a loaded model/image, let's insert it into the list of loaded models
-	 */
-	void				InsertModelHandle( const char *fileName, qhandle_t handle );
-
-	virtual qboolean	LevelLoadEnd( qboolean deleteUnusedByLevel );
-	void				StoreShaderRequest( const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke );
-	void				AllocateShaders( const char *psFileName );
-
-protected:
-	virtual void		DeleteRemaining();
+	void		*Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag );
+	void		DeleteAll( void );
+	void		DumpNonPure();
 
 private:
 	AssetCache::iterator FindAsset( const char *name );
+	FileCache::iterator	FindFile( const char *name );
+
 	AssetCache assets;
+	FileCache files;
 };
 
 qboolean C_Models_LevelLoadEnd( qboolean deleteUnusedByLevel );
 qboolean C_Images_LevelLoadEnd();
 
-extern CImageCacheManager *CImgCache;
 extern CModelCacheManager *CModelCache;
