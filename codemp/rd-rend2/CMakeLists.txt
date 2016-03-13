@@ -23,6 +23,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_backend.cpp"
 	"${MPDir}/rd-rend2/tr_bsp.cpp"
 	"${MPDir}/rd-rend2/tr_cache.cpp"
+	"${MPDir}/rd-rend2/tr_cache.h"
 	"${MPDir}/rd-rend2/tr_cmds.cpp"
 	"${MPDir}/rd-rend2/tr_curve.cpp"
 	"${MPDir}/rd-rend2/tr_decals.cpp"

@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "tr_local.h"
 #include "ghoul2/g2_local.h"
+#include "tr_cache.h"
 #include <algorithm>
 
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;

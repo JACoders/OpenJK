@@ -12,6 +12,7 @@
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
 #endif
 #include "qcommon/disablewarnings.h"
+#include "tr_cache.h"
 
 #define	LL(x) x=LittleLong(x)
 

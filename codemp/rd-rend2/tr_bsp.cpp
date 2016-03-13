@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_map.c
 
 #include "tr_local.h"
+#include "tr_cache.h"
 #include <vector>
 
 /*
@@ -2279,7 +2280,7 @@ static	void R_LoadSubmodels( lump_t *l ) {
 			out->bounds[1][j] = LittleFloat (in->maxs[j]);
 		}
 
-		CModelCache->InsertLoaded (model->name, model->index);
+		CModelCache->InsertModelHandle(model->name, model->index);
 
 		out->firstSurface = LittleLong( in->firstSurface );
 		out->numSurfaces = LittleLong( in->numSurfaces );
