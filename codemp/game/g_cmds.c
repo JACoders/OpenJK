@@ -12371,6 +12371,18 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
 					this_ent->targetname);
 			}
+			else if (Q_stricmp(this_ent->classname, "target_push") == 0)
+			{
+				fprintf(this_file,"target_push\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%f\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->speed,this_ent->targetname,this_ent->target);
+			}
+			else if (Q_stricmp(this_ent->classname, "trigger_push") == 0)
+			{
+				fprintf(this_file,"trigger_push\n%d\n%d\n%d\n%d\n%d\n%d\n%d\n%f\n%f\n%s\n%s\n",(int)this_ent->s.origin[0],(int)this_ent->s.origin[1],
+					(int)this_ent->s.origin[2],(int)this_ent->s.angles[0],(int)this_ent->s.angles[1],(int)this_ent->s.angles[2],this_ent->spawnflags,
+					this_ent->speed,this_ent->wait,this_ent->targetname,this_ent->target);
+			}
 			else if (Q_stricmp(this_ent->classname, "misc_bsp") == 0)
 			{
 				fprintf(this_file,"misc_bsp\n%f\n%f\n%f\n%f\n%f\n%f\n%d\n%s\n",this_ent->s.origin[0],this_ent->s.origin[1],

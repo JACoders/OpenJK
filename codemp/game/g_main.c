@@ -6058,6 +6058,56 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_spawn_entity(new_ent);
 					}
+					else if (Q_stricmp(content, "target_push") == 0)
+					{
+						zyk_set_entity_field(new_ent,"classname","target_push");
+
+						x = atoi(zyk_get_file_value(this_file));
+						y = atoi(zyk_get_file_value(this_file));
+						z = atoi(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+						x = atoi(zyk_get_file_value(this_file));
+						y = atoi(zyk_get_file_value(this_file));
+						z = atoi(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
+					else if (Q_stricmp(content, "trigger_push") == 0)
+					{
+						zyk_set_entity_field(new_ent,"classname","trigger_push");
+
+						x = atoi(zyk_get_file_value(this_file));
+						y = atoi(zyk_get_file_value(this_file));
+						z = atoi(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"origin",va("%d %d %d",x,y,z));
+
+						x = atoi(zyk_get_file_value(this_file));
+						y = atoi(zyk_get_file_value(this_file));
+						z = atoi(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"angles",va("%d %d %d",x,y,z));
+
+						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"wait",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
+
+						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
+
+						zyk_spawn_entity(new_ent);
+					}
 					else if (Q_stricmp(content, "misc_bsp") == 0)
 					{
 						float fx, fy, fz;
