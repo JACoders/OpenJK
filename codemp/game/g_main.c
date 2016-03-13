@@ -6060,6 +6060,8 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (Q_stricmp(content, "target_push") == 0)
 					{
+						float fx, fy, fz;
+
 						zyk_set_entity_field(new_ent,"classname","target_push");
 
 						x = atoi(zyk_get_file_value(this_file));
@@ -6076,6 +6078,16 @@ void G_RunFrame( int levelTime ) {
 
 						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
 
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"mins",va("%f %f %f",fx,fy,fz));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"maxs",va("%f %f %f",fx,fy,fz));
+
 						zyk_set_entity_field(new_ent,"targetname",zyk_get_file_value(this_file));
 
 						zyk_set_entity_field(new_ent,"target",zyk_get_file_value(this_file));
@@ -6084,6 +6096,8 @@ void G_RunFrame( int levelTime ) {
 					}
 					else if (Q_stricmp(content, "trigger_push") == 0)
 					{
+						float fx, fy, fz;
+
 						zyk_set_entity_field(new_ent,"classname","trigger_push");
 
 						x = atoi(zyk_get_file_value(this_file));
@@ -6099,6 +6113,16 @@ void G_RunFrame( int levelTime ) {
 						zyk_set_entity_field(new_ent,"spawnflags",zyk_get_file_value(this_file));
 
 						zyk_set_entity_field(new_ent,"speed",zyk_get_file_value(this_file));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"mins",va("%f %f %f",fx,fy,fz));
+
+						fx = atof(zyk_get_file_value(this_file));
+						fy = atof(zyk_get_file_value(this_file));
+						fz = atof(zyk_get_file_value(this_file));
+						zyk_set_entity_field(new_ent,"maxs",va("%f %f %f",fx,fy,fz));
 
 						zyk_set_entity_field(new_ent,"wait",zyk_get_file_value(this_file));
 
