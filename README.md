@@ -37,6 +37,17 @@ Installing and running OpenJK:
 1. [Download the latest build](http://builds.openjk.org) for your operating system.
 2. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
 3. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` application (OS X), depending on your operating system.
+ 
+**Linux Instructions**
+
+If you do not have a windows partition and need to download the game base.
+
+1. Download  and Install SteamCMD [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Linux) .
+2. Set the download path using steamCMD, force_install_dir <path> .
+3. Using SteamCMD Set the platform to windows to download any windows game on steam. @sSteamCmdForcePlatformType "windows"
+4. Using SteamCMD download the game,  app_update 6020.
+5. [Download the latest build](http://builds.openjk.org) for your operating system.
+6. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
 
 
 **OS X Instructions**
