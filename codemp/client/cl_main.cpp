@@ -2636,11 +2636,27 @@ static void CL_Afk_f(void) {
 	const size_t prefixLen = strlen(prefix);
 	char name[MAX_TOKEN_CHARS];
 	Cvar_VariableStringBuffer("name", name, sizeof(name));
-	if (!Q_strncmp(name, prefix, prefixLen)) {
-		Cvar_Set("name", name + prefixLen);
+	if (Cmd_Argc() == 1) {
+		if (!Q_strncmp(name, prefix, prefixLen)) {
+			Cvar_Set("name", name + prefixLen);
+		}
+		else {
+			Cvar_Set("name", va("%s%s", prefix, name));
+		}
 	}
 	else {
-		Cvar_Set("name", va("%s%s", prefix, name));
+		char arg[8] = { 0 };
+		Cmd_ArgvBuffer(1, arg, sizeof(arg));
+		if (atoi(arg)) {
+			if (Q_strncmp(name, prefix, prefixLen)) {
+				Cvar_Set("name", va("%s%s", prefix, name));
+			}
+		}
+		else {
+			if (!Q_strncmp(name, prefix, prefixLen)) {
+				Cvar_Set("name", name + prefixLen);
+			}
+		}
 	}
 }
 
@@ -2909,6 +2925,8 @@ void CL_Init( void ) {
 
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
+
+	Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE);
 
 	cl_stringColors = Cvar_Get("cl_stringColors", "0", CVAR_ARCHIVE);
 	cl_stringColorsCount = Cvar_Get("cl_stringColorsCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);

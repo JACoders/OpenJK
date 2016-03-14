@@ -1327,6 +1327,8 @@ void CL_FinishMove( usercmd_t *cmd ) {
 CL_CreateCmd
 =================
 */
+static int afkTime = 0;
+static int afkTimeExecuted = 0;
 usercmd_t CL_CreateCmd( void ) {
 	usercmd_t	cmd;
 	vec3_t		oldAngles;
@@ -1339,6 +1341,26 @@ usercmd_t CL_CreateCmd( void ) {
 	Com_Memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
+
+	if (cl.serverTime) {
+		if (afkTime > cls.realtime + 1000) {
+			afkTime = cls.realtime;
+			afkTimeExecuted = cls.realtime;
+		}
+		if (cmd.buttons != 0 && !(cmd.buttons & BUTTON_TALK)) {
+			afkTime = cls.realtime;
+			if (cls.realtime - afkTimeExecuted >= 5000) {
+				Cmd_ExecuteString("afk 0");
+				afkTimeExecuted = cls.realtime;
+			}
+		}
+		else if (cls.realtime - afkTime >= Cvar_VariableIntegerValue("cl_afkTime") * 60000) {
+			if (cls.realtime - afkTimeExecuted >= 5000) {
+				Cmd_ExecuteString("afk 1");
+				afkTimeExecuted = cls.realtime;
+			}
+		}
+	}
 
 	// get basic movement from keyboard
 	CL_KeyMove( &cmd );
