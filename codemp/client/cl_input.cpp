@@ -1342,7 +1342,7 @@ usercmd_t CL_CreateCmd( void ) {
 
 	CL_CmdButtons( &cmd );
 
-	if (cl.serverTime) {
+	if (cl.serverTime && Cvar_VariableIntegerValue("cl_afkTime") > 0) {
 		if (afkTime > cls.realtime + 1000) {
 			afkTime = cls.realtime;
 			afkTimeExecuted = cls.realtime;
