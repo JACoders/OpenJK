@@ -1085,27 +1085,22 @@ int CM_ModelContents_Actual( clipHandle_t model, clipMap_t *cm )
 	cmod = CM_ClipHandleToModel( model, &cm );
 
 	//MCG ADDED - return the contents, too
-	if( cmod->leaf.numLeafBrushes )		// check for brush
+
+	for ( i = 0; i < cmod->leaf.numLeafBrushes; i++ )
 	{
-		int brushNum;
-		for ( i = cmod->leaf.firstLeafBrush; i < cmod->leaf.firstLeafBrush+cmod->leaf.numLeafBrushes; i++ )
-		{
-			brushNum = cm->leafbrushes[i];
-			contents |= cm->brushes[brushNum].contents;
+		int brushNum = cm->leafbrushes[cmod->leaf.firstLeafBrush + i];
+		contents |= cm->brushes[brushNum].contents;
+	}
+
+	for ( i = 0; i < cmod->leaf.numLeafSurfaces; i++ )
+	{
+		int surfaceNum = cm->leafsurfaces[cmod->leaf.firstLeafSurface + i];
+		if ( cm->surfaces[surfaceNum] != NULL )
+		{//HERNH?  How could we have a null surf within our cmod->leaf.numLeafSurfaces?
+			contents |= cm->surfaces[surfaceNum]->contents;
 		}
 	}
-	if( cmod->leaf.numLeafSurfaces )	// if not brush, check for patch
-	{
-		int surfaceNum;
-		for ( i = cmod->leaf.firstLeafSurface; i < cmod->leaf.firstLeafSurface+cmod->leaf.numLeafSurfaces; i++ )
-		{
-			surfaceNum = cm->leafsurfaces[i];
-			if ( cm->surfaces[surfaceNum] != NULL )
-			{//HERNH?  How could we have a null surf within our cmod->leaf.numLeafSurfaces?
-				contents |= cm->surfaces[surfaceNum]->contents;
-			}
-		}
-	}
+
 	return contents;
 }
 
