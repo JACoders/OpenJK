@@ -14021,6 +14021,18 @@ void Cmd_Saber_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (zyk_allow_saber_command.integer > 1 && ent->client->ps.duelInProgress == qtrue)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot use this command in private duels.\n\"" );
+		return;
+	}
+
+	if (zyk_allow_saber_command.integer > 1 && ent->client->sess.amrpgmode == 2 && ent->client->pers.guardian_mode > 0)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot use this command in boss battles.\n\"" );
+		return;
+	}
+
 	if (number_of_args == 1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"Usage: /saber <saber1> <saber2>. Examples: /saber single_1, /saber single_1 single_1, /saber dual_1\n\"" );
