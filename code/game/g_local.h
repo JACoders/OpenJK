@@ -41,7 +41,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define BODY_QUEUE_SIZE		8
 
-#define Q3_INFINITE			16777216 
+#define Q3_INFINITE			16777216
 
 #define	FRAMETIME			100					// msec
 #define	EVENT_VALID_MSEC	300
@@ -104,7 +104,7 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #define MAX_INTEREST_POINTS		64
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	char		*target;
@@ -114,7 +114,7 @@ typedef struct
 
 #define MAX_COMBAT_POINTS		512
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	int			flags;
@@ -181,7 +181,7 @@ typedef struct
 #define	WF_PUFFING		0x00000004	// puffing something
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct 
+typedef struct
 {
 	gclient_t	*clients;		// [maxclients]
 
@@ -259,6 +259,7 @@ extern	cvar_t	*g_ICARUSDebug;
 
 extern cvar_t	*g_npcdebug;
 
+extern	cvar_t	*g_allowBunnyhopping;
 extern gentity_t *player;
 //
 // g_spawn.c

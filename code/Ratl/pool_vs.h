@@ -35,7 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// The Number Of Objects Allocated
     ////////////////////////////////////////////////////////////////////////////////////
-	int			size()	 const													
+	int			size()	 const
 	{
 		return (mSize);
 	}
@@ -121,7 +121,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Is Empty
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		empty()	 const													
+	bool		empty()	 const
 	{
 		return (mSize==0);
 	}
@@ -129,7 +129,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Is Full
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		full()	 const													
+	bool		full()	 const
 	{
 		return (mSize==CAPACITY);
 	}
@@ -137,7 +137,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constant Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	const TTValue&	value_at_index(int i) const 									
+	const TTValue&	value_at_index(int i) const
 	{
 		assert(mUsed[i]);
 		return (mData[i]);
@@ -146,7 +146,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	TTValue&			value_at_index(int i)											
+	TTValue&			value_at_index(int i)
 	{
 		assert(mUsed[i]);
 		return (mData[i]);
@@ -290,7 +290,7 @@ public:
 		//---------------------
 		void		operator= (const iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mIndex	= t.mIndex;
 		}
 
@@ -307,7 +307,7 @@ public:
 		// Handle & Index Access
 		//-----------------------
 		int		index()							{assert(mOwner && mOwner->is_used_index(mIndex));	return mIndex;}
-		
+
 		// Inc Operator
 		//-------------
 		iterator operator++(int)	 // postfix
@@ -334,7 +334,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Iterator
     ////////////////////////////////////////////////////////////////////////////////////
-	class const_iterator 
+	class const_iterator
 	{
 		int					mIndex;
 		const pool_root<T>*	mOwner;
@@ -365,7 +365,7 @@ public:
 		// Handle & Index Access
 		//-----------------------
 		int		index() const					{assert(mOwner && mOwner->is_used_index(mIndex));	return mIndex;}
-		
+
 		// Inc Operator
 		//-------------
 		const_iterator operator++(int)	 // postfix
@@ -474,11 +474,11 @@ class pool_base : public pool_root<T>
 {
 public:
 	typedef typename T::TValue TTValue;
-	
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constant Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	const TTValue&	operator[](int i) const 									
+	const TTValue&	operator[](int i) const
 	{
 		return pool_root<T>::value_at_index(i);
 	}
@@ -486,7 +486,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	TTValue&			operator[](int i)											
+	TTValue&			operator[](int i)
 	{
 		return pool_root<T>::value_at_index(i);
 	}

@@ -281,7 +281,7 @@ float _vmf( intptr_t x ) {
 	return fi.f;
 }
 
-intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
+intptr_t QDECL VM_Call( vm_t *vm, int callnum, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11 ) {
 	intptr_t args[16] = { 0 };
 
 	if ( !vm || !vm->name[0] ) {
@@ -291,13 +291,6 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 
 	VMSwap v( vm );
 
-	//rcg010207 -  see dissertation at top of VM_DllSyscall() in this file.
-	va_list ap;
-	va_start( ap, callnum );
-	for ( size_t i = 0; i < ARRAY_LEN( args ); i++ )
-		args[i] = va_arg( ap, intptr_t );
-	va_end( ap );
-
-	return vm->legacy.main( callnum, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
-		args[9], args[10], args[11], args[12], args[13], args[14], args[15] );
+	return vm->legacy.main( callnum, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
+		arg9, arg10, arg11 );
 }

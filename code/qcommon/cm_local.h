@@ -188,8 +188,8 @@ typedef struct traceWork_s {
 	qboolean	isPoint;	// optimized case
 	sphere_t	sphere;		// sphere for oriendted capsule collision
 
-	float			baseEnterFrac;	// global enter fraction (before processing subsections of the brush)	
-	float			baseLeaveFrac;	// global leave fraction (before processing subsections of the brush)	
+	float			baseEnterFrac;	// global enter fraction (before processing subsections of the brush)
+	float			baseLeaveFrac;	// global leave fraction (before processing subsections of the brush)
 	float			enterFrac;		// fraction where the ray enters the brush
 	float			leaveFrac;		// fraction where the ray leaves the brush
 	cbrushside_t	*leadside;

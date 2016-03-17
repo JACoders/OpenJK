@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // Also included is a safeguarded assert file for all the asserts in RTL.
 //
-// This file is included in EVERY TEMPLATE, so it should be very light in order to 
+// This file is included in EVERY TEMPLATE, so it should be very light in order to
 // reduce compile times.
 //
 //

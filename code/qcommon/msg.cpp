@@ -79,18 +79,18 @@ void *MSG_GetSpace( msg_t *buf, int length ) {
 			Com_Error (ERR_FATAL, "MSG_GetSpace: %i is > full buffer size", length);
 		}
 		Com_Printf ("MSG_GetSpace: overflow\n");
-		MSG_Clear (buf); 
+		MSG_Clear (buf);
 		buf->overflowed = qtrue;
 	}
 
 	data = buf->data + buf->cursize;
 	buf->cursize += length;
-	
+
 	return data;
 }
 
 void MSG_WriteData( msg_t *buf, const void *data, int length ) {
-	memcpy (MSG_GetSpace(buf,length),data,length);		
+	memcpy (MSG_GetSpace(buf,length),data,length);
 }
 
 
@@ -98,7 +98,7 @@ void MSG_WriteData( msg_t *buf, const void *data, int length ) {
 =============================================================================
 
 bit functions
-  
+
 =============================================================================
 */
 
@@ -284,19 +284,19 @@ void MSG_WriteString( msg_t *sb, const char *s ) {
 // returns -1 if no more characters are available
 int MSG_ReadByte( msg_t *msg ) {
 	int	c;
-	
+
 	if ( msg->readcount+1 > msg->cursize ) {
 		c = -1;
 	} else {
 		c = (unsigned char)MSG_ReadBits( msg, 8 );
 	}
-	
+
 	return c;
 }
 
 int MSG_ReadShort( msg_t *msg ) {
 	int	c;
-	
+
 	if ( msg->readcount+2 > msg->cursize ) {
 		c = -1;
 	} else {
@@ -308,7 +308,7 @@ int MSG_ReadShort( msg_t *msg ) {
 
 static int MSG_ReadSShort( msg_t *msg ) {
 	int	c;
-	
+
 	if ( msg->readcount+2 > msg->cursize ) {
 		c = -1;
 	} else {
@@ -320,13 +320,13 @@ static int MSG_ReadSShort( msg_t *msg ) {
 
 int MSG_ReadLong( msg_t *msg ) {
 	int	c;
-	
+
 	if ( msg->readcount+4 > msg->cursize ) {
 		c = -1;
 	} else {
 		c = MSG_ReadBits( msg, 32 );
 	}
-	
+
 	return c;
 }
 
@@ -334,7 +334,7 @@ char *MSG_ReadString( msg_t *msg ) {
 	static const int STRING_SIZE = MAX_STRING_CHARS;
 	static char	string[STRING_SIZE];
 	int		l,c;
-	
+
 	MSG_ReadByteAlign( msg );
 	l = 0;
 	do {
@@ -350,9 +350,9 @@ char *MSG_ReadString( msg_t *msg ) {
 		string[l] = c;
 		l++;
 	} while (l < STRING_SIZE - 1);
-	
+
 	string[l] = 0;
-	
+
 	return string;
 }
 
@@ -375,9 +375,9 @@ char *MSG_ReadStringLine( msg_t *msg ) {
 		string[l] = c;
 		l++;
 	} while (l < STRING_SIZE - 1);
-	
+
 	string[l] = 0;
-	
+
 	return string;
 }
 
@@ -396,7 +396,7 @@ void MSG_ReadData( msg_t *msg, void *data, int len ) {
 =============================================================================
 
 delta functions
-  
+
 =============================================================================
 */
 
@@ -501,7 +501,7 @@ void MSG_ReadDeltaUsercmd( msg_t *msg, usercmd_t *from, usercmd_t *to ) {
 =============================================================================
 
 entityState_t communication
-  
+
 =============================================================================
 */
 
@@ -515,7 +515,7 @@ typedef struct {
 #define	NETF(x) #x,offsetof(entityState_t, x)
 
 #if 0	// Removed by BTO (VV)
-const netField_t	entityStateFields[] = 
+const netField_t	entityStateFields[] =
 {
 { NETF(eType), 8 },
 { NETF(eFlags), 32 },
@@ -633,7 +633,7 @@ void MSG_WriteField (msg_t *msg, const int *toF, const netField_t *field)
 			MSG_WriteBits( msg, 0, 1 );	//it's a zero
 		} else {
 			MSG_WriteBits( msg, 1, 1 );	//not a zero
-			if ( trunc == fullFloat && trunc + FLOAT_INT_BIAS >= 0 && 
+			if ( trunc == fullFloat && trunc + FLOAT_INT_BIAS >= 0 &&
 				trunc + FLOAT_INT_BIAS < ( 1 << FLOAT_INT_BITS ) ) {
 				// send as small integer
 				MSG_WriteBits( msg, 0, 1 );
@@ -668,14 +668,14 @@ void MSG_ReadField (msg_t *msg, int *toF, const netField_t *field, int print)
   	if ( field->bits == 0 ) {
   		// float
 		if ( MSG_ReadBits( msg, 1 ) == 0 ) {
-				*(float *)toF = 0.0f; 
+				*(float *)toF = 0.0f;
 		} else {
 			if ( MSG_ReadBits( msg, 1 ) == 0 ) {
 				// integral float
 				trunc = MSG_ReadBits( msg, FLOAT_INT_BITS );
 				// bias to allow equal parts positive and negative
 				trunc -= FLOAT_INT_BIAS;
-				*(float *)toF = trunc; 
+				*(float *)toF = trunc;
 				if ( print ) {
 					Com_Printf( "%s:%i ", field->name, trunc );
 				}
@@ -718,7 +718,7 @@ identical, under the assumption that the in-order delta code will catch it.
 ==================
 */
 #if 0 // Removed by BTO (VV)
-void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to, 
+void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entityState_s *to,
 						   qboolean force ) {
 	int			c;
 	int			i;
@@ -735,7 +735,7 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 	// if this assert fails, someone added a field to the entityState_t
 	// struct without updating the message fields
 	blah = sizeof( *from );
-	assert( numFields + 1 == blah/4); 
+	assert( numFields + 1 == blah/4);
 
 	c = msg->cursize;
 
@@ -764,8 +764,8 @@ void MSG_WriteDeltaEntity( msg_t *msg, struct entityState_s *from, struct entity
 			stuffChanged = true;
 		}
 	}
-	
-	if ( stuffChanged ) 
+
+	if ( stuffChanged )
 	{
 		MSG_WriteBits( msg, to->number, GENTITYNUM_BITS );
 		MSG_WriteBits( msg, 0, 1 );			// not removed
@@ -824,7 +824,7 @@ void MSG_ReadEntity( msg_t *msg, entityState_t *to)
 {
 	// check for a remove
 	if ( MSG_ReadBits( msg, 1 ) == 1 ) {
-		memset( to, 0, sizeof( *to ) );	
+		memset( to, 0, sizeof( *to ) );
 		to->number = MAX_GENTITIES - 1;
 		return;
 	}
@@ -851,7 +851,7 @@ Can go from either a baseline or a previous packet_entity
 extern	cvar_t	*cl_shownet;
 
 #if 0 // Removed by BTO (VV)
-void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, int number) 
+void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, int number)
 {
 	int			i;
 	const netField_t	*field;
@@ -873,7 +873,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, in
 
 	// check for a remove
 	if ( MSG_ReadBits( msg, 1 ) == 1 ) {
-		memset( to, 0, sizeof( *to ) );	
+		memset( to, 0, sizeof( *to ) );
 		to->number = MAX_GENTITIES - 1;
 		if ( cl_shownet->integer >= 2 || cl_shownet->integer == -1 ) {
 			Com_Printf( "%3i: #%-3i remove\n", msg->readcount, number );
@@ -883,7 +883,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to, in
 
 	// check for no delta
 	if ( MSG_ReadBits( msg, 1 ) != 0 )
-	{  
+	{
 		const int numFields = sizeof(entityStateFields)/sizeof(entityStateFields[0]);
 
 		// shownet 2/3 will interleave with other printed info, -1 will
@@ -948,7 +948,7 @@ plyer_state_t communication
 // using the stringizing operator to save typing...
 #define	PSF(x) #x,offsetof(playerState_t, x)
 
-static const netField_t	playerStateFields[] = 
+static const netField_t	playerStateFields[] =
 {
 { PSF(commandTime), 32 },
 { PSF(pm_type), 8 },
@@ -1132,14 +1132,14 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 
 
 	statsbits = 0;
-	for (i=0 ; i<MAX_INVENTORY ; i++) 
+	for (i=0 ; i<MAX_INVENTORY ; i++)
 	{
-		if (to->inventory[i] != from->inventory[i]) 
+		if (to->inventory[i] != from->inventory[i])
 		{
 			statsbits |= 1<<i;
 		}
 	}
-	if ( statsbits ) 
+	if ( statsbits )
 	{
 		MSG_WriteBits( msg, 1, 1 );	// changed
 		MSG_WriteShort( msg, statsbits );
@@ -1150,8 +1150,8 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 				MSG_WriteShort (msg, to->inventory[i]);
 			}
 		}
-	} 
-	else 
+	}
+	else
 	{
 		MSG_WriteBits( msg, 0, 1 );	// no change
 	}

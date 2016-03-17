@@ -34,7 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ public:
 	{
 		return mSize;
 	}
-	
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If The Size Is Zero
     ////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ public:
 	TTValue &		push()
 	{
 		assert(!full());
-		mData.construct(mSize);	
+		mData.construct(mSize);
 		mSize++;
 		return mData[mSize-1];
 	}
@@ -130,7 +130,7 @@ public:
 	void push(const TTValue& v)
 	{
 		assert(!full());
-		mData.construct(mSize,v);	
+		mData.construct(mSize,v);
 		mSize++;
 	}
 
@@ -141,7 +141,7 @@ public:
 	{
 		assert(!full());
 		mSize++;
-		return mData.alloc_raw(mSize-1);	
+		return mData.alloc_raw(mSize-1);
 	}
     ////////////////////////////////////////////////////////////////////////////////////
 	// Remove A Value From The stack

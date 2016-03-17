@@ -43,8 +43,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	NAV_HEADER_ID	INT_ID('J','N','V','5')
 #define	NODE_HEADER_ID	INT_ID('N','O','D','E')
 
-typedef multimap<int, int> EdgeMultimap;
-typedef multimap<int, int>::iterator EdgeMultimapIt;
+typedef std::multimap<int, int> EdgeMultimap;
+typedef std::multimap<int, int>::iterator EdgeMultimapIt;
 
 
 /*
@@ -82,7 +82,7 @@ class CNode
 		unsigned char	flags;
 	} edge_t;
 
-	typedef	vector< edge_t >	edge_v;
+	typedef	std::vector< edge_t >	edge_v;
 
 public:
 
@@ -147,8 +147,8 @@ typedef struct failedEdge_e
 
 class CNavigator
 {
-	typedef	vector < CNode * >			node_v;
-	typedef	list < CEdge >				edge_l;
+	typedef	std::vector < CNode * >			node_v;
+	typedef	std::list < CEdge >				edge_l;
 
 #if __NEWCOLLECT
 
@@ -158,7 +158,7 @@ class CNavigator
 		unsigned int	distance;
 	};
 
-	typedef list < nodeList_t >		nodeChain_l;
+	typedef std::list < nodeList_t >		nodeChain_l;
 
 #endif	//__NEWCOLLECT
 
@@ -283,7 +283,7 @@ public:
 // DATA
 //--------------------------------------------------------------
 private:
-	vector<CEdge*>	mHeap;
+	std::vector<CEdge*>	mHeap;
 };
 
 #endif	//__G_NAVIGATOR__

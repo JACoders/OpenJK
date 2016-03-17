@@ -103,7 +103,7 @@ typedef struct poly_s {
 	polyVert_t			*verts;
 } poly_t;
 
-typedef enum 
+typedef enum
 {
 	RT_MODEL,
 	RT_POLY,

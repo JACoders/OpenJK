@@ -476,7 +476,7 @@ void CMod_LoadEntityString( lump_t *l, clipMap_t &cm, const char* name ) {
 		Com_Printf("Loaded entities from %s\n", entName);
 		return;
 	}
-	
+
 	cm.entityString = (char *)Hunk_Alloc( l->filelen, h_high );
 	cm.numEntityChars = l->filelen;
 	Com_Memcpy (cm.entityString, cmod_base + l->fileofs, l->filelen);
@@ -1100,7 +1100,7 @@ int CM_ModelContents_Actual( clipHandle_t model, clipMap_t *cm )
 			contents |= cm->surfaces[surfaceNum]->contents;
 		}
 	}
-	
+
 	return contents;
 }
 

@@ -1406,7 +1406,7 @@ void IN_DoXInput( void )
 		{
 			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value;
 		}
-		
+
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, rightThumbX, 0, NULL);
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, rightThumbY, 0, NULL);
 
@@ -1440,7 +1440,7 @@ void IN_DoXInput( void )
 			if(in_debugJoystick->integer)
 				Com_Printf("rightThumbY: %f\tfactor: %f\tdX: %f\n", rightThumbY, factor, dY);
 		}
-		
+
 		// ...but cap it at a reasonable amount.
 		if(dX < -2.5f) dX = -2.5f;
 		if(dX > 2.5f) dX = 2.5f;

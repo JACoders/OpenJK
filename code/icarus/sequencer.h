@@ -157,7 +157,7 @@ protected:
 	CSequence *GetTaskSequence( CTaskGroup *group );
 
 	//Member variables
-	
+
 	int					m_ownerID;
 
 	CTaskManager		*m_taskManager;

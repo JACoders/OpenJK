@@ -621,15 +621,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				{
 					if ( disintSound1 && disintSound2 )
 					{//play an extra sound
-					/*
-						if ( cent->gent->owner->client->playerTeam == TEAM_STARFLEET ||
-								cent->gent->owner->client->playerTeam == TEAM_SCAVENGERS ||
-								cent->gent->owner->client->playerTeam == TEAM_MALON ||
-								cent->gent->owner->client->playerTeam == TEAM_IMPERIAL ||
-								cent->gent->owner->client->playerTeam == TEAM_HIROGEN ||
-								cent->gent->owner->client->playerTeam == TEAM_DISGUISE ||
-								cent->gent->owner->client->playerTeam == TEAM_KLINGON )
-					*/
 						// listed all the non-humanoids, because there's a lot more humanoids
 						class_t	npc_class = cent->gent->owner->client->NPC_class;
 						if( npc_class != CLASS_ATST && npc_class != CLASS_GONK &&

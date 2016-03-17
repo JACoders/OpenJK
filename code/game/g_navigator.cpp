@@ -5529,7 +5529,7 @@ bool	STEER::Reached(gentity_t* actor, const vec3_t& target, float targetRadius, 
 void	ClearAllNavStructures(void)
 {
 	TEntEdgeMap::iterator i = mEntEdgeMap.begin();
-	for ( ; i != mEntEdgeMap.end(); i++)
+	for ( ; i != mEntEdgeMap.end(); ++i)
 	{
 		i->clear();
 	}
