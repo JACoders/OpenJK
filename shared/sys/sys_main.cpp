@@ -437,7 +437,7 @@ static void *Sys_LoadDllFromPaths( const char *filename, const char *gamedir, co
 			Com_Printf( "%s(%s) failed: \"%s\"\n", callerName, fn, Sys_LibraryError() );
 		}
 	}
-		
+
 	return NULL;
 }
 

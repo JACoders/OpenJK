@@ -472,12 +472,9 @@ void CL_InitInput (void);
 void CL_ShutdownInput(void);
 void CL_SendCmd (void);
 void CL_ClearState (void);
-void CL_ReadPackets (void);
 
 void CL_WritePacket( void );
 void IN_CenterView (void);
-
-void CL_VerifyCode( void );
 
 float CL_KeyState (kbutton_t *key);
 const char *Key_KeynumToString( int keynum/*, qboolean bTranslate */ ); //note: translate is only called for menu display not configs
@@ -558,8 +555,6 @@ void CIN_SetExtents (int handle, int x, int y, int w, int h);
 void CIN_SetLooping (int handle, qboolean loop);
 void CIN_UploadCinematic(int handle);
 void CIN_CloseAllVideos(void);
-
-void CL_UpdateHotSwap(void);
 
 //
 // cl_cgame.c

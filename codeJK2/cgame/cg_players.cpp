@@ -420,7 +420,7 @@ void CG_NewClientinfo( int clientNum )
 		return;		// player just left
 	}
 	//ci = &cgs.clientinfo[clientNum];
-	if ( !(&g_entities[clientNum].client) )
+	if ( !(g_entities[clientNum].client) )
 	{
 		return;
 	}
@@ -1069,27 +1069,6 @@ void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float *legsBa
 			CG_PlayerAnimSounds( ci->animFileIndex, qfalse, cent->pe.legs.frame, cent->pe.legs.frame, cent->currentState.number );
 		}
 	}
-
-	//HACKHACKHACK
-	/*
-	if ( cent->gent->client->playerTeam == TEAM_BORG &&
-		cent->gent->client->ps.weapon == WP_BORG_ASSIMILATOR )
-	{
-		if ( cent->gent->NPC->attackHoldTime > cg.time )
-		{
-			if ( cent->pe.torso.frame >= 468 && cent->pe.torso.frame < 478 )
-			{//Do not animate
-				*torsoOld = *torso = cent->pe.torso.frame = 468;
-				*torsoBackLerp = 0;
-				if ( ValidAnimFileIndex( ci->animFileIndex ) )
-				{
-					CG_PlayerAnimSounds(ci->animFileIndex, qtrue, cent->pe.torso.frame, cent->pe.torso.frame, cent->currentState.number );
-				}
-				return;
-			}
-		}
-	}
-	*/
 
 	newTorsoFrame = CG_RunLerpFrame( ci, &cent->pe.torso, cent->gent->client->ps.torsoAnim, cent->gent->client->renderInfo.torsoFpsMod, cent->gent->s.number );
 

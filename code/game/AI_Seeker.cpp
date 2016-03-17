@@ -57,7 +57,7 @@ void NPC_Seeker_Precache(void)
 }
 
 //------------------------------------
-void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	if ( !(self->svFlags & SVF_CUSTOM_GRAVITY ))
 	{
@@ -73,7 +73,7 @@ void NPC_Seeker_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, c
 
 //------------------------------------
 void Seeker_MaintainHeight( void )
-{	
+{
 	float	dif;
 
 	// Update our angles regardless
@@ -87,7 +87,7 @@ void Seeker_MaintainHeight( void )
 			TIMER_Set( NPC,"heightChange",Q_irand( 1000, 3000 ));
 
 			// Find the height difference
-			dif = (NPC->enemy->currentOrigin[2] +  Q_flrand( NPC->enemy->maxs[2]/2, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2]; 
+			dif = (NPC->enemy->currentOrigin[2] +  Q_flrand( NPC->enemy->maxs[2]/2, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2];
 
 			float	difFactor = 1.0f;
 			if ( NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -358,7 +358,7 @@ void Seeker_Ranged( qboolean visible, qboolean advance )
 	{
 		Seeker_Hunt( visible, advance );
 	}
-} 
+}
 
 //------------------------------------
 void Seeker_Attack( void )
@@ -367,7 +367,7 @@ void Seeker_Attack( void )
 	Seeker_MaintainHeight();
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance > MIN_DISTANCE_SQR);
 
@@ -402,7 +402,7 @@ void Seeker_FindEnemy( void )
 
 	numFound = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( int i = 0 ; i < numFound ; i++ ) 
+	for ( int i = 0 ; i < numFound ; i++ )
 	{
 		ent = entityList[i];
 
@@ -447,7 +447,7 @@ void Seeker_FollowPlayer( void )
 
 	float	dis	= DistanceHorizontalSquared( NPC->currentOrigin, g_entities[0].currentOrigin );
 	vec3_t	pt, dir;
-	
+
 	float	minDistSqr = MIN_DISTANCE_SQR;
 
 	if ( NPC->client->NPC_class == CLASS_BOBAFETT )
@@ -532,7 +532,7 @@ void NPC_BSSeeker_Default( void )
 
 	if ( NPC->enemy && NPC->enemy->health && NPC->enemy->inuse )
 	{
-		if ( NPC->client->NPC_class != CLASS_BOBAFETT 
+		if ( NPC->client->NPC_class != CLASS_BOBAFETT
 			&& ( NPC->enemy->s.number == 0 || ( NPC->enemy->client && NPC->enemy->client->NPC_class == CLASS_SEEKER )) )
 		{
 			//hacked to never take the player as an enemy, even if the player shoots at it

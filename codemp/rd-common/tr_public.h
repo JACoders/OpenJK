@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 7
+#define	REF_API_VERSION 8
 
 //
 // these are the functions exported by the refresh module
@@ -239,7 +239,12 @@ typedef struct refexport_s {
 	int					(*G2API_GetNumGoreMarks)				( CGhoul2Info_v& ghoul2, int modelIndex );
 	void				(*G2API_AddSkinGore)					( CGhoul2Info_v &ghoul2, SSkinGoreData &gore );
 	void				(*G2API_ClearSkinGore)					( CGhoul2Info_v &ghoul2 );
-	#endif // _SOF2
+	#endif // _G2_GORE
+
+	struct {
+		float				(*Font_StrLenPixels)					( const char *text, const int iFontIndex, const float scale );
+	} ext;
+
 } refexport_t;
 
 //
@@ -300,7 +305,6 @@ typedef struct refimport_s {
 	int				(*CM_LeafCluster)					( int leafnum );
 	int				(*CM_PointLeafnum)					( const vec3_t p );
 	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-	intptr_t		(QDECL *VM_Call)					( vm_t *vm, int callnum, ... );
 	qboolean		(*Com_TheHunkMarkHasBeenMade)		( void );
 	void			(*S_RestartMusic)					( void );
 	qboolean		(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );

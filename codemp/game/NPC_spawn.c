@@ -527,19 +527,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
 	switch(team)
 	{
-	// no longer exists
-//	case TEAM_BORG:
-//		break;
-
-//	case TEAM_HIROGEN:
-//		if( Q_stricmp( "hirogenalpha", NPC_type ) == 0 )
-//			return ( 1 << WP_BLASTER);
-		//Falls through
-
-//	case TEAM_KLINGON:
-
-		//NOTENOTE: Falls through
-
 //	case TEAM_IMPERIAL:
 	case NPCTEAM_ENEMY:
 		if ( Q_stricmp( "tavion", NPC_type ) == 0 ||
@@ -684,9 +671,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		break;
 
 	case NPCTEAM_PLAYER:
-
-//		if(spawnflags & SFB_TRICORDER)
-//			return ( 1 << WP_TRICORDER);
 
 		if(spawnflags & SFB_RIFLEMAN)
 			return ( 1 << WP_REPEATER);

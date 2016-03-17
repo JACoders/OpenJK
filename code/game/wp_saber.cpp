@@ -8869,7 +8869,7 @@ static qboolean ShouldPlayerResistForceThrow( gentity_t *player, gentity_t *atta
 	{
 		return qfalse;
 	}
-	
+
 	if ( !player->client )
 	{
 		return qfalse;
@@ -8879,7 +8879,7 @@ static qboolean ShouldPlayerResistForceThrow( gentity_t *player, gentity_t *atta
 	{
 		return qfalse;
 	}
-	
+
 	//wasn't trying to grip/drain anyone
 	if ( player->client->ps.torsoAnim == BOTH_FORCEGRIP_HOLD ||
 			player->client->ps.torsoAnim == BOTH_FORCE_DRAIN_GRAB_START ||
@@ -8903,7 +8903,7 @@ static qboolean ShouldPlayerResistForceThrow( gentity_t *player, gentity_t *atta
 	//not knocked down already
 	if ( PM_InKnockDown( &player->client->ps ) )
 	{
-		return qfalse;	
+		return qfalse;
 	}
 
 	//not involved in a saberLock

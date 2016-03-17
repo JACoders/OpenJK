@@ -2083,7 +2083,7 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 					ftemp = matrix->matrix[0][0];
 					matrix->matrix[0][0] = -matrix->matrix[0][1];
 					matrix->matrix[0][1] = ftemp;
-					
+
 					ftemp = matrix->matrix[1][0];
 					matrix->matrix[1][0] = -matrix->matrix[1][1];
 					matrix->matrix[1][1] = ftemp;

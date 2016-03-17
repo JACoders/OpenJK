@@ -37,6 +37,29 @@ Installing and running OpenJK:
 1. [Download the latest build](http://builds.openjk.org) for your operating system.
 2. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
 3. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` application (OS X), depending on your operating system.
+ 
+**Linux Instructions**
+
+If you do not have a windows partition and need to download the game base.
+
+1. Download  and Install SteamCMD [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Linux) .
+2. Set the download path using steamCMD, force_install_dir <path> .
+3. Using SteamCMD Set the platform to windows to download any windows game on steam. @sSteamCmdForcePlatformType "windows"
+4. Using SteamCMD download the game,  app_update 6020.
+5. [Download the latest build](http://builds.openjk.org) for your operating system.
+6. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
+
+
+**OS X Instructions**
+
+If you have the Mac App Store Version of Jedi Academy, follow these steps to get OpenJK runnning under OS X:  
+
+1. Install [Homebrew](http://brew.sh/) if you don't have it.
+2. Open the Terminal app, and enter the command `brew install sdl2`.
+3. Extract the contents of the OpenJK DMG ([Download the latest build](http://builds.openjk.org)) into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
+4. Run `openJK.app` or `openJK SP.app` 
+5. Savegames, Config Files and Log Files are stored in `/Users/<USER>/Library/Application Support/OpenJK/`
+
 
 ## For Developers
 
@@ -53,6 +76,11 @@ Installing and running OpenJK:
 * [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Change the GAMEVERSION define in codemp/game/g_local.h from "OpenJK" to your project name
 * If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
+
+### Deciphering buildbot's output
+* Pick the build from the operating system builder you're interested in at the [builders](https://jk.xd.cm/builders) page.
+* Click on stdio for the Steps to see the command executed and the result.
+* The command is at the very top, the output starts below.
 
 ## Maintainers (in alphabetical order)
 

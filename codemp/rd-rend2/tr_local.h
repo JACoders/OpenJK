@@ -253,6 +253,8 @@ extern int		max_polys;
 extern cvar_t	*r_maxpolyverts;
 extern int		max_polyverts;
 
+extern	cvar_t	*r_aspectCorrectFonts;
+
 /*
 Ghoul2 Insert Start
 */

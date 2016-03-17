@@ -2106,6 +2106,10 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	glState.vertexAnimation = qfalse;
 }
 
+static void RB_SurfaceSprites( void *surfaceSprites )
+{
+}
+
 static void RB_SurfaceSkip( void *surf ) {
 }
 

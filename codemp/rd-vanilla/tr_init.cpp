@@ -164,6 +164,8 @@ cvar_t	*r_debugSort;
 
 cvar_t	*r_marksOnTriangleMeshes;
 
+cvar_t	*r_aspectCorrectFonts;
+
 // the limits apply to the sum of all scenes in a frame --
 // the main view, all the 3D icons, etc
 #define	DEFAULT_MAX_POLYS		600
@@ -719,7 +721,7 @@ static void GLimp_InitExtensions( void )
 		glConfigExt.doGammaCorrectionWithShaders = qtrue;
 #endif
 	}
-	
+
 	// Only allow dynamic glows/flares if they have the hardware
 	if ( bTexRectSupported && bARBVertexProgram && qglActiveTextureARB && glConfig.maxActiveTextures >= 4 &&
 		( ( bNVRegisterCombiners && iNumGeneralCombiners >= 2 ) || bARBFragmentProgram ) )
@@ -1570,7 +1572,7 @@ void R_Register( void )
 	r_uiFullScreen						= ri->Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE );
 	r_subdivisions						= ri->Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH );
 	ri->Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
-	
+
 	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT );
 	r_intensity							= ri->Cvar_Get( "r_intensity",						"1",						CVAR_LATCH );
 	r_singleShader						= ri->Cvar_Get( "r_singleShader",					"0",						CVAR_CHEAT|CVAR_LATCH );
@@ -1646,6 +1648,7 @@ void R_Register( void )
 	r_shadows							= ri->Cvar_Get( "cg_shadows",						"1",						CVAR_NONE );
 	r_shadowRange						= ri->Cvar_Get( "r_shadowRange",					"1000",						CVAR_NONE );
 	r_marksOnTriangleMeshes				= ri->Cvar_Get( "r_marksOnTriangleMeshes",			"0",						CVAR_ARCHIVE );
+	r_aspectCorrectFonts				= ri->Cvar_Get( "r_aspectCorrectFonts",				"0",						CVAR_ARCHIVE );
 	r_maxpolys							= ri->Cvar_Get( "r_maxpolys",						XSTRING( DEFAULT_MAX_POLYS ),		CVAR_NONE );
 	r_maxpolyverts						= ri->Cvar_Get( "r_maxpolyverts",					XSTRING( DEFAULT_MAX_POLYVERTS ),	CVAR_NONE );
 /*
@@ -2128,6 +2131,8 @@ Q_EXPORT refexport_t* QDECL GetRefAPI( int apiVersion, refimport_t *rimp ) {
 
 	// this is set in R_Init
 	//re.G2VertSpaceServer	= G2VertSpaceServer;
+
+	re.ext.Font_StrLenPixels				= RE_Font_StrLenPixelsNew;
 
 	return &re;
 }

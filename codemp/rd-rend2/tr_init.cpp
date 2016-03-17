@@ -259,6 +259,8 @@ cvar_t	*r_dynamicGlowHeight;
 
 cvar_t *r_debugContext;
 
+cvar_t	*r_aspectCorrectFonts;
+
 extern void	RB_SetGL2D (void);
 void R_Splash()
 {
@@ -1529,6 +1531,7 @@ void R_Register( void )
 	r_screenshotJpegQuality = ri->Cvar_Get("r_screenshotJpegQuality", "90", CVAR_ARCHIVE);
 	r_surfaceSprites = ri->Cvar_Get("r_surfaceSprites", "1", CVAR_ARCHIVE);
 
+	r_aspectCorrectFonts = ri->Cvar_Get( "r_aspectCorrectFonts", "0", CVAR_ARCHIVE );
 	r_maxpolys = ri->Cvar_Get( "r_maxpolys", XSTRING( DEFAULT_MAX_POLYS ), 0);
 	r_maxpolyverts = ri->Cvar_Get( "r_maxpolyverts", XSTRING( DEFAULT_MAX_POLYVERTS ), 0 );
 

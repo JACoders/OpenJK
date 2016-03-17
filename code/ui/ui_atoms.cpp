@@ -58,12 +58,12 @@ void UI_ForceMenuOff (void)
 
 /*
 =================
-UI_SetActiveMenu - 
+UI_SetActiveMenu -
 	this should be the ONLY way the menu system is brought up
- 
+
 =================
 */
-void UI_SetActiveMenu( const char* menuname,const char *menuID ) 
+void UI_SetActiveMenu( const char* menuname,const char *menuID )
 {
 	// this should be the ONLY way the menu system is brought up (besides the UI_ConsoleCommand below)
 
@@ -85,27 +85,27 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 	// enusure minumum menu data is cached
 	Menu_Cache();
 
-	if ( Q_stricmp (menuname, "mainMenu") == 0 ) 
+	if ( Q_stricmp (menuname, "mainMenu") == 0 )
 	{
 		UI_MainMenu();
 		return;
 	}
 
-	if ( Q_stricmp (menuname, "ingame") == 0 ) 
+	if ( Q_stricmp (menuname, "ingame") == 0 )
 	{
 		ui.Cvar_Set( "cl_paused", "1" );
 		UI_InGameMenu(menuID);
 		return;
 	}
 
-	if ( Q_stricmp (menuname, "datapad") == 0 ) 
+	if ( Q_stricmp (menuname, "datapad") == 0 )
 	{
 		ui.Cvar_Set( "cl_paused", "1" );
 		UI_DataPadMenu();
 		return;
 	}
 #ifndef JK2_MODE
-	if ( Q_stricmp (menuname, "missionfailed_menu") == 0 ) 
+	if ( Q_stricmp (menuname, "missionfailed_menu") == 0 )
 	{
 		Menus_CloseAll();
 		Menus_ActivateByName("missionfailed_menu");
@@ -121,7 +121,7 @@ void UI_SetActiveMenu( const char* menuname,const char *menuID )
 UI_Argv
 =================
 */
-static char *UI_Argv( int arg ) 
+static char *UI_Argv( int arg )
 {
 	static char	buffer[MAX_STRING_CHARS];
 
@@ -136,7 +136,7 @@ static char *UI_Argv( int arg )
 UI_Cvar_VariableString
 =================
 */
-char *UI_Cvar_VariableString( const char *var_name ) 
+char *UI_Cvar_VariableString( const char *var_name )
 {
 	static char	buffer[MAX_STRING_CHARS];
 
@@ -150,7 +150,7 @@ char *UI_Cvar_VariableString( const char *var_name )
 UI_Cache
 =================
 */
-static void UI_Cache_f( void ) 
+static void UI_Cache_f( void )
 {
 	Menu_Cache();
 #ifndef JK2_MODE
@@ -199,7 +199,7 @@ UI_ConsoleCommand
 void UI_Load(void);	//in UI_main.cpp
 #endif
 
-qboolean UI_ConsoleCommand( void ) 
+qboolean UI_ConsoleCommand( void )
 {
 	char	*cmd;
 
@@ -213,32 +213,32 @@ qboolean UI_ConsoleCommand( void )
 	// ensure minimum menu data is available
 	Menu_Cache();
 
-	if ( Q_stricmp (cmd, "ui_cache") == 0 ) 
+	if ( Q_stricmp (cmd, "ui_cache") == 0 )
 	{
 		UI_Cache_f();
 		return qtrue;
 	}
 
-	if ( Q_stricmp (cmd, "levelselect") == 0 ) 
+	if ( Q_stricmp (cmd, "levelselect") == 0 )
 	{
 		UI_LoadMenu_f();
 		return qtrue;
 	}
-	
-	if ( Q_stricmp (cmd, "ui_teamOrders") == 0 ) 
+
+	if ( Q_stricmp (cmd, "ui_teamOrders") == 0 )
 	{
 		UI_SaveMenu_f();
 		return qtrue;
 	}
 
-	if ( Q_stricmp (cmd, "ui_report") == 0 ) 
+	if ( Q_stricmp (cmd, "ui_report") == 0 )
 	{
 		UI_Report();
 		return qtrue;
 	}
-	
+
 #ifndef JK2_MODE
-	if ( Q_stricmp (cmd, "ui_load") == 0 ) 
+	if ( Q_stricmp (cmd, "ui_load") == 0 )
 	{
 		UI_Load();
 		return qtrue;
@@ -254,7 +254,7 @@ qboolean UI_ConsoleCommand( void )
 UI_Init
 =================
 */
-void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad ) 
+void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 {
 	ui = *uiimport;
 
@@ -286,7 +286,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "g_saber2",				"",			CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_saber_color",		"yellow",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
 	ui.Cvar_Create( "g_saber2_color",		"yellow",	CVAR_ARCHIVE|CVAR_SAVEGAME|CVAR_NORESTART );
-	
+
 	ui.Cvar_Create( "ui_forcepower_inc",	"0",		CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 	ui.Cvar_Create( "tier_storyinfo",		"0",		CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 	ui.Cvar_Create( "tiers_complete",		"",			CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
@@ -310,7 +310,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 	ui.Cvar_Create( "ui_disableWeaponSway", "0", CVAR_ARCHIVE );
 #endif
 
-	
+
 
 	_UI_Init(inGameLoad);
 }
@@ -320,7 +320,7 @@ void UI_Init( int apiVersion, uiimport_t *uiimport, qboolean inGameLoad )
 UI_DrawNamedPic
 =================
 */
-void UI_DrawNamedPic( float x, float y, float width, float height, const char *picname ) 
+void UI_DrawNamedPic( float x, float y, float width, float height, const char *picname )
 {
 	qhandle_t	hShader;
 
@@ -334,7 +334,7 @@ void UI_DrawNamedPic( float x, float y, float width, float height, const char *p
 UI_DrawHandlePic
 =================
 */
-void UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ) 
+void UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader )
 {
 	float	s0;
 	float	s1;
@@ -371,7 +371,7 @@ UI_FillRect
 Coordinates are 640*480 virtual values
 =================
 */
-void UI_FillRect( float x, float y, float width, float height, const float *color ) 
+void UI_FillRect( float x, float y, float width, float height, const float *color )
 {
 	ui.R_SetColor( color );
 
@@ -385,7 +385,7 @@ void UI_FillRect( float x, float y, float width, float height, const float *colo
 UI_UpdateScreen
 =================
 */
-void UI_UpdateScreen( void ) 
+void UI_UpdateScreen( void )
 {
 	ui.UpdateScreen();
 }
@@ -396,7 +396,7 @@ void UI_UpdateScreen( void )
 UI_LoadMenu_f
 ===============
 */
-static void UI_LoadMenu_f( void ) 
+static void UI_LoadMenu_f( void )
 {
 	trap_Key_SetCatcher( KEYCATCH_UI );
 	Menus_ActivateByName("ingameloadMenu");
@@ -407,7 +407,7 @@ static void UI_LoadMenu_f( void )
 UI_SaveMenu_f
 ===============
 */
-static void UI_SaveMenu_f( void ) 
+static void UI_SaveMenu_f( void )
 {
 #ifdef JK2_MODE
 	ui.PrecacheScreenshot();
@@ -425,7 +425,7 @@ static void UI_SaveMenu_f( void )
 UI_SetColor
 =================
 */
-void UI_SetColor( const float *rgba ) 
+void UI_SetColor( const float *rgba )
 {
 	trap_R_SetColor( rgba );
 }
@@ -441,7 +441,7 @@ UI_RegisterFont
 =================
 */
 
-int UI_RegisterFont(const char *fontName) 
+int UI_RegisterFont(const char *fontName)
 {
 	int iFontIndex = ui.R_RegisterFont(fontName);
 	if (iFontIndex == 0)

@@ -101,43 +101,43 @@ bool CM_PlaneCollision(traceWork_t *tw, cbrushside_t *side)
 	d1 = DotProduct( tw->start, plane->normal ) - dist;
 	d2 = DotProduct( tw->end, plane->normal ) - dist;
 
-	if (d2 > 0.0f) 
+	if (d2 > 0.0f)
 	{
 		// endpoint is not in solid
-		tw->getout = true;	
+		tw->getout = true;
 	}
-	if (d1 > 0.0f) 
+	if (d1 > 0.0f)
 	{
 		// startpoint is not in solid
 		tw->startout = true;
 	}
 
 	// if completely in front of face, no intersection with the entire brush
-	if ((d1 > 0.0f) && ( (d2 >= SURFACE_CLIP_EPSILON) || (d2 >= d1) ) ) 
+	if ((d1 > 0.0f) && ( (d2 >= SURFACE_CLIP_EPSILON) || (d2 >= d1) ) )
 	{
 		return(false);
 	}
 
 	// if it doesn't cross the plane, the plane isn't relevent
-	if ((d1 <= 0.0f) && (d2 <= 0.0f)) 
+	if ((d1 <= 0.0f) && (d2 <= 0.0f))
 	{
 		return(true);
 	}
 	// crosses face
-	if (d1 > d2) 
+	if (d1 > d2)
 	{	// enter
 		f = (d1 - SURFACE_CLIP_EPSILON);
-		if ( f < 0.0f ) 
+		if ( f < 0.0f )
 		{
 			f = 0.0f;
-			if (f > tw->enterFrac) 
+			if (f > tw->enterFrac)
 			{
 				tw->enterFrac = f;
 				tw->clipplane = plane;
 				tw->leadside = side;
 			}
 		}
-		else if (f > tw->enterFrac * (d1 - d2) ) 
+		else if (f > tw->enterFrac * (d1 - d2) )
 		{
 			tw->enterFrac = f / (d1 - d2);
 			tw->clipplane = plane;
@@ -147,15 +147,15 @@ bool CM_PlaneCollision(traceWork_t *tw, cbrushside_t *side)
 	else
 	{	// leave
 		f = (d1 + SURFACE_CLIP_EPSILON);
-		if ( f < (d1 - d2) ) 
+		if ( f < (d1 - d2) )
 		{
 			f = 1.0f;
-			if (f < tw->leaveFrac) 
+			if (f < tw->leaveFrac)
 			{
 				tw->leaveFrac = f;
 			}
 		}
-		else if (f > tw->leaveFrac * (d1 - d2) ) 
+		else if (f > tw->leaveFrac * (d1 - d2) )
 		{
 			tw->leaveFrac = f / (d1 - d2);
 		}
@@ -168,7 +168,7 @@ bool CM_PlaneCollision(traceWork_t *tw, cbrushside_t *side)
 CM_TraceThroughBrush
 ================
 */
-void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, bool infoOnly ) 
+void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, bool infoOnly )
 {
 	int				i;
 	cbrushside_t	*side;
@@ -177,13 +177,13 @@ void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, boo
 	tw->leaveFrac = 1.0f;
 	tw->clipplane = NULL;
 
-	if ( !brush->numsides ) 
+	if ( !brush->numsides )
 	{
 		return;
 	}
 
 	tw->getout = false;
-	tw->startout = false;						   
+	tw->startout = false;
 	tw->leadside = NULL;
 
 	//
@@ -191,7 +191,7 @@ void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, boo
 	// find the latest time the trace crosses a plane towards the interior
 	// and the earliest time the trace crosses a plane towards the exterior
 	//
-	for (i = 0; i < brush->numsides; i++) 
+	for (i = 0; i < brush->numsides; i++)
 	{
 		side = brush->sides + i;
 
@@ -205,13 +205,13 @@ void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, boo
 	// all planes have been checked, and the trace was not
 	// completely outside the brush
 	//
-	if (!tw->startout) 
-	{	
+	if (!tw->startout)
+	{
 		if(!infoOnly)
 		{
 			// original point was inside brush
 			trace.startsolid = qtrue;
-			if (!tw->getout) 
+			if (!tw->getout)
 			{
 				trace.allsolid = qtrue;
 				trace.fraction = 0.0f;
@@ -220,12 +220,12 @@ void CM_TraceThroughBrush( traceWork_t *tw, trace_t &trace, cbrush_t *brush, boo
 		tw->enterFrac = 0.0f;
 		return;
 	}
-	
-	if (tw->enterFrac < tw->leaveFrac) 
+
+	if (tw->enterFrac < tw->leaveFrac)
 	{
-		if ((tw->enterFrac > -1.0f) && (tw->enterFrac < trace.fraction)) 
+		if ((tw->enterFrac > -1.0f) && (tw->enterFrac < trace.fraction))
 		{
-			if (tw->enterFrac < 0.0f) 
+			if (tw->enterFrac < 0.0f)
 			{
 				tw->enterFrac = 0.0f;
 			}
@@ -291,7 +291,7 @@ void CM_TestInLeaf( traceWork_t *tw, cLeaf_t *leaf, clipMap_t *local ) {
 			if ( !(patch->contents & tw->contents)) {
 				continue;
 			}
-			
+
 			if ( CM_PositionTestInPatchCollide( tw, patch->pc ) ) {
 				tw->trace.startsolid = tw->trace.allsolid = qtrue;
 				tw->trace.fraction = 0;
@@ -480,14 +480,14 @@ void CM_TraceThroughBrush( traceWork_t *tw, cbrush_t *brush ) {
 	if (!startout) {	// original point was inside brush
 		tw->trace.startsolid = qtrue;
 		tw->trace.contents |= brush->contents;	//note, we always want to know the contents of something we're inside of
-		if (!getout) 
+		if (!getout)
 		{	//endpoint was inside brush
 			tw->trace.allsolid = qtrue;
 			tw->trace.fraction = 0;
 		}
 		return;
 	}
-	
+
 	if (enterFrac < leaveFrac) {
 		if (enterFrac > -1 && enterFrac < tw->trace.fraction) {
 			if (enterFrac < 0) {
@@ -620,7 +620,7 @@ void CM_TraceThroughTree( traceWork_t *tw, clipMap_t *local, int num, float p1f,
 	}
 
 	//
-	// find the point distances to the seperating plane
+	// find the point distances to the separating plane
 	// and the offset for the size of the box
 	//
 	node = local->nodes + num;
@@ -696,7 +696,7 @@ return;
 	if ( frac > 1 ) {
 		frac = 1;
 	}
-		
+
 	midf = p1f + (p2f - p1f)*frac;
 
 	mid[0] = p1[0] + frac*(p2[0] - p1[0]);
@@ -713,7 +713,7 @@ return;
 	if ( frac2 > 1 ) {
 		frac2 = 1;
 	}
-		
+
 	midf = p1f + (p2f - p1f)*frac2;
 
 	mid[0] = p1[0] + frac2*(p2[0] - p1[0]);
@@ -935,7 +935,7 @@ void CM_TransformedBoxTrace( trace_t *results, const vec3_t start, const vec3_t 
 	VectorSubtract( end_l, origin, end_l );
 
 	// rotate start and end into the models frame of reference
-	if ( model != BOX_MODEL_HANDLE && 
+	if ( model != BOX_MODEL_HANDLE &&
 		(angles[0] || angles[1] || angles[2]) ) {
 		rotated = qtrue;
 	} else {
@@ -991,17 +991,17 @@ bool CM_CullBox(const cplane_t *frustum, const vec3_t transformed[8])
 	const cplane_t	*frust;
 
 	// check against frustum planes
-	for (i=0, frust=frustum; i<4 ; i++, frust++) 
+	for (i=0, frust=frustum; i<4 ; i++, frust++)
 	{
-		for (j=0 ; j<8 ; j++) 
+		for (j=0 ; j<8 ; j++)
 		{
-			if (DotProduct(transformed[j], frust->normal) > frust->dist) 
+			if (DotProduct(transformed[j], frust->normal) > frust->dist)
 			{	// a point is in front
 				break;
-			} 
+			}
 		}
 
-		if (j == 8) 
+		if (j == 8)
 		{	// all points were behind one of the planes
 			return true;
 		}
@@ -1017,12 +1017,12 @@ Returns true if culled out
 =================
 */
 
-bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds) 
+bool CM_CullWorldBox (const cplane_t *frustum, const vec3pair_t bounds)
 {
 	int			i;
 	vec3_t		transformed[8];
 
-	for (i = 0 ; i < 8 ; i++) 
+	for (i = 0 ; i < 8 ; i++)
 	{
 		transformed[i][0] = bounds[i & 1][0];
 		transformed[i][1] = bounds[(i >> 1) & 1][1];

@@ -122,7 +122,7 @@ typedef struct {
 
 
 //==================================================================
-typedef enum 
+typedef enum
 {
 	MOVER_POS1,
 	MOVER_POS2,
@@ -133,7 +133,7 @@ typedef enum
 // Rendering information structure
 
 
-typedef enum 
+typedef enum
 {
 	MODEL_LEGS = 0,
 	MODEL_TORSO,
@@ -265,30 +265,7 @@ typedef enum {
 	TEAM_BEGIN,		// Beginning a team game, spawn at base
 	TEAM_ACTIVE		// Now actively playing
 } playerTeamStateState_t;
-/*
-typedef enum //# race_e
-{
-	RACE_NONE = 0,
-	RACE_HUMAN,
-	RACE_BORG,
-	RACE_KLINGON,
-	RACE_HIROGEN,
-	RACE_MALON,
-	RACE_STASIS,
-	RACE_8472,
-	RACE_BOT,
-	RACE_HARVESTER,
-	RACE_REAVER,
-	RACE_AVATAR,
-	RACE_PARASITE,
-	RACE_VULCAN,
-	RACE_BETAZOID,
-	RACE_BOLIAN,
-	RACE_TALAXIAN,
-	RACE_BAJORAN,
-	RACE_HOLOGRAM
-} race_t;
-*/
+
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct {
 	playerTeamStateState_t	state;
@@ -357,7 +334,7 @@ typedef struct {
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct {
-	clientConnected_t	connected;	
+	clientConnected_t	connected;
 	usercmd_t	lastCommand;
 	char		netname[34];
 	int			maxHealth;			// for handicapping
@@ -438,7 +415,7 @@ struct gclient_s {
 	// timeResidual is used to handle events that happen every second
 	// like health / armor countdowns and regeneration
 	int			timeResidual;
-	
+
 	// Facial Expression Timers
 
 	float		facial_blink;		// time before next blink. If a minus value, we are in blink mode
@@ -508,7 +485,7 @@ struct gclient_s {
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
 typedef struct
-{	
+{
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 } parms_t;
 
@@ -559,7 +536,7 @@ struct gentity_s {
 Ghoul2 Insert Start
 */
 	// this marker thing of Jake's is used for memcpy() length calcs, so don't put any ordinary fields (like above)
-	//	below this point or they won't work, and will mess up all sorts of stuff. 
+	//	below this point or they won't work, and will mess up all sorts of stuff.
 	//
 	CGhoul2Info_v	ghoul2;
 
@@ -586,7 +563,7 @@ Ghoul2 Insert End
 	char		*model2;			// Torso model
 
 	int			freetime;			// sv.time when the object was freed
-	
+
 	int			eventTime;			// events will be cleared EVENT_VALID_MSEC after set
 	qboolean	freeAfterEvent;
 //	qboolean	unlinkAfterEvent;
@@ -630,7 +607,7 @@ Ghoul2 Insert End
 
 	int		roff_ctr;		// current roff frame we are playing
 
-	int			next_roff_time;	
+	int			next_roff_time;
 	int			fx_time;		// timer for beam in/out effects.
 
 //Think Functions
@@ -769,7 +746,7 @@ Ghoul2 Insert End
 	qhandle_t		cinematicModel;
 
 //==========================================================================================
-	
+
 //FIELDS USED EXCLUSIVELY BY SPECIFIC CLASSES OF ENTITIES
 	// Vehicle information.
 	// The vehicle object.
@@ -809,7 +786,7 @@ Ghoul2 Insert End
 
 //Variables used only by waypoints (for the most part)
 	float		radius;
-	
+
 	union
 	{
 		int		wpIndex;
@@ -828,7 +805,7 @@ Ghoul2 Insert End
 	};
 
 //FIXME: Are these being used anymore?
-	gitem_t		*item;			// for bonus items - 
+	gitem_t		*item;			// for bonus items -
 	char		*message;		//Used by triggers to print a message when activated
 
 	float		lightLevel;

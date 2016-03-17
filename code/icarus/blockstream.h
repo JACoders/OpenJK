@@ -37,7 +37,7 @@ typedef float vec3_t[3];
 class CBlockMember
 {
 public:
-	CBlockMember();	
+	CBlockMember();
 
 protected:
 	~CBlockMember();
@@ -109,7 +109,7 @@ protected:
 	void	*m_data;	//Data for this member
 
 };
-	
+
 //CBlock
 
 class CBlock
@@ -152,7 +152,7 @@ public:
 
 	void SetFlags( unsigned char flags )	{	m_flags = flags;	}
 	void SetFlag( unsigned char flag )		{	m_flags |= flag;	}
-	
+
 	int HasFlag( unsigned char flag )	const	{	return ( m_flags & flag );	}
 	unsigned char GetFlags( void )		const	{	return m_flags;				}
 
@@ -204,7 +204,7 @@ public:
 
 	int WriteBlock( CBlock *, CIcarus* icarus );	//Write the block out
 	int ReadBlock( CBlock *, CIcarus* icarus );	//Read the block in
-	
+
 	int Open( char *, long );	//Open a stream for reading / writing
 
 	// Overloaded new operator.
@@ -220,7 +220,7 @@ public:
 	}
 
 protected:
-	long	m_fileSize;							//Size of the file	
+	long	m_fileSize;							//Size of the file
 	FILE	*m_fileHandle;						//Global file handle of current I/O source
 	char	m_fileName[CIcarus::MAX_FILENAME_LENGTH];	//Name of the current file
 

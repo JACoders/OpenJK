@@ -85,7 +85,7 @@ private:
 	////////////////////////////////////////////////////////////////////////////////////
 	// Returns The Location Of Node (i)'s Left Child (The Child Of A Leaf Is The Leaf)
 	////////////////////////////////////////////////////////////////////////////////////
-	static int			left(int i)	
+	static int			left(int i)
 	{
 		return (2*i)+1;
 	}
@@ -183,7 +183,7 @@ public:
 	{
 		return mPush;
 	}
-	
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If The Size Is Zero
     ////////////////////////////////////////////////////////////////////////////////////
@@ -233,7 +233,7 @@ public:
 		// Fix Possible Heap Inconsistancies
 		//-----------------------------------
 		reheapify_upward(mPush);
-		
+
 		mPush++;
 		assert(valid());
 	}
@@ -271,7 +271,7 @@ public:
 		// Fix Possible Heap Inconsistancies
 		//-----------------------------------
 		reheapify_upward(mPush);
-		
+
 		mPush++;
 		assert(valid());
 	}
