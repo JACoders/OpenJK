@@ -526,6 +526,8 @@ void Con_Bottom( void );
 void Con_Close( void );
 
 void Con_SetFrac(const float conFrac);
+void Con_Copy(void);
+void Con_CopyLink(void);
 
 
 //

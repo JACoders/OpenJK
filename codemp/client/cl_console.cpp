@@ -163,6 +163,115 @@ void Con_Clear_f (void) {
 	Con_Bottom();		// go to end
 }
 
+void Con_Copy(void) {
+	int l, x, i;
+	short *line;
+	int bufferlen, savebufferlen;
+	char *buffer, *savebuffer;
+
+	// skip empty lines
+	for (l = con.current - con.totallines + 1; l <= con.current; l++)
+	{
+		line = con.text + (l%con.totallines)*con.linewidth;
+		for (x = 0; x<con.linewidth; x++)
+			if ((line[x] & 0xff) != ' ')
+				break;
+		if (x != con.linewidth)
+			break;
+	}
+
+#ifdef _WIN32
+	bufferlen = con.linewidth + 3 * sizeof(char);
+#else
+	bufferlen = con.linewidth + 2 * sizeof(char);
+#endif
+
+	savebufferlen = bufferlen*(l%con.totallines);
+	buffer = (char *)Hunk_AllocateTempMemory(bufferlen);
+	savebuffer = (char *)Hunk_AllocateTempMemory(savebufferlen);
+	memset(savebuffer, 0, savebufferlen);
+
+	// write the remaining lines
+	buffer[bufferlen - 1] = 0;
+	for (; l <= con.current; l++)
+	{
+		line = con.text + (l%con.totallines)*con.linewidth;
+		for (i = 0; i<con.linewidth; i++)
+			buffer[i] = (char)(line[i] & 0xff);
+		for (x = con.linewidth - 1; x >= 0; x--)
+		{
+			if (buffer[x] == ' ')
+				buffer[x] = 0;
+			else
+				break;
+		}
+#ifdef _WIN32
+		Q_strcat(buffer, bufferlen, "\r\n");
+#else
+		Q_strcat(buffer, bufferlen, "\n");
+#endif
+		Q_strcat(savebuffer, savebufferlen, buffer);
+	}
+	Sys_SetClipboardData(savebuffer);
+
+	Hunk_FreeTempMemory(buffer);
+	Hunk_FreeTempMemory(savebuffer);
+}
+
+void Con_CopyLink(void) {
+	int l, x, i;
+	short *line;
+	char *buffer, n[] = "\0";
+	const char *link;
+	qboolean num = qfalse;
+
+	buffer = (char *)Hunk_AllocateTempMemory(con.linewidth);
+
+	for (l = con.current; l >= con.current - 32; l--)
+	{
+		line = con.text + (l%con.totallines)*con.linewidth;
+		for (i = 0; i < con.linewidth; i++) {
+			buffer[i] = (char)(line[i] & 0xff);
+			if (Q_isanumber(&buffer[i])) num = qtrue;
+		}
+		for (x = con.linewidth - 1; x >= 0; x--) {
+			if (buffer[x] == ' ')
+				buffer[x] = 0;
+			else
+				break;
+		}
+		if (num) {
+			for (i = 0; i < con.linewidth; i++) {
+				*n = buffer[i];
+				if (Q_isanumber(n)) {
+					if ((link = Q_stristr(buffer, ".")) && link - &buffer[i] <= 3) {
+						link = &buffer[i];
+						break;
+					}
+					else link = NULL;
+				}
+			}
+			if (link) {
+				for (i = 0; i < con.linewidth; i++) {
+					buffer[i] = *link++;
+				}
+				Sys_SetClipboardData(buffer);
+				Com_Printf("^2IP ^7\"%s\" ^2Copied!\n", buffer);
+				break;
+			}
+		}
+		if (link = Q_stristr(buffer, "://")) {
+			while (link != &buffer[0] && *(link - 1) != ' ') *link--;
+			for (i = 0; i < con.linewidth; i++) {
+				buffer[i] = *link++;
+			}
+			Sys_SetClipboardData(buffer);
+			Com_Printf("^2Link ^7\"%s\" ^2Copied!\n", buffer);
+			break;
+		}
+	}
+	Hunk_FreeTempMemory(buffer);
+}
 
 /*
 ================

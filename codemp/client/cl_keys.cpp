@@ -588,9 +588,18 @@ void Field_CharEvent( field_t *edit, int ch ) {
 		return;
 	}
 
-	if ( ch == 'c' - 'a' + 1 ) {	// ctrl-c clears the field
+	if ( ch == 'z' - 'a' + 1 ) {	// ctrl-z clears the field
 		Field_Clear( edit );
 		return;
+	}
+
+	if (ch == 'c' - 'a' + 1) {	// ctrl-c copies latest link or ip from console
+		Con_CopyLink();
+		return;
+	}
+
+	if (ch == 's' - 'a' + 1) {	// ctrl-s copies console to clipboard
+		Con_Copy();
 	}
 
 	len = strlen( edit->buffer );
