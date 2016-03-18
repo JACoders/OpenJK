@@ -116,6 +116,10 @@ char *Sys_GetClipboardData( void ) {
 #endif
 }
 
+void Sys_SetClipboardData(const char * cbText) {
+	SDL_SetClipboardText(cbText);
+}
+
 /*
 =================
 Sys_ConsoleInput
