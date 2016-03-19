@@ -418,6 +418,8 @@ extern cvar_t	*cl_stringColors;
 extern cvar_t	*cl_stringColorsCount;
 extern cvar_t	*cl_stringColorsRandom;
 
+extern cvar_t	*cl_afkTime;
+
 //=================================================
 
 //

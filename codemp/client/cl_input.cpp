@@ -1341,8 +1341,8 @@ usercmd_t CL_CreateCmd( void ) {
 	Com_Memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
-
-	if (cl.serverTime && Cvar_VariableIntegerValue("cl_afkTime") > 0) {
+	
+	if (cl.serverTime && cl_afkTime->integer > 0) {
 		if (afkTime > cls.realtime + 1000) {
 			afkTime = cls.realtime;
 			afkTimeExecuted = cls.realtime;
@@ -1354,7 +1354,7 @@ usercmd_t CL_CreateCmd( void ) {
 				afkTimeExecuted = cls.realtime;
 			}
 		}
-		else if (cls.realtime - afkTime >= Cvar_VariableIntegerValue("cl_afkTime") * 60000) {
+		else if (cls.realtime - afkTime >= cl_afkTime->integer * 60000) {
 			if (cls.realtime - afkTimeExecuted >= 5000) {
 				Cmd_ExecuteString("afk 1");
 				afkTimeExecuted = cls.realtime;

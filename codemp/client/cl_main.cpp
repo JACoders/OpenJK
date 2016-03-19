@@ -106,6 +106,8 @@ cvar_t *cl_stringColors;
 cvar_t *cl_stringColorsCount;
 cvar_t *cl_stringColorsRandom;
 
+cvar_t *cl_afkTime;
+
 vec3_t cl_windVec;
 
 
@@ -2926,7 +2928,7 @@ void CL_Init( void ) {
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
 
-	Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE);
+	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE);
 
 	cl_stringColors = Cvar_Get("cl_stringColors", "0", CVAR_ARCHIVE);
 	cl_stringColorsCount = Cvar_Get("cl_stringColorsCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
