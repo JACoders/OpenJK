@@ -1,1 +1,1 @@
-echo msbuild INSTALL.vcxproj /p:Configuration=Release
+msbuild INSTALL.vcxproj /p:Configuration=Release
