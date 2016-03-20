@@ -43,9 +43,7 @@ cvar_t	*com_developer;
 cvar_t	*com_dedicated;
 cvar_t	*com_timescale;
 cvar_t	*com_fixedtime;
-cvar_t	*com_dropsim;		// 0.0 to 1.0, simulated packet drops
 cvar_t	*com_journal;
-cvar_t	*com_maxfps;
 cvar_t	*com_timedemo;
 cvar_t	*com_sv_running;
 cvar_t	*com_cl_running;
@@ -68,6 +66,7 @@ cvar_t  *com_homepath;
 #ifndef _WIN32
 cvar_t	*com_ansiColor = NULL;
 #endif
+cvar_t	*com_busyWait;
 
 cvar_t *com_affinity;
 
@@ -77,7 +76,6 @@ int		time_frontend;		// renderer frontend time
 int		time_backend;		// renderer backend time
 
 int			com_frameTime;
-int			com_frameMsec;
 int			com_frameNumber;
 
 qboolean	com_errorEntered = qfalse;
@@ -923,36 +921,6 @@ int Com_EventLoop( void ) {
 			}
 			Cbuf_AddText( "\n" );
 			break;
-		case SE_PACKET:
-			// this cvar allows simulation of connections that
-			// drop a lot of packets.  Note that loopback connections
-			// don't go through here at all.
-			if ( com_dropsim->value > 0 ) {
-				static int seed;
-
-				if ( Q_random( &seed ) < com_dropsim->value ) {
-					break;		// drop this packet
-				}
-			}
-
-			evFrom = *(netadr_t *)ev.evPtr;
-			buf.cursize = ev.evPtrLength - sizeof( evFrom );
-
-			// we must copy the contents of the message out, because
-			// the event buffers are only large enough to hold the
-			// exact payload, but channel messages need to be large
-			// enough to hold fragment reassembly
-			if ( (unsigned)buf.cursize > (unsigned)buf.maxsize ) {
-				Com_Printf("Com_EventLoop: oversize packet\n");
-				continue;
-			}
-			Com_Memcpy( buf.data, (byte *)((netadr_t *)ev.evPtr + 1), buf.cursize );
-			if ( com_sv_running->integer ) {
-				Com_RunAndTimeServerPacket( &evFrom, &buf );
-			} else {
-				CL_PacketEvent( evFrom, &buf );
-			}
-			break;
 		}
 
 		// free any block data
@@ -1242,15 +1210,12 @@ void Com_Init( char *commandLine ) {
 		//
 		// init commands and vars
 		//
-		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
-
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 
 		com_timescale = Cvar_Get ("timescale", "1", CVAR_CHEAT | CVAR_SYSTEMINFO );
 		com_fixedtime = Cvar_Get ("fixedtime", "0", CVAR_CHEAT);
 		com_showtrace = Cvar_Get ("com_showtrace", "0", CVAR_CHEAT);
 
-		com_dropsim = Cvar_Get ("com_dropsim", "0", CVAR_CHEAT);
 		com_speeds = Cvar_Get ("com_speeds", "0", 0);
 		com_timedemo = Cvar_Get ("timedemo", "0", 0);
 		com_cameraMode = Cvar_Get ("com_cameraMode", "0", CVAR_CHEAT);
@@ -1271,6 +1236,7 @@ void Com_Init( char *commandLine ) {
 #endif
 
 		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
+		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
 
@@ -1462,6 +1428,26 @@ extern int G2Time_PreciseFrame;
 
 /*
 =================
+Com_TimeVal
+=================
+*/
+
+int Com_TimeVal(int minMsec)
+{
+	int timeVal;
+
+	timeVal = Sys_Milliseconds() - com_frameTime;
+
+	if(timeVal >= minMsec)
+		timeVal = 0;
+	else
+		timeVal = minMsec - timeVal;
+
+	return timeVal;
+}
+
+/*
+=================
 Com_Frame
 =================
 */
@@ -1473,7 +1459,8 @@ void Com_Frame( void ) {
 		G2PerformanceTimer_PreciseFrame.Start();
 #endif
 		int		msec, minMsec;
-		static int	lastTime = 0;
+		int		timeVal;
+		static int	lastTime = 0, bias = 0;
 
 		int		timeBeforeFirstEvents = 0;
 		int           timeBeforeServer = 0;
@@ -1491,25 +1478,53 @@ void Com_Frame( void ) {
 			timeBeforeFirstEvents = Sys_Milliseconds ();
 		}
 
-		// we may want to spin here if things are going too fast
-		if ( !com_dedicated->integer && com_maxfps->integer > 0 && !com_timedemo->integer ) {
-			minMsec = 1000 / com_maxfps->integer;
-		} else {
-			minMsec = 1;
-		}
-		do {
-			com_frameTime = Com_EventLoop();
-			if ( lastTime > com_frameTime ) {
-				lastTime = com_frameTime;		// possible on first frame
+		// Figure out how much time we have
+		if(!com_timedemo->integer)
+		{
+			if(com_dedicated->integer)
+				minMsec = SV_FrameMsec();
+			else
+			{
+				if(com_minimized->integer && com_maxfpsMinimized->integer > 0)
+					minMsec = 1000 / com_maxfpsMinimized->integer;
+				else if(com_unfocused->integer && com_maxfpsUnfocused->integer > 0)
+					minMsec = 1000 / com_maxfpsUnfocused->integer;
+				else if(com_maxfps->integer > 0)
+					minMsec = 1000 / com_maxfps->integer;
+				else
+					minMsec = 1;
+
+				timeVal = com_frameTime - lastTime;
+				bias += timeVal - minMsec;
+
+				if (bias > minMsec)
+					bias = minMsec;
+
+				// Adjust minMsec if previous frame took too long to render so
+				// that framerate is stable at the requested value.
+				minMsec -= bias;
 			}
-			msec = com_frameTime - lastTime;
-		} while ( msec < minMsec );
-		Cbuf_Execute ();
+		}
+		else
+			minMsec = 1;
+
+		timeVal = Com_TimeVal(minMsec);
+		do {
+			// Busy sleep the last millisecond for better timeout precision
+			if(com_busyWait->integer || timeVal < 1)
+				NET_Sleep(0);
+			else
+				NET_Sleep(timeVal - 1);
+		} while( (timeVal = Com_TimeVal(minMsec)) != 0 );
 
 		lastTime = com_frameTime;
+		com_frameTime = Com_EventLoop();
+
+		msec = com_frameTime - lastTime;
+
+		Cbuf_Execute ();
 
 		// mess with msec if needed
-		com_frameMsec = msec;
 		msec = Com_ModifyMsec( msec );
 
 		//
