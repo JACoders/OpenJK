@@ -346,15 +346,12 @@ static void R_AddWorldSurface( msurface_t *surf, int entityNum, int dlightBits, 
 	R_AddDrawSurf( surf->data, entityNum, surf->shader, surf->fogIndex,
 			dlightBits, isPostRenderEntity, surf->cubemapIndex );
 
-	if ( surf->numSurfaceSprites )
+	for ( int i = 0, numSprites = surf->numSurfaceSprites; 
+			i < numSprites; ++i )
 	{
-		for ( int i = 0, numSprites = surf->numSurfaceSprites; 
-				i < numSprites; ++i )
-		{
-			srfSprites_t *sprites = surf->surfaceSprites + i;
-			R_AddDrawSurf((surfaceType_t *)sprites, entityNum, sprites->shader,
-					surf->fogIndex, dlightBits, isPostRenderEntity, 0);
-		}
+		srfSprites_t *sprites = surf->surfaceSprites + i;
+		R_AddDrawSurf((surfaceType_t *)sprites, entityNum, sprites->shader,
+				surf->fogIndex, dlightBits, isPostRenderEntity, 0);
 	}
 }
 
