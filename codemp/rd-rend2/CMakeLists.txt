@@ -3,9 +3,7 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPRend2IncludeDirectories ${MPDir})
 set(MPRend2IncludeDirectories
-	"${MPRend2IncludeDirectories}"
 	"${SharedDir}"
 	"${MPDir}"
 	"${MPDir}/rd-rend2"
@@ -21,6 +19,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_bones.cpp"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
+	"${MPDir}/rd-rend2/tr_allocator.cpp"
 	"${MPDir}/rd-rend2/tr_animation.cpp"
 	"${MPDir}/rd-rend2/tr_backend.cpp"
 	"${MPDir}/rd-rend2/tr_bsp.cpp"
@@ -38,6 +37,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_flares.cpp"
 	"${MPDir}/rd-rend2/tr_ghoul2.cpp"
 	"${MPDir}/rd-rend2/tr_glsl.cpp"
+	"${MPDir}/rd-rend2/tr_glsl_parse.cpp"
 	"${MPDir}/rd-rend2/tr_image.cpp"
 	"${MPDir}/rd-rend2/tr_init.cpp"
 	"${MPDir}/rd-rend2/tr_light.cpp"
@@ -159,13 +159,19 @@ set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines
 
 # Hide symbols not explicitly marked public.
 set_property(TARGET ${MPRend2} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
-
 set_target_properties(${MPRend2} PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 set_target_properties(${MPRend2} PROPERTIES PROJECT_LABEL "MP Rend2 Renderer")
 target_link_libraries(${MPRend2} ${MPRend2Libraries})
 
 # GLSL shader file generator
-add_executable(compact_glsl ${MPDir}/rd-rend2/glsl/compact.cpp)
+add_executable(compact_glsl
+	${MPDir}/rd-rend2/glsl/compact.cpp
+	${MPDir}/rd-rend2/tr_allocator.cpp
+	${MPDir}/rd-rend2/tr_allocator.h
+	${MPDir}/rd-rend2/tr_glsl_parse.cpp
+	)
+set_target_properties(compact_glsl PROPERTIES COMPILE_DEFINITIONS "GLSL_BUILDTOOL")
+set_target_properties(compact_glsl PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
 	COMMAND compact_glsl ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp ${MPRend2GLSLFiles}

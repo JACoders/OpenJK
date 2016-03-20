@@ -1,0 +1,137 @@
+/*
+===========================================================================
+Copyright (C) 2013 - 2016, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
+#include "tr_local.h"
+#include "tr_allocator.h"
+#if defined(GLSL_BUILDTOOL)
+#include <iostream>
+#endif
+
+namespace
+{
+
+Block *FindBlock( const char *name, Block *blocks, size_t numBlocks )
+{
+	for ( size_t i = 0; i < numBlocks; ++i )
+	{
+		Block *block = blocks + i;
+		if ( strncmp(block->blockHeaderTitle, name, block->blockHeaderTitleLength) == 0 )
+		{
+			return block;
+		}
+	}
+
+	return nullptr;
+}
+
+}
+
+GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
+{
+	int numBlocks = 0;
+	Block blocks[MAX_BLOCKS];
+	Block *prevBlock = nullptr;
+
+	int i = 0;
+	while ( text[i] )
+	{
+		int markerStart = i;
+		int markerEnd = -1;
+
+		if ( strncmp(text + i, "/*[", 3) == 0 )
+		{
+			int startHeaderTitle = i + 3;
+			int endHeaderTitle = -1;
+			int endHeaderText = -1;
+			int j = startHeaderTitle;
+			while ( text[j] )
+			{
+				if ( text[j] == ']' )
+				{
+					endHeaderTitle = j;
+				}
+				else if ( strncmp(text + j, "*/\n", 3) == 0 )
+				{
+					endHeaderText = j;
+					break;
+				}
+
+				++j;
+			}
+
+			if ( endHeaderTitle == -1 || endHeaderText == -1 )
+			{
+#if defined(GLSL_BUILDTOOL)
+				std::cerr << "Unclosed block marker\n";
+#else
+				Com_Printf(S_COLOR_YELLOW "Unclosed block marker\n");
+#endif
+				break;
+			}
+
+			Block *block = blocks + numBlocks++;
+			block->blockHeaderTitle = text + startHeaderTitle;
+			block->blockHeaderTitleLength = endHeaderTitle - startHeaderTitle;
+			block->blockHeaderText = text + endHeaderTitle + 1;
+			block->blockHeaderTextLength = endHeaderText - endHeaderTitle - 1;
+			block->blockText = text + endHeaderText + 3;
+			block->blockTextLength = 0;
+
+			if ( prevBlock )
+			{
+				prevBlock->blockTextLength = (text + i) - prevBlock->blockText;
+			}
+			prevBlock = block;
+
+			i = endHeaderText + 3;
+			continue;
+		}
+
+		++i;
+	}
+
+	if ( prevBlock )
+	{
+		prevBlock->blockTextLength = (text + i) - prevBlock->blockText;
+	}
+
+	GPUProgramDesc theProgram = {};
+	theProgram.numShaders = 2;
+
+	Block *vertexBlock = FindBlock("Vertex", blocks, numBlocks);
+	Block *fragmentBlock = FindBlock("Fragment", blocks, numBlocks);
+
+	theProgram.shaders = ojkAllocArray<GPUShaderDesc>(allocator, theProgram.numShaders);
+
+	char *vertexSource = ojkAllocString(allocator, vertexBlock->blockTextLength);
+	char *fragmentSource = ojkAllocString(allocator, fragmentBlock->blockTextLength);
+
+	strncpy_s(vertexSource, vertexBlock->blockTextLength + 1,
+		vertexBlock->blockText, vertexBlock->blockTextLength);
+	strncpy_s(fragmentSource, fragmentBlock->blockTextLength + 1,
+		fragmentBlock->blockText, fragmentBlock->blockTextLength);
+
+	theProgram.shaders[0].type = GPUSHADER_VERTEX;
+	theProgram.shaders[0].source = vertexSource;
+	theProgram.shaders[1].type = GPUSHADER_FRAGMENT;
+	theProgram.shaders[1].source = fragmentSource;
+
+	return theProgram;
+}

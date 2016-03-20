@@ -24,11 +24,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef TR_LOCAL_H
 #define TR_LOCAL_H
 
-#include "../qcommon/q_shared.h"
-#include "../qcommon/qfiles.h"
-#include "../qcommon/qcommon.h"
-#include "../rd-common/tr_public.h"
-#include "../rd-common/tr_common.h"
+#include "qcommon/q_shared.h"
+#include "qcommon/qfiles.h"
+#include "qcommon/qcommon.h"
+#include "rd-common/tr_public.h"
+#include "rd-common/tr_common.h"
 #include "tr_extratypes.h"
 #include "tr_extramath.h"
 #include "tr_fbo.h"
@@ -1116,6 +1116,38 @@ struct uniformBlockInfo_t
 	size_t size;
 };
 extern const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT];
+
+#define MAX_BLOCKS (32)
+#define MAX_BLOCK_NAME_LEN (32)
+struct Block
+{
+	const char *blockText;
+	size_t blockTextLength;
+
+	const char *blockHeaderTitle;
+	size_t blockHeaderTitleLength;
+
+	const char *blockHeaderText;
+	size_t blockHeaderTextLength;
+};
+
+enum GPUShaderType
+{
+	GPUSHADER_VERTEX,
+	GPUSHADER_FRAGMENT
+};
+
+struct GPUShaderDesc
+{
+	GPUShaderType type;
+	const char *source;
+};
+
+struct GPUProgramDesc
+{
+	size_t numShaders;
+	GPUShaderDesc *shaders;
+};
 
 typedef enum
 {
@@ -3306,5 +3338,8 @@ qboolean ShaderHashTableExists(void);
 void R_ImageLoader_Init(void);
 
 void RB_SurfaceGhoul( CRenderableSurface *surf );
+
+class Allocator;
+GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text );
 
 #endif //TR_LOCAL_H

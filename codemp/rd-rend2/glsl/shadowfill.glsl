@@ -1,40 +1,30 @@
+/*[Vertex]*/
 in vec3 attr_Position;
 in vec3 attr_Normal;
+in vec4 attr_TexCoord0;
 
-in vec2 attr_TexCoord0;
-
-#if defined(USE_VERTEX_ANIMATION)
+//#if defined(USE_VERTEX_ANIMATION)
 in vec3 attr_Position2;
 in vec3 attr_Normal2;
-#elif defined(USE_SKELETAL_ANIMATION)
-in uvec4 attr_BoneIndexes;
-in vec4 attr_BoneWeights;
-#endif
+//#endif
 
-uniform vec4 u_FogDistance;
-uniform vec4 u_FogDepth;
-uniform float u_FogEyeT;
-
-#if defined(USE_DEFORM_VERTEXES)
+//#if defined(USE_DEFORM_VERTEXES)
 uniform int u_DeformType;
 uniform int u_DeformFunc;
 uniform float u_DeformParams[7];
-#endif
+//#endif
 
 uniform float u_Time;
 uniform mat4 u_ModelViewProjectionMatrix;
 
-#if defined(USE_VERTEX_ANIMATION)
+uniform mat4 u_ModelMatrix;
+
+//#if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
-#elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4x3 u_BoneMatrices[20];
-#endif
+//#endif
 
-uniform vec4 u_Color;
+out vec3 var_Position;
 
-out float var_Scale;
-
-#if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )
 {
 	// Variation on the 'one-liner random function'.
@@ -170,62 +160,62 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 
 	return outNormal;
 }
-#endif
-
-float CalcFog(vec3 position)
-{
-	float s = dot(vec4(position, 1.0), u_FogDistance) * 8.0;
-	float t = dot(vec4(position, 1.0), u_FogDepth);
-
-	float eyeOutside = float(u_FogEyeT < 0.0);
-	float fogged = float(t >= eyeOutside);
-
-	t += 1e-6;
-	t *= fogged / (t - u_FogEyeT * eyeOutside);
-
-	return s * t;
-}
 
 void main()
 {
-#if defined(USE_VERTEX_ANIMATION)
-	vec3 position = mix(attr_Position, attr_Position2, u_VertexLerp);
-	vec3 normal   = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
+	vec3 position  = mix(attr_Position, attr_Position2, u_VertexLerp);
+	vec3 normal    = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
 	normal = normalize(normal - vec3(0.5));
-#elif defined(USE_SKELETAL_ANIMATION)
-	vec4 position4 = vec4(0.0);
-	vec4 normal4 = vec4(0.0);
-	vec4 originalPosition = vec4(attr_Position, 1.0);
-	vec4 originalNormal = vec4(attr_Normal - vec3 (0.5), 0.0);
 
-	for (int i = 0; i < 4; i++)
-	{
-		uint boneIndex = attr_BoneIndexes[i];
-
-		mat4 boneMatrix = mat4(
-			vec4(u_BoneMatrices[boneIndex][0], 0.0),
-			vec4(u_BoneMatrices[boneIndex][1], 0.0),
-			vec4(u_BoneMatrices[boneIndex][2], 0.0),
-			vec4(u_BoneMatrices[boneIndex][3], 1.0)
-		);
-
-		position4 += (boneMatrix * originalPosition) * attr_BoneWeights[i];
-		normal4 += (boneMatrix * originalNormal) * attr_BoneWeights[i];
-	}
-
-	vec3 position = position4.xyz;
-	vec3 normal = normalize(normal4.xyz);
-#else
-	vec3 position = attr_Position;
-	vec3 normal   = attr_Normal * 2.0 - vec3(1.0);
-#endif
-
-#if defined(USE_DEFORM_VERTEXES)
 	position = DeformPosition(position, normal, attr_TexCoord0.st);
 	normal = DeformNormal( position, normal );
-#endif
 
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+	
+	var_Position  = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+}
 
-	var_Scale = CalcFog(position) * u_Color.a * u_Color.a;
+/*[Fragment]*/
+uniform vec4  u_LightOrigin;
+uniform float u_LightRadius;
+
+in vec3 var_Position;
+
+out vec4 out_Color;
+
+void main()
+{
+#if defined(USE_DEPTH)
+	float depth = length(u_LightOrigin.xyz - var_Position) / u_LightRadius;
+ #if 0
+	// 32 bit precision
+	const vec4 bitSh = vec4( 256 * 256 * 256,   256 * 256,         256,           1);
+	const vec4 bitMsk = vec4(              0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+	
+	vec4 comp;
+	comp = depth * bitSh;
+	comp.xyz = fract(comp.xyz);
+	comp -= comp.xxyz * bitMsk;
+	out_Color = comp;
+ #endif
+
+ #if 1
+	// 24 bit precision
+	const vec3 bitSh = vec3( 256 * 256,         256,           1);
+	const vec3 bitMsk = vec3(        0, 1.0 / 256.0, 1.0 / 256.0);
+	
+	vec3 comp;
+	comp = depth * bitSh;
+	comp.xy = fract(comp.xy);
+	comp -= comp.xxy * bitMsk;
+	out_Color = vec4(comp, 1.0);
+ #endif
+
+ #if 0
+	// 8 bit precision
+	out_Color = vec4(depth, depth, depth, 1);
+ #endif
+#else
+	out_Color = vec4(0, 0, 0, 1);
+#endif
 }
