@@ -2710,11 +2710,17 @@ static void CL_ColorString_f(void) {
 
 		if (index == -1) {
 			Cvar_Set("cl_colorString", "0");
-			Com_Printf("colorString: All colors are now disabled\n");
+			Com_Printf("colorString: All colors are now ^1disabled\n");
 			return;
 		}
 
-		if (index < 0 || index >= 10) {
+		if (index == 10) {
+			Cvar_Set("cl_colorString", "0");
+			Com_Printf("colorString: All colors are now ^2enabled\n");
+			return;
+		}
+
+		if (index < 0 || index > 10) {
 			Com_Printf("colorString: Invalid range: %i [0, %i]\n", index, 9);
 			return;
 		}
