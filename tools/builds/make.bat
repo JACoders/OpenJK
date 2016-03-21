@@ -1,5 +1,5 @@
-set BUILDDIR=%1
-IF [%BUILDDIR%] == [] (
-    set BUILDDIR=.
+set SRCDIR=%1
+IF [%SRCDIR%] == [] (
+    set SRCDIR=.
 )
-cmake -G "Visual Studio 12" -D CMAKE_INSTALL_PREFIX=install -D CMAKE_BUILD_TYPE=Release %BUILDDIR%
+cmake -G "Visual Studio 12" -D CMAKE_INSTALL_PREFIX=install -D CMAKE_BUILD_TYPE=Release %SRCDIR%
