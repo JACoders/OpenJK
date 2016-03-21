@@ -1328,11 +1328,10 @@ CL_CreateCmd
 =================
 */
 static int afkTime = 0;
-static int afkTimeExecuted = 0;
 usercmd_t CL_CreateCmd( void ) {
 	usercmd_t	cmd;
 	vec3_t		oldAngles;
-
+	
 	VectorCopy( cl.viewangles, oldAngles );
 
 	// keyboard angle adjustment
@@ -1341,23 +1340,18 @@ usercmd_t CL_CreateCmd( void ) {
 	Com_Memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
-	
-	if (cl.serverTime && cl_afkTime->integer > 0) {
-		if (afkTime > cls.realtime + 1000) {
-			afkTime = cls.realtime;
-			afkTimeExecuted = cls.realtime;
-		}
+
+	if (!cl.serverTime)afkTime = cls.realtime;
+	else if (cl_afkTime->integer > 0) {
 		if (cmd.buttons != 0 && !(cmd.buttons & BUTTON_TALK)) {
 			afkTime = cls.realtime;
-			if (cls.realtime - afkTimeExecuted >= 5000) {
-				Cmd_ExecuteString("afk 0");
-				afkTimeExecuted = cls.realtime;
+			if (cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
+				CL_Afk_f();
 			}
 		}
-		else if (cls.realtime - afkTime >= cl_afkTime->integer * 60000) {
-			if (cls.realtime - afkTimeExecuted >= 5000) {
-				Cmd_ExecuteString("afk 1");
-				afkTimeExecuted = cls.realtime;
+		else if (cls.realtime - cl_afkTime->integer * 60000) {
+			if (!cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
+				CL_Afk_f();
 			}
 		}
 	}

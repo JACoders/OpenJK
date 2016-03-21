@@ -37,6 +37,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "snd_local.h"
 #include "sys/sys_loadlib.h"
 
+cvar_t *cl_name;
+
 cvar_t	*cl_renderer;
 
 cvar_t	*cl_nodelta;
@@ -2123,7 +2125,23 @@ void CL_CheckUserinfo( void ) {
 
 }
 
-static int lastModifiedColors = -1;
+qboolean cl_afkName;
+static const char *afkPrefix = "[AFK]";
+static const size_t afkPrefixLen = strlen(afkPrefix);
+
+static void CL_GetAfk(void) {
+	char * name = cl_name->string;
+	if (!Q_strncmp(name, afkPrefix, afkPrefixLen)) {
+		cl_afkName = qtrue;
+	}
+	else {
+		cl_afkName = qfalse;
+	}
+}
+
+int cl_nameModifiedTime = 0;
+static int lastModifiedColors = 0;
+static int lastModifiedName = 0;
 static void CL_CheckCvarUpdate(void) {
 	if (lastModifiedColors != cl_stringColors->modificationCount) {
 		// recalculate cl_stringColorsCount
@@ -2132,7 +2150,13 @@ static void CL_CheckCvarUpdate(void) {
 		count = count - ((count >> 1) & 0x55555555);
 		count = (count & 0x33333333) + ((count >> 2) & 0x33333333);
 		count = (((count + (count >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
-		Cvar_Set("cl_stringColorsCount", va("%i", count));
+		cl_stringColors->integer = count;
+	}
+
+	if (lastModifiedName != cl_name->modificationCount) {
+		lastModifiedName = cl_name->modificationCount;
+		cl_nameModifiedTime = cls.realtime;
+		CL_GetAfk();
 	}
 }
 
@@ -2633,32 +2657,14 @@ static void CL_AddFavorite_f( void ) {
 	}
 }
 
-static void CL_Afk_f(void) {
-	const char *prefix = "[AFK]";
-	const size_t prefixLen = strlen(prefix);
+void CL_Afk_f(void) {
 	char name[MAX_TOKEN_CHARS];
 	Cvar_VariableStringBuffer("name", name, sizeof(name));
-	if (Cmd_Argc() == 1) {
-		if (!Q_strncmp(name, prefix, prefixLen)) {
-			Cvar_Set("name", name + prefixLen);
-		}
-		else {
-			Cvar_Set("name", va("%s%s", prefix, name));
-		}
+	if (cl_afkName) {
+		Cvar_Set("name", name + afkPrefixLen);
 	}
 	else {
-		char arg[8] = { 0 };
-		Cmd_ArgvBuffer(1, arg, sizeof(arg));
-		if (atoi(arg)) {
-			if (Q_strncmp(name, prefix, prefixLen)) {
-				Cvar_Set("name", va("%s%s", prefix, name));
-			}
-		}
-		else {
-			if (!Q_strncmp(name, prefix, prefixLen)) {
-				Cvar_Set("name", name + prefixLen);
-			}
-		}
+		Cvar_Set("name", va("%s%s", afkPrefix, name));
 	}
 }
 
@@ -2900,9 +2906,9 @@ void CL_Init( void ) {
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
-
+	
 	// userinfo
-	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
+	cl_name = Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE );
 	Cvar_Get ("model", DEFAULT_MODEL"/default", CVAR_USERINFO | CVAR_ARCHIVE );

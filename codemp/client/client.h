@@ -460,8 +460,12 @@ void CL_InitRef( void );
 int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen );
 
 void CL_RandomizeColors(const char*, char*);
+void CL_Afk_f(void);
 
 qboolean CL_CheckPaused(void);
+
+extern int		cl_nameModifiedTime;
+extern qboolean cl_afkName;
 
 //
 // cl_input
