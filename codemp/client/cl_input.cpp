@@ -1349,7 +1349,7 @@ usercmd_t CL_CreateCmd( void ) {
 				CL_Afk_f();
 			}
 		}
-		else if (cls.realtime - cl_afkTime->integer * 60000) {
+		else if (cls.realtime - afkTime >= cl_afkTime->integer * 60000) {
 			if (!cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
 				CL_Afk_f();
 			}

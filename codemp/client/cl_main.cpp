@@ -2130,8 +2130,7 @@ static const char *afkPrefix = "[AFK]";
 static const size_t afkPrefixLen = strlen(afkPrefix);
 
 static void CL_GetAfk(void) {
-	char * name = cl_name->string;
-	if (!Q_strncmp(name, afkPrefix, afkPrefixLen)) {
+	if (!Q_strncmp(cl_name->string, afkPrefix, afkPrefixLen)) {
 		cl_afkName = qtrue;
 	}
 	else {
@@ -2660,11 +2659,14 @@ static void CL_AddFavorite_f( void ) {
 void CL_Afk_f(void) {
 	char name[MAX_TOKEN_CHARS];
 	Cvar_VariableStringBuffer("name", name, sizeof(name));
-	if (cl_afkName) {
-		Cvar_Set("name", name + afkPrefixLen);
-	}
+	if (cls.realtime - cl_nameModifiedTime <= 5000)Com_Printf("You must wait 5 seconds before changing your name again.\n");
 	else {
-		Cvar_Set("name", va("%s%s", afkPrefix, name));
+		if (cl_afkName) {
+			Cvar_Set("name", name + afkPrefixLen);
+		}
+		else {
+			Cvar_Set("name", va("%s%s", afkPrefix, name));
+		}
 	}
 }
 
