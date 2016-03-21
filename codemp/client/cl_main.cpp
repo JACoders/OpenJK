@@ -2783,7 +2783,20 @@ void CL_RandomizeColors(const char* in, char *out) {
 			c = *p++;
 			store = 0;
 		}
-		else if (store != (random = irand(1, count*(store == 0 ? 1 : Cvar_VariableIntegerValue("cl_colorStringRandom")))) && random <= count) {
+		else if (count == 1) {
+			if (store == 0) {
+				for (i = 0; i < 10; i++) {
+					if ((cl_colorString->integer & (1 << i))) {
+						store = i;
+						*s++ = '^';
+						*s++ = i + '0';
+					}
+				}
+			}
+			*s++ = c;
+		}
+		else if (store != (random = irand(1, count*(store == 0
+			? 1 : cl_colorStringRandom->integer))) && random <= count) {
 			for (i = 0; i < 10; i++) {
 				if ((cl_colorString->integer & (1 << i)) && (random - 1) == j++) {
 					store = random;
