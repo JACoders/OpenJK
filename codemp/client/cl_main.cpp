@@ -2149,7 +2149,7 @@ static void CL_CheckCvarUpdate(void) {
 		count = count - ((count >> 1) & 0x55555555);
 		count = (count & 0x33333333) + ((count >> 2) & 0x33333333);
 		count = (((count + (count >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
-		cl_stringColors->integer = count;
+		cl_stringColorsCount->integer = count;
 	}
 
 	if (lastModifiedName != cl_name->modificationCount) {
