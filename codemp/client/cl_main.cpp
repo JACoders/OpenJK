@@ -104,9 +104,9 @@ cvar_t	*cl_consoleKeys;
 
 cvar_t  *cl_lanForcePackets;
 
-cvar_t *cl_stringColors;
-cvar_t *cl_stringColorsCount;
-cvar_t *cl_stringColorsRandom;
+cvar_t *cl_colorString;
+cvar_t *cl_colorStringCount;
+cvar_t *cl_colorStringRandom;
 
 cvar_t *cl_afkTime;
 
@@ -2142,14 +2142,14 @@ int cl_nameModifiedTime = 0;
 static int lastModifiedColors = 0;
 static int lastModifiedName = 0;
 static void CL_CheckCvarUpdate(void) {
-	if (lastModifiedColors != cl_stringColors->modificationCount) {
-		// recalculate cl_stringColorsCount
-		lastModifiedColors = cl_stringColors->modificationCount;
-		int count = cl_stringColors->integer;
+	if (lastModifiedColors != cl_colorString->modificationCount) {
+		// recalculate cl_colorStringCount
+		lastModifiedColors = cl_colorString->modificationCount;
+		int count = cl_colorString->integer;
 		count = count - ((count >> 1) & 0x55555555);
 		count = (count & 0x33333333) + ((count >> 2) & 0x33333333);
 		count = (((count + (count >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
-		cl_stringColorsCount->integer = count;
+		Cvar_Set("cl_colorStringCount", va("%i", count));
 	}
 
 	if (lastModifiedName != cl_name->modificationCount) {
@@ -2672,26 +2672,26 @@ void CL_Afk_f(void) {
 
 typedef struct bitInfo_S {
 	const char	*string;
-} bitInfo_T;
+} bitInfo_t;
 
-static bitInfo_T colors[] = {
-	{ "BLACK" },
-	{ "RED" },
-	{ "GREEN" },
-	{ "YELLOW" },
-	{ "BLUE" },
-	{ "CYAN" },
-	{ "MAGENTA" },
-	{ "WHITE" },
-	{ "ORANGE" },
-	{ "GRAY" }
+static bitInfo_t colors[] = {
+	{ "^0BLACK" },
+	{ "^1RED" },
+	{ "^2GREEN" },
+	{ "^3YELLOW" },
+	{ "^4BLUE" },
+	{ "^5CYAN" },
+	{ "^6MAGENTA" },
+	{ "^7WHITE" },
+	{ "^8ORANGE" },
+	{ "^9GRAY" }
 };
 
 static void CL_ColorString_f(void) {
 	if (Cmd_Argc() == 1) {
 		int i = 0;
 		for (i = 0; i < 10; i++) {
-			if ((cl_stringColors->integer & (1 << i))) {
+			if ((cl_colorString->integer & (1 << i))) {
 				Com_Printf("%2d [X] %s\n", i, colors[i].string);
 			}
 			else {
@@ -2700,7 +2700,7 @@ static void CL_ColorString_f(void) {
 		}
 		return;
 	}
-	else {
+	else if (Cmd_Argc() == 2) {
 		char arg[8] = { 0 };
 		int index;
 		const uint32_t mask = (1 << 10) - 1;
@@ -2708,20 +2708,64 @@ static void CL_ColorString_f(void) {
 		Cmd_ArgvBuffer(1, arg, sizeof(arg));
 		index = atoi(arg);
 
+		if (index == -1) {
+			Cvar_Set("cl_colorString", "0");
+			Com_Printf("colorString: All colors are now disabled\n");
+			return;
+		}
+
 		if (index < 0 || index >= 10) {
 			Com_Printf("colorString: Invalid range: %i [0, %i]\n", index, 9);
 			return;
 		}
 
-		Cvar_Set("cl_stringColors", va("%i", (1 << index) ^ (cl_stringColors->integer & mask)));
+		Cvar_Set("cl_colorString", va("%i", (1 << index) ^ (cl_colorString->integer & mask)));
 
-		Com_Printf("%s %s^7\n", colors[index].string, ((cl_stringColors->integer & (1 << index))
+		Com_Printf("%s %s^7\n", colors[index].string, ((cl_colorString->integer & (1 << index))
 			? "^2Enabled" : "^1Disabled"));
+	}
+	else {
+		char arg[8] = { 0 };
+		int i, argc, index[10], bits = 0;
+		const uint32_t mask = (1 << 10) - 1;
+
+		if ((argc = Cmd_Argc() - 1) > 10) {
+			Com_Printf("colorString: More than 10 arguments were entered");
+			return;
+		}
+
+		for (i = 0; i < argc; i++) {
+			Cmd_ArgvBuffer(i+1, arg, sizeof(arg));
+			index[i] = atoi(arg);
+
+			if (index[i] < 0 || index[i] >= 10) {
+				Com_Printf("colorString: Invalid range: %i [0, %i]\n", index[i], 9);
+				return;
+			}
+
+			if ((bits & mask) & (1 << index[i])) {
+				Com_Printf("colorString: %s ^7was entered more than once\n", colors[index[i]].string);
+				return;
+			}
+
+			bits = (1 << index[i]) ^ (bits & mask);
+		}
+
+		Cvar_Set("cl_colorString", va("%i", bits));
+
+		for (i = 0; i < 10; i++) {
+			if ((cl_colorString->integer & (1 << i))) {
+				Com_Printf("%2d [X] %s\n", i, colors[i].string);
+			}
+			else {
+				Com_Printf("%2d [ ] %s\n", i, colors[i].string);
+			}
+		}
 	}
 }
 
 void CL_RandomizeColors(const char* in, char *out) {
-	int count = cl_stringColorsCount->integer;
+	int count = cl_colorStringCount->integer;
 	int i, random, j = 0, store = 0;
 	const char *p = in;
 	char *s = out, c;
@@ -2733,9 +2777,9 @@ void CL_RandomizeColors(const char* in, char *out) {
 			c = *p++;
 			store = 0;
 		}
-		else if (store != (random = irand(1, count*(store == 0 ? 1 : Cvar_VariableIntegerValue("cl_stringColorsRandom")))) && random <= count) {
+		else if (store != (random = irand(1, count*(store == 0 ? 1 : Cvar_VariableIntegerValue("cl_colorStringRandom")))) && random <= count) {
 			for (i = 0; i < 10; i++) {
-				if ((cl_stringColors->integer & (1 << i)) && (random - 1) == j++) {
+				if ((cl_colorString->integer & (1 << i)) && (random - 1) == j++) {
 					store = random;
 					*s++ = '^';
 					*s++ = i + '0';
@@ -2938,9 +2982,9 @@ void CL_Init( void ) {
 
 	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE);
 
-	cl_stringColors = Cvar_Get("cl_stringColors", "0", CVAR_ARCHIVE);
-	cl_stringColorsCount = Cvar_Get("cl_stringColorsCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
-	cl_stringColorsRandom = Cvar_Get("cl_stringColorsRandom", "2", CVAR_ARCHIVE);
+	cl_colorString = Cvar_Get("cl_colorString", "0", CVAR_ARCHIVE);
+	cl_colorStringCount = Cvar_Get("cl_colorStringCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
+	cl_colorStringRandom = Cvar_Get("cl_colorStringRandom", "2", CVAR_ARCHIVE);
 
 	//
 	// register our commands
