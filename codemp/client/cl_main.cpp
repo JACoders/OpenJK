@@ -2715,12 +2715,12 @@ static void CL_ColorString_f(void) {
 		}
 
 		if (index == 10) {
-			Cvar_Set("cl_colorString", "0");
+			Cvar_Set("cl_colorString", "1023");
 			Com_Printf("colorString: All colors are now ^2enabled\n");
 			return;
 		}
 
-		if (index < 0 || index > 10) {
+		if (index < 0 || index >= 10) {
 			Com_Printf("colorString: Invalid range: %i [0, %i]\n", index, 9);
 			return;
 		}
@@ -2790,10 +2790,10 @@ void CL_RandomizeColors(const char* in, char *out) {
 						store = i;
 						*s++ = '^';
 						*s++ = i + '0';
+						break;
 					}
 				}
 			}
-			*s++ = c;
 		}
 		else if (store != (random = irand(1, count*(store == 0
 			? 1 : cl_colorStringRandom->integer))) && random <= count) {
@@ -2814,10 +2814,88 @@ void CL_RandomizeColors(const char* in, char *out) {
 static void CL_ColorName_f(void) {
 	char name[MAX_TOKEN_CHARS];
 	char coloredName[MAX_TOKEN_CHARS];
+	int storebits = cl_colorString->integer;
+	int storebitcount = cl_colorStringCount->integer;
+
+	if (cls.realtime - cl_nameModifiedTime <= 5000) {
+		Com_Printf("You must wait 5 seconds before changing your name again.\n");
+		return;
+	}
+
 	Cvar_VariableStringBuffer("name", name, sizeof(name));
 	Q_StripColor(name);
+	if (Cmd_Argc() == 1) {
+		CL_RandomizeColors(name, coloredName);
+		Cvar_Set("name", va("%s", coloredName));
+		return;
+	}
+	else if (Cmd_Argc() == 2) {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << 10) - 1;
+
+		Cmd_ArgvBuffer(1, arg, sizeof(arg));
+		index = atoi(arg);
+
+		if (index == -1) {
+			Cvar_Set("name", va("%s", name));
+			return;
+		}
+
+		if (index == 10) {
+			cl_colorString->integer = 1023;
+			cl_colorStringCount->integer = 10;
+			CL_RandomizeColors(name, coloredName);
+			Cvar_Set("name", va("%s", coloredName));
+			cl_colorString->integer = storebits;
+			cl_colorStringCount->integer = storebitcount;
+			return;
+		}
+
+		if (index < 0 || index >= 10) {
+			Com_Printf("colorName: Invalid range: %i [0, %i]\n", index, 9);
+			return;
+		}
+
+		cl_colorStringCount->integer = 1;
+		cl_colorString->integer = 0;
+		cl_colorString->integer = (1 << index) ^ (cl_colorString->integer & mask);
+	}
+	else {
+		char arg[8] = { 0 };
+		int i, argc, index[10], bits = 0;
+		const uint32_t mask = (1 << 10) - 1;
+
+		if ((argc = Cmd_Argc() - 1) > 10) {
+			Com_Printf("colorName: More than 10 arguments were entered");
+			return;
+		}
+
+		for (i = 0; i < argc; i++) {
+			Cmd_ArgvBuffer(i + 1, arg, sizeof(arg));
+			index[i] = atoi(arg);
+
+			if (index[i] < 0 || index[i] >= 10) {
+				Com_Printf("colorName: Invalid range: %i [0, %i]\n", index[i], 9);
+				return;
+			}
+
+			if ((bits & mask) & (1 << index[i])) {
+				Com_Printf("colorName: %s ^7was entered more than once\n", colors[index[i]].string);
+				return;
+			}
+
+			bits = (1 << index[i]) ^ (bits & mask);
+		}
+
+		cl_colorStringCount->integer = argc;
+		cl_colorString->integer = bits;
+	}
+
 	CL_RandomizeColors(name, coloredName);
 	Cvar_Set("name", va("%s", coloredName));
+	cl_colorString->integer = storebits;
+	cl_colorStringCount->integer = storebitcount;
 }
 
 #define G2_VERT_SPACE_CLIENT_SIZE 256
