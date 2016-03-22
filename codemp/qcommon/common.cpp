@@ -1157,7 +1157,7 @@ void Com_Init( char *commandLine ) {
 		Rand_Init(Sys_Milliseconds(true));
 
 		// get the developer cvar set as early as possible
-		com_developer = Cvar_Get("developer", "0", CVAR_TEMP);
+		com_developer = Cvar_Get("developer", "0", CVAR_TEMP, "Developer mode" );
 
 		// done early so bind command exists
 		CL_InitKeyCommands();
@@ -1174,11 +1174,11 @@ void Com_Init( char *commandLine ) {
 			Cmd_AddCommand ("crash", Com_Crash_f );
 			Cmd_AddCommand ("freeze", Com_Freeze_f);
 		}
-		Cmd_AddCommand ("quit", Com_Quit_f );
+		Cmd_AddCommand ("quit", Com_Quit_f, "Quits the game" );
 #ifndef FINAL_BUILD
 		Cmd_AddCommand ("changeVectors", MSG_ReportChangeVectors_f );
 #endif
-		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
+		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f, "Write the configuration to file" );
 		Cmd_SetCommandCompletionFunc( "writeconfig", Cmd_CompleteCfgName );
 
 		Com_ExecuteCfg();
@@ -1224,8 +1224,8 @@ void Com_Init( char *commandLine ) {
 
 		cl_paused = Cvar_Get ("cl_paused", "0", CVAR_ROM);
 		sv_paused = Cvar_Get ("sv_paused", "0", CVAR_ROM);
-		com_sv_running = Cvar_Get ("sv_running", "0", CVAR_ROM);
-		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
+		com_sv_running = Cvar_Get ("sv_running", "0", CVAR_ROM, "Is a server running?" );
+		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM, "Is the client running?" );
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 #ifndef _WIN32
 		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE );
@@ -1238,7 +1238,7 @@ void Com_Init( char *commandLine ) {
 		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
 		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE );
 
-		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE);
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE, "Show intro movies" );
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
@@ -1742,9 +1742,15 @@ PrintMatches
 
 ===============
 */
+char *Cmd_DescriptionString( const char *cmd_name );
 static void PrintMatches( const char *s ) {
-	if ( !Q_stricmpn( s, shortestMatch, strlen( shortestMatch ) ) ) {
-		Com_Printf( S_COLOR_GREY "Cmd  " S_COLOR_WHITE "%s\n", s );
+	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
+		const char *description = Cmd_DescriptionString( s );
+		Com_Printf( S_COLOR_GREY "Cmd   " S_COLOR_WHITE "%s\n", s );
+		if ( VALIDSTRING( description ) )
+			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );
+	}
+}
 	}
 }
 
@@ -1795,12 +1801,15 @@ PrintCvarMatches
 
 ===============
 */
+char *Cvar_DescriptionString( const char *var_name );
 static void PrintCvarMatches( const char *s ) {
-	char value[TRUNCATE_LENGTH] = {0};
-
 	if ( !Q_stricmpn( s, shortestMatch, (int)strlen( shortestMatch ) ) ) {
+		char value[TRUNCATE_LENGTH] = {0};
+		const char *description = Cvar_DescriptionString( s );
 		Com_TruncateLongString( value, Cvar_VariableString( s ) );
-		Com_Printf( S_COLOR_GREY "Cvar " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", s, value );
+		Com_Printf( S_COLOR_GREY "Cvar  " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", s, value );
+		if ( VALIDSTRING( description ) )
+			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );
 	}
 }
 
