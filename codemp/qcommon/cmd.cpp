@@ -959,7 +959,7 @@ void Cmd_CompleteCmdName( char *args, int argNum )
 		char *p = Com_SkipTokens( args, 1, " " );
 
 		if ( p > args )
-			Field_CompleteCommand( p, qtrue, qtrue, qfalse );
+			Field_CompleteCommand( p, qtrue, qfalse );
 	}
 }
 
