@@ -221,7 +221,7 @@ void Con_Copy(void) {
 void Con_CopyLink(void) {
 	int l, x, i;
 	short *line;
-	char *buffer, n[] = "\0";
+	char *buffer;
 	const char *link;
 	qboolean num = qfalse;
 
@@ -241,14 +241,34 @@ void Con_CopyLink(void) {
 				break;
 		}
 		if (num) {
+			char n[] = "\0";
+			const char *point1, *point2, *point3;
+			int pointDiff;
 			for (i = 0; i < con.linewidth; i++) {
 				*n = buffer[i];
 				if (Q_isanumber(n)) {
-					if ((link = Q_stristr(buffer, ".")) && link - &buffer[i] <= 3) {
+					if (
+						( point1 = Q_stristr(buffer, ".") ) &&
+						( pointDiff = point1 - &buffer[i] ) <= 3 &&
+						pointDiff > 0 &&
+
+						( point2 = Q_stristr(point1 + 1, ".") ) &&
+						( pointDiff = point2 - (point1 + 1) ) <= 3 &&
+						pointDiff > 0 &&
+
+						( point3 = Q_stristr(point2 + 1, ".") ) &&
+						( pointDiff = point3 - (point2 + 1) ) <= 3 &&
+						pointDiff > 0
+						)
+					{
 						link = &buffer[i];
 						break;
 					}
-					else link = NULL;
+					else {
+						point1 = NULL;
+						point2 = NULL;
+						point3 = NULL;
+					}
 				}
 			}
 			if (link) {
