@@ -1751,8 +1751,6 @@ static void PrintMatches( const char *s ) {
 			Com_Printf( S_COLOR_GREEN "      %s" S_COLOR_WHITE "\n", description );
 	}
 }
-	}
-}
 
 /*
 ===============
