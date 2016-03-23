@@ -248,7 +248,7 @@ void Con_CopyLink(void) {
 				*n = buffer[i];
 				if (Q_isanumber(n)) {
 					if (
-						( point1 = Q_stristr(buffer, ".") ) &&
+						( point1 = Q_stristr(&buffer[i], ".") ) &&
 						( pointDiff = point1 - &buffer[i] ) <= 3 &&
 						pointDiff > 0 &&
 
