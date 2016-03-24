@@ -295,6 +295,9 @@ void Con_CopyLink(void) {
 			break;
 		}
 	}
+	if (!link) {
+		Com_Printf("^1No Links or IPs found!\n", buffer);
+	}
 	Hunk_FreeTempMemory(buffer);
 }
 
