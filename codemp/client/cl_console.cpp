@@ -244,10 +244,11 @@ void Con_CopyLink(void) {
 		}
 		Q_StripColor(buffer);
 		if (containsNum && containsPoint) {
-			point1 = Q_stristr(buffer, "."); // Set address of first point
-			// Check if points exist after point1 and set their addresses
-			if (!(point2 = Q_stristr(point1 + 1, ".")) ||
-				!(point3 = Q_stristr(point2 + 1, "."))) break;
+			containsNum = qfalse, containsPoint = qfalse;
+			if (!(point1 = Q_stristr(buffer, ".")) || // Set address of first point
+				// Check if points exist after point1 and set their addresses
+				!(point2 = Q_stristr(point1 + 1, ".")) ||
+				!(point3 = Q_stristr(point2 + 1, "."))) continue;
 			for(i = 0; buffer[i] != 0; i++) {
 				if (point1 == &buffer[i]) { // If addresses match, set point1 to next point
 					// Check if points exist and set point addresses
@@ -276,7 +277,7 @@ void Con_CopyLink(void) {
 			if (link) {
 				for (i = 0; buffer[i] != 0; i++) {
 					buffer[i] = *link++;
-					if (*link == ' ') buffer[i + 1] = 0;
+					if (*link == ' ' || *link == '"') buffer[i + 1] = 0;
 				}
 				Sys_SetClipboardData(buffer);
 				Com_Printf("^2IP ^7\"%s\" ^2Copied!\n", buffer);
@@ -287,7 +288,7 @@ void Con_CopyLink(void) {
 			while (link != &buffer[0] && *(link - 1) != ' ') *link--;
 			for (i = 0; buffer[i] != 0; i++) {
 				buffer[i] = *link++;
-				if (*link == ' ') buffer[i + 1] = 0;
+				if (*link == ' ' || *link == '"') buffer[i + 1] = 0;
 			}
 			Sys_SetClipboardData(buffer);
 			Com_Printf("^2Link ^7\"%s\" ^2Copied!\n", buffer);
