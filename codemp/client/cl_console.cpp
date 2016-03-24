@@ -57,7 +57,7 @@ void Con_ToggleConsole_f (void) {
 
 	if( con_autoclear->integer )
 		Field_Clear( &g_consoleField );
-	g_consoleField.widthInChars = g_console_field_width;
+	g_consoleField.widthInChars = g_console_field_width - 9;
 
 	Con_ClearNotify ();
 	Key_SetCatcher( Key_GetCatcher( ) ^ KEYCATCH_CONSOLE );
@@ -689,7 +689,9 @@ Draw the editline after a ] prompt
 ================
 */
 void Con_DrawInput (void) {
-	int		y;
+	int		y, x = 0;
+	char ts[9];
+	qtime_t	now;
 
 	if ( cls.state != CA_DISCONNECTED && !(Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
 		return;
@@ -697,11 +699,20 @@ void Con_DrawInput (void) {
 
 	y = con.vislines - ( SMALLCHAR_HEIGHT * (re->Language_IsAsian() ? 1.5 : 2) );
 
+	Com_RealTime(&now);
+	Com_sprintf(ts, sizeof(ts), "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
+
+	re->SetColor(g_color_table[ColorIndex(COLOR_GREY)]);
+	for (x = 0; x<8; x++) {
+		SCR_DrawSmallChar(con.xadjust + (x + 1) * SMALLCHAR_WIDTH, y, ts[x]);
+	}
+	x = 9;
+
 	re->SetColor( con.color );
 
-	SCR_DrawSmallChar( (int)(con.xadjust + 1 * SMALLCHAR_WIDTH), y, CONSOLE_PROMPT_CHAR );
+	SCR_DrawSmallChar( (int)(con.xadjust + (x+1) * SMALLCHAR_WIDTH), y, CONSOLE_PROMPT_CHAR );
 
-	Field_Draw( &g_consoleField, (int)(con.xadjust + 2 * SMALLCHAR_WIDTH), y,
+	Field_Draw( &g_consoleField, (int)(con.xadjust + (x+2) * SMALLCHAR_WIDTH), y,
 				SCREEN_WIDTH - 3 * SMALLCHAR_WIDTH, qtrue, qtrue );
 }
 
@@ -845,6 +856,8 @@ void Con_DrawSolidConsole( float frac ) {
 	int				lines;
 //	qhandle_t		conShader;
 	int				currentColor;
+	char ts[30];
+	qtime_t	now;
 
 	lines = (int) (cls.glconfig.vidHeight * frac);
 	if (lines <= 0)
@@ -883,6 +896,15 @@ void Con_DrawSolidConsole( float frac ) {
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
+	}
+
+	// Draw time and date
+	Com_RealTime(&now);
+	Com_sprintf(ts, sizeof(ts), "%02d:%02d:%02d %02d/%02d/%04d", now.tm_hour, now.tm_min, now.tm_sec, 1 + now.tm_mon, now.tm_mday, 1900 + now.tm_year);
+	i = strlen(ts);
+
+	for (x = 0; x<i; x++) {
+		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x) * SMALLCHAR_WIDTH, lines - (SMALLCHAR_HEIGHT * 2 + SMALLCHAR_HEIGHT / 2), ts[x]);
 	}
 
 
