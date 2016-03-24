@@ -181,7 +181,7 @@ void Con_Copy(void) {
 	}
 
 	if (l > con.current) {
-		Com_Printf("^3Console is empty! Nothing copied.");
+		Com_Printf("^3Console is empty! Nothing copied.\n");
 		return;
 	}
 
@@ -218,7 +218,7 @@ void Con_Copy(void) {
 		Q_strcat(savebuffer, savebufferlen, buffer);
 	}
 	Sys_SetClipboardData(savebuffer);
-	Com_Printf("^2Console successfully copied to clipboard!");
+	Com_Printf("^2Console successfully copied to clipboard!\n");
 	Hunk_FreeTempMemory(buffer);
 	Hunk_FreeTempMemory(savebuffer);
 }
