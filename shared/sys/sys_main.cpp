@@ -550,7 +550,7 @@ void *Sys_LoadSPGameDll( const char *name, GetGameAPIProc **GetGameAPI )
 #if defined(MACOS_X) && !defined(_JK2EXE)
     //First, look for the old-style mac .bundle that's inside a pk3
     //It's actually zipped, and the zipfile has the same name as 'name'
-    libHandle = Sys_LoadMachOBundle( name );
+    libHandle = Sys_LoadMachOBundle( filename );
 #endif
 
 	if (!libHandle) {
@@ -597,7 +597,7 @@ void *Sys_LoadGameDll( const char *name, GetModuleAPIProc **moduleAPI )
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
 #if defined(_DEBUG)
-	libHandle = Sys_LoadLibrary( name );
+	libHandle = Sys_LoadLibrary( filename );
 	if ( !libHandle )
 #endif
 	{
