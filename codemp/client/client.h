@@ -478,17 +478,12 @@ typedef struct kbutton_s {
 	qboolean	wasPressed;		// set when down, not cleared when up
 } kbutton_t;
 
-extern	kbutton_t	in_mlook, in_klook;
-extern 	kbutton_t 	in_strafe;
-extern 	kbutton_t 	in_speed;
-
 void CL_InitInput (void);
 void CL_ShutdownInput(void);
 void CL_SendCmd (void);
 void CL_ClearState (void);
 
 void CL_WritePacket( void );
-void IN_CenterView (void);
 
 float CL_KeyState (kbutton_t *key);
 const char *Key_KeynumToString( int keynum/*, qboolean bTranslate */ ); //note: translate is only called for menu display not configs

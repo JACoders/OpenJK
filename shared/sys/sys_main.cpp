@@ -161,7 +161,11 @@ void Sys_Init( void ) {
 
 	com_unfocused = Cvar_Get( "com_unfocused", "0", CVAR_ROM );
 	com_minimized = Cvar_Get( "com_minimized", "0", CVAR_ROM );
-	com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
+#ifdef _JK2EXE
+	com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE );
+#else
+	com_maxfps = Cvar_Get( "com_maxfps", "125", CVAR_ARCHIVE, "Maximum frames per second" );
+#endif
 	com_maxfpsUnfocused = Cvar_Get( "com_maxfpsUnfocused", "0", CVAR_ARCHIVE );
 	com_maxfpsMinimized = Cvar_Get( "com_maxfpsMinimized", "50", CVAR_ARCHIVE );
 }

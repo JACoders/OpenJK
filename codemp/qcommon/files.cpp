@@ -3384,17 +3384,17 @@ void FS_Startup( const char *gameName ) {
 
 	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
-	fs_cdpath = Cvar_Get ("fs_cdpath", "", CVAR_INIT|CVAR_PROTECTED );
-	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT|CVAR_PROTECTED );
+	fs_cdpath = Cvar_Get ("fs_cdpath", "", CVAR_INIT|CVAR_PROTECTED, "(Read Only) Location for development files" );
+	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT|CVAR_PROTECTED, "(Read Only) Location for game files" );
 	fs_basegame = Cvar_Get ("fs_basegame", "japro", CVAR_INIT );
 	homePath = Sys_DefaultHomePath();
 	if (!homePath || !homePath[0]) {
 		homePath = fs_basepath->string;
 	}
-	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED );
-	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO );
+	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT|CVAR_PROTECTED, "(Read/Write) Location for user generated files" );
+	fs_gamedirvar = Cvar_Get ("fs_game", "", CVAR_INIT|CVAR_SYSTEMINFO, "Mod directory" );
 
-	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED);
+	fs_dirbeforepak = Cvar_Get("fs_dirbeforepak", "0", CVAR_INIT|CVAR_PROTECTED, "Prioritize directories before paks if not pure" );
 
 	// add search path elements in reverse priority order (lowest priority first)
 	if (fs_cdpath->string[0]) {
@@ -3405,7 +3405,7 @@ void FS_Startup( const char *gameName ) {
 	}
 
 #ifdef MACOS_X
-	fs_apppath = Cvar_Get ("fs_apppath", Sys_DefaultAppPath(), CVAR_INIT|CVAR_PROTECTED );
+	fs_apppath = Cvar_Get ("fs_apppath", Sys_DefaultAppPath(), CVAR_INIT|CVAR_PROTECTED, "(Read Only) Location of OSX .app bundle" );
 	// Make MacOSX also include the base path included with the .app bundle
 	if (fs_apppath->string[0]) {
 		FS_AddGameDirectory( fs_apppath->string, gameName );
@@ -3446,11 +3446,11 @@ void FS_Startup( const char *gameName ) {
 	}
 
 	// add our commands
-	Cmd_AddCommand ("path", FS_Path_f);
-	Cmd_AddCommand ("dir", FS_Dir_f );
-	Cmd_AddCommand ("fdir", FS_NewDir_f );
-	Cmd_AddCommand ("touchFile", FS_TouchFile_f );
-	Cmd_AddCommand ("which", FS_Which_f );
+	Cmd_AddCommand ("path", FS_Path_f, "Lists search paths" );
+	Cmd_AddCommand ("dir", FS_Dir_f, "Lists a folder" );
+	Cmd_AddCommand ("fdir", FS_NewDir_f, "Lists a folder with filters" );
+	Cmd_AddCommand ("touchFile", FS_TouchFile_f, "Touches a file" );
+	Cmd_AddCommand ("which", FS_Which_f, "Determines which search path a file was loaded from" );
 
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=506
 	// reorder the pure pk3 files according to server order
