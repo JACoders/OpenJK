@@ -887,6 +887,7 @@ static void IN_ProcessEvents( void )
 					{
 						Cvar_SetValue( "com_unfocused", 1 );
 						SNDDMA_Activate( qfalse );
+						if (!cl_afkName) CL_Afk_f();
 						break;
 					}
 
@@ -894,6 +895,7 @@ static void IN_ProcessEvents( void )
 					{
 						Cvar_SetValue( "com_unfocused", 0 );
 						SNDDMA_Activate( qtrue );
+						if (cl_afkName) CL_Afk_f();
 						break;
 					}
 				}
