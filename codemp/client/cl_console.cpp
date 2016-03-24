@@ -219,11 +219,11 @@ void Con_Copy(void) {
 }
 
 void Con_CopyLink(void) {
-	int l, x, i;
+	int l, x, i, pointDiff;
 	short *line;
 	char *buffer, n[] = "\0";
-	const char *link;
-	qboolean num = qfalse;
+	const char *link, *point1, *point2, *point3;
+	qboolean containsNum = qfalse, containsPoint = qfalse;
 
 	buffer = (char *)Hunk_AllocateTempMemory(con.linewidth);
 
@@ -232,28 +232,51 @@ void Con_CopyLink(void) {
 		line = con.text + (l%con.totallines)*con.linewidth;
 		for (i = 0; i < con.linewidth; i++) {
 			buffer[i] = (char)(line[i] & 0xff);
-			if (Q_isanumber(&buffer[i])) num = qtrue;
+			if (!containsNum && Q_isanumber(&buffer[i])) containsNum = qtrue;
+			if (!containsPoint && buffer[i] == '.') containsPoint = qtrue;
 		}
+		// Clear spaces at end of buffer
 		for (x = con.linewidth - 1; x >= 0; x--) {
 			if (buffer[x] == ' ')
 				buffer[x] = 0;
 			else
 				break;
 		}
-		if (num) {
-			for (i = 0; i < con.linewidth; i++) {
-				*n = buffer[i];
+		Q_StripColor(buffer);
+		if (containsNum && containsPoint) {
+			point1 = Q_stristr(buffer, "."); // Set address of first point
+			// Check if points exist after point1 and set their addresses
+			if (!(point2 = Q_stristr(point1 + 1, ".")) ||
+				!(point3 = Q_stristr(point2 + 1, "."))) break;
+			for(i = 0; buffer[i] != 0; i++) {
+				if (point1 == &buffer[i]) { // If addresses match, set point1 to next point
+					// Check if points exist and set point addresses
+					if (
+						!(point1 = Q_stristr(&buffer[i + 1], ".")) ||
+						!(point2 = Q_stristr(point1 + 1, ".")) ||
+						!(point3 = Q_stristr(point2 + 1, "."))
+						) break;
+				}
+				*n = buffer[i]; // Force Q_isanumber to look at a single char
 				if (Q_isanumber(n)) {
-					if ((link = Q_stristr(buffer, ".")) && link - &buffer[i] <= 3) {
+					// Check if chars exist between points and the amount of chars is > 0 & <=3
+					// <xxx>.<xxx>.<xxx>. Can't reliably check for chars after last point
+					if ((pointDiff = point1 - &buffer[i]) <= 3 &&
+						pointDiff > 0 &&
+						(pointDiff = point2 - (point1 + 1)) <= 3 &&
+						pointDiff > 0 &&
+						(pointDiff = point3 - (point2 + 1)) <= 3 &&
+						pointDiff > 0
+						) {
 						link = &buffer[i];
 						break;
 					}
-					else link = NULL;
 				}
 			}
 			if (link) {
-				for (i = 0; i < con.linewidth; i++) {
+				for (i = 0; buffer[i] != 0; i++) {
 					buffer[i] = *link++;
+					if (*link == ' ') buffer[i + 1] = 0;
 				}
 				Sys_SetClipboardData(buffer);
 				Com_Printf("^2IP ^7\"%s\" ^2Copied!\n", buffer);
@@ -262,8 +285,9 @@ void Con_CopyLink(void) {
 		}
 		if (link = Q_stristr(buffer, "://")) {
 			while (link != &buffer[0] && *(link - 1) != ' ') *link--;
-			for (i = 0; i < con.linewidth; i++) {
+			for (i = 0; buffer[i] != 0; i++) {
 				buffer[i] = *link++;
+				if (*link == ' ') buffer[i + 1] = 0;
 			}
 			Sys_SetClipboardData(buffer);
 			Com_Printf("^2Link ^7\"%s\" ^2Copied!\n", buffer);
