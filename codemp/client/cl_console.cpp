@@ -180,13 +180,18 @@ void Con_Copy(void) {
 			break;
 	}
 
+	if (l > con.current) {
+		Com_Printf("^3Console is empty! Nothing copied.");
+		return;
+	}
+
 #ifdef _WIN32
 	bufferlen = con.linewidth + 3 * sizeof(char);
 #else
 	bufferlen = con.linewidth + 2 * sizeof(char);
 #endif
 
-	savebufferlen = bufferlen*(l%con.totallines);
+	savebufferlen = bufferlen*(con.current - l);
 	buffer = (char *)Hunk_AllocateTempMemory(bufferlen);
 	savebuffer = (char *)Hunk_AllocateTempMemory(savebufferlen);
 	memset(savebuffer, 0, savebufferlen);
@@ -213,7 +218,7 @@ void Con_Copy(void) {
 		Q_strcat(savebuffer, savebufferlen, buffer);
 	}
 	Sys_SetClipboardData(savebuffer);
-
+	Com_Printf("^2Console successfully copied to clipboard!");
 	Hunk_FreeTempMemory(buffer);
 	Hunk_FreeTempMemory(savebuffer);
 }
