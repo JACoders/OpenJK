@@ -110,6 +110,8 @@ cvar_t *cl_colorStringRandom;
 
 cvar_t *cl_afkTime;
 
+int		cl_unfocusedTime;
+
 vec3_t cl_windVec;
 
 
@@ -3078,6 +3080,7 @@ void CL_Init( void ) {
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
 
 	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE);
+	cl_unfocusedTime = 0;
 
 	cl_colorString = Cvar_Get("cl_colorString", "0", CVAR_ARCHIVE);
 	cl_colorStringCount = Cvar_Get("cl_colorStringCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);

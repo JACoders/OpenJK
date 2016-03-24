@@ -465,6 +465,7 @@ void CL_Afk_f(void);
 qboolean CL_CheckPaused(void);
 
 extern int		cl_nameModifiedTime;
+extern int		cl_unfocusedTime;
 extern qboolean cl_afkName;
 
 //
