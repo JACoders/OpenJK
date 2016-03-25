@@ -591,8 +591,14 @@ void CL_ConsolePrint( const char *txt) {
 		txt += 12;
 	}
 	if ( txt[0] == '*' ) {
+		char *txtc;
+
 		skipnotify = qtrue;
 		txt += 1;
+
+		txtc = va("%s", txt);
+		Q_StripColor(txtc);
+		CL_LogPrintf(cls.log.chat, va("%s", txtc));
 	}
 
 	if (con.x == 0) {

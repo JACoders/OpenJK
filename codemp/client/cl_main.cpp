@@ -110,6 +110,8 @@ cvar_t *cl_colorStringRandom;
 
 cvar_t *cl_afkTime;
 
+cvar_t *cl_logChat;
+
 int		cl_unfocusedTime;
 
 vec3_t cl_windVec;
@@ -3086,6 +3088,8 @@ void CL_Init( void ) {
 	cl_colorStringCount = Cvar_Get("cl_colorStringCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
 	cl_colorStringRandom = Cvar_Get("cl_colorStringRandom", "2", CVAR_ARCHIVE);
 
+	cl_logChat = Cvar_Get("cl_logChat", "1", CVAR_ARCHIVE);
+
 	//
 	// register our commands
 	//
@@ -3211,6 +3215,27 @@ void CL_Shutdown( void ) {
 
 	//Com_Printf( "-----------------------\n" );
 
+}
+
+void QDECL CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...) {
+	va_list argptr;
+	char string[1024] = { 0 };
+	size_t len;
+	time_t rawtime;
+	time(&rawtime);
+	
+	strftime(string, sizeof(string), "[%Y-%m-%d] [%H:%M:%S] ", gmtime(&rawtime));
+
+	len = strlen(string);
+
+	va_start(argptr, fmt);
+	Q_vsnprintf(string + len, sizeof(string) - len, fmt, argptr);
+	va_end(argptr);
+
+	if (!fileHandle)
+		return;
+
+	FS_Write(string, strlen(string), fileHandle);
 }
 
 qboolean CL_ConnectedToRemoteServer( void ) {

@@ -327,6 +327,10 @@ typedef struct clientStatic_s {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
+
+	struct {
+		fileHandle_t	chat;
+	} log;
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768
@@ -418,6 +422,8 @@ extern cvar_t	*cl_colorString;
 extern cvar_t	*cl_colorStringCount;
 extern cvar_t	*cl_colorStringRandom;
 
+extern cvar_t	*cl_logChat;
+
 extern cvar_t	*cl_afkTime;
 
 //=================================================
@@ -461,6 +467,8 @@ int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int ma
 
 void CL_RandomizeColors(const char*, char*);
 void CL_Afk_f(void);
+
+void CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...);
 
 qboolean CL_CheckPaused(void);
 
