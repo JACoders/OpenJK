@@ -1032,10 +1032,6 @@ Ghoul2 Insert End
 	int numSpawnVarChars;
 	char spawnVarChars[MAX_SPAWN_VARS_CHARS];
 
-	struct {
-		fileHandle_t	chat;
-	} log;
-
 } cg_t;
 
 #define MAX_TICS	14
@@ -1704,7 +1700,6 @@ void CG_UpdateCvars( void );
 int CG_CrosshairPlayer( void );
 int CG_LastAttacker( void );
 void CG_LoadMenus(const char *menuFile);
-void CG_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...);
 void CG_KeyEvent(int key, qboolean down);
 void CG_MouseEvent(int x, int y);
 void CG_EventHandling(int type);

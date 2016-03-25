@@ -1500,21 +1500,14 @@ static void CG_Chat_f( void ) {
 
 	trap->Cmd_Argv( 0, cmd, sizeof( cmd ) );
 
-	time_t rawtime;
-	char timeStr[32] = { 0 };
-	time(&rawtime);
-	strftime(timeStr, sizeof(timeStr), "[%H:%M:%S]", localtime(&rawtime));
-
 	if ( !strcmp( cmd, "chat" ) ) {
 		if ( !cg_teamChatsOnly.integer ) {
 			if( cg_chatBeep.integer )
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			trap->Cmd_Argv( 1, text, sizeof( text ) );
 			CG_RemoveChatEscapeChar( text );
-			CG_ChatBox_AddString(va("%s %s", timeStr, text));
-			trap->Print("*%s\n", text);
-			Q_CleanString( text, STRIP_COLOR );
-			CG_LogPrintf(cg.log.chat, va("%s\n", text));
+			CG_ChatBox_AddString( text );
+			trap->Print( "*%s\n", text );
 		}
 	}
 	else if ( !strcmp( cmd, "lchat" ) ) {
@@ -1538,10 +1531,8 @@ static void CG_Chat_f( void ) {
 				trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 			Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 			CG_RemoveChatEscapeChar( text );
-			CG_ChatBox_AddString(va("%s %s", timeStr, text));
-			trap->Print("*%s\n", text);
-			Q_CleanString(text, STRIP_COLOR);
-			CG_LogPrintf(cg.log.chat, va("%s\n", text));
+			CG_ChatBox_AddString( text );
+			trap->Print( "*%s\n", text );
 		}
 	}
 	else if ( !strcmp( cmd, "tchat" ) ) {
@@ -1549,10 +1540,8 @@ static void CG_Chat_f( void ) {
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		trap->Cmd_Argv( 1, text, sizeof( text ) );
 		CG_RemoveChatEscapeChar( text );
-		CG_ChatBox_AddString(va("%s %s", timeStr, text));
-		trap->Print("*%s\n", text);
-		Q_CleanString(text, STRIP_COLOR);
-		CG_LogPrintf(cg.log.chat, va("%s\n", text));
+		CG_ChatBox_AddString( text );
+		trap->Print( "*%s\n", text );
 	}
 	else if ( !strcmp( cmd, "ltchat" ) ) {
 		char	name[MAX_NETNAME]={0},	loc[MAX_STRING_CHARS]={0},
@@ -1574,10 +1563,8 @@ static void CG_Chat_f( void ) {
 			trap->S_StartLocalSound( cgs.media.talkSound, CHAN_LOCAL_SOUND );
 		Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 		CG_RemoveChatEscapeChar( text );
-		CG_ChatBox_AddString(va("%s %s", timeStr, text));
-		trap->Print("*%s\n", text);
-		Q_CleanString(text, STRIP_COLOR);
-		CG_LogPrintf(cg.log.chat, va("%s\n", text));
+		CG_ChatBox_AddString( text );
+		trap->Print( "*%s\n", text );
 	}
 }
 
@@ -1606,6 +1593,7 @@ int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
 }
 
+/* This array MUST be sorted correctly by alphabetical name field */
 static serverCommand_t	commands[] = {
 	{ "chat",				CG_Chat_f },
 	{ "clientLevelShot",	CG_ClientLevelShot_f },
