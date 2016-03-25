@@ -595,6 +595,14 @@ void CL_ConsolePrint( const char *txt) {
 		txt += 1;
 	}
 
+	if (con.x == 0) {
+		char txtt[MAXPRINTMSG];
+		qtime_t	now;
+		Com_RealTime(&now);
+		Com_sprintf(txtt, sizeof(txtt), "^9%02d:%02d:%02d ^7%s", now.tm_hour, now.tm_min, now.tm_sec, txt);
+		txt = va("%s", txtt);
+	}
+
 	// for some demos we don't want to ever show anything on the console
 	if ( cl_noprint && cl_noprint->integer ) {
 		return;
@@ -702,7 +710,7 @@ void Con_DrawInput (void) {
 	Com_RealTime(&now);
 	Com_sprintf(ts, sizeof(ts), "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
 
-	re->SetColor(g_color_table[ColorIndex(COLOR_GREY)]);
+	re->SetColor(g_color_table[ColorIndex(COLOR_GREEN)]);
 	for (x = 0; x<8; x++) {
 		SCR_DrawSmallChar(con.xadjust + (x + 1) * SMALLCHAR_WIDTH, y, ts[x]);
 	}
@@ -775,7 +783,7 @@ void Con_DrawNotify (void)
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++)
+			for (x = 9 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
@@ -792,7 +800,7 @@ void Con_DrawNotify (void)
 		}
 		else
 		{
-			for (x = 0 ; x < con.linewidth ; x++) {
+			for (x = 9 ; x < con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
 				}
@@ -804,7 +812,7 @@ void Con_DrawNotify (void)
 				{
 					cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
 				}
-				SCR_DrawSmallChar( (int)(cl_conXOffset->integer + con.xadjust + (x+1)*SMALLCHAR_WIDTH), v, text[x] & 0xff );
+				SCR_DrawSmallChar((int)(cl_conXOffset->integer + con.xadjust + (x + 1 - 9)*SMALLCHAR_WIDTH), v, text[x] & 0xff);
 			}
 
 			v += SMALLCHAR_HEIGHT;
@@ -856,8 +864,10 @@ void Con_DrawSolidConsole( float frac ) {
 	int				lines;
 //	qhandle_t		conShader;
 	int				currentColor;
-	char ts[30];
-	qtime_t	now;
+	struct tm		*newtime;
+	char			am_pm[] = "AM";
+	time_t			rawtime;
+	char			ts[24];
 
 	lines = (int) (cls.glconfig.vidHeight * frac);
 	if (lines <= 0)
@@ -895,16 +905,20 @@ void Con_DrawSolidConsole( float frac ) {
 
 	for (x=0 ; x<i ; x++) {
 		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
-			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
+			(lines-(SMALLCHAR_HEIGHT*2+SMALLCHAR_HEIGHT/2)), JK_VERSION[x] );
 	}
 
 	// Draw time and date
-	Com_RealTime(&now);
-	Com_sprintf(ts, sizeof(ts), "%02d:%02d:%02d %02d/%02d/%04d", now.tm_hour, now.tm_min, now.tm_sec, 1 + now.tm_mon, now.tm_mday, 1900 + now.tm_year);
+	time(&rawtime);
+	newtime = localtime(&rawtime);
+	if (newtime->tm_hour > 12) strcpy(am_pm, "PM");
+	if (newtime->tm_hour > 12) newtime->tm_hour -= 12;
+	if (newtime->tm_hour == 0) newtime->tm_hour = 12;
+	Com_sprintf(ts, sizeof(ts), "%.19s %s ", asctime(newtime), am_pm);
 	i = strlen(ts);
 
 	for (x = 0; x<i; x++) {
-		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x) * SMALLCHAR_WIDTH, lines - (SMALLCHAR_HEIGHT * 2 + SMALLCHAR_HEIGHT / 2), ts[x]);
+		SCR_DrawSmallChar(cls.glconfig.vidWidth - (i - x) * SMALLCHAR_WIDTH, lines - (SMALLCHAR_HEIGHT + SMALLCHAR_HEIGHT / 2), ts[x]);
 	}
 
 
