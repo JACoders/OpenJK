@@ -1326,7 +1326,7 @@ int GLSL_BeginLoadGPUShaders(void)
 	for (i = 0; i < LIGHTDEF_COUNT; i++)
 	{
 		int lightType = i & LIGHTDEF_LIGHTTYPE_MASK;
-		qboolean fastLight = (qboolean)!(r_normalMapping->integer || r_specularMapping->integer);
+		qboolean allowVertexLighting = (qboolean)!(r_normalMapping->integer || r_specularMapping->integer);
 
 		// skip impossible combos
 		if (!GLSL_IsValidPermutationForLight (lightType, i))
@@ -1357,14 +1357,14 @@ int GLSL_BeginLoadGPUShaders(void)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT\n");
 
-			if (fastLight)
-				Q_strcat(extradefines, sizeof(extradefines), "#define USE_FAST_LIGHT\n");
+			if (allowVertexLighting)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_LIGHTING\n");
 
 			switch (lightType)
 			{
 				case LIGHTDEF_USE_LIGHTMAP:
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHTMAP\n");
-					if (r_deluxeMapping->integer && !fastLight)
+					if (r_deluxeMapping->integer && !allowVertexLighting)
 						Q_strcat(extradefines, sizeof(extradefines), "#define USE_DELUXEMAP\n");
 					attribs |= ATTR_TEXCOORD1 | ATTR_LIGHTDIRECTION;
 					break;
@@ -1383,13 +1383,6 @@ int GLSL_BeginLoadGPUShaders(void)
 			{
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_NORMALMAP\n");
 
-				if (r_normalMapping->integer == 2)
-					Q_strcat(extradefines, sizeof(extradefines), "#define USE_OREN_NAYAR\n");
-
-				if (r_normalMapping->integer == 3)
-					Q_strcat(extradefines, sizeof(extradefines), "#define USE_TRIACE_OREN_NAYAR\n");
-
-				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERT_TANGENT_SPACE\n");
 				attribs |= ATTR_TANGENT;
 
 				if ((i & LIGHTDEF_USE_PARALLAXMAP) && r_parallaxMapping->integer)
