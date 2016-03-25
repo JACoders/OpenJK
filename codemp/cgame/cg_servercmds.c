@@ -1512,7 +1512,7 @@ static void CG_Chat_f( void ) {
 			trap->Cmd_Argv( 1, text, sizeof( text ) );
 			CG_RemoveChatEscapeChar( text );
 			CG_ChatBox_AddString(va("%s %s", timeStr, text));
-			trap->Print( "*%s\n", va("%s %s", timeStr, text));
+			trap->Print("*%s\n", text);
 			Q_CleanString( text, STRIP_COLOR );
 			CG_LogPrintf(cg.log.chat, va("%s\n", text));
 		}
@@ -1539,7 +1539,7 @@ static void CG_Chat_f( void ) {
 			Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 			CG_RemoveChatEscapeChar( text );
 			CG_ChatBox_AddString(va("%s %s", timeStr, text));
-			trap->Print( "*%s\n", va("%s %s", timeStr, text));
+			trap->Print("*%s\n", text);
 			Q_CleanString(text, STRIP_COLOR);
 			CG_LogPrintf(cg.log.chat, va("%s\n", text));
 		}
@@ -1550,7 +1550,7 @@ static void CG_Chat_f( void ) {
 		trap->Cmd_Argv( 1, text, sizeof( text ) );
 		CG_RemoveChatEscapeChar( text );
 		CG_ChatBox_AddString(va("%s %s", timeStr, text));
-		trap->Print( "*%s\n", va("%s %s", timeStr, text));
+		trap->Print("*%s\n", text);
 		Q_CleanString(text, STRIP_COLOR);
 		CG_LogPrintf(cg.log.chat, va("%s\n", text));
 	}
@@ -1575,7 +1575,7 @@ static void CG_Chat_f( void ) {
 		Com_sprintf( text, sizeof( text ), "%s^7<%s> ^%s%s", name, loc, color, message );
 		CG_RemoveChatEscapeChar( text );
 		CG_ChatBox_AddString(va("%s %s", timeStr, text));
-		trap->Print( "*%s\n", va("%s %s", timeStr, text));
+		trap->Print("*%s\n", text);
 		Q_CleanString(text, STRIP_COLOR);
 		CG_LogPrintf(cg.log.chat, va("%s\n", text));
 	}
