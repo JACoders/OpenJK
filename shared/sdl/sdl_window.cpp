@@ -41,6 +41,7 @@ static SDL_GLContext opengl_context;
 static float displayAspect;
 
 cvar_t *r_sdlDriver;
+cvar_t *r_allowSoftwareGL;
 
 // Window cvars
 cvar_t	*r_fullscreen = 0;
@@ -564,7 +565,7 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 			}
 
 			SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
-			SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, 1 );
+			SDL_GL_SetAttribute( SDL_GL_ACCELERATED_VISUAL, !r_allowSoftwareGL->integer );
 
 			if( ( screen = SDL_CreateWindow( windowTitle, x, y,
 					glConfig->vidWidth, glConfig->vidHeight, flags ) ) == NULL )
@@ -728,6 +729,7 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 	Cmd_AddCommand("minimize", GLimp_Minimize);
 
 	r_sdlDriver			= Cvar_Get( "r_sdlDriver",			"",			CVAR_ROM );
+	r_allowSoftwareGL	= Cvar_Get( "r_allowSoftwareGL",	"0",		CVAR_ARCHIVE|CVAR_LATCH );
 
 	// Window cvars
 	r_fullscreen		= Cvar_Get( "r_fullscreen",			"0",		CVAR_ARCHIVE|CVAR_LATCH );
