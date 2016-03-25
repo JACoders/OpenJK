@@ -153,7 +153,6 @@ void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *p
 }
 
 /*
- * CCacheManager::DeleteAll
  * Clears out the cache (done on renderer shutdown I suppose)
  */
 void CModelCacheManager::DeleteAll( void )
@@ -168,7 +167,6 @@ void CModelCacheManager::DeleteAll( void )
 }
 
 /*
- * CCacheManager::DumpNonPure
  * Scans the cache for assets which don't match the checksum, and dumps
  * those that don't match.
  */
@@ -308,7 +306,7 @@ void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const 
 	int iNameOffset =		  psShaderName		- (char *)file->pDiskImage;
 	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)file->pDiskImage;
 
-	file->shaderCache.push_back(std::make_pair(iNameOffset, iPokeOffset));
+	file->shaderCache.push_back(ShaderCacheEntry(iNameOffset, iPokeOffset));
 }
 
 void CModelCacheManager::AllocateShaders( const char *psFileName )
@@ -331,13 +329,10 @@ void CModelCacheManager::AllocateShaders( const char *psFileName )
 		return;
 	}
 
-	for( auto storedShader = file->shaderCache.begin(); storedShader != file->shaderCache.end(); ++storedShader )
+	for( const ShaderCacheEntry& shader : file->shaderCache )
 	{
-		int iShaderNameOffset = storedShader->first;
-		int iShaderPokeOffset = storedShader->second;
-
-		char *psShaderName		=		 ((char*)file->pDiskImage + iShaderNameOffset);
-		int  *piShaderPokePtr	= (int *)((char*)file->pDiskImage + iShaderPokeOffset);
+		char *psShaderName		=		 ((char*)file->pDiskImage + shader.nameOffset);
+		int  *piShaderPokePtr	= (int *)((char*)file->pDiskImage + shader.pokeOffset);
 
 		shader_t *sh = R_FindShader(psShaderName, lightmapsNone, stylesDefault, qtrue);
 		if ( sh->defaultShader ) 

@@ -13,8 +13,18 @@ struct Asset
 };
 
 /* and shaderCache_t is needed for the model cache manager */
-typedef std::pair<int,int> shaderCacheEntry_t;
-typedef std::vector<shaderCacheEntry_t> shaderCache_t;
+struct ShaderCacheEntry
+{
+	ShaderCacheEntry( int nameOffset, int pokeOffset )
+		: nameOffset(nameOffset)
+		, pokeOffset(pokeOffset)
+	{
+	}
+
+	int nameOffset;
+	int pokeOffset;
+};
+using ShaderCache = std::vector<ShaderCacheEntry>;
 
 /*
  * The actual data stored in the cache
@@ -26,7 +36,7 @@ struct CachedFile
 	int				iPAKChecksum;			// -1 = not from PAK
 	int				iAllocSize;				//
 
-	shaderCache_t	shaderCache;
+	ShaderCache		shaderCache;
 
 	char			path[MAX_QPATH];
 
