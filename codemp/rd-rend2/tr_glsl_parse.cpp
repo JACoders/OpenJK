@@ -50,6 +50,7 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 	Block *prevBlock = nullptr;
 
 	int i = 0;
+	int line = 1;
 	while ( text[i] )
 	{
 		int markerStart = i;
@@ -70,7 +71,12 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 				else if ( strncmp(text + j, "*/\n", 3) == 0 )
 				{
 					endHeaderText = j;
+					line++;
 					break;
+				}
+				else if ( text[j] == '\n' )
+				{
+					line++;
 				}
 
 				++j;
@@ -93,6 +99,7 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 			block->blockHeaderTextLength = endHeaderText - endHeaderTitle - 1;
 			block->blockText = text + endHeaderText + 3;
 			block->blockTextLength = 0;
+			block->blockTextFirstLine = line;
 
 			if ( prevBlock )
 			{
@@ -102,6 +109,10 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 
 			i = endHeaderText + 3;
 			continue;
+		}
+		else if ( text[i] == '\n' )
+		{
+			line++;
 		}
 
 		++i;
@@ -128,10 +139,13 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 	strncpy_s(fragmentSource, fragmentBlock->blockTextLength + 1,
 		fragmentBlock->blockText, fragmentBlock->blockTextLength);
 
-	theProgram.shaders[0].type = GPUSHADER_VERTEX;
-	theProgram.shaders[0].source = vertexSource;
-	theProgram.shaders[1].type = GPUSHADER_FRAGMENT;
-	theProgram.shaders[1].source = fragmentSource;
+	theProgram.shaders[0].type      = GPUSHADER_VERTEX;
+	theProgram.shaders[0].source    = vertexSource;
+	theProgram.shaders[0].firstLine = vertexBlock->blockTextFirstLine;
+
+	theProgram.shaders[1].type      = GPUSHADER_FRAGMENT;
+	theProgram.shaders[1].source    = fragmentSource;
+	theProgram.shaders[1].firstLine = fragmentBlock->blockTextFirstLine;
 
 	return theProgram;
 }

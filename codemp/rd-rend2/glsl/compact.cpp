@@ -178,7 +178,8 @@ int main( int argc, char *argv[] )
 			const char *suffix = GetShaderSuffix(shaderDesc.type);
 
 			ss << "  { " << ToString(shaderDesc.type) << ", "
-						"fallback_" << shaderName << suffix << " },\n";
+						"fallback_" << shaderName << suffix << ", "
+						<< shaderDesc.firstLine << " },\n";
 		}
 		ss << "};\n";
 

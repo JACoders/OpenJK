@@ -1123,6 +1123,7 @@ struct Block
 {
 	const char *blockText;
 	size_t blockTextLength;
+	int blockTextFirstLine;
 
 	const char *blockHeaderTitle;
 	size_t blockHeaderTitleLength;
@@ -1141,6 +1142,7 @@ struct GPUShaderDesc
 {
 	GPUShaderType type;
 	const char *source;
+	int firstLine;
 };
 
 struct GPUProgramDesc
