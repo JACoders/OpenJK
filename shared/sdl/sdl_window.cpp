@@ -619,6 +619,11 @@ static rserr_t GLimp_SetMode(glconfig_t *glConfig, const windowDesc_t *windowDes
 					glConfig->colorBits, glConfig->depthBits, glConfig->stencilBits );
 			break;
 		}
+
+		if (opengl_context == NULL) {
+			SDL_FreeSurface(icon);
+			return RSERR_UNKNOWN;
+		}
 	}
 	else
 	{
