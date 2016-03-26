@@ -896,7 +896,10 @@ static void IN_ProcessEvents( void )
 						Cvar_SetValue( "com_unfocused", 0 );
 						SNDDMA_Activate( qtrue );
 						cl_unfocusedTime = 0;
-						if (cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) CL_Afk_f();
+						if (cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
+							CL_Afk_f();
+							cls.afkTime = cls.realtime;
+						}
 						break;
 					}
 				}

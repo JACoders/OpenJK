@@ -1328,7 +1328,6 @@ void CL_FinishMove( usercmd_t *cmd ) {
 CL_CreateCmd
 =================
 */
-static int afkTime = 0;
 usercmd_t CL_CreateCmd( void ) {
 	usercmd_t	cmd;
 	vec3_t		oldAngles;
@@ -1342,16 +1341,16 @@ usercmd_t CL_CreateCmd( void ) {
 
 	CL_CmdButtons( &cmd );
 
-	if (!cl.serverTime)afkTime = cls.realtime;
+	if (!cl.serverTime)cls.afkTime = cls.realtime;
 	else if (cl_afkTime->integer > 0) {
 		if (cmd.buttons != 0 && !(cmd.buttons & BUTTON_TALK)) {
-			afkTime = cls.realtime;
+			cls.afkTime = cls.realtime;
 			if (cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
 				CL_Afk_f();
 			}
 		}
 		else if ((cl_unfocusedTime && cls.realtime - cl_unfocusedTime >= 30000) ||
-			cls.realtime - afkTime >= cl_afkTime->integer * 60000) {
+			cls.realtime - cls.afkTime >= cl_afkTime->integer * 60000) {
 			if (!cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
 				CL_Afk_f();
 			}

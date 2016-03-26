@@ -300,6 +300,7 @@ typedef struct clientStatic_s {
 
 	int			realtime;			// ignores pause
 	int			realFrametime;		// ignoring pause, so console always works
+	int			afkTime;
 
 	int			numlocalservers;
 	serverInfo_t	localServers[MAX_OTHER_SERVERS];
