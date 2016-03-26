@@ -1315,6 +1315,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				}
 
 				sp = &pStage->glslShaderGroup[index];
+				backEnd.pc.c_lightallDraws++;
 			}
 			else
 			{
@@ -1360,6 +1361,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				}
 
 				sp = &tr.genericShader[index];
+				backEnd.pc.c_genericDraws++;
 			}
 		}
 		else if (pStage->glslShaderGroup == tr.lightallShader)
