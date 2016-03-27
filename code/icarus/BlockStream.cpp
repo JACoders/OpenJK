@@ -99,7 +99,7 @@ void CBlockMember::SetData( const char *data , CIcarus* icarus)
 
 void CBlockMember::SetData( vec3_t data , CIcarus* icarus)
 {
-	WriteDataPointer( data, 3 , icarus);
+	WriteDataPointer( data, 1 , icarus);
 }
 
 void CBlockMember::SetData( void *data, int size, CIcarus* icarus)

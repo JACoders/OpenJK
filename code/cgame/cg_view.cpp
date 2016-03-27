@@ -1547,7 +1547,7 @@ void CG_SaberClashFlare( void )
 		return;
 	}
 
-	vec3_t color;
+	vec4_t color;
 	int x,y;
 	float v, len = VectorNormalize( dif );
 
@@ -1562,6 +1562,7 @@ void CG_SaberClashFlare( void )
 	CG_WorldCoordToScreenCoord( g_saberFlashPos, &x, &y );
 
 	VectorSet( color, 0.8f, 0.8f, 0.8f );
+	color[3] = 1.0f;
 	cgi_R_SetColor( color );
 
 	CG_DrawPic( x - ( v * 300 ), y - ( v * 300 ),

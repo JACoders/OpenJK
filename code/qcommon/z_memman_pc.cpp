@@ -502,7 +502,10 @@ static int Zone_FreeBlock(zoneHeader_t *pMemory)
 
 // stats-query function to to see if it's our malloc
 // returns block size if so
-qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag)
+// This function checks if header contains valid Magic values, but
+// for data malloced not by us, it may read bytes between two objects.
+// So we need to disable Address Sanitizer for this function
+NO_SANITIZE_ADDRESS qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag)
 {
 	const zoneHeader_t *pMemory = ((const zoneHeader_t *)pvAddress) - 1;
 #if 1	//debugging double free
