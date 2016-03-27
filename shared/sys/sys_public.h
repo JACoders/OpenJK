@@ -67,8 +67,7 @@ typedef enum {
 	SE_CHAR,	// evValue is an ascii char
 	SE_MOUSE,	// evValue and evValue2 are reletive signed x / y moves
 	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
-	SE_CONSOLE,	// evPtr is a char*
-	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
+	SE_CONSOLE	// evPtr is a char*
 } sysEventType_t;
 
 typedef struct sysEvent_s {
@@ -79,10 +78,11 @@ typedef struct sysEvent_s {
 	void			*evPtr;			// this must be manually freed if not NULL
 } sysEvent_t;
 
-#ifndef DEDICATED
 extern cvar_t *com_minimized;
 extern cvar_t *com_unfocused;
-#endif
+extern cvar_t *com_maxfps;
+extern cvar_t *com_maxfpsMinimized;
+extern cvar_t *com_maxfpsUnfocused;
 
 sysEvent_t	Sys_GetEvent( void );
 

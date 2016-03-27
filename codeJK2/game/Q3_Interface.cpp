@@ -8613,7 +8613,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 	case SET_ANIM_BOTH:
 		*value = (char *) Q3_GetAnimBoth( ent );
 
-		if ( VALIDSTRING( value ) == false )
+		if ( VALIDSTRING( *value ) == false )
 			return false;
 
 		break;
