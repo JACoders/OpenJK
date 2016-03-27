@@ -1243,6 +1243,15 @@ typedef enum
 	UNIFORM_COUNT
 } uniform_t;
 
+struct UniformData
+{
+	uniform_t index;
+	int numElements;
+
+	// uniform data follows immediately afterwards
+	//char data[1];
+};
+
 // shaderProgram_t represents a pair of one
 // GLSL vertex and one GLSL fragment shader
 typedef struct shaderProgram_s
@@ -2929,6 +2938,7 @@ void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t 
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
 void GLSL_SetUniformMatrix4x3(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
 void GLSL_SetUniformMatrix4x4(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
+void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData );
 
 shaderProgram_t *GLSL_GetGenericShaderProgram(int stage);
 
@@ -3268,10 +3278,13 @@ struct gpuFrame_t
 // all of the information needed by the back end must be
 // contained in a backEndData_t.
 #define MAX_FRAMES (2)
+#define PER_FRAME_MEMORY_BYtES (128 * 1024 * 1024)
+class Allocator;
 typedef struct backEndData_s {
 	unsigned realFrameNumber;
 	gpuFrame_t frames[MAX_FRAMES];
 	gpuFrame_t *currentFrame;
+	Allocator *perFrameMemory;
 
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 	dlight_t	dlights[MAX_DLIGHTS];

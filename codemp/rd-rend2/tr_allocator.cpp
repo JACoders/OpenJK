@@ -2,35 +2,58 @@
 #include "tr_allocator.h"
 #include "tr_local.h"
 
-Allocator::Allocator( size_t memorySize )
-#if defined(GLSL_BUILDTOOL)
-	: memoryBase(malloc(memorySize))
-#else
-	: memoryBase(Z_Malloc(memorySize, TAG_SHADERTEXT))
-#endif
-	, mark(memoryBase)
-	, end((char *)memoryBase + memorySize)
+Allocator::Allocator( void *memory, size_t memorySize, size_t alignment )
+	: alignment(alignment)
+	, ownMemory(false)
+	, unalignedBase(memory)
+	, alignedBase(PADP(unalignedBase, alignment))
+	, mark(alignedBase)
+	, end((char *)unalignedBase + memorySize)
 {
+	assert(unalignedBase);
+	assert(memorySize);
+	assert(alignment);
+}
+
+Allocator::Allocator( size_t memorySize, size_t alignment )
+	: alignment(alignment)
+	, ownMemory(true)
+#if defined(GLSL_BUILDTOOL)
+	, unalignedBase(malloc(memorySize))
+#else
+	, unalignedBase(Z_Malloc(memorySize, TAG_SHADERTEXT))
+#endif
+	, alignedBase(PADP(unalignedBase, alignment))
+	, mark(alignedBase)
+	, end((char *)unalignedBase + memorySize)
+{
+	assert(unalignedBase);
+	assert(memorySize);
+	assert(alignment);
 }
 
 Allocator::~Allocator()
 {
+	if ( ownMemory )
+	{
 #if defined(GLSL_BUILDTOOL)
-	free(memoryBase);
+		free(unalignedBase);
 #else
-	Z_Free(memoryBase);
+		Z_Free(unalignedBase);
 #endif
+	}
 }
 
 void *Allocator::Alloc( size_t allocSize )
 {
 	if ( (size_t)((char *)end - (char *)mark) < allocSize )
 	{
+		assert(!"Allocator is out of memory");
 		return nullptr;
 	}
 
 	void *result = mark;
-	size_t alignedSize = (allocSize + 15) & ~15;
+	size_t alignedSize = PAD(allocSize, alignment);
 
 	mark = (char *)mark + alignedSize;
 
@@ -44,7 +67,7 @@ void *Allocator::Mark() const
 
 void Allocator::Reset()
 {
-	mark = memoryBase;
+	mark = alignedBase;
 }
 
 void Allocator::ResetTo( void *m )

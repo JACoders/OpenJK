@@ -24,6 +24,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 #include "ghoul2/g2_local.h"
 #include "tr_cache.h"
+#include "tr_allocator.h"
 #include <algorithm>
 
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
@@ -1682,10 +1683,24 @@ void R_Init( void ) {
 	max_polys = Q_min( r_maxpolys->integer, DEFAULT_MAX_POLYS );
 	max_polyverts = Q_min( r_maxpolyverts->integer, DEFAULT_MAX_POLYVERTS );
 
-	ptr = (byte*)ri->Hunk_Alloc( sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys + sizeof(polyVert_t) * max_polyverts, h_low);
-	backEndData = (backEndData_t *) ptr;
-	backEndData->polys = (srfPoly_t *) ((char *) ptr + sizeof( *backEndData ));
-	backEndData->polyVerts = (polyVert_t *) ((char *) ptr + sizeof( *backEndData ) + sizeof(srfPoly_t) * max_polys);
+	ptr = (byte*)ri->Hunk_Alloc(
+		sizeof( *backEndData ) +
+		sizeof(srfPoly_t) * max_polys +
+		sizeof(polyVert_t) * max_polyverts +
+		sizeof(Allocator) +
+		PER_FRAME_MEMORY_BYtES,
+		h_low);
+
+	backEndData = (backEndData_t *)ptr;
+	ptr = (byte *)(backEndData + 1);
+
+	backEndData->polys = (srfPoly_t *)ptr;
+	ptr += sizeof(*backEndData->polys) * max_polys;
+
+	backEndData->polyVerts = (polyVert_t *)ptr;
+	ptr += sizeof(*backEndData->polyVerts) * max_polyverts;
+
+	backEndData->perFrameMemory = new(ptr) Allocator(ptr + sizeof(*backEndData->perFrameMemory), PER_FRAME_MEMORY_BYtES);
 
 	R_InitNextFrame();
 

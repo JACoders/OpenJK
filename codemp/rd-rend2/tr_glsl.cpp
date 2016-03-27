@@ -737,6 +737,82 @@ void GLSL_FinishGPUShader(shaderProgram_t *program)
 #endif
 }
 
+void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData )
+{
+	UniformData *data = uniformData;
+	while ( data->index != UNIFORM_COUNT )
+	{
+		switch ( uniformsInfo[data->index].type )
+		{
+			case GLSL_INT:
+			{
+				assert(data->numElements == 1);
+				GLint *value = (GLint *)(data + 1);
+				GLSL_SetUniformInt(program, data->index, *value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements);
+				break;
+			}
+
+			case GLSL_FLOAT:
+			{
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformFloatN(program, data->index, value, data->numElements);
+				data = reinterpret_cast<UniformData *>(value + data->numElements);
+				break;
+			}
+
+			case GLSL_VEC2:
+			{
+				assert(data->numElements == 1);
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformVec2(program, data->index, value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*2);
+				break;
+			}
+
+			case GLSL_VEC3:
+			{
+				assert(data->numElements == 1);
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformVec3(program, data->index, value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*3);
+				break;
+			}
+
+			case GLSL_VEC4:
+			{
+				assert(data->numElements == 1);
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformVec4(program, data->index, value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*4);
+				break;
+			}
+
+			case GLSL_MAT4x3:
+			{
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformMatrix4x3(program, data->index, value, data->numElements);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*12);
+				break;
+			}
+
+			case GLSL_MAT4x4:
+			{
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformMatrix4x4(program, data->index, value, data->numElements);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*16);
+				break;
+			}
+
+			default:
+			{
+				assert(!"Invalid uniform data type");
+				return;
+			}
+		}
+	}
+}
+
 void GLSL_SetUniformInt(shaderProgram_t *program, int uniformNum, GLint value)
 {
 	GLint *uniforms = program->uniforms;

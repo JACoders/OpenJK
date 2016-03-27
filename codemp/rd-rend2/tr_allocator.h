@@ -23,7 +23,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 class Allocator
 {
 public:
-	Allocator( size_t memorySize );
+	Allocator( void *memory, size_t memorySize, size_t alignment = 16 );
+	Allocator( size_t memorySize, size_t alignment = 16 );
 	~Allocator();
 
 	Allocator( const Allocator& ) = delete;
@@ -35,7 +36,10 @@ public:
 	void ResetTo( void *mark );
 
 private:
-	void *memoryBase;
+	size_t alignment;
+	bool ownMemory;
+	void *unalignedBase;
+	void *alignedBase;
 	void *mark;
 	void *end;
 };
