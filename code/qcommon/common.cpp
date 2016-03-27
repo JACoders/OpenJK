@@ -48,7 +48,6 @@ cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_timescale;
 cvar_t	*com_fixedtime;
-cvar_t	*com_maxfps;
 cvar_t	*com_sv_running;
 cvar_t	*com_cl_running;
 cvar_t	*com_logfile;		// 1 = buffer log, 2 = flush after each print
@@ -64,6 +63,7 @@ cvar_t  *com_homepath;
 #ifndef _WIN32
 cvar_t	*com_ansiColor = NULL;
 #endif
+cvar_t	*com_busyWait;
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
@@ -81,7 +81,6 @@ int		timeInPVSCheck;
 int		numTraces;
 
 int			com_frameTime;
-int			com_frameMsec;
 int			com_frameNumber = 0;
 
 qboolean	com_errorEntered = qfalse;
@@ -881,25 +880,6 @@ int Com_EventLoop( void ) {
 			Cbuf_AddText( (char *)ev.evPtr );
 			Cbuf_AddText( "\n" );
 			break;
-		case SE_PACKET:
-			evFrom = *(netadr_t *)ev.evPtr;
-			buf.cursize = ev.evPtrLength - sizeof( evFrom );
-
-			// we must copy the contents of the message out, because
-			// the event buffers are only large enough to hold the
-			// exact payload, but channel messages need to be large
-			// enough to hold fragment reassembly
-			if ( (unsigned)buf.cursize > (unsigned)buf.maxsize ) {
-				Com_Printf("Com_EventLoop: oversize packet\n");
-				continue;
-			}
-			memcpy( buf.data, (byte *)((netadr_t *)ev.evPtr + 1), buf.cursize );
-			if ( com_sv_running->integer ) {
-				Com_RunAndTimeServerPacket( &evFrom, &buf );
-			} else {
-				CL_PacketEvent( evFrom, &buf );
-			}
-			break;
 		}
 
 		// free any block data
@@ -1114,8 +1094,6 @@ void Com_Init( char *commandLine ) {
 		Cmd_AddCommand ("quit", Com_Quit_f);
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
-		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
-
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 		com_speedslog = Cvar_Get ("speedslog", "0", CVAR_TEMP );
@@ -1137,6 +1115,7 @@ void Com_Init( char *commandLine ) {
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
 		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
+		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE );
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE );
 
@@ -1325,6 +1304,26 @@ int Com_ModifyMsec( int msec, float &fraction )
 
 /*
 =================
+Com_TimeVal
+=================
+*/
+
+int Com_TimeVal(int minMsec)
+{
+	int timeVal;
+
+	timeVal = Sys_Milliseconds() - com_frameTime;
+
+	if(timeVal >= minMsec)
+		timeVal = 0;
+	else
+		timeVal = minMsec - timeVal;
+
+	return timeVal;
+}
+
+/*
+=================
 Com_Frame
 =================
 */
@@ -1347,7 +1346,8 @@ void Com_Frame( void ) {
 	{
 		int		timeBeforeFirstEvents = 0, timeBeforeServer = 0, timeBeforeEvents = 0, timeBeforeClient = 0, timeAfter = 0;
 		int		msec, minMsec;
-		static int	lastTime = 0;
+		int		timeVal;
+		static int	lastTime = 0, bias = 0;
 
 		// write config file if anything changed
 		Com_WriteConfiguration();
@@ -1359,25 +1359,43 @@ void Com_Frame( void ) {
 			timeBeforeFirstEvents = Sys_Milliseconds ();
 		}
 
-		// we may want to spin here if things are going too fast
-		if ( com_maxfps->integer > 0 ) {
+		// Figure out how much time we have
+		if(com_minimized->integer && com_maxfpsMinimized->integer > 0)
+			minMsec = 1000 / com_maxfpsMinimized->integer;
+		else if(com_unfocused->integer && com_maxfpsUnfocused->integer > 0)
+			minMsec = 1000 / com_maxfpsUnfocused->integer;
+		else if(com_maxfps->integer > 0)
 			minMsec = 1000 / com_maxfps->integer;
-		} else {
+		else
 			minMsec = 1;
-		}
+
+		timeVal = com_frameTime - lastTime;
+		bias += timeVal - minMsec;
+
+		if (bias > minMsec)
+			bias = minMsec;
+
+		// Adjust minMsec if previous frame took too long to render so
+		// that framerate is stable at the requested value.
+		minMsec -= bias;
+
+		timeVal = Com_TimeVal(minMsec);
 		do {
-			com_frameTime = Com_EventLoop();
-			if ( lastTime > com_frameTime ) {
-				lastTime = com_frameTime;		// possible on first frame
-			}
-			msec = com_frameTime - lastTime;
-		} while ( msec < minMsec );
-		Cbuf_Execute ();
+			// Busy sleep the last millisecond for better timeout precision
+			if(com_busyWait->integer || timeVal < 1)
+				Sys_Sleep(0);
+			else
+				Sys_Sleep(timeVal - 1);
+		} while( (timeVal = Com_TimeVal(minMsec)) != 0 );
 
 		lastTime = com_frameTime;
+		com_frameTime = Com_EventLoop();
+
+		msec = com_frameTime - lastTime;
+
+		Cbuf_Execute ();
 
 		// mess with msec if needed
-		com_frameMsec = msec;
 		float fractionMsec=0.0f;
 		msec = Com_ModifyMsec( msec, fractionMsec);
 
