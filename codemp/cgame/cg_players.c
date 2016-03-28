@@ -1533,7 +1533,7 @@ CG_NewClientInfo
 ======================
 */
 void WP_SetSaber( int entNum, saberInfo_t *sabers, int saberNum, const char *saberName );
-void ParseRGBSaber(char *str, vec3_t c);
+void ParseRGBSaber(const char *str, vec3_t c);
 
 void CG_NewClientInfo( int clientNum, qboolean entitiesInitialized ) {
 	clientInfo_t *ci;
@@ -5275,14 +5275,11 @@ int getint( const char **buf ) {
 	return (int)strtod( *buf, (char **)buf );
 }
 
-void ParseRGBSaber( char *str, vec3_t c ) {
-	const char *p = str;
+void ParseRGBSaber(const char *str, vec3_t c) {
 	int i;
 
-	for(i=0;i<3;i++) {
-		c[i] = getint(&p);
-		p++;
-	}
+	for(i=0;i<3;i++, str++)
+		c[i] = getint(&str);
 }
 
 static void CG_RGBForSaberColor( saber_colors_t color, vec3_t rgb, int cnum, int bnum )
