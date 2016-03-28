@@ -5276,7 +5276,7 @@ int getint( const char **buf ) {
 }
 
 void ParseRGBSaber( char *str, vec3_t c ) {
-	char *p = str;
+	const char *p = str;
 	int i;
 
 	for(i=0;i<3;i++) {

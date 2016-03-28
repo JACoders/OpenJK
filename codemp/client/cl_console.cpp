@@ -289,8 +289,9 @@ void Con_CopyLink(void) {
 				break;
 			}
 		}
-		if (link = Q_stristr(buffer, "://")) {
-			while (link != &buffer[0] && *(link - 1) != ' ') *link--;
+		if ((link = Q_stristr(buffer, "://"))) {
+			// Move link ptr back until it hits a space or first char of string
+			while (link != &buffer[0] && *(link - 1) != ' ') link--;
 			for (i = 0; buffer[i] != 0; i++) {
 				buffer[i] = *link++;
 				if (*link == ' ' || *link == '"') buffer[i + 1] = 0;

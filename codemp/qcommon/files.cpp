@@ -3600,7 +3600,7 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 	checksum = fs_checksumFeed;
 	numPaks = 0;
 
-	for ( search = fs_searchpaths ; search ; search = search->next ) {
+	for (search = fs_searchpaths; search; search = search->next) {
 		if (search->pack && search->pack->checksum == -1342311474) {
 			search->pack->referenced = 7;
 			break;
@@ -3616,9 +3616,9 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 			info[strlen(info)] = '@';
 			info[strlen(info)] = ' ';
 		}
-		for ( search ; search ; search = search->next ) {
+		while(search) {
 			// is the element a pak file and has it been referenced based on flag?
-			if ( search->pack && (search->pack->referenced & nFlags)) {
+			if (search->pack && (search->pack->referenced & nFlags)) {
 				Q_strcat( info, sizeof( info ), va("%i ", search->pack->pure_checksum ) );
 				if (nFlags & (FS_CGAME_REF | FS_UI_REF)) {
 					break;
@@ -3629,6 +3629,7 @@ const char *FS_ReferencedPakPureChecksums( void ) {
 					break;
 				}
 			}
+			search = search->next;
 		}
 		if (fs_fakeChkSum != 0) {
 			// only added if a non-pure file is referenced
