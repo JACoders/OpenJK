@@ -7,6 +7,17 @@ host="$1"
 flavour="$2"
 shift 2
 
+if [[ "${host}" == macosx-universal-clang ]]; then
+	cd ~
+	curl -O https://www.libsdl.org/release/SDL2-2.0.4.tar.gz
+	tar xzf SDL2-2.0.4.tar.gz
+	cd SDL2-2.0.4/Xcode/SDL
+	sed -i -e 's/@rpath//g' SDL.xcodeproj/project.pbxproj
+	xcodebuild ARCHS="i386 x86_64" ONLY_ACTIVE_ARCH=NO -configuration Release
+	mkdir -p ~/Library/Frameworks/
+	ln -s `pwd`/build/Release/SDL2.framework ~/Library/Frameworks/
+else
+
 # travis-ci's Ubuntu 14.04 image provides an apt source for Chrome,
 # which breaks i386 multiarch. Disable it: we don't need it for any of
 # these builds anyway.
@@ -50,3 +61,4 @@ case "${host}" in
 			g++ g++-4.8 gcc gcc-4.8 cpp cpp-4.8
 		;;
 esac
+fi
