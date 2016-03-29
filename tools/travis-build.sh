@@ -23,7 +23,8 @@ case "${host}" in
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/linux-i686.cmake \
 			"$@"
 		;;
-
+	(macosx-universal-clang)
+		;;
 	(native)
 		;;
 
@@ -36,11 +37,7 @@ esac
 
 set -- -D CMAKE_BUILD_TYPE="$flavour" "$@"
 
-# Build JK2, so that the CI build is testing everything
 ( cd build && cmake \
-	-D BuildJK2SPEngine=ON \
-	-D BuildJK2SPGame=ON \
-	-D BuildJK2SPRdVanilla=ON \
 	-D CMAKE_INSTALL_PREFIX=/prefix \
 	"$@" .. )
 make -C build
