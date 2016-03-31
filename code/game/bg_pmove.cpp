@@ -3690,7 +3690,6 @@ int PM_GetLandingAnim( void )
 			//stick landings some
 			pm->ps->velocity[0] *= 0.5f;
 			pm->ps->velocity[1] *= 0.5f;
-			Com_Printf( "sticking landing\n" );
 		}
 		break;
 	case BOTH_JUMPBACK1:
