@@ -1385,23 +1385,27 @@ void CL_CreateNewCommands( void ) {
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
-	if ( cls.state < CA_PRIMED ) {
+	if ( cls.state < CA_PRIMED )
 		return;
-	}
 
 	frame_msec = com_frameTime - old_com_frameTime;
 
+	// if running over 1000fps, act as if each frame is 1ms
+	// prevents divisions by zero
+	if ( frame_msec < 1 )
+		frame_msec = 1;
+
 	// if running less than 5fps, truncate the extra time to prevent
 	// unexpected moves after a hitch
-	if ( frame_msec > 200 ) {
+	if ( frame_msec > 200 )
 		frame_msec = 200;
-	}
+
 	old_com_frameTime = com_frameTime;
 
 	// generate a command for this frame
 	cl.cmdNumber++;
 	cmdNum = cl.cmdNumber & CMD_MASK;
-	cl.cmds[cmdNum] = CL_CreateCmd ();
+	cl.cmds[cmdNum] = CL_CreateCmd();
 }
 
 /*
