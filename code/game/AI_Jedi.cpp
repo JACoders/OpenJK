@@ -3934,11 +3934,6 @@ static qboolean Jedi_SaberBlock( void )
 	}
 	*/
 
-	if (NPC->s.weapon != WP_SABER)
-	{//we are not a saber wielder
-		return qfalse;
-	}
-
 	if ( !TIMER_Done( NPC, "parryReCalcTime" ) )
 	{//can't do our own re-think of which parry to use yet
 		return qfalse;
@@ -4203,21 +4198,27 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 {
 	vec3_t	dirEnemy2Me;
 	int		evasionChance = 30;//only step aside 30% if he's moving at me but not attacking
+	if (NPC->s.weapon != WP_SABER)
+	{//be more wary of approaching enemy even if he's not attacking
+		evasionChance = 40;
+	}
+
 	qboolean	enemy_attacking = qfalse;
 	qboolean	throwing_saber = qfalse;
 	qboolean	shooting_lightning = qfalse;
+
 
 	if ( !NPC->enemy->client )
 	{
 		return;
 	}
-	else if ( NPC->enemy->client 
-		&& NPC->enemy->s.weapon == WP_SABER 
+	else if ( NPC->enemy->client
+		&& NPC->enemy->s.weapon == WP_SABER
 		&& NPC->enemy->client->ps.saberLockTime > level.time )
 	{//don't try to block/evade an enemy who is in a saberLock
 		return;
 	}
-	else if ( (NPC->client->ps.saberEventFlags&SEF_LOCK_WON) 
+	else if ( (NPC->client->ps.saberEventFlags&SEF_LOCK_WON)
 		&& NPC->enemy->painDebounceTime > level.time )
 	{//pressing the advantage of winning a saber lock
 		return;
@@ -4252,8 +4253,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 	else if ( Jedi_CheckEvadeSpecialAttacks() != EVASION_NONE )
 	{
 		return;
-	}
-
+	}	
 
 	VectorSubtract( NPC->currentOrigin, NPC->enemy->currentOrigin, dirEnemy2Me );
 	VectorNormalize( dirEnemy2Me );
@@ -4271,16 +4271,16 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 		evasionChance = 50;
 	}
 
-	if ( NPC->enemy->client->ps.saberInFlight 
-		&& NPC->enemy->client->ps.saberEntityNum != ENTITYNUM_NONE 
+	if ( NPC->enemy->client->ps.saberInFlight
+		&& NPC->enemy->client->ps.saberEntityNum != ENTITYNUM_NONE
 		&& NPC->enemy->client->ps.saberEntityState != SES_RETURNING )
 	{//enemy is saber throwing
 		enemy_attacking = qtrue;
 		throwing_saber = qtrue;
-		if (NPC->s.weapon == WP_MELEE)
-		{//melee users are more aware they need to evade
-			evasionChance += 5;
-		}
+		if (NPC->s.weapon != WP_SABER)
+		{//I can't block it so have to dodge
+			evasionChance = 90;
+		}		
 	}
 
 	//FIXME: this needs to take skill and rank(reborn type) into account much more
@@ -4297,9 +4297,9 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 		{//he's moving
 			facingAmt = DotProduct( enemy_movedir, dirEnemy2Me );
 		}
-			
+
 		if ( Q_flrand( 0.25, 1 ) < facingAmt )
-		{//coming at/facing me!  
+		{//coming at/facing me!
 			int whichDefense = 0;
 			/*if ( NPC->client->NPC_class == CLASS_SABOTEUR )
 			{
@@ -4321,13 +4321,13 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 					return;
 				}
 			}
-			else */if ( NPC->client->ps.weaponTime 
-				|| NPC->client->ps.saberInFlight 
-				|| NPC->client->NPC_class == CLASS_BOBAFETT 
+			else */if ( NPC->client->ps.weaponTime
+				|| NPC->client->ps.saberInFlight
+				|| NPC->client->NPC_class == CLASS_BOBAFETT
 				|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 				|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 			{//I'm attacking or recovering from a parry, can only try to strafe/jump right now
-				if ( Q_irand( 0, 10 ) < NPCInfo->stats.aggression )
+				if ( (Q_irand( 0, 10 ) < NPCInfo->stats.aggression && NPC->s.weapon == WP_SABER))
 				{
 					return;
 				}
@@ -4404,7 +4404,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 
 			if ( whichDefense >= 4 && whichDefense <= 12 )
 			{//would try to block
-				if ( NPC->client->ps.saberInFlight || NPC->s.weapon != WP_SABER )
+				if ( NPC->client->ps.saberInFlight )
 				{//can't, saber in not in hand, so fall back to strafe/jump
 					whichDefense = 100;
 				}
@@ -4419,8 +4419,10 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				//use jedi force push? or kick?
 				//FIXME: try to do this if health low or enemy back to a cliff?
 				if ( Jedi_DecideKick(enemy_dist)//let's try a kick
-					&& ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE 
-						|| (G_CanKickEntity(NPC, NPC->enemy )&&G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE)))
+					&& ( G_PickAutoMultiKick( NPC, qfalse, qtrue ) != LS_NONE
+						|| (G_CanKickEntity(NPC, NPC->enemy )&&G_PickAutoKick( NPC, NPC->enemy, qtrue )!=LS_NONE)
+						)
+					)
 				{//kicked
 					TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 				}
@@ -4448,23 +4450,25 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				if ( !Q_irand( 0, 5 ) || !Jedi_Strafe( 300, 1000, 0, 1000, qfalse ) )
 				{//certain chance they will pick an alternative evasion
 					//if couldn't strafe, try a different kind of evasion...
-					if ( Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy ) && G_PickAutoKick( NPC, NPC->enemy, qtrue ) != LS_NONE )
+					if (NPC->s.weapon == WP_SABER && Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy) && G_PickAutoKick(NPC, NPC->enemy, qtrue) != LS_NONE)
 					{//kicked!
 						TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 					}
 					else if ( shooting_lightning || throwing_saber || enemy_dist < 80 )
 					{
 						//FIXME: force-jump+forward - jump over the guy!
-						if ( shooting_lightning || (!Q_irand( 0, 2 ) && NPCInfo->stats.aggression < 4 && TIMER_Done( NPC, "parryTime" ) ) )
-						{
+						if ( shooting_lightning || (!Q_irand( 0, 2 ) 
+							&& (NPCInfo->stats.aggression < 4 || NPC->s.weapon != WP_SABER || NPC->client->ps.saberInFlight)
+							&& TIMER_Done( NPC, "parryTime" ) ) )
+						{							
 							if ( (NPCInfo->rank == RANK_ENSIGN || NPCInfo->rank > RANK_LT_JG) && !shooting_lightning && Q_irand( 0, 2 ) )
 							{//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
 								ForceThrow( NPC, qfalse );
 							}
-							else if ( (NPCInfo->rank==RANK_CREWMAN||NPCInfo->rank>RANK_LT_JG) 
-								&& !(NPCInfo->scriptFlags&SCF_NO_ACROBATICS) 
+							else if ( (NPCInfo->rank==RANK_CREWMAN||NPCInfo->rank>RANK_LT_JG)
+								&& !(NPCInfo->scriptFlags&SCF_NO_ACROBATICS)
 								&& NPC->client->ps.forceRageRecoveryTime < level.time
-								&& !(NPC->client->ps.forcePowersActive&(1<<FP_RAGE)) 
+								&& !(NPC->client->ps.forcePowersActive&(1<<FP_RAGE))
 								&& !PM_InKnockDown( &NPC->client->ps ) )
 							{//FIXME: make this a function call?
 								//FIXME: check for clearance, safety of landing spot?
@@ -4492,19 +4496,24 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 								}
 							}
 						}
-						else if ( enemy_attacking )
+						else if (enemy_attacking || (enemy_approaching && (NPC->s.weapon != WP_SABER || NPC->client->ps.saberInFlight)))
 						{
-							if (NPC->s.weapon == WP_MELEE)
-							{//melee users try to kick as a last resort
+							if (!enemy_attacking && enemy_approaching && (NPC->s.weapon != WP_SABER || NPC->client->ps.saberInFlight))
+							{
+								/*
 								if (Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy) && G_PickAutoKick(NPC, NPC->enemy, qtrue) != LS_NONE)
 								{//kicked!
 									TIMER_Set(NPC, "kickDebounce", Q_irand(3000, 10000));
-								}
+								}*/
+								
+								//if enemy hasn't slashed yet try just backing away
+								Jedi_StartBackOff();
 							}
 							else
 							{
 								Jedi_SaberBlock();
-							}							
+							}
+							
 						}
 					}
 				}
@@ -4514,15 +4523,15 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 					{
 						gi.Printf( "def strafe\n" );
 					}
-					if ( !(NPCInfo->scriptFlags&SCF_NO_ACROBATICS) 
+					if ( !(NPCInfo->scriptFlags&SCF_NO_ACROBATICS)
 						&& NPC->client->ps.forceRageRecoveryTime < level.time
-						&& !(NPC->client->ps.forcePowersActive&(1<<FP_RAGE)) 
-						&& (NPCInfo->rank == RANK_CREWMAN || NPCInfo->rank > RANK_LT_JG ) 
+						&& !(NPC->client->ps.forcePowersActive&(1<<FP_RAGE))
+						&& (NPCInfo->rank == RANK_CREWMAN || NPCInfo->rank > RANK_LT_JG )
 						&& !PM_InKnockDown( &NPC->client->ps )
 						&& !Q_irand( 0, 5 ) )
 					{//FIXME: make this a function call?
 						//FIXME: check for clearance, safety of landing spot?
-						if ( NPC->client->NPC_class == CLASS_BOBAFETT 
+						if ( NPC->client->NPC_class == CLASS_BOBAFETT
 							|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 							|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 						{
@@ -4538,7 +4547,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				}
 				break;
 			}
-		
+
 			//turn off slow walking no matter what
 			TIMER_Set( NPC, "walking", -level.time );
 			TIMER_Set( NPC, "taunting", -level.time );
@@ -5452,8 +5461,29 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 	}
 
 	if ( (NPCInfo->scriptFlags&SCF_DONT_FIRE) )
-	{//not allowed to attack
-		return qfalse;
+	{//melee cultists punch rarely
+		if (NPC->s.weapon == WP_MELEE 			
+			&& enemy_dist <= 0
+			&& (NPC->client->ps.groundEntityNum != ENTITYNUM_NONE
+				&& NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE)) //both on ground
+		{
+			if (!(NPC->client->ps.forcePowerDebounce[FP_PUSH] > level.time || NPC->client->ps.forcePowerDebounce[FP_PULL] > level.time 
+				|| NPC->client->ps.forcePowerDebounce[FP_DRAIN] > level.time || NPC->client->ps.forcePowerDebounce[FP_LIGHTNING] > level.time))
+			{//not in the middle of pushing, pulling, draining, or zapping
+				if ((level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500 
+						|| level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500)) //we tried pushing/pulling the last 1.5 seconds
+				{//we already tried to push/pull and aren't using another force power
+					if (!Q_irand(0, 10) - NPCInfo->stats.aggression)
+					{
+						TIMER_Set(NPC, "attackDelay", Q_irand(500, 2000)); //don't try a punch again for a while
+					}
+				}
+			}						
+		}
+		else {
+			return qfalse;
+		}
+		
 	}
 
 	if ( !(ucmd.buttons&BUTTON_ATTACK) 
@@ -7031,8 +7061,8 @@ static void Jedi_Attack( void )
 		}
 	}
 
-	if( (NPCInfo->scriptFlags&SCF_DONT_FIRE) //not allowed to attack
-		|| ((NPC->client->ps.forcePowersActive&(1<<FP_HEAL))&&NPC->client->ps.forcePowerLevel[FP_HEAL]<FORCE_LEVEL_3)
+	if( //(NPCInfo->scriptFlags&SCF_DONT_FIRE) //not allowed to attack... well maybe rarely
+		((NPC->client->ps.forcePowersActive&(1<<FP_HEAL))&&NPC->client->ps.forcePowerLevel[FP_HEAL]<FORCE_LEVEL_3)
 		|| ((NPC->client->ps.saberEventFlags&SEF_INWATER)&&!NPC->client->ps.saberInFlight) )//saber in water
 	{
 		ucmd.buttons &= ~(BUTTON_ATTACK|BUTTON_ALT_ATTACK|BUTTON_FORCE_FOCUS);

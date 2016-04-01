@@ -940,8 +940,8 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		break;
 
 	case WP_MELEE:
-	case WP_TUSKEN_STAFF:
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
+		ent->NPC->burstSpacing = 1000;//attackdebounce
 		if (ent->NPC->aiFlags & NPCAI_HEAVY_MELEE)
 		{ //heavy melee guys punch a bit slower
 			ent->NPC->burstSpacing = 1000;//attackdebounce
@@ -950,6 +950,10 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		{ //regular melee guys punch faster but weaker
 			ent->NPC->burstSpacing = 500;//attackdebounce
 		}
+		break;
+	case WP_TUSKEN_STAFF:
+		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
+		ent->NPC->burstSpacing = 1000;//attackdebounce
 		break;
 
 	case WP_ATST_MAIN:
@@ -1593,7 +1597,7 @@ You can mix and match any of those options (example: find closest visible player
 
 FIXME: this should go through the snapshot and find the closest enemy
 */
-gentity_t *NPC_PickEnemy( gentity_t *closestTo, int enemyTeam, qboolean checkVis, qboolean findPlayersFirst, qboolean findClosest )
+gentity_t *NPC_PickEnemy(gentity_t *closestTo, int enemyTeam, qboolean checkVis, qboolean findPlayersFirst, qboolean findClosest)
 {
 	int			num_choices = 0;
 	int			choice[128];//FIXME: need a different way to determine how many choices?
@@ -1886,6 +1890,151 @@ gentity_t *NPC_PickEnemy( gentity_t *closestTo, int enemyTeam, qboolean checkVis
 	return &g_entities[ choice[rand() % num_choices] ];
 }
 
+//returns the number of enemies around an NPC
+
+int NPC_CheckMultipleEnemies(gentity_t *closestTo, int enemyTeam, qboolean checkVis)
+{
+	int			num_choices = 0;
+	int			choice[128];//FIXME: need a different way to determine how many choices?
+	gentity_t	*newenemy = NULL;
+	gentity_t	*closestEnemy = NULL;
+	int			entNum;
+	vec3_t		diff;
+	float		relDist;
+	float		bestDist = Q3_INFINITE;
+	qboolean	failed = qfalse;
+	int			visChecks = (CHECK_360 | CHECK_FOV | CHECK_VISRANGE);
+	int			minVis = VIS_FOV;
+
+	if (enemyTeam == TEAM_NEUTRAL)
+	{
+		return NULL;
+	}
+
+	if (NPCInfo->behaviorState == BS_STAND_AND_SHOOT ||
+		NPCInfo->behaviorState == BS_HUNT_AND_KILL)
+	{//Formations guys don't require inFov to pick up a target
+		//These other behavior states are active battle states and should not
+		//use FOV.  FOV checks are for enemies who are patrolling, guarding, etc.
+		visChecks &= ~CHECK_FOV;
+		minVis = VIS_360;
+	}
+
+	/*
+	//FIXME: used to have an option to look *only* for the player... now...?  Still need it?
+	if ( enemyTeam == TEAM_PLAYER )
+	{//couldn't find the player
+	return NULL;
+	}
+	*/
+
+	num_choices = 0;
+	bestDist = Q3_INFINITE;
+	closestEnemy = NULL;
+
+	for (entNum = 0; entNum < globals.num_entities; entNum++)
+	{
+		newenemy = &g_entities[entNum];
+
+		if (newenemy != NPC && (newenemy->client || newenemy->svFlags & SVF_NONNPC_ENEMY) && !(newenemy->flags & FL_NOTARGET) && !(newenemy->s.eFlags & EF_NODRAW))
+		{
+			if (newenemy->health > 0)
+			{
+				if ((newenemy->client && NPC_ValidEnemy(newenemy))
+					|| (!newenemy->client && newenemy->noDamageTeam == enemyTeam))
+				{//FIXME:  check for range and FOV or vis?
+					if (NPC->client->playerTeam == TEAM_PLAYER && enemyTeam == TEAM_PLAYER)
+					{//player allies turning on ourselves?  How?
+						if (newenemy->s.number)
+						{//only turn on the player, not other player allies
+							continue;
+						}
+					}
+
+					if (newenemy != NPC->lastEnemy)
+					{//Make sure we're not just going back and forth here
+						if (!gi.inPVS(newenemy->currentOrigin, NPC->currentOrigin))
+						{
+							continue;
+						}
+
+						if (NPCInfo->behaviorState == BS_INVESTIGATE || NPCInfo->behaviorState == BS_PATROL)
+						{
+							if (!NPC->enemy)
+							{
+								if (!InVisrange(newenemy))
+								{
+									continue;
+								}
+								else if (NPC_CheckVisibility(newenemy, CHECK_360 | CHECK_FOV | CHECK_VISRANGE) != VIS_FOV)
+								{
+									continue;
+								}
+							}
+						}
+
+						VectorSubtract(closestTo->currentOrigin, newenemy->currentOrigin, diff);
+						relDist = VectorLengthSquared(diff);
+						if (newenemy->client && newenemy->client->hiddenDist > 0)
+						{
+							if (relDist > newenemy->client->hiddenDist*newenemy->client->hiddenDist)
+							{
+								//out of hidden range
+								if (VectorLengthSquared(newenemy->client->hiddenDir))
+								{//They're only hidden from a certain direction, check
+									float	dot;
+
+									VectorNormalize(diff);
+									dot = DotProduct(newenemy->client->hiddenDir, diff);
+									if (dot > 0.5)
+									{//I'm not looking in the right dir toward them to see them
+										continue;
+									}
+									else
+									{
+										Debug_Printf(debugNPCAI, DEBUG_LEVEL_INFO, "%s saw %s trying to hide - hiddenDir %s targetDir %s dot %f\n", NPC->targetname, newenemy->targetname, vtos(newenemy->client->hiddenDir), vtos(diff), dot);
+									}
+								}
+								else
+								{
+									continue;
+								}
+							}
+							else
+							{
+								Debug_Printf(debugNPCAI, DEBUG_LEVEL_INFO, "%s saw %s trying to hide - hiddenDist %f\n", NPC->targetname, newenemy->targetname, newenemy->client->hiddenDist);
+							}
+						}
+
+						if (!NPC_EnemyTooFar(newenemy, 0, qfalse))
+						{
+							if (checkVis)
+							{
+								//if( NPC_CheckVisibility ( newenemy, CHECK_360|CHECK_FOV|CHECK_VISRANGE ) == VIS_FOV )
+								if (NPC_CheckVisibility(newenemy, CHECK_360 | CHECK_VISRANGE) >= VIS_360)
+								{
+									choice[num_choices++] = newenemy->s.number;
+								}
+							}
+							else
+							{
+								choice[num_choices++] = newenemy->s.number;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if (!num_choices)
+	{
+		return 0;
+	}
+
+	return num_choices;
+}
+
 /*
 gentity_t *NPC_PickAlly ( void )
 
@@ -1995,6 +2144,21 @@ qboolean NPC_JediClassGoodGuy(class_t npc_class) {
 	}
 }
 
+qboolean NPC_CheckAttackSurrenderedEnemy(gentity_t *NPC) 
+{
+	if (NPC->enemy
+		&& NPC->enemy->NPC
+		&& (NPC->enemy->NPC->surrenderTime > level.time || NPC->enemy->s.weapon == WP_NONE
+		|| (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy))
+		&& NPC->client->playerTeam == TEAM_PLAYER
+		&& NPC_JediClassGoodGuy(NPC->client->NPC_class))
+	{//enemy is surrendering or not attacking and I'm a good guy Jedi
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
 gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnemy )
 {
 	qboolean	forcefindNew = qfalse;
@@ -2029,19 +2193,6 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 			G_ClearEnemy( NPC );
 		}
 		return NULL;
-	}
-
-	if (NPC->enemy
-		&& NPC->enemy->NPC
-		&& (NPC->enemy->NPC->surrenderTime > level.time || NPC->enemy->s.weapon == WP_NONE 
-			|| (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy))
-		&& NPC->client->playerTeam == TEAM_PLAYER
-		&& NPC_JediClassGoodGuy(NPC->client->NPC_class))
-	{//enemy is surrendering or not attacking and I'm a good guy Jedi
-		if (setEnemy)
-		{
-			G_ClearEnemy(NPC);
-		}
 	}
 
 	// Kyle does not get new enemies if not close to his leader
@@ -2227,6 +2378,13 @@ gentity_t *NPC_CheckEnemy( qboolean findNew, qboolean tooFarOk, qboolean setEnem
 			}
 		}
 	}
+
+	/*if (!NPC_CheckAttackSurrenderedEnemy(NPC))
+	{
+		G_ClearEnemy(NPC);
+		return NULL;
+	}*/
+
 	return newEnemy;
 }
 

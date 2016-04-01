@@ -3231,14 +3231,11 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 		{
 		case FORCE_LEVEL_0:
 		case FORCE_LEVEL_1:
-			kickDamage = Q_irand(3, 6);
-			kickDamage2 = Q_irand(3, 6);
+			kickDamage = Q_irand(4, 5);
 		case FORCE_LEVEL_2:
-			kickDamage = Q_irand(4, 7);
-			kickDamage2 = Q_irand(4, 7);
 		case FORCE_LEVEL_3:
-			kickDamage = Q_irand(5, 9);
-			kickDamage2 = Q_irand(5, 9);
+			kickDamage = Q_irand(5, 6);
+			kickDamage2 = Q_irand(5, 6);
 		}
 
 		int	  kickPush = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
@@ -3676,6 +3673,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case BOTH_A7_KICK_S:
 				kickPush = Q_flrand( 150.0f, 250.0f );//Q_flrand( 75.0f, 125.0f );
+				kickDamage += 4;
 				if ( ent->footRBolt != -1 )
 				{//actually trace to a bolt
 					if ( elapsedTime >= 550 
@@ -3743,6 +3741,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case BOTH_A7_KICK_BF:
 				kickPush = Q_flrand( 150.0f, 250.0f );//Q_flrand( 75.0f, 125.0f );
+				kickDamage += 4;
 				if ( elapsedTime < 1500 )
 				{//auto-aim!
 					overridAngles = PM_AdjustAnglesForBFKick( ent, ucmd, fwdAngs, qboolean(elapsedTime<850) )?qtrue:overridAngles;
@@ -3781,6 +3780,7 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			case BOTH_A7_KICK_RL:
 				kickSoundOnWalls = qtrue;
 				kickPush = Q_flrand( 150.0f, 250.0f );//Q_flrand( 75.0f, 125.0f );
+				kickDamage += 4;
 				//FIXME: auto aim at enemies on the side of us?
 				//overridAngles = PM_AdjustAnglesForRLKick( ent, ucmd, fwdAngs, qboolean(elapsedTime<850) )?qtrue:overridAngles;
 				if ( elapsedTime >= 250 && elapsedTime < 350 )
@@ -5346,14 +5346,11 @@ extern cvar_t	*g_skippingcin;
 		{
 			WP_SaberStartMissileBlockCheck(ent, ucmd);
 		}
+		else if (ent->s.number)
+		{//we may be a non-saber force user
+			Jedi_MeleeEvasionDefense(ent, ucmd);
+		}
 	}
-
-	if (ent->NPC && ent->client->ps.weapon == WP_MELEE)
-	{//we may be a melee force user, use a check for explosives and saber throws
-		Jedi_MeleeEvasionDefense(ent, ucmd);
-	}
-		
-
 
 	// Update the position of the saber, and check to see if we're throwing it
 	if ( client->ps.saberEntityNum != ENTITYNUM_NONE )

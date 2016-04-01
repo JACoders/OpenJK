@@ -1217,8 +1217,7 @@ void NPC_HandleAIFlags (void)
 }
 
 void NPC_AvoidWallsAndCliffs (void)
-{
-/*
+{/*
 	vec3_t	forward, right, testPos, angles, mins;
 	trace_t	trace;
 	float	fwdDist, rtDist;
@@ -1249,7 +1248,7 @@ void NPC_AvoidWallsAndCliffs (void)
 		//  straight into a wall or off	a cliff unless we really wanted to?
 		return;
 	}
-
+	
 	VectorCopy( NPC->mins, mins );
 	mins[2] += STEPSIZE;
 	angles[YAW] = NPC->client->ps.viewangles[YAW];//Add ucmd.angles[YAW]?
@@ -1265,6 +1264,7 @@ void NPC_AvoidWallsAndCliffs (void)
 		ucmd.rightmove = 0;
 		return;
 	}
+	
 
 	VectorCopy(trace.endpos, testPos);
 	testPos[2] -= 128;
@@ -1279,7 +1279,7 @@ void NPC_AvoidWallsAndCliffs (void)
 	ucmd.forwardmove = 0;
 	ucmd.rightmove = 0;
 	return;
-*/
+	*/
 }
 
 void NPC_CheckAttackScript(void)
@@ -1913,7 +1913,7 @@ NPC_RunBehavior
 -------------------------
 */
 extern void NPC_BSEmplaced( void );
-extern qboolean NPC_CheckSurrender( void );
+extern qboolean NPC_CheckSurrender( qboolean noEscape = qfalse );
 extern void NPC_BSRT_Default( void );
 extern void NPC_BSCivilian_Default( int bState );
 extern void NPC_BSSD_Default( void );
@@ -2300,16 +2300,10 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 			&& (NPC->client->playerTeam != TEAM_FREE || (NPC->client->NPC_class == CLASS_TUSKEN && Q_irand( 0, 4 )))//not a rampaging creature or I'm a tusken and I feel generous (temporarily)
 			&& NPC->enemy->NPC 
 			&& (NPC->enemy->NPC->surrenderTime > level.time || (NPC->enemy->NPC->scriptFlags&SCF_FORCED_MARCH)
-				|| (NPC_JediClassGood(NPC) && (NPC->enemy->s.weapon == WP_NONE || (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy))))
-				)
+				|| (NPC_JediClassGood(NPC) && (NPC->enemy->s.weapon == WP_NONE || (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy)))))
 		{//don't shoot someone who's surrendering if you're a good guy, especially if you're a Jedi
 			ucmd.buttons &= ~BUTTON_ATTACK;
 			ucmd.buttons &= ~BUTTON_ALT_ATTACK;
-
-			if (NPC_JediClassGood(NPC))
-			{
-				NPC_CheckEnemy(qtrue, qfalse);
-			}
 		}
 
 		if(client->ps.weaponstate == WEAPON_IDLE)
@@ -2368,6 +2362,15 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 	else
 	{
 		NPC_ApplyRoff();
+	}
+
+	if (NPC->client->playerTeam != TEAM_PLAYER //not an enemy
+		&& NPC_JediClassGood(NPC)
+		&& NPC->enemy->NPC
+		&& (NPC->enemy->NPC->surrenderTime > level.time || (NPC->enemy->NPC->scriptFlags&SCF_FORCED_MARCH) || NPC->enemy->s.weapon == WP_NONE || (NPC->enemy->s.weapon == WP_MELEE && !NPC->enemy)))
+	{//redundancy for Jedi because they like to attack anyway
+		ucmd.buttons &= ~BUTTON_ATTACK;
+		ucmd.buttons &= ~BUTTON_ALT_ATTACK;
 	}
 
 	// end of thinking cleanup

@@ -2637,12 +2637,12 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 		}
 	}
 
-	if (pm->ps->saberAnimLevel == SS_DESANN && pm->ps->saberAttackChainCount > Q_irand(2, 3))
+	if (pm->ps->saberAnimLevel == SS_DESANN && pm->ps->saberAttackChainCount > 3)
 	{
 		return qtrue;
 	}
 		
-	if (pm->ps->saberAnimLevel == SS_TAVION && pm->ps->saberAttackChainCount > Q_irand(4, 5))
+	if (pm->ps->saberAnimLevel == SS_TAVION && pm->ps->saberAttackChainCount > 5)
 	{//desann and tavion can link up as many attacks as they want
 		return qtrue;
 	}
@@ -2650,11 +2650,11 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 	//		not you can chain?  Like if you were completely missed, you can't chain as much, or...?
 	//		And/Or based on FP_SABER_OFFENSE level?  So number of attacks you can chain
 	//		increases with your FP_SABER_OFFENSE skill?
-	if (pm->ps->saberAnimLevel == SS_STAFF && pm->ps->saberAttackChainCount > Q_irand(4, 5))
+	if (pm->ps->saberAnimLevel == SS_STAFF && pm->ps->saberAttackChainCount > 5)
 	{
 		return qtrue;
 	}
-	else if (pm->ps->saberAnimLevel == SS_DUAL && pm->ps->saberAttackChainCount > Q_irand(4, 5))
+	else if (pm->ps->saberAnimLevel == SS_DUAL && pm->ps->saberAttackChainCount > 5)
 	{
 		return qtrue;
 	}
@@ -2662,12 +2662,12 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 	{
 		if (curmove == LS_NONE || newmove == LS_NONE)
 		{
-			if (pm->ps->saberAnimLevel >= SS_STRONG && pm->ps->saberAttackChainCount > Q_irand(0, 1))
+			if (pm->ps->saberAnimLevel >= SS_STRONG && pm->ps->saberAttackChainCount > 1)
 			{
 				return qtrue;
 			}
 		}
-		else if (pm->ps->saberAttackChainCount > Q_irand(2, 3))
+		else if (pm->ps->saberAttackChainCount > 3)
 		{
 			return qtrue;
 		}
@@ -2696,7 +2696,7 @@ qboolean PM_SaberKataDoneNew(int curmove = LS_NONE, int newmove = LS_NONE)
 	}
 	else
 	{//FIXME: have chainAngle influence fast and medium chains as well?
-		if (pm->ps->saberAnimLevel == SS_MEDIUM	&& pm->ps->saberAttackChainCount > Q_irand(4, 5))
+		if (pm->ps->saberAnimLevel == SS_MEDIUM	&& pm->ps->saberAttackChainCount > 5)
 		{
 			return qtrue;
 		}
@@ -3179,6 +3179,10 @@ saberMoveName_t PM_SaberLungeAttackMove(qboolean fallbackToNormalLunge)
 			return LS_SPINATTACK_DUAL;
 			break;
 		case SS_STAFF:
+			if ((pm->gent->s.number && !Q_irand(0, 3)) || pm->cmd.buttons&BUTTON_USE)
+			{
+				return LS_HILT_BASH;
+			}
 			return LS_SPINATTACK;
 			break;
 		default://normal lunge
@@ -5512,8 +5516,11 @@ void PM_SetAnimFinal(int *torsoAnim, int *legsAnim,
 
 
 
-
-
+		if ((*torsoAnim == BOTH_MELEE1 || *torsoAnim == BOTH_MELEE2)
+			&& (pm->gent->s.number == 0 || !(pm->gent->NPC->aiFlags&NPCAI_HEAVY_MELEE)))
+		{//non-heavy punches are faster
+			animSpeed *= .1f;
+		}
 
 		animSpeed *= (gent->resultspeed / moveSpeedOfAnim);
 		if (animSpeed<0.01f)

@@ -337,6 +337,17 @@ vmCvar_t	cg_speedTrail;
 vmCvar_t	cg_fovViewmodel;
 vmCvar_t	cg_fovViewmodelAdjust;
 
+//new cvars - Dusty
+/*
+vmCvar_t	cg_lightningBolts;
+vmCvar_t	cg_lightningWideBolts;
+vmCvar_t	cg_pushBlurSpeed;
+vmCvar_t	cg_pushBlurSize;
+vmCvar_t	cg_pullBlurSpeed;
+vmCvar_t	cg_pullBlurSize;
+*/
+
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	const char	*cvarName;

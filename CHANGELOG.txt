@@ -3,11 +3,13 @@
 new cvars:
 g_autoRoll - been there for a while, now works 100% correctly, if 1
 default JA behavior, if 0 you have to be holding USE to roll
-g_char_forcePowerMax - requires level restart
-g_char_forceRegen - requires level restart
-g_char_parryBonus -
-g_char_breakParryBonus -
+g_char_forcePowerMax - requires level restart, like the NPC setting but for the player
+g_char_forceRegen - requires level restart, like NPC setting but for player
+g_char_parryBonus - like the .sab file setting but applied on game load for player
+g_char_breakParryBonus - like the .sab file setting but applied on game load for player
 all these affect the player's stats
+g_handicap - goes up to 200 now
+g_saberDamageScale - this scales saber damage, and is saved with your savegame
 g_saberForceDrains - if 1 special moves drain the amount of FP from the
 next cvar, katas not affected
 g_saberForceDrainAmount - if g_saberForceDrains is 1, special moves
@@ -15,50 +17,103 @@ drain this amount of FP, katas not affected
 g_saberLockSuperBreaks - if 1 default JA behavior of saber locks, if 0
 no super breaks (1-hit KOs) ever happen after saber locks
 g_saberLockStyle - dummy cvar. Later maybe make it so superbreaks happen
-under certain conditions.
+under certain conditions
+g_saberMoreRealistic - no longer write-protected
+g_weaponVelocity, g_weaponAltVelocity - use this to multiply the speed of most projectiles
 
-Melee changes:
-- Player gets a weaker version of melee katas now based on saber offense level (1 - punches and kicks, 2 - katas, 3 - spin kicks)
-- Player melee katas have less range, must be aimed more precisely, and do not work on certain types of enemies unless g_debugmelee is on
-- Spin kicks and the like are enabled for Saber Offense 3
-- Can do spin kicks on demand by holding Use and pressing the kick button, however this costs Force power
+cvars to-do:
+separate cvars into global and savegame versions, have global take priority?
+camera cvars?
+cvars for force push blur effects?
 
-other changes:
-- QMax bugs and crashes fixed (wasn't ported properly from OpenJK)
-- melee force users push back and dodge explosives better now, still
-don't dodge saber throws yet...
-- All sabers kick by default for their alternate attack, +forcefocus must be held to use Saber Throw
+increased modability:
+- separate lightning block effect into own .efx file
+- external file for controlling force push/pull effects
+- Class_Wookiee, Class_Cultist
+- weapons.dat stuff (NPCDamageMult, NPCFireTimeMult)
+- alt-fire field works for NPCs?
+
+
 
 -----------------------------------------------------------------------
 Only larger/more important changes recorded here:
 Gameplay mechanics -
+Force powers -- (with g_forceNewPowers 1)
 - Force Jump height for all levels increased by 25%
+- Force Pull level 1 pulls weapons only, level 2 can knockdown, level 3 can pull toward you somewhat
+- Force Sense gives limited snipershot dodging ability
+- Force Speed decreases cost of sniper shot dodging at Level 3
+- Force Protect 1/2/3 gives only 10/20/40% damage reduction against saber attacks instead of 25/50/75%
+
+NPC AI --
+- Improvements to NPC AI pertaining to the use of JA-exclusive abilities;
+NPCs only use Force Rage if close to the player and if have > 25% HP, only kick if close to the player,
+only use katas if close to the player
+- NPC Jedi will try very hard to dodge your attacks if you knock their saber throw to the ground
+- NPC Jedi get up much more quickly on higher difficulties (no easy marios for the win)
+- NPC Jedi will activate their saber very quickly after being gripped or drained based on difficulty and rank
+- Force Cultists react properly to explosives, sniper shots, and saber throws now
+- Non-saber wielding NPCs with Class_Reborn try extra hard to dodge saber attacks and throws (because they can't block)
+- Light Jedi with non-dark Jedi AI (class_reborn, class_desann, etc.) classes don't attack surrendered or unarmed enemies now
+- Grenadier Grans will alternate punches/thermal detonators even if your saber is out if you are really close to
+them.
+- NPCs surrender better... (to-do)
+NPC other --
 - Allied NPCs receive 150%/125%/100% HP for Padawan/Jedi/Jedi Knight difficulties now instead of 100/125/150 like enemy
 npcs
+- Assassin Droids now fire even with their shields up
+- Class_Rodian with E11 and Class_Imperial at commander rank use alt-fire now always
+ 
 
+Saber System: *(with g_saberNewCombat 1)
+* saber offense and defense increase your offense and defensive strength in parries:
+ - offense controls your power level (+2/4/6), and is modified by saber style (-2/0/+2/-1/+1/-1/+1 for fast/med/strong/duals
+   /staff/tavion/desann), defense controls your defense strength (+2/4/6, not affected by saber style)
+ - if an attack powerlevel is greater than defense strength, you can still block it but you lose some block points
+ - if you lose enough block points, your guard is crushed; block points regenerate while walking/standing still and not attacking
+ - special attacks don't drain block points but either break through completely or are blocked partially
+* red/strong can be blocked now, but is faster and less unwieldy (and more realistic I think)
+* staff and duals cannot chain
 
-NPC AI -
-- Improvements to NPC AI pertaining to the use of JA-exclusive abilities;
-NPCs only use Force Rage if close to the player, if have > 25% HP, they only kick if close to the player
+- at higher difficulties, blaster bolts are deflected in the direction of the crosshair instead of being auto-aimed
+- your ability to parry saber attacks (TO DO) and deflect blaster fire is slightly improved while walking/standing still
+- you do a full slash even if starting with your saber off -- TO DO
+- Desann style is full strength if you are CLASS_DESANN, otherwise it is a cross between medium/strong
+(it has the same power level as staff, and can knock down enemies but is unlikely to)
+- attack chain amounts tweaked slightly, not random now (not completely), can only chain 2 slashes if running,
+staff and duals cannot chain infinitely (5 slash maximum now)
+- staff power is nerfed so it is not as strong as strong style now, but slightly more powerful than medium
+- staff sabers are now thrown double-bladed
 
+Melee changes:
+- Player gets a weaker version of melee katas now based on saber offense level (1 - punches and kicks, 2 - katas, 3 - spin kicks)
+- Player melee katas have less range, must be aimed more precisely, and do not work on certain types of enemies
+- Spin kicks and the like are enabled for Saber Offense 3 and do slightly more damage
+- Can do spin kicks on demand by holding Use and pressing the kick button, however this costs Force power
+- kicks knocking down an enemy jedi depends on your saber offense vs. their saber defense
+- Player punches do 7/5 damage now instead of 6/3 and aren't randomized now
+- Force Speed punching is more consistent now and less cheap -- test
+- Heavy melee is specifically associated with Chewbacca, Class_Gran, and Class_Trandoshan, other NPC types will punch
+more quickly but weaker if given WP_MELEE -- test & fix
 
-Game additions -
-- Save games allow for screenshots now like JK2
+Other additions -
+- Save games allow for screenshots now like JK2 -- fix
 - Visual effect for blocking Force Lightning with your lightsaber
-- A modified saber system is available with the g_saberNewCombat command; with slightly rebalanced saber styles and adjustments to how Saber Offense, Defense, and .sab parry and breakparry bonuses affect saber combat
-- g_saberDeflectAutoAim (0/1) cvar added, if 0 deflected shots go in the direction of the player's crosshair as opposed to being auto-aimed with the likelihood of the shots being deflected toward the crosshair increasing with Saber Defense level
-- g_saberDamageScale cvar added for more precise control over saber damage (fully compatible with g_saberMoreRealistic)
+- handicap can go up to 200
+- r_dynamicglowintensity cvar is saved and written to jaconfig now
+- rolls and acrobatics are possible in 1st person view
 
 
 Things to do -
-- Kick-Saber Throw alternate and Kata switch button - partial done
-- Saber Offense controlling melee and kicking abilities - done
-- Savegame screenshots working in the loading screen
+- Savegame screenshots working in the loading screen - got broken
 - handicap cvar going past 100, separate cvar for player HP and Shields - partial done
-- g_autoRoll cvar, g_charForcePoints cvar, g_charForceRegen cvar - done
-- have r_dynamicglowintensity cvar be archived - done
-- NPCs surrender bettur
-- Jedi saber throw evasion
+- Reborn masters with constant saber throwing + lightning
+- NPCs avoid cliffs? -- not able
+- NPCDamageMult, NPCAltDamageMult, saber ignition/deignition time fields in weapons.dat
+- Force push strong version, mindtrick changes - not done
+- Doing a full slash when starting saber off - not done
+- camera controls (1st, 2nd, 3rd, 4th person)
+- Fix NPCs surrendering
 
 -------------------------------------------------------------------------------------------------------------------------
 (OpenJK changelog)

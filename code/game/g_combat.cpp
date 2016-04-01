@@ -4825,7 +4825,7 @@ void PlayerPain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const 
 		}
 		if ( damage != -1 && (mod==MOD_MELEE || damage==0/*fake damage*/ || (Q_irand( 0, 10 ) <= damage && self->client->damage_blood)) )
 		{//-1 == don't play pain anim
-			if ( ( ((mod==MOD_SABER||mod==MOD_MELEE)&&self->client->damage_blood) || mod == MOD_CRUSH ) && (self->s.weapon == WP_SABER||self->s.weapon==WP_MELEE||cg.renderingThirdPerson) )//FIXME: not only if using saber, but if in third person at all?  But then 1st/third person functionality is different...
+			if ( ( ((mod==MOD_SABER||mod==MOD_MELEE)/*&&self->client->damage_blood*/) || mod == MOD_CRUSH ) && (self->s.weapon == WP_SABER||self->s.weapon==WP_MELEE||cg.renderingThirdPerson) )//FIXME: not only if using saber, but if in third person at all?  But then 1st/third person functionality is different...
 			{//FIXME: only strong-level saber attacks should make me play pain anim?
 				if ( !G_CheckForStrongAttackMomentum( self ) && !PM_SpinningSaberAnim( self->client->ps.legsAnim )
 					&& !PM_SaberInSpecialAttack( self->client->ps.torsoAnim )

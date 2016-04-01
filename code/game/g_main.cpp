@@ -207,6 +207,7 @@ cvar_t  *g_autoRoll;
 cvar_t	*g_saberNewCombat; 
 cvar_t  *g_saberLocksEnabled;
 cvar_t	*g_saberDamageScale;
+cvar_t	*g_saberDamageScaleGlobal;
 cvar_t  *g_saberWalkAnims;
 cvar_t	*g_saberForceDrains;
 cvar_t	*g_saberForceDrainAmount;
@@ -681,7 +682,7 @@ void G_InitCvars( void ) {
 	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
 	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
-	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
+	g_AIsurrender = gi.cvar( "g_AIsurrender", "1", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
 
 	gi.cvar( "newTotalSecrets", "0", CVAR_ROM );
@@ -721,7 +722,8 @@ void G_InitCvars( void ) {
 	g_saberLockSuperBreaks = gi.cvar("g_saberLockSuperBreaks", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberForceDrains = gi.cvar("g_saberForceDrains", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_saberForceDrainAmount = gi.cvar("g_saberForceDrainAmount", "10", CVAR_ARCHIVE | CVAR_CHEAT);
-	g_saberDamageScale = gi.cvar("g_saberDamageScale", "1", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_saberDamageScale = gi.cvar("g_saberDamageScale", "1.0", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_saberDamageScaleGlobal = gi.cvar("g_saberDamageScaleGlobal", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_forceNewPowers = gi.cvar("g_forceNewPowers", "1", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_char_forcePowerMax = gi.cvar("g_char_forcePowerMax", "100", CVAR_CHEAT | CVAR_SAVEGAME );
 	g_char_forceRegen = gi.cvar("g_char_forceRegen", "100", CVAR_CHEAT | CVAR_SAVEGAME);

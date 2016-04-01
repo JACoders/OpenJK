@@ -525,11 +525,14 @@ void NPC_BSGrenadier_Attack( void )
 			if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPC->enemy->s.number ) )
 			{//I can get right to him
 				//reset fire-timing variables
-				NPC_ChangeWeapon( WP_MELEE );
-				if ( !(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) )//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
-				{//FIXME: should we be overriding scriptFlags?
-					NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
-				}
+				if (NPCInfo->aiFlags&NPCAI_HEAVY_MELEE)
+				{
+					NPC_ChangeWeapon(WP_MELEE);
+					if (!(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES))//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
+					{//FIXME: should we be overriding scriptFlags?
+						NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
+					}
+				}				
 			}
 		}
 	}

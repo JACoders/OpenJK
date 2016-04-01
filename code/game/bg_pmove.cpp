@@ -152,6 +152,7 @@ extern cvar_t	*g_autoRoll;
 extern cvar_t	*g_saberForceDrainAmount;
 extern cvar_t	*g_saberLockSuperBreaks;
 extern cvar_t	*g_saberNewCombat;
+extern cvar_t	*g_forceNewPowers;
 
 static void PM_SetWaterLevelAtPoint(vec3_t org, int *waterlevel, int *watertype);
 
@@ -1103,6 +1104,17 @@ static qboolean PM_CheckJump(void)
 	}
 	*/
 
+	float jumpMultiplier;
+
+	if (g_forceNewPowers->integer)
+	{
+		jumpMultiplier = 1.25;
+	}
+	else
+	{
+		jumpMultiplier = 1.0;
+	}
+
 #if METROID_JUMP
 	if ((pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
 		&& pm->gent && pm->gent->client
@@ -1248,9 +1260,9 @@ static qboolean PM_CheckJump(void)
 				*/
 				float curHeight = pm->ps->origin[2] - pm->ps->forceJumpZStart;
 				//check for max force jump level and cap off & cut z vel
-				if ((curHeight <= forceJumpHeight[0] ||//still below minimum jump height
+				if ((curHeight <= forceJumpHeight[0] * jumpMultiplier ||//still below minimum jump height
 					(pm->ps->forcePower&&pm->cmd.upmove >= 10)) &&////still have force power available and still trying to jump up
-					curHeight < forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]])//still below maximum jump height
+					curHeight < forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier)//still below maximum jump height
 				{//can still go up
 					//FIXME: after a certain amount of time of held jump, play force jump sound and flip if a dir is being held
 					//FIXME: if hit a wall... should we cut velocity or allow them to slide up it?
@@ -1408,12 +1420,12 @@ static qboolean PM_CheckJump(void)
 					}
 
 					//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
-					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] - curHeight) / forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * forceJumpStrength[pm->ps->forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
+					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier - curHeight) / forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier * forceJumpStrength[pm->ps->forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
 					pm->ps->velocity[2] /= 10;
 					pm->ps->velocity[2] += JUMP_VELOCITY;
 					pm->ps->pm_flags |= PMF_JUMP_HELD;
 				}
-				else if (curHeight > forceJumpHeight[0] && curHeight < forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] - forceJumpHeight[0])
+				else if (curHeight > forceJumpHeight[0] && curHeight < forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier - forceJumpHeight[0])
 				{//still have some headroom, don't totally stop it
 					if (pm->ps->velocity[2] > JUMP_VELOCITY)
 					{
@@ -2894,6 +2906,16 @@ static void PM_AirMove(void) {
 	usercmd_t	cmd;
 	float		gravMod = 1.0f;
 
+	float jumpMultiplier;
+	if (g_forceNewPowers->integer)
+	{
+		jumpMultiplier = 1.25;
+	}
+	else
+	{
+		jumpMultiplier = 1.0;
+	}
+
 #if METROID_JUMP
 	PM_CheckJump();
 #endif
@@ -3022,7 +3044,7 @@ static void PM_AirMove(void) {
 		&& pm->ps->velocity[2] > 0)
 	{//I am force jumping and I'm not holding the button anymore
 		float curHeight = pm->ps->origin[2] - pm->ps->forceJumpZStart + (pm->ps->velocity[2] * pml.frametime);
-		float maxJumpHeight = forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]];
+		float maxJumpHeight = forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier;
 		if (curHeight >= maxJumpHeight)
 		{//reached top, cut velocity
 			pm->ps->velocity[2] = 0;
@@ -3972,6 +3994,16 @@ static void PM_CrashLand(void)
 	float		delta = 0;
 	qboolean	forceLanding = qfalse;
 
+	float jumpMultiplier;
+	if (g_forceNewPowers->integer)
+	{
+		jumpMultiplier = 1.25;
+	}
+	else
+	{
+		jumpMultiplier = 1.0;
+	}
+
 	if (pm->gent && pm->gent->client && pm->gent->client->NPC_class == CLASS_VEHICLE)
 	{
 		if (pm->gent->m_pVehicle->m_pVehicleInfo->type != VH_ANIMAL)
@@ -4045,12 +4077,12 @@ static void PM_CrashLand(void)
 			else
 			{//take off some of it, at least
 				delta = (pm->ps->jumpZStart - pm->ps->origin[2]);
-				float dropAllow = forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]];
+				float dropAllow = forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier;
 				if (dropAllow < 128)
 				{//always allow a drop from 128, at least
 					dropAllow = 128;
 				}
-				if (delta > forceJumpHeight[FORCE_LEVEL_1])
+				if (delta > forceJumpHeight[FORCE_LEVEL_1] * jumpMultiplier)
 				{//will have to use force jump ability to absorb some of it
 					forceLanding = qtrue;//absorbed some - just to force the correct animation to play below
 				}
@@ -12500,7 +12532,7 @@ void PM_WeaponLightsaber(void)
 		// Start with the current move, and cross index it with the current control states.
 		if (pm->ps->saberMove > LS_NONE && pm->ps->saberMove < LS_MOVE_MAX)
 		{
-			curmove = (saberMoveName_t)pm->ps->saberMove;
+			curmove = (saberMoveName_t)pm->ps->saberMove; //something here - Dusty
 		}
 		else
 		{
@@ -12681,7 +12713,7 @@ void PM_WeaponLightsaber(void)
 					}
 					else
 					{
-						newmove = PM_SaberAttackForMovement(pm->cmd.forwardmove, pm->cmd.rightmove, curmove);
+						newmove = PM_SaberAttackForMovement(pm->cmd.forwardmove, pm->cmd.rightmove, curmove); //Dusty
 						if ((PM_SaberInBounce(curmove) || PM_SaberInBrokenParry(curmove))
 							&& saberMoveData[newmove].startQuad == saberMoveData[curmove].endQuad)
 						{//this attack would be a repeat of the last (which was blocked), so don't actually use it, use the default chain attack for this bounce
@@ -12756,13 +12788,13 @@ void PM_WeaponLightsaber(void)
 					else
 					{
 						// Add randomness for prototype?
-						newmove = saberMoveData[curmove].chain_attack;
+						newmove = saberMoveData[curmove].chain_attack; //Dusty
 					}
 					if (newmove != LS_NONE)
 					{
 						if (PM_HasAnimation(pm->gent, saberMoveData[newmove].animToUse))
 						{
-							anim = saberMoveData[newmove].animToUse;
+							anim = saberMoveData[newmove].animToUse; //Dusty
 						}
 					}
 				}
@@ -12804,10 +12836,10 @@ void PM_WeaponLightsaber(void)
 
 			if (!pm->ps->SaberActive())
 			{//turn on the saber if it's not on
-				pm->ps->SaberActivate();
+				pm->ps->SaberActivate(); //Dusty
 			}
 
-			PM_SetSaberMove((saberMoveName_t)newmove);
+			PM_SetSaberMove((saberMoveName_t)newmove); //Dusty
 
 			if (both && pm->ps->legsAnim != pm->ps->torsoAnim)
 			{
@@ -13361,7 +13393,7 @@ Generates weapon events and modifes the weapon counter
 static void PM_Weapon(void)
 {
 	int			addTime, amount, trueCount = 1;
-	int			punch = 0;
+	static int			punch = 0;
 	qboolean	delayed_fire = qfalse;
 
 	if ((pm->ps->eFlags&EF_HELD_BY_WAMPA))
@@ -13730,29 +13762,49 @@ static void PM_Weapon(void)
 								{
 									PM_TryGrab();
 								}
-								else if (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD) && pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 0)
+								else if (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD) /*&& pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 0*/)
 								{
 									PM_CheckKick();
 								}
 							}
 							else if (!(pm->ps->pm_flags&PMF_ATTACK_HELD))
 							{
-								anim = PM_PickAnim(pm->gent, BOTH_MELEE1, BOTH_MELEE2);
+								//anim = PM_PickAnim(pm->gent, BOTH_MELEE1, BOTH_MELEE2);
+								if (punch == 0)
+								{
+									anim = BOTH_MELEE1;
+									punch = 1;
+								}
+								else
+								{
+									anim = BOTH_MELEE2;
+									punch = 0;
+								}
 							}
 						}
 						else
 						{
-							anim = PM_PickAnim(pm->gent, BOTH_MELEE1, BOTH_MELEE2);
+							anim = PM_PickAnim(pm->gent, BOTH_MELEE1, BOTH_MELEE2); //is this even used?
 						}
 						if (anim != -1)
 						{
+							int extraAnimFlag = 0;
+							if (pm->gent->NPC && pm->gent->NPC->aiFlags&NPCAI_HEAVY_MELEE) 
+							{//heavy punchers hold it out there
+								extraAnimFlag = SETANIM_FLAG_HOLD;
+							}
+							else
+							{//fast punchers pull it back after finishing anim
+								extraAnimFlag = SETANIM_FLAG_HOLDLESS;
+							}
+
 							if (VectorCompare(pm->ps->velocity, vec3_origin) && pm->cmd.upmove >= 0)
 							{
-								PM_SetAnim(pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD | SETANIM_FLAG_RESTART);
+								PM_SetAnim(pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE | extraAnimFlag | SETANIM_FLAG_RESTART);		
 							}
 							else
 							{
-								PM_SetAnim(pm, SETANIM_TORSO, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD | SETANIM_FLAG_RESTART);
+								PM_SetAnim(pm, SETANIM_TORSO, anim, SETANIM_FLAG_OVERRIDE | extraAnimFlag | SETANIM_FLAG_RESTART);
 							}
 						}
 					}
@@ -14054,8 +14106,12 @@ static void PM_Weapon(void)
 			break;
 		case WP_MELEE:
 			//addTime *= ((trueCount < 3) ? 0.35f : 1.0f);//slightly faster if high offense level, speed punching
-			if (pm->ps->forcePowerLevel[FP_SABER_OFFENSE] <= 1) addTime *= 1.2;
-			else if (pm->ps->forcePowerLevel[FP_SABER_OFFENSE] == 3) addTime *= 0.85;
+			//if (pm->ps->forcePowerLevel[FP_SABER_OFFENSE] <= 1) addTime *= 1.2;
+			//else if (pm->ps->forcePowerLevel[FP_SABER_OFFENSE] == 3) addTime *= 0.85;
+			if (pm->ps->clientNum >= MAX_CLIENTS && !(pm->gent->NPC->aiFlags&NPCAI_HEAVY_MELEE))
+			{//so non-heavy melee NPCs punch faster
+				addTime *= 0.75;
+			}
 			if (pm->ps->forcePowersActive&(1 << FP_SPEED) && pm->ps->forcePowerLevel[FP_SPEED] > 1) addTime *= 0.5; //speed punching bonus
 			break;
 		}

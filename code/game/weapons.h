@@ -158,6 +158,9 @@ typedef struct weaponData_s
 	float	altSplashRadius;
 	int		velocity;
 	int		altVelocity;
+	int		npcDmgMult;
+	int		npcAltDmgMult;
+	
 
 } weaponData_t;
 
