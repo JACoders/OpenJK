@@ -207,6 +207,7 @@ void RB_BeginSurface( shader_t *shader, int fogNum, int cubemapIndex ) {
 	tess.currentStageIteratorFunc = state->optimalStageIteratorFunc;
 	tess.externalIBO = nullptr;
 	tess.useInternalVBO = qtrue;
+	tess.maxDepthRange = 1.0f;
 
 	tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 	if (tess.shader->clampTime && tess.shaderTime >= tess.shader->clampTime) {
@@ -2036,6 +2037,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		item.stateBits = stateBits;
 		item.cullType = cullType;
 		item.program = sp;
+		item.maxDepthRange = input->maxDepthRange;
 		item.ibo = input->externalIBO ? input->externalIBO : input->ibo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;

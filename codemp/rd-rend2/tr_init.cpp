@@ -1116,6 +1116,7 @@ void GL_SetDefaultState( void )
 	// make sure our GL state vector is set correctly
 	//
 	glState.glStateBits = GLS_DEPTHTEST_DISABLE | GLS_DEPTHMASK_TRUE;
+	glState.maxDepthRange = 1.0f;
 
 	qglUseProgram(0);
 

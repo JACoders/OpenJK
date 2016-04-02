@@ -151,6 +151,17 @@ void GL_Cull( int cullType ) {
 	}
 }
 
+void GL_DepthRange( float max )
+{
+	if ( glState.maxDepthRange == max )
+	{
+		return;
+	}
+
+	qglDepthRange(0.0f, max);
+	glState.maxDepthRange = max;
+}
+
 /*
 ** GL_State
 **
@@ -660,8 +671,8 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 			}
 		}
 	
-
 		GL_State(drawItem.stateBits);
+		GL_DepthRange(drawItem.maxDepthRange);
 		R_BindIBO(drawItem.ibo);
 		GLSL_BindProgram(drawItem.program);
 
@@ -889,7 +900,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						}
 
 						if( !sunflare )
-							qglDepthRange( 0.0f, 1.0f );
+						{
+							tess.maxDepthRange = 1.0f;
+						}
 
 						break;
 
@@ -904,7 +917,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						}
 
  						if ( !oldDepthRange )
- 							qglDepthRange( 0.0f, 0.3f );
+						{
+							tess.maxDepthRange = 0.3f;
+						}
 
 						break;
 
@@ -919,7 +934,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						}
 
  						if ( !oldDepthRange )
- 							qglDepthRange( 0.0f, 0.0f );
+						{
+							tess.maxDepthRange = 0.0f;
+						}
 
 						break;
 				}
@@ -940,9 +957,6 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	if (oldShader != NULL) {
 		RB_EndSurface();
 	}
-
-	// FIXME: This should be pass of the draw item state
-	qglDepthRange(0.0f, 1.0f);
 
 	uint32_t *drawOrder = ojkAllocArray<uint32_t>(
 		*backEndData->perFrameMemory, backEndData->currentPass->numDrawItems);
@@ -973,7 +987,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	GL_SetModelviewMatrix( backEnd.viewParms.world.modelViewMatrix );
 
 	// Restore depth range for subsequent rendering
-	qglDepthRange( 0.0f, 1.0f );
+	GL_DepthRange(1.0f);
 }
 
 
