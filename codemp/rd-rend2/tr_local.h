@@ -3299,7 +3299,7 @@ typedef struct backEndData_s {
 } backEndData_t;
 
 struct DrawItem;
-void RB_AddDrawItem( Pass *pass, const DrawItem& drawItem );
+void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
 
 extern	int		max_polys;
 extern	int		max_polyverts;

@@ -1666,6 +1666,17 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 	return result;
 }
 
+static uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer )
+{
+	uint32_t key = 0;
+	uintptr_t shaderProgram = (uintptr_t)item.program;
+
+	key |= (layer & 0xf) << 28;
+	key |= (stage & 0xf) << 24;
+	key |= shaderProgram & 0x00ffffff;
+	return key;
+}
+
 static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
 {
 	int stage;
@@ -2074,7 +2085,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			item.draw.params.indexed.numIndices = input->numIndexes;
 		}
 
-		RB_AddDrawItem(backEndData->currentPass, item);
+		uint32_t key = RB_CreateSortKey(item, stage, input->shader->sort);
+		RB_AddDrawItem(backEndData->currentPass, key, item);
 
 		// allow skipping out to show just lightmaps during development
 		if ( r_lightmap->integer && ( pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap ) )

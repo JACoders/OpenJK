@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 #include "tr_allocator.h"
 #include "glext.h"
+#include <algorithm>
 
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
@@ -601,6 +602,7 @@ struct Pass
 	int maxDrawItems;
 	int numDrawItems;
 	DrawItem *drawItems;
+	uint32_t *sortKeys;
 };
 
 static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings )
@@ -623,11 +625,11 @@ static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings 
 	}
 }
 
-static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems )
+static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t *drawOrder )
 {
 	for ( int i = 0; i < numDrawItems; ++i )
 	{
-		const DrawItem& drawItem = drawItems[i];
+		const DrawItem& drawItem = drawItems[drawOrder[i]];
 
 		int q3CullType = drawItem.cullType & 0xffff;
 		int glCullType = (drawItem.cullType >> 16) & 0xfff;
@@ -699,7 +701,7 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems )
 	}
 }
 
-void RB_AddDrawItem( Pass *pass, const DrawItem& drawItem )
+void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem )
 {
 	// There will be no pass if we are drawing a 2D object.
 	if ( pass )
@@ -710,12 +712,25 @@ void RB_AddDrawItem( Pass *pass, const DrawItem& drawItem )
 			return;
 		}
 
-		memcpy(pass->drawItems + pass->numDrawItems++, &drawItem, sizeof(*pass->drawItems));
+		pass->sortKeys[pass->numDrawItems] = sortKey;
+		memcpy(pass->drawItems + pass->numDrawItems, &drawItem, sizeof(*pass->drawItems));
+		++pass->numDrawItems;
 	}
 	else
 	{
-		RB_DrawItems(1, &drawItem);
+		uint32_t drawOrder[] = {0};
+		RB_DrawItems(1, &drawItem, drawOrder);
 	}
+}
+
+static Pass *RB_CreatePass( Allocator& allocator, int capacity )
+{
+	Pass *pass = ojkAlloc<Pass>(*backEndData->perFrameMemory);
+	*pass = {};
+	pass->maxDrawItems = capacity;
+	pass->drawItems = ojkAllocArray<DrawItem>(allocator, pass->maxDrawItems);
+	pass->sortKeys = ojkAllocArray<uint32_t>(allocator, pass->maxDrawItems);
+	return pass;
 }
 
 /*
@@ -743,11 +758,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	void *allocMark = backEndData->perFrameMemory->Mark();
 
 	assert(backEndData->currentPass == nullptr);
-	backEndData->currentPass = ojkAlloc<Pass>(*backEndData->perFrameMemory);
-	*backEndData->currentPass = {};
-	backEndData->currentPass->maxDrawItems = numDrawSurfs * 2;
-	backEndData->currentPass->drawItems = ojkAllocArray<DrawItem>(
-		*backEndData->perFrameMemory, backEndData->currentPass->maxDrawItems);
+	backEndData->currentPass = RB_CreatePass(*backEndData->perFrameMemory, numDrawSurfs * 2);
 
 	// save original time for entity shader offsets
 	originalTime = backEnd.refdef.floatTime;
@@ -930,8 +941,23 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		RB_EndSurface();
 	}
 
+	// FIXME: This should be pass of the draw item state
 	qglDepthRange(0.0f, 1.0f);
-	RB_DrawItems(backEndData->currentPass->numDrawItems, backEndData->currentPass->drawItems);
+
+	uint32_t *drawOrder = ojkAllocArray<uint32_t>(
+		*backEndData->perFrameMemory, backEndData->currentPass->numDrawItems);
+
+	uint32_t numDrawItems = backEndData->currentPass->numDrawItems;
+	for ( uint32_t i = 0; i < numDrawItems; ++i )
+		drawOrder[i] = i;
+
+	uint32_t *sortKeys = backEndData->currentPass->sortKeys;
+	std::sort(drawOrder, drawOrder + numDrawItems, [sortKeys]( uint32_t a, uint32_t b )
+	{
+		return sortKeys[a] < sortKeys[b];
+	});
+
+	RB_DrawItems(backEndData->currentPass->numDrawItems, backEndData->currentPass->drawItems, drawOrder);
 
 	backEndData->perFrameMemory->ResetTo(allocMark);
 	backEndData->currentPass = nullptr;
