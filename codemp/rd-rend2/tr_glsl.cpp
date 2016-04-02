@@ -2199,7 +2199,6 @@ void GLSL_BindNullProgram(void)
 	}
 }
 
-
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArraysOut)
 {
 	VertexArraysProperties vertexArraysLocal;
@@ -2224,25 +2223,14 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 		CalculateVertexArraysFromVBO(stateBits, glState.currentVBO, vertexArrays);
 	}
 
-	GLSL_VertexAttribPointers(stateBits, vertexArrays);
+	GLSL_VertexAttribPointers(vertexArrays);
 
 }
 
-void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays)
+void GL_VertexArraysToAttribs( vertexAttribute_t *attribs,
+	size_t attribsCount, const VertexArraysProperties *vertexArrays )
 {
-	VBO_t *vbo = glState.currentVBO;
-	
-	if(!vbo)
-	{
-		ri->Error(ERR_FATAL, "GL_VertexAttribPointers: no VBO bound");
-		return;
-	}
-
-	// don't just call LogComment, or we will get a call to va() every frame!
-	if (r_logFile->integer)
-	{
-		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
-	}
+	assert(attribsCount == ATTR_INDEX_MAX);
 
 	static const struct
 	{
@@ -2269,7 +2257,6 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
 	};
 
-	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
 		int attributeIndex = vertexArrays->enabledAttributes[i];
@@ -2285,7 +2272,18 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		attrib.offset = vertexArrays->offsets[attributeIndex];
 		attrib.stepRate = 0;
 	}
+}
 
+void GLSL_VertexAttribPointers(const VertexArraysProperties *vertexArrays)
+{
+	// don't just call LogComment, or we will get a call to va() every frame!
+	if (r_logFile->integer)
+	{
+		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
+	}
+
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 	GL_VertexAttribPointers(vertexArrays->numVertexArrays, attribs);
 }
 

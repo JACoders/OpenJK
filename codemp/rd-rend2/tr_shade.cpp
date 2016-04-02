@@ -205,6 +205,7 @@ void RB_BeginSurface( shader_t *shader, int fogNum, int cubemapIndex ) {
 	tess.xstages = state->stages;
 	tess.numPasses = state->numUnfoggedPasses;
 	tess.currentStageIteratorFunc = state->optimalStageIteratorFunc;
+	tess.externalIBO = nullptr;
 	tess.useInternalVBO = qtrue;
 
 	tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
@@ -1196,121 +1197,6 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 	return vertexAttribs;
 }
 
-struct SamplerBinding
-{
-	image_t *image;
-	qhandle_t videoMapHandle;
-	uint8_t slot;
-};
-
-enum DrawCommandType
-{
-	DRAW_COMMAND_MULTI_INDEXED,
-	DRAW_COMMAND_INDEXED,
-	DRAW_COMMAND_ARRAYS
-};
-
-struct DrawCommand
-{
-	DrawCommandType type;
-	GLenum primitiveType;
-	int numInstances;
-
-	union DrawParams
-	{
-		struct MultiDrawIndexed
-		{
-			int numDraws;
-			GLsizei *numIndices;
-			glIndex_t **firstIndices;
-		} multiIndexed;
-
-		struct DrawIndexed
-		{
-			GLsizei numIndices;
-			glIndex_t firstIndex;
-		} indexed;
-	} params;
-};
-
-struct DrawItem
-{
-	uint32_t stateBits;
-	IBO_t *ibo;
-	shaderProgram_t *program;
-
-	uint32_t numAttributes;
-	vertexAttribute_t *attributes;
-
-	uint32_t numSamplerBindings;
-	SamplerBinding *samplerBindings;
-
-	UniformData *uniformData;
-
-	DrawCommand draw;
-};
-
-static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings )
-{
-	for ( size_t i = 0; i < numBindings; ++i )
-	{
-		const SamplerBinding& binding = bindings[i];
-		if ( binding.videoMapHandle )
-		{
-			int oldtmu = glState.currenttmu;
-			GL_SelectTexture(binding.slot);
-			ri->CIN_RunCinematic(binding.videoMapHandle - 1);
-			ri->CIN_UploadCinematic(binding.videoMapHandle - 1);
-			GL_SelectTexture(oldtmu);
-		}
-		else
-		{
-			GL_BindToTMU(binding.image, binding.slot);
-		}
-	}
-}
-
-static void RB_Draw( const DrawItem& drawItem )
-{
-	GL_State(drawItem.stateBits);
-	//R_BindIBO(drawItem.ibo);
-	GLSL_BindProgram(drawItem.program);
-
-	// FIXME: There was a reason I didn't have const on attributes. Can't remember at the moment
-	// what the reason was though.
-	//GL_VertexAttribPointers(drawItem.numAttributes, (vertexAttribute_t *)drawItem.attributes);
-	RB_BindTextures(drawItem.numSamplerBindings, drawItem.samplerBindings);
-
-	GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
-
-	switch ( drawItem.draw.type )
-	{
-		case DRAW_COMMAND_MULTI_INDEXED:
-		{
-			GL_MultiDrawIndexed(drawItem.draw.primitiveType,
-				drawItem.draw.params.multiIndexed.numIndices,
-				drawItem.draw.params.multiIndexed.firstIndices,
-				drawItem.draw.params.multiIndexed.numDraws);
-			break;
-		}
-
-		case DRAW_COMMAND_INDEXED:
-		{
-			GL_DrawIndexed(drawItem.draw.primitiveType,
-				drawItem.draw.params.indexed.numIndices,
-				drawItem.draw.params.indexed.firstIndex,
-				drawItem.draw.numInstances, 0);
-			break;
-		}
-
-		default:
-		{
-			assert(!"Invalid or unhandled draw type");
-			break;
-		}
-	}
-}
-
 class UniformDataWriter
 {
 public:
@@ -1795,8 +1681,36 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
+	GLenum cullType = GL_NONE;
+
+	if ( !backEnd.projection2D )
+	{
+		if ( input->shader->cullType != CT_TWO_SIDED ) 
+		{
+			bool cullFront = (input->shader->cullType == CT_FRONT_SIDED);
+			if ( backEnd.viewParms.isMirror )
+			{
+				cullFront = !cullFront;
+			}
+
+			if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
+			{
+				cullFront = !cullFront;
+			}
+
+			cullType = (cullFront ? GL_FRONT : GL_BACK);
+		}
+	}
+
+	// Pack the cull types
+	cullType = (cullType << 16) | (input->shader->cullType & 0xfff);
+
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
+
 	for ( stage = 0; stage < MAX_SHADER_STAGES; stage++ )
 	{
+		// FIXME: This seems a bit weird.
 		Allocator uniformDataAlloc(backEndData->perFrameMemory->Alloc(1024), 1024, 1);
 		Allocator samplerBindingsAlloc(backEndData->perFrameMemory->Alloc(128), 128, 1);
 
@@ -2109,14 +2023,14 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		DrawItem item = {};
 		item.stateBits = stateBits;
+		item.cullType = cullType;
 		item.program = sp;
-		item.ibo = input->ibo;
+		item.ibo = input->externalIBO ? input->externalIBO : input->ibo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
 		item.attributes = ojkAllocArray<vertexAttribute_t>(
 			*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
-		memcpy(item.attributes, glState.currentVaoAttribs,
-			sizeof(*item.attributes)*vertexArrays->numVertexArrays);
+		memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
 
 		item.uniformData = uniformDataWriter.Finish();
 		// FIXME: This is a bit ugly with the casting
@@ -2126,10 +2040,29 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		if ( input->multiDrawPrimitives )
 		{
-			item.draw.type = DRAW_COMMAND_MULTI_INDEXED;
-			item.draw.params.multiIndexed.numDraws = input->multiDrawPrimitives;
-			item.draw.params.multiIndexed.firstIndices = input->multiDrawFirstIndex;
-			item.draw.params.multiIndexed.numIndices = input->multiDrawNumIndexes;
+			if ( input->multiDrawPrimitives == 1 )
+			{
+				item.draw.type = DRAW_COMMAND_INDEXED;
+				item.draw.params.indexed.firstIndex = (glIndex_t)(input->multiDrawFirstIndex[0]);
+				item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
+			}
+			else
+			{
+				item.draw.type = DRAW_COMMAND_MULTI_INDEXED;
+				item.draw.params.multiIndexed.numDraws = input->multiDrawPrimitives;
+
+				item.draw.params.multiIndexed.firstIndices =
+					ojkAllocArray<glIndex_t *>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
+				memcpy(item.draw.params.multiIndexed.firstIndices,
+					input->multiDrawFirstIndex,
+					sizeof(glIndex_t *) * input->multiDrawPrimitives);
+
+				item.draw.params.multiIndexed.numIndices =
+					ojkAllocArray<GLsizei>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
+				memcpy(item.draw.params.multiIndexed.numIndices,
+					input->multiDrawNumIndexes,
+					sizeof(GLsizei *) * input->multiDrawPrimitives);
+			}
 		}
 		else
 		{
@@ -2141,7 +2074,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			item.draw.params.indexed.numIndices = input->numIndexes;
 		}
 
-		RB_Draw(item);
+		RB_AddDrawItem(backEndData->currentPass, item);
 
 		// allow skipping out to show just lightmaps during development
 		if ( r_lightmap->integer && ( pStage->bundle[0].isLightmap || pStage->bundle[1].isLightmap ) )
@@ -2247,27 +2180,25 @@ void RB_StageIteratorGeneric( void )
 		backEnd.pc.c_staticVboDraws++;
 	}
 
-	//
-	// set face culling appropriately
-	//
-	if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW))
-	{
-		if (input->shader->cullType == CT_TWO_SIDED)
-			GL_Cull( CT_TWO_SIDED );
-		else if (input->shader->cullType == CT_FRONT_SIDED)
-			GL_Cull( CT_BACK_SIDED );
-		else
-			GL_Cull( CT_FRONT_SIDED );
-		
-	}
-	else
-		GL_Cull( input->shader->cullType );
+
 
 	//
-	// set vertex attribs and pointers
+	// vertex arrays
 	//
 	VertexArraysProperties vertexArrays;
-	GLSL_VertexAttribsState(vertexAttribs, &vertexArrays);
+	if ( tess.useInternalVBO )
+	{
+		CalculateVertexArraysProperties(vertexAttribs, &vertexArrays);
+		for ( int i = 0; i < vertexArrays.numVertexArrays; i++ )
+		{
+			int attributeIndex = vertexArrays.enabledAttributes[i];
+			vertexArrays.offsets[attributeIndex] += tess.internalVBOCommitOffset;
+		}
+	}
+	else
+	{
+		CalculateVertexArraysFromVBO(vertexAttribs, glState.currentVBO, &vertexArrays);
+	}
 
 	if (backEnd.depthFill)
 	{
@@ -2283,6 +2214,25 @@ void RB_StageIteratorGeneric( void )
 		//
 		if ( input->shader->sort == SS_OPAQUE )
 		{
+			//
+			// set face culling appropriately
+			//
+			if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW))
+			{
+				if (input->shader->cullType == CT_TWO_SIDED)
+					GL_Cull( CT_TWO_SIDED );
+				else if (input->shader->cullType == CT_FRONT_SIDED)
+					GL_Cull( CT_BACK_SIDED );
+				else
+					GL_Cull( CT_FRONT_SIDED );
+		
+			}
+			else
+				GL_Cull( input->shader->cullType );
+
+			vertexAttribute_t attribs[ATTR_INDEX_MAX];
+			GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), &vertexArrays);
+			GL_VertexAttribPointers(vertexArrays.numVertexArrays, attribs);
 			RB_RenderShadowmap( input );
 		}
 	}
@@ -2293,6 +2243,7 @@ void RB_StageIteratorGeneric( void )
 		//
 		RB_IterateStagesGeneric( input, &vertexArrays );
 
+#if 0 // don't do this for now while I get draw sorting working :)
 		//
 		// pshadows!
 		//
@@ -2330,6 +2281,7 @@ void RB_StageIteratorGeneric( void )
 		if ( tess.fogNum && tess.shader->fogPass ) {
 			RB_FogPass();
 		}
+#endif
 	}
 
 	RB_CommitInternalBufferData();
@@ -2416,6 +2368,7 @@ void RB_EndSurface( void ) {
 	tess.numVertexes = 0;
 	tess.firstIndex = 0;
 	tess.multiDrawPrimitives = 0;
+	tess.externalIBO = nullptr;
 
 	GLimp_LogComment( "----------\n" );
 }

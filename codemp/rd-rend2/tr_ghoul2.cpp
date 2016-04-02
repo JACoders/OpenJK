@@ -3476,6 +3476,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	R_BindIBO(surface->ibo);
 
 	tess.useInternalVBO = qfalse;
+	tess.externalIBO = surface->ibo;
 
 	tess.numIndexes += surface->numIndexes;
 	tess.numVertexes += surface->numVertexes;

@@ -2701,6 +2701,7 @@ struct shaderCommands_s
 	IBO_t       *ibo;
 	void		*vboData; // If immutable buffers
 	void		*iboData; // are available
+	IBO_t		*externalIBO;
 	qboolean    useInternalVBO;
 	int			internalVBOWriteOffset;
 	int			internalVBOCommitOffset;
@@ -2759,8 +2760,6 @@ void RB_CheckOverflow( int verts, int indexes );
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex );
 void RB_StageIteratorGeneric( void );
 void RB_StageIteratorSky( void );
-void RB_StageIteratorVertexLitTexture( void );
-void RB_StageIteratorLightmappedMultitexture( void );
 
 void RB_AddQuadStamp( vec3_t origin, vec3_t left, vec3_t up, float color[4] );
 void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, float color[4], float s1, float t1, float s2, float t2 );
@@ -2926,7 +2925,9 @@ int GLSL_BeginLoadGPUShaders(void);
 void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArrays);
-void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays);
+void GLSL_VertexAttribPointers(const VertexArraysProperties *vertexArrays);
+void GL_VertexArraysToAttribs( vertexAttribute_t *attribs,
+	size_t attribsCount, const VertexArraysProperties *vertexArrays );
 void GLSL_BindProgram(shaderProgram_t * program);
 void GLSL_BindNullProgram(void);
 
@@ -3280,11 +3281,13 @@ struct gpuFrame_t
 #define MAX_FRAMES (2)
 #define PER_FRAME_MEMORY_BYtES (128 * 1024 * 1024)
 class Allocator;
+struct Pass;
 typedef struct backEndData_s {
 	unsigned realFrameNumber;
 	gpuFrame_t frames[MAX_FRAMES];
 	gpuFrame_t *currentFrame;
 	Allocator *perFrameMemory;
+	Pass *currentPass;
 
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 	dlight_t	dlights[MAX_DLIGHTS];
@@ -3294,6 +3297,9 @@ typedef struct backEndData_s {
 	pshadow_t pshadows[MAX_CALC_PSHADOWS];
 	renderCommandList_t	commands;
 } backEndData_t;
+
+struct DrawItem;
+void RB_AddDrawItem( Pass *pass, const DrawItem& drawItem );
 
 extern	int		max_polys;
 extern	int		max_polyverts;
@@ -3356,5 +3362,60 @@ void RB_SurfaceGhoul( CRenderableSurface *surf );
 
 class Allocator;
 GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text );
+
+struct SamplerBinding
+{
+	image_t *image;
+	qhandle_t videoMapHandle;
+	uint8_t slot;
+};
+
+enum DrawCommandType
+{
+	DRAW_COMMAND_MULTI_INDEXED,
+	DRAW_COMMAND_INDEXED,
+	DRAW_COMMAND_ARRAYS
+};
+
+struct DrawCommand
+{
+	DrawCommandType type;
+	GLenum primitiveType;
+	int numInstances;
+
+	union DrawParams
+	{
+		struct MultiDrawIndexed
+		{
+			int numDraws;
+			GLsizei *numIndices;
+			glIndex_t **firstIndices;
+		} multiIndexed;
+
+		struct DrawIndexed
+		{
+			GLsizei numIndices;
+			glIndex_t firstIndex;
+		} indexed;
+	} params;
+};
+
+struct DrawItem
+{
+	uint32_t stateBits;
+	uint32_t cullType; // this is stupid. hi bits = GL cull type, lo bits = Q3 cull type
+	IBO_t *ibo;
+	shaderProgram_t *program;
+
+	uint32_t numAttributes;
+	vertexAttribute_t *attributes;
+
+	uint32_t numSamplerBindings;
+	SamplerBinding *samplerBindings;
+
+	UniformData *uniformData;
+
+	DrawCommand draw;
+};
 
 #endif //TR_LOCAL_H

@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 #include "tr_local.h"
+#include "tr_allocator.h"
 #include "glext.h"
 
 backEndData_t	*backEndData;
@@ -595,6 +596,128 @@ void RB_BeginDrawingView (void) {
 
 #define	MAC_EVENT_PUMP_MSEC		5
 
+struct Pass
+{
+	int maxDrawItems;
+	int numDrawItems;
+	DrawItem *drawItems;
+};
+
+static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings )
+{
+	for ( size_t i = 0; i < numBindings; ++i )
+	{
+		const SamplerBinding& binding = bindings[i];
+		if ( binding.videoMapHandle )
+		{
+			int oldtmu = glState.currenttmu;
+			GL_SelectTexture(binding.slot);
+			ri->CIN_RunCinematic(binding.videoMapHandle - 1);
+			ri->CIN_UploadCinematic(binding.videoMapHandle - 1);
+			GL_SelectTexture(oldtmu);
+		}
+		else
+		{
+			GL_BindToTMU(binding.image, binding.slot);
+		}
+	}
+}
+
+static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems )
+{
+	for ( int i = 0; i < numDrawItems; ++i )
+	{
+		const DrawItem& drawItem = drawItems[i];
+
+		int q3CullType = drawItem.cullType & 0xffff;
+		int glCullType = (drawItem.cullType >> 16) & 0xfff;
+		if ( glState.faceCulling != q3CullType )
+		{
+			glState.faceCulling = q3CullType;
+			switch ( glCullType )
+			{
+				case GL_NONE:
+				{
+					qglDisable(GL_CULL_FACE);
+					break;
+				}
+
+				case GL_FRONT:
+				{
+					qglEnable(GL_CULL_FACE);
+					qglCullFace(GL_FRONT);
+					break;
+				}
+
+				case GL_BACK:
+				{
+					qglEnable(GL_CULL_FACE);
+					qglCullFace(GL_BACK);
+					break;
+				}
+			}
+		}
+	
+
+		GL_State(drawItem.stateBits);
+		R_BindIBO(drawItem.ibo);
+		GLSL_BindProgram(drawItem.program);
+
+		// FIXME: There was a reason I didn't have const on attributes. Can't remember at the moment
+		// what the reason was though.
+		GL_VertexAttribPointers(drawItem.numAttributes, drawItem.attributes);
+		RB_BindTextures(drawItem.numSamplerBindings, drawItem.samplerBindings);
+
+		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
+
+		switch ( drawItem.draw.type )
+		{
+			case DRAW_COMMAND_MULTI_INDEXED:
+			{
+				GL_MultiDrawIndexed(drawItem.draw.primitiveType,
+					drawItem.draw.params.multiIndexed.numIndices,
+					drawItem.draw.params.multiIndexed.firstIndices,
+					drawItem.draw.params.multiIndexed.numDraws);
+				break;
+			}
+
+			case DRAW_COMMAND_INDEXED:
+			{
+				GL_DrawIndexed(drawItem.draw.primitiveType,
+					drawItem.draw.params.indexed.numIndices,
+					drawItem.draw.params.indexed.firstIndex,
+					drawItem.draw.numInstances, 0);
+				break;
+			}
+
+			default:
+			{
+				assert(!"Invalid or unhandled draw type");
+				break;
+			}
+		}
+	}
+}
+
+void RB_AddDrawItem( Pass *pass, const DrawItem& drawItem )
+{
+	// There will be no pass if we are drawing a 2D object.
+	if ( pass )
+	{
+		if ( pass->numDrawItems >= pass->maxDrawItems )
+		{
+			assert(!"Ran out of space for pass");
+			return;
+		}
+
+		memcpy(pass->drawItems + pass->numDrawItems++, &drawItem, sizeof(*pass->drawItems));
+	}
+	else
+	{
+		RB_DrawItems(1, &drawItem);
+	}
+}
+
 /*
 ==================
 RB_RenderDrawSurfList
@@ -617,6 +740,14 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	float			depth[2];
 
+	void *allocMark = backEndData->perFrameMemory->Mark();
+
+	assert(backEndData->currentPass == nullptr);
+	backEndData->currentPass = ojkAlloc<Pass>(*backEndData->perFrameMemory);
+	*backEndData->currentPass = {};
+	backEndData->currentPass->maxDrawItems = numDrawSurfs * 2;
+	backEndData->currentPass->drawItems = ojkAllocArray<DrawItem>(
+		*backEndData->perFrameMemory, backEndData->currentPass->maxDrawItems);
 
 	// save original time for entity shader offsets
 	originalTime = backEnd.refdef.floatTime;
@@ -798,6 +929,12 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	if (oldShader != NULL) {
 		RB_EndSurface();
 	}
+
+	qglDepthRange(0.0f, 1.0f);
+	RB_DrawItems(backEndData->currentPass->numDrawItems, backEndData->currentPass->drawItems);
+
+	backEndData->perFrameMemory->ResetTo(allocMark);
+	backEndData->currentPass = nullptr;
 
 	if (inQuery) {
 		qglEndQuery(GL_SAMPLES_PASSED);
@@ -2023,6 +2160,23 @@ static const void *RB_EndTimedBlock( const void *data )
 	}
 
 	return (const void *)(cmd + 1);
+}
+
+
+static void RB_Begin2DPass()
+{
+	if ( backEndData->currentPass )
+	{
+		return;
+	}
+
+	*backEndData->currentPass = {};
+	backEndData->currentPass = ojkAllocArray<Pass>(*backEndData->perFrameMemory, 8000);
+}
+
+static void RB_End2DPass()
+{
+
 }
 
 
