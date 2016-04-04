@@ -1541,7 +1541,7 @@ void NPC_Surrender( void )
 		else
 		{
 			NPC_SetAnim(NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
-			NPC->client->ps.torsoAnimTimer = 1500;
+			NPC->client->ps.torsoAnimTimer = 2000;
 			NPCInfo->surrenderTime = level.time + NPC->client->ps.torsoAnimTimer + 1000;//stay surrendered for at least 1 second
 			//FIXME: while surrendering, make a big sight/sound alert? Or G_AlertTeam?
 		}
@@ -1570,7 +1570,7 @@ void NPC_Surrender( void )
 			else
 			{
 				NPC_SetAnim(NPC, SETANIM_TORSO, TORSO_SURRENDER_START, SETANIM_FLAG_HOLD | SETANIM_FLAG_OVERRIDE);
-				NPC->client->ps.torsoAnimTimer = 1500;			
+				NPC->client->ps.torsoAnimTimer = 2000;			
 			}
 		}
 	 	NPCInfo->surrenderTime = level.time + NPC->client->ps.torsoAnimTimer + 1000;
@@ -1587,6 +1587,10 @@ qboolean NPC_CheckSurrender(qboolean noEscape = qfalse)
 	{//not enabled
 		return qfalse;
 	}
+	if (NPC->s.weapon != WP_NONE && NPC->s.weapon != WP_MELEE)
+	{
+		return qfalse;
+	}
 	if (!Q3_TaskIDPending(NPC, TID_MOVE_NAV) //not scripted to go somewhere
 		&& NPC->client->ps.groundEntityNum != ENTITYNUM_NONE //not in the air
 		&& !NPC->client->ps.weaponTime && !PM_InKnockDown(&NPC->client->ps)//not firing and not on the ground
@@ -1597,7 +1601,9 @@ qboolean NPC_CheckSurrender(qboolean noEscape = qfalse)
 		
 			//we "might" surrender, check number of enemies
 			int numEnemies = NPC_CheckMultipleEnemies(NPC, NPC->client->enemyTeam, 0);
-			int relNumEnemies = numEnemies - NPCInfo->group->numGroup;
+			int numMyGroup = 0;
+			if (NPCInfo->group)	numMyGroup = NPCInfo->group->numGroup;			
+			int relNumEnemies = numEnemies - numMyGroup;
 			//0 means there is a 1-1 ratio, < 0 means my group is bigger by x, > 0 means my group is smaller by x
 
 			if (numEnemies == 1 && (NPC->enemy->s.weapon == WP_MELEE || NPC->enemy->s.weapon == WP_NONE))
@@ -1622,16 +1628,15 @@ qboolean NPC_CheckSurrender(qboolean noEscape = qfalse)
 
 			if (NPC->s.weapon == WP_NONE
 				//NPC has a weapon					
-				|| NPC->enemy == player
+				/*|| NPC->enemy == player
 				|| (NPC->enemy->s.weapon == WP_SABER&&NPC->enemy->client&&NPC->enemy->client->ps.SaberActive())
-				|| (NPC->enemy->NPC && NPC->enemy->NPC->group && NPC->enemy->NPC->group->numGroup > 2))
+				|| (NPC->enemy->NPC && NPC->enemy->NPC->group && NPC->enemy->NPC->group->numGroup > 2)*/)
 			{//surrender only if have no weapon or fighting a player or jedi or if we are outnumbered at least 3 to 1
 				if (NPC->enemy == player)
 				{//player is the guy I'm running from						
 					if ((g_crosshairEntNum == NPC->s.number && InFOV(player, NPC, 60, 30))
-						|| DistanceSquared(NPC->currentOrigin, player->currentOrigin) < 200 * 200
-						|| ((DistanceSquared(NPC->currentOrigin, player->currentOrigin) < 512 * 512)
-						&& (InFOV(NPC, player, 60, 30) || numEnemies > 1)))
+						|| DistanceSquared(NPC->currentOrigin, player->currentOrigin) < 256 * 256
+						|| ((DistanceSquared(NPC->currentOrigin, player->currentOrigin) < 512 * 512) && (InFOV(NPC, player, 60, 30) || numEnemies > 1)))
 					{//give up if I see player aiming at me, player is very close, or player is near and watching me/has buddies
 						//NPC_FaceEnemy();
 						NPC_Surrender();
@@ -1641,11 +1646,11 @@ qboolean NPC_CheckSurrender(qboolean noEscape = qfalse)
 				}
 				else if (NPC->enemy)
 				{//running from another NPC
-					if (InFOV(NPC, NPC->enemy, 30, 30) || relNumEnemies > 1)
+					if (InFOV(NPC, NPC->enemy, 30, 30) || numEnemies > 1)
 					{//they're looking at me or have friends
 						//float maxDist = (128+(NPC->maxs[0]*1.5)+(NPC->enemy->maxs[0]*1.5)); //64
-						float maxDist = 128;
-						float maxDistMultEnemies = 256;
+						float maxDist = 256;
+						float maxDistMultEnemies = 512;
 						maxDist *= maxDist;
 						maxDistMultEnemies *= maxDistMultEnemies;
 						if (DistanceSquared(NPC->currentOrigin, NPC->enemy->currentOrigin) < maxDist

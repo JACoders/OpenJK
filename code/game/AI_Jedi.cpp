@@ -5471,11 +5471,11 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 				|| NPC->client->ps.forcePowerDebounce[FP_DRAIN] > level.time || NPC->client->ps.forcePowerDebounce[FP_LIGHTNING] > level.time))
 			{//not in the middle of pushing, pulling, draining, or zapping
 				if ((level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500 
-						|| level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500)) //we tried pushing/pulling the last 1.5 seconds
+						|| level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500)) //we tried pushing/pulling in the last 1.5 seconds
 				{//we already tried to push/pull and aren't using another force power
 					if (!Q_irand(0, 10) - NPCInfo->stats.aggression)
 					{
-						TIMER_Set(NPC, "attackDelay", Q_irand(500, 2000)); //don't try a punch again for a while
+						TIMER_Set(NPC, "attackDelay", Q_irand(2000, 3000)); //don't try a punch again for a while
 					}
 				}
 			}						

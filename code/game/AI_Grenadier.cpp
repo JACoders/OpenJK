@@ -510,12 +510,15 @@ void NPC_BSGrenadier_Attack( void )
 	shoot = qfalse;
 	enemyDist = DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin );
 
+	qboolean enemyUsingSaber = qfalse;
+	if ((NPC->enemy->client && NPC->enemy->client->ps.weapon == WP_SABER && NPC->enemy->client->ps.SaberActive()))
+	{
+		enemyUsingSaber = qtrue;
+	}
+
 	//See if we should switch to melee attack
-	if ( (enemyDist < 16384 
-		&& (!NPC->enemy->client||NPC->enemy->client->ps.weapon != WP_SABER||(!NPC->enemy->client->ps.SaberActive())))
-		||
-		(enemyDist < 4096 //64 squared
-		&& Q_irand(0,1)))//50% chance to throw a punch if player is super close
+	if ( (enemyDist < 16384 && enemyUsingSaber)
+		|| (enemyDist < 64*64 && !Q_irand(0,3))) //slight chance to throw a punch if player is super close
 		// 50% chance if enemy very close to use melee on saber wielding enemy
 	{//enemy is close and not using saber or very close and random chance
 		if ( NPC->client->ps.weapon == WP_THERMAL )
@@ -527,21 +530,46 @@ void NPC_BSGrenadier_Attack( void )
 				//reset fire-timing variables
 				if (NPCInfo->aiFlags&NPCAI_HEAVY_MELEE)
 				{
-					NPC_ChangeWeapon(WP_MELEE);
-					if (!(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES))//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
-					{//FIXME: should we be overriding scriptFlags?
-						NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
+					if (enemyUsingSaber && NPC->attackDebounceTime < level.time)
+					{//don't try this again for a little while
+						NPC->attackDebounceTime = level.time + Q_irand(1000, 3000);
+						NPC_ChangeWeapon(WP_MELEE);
+						if (!(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES))//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
+						{//FIXME: should we be overriding scriptFlags?
+							NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
+						}
 					}
+					else
+					{//not using saber, just do it
+						NPC_ChangeWeapon(WP_MELEE);
+						if (!(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES))//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
+						{//FIXME: should we be overriding scriptFlags?
+							NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
+						}
+					}
+					
 				}				
 			}
 		}
 	}
-	else if ( enemyDist > 65536 || (NPC->enemy->client && NPC->enemy->client->ps.weapon == WP_SABER && NPC->enemy->client->ps.SaberActive()) )//256
+	else if ( enemyDist > 65536 || enemyUsingSaber )//256
 	{//enemy is far or using saber
 		if ( NPC->client->ps.weapon == WP_MELEE && (NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_THERMAL)) )
 		{//fisticuffs, make switch to thermal if have it
 			//reset fire-timing variables
-			NPC_ChangeWeapon( WP_THERMAL );
+			if (enemyUsingSaber && enemyDist < 64*64)
+			{//if enemy is close and using saber, wait until we've at least had a short chance to use melee
+				if (NPC->attackDebounceTime > level.time)
+				{
+					NPC->attackDebounceTime = level.time + Q_irand(1500, 3500);
+					NPC_ChangeWeapon(WP_THERMAL);
+				}
+			}
+			else
+			{
+				NPC_ChangeWeapon(WP_THERMAL);
+			}
+			
 		}
 	}
 
