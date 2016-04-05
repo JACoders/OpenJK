@@ -142,6 +142,14 @@ void GLimp_Minimize(void)
 	SDL_MinimizeWindow( screen );
 }
 
+#ifdef _WIN32
+qboolean con_alert;
+static FLASHWINFO fi;
+void GLimp_Alert(void) {
+	FlashWindowEx(&fi);
+}
+#endif
+
 void WIN_Present( window_t *window )
 {
 	if ( window->api == GRAPHICS_API_OPENGL )
@@ -778,15 +786,23 @@ window_t WIN_Init( const windowDesc_t *windowDesc, glconfig_t *glConfig )
 
 	window.api = windowDesc->api;
 
-#if defined(_WIN32)
+#ifdef _WIN32
 	SDL_SysWMinfo info;
 	SDL_VERSION(&info.version);
+
+	con_alert = qfalse;
 
 	if ( SDL_GetWindowWMInfo(screen, &info) )
 	{
 		switch(info.subsystem) {
 			case SDL_SYSWM_WINDOWS:
 				window.handle = info.info.win.window;
+
+				fi.cbSize = sizeof(FLASHWINFO);
+				fi.hwnd = info.info.win.window;
+				fi.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG;
+				fi.uCount = 0;
+				fi.dwTimeout = 0;
 				break;
 
 			default:

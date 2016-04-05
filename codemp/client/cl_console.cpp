@@ -38,6 +38,7 @@ cvar_t		*con_conspeed;
 cvar_t		*con_notifytime;
 cvar_t		*con_opacity; // background alpha multiplier
 cvar_t		*con_autoclear;
+cvar_t		*con_notifyname;
 
 #define	DEFAULT_CONSOLE_WIDTH	78
 
@@ -507,6 +508,7 @@ void Con_Init (void) {
 
 	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE, "Opacity of console background");
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE, "Automatically clear console input on close");
+	con_notifyname = Cvar_Get("con_notifyname", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
@@ -551,6 +553,7 @@ Con_Linefeed
 static void Con_Linefeed (qboolean skipnotify)
 {
 	int		i;
+	char	design[] = "::::::::";
 
 	// mark time for transparent overlay
 	if (con.current >= 0)
@@ -561,11 +564,14 @@ static void Con_Linefeed (qboolean skipnotify)
 			  con.times[con.current % NUM_CON_TIMES] = cls.realtime;
 	}
 
-	con.x = 0;
+	con.x = 9;
 	if (con.display == con.current)
 		con.display++;
 	con.current++;
-	for(i=0; i<con.linewidth; i++)
+	for (i = 0; i < 9; i++) {
+		con.text[(con.current%con.totallines)*con.linewidth + i] = (ColorIndex(COLOR_GREY) << 8) | design[i];
+	}
+	for(i=9; i<con.linewidth; i++)
 		con.text[(con.current%con.totallines)*con.linewidth+i] = (ColorIndex(COLOR_WHITE)<<8) | ' ';
 }
 
@@ -578,12 +584,15 @@ All console printing must go through this in order to be logged to disk
 If no console is visible, the text will appear at the top of the game window
 ================
 */
+static qtime_t lastTime;
 void CL_ConsolePrint( const char *txt) {
 	int		y;
 	int		c, l;
-	int		color;
+	int		color, stampColor;
 	qboolean skipnotify = qfalse;		// NERVE - SMF
 	int prev;							// NERVE - SMF
+	char txtt[MAXPRINTMSG];
+	qtime_t	now;
 
 	// TTimo - prefix for text that shows up in console but not in notify
 	// backported from RTCW
@@ -593,26 +602,39 @@ void CL_ConsolePrint( const char *txt) {
 	}
 	if ( txt[0] == '*' ) {
 		char *txtc;
-
+		
 		skipnotify = qtrue;
 		txt += 1;
 
 		txtc = va("%s", txt);
 		Q_StripColor(txtc);
 		CL_LogPrintf(cls.log.chat, va("%s", txtc));
-	}
 
-	if (con.x == 0) {
-		char txtt[MAXPRINTMSG];
-		qtime_t	now;
-		Com_RealTime(&now);
-		Com_sprintf(txtt, sizeof(txtt), "^9%02d:%02d:%02d ^7%s", now.tm_hour, now.tm_min, now.tm_sec, txt);
-		txt = va("%s", txtt);
+		if (con_notifyname->string != "0" && Q_stristr(Q_strrchr(txtc, ':'), con_notifyname->string)) {
+			stampColor = COLOR_CYAN;
+			#ifdef _WIN32
+			con_alert = qtrue;
+			#endif
+		}
+		else stampColor = COLOR_WHITE;
 	}
+	else if (txt[0] == ']') stampColor = COLOR_GREEN;
+	else stampColor = COLOR_GREY;
+	stampColor -= '0';
 
 	// for some demos we don't want to ever show anything on the console
 	if ( cl_noprint && cl_noprint->integer ) {
 		return;
+	}
+
+	Com_RealTime(&now);
+	if (lastTime.tm_hour != now.tm_hour || lastTime.tm_min != now.tm_min || lastTime.tm_sec != now.tm_sec) {
+		lastTime.tm_hour = now.tm_hour, lastTime.tm_min = now.tm_min, lastTime.tm_sec = now.tm_sec;
+		Com_sprintf(txtt, sizeof(txtt), "^%i%02d:%02d:%02d ^7%s", stampColor, now.tm_hour, now.tm_min, now.tm_sec, txt);
+		txt = va("%s", txtt);
+	}
+	else {
+		txt = va("^%i%s ^7%s", stampColor, "::::::::", txt);
 	}
 
 	if (!con.initialized) {
@@ -644,7 +666,6 @@ void CL_ConsolePrint( const char *txt) {
 		// word wrap
 		if (l != con.linewidth && (con.x + l >= con.linewidth) ) {
 			Con_Linefeed(skipnotify);
-
 		}
 
 		txt++;
@@ -655,7 +676,7 @@ void CL_ConsolePrint( const char *txt) {
 			Con_Linefeed (skipnotify);
 			break;
 		case '\r':
-			con.x = 0;
+			con.x = 9;
 			break;
 		default:	// display character and advance
 			y = con.current % con.totallines;
@@ -668,6 +689,7 @@ void CL_ConsolePrint( const char *txt) {
 		}
 	}
 
+	con.x = 0;
 
 	// mark time for transparent overlay
 

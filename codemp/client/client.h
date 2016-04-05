@@ -540,6 +540,9 @@ void Con_SetFrac(const float conFrac);
 void Con_Copy(void);
 void Con_CopyLink(void);
 
+#ifdef _WIN32
+extern qboolean con_alert;
+#endif
 
 //
 // cl_scrn.c
