@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "ghoul2/ghoul2_shared.h"
 #include "sv_gameapi.h"
+#include <chrono>
 
 serverStatic_t	svs;				// persistant server info
 server_t		sv;					// local server
@@ -64,10 +65,14 @@ cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
 cvar_t	*sv_legacyFixForceSelect;
 cvar_t	*sv_banFile;
+cvar_t  *sv_hibernateTime;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
 
+std::chrono::time_point<std::chrono::system_clock> lastTimeDisconnected;
+std::string sv_fps_old;
+bool hibernationEnabled = false;
 /*
 =============================================================================
 
@@ -1059,6 +1064,27 @@ void SV_Frame( int msec ) {
 		SV_Shutdown ("Server was killed.\n");
 		Cvar_Set( "sv_killserver", "0" );
 		return;
+	}
+
+	if (svs.initialized && svs.gameStarted) {
+		int i = 0;
+		int players = 0;
+		for (i = 0; i < sv_maxclients->integer; i++) {
+			if (svs.clients[i].state >= CS_CONNECTED && svs.clients[i].netchan.remoteAddress.type != NA_BOT) {
+				players++;
+			}
+		}
+
+		//Check for hibernation mode
+		if (sv_hibernateTime->integer && !hibernationEnabled && i == sv_maxclients->integer && !players) {
+			std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
+			long long elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(time - lastTimeDisconnected).count();
+			if (elapsed_time >= sv_hibernateTime->integer) {
+				Cvar_Set("sv_fps", "1");
+				hibernationEnabled = true;
+				Com_Printf("Server switched to hibernation mode\n");
+			}
+		}
 	}
 
 	if ( !com_sv_running->integer ) {

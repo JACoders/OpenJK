@@ -23,12 +23,13 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <chrono>
+
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "game/g_public.h"
 #include "game/bg_public.h"
 #include "rd-common/tr_public.h"
-
 //=============================================================================
 
 #define	PERS_SCORE				0		// !!! MUST NOT CHANGE, SERVER AND
@@ -291,9 +292,14 @@ extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
 extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
+extern	cvar_t	*sv_hibernateTime;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
+
+extern  std::string sv_fps_old;
+extern  bool hibernationEnabled;
+extern std::chrono::time_point<std::chrono::system_clock> lastTimeDisconnected;
 
 //===========================================================
 

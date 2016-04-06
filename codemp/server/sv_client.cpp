@@ -36,7 +36,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "server/sv_gameapi.h"
 
 static void SV_CloseDownload( client_t *cl );
-
 /*
 =================
 SV_GetChallenge
@@ -294,13 +293,13 @@ void SV_DirectConnect( netadr_t from ) {
 
 		// never reject a LAN client based on ping
 		if ( !Sys_IsLANAddress( from ) ) {
-			if ( sv_minPing->value && ping < sv_minPing->value ) {
+			if ( ( sv_minPing->value && ping < sv_minPing->value ) && !hibernationEnabled ) {
 				NET_OutOfBandPrint( NS_SERVER, from, va("print\n%s\n", SE_GetString("MP_SVGAME", "SERVER_FOR_HIGH_PING")));//Server is for high pings only\n" );
 				Com_DPrintf (SE_GetString("MP_SVGAME", "CLIENT_REJECTED_LOW_PING"), i);//"Client %i rejected on a too low ping\n", i);
 				challengeptr->wasrefused = qtrue;
 				return;
 			}
-			if ( sv_maxPing->value && ping > sv_maxPing->value ) {
+			if ( ( sv_maxPing->value && ping > sv_maxPing->value ) && !hibernationEnabled ){
 				NET_OutOfBandPrint( NS_SERVER, from, va("print\n%s\n", SE_GetString("MP_SVGAME", "SERVER_FOR_LOW_PING")));//Server is for low pings only\n" );
 				Com_DPrintf (SE_GetString("MP_SVGAME", "CLIENT_REJECTED_HIGH_PING"), i);//"Client %i rejected on a too high ping\n", i);
 				challengeptr->wasrefused = qtrue;
@@ -420,6 +419,10 @@ gotnewcl:
 		return;
 	}
 
+	Cvar_Set( "sv_fps", sv_fps_old.c_str());
+	hibernationEnabled = false;
+	Com_Printf("Server restored from hibernation\n");
+
 	SV_UserinfoChanged( newcl );
 
 	// send the connect packet to the client
@@ -452,7 +455,6 @@ gotnewcl:
 		SV_Heartbeat_f();
 	}
 }
-
 
 /*
 =====================
@@ -522,6 +524,12 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	// to the master so it is known the server is empty
 	// send a heartbeat now so the master will get up to date info
 	// if there is already a slot for this ip, reuse it
+	int players = 0;
+	for (i = 0; i < sv_maxclients->integer; i++) {
+		if (svs.clients[i].state >= CS_CONNECTED && !svs.clients[i].netchan.remoteAddress.type == NA_BOT) {
+			players++;
+		}
+	}
 	for (i=0 ; i < sv_maxclients->integer ; i++ ) {
 		if ( svs.clients[i].state >= CS_CONNECTED ) {
 			break;
@@ -529,6 +537,9 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 	}
 	if ( i == sv_maxclients->integer ) {
 		SV_Heartbeat_f();
+	}
+	if (players == 0) {
+		lastTimeDisconnected = std::chrono::system_clock::now();
 	}
 }
 

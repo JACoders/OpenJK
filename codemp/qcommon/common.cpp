@@ -1396,7 +1396,8 @@ int Com_ModifyMsec( int msec ) {
 		// period, because it would mess up all the client's views
 		// of time.
 		if ( com_sv_running->integer && msec > 500 ) {
-			Com_Printf( "Hitch warning: %i msec frame time\n", msec );
+			if (!hibernationEnabled) //hibernation mode cause this
+				Com_Printf("Hitch warning: %i msec frame time\n", msec);
 		}
 		clampTime = 5000;
 	} else
