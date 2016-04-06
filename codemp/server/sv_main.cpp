@@ -66,13 +66,10 @@ cvar_t	*sv_autoDemoMaxMaps;
 cvar_t	*sv_legacyFixForceSelect;
 cvar_t	*sv_banFile;
 cvar_t  *sv_hibernateTime;
+cvar_t  *sv_hibernateFps;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
-
-std::chrono::time_point<std::chrono::system_clock> lastTimeDisconnected;
-std::string sv_fps_old;
-bool hibernationEnabled = false;
 /*
 =============================================================================
 
@@ -1076,12 +1073,12 @@ void SV_Frame( int msec ) {
 		}
 
 		//Check for hibernation mode
-		if (sv_hibernateTime->integer && !hibernationEnabled && i == sv_maxclients->integer && !players) {
+		if (sv_hibernateTime->integer && !svs.hibernation.enabled && i == sv_maxclients->integer && !players) {
 			std::chrono::time_point<std::chrono::system_clock> time = std::chrono::system_clock::now();
-			long long elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(time - lastTimeDisconnected).count();
+			long long elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(time - svs.hibernation.lastTimeDisconnected).count();
 			if (elapsed_time >= sv_hibernateTime->integer) {
 				Cvar_Set("sv_fps", "1");
-				hibernationEnabled = true;
+				svs.hibernation.enabled = true;
 				Com_Printf("Server switched to hibernation mode\n");
 			}
 		}

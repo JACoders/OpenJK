@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <chrono>
+#include <string>
 
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
@@ -238,6 +239,10 @@ typedef struct serverStatic_s {
 	netadr_t	authorizeAddress;			// for rcon return messages
 
 	qboolean	gameStarted;				// gvm is loaded
+	struct {
+		bool enabled;
+		std::chrono::time_point<std::chrono::system_clock> lastTimeDisconnected;
+	} hibernation;							// handle hibernation mode data
 } serverStatic_t;
 
 #define SERVER_MAXBANS	1024
@@ -293,13 +298,10 @@ extern	cvar_t	*sv_autoDemoMaxMaps;
 extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
 extern	cvar_t	*sv_hibernateTime;
+extern  cvar_t  *sv_hibernateFps;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
-
-extern  std::string sv_fps_old;
-extern  bool hibernationEnabled;
-extern std::chrono::time_point<std::chrono::system_clock> lastTimeDisconnected;
 
 //===========================================================
 
