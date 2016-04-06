@@ -1,5 +1,28 @@
 (Dusty's Patch changelog)
-10/9/15 -
+cvars to-do:
+separate cvars into global and savegame versions, have global take priority?
+camera cvars?
+cvars for force push blur effects?
+
+increased modability:
+- separate lightning block effect into own .efx file
+- external file for controlling force push/pull/absorb/protect effects
+- Class_Wookiee, Class_Cultist
+- weapons.dat stuff (npcDamageMult, npcSpeedMult)
+- alt-fire field works for .npc files?
+- other .npc fields:
+fastPunches, kicks, freeMovement, aggression = punching...
+- 
+
+other:
+- kick knockdown based on hit location
+- better Jedi AI
+- NPCs avoid walls and cliffs
+- better saber throws, strong force push
+
+
+-----------------------------------------------------------------------
+Only larger/more important changes recorded here:
 new cvars:
 g_autoRoll - been there for a while, now works 100% correctly, if 1
 default JA behavior, if 0 you have to be holding USE to roll
@@ -21,22 +44,6 @@ under certain conditions
 g_saberMoreRealistic - no longer write-protected
 g_weaponVelocity, g_weaponAltVelocity - use this to multiply the speed of most projectiles
 
-cvars to-do:
-separate cvars into global and savegame versions, have global take priority?
-camera cvars?
-cvars for force push blur effects?
-
-increased modability:
-- separate lightning block effect into own .efx file
-- external file for controlling force push/pull effects
-- Class_Wookiee, Class_Cultist
-- weapons.dat stuff (NPCDamageMult, NPCFireTimeMult)
-- alt-fire field works for NPCs?
-
-
-
------------------------------------------------------------------------
-Only larger/more important changes recorded here:
 Gameplay mechanics -
 Force powers -- (with g_forceNewPowers 1)
 - Force Jump height for all levels increased by 25%
