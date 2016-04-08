@@ -419,7 +419,7 @@ gotnewcl:
 		return;
 	}
 
-	Cvar_Set( "sv_fps", sv_hibernateFps->string);
+	Cvar_SetValue("sv_fps", svs.hibernation.sv_fps);
 	svs.hibernation.enabled = false;
 	Com_Printf("Server restored from hibernation\n");
 
@@ -539,7 +539,7 @@ void SV_DropClient( client_t *drop, const char *reason ) {
 		SV_Heartbeat_f();
 	}
 	if (players == 0) {
-		svs.hibernation.lastTimeDisconnected = std::chrono::system_clock::now();
+		svs.hibernation.lastTimeDisconnected = Sys_Milliseconds();
 	}
 }
 

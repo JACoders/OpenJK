@@ -241,7 +241,8 @@ typedef struct serverStatic_s {
 	qboolean	gameStarted;				// gvm is loaded
 	struct {
 		bool enabled;
-		std::chrono::time_point<std::chrono::system_clock> lastTimeDisconnected;
+		int lastTimeDisconnected;
+		float sv_fps;
 	} hibernation;							// handle hibernation mode data
 } serverStatic_t;
 
@@ -298,7 +299,6 @@ extern	cvar_t	*sv_autoDemoMaxMaps;
 extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
 extern	cvar_t	*sv_hibernateTime;
-extern  cvar_t  *sv_hibernateFps;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;

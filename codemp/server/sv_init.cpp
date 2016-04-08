@@ -999,7 +999,7 @@ void SV_Init (void) {
 	sv_banFile = Cvar_Get( "sv_banFile", "serverbans.dat", CVAR_ARCHIVE, "File to use to store bans and exceptions" );
 	
 	sv_hibernateTime = Cvar_Get( "sv_hibernateTime", "0", CVAR_ARCHIVE, "Time after which server will enter hibernation mode" );
-	sv_hibernateFps = Cvar_Get( "sv_hibernateFps", sv_fps->string, CVAR_INTERNAL, "Holds default fps which should be set when server goes out of hibernation mode" );
+	svs.hibernation.sv_fps = sv_fps->value;
 
 	// initialize bot cvars so they are listed and can be set before loading the botlib
 	SV_BotInitCvars();
