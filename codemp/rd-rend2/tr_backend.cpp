@@ -642,12 +642,10 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 	{
 		const DrawItem& drawItem = drawItems[drawOrder[i]];
 
-		int q3CullType = drawItem.cullType & 0xffff;
-		int glCullType = (drawItem.cullType >> 16) & 0xfff;
-		if ( glState.faceCulling != q3CullType )
+		if ( glState.faceCulling != drawItem.cullType )
 		{
-			glState.faceCulling = q3CullType;
-			switch ( glCullType )
+			glState.faceCulling = drawItem.cullType;
+			switch ( drawItem.cullType )
 			{
 				case GL_NONE:
 				{

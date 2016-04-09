@@ -3,27 +3,17 @@ in vec3 attr_Position;
 in vec3 attr_Normal;
 in vec4 attr_TexCoord0;
 
-//#if defined(USE_VERTEX_ANIMATION)
 in vec3 attr_Position2;
 in vec3 attr_Normal2;
-//#endif
 
-//#if defined(USE_DEFORM_VERTEXES)
 uniform int u_DeformType;
 uniform int u_DeformFunc;
 uniform float u_DeformParams[7];
-//#endif
 
 uniform float u_Time;
 uniform mat4 u_ModelViewProjectionMatrix;
 
-uniform mat4 u_ModelMatrix;
-
-//#if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
-//#endif
-
-out vec3 var_Position;
 
 float GetNoiseValue( float x, float y, float z, float t )
 {
@@ -168,54 +158,12 @@ void main()
 	normal = normalize(normal - vec3(0.5));
 
 	position = DeformPosition(position, normal, attr_TexCoord0.st);
-	normal = DeformNormal( position, normal );
-
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
-	
-	var_Position  = (u_ModelMatrix * vec4(position, 1.0)).xyz;
 }
 
 /*[Fragment]*/
-uniform vec4  u_LightOrigin;
-uniform float u_LightRadius;
-
-in vec3 var_Position;
-
 out vec4 out_Color;
-
 void main()
 {
-#if defined(USE_DEPTH)
-	float depth = length(u_LightOrigin.xyz - var_Position) / u_LightRadius;
- #if 0
-	// 32 bit precision
-	const vec4 bitSh = vec4( 256 * 256 * 256,   256 * 256,         256,           1);
-	const vec4 bitMsk = vec4(              0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
-	
-	vec4 comp;
-	comp = depth * bitSh;
-	comp.xyz = fract(comp.xyz);
-	comp -= comp.xxyz * bitMsk;
-	out_Color = comp;
- #endif
-
- #if 1
-	// 24 bit precision
-	const vec3 bitSh = vec3( 256 * 256,         256,           1);
-	const vec3 bitMsk = vec3(        0, 1.0 / 256.0, 1.0 / 256.0);
-	
-	vec3 comp;
-	comp = depth * bitSh;
-	comp.xy = fract(comp.xy);
-	comp -= comp.xxy * bitMsk;
-	out_Color = vec4(comp, 1.0);
- #endif
-
- #if 0
-	// 8 bit precision
-	out_Color = vec4(depth, depth, depth, 1);
- #endif
-#else
 	out_Color = vec4(0, 0, 0, 1);
-#endif
 }

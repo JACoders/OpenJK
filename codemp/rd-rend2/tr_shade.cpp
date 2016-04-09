@@ -1714,9 +1714,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		}
 	}
 
-	// Pack the cull types
-	cullType = (cullType << 16) | (input->shader->cullType & 0xfff);
-
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 
@@ -2102,7 +2099,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 }
 
 
-static void RB_RenderShadowmap( shaderCommands_t *input )
+static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
 {
 	deform_t deformType;
 	genFunc_t deformGen;
@@ -2110,53 +2107,97 @@ static void RB_RenderShadowmap( shaderCommands_t *input )
 
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
+	GLenum cullType = GL_NONE;
+	if ( !backEnd.projection2D )
 	{
-		shaderProgram_t *sp = &tr.shadowmapShader;
-
-		vec4_t vector;
-
-		GLSL_BindProgram(sp);
-
-		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-
-		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
-
-		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
-
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
-		if (deformType != DEFORM_NONE)
+		if ( input->shader->cullType != CT_TWO_SIDED ) 
 		{
-			GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
-			GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
-			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
-		}
-
-		VectorCopy(backEnd.viewParms.ori.origin, vector);
-		vector[3] = 1.0f;
-		GLSL_SetUniformVec4(sp, UNIFORM_LIGHTORIGIN, vector);
-		GLSL_SetUniformFloat(sp, UNIFORM_LIGHTRADIUS, backEnd.viewParms.zFar);
-
-		GL_State( 0 );
-
-		//
-		// do multitexture
-		//
-		//if ( pStage->glslShaderGroup )
-		{
-			//
-			// draw
-			//
-
-			if (input->multiDrawPrimitives)
+			bool cullFront = (input->shader->cullType == CT_FRONT_SIDED);
+			if ( backEnd.viewParms.isMirror )
 			{
-				R_DrawMultiElementsVBO(input->multiDrawPrimitives, input->multiDrawMinIndex, input->multiDrawMaxIndex, input->multiDrawNumIndexes, input->multiDrawFirstIndex);
+				cullFront = !cullFront;
 			}
-			else
+
+			if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
 			{
-				R_DrawElementsVBO(input->numIndexes, input->firstIndex, input->minIndex, input->maxIndex);
+				cullFront = !cullFront;
 			}
+
+			// NOTE: This is intentionally backwards. Shadow maps cull front faces
+			// when the forward pass would cull the back face.
+			cullType = (cullFront ? GL_BACK : GL_FRONT);
 		}
 	}
+
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
+
+	Allocator uniformDataAlloc(backEndData->perFrameMemory->Alloc(128), 128, 1);
+	UniformDataWriter uniformDataWriter(uniformDataAlloc);
+
+	shaderProgram_t *sp = &tr.shadowmapShader;
+	uniformDataWriter.Start(sp);
+	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	uniformDataWriter.SetUniformFloat(UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
+	uniformDataWriter.SetUniformInt(UNIFORM_DEFORMTYPE, deformType);
+	uniformDataWriter.SetUniformInt(UNIFORM_DEFORMFUNC, deformGen);
+	uniformDataWriter.SetUniformFloat(UNIFORM_DEFORMPARAMS, deformParams, 7);
+	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
+
+	DrawItem item = {};
+	item.cullType = cullType;
+	item.program = sp;
+	item.maxDepthRange = input->maxDepthRange;
+	item.ibo = input->externalIBO ? input->externalIBO : input->ibo;
+
+	item.numAttributes = vertexArrays->numVertexArrays;
+	item.attributes = ojkAllocArray<vertexAttribute_t>(
+		*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
+	memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
+
+	item.uniformData = uniformDataWriter.Finish();
+	item.draw.primitiveType = GL_TRIANGLES;
+	item.draw.numInstances = 1;
+
+	if ( input->multiDrawPrimitives )
+	{
+		if ( input->multiDrawPrimitives == 1 )
+		{
+			item.draw.type = DRAW_COMMAND_INDEXED;
+			item.draw.params.indexed.firstIndex = (glIndex_t)(input->multiDrawFirstIndex[0]);
+			item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
+		}
+		else
+		{
+			item.draw.type = DRAW_COMMAND_MULTI_INDEXED;
+			item.draw.params.multiIndexed.numDraws = input->multiDrawPrimitives;
+
+			item.draw.params.multiIndexed.firstIndices =
+				ojkAllocArray<glIndex_t *>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
+			memcpy(item.draw.params.multiIndexed.firstIndices,
+				input->multiDrawFirstIndex,
+				sizeof(glIndex_t *) * input->multiDrawPrimitives);
+
+			item.draw.params.multiIndexed.numIndices =
+				ojkAllocArray<GLsizei>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
+			memcpy(item.draw.params.multiIndexed.numIndices,
+				input->multiDrawNumIndexes,
+				sizeof(GLsizei *) * input->multiDrawPrimitives);
+		}
+	}
+	else
+	{
+		int offset = input->firstIndex * sizeof(glIndex_t) +
+			(tess.useInternalVBO ? tess.internalIBOCommitOffset : 0);
+
+		item.draw.type = DRAW_COMMAND_INDEXED;
+		item.draw.params.indexed.firstIndex = offset;
+		item.draw.params.indexed.numIndices = input->numIndexes;
+	}
+
+	// FIXME: Use depth to object
+	uint32_t key = 0;
+	RB_AddDrawItem(backEndData->currentPass, key, item);
 }
 
 /*
@@ -2223,38 +2264,13 @@ void RB_StageIteratorGeneric( void )
 	}
 	else if (backEnd.viewParms.flags & VPF_SHADOWMAP)
 	{
-		//
-		// render shadowmap if in shadowmap mode
-		//
 		if ( input->shader->sort == SS_OPAQUE )
 		{
-			//
-			// set face culling appropriately
-			//
-			if ((backEnd.viewParms.flags & VPF_DEPTHSHADOW))
-			{
-				if (input->shader->cullType == CT_TWO_SIDED)
-					GL_Cull( CT_TWO_SIDED );
-				else if (input->shader->cullType == CT_FRONT_SIDED)
-					GL_Cull( CT_BACK_SIDED );
-				else
-					GL_Cull( CT_FRONT_SIDED );
-		
-			}
-			else
-				GL_Cull( input->shader->cullType );
-
-			vertexAttribute_t attribs[ATTR_INDEX_MAX];
-			GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), &vertexArrays);
-			GL_VertexAttribPointers(vertexArrays.numVertexArrays, attribs);
-			RB_RenderShadowmap( input );
+			RB_RenderShadowmap(input, &vertexArrays);
 		}
 	}
 	else
 	{
-		//
-		// call shader function
-		//
 		RB_IterateStagesGeneric( input, &vertexArrays );
 
 #if 0 // don't do this for now while I get draw sorting working :)
