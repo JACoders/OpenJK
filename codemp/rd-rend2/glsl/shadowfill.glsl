@@ -1,40 +1,20 @@
+/*[Vertex]*/
 in vec3 attr_Position;
 in vec3 attr_Normal;
+in vec4 attr_TexCoord0;
 
-in vec2 attr_TexCoord0;
-
-#if defined(USE_VERTEX_ANIMATION)
 in vec3 attr_Position2;
 in vec3 attr_Normal2;
-#elif defined(USE_SKELETAL_ANIMATION)
-in uvec4 attr_BoneIndexes;
-in vec4 attr_BoneWeights;
-#endif
 
-uniform vec4 u_FogDistance;
-uniform vec4 u_FogDepth;
-uniform float u_FogEyeT;
-
-#if defined(USE_DEFORM_VERTEXES)
 uniform int u_DeformType;
 uniform int u_DeformFunc;
 uniform float u_DeformParams[7];
-#endif
 
 uniform float u_Time;
 uniform mat4 u_ModelViewProjectionMatrix;
 
-#if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
-#elif defined(USE_SKELETAL_ANIMATION)
-uniform mat4x3 u_BoneMatrices[20];
-#endif
 
-uniform vec4 u_Color;
-
-out float var_Scale;
-
-#if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )
 {
 	// Variation on the 'one-liner random function'.
@@ -170,62 +150,20 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 
 	return outNormal;
 }
-#endif
-
-float CalcFog(vec3 position)
-{
-	float s = dot(vec4(position, 1.0), u_FogDistance) * 8.0;
-	float t = dot(vec4(position, 1.0), u_FogDepth);
-
-	float eyeOutside = float(u_FogEyeT < 0.0);
-	float fogged = float(t >= eyeOutside);
-
-	t += 1e-6;
-	t *= fogged / (t - u_FogEyeT * eyeOutside);
-
-	return s * t;
-}
 
 void main()
 {
-#if defined(USE_VERTEX_ANIMATION)
-	vec3 position = mix(attr_Position, attr_Position2, u_VertexLerp);
-	vec3 normal   = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
+	vec3 position  = mix(attr_Position, attr_Position2, u_VertexLerp);
+	vec3 normal    = mix(attr_Normal,   attr_Normal2,   u_VertexLerp);
 	normal = normalize(normal - vec3(0.5));
-#elif defined(USE_SKELETAL_ANIMATION)
-	vec4 position4 = vec4(0.0);
-	vec4 normal4 = vec4(0.0);
-	vec4 originalPosition = vec4(attr_Position, 1.0);
-	vec4 originalNormal = vec4(attr_Normal - vec3 (0.5), 0.0);
 
-	for (int i = 0; i < 4; i++)
-	{
-		uint boneIndex = attr_BoneIndexes[i];
-
-		mat4 boneMatrix = mat4(
-			vec4(u_BoneMatrices[boneIndex][0], 0.0),
-			vec4(u_BoneMatrices[boneIndex][1], 0.0),
-			vec4(u_BoneMatrices[boneIndex][2], 0.0),
-			vec4(u_BoneMatrices[boneIndex][3], 1.0)
-		);
-
-		position4 += (boneMatrix * originalPosition) * attr_BoneWeights[i];
-		normal4 += (boneMatrix * originalNormal) * attr_BoneWeights[i];
-	}
-
-	vec3 position = position4.xyz;
-	vec3 normal = normalize(normal4.xyz);
-#else
-	vec3 position = attr_Position;
-	vec3 normal   = attr_Normal * 2.0 - vec3(1.0);
-#endif
-
-#if defined(USE_DEFORM_VERTEXES)
 	position = DeformPosition(position, normal, attr_TexCoord0.st);
-	normal = DeformNormal( position, normal );
-#endif
-
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
+}
 
-	var_Scale = CalcFog(position) * u_Color.a * u_Color.a;
+/*[Fragment]*/
+out vec4 out_Color;
+void main()
+{
+	out_Color = vec4(0, 0, 0, 1);
 }

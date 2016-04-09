@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 
 
+
 uint32_t R_VboPackTangent(vec4_t v)
 {
 	return (((uint32_t)(v[3] * 1.5f   + 2.0f  )) << 30)
@@ -68,6 +69,41 @@ static GLenum GetGLBufferUsage ( vboUsage_t usage )
 			return GL_INVALID_OPERATION;
 	}
 }
+
+#if 0
+struct Attribute
+{
+	int index;
+	GLenum type;
+	int numElements;
+	qboolean normalised;
+	int offset;
+	int stride;
+	int stream;
+};
+
+const int MAX_ATTRIBUTES = 8;
+struct VertexFormat
+{
+	Attribute attributes[MAX_ATTRIBUTES];
+	int numAttributes;
+};
+
+const int MAX_VERTEX_STREAMS = 2;
+struct VertexArrayObject
+{
+	GLuint vao;
+	IBO_t *ibo;
+	VBO_t *vbos[MAX_VERTEX_STREAMS];
+	int numStreams;
+	VertexFormat format;
+};
+
+VertexArrayObject *R_GetVertexArrayObject( const VertexFormat& format )
+{
+	return nullptr;
+}
+#endif
 
 /*
 ============
@@ -188,7 +224,6 @@ void R_BindVBO(VBO_t * vbo)
 	if(glState.currentVBO != vbo)
 	{
 		glState.currentVBO = vbo;
-		glState.vertexAttribPointersSet = 0;
 
 		glState.vertexAttribsInterpolation = 0;
 		glState.vertexAttribsOldFrame = 0;
@@ -264,7 +299,6 @@ void R_BindNullIBO(void)
 	{
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glState.currentIBO = NULL;
-		glState.vertexAttribPointersSet = 0;
 	}
 }
 
@@ -592,4 +626,19 @@ void RB_CommitInternalBufferData()
 {
 	tess.internalIBOCommitOffset = tess.internalIBOWriteOffset;
 	tess.internalVBOCommitOffset = tess.internalVBOWriteOffset;
+}
+
+void RB_UpdateUniformBlock(uniformBlock_t block, void *data)
+{
+	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
+	gpuFrame_t *thisFrame = backEndData->currentFrame;
+
+	qglBufferSubData(GL_UNIFORM_BUFFER,
+			thisFrame->uboWriteOffset, blockInfo->size, data);
+	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
+			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
+
+	// FIXME: Use actual ubo alignment
+	size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
+	thisFrame->uboWriteOffset += alignedBlockSize;
 }

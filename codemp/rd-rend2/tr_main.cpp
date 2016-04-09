@@ -1418,8 +1418,9 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 
 	R_RotateForViewer(&tr.viewParms);
 
-	R_DecomposeSort( drawSurf->sort, &shader, &cubemap, &fogNum, &postRender );
+	R_DecomposeSort( drawSurf->sort, &shader, &cubemap, &postRender );
 	entityNum = drawSurf->entityNum;
+	fogNum = drawSurf->fogIndex;
 
 	RB_BeginSurface( shader, fogNum, cubemap );
 	rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
@@ -1747,21 +1748,19 @@ bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity )
 R_DecomposeSort
 =================
 */
-void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *fogNum, int *postRender )
+void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender )
 {
-	*fogNum = (sort >> QSORT_FOGNUM_SHIFT) & QSORT_FOGNUM_MASK;
 	*shader = tr.sortedShaders[ ( sort >> QSORT_SHADERNUM_SHIFT ) & QSORT_SHADERNUM_MASK ];
 	*postRender = (sort >> QSORT_POSTRENDER_SHIFT ) & QSORT_POSTRENDER_MASK;
 	*cubemap = (sort >> QSORT_CUBEMAP_SHIFT ) & QSORT_CUBEMAP_MASK;
 }
 
-uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int fogIndex, int postRender)
+uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender)
 {
 	uint32_t key = 0;
 
 	key |= (sortedShaderIndex & QSORT_SHADERNUM_MASK) << QSORT_SHADERNUM_SHIFT;
 	key |= (cubemapIndex & QSORT_CUBEMAP_MASK) << QSORT_CUBEMAP_SHIFT;
-	key |= (fogIndex & QSORT_FOGNUM_MASK) << QSORT_FOGNUM_SHIFT;
 	key |= (postRender & QSORT_POSTRENDER_MASK) << QSORT_POSTRENDER_SHIFT;
 
 	return key;
@@ -1792,10 +1791,11 @@ void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,  in
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 	surf = tr.refdef.drawSurfs + index;
 
-	surf->sort = R_CreateSortKey(shader->sortedIndex, cubemap, fogIndex, postRender);
+	surf->sort = R_CreateSortKey(shader->sortedIndex, cubemap, postRender);
 	surf->entityNum = entityNum;
 	surf->lit = (qboolean)dlightMap;
 	surf->surface = surface;
+	surf->fogIndex = fogIndex;
 
 	tr.refdef.numDrawSurfs++;
 }
@@ -1829,11 +1829,10 @@ void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			for ( int i = 0 ; i < numDrawSurfs ; i++ ) {
 				int entityNum;
 				shader_t *shader;
-				int fogNum;
 				int postRender;
 				int cubemap;
 
-				R_DecomposeSort( (drawSurfs+i)->sort, &shader, &cubemap, &fogNum, &postRender );
+				R_DecomposeSort( (drawSurfs+i)->sort, &shader, &cubemap, &postRender );
 				entityNum = drawSurfs[i].entityNum;
 
 				if ( shader->sort > SS_PORTAL ) {

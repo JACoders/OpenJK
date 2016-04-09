@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_models.c -- model loading and caching
 
 #include "tr_local.h"
+#include "tr_cache.h"
 #include <qcommon/sstring.h>
 
 #define	LL(x) x=LittleLong(x)
@@ -287,7 +288,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 	}
 
 	// search the currently loaded models
-	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+	if( ( hModel = CModelCache->GetModelHandle( name ) ) != -1 )
 		return hModel;
 
 	if ( name[0] == '*' )
@@ -352,7 +353,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 			else
 			{
 				// Something loaded
-				CModelCache->InsertLoaded( name, hModel );
+				CModelCache->InsertModelHandle( name, hModel );
 				return mod->index;
 			}
 		}
@@ -382,7 +383,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 		}
 	}
 
-	CModelCache->InsertLoaded( name, hModel );
+	CModelCache->InsertModelHandle( name, hModel );
 	return hModel;
 }
 
@@ -719,7 +720,7 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 
 	if (!r_noServerGhoul2)
 	{ //keep it from choking when it gets to these checks in the g2 code. Registering all r_ cvars for the server would be a Bad Thing though.
-		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0);
+		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0, "");
 	}
 
 	if ( !name || !name[0] ) {
@@ -731,7 +732,7 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 	}
 
 	// search the currently loaded models
-	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+	if( ( hModel = CModelCache->GetModelHandle( name ) ) != -1 )
 		return hModel;
 
 	if ( name[0] == '*' )
@@ -782,13 +783,13 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 			if( hModel )
 			{
 				// Something loaded
-				CModelCache->InsertLoaded( name, hModel );
+				CModelCache->InsertModelHandle( name, hModel );
 				return mod->index;
 			}
 		}
 	}
 
-	CModelCache->InsertLoaded( name, hModel );
+	CModelCache->InsertModelHandle( name, hModel );
 	return hModel;
 }
 

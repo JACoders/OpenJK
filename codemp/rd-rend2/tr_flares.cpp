@@ -465,6 +465,7 @@ extend past the portal edge will be overwritten.
 ==================
 */
 void RB_RenderFlares (void) {
+#if 0
 	flare_t		*f;
 	flare_t		**prev;
 	qboolean	draw;
@@ -522,10 +523,6 @@ void RB_RenderFlares (void) {
 		return;		// none visible
 	}
 
-	if ( backEnd.viewParms.isPortal ) {
-		qglDisable (GL_CLIP_PLANE0);
-	}
-
 	Matrix16Copy(glState.projection, oldprojection);
 	Matrix16Copy(glState.modelview, oldmodelview);
 	Matrix16Identity(matrix);
@@ -545,6 +542,7 @@ void RB_RenderFlares (void) {
 
 	GL_SetProjectionMatrix(oldprojection);
 	GL_SetModelviewMatrix(oldmodelview);
+#endif
 }
 
 

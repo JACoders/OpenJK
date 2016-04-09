@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_map.c
 
 #include "tr_local.h"
+#include "tr_cache.h"
+#include <vector>
 
 /*
 
@@ -679,6 +681,9 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors, 
 		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
 	}
 
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
+
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
@@ -837,6 +842,9 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, float *hdrVertColors,
 		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
 	}
 
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
+
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
@@ -936,6 +944,9 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, float *hdrVertColor
 	glIndex_t  *tri;
 	int             i, j;
 	int             numVerts, numIndexes, badTriangles;
+
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -1066,6 +1077,9 @@ ParseFlare
 static void ParseFlare( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, int *indexes ) {
 	srfFlare_t		*flare;
 	int				i;
+
+	surf->numSurfaceSprites = 0;
+	surf->surfaceSprites = nullptr;
 
 	// get fog volume
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
@@ -1832,33 +1846,6 @@ static int BSPSurfaceCompare(const void *a, const void *b)
 	return 0;
 }
 
-
-static void CopyVert(const srfVert_t * in, srfVert_t * out)
-{
-	int             j;
-
-	for(j = 0; j < 3; j++)
-	{
-		out->xyz[j]       = in->xyz[j];
-		out->tangent[j]   = in->tangent[j];
-		out->normal[j]    = in->normal[j];
-		out->lightdir[j]  = in->lightdir[j];
-	}
-
-	out->tangent[3] = in->tangent[3];
-
-	for(j = 0; j < 2; j++)
-	{
-		out->st[j] = in->st[j];
-		Com_Memcpy (out->lightmap[j], in->lightmap[j], sizeof (out->lightmap[0]));
-	}
-
-	for(j = 0; j < 4; j++)
-	{
-		Com_Memcpy (out->vertexColors[j], in->vertexColors[j], sizeof (out->vertexColors[0]));
-	}
-}
-
 struct packedVertex_t
 {
 	vec3_t position;
@@ -2063,7 +2050,10 @@ static void R_CreateWorldVBOs(void)
 		vbo->offsets[ATTR_INDEX_NORMAL] = offsetof(packedVertex_t, normal);
 		vbo->offsets[ATTR_INDEX_TANGENT] = offsetof(packedVertex_t, tangent);
 		vbo->offsets[ATTR_INDEX_TEXCOORD0] = offsetof(packedVertex_t, texcoords[0]);
-		vbo->offsets[ATTR_INDEX_TEXCOORD1] = offsetof(packedVertex_t, texcoords[0]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD1] = offsetof(packedVertex_t, texcoords[1]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD2] = offsetof(packedVertex_t, texcoords[2]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD3] = offsetof(packedVertex_t, texcoords[3]);
+		vbo->offsets[ATTR_INDEX_TEXCOORD4] = offsetof(packedVertex_t, texcoords[4]);
 		vbo->offsets[ATTR_INDEX_COLOR] = offsetof(packedVertex_t, colors);
 		vbo->offsets[ATTR_INDEX_LIGHTDIRECTION] = offsetof(packedVertex_t, lightDirection);
 
@@ -2073,6 +2063,9 @@ static void R_CreateWorldVBOs(void)
 		vbo->strides[ATTR_INDEX_TANGENT] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_TEXCOORD0] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_TEXCOORD1] = packedVertexSize;
+		vbo->strides[ATTR_INDEX_TEXCOORD2] = packedVertexSize;
+		vbo->strides[ATTR_INDEX_TEXCOORD3] = packedVertexSize;
+		vbo->strides[ATTR_INDEX_TEXCOORD4] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_COLOR] = packedVertexSize;
 		vbo->strides[ATTR_INDEX_LIGHTDIRECTION] = packedVertexSize;
 
@@ -2080,6 +2073,9 @@ static void R_CreateWorldVBOs(void)
 		vbo->sizes[ATTR_INDEX_NORMAL] = sizeof(verts->normal);
 		vbo->sizes[ATTR_INDEX_TEXCOORD0] = sizeof(verts->texcoords[0]);
 		vbo->sizes[ATTR_INDEX_TEXCOORD1] = sizeof(verts->texcoords[0]);
+		vbo->sizes[ATTR_INDEX_TEXCOORD2] = sizeof(verts->texcoords[0]);
+		vbo->sizes[ATTR_INDEX_TEXCOORD3] = sizeof(verts->texcoords[0]);
+		vbo->sizes[ATTR_INDEX_TEXCOORD4] = sizeof(verts->texcoords[0]);
 		vbo->sizes[ATTR_INDEX_TANGENT] = sizeof(verts->tangent);
 		vbo->sizes[ATTR_INDEX_LIGHTDIRECTION] = sizeof(verts->lightDirection);
 		vbo->sizes[ATTR_INDEX_COLOR] = sizeof(verts->colors);
@@ -2284,7 +2280,7 @@ static	void R_LoadSubmodels( lump_t *l ) {
 			out->bounds[1][j] = LittleFloat (in->maxs[j]);
 		}
 
-		CModelCache->InsertLoaded (model->name, model->index);
+		CModelCache->InsertModelHandle(model->name, model->index);
 
 		out->firstSurface = LittleLong( in->firstSurface );
 		out->numSurfaces = LittleLong( in->numSurfaces );
@@ -3033,7 +3029,7 @@ R_MergeLeafSurfaces
 Merges surfaces that share a common leaf
 =================
 */
-void R_MergeLeafSurfaces(void)
+static void R_MergeLeafSurfaces(void)
 {
 	int i, j, k;
 	int numWorldSurfaces;
@@ -3370,7 +3366,11 @@ static void R_CalcVertexLightDirs( void )
 			case SF_GRID:
 			case SF_TRIANGLES:
 				for(i = 0; i < bspSurf->numVerts; i++)
-					R_LightDirForPoint( bspSurf->verts[i].xyz, bspSurf->verts[i].lightdir, bspSurf->verts[i].normal, &s_worldData );
+					R_LightDirForPoint(
+							bspSurf->verts[i].xyz,
+							bspSurf->verts[i].lightdir,
+							bspSurf->verts[i].normal,
+							&s_worldData );
 
 				break;
 
@@ -3380,6 +3380,205 @@ static void R_CalcVertexLightDirs( void )
 	}
 }
 
+struct sprite_t
+{
+	vec3_t position;
+	vec3_t normal;
+};
+
+static uint32_t UpdateHash( const char *text, uint32_t hash )
+{
+	for ( int i = 0; text[i]; ++i )
+	{
+		char letter = tolower((unsigned char)text[i]);
+		if (letter == '.') break;				// don't include extension
+		if (letter == '\\') letter = '/';		// damn path names
+		if (letter == PATH_SEP) letter = '/';		// damn path names
+
+		hash += (uint32_t)(letter)*(i+119);
+	}
+
+	return (hash ^ (hash >> 10) ^ (hash >> 20));
+}
+
+static void R_GenerateSurfaceSprites(
+		const srfBspSurface_t *bspSurf,
+		const shader_t *shader,
+		const shaderStage_t *stage,
+		srfSprites_t *out)
+{
+	const surfaceSprite_t *surfaceSprite = stage->ss;
+	const textureBundle_t *bundle = &stage->bundle[0];
+
+	const float density = surfaceSprite->density;
+	const srfVert_t *verts = bspSurf->verts;
+	const glIndex_t *indexes = bspSurf->indexes;
+
+	std::vector<sprite_t> sprites;
+	sprites.reserve(10000);
+	for ( int i = 0, numIndexes = bspSurf->numIndexes; i < numIndexes; i += 3 )
+	{
+		const srfVert_t *v0 = verts + indexes[i + 0];
+		const srfVert_t *v1 = verts + indexes[i + 1];
+		const srfVert_t *v2 = verts + indexes[i + 2];
+
+		vec3_t p0, p1, p2;
+		VectorCopy(v0->xyz, p0);
+		VectorCopy(v1->xyz, p1);
+		VectorCopy(v2->xyz, p2);
+
+		vec3_t n0, n1, n2;
+		VectorCopy(v0->normal, n0);
+		VectorCopy(v1->normal, n1);
+		VectorCopy(v2->normal, n2);
+
+		const vec2_t p01 = {p1[0] - p0[0], p1[1] - p0[1]};
+		const vec2_t p02 = {p2[0] - p0[0], p2[1] - p0[1]};
+
+		const float zarea = std::fabsf(p02[0]*p01[1] - p02[1]*p01[0]);
+		if ( zarea <= 1.0 )
+		{
+			// Triangle's area is too small to consider.
+			continue;
+		}
+
+		// Generate the positions of the surface sprites.
+		//
+		// Pick random points inside of each triangle, using barycentric
+		// coordinates.
+		const float step = density * Q_rsqrt(zarea);
+		for ( float a = 0.0f; a < 1.0f; a += step )
+		{
+			for ( float b = 0.0f, bend = (1.0f - a); b < bend; b += step )
+			{
+				float x = flrand(0.0f, 1.0f)*step + a;
+				float y = flrand(0.0f, 1.0f)*step + b;
+				float z = 1.0f - x - y;
+
+				// Ensure we're inside the triangle bounds.
+				if ( x > 1.0f ) continue;
+				if ( (x + y ) > 1.0f ) continue;
+
+				// Calculate position inside triangle.
+				// pos = (((p0*x) + p1*y) + p2*z)
+				sprite_t sprite = {};
+				VectorMA(sprite.position, x, p0, sprite.position);
+				VectorMA(sprite.position, y, p1, sprite.position);
+				VectorMA(sprite.position, z, p2, sprite.position);
+
+				// x*x + y*y = 1.0
+				// => y*y = 1.0 - x*x
+				// => y = -/+sqrt(1.0 - x*x)
+				float nx = flrand(-1.0f, 1.0f);
+				float ny = std::sqrtf(1.0f - nx*nx);
+				ny *= irand(0, 1) ? -1 : 1;
+
+				VectorSet(sprite.normal, nx, ny, 0.0f);
+
+				// We have 4 copies for each corner of the quad
+				sprites.push_back(sprite);
+			}
+		}
+	}
+
+	uint32_t hash = 0;
+	for ( int i = 0; bundle->image[i]; ++i )
+	{
+		hash = UpdateHash(bundle->image[i]->imgName, hash);
+	}
+
+	uint16_t indices[] = { 0, 1, 2, 0, 2, 3 };
+
+	out->surfaceType = SF_SPRITES;
+	out->sprite = surfaceSprite;
+	out->numSprites = sprites.size();
+	out->vbo = R_CreateVBO((byte *)sprites.data(),
+			sizeof(sprite_t) * sprites.size(), VBO_USAGE_STATIC);
+
+	out->ibo = R_CreateIBO((byte *)indices, sizeof(indices), VBO_USAGE_STATIC);
+
+	// FIXME: Need a better way to handle this.
+	out->shader = R_CreateShaderFromTextureBundle(va("*ss_%08x\n", hash),
+			bundle, stage->stateBits);
+	out->shader->cullType = shader->cullType;
+	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
+	out->shader->stages[0]->alphaTestCmp = stage->alphaTestCmp;
+
+	out->numAttributes = 2;
+	out->attributes = (vertexAttribute_t *)ri->Hunk_Alloc(
+			sizeof(vertexAttribute_t) * out->numAttributes, h_low);
+
+	out->attributes[0].vbo = out->vbo;
+	out->attributes[0].index = ATTR_INDEX_POSITION;
+	out->attributes[0].numComponents = 3;
+	out->attributes[0].integerAttribute = qfalse;
+	out->attributes[0].type = GL_FLOAT;
+	out->attributes[0].normalize = GL_FALSE;
+	out->attributes[0].stride = sizeof(sprite_t);
+	out->attributes[0].offset = offsetof(sprite_t, position);
+	out->attributes[0].stepRate = 1;
+
+	out->attributes[1].vbo = out->vbo;
+	out->attributes[1].index = ATTR_INDEX_NORMAL;
+	out->attributes[1].numComponents = 3;
+	out->attributes[1].integerAttribute = qfalse;
+	out->attributes[1].type = GL_FLOAT;
+	out->attributes[1].normalize = GL_FALSE;
+	out->attributes[1].stride = sizeof(sprite_t);
+	out->attributes[1].offset = offsetof(sprite_t, normal);
+	out->attributes[1].stepRate = 1;
+}
+
+static void R_GenerateSurfaceSprites( const world_t *world )
+{
+	msurface_t *surfaces = world->surfaces;
+	for ( int i = 0, numSurfaces = world->numsurfaces; i < numSurfaces; ++i )
+	{
+		msurface_t *surf = surfaces + i;
+		const srfBspSurface_t *bspSurf = (srfBspSurface_t *)surf->data;
+		switch ( bspSurf->surfaceType )
+		{
+			case SF_FACE:
+			case SF_GRID:
+			case SF_TRIANGLES:
+			{
+				const shader_t *shader = surf->shader;
+				if ( !shader->numSurfaceSpriteStages )
+				{
+					continue;
+				}
+
+				surf->numSurfaceSprites = shader->numSurfaceSpriteStages;
+				surf->surfaceSprites = (srfSprites_t *)ri->Hunk_Alloc(
+						sizeof(srfSprites_t) * surf->numSurfaceSprites, h_low);
+
+				int surfaceSpriteNum = 0;
+				for ( int j = 0, numStages = shader->numUnfoggedPasses;
+						j < numStages; ++j )
+				{
+					const shaderStage_t *stage = shader->stages[j];
+					if ( !stage )
+					{
+						break;
+					}
+
+					if ( !stage->ss || stage->ss->type == SURFSPRITE_NONE )
+					{
+						continue;
+					}
+
+					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
+					R_GenerateSurfaceSprites(bspSurf, shader, stage, sprite);
+					++surfaceSpriteNum;
+				}
+				break;
+			}
+
+			default:
+				break;
+		}
+	}
+}
 
 /*
 =================
@@ -3470,199 +3669,11 @@ void RE_LoadWorldMap( const char *name ) {
 	R_LoadVisibility( &header->lumps[LUMP_VISIBILITY] );
 	R_LoadLightGrid( &header->lumps[LUMP_LIGHTGRID] );
 	R_LoadLightGridArray( &header->lumps[LUMP_LIGHTARRAY] );
+
+	R_GenerateSurfaceSprites(&s_worldData);
 	
 	// determine vertex light directions
 	R_CalcVertexLightDirs();
-
-	// determine which parts of the map are in sunlight
-#if 0
-	if (0)
-	{
-		world_t	*w;
-
-		uint8_t *primaryLightGrid, *data;
-		int lightGridSize;
-		int i;
-
-		w = &s_worldData;
-
-		lightGridSize = w->lightGridBounds[0] * w->lightGridBounds[1] * w->lightGridBounds[2];
-		primaryLightGrid = (uint8_t *)Z_Malloc(lightGridSize * sizeof(*primaryLightGrid), TAG_GENERAL);
-
-		memset(primaryLightGrid, 0, lightGridSize * sizeof(*primaryLightGrid));
-
-		data = w->lightGridData;
-		for (i = 0; i < lightGridSize; i++, data += 8)
-		{
-			int lat, lng;
-			vec3_t gridLightDir, gridLightCol;
-
-			// skip samples in wall
-			if (!(data[0]+data[1]+data[2]+data[3]+data[4]+data[5]) )
-				continue;
-
-			gridLightCol[0] = ByteToFloat(data[3]);
-			gridLightCol[1] = ByteToFloat(data[4]);
-			gridLightCol[2] = ByteToFloat(data[5]);
-			(void)gridLightCol; // Suppress unused-but-set-variable warning
-
-			lat = data[7];
-			lng = data[6];
-			lat *= (FUNCTABLE_SIZE/256);
-			lng *= (FUNCTABLE_SIZE/256);
-
-			// decode X as cos( lat ) * sin( long )
-			// decode Y as sin( lat ) * sin( long )
-			// decode Z as cos( long )
-
-			gridLightDir[0] = tr.sinTable[(lat+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK] * tr.sinTable[lng];
-			gridLightDir[1] = tr.sinTable[lat] * tr.sinTable[lng];
-			gridLightDir[2] = tr.sinTable[(lng+(FUNCTABLE_SIZE/4))&FUNCTABLE_MASK];
-
-			// FIXME: magic number for determining if light direction is close enough to sunlight
-			if (DotProduct(gridLightDir, tr.sunDirection) > 0.75f)
-			{
-				primaryLightGrid[i] = 1;
-			}
-			else
-			{
-				primaryLightGrid[i] = 255;
-			}
-		}
-
-		if (0)
-		{
-			int i;
-			byte *buffer = (byte *)Z_Malloc(w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18, TAG_GENERAL);
-			byte *out;
-			uint8_t *in;
-			char fileName[MAX_QPATH];
-			
-			Com_Memset (buffer, 0, 18);
-			buffer[2] = 2;		// uncompressed type
-			buffer[12] = w->lightGridBounds[0] & 255;
-			buffer[13] = w->lightGridBounds[0] >> 8;
-			buffer[14] = w->lightGridBounds[1] & 255;
-			buffer[15] = w->lightGridBounds[1] >> 8;
-			buffer[16] = 24;	// pixel size
-
-			in = primaryLightGrid;
-			for (i = 0; i < w->lightGridBounds[2]; i++)
-			{
-				int j;
-
-				sprintf(fileName, "primarylg%d.tga", i);
-
-				out = buffer + 18;
-				for (j = 0; j < w->lightGridBounds[0] * w->lightGridBounds[1]; j++)
-				{
-					if (*in == 1)
-					{
-						*out++ = 255;
-						*out++ = 255;
-						*out++ = 255;
-					}
-					else if (*in == 255)
-					{
-						*out++ = 64;
-						*out++ = 64;
-						*out++ = 64;
-					}
-					else
-					{
-						*out++ = 0;
-						*out++ = 0;
-						*out++ = 0;
-					}
-					in++;
-				}
-
-				ri->FS_WriteFile(fileName, buffer, w->lightGridBounds[0] * w->lightGridBounds[1] * 3 + 18);
-			}
-
-			Z_Free(buffer);
-		}
-
-		for (i = 0; i < w->numWorldSurfaces; i++)
-		{
-			msurface_t *surf = w->surfaces + i;
-			cullinfo_t *ci = &surf->cullinfo;
-
-			if(ci->type & CULLINFO_PLANE)
-			{
-				if (DotProduct(ci->plane.normal, tr.sunDirection) <= 0.0f)
-				{
-					//ri->Printf(PRINT_ALL, "surface %d is not oriented towards sunlight\n", i);
-					continue;
-				}
-			}
-
-			if(ci->type & CULLINFO_BOX)
-			{
-				int ibounds[2][3], x, y, z, goodSamples, numSamples;
-				vec3_t lightOrigin;
-
-				VectorSubtract( ci->bounds[0], w->lightGridOrigin, lightOrigin );
-
-				ibounds[0][0] = floor(lightOrigin[0] * w->lightGridInverseSize[0]);
-				ibounds[0][1] = floor(lightOrigin[1] * w->lightGridInverseSize[1]);
-				ibounds[0][2] = floor(lightOrigin[2] * w->lightGridInverseSize[2]);
-
-				VectorSubtract( ci->bounds[1], w->lightGridOrigin, lightOrigin );
-
-				ibounds[1][0] = ceil(lightOrigin[0] * w->lightGridInverseSize[0]);
-				ibounds[1][1] = ceil(lightOrigin[1] * w->lightGridInverseSize[1]);
-				ibounds[1][2] = ceil(lightOrigin[2] * w->lightGridInverseSize[2]);
-
-				ibounds[0][0] = CLAMP(ibounds[0][0], 0, w->lightGridSize[0]);
-				ibounds[0][1] = CLAMP(ibounds[0][1], 0, w->lightGridSize[1]);
-				ibounds[0][2] = CLAMP(ibounds[0][2], 0, w->lightGridSize[2]);
-
-				ibounds[1][0] = CLAMP(ibounds[1][0], 0, w->lightGridSize[0]);
-				ibounds[1][1] = CLAMP(ibounds[1][1], 0, w->lightGridSize[1]);
-				ibounds[1][2] = CLAMP(ibounds[1][2], 0, w->lightGridSize[2]);
-
-				/*
-				ri->Printf(PRINT_ALL, "surf %d bounds (%f %f %f)-(%f %f %f) ibounds (%d %d %d)-(%d %d %d)\n", i,
-					ci->bounds[0][0], ci->bounds[0][1], ci->bounds[0][2],
-					ci->bounds[1][0], ci->bounds[1][1], ci->bounds[1][2],
-					ibounds[0][0], ibounds[0][1], ibounds[0][2],
-					ibounds[1][0], ibounds[1][1], ibounds[1][2]);
-				*/
-
-				goodSamples = 0;
-				numSamples = 0;
-				for (x = ibounds[0][0]; x <= ibounds[1][0]; x++)
-				{
-					for (y = ibounds[0][1]; y <= ibounds[1][1]; y++)
-					{
-						for (z = ibounds[0][2]; z <= ibounds[1][2]; z++)
-						{
-							uint8_t primaryLight = primaryLightGrid[x * 8 + y * 8 * w->lightGridBounds[0] + z * 8 * w->lightGridBounds[0] * w->lightGridBounds[2]];
-
-							if (primaryLight == 0)
-								continue;
-
-							numSamples++;
-
-							if (primaryLight == 1)
-								goodSamples++;
-						}
-					}
-				}
-
-				// FIXME: magic number for determining whether object is mostly in sunlight
-				if (goodSamples > numSamples * 0.75f)
-				{
-					//ri->Printf(PRINT_ALL, "surface %d is in sunlight\n", i);
-					//surf->primaryLight = 1;
-				}
-			}
-		}
-
-		Z_Free(primaryLightGrid);
-	}
-#endif
 
 	// load cubemaps
 	if (r_cubeMapping->integer)
