@@ -1243,6 +1243,15 @@ typedef enum
 	UNIFORM_COUNT
 } uniform_t;
 
+struct UniformData
+{
+	uniform_t index;
+	int numElements;
+
+	// uniform data follows immediately afterwards
+	//char data[1];
+};
+
 // shaderProgram_t represents a pair of one
 // GLSL vertex and one GLSL fragment shader
 typedef struct shaderProgram_s
@@ -1972,6 +1981,7 @@ typedef struct glstate_s {
 	int			currenttmu;
 	int			texEnv[2];
 	int			faceCulling;
+	float		maxDepthRange;
 	uint32_t	glStateBits;
 	uint32_t		vertexAttribsState;
 	vertexAttribute_t currentVaoAttribs[ATTR_INDEX_MAX];
@@ -2565,6 +2575,7 @@ void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
 //void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
+void	GL_DepthRange( float max );
 void	GL_PolygonOffset( qboolean enabled );
 void	GL_VertexAttribPointers(size_t numAttributes,
 								vertexAttribute_t *attributes);
@@ -2692,11 +2703,15 @@ struct shaderCommands_s
 	IBO_t       *ibo;
 	void		*vboData; // If immutable buffers
 	void		*iboData; // are available
+	IBO_t		*externalIBO;
 	qboolean    useInternalVBO;
 	int			internalVBOWriteOffset;
 	int			internalVBOCommitOffset;
 	int			internalIBOWriteOffset;
 	int			internalIBOCommitOffset;
+
+	float		minDepthRange;
+	float		maxDepthRange;
 
 	stageVars_t	svars QALIGN(16);
 
@@ -2750,8 +2765,6 @@ void RB_CheckOverflow( int verts, int indexes );
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex );
 void RB_StageIteratorGeneric( void );
 void RB_StageIteratorSky( void );
-void RB_StageIteratorVertexLitTexture( void );
-void RB_StageIteratorLightmappedMultitexture( void );
 
 void RB_AddQuadStamp( vec3_t origin, vec3_t left, vec3_t up, float color[4] );
 void RB_AddQuadStampExt( vec3_t origin, vec3_t left, vec3_t up, float color[4], float s1, float t1, float s2, float t2 );
@@ -2917,7 +2930,9 @@ int GLSL_BeginLoadGPUShaders(void);
 void GLSL_EndLoadGPUShaders( int startTime );
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArrays);
-void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays);
+void GLSL_VertexAttribPointers(const VertexArraysProperties *vertexArrays);
+void GL_VertexArraysToAttribs( vertexAttribute_t *attribs,
+	size_t attribsCount, const VertexArraysProperties *vertexArrays );
 void GLSL_BindProgram(shaderProgram_t * program);
 void GLSL_BindNullProgram(void);
 
@@ -2929,6 +2944,7 @@ void GLSL_SetUniformVec3(shaderProgram_t *program, int uniformNum, const vec3_t 
 void GLSL_SetUniformVec4(shaderProgram_t *program, int uniformNum, const vec4_t v);
 void GLSL_SetUniformMatrix4x3(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
 void GLSL_SetUniformMatrix4x4(shaderProgram_t *program, int uniformNum, const float *matrix, int numElements = 1);
+void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData );
 
 shaderProgram_t *GLSL_GetGenericShaderProgram(int stage);
 
@@ -3268,10 +3284,15 @@ struct gpuFrame_t
 // all of the information needed by the back end must be
 // contained in a backEndData_t.
 #define MAX_FRAMES (2)
+#define PER_FRAME_MEMORY_BYtES (128 * 1024 * 1024)
+class Allocator;
+struct Pass;
 typedef struct backEndData_s {
 	unsigned realFrameNumber;
 	gpuFrame_t frames[MAX_FRAMES];
 	gpuFrame_t *currentFrame;
+	Allocator *perFrameMemory;
+	Pass *currentPass;
 
 	drawSurf_t	drawSurfs[MAX_DRAWSURFS];
 	dlight_t	dlights[MAX_DLIGHTS];
@@ -3281,6 +3302,9 @@ typedef struct backEndData_s {
 	pshadow_t pshadows[MAX_CALC_PSHADOWS];
 	renderCommandList_t	commands;
 } backEndData_t;
+
+struct DrawItem;
+void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
 
 extern	int		max_polys;
 extern	int		max_polyverts;
@@ -3343,5 +3367,62 @@ void RB_SurfaceGhoul( CRenderableSurface *surf );
 
 class Allocator;
 GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text );
+
+struct SamplerBinding
+{
+	image_t *image;
+	qhandle_t videoMapHandle;
+	uint8_t slot;
+};
+
+enum DrawCommandType
+{
+	DRAW_COMMAND_MULTI_INDEXED,
+	DRAW_COMMAND_INDEXED,
+	DRAW_COMMAND_ARRAYS
+};
+
+struct DrawCommand
+{
+	DrawCommandType type;
+	GLenum primitiveType;
+	int numInstances;
+
+	union DrawParams
+	{
+		struct MultiDrawIndexed
+		{
+			int numDraws;
+			GLsizei *numIndices;
+			glIndex_t **firstIndices;
+		} multiIndexed;
+
+		struct DrawIndexed
+		{
+			GLsizei numIndices;
+			glIndex_t firstIndex;
+		} indexed;
+	} params;
+};
+
+struct DrawItem
+{
+	uint32_t stateBits;
+	uint32_t cullType; // this is stupid. hi bits = GL cull type, lo bits = Q3 cull type
+	float maxDepthRange;
+
+	IBO_t *ibo;
+	shaderProgram_t *program;
+
+	uint32_t numAttributes;
+	vertexAttribute_t *attributes;
+
+	uint32_t numSamplerBindings;
+	SamplerBinding *samplerBindings;
+
+	UniformData *uniformData;
+
+	DrawCommand draw;
+};
 
 #endif //TR_LOCAL_H

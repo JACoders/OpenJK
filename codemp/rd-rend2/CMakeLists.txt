@@ -20,6 +20,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
 	"${MPDir}/rd-rend2/tr_allocator.cpp"
+	"${MPDir}/rd-rend2/tr_allocator.h"
 	"${MPDir}/rd-rend2/tr_animation.cpp"
 	"${MPDir}/rd-rend2/tr_backend.cpp"
 	"${MPDir}/rd-rend2/tr_bsp.cpp"

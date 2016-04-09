@@ -20,7 +20,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 #include "tr_local.h"
+#include "tr_allocator.h"
 #include "glext.h"
+#include <algorithm>
 
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
@@ -147,6 +149,17 @@ void GL_Cull( int cullType ) {
 
 		qglCullFace( cullFront ? GL_FRONT : GL_BACK );
 	}
+}
+
+void GL_DepthRange( float max )
+{
+	if ( glState.maxDepthRange == max )
+	{
+		return;
+	}
+
+	qglDepthRange(0.0f, max);
+	glState.maxDepthRange = max;
 }
 
 /*
@@ -595,6 +608,140 @@ void RB_BeginDrawingView (void) {
 
 #define	MAC_EVENT_PUMP_MSEC		5
 
+struct Pass
+{
+	int maxDrawItems;
+	int numDrawItems;
+	DrawItem *drawItems;
+	uint32_t *sortKeys;
+};
+
+static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings )
+{
+	for ( size_t i = 0; i < numBindings; ++i )
+	{
+		const SamplerBinding& binding = bindings[i];
+		if ( binding.videoMapHandle )
+		{
+			int oldtmu = glState.currenttmu;
+			GL_SelectTexture(binding.slot);
+			ri->CIN_RunCinematic(binding.videoMapHandle - 1);
+			ri->CIN_UploadCinematic(binding.videoMapHandle - 1);
+			GL_SelectTexture(oldtmu);
+		}
+		else
+		{
+			GL_BindToTMU(binding.image, binding.slot);
+		}
+	}
+}
+
+static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t *drawOrder )
+{
+	for ( int i = 0; i < numDrawItems; ++i )
+	{
+		const DrawItem& drawItem = drawItems[drawOrder[i]];
+
+		if ( glState.faceCulling != drawItem.cullType )
+		{
+			glState.faceCulling = drawItem.cullType;
+			switch ( drawItem.cullType )
+			{
+				case GL_NONE:
+				{
+					qglDisable(GL_CULL_FACE);
+					break;
+				}
+
+				case GL_FRONT:
+				{
+					qglEnable(GL_CULL_FACE);
+					qglCullFace(GL_FRONT);
+					break;
+				}
+
+				case GL_BACK:
+				{
+					qglEnable(GL_CULL_FACE);
+					qglCullFace(GL_BACK);
+					break;
+				}
+			}
+		}
+	
+		GL_State(drawItem.stateBits);
+		GL_DepthRange(drawItem.maxDepthRange);
+		R_BindIBO(drawItem.ibo);
+		GLSL_BindProgram(drawItem.program);
+
+		// FIXME: There was a reason I didn't have const on attributes. Can't remember at the moment
+		// what the reason was though.
+		GL_VertexAttribPointers(drawItem.numAttributes, drawItem.attributes);
+		RB_BindTextures(drawItem.numSamplerBindings, drawItem.samplerBindings);
+
+		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
+
+		switch ( drawItem.draw.type )
+		{
+			case DRAW_COMMAND_MULTI_INDEXED:
+			{
+				GL_MultiDrawIndexed(drawItem.draw.primitiveType,
+					drawItem.draw.params.multiIndexed.numIndices,
+					drawItem.draw.params.multiIndexed.firstIndices,
+					drawItem.draw.params.multiIndexed.numDraws);
+				break;
+			}
+
+			case DRAW_COMMAND_INDEXED:
+			{
+				GL_DrawIndexed(drawItem.draw.primitiveType,
+					drawItem.draw.params.indexed.numIndices,
+					drawItem.draw.params.indexed.firstIndex,
+					drawItem.draw.numInstances, 0);
+				break;
+			}
+
+			default:
+			{
+				assert(!"Invalid or unhandled draw type");
+				break;
+			}
+		}
+	}
+}
+
+void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem )
+{
+	// There will be no pass if we are drawing a 2D object.
+	if ( pass )
+	{
+		if ( pass->numDrawItems >= pass->maxDrawItems )
+		{
+			assert(!"Ran out of space for pass");
+			return;
+		}
+
+		pass->sortKeys[pass->numDrawItems] = sortKey;
+		memcpy(pass->drawItems + pass->numDrawItems, &drawItem, sizeof(*pass->drawItems));
+		++pass->numDrawItems;
+	}
+	else
+	{
+		uint32_t drawOrder[] = {0};
+		RB_DrawItems(1, &drawItem, drawOrder);
+	}
+}
+
+static Pass *RB_CreatePass( Allocator& allocator, int capacity )
+{
+	Pass *pass = ojkAlloc<Pass>(*backEndData->perFrameMemory);
+	*pass = {};
+	pass->maxDrawItems = capacity;
+	pass->drawItems = ojkAllocArray<DrawItem>(allocator, pass->maxDrawItems);
+	pass->sortKeys = ojkAllocArray<uint32_t>(allocator, pass->maxDrawItems);
+	return pass;
+}
+
 /*
 ==================
 RB_RenderDrawSurfList
@@ -617,6 +764,10 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	float			depth[2];
 
+	void *allocMark = backEndData->perFrameMemory->Mark();
+
+	assert(backEndData->currentPass == nullptr);
+	backEndData->currentPass = RB_CreatePass(*backEndData->perFrameMemory, numDrawSurfs * 2);
 
 	// save original time for entity shader offsets
 	originalTime = backEnd.refdef.floatTime;
@@ -747,7 +898,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						}
 
 						if( !sunflare )
-							qglDepthRange( 0.0f, 1.0f );
+						{
+							tess.maxDepthRange = 1.0f;
+						}
 
 						break;
 
@@ -762,7 +915,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						}
 
  						if ( !oldDepthRange )
- 							qglDepthRange( 0.0f, 0.3f );
+						{
+							tess.maxDepthRange = 0.3f;
+						}
 
 						break;
 
@@ -777,7 +932,9 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						}
 
  						if ( !oldDepthRange )
- 							qglDepthRange( 0.0f, 0.0f );
+						{
+							tess.maxDepthRange = 0.0f;
+						}
 
 						break;
 				}
@@ -799,6 +956,24 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		RB_EndSurface();
 	}
 
+	uint32_t *drawOrder = ojkAllocArray<uint32_t>(
+		*backEndData->perFrameMemory, backEndData->currentPass->numDrawItems);
+
+	uint32_t numDrawItems = backEndData->currentPass->numDrawItems;
+	for ( uint32_t i = 0; i < numDrawItems; ++i )
+		drawOrder[i] = i;
+
+	uint32_t *sortKeys = backEndData->currentPass->sortKeys;
+	std::sort(drawOrder, drawOrder + numDrawItems, [sortKeys]( uint32_t a, uint32_t b )
+	{
+		return sortKeys[a] < sortKeys[b];
+	});
+
+	RB_DrawItems(backEndData->currentPass->numDrawItems, backEndData->currentPass->drawItems, drawOrder);
+
+	backEndData->perFrameMemory->ResetTo(allocMark);
+	backEndData->currentPass = nullptr;
+
 	if (inQuery) {
 		qglEndQuery(GL_SAMPLES_PASSED);
 	}
@@ -810,7 +985,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	GL_SetModelviewMatrix( backEnd.viewParms.world.modelViewMatrix );
 
 	// Restore depth range for subsequent rendering
-	qglDepthRange( 0.0f, 1.0f );
+	GL_DepthRange(1.0f);
 }
 
 
@@ -2023,6 +2198,23 @@ static const void *RB_EndTimedBlock( const void *data )
 	}
 
 	return (const void *)(cmd + 1);
+}
+
+
+static void RB_Begin2DPass()
+{
+	if ( backEndData->currentPass )
+	{
+		return;
+	}
+
+	*backEndData->currentPass = {};
+	backEndData->currentPass = ojkAllocArray<Pass>(*backEndData->perFrameMemory, 8000);
+}
+
+static void RB_End2DPass()
+{
+
 }
 
 

@@ -542,7 +542,7 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 
 	if ( cg_g2MarksAllModels == NULL )
 	{
-		cg_g2MarksAllModels = ri->Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+		cg_g2MarksAllModels = ri->Cvar_Get( "cg_g2MarksAllModels", "0", 0, "Render marks on all G2 models" );
 	}
 
 	if (cg_g2MarksAllModels == NULL
@@ -1493,7 +1493,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, Colli
 
 	if ( cg_g2MarksAllModels == NULL )
 	{
-		cg_g2MarksAllModels = ri->Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
+		cg_g2MarksAllModels = ri->Cvar_Get( "cg_g2MarksAllModels", "0", 0, "Render marks on all G2 models" );
 	}
 
 	if (cg_g2MarksAllModels == NULL

@@ -737,6 +737,82 @@ void GLSL_FinishGPUShader(shaderProgram_t *program)
 #endif
 }
 
+void GLSL_SetUniforms( shaderProgram_t *program, UniformData *uniformData )
+{
+	UniformData *data = uniformData;
+	while ( data->index != UNIFORM_COUNT )
+	{
+		switch ( uniformsInfo[data->index].type )
+		{
+			case GLSL_INT:
+			{
+				assert(data->numElements == 1);
+				GLint *value = (GLint *)(data + 1);
+				GLSL_SetUniformInt(program, data->index, *value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements);
+				break;
+			}
+
+			case GLSL_FLOAT:
+			{
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformFloatN(program, data->index, value, data->numElements);
+				data = reinterpret_cast<UniformData *>(value + data->numElements);
+				break;
+			}
+
+			case GLSL_VEC2:
+			{
+				assert(data->numElements == 1);
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformVec2(program, data->index, value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*2);
+				break;
+			}
+
+			case GLSL_VEC3:
+			{
+				assert(data->numElements == 1);
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformVec3(program, data->index, value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*3);
+				break;
+			}
+
+			case GLSL_VEC4:
+			{
+				assert(data->numElements == 1);
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformVec4(program, data->index, value);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*4);
+				break;
+			}
+
+			case GLSL_MAT4x3:
+			{
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformMatrix4x3(program, data->index, value, data->numElements);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*12);
+				break;
+			}
+
+			case GLSL_MAT4x4:
+			{
+				GLfloat *value = (GLfloat *)(data + 1);
+				GLSL_SetUniformMatrix4x4(program, data->index, value, data->numElements);
+				data = reinterpret_cast<UniformData *>(value + data->numElements*16);
+				break;
+			}
+
+			default:
+			{
+				assert(!"Invalid uniform data type");
+				return;
+			}
+		}
+	}
+}
+
 void GLSL_SetUniformInt(shaderProgram_t *program, int uniformNum, GLint value)
 {
 	GLint *uniforms = program->uniforms;
@@ -2123,7 +2199,6 @@ void GLSL_BindNullProgram(void)
 	}
 }
 
-
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArraysOut)
 {
 	VertexArraysProperties vertexArraysLocal;
@@ -2148,25 +2223,14 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 		CalculateVertexArraysFromVBO(stateBits, glState.currentVBO, vertexArrays);
 	}
 
-	GLSL_VertexAttribPointers(stateBits, vertexArrays);
+	GLSL_VertexAttribPointers(vertexArrays);
 
 }
 
-void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties *vertexArrays)
+void GL_VertexArraysToAttribs( vertexAttribute_t *attribs,
+	size_t attribsCount, const VertexArraysProperties *vertexArrays )
 {
-	VBO_t *vbo = glState.currentVBO;
-	
-	if(!vbo)
-	{
-		ri->Error(ERR_FATAL, "GL_VertexAttribPointers: no VBO bound");
-		return;
-	}
-
-	// don't just call LogComment, or we will get a call to va() every frame!
-	if (r_logFile->integer)
-	{
-		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
-	}
+	assert(attribsCount == ATTR_INDEX_MAX);
 
 	static const struct
 	{
@@ -2193,7 +2257,6 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		{ 4, GL_FALSE, GL_UNSIGNED_INT_2_10_10_10_REV, GL_TRUE }, // normal2
 	};
 
-	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 	{
 		int attributeIndex = vertexArrays->enabledAttributes[i];
@@ -2209,7 +2272,18 @@ void GLSL_VertexAttribPointers(uint32_t attribBits, const VertexArraysProperties
 		attrib.offset = vertexArrays->offsets[attributeIndex];
 		attrib.stepRate = 0;
 	}
+}
 
+void GLSL_VertexAttribPointers(const VertexArraysProperties *vertexArrays)
+{
+	// don't just call LogComment, or we will get a call to va() every frame!
+	if (r_logFile->integer)
+	{
+		GLimp_LogComment("--- GL_VertexAttribPointers() ---\n");
+	}
+
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 	GL_VertexAttribPointers(vertexArrays->numVertexArrays, attribs);
 }
 

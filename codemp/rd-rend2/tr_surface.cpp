@@ -78,7 +78,14 @@ void RB_CheckVBOandIBO(VBO_t *vbo, IBO_t *ibo)
 	}
 
 	if (vbo != tess.vbo && ibo != tess.ibo)
+	{
 		tess.useInternalVBO = qfalse;
+	}
+
+	if ( ibo != tess.ibo )
+	{
+		tess.externalIBO = ibo;
+	}
 }
 
 
@@ -2073,6 +2080,7 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	R_BindIBO(surface->ibo);
 
 	tess.useInternalVBO = qfalse;
+	tess.externalIBO = surface->ibo;
 
 	tess.numIndexes += surface->numIndexes;
 	tess.numVertexes += surface->numVerts;
@@ -2159,6 +2167,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 
 	R_BindIBO(surf->ibo);
+	tess.externalIBO = surf->ibo;
 	qglDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0, surf->numSprites);
 }
 
