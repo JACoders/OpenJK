@@ -20,6 +20,13 @@ other:
 - NPCs avoid walls and cliffs
 - better saber throws, strong force push
 
+Test:
+- cultist punch delay
+- gran punch decisions vs. saber wielder
+- npc surrender
+- lightning block effect
+- force protect saber damage
+- faster non-heavy punches
 
 -----------------------------------------------------------------------
 Only larger/more important changes recorded here:

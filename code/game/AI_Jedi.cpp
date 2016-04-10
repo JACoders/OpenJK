@@ -5366,6 +5366,11 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 		return qfalse;
 	}
 
+	if (!TIMER_Done(NPC, "attackDelay") && NPC->s.weapon == WP_MELEE)
+	{
+		return qfalse;
+	}
+
 	if ( Jedi_CultistDestroyer( NPC ) )
 	{//destroyer
 		if ( enemy_dist <= 32 )
