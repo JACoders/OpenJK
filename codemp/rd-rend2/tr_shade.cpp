@@ -1201,11 +1201,10 @@ static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 class UniformDataWriter
 {
 public:
-	UniformDataWriter( Allocator& allocator )
-		: allocator(allocator)
-		, uniformDataBase(static_cast<UniformData *>(allocator.Mark()))
-		, failed(false)
+	UniformDataWriter()
+		: failed(false)
 		, shaderProgram(nullptr)
+		, scratch(scratchBuffer, sizeof(scratchBuffer), 1)
 	{
 	}
 
@@ -1222,7 +1221,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(int));
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(int));
 		if ( !memory )
 		{
 			failed = true;
@@ -1249,7 +1248,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(float)*count);
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*count);
 		if ( !memory )
 		{
 			failed = true;
@@ -1269,7 +1268,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(vec2_t)*count);
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec2_t)*count);
 		if ( !memory )
 		{
 			failed = true;
@@ -1289,7 +1288,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(vec3_t)*count);
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec3_t)*count);
 		if ( !memory )
 		{
 			failed = true;
@@ -1309,7 +1308,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(vec4_t)*count);
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec4_t)*count);
 		if ( !memory )
 		{
 			failed = true;
@@ -1329,7 +1328,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(float)*12*count);
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*12*count);
 		if ( !memory )
 		{
 			failed = true;
@@ -1349,7 +1348,7 @@ public:
 		if ( shaderProgram->uniforms[uniform] == -1 )
 			return *this;
 
-		void *memory = allocator.Alloc(sizeof(UniformData) + sizeof(float)*16*count);
+		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*16*count);
 		if ( !memory )
 		{
 			failed = true;
@@ -1364,9 +1363,9 @@ public:
 		return *this;
 	}
 
-	UniformData *Finish()
+	UniformData *Finish( Allocator& destHeap )
 	{
-		UniformData *endSentinel = ojkAlloc<UniformData>(allocator);
+		UniformData *endSentinel = ojkAlloc<UniformData>(scratch);
 		if ( failed || !endSentinel )
 		{
 			return nullptr;
@@ -1374,27 +1373,32 @@ public:
 
 		endSentinel->index = UNIFORM_COUNT;
 
-		UniformData *result = uniformDataBase;
-		uniformDataBase = static_cast<UniformData *>(allocator.Mark());
+		int uniformDataSize = (char *)scratch.Mark() - (char *)scratch.Base();
+
+		// Copy scratch buffer to per-frame heap
+		void *finalMemory = destHeap.Alloc(uniformDataSize);
+		UniformData *result = static_cast<UniformData *>(finalMemory);
+		memcpy(finalMemory, scratch.Base(), uniformDataSize);
+		scratch.Reset();
+
 		failed = false;
 		shaderProgram = nullptr;
+
 		return result;
 	}
 
 private:
-	Allocator& allocator;
-	UniformData *uniformDataBase;
 	bool failed;
 	shaderProgram_t *shaderProgram;
+	char scratchBuffer[2048];
+	Allocator scratch;
 };
 
 class SamplerBindingsWriter
 {
 public:
-	SamplerBindingsWriter( Allocator& allocator )
-		: allocator(allocator)
-		, bindingsBase(static_cast<SamplerBinding *>(allocator.Mark()))
-		, failed(false)
+	SamplerBindingsWriter()
+		: failed(false)
 		, count(0)
 	{
 	}
@@ -1404,7 +1408,7 @@ public:
 
 	SamplerBindingsWriter& AddStaticImage( image_t *image, int unit )
 	{
-		SamplerBinding *binding = ojkAlloc<SamplerBinding>(allocator);
+		SamplerBinding *binding = &scratch[count];
 		if ( !binding )
 		{
 			failed = true;
@@ -1425,7 +1429,7 @@ public:
 
 		if ( bundle->isVideoMap )
 		{
-			SamplerBinding *binding = ojkAlloc<SamplerBinding>(allocator);
+			SamplerBinding *binding = &scratch[count];
 			if ( !binding )
 			{
 				failed = true;
@@ -1470,29 +1474,28 @@ public:
 		return AddStaticImage(bundle->image[ index ], unit);
 	}
 
-	SamplerBinding *Finish( int* numBindings )
+	SamplerBinding *Finish( Allocator& destHeap, int* numBindings )
 	{
 		if ( failed )
 		{
 			return nullptr;
 		}
 
-		SamplerBinding *result = bindingsBase;
+		SamplerBinding *result = ojkAllocArray<SamplerBinding>(destHeap, count);
 
 		if ( numBindings )
 		{
 			*numBindings = count;
 		}
 
-		bindingsBase = static_cast<SamplerBinding *>(allocator.Mark());
+		memcpy(result, scratch, sizeof(SamplerBinding)*count);
 		failed = false;
 		count = 0;
 		return result;
 	}
 
 private:
-	Allocator& allocator;
-	SamplerBinding *bindingsBase;
+	SamplerBinding scratch[32];
 	bool failed;
 	int count;
 };
@@ -1717,15 +1720,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 
+	UniformDataWriter uniformDataWriter;
+	SamplerBindingsWriter samplerBindingsWriter;
+
 	for ( stage = 0; stage < MAX_SHADER_STAGES; stage++ )
 	{
-		// FIXME: This seems a bit weird.
-		Allocator uniformDataAlloc(backEndData->perFrameMemory->Alloc(1024), 1024, 1);
-		Allocator samplerBindingsAlloc(backEndData->perFrameMemory->Alloc(128), 128, 1);
-
-		UniformDataWriter uniformDataWriter(uniformDataAlloc);
-		SamplerBindingsWriter samplerBindingsWriter(samplerBindingsAlloc);
-
 		shaderStage_t *pStage = input->xstages[stage];
 		shaderProgram_t *sp;
 		vec4_t texMatrix;
@@ -2042,9 +2041,10 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
 		memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
 
-		item.uniformData = uniformDataWriter.Finish();
+		item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 		// FIXME: This is a bit ugly with the casting
-		item.samplerBindings = samplerBindingsWriter.Finish((int *)&item.numSamplerBindings);
+		item.samplerBindings = samplerBindingsWriter.Finish(
+			*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
 		item.draw.primitiveType = GL_TRIANGLES;
 		item.draw.numInstances = 1;
 
@@ -2132,8 +2132,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 
-	Allocator uniformDataAlloc(backEndData->perFrameMemory->Alloc(128), 128, 1);
-	UniformDataWriter uniformDataWriter(uniformDataAlloc);
+	UniformDataWriter uniformDataWriter;
 
 	shaderProgram_t *sp = &tr.shadowmapShader;
 	uniformDataWriter.Start(sp);
@@ -2155,7 +2154,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 		*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
 	memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
 
-	item.uniformData = uniformDataWriter.Finish();
+	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 	item.draw.primitiveType = GL_TRIANGLES;
 	item.draw.numInstances = 1;
 

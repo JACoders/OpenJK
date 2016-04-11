@@ -1689,7 +1689,7 @@ void R_Init( void ) {
 		sizeof(srfPoly_t) * max_polys +
 		sizeof(polyVert_t) * max_polyverts +
 		sizeof(Allocator) +
-		PER_FRAME_MEMORY_BYtES,
+		PER_FRAME_MEMORY_BYTES,
 		h_low);
 
 	backEndData = (backEndData_t *)ptr;
@@ -1701,7 +1701,7 @@ void R_Init( void ) {
 	backEndData->polyVerts = (polyVert_t *)ptr;
 	ptr += sizeof(*backEndData->polyVerts) * max_polyverts;
 
-	backEndData->perFrameMemory = new(ptr) Allocator(ptr + sizeof(*backEndData->perFrameMemory), PER_FRAME_MEMORY_BYtES);
+	backEndData->perFrameMemory = new(ptr) Allocator(ptr + sizeof(*backEndData->perFrameMemory), PER_FRAME_MEMORY_BYTES);
 
 	R_InitNextFrame();
 
