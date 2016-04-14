@@ -155,15 +155,8 @@ extern void NPC_DeleteFromFormation (gentity_t *self);
 #define NUM_POSITIONS 30
 
 //NPC spawnflags
-#define SFB_SMALLHULL	1
-
 #define SFB_RIFLEMAN	2
-#define SFB_OLDBORG		2//Borg
 #define SFB_PHASER		4
-#define SFB_GUN			4//Borg
-#define	SFB_TRICORDER	8
-#define	SFB_TASER		8//Borg
-#define	SFB_DRILL		16//Borg
 
 #define	SFB_CINEMATIC	32
 #define	SFB_NOTSOLID	64

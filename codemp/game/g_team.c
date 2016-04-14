@@ -354,7 +354,6 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 	gentity_t *ent;
 	int flag_pw, enemy_flag_pw;
 	int otherteam;
-	int tokens;
 	gentity_t *flag, *carrier = NULL;
 	char *c;
 	vec3_t v1, v2;
@@ -379,7 +378,6 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 	}
 
 	// did the attacker frag the flag carrier?
-	tokens = 0;
 	if (targ->client->ps.powerups[enemy_flag_pw]) {
 		attacker->client->pers.teamState.lastfraggedcarrier = level.time;
 		AddScore(attacker, targ->r.currentOrigin, CTF_FRAG_CARRIER_BONUS);
@@ -387,24 +385,6 @@ void Team_FragBonuses(gentity_t *targ, gentity_t *inflictor, gentity_t *attacker
 		//PrintMsg(NULL, "%s" S_COLOR_WHITE " fragged %s's flag carrier!\n",
 		//	attacker->client->pers.netname, TeamName(team));
 		PrintCTFMessage(attacker->s.number, team, CTFMESSAGE_FRAGGED_FLAG_CARRIER);
-
-		// the target had the flag, clear the hurt carrier
-		// field on the other team
-		for (i = 0; i < sv_maxclients.integer; i++) {
-			ent = g_entities + i;
-			if (ent->inuse && ent->client->sess.sessionTeam == otherteam)
-				ent->client->pers.teamState.lasthurtcarrier = 0;
-		}
-		return;
-	}
-
-	// did the attacker frag a head carrier? other->client->ps.generic1
-	if (tokens) {
-		attacker->client->pers.teamState.lastfraggedcarrier = level.time;
-		AddScore(attacker, targ->r.currentOrigin, CTF_FRAG_CARRIER_BONUS * tokens * tokens);
-		attacker->client->pers.teamState.fragcarrier++;
-		//PrintMsg(NULL, "%s" S_COLOR_WHITE " fragged %s's skull carrier!\n",
-		//	attacker->client->pers.netname, TeamName(team));
 
 		// the target had the flag, clear the hurt carrier
 		// field on the other team

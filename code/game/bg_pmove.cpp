@@ -3690,7 +3690,6 @@ int PM_GetLandingAnim( void )
 			//stick landings some
 			pm->ps->velocity[0] *= 0.5f;
 			pm->ps->velocity[1] *= 0.5f;
-			Com_Printf( "sticking landing\n" );
 		}
 		break;
 	case BOTH_JUMPBACK1:
@@ -8274,7 +8273,7 @@ static void PM_Footsteps( void )
 					PM_SetAnim(pm,SETANIM_LEGS,legsAnim,SETANIM_FLAG_NORMAL);
 				}
 			}
-			else if( (validNPC && pm->ps->weapon > WP_SABER && pm->ps->weapon < WP_DET_PACK ))// && pm->gent->client->race != RACE_BORG))//Being careful or carrying a 2-handed weapon
+			else if( (validNPC && pm->ps->weapon > WP_SABER && pm->ps->weapon < WP_DET_PACK ))//Being careful or carrying a 2-handed weapon
 			{//Squadmates use BOTH_STAND3
 				oldAnim = pm->ps->legsAnim;
 				if(oldAnim != BOTH_GUARD_LOOKAROUND1 && oldAnim != BOTH_GUARD_IDLE1
@@ -13413,12 +13412,7 @@ static void PM_Weapon( void )
 	{
 		if ( pm->gent && pm->gent->client )
 		{
-			// borg no longer exist, use NPC_class to check for any npc's that don't drop their weapons (if there are any)
-			// Sigh..borg shouldn't drop their weapon attachments when they die.  Also, never drop a lightsaber!
-		//	if ( pm->gent->client->playerTeam != TEAM_BORG)
-			{
-				pm->ps->weapon = WP_NONE;
-			}
+			pm->ps->weapon = WP_NONE;
 		}
 
 		if ( pm->gent )
@@ -14105,16 +14099,6 @@ static void PM_VehicleWeapon( void )
 	// check for dead player
 	if ( pm->ps->stats[STAT_HEALTH] <= 0 )
 	{
-		if ( pm->gent && pm->gent->client )
-		{
-			// borg no longer exist, use NPC_class to check for any npc's that don't drop their weapons (if there are any)
-			// Sigh..borg shouldn't drop their weapon attachments when they die.  Also, never drop a lightsaber!
-		//	if ( pm->gent->client->playerTeam != TEAM_BORG)
-			{
-		//		pm->ps->weapon = WP_NONE;
-			}
-		}
-
 		if ( pm->gent )
 		{
 			pm->gent->s.loopSound = 0;

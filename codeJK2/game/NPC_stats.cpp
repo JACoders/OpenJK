@@ -35,20 +35,6 @@ extern vec3_t playerMaxs;
 char	*TeamNames[TEAM_NUM_TEAMS] =
 {
 	"",
-//	"starfleet",
-//	"borg",
-//	"parasite",
-//	"scavengers",
-//	"klingon",
-//	"malon",
-//	"hirogen",
-//	"imperial",
-//	"stasis",
-//	"species8472",
-//	"dreadnought",
-//	"forge",
-//	"disguise",
-//	"player (not valid)"
 	"player",
 	"enemy",
 	"neutral"
@@ -177,16 +163,6 @@ class_t TranslateClassName( const char *name )
 	return CLASS_NONE;  // I hope this never happens, maybe print a warning
 }
 
-/*
-static race_t TranslateRaceName( const char *name )
-{
-	if ( !Q_stricmp( name, "human" ) )
-	{
-		return RACE_HUMAN;
-	}
-	return RACE_NONE;
-}
-*/
 /*
 static rank_t TranslateRankName( const char *name )
 
@@ -1076,7 +1052,6 @@ void NPC_BuildRandom( gentity_t *NPC )
 	}
 
 	NPC->s.modelScale[0] = NPC->s.modelScale[1] = NPC->s.modelScale[2] = Q_irand(87, 102)/100.0f;
-//	NPC->client->race = RACE_HUMAN;
 	NPC->NPC->rank = RANK_CREWMAN;
 	NPC->client->playerTeam = TEAM_PLAYER;
 	NPC->client->clientInfo.customBasicSoundDir = "kyle";

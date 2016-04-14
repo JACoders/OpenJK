@@ -372,7 +372,7 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	if( in_keyboardDebug->integer )
 		IN_PrintKey( keysym, key, down );
 
-	if( IN_IsConsoleKey( key, 0 ) )
+	if( IN_IsConsoleKey( key, 0 ) && !kg.keys[A_ALT].down )
 	{
 		// Console keys can't be bound or generate characters
 		key = A_CONSOLE;

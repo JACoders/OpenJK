@@ -1034,7 +1034,7 @@ Ghoul2 Insert End
 
 	if (!r_noServerGhoul2)
 	{ //keep it from choking when it gets to these checks in the g2 code. Registering all r_ cvars for the server would be a Bad Thing though.
-		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0);
+		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0, "");
 	}
 
 	if ( !name || !name[0] ) {

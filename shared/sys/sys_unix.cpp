@@ -37,7 +37,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/q_shared.h"
 #include "sys_local.h"
 
-qboolean stdin_active = qtrue;
 qboolean stdinIsATTY = qfalse;
 
 // Used to determine where to store user-specific files
@@ -50,7 +49,7 @@ void Sys_PlatformInit( void )
 	signal( SIGHUP, Sys_SigHandler );
 	signal( SIGQUIT, Sys_SigHandler );
 	signal( SIGTRAP, Sys_SigHandler );
-	signal( SIGIOT, Sys_SigHandler );
+	signal( SIGABRT, Sys_SigHandler );
 	signal( SIGBUS, Sys_SigHandler );
 
 	if (isatty( STDIN_FILENO ) && !( term && ( !strcmp( term, "raw" ) || !strcmp( term, "dumb" ) ) ))

@@ -265,30 +265,7 @@ typedef enum {
 	TEAM_BEGIN,		// Beginning a team game, spawn at base
 	TEAM_ACTIVE		// Now actively playing
 } playerTeamStateState_t;
-/*
-typedef enum //# race_e
-{
-	RACE_NONE = 0,
-	RACE_HUMAN,
-	RACE_BORG,
-	RACE_KLINGON,
-	RACE_HIROGEN,
-	RACE_MALON,
-	RACE_STASIS,
-	RACE_8472,
-	RACE_BOT,
-	RACE_HARVESTER,
-	RACE_REAVER,
-	RACE_AVATAR,
-	RACE_PARASITE,
-	RACE_VULCAN,
-	RACE_BETAZOID,
-	RACE_BOLIAN,
-	RACE_TALAXIAN,
-	RACE_BAJORAN,
-	RACE_HOLOGRAM
-} race_t;
-*/
+
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct {
 	playerTeamStateState_t	state;
