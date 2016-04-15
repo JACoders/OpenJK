@@ -1352,18 +1352,26 @@ void R_PrintLongString(const char *string) {
 	char buffer[1024];
 	const char *p, *s;
 	int size = strlen(string);
-	int bufferSize;
+	int copySize, bufferSize;
 
+	bufferSize = sizeof(buffer);
 	p = string;
 	while (size > 0)
 	{
-		s = p + 1023;
-		while (*s > ' ') s--;
-		bufferSize = s - p;
-		Q_strncpyz(buffer, p, bufferSize);
+		s = p + bufferSize - 1;
+		while (*s > ' ' && s != p) s--;
+		copySize = s - p;
+		if (copySize <= 0) {
+			Q_strncpyz(buffer, p, bufferSize);
+			p += bufferSize - 1;
+			size -= bufferSize - 1;
+		}
+		else {
+			Q_strncpyz(buffer, p, copySize);
+			p = s + 1;
+			size -= copySize;
+		}
 		ri->Printf(PRINT_ALL, "%s", buffer);
-		p = s + 1;
-		size -= bufferSize;
 	}
 }
 
