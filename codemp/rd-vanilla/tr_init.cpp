@@ -1350,16 +1350,28 @@ Workaround for ri->Printf's 1024 characters buffer limit.
 */
 void R_PrintLongString(const char *string) {
 	char buffer[1024];
-	const char *p;
+	const char *p, *s;
 	int size = strlen(string);
+	int copySize, bufferSize;
 
+	bufferSize = sizeof(buffer);
 	p = string;
-	while(size > 0)
+	while (size > 0)
 	{
-		Q_strncpyz(buffer, p, sizeof (buffer) );
-		ri->Printf( PRINT_ALL, "%s", buffer );
-		p += 1023;
-		size -= 1023;
+		s = p + bufferSize - 1;
+		while (*s > ' ' && s != p) s--;
+		copySize = s - p;
+		if (copySize <= 0) {
+			Q_strncpyz(buffer, p, bufferSize);
+			p += bufferSize - 1;
+			size -= bufferSize - 1;
+		}
+		else {
+			Q_strncpyz(buffer, p, copySize);
+			p = s + 1;
+			size -= copySize;
+		}
+		ri->Printf(PRINT_ALL, "%s", buffer);
 	}
 }
 
