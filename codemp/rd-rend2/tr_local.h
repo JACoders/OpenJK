@@ -2699,16 +2699,8 @@ struct shaderCommands_s
 	uint32_t    lightdir[SHADER_MAX_VERTEXES] QALIGN(16);
 	//int			vertexDlightBits[SHADER_MAX_VERTEXES] QALIGN(16);
 
-	VBO_t       *vbo;
-	IBO_t       *ibo;
-	void		*vboData; // If immutable buffers
-	void		*iboData; // are available
 	IBO_t		*externalIBO;
 	qboolean    useInternalVBO;
-	int			internalVBOWriteOffset;
-	int			internalVBOCommitOffset;
-	int			internalIBOWriteOffset;
-	int			internalIBOCommitOffset;
 
 	float		minDepthRange;
 	float		maxDepthRange;
@@ -3273,6 +3265,16 @@ struct gpuFrame_t
 	GLsync sync;
 	GLuint ubo;
 	size_t uboWriteOffset;
+
+	VBO_t *dynamicVbo;
+	void *dynamicVboMemory;
+	size_t dynamicVboWriteOffset;
+	size_t dynamicVboCommitOffset;
+
+	IBO_t *dynamicIbo;
+	void *dynamicIboMemory;
+	size_t dynamicIboWriteOffset;
+	size_t dynamicIboCommitOffset;
 
 	int numTimers;
 	int numTimedBlocks;

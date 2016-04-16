@@ -77,12 +77,13 @@ void RB_CheckVBOandIBO(VBO_t *vbo, IBO_t *ibo)
 		R_BindIBO(ibo);
 	}
 
-	if (vbo != tess.vbo && ibo != tess.ibo)
+	if (vbo != backEndData->currentFrame->dynamicVbo &&
+		ibo != backEndData->currentFrame->dynamicIbo)
 	{
 		tess.useInternalVBO = qfalse;
 	}
 
-	if ( ibo != tess.ibo )
+	if ( ibo != backEndData->currentFrame->dynamicIbo )
 	{
 		tess.externalIBO = ibo;
 	}
@@ -385,8 +386,9 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	uint32_t        *tangent;
 	glIndex_t      *outIndex;
 	float          *color;
+	gpuFrame_t		*currentFrame = backEndData->currentFrame;
 
-	RB_CheckVBOandIBO(tess.vbo, tess.ibo);
+	RB_CheckVBOandIBO(currentFrame->dynamicVbo, currentFrame->dynamicIbo);
 
 	RB_CHECKOVERFLOW( numVerts, numIndexes );
 

@@ -46,7 +46,7 @@ R_DrawElements
 void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex, glIndex_t maxIndex )
 {
 	int offset = firstIndex * sizeof(glIndex_t) +
-		(tess.useInternalVBO ? tess.internalIBOCommitOffset : 0);
+		(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
 	GL_DrawIndexed(GL_TRIANGLES, numIndexes, offset, 1, 0);
 }
@@ -2034,7 +2034,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		item.cullType = cullType;
 		item.program = sp;
 		item.maxDepthRange = input->maxDepthRange;
-		item.ibo = input->externalIBO ? input->externalIBO : input->ibo;
+		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
 		item.attributes = ojkAllocArray<vertexAttribute_t>(
@@ -2077,7 +2077,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		else
 		{
 			int offset = input->firstIndex * sizeof(glIndex_t) +
-				(tess.useInternalVBO ? tess.internalIBOCommitOffset : 0);
+				(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
 			item.draw.type = DRAW_COMMAND_INDEXED;
 			item.draw.params.indexed.firstIndex = offset;
@@ -2147,7 +2147,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	item.cullType = cullType;
 	item.program = sp;
 	item.maxDepthRange = input->maxDepthRange;
-	item.ibo = input->externalIBO ? input->externalIBO : input->ibo;
+	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	item.numAttributes = vertexArrays->numVertexArrays;
 	item.attributes = ojkAllocArray<vertexAttribute_t>(
@@ -2187,7 +2187,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	else
 	{
 		int offset = input->firstIndex * sizeof(glIndex_t) +
-			(tess.useInternalVBO ? tess.internalIBOCommitOffset : 0);
+			(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
 		item.draw.type = DRAW_COMMAND_INDEXED;
 		item.draw.params.indexed.firstIndex = offset;
@@ -2246,7 +2246,7 @@ void RB_StageIteratorGeneric( void )
 		for ( int i = 0; i < vertexArrays.numVertexArrays; i++ )
 		{
 			int attributeIndex = vertexArrays.enabledAttributes[i];
-			vertexArrays.offsets[attributeIndex] += tess.internalVBOCommitOffset;
+			vertexArrays.offsets[attributeIndex] += backEndData->currentFrame->dynamicVboCommitOffset;
 		}
 	}
 	else

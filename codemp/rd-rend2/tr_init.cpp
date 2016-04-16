@@ -28,6 +28,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <algorithm>
 
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
+static size_t FRAME_VERTEX_BUFFER_SIZE = 8*1024*1024;
+static size_t FRAME_INDEX_BUFFER_SIZE = 2*1024*1024;
 
 glconfig_t  glConfig;
 glconfigExt_t glConfigExt;
@@ -1593,6 +1595,7 @@ static void R_InitBackEndFrameData()
 	for ( int i = 0; i < MAX_FRAMES; i++ )
 	{
 		gpuFrame_t *frame = backEndData->frames + i;
+		const GLbitfield mapBits = GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT;
 
 		frame->ubo = ubos[i];
 		frame->uboWriteOffset = 0;
@@ -1601,6 +1604,32 @@ static void R_InitBackEndFrameData()
 		// TODO: persistently mapped UBOs
 		qglBufferData(GL_UNIFORM_BUFFER, FRAME_UNIFORM_BUFFER_SIZE,
 				nullptr, GL_DYNAMIC_DRAW);
+
+		frame->dynamicVbo = R_CreateVBO(nullptr, FRAME_VERTEX_BUFFER_SIZE,
+				VBO_USAGE_DYNAMIC);
+		frame->dynamicVboCommitOffset = 0;
+		frame->dynamicVboWriteOffset = 0;
+
+		frame->dynamicIbo = R_CreateIBO(nullptr, FRAME_INDEX_BUFFER_SIZE,
+				VBO_USAGE_DYNAMIC);
+		frame->dynamicIboCommitOffset = 0;
+		frame->dynamicIboWriteOffset = 0;
+
+		if ( glRefConfig.immutableBuffers )
+		{
+			R_BindVBO(frame->dynamicVbo);
+			frame->dynamicVboMemory = qglMapBufferRange(GL_ARRAY_BUFFER, 0,
+				frame->dynamicVbo->vertexesSize, mapBits);
+
+			R_BindIBO(frame->dynamicIbo);
+			frame->dynamicIboMemory = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0,
+				frame->dynamicIbo->indexesSize, mapBits);
+		}
+		else
+		{
+			frame->dynamicVboMemory = nullptr;
+			frame->dynamicIboMemory = nullptr;
+		}
 
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{
@@ -1622,6 +1651,14 @@ static void R_ShutdownBackEndFrameData()
 		gpuFrame_t *frame = backEndData->frames + i;
 
 		qglDeleteBuffers(1, &frame->ubo);
+
+		if ( glRefConfig.immutableBuffers )
+		{
+			R_BindVBO(frame->dynamicVbo);
+			R_BindIBO(frame->dynamicIbo);
+			qglUnmapBuffer(GL_ARRAY_BUFFER);
+			qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+		}
 
 		for ( int j = 0; j < MAX_GPU_TIMERS; j++ )
 		{
@@ -1714,6 +1751,8 @@ void R_Init( void ) {
 
 	InitOpenGL();
 
+	R_InitVBOs();
+
 	R_InitBackEndFrameData();
 	R_InitImages();
 
@@ -1721,7 +1760,6 @@ void R_Init( void ) {
 
 	int shadersStartTime = GLSL_BeginLoadGPUShaders();
 
-	R_InitVBOs();
 
 	R_InitShaders (qfalse);
 

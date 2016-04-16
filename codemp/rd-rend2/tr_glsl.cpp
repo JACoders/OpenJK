@@ -2215,7 +2215,7 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 		for ( int i = 0; i < vertexArrays->numVertexArrays; i++ )
 		{
 			int attributeIndex = vertexArrays->enabledAttributes[i];
-			vertexArrays->offsets[attributeIndex] += tess.internalVBOCommitOffset;
+			vertexArrays->offsets[attributeIndex] += backEndData->currentFrame->dynamicVboCommitOffset;
 		}
 	}
 	else
