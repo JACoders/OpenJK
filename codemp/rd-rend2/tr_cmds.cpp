@@ -506,9 +506,15 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		qglDeleteSync( sync );
 		thisFrame->sync = NULL;
 
-		// Set the frame uniform buffer
+		// Resets resources
 		qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo);
 		thisFrame->uboWriteOffset = 0;
+
+		thisFrame->dynamicIboCommitOffset = 0;
+		thisFrame->dynamicIboWriteOffset = 0;
+
+		thisFrame->dynamicVboCommitOffset = 0;
+		thisFrame->dynamicVboWriteOffset = 0;
 
 		backEndData->perFrameMemory->Reset();
 	}
