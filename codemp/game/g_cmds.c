@@ -1087,13 +1087,28 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 	specClient = 0;
 	specState = SPECTATOR_NOT;
 	if ( !Q_stricmp( s, "scoreboard" ) || !Q_stricmp( s, "score" )  ) {
+		if(level.isLockedspec && !forcedToJoin)
+		{
+				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Spectator ^7Access has been locked!\n\""));
+				return;
+		}
 		team = TEAM_SPECTATOR;
 		specState = SPECTATOR_FREE; // SPECTATOR_SCOREBOARD disabling this for now since it is totally broken on client side
 	} else if ( !Q_stricmp( s, "follow1" ) ) {
+		if(level.isLockedspec && !forcedToJoin)
+		{
+				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Spectator ^7Access has been locked!\n\""));
+				return;
+		}
 		team = TEAM_SPECTATOR;
 		specState = SPECTATOR_FOLLOW;
 		specClient = -1;
 	} else if ( !Q_stricmp( s, "follow2" ) ) {
+		if(level.isLockedspec && !forcedToJoin)
+		{
+				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Spectator ^7Access has been locked!\n\""));
+				return;
+		}
 		team = TEAM_SPECTATOR;
 		specState = SPECTATOR_FOLLOW;
 		specClient = -2;
@@ -1103,11 +1118,8 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Spectator ^7Access has been locked!\n\""));
 				return;
 		}
-		else
-		{
-			team = TEAM_SPECTATOR;
-			specState = SPECTATOR_FREE;
-		}
+		team = TEAM_SPECTATOR;
+		specState = SPECTATOR_FREE;
 	} else if ( level.gametype >= GT_TEAM ) {
 		// if running a team game, assign player to one of the teams
 		specState = SPECTATOR_NOT;
@@ -1118,14 +1130,15 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is locked!\n\""));
 				return;
 			}
-			else if (sv_maxTeamSize.integer && !forcedToJoin && GetTeamPlayers(TEAM_RED) >= sv_maxTeamSize.integer) {
+			if (sv_maxTeamSize.integer && !forcedToJoin && GetTeamPlayers(TEAM_RED) >= sv_maxTeamSize.integer) {
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is full!\n\""));
 				return;
 			}
-			else
-			{
-				team = TEAM_RED;
+			if (g_forceLogin.integer && !forcedToJoin && !ent->client->pers.userName[0]) {
+				trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
+				return;
 			}
+			team = TEAM_RED;
 		} else if (!Q_stricmp(s, "blue") || !Q_stricmp(s, "b"))
 		{
 			if(level.isLockedblue && !forcedToJoin)
@@ -1133,14 +1146,15 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));
 				return;
 			}
-			else if (sv_maxTeamSize.integer && !forcedToJoin && GetTeamPlayers(TEAM_BLUE) >= sv_maxTeamSize.integer) {
+			if (sv_maxTeamSize.integer && !forcedToJoin && GetTeamPlayers(TEAM_BLUE) >= sv_maxTeamSize.integer) {
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is full!\n\""));
 				return;
 			}
-			else
-			{
-				team = TEAM_BLUE;
+			if (g_forceLogin.integer && !forcedToJoin && !ent->client->pers.userName[0]) {
+				trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
+				return;
 			}
+			team = TEAM_BLUE;
 		} else {
 			// pick the team with the least number of players
 			//For now, don't do this. The legalize function will set powers properly now.
@@ -1163,19 +1177,26 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 					team = TEAM_FREE;
 				else
 					team = PickTeam( clientNum );
+
 				if(team == TEAM_BLUE && !forcedToJoin) {
-					if (level.isLockedblue)
+					if (level.isLockedblue) {
 						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is locked!\n\""));
-					else if (sv_maxTeamSize.integer && GetTeamPlayers(TEAM_BLUE) >= sv_maxTeamSize.integer)
+						return;
+					}
+					if (sv_maxTeamSize.integer && GetTeamPlayers(TEAM_BLUE) >= sv_maxTeamSize.integer) {
 						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is full!\n\""));
-					return;
+						return;
+					}
 				}
 				else if(team == TEAM_RED && !forcedToJoin) {
-					if (level.isLockedred)
+					if (level.isLockedred) {
 						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is locked!\n\""));
-					else if (sv_maxTeamSize.integer && GetTeamPlayers(TEAM_RED) >= sv_maxTeamSize.integer)
+						return;
+					}
+					if (sv_maxTeamSize.integer && GetTeamPlayers(TEAM_RED) >= sv_maxTeamSize.integer) {
 						trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is full!\n\""));
-					return;
+						return;
+					}
 				}
 			//}
 		}
@@ -1249,10 +1270,11 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Free ^7team is locked!\n\""));
 			return;
 		}
-		else
-		{
-			team = TEAM_FREE; // force them to spectators if there aren't any spots free
+		if (g_forceLogin.integer && !forcedToJoin && !ent->client->pers.userName[0]) {
+			trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
+			return;
 		}
+		team = TEAM_FREE; // force them to spectators if there aren't any spots free
 	}
 
 	oldTeam = client->sess.sessionTeam;

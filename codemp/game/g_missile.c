@@ -785,7 +785,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 				velocity[2] = 1;	// stepped on a grenade
 			}
 
-			//damage falloff option
+			//damage falloff option, assumes bullet lifetime is 10,000 (default)
 			if ((g_tweakWeapons.integer & NO_SPREAD) &&
 				((ent->s.weapon == WP_BLASTER && (ent->s.eFlags & EF_ALT_FIRING)) ||
 				(ent->s.weapon == WP_REPEATER && !(ent->s.eFlags & EF_ALT_FIRING))	

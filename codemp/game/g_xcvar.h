@@ -291,8 +291,9 @@ XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowRegistration,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 //XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
 //XCVAR_DEF( sv_webServerPath,			"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
-XCVAR_DEF( sv_webServerPassword,		"",				NULL,				CVAR_ARCHIVE,									qfalse )
+//XCVAR_DEF( sv_webServerPassword,		"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( sv_pluginKey,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
+XCVAR_DEF( g_forceLogin,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 //JAPRO LOGGING
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )

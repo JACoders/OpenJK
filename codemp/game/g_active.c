@@ -3457,6 +3457,11 @@ void ClientThink_real( gentity_t *ent ) {
 		trap->Cvar_Set("pmove_msec", "66");
 	}
 
+	if (!isNPC && client->sess.sessionTeam != TEAM_SPECTATOR && g_forceLogin.integer && !ent->client->pers.userName[0]) {
+		SetTeam ( ent, "spectator", qtrue );
+		trap->SendServerCommand( -1, "print \"^1You must login to join the game\n\"");
+	}
+
 	if (!isNPC && client->sess.sessionTeam == TEAM_FREE && !g_raceMode.integer) {
 		if (client->ps.stats[STAT_RACEMODE] || level.gametype >= GT_TEAM) {
 			SetTeam ( ent, "spectator", qtrue );
