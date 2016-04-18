@@ -1134,7 +1134,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^1Red ^7team is full!\n\""));
 				return;
 			}
-			if (g_forceLogin.integer && !forcedToJoin && !ent->client->pers.userName[0]) {
+			if (g_forceLogin.integer && !forcedToJoin && !(ent->r.svFlags & SVF_BOT) && !ent->client->pers.userName[0]) {
 				trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
 				return;
 			}
@@ -1150,7 +1150,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^4Blue ^7team is full!\n\""));
 				return;
 			}
-			if (g_forceLogin.integer && !forcedToJoin && !ent->client->pers.userName[0]) {
+			if (g_forceLogin.integer && !forcedToJoin && !(ent->r.svFlags & SVF_BOT) && !ent->client->pers.userName[0]) {
 				trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
 				return;
 			}
@@ -1270,7 +1270,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			trap->SendServerCommand( ent->client->ps.clientNum, va("print \"^7The ^3Free ^7team is locked!\n\""));
 			return;
 		}
-		if (g_forceLogin.integer && !forcedToJoin && !ent->client->pers.userName[0]) {
+		if (g_forceLogin.integer && !(ent->r.svFlags & SVF_BOT) && !forcedToJoin && !ent->client->pers.userName[0]) {
 			trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
 			return;
 		}

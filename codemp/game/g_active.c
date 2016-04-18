@@ -3457,7 +3457,7 @@ void ClientThink_real( gentity_t *ent ) {
 		trap->Cvar_Set("pmove_msec", "66");
 	}
 
-	if (!isNPC && client->sess.sessionTeam != TEAM_SPECTATOR && g_forceLogin.integer && !ent->client->pers.userName[0]) {
+	if (!isNPC && !(ent->r.svFlags & SVF_BOT) && client->sess.sessionTeam != TEAM_SPECTATOR && g_forceLogin.integer && !client->pers.userName[0]) {
 		SetTeam ( ent, "spectator", qtrue );
 		trap->SendServerCommand( -1, "print \"^1You must login to join the game\n\"");
 	}
