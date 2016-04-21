@@ -442,6 +442,11 @@ void CL_ConsolePrint( const char *txt) {
 	qboolean skipnotify = qfalse;		// NERVE - SMF
 	int prev;							// NERVE - SMF
 
+	// for some demos we don't want to ever show anything on the console
+	if (cl_noprint && cl_noprint->integer) {
+		return;
+	}
+
 	// TTimo - prefix for text that shows up in console but not in notify
 	// backported from RTCW
 	if ( !Q_strncmp( txt, "[skipnotify]", 12 ) ) {
@@ -451,11 +456,6 @@ void CL_ConsolePrint( const char *txt) {
 	if ( txt[0] == '*' ) {
 		skipnotify = qtrue;
 		txt += 1;
-	}
-
-	// for some demos we don't want to ever show anything on the console
-	if ( cl_noprint && cl_noprint->integer ) {
-		return;
 	}
 
 	if (!con.initialized) {
@@ -469,6 +469,7 @@ void CL_ConsolePrint( const char *txt) {
 	}
 
 	color = ColorIndex(COLOR_WHITE);
+	l = -1;
 
 	while ( (c = (unsigned char) *txt) != 0 ) {
 		if ( Q_IsColorString( (unsigned char*) txt ) ) {
@@ -478,19 +479,22 @@ void CL_ConsolePrint( const char *txt) {
 		}
 
 		// count word length
-		for (l=0 ; l< con.linewidth ; l++) {
-			if ( txt[l] <= ' ') {
-				break;
+		if ((l < 0 ? l = 0, true : false) || (l + 1 == con.linewidth)) {
+			while (l < con.linewidth) {
+				if (txt[l] <= ' ') {
+					break;
+				}
+				l++;
 			}
 		}
 
 		// word wrap
-		if (l != con.linewidth && (con.x + l >= con.linewidth) ) {
+		if (l != con.linewidth && (con.x + l >= con.linewidth)) {
 			Con_Linefeed(skipnotify);
-
 		}
 
 		txt++;
+		l--;
 
 		switch (c)
 		{
