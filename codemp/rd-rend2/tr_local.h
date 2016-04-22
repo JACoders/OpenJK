@@ -1438,7 +1438,7 @@ compared quickly during the qsorting process
 typedef struct drawSurf_s {
 	uint32_t sort; // bit combination for fast compares
 	int entityNum;
-	qboolean lit;
+	uint32_t dlightBits;
 	surfaceType_t *surface; // any of surface*_t
 	int fogIndex;
 } drawSurf_t;

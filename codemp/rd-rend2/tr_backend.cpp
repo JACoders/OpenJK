@@ -794,7 +794,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		R_DecomposeSort( drawSurf->sort, &shader, &cubemapIndex, &postRender );
 		fogNum = drawSurf->fogIndex;
 		entityNum = drawSurf->entityNum;
-		dlighted = drawSurf->lit;
+		dlighted = drawSurf->dlightBits;
 
 		if ( shader == oldShader &&
 				fogNum == oldFogNum &&

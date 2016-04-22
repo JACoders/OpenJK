@@ -1793,7 +1793,7 @@ void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,  in
 
 	surf->sort = R_CreateSortKey(shader->sortedIndex, cubemap, postRender);
 	surf->entityNum = entityNum;
-	surf->lit = (qboolean)dlightMap;
+	surf->dlightBits = dlightMap;
 	surf->surface = surface;
 	surf->fogIndex = fogIndex;
 
