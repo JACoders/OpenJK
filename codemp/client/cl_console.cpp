@@ -570,7 +570,7 @@ static void Con_Linefeed (qboolean skipnotify)
 
 	Com_RealTime(&now);
 	Com_sprintf(timetxt, sizeof(timetxt), "%02d:%02d:%02d", now.tm_hour, now.tm_min, now.tm_sec);
-	for (i = 0; i<9; i++)
+	for (i = 0; i<8; i++)
 		con.text[(con.current%con.totallines)*con.linewidth + i] = (ColorIndex(stampColor) << 8) | timetxt[i];
 
 	con.x = 9;
@@ -653,7 +653,7 @@ void CL_ConsolePrint( const char *txt) {
 	}
 
 	color = ColorIndex(COLOR_WHITE);
-	l = 0;
+	l = -1;
 
 	while ( (c = (unsigned char) *txt) != 0 ) {
 		if ( Q_IsColorString( (unsigned char*) txt ) ) {
@@ -663,17 +663,16 @@ void CL_ConsolePrint( const char *txt) {
 		}
 
 		// count word length
-		if (l == 0)
-			while (l < con.linewidth - 10) {
+		if ((l < 0 ? l = 0, true : false) || (l + 1 == con.linewidth - 9))
+			while (l < con.linewidth - 9) {
 				if ( txt[l] <= ' ') {
-					l++;
 					break;
 				}
 				l++;
 			}
 
 		// word wrap
-		if (con.x + l >= con.linewidth) {
+		if (l != con.linewidth - 9 && con.x + l >= con.linewidth) {
 			Con_Linefeed(skipnotify);
 		}
 
