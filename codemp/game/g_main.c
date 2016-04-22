@@ -3858,8 +3858,6 @@ void G_RunFrame( int levelTime ) {
 				}
 			}
 
-#define _retardedsabertest 0
-
 			if((!level.intermissiontime)&&!(ent->client->ps.pm_flags&PMF_FOLLOW) && ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{
 				WP_ForcePowersUpdate(ent, &ent->client->pers.cmd );

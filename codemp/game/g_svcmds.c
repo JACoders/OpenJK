@@ -1324,12 +1324,21 @@ void Svcmd_DeleteAccount_f( void );
 void Svcmd_RenameAccount_f( void );
 void Svcmd_ClearIP_f( void );
 void Svcmd_DBInfo_f( void );
+#if _ELORANKING
+void G_TestAddDuel( void );
+#endif
+
 
 /* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
 	{ "accountInfo",				Svcmd_AccountInfo_f,				qfalse },
 
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
+
+#if _ELORANKING
+	{ "addDuel",					G_TestAddDuel,						qfalse },
+#endif
+
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
 
 	{ "amban",						Svcmd_AmBan_f,						qfalse },

@@ -336,8 +336,22 @@ XCVAR_DEF( g_forceDrainTargetRegenDelay,	"800",			NULL,				CVAR_ARCHIVE,								
 XCVAR_DEF( g_forceDrainSelfRegenDelay,		"500",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_forceDrainRestartDelay,		"1500",			NULL,				CVAR_ARCHIVE,									qtrue )
 
+#define _retardedsabertest 0 
 #if _retardedsabertest
 XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+#endif
+
+#define _ELORANKING 1
+#if _ELORANKING
+XCVAR_DEF( g_eloRanking,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloNewUserCutoff,				"-1",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloProvisionalCutoff,			"10",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloProvisionalChangeBig,		"2",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloProvisionalChangeSmall,		"1.5",			NULL,				CVAR_ARCHIVE,									qtrue )
+
+XCVAR_DEF( g_eloKValue1,						"30",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloKValue2,						"30",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_eloKValue3,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )
 #endif
 
 #undef XCVAR_DEF
