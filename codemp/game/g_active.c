@@ -3459,7 +3459,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 	if (!isNPC && !(ent->r.svFlags & SVF_BOT) && client->sess.sessionTeam != TEAM_SPECTATOR && g_forceLogin.integer && !client->pers.userName[0]) {
 		SetTeam ( ent, "spectator", qtrue );
-		trap->SendServerCommand( -1, "print \"^1You must login to join the game\n\"");
+		trap->SendServerCommand( ent-g_entities, "print \"^1You must login to join the game\n\"");
 	}
 
 	if (!isNPC && client->sess.sessionTeam == TEAM_FREE && !g_raceMode.integer) {

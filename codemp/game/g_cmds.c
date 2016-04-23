@@ -1135,7 +1135,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				return;
 			}
 			if (g_forceLogin.integer && !forcedToJoin && !(ent->r.svFlags & SVF_BOT) && !ent->client->pers.userName[0]) {
-				trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
+				trap->SendServerCommand( ent-g_entities, "print \"^1You must login to join the game!\n\"");
 				return;
 			}
 			team = TEAM_RED;
@@ -1151,7 +1151,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 				return;
 			}
 			if (g_forceLogin.integer && !forcedToJoin && !(ent->r.svFlags & SVF_BOT) && !ent->client->pers.userName[0]) {
-				trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
+				trap->SendServerCommand( ent-g_entities, "print \"^1You must login to join the game!\n\"");
 				return;
 			}
 			team = TEAM_BLUE;
@@ -1271,7 +1271,7 @@ void SetTeam( gentity_t *ent, char *s, qboolean forcedToJoin ) {//JAPRO - Modifi
 			return;
 		}
 		if (g_forceLogin.integer && !(ent->r.svFlags & SVF_BOT) && !forcedToJoin && !ent->client->pers.userName[0]) {
-			trap->SendServerCommand( -1, "print \"^1You must login to join the game!\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"^1You must login to join the game!\n\"");
 			return;
 		}
 		team = TEAM_FREE; // force them to spectators if there aren't any spots free
@@ -8070,6 +8070,9 @@ void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
 void Cmd_MapEnts_f( gentity_t *self);
 void Cmd_NotCompleted_f( gentity_t *ent );
+#if _ELORANKING
+void Cmd_DuelTop10_f( gentity_t *ent );
+#endif
 
 /* This array MUST be sorted correctly by alphabetical name field */
 command_t commands[] = {
@@ -8220,6 +8223,11 @@ command_t commands[] = {
 	{ "tell",				Cmd_Tell_f,					0 },
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "throwflag",			Cmd_Throwflag_f,			CMD_ALIVE|CMD_NOINTERMISSION },
+
+#if _ELORANKING
+	{ "top10",				Cmd_DuelTop10_f,			CMD_NOINTERMISSION },
+#endif
+
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "vgs_cmd",			Cmd_VGSCommand_f,			CMD_NOINTERMISSION },//vgs
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			0 },

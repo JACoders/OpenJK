@@ -1326,6 +1326,7 @@ void Svcmd_ClearIP_f( void );
 void Svcmd_DBInfo_f( void );
 #if _ELORANKING
 void G_TestAddDuel( void );
+void SV_RebuildElo_f( void );
 #endif
 
 
@@ -1364,10 +1365,13 @@ svcmd_t svcmds[] = {
 
 	{ "pause",						SV_Pause_f,							qfalse },
 
+#if _ELORANKING
+	{ "rebuildElo",					SV_RebuildElo_f,					qfalse },
+#endif
+
 	{ "register",					Svcmd_Register_f,					qfalse },
 
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
-
 	{ "renameAccount",				Svcmd_RenameAccount_f,				qfalse },
 	{ "resetScores",				Svcmd_ResetScores_f,				qfalse },
 

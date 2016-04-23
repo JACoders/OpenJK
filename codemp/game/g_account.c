@@ -278,16 +278,14 @@ void G_AddPlayerLog(char *name, char *strIP, char *guid) {
 }
 
 #if _ELORANKING	
-void DuelRankExists(char *username, int type) {
-	sqlite3 * db;
+void DuelRankExists(char *username, int type, sqlite3 * db) {
+	//sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
 	int count = -1;
 
-	int time1 = trap->Milliseconds();
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
-	Com_Printf("Opening took %i ms\n", trap->Milliseconds() - time1);
+	//CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
 
 	sql = "SELECT COUNT(*) FROM DuelCounts WHERE username = ? AND type = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -319,7 +317,6 @@ void DuelRankExists(char *username, int type) {
 	}
 
 	//
-
 	sql = "SELECT COUNT(*) FROM DuelRanks WHERE username = ? AND type = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
@@ -336,6 +333,7 @@ void DuelRankExists(char *username, int type) {
 
 	CALL_SQLITE (finalize(stmt));
 
+	
 	if (count == 0) {
 		sql = "INSERT INTO DuelRanks(username, type, rank, TSSUM) VALUES (?, ?, 1000, 0)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -349,21 +347,19 @@ void DuelRankExists(char *username, int type) {
 		CALL_SQLITE (finalize(stmt));
 	}
 
-	time1 = trap->Milliseconds();
-	CALL_SQLITE (close(db));//-Can be removed-end
-	Com_Printf("Closing took %i ms\n", trap->Milliseconds() - time1);
+	//CALL_SQLITE (close(db));//-Can be removed-end
 }
 
 
-int GetDuelCount(char *username, int type) {
+int GetDuelCount(char *username, int type, sqlite3 * db) {
 	int count = -1;
 
-	sqlite3 * db;
+	//sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
+	//CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
 
 	sql = "SELECT count FROM DuelCounts where type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -380,21 +376,21 @@ int GetDuelCount(char *username, int type) {
 	}
 
 	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));//-Can be removed-end
+	//CALL_SQLITE (close(db));//-Can be removed-end
 
 	return count;
 }
 
 
-float GetCurrentRank(char *username, int type) {
+float GetCurrentRank(char *username, int type, sqlite3 * db) {
 	float rank = -1;
 
-	sqlite3 * db;
+	//sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
+	//CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
 
 	sql = "SELECT rank FROM DuelRanks where type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -411,19 +407,18 @@ float GetCurrentRank(char *username, int type) {
 	}
 
 	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));//-Can be removed-end
+	//CALL_SQLITE (close(db));//-Can be removed-end
 
 	return rank;
 }
 
 
-void UpdatePlayerRating(char *username, int type, float newElo, float odds) {
-	sqlite3 * db;
+void UpdatePlayerRating(char *username, int type, float newElo, float odds, sqlite3 * db) {
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //-Can be removed-start
+	//CALL_SQLITE (open (LOCAL_DB_PATH, & db)); //-Can be removed-start
 
 	sql = "UPDATE DuelRanks SET rank = ?, TSSUM = TSSUM + ? WHERE type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -439,16 +434,16 @@ void UpdatePlayerRating(char *username, int type, float newElo, float odds) {
 	}
 
 	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db)); //-Can be removed-end
+	//CALL_SQLITE (close(db)); //-Can be removed-end
 }
 
-void UpdateDuelCount(char *username, int type) {
-	sqlite3 * db;
+void UpdateDuelCount(char *username, int type, sqlite3 * db) {
+//	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
 
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
+	//CALL_SQLITE (open (LOCAL_DB_PATH, & db));//-Can be removed-start
 
 	sql = "UPDATE DuelCounts SET count = count + 1 WHERE type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
@@ -462,7 +457,7 @@ void UpdateDuelCount(char *username, int type) {
 	}
 
 	CALL_SQLITE (finalize(stmt));
-	CALL_SQLITE (close(db));//-Can be removed-end
+	//CALL_SQLITE (close(db));//-Can be removed-end
 }
 
 int GetEloKValue(int numDuels) { //Also take rank into account
@@ -477,7 +472,7 @@ int GetEloKValue(int numDuels) { //Also take rank into account
 	*/
 }
 
-void G_AddDuelElo(char *winner, char *loser, int type) {
+void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 	int winnerDuelCount, loserDuelCount, winnerType, loserType, winnerK, loserK;
 	float expectedScoreWinner, expectedScoreLoser, WA, LA, loserElo, winnerElo, newWinnerElo, newLoserElo;
 
@@ -489,11 +484,11 @@ void G_AddDuelElo(char *winner, char *loser, int type) {
 	float provisionalChangeBig = 2;
 	float provisionalChangeSmall = 1.5;
 
-	DuelRankExists(winner, type);
-	DuelRankExists(loser, type);
+	DuelRankExists(winner, type, db);
+	DuelRankExists(loser, type, db);
 
-	winnerDuelCount = GetDuelCount(winner, type);
-	loserDuelCount = GetDuelCount(loser, type);
+	winnerDuelCount = GetDuelCount(winner, type, db);
+	loserDuelCount = GetDuelCount(loser, type, db);
 
 	if (winnerDuelCount < 0) //Error i guess
 		return;
@@ -520,7 +515,7 @@ void G_AddDuelElo(char *winner, char *loser, int type) {
 	if (winnerType == 0)
 		winnerElo = 1000; //loda fixme
 	else 
-		winnerElo = GetCurrentRank(winner, type);
+		winnerElo = GetCurrentRank(winner, type, db);
 
 	if (winnerElo < 0) //Error i guess
 		return; 
@@ -528,7 +523,7 @@ void G_AddDuelElo(char *winner, char *loser, int type) {
 	if (loserType == 0)
 		loserElo = 1000; //loda fixme
 	else
-		loserElo = GetCurrentRank(loser, type);
+		loserElo = GetCurrentRank(loser, type, db);
 
 	if (loserElo < 0) //Error i guess
 		return; 
@@ -569,30 +564,74 @@ void G_AddDuelElo(char *winner, char *loser, int type) {
 		newLoserElo = loserElo + loserK * (0 - expectedScoreLoser);
 
 	if (newWinnerElo != winnerElo) //Update winner elo
-		UpdatePlayerRating(winner, type, newWinnerElo, expectedScoreWinner);
+		UpdatePlayerRating(winner, type, newWinnerElo, expectedScoreWinner, db);
 
 	if (newLoserElo != loserElo) //Update loser elo
-		UpdatePlayerRating(loser, type, newLoserElo, expectedScoreLoser);
+		UpdatePlayerRating(loser, type, newLoserElo, expectedScoreLoser, db);
 
-	UpdateDuelCount(winner, type);
-	UpdateDuelCount(loser, type);
+	UpdateDuelCount(winner, type, db);
+	UpdateDuelCount(loser, type, db);
 
 	Com_Printf("Adding duel: odds = %.2f, %s [%.2f -> %.2f (c=%i) (t=%i)] > %s [%.2f -> %.2f (c=%i) (t=%i)] {%i}\n", 
 		expectedScoreWinner, winner, winnerElo, newWinnerElo, winnerDuelCount, winnerType, loser, loserElo, newLoserElo, loserDuelCount, loserType, type);
 }
 
 //Make function to clear duel rank tables and recompute everything from duels table -- todo!
-void RecomputeDuelRanks() {
+void SV_RebuildElo_f() {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	int time1 = trap->Milliseconds();
 	//Clear table DuelRanks
 	//Clear table DuelCounts
 
 	//For each duel, from begining of time to now, add it to G_AddEloDuel
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+    sql = "DELETE FROM DuelRanks";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+    sql = "DELETE FROM DuelCounts";
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT winner, loser, type from LocalDuel ORDER BY end_time ASC";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	
+	
+    while (1) {
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			G_AddDuelElo((char*)sqlite3_column_text(stmt, 0), (char*)sqlite3_column_text(stmt, 1), sqlite3_column_int(stmt, 2), db);
+        }
+        else if (s == SQLITE_DONE) {
+            break;
+		}
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+	
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	Com_Printf("Duel ranks cleared in %i ms.\n", trap->Milliseconds() - time1);
 }
 
-extern int timeGetTime();
 void G_TestAddDuel() {
 	char winner[32], loser[32], type[32];
 	int time1;
+	sqlite3 * db;
 
 	if (trap->Argc() != 4) {
 		Com_Printf("Usage: /addDuel winner loser type\n");
@@ -604,8 +643,146 @@ void G_TestAddDuel() {
 	trap->Argv(3, type, sizeof(type));
 
 	time1 = trap->Milliseconds();
-	G_AddDuelElo(winner, loser, atoi(type));
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	G_AddDuelElo(winner, loser, atoi(type), db);
+	CALL_SQLITE (close(db));
 	Com_Printf("Adding duel elo, took %i ms\n", trap->Milliseconds() - time1);
+}
+
+int DuelTypeToInteger(char *style) {
+	Q_strlwr(style);
+	Q_CleanStr(style);
+
+	if (!Q_stricmp(style, "saber") || !Q_stricmp(style, "nf"))
+		return 0;
+	if (!Q_stricmp(style, "force") || !Q_stricmp(style, "fullforce") || !Q_stricmp(style, "ff"))
+		return 1;
+	if (!Q_stricmp(style, "melee") || !Q_stricmp(style, "fists") || !Q_stricmp(style, "fisticuffs"))
+		return 4;
+	if (!Q_stricmp(style, "pistol"))
+		return 6;
+	if (!Q_stricmp(style, "blaster") || !Q_stricmp(style, "e11"))
+		return 7;
+	if (!Q_stricmp(style, "sniper") || !Q_stricmp(style, "disruptor"))
+		return 8;
+	if (!Q_stricmp(style, "bowcaster") || !Q_stricmp(style, "crossbow"))
+		return 9;
+	if (!Q_stricmp(style, "repeater"))
+		return 10;
+	if (!Q_stricmp(style, "demp2"))
+		return 11;
+	if (!Q_stricmp(style, "flechette") || !Q_stricmp(style, "shotgun"))
+		return 12;
+	if (!Q_stricmp(style, "rocket") || !Q_stricmp(style, "rocket launcher") || !Q_stricmp(style, "rl"))
+		return 13;
+	if (!Q_stricmp(style, "thermal") || !Q_stricmp(style, "grenade"))
+		return 14;
+	if (!Q_stricmp(style, "tripmine"))
+		return 15;
+	if (!Q_stricmp(style, "detpack"))
+		return 16;
+	if (!Q_stricmp(style, "concussion") || !Q_stricmp(style, "conc"))
+		return 17;
+	if (!Q_stricmp(style, "bryar pistol") || !Q_stricmp(style, "bryar"))
+		return 18;
+	if (!Q_stricmp(style, "stun baton") || !Q_stricmp(style, "stun"))
+		return 19;
+	if (!Q_stricmp(style, "all") || !Q_stricmp(style, "-1"))
+		return 20;
+	return -1;
+}
+
+void IntegerToDuelType(int type, char *typeString, size_t typeStringSize) {
+	switch(type) {
+		case 0: Q_strncpyz(typeString, "saber", typeStringSize); break;
+		case 1: Q_strncpyz(typeString, "force", typeStringSize); break;
+		case 4:	Q_strncpyz(typeString, "melee", typeStringSize);	break;
+		case 6:	Q_strncpyz(typeString, "pistol", typeStringSize); break;
+		case 7:	Q_strncpyz(typeString, "blaster", typeStringSize); break;
+		case 8:	Q_strncpyz(typeString, "sniper", typeStringSize); break;
+		case 9:	Q_strncpyz(typeString, "bowcaster", typeStringSize); break;
+		case 10: Q_strncpyz(typeString, "repeater", typeStringSize); break;
+		case 11: Q_strncpyz(typeString, "demp2", typeStringSize); break;
+		case 12: Q_strncpyz(typeString, "flechette", typeStringSize); break;
+		case 13: Q_strncpyz(typeString, "rocket", typeStringSize); break;
+		case 14: Q_strncpyz(typeString, "thermal", typeStringSize); break;
+		case 15: Q_strncpyz(typeString, "trip mine", typeStringSize); break;
+		case 16: Q_strncpyz(typeString, "det pack", typeStringSize); break;
+		case 17: Q_strncpyz(typeString, "concussion", typeStringSize); break;
+		case 18: Q_strncpyz(typeString, "bryar pistol", typeStringSize); break;
+		case 19: Q_strncpyz(typeString, "stun baton", typeStringSize); break;
+		case 20: Q_strncpyz(typeString, "all weapons", typeStringSize); break;
+		default: Q_strncpyz(typeString, "ERROR", typeStringSize); break;
+	}
+}
+
+void Cmd_DuelTop10_f(gentity_t *ent) {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char input[32], username[32], msg[1024-128] = {0}, typeString[32];
+	float TS;
+	int rank, count, type, i = 0;
+
+	if (!ent->client)
+		return;
+
+	if (trap->Argc() != 2) {
+		Com_Printf("Usage: /top10 dueltype\n");
+		return;
+	}
+
+	trap->Argv(1, input, sizeof(input));
+
+	type = DuelTypeToInteger(input);
+	if (type == -1) {
+		Com_Printf("Usage: /top10 dueltype\n");
+		return;
+	}
+
+	//Convert type int to typestr string
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT DR.username, DR.rank, DC.count, DR.TSSUM FROM DuelRanks AS DR, DuelCounts AS DC WHERE DR.type = ? AND DC.type = ? GROUP BY DR.username ORDER BY DR.rank DESC LIMIT 10"; //this is shit..?
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_int (stmt, 1, type));
+	CALL_SQLITE (bind_int (stmt, 2, type));
+
+	IntegerToDuelType(type, typeString, sizeof(typeString));
+
+	trap->SendServerCommand(ent-g_entities, va("print \"Topscore results for %s duels:\n    ^5Username           Rank         Count     TS\n\"", typeString));
+	
+    while (1) {
+        int s;
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			char *tmpMsg = NULL;
+
+			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
+			rank = sqlite3_column_int(stmt, 1);
+			count = sqlite3_column_int(stmt, 2);
+			TS = sqlite3_column_double(stmt, 3) / count;
+
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %.2f\n", i + 1, username, rank, count, TS);
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+			i++;
+        }
+        else if (s == SQLITE_DONE) {
+			trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+            break;
+		}
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
 }
 
 #endif
@@ -644,13 +821,15 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 		CALL_SQLITE_EXPECT (step (stmt), DONE);
 
 		CALL_SQLITE (finalize(stmt));
-		CALL_SQLITE (close(db));
-	}
 
 #if _ELORANKING	
-	if (g_eloRanking.integer)
-		G_AddDuelElo(winner, loser, type);
+		if (g_eloRanking.integer)
+			G_AddDuelElo(winner, loser, type, db);
 #endif
+
+		CALL_SQLITE (close(db));//-Can be removed-end -- moved to end of addduel..
+
+	}
 
 	//Call function to add duel to webserver
 	//If adding duel to webserver fails... then what
