@@ -719,7 +719,8 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 	char input[32], username[32], msg[1024-128] = {0}, typeString[32];
 	float TS;
 	int rank, count, type, i = 0;
-
+	int minimumCount = g_eloMinimumDuels.integer;
+	
 	if (!ent->client)
 		return;
 
@@ -736,13 +737,24 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 		return;
 	}
 
+	if (minimumCount < 0)
+		minimumCount = 0;
+
 	//Convert type int to typestr string
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT DR.username, DR.rank, DC.count, DR.TSSUM FROM DuelRanks AS DR, DuelCounts AS DC WHERE DR.type = ? AND DC.type = ? GROUP BY DR.username ORDER BY DR.rank DESC LIMIT 10"; //this is shit..?
+	//sql = "SELECT DR.username, DR.rank, DC.count, DR.TSSUM FROM DuelRanks AS DR, DuelCounts AS DC WHERE DR.type = ? AND DC.type = ? GROUP BY DR.username ORDER BY DR.rank DESC LIMIT 10"; //this is shit..?
+
+	sql = "SELECT DR.username, DR.rank, DC.count, DR.TSSUM \
+		FROM DuelRanks AS DR LEFT JOIN \
+		DuelCounts AS DC ON DR.username = DC.username \
+		WHERE DR.type = ? AND DC.type = ? AND DC.count > ? \
+		GROUP BY DR.username ORDER BY DR.rank DESC LIMIT 10";
+
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, type));
 	CALL_SQLITE (bind_int (stmt, 2, type));
+	CALL_SQLITE (bind_int (stmt, 3, minimumCount));
 
 	IntegerToDuelType(type, typeString, sizeof(typeString));
 
