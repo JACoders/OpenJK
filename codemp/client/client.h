@@ -426,6 +426,7 @@ extern cvar_t	*cl_colorStringRandom;
 extern cvar_t	*cl_logChat;
 
 extern cvar_t	*cl_afkTime;
+extern cvar_t	*cl_afkTimeUnfocused;
 
 //=================================================
 

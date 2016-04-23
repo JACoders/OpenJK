@@ -1349,7 +1349,7 @@ usercmd_t CL_CreateCmd( void ) {
 				CL_Afk_f();
 			}
 		}
-		else if ((cl_unfocusedTime && cls.realtime - cl_unfocusedTime >= 30000) ||
+		else if ((cl_unfocusedTime && cls.realtime - cl_unfocusedTime >= cl_afkTimeUnfocused->value * 60000) ||
 			cls.realtime - cls.afkTime >= cl_afkTime->integer * 60000) {
 			if (!cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
 				CL_Afk_f();

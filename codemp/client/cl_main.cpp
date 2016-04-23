@@ -109,6 +109,7 @@ cvar_t *cl_colorStringCount;
 cvar_t *cl_colorStringRandom;
 
 cvar_t *cl_afkTime;
+cvar_t *cl_afkTimeUnfocused;
 
 cvar_t *cl_logChat;
 
@@ -3081,14 +3082,15 @@ void CL_Init( void ) {
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
 
-	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE);
+	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE, "Minutes to autorename to afk, 0 to disable");
+	cl_afkTimeUnfocused = Cvar_Get("cl_afkTimeUnfocused", "1", CVAR_ARCHIVE, "Minutes to autorename to afk while unfocused/minimized");
 	cl_unfocusedTime = 0;
 
-	cl_colorString = Cvar_Get("cl_colorString", "0", CVAR_ARCHIVE);
+	cl_colorString = Cvar_Get("cl_colorString", "0", CVAR_ARCHIVE, "Bit value of selected colors in colorString");
 	cl_colorStringCount = Cvar_Get("cl_colorStringCount", "0", CVAR_INTERNAL | CVAR_ROM | CVAR_ARCHIVE);
-	cl_colorStringRandom = Cvar_Get("cl_colorStringRandom", "2", CVAR_ARCHIVE);
+	cl_colorStringRandom = Cvar_Get("cl_colorStringRandom", "2", CVAR_ARCHIVE, "Randomness of the colors changing, higher numbers are less random");
 
-	cl_logChat = Cvar_Get("cl_logChat", "1", CVAR_ARCHIVE);
+	cl_logChat = Cvar_Get("cl_logChat", "1", CVAR_ARCHIVE, "Toggle chat logs");
 
 	//
 	// register our commands
@@ -3121,9 +3123,9 @@ void CL_Init( void ) {
 	Cmd_AddCommand ("video", CL_Video_f, "Record demo to avi" );
 	Cmd_AddCommand ("stopvideo", CL_StopVideo_f, "Stop avi recording" );
 
-	Cmd_AddCommand("afk", CL_Afk_f);
-	Cmd_AddCommand("colorstring", CL_ColorString_f);
-	Cmd_AddCommand("colorname", CL_ColorName_f);
+	Cmd_AddCommand("afk", CL_Afk_f, "Rename to or from afk");
+	Cmd_AddCommand("colorstring", CL_ColorString_f, "Color say text");
+	Cmd_AddCommand("colorname", CL_ColorName_f, "Color name");
 
 	CL_InitRef();
 
