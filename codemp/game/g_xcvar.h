@@ -348,7 +348,6 @@ XCVAR_DEF( g_eloNewUserCutoff,				"-1",			NULL,				CVAR_ARCHIVE,									qfalse 
 XCVAR_DEF( g_eloProvisionalCutoff,			"10",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloProvisionalChangeBig,		"2",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloProvisionalChangeSmall,		"1.5",			NULL,				CVAR_ARCHIVE,									qfalse )
-XCVAR_DEF( g_eloProvisionalChangeSmall,		"1.5",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloMinimumDuels,				"20",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 XCVAR_DEF( g_eloKValue1,						"30",			NULL,				CVAR_ARCHIVE,									qtrue )
