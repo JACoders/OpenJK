@@ -547,12 +547,8 @@ void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 			loserK *= provisionalChangeBig;
 	}
 
-
-	//WA = pow(10, winnerElo / 400);
-	//LA = pow(10, loserElo / 400);
-
-	WA = Q_powf(10, winnerElo / 400);
-	LA = Q_powf(10, loserElo / 400);
+	WA = pow(10, winnerElo / 400.0f);
+	LA = pow(10, loserElo / 400.0f);
 
 	expectedScoreWinner = WA / (WA + LA);
 	expectedScoreLoser = LA / (LA + WA); //This is just 1 - expected score winner..?
