@@ -761,7 +761,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 			count = sqlite3_column_int(stmt, 2);
 			TS = sqlite3_column_double(stmt, 3) / count;
 
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", i + 1, username, rank, count, int(TS * 100 + 0.5f));
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", i + 1, username, rank, count, (int)(TS * 100 + 0.5f));
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 				msg[0] = '\0';

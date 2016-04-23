@@ -772,19 +772,14 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"Infinite ammo"},//18
 	{"Stun baton heal gun"},//19
 	{"Weapons can damage vehicles"},//20
-	//{"Reduced saberblock for MP damages"},//21
-	{"Allow gunroll"},//22
+	{"Allow gunroll"},//21
 	{"Fast weaponswitch"},//22
-	//{"Fixed saberswitch"},//23
-	{"Impact nitrons"},//24
-	{"Flechette stake gun"},//25
-	//{"Reduce saberdrops for MP damages"},//26
-	//{"Allow rollcancel for saber swings"},//27
-	//{"Skip saber interpolate for MP dmgs"},//28
-	{"Fix dropped mine ammo count"},//29
-	{"JK2 Style Alt Tripmine"},//30
-	{"Projectile Sniper"},//30
-	{"No Spread"}//30
+	{"Impact nitrons"},//23
+	{"Flechette stake gun"},//24
+	{"Fix dropped mine ammo count"},//25
+	{"JK2 Style Alt Tripmine"},//26
+	{"Projectile Sniper"},//27
+	{"No Spread"}//28
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 

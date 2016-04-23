@@ -2031,7 +2031,11 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 				}
 				else if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_3)
 				{
+#if _draintest
 					dmg = g_forceDrainDamage.integer;//4
+#else
+					dmg = 4;
+#endif
 				}
 			
 				if (traceEnt->client)
@@ -2086,7 +2090,11 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					self->client->ps.stats[STAT_HEALTH] = self->health;
 				}
 
+#if _draintest
 				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainTargetRegenDelay.integer;//800 //don't let the client being drained get force power back right away
+#else
+				traceEnt->client->ps.fd.forcePowerRegenDebounceTime = level.time + 800;//don't let the client being drained get force power back right away
+#endif
 
 				//JAPRO - Serverside - Fixkillcredit - Start
 				if (dmg && g_fixKillCredit.integer) {
@@ -2291,7 +2299,11 @@ int ForceShootDrain( gentity_t *self )
 
 	BG_ForcePowerDrain( &self->client->ps, FP_DRAIN, 5 ); //used to be 1, but this did, too, anger the God of Balance.
 
+#if _draintest
 	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + g_forceDrainSelfRegenDelay.integer;//500; //oh, interesting	
+#else
+	self->client->ps.fd.forcePowerRegenDebounceTime = level.time + 500;//oh, interesting	
+#endif
 
 	return gotOneOrMore;
 }
@@ -4008,7 +4020,11 @@ void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower )
 		}
 		else
 		{
+#if _draintest
 			self->client->ps.fd.forcePowerDebounce[FP_DRAIN] = level.time + g_forceDrainRestartDelay.integer;//1500;
+#else
+			self->client->ps.fd.forcePowerDebounce[FP_DRAIN] = level.time + 1500;
+#endif
 		}
 
 		if (self->client->ps.forceHandExtend == HANDEXTEND_FORCE_HOLD)

@@ -157,8 +157,6 @@ XCVAR_DEF( sv_maxRate,					"7000",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					
 XCVAR_DEF( sv_maxclients,				"8",			NULL,				CVAR_SERVERINFO|CVAR_LATCH|CVAR_ARCHIVE,		qfalse )
 XCVAR_DEF( timelimit,					"0",			NULL,				CVAR_SERVERINFO|CVAR_ARCHIVE|CVAR_NORESTART,	qtrue )
 
-XCVAR_DEF( sv_autoRaceDemo,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-
 //JAPRO CTF
 XCVAR_DEF( g_flagDrag,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixFlagSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -169,11 +167,6 @@ XCVAR_DEF( g_rabbit,					"0",			CVU_Rabbit,	CVAR_ARCHIVE,									qtrue )
 
 //JAPRO Saber
 XCVAR_DEF( g_tweakSaber,				"0",			CVU_TweakSaber,		CVAR_ARCHIVE,									qtrue )
-//XCVAR_DEF( g_tweakYellowDFA,			"0",			CVU_YDFA,			CVAR_ARCHIVE,									qtrue )	//s
-//XCVAR_DEF( g_spinRedDFA,				"0",			CVU_SpinRDFA,		CVAR_ARCHIVE,									qtrue )	//s
-//XCVAR_DEF( g_spinBackslash,				"0",			CVU_SpinBackslash,	CVAR_ARCHIVE,									qtrue )	//s
-//XCVAR_DEF( g_jk2Lunge,					"0",			CVU_JK2Lunge,		CVAR_ARCHIVE,									qtrue )	//s
-//XCVAR_DEF( g_jk2DFA,					"0",			CVU_JK2DFA,			CVAR_ARCHIVE,									qtrue )	//s
 XCVAR_DEF( g_backslashDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxSaberDefense,			"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_saberTouchDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -184,24 +177,13 @@ XCVAR_DEF( g_saberDisable,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_blueDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
 XCVAR_DEF( g_yellowDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
 XCVAR_DEF( g_redDamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) //sad hack
-//XCVAR_DEF( g_easyBackslash,				"0",			CVU_EasyBackslash,	CVAR_ARCHIVE,									qtrue ) //s
 XCVAR_DEF( g_redDFADamageScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) 
-//XCVAR_DEF( g_jk2SaberDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //s
 
 //JAPRO FORCE
 XCVAR_DEF( g_tweakForce,				"0",			CVU_TweakForce,		CVAR_ARCHIVE,									qtrue )
-//XCVAR_DEF( g_fastGrip,					"0",			CVU_FastGrip,		CVAR_ARCHIVE,									qtrue ) //f
-//XCVAR_DEF( g_forceCombo,				"0",			CVU_ForceCombo,		CVAR_ARCHIVE,									qtrue ) //f
 XCVAR_DEF( g_fixSaberInGrip,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) 
-//XCVAR_DEF( g_pushPullKnockdown,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
-//XCVAR_DEF( g_fixGripAbsorb,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
 XCVAR_DEF( g_fixLightning,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixGetups,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-//XCVAR_DEF( g_fixPullStrength,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
-//XCVAR_DEF( g_jk2Grip,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
-//XCVAR_DEF( g_pushPullItems,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
-//XCVAR_DEF( g_fixWeaponForcePoints,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-//XCVAR_DEF( g_fixProjectilePush,			"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //f
 XCVAR_DEF( g_teamAbsorbScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue ) 
 XCVAR_DEF( g_teamHealScale,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_teamEnergizeScale,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -227,8 +209,7 @@ XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			CVU_HighFPS,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
-
-XCVAR_DEF( g_fixGlitchKickDamage,				"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixGlitchKickDamage,			"0",			CVU_Flipkick,		CVAR_ARCHIVE,								qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -259,11 +240,20 @@ XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_LATCH,						q
 XCVAR_DEF( g_allowSaberSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowTeamSuicide,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_godChat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
+XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_stopHealthESP,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_blockDuelHealthSpec,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+#define _ANTIWALLHACK 1
+#if _ANTIWALLHACK
+XCVAR_DEF( g_antiWallhack,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+#endif
+
 
 //JAPRO Other
 XCVAR_DEF( jcinfo,						"0",			NULL,				CVAR_SERVERINFO|CVAR_ROM,						qtrue ) //not a cvar, dont change it
 XCVAR_DEF( g_emotesDisable,				"0",			CVU_Jawarun,		CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_corpseRemovalTime,			"30",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_removeSpectatorPortals,	"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_consoleMOTD,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
@@ -271,34 +261,33 @@ XCVAR_DEF( g_centerMOTDTime,			"5",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_centerMOTD,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_fakeClients,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_lagIcon,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowSamePlayerNames,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_showHealth,				"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( sv_maxTeamSize,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_tweakVote,					"0",			NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qtrue )//latch cuz of calculateRanks? not sure man
 XCVAR_DEF( g_allowSpotting,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowTargetLaser,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_voteTimeout,				"180",			NULL,				CVAR_ARCHIVE,									qfalse )//Time in seconds to lockout callvote after a failed vote
-
 XCVAR_DEF( g_allowVGS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-
 XCVAR_DEF( g_pauseTime,					"120",			NULL,				CVAR_NONE,										qfalse )
 XCVAR_DEF( g_unpauseTime,				"5",			NULL,				CVAR_NONE,										qfalse )
+XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfalse )
+XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //If the difference is greater than X percent of the frag limit... then end match.
 
 //JAPRO RACE / ACCOUNTS
 XCVAR_DEF( g_raceMode,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowRaceTele,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowRegistration,			"1",			NULL,				CVAR_ARCHIVE,									qtrue )
-//XCVAR_DEF( sv_globalDBPath,				"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
-//XCVAR_DEF( sv_webServerPath,			"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
-//XCVAR_DEF( sv_webServerPassword,		"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( sv_pluginKey,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_forceLogin,				"0",			NULL,				CVAR_ARCHIVE,									qfalse )
+//XCVAR_DEF( sv_globalDBPath,			"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
+//XCVAR_DEF( sv_webServerPath,			"",				NULL,				CVAR_ARCHIVE|CVAR_LATCH,						qfalse )
+//XCVAR_DEF( sv_webServerPassword,		"",				NULL,				CVAR_ARCHIVE,									qfalse )
 
-//JAPRO LOGGING
+//JAPRO LOGGING/RECORDING
 XCVAR_DEF( g_duelLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_raceLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_playerLog,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( sv_autoRaceDemo,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO BOTS
 XCVAR_DEF( bot_nochat,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -308,38 +297,8 @@ XCVAR_DEF( g_newBotAI,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_newBotAITarget,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( bot_maxbots,					"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 
+//DEBUG / TOOLS
 XCVAR_DEF( g_showJumpSpot,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-
-
-
-XCVAR_DEF( g_stopHealthESP,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-
-XCVAR_DEF( restricts,					"0",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,					qfalse )
-
-//XCVAR_DEF( cl_yawspeed,				"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
-//XCVAR_DEF( cl_allowDownload,			"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
-//XCVAR_DEF( r_primitives,				"0",			NULL,				CVAR_SYSTEMINFO,								qtrue ) //not needed anymore, RIP jaiko
-
-//XCVAR_DEF( g_fixFlipKick,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_mercyRule,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //If the difference is greater than X percent of the frag limit... then end match.
-
-#define _ANTIWALLHACK 1
-#if _ANTIWALLHACK
-XCVAR_DEF( g_antiWallhack,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-#endif
-
-XCVAR_DEF( g_blockDuelHealthSpec,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-
-//drain fuck around cvars
-XCVAR_DEF( g_forceDrainDamage,				"4",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_forceDrainTargetRegenDelay,	"800",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_forceDrainSelfRegenDelay,		"500",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_forceDrainRestartDelay,		"1500",			NULL,				CVAR_ARCHIVE,									qtrue )
-
-#define _retardedsabertest 0 
-#if _retardedsabertest
-XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-#endif
 
 #define _ELORANKING 1
 #if _ELORANKING
@@ -354,5 +313,27 @@ XCVAR_DEF( g_eloKValue1,						"30",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_eloKValue2,						"30",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_eloKValue3,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )
 #endif
+
+
+//XCVAR_DEF( cl_yawspeed,				"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
+//XCVAR_DEF( cl_allowDownload,			"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
+//XCVAR_DEF( r_primitives,				"0",			NULL,				CVAR_SYSTEMINFO,								qtrue ) //not needed anymore, RIP jaiko
+//XCVAR_DEF( g_fixFlipKick,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
+//drain fuck around cvars
+#define _draintest 0
+#if _draintest
+XCVAR_DEF( g_forceDrainDamage,				"4",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_forceDrainTargetRegenDelay,	"800",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_forceDrainSelfRegenDelay,		"500",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_forceDrainRestartDelay,		"1500",			NULL,				CVAR_ARCHIVE,									qtrue )
+#endif
+
+#define _retardedsabertest 0 
+#if _retardedsabertest
+XCVAR_DEF( sv_saberFPS,					"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+#endif
+
+
 
 #undef XCVAR_DEF
