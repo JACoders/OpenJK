@@ -120,8 +120,6 @@ void GL_Cull( int cullType ) {
 		return;
 	}
 
-	glState.faceCulling = cullType;
-
 	if ( backEnd.projection2D )
 	{
 		return;
@@ -133,22 +131,15 @@ void GL_Cull( int cullType ) {
 	} 
 	else 
 	{
-		qboolean cullFront;
-		qglEnable( GL_CULL_FACE );
+		qboolean cullFront = (qboolean)(cullType == CT_FRONT_SIDED);
+		
+		if ( glState.faceCulling == CT_TWO_SIDED )
+			qglEnable( GL_CULL_FACE );
 
-		cullFront = (qboolean)(cullType == CT_FRONT_SIDED);
-		if ( backEnd.viewParms.isMirror )
-		{
-			cullFront = (qboolean)(!cullFront);
-		}
-
-		if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
-		{
-			cullFront = (qboolean)(!cullFront);
-		}
-
-		qglCullFace( cullFront ? GL_FRONT : GL_BACK );
+		qglCullFace( cullFront ? GL_FRONT : GL_BACK);
 	}
+
+	glState.faceCulling = cullType;
 }
 
 void GL_DepthRange( float max )
@@ -642,33 +633,7 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 	{
 		const DrawItem& drawItem = drawItems[drawOrder[i]];
 
-		if ( glState.faceCulling != drawItem.cullType )
-		{
-			glState.faceCulling = drawItem.cullType;
-			switch ( drawItem.cullType )
-			{
-				case GL_NONE:
-				{
-					qglDisable(GL_CULL_FACE);
-					break;
-				}
-
-				case GL_FRONT:
-				{
-					qglEnable(GL_CULL_FACE);
-					qglCullFace(GL_FRONT);
-					break;
-				}
-
-				case GL_BACK:
-				{
-					qglEnable(GL_CULL_FACE);
-					qglCullFace(GL_BACK);
-					break;
-				}
-			}
-		}
-	
+		GL_Cull(drawItem.cullType);
 		GL_State(drawItem.stateBits);
 		GL_DepthRange(drawItem.maxDepthRange);
 		R_BindIBO(drawItem.ibo);

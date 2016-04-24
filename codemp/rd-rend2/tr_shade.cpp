@@ -1149,6 +1149,29 @@ static uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer )
 	return key;
 }
 
+static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntity_t *refEntity, cullType_t shaderCullType )
+{
+	assert(refEntity);
+
+	cullType_t cullType = CT_TWO_SIDED;
+	if ( !backEnd.projection2D )
+	{
+		if ( shaderCullType != CT_TWO_SIDED ) 
+		{
+			bool cullFront = (shaderCullType == CT_FRONT_SIDED);
+			if ( viewParms->isMirror )
+				cullFront = !cullFront;
+
+			if ( refEntity->mirrored )
+				cullFront = !cullFront;
+
+			cullType = (cullFront ? CT_FRONT_SIDED : CT_BACK_SIDED);
+		}
+	}
+
+	return cullType;
+}
+
 static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 	int		l;
 	//vec3_t	origin;
@@ -1173,26 +1196,7 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 
 	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
-	GLenum cullType = GL_NONE;
-
-	if ( !backEnd.projection2D )
-	{
-		if ( input->shader->cullType != CT_TWO_SIDED ) 
-		{
-			bool cullFront = (input->shader->cullType == CT_FRONT_SIDED);
-			if ( backEnd.viewParms.isMirror )
-			{
-				cullFront = !cullFront;
-			}
-
-			if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
-			{
-				cullFront = !cullFront;
-			}
-
-			cullType = (cullFront ? GL_FRONT : GL_BACK);
-		}
-	}
+	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
@@ -1766,26 +1770,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
-	GLenum cullType = GL_NONE;
-
-	if ( !backEnd.projection2D )
-	{
-		if ( input->shader->cullType != CT_TWO_SIDED ) 
-		{
-			bool cullFront = (input->shader->cullType == CT_FRONT_SIDED);
-			if ( backEnd.viewParms.isMirror )
-			{
-				cullFront = !cullFront;
-			}
-
-			if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
-			{
-				cullFront = !cullFront;
-			}
-
-			cullType = (cullFront ? GL_FRONT : GL_BACK);
-		}
-	}
+	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
@@ -2177,27 +2162,12 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
-	GLenum cullType = GL_NONE;
-	if ( !backEnd.projection2D )
-	{
-		if ( input->shader->cullType != CT_TWO_SIDED ) 
-		{
-			bool cullFront = (input->shader->cullType == CT_FRONT_SIDED);
-			if ( backEnd.viewParms.isMirror )
-			{
-				cullFront = !cullFront;
-			}
-
-			if ( backEnd.currentEntity && backEnd.currentEntity->mirrored )
-			{
-				cullFront = !cullFront;
-			}
-
-			// NOTE: This is intentionally backwards. Shadow maps cull front faces
-			// when the forward pass would cull the back face.
-			cullType = (cullFront ? GL_BACK : GL_FRONT);
-		}
-	}
+	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
+	// Reduce shadow acne by using back face culling instead of front
+	if ( cullType == CT_FRONT_SIDED )
+		cullType = CT_BACK_SIDED;
+	else if ( cullType == CT_BACK_SIDED )
+		cullType = CT_FRONT_SIDED;
 
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
