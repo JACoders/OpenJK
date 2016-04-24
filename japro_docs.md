@@ -1,398 +1,394 @@
-## Server Cvars ##
+##ServerCvars##
 
-//JAPRO CTF
-g_flagDrag		"0"	
-g_fixFlagSuicide	"0"	
-g_allowFlagThrow	"0"	
-g_fixCTFScores		"0"	
-g_fixFlagHitbox		"0"	
-g_rabbit		"0"	
+###CTF###
+	g_flagDrag	0  
+	g_fixFlagSuicide	0  
+	g_allowFlagThrow	0  
+	g_fixCTFScores	0  
+	g_fixFlagHitbox	0  	
+	g_rabbit	0  
 
-//JAPRO Saber
-g_tweakSaber		"0"	//Configured with /tweakSaber command
-g_backslashDamageScale	"1"	
-g_maxSaberDefense	"0"		
-g_saberTouchDmg		"0"	//Configure saber touch damage for MP dmgs.  Can be > 1 for more touch damage like in JK2.
-g_fixGroundStab		"0"	
-g_saberDuelSPDamage	"1"	 
-g_forceDuelSPDamage	"0"	 
-g_saberDisable		"0"	
-g_blueDamageScale	"1"	 
-g_yellowDamageScale	"1"	 
-g_redDamageScale	"1"	 
-g_redDFADamageScale	"1"	 
+###Saber###
+	g_tweakSaber	0	//Configuredwith/tweakSabercommand
+	g_backslashDamageScale	1	
+	g_maxSaberDefense	0	
+	g_saberTouchDmg	0	//ConfiguresabertouchdamageforMPdmgs.Canbe>1formoretouchdamagelikeinJK2.
+	g_fixGroundStab	0	
+	g_saberDuelSPDamage	1	
+	g_forceDuelSPDamage	0	
+	g_saberDisable	0	
+	g_blueDamageScale	1	
+	g_yellowDamageScale	1	
+	g_redDamageScale	1	
+	g_redDFADamageScale	1	
 
-//JAPRO FORCE
-g_tweakForce		"0"	//Configured with /tweakForce command
-g_fixSaberInGrip	"0"	 
-g_fixLightning		"0"	
-g_fixGetups		"0"	
-g_teamAbsorbScale	"1"	 
-g_teamHealScale		"1"	
-g_teamEnergizeScale	"1"	
+###Force###
+	g_tweakForce	0	//Configuredwith/tweakForcecommand
+	g_fixSaberInGrip	0	
+	g_fixLightning	0	
+	g_fixGetups	0	
+	g_teamAbsorbScale	1	
+	g_teamHealScale	1	
+	g_teamEnergizeScale	1	
 
-//JAPRO GUNS
-g_tweakWeapons		"0"	//Configured with /tweakWeapons command	
-g_startingWeapons	"8"	//Configured with /startingWeapons command	
-g_weaponDamageScale	"1"	
-g_projectileVelocityScale	"1"	
-g_selfDamageScale	"0.5"	
-g_projectileInheritance	"0"	
-g_fullInheritance	"0"	
+###Guns###
+	g_tweakWeapons	0	//Configuredwith/tweakWeaponscommand	
+	g_startingWeapons	8	//Configuredwith/startingWeaponscommand	
+	g_weaponDamageScale	1	
+	g_projectileVelocityScale	1	
+	g_selfDamageScale	0.5	
+	g_projectileInheritance	0	
+	g_fullInheritance	0	
 
-//JAPRO MOVEMENT
-g_slideOnPlayer		"0"	
-g_flipKick		"0"	
-g_nonRandomKnockdown	"0"	
-g_fixRoll		"0"		
-g_onlyBhop		"0"		
-g_tweakJetpack		"0"	
-g_movementStyle		"1"	
-g_LegDangle		"1"	
-g_fixHighFPSAbuse	"0"	
-g_fixSlidePhysics	"0"	
-g_fixRedDFA		"0"	
-g_fixGlitchKickDamage	"0"	
+###JAPRO	Movement###
+	g_slideOnPlayer	0	
+	g_flipKick	0	
+	g_nonRandomKnockdown	0	
+	g_fixRoll	0	
+	g_onlyBhop	0	
+	g_tweakJetpack	0	
+	g_movementStyle	1	
+	g_LegDangle	1	
+	g_fixHighFPSAbuse	0	
+	g_fixSlidePhysics	0	
+	g_fixRedDFA	0	
+	g_fixGlitchKickDamage	0//	
 
-//JAPRO DUELING
-g_duelStartHealth	"0"	
-g_duelStartArmor	"0"	
-g_duelDistanceLimit	"0"	
-g_allowUseInDuel	"1"	
-g_allowGunDuel		"1"	
-g_saberDuelForceRegenTime	"200"	
-g_forceDuelForceRegenTime	"200"	
-g_duelRespawn		"0"	
+###JAPRO	Dueling###
+	g_duelStartHealth	0	
+	g_duelStartArmor	0	
+	g_duelDistanceLimit	0	
+	g_allowUseInDuel	1	
+	g_allowGunDuel	1	
+	g_saberDuelForceRegenTime	200//	
+	g_forceDuelForceRegenTime	200	
+	g_duelRespawn	0	
 
-//JAPRO ADMIN
-g_juniorAdminLevel	"0"	
-g_fullAdminLevel	"0"	
-g_juniorAdminPass	""	
-g_fullAdminPass		""	
-g_juniorAdminMsg	""	
-g_fullAdminMsg		""	
-g_allowNoFollow		"0"	 
+###JAPRO	Admin###
+	g_juniorAdminLevel	0	
+	g_fullAdminLevel	0	
+	g_juniorAdminPass	
+	g_fullAdminPass	
+	g_juniorAdminMsg//	
+	g_fullAdminMsg	
+	g_allowNoFollow	0	
 
-//JAPRO OTHER Gameplay
-g_flipKickDamageScale	"1"	
-g_maxFallDmg		"0"	
-g_startingItems		"0"	//Configured with /startingItems command.
-g_quakeStyleTeleport	"0"	
-g_screenShake		"0"	
-g_unlagged		"0"			
-g_allowSaberSwitch	"0"	
-g_allowTeamSuicide	"0"	
-g_godChat		"0"	
-g_showHealth		"0"		
-g_damageNumbers		"0"	
-g_fixKillCredit		"0"	
-g_stopHealthESP		"0"	
-g_blockDuelHealthSpec	"0"	
-g_antiWallhack		"0"	
+###Other	Gameplay###
+	g_flipKickDamageScale	1	
+	g_maxFallDmg	0	
+	g_startingItems	0	//Configuredwith/startingItemscommand.
+	g_quakeStyleTeleport	0	
+	g_screenShake	0	
+	g_unlagged	0	
+	g_allowSaberSwitch	0	
+	g_allowTeamSuicide	0	
+	g_emotesDisable	0	
+	g_godChat	0	
+	g_showHealth	0	
+	g_damageNumbers	0	
+	g_fixKillCredit	0	
+	g_stopHealthESP	0	
+	g_blockDuelHealthSpec	0	
+	g_antiWallhack	0	
 
+###Other###
+	g_corpseRemovalTime	30	
+	g_removeSpectatorPortals	0	
+	g_consoleMOTD	
+	g_centerMOTDTime	5	
+	g_centerMOTD	
+	g_fakeClients	0	
+	g_lagIcon	0	
+	g_allowSamePlayerNames	0	
+	sv_maxTeamSize	0	
+	g_tweakVote	0	//Configuredwith/tweakVotecommand.
+	g_allowSpotting	0	
+	g_allowTargetLaser	0	
+	g_voteTimeout	180	//Timeinsecondstolockoutcallvoteafterafailedvote.
+	g_allowVGS	0	
+	g_pauseTime	120	
+	g_unpauseTime	5	
+	restricts	0	
+	g_mercyRule	0	//IfthescoredifferenceisgreaterthanXpercentofthefraglimit,endthematch.
 
-
-//JAPRO Other
-g_emotesDisable		"0"	
-g_corpseRemovalTime	"30"	
-g_removeSpectatorPortals	"0"	
-g_consoleMOTD		""	
-g_centerMOTDTime	"5"	
-g_centerMOTD		""	
-g_fakeClients		"0"	
-g_lagIcon		"0"	
-g_allowSamePlayerNames	"0"	
-sv_maxTeamSize		"0"	
-g_tweakVote		"0"	//Configured with /tweakVote command.
-g_allowSpotting		"0"	
-g_allowTargetLaser	"0"	
-g_voteTimeout		"180"	//Time in seconds to lockout callvote after a failed vote.
-g_allowVGS		"0"	
-g_pauseTime		"120"		
-g_unpauseTime		"5"		
-restricts		"0"	
-g_mercyRule		"0"	 //If the score difference is greater than X percent of the frag limit, end the match.
-
-//JAPRO RACE / ACCOUNTS
-g_raceMode		"0"	//0 = No racemode, 1 = forced racemode, 2 = client can toggle racemode with /race command.
-g_allowRaceTele		"0"	
-g_allowRegistration	"1"	
-sv_pluginKey		"0"	
-g_forceLogin		"0"	
+###Race/Accounts###
+	g_raceMode	0	//0=Noracemode,1=forcedracemode,2=clientcantoggleracemodewith/racecommand.
+	g_allowRaceTele	0	
+	g_allowRegistration	1	
+sv_pluginKey	0	
+	g_forceLogin	0	
 
 
-//JAPRO LOGGING/RECORDING
-g_duelLog		"0"	
-g_raceLog		"0"	
-g_playerLog		"0"	
-sv_autoRaceDemo		"0"	
+###Loggging/Recording###
+	g_duelLog	0	
+	g_raceLog	0	
+	g_playerLog	0	
+	sv_autoRaceDemo	0	
 
-//JAPRO BOTS
-bot_nochat		"0"	
-bot_strafeOffset	"0"	
-bot_frameTime		"0.008"	
-g_newBotAI		"0"	
-g_newBotAITarget	"-1"	//-2 = Target closest excluding other bots.  -1 = target closest.  0-31 = target clientnum.
-bot_maxbots		"0"	
+###Bots###
+	bot_nochat	0	
+	bot_strafeOffset	0	
+	bot_frameTime	0.008	
+	g_newBotAI	0	
+	g_newBotAITarget	-1	//-2=Targetclosestexcludingotherbots.-1=targetclosest.0-31=targetclientnum.
+	bot_maxbots	0	
 
-//DEBUG / TOOLS
-g_showJumpSpot		"0"	//Draws a red line where a player touches ground as they land.  Useful with the /nudge command on entities to easily space jumps.
+###Debug/Tools###
+	g_showJumpSpot	0	//Drawsaredlinewhereaplayertouchesgroundastheyland.Usefulwiththe/nudgecommandonentitiestoeasilyspacejumps.
 
-
-## Server RCON Commands: ##
-
-accountInfo							
-			
-amban											
-amgrantadmin							
-amkick											
-				
-changepassword												
-clearIP									
-DBInfo									
-deleteAccount							
-				
-forceteam										
-gametype	//Instantly change the gametype of the server without having to reload the map											
-			
-
-pause		//Pause / unpause the game											
-
-rebuildElo	//Delete all Elo records and rebuild them from the duel records in the database.									
-
-
-register										
-			
-renameAccount							
-resetScores	//Reset all player/team scores without having to reload the map.					
-
-startingItems					
-startingWeapons			
-toggleAdmin							
-toggleVote						
-
-toggleuserinfovalidation	
-tweakForce								
-tweakSaber							
-tweakVote								
-tweakWeapons	
-
-### Saber tweaks ###
-	Skip saber interpolate for MP dmgs	//1
-	JK2 1.02 Style Damage System	//2
-	Reduced saberblock for MP damages	//3
-	Reduce saberdrops for MP damages	//4
-	Allow rollcancel for saber swings	//5
-	Remove chainable swings from red stance	//6
-	Fixed saberswitch	//7
-	No aim backslash	//8
-	JK2 red DFA	//9
-	Fix yellow DFA	//10
-	Spin red DFA	//11
-	Spin backslash	//12
-	JK2 Lunge	//13
-
-### Force Tweaks ###
-
-	No forcepower drain for crouch attack	//1
-	Fix projectile force push dir	//2
-	Push pull knockdowns	//3
-	Fix grip absorb	//4
-	Allow force combo	//5
-	Fix pull strength	//6
-	JK2 grip	//7
-	Fast grip runspeed	//8
-	Push/pull items	//9
-	Smaller Drain COF	//10
-
-### Weapon Tweaks ###
-
-Nonrandom DEMP2	//1	
-Increased DEMP2 primary damage	//2
-Decreased disruptor alt damage	//3
-Nonrandom bowcaster spread	//4
-Increased repeater alt damage	//5
-Nonrandom flechette primary spread	//6
-Decreased flechette alt damage	//7
-Nonrandom flechette alt spread	//8
-Increased concussion rifle alt damage	//9
-Removed projectile knockback	//10
-Stun baton lightning gun	//11
-Stun baton shocklance	//12
-Projectile gravity	//13
-Allow center muzzle	//14
-Pseudo random weapon spread	//15
-Rocket alt fire mortar	//16
-Rocket alt fire redeemer	//17
-Infinite ammo	//18
-Stun baton heal gun	//19
-Weapons can damage vehicles	//20
-Allow gunroll	//21
-Fast weaponswitch	//22
-Impact nitrons	//23
-Flechette stake gun	//24
-Fix dropped mine ammo count	//25
-JK2 Style Alt Tripmine	//26
-Projectile Sniper	//27
-No Spread	//28
-
-### Vote Tweaks ###
-
-	Allow spec callvote in siege gametype	//1
-	Allow spec callvote in CTF/TFFA gametypes	//2
-	Clear vote when going to spectate	//3
-	Dont allow callvote for 30s after mapload	//4
-	Floodprotect callvotes by IP	//5
-	Dont allow map callvotes for 10 minutes at start of each map	//6
-	Add vote delay for map callvotes only	//7
-	Allow voting from spectate	//8
-	Show votes in console	//9
-	Only count voters in pass/fail calculation	//10
-	Fix mapchange after gametype vote	//11
-
-## Server Game Commands: ##	
-
-	addbot				Cmd_AddBot_f				
-	amban				Cmd_Amban_f		
-		
-	ambeg				Cmd_EmoteBeg_f				 //EMOTE
-	ambeg2				Cmd_EmoteBeg2_f			 //EMOTE
-	ambernie			Cmd_EmoteBernie_f			 //EMOTE
-	ambreakdance		Cmd_EmoteBreakdance_f		 //EMOTE
-	ambreakdance2		Cmd_EmoteBreakdance2_f		 //EMOTE
-	ambreakdance3		Cmd_EmoteBreakdance3_f		 //EMOTE
-	ambreakdance4		Cmd_EmoteBreakdance4_f		 //EMOTE
-
-	amcheer			Cmd_EmoteCheer_f			 //EMOTE
-	amcower						 //EMOTE
-	amdance						 //EMOTE
-
-	amflip						 //EMOTE
-
-	amforceteam					 
-	amfreeze						 
-	amgrantadmin					
-	amhug							 //EMOTE
-	aminfo								
-	amkick							
-	amkillvote						
-	amlistmaps					 
-	amlockteam						 
-	amlogin						
-	amlogout							
-	amlookup						
-	ammap								 
-	ammotd					
-			 
-	amnoisy						 //EMOTE
-	ampoint						 //EMOTE 
-	amrage						 //EMOTE
-	amrename						 
-	amrun								//EMOTE
-	amsay								
-	amsignal						 //EMOTE
-	amsignal2					 //EMOTE
-	amsignal3						 //EMOTE
-	amsignal4						 //EMOTE
-	amsit								 //EMOTE
-	amsit2						 //EMOTE
-	amsit3						 //EMOTE
-	amsit4							 //EMOTE
-	amsit5						 //EMOTE
-	amslap						 //EMOTE
-	amsleep						 //EMOTE
-	amsmack						 //EMOTE	
-	amsurrender				 //EMOTE
-	amtaunt						 //EMOTE
-	amtaunt2						 //EMOTE
-	amtele							 
-	amtelemark						 
-	amvictory						 //EMOTE
-
-	ampsay								
-
-	amvstr							 
-
-	best							 
-
-			 
-
-	changepassword			 
-
-	clanpass						 
-	clansay						
-	clanwhois					
-
-
-		 
-	dftop10							 
-
-	 
-	engage_fullforceduel	
-	engage_gunduel		
-		
-
-				 
-
-	hide									
-	ignore				
-	jetpack								 
-
-	jump							
-
-			
-
-	launch								
-	 
-
-	login							 
-	logout							 
+##ServerRCONCommands##
+	accountInfo  
 	
-			 
-	modversion						
-	move					
-			 
+	amban		
+	amgrantadmin	
+	amkick		
+	
+	changepassword		
+	clearIP		
+	DBInfo		
+	deleteAccount	
+	
+	forceteam		
+	gametype	//Instantlychangethegametypeoftheserverwithouthavingtoreloadthemap		
+	
 
-	notcompleted					 
+	pause	//Pause/unpausethegame		
 
-
-	nudge								 
-
-	practice						
-	printstats						 
-	race									 
-	register						 
-	rocketchange			
-			
-	say_team_mod					
-			
-	serverconfig				
+	rebuildElo	//DeleteallElorecordsandrebuildthemfromtheduelrecordsinthedatabase.		
 
 
-	showNet						
-		 
+	register		
+	
+	renameAccount	
+	resetScores	//Resetallplayer/teamscoreswithouthavingtoreloadthemap.	
 
-	spot									 
+	startingItems	
+	startingWeapons	
+	toggleAdmin	
+	toggleVote	
 
-	stats								 
-		 
-	throwflag					 
+	toggleuserinfovalidation	
+	tweakForce	
+	tweakSaber	
+	tweakVote	
+	tweakWeapons	
+
+###Sabertweaks###
+	SkipsaberinterpolateforMPdmgs	//1
+	JK21.02StyleDamageSystem	//2
+	ReducedsaberblockforMPdamages	//3
+	ReducesaberdropsforMPdamages	//4
+	Allowrollcancelforsaberswings	//5
+	Removechainableswingsfromredstance	//6
+	Fixedsaberswitch	//7
+	Noaimbackslash	//8
+	JK2redDFA	//9
+	FixyellowDFA	//10
+	SpinredDFA	//11
+	Spinbackslash	//12
+	JK2Lunge	//13
+
+###ForceTweaks###
+
+	Noforcepowerdrainforcrouchattack	//1
+	Fixprojectileforcepushdir	//2
+	Pushpullknockdowns	//3
+	Fixgripabsorb	//4
+	Allowforcecombo	//5
+	Fixpullstrength	//6
+	JK2grip	//7
+	Fastgriprunspeed	//8
+	Push/pullitems	//9
+	SmallerDrainCOF	//10
+
+###WeaponTweaks###
+
+	NonrandomDEMP2	//1  
+	IncreasedDEMP2primarydamage	//2  
+	Decreaseddisruptoraltdamage	//3  
+	Nonrandombowcasterspread	//4  
+	Increasedrepeateraltdamage	//5  
+	Nonrandomflechetteprimaryspread	//6  	
+	Decreasedflechettealtdamage	//7  	
+	Nonrandomflechettealtspread	//8  
+	Increasedconcussionriflealtdamage	//9  
+	Removedprojectileknockback	//10  
+	Stunbatonlightninggun	//11  
+	Stunbatonshocklance	//12  
+	Projectilegravity	//13  
+	Allowcentermuzzle	//14  
+	Pseudorandomweaponspread	//15  
+	Rocketaltfiremortar	//16  
+	Rocketaltfireredeemer	//17  
+	Infiniteammo	//18  
+	Stunbatonhealgun	//19  
+	Weaponscandamagevehicles	//20  
+	Allowgunroll	//21  
+	Fastweaponswitch	//22  
+	Impactnitrons	//23  
+	Flechettestakegun	//24  
+	Fixdroppedmineammocount	//25  
+	JK2StyleAltTripmine	//26  
+	ProjectileSniper	//27  
+	NoSpread	//28  
+
+###VoteTweaks###
+
+	Allowspeccallvoteinsiegegametype	//1
+	AllowspeccallvoteinCTF/TFFAgametypes	//2
+	Clearvotewhengoingtospectate	//3
+	Dontallowcallvotefor30saftermapload	//4
+	FloodprotectcallvotesbyIP	//5
+	Dontallowmapcallvotesfor10minutesatstartofeachmap	//6
+	Addvotedelayformapcallvotesonly	//7
+	Allowvotingfromspectate	//8
+	Showvotesinconsole	//9
+	Onlycountvotersinpass/failcalculation	//10
+	Fixmapchangeaftergametypevote	//11
+
+##ServerGameCommands:##
+
+	addbot	
+	amban	
+	
+	ambeg	//EMOTE
+	ambeg2	//EMOTE
+	ambernie	//EMOTE
+	ambreakdance	//EMOTE
+	ambreakdance2	//EMOTE
+	ambreakdance3	//EMOTE
+	ambreakdance4	//EMOTE
+
+	amcheer	//EMOTE
+	amcower	//EMOTE
+	amdance	//EMOTE
+
+	amflip	//EMOTE
+
+	amforceteam	
+	amfreeze	
+	amgrantadmin	
+	amhug	//EMOTE
+	aminfo	
+	amkick	
+	amkillvote	
+	amlistmaps	
+	amlockteam	
+	amlogin	
+	amlogout	
+	amlookup	
+	ammap	
+	ammotd	
+	
+	amnoisy	//EMOTE
+	ampoint	//EMOTE
+	amrage	//EMOTE
+	amrename	
+	amrun	//EMOTE
+	amsay	
+	amsignal	//EMOTE
+	amsignal2	//EMOTE
+	amsignal3	//EMOTE
+	amsignal4	//EMOTE
+	amsit	//EMOTE
+	amsit2	//EMOTE
+	amsit3	//EMOTE
+	amsit4	//EMOTE
+	amsit5	//EMOTE
+	amslap	//EMOTE
+	amsleep	//EMOTE
+	amsmack	//EMOTE	
+	amsurrender	//EMOTE
+	amtaunt	//EMOTE
+	amtaunt2	//EMOTE
+	amtele	
+	amtelemark	
+	amvictory	//EMOTE
+
+	ampsay	
+
+	amvstr	
+
+	best	
+
+	
+
+	changepassword	
+
+	clanpass	
+	clansay	
+	clanwhois	
 
 
-	top10					 
-	 
-	vgs_cmd			
-	voice_cmd									 
-	warp								 
-	warplist			
-	whois							
+	
+	dftop10	
 
-## Admin Commands: ##
+	
+	engage_fullforceduel	
+	engage_gunduel	
+	
+
+	
+
+	hide		
+	ignore	
+	jetpack	
+
+	jump	
+
+	
+
+	launch	
+	
+
+	login	
+	logout	
+	
+	
+	modversion	
+	move	
+	
+
+	notcompleted	
 
 
-## Client Cvars: ##
+	nudge	
 
-	//JAPRO HUD / DISPLAY
+	practice	
+	printstats	
+	race		
+	register	
+	rocketchange	
+	
+	say_team_mod	
+	
+	serverconfig	
+
+
+	showNet	
+	
+
+	spot		
+
+	stats	
+	
+	throwflag	
+
+
+	top10	
+	
+	vgs_cmd	
+	voice_cmd		
+	warp	
+	warplist	
+	whois	
+
+##AdminCommands:##
+
+
+##ClientCvars:##
+
+	//JAPROHUD/DISPLAY
 	cg_movementKeys	0	
 	cg_movementKeysX	451	
 	cg_movementKeysY	430	
@@ -408,7 +404,7 @@ No Spread	//28
 	cg_raceTimer	2	
 	cg_raceTimerSize	0.75	
 	cg_raceTimerX	5	
-	cg_raceTimerY	280	 
+	cg_raceTimerY	280	
 	cg_groundspeedometer	0	
 	cg_smallScoreboard	0	
 	cg_chatBoxFontSize	1	
@@ -419,8 +415,8 @@ No Spread	//28
 	cg_crosshairBlue	0	
 	cg_crosshairAlpha	255	
 	cg_hudColors	0	
-	cg_drawScore	1	 //eh
-	cg_drawVote	1	 //eh
+	cg_drawScore	1	//eh
+	cg_drawVote	1	//eh
 
 	//Strafehelper
 	cg_strafeHelper	0	
@@ -474,7 +470,7 @@ No Spread	//28
 	cg_autoKillWhenFalling	0	
 	cg_engineModifications	0	
 
-	//Auto login
+	//Autologin
 	cg_autoLoginServer1	0	
 	cg_autoLoginPass1	0	
 	cg_autoLoginServer2	0	
@@ -501,21 +497,20 @@ No Spread	//28
 
 	cg_predictKnockback	0	
 
-	cg_strafeHelperActiveColor	0 255 0 200	
+	cg_strafeHelperActiveColor	02550200	
 	cg_strafeHelperInactiveAlpha200	
 
-	cp_pluginDisable	0	 
+	cp_pluginDisable	0	
 	
-	 
-//unlocked - default
+	
 	cl_timeNudge	0	
 	cl_maxPackets	30	
 
 
-	 
-	cp_clanPwd	none	 
-	cp_sbRGB1	0	   
-	cp_sbRGB2	0	   
+	
+	cp_clanPwd	none	
+	cp_sbRGB1	0	
+	cp_sbRGB2	0	
 
 	cg_predictRacemode	0	
 
@@ -542,42 +537,42 @@ No Spread	//28
 	cl_timenudgeDuration	0	
 
 
-## Client game commands: ##
+##Clientgamecommands:##
 	
 	showPlayerId
-	serverconfig 
+	serverconfig
 	autoLogin
-	+zoom 
-	-zoom 
-	+cosbybot 
+	+zoom
+	-zoom
+	+cosbybot
 	-cosbybot
 	saber
-	amColor 
+	amColor
 	amrun
-	modversion 
+	modversion
 
 	followredflag
-	followblueflag 
+	followblueflag
 
 	login
 
-	strafeHelper 
-	flipkick 
-	plugin  
+	strafeHelper
+	flipkick
+	plugin
 
-	addCheckpoint 
+	addCheckpoint
 	listCheckpoints
 	deleteCheckpoint
 	teleToCheckpoint
 	clearTrail
-	strafeTrail 
+	strafeTrail
 
 	PTelemark
-	PTele 
+	PTele
 
-	remapShader 
+	remapShader
 	listRemaps
 	loadTrail
-	do 
+	do
 
 
