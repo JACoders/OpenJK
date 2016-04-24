@@ -1,10 +1,6 @@
 /*
 ===========================================================================
-Copyright (C) 1999 - 2005, Id Software, Inc.
-Copyright (C) 2000 - 2013, Raven Software, Inc.
-Copyright (C) 2001 - 2013, Activision, Inc.
-Copyright (C) 2005 - 2015, ioquake3 contributors
-Copyright (C) 2013 - 2015, OpenJK contributors
+Copyright (C) 2013 - 2016, OpenJK contributors
 
 This file is part of the OpenJK source code.
 
@@ -25,32 +21,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // sv_challenge.cpp -- stateless challenge creation and verification functions
 
 #include "server.h"
-#include <mbedtls/error.h>
-#include <mbedtls/md.h>
+#include "qcommon/md5.h"
 
-#define DEBUG_SV_CHALLENGE
+#define DEBUG_SV_CHALLENGE // Enable for Com_DPrintf debugging output
 
-// TODO: DOCS
-static const mbedtls_md_type_t HMAC_ALGORITHM = MBEDTLS_MD_SHA1;
-static const size_t HMAC_DIGEST_LENGTH = 20; // HMAC-SHA1 digest is 20 bytes (160 bits)
-static const int SECRET_KEY_LENGTH = 20; // Key length equal to digest length is adequate
+static const size_t SECRET_KEY_LENGTH = MD5_DIGEST_SIZE; // Key length equal to digest length is adequate
 
 static qboolean challengerInitialized = qfalse;
-static mbedtls_md_context_t challenger;
-
-/*
-====================
-SV_mbedTLS_ErrString
-
-Return a string representation of the given mbed TLS error code.
-====================
-*/
-static const char *SV_mbedTLS_ErrString(int errnum)
-{
-	static char errorString[1024];
-	mbedtls_strerror(errnum, errorString, sizeof(errorString));
-	return errorString;
-}
+static hmacMD5Context_t challenger;
 
 /*
 ====================
@@ -77,56 +55,43 @@ static const char *BufferToHexString(byte *buffer, size_t bufferLen)
 
 /*
 ====================
-SV_InitChallenger
+SV_ChallengeInit
 
-Initialize and allocate the HMAC context for generating challenges.
+Initialize the HMAC context for generating challenges.
 ====================
 */
-void SV_InitChallenger()
+void SV_ChallengeInit()
 {
 	if (challengerInitialized) {
-		SV_ShutdownChallenger();
-	}
-
-	const mbedtls_md_info_t *info = mbedtls_md_info_from_type(HMAC_ALGORITHM);
-	if (!info) {
-		Com_Error(ERR_FATAL, "SV_InitChallengers: The given digest type is unavailable");
-	}
-
-	int errorNum;
-	byte secretKey[SECRET_KEY_LENGTH];
-	mbedtls_md_init(&challenger);
-
-	if ((errorNum = mbedtls_md_setup(&challenger, info, 1)) != 0) {
-		Com_Error(ERR_FATAL, "SV_InitChallengers: mbedtls_md_setup failed - %s", SV_mbedTLS_ErrString(errorNum));
+		SV_ChallengeShutdown();
 	}
 
 	// Generate a secret key from the OS RNG
+	byte secretKey[SECRET_KEY_LENGTH];
 	if (!Sys_RandomBytes(secretKey, sizeof(secretKey))) {
-		Com_Error(ERR_FATAL, "SV_InitChallengers: Sys_RandomBytes failed");
+		Com_Error(ERR_FATAL, "SV_ChallengeInit: Sys_RandomBytes failed");
 	}
+
 #ifdef DEBUG_SV_CHALLENGE
 	Com_DPrintf("Initialize challenger: %s\n", BufferToHexString(secretKey, sizeof(secretKey)));
 #endif
 
-	if ((errorNum = mbedtls_md_hmac_starts(&challenger, secretKey, sizeof(secretKey))) != 0) {
-		Com_Error(ERR_FATAL, "SV_InitChallengers: mbedtls_md_hmac_starts failed - %s", SV_mbedTLS_ErrString(errorNum));
-	}
+	HMAC_MD5_Init(&challenger, secretKey, sizeof(secretKey));
 
 	challengerInitialized = qtrue;
 }
 
 /*
 ====================
-SV_ShutdownChallenger
+SV_ChallengeShutdown
 
-Free the resources allocated to generate challenges.
+Clear the HMAC context used to generate challenges.
 ====================
 */
-void SV_ShutdownChallenger()
+void SV_ChallengeShutdown()
 {
 	if (challengerInitialized) {
-		mbedtls_md_free(&challenger);
+		memset(&challenger, 0, sizeof(challenger));
 		challengerInitialized = qfalse;
 	}
 }
@@ -143,20 +108,18 @@ static int SV_CreateChallenge(int timestamp, netadr_t from)
 	const char *clientParams = NET_AdrToString(from);
 	size_t clientParamsLen = strlen(clientParams);
 
-	// Create an unforgeable, temporal challenge for this client using HMAC(secretKey, clientParams)
-	int errorNum;
-	byte digest[HMAC_DIGEST_LENGTH];
-	if ((errorNum = mbedtls_md_hmac_update(&challenger, (byte*)clientParams, clientParamsLen)) != 0 ||
-		(errorNum = mbedtls_md_hmac_update(&challenger, (byte*)&timestamp, sizeof(timestamp))) != 0 ||
-		(errorNum = mbedtls_md_hmac_finish(&challenger, digest)) != 0 ||
-		(errorNum = mbedtls_md_hmac_reset(&challenger)) != 0) {
-		Com_Error(ERR_FATAL, "SV_CreateChallenge: failed - %s", SV_mbedTLS_ErrString(errorNum));
-	}
+	// Create an unforgeable, temporal challenge for this client using HMAC(secretKey, clientParams + timestamp)
+	byte digest[MD5_DIGEST_SIZE];
+	HMAC_MD5_Update(&challenger, (byte*)clientParams, clientParamsLen);
+	HMAC_MD5_Update(&challenger, (byte*)&timestamp, sizeof(timestamp));
+	HMAC_MD5_Final(&challenger, digest);
+	HMAC_MD5_Reset(&challenger);
 
 	// Use first 4 bytes of the HMAC digest as an int (client only deals with numeric challenges)
-	// The most-significant bit stores the challenger (0 or 1) used to create this challenge for later verification
+	// The most-significant bit stores whether the timestamp is odd or even. This lets later verification code handle the
+	// case where the engine timestamp has incremented between the time this challenge is sent and the client replies.
 	int challenge = *(int *)digest & 0x7FFFFFFF;
-	challenge |= (timestamp & 0x1) << 31;
+	challenge |= (unsigned int)(timestamp & 0x1) << 31;
 
 #ifdef DEBUG_SV_CHALLENGE
 	Com_DPrintf("Generated challenge %d (timestamp = %d) for %s\n", challenge, timestamp, NET_AdrToString(from));
@@ -174,7 +137,12 @@ Create an unforgeable, temporal challenge for the given client address.
 */
 int SV_CreateChallenge(netadr_t from)
 {
-	// TODO: doc
+	if (!challengerInitialized) {
+		Com_Error(ERR_FATAL, "SV_CreateChallenge: The challenge subsystem has not been initialized");
+	}
+
+	// The current time gets 14 bits chopped off to create a challenge timestamp that changes every 16.384 seconds
+	// This allows clients at least ~16 seconds from now to reply to the challenge
 	int currentTimestamp = svs.time >> 14;
 	return SV_CreateChallenge(currentTimestamp, from);
 }
@@ -188,12 +156,17 @@ Verify a challenge received by the client matches the expected challenge.
 */
 qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from)
 {
+	if (!challengerInitialized) {
+		Com_Error(ERR_FATAL, "SV_VerifyChallenge: The challenge subsystem has not been initialized");
+	}
+
 	int currentTimestamp = svs.time >> 14;
 	int currentPeriod = currentTimestamp & 0x1;
 
-	// Retrieve the challenger used from the most-significant bit, then re-create the expected challenge
-	// TODO: doc
-	int challengePeriod = ((unsigned int)receivedChallenge >> 31) & 0x1; // 0 or 1
+	// Use the current timestamp for verification if the current period matches the client challenge's period.
+	// Otherwise, use the previous timestamp in case the current timestamp incremented in the time between the
+	// client being sent a challenge and the client's reply that's being verified now.
+	int challengePeriod = ((unsigned int)receivedChallenge >> 31) & 0x1;
 	int challengeTimestamp = currentTimestamp - (currentPeriod ^ challengePeriod);
 
 #ifdef DEBUG_SV_CHALLENGE

@@ -329,8 +329,8 @@ void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload
 //
 // sv_challenge.cpp
 //
-void SV_InitChallenger();
-void SV_ShutdownChallenger();
+void SV_ChallengeInit();
+void SV_ChallengeShutdown();
 int SV_CreateChallenge(netadr_t from);
 qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from);
 
