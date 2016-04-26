@@ -10,10 +10,10 @@
 	g_rabbit			0  
 
 #### Saber
-	g_tweakSaber			0	//Configuredwith/tweakSabercommand
+	g_tweakSaber			0	//Configured with /tweakSaber command
 	g_backslashDamageScale	1	
 	g_maxSaberDefense		0	
-	g_saberTouchDmg			0	//ConfiguresabertouchdamageforMPdmgs.Canbe>1formoretouchdamagelikeinJK2.
+	g_saberTouchDmg			0	//Configure saber touch damage for MP dmgs. Can be >1 for more touch damage.
 	g_fixGroundStab			0	
 	g_saberDuelSPDamage		1	
 	g_forceDuelSPDamage		0	
@@ -132,6 +132,17 @@
 	g_newBotAI			0	
 	g_newBotAITarget	-1	//-2=Target closest excluding otherbots. -1=target closest. 0-31=target clientnum.
 	bot_maxbots			0	
+
+#### Elo ranking
+	g_eloRanking					0 // Enables or disabled built in elo ranking for duels.
+	g_eloNewUserCutoff				-1 
+	g_eloProvisionalCutoff			10 
+	g_eloProvisionalChangeBig		2 
+	g_eloProvisionalChangeSmall		1.5 
+	g_eloMinimumDuels				20 
+	g_eloKValue1					25 
+	g_eloKValue2					25 
+	g_eloKValue3					25 
 
 #### Debug/Tools 
 	g_showJumpSpot	0	//Marks where player touches ground as they land. Useful with the /nudge command on entities.
