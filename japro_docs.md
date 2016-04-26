@@ -1,6 +1,7 @@
-## ServerCvars ##
+## ServerCvars
 
-### CTF ###
+
+#### CTF
 	g_flagDrag			0  
 	g_fixFlagSuicide	0  
 	g_allowFlagThrow	0  
@@ -8,7 +9,7 @@
 	g_fixFlagHitbox		0  	
 	g_rabbit			0  
 
-### Saber ###
+#### Saber
 	g_tweakSaber			0	//Configuredwith/tweakSabercommand
 	g_backslashDamageScale	1	
 	g_maxSaberDefense		0	
@@ -22,7 +23,7 @@
 	g_redDamageScale		1	
 	g_redDFADamageScale		1	
 
-### Force ###
+#### Force 
 	g_tweakForce		0	//Configured with /tweakForce command
 	g_fixSaberInGrip	0	
 	g_fixLightning		0	
@@ -31,7 +32,7 @@
 	g_teamHealScale		1	
 	g_teamEnergizeScale	1	
 
-### Guns ###
+#### Guns 
 	g_tweakWeapons				0	//Configured with /tweakWeapons command	
 	g_startingWeapons			8	//Configured with /startingWeapons command	
 	g_weaponDamageScale			1	
@@ -40,7 +41,7 @@
 	g_projectileInheritance		0	
 	g_fullInheritance			0	
 
-### Movement ###
+#### Movement 
 	g_slideOnPlayer			0	
 	g_flipKick				0	
 	g_nonRandomKnockdown	0	
@@ -54,7 +55,7 @@
 	g_fixRedDFA				0	
 	g_fixGlitchKickDamage	0
 
-### Dueling ###
+#### Dueling 
 	g_duelStartHealth			0	
 	g_duelStartArmor			0	
 	g_duelDistanceLimit			0	
@@ -64,7 +65,7 @@
 	g_forceDuelForceRegenTime	200	
 	g_duelRespawn				0	
 
-### Admin ##
+#### Admin 
 	g_juniorAdminLevel	0	
 	g_fullAdminLevel	0	
 	g_juniorAdminPass	""
@@ -73,7 +74,7 @@
 	g_fullAdminMsg		""
 	g_allowNoFollow		0	
 
-### Other Gameplay ###
+#### Other Gameplay 
 	g_flipKickDamageScale	1	
 	g_maxFallDmg			0	
 	g_startingItems			0	//Configured with /startingItems command.
@@ -91,7 +92,7 @@
 	g_blockDuelHealthSpec	0	
 	g_antiWallhack			0	
 
-### Other ###
+#### Other 
 	g_corpseRemovalTime			30	
 	g_removeSpectatorPortals	0	
 	g_consoleMOTD				""
@@ -111,7 +112,7 @@
 	restricts					0	
 	g_mercyRule					0	//If the score difference isgreater than X percent of the fraglimit, end the match.
 
-### Race/Accounts ###
+#### Race/Accounts 
 	g_raceMode					0	//0=Noracemode, 1=forcedracemode, 2=player can toggle race mode with /racecommand.
 	g_allowRaceTele				0	
 	g_allowRegistration			1	
@@ -119,23 +120,23 @@
 	g_forceLogin				0	
 
 
-### Loggging/Recording ###
+#### Loggging/Recording 
 	g_duelLog		0	
 	g_raceLog		0	
 	g_playerLog		0	
 	sv_autoRaceDemo	0	
 
-### Bots ###
+#### Bots 
 	bot_nochat			0	
 	bot_strafeOffset	0	
 	g_newBotAI			0	
 	g_newBotAITarget	-1	//-2=Target closest excluding otherbots. -1=target closest. 0-31=target clientnum.
 	bot_maxbots			0	
 
-### Debug/Tools ###
+#### Debug/Tools 
 	g_showJumpSpot	0	//Marks where player touches ground as they land. Useful with the /nudge command on entities.
 
-## ServerRCONCommands ##
+## ServerRCONCommands 
 	accountInfo  	
 	amban		
 	amgrantadmin	
@@ -161,7 +162,7 @@
 	tweakVote	
 	tweakWeapons	
 
-### Sabertweaks ###
+#### Sabertweaks 
 	SkipsaberinterpolateforMPdmgs	//1
 	JK21.02StyleDamageSystem	//2
 	ReducedsaberblockforMPdamages	//3
@@ -176,7 +177,7 @@
 	Spinbackslash	//12
 	JK2Lunge	//13
 
-### Force Tweaks ###
+#### Force Tweaks 
 	Noforcepowerdrainforcrouchattack	//1
 	Fixprojectileforcepushdir	//2
 	Pushpullknockdowns	//3
@@ -188,7 +189,7 @@
 	Push/pullitems	//9
 	SmallerDrainCOF	//10
 
-### Weapon Tweaks ###
+#### Weapon Tweaks 
 	NonrandomDEMP2	//1  
 	IncreasedDEMP2primarydamage	//2  
 	Decreaseddisruptoraltdamage	//3  
@@ -218,7 +219,7 @@
 	ProjectileSniper	//27  
 	NoSpread	//28  
 
-### Vote Tweaks ###
+#### Vote Tweaks 
 	Allowspeccallvoteinsiegegametype	//1
 	AllowspeccallvoteinCTF/TFFAgametypes	//2
 	Clearvotewhengoingtospectate	//3
@@ -231,7 +232,8 @@
 	Onlycountvotersinpass/failcalculation	//10
 	Fixmapchangeaftergametypevote	//11
 
-## ServerGameCommands: ##
+## ServerGameCommands 
+#### General 
 	ammap	
 	ammotd	
 	amrename	
@@ -277,7 +279,7 @@
 	warplist	
 	whois	
    
-### Emotes ###
+#### Emotes 
 	ambeg 
 	ambeg2	
 	ambernie 
@@ -311,7 +313,7 @@
     amrun	
     amvictory   
 
-### AdminCommands: ###
+#### AdminCommands 
 	amban	
 	amforceteam	
 	amfreeze	
@@ -328,7 +330,7 @@
 
 ## ClientCvars ##
 
-### JAPROHUD/DISPLAY ###
+#### JAPROHUD/DISPLAY 
 	cg_movementKeys			0	
 	cg_movementKeysX		451	
 	cg_movementKeysY		430	
@@ -364,7 +366,7 @@
 	cg_speedGraph			0	
     cg_drawHud				1
 
-### Strafehelper ###
+#### Strafehelper 
 	cg_strafeHelper					0	
 	cg_strafeHelper_FPS				0	
 	cg_strafeHelperOffset			75	
@@ -375,14 +377,14 @@
     cg_strafeHelperActiveColor		0 255 0 200	
 	cg_strafeHelperInactiveAlpha	200	
 
-### Sounds ###
+#### Sounds 
 	cg_rollSounds	1	
 	cg_jumpSounds	0	
 	cg_chatSounds	1	
 	cg_hitsounds	0	
     cg_duelMusic	1	
 
-### Visuals ###
+#### Game Visuals 
 	cg_remaps				1	
 	cg_screenShake			2	
 	cg_smoothCamera			0	
@@ -400,7 +402,7 @@
     cg_specHud				0	
     cg_newDrainFX			0  
 
-### Features ###
+#### Features 
 	cg_simulatedProjectiles	0	
 	cg_simulatedHitscan		1	
 	cg_spectatorCameraDamp	0	
@@ -423,7 +425,7 @@
 	cg_autoKillWhenFalling	0	
 	cg_engineModifications	0	
 
-### Autologin ###
+#### Autologin 
 	cg_autoLoginServer1	0	
 	cg_autoLoginPass1	0	
 	cg_autoLoginServer2	0	
@@ -431,11 +433,11 @@
 	cg_autoLoginServer3	0	
 	cg_autoLoginPass3	0	
 
-### Logging ###
+#### Logging 
 	cg_logChat		1	
 	cg_logFormat	1	
    
-### Strafe Trails ###
+#### Strafe Trails 
 	cg_strafeTrailPlayers		0	
 	cg_strafeTrailLife			5	
 	cg_strafeTrailRacersOnly	0	
@@ -444,25 +446,26 @@
 	cg_logStrafeTrail			0	
 
 	
-### Network ###
+#### Network
 	cg_predictKnockback		0	
     cg_predictRacemode		0	
 	cl_timeNudge			0	
 	cl_maxPackets			30	
 	cl_timenudgeDuration	0	
     
-### Userinfo ###
+#### Userinfo 
 	cp_pluginDisable	0	
 	cp_clanPwd			none	
 	cp_sbRGB1			0	
 	cp_sbRGB2			0	
 
-### Flipkick ###
+#### Flipkick 
 	cg_fkDuration			50	
 	cg_fkFirstJumpDuration	0	
 	cg_fkSecondJumpDelay	0  
 
 ## Clientgamecommands ##
+#### General 
 	showPlayerId
 	serverconfig
 	autoLogin
@@ -491,4 +494,6 @@
 	remapShader
 	listRemaps
 	loadTrail
-	do  
+	do
+
+
