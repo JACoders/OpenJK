@@ -5984,8 +5984,6 @@ void NewBotAI_GetStrafeAim(bot_state_t *bs)
 	optimalAngle = acos((double) ((baseSpeed - (baseSpeed * frameTime)) / currentSpeed)) * (180.0f/M_PI) - 45.0f; 
 
 	optimalAngle += bot_strafeOffset.value; //Ayy
-	if (bot_frameTime.value > 0 && bot_frameTime.value < 1) 
-		frameTime = bot_frameTime.value;
 
 	if (optimalAngle < 0 || optimalAngle > 360)
 		optimalAngle = 0;

@@ -124,7 +124,7 @@
 	g_duelLog		0	
 	g_raceLog		0	
 	g_playerLog		0	
-	sv_autoRaceDemo	0	
+	sv_autoRaceDemo	0 //Requires custom server executable with "svrecord" command.
 
 #### Bots 
 	bot_nochat			0	
@@ -134,7 +134,7 @@
 	bot_maxbots			0	
 
 #### Elo ranking
-	g_eloRanking					0 // Enables or disabled built in elo ranking for duels.
+	g_eloRanking					0 // Enables the built in elo ranking for duels.
 	g_eloNewUserCutoff				-1 
 	g_eloProvisionalCutoff			10 
 	g_eloProvisionalChangeBig		2 
