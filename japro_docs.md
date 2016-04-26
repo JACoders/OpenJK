@@ -1,4 +1,4 @@
-## ServerCvars
+## Server Cvars
 
 
 #### CTF
@@ -136,7 +136,7 @@
 #### Debug/Tools 
 	g_showJumpSpot	0	//Marks where player touches ground as they land. Useful with the /nudge command on entities.
 
-## ServerRCONCommands 
+## Server RCON Commands 
 	accountInfo  	
 	amban		
 	amgrantadmin	
@@ -162,77 +162,77 @@
 	tweakVote	
 	tweakWeapons	
 
-#### Sabertweaks 
-	SkipsaberinterpolateforMPdmgs	//1
-	JK21.02StyleDamageSystem	//2
-	ReducedsaberblockforMPdamages	//3
-	ReducesaberdropsforMPdamages	//4
-	Allowrollcancelforsaberswings	//5
-	Removechainableswingsfromredstance	//6
-	Fixedsaberswitch	//7
-	Noaimbackslash	//8
-	JK2redDFA	//9
-	FixyellowDFA	//10
-	SpinredDFA	//11
-	Spinbackslash	//12
-	JK2Lunge	//13
+#### Saber tweaks 
+	Skip saber interpolate for MPdmgs	//1
+	JK2 1.02 Style Damage System	//2
+	Reduced saberblock for MP damages	//3
+	Reducesaberdrops for MP damages	//4
+	Allow roll cancel for saber swings	//5
+	Removec hainable swings from red stance	//6
+	Fixed saber switch	//7
+	No aim backslash	//8
+	JK2 red DFA	//9
+	Fix yellow DFA	//10
+	Spin red DFA	//11
+	Spin back slash	//12
+	JK2 Lunge	//13
 
 #### Force Tweaks 
-	Noforcepowerdrainforcrouchattack	//1
-	Fixprojectileforcepushdir	//2
-	Pushpullknockdowns	//3
-	Fixgripabsorb	//4
-	Allowforcecombo	//5
-	Fixpullstrength	//6
-	JK2grip	//7
-	Fastgriprunspeed	//8
-	Push/pullitems	//9
-	SmallerDrainCOF	//10
+	No force power drain for crouch attack	//1
+	Fix projectile force push dir	//2
+	Push pull knockdowns	//3
+	Fix grip absorb	//4
+	Allow force combo	//5
+	Fix pull strength	//6
+	JK2 grip	//7
+	Fast grip run speed	//8
+	Push/pull items	//9
+	Smaller Drain COF	//10
 
 #### Weapon Tweaks 
-	NonrandomDEMP2	//1  
-	IncreasedDEMP2primarydamage	//2  
-	Decreaseddisruptoraltdamage	//3  
-	Nonrandombowcasterspread	//4  
-	Increasedrepeateraltdamage	//5  
-	Nonrandomflechetteprimaryspread	//6  	
-	Decreasedflechettealtdamage	//7  	
-	Nonrandomflechettealtspread	//8  
-	Increasedconcussionriflealtdamage	//9  
-	Removedprojectileknockback	//10  
-	Stunbatonlightninggun	//11  
-	Stunbatonshocklance	//12  
-	Projectilegravity	//13  
-	Allowcentermuzzle	//14  
-	Pseudorandomweaponspread	//15  
-	Rocketaltfiremortar	//16  
-	Rocketaltfireredeemer	//17  
-	Infiniteammo	//18  
-	Stunbatonhealgun	//19  
-	Weaponscandamagevehicles	//20  
-	Allowgunroll	//21  
-	Fastweaponswitch	//22  
-	Impactnitrons	//23  
-	Flechettestakegun	//24  
-	Fixdroppedmineammocount	//25  
-	JK2StyleAltTripmine	//26  
-	ProjectileSniper	//27  
+	Nonrandom DEMP2	//1  
+	Increased DEMP2 primary damage	//2  
+	Decreased disruptor alt damage	//3  
+	Nonrandom bowcaster spread	//4  
+	Increased repeater alt damage	//5  
+	Nonrandom flechette primary spread	//6  	
+	Decreased flechette alt damage	//7  	
+	Nonrandom flechette alt spread	//8  
+	Increased concussion rifle alt damage	//9  
+	Removed projectile knockback	//10  
+	Stunbaton lightning gun	//11  
+	Stunbaton shocklance	//12  
+	Projectile gravity	//13  
+	Allowcenter muzzle	//14  
+	Pseudo random weapon spread	//15  
+	Rocketalt firemortar	//16  
+	Rocketalt fireredeemer	//17  
+	Infinite ammo	//18  
+	Stunbaton heal gun	//19  
+	Weaponscan damage vehicles	//20  
+	Allow gun roll	//21  
+	Fast weapon switch	//22  
+	Impact nitrons	//23  
+	Flechette stake gun	//24  
+	Fix droppedmine ammocount	//25  
+	JK2 Style Alt Tripmine	//26  
+	Projectile Sniper	//27  
 	NoSpread	//28  
 
 #### Vote Tweaks 
-	Allowspeccallvoteinsiegegametype	//1
-	AllowspeccallvoteinCTF/TFFAgametypes	//2
-	Clearvotewhengoingtospectate	//3
-	Dontallowcallvotefor30saftermapload	//4
-	FloodprotectcallvotesbyIP	//5
-	Dontallowmapcallvotesfor10minutesatstartofeachmap	//6
-	Addvotedelayformapcallvotesonly	//7
-	Allowvotingfromspectate	//8
-	Showvotesinconsole	//9
-	Onlycountvotersinpass/failcalculation	//10
-	Fixmapchangeaftergametypevote	//11
+	Allow speccall votein siege gametype	//1
+	Allow speccall vote in CTF/TFFA gametypes	//2
+	Clearvote whengoing to spectate	//3
+	Dontallow callvote for 30s after map load	//4
+	Flood protect callvotes by IP	//5
+	Dont allow mapcall votesfor 10 minutes at start of eachmap	//6
+	Add vote delay for map call votesonly	//7
+	Allow voting from spectate	//8
+	Show votes in console	//9
+	Only count voters inpass/fail calculation	//10
+	Fix map change after gametype vote	//11
 
-## ServerGameCommands 
+## Server Game Commands 
 #### General 
 	ammap	
 	ammotd	
@@ -362,9 +362,9 @@
 	cg_drawVote				1  
 	cg_centerHeight			0	
 	cg_centerSize			1	
-    cg_accelerometer		0	
+	cg_accelerometer		0	
 	cg_speedGraph			0	
-    cg_drawHud				1
+   	cg_drawHud				1
 
 #### Strafehelper 
 	cg_strafeHelper					0	
@@ -372,7 +372,7 @@
 	cg_strafeHelperOffset			75	
 	cg_strafeHelperInvertOffset		75	
 	cg_strafeHelperLineWidth		1	
-    cg_strafeHelperPrecision		256	
+   	cg_strafeHelperPrecision		256	
 	cg_strafeHelperCutoff			0	
     cg_strafeHelperActiveColor		0 255 0 200	
 	cg_strafeHelperInactiveAlpha	200	
@@ -382,7 +382,7 @@
 	cg_jumpSounds	0	
 	cg_chatSounds	1	
 	cg_hitsounds	0	
-    cg_duelMusic	1	
+   	cg_duelMusic	1	
 
 #### Game Visuals 
 	cg_remaps				1	
@@ -403,27 +403,27 @@
     cg_newDrainFX			0  
 
 #### Features 
-	cg_simulatedProjectiles	0	
-	cg_simulatedHitscan		1	
-	cg_spectatorCameraDamp	0	
-	cg_scopeSensitivity		1	
-	cg_defaultModel			kyle	
-	cg_defaultFemaleModel	jan	
-	cg_forceAllyModel		none	
-	cg_forceEnemyModel		none	
-	cg_jumpHeight			0	
-	cg_autoRecordDemo		0	
-	cg_zoomSensitivity		2.5	
-	cg_leadIndicator		0	
-	cg_cosbyBotTarget		-1	
-	cg_cosbyBotLS			0	
-	cg_drawHitBox			0	
-	cg_drawPlayerNames		0	
-	cg_drawPlayerNamesScale	0.5	
-	cg_autoScreenshot		0	
-	cg_autoRecordRaceDemo	0	
-	cg_autoKillWhenFalling	0	
-	cg_engineModifications	0	
+	cg_simulatedProjectiles		0	
+	cg_simulatedHitscan			1	
+	cg_spectatorCameraDamp		0	
+	cg_scopeSensitivity			1	
+	cg_defaultModel				kyle	
+	cg_defaultFemaleModel		jan	
+	cg_forceAllyModel			none	
+	cg_forceEnemyModel			none	
+	cg_jumpHeight				0	
+	cg_autoRecordDemo			0	
+	cg_zoomSensitivity			2.5	
+	cg_leadIndicator			0	
+	cg_cosbyBotTarget			-1	
+	cg_cosbyBotLS				0	
+	cg_drawHitBox				0	
+	cg_drawPlayerNames			0	
+	cg_drawPlayerNamesScale		0.5	
+	cg_autoScreenshot			0	
+	cg_autoRecordRaceDemo		0	
+	cg_autoKillWhenFalling		0	
+	cg_engineModifications		0	
 
 #### Autologin 
 	cg_autoLoginServer1	0	
@@ -464,7 +464,7 @@
 	cg_fkFirstJumpDuration	0	
 	cg_fkSecondJumpDelay	0  
 
-## Clientgamecommands ##
+## Client game commands ##
 #### General 
 	showPlayerId
 	serverconfig
@@ -496,4 +496,30 @@
 	loadTrail
 	do
 
+#### Plugin disable
+	Disable forcejumps  //1
+	Disable rolls  //1  
+	Disable cartwheels  //3 
+	New run animation  //4  
+	Disable duel tele  //5
+	Disable centerprint checkpoints  //6
+	Show chatbox checkpoints  //7 
+	Disable damage numbers  //8  
+	Centermuzzle  //9  
 
+#### Strafehelper 
+	Original style  //0
+	Updated style  //1
+	Cgaz style  //2
+	Warsow style  //3
+	Sound  //4
+	W  //5
+	WA  //6
+	WD  //7
+	A  //8
+	D  //9
+	Rear  //10
+	Center  //11
+	Accel bar  //12
+	Weze style  //13
+	Line Crosshair  //14
