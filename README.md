@@ -1,6 +1,10 @@
 # DarkJedi
 
-DarkJedi is a fork of OpenJK (see below) focused on providing necessary code changes for the Dark Forces mod for Jedi Academy. 
+DarkJedi is a fork of OpenJK (see below) focused on providing necessary code changes for the Dark Forces mod for Jedi Academy. Changes include enabling the unused advanced combat system from Jedi Academy, reenabling the inventory system, and programming the Dark Forces weapons: the Fusion Cutter, Mortar Gun, and Assault Cannon as new, separate weapons.
+
+Additional aims are to:
+* Provide commits to OpenJK that can mutually benefit both projects
+* Add new gameplay elements, such as a Stormtrooper Disguise and unlockable outfits for Kyle Katarn
 
 # About OpenJK
 
