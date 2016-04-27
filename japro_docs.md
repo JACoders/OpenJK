@@ -2,10 +2,10 @@
 
 
 #### CTF
-	g_flagDrag			0  
-	g_fixFlagSuicide	0  
-	g_allowFlagThrow	0  
-	g_fixCTFScores		0  
+	g_flagDrag			0  //Add air friction to flag carrier
+	g_fixFlagSuicide	0  //Don't auto return flag when flag carrier suicides
+	g_allowFlagThrow	0  //Allow use of /throwflag command
+	g_fixCTFScores		0  //Tweak CTF score amounts
 	g_fixFlagHitbox		0  	
 	g_rabbit			0  
 
@@ -14,10 +14,10 @@
 	g_backslashDamageScale	1	
 	g_maxSaberDefense		0	
 	g_saberTouchDmg			0	//Configure saber touch damage for MP dmgs. Can be >1 for more touch damage.
-	g_fixGroundStab			0	
-	g_saberDuelSPDamage		1	
-	g_forceDuelSPDamage		0	
-	g_saberDisable			0	
+	g_fixGroundStab			0	//1=Groundstabs damage players on ground. 2=Groundstabs damage players on ground but with reduced damage.
+	g_saberDuelSPDamage		1	//Toggle use of SP style damage in saber duels
+	g_forceDuelSPDamage		0	//Toggle use of SP style damage in force duels
+	g_saberDisable			0	//Disable certain saber styles
 	g_blueDamageScale		1	
 	g_yellowDamageScale		1	
 	g_redDamageScale		1	
@@ -25,12 +25,12 @@
 
 #### Force 
 	g_tweakForce		0	//Configured with /tweakForce command
-	g_fixSaberInGrip	0	
-	g_fixLightning		0	
-	g_fixGetups			0	
-	g_teamAbsorbScale	1	
-	g_teamHealScale		1	
-	g_teamEnergizeScale	1	
+	g_fixSaberInGrip	0	//1=Grip does not turn off lightsaber. 2=Same as 1 and also target can toggle lightsaber in grip. 3=Same as 2 and also target can switch saberstyle in grip.
+	g_fixLightning		0	//1=Lightning gives forcepoints to target. 2=Same as 1 with reduced damage. 3=Same as 2 with no melee bonus.
+	g_fixGetups			0  //1=Allow grip during knockdown recovery. 2=Allow grip/push/pull during knockdown recovery.
+	g_teamAbsorbScale	1	//Scale forcepoints gained from teampush/teampull etc.
+	g_teamHealScale		1	//Scale health given from team heal.
+	g_teamEnergizeScale	1	//Scale forcepoints given from team energize.
 
 #### Guns 
 	g_tweakWeapons				0	//Configured with /tweakWeapons command	
@@ -38,21 +38,21 @@
 	g_weaponDamageScale			1	
 	g_projectileVelocityScale	1	
 	g_selfDamageScale			0.5	
-	g_projectileInheritance		0	
-	g_fullInheritance			0	
+	g_projectileInheritance		0//Scale of forward player momentum gained by projectiles.
+	g_fullInheritance			0//Scale of all player momentum gained by projectiles.
 
 #### Movement 
 	g_slideOnPlayer			0	
-	g_flipKick				0	
-	g_nonRandomKnockdown	0	
-	g_fixRoll				0	
-	g_onlyBhop				0	
+	g_flipKick				0//1=JA+ style.  2=Floodprotected to one kick every 50ms.  3=JK2 style.
+	g_nonRandomKnockdown	0	//1=Nonrandom knockdowns based on forcepoints.  2=Pseudorandom with less variance. 3=Nonrandom based on viewangle of target. 4=Random based on viewangle of target. 
+	g_fixRoll				0	//1=JA+ style base roll. //2=Chainable roll. //3=JK2 style roll.
+	g_onlyBhop				0	//1=Disable forcejumps for all players. 2=Let players choose if they want to disable forcejumps.
 	g_tweakJetpack			0	
-	g_movementStyle			1	
-	g_LegDangle				1	
-	g_fixHighFPSAbuse		0	
-	g_fixSlidePhysics		0	
-	g_fixRedDFA				0	
+	g_movementStyle			1	//Force movement style for players. 0=SIEGE 1=JKA 2=QW 3=CPM 4=Q3 5=PJK 6=WSW
+	g_LegDangle				1	//Toggle the leg dangle animation which is not predicted and results in jerkyness on ledges with high ping.
+	g_fixHighFPSAbuse		0	//Make players who have more than 250fps behave at 250fps physics.
+	g_fixSlidePhysics		0	//1=Fixed slide physics for NPCS.  2=Fixed slide physics for NPCs and players.
+	g_fixRedDFA				0	1=Remove red DFA boost glitch. 2=Make red DFA cost 0 forcepoints.
 	g_fixGlitchKickDamage	0
 
 #### Dueling 
@@ -63,7 +63,7 @@
 	g_allowGunDuel				1	
 	g_saberDuelForceRegenTime	200  
 	g_forceDuelForceRegenTime	200	
-	g_duelRespawn				0	
+	g_duelRespawn				0	//Automatically respawn players to where they died after losing a duel.  
 
 #### Admin 
 	g_juniorAdminLevel	0	
@@ -72,29 +72,29 @@
 	g_fullAdminPass		""
 	g_juniorAdminMsg	""
 	g_fullAdminMsg		""
-	g_allowNoFollow		0	
+	g_allowNoFollow		0	//Allow players to hide themselves and not be spectated/seen in racemode.
 
 #### Other Gameplay 
 	g_flipKickDamageScale	1	
 	g_maxFallDmg			0	
 	g_startingItems			0	//Configured with /startingItems command.
-	g_quakeStyleTeleport	0	
-	g_screenShake			0	
-	g_unlagged				0	
+	g_quakeStyleTeleport	0	//Preserve momentum during teleports.
+	g_screenShake			0 //Force screenshake so players can't disable it with jaPRO.
+	g_unlagged				0//Bitvalue. 1=Unlagged projectiles. 2=Unlagged hitscan.  4=Unlagged push/pull.
 	g_allowSaberSwitch		0	
 	g_allowTeamSuicide		0	
 	g_emotesDisable			0	
 	g_godChat				0	
-	g_showHealth			0	
-	g_damageNumbers			0	
-	g_fixKillCredit			0	
-	g_stopHealthESP			0	
-	g_blockDuelHealthSpec	0	
-	g_antiWallhack			0	
+	g_showHealth			0 //Show healthbars above players heads when aimed at.  Requires map restart.	
+	g_damageNumbers			0 //1-7.  Controls different types of damagenumber printouts.
+	g_fixKillCredit			0 //1=Award kill credit after target suicides/spectates. 2=Also for disconnects/reconnects.
+	g_stopHealthESP			0 //Don't send health info to other players (pain sounds can't be used to count health now).
+	g_blockDuelHealthSpec	0 //Don't show duelers health to people in spectate.
+	g_antiWallhack			0 //Experimental anti wallhack code.  Use the client plugin so it can tell the server where your camera position is, and if you use 3rd person.
 
 #### Other 
 	g_corpseRemovalTime			30	
-	g_removeSpectatorPortals	0	
+	g_removeSpectatorPortals	0 //Network all entity data to spectators, useful if you have a recorder in spectate so you can record all POV's.
 	g_consoleMOTD				""
 	g_centerMOTDTime			5	
 	g_centerMOTD				""
@@ -104,7 +104,7 @@
 	sv_maxTeamSize				0	
 	g_tweakVote					0	//Configured with /tweakVote command.
 	g_allowSpotting				0	
-	g_allowTargetLaser			0	
+	g_allowTargetLaser			0	//Target laser used with +button14
 	g_voteTimeout				180	//Time in seconds to lockout callvote aftera failed vote.
 	g_allowVGS					0	
 	g_pauseTime					120	
@@ -114,16 +114,16 @@
 
 #### Race/Accounts 
 	g_raceMode					0	//0=Noracemode, 1=forcedracemode, 2=player can toggle race mode with /racecommand.
-	g_allowRaceTele				0	
+	g_allowRaceTele				0//1=Allow amtele in racemode. 2=Also allow noclip.
 	g_allowRegistration			1	
-    sv_pluginKey				0	
-	g_forceLogin				0	
+	sv_pluginKey				0	
+	g_forceLogin				0//Force players to login in order to be ingame.
 
 
 #### Loggging/Recording 
-	g_duelLog		0	
-	g_raceLog		0	
-	g_playerLog		0	
+	g_duelLog		0//Log to duels.log.
+	g_raceLog		0//Log to races.log (incase database gets messed up).	
+	g_playerLog		0//Used by /amlookup
 	sv_autoRaceDemo	0 //Requires custom server executable with "svrecord" command.
 
 #### Bots 
@@ -173,7 +173,16 @@
 	tweakVote	
 	tweakWeapons	
 
-#### Saber tweaks 
+#### Saber Disables
+	SABERSTYLE_BLUE //1
+	SABERSTYLE_YELLOW //2
+	SABERSTYLE_RED //3
+	SABERSTYLE_DUAL //4
+	SABERSTYLE_STAFF //5
+	SABERSTYLE_DESANN //6
+	SABERSTYLE_TAVION //7
+
+#### Saber Tweaks 
 	Skip saber interpolate for MPdmgs	//1
 	JK2 1.02 Style Damage System	//2
 	Reduced saberblock for MP damages	//3
@@ -228,7 +237,7 @@
 	Fix droppedmine ammocount	//25  
 	JK2 Style Alt Tripmine	//26  
 	Projectile Sniper	//27  
-	NoSpread	//28  
+	No Spread	//28  
 
 #### Vote Tweaks 
 	Allow speccall votein siege gametype	//1
@@ -243,16 +252,33 @@
 	Only count voters inpass/fail calculation	//10
 	Fix map change after gametype vote	//11
 
+#### Emote bitvalue order
+	BEG
+	BEG2
+	BREAKDANCE
+	CHEER
+	COWER
+	DANCE
+	HUG
+	NOISY
+	POINT
+	RAGE
+	SIT
+	SURRENDER
+	SMACK
+	TAUNT
+	VICTORY
+	JAWARUN
+	BERNIE
+	SLEEP
+	SABERFLIP
+	SLAP
+	SIGNAL
+
 ## Server Game Commands 
-#### General 
-	ammap	
-	ammotd	
-	amrename	
+#### General 	
+	ammotd		
 	amsay	
-	amtele	
-	amtelemark	
-	ampsay	
-	amvstr	
 	best 
 	changepassword	
 	clanpass	
@@ -302,7 +328,7 @@
 	amcower	
 	amdance	
 	amflip	
-    amhug	
+	amhug	
 	amsignal	
 	amsignal2	
 	amsignal3	
@@ -318,13 +344,19 @@
 	amsurrender	
 	amtaunt	
 	amtaunt2	
-    amnoisy	
+	amnoisy	
 	ampoint	
 	amrage	
-    amrun	
-    amvictory   
+	amrun	
+	amvictory   
 
 #### AdminCommands 
+	ammap
+	amrename
+	amtele	
+	amtelemark	
+	ampsay	
+	amvstr	
 	amban	
 	amforceteam	
 	amfreeze	
@@ -350,11 +382,11 @@
 	cg_speedometerX			132	
 	cg_speedometerY			459	
 	cg_speedometerSize		0.75	
-	cg_tintHud				1	
+	cg_tintHud				1//Hud color tinting based on team.	
 	cg_drawTeamOverlayX		640	
 	cg_drawTeamOverlayY		0	
 	cg_drawJumpHeight		0	
-    cg_drawJumpDistance		0	
+	cg_drawJumpDistance		0	
 	cg_raceTimer			2	
 	cg_raceTimerSize		0.75	
 	cg_raceTimerX			5	
@@ -376,6 +408,7 @@
 	cg_accelerometer		0	
 	cg_speedGraph			0	
    	cg_drawHud				1
+	cg_cleanChatbox			0  //1=Remove all colors from chat msgs, 2=Only remove color at begining of message
 
 #### Strafehelper 
 	cg_strafeHelper					0	
@@ -385,18 +418,18 @@
 	cg_strafeHelperLineWidth		1	
    	cg_strafeHelperPrecision		256	
 	cg_strafeHelperCutoff			0	
-    cg_strafeHelperActiveColor		0 255 0 200	
+	cg_strafeHelperActiveColor		0 255 0 200	
 	cg_strafeHelperInactiveAlpha	200	
 
 #### Sounds 
-	cg_rollSounds	1	
-	cg_jumpSounds	0	
-	cg_chatSounds	1	
-	cg_hitsounds	0	
+	cg_rollSounds	1//0=no sounds. 1=sounds for all rolls. 2=sounds for all rolls but your own.
+	cg_jumpSounds	0//same as rollsounds but for jump.
+	cg_chatSounds	1
+	cg_hitsounds	0//0-4	
    	cg_duelMusic	1	
 
 #### Game Visuals 
-	cg_remaps				1	
+	cg_remaps				1//Toggle serverside texture changes.	
 	cg_screenShake			2	
 	cg_smoothCamera			0	
 	cg_corpseEffects		1	
@@ -410,35 +443,36 @@
 	cg_noFX					0	
 	cg_drawYsalShell		1	
 	cg_noTeleFX				0	
-    cg_specHud				0	
-    cg_newDrainFX			0  
+	cg_specHud				0	
+	cg_newDrainFX			0  
+	cg_draw2D			1 //2=No tinted overlay during rage/ysal use.
 
 #### Features 
-	cg_simulatedProjectiles		0	
-	cg_simulatedHitscan			1	
+	cg_simulatedProjectiles		0 //Wether to use simulated projectiles so bullets appear instantly.  Values > 1 don't draw the projectile right away.
+	cg_simulatedHitscan			1 //Toggle predicted hitscan weapon effects.	
 	cg_spectatorCameraDamp		0	
 	cg_scopeSensitivity			1	
 	cg_defaultModel				kyle	
 	cg_defaultFemaleModel		jan	
 	cg_forceAllyModel			none	
 	cg_forceEnemyModel			none	
-	cg_jumpHeight				0	
+	cg_jumpHeight				0 //Specify jumpheight before jump is automaticaly canceled.
 	cg_autoRecordDemo			0	
 	cg_zoomSensitivity			2.5	
 	cg_leadIndicator			0	
-	cg_cosbyBotTarget			-1	
+	cg_cosbyBotTarget			-1 //-1 = closest.  0-31 = clientnum.
 	cg_cosbyBotLS				0	
 	cg_drawHitBox				0	
 	cg_drawPlayerNames			0	
 	cg_drawPlayerNamesScale		0.5	
-	cg_autoScreenshot			0	
+	cg_autoScreenshot			0 //Automatically take a screenshot at end of round.
 	cg_autoRecordRaceDemo		0	
 	cg_autoKillWhenFalling		0	
 	cg_engineModifications		0	
 
 #### Autologin 
-	cg_autoLoginServer1	0	
-	cg_autoLoginPass1	0	
+	cg_autoLoginServer1	0 //IP of server to try to autologin on, used with /autologin command. If you are not on the right server, the password will not be sent to the server.
+	cg_autoLoginPass1	0 //password to use.
 	cg_autoLoginServer2	0	
 	cg_autoLoginPass2	0	
 	cg_autoLoginServer3	0	
@@ -453,17 +487,16 @@
 	cg_strafeTrailLife			5	
 	cg_strafeTrailRacersOnly	0	
 	cg_strafeTrailRadius		2	
-	cg_strafeTrailFPS			40	
+	cg_strafeTrailFPS			40 //SV_FPS the strafetrail was recorded at.
 	cg_logStrafeTrail			0	
-
 	
 #### Network
 	cg_predictKnockback		0	
-    cg_predictRacemode		0	
+	cg_predictRacemode		0	
 	cl_timeNudge			0	
 	cl_maxPackets			30	
 	cl_timenudgeDuration	0	
-    
+	
 #### Userinfo 
 	cp_pluginDisable	0	
 	cp_clanPwd			none	
@@ -518,7 +551,7 @@
 	Disable damage numbers  //8  
 	Centermuzzle  //9  
 
-#### Strafehelper 
+#### Strafehelper Options
 	Original style  //0
 	Updated style  //1
 	Cgaz style  //2
