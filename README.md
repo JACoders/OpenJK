@@ -1,4 +1,8 @@
-# OpenJK
+# DarkJedi
+
+DarkJedi is a fork of OpenJK (see below) focused on providing necessary code changes for the Dark Forces mod for Jedi Academy. 
+
+# About OpenJK
 
 OpenJK is an effort by the JACoders group to maintain and improve the game engines on which the Jedi Academy (JA) and Jedi Outcast (JO) games run on, while maintaining *full backwards compatibility* with the existing games. *This project does not attempt to rebalance or otherwise modify core gameplay*.
 
