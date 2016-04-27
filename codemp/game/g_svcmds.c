@@ -1300,6 +1300,64 @@ void Svcmd_ToggleTweakVote_f( void ) {
 	}
 }
 
+static bitInfo_T emoteDisables[] = { 
+	{"Beg"},//1
+	{"Breakdance"},//2
+	{"Cheer"},//3
+	{"Cower"},//4
+	{"Dance"},//5
+	{"Hug"},//6
+	{"Noisy"},//7
+	{"Point"},//8
+	{"Rage"},//9
+	{"Sit"},//10
+	{"Surrender"},//11
+	{"Smack"},//12
+	{"Taunt"},//13
+	{"Victory"},//14
+	{"Jawa run"},//15
+	{"Bernie"},//16
+	{"Sleep"},//17
+	{"Saberflip"},//18
+	{"Slap"},//19
+	{"Signal"}//20
+};
+static const int MAX_EMOTE_DISABLES = ARRAY_LEN( emoteDisables );
+
+void Svcmd_ToggleEmotes_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_EMOTE_DISABLES; i++ ) {
+			if ( (g_emotesDisable.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, emoteDisables[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, emoteDisables[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_EMOTE_DISABLES) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_EMOTE_DISABLES ) {
+			trap->Print( "disableEmotes: Invalid range: %i [0, %i]\n", index, MAX_EMOTE_DISABLES - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_emotesDisable", va( "%i", (1 << index) ^ (g_emotesDisable.integer & mask ) ) );
+		trap->Cvar_Update( &g_emotesDisable );
+
+		trap->Print( "%s %s^7\n", emoteDisables[index].string, ((g_emotesDisable.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+
 typedef struct svcmd_s {
 	const char	*name;
 	void		(*func)(void);
@@ -1375,6 +1433,7 @@ svcmd_t svcmds[] = {
 	{ "startingItems",				Svcmd_ToggleStartingItems_f,		qfalse },
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
 	{ "toggleAdmin",				Svcmd_ToggleAdmin_f,				qfalse },
+	{ "toggleEmotes",				Svcmd_ToggleEmotes_f,				qfalse },
 	{ "toggleVote",					Svcmd_ToggleVote_f,					qfalse },
 
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
