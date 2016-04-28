@@ -1165,6 +1165,10 @@ struct gclient_s {
 	int			lastStartTime; //for autodemo floodprotect
 	//int			numStakes;
 
+#if _GRAPPLE
+	qboolean hookHasBeenFired;
+#endif
+
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];
 	int			lastSpotTime;
 	int			lastSpottedTime;

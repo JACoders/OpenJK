@@ -1849,6 +1849,7 @@ typedef struct siegePers_s
 #define BUTTON_JETPACK			4096
 #define BUTTON_DASH				8192
 #define BUTTON_TARGET			16384 //who knows if this will work
+#define BUTTON_GRAPPLE			32768 //e?
 
 // Here's an interesting bit.  The bots in TA used buttons to do additional gestures.
 // I ripped them out because I didn't want too many buttons given the fact that I was already adding some for JK2.

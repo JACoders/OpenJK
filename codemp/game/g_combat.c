@@ -2137,6 +2137,9 @@ extern qboolean g_endPDuel;
 extern qboolean g_noPDuelCheck;
 extern void saberReactivate(gentity_t *saberent, gentity_t *saberOwner);
 extern void saberBackToOwner(gentity_t *saberent);
+#if _GRAPPLE
+void Weapon_HookFree (gentity_t *ent);
+#endif
 void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath ) {
 	gentity_t	*ent;
 	int			anim;
@@ -2154,6 +2157,11 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	if ( level.intermissiontime ) {
 		return;
 	}
+
+#if _GRAPPLE
+	if (self->client && self->client->hook)
+		Weapon_HookFree(self->client->hook);
+#endif
 
 	if ( !attacker )
 		return;

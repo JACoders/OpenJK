@@ -3259,6 +3259,7 @@ void G_RunThink (gentity_t *ent) {
 		//trap->Error( ERR_DROP, "NULL ent->think");
 		goto runicarus;
 	}
+
 	ent->think (ent);
 
 runicarus:
@@ -3580,6 +3581,7 @@ void G_RunFrame( int levelTime ) {
 	//
 	ent = &g_entities[0];
 	for (i=0 ; i<level.num_entities ; i++, ent++) {
+
 		if ( !ent->inuse ) {
 			continue;
 		}

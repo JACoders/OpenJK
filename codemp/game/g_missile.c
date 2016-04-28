@@ -424,6 +424,10 @@ G_MissileImpact
 qboolean WP_CheckSaberDimension( gentity_t *self,  gentity_t *other);
 void WP_SaberBlockNonRandom( gentity_t *self, vec3_t hitloc, qboolean missileBlock );
 void WP_flechette_alt_blow( gentity_t *ent );
+#if _GRAPPLE
+void Weapon_HookThink (gentity_t *ent);
+void Weapon_HookFree (gentity_t *ent);
+#endif
 void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	gentity_t		*other;
 	qboolean		hitClient = qfalse;
@@ -903,6 +907,71 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			}
 		}
 	}
+
+#if _GRAPPLE//_GRAPPLE
+		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_STUN_BATON) {
+		gentity_t *nent;
+		vec3_t v;
+
+		nent = G_Spawn(qtrue);
+		nent->freeAfterEvent = qtrue;
+		nent->s.weapon = WP_STUN_BATON;//WP_GRAPPLING_HOOK;
+
+		ent->enemy = NULL;
+		ent->s.otherEntityNum = -1;
+		ent->s.groundEntityNum = -1;
+
+		if ( other->s.eType == ET_MOVER || (other->client && !( other->s.eFlags & EF_DEAD ) ) ) {
+			if ( other->client ) {
+				G_AddEvent( nent, EV_MISSILE_HIT, DirToByte( trace->plane.normal ) );
+
+				ent->enemy = other;
+				other->s.otherEntityNum = ent->parent->s.number;
+
+				v[0] = other->r.currentOrigin[0];// + (other->r.mins[0] + other->r.maxs[0]) * 0.5;
+				v[1] = other->r.currentOrigin[1];// + (other->r.mins[1] + other->r.maxs[1]) * 0.5;
+				v[2] = other->r.currentOrigin[2] + (other->r.mins[2] + other->r.maxs[2]) * 0.5;
+
+				SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
+				ent->s.otherEntityNum = ent->enemy->s.clientNum;
+				other->s.otherEntityNum = ent->parent->s.clientNum;
+			} else {
+				if ( !strcmp(other->classname, "func_rotating") || !strcmp(other->classname, "func_pendulum") ) {
+					Weapon_HookFree(ent);	// don't work
+					return;
+				}
+				ent->s.otherEntityNum = other->s.number;
+				ent->s.groundEntityNum = other->s.number;
+				VectorCopy(trace->endpos, v);
+				G_AddEvent( nent, EV_MISSILE_MISS, 0); //DirToByte( trace->plane.normal ) );
+			}
+		} else {
+			VectorCopy(trace->endpos, v);
+			G_AddEvent( nent, EV_MISSILE_MISS, 0);//DirToByte( trace->plane.normal ) );
+		}
+
+		SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
+
+		// change over to a normal entity right at the point of impact
+		nent->s.eType = ET_GENERAL;
+		ent->s.eType = ET_MISSILE;
+
+		G_SetOrigin( ent, v );
+		G_SetOrigin( nent, v );
+
+		ent->think = Weapon_HookThink;
+		ent->nextthink = level.time + FRAMETIME;
+
+		VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc); //use hyperSpaceAngles ?
+		VectorSubtract( ent->r.currentOrigin, ent->parent->client->ps.origin, v );
+
+		trap->LinkEntity( (sharedEntity_t *)ent );
+		trap->LinkEntity( (sharedEntity_t *)nent );
+
+		return;
+	}
+#endif
+
 killProj:
 	// is it cheaper in bandwidth to just remove this ent and create a new
 	// one, rather than changing the missile into the explosion?
@@ -1052,7 +1121,7 @@ void G_RunMissile( gentity_t *ent ) {
 
 	if (tr.fraction != 1) { //Hit something maybe
 		qboolean skip = qfalse;
-		
+	
 		gentity_t *other = &g_entities[tr.entityNum]; //Check to see if we hit a lightsaber and they are in another dimension, if so dont do the hit code..
 		if (other && other->r.contents & CONTENTS_LIGHTSABER)
 		{
@@ -1069,6 +1138,7 @@ void G_RunMissile( gentity_t *ent ) {
 		}
 	
 		if ( tr.fraction != 1 && !skip) {
+		
 			// never explode or bounce on sky
 			if ( tr.surfaceFlags & SURF_NOIMPACT ) {
 				// If grapple, reset owner
@@ -1143,12 +1213,108 @@ passthrough:
 			}
 		}
 	}
-
 	// check think function after bouncing
 	G_RunThink( ent );
 }
 
+#if _GRAPPLE//_GRAPPLE
+void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod );
+gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
+	const int GRAPPLE_SPEED = 2400;
 
+	gentity_t	*hook;
+
+		WP_FireGenericBlasterMissile( self, start, dir, qfalse, 1, 2400, MOD_BLASTER );
+
+	VectorNormalize (dir);
+
+	hook = G_Spawn(qtrue);
+	hook->classname = "laserTrap";
+	hook->nextthink = level.time + 10000;
+	hook->think = Weapon_HookFree;
+	hook->s.eType = ET_MISSILE;
+	hook->s.clientNum = self->s.clientNum;
+	hook->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	hook->s.weapon = WP_STUN_BATON;//WP_GRAPPLING_HOOK;
+	hook->r.ownerNum = self->s.number;
+	hook->methodOfDeath = MOD_STUN_BATON;//MOD_GRAPPLE
+	hook->clipmask = MASK_SHOT;
+	hook->parent = self;
+
+	hook->s.pos.trType = TR_LINEAR;
+	hook->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;
+	hook->s.otherEntityNum = -1;
+	hook->s.groundEntityNum = -1;
+
+	//hook->target_ent = NULL; // ???
+
+	VectorCopy( start, hook->s.pos.trBase );
+	//if ( level.accuracyChallenge ) {
+		//VectorScale( dir, 1600, hook->s.pos.trDelta );
+	//} else {
+		if ( self->client->pers.haste )
+			VectorScale( dir, GRAPPLE_SPEED * 1.3, hook->s.pos.trDelta );
+		else 
+			VectorScale( dir, GRAPPLE_SPEED, hook->s.pos.trDelta );
+	//}
+
+	SnapVector( hook->s.pos.trDelta );			// save net bandwidth
+	VectorCopy (start, hook->r.currentOrigin);
+
+	self->client->hook = hook;
+
+	return hook;
+}
+#endif
+
+
+
+/*
+//-----------------------------------------------------------------------------
+gentity_t *fire_grapple( gentity_t *self, vec3_t org, vec3_t dir )
+//-----------------------------------------------------------------------------
+{
+	gentity_t	*missile;
+
+	missile = G_Spawn(qfalse);
+	
+	missile->nextthink = level.time + 5000;
+	missile->think = G_FreeEntity;
+	missile->s.eType = ET_MISSILE;
+	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+
+		missile->classname = "hook";
+	//missile->parent = owner;
+	//missile->r.ownerNum = owner->s.number;
+
+	//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	//missile->s.owner = owner->s.number;
+	//
+
+	missile->s.pos.trType = TR_LINEAR;
+	missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2
+	missile->target_ent = NULL;
+
+	//if (owner->client && owner->client->sess.raceMode)
+		missile->s.pos.trTime -= MISSILE_PRESTEP_TIME;//this be why rocketjump fucks up at high speed
+
+	SnapVector(org);
+	VectorCopy( org, missile->s.pos.trBase );
+	VectorScale( dir, 555, missile->s.pos.trDelta );
+	VectorCopy( org, missile->r.currentOrigin);
+	SnapVector(missile->s.pos.trDelta);
+
+	Com_Printf("ass\n");
+
+	self->client->hook = missile;
+
+	Com_Printf("Missile made\n");
+
+	return missile;
+}
+
+
+*/
 //=============================================================================
 
 

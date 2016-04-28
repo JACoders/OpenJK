@@ -3151,6 +3151,11 @@ once for each server frame, which makes for smooth demo recording.
 */
 qboolean G_SetSaber(gentity_t *ent, int saberNum, char *saberName, qboolean siegeOverride);
 qboolean G_SaberModelSetup(gentity_t *ent);
+#if _GRAPPLE
+void Weapon_GrapplingHook_Fire (gentity_t *ent);
+void Weapon_HookFree (gentity_t *ent);
+void Weapon_HookThink (gentity_t *ent);
+#endif
 
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
@@ -4345,6 +4350,19 @@ void ClientThink_real( gentity_t *ent ) {
 		ent->client->ps.heldByClient = 0;
 	}
 
+
+#if _GRAPPLE
+	//CHUNK 1
+
+		// sanity check, deals with falling etc;
+	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink /*&& g_allowGrapple.integer && !ent->client->sess.raceMode*/) {
+		ent->client->ps.pm_flags |= PMF_GRAPPLE;
+	} else {
+		//Com_Printf("Unsetting grapple pmf\n");
+		ent->client->ps.pm_flags &= ~( PMF_GRAPPLE );
+	}
+#endif
+
 	/*
 	if ( client->ps.powerups[PW_HASTE] ) {
 		client->ps.speed *= 1.3;
@@ -4642,6 +4660,40 @@ void ClientThink_real( gentity_t *ent ) {
 			pmove.cmd.buttons |= BUTTON_GESTURE;
 		}
 	}
+
+
+#if _GRAPPLE
+	//CHUNK 2
+	//Com_Printf("Chunk 2 start!\n");
+	if (pm && client)
+	{
+
+		if ( (pm->cmd.buttons & BUTTON_GRAPPLE) &&
+				ent->client->ps.pm_type != PM_DEAD &&
+				!ent->client->hookHasBeenFired &&
+				g_allowGrapple.integer &&
+				!ent->client->sess.raceMode)
+		{
+			Weapon_GrapplingHook_Fire( ent );
+			ent->client->hookHasBeenFired = qtrue;
+		}
+
+		if ( !(pm->cmd.buttons & BUTTON_GRAPPLE)  &&
+				ent->client->ps.pm_type != PM_DEAD &&
+				ent->client->hookHasBeenFired &&
+				ent->client->fireHeld )
+		{
+			ent->client->fireHeld = qfalse;
+			ent->client->hookHasBeenFired = qfalse;
+			client->ps.pm_flags &= ~( PMF_GRAPPLE );
+		}
+
+		if ( client->hook && client->fireHeld == qfalse ) {
+			Weapon_HookFree(client->hook);
+		}
+	}
+#endif
+
 
 	if (ent->s.number >= MAX_CLIENTS)
 	{
@@ -5058,9 +5110,9 @@ void ClientThink_real( gentity_t *ent ) {
 
 	SendPendingPredictableEvents( &ent->client->ps );
 
-	if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
-		client->fireHeld = qfalse;		// for grapple
-	}
+	//if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
+		//client->fireHeld = qfalse;		// for grapple
+	//}
 
 	// use the snapped origin for linking so it matches client predicted versions
 	VectorCopy( ent->s.pos.trBase, ent->r.currentOrigin );
@@ -5340,6 +5392,22 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 		return;
 	}
+
+	
+#if _GRAPPLE
+	//CHUNK 3
+	// sanity check, deals with falling etc;
+
+	//Com_Printf("Chunk 3 start\n");
+
+	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink /*&& g_allowGrapple.integer && !ent->client->sess.raceMode*/) {
+		ent->client->ps.pm_flags |= PMF_GRAPPLE;
+	} else {
+		ent->client->ps.pm_flags &= ~( PMF_GRAPPLE );
+	}
+#endif
+	
+
 
 	//Copy current velocity to lastvelocity
 	VectorCopy(ent->client->ps.velocity, ent->client->lastVelocity);

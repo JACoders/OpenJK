@@ -4043,6 +4043,70 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 	}
 }
 
+#if _GRAPPLE
+
+/*
+===================
+PM_GrappleMoveTarzan
+
+===================
+*/
+static void PM_GrappleMoveTarzan( void ) {
+	vec3_t vel, facingFwd, facingRight, facingAngles;//, oldvel, v;
+	float vlen, dotR, dotF;
+	int pullspeed = 800;
+	int	anim = -1;
+
+	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
+	vlen = VectorLength(vel);
+	VectorNormalize( vel );
+
+	if (vlen < ( pullspeed / 2 ) )
+		PM_Accelerate(vel, 2 * vlen, vlen * ( 40.0 / (float)pullspeed ) );
+	else
+		PM_Accelerate(vel, pullspeed, 20);
+
+	if ( vel[2] > 0.5 && pml.walking ) {
+		pml.walking = qfalse;
+		//PM_ForceLegsAnim( BOTH_JUMP1  ); //LEGS_JUMP
+	}
+
+	pml.groundPlane = qfalse;
+
+	//Set anims from raz0r
+	VectorSet(facingAngles, 0, pm->ps->viewangles[YAW], 0);
+
+	AngleVectors(facingAngles, facingFwd, facingRight, NULL);
+	dotR = DotProduct(facingRight, pm->ps->velocity);
+	dotF = DotProduct(facingFwd, pm->ps->velocity);
+
+	if (fabsf(dotR) > fabsf(dotF) * 1.5f) {
+		if (dotR > 150) {
+			anim = BOTH_FORCEJUMPRIGHT1;
+		}
+		else if (dotR < -150) {
+			anim = BOTH_FORCEJUMPLEFT1;
+		}
+	}
+	else {
+		if (dotF > 150) {
+			anim = BOTH_FORCEJUMP1;
+		}
+		else if (dotF < -150) {
+			anim = BOTH_FORCEJUMPBACK1;
+		}
+	}
+	if (anim != -1) {
+		int parts = SETANIM_BOTH;
+		if (pm->ps->weaponTime) {//FIXME: really only care if we're in a saber attack anim...
+			parts = SETANIM_LEGS;
+		}
+
+		PM_SetAnim(parts, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
+	}
+}
+#endif
+
 /*
 ===================
 PM_WalkMove
@@ -12688,6 +12752,13 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 		else
 		{
+
+#if _GRAPPLE
+			if (pm->ps->pm_flags & (PMF_GRAPPLE) ) {
+				PM_GrappleMoveTarzan();
+			} 
+#endif
+
 			if (pm->ps->pm_flags & PMF_TIME_WATERJUMP) {
 				PM_WaterJumpMove();
 			} else if ( pm->waterlevel > 1 ) {

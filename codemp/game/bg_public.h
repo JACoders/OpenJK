@@ -440,6 +440,11 @@ extern int bgForcePowerCost[NUM_FORCE_POWERS][NUM_FORCE_POWER_LEVELS];
 #define PMF_SCOREBOARD		8192	// spectate as a scoreboard
 #define PMF_STUCK_TO_WALL	16384	// grabbing a wall
 
+#define _GRAPPLE 1
+#if _GRAPPLE
+#define PMF_GRAPPLE	32768
+#endif
+
 #define	PMF_ALL_TIMES	(PMF_TIME_WATERJUMP|PMF_TIME_LAND|PMF_TIME_KNOCKBACK)
 
 #define	MAXTOUCH	32
@@ -1231,7 +1236,6 @@ typedef enum {
 	ET_BODY,
 	ET_TERRAIN,
 	ET_FX,
-
 	ET_EVENTS				// any of the EV_* events can be added freestanding
 							// by setting eType to ET_EVENTS + eventNum
 							// this avoids having to set eFlags and eventNum

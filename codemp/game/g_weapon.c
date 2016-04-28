@@ -4400,6 +4400,60 @@ static void WP_FireShockLance( gentity_t *ent )
 	
 }
 
+//---------------------------------------------------------
+#if _GRAPPLE
+gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
+void Weapon_GrapplingHook_Fire (gentity_t *ent)
+{
+	if (!ent->client->fireHeld && !ent->client->hook) {
+		AngleVectors (ent->client->ps.viewangles, forward, vright, up);
+		CalcMuzzlePoint ( ent, forward, vright, up, muzzle );
+		fire_grapple (ent, muzzle, forward);
+	}
+
+	ent->client->fireHeld = qtrue;
+}
+
+void Weapon_HookFree (gentity_t *ent)
+{
+	int i;
+	i = ( PMF_GRAPPLE );
+	ent->parent->client->hook = NULL;
+	ent->parent->client->ps.pm_flags &= ~i;
+	ent->parent->client->hookHasBeenFired = qfalse;
+	ent->parent->client->fireHeld = qfalse;
+	G_FreeEntity( ent );
+}
+
+void Weapon_HookThink (gentity_t *ent)
+{
+	//vec3_t		chainvec, velpart;
+	//float		force, chainlen;
+
+	if ( ent->enemy ) {
+		if ( ent->enemy->client ) {
+			vec3_t v;
+
+			if ( ent->enemy->s.eFlags & EF_DEAD ) {
+				Weapon_HookFree ( ent );
+				return;
+			}
+
+//			VectorCopy( ent->enemy->s.pos.trDelta, ent->s.pos.trDelta );
+			v[0] = ent->enemy->r.currentOrigin[0];
+			v[1] = ent->enemy->r.currentOrigin[1];
+			v[2] = ent->enemy->r.currentOrigin[2];
+			SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
+
+			G_SetOrigin( ent, v );
+		}
+	}
+
+	VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.hyperSpaceAngles );
+	ent->nextthink = level.time + FRAMETIME;
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////

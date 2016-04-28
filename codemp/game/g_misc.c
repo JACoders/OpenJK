@@ -173,6 +173,9 @@ TELEPORTERS
 =================================================================================
 */
 void DeletePlayerProjectiles(gentity_t *ent);
+#if _GRAPPLE
+void Weapon_HookFree (gentity_t *ent);
+#endif
 void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	gentity_t	*tent;
 	qboolean	isNPC = qfalse;
@@ -193,6 +196,11 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 		tent = G_TempEntity( origin, EV_PLAYER_TELEPORT_IN );
 		tent->s.clientNum = player->s.clientNum;
 	}
+
+#if _GRAPPLE
+	if (player->client && player->client->hook)
+		Weapon_HookFree(player->client->hook);
+#endif
 
 	// unlink to make sure it can't possibly interfere with G_KillBox
 	trap->UnlinkEntity ((sharedEntity_t *)player);
@@ -255,6 +263,11 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 		return;
 	if (BG_InRoll(&player->client->ps, player->s.legsAnim))//is this crashing? if ps is null or something?
 		return;
+
+#if _GRAPPLE
+	if (player->client && player->client->hook)
+		Weapon_HookFree(player->client->hook);
+#endif
 
 	neworigin[0] = origin[0];
 	neworigin[1] = origin[1];
