@@ -1220,13 +1220,58 @@ passthrough:
 #if _GRAPPLE//_GRAPPLE
 void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod );
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
-	const int GRAPPLE_SPEED = 2400;
-
+	float vel = g_hookSpeed.integer;
 	gentity_t	*hook;
-
-	WP_FireGenericBlasterMissile( self, start, dir, qfalse, 1, 2400, MOD_BLASTER );
+	gentity_t *missile;
 
 	VectorNormalize (dir);
+
+	vel = vel + DotProduct(dir, self->client->ps.velocity)*g_projectileInheritance.value; //Inheritence scale
+
+	if (vel < 250)
+		vel = 250;
+	
+	missile = G_Spawn(qfalse);
+	missile->nextthink = level.time + 10000;
+	missile->think = G_FreeEntity;
+	missile->s.eType = ET_MISSILE;
+	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	missile->parent = self;
+	missile->r.ownerNum = self->s.number;
+	missile->s.owner = self->s.number;//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
+	missile->s.pos.trType = TR_LINEAR;
+
+	/*
+	if (g_unlagged.integer & UNLAGGED_PROJ_NUDGE && self->client) {
+		int amount = self->client->ps.ping * 0.9;
+
+		if (amount > 135)
+			amount = 135;
+		else if (amount < 0) //dunno
+			amount = 0;
+
+		missile->s.pos.trTime = level.time - amount; //fixmer;
+	}
+	else {
+	*/
+		missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2 - do unlagged stuff here?
+	//}
+
+	missile->target_ent = NULL;
+
+	SnapVector(start);
+	VectorCopy( start, missile->s.pos.trBase );
+	VectorScale( dir, vel, missile->s.pos.trDelta );
+	VectorCopy( start, missile->r.currentOrigin);
+	SnapVector(missile->s.pos.trDelta);
+
+	missile->classname = "repeater_proj";
+	missile->s.weapon = WP_REPEATER;
+	missile->damage = 1;
+	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+	missile->methodOfDeath = MOD_REPEATER;
+	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
 
 	hook = G_Spawn(qtrue);
 	hook->classname = "laserTrap";
@@ -1249,14 +1294,13 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	//hook->target_ent = NULL; // ???
 
 	VectorCopy( start, hook->s.pos.trBase );
-	//if ( level.accuracyChallenge ) {
-		//VectorScale( dir, 1600, hook->s.pos.trDelta );
-	//} else {
-		if ( self->client->pers.haste )
-			VectorScale( dir, GRAPPLE_SPEED * 1.3, hook->s.pos.trDelta );
-		else 
-			VectorScale( dir, GRAPPLE_SPEED, hook->s.pos.trDelta );
-	//}
+
+	if ( self->client->pers.haste )
+		VectorScale( dir, vel * 1.3, hook->s.pos.trDelta );
+	else 
+		VectorScale( dir, vel, hook->s.pos.trDelta );
+
+
 
 	SnapVector( hook->s.pos.trDelta );			// save net bandwidth
 	VectorCopy (start, hook->r.currentOrigin);

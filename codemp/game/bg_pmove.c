@@ -4054,19 +4054,27 @@ PM_GrappleMoveTarzan
 static void PM_GrappleMoveTarzan( void ) {
 	vec3_t vel, facingFwd, facingRight, facingAngles;//, oldvel, v;
 	float vlen, dotR, dotF;
+#if _GAME
+	int pullSpeed = g_hookStrength.integer;
+	int pullStrength1 = g_hookStrength1.integer;//20;
+	int pullStrength2 = g_hookStrength2.integer;//40;
+#else
 	int pullspeed = 800;
+	int pullStrength1 = 20;//20;
+	int pullStrength2 = 40;//40;
+#endif
 	int	anim = -1;
 
 	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
 	vlen = VectorLength(vel);
 	VectorNormalize( vel );
 
-	if (vlen < ( pullspeed / 2 ) )
-		PM_Accelerate(vel, 2 * vlen, vlen * ( 40.0 / (float)pullspeed ) );
+	if (vlen < ( pullSpeed / 2 ) )
+		PM_Accelerate(vel, 2 * vlen, vlen * ( pullStrength2 / (float)pullSpeed ) );
 	else
-		PM_Accelerate(vel, pullspeed, 20);
+		PM_Accelerate(vel, pullSpeed, pullStrength1);
 
-	if ( vel[2] > 0.5 && pml.walking ) {
+	if ( vel[2] > 0.5f && pml.walking ) {
 		pml.walking = qfalse;
 		//PM_ForceLegsAnim( BOTH_JUMP1  ); //LEGS_JUMP
 	}

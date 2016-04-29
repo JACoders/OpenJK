@@ -212,6 +212,10 @@ XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rena
 XCVAR_DEF( g_fixGlitchKickDamage,		"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_allowGrapple,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
+XCVAR_DEF( g_hookSpeed,					"2400",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_hookStrength,				"800",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_hookStrength1,				"20",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_hookStrength2,				"40",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
