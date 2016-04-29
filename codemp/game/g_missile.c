@@ -1226,7 +1226,7 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 
 	VectorNormalize (dir);
 
-	vel = vel + DotProduct(dir, self->client->ps.velocity)*g_projectileInheritance.value; //Inheritence scale
+	vel = vel + DotProduct(dir, self->client->ps.velocity)*g_hookInheritance.value; //Inheritence scale
 
 	if (vel < 250)
 		vel = 250;

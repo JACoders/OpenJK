@@ -4107,6 +4107,7 @@ void Cmd_GunDuel_f(gentity_t *ent)
 	Cmd_EngageDuel_f(ent, weap + 2);//Fuck it right here
 }
 
+void Weapon_HookFree (gentity_t *ent);
 void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullforce Duels
 {
 	trace_t tr;
@@ -4150,6 +4151,11 @@ void Cmd_EngageDuel_f(gentity_t *ent, int dueltype)//JAPRO - Serverside - Fullfo
 
 	if (ent->client->sess.raceMode)
 		return;
+
+#if _GRAPPLE
+	if (ent->client && ent->client->hook)
+		Weapon_HookFree(ent->client->hook);
+#endif
 
 	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
 
@@ -5565,13 +5571,13 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	if (g_allowFlagThrow.integer && ((level.gametype == GT_CTF) || g_rabbit.integer)) 
 		Q_strcat(buf, sizeof(buf), "throwFlag ");
 	if (g_allowTargetLaser.integer) 
-		Q_strcat(buf, sizeof(buf), "+button14 (target laser) ");
+		Q_strcat(buf, sizeof(buf), "+button15 (target laser) ");
 	if ((level.gametype >= GT_TEAM) && g_allowSpotting.integer)
 		Q_strcat(buf, sizeof(buf), "spot ");
 	if (g_tweakJetpack.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (jetpack) ");
 	if (g_allowGrapple.integer) 
-		Q_strcat(buf, sizeof(buf), "+button15 (grapple) ");
+		Q_strcat(buf, sizeof(buf), "+button14 (grapple) ");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	if (g_raceMode.integer) {
