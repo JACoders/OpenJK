@@ -5564,10 +5564,14 @@ void Cmd_Aminfo_f(gentity_t *ent)
 		Q_strcat(buf, sizeof(buf), "saber ");
 	if (g_allowFlagThrow.integer && ((level.gametype == GT_CTF) || g_rabbit.integer)) 
 		Q_strcat(buf, sizeof(buf), "throwFlag ");
+	if (g_allowTargetLaser.integer) 
+		Q_strcat(buf, sizeof(buf), "+button14 (target laser) ");
 	if ((level.gametype >= GT_TEAM) && g_allowSpotting.integer)
 		Q_strcat(buf, sizeof(buf), "spot ");
 	if (g_tweakJetpack.integer) 
 		Q_strcat(buf, sizeof(buf), "+button12 (jetpack) ");
+	if (g_allowGrapple.integer) 
+		Q_strcat(buf, sizeof(buf), "+button15 (grapple) ");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
 	if (g_raceMode.integer) {

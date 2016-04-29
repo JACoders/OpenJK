@@ -1224,7 +1224,7 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 
 	gentity_t	*hook;
 
-		WP_FireGenericBlasterMissile( self, start, dir, qfalse, 1, 2400, MOD_BLASTER );
+	WP_FireGenericBlasterMissile( self, start, dir, qfalse, 1, 2400, MOD_BLASTER );
 
 	VectorNormalize (dir);
 

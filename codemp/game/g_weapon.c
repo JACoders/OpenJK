@@ -4406,9 +4406,18 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir);
 void Weapon_GrapplingHook_Fire (gentity_t *ent)
 {
 	if (!ent->client->fireHeld && !ent->client->hook) {
+		vec3_t muzzlePoint;
 		AngleVectors (ent->client->ps.viewangles, forward, vright, up);
-		CalcMuzzlePoint ( ent, forward, vright, up, muzzle );
-		fire_grapple (ent, muzzle, forward);
+
+		VectorCopy( ent->s.pos.trBase, muzzlePoint );
+
+		VectorMA(muzzlePoint, 4, forward, muzzlePoint);
+		VectorMA(muzzlePoint, 4, vright, muzzlePoint);
+		muzzlePoint[2] += ent->client->ps.viewheight + 4;
+
+		SnapVector( muzzlePoint );
+
+		fire_grapple (ent, muzzlePoint, forward);
 	}
 
 	ent->client->fireHeld = qtrue;
@@ -4421,7 +4430,7 @@ void Weapon_HookFree (gentity_t *ent)
 	ent->parent->client->hook = NULL;
 	ent->parent->client->ps.pm_flags &= ~i;
 	ent->parent->client->hookHasBeenFired = qfalse;
-	ent->parent->client->fireHeld = qfalse;
+	ent->parent->client->fireHeld= qfalse;
 	G_FreeEntity( ent );
 }
 

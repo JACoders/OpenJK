@@ -4355,7 +4355,7 @@ void ClientThink_real( gentity_t *ent ) {
 	//CHUNK 1
 
 		// sanity check, deals with falling etc;
-	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink /*&& g_allowGrapple.integer && !ent->client->sess.raceMode*/) {
+	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink && g_allowGrapple.integer && !ent->client->sess.raceMode) {
 		ent->client->ps.pm_flags |= PMF_GRAPPLE;
 	} else {
 		//Com_Printf("Unsetting grapple pmf\n");
@@ -4665,20 +4665,19 @@ void ClientThink_real( gentity_t *ent ) {
 #if _GRAPPLE
 	//CHUNK 2
 	//Com_Printf("Chunk 2 start!\n");
-	if (pm && client)
+	if (pm && ent->client)
 	{
 
-		if ( (pm->cmd.buttons & BUTTON_GRAPPLE) &&
+		if ( (pmove.cmd.buttons & BUTTON_GRAPPLE) &&
 				ent->client->ps.pm_type != PM_DEAD &&
 				!ent->client->hookHasBeenFired &&
-				g_allowGrapple.integer &&
-				!ent->client->sess.raceMode)
+				g_allowGrapple.integer && !ent->client->sess.raceMode)
 		{
 			Weapon_GrapplingHook_Fire( ent );
 			ent->client->hookHasBeenFired = qtrue;
 		}
 
-		if ( !(pm->cmd.buttons & BUTTON_GRAPPLE)  &&
+		if ( !(pmove.cmd.buttons & BUTTON_GRAPPLE)  &&
 				ent->client->ps.pm_type != PM_DEAD &&
 				ent->client->hookHasBeenFired &&
 				ent->client->fireHeld )
@@ -5394,20 +5393,23 @@ void ClientThink_real( gentity_t *ent ) {
 	}
 
 	
-#if _GRAPPLE
+#if 0//_GRAPPLE
 	//CHUNK 3
 	// sanity check, deals with falling etc;
 
 	//Com_Printf("Chunk 3 start\n");
+
 
 	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink /*&& g_allowGrapple.integer && !ent->client->sess.raceMode*/) {
 		ent->client->ps.pm_flags |= PMF_GRAPPLE;
 	} else {
 		ent->client->ps.pm_flags &= ~( PMF_GRAPPLE );
 	}
+
+	//if (ent->client && ent->s.eType != ET_NPC)
+	//Com_Printf("Flags: %i, hasbeenfired: %i, fireheld: %i\n", ent->client->ps.pm_flags, ent->client->hookHasBeenFired, ent->client->fireHeld);
 #endif
 	
-
 
 	//Copy current velocity to lastvelocity
 	VectorCopy(ent->client->ps.velocity, ent->client->lastVelocity);
