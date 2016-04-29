@@ -121,13 +121,12 @@ void GL_Cull( int cullType ) {
 	}
 
 	if ( backEnd.projection2D )
-	{
-		return;
-	}
+		cullType = CT_TWO_SIDED;
 
 	if ( cullType == CT_TWO_SIDED ) 
 	{
-		qglDisable( GL_CULL_FACE );
+		if ( glState.faceCulling != CT_TWO_SIDED )
+			qglDisable( GL_CULL_FACE );
 	} 
 	else 
 	{
@@ -571,8 +570,6 @@ void RB_BeginDrawingView (void) {
 		return;
 	}
 
-	glState.faceCulling = -1;		// force face culling to set next time
-
 	// we will only draw a sun if there was sky rendered in this view
 	backEnd.skyRenderedThisView = qfalse;
 
@@ -1002,7 +999,7 @@ void	RB_SetGL2D (void) {
 			  GLS_SRCBLEND_SRC_ALPHA |
 			  GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
 
-	qglDisable( GL_CULL_FACE );
+	GL_Cull(CT_TWO_SIDED);
 
 	// set time for 2D shaders
 	backEnd.refdef.time = ri->Milliseconds();
@@ -1424,14 +1421,14 @@ static const void	*RB_DrawSurfs( const void *data ) {
 	// clear the z buffer, set the modelview, etc
 	RB_BeginDrawingView ();
 
-	if (backEnd.viewParms.flags & VPF_DEPTHCLAMP)
-	{
-		qglEnable(GL_DEPTH_CLAMP);
-	}
-
 	if (!(backEnd.refdef.rdflags & RDF_NOWORLDMODEL) && (r_depthPrepass->integer || (backEnd.viewParms.flags & VPF_DEPTHSHADOW)))
 	{
 		FBO_t *oldFbo = glState.currentFBO;
+
+		if (backEnd.viewParms.flags & VPF_DEPTHCLAMP)
+		{
+			qglEnable(GL_DEPTH_CLAMP);
+		}
 
 		backEnd.depthFill = qtrue;
 		qglColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
@@ -1457,7 +1454,7 @@ static const void	*RB_DrawSurfs( const void *data ) {
 			FBO_BlitFromTexture(tr.renderDepthImage, NULL, NULL, tr.hdrDepthFbo, NULL, NULL, NULL, 0);
 		}
 
-		if (r_sunlightMode->integer && backEnd.viewParms.flags & VPF_USESUNLIGHT)
+		if (r_sunlightMode->integer && (backEnd.viewParms.flags & VPF_USESUNLIGHT))
 		{
 			vec4_t quadVerts[4];
 			vec2_t texCoords[4];
@@ -1625,11 +1622,11 @@ static const void	*RB_DrawSurfs( const void *data ) {
 		// reset viewport and scissor
 		FBO_Bind(oldFbo);
 		SetViewportAndScissor();
-	}
 
-	if (backEnd.viewParms.flags & VPF_DEPTHCLAMP)
-	{
-		qglDisable(GL_DEPTH_CLAMP);
+		if (backEnd.viewParms.flags & VPF_DEPTHCLAMP)
+		{
+			qglDisable(GL_DEPTH_CLAMP);
+		}
 	}
 
 	if (!(backEnd.viewParms.flags & VPF_DEPTHSHADOW))

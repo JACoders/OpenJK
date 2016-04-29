@@ -1348,14 +1348,14 @@ typedef struct {
 
 typedef enum {
 	VPF_NONE            = 0x00,
-	VPF_NOVIEWMODEL     = 0x01,
-	VPF_SHADOWMAP       = 0x02,
-	VPF_DEPTHSHADOW     = 0x04,
-	VPF_DEPTHCLAMP      = 0x08,
-	VPF_ORTHOGRAPHIC    = 0x10,
+	VPF_NOVIEWMODEL     = 0x01, // Don't render the view model
+	VPF_SHADOWMAP       = 0x02, // Rendering to shadow map
+	VPF_DEPTHSHADOW     = 0x04, // Rendering depth-only
+	VPF_DEPTHCLAMP      = 0x08, // Perform depth clamping when rendering z pass
+	VPF_ORTHOGRAPHIC    = 0x10, // Use orthographic projection
 	VPF_USESUNLIGHT     = 0x20,
-	VPF_FARPLANEFRUSTUM = 0x40,
-	VPF_NOCUBEMAPS      = 0x80,
+	VPF_FARPLANEFRUSTUM = 0x40, // Use far clipping plane
+	VPF_NOCUBEMAPS      = 0x80, // Don't render cubemaps
 	VPF_NOPOSTPROCESS	= 0x100
 } viewParmFlags_t;
 

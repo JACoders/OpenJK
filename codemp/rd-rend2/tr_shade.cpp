@@ -1156,13 +1156,16 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 	cullType_t cullType = CT_TWO_SIDED;
 	if ( !backEnd.projection2D )
 	{
-		if ( shaderCullType != CT_TWO_SIDED ) 
+		if ( shaderCullType != CT_TWO_SIDED )
 		{
 			bool cullFront = (shaderCullType == CT_FRONT_SIDED);
 			if ( viewParms->isMirror )
 				cullFront = !cullFront;
 
 			if ( refEntity->mirrored )
+				cullFront = !cullFront;
+
+			if ( viewParms->flags & VPF_DEPTHSHADOW )
 				cullFront = !cullFront;
 
 			cullType = (cullFront ? CT_FRONT_SIDED : CT_BACK_SIDED);
@@ -2163,11 +2166,6 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
 
 	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
-	// Reduce shadow acne by using back face culling instead of front
-	if ( cullType == CT_FRONT_SIDED )
-		cullType = CT_BACK_SIDED;
-	else if ( cullType == CT_BACK_SIDED )
-		cullType = CT_FRONT_SIDED;
 
 	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
 	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
@@ -2274,8 +2272,6 @@ void RB_StageIteratorGeneric( void )
 		backEnd.pc.c_staticVboDraws++;
 	}
 
-
-
 	//
 	// vertex arrays
 	//
@@ -2294,11 +2290,8 @@ void RB_StageIteratorGeneric( void )
 		CalculateVertexArraysFromVBO(vertexAttribs, glState.currentVBO, &vertexArrays);
 	}
 
-	if (backEnd.depthFill)
+	if ( backEnd.depthFill )
 	{
-		//
-		// render depth if in depthfill mode
-		//
 		RB_IterateStagesGeneric( input, &vertexArrays );
 	}
 	else if (backEnd.viewParms.flags & VPF_SHADOWMAP)

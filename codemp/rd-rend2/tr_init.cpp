@@ -274,7 +274,7 @@ void R_Splash()
 
 	GLSL_InitSplashScreenShader();
 
-	qglDisable( GL_CULL_FACE );
+	GL_Cull(CT_TWO_SIDED);
 
 	image_t *pImage = R_FindImageFile( "menu/splash", IMGTYPE_COLORALPHA, IMGFLAG_NONE);
 	if (pImage )

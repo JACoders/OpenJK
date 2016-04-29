@@ -791,7 +791,7 @@ void FBO_BlitFromTexture(struct image_s *src, vec4i_t inSrcBox, vec2_t inSrcTexS
 
 	Matrix16Ortho(0, width, height, 0, 0, 1, projection);
 
-	qglDisable( GL_CULL_FACE );
+	GL_Cull(CT_TWO_SIDED);
 
 	GL_BindToTMU(src, TB_COLORMAP);
 

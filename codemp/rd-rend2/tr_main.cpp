@@ -2115,7 +2115,7 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
-		shadowParms.flags = (int)(VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL);
+		shadowParms.flags = (viewParmFlags_t)(VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL);
 		shadowParms.zFar = tr.refdef.dlights[i].radius;
 
 		VectorCopy( tr.refdef.dlights[i].origin, shadowParms.ori.origin );
@@ -2690,27 +2690,24 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		// Moving the Light in Texel-Sized Increments
 		// from http://msdn.microsoft.com/en-us/library/windows/desktop/ee416324%28v=vs.85%29.aspx
 		//
-		if (lightViewIndependentOfCameraView)
-		{
-			float cascadeBound, worldUnitsPerTexel, invWorldUnitsPerTexel;
+		float cascadeBound, worldUnitsPerTexel, invWorldUnitsPerTexel;
 
-			cascadeBound = MAX(lightviewBounds[1][0] - lightviewBounds[0][0], lightviewBounds[1][1] - lightviewBounds[0][1]);
-			cascadeBound = MAX(cascadeBound, lightviewBounds[1][2] - lightviewBounds[0][2]);
-			worldUnitsPerTexel = cascadeBound / tr.sunShadowFbo[level]->width;
-			invWorldUnitsPerTexel = 1.0f / worldUnitsPerTexel;
+		cascadeBound = MAX(lightviewBounds[1][0] - lightviewBounds[0][0], lightviewBounds[1][1] - lightviewBounds[0][1]);
+		cascadeBound = MAX(cascadeBound, lightviewBounds[1][2] - lightviewBounds[0][2]);
+		worldUnitsPerTexel = cascadeBound / tr.sunShadowFbo[level]->width;
+		invWorldUnitsPerTexel = 1.0f / worldUnitsPerTexel;
 
-			VectorScale(lightviewBounds[0], invWorldUnitsPerTexel, lightviewBounds[0]);
-			lightviewBounds[0][0] = floor(lightviewBounds[0][0]);
-			lightviewBounds[0][1] = floor(lightviewBounds[0][1]);
-			lightviewBounds[0][2] = floor(lightviewBounds[0][2]);
-			VectorScale(lightviewBounds[0], worldUnitsPerTexel, lightviewBounds[0]);
+		VectorScale(lightviewBounds[0], invWorldUnitsPerTexel, lightviewBounds[0]);
+		lightviewBounds[0][0] = floor(lightviewBounds[0][0]);
+		lightviewBounds[0][1] = floor(lightviewBounds[0][1]);
+		lightviewBounds[0][2] = floor(lightviewBounds[0][2]);
+		VectorScale(lightviewBounds[0], worldUnitsPerTexel, lightviewBounds[0]);
 
-			VectorScale(lightviewBounds[1], invWorldUnitsPerTexel, lightviewBounds[1]);
-			lightviewBounds[1][0] = floor(lightviewBounds[1][0]);
-			lightviewBounds[1][1] = floor(lightviewBounds[1][1]);
-			lightviewBounds[1][2] = floor(lightviewBounds[1][2]);
-			VectorScale(lightviewBounds[1], worldUnitsPerTexel, lightviewBounds[1]);
-		}
+		VectorScale(lightviewBounds[1], invWorldUnitsPerTexel, lightviewBounds[1]);
+		lightviewBounds[1][0] = floor(lightviewBounds[1][0]);
+		lightviewBounds[1][1] = floor(lightviewBounds[1][1]);
+		lightviewBounds[1][2] = floor(lightviewBounds[1][2]);
+		VectorScale(lightviewBounds[1], worldUnitsPerTexel, lightviewBounds[1]);
 
 		//ri->Printf(PRINT_ALL, "znear %f zfar %f\n", lightviewBounds[0][0], lightviewBounds[1][0]);		
 		//ri->Printf(PRINT_ALL, "fovx %f fovy %f xmin %f xmax %f ymin %f ymax %f\n", fd->fov_x, fd->fov_y, xmin, xmax, ymin, ymax);
