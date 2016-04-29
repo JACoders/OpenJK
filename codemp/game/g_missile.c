@@ -909,13 +909,13 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	}
 
 #if _GRAPPLE//_GRAPPLE
-		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_STUN_BATON) {
+		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
 		gentity_t *nent;
 		vec3_t v;
 
 		nent = G_Spawn(qtrue);
 		nent->freeAfterEvent = qtrue;
-		nent->s.weapon = WP_STUN_BATON;//WP_GRAPPLING_HOOK;
+		nent->s.weapon = WP_STUN_BATON;//WP_GRAPPLING_HOOK; -- idk what this is
 
 		ent->enemy = NULL;
 		ent->s.otherEntityNum = -1;
@@ -962,7 +962,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		ent->think = Weapon_HookThink;
 		ent->nextthink = level.time + FRAMETIME;
 
-		VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc); //use hyperSpaceAngles ?
+		VectorCopy( ent->r.currentOrigin, ent->parent->client->ps.lastHitLoc);
 		VectorSubtract( ent->r.currentOrigin, ent->parent->client->ps.origin, v );
 
 		trap->LinkEntity( (sharedEntity_t *)ent );
@@ -1222,7 +1222,7 @@ void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qbo
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	float vel = g_hookSpeed.integer;
 	gentity_t	*hook;
-	gentity_t *missile;
+	//gentity_t *missile;
 
 	VectorNormalize (dir);
 
@@ -1230,7 +1230,8 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 
 	if (vel < 250)
 		vel = 250;
-	
+
+#if 0
 	missile = G_Spawn(qfalse);
 	missile->nextthink = level.time + 10000;
 	missile->think = G_FreeEntity;
@@ -1271,16 +1272,16 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 	missile->methodOfDeath = MOD_REPEATER;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-
+#endif
 
 	hook = G_Spawn(qtrue);
 	hook->classname = "laserTrap";
-	hook->nextthink = level.time + 10000;
+	hook->nextthink = level.time + 30000;
 	hook->think = Weapon_HookFree;
 	hook->s.eType = ET_MISSILE;
 	hook->s.clientNum = self->s.clientNum;
 	hook->r.svFlags = SVF_USE_CURRENT_ORIGIN;
-	hook->s.weapon = WP_STUN_BATON;//WP_GRAPPLING_HOOK;
+	hook->s.weapon = WP_BRYAR_PISTOL;//WP_GRAPPLING_HOOK;
 	hook->r.ownerNum = self->s.number;
 	hook->methodOfDeath = MOD_STUN_BATON;//MOD_GRAPPLE
 	hook->clipmask = MASK_SHOT;
@@ -1290,6 +1291,8 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	hook->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;
 	hook->s.otherEntityNum = -1;
 	hook->s.groundEntityNum = -1;
+
+	hook->s.saberInFlight = qtrue;
 
 	//hook->target_ent = NULL; // ???
 
