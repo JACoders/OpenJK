@@ -118,7 +118,9 @@ static int SV_CreateChallenge(int timestamp, netadr_t from)
 	// Use first 4 bytes of the HMAC digest as an int (client only deals with numeric challenges)
 	// The most-significant bit stores whether the timestamp is odd or even. This lets later verification code handle the
 	// case where the engine timestamp has incremented between the time this challenge is sent and the client replies.
-	int challenge = *(int *)digest & 0x7FFFFFFF;
+	int challenge;
+	memcpy(&challenge, digest, sizeof(challenge));
+	challenge &= 0x7FFFFFFF;
 	challenge |= (unsigned int)(timestamp & 0x1) << 31;
 
 #ifdef DEBUG_SV_CHALLENGE
