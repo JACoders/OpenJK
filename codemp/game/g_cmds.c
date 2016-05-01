@@ -4514,34 +4514,6 @@ void Cmd_TheDestroyer_f( gentity_t *ent ) {
 	Cmd_ToggleSaber_f( ent );
 }
 
-void Cmd_DebugSetSaberMove_f(gentity_t *self)
-{
-	int argNum = trap->Argc();
-	char arg[MAX_STRING_CHARS];
-
-	if (argNum < 2)
-	{
-		return;
-	}
-
-	trap->Argv( 1, arg, sizeof( arg ) );
-
-	if (!arg[0])
-	{
-		return;
-	}
-
-	self->client->ps.saberMove = atoi(arg);
-	self->client->ps.saberBlocked = BLOCKED_BOUNCE_MOVE;
-
-	if (self->client->ps.saberMove >= LS_MOVE_MAX)
-	{
-		self->client->ps.saberMove = LS_MOVE_MAX-1;
-	}
-
-	//Com_Printf("Anim for move: %s\n", animTable[saberMoveData[self->client->ps.saberMove].animToUse].name);
-}
-
 void Cmd_BotMoveForward_f( gentity_t *ent ) {
 	int arg = 4000;
 	int bCl = 0;
@@ -8158,12 +8130,12 @@ command_t commands[] = {
 	{ "debugBMove_Right",	Cmd_BotMoveRight_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "debugBMove_Up",		Cmd_BotMoveUp_f,			CMD_CHEAT|CMD_ALIVE },
 
-	{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
+	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
+	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
 	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
 
-	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "engage_fullforceduel",	Cmd_ForceDuel_f,		CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels
 	{ "engage_gunduel",		Cmd_GunDuel_f,				CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels

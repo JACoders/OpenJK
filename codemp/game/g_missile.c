@@ -915,7 +915,9 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 
 		nent = G_Spawn(qtrue);
 		nent->freeAfterEvent = qtrue;
-		nent->s.weapon = WP_STUN_BATON;//WP_GRAPPLING_HOOK; -- idk what this is
+		nent->s.weapon = WP_REPEATER;//WP_GRAPPLING_HOOK; -- idk what this is
+		nent->s.saberInFlight = qtrue;
+		nent->s.owner = ent->s.owner;
 
 		ent->enemy = NULL;
 		ent->s.otherEntityNum = -1;
@@ -1218,7 +1220,7 @@ passthrough:
 }
 
 #if _GRAPPLE//_GRAPPLE
-void WP_FireGenericBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire, int damage, int velocity, int mod );
+void StandardSetBodyAnim(gentity_t *self, int anim, int flags, int body);
 gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	float vel = g_hookSpeed.integer;
 	gentity_t	*hook;
@@ -1230,49 +1232,6 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 
 	if (vel < 250)
 		vel = 250;
-
-#if 0
-	missile = G_Spawn(qfalse);
-	missile->nextthink = level.time + 10000;
-	missile->think = G_FreeEntity;
-	missile->s.eType = ET_MISSILE;
-	missile->r.svFlags = SVF_USE_CURRENT_ORIGIN;
-	missile->parent = self;
-	missile->r.ownerNum = self->s.number;
-	missile->s.owner = self->s.number;//japro - do this so clients can know who the missile belongs to.. so they can hide it if its from another dimension
-	missile->s.pos.trType = TR_LINEAR;
-
-	/*
-	if (g_unlagged.integer & UNLAGGED_PROJ_NUDGE && self->client) {
-		int amount = self->client->ps.ping * 0.9;
-
-		if (amount > 135)
-			amount = 135;
-		else if (amount < 0) //dunno
-			amount = 0;
-
-		missile->s.pos.trTime = level.time - amount; //fixmer;
-	}
-	else {
-	*/
-		missile->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;	// NOTENOTE This is a Quake 3 addition over JK2 - do unlagged stuff here?
-	//}
-
-	missile->target_ent = NULL;
-
-	SnapVector(start);
-	VectorCopy( start, missile->s.pos.trBase );
-	VectorScale( dir, vel, missile->s.pos.trDelta );
-	VectorCopy( start, missile->r.currentOrigin);
-	SnapVector(missile->s.pos.trDelta);
-
-	missile->classname = "repeater_proj";
-	missile->s.weapon = WP_REPEATER;
-	missile->damage = 1;
-	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
-	missile->methodOfDeath = MOD_REPEATER;
-	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-#endif
 
 	hook = G_Spawn(qtrue);
 	hook->classname = "laserTrap";
@@ -1286,6 +1245,8 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	hook->methodOfDeath = MOD_STUN_BATON;//MOD_GRAPPLE
 	hook->clipmask = MASK_SHOT;
 	hook->parent = self;
+
+	hook->s.owner = self->s.number;
 
 	hook->s.pos.trType = TR_LINEAR;
 	hook->s.pos.trTime = level.time;// - MISSILE_PRESTEP_TIME;
@@ -1303,12 +1264,15 @@ gentity_t *fire_grapple (gentity_t *self, vec3_t start, vec3_t dir) {
 	else 
 		VectorScale( dir, vel, hook->s.pos.trDelta );
 
-
-
 	SnapVector( hook->s.pos.trDelta );			// save net bandwidth
 	VectorCopy (start, hook->r.currentOrigin);
 
 	self->client->hook = hook;
+
+	//hm.
+	G_Sound( self, CHAN_AUTO, G_SoundIndex( "sound/weapons/melee/swing2.wav" ) );
+	StandardSetBodyAnim(self, BOTH_FORCEPUSH, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, SETANIM_TORSO);
+	//G_AddEvent( hook, EV_FIRE_WEAPON, 0 );
 
 	return hook;
 }
