@@ -3157,6 +3157,24 @@ void Weapon_HookFree (gentity_t *ent);
 void Weapon_HookThink (gentity_t *ent);
 #endif
 
+qboolean CanGrapple( gentity_t *ent ) {
+	if (!ent || !ent->client)
+		return qfalse;
+	if (!g_allowGrapple.integer)
+		return qfalse;
+	if (ent->client->sess.raceMode)
+		return qfalse;
+	if (ent->client->ps.duelInProgress)
+		return qfalse;
+	if (!BG_SaberInIdle(ent->client->ps.saberMove))
+		return qfalse;
+	if (BG_InRoll(&ent->client->ps, ent->client->ps.legsAnim))
+		return qfalse;
+	if (BG_InSpecialJump(ent->client->ps.legsAnim))
+		return qfalse;	
+	return qtrue;
+}
+
 void ClientThink_real( gentity_t *ent ) {
 	gclient_t	*client;
 	pmove_t		pmove;
@@ -4355,7 +4373,7 @@ void ClientThink_real( gentity_t *ent ) {
 	//CHUNK 1
 
 		// sanity check, deals with falling etc;
-	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink && g_allowGrapple.integer && !ent->client->sess.raceMode && !ent->client->ps.duelInProgress) {
+	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink && CanGrapple(ent)) {
 		ent->client->ps.pm_flags |= PMF_GRAPPLE;
 	} else {
 		//Com_Printf("Unsetting grapple pmf\n");
@@ -4671,7 +4689,7 @@ void ClientThink_real( gentity_t *ent ) {
 		if ( (pmove.cmd.buttons & BUTTON_GRAPPLE) &&
 				ent->client->ps.pm_type != PM_DEAD &&
 				!ent->client->hookHasBeenFired &&
-				g_allowGrapple.integer && !ent->client->sess.raceMode && !ent->client->ps.duelInProgress)
+				CanGrapple(ent))
 		{
 			Weapon_GrapplingHook_Fire( ent );
 			ent->client->hookHasBeenFired = qtrue;
@@ -5400,7 +5418,7 @@ void ClientThink_real( gentity_t *ent ) {
 	//Com_Printf("Chunk 3 start\n");
 
 
-	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink /*&& g_allowGrapple.integer && !ent->client->sess.raceMode*/) {
+	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink && CanGrapple(ent)) {
 		ent->client->ps.pm_flags |= PMF_GRAPPLE;
 	} else {
 		ent->client->ps.pm_flags &= ~( PMF_GRAPPLE );

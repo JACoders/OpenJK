@@ -951,12 +951,18 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 				ent->s.groundEntityNum = other->s.number;
 				VectorCopy(trace->endpos, v);
 				//G_AddEvent( nent, EV_MISSILE_MISS, 0); //DirToByte( trace->plane.normal ) );				//Event
-				G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
+				if (!ent->s.hasLookTarget) {
+					G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
+				}
+				ent->s.hasLookTarget = qtrue;
 			}
 		} else {
 			VectorCopy(trace->endpos, v);
 			//G_AddEvent( nent, EV_MISSILE_MISS, 0);//DirToByte( trace->plane.normal ) );						//Event
-			G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
+			if (!ent->s.hasLookTarget) {
+				G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
+			}
+			ent->s.hasLookTarget = qtrue;
 		}
 
 		SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
