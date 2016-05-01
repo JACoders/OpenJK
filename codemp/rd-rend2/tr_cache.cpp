@@ -162,8 +162,8 @@ void CModelCacheManager::DeleteAll( void )
 		Z_Free(file.pDiskImage);
 	}
 
-	files.swap(FileCache());
-	assets.swap(AssetCache());
+	FileCache().swap(files);
+	AssetCache().swap(assets);
 }
 
 /*

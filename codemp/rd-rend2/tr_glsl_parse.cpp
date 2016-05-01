@@ -41,6 +41,17 @@ Block *FindBlock( const char *name, Block *blocks, size_t numBlocks )
 	return nullptr;
 }
 
+#if defined(__clang__)
+void strncpy_s( char *dest, size_t destSize, const char *src, size_t srcSize )
+{
+	// This isn't really a safe version, but I know the inputs to expect.
+	size_t len = std::min(srcSize, destSize);
+	memcpy(dest, src, len);
+	if ( (destSize - len) > 0 )
+		memset(dest + len, 0, destSize - len);
+}
+#endif
+
 }
 
 GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )

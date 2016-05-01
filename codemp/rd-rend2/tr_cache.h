@@ -46,8 +46,8 @@ struct CachedFile
 class CModelCacheManager
 {
 public:
-	typedef std::vector<Asset> AssetCache;
-	typedef std::vector<CachedFile> FileCache;
+	using AssetCache = std::vector<Asset>;
+	using FileCache = std::vector<CachedFile>;
 
 public:
 	/*

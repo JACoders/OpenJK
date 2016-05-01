@@ -1366,7 +1366,7 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 			if ( input->multiDrawPrimitives == 1 )
 			{
 				item.draw.type = DRAW_COMMAND_INDEXED;
-				item.draw.params.indexed.firstIndex = (glIndex_t)(input->multiDrawFirstIndex[0]);
+				item.draw.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
 				item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
 			}
 			else
@@ -2111,7 +2111,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			if ( input->multiDrawPrimitives == 1 )
 			{
 				item.draw.type = DRAW_COMMAND_INDEXED;
-				item.draw.params.indexed.firstIndex = (glIndex_t)(input->multiDrawFirstIndex[0]);
+				item.draw.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
 				item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
 			}
 			else
@@ -2201,7 +2201,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 		if ( input->multiDrawPrimitives == 1 )
 		{
 			item.draw.type = DRAW_COMMAND_INDEXED;
-			item.draw.params.indexed.firstIndex = (glIndex_t)(input->multiDrawFirstIndex[0]);
+			item.draw.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
 			item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
 		}
 		else
