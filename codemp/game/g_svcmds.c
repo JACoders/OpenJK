@@ -591,12 +591,15 @@ void Svcmd_ChangeGametype_f (void) {
 	if (gametype == GT_SIEGE || gametype == GT_SINGLE_PLAYER) //Also dont even bother with siege, idk
 		return;
 
+	//Check if gametype was actually changed?
+	if (gametype != level.gametype) 
+		Svcmd_ResetScores_f();
+
 	trap->Cvar_Register(&g_gametype, "g_gametype", "0", CVAR_SERVERINFO);
 	trap->Cvar_Set( "g_gametype", va( "%i", gametype ) );
 	trap->Cvar_Update( &g_gametype );
 
 	G_CacheGametype();
-	Svcmd_ResetScores_f();
 
 	if (level.gametype == GT_CTF || level.gametype == GT_CTY) { //
 		gentity_t	*ent;

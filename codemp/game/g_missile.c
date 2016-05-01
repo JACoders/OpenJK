@@ -915,7 +915,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 
 		nent = G_Spawn(qtrue);
 		nent->freeAfterEvent = qtrue;
-		nent->s.weapon = WP_REPEATER;//WP_GRAPPLING_HOOK; -- idk what this is
+		nent->s.weapon = WP_BRYAR_PISTOL;//WP_GRAPPLING_HOOK; -- idk what this is
 		nent->s.saberInFlight = qtrue;
 		nent->s.owner = ent->s.owner;
 
@@ -925,7 +925,12 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 
 		if ( other->s.eType == ET_MOVER || (other->client && !( other->s.eFlags & EF_DEAD ) ) ) {
 			if ( other->client ) {
-				G_AddEvent( nent, EV_MISSILE_HIT, DirToByte( trace->plane.normal ) );
+				//G_AddEvent( nent, EV_MISSILE_HIT, DirToByte( trace->plane.normal ) );							//Event
+
+				if (!ent->s.hasLookTarget) {
+					G_PlayEffectID( G_EffectIndex("tusken/hit"), trace->endpos, trace->plane.normal );
+				}
+				ent->s.hasLookTarget = qtrue;
 
 				ent->enemy = other;
 				other->s.otherEntityNum = ent->parent->s.number;
@@ -945,11 +950,13 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 				ent->s.otherEntityNum = other->s.number;
 				ent->s.groundEntityNum = other->s.number;
 				VectorCopy(trace->endpos, v);
-				G_AddEvent( nent, EV_MISSILE_MISS, 0); //DirToByte( trace->plane.normal ) );
+				//G_AddEvent( nent, EV_MISSILE_MISS, 0); //DirToByte( trace->plane.normal ) );				//Event
+				G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
 			}
 		} else {
 			VectorCopy(trace->endpos, v);
-			G_AddEvent( nent, EV_MISSILE_MISS, 0);//DirToByte( trace->plane.normal ) );
+			//G_AddEvent( nent, EV_MISSILE_MISS, 0);//DirToByte( trace->plane.normal ) );						//Event
+			G_PlayEffectID( G_EffectIndex("tusken/hitwall"), trace->endpos, trace->plane.normal );
 		}
 
 		SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
