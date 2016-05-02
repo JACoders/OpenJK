@@ -34,7 +34,7 @@ std::string& Escape( std::string& s )
 		return s;
 	}
 
-	if ( (s.capacity() < s.length()) + escapableCharacters )
+	if ( s.capacity() < (s.length() + escapableCharacters) )
 	{
 		// Grow if necessary.
 		s.resize(s.length() + escapableCharacters);
