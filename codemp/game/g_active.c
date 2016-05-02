@@ -5205,7 +5205,7 @@ void ClientThink_real( gentity_t *ent ) {
 		if (faceKicked && faceKicked->client && (!OnSameTeam(ent, faceKicked) || g_friendlyFire.integer) &&
 			(!faceKicked->client->ps.duelInProgress || faceKicked->client->ps.duelIndex == ent->s.number) &&
 			(!ent->client->ps.duelInProgress || ent->client->ps.duelIndex == faceKicked->s.number)
-			&& ((!ent->client->didGlitchKick || !ent->client->ps.fd.forceGripCripple) || g_fixGlitchKickDamage.integer <= 0))
+			&& ((!ent->client->didGlitchKick || !ent->client->ps.fd.forceGripCripple) || g_glitchKickDamage.integer < 0))
 		{
 			if (faceKicked && faceKicked->client && faceKicked->health && faceKicked->takedamage && !faceKicked->client->sess.raceMode && !faceKicked->client->noclip)
 			{//push them away and do pain
@@ -5220,9 +5220,9 @@ void ClientThink_real( gentity_t *ent ) {
 				if (faceKicked->client->sess.movementStyle = MV_JKA) //gross hack to use dashtime as lastKickedByTime for jka (flipkick) physics
 					faceKicked->client->ps.stats[STAT_DASHTIME] = 200;
 
-				if (ent->client->ps.fd.forceGripCripple && g_fixGlitchKickDamage.integer > 0) {
+				if (ent->client->ps.fd.forceGripCripple && g_glitchKickDamage.integer > 0) {
 					ent->client->didGlitchKick = qtrue;
-					glitchKickBonus = 30;
+					glitchKickBonus = g_glitchKickDamage.integer;
 				}
 				
 //JAPRO - Serverside - New flipkick damage options - Start

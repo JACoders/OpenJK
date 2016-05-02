@@ -2576,7 +2576,7 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 						&& newmove != LS_NONE )
 					{
 #ifdef _GAME
-						if (g_fixRedDFA.integer <= 1) 
+						if (!(g_tweakSaber.integer & ST_REDDFANOFORCE))
 #endif
 							BG_ForcePowerDrain(pm->ps, FP_GRIP, SABER_ALT_ATTACK_POWER_FB);
 					}
@@ -3828,7 +3828,7 @@ weapChecks:
 					if (PM_SaberKataDone(curmove, newmove))
 					{//cannot chain this time
 #ifdef _GAME
-						if ((newmove != LS_A_JUMP_T__B_) || !(g_fixRedDFA.integer == 1))
+						if ((newmove != LS_A_JUMP_T__B_) || !(g_tweakSaber.integer & ST_REDDFAFIX))
 #endif
 						{
 							if (pm->ps->stats[STAT_RACEMODE] && (pm->ps->stats[STAT_MOVEMENTSTYLE] == 1 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 2 || pm->ps->stats[STAT_MOVEMENTSTYLE] == 5) && (pm->ps->velocity[2] == 280.0f))

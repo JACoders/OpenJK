@@ -836,7 +836,9 @@ static bitInfo_T saberTweaks[] = {
 	{"Fix yellow DFA"},//10
 	{"Spin red DFA"},//11
 	{"Spin backslash"},//12
-	{"JK2 Lunge"}//13
+	{"JK2 Lunge"},//13
+	{"Remove red DFA Boost"},//13
+	{"Make red DFA cost 0 forcepoints"}//13
 };
 static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
 
@@ -880,14 +882,15 @@ void Svcmd_ToggleTweakSaber_f( void ) {
 static bitInfo_T forceTweaks[] = { 
 	{"No forcepower drain for crouch attack"},//1
 	{"Fix projectile force push dir"},//2
-	{"Push pull knockdowns"},//3
+	{"Can push/pull knocked down players"},//3
 	{"Fix grip absorb"},//4
 	{"Allow force combo"},//5
 	{"Fix pull strength"},//6
 	{"JK2 grip"},//7
 	{"Fast grip runspeed"},//8
 	{"Push/pull items"},//9
-	{"Smaller Drain COF"}//10
+	{"Smaller Drain COF"},//10
+	{"JK2 push/pull knockdown"}//10
 };
 static const int MAX_FORCE_TWEAKS = ARRAY_LEN( forceTweaks );
 

@@ -197,19 +197,22 @@ XCVAR_DEF( g_selfDamageScale,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileInheritance,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fullInheritance,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
+
+
+
 //JAPRO MOVEMENT
-XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_flipKick,					"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_nonRandomKnockdown,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixRoll,					"0",			CVU_Roll,			CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_onlyBhop,					"0",			CVU_Bhop,			CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_movementStyle,				"1",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
+
+//JAPRO Movement to be replaced with tweakmovement?
 XCVAR_DEF( g_fixHighFPSAbuse,			"0",			CVU_HighFPS,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_LegDangle,					"1",			CVU_LegDangle,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_tweakJetpack,				"0",			CVU_TweakJetpack,	CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_slideOnPlayer,				"0",			CVU_Headslide,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixSlidePhysics,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_fixRedDFA,					"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //rename this.. it fixes red dfa glitch boost
-XCVAR_DEF( g_fixGlitchKickDamage,		"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
 
 XCVAR_DEF( g_allowGrapple,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_hookSpeed,					"2400",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -217,7 +220,7 @@ XCVAR_DEF( g_hookStrength,				"800",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,			
 XCVAR_DEF( g_hookStrength1,				"20",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_hookStrength2,				"40",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_hookInheritance,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_hookFloodProtect,			"500",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_hookFloodProtect,			"600",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -239,7 +242,8 @@ XCVAR_DEF( g_fullAdminMsg,				"",				NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_allowNoFollow,				"0",			NULL,				CVAR_ARCHIVE,									qtrue ) //race also
 
 //JAPRO OTHER Gameplay
-XCVAR_DEF( g_flipKickDamageScale,		"1",			NULL,		CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_flipKickDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_glitchKickDamage,			"-1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingItems,				"0",			CVU_StartingItems,	CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )

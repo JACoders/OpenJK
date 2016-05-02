@@ -7690,6 +7690,10 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Roll cancel enabled\n");
 	if (g_tweakSaber.integer & ST_NO_REDCHAIN)
 		Q_strcat(buf, sizeof(buf), "   ^5Red swings can not be chained\n");
+	if (g_tweakSaber.integer & ST_REDDFAFIX)
+		Q_strcat(buf, sizeof(buf), "   ^5Red DFA boost exploit removed\n");
+	if (g_tweakSaber.integer & ST_REDDFANOFORCE)
+		Q_strcat(buf, sizeof(buf), "   ^5Red DFA costs 0 forcepoints\n");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 
 	//Gun changes
@@ -7808,8 +7812,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5Floodprotected flipkick\n");
 	else if (g_flipKick.integer > 2)
 		Q_strcat(buf, sizeof(buf), "   ^5Flipkick enabled with JK2 style\n");
-	if (g_fixGlitchKickDamage.integer > 0)
-		Q_strcat(buf, sizeof(buf), va("   ^5Glitch kick randomness removed, now does ^3%i ^5bonus damage\n", g_fixGlitchKickDamage.integer));
+	if (g_glitchKickDamage.integer >= 0)
+		Q_strcat(buf, sizeof(buf), va("   ^5Glitch kick randomness removed, now does ^3%i ^5bonus damage\n", g_glitchKickDamage.integer));
 	if (g_nonRandomKnockdown.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flipkick knockdowns\n");
 	else if (g_nonRandomKnockdown.integer == 2)
@@ -7855,6 +7859,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), "   ^5Force drain cone of fire is narrower, matching that of the visual effect\n");
 		if (g_tweakForce.integer & FT_PUSHPULLKD)
 			Q_strcat(buf, sizeof(buf), "   ^5Knocked down players are affected by push/pull\n");
+		if (g_tweakForce.integer & FT_JK2KNOCKDOWN)
+			Q_strcat(buf, sizeof(buf), "   ^5Push/pull can knockdown all players like in JK2\n");
 		if ((!(g_forcePowerDisable.integer & FP_PULL) || !(g_forcePowerDisable.integer & FP_PUSH)) && g_unlagged.integer & UNLAGGED_PUSHPULL)
 			Q_strcat(buf, sizeof(buf), "   ^5Lag compensation for force push/pull\n");
 		if (g_tweakForce.integer & FT_GRIPABSORB)

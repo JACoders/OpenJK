@@ -250,6 +250,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define	FT_FASTGRIP			  (1<<7)
 #define	FT_PUSHPULLITEMS	  (1<<8)
 #define FT_FIXDRAINCOF		  (1<<9)
+#define FT_JK2KNOCKDOWN		  (1<<10)
 
 //Saber tweaks
 #define	ST_NO_MP_SABERLERP		(1<<0)
@@ -265,6 +266,8 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define ST_SPINREDDFA			(1<<10)
 #define ST_SPINBACKSLASH		(1<<11)
 #define ST_JK2LUNGE				(1<<12)
+#define ST_REDDFAFIX			(1<<13)
+#define ST_REDDFANOFORCE		(1<<14)
 
 //Saberstyles
 #define SABERSTYLE_BLUE (1<<0)//blue only

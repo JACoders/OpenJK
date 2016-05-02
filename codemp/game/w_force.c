@@ -3638,8 +3638,8 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					{
 						dirLen = VectorLength(pushDir);
 
-						if (BG_KnockDownable(&push_list[x]->client->ps) &&
-							dirLen <= (64*((modPowerLevel - otherPushPower)-1)))
+						if (BG_KnockDownable(&push_list[x]->client->ps) && 
+							((!(g_tweakForce.integer & FT_JK2KNOCKDOWN) && (dirLen <= (64*((modPowerLevel - otherPushPower)-1)))) || ((g_tweakForce.integer & FT_JK2KNOCKDOWN) && (dirLen <= 128))) )  
 						{ //can only do a knockdown if fairly close
 							push_list[x]->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 							push_list[x]->client->ps.forceHandExtendTime = level.time + 700;
