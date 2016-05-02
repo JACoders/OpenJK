@@ -77,6 +77,9 @@ uniform vec4 u_PrimaryLightOrigin;
 uniform float u_PrimaryLightRadius;
 #endif
 
+uniform vec3 u_ViewForward;
+uniform float u_FXVolumetricBase;
+
 out vec4 var_TexCoords;
 out vec4 var_Color;
 out vec3 var_N;
@@ -266,15 +269,30 @@ void main()
 	var_TexCoords.zw = GenTexCoords(u_TCGen1, vec3(0.0), vec3(0.0), vec3(0.0), vec3(0.0));
 #endif
 
-	var_Color = u_VertColor * attr_Color + u_BaseColor;
+	if ( u_FXVolumetricBase > 0.0 )
+	{
+		vec3 viewForward = u_ViewForward;
+#if defined(USE_MODELMATRIX)
+		viewForward = (u_ModelMatrix * vec4(viewForward, 0.0)).xyz;
+#endif
+		float d = clamp(dot(normalize(viewForward), normalize(normal)), 0.0, 1.0);
+		d = d * d;
+		d = d * d;
+
+		var_Color = vec4(u_FXVolumetricBase * (1.0 - d));
+	}
+	else
+	{
+		var_Color = u_VertColor * attr_Color + u_BaseColor;
 
 #if defined(USE_LIGHT_VECTOR) && defined(USE_FAST_LIGHT)
-	float sqrLightDist = dot(L, L);
-	float attenuation = CalcLightAttenuation(u_LightOrigin.w, u_LightRadius * u_LightRadius / sqrLightDist);
-	float NL = clamp(dot(normalize(normal), L) / sqrt(sqrLightDist), 0.0, 1.0);
+		float sqrLightDist = dot(L, L);
+		float attenuation = CalcLightAttenuation(u_LightOrigin.w, u_LightRadius * u_LightRadius / sqrLightDist);
+		float NL = clamp(dot(normalize(normal), L) / sqrt(sqrLightDist), 0.0, 1.0);
 
-	var_Color.rgb *= u_DirectedLight * (attenuation * NL) + u_AmbientLight;
+		var_Color.rgb *= u_DirectedLight * (attenuation * NL) + u_AmbientLight;
 #endif
+	}
 
 #if defined(USE_PRIMARY_LIGHT) || defined(USE_SHADOWMAP)
 	var_PrimaryLightDir.xyz = u_PrimaryLightOrigin.xyz - (position * u_PrimaryLightOrigin.w);

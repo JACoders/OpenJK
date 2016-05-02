@@ -145,6 +145,8 @@ static uniformInfo_t uniformsInfo[] =
 
 	{ "u_BoneMatrices",			GLSL_MAT4x3, 20 },
 	{ "u_AlphaTestValue",		GLSL_FLOAT, 1 },
+
+	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)

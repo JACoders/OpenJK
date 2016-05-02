@@ -48,6 +48,9 @@ uniform mat4 u_ModelViewProjectionMatrix;
 uniform vec4 u_BaseColor;
 uniform vec4 u_VertColor;
 
+uniform vec3 u_ViewForward;
+uniform float u_FXVolumetricBase;
+
 #if defined(USE_RGBAGEN)
 uniform int u_ColorGen;
 uniform int u_AlphaGen;
@@ -347,11 +350,23 @@ void main()
     var_DiffuseTex = tex;
 #endif
 
+	if ( u_FXVolumetricBase > 0.0 )
+	{
+		vec3 viewForward = u_ViewForward;
+		float d = clamp(dot(normalize(viewForward), normalize(normal)), 0.0, 1.0);
+		d = d * d;
+		d = d * d;
+
+		var_Color = vec4(u_FXVolumetricBase * (1.0 - d));
+	}
+	else
+	{
 #if defined(USE_RGBAGEN)
-	var_Color = CalcColor(position, normal);
+		var_Color = CalcColor(position, normal);
 #else
-	var_Color = u_VertColor * attr_Color + u_BaseColor;
+		var_Color = u_VertColor * attr_Color + u_BaseColor;
 #endif
+	}
 
 #if defined(USE_FOG)
 	var_Color *= vec4(1.0) - u_FogColorMask * sqrt(clamp(CalcFog(position), 0.0, 1.0));

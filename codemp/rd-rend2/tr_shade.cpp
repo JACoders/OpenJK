@@ -1866,10 +1866,17 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
 		}
 
+		float volumetricBaseValue = 0.0f;
+		if ( backEnd.currentEntity->e.renderfx & RF_VOLUMETRIC )
+		{
+			volumetricBaseValue = backEnd.currentEntity->e.shaderRGBA[0] / 255.0f;
+			uniformDataWriter.SetUniformVec3(UNIFORM_VIEWFORWARD, backEnd.refdef.viewaxis[0]);
+		}
+		else
 		{
 			vec4_t baseColor;
 			vec4_t vertColor;
-
+			
 			ComputeShaderColors(pStage, baseColor, vertColor, stateBits, &forceRGBGen, &forceAlphaGen);
 
 			if ((backEnd.refdef.colorScale != 1.0f) && !(backEnd.refdef.rdflags & RDF_NOWORLDMODEL))
@@ -1879,8 +1886,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 				VectorScale(vertColor, backEnd.refdef.colorScale, vertColor);
 			}
 
-			if ( backEnd.currentEntity != NULL &&
-				(backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA) )
+			if (backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA)
 			{
 				vertColor[3] = backEnd.currentEntity->e.shaderRGBA[3] / 255.0f;
 			}
@@ -1888,6 +1894,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec4(UNIFORM_BASECOLOR, baseColor);
 			uniformDataWriter.SetUniformVec4(UNIFORM_VERTCOLOR, vertColor);
 		}
+
+		uniformDataWriter.SetUniformFloat(UNIFORM_FX_VOLUMETRIC_BASE, volumetricBaseValue);
 
 		if (pStage->rgbGen == CGEN_LIGHTING_DIFFUSE ||
 			pStage->rgbGen == CGEN_LIGHTING_DIFFUSE_ENTITY)
