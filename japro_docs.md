@@ -52,9 +52,12 @@
 	g_LegDangle				1	//Toggle the leg dangle animation which is not predicted and results in jerkyness on ledges with high ping.
 	g_fixHighFPSAbuse		0	//Make players who have more than 250fps behave at 250fps physics.
 	g_fixSlidePhysics		0	//1=Fixed slide physics for NPCS.  2=Fixed slide physics for NPCs and players.
-	g_fixRedDFA				0	1=Remove red DFA boost glitch. 2=Make red DFA cost 0 forcepoints.
+	g_fixRedDFA				0	//1=Remove red DFA boost glitch. 2=Make red DFA cost 0 forcepoints.
 	g_fixGlitchKickDamage	0
-	g_allowGrapple			0	
+	g_allowGrapple			0//1= JA+ style. 2=Tarzan style
+	g_hookSpeed			2400//Speed that grapple hook travels at
+	g_hookStrength			800//Speed that grapple pulls you at
+	g_hookFloodProtect		500//Milliseconds between hook shots
 
 #### Dueling 
 	g_duelStartHealth			0	

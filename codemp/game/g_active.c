@@ -4693,10 +4693,12 @@ void ClientThink_real( gentity_t *ent ) {
 		if ( (pmove.cmd.buttons & BUTTON_GRAPPLE) &&
 				ent->client->ps.pm_type != PM_DEAD &&
 				!ent->client->hookHasBeenFired &&
+				(ent->client->hookFireTime < level.time - g_hookFloodProtect.integer) &&
 				CanGrapple(ent))
 		{
 			Weapon_GrapplingHook_Fire( ent );
 			ent->client->hookHasBeenFired = qtrue;
+			ent->client->hookFireTime = level.time;
 		}
 
 		if ( !(pmove.cmd.buttons & BUTTON_GRAPPLE)  &&

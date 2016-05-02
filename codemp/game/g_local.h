@@ -1167,6 +1167,7 @@ struct gclient_s {
 
 #if _GRAPPLE
 	qboolean hookHasBeenFired;
+	int		 hookFireTime;
 #endif
 
 	int			genCmdDebounce[MAX_GENCMD_DELAYS];

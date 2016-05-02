@@ -217,6 +217,7 @@ XCVAR_DEF( g_hookStrength,				"800",			NULL,				CVAR_ARCHIVE|CVAR_SERVERINFO,			
 XCVAR_DEF( g_hookStrength1,				"20",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_hookStrength2,				"40",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_hookInheritance,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
+XCVAR_DEF( g_hookFloodProtect,			"500",			NULL,				CVAR_ARCHIVE,									qtrue )
 
 //JAPRO DUELING
 XCVAR_DEF( g_duelStartHealth,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
