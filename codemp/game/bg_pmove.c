@@ -12801,17 +12801,17 @@ void PmoveSingle (pmove_t *pmove) {
 		{
 
 #if _GRAPPLE
-			if (pm->ps->pm_flags & (PMF_GRAPPLE_TARZAN) ) {
+			if (pm->ps->pm_flags & (PMF_GRAPPLE) ) {
 				PM_GrappleMoveTarzan();
 			} 		
-			
+/*			
 			if (pm->ps->pm_flags & (PMF_GRAPPLE_PULL) ) {
 				PM_GrappleMove();
 				PM_AirMove();// We can wiggle a bit
 			} 
 			else
+*/
 #endif
-
 			if (pm->ps->pm_flags & PMF_TIME_WATERJUMP) {
 				PM_WaterJumpMove();
 			} else if ( pm->waterlevel > 1 ) {

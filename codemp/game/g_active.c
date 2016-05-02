@@ -4375,13 +4375,10 @@ void ClientThink_real( gentity_t *ent ) {
 
 		// sanity check, deals with falling etc;
 	if ( ent->client->hook && ent->client->hook->think == Weapon_HookThink && CanGrapple(ent)) {
-		if (g_allowGrapple.integer > 1)
-			ent->client->ps.pm_flags |= PMF_GRAPPLE_TARZAN;
-		else
-			ent->client->ps.pm_flags |= PMF_GRAPPLE_PULL;
+			ent->client->ps.pm_flags |= PMF_GRAPPLE;
 	} else {
 		//Com_Printf("Unsetting grapple pmf\n");
-		ent->client->ps.pm_flags &= ~( PMF_GRAPPLE_PULL | PMF_GRAPPLE_TARZAN );
+		ent->client->ps.pm_flags &= ~( PMF_GRAPPLE );
 	}
 #endif
 
@@ -4708,7 +4705,7 @@ void ClientThink_real( gentity_t *ent ) {
 		{
 			ent->client->fireHeld = qfalse;
 			ent->client->hookHasBeenFired = qfalse;
-			client->ps.pm_flags &= ~( PMF_GRAPPLE_TARZAN | PMF_GRAPPLE_PULL );
+			client->ps.pm_flags &= ~( PMF_GRAPPLE );
 		}
 
 		if ( client->hook && client->fireHeld == qfalse ) {
