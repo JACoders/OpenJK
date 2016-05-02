@@ -5320,13 +5320,13 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 			{
 				self->client->ps.forceHandExtend = HANDEXTEND_NONE;
 			}
-			else if (G_SpecialRollGetup(self))
+			else if (G_SpecialRollGetup(self) && !(g_tweakForce.integer & FT_JK2GETUPS))
 			{
 				self->client->ps.forceHandExtend = HANDEXTEND_NONE;
 			}
 			else
 			{ //hmm.. ok.. no more getting up on your own, you've gotta push something, unless..
-				if ((level.time-self->client->ps.forceHandExtendTime) > 4000)
+				if (((level.time - self->client->ps.forceHandExtendTime) > 4000) || (g_tweakForce.integer & FT_JK2GETUPS))
 				{ //4 seconds elapsed, I guess they're too dumb to push something to get up!
 					if (self->client->pers.cmd.upmove &&
 						self->client->ps.fd.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_1)
@@ -5334,6 +5334,11 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						G_PreDefSound(self->client->ps.origin, PDSOUND_FORCEJUMP);
 						self->client->ps.forceDodgeAnim = 2;
 						self->client->ps.forceHandExtendTime = level.time + 500;
+
+						if (g_tweakForce.integer & FT_JK2GETUPS) {
+							self->client->ps.forceHandExtendTime += 300; //Bring this up to 800 like in jk2
+							self->client->ps.velocity[2] = 300;
+						}
 
 						//self->client->ps.velocity[2] = 400;
 					}
@@ -5343,6 +5348,11 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						self->client->ps.forceDodgeAnim = 3;
 						self->client->ps.forceHandExtendTime = level.time + 500;
 						self->client->ps.velocity[2] = 300;
+
+						if (g_tweakForce.integer & FT_JK2GETUPS) {
+							self->client->ps.forceHandExtendTime += 100; //Bring this up to 600 like in jk2
+							self->client->ps.velocity[2] = 200;
+						}
 					}
 					else
 					{

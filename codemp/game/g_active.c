@@ -5217,10 +5217,10 @@ void ClientThink_real( gentity_t *ent ) {
 
 				VectorScale( oppDir, -1, oppDir );
 
-				if (faceKicked->client->sess.movementStyle = MV_JKA) //gross hack to use dashtime as lastKickedByTime for jka (flipkick) physics
+				if (faceKicked->client->sess.movementStyle != MV_WSW) //gross hack to use dashtime as lastKickedByTime for jka (flipkick) physics
 					faceKicked->client->ps.stats[STAT_DASHTIME] = 200;
 
-				if (ent->client->ps.fd.forceGripCripple && g_glitchKickDamage.integer > 0) {
+				if (ent->client->ps.fd.forceGripCripple && g_glitchKickDamage.integer >= 0) {
 					ent->client->didGlitchKick = qtrue;
 					glitchKickBonus = g_glitchKickDamage.integer;
 				}
