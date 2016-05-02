@@ -190,6 +190,20 @@ static void CVU_HighFPS(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+/*
+static void CVU_Grapple(void) {
+		if ( sscanf( g_grapple.string, "%d %d %d %d %d %d", &grapple.enable, &grapple.tarzanStyle, &grapple.hookspeed, &grapple.pullspeed, &grapple.strength, &grapple.flood ) != 6 ) {
+			//Defaults
+			grapple.enable = qfalse;
+			grapple.tarzanStyle = qfalse;
+			grapple.hookspeed = 2400;
+			grapple.pullspeed = 800;
+			grapple.strength = 20;
+			grapple.flood = 500;
+		}
+}
+*/
+
 static void RemoveRabbit(void) {
 	int i;
 	gclient_t	*cl;

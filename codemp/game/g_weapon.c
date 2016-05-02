@@ -4426,7 +4426,7 @@ void Weapon_GrapplingHook_Fire (gentity_t *ent)
 void Weapon_HookFree (gentity_t *ent)
 {
 	int i;
-	i = ( PMF_GRAPPLE );
+	i = ( PMF_GRAPPLE_TARZAN & PMF_GRAPPLE_PULL );
 	ent->parent->client->hook = NULL;
 	ent->parent->client->ps.pm_flags &= ~i;
 	ent->parent->client->hookHasBeenFired = qfalse;

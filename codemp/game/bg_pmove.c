@@ -4045,41 +4045,11 @@ static void PM_CheckWallJump( void )//loda fixme, wip
 
 #if _GRAPPLE
 
-/*
-===================
-PM_GrappleMoveTarzan
 
-===================
-*/
-static void PM_GrappleMoveTarzan( void ) {
-	vec3_t vel, facingFwd, facingRight, facingAngles;//, oldvel, v;
-	float vlen, dotR, dotF;
-#if _GAME
-	int pullSpeed = g_hookStrength.integer;
-	int pullStrength1 = g_hookStrength1.integer;//20;
-	int pullStrength2 = g_hookStrength2.integer;//40;
-#else
-	int pullspeed = 800;
-	int pullStrength1 = 20;//20;
-	int pullStrength2 = 40;//40;
-#endif
+static void PM_GetGrappleAnim( void ) {
+	vec3_t  facingFwd, facingRight, facingAngles;
 	int	anim = -1;
-
-	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
-	vlen = VectorLength(vel);
-	VectorNormalize( vel );
-
-	if (vlen < ( pullSpeed / 2 ) )
-		PM_Accelerate(vel, 2 * vlen, vlen * ( pullStrength2 / (float)pullSpeed ) );
-	else
-		PM_Accelerate(vel, pullSpeed, pullStrength1);
-
-	if ( vel[2] > 0.5f && pml.walking ) {
-		pml.walking = qfalse;
-		//PM_ForceLegsAnim( BOTH_JUMP1  ); //LEGS_JUMP
-	}
-
-	pml.groundPlane = qfalse;
+	float dotR, dotF;
 
 	//Set anims from raz0r
 	VectorSet(facingAngles, 0, pm->ps->viewangles[YAW], 0);
@@ -4112,6 +4082,75 @@ static void PM_GrappleMoveTarzan( void ) {
 
 		PM_SetAnim(parts, anim, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD);
 	}
+}
+
+static void PM_GrappleMove( void ) {
+	vec3_t vel, v;
+	float vlen;
+#if _GAME
+	int pullSpeed = g_hookStrength.integer;
+#else
+	int pullspeed = 800;
+#endif
+
+	VectorScale(pml.forward, -16, v);
+	VectorAdd(pm->ps->lastHitLoc, v, v);
+	VectorSubtract(v, pm->ps->origin, vel);
+	//if( pm->ps->pm_flags & PMF_GRAPPLE_PULL_QUAKE2 ) {
+		vel[2] = vel[2] - pm->ps->viewheight - 4;
+	//}
+	vlen = VectorLength(vel);
+	VectorNormalize( vel );
+
+	if (vlen <= 100)
+		VectorScale(vel, ( pullSpeed / 100.0 )  * vlen, vel);
+	else
+		VectorScale(vel, pullSpeed, vel);
+
+	VectorCopy(vel, pm->ps->velocity);
+
+	pml.groundPlane = qfalse;
+
+	PM_GetGrappleAnim();
+}
+
+/*
+===================
+PM_GrappleMoveTarzan
+
+===================
+*/
+static void PM_GrappleMoveTarzan( void ) {
+	vec3_t vel;
+	float vlen;
+#if _GAME
+	int pullSpeed = g_hookStrength.integer;
+	int pullStrength1 = g_hookStrength1.integer;
+	int pullStrength2 = g_hookStrength2.integer;
+#else
+	int pullSpeed = 800;
+	int pullStrength1 = 20;//20;
+	int pullStrength2 = 40;//40;
+#endif
+
+	VectorSubtract(pm->ps->lastHitLoc, pm->ps->origin, vel);
+	vlen = VectorLength(vel);
+	VectorNormalize( vel );
+
+	if (vlen < ( pullSpeed / 2 ) )
+		PM_Accelerate(vel, 2 * vlen, vlen * ( pullStrength2 / (float)pullSpeed ) );
+	else
+		PM_Accelerate(vel, pullSpeed, pullStrength1);
+
+	if ( vel[2] > 0.5f && pml.walking ) {
+		pml.walking = qfalse;
+		//PM_ForceLegsAnim( BOTH_JUMP1  ); //LEGS_JUMP
+	}
+
+	pml.groundPlane = qfalse;
+
+	PM_GetGrappleAnim();
+	
 }
 #endif
 
@@ -12762,9 +12801,15 @@ void PmoveSingle (pmove_t *pmove) {
 		{
 
 #if _GRAPPLE
-			if (pm->ps->pm_flags & (PMF_GRAPPLE) ) {
+			if (pm->ps->pm_flags & (PMF_GRAPPLE_TARZAN) ) {
 				PM_GrappleMoveTarzan();
+			} 		
+			
+			if (pm->ps->pm_flags & (PMF_GRAPPLE_PULL) ) {
+				PM_GrappleMove();
+				PM_AirMove();// We can wiggle a bit
 			} 
+			else
 #endif
 
 			if (pm->ps->pm_flags & PMF_TIME_WATERJUMP) {
