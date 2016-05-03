@@ -143,14 +143,14 @@ void GL_Cull( int cullType ) {
 
 void GL_DepthRange( float min, float max )
 {
-	if ( glState.minDepthRange == min && glState.maxDepthRange == max )
+	if ( glState.minDepth == min && glState.maxDepth == max )
 	{
 		return;
 	}
 
 	qglDepthRange(min, max);
-	glState.minDepthRange = min;
-	glState.maxDepthRange = max;
+	glState.minDepth = min;
+	glState.maxDepth = max;
 }
 
 /*
@@ -633,7 +633,7 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 
 		GL_Cull(drawItem.cullType);
 		GL_State(drawItem.stateBits);
-		GL_DepthRange(drawItem.minDepthRange, drawItem.maxDepthRange);
+		GL_DepthRange(drawItem.minDepth, drawItem.maxDepth);
 		R_BindIBO(drawItem.ibo);
 		GLSL_BindProgram(drawItem.program);
 
@@ -808,7 +808,6 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		// change the modelview matrix if needed
 		//
 		if ( entityNum != oldEntityNum ) {
-			qboolean sunflare = qfalse;
 			depthRange = 0;
 
 			if ( entityNum != REFENTITYNUM_WORLD ) {
@@ -852,44 +851,32 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			//
 			if (oldDepthRange != depthRange)
 			{
-				switch ( depthRange ) {
+				switch ( depthRange )
+				{
 					default:
 					case 0:
-						if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
+						if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
 						{
-							GL_SetProjectionMatrix( backEnd.viewParms.projectionMatrix );
-						}
-
-						if( !sunflare )
-						{
-							tess.maxDepthRange = 1.0f;
+							GL_SetProjectionMatrix(backEnd.viewParms.projectionMatrix);
 						}
 						break;
 
 					case 1:
-						if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
+						if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
 						{
 							viewParms_t temp = backEnd.viewParms;
-
 							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
-
-							GL_SetProjectionMatrix( temp.projectionMatrix );
+							GL_SetProjectionMatrix(temp.projectionMatrix);
 						}
-
-						tess.maxDepthRange = 0.3f;
 						break;
 
 					case 2:
-						if(backEnd.viewParms.stereoFrame != STEREO_CENTER)
+						if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
 						{
 							viewParms_t temp = backEnd.viewParms;
-
 							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
-
-							GL_SetProjectionMatrix( temp.projectionMatrix );
+							GL_SetProjectionMatrix(temp.projectionMatrix);
 						}
-
-						tess.maxDepthRange = 0.0f;
 						break;
 				}
 

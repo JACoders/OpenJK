@@ -1983,8 +1983,8 @@ typedef struct glstate_s {
 	int			currenttmu;
 	int			texEnv[2];
 	int			faceCulling;
-	float		minDepthRange;
-	float		maxDepthRange;
+	float		minDepth;
+	float		maxDepth;
 	uint32_t	glStateBits;
 	uint32_t		vertexAttribsState;
 	vertexAttribute_t currentVaoAttribs[ATTR_INDEX_MAX];
@@ -2705,8 +2705,6 @@ struct shaderCommands_s
 	IBO_t		*externalIBO;
 	qboolean    useInternalVBO;
 
-	float		maxDepthRange;
-
 	stageVars_t	svars QALIGN(16);
 
 	//color4ub_t	constantColor255[SHADER_MAX_VERTEXES] QALIGN(16);
@@ -3413,8 +3411,8 @@ struct DrawItem
 {
 	uint32_t stateBits;
 	uint32_t cullType; // this is stupid
-	float minDepthRange;
-	float maxDepthRange;
+	float minDepth;
+	float maxDepth;
 
 	IBO_t *ibo;
 	shaderProgram_t *program;

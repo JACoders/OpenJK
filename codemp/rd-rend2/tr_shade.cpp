@@ -207,7 +207,6 @@ void RB_BeginSurface( shader_t *shader, int fogNum, int cubemapIndex ) {
 	tess.currentStageIteratorFunc = state->optimalStageIteratorFunc;
 	tess.externalIBO = nullptr;
 	tess.useInternalVBO = qtrue;
-	tess.maxDepthRange = 1.0f;
 
 	tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
 	if (tess.shader->clampTime && tess.shaderTime >= tess.shader->clampTime) {
@@ -1175,6 +1174,20 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 	return cullType;
 }
 
+static float RB_GetMaxDepth( const trRefEntity_t *re )
+{
+	if ( re->e.renderfx & RF_NODEPTH )
+	{
+		return 0.0f;
+	}
+	else if ( re->e.renderfx & RF_DEPTHHACK )
+	{
+		return 0.3f;
+	}
+
+	return 1.0f;
+}
+
 static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 	int		l;
 	//vec3_t	origin;
@@ -1345,7 +1358,7 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 		item.stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
 		item.cullType = cullType;
 		item.program = sp;
-		item.maxDepthRange = input->maxDepthRange;
+		item.maxDepth = RB_GetMaxDepth(backEnd.currentEntity);
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
@@ -1359,7 +1372,6 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 			*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
 		item.draw.primitiveType = GL_TRIANGLES;
 		item.draw.numInstances = 1;
-
 
 		if ( input->multiDrawPrimitives )
 		{
@@ -2099,7 +2111,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		item.stateBits = stateBits;
 		item.cullType = cullType;
 		item.program = sp;
-		item.maxDepthRange = input->maxDepthRange;
+		item.maxDepth = RB_GetMaxDepth(backEnd.currentEntity);
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
@@ -2192,7 +2204,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	DrawItem item = {};
 	item.cullType = cullType;
 	item.program = sp;
-	item.maxDepthRange = input->maxDepthRange;
+	item.maxDepth = RB_GetMaxDepth(backEnd.currentEntity);
 	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	item.numAttributes = vertexArrays->numVertexArrays;
