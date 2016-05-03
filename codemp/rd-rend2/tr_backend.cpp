@@ -141,14 +141,15 @@ void GL_Cull( int cullType ) {
 	glState.faceCulling = cullType;
 }
 
-void GL_DepthRange( float max )
+void GL_DepthRange( float min, float max )
 {
-	if ( glState.maxDepthRange == max )
+	if ( glState.minDepthRange == min && glState.maxDepthRange == max )
 	{
 		return;
 	}
 
-	qglDepthRange(0.0f, max);
+	qglDepthRange(min, max);
+	glState.minDepthRange = min;
 	glState.maxDepthRange = max;
 }
 
@@ -632,7 +633,7 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 
 		GL_Cull(drawItem.cullType);
 		GL_State(drawItem.stateBits);
-		GL_DepthRange(drawItem.maxDepthRange);
+		GL_DepthRange(drawItem.minDepthRange, drawItem.maxDepthRange);
 		R_BindIBO(drawItem.ibo);
 		GLSL_BindProgram(drawItem.program);
 
@@ -863,7 +864,6 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 						{
 							tess.maxDepthRange = 1.0f;
 						}
-
 						break;
 
 					case 1:
@@ -876,11 +876,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 							GL_SetProjectionMatrix( temp.projectionMatrix );
 						}
 
- 						if ( !oldDepthRange )
-						{
-							tess.maxDepthRange = 0.3f;
-						}
-
+						tess.maxDepthRange = 0.3f;
 						break;
 
 					case 2:
@@ -893,11 +889,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 							GL_SetProjectionMatrix( temp.projectionMatrix );
 						}
 
- 						if ( !oldDepthRange )
-						{
-							tess.maxDepthRange = 0.0f;
-						}
-
+						tess.maxDepthRange = 0.0f;
 						break;
 				}
 
@@ -947,7 +939,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	GL_SetModelviewMatrix( backEnd.viewParms.world.modelViewMatrix );
 
 	// Restore depth range for subsequent rendering
-	GL_DepthRange(1.0f);
+	GL_DepthRange(0.0f, 1.0f);
 }
 
 

@@ -827,7 +827,7 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 	VectorScale( vec2, size, vec2 );
 
 	// farthest depth range
-	qglDepthRange( 1.0, 1.0 );
+	GL_DepthRange(1.0f, 1.0f);
 
 	RB_BeginSurface( shader, 0, 0 );
 
@@ -836,7 +836,7 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 	RB_EndSurface();
 
 	// back to normal depth range
-	qglDepthRange( 0.0, 1.0 );
+	GL_DepthRange(0.0f, 1.0f);
 }
 
 
@@ -865,9 +865,9 @@ void RB_StageIteratorSky( void ) {
 	// front of everything to allow developers to see how
 	// much sky is getting sucked in
 	if ( r_showsky->integer ) {
-		qglDepthRange( 0.0, 0.0 );
+		GL_DepthRange(0.0f, 0.0f);
 	} else {
-		qglDepthRange( 1.0, 1.0 );
+		GL_DepthRange(1.0f, 1.0f);
 	}
 
 	// draw the outer skybox
@@ -903,7 +903,7 @@ void RB_StageIteratorSky( void ) {
 
 
 	// back to normal depth range
-	qglDepthRange( 0.0, 1.0 );
+	GL_DepthRange(0.0f, 1.0f);
 
 	// note that sky was drawn so we will draw a sun later
 	backEnd.skyRenderedThisView = qtrue;

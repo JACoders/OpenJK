@@ -1983,6 +1983,7 @@ typedef struct glstate_s {
 	int			currenttmu;
 	int			texEnv[2];
 	int			faceCulling;
+	float		minDepthRange;
 	float		maxDepthRange;
 	uint32_t	glStateBits;
 	uint32_t		vertexAttribsState;
@@ -2577,7 +2578,7 @@ void    GL_SetProjectionMatrix(matrix_t matrix);
 void    GL_SetModelviewMatrix(matrix_t matrix);
 //void	GL_TexEnv( int env );
 void	GL_Cull( int cullType );
-void	GL_DepthRange( float max );
+void	GL_DepthRange( float min, float max );
 void	GL_PolygonOffset( qboolean enabled );
 void	GL_VertexAttribPointers(size_t numAttributes,
 								vertexAttribute_t *attributes);
@@ -2704,7 +2705,6 @@ struct shaderCommands_s
 	IBO_t		*externalIBO;
 	qboolean    useInternalVBO;
 
-	float		minDepthRange;
 	float		maxDepthRange;
 
 	stageVars_t	svars QALIGN(16);
@@ -3412,7 +3412,8 @@ struct DrawCommand
 struct DrawItem
 {
 	uint32_t stateBits;
-	uint32_t cullType; // this is stupid. hi bits = GL cull type, lo bits = Q3 cull type
+	uint32_t cullType; // this is stupid
+	float minDepthRange;
 	float maxDepthRange;
 
 	IBO_t *ibo;
