@@ -350,7 +350,7 @@ void main()
     var_DiffuseTex = tex;
 #endif
 
-	if ( u_FXVolumetricBase > 0.0 )
+	if ( u_FXVolumetricBase >= 0.0 )
 	{
 		vec3 viewForward = u_ViewForward;
 		float d = clamp(dot(normalize(viewForward), normalize(normal)), 0.0, 1.0);

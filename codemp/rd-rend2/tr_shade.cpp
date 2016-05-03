@@ -1866,7 +1866,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
 		}
 
-		float volumetricBaseValue = 0.0f;
+		float volumetricBaseValue = -1.0f;
 		if ( backEnd.currentEntity->e.renderfx & RF_VOLUMETRIC )
 		{
 			volumetricBaseValue = backEnd.currentEntity->e.shaderRGBA[0] / 255.0f;
