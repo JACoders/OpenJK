@@ -81,13 +81,6 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
-	// Allow getchallenge to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
-		return;
-	}
-
 	// Create a unique challenge for this client without storing state on the server
 	challenge = SV_CreateChallenge(from);
 
