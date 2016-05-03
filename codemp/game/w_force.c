@@ -2040,7 +2040,10 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 			
 				if (traceEnt->client)
 				{
-					modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 1);
+					if (g_tweakForce.integer & FT_NODRAINABSORB)
+						modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 0);
+					else
+						modPowerLevel = WP_AbsorbConversion(traceEnt, traceEnt->client->ps.fd.forcePowerLevel[FP_ABSORB], self, FP_DRAIN, self->client->ps.fd.forcePowerLevel[FP_DRAIN], 1);
 				}
 
 				if (modPowerLevel != -1)
@@ -3092,10 +3095,15 @@ void ForceThrow( gentity_t *self, qboolean pull )
 //[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
 	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
-		if (!(g_fixGetups.integer > 1 && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B)))
+		if ( (!(g_fixGetups.integer > 1 && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B)))
+			&& 
+			(!(g_tweakForce.integer & FT_JK2PULLROLL) && (self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L || self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B))
+			)
 			return;
 	}
 //[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
+
+	Com_Printf("meme1b\n");
 
 	if ( self->health <= 0 )
 	{

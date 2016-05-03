@@ -207,7 +207,7 @@
 	No force power drain for crouch attack	//1
 	Fix projectile force push dir	//2
 	Knocked down players can be pushed/pulled//3
-	Fix grip absorb	//4
+	No grip absorb	//4
 	Allow force combo	//5
 	Fix pull strength	//6
 	JK2 grip	//7
@@ -216,6 +216,8 @@
 	Smaller Drain COF	//10
 	Push/pull can knockdown players like in JK2//11
 	JK2 style knockdown getups//12
+	JK2 push/pull in roll//13
+	No drain absorb//14
 
 #### Weapon Tweaks 
 	Nonrandom DEMP2	//1  
