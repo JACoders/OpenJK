@@ -3079,7 +3079,7 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 	visionArc = 0;
 
-	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE && (self->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN || !G_InGetUpAnim(&self->client->ps)))
+	if (self->client->ps.forceHandExtend != HANDEXTEND_NONE && ((self->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN || !G_InGetUpAnim(&self->client->ps)) || (g_tweakForce.integer & FT_JK2GETUPS)))
 	{
 		return;
 	}

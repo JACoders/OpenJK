@@ -215,6 +215,7 @@
 	Push/pull items	//9
 	Smaller Drain COF	//10
 	Push/pull can knockdown players like in JK2//11
+	JK2 style knockdown getups//12
 
 #### Weapon Tweaks 
 	Nonrandom DEMP2	//1  
