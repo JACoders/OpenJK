@@ -1445,7 +1445,7 @@ void ForceGrip( gentity_t *self )
 		if (g_fixGetups.integer && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B))
 		{
 		}
-		else if (g_fixRoll.integer && ((self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B || self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L))) //ahh what the fuck.. i think this is the only case.. FF duels?
+		else if ((g_tweakForce.integer & FT_GRIPDURINGROLL) && ((self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B || self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L))) //ahh what the fuck.. i think this is the only case.. FF duels?
 		{
 		}
 		else 
@@ -3102,8 +3102,6 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			return;
 	}
 //[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
-
-	Com_Printf("meme1b\n");
 
 	if ( self->health <= 0 )
 	{
