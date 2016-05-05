@@ -784,16 +784,12 @@ void RB_DrawSun( float scale, shader_t *shader ) {
 		return;
 	}
 
-	//qglLoadMatrixf( backEnd.viewParms.world.modelViewMatrix );
-	//qglTranslatef (backEnd.viewParms.ori.origin[0], backEnd.viewParms.ori.origin[1], backEnd.viewParms.ori.origin[2]);
-	{
-		// FIXME: this could be a lot cleaner
-		matrix_t translation, modelview;
+	// FIXME: this could be a lot cleaner
+	matrix_t translation, modelview;
 
-		Matrix16Translation( backEnd.viewParms.ori.origin, translation );
-		Matrix16Multiply( backEnd.viewParms.world.modelViewMatrix, translation, modelview );
-		GL_SetModelviewMatrix( modelview );
-	}
+	Matrix16Translation( backEnd.viewParms.ori.origin, translation );
+	Matrix16Multiply( backEnd.viewParms.world.modelViewMatrix, translation, modelview );
+	GL_SetModelviewMatrix( modelview );
 
 	dist = 	backEnd.viewParms.zFar / 1.75;		// div sqrt(3)
 	size = dist * scale;
@@ -840,15 +836,6 @@ void RB_StageIteratorSky( void ) {
 	// to be drawn
 	RB_ClipSkyPolygons( &tess );
 
-	// r_showsky will let all the sky blocks be drawn in
-	// front of everything to allow developers to see how
-	// much sky is getting sucked in
-	if ( r_showsky->integer ) {
-		GL_DepthRange(0.0f, 0.0f);
-	} else {
-		GL_DepthRange(1.0f, 1.0f);
-	}
-
 	// draw the outer skybox
 	if ( tess.shader->sky.outerbox[0] &&
 			tess.shader->sky.outerbox[0] != tr.defaultImage ) {
@@ -870,9 +857,6 @@ void RB_StageIteratorSky( void ) {
 	R_BuildCloudData( &tess );
 
 	RB_StageIteratorGeneric();
-
-	// back to normal depth range
-	GL_DepthRange(0.0f, 1.0f);
 
 	// note that sky was drawn so we will draw a sun later
 	backEnd.skyRenderedThisView = qtrue;

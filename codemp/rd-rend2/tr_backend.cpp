@@ -1219,9 +1219,6 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	// go back to the world modelview matrix
 
 	GL_SetModelviewMatrix( backEnd.viewParms.world.modelViewMatrix );
-
-	// Restore depth range for subsequent rendering
-	GL_DepthRange(0.0f, 1.0f);
 }
 
 
