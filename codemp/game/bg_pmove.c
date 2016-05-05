@@ -12803,7 +12803,7 @@ void PmoveSingle (pmove_t *pmove) {
 #if _GRAPPLE
 #if _GAME
 			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(pm->ps->pm_flags & PMF_DUCKED) && (g_allowGrapple.integer == 1)) {
-				Com_Printf("Flags are %i\n", pm->ps->pm_flags);
+				//Com_Printf("Flags are %i\n", pm->ps->pm_flags);
 				PM_GrappleMoveTarzan();
 			} 		
 		
