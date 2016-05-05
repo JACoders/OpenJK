@@ -12801,16 +12801,29 @@ void PmoveSingle (pmove_t *pmove) {
 		{
 
 #if _GRAPPLE
-			if (pm->ps->pm_flags & (PMF_GRAPPLE) ) {
+#if _GAME
+			if (pm->ps->pm_flags & (PMF_GRAPPLE) && (g_allowGrapple.integer == 1)) {
 				PM_GrappleMoveTarzan();
 			} 		
-/*			
-			if (pm->ps->pm_flags & (PMF_GRAPPLE_PULL) ) {
+		
+			if (pm->ps->pm_flags & (PMF_GRAPPLE) && (g_allowGrapple.integer > 1)) {
 				PM_GrappleMove();
 				PM_AirMove();// We can wiggle a bit
 			} 
 			else
-*/
+#else
+
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && !(cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
+				PM_GrappleMoveTarzan();
+			} 
+
+			if ((pm->ps->pm_flags & PMF_GRAPPLE) && (cgs.jcinfo & JAPRO_CINFO_JAPLUSGRAPPLE)) {
+				PM_GrappleMove();
+				PM_AirMove();// We can wiggle a bit
+			} 
+			else
+#endif
+
 #endif
 			if (pm->ps->pm_flags & PMF_TIME_WATERJUMP) {
 				PM_WaterJumpMove();

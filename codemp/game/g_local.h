@@ -193,6 +193,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define JAPRO_CINFO_ROLLCANCEL		(1<<27)	//option for only bhop mode
 #define JAPRO_CINFO_NOREDCHAIN		(1<<28)	//option for only bhop mode
 #define JAPRO_CINFO_PROJSNIPER		(1<<29)	//option for only bhop mode
+#define	JAPRO_CINFO_JAPLUSGRAPPLE	(1<<30)
 
 //JAPRO - Serverside - Tweak Weapons bitvalues
 #define DEMP2_RANDOM		(1<<0)

@@ -190,6 +190,12 @@ static void CVU_HighFPS(void) {
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }
 
+static void CVU_Grapple(void) {
+	g_allowGrapple.integer > 1 ?
+		(jcinfo.integer |= JAPRO_CINFO_JAPLUSGRAPPLE) : (jcinfo.integer &= ~JAPRO_CINFO_JAPLUSGRAPPLE);
+	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
+}
+
 /*
 static void CVU_Grapple(void) {
 		if ( sscanf( g_grapple.string, "%d %d %d %d %d %d", &grapple.enable, &grapple.tarzanStyle, &grapple.hookspeed, &grapple.pullspeed, &grapple.strength, &grapple.flood ) != 6 ) {

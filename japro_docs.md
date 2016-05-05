@@ -53,7 +53,7 @@
 	g_fixHighFPSAbuse		0	//Make players who have more than 250fps behave at 250fps physics.
 	g_fixSlidePhysics		0	//1=Fixed slide physics for NPCS.  2=Fixed slide physics for NPCs and players.
 	g_fixGlitchKickDamage	0
-	g_allowGrapple			0
+	g_allowGrapple			0//1=Tarzan style. 2=JA+ Style.
 	g_hookSpeed			2400//Speed that grapple hook travels at
 	g_hookStrength			800//Speed that grapple pulls you at
 	g_hookFloodProtect		600//Milliseconds between hook shots
