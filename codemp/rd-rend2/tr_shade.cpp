@@ -832,309 +832,7 @@ static void CaptureDrawData(shaderCommands_t *input, shaderStage_t *stage, int g
 	}
 }
 
-class UniformDataWriter
-{
-public:
-	UniformDataWriter()
-		: failed(false)
-		, shaderProgram(nullptr)
-		, scratch(scratchBuffer, sizeof(scratchBuffer), 1)
-	{
-	}
-
-	UniformDataWriter( const UniformDataWriter& ) = delete;
-	UniformDataWriter& operator=( const UniformDataWriter& ) = delete;
-
-	void Start( shaderProgram_t *sp )
-	{
-		shaderProgram = sp;
-	}
-
-	UniformDataWriter& SetUniformInt( uniform_t uniform, int value )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(int));
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = 1;
-
-		int *data = reinterpret_cast<int *>(header + 1);
-		*data = value;
-
-		return *this;
-	}
-
-	UniformDataWriter& SetUniformFloat( uniform_t uniform, float value )
-	{
-		return SetUniformFloat(uniform, &value, 1);
-	}
-
-	UniformDataWriter& SetUniformFloat( uniform_t uniform, float *values, size_t count )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*count);
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = count;
-		memcpy(header + 1, values, sizeof(float) * count);
-
-		return *this;
-	}
-
-	UniformDataWriter& SetUniformVec2( uniform_t uniform, float *values, size_t count = 1 )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec2_t)*count);
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = count;
-		memcpy(header + 1, values, sizeof(vec2_t) * count);
-
-		return *this;
-	}
-
-	UniformDataWriter& SetUniformVec3( uniform_t uniform, float *values, size_t count = 1 )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec3_t)*count);
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = count;
-		memcpy(header + 1, values, sizeof(vec3_t) * count);
-
-		return *this;
-	}
-
-	UniformDataWriter& SetUniformVec4( uniform_t uniform, float *values, size_t count = 1 )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec4_t)*count);
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = count;
-		memcpy(header + 1, values, sizeof(vec4_t) * count);
-
-		return *this;
-	}
-
-	UniformDataWriter& SetUniformMatrix4x3( uniform_t uniform, float *matrix, size_t count = 1 )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*12*count);
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = count;
-		memcpy(header + 1, matrix, sizeof(float) * 12 * count);
-
-		return *this;
-	}
-
-	UniformDataWriter& SetUniformMatrix4x4( uniform_t uniform, float *matrix, size_t count = 1 )
-	{
-		if ( shaderProgram->uniforms[uniform] == -1 )
-			return *this;
-
-		void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*16*count);
-		if ( !memory )
-		{
-			failed = true;
-			return *this;
-		}
-
-		UniformData *header = static_cast<UniformData *>(memory);
-		header->index = uniform;
-		header->numElements = count;
-		memcpy(header + 1, matrix, sizeof(float) * 16 * count);
-
-		return *this;
-	}
-
-	UniformData *Finish( Allocator& destHeap )
-	{
-		UniformData *endSentinel = ojkAlloc<UniformData>(scratch);
-		if ( failed || !endSentinel )
-		{
-			return nullptr;
-		}
-
-		endSentinel->index = UNIFORM_COUNT;
-
-		int uniformDataSize = (char *)scratch.Mark() - (char *)scratch.Base();
-
-		// Copy scratch buffer to per-frame heap
-		void *finalMemory = destHeap.Alloc(uniformDataSize);
-		UniformData *result = static_cast<UniformData *>(finalMemory);
-		memcpy(finalMemory, scratch.Base(), uniformDataSize);
-		scratch.Reset();
-
-		failed = false;
-		shaderProgram = nullptr;
-
-		return result;
-	}
-
-private:
-	bool failed;
-	shaderProgram_t *shaderProgram;
-	char scratchBuffer[2048];
-	Allocator scratch;
-};
-
-class SamplerBindingsWriter
-{
-public:
-	SamplerBindingsWriter()
-		: failed(false)
-		, count(0)
-	{
-	}
-
-	SamplerBindingsWriter( const SamplerBindingsWriter& ) = delete;
-	SamplerBindingsWriter& operator=( const SamplerBindingsWriter& ) = delete;
-
-	SamplerBindingsWriter& AddStaticImage( image_t *image, int unit )
-	{
-		SamplerBinding *binding = &scratch[count];
-		if ( !binding )
-		{
-			failed = true;
-			return *this;
-		}
-
-		binding->image = image;
-		binding->slot = unit;
-		binding->videoMapHandle = NULL_HANDLE;
-		++count;
-
-		return *this;
-	}
-
-	SamplerBindingsWriter& AddAnimatedImage( textureBundle_t *bundle, int unit )
-	{
-		int index;
-
-		if ( bundle->isVideoMap )
-		{
-			SamplerBinding *binding = &scratch[count];
-			if ( !binding )
-			{
-				failed = true;
-				return *this;
-			}
-
-			binding->image = nullptr;
-			binding->slot = unit;
-			binding->videoMapHandle = bundle->videoMapHandle + 1;
-			++count;
-
-			return *this;
-		}
-
-		if ( bundle->numImageAnimations <= 1 )
-		{
-			return AddStaticImage(bundle->image[0], unit);
-		}
-
-		if (backEnd.currentEntity->e.renderfx & RF_SETANIMINDEX )
-		{
-			index = backEnd.currentEntity->e.skinNum;
-		}
-		else
-		{
-			// it is necessary to do this messy calc to make sure animations line up
-			// exactly with waveforms of the same frequency
-			index = Q_ftol( tess.shaderTime * bundle->imageAnimationSpeed * FUNCTABLE_SIZE );
-			index = Q_max(0, index >> FUNCTABLE_SIZE2);
-		}
-
-		if ( bundle->oneShotAnimMap )
-		{
-			index = Q_min(index, bundle->numImageAnimations - 1);
-		}
-		else
-		{
-			// loop
-			index %= bundle->numImageAnimations;
-		}
-
-		return AddStaticImage(bundle->image[ index ], unit);
-	}
-
-	SamplerBinding *Finish( Allocator& destHeap, int* numBindings )
-	{
-		if ( failed )
-		{
-			return nullptr;
-		}
-
-		SamplerBinding *result = ojkAllocArray<SamplerBinding>(destHeap, count);
-
-		if ( numBindings )
-		{
-			*numBindings = count;
-		}
-
-		memcpy(result, scratch, sizeof(SamplerBinding)*count);
-		failed = false;
-		count = 0;
-		return result;
-	}
-
-private:
-	SamplerBinding scratch[32];
-	bool failed;
-	int count;
-};
-
-static uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer )
+uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer )
 {
 	uint32_t key = 0;
 	uintptr_t shaderProgram = (uintptr_t)item.program;
@@ -1174,18 +872,78 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 	return cullType;
 }
 
-static float RB_GetMaxDepth( const trRefEntity_t *re )
+DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader )
 {
-	if ( re->e.renderfx & RF_NODEPTH )
+	DepthRange range = {0.0f, 1.0f};
+	if ( shader->optimalStageIteratorFunc == RB_StageIteratorSky )
 	{
-		return 0.0f;
+		if ( r_showsky->integer )
+		{
+			range.minDepth = 1.0f;
+			range.maxDepth = 1.0f;
+		}
+		else
+		{
+			range.maxDepth = 0.0f;
+		}
+	}
+	else if ( re->e.renderfx & RF_NODEPTH )
+	{
+		range.maxDepth = 0.0f;
 	}
 	else if ( re->e.renderfx & RF_DEPTHHACK )
 	{
-		return 0.3f;
+		range.maxDepth = 0.3f;
 	}
 
-	return 1.0f;
+	return range;
+}
+
+void RB_FillDrawCommand(
+	DrawCommand& drawCmd,
+	GLenum primitiveType,
+	int numInstances,
+	const shaderCommands_t *input
+)
+{
+	drawCmd.primitiveType = primitiveType;
+	drawCmd.numInstances = numInstances;
+
+	if ( input->multiDrawPrimitives )
+	{
+		if ( input->multiDrawPrimitives == 1 )
+		{
+			drawCmd.type = DRAW_COMMAND_INDEXED;
+			drawCmd.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
+			drawCmd.params.indexed.numIndices = input->multiDrawNumIndexes[0];
+		}
+		else
+		{
+			drawCmd.type = DRAW_COMMAND_MULTI_INDEXED;
+			drawCmd.params.multiIndexed.numDraws = input->multiDrawPrimitives;
+
+			drawCmd.params.multiIndexed.firstIndices =
+				ojkAllocArray<glIndex_t *>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
+			memcpy(drawCmd.params.multiIndexed.firstIndices,
+				input->multiDrawFirstIndex,
+				sizeof(glIndex_t *) * input->multiDrawPrimitives);
+
+			drawCmd.params.multiIndexed.numIndices =
+				ojkAllocArray<GLsizei>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
+			memcpy(drawCmd.params.multiIndexed.numIndices,
+				input->multiDrawNumIndexes,
+				sizeof(GLsizei *) * input->multiDrawPrimitives);
+		}
+	}
+	else
+	{
+		int offset = input->firstIndex * sizeof(glIndex_t) +
+			(input->useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
+
+		drawCmd.type = DRAW_COMMAND_INDEXED;
+		drawCmd.params.indexed.firstIndex = offset;
+		drawCmd.params.indexed.numIndices = input->numIndexes;
+	}
 }
 
 static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
@@ -1358,7 +1116,7 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 		item.stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
 		item.cullType = cullType;
 		item.program = sp;
-		item.maxDepth = RB_GetMaxDepth(backEnd.currentEntity);
+		item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
@@ -1370,44 +1128,8 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 		// FIXME: This is a bit ugly with the casting
 		item.samplerBindings = samplerBindingsWriter.Finish(
 			*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
-		item.draw.primitiveType = GL_TRIANGLES;
-		item.draw.numInstances = 1;
 
-		if ( input->multiDrawPrimitives )
-		{
-			if ( input->multiDrawPrimitives == 1 )
-			{
-				item.draw.type = DRAW_COMMAND_INDEXED;
-				item.draw.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
-				item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
-			}
-			else
-			{
-				item.draw.type = DRAW_COMMAND_MULTI_INDEXED;
-				item.draw.params.multiIndexed.numDraws = input->multiDrawPrimitives;
-
-				item.draw.params.multiIndexed.firstIndices =
-					ojkAllocArray<glIndex_t *>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
-				memcpy(item.draw.params.multiIndexed.firstIndices,
-					input->multiDrawFirstIndex,
-					sizeof(glIndex_t *) * input->multiDrawPrimitives);
-
-				item.draw.params.multiIndexed.numIndices =
-					ojkAllocArray<GLsizei>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
-				memcpy(item.draw.params.multiIndexed.numIndices,
-					input->multiDrawNumIndexes,
-					sizeof(GLsizei *) * input->multiDrawPrimitives);
-			}
-		}
-		else
-		{
-			int offset = input->firstIndex * sizeof(glIndex_t) +
-				(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
-
-			item.draw.type = DRAW_COMMAND_INDEXED;
-			item.draw.params.indexed.firstIndex = offset;
-			item.draw.params.indexed.numIndices = input->numIndexes;
-		}
+		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
 		uint32_t key = RB_CreateSortKey(item, 15, input->shader->sort);
 		RB_AddDrawItem(backEndData->currentPass, key, item);
@@ -2111,7 +1833,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		item.stateBits = stateBits;
 		item.cullType = cullType;
 		item.program = sp;
-		item.maxDepth = RB_GetMaxDepth(backEnd.currentEntity);
+		item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 		item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 		item.numAttributes = vertexArrays->numVertexArrays;
@@ -2123,44 +1845,8 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		// FIXME: This is a bit ugly with the casting
 		item.samplerBindings = samplerBindingsWriter.Finish(
 			*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
-		item.draw.primitiveType = GL_TRIANGLES;
-		item.draw.numInstances = 1;
 
-		if ( input->multiDrawPrimitives )
-		{
-			if ( input->multiDrawPrimitives == 1 )
-			{
-				item.draw.type = DRAW_COMMAND_INDEXED;
-				item.draw.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
-				item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
-			}
-			else
-			{
-				item.draw.type = DRAW_COMMAND_MULTI_INDEXED;
-				item.draw.params.multiIndexed.numDraws = input->multiDrawPrimitives;
-
-				item.draw.params.multiIndexed.firstIndices =
-					ojkAllocArray<glIndex_t *>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
-				memcpy(item.draw.params.multiIndexed.firstIndices,
-					input->multiDrawFirstIndex,
-					sizeof(glIndex_t *) * input->multiDrawPrimitives);
-
-				item.draw.params.multiIndexed.numIndices =
-					ojkAllocArray<GLsizei>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
-				memcpy(item.draw.params.multiIndexed.numIndices,
-					input->multiDrawNumIndexes,
-					sizeof(GLsizei *) * input->multiDrawPrimitives);
-			}
-		}
-		else
-		{
-			int offset = input->firstIndex * sizeof(glIndex_t) +
-				(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
-
-			item.draw.type = DRAW_COMMAND_INDEXED;
-			item.draw.params.indexed.firstIndex = offset;
-			item.draw.params.indexed.numIndices = input->numIndexes;
-		}
+		RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
 		uint32_t key = RB_CreateSortKey(item, stage, input->shader->sort);
 		RB_AddDrawItem(backEndData->currentPass, key, item);
@@ -2204,7 +1890,7 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	DrawItem item = {};
 	item.cullType = cullType;
 	item.program = sp;
-	item.maxDepth = RB_GetMaxDepth(backEnd.currentEntity);
+	item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
 	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
 
 	item.numAttributes = vertexArrays->numVertexArrays;
@@ -2213,44 +1899,8 @@ static void RB_RenderShadowmap( shaderCommands_t *input, const VertexArraysPrope
 	memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
 
 	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
-	item.draw.primitiveType = GL_TRIANGLES;
-	item.draw.numInstances = 1;
 
-	if ( input->multiDrawPrimitives )
-	{
-		if ( input->multiDrawPrimitives == 1 )
-		{
-			item.draw.type = DRAW_COMMAND_INDEXED;
-			item.draw.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
-			item.draw.params.indexed.numIndices = input->multiDrawNumIndexes[0];
-		}
-		else
-		{
-			item.draw.type = DRAW_COMMAND_MULTI_INDEXED;
-			item.draw.params.multiIndexed.numDraws = input->multiDrawPrimitives;
-
-			item.draw.params.multiIndexed.firstIndices =
-				ojkAllocArray<glIndex_t *>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
-			memcpy(item.draw.params.multiIndexed.firstIndices,
-				input->multiDrawFirstIndex,
-				sizeof(glIndex_t *) * input->multiDrawPrimitives);
-
-			item.draw.params.multiIndexed.numIndices =
-				ojkAllocArray<GLsizei>(*backEndData->perFrameMemory, input->multiDrawPrimitives);
-			memcpy(item.draw.params.multiIndexed.numIndices,
-				input->multiDrawNumIndexes,
-				sizeof(GLsizei *) * input->multiDrawPrimitives);
-		}
-	}
-	else
-	{
-		int offset = input->firstIndex * sizeof(glIndex_t) +
-			(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
-
-		item.draw.type = DRAW_COMMAND_INDEXED;
-		item.draw.params.indexed.firstIndex = offset;
-		item.draw.params.indexed.numIndices = input->numIndexes;
-	}
+	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
 
 	// FIXME: Use depth to object
 	uint32_t key = 0;

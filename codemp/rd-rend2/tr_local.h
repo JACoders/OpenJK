@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "qcommon/qcommon.h"
 #include "rd-common/tr_public.h"
 #include "rd-common/tr_common.h"
+#include "tr_allocator.h"
 #include "tr_extratypes.h"
 #include "tr_extramath.h"
 #include "tr_fbo.h"
@@ -3305,9 +3306,6 @@ typedef struct backEndData_s {
 	renderCommandList_t	commands;
 } backEndData_t;
 
-struct DrawItem;
-void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
-
 extern	int		max_polys;
 extern	int		max_polyverts;
 
@@ -3370,6 +3368,12 @@ void RB_SurfaceGhoul( CRenderableSurface *surf );
 class Allocator;
 GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text );
 
+struct DepthRange
+{
+	float minDepth;
+	float maxDepth;
+};
+
 struct SamplerBinding
 {
 	image_t *image;
@@ -3411,8 +3415,7 @@ struct DrawItem
 {
 	uint32_t stateBits;
 	uint32_t cullType; // this is stupid
-	float minDepth;
-	float maxDepth;
+	DepthRange depthRange;
 
 	IBO_t *ibo;
 	shaderProgram_t *program;
@@ -3427,5 +3430,68 @@ struct DrawItem
 
 	DrawCommand draw;
 };
+
+class UniformDataWriter
+{
+public:
+	UniformDataWriter();
+
+	void Start( shaderProgram_t *sp );
+
+	UniformDataWriter& SetUniformInt( uniform_t uniform, int value );
+	UniformDataWriter& SetUniformFloat( uniform_t uniform, float value );
+	UniformDataWriter& SetUniformFloat( uniform_t uniform, float *values, size_t count );
+
+	UniformDataWriter& SetUniformVec2( uniform_t uniform, float x, float y );
+	UniformDataWriter& SetUniformVec2( uniform_t uniform, float *values, size_t count = 1 );
+
+	UniformDataWriter& SetUniformVec3( uniform_t uniform, float x, float y, float z );
+	UniformDataWriter& SetUniformVec3( uniform_t uniform, float *values, size_t count = 1 );
+
+	UniformDataWriter& SetUniformVec4( uniform_t uniform, float x, float y, float z, float w );
+	UniformDataWriter& SetUniformVec4( uniform_t uniform, float *values, size_t count = 1 );
+
+	UniformDataWriter& SetUniformMatrix4x3( uniform_t uniform, float *matrix, size_t count = 1 );
+	UniformDataWriter& SetUniformMatrix4x4( uniform_t uniform, float *matrix, size_t count = 1 );
+
+	UniformData *Finish( Allocator& destHeap );
+
+private:
+	bool failed;
+	shaderProgram_t *shaderProgram;
+	char scratchBuffer[2048];
+	Allocator scratch;
+};
+
+class SamplerBindingsWriter
+{
+public:
+	SamplerBindingsWriter();
+
+	SamplerBindingsWriter( const SamplerBindingsWriter& ) = delete;
+	SamplerBindingsWriter& operator=( const SamplerBindingsWriter& ) = delete;
+
+	SamplerBindingsWriter& AddStaticImage( image_t *image, int unit );
+
+	SamplerBindingsWriter& AddAnimatedImage( textureBundle_t *bundle, int unit );
+
+	SamplerBinding *Finish( Allocator& destHeap, int* numBindings );
+
+private:
+	SamplerBinding scratch[32];
+	bool failed;
+	int count;
+};
+
+void RB_FillDrawCommand(
+	DrawCommand& drawCmd,
+	GLenum primitiveType,
+	int numInstances,
+	const shaderCommands_t *input
+);
+
+uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
+void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem );
+DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader );
 
 #endif //TR_LOCAL_H

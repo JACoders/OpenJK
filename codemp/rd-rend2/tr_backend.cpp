@@ -597,6 +597,301 @@ void RB_BeginDrawingView (void) {
 
 #define	MAC_EVENT_PUMP_MSEC		5
 
+UniformDataWriter::UniformDataWriter()
+	: failed(false)
+	, shaderProgram(nullptr)
+	, scratch(scratchBuffer, sizeof(scratchBuffer), 1)
+{
+}
+
+void UniformDataWriter::Start( shaderProgram_t *sp )
+{
+	shaderProgram = sp;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformInt( uniform_t uniform, int value )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(int));
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = 1;
+
+	int *data = reinterpret_cast<int *>(header + 1);
+	*data = value;
+
+	return *this;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformFloat( uniform_t uniform, float value )
+{
+	return SetUniformFloat(uniform, &value, 1);
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformFloat( uniform_t uniform, float *values, size_t count )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*count);
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = count;
+	memcpy(header + 1, values, sizeof(float) * count);
+
+	return *this;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformVec2( uniform_t uniform, float x, float y )
+{
+	vec2_t values = {x, y};
+	return SetUniformVec2(uniform, values);
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformVec2( uniform_t uniform, float *values, size_t count )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec2_t)*count);
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = count;
+	memcpy(header + 1, values, sizeof(vec2_t) * count);
+
+	return *this;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformVec3( uniform_t uniform, float x, float y, float z )
+{
+	vec3_t values = {x, y, z};
+	return SetUniformVec3(uniform, values);
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformVec3( uniform_t uniform, float *values, size_t count )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec3_t)*count);
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = count;
+	memcpy(header + 1, values, sizeof(vec3_t) * count);
+
+	return *this;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformVec4( uniform_t uniform, float x, float y, float z, float w )
+{
+	vec4_t values = {x, y, z, w};
+	return SetUniformVec4(uniform, values);
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformVec4( uniform_t uniform, float *values, size_t count )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(vec4_t)*count);
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = count;
+	memcpy(header + 1, values, sizeof(vec4_t) * count);
+
+	return *this;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformMatrix4x3( uniform_t uniform, float *matrix, size_t count )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*12*count);
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = count;
+	memcpy(header + 1, matrix, sizeof(float) * 12 * count);
+
+	return *this;
+}
+
+UniformDataWriter& UniformDataWriter::SetUniformMatrix4x4( uniform_t uniform, float *matrix, size_t count )
+{
+	if ( shaderProgram->uniforms[uniform] == -1 )
+		return *this;
+
+	void *memory = scratch.Alloc(sizeof(UniformData) + sizeof(float)*16*count);
+	if ( !memory )
+	{
+		failed = true;
+		return *this;
+	}
+
+	UniformData *header = static_cast<UniformData *>(memory);
+	header->index = uniform;
+	header->numElements = count;
+	memcpy(header + 1, matrix, sizeof(float) * 16 * count);
+
+	return *this;
+}
+
+UniformData *UniformDataWriter::Finish( Allocator& destHeap )
+{
+	UniformData *endSentinel = ojkAlloc<UniformData>(scratch);
+	if ( failed || !endSentinel )
+	{
+		return nullptr;
+	}
+
+	endSentinel->index = UNIFORM_COUNT;
+
+	int uniformDataSize = (char *)scratch.Mark() - (char *)scratch.Base();
+
+	// Copy scratch buffer to per-frame heap
+	void *finalMemory = destHeap.Alloc(uniformDataSize);
+	UniformData *result = static_cast<UniformData *>(finalMemory);
+	memcpy(finalMemory, scratch.Base(), uniformDataSize);
+	scratch.Reset();
+
+	failed = false;
+	shaderProgram = nullptr;
+
+	return result;
+}
+
+SamplerBindingsWriter::SamplerBindingsWriter()
+	: failed(false)
+	, count(0)
+{
+}
+
+SamplerBindingsWriter& SamplerBindingsWriter::AddStaticImage( image_t *image, int unit )
+{
+	SamplerBinding *binding = &scratch[count];
+	if ( !binding )
+	{
+		failed = true;
+		return *this;
+	}
+
+	binding->image = image;
+	binding->slot = unit;
+	binding->videoMapHandle = NULL_HANDLE;
+	++count;
+
+	return *this;
+}
+
+SamplerBindingsWriter& SamplerBindingsWriter::AddAnimatedImage( textureBundle_t *bundle, int unit )
+{
+	int index;
+
+	if ( bundle->isVideoMap )
+	{
+		SamplerBinding *binding = &scratch[count];
+		if ( !binding )
+		{
+			failed = true;
+			return *this;
+		}
+
+		binding->image = nullptr;
+		binding->slot = unit;
+		binding->videoMapHandle = bundle->videoMapHandle + 1;
+		++count;
+
+		return *this;
+	}
+
+	if ( bundle->numImageAnimations <= 1 )
+	{
+		return AddStaticImage(bundle->image[0], unit);
+	}
+
+	if (backEnd.currentEntity->e.renderfx & RF_SETANIMINDEX )
+	{
+		index = backEnd.currentEntity->e.skinNum;
+	}
+	else
+	{
+		// it is necessary to do this messy calc to make sure animations line up
+		// exactly with waveforms of the same frequency
+		index = Q_ftol( tess.shaderTime * bundle->imageAnimationSpeed * FUNCTABLE_SIZE );
+		index = Q_max(0, index >> FUNCTABLE_SIZE2);
+	}
+
+	if ( bundle->oneShotAnimMap )
+	{
+		index = Q_min(index, bundle->numImageAnimations - 1);
+	}
+	else
+	{
+		// loop
+		index %= bundle->numImageAnimations;
+	}
+
+	return AddStaticImage(bundle->image[ index ], unit);
+}
+
+SamplerBinding *SamplerBindingsWriter::Finish( Allocator& destHeap, int* numBindings )
+{
+	if ( failed )
+	{
+		return nullptr;
+	}
+
+	SamplerBinding *result = ojkAllocArray<SamplerBinding>(destHeap, count);
+
+	if ( numBindings )
+	{
+		*numBindings = count;
+	}
+
+	memcpy(result, scratch, sizeof(SamplerBinding)*count);
+	failed = false;
+	count = 0;
+	return result;
+}
+
 struct Pass
 {
 	int maxDrawItems;
@@ -633,7 +928,7 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 
 		GL_Cull(drawItem.cullType);
 		GL_State(drawItem.stateBits);
-		GL_DepthRange(drawItem.minDepth, drawItem.maxDepth);
+		GL_DepthRange(drawItem.depthRange.minDepth, drawItem.depthRange.maxDepth);
 		R_BindIBO(drawItem.ibo);
 		GLSL_BindProgram(drawItem.program);
 
