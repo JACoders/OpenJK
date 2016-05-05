@@ -139,6 +139,7 @@ Draws triangle outlines for debugging
 ================
 */
 static void DrawTris (shaderCommands_t *input) {
+#if 0
 	GL_Bind( tr.whiteImage );
 
 	GL_State( GLS_POLYMODE_LINE | GLS_DEPTHMASK_TRUE );
@@ -166,6 +167,7 @@ static void DrawTris (shaderCommands_t *input) {
 	}
 
 	GL_DepthRange(0.0f, 1.0f);
+#endif
 }
 
 
