@@ -9068,7 +9068,7 @@ if (pm->ps->duelInProgress)
 			if (pm->ps->weapon != WP_MELEE || !pm->ps->m_iVehicleNum)
 				PM_AddEvent( EV_FIRE_WEAPON );
 #ifdef _GAME
-			if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & INFINITE_AMMO)//Sad hack to make instagib more playable
+			if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & WT_SLOW_SNIPER)//Sad hack to make instagib more playable
 				addTime = 1500;
 			else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
 				addTime = 50;
@@ -12788,8 +12788,7 @@ void PmoveSingle (pmove_t *pmove) {
 	}
 	else
 	{ //don't even run physics on a player if he's on a vehicle - he goes where the vehicle goes
-		if (pm->ps->pm_type == PM_FLOAT
-			||pm_flying == FLY_NORMAL)
+		if (pm->ps->pm_type == PM_FLOAT	|| pm_flying == FLY_NORMAL)
 		{
 			PM_FlyMove ();
 		}

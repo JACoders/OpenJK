@@ -216,6 +216,7 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define INFINITE_AMMO		(1<<17)
 #define STUN_HEAL			(1<<18)
 #define ANTI_VEHICLE		(1<<19)
+#define WT_SLOW_SNIPER		(1<<20)
 
 #define ALLOW_GUNROLL		(1<<20) 
 #define FAST_WEAPONSWITCH	(1<<21)   
