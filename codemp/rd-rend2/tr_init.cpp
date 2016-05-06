@@ -280,7 +280,7 @@ void R_Splash()
 	if (pImage )
 		GL_Bind( pImage );
 
-	GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
+	GL_State(0);
 	GLSL_BindProgram(&tr.splashScreenShader);
 	qglDrawArrays(GL_TRIANGLES, 0, 3);
 

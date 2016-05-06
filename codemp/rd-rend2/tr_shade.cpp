@@ -877,12 +877,12 @@ static cullType_t RB_GetCullType( const viewParms_t *viewParms, const trRefEntit
 DepthRange RB_GetDepthRange( const trRefEntity_t *re, const shader_t *shader )
 {
 	DepthRange range = {0.0f, 1.0f};
-	if ( shader->optimalStageIteratorFunc == RB_StageIteratorSky )
+	if ( shader->isSky )
 	{
 		// r_showsky will let all the sky blocks be drawn in
 		// front of everything to allow developers to see how
 		// much sky is getting sucked in
-		if ( r_showsky->integer )
+		if ( !r_showsky->integer )
 		{
 			range.minDepth = 1.0f;
 			range.maxDepth = 1.0f;
