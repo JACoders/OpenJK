@@ -55,7 +55,7 @@ Keybinding command
 =================
 */
 static void CG_SizeUp_f (void) {
-	trap->Cvar_Set( "cg_viewsize", va( "%i", cg_viewsize.integer + 10 ) );
+	trap->Cvar_Set( "cg_viewsize", va( "%i", Q_min( cg_viewsize.integer + 10, 100 ) ) );
 }
 
 /*
@@ -66,7 +66,7 @@ Keybinding command
 =================
 */
 static void CG_SizeDown_f (void) {
-	trap->Cvar_Set( "cg_viewsize", va( "%i", cg_viewsize.integer - 10 ) );
+	trap->Cvar_Set( "cg_viewsize", va( "%i", Q_max( cg_viewsize.integer - 10, 30 ) ) );
 }
 
 /*
@@ -166,31 +166,31 @@ void CG_ClientList_f( void )
 
 static void CG_TellTarget_f( void ) {
 	int		clientNum;
-	char	command[128];
-	char	message[128];
+	char	command[MAX_SAY_TEXT+10];
+	char	message[MAX_SAY_TEXT];
 
 	clientNum = CG_CrosshairPlayer();
 	if ( clientNum == -1 ) {
 		return;
 	}
 
-	trap->Cmd_Args( message, 128 );
-	Com_sprintf( command, 128, "tell %i %s", clientNum, message );
+	trap->Cmd_Args( message, sizeof(message) );
+	Com_sprintf( command, sizeof(command), "tell %i %s", clientNum, message );
 	trap->SendClientCommand( command );
 }
 
 static void CG_TellAttacker_f( void ) {
 	int		clientNum;
-	char	command[128];
-	char	message[128];
+	char	command[MAX_SAY_TEXT + 10];
+	char	message[MAX_SAY_TEXT];
 
 	clientNum = CG_LastAttacker();
 	if ( clientNum == -1 ) {
 		return;
 	}
 
-	trap->Cmd_Args( message, 128 );
-	Com_sprintf( command, 128, "tell %i %s", clientNum, message );
+	trap->Cmd_Args( message, sizeof(message) );
+	Com_sprintf( command, sizeof(command), "tell %i %s", clientNum, message );
 	trap->SendClientCommand( command );
 }
 

@@ -5340,7 +5340,7 @@ void CG_SaberClashFlare( void )
 {
 	int				t, maxTime = 150;
 	vec3_t dif;
-	vec3_t color;
+	vec4_t color;
 	int x,y;
 	float v, len;
 	trace_t tr;
@@ -5389,7 +5389,7 @@ void CG_SaberClashFlare( void )
 
 	CG_WorldCoordToScreenCoord( cg_saberFlashPos, &x, &y );
 
-	VectorSet( color, 0.8f, 0.8f, 0.8f );
+	VectorSet4( color, 0.8f, 0.8f, 0.8f, 1.0f );
 	trap->R_SetColor( color );
 
 	CG_DrawPic( x - ( v * 300 ), y - ( v * 300 ),
