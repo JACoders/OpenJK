@@ -5404,9 +5404,10 @@ void PM_SetAnimFinal(int *torsoAnim, int *legsAnim,
 	PM_SaberStartTransAnim(gent->client->ps.saberAnimLevel, anim, &timeScaleMod, gent);
 
 	if (*torsoAnim == BOTH_MELEE1 || *torsoAnim == BOTH_MELEE2)
-	{//non-heavy punches are faster FIXME: Give player heavy punch cheat?
-		if (pm->gent->s.number == 0 || !(pm->gent->NPC->aiFlags&NPCAI_HEAVY_MELEE))
-			timeScaleMod *= 2.0;
+	{//non-heavy punches are faster FIXME: Give player heavy punch cheat?		
+		if (gent->s.number == 0 || !(gent->NPC->aiFlags&NPCAI_HEAVY_MELEE)) {
+			timeScaleMod *= 1.25;
+		}				
 	}
 	
 

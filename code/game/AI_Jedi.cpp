@@ -5469,6 +5469,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 	{//melee cultists punch rarely
 		if (NPC->s.weapon == WP_MELEE 			
 			&& enemy_dist <= 0
+			&& ucmd.forwardmove >= 0 //if moving backwards punch tends to miss
 			&& (NPC->client->ps.groundEntityNum != ENTITYNUM_NONE
 				&& NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE)) //both on ground
 		{
@@ -5480,7 +5481,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 				{//we already tried to push/pull and aren't using another force power
 					if (!Q_irand(0, 10) - NPCInfo->stats.aggression)
 					{
-						TIMER_Set(NPC, "attackDelay", Q_irand(2000, 3000)); //don't try a punch again for a while
+						TIMER_Set(NPC, "attackDelay", Q_irand(1000, 3000)); //single punches only, don't try again for a while
 					}
 				}
 			}						

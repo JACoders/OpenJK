@@ -530,7 +530,7 @@ void NPC_BSGrenadier_Attack( void )
 				//reset fire-timing variables
 				if (NPCInfo->aiFlags&NPCAI_HEAVY_MELEE)
 				{
-					if (enemyUsingSaber && TIMER_Done(NPC, "sleepTime"))
+					if (enemyUsingSaber && !Q_irand(0,999) /*&& TIMER_Done(NPC, "sleepTime")*/)
 					{
 						TIMER_Set(NPC, "sleepTime", Q_irand(2000, 5000));//keep using melee for a short while
 						NPC_ChangeWeapon(WP_MELEE);
@@ -559,7 +559,7 @@ void NPC_BSGrenadier_Attack( void )
 			//reset fire-timing variables
 			if (enemyUsingSaber && enemyDist < 64*64)
 			{//if enemy is close and using saber, wait until we've at least had a short chance to use melee
-				if (TIMER_Done(NPC, "sleepTime"))
+				if (!Q_irand(0,999)/*TIMER_Done(NPC, "sleepTime")*/)
 				{
 					TIMER_Set(NPC, "sleepTime", Q_irand(1500, 3000));
 					NPC_ChangeWeapon(WP_THERMAL);

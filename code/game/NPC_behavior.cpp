@@ -1827,8 +1827,8 @@ qboolean NPC_BSFlee( void )
 	bool		moveSuccess			= false;
 	bool		inSurrender			= (level.time<NPCInfo->surrenderTime);
 
-	if (TIMER_Done(NPC, "panic") && NPC_CheckSurrender())
-	{
+	if (NPCInfo->surrenderTime - level.time < 4000 && NPC_CheckSurrender())
+	{//currently or just finished surrendering
 		return qfalse;
 	}
 
