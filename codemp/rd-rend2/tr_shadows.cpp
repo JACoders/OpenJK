@@ -59,9 +59,8 @@ void R_AddEdgeDef( int i1, int i2, int facing ) {
 }
 
 void R_RenderShadowEdges( void ) {
-	int		i;
-
 #if 0
+	int		i;
 	int		numTris;
 
 	// dumb way -- render every triangle's edges

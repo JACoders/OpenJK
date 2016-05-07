@@ -2719,6 +2719,8 @@ R_LoadEntities
 void R_LoadEntities( lump_t *l ) {
 	const char *p;
 	char *token, *s;
+	char vertexRemapShaderText[] = "vertexremapshader";
+	char remapShaderText[] = "remapshader";
 	char keyname[MAX_TOKEN_CHARS];
 	char value[MAX_TOKEN_CHARS];
 	world_t	*w;
@@ -2761,7 +2763,7 @@ void R_LoadEntities( lump_t *l ) {
 		Q_strncpyz(value, token, sizeof(value));
 
 		// check for remapping of shaders for vertex lighting
-		s = "vertexremapshader";
+		s = vertexRemapShaderText;
 		if (!Q_strncmp(keyname, s, strlen(s)) ) {
 			s = strchr(value, ';');
 			if (!s) {
@@ -2775,7 +2777,7 @@ void R_LoadEntities( lump_t *l ) {
 			continue;
 		}
 		// check for remapping of shaders
-		s = "remapshader";
+		s = remapShaderText;
 		if (!Q_strncmp(keyname, s, strlen(s)) ) {
 			s = strchr(value, ';');
 			if (!s) {

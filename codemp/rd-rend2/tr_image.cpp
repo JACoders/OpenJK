@@ -73,7 +73,7 @@ void R_GammaCorrect( byte *buffer, int bufSize ) {
 }
 
 typedef struct {
-	char *name;
+	const char *name;
 	int	minimize, maximize;
 } textureMode_t;
 
@@ -181,7 +181,7 @@ int R_SumOfUsedImages( void ) {
 	return total;
 }
 
-static float GetReadableSize( int bytes, char **units )
+static float GetReadableSize( int bytes, const char **units )
 {
 	float result = bytes;
 	*units = "b ";
@@ -215,14 +215,14 @@ R_ImageList_f
 void R_ImageList_f( void ) {
 	int i;
 	int estTotalSize = 0;
-	char *sizeSuffix;
+	const char *sizeSuffix;
 	image_t *image = tr.images;
 
 	ri->Printf(PRINT_ALL, "\n      -w-- -h-- type  -size- --name-------\n");
 
 	for ( i = 0 ; i < tr.numImages ; i++, image = image->poolNext )
 	{
-		char *format = "???? ";
+		const char *format = "???? ";
 		int estSize;
 
 		estSize = image->uploadHeight * image->uploadWidth;
@@ -2305,6 +2305,7 @@ static image_t *R_AllocImage()
 	return result;
 }
 
+#if 0
 static void R_FreeImage( image_t *imageToFree )
 {
 	if ( imageToFree )
@@ -2339,6 +2340,7 @@ static void R_FreeImage( image_t *imageToFree )
 		}
 	}
 }
+#endif
 
 /*
 ================

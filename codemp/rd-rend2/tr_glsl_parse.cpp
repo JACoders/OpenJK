@@ -64,9 +64,6 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 	int line = 1;
 	while ( text[i] )
 	{
-		int markerStart = i;
-		int markerEnd = -1;
-
 		if ( strncmp(text + i, "/*[", 3) == 0 )
 		{
 			int startHeaderTitle = i + 3;

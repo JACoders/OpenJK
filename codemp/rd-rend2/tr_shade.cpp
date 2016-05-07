@@ -408,95 +408,6 @@ static void ComputeDeformValues(deform_t *type, genFunc_t *waveFunc, float defor
 	}
 }
 
-
-static void ProjectDlightTexture( void ) {
-	int		l;
-	vec3_t	origin;
-	float	scale;
-	float	radius;
-	deform_t deformType;
-	genFunc_t deformGen;
-	float deformParams[7];
-
-	if ( !backEnd.refdef.num_dlights ) {
-		return;
-	}
-
-	ComputeDeformValues(&deformType, &deformGen, deformParams);
-
-	for ( l = 0 ; l < backEnd.refdef.num_dlights ; l++ ) {
-		dlight_t	*dl;
-		shaderProgram_t *sp;
-
-		if ( !( tess.dlightBits & ( 1 << l ) ) ) {
-			continue;	// this surface definately doesn't have any of this light
-		}
-
-		dl = &backEnd.refdef.dlights[l];
-
-		GL_Bind( tr.dlightImage );
-
-		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
-		// where they aren't rendered
-		uint32_t shaderCaps = 0;
-		if ( dl->additive ) {
-			GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
-			shaderCaps |= DLIGHTDEF_USE_ATEST_GT;
-		}
-		else {
-			GL_State( GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL );
-			shaderCaps |= DLIGHTDEF_USE_ATEST_GT;
-		}
-
-		if ( deformGen != DGEN_NONE )
-		{
-			shaderCaps |= DLIGHTDEF_USE_DEFORM_VERTEXES;
-		}
-
-		backEnd.pc.c_dlightDraws++;
-
-		sp = &tr.dlightShader[shaderCaps];
-		GLSL_BindProgram(sp);
-
-		VectorCopy( dl->transformed, origin );
-		radius = dl->radius;
-		scale = 1.0f / radius;
-
-		vec4_t color = {dl->color[0], dl->color[1], dl->color[2], 1.0f};
-		vec4_t dlightInfo = {origin[0], origin[1], origin[2], scale};
-
-		GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-		GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
-		if (deformType != DEFORM_NONE)
-		{
-			GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
-			GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
-			GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
-		}
-
-		GLSL_SetUniformVec4(sp, UNIFORM_COLOR, color);
-		GLSL_SetUniformVec4(sp, UNIFORM_DLIGHTINFO, dlightInfo);
-
-		if (tess.multiDrawPrimitives)
-		{
-			shaderCommands_t *input = &tess;
-			R_DrawMultiElementsVBO(input->multiDrawPrimitives, input->multiDrawMinIndex, input->multiDrawMaxIndex, input->multiDrawNumIndexes, input->multiDrawFirstIndex);
-		}
-		else
-		{
-			R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
-		}
-
-		backEnd.pc.c_totalIndexes += tess.numIndexes;
-		backEnd.pc.c_dlightIndexes += tess.numIndexes;
-		backEnd.pc.c_dlightVertexes += tess.numVertexes;
-
-		RB_BinTriangleCounts();
-	}
-}
-
-
 static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t vertColor, int blend, colorGen_t *forceRGBGen, alphaGen_t *forceAlphaGen )
 {
 	colorGen_t rgbGen = pStage->rgbGen;
@@ -1369,6 +1280,8 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 						case ATEST_CMP_GE:
 							index |= LIGHTDEF_USE_ATEST_GE;
 							break;
+						default:
+							break;
 					}
 				}
 			}
@@ -1414,6 +1327,8 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 							break;
 						case ATEST_CMP_GE:
 							index |= GENERICDEF_USE_ATEST_GE;
+							break;
+						default:
 							break;
 					}
 				}
@@ -1475,6 +1390,8 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 							break;
 						case ATEST_CMP_GE:
 							index |= LIGHTDEF_USE_ATEST_GE;
+							break;
+						default:
 							break;
 					}
 				}

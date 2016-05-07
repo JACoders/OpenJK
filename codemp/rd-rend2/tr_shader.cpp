@@ -3040,6 +3040,8 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 		case ATEST_CMP_GE:
 			defs |= LIGHTDEF_USE_ATEST_GE;
 			break;
+		default:
+			break;
 	}
 
 	//ri->Printf(PRINT_ALL, ".\n");

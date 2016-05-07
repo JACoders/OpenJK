@@ -367,7 +367,6 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	int firstVertex = tess.numVertexes;
 	int minIndex = tess.minIndex;
 	int maxIndex = tess.maxIndex;
-	vec4_t color;
 
 	tess.firstIndex = tess.numIndexes;
 	

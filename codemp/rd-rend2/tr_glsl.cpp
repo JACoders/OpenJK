@@ -51,7 +51,7 @@ const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
 
 typedef struct uniformInfo_s
 {
-	char *name;
+	const char *name;
 	int type;
 	int size;
 }
@@ -1871,7 +1871,6 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 	for (i = 0; i < LIGHTDEF_COUNT; i++)
 	{
 		int lightType = i & LIGHTDEF_LIGHTTYPE_MASK;
-		qboolean fastLight = (qboolean)!(r_normalMapping->integer || r_specularMapping->integer);
 
 		// skip impossible combos
 		if (!GLSL_IsValidPermutationForLight (lightType, i))
@@ -2307,6 +2306,7 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 			case ATEST_CMP_LT:	shaderAttribs |= GENERICDEF_USE_ATEST_LT; break;
 			case ATEST_CMP_GT:	shaderAttribs |= GENERICDEF_USE_ATEST_GT; break;
 			case ATEST_CMP_GE:	shaderAttribs |= GENERICDEF_USE_ATEST_GE; break;
+			default: break;
 		}
 	}
 

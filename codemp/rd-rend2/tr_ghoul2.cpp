@@ -113,22 +113,6 @@ qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2);
 extern cvar_t	*r_Ghoul2AnimSmooth;
 extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
 
-static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, const int boneNum)
-{
-	size_t i = 0;
-
-	while (i < blist.size())
-	{
-		if (blist[i].boneNumber == boneNum)
-		{
-			return i;
-		}
-		i++;
-	}
-
-	return -1;
-}
-
 const static mdxaBone_t		identityMatrix = 
 { 
 	{
@@ -1343,7 +1327,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 	skel = (mdxaSkel_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
 
 	//find/add the bone in the list
-	if (!skel->name || !skel->name[0])
+	if (!skel->name[0])
 	{
 		bListIndex = -1;
 	}
@@ -1382,7 +1366,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 		pskel = (mdxaSkel_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t) + offsets->offsets[parent]);
 
 		//taking bone matrix for the skeleton frame and parent's animFrameMatrix into account, determine our final animFrameMatrix
-		if (!pskel->name || !pskel->name[0])
+		if (!pskel->name[0])
 		{
 			parentBlistIndex = -1;
 		}
@@ -4240,8 +4224,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				float *v0, *v1, *v2;
 				float *uv0, *uv1, *uv2;
 				vec3_t normal = { 0.0f, 0.0f, 0.0f };
-				vec3_t tangent = { 0.0f, 0.0f, 0.0f };
-				vec3_t bitangent = { 0.0f, 0.0f, 0.0f };
 
 				index[0] = t[k].indexes[0];
 				index[1] = t[k].indexes[1];

@@ -564,7 +564,7 @@ static void InitOpenGL( void )
 GL_CheckErrors
 ==================
 */
-void GL_CheckErrs( char *file, int line ) {
+void GL_CheckErrs( const char *file, int line ) {
 #if defined(_DEBUG)
 	GLenum	err;
 	char	s[64];

@@ -2434,23 +2434,6 @@ static const void *RB_EndTimedBlock( const void *data )
 }
 
 
-static void RB_Begin2DPass()
-{
-	if ( backEndData->currentPass )
-	{
-		return;
-	}
-
-	*backEndData->currentPass = {};
-	backEndData->currentPass = ojkAllocArray<Pass>(*backEndData->perFrameMemory, 8000);
-}
-
-static void RB_End2DPass()
-{
-
-}
-
-
 /*
 ====================
 RB_ExecuteRenderCommands

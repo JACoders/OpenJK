@@ -500,7 +500,7 @@ void GLimp_InitCoreFunctions()
 void GLW_InitTextureCompression( void );
 void GLimp_InitExtensions()
 {
-	char *extension;
+	const char *extension;
 	const char* result[3] = { "...ignoring %s\n", "...using %s\n", "...%s not found\n" };
 
 	Com_Printf ("Initializing OpenGL extensions\n" );
