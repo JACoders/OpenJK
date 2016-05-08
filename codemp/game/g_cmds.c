@@ -11662,7 +11662,14 @@ void Cmd_PlayerMode_f( gentity_t *ent ) {
 	save_account(ent);
 
 	if (ent->client->sess.amrpgmode == 1)
+	{
+		if (level.bounty_quest_choose_target == qfalse && level.bounty_quest_target_id == ent->s.number)
+		{ // zyk: if this player was the target, remove it so the bounty quest can get a new target
+			level.bounty_quest_choose_target = qtrue;
+			level.bounty_quest_target_id++;
+		}
 		trap->SendServerCommand( ent-g_entities, "print \"^7You are now in ^2Admin-Only mode^7.\n\"" );
+	}
 	else
 	{
 		zyk_load_magic_master_config(ent);
