@@ -204,18 +204,12 @@ const char *Music_BaseStateToString( MusicState_e eMusicState, qboolean bDebugPr
 	return NULL;
 }
 
-static sstring_t StringViewToSString( const gsl::cstring_view& view )
-{
-	std::size_t len = std::min< std::size_t >( view.size(), MAX_QPATH - 1 );
-	return sstring_t( std::string( view.begin(), view.begin() + len ).c_str() );
-}
-
 static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Parser, MusicData_t* MusicData, const CGPGroup& pgMusicFiles, const gsl::cstring_view& psMusicName, const gsl::cstring_view& psMusicNameKey, MusicState_e eMusicState )
 {
 	bool bReturn = false;
 	MusicFile_t MusicFile;
 
-	const CGPGroup* pgMusicFile = pgMusicFiles.FindSubGroup( psMusicName );
+	const CGPGroup* const pgMusicFile = pgMusicFiles.FindSubGroup( psMusicName );
 	if( pgMusicFile )
 	{
 		// read subgroups...
@@ -233,8 +227,10 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 			for( auto& prop : pEntryGroup->GetProperties() )
 			{
 				//if (!strncmp(psKey,sKEY_MARKER,strlen(sKEY_MARKER)))	// for now, assume anything is a marker
-				MusicFile.MusicEntryTimes[ StringViewToSString( prop.GetName() ) ] = Q::svtoi( prop.GetTopValue() );
-				bEntryFound = true;
+				{
+					MusicFile.MusicEntryTimes[ prop.GetName() ] = Q::svtoi( prop.GetTopValue() );
+					bEntryFound = true;
+				}
 			}
 		}
 
@@ -261,12 +257,12 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 
 					if( key == sKEY_NEXTFILE )
 					{
-						MusicExitPoint.sNextFile = StringViewToSString( value );
+						MusicExitPoint.sNextFile = value;
 						bExitFound = true;	// harmless to keep setting
 					}
 					else if( key == sKEY_NEXTMARK )
 					{
-						MusicExitPoint.sNextMark = StringViewToSString( value );
+						MusicExitPoint.sNextMark = value;
 					}
 					else if( key == sKEY_TIME )
 					{
@@ -354,8 +350,8 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 
 	if( bReturn )
 	{
-		MusicFile.sFileNameBase = StringViewToSString( psMusicName );
-		( *MusicData )[ StringViewToSString( psMusicNameKey ) ] = MusicFile;
+		MusicFile.sFileNameBase = psMusicName;
+		( *MusicData )[ psMusicNameKey ] = MusicFile;
 	}
 
 	return bReturn;
@@ -391,6 +387,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 
 	MusicData->clear();
 
+	// shorten level name to MAX_QPATH so sstring's assignment assertion is satisfied.
 	char sLevelName[MAX_QPATH];
 	Q_strncpyz(sLevelName,psLevelName,sizeof(sLevelName));
 
@@ -432,7 +429,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 				const int sanityLimit = 10;
 				while( !searchName.empty() && steps < sanityLimit )
 				{
-					gsLevelNameForLoad = StringViewToSString( searchName );
+					gsLevelNameForLoad = searchName;
 					gsLevelNameForBossLoad = gsLevelNameForLoad;
 					pgThisLevelMusic = pgLevelMusic->FindSubGroup( searchName );
 
@@ -527,7 +524,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 							else
 							{
 								psName_Boss = pValueBoss->GetTopValue();
-								gsLevelNameForBossLoad = StringViewToSString( psName_UseBoss );
+								gsLevelNameForBossLoad = psName_UseBoss;
 							}
 						}
 					}
@@ -553,7 +550,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 
 						MusicFile_t m;
 						m.sFileNameBase = "death_music";
-						( *MusicData )[ "death" ] = m;
+						( *MusicData )[ sKEY_DEATH ] = m;
 					}
 				}
 			}
