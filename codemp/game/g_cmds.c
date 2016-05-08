@@ -4518,7 +4518,6 @@ void load_account(gentity_t *ent, qboolean change_mode)
 
 		// zyk: initializing mind control attributes used in RPG mode
 		ent->client->pers.being_mind_controlled = -1;
-		ent->client->pers.skill_levels[38] = 0;
 		ent->client->pers.mind_controlled1_id = -1;
 
 		// zyk: loading player_settings value
@@ -4868,47 +4867,12 @@ void rpg_score(gentity_t *ent, qboolean admin_rp_mode)
 // zyk: increases the RPG skill counter by this amount
 void rpg_skill_counter(gentity_t *ent, int amount)
 {
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2)
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.level < MAX_RPG_LEVEL)
 	{ // zyk: now RPG mode increases level up score after a certain amount of attacks
 		ent->client->pers.skill_counter += amount;
 		if (ent->client->pers.skill_counter >= MAX_SKILL_COUNTER)
 		{
 			ent->client->pers.skill_counter = 0;
-
-			// zyk: some classes, after reaching level 10, get the Unique Skill
-			if (ent->client->pers.level >= 10)
-			{
-				if (ent->client->pers.rpg_class == 1 && !(ent->client->pers.secrets_found & (1 << 2)))
-				{
-					ent->client->pers.secrets_found |= (1 << 2);
-					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Force User Unique Skill!\"");
-				}
-				else if (ent->client->pers.rpg_class == 4 && !(ent->client->pers.secrets_found & (1 << 3)))
-				{
-					ent->client->pers.secrets_found |= (1 << 3);
-					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Monk Unique Skill!\"");
-				}
-				else if (ent->client->pers.rpg_class == 6 && !(ent->client->pers.secrets_found & (1 << 4)))
-				{
-					ent->client->pers.secrets_found |= (1 << 4);
-					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Duelist Unique Skill!\"");
-				}
-				else if (ent->client->pers.rpg_class == 7 && !(ent->client->pers.secrets_found & (1 << 5)))
-				{
-					ent->client->pers.secrets_found |= (1 << 5);
-					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Force Gunner Unique Skill!\"");
-				}
-				else if (ent->client->pers.rpg_class == 8 && !(ent->client->pers.secrets_found & (1 << 6)))
-				{
-					ent->client->pers.secrets_found |= (1 << 6);
-					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Magic Master Unique Skill!\"");
-				}
-				else if (ent->client->pers.rpg_class == 9 && !(ent->client->pers.secrets_found & (1 << 18)))
-				{
-					ent->client->pers.secrets_found |= (1 << 18);
-					trap->SendServerCommand( ent->s.number, "chat \"^3Skill Counter: ^7learned Force Tank Unique Skill!\"");
-				}
-			}
 
 			// zyk: skill counter does not give credits, only Level Up Score
 			ent->client->pers.credits_modifier = -10;
@@ -6161,7 +6125,7 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 		return;
 	}
 
-	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.mind_controlled1_id != -1)
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 1 && ent->client->pers.mind_controlled1_id != -1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You cant logout while using Mind Control on someone.\n\"" );
 		return;
@@ -6890,7 +6854,7 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 		else
 		{
 			if (dont_show_message == qfalse)
-				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Mind Control ^7skill.\n\"" );
+				trap->SendServerCommand( ent-g_entities, "print \"You reached the maximum level of ^3Unique Skill^7.\n\"" );
 			return qfalse;
 		}
 	}
@@ -7377,7 +7341,7 @@ qboolean validate_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont
 		return qfalse;
 	}
 
-	if (ent->client->pers.rpg_class == 4 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 9) || upgrade_value == 11 || upgrade_value == 14 || upgrade_value == 17 || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 39 && upgrade_value <= 54)))
+	if (ent->client->pers.rpg_class == 4 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 9) || upgrade_value == 11 || upgrade_value == 14 || upgrade_value == 17 || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 40 && upgrade_value <= 54)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"Monk class doesn't allow this skill.\n\"" );
@@ -7391,28 +7355,28 @@ qboolean validate_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont
 		return qfalse;
 	}
 
-	if (ent->client->pers.rpg_class == 6 && ((upgrade_value >= 12 && upgrade_value <= 13) || (upgrade_value >= 17 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 38 && upgrade_value <= 54)))
+	if (ent->client->pers.rpg_class == 6 && ((upgrade_value >= 12 && upgrade_value <= 13) || (upgrade_value >= 17 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || upgrade_value == 38 || (upgrade_value >= 40 && upgrade_value <= 54)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"Duelist class doesn't allow this skill.\n\"" );
 		return qfalse;
 	}
 
-	if (ent->client->pers.rpg_class == 7 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 8) || (upgrade_value >= 11 && upgrade_value <= 12) || upgrade_value == 15 || upgrade_value == 17 || upgrade_value == 20 || upgrade_value == 23 || (upgrade_value >= 25 && upgrade_value <= 26) || (upgrade_value >= 28 && upgrade_value <= 29) || upgrade_value == 39 || (upgrade_value >= 45 && upgrade_value <= 46) || upgrade_value == 48 || upgrade_value == 51 || (upgrade_value >= 53 && upgrade_value <= 54)))
+	if (ent->client->pers.rpg_class == 7 && (upgrade_value == 4 || (upgrade_value >= 6 && upgrade_value <= 8) || (upgrade_value >= 11 && upgrade_value <= 12) || upgrade_value == 15 || upgrade_value == 17 || upgrade_value == 20 || upgrade_value == 23 || (upgrade_value >= 25 && upgrade_value <= 26) || (upgrade_value >= 28 && upgrade_value <= 29) || (upgrade_value >= 45 && upgrade_value <= 46) || upgrade_value == 48 || upgrade_value == 51 || (upgrade_value >= 53 && upgrade_value <= 54)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"Force Gunner class doesn't allow this skill.\n\"" );
 		return qfalse;
 	}
 
-	if (ent->client->pers.rpg_class == 8 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 47) || (upgrade_value >= 49 && upgrade_value <= 55)))
+	if (ent->client->pers.rpg_class == 8 && ((upgrade_value >= 1 && upgrade_value <= 4) || (upgrade_value >= 6 && upgrade_value <= 18) || (upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 34 || (upgrade_value >= 36 && upgrade_value <= 38) || (upgrade_value >= 40 && upgrade_value <= 47) || (upgrade_value >= 49 && upgrade_value <= 55)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"Magic Master class doesn't allow this skill.\n\"" );
 		return qfalse;
 	}
 
-	if (ent->client->pers.rpg_class == 9 && (upgrade_value == 4 || upgrade_value == 10 || (upgrade_value >= 12 && upgrade_value <= 13) || upgrade_value == 14 || upgrade_value == 16 || upgrade_value == 18 || (upgrade_value >= 20 && upgrade_value <= 29) || (upgrade_value >= 34 && upgrade_value <= 54)))
+	if (ent->client->pers.rpg_class == 9 && (upgrade_value == 4 || upgrade_value == 10 || (upgrade_value >= 12 && upgrade_value <= 13) || upgrade_value == 14 || upgrade_value == 16 || upgrade_value == 18 || (upgrade_value >= 20 && upgrade_value <= 29) || (upgrade_value >= 34 && upgrade_value <= 38) || (upgrade_value >= 40 && upgrade_value <= 54)))
 	{
 		if (dont_show_message == qfalse)
 			trap->SendServerCommand( ent-g_entities, "print \"Force Tank class doesn't allow this skill.\n\"" );
@@ -8214,7 +8178,7 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 		}
 		else
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Mind Control ^7skill.\n\"" );
+			trap->SendServerCommand( ent-g_entities, "print \"You reached the minimum level of ^3Unique Skill ^7.\n\"" );
 			return;
 		}
 	}
@@ -8709,10 +8673,10 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 		else
 			sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
 
-		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-			sprintf(message_content[8],"^039 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
+		if (ent->client->pers.rpg_class == 0 || ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
+			sprintf(message_content[8],"^039 - Unique Skill: %d/1\n", ent->client->pers.skill_levels[38]);
 		else
-			sprintf(message_content[8],"^639 - Mind Control: %d/1\n", ent->client->pers.skill_levels[38]);
+			sprintf(message_content[8],"^739 - Unique Skill: %d/1\n", ent->client->pers.skill_levels[38]);
 
 		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
 			sprintf(message_content[9],"^055 - Force Power: %d/5\n", ent->client->pers.skill_levels[54]);
@@ -8782,25 +8746,6 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^2yes\n",message_content[6]);
 		else
 			sprintf(message_content[6],"%s^3s  ^6- Magic Powers: ^1no\n",message_content[6]);
-
-		if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-		else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-		else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-		else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-		else if (ent->client->pers.secrets_found & (1 << 6) && ent->client->pers.rpg_class == 8)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-		else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^2yes\n",message_content[7]);
-		else if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || 
-					ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 ||
-					ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-			sprintf(message_content[7],"%s^3#  ^7- Unique Skill: ^1no\n",message_content[7]);
-		else
-			sprintf(message_content[7],"%s^0#  ^0- Unique Skill: no\n",message_content[7]);
 
 		for (i = 0; i < 11; i++)
 		{
@@ -9208,7 +9153,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "classes" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7 Has all skills, but no unique features\n^31 - Force User\n^7 Has saber and force with more damage and force powers use less force\n^32 - Bounty Hunter\n^7 Has guns with more damage. Gets more credits in battles\n^33 - Armored Soldier\n^7 Deflects some gun shots. Has guns and some holdable items. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7 Has highest melee damage and some force powers. Melee can destroy some objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7 Uses some guns. Has highest gun damage. Does not decloak by electric attacks\n^36 - Duelist\n^7 Has some force powers, more melee damage and the highest saber damage. \n^37 - Force Gunner\n^7 Has some force powers and guns. Improvements increase more damage and resistance than Free Warrior\n^38 - Magic Master\n^7 Has very few skills. Learn special powers\n^39 - Force Tank\n^7 uses saber and force. Has more resistance to damage but no heal\n\n^3/rpgclass <class number>\n\"" );
+				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7 the most balanced class\n^31 - Force User\n^7 Has saber and force with more damage. Force powers use less force. Mind Trick can mind control enemies\n^32 - Bounty Hunter\n^7 Has guns with more damage. Gets more credits in battles\n^33 - Armored Soldier\n^7 Deflects some gun shots. Has guns and some holdable items. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7 Has highest melee damage and some force powers. Melee can destroy some objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7 Uses some guns. Has highest gun damage. Does not decloak by electric attacks\n^36 - Duelist\n^7 Has some force powers, more melee damage and the highest saber damage. \n^37 - Force Gunner\n^7 Has some force powers and guns. Improvements increase more damage and resistance than Free Warrior\n^38 - Magic Master\n^7 Has very few skills. Learn special powers\n^39 - Force Tank\n^7 uses saber and force. Has more resistance to damage but no heal\n\n^3/rpgclass <class number>\n\"" );
 			}
 			else if (Q_stricmp( arg1, "info" ) == 0)
 			{
@@ -9319,7 +9264,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 11)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Protect: ^7decreases damage done to you by non-force power attacks. At level 4 decreases force consumption when receiving damage\n\"" );
 					if (i == 12)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Mind Trick: ^7makes yourself invisible to the players affected by this force power. If you have Mind Control, you can also control a player or npc. Level 1 has a duration of 20 seconds, level 2 is 25 seconds and level 3 is 30 seconds\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Mind Trick: ^7makes yourself invisible to the players affected by this force power. Force User class can mind control a player or npc. Level 1 has a duration of 20 seconds, level 2 is 25 seconds and level 3 is 30 seconds\n\"" );
 					if (i == 13)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Team Heal: ^7restores some health to players near you\n\"" );
 					if (i == 14)
@@ -9373,7 +9318,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 38)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Team Shield Heal: ^7recovers 3 shield at level 1, 6 shield at level 2 and 9 shield at level 3 to players near you. To use it, when near players, use Team Heal force power. It will heal their shield after they have full HP\n\"") );
 					if (i == 39)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Mind Control: ^7allows you to control every action of a player or npc. To use it, when near a player or npc, use Mind Trick force power, if you have Mind Control\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nForce User: creates a force shield around the player that greatly reduces damage and protects against force powers\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: increases magic bolts damage. Inner Area Damage, Lightning Dome and Magic Explosion have more damage and Healing Area has more damage and heals more\nForce Tank: increases resistance to damage for some seconds\n\"") );
 					if (i == 40)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pack: ^7used as ammo for Blaster Pistol, Bryar Pistol and E11 Blaster Rifle. You can carry up to %d ammo\n\"",zyk_max_blaster_pack_ammo.integer) );
 					if (i == 41)
@@ -9469,10 +9414,6 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Inner Area Damage: ^7damages everyone near you. MP cost: %d\n^3Healing Area: ^7creates an energy area that heals you and your allies and damage enemies. MP cost: %d\n^3Lightning Dome: ^7creates a dome that does lightning damage. MP cost: %d\n^3Magic Explosion: ^7creates a short explosion that does a lot of damage. MP cost: %d\n\nThis class can use any of the Light Quest special powers. Use A, W or D and melee kata to use a power. You can set each of A, W and D powers with the force power keys (usually the F3, F4, F5, F6, F7 and F8 keys)\n\"", zyk_inner_area_mp_cost.integer, zyk_healing_area_mp_cost.integer, zyk_lightning_dome_mp_cost.integer, zyk_magic_explosion_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 9)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Ice Boulder: ^7creates a boulder that damages and traps enemies nearby for some seconds. Attack with D + special melee to use this power. MP cost: %d\n^3Ice Stalagmite: ^7greatly damages enemies nearby with a stalagmite. Attack with A + special melee to use this power. MP cost: %d\n\"", zyk_ice_boulder_mp_cost.integer, zyk_ice_stalagmite_mp_cost.integer) );
-				}
-				else if (Q_stricmp( arg1, "#" ) == 0)
-				{
-					trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nIt is got after player is at least at level 10 and fills the skill counter\nForce User: creates a force shield around the player that greatly reduces damage and protects against force powers\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: increases magic bolts damage. Inner Area Damage, Lightning Dome and Magic Explosion have more damage and Healing Area has more damage and heals more\nForce Tank: increases resistance to damage for some seconds\n\"") );
 				}
 				else
 				{

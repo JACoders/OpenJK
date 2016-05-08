@@ -3456,9 +3456,9 @@ void ClientThink_real( gentity_t *ent ) {
 
 				if (pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && ent->client->ps.weapon == WP_MELEE)
 				{ // zyk: Unique Skill, used by some RPG classes
-					if (ent->client->pers.unique_skill_timer < level.time)
+					if (ent->client->pers.unique_skill_timer < level.time && ent->client->pers.skill_levels[38] > 0)
 					{
-						if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.rpg_class == 1)
+						if (ent->client->pers.rpg_class == 1)
 						{ // zyk: Force User
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
@@ -3473,7 +3473,7 @@ void ClientThink_real( gentity_t *ent ) {
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
-						else if (ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.rpg_class == 4)
+						else if (ent->client->pers.rpg_class == 4)
 						{ // zyk: Monk
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
@@ -3488,7 +3488,7 @@ void ClientThink_real( gentity_t *ent ) {
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
-						else if (ent->client->pers.secrets_found & (1 << 4) && ent->client->pers.rpg_class == 6)
+						else if (ent->client->pers.rpg_class == 6)
 						{ // zyk: Duelist
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
@@ -3555,7 +3555,7 @@ void ClientThink_real( gentity_t *ent ) {
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
-						else if (ent->client->pers.secrets_found & (1 << 5) && ent->client->pers.rpg_class == 7)
+						else if (ent->client->pers.rpg_class == 7)
 						{ // zyk: Force Gunner
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
@@ -3629,7 +3629,7 @@ void ClientThink_real( gentity_t *ent ) {
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
-						else if (ent->client->pers.secrets_found & (1 << 6) && ent->client->pers.rpg_class == 8)
+						else if (ent->client->pers.rpg_class == 8)
 						{ // zyk: Magic Master
 							if (ent->client->pers.magic_power > 0)
 							{
@@ -3646,7 +3646,7 @@ void ClientThink_real( gentity_t *ent ) {
 								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs at least 1 MP to use it\"");
 							}
 						}
-						else if (ent->client->pers.secrets_found & (1 << 18) && ent->client->pers.rpg_class == 9)
+						else if (ent->client->pers.rpg_class == 9)
 						{ // zyk: Force Tank
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
@@ -3662,7 +3662,7 @@ void ClientThink_real( gentity_t *ent ) {
 							}
 						}
 					}
-					else
+					else if (ent->client->pers.skill_levels[38] > 0)
 					{ // zyk: still in cooldown time, shows the time left in chat
 						trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time)/1000)));
 					}

@@ -713,11 +713,11 @@ typedef struct clientPersistant_s {
 	// Possible bit values (1 << bit_value) are:
 	// 0 - Holdable Items Upgrade
 	// 1 - Bounty Hunter Upgrade
-	// 2 - Force User Unique Skill - got after player reaches level 10 and fills the skill counter once
-	// 3 - Monk Unique Skill - got after player reaches level 10 and fills the skill counter once
-	// 4 - Duelist Unique Skill - got after player reaches level 10 and fills the skill counter once
-	// 5 - Force Gunner Unique Skill - got after player reaches level 10 and fills the skill counter once
-	// 6 - Magic Master Unique Skill - got after player reaches level 10 and fills the skill counter once
+	// 2 - unused
+	// 3 - unused
+	// 4 - unused
+	// 5 - unused
+	// 6 - unused
 	// 7 - Stealth Attacker Upgrade
 	// 8 - Force Gunner Upgrade
 	// 9 - Impact Reducer
@@ -729,7 +729,7 @@ typedef struct clientPersistant_s {
 	// 15 - Stun Baton Upgrade
 	// 16 - Armored Soldier Upgrade
 	// 17 - Jetpack Upgrade
-	// 18 - Force Tank Unique Skill - got after player reaches level 10 and fills the skill counter once
+	// 18 - unused
 	// 19 - Force Tank Upgrade
 	int secrets_found;
 
