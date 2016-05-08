@@ -1645,10 +1645,7 @@ static void CG_ZykMod( void )
 
 			if (Q_stricmp(rpg_class, "Free Warrior") == 0)
 			{
-				if (skill_number == 39)
-					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
-				else
-					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
+				trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
 			}
 			else if (Q_stricmp(rpg_class, "Force User") == 0)
 			{

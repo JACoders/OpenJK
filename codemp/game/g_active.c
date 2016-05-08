@@ -3458,7 +3458,66 @@ void ClientThink_real( gentity_t *ent ) {
 				{ // zyk: Unique Skill, used by some RPG classes
 					if (ent->client->pers.unique_skill_timer < level.time && ent->client->pers.skill_levels[38] > 0)
 					{
-						if (ent->client->pers.rpg_class == 1)
+						if (ent->client->pers.rpg_class == 0)
+						{ // zyk: Free Warrior
+							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
+							{
+								int random_recovery = Q_irand(0,4);
+
+								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
+
+								// zyk: randomly recovers hp, shield, mp, jetpack fuel or flame thrower fuel
+								if (random_recovery == 0)
+								{
+									if ((ent->health + 40) < ent->client->pers.max_rpg_health)
+										ent->health += 40;
+									else
+										ent->health = ent->client->pers.max_rpg_health;
+
+									G_Sound( ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
+								}
+								else if (random_recovery == 1)
+								{
+									if ((ent->client->ps.stats[STAT_ARMOR] + 60) < ent->client->pers.max_rpg_shield)
+										ent->client->ps.stats[STAT_ARMOR] += 60;
+									else
+										ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+
+									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
+								}
+								else if (random_recovery == 2)
+								{
+									if ((ent->client->pers.magic_power + 10) < zyk_max_magic_power(ent))
+										ent->client->pers.magic_power += 10;
+									else
+										ent->client->pers.magic_power = zyk_max_magic_power(ent);
+
+									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+
+									send_rpg_events(2000);
+								}
+								else if (random_recovery == 3)
+								{
+									ent->client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
+									ent->client->ps.jetpackFuel = 100;
+									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+								}
+								else if (random_recovery == 4)
+								{
+									ent->client->ps.cloakFuel = 100;
+									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+								}
+
+								ent->client->pers.unique_skill_timer = level.time + 60000;
+							}
+							else
+							{
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/2)));
+							}
+						}
+						else if (ent->client->pers.rpg_class == 1)
 						{ // zyk: Force User
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{

@@ -7324,13 +7324,6 @@ qboolean validate_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont
 	}
 
 	// zyk: validation on skills that are allowed to specific RPG classes
-	if (ent->client->pers.rpg_class == 0 && upgrade_value == 39)
-	{
-		if (dont_show_message == qfalse)
-			trap->SendServerCommand( ent-g_entities, "print \"Free Warrior class doesn't allow this skill.\n\"" );
-		return qfalse;
-	}
-
 	if (ent->client->pers.rpg_class == 1 && ((upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 40 && upgrade_value <= 54)))
 	{
 		if (dont_show_message == qfalse)
@@ -8684,7 +8677,7 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 		else
 			sprintf(message_content[7],"^638 - Team Shield Heal: %d/3\n", ent->client->pers.skill_levels[37]);
 
-		if (ent->client->pers.rpg_class == 0 || ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
+		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
 			sprintf(message_content[8],"^039 - Unique Skill: %d/1\n", ent->client->pers.skill_levels[38]);
 		else
 			sprintf(message_content[8],"^739 - Unique Skill: %d/1\n", ent->client->pers.skill_levels[38]);
@@ -9329,7 +9322,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 38)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Team Shield Heal: ^7recovers 3 shield at level 1, 6 shield at level 2 and 9 shield at level 3 to players near you. To use it, when near players, use Team Heal force power. It will heal their shield after they have full HP\n\"") );
 					if (i == 39)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nForce User: creates a force shield around the player that greatly reduces damage and protects against force powers\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: increases magic bolts damage. Inner Area Damage, Lightning Dome and Magic Explosion have more damage and Healing Area has more damage and heals more\nForce Tank: increases resistance to damage for some seconds\n\"") );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Unique Skill: ^7Used by pressing Saber Style key when using melee\nFree Warrior: randomly chooses to recover some hp, shield, mp, jetpack fuel or flame thrower fuel\nForce User: creates a force shield around the player that greatly reduces damage and protects against force powers\nMonk: increases resistance to damage\nDuelist: recovers some MP and disables jetpack and force regen of enemies nearby\nForce Gunner: disarms enemies nearby\nMagic Master: increases magic bolts, Inner Area Damage, Lightning Dome, Magic Explosion and Healing Area damage. Healing Area heals more\nForce Tank: increases resistance to damage for some seconds\n\"") );
 					if (i == 40)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pack: ^7used as ammo for Blaster Pistol, Bryar Pistol and E11 Blaster Rifle. You can carry up to %d ammo\n\"",zyk_max_blaster_pack_ammo.integer) );
 					if (i == 41)
