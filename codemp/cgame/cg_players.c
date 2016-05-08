@@ -6662,6 +6662,20 @@ void CG_DrawPlayerSphere(centity_t *cent, vec3_t origin, float scale, int shader
 		ent.shaderRGBA[2] = 255;
 		ent.shaderRGBA[3] = 20;
 	}
+	else if (shader == cgs.media.ysaliredShader)
+	{ // zyk: added the red ysal shader
+		ent.shaderRGBA[0] = 255;
+		ent.shaderRGBA[1] = 20;
+		ent.shaderRGBA[2] = 0;
+		ent.shaderRGBA[3] = 80;
+	}
+	else if (shader == cgs.media.ysaliblueShader)
+	{ // zyk: added the blue ysal shader
+		ent.shaderRGBA[0] = 0;
+		ent.shaderRGBA[1] = 20;
+		ent.shaderRGBA[2] = 255;
+		ent.shaderRGBA[3] = 80;
+	}
 	else
 	{ //ysal red/blue, boon
 		ent.shaderRGBA[0] = 255.0f;
@@ -9935,6 +9949,12 @@ void CG_Player( centity_t *cent ) {
 		{
 			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysalimariShader );
 		}
+	}
+
+	if (cent->currentState.number < MAX_CLIENTS && cg.is_a_force_user[cent->currentState.number] == qtrue && 
+		cent->currentState.powerups & (1 << PW_NEUTRALFLAG))
+	{ // zyk: if this is a Force User, draws the Force Shield effect
+		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliblueShader );
 	}
 
 	if (cent->currentState.powerups & (1 << PW_FORCE_BOON))

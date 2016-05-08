@@ -1021,6 +1021,9 @@ Ghoul2 Insert End
 	int ultra_strength_duration;
 	int ultra_resistance_duration;
 
+	// zyk: tests if this player is a force user class in RPG Mode
+	qboolean is_a_force_user[MAX_CLIENTS];
+
 	// zyk: sets clients which must have some RPG stuff set for this cg player to see the stuff on them
 	// Possible bitvalues:
 	// 0 - Blue Jet Flame

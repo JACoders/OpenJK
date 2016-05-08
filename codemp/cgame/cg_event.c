@@ -2614,27 +2614,6 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 	case EV_USE_ITEM8:
 		DEBUGNAME("EV_USE_ITEM8");
 		//CG_UseItem( cent ); zyk: commented this, not used in mod
-
-		if (cg.snap->ps.clientNum == es->number)
-		{
-			if (es->eventParm <= 100)
-			{ // zyk: current magic power
-				cg.magic_power = es->eventParm;
-			}
-			else if (es->eventParm == 101)
-			{ // zyk: Immunity Power
-				cg.immunity_power_duration = cg.time + 25000;
-			}
-			else if (es->eventParm == 102)
-			{ // zyk: Ultra Strength
-				cg.ultra_strength_duration = cg.time + 30000;
-			}
-			else if (es->eventParm == 103)
-			{ // zyk: Ultra Resistance
-				cg.ultra_resistance_duration = cg.time + 30000;
-			}
-		}
-
 		break;
 	case EV_USE_ITEM9:
 		DEBUGNAME("EV_USE_ITEM9");
@@ -2688,6 +2667,19 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				cg.ultra_resistance_duration = cg.time + 30000;
 			}
 		}
+
+		if (es->number < MAX_CLIENTS)
+		{
+			if (es->eventParm == 104)
+			{ // zyk: Force User
+				cg.is_a_force_user[es->number] = qtrue;
+			}
+			else if (es->eventParm == 105)
+			{ // zyk: not a Force User
+				cg.is_a_force_user[es->number] = qfalse;
+			}
+		}
+
 		break;
 	case EV_USE_ITEM14:
 		DEBUGNAME("EV_USE_ITEM14");

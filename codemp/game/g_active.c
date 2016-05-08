@@ -943,6 +943,15 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 			client->pers.player_statuses |= (1 << 3);
 		}
+		else if (client->pers.player_statuses & (1 << 7))
+		{ // zyk: tell the client-side mod if this is a Force User or not, so it can render the Force Shield effect
+			if (client->pers.rpg_class == 1)
+				G_AddEvent(ent, EV_USE_ITEM13, 104);
+			else
+				G_AddEvent(ent, EV_USE_ITEM13, 105);
+
+			client->pers.player_statuses &= ~(1 << 7);
+		}
 		else
 		{
 			// zyk: event to set the stealth attacker upgrade
@@ -3535,9 +3544,9 @@ void ClientThink_real( gentity_t *ent ) {
 								else
 									ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
-								send_rpg_events(2000);
-
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
+
+								send_rpg_events(2000);
 
 								ent->client->pers.unique_skill_timer = level.time + 45000;
 							}
@@ -3626,9 +3635,9 @@ void ClientThink_real( gentity_t *ent ) {
 							{
 								ent->client->pers.magic_power--;
 
-								send_rpg_events(2000);
-
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								send_rpg_events(2000);
 
 								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}

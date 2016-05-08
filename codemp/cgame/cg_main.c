@@ -2521,6 +2521,7 @@ Ghoul2 Insert End
 	for (j = 0; j < MAX_CLIENTS; j++)
 	{
 		cg.zyk_rpg_stuff[j] = 0;
+		cg.is_a_force_user[j] = qfalse;
 	}
 
 	cgs.processedSnapshotNum = serverMessageNum;
