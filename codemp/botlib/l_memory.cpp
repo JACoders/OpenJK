@@ -398,7 +398,7 @@ void *GetHunkMemory(unsigned long size)
 	if (!ptr) return NULL;
 	memid = (unsigned long int *) ptr;
 	*memid = HUNK_ID;
-	return (unsigned long int *) ((char *) ptr + alignof(std::max_align_t));
+	return (unsigned long int *) ((char *) ptr + sizeof(max_align_t));
 } //end of the function GetHunkMemory
 //===========================================================================
 //
@@ -431,7 +431,7 @@ void FreeMemory(void *ptr)
 {
 	unsigned long int *memid;
 
-	memid = (unsigned long int *) ((char *) ptr - alignof(std::max_align_t));
+	memid = (unsigned long int *) ((char *) ptr - sizeof(max_align_t));
 
 	if (*memid == MEM_ID)
 	{
