@@ -3511,16 +3511,18 @@ void ClientThink_real( gentity_t *ent ) {
 												{ //disable jetpack temporarily
 													if (player_ent->client->jetPackOn)
 														Jetpack_Off(player_ent);
-													player_ent->client->jetPackToggleTime = level.time + 7000;
+													player_ent->client->jetPackToggleTime = level.time + 8000;
+													player_ent->client->ps.powerups[PW_QUAD] = level.time + 8000;
 												}
 												else if (player_ent->NPC && player_ent->client->NPC_class == CLASS_BOBAFETT)
 												{ // zyk: also disables npc jetpack
 													Boba_FlyStop(player_ent);
+													player_ent->client->ps.powerups[PW_QUAD] = level.time + 8000;
 												}
 
 												if (player_ent->client->ps.fd.forcePowerMax > 0)
 												{ // zyk: disables force regen
-													player_ent->client->ps.powerups[PW_QUAD] = level.time + 7000;
+													player_ent->client->ps.powerups[PW_QUAD] = level.time + 8000;
 												}
 											}
 										}
