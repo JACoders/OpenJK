@@ -666,6 +666,7 @@ static void ComputeFogValues(vec4_t fogDistanceVector, vec4_t fogDepthVector, fl
 
 		*eyeT = DotProduct( backEnd.ori.viewOrigin, fogDepthVector ) + fogDepthVector[3];
 	} else {
+		VectorClear4(fogDepthVector);
 		*eyeT = 1;	// non-surface fog always has eye inside
 	}
 }
@@ -1138,11 +1139,13 @@ RB_FogPass
 Blends a fog texture on top of everything else
 ===================
 */
-static void RB_FogPass( void ) {
-	fog_t		*fog;
-	vec4_t  color;
-	vec4_t	fogDistanceVector, fogDepthVector = {0, 0, 0, 0};
-	float	eyeT = 0;
+static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
+{
+	fog_t *fog;
+	vec4_t color;
+	vec4_t fogDistanceVector;
+	vec4_t fogDepthVector = {};
+	float eyeT = 0;
 	shaderProgram_t *sp;
 
 	deform_t deformType;
@@ -1150,69 +1153,82 @@ static void RB_FogPass( void ) {
 	vec5_t deformParams;
 
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
+	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
-	{
-		int index = 0;
+	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
-		if (deformGen != DGEN_NONE)
-			index |= FOGDEF_USE_DEFORM_VERTEXES;
+	vertexAttribute_t attribs[ATTR_INDEX_MAX] = {};
+	GL_VertexArraysToAttribs(attribs, ARRAY_LEN(attribs), vertexArrays);
 
-		if (glState.vertexAnimation)
-			index |= FOGDEF_USE_VERTEX_ANIMATION;
+	UniformDataWriter uniformDataWriter;
 
-		if (glState.skeletalAnimation)
-			index |= FOGDEF_USE_SKELETAL_ANIMATION;
-		
-		sp = &tr.fogShader[index];
-	}
+	int shaderBits = 0;
+
+	if (deformGen != DGEN_NONE)
+		shaderBits |= FOGDEF_USE_DEFORM_VERTEXES;
+
+	if (glState.vertexAnimation)
+		shaderBits |= FOGDEF_USE_VERTEX_ANIMATION;
+
+	if (glState.skeletalAnimation)
+		shaderBits |= FOGDEF_USE_SKELETAL_ANIMATION;
+	
+	sp = tr.fogShader + shaderBits;
+	uniformDataWriter.Start(sp);
 
 	backEnd.pc.c_fogDraws++;
 
-	GLSL_BindProgram(sp);
-
 	fog = tr.world->fogs + tess.fogNum;
 
-	GLSL_SetUniformMatrix4x4(sp, UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 
-	GLSL_SetUniformFloat(sp, UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
+	uniformDataWriter.SetUniformFloat(UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 	
-	GLSL_SetUniformInt(sp, UNIFORM_DEFORMTYPE, deformType);
+	uniformDataWriter.SetUniformInt(UNIFORM_DEFORMTYPE, deformType);
 	if (deformType != DEFORM_NONE)
 	{
-		GLSL_SetUniformInt(sp, UNIFORM_DEFORMFUNC, deformGen);
-		GLSL_SetUniformFloatN(sp, UNIFORM_DEFORMPARAMS, deformParams, 7);
-		GLSL_SetUniformFloat(sp, UNIFORM_TIME, tess.shaderTime);
+		uniformDataWriter.SetUniformInt(UNIFORM_DEFORMFUNC, deformGen);
+		uniformDataWriter.SetUniformFloat(UNIFORM_DEFORMPARAMS, deformParams, 7);
+		uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
 	}
 
 	color[0] = ((unsigned char *)(&fog->colorInt))[0] / 255.0f;
 	color[1] = ((unsigned char *)(&fog->colorInt))[1] / 255.0f;
 	color[2] = ((unsigned char *)(&fog->colorInt))[2] / 255.0f;
 	color[3] = ((unsigned char *)(&fog->colorInt))[3] / 255.0f;
-	GLSL_SetUniformVec4(sp, UNIFORM_COLOR, color);
+	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, color);
 
-	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
+	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDISTANCE, fogDistanceVector);
+	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDEPTH, fogDepthVector);
+	uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
 
-	GLSL_SetUniformVec4(sp, UNIFORM_FOGDISTANCE, fogDistanceVector);
-	GLSL_SetUniformVec4(sp, UNIFORM_FOGDEPTH, fogDepthVector);
-	GLSL_SetUniformFloat(sp, UNIFORM_FOGEYET, eyeT);
-
+	uint32_t stateBits = 0;
 	if ( tess.shader->fogPass == FP_EQUAL ) {
-		GL_State( GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL );
+		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL;
 	} else {
-		GL_State( GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA );
+		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	}
 
-	if (tess.multiDrawPrimitives)
-	{
-		shaderCommands_t *input = &tess;
-		R_DrawMultiElementsVBO(input->multiDrawPrimitives, input->multiDrawMinIndex, input->multiDrawMaxIndex, input->multiDrawNumIndexes, input->multiDrawFirstIndex);
-	}
-	else
-	{
-		R_DrawElementsVBO(tess.numIndexes, tess.firstIndex, tess.minIndex, tess.maxIndex);
-	}
+
+	DrawItem item = {};
+	item.stateBits = stateBits;
+	item.cullType = cullType;
+	item.program = sp;
+	item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
+	item.ibo = input->externalIBO ? input->externalIBO : backEndData->currentFrame->dynamicIbo;
+
+	item.numAttributes = vertexArrays->numVertexArrays;
+	item.attributes = ojkAllocArray<vertexAttribute_t>(
+		*backEndData->perFrameMemory, vertexArrays->numVertexArrays);
+	memcpy(item.attributes, attribs, sizeof(*item.attributes)*vertexArrays->numVertexArrays);
+
+	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+
+	RB_FillDrawCommand(item.draw, GL_TRIANGLES, 1, input);
+
+	uint32_t key = RB_CreateSortKey(item, 15, input->shader->sort);
+	RB_AddDrawItem(backEndData->currentPass, key, item);
 }
-
 
 static unsigned int RB_CalcShaderVertexAttribs( const shader_t *shader )
 {
@@ -1919,15 +1935,13 @@ void RB_StageIteratorGeneric( void )
 		{
 			ForwardDlight( &vertexArrays );
 		}
-#if 0
 
 		//
 		// now do fog
 		//
 		if ( tess.fogNum && tess.shader->fogPass ) {
-			RB_FogPass();
+			RB_FogPass( &tess, &vertexArrays );
 		}
-#endif
 	}
 
 	RB_CommitInternalBufferData();
