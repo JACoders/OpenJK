@@ -7324,6 +7324,13 @@ qboolean validate_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont
 	}
 
 	// zyk: validation on skills that are allowed to specific RPG classes
+	if (ent->client->pers.rpg_class == 0 && upgrade_value == 39)
+	{
+		if (dont_show_message == qfalse)
+			trap->SendServerCommand( ent-g_entities, "print \"Free Warrior class doesn't allow this skill.\n\"" );
+		return qfalse;
+	}
+
 	if (ent->client->pers.rpg_class == 1 && ((upgrade_value >= 20 && upgrade_value <= 29) || upgrade_value == 35 || (upgrade_value >= 40 && upgrade_value <= 54)))
 	{
 		if (dont_show_message == qfalse)
