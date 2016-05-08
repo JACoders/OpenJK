@@ -68,7 +68,6 @@ public:
 	{
 		return mValues;
 	}
-	// Copies the value into the textPool and adds a pointer to that copy to the end of the list.
 	void AddValue( gsl::cstring_view newValue );
 };
 

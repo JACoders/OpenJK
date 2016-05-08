@@ -35,7 +35,7 @@ namespace Q
 			// lhs == rhs
 			return Ordering::EQ;
 		}
-		// lhs is a prefix or rhs
+		// lhs is a prefix of rhs
 		return Ordering::LT;
 	}
 
