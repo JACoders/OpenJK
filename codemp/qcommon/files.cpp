@@ -322,6 +322,12 @@ qboolean FS_Initialized( void ) {
 	return (qboolean)(fs_searchpaths != NULL);
 }
 
+static void FS_AssertInitialised( void ) {
+	if ( !fs_searchpaths ) {
+		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
+	}
+}
+
 /*
 =================
 FS_PakIsPure
@@ -780,9 +786,7 @@ fileHandle_t FS_SV_FOpenFileWrite( const char *filename ) {
 	char *ospath;
 	fileHandle_t	f;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	ospath = FS_BuildOSPath( fs_homepath->string, filename, "" );
 	ospath[strlen(ospath)-1] = '\0';
@@ -823,9 +827,7 @@ int FS_SV_FOpenFileRead( const char *filename, fileHandle_t *fp ) {
 	char *ospath;
 	fileHandle_t	f = 0;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	f = FS_HandleForFile();
 	fsh[f].zipFile = qfalse;
@@ -906,9 +908,7 @@ FS_SV_Rename
 void FS_SV_Rename( const char *from, const char *to, qboolean safe ) {
 	char			*from_ospath, *to_ospath;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	// don't let sound stutter
 	S_ClearSoundBuffer();
@@ -942,9 +942,7 @@ FS_Rename
 void FS_Rename( const char *from, const char *to ) {
 	char			*from_ospath, *to_ospath;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	// don't let sound stutter
 	S_ClearSoundBuffer();
@@ -985,9 +983,7 @@ There are three cases handled:
 ===========
 */
 void FS_FCloseFile( fileHandle_t f ) {
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if (fsh[f].zipFile == qtrue) {
 		unzCloseCurrentFile( fsh[f].handleFiles.file.z );
@@ -1015,9 +1011,7 @@ fileHandle_t FS_FOpenFileWrite( const char *filename, qboolean safe ) {
 	char			*ospath;
 	fileHandle_t	f;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	f = FS_HandleForFile();
 	fsh[f].zipFile = qfalse;
@@ -1060,9 +1054,7 @@ fileHandle_t FS_FOpenFileAppend( const char *filename ) {
 	char			*ospath;
 	fileHandle_t	f;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	f = FS_HandleForFile();
 	fsh[f].zipFile = qfalse;
@@ -1278,9 +1270,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 
 	hash = 0;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if ( file == NULL ) {
 		Com_Error( ERR_FATAL, "FS_FOpenFileRead: NULL 'file' parameter passed\n" );
@@ -1620,9 +1610,7 @@ int FS_Read( void *buffer, int len, fileHandle_t f ) {
 	byte	*buf;
 	int		tries;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if ( !f ) {
 		return 0;
@@ -1674,9 +1662,7 @@ int FS_Write( const void *buffer, int len, fileHandle_t h ) {
 	int		tries;
 	FILE	*f;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if ( !h ) {
 		return 0;
@@ -1734,10 +1720,7 @@ FS_Seek
 int FS_Seek( fileHandle_t f, long offset, int origin ) {
 	int		_origin;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-		return -1;
-	}
+	FS_AssertInitialised();
 
 	if (fsh[f].zipFile == qtrue) {
 		//FIXME: this is really, really crappy
@@ -1835,9 +1818,7 @@ int	FS_FileIsInPAK(const char *filename, int *pChecksum ) {
 	fileInPack_t	*pakFile;
 	long			hash = 0;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if ( !filename ) {
 		Com_Error( ERR_FATAL, "FS_FOpenFileRead: NULL 'filename' parameter passed\n" );
@@ -1903,9 +1884,7 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	qboolean		isConfig;
 	long				len;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if ( !qpath || !qpath[0] ) {
 		Com_Error( ERR_FATAL, "FS_ReadFile with empty name\n" );
@@ -1984,9 +1963,6 @@ long FS_ReadFile( const char *qpath, void **buffer ) {
 	}
 
 	fs_loadCount++;
-/*
-	buf = (unsigned char *)Hunk_AllocateTempMemory(len+1);
-	*buffer = buf;*/
 
 	buf = (byte*)Z_Malloc( len+1, TAG_FILESYS, qfalse);
 	buf[len]='\0';	// because we're not calling Z_Malloc with optional trailing 'bZeroIt' bool
@@ -2016,20 +1992,7 @@ FS_FreeFile
 =============
 */
 void FS_FreeFile( void *buffer ) {
-	/*
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
-	if ( !buffer ) {
-		Com_Error( ERR_FATAL, "FS_FreeFile( NULL )" );
-	}
-
-	Hunk_FreeTempMemory( buffer );
-	*/
-
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 	if ( !buffer ) {
 		Com_Error( ERR_FATAL, "FS_FreeFile( NULL )" );
 	}
@@ -2047,9 +2010,7 @@ Filename are reletive to the quake search path
 void FS_WriteFile( const char *qpath, const void *buffer, int size ) {
 	fileHandle_t f;
 
-	if ( !fs_searchpaths ) {
-		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
-	}
+	FS_AssertInitialised();
 
 	if ( !qpath || !buffer ) {
 		Com_Error( ERR_FATAL, "FS_WriteFile: NULL parameter" );
