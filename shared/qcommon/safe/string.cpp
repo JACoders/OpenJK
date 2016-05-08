@@ -39,6 +39,17 @@ namespace Q
 		return Ordering::LT;
 	}
 
+	gsl::cstring_view substr( const gsl::cstring_view& lhs, const std::string::size_type pos, const std::string::size_type count )
+	{
+		if( pos > lhs.size() )
+		{
+			throw std::out_of_range( "Q::substr called with out-of-bounds pos parameter!" );
+		}
+		auto start = lhs.begin() + pos;
+		auto end = count == std::string::npos ? lhs.end() : std::min( start + count, lhs.end() );
+		return{ start, end };
+	}
+
 	int svtoi( const gsl::cstring_view& view )
 	{
 		int result = 0;
