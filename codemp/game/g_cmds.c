@@ -3562,6 +3562,10 @@ void Cmd_EngageDuel_f(gentity_t *ent)
 			challenged->health = 100;
 			challenged->client->ps.stats[STAT_ARMOR] = 100;
 
+			// zyk: disable jetpack of both players
+			Jetpack_Off(ent);
+			Jetpack_Off(challenged);
+
 			ent->client->ps.duelTime = level.time + 2000;
 			challenged->client->ps.duelTime = level.time + 2000;
 
