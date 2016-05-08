@@ -226,7 +226,7 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 			//
 			for( auto& prop : pEntryGroup->GetProperties() )
 			{
-				//if (!strncmp(psKey,sKEY_MARKER,strlen(sKEY_MARKER)))	// for now, assume anything is a marker
+				//if( Q::substr( prop.GetName(), 0, sKEY_MARKER.size() ) == sKEY_MARKER )	// for now, assume anything is a marker
 				{
 					MusicFile.MusicEntryTimes[ prop.GetName() ] = Q::svtoi( prop.GetTopValue() );
 					bEntryFound = true;
@@ -264,7 +264,7 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 					{
 						MusicExitPoint.sNextMark = value;
 					}
-					else if( key == sKEY_TIME )
+					else if( Q::substr( key, 0, sKEY_TIME.size() ) == sKEY_TIME )
 					{
 						MusicExitTime_t MusicExitTime;
 						MusicExitTime.fTime = Q::svtof( value );
