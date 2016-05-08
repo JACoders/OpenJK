@@ -8669,9 +8669,9 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 			sprintf(message_content[6],"^637 - Shield Heal: %d/3      ", ent->client->pers.skill_levels[36]);
 
 		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
-			sprintf(message_content[7],"^038 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
+			sprintf(message_content[7],"^038 - Team Shield Heal: %d/3\n", ent->client->pers.skill_levels[37]);
 		else
-			sprintf(message_content[7],"^638 - Team Shield Heal: %d/3 ", ent->client->pers.skill_levels[37]);
+			sprintf(message_content[7],"^638 - Team Shield Heal: %d/3\n", ent->client->pers.skill_levels[37]);
 
 		if (ent->client->pers.rpg_class == 0 || ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 5)
 			sprintf(message_content[8],"^039 - Unique Skill: %d/1\n", ent->client->pers.skill_levels[38]);

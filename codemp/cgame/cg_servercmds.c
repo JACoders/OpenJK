@@ -1673,7 +1673,7 @@ static void CG_ZykMod( void )
 			else if (Q_stricmp(rpg_class, "Monk") == 0)
 			{
 				if (skill_number == 4 || (skill_number > 5 && skill_number < 10) || skill_number == 11 || skill_number == 14 || skill_number == 17 ||
-					(skill_number > 19 && skill_number < 30) || skill_number == 35 || (skill_number > 38 && skill_number < 55))
+					(skill_number > 19 && skill_number < 30) || skill_number == 35 || (skill_number > 39 && skill_number < 55))
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
@@ -1691,7 +1691,7 @@ static void CG_ZykMod( void )
 			else if (Q_stricmp(rpg_class, "Duelist") == 0)
 			{
 				if ((skill_number > 11 && skill_number < 14) || (skill_number > 16 && skill_number < 19) || 
-					(skill_number > 19 && skill_number < 30) || skill_number == 35 || (skill_number > 37 && skill_number < 55))
+					(skill_number > 19 && skill_number < 30) || skill_number == 35 || skill_number == 38 || (skill_number > 39 && skill_number < 55))
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
@@ -1700,7 +1700,7 @@ static void CG_ZykMod( void )
 			{
 				if (skill_number == 4 || (skill_number > 5 && skill_number < 9) || (skill_number > 10 && skill_number < 13) || skill_number == 15 ||
 					skill_number == 17 || skill_number == 20 || skill_number == 23 || (skill_number > 24 && skill_number < 27) || 
-					(skill_number > 27 && skill_number < 30) || skill_number == 39 || (skill_number > 44 && skill_number < 47) ||
+					(skill_number > 27 && skill_number < 30) || (skill_number > 44 && skill_number < 47) ||
 					skill_number == 48 || skill_number == 51 || (skill_number > 52 && skill_number < 55))
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else
@@ -1709,7 +1709,8 @@ static void CG_ZykMod( void )
 			else if (Q_stricmp(rpg_class, "Magic Master") == 0)
 			{
 				if ((skill_number > 0 && skill_number < 5) || (skill_number > 5 && skill_number < 19) || (skill_number > 19 && skill_number < 30) || 
-					skill_number == 34 || (skill_number > 35 && skill_number < 48) || (skill_number > 48 && skill_number < 56))
+					skill_number == 34 || (skill_number > 35 && skill_number < 39) || (skill_number > 39 && skill_number < 48) || 
+					(skill_number > 48 && skill_number < 56))
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
@@ -1717,7 +1718,8 @@ static void CG_ZykMod( void )
 			else if (Q_stricmp(rpg_class, "Force Tank") == 0)
 			{
 				if (skill_number == 4 || skill_number == 10 || (skill_number > 11 && skill_number < 15) || skill_number == 16 || 
-					skill_number == 18 || (skill_number > 19 && skill_number < 30) || (skill_number > 33 && skill_number < 55))
+					skill_number == 18 || (skill_number > 19 && skill_number < 30) || (skill_number > 33 && skill_number < 39) || 
+					(skill_number > 39 && skill_number < 55))
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
@@ -1802,29 +1804,6 @@ static void CG_ZykMod( void )
 				trap->Cvar_Set("ui_zyk_upgrade_13_value","Force Tank Upgrade - yes");
 			else
 				trap->Cvar_Set("ui_zyk_upgrade_13_value","Force Tank Upgrade - no");
-
-			if (Q_stricmp(rpg_class, "Free Warrior") == 0)
-				trap->Cvar_Set("ui_zyk_unique_skill","");
-			else if (Q_stricmp(rpg_class, "Force User") == 0 && secrets_found & (1 << 2))
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
-			else if (Q_stricmp(rpg_class, "Bounty Hunter") == 0)
-				trap->Cvar_Set("ui_zyk_unique_skill","");
-			else if (Q_stricmp(rpg_class, "Armored Soldier") == 0)
-				trap->Cvar_Set("ui_zyk_unique_skill","");
-			else if (Q_stricmp(rpg_class, "Monk") == 0 && secrets_found & (1 << 3))
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
-			else if (Q_stricmp(rpg_class, "Stealth Attacker") == 0)
-				trap->Cvar_Set("ui_zyk_unique_skill","");
-			else if (Q_stricmp(rpg_class, "Duelist") == 0 && secrets_found & (1 << 4))
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
-			else if (Q_stricmp(rpg_class, "Force Gunner") == 0 && secrets_found & (1 << 5))
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
-			else if (Q_stricmp(rpg_class, "Magic Master") == 0 && secrets_found & (1 << 6))
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
-			else if (Q_stricmp(rpg_class, "Force Tank") == 0 && secrets_found & (1 << 18))
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - yes");
-			else
-				trap->Cvar_Set("ui_zyk_unique_skill","Unique Skill - no");
 		}
 		else if (j == 81)
 		{
