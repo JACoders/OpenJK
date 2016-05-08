@@ -783,25 +783,6 @@ qboolean ClientInactivityTimer( gclient_t *client ) {
 	return qtrue;
 }
 
-void zyk_force_user_shield(gentity_t *ent, int amount_of_tempentities)
-{
-	gentity_t *evEnt;
-	vec3_t zyk_dir;
-	int i = 0;
-
-	for (i = 0; i < amount_of_tempentities; i++)
-	{
-		VectorCopy(ent->client->ps.viewangles, zyk_dir);
-		VectorNormalize(zyk_dir);
-
-		// zyk: shows shield effect around the player
-		evEnt = G_TempEntity(ent->r.currentOrigin, EV_SHIELD_HIT);
-		evEnt->s.otherEntityNum = ent->s.number;
-		evEnt->s.eventParm = DirToByte(zyk_dir);
-		evEnt->s.time2 = 50;
-	}
-}
-
 /*
 ==================
 ClientTimerActions
@@ -852,11 +833,6 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 		if (client->sess.amrpgmode == 2)
 		{
-			if (client->pers.rpg_class == 1 && client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-			{ // zyk: Force User Unique Skill
-				zyk_force_user_shield(ent, 5);
-			}
-
 			if (client->pers.rpg_class == 4 && ent->health > 0)
 			{ // zyk: Monk auto-healing ability
 				if (ent->health < client->pers.max_rpg_health)
@@ -3477,8 +3453,6 @@ void ClientThink_real( gentity_t *ent ) {
 						{ // zyk: Force User
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
-								zyk_force_user_shield(ent, 5);
-
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
