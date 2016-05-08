@@ -1191,13 +1191,9 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDEPTH, fogDepthVector);
 	uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
 
-	uint32_t stateBits = 0;
-	if ( tess.shader->fogPass == FP_EQUAL ) {
-		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA | GLS_DEPTHFUNC_EQUAL;
-	} else {
-		stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
-	}
-
+	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+	if ( tess.shader->fogPass == FP_EQUAL )
+		stateBits |= GLS_DEPTHFUNC_EQUAL;
 
 	DrawItem item = {};
 	item.stateBits = stateBits;

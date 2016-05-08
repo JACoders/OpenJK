@@ -284,7 +284,7 @@ vec4 CalcColor(vec3 position, vec3 normal)
 #if defined(USE_FOG)
 float CalcFog(vec3 position)
 {
-	float s = dot(vec4(position, 1.0), u_FogDistance) * 8.0;
+	float s = dot(vec4(position, 1.0), u_FogDistance);
 	float t = dot(vec4(position, 1.0), u_FogDepth);
 
 	float eyeOutside = float(u_FogEyeT < 0.0);
