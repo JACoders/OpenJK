@@ -1705,10 +1705,12 @@ qboolean BG_CanUseFPNow(int gametype, playerState_t *ps, int time, forcePowers_t
 		return qfalse;
 	}
 
+	/* zyk: not it will be possible
 	if (ps->weapon == WP_EMPLACED_GUN)
 	{ //can't use any of your powers while on an emplaced weapon
 		return qfalse;
 	}
+	*/
 
 	// zyk: now it is possible to use force powers while riding a vehicle
 	/*
