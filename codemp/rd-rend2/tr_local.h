@@ -1340,7 +1340,7 @@ typedef struct {
 	int			originalBrushNumber;
 	vec3_t		bounds[2];
 
-	unsigned	colorInt;				// in packed byte format
+	vec4_t		color;
 	float		tcScale;				// texture coordinate vector scales
 	fogParms_t	parms;
 

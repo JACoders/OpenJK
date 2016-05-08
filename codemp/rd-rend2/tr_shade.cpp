@@ -491,14 +491,8 @@ static void ComputeShaderColors( shaderStage_t *pStage, vec4_t baseColor, vec4_t
 			break;
 		case CGEN_FOG:
 			{
-				fog_t		*fog;
-
-				fog = tr.world->fogs + tess.fogNum;
-
-				baseColor[0] = ((unsigned char *)(&fog->colorInt))[0] / 255.0f;
-				baseColor[1] = ((unsigned char *)(&fog->colorInt))[1] / 255.0f;
-				baseColor[2] = ((unsigned char *)(&fog->colorInt))[2] / 255.0f;
-				baseColor[3] = ((unsigned char *)(&fog->colorInt))[3] / 255.0f;
+				fog_t *fog = tr.world->fogs + tess.fogNum;
+				VectorCopy4(fog->color, baseColor);
 			}
 			break;
 		case CGEN_WAVEFORM:
@@ -1192,12 +1186,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 		uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
 	}
 
-	color[0] = ((unsigned char *)(&fog->colorInt))[0] / 255.0f;
-	color[1] = ((unsigned char *)(&fog->colorInt))[1] / 255.0f;
-	color[2] = ((unsigned char *)(&fog->colorInt))[2] / 255.0f;
-	color[3] = ((unsigned char *)(&fog->colorInt))[3] / 255.0f;
-	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, color);
-
+	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDISTANCE, fogDistanceVector);
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDEPTH, fogDepthVector);
 	uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
