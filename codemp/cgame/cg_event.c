@@ -2670,13 +2670,12 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 
 		if (es->number < MAX_CLIENTS)
 		{
-			if (es->eventParm == 104)
-			{ // zyk: Force User
-				cg.is_a_force_user[es->number] = qtrue;
-			}
-			else if (es->eventParm == 105)
-			{ // zyk: not a Force User
-				cg.is_a_force_user[es->number] = qfalse;
+			if (es->eventParm >= 104 && es->eventParm <= 114)
+			{
+				if (es->eventParm == 114) // zyk: is not in RPG Mode
+					cg.rpg_class[es->number] = -1;
+				else // zyk: set the RPG class
+					cg.rpg_class[es->number] = es->eventParm - 104;
 			}
 		}
 

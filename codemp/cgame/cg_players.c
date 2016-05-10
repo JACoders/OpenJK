@@ -9951,10 +9951,13 @@ void CG_Player( centity_t *cent ) {
 		}
 	}
 
-	if (cent->currentState.number < MAX_CLIENTS && cg.is_a_force_user[cent->currentState.number] == qtrue && 
+	if (cent->currentState.number < MAX_CLIENTS && 
 		cent->currentState.powerups & (1 << PW_NEUTRALFLAG))
-	{ // zyk: if this is a Force User, draws the Force Shield effect
-		CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliblueShader );
+	{ 
+		if (cg.rpg_class[cent->currentState.number] == 1) // zyk: Force User, draws the Force Shield effect
+			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliblueShader );
+		else if (cg.rpg_class[cent->currentState.number] == 9) // zyk: Force Tank, draws the resistance shield around him
+			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliredShader );
 	}
 
 	if (cent->currentState.powerups & (1 << PW_FORCE_BOON))

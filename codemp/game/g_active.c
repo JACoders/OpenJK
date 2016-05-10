@@ -944,11 +944,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			client->pers.player_statuses |= (1 << 3);
 		}
 		else if (client->pers.player_statuses & (1 << 7))
-		{ // zyk: tell the client-side mod if this is a Force User or not, so it can render the Force Shield effect
-			if (client->pers.rpg_class == 1)
-				G_AddEvent(ent, EV_USE_ITEM13, 104);
+		{ // zyk: tells the RPG class to the client-side mod to render the Force Shield effect and the resistance shield
+			if (client->sess.amrpgmode == 2)
+				G_AddEvent(ent, EV_USE_ITEM13, (104 + client->pers.rpg_class));
 			else
-				G_AddEvent(ent, EV_USE_ITEM13, 105);
+				G_AddEvent(ent, EV_USE_ITEM13, 114);
 
 			client->pers.player_statuses &= ~(1 << 7);
 		}
