@@ -1057,7 +1057,7 @@ void G_RunMissile( gentity_t *ent ) {
 
 
 	//If its a rocket, and older than 500ms, make it solid to the shooter.
-	if ((g_tweakWeapons.integer & WT_SOLID_ROCKET) && (ent->s.weapon == WP_ROCKET_LAUNCHER) && (ent->nextthink - level.time < 9500)) {
+	if ((g_tweakWeapons.integer & WT_SOLID_ROCKET) && (ent->s.weapon == WP_ROCKET_LAUNCHER) && (!ent->raceModeShooter) && (ent->nextthink - level.time < 9500)) {
 		ent->r.ownerNum = ENTITYNUM_WORLD;
 	}
 

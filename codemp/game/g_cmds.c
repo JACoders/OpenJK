@@ -802,6 +802,80 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 	}
 }
 
+static void Cmd_Blink_f( gentity_t *ent )
+{
+	const int MAX_BLINK_DISTANCE = 65536;
+	vec3_t startpoint, endpoint, forward;
+	trace_t tr;
+
+	if (!ent->client)
+		return;
+	if (ent->client->ps.stats[STAT_HEALTH] <= 0)
+		return;
+	if (ent->client->ps.weaponTime > 0)
+		return;
+
+		
+		if (ent->client && ent->client->ps.duelInProgress && ent->client->pers.lastUserName[0]) {
+			gentity_t *duelAgainst = &g_entities[ent->client->ps.duelIndex];
+			if (duelAgainst->client && duelAgainst->client->pers.lastUserName[0]) {
+				trap->SendServerCommand( ent-g_entities, va("print \"You are not authorized to use this command (blink) in ranked duels.\n\"") );
+				return; //Dont allow amtele in ranked duels ever..
+			}
+		}
+
+		if (ent->client->sess.fullAdmin) {//Logged in as full admin
+			if (!(g_fullAdminLevel.integer & (1 << A_ADMINTELE))) {
+				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink) outside of racemode.\n\"" );
+					return;
+				}
+				else if (ent->client->sess.raceMode && !g_allowRaceTele.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink).\n\"" );
+					return;
+				}
+			}
+		}
+		else if (ent->client->sess.juniorAdmin) {//Logged in as junior admin
+			if (!(g_juniorAdminLevel.integer & (1 << A_ADMINTELE))) {
+				if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink) outside of racemode.\n\"" );
+					return;
+				}
+				else if (ent->client->sess.raceMode && !g_allowRaceTele.integer) {
+					trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink).\n\"" );
+					return;
+				}
+			}
+		}
+		else {//Not logged in
+			if (!ent->client->sess.raceMode && g_raceMode.integer && g_allowRaceTele.integer) {
+				trap->SendServerCommand( ent-g_entities, "print \"You are not authorized to use this command (blink) outside of racemode.\n\"" );
+				return;
+			}
+			else if (!g_allowRaceTele.integer || !g_raceMode.integer) {
+				trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (blink).\n\"" );
+				return;
+			}
+		}
+
+	AngleVectors( ent->client->ps.viewangles, forward, NULL, NULL );
+	VectorCopy( ent->client->ps.origin, startpoint );
+	VectorMA( startpoint, MAX_BLINK_DISTANCE, forward, endpoint );
+	startpoint[2] += ent->client->ps.viewheight;
+
+
+	//G_TestLine(startpoint, endpoint, 0x0000ff, 500);
+	trap->Trace(&tr, startpoint, ent->r.mins, ent->r.maxs, endpoint, ent->client->ps.clientNum, CONTENTS_SOLID, qfalse, 0, 0);
+
+	if (tr.fraction < 1.0f) { //Hit something
+		G_PlayEffect( EFFECT_LANDING_SAND, tr.endpos, tr.plane.normal );
+		G_PlayEffect( EFFECT_LANDING_SAND, ent->client->ps.origin, vec3_origin );
+
+		VectorCopy(tr.endpos, ent->client->ps.origin);
+		ResetPlayerTimers(ent, qtrue);
+	}
+}
 
 /*
 ==================
@@ -8123,6 +8197,7 @@ command_t commands[] = {
 	{ "amvstr",				Cmd_Amvstr_f,				CMD_NOINTERMISSION },
 
 	{ "best",				Cmd_PersonalBest_f,			CMD_NOINTERMISSION },
+	{ "blink",				Cmd_Blink_f,				CMD_NOINTERMISSION },//change for admin?
 
 	{ "callteamvote",		Cmd_CallTeamVote_f,			CMD_NOINTERMISSION },
 	{ "callvote",			Cmd_CallVote_f,				CMD_NOINTERMISSION },
