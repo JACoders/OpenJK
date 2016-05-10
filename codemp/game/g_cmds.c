@@ -5377,9 +5377,6 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->pers.quest_power_status &= ~(1 << 13);
 		}
 
-		// zyk: tells the client if this is a Force User or not, so it can render the Force Shield effect
-		ent->client->pers.player_statuses |= (1 << 7);
-
 		// zyk: update the rpg stuff info at the client-side game
 		send_rpg_events(10000);
 	}
