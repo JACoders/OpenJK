@@ -3462,53 +3462,29 @@ void ClientThink_real( gentity_t *ent ) {
 						{ // zyk: Free Warrior
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/2))
 							{
-								int random_recovery = Q_irand(0,4);
-
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
 
-								// zyk: randomly recovers hp, shield, mp, jetpack fuel or flame thrower fuel
-								if (random_recovery == 0)
-								{
-									if ((ent->health + 40) < ent->client->pers.max_rpg_health)
-										ent->health += 40;
-									else
-										ent->health = ent->client->pers.max_rpg_health;
+								// zyk: recovers hp, shield and mp
+								if ((ent->health + 20) < ent->client->pers.max_rpg_health)
+									ent->health += 20;
+								else
+									ent->health = ent->client->pers.max_rpg_health;
 
-									G_Sound( ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
-								}
-								else if (random_recovery == 1)
-								{
-									if ((ent->client->ps.stats[STAT_ARMOR] + 60) < ent->client->pers.max_rpg_shield)
-										ent->client->ps.stats[STAT_ARMOR] += 60;
-									else
-										ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+								if ((ent->client->ps.stats[STAT_ARMOR] + 20) < ent->client->pers.max_rpg_shield)
+									ent->client->ps.stats[STAT_ARMOR] += 20;
+								else
+									ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
 
-									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupshield.wav"));
-								}
-								else if (random_recovery == 2)
-								{
-									if ((ent->client->pers.magic_power + 10) < zyk_max_magic_power(ent))
-										ent->client->pers.magic_power += 10;
-									else
-										ent->client->pers.magic_power = zyk_max_magic_power(ent);
+								if ((ent->client->pers.magic_power + 20) < zyk_max_magic_power(ent))
+									ent->client->pers.magic_power += 20;
+								else
+									ent->client->pers.magic_power = zyk_max_magic_power(ent);
 
-									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+								G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/boon.wav"));
 
-									send_rpg_events(2000);
-								}
-								else if (random_recovery == 3)
-								{
-									ent->client->pers.jetpack_fuel = MAX_JETPACK_FUEL;
-									ent->client->ps.jetpackFuel = 100;
-									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
-								}
-								else if (random_recovery == 4)
-								{
-									ent->client->ps.cloakFuel = 100;
-									G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
-								}
+								send_rpg_events(2000);
 
 								ent->client->pers.unique_skill_timer = level.time + 60000;
 							}
