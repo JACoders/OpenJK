@@ -486,7 +486,7 @@ void TossClientWeapon(gentity_t *self, vec3_t direction, float speed)
 	if ((g_rabbit.integer == 2) && (weapon == WP_DISRUPTOR))//rabbit, only cuz of snipers idk?
 		return;
 
-	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
+	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & WT_INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
 		return;
 
 
@@ -613,7 +613,7 @@ void TossClientItems( gentity_t *self ) {
 		weapon = WP_NONE;
 	}
 
-	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
+	if ((g_startingWeapons.integer & (1 << weapon)) && (g_forcePowerDisable.integer & (1 << FP_PULL)) && (g_tweakWeapons.integer & WT_INFINITE_AMMO))//Dont toss weapon if thers no possible use for it
 		weapon = WP_NONE;
 
 	self->s.bolt2 = weapon;
@@ -634,7 +634,7 @@ void TossClientItems( gentity_t *self ) {
 
 		// spawn the item
 		drop = Drop_Item( self, item, 0 );
-		if ((g_tweakWeapons.integer & FIX_MINEAMMO) && ((weapon == WP_TRIP_MINE) || (weapon == WP_DET_PACK)) && (self->client->ps.ammo[weaponData[weapon].ammoIndex] < bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity)) { //Quantity is always 3 for mines i guess
+		if ((g_tweakWeapons.integer & WT_FIX_MINEAMMO) && ((weapon == WP_TRIP_MINE) || (weapon == WP_DET_PACK)) && (self->client->ps.ammo[weaponData[weapon].ammoIndex] < bg_itemlist[BG_GetItemIndexByTag(weapon, IT_WEAPON)].quantity)) { //Quantity is always 3 for mines i guess
 			drop->count = self->client->ps.ammo[weaponData[weapon].ammoIndex];
 			if (drop->count < 1)
 				drop->count = 1;
@@ -4646,7 +4646,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				|| (targ->m_pVehicle && targ->m_pVehicle->m_pVehicleInfo->type != VH_FIGHTER) )
 			{//don't do this to fighters
 //[JAPRO - Serverside - Weapons - Tweak weapons Remove Demp2 Randomness - Start]
-				if (g_tweakWeapons.integer & DEMP2_RANDOM)
+				if (g_tweakWeapons.integer & WT_DEMP2_RANDOM)
 					targ->client->ps.electrifyTime = level.time + 550;
 				else
 					targ->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
@@ -4792,7 +4792,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if ((g_tweakWeapons.integer & ANTI_VEHICLE) && (targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) {
+	if ((g_tweakWeapons.integer & WT_ANTI_VEHICLE) && (targ->s.eType == ET_NPC) && (targ->s.NPC_class == CLASS_VEHICLE) && (targ->m_pVehicle) && (targ->m_pVehicle->m_pVehicleInfo->type == VH_FIGHTER)) {
 		switch (mod)
 		{
 			//Bullets do ~5x dmg..
@@ -5009,7 +5009,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 		}
 //[JAPRO - Serverside - Weapons - Remove Projectile/disruptor Knockback - Start]
-		else if ((g_tweakWeapons.integer & PROJECTILE_KNOCKBACK) && (mod == MOD_BLASTER || mod == MOD_BRYAR_PISTOL || mod == MOD_REPEATER || mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || mod == MOD_STUN_BATON))
+		else if ((g_tweakWeapons.integer & WT_PROJECTILE_KNOCKBACK) && (mod == MOD_BLASTER || mod == MOD_BRYAR_PISTOL || mod == MOD_REPEATER || mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || mod == MOD_STUN_BATON))
 				VectorScale (dir, 0.01 * g_knockback.value * (float)knockback / mass, kvel);
 //[JAPRO - Serverside - Weapons - Remove Projectile/disruptor Knockback - End]
 		else
@@ -5283,7 +5283,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage *= g_selfDamageScale.value;
 	}
 
-	if (g_tweakWeapons.integer & IMPACT_NITRON && (/*mod == MOD_THERMAL ||*/ mod == MOD_THERMAL_SPLASH)) {
+	if (g_tweakWeapons.integer & WT_IMPACT_NITRON && (/*mod == MOD_THERMAL ||*/ mod == MOD_THERMAL_SPLASH)) {
 		if (targ && targ->client) {
 			if (targ->client->ps.powerups[PW_REDFLAG])
 			{
@@ -5336,7 +5336,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if (mod == MOD_STUN_BATON && g_tweakWeapons.integer & STUN_HEAL && (attacker->client && !attacker->client->ps.duelInProgress)) {
+	if (mod == MOD_STUN_BATON && g_tweakWeapons.integer & WT_STUN_HEAL && (attacker->client && !attacker->client->ps.duelInProgress)) {
 		//if (damage < 1 && damage >= 0)
 		//	damage = 1;
 		if (damage > -1 && damage <= 0)
@@ -5588,7 +5588,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 					if (take > 0)
 					{
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Demp2 - Start]
-						if (g_tweakWeapons.integer & DEMP2_DAM)
+						if (g_tweakWeapons.integer & WT_DEMP2_DAM)
 							take /= 2;
 						else
 							take /= 3;

@@ -531,8 +531,9 @@
 	amColor
 	amrun
 	modversion
-	followredflag
-	followblueflag
+	followRedFlag
+	followBlueFlag
+	followFastest
 	login
 	strafeHelper
 	flipkick

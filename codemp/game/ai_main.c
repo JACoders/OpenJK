@@ -6273,7 +6273,7 @@ int NewBotAI_GetWeapon(bot_state_t *bs)
 		else if (distance < 200) {
 			if (BotWeaponSelectableAltFire(bs, WP_FLECHETTE)) {
 				bestWeapon = WP_FLECHETTE;
-				if (!(g_tweakWeapons.integer & STAKE_GUN))
+				if (!(g_tweakWeapons.integer & WT_STAKE_GUN))
 					bs->doAltAttack = 1;
 			}
 			else if (BotWeaponSelectable(bs, WP_ROCKET_LAUNCHER))

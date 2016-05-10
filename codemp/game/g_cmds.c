@@ -2131,12 +2131,12 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	switch ( mode ) {
 	default:
 	case SAY_ALL:
-		G_LogPrintf( "say: %s: %s\n", ent->client->pers.netname, text );
+		//G_LogPrintf( "say: %s: %s\n", ent->client->pers.netname, text ); // --kinda useless since logs already get the normal chatlogs?
 		Com_sprintf (name, sizeof(name), "%s%c%c"EC": ", ent->client->pers.netname, Q_COLOR_ESCAPE, COLOR_WHITE );
 		color = COLOR_GREEN;
 		break;
 	case SAY_TEAM:
-		G_LogPrintf( "sayteam: %s: %s\n", ent->client->pers.netname, text );
+		//G_LogPrintf( "sayteam: %s: %s\n", ent->client->pers.netname, text );
 		if (Team_GetLocationMsg(ent, location, sizeof(location)))
 		{
 			Com_sprintf (name, sizeof(name), EC"(%s%c%c"EC")"EC": ", 
@@ -2165,7 +2165,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		color = COLOR_MAGENTA;
 		break;
 	case SAY_CLAN:
-		G_LogPrintf( "sayclan: %s: %s\n", ent->client->pers.netname, chatText );
+		//G_LogPrintf( "sayclan: %s: %s\n", ent->client->pers.netname, chatText );
 		if (Team_GetLocationMsg(ent, location, sizeof(location)))
 		{
 			Com_sprintf (name, sizeof(name), EC"^1<Clan>^7(%s%c%c"EC")"EC": ", 
@@ -2180,7 +2180,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 		color = COLOR_RED;
 		break;
 	case SAY_ADMIN:
-		G_LogPrintf( "sayadmin: %s: %s\n", ent->client->pers.netname, chatText );
+		//G_LogPrintf( "sayadmin: %s: %s\n", ent->client->pers.netname, chatText );
 		if (Team_GetLocationMsg(ent, location, sizeof(location)))
 		{
 			Com_sprintf (name, sizeof(name), EC"^3<Admin>^7(%s%c%c"EC")"EC": ", 
@@ -7699,7 +7699,7 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 	//Gun changes
 	if (g_weaponDisable.integer < (1<<WP_CONCUSSION) || g_startingWeapons.integer > (1<<WP_BRYAR_PISTOL)) { // Weapons are enabled?
 		Q_strncpyz(buf, " ^3Weapon Changes:\n", sizeof(buf));
-		if (g_tweakWeapons.integer & FAST_WEAPONSWITCH)
+		if (g_tweakWeapons.integer & WT_FAST_WEAPONSWITCH)
 			Q_strcat(buf, sizeof(buf), "   ^5Fast weapon switch\n");
 		if (d_projectileGhoul2Collision.integer == 0)
 			Q_strcat(buf, sizeof(buf), "   ^5Larger, square hitboxes for projectiles and hitscan\n");
@@ -7721,45 +7721,47 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 			Q_strcat(buf, sizeof(buf), va("   ^5Projectile velocity scale: ^2%.2f\n", g_projectileVelocityScale.value));
 		if (g_weaponDamageScale.value != 1.0f)
 			Q_strcat(buf, sizeof(buf), va("   ^5Weapon damage scale: ^2%.2f\n", g_weaponDamageScale.value));
-		if (g_tweakWeapons.integer & DEMP2_RANDOM)
+		if (g_tweakWeapons.integer & WT_DEMP2_RANDOM)
 			Q_strcat(buf, sizeof(buf), "   ^5Nonrandom Demp2 alt damage\n");
-		if (g_tweakWeapons.integer & DEMP2_DAM)
+		if (g_tweakWeapons.integer & WT_DEMP2_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Increased Demp2 primary damage\n");
-		if (g_tweakWeapons.integer & DISRUPTOR_DAM)
+		if (g_tweakWeapons.integer & WT_DISRUPTOR_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Decreased sniper alt max damage\n");
-		if (g_tweakWeapons.integer & BOWCASTER_SPRD)
+		if (g_tweakWeapons.integer & WT_BOWCASTER_SPRD)
 			Q_strcat(buf, sizeof(buf), "   ^5Modified bowcaster primary spread\n");
-		if (g_tweakWeapons.integer & REPEATER_ALT_DAM)
+		if (g_tweakWeapons.integer & WT_REPEATER_ALT_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Increased repeater alt damage\n");
-		if (g_tweakWeapons.integer & FLECHETTE_SPRD)
+		if (g_tweakWeapons.integer & WT_FLECHETTE_SPRD)
 			Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flechette prim spread\n");
-		if (g_tweakWeapons.integer & FLECHETTE_ALT_DAM)
+		if (g_tweakWeapons.integer & WT_FLECHETTE_ALT_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Decreased flechette alt damage\n");
-		if (g_tweakWeapons.integer & FLECHETTE_ALT_SPRD)
+		if (g_tweakWeapons.integer & WT_FLECHETTE_ALT_SPRD)
 			Q_strcat(buf, sizeof(buf), "   ^5Nonrandom flechette alt spread/velocity\n");
-		if (g_tweakWeapons.integer & CONC_ALT_DAM)
+		if (g_tweakWeapons.integer & WT_CONC_ALT_DAM)
 			Q_strcat(buf, sizeof(buf), "   ^5Increased concussion rifle alt damage\n");
-		if (g_tweakWeapons.integer & PROJECTILE_KNOCKBACK)
+		if (g_tweakWeapons.integer & WT_PROJECTILE_KNOCKBACK)
 			Q_strcat(buf, sizeof(buf), "   ^5Removed knockback from most projectiles\n");
-		if (g_tweakWeapons.integer & STUN_HEAL)
+		if (g_tweakWeapons.integer & WT_STUN_HEAL)
 			Q_strcat(buf, sizeof(buf), "   ^5Heal gun stun baton\n");
-		if (g_tweakWeapons.integer & STUN_LG)
+		if (g_tweakWeapons.integer & WT_STUN_LG)
 			Q_strcat(buf, sizeof(buf), "   ^5Lightning gun stun baton\n");
-		if (g_tweakWeapons.integer & STUN_SHOCKLANCE)
+		if (g_tweakWeapons.integer & WT_STUN_SHOCKLANCE)
 			Q_strcat(buf, sizeof(buf), "   ^5Shocklance stun baton\n");
-		if (g_tweakWeapons.integer & PROJECTILE_GRAVITY)
+		if (g_tweakWeapons.integer & WT_PROJECTILE_GRAVITY)
 			Q_strcat(buf, sizeof(buf), "   ^5Gravity affected projectiles\n");
-		if (g_tweakWeapons.integer & PROJ_SNIPER)
+		if (g_tweakWeapons.integer & WT_PROJ_SNIPER)
 			Q_strcat(buf, sizeof(buf), "   ^5Projectile sniper enabled\n");
-		if (g_tweakWeapons.integer & CENTER_MUZZLEPOINT)
+		if (g_tweakWeapons.integer & WT_SLOW_SNIPER)
+			Q_strcat(buf, sizeof(buf), "   ^5Slower snipe rifle fire rate\n");
+		if (g_tweakWeapons.integer & WT_CENTER_MUZZLEPOINT)
 			Q_strcat(buf, sizeof(buf), "   ^5Allowed center muzzlepoint setting\n");
-		if (g_tweakWeapons.integer & PSEUDORANDOM_FIRE)
+		if (g_tweakWeapons.integer & WT_PSEUDORANDOM_FIRE)
 			Q_strcat(buf, sizeof(buf), "   ^5Pseudo random weapon spread\n");
-		if (g_tweakWeapons.integer & ROCKET_MORTAR)
+		if (g_tweakWeapons.integer & WT_ROCKET_MORTAR)
 			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher alt fire is replaced with mortar\n");
-		else if (g_tweakWeapons.integer & ROCKET_REDEEMER)
+		else if (g_tweakWeapons.integer & WT_ROCKET_REDEEMER)
 			Q_strcat(buf, sizeof(buf), "   ^5Rocket launcher alt fire is replaced with redeemer\n");
-		if (g_tweakWeapons.integer & ALLOW_GUNROLL)
+		if (g_tweakWeapons.integer & WT_ALLOW_GUNROLL)
 			Q_strcat(buf, sizeof(buf), "   ^5Gunroll enabled\n");
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
 	}

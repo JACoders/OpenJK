@@ -4525,7 +4525,7 @@ static int PM_TryRoll( void )
 	}
 
 #ifdef _GAME
-	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(g_tweakWeapons.integer & ALLOW_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
+	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(g_tweakWeapons.integer & WT_ALLOW_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
 #else
 	if ((pm->ps->weapon != WP_SABER && pm->ps->weapon != WP_MELEE && (!(cgs.jcinfo & JAPRO_CINFO_GUNROLL) || pm->ps->stats[STAT_RACEMODE])) ||
 #endif
@@ -7149,7 +7149,7 @@ void PM_FinishWeaponChange( void ) {
 		((gentity_t *)pm_entSelf)->client->saberDelayCount += 1000; //Ait.. this is the delay past 250 that is added, we wil subract this from weapontime later when checking forcepower use
 		//saberDelay can never be negative. Saber delay can never be more than weapontime-250.
 	}
-	else if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FAST_WEAPONSWITCH))
+	else if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & WT_FAST_WEAPONSWITCH))
 		pm->ps->weaponTime += 25;
 	else
 		pm->ps->weaponTime += 250;
@@ -7393,7 +7393,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				&& pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] >= weaponData[pm->ps->weapon].altEnergyPerShot )
 			{
 #ifdef _GAME
-				if (!(g_tweakWeapons.integer & ROCKET_MORTAR) || pm->ps->stats[STAT_RACEMODE]) {
+				if (!(g_tweakWeapons.integer & WT_ROCKET_MORTAR) || pm->ps->stats[STAT_RACEMODE]) {
 					PM_RocketLock(2048,qfalse);
 					charging = qtrue;
 				}
@@ -7497,7 +7497,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				if (pm->ps->weaponChargeSubtractTime < pm->cmd.serverTime)
 				{
 #ifdef _GAME
-					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & INFINITE_AMMO))
+					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & WT_INFINITE_AMMO))
 #endif
 						pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].altChargeSub;
 					pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].altChargeSubTime;
@@ -7538,7 +7538,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 				if (pm->ps->weaponChargeSubtractTime < pm->cmd.serverTime)
 				{
 #ifdef _GAME
-					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & INFINITE_AMMO))
+					if (!pm->ps->stats[STAT_RACEMODE] && !(g_tweakWeapons.integer & WT_INFINITE_AMMO))
 #endif
 						pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] -= weaponData[pm->ps->weapon].chargeSub;
 					pm->ps->weaponChargeSubtractTime = pm->cmd.serverTime + weaponData[pm->ps->weapon].chargeSubTime;
@@ -8104,7 +8104,7 @@ static void PM_Weapon( void )
 		//this is so that my holster-view-weapon-when-hand-extend stuff works.
 		pm->ps->weaponstate = WEAPON_RAISING;
 #ifdef _GAME
-	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & FAST_WEAPONSWITCH))
+	if (!pm->ps->stats[STAT_RACEMODE] && (g_tweakWeapons.integer & WT_FAST_WEAPONSWITCH))
 		pm->ps->weaponTime += 25;
 	else
 		pm->ps->weaponTime += 250;
@@ -8558,7 +8558,7 @@ if (pm->ps->duelInProgress)
 	if ( pm->ps->weapon != WP_NONE &&
 		pm->ps->weapon == pm->cmd.weapon &&
 #ifdef _GAME
-		!(g_tweakWeapons.integer & INFINITE_AMMO) &&
+		!(g_tweakWeapons.integer & WT_INFINITE_AMMO) &&
 #endif
 		(pm->ps->weaponTime <= 0 || pm->ps->weaponstate != WEAPON_FIRING) )
 	{
@@ -8568,7 +8568,7 @@ if (pm->ps->duelInProgress)
 			if (pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].energyPerShot &&
 				pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] < weaponData[pm->ps->weapon].altEnergyPerShot
 #ifdef _GAME 
-				&& (!(g_tweakWeapons.integer & STAKE_GUN) || (pm->ps->weapon != WP_FLECHETTE)) //I guess we have to make the stake gun 
+				&& (!(g_tweakWeapons.integer & WT_STAKE_GUN) || (pm->ps->weapon != WP_FLECHETTE)) //I guess we have to make the stake gun 
 #endif
 				)
 			{ //the weapon is out of ammo essentially because it cannot fire primary or secondary, so do the switch
@@ -8986,11 +8986,11 @@ if (pm->ps->duelInProgress)
 	if (pm->cmd.buttons & BUTTON_ALT_ATTACK)
 	{
 #ifdef _GAME
-		if (g_tweakWeapons.integer & INFINITE_AMMO)
+		if (g_tweakWeapons.integer & WT_INFINITE_AMMO)
 			amount = 0;
-		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
+		else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & WT_ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
 			amount = 1;//JAPRO mortar meh
-		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & STAKE_GUN)
+		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & WT_STAKE_GUN)
 			amount = 0;//Detonating stakes shouldnt take ammo
 		else
 #endif
@@ -8999,9 +8999,9 @@ if (pm->ps->duelInProgress)
 	else
 	{
 #ifdef _GAME
-		if (g_tweakWeapons.integer & INFINITE_AMMO)
+		if (g_tweakWeapons.integer & WT_INFINITE_AMMO)
 			amount = 0;
-		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & STAKE_GUN)
+		else if (pm->ps->weapon == WP_FLECHETTE && g_tweakWeapons.integer & WT_STAKE_GUN)
 			amount = 10;//5 ammo per stake? eh
 		else
 #endif
@@ -9025,7 +9025,7 @@ if (pm->ps->duelInProgress)
 		{
 			// Switch weapons
 #ifdef _GAME
-			if ((pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted) && (pm->ps->weapon != WP_FLECHETTE || !(g_tweakWeapons.integer & STAKE_GUN)))
+			if ((pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted) && (pm->ps->weapon != WP_FLECHETTE || !(g_tweakWeapons.integer & WT_STAKE_GUN)))
 #else
 			if (pm->ps->weapon != WP_DET_PACK || !pm->ps->hasDetPackPlanted)
 #endif
@@ -9053,11 +9053,11 @@ if (pm->ps->duelInProgress)
 				if (pm->ps->weapon != WP_MELEE || !pm->ps->m_iVehicleNum)
 					PM_AddEvent( EV_ALT_FIRE );
 #ifdef _GAME
-				if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_SHOCKLANCE)
+				if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & WT_STUN_SHOCKLANCE)
 					addTime = 1500;
-				else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
+				else if (pm->ps->weapon == WP_ROCKET_LAUNCHER && (g_tweakWeapons.integer & WT_ROCKET_MORTAR) && !pm->ps->stats[STAT_RACEMODE])
 					addTime = 3000;
-				else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & IMPACT_NITRON))
+				else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & WT_IMPACT_NITRON))
 					addTime = 2000;
 				else
 #endif
@@ -9070,9 +9070,9 @@ if (pm->ps->duelInProgress)
 #ifdef _GAME
 			if (pm->ps->weapon == WP_DISRUPTOR && g_tweakWeapons.integer & WT_SLOW_SNIPER)//Sad hack to make instagib more playable
 				addTime = 1500;
-			else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & STUN_LG)
+			else if (pm->ps->weapon == WP_STUN_BATON && g_tweakWeapons.integer & WT_STUN_LG)
 				addTime = 50;
-			else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & IMPACT_NITRON))
+			else if (pm->ps->weapon == WP_THERMAL && (g_tweakWeapons.integer & WT_IMPACT_NITRON))
 				addTime = 2000;
 			else
 #endif

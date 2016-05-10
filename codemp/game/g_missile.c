@@ -162,7 +162,7 @@ void G_BounceMissile( gentity_t *ent, trace_t *trace ) {
 	}
 	else if ( ent->flags & FL_BOUNCE_HALF ) 
 	{
-		if (ent->s.weapon == WP_REPEATER && g_tweakWeapons.integer & ROCKET_MORTAR)
+		if (ent->s.weapon == WP_REPEATER && g_tweakWeapons.integer & WT_ROCKET_MORTAR)
 			VectorScale( ent->s.pos.trDelta, 0.4f, ent->s.pos.trDelta );
 		else
 			VectorScale( ent->s.pos.trDelta, 0.65f, ent->s.pos.trDelta );
@@ -439,7 +439,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	if ( other->takedamage &&
 		(ent->bounceCount > 0 || ent->bounceCount == -5) &&
 		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) &&
-		(g_tweakWeapons.integer & ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime > level.time - 300)) 
+		(g_tweakWeapons.integer & WT_ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime > level.time - 300)) 
 	{ //if its a direct hit and first 500ms of mortar, bounce off player.
 			G_BounceMissile( ent, trace );
 			G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
@@ -448,7 +448,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 	else if ( !other->takedamage &&
 		(ent->bounceCount > 0 || ent->bounceCount == -5) &&
 		( ent->flags & ( FL_BOUNCE | FL_BOUNCE_HALF ) ) ) { //only on the first bounce vv
-		if (!(g_tweakWeapons.integer & ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime < level.time - 1000))//give this mortar a 1 second 'fuse' until its armed
+		if (!(g_tweakWeapons.integer & WT_ROCKET_MORTAR && ent->s.weapon == WP_REPEATER && ent->bounceCount == 50 && ent->setTime && ent->setTime < level.time - 1000))//give this mortar a 1 second 'fuse' until its armed
 		{
 			G_BounceMissile( ent, trace );
 			G_AddEvent( ent, EV_GRENADE_BOUNCE, 0 );
@@ -790,7 +790,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			}
 
 			//damage falloff option, assumes bullet lifetime is 10,000 (default)
-			if ((g_tweakWeapons.integer & NO_SPREAD) &&
+			if ((g_tweakWeapons.integer & WT_NO_SPREAD) &&
 				((ent->s.weapon == WP_BLASTER && (ent->s.eFlags & EF_ALT_FIRING)) ||
 				(ent->s.weapon == WP_REPEATER && !(ent->s.eFlags & EF_ALT_FIRING))	
 				))
@@ -910,14 +910,16 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 
 #if _GRAPPLE//_GRAPPLE
 		if (!strcmp(ent->classname, "laserTrap") && ent->s.weapon == WP_BRYAR_PISTOL) {
-		gentity_t *nent;
+		//gentity_t *nent;
 		vec3_t v;
 
+		/*
 		nent = G_Spawn(qtrue);
 		nent->freeAfterEvent = qtrue;
 		nent->s.weapon = WP_BRYAR_PISTOL;//WP_GRAPPLING_HOOK; -- idk what this is
 		nent->s.saberInFlight = qtrue;
 		nent->s.owner = ent->s.owner;
+		*/
 
 		ent->enemy = NULL;
 		ent->s.otherEntityNum = -1;
@@ -965,14 +967,15 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 			ent->s.hasLookTarget = qtrue;
 		}
 
+		VectorCopy(trace->plane.normal, ent->s.angles);
 		SnapVectorTowards( v, ent->s.pos.trBase );	// save net bandwidth
 
 		// change over to a normal entity right at the point of impact
-		nent->s.eType = ET_GENERAL;
+		//nent->s.eType = ET_GENERAL;
 		ent->s.eType = ET_MISSILE;
 
 		G_SetOrigin( ent, v );
-		G_SetOrigin( nent, v );
+		//G_SetOrigin( nent, v );
 
 		ent->think = Weapon_HookThink;
 		ent->nextthink = level.time + FRAMETIME;
@@ -981,7 +984,7 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace ) {
 		VectorSubtract( ent->r.currentOrigin, ent->parent->client->ps.origin, v );
 
 		trap->LinkEntity( (sharedEntity_t *)ent );
-		trap->LinkEntity( (sharedEntity_t *)nent );
+		//trap->LinkEntity( (sharedEntity_t *)nent );
 
 		return;
 	}

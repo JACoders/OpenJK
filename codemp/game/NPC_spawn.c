@@ -1530,7 +1530,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent )
 		newent->client->NPC_class = CLASS_VEHICLE;
 		if ( g_vehicleInfo[iVehIndex].type == VH_FIGHTER )
 		{//FIXME: EXTERN!!!
-			if (g_tweakWeapons.integer & ANTI_VEHICLE) {
+			if (g_tweakWeapons.integer & WT_ANTI_VEHICLE) {
 				newent->flags |= (FL_NO_KNOCKBACK);
 			}
 			else

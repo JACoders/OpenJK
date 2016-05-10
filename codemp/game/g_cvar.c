@@ -131,15 +131,15 @@ static void CVU_ScreenShake(void) {
 }
 
 void CVU_TweakWeapons(void) {
-	(g_tweakWeapons.integer & PSEUDORANDOM_FIRE) ?
+	(g_tweakWeapons.integer & WT_PSEUDORANDOM_FIRE) ?
 		(jcinfo.integer |= JAPRO_CINFO_PSEUDORANDOM_FIRE) : (jcinfo.integer &= ~JAPRO_CINFO_PSEUDORANDOM_FIRE);
-	(g_tweakWeapons.integer & STUN_LG) ?
+	(g_tweakWeapons.integer & WT_STUN_LG) ?
 		(jcinfo.integer |= JAPRO_CINFO_LG) : (jcinfo.integer &= ~JAPRO_CINFO_LG);
-	(g_tweakWeapons.integer & STUN_SHOCKLANCE) ?
+	(g_tweakWeapons.integer & WT_STUN_SHOCKLANCE) ?
 		(jcinfo.integer |= JAPRO_CINFO_SHOCKLANCE) : (jcinfo.integer &= ~JAPRO_CINFO_SHOCKLANCE);
-	(g_tweakWeapons.integer & ALLOW_GUNROLL) ?
+	(g_tweakWeapons.integer & WT_ALLOW_GUNROLL) ?
 		(jcinfo.integer |= JAPRO_CINFO_GUNROLL) : (jcinfo.integer &= ~JAPRO_CINFO_GUNROLL);
-	(g_tweakWeapons.integer & PROJ_SNIPER) ?
+	(g_tweakWeapons.integer & WT_PROJ_SNIPER) ?
 		(jcinfo.integer |= JAPRO_CINFO_PROJSNIPER) : (jcinfo.integer &= ~JAPRO_CINFO_PROJSNIPER);
 	trap->Cvar_Set("jcinfo", va("%i", jcinfo.integer));
 }

@@ -783,7 +783,7 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"JK2 Style Alt Tripmine"},//26
 	{"Projectile Sniper"},//27
 	{"No Spread"},//28
-	{"Slow sniper firerate"}//29
+	{"Slow sniper fire rate"}//29
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 
