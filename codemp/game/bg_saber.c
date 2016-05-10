@@ -1541,6 +1541,9 @@ qboolean PM_CanBackstab(void)
 	vec3_t trmaxs = {15, 15, 8};
 
 #ifdef _GAME
+	if (g_tweakSaber.integer & ST_EASIERBACKSLASH)
+		return qtrue;
+
 	if (g_tweakSaber.integer & ST_EASYBACKSLASH) //easybackslash
 	{
 		gclient_t	*cl;
@@ -1571,6 +1574,11 @@ qboolean PM_CanBackstab(void)
 		}
 	}
 #else
+	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_EASIERBACKSLASH))
+	{
+		return qtrue;
+	}
+
 	if (cgs.isJAPro && (cgs.jcinfo & JAPRO_CINFO_EASYBACKSLASH))
 	{
 		int i;

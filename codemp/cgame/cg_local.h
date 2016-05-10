@@ -121,6 +121,9 @@
 #define JAPRO_CINFO_BHOP2			(1<<26) //option for only bhop mode
 #define JAPRO_CINFO_ROLLCANCEL		(1<<27) //jk2 1.02 rollcancel move
 #define JAPRO_CINFO_NOREDCHAIN		(1<<28) //no red chains 1.02
+#define JAPRO_CINFO_PROJSNIPER		(1<<29)
+#define	JAPRO_CINFO_JAPLUSGRAPPLE	(1<<30)
+#define	JAPRO_CINFO_EASIERBACKSLASH	(1<<31)
 
 //ja+ stuff
 #define JAPRO_PLUGIN_NEWDRAINEFX		(1<<0)
