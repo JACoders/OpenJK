@@ -783,7 +783,8 @@ static bitInfo_T weaponTweaks[] = { // MAX_WEAPON_TWEAKS tweaks (24)
 	{"JK2 Style Alt Tripmine"},//26
 	{"Projectile Sniper"},//27
 	{"No Spread"},//28
-	{"Slow sniper fire rate"}//29
+	{"Slow sniper fire rate"},//29
+	{"Make rockets solid for their owners"}//29
 };
 static const int MAX_WEAPON_TWEAKS = ARRAY_LEN( weaponTweaks );
 
@@ -839,7 +840,8 @@ static bitInfo_T saberTweaks[] = {
 	{"Spin backslash"},//12
 	{"JK2 Lunge"},//13
 	{"Remove red DFA Boost"},//13
-	{"Make red DFA cost 0 forcepoints"}//13
+	{"Make red DFA cost 0 forcepoints"},//13
+	{"Remove all backslash restrictions"}//8
 };
 static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
 

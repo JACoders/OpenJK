@@ -1055,6 +1055,12 @@ void G_RunMissile( gentity_t *ent ) {
 	// get current position
 	BG_EvaluateTrajectory( &ent->s.pos, level.time, origin );
 
+
+	//If its a rocket, and older than 500ms, make it solid to the shooter.
+	if ((g_tweakWeapons.integer & WT_SOLID_ROCKET) && (ent->s.weapon == WP_ROCKET_LAUNCHER) && (ent->nextthink - level.time < 9500)) {
+		ent->r.ownerNum = ENTITYNUM_WORLD;
+	}
+
 	// if this missile bounced off an invulnerability sphere
 	if ( ent->target_ent ) {
 		passent = ent->target_ent->s.number;
