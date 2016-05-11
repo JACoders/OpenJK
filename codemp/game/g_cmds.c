@@ -866,14 +866,16 @@ static void Cmd_Blink_f( gentity_t *ent )
 
 
 	//G_TestLine(startpoint, endpoint, 0x0000ff, 500);
-	trap->Trace(&tr, startpoint, ent->r.mins, ent->r.maxs, endpoint, ent->client->ps.clientNum, CONTENTS_SOLID, qfalse, 0, 0);
+	trap->Trace(&tr, startpoint, ent->r.mins, ent->r.maxs, endpoint, ent->client->ps.clientNum, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 	if (tr.fraction < 1.0f) { //Hit something
-		G_PlayEffect( EFFECT_LANDING_SAND, tr.endpos, tr.plane.normal );
-		G_PlayEffect( EFFECT_LANDING_SAND, ent->client->ps.origin, vec3_origin );
+		//G_PlayEffect( EFFECT_LANDING_SAND, tr.endpos, tr.plane.normal );
+		//G_PlayEffect( EFFECT_LANDING_SAND, ent->client->ps.origin, vec3_origin );
 
-		VectorCopy(tr.endpos, ent->client->ps.origin);
-		ResetPlayerTimers(ent, qtrue);
+		if (ent->client->sess.raceMode)
+			AmTeleportPlayer(ent, tr.endpos, ent->client->ps.viewangles, qtrue, qtrue);
+		else
+			AmTeleportPlayer(ent, tr.endpos, ent->client->ps.viewangles, qfalse, qfalse);
 	}
 }
 
