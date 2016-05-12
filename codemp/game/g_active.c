@@ -3513,7 +3513,7 @@ void ClientThink_real( gentity_t *ent ) {
 							{
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
-								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 9000;
 
 								ent->client->pers.unique_skill_timer = level.time + 60000;
 							}
