@@ -790,9 +790,6 @@ int main ( int argc, char* argv[] )
 			}
 		}
 
-		// make sure mouse and joystick are only called once a frame
-		IN_Frame();
-
 		// run the game
 		Com_Frame();
 	}
