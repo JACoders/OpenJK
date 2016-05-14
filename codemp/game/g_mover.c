@@ -912,6 +912,7 @@ void Use_BinaryMover( gentity_t *ent, gentity_t *other, gentity_t *activator )
 	if (activator->client &&
 		activator->client->sess.raceMode && 
 		(!other || !(other->spawnflags & 4)) && 
+		(ent->spawnflags & 256) && //Let mapmaker bypass this..
 		((ent->pos2[2] - ent->pos1[2]) > 128) &&
 		(activator->client->ps.origin[2] < (ent->r.absmax[2] + 96)) &&
 		(activator->client->ps.origin[2] > (ent->r.absmax[2] - 96)) ) //We are in racemode, and the door/plat/ele moves upwawrds. Ideally could also check for angle == -1 or -2 but where is that..

@@ -1105,6 +1105,51 @@ void Svcmd_ToggleStartingItems_f( void ) {
 	}
 }
 
+static bitInfo_T saberDisables[] = { // MAX_WEAPON_TWEAKS tweaks (24)
+	{"Disable blue style"},//0
+	{"Disable yellow style"},//1
+	{"Disable red style"},//2
+	{"Disable duals"},//3
+	{"Distable staff"},//4
+	{"Force desann style"},//5
+	{"Force tavion style"}//6
+};
+static const int MAX_SABER_DISABLES = ARRAY_LEN( saberDisables );
+
+void Svcmd_ToggleSaberDisable_f( void ) {
+	if ( trap->Argc() == 1 ) {
+		int i = 0;
+		for ( i = 0; i < MAX_SABER_DISABLES; i++ ) {
+			if ( (g_saberDisable.integer & (1 << i)) ) {
+				trap->Print( "%2d [X] %s\n", i, saberDisables[i].string );
+			}
+			else {
+				trap->Print( "%2d [ ] %s\n", i, saberDisables[i].string );
+			}
+		}
+		return;
+	}
+	else {
+		char arg[8] = { 0 };
+		int index;
+		const uint32_t mask = (1 << MAX_SABER_DISABLES) - 1;
+
+		trap->Argv( 1, arg, sizeof(arg) );
+		index = atoi( arg );
+
+		if ( index < 0 || index >= MAX_SABER_DISABLES ) {
+			trap->Print( "saberDisable: Invalid range: %i [0, %i]\n", index, MAX_SABER_DISABLES - 1 );
+			return;
+		}
+
+		trap->Cvar_Set( "g_saberDisable", va( "%i", (1 << index) ^ (g_saberDisable.integer & mask ) ) );
+		trap->Cvar_Update( &g_saberDisable );
+
+		trap->Print( "%s %s^7\n", saberDisables[index].string, ((g_saberDisable.integer & (1 << index))
+			? "^2Enabled" : "^1Disabled") );
+	}
+}
+
 static bitInfo_T adminOptions[] = {
 	{"Amtele"},//0
 	{"Amfreeze"},//1
@@ -1440,6 +1485,8 @@ svcmd_t svcmds[] = {
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 	{ "renameAccount",				Svcmd_RenameAccount_f,				qfalse },
 	{ "resetScores",				Svcmd_ResetScores_f,				qfalse },
+
+	{ "saberDisable",				Svcmd_ToggleSaberDisable_f,			qfalse },
 
 	{ "say",						Svcmd_Say_f,						qtrue },
 

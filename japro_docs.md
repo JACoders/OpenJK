@@ -2,29 +2,29 @@
 
 
 #### CTF
-	g_flagDrag			0  //Add air friction to flag carrier
-	g_fixFlagSuicide	0  //Don't auto return flag when flag carrier suicides
-	g_allowFlagThrow	0  //Allow use of /throwflag command
-	g_fixCTFScores		0  //Tweak CTF score amounts
+	g_flagDrag			0  //Add air friction to flag carrier.
+	g_fixFlagSuicide	0  //Don't auto return flag when flag carrier suicides.
+	g_allowFlagThrow	0  //Allow use of /throwflag command.
+	g_fixCTFScores		0  //Tweak CTF score amounts.
 	g_fixFlagHitbox		0  	
 	g_rabbit			0  
 
 #### Saber
-	g_tweakSaber			0	//Configured with /tweakSaber command
+	g_tweakSaber			0	//Configured with /tweakSaber command.
 	g_backslashDamageScale	1	
 	g_maxSaberDefense		0	
 	g_saberTouchDmg			0	//Configure saber touch damage for MP dmgs. Can be >1 for more touch damage.
 	g_fixGroundStab			0	//1=Groundstabs damage players on ground. 2=Groundstabs damage players on ground but with reduced damage.
-	g_saberDuelSPDamage		1	//Toggle use of SP style damage in saber duels
-	g_forceDuelSPDamage		0	//Toggle use of SP style damage in force duels
-	g_saberDisable			0	//Disable certain saber styles
+	g_saberDuelSPDamage		1	//Toggle use of SP style damage in saber duels.
+	g_forceDuelSPDamage		0	//Toggle use of SP style damage in force duels.
+	g_saberDisable			0	//Configured with /saberDisable command.
 	g_blueDamageScale		1	
 	g_yellowDamageScale		1	
 	g_redDamageScale		1	
 	g_redDFADamageScale		1	
 
 #### Force 
-	g_tweakForce		0	//Configured with /tweakForce command
+	g_tweakForce		0	//Configured with /tweakForce command.
 	g_fixSaberInGrip	0	//1=Grip does not turn off lightsaber. 2=Same as 1 and also target can toggle lightsaber in grip. 3=Same as 2 and also target can switch saberstyle in grip.
 	g_fixLightning		0	//1=Lightning gives forcepoints to target. 2=Same as 1 with reduced damage. 3=Same as 2 with no melee bonus.
 	g_fixGetups			0  //1=Allow grip during knockdown recovery. 2=Allow grip/push/pull during knockdown recovery.
@@ -166,6 +166,7 @@
 	register  
 	renameAccount	
 	resetScores	//Reset all player/team scores without having to reload the map.	
+	saberDisable
 	startingItems	
 	startingWeapons	
 	toggleAdmin	

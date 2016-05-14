@@ -1434,8 +1434,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		//else 
 			//time -= 10; //Clients time was massively fucked due to lag, improve it up the minimum ammount..
 
-		if (player->client->sess.fullAdmin)
-			trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > 0): %i\"", diffLag));
+		//if (player->client->sess.fullAdmin) //think we can finally remove this debug print
+			//trap->SendServerCommand( player-g_entities, va("chat \"Msec diff due to warp (added if > 0): %i\"", diffLag));
 		
 		//trap->SendServerCommand( player-g_entities, va("chat \"diffLag: %i\"", diffLag));
 

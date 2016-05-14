@@ -276,11 +276,11 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define ST_EASIERBACKSLASH		(1<<15)
 
 //Saberstyles
-#define SABERSTYLE_BLUE (1<<0)//blue only
-#define SABERSTYLE_YELLOW (1<<1)//yellow only
-#define SABERSTYLE_RED (1<<2) //red only
-#define SABERSTYLE_DUAL (1<<3) //duals only
-#define SABERSTYLE_STAFF (1<<4)//staff only
+#define SABERSTYLE_BLUE (1<<0)//no blue
+#define SABERSTYLE_YELLOW (1<<1)//no yellow
+#define SABERSTYLE_RED (1<<2) //no red
+#define SABERSTYLE_DUAL (1<<3) //no duals
+#define SABERSTYLE_STAFF (1<<4)//no staff
 #define SABERSTYLE_DESANN (1<<5)// desann only
 #define SABERSTYLE_TAVION (1<<6)//tavion only
 
