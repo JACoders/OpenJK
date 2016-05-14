@@ -197,6 +197,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define IS_NOEXCEPT(x) noexcept(x)
 #endif
 
+#if defined(__cplusplus)
+	#include <cstddef>
+
+	// gcc versions < 4.9 did not add max_align_t to the std:: namespace, but instead
+	// put it in the global namespace. Need this to provide uniform access to max_align_t
+	#if defined(__GNUC__) && ((__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9))
+		typedef max_align_t qmax_align_t;
+	#else
+		typedef std::max_align_t qmax_align_t;
+	#endif
+#endif
 
 // catch missing defines in above blocks
 #if !defined(OS_STRING)
