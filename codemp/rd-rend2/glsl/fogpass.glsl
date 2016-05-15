@@ -12,10 +12,6 @@ in uvec4 attr_BoneIndexes;
 in vec4 attr_BoneWeights;
 #endif
 
-uniform vec4 u_FogDistance;
-uniform vec4 u_FogDepth;
-uniform float u_FogEyeT;
-
 #if defined(USE_DEFORM_VERTEXES)
 uniform int u_DeformType;
 uniform int u_DeformFunc;
@@ -33,7 +29,7 @@ uniform mat4x3 u_BoneMatrices[20];
 
 uniform vec4 u_Color;
 
-out float var_Scale;
+out vec3 var_WSPosition;
 
 #if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )
@@ -173,20 +169,6 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 }
 #endif
 
-float CalcFog(vec3 position)
-{
-	float s = dot(vec4(position, 1.0), u_FogDistance);
-	float t = dot(vec4(position, 1.0), u_FogDepth);
-
-	float eyeOutside = float(u_FogEyeT < 0.0);
-	float fogged = float(t >= eyeOutside);
-
-	t += 1e-6;
-	t *= fogged / (t - u_FogEyeT * eyeOutside);
-
-	return s * t;
-}
-
 void main()
 {
 #if defined(USE_VERTEX_ANIMATION)
@@ -228,7 +210,7 @@ void main()
 
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
 
-	var_Scale = CalcFog(position) * u_Color.a * u_Color.a;
+	var_WSPosition = position;
 }
 
 /*[Fragment]*/
@@ -237,15 +219,51 @@ uniform vec4 u_Color;
 uniform float u_AlphaTestValue;
 #endif
 
-in float var_Scale;
+uniform vec4 u_FogPlane;
+uniform float u_FogDepthToOpaque;
+uniform bool u_FogHasPlane;
+uniform vec3 u_ViewOrigin;
+in vec3 var_WSPosition;
 
 out vec4 out_Color;
 out vec4 out_Glow;
 
+float CalcFog(in vec3 viewOrigin, in vec3 position, in vec4 fogPlane, in float depthToOpaque, in bool hasPlane)
+{
+	// line: x = o + tv
+	// plane: (x . n) + d = 0
+	// intersects: dot(o + tv, n) + d = 0
+	//             dot(o + tv, n) = -d
+	//             dot(o, n) + t*dot(n, v) = -d
+	//             t = -(d + dot(o, n)) / dot(n, v)
+	vec3 V = position - viewOrigin;
+
+	// fogPlane is inverted in tr_bsp for some reason.
+	float t = -(fogPlane.w + dot(viewOrigin, -fogPlane.xyz)) / dot(V, -fogPlane.xyz);
+
+	bool inFog = ((dot(viewOrigin, fogPlane.xyz) - fogPlane.w) >= 0.0) || !hasPlane;
+	bool intersects = (t > 0.0 && t <= 1.0);
+
+	// this is valid only when t > 0.0. When t < 0.0, then intersection point is behind
+	// the camera, meaning we're facing away from the fog plane, which probably means
+	// we're inside the fog volume.
+	vec3 intersectsAt = viewOrigin + t*V;
+
+	float distToVertexFromIntersection = distance(intersectsAt, position);
+	float distToVertexFromViewOrigin = distance(viewOrigin, position);
+
+	float distToVertex = mix(distToVertexFromViewOrigin,
+							 distToVertexFromIntersection,
+							 !inFog && intersects);
+
+	return min(distToVertex / depthToOpaque, 1.0);
+}
+
 void main()
 {
+	float fog = CalcFog(u_ViewOrigin, var_WSPosition, u_FogPlane, u_FogDepthToOpaque, u_FogHasPlane);
 	out_Color.rgb = u_Color.rgb;
-	out_Color.a = sqrt(clamp(var_Scale, 0.0, 1.0));
+	out_Color.a = sqrt(clamp(fog, 0.0, 1.0));
 
 #if defined(USE_ATEST)
 #  if USE_ATEST == ATEST_CMP_LT

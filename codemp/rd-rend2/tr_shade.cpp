@@ -1187,9 +1187,10 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	}
 
 	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
-	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDISTANCE, fogDistanceVector);
-	uniformDataWriter.SetUniformVec4(UNIFORM_FOGDEPTH, fogDepthVector);
-	uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
+	uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
+	uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
+	uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, fog->depthToOpaque);
+	uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.refdef.vieworg);
 
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
 	if ( tess.shader->fogPass == FP_EQUAL )

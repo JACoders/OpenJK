@@ -116,6 +116,9 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_FogDepth",     GLSL_VEC4, 1 },
 	{ "u_FogEyeT",      GLSL_FLOAT, 1 },
 	{ "u_FogColorMask", GLSL_VEC4, 1 },
+	{ "u_FogPlane",		GLSL_VEC4, 1 },
+	{ "u_FogHasPlane",	GLSL_INT, 1 },
+	{ "u_FogDepthToOpaque", GLSL_FLOAT, 1 },
 
 	{ "u_ModelMatrix",               GLSL_MAT4x4, 1 },
 	{ "u_ModelViewProjectionMatrix", GLSL_MAT4x4, 1 },

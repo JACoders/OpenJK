@@ -1211,6 +1211,9 @@ typedef enum
 	UNIFORM_FOGDEPTH,
 	UNIFORM_FOGEYET,
 	UNIFORM_FOGCOLORMASK,
+	UNIFORM_FOGPLANE,
+	UNIFORM_FOGHASPLANE,
+	UNIFORM_FOGDEPTHTOOPAQUE,
 
 	UNIFORM_MODELMATRIX,
 	UNIFORM_MODELVIEWPROJECTIONMATRIX,
@@ -1342,6 +1345,7 @@ typedef struct {
 
 	vec4_t		color;
 	float		tcScale;				// texture coordinate vector scales
+	float		depthToOpaque;
 	fogParms_t	parms;
 
 	// for clipping distance in fog when outside
