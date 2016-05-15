@@ -358,7 +358,7 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime );
 typedef struct { //Should this store their g2 anim? for proper g2 sync?
 	vec3_t	mins, maxs;
 	vec3_t	currentOrigin, currentAngles;
-	int		time, leveltime;
+	int		time, leveltime, torsoAnim, torsoTimer, legsAnim, legsTimer;
 } clientTrail_t;
 
 

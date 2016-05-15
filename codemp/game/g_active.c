@@ -45,6 +45,13 @@ void G_ResetTrail( gentity_t *ent ) {
 		VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[i].currentAngles );
 		ent->client->unlagged.trail[i].leveltime = time;
 		ent->client->unlagged.trail[i].time = time;
+
+
+		ent->client->unlagged.trail[i].torsoAnim = ent->client->ps.torsoAnim;
+		ent->client->unlagged.trail[i].torsoTimer = ent->client->ps.torsoTimer;
+		ent->client->unlagged.trail[i].legsAnim = ent->client->ps.legsAnim;
+		ent->client->unlagged.trail[i].legsTimer = ent->client->ps.legsTimer;
+
 	}
 }
 
@@ -96,6 +103,13 @@ void G_StoreTrail( gentity_t *ent ) {
 	ent->client->unlagged.trail[head].leveltime = level.time;
 	ent->client->unlagged.trail[head].time = newtime;
 
+	ent->client->unlagged.trail[head].torsoAnim = ent->client->ps.torsoAnim;
+	ent->client->unlagged.trail[head].torsoTimer = ent->client->ps.torsoTimer;
+	ent->client->unlagged.trail[head].legsAnim = ent->client->ps.legsAnim;
+	ent->client->unlagged.trail[head].legsTimer = ent->client->ps.legsTimer;
+
+	//Also store their anim info? Since with ghoul2 collision that matters..
+
 	// FOR TESTING ONLY
 	//Com_Printf("level.previousTime: %d, level.time: %d, newtime: %d\n", level.previousTime, level.time, newtime);
 }
@@ -115,6 +129,17 @@ static void TimeShiftLerp( float frac, vec3_t start, vec3_t end, vec3_t result )
 	result[0] = frac * start[0] + comp * end[0];
 	result[1] = frac * start[1] + comp * end[1];
 	result[2] = frac * start[2] + comp * end[2];
+}
+
+static void TimeShiftAnimLerp( float frac, int anim1, int anim2, int time1, int time2, int *outAnim, int *outTime ) {
+	if (anim1 == anim2 && time2 > time1) { //Only lerp if both anims are same and time2 is after time1.
+		*outAnim = anim2;
+		*outTime = time1 + (time2 - time1)*frac;
+	}
+	else {
+		*outAnim = anim2;
+		*outTime = time2;
+	}
 }
 
 
@@ -157,6 +182,12 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			VectorCopy( ent->r.currentOrigin, ent->client->unlagged.saved.currentOrigin );
 			VectorCopy( ent->r.currentAngles, ent->client->unlagged.saved.currentAngles );
 			ent->client->unlagged.saved.leveltime = level.time;
+
+			ent->client->unlagged.saved.torsoAnim = ent->client->ps.torsoAnim;
+			ent->client->unlagged.saved.torsoTimer = ent->client->ps.torsoTimer;
+			ent->client->unlagged.saved.legsAnim = ent->client->ps.legsAnim;
+			ent->client->unlagged.saved.legsTimer = ent->client->ps.legsTimer;
+
 		}
 
 		// if we haven't wrapped back to the head, we've sandwiched, so
@@ -175,6 +206,17 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			// lerp these too, just for fun (and ducking)
 			TimeShiftLerp( frac, ent->client->unlagged.trail[k].mins, ent->client->unlagged.trail[j].mins, ent->r.mins );
 			TimeShiftLerp( frac, ent->client->unlagged.trail[k].maxs, ent->client->unlagged.trail[j].maxs, ent->r.maxs );
+			
+			/*
+			Com_Printf("Lerp timeshifting client %s. Old anim = %i %i (times %i %i).  New Anim = %i %i (times %i %i).\n", 
+				ent->client->pers.netname,
+				ent->client->ps.torsoAnim, ent->client->ps.legsAnim, ent->client->ps.torsoTimer, ent->client->ps.legsTimer, 
+				ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[k].torsoTimer, ent->client->unlagged.trail[k].legsTimer);
+			*/
+
+			//Lerp this somehow?
+			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].torsoAnim, ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[j].torsoTimer, ent->client->unlagged.trail[k].torsoTimer, &ent->client->ps.torsoAnim, &ent->client->ps.torsoTimer);
+			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].legsAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[j].legsTimer, ent->client->unlagged.trail[k].legsTimer, &ent->client->ps.legsAnim, &ent->client->ps.legsTimer);
 
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );
@@ -184,6 +226,18 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			VectorCopy( ent->client->unlagged.trail[k].currentOrigin, ent->r.currentOrigin );
 			VectorCopy( ent->client->unlagged.trail[k].mins, ent->r.mins );
 			VectorCopy( ent->client->unlagged.trail[k].maxs, ent->r.maxs );
+
+			/*
+			Com_Printf("Timeshifting client %s. Old anim = %i %i (times %i %i).  New Anim = %i %i (times %i %i).\n", 
+				ent->client->pers.netname,
+				ent->client->ps.torsoAnim, ent->client->ps.legsAnim, ent->client->ps.torsoTimer, ent->client->ps.legsTimer, 
+				ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[k].torsoTimer, ent->client->unlagged.trail[k].legsTimer);
+			*/
+
+			ent->client->ps.torsoAnim = ent->client->unlagged.trail[k].torsoAnim;
+			ent->client->ps.torsoTimer = ent->client->unlagged.trail[k].torsoTimer;
+			ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
+			ent->client->ps.legsTimer = ent->client->unlagged.trail[k].legsTimer;
 
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );
@@ -237,6 +291,12 @@ void G_UnTimeShiftClient( gentity_t *ent ) {
 		VectorCopy( ent->client->unlagged.saved.maxs, ent->r.maxs );
 		VectorCopy( ent->client->unlagged.saved.currentOrigin, ent->r.currentOrigin );
 		VectorCopy( ent->client->unlagged.saved.currentAngles, ent->r.currentAngles );
+
+		ent->client->ps.torsoAnim = ent->client->unlagged.saved.torsoAnim;
+		ent->client->ps.torsoTimer = ent->client->unlagged.saved.torsoTimer;
+		ent->client->ps.legsAnim = ent->client->unlagged.saved.legsAnim;
+		ent->client->ps.legsTimer = ent->client->unlagged.saved.legsTimer;
+
 		ent->client->unlagged.saved.leveltime = 0;
 
 		// this will recalculate absmin and absmax
