@@ -131,15 +131,14 @@ static void TimeShiftLerp( float frac, vec3_t start, vec3_t end, vec3_t result )
 	result[2] = frac * start[2] + comp * end[2];
 }
 
-static void TimeShiftAnimLerp( float frac, int anim1, int anim2, int time1, int time2, int *outAnim, int *outTime ) {
-	if (anim1 == anim2 && time2 > time1) { //Only lerp if both anims are same and time2 is after time1.
-		*outAnim = anim2;
+static void TimeShiftAnimLerp( float frac, int anim1, int anim2, int time1, int time2, int *outTime ) {
+	if (anim1 == anim2 && time2 > time1) {//Only lerp if both anims are same and time2 is after time1.
 		*outTime = time1 + (time2 - time1)*frac;
 	}
-	else {
-		*outAnim = anim2;
+	else
 		*outTime = time2;
-	}
+
+	//Com_Printf("Timeshift anim lerping: time1 is %i, time 2 is %i, lerped is %i\n", time1, time2, outTime);
 }
 
 
@@ -215,8 +214,10 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			*/
 
 			//Lerp this somehow?
-			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].torsoAnim, ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[j].torsoTimer, ent->client->unlagged.trail[k].torsoTimer, &ent->client->ps.torsoAnim, &ent->client->ps.torsoTimer);
-			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].legsAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[j].legsTimer, ent->client->unlagged.trail[k].legsTimer, &ent->client->ps.legsAnim, &ent->client->ps.legsTimer);
+			ent->client->ps.torsoAnim = ent->client->unlagged.trail[k].torsoAnim;
+			ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
+			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].torsoAnim, ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[j].torsoTimer, ent->client->unlagged.trail[k].torsoTimer,  &ent->client->ps.torsoTimer);
+			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].legsAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[j].legsTimer, ent->client->unlagged.trail[k].legsTimer, &ent->client->ps.legsTimer);
 
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );

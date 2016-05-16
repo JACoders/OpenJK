@@ -1727,7 +1727,7 @@ int	TAG_GetAngles( const char *owner, const char *name, vec3_t angles );
 int TAG_GetRadius( const char *owner, const char *name );
 int TAG_GetFlags( const char *owner, const char *name );
 
-void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles );
+void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean keepVel );
 void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean droptofloor, qboolean race );
 
 //

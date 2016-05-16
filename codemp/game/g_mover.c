@@ -1150,7 +1150,7 @@ static void Touch_DoorTriggerSpectator( gentity_t *ent, gentity_t *other, trace_
 		tr.fraction == 1.0f &&
 		tr.entityNum == ENTITYNUM_NONE)
 	{
-		TeleportPlayer( other, origin, doorangles );
+		TeleportPlayer( other, origin, doorangles, qfalse );
 	}
 }
 

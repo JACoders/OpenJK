@@ -176,10 +176,11 @@ void DeletePlayerProjectiles(gentity_t *ent);
 #if _GRAPPLE
 void Weapon_HookFree (gentity_t *ent);
 #endif
-void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
+void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean keepVel ) {
 	gentity_t	*tent;
 	qboolean	isNPC = qfalse;
 	qboolean	noAngles;
+
 	if (player->s.eType == ET_NPC)
 	{
 		isNPC = qtrue;
@@ -211,7 +212,7 @@ void TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	// spit the player out
 	if ( !noAngles ) {
 		AngleVectors( angles, player->client->ps.velocity, NULL, NULL );
-		if (g_quakeStyleTeleport.integer && !player->client->sess.raceMode) //Eh.. ideally should be a spawnflag on the teleporter entity itself? dunno .. todo
+		if (keepVel)
 			VectorScale( player->client->ps.velocity, pm->xyspeed, player->client->ps.velocity );
 		else
 			VectorScale( player->client->ps.velocity, 400, player->client->ps.velocity );

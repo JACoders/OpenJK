@@ -579,3 +579,44 @@
 	Accel bar  //12
 	Weze style  //13
 	Line Crosshair  //14
+
+## Map entity changes:
+### df_trigger_finish
+#### Spawnflags:
+JUMP1_ONLY JUMP2_ONLY JUMP3_ONLY ALLOW_HASTE ALLOW_JETPACK FFA_ONLY
+#### Keys
+noise - sound it makes.
+awesomenoise - sound it makes when time is below 'speed' key (only in jka style).
+speed - max time in ms to play awesomenoise.
+target
+
+### df_trigger_checkpoint
+noise - sound it makes.
+
+### trigger_newpush 
+#### Spawnflags
+XVEL YVEL ZVEL PLAYERONLY NPCONLY
+#### Keys
+noise - sound it makes.
+speed - scale to use
+
+### target_restrict 
+#### Spawnflags
+REMOVE_RESTRICTIONS HASTE REMOVE_NEUTRALFLAG
+#### Keys 
+REMOVE_RESTRICTIONS - Removes the specified restrictions (default only bhop)
+HASTE - Replaces the default onlybhop restriction with haste.
+
+### func_static 
+Added spawnflag "NOT_IN_CTF" (512) to stop entity from spawning in CTF mode.
+
+### trigger_multiple
+Added spawnflag "NO_RACEMODE" (4096) to prevent people in racemode from using it.
+Added spawnflag "NOT_IN_CTF" (8192) to prevent it from spawning in CTF.
+
+### trigger_teleport
+Added spawnflag "KEEP_VELOCITY" (2) to preserve momentum after teleport.
+
+### target_teleporter
+Added spawnflag "KEEP_VELOCITY" (1) to preserve momentum after teleport.
+

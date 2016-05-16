@@ -246,7 +246,6 @@ XCVAR_DEF( g_flipKickDamageScale,		"1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_glitchKickDamage,			"-1",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_maxFallDmg,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_startingItems,				"0",			CVU_StartingItems,	CVAR_ARCHIVE,									qtrue )
-XCVAR_DEF( g_quakeStyleTeleport,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_screenShake,				"0",			CVU_ScreenShake,	CVAR_ARCHIVE,									qtrue ) //should be g_forceScreenShake
 XCVAR_DEF( g_unlagged,					"0",			CVU_Unlagged,		CVAR_ARCHIVE|CVAR_LATCH,						qtrue )
 XCVAR_DEF( g_allowSaberSwitch,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )

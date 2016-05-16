@@ -1188,7 +1188,7 @@ void Use_target_push( gentity_t *self, gentity_t *other, gentity_t *activator ) 
 
 qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 { //How 2 check if cvars were valid the whole time of run.. and before? since you can get a headstart with higher g_speed before hitting start timer? :S
-	//Make most of this hardcoded into racemode..? speed, knockback, debugmelee, stepslidefix, gravity, quakestyleteleport
+	//Make most of this hardcoded into racemode..? speed, knockback, debugmelee, stepslidefix, gravity
 	int style;
 	if (!player->client)
 		return qfalse;
@@ -1836,6 +1836,7 @@ trigger_teleport
 
 void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace ) {
 	gentity_t	*dest;
+	qboolean keepVel = qfalse;
 
 	if ( self->flags & FL_INACTIVE )
 	{//set by target_deactivate
@@ -1861,12 +1862,15 @@ void trigger_teleporter_touch (gentity_t *self, gentity_t *other, trace_t *trace
 		return;
 	}
 
+	if (self->spawnflags & 2)
+		keepVel = qtrue;
+
 	//Look at dest->speed, and.. dest->spawnflags?   if spawnflags & quake style, multiply their current speed
 	//if not spawnflags & quake style, set their speed to specified speed
 	//if neither, set their speed to 450 or whatever?
 
 
-	TeleportPlayer( other, dest->s.origin, dest->s.angles );
+	TeleportPlayer( other, dest->s.origin, dest->s.angles, keepVel );
 }
 
 
@@ -2293,10 +2297,10 @@ void hyperspace_touch( gentity_t *self, gentity_t *other, trace_t *trace )
 				VectorMA( newOrg, uDiff, up, newOrg );
 				//trap->Print("hyperspace from %s to %s\n", vtos(other->client->ps.origin), vtos(newOrg) );
 				//now put them in the offset position, facing the angles that position wants them to be facing
-				TeleportPlayer( other, newOrg, ent->s.angles );
+				TeleportPlayer( other, newOrg, ent->s.angles, qfalse );
 				if ( other->m_pVehicle && other->m_pVehicle->m_pPilot )
 				{//teleport the pilot, too
-					TeleportPlayer( (gentity_t*)other->m_pVehicle->m_pPilot, newOrg, ent->s.angles );
+					TeleportPlayer( (gentity_t*)other->m_pVehicle->m_pPilot, newOrg, ent->s.angles, qfalse );
 					//FIXME: and the passengers?
 				}
 				//make them face the new angle
