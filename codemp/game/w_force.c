@@ -3095,10 +3095,15 @@ void ForceThrow( gentity_t *self, qboolean pull )
 //[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
 	if ((self->client->ps.weaponTime - self->client->saberDelay) > 0)
 	{
-		if ( (!(g_fixGetups.integer > 1 && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B)))
-			&& 
-			(!(g_tweakForce.integer & FT_JK2PULLROLL) && (self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L || self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B))
-			)
+		if ((g_fixGetups.integer > 1) && (self->client->ps.legsAnim == BOTH_GETUP_BROLL_R || self->client->ps.legsAnim == BOTH_GETUP_BROLL_L || self->client->ps.legsAnim == BOTH_GETUP_BROLL_F || self->client->ps.legsAnim == BOTH_GETUP_BROLL_B))
+		{
+			//Getting up and allowed to pull
+		}
+		else if ((g_tweakForce.integer & FT_JK2PULLROLL) && (self->client->ps.legsAnim == BOTH_ROLL_R || self->client->ps.legsAnim == BOTH_ROLL_L || self->client->ps.legsAnim == BOTH_ROLL_F || self->client->ps.legsAnim == BOTH_ROLL_B))
+		{
+			//Rolling and allowed to pull.
+		}
+		else 
 			return;
 	}
 //[JAPRO - Serverside - Force - Fix push/pull during getup - Start]
@@ -3295,8 +3300,13 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 			if (ent)
 			{ //not in the arc, don't consider it
-				if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
-					G_TimeShiftAllClients( self->client->pers.cmd.serverTime, self );
+
+				if ( ent->client && !(ent->r.svFlags & SVF_BOT) &&
+					ent != self &&
+					(g_unlagged.integer & UNLAGGED_PUSHPULL) && self->client && 
+					!(self->r.svFlags & SVF_BOT) ) {//Ok, only bother if it could possibly hit a player? this could be optimized..
+						G_TimeShiftAllClients( self->client->pers.cmd.serverTime, self );
+				}
 
 				VectorCopy(self->client->ps.origin, tto);
 				tto[2] += self->client->ps.viewheight;

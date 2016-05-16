@@ -7,6 +7,7 @@
 
 extern void Jedi_Cloak( gentity_t *self );
 extern void Jedi_Decloak( gentity_t *self );
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
 
 static int frametime = 25;
 static int historytime = 250;
@@ -51,7 +52,6 @@ void G_ResetTrail( gentity_t *ent ) {
 		ent->client->unlagged.trail[i].torsoTimer = ent->client->ps.torsoTimer;
 		ent->client->unlagged.trail[i].legsAnim = ent->client->ps.legsAnim;
 		ent->client->unlagged.trail[i].legsTimer = ent->client->ps.legsTimer;
-
 	}
 }
 
@@ -142,6 +142,87 @@ static void TimeShiftAnimLerp( float frac, int anim1, int anim2, int time1, int 
 }
 
 
+static void G_DrawPlayerStick(gentity_t *ent, int color, int duration, int time) {
+	//Lets draw a visual of the unlagged hitbox difference?
+	//Not sure how to get bounding boxes of g2 parts, so maybe just two stick figures? (lagged stick figure = red, unlagged stick figure = green) and make them both appear for like 5 seconds?
+	vec3_t headPos, torsoPos, rHandPos, lHandPos, rArmPos, lArmPos, rKneePos, lKneePos, rFootPos, lFootPos, G2Angles;
+	mdxaBone_t	boltMatrix;
+	int handLBolt, handRBolt, armRBolt, armLBolt, kneeLBolt, kneeRBolt, footLBolt, footRBolt;
+
+	if (!ent->client)
+		return;
+	if (ent->localAnimIndex > 1) //Not humanoid
+		return;
+
+	//Com_Printf("Drawing player stick model for %s\n", ent->client->pers.netname);
+
+	handLBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*l_hand");
+	handRBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*r_hand");
+	armLBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*l_arm_elbow");
+	armRBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*r_arm_elbow");
+	kneeLBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*hips_l_knee");
+	kneeRBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*hips_r_knee");
+	footLBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*l_leg_foot");
+	footRBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*r_leg_foot");  //Shouldnt these always be the same numbers? can just make them constants?.. or pm->g2Bolts_RFoot etc?
+
+	VectorSet(G2Angles, 0, ent->r.currentAngles[YAW], 0);
+	VectorCopy(ent->r.currentOrigin, torsoPos);
+
+	VectorCopy(torsoPos, headPos);
+	headPos[2] += ent->r.maxs[2]; //E?
+	torsoPos[2] += 8;//idk man
+	G_TestLine(headPos, torsoPos, color, duration); //Head -> Torso
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, armRBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale ); //ent->cmd.serverTime ?.. why does this need time?
+	rArmPos[0] = boltMatrix.matrix[0][3];
+	rArmPos[1] = boltMatrix.matrix[1][3];
+	rArmPos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(torsoPos, rArmPos, color, duration); //Torso -> R Arm
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, armLBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale );
+	lArmPos[0] = boltMatrix.matrix[0][3];
+	lArmPos[1] = boltMatrix.matrix[1][3];
+	lArmPos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(torsoPos, lArmPos, color, duration); //Torso -> L Arm
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, handRBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale ); 
+	rHandPos[0] = boltMatrix.matrix[0][3];
+	rHandPos[1] = boltMatrix.matrix[1][3];
+	rHandPos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(rArmPos, rHandPos, color, duration); //R Arm  -> R Hand
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, handLBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale );
+	lHandPos[0] = boltMatrix.matrix[0][3];
+	lHandPos[1] = boltMatrix.matrix[1][3];
+	lHandPos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(lArmPos, lHandPos, color, duration); //L Arm -> L Hand
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, kneeRBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale );
+	rKneePos[0] = boltMatrix.matrix[0][3];
+	rKneePos[1] = boltMatrix.matrix[1][3];
+	rKneePos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(torsoPos, rKneePos, color, duration); //Torso -> R Knee
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, kneeLBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale );
+	lKneePos[0] = boltMatrix.matrix[0][3];
+	lKneePos[1] = boltMatrix.matrix[1][3];
+	lKneePos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(torsoPos, lKneePos, color, duration); //Torso -> L Knee
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, footRBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale );
+	rFootPos[0] = boltMatrix.matrix[0][3];
+	rFootPos[1] = boltMatrix.matrix[1][3];
+	rFootPos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(rKneePos, rFootPos, color, duration); //R Knee -> R Foot
+
+	trap->G2API_GetBoltMatrix( ent->ghoul2, 0, footLBolt, &boltMatrix, G2Angles, ent->r.currentOrigin, time, NULL, ent->modelScale );
+	lFootPos[0] = boltMatrix.matrix[0][3];
+	lFootPos[1] = boltMatrix.matrix[1][3];
+	lFootPos[2] = boltMatrix.matrix[2][3];
+	G_TestLine(lKneePos, lFootPos, color, duration); //L Knee -> L Foot
+}
+
+
 /*
 =================
 G_TimeShiftClient
@@ -188,6 +269,10 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			ent->client->unlagged.saved.legsTimer = ent->client->ps.legsTimer;
 
 		}
+
+#if 0
+		G_DrawPlayerStick(ent, 0x0000ff, 5000, level.time);
+#endif
 
 		// if we haven't wrapped back to the head, we've sandwiched, so
 		// we shift the client's position back to where he was at "time"
@@ -243,9 +328,14 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );
 		}
+
+#if 0
+		G_DrawPlayerStick(ent, 0x00ff00, 5000, level.time);
+#endif
+
+
 	}
 }
-
 
 /*
 =====================
@@ -330,11 +420,6 @@ void G_UpdateTrailData( void ) {
 	historytime = g_unlagged.integer;
 	numTrails = NUM_CLIENT_TRAILS;
 }
-
-
-
-
-
 
 
 /*
@@ -2051,7 +2136,7 @@ static void MakeVector( const vec3_t ain, vec3_t vout ) {
 }
 */
 
-extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+//extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
 static qboolean SE_RenderIsVisible( const gentity_t *self, const vec3_t startPos, const vec3_t testOrigin,
 	qboolean reversedCheck )
 {
