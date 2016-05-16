@@ -716,7 +716,7 @@ Ghoul2 Insert Start
 
 			if (touch->s.number < MAX_CLIENTS)
 			{
-				VectorCopy(touch->s.apos.trBase, angles);
+				VectorCopy(touch->s.apos.trBase, angles); //Since ghoul2 hit detection is based off apos.trbase, we have to add that to list of things to be unlagged?
 			}
 			else
 			{

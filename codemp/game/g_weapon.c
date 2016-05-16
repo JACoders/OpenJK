@@ -563,10 +563,15 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 	gentity_t	*traceEnt, *tent;
 	float		shotRange = 8192;
 	int			ignore, traces;
+	qboolean ghoul2 = qfalse;
 
 	if ( level.gametype == GT_SIEGE )
 	{
 		damage = DISRUPTOR_MAIN_DAMAGE_SIEGE;
+	}
+
+	if (d_projectileGhoul2Collision.integer) {
+		ghoul2 = qtrue;
 	}
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
@@ -576,25 +581,21 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 
 	VectorMA( start, shotRange, forward, end );
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, ghoul2 );
 
 	ignore = ent->s.number;
 	traces = 0;
 	while ( traces < 10 )
 	{//need to loop this in case we hit a Jedi who dodges the shot
-		if (d_projectileGhoul2Collision.integer)
-		{
+		if (ghoul2)
 			JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
-		}
 		else
-		{
 			JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
-		}
 
 		traceEnt = &g_entities[tr.entityNum];
 
-		if (d_projectileGhoul2Collision.integer && traceEnt->inuse && traceEnt->client)
+		if (ghoul2 && traceEnt->inuse && traceEnt->client)
 		{ //g2 collision checks -rww
 			if (traceEnt->inuse && traceEnt->client && traceEnt->ghoul2)
 			{ //since we used G2TRFLAG_GETSURFINDEX, tr.surfaceFlags will actually contain the index of the surface on the ghoul2 model we collided with.
@@ -656,8 +657,8 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 		break;
 	}
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_UnTimeShiftAllClients( ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_UnTimeShiftAllClients( ent, ghoul2 );
 
 	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
 	{
@@ -764,11 +765,15 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	int			count, maxCount = 60;
 	int			traces = DISRUPTOR_ALT_TRACES;
 	qboolean	fullCharge = qfalse;
+	qboolean	ghoul2 = qfalse;
 
 	if (g_tweakWeapons.integer & WT_DISRUPTOR_DAM)
 		damage = DISRUPTOR_ALT_DAMAGE-40;//60
 	else
 		damage = DISRUPTOR_ALT_DAMAGE-30;//70
+
+	if (d_projectileGhoul2Collision.integer)
+		ghoul2 = qtrue;
 
 	VectorCopy( muzzle, muzzle2 ); // making a backup copy
 
@@ -824,25 +829,21 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	
 	skip = ent->s.number;
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, ghoul2 );
 
 	for (i = 0; i < traces; i++ )
 	{
 		VectorMA( start, shotRange, forward, end );
 
-		if (d_projectileGhoul2Collision.integer)
-		{
+		if (ghoul2)
 			JP_Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
-		}
 		else
-		{
 			JP_Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, 0, 0 );
-		}
 
 		if ( tr.entityNum == ENTITYNUM_NONE ) {
-			if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-				G_UnTimeShiftAllClients( ent );
+			if ( g_unlagged.integer & UNLAGGED_HITSCAN  )
+				G_UnTimeShiftAllClients( ent, ghoul2 );
 			return;
 		}
 
@@ -852,7 +853,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 
 		traceEnt = &g_entities[tr.entityNum];
 
-		if (d_projectileGhoul2Collision.integer && traceEnt->inuse && traceEnt->client)
+		if (ghoul2 && traceEnt->inuse && traceEnt->client)
 		{ //g2 collision checks -rww
 			if (traceEnt->inuse && traceEnt->client && traceEnt->ghoul2)
 			{ //since we used G2TRFLAG_GETSURFINDEX, tr.surfaceFlags will actually contain the index of the surface on the ghoul2 model we collided with.
@@ -1017,8 +1018,8 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		skip = tr.entityNum;
 	}
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_UnTimeShiftAllClients( ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_UnTimeShiftAllClients( ent, ghoul2 ); //--ok, this resets their angles..
 }
 
 
@@ -3713,11 +3714,15 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	vec3_t shot_mins, shot_maxs;
 	int			i;
 	const int   shove = -400 * g_selfDamageScale.integer;
+	qboolean	ghoul2 = qfalse;
 
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - Start]
 	if (g_tweakWeapons.integer & WT_CONC_ALT_DAM)
 		damage *= 2.0f;
 //[JAPRO - Serverside - Weapons - Tweak weapons Buff Conc alt - End]
+
+	if (d_projectileGhoul2Collision.integer)
+		ghoul2 = qtrue;
 
 	//Shove us backwards for half a second
 	//VectorMA( ent->client->ps.velocity, -200, forward, ent->client->ps.velocity );
@@ -3754,8 +3759,8 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	VectorSet( shot_mins, -1, -1, -1 );
 	VectorSet( shot_maxs, 1, 1, 1 );
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, ghoul2 );
 
 	for ( i = 0; i < traces; i++ )
 	{
@@ -3764,24 +3769,20 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		//NOTE: if you want to be able to hit guys in emplaced guns, use "G2_COLLIDE, 10" instead of "G2_RETURNONHIT, 0"
 		//alternately, if you end up hitting an emplaced_gun that has a sitter, just redo this one trace with the "G2_COLLIDE, 10" to see if we it the sitter
 		//trap->trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, G2_COLLIDE, 10 );//G2_RETURNONHIT, 0 );
-		if (d_projectileGhoul2Collision.integer)
-		{
+		if (ghoul2)
 			JP_Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
-		}
 		else
-		{
 			JP_Trace( &tr, start, shot_mins, shot_maxs, end, skip, MASK_SHOT, qfalse, 0, 0 );
-		}
 
 		if ( tr.entityNum == ENTITYNUM_NONE ) {
-			if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-				G_UnTimeShiftAllClients( ent );
+			if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+				G_UnTimeShiftAllClients( ent, ghoul2 );
 			return;
 		}
 
 		traceEnt = &g_entities[tr.entityNum];
 
-		if (d_projectileGhoul2Collision.integer && traceEnt->inuse && traceEnt->client)
+		if (ghoul2 && traceEnt->inuse && traceEnt->client)
 		{ //g2 collision checks -rww
 			if (traceEnt->inuse && traceEnt->client && traceEnt->ghoul2)
 			{ //since we used G2TRFLAG_GETSURFINDEX, tr.surfaceFlags will actually contain the index of the surface on the ghoul2 model we collided with.
@@ -3944,8 +3945,8 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		hitDodged = qfalse;
 	}
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_UnTimeShiftAllClients( ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_UnTimeShiftAllClients( ent, ghoul2 );
 
 	//just draw one beam all the way to the end
 //	tent = G_TempEntity( tr.endpos, EV_CONC_ALT_SHOT );
@@ -4217,6 +4218,10 @@ static void WP_FireLightningGun( gentity_t *ent )
 	gentity_t	*traceEnt, *tent;
 	float		shotRange = LIGHTNING_RANGE;
 	int			ignore;
+	qboolean	ghoul2 = qfalse;
+
+	if (d_projectileGhoul2Collision.integer)
+		ghoul2 = qtrue;
 
 
 	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
@@ -4227,33 +4232,33 @@ static void WP_FireLightningGun( gentity_t *ent )
 
 	VectorMA( start, 1, vright, start );
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, ghoul2 );
 
 	ignore = ent->s.number;
 
-	if (d_projectileGhoul2Collision.integer)
+	if (ghoul2)
 		JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, G2TRFLAG_DOGHOULTRACE|G2TRFLAG_GETSURFINDEX|G2TRFLAG_THICK|G2TRFLAG_HITCORPSES, g_g2TraceLod.integer );
 	else
 		JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
 
 	if ( tr.entityNum == ENTITYNUM_NONE )
 	{
-		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-			G_UnTimeShiftAllClients( ent );
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+			G_UnTimeShiftAllClients( ent, ghoul2 );
 		return;
 	}
 	//fix: shooting ourselves shouldn't be allowed 
 	if (tr.entityNum == ent->s.number)
 	{
-		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-			G_UnTimeShiftAllClients( ent );
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+			G_UnTimeShiftAllClients( ent, ghoul2 );
 		return;
 	}
 
 	traceEnt = &g_entities[tr.entityNum];
 
-	if (d_projectileGhoul2Collision.integer && traceEnt->inuse && traceEnt->client)
+	if (ghoul2 && traceEnt->inuse && traceEnt->client)
 	{ //g2 collision checks -rww
 		if (traceEnt->inuse && traceEnt->client && traceEnt->ghoul2)
 		{ //since we used G2TRFLAG_GETSURFINDEX, tr.surfaceFlags will actually contain the index of the surface on the ghoul2 model we collided with.
@@ -4267,8 +4272,8 @@ static void WP_FireLightningGun( gentity_t *ent )
 		}
 	}
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_UnTimeShiftAllClients( ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_UnTimeShiftAllClients( ent, ghoul2 );
 
 	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
 	{
@@ -4333,31 +4338,31 @@ static void WP_FireShockLance( gentity_t *ent )
 	VectorMA( start, shotRange, forward, end );
 	VectorMA( start, 1, vright, start );
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, qfalse );
 
 	ignore = ent->s.number;
 
-	JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 );
+	JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 ); //Never use small hitbox for shocklance
 
 	if ( tr.entityNum == ENTITYNUM_NONE )
 	{
-		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-			G_UnTimeShiftAllClients( ent );
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+			G_UnTimeShiftAllClients( ent, qfalse );
 		return;
 	}
 	//fix: shooting ourselves shouldn't be allowed 
 	if (tr.entityNum == ent->s.number)
 	{
-		if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-			G_UnTimeShiftAllClients( ent );
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+			G_UnTimeShiftAllClients( ent, qfalse );
 		return;
 	}
 
 	traceEnt = &g_entities[tr.entityNum];
 
-	if ( g_unlagged.integer & UNLAGGED_HITSCAN && ent->client && !(ent->r.svFlags & SVF_BOT) )
-		G_UnTimeShiftAllClients( ent );
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_UnTimeShiftAllClients( ent, qfalse );
 
 	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
 	{

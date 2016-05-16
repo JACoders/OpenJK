@@ -347,17 +347,17 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 
 void G_StoreTrail( gentity_t *ent );
 void G_ResetTrail( gentity_t *ent );
-void G_TimeShiftClient( gentity_t *ent, int time );
-void G_TimeShiftAllClients( int time, gentity_t *skip );
-void G_UnTimeShiftClient( gentity_t *ent );
-void G_UnTimeShiftAllClients( gentity_t *skip );
+void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims );
+void G_TimeShiftAllClients( int time, gentity_t *skip, qboolean timeshiftAnims );
+void G_UnTimeShiftClient( gentity_t *ent, qboolean timeshiftAnims );
+void G_UnTimeShiftAllClients( gentity_t *skip, qboolean timeshiftAnims );
 void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime );
 
 //NT - client origin trails
 #define NUM_CLIENT_TRAILS 10
 typedef struct { //Should this store their g2 anim? for proper g2 sync?
 	vec3_t	mins, maxs;
-	vec3_t	currentOrigin, currentAngles;
+	vec3_t	currentOrigin, currentAngles, realAngles;
 	int		time, leveltime, torsoAnim, torsoTimer, legsAnim, legsTimer;
 } clientTrail_t;
 

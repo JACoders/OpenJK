@@ -3053,6 +3053,9 @@ float forcePushPullRadius[NUM_FORCE_POWER_LEVELS] =
 };
 //rwwFIXMEFIXME: incorporate this into the below function? Currently it's only being used by jedi AI
 
+#if 1
+extern void G_TestLine(vec3_t start, vec3_t end, int color, int time);
+#endif
 extern void Touch_Button(gentity_t *ent, gentity_t *other, trace_t *trace );
 void ForceThrow( gentity_t *self, qboolean pull )
 {
@@ -3274,6 +3277,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 		e = 0;
 
+		if (g_unlagged.integer & UNLAGGED_PUSHPULL) //Only unlag the in FOV check since effects of pull are movement based and we dont want to pull someone who not LOS
+			G_TimeShiftAllClients( self->client->pers.cmd.serverTime, self, qfalse );
+
 		while (e < numListedEntities)
 		{
 			ent = &g_entities[entityList[e]];
@@ -3290,7 +3296,21 @@ void ForceThrow( gentity_t *self, qboolean pull )
 			{
 				if (ent->client)
 				{
-					VectorCopy(ent->client->ps.origin, thispush_org);
+					//Com_Printf("ent %i : Ent ps origin: %.2f %.2f %.2f ... Ent r origin: %.2f %.2f %.2f\n", 
+						//ent->client->ps.clientNum, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2], ent->r.currentOrigin[0], ent->r.currentOrigin[1], ent->r.currentOrigin[2]);
+					if (ent != self && (g_unlagged.integer & UNLAGGED_PUSHPULL) && !(ent->r.svFlags & SVF_BOT) && (ent->s.eType != ET_NPC))
+						VectorCopy(ent->r.currentOrigin, thispush_org);
+					else
+						VectorCopy(ent->client->ps.origin, thispush_org);
+
+#if 1
+					if (g_unlagged.integer & (1<<3)) //debug 
+					{
+						G_TestLine(self->client->ps.origin, ent->r.currentOrigin, 0x00ff00, 5000); //check trace.fraction? ehh trace.startsolid or whatever?
+						G_TestLine(self->client->ps.origin, ent->client->ps.origin, 0x0000ff, 5000); //check trace.fraction? ehh trace.startsolid or whatever?
+					}
+#endif
+
 				}
 				else
 				{
@@ -3300,14 +3320,6 @@ void ForceThrow( gentity_t *self, qboolean pull )
 
 			if (ent)
 			{ //not in the arc, don't consider it
-
-				if ( ent->client && !(ent->r.svFlags & SVF_BOT) &&
-					ent != self &&
-					(g_unlagged.integer & UNLAGGED_PUSHPULL) && self->client && 
-					!(self->r.svFlags & SVF_BOT) ) {//Ok, only bother if it could possibly hit a player? this could be optimized..
-						G_TimeShiftAllClients( self->client->pers.cmd.serverTime, self );
-				}
-
 				VectorCopy(self->client->ps.origin, tto);
 				tto[2] += self->client->ps.viewheight;
 				VectorSubtract(thispush_org, tto, a);
@@ -3317,15 +3329,9 @@ void ForceThrow( gentity_t *self, qboolean pull )
 					ForcePowerUsableOn(self, ent, powerUse))
 				{ //only bother with arc rules if the victim is a client
 					entityList[e] = ENTITYNUM_NONE;
-
-					if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
-						G_UnTimeShiftAllClients( self );
 				}
 				else if (ent->client)
 				{
-					if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
-						G_UnTimeShiftAllClients( self );
-
 					if (pull)
 					{
 						if (!ForcePowerUsableOn(self, ent, FP_PULL))
@@ -3341,13 +3347,11 @@ void ForceThrow( gentity_t *self, qboolean pull )
 						}
 					}
 				}
-				else {
-					if ( g_unlagged.integer & UNLAGGED_PUSHPULL && self->client && !(self->r.svFlags & SVF_BOT) )
-						G_UnTimeShiftAllClients( self );
-				}
 			}
 			e++;
 		}
+		if ( g_unlagged.integer & UNLAGGED_PUSHPULL )
+			G_UnTimeShiftAllClients( self, qfalse );
 	}
 
 	for ( e = 0 ; e < numListedEntities ; e++ ) 

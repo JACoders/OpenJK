@@ -44,14 +44,15 @@ void G_ResetTrail( gentity_t *ent ) {
 		VectorCopy( ent->r.maxs, ent->client->unlagged.trail[i].maxs );
 		VectorCopy( ent->r.currentOrigin, ent->client->unlagged.trail[i].currentOrigin );
 		VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[i].currentAngles );
-		ent->client->unlagged.trail[i].leveltime = time;
-		ent->client->unlagged.trail[i].time = time;
-
 
 		ent->client->unlagged.trail[i].torsoAnim = ent->client->ps.torsoAnim;
 		ent->client->unlagged.trail[i].torsoTimer = ent->client->ps.torsoTimer;
 		ent->client->unlagged.trail[i].legsAnim = ent->client->ps.legsAnim;
 		ent->client->unlagged.trail[i].legsTimer = ent->client->ps.legsTimer;
+		VectorCopy( ent->s.apos.trBase, ent->client->unlagged.trail[i].realAngles );
+
+		ent->client->unlagged.trail[i].leveltime = time;
+		ent->client->unlagged.trail[i].time = time;
 	}
 }
 
@@ -100,13 +101,15 @@ void G_StoreTrail( gentity_t *ent ) {
 	VectorCopy( ent->r.maxs, ent->client->unlagged.trail[head].maxs );
 	VectorCopy( ent->r.currentOrigin, ent->client->unlagged.trail[head].currentOrigin );
 	VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[head].currentAngles );
-	ent->client->unlagged.trail[head].leveltime = level.time;
-	ent->client->unlagged.trail[head].time = newtime;
 
 	ent->client->unlagged.trail[head].torsoAnim = ent->client->ps.torsoAnim;
 	ent->client->unlagged.trail[head].torsoTimer = ent->client->ps.torsoTimer;
 	ent->client->unlagged.trail[head].legsAnim = ent->client->ps.legsAnim;
 	ent->client->unlagged.trail[head].legsTimer = ent->client->ps.legsTimer;
+	VectorCopy( ent->s.apos.trBase, ent->client->unlagged.trail[head].realAngles );
+
+	ent->client->unlagged.trail[head].leveltime = level.time;
+	ent->client->unlagged.trail[head].time = newtime;
 
 	//Also store their anim info? Since with ghoul2 collision that matters..
 
@@ -165,7 +168,7 @@ static void G_DrawPlayerStick(gentity_t *ent, int color, int duration, int time)
 	footLBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*l_leg_foot");
 	footRBolt = trap->G2API_AddBolt(ent->ghoul2, 0, "*r_leg_foot");  //Shouldnt these always be the same numbers? can just make them constants?.. or pm->g2Bolts_RFoot etc?
 
-	VectorSet(G2Angles, 0, ent->r.currentAngles[YAW], 0);
+	VectorSet(G2Angles, 0, ent->s.apos.trBase[YAW], 0); //Ok so r.currentAngles isnt even used for players ??
 	VectorCopy(ent->r.currentOrigin, torsoPos);
 
 	VectorCopy(torsoPos, headPos);
@@ -230,7 +233,7 @@ G_TimeShiftClient
 Move a client back to where he was at the specified "time"
 =================
 */
-void G_TimeShiftClient( gentity_t *ent, int time ) {
+void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 	int		j, k;
 
 	if ( time > level.time ) {
@@ -261,17 +264,23 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			VectorCopy( ent->r.maxs, ent->client->unlagged.saved.maxs );
 			VectorCopy( ent->r.currentOrigin, ent->client->unlagged.saved.currentOrigin );
 			VectorCopy( ent->r.currentAngles, ent->client->unlagged.saved.currentAngles );
+
+			if (timeshiftAnims) {
+				ent->client->unlagged.saved.torsoAnim = ent->client->ps.torsoAnim;
+				ent->client->unlagged.saved.torsoTimer = ent->client->ps.torsoTimer;
+				ent->client->unlagged.saved.legsAnim = ent->client->ps.legsAnim;
+				ent->client->unlagged.saved.legsTimer = ent->client->ps.legsTimer;
+				VectorCopy( ent->s.apos.trBase, ent->client->unlagged.saved.realAngles );
+			}
+
 			ent->client->unlagged.saved.leveltime = level.time;
-
-			ent->client->unlagged.saved.torsoAnim = ent->client->ps.torsoAnim;
-			ent->client->unlagged.saved.torsoTimer = ent->client->ps.torsoTimer;
-			ent->client->unlagged.saved.legsAnim = ent->client->ps.legsAnim;
-			ent->client->unlagged.saved.legsTimer = ent->client->ps.legsTimer;
-
 		}
 
-#if 0
-		G_DrawPlayerStick(ent, 0x0000ff, 5000, level.time);
+#if 1
+		if (g_unlagged.integer & (1<<3)) {
+			G_DrawPlayerStick(ent, 0x0000ff, 5000, level.time);
+			Com_Printf("pre angles are %.2f %.2f\n", ent->r.currentAngles[YAW], ent->s.apos.trBase[YAW]);
+		}
 #endif
 
 		// if we haven't wrapped back to the head, we've sandwiched, so
@@ -291,18 +300,22 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			TimeShiftLerp( frac, ent->client->unlagged.trail[k].mins, ent->client->unlagged.trail[j].mins, ent->r.mins );
 			TimeShiftLerp( frac, ent->client->unlagged.trail[k].maxs, ent->client->unlagged.trail[j].maxs, ent->r.maxs );
 			
-			/*
-			Com_Printf("Lerp timeshifting client %s. Old anim = %i %i (times %i %i).  New Anim = %i %i (times %i %i).\n", 
-				ent->client->pers.netname,
-				ent->client->ps.torsoAnim, ent->client->ps.legsAnim, ent->client->ps.torsoTimer, ent->client->ps.legsTimer, 
-				ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[k].torsoTimer, ent->client->unlagged.trail[k].legsTimer);
-			*/
-
 			//Lerp this somehow?
-			ent->client->ps.torsoAnim = ent->client->unlagged.trail[k].torsoAnim;
-			ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
-			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].torsoAnim, ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[j].torsoTimer, ent->client->unlagged.trail[k].torsoTimer,  &ent->client->ps.torsoTimer);
-			TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].legsAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[j].legsTimer, ent->client->unlagged.trail[k].legsTimer, &ent->client->ps.legsTimer);
+			if (timeshiftAnims) {
+				/*
+				Com_Printf("Lerp timeshifting client %s. Old anim = %i %i (times %i %i).  New Anim = %i %i (times %i %i).\n", 
+					ent->client->pers.netname,
+					ent->client->ps.torsoAnim, ent->client->ps.legsAnim, ent->client->ps.torsoTimer, ent->client->ps.legsTimer, 
+					ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[k].torsoTimer, ent->client->unlagged.trail[k].legsTimer);
+				*/
+
+				ent->client->ps.torsoAnim = ent->client->unlagged.trail[k].torsoAnim;
+				ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
+				TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].torsoAnim, ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[j].torsoTimer, ent->client->unlagged.trail[k].torsoTimer,  &ent->client->ps.torsoTimer);
+				TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].legsAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[j].legsTimer, ent->client->unlagged.trail[k].legsTimer, &ent->client->ps.legsTimer);
+				VectorCopy( ent->client->unlagged.trail[k].realAngles, ent->s.apos.trBase ); //Do this to get pitch just in case..?
+				ent->s.apos.trBase[YAW] = LerpAngle( ent->client->unlagged.trail[k].realAngles[YAW], ent->s.apos.trBase[YAW], frac ); //Get more accurate yaw
+			}
 
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );
@@ -313,24 +326,30 @@ void G_TimeShiftClient( gentity_t *ent, int time ) {
 			VectorCopy( ent->client->unlagged.trail[k].mins, ent->r.mins );
 			VectorCopy( ent->client->unlagged.trail[k].maxs, ent->r.maxs );
 
-			/*
-			Com_Printf("Timeshifting client %s. Old anim = %i %i (times %i %i).  New Anim = %i %i (times %i %i).\n", 
-				ent->client->pers.netname,
-				ent->client->ps.torsoAnim, ent->client->ps.legsAnim, ent->client->ps.torsoTimer, ent->client->ps.legsTimer, 
-				ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[k].torsoTimer, ent->client->unlagged.trail[k].legsTimer);
-			*/
+			if (timeshiftAnims) {
+				/*
+				Com_Printf("Timeshifting client %s. Old anim = %i %i (times %i %i).  New Anim = %i %i (times %i %i).\n", 
+					ent->client->pers.netname,
+					ent->client->ps.torsoAnim, ent->client->ps.legsAnim, ent->client->ps.torsoTimer, ent->client->ps.legsTimer, 
+					ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[k].torsoTimer, ent->client->unlagged.trail[k].legsTimer);
+				*/
 
-			ent->client->ps.torsoAnim = ent->client->unlagged.trail[k].torsoAnim;
-			ent->client->ps.torsoTimer = ent->client->unlagged.trail[k].torsoTimer;
-			ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
-			ent->client->ps.legsTimer = ent->client->unlagged.trail[k].legsTimer;
+				ent->client->ps.torsoAnim = ent->client->unlagged.trail[k].torsoAnim;
+				ent->client->ps.torsoTimer = ent->client->unlagged.trail[k].torsoTimer;
+				ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
+				ent->client->ps.legsTimer = ent->client->unlagged.trail[k].legsTimer;
+				VectorCopy( ent->client->unlagged.trail[k].realAngles, ent->s.apos.trBase );
+			}
 
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );
 		}
 
-#if 0
-		G_DrawPlayerStick(ent, 0x00ff00, 5000, level.time);
+#if 1
+		if (g_unlagged.integer & (1<<3)) {
+			G_DrawPlayerStick(ent, 0x00ff00, 5000, level.time);
+			Com_Printf("post angles are %.2f %.2f\n", ent->r.currentAngles[YAW], ent->s.apos.trBase[YAW]);
+		}
 #endif
 
 
@@ -345,9 +364,16 @@ Move ALL clients back to where they were at the specified "time",
 except for "skip"
 =====================
 */
-void G_TimeShiftAllClients( int time, gentity_t *skip ) {
+void G_TimeShiftAllClients( int time, gentity_t *skip, qboolean timeshiftAnims ) {
 	int			i;
 	gentity_t	*ent;
+
+	if (!skip->client)
+		return;
+	if (skip->r.svFlags & SVF_BOT)
+		return;
+	if (skip->s.eType == ET_NPC)
+		return;
 
 	if ( time > level.time ) {
 		time = level.time;
@@ -357,11 +383,13 @@ void G_TimeShiftAllClients( int time, gentity_t *skip ) {
 	//if (g_unlaggedOffset.integer)
 		//time += g_unlaggedOffset.integer;
 
+	time += g_saberDamageScale.integer;
+
 	// for every client
 	ent = &g_entities[0];
 	for ( i = 0; i < MAX_CLIENTS; i++, ent++ ) {
 		if ( ent->client && ent->inuse && ent->client->sess.sessionTeam < TEAM_SPECTATOR && ent != skip ) {
-			G_TimeShiftClient( ent, time );
+			G_TimeShiftClient( ent, time, timeshiftAnims );
 		}
 	}
 }
@@ -374,7 +402,7 @@ G_UnTimeShiftClient
 Move a client back to where he was before the time shift
 ===================
 */
-void G_UnTimeShiftClient( gentity_t *ent ) {
+void G_UnTimeShiftClient( gentity_t *ent, qboolean timeshiftAnims ) {
 	// if it was saved
 	if ( ent->client->unlagged.saved.leveltime == level.time ) {
 		// move it back
@@ -383,10 +411,13 @@ void G_UnTimeShiftClient( gentity_t *ent ) {
 		VectorCopy( ent->client->unlagged.saved.currentOrigin, ent->r.currentOrigin );
 		VectorCopy( ent->client->unlagged.saved.currentAngles, ent->r.currentAngles );
 
-		ent->client->ps.torsoAnim = ent->client->unlagged.saved.torsoAnim;
-		ent->client->ps.torsoTimer = ent->client->unlagged.saved.torsoTimer;
-		ent->client->ps.legsAnim = ent->client->unlagged.saved.legsAnim;
-		ent->client->ps.legsTimer = ent->client->unlagged.saved.legsTimer;
+		if (timeshiftAnims) {
+			ent->client->ps.torsoAnim = ent->client->unlagged.saved.torsoAnim;
+			ent->client->ps.torsoTimer = ent->client->unlagged.saved.torsoTimer;
+			ent->client->ps.legsAnim = ent->client->unlagged.saved.legsAnim;
+			ent->client->ps.legsTimer = ent->client->unlagged.saved.legsTimer;
+			VectorCopy( ent->client->unlagged.saved.realAngles, ent->s.apos.trBase );
+		}
 
 		ent->client->unlagged.saved.leveltime = 0;
 
@@ -403,14 +434,21 @@ Move ALL the clients back to where they were before the time shift,
 except for "skip"
 =======================
 */
-void G_UnTimeShiftAllClients( gentity_t *skip ) {
+void G_UnTimeShiftAllClients( gentity_t *skip, qboolean timeshiftAnims ) {
 	int			i;
 	gentity_t	*ent;
+
+	if (!skip->client)
+		return;
+	if (skip->r.svFlags & SVF_BOT)
+		return;
+	if (skip->s.eType == ET_NPC)
+		return;
 
 	ent = &g_entities[0];
 	for ( i = 0; i < MAX_CLIENTS; i++, ent++) {
 		if ( ent->client && ent->inuse && ent->client->sess.sessionTeam < TEAM_SPECTATOR && ent != skip ) {
-			G_UnTimeShiftClient( ent );
+			G_UnTimeShiftClient( ent, timeshiftAnims );
 		}
 	}
 }
@@ -1503,7 +1541,8 @@ int SpectatorFind(gentity_t *self)
 		if (ent->client->sess.sessionTeam == TEAM_SPECTATOR)
 			continue;
 
-		VectorSubtract( ent->client->ps.origin, self->client->ps.origin, angles );
+		//VectorSubtract( ent->client->ps.origin, self->client->ps.origin, angles ); //Changed because only r.curentOrigin is unlagged
+		VectorSubtract( ent->r.currentOrigin, self->client->ps.origin, angles );
 		dist = VectorLengthSquared ( angles );
 		vectoangles ( angles, angles );
 
@@ -1512,7 +1551,8 @@ int SpectatorFind(gentity_t *self)
 		if (!InFieldOfVision(self->client->ps.viewangles, 30, angles)) // Not in our FOV
 			continue;
 
-		JP_Trace( &tr, self->client->ps.origin, NULL, NULL, ent->client->ps.origin, self->s.number, MASK_SOLID, qfalse, 0, 0 );
+		//JP_Trace( &tr, self->client->ps.origin, NULL, NULL, ent->client->ps.origin, self->s.number, MASK_SOLID, qfalse, 0, 0 );
+		JP_Trace( &tr, self->client->ps.origin, NULL, NULL, ent->r.currentOrigin, self->s.number, MASK_SOLID, qfalse, 0, 0 );
 		if (tr.fraction != 1.0) //if not line of sight
 			continue;
 
@@ -1590,9 +1630,9 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 		if ( client->sess.spectatorState == SPECTATOR_FOLLOW && (client->buttons & BUTTON_ATTACK) && !(client->oldbuttons & BUTTON_ATTACK) )
 			Cmd_FollowCycle_f( ent, 1 ); // Clicked while following a guy -> go to next guy
 		else if ( (client->buttons & BUTTON_ATTACK) && !(client->oldbuttons & BUTTON_ATTACK) ) {
-			G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent );
+			G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, qfalse );
 			match = SpectatorFind(ent);
-			G_UnTimeShiftAllClients( ent );
+			G_UnTimeShiftAllClients( ent, qfalse );
 			if (match == -1) // Clicked while not following a guy -> Follow guy you are aiming at.
 				Cmd_FollowCycle_f( ent, 1 );
 			else {
