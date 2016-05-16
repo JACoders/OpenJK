@@ -3096,8 +3096,8 @@ void zyk_regen_unit_think(gentity_t *ent)
 	{
 		this_ent = &g_entities[entity_ids[i]];
 
-		if (this_ent && this_ent->client && this_ent->s.number < MAX_CLIENTS)
-		{ // zyk: must be a player
+		if (this_ent && this_ent->client && this_ent->s.number < MAX_CLIENTS && this_ent->health > 0)
+		{ // zyk: must be a player that is alive
 			if (ent->spawnflags & 1)
 			{
 				if ((this_ent->health + ent->count) < this_ent->client->ps.stats[STAT_MAX_HEALTH])
