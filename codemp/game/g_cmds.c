@@ -209,6 +209,12 @@ void Cmd_Emote_f( gentity_t *ent )
 		return;
 	}
 
+	if (level.gametype == GT_SIEGE)
+	{
+		trap->SendServerCommand( ent-g_entities, "print \"Cannot use emotes in Siege gametype\n\"" );
+		return;
+	}
+
 	if ( trap->Argc () < 2 ) {
 		trap->SendServerCommand( ent-g_entities, va("print \"Usage: emote <anim id between 0 and %d>\n\"",MAX_ANIMATIONS-1) );
 		return;
