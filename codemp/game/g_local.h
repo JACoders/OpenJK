@@ -357,8 +357,9 @@ void G_PredictPlayerStepSlideMove( gentity_t *ent, float frametime );
 #define NUM_CLIENT_TRAILS 10
 typedef struct { //Should this store their g2 anim? for proper g2 sync?
 	vec3_t	mins, maxs;
-	vec3_t	currentOrigin, currentAngles, realAngles;
+	vec3_t	currentOrigin;//, currentAngles; //Well r.currentAngles are never actually used by clients in this game?
 	int		time, leveltime, torsoAnim, torsoTimer, legsAnim, legsTimer;
+	float	realAngle; //Only the [YAW] is ever used for hit detection
 } clientTrail_t;
 
 

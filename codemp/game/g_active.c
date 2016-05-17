@@ -43,13 +43,13 @@ void G_ResetTrail( gentity_t *ent ) {
 		VectorCopy( ent->r.mins, ent->client->unlagged.trail[i].mins );
 		VectorCopy( ent->r.maxs, ent->client->unlagged.trail[i].maxs );
 		VectorCopy( ent->r.currentOrigin, ent->client->unlagged.trail[i].currentOrigin );
-		VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[i].currentAngles );
+		//VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[i].currentAngles );
 
 		ent->client->unlagged.trail[i].torsoAnim = ent->client->ps.torsoAnim;
 		ent->client->unlagged.trail[i].torsoTimer = ent->client->ps.torsoTimer;
 		ent->client->unlagged.trail[i].legsAnim = ent->client->ps.legsAnim;
 		ent->client->unlagged.trail[i].legsTimer = ent->client->ps.legsTimer;
-		VectorCopy( ent->s.apos.trBase, ent->client->unlagged.trail[i].realAngles );
+		ent->client->unlagged.trail[i].realAngle = ent->s.apos.trBase[YAW];
 
 		ent->client->unlagged.trail[i].leveltime = time;
 		ent->client->unlagged.trail[i].time = time;
@@ -100,13 +100,16 @@ void G_StoreTrail( gentity_t *ent ) {
 	VectorCopy( ent->r.mins, ent->client->unlagged.trail[head].mins );
 	VectorCopy( ent->r.maxs, ent->client->unlagged.trail[head].maxs );
 	VectorCopy( ent->r.currentOrigin, ent->client->unlagged.trail[head].currentOrigin );
-	VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[head].currentAngles );
+	//VectorCopy( ent->r.currentAngles, ent->client->unlagged.trail[head].currentAngles );
 
 	ent->client->unlagged.trail[head].torsoAnim = ent->client->ps.torsoAnim;
 	ent->client->unlagged.trail[head].torsoTimer = ent->client->ps.torsoTimer;
 	ent->client->unlagged.trail[head].legsAnim = ent->client->ps.legsAnim;
 	ent->client->unlagged.trail[head].legsTimer = ent->client->ps.legsTimer;
-	VectorCopy( ent->s.apos.trBase, ent->client->unlagged.trail[head].realAngles );
+	ent->client->unlagged.trail[head].realAngle = ent->s.apos.trBase[YAW];
+
+	//if (ent->client->unlagged.trail[head].currentAngles[0] || ent->client->unlagged.trail[head].currentAngles[1] || ent->client->unlagged.trail[head].currentAngles[2])
+		//Com_Printf("Current angles are %.2f %.2f %.2f\n", ent->client->unlagged.trail[head].currentAngles[0], ent->client->unlagged.trail[head].currentAngles[1], ent->client->unlagged.trail[head].currentAngles[2]);
 
 	ent->client->unlagged.trail[head].leveltime = level.time;
 	ent->client->unlagged.trail[head].time = newtime;
@@ -263,14 +266,14 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 			VectorCopy( ent->r.mins, ent->client->unlagged.saved.mins );
 			VectorCopy( ent->r.maxs, ent->client->unlagged.saved.maxs );
 			VectorCopy( ent->r.currentOrigin, ent->client->unlagged.saved.currentOrigin );
-			VectorCopy( ent->r.currentAngles, ent->client->unlagged.saved.currentAngles );
+			//VectorCopy( ent->r.currentAngles, ent->client->unlagged.saved.currentAngles );
 
 			if (timeshiftAnims) {
 				ent->client->unlagged.saved.torsoAnim = ent->client->ps.torsoAnim;
 				ent->client->unlagged.saved.torsoTimer = ent->client->ps.torsoTimer;
 				ent->client->unlagged.saved.legsAnim = ent->client->ps.legsAnim;
 				ent->client->unlagged.saved.legsTimer = ent->client->ps.legsTimer;
-				VectorCopy( ent->s.apos.trBase, ent->client->unlagged.saved.realAngles );
+				ent->client->unlagged.saved.realAngle = ent->s.apos.trBase[YAW];
 			}
 
 			ent->client->unlagged.saved.leveltime = level.time;
@@ -279,7 +282,7 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 #if 1
 		if (g_unlagged.integer & (1<<3)) {
 			G_DrawPlayerStick(ent, 0x0000ff, 5000, level.time);
-			Com_Printf("pre angles are %.2f %.2f\n", ent->r.currentAngles[YAW], ent->s.apos.trBase[YAW]);
+			//Com_Printf("pre angle is %.2f\n", ent->s.apos.trBase[YAW]);
 		}
 #endif
 
@@ -294,7 +297,7 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 
 			// interpolate between the two origins to give position at time index "time"
 			TimeShiftLerp( frac, ent->client->unlagged.trail[k].currentOrigin, ent->client->unlagged.trail[j].currentOrigin, ent->r.currentOrigin );
-			ent->r.currentAngles[YAW] = LerpAngle( ent->client->unlagged.trail[k].currentAngles[YAW], ent->r.currentAngles[YAW], frac );
+			//ent->r.currentAngles[YAW] = LerpAngle( ent->client->unlagged.trail[k].currentAngles[YAW], ent->r.currentAngles[YAW], frac );
 
 			// lerp these too, just for fun (and ducking)
 			TimeShiftLerp( frac, ent->client->unlagged.trail[k].mins, ent->client->unlagged.trail[j].mins, ent->r.mins );
@@ -313,15 +316,18 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 				ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
 				TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].torsoAnim, ent->client->unlagged.trail[k].torsoAnim, ent->client->unlagged.trail[j].torsoTimer, ent->client->unlagged.trail[k].torsoTimer,  &ent->client->ps.torsoTimer);
 				TimeShiftAnimLerp(frac, ent->client->unlagged.trail[j].legsAnim, ent->client->unlagged.trail[k].legsAnim, ent->client->unlagged.trail[j].legsTimer, ent->client->unlagged.trail[k].legsTimer, &ent->client->ps.legsTimer);
-				VectorCopy( ent->client->unlagged.trail[k].realAngles, ent->s.apos.trBase ); //Do this to get pitch just in case..?
-				ent->s.apos.trBase[YAW] = LerpAngle( ent->client->unlagged.trail[k].realAngles[YAW], ent->s.apos.trBase[YAW], frac ); //Get more accurate yaw
+				//ent->s.apos.trBase[YAW] = LerpAngle( ent->client->unlagged.trail[k].realAngle, ent->s.apos.trBase[YAW], frac ); //Shouldnt this be lerping between k and j instead of k and trbase ?
+				ent->s.apos.trBase[YAW] = LerpAngle( ent->client->unlagged.trail[k].realAngle, ent->client->unlagged.trail[j].realAngle, frac ); //Shouldnt this be lerping between k and j instead of k and trbase ?
+
+				//Com_Printf("j angle is %.2f k angle is %.2f frac is %.2f\n", ent->client->unlagged.trail[j].realAngle, ent->client->unlagged.trail[k].realAngle, frac);
+				//Com_Printf("interp angle is %.2f\n", LerpAngle( ent->client->unlagged.trail[j].realAngle, ent->client->unlagged.trail[k].realAngle, frac ));
 			}
 
 			// this will recalculate absmin and absmax
 			trap->LinkEntity( (sharedEntity_t *)ent );
 		} else {
 			// we wrapped, so grab the earliest
-			VectorCopy( ent->client->unlagged.trail[k].currentAngles, ent->r.currentAngles );
+			//VectorCopy( ent->client->unlagged.trail[k].currentAngles, ent->r.currentAngles );
 			VectorCopy( ent->client->unlagged.trail[k].currentOrigin, ent->r.currentOrigin );
 			VectorCopy( ent->client->unlagged.trail[k].mins, ent->r.mins );
 			VectorCopy( ent->client->unlagged.trail[k].maxs, ent->r.maxs );
@@ -338,7 +344,7 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 				ent->client->ps.torsoTimer = ent->client->unlagged.trail[k].torsoTimer;
 				ent->client->ps.legsAnim = ent->client->unlagged.trail[k].legsAnim;
 				ent->client->ps.legsTimer = ent->client->unlagged.trail[k].legsTimer;
-				VectorCopy( ent->client->unlagged.trail[k].realAngles, ent->s.apos.trBase );
+				ent->s.apos.trBase[YAW] = ent->client->unlagged.trail[k].realAngle;
 			}
 
 			// this will recalculate absmin and absmax
@@ -348,7 +354,7 @@ void G_TimeShiftClient( gentity_t *ent, int time, qboolean timeshiftAnims ) {
 #if 1
 		if (g_unlagged.integer & (1<<3)) {
 			G_DrawPlayerStick(ent, 0x00ff00, 5000, level.time);
-			Com_Printf("post angles are %.2f %.2f\n", ent->r.currentAngles[YAW], ent->s.apos.trBase[YAW]);
+			//Com_Printf("post angle is %.2f\n", ent->s.apos.trBase[YAW]);
 		}
 #endif
 
@@ -383,8 +389,6 @@ void G_TimeShiftAllClients( int time, gentity_t *skip, qboolean timeshiftAnims )
 	//if (g_unlaggedOffset.integer)
 		//time += g_unlaggedOffset.integer;
 
-	time += g_saberDamageScale.integer;
-
 	// for every client
 	ent = &g_entities[0];
 	for ( i = 0; i < MAX_CLIENTS; i++, ent++ ) {
@@ -409,14 +413,14 @@ void G_UnTimeShiftClient( gentity_t *ent, qboolean timeshiftAnims ) {
 		VectorCopy( ent->client->unlagged.saved.mins, ent->r.mins );
 		VectorCopy( ent->client->unlagged.saved.maxs, ent->r.maxs );
 		VectorCopy( ent->client->unlagged.saved.currentOrigin, ent->r.currentOrigin );
-		VectorCopy( ent->client->unlagged.saved.currentAngles, ent->r.currentAngles );
+		//VectorCopy( ent->client->unlagged.saved.currentAngles, ent->r.currentAngles );
 
 		if (timeshiftAnims) {
 			ent->client->ps.torsoAnim = ent->client->unlagged.saved.torsoAnim;
 			ent->client->ps.torsoTimer = ent->client->unlagged.saved.torsoTimer;
 			ent->client->ps.legsAnim = ent->client->unlagged.saved.legsAnim;
 			ent->client->ps.legsTimer = ent->client->unlagged.saved.legsTimer;
-			VectorCopy( ent->client->unlagged.saved.realAngles, ent->s.apos.trBase );
+			ent->s.apos.trBase[YAW] = ent->client->unlagged.saved.realAngle;
 		}
 
 		ent->client->unlagged.saved.leveltime = 0;
