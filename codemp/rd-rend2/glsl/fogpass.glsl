@@ -19,6 +19,7 @@ uniform float u_DeformParams[7];
 #endif
 
 uniform float u_Time;
+uniform mat4 u_ModelMatrix;
 uniform mat4 u_ModelViewProjectionMatrix;
 
 #if defined(USE_VERTEX_ANIMATION)
@@ -210,7 +211,7 @@ void main()
 
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
 
-	var_WSPosition = position;
+	var_WSPosition = (u_ModelMatrix * vec4(position, 1.0)).xyz;
 }
 
 /*[Fragment]*/

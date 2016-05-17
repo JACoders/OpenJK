@@ -1136,10 +1136,6 @@ Blends a fog texture on top of everything else
 static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
 {
 	fog_t *fog;
-	vec4_t color;
-	vec4_t fogDistanceVector;
-	vec4_t fogDepthVector = {};
-	float eyeT = 0;
 	shaderProgram_t *sp;
 
 	deform_t deformType;
@@ -1147,7 +1143,6 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	vec5_t deformParams;
 
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
-	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
 	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
@@ -1175,6 +1170,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	fog = tr.world->fogs + tess.fogNum;
 
 	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
 
 	uniformDataWriter.SetUniformFloat(UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
 	
@@ -1418,18 +1414,11 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
 {
-	int stage;
-	
-	vec4_t fogDistanceVector, fogDepthVector = {0, 0, 0, 0};
-	float eyeT = 0;
-
 	deform_t deformType;
 	genFunc_t deformGen;
 	float deformParams[7];
 
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
-
-	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
 	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
@@ -1439,7 +1428,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 	UniformDataWriter uniformDataWriter;
 	SamplerBindingsWriter samplerBindingsWriter;
 
-	for ( stage = 0; stage < MAX_SHADER_STAGES; stage++ )
+	for ( int stage = 0; stage < MAX_SHADER_STAGES; stage++ )
 	{
 		shaderStage_t *pStage = input->xstages[stage];
 		shaderProgram_t *sp;
@@ -1519,9 +1508,17 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		}
 
 		if ( input->fogNum ) {
-			uniformDataWriter.SetUniformVec4(UNIFORM_FOGDISTANCE, fogDistanceVector);
-			uniformDataWriter.SetUniformVec4(UNIFORM_FOGDEPTH, fogDepthVector);
-			uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
+			const fog_t *fog = tr.world->fogs + input->fogNum;
+
+			uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
+			uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
+			uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
+			uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, fog->depthToOpaque);
+			uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.refdef.vieworg);
+
+			vec4_t fogColorMask;
+			ComputeFogColorMask(pStage, fogColorMask);
+			uniformDataWriter.SetUniformVec4(UNIFORM_FOGCOLORMASK, fogColorMask);
 		}
 
 		float volumetricBaseValue = -1.0f;
@@ -1581,13 +1578,6 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		uniformDataWriter.SetUniformInt(UNIFORM_COLORGEN, forceRGBGen);
 		uniformDataWriter.SetUniformInt(UNIFORM_ALPHAGEN, forceAlphaGen);
-
-		if ( input->fogNum )
-		{
-			vec4_t fogColorMask;
-			ComputeFogColorMask(pStage, fogColorMask);
-			uniformDataWriter.SetUniformVec4(UNIFORM_FOGCOLORMASK, fogColorMask);
-		}
 
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);

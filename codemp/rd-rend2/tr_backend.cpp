@@ -662,7 +662,7 @@ UniformDataWriter& UniformDataWriter::SetUniformVec2( uniform_t uniform, float x
 	return SetUniformVec2(uniform, values);
 }
 
-UniformDataWriter& UniformDataWriter::SetUniformVec2( uniform_t uniform, float *values, size_t count )
+UniformDataWriter& UniformDataWriter::SetUniformVec2( uniform_t uniform, const float *values, size_t count )
 {
 	if ( shaderProgram->uniforms[uniform] == -1 )
 		return *this;
@@ -688,7 +688,7 @@ UniformDataWriter& UniformDataWriter::SetUniformVec3( uniform_t uniform, float x
 	return SetUniformVec3(uniform, values);
 }
 
-UniformDataWriter& UniformDataWriter::SetUniformVec3( uniform_t uniform, float *values, size_t count )
+UniformDataWriter& UniformDataWriter::SetUniformVec3( uniform_t uniform, const float *values, size_t count )
 {
 	if ( shaderProgram->uniforms[uniform] == -1 )
 		return *this;
@@ -714,7 +714,7 @@ UniformDataWriter& UniformDataWriter::SetUniformVec4( uniform_t uniform, float x
 	return SetUniformVec4(uniform, values);
 }
 
-UniformDataWriter& UniformDataWriter::SetUniformVec4( uniform_t uniform, float *values, size_t count )
+UniformDataWriter& UniformDataWriter::SetUniformVec4( uniform_t uniform, const float *values, size_t count )
 {
 	if ( shaderProgram->uniforms[uniform] == -1 )
 		return *this;
@@ -734,7 +734,7 @@ UniformDataWriter& UniformDataWriter::SetUniformVec4( uniform_t uniform, float *
 	return *this;
 }
 
-UniformDataWriter& UniformDataWriter::SetUniformMatrix4x3( uniform_t uniform, float *matrix, size_t count )
+UniformDataWriter& UniformDataWriter::SetUniformMatrix4x3( uniform_t uniform, const float *matrix, size_t count )
 {
 	if ( shaderProgram->uniforms[uniform] == -1 )
 		return *this;
@@ -754,7 +754,7 @@ UniformDataWriter& UniformDataWriter::SetUniformMatrix4x3( uniform_t uniform, fl
 	return *this;
 }
 
-UniformDataWriter& UniformDataWriter::SetUniformMatrix4x4( uniform_t uniform, float *matrix, size_t count )
+UniformDataWriter& UniformDataWriter::SetUniformMatrix4x4( uniform_t uniform, const float *matrix, size_t count )
 {
 	if ( shaderProgram->uniforms[uniform] == -1 )
 		return *this;

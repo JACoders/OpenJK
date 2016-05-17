@@ -803,9 +803,11 @@ static void R_RotateForViewer(viewParms_t *viewParms)
 	viewerMatrix[11] = 0;
 	viewerMatrix[15] = 1;
 
+
 	// convert from our coordinate system (looking down X)
 	// to OpenGL's coordinate system (looking down -Z)
 	myGlMultMatrix( viewerMatrix, s_flipMatrix, tr.ori.modelViewMatrix );
+	Matrix16Identity(tr.ori.modelMatrix);
 
 	viewParms->world = tr.ori;
 

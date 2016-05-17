@@ -3447,16 +3447,16 @@ public:
 	UniformDataWriter& SetUniformFloat( uniform_t uniform, float *values, size_t count );
 
 	UniformDataWriter& SetUniformVec2( uniform_t uniform, float x, float y );
-	UniformDataWriter& SetUniformVec2( uniform_t uniform, float *values, size_t count = 1 );
+	UniformDataWriter& SetUniformVec2( uniform_t uniform, const float *values, size_t count = 1 );
 
 	UniformDataWriter& SetUniformVec3( uniform_t uniform, float x, float y, float z );
-	UniformDataWriter& SetUniformVec3( uniform_t uniform, float *values, size_t count = 1 );
+	UniformDataWriter& SetUniformVec3( uniform_t uniform, const float *values, size_t count = 1 );
 
 	UniformDataWriter& SetUniformVec4( uniform_t uniform, float x, float y, float z, float w );
-	UniformDataWriter& SetUniformVec4( uniform_t uniform, float *values, size_t count = 1 );
+	UniformDataWriter& SetUniformVec4( uniform_t uniform, const float *values, size_t count = 1 );
 
-	UniformDataWriter& SetUniformMatrix4x3( uniform_t uniform, float *matrix, size_t count = 1 );
-	UniformDataWriter& SetUniformMatrix4x4( uniform_t uniform, float *matrix, size_t count = 1 );
+	UniformDataWriter& SetUniformMatrix4x3( uniform_t uniform, const float *matrix, size_t count = 1 );
+	UniformDataWriter& SetUniformMatrix4x4( uniform_t uniform, const float *matrix, size_t count = 1 );
 
 	UniformData *Finish( Allocator& destHeap );
 
