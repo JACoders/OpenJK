@@ -574,6 +574,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 //-----------------------------------------------------
 {
 	qboolean	found = qfalse;
+	int			distance_to_find_enemies = TURRET_RADIUS;
 	int			count, i;
 	float		bestDist = TURRET_RADIUS*TURRET_RADIUS;
 	float		enemyDist;
@@ -593,7 +594,15 @@ static qboolean pas_find_enemies( gentity_t *self )
 
 	VectorCopy(self->s.pos.trBase, org2);
 
-	count = G_RadiusList( org2, TURRET_RADIUS, self, qtrue, entity_list );
+	// zyk: Bounty Hunter Upgrade allows it to find enemies in a greater distance
+	if (self->parent && self->parent->client && self->parent->client->sess.amrpgmode == 2 && 
+		self->parent->client->pers.rpg_class == 2 && self->parent->client->pers.secrets_found & (1 << 1))
+	{
+		distance_to_find_enemies *= 2;
+		bestDist = distance_to_find_enemies*distance_to_find_enemies;
+	}
+
+	count = G_RadiusList( org2, distance_to_find_enemies, self, qtrue, entity_list );
 
 	for ( i = 0; i < count; i++ )
 	{
@@ -1152,7 +1161,7 @@ void ItemUse_Sentry( gentity_t *ent )
 	// zyk: Bounty Hunter sentry gun has more HP and with the Upgrade, player can place more sentry guns
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2)
 	{
-		sentry->health = 100 * (ent->client->pers.skill_levels[55] + 2);
+		sentry->health = 100 * (ent->client->pers.skill_levels[55] + 1);
 
 		// zyk: validating quantity of sentry guns that the Bounty Hunter can place
 		ent->client->pers.bounty_hunter_placed_sentries++;
