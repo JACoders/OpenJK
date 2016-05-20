@@ -2050,6 +2050,34 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 
 	item = &bg_itemlist[ent->modelindex];
 
+#if defined(_CGAME)
+	// zyk: Some RPG classes cant pickup some items
+	if (cg.rpg_class[ps->clientNum] == 1 && ((item->giType == IT_WEAPON && item->giTag != WP_STUN_BATON) || item->giType == IT_AMMO || 
+		item->giType == IT_HOLDABLE))
+	{
+		return qfalse;
+	}
+	else if (cg.rpg_class[ps->clientNum] == 3 && item->giType == IT_HOLDABLE && item->giTag == HI_CLOAK)
+	{
+		return qfalse;
+	}
+	else if (cg.rpg_class[ps->clientNum] == 4 && ((item->giType == IT_WEAPON && item->giTag != WP_STUN_BATON) || 
+				item->giType == IT_AMMO || item->giType == IT_HOLDABLE))
+	{
+		return qfalse;
+	}
+	else if (cg.rpg_class[ps->clientNum] == 6 && ((item->giType == IT_WEAPON && item->giTag != WP_STUN_BATON) || 
+				item->giType == IT_AMMO || item->giType == IT_HOLDABLE))
+	{
+		return qfalse;
+	}
+	else if (cg.rpg_class[ps->clientNum] == 8 && ((item->giType == IT_WEAPON && item->giTag != WP_STUN_BATON) || item->giType == IT_AMMO || 
+			    (item->giType == IT_HOLDABLE && item->giTag != HI_MEDPAC && item->giTag != HI_CLOAK && item->giTag != HI_JETPACK)))
+	{ // zyk: Magic Master can only pickup some items
+		return qfalse;
+	}
+#endif
+
 	if ( ps )
 	{
 		if ( ps->trueJedi )
