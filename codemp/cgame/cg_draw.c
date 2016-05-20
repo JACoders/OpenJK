@@ -4904,6 +4904,47 @@ void CG_DrawGenericTimerBar(void)
 	CG_FillRect(x+1.0f, y+1.0f, CGTIMERBAR_W-2.0f, CGTIMERBAR_H-percent, cColor);
 }
 
+#define CGUNIQUEBAR_H			50.0f
+#define CGUNIQUEBAR_W			10.0f
+#define CGUNIQUEBAR_X			(SCREEN_WIDTH-CGUNIQUEBAR_W-140.0f)
+#define CGUNIQUEBAR_Y			(SCREEN_HEIGHT-CGUNIQUEBAR_H-20.0f)
+void CG_DrawUniqueSkillTimer(void)
+{ // zyk: draws the Unique Skill cooldown timer
+	vec4_t aColor;
+	vec4_t cColor;
+	float x = CGUNIQUEBAR_X;
+	float y = CGUNIQUEBAR_Y;
+	float percent = ((float)(cg.unique_cooldown_timer-cg.time)/(float)cg.unique_duration) * CGUNIQUEBAR_H;
+
+	if (cg.unique_cooldown_timer < cg.time || cg.snap->ps.stats[STAT_HEALTH] < 1)
+	{
+		cg.unique_cooldown_timer = 0;
+		cg.unique_duration = 0;
+		return;
+	}
+
+	//color of the bar
+	aColor[0] = 0.0;
+	aColor[1] = 0.2;
+	aColor[2] = 1.0;
+	aColor[3] = 1.0;
+
+	//color of greyed out "missing fuel"
+	cColor[0] = 0.5f;
+	cColor[1] = 0.5f;
+	cColor[2] = 0.5f;
+	cColor[3] = 0.1f;
+
+	//draw the background (black)
+	CG_DrawRect(x, y, CGUNIQUEBAR_W, CGUNIQUEBAR_H, 1.0f, colorTable[CT_BLACK]);
+
+	//now draw the part to show how much health there is in the color specified
+	CG_FillRect(x+1.0f, y+1.0f+(CGUNIQUEBAR_H-percent), CGUNIQUEBAR_W-2.0f, CGUNIQUEBAR_H-1.0f-(CGUNIQUEBAR_H-percent), aColor);
+
+	//then draw the other part greyed out
+	CG_FillRect(x+1.0f, y+1.0f, CGUNIQUEBAR_W-2.0f, CGUNIQUEBAR_H-percent, cColor);
+}
+
 /*
 =================
 CG_DrawCrosshair
@@ -8238,6 +8279,10 @@ static void CG_Draw2D( void ) {
 		if (cg.ultra_resistance_duration > 0)
 		{
 			CG_DrawUltraResistance();
+		}
+		if (cg.unique_duration > 0)
+		{
+			CG_DrawUniqueSkillTimer();
 		}
 	}
 

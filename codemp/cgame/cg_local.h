@@ -1021,6 +1021,10 @@ Ghoul2 Insert End
 	int ultra_strength_duration;
 	int ultra_resistance_duration;
 
+	// zyk: Unique Skill cooldown timer
+	int unique_cooldown_timer;
+	int unique_duration;
+
 	// zyk: RPG Mode class of the players
 	int rpg_class[MAX_CLIENTS];
 
