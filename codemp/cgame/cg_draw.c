@@ -5387,7 +5387,9 @@ void CG_SaberClashFlare( void )
 		v = 0.001f;
 	}
 
-	CG_WorldCoordToScreenCoord( cg_saberFlashPos, &x, &y );
+	if ( !CG_WorldCoordToScreenCoord( cg_saberFlashPos, &x, &y ) ) {
+		return;
+	}
 
 	VectorSet4( color, 0.8f, 0.8f, 0.8f, 1.0f );
 	trap->R_SetColor( color );
