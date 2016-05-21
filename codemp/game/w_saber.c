@@ -7292,7 +7292,10 @@ void saberFirstThrown(gentity_t *saberent)
 
 		if (saberOwn->client->ps.fd.forcePowerLevel[FP_SABERTHROW] >= FORCE_LEVEL_3)
 		{ //we'll treat them to a quicker update rate if their throw rank is high enough
-			saberent->speed = level.time + 100;
+			if (saberOwn->client->ps.fd.forcePowerLevel[FP_SABERTHROW] == FORCE_LEVEL_3)
+				saberent->speed = level.time + 100;
+			else // zyk: added new Saber Throw level
+				saberent->speed = level.time + 50;
 		}
 		else
 		{

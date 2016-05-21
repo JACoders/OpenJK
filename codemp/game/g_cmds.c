@@ -6334,7 +6334,7 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 8)
 	{
-		if (ent->client->pers.skill_levels[7] < 3)
+		if (ent->client->pers.skill_levels[7] < 4)
 		{
 			if (!(ent->client->ps.fd.forcePowersKnown & (1 << FP_SABERTHROW)))
 				ent->client->ps.fd.forcePowersKnown |= (1 << FP_SABERTHROW);
@@ -7256,7 +7256,7 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 		{
 			if (i == 0 || i == 5 || i == 30 || i == 54)
 				strcpy(content,va("%s%d/5-",content,ent->client->pers.skill_levels[i]));
-			else if (i == 3 || i == 8 || i == 10 || i == 13 || i == 16 || i == 31 || i == 32)
+			else if (i == 3 || i == 7 || i == 8 || i == 10 || i == 13 || i == 16 || i == 31 || i == 32)
 				strcpy(content,va("%s%d/4-",content,ent->client->pers.skill_levels[i]));
 			else if (i > 18 && i < 29)
 				strcpy(content,va("%s%d/2-",content,ent->client->pers.skill_levels[i]));
@@ -8533,9 +8533,9 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 			sprintf(message_content[6],"^3 7 - Saber Defense: %d/3 ",ent->client->pers.skill_levels[6]);
 				
 		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8)
-			sprintf(message_content[7],"^0 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
+			sprintf(message_content[7],"^0 8 - Saber Throw: %d/4   ",ent->client->pers.skill_levels[7]);
 		else
-			sprintf(message_content[7],"^3 8 - Saber Throw: %d/3   ",ent->client->pers.skill_levels[7]);
+			sprintf(message_content[7],"^3 8 - Saber Throw: %d/4   ",ent->client->pers.skill_levels[7]);
 				
 		if (ent->client->pers.rpg_class == 2 || ent->client->pers.rpg_class == 3 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 8)
 			sprintf(message_content[8],"^0 9 - Absorb: %d/4        ",ent->client->pers.skill_levels[8]);
@@ -9273,7 +9273,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 7)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Saber Defense: ^7increases your ability to block, parry enemy saber attacks or enemy shots\n\"" );
 					if (i == 8)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Saber Throw: ^7throws your saber at enemy and gets it back\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Saber Throw: ^7throws your saber at enemy and gets it back. Each level increases max distance and saber throw speed\n\"" );
 					if (i == 9)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Absorb: ^7allows you to absorb force power attacks done to you\n\"" );
 					if (i == 10)

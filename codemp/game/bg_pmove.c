@@ -169,7 +169,7 @@ int forcePowerNeeded[NUM_FORCE_POWER_LEVELS][NUM_FORCE_POWERS] =
 		999,//FP_SEE,//duration
 		999,//FP_SABER_OFFENSE,
 		999,//FP_SABER_DEFENSE,
-		999//FP_SABERTHROW,
+		20//FP_SABERTHROW,
 		//NUM_FORCE_POWERS
 	},
 	{ // zyk: level 5
