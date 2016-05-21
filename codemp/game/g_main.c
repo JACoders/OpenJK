@@ -1327,6 +1327,9 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 				G_FreeEntity( ent );
 			}
 		}
+
+		zyk_create_info_player_deathmatch(2195,7611,4380,-90);
+		zyk_create_info_player_deathmatch(2305,7640,4380,-90);
 	}
 	else if (Q_stricmp(zyk_mapname, "t3_stamp") == 0)
 	{
