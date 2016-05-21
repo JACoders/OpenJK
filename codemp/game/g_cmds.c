@@ -9645,7 +9645,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 28)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Rocket Upgrade: ^7increases damage of rocket launcher which uses rockets as ammo. Also adds a new feature to it\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Rocket Upgrade: ^7increases damage of rocket launcher which uses rockets as ammo. Makes it damage saber-only damage objects in map\n\n\"");
 		}
 		else if (i == 29)
 		{
