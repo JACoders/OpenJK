@@ -664,9 +664,9 @@ void SG_WriteCvars(void)
 
 void SG_ReadCvars(void)
 {
-	int		iCount;
-	char	*psName;
-	char	*psValue;
+	int		iCount = 0;
+	char	*psName = nullptr;
+	char	*psValue = nullptr;
 
 	SG_Read(INT_ID('C','V','C','N'), &iCount, sizeof(iCount));
 
