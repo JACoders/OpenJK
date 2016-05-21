@@ -1349,17 +1349,18 @@ void ForceTeamHeal( gentity_t *self )
 		return;
 	}
 
+	// zyk: decreased amount of hp healed. Default values in order: 50, 33 and 25
 	if (numpl == 1)
 	{
-		healthadd = 50;
+		healthadd = 40;
 	}
 	else if (numpl == 2)
 	{
-		healthadd = 33;
+		healthadd = 30;
 	}
 	else
 	{
-		healthadd = 25;
+		healthadd = 20;
 	}
 
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_HEAL] = level.time + 2000;
@@ -1493,17 +1494,18 @@ void ForceTeamForceReplenish( gentity_t *self )
 		return;
 	}
 
+	// zyk: decreased amount of force recovered. Default values in order: 50, 33 and 25
 	if (numpl == 1)
 	{
-		poweradd = 50;
+		poweradd = 40;
 	}
 	else if (numpl == 2)
 	{
-		poweradd = 33;
+		poweradd = 30;
 	}
 	else
 	{
-		poweradd = 25;
+		poweradd = 20;
 	}
 	self->client->ps.fd.forcePowerDebounce[FP_TEAM_FORCE] = level.time + 2000;
 
