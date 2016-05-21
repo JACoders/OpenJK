@@ -9289,7 +9289,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 15)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Grip: ^7attacks a player by holding and damaging him\n\"" );
 					if (i == 16)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Drain: ^7drains force power from a player to restore you health\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Drain: ^7drains force power from a player to restore you health. At level 3, allows draining enemy hp\n\"" );
 					if (i == 17)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Rage: ^7makes you 1.3 times faster, increases your saber attack speed and damage and makes you get less damage\n\"" );
 					if (i == 18)

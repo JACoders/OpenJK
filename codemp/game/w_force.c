@@ -2162,7 +2162,7 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 	if ( traceEnt && traceEnt->takedamage )
 	{
-		if ( traceEnt->client && (!OnSameTeam(self, traceEnt) || g_friendlyFire.integer) && self->client->ps.fd.forceDrainTime < level.time && traceEnt->client->ps.fd.forcePower )
+		if ( traceEnt->client && (!OnSameTeam(self, traceEnt) || g_friendlyFire.integer) && self->client->ps.fd.forceDrainTime < level.time)
 		{//an enemy or object
 			if (!traceEnt->client && traceEnt->s.eType == ET_NPC)
 			{ //g2animent
@@ -2212,7 +2212,14 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 				if (dmg)
 				{
-					traceEnt->client->ps.fd.forcePower -= (dmg);
+					if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_3 && traceEnt->client->ps.fd.forcePower <= 0)
+					{ // zyk: Drain 3/3 and enemy has no force. Damages him
+						G_Damage( traceEnt, self, self, NULL, impactPoint, dmg, 0, MOD_FORCE_DARK );
+					}
+					else
+					{
+						traceEnt->client->ps.fd.forcePower -= (dmg);
+					}
 				}
 				if (traceEnt->client->ps.fd.forcePower < 0)
 				{
@@ -2336,8 +2343,8 @@ int ForceShootDrain( gentity_t *self )
 				continue;
 			if ( !traceEnt->client )
 				continue;
-			if ( !traceEnt->client->ps.fd.forcePower )
-				continue;
+			//if ( !traceEnt->client->ps.fd.forcePower ) zyk: no longer test it here
+				//continue;
 			if (OnSameTeam(self, traceEnt) && !g_friendlyFire.integer)
 				continue;
 			//this is all to see if we need to start a saber attack, if it's in flight, this doesn't matter
