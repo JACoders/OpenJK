@@ -659,6 +659,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	level.server_empty_change_map_timer = 0;
 	level.num_fully_connected_clients = 0;
 
+	level.guardian_quest_timer = 0;
+
 	level.load_entities_timer = 0;
 	strcpy(level.load_entities_file,"");
 

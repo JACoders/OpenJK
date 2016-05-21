@@ -2193,9 +2193,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		{ // zyk: if player defeated the map guardian npc
 			attacker->client->pers.score_modifier = 2;
 			attacker->client->pers.credits_modifier = 990;
-			trap->SendServerCommand( -1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the map guardian\n\"", attacker->client->pers.netname) );
+			trap->SendServerCommand( -1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the Guardian of Map\n\"", attacker->client->pers.netname) );
 			level.guardian_quest = 0;
 			level.boss_battle_music_reset_timer = level.time + 1000;
+			level.guardian_quest_timer = level.time + zyk_guardian_quest_timer.integer;
 		}
 
 		if (attacker->client->pers.rpg_class == 2)

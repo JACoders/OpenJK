@@ -11568,6 +11568,12 @@ void Cmd_GuardianQuest_f( gentity_t *ent ) {
 		return;
 	}
 
+	if (level.guardian_quest_timer > level.time)
+	{
+		trap->SendServerCommand( ent-g_entities, va("chat \"^3Guardian Quest: ^7wait %d seconds and try again\n\"", (level.guardian_quest_timer - level.time)/1000) );
+		return;
+	}
+
 	if (level.guardian_quest == 0)
 	{
 		int i = 0, j = 0, num_spawn_points = 0, chosen_spawn_point = -1;

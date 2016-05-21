@@ -1461,6 +1461,9 @@ typedef struct level_locals_s {
 	// zyk: Guardian Quest. Default 0. After the guardian is spawned, guardian_quest will have the guardian npc id
 	int guardian_quest;
 
+	// zyk: timer to start the Guardian Quest
+	int guardian_quest_timer;
+
 	// zyk: allows guardian of map to get his weapons back
 	int initial_map_guardian_weapons;
 
