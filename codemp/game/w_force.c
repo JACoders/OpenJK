@@ -1329,7 +1329,8 @@ void ForceTeamHeal( gentity_t *self )
 			 !ent->NPC && ent->client->ps.stats[STAT_HEALTH] >= ent->client->ps.stats[STAT_MAX_HEALTH] && 
 			 ((ent->client->sess.amrpgmode < 2 && ent->client->ps.stats[STAT_ARMOR] < 100) || (ent->client->sess.amrpgmode == 2 && 
 			 ent->client->ps.stats[STAT_ARMOR] < max_shield)))) && ent->client->ps.stats[STAT_HEALTH] > 0 && ForcePowerUsableOn(self, ent, FP_TEAM_HEAL) &&
-		 	trap->InPVS(self->client->ps.origin, ent->client->ps.origin) && (g_gametype.integer == GT_FFA || OnSameTeam(self, ent)))
+		 	trap->InPVS(self->client->ps.origin, ent->client->ps.origin) && 
+			(((self->client->sess.amrpgmode == 0 || self->client->pers.player_settings & (1 << 17)) && g_gametype.integer == GT_FFA) || OnSameTeam(self, ent)))
 		{ // zyk: Team Heal now can be used in FFA and in npcs. It will not heal enemy npcs
 			VectorSubtract(self->client->ps.origin, ent->client->ps.origin, a);
 
@@ -1472,7 +1473,8 @@ void ForceTeamForceReplenish( gentity_t *self )
 			 )
 			) && 
 			ForcePowerUsableOn(self, ent, FP_TEAM_FORCE) &&
-			trap->InPVS(self->client->ps.origin, ent->client->ps.origin) && (g_gametype.integer == GT_FFA || OnSameTeam(self, ent)))
+			trap->InPVS(self->client->ps.origin, ent->client->ps.origin) && 
+			((self->client->sess.amrpgmode == 0 || self->client->pers.player_settings & (1 << 17)) && g_gametype.integer == GT_FFA || OnSameTeam(self, ent)))
 		{
 			VectorSubtract(self->client->ps.origin, ent->client->ps.origin, a);
 

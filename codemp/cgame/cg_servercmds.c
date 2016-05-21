@@ -1607,7 +1607,7 @@ static void CG_ZykMod( void )
 
 	trap->Cmd_Argv( 1, arg, sizeof( arg ) );
 
-	while (j < 86)
+	while (j < 87)
 	{ // zyk: parsing info from the server and setting the respective cvars
 		k = 0;
 
@@ -2226,6 +2226,10 @@ static void CG_ZykMod( void )
 			{
 				trap->Cvar_Set("ui_zyk_universe_text3",va("Crystals: ^3%d", amount_of_stuff));
 			}
+		}
+		else if (j == 86)
+		{ // zyk: new setting added
+			trap->Cvar_Set("ui_zyk_setting_17_value", va("%s",value));
 		}
 
 		j++;
