@@ -1173,6 +1173,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
 
 	uniformDataWriter.SetUniformFloat(UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
+	uniformDataWriter.SetUniformMatrix4x3(UNIFORM_BONE_MATRICES, &glState.boneMatrices[0][0], glState.numBones);
 	
 	uniformDataWriter.SetUniformInt(UNIFORM_DEFORMTYPE, deformType);
 	if (deformType != DEFORM_NONE)

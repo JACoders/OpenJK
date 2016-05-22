@@ -1319,7 +1319,10 @@ int GLSL_BeginLoadGPUShaders(void)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 
 		if (i & FOGDEF_USE_SKELETAL_ANIMATION)
+		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
+			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
+		}
 
 		switch ( i & FOGDEF_USE_ATEST_MASK )
 		{
