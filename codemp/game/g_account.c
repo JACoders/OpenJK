@@ -1046,58 +1046,243 @@ void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 	}
 }
 
-#if _NEWRACERANKING
-void G_AddNewRaceToDB(char *username, char *coursename, int style, int duration_ms, int average, int topspeed, int end_time, int oldrank, int newrank) {
+void CleanupLocalRun() { //loda fixme, there really has to be a better way to do this. -Delete from table localrun, all but fastest time, grouped by username, coursename, style.. HOW?
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+
+	//sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
+	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, coursename, username, style FROM LocalRun ORDER BY duration_ms DESC) AS T GROUP BY T.username, T.coursename, T.style)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_DONE)
+		trap->Print("Cleaned up racetimes\n");
+	else 
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+
+	CALL_SQLITE (finalize(stmt));
+	//loda fixme, maybe remake table or something.. ?
+	CALL_SQLITE (close(db));
+
+	//DebugWriteToDB("CleanupLocalRun");
+}
+
+#if 1//_NEWRACERANKING
+void G_GetRaceScore(int id, char *username, char *coursename, int style, sqlite3 * db) {
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s, count=0, rank=0, i=1;
+	float score, percentile;
+	qboolean isMedal = qfalse;
+
+	//Com_Printf("id is %i, username is %s, coursename is %s, style is %i\n", id, username, coursename, style);
 	
-	//Get oldspot, if not specified
-	//Get newspot, if not specified
+	sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ?";//Select count for that course,style
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW)
+		count = sqlite3_column_int(stmt, 0);
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+	
+	/*
+	sql = "SELECT rank, id FROM (SELECT @rownum:=@rownum+1 rank, username, id FROM LocalRun R, (SELECT @rownum:=0) R WHERE coursename = ? AND style = ? ORDER BY duration_ms, end_time ASC LIMIT 500) AS Tmp WHERE username = ?"; //Change limit = 10 i guess.. ? what a mess
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style));
+	CALL_SQLITE (bind_text (stmt, 3, username, -1, SQLITE_STATIC));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) { //Select position of that entry in ordered list of course/style (as rank)
+		rank = sqlite3_column_int(stmt, 0);
+		id = sqlite3_column_int(stmt, 1);
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+	*/
 
-	//oldSpot = what # they were on that dftop10 before this new record
-	//newSpot = what # they will be now
+	//select all races of that course/style ordered by duration_ms..
+	//find out where our username is in that list?
+	sql = "SELECT id, duration_ms FROM LocalRun  WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style));
+    while (1) {
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			if (id == sqlite3_column_int(stmt, 0)) {
+				rank = i;
+				break;
+			}
+			i++;
+        }
+        else if (s == SQLITE_DONE)
+            break;
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+	CALL_SQLITE (finalize(stmt));
+	
+	sql = "UPDATE LocalRun SET rank = ? WHERE id = ?";//Save rank into row
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_int (stmt, 1, rank));
+	CALL_SQLITE (bind_int (stmt, 2, id));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+	CALL_SQLITE (finalize(stmt));
+	
 
-	//add new race to db
-	//remove old race from db <- order of this?
+	//score = (float)count/(float)rank;//Get score = count/rank
+	//percentile = ((float)count - ((float)rank - 1)) / (float)count; //eh?
 
-	//Oldrank = 0 means we dont know what the oldrank was
-	//Oldrank = -1 means there was no oldrank.
-	//Newrank = 0 means we dont know what the newrank is
+	//Com_Printf("Race on %s using %i by %s has count %i rank %i score of %.2f id is %i\n", coursename, style, username, count, rank, score, id);
+
+	/*
+	if (rank == 1 || rank == 2 || rank == 3) {	
+		if (rank == 1)
+			sql = "INSERT INTO RaceScores (username, RSUM, score, style, golds) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE RSUM = IFNULL(RSUM, 0) + ?, score = IFNULL(score, 0) + ?, percentile = IFNULL(percentile, 0) + ?, silvers = IFNULL(golds, 0) + 1";
+		else if (rank == 2)
+			sql = "INSERT INTO RaceScores (username, RSUM, score, style, golds) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE RSUM = IFNULL(RSUM, 0) + ?, score = IFNULL(score, 0) + ?, percentile = IFNULL(percentile, 0) + ?, silvers = IFNULL(golds, 0) + 1";
+		else if (rank == 3)
+			sql = "INSERT INTO RaceScores (username, RSUM, score, style, golds) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE RSUM = IFNULL(RSUM, 0) + ?, score = IFNULL(score, 0) + ?, percentile = IFNULL(percentile, 0) + ?, silvers = IFNULL(golds, 0) + 1";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, rank));
+		CALL_SQLITE (bind_int (stmt, 3, score));
+		CALL_SQLITE (bind_int (stmt, 4, style));
+		CALL_SQLITE (bind_int (stmt, 5, score));
+		CALL_SQLITE (bind_int (stmt, 6, percentile));	
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE)
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
+	}
+	*/
+}
+
+void SV_RebuildRaceRanks_f() {
+	char * sql;
+    sqlite3_stmt * stmt;
+	sqlite3 * db;
+	int s;//, row = 0;
+
+	CleanupLocalRun();//Make sure no duplicate entries
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
+
+	sql = "DELETE FROM RaceRanks"; //Clear RaceRanks table
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "SELECT id, username, coursename, style FROM LocalRun ORDER BY end_time ASC";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    while (1) {
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			G_GetRaceScore(sqlite3_column_int(stmt, 0), (char*)sqlite3_column_text(stmt, 1), (char*)sqlite3_column_text(stmt, 2), sqlite3_column_int(stmt, 3), db);
+        }
+        else if (s == SQLITE_DONE)
+            break;
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+	CALL_SQLITE (finalize(stmt));
+
+	CALL_SQLITE (close(db));
 
 
-	//for (...i++...) { //For each player between oldSpot and newSpot, since they will be bumped down in rank / aggregate score
-		//Calculate their current score from this course/style
-		//Subtract it from their aggregate scores
-		//Recalculate their current score for this course/style with their new rank
+
+
+	//how the fuck..
+	//Make sure no duplicate entries
+
+	//Clear RaceRanks table
+
+	//For each entry
+		//Select count for that course,style
+		//Select position of that entry in ordered list of course/style (as rank)
+		//save rank into row
+		//Get score = count/rank
+		//Add score to that username/style entry in raceScores
+		//If rank =1, add a gold, etc.
+
+
+}
+
+void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldrank_self, int newrank_self) {
+	
+
+	if (oldrank_self == 0) { //Unknown what their old rank was..
+		//Select all races of that coursename,style, ordered by duration_ms ASC
+		//select the number of row for first occurence of 'username', set as oldrank
+
+		//if nothing found, oldrank_self = -1
+	}
+
+	if (newrank_self == 0) { //Unknown what their new rank is
+		//Select all races of that coursename,style, ordered by duration_ms ASC
+		//Select the number of row that our duration_ms would correspond to, set as newrank
+	}
+
+	//get course/style count , select count from localrun where course =? and style = ?
+	//int selfoldcount = int selfnewcount = count we just got
+
+	if (oldrank_self == -1) {//Their first attempt
+		//newcount++; //this race is upping the count since its not replacing an old race
+	}
+	else {//Not their first attempt
+		//delete old record.. here?
+	}
+
+	//Select each row between oldrank and newrank for the given course/style
+	//for (...i++...) { //For each player between oldrank and newrank, since they will be bumped down in rank / aggregate score
+		//Calculate their oldscore from this course/style -- if username = username_self and oldrank == -1, oldscore = 0
+		//otherwise oldscore = oldcount / i ?
+		//Subtract it from their aggregate score
+		//Recalculate their newscore for this course/style with their newrank -- if username = username_self, newrank is known.
+		//newscore = newcount / i+1  ?  +1 since everyone is bumped down one? IDK
 		//Add it to their aggregate scores
 
-		//update their current rank in race row for this course
-
-		//What if this was their first attempt..?
-
-		//using highscores[course][style][i].username etc..  <- but this only stores top10? or top50? so maybe we have to do sqlquery and get every record for that course/style?
+		//update their current rank in race row for this course - caching, so we can do simpler queries for dftop10/web api
 
 		//this should include player who recorded the record as well.
 
 		//If rank was 3 and is no longer, subtract a bronze
 		//If rank is now 3 and wasn't before, add a bronze.. etc
-
 	//}
 
-	//if this is all done correctly, could remove all the caching from /dftop10 since rank will be 'cached' directly in the races table entry, 
+	
+	
+
+	//Oldrank = 0 means we dont know what the oldrank was
+	//Oldrank = -1 means there was no oldrank.
+	//Newrank = 0 means we dont know what the newrank is
+
+	//if this is all done correctly, could add functionality to /dftop10 to query other maps.
 	//so much less expensive to get with an sql query
-
-			//One by one
-			//If my time is faster, and newRank is -1, store i as NewRank.  We will eventually insert our time into spot i
-
-			//else If spot is empty, and newRank is -1, set newRank to i, and rowToDelete to -1, we will insert our time here.
-
-			//Else if newrank is set, and this row is also us, mark this row for deletion?.
-
-		
-		//If newrank
-			//remove rowToDelete, and fill gap by moving slower times up
-
-			//Shift every row after newRank down one
-			//Insert our new time into newRank spot
 
 }
 #endif
@@ -2438,31 +2623,6 @@ void G_AddSimpleStatsToDB2() { //For each item in array.. do an update query?  C
 }
 #endif
 
-void CleanupLocalRun() { //loda fixme, there really has to be a better way to do this. -Delete from table localrun, all but fastest time, grouped by username, coursename, style.. HOW?
-	sqlite3 * db;
-    char * sql;
-    sqlite3_stmt * stmt;
-	int s;
-
-	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-
-	//sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, MIN(duration_ms) FROM LocalRun GROUP BY username, coursename, style))";
-	sql = "DELETE FROM LocalRun WHERE id NOT IN (SELECT id FROM (SELECT id, coursename, username, style FROM LocalRun ORDER BY duration_ms DESC) AS T GROUP BY T.username, T.coursename, T.style)";
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-
-	s = sqlite3_step(stmt);
-	if (s == SQLITE_DONE)
-		trap->Print("Cleaned up racetimes\n");
-	else 
-		trap->Print( "Error: Could not write to database: %i.\n", s);
-
-	CALL_SQLITE (finalize(stmt));
-	//loda fixme, maybe remake table or something.. ?
-	CALL_SQLITE (close(db));
-
-	//DebugWriteToDB("CleanupLocalRun");
-}
-
 void BuildMapHighscores() { //loda fixme, take prepare,query out of loop
 	sqlite3 * db;
     char * sql;
@@ -2592,7 +2752,7 @@ void Cmd_PersonalBest_f(gentity_t *ent) {
     char * sql;
     sqlite3_stmt * stmt;
 	int s, style, duration_ms = 0, topspeed = 0, average = 0, i, course = -1;
-	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32], tempCourseName[32];
+	char username[16], courseName[40], courseNameFull[40], styleString[16], durationStr[32], tempCourseName[40];
 
 	if (trap->Argc() != 4 && trap->Argc() != 5) {
 		trap->SendServerCommand(ent-g_entities, "print \"Usage: /best <username> <full coursename> <style>.  Example: /best user mapname (coursename) style\n\"");
@@ -3186,8 +3346,13 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
+#if _NEWRACERANKING
+	sql = "CREATE TABLE IF NOT EXISTS LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
+		"average UNSIGNED SMALLINT, style UNSIGNED TINYINT, end_time UNSIGNED INTEGER, rank UNSIGNED SMALLINT)";
+#else
 	sql = "CREATE TABLE IF NOT EXISTS LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
 		"average UNSIGNED SMALLINT, style UNSIGNED TINYINT, end_time UNSIGNED INTEGER)";
+#endif
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
@@ -3211,13 +3376,11 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (finalize(stmt));
 #endif
 
-#if _NEWRACERANKING
-	/*
-	sql = "CREATE TABLE IF NOT EXISTS RaceRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), style UNSIGNED SMALLINT, score, DECIMAL(6,2), percentilesum DECIMAL(6,2), ranksum DECIMAL(6,2), golds UNSIGNED SMALLINT, silvers UNSIGNED SMALLINT, bronzes UNSIGNED SMALLINT, count UNSIGNED SMALLINT)"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
+#if 1//_NEWRACERANKING
+	sql = "CREATE TABLE IF NOT EXISTS RaceRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), style UNSIGNED SMALLINT, score DECIMAL(6,2), percentilesum DECIMAL(6,2), ranksum DECIMAL(6,2), golds UNSIGNED SMALLINT, silvers UNSIGNED SMALLINT, bronzes UNSIGNED SMALLINT, count UNSIGNED SMALLINT)"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
-	*/
 #endif
 
 	CALL_SQLITE (close(db));

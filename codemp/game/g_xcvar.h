@@ -320,6 +320,8 @@ XCVAR_DEF( g_eloProvisionalChangeSmall,		"1.5",			NULL,				CVAR_ARCHIVE,								
 XCVAR_DEF( g_eloMinimumDuels,				"20",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 #define _NEWRACERANKING 0
+#if _NEWRACERANKING
+#endif
 
 XCVAR_DEF( g_eloKValue1,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_eloKValue2,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )

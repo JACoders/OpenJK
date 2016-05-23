@@ -1436,8 +1436,11 @@ void Svcmd_RenameAccount_f( void );
 void Svcmd_ClearIP_f( void );
 void Svcmd_DBInfo_f( void );
 #if _ELORANKING
-void G_TestAddDuel( void );
+//void G_TestAddDuel( void );
 void SV_RebuildElo_f( void );
+#endif
+#if 1//_NEWRACERANKING
+void SV_RebuildRaceRanks_f( void );
 #endif
 
 
@@ -1448,7 +1451,7 @@ svcmd_t svcmds[] = {
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
 
 #if _ELORANKING
-	{ "addDuel",					G_TestAddDuel,						qfalse },
+	//{ "addDuel",					G_TestAddDuel,						qfalse },
 #endif
 
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
@@ -1478,6 +1481,10 @@ svcmd_t svcmds[] = {
 
 #if _ELORANKING
 	{ "rebuildElo",					SV_RebuildElo_f,					qfalse },
+#endif
+
+#if 1//_NEWRACERANKING
+	{ "rebuildRaces",				SV_RebuildRaceRanks_f,				qfalse },
 #endif
 
 	{ "register",					Svcmd_Register_f,					qfalse },
