@@ -1046,6 +1046,62 @@ void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 	}
 }
 
+#if _NEWRACERANKING
+void G_AddNewRaceToDB(char *username, char *coursename, int style, int duration_ms, int average, int topspeed, int end_time, int oldrank, int newrank) {
+	
+	//Get oldspot, if not specified
+	//Get newspot, if not specified
+
+	//oldSpot = what # they were on that dftop10 before this new record
+	//newSpot = what # they will be now
+
+	//add new race to db
+	//remove old race from db <- order of this?
+
+	//Oldrank = 0 means we dont know what the oldrank was
+	//Oldrank = -1 means there was no oldrank.
+	//Newrank = 0 means we dont know what the newrank is
+
+
+	//for (...i++...) { //For each player between oldSpot and newSpot, since they will be bumped down in rank / aggregate score
+		//Calculate their current score from this course/style
+		//Subtract it from their aggregate scores
+		//Recalculate their current score for this course/style with their new rank
+		//Add it to their aggregate scores
+
+		//update their current rank in race row for this course
+
+		//What if this was their first attempt..?
+
+		//using highscores[course][style][i].username etc..  <- but this only stores top10? or top50? so maybe we have to do sqlquery and get every record for that course/style?
+
+		//this should include player who recorded the record as well.
+
+		//If rank was 3 and is no longer, subtract a bronze
+		//If rank is now 3 and wasn't before, add a bronze.. etc
+
+	//}
+
+	//if this is all done correctly, could remove all the caching from /dftop10 since rank will be 'cached' directly in the races table entry, 
+	//so much less expensive to get with an sql query
+
+			//One by one
+			//If my time is faster, and newRank is -1, store i as NewRank.  We will eventually insert our time into spot i
+
+			//else If spot is empty, and newRank is -1, set newRank to i, and rowToDelete to -1, we will insert our time here.
+
+			//Else if newrank is set, and this row is also us, mark this row for deletion?.
+
+		
+		//If newrank
+			//remove rowToDelete, and fill gap by moving slower times up
+
+			//Shift every row after newRank down one
+			//Insert our new time into newRank spot
+
+}
+#endif
+
 void StripWhitespace(char *s);
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
 	time_t	rawtime;
@@ -1154,8 +1210,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		HighScores[course][style][newRank].style = style;
 		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
 
+#if _NEWRACERANKING
+		G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, rowToDelete, newRank); //Its ok if oldrank or newrank is unknown, we will get that in the function if we have to.
+#else
 		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+#endif
 
 		if (newRank == 0) //Play the sound
 			PlayActualGlobalSound("sound/chars/rosh_boss/misc/victory3");
@@ -1189,9 +1249,15 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 				if (duration_ms < PersonalBests[style][i].duration_ms) { //Our new time is faster, so update the cache..
 					PersonalBests[style][i].duration_ms = duration_ms;
 
+					//rowToDelete = i; ?
+
 					//trap->Print("Found in cach, updating cache and writing to file %i", duration_ms);
+#if _NEWRACERANKING
+					G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, i, 0);//We dont know what the newrank should be..
+#else
 					if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 						trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+#endif
 					break;
 				}
 				else {
@@ -1224,8 +1290,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 						if (duration_ms < oldBest) { //our time we just recorded is faster, so log it
 							PersonalBests[style][i].duration_ms = duration_ms;
 							//trap->Print("Time not found in cache, time in DB is slower, adding time just recorded: %i\n", duration_ms);
+#if _NEWRACERANKING
+							G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, 0, 0); //We dont know newrank or oldrank
+#else
 							if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 								trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+#endif
 							CALL_SQLITE (finalize(stmt));
 							CALL_SQLITE (close(db));
 							break;
@@ -1241,8 +1311,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 					else { //No time found in database, so record the time we just recorded 
 						PersonalBests[style][i].duration_ms = duration_ms;
 						//trap->Print("Time not found in cache or DB, adding time just recorded: %i\n", duration_ms);
+#if _NEWRACERANKING
+						G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, -1, 0); //No old rank in database and we dont know newrank
+#else
 						if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+#endif
 						CALL_SQLITE (finalize(stmt));
 						CALL_SQLITE (close(db));
 						break;
@@ -1261,20 +1335,6 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 			}
 		}
 	}
-		//One by one
-			//If my time is faster, and newRank is -1, store i as NewRank.  We will eventually insert our time into spot i
-
-			//else If spot is empty, and newRank is -1, set newRank to i, and rowToDelete to -1, we will insert our time here.
-
-			//Else if newrank is set, and this row is also us, mark this row for deletion?.
-
-		
-		//If newrank
-			//remove rowToDelete, and fill gap by moving slower times up
-
-			//Shift every row after newRank down one
-			//Insert our new time into newRank spot
-
 	//DebugWriteToDB("G_AddRaceTime");
 }
 
@@ -2773,7 +2833,17 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 	}
 }
 
+#if _NEWRACERANKING
+void Cmd_DFTop10_f(gentity_t *ent) {
+	//Check format of input, if its has no (), search current map..
+	//If it has (), treat it as full mapname (coursename)
+	//Allow more than one page? /dftop10 dash1 2  ? for results 10-20 ?
 
+	//If we are searching current map, and its page 1, we can use the cache (redirect to old function).
+	//otherwise do sql query..
+	//select * from localrun where course = ? and style = ? ORDER BY rank limit ?, 10 etc...
+}
+#else
 void Cmd_DFTop10_f(gentity_t *ent) {
 	int i, style, course = -1;
 	char courseName[40], courseNameFull[40], styleString[16] = {0}, timeStr[32];
@@ -2881,6 +2951,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	}
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 }
+#endif
 
 void Cmd_DFRefresh_f(gentity_t *ent) {
 	if (ent->client && ent->client->sess.fullAdmin) {//Logged in as full admin
@@ -2899,7 +2970,9 @@ void Cmd_DFRefresh_f(gentity_t *ent) {
 		trap->SendServerCommand( ent-g_entities, "print \"You must be logged in to use this command (dfRefresh).\n\"" );
 		return;
 	}
+#if !_NEWRACERANKING
 	G_AddToDBFromFile(); //From file to db
+#endif
 	BuildMapHighscores(); //From db, built to memory
 }
 
@@ -3138,10 +3211,21 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (finalize(stmt));
 #endif
 
+#if _NEWRACERANKING
+	/*
+	sql = "CREATE TABLE IF NOT EXISTS RaceRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), style UNSIGNED SMALLINT, score, DECIMAL(6,2), percentilesum DECIMAL(6,2), ranksum DECIMAL(6,2), golds UNSIGNED SMALLINT, silvers UNSIGNED SMALLINT, bronzes UNSIGNED SMALLINT, count UNSIGNED SMALLINT)"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
+    CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE_EXPECT (step (stmt), DONE);
+	CALL_SQLITE (finalize(stmt));
+	*/
+#endif
+
 	CALL_SQLITE (close(db));
 
 	CleanupLocalRun(); //Deletes useless shit from LocalRun database table
+#if !_NEWRACERANKING
 	G_AddToDBFromFile(); //Add last maps highscores
+#endif
 	BuildMapHighscores();//Build highscores into memory from database
 
 	//DebugWriteToDB("InitGameAccountStuff");

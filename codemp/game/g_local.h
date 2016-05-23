@@ -27,7 +27,9 @@ extern vec3_t gPainPoint;
 #define SECURITY_LOG "security.log"
 #define DUEL_LOG "duels.log" //duellog
 #define RACE_LOG "races.log" //racelog
+#if !_NEWRACERANKING
 #define TEMP_RACE_LOG "currentRaces.tmp" //racelog
+#endif
 #define TEMP_STAT_LOG "currentStats.tmp" //racelog
 #define	PLAYER_LOG "players.log" //Name, IP, Guid
 
@@ -1435,7 +1437,9 @@ typedef struct level_locals_s {
 	qboolean	isLockedfree;	
 	fileHandle_t	duelLog;
 	fileHandle_t	raceLog;
+#if !_NEWRACERANKING
 	fileHandle_t	tempRaceLog;
+#endif
 	fileHandle_t	tempStatLog;
 	fileHandle_t	playerLog;
 
