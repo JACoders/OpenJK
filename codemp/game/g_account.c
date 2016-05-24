@@ -1075,7 +1075,7 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 void G_GetRaceScore(int id, char *username, char *coursename, int style, sqlite3 * db) {
 	char * sql;
 	sqlite3_stmt * stmt;
-	int s, count=0, rank=0, i=1;
+	int s, count = 0, rank=0, i=1, rankCount = 0, rank_id;
 	float score, percentile;
 	qboolean isMedal = qfalse;
 
@@ -1091,7 +1091,6 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, sqlite3
 	else if (s != SQLITE_DONE) {
 		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
 		CALL_SQLITE (finalize(stmt));
-		CALL_SQLITE (close(db));
 		return;
 	}
 	CALL_SQLITE (finalize(stmt));
@@ -1150,32 +1149,73 @@ void G_GetRaceScore(int id, char *username, char *coursename, int style, sqlite3
 	CALL_SQLITE (finalize(stmt));
 	
 
-	//score = (float)count/(float)rank;//Get score = count/rank
-	//percentile = ((float)count - ((float)rank - 1)) / (float)count; //eh?
+	score = (float)count/(float)rank;//Get score = count/rank
+	percentile = ((float)count - ((float)rank - 1)) / (float)count; //eh?
 
 	//Com_Printf("Race on %s using %i by %s has count %i rank %i score of %.2f id is %i\n", coursename, style, username, count, rank, score, id);
 
-	/*
-	if (rank == 1 || rank == 2 || rank == 3) {	
+
+	//id, username, style, score, percentilesum, ranksum, golds, silvers, bronzes, count
+	
+	//if medal, increment golds/silvers/bronzes..
+	//score = score+score, percentilesum = percentilesum + percentile, ranksum = ranksum + rank, count = count + 1 WHERE username = ? and style = ?
+
+	sql = "SELECT id, COUNT(*) FROM RaceRanks WHERE username = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		rank_id = sqlite3_column_int(stmt, 0);
+		rankCount = sqlite3_column_int(stmt, 1);
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	if (rankCount == 1) { //Found the entry, so update it.
 		if (rank == 1)
-			sql = "INSERT INTO RaceScores (username, RSUM, score, style, golds) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE RSUM = IFNULL(RSUM, 0) + ?, score = IFNULL(score, 0) + ?, percentile = IFNULL(percentile, 0) + ?, silvers = IFNULL(golds, 0) + 1";
+			sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, golds = golds + 1, count = count + 1 WHERE id = ?";//Save rank into row
 		else if (rank == 2)
-			sql = "INSERT INTO RaceScores (username, RSUM, score, style, golds) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE RSUM = IFNULL(RSUM, 0) + ?, score = IFNULL(score, 0) + ?, percentile = IFNULL(percentile, 0) + ?, silvers = IFNULL(golds, 0) + 1";
+			sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, silvers = silvers + 1, count = count + 1 WHERE id = ?";//Save rank into row
 		else if (rank == 3)
-			sql = "INSERT INTO RaceScores (username, RSUM, score, style, golds) VALUES (?, ?, ?, ?, 1) ON DUPLICATE KEY UPDATE RSUM = IFNULL(RSUM, 0) + ?, score = IFNULL(score, 0) + ?, percentile = IFNULL(percentile, 0) + ?, silvers = IFNULL(golds, 0) + 1";
+			sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, bronzes = bronzes + 1, count = count + 1 WHERE id = ?";//Save rank into row
+		else 
+			sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, count = count + 1 WHERE id = ?";//Save rank into row
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, rank));
-		CALL_SQLITE (bind_int (stmt, 3, score));
-		CALL_SQLITE (bind_int (stmt, 4, style));
-		CALL_SQLITE (bind_int (stmt, 5, score));
-		CALL_SQLITE (bind_int (stmt, 6, percentile));	
+		CALL_SQLITE (bind_double (stmt, 1, score));
+		CALL_SQLITE (bind_double (stmt, 2, percentile));
+		CALL_SQLITE (bind_int (stmt, 3, rank));
+		CALL_SQLITE (bind_int (stmt, 4, rank_id));
 		s = sqlite3_step(stmt);
 		if (s != SQLITE_DONE)
 			trap->Print( "Error: Could not write to database: %i.\n", s);
 		CALL_SQLITE (finalize(stmt));
 	}
-	*/
+	else if (rankCount == 0) { //Not found, so add
+		sql = "INSERT INTO RaceRanks (username, style, score, percentilesum, ranksum, golds, silvers, bronzes, count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style));
+		CALL_SQLITE (bind_double (stmt, 3, score));
+		CALL_SQLITE (bind_double (stmt, 4, percentile));
+		CALL_SQLITE (bind_int (stmt, 5, rank));
+		CALL_SQLITE (bind_int (stmt, 6, ((rank == 1) ? 1 : 0)));
+		CALL_SQLITE (bind_int (stmt, 7, ((rank == 2) ? 1 : 0)));
+		CALL_SQLITE (bind_int (stmt, 8, ((rank == 3) ? 1 : 0)));
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE)
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
+	}
+	else {
+		trap->Print( "Error: Mupltiple RaceRank rows for single user: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
+		return;
+	}
 }
 
 void SV_RebuildRaceRanks_f() {
