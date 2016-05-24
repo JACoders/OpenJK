@@ -1345,7 +1345,6 @@ typedef struct {
 
 	vec4_t		color;
 	float		tcScale;				// texture coordinate vector scales
-	float		depthToOpaque;
 	fogParms_t	parms;
 
 	// for clipping distance in fog when outside
@@ -1760,6 +1759,7 @@ typedef struct {
 
 	int			numfogs;
 	fog_t		*fogs;
+	const fog_t	*globalFog;
 
 	vec3_t		lightGridOrigin;
 	vec3_t		lightGridSize;

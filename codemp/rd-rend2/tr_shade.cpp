@@ -1133,9 +1133,8 @@ RB_FogPass
 Blends a fog texture on top of everything else
 ===================
 */
-static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *vertexArrays )
+static void RB_FogPass( shaderCommands_t *input, const fog_t *fog, const VertexArraysProperties *vertexArrays )
 {
-	fog_t *fog;
 	shaderProgram_t *sp;
 
 	deform_t deformType;
@@ -1167,8 +1166,6 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 
 	backEnd.pc.c_fogDraws++;
 
-	fog = tr.world->fogs + tess.fogNum;
-
 	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
 	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELMATRIX, backEnd.ori.modelMatrix);
 
@@ -1186,7 +1183,7 @@ static void RB_FogPass( shaderCommands_t *input, const VertexArraysProperties *v
 	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
 	uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
-	uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, fog->depthToOpaque);
+	uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque);
 	uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.refdef.vieworg);
 
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
@@ -1514,7 +1511,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
 			uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
 			uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
-			uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, fog->depthToOpaque);
+			uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, fog->parms.depthForOpaque);
 			uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.refdef.vieworg);
 
 			vec4_t fogColorMask;
@@ -1916,8 +1913,17 @@ void RB_StageIteratorGeneric( void )
 		//
 		// now do fog
 		//
-		if ( tess.fogNum && tess.shader->fogPass ) {
-			RB_FogPass( &tess, &vertexArrays );
+		const fog_t *fog = nullptr;
+		if ( tr.world )
+		{
+			if ( tr.world->globalFog )
+				fog = tr.world->globalFog;
+			else if ( tess.fogNum )
+				fog = tr.world->fogs + tess.fogNum;
+		}
+
+		if ( fog && tess.shader->fogPass ) {
+			RB_FogPass( &tess, fog, &vertexArrays );
 		}
 	}
 

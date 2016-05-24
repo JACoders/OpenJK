@@ -257,7 +257,8 @@ float CalcFog(in vec3 viewOrigin, in vec3 position, in vec4 fogPlane, in float d
 							 distToVertexFromIntersection,
 							 !inFog && intersects);
 
-	return min(distToVertex / depthToOpaque, 1.0);
+	float z = depthToOpaque * distToVertex;
+	return 1.0 - clamp(exp(-(z * z)), 0.0, 1.0);
 }
 
 void main()
