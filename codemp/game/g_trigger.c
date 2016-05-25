@@ -2007,7 +2007,17 @@ void hurt_touch( gentity_t *self, gentity_t *other, trace_t *trace ) {
 	else
 		dflags = 0;
 
-	if (self->damage == -1 && other && other->client)
+	if (self->damage == -1 && other && other->client && other->client->sess.raceMode) { //Racemode falling to death
+		if (self->activator && self->activator->inuse && self->activator->client)
+		{
+			G_Damage (other, self->activator, self->activator, NULL, NULL, 9999, dflags|DAMAGE_NO_PROTECTION, MOD_TRIGGER_HURT);
+		}
+		else
+		{
+			G_Damage (other, self, self, NULL, NULL, 9999, dflags|DAMAGE_NO_PROTECTION, MOD_TRIGGER_HURT);
+		}
+	}
+	else if (self->damage == -1 && other && other->client)
 	{
 		if (other->client->ps.otherKillerTime > level.time)
 		{ //we're as good as dead, so if someone pushed us into this then remember them

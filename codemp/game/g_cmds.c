@@ -8129,6 +8129,7 @@ void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
+void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
 void Cmd_ChangePassword_f( gentity_t *ent );
 void Cmd_Stats_f( gentity_t *ent);
@@ -8220,6 +8221,7 @@ command_t commands[] = {
 
 	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
+	{ "dftopRank",			Cmd_DFTopRank_f,				CMD_NOINTERMISSION },
 
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "engage_fullforceduel",	Cmd_ForceDuel_f,		CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels

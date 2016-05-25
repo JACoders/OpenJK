@@ -3033,15 +3033,332 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 	}
 }
 
-#if _NEWRACERANKING
-void Cmd_DFTop10_f(gentity_t *ent) {
-	//Check format of input, if its has no (), search current map..
-	//If it has (), treat it as full mapname (coursename)
-	//Allow more than one page? /dftop10 dash1 2  ? for results 10-20 ?
+#if 1//_NEWRACERANKING
+void Cmd_DFTopRank_f(gentity_t *ent) {
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	int row = 1, style, page = 1, start = 0;
+	char msg[1024-128] = {0}, styleString[16] = {0}, input1[32], input2[32], username[40];
+	int score, golds, silvers, bronzes, count;
+	float rank, percentile;
 
-	//If we are searching current map, and its page 1, we can use the cache (redirect to old function).
-	//otherwise do sql query..
-	//select * from localrun where course = ? and style = ? ORDER BY rank limit ?, 10 etc...
+	if (trap->Argc() > 3) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+		return;
+	}
+
+	if (trap->Argc() == 3) {
+		trap->Argv(1, input1, sizeof(input1));
+		trap->Argv(2, input2, sizeof(input2));
+		style = RaceNameToInteger(input1);
+
+		if (style < 0) {//Fuckup
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+			return;
+		}
+		else {
+			IntegerToRaceName(style, styleString, sizeof(styleString));
+			Q_strcat(styleString, sizeof(styleString), " style:");
+		}
+
+		page = atoi(input2);
+	}
+	else if (trap->Argc() == 2) { //Either /dftoprank cpm or /dftoprank 2
+		trap->Argv(1, input1, sizeof(input1));
+
+		if (atoi(input1)) {//its a page
+			page = atoi(input1);
+			Q_strncpyz(styleString, "all styles:", sizeof(styleString));
+			style = -1;
+		}
+		else {
+			style = RaceNameToInteger(input1);
+			IntegerToRaceName(style, styleString, sizeof(styleString));
+			Q_strcat(styleString, sizeof(styleString), " style:");
+		}
+	}
+	else { //dftoprank
+		style = -1;
+		Q_strncpyz(styleString, "all styles:", sizeof(styleString));
+	}
+
+	if (page < 1) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /top <style (optional)> <page (optional)>.  This displays the specified top10 for specified style.\n\"");
+		return;
+	}
+	else if (page > 100)
+		page = 100;
+	start = (page - 1) * 10;
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	if (style == -1) {
+		sql = "SELECT username, SUM(score), SUM(ranksum), SUM(percentilesum), SUM(golds), SUM(silvers), SUM(bronzes), SUM(count) from RaceRanks GROUP BY username ORDER BY SUM(score) DESC LIMIT ?, 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_int (stmt, 1, start));
+	}
+	else {
+		sql = "SELECT username, score, ranksum, percentilesum, golds, silvers, bronzes, count from RaceRanks WHERE style = ? ORDER BY score DESC LIMIT ?, 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_int (stmt, 1, style));
+		CALL_SQLITE (bind_int (stmt, 2, start));
+	}
+	
+	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
+
+	while (1) {
+		int s;
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			char *tmpMsg = NULL;
+			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
+			score = sqlite3_column_int(stmt, 1);
+			rank = sqlite3_column_int(stmt, 2);
+			percentile = sqlite3_column_int(stmt, 3);
+			golds = sqlite3_column_int(stmt, 4);
+			silvers = sqlite3_column_int(stmt, 5);
+			bronzes = sqlite3_column_int(stmt, 6);
+			count = sqlite3_column_int(stmt, 7);
+
+			rank = (float)rank/(float)count;
+			percentile = (float)percentile/(float)count;
+
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, rank, percentile, golds, silvers, bronzes, count);
+			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+				msg[0] = '\0';
+			}
+			Q_strcat(msg, sizeof(msg), tmpMsg);
+			row++;
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+		}
+	}
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+}
+
+void Cmd_DFTop10_f(gentity_t *ent) { //this needs lots of cleaning up..
+	int i, style = -1, course = -1;
+	char courseName[40] = {0}, courseNameFull[40] = {0}, styleString[16] = {0}, timeStr[32];
+	char info[1024] = {0};
+	char msg[1024-128] = {0};
+	qboolean validStyle = qtrue;
+
+
+#if 0
+	if (level.numCourses == 0) {
+		//trap->SendServerCommand(ent-g_entities, "print \"This map does not have any courses.\n\"");
+		//return;
+	}
+
+	if (trap->Argc() > 3 || (level.numCourses == 1 && trap->Argc() > 2)) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
+		return;
+	}
+
+	if (level.numCourses > 1 && trap->Argc() < 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /dftop10 <coursename> <style (optional)>\n\"");
+		for (i = 0; i < level.numCourses; i++) { //32 max
+			if (level.courseName[i] && level.courseName[i][0])
+				trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i, level.courseName[i]));
+		}
+		return;
+	}
+
+	if (level.numCourses == 1 && trap->Argc() == 1) { //dftop10
+		style = 1;
+		Q_strncpyz(courseName, "", sizeof(courseName));
+	}
+	else if (level.numCourses == 1 && trap->Argc() == 2) { //dftop10 cpm
+		char input[32];
+		trap->Argv(1, input, sizeof(input));
+
+		Q_strncpyz(courseName, "", sizeof(courseName));
+		//trap->Print("Input: %s, atoi: %i\n", input, atoi(input));
+		style = RaceNameToInteger(input);
+
+		if (style < 0) {
+
+			Q_strncpyz(courseName, input, sizeof(courseName));
+			validStyle = qfalse;
+			style = 1;
+			//Check for global course, if not found
+
+
+			//trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
+			//return;
+		}
+	}
+	else if (level.numCourses > 1 && trap->Argc() == 2) { //dftop10 dash1
+		char input[32];
+		trap->Argv(1, input, sizeof(input));
+		Q_strncpyz(courseName, input, sizeof(courseName));
+		style = 1;
+	}
+	else if (level.numCourses > 1 && trap->Argc() == 3) { //dftop10 dash1 cpm
+		char input1[40], input2[16];
+		trap->Argv(1, input1, sizeof(input1));
+		trap->Argv(2, input2, sizeof(input2));
+		Q_strncpyz(courseName, input1, sizeof(courseName));
+		style = RaceNameToInteger(input2);
+		if (style < 0) {
+			style = 1;
+			//trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
+			//return;
+		}
+	}
+	else if (trap->Argc() == 1 || trap->Argc() == 2) {
+		char input1[40], input2[16];
+		trap->Argv(1, input1, sizeof(input1));
+		trap->Argv(2, input2, sizeof(input2));
+		Q_strncpyz(courseName, input1, sizeof(courseName));
+		style = RaceNameToInteger(input2);
+		if (style < 0)
+			style = 1;
+		//trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
+		//return;
+	}
+#endif
+
+	if (trap->Argc() == 1) {
+		style = 1;
+		validStyle = qtrue;
+	}
+	else {
+		char input1[40], input2[16];
+		trap->Argv(1, input1, sizeof(input1));
+		trap->Argv(2, input2, sizeof(input2));
+		Q_strncpyz(courseName, input1, sizeof(courseName));
+		style = RaceNameToInteger(input2);
+		if (style < 0)
+			style = 1;
+	}
+
+	trap->GetServerinfo(info, sizeof(info));
+	Q_strncpyz(courseNameFull, Info_ValueForKey( info, "mapname" ), sizeof(courseNameFull));
+	if (courseName[0]) //&& courseName[0]?
+		Q_strcat(courseNameFull, sizeof(courseNameFull), va(" (%s)", courseName));
+
+	Q_strlwr(courseName);
+	Q_CleanStr(courseName);
+	Q_strlwr(courseNameFull);
+	Q_CleanStr(courseNameFull);
+	
+	IntegerToRaceName(style, styleString, sizeof(styleString));
+
+	for (i = 0; i < level.numCourses; i++) {
+		if (!Q_stricmp(courseName, level.courseName[i])) {
+			course = i;
+			break;
+		}
+	}
+
+	if (level.numCourses == 1 && validStyle)
+		course = 0;
+
+	if (course == -1) {
+		//trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
+
+
+
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int row = 1;
+		int s;
+		char dateStr[64] = {0};
+
+		//Com_Printf("doing sql query %s %i\n", courseName, style);
+
+		//load fixme replace this with simple select count
+
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE ? AND style = ?";
+		sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 AND style = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style));
+
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			Q_strncpyz(courseNameFull, (char*)sqlite3_column_text(stmt, 0), sizeof(courseNameFull));
+		}
+		else {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the specified top10 for the current map.\n\"");
+			CALL_SQLITE (finalize(stmt));
+			CALL_SQLITE (close(db));
+			return;
+		}
+		//if (s != SQLITE_DONE) {
+			//fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+		//}
+
+		CALL_SQLITE (finalize(stmt));
+
+		sql = "SELECT username, duration_ms, topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC LIMIT 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, courseNameFull, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style));
+		
+		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
+
+		while (1) {
+			int s;
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				TimeToString(sqlite3_column_int(stmt, 1), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", row, sqlite3_column_text(stmt, 0), timeStr, sqlite3_column_int(stmt, 2), sqlite3_column_int(stmt, 3), dateStr);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				break;
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+
+
+
+
+
+	}
+	else {
+		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
+
+		for (i = 0; i < 10; i++) {
+			char *tmpMsg = NULL;
+			if (HighScores[course][style][i].username && HighScores[course][style][i].username[0])
+			{
+				TimeToString(HighScores[course][style][i].duration_ms, timeStr, sizeof(timeStr), qfalse);
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+	}
 }
 #else
 void Cmd_DFTop10_f(gentity_t *ent) {
