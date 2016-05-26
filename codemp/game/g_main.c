@@ -9541,7 +9541,7 @@ void G_RunFrame( int levelTime ) {
 
 								origin[0] = -1915.0f;
 								origin[1] = -26945.0f;
-								origin[2] = 200.0f;
+								origin[2] = 400.0f;
 								angles[0] = 0.0f;
 								angles[1] = -179.0f;
 								angles[2] = 0.0f;
