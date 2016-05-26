@@ -1682,7 +1682,7 @@ static void CG_ZykMod( void )
 			{
 				if ((skill_number > 0 && skill_number < 5) || (skill_number > 5 && skill_number < 19) || (skill_number > 19 && skill_number < 22) ||
 					skill_number == 23 || (skill_number > 25 && skill_number < 28) || skill_number == 29 || skill_number == 34 || 
-					(skill_number > 35 && skill_number < 41) || (skill_number > 42 && skill_number < 45) || (skill_number > 47 && skill_number < 50) || 
+					(skill_number > 35 && skill_number < 39) || skill_number == 40 || (skill_number > 42 && skill_number < 45) || (skill_number > 47 && skill_number < 50) || 
 					(skill_number > 50 && skill_number < 54) || skill_number == 55)
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else

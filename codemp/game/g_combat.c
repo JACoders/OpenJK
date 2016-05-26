@@ -4803,27 +4803,35 @@ void G_Knockdown( gentity_t *victim )
 // zyk: tests if this rpg player can damage saber-only damage things
 qboolean zyk_can_damage_saber_only_entities(gentity_t *attacker, gentity_t *inflictor, int mod)
 {
-	if ((mod == MOD_ROCKET || mod == MOD_ROCKET_HOMING || mod == MOD_ROCKET_SPLASH || mod == MOD_ROCKET_HOMING_SPLASH) && attacker && 
-		attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.skill_levels[26] == 2)
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{
-		return qtrue;
-	}
+		if ((mod == MOD_ROCKET || mod == MOD_ROCKET_HOMING || mod == MOD_ROCKET_SPLASH || mod == MOD_ROCKET_HOMING_SPLASH) && 
+			attacker->client->pers.skill_levels[26] == 2)
+		{
+			return qtrue;
+		}
 	
-	if ((mod == MOD_CONC || mod == MOD_CONC_ALT) && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && 
-		attacker->client->pers.skill_levels[27] == 2)
-	{
-		return qtrue;
-	}
+		if ((mod == MOD_CONC || mod == MOD_CONC_ALT) && attacker->client->pers.skill_levels[27] == 2)
+		{
+			return qtrue;
+		}
 
-	if (mod == MOD_MELEE && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.rpg_class == 4)
-	{ // zyk: Monk melee
-		return qtrue;
-	}
+		if (mod == MOD_MELEE && attacker->client->pers.rpg_class == 4)
+		{ // zyk: Monk melee
+			return qtrue;
+		}
 
-	if (mod == MOD_MELEE && attacker && attacker->client && attacker->client->sess.amrpgmode == 2 && attacker->client->pers.rpg_class == 8 &&
-		inflictor && inflictor->s.weapon == WP_CONCUSSION)
-	{ // zyk: Magic Master bolts, the Ultra Bolt
-		return qtrue;
+		if (mod == MOD_MELEE && attacker->client->pers.rpg_class == 8 &&
+			inflictor && inflictor->s.weapon == WP_CONCUSSION)
+		{ // zyk: Magic Master bolts, the Ultra Bolt
+			return qtrue;
+		}
+
+		if ((mod == MOD_DISRUPTOR || mod == MOD_DISRUPTOR_SNIPER || mod == MOD_DISRUPTOR_SPLASH) && attacker->client->pers.rpg_class == 5 && 
+			attacker->client->pers.skill_levels[38] > 0 && attacker->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+		{ // zyk: Stealth Attacker using disruptor and Unique Skill
+			return qtrue;
+		}
 	}
 
 	return qfalse;
@@ -4865,8 +4873,8 @@ extern void Boba_FlyStop( gentity_t *self );
 extern qboolean zyk_can_hit_target(gentity_t *attacker, gentity_t *target);
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod ) {
 	gclient_t	*client;
-	int			take, asave = 0, subamt = 0, knockback;
-	float		famt = 0, hamt = 0, shieldAbsorbed = 0;
+	int			take, asave = 0, knockback;
+	float		shieldAbsorbed = 0;
 	int			check_shield = 1; // zyk: tests if damage can be absorbed by shields
 	qboolean	can_damage_heavy_things = qfalse; // zyk: will be qtrue if attacker is a RPG Mode Monk using melee or a Magic Master using Magic Fist
 

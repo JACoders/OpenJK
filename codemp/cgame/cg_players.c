@@ -9971,6 +9971,8 @@ void CG_Player( centity_t *cent ) {
 				unique_duration = 30000;
 			else if (cg.rpg_class[cent->currentState.number] == 4)
 				unique_duration = 30000;
+			else if (cg.rpg_class[cent->currentState.number] == 5)
+				unique_duration = 40000;
 			else if (cg.rpg_class[cent->currentState.number] == 6)
 				unique_duration = 45000;
 			else if (cg.rpg_class[cent->currentState.number] == 7)
