@@ -3150,12 +3150,21 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	char input1[40], input2[32], courseName[40] = {0}, courseNameFull[40] = {0}, msg[1024-128] = {0}, timeStr[32], styleString[16] = {0};
 	int i, style = -1, course = -1;
 
-	if (args == 1) { //Dftop10  - current map JKA, only 1 course on map
+	if (args == 1) { //Dftop10  - current map JKA, only 1 course on map.  Or if there are multiple courses, display them all.
 		if (level.numCourses == 0) { //No course on this map, so error.
 			//Com_Printf("fail 1\n");
 			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the top10 for the specified course.\n\"");
 			return;
 		}
+		if (level.numCourses > 1) { //
+			trap->SendServerCommand(ent-g_entities, "print \"This map has multiple courses, you must specify one of the following with /dftop10 <coursename> <style (optional)>\n\"");
+			for (i = 0; i < level.numCourses; i++) { //32 max
+				if (level.courseName[i] && level.courseName[i][0])
+					trap->SendServerCommand(ent-g_entities, va("print \"  ^5%i ^7- ^3%s\n\"", i, level.courseName[i]));
+			}
+			return;
+		}
+		style = 1;
 	}
 	else if (args == 2) {//CPM - current map cpm, only 1 course on map
 		trap->Argv(1, input1, sizeof(input1));
@@ -3193,6 +3202,7 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 	//At this point we should have a valid style and a potential coursename.
 	Q_strlwr(courseName);
 	Q_CleanStr(courseName);
+	IntegerToRaceName(style, styleString, sizeof(styleString));
 
 	for (i = 0; i < level.numCourses; i++) {  //Check memory for coursename.
 		if (!Q_stricmp(courseName, level.courseName[i])) {
@@ -3241,10 +3251,9 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 		//sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE coursename LIKE ? AND style = ?";
-		sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 AND style = ? LIMIT 1";
+		sql = "SELECT DISTINCT(coursename) FROM LocalRun WHERE instr(coursename, ?) > 0 LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, courseName, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 2, style));
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
 			Q_strncpyz(courseNameFull, (char*)sqlite3_column_text(stmt, 0), sizeof(courseNameFull));
