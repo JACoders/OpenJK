@@ -5035,7 +5035,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{ // zyk: attacker is a RPG boss. Increase damage based in the number of allies of the quest player
 		gentity_t *quest_player_ent = &g_entities[attacker->client->pers.guardian_invoked_by_id];
 
-		damage += ((int)ceil(damage * 0.1 * zyk_number_of_allies(quest_player_ent)));
+		damage += ((int)ceil(damage * 0.05 * zyk_number_of_allies(quest_player_ent)));
 	}
 
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
