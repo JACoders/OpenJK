@@ -1245,6 +1245,8 @@ void ForceHeal( gentity_t *self )
 	// zyk: now heal force power requires force based on the force power max cvar
 	self->client->ps.fd.forcePower -= (zyk_max_force_power.integer/2);
 
+	rpg_skill_counter(self, 100);
+
 	G_Sound( self, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav") );
 }
 
@@ -5448,7 +5450,6 @@ qboolean G_SpecialRollGetup(gentity_t *self)
 	return rolled;
 }
 
-extern void rpg_skill_counter(gentity_t *ent, int amount);
 extern char *zyk_rpg_class(gentity_t *ent);
 extern int zyk_max_magic_power(gentity_t *ent);
 void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
