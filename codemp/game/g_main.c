@@ -10722,8 +10722,6 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Chaos
 					if (ent->client->pers.guardian_timer < level.time)
 					{
-						gentity_t *player_ent = &g_entities[ent->client->pers.guardian_invoked_by_id];
-
 						if (ent->client->pers.hunter_quest_messages == 0)
 						{
 							if (!ent->client->ps.powerups[PW_CLOAKED])

@@ -12141,7 +12141,6 @@ Cmd_EntAdd_f
 */
 void Cmd_EntAdd_f( gentity_t *ent ) {
 	gentity_t *new_ent = NULL;
-	qboolean worked = qfalse;
 	int number_of_args = trap->Argc();
 	int i = 0;
 	char key[64];
@@ -12223,7 +12222,6 @@ Cmd_EntEdit_f
 */
 void Cmd_EntEdit_f( gentity_t *ent ) {
 	gentity_t *this_ent = NULL;
-	qboolean worked = qfalse;
 	int number_of_args = trap->Argc();
 	int entity_id = -1;
 	int i = 0;
