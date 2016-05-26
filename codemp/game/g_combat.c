@@ -2648,18 +2648,23 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 				}
 				else
 				{
-					AddScore( attacker, self->r.currentOrigin, -1 );
+					if (!attacker->client->sess.raceMode)
+						AddScore( attacker, self->r.currentOrigin, -1 );
 				}
 			}
 			else
 			{
 				if (attacker != self) { //we did a teamkill
-					AddScore( attacker, self->r.currentOrigin, -1 );
-					if (attacker != self  && attacker->client)//JAPRO STATS
-						attacker->client->pers.stats.teamKills++;
+					if (!attacker->client->sess.raceMode) {
+						AddScore( attacker, self->r.currentOrigin, -1 );
+						if (attacker != self  && attacker->client)//JAPRO STATS
+							attacker->client->pers.stats.teamKills++;
+					}
 				}
-				else if (level.gametype != GT_FFA && (level.gametype != GT_CTF || !g_fixCTFScores.integer)) //we selfkilled
-					AddScore( attacker, self->r.currentOrigin, -1 ); //Only take away a point if its not FFA or CTF i guess, sure
+				else if (level.gametype != GT_FFA && (level.gametype != GT_CTF || !g_fixCTFScores.integer)) {//we selfkilled
+					if (!attacker->client->sess.raceMode)
+						AddScore( attacker, self->r.currentOrigin, -1 ); //Only take away a point if its not FFA or CTF i guess, sure
+				}
 
 			}
 			if (level.gametype == GT_JEDIMASTER)

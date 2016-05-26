@@ -5594,6 +5594,7 @@ void Cmd_Aminfo_f(gentity_t *ent)
 	Q_strcat(buf, sizeof(buf), "logout ");
 	Q_strcat(buf, sizeof(buf), "changepassword ");
 	Q_strcat(buf, sizeof(buf), "stats ");
+	Q_strcat(buf, sizeof(buf), "top10 ");
 	Q_strcat(buf, sizeof(buf), "whois");
 	trap->SendServerCommand(ent-g_entities, va("print \"%s\n\"", buf));
 
@@ -5630,8 +5631,9 @@ void Cmd_Aminfo_f(gentity_t *ent)
 
 	if (g_raceMode.integer) {
 		Q_strncpyz(buf, "   ^3Defrag commands: ", sizeof(buf));
-		Q_strcat(buf, sizeof(buf), "dftop10 ");
-		Q_strcat(buf, sizeof(buf), "notcompleted ");
+		Q_strcat(buf, sizeof(buf), "dfTop10 ");
+		Q_strcat(buf, sizeof(buf), "dfTopRank ");
+		Q_strcat(buf, sizeof(buf), "notCompleted ");
 		Q_strcat(buf, sizeof(buf), "best ");
 		if (g_raceMode.integer > 1 && level.gametype == GT_FFA) 
 			Q_strcat(buf, sizeof(buf), "race ");
