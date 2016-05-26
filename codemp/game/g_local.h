@@ -617,7 +617,17 @@ typedef struct clientPersistant_s {
 	// 17 - Sending Ultra Resistance event
 	// 18 - NPC has the guard order
 	// 19 - NPC has the cover order
+	// 20 - hit by poison dart
 	int player_statuses;
+
+	// zyk: amount of times player must be hit by poison
+	int poison_dart_hit_counter;
+
+	// zyk: player who hit the target with poison dart
+	int poison_dart_user_id;
+
+	// zyk: timer of the poison darts
+	int poison_dart_hit_timer;
 
 	int player_scale;
 

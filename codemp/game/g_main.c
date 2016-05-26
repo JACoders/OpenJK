@@ -5641,6 +5641,25 @@ void quest_power_events(gentity_t *ent)
 	}
 }
 
+// zyk: damages target player with posion hits
+void poison_dart_hits(gentity_t *ent)
+{
+	if (ent && ent->client && ent->health > 0 && ent->client->pers.player_statuses & (1 << 20) && ent->client->pers.poison_dart_hit_counter > 0 && 
+		ent->client->pers.poison_dart_hit_timer < level.time)
+	{
+		gentity_t *poison_user = &g_entities[ent->client->pers.poison_dart_user_id];
+
+		G_Damage(ent,poison_user,poison_user,NULL,NULL,30,0,MOD_UNKNOWN);
+
+		ent->client->pers.poison_dart_hit_counter--;
+		ent->client->pers.poison_dart_hit_timer = level.time + 1000;
+
+		// zyk: no more do poison damage if counter is 0
+		if (ent->client->pers.poison_dart_hit_counter == 0)
+			ent->client->pers.player_statuses &= ~(1 << 20);
+	}
+}
+
 // zyk: tests if player already finished the Revelations mission of Universe Quest
 void first_second_act_objective(gentity_t *ent)
 {
@@ -7844,6 +7863,7 @@ void G_RunFrame( int levelTime ) {
 			}
 
 			quest_power_events(ent);
+			poison_dart_hits(ent);
 
 			if (zyk_chat_protection_timer.integer > 0)
 			{ // zyk: chat protection. If 0, it is off. If greater than 0, set the timer to protect the player
@@ -10366,6 +10386,7 @@ void G_RunFrame( int levelTime ) {
 			WP_SaberStartMissileBlockCheck(ent, &ent->client->pers.cmd);
 
 			quest_power_events(ent);
+			poison_dart_hits(ent);
 
 			if (ent->client->pers.universe_quest_artifact_holder_id != -1 && ent->health > 0 && ent->client->ps.powerups[PW_FORCE_BOON] < (level.time + 1000))
 			{ // zyk: artifact holder npcs. Keep their artifact (force boon) active

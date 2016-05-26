@@ -3535,6 +3535,21 @@ void ClientThink_real( gentity_t *ent ) {
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
 							}
 						}
+						else if (ent->client->pers.rpg_class == 2)
+						{ // zyk: Bounty Hunter
+							if (ent->client->ps.ammo[AMMO_METAL_BOLTS] >= 1)
+							{
+								ent->client->ps.ammo[AMMO_METAL_BOLTS] -= 1;
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+								ent->client->pers.unique_skill_timer = level.time + 45000;
+							}
+							else
+							{
+								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs 1 metal bolts ammo to use it\"");
+							}
+						}
 						else if (ent->client->pers.rpg_class == 3)
 						{ // zyk: Armored Soldier
 							if (ent->client->ps.ammo[AMMO_POWERCELL] >= 2)

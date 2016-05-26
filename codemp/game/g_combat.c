@@ -2131,6 +2131,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 
 	// zyk: remove any quest_power status from this player
 	self->client->pers.quest_power_status = 0;
+	self->client->pers.player_statuses &= ~(1 << 20);
 
 	// zyk: resetting boss battle music to default one if needed
 	if (self->client->pers.guardian_invoked_by_id != -1)
@@ -5173,6 +5174,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				targ->client->ps.electrifyTime = level.time + Q_irand( 300, 800 );
 			}
 		}
+	}
+
+	if ((mod == MOD_MELEE && inflictor && inflictor->s.weapon == WP_FLECHETTE) && targ && targ->client && attacker && attacker->client)
+	{ // zyk: hit by poison dart
+		targ->client->pers.poison_dart_hit_counter = 5;
+		targ->client->pers.poison_dart_user_id = attacker->s.number;
+		targ->client->pers.poison_dart_hit_timer = level.time + 1000;
+		targ->client->pers.player_statuses |= (1 << 20);
 	}
 
 	if (level.gametype == GT_SIEGE &&

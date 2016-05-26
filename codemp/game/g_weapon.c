@@ -4148,6 +4148,43 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				send_rpg_events(2000);
 			}
 		}
+		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && 
+				 ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && ent->client->ps.ammo[AMMO_METAL_BOLTS] > 0)
+		{ // zyk: Bounty Hunter Unique Skill, fire poison darts
+			vec3_t		fwd, dir, origin;
+			gentity_t	*missile;
+
+			ent->client->ps.ammo[AMMO_METAL_BOLTS] -= 1;
+
+			VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+
+			AngleVectors( dir, fwd, NULL, NULL );
+
+			if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
+			else
+				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
+
+			missile = CreateMissile( origin, fwd, 4500, 10000, ent, qfalse);
+
+			missile->classname = "flech_proj";
+			missile->s.weapon = WP_FLECHETTE;
+
+			VectorSet( missile->r.maxs, FLECHETTE_SIZE, FLECHETTE_SIZE, FLECHETTE_SIZE );
+			VectorScale( missile->r.maxs, -1, missile->r.mins );
+
+			missile->damage = 1;
+			missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+			missile->methodOfDeath = MOD_MELEE;
+			missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+			// we don't want it to bounce forever
+			missile->bounceCount = 2;
+
+			missile->flags |= FL_BOUNCE_SHRAPNEL;
+
+			G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/tusken_rifle/fire_gun.wav"));
+		}
 
 		VectorCopy(ent->client->ps.origin, muzzlePunch);
 		muzzlePunch[2] += ent->client->ps.viewheight-6;
