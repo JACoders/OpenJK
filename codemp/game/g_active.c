@@ -854,8 +854,21 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 			if (client->pers.rpg_class == 3 && ent->health > 0)
 			{ // zyk: Armored Soldier auto-shield-healing ability
-				if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
+				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				{ // zyk: Armored Soldier Unique Skill
+					if ((client->ps.stats[STAT_ARMOR] + 3) < client->pers.max_rpg_shield)
+					{
+						client->ps.stats[STAT_ARMOR] += 3;
+					}
+					else
+					{
+						client->ps.stats[STAT_ARMOR] = client->pers.max_rpg_shield;
+					}
+				}
+				else if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
+				{
 					client->ps.stats[STAT_ARMOR] += 1;
+				}
 			}
 
 			if (client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && client->pers.universe_quest_counter & (1 << 29) &&
@@ -3520,6 +3533,21 @@ void ClientThink_real( gentity_t *ent ) {
 							else
 							{
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Unique Skill: ^7needs %d force to use it\"", (zyk_max_force_power.integer/4)));
+							}
+						}
+						else if (ent->client->pers.rpg_class == 3)
+						{ // zyk: Armored Soldier
+							if (ent->client->ps.ammo[AMMO_POWERCELL] >= 2)
+							{
+								ent->client->ps.ammo[AMMO_POWERCELL] -= 2;
+
+								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								ent->client->pers.unique_skill_timer = level.time + 30000;
+							}
+							else
+							{
+								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs 2 power cell ammo to use it\"");
 							}
 						}
 						else if (ent->client->pers.rpg_class == 4)

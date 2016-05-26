@@ -1665,7 +1665,7 @@ static void CG_ZykMod( void )
 			else if (Q_stricmp(rpg_class, "Armored Soldier") == 0)
 			{
 				if ((skill_number > 0 && skill_number < 5) || (skill_number > 5 && skill_number < 19) || skill_number == 34 || 
-					(skill_number > 35 && skill_number < 40) || skill_number == 49 || (skill_number > 51 && skill_number < 56))
+					(skill_number > 35 && skill_number < 39) || skill_number == 49 || (skill_number > 51 && skill_number < 56))
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), "");
 				else
 					trap->Cvar_Set(va("ui_zyk_skill_%d_level", skill_number), va("%s",value));
