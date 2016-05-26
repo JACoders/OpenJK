@@ -1914,7 +1914,7 @@ void rocketThink( gentity_t *ent )
 	vec3_t	org;
 	float dot, dot2, dis;
 	int i;
-	float vel = (ent->spawnflags&1)?ent->speed:zyk_rocket_velocity.integer;
+	float vel = (ent->spawnflags&1)?ent->speed:zyk_rocket_alt_velocity.integer;
 
 	if ( ent->genericValue1 && ent->genericValue1 < level.time )
 	{//time's up, we're done, remove us
@@ -2020,7 +2020,7 @@ void rocketThink( gentity_t *ent )
 			newdir[2] = ( (targetdir[2]*newDirMult) + (ent->movedir[2]*oldDirMult) ) * 0.5;
 
 			// let's also slow down a lot
-			vel *= 0.5f;
+			// vel *= 0.5f; zyk: no longer slow it down. Cvar controls its velocity
 		}
 		else if ( dot < 0.70f )
 		{
@@ -2057,7 +2057,7 @@ void rocketThink( gentity_t *ent )
 
 		VectorNormalize( newdir );
 
-		VectorScale( newdir, vel * 0.5f, ent->s.pos.trDelta );
+		VectorScale( newdir, vel /* * 0.5f */, ent->s.pos.trDelta ); // zyk: no more scale the rocket velocity here
 		VectorCopy( newdir, ent->movedir );
 		SnapVector( ent->s.pos.trDelta );			// save net bandwidth
 		VectorCopy( ent->r.currentOrigin, ent->s.pos.trBase );
@@ -2093,7 +2093,7 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 
 	if ( altFire )
 	{
-		vel *= 0.5f;
+		vel = zyk_rocket_alt_velocity.integer;
 	}
 
 	missile = CreateMissile( muzzle, forward, vel, 30000, ent, altFire );
