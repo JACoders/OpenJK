@@ -3266,7 +3266,7 @@ void WP_DropDetPack( gentity_t *ent, qboolean alt_fire )
 		CalcMuzzlePoint( ent, forward, vright, up, muzzle );
 
 		VectorNormalize( forward );
-		VectorMA( muzzle, -4, forward, muzzle );
+		VectorMA( muzzle, 2, forward, muzzle ); // zyk: changed scale to 2. Default -4
 		drop_charge( ent, muzzle, forward );
 
 		ent->client->ps.hasDetPackPlanted = qtrue;
