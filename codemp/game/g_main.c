@@ -4242,7 +4242,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	if (npc_ent)
 	{
-		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health/10 * zyk_number_of_allies(ent));
+		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health * 0.15 * zyk_number_of_allies(ent));
 		npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->NPC->stats.health;
 		npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
 
