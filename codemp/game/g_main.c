@@ -306,6 +306,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	// zyk: variable used in the SP buged maps fix
 	char zyk_mapname[128] = {0};
 	FILE *zyk_entities_file = NULL;
+	FILE *zyk_remap_file = NULL;
 
 	//Init RMG to 0, it will be autoset to 1 if there is terrain on the level.
 	trap->Cvar_Set("RMG", "0");
@@ -1553,6 +1554,32 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		strcpy(level.load_entities_file, va("entities/%s/default.txt",zyk_mapname));
 
 		level.load_entities_timer = level.time + 1050;
+	}
+
+	// zyk: loading default remaps
+	zyk_remap_file = fopen(va("remaps/%s/default.txt",zyk_mapname),"r");
+
+	if (zyk_remap_file != NULL)
+	{
+		char old_shader[128];
+		char new_shader[128];
+		char time_offset[128];
+
+		strcpy(old_shader,"");
+		strcpy(new_shader,"");
+		strcpy(time_offset,"");
+
+		while(fscanf(zyk_remap_file,"%s",old_shader) != EOF)
+		{
+			fscanf(zyk_remap_file,"%s",new_shader);
+			fscanf(zyk_remap_file,"%s",time_offset);
+
+			AddRemap(G_NewString(old_shader), G_NewString(new_shader), atof(time_offset));
+		}
+		
+		fclose(zyk_remap_file);
+
+		trap->SetConfigstring(CS_SHADERSTATE, BuildShaderStateConfig());
 	}
 }
 

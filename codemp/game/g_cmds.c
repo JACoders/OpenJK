@@ -12168,6 +12168,58 @@ void Cmd_Remap_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_RemapDeleteFile_f
+==================
+*/
+void Cmd_RemapDeleteFile_f( gentity_t *ent ) {
+	int number_of_args = trap->Argc();
+	char arg1[MAX_STRING_CHARS];
+	char serverinfo[MAX_INFO_STRING] = {0};
+	char zyk_mapname[128] = {0};
+	FILE *this_file = NULL;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( number_of_args < 2)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify a file name.\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+
+	// zyk: getting mapname
+	trap->GetServerinfo( serverinfo, sizeof( serverinfo ) );
+	Q_strncpyz(zyk_mapname, Info_ValueForKey( serverinfo, "mapname" ), sizeof(zyk_mapname));
+
+	// zyk: creating directories where the remap files will be loaded from
+#if defined(__linux__)
+	system(va("mkdir -p remaps/%s",zyk_mapname));
+#else
+	system(va("mkdir \"remaps/%s\"",zyk_mapname));
+#endif
+
+	this_file = fopen(va("remaps/%s/%s.txt",zyk_mapname,arg1),"r");
+	if (this_file)
+	{
+		fclose(this_file);
+
+		remove(va("remaps/%s/%s.txt",zyk_mapname,arg1));
+
+		trap->SendServerCommand( ent-g_entities, va("print \"File %s deleted from server\n\"", arg1) );
+	}
+	else
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"File %s does not exist\n\"", arg1) );
+	}
+}
+
+/*
+==================
 Cmd_RemapSave_f
 ==================
 */
@@ -13826,7 +13878,7 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 		return;
 	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> <spawnflags> <key value key value ... etc>: ^7adds a new entity in the map\n^3/entedit <entity id> [key value key value ... etc]: ^7shows entity info or edits the entity fields\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file. Use ^3default ^7name to make it load with the map\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n^3/remap <old shader> <new shader>: ^7remaps shaders in the map\n^3/remapsave <file name>: ^7saves remapped shaders in a file. Use ^3default ^7name to make file load with the map\n^3/remapload <file name>: ^7loads remapped shaders from a file\n\n\"") );
+	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> <spawnflags> <key value key value ... etc>: ^7adds a new entity in the map\n^3/entedit <entity id> [key value key value ... etc]: ^7shows entity info or edits the entity fields\n^3/entnear: ^7lists entities with a distance to you less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map. This command lists 10 entities per page\n^3/entsave <filename>: ^7saves entities into a file. Use ^3default ^7name to make it load with the map\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n^3/remap <old shader> <new shader>: ^7remaps shaders in the map\n^3/remapsave <file name>: ^7saves remapped shaders in a file. Use ^3default ^7name to make file load with the map\n^3/remapload <file name>: ^7loads remapped shaders from a file\n^3/remapdeletefile <file name>: ^7deletes a remap file\n\n\"") );
 }
 
 /*
@@ -14427,6 +14479,7 @@ command_t commands[] = {
 	{ "players",			Cmd_Players_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "remap",				Cmd_Remap_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "remapdeletefile",	Cmd_RemapDeleteFile_f,		CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "remapload",			Cmd_RemapLoad_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "remapsave",			Cmd_RemapSave_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
