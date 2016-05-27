@@ -1526,6 +1526,18 @@ typedef struct level_locals_s {
 qboolean zyk_is_ally(gentity_t *ent, gentity_t *other);
 int zyk_number_of_allies(gentity_t *ent);
 void send_rpg_events(int send_event_timer);
+int zyk_get_remap_count();
+
+// zyk: shader remap struct
+typedef struct shaderRemap_s {
+  char oldShader[MAX_QPATH];
+  char newShader[MAX_QPATH];
+  float timeOffset;
+} shaderRemap_t;
+
+#define MAX_SHADER_REMAPS 128
+
+shaderRemap_t remappedShaders[MAX_SHADER_REMAPS];
 
 //
 // g_spawn.c

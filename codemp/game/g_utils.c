@@ -6,16 +6,12 @@
 #include "bg_saga.h"
 #include "qcommon/q_shared.h"
 
-typedef struct shaderRemap_s {
-  char oldShader[MAX_QPATH];
-  char newShader[MAX_QPATH];
-  float timeOffset;
-} shaderRemap_t;
-
-#define MAX_SHADER_REMAPS 128
-
 int remapCount = 0;
-shaderRemap_t remappedShaders[MAX_SHADER_REMAPS];
+
+int zyk_get_remap_count()
+{
+	return remapCount;
+}
 
 void AddRemap(const char *oldShader, const char *newShader, float timeOffset) {
 	int i;
