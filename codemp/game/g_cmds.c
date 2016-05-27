@@ -12136,6 +12136,38 @@ void Cmd_Jetpack_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_Remap_f
+==================
+*/
+void Cmd_Remap_f( gentity_t *ent ) {
+	int number_of_args = trap->Argc();
+	char arg1[MAX_STRING_CHARS];
+	char arg2[MAX_STRING_CHARS];
+	float f = level.time * 0.001;
+
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
+	{ // zyk: admin command
+		trap->SendServerCommand( ent-g_entities, "print \"You don't have this admin command.\n\"" );
+		return;
+	}
+
+	if ( number_of_args < 3)
+	{
+		trap->SendServerCommand( ent-g_entities, va("print \"You must specify the old shader and new shader. Ex: ^3/remap models/weapons2/heavy_repeater/heavy_repeater_w.glm models/items/bacta^7\n\"") );
+		return;
+	}
+
+	trap->Argv( 1, arg1, sizeof( arg1 ) );
+	trap->Argv( 2, arg2, sizeof( arg2 ) );
+
+	AddRemap(G_NewString(arg1), G_NewString(arg2), f);
+	trap->SetConfigstring(CS_SHADERSTATE, BuildShaderStateConfig());
+
+	trap->SendServerCommand( ent-g_entities, "print \"Shader remapped\n\"" );
+}
+
+/*
+==================
 Cmd_EntAdd_f
 ==================
 */
@@ -14277,6 +14309,7 @@ command_t commands[] = {
 	{ "playermode",			Cmd_PlayerMode_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "players",			Cmd_Players_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "racemode",			Cmd_RaceMode_f,				CMD_ALIVE|CMD_NOINTERMISSION },
+	{ "remap",				Cmd_Remap_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "resetaccount",		Cmd_ResetAccount_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "rpgclass",			Cmd_RpgClass_f,				CMD_RPG|CMD_NOINTERMISSION },
 	{ "rpmode",				Cmd_RpMode_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
