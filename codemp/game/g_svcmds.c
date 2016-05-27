@@ -1442,6 +1442,9 @@ void SV_RebuildElo_f( void );
 #if 1//_NEWRACERANKING
 void SV_RebuildRaceRanks_f( void );
 #endif
+#if 1
+void G_TestAddRace( void );
+#endif
 
 
 /* This array MUST be sorted correctly by alphabetical name field */
@@ -1455,6 +1458,10 @@ svcmd_t svcmds[] = {
 #endif
 
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
+
+#if 1
+	{ "addRace",					G_TestAddRace,						qfalse },
+#endif
 
 	{ "amban",						Svcmd_AmBan_f,						qfalse },
 	{ "amgrantadmin",				Svcmd_Amgrantadmin_f,				qfalse },
