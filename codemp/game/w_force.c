@@ -1606,6 +1606,13 @@ void ForceGrip( gentity_t *self )
 			return;
 		}
 
+		// zyk: bosses cannot be gripped by players who are not in the boss battle
+		if (g_entities[tr.entityNum].client && g_entities[tr.entityNum].NPC && g_entities[tr.entityNum].client->pers.guardian_invoked_by_id != -1 &&
+			(self->client->sess.amrpgmode != 2 || self->client->pers.guardian_mode == 0))
+		{
+			return;
+		}
+
 		if (g_entities[tr.entityNum].s.number < MAX_CLIENTS && g_entities[tr.entityNum].client->ps.m_iVehicleNum)
 		{ //a player on a vehicle
 			gentity_t *vehEnt = &g_entities[g_entities[tr.entityNum].client->ps.m_iVehicleNum];
