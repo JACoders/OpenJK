@@ -1045,20 +1045,18 @@ void GLSL_DeleteGPUShader(shaderProgram_t *program)
 
 static bool GLSL_IsValidPermutationForGeneric (int shaderCaps)
 {
-	if ((shaderCaps & (GENERICDEF_USE_VERTEX_ANIMATION | GENERICDEF_USE_SKELETAL_ANIMATION)) == (GENERICDEF_USE_VERTEX_ANIMATION | GENERICDEF_USE_SKELETAL_ANIMATION))
-	{
+	if ( (shaderCaps & GENERICDEF_USE_VERTEX_ANIMATION) &&
+			(shaderCaps & GENERICDEF_USE_SKELETAL_ANIMATION) )
 		return false;
-	}
 
 	return true;
 }
 
 static bool GLSL_IsValidPermutationForFog (int shaderCaps)
 {
-	if ((shaderCaps & (FOGDEF_USE_VERTEX_ANIMATION | FOGDEF_USE_SKELETAL_ANIMATION)) == (FOGDEF_USE_VERTEX_ANIMATION | FOGDEF_USE_SKELETAL_ANIMATION))
-	{
+	if ( (shaderCaps & FOGDEF_USE_VERTEX_ANIMATION) &&
+			(shaderCaps & FOGDEF_USE_SKELETAL_ANIMATION) )
 		return false;
-	}
 
 	return true;
 }
@@ -1072,6 +1070,10 @@ static bool GLSL_IsValidPermutationForLight (int lightType, int shaderCaps)
 		return false;
 
 	if (!lightType && (shaderCaps & LIGHTDEF_USE_SHADOWMAP))
+		return false;
+
+	if ( (shaderCaps & LIGHTDEF_USE_SKELETAL_ANIMATION) &&
+			(shaderCaps & LIGHTDEF_USE_VERTEX_ANIMATION) )
 		return false;
 
 	return true;
@@ -1410,23 +1412,18 @@ int GLSL_BeginLoadGPUShaders(void)
 
 	/////////////////////////////////////////////////////////////////////////////
 	programDesc = LoadProgramSource("lightall", allocator, fallback_lightallProgram);
+	qboolean useFastLight = (qboolean)(!r_normalMapping->integer && !r_specularMapping->integer);
 	for (i = 0; i < LIGHTDEF_COUNT; i++)
 	{
 		int lightType = i & LIGHTDEF_LIGHTTYPE_MASK;
-		qboolean allowVertexLighting = (qboolean)!(r_normalMapping->integer || r_specularMapping->integer);
 
 		// skip impossible combos
 		if (!GLSL_IsValidPermutationForLight (lightType, i))
-		{
 			continue;
-		}
 
 		attribs = ATTR_POSITION | ATTR_TEXCOORD0 | ATTR_COLOR | ATTR_NORMAL;
 
 		extradefines[0] = '\0';
-
-		if (r_deluxeSpecular->value > 0.000001f)
-			Q_strcat(extradefines, sizeof(extradefines), va("#define r_deluxeSpecular %f\n", r_deluxeSpecular->value));
 
 		if (r_specularIsMetallic->value)
 			Q_strcat(extradefines, sizeof(extradefines), "#define SPECULAR_IS_METALLIC\n");
@@ -1444,24 +1441,35 @@ int GLSL_BeginLoadGPUShaders(void)
 		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT\n");
 
-			if (allowVertexLighting)
-				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_LIGHTING\n");
+			if (useFastLight)
+				Q_strcat(extradefines, sizeof(extradefines), "#define USE_FAST_LIGHT\n");
 
 			switch (lightType)
 			{
 				case LIGHTDEF_USE_LIGHTMAP:
+				{
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHTMAP\n");
-					if (r_deluxeMapping->integer && !allowVertexLighting)
+
+					if (r_deluxeMapping->integer && !useFastLight)
 						Q_strcat(extradefines, sizeof(extradefines), "#define USE_DELUXEMAP\n");
+
 					attribs |= ATTR_TEXCOORD1 | ATTR_LIGHTDIRECTION;
 					break;
+				}
+
 				case LIGHTDEF_USE_LIGHT_VECTOR:
+				{
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VECTOR\n");
 					break;
+				}
+
 				case LIGHTDEF_USE_LIGHT_VERTEX:
+				{
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_LIGHT_VERTEX\n");
 					attribs |= ATTR_LIGHTDIRECTION;
 					break;
+				}
+
 				default:
 					break;
 			}
@@ -1470,16 +1478,14 @@ int GLSL_BeginLoadGPUShaders(void)
 			{
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_NORMALMAP\n");
 
-				attribs |= ATTR_TANGENT;
-
 				if ((i & LIGHTDEF_USE_PARALLAXMAP) && r_parallaxMapping->integer)
 					Q_strcat(extradefines, sizeof(extradefines), "#define USE_PARALLAXMAP\n");
+
+				attribs |= ATTR_TANGENT;
 			}
 
 			if (r_specularMapping->integer)
-			{
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_SPECULARMAP\n");
-			}
 
 			if (r_cubeMapping->integer)
 				Q_strcat(extradefines, sizeof(extradefines), "#define USE_CUBEMAP\n");
@@ -1501,25 +1507,18 @@ int GLSL_BeginLoadGPUShaders(void)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_TCMOD\n");
 		}
 
-		if (i & LIGHTDEF_ENTITY)
+		if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
 		{
-			if (i & LIGHTDEF_USE_VERTEX_ANIMATION)
-			{
-				Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
-			}
-			else if (i & LIGHTDEF_USE_SKELETAL_ANIMATION)
-			{
-				Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
-				attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
-			}
-
-			Q_strcat(extradefines, sizeof(extradefines), "#define USE_MODELMATRIX\n");
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_VERTEX_ANIMATION\n");
 			attribs |= ATTR_POSITION2 | ATTR_NORMAL2;
 
 			if (r_normalMapping->integer)
-			{
 				attribs |= ATTR_TANGENT2;
-			}
+		}
+		else if (i & LIGHTDEF_USE_SKELETAL_ANIMATION)
+		{
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SKELETAL_ANIMATION\n");
+			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
 		switch (i & LIGHTDEF_USE_ATEST_MASK)

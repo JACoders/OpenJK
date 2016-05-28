@@ -1024,11 +1024,13 @@ enum
 	GENERICDEF_USE_ATEST_LT				= 0x0080,
 	GENERICDEF_USE_ATEST_GT				= 0x0100,
 	GENERICDEF_USE_ATEST_GE				= 0x0180,
+
 	GENERICDEF_USE_ATEST_MASK			= GENERICDEF_USE_ATEST_LT |
 										  GENERICDEF_USE_ATEST_GT |
 										  GENERICDEF_USE_ATEST_GE,
+
 	GENERICDEF_ALL                  	= 0x01FF,
-	GENERICDEF_COUNT                	= 0x0200,
+	GENERICDEF_COUNT                	= GENERICDEF_ALL + 1,
 };
 
 enum
@@ -1039,11 +1041,13 @@ enum
 	FOGDEF_USE_ATEST_LT					= 0x0008,
 	FOGDEF_USE_ATEST_GT					= 0x0010,
 	FOGDEF_USE_ATEST_GE					= 0x0018,
+
 	FOGDEF_USE_ATEST_MASK				= FOGDEF_USE_ATEST_LT |
 										  FOGDEF_USE_ATEST_GT |
 										  FOGDEF_USE_ATEST_GE,
+
 	FOGDEF_ALL                  		= 0x001F,
-	FOGDEF_COUNT                		= 0x0020,
+	FOGDEF_COUNT                		= FOGDEF_ALL + 1,
 };
 
 enum
@@ -1052,11 +1056,13 @@ enum
 	DLIGHTDEF_USE_ATEST_LT		   		= 0x0002,
 	DLIGHTDEF_USE_ATEST_GT		   		= 0x0004,
 	DLIGHTDEF_USE_ATEST_GE		   		= 0x0006,
+
 	DLIGHTDEF_USE_ATEST_MASK	   		= DLIGHTDEF_USE_ATEST_LT |
 								   		  DLIGHTDEF_USE_ATEST_GT |
 								   		  DLIGHTDEF_USE_ATEST_GE,
+
 	DLIGHTDEF_ALL                  		= 0x0007,
-	DLIGHTDEF_COUNT                		= 0x0008,
+	DLIGHTDEF_COUNT                		= DLIGHTDEF_ALL + 1,
 };
 
 enum
@@ -1064,22 +1070,25 @@ enum
 	LIGHTDEF_USE_LIGHTMAP        		= 0x0001,
 	LIGHTDEF_USE_LIGHT_VECTOR    		= 0x0002,
 	LIGHTDEF_USE_LIGHT_VERTEX    		= 0x0003,
-	LIGHTDEF_LIGHTTYPE_MASK      		= 0x0003,
-	LIGHTDEF_ENTITY              		= 0x0004,
-	LIGHTDEF_USE_TCGEN_AND_TCMOD 		= 0x0008,
-	LIGHTDEF_USE_PARALLAXMAP     		= 0x0010,
-	LIGHTDEF_USE_SHADOWMAP       		= 0x0020,
-	LIGHTDEF_USE_VERTEX_ANIMATION		= 0x0040,
-	LIGHTDEF_USE_SKELETAL_ANIMATION 	= 0x0080,
-	LIGHTDEF_USE_GLOW_BUFFER     		= 0x0100,
-	LIGHTDEF_USE_ATEST_LT		 		= 0x0200,
-	LIGHTDEF_USE_ATEST_GT		 		= 0x0400,
-	LIGHTDEF_USE_ATEST_GE		 		= 0x0600,
+	LIGHTDEF_USE_TCGEN_AND_TCMOD 		= 0x0004,
+	LIGHTDEF_USE_PARALLAXMAP     		= 0x0008,
+	LIGHTDEF_USE_SHADOWMAP       		= 0x0010,
+	LIGHTDEF_USE_VERTEX_ANIMATION		= 0x0020,
+	LIGHTDEF_USE_SKELETAL_ANIMATION 	= 0x0040,
+	LIGHTDEF_USE_GLOW_BUFFER     		= 0x0080,
+	LIGHTDEF_USE_ATEST_LT		 		= 0x0100,
+	LIGHTDEF_USE_ATEST_GT		 		= 0x0200,
+	LIGHTDEF_USE_ATEST_GE		 		= 0x0300,
+
+	LIGHTDEF_LIGHTTYPE_MASK      		= LIGHTDEF_USE_LIGHTMAP |
+										  LIGHTDEF_USE_LIGHT_VECTOR |
+										  LIGHTDEF_USE_LIGHT_VERTEX,
 	LIGHTDEF_USE_ATEST_MASK		 		= LIGHTDEF_USE_ATEST_LT |
 								 		  LIGHTDEF_USE_ATEST_GT |
 								 		  LIGHTDEF_USE_ATEST_GE,
-	LIGHTDEF_ALL                 		= 0x07FF,
-	LIGHTDEF_COUNT               		= 0x0800
+
+	LIGHTDEF_ALL                 		= 0x03FF,
+	LIGHTDEF_COUNT               		= LIGHTDEF_ALL + 1
 };
 
 // Surface sprite shader flags
@@ -2469,7 +2478,6 @@ extern  cvar_t  *r_specularMapping;
 extern  cvar_t  *r_deluxeMapping;
 extern  cvar_t  *r_parallaxMapping;
 extern  cvar_t  *r_cubeMapping;
-extern  cvar_t  *r_deluxeSpecular;
 extern  cvar_t  *r_specularIsMetallic;
 extern  cvar_t  *r_baseNormalX;
 extern  cvar_t  *r_baseNormalY;

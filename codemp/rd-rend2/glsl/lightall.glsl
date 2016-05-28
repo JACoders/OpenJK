@@ -52,10 +52,7 @@ uniform vec4 u_DiffuseTexOffTurb;
 uniform mat4 u_ModelViewProjectionMatrix;
 uniform vec4 u_BaseColor;
 uniform vec4 u_VertColor;
-
-#if defined(USE_MODELMATRIX)
 uniform mat4 u_ModelMatrix;
-#endif
 
 #if defined(USE_VERTEX_ANIMATION)
 uniform float u_VertexLerp;
@@ -244,13 +241,11 @@ void main()
 
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
 
-#if defined(USE_MODELMATRIX)
 	position  = (u_ModelMatrix * vec4(position, 1.0)).xyz;
 	normal    = (u_ModelMatrix * vec4(normal,   0.0)).xyz;
   #if defined(PER_PIXEL_LIGHTING)
 	tangent   = (u_ModelMatrix * vec4(tangent,  0.0)).xyz;
   #endif
-#endif
 
 #if defined(PER_PIXEL_LIGHTING)
 	vec3 bitangent = cross(normal, tangent) * (attr_Tangent.w * 2.0 - 1.0);
@@ -260,9 +255,7 @@ void main()
 	vec3 L = u_LightOrigin.xyz - (position * u_LightOrigin.w);
 #elif defined(PER_PIXEL_LIGHTING)
 	vec3 L = attr_LightDirection * 2.0 - vec3(1.0);
-  #if defined(USE_MODELMATRIX)
 	L = (u_ModelMatrix * vec4(L, 0.0)).xyz;
-  #endif
 #endif
 
 #if defined(USE_LIGHTMAP)
@@ -272,9 +265,7 @@ void main()
 	if ( u_FXVolumetricBase > 0.0 )
 	{
 		vec3 viewForward = u_ViewForward;
-#if defined(USE_MODELMATRIX)
-		viewForward = (u_ModelMatrix * vec4(viewForward, 0.0)).xyz;
-#endif
+
 		float d = clamp(dot(normalize(viewForward), normalize(normal)), 0.0, 1.0);
 		d = d * d;
 		d = d * d;
@@ -498,7 +489,7 @@ float CalcVisibility(float NH, float NL, float NE, float EH, float gloss)
 	return 1.0 / (invGeo1 * invGeo2);
 }
 
-vec3 CalcSpecular(vec3 specular, float NH, float NL, float NE, float EH, float gloss, float shininess)
+vec3 CalcSpecular(vec3 specular, float NH, float NL, float NE, float EH, float gloss)
 {
 	float distrib = CalcGGX(NH, gloss);
 
@@ -672,7 +663,6 @@ void main()
 	specular *= u_SpecularScale;
 
 	float gloss = specular.a;
-	float shininess = exp2(gloss * 13.0);
 
   #if defined(SPECULAR_IS_METALLIC)
 	// diffuse is actually base color, and red of specular is metallicness
@@ -686,21 +676,12 @@ void main()
 
 	reflectance = diffuse.rgb;
 
-  #if defined(r_deluxeSpecular) || defined(USE_LIGHT_VECTOR)
-	float adjGloss = gloss;
-	float adjShininess = shininess;
-
+  #if defined(USE_LIGHT_VECTOR)
 	H = normalize(L + E);
 	EH = clamp(dot(E, H), 0.0, 1.0);
 	NH = clamp(dot(N, H), 0.0, 1.0);
 
-    #if defined(r_deluxeSpecular)
-	adjGloss *= r_deluxeSpecular;
-	adjShininess = exp2(adjGloss * 13.0);
-	reflectance += CalcSpecular(specular.rgb, NH, NL, NE, EH, adjGloss, adjShininess) * r_deluxeSpecular;
-    #else
-	reflectance += CalcSpecular(specular.rgb, NH, NL, NE, EH, adjGloss, adjShininess);
-    #endif
+	reflectance += CalcSpecular(specular.rgb, NH, NL, NE, EH, gloss);
   #endif
 
 	out_Color.rgb  = lightColor   * reflectance * (attenuation * NL);
@@ -719,7 +700,7 @@ void main()
 	NH2 = clamp(dot(N, H2), 0.0, 1.0);
 
 	reflectance  = diffuse.rgb;
-	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, EH2, gloss, shininess);
+	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, EH2, gloss);
 
 	lightColor = u_PrimaryLightColor * var_Color.rgb;
     #if defined(USE_SHADOWMAP)

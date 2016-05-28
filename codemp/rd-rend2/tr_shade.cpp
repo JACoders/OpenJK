@@ -912,6 +912,12 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 			index &= ~LIGHTDEF_LIGHTTYPE_MASK;
 			index |= LIGHTDEF_USE_LIGHT_VECTOR;
 
+			if (glState.vertexAnimation)
+				index |= LIGHTDEF_USE_VERTEX_ANIMATION;
+
+			if (glState.skeletalAnimation)
+				index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
+
 			sp = &tr.lightallShader[index];
 		}
 
@@ -924,6 +930,7 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 		uniformDataWriter.SetUniformVec3(UNIFORM_LOCALVIEWORIGIN, backEnd.ori.viewOrigin);
 
 		uniformDataWriter.SetUniformFloat(UNIFORM_VERTEXLERP, glState.vertexAttribsInterpolation);
+		uniformDataWriter.SetUniformMatrix4x3(UNIFORM_BONE_MATRICES, &glState.boneMatrices[0][0], glState.numBones);
 
 		uniformDataWriter.SetUniformInt(UNIFORM_DEFORMTYPE, deformType);
 		if (deformType != DEFORM_NONE)
@@ -1247,14 +1254,11 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
-				index |= LIGHTDEF_ENTITY;
-
 				if (glState.vertexAnimation)
 				{
 					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
 				}
-
-				if (glState.skeletalAnimation)
+				else if (glState.skeletalAnimation)
 				{
 					index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
 				}
@@ -1302,8 +1306,7 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 			{
 				index |= GENERICDEF_USE_VERTEX_ANIMATION;
 			}
-
-			if (glState.skeletalAnimation)
+			else if (glState.skeletalAnimation)
 			{
 				index |= GENERICDEF_USE_SKELETAL_ANIMATION;
 			}
@@ -1348,11 +1351,8 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 		}
 		else
 		{
-			if (backEnd.currentEntity &&
-					backEnd.currentEntity != &tr.worldEntity)
+			if (backEnd.currentEntity && backEnd.currentEntity != &tr.worldEntity)
 			{
-				index |= LIGHTDEF_ENTITY;
-
 				if (glState.vertexAnimation)
 				{
 					index |= LIGHTDEF_USE_VERTEX_ANIMATION;
