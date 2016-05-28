@@ -3537,9 +3537,9 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.rpg_class == 2)
 						{ // zyk: Bounty Hunter
-							if (ent->client->ps.ammo[AMMO_METAL_BOLTS] >= 1)
+							if (ent->client->ps.ammo[AMMO_METAL_BOLTS] >= 2)
 							{
-								ent->client->ps.ammo[AMMO_METAL_BOLTS] -= 1;
+								ent->client->ps.ammo[AMMO_METAL_BOLTS] -= 2;
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
@@ -3547,7 +3547,7 @@ void ClientThink_real( gentity_t *ent ) {
 							}
 							else
 							{
-								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs 1 metal bolts ammo to use it\"");
+								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs 2 metal bolts ammo to use it\"");
 							}
 						}
 						else if (ent->client->pers.rpg_class == 3)
@@ -3582,17 +3582,17 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.rpg_class == 5)
 						{ // zyk: Stealth Attacker
-							if (ent->client->ps.ammo[AMMO_POWERCELL] >= 1)
+							if (ent->client->ps.ammo[AMMO_POWERCELL] >= 2)
 							{
-								ent->client->ps.ammo[AMMO_POWERCELL] -= 1;
+								ent->client->ps.ammo[AMMO_POWERCELL] -= 2;
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
-								ent->client->pers.unique_skill_timer = level.time + 40000;
+								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}
 							else
 							{
-								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs 1 power cell ammo to use it\"");
+								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs 2 power cell ammo to use it\"");
 							}
 						}
 						else if (ent->client->pers.rpg_class == 6)
