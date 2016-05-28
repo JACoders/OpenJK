@@ -10622,7 +10622,8 @@ stillDoSaber:
 		legs.renderfx |= RF_MINLIGHT;
 	}
 
-	if (cg.snap->ps.duelInProgress /*&& cent->currentState.number != cg.snap->ps.clientNum*/)
+	if (cg.snap->ps.duelInProgress && /*&& cent->currentState.number != cg.snap->ps.clientNum*/
+		!cg_zyk_dont_change_skin_colors.integer) // zyk: if this cvar is not enabled, change skin colors and draw shell in private duel players
 	{ //I guess go ahead and glow your own client too in a duel
 		if (cent->currentState.number != cg.snap->ps.duelIndex &&
 			cent->currentState.number != cg.snap->ps.clientNum)
