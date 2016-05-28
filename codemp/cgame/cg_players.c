@@ -10625,15 +10625,22 @@ stillDoSaber:
 	if (cg.snap->ps.duelInProgress/*&& cent->currentState.number != cg.snap->ps.clientNum*/)
 	{ //I guess go ahead and glow your own client too in a duel
 		if (cent->currentState.number != cg.snap->ps.duelIndex &&
-			cent->currentState.number != cg.snap->ps.clientNum &&
-			!cg_zyk_dont_change_colors.integer) // zyk: if this cvar is not enabled, dont change skin colors of other players
+			cent->currentState.number != cg.snap->ps.clientNum) 
 		{ //everyone not involved in the duel is drawn very dark
-			legs.shaderRGBA[0] /= 5.0f;
-			legs.shaderRGBA[1] /= 5.0f;
-			legs.shaderRGBA[2] /= 5.0f;
-			legs.renderfx |= RF_RGB_TINT;
+			if (cg_zyk_duel_only_render_duelists.integer)
+			{ // zyk: if this cvar is enabled, do not render players other than the duelists themselves
+				return;
+			}
+
+			if (!cg_zyk_duel_keep_colors.integer)
+			{ // zyk: if this cvar is not enabled, dont change skin colors of other players
+				legs.shaderRGBA[0] /= 5.0f;
+				legs.shaderRGBA[1] /= 5.0f;
+				legs.shaderRGBA[2] /= 5.0f;
+				legs.renderfx |= RF_RGB_TINT;
+			}
 		}
-		else if (!cg_zyk_dont_change_duelists_colors.integer) // zyk: if this cvar is not enabled, change skin colors and draw shell in duelists
+		else if (!cg_zyk_duel_keep_duelists_colors.integer) // zyk: if this cvar is not enabled, change skin colors and draw shell in duelists
 		{ //adjust the glow by how far away you are from your dueling partner
 			centity_t *duelEnt;
 
