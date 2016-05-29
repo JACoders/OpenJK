@@ -1425,9 +1425,6 @@ int GLSL_BeginLoadGPUShaders(void)
 
 		extradefines[0] = '\0';
 
-		if (r_specularIsMetallic->value)
-			Q_strcat(extradefines, sizeof(extradefines), "#define SPECULAR_IS_METALLIC\n");
-
 		if (r_dlightMode->integer >= 2)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_SHADOWMAP\n");
 

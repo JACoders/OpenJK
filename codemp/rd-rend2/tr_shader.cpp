@@ -112,7 +112,7 @@ static void ClearGlobalShader(void)
 		stages[i].specularScale[0] = 
 		stages[i].specularScale[1] =
 		stages[i].specularScale[2] = r_baseSpecular->value;
-		stages[i].specularScale[3] = r_baseGloss->value;
+		stages[i].specularScale[3] = 0.9;
 	}
 
 	shader.contentFlags = CONTENTS_SOLID | CONTENTS_OPAQUE;

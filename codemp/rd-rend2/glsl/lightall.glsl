@@ -448,56 +448,36 @@ float RayIntersectDisplaceMap(vec2 dp, vec2 ds, sampler2D normalMap)
 }
 #endif
 
-float CalcFresnel(float EH)
+vec3 CalcFresnel( in vec3 f0, in vec3 f90, in float LH )
 {
-	// From http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	// not accurate, but fast
-	return exp2(-10.0 * EH);
+	return f0 + (f90 - f0) * pow(1.0 - LH, 5.0);
 }
 
-vec3 EnvironmentBRDF(float gloss, float NE, vec3 specular)
+float CalcGGX( in float NH, in float roughness )
 {
-	// from http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
-	vec4 t = vec4( 1/0.96, 0.475, (0.0275 - 0.25 * 0.04)/0.96,0.25 ) * gloss;
-	t += vec4( 0.0, 0.0, (0.015 - 0.75 * 0.04)/0.96,0.75 );
-	float a0 = t.x * min( t.y, exp2( -9.28 * NE ) ) + t.z;
-	float a1 = t.w;
-	return clamp( a0 + specular * ( a1 - a0 ), 0.0, 1.0 );
+	float alphaSq = roughness*roughness;
+	float f = (NH * alphaSq - NH) * NH + 1.0;
+	return alphaSq / (f * f);
 }
 
-float CalcGGX(float NH, float gloss)
+float CalcVisibility( in float NL, in float NE, in float roughness )
 {
-	// from http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-	float a_sq = exp2(gloss * -13.0 + 1.0);
-	float d = ((NH * NH) * (a_sq - 1.0) + 1.0);
-	return a_sq / (d * d);
+	float alphaSq = roughness*roughness;
+
+	float lambdaE = NL * sqrt((-NE * alphaSq + NE) * NE + alphaSq);
+	float lambdaL = NE * sqrt((-NL * alphaSq + NL) * NL + alphaSq);
+
+	return 0.5 / (lambdaE + lambdaL);
 }
 
-float CalcVisibility(float NH, float NL, float NE, float EH, float gloss)
+// http://www.frostbite.com/2014/11/moving-frostbite-to-pbr/
+vec3 CalcSpecular( in vec3 specular, in float NH, in float NL, in float NE, in float LH, in float roughness)
 {
-	float roughness = exp2(gloss * -6.5);
+	vec3  F = CalcFresnel(specular, vec3(1.0), LH);
+	float D = CalcGGX(NH, roughness);
+	float V = CalcVisibility(NL, NE, roughness);
 
-	// Modified from http://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-	// NL, NE in numerator factored out from cook-torrance
-	float k = roughness + 1.0;
-	k *= k * 0.125;
-
-	float k2 = 1.0 - k;
-	float invGeo1 = NL * k2 + k;
-	float invGeo2 = NE * k2 + k;
-
-	return 1.0 / (invGeo1 * invGeo2);
-}
-
-vec3 CalcSpecular(vec3 specular, float NH, float NL, float NE, float EH, float gloss)
-{
-	float distrib = CalcGGX(NH, gloss);
-
-	vec3 fSpecular = mix(specular, vec3(1.0), CalcFresnel(EH));
-
-	float vis = CalcVisibility(NH, NL, NE, EH, gloss);
-
-	return fSpecular * (distrib * vis);
+	return D * F * V;
 }
 
 float CalcLightAttenuation(float point, float normDist)
@@ -528,10 +508,29 @@ vec2 GetParallaxOffset(in vec2 texCoords, in vec3 E, in mat3 tangentToWorld )
 #endif
 }
 
-vec3 CalcIBLContribution( in float gloss, in vec3 N, in vec3 E, in vec3 viewDir, in float NE, in vec3 specular )
+vec3 EnvironmentBRDF(float gloss, float NE, vec3 specular)
+{
+	// from http://blog.selfshadow.com/publications/s2013-shading-course/lazarov/s2013_pbs_black_ops_2_notes.pdf
+	vec4 t = vec4( 1/0.96, 0.475, (0.0275 - 0.25 * 0.04)/0.96,0.25 ) * gloss;
+	t += vec4( 0.0, 0.0, (0.015 - 0.75 * 0.04)/0.96,0.75 );
+	float a0 = t.x * min( t.y, exp2( -9.28 * NE ) ) + t.z;
+	float a1 = t.w;
+	return clamp( a0 + specular * ( a1 - a0 ), 0.0, 1.0 );
+}
+
+vec3 CalcIBLContribution(
+	in float roughness,
+	in vec3 N,
+	in vec3 E,
+	in vec3 viewDir,
+	in float NE,
+	in vec3 specular
+)
 {
 #if defined(USE_CUBEMAP)
-	vec3 reflectance = EnvironmentBRDF(gloss, NE, specular);
+	// EnvironmentBRDF is supposed to work with gloss. Invert roughness for now, but this needs
+	// to be replaced at some point with preconvoluted cubemap code.
+	vec3 reflectance = EnvironmentBRDF(1.0 - roughness, NE, specular);
 
 	vec3 R = reflect(E, N);
 
@@ -539,7 +538,7 @@ vec3 CalcIBLContribution( in float gloss, in vec3 N, in vec3 E, in vec3 viewDir,
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
 	vec3 parallax = u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
 
-	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, 7.0 - gloss * 7.0).rgb * u_EnableTextures.w;
+	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, roughness * 7.0).rgb * u_EnableTextures.w;
 
 	return cubeLightColor * reflectance;
 #else
@@ -569,8 +568,7 @@ vec3 CalcNormal( in vec3 vertexNormal, in vec2 texCoords, in mat3 tangentToWorld
 void main()
 {
 	vec3 viewDir, lightColor, ambientColor;
-	vec3 L, N, E, H;
-	float NL, NH, NE, EH, attenuation;
+	vec3 L, N, E;
 
 #if defined(PER_PIXEL_LIGHTING)
 	mat3 tangentToWorld = mat3(var_Tangent.xyz, var_Bitangent.xyz, var_Normal.xyz);
@@ -608,6 +606,8 @@ void main()
 #endif
 
 #if defined(PER_PIXEL_LIGHTING)
+	float attenuation;
+
   #if defined(USE_LIGHTMAP)
 	lightColor	= lightmapColor.rgb * var_Color.rgb;
 	ambientColor = vec3 (0.0);
@@ -650,11 +650,6 @@ void main()
 	// light is below the surface
 	ambientColor = clamp(ambientColor - lightColor * surfNL, 0.0, 1.0);
   #endif
-  
-	vec3 reflectance;
-
-	NL = clamp(dot(N, L), 0.0, 1.0);
-	NE = clamp(dot(N, E), 0.0, 1.0);
 
 	vec4 specular = vec4(1.0);
   #if defined(USE_SPECULARMAP)
@@ -662,45 +657,43 @@ void main()
   #endif
 	specular *= u_SpecularScale;
 
-	float gloss = specular.a;
+	// diffuse is actually base color, and red of specular is metalness
+	const vec3 DIELECTRIC_SPECULAR = vec3(0.04);
+	const vec3 METAL_DIFFUSE       = vec3(0.0);
 
-  #if defined(SPECULAR_IS_METALLIC)
-	// diffuse is actually base color, and red of specular is metallicness
-	float metallic = specular.r;
-	specular.rgb = (0.96 * metallic) * diffuse.rgb + vec3(0.04);
-	diffuse.rgb *= 1.0 - metallic;
-  #else
-	// adjust diffuse by specular reflectance, to maintain energy conservation
-	diffuse.rgb *= vec3(1.0) - specular.rgb;
-  #endif
+	float metalness = specular.r;
+	float roughness = max(specular.a, 0.02);
+	specular.rgb = mix(DIELECTRIC_SPECULAR, diffuse.rgb,   metalness);
+	diffuse.rgb  = mix(diffuse.rgb,         METAL_DIFFUSE, metalness);
 
-	reflectance = diffuse.rgb;
+	float NE = abs(dot(N, E)) + 1e-5;
+	float NL = clamp(dot(N, L), 0.0, 1.0);
+
+	vec3  Fd = diffuse.rgb;
+	vec3  Fs = vec3(0.0);
 
   #if defined(USE_LIGHT_VECTOR)
-	H = normalize(L + E);
-	EH = clamp(dot(E, H), 0.0, 1.0);
-	NH = clamp(dot(N, H), 0.0, 1.0);
+	vec3  H  = normalize(L + E);
+	float LH = clamp(dot(L, H), 0.0, 1.0);
+	float NH = clamp(dot(N, H), 0.0, 1.0);
 
-	reflectance += CalcSpecular(specular.rgb, NH, NL, NE, EH, gloss);
+	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness);
   #endif
 
+	vec3 reflectance = Fd + Fs;
+
 	out_Color.rgb  = lightColor   * reflectance * (attenuation * NL);
-	out_Color.rgb += ambientColor * (diffuse.rgb + specular.rgb);
-	out_Color.rgb += CalcIBLContribution(gloss, N, E, viewDir, NE, specular.rgb);
-
+	out_Color.rgb += ambientColor * diffuse.rgb;
+	
   #if defined(USE_PRIMARY_LIGHT)
-	vec3 L2, H2;
-	float NL2, EH2, NH2;
-
-	L2 = normalize(var_PrimaryLightDir.xyz);
-	NL2 = clamp(dot(N, L2), 0.0, 1.0);
-
-	H2 = normalize(L2 + E);
-	EH2 = clamp(dot(E, H2), 0.0, 1.0);
-	NH2 = clamp(dot(N, H2), 0.0, 1.0);
+	vec3  L2   = normalize(var_PrimaryLightDir.xyz);
+	vec3  H2   = normalize(L2 + E);
+	float NL2  = clamp(dot(N,  L2), 0.0, 1.0);
+	float L2H2 = clamp(dot(L2, H2), 0.0, 1.0);
+	float NH2  = clamp(dot(N,  H2), 0.0, 1.0);
 
 	reflectance  = diffuse.rgb;
-	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, EH2, gloss);
+	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, L2H2, roughness);
 
 	lightColor = u_PrimaryLightColor * var_Color.rgb;
     #if defined(USE_SHADOWMAP)
@@ -709,6 +702,8 @@ void main()
 
 	out_Color.rgb += lightColor * reflectance * NL2;
   #endif
+	
+	out_Color.rgb += CalcIBLContribution(roughness, N, E, viewDir, NE, specular.rgb);
 
 #else
 	lightColor = var_Color.rgb;
