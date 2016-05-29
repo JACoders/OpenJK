@@ -1737,7 +1737,7 @@ qboolean zyk_answer(gentity_t *ent, char *arg1)
 	{
 		if (level.quest_map == 10 && ent->client->pers.can_play_quest == 1 && ent->client->pers.eternity_quest_timer > 0 && 
 			ent->client->pers.eternity_quest_progress < (NUMBER_OF_ETERNITY_QUEST_OBJECTIVES - 1) && (int) ent->client->ps.origin[0] > -676 && 
-			(int) ent->client->ps.origin[0] < -296 && (int) ent->client->ps.origin[1] > 1483 && (int) ent->client->ps.origin[1] < 1663 && 
+			(int) ent->client->ps.origin[0] < -296 && (int) ent->client->ps.origin[1] > 1283 && (int) ent->client->ps.origin[1] < 1663 && 
 			(int) ent->client->ps.origin[2] > 60 && (int) ent->client->ps.origin[2] < 120)
 		{ // zyk: Eternity Quest
 			if (ent->client->pers.eternity_quest_progress == 0 && Q_stricmp( arg1, "key" ) == 0)
