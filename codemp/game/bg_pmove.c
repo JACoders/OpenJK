@@ -7347,19 +7347,29 @@ static void PM_Weapon( void )
 		BG_InRoll(pm->ps, pm->ps->legsAnim) ||
 		PM_InRollComplete(pm->ps, pm->ps->legsAnim))
 	{
-		/*
-		if (pm->cmd.weapon != WP_MELEE &&
-			pm->ps->weapon != WP_MELEE &&
-			(pm->ps->stats[STAT_WEAPONS] & (1<<WP_SABER)))
-		{ //it's alright also if we are melee
-			pm->cmd.weapon = WP_SABER;
-			pm->ps->weapon = WP_SABER;
+#if defined (_GAME)
+		gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+		qboolean is_a_force_gunner = qfalse;
+
+		// zyk: Force Gunner class can use weapon even if it is doing some special move
+		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.rpg_class == 7)
+		{
+			is_a_force_gunner = qtrue;
 		}
-		*/
+
+		if (is_a_force_gunner == qfalse)
+		{
+			if (pm->ps->weaponTime < pm->ps->legsTimer)
+			{
+				pm->ps->weaponTime = pm->ps->legsTimer;
+			}
+		}
+#else
 		if (pm->ps->weaponTime < pm->ps->legsTimer)
 		{
 			pm->ps->weaponTime = pm->ps->legsTimer;
 		}
+#endif
 	}
 
 	if (pm->ps->duelInProgress)
