@@ -294,6 +294,7 @@ XCVAR_DEF( zyk_enable_light_power,	"1",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,
 XCVAR_DEF( zyk_enable_dark_power,	"1",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_eternity_power,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_universe_power,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_enable_resurrection_power,	"1",		NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_screen_message,	"",						NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_screen_message_timer,	"3000",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_allow_rpg_mode,	"1",					NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
