@@ -9530,7 +9530,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 5000 - Sell: ^1no\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: ^1no\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1000 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no\n^346 - Jetpack Upgrade: ^7Buy: 10000 - Sell: ^1no\n^347 - Force Tank Upgrade: ^7Buy: 5000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 4500 - Sell: ^1no\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: ^1no\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1200 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no\n^346 - Jetpack Upgrade: ^7Buy: 10000 - Sell: ^1no\n^347 - Force Tank Upgrade: ^7Buy: 5000 - Sell: ^1no^7\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9751,7 +9751,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,5000,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1000,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4500,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000};
 
 	if (trap->Argc() == 1)
 	{
