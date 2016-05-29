@@ -5146,7 +5146,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 			{ // zyk: Force Tank Unique Skill increases damage resistance
-				force_tank_bonus_resistance += 0.1;
+				force_tank_bonus_resistance += 0.15;
 			}
 
 			damage = (int)ceil(damage * (0.95 - force_tank_bonus_resistance - (0.1 * targ->client->pers.skill_levels[55])));
