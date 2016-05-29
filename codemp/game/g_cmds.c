@@ -4401,7 +4401,8 @@ void zyk_jetpack(gentity_t *ent)
 {
 	// zyk: player starts with jetpack if it is enabled in player settings, is not in Siege Mode, and does not have all force powers through /give command
 	if (!(ent->client->pers.player_settings & (1 << 12)) && zyk_allow_jetpack_command.integer && 
-		(g_gametype.integer != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && !(ent->client->pers.player_statuses & (1 << 12)) &&
+		(level.gametype != GT_SIEGE || zyk_allow_jetpack_in_siege.integer) && level.gametype != GT_JEDIMASTER && 
+		!(ent->client->pers.player_statuses & (1 << 12)) &&
 		((ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[34] > 0) || ent->client->sess.amrpgmode == 1))
 	{
 		ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
@@ -4666,10 +4667,13 @@ void load_account(gentity_t *ent, qboolean change_mode)
 			// zyk: reset the force powers of this player
 			WP_InitForcePowers( ent );
 
-			if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
+			if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0 && 
+				level.gametype != GT_JEDIMASTER && level.gametype != GT_SIEGE
+				)
 				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 
-			ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
+			if (level.gametype != GT_JEDIMASTER && level.gametype != GT_SIEGE)
+				ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
 
 			zyk_load_common_settings(ent);
 		}
