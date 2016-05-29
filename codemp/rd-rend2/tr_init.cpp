@@ -108,7 +108,6 @@ cvar_t  *r_externalGLSL;
 
 cvar_t  *r_hdr;
 cvar_t  *r_floatLightmap;
-cvar_t  *r_postProcess;
 
 cvar_t  *r_toneMap;
 cvar_t  *r_forceToneMap;
@@ -1390,7 +1389,6 @@ void R_Register( void )
 
 	r_hdr = ri->Cvar_Get( "r_hdr", "1", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_floatLightmap = ri->Cvar_Get( "r_floatLightmap", "0", CVAR_ARCHIVE | CVAR_LATCH, "" );
-	r_postProcess = ri->Cvar_Get( "r_postProcess", "1", CVAR_ARCHIVE, "" );
 
 	r_toneMap = ri->Cvar_Get( "r_toneMap", "1", CVAR_ARCHIVE | CVAR_LATCH, "" );
 	r_forceToneMap = ri->Cvar_Get( "r_forceToneMap", "0", CVAR_CHEAT, "" );

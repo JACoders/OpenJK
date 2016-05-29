@@ -79,7 +79,7 @@ void RB_ToneMap(FBO_t *hdrFbo, vec4i_t hdrBox, FBO_t *ldrFbo, vec4i_t ldrBox, in
 	// tonemap
 	color[0] =
 	color[1] =
-	color[2] = pow(2, r_cameraExposure->value); //exp2(r_cameraExposure->value);
+	color[2] = powf(2.0f, r_cameraExposure->value); //exp2(r_cameraExposure->value);
 	color[3] = 1.0f;
 
 	if (autoExposure)

@@ -137,7 +137,6 @@ extern cvar_t  *r_mergeLeafSurfaces;
 extern cvar_t  *r_cameraExposure;
 
 extern cvar_t  *r_hdr;
-extern cvar_t  *r_postProcess;
 
 extern cvar_t  *r_toneMap;
 extern cvar_t  *r_forceToneMap;
@@ -2453,7 +2452,6 @@ extern	cvar_t	*r_externalGLSL;
 
 extern  cvar_t  *r_hdr;
 extern  cvar_t  *r_floatLightmap;
-extern  cvar_t  *r_postProcess;
 
 extern  cvar_t  *r_toneMap;
 extern  cvar_t  *r_forceToneMap;

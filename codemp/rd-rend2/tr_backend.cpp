@@ -1025,7 +1025,7 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	void *allocMark = backEndData->perFrameMemory->Mark();
 
 	assert(backEndData->currentPass == nullptr);
-	backEndData->currentPass = RB_CreatePass(*backEndData->perFrameMemory, numDrawSurfs * 2);
+	backEndData->currentPass = RB_CreatePass(*backEndData->perFrameMemory, numDrawSurfs * 4);
 
 	// save original time for entity shader offsets
 	originalTime = backEnd.refdef.floatTime;
@@ -2228,7 +2228,7 @@ const void *RB_PostProcess(const void *data)
 	if(tess.numIndexes)
 		RB_EndSurface();
 
-	if (!r_postProcess->integer || (tr.viewParms.flags & VPF_NOPOSTPROCESS))
+	if (tr.viewParms.flags & VPF_NOPOSTPROCESS)
 	{
 		// do nothing
 		return (const void *)(cmd + 1);

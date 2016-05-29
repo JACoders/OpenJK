@@ -471,13 +471,31 @@ float CalcVisibility( in float NL, in float NE, in float roughness )
 }
 
 // http://www.frostbite.com/2014/11/moving-frostbite-to-pbr/
-vec3 CalcSpecular( in vec3 specular, in float NH, in float NL, in float NE, in float LH, in float roughness)
+vec3 CalcSpecular(
+	in vec3 specular,
+	in float NH,
+	in float NL,
+	in float NE,
+	in float LH,
+	in float roughness
+)
 {
 	vec3  F = CalcFresnel(specular, vec3(1.0), LH);
 	float D = CalcGGX(NH, roughness);
 	float V = CalcVisibility(NL, NE, roughness);
 
 	return D * F * V;
+}
+
+vec3 CalcDiffuse(
+	in vec3 diffuse,
+	in float NE,
+	in float NL,
+	in float LH,
+	in float roughness
+)
+{
+	return diffuse;
 }
 
 float CalcLightAttenuation(float point, float normDist)
@@ -565,6 +583,13 @@ vec3 CalcNormal( in vec3 vertexNormal, in vec2 texCoords, in mat3 tangentToWorld
 	return normalize(N);
 }
 
+vec3 sRGBToLinear( in vec3 srgb )
+{
+	vec3 lo = srgb / 12.92;
+	vec3 hi = pow(((srgb + vec3(0.055)) / 1.055), vec3(2.4));
+	return mix(lo, hi, greaterThan(srgb, vec3(0.04045)));
+}
+
 void main()
 {
 	vec3 viewDir, lightColor, ambientColor;
@@ -586,6 +611,7 @@ void main()
   #if defined(RGBM_LIGHTMAP)
 	lightmapColor.rgb *= lightmapColor.a;
   #endif
+	//lightmapColor.rgb = sRGBToLinear(lightmapColor.rgb);
 #endif
 
 	vec2 texCoords = var_TexCoords.xy;
@@ -604,6 +630,8 @@ void main()
 #  endif
 		discard;
 #endif
+
+	//diffuse.rgb = sRGBToLinear(diffuse.rgb);
 
 #if defined(PER_PIXEL_LIGHTING)
 	float attenuation;
@@ -625,7 +653,7 @@ void main()
 	N = CalcNormal(var_Normal.xyz, texCoords, tangentToWorld);
 	L /= sqrt(sqrLightDist);
 
-  #if defined(USE_SHADOWMAP) 
+  #if defined(USE_SHADOWMAP)
 	vec2 shadowTex = gl_FragCoord.xy * r_FBufScale;
 	float shadowValue = texture(u_ShadowMap, shadowTex).r;
 
@@ -654,6 +682,7 @@ void main()
 	vec4 specular = vec4(1.0);
   #if defined(USE_SPECULARMAP)
 	specular = texture(u_SpecularMap, texCoords);
+	//specular.rgb = sRGBToLinear(specular.rgb);
   #endif
 	specular *= u_SpecularScale;
 
@@ -666,15 +695,15 @@ void main()
 	specular.rgb = mix(DIELECTRIC_SPECULAR, diffuse.rgb,   metalness);
 	diffuse.rgb  = mix(diffuse.rgb,         METAL_DIFFUSE, metalness);
 
+	vec3  H  = normalize(L + E);
 	float NE = abs(dot(N, E)) + 1e-5;
 	float NL = clamp(dot(N, L), 0.0, 1.0);
+	float LH = clamp(dot(L, H), 0.0, 1.0);
 
-	vec3  Fd = diffuse.rgb;
+	vec3  Fd = CalcDiffuse(diffuse.rgb, NE, NL, LH, roughness);
 	vec3  Fs = vec3(0.0);
 
   #if defined(USE_LIGHT_VECTOR)
-	vec3  H  = normalize(L + E);
-	float LH = clamp(dot(L, H), 0.0, 1.0);
 	float NH = clamp(dot(N, H), 0.0, 1.0);
 
 	Fs = CalcSpecular(specular.rgb, NH, NL, NE, LH, roughness);
@@ -682,7 +711,7 @@ void main()
 
 	vec3 reflectance = Fd + Fs;
 
-	out_Color.rgb  = lightColor   * reflectance * (attenuation * NL);
+	out_Color.rgb  = lightColor * reflectance * (attenuation * NL);
 	out_Color.rgb += ambientColor * diffuse.rgb;
 	
   #if defined(USE_PRIMARY_LIGHT)
@@ -692,7 +721,7 @@ void main()
 	float L2H2 = clamp(dot(L2, H2), 0.0, 1.0);
 	float NH2  = clamp(dot(N,  H2), 0.0, 1.0);
 
-	reflectance  = diffuse.rgb;
+	reflectance  = CalcDiffuse(diffuse.rgb, NE, NL2, L2H2, roughness);
 	reflectance += CalcSpecular(specular.rgb, NH2, NL2, NE, L2H2, roughness);
 
 	lightColor = u_PrimaryLightColor * var_Color.rgb;
