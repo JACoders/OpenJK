@@ -6550,7 +6550,7 @@ qboolean rpg_upgrade_skill(gentity_t *ent, int upgrade_value, qboolean dont_show
 
 	if (upgrade_value == 19)
 	{
-		if (ent->client->pers.skill_levels[18] < 3)
+		if (ent->client->pers.skill_levels[18] < 4)
 		{
 			ent->client->pers.skill_levels[18]++;
 			ent->client->pers.skillpoints--;
@@ -7256,7 +7256,7 @@ void Cmd_ZykMod_f( gentity_t *ent ) {
 		{
 			if (i == 0 || i == 5 || i == 30 || i == 54)
 				strcpy(content,va("%s%d/5-",content,ent->client->pers.skill_levels[i]));
-			else if (i == 3 || i == 7 || i == 8 || i == 10 || i == 13 || i == 16 || i == 31 || i == 32)
+			else if (i == 3 || i == 7 || i == 8 || i == 10 || i == 13 || i == 16 || i == 18 || i == 31 || i == 32)
 				strcpy(content,va("%s%d/4-",content,ent->client->pers.skill_levels[i]));
 			else if (i > 18 && i < 29)
 				strcpy(content,va("%s%d/2-",content,ent->client->pers.skill_levels[i]));
@@ -8596,7 +8596,7 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 	}
 	else if (Q_stricmp( arg1, "weapons" ) == 0)
 	{
-		sprintf(message_content[0],"^319 - Stun Baton: %d/3        ",ent->client->pers.skill_levels[18]);
+		sprintf(message_content[0],"^319 - Stun Baton: %d/4        ",ent->client->pers.skill_levels[18]);
 					
 		if (ent->client->pers.rpg_class == 1 || ent->client->pers.rpg_class == 4 || ent->client->pers.rpg_class == 5 || ent->client->pers.rpg_class == 6 || ent->client->pers.rpg_class == 7 || ent->client->pers.rpg_class == 8 || ent->client->pers.rpg_class == 9)
 			sprintf(message_content[1],"^020 - Blaster Pistol: %d/2    ",ent->client->pers.skill_levels[19]);
@@ -9292,7 +9292,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 18)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Team Energize: ^7restores some force power to players near you. If Improvements skill is at least at level 1, regens blaster pack and power cell ammo of the target players\n\"" );
 					if (i == 19)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Stun Baton: ^7attacks someone with a small electric charge. Has %d damage. Level 2 does double damage and decloaks enemies. Level 3 does triple damage and decreases enemy run speed. Can fire the flame thrower when using alternate fire (does not work for Force User, Monk, Duelist or Magic Master). With Stun Baton Upgrade, it opens any door, even locked ones, and can destroy or move some other objects\n\"", zyk_stun_baton_damage.integer));
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Stun Baton: ^7attacks someone with a small electric charge. Has %d damage multiplied by the stun baton level. Can fire the flame thrower when using alternate fire (does not work for Force User, Monk, Duelist or Magic Master). With Stun Baton Upgrade, it opens any door, even locked ones, and can destroy or move some other objects, and also decloaks enemies and decrease their moving speed for some seconds\n\"", zyk_stun_baton_damage.integer));
 					if (i == 20)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Blaster Pistol: ^7the popular Star Wars pistol used by Han Solo in the movies. Normal fire is a single blaster shot, alternate fire allows you to fire a powerful charged shot. The pistol shot does %d damage. The charged shot causes a lot more damage depending on how much it was charged. At level 2 causes 25 per cent more damage\n\"", zyk_blaster_pistol_damage.integer));
 					if (i == 21)
@@ -9662,7 +9662,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 33)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stun Baton Upgrade: ^7allows stun baton to open any door, including locked ones, move elevators, and move or destroy other objects\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stun Baton Upgrade: ^7allows stun baton to open any door, including locked ones, move elevators, and move or destroy other objects. Also makes stun baton decloak enemies and decrease their running speed for some seconds\n\n\"");
 		}
 		else if (i == 34)
 		{

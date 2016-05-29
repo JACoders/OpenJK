@@ -3692,13 +3692,9 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 		G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 
 		// zyk: if stun baton is in level 2 in RPG mode, does double damage
-		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] == 2)
+		if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] > 1)
 		{
-			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 2, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
-		}
-		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] == 3)
-		{ // zyk: if in level 3, causes triple damage
-			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * 3, (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
+			G_Damage( tr_ent, ent, ent, forward, tr.endpos, zyk_stun_baton_damage.integer * ent->client->pers.skill_levels[18], (DAMAGE_NO_KNOCKBACK|DAMAGE_HALF_ABSORB), MOD_STUN_BATON );
 		}
 		else
 		{
@@ -3732,13 +3728,13 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 					}
 				}
 
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] >= 2 && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
-				{ // zyk: stun baton level 2 or 3 decloaks players except Stealth Attacker
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 15) && (tr_ent->client->sess.amrpgmode < 2 || tr_ent->client->pers.rpg_class != 5) && tr_ent->client->ps.powerups[PW_CLOAKED])
+				{ // zyk: stun baton upgrade decloaks players except Stealth Attacker
 					Jedi_Decloak(tr_ent);
 				}
 
-				// zyk: if the player has stun baton at level 3 in RPG mode, enemy has its speed decreased
-				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[18] == 3)
+				// zyk: if the player has stun baton upgrade in RPG mode, enemy has its speed decreased
+				if (ent->client->sess.amrpgmode == 2 && ent->client->pers.secrets_found & (1 << 15))
 				{
 					// zyk: allies cant be hit by it
 					if (zyk_is_ally(ent,tr_ent) == qtrue)
@@ -3759,7 +3755,7 @@ void WP_FireStunBaton( gentity_t *ent, qboolean alt_fire )
 					}
 
 					if (zyk_can_hit_target(ent, tr_ent) == qfalse)
-					{ // zyk: testing if the target player can get the stun baton 3/3 effect
+					{ // zyk: testing if the target player can get hit by the stun baton
 						return;
 					}
 
