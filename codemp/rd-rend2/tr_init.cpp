@@ -261,7 +261,7 @@ cvar_t *r_debugContext;
 cvar_t	*r_aspectCorrectFonts;
 
 extern void	RB_SetGL2D (void);
-void R_Splash()
+static void R_Splash()
 {
 	const GLfloat black[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
@@ -276,7 +276,7 @@ void R_Splash()
 	if (pImage )
 		GL_Bind( pImage );
 
-	GL_State(0);
+	GL_State(GLS_DEPTHTEST_DISABLE);
 	GLSL_BindProgram(&tr.splashScreenShader);
 	qglDrawArrays(GL_TRIANGLES, 0, 3);
 
