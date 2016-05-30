@@ -9597,7 +9597,7 @@ void G_RunFrame( int levelTime ) {
 
 								origin[0] = -1915.0f;
 								origin[1] = -26945.0f;
-								origin[2] = 400.0f;
+								origin[2] = 300.0f;
 								angles[0] = 0.0f;
 								angles[1] = -179.0f;
 								angles[2] = 0.0f;
@@ -9644,7 +9644,7 @@ void G_RunFrame( int levelTime ) {
 								}
 								else if (ent->client->pers.universe_quest_messages == 9)
 								{ // zyk: teleports the quest player to the Sacred Dimension
-									if ((int) ent->client->ps.origin[0] > -2015 && (int) ent->client->ps.origin[0] < -1815 && (int) ent->client->ps.origin[1] > -27045 && (int) ent->client->ps.origin[1] < -26845 && (int) ent->client->ps.origin[2] > 100 && (int) ent->client->ps.origin[2] < 300)
+									if ((int) ent->client->ps.origin[0] > -2415 && (int) ent->client->ps.origin[0] < -1415 && (int) ent->client->ps.origin[1] > -27445 && (int) ent->client->ps.origin[1] < -26445 && (int) ent->client->ps.origin[2] > 100 && (int) ent->client->ps.origin[2] < 400)
 									{
 										ent->client->pers.universe_quest_messages = 10;
 									}
