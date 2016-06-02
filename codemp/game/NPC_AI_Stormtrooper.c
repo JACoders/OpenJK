@@ -2453,7 +2453,7 @@ void NPC_BSST_Attack( void )
 	// zyk: now if this timer is done and the enemy is no longer in our line of sight, try to get a new enemy later
 	if (TIMER_Done( NPCS.NPC, "zyk_check_enemy" ))
 	{
-		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 15000 ) );
+		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 10000 ) );
 
 		if (NPCS.NPC->enemy)
 		{

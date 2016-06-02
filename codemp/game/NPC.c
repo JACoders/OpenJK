@@ -728,10 +728,18 @@ void NPC_ApplyScriptFlags (void)
 		{ // zyk: npcs can use homing missiles properly now
 			NPCS.NPCInfo->attackHold = 2000;
 		}
+		else if (NPCS.NPC->client->ps.weapon == WP_BRYAR_PISTOL && (NPCS.ucmd.buttons & BUTTON_ALT_ATTACK) && !Q_irand(0, 1))
+		{ // zyk: npcs can use charged pistol
+			NPCS.NPCInfo->attackHold = 2000;
+		}
 	}
 	else if (NPCS.NPC->client->ps.weapon == WP_DISRUPTOR && !(NPCS.NPCInfo->scriptFlags & SCF_ALT_FIRE) && NPCS.NPC->client->ps.zoomMode != 0)
 	{ // zyk: reset sniper zoomMode when switching back to primary fire
 		NPCS.ucmd.buttons |= BUTTON_ALT_ATTACK;
+	}
+	else if (NPCS.NPC->client->ps.weapon == WP_BOWCASTER && (NPCS.ucmd.buttons & BUTTON_ATTACK) && !Q_irand(0, 1))
+	{ // zyk: npcs can use charged bowcaster
+		NPCS.NPCInfo->attackHold = 2000;
 	}
 
 	// zyk: npcs with thermals must calculate distance to enemy and hold fire properly
