@@ -657,6 +657,19 @@ void NPC_BSSniper_Attack( void )
 		return;
 	}
 
+	// zyk: now if this timer is done and the enemy is no longer in our line of sight, try to get a new enemy later
+	if (TIMER_Done( NPCS.NPC, "zyk_check_enemy" ))
+	{
+		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 15000 ) );
+
+		if (NPCS.NPC->enemy)
+		{
+			NPCS.NPC->enemy = NULL;
+			NPC_BSSniper_Patrol();//FIXME: or patrol?
+			return;
+		}
+	}
+
 	if ( TIMER_Done( NPCS.NPC, "flee" ) && NPC_CheckForDanger( NPC_CheckAlertEvents( qtrue, qtrue, -1, qfalse, AEL_DANGER ) ) )
 	{//going to run
 		NPC_UpdateAngles( qtrue, qtrue );

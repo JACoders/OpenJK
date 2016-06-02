@@ -2450,6 +2450,26 @@ void NPC_BSST_Attack( void )
 		return;
 	}
 
+	// zyk: now if this timer is done and the enemy is no longer in our line of sight, try to get a new enemy later
+	if (TIMER_Done( NPCS.NPC, "zyk_check_enemy" ))
+	{
+		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 15000 ) );
+
+		if (NPCS.NPC->enemy)
+		{
+			NPCS.NPC->enemy = NULL;
+			if( NPCS.NPC->client->playerTeam == NPCTEAM_PLAYER )
+			{
+				NPC_BSPatrol();
+			}
+			else
+			{
+				NPC_BSST_Patrol();//FIXME: or patrol?
+			}
+			return;
+		}
+	}
+
 	//FIXME: put some sort of delay into the guys depending on how they saw you...?
 
 	//Get our group info
