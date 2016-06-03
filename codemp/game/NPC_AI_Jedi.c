@@ -6567,6 +6567,26 @@ void NPC_BSJedi_Default( void )
 			NPCS.NPC->s.loopSound = G_SoundIndex( "sound/movers/objects/green_beam_lp2.wav" );//test/charm.wav" );
 		}
 
+		// zyk: now if this timer is done and the enemy is no longer in our line of sight, try to get a new enemy later
+		if (TIMER_Done( NPCS.NPC, "zyk_check_enemy" ))
+		{
+			TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 10000 ) );
+
+			if (NPCS.NPC->enemy && !NPC_ClearLOS4(NPCS.NPC->enemy))
+			{ // zyk: if enemy cant be seen, try getting one later
+				NPCS.NPC->enemy = NULL;
+				if ( NPCS.NPC->client->NPC_class == CLASS_BOBAFETT )
+				{
+					NPC_BSST_Patrol();
+				}
+				else
+				{
+					Jedi_Patrol();
+				}
+				return;
+			}
+		}
+
 		Jedi_Attack();
 		//if we have multiple-jedi combat, probably need to keep checking (at certain debounce intervals) for a better (closer, more active) enemy and switch if needbe...
 		if ( ((!NPCS.ucmd.buttons&&!NPCS.NPC->client->ps.fd.forcePowersActive)||(NPCS.NPC->enemy&&NPCS.NPC->enemy->health<=0)) && NPCS.NPCInfo->enemyCheckDebounceTime < level.time )
