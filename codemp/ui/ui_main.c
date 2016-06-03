@@ -9579,9 +9579,9 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t *species,char*	
 			species->ColorMax *= 2;
 			species->Color = (playerColor_t *)realloc(species->Color, species->ColorMax * sizeof(playerColor_t));
 		}
-		
+
 		memset(&species->Color[species->ColorCount], 0, sizeof(playerColor_t));
-		
+
 		Q_strncpyz( species->Color[species->ColorCount].shader, token, MAX_QPATH );
 
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
@@ -9589,7 +9589,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t *species,char*	
 		{
 			return qfalse;
 		}
-		
+
 		token = COM_ParseExt( &p, qtrue );	//looking for action commands
 		while (token[0] != '}')
 		{
@@ -9618,7 +9618,7 @@ static void UI_FreeSpecies( playerSpeciesInfo_t *species )
 void UI_FreeAllSpecies( void )
 {
 	int i;
-	
+
 	for (i = 0; i < uiInfo.playerSpeciesCount; i++)
 	{
 		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
@@ -9707,11 +9707,11 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			{
 				Com_Printf(S_COLOR_RED"UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath);
 			}
-			
+
 			species->SkinHeadMax = 8;
 			species->SkinTorsoMax = 8;
 			species->SkinLegMax = 8;
-			
+
 			species->SkinHead = (skinName_t *)malloc(species->SkinHeadMax * sizeof(skinName_t));
 			species->SkinTorso = (skinName_t *)malloc(species->SkinTorsoMax * sizeof(skinName_t));
 			species->SkinLeg = (skinName_t *)malloc(species->SkinLegMax * sizeof(skinName_t));
@@ -9898,6 +9898,7 @@ void UI_Init( qboolean inGameLoad ) {
 	uiInfo.uiDC.stopCinematic					= &UI_StopCinematic;
 	uiInfo.uiDC.drawCinematic					= &UI_DrawCinematic;
 	uiInfo.uiDC.runCinematicFrame				= &UI_RunCinematicFrame;
+	uiInfo.uiDC.ext.Font_StrLenPixels			= trap->ext.R_Font_StrLenPixels;
 
 	Init_Display(&uiInfo.uiDC);
 

@@ -1776,7 +1776,7 @@ static int SV_FindLeafFolders( const char *baseFolder, char *result, int maxResu
 	}
 
 	Z_Free( fileList );
-	
+
 	return resultCount;
 }
 
@@ -1931,41 +1931,41 @@ void SV_AddOperatorCommands( void ) {
 	}
 	initialized = qtrue;
 
-	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
-	Cmd_AddCommand ("kick", SV_Kick_f);
-	Cmd_AddCommand ("kickbots", SV_KickBots_f);
-	Cmd_AddCommand ("kickall", SV_KickAll_f);
-	Cmd_AddCommand ("kicknum", SV_KickNum_f);
-	Cmd_AddCommand ("clientkick", SV_KickNum_f);
-	Cmd_AddCommand ("status", SV_Status_f);
-	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);
-	Cmd_AddCommand ("systeminfo", SV_Systeminfo_f);
-	Cmd_AddCommand ("dumpuser", SV_DumpUser_f);
-	Cmd_AddCommand ("map_restart", SV_MapRestart_f);
+	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f, "Sends a heartbeat to the masterserver" );
+	Cmd_AddCommand ("kick", SV_Kick_f, "Kick a user from the server" );
+	Cmd_AddCommand ("kickbots", SV_KickBots_f, "Kick all bots from the server" );
+	Cmd_AddCommand ("kickall", SV_KickAll_f, "Kick all users from the server" );
+	Cmd_AddCommand ("kicknum", SV_KickNum_f, "Kick a user from the server by userid" );
+	Cmd_AddCommand ("clientkick", SV_KickNum_f, "Kick a user from the server by userid" );
+	Cmd_AddCommand ("status", SV_Status_f, "Prints status of server and connected clients" );
+	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f, "Prints the serverinfo that is visible in the server browsers" );
+	Cmd_AddCommand ("systeminfo", SV_Systeminfo_f, "Prints the systeminfo variables that are replicated to clients" );
+	Cmd_AddCommand ("dumpuser", SV_DumpUser_f, "Prints the userinfo for a given userid" );
+	Cmd_AddCommand ("map_restart", SV_MapRestart_f, "Restart the current map" );
 	Cmd_AddCommand ("sectorlist", SV_SectorList_f);
-	Cmd_AddCommand ("map", SV_Map_f);
+	Cmd_AddCommand ("map", SV_Map_f, "Load a new map with cheats disabled" );
 	Cmd_SetCommandCompletionFunc( "map", SV_CompleteMapName );
-	Cmd_AddCommand ("devmap", SV_Map_f);
+	Cmd_AddCommand ("devmap", SV_Map_f, "Load a new map with cheats enabled" );
 	Cmd_SetCommandCompletionFunc( "devmap", SV_CompleteMapName );
 //	Cmd_AddCommand ("devmapbsp", SV_Map_f);	// not used in MP codebase, no server BSP_cacheing
-	Cmd_AddCommand ("devmapmdl", SV_Map_f);
+	Cmd_AddCommand ("devmapmdl", SV_Map_f, "Load a new map with cheats enabled" );
 	Cmd_SetCommandCompletionFunc( "devmapmdl", SV_CompleteMapName );
-	Cmd_AddCommand ("devmapall", SV_Map_f);
+	Cmd_AddCommand ("devmapall", SV_Map_f, "Load a new map with cheats enabled" );
 	Cmd_SetCommandCompletionFunc( "devmapall", SV_CompleteMapName );
-	Cmd_AddCommand ("killserver", SV_KillServer_f);
-	Cmd_AddCommand ("svsay", SV_ConSay_f);
-	Cmd_AddCommand ("svtell", SV_ConTell_f);
-	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f);
-	Cmd_AddCommand ("weapontoggle", SV_WeaponToggle_f);
-	Cmd_AddCommand ("svrecord", SV_Record_f);
-	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f);
-	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f);
-	Cmd_AddCommand ("sv_listbans", SV_ListBans_f);
-	Cmd_AddCommand ("sv_banaddr", SV_BanAddr_f);
-	Cmd_AddCommand ("sv_exceptaddr", SV_ExceptAddr_f);
-	Cmd_AddCommand ("sv_bandel", SV_BanDel_f);
-	Cmd_AddCommand ("sv_exceptdel", SV_ExceptDel_f);
-	Cmd_AddCommand ("sv_flushbans", SV_FlushBans_f);
+	Cmd_AddCommand ("killserver", SV_KillServer_f, "Shuts the server down and disconnects all clients" );
+	Cmd_AddCommand ("svsay", SV_ConSay_f, "Broadcast server messages to clients" );
+	Cmd_AddCommand ("svtell", SV_ConTell_f, "Private message from the server to a user" );
+	Cmd_AddCommand ("forcetoggle", SV_ForceToggle_f, "Toggle g_forcePowerDisable bits" );
+	Cmd_AddCommand ("weapontoggle", SV_WeaponToggle_f, "Toggle g_weaponDisable bits" );
+	Cmd_AddCommand ("svrecord", SV_Record_f, "Record a server-side demo" );
+	Cmd_AddCommand ("svstoprecord", SV_StopRecord_f, "Stop recording a server-side demo" );
+	Cmd_AddCommand ("sv_rehashbans", SV_RehashBans_f, "Reloads banlist from file" );
+	Cmd_AddCommand ("sv_listbans", SV_ListBans_f, "Lists bans" );
+	Cmd_AddCommand ("sv_banaddr", SV_BanAddr_f, "Bans a user" );
+	Cmd_AddCommand ("sv_exceptaddr", SV_ExceptAddr_f, "Adds a ban exception for a user" );
+	Cmd_AddCommand ("sv_bandel", SV_BanDel_f, "Removes a ban" );
+	Cmd_AddCommand ("sv_exceptdel", SV_ExceptDel_f, "Removes a ban exception" );
+	Cmd_AddCommand ("sv_flushbans", SV_FlushBans_f, "Removes all bans and exceptions" );
 }
 
 /*

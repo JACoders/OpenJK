@@ -1370,7 +1370,7 @@ void R_CreateBuiltinImages( void ) {
 		qglTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		qglDisable(GL_TEXTURE_3D);
 	}
-	
+
 	qglEnable(GL_TEXTURE_2D);
 
 	// with overbright bits active, we need an image which is some fraction of full color,

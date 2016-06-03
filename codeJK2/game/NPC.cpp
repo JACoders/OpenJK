@@ -264,51 +264,7 @@ int BodyRemovalPadTime( gentity_t *ent )
 
 	if ( !ent || !ent->client )
 		return 0;
-/*
-	switch ( ent->client->playerTeam )
-	{
-	case TEAM_KLINGON:	// no effect, we just remove them when the player isn't looking
-	case TEAM_SCAVENGERS:
-	case TEAM_HIROGEN:
-	case TEAM_MALON:
-	case TEAM_IMPERIAL:
-	case TEAM_STARFLEET:
-		time = 10000; // 15 secs.
-		break;
 
-	case TEAM_BORG:
-		time = 2000;
-		break;
-
-	case TEAM_STASIS:
-		return qtrue;
-		break;
-
-	case TEAM_FORGE:
-		time = 1000;
-		break;
-
-	case TEAM_BOTS:
-//		if (!Q_stricmp( ent->NPC_type, "mouse" ))
-//		{
-			time = 0;
-//		}
-//		else
-//		{
-//			time = 10000;
-//		}
-		break;
-
-	case TEAM_8472:
-		time = 2000;
-		break;
-
-	default:
-		// never go away
-		time = Q3_INFINITE;
-		break;
-	}
-*/
 	// team no longer indicates species/race, so in this case we'd use NPC_class, but
 	switch( ent->client->NPC_class )
 	{
@@ -355,26 +311,6 @@ static void NPC_RemoveBodyEffect(void)
 
 	if ( !NPC || !NPC->client || (NPC->s.eFlags & EF_NODRAW) )
 		return;
-/*
-	switch(NPC->client->playerTeam)
-	{
-	case TEAM_STARFLEET:
-		//FIXME: Starfleet beam out
-		break;
-
-	case TEAM_BOTS:
-//		VectorCopy( NPC->currentOrigin, org );
-//		org[2] -= 16;
-//		tent = G_TempEntity( org, EV_BOT_EXPLODE );
-//		tent->owner = NPC;
-
-		break;
-
-	default:
-		break;
-	}
-*/
-
 
 	// team no longer indicates species/race, so in this case we'd use NPC_class, but
 
@@ -1957,12 +1893,9 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 	}
 	else if ( !NPC->enemy )//HACK!
 	{
-//		if(client->ps.weapon != WP_TRICORDER)
-		{
-			if( NPC->s.torsoAnim == TORSO_WEAPONREADY1 || NPC->s.torsoAnim == TORSO_WEAPONREADY3 )
-			{//we look ready for action, using one of the first 2 weapon, let's rest our weapon on our shoulder
-				NPC_SetAnim(NPC,SETANIM_TORSO,TORSO_WEAPONIDLE1,SETANIM_FLAG_NORMAL);
-			}
+		if( NPC->s.torsoAnim == TORSO_WEAPONREADY1 || NPC->s.torsoAnim == TORSO_WEAPONREADY3 )
+		{//we look ready for action, using one of the first 2 weapon, let's rest our weapon on our shoulder
+			NPC_SetAnim(NPC,SETANIM_TORSO,TORSO_WEAPONIDLE1,SETANIM_FLAG_NORMAL);
 		}
 	}
 

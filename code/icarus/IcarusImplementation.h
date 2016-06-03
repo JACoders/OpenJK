@@ -145,7 +145,7 @@ public:
 	}
 
 public:
-	enum 
+	enum
 	{
 		TK_EOF = -1,
 		TK_UNDEFINED,
@@ -224,9 +224,9 @@ public:
 		TYPE_ORIGIN,
 
 		//Affect types
-		TYPE_INSERT,	
-		TYPE_FLUSH,	
-		
+		TYPE_INSERT,
+		TYPE_FLUSH,
+
 		//Camera types
 		TYPE_PAN,
 		TYPE_ZOOM,
@@ -240,7 +240,7 @@ public:
 		TYPE_TRACK,
 		TYPE_DISTANCE,
 		TYPE_FOLLOW,
-			
+
 		//Variable type
 		TYPE_VARIABLE,
 

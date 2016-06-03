@@ -1160,7 +1160,7 @@ public:
 	{
 		// fixme, this don't work
 		iterator ubound(this, find_index(key));
-		ubound++;
+		++ubound;
 		return ubound;
 	}
 

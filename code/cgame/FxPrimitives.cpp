@@ -307,9 +307,12 @@ bool CParticle::UpdateOrigin()
 				}
 			}
 
-			// Hit something
-			if ( trace.fraction < 1.0f )//|| trace.startsolid || trace.allsolid )
+			if ( trace.startsolid || trace.allsolid || trace.fraction == 1.0)
 			{
+			}
+			else
+			{
+				// Hit something
 				if ( mFlags & FX_IMPACT_RUNS_FX && !(trace.surfaceFlags & SURF_NOIMPACT ))
 				{
 					theFxScheduler.PlayEffect( mImpactFxID, trace.endpos, trace.plane.normal );
@@ -2099,7 +2102,7 @@ bool CBezier::Update( void )
 }
 
 //----------------------------
-inline void CBezier::DrawSegment( vec3_t start, vec3_t end, float texcoord1, float texcoord2 )
+void CBezier::DrawSegment( vec3_t start, vec3_t end, float texcoord1, float texcoord2 )
 {
 	vec3_t			lineDir, cross, viewDir;
 	static vec3_t	lastEnd[2];

@@ -37,14 +37,14 @@ enum
 	TASK_RETURN_FAILED,
 };
 
-enum 
+enum
 {
 	TASK_OK,
 	TASK_FAILED,
 	TASK_START,
 	TASK_END,
 };
-	
+
 // CTask
 
 class CTask
@@ -100,7 +100,7 @@ public:
 	void Init( void );
 
 	int Add( CTask *task );
-	
+
 	void SetGUID( int GUID );
 	void SetParent( CTaskGroup *group )	{	m_parent = group;	}
 
@@ -235,7 +235,7 @@ protected:
 
 	int						m_GUID;
 	int						m_count;
-	
+
 	taskGroupName_m			m_taskGroupNameMap;
 	taskGroupID_m			m_taskGroupIDMap;
 

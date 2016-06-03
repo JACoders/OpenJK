@@ -96,8 +96,8 @@ void CSequence::Delete( CIcarus* icarus )
 		{
 			(*iterSeq).second->SetParent( NULL );
 		}*/
-		
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->SetParent( NULL );
 		}
@@ -106,14 +106,14 @@ void CSequence::Delete( CIcarus* icarus )
 	//m_childrenMap.clear();
 
 	//Clear all held commands
-	for ( bi = m_commands.begin(); bi != m_commands.end(); bi++ )
+	for ( bi = m_commands.begin(); bi != m_commands.end(); ++bi )
 	{
 		(*bi)->Free(icarus);
 		delete (*bi);	//Free() handled internally -- not any more!!
 	}
 
 	m_commands.clear();
-	
+
 }
 
 
@@ -145,7 +145,7 @@ void CSequence::RemoveChild( CSequence *child )
 	assert( child );
 	if ( child == NULL )
 		return;
-	
+
 	m_children.remove( child );
 
 	//Remove the child
@@ -208,7 +208,7 @@ void CSequence::SetParent( CSequence *parent )
 		m_flags |= SQ_RETAIN;
 
 	if ( parent->m_flags & SQ_PENDING )
-		m_flags |= SQ_PENDING;	
+		m_flags |= SQ_PENDING;
 }
 
 /*
@@ -234,7 +234,7 @@ CBlock *CSequence::PopCommand( int type )
 		command = m_commands.front();
 		m_commands.pop_front();
 		m_numCommands--;
-	
+
 		return command;
 		break;
 
@@ -243,7 +243,7 @@ CBlock *CSequence::PopCommand( int type )
 		command = m_commands.back();
 		m_commands.pop_back();
 		m_numCommands--;
-		
+
 		return command;
 		break;
 	}
@@ -267,7 +267,7 @@ int CSequence::PushCommand( CBlock *block, int type )
 	switch ( type )
 	{
 	case PUSH_FRONT:
-		
+
 		m_commands.push_front( block );
 		m_numCommands++;
 
@@ -317,7 +317,7 @@ void CSequence::RemoveFlag( int flag, bool children )
 		}*/
 
 		sequence_l::iterator	si;
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->RemoveFlag( flag, true );
 		}
@@ -437,11 +437,11 @@ int CSequence::SaveCommand( CBlock *block )
 		//Save the block id
 		bID = bm->GetID();
 		pIcarus->BufferWrite( &bID, sizeof ( bID ) );
-		
+
 		//Save out the data size
 		size = bm->GetSize();
 		pIcarus->BufferWrite( &size, sizeof ( size ) );
-		
+
 		//Save out the raw data
 		pIcarus->BufferWrite( bm->GetData(), size );
 	}
@@ -454,7 +454,7 @@ int CSequence::LoadCommand( CBlock *block, CIcarus *icarus )
 	IGameInterface* game = icarus->GetGame();
 	int				bID, bSize;
 	void			*bData;
-	unsigned char	flags; 
+	unsigned char	flags;
 	int				id, numMembers;
 
 	// Data expected/loaded here (IBLK) (with the size as : 'IBSZ' ).
@@ -465,7 +465,7 @@ int CSequence::LoadCommand( CBlock *block, CIcarus *icarus )
 	//				- Block Member ID.
 	//				- Block Data Size.
 	//				- Block (Raw) Data.
-	
+
 	//Get the block ID.
 	icarus->BufferRead( &id, sizeof( id ) );
 	block->Create( id );
@@ -476,12 +476,12 @@ int CSequence::LoadCommand( CBlock *block, CIcarus *icarus )
 
 	//Get the number of block members
 	icarus->BufferRead( &numMembers, sizeof( numMembers ) );
-	
+
 	for ( int j = 0; j < numMembers; j++ )
 	{
 		//Get the member ID
 		icarus->BufferRead( &bID, sizeof( bID ) );
-		
+
 		//Get the member size
 		icarus->BufferRead( &bSize, sizeof( bSize ) );
 
@@ -529,7 +529,7 @@ int CSequence::LoadCommand( CBlock *block, CIcarus *icarus )
 		case CIcarus::ID_RANDOM:
 			block->Write( CIcarus::ID_RANDOM, *(float *) bData, icarus );//(float) ID_RANDOM );
 			break;
-		
+
 		case CIcarus::TK_EQUALS:
 		case CIcarus::TK_GREATER_THAN:
 		case CIcarus::TK_LESS_THAN:
@@ -542,7 +542,7 @@ int CSequence::LoadCommand( CBlock *block, CIcarus *icarus )
 			return false;
 			break;
 		}
-		
+
 		//Get rid of the temp memory
 		game->Free( bData );
 	}
@@ -581,7 +581,7 @@ int CSequence::Save()
 	//Save the return (by GUID)
 	id = ( m_return != NULL ) ? m_return->GetID() : -1;
 	pIcarus->BufferWrite( &id, sizeof( id ) );
-	
+
 	//Save the number of children
 	int iNumChildren = m_children.size();
 	pIcarus->BufferWrite( &iNumChildren, sizeof( iNumChildren ) );
@@ -643,7 +643,7 @@ int CSequence::Load( CIcarus* icarus )
 	//Get the parent sequence
 	icarus->BufferRead( &id, sizeof( id ) );
 	m_parent = ( id != -1 ) ? icarus->GetSequence( id ) : NULL;
-	
+
 	//Get the return sequence
 	icarus->BufferRead( &id, sizeof( id ) );
 	m_return = ( id != -1 ) ? icarus->GetSequence( id ) : NULL;
@@ -661,7 +661,7 @@ int CSequence::Load( CIcarus* icarus )
 		//Get the desired sequence
 		if ( ( sequence = icarus->GetSequence( id ) ) == NULL )
 			return false;
-		
+
 		//Insert this into the list
 		STL_INSERT( m_children, sequence );
 
@@ -669,7 +669,7 @@ int CSequence::Load( CIcarus* icarus )
 //		m_childrenMap[ i ] = sequence;
 	}
 
-	
+
 	//Get the sequence flags
 	icarus->BufferRead( &m_flags, sizeof( m_flags ) );
 

@@ -155,6 +155,7 @@ static const save_field_t savefields_gClient[] =
 	{NULL, 0, F_IGNORE}
 };
 
+// TODO FIXME mrwonko: this has no business being a global variable. WTF Raven?
 std::list<sstring_t> *strList = NULL;
 
 

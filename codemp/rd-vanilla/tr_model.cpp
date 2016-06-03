@@ -768,9 +768,9 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 	}
 
 	// find the largest index, since the actual number of compressed bone pools is not stored anywhere
-	for ( i = 0 ; i < mdxa->numFrames ; i++ ) 
+	for ( i = 0 ; i < mdxa->numFrames ; i++ )
 	{
-		for ( j = 0 ; j < mdxa->numBones ; j++ ) 
+		for ( j = 0 ; j < mdxa->numBones ; j++ )
 		{
 			k = (i * mdxa->numBones * 3) + (j * 3); // iOffsetToIndex
 			pIndex = (mdxaIndex_t *) ((byte*) mdxa + mdxa->ofsFrames + k);
@@ -778,7 +778,7 @@ qboolean ServerLoadMDXA( model_t *mod, void *buffer, const char *mod_name, qbool
 			// 3 byte ints, yeah...
 			int tmp = pIndex->iIndex & 0xFFFFFF00;
 			LL(tmp);
-			
+
 			if (maxBoneIndex < tmp)
 				maxBoneIndex = tmp;
 		}
@@ -1034,7 +1034,7 @@ Ghoul2 Insert End
 
 	if (!r_noServerGhoul2)
 	{ //keep it from choking when it gets to these checks in the g2 code. Registering all r_ cvars for the server would be a Bad Thing though.
-		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0);
+		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0, "");
 	}
 
 	if ( !name || !name[0] ) {
@@ -1602,7 +1602,7 @@ static qboolean R_LoadMD3 (model_t *mod, int lod, void *buffer, const char *mod_
 
 		// swap all the XyzNormals
 		xyz = (md3XyzNormal_t *) ( (byte *)surf + surf->ofsXyzNormals );
-		for ( j = 0 ; j < surf->numVerts * surf->numFrames ; j++, xyz++ ) 
+		for ( j = 0 ; j < surf->numVerts * surf->numFrames ; j++, xyz++ )
 		{
 			LS(xyz->xyz[0]);
 			LS(xyz->xyz[1]);

@@ -60,7 +60,7 @@ static float	sky_min, sky_max;
 AddSkyPolygon
 ================
 */
-static void AddSkyPolygon (int nump, vec3_t vecs) 
+static void AddSkyPolygon (int nump, vec3_t vecs)
 {
 	int		i,j;
 	vec3_t	v, av;

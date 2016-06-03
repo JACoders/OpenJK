@@ -29,6 +29,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "tr_local.h"
 #endif
 
+#include "tr_common.h"
+
 #include "qcommon/matcomp.h"
 #if !defined(_QCOMMON_H_)
 	#include "../qcommon/qcommon.h"
@@ -241,8 +243,8 @@ public:
 
 		mNumBones = header->numBones;
 		mBones = new SBoneCalc[mNumBones];
-		mFinalBones = (CTransformBone*)Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue, 16);
-		mSmoothBones = (CTransformBone*)Z_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue, 16);
+		mFinalBones = (CTransformBone*) R_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue);
+		mSmoothBones = (CTransformBone*) R_Malloc(sizeof(CTransformBone) * mNumBones, TAG_GHOUL2, qtrue);
 		mSkels = new mdxaSkel_t*[mNumBones];
 		mdxaSkelOffsets_t *offsets;
 		mdxaSkel_t		*skel;
@@ -265,8 +267,8 @@ public:
 	{
 		delete [] mBones;
 		// Alignment
-		Z_Free(mFinalBones);
-		Z_Free(mSmoothBones);
+		R_Free(mFinalBones);
+		R_Free(mSmoothBones);
 		delete [] mSkels;
 	}
 
@@ -2340,7 +2342,7 @@ void RenderSurfaces(CRenderSurface &RS)
 				for (k=range.first;k!=range.second;)
 				{
 					kcur=k;
-					k++;
+					++k;
 					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
 					if (!tex ||											 // it is gone, lets get rid of it
 						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
@@ -3514,7 +3516,7 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mod->dataSize += size;
 
 	qboolean bAlreadyFound = qfalse;
-	mdxm = mod->mdxm = (mdxmHeader_t*) //Hunk_Alloc( size );
+	mdxm = mod->mdxm = (mdxmHeader_t*) //R_Hunk_Alloc( size );
 										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLM);
 
 	assert(bAlreadyCached == bAlreadyFound);
@@ -3814,7 +3816,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mod->dataSize  += size;
 
 	qboolean bAlreadyFound = qfalse;
-	mdxa = mod->mdxa = (mdxaHeader_t*) //Hunk_Alloc( size );
+	mdxa = mod->mdxa = (mdxaHeader_t*) //R_Hunk_Alloc( size );
 										RE_RegisterModels_Malloc(size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA);
 
 	assert(bAlreadyCached == bAlreadyFound);

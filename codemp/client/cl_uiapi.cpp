@@ -454,6 +454,14 @@ static void UIVM_Cvar_SetValue( const char *var_name, float value ) {
 	Cvar_VM_SetValue( var_name, value, VM_UI );
 }
 
+static void CL_AddUICommand( const char *cmdName ) {
+	Cmd_AddCommand( cmdName, NULL );
+}
+
+static void UIVM_Cmd_RemoveCommand( const char *cmd_name ) {
+	Cmd_VM_RemoveCommand( cmd_name, VM_UI );
+}
+
 // legacy syscall
 
 intptr_t CL_UISystemCalls( intptr_t *args ) {
@@ -1193,6 +1201,10 @@ void CL_BindUI( void ) {
 		uii.G2API_IKMove						= CL_G2API_IKMove;
 		uii.G2API_GetSurfaceName				= CL_G2API_GetSurfaceName;
 		uii.G2API_AttachG2Model					= CL_G2API_AttachG2Model;
+
+		uii.ext.R_Font_StrLenPixels				= re->ext.Font_StrLenPixels;
+		uii.ext.AddCommand						= CL_AddUICommand;
+		uii.ext.RemoveCommand					= UIVM_Cmd_RemoveCommand;
 
 		GetUIAPI = (GetUIAPI_t)uivm->GetModuleAPI;
 		ret = GetUIAPI( UI_API_VERSION, &uii );

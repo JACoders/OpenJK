@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 7
+#define	REF_API_VERSION 8
 
 //
 // these are the functions exported by the refresh module
@@ -239,7 +239,12 @@ typedef struct refexport_s {
 	int					(*G2API_GetNumGoreMarks)				( CGhoul2Info_v& ghoul2, int modelIndex );
 	void				(*G2API_AddSkinGore)					( CGhoul2Info_v &ghoul2, SSkinGoreData &gore );
 	void				(*G2API_ClearSkinGore)					( CGhoul2Info_v &ghoul2 );
-	#endif // _SOF2
+	#endif // _G2_GORE
+
+	struct {
+		float				(*Font_StrLenPixels)					( const char *text, const int iFontIndex, const float scale );
+	} ext;
+
 } refexport_t;
 
 //
@@ -267,10 +272,12 @@ typedef struct refimport_s {
 	int				(*Cmd_Argc)							( void );
 	char *			(*Cmd_Argv)							( int arg );
 	void			(*Cmd_ArgsBuffer)					( char *buffer, int bufferLength );
-	void			(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function );
+	void			(*Cmd_AddCommand)					( const char *cmd_name, xcommand_t function, const char *cmd_desc );
+	void			(*Cmd_AddCommandList)				( const cmdList_t *cmdList );
 	void			(*Cmd_RemoveCommand)				( const char *cmd_name );
+	void			(*Cmd_RemoveCommandList)			( const cmdList_t *cmdList );
 	cvar_t *		(*Cvar_Set)							( const char *var_name, const char *value );
-	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, uint32_t flags );
+	cvar_t *		(*Cvar_Get)							( const char *var_name, const char *value, uint32_t flags, const char *var_desc );
 	cvar_t *		(*Cvar_SetValue)					( const char *name, float value );
 	void			(*Cvar_CheckRange)					( cvar_t *cv, float minVal, float maxVal, qboolean shouldBeIntegral );
 	void			(*Cvar_VariableStringBuffer)		( const char *var_name, char *buffer, int bufsize );
@@ -300,7 +307,6 @@ typedef struct refimport_s {
 	int				(*CM_LeafCluster)					( int leafnum );
 	int				(*CM_PointLeafnum)					( const vec3_t p );
 	int				(*CM_PointContents)					( const vec3_t p, clipHandle_t model );
-	intptr_t		(QDECL *VM_Call)					( vm_t *vm, int callnum, ... );
 	qboolean		(*Com_TheHunkMarkHasBeenMade)		( void );
 	void			(*S_RestartMusic)					( void );
 	qboolean		(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );

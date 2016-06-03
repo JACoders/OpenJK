@@ -2300,19 +2300,6 @@ static void Q3_SetLeader( int entID, const char *name )
 stringID_table_t teamTable [] = 
 {
 	ENUM2STRING(TEAM_FREE),
-//	ENUM2STRING(TEAM_STARFLEET),
-//	ENUM2STRING(TEAM_BORG),
-//	ENUM2STRING(TEAM_PARASITE),
-//	ENUM2STRING(TEAM_SCAVENGERS),
-//	ENUM2STRING(TEAM_KLINGON),
-//	ENUM2STRING(TEAM_MALON),
-//	ENUM2STRING(TEAM_HIROGEN),
-//	ENUM2STRING(TEAM_IMPERIAL),
-//	ENUM2STRING(TEAM_STASIS),
-//	ENUM2STRING(TEAM_8472),
-//	ENUM2STRING(TEAM_BOTS),
-//	ENUM2STRING(TEAM_FORGE),
-//	ENUM2STRING(TEAM_DISGUISE),
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
@@ -8626,7 +8613,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 	case SET_ANIM_BOTH:
 		*value = (char *) Q3_GetAnimBoth( ent );
 
-		if ( VALIDSTRING( value ) == false )
+		if ( VALIDSTRING( *value ) == false )
 			return false;
 
 		break;

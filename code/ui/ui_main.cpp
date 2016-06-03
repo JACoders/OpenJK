@@ -2340,7 +2340,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 	species.ColorCount = 0;
 	species.ColorMax = 16;
 	species.Color = (playerColor_t *)malloc(species.ColorMax * sizeof(playerColor_t));
-	
+
 	while ( p )
 	{
 		token = COM_ParseExt( &p, qtrue );	//looking for the shader
@@ -2349,13 +2349,13 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 			COM_EndParseSession(  );
 			return species.ColorCount;
 		}
-		
+
 		if (species.ColorCount >= species.ColorMax)
 		{
 			species.ColorMax *= 2;
 			species.Color = (playerColor_t *)realloc(species.Color, species.ColorMax * sizeof(playerColor_t));
 		}
-		
+
 		memset(&species.Color[species.ColorCount], 0, sizeof(playerColor_t));
 
 		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH, qtrue );
@@ -2431,7 +2431,7 @@ static void UI_FreeSpecies( playerSpeciesInfo_t *species )
 void UI_FreeAllSpecies( void )
 {
 	int i;
-	
+
 	for (i = 0; i < uiInfo.playerSpeciesCount; i++)
 	{
 		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
@@ -2452,12 +2452,12 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	int		dirlen;
 	int		i;
 	const int building = Cvar_VariableIntegerValue("com_buildscript");
-	
+
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
 	uiInfo.playerSpeciesMax = 8;
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
-	
+
 	// iterate directory of all player models
 	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, 2048 );
 	dirptr  = dirlist;
@@ -2503,7 +2503,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			{
 				ui.Printf( "UI_BuildPlayerModel_List: Errors parsing '%s'\n", fpath );
 			}
-			
+
 			species->SkinHeadMax = 8;
 			species->SkinTorsoMax = 8;
 			species->SkinLegMax = 8;

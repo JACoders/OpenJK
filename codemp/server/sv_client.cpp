@@ -1503,6 +1503,10 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	for ( i = 0 ; i < cmdCount ; i++ ) {
 		cmd = &cmds[i];
 		MSG_ReadDeltaUsercmdKey( msg, key, oldcmd, cmd );
+		if ( sv_legacyFixForceSelect->integer && (cmd->forcesel == FP_LEVITATION || cmd->forcesel >= NUM_FORCE_POWERS) )
+		{
+			cmd->forcesel = 0xFFu;
+		}
 		oldcmd = cmd;
 	}
 
@@ -1531,7 +1535,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	}
 
 	// a bad cp command was sent, drop the client
-	if (sv_pure->integer != 0 && cl->pureAuthentic == 0) {		
+	if (sv_pure->integer != 0 && cl->pureAuthentic == 0) {
 		SV_DropClient( cl, "Cannot validate pure client!");
 		return;
 	}

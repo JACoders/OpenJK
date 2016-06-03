@@ -96,14 +96,13 @@ typedef struct {
 
 	// force a screen update, only used during gamestate load
 	void		(*UpdateScreen)( void );
-	
 	// stuff for savegame screenshots...
 	void		(*PrecacheScreenshot)( void );
 
 	//========= model collision ===============
 
 	// R_LerpTag is only valid for md3 models
-	void		(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame, 
+	void		(*R_LerpTag)( orientation_t *tag, clipHandle_t mod, int startFrame, int endFrame,
 						 float frac, const char *tagName );
 
 	// =========== sound function calls ===============

@@ -10876,7 +10876,7 @@ static qboolean ShouldPlayerResistForceThrow(gentity_t *player, gentity_t *attac
 		return qfalse;
 	}
 
-	if (!player->client)
+	if ( !player->client )
 	{
 		return qfalse;
 	}

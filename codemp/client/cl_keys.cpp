@@ -1186,12 +1186,12 @@ CL_InitKeyCommands
 */
 void CL_InitKeyCommands( void ) {
 	// register our functions
-	Cmd_AddCommand( "bind", Key_Bind_f );
+	Cmd_AddCommand( "bind", Key_Bind_f, "Bind a key to a console command" );
 	Cmd_SetCommandCompletionFunc( "bind", Key_CompleteBind );
-	Cmd_AddCommand( "unbind", Key_Unbind_f );
+	Cmd_AddCommand( "unbind", Key_Unbind_f, "Unbind a key" );
 	Cmd_SetCommandCompletionFunc( "unbind", Key_CompleteUnbind );
-	Cmd_AddCommand( "unbindall", Key_Unbindall_f );
-	Cmd_AddCommand( "bindlist", Key_Bindlist_f );
+	Cmd_AddCommand( "unbindall", Key_Unbindall_f, "Delete all key bindings" );
+	Cmd_AddCommand( "bindlist", Key_Bindlist_f, "Show all bindings in the console" );
 }
 
 /*
@@ -1307,12 +1307,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 		kg.anykeydown = qtrue;
 	}
 
-	/*if( kg.keys[A_ALT].down && key == A_ENTER )
+	if ( cl_allowAltEnter->integer && kg.keys[A_ALT].down && key == A_ENTER )
 	{
-		Cvar_SetValue( "r_fullscreen",
-			!Cvar_VariableIntegerValue( "r_fullscreen" ) );
+		Cvar_SetValue( "r_fullscreen", !Cvar_VariableIntegerValue( "r_fullscreen" ) );
 		return;
-	}*/
+	}
 
 	// console key is hardcoded, so the user can never unbind it
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
@@ -1448,10 +1447,6 @@ Normal keyboard characters, already shifted / capslocked / etc
 ===================
 */
 void CL_CharEvent( int key ) {
-	// the console key should never be used as a char
-	if ( key == '`' || key == '~' )
-		return;
-
 	// delete is not a printable character and is otherwise handled by Field_KeyDownEvent
 	if ( key == 127 )
 		return;

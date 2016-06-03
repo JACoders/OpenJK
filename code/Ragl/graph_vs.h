@@ -58,7 +58,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // MAXEDGES of 1.  You will want to call the version of connect_node() which does not
 // take an edge object, and uses 1 as the "index" in the Adj. Matrix.
 //
-// 
+//
 //
 //
 // How Do You Search?
@@ -79,18 +79,18 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //		OutputDebugString(Buf);
 //	}
 //
-// 
+//
 //
 //
 // Complexity Analisis
 // -------------------
 // All data operations except remove_node() are O(1) constant time.
 // remove_node() can be O(n) where n is the number of NODES in the graph.
-// 
+//
 // Search routines:
-//  BFS - 
-//  DFS - 
-//  A*  - 
+//  BFS -
+//  DFS -
+//  A*  -
 //
 //
 //
@@ -169,7 +169,7 @@ public:
 		// can be invalid edge (For Region)
 		////////////////////////////////////////////////////////////////////////////////////
 		virtual		bool	can_be_invalid(const TEDGE& Edge) const = 0;
-		
+
 		////////////////////////////////////////////////////////////////////////////////////
 		// valid edge (For A* and Region)
 		////////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +201,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		CAPACITY = MAXNODES,
 		NULLEDGE = -1,
@@ -229,7 +229,7 @@ public:
 	class cells : public ratl::ratl_base
 	{
 	public:
-	 	enum 
+	 	enum
 		{
 			SIZEX = CELLSX,
 			SIZEY = CELLSY,
@@ -241,7 +241,7 @@ public:
 		{
 			float	mCost;
 			short	mHandle;
-			bool			operator<(const SSortNode& t) const	
+			bool			operator<(const SSortNode& t) const
 			{
 				return	(mCost<t.mCost);
 			}
@@ -522,7 +522,7 @@ public:
 	// Remove All Edges
     ////////////////////////////////////////////////////////////////////////////////////
 	void		clear_edges()
-	{	
+	{
 		mEdges.clear();
 		mEdges.alloc();		// Alloc a dummy edge at location 0
 		for (int i=0; i<MAXNODES; i++)
@@ -877,7 +877,7 @@ private:
 		{
 			clear();
 		}
-    
+
 		////////////////////////////////////////////////////////////////////////////////////
 		// Get The Size (The Difference Between The Push And Pop "Pointers")
 		////////////////////////////////////////////////////////////////////////////////////
@@ -885,7 +885,7 @@ private:
 		{
 			return (mPush);
 		}
-		
+
 		////////////////////////////////////////////////////////////////////////////////////
 		// Check To See If The Size Is Zero
 		////////////////////////////////////////////////////////////////////////////////////
@@ -934,7 +934,7 @@ private:
 		////////////////////////////////////////////////////////////////////////////////////
 		// Accessor
 		////////////////////////////////////////////////////////////////////////////////////
-		T&			operator[](int handle)											
+		T&			operator[](int handle)
 		{
 			// If You Hit This Assert, Then You Are Asking For Unallocated Data
 			//------------------------------------------------------------------
@@ -959,12 +959,12 @@ private:
 			mData[mPush]										= nValue;
 			mHandleToPos[nValue.handle()]	= mPush;
 
-			
+
 
 			// Fix Possible Heap Inconsistancies
 			//-----------------------------------
 			reheapify_upward(mPush);
-			
+
 			mPush++;
 		}
 
@@ -978,7 +978,7 @@ private:
 			mPush--;
 
 			assert(mHandleToPos[mData[0].handle()]==0);
-			
+
 
 			// Swap The Lowest Element Up To The Spot We Just "Erased"
 			//---------------------------------------------------------
@@ -1008,7 +1008,7 @@ private:
 		////////////////////////////////////////////////////////////////////////////////////
 		// Returns The Location Of Node (i)'s Parent Node (The Parent Node Of Zero Is Zero)
 		////////////////////////////////////////////////////////////////////////////////////
-		int			parent(int i)				
+		int			parent(int i)
 		{
 			return ((i-1)/2);
 		}
@@ -1016,7 +1016,7 @@ private:
 		////////////////////////////////////////////////////////////////////////////////////
 		// Returns The Location Of Node (i)'s Left Child (The Child Of A Leaf Is The Leaf)
 		////////////////////////////////////////////////////////////////////////////////////
-		int			left(int i)	
+		int			left(int i)
 		{
 			return (2*i)+1;
 		}
@@ -1143,14 +1143,14 @@ private:
 		////////////////////////////////////////////////////////////////////////////////
 		// Constructors
 		////////////////////////////////////////////////////////////////////////////////
-		search_node(int Node=-1, int Parent=-1) : 
-			mNode(Node), 
+		search_node(int Node=-1, int Parent=-1) :
+			mNode(Node),
 			mParentVisit(Parent),
 			mCostToGoal(-1),
 			mCostFromStart(0)
 		{}
-		search_node(const search_node& t) : 
-			mNode(t.mNode), 
+		search_node(const search_node& t) :
+			mNode(t.mNode),
 			mParentVisit(t.mParentVisit),
 			mCostToGoal(t.mCostToGoal),
 			mCostFromStart(t.mCostFromStart)
@@ -1161,14 +1161,14 @@ private:
 		////////////////////////////////////////////////////////////////////////////////
 		void		operator=(const search_node& t)
 		{
-			mNode			= (t.mNode); 
+			mNode			= (t.mNode);
 			mParentVisit	= (t.mParentVisit);
 			mCostToGoal		= (t.mCostToGoal);
-			mCostFromStart	= (t.mCostFromStart);	
+			mCostFromStart	= (t.mCostFromStart);
 		}
 
 		////////////////////////////////////////////////////////////////////////////////
-		// 
+		//
 		////////////////////////////////////////////////////////////////////////////////
 		int			handle() const
 		{
@@ -1176,7 +1176,7 @@ private:
 		}
 
 		////////////////////////////////////////////////////////////////////////////////
-		// 
+		//
 		////////////////////////////////////////////////////////////////////////////////
 		float		cost_estimate() const
 		{
@@ -1184,9 +1184,9 @@ private:
 		}
 
 		////////////////////////////////////////////////////////////////////////////////
-		// 
+		//
 		////////////////////////////////////////////////////////////////////////////////
-		bool		operator<  (const search_node& t) const	
+		bool		operator<  (const search_node& t) const
 		{
 			return (cost_estimate() > t.cost_estimate());
 		}
@@ -1407,7 +1407,7 @@ public:
 
 
 		////////////////////////////////////////////////////////////////////////////////
-		// Pretend the next index is open, probably because we found a shorter route 
+		// Pretend the next index is open, probably because we found a shorter route
 		// than the first time it was closed, and want it back on the open list
 		////////////////////////////////////////////////////////////////////////////////
 		void			reopen_next_index()
@@ -1478,7 +1478,7 @@ public:
 
 			return mNext;
 		}
-		
+
 		////////////////////////////////////////////////////////////////////////////////
 		// This "Get Next" Function Is For A* and Sets Up THe Costs Of The Search Node
 		////////////////////////////////////////////////////////////////////////////////
@@ -1492,7 +1492,7 @@ public:
 			mNext.mNode				= mNextIndex;
 			mNext.mCostToGoal		= suser.cost((*mNodesPtr)[mNext.mNode], (*mNodesPtr)[mEnd]);
 			mNext.mCostFromStart	= suser.cost(edge_parent_to_next, (*mNodesPtr)[mNext.mNode]);
-			
+
 			if (mNext.mParentVisit!=NULL_VISIT_INDEX)
 			{
 				mNext.mCostFromStart += mVisited[mNext.mParentVisit].mCostFromStart;
@@ -1513,7 +1513,7 @@ public:
 		////////////////////////////////////////////////////////////////////////////////
 	private:
 		TNodes*						mNodesPtr;
-		
+
 		int							mPathVisit;
 		int							mPrevIndex;
 		int							mNextIndex;
@@ -1762,9 +1762,9 @@ public:
 		ProfilePrint("               Graph Profile Results                    ");
 		ProfilePrint("--------------------------------------------------------");
 		ProfilePrint("");
-		ProfilePrint("GRAPH SIZE (Bytes): (%d)  (KiloBytes): (%5.3f)  MeggaBytes(%3.3f)", 
-			(sizeof(*this)), 
-			((float)(sizeof(*this))/1024.0f), 
+		ProfilePrint("GRAPH SIZE (Bytes): (%d)  (KiloBytes): (%5.3f)  MeggaBytes(%3.3f)",
+			(sizeof(*this)),
+			((float)(sizeof(*this))/1024.0f),
 			((float)(sizeof(*this))/1048576.0f)
 			);
 		ProfilePrint("GRAPH COUNT: (%d) Nodes  (%d) Edges", mNodes.size(), mEdges.size());
@@ -1778,10 +1778,10 @@ public:
 			ProfilePrint("SEARCH: (%d) Searches  (%f) AveSize", mSearchCount,  ((float)mSearchMemorySize/(float)mSearchCount));
 			if (mSearchSuccess)
 			{
-				ProfilePrint("SEARCH: (%d) Successes  (%f) AveVisited  (%f) AvePathLen", 
-					mSearchSuccess,  
+				ProfilePrint("SEARCH: (%d) Successes  (%f) AveVisited  (%f) AvePathLen",
+					mSearchSuccess,
 					((float)mSearchSuccessVisited/(float)mSearchSuccess),
-					((float)mSearchSuccessPathLen/(float)mSearchSuccess)					
+					((float)mSearchSuccessPathLen/(float)mSearchSuccess)
 					);
 			}
 			if (mSearchFail)
