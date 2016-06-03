@@ -748,16 +748,13 @@ qboolean NPC_CheckPlayerTeamStealth( void )
 	gentity_t *enemy;
 	int i;
 
-	for ( i = 0; i < ENTITYNUM_WORLD; i++ )
+	// zyk: changed code below
+
+	for ( i = 0; i < level.num_entities; i++ )
 	{
 		enemy = &g_entities[i];
 
-		if (!enemy->inuse)
-		{
-			continue;
-		}
-
-		if ( enemy && enemy->client && NPC_ValidEnemy( enemy ) && enemy->client->playerTeam == NPCS.NPC->client->enemyTeam )
+		if ( enemy && enemy->client && enemy->inuse && NPC_ValidEnemy( enemy ) && enemy->client->playerTeam == NPCS.NPC->client->enemyTeam )
 		{
 			if ( NPC_CheckEnemyStealth( enemy ) )	//Change this pointer to assess other entities
 			{
@@ -2455,8 +2452,8 @@ void NPC_BSST_Attack( void )
 	{
 		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 10000 ) );
 
-		if (NPCS.NPC->enemy)
-		{
+		if (NPCS.NPC->enemy && !NPC_ClearLOS4(NPCS.NPC->enemy))
+		{ // zyk: if enemy cant be seen, try getting one later
 			NPCS.NPC->enemy = NULL;
 			if( NPCS.NPC->client->playerTeam == NPCTEAM_PLAYER )
 			{
@@ -2464,7 +2461,7 @@ void NPC_BSST_Attack( void )
 			}
 			else
 			{
-				NPC_BSST_Patrol();//FIXME: or patrol?
+				NPC_BSST_Patrol();
 			}
 			return;
 		}

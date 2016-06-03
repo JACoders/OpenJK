@@ -662,10 +662,10 @@ void NPC_BSSniper_Attack( void )
 	{
 		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 10000 ) );
 
-		if (NPCS.NPC->enemy)
-		{
+		if (NPCS.NPC->enemy && !NPC_ClearLOS4(NPCS.NPC->enemy))
+		{ // zyk: if enemy cant be seen, try getting one later
 			NPCS.NPC->enemy = NULL;
-			NPC_BSSniper_Patrol();//FIXME: or patrol?
+			NPC_BSSniper_Patrol();
 			return;
 		}
 	}

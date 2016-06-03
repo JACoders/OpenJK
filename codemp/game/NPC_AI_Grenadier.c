@@ -464,6 +464,19 @@ void NPC_BSGrenadier_Attack( void )
 		return;
 	}
 
+	// zyk: now if this timer is done and the enemy is no longer in our line of sight, try to get a new enemy later
+	if (TIMER_Done( NPCS.NPC, "zyk_check_enemy" ))
+	{
+		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 10000 ) );
+
+		if (NPCS.NPC->enemy && !NPC_ClearLOS4(NPCS.NPC->enemy))
+		{ // zyk: if enemy cant be seen, try getting one later
+			NPCS.NPC->enemy = NULL;
+			NPC_BSGrenadier_Patrol();
+			return;
+		}
+	}
+
 	//NPC_CheckEnemy( qtrue, qfalse );
 	//If we don't have an enemy, just idle
 	if ( NPC_CheckEnemyExt(qfalse) == qfalse )//!NPC->enemy )//
