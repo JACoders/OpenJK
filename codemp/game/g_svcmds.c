@@ -867,10 +867,20 @@ void Svcmd_ToggleTweakSaber_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_SABER_TWEAKS ) {
-			trap->Print( "tweakSaber: Invalid range: %i [0, %i]\n", index, MAX_SABER_TWEAKS - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_SABER_TWEAKS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("tweakSaber: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_SABER_TWEAKS - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_SABER_TWEAKS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_tweakSaber", va("%i", (1 << index) ^ (g_tweakSaber.integer & mask)));
+				trap->Cvar_Update(&g_tweakSaber);
+				trap->Print("%s %s^7\n", saberTweaks[index].string, ((g_tweakSaber.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+				CVU_TweakSaber();
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_tweakSaber", va( "%i", (1 << index) ^ (g_tweakSaber.integer & mask ) ) );
 		trap->Cvar_Update( &g_tweakSaber );
