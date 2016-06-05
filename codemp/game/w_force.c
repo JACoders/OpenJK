@@ -2221,8 +2221,8 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 
 				if (dmg)
 				{
-					if (self->client->ps.fd.forcePowerLevel[FP_DRAIN] == FORCE_LEVEL_3 && traceEnt->client->ps.fd.forcePower <= 0)
-					{ // zyk: Drain 3/3 and enemy has no force. Damages him
+					if (self->client->sess.amrpgmode == 2 && self->client->pers.skill_levels[33] > 0 && traceEnt->client->ps.fd.forcePower <= 0)
+					{ // zyk: Drain Shield skill. Enemy has no force. Damages him
 						G_Damage( traceEnt, self, self, NULL, impactPoint, (dmg/2), 0, MOD_FORCE_DARK );
 					}
 					else

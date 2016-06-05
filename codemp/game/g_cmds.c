@@ -9290,7 +9290,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 15)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Grip: ^7attacks a player by holding and damaging him\n\"" );
 					if (i == 16)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Drain: ^7drains force power from a player to restore you health. At level 3, allows draining enemy hp\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Drain: ^7drains force power from a player to restore your health\n\"" );
 					if (i == 17)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Rage: ^7makes you 1.3 times faster, increases your saber attack speed and damage and makes you get less damage\n\"" );
 					if (i == 18)
@@ -9326,7 +9326,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 33)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Health Strength: ^7Increases your health resistance to damage. Each level increases your health resistance by 10 per cent\n\"" );
 					if (i == 34)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Drain Shield: ^7When using Drain force power, and your health is full, restores some shield\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Drain Shield: ^7When using Drain force power, and your health is full, restores some shield. It also makes Drain suck hp/shield from the enemy to restore your hp/shield\n\"" );
 					if (i == 35)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Jetpack: ^7the jetpack, used by Boba Fett. Allows you to fly. To use it, jump and press the Use key (usually R) while in the middle of the jump. Each level uses less fuel, allowing you to fly for a longer time\n\"" );
 					if (i == 36)
