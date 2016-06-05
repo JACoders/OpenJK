@@ -4241,11 +4241,13 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	// zyk: removing scale from allies
 	for (i = 0; i < level.maxclients; i++)
 	{
-		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+		gentity_t *allied_player = &g_entities[i];
+
+		if (zyk_is_ally(ent,allied_player) == qtrue && allied_player->client->sess.amrpgmode == 2)
 		{
-			g_entities[i].client->pers.guardian_mode = guardian_mode;
-			do_scale(&g_entities[i], 100);
-			g_entities[i].client->noclip = qfalse;
+			allied_player->client->pers.guardian_mode = guardian_mode;
+			do_scale(allied_player, 100);
+			allied_player->client->noclip = qfalse;
 		}
 	}
 
