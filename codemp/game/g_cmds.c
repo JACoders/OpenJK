@@ -9330,7 +9330,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 					if (i == 35)
 						trap->SendServerCommand( ent-g_entities, "print \"^3Jetpack: ^7the jetpack, used by Boba Fett. Allows you to fly. To use it, jump and press the Use key (usually R) while in the middle of the jump. Each level uses less fuel, allowing you to fly for a longer time\n\"" );
 					if (i == 36)
-						trap->SendServerCommand( ent-g_entities, "print \"^3Sense Health: ^7allows you to see someone health and shield, including npcs. To use it, when you are near a player or npc, use ^3Sense ^7force power\n\"" );
+						trap->SendServerCommand( ent-g_entities, "print \"^3Sense Health: ^7allows you to see info about someone, like his health and shield, including npcs. To use it, when you are near a player or npc, use ^3Sense ^7force power\n\"" );
 					if (i == 37)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Shield Heal: ^7recovers 4 shield at level 1, 8 shield at level 2 and 12 shield at level 3. To use it, use Heal force power when you have full HP. This skill uses %d force power\n\"", zyk_max_force_power.integer/2) );
 					if (i == 38)
