@@ -2505,6 +2505,12 @@ void RespawnItem( gentity_t *ent ) {
 			;
 	}
 
+	// zyk: if a player pushed/pulled this item, make it return to its default origin
+	G_SetOrigin(ent, ent->s.origin);
+
+	ent->s.pos.trType = TR_GRAVITY;
+	ent->s.pos.trTime = level.time;
+
 	ent->r.contents = CONTENTS_TRIGGER;
 	//ent->s.eFlags &= ~EF_NODRAW;
 	ent->s.eFlags &= ~(EF_NODRAW | EF_ITEMPLACEHOLDER);
