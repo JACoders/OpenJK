@@ -4572,8 +4572,9 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 		if (G_IsMindTricked(&self->client->ps.fd, i) || (ent && ent->NPC))
 		{ // zyk: added the NPC condition
 			if ( !ent || !ent->client || !ent->inuse || ent->health < 1 ||
-				(ent->client->ps.fd.forcePowersActive & (1 << FP_SEE)) )
-			{
+				(ent->client->ps.fd.forcePowersActive & (1 << FP_SEE) && 
+				(ent->client->sess.amrpgmode < 2 || ent->client->pers.thermal_vision == qfalse)) )
+			{ // zyk: do not cancel Mind Trick if enemy is using Thermal Vision
 				if (ent && !ent->NPC) // zyk: remove tricked entity only for players
 					RemoveTrickedEnt(&self->client->ps.fd, i);
 			}
