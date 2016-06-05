@@ -4109,13 +4109,11 @@ int BG_GetTime(void)
 void zyk_TeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles ) {
 	gentity_t	*tent;
 	qboolean	isNPC = qfalse;
-	qboolean	noAngles;
+
 	if (player->s.eType == ET_NPC)
 	{
 		isNPC = qtrue;
 	}
-
-	noAngles = (angles[0] > 999999.0) ? qtrue : qfalse;
 
 	// use temp events at source and destination to prevent the effect
 	// from getting dropped by a second player event
@@ -9072,12 +9070,10 @@ void G_RunFrame( int levelTime ) {
 
 						if (ent->client->pers.universe_quest_progress == 10 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_timer < level.time && (int) ent->client->ps.origin[0] > -18684 && (int) ent->client->ps.origin[0] < -17485 && (int) ent->client->ps.origin[1] > 17652 && (int) ent->client->ps.origin[1] < 18781 && (int) ent->client->ps.origin[2] > 1505 && (int) ent->client->ps.origin[2] < 1850)
 						{ // zyk: eleventh objective of Universe Quest. Setting Guardian of Time free
-							gentity_t *npc_ent = NULL;
-
 							if (ent->client->pers.universe_quest_messages == 1)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: This is it. I will use the crystals.\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 2)
-								npc_ent = Zyk_NPC_SpawnType("guardian_of_time",-18084,17970,1658,-90);
+								Zyk_NPC_SpawnType("guardian_of_time",-18084,17970,1658,-90);
 							else if (ent->client->pers.universe_quest_messages == 3)
 								trap->SendServerCommand( ent->s.number, va("chat \"^7Guardian of Time^7: I am finally free.\""));
 							else if (ent->client->pers.universe_quest_messages == 4)

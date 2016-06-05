@@ -11359,7 +11359,7 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 void load_config(gentity_t *ent)
 {
-	FILE *config_file;
+	FILE *config_file = NULL;
 	gclient_t *client;
 	char content[32];
 	int value = 0;
@@ -11416,7 +11416,7 @@ void load_config(gentity_t *ent)
 
 void save_config(gentity_t *ent)
 {
-	FILE *config_file;
+	FILE *config_file = NULL;
 	gclient_t *client;
 	client = ent->client;
 
