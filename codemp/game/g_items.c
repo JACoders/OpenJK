@@ -2505,11 +2505,12 @@ void RespawnItem( gentity_t *ent ) {
 			;
 	}
 
-	// zyk: if a player pushed/pulled this item, make it return to its default origin
-	G_SetOrigin(ent, ent->s.origin);
-
-	ent->s.pos.trType = TR_GRAVITY;
-	ent->s.pos.trTime = level.time;
+	if (ent->r.currentOrigin[0] != ent->s.origin[0] || ent->r.currentOrigin[1] != ent->s.origin[1])
+	{ // zyk: if a player pushed/pulled this item, make it return to its default origin
+		G_SetOrigin(ent, ent->s.origin);
+		ent->s.pos.trType = TR_GRAVITY;
+		ent->s.pos.trTime = level.time;
+	}
 
 	ent->r.contents = CONTENTS_TRIGGER;
 	//ent->s.eFlags &= ~EF_NODRAW;
