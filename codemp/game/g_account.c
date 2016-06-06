@@ -3615,6 +3615,11 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		int s;
 		char dateStr[64] = {0};
 
+		if (!Q_stricmp(courseName, "")) {
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the top10 for the specified course.\n\"");
+			return;
+		}
+
 		//Com_Printf("doing sql query %s %i\n", courseName, style);
 
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
@@ -3635,7 +3640,9 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 		}
 		CALL_SQLITE (finalize(stmt));
 
-		sql = "SELECT username, duration_ms, topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC LIMIT 10";
+		//Problem - crossmap query can return multiple records for same person since the cleanup cmd is only done on mapchange, 
+		//fix by grouping by username here? and using min() so it shows right one? who knows if that will work
+		sql = "SELECT username, min(duration_ms), topspeed, average, end_time FROM LocalRun WHERE coursename = ? AND style = ? GROUP BY username ORDER BY duration_ms ASC LIMIT 10";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, courseNameFull, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, style));
