@@ -4200,14 +4200,16 @@ qboolean zyk_is_ally(gentity_t *ent, gentity_t *other)
 }
 
 // zyk: counts how many allies this player has
-int zyk_number_of_allies(gentity_t *ent)
+int zyk_number_of_allies(gentity_t *ent, qboolean in_rpg_mode)
 {
 	int i = 0;
 	int number_of_allies = 0;
 
 	for (i = 0; i < level.maxclients; i++)
 	{
-		if (zyk_is_ally(ent,&g_entities[i]) == qtrue)
+		gentity_t *allied_player = &g_entities[i];
+
+		if (zyk_is_ally(ent,allied_player) == qtrue && (in_rpg_mode == qfalse || allied_player->client->sess.amrpgmode == 2))
 			number_of_allies++;
 	}
 
@@ -4269,7 +4271,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 
 	if (npc_ent)
 	{
-		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health * 0.15 * zyk_number_of_allies(ent));
+		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health * 0.15 * zyk_number_of_allies(ent,qtrue));
 		npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->NPC->stats.health;
 		npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
 

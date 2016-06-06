@@ -1521,7 +1521,7 @@ typedef struct level_locals_s {
 
 // zyk: functions used in a lot of places
 qboolean zyk_is_ally(gentity_t *ent, gentity_t *other);
-int zyk_number_of_allies(gentity_t *ent);
+int zyk_number_of_allies(gentity_t *ent, qboolean in_rpg_mode);
 void send_rpg_events(int send_event_timer);
 int zyk_get_remap_count();
 
