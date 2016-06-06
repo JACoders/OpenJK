@@ -568,8 +568,6 @@ static void RB_BeginDrawingView (void) {
 	}
 }
 
-#define	MAC_EVENT_PUMP_MSEC		5
-
 //used by RF_DISTORTION
 static inline bool R_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 {
@@ -707,9 +705,8 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		if (entityNum != REFENTITYNUM_WORLD &&
 			g_numPostRenders < MAX_POST_RENDERS)
 		{
-			if ( (backEnd.refdef.entities[entityNum].e.renderfx & RF_DISTORTION)/* ||
-				(backEnd.refdef.entities[entityNum].e.renderfx & RF_FORCE_ENT_ALPHA)*/)
-				//not sure if we need this alpha fix for sp or not, leaving it out for now -rww
+			if ( (backEnd.refdef.entities[entityNum].e.renderfx & RF_DISTORTION) ||
+				(backEnd.refdef.entities[entityNum].e.renderfx & RF_FORCE_ENT_ALPHA))
 			{ //must render last
 				curEnt = &backEnd.refdef.entities[entityNum];
 				pRender = &g_postRenders[g_numPostRenders];
