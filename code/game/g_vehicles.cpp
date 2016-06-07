@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "../qcommon/q_shared.h"
 #include "g_local.h"
 
@@ -51,7 +56,6 @@ This file is part of Jedi Academy.
 #endif
 
 #ifndef _JK2MP
-#define GAME_INLINE inline
 #define bgEntity_t gentity_t
 #endif
 
@@ -150,9 +154,9 @@ float	G_CanJumpToEnemyVeh(Vehicle_t *pVeh, const usercmd_t *pUcmd )
 
 	// If There Is An Enemy And We Are At The Same Z Height
 	//------------------------------------------------------
-	if (rider && 
-		rider->enemy && 
-		pUcmd->rightmove && 
+	if (rider &&
+		rider->enemy &&
+		pUcmd->rightmove &&
 		fabsf(rider->enemy->currentOrigin[2] - rider->currentOrigin[2])<50.0f)
 	{
 		if (level.time<pVeh->m_safeJumpMountTime)
@@ -177,7 +181,7 @@ float	G_CanJumpToEnemyVeh(Vehicle_t *pVeh, const usercmd_t *pUcmd )
 			//------------------------------------------------
 			VectorSubtract(rider->enemy->currentOrigin, rider->currentOrigin, toEnemy);
 		 	toEnemyDistance = VectorNormalize(toEnemy);
-			if (toEnemyDistance<70.0f && 
+			if (toEnemyDistance<70.0f &&
 				pVeh->m_pParentEntity->resultspeed>100.0f &&
 				fabsf(pVeh->m_pParentEntity->resultspeed - enemyVeh->m_pParentEntity->resultspeed)<100.0f)
 			{
@@ -225,18 +229,18 @@ void G_VehicleSpawn( gentity_t *self )
 
 	//save this because self gets removed in next func
 	yaw = self->s.angles[YAW];
-	
+
 #ifdef _JK2MP
 	vehEnt = NPC_Spawn_Do( self );
 #else
 	vehEnt = NPC_Spawn_Do( self, qtrue );
 #endif
-	
+
 	if ( !vehEnt )
 	{
 		return;//return NULL;
 	}
-	
+
 	vehEnt->s.angles[YAW] = yaw;
 	if ( vehEnt->m_pVehicle->m_pVehicleInfo->type != VH_ANIMAL )
 	{
@@ -321,7 +325,7 @@ void G_KnockOffVehicle( gentity_t *pRider, gentity_t *self, qboolean bPull )
 	{
 		return;
 	}
-	
+
 	pVeh = G_IsRidingVehicle( pRider );
 
 	if ( !pVeh || !pVeh->m_pVehicleInfo )
@@ -579,7 +583,7 @@ bool ValidateBoard( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	VectorNormalize( vVehToEnt );
 
 	// Get the right vector.
-	AngleVectors( vVehAngles, NULL, vVehDir, NULL ); 
+	AngleVectors( vVehAngles, NULL, vVehDir, NULL );
 	VectorNormalize( vVehDir );
 
 	// Find the angle between the vehicle right vector and the vehicle to entity vector.
@@ -600,7 +604,7 @@ bool ValidateBoard( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	else
 	{
 		// The forward vector of the vehicle.
-	//	AngleVectors( vVehAngles, vVehDir, NULL, NULL ); 
+	//	AngleVectors( vVehAngles, vVehDir, NULL, NULL );
 	//	VectorNormalize( vVehDir );
 
 		// Find the angle between the vehicle forward and the vehicle to entity vector.
@@ -705,7 +709,7 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 		parent->owner = ent;
 #endif
 
-#ifdef QAGAME		
+#ifdef QAGAME
 		{
 			gentity_t *gParent = (gentity_t *)parent;
 			if ( (gParent->spawnflags&2) )
@@ -778,7 +782,7 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 			return false;
 		}
 	}
-	
+
 	// Make sure the entity knows it's in a vehicle.
 #ifdef _JK2MP
 	ent->client->ps.m_iVehicleNum = parent->s.number;
@@ -804,8 +808,8 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 		{// Riding means you get WP_NONE
 			ent->client->ps.stats[ STAT_WEAPONS ] |= (1<<WP_NONE);
 		}
-		if ( ent->client->ps.weapon != WP_SABER
-			&& ent->client->ps.weapon != WP_BLASTER )
+		if ( (ent->client->ps.weapon != WP_SABER
+			&& ent->client->ps.weapon != WP_BLASTER) || !(pVeh->m_pVehicleInfo->type == VH_ANIMAL || pVeh->m_pVehicleInfo->type == VH_SPEEDER))
 		{//switch to weapon none?
 			if (ent->s.number<MAX_CLIENTS)
 			{
@@ -840,10 +844,10 @@ bool Board( Vehicle_t *pVeh, bgEntity_t *pEnt )
 	return true;
 }
 
-bool VEH_TryEject( Vehicle_t *pVeh, 
-				  gentity_t *parent, 
-				  gentity_t *ent, 
-				  int ejectDir, 
+bool VEH_TryEject( Vehicle_t *pVeh,
+				  gentity_t *parent,
+				  gentity_t *ent,
+				  int ejectDir,
 				  vec3_t vExitPos )
 {
 	float		fBias;
@@ -859,29 +863,29 @@ bool VEH_TryEject( Vehicle_t *pVeh,
 	{
 		// Left.
 		case VEH_EJECT_LEFT:
-			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL ); 
+			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL );
 			vVehLeaveDir[0] = -vVehLeaveDir[0];
 			vVehLeaveDir[1] = -vVehLeaveDir[1];
 			vVehLeaveDir[2] = -vVehLeaveDir[2];
 			break;
 		// Right.
 		case VEH_EJECT_RIGHT:
-			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL ); 
+			AngleVectors( vVehAngles, NULL, vVehLeaveDir, NULL );
 			break;
 		// Front.
 		case VEH_EJECT_FRONT:
-			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL ); 
+			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL );
 			break;
 		// Rear.
 		case VEH_EJECT_REAR:
-			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL ); 
+			AngleVectors( vVehAngles, vVehLeaveDir, NULL, NULL );
 			vVehLeaveDir[0] = -vVehLeaveDir[0];
 			vVehLeaveDir[1] = -vVehLeaveDir[1];
 			vVehLeaveDir[2] = -vVehLeaveDir[2];
 			break;
 		// Top.
 		case VEH_EJECT_TOP:
-			AngleVectors( vVehAngles, NULL, NULL, vVehLeaveDir ); 
+			AngleVectors( vVehAngles, NULL, NULL, vVehLeaveDir );
 			break;
 		// Bottom?.
 		case VEH_EJECT_BOTTOM:
@@ -891,7 +895,7 @@ bool VEH_TryEject( Vehicle_t *pVeh,
 	//NOTE: not sure why following line was needed - MCG
 	//pVeh->m_EjectDir = VEH_EJECT_LEFT;
 
-	// Since (as of this time) the collidable geometry of the entity is just an axis 
+	// Since (as of this time) the collidable geometry of the entity is just an axis
 	// aligned box, we need to get the diagonal length of it in case we come out on that side.
 	// Diagonal Length == squareroot( squared( Sidex / 2 ) + squared( Sidey / 2 ) );
 
@@ -1232,7 +1236,7 @@ getItOutOfMe:
 		ent->r.contents = CONTENTS_BODY;
 	}
 #else
-	ent->owner = NULL;	
+	ent->owner = NULL;
 #endif
 	ent->s.m_iVehicleNum = 0;
 
@@ -1260,7 +1264,7 @@ getItOutOfMe:
 		//ent->client->ps.stats[STAT_WEAPONS] &= ~( 1 << WP_EMPLACED_GUN );
 		//ent->client->ps.ammo[weaponData[WP_EMPLACED_GUN].ammoIndex] = 0;//maybe store this ammo on the vehicle before clearing it?
 		//switch back to a normal weapon we're carrying
-		
+
 		//FIXME: store the weapon we were using when we got on and restore that when hop off
 /*		if ( (ent->client->ps.stats[STAT_WEAPONS]&(1<<WP_SABER)) )
 		{
@@ -1288,7 +1292,7 @@ getItOutOfMe:
 		//NOTE: this is because you're only allowed to use your first saber's first blade on a vehicle
 	}
 
-/*	if ( !ent->s.number && ent->client->ps.weapon != WP_SABER 
+/*	if ( !ent->s.number && ent->client->ps.weapon != WP_SABER
 		&& cg_gunAutoFirst.value )
 	{
 		gi.cvar_set( "cg_thirdperson", "0" );
@@ -1348,7 +1352,7 @@ bool EjectAll( Vehicle_t *pVeh )
 		}
 #endif
 	}
-	
+
 	if ( pVeh->m_pDroidUnit )
 	{
 		G_EjectDroidUnit( pVeh, pVeh->m_pVehicleInfo->killRiderOnDeath );
@@ -1431,7 +1435,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 								NULL, pVeh->m_pParentEntity->playerState->origin, 999, DAMAGE_NO_PROTECTION, MOD_EXPLOSIVE);
 						}
 					}
-				}				
+				}
 			}
 #endif
 		}
@@ -1464,7 +1468,7 @@ static void DeathUpdate( Vehicle_t *pVeh )
 #endif
 			if ( pVeh->m_pVehicleInfo->iExplodeFX )
 			{
-				vec3_t fxAng = { -90.0f, 0.0f, 0.0f };
+				vec3_t fxAng = { 0.0f, -1.0f, 0.0f };
 				G_PlayEffect( pVeh->m_pVehicleInfo->iExplodeFX, parent->currentOrigin, fxAng );
 
 				//trace down and place mark
@@ -1565,8 +1569,8 @@ bool Initialize( Vehicle_t *pVeh )
 		}
 	}
 	//begin stopped...?
-	parent->client->ps.speed = 0; 
-	
+	parent->client->ps.speed = 0;
+
 	VectorClear( pVeh->m_vOrientation );
 	pVeh->m_vOrientation[YAW] = parent->s.angles[YAW];
 
@@ -1635,7 +1639,7 @@ bool Initialize( Vehicle_t *pVeh )
 		int iFlags = SETANIM_FLAG_NORMAL, iBlend = 300;
 #ifdef _JK2MP
 		pVeh->m_ulFlags |= VEH_GEARSOPEN;
-		BG_SetAnim(pVeh->m_pParentEntity->playerState, 
+		BG_SetAnim(pVeh->m_pParentEntity->playerState,
 			bgAllAnims[pVeh->m_pParentEntity->localAnimIndex].anims,
 			SETANIM_BOTH, BOTH_VS_IDLE, iFlags, iBlend);
 #else
@@ -1751,7 +1755,7 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 #endif
 
 	// See whether this vehicle should be dieing or dead.
-	if ( pVeh->m_iDieTime != 0 
+	if ( pVeh->m_iDieTime != 0
 #ifndef _JK2MP //sometimes this gets out of whack, probably init'ing
 		|| (parent->health <= 0)
 #endif
@@ -1763,7 +1767,7 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		// Process the orient commands.
 		pVeh->m_pVehicleInfo->ProcessOrientCommands( pVeh );
 		// Need to copy orientation to our entity's viewangles so that it renders at the proper angle and currentAngles is correct.
-		SetClientViewAngle( parent, pVeh->m_vOrientation ); 
+		SetClientViewAngle( parent, pVeh->m_vOrientation );
 		if ( pVeh->m_pPilot )
 		{
 			SetClientViewAngle( (gentity_t *)pVeh->m_pPilot, pVeh->m_vOrientation );
@@ -1784,12 +1788,12 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		// Setup the move direction.
 		if ( pVeh->m_pVehicleInfo->type == VH_FIGHTER )
 		{
-			AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL ); 
+			AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL );
 		}
 		else
 		{
 			VectorSet(vVehAngles, 0, pVeh->m_vOrientation[YAW], 0);
-			AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL ); 
+			AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL );
 		}
 		pVeh->m_pVehicleInfo->DeathUpdate( pVeh );
 		return false;
@@ -1813,7 +1817,7 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		return false;
 	}
 #endif
-	
+
 #ifdef _JK2MP //special check in case someone disconnects/dies while boarding
 #ifdef QAGAME
 	if (parent->spawnflags & 1)
@@ -1875,7 +1879,7 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 //	if (level.time<pVeh->m_iTurboTime || pVeh->m_pVehicleInfo->type==VH_ANIMAL)
 	// always knock guys around now...
 	{
-		vec3_t	dir;						
+		vec3_t	dir;
 		vec3_t	projectedPosition;
 		VectorCopy(parent->client->ps.velocity, dir);
 		VectorMA(parent->currentOrigin, 0.1f, dir, projectedPosition);
@@ -1886,10 +1890,10 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 		{
 			trace_t	tr;
 			G_VehicleTrace(&tr, parent->currentOrigin, parent->mins, parent->maxs, projectedPosition, parent->s.number, CONTENTS_BODY);
-			if (tr.fraction<1.0f && 
-				!tr.allsolid && 
-				!tr.startsolid && 
-				tr.entityNum!=ENTITYNUM_NONE && 
+			if (tr.fraction<1.0f &&
+				!tr.allsolid &&
+				!tr.startsolid &&
+				tr.entityNum!=ENTITYNUM_NONE &&
 				tr.entityNum!=ENTITYNUM_WORLD &&
 				(level.time<pVeh->m_iTurboTime || Q_irand(0,3)==0))
 			{
@@ -1956,7 +1960,7 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 	if ( pVeh->m_pPilot )
 	{
 		pilotEnt = (gentity_t *)pVeh->m_pPilot;
-		
+
 #ifdef _JK2MP
 		if (!pilotEnt->inuse || !pilotEnt->client || pilotEnt->health <= 0 ||
 			pilotEnt->client->pers.connected != CON_CONNECTED)
@@ -1982,18 +1986,18 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 	// Update time modifier.
 	pVeh->m_fTimeModifier = pVeh->m_ucmd.serverTime - parent->client->ps.commandTime;
 	//sanity check
-	if ( pVeh->m_fTimeModifier < 1 ) 
+	if ( pVeh->m_fTimeModifier < 1 )
 	{
 		pVeh->m_fTimeModifier = 1;
-	} 
-	else if ( pVeh->m_fTimeModifier > 200 ) 
+	}
+	else if ( pVeh->m_fTimeModifier > 200 )
 	{
 		pVeh->m_fTimeModifier = 200;
 	}
 	//normalize to 1.0f at 20fps
 	pVeh->m_fTimeModifier = pVeh->m_fTimeModifier / fMod;
 	*/
-	
+
 	//check for weapon linking/unlinking command
 	for ( i = 0; i < MAX_VEHICLE_WEAPONS; i++ )
 	{//HMM... can't get a seperate command for each weapon, so do them all...?
@@ -2006,23 +2010,23 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 			}
 		}
 #ifdef _JK2MP
-		else if ( (pVeh->m_ucmd.buttons&BUTTON_USE_HOLDABLE) ) 
+		else if ( (pVeh->m_ucmd.buttons&BUTTON_USE_HOLDABLE) )
 #else
 		//FIXME: implement... just a console command bound to a key?
 		else if ( 0 )
-#endif	
+#endif
 		{//pilot pressed the "weapon link" toggle button
-			playerState_t *pilotPS;
+			//playerState_t *pilotPS;
 #ifdef _JK2MP
 			bgEntity_t *rider = NULL;
 			if (parent->s.owner != ENTITYNUM_NONE)
 			{
 				rider = PM_BGEntForNum(parent->s.owner); //&g_entities[parent->r.ownerNum];
 			}
-			pilotPS = rider->playerState;
+			//pilotPS = rider->playerState;
 #else
-			gentity_t *rider = parent->owner;
-			pilotPS = &rider->client->ps;
+			//gentity_t *rider = parent->owner;
+			//pilotPS = &rider->client->ps;
 #endif
 			if ( !pVeh->linkWeaponToggleHeld )//so we don't hold it down and toggle it back and forth
 			{//okay to toggle
@@ -2083,7 +2087,7 @@ maintainSelfDuringBoarding:
 	// Process the orient commands.
 	pVeh->m_pVehicleInfo->ProcessOrientCommands( pVeh );
 	// Need to copy orientation to our entity's viewangles so that it renders at the proper angle and currentAngles is correct.
-	SetClientViewAngle( parent, pVeh->m_vOrientation ); 
+	SetClientViewAngle( parent, pVeh->m_vOrientation );
 	if ( pVeh->m_pPilot )
 	{
 #ifdef _JK2MP
@@ -2117,12 +2121,12 @@ maintainSelfDuringBoarding:
 	pVeh->m_pVehicleInfo->ProcessMoveCommands( pVeh );
 	nextSpeed = parentPS->speed;
 	halfMaxSpeed = pVeh->m_pVehicleInfo->speedMax*0.5f;
-	
+
 
 // Shifting Sounds
 //=====================================================================
-	if (pVeh->m_iTurboTime<curTime && 
-		pVeh->m_iSoundDebounceTimer<curTime && 
+	if (pVeh->m_iTurboTime<curTime &&
+		pVeh->m_iSoundDebounceTimer<curTime &&
 		((nextSpeed>prevSpeed && nextSpeed>halfMaxSpeed &&	prevSpeed<halfMaxSpeed) || (nextSpeed>halfMaxSpeed && !Q_irand(0,1000)))
  		)
 	{
@@ -2151,12 +2155,12 @@ maintainSelfDuringBoarding:
 	// Setup the move direction.
 	if ( pVeh->m_pVehicleInfo->type == VH_FIGHTER )
 	{
-		AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL ); 
+		AngleVectors( pVeh->m_vOrientation, parent->client->ps.moveDir, NULL, NULL );
 	}
 	else
 	{
 		VectorSet(vVehAngles, 0, pVeh->m_vOrientation[YAW], 0);
-		AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL ); 
+		AngleVectors( vVehAngles, parent->client->ps.moveDir, NULL, NULL );
 	}
 
 #ifdef _JK2MP
@@ -2181,7 +2185,7 @@ maintainSelfDuringBoarding:
 			//FIXME: aside from bypassing shields, maybe set m_iShields to 0, too... ?
 			G_Damage(parent, killer, killer, NULL, parent->client->ps.origin, Q_irand(2, 5), DAMAGE_NO_PROTECTION|DAMAGE_NO_ARMOR, MOD_SUICIDE);
 		}
-		
+
 		//make sure playerstate value stays in sync
 		parent->client->ps.vehSurfaces = pVeh->m_iRemovedSurfaces;
 	}
@@ -2206,7 +2210,7 @@ maintainSelfDuringBoarding:
 		parent->enemy = pVeh->m_pPilot->enemy;
 	}
 #endif
-	
+
 
 	return true;
 }
@@ -2225,7 +2229,7 @@ static bool UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUmcd )
 	rider = (gentity_t *)pRider;
 #ifdef _JK2MP
 	//MG FIXME !! Single player needs update!
-	if ( rider && rider->client 
+	if ( rider && rider->client
 		&& parent && parent->client )
 	{//so they know who we're locking onto with our rockets, if anyone
 		rider->client->ps.rocketLockIndex = parent->client->ps.rocketLockIndex;
@@ -2288,7 +2292,7 @@ static bool UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUmcd )
 					Anim = BOTH_VS_DISMOUNT_L;
 					pVeh->m_EjectDir = VEH_EJECT_LEFT;
 				}
-				
+
 				if ( pVeh->m_iBoarding <= 1 )
 				{
 					int iAnimLen;
@@ -2343,7 +2347,7 @@ static bool UpdateRider( Vehicle_t *pVeh, bgEntity_t *pRider, usercmd_t *pUmcd )
 		}
 	}
 
-	if ( pVeh->m_pVehicleInfo->type != VH_FIGHTER 
+	if ( pVeh->m_pVehicleInfo->type != VH_FIGHTER
 		&& pVeh->m_pVehicleInfo->type != VH_WALKER  )
 	{
 		// Jump off.
@@ -2854,7 +2858,7 @@ void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 				&& veh->m_pVehicle->m_pDroidUnit )
 			{//we have one
 				gentity_t *droidEnt = (gentity_t *)veh->m_pVehicle->m_pDroidUnit;
-				if ( droidEnt 
+				if ( droidEnt
 					&& ((droidEnt->flags&FL_UNDYING) || droidEnt->health > 0) )
 				{//boom
 					//make it vulnerable
@@ -2880,7 +2884,7 @@ void G_SetVehDamageFlags( gentity_t *veh, int shipSurf, int damageLevel )
 				&& veh->m_pVehicle->m_pDroidUnit )
 			{//we have one
 				gentity_t *droidEnt = (gentity_t *)veh->m_pVehicle->m_pDroidUnit;
-				if ( droidEnt 
+				if ( droidEnt
 					&& (droidEnt->flags&FL_UNDYING) )
 				{//make it vulnerab;e
 					droidEnt->flags &= ~FL_UNDYING;
@@ -2941,7 +2945,7 @@ void G_VehicleSetDamageLocFlags( gentity_t *veh, int impactDir, int deathPoint )
 		}
 		if ( veh->m_pVehicle
 			&& veh->m_pVehicle->m_pVehicleInfo
-			&& veh->m_pVehicle->m_pVehicleInfo->malfunctionArmorLevel 
+			&& veh->m_pVehicle->m_pVehicleInfo->malfunctionArmorLevel
 			&& veh->m_pVehicle->m_pVehicleInfo->armor )
 		{
 			float perc = ((float)veh->m_pVehicle->m_pVehicleInfo->malfunctionArmorLevel/(float)veh->m_pVehicle->m_pVehicleInfo->armor);
@@ -3134,7 +3138,7 @@ anotherImpact:
 
 void G_VehUpdateShields( gentity_t *targ )
 {
-	if ( !targ || !targ->client 
+	if ( !targ || !targ->client
 		|| !targ->m_pVehicle || !targ->m_pVehicle->m_pVehicleInfo )
 	{
 		return;
@@ -3148,16 +3152,16 @@ void G_VehUpdateShields( gentity_t *targ )
 #endif
 
 // Set the parent entity of this Vehicle NPC.
-GAME_INLINE void SetParent( Vehicle_t *pVeh, bgEntity_t *pParentEntity ) { pVeh->m_pParentEntity = pParentEntity; }
+void SetParent( Vehicle_t *pVeh, bgEntity_t *pParentEntity ) { pVeh->m_pParentEntity = pParentEntity; }
 
 // Add a pilot to the vehicle.
-GAME_INLINE void SetPilot( Vehicle_t *pVeh, bgEntity_t *pPilot ) { pVeh->m_pPilot = pPilot; }
+void SetPilot( Vehicle_t *pVeh, bgEntity_t *pPilot ) { pVeh->m_pPilot = pPilot; }
 
 // Add a passenger to the vehicle (false if we're full).
-GAME_INLINE bool AddPassenger( Vehicle_t *pVeh ) { return false; }
+bool AddPassenger( Vehicle_t *pVeh ) { return false; }
 
 // Whether this vehicle is currently inhabited (by anyone) or not.
-GAME_INLINE bool Inhabited( Vehicle_t *pVeh ) { return ( pVeh->m_pPilot ) ? true : false; }
+bool Inhabited( Vehicle_t *pVeh ) { return ( pVeh->m_pPilot ) ? true : false; }
 
 
 // Setup the shared functions (one's that all vehicles would generally use).

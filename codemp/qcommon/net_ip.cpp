@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "qcommon/qcommon.h"
 
 #ifdef _WIN32
@@ -70,6 +94,8 @@ static cvar_t	*net_socksPassword;
 
 static cvar_t	*net_ip;
 static cvar_t	*net_port;
+
+static cvar_t	*net_dropsim;
 
 static struct sockaddr	socksRelayAddr;
 
@@ -213,21 +239,21 @@ qboolean Sys_StringToAdr( const char *s, netadr_t *a ) {
 
 /*
 ==================
-Sys_GetPacket
+NET_GetPacket
 
-Never called by the game logic, just the system event queing
+Receive one packet
 ==================
 */
 #ifdef _DEBUG
 int	recvfromCount;
 #endif
 
-qboolean Sys_GetPacket( netadr_t *net_from, msg_t *net_message ) {
+qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 	int ret, err;
 	socklen_t fromlen;
 	struct sockaddr from;
 
-	if ( ip_socket == INVALID_SOCKET ) {
+	if ( ip_socket == INVALID_SOCKET || !FD_ISSET(ip_socket, fdr) ) {
 		return qfalse;
 	}
 
@@ -463,7 +489,6 @@ NET_OpenSocks
 */
 void NET_OpenSocks( int port ) {
 	struct sockaddr_in	address;
-	int					err;
 	struct hostent		*h;
 	int					len;
 	qboolean			rfc1929;
@@ -474,14 +499,12 @@ void NET_OpenSocks( int port ) {
 	Com_Printf( "Opening connection to SOCKS server.\n" );
 
 	if ( ( socks_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) == INVALID_SOCKET ) {
-		err = socketError;
 		Com_Printf( "WARNING: NET_OpenSocks: socket: %s\n", NET_ErrorString() );
 		return;
 	}
 
 	h = gethostbyname( net_socksServer->string );
 	if ( h == NULL ) {
-		err = socketError;
 		Com_Printf( "WARNING: NET_OpenSocks: gethostbyname: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -495,7 +518,6 @@ void NET_OpenSocks( int port ) {
 	address.sin_port = htons( (short)net_socksPort->integer );
 
 	if ( connect( socks_socket, (struct sockaddr *)&address, sizeof( address ) ) == SOCKET_ERROR ) {
-		err = socketError;
 		Com_Printf( "NET_OpenSocks: connect: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -523,7 +545,6 @@ void NET_OpenSocks( int port ) {
 		buf[2] = 2;		// method #2 - method id #02: username/password
 	}
 	if ( send( socks_socket, (const char *)buf, len, 0 ) == SOCKET_ERROR ) {
-		err = socketError;
 		Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -531,7 +552,6 @@ void NET_OpenSocks( int port ) {
 	// get the response
 	len = recv( socks_socket, (char *)buf, 64, 0 );
 	if ( len == SOCKET_ERROR ) {
-		err = socketError;
 		Com_Printf( "NET_OpenSocks: recv: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -570,7 +590,6 @@ void NET_OpenSocks( int port ) {
 
 		// send it
 		if ( send( socks_socket, (const char *)buf, 3 + ulen + plen, 0 ) == SOCKET_ERROR ) {
-			err = socketError;
 			Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 			return;
 		}
@@ -578,7 +597,6 @@ void NET_OpenSocks( int port ) {
 		// get the response
 		len = recv( socks_socket, (char *)buf, 64, 0 );
 		if ( len == SOCKET_ERROR ) {
-			err = socketError;
 			Com_Printf( "NET_OpenSocks: recv: %s\n", NET_ErrorString() );
 			return;
 		}
@@ -600,7 +618,6 @@ void NET_OpenSocks( int port ) {
 	*(int *)&buf[4] = INADDR_ANY;
 	*(short *)&buf[8] = htons( (short)port );		// port
 	if ( send( socks_socket, (const char *)buf, 10, 0 ) == SOCKET_ERROR ) {
-		err = socketError;
 		Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -608,7 +625,6 @@ void NET_OpenSocks( int port ) {
 	// get the response
 	len = recv( socks_socket, (char *)buf, 64, 0 );
 	if( len == SOCKET_ERROR ) {
-		err = socketError;
 		Com_Printf( "NET_OpenSocks: recv: %s\n", NET_ErrorString() );
 		return;
 	}
@@ -651,7 +667,7 @@ NET_GetLocalAddress
 	// tjw: assume that once upon a time some version did have sa_len
 	#define IFR_NEXT(ifr)	\
 	((struct ifreq *) ((char *) (ifr) + sizeof(*(ifr)) + \
-	max(0, (int) (ifr)->ifr_addr.sa_len - (int) sizeof((ifr)->ifr_addr))))
+	Q_max(0, (int) (ifr)->ifr_addr.sa_len - (int) sizeof((ifr)->ifr_addr))))
 #endif
 
 
@@ -755,7 +771,6 @@ void NET_GetLocalAddress( void )
 {
 	char				hostname[256];
 	struct hostent		*hostInfo;
-	int					error;
 	char				*p;
 	int					ip;
 	int					n;
@@ -764,13 +779,11 @@ void NET_GetLocalAddress( void )
 	numIP = 0;
 
 	if( gethostname( hostname, 256 ) == SOCKET_ERROR ) {
-		error = socketError;
 		return;
 	}
 
 	hostInfo = gethostbyname( hostname );
 	if( !hostInfo ) {
-		error = socketError;
 		return;
 	}
 
@@ -878,6 +891,8 @@ static qboolean NET_GetCvars( void ) {
 	modified += net_socksPassword->modified;
 	net_socksPassword->modified = qfalse;
 
+	net_dropsim = Cvar_Get( "net_dropsim", "", CVAR_TEMP);
+
 	return modified ? qtrue : qfalse;
 }
 
@@ -960,7 +975,7 @@ void NET_Init( void ) {
 
 	NET_Config( qtrue );
 
-	Cmd_AddCommand ("net_restart", NET_Restart_f );
+	Cmd_AddCommand ("net_restart", NET_Restart_f, "Restart the networking sub-system" );
 }
 
 /*
@@ -982,31 +997,82 @@ void NET_Shutdown( void ) {
 
 /*
 ====================
+NET_Event
+
+Called from NET_Sleep which uses select() to determine which sockets have seen action.
+====================
+*/
+
+void NET_Event(fd_set *fdr)
+{
+	byte bufData[MAX_MSGLEN + 1];
+	netadr_t from;
+	msg_t netmsg;
+
+	while(1)
+	{
+		MSG_Init(&netmsg, bufData, sizeof(bufData));
+
+		if(NET_GetPacket(&from, &netmsg, fdr))
+		{
+			if(net_dropsim->value > 0.0f && net_dropsim->value <= 100.0f)
+			{
+				// com_dropsim->value percent of incoming packets get dropped.
+				if(rand() < (int) (((double) RAND_MAX) / 100.0 * (double) net_dropsim->value))
+					continue;          // drop this packet
+			}
+
+			if(com_sv_running->integer)
+				Com_RunAndTimeServerPacket(&from, &netmsg);
+			else
+				CL_PacketEvent(from, &netmsg);
+		}
+		else
+			break;
+	}
+}
+
+/*
+====================
 NET_Sleep
 
 sleeps msec or until net socket is ready
 ====================
 */
 void NET_Sleep( int msec ) {
-#ifndef _WIN32
 	struct timeval timeout;
 	fd_set	fdset;
-	extern qboolean stdin_active;
+	int retval;
+	SOCKET highestfd = INVALID_SOCKET;
 
-	if ( !com_dedicated->integer )
-		return; // we're not a server, just run full speed
-
-	if ( ip_socket == INVALID_SOCKET )
-		return;
+	if (msec < 0)
+		msec = 0;
 
 	FD_ZERO(&fdset);
-	if (stdin_active)
-		FD_SET(0, &fdset); // stdin is processed too
-	FD_SET(ip_socket, &fdset); // network socket
+	if (ip_socket != INVALID_SOCKET) {
+		FD_SET(ip_socket, &fdset); // network socket
+		highestfd = ip_socket;
+	}
+
+#ifdef _WIN32
+	if(highestfd == INVALID_SOCKET)
+	{
+		// windows ain't happy when select is called without valid FDs
+
+		SleepEx(msec, 0);
+		return;
+	}
+#endif
+
 	timeout.tv_sec = msec/1000;
 	timeout.tv_usec = (msec%1000)*1000;
-	select(ip_socket+1, &fdset, NULL, NULL, &timeout);
-#endif
+
+	retval = select(highestfd + 1, &fdset, NULL, NULL, &timeout);
+
+	if(retval == SOCKET_ERROR)
+		Com_Printf("Warning: select() syscall failed: %s\n", NET_ErrorString());
+	else if(retval > 0)
+		NET_Event(&fdset);
 }
 
 /*

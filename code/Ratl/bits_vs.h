@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -23,8 +27,8 @@ This file is part of Jedi Academy.
 //
 // Bit Field
 // ---------
-// The bits class is a bit field of any length which supports all the 
-// standard bitwize operations in addition to some operators for adding & removing 
+// The bits class is a bit field of any length which supports all the
+// standard bitwize operations in addition to some operators for adding & removing
 // individual bits by their integer indicies and a string conversion method.
 //
 //
@@ -47,7 +51,7 @@ This file is part of Jedi Academy.
 #endif
 namespace ratl
 {
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // The Bit Field Class
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +68,7 @@ class bits_vs : public bits_base<SZ>
 			this->mV[i>>this->BITS_SHIFT] &= ~(1<<(i&this->BITS_AND));
 		}
 	}
-	
+
 public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -127,7 +131,7 @@ public:
 	int			size()	const
 	{
 		return SIZE;
-	}	
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Execute A Bitwise Flip On All The Bits
@@ -150,11 +154,11 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
-	// Query 
+	// Query
 	////////////////////////////////////////////////////////////////////////////////////////
 	bool		get_bit(const int i) const
 	{
-		// If you hit this assert, then you are trying 
+		// If you hit this assert, then you are trying
 		// to query a bit that goes beyond the number
 		// of bits this object can hold.
 		//--------------------------------------------

@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
+
 #include "../cgame/cg_local.h"
 #include "Q3_Interface.h"
 #include "g_local.h"
@@ -37,7 +43,7 @@ int			delayedShutDown = 0;
 #include "../qcommon/sstring.h"
 
 //NOTENOTE: Be sure to change the mirrored code in cgmain.cpp
-typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
+typedef	std::map< sstring_t, unsigned char  >	namePrecache_m;
 namePrecache_m	*as_preCacheMap = NULL;
 
 char *G_AddSpawnVarToken( const char *string );
@@ -129,9 +135,9 @@ qboolean	G_SpawnVector4( const char *key, const char *defaultString, float *out 
 qboolean	G_SpawnFlag( const char *key, int flag, int *out )
 {
 	//find that key
-	for ( int i = 0 ; i < numSpawnVars ; i++ ) 
+	for ( int i = 0 ; i < numSpawnVars ; i++ )
 	{
-		if ( !strcmp( key, spawnVars[i][0] ) ) 
+		if ( !strcmp( key, spawnVars[i][0] ) )
 		{
 			//found the key
 			if ( atoi( spawnVars[i][1] ) != 0 )
@@ -176,7 +182,7 @@ stringID_table_t flagTable [] =
 // fields are needed for spawning from the entity string
 //
 typedef enum {
-	F_INT, 
+	F_INT,
 	F_FLOAT,
 	F_LSTRING,			// string on disk, pointer in memory, TAG_LEVEL
 	F_GSTRING,			// string on disk, pointer in memory, TAG_GAME
@@ -209,7 +215,7 @@ typedef enum {
 typedef struct
 {
 	const char	*name;
-	int		ofs;
+	size_t		ofs;
 	fieldtype_t	type;
 	int		flags;
 } field_t;
@@ -342,7 +348,7 @@ field_t fields[] = {
 
 	{"soundSet", FOFS(soundSet), F_LSTRING},
 	{"mass", FOFS(mass), F_FLOAT},		//really only used for pushable misc_model_breakables
-	
+
 //q3map stuff
 	{"scale", 0, F_IGNORE},
 	{"modelscale", 0, F_IGNORE},
@@ -692,7 +698,7 @@ spawn_t	spawns[] = {
 	{"misc_maglock", SP_misc_maglock},
 	{"misc_weapon_shooter", SP_misc_weapon_shooter},
 	{"misc_weather_zone", SP_misc_weather_zone},
-	
+
 	{"misc_model_ghoul", SP_misc_model_ghoul},
 	{"misc_model_breakable", SP_misc_model_breakable},
 	{"misc_portal_surface", SP_misc_portal_surface},
@@ -730,7 +736,7 @@ spawn_t	spawns[] = {
 	{"misc_atst_drivable", SP_misc_atst_drivable},
 
 	{"misc_cubemap", SP_misc_cubemap},
-	
+
 	{"shooter_rocket", SP_shooter_rocket},
 	{"shooter_grenade", SP_shooter_grenade},
 	{"shooter_plasma", SP_shooter_plasma},
@@ -834,7 +840,7 @@ spawn_t	spawns[] = {
 	{"waypoint", SP_waypoint},
 	{"waypoint_small", SP_waypoint_small},
 	{"waypoint_navgoal", SP_waypoint_navgoal},
-	
+
 	{"fx_runner", SP_fx_runner},
 	{"fx_explosion_trail", SP_fx_explosion_trail},
 	{"fx_target_beam", SP_fx_target_beam},
@@ -932,7 +938,7 @@ char *G_NewString( const char *string ) {
 			*new_p++ = string[i];
 		}
 	}
-	
+
 	return newb;
 }
 
@@ -1108,7 +1114,7 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	if ( Quake3Game()->ValidEntity( ent ) )
 	{
 		Quake3Game()->InitEntity( ent ); //ICARUS_InitEnt( ent );
-		
+
 		if ( ent->classname && ent->classname[0] )
 		{
 			if ( Q_strncmp( "NPC_", ent->classname, 4 ) != 0 )
@@ -1155,7 +1161,7 @@ void G_SpawnSubBSPGEntityFromSpawnVars( vec3_t posOffset, vec3_t angOffset ) {
 	//Tag on the ICARUS scripting information only to valid recipients
 	if ( Quake3Game()->ValidEntity( ent ) )
 	{
-		
+
 		Quake3Game()->InitEntity( ent ); // ICARUS_InitEnt( ent );
 
 		if ( ent->classname && ent->classname[0] )
@@ -1208,7 +1214,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	numSpawnVars = 0;
 	numSpawnVarChars = 0;
 
-	// parse the opening brace	
+	// parse the opening brace
 	COM_BeginParseSession();
 	com_token = COM_Parse( data );
 	if ( !*data ) {
@@ -1222,28 +1228,29 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	}
 
 	// go through all the key / value pairs
-	while ( 1 ) {	
+	while ( 1 ) {
 		// parse key
 		com_token = COM_Parse( data );
-		if ( com_token[0] == '}' ) {
-			break;
-		}
-		if ( !data ) {
+		if ( !*data ) {
 			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 
+		if ( com_token[0] == '}' ) {
+			break;
+		}
+
 		Q_strncpyz( keyname, com_token, sizeof(keyname) );
-		
-		// parse value	
+
+		// parse value
 		com_token = COM_Parse( data );
+		if ( !*data ) {
+			COM_EndParseSession();
+			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
+		}
 		if ( com_token[0] == '}' ) {
 			COM_EndParseSession();
 			G_Error( "G_ParseSpawnVars: closing brace without data" );
-		}
-		if ( !data ) {
-			COM_EndParseSession();
-			G_Error( "G_ParseSpawnVars: EOF without closing brace" );
 		}
 		if ( numSpawnVars == MAX_SPAWN_VARS ) {
 			COM_EndParseSession();
@@ -1258,7 +1265,7 @@ qboolean G_ParseSpawnVars( const char **data ) {
 	return qtrue;
 }
 
-static	const char *defaultStyles[LS_NUM_STYLES][3] = 
+static	const char *defaultStyles[LS_NUM_STYLES][3] =
 {
 	{	// 0 normal
 		"z",
@@ -1453,7 +1460,7 @@ void SP_worldspawn( void ) {
 
 	g_entities[ENTITYNUM_WORLD].max_health = 0;
 
-	for ( i = 0 ; i < numSpawnVars ; i++ ) 
+	for ( i = 0 ; i < numSpawnVars ; i++ )
 	{
 		if ( Q_stricmp( "spawnscript", spawnVars[i][0] ) == 0 )
 		{//ONly let them set spawnscript, we don't want them setting an angle or something on the world.
@@ -1517,10 +1524,10 @@ void SP_worldspawn( void ) {
 
 		if (lengthRed != lengthGreen || lengthGreen != lengthBlue)
 		{
-			Com_Error(ERR_DROP, "Style %d has inconsistent lengths: R %d, G %d, B %d", 
+			Com_Error(ERR_DROP, "Style %d has inconsistent lengths: R %d, G %d, B %d",
 				i, lengthRed, lengthGreen, lengthBlue);
 		}
-	}	
+	}
 
 	G_SpawnString( "breath", "0", &s );
 	gi.cvar_set( "cg_drawBreath", s );
@@ -1528,7 +1535,7 @@ void SP_worldspawn( void ) {
 	G_SpawnString( "clearstats", "1", &s );
 	gi.cvar_set( "g_clearstats", s );
 
-	if (G_SpawnString( "tier_storyinfo", "", &s )) 
+	if (G_SpawnString( "tier_storyinfo", "", &s ))
 	{
 		gi.cvar_set( "tier_storyinfo", s );
 	}
@@ -1590,7 +1597,7 @@ qboolean SP_bsp_worldspawn ( void )
 	return qtrue;
 }
 
-void G_SubBSPSpawnEntitiesFromString(const char *entityString, vec3_t posOffset, vec3_t angOffset) 
+void G_SubBSPSpawnEntitiesFromString(const char *entityString, vec3_t posOffset, vec3_t angOffset)
 {
 	const char		*entities;
 
@@ -1607,7 +1614,7 @@ void G_SubBSPSpawnEntitiesFromString(const char *entityString, vec3_t posOffset,
 	if ( !G_ParseSpawnVars( &entities ) ) {
 		G_Error( "SpawnEntities: no entities" );
 	}
-	
+
 	// Skip this guy if its worldspawn fails
 	if ( !SP_bsp_worldspawn() )
 	{
@@ -1615,10 +1622,10 @@ void G_SubBSPSpawnEntitiesFromString(const char *entityString, vec3_t posOffset,
 	}
 
 	// parse ents
-	while( G_ParseSpawnVars(&entities) ) 
+	while( G_ParseSpawnVars(&entities) )
 	{
 		G_SpawnSubBSPGEntityFromSpawnVars(posOffset, angOffset);
-	}	
+	}
 }
 
 void G_SpawnEntitiesFromString( const char *entityString ) {
@@ -1637,14 +1644,14 @@ void G_SpawnEntitiesFromString( const char *entityString ) {
 	if ( !G_ParseSpawnVars( &entities ) ) {
 		G_Error( "SpawnEntities: no entities" );
 	}
-	
+
 	SP_worldspawn();
 
 	// parse ents
-	while( G_ParseSpawnVars( &entities ) ) 
+	while( G_ParseSpawnVars( &entities ) )
 	{
 		G_SpawnGEntityFromSpawnVars();
-	}	
+	}
 
 	//Search the entities for precache information
 	G_ParsePrecaches();

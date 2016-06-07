@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -138,7 +137,7 @@ char	*Sys_DefaultHomePath(void) {
 	Com_Printf("Portable install requested, skipping homepath support\n");
 	return NULL;
 #else
-	typedef HRESULT (__stdcall * GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPSTR); 
+	typedef HRESULT (__stdcall * GETFOLDERPATH)(HWND, int, HANDLE, DWORD, LPSTR);
 
 	TCHAR szPath[MAX_PATH];
 	GETFOLDERPATH qSHGetFolderPath;
@@ -167,7 +166,7 @@ char	*Sys_DefaultHomePath(void) {
 			FreeLibrary(shfolder);
 			return NULL;
 		}
-		
+
 		Com_sprintf(homePath, sizeof(homePath), "%s%cMy Games%c", szPath, PATH_SEP, PATH_SEP);
 
 		if(com_homepath->string[0])

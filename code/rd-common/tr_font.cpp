@@ -1,29 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
 
-#ifndef _WIN32
 #include <limits.h>
 #include <string>
-#endif
 #include "../qcommon/sstring.h"	// stl string class won't compile in here (MS shite), so use Gil's.
 #include "tr_local.h"
 #include "tr_font.h"
@@ -52,7 +52,9 @@ typedef enum
 //
 Language_e GetLanguageEnum()
 {
+#ifndef JK2_MODE
 	static int			iSE_Language_ModificationCount = -1234;	// any old silly value that won't match the cvar mod count
+#endif
 	static Language_e	eLanguage = eWestern;
 
 	// only re-strcmp() when language string has changed from what we knew it as...
@@ -61,7 +63,7 @@ Language_e GetLanguageEnum()
 	if (iSE_Language_ModificationCount != se_language->modificationCount )
 	{
 		iSE_Language_ModificationCount  = se_language->modificationCount;
-				
+
 		if ( Language_IsRussian()	)	eLanguage = eRussian;
 		else	if ( Language_IsPolish()	)	eLanguage = ePolish;
 		else	if ( Language_IsKorean()	)	eLanguage = eKorean;
@@ -101,14 +103,14 @@ SBCSOverrideLanguages_t g_SBCSOverrideLanguages[]=
 
 struct ThaiCodes_t
 {
-	map <int, int>	m_mapValidCodes;
-	vector<int>		m_viGlyphWidths;	
-	string			m_strInitFailureReason;	// so we don't have to keep retrying to work this out
+	std::map <int, int>	m_mapValidCodes;
+	std::vector<int>		m_viGlyphWidths;
+	std::string			m_strInitFailureReason;	// so we don't have to keep retrying to work this out
 
 	void Clear( void )
 	{
 		m_mapValidCodes.clear();
-		m_viGlyphWidths.clear();		
+		m_viGlyphWidths.clear();
 		m_strInitFailureReason = "";	// if blank, never failed, else says don't bother re-trying
 	}
 
@@ -121,7 +123,7 @@ struct ThaiCodes_t
 	//
 	int GetValidIndex( int iCode )
 	{
-		map <int,int>::iterator it = m_mapValidCodes.find( iCode );
+		std::map <int,int>::iterator it = m_mapValidCodes.find( iCode );
 		if (it != m_mapValidCodes.end())
 		{
             return (*it).second;
@@ -156,7 +158,7 @@ struct ThaiCodes_t
 				if (iBytesRead > 0 && !(iBytesRead&3))	// valid length and multiple of 4 bytes long
 				{
 					int iTableEntries = iBytesRead / sizeof(int);
-					
+
 					for (int i=0; i < iTableEntries; i++)
 					{
 						m_mapValidCodes[ piData[i] ] = i;	// convert MBCS code to sequential index...
@@ -164,7 +166,7 @@ struct ThaiCodes_t
 					ri.FS_FreeFile( piData );	// dispose of original
 
 					// now read in the widths... (I'll keep these in a simple STL vector, so they'all disappear when the <map> entries do...
-					//		
+					//
 					iBytesRead = ri.FS_ReadFile( sFILENAME_THAI_WIDTHS, (void **) &piData );
 					if (iBytesRead > 0 && !(iBytesRead&3) && iBytesRead>>2/*sizeof(int)*/ == iTableEntries)
 					{
@@ -208,8 +210,8 @@ private:
 	// end of fontdat data
 
 	int				mShader;   				// handle to the shader with the glyph
-	
-	int				m_hAsianShaders[GLYPH_MAX_ASIAN_SHADERS];	// shaders for Korean glyphs where applicable		
+
+	int				m_hAsianShaders[GLYPH_MAX_ASIAN_SHADERS];	// shaders for Korean glyphs where applicable
 	glyphInfo_t		m_AsianGlyph;			// special glyph containing asian->western scaling info for all glyphs
 	int				m_iAsianGlyphsAcross;	// needed to dynamically calculate S,T coords
 	int				m_iAsianPagesLoaded;
@@ -234,7 +236,7 @@ public:
 
 	CFontInfo(const char *fontName);
 //	CFontInfo(int fill) { memset(this, fill, sizeof(*this)); }	// wtf?
-	~CFontInfo(void) {}	
+	~CFontInfo(void) {}
 
 	const int GetPointSize(void) const { return(mPointSize); }
 	const int GetHeight(void) const { return(mHeight); }
@@ -251,7 +253,7 @@ public:
 	void FlagNoAsianGlyphs(void) { m_hAsianShaders[0] = 0; m_iLanguageModificationCount = -1; }	// used during constructor
 	bool AsianGlyphsAvailable(void) const { return !!(m_hAsianShaders[0]); }
 
-	void UpdateAsianIfNeeded( bool bForceReEval = false);	
+	void UpdateAsianIfNeeded( bool bForceReEval = false);
 };
 
 //================================================
@@ -268,9 +270,9 @@ float RoundTenth( float fValue )
 
 
 int							g_iCurrentFontIndex;	// entry 0 is reserved index for missing/invalid, else ++ with each new font registered
-vector<CFontInfo *>			g_vFontArray;
-typedef map<sstring_t, int>	FontIndexMap_t;
-							FontIndexMap_t g_mapFontIndexes;
+std::vector<CFontInfo *>			g_vFontArray;
+typedef std::map<sstring_t, int>	FontIndexMap_t;
+FontIndexMap_t g_mapFontIndexes;
 int g_iNonScaledCharRange;	// this is used with auto-scaling of asian fonts, anything below this number is preserved in scale, anything above is scaled down by 0.75f
 
 //paletteRGBA_c				lastcolour;
@@ -329,13 +331,13 @@ static int Korean_InitFields(int &iGlyphTPs, const char *&psLang)
 // (all ranges inclusive for Big5)...
 //
 #define BIG5_HIBYTE_START0		0xA1	// (misc chars + level 1 hanzi)
-#define BIG5_HIBYTE_STOP0		0xC6	// 
+#define BIG5_HIBYTE_STOP0		0xC6	//
 #define BIG5_HIBYTE_START1		0xC9	// (level 2 hanzi)
-#define BIG5_HIBYTE_STOP1		0xF9	// 
-#define BIG5_LOBYTE_LOBOUND0	0x40	// 
-#define BIG5_LOBYTE_HIBOUND0	0x7E	// 
-#define BIG5_LOBYTE_LOBOUND1	0xA1	// 
-#define BIG5_LOBYTE_HIBOUND1	0xFE	// 
+#define BIG5_HIBYTE_STOP1		0xF9	//
+#define BIG5_LOBYTE_LOBOUND0	0x40	//
+#define BIG5_LOBYTE_HIBOUND0	0x7E	//
+#define BIG5_LOBYTE_LOBOUND1	0xA1	//
+#define BIG5_LOBYTE_HIBOUND1	0xFE	//
 #define BIG5_CODES_PER_ROW		160		// 3 more than the number of glyphs
 
 extern qboolean Language_IsTaiwanese( void );
@@ -367,7 +369,7 @@ static bool Taiwanese_IsTrailingPunctuation( unsigned int uiCode )
 {
 	// so far I'm just counting the first 21 chars, those seem to be all the basic punctuation...
 	//
-	if (	uiCode >= ((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0) && 
+	if (	uiCode >= ((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0) &&
 			uiCode <  (((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0)+20)
 		)
 	{
@@ -386,7 +388,7 @@ static bool Taiwanese_IsTrailingPunctuation( unsigned int uiCode )
 static int Taiwanese_CollapseBig5Code( unsigned int uiCode )
 {
 	if (Taiwanese_ValidBig5Code( uiCode ))
-	{			
+	{
 		uiCode -= (BIG5_HIBYTE_START0 * 256) + BIG5_LOBYTE_LOBOUND0;	// sneaky maths on both bytes, reduce to 0x0000 onwards
 		if ( (uiCode & 0xFF) >= (BIG5_LOBYTE_LOBOUND1-1)-BIG5_LOBYTE_LOBOUND0)
 		{
@@ -438,7 +440,7 @@ static bool Japanese_ValidShiftJISCode( byte _iHi, byte _iLo )
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -454,7 +456,7 @@ static bool Japanese_IsTrailingPunctuation( unsigned int uiCode )
 {
 	// so far I'm just counting the first 18 chars, those seem to be all the basic punctuation...
 	//
-	if (	uiCode >= ((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0) && 
+	if (	uiCode >= ((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0) &&
 			uiCode <  (((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0)+18)
 		)
 	{
@@ -472,9 +474,9 @@ static bool Japanese_IsTrailingPunctuation( unsigned int uiCode )
 static int Japanese_CollapseShiftJISCode( unsigned int uiCode )
 {
 	if (Japanese_ValidShiftJISCode( uiCode ))
-	{	
+	{
 		uiCode -= ((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0);	// sneaky maths on both bytes, reduce to 0x0000 onwards
-		
+
 		if ( (uiCode & 0xFF) >= (SHIFTJIS_LOBYTE_START1)-SHIFTJIS_LOBYTE_START0)
 		{
 			uiCode -= ((SHIFTJIS_LOBYTE_START1)-SHIFTJIS_LOBYTE_STOP0)-1;
@@ -503,10 +505,10 @@ static int Japanese_InitFields(int &iGlyphTPs, const char *&psLang)
 
 // ======================== some Chinese stuff ==============================
 
-#define GB_HIBYTE_START		0xA1	// range is...       
-#define GB_HIBYTE_STOP		0xF7	// ... inclusive     
-#define GB_LOBYTE_LOBOUND	0xA0	// range is...                                                                                
-#define GB_LOBYTE_HIBOUND	0xFF	// ...bounding (ie only valid in between these points, but NULLs in charsets for these codes) 
+#define GB_HIBYTE_START		0xA1	// range is...
+#define GB_HIBYTE_STOP		0xF7	// ... inclusive
+#define GB_LOBYTE_LOBOUND	0xA0	// range is...
+#define GB_LOBYTE_HIBOUND	0xFF	// ...bounding (ie only valid in between these points, but NULLs in charsets for these codes)
 #define GB_CODES_PER_ROW	95		// 1 more than the number of glyphs
 
 extern qboolean Language_IsChinese( void );
@@ -525,14 +527,14 @@ static inline bool Chinese_ValidGBCode( unsigned int uiCode)
 	return Chinese_ValidGBCode( uiCode >> 8, uiCode & 0xFF );
 }
 
-
+#ifndef JK2_MODE
 // only call this when Chinese_ValidGBCode() has already returned true...
 //
 static bool Chinese_IsTrailingPunctuation( unsigned int uiCode )
 {
 	// so far I'm just counting the first 13 chars, those seem to be all the basic punctuation...
 	//
-	if (	uiCode >  ((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND) && 
+	if (	uiCode >  ((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND) &&
 			uiCode <  (((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND)+14)
 		)
 	{
@@ -541,7 +543,7 @@ static bool Chinese_IsTrailingPunctuation( unsigned int uiCode )
 
 	return false;
 }
-
+#endif
 
 // takes a GB double-byte code and collapses down to a 0..n glyph index...
 // Assumes rows are 96 wide (glyph slots), not 94 wide (actual glyphs), so I can ignore boundary markers
@@ -551,9 +553,9 @@ static bool Chinese_IsTrailingPunctuation( unsigned int uiCode )
 static int Chinese_CollapseGBCode( unsigned int uiCode )
 {
 	if (Chinese_ValidGBCode( uiCode ))
-	{			
+	{
 		uiCode -= (GB_HIBYTE_START * 256) + GB_LOBYTE_LOBOUND;	// sneaky maths on both bytes, reduce to 0x0000 onwards
-		uiCode  = ((uiCode >> 8) * GB_CODES_PER_ROW) + (uiCode & 0xFF);		
+		uiCode  = ((uiCode >> 8) * GB_CODES_PER_ROW) + (uiCode & 0xFF);
 		return uiCode;
 	}
 
@@ -583,32 +585,33 @@ static int Thai_IsAccentChar( unsigned int uiCode )
 {
 	switch (uiCode)
 	{
-		case 209:		
+		case 209:
 		case 212:	case 213:	case 214:	case 215:	case 216:	case 217:	case 218:
 		case 231:	case 232:	case 233:	case 234:	case 235:	case 236:	case 237:	case 238:
 		return true;
 	}
-	
+
 	return false;
 }
 */
 
+#ifndef JK2_MODE
 // returns a valid Thai code (or 0), based on taking 1,2 or 3 bytes from the supplied byte stream
 //	Fills in <iThaiBytes> with 1,2 or 3
 static int Thai_ValidTISCode( const byte *psString, int &iThaiBytes )
-{	
+{
 	// try a 1-byte code first...
 	//
 	if (psString[0] >= 160)	// so western letters drop through and use normal font
 	{
 		// this code is heavily little-endian, so someone else will need to port for Mac etc... (not my problem ;-)
-		//		
+		//
 		union CodeToTry_t
 		{
             char sChars[4];
 			unsigned int uiCode;
 		};
-		
+
 		CodeToTry_t CodeToTry;
 		CodeToTry.uiCode = 0;	// important that we clear all 4 bytes in sChars here
 
@@ -616,7 +619,7 @@ static int Thai_ValidTISCode( const byte *psString, int &iThaiBytes )
 		//
 		int i = 0;
 		for (i = 0; i<3; i++)
-		{			
+		{
 			CodeToTry.sChars[i] = psString[i];
 
             int iIndex = g_ThaiCodes.GetValidIndex( CodeToTry.uiCode );
@@ -635,6 +638,7 @@ static int Thai_ValidTISCode( const byte *psString, int &iThaiBytes )
 
 	return 0;
 }
+#endif
 
 // special case, thai can only break on certain letters, and since the rules are complicated then
 //	we tell the translators to put an underscore ('_') between each word even though in Thai they're
@@ -657,7 +661,7 @@ static int Thai_CollapseTISCode( unsigned int uiCode )
 		if (iCollapsedIndex != -1)
 		{
 			return iCollapsedIndex;
-		}        
+		}
 	}
 
 	return 0;
@@ -682,7 +686,7 @@ static int Thai_InitFields(int &iGlyphTPs, const char *&psLang)
 // Note that I have to have this 3-param form instead of advancing a passed-in "const char **psText" because of VM-crap where you can only change ptr-contents, not ptrs themselves. Bleurgh. Ditto the qtrue:qfalse crap instead of just returning stuff straight through.
 //
 unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, qboolean *pbIsTrailingPunctuation /* = NULL */)
-{	
+{
 #ifdef JK2_MODE
 	// JK2 does this func a little differently --eez
 	const byte *psString = (const byte *) psText;	// avoid sign-promote bug
@@ -696,7 +700,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 			psText += 2;
 			*piAdvanceCount = 2;
 
-			// not going to bother testing for korean punctuation here, since korean already 
+			// not going to bother testing for korean punctuation here, since korean already
 			//	uses spaces, and I don't have the punctuation glyphs defined, only the basic 2350 hanguls
 			//
 			if ( pbIsTrailingPunctuation)
@@ -754,11 +758,11 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 
 	if (pbIsTrailingPunctuation)
 	{
-		*pbIsTrailingPunctuation = (uiLetter == '!' || 
-									uiLetter == '?' || 
-									uiLetter == ',' || 
-									uiLetter == '.' || 
-									uiLetter == ';' || 
+		*pbIsTrailingPunctuation = (uiLetter == '!' ||
+									uiLetter == '?' ||
+									uiLetter == ',' ||
+									uiLetter == '.' ||
+									uiLetter == ';' ||
 									uiLetter == ':'
 									);
 	}
@@ -777,7 +781,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 				uiLetter = (psString[0] * 256) + psString[1];
 				*piAdvanceCount = 2;
 
-				// not going to bother testing for korean punctuation here, since korean already 
+				// not going to bother testing for korean punctuation here, since korean already
 				//	uses spaces, and I don't have the punctuation glyphs defined, only the basic 2350 hanguls
 				//
 				if ( pbIsTrailingPunctuation)
@@ -803,7 +807,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 				{
 					*pbIsTrailingPunctuation = Taiwanese_IsTrailingPunctuation( uiLetter ) ? qtrue : qfalse;
 				}
-	
+
 				return uiLetter;
 			}
 		}
@@ -815,7 +819,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 			{
 				uiLetter = (psString[0] * 256) + psString[1];
 				*piAdvanceCount = 2;
-	
+
 				// need to ask if this is a trailing (ie like a comma or full-stop) punctuation?...
 				//
 				if ( pbIsTrailingPunctuation)
@@ -876,11 +880,11 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 
 	if (pbIsTrailingPunctuation)
 	{
-		*pbIsTrailingPunctuation = (uiLetter == '!' || 
-									uiLetter == '?' || 
-									uiLetter == ',' || 
-									uiLetter == '.' || 
-									uiLetter == ';' || 
+		*pbIsTrailingPunctuation = (uiLetter == '!' ||
+									uiLetter == '?' ||
+									uiLetter == ',' ||
+									uiLetter == '.' ||
+									uiLetter == ';' ||
 									uiLetter == ':'
 									) ? qtrue : qfalse;
 	}
@@ -891,7 +895,7 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 
 #ifdef JK2_MODE
 unsigned int AnyLanguage_ReadCharFromString( char **psText, qboolean *pbIsTrailingPunctuation /* = NULL */)
-{	
+{
 	int advance = 0;
 	unsigned int advance2 = AnyLanguage_ReadCharFromString (*psText, &advance, pbIsTrailingPunctuation);
 	*psText += advance;
@@ -925,10 +929,10 @@ qboolean Language_UsesSpaces(void)
 	// ( korean uses spaces )
 	switch ( GetLanguageEnum() )
 	{
-		case eTaiwanese:	
-		case eJapanese:		
-		case eChinese:		
-		case eThai:			
+		case eTaiwanese:
+		case eJapanese:
+		case eChinese:
+		case eThai:
 			return qfalse;
 		default:
 			break;
@@ -953,7 +957,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 	//
 	char fontName[MAX_QPATH];
 	sprintf(fontName,"fonts/%s.fontdat",COM_SkipPath(const_cast<char*>(_fontName)));	// COM_SkipPath should take a const char *, but it's just possible people use it as a char * I guess, so I have to hack around like this <groan>
-	
+
 	// clear some general things...
 	//
 	m_pThaiData = NULL;
@@ -990,7 +994,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 		mAscender = LittleShort(fontdat->mAscender);
 		mDescender = LittleShort(fontdat->mDescender);
 //		mAsianHack = LittleShort(fontdat->mKoreanHack);	// ignore this crap, it's some junk in the fontdat file that no-one uses
-		mbRoundCalcs = !!strstr(fontName,"ergo");
+		mbRoundCalcs = false /*!!strstr(fontName,"ergo")*/;
 
 		// cope with bad fontdat headers...
 		//
@@ -1036,7 +1040,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 
 			// SBCS override languages...
 			//
-			fileHandle_t f;	
+			fileHandle_t f;
 			for (int i=0; g_SBCSOverrideLanguages[i].m_psName ;i++)
 			{
 				char sTemp[MAX_QPATH];
@@ -1060,10 +1064,10 @@ CFontInfo::CFontInfo(const char *_fontName)
 					case 1: m_iAsianGlyphsAcross = Taiwanese_InitFields	(iGlyphTPs, psLang);	break;
 					case 2: m_iAsianGlyphsAcross = Japanese_InitFields	(iGlyphTPs, psLang);	break;
 					case 3: m_iAsianGlyphsAcross = Chinese_InitFields	(iGlyphTPs, psLang);	break;
-					case 4: m_iAsianGlyphsAcross = Thai_InitFields		(iGlyphTPs, psLang);	
+					case 4: m_iAsianGlyphsAcross = Thai_InitFields		(iGlyphTPs, psLang);
 					{
 						// additional files needed for Thai language...
-						//						
+						//
 						ri.FS_FOpenFileRead( sFILENAME_THAI_WIDTHS , &f, qfalse );
 						if (f) {
 							ri.FS_FCloseFile( f );
@@ -1072,7 +1076,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 						ri.FS_FOpenFileRead( sFILENAME_THAI_CODES, &f, qfalse );
 						if (f) {
 							ri.FS_FCloseFile( f );
-						}					
+						}
 					}
                     break;
 				}
@@ -1081,7 +1085,7 @@ CFontInfo::CFontInfo(const char *_fontName)
 				{
 					Com_sprintf(sTemp,sizeof(sTemp), "fonts/%s_%d_1024_%d.tga", psLang, 1024/m_iAsianGlyphsAcross, i);
 
-					// RE_RegisterShaderNoMip( sTemp );	// don't actually need to load it, so...					
+					// RE_RegisterShaderNoMip( sTemp );	// don't actually need to load it, so...
 					ri.FS_FOpenFileRead( sTemp, &f, qfalse );
 					if (f) {
 						ri.FS_FCloseFile( f );
@@ -1150,7 +1154,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 					// (but for now, we just use the one glyph set)
 					//
 				}
-				
+
 				for (int i = 0; i < iGlyphTPs; i++)
 				{
 					// (Note!!  assumption for S,T calculations: all Asian glyph textures pages are square except for last one)
@@ -1162,7 +1166,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 					//
 					m_hAsianShaders[i] = RE_RegisterShaderNoMip( sTemp );
 				}
-			
+
 				// for now I'm hardwiring these, but if we ever have more than one glyph set per language then they'll be changed...
 				//
 				m_iAsianPagesLoaded = iGlyphTPs;	// not necessarily true, but will be safe, and show up obvious if something missing
@@ -1172,7 +1176,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 			}
 
 			if (bForceReEval)
-			{			
+			{
 				// now init the Asian member glyph fields to make them come out the same size as the western ones
 				//	that they serve as an alternative for...
 				//
@@ -1200,7 +1204,7 @@ void CFontInfo::UpdateAsianIfNeeded( bool bForceReEval /* = false */ )
 		}
 	}
 	else
-	{			
+	{
 		// no western glyphs available, so don't attempt to match asian...
 		//
 		FlagNoAsianGlyphs();
@@ -1225,11 +1229,11 @@ static CFontInfo *GetFont_Actual(int index)
 }
 
 
-// needed to add *piShader param because of multiple TPs, 
+// needed to add *piShader param because of multiple TPs,
 //	if not passed in, then I also skip S,T calculations for re-usable static asian glyphinfo struct...
 //
 const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShader /* = NULL */)
-{ 	
+{
 	if ( AsianGlyphsAvailable() )
 	{
 		int iCollapsedAsianCode = GetCollapsedAsianCode( uiLetter );
@@ -1239,7 +1243,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 			{
 				// (Note!!  assumption for S,T calculations: all asian glyph textures pages are square except for last one
 				//			which may or may not be half height) - but not for Thai
-				//				
+				//
 				int iTexturePageIndex = iCollapsedAsianCode / (m_iAsianGlyphsAcross * m_iAsianGlyphsAcross);
 
 				if (iTexturePageIndex > m_iAsianPagesLoaded)
@@ -1252,18 +1256,18 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 				iCollapsedAsianCode -= iTexturePageIndex *  (m_iAsianGlyphsAcross * m_iAsianGlyphsAcross);
 
 				const int iColumn	= iCollapsedAsianCode % m_iAsianGlyphsAcross;
-				const int iRow		= iCollapsedAsianCode / m_iAsianGlyphsAcross;				
+				const int iRow		= iCollapsedAsianCode / m_iAsianGlyphsAcross;
 				const bool bHalfT	= (iTexturePageIndex == (m_iAsianPagesLoaded - 1) && m_bAsianLastPageHalfHeight);
 				const int iAsianGlyphsDown = (bHalfT) ? m_iAsianGlyphsAcross / 2 : m_iAsianGlyphsAcross;
 
 				switch ( GetLanguageEnum() )
 				{
 					case eKorean:
-					default:					
+					default:
 					{
 						m_AsianGlyph.s  = (float)( iColumn    ) / (float)m_iAsianGlyphsAcross;
 						m_AsianGlyph.t  = (float)( iRow       ) / (float)  iAsianGlyphsDown;
-						m_AsianGlyph.s2 = (float)( iColumn + 1) / (float)m_iAsianGlyphsAcross;				
+						m_AsianGlyph.s2 = (float)( iColumn + 1) / (float)m_iAsianGlyphsAcross;
 						m_AsianGlyph.t2 = (float)( iRow + 1   ) / (float)  iAsianGlyphsDown;
 					}
 					break;
@@ -1300,11 +1304,11 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 							iGlyphWidth= 20;	//
 						}
 						m_AsianGlyph.s  = (float)(iGlyphXpos) / 1024.0f;
-						m_AsianGlyph.t  = (float)(((1024 / iAsianGlyphsDown    ) * ( iRow       ))  ) / 1024.0f;						
+						m_AsianGlyph.t  = (float)(((1024 / iAsianGlyphsDown    ) * ( iRow       ))  ) / 1024.0f;
 						// technically this .s2 line should be modified to blit only the correct width, but since
 						//	all Thai glyphs are up against the left edge of their cells and have blank to the cell
 						//	boundary then it's better to keep these calculations simpler...
-						
+
 						m_AsianGlyph.s2 = (float)(iGlyphXpos+iGlyphWidth) / 1024.0f;
 						m_AsianGlyph.t2 = (float)(((1024 / iAsianGlyphsDown    ) * ( iRow+1     ))-1) / 1024.0f;
 
@@ -1337,7 +1341,7 @@ const glyphInfo_t *CFontInfo::GetLetter(const unsigned int uiLetter, int *piShad
 		memcpy(&m_AsianGlyph,pGlyph,sizeof(m_AsianGlyph));	// *before* changin pGlyph!
 
 //		CFontInfo *pOriginalFont = GetFont_Actual( this->m_iOriginalFontWhenSBCSOverriden );
-//		pGlyph = &pOriginalFont->mGlyphs[ uiLetter & 0xff ];		
+//		pGlyph = &pOriginalFont->mGlyphs[ uiLetter & 0xff ];
 
 		#define ASSIGN_WITH_ROUNDING(_dst,_src) _dst = mbRoundCalcs ? Round( m_fAltSBCSFontScaleFactor * _src ) : m_fAltSBCSFontScaleFactor * (float)_src;
 
@@ -1380,7 +1384,7 @@ const int CFontInfo::GetLetterWidth(unsigned int uiLetter)
 }
 
 const int CFontInfo::GetLetterHorizAdvance(unsigned int uiLetter)
-{	
+{
 	const glyphInfo_t *pGlyph = GetLetter( uiLetter );
 	return pGlyph->horizAdvance ? pGlyph->horizAdvance : mGlyphs[(unsigned)'.'].horizAdvance;
 }
@@ -1446,7 +1450,7 @@ CFontInfo *GetFont(int index)
 		for (int i=0; g_SBCSOverrideLanguages[i].m_psName; i++)
 		{
 			CFontInfo *pAltFont = GetFont_SBCSOverride( pFont, g_SBCSOverrideLanguages[i].m_eLanguage, g_SBCSOverrideLanguages[i].m_psName );
-			if (pAltFont) 
+			if (pAltFont)
 			{
 				return pAltFont;
 			}
@@ -1458,11 +1462,11 @@ CFontInfo *GetFont(int index)
 
 
 int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
-{	
+{
 #ifdef JK2_MODE
 	// Yes..even this func is a little different, to the point where it doesn't work. --eez
-	int			iMaxWidth = 0;
-	int			iThisWidth= 0;
+	float		fMaxWidth = 0.0f;
+	float		fThisWidth = 0.0f;
 	CFontInfo	*curfont;
 
 	curfont = GetFont(iFontHandle);
@@ -1471,10 +1475,10 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		return(0);
 	}
 
-	float fScaleA = fScale;
+	float fScaleAsian = fScale;
 	if (Language_IsAsian() && fScale > 0.7f )
 	{
-		fScaleA = fScale * 0.75f;
+		fScaleAsian = fScale * 0.75f;
 	}
 
 	while(*psText)
@@ -1482,24 +1486,26 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		unsigned int uiLetter = AnyLanguage_ReadCharFromString( (char **)&psText );
 		if (uiLetter == 0x0A)
 		{
-			iThisWidth = 0;
+			fThisWidth = 0.0f;
 		}
 		else
 		{
 			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
-		
-			iThisWidth += Round(iPixelAdvance * ((uiLetter > 255) ? fScaleA : fScale));
-			if (iThisWidth > iMaxWidth)
+
+			float fValue = iPixelAdvance * ((uiLetter > 255) ? fScaleAsian : fScale);
+			fThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
+			if (fThisWidth > fMaxWidth)
 			{
-				iMaxWidth = iThisWidth;
+				fMaxWidth = fThisWidth;
 			}
 		}
 	}
 
-	return iMaxWidth;
+	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
+	return (int)ceilf(fMaxWidth);
 #else
-	int			iMaxWidth = 0;
-	int			iThisWidth= 0;
+	float		fMaxWidth = 0.0f;
+	float		fThisWidth = 0.0f;
 	CFontInfo	*curfont;
 
 	curfont = GetFont(iFontHandle);
@@ -1508,10 +1514,10 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		return(0);
 	}
 
-	float fScaleA = fScale;
+	float fScaleAsian = fScale;
 	if (Language_IsAsian() && fScale > 0.7f )
 	{
-		fScaleA = fScale * 0.75f;
+		fScaleAsian = fScale * 0.75f;
 	}
 
 	while(*psText)
@@ -1533,29 +1539,30 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 
 		if (uiLetter == 0x0A)
 		{
-			iThisWidth = 0;
+			fThisWidth = 0.0f;
 		}
 		else
 		{
 			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
-	
-			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleA : fScale);
-			iThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
-			if (iThisWidth > iMaxWidth)
+
+			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
+			fThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
+			if (fThisWidth > fMaxWidth)
 			{
-				iMaxWidth = iThisWidth;
+				fMaxWidth = fThisWidth;
 			}
 		}
 	}
 
-	return iMaxWidth;
+	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
+	return (int)ceilf(fMaxWidth);
 #endif
 }
 
 // not really a font function, but keeps naming consistant...
 //
 int RE_Font_StrLenChars(const char *psText)
-{			
+{
 	// logic for this function's letter counting must be kept same in this function and RE_Font_DrawString()
 	//
 	int iCharCount = 0;
@@ -1582,17 +1589,17 @@ int RE_Font_StrLenChars(const char *psText)
 				}
 				break;	// colour code (note next-char skip)
 			case 10:								break;	// linefeed
-			case 13:								break;	// return 
+			case 13:								break;	// return
 			case '_':	iCharCount += (GetLanguageEnum() == eThai && (((unsigned char *)psText)[0] >= TIS_GLYPHS_START))?0:1; break;	// special word-break hack
 			default:	iCharCount++;				break;
 		}
 	}
-	
+
 	return iCharCount;
 }
 
 int RE_Font_HeightPixels(const int iFontHandle, const float fScale)
-{			
+{
 	CFontInfo	*curfont;
 
 	curfont = GetFont(iFontHandle);
@@ -1611,7 +1618,8 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	// HAAAAAAAAAAAAAAAX..fix me please --eez
 #ifdef JK2_MODE
 	static qboolean gbInShadow = qfalse;	// MUST default to this
-	int					x, y, colour, offset;
+	float				fox, foy, fx, fy;
+	int					colour, offset;
 	const glyphInfo_t	*pLetter;
 	qhandle_t			hShader;
 
@@ -1650,12 +1658,12 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		return;
 	}
 
-	float fScaleA = fScale;
-	int iAsianYAdjust = 0;
+	float fScaleAsian = fScale;
+	float fAsianYAdjust = 0.0f;
 	if (Language_IsAsian() && fScale > 0.7f)
 	{
-		fScaleA = fScale * 0.75f;
-		iAsianYAdjust = /*Round*/((((float)curfont->GetPointSize() * fScale) - ((float)curfont->GetPointSize() * fScaleA))/2);
+		fScaleAsian = fScale * 0.75f;
+		fAsianYAdjust = ((curfont->GetPointSize() * fScale) - (curfont->GetPointSize() * fScaleAsian)) / 2.0f;
 	}
 
 	// Draw a dropshadow if required
@@ -1663,15 +1671,22 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
+		const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, rgba?rgba[3]:1.0f};
+
 		gbInShadow = qtrue;
-		RE_Font_DrawString(ox + offset, oy + offset, psText, colorTable[CT_DKGREY2], iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
+		RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 		gbInShadow = qfalse;
 	}
-			
+
 	RE_SetColor( rgba );
 
-	x = ox;
-	oy += Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale);
+	// Now we take off the training wheels and become a big font renderer
+	// It's all floats from here on out
+	fox = ox;
+	foy = oy;
+
+	fx = fox;
+	foy += curfont->mbRoundCalcs ? Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale) : (curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale;
 
 	qboolean bNextTextWouldOverflow = qfalse;
 	while (*psText && !bNextTextWouldOverflow)
@@ -1680,26 +1695,33 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		switch( uiLetter )
 		{
 		case '^':
-			colour = ColorIndex(*psText++);
-			if (!gbInShadow)
+			if (*psText >= '0' &&
+				*psText <= '9')
 			{
-				RE_SetColor( g_color_table[colour] );
+				colour = ColorIndex(*psText++);
+				if (!gbInShadow)
+				{
+					vec4_t color;
+					Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
+					color[3] = rgba ? rgba[3] : 1.0f;
+					RE_SetColor( color );
+				}
 			}
 			break;
 		case 10:						//linefeed
-			x = ox;
-			oy += Round(curfont->GetPointSize() * fScale);
+			fx = fox;
+			foy += curfont->mbRoundCalcs ? Round(curfont->GetPointSize() * fScale) : curfont->GetPointSize() * fScale;
 			if (Language_IsAsian())
 			{
-				oy += 4;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
+				foy += 4.0f;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
 			}
 			break;
 		case 13:						// Return
 			break;
 		case 32:						// Space
-			pLetter = curfont->GetLetter(' ');			
-			x += Round(pLetter->horizAdvance * fScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((x-ox)>iMaxPixelWidth) );
+			pLetter = curfont->GetLetter(' ');
+			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) );
 			break;
 
 		default:
@@ -1709,36 +1731,37 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				pLetter = curfont->GetLetter('.');
 			}
 
-			float fThisScale = uiLetter > 255 ? fScaleA : fScale;
-			int iAdvancePixels = Round(pLetter->horizAdvance * fThisScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((x+iAdvancePixels)-ox)>iMaxPixelWidth) );
+			float fThisScale = uiLetter > 255 ? fScaleAsian : fScale;
+			float fAdvancePixels = curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fThisScale) : pLetter->horizAdvance * fThisScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((fx+fAdvancePixels)-fox) > (float)iMaxPixelWidth) );
 			if (!bNextTextWouldOverflow)
 			{
 				// this 'mbRoundCalcs' stuff is crap, but the only way to make the font code work. Sigh...
-				//				
-				y = oy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
+				//
+				fy = foy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
 
-				RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
-								(uiLetter > 255) ? y - iAsianYAdjust : y,	// float y
+				RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+								(uiLetter > 255) ? fy - fAsianYAdjust : fy,	// float y
 								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
 								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
 								pLetter->s,						// float s1
 								pLetter->t,						// float t1
 								pLetter->s2,					// float s2
 								pLetter->t2,					// float t2
-								//lastcolour.c, 
+								//lastcolour.c,
 								hShader							// qhandle_t hShader
 								);
 
-				x += iAdvancePixels;
+				fx += fAdvancePixels;
 			}
 			break;
-		}		
+		}
 	}
-	//let it remember the old color //RE_SetColor(NULL);;
+	//let it remember the old color //RE_SetColor(NULL);
 #else
 	static qboolean gbInShadow = qfalse;	// MUST default to this
-	int					x, y, colour, offset;
+	float				fox, foy, fx, fy;
+	int					colour, offset;
 	const glyphInfo_t	*pLetter;
 	qhandle_t			hShader;
 
@@ -1757,13 +1780,13 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 //	{
 //		psText = "Wp:\B6}\B7F\A7a \BFp\B7G\B4\B5\A1A\A7Ʊ\E6\A7A\B9\B3\A5L\AD̻\A1\AA\BA\A4@\BC˦\E6\A1C";
 //	}
-//	else 
+//	else
 //	if (GetLanguageEnum() == eChinese)
 //	{
 //		//psText = "Ӷ\B1\F8ս\B3\A1II  Լ\BA\B2?Ī\C1\D6˹  \C8\CE\CE\F1ʧ\B0\DC  \C4\E3Ҫ\CC\D7\D3û\AD\C3\E6\C9趨\B5ı\E4\B8\FC\C2\F0\A3\BF  Ԥ\C9\E8,S3 ѹ\CB\F5,DXT1 ѹ\CB\F5,DXT5 ѹ\CB\F5,16 Bit,32 Bit";
 //		psText = "Ӷ\B1\F8ս\B3\A1II";
 //	}
-//	else 
+//	else
 //	if (GetLanguageEnum() == eThai)
 //	{
 //		//psText = "\C1ҵðҹ\BC\C5Ե\C0ѳ\B1\EC\CDص\CA\D2ˡ\C3\C3\C1\C3\CB\D1\CA\CA\D3\CB\C3Ѻ\CDѡ\A2\C3\D0\E4\B7·\D5\E8\E3\AA\E9\A1Ѻ\A4\CD\C1\BE\D4\C7\E0\B5\CD\C3\EC";
@@ -1803,12 +1826,12 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		return;
 	}
 
-	float fScaleA = fScale;
-	int iAsianYAdjust = 0;
+	float fScaleAsian = fScale;
+	float fAsianYAdjust = 0.0f;
 	if (Language_IsAsian() && fScale > 0.7f)
 	{
-		fScaleA = fScale * 0.75f;
-		iAsianYAdjust = /*Round*/((((float)curfont->GetPointSize() * fScale) - ((float)curfont->GetPointSize() * fScaleA))/2);
+		fScaleAsian = fScale * 0.75f;
+		fAsianYAdjust = ((curfont->GetPointSize() * fScale) - (curfont->GetPointSize() * fScaleAsian)) / 2.0f;
 	}
 
 	// Draw a dropshadow if required
@@ -1816,20 +1839,24 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 	{
 		offset = Round(curfont->GetPointSize() * fScale * 0.075f);
 
-		static const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, 1};
+		const vec4_t v4DKGREY2 = {0.15f, 0.15f, 0.15f, rgba?rgba[3]:1.0f};
 
 		gbInShadow = qtrue;
 		RE_Font_DrawString(ox + offset, oy + offset, psText, v4DKGREY2, iFontHandle & SET_MASK, iMaxPixelWidth, fScale);
 		gbInShadow = qfalse;
 	}
-		
+
 	RE_SetColor( rgba );
 
-	x = ox;
-	oy += Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale);
+	// Now we take off the training wheels and become a big font renderer
+	// It's all floats from here on out
+	fox = ox;
+	foy = oy;
+
+	fx = fox;
+	foy += curfont->mbRoundCalcs ? Round((curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale) : (curfont->GetHeight() - (curfont->GetDescender() >> 1)) * fScale;
 
 	qboolean bNextTextWouldOverflow = qfalse;
-
 	while (*psText && !bNextTextWouldOverflow)
 	{
 		int iAdvanceCount;
@@ -1839,19 +1866,19 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		switch( uiLetter )
 		{
 		case 10:						//linefeed
-			x = ox;
-			oy += Round(curfont->GetPointSize() * fScale);
+			fx = fox;
+			foy += curfont->mbRoundCalcs ? Round(curfont->GetPointSize() * fScale) : curfont->GetPointSize() * fScale;
 			if (Language_IsAsian())
 			{
-				oy += 4;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
+				foy += 4.0f;	// this only comes into effect when playing in asian for "A long time ago in a galaxy" etc, all other text is line-broken in feeder functions
 			}
 			break;
 		case 13:						// Return
 			break;
 		case 32:						// Space
-			pLetter = curfont->GetLetter(' ');			
-			x += Round(pLetter->horizAdvance * fScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((x-ox)>iMaxPixelWidth) ) ? qtrue : qfalse;	// yeuch
+			pLetter = curfont->GetLetter(' ');
+			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) ) ? qtrue : qfalse; // yeuch
 			break;
 		case '_':	// has a special word-break usage if in Thai (and followed by a thai char), and should not be displayed, else treat as normal
 			if (GetLanguageEnum()== eThai && ((unsigned char *)psText)[0] >= TIS_GLYPHS_START)
@@ -1868,7 +1895,10 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 					colour = ColorIndex(*psText++);
 					if (!gbInShadow)
 					{
-						RE_SetColor( g_color_table[colour] );
+						vec4_t color;
+						Com_Memcpy( color, g_color_table[colour], sizeof( color ) );
+						color[3] = rgba ? rgba[3] : 1.0f;
+						RE_SetColor( color );
 					}
 					break;
 				}
@@ -1881,49 +1911,49 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 				pLetter = curfont->GetLetter('.');
 			}
 
-			float fThisScale = uiLetter > (unsigned)g_iNonScaledCharRange ? fScaleA : fScale;
+			float fThisScale = uiLetter > (unsigned)g_iNonScaledCharRange ? fScaleAsian : fScale;
 
 			// sigh, super-language-specific hack...
 			//
 			if (uiLetter == TIS_SARA_AM && GetLanguageEnum() == eThai)
 			{
-				x -= Round(7 * fThisScale);
+				fx -= curfont->mbRoundCalcs ? Round(7.0f * fThisScale) : 7.0f * fThisScale;
 			}
 
-			int iAdvancePixels = Round(pLetter->horizAdvance * fThisScale);
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((x+iAdvancePixels)-ox)>iMaxPixelWidth) ) ? qtrue : qfalse;	// yeuch
+			float fAdvancePixels = curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fThisScale) : pLetter->horizAdvance * fThisScale;
+			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((fx+fAdvancePixels)-fox) > (float)iMaxPixelWidth) ) ? qtrue : qfalse; // yeuch
 			if (!bNextTextWouldOverflow)
 			{
 				// this 'mbRoundCalcs' stuff is crap, but the only way to make the font code work. Sigh...
-				//				
-				y = oy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
+				//
+				fy = foy - (curfont->mbRoundCalcs ? Round(pLetter->baseline * fThisScale) : pLetter->baseline * fThisScale);
 				if (curfont->m_fAltSBCSFontScaleFactor != -1)
 				{
-					y+=3;	// I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
+					fy += 3.0f; // I'm sick and tired of going round in circles trying to do this legally, so bollocks to it
 				}
 
-				RE_StretchPic ( x + Round(pLetter->horizOffset * fScale), // float x
-								(uiLetter > (unsigned)g_iNonScaledCharRange) ? y - iAsianYAdjust : y,	// float y
+				RE_StretchPic(curfont->mbRoundCalcs ? fx + Round(pLetter->horizOffset * fThisScale) : fx + pLetter->horizOffset * fThisScale, // float x
+								(uiLetter > (unsigned)g_iNonScaledCharRange) ? fy - fAsianYAdjust : fy,	// float y
 								curfont->mbRoundCalcs ? Round(pLetter->width * fThisScale) : pLetter->width * fThisScale,	// float w
 								curfont->mbRoundCalcs ? Round(pLetter->height * fThisScale) : pLetter->height * fThisScale, // float h
 								pLetter->s,						// float s1
 								pLetter->t,						// float t1
 								pLetter->s2,					// float s2
 								pLetter->t2,					// float t2
-								//lastcolour.c, 
+								//lastcolour.c,
 								hShader							// qhandle_t hShader
 								);
 
-				x += iAdvancePixels;
+				fx += fAdvancePixels;
 			}
 			break;
-		}		
+		}
 	}
-	//let it remember the old color //RE_SetColor(NULL);;
+	//let it remember the old color //RE_SetColor(NULL);
 #endif
 }
 
-int RE_RegisterFont(const char *psName) 
+int RE_RegisterFont(const char *psName)
 {
 	FontIndexMap_t::iterator it = g_mapFontIndexes.find(psName);
 	if (it != g_mapFontIndexes.end() )
@@ -2000,11 +2030,11 @@ void R_ReloadFonts_f(void)
 {
 	// first, grab all the currently-registered fonts IN THE ORDER THEY WERE REGISTERED...
 	//
-	vector <sstring_t> vstrFonts;
+	std::vector <sstring_t> vstrFonts;
 
 	int iFontToFind = 1;
 	for (; iFontToFind < g_iCurrentFontIndex; iFontToFind++)
-	{		
+	{
 		FontIndexMap_t::iterator it = g_mapFontIndexes.begin();
 		for (; it != g_mapFontIndexes.end(); ++it)
 		{

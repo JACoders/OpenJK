@@ -1,29 +1,31 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
-// leave this at the top of all UI_xxxx files for PCH reasons...
-//
+
 #include "../server/exe_headers.h"
 
 #include "ui_local.h"
 
-float trap_Cvar_VariableValue( const char *var_name ) 
+float trap_Cvar_VariableValue( const char *var_name )
 {
 	return Cvar_VariableValue( var_name );
 }
@@ -39,20 +41,20 @@ void trap_R_AddRefEntityToScene( const refEntity_t *re )
 	ui.R_AddRefEntityToScene(re);
 }
 
-void trap_R_RenderScene( const refdef_t *fd ) 
+void trap_R_RenderScene( const refdef_t *fd )
 {
 //	syscall( UI_R_RENDERSCENE, fd );
 	ui.R_RenderScene(fd);
 }
 
-void trap_R_SetColor( const float *rgba ) 
+void trap_R_SetColor( const float *rgba )
 {
 //	syscall( UI_R_SETCOLOR, rgba );
 //	re.SetColor( rgba );
 	ui.R_SetColor(rgba);
 }
 
-void trap_R_DrawStretchPic( float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t hShader ) 
+void trap_R_DrawStretchPic( float x, float y, float w, float h, float s1, float t1, float s2, float t2, qhandle_t hShader )
 {
 //	syscall( UI_R_DRAWSTRETCHPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), hShader );
 //	re.DrawStretchPic( x, y, w, h, s1, t1, s2, t2, hShader  );
@@ -61,59 +63,59 @@ void trap_R_DrawStretchPic( float x, float y, float w, float h, float s1, float 
 
 }
 
-void	trap_R_ModelBounds( clipHandle_t model, vec3_t mins, vec3_t maxs ) 
+void	trap_R_ModelBounds( clipHandle_t model, vec3_t mins, vec3_t maxs )
 {
 //	syscall( UI_R_MODELBOUNDS, model, mins, maxs );
 	ui.R_ModelBounds(model, mins, maxs);
 }
 
-void trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum ) 
+void trap_S_StartLocalSound( sfxHandle_t sfx, int channelNum )
 {
 //	syscall( UI_S_STARTLOCALSOUND, sfx, channelNum );
 	S_StartLocalSound( sfx, channelNum );
 }
 
 
-void trap_S_StopSounds( void ) 
+void trap_S_StopSounds( void )
 {
 	S_StopSounds( );
 }
 
-sfxHandle_t	trap_S_RegisterSound( const char *sample, qboolean compressed ) 
+sfxHandle_t	trap_S_RegisterSound( const char *sample, qboolean compressed )
 {
 	return S_RegisterSound(sample);
 }
 
-void trap_Key_SetBinding( int keynum, const char *binding ) 
+void trap_Key_SetBinding( int keynum, const char *binding )
 {
 	Key_SetBinding( keynum, binding);
 }
 
-qboolean trap_Key_GetOverstrikeMode( void ) 
+qboolean trap_Key_GetOverstrikeMode( void )
 {
 	return Key_GetOverstrikeMode();
 }
 
-void trap_Key_SetOverstrikeMode( qboolean state ) 
+void trap_Key_SetOverstrikeMode( qboolean state )
 {
 	Key_SetOverstrikeMode( state );
 }
 
-void trap_Key_ClearStates( void ) 
+void trap_Key_ClearStates( void )
 {
 	Key_ClearStates();
 }
 
 int Key_GetCatcher( void );
 
-int trap_Key_GetCatcher( void ) 
+int trap_Key_GetCatcher( void )
 {
 	return Key_GetCatcher();
 }
 
-void Key_SetCatcher( int catcher ); 
+void Key_SetCatcher( int catcher );
 
-void trap_Key_SetCatcher( int catcher ) 
+void trap_Key_SetCatcher( int catcher )
 {
 	Key_SetCatcher( catcher );
 }
@@ -129,7 +131,7 @@ void trap_GetClientState( uiClientState_t *state ) {
 
 void CL_GetGlconfig( glconfig_t *glconfig );
 
-void trap_GetGlconfig( glconfig_t *glconfig ) 
+void trap_GetGlconfig( glconfig_t *glconfig )
 {
 //	syscall( UI_GETGLCONFIG, glconfig );
 	CL_GetGlconfig( glconfig );
@@ -143,7 +145,7 @@ int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int
 
 // stops playing the cinematic and ends it.  should always return FMV_EOF
 // cinematics must be stopped in reverse order of when they are started
-int trap_CIN_StopCinematic(int handle) 
+int trap_CIN_StopCinematic(int handle)
 {
 //  return syscall(UI_CIN_STOPCINEMATIC, handle);
 	return CIN_StopCinematic(handle);

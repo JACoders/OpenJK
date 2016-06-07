@@ -1,23 +1,28 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-#ifndef __TR_PUBLIC_H
-#define __TR_PUBLIC_H
+#pragma once
 
 #include "tr_types.h"
 #include "../qcommon/qcommon.h"
@@ -25,12 +30,7 @@ This file is part of Jedi Academy.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#ifdef _WIN32
-// down
-#include "../win32/win_local.h"
-#endif
-
-#define	REF_API_VERSION		13
+#define	REF_API_VERSION		16
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -40,7 +40,7 @@ typedef struct {
 	int					(*Milliseconds)						( void );
 
 	void				(*Hunk_ClearToMark)					( void );
-	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
+	void*				(*Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
 	int					(*Z_Free)							( void *memory );
 	int					(*Z_MemSize)						( memtag_t eTag );
 	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
@@ -69,10 +69,10 @@ typedef struct {
 	void				(*FS_FreeFile)						( void *buffer );
 	void				(*FS_FreeFileList)					( char **fileList );
 	int					(*FS_Read)							( void *buffer, int len, fileHandle_t f );
-	int					(*FS_ReadFile)						( const char *qpath, void **buffer );
+	long					(*FS_ReadFile)						( const char *qpath, void **buffer );
 	void				(*FS_FCloseFile)					( fileHandle_t f );
-	int					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
-	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath );
+	long					(*FS_FOpenFileRead)					( const char *qpath, fileHandle_t *file, qboolean uniqueFILE );
+	fileHandle_t		(*FS_FOpenFileWrite)				( const char *qpath, qboolean safe );
 	int					(*FS_FOpenFileByMode)				( const char *qpath, fileHandle_t *f, fsMode_t mode );
 	qboolean			(*FS_FileExists)					( const char *file );
 	int					(*FS_FileIsInPAK)					( const char *filename );
@@ -88,18 +88,18 @@ typedef struct {
 	qboolean			(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
 
 	e_status			(*CIN_RunCinematic)					( int handle );
-	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
+	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height,
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
 
-#ifdef _WIN32
-	WinVars_t *			(*GetWinVars)						( void ); //g_wv
-#endif
+	// window handling
+	window_t		(*WIN_Init)                         ( const windowDesc_t *desc, glconfig_t *glConfig );
+	void			(*WIN_SetGamma)						( glconfig_t *glConfig, byte red[256], byte green[256], byte blue[256] );
+	void			(*WIN_Present)						( window_t *window );
+	void            (*WIN_Shutdown)                     ( void );
 
-    // input event handling
-	void            (*IN_Init)                          ( void *windowData );
-	void            (*IN_Shutdown)                      ( void );
-	void            (*IN_Restart)                       ( void );
+	// OpenGL-specific
+	void *			(*GL_GetProcAddress)				( const char *name );
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
@@ -108,8 +108,8 @@ typedef struct {
 	const void *	(*PD_Load)							( const char *name, size_t *size );
 
 	// ============= NOT IN MP BEYOND THIS POINT
-	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-															const int passEntityNum, const int contentmask, 
+	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
+															const int passEntityNum, const int contentmask,
 															const EG2_Collision eG2TraceType, const int useLod );
 
 	qboolean			(*SG_Append)						( unsigned int chid, const void *pvData, int iLength );
@@ -183,11 +183,11 @@ typedef struct {
 	qboolean(*GetLighting)( const vec3_t org, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir);
 
 	void	(*SetColor)( const float *rgba );	// NULL = 1,1,1,1
-	void	(*DrawStretchPic) ( float x, float y, float w, float h, 
+	void	(*DrawStretchPic) ( float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, qhandle_t hShader );	// 0 = white
-	void	(*DrawRotatePic) ( float x, float y, float w, float h, 
+	void	(*DrawRotatePic) ( float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, float a1, qhandle_t hShader );	// 0 = white
-	void	(*DrawRotatePic2) ( float x, float y, float w, float h, 
+	void	(*DrawRotatePic2) ( float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, float a1, qhandle_t hShader );	// 0 = white
 	void	(*LAGoggles)(void);
 	void	(*Scissor) ( float x, float y, float w, float h);	// 0 = white
@@ -208,7 +208,12 @@ typedef struct {
 	// for use with save-games mainly...
 	void	(*GetScreenShot)(byte *data, int w, int h);
 
-	// this is so you can get access to raw pixels from a graphics format (TGA/JPG/BMP etc), 
+#ifdef JK2_MODE
+	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
+	void	(*LoadJPGFromBuffer)( byte *inputBuffer, size_t len, byte **pic, int *width, int *height );
+#endif
+
+	// this is so you can get access to raw pixels from a graphics format (TGA/JPG/BMP etc),
 	//	currently only the save game uses it (to make raw shots for the autosaves)
 	//
 	byte*	(*TempRawImage_ReadFromFile)(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
@@ -219,7 +224,7 @@ typedef struct {
 				   int maxPoints, vec3_t pointBuffer, int maxFragments, markFragment_t *fragmentBuffer );
 
 	//model stuff
-	void	(*LerpTag)( orientation_t *tag,  qhandle_t model, int startFrame, int endFrame, 
+	void	(*LerpTag)( orientation_t *tag,  qhandle_t model, int startFrame, int endFrame,
 					 float frac, const char *tagName );
 	void	(*ModelBounds)( qhandle_t model, vec3_t mins, vec3_t maxs );
 
@@ -293,7 +298,7 @@ typedef struct {
 	qboolean	(*G2API_GetBoneAnim)(CGhoul2Info *ghlInfo, const char *boneName, const int AcurrentTime,
 					float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *);
 	qboolean	(*G2API_GetBoneAnimIndex)(CGhoul2Info *ghlInfo, const int iBoneIndex, const int AcurrentTime,
-					float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *); 
+					float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *);
 	int			(*G2API_GetBoneIndex)(CGhoul2Info *ghlInfo, const char *boneName, qboolean bAddIfNotFound);
 	qboolean	(*G2API_GetBoltMatrix)(CGhoul2Info_v &ghoul2, const int modelIndex,  const int boltIndex, mdxaBone_t *matrix,
 					const vec3_t angles, const vec3_t position, const int AframeNum, qhandle_t *modelList, const vec3_t scale);
@@ -309,7 +314,7 @@ typedef struct {
 	void		(*G2API_GiveMeVectorFromMatrix)(mdxaBone_t &boltMatrix, Eorientations flags, vec3_t &vec);
 	int			(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
 	qboolean	(*G2API_IKMove)(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
-	int			(*G2API_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex, 
+	int			(*G2API_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex,
 					qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias);
 	qboolean	(*G2API_IsPaused)(CGhoul2Info *ghlInfo, const char *boneName);
 	void		(*G2API_ListBones)(CGhoul2Info *ghlInfo, int frame);
@@ -320,7 +325,7 @@ typedef struct {
 	qboolean	(*G2API_PauseBoneAnimIndex)(CGhoul2Info *ghlInfo, const int boneIndex, const int AcurrentTime);
 	qhandle_t	(*G2API_PrecacheGhoul2Model)(const char *fileName);
 	qboolean	(*G2API_RagEffectorGoal)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos);
-	qboolean	(*G2API_RagEffectorKick)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity); 
+	qboolean	(*G2API_RagEffectorKick)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity);
 	qboolean	(*G2API_RagForceSolve)(CGhoul2Info_v &ghoul2, qboolean force);
 	qboolean	(*G2API_RagPCJConstraint)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t min, vec3_t max);
 	qboolean	(*G2API_RagPCJGradientSpeed)(CGhoul2Info_v &ghoul2, const char *boneName, const float speed);
@@ -344,7 +349,7 @@ typedef struct {
 					const int flags, qhandle_t *modelList, int blendTime, int AcurrentTime);
 	qboolean	(*G2API_SetBoneAnglesMatrixIndex)(CGhoul2Info *ghlInfo, const int index, const mdxaBone_t &matrix,
 					const int flags, qhandle_t *modelList, int blandeTime, int AcurrentTime);
-	qboolean	(*G2API_SetBoneIKState)(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, 
+	qboolean	(*G2API_SetBoneIKState)(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState,
 					sharedSetBoneIKStateParams_t *params);
 	qboolean	(*G2API_SetGhoul2ModelFlags)(CGhoul2Info *ghlInfo, const int flags);
 	void		(*G2API_SetGhoul2ModelIndexes)(CGhoul2Info_v &ghoul2, qhandle_t *modelList, qhandle_t *skinList);
@@ -371,11 +376,8 @@ typedef struct {
 	void		(*G2Time_ReportTimers)(void);
 } refexport_t;
 
-
 // this is the only function actually exported at the linker level
 // If the module can't init to a valid rendering state, NULL will be
 // returned.
 
 typedef	refexport_t* (QDECL *GetRefAPI_t) (int apiVersion, refimport_t *rimp);
-
-#endif	// __TR_PUBLIC_H

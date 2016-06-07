@@ -1,5 +1,5 @@
 /*____________________________________________________________________________
-	
+
 	FreeAmp - The Free MP3 Player
 
         MP3 Decoder originally Copyright (C) 1995-1997 Xing Technology
@@ -20,7 +20,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program; if not, write to the Free Software
 	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-	
+
 	$Id: uph.c,v 1.3 1999/10/19 07:13:09 elrod Exp $
 ____________________________________________________________________________*/
 
@@ -37,13 +37,6 @@ Layer 3 audio
 #include <math.h>
 
 #include "l3.h"
-
-#ifdef _MSC_VER
-#pragma warning ( disable : 4711 )	// function 'xxxx' selected for automatic inline expansion
-
-
-#pragma warning(disable: 4505)
-#endif
 
 /*===============================================================*/
 

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Interpreted Block Stream Functions
 //
@@ -22,11 +26,6 @@ This file is part of Jedi Knight 2.
 
 // this include must remain at the top of every Icarus CPP file
 #include "icarus.h"
-
-#ifdef _MSC_VER
-	#pragma warning(disable : 4100)  //unref formal parm
-	#pragma warning(disable : 4710)  //member not inlined
-#endif
 
 #include <string.h>
 #include "blockstream.h"
@@ -118,7 +117,7 @@ ReadMember
 
 int CBlockMember::ReadMember( char **stream, int *streamPos )
 {
-	m_id = *(int *) (*stream + *((int *)streamPos));
+	m_id = LittleLong(*(int *) (*stream + *((int *)streamPos)));
 	*streamPos += sizeof( int );
 
 	if ( m_id == ID_RANDOM )
@@ -131,10 +130,15 @@ int CBlockMember::ReadMember( char **stream, int *streamPos )
 	}
 	else
 	{
-		m_size = *(int *) (*stream + *streamPos);
+		m_size = LittleLong(*(int *) (*stream + *streamPos));
 		*streamPos += sizeof( int );
 		m_data = ICARUS_Malloc( m_size );
 		memcpy( m_data, (*stream + *streamPos), m_size );
+#ifdef Q3_BIG_ENDIAN
+		// only TK_INT, TK_VECTOR and TK_FLOAT has to be swapped, but just in case
+		if (m_size == 4 && m_id != TK_STRING && m_id != TK_IDENTIFIER && m_id != TK_CHAR)
+			*(int *)m_data = LittleLong(*(int *)m_data);
+#endif
 	}
 	*streamPos += m_size;
 	
@@ -386,7 +390,7 @@ CBlock *CBlock::Duplicate( void )
 	newblock->Create( m_id );
 
 	//Duplicate entire block and return the cc
-	for ( mi = m_members.begin(); mi != m_members.end(); mi++ )
+	for ( mi = m_members.begin(); mi != m_members.end(); ++mi )
 	{
 		newblock->AddMember( (*mi)->Duplicate() );
 	}
@@ -611,8 +615,8 @@ int CBlockStream::ReadBlock( CBlock *get )
 	if (!BlockAvailable())
 		return false;
 
-	b_id		= GetInteger();
-	numMembers	= GetInteger();
+	b_id		= LittleLong(GetInteger());
+	numMembers	= LittleLong(GetInteger());
 	flags		= (unsigned char) GetChar();
 
 	if (numMembers < 0)
@@ -654,6 +658,7 @@ int CBlockStream::Open( char *buffer, long size )
 	}
 
 	version = GetFloat();
+	version = LittleFloat(version);
 
 	//Check for valid header
 	if ( strcmp( id_header, IBI_HEADER_ID ) )

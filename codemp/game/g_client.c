@@ -1,5 +1,27 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "g_local.h"
 #include "ghoul2/G2.h"
 #include "bg_saga.h"
@@ -1535,7 +1557,7 @@ void *g2SaberInstance = NULL;
 
 qboolean BG_IsValidCharacterModel(const char *modelName, const char *skinName);
 qboolean BG_ValidateSkinForTeam( const char *modelName, char *skinName, int team, float *colors );
-void BG_GetVehicleModelName(char *modelname, int len);
+void BG_GetVehicleModelName(char *modelName, const char *vehicleName, size_t len);
 
 void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 {
@@ -1595,20 +1617,22 @@ void SetupGameGhoul2Model(gentity_t *ent, char *modelname, char *skinName)
 			// If this is a vehicle, get it's model name.
 			if ( ent->client->NPC_class == CLASS_VEHICLE )
 			{
+				char realModelName[MAX_QPATH];
+
 				Q_strncpyz( vehicleName, modelname, sizeof( vehicleName ) );
-				BG_GetVehicleModelName(modelname, strlen( modelname ));
-				strcpy(truncModelName, modelname);
+				BG_GetVehicleModelName(realModelName, modelname, sizeof( realModelName ));
+				strcpy(truncModelName, realModelName);
 				skin[0] = 0;
 				if ( ent->m_pVehicle
 					&& ent->m_pVehicle->m_pVehicleInfo
 					&& ent->m_pVehicle->m_pVehicleInfo->skin
 					&& ent->m_pVehicle->m_pVehicleInfo->skin[0] )
 				{
-					skinHandle = trap->R_RegisterSkin(va("models/players/%s/model_%s.skin", modelname, ent->m_pVehicle->m_pVehicleInfo->skin));
+					skinHandle = trap->R_RegisterSkin(va("models/players/%s/model_%s.skin", realModelName, ent->m_pVehicle->m_pVehicleInfo->skin));
 				}
 				else
 				{
-					skinHandle = trap->R_RegisterSkin(va("models/players/%s/model_default.skin", modelname));
+					skinHandle = trap->R_RegisterSkin(va("models/players/%s/model_default.skin", realModelName));
 				}
 			}
 			else
@@ -1994,7 +2018,7 @@ void Svcmd_ToggleUserinfoValidation_f( void ) {
 			return;
 		}
 
-		trap->Cvar_Set( "g_userinfoValidate", va( "%i", (1<<index) ^ g_userinfoValidate.integer ) );
+		trap->Cvar_Set( "g_userinfoValidate", va( "%i", (1 << index) ^ (g_userinfoValidate.integer & ((1 << (numUserinfoFields + USERINFO_VALIDATION_MAX)) - 1)) ) );
 		trap->Cvar_Update( &g_userinfoValidate );
 
 		if ( index < numUserinfoFields )	Com_Printf( "%s %s\n", userinfoFields[index].fieldClean,				((g_userinfoValidate.integer & (1<<index)) ? "Validated" : "Ignored") );
@@ -2136,7 +2160,7 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 			Q_StripColor( client->pers.netname_nocolor );
 		}
 		else {
-			trap->SendServerCommand( -1, va( "print \"%s"S_COLOR_WHITE" %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
+			trap->SendServerCommand( -1, va( "print \"%s" S_COLOR_WHITE " %s %s\n\"", oldname, G_GetStringEdString( "MP_SVGAME", "PLRENAME" ), client->pers.netname ) );
 			G_LogPrintf( "ClientRename: %i [%s] (%s) \"%s^7\" -> \"%s^7\"\n", clientNum, ent->client->sess.IP, ent->client->pers.guid, oldname, ent->client->pers.netname );
 			client->pers.netnameTime = level.time + 5000;
 		}
@@ -2290,16 +2314,14 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 
 	// gender hints
 	s = Info_ValueForKey( userinfo, "sex" );
-	if ( !Q_stricmp( s, "male" ) )
-		gender = GENDER_MALE;
-	else if ( !Q_stricmp( s, "female" ) )
+	if ( !Q_stricmp( s, "female" ) )
 		gender = GENDER_FEMALE;
 	else
-		gender = GENDER_NEUTER;
+		gender = GENDER_MALE;
 
 	s = Info_ValueForKey( userinfo, "snaps" );
 	if ( atoi( s ) < sv_fps.integer )
-		trap->SendServerCommand( clientNum, va( "print \""S_COLOR_YELLOW"Recommend setting /snaps %d or higher to match this server's sv_fps\n\"", sv_fps.integer ) );
+		trap->SendServerCommand( clientNum, va( "print \"" S_COLOR_YELLOW "Recommend setting /snaps %d or higher to match this server's sv_fps\n\"", sv_fps.integer ) );
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
@@ -2307,9 +2329,8 @@ qboolean ClientUserinfoChanged( int clientNum ) {
 	Q_strcat( buf, sizeof( buf ), va( "n\\%s\\", client->pers.netname ) );
 	Q_strcat( buf, sizeof( buf ), va( "t\\%i\\", client->sess.sessionTeam ) );
 	Q_strcat( buf, sizeof( buf ), va( "model\\%s\\", model ) );
-		 if ( gender == GENDER_MALE )	Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'm' ) );
-	else if ( gender == GENDER_FEMALE )	Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'f' ) );
-	else								Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'n' ) );
+	if ( gender == GENDER_FEMALE )	Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'f' ) );
+	else							Q_strcat( buf, sizeof( buf ), va( "ds\\%c\\", 'm' ) );
 	Q_strcat( buf, sizeof( buf ), va( "st\\%s\\", client->pers.saber1 ) );
 	Q_strcat( buf, sizeof( buf ), va( "st2\\%s\\", client->pers.saber2 ) );
 	Q_strcat( buf, sizeof( buf ), va( "c1\\%s\\", color1 ) );
@@ -3508,6 +3529,7 @@ void ClientSpawn(gentity_t *ent) {
 	else
 	{//jediVmerc is incompatible with this gametype, turn it off!
 		trap->Cvar_Set( "g_jediVmerc", "0" );
+		trap->Cvar_Update( &g_jediVmerc );
 		if (level.gametype == GT_HOLOCRON)
 		{
 			//always get free saber level 1 in holocron
@@ -4053,6 +4075,16 @@ void ClientDisconnect( int clientNum ) {
 	i = 0;
 
 	G_LeaveVehicle( ent, qtrue );
+
+	if ( ent->client->ewebIndex )
+	{
+		gentity_t *eweb = &g_entities[ent->client->ewebIndex];
+
+		ent->client->ps.emplacedIndex = 0;
+		ent->client->ewebIndex = 0;
+		ent->client->ewebHealth = 0;
+		G_FreeEntity( eweb );
+	}
 
 	// stop any following clients
 	for ( i = 0 ; i < level.maxclients ; i++ ) {

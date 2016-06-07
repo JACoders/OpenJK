@@ -4,92 +4,103 @@
 This project is an OpenJK fork. Some years ago, I developed a mod called Zyk Mod. The code was ported from this older project into this one. This mod has an account system with admin commands, a RPG level system, quests, and more.
 
 
-# JACoders "OpenJK" project #
+# OpenJK
+
+OpenJK is an effort by the JACoders group to maintain and improve the game engines on which the Jedi Academy (JA) and Jedi Outcast (JO) games run on, while maintaining *full backwards compatibility* with the existing games. *This project does not attempt to rebalance or otherwise modify core gameplay*.
+
+Our aims are to:
+* Improve the stability of the engine by fixing bugs and improving performance.
+* Provide a clean base from which new JO and JA code modifications can be made.
+* Make available this engine to more operating systems. To date, we have ports on Linux and OS X.
+
+Currently, the most stable portion of this project is the Jedi Academy multiplayer code, with the single player code in a reasonable state.
+
+Rough support for Jedi Outcast single player is also available, however this should be considered heavily work in progress. This is not currently actively worked on or tested. OpenJK does not have Jedi Outcast multiplayer support.
+
+Please use discretion when making issue requests on GitHub. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for support queries, discussions, and feature requests.
+
+[![IRC](https://img.shields.io/badge/irc-%23JACoders-brightgreen.svg)](http://unic0rn.github.io/tiramisu/jacoders/)
+[![Forum](https://img.shields.io/badge/forum-JKHub.org%20OpenJK-brightgreen.svg)](http://jkhub.org/forum/51-discussion/)
+
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/1153/badge.svg)](https://scan.coverity.com/projects/1153)
 
-IRC: irc.arloria.net / #JACoders ([webchat](http://unic0rn.github.io/tiramisu/jacoders/))
+| Windows | OSX | Linux x86 | Linux x64 |
+|---------|-----|-----------|-----------|
+| [![Windows Build Status](http://jk.xd.cm/badge.svg?builder=windows)](http://jk.xd.cm/builders/windows) | [ ![OSX Build Status](http://jk.xd.cm/badge.svg?builder=osx)](http://jk.xd.cm/builders/osx) | [ ![Linux x86 Build Status](http://jk.xd.cm/badge.svg?builder=linux)](http://jk.xd.cm/builders/linux) | [ ![Linux x64 Build Status](http://jk.xd.cm/badge.svg?builder=linux-64)](http://jk.xd.cm/builders/linux-64) |
 
-Forum: http://jkhub.org/forum/51-discussion/
+## License
 
-The purpose of this project is to maintain and improve the Jedi Academy and Jedi Outcast games, developed by Raven Software. This project does not attempt to rebalance or otherwise modify core gameplay.
-
-Major enhancement changes are very low priority at this time unless patches are made available and which do not alter the core functionality of gameplay or the stock renderer itself.
-
-Please use discretion when making issue requests on github. The [JKHub sub-forum](http://jkhub.org/forum/51-discussion/) is a better place for larger discussions on changes that aren't actually bugs.
-
-## Jedi Outcast Support ##
-
-_Do not make issues regarding Jedi Outcast support problems at this time.  It is considered mostly unfinished, broken and use at your own risk!_
-
-There is no Multiplayer code for JK2MP at all on our repository at this time.  The Singleplayer support must be explicitly turned on in your own compile.  The prebuilt versions will not include this.
-
-## 64-bit Support
-
-64-bit is currently supported on non-Windows platforms.
-
-## Installation ##
-
-First, install Jedi Academy. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [Play](http://www.play.com/Games/PC/4-/127805/Star-Wars-Jedi-Knight-Jedi-Academy/Product.html?searchstring=jedi+academy&searchsource=0&searchtype=allproducts&urlrefer=search). Then unpack the OpenJK zip file to your Jedi Academy GameData folder.
-
-## Maintainers (in alphabetical order) ##
-
-* eezstreet
-* Ensiform
-* Razish
-* redsaurus
-* Xycaleth
-
-## Significant contributors (in alphabetical order) ##
-
-* exidl
-* ImperatorPrime
-* mrwonko
-* Scooper
-* Sil
-
-## Dependencies ##
-
-* OpenGL
-* OpenAL (included on Windows)
-* libpng (included on Windows)
-* libjpeg (included on Windows)
-* zlib (included on Windows)
-
-## Dedicated Server ##
-
-In order to run dedicated server, you must use the openjkded binary, running dedicated from the main executable is currently not allowed because it is broken with the addition of modular renderer.
-
-## Developer Notes ##
+[![License](https://img.shields.io/github/license/JACoders/OpenJK.svg)](https://github.com/JACoders/OpenJK/blob/master/LICENSE.txt)
 
 OpenJK is licensed under GPLv2 as free software. You are free to use, modify and redistribute OpenJK following the terms in LICENSE.txt.
 
-Please be aware of the implications of the GPLv2 licence. In short, be prepared to share your code.
+## For players
 
-### If you wish to contribute to OpenJK, please do the following ###
-* [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
+To install OpenJK, you will first need Jedi Academy installed. If you don't already own the game you can buy it from online stores such as [Steam](http://store.steampowered.com/app/6020/), [Amazon](http://www.amazon.com/Star-Wars-Jedi-Knight-Academy-Pc/dp/B0000A2MCN) or [GOG](https://www.gog.com/game/star_wars_jedi_knight_jedi_academy).
+
+Installing and running OpenJK:
+
+1. [Download the latest build](http://builds.openjk.org) for your operating system.
+2. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
+3. Run `openjk.x86.exe` (Windows), `openjk.i386` (Linux 32-bit), `openjk.x86_64` (Linux 64-bit) or the `OpenJK` application (OS X), depending on your operating system.
+ 
+**Linux Instructions**
+
+If you do not have a windows partition and need to download the game base.
+
+1. Download  and Install SteamCMD [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD#Linux) .
+2. Set the download path using steamCMD, force_install_dir <path> .
+3. Using SteamCMD Set the platform to windows to download any windows game on steam. @sSteamCmdForcePlatformType "windows"
+4. Using SteamCMD download the game,  app_update 6020.
+5. [Download the latest build](http://builds.openjk.org) for your operating system.
+6. Extract the contents of the file into the Jedi Academy `GameData/` folder. For Steam users, this will be in `<Steam Folder>/steamapps/common/Jedi Academy/GameData`.
+
+
+**OS X Instructions**
+
+If you have the Mac App Store Version of Jedi Academy, follow these steps to get OpenJK runnning under OS X:  
+
+1. Install [Homebrew](http://brew.sh/) if you don't have it.
+2. Open the Terminal app, and enter the command `brew install sdl2`.
+3. Extract the contents of the OpenJK DMG ([Download the latest build](http://builds.openjk.org)) into the game directory `/Applications/Star Wars Jedi Knight: Jedi Academy.app/Contents/`
+4. Run `openJK.app` or `openJK SP.app` 
+5. Savegames, Config Files and Log Files are stored in `/Users/<USER>/Library/Application Support/OpenJK/`
+
+
+## For Developers
+
+### Building OpenJK
+* [Compilation guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
+* [Debugging guide](https://github.com/JACoders/OpenJK/wiki/Debugging)
+
+### Contributing to OpenJK
+* [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Create a new branch and make your changes
 * Send a [pull request](https://help.github.com/articles/creating-a-pull-request) to upstream (JACoders/OpenJK)
 
-### If you wish to base your work off OpenJK (mod or engine) ###
-* [Fork](https://github.com/JACoders/OpenJK/fork) the project on Github
+### Using OpenJK as a base for a new mod
+* [Fork](https://github.com/JACoders/OpenJK/fork) the project on GitHub
 * Change the GAMEVERSION define in codemp/game/g_local.h from "OpenJK" to your project name
-* If you make a nice change, please consider backporting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
+* If you make a nice change, please consider back-porting to upstream via pull request as described above. This is so everyone benefits without having to reinvent the wheel for every project.
 
-### Reserved renderer names ###
-* rd-vanilla (JA's original renderer)
-* rd-dedicated (Stripped down renderer for use with dedicated server)
-* rd-rend2 (Maintainer: Xycaleth)
-* rd-es (OpenGL ES compliant renderer for use with Raspberry Pi, Ouya, etc - please contribute!)
-* rd-strawberry (Maintainer: Xycaleth)
-* rd-vader (Maintainer: mrwonko)
-* rd-palpatine (Maintainer: mrwonko)
-* rd-sidious (Maintainer: mrwonko)
+### Deciphering buildbot's output
+* Pick the build from the operating system builder you're interested in at the [builders](https://jk.xd.cm/builders) page.
+* Click on stdio for the Steps to see the command executed and the result.
+* The command is at the very top, the output starts below.
 
-### Engine "hax" ###
-* You will no longer be able to use runtime memory patches. Consider forking OpenJK and adding your engine modifications directly.
+## Maintainers (in alphabetical order)
 
-### Links of Interest ###
-* [Buildbot](http://jk.xd.cm/)
-* [Buildbot builds](http://builds.openjk.org/)
-* [Compilation Guide](https://github.com/JACoders/OpenJK/wiki/Compilation-guide)
-* [JKHub sub-forum](http://jkhub.org/forum/51-discussion/)
+* Ensiform
+* Razish
+* Xycaleth
+
+## Significant contributors (in alphabetical order)
+
+* eezstreet
+* exidl
+* ImperatorPrime
+* mrwonko
+* redsaurus
+* Scooper
+* Sil
+* smcv

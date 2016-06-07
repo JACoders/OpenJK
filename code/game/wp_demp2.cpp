@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_local.h"
 #include "b_local.h"
@@ -92,10 +96,10 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 	vec3_t		v, dir;
 
 	frac *= frac * frac; // yes, this is completely ridiculous...but it causes the shell to grow slowly then "explode" at the end
-	
+
 	radius = frac * 200.0f; // 200 is max radius...the model is aprox. 100 units tall...the fx draw code mults. this by 2.
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = ent->currentOrigin[i] - radius;
 		maxs[i] = ent->currentOrigin[i] + radius;
@@ -103,7 +107,7 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 
 	numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		gent = entityList[ e ];
 
@@ -113,17 +117,17 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 		}
 
 		// find the distance from the edge of the bounding box
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
-			if ( ent->currentOrigin[i] < gent->absmin[i] ) 
+			if ( ent->currentOrigin[i] < gent->absmin[i] )
 			{
 				v[i] = gent->absmin[i] - ent->currentOrigin[i];
-			} 
-			else if ( ent->currentOrigin[i] > gent->absmax[i] ) 
+			}
+			else if ( ent->currentOrigin[i] > gent->absmax[i] )
 			{
 				v[i] = ent->currentOrigin[i] - gent->absmax[i];
-			} 
-			else 
+			}
+			else
 			{
 				v[i] = 0;
 			}
@@ -134,7 +138,7 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 
 		dist = VectorLength( v );
 
-		if ( dist >= radius ) 
+		if ( dist >= radius )
 		{
 			// shockwave hasn't hit them yet
 			continue;
@@ -153,7 +157,7 @@ void DEMP2_AltRadiusDamage( gentity_t *ent )
 		dir[2] += 12;
 
 		G_Damage( gent, ent, ent->owner, dir, ent->currentOrigin, weaponData[WP_DEMP2].altDamage, DAMAGE_DEATH_KNOCKBACK, ent->splashMethodOfDeath );
-		if ( gent->takedamage && gent->client ) 
+		if ( gent->takedamage && gent->client )
 		{
 			gent->s.powerups |= ( 1 << PW_SHOCKED );
 			gent->client->ps.powerups[PW_SHOCKED] = level.time + 2000;

@@ -1,8 +1,5 @@
 #pragma once
-
-#ifndef _WIN32
-	#error You should not be including this file on this platform
-#endif
+#error You should not be including this file on this platform
 
 #include <windows.h>
 

@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //NPC_reactions.cpp
 #include "b_local.h"
 #include "anims.h"
@@ -130,17 +152,13 @@ void NPC_SetPainEvent( gentity_t *self )
 {
 	if ( !self->NPC || !(self->NPC->aiFlags&NPCAI_DIE_ON_IMPACT) )
 	{
-	// no more borg
-	//	if( self->client->playerTeam != TEAM_BORG )
-	//	{
-			//if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
-			if (!trap->ICARUS_TaskIDPending((sharedEntity_t *)self, TID_CHAN_VOICE) && self->client)
-			{
-				//G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
-				G_AddEvent( self, EV_PAIN, floor((float)self->health/self->client->ps.stats[STAT_MAX_HEALTH]*100.0f) );
-				//rwwFIXMEFIXME: Do this properly?
-			}
-	//	}
+		//if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
+		if (!trap->ICARUS_TaskIDPending((sharedEntity_t *)self, TID_CHAN_VOICE) && self->client)
+		{
+			//G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
+			G_AddEvent( self, EV_PAIN, floor((float)self->health/self->client->ps.stats[STAT_MAX_HEALTH]*100.0f) );
+			//rwwFIXMEFIXME: Do this properly?
+		}
 	}
 }
 
@@ -287,6 +305,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 				|| PM_RollingAnim( self->client->ps.legsAnim )
 				|| (BG_FlippingAnim( self->client->ps.legsAnim )&&!PM_InCartwheel( self->client->ps.legsAnim )) )
 			{//strong attacks, rolls, knockdowns, flips and spins cannot be interrupted by pain
+				return;
 			}
 			else
 			{//play an anim

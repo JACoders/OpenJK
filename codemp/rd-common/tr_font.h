@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // Filename:-	tr_font.h
 //
 // font support
@@ -11,7 +33,8 @@
 void R_ShutdownFonts(void);
 void R_InitFonts(void);
 int RE_RegisterFont(const char *psName);
-int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale = 1.0f);
+float RE_Font_StrLenPixelsNew( const char *psText, const int iFontHandle, const float fScale = 1.0f );
+int RE_Font_StrLenPixels( const char *psText, const int iFontHandle, const float fScale = 1.0f );
 int RE_Font_StrLenChars(const char *psText);
 int RE_Font_HeightPixels(const int iFontHandle, const float fScale = 1.0f);
 void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, const int iFontHandle, int iMaxPixelWidth, const float fScale = 1.0f);

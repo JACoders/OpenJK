@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 //NPC_behavior.cpp
 /*
@@ -80,7 +84,7 @@ void NPC_BSAdvanceFight (void)
 		//Yaw to enemy
 		VectorMA(NPC->enemy->absmin, 0.5, NPC->enemy->maxs, enemy_org);
 		CalcEntitySpot( NPC, SPOT_WEAPON, muzzle );
-		
+
 		VectorSubtract (enemy_org, muzzle, delta);
 		vectoangles ( delta, angleToEnemy );
 		distanceToEnemy = VectorNormalize(delta);
@@ -99,7 +103,7 @@ void NPC_BSAdvanceFight (void)
 
 			if(enemyVisibility == VIS_FOV)
 			{//He's in our FOV
-				
+
 				attack_ok = qtrue;
 				CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_head);
 
@@ -187,7 +191,7 @@ void NPC_BSAdvanceFight (void)
 //			NPC->cantHitEnemyCounter++;
 	}
 	else
-	{//FIXME: 
+	{//FIXME:
 		NPC_UpdateShootAngles(NPC->client->ps.viewangles, qtrue, qtrue);
 	}
 
@@ -212,7 +216,7 @@ void MakeOwnerInvis (gentity_t *self);
 void BeamOut (gentity_t *self)
 {
 //	gentity_t *tent = G_Spawn();
-	
+
 /*
 	tent->owner = self;
 	tent->think = MakeOwnerInvis;
@@ -227,7 +231,7 @@ void BeamOut (gentity_t *self)
 	self->svFlags |= SVF_BEAMING;
 }
 
-void NPC_BSCinematic( void ) 
+void NPC_BSCinematic( void )
 {
 
 	if( NPCInfo->scriptFlags & SCF_FIRE_WEAPON )
@@ -258,7 +262,7 @@ void NPC_BSCinematic( void )
 		CalcEntitySpot( NPCInfo->watchTarget, SPOT_HEAD_LEAN, viewSpot );
 
 		VectorSubtract( viewSpot, eyes, viewvec );
-		
+
 		vectoangles( viewvec, viewangles );
 
 		NPCInfo->lockedDesiredYaw = NPCInfo->desiredYaw = viewangles[YAW];
@@ -268,7 +272,7 @@ void NPC_BSCinematic( void )
 	NPC_UpdateAngles( qtrue, qtrue );
 }
 
-void NPC_BSWait( void ) 
+void NPC_BSWait( void )
 {
 	NPC_UpdateAngles( qtrue, qtrue );
 }
@@ -326,7 +330,7 @@ void NPC_BSInvestigate (void)
 
 	if(	level.time < NPCInfo->walkDebounceTime )
 	{//walk toward investigateGoal
-		
+
 		/ *
 		NPCInfo->goalEntity = NPCInfo->tempGoal;
 		VectorCopy(NPCInfo->investigateGoal, NPCInfo->tempGoal->currentOrigin);
@@ -348,14 +352,14 @@ void NPC_BSInvestigate (void)
 
 		if(NPCInfo->hlookCount > 30)
 		{
-			if(Q_irand(0, 10) > 7) 
+			if(Q_irand(0, 10) > 7)
 			{
 				NPCInfo->hlookCount = 0;
 			}
 		}
 		else if(NPCInfo->hlookCount < -30)
 		{
-			if(Q_irand(0, 10) > 7) 
+			if(Q_irand(0, 10) > 7)
 			{
 				NPCInfo->hlookCount = 0;
 			}
@@ -364,7 +368,7 @@ void NPC_BSInvestigate (void)
 		{
 			NPCInfo->hlookCount = Q_irand(-1, 1);
 		}
-		else if(Q_irand(0, 10) > 7) 
+		else if(Q_irand(0, 10) > 7)
 		{
 			if(NPCInfo->hlookCount > 0)
 			{
@@ -378,14 +382,14 @@ void NPC_BSInvestigate (void)
 
 		if(NPCInfo->vlookCount >= 15)
 		{
-			if(Q_irand(0, 10) > 7) 
+			if(Q_irand(0, 10) > 7)
 			{
 				NPCInfo->vlookCount = 0;
 			}
 		}
 		else if(NPCInfo->vlookCount <= -15)
 		{
-			if(Q_irand(0, 10) > 7) 
+			if(Q_irand(0, 10) > 7)
 			{
 				NPCInfo->vlookCount = 0;
 			}
@@ -394,7 +398,7 @@ void NPC_BSInvestigate (void)
 		{
 			NPCInfo->vlookCount = Q_irand(-1, 1);
 		}
-		else if(Q_irand(0, 10) > 8) 
+		else if(Q_irand(0, 10) > 8)
 		{
 			if(NPCInfo->vlookCount > 0)
 			{
@@ -444,17 +448,17 @@ qboolean NPC_CheckInvestigate( int alertEventNum )
 		return qfalse;
 	}
 
-	if ( owner->s.eType != ET_PLAYER && owner == NPCInfo->goalEntity ) 
+	if ( owner->s.eType != ET_PLAYER && owner == NPCInfo->goalEntity )
 	{
 		return qfalse;
 	}
 
-	if ( owner->s.eFlags & EF_NODRAW ) 
+	if ( owner->s.eFlags & EF_NODRAW )
 	{
 		return qfalse;
 	}
 
-	if ( owner->flags & FL_NOTARGET ) 
+	if ( owner->flags & FL_NOTARGET )
 	{
 		return qfalse;
 	}
@@ -517,9 +521,9 @@ qboolean NPC_CheckInvestigate( int alertEventNum )
 
 
 /*
-void NPC_BSSleep( void ) 
+void NPC_BSSleep( void )
 */
-void NPC_BSSleep( void ) 
+void NPC_BSSleep( void )
 {
 	int alertEvent = NPC_CheckAlertEvents( qtrue, qfalse );
 
@@ -573,15 +577,15 @@ bool NPC_BSFollowLeader_UpdateLeader(void)
 		}
 		if ( NPCInfo->behaviorState == BS_FOLLOW_LEADER )
 		{
-			NPCInfo->behaviorState = BS_DEFAULT; 
+			NPCInfo->behaviorState = BS_DEFAULT;
 		}
 		if ( NPCInfo->defaultBehavior == BS_FOLLOW_LEADER )
 		{
-			NPCInfo->defaultBehavior = BS_DEFAULT; 
+			NPCInfo->defaultBehavior = BS_DEFAULT;
 		}
 		return false;
 	}
-	return true; 
+	return true;
 }
 
 
@@ -602,8 +606,8 @@ void NPC_BSFollowLeader_UpdateEnemy(void)
 				if ( eventID > -1 && level.alertEvents[eventID].level >= AEL_SUSPICIOUS && (NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES) )
 				{
 					//NPCInfo->lastAlertID = level.alertEvents[eventID].ID;
-					if ( !level.alertEvents[eventID].owner || 
-						!level.alertEvents[eventID].owner->client || 
+					if ( !level.alertEvents[eventID].owner ||
+						!level.alertEvents[eventID].owner->client ||
 						level.alertEvents[eventID].owner->health <= 0 ||
 						level.alertEvents[eventID].owner->client->playerTeam != NPC->client->enemyTeam )
 					{//not an enemy
@@ -622,8 +626,8 @@ void NPC_BSFollowLeader_UpdateEnemy(void)
 		}
 		if ( !NPC->enemy )
 		{
-			if ( NPC->client->leader 
-				&& NPC->client->leader->enemy 
+			if ( NPC->client->leader
+				&& NPC->client->leader->enemy
 				&& NPC->client->leader->enemy != NPC
 				&& ( (NPC->client->leader->enemy->client&&NPC->client->leader->enemy->client->playerTeam==NPC->client->enemyTeam)
 					||(NPC->client->leader->enemy->svFlags&SVF_NONNPC_ENEMY&&NPC->client->leader->enemy->noDamageTeam==NPC->client->enemyTeam) )
@@ -635,7 +639,7 @@ void NPC_BSFollowLeader_UpdateEnemy(void)
 			}
 		}
 	}
-	else 
+	else
 	{
 		if ( NPC->enemy->health <= 0 || (NPC->enemy->flags&FL_NOTARGET) )
 		{
@@ -670,16 +674,15 @@ bool NPC_BSFollowLeader_AttackEnemy(void)
 	if ( enemyVisibility > VIS_PVS )
 	{//face
 		vec3_t	enemy_org, muzzle, delta, angleToEnemy;
-		float	distanceToEnemy;
 
 		CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_org );
 		NPC_AimWiggle( enemy_org );
 
 		CalcEntitySpot( NPC, SPOT_WEAPON, muzzle );
-		
+
 		VectorSubtract( enemy_org, muzzle, delta);
 		vectoangles( delta, angleToEnemy );
-		distanceToEnemy = VectorNormalize( delta );
+		VectorNormalize( delta );
 
 		NPCInfo->desiredYaw = angleToEnemy[YAW];
 		NPCInfo->desiredPitch = angleToEnemy[PITCH];
@@ -688,7 +691,7 @@ bool NPC_BSFollowLeader_AttackEnemy(void)
 		if ( enemyVisibility >= VIS_SHOOT )
 		{//shoot
 			NPC_AimAdjust( 2 );
-			if ( NPC_GetHFOVPercentage( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, NPCInfo->stats.hfov ) > 0.6f 
+			if ( NPC_GetHFOVPercentage( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, NPCInfo->stats.hfov ) > 0.6f
 				&& NPC_GetHFOVPercentage( NPC->enemy->currentOrigin, NPC->currentOrigin, NPC->client->ps.viewangles, NPCInfo->stats.vfov ) > 0.5f )
 			{//actually withing our front cone
 				WeaponThink( qtrue );
@@ -698,7 +701,7 @@ bool NPC_BSFollowLeader_AttackEnemy(void)
 		{
 			NPC_AimAdjust( 1 );
 		}
-		
+
 		//NPC_CheckCanAttack(1.0, qfalse);
 	}
 	else
@@ -710,8 +713,8 @@ bool NPC_BSFollowLeader_AttackEnemy(void)
 
 bool NPC_BSFollowLeader_CanAttack(void)
 {
-	 return (NPC->enemy 
-		&& NPC->client->ps.weapon 
+	 return (NPC->enemy
+		&& NPC->client->ps.weapon
 		&& !(NPCInfo->aiFlags&NPCAI_HEAL_ROSH) //Kothos twins never go after their enemy
 		);
 }
@@ -719,10 +722,10 @@ bool NPC_BSFollowLeader_CanAttack(void)
 bool NPC_BSFollowLeader_InFullBodyAttack(void)
 {
 	return (
-		NPC->client->ps.legsAnim==BOTH_ATTACK1 || 
-		NPC->client->ps.legsAnim==BOTH_ATTACK2 || 
-		NPC->client->ps.legsAnim==BOTH_ATTACK3 || 
-		NPC->client->ps.legsAnim==BOTH_MELEE1 || 
+		NPC->client->ps.legsAnim==BOTH_ATTACK1 ||
+		NPC->client->ps.legsAnim==BOTH_ATTACK2 ||
+		NPC->client->ps.legsAnim==BOTH_ATTACK3 ||
+		NPC->client->ps.legsAnim==BOTH_MELEE1 ||
 		NPC->client->ps.legsAnim==BOTH_MELEE2
 		);
 }
@@ -738,7 +741,7 @@ void NPC_BSFollowLeader_LookAtLeader(void)
 	VectorNormalize(delta);
 	NPC->NPC->desiredYaw = angleToLeader[YAW];
 	NPC->NPC->desiredPitch = angleToLeader[PITCH];
-	
+
 	NPC_UpdateAngles(qtrue, qtrue);
 }
 
@@ -798,8 +801,8 @@ void NPC_BSFollowLeader (void)
 		{
 			// If Too Close, Back Away Some
 			//------------------------------
-			if (STEER::Reached(NPC, NPC->client->leader, 65.0f))    
-			{ 
+			if (STEER::Reached(NPC, NPC->client->leader, 65.0f))
+			{
 				STEER::Evade(NPC, NPC->client->leader);
 			}
 			else
@@ -913,7 +916,7 @@ void NPC_BSJump (void)
 
 		//FIXME: length of xy will change curve of parabola, need to account for this
 		//somewhere... PARA_WIDTH
-		
+
 		z = (sqrt(apexHeight + z) - sqrt(apexHeight));
 
 		assert(z >= 0);
@@ -931,13 +934,13 @@ void NPC_BSJump (void)
 
 		VectorMA( p1, xy, dir, apex );
 		apex[2] += apexHeight;
-	
+
 		VectorCopy(apex, NPC->pos1);
-		
+
 		//Now we have the apex, aim for it
 		height = apex[2] - NPC->currentOrigin[2];
 		time = sqrt( height / ( .5 * NPC->client->ps.gravity ) );
-		if ( !time ) 
+		if ( !time )
 		{
 //			gi.Printf("ERROR no time in jump\n");
 			return;
@@ -969,8 +972,8 @@ void NPC_BSJump (void)
 
 		if ( NPC->s.groundEntityNum != ENTITYNUM_NONE)
 		{//Landed, start landing anim
-			//FIXME: if the 
-			VectorClear(NPC->client->ps.velocity); 
+			//FIXME: if the
+			VectorClear(NPC->client->ps.velocity);
 			NPC_SetAnim(NPC, SETANIM_BOTH, BOTH_LAND1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			NPCInfo->jumpState = JS_LANDING;
 			//FIXME: landsound?
@@ -1155,7 +1158,7 @@ void NPC_BSSearch (void)
 					vec3_t	branchPos, lookDir;
 
 					NAV::GetNodePosition(NAV::ChooseRandomNeighbor(NPCInfo->tempGoal->waypoint), branchPos);
-					
+
 					VectorSubtract( branchPos, NPCInfo->tempGoal->currentOrigin, lookDir );
 					NPCInfo->desiredYaw = AngleNormalize360( vectoyaw( lookDir ) + Q_flrand( -45, 45 ) );
 				}
@@ -1225,7 +1228,7 @@ void NPC_BSNoClip ( void )
 		float	fDot, rDot, uDot;
 
 		VectorSubtract( NPCInfo->goalEntity->currentOrigin, NPC->currentOrigin, dir );
-		
+
 		vectoangles( dir, angles );
 		NPCInfo->desiredYaw = angles[YAW];
 
@@ -1300,7 +1303,7 @@ void NPC_BSWander (void)
 	{
 		// If Debounce Time Has Expired, Choose A New Sub State
 		//------------------------------------------------------
-	 	if (NPCInfo->investigateDebounceTime<level.time || 
+	 	if (NPCInfo->investigateDebounceTime<level.time ||
 			((NPCInfo->aiFlags&NPCAI_BLOCKED) &&	(level.time-NPCInfo->blockedDebounceTime)>1000))
 		{
 			// Clear Out Flags From The Previous Substate
@@ -1316,7 +1319,7 @@ void NPC_BSWander (void)
 			bool	RandomPathNode = (NEXTSUBSTATE<9);  //(NEXTSUBSTATE<4);
 			bool	PathlessWander = false;				//(NEXTSUBSTATE<9)
 
-			
+
 
 			// Random Path Node
 			//------------------
@@ -1395,7 +1398,7 @@ void NPC_BSFaceLeader (void)
 	VectorNormalize( delta );
 	NPC->NPC->desiredYaw = angleToLeader[YAW];
 	NPC->NPC->desiredPitch = angleToLeader[PITCH];
-	
+
 	NPC_UpdateAngles(qtrue, qtrue);
 }
 */
@@ -1426,18 +1429,18 @@ qboolean NPC_CanSurrender( void )
 		case CLASS_RANCOR:
 		case CLASS_SAND_CREATURE:
 		case CLASS_WAMPA:
-		case CLASS_INTERROGATOR:		// droid 
-		case CLASS_JAN:				
-		case CLASS_JEDI:				
+		case CLASS_INTERROGATOR:		// droid
+		case CLASS_JAN:
+		case CLASS_JEDI:
 		case CLASS_KYLE:
-		case CLASS_LANDO:			
+		case CLASS_LANDO:
 		case CLASS_LIZARD:
-		case CLASS_LUKE:				
+		case CLASS_LUKE:
 		case CLASS_MARK1:			// droid
 		case CLASS_MARK2:			// droid
 		case CLASS_GALAKMECH:		// droid
 		case CLASS_MINEMONSTER:
-		case CLASS_MONMOTHA:			
+		case CLASS_MONMOTHA:
 		case CLASS_MORGANKATARN:
 		case CLASS_MOUSE:			// droid
 		case CLASS_MURJJ:
@@ -1508,7 +1511,7 @@ void NPC_Surrender( void )
 	{
 		return;
 	}
-	if ( NPC->s.weapon != WP_NONE && 
+	if ( NPC->s.weapon != WP_NONE &&
 		NPC->s.weapon != WP_MELEE &&
 		NPC->s.weapon != WP_SABER )
 	{
@@ -1569,8 +1572,8 @@ void NPC_Surrender( void )
 
 qboolean NPC_CheckSurrender( void )
 {
-	if ( !g_AIsurrender->integer 
-		&& NPC->client->NPC_class != CLASS_UGNAUGHT 
+	if ( !g_AIsurrender->integer
+		&& NPC->client->NPC_class != CLASS_UGNAUGHT
 		&& NPC->client->NPC_class != CLASS_JAWA )
 	{//not enabled
 		return qfalse;
@@ -1582,7 +1585,7 @@ qboolean NPC_CheckSurrender( void )
 		&& NPC->enemy->health > 20 && NPC->enemy->painDebounceTime < level.time - 3000 && NPC->enemy->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] < level.time - 1000 )
 	{//don't surrender if scripted to run somewhere or if we're in the air or if we're busy or if we don't have an enemy or if the enemy is not mad at me or is hurt or not a threat or busy being attacked
 		//FIXME: even if not in a group, don't surrender if there are other enemies in the PVS and within a certain range?
-		if ( NPC->s.weapon != WP_ROCKET_LAUNCHER 
+		if ( NPC->s.weapon != WP_ROCKET_LAUNCHER
 			&& NPC->s.weapon != WP_CONCUSSION
 			&& NPC->s.weapon != WP_REPEATER
 			&& NPC->s.weapon != WP_FLECHETTE
@@ -1618,7 +1621,7 @@ qboolean NPC_CheckSurrender( void )
 			}
 			if ( !NPCInfo->group || (NPCInfo->group && NPCInfo->group->numGroup <= 1) )
 			{//I'm alone but I was in a group//FIXME: surrender anyway if just melee or no weap?
-				if ( NPC->s.weapon == WP_NONE 
+				if ( NPC->s.weapon == WP_NONE
 					//NPC has a weapon
 					|| NPC->enemy == player
 					|| (NPC->enemy->s.weapon == WP_SABER&&NPC->enemy->client&&NPC->enemy->client->ps.SaberActive())
@@ -1679,11 +1682,11 @@ void NPC_JawaFleeSound( void )
 	if ( NPC
 		&& NPC->client
 		&& NPC->client->NPC_class == CLASS_JAWA
-		&& !Q_irand( 0, 3 ) 
+		&& !Q_irand( 0, 3 )
 		&& NPCInfo->blockedSpeechDebounceTime < level.time
 		&& !Q3_TaskIDPending(NPC, TID_CHAN_VOICE ) )
-	{//ooteenee!!!!  
-		//Com_Printf( "ooteenee!!!!\n" ); 
+	{//ooteenee!!!!
+		//Com_Printf( "ooteenee!!!!\n" );
 		G_SoundOnEnt(NPC, CHAN_VOICE, "sound/chars/jawa/misc/ooh-tee-nee.wav" );
 		NPCInfo->blockedSpeechDebounceTime = level.time + 2000;
 	}
@@ -1695,7 +1698,7 @@ qboolean NPC_BSFlee( void )
 {
 	bool		enemyRecentlySeen	= false;
 	float		enemyTooCloseDist	= 50.0f;
-	bool		reachedEscapePoint	= false; 
+	bool		reachedEscapePoint	= false;
 	bool		hasEscapePoint		= false;
 	bool		moveSuccess			= false;
 	bool		inSurrender			= (level.time<NPCInfo->surrenderTime);
@@ -1727,7 +1730,7 @@ qboolean NPC_BSFlee( void )
 		NPC->client->NPC_class!=CLASS_PRISONER &&	// Prisoners can't pickup weapons
 		NPCInfo->rank>RANK_CIVILIAN &&				// Neither can civilians
 		TIMER_Done(NPC, "panic") &&					// Panic causes him to run for a bit, don't pickup weapons
-		TIMER_Done(NPC, "CheckForWeaponToPickup") && 
+		TIMER_Done(NPC, "CheckForWeaponToPickup") &&
 		G_CanPickUpWeapons( NPC )					//Allowed To Pick Up Dropped Weapons
 		)
 	{
@@ -1788,7 +1791,7 @@ qboolean NPC_BSFlee( void )
 
 		// If Super Close To The Enemy, Run In The Other Direction
 		//---------------------------------------------------------
-		if (enemyRecentlySeen && 
+		if (enemyRecentlySeen &&
 			Distance(NPC->enemy->currentOrigin, NPC->currentOrigin)<enemyTooCloseDist)
 		{
 			STEER::Evade(NPC, NPC->enemy);
@@ -1855,21 +1858,21 @@ qboolean NPC_BSFlee( void )
 				&& (level.time-NPCInfo->surrenderTime) > 3000 )//and haven't just finished surrendering
 			{
 				NPC_FaceEnemy();
-				NPC_Surrender(); 
+				NPC_Surrender();
  			}
 		}
- 
+
 		// Time To Choose A New Escape Point?
 		//------------------------------------
 		if ((!hasEscapePoint || reachedEscapePoint) && TIMER_Done(NPC, "FindNewEscapePointDebounce"))
 		{
 			TIMER_Set(NPC, "FindNewEscapePointDebounce", 2500);
 
-			int escapePoint = NPC_FindCombatPoint( 
-				NPC->currentOrigin, 
-				NPC->enemy->currentOrigin, 
-				NPC->currentOrigin, 
-				CP_COVER|CP_AVOID_ENEMY|CP_HAS_ROUTE, 
+			int escapePoint = NPC_FindCombatPoint(
+				NPC->currentOrigin,
+				NPC->enemy->currentOrigin,
+				NPC->currentOrigin,
+				CP_COVER|CP_AVOID_ENEMY|CP_HAS_ROUTE,
 				128 );
 			if (escapePoint!=-1)
 			{
@@ -1884,8 +1887,8 @@ qboolean NPC_BSFlee( void )
 	// If Only Temporarly In Flee, Think About Perhaps Returning To Combat
 	//---------------------------------------------------------------------
 	if (NPCInfo->tempBehavior==BS_FLEE &&
-		TIMER_Done(NPC, "flee") && 
-		NPC->s.weapon != WP_NONE && 
+		TIMER_Done(NPC, "flee") &&
+		NPC->s.weapon != WP_NONE &&
 		NPC->s.weapon != WP_MELEE
 		)
 	{
@@ -1957,14 +1960,14 @@ void NPC_StartFlee( gentity_t *enemy, vec3_t dangerPoint, int dangerLevel, int f
 	}
 	else
 	{//couldn't find a place to hide
-		//FIXME: re-implement the old BS_FLEE behavior of following any the waypoint edge 
+		//FIXME: re-implement the old BS_FLEE behavior of following any the waypoint edge
 		//			that leads away from the danger point.
 		NPC_SetMoveGoal( NPC, NPC->currentOrigin, 0/*goalRadius*/, qtrue, cp );
 	}
 
 	if ( dangerLevel > AEL_DANGER//geat danger always makes people turn and run
 		|| NPC->s.weapon == WP_NONE	//melee/unarmed guys turn and run, others keep facing you and shooting
-		|| NPC->s.weapon == WP_MELEE 
+		|| NPC->s.weapon == WP_MELEE
 		|| NPC->s.weapon == WP_TUSKEN_STAFF )
 	{
 		NPCInfo->tempBehavior = BS_FLEE;//we don't want to do this forever!

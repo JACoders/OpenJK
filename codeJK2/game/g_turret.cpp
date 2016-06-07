@@ -1,22 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
 
 #include "g_local.h"
@@ -82,7 +84,7 @@ void turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, in
 		VectorMA( self->currentOrigin, 12, forward, pos );
 		G_PlayEffect( self->fxID, pos, forward );
 	}
-	
+
 	if ( self->splashDamage > 0 && self->splashRadius > 0 )
 	{
 		G_RadiusDamage( self->currentOrigin, attacker, self->splashDamage, self->splashRadius, attacker, MOD_UNKNOWN );
@@ -102,7 +104,7 @@ void turret_die ( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, in
 
 		VectorCopy( self->currentAngles, self->s.apos.trBase );
 		VectorClear( self->s.apos.trDelta );
-		
+
 		if ( self->target )
 		{
 			G_UseTargets( self, attacker );
@@ -132,7 +134,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	G_PlayEffect( "blaster/muzzle_flash", org, dir );
 
 	bolt = G_Spawn();
-	
+
 	bolt->classname = "turret_proj";
 	bolt->nextthink = level.time + 10000;
 	bolt->e_ThinkFunc = thinkF_G_FreeEntity;
@@ -145,7 +147,7 @@ static void turret_fire ( gentity_t *ent, vec3_t start, vec3_t dir )
 	bolt->splashRadius = 0;
 	bolt->methodOfDeath = MOD_ENERGY;
 	bolt->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
-	bolt->trigger_formation = qfalse;		// don't draw tail on first frame	
+	bolt->trigger_formation = qfalse;		// don't draw tail on first frame
 
 	VectorSet( bolt->maxs, 1.5, 1.5, 1.5 );
 	VectorScale( bolt->maxs, -1, bolt->mins );
@@ -171,7 +173,7 @@ void turret_head_think( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the flash bolt here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->currentAngles, self->currentOrigin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -222,7 +224,7 @@ static void turret_aim( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the "eye" here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->currentAngles, self->s.origin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -281,8 +283,8 @@ static void turret_aim( gentity_t *self )
 			VectorSet( desiredAngles, -self->speed, 0.0f, 0.0f );
 		}
 
-		gi.G2API_SetBoneAngles( &self->ghoul2[0], "Bone_body", desiredAngles, 
-						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 100, cg.time ); 
+		gi.G2API_SetBoneAngles( &self->ghoul2[0], "Bone_body", desiredAngles,
+						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 100, cg.time );
 	}
 
 	if ( diffYaw || diffPitch )
@@ -307,7 +309,7 @@ static void turret_turnoff( gentity_t *self )
 
 	// shut-down sound
 	G_Sound( self, G_SoundIndex( "sound/chars/turret/shutdown.wav" ));
-	
+
 	// make turret play ping sound for 5 seconds
 	self->aimDebounceTime = level.time + 5000;
 
@@ -362,7 +364,7 @@ static qboolean turret_find_enemies( gentity_t *self )
 			continue;
 		}
 		if ( target->client->playerTeam == self->noDamageTeam )
-		{ 
+		{
 			// A bot we don't want to shoot
 			continue;
 		}
@@ -549,11 +551,11 @@ Turret that hangs from the ceiling, will aim and shoot at enemies
   wait	- Time between shots (default 150 ms)
   dmg	- How much damage each shot does (default 5)
   health - How much damage it can take before exploding (default 100)
-  
+
   splashDamage - How much damage the explosion does
   splashRadius - The radius of the explosion
   NOTE: If either of the above two are 0, it will not make an explosion
-  
+
   targetname - Toggles it on/off
   target - What to use when destroyed
   target2 - What to use when it decides to start shooting at an enemy
@@ -569,10 +571,10 @@ void SP_misc_turret( gentity_t *base )
 {
 	base->s.modelindex = G_ModelIndex( "models/map_objects/imp_mine/turret_canon.glm" );
 	base->s.modelindex2 = G_ModelIndex( "models/map_objects/imp_mine/turret_damage.md3" );
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/turret_canon.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 80.0f;
 
-	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
+	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
 	base->torsoBolt = gi.G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash03" );
 
 	finish_spawning_turret( base );
@@ -605,7 +607,7 @@ void finish_spawning_turret( gentity_t *base )
 	G_SetOrigin(base, base->s.origin);
 
 	base->noDamageTeam = TEAM_ENEMY;
-	
+
 	base->s.eType = ET_GENERAL;
 
 	if ( base->team && base->team[0] )
@@ -707,11 +709,11 @@ NS turret that only hangs from the ceiling, will aim and shoot at enemies
   wait	- Time between shots (default 150 ms)
   dmg	- How much damage each shot does (default 5)
   health - How much damage it can take before exploding (default 100)
-  
+
   splashDamage - How much damage the explosion does
   splashRadius - The radius of the explosion
   NOTE: If either of the above two are 0, it will not make an explosion
-  
+
   targetname - Toggles it on/off
   target - What to use when destroyed
 
@@ -726,10 +728,10 @@ void SP_misc_ns_turret( gentity_t *base )
 {
 	base->s.modelindex = G_ModelIndex( "models/map_objects/nar_shaddar/turret/turret.glm" );
 	base->s.modelindex2 = G_ModelIndex( "models/map_objects/imp_mine/turret_damage.md3" ); // FIXME!
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/nar_shaddar/turret/turret.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/nar_shaddar/turret/turret.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 80.0f;
 
-	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
+	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "Bone_body", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
 	base->torsoBolt = gi.G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash02" );
 
 	finish_spawning_turret( base );
@@ -755,11 +757,11 @@ void laser_arm_fire (gentity_t *ent)
 	// If a fool gets in the laser path, fry 'em
 	AngleVectors( ent->currentAngles, fwd, rt, up );
 
-	VectorMA( ent->currentOrigin, 20, fwd, start );	
+	VectorMA( ent->currentOrigin, 20, fwd, start );
 	//VectorMA( start, -6, rt, start );
 	//VectorMA( start, -3, up, start );
 	VectorMA( start, 4096, fwd, end );
-	
+
 	gi.trace( &trace, start, NULL, NULL, end, ENTITYNUM_NONE, MASK_SHOT, G2_NOCOLLIDE, 0 );//ignore
 	ent->fly_sound_debounce_time = level.time;//used as lastShotTime
 
@@ -775,7 +777,7 @@ void laser_arm_fire (gentity_t *ent)
 			}
 		}
 	}
-	
+
 	if ( ent->alt_fire )
 	{
 //		CG_FireLaser( start, trace.endpos, trace.plane.normal, ent->nextTrain->startRGBA, qfalse );
@@ -850,7 +852,7 @@ void laser_arm_use (gentity_t *self, gentity_t *other, gentity_t *activator)
 		break;
 	}
 }
-/*QUAKED misc_laser_arm (1 0 0) (-8 -8 -8) (8 8 8) 
+/*QUAKED misc_laser_arm (1 0 0) (-8 -8 -8) (8 8 8)
 
 What it does when used depends on it's "count" (can be set by a script)
 	count:
@@ -863,7 +865,7 @@ What it does when used depends on it's "count" (can be set by a script)
   speed - How fast it turns (degrees per second, default 30)
   dmg	- How much damage the laser does 10 times a second (default 5 = 50 points per second)
   wait  - How long the beam lasts, in seconds (default is 3)
-  
+
   targetname - to use it
   target - What thing for it to be pointing at to start with
 
@@ -1029,7 +1031,7 @@ void pas_fire( gentity_t *ent )
 	mdxaBone_t	boltMatrix;
 
 	// Getting the flash bolt here
-	gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, 
+	gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel,
 				ent->torsoBolt,
 				&boltMatrix, ent->currentAngles, ent->s.origin, (cg.time?cg.time:level.time),
 				NULL, ent->s.modelScale );
@@ -1042,7 +1044,7 @@ void pas_fire( gentity_t *ent )
 	gentity_t	*bolt;
 
 	bolt = G_Spawn();
-	
+
 	bolt->classname = "turret_proj";
 	bolt->nextthink = level.time + 10000;
 	bolt->e_ThinkFunc = thinkF_G_FreeEntity;
@@ -1091,7 +1093,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 	mdxaBone_t	boltMatrix;
 
 	// Getting the "eye" here
-	gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+	gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 				self->torsoBolt,
 				&boltMatrix, self->currentAngles, self->s.origin, (cg.time?cg.time:level.time),
 				NULL, self->s.modelScale );
@@ -1113,7 +1115,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 			continue;
 		}
 		if ( target->client->playerTeam == self->noDamageTeam )
-		{ 
+		{
 			// A bot we don't want to shoot
 			continue;
 		}
@@ -1189,7 +1191,7 @@ void pas_adjust_enemy( gentity_t *ent )
 		vec3_t		org, org2;
 
 		// Getting the "eye" here
-		gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel, 
+		gi.G2API_GetBoltMatrix( ent->ghoul2, ent->playerModel,
 					ent->torsoBolt,
 					&boltMatrix, ent->currentAngles, ent->s.origin, (cg.time?cg.time:level.time),
 					NULL, ent->s.modelScale );
@@ -1225,7 +1227,7 @@ void pas_adjust_enemy( gentity_t *ent )
 		ent->enemy = NULL;
 		// shut-down sound
 		G_Sound( ent, G_SoundIndex( "sound/chars/turret/shutdown.wav" ));
-	
+
 		// make turret play ping sound for 5 seconds
 		ent->aimDebounceTime = level.time + 5000;
 	}
@@ -1335,12 +1337,12 @@ void pas_think( gentity_t *ent )
 	VectorSet( frontAngles, -ent->random, 0.0f, 0.0f );
 	VectorSet( backAngles, 0.0f, 0.0f, ent->speed - ent->s.angles[YAW] );
 
-	gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "bone_barrel", frontAngles, 
-						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, NEGATIVE_X, NULL,100,cg.time); 
-	gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "bone_gback", frontAngles, 
-						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, NEGATIVE_X, NULL,100,cg.time); 
-	gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "bone_hinge", backAngles, 
-						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL,100,cg.time); 
+	gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "bone_barrel", frontAngles,
+						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, NEGATIVE_X, NULL,100,cg.time);
+	gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "bone_gback", frontAngles,
+						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, NEGATIVE_X, NULL,100,cg.time);
+	gi.G2API_SetBoneAngles( &ent->ghoul2[ent->playerModel], "bone_hinge", backAngles,
+						BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL,100,cg.time);
 
 	if ( moved )
 	{
@@ -1376,11 +1378,11 @@ personal assault sentry, like the ones you can carry in your inventory
   radius - How far away an enemy can be for it to pick it up (default 512)
   count - number of shots before thing deactivates. -1 = infinite, default 150
   health - How much damage it can take before exploding (default 50)
-  
+
   splashDamage - How much damage the explosion does
   splashRadius - The radius of the explosion
   NOTE: If either of the above two are 0, it will not make an explosion
-  
+
   target - What to use when destroyed
   target2 - What to use when it decides to fire at an enemy
 
@@ -1402,14 +1404,14 @@ void SP_PAS( gentity_t *base )
 	base->speed = base->s.angles[YAW];
 
 	base->s.modelindex = G_ModelIndex( "models/items/psgun.glm" );
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/items/psgun.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/items/psgun.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 30.0f;
 	VectorSet( base->s.modelScale, 1.0f, 1.0f, 1.0f );
 
 	base->rootBone = gi.G2API_GetBoneIndex( &base->ghoul2[base->playerModel], "model_root", qtrue );
-	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "bone_hinge", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
-	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "bone_gback", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
-	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "bone_barrel", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 ); 
+	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "bone_hinge", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
+	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "bone_gback", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
+	gi.G2API_SetBoneAngles( &base->ghoul2[base->playerModel], "bone_barrel", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
 
 	base->torsoBolt = gi.G2API_AddBolt( &base->ghoul2[base->playerModel], "*flash02" );
 
@@ -1516,7 +1518,7 @@ qboolean place_portable_assault_sentry( gentity_t *self, vec3_t origin, vec3_t a
 			pas->contents |= CONTENTS_PLAYERCLIP; // player placed ones can block players but not npcs
 
 			pas->e_UseFunc = useF_NULL; // placeable ones never need to be used
-	
+
 			// we don't hurt us or anyone who belongs to the same team as us.
 			if ( self->client )
 			{
@@ -1565,7 +1567,7 @@ void ion_cannon_think( gentity_t *self )
 		mdxaBone_t	boltMatrix;
 
 		// Getting the flash bolt here
-		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel, 
+		gi.G2API_GetBoltMatrix( self->ghoul2, self->playerModel,
 					self->torsoBolt,
 					&boltMatrix, self->s.angles, self->s.origin, (cg.time?cg.time:level.time),
 					NULL, self->s.modelScale );
@@ -1625,10 +1627,10 @@ void ion_cannon_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker,
 	VectorCopy( self->currentOrigin, org );
 	org[2] += 20;
 	G_PlayEffect( "env/ion_cannon_explosion", org );
-	
+
 	if ( self->splashDamage > 0 && self->splashRadius > 0 )
 	{
-		G_RadiusDamage( self->currentOrigin, attacker, self->splashDamage, self->splashRadius, 
+		G_RadiusDamage( self->currentOrigin, attacker, self->splashDamage, self->splashRadius,
 				attacker, MOD_UNKNOWN );
 	}
 
@@ -1680,7 +1682,7 @@ void SP_misc_ion_cannon( gentity_t *base )
 	G_SetOrigin(base, base->s.origin);
 
 	base->s.modelindex = G_ModelIndex( "models/map_objects/imp_mine/ion_cannon.glm" );
-	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/ion_cannon.glm", base->s.modelindex, NULL, NULL, 0, 0 );
+	base->playerModel = gi.G2API_InitGhoul2Model( base->ghoul2, "models/map_objects/imp_mine/ion_cannon.glm", base->s.modelindex, NULL_HANDLE, NULL_HANDLE, 0, 0 );
 	base->s.radius = 320.0f;
 	VectorSet( base->s.modelScale, 1.0f, 1.0f, 1.0f );
 
@@ -1867,7 +1869,7 @@ void SP_misc_spotlight( gentity_t *base )
 		G_FreeEntity( base );
 		return;
 	}
-	
+
 	G_SetAngles( base, base->s.angles );
 	G_SetOrigin( base, base->s.origin );
 
@@ -1903,7 +1905,7 @@ Creates a turret that, when the player uses a panel, takes control of this turre
   damage - amount of damage shots do, (default 50).
   speed - missile speed, (default 3000)
 
-  heatlh - how much heatlh the thing has, (default 200) only works if HEALTH is checked, otherwise it can't be destroyed. 
+  heatlh - how much heatlh the thing has, (default 200) only works if HEALTH is checked, otherwise it can't be destroyed.
 */
 
 extern gentity_t	*player;
@@ -2013,7 +2015,7 @@ void panel_turret_think( gentity_t *self )
 			G_Sound( player, self->soundPos2 );
 
 			cg.overrides.active &= ~CG_OVERRIDE_FOV;
-			cg.overrides.fov = 0; 
+			cg.overrides.fov = 0;
 			if ( ucmd->upmove > 0 )
 			{//stop player from doing anything for a half second after
 				player->aimDebounceTime = level.time + 500;
@@ -2092,7 +2094,7 @@ void panel_turret_use( gentity_t *self, gentity_t *other, gentity_t *activator )
 }
 
 //-----------------------------------------
-void SP_misc_panel_turret( gentity_t *self ) 
+void SP_misc_panel_turret( gentity_t *self )
 {
 	G_SpawnFloat( "radius", "90", &self->radius );	// yaw
 	G_SpawnFloat( "random", "60", &self->random );	// pitch

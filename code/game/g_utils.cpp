@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // g_utils.c -- misc utility functions for game module
 
@@ -93,7 +98,7 @@ int G_ModelIndex( const char *name ) {
 
 int G_SoundIndex( const char *name ) {
 	assert( name && name[0] );
-	char stripped[MAX_QPATH]; 
+	char stripped[MAX_QPATH];
 	COM_StripExtension(name, stripped, sizeof(stripped));
 
 	return G_FindConfigstringIndex (stripped, CS_SOUNDS, MAX_SOUNDS, qtrue);
@@ -199,7 +204,7 @@ void G_PlayEffect( int fxID, const int modelIndex, const int boltIndex, const in
 	tent->s.weapon = isRelative;
 
 	tent->svFlags |=SVF_BROADCAST;
-	gi.G2API_AttachEnt(&tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex); 
+	gi.G2API_AttachEnt(&tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex);
 }
 
 //-----------------------------
@@ -236,7 +241,7 @@ void G_StopEffect( int fxID, const int modelIndex, const int boltIndex, const in
 	tent = G_TempEntity( g_entities[entNum].currentOrigin, EV_STOP_EFFECT );
 	tent->s.eventParm = fxID;
 	tent->svFlags |= SVF_BROADCAST;
-	gi.G2API_AttachEnt( &tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex ); 
+	gi.G2API_AttachEnt( &tent->s.boltInfo, &g_entities[entNum].ghoul2[modelIndex], boltIndex, entNum, modelIndex );
 }
 
 void G_StopEffect(const char *name, const int modelIndex, const int boltIndex, const int entNum )
@@ -265,7 +270,7 @@ void G_SoundOnEnt( gentity_t *ent, soundChannel_t channel, const char *soundPath
 	}
 
 	cgi_S_UpdateEntityPosition( ent->s.number, ent->currentOrigin );
-	if ( cgs.sound_precache[ index ] ) 
+	if ( cgs.sound_precache[ index ] )
 	{
 		cgi_S_StartSound( NULL, ent->s.number, channel, cgs.sound_precache[ index ] );
 	}
@@ -283,7 +288,7 @@ void G_SoundIndexOnEnt( gentity_t *ent, soundChannel_t channel, int index )
 	}
 
 	cgi_S_UpdateEntityPosition( ent->s.number, ent->currentOrigin );
-	if ( cgs.sound_precache[ index ] ) 
+	if ( cgs.sound_precache[ index ] )
 	{
 		cgi_S_StartSound( NULL, ent->s.number, channel, cgs.sound_precache[ index ] );
 	}
@@ -455,7 +460,7 @@ NULL will be returned if the end of the list is reached.
 gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 {
 	char	*s;
-	
+
 	if(!match || !match[0])
 	{
 		return NULL;
@@ -470,7 +475,7 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 	int i=from-g_entities;
 	for ( ; i < globals.num_entities ; i++)
 	{
-//		if (!from->inuse)	
+//		if (!from->inuse)
 		if(!PInUse(i))
 			continue;
 
@@ -491,7 +496,7 @@ gentity_t *G_Find (gentity_t *from, int fieldofs, const char *match)
 G_RadiusList - given an origin and a radius, return all entities that are in use that are within the list
 ============
 */
-int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean takeDamage, gentity_t *ent_list[MAX_GENTITIES])					  
+int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean takeDamage, gentity_t *ent_list[MAX_GENTITIES])
 {
 	float		dist;
 	gentity_t	*ent;
@@ -502,12 +507,12 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 	int			i, e;
 	int			ent_count = 0;
 
-	if ( radius < 1 ) 
+	if ( radius < 1 )
 	{
 		radius = 1;
 	}
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = origin[i] - radius;
 		maxs[i] = origin[i] + radius;
@@ -515,7 +520,7 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 
 	numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 	radius *= radius; //square for the length squared below
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		ent = entityList[ e ];
 
@@ -523,26 +528,26 @@ int G_RadiusList ( vec3_t origin, float radius,	gentity_t *ignore, qboolean take
 			continue;
 
 		// find the distance from the edge of the bounding box
-		for ( i = 0 ; i < 3 ; i++ ) 
+		for ( i = 0 ; i < 3 ; i++ )
 		{
-			if ( origin[i] < ent->absmin[i] ) 
+			if ( origin[i] < ent->absmin[i] )
 			{
 				v[i] = ent->absmin[i] - origin[i];
-			} else if ( origin[i] > ent->absmax[i] ) 
+			} else if ( origin[i] > ent->absmax[i] )
 			{
 				v[i] = origin[i] - ent->absmax[i];
-			} else 
+			} else
 			{
 				v[i] = 0;
 			}
 		}
 
 		dist = VectorLengthSquared( v );
-		if ( dist >= radius ) 
+		if ( dist >= radius )
 		{
 			continue;
 		}
-		
+
 		// ok, we are within the radius, add us to the incoming list
 		ent_list[ent_count] = ent;
 		ent_count++;
@@ -596,7 +601,7 @@ gentity_t *G_PickTarget (char *targetname)
 void G_UseTargets2 (gentity_t *ent, gentity_t *activator, const char *string)
 {
 	gentity_t		*t;
-	
+
 //
 // fire targets
 //
@@ -711,7 +716,7 @@ void G_SetMovedir( vec3_t angles, vec3_t movedir ) {
 
 float vectoyaw( const vec3_t vec ) {
 	float	yaw;
-	
+
 	if (vec[YAW] == 0 && vec[PITCH] == 0) {
 		yaw = 0;
 	} else {
@@ -731,14 +736,14 @@ float vectoyaw( const vec3_t vec ) {
 }
 
 
-void G_InitGentity( gentity_t *e, qboolean bFreeG2 ) 
+void G_InitGentity( gentity_t *e, qboolean bFreeG2 )
 {
 	e->inuse = qtrue;
 	SetInUse(e);
 	e->m_iIcarusID = IIcarusInterface::ICARUS_INVALID;
 	e->classname = "noclass";
 	e->s.number = e - g_entities;
-	
+
 	// remove any ghoul2 models here in case we're reusing
 	if (bFreeG2 && e->ghoul2.IsValid())
 	{
@@ -764,14 +769,14 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-gentity_t *G_Spawn( void ) 
+gentity_t *G_Spawn( void )
 {
 	int			i, force;
 	gentity_t	*e;
 
 	e = NULL;	// shut up warning
 	i = 0;		// shut up warning
-	for ( force = 0 ; force < 2 ; force++ ) 
+	for ( force = 0 ; force < 2 ; force++ )
 	{
 		// if we go through all entities and can't find one to free,
 		// override the normal minimum times before use
@@ -782,12 +787,12 @@ gentity_t *G_Spawn( void )
 //			{
 //				continue;
 //			}
-		for ( i = MAX_CLIENTS ; i<globals.num_entities ; i++) 
+		for ( i = MAX_CLIENTS ; i<globals.num_entities ; i++)
 		{
 			if(PInUse(i))
 			{
 				continue;
-			}			
+			}
 			e=&g_entities[i];
 
 			// the first couple seconds of server time can involve a lot of
@@ -817,7 +822,7 @@ gentity_t *G_Spawn( void )
 		FILE *fp;
 
 		fp = fopen( "c:/nofreeentities.txt", "w" );
-		for ( i = 0 ; i<globals.num_entities ; i++, e++) 
+		for ( i = 0 ; i<globals.num_entities ; i++, e++)
 		{
 			if ( e->classname )
 			{
@@ -829,7 +834,7 @@ gentity_t *G_Spawn( void )
 		fclose( fp );
 /*
 //---------------Or use this to dump to the console -- beware though, the console will fill quickly and you probably won't see the full list
-		for ( i = 0 ; i<globals.num_entities ; i++, e++) 
+		for ( i = 0 ; i<globals.num_entities ; i++, e++)
 		{
 			if ( e->classname )
 			{
@@ -841,7 +846,7 @@ gentity_t *G_Spawn( void )
 //FINAL_BUILD
 		G_Error( "G_Spawn: no free entities" );
 	}
-	
+
 	// open up a new slot
 	globals.num_entities++;
 	G_InitGentity( e, qtrue );
@@ -887,7 +892,7 @@ void G_FreeEntity( gentity_t *ed ) {
 		//CVehicleNPC *pVeh = static_cast< CVehicleNPC * >( ed->NPC );
 		//delete pVeh;
 		//gi.Free((char*)ed->NPC-4);//crazy hack for class vtables
-	} 
+	}
 
 	//free this stuff now, rather than waiting until the level ends.
 	if (ed->NPC)
@@ -898,15 +903,9 @@ void G_FreeEntity( gentity_t *ed ) {
 			gi.Free(ed->client->clientInfo.customBasicSoundDir);
 		}
 		if(ed->client->clientInfo.customCombatSoundDir) {
-#ifdef _MSC_VER
-			assert(*(unsigned int*)ed->client->clientInfo.customCombatSoundDir != 0xfeeefeee);
-#endif
 			gi.Free(ed->client->clientInfo.customCombatSoundDir);
 		}
 		if(ed->client->clientInfo.customExtraSoundDir) {
-#ifdef _MSC_VER
-			assert(*(unsigned int*)ed->client->clientInfo.customExtraSoundDir != 0xfeeefeee);
-#endif
 			gi.Free(ed->client->clientInfo.customExtraSoundDir);
 		}
 		if(ed->client->clientInfo.customJediSoundDir) {
@@ -945,10 +944,10 @@ void G_FreeEntity( gentity_t *ed ) {
 	}
 	if (ed->message && gi.bIsFromZone(ed->message, TAG_G_ALLOC)) {
 		gi.Free(ed->message);
-	}	
+	}
 	if (ed->model && gi.bIsFromZone(ed->model, TAG_G_ALLOC)) {
 		gi.Free(ed->model);
-	}	
+	}
 
 //scripting
 	if (ed->script_targetname && gi.bIsFromZone(ed->script_targetname, TAG_G_ALLOC)) {
@@ -963,7 +962,7 @@ void G_FreeEntity( gentity_t *ed ) {
 	if(ed->parms) {
 		gi.Free(ed->parms);
 	}
-	
+
 //Limbs
 	if (ed->target && gi.bIsFromZone(ed->target , TAG_G_ALLOC)) {
 		gi.Free(ed->target);
@@ -1059,7 +1058,7 @@ void G_KillBox (gentity_t *ent) {
 		if ( hit == ent ) {
 			continue;
 		}
-		if ( ent->s.number && hit->client->ps.stats[STAT_HEALTH] <= 0 ) 
+		if ( ent->s.number && hit->client->ps.stats[STAT_HEALTH] <= 0 )
 		{//NPC
 			continue;
 		}
@@ -1070,9 +1069,9 @@ void G_KillBox (gentity_t *ent) {
 				continue;
 			}
 		}
-		else 
+		else
 		{//player
-			if ( !(hit->contents & ent->contents) ) 
+			if ( !(hit->contents & ent->contents) )
 			{
 				continue;
 			}
@@ -1160,7 +1159,7 @@ void G_AddEvent( gentity_t *ent, int event, int eventParm ) {
 G_Sound
 =============
 */
-void G_Sound( gentity_t *ent, int soundIndex ) 
+void G_Sound( gentity_t *ent, int soundIndex )
 {
 	gentity_t	*te;
 
@@ -1173,7 +1172,7 @@ void G_Sound( gentity_t *ent, int soundIndex )
 G_Sound
 =============
 */
-void G_SoundAtSpot( vec3_t org, int soundIndex, qboolean broadcast ) 
+void G_SoundAtSpot( vec3_t org, int soundIndex, qboolean broadcast )
 {
 	gentity_t	*te;
 
@@ -1192,7 +1191,7 @@ G_SoundBroadcast
   Plays sound that can permeate PVS blockage
 =============
 */
-void G_SoundBroadcast( gentity_t *ent, int soundIndex ) 
+void G_SoundBroadcast( gentity_t *ent, int soundIndex )
 {
 	gentity_t	*te;
 
@@ -1210,7 +1209,7 @@ G_SetOrigin
 Sets the pos trajectory for a fixed position
 ================
 */
-void G_SetOrigin( gentity_t *ent, const vec3_t origin ) 
+void G_SetOrigin( gentity_t *ent, const vec3_t origin )
 {
 	VectorCopy( origin, ent->s.pos.trBase );
 	if(ent->client)
@@ -1275,7 +1274,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 	{
 		return qtrue;
 	}
-	
+
 #ifdef _DEBUG
 	if(trace.fraction < 0.99999713)
 #else
@@ -1298,7 +1297,7 @@ qboolean G_CheckInSolid (gentity_t *self, qboolean fix)
 			return qtrue;
 		}
 	}
-		
+
 	return qfalse;
 }
 
@@ -1434,12 +1433,12 @@ qboolean ValidUseTarget( gentity_t *ent )
 	{//set by target_deactivate
 		return qfalse;
 	}
-	
+
 	if ( !(ent->svFlags & SVF_PLAYER_USABLE) )
 	{//Check for flag that denotes BUTTON_USE useability
 		return qfalse;
 	}
-	
+
 	//FIXME: This is only a temp fix..
 	if ( !Q_strncmp( ent->classname, "trigger", 7) )
 	{
@@ -1455,7 +1454,7 @@ static void DebugTraceForNPC(gentity_t *ent)
 	vec3_t		src, dest, vf;
 
 	VectorCopy( ent->client->renderInfo.eyePoint, src );
-	
+
 	AngleVectors( ent->client->ps.viewangles, vf, NULL, NULL );//ent->client->renderInfo.eyeAngles was cg.refdef.viewangles, basically
 	//extend to find end of use trace
 	VectorMA( src, 4096, vf, dest );
@@ -1493,7 +1492,7 @@ static qboolean G_ValidActivateBehavior (gentity_t* self, int bset)
 	}
 
 	const char *bs_name = self->behaviorSet[bset];
-	
+
 	if( !(VALIDSTRING( bs_name )) )
 	{
 		return qfalse;
@@ -1550,9 +1549,9 @@ static qboolean G_IsTriggerUsable(gentity_t* self, gentity_t* other)
 	}
 
 	if ((!G_ValidActivateBehavior (self, BSET_USE) && !self->target) ||
-		(self->target && 
-		(Q_stricmp(self->target, "n") == 0 || 
-		(Q_stricmp(self->target, "neveropen") == 0 || 
+		(self->target &&
+		(Q_stricmp(self->target, "n") == 0 ||
+		(Q_stricmp(self->target, "neveropen") == 0 ||
 		(Q_stricmp(self->target, "run_gran_drop") == 0) ||
 		(Q_stricmp(self->target, "speaker") == 0) ||
 		(Q_stricmp(self->target, "locked") == 0)
@@ -1606,7 +1605,7 @@ static qboolean CanUseInfrontOfPartOfLevel(gentity_t* ent )	//originally from VV
 		if ( !gi.EntityContact( mins, maxs, hit ) ) {
 			continue;
 		}
-		
+
 		if ( hit->e_TouchFunc != touchF_NULL ) {
 			switch (hit->e_TouchFunc )
 			{
@@ -1643,7 +1642,7 @@ qboolean CanUseInfrontOf(gentity_t *ent)
 	{
 		ent = &g_entities[ent->client->ps.viewEntity];
 
-		if ( !Q_stricmp( "misc_camera", ent->classname ) ) 
+		if ( !Q_stricmp( "misc_camera", ent->classname ) )
 		{	// we are in a camera
 			gentity_t *next = 0;
 			if ( ent->target2 != NULL )
@@ -1668,18 +1667,18 @@ qboolean CanUseInfrontOf(gentity_t *ent)
 		return qfalse;
 	}
 
-	
+
 	//FIXME: this does not match where the new accurate crosshair aims...
 	//cg.refdef.vieworg, basically
 	VectorCopy( ent->client->renderInfo.eyePoint, src );
-	
+
 	AngleVectors( ent->client->ps.viewangles, vf, NULL, NULL );
 	//extend to find end of use trace
 	VectorMA( src, USE_DISTANCE, vf, dest );
 
 	//Trace ahead to find a valid target
 	gi.trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_TERRAIN|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE , G2_NOCOLLIDE, 10);
-	
+
 	if ( trace.fraction == 1.0f || trace.entityNum >= ENTITYNUM_WORLD )
 	{
 		return (CanUseInfrontOfPartOfLevel(ent));
@@ -1703,7 +1702,7 @@ qboolean CanUseInfrontOf(gentity_t *ent)
 					return qfalse;
 				}
 			}
-			if ( !BG_CanItemBeGrabbed( &target->s, &ent->client->ps ) ) 
+			if ( !BG_CanItemBeGrabbed( &target->s, &ent->client->ps ) )
 			{//nope, so don't indicate that we can use it
 				return qfalse;
 			}
@@ -1729,10 +1728,10 @@ qboolean CanUseInfrontOf(gentity_t *ent)
 		return qtrue;
 	}
 
-	if ( target->client 
-		&& target->client->ps.pm_type < PM_DEAD 
-		&& target->NPC!=NULL 
-		&& target->client->playerTeam 
+	if ( target->client
+		&& target->client->ps.pm_type < PM_DEAD
+		&& target->NPC!=NULL
+		&& target->client->playerTeam
 		&& (target->client->playerTeam == ent->client->playerTeam || target->client->playerTeam == TEAM_NEUTRAL)
 		&& !(target->NPC->scriptFlags&SCF_NO_RESPONSE)
 		&& G_ValidActivateBehavior (target, BSET_USE))
@@ -1782,14 +1781,14 @@ void TryUse( gentity_t *ent )
 	//FIXME: this does not match where the new accurate crosshair aims...
 	//cg.refdef.vieworg, basically
 	VectorCopy( ent->client->renderInfo.eyePoint, src );
-	
+
 	AngleVectors( ent->client->ps.viewangles, vf, NULL, NULL );//ent->client->renderInfo.eyeAngles was cg.refdef.viewangles, basically
 	//extend to find end of use trace
 	VectorMA( src, USE_DISTANCE, vf, dest );
 
 	//Trace ahead to find a valid target
 	gi.trace( &trace, src, vec3_origin, vec3_origin, dest, ent->s.number, MASK_OPAQUE|CONTENTS_SOLID|CONTENTS_TERRAIN|CONTENTS_BODY|CONTENTS_ITEM|CONTENTS_CORPSE , G2_NOCOLLIDE, 10);
-	
+
 	if ( trace.fraction == 1.0f || trace.entityNum  >= ENTITYNUM_WORLD )
 	{
 		//TODO: Play a failure sound
@@ -1826,10 +1825,10 @@ void TryUse( gentity_t *ent )
 		GEntity_UseFunc( target, ent, ent );
 		return;
 	}
-	else if ( target->client 
-		&& target->client->ps.pm_type < PM_DEAD 
-		&& target->NPC!=NULL 
-		&& target->client->playerTeam 
+	else if ( target->client
+		&& target->client->ps.pm_type < PM_DEAD
+		&& target->NPC!=NULL
+		&& target->client->playerTeam
 		&& (target->client->playerTeam == ent->client->playerTeam || target->client->playerTeam == TEAM_NEUTRAL)
 		&& !(target->NPC->scriptFlags&SCF_NO_RESPONSE) )
 	{
@@ -1967,7 +1966,7 @@ qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs
 	vec3_t	start, end;
 
 	VectorCopy( point, start );
-	
+
 	for ( int i = 0; i < 3; i++ )
 	{
 		VectorCopy( start, end );
@@ -2015,7 +2014,7 @@ void removeBoltSurface( gentity_t *ent)
 		(hitEnt->ghoul2[ent->damage].mModelindex != -1) &&
 		(hitEnt->ghoul2[ent->damage].mSlist.size() > (unsigned int)ent->aimDebounceTime) &&
 		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].surface != -1) &&
-		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].offFlags == G2SURFACEFLAG_GENERATED)) 
+		(hitEnt->ghoul2[ent->damage].mSlist[ent->aimDebounceTime].offFlags == G2SURFACEFLAG_GENERATED))
 	{
 		// remove the bolt
 		gi.G2API_RemoveBolt(&hitEnt->ghoul2[ent->damage], ent->attackDebounceTime);

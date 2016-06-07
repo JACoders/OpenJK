@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "../Rufl/hstring.h"
@@ -43,9 +47,9 @@ static int TIMER_GetCount(int num)
 		count++;
 		p = p->next;
 	}
-	
+
 	return count;
-}	
+}
 
 
 /*
@@ -168,7 +172,7 @@ void TIMER_Save( void )
 
 		//Write out the timer information
 		gi.AppendToSaveGame(INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers));
-	
+
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
 
@@ -273,9 +277,9 @@ gtimer_t *TIMER_GetExisting(int num, const char *identifier)
 
 		p = p->next;
 	}
-	
+
 	return NULL;
-}	
+}
 
 
 
@@ -337,8 +341,8 @@ qboolean TIMER_Done( gentity_t *ent, const char *identifier )
 -------------------------
 TIMER_Done2
 
-Returns false if timer has been 
-started but is not done...or if 
+Returns false if timer has been
+started but is not done...or if
 timer was never started
 -------------------------
 */

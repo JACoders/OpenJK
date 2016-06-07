@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "q_shared.h"
 #include "qcommon.h"
@@ -87,7 +92,7 @@ void Netchan_Init( int port ) {
 	{
 		loopbacks = (loopback_t*) Z_Malloc(sizeof(loopback_t) * 2, TAG_NEWDEL, qtrue);
 	}
-	
+
 	port &= 0xffff;
 	showpackets = Cvar_Get ("showpackets", "0", CVAR_TEMP );
 	showdrop = Cvar_Get ("showdrop", "0", CVAR_TEMP );
@@ -112,7 +117,7 @@ called to open a channel to a remote system
 */
 void Netchan_Setup( netsrc_t sock, netchan_t *chan, netadr_t adr, int qport ) {
 	memset (chan, 0, sizeof(*chan));
-	
+
 	chan->sock = sock;
 	chan->remoteAddress = adr;
 	chan->qport = qport;
@@ -228,7 +233,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 	int			fragmentStart, fragmentLength;
 	qboolean	fragmented;
 
-	// get sequence numbers		
+	// get sequence numbers
 	MSG_BeginReading( msg );
 	sequence = MSG_ReadLong( msg );
 	sequence_ack = MSG_ReadLong( msg );
@@ -297,14 +302,14 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			, sequence );
 		}
 	}
-	
+
 
 	//
 	// if this is the final framgent of a reliable message,
-	// bump incoming_reliable_sequence 
+	// bump incoming_reliable_sequence
 	//
 	if ( fragmented ) {
-		// make sure we 
+		// make sure we
 		if ( sequence != chan->fragmentSequence ) {
 			chan->fragmentSequence = sequence;
 			chan->fragmentLength = 0;
@@ -332,7 +337,7 @@ qboolean Netchan_Process( netchan_t *chan, msg_t *msg ) {
 			return qfalse;
 		}
 
-		memcpy( chan->fragmentBuffer + chan->fragmentLength, 
+		memcpy( chan->fragmentBuffer + chan->fragmentLength,
 			msg->data + msg->readcount, fragmentLength );
 
 		chan->fragmentLength += fragmentLength;
@@ -450,7 +455,8 @@ qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_messag
 	}
 
 	//Get length of packet.
-	int length = *(int*)(loop->loopData + i);
+	byteAlias_t *ba = (byteAlias_t *)&loop->loopData[i];
+	const int length = ba->i;
 	i += 4;
 
 	//See if entire packet is at end of buffer or part is at the beginning.
@@ -464,7 +470,7 @@ qboolean	NET_GetLoopPacket (netsrc_t sock, netadr_t *net_from, msg_t *net_messag
 		//Doesn't all fit, partial copy
 		const int copyToEnd = MAX_LOOPDATA - i;
 		memcpy (net_message->data, loop->loopData + i, copyToEnd);
-		memcpy ((char*)net_message->data + copyToEnd, 
+		memcpy ((char*)net_message->data + copyToEnd,
 				loop->loopData, length - copyToEnd);
 		net_message->cursize = length;
 		loop->get = length - copyToEnd;
@@ -485,6 +491,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t t
 	loop = &loopbacks[sock^1];
 
 	//Make sure there is enough free space in the buffer.
+#ifdef _DEBUG
 	int freeSpace;
 	if(loop->send >= loop->get) {
 		freeSpace = MAX_LOOPDATA - (loop->send - loop->get);
@@ -493,6 +500,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t t
 	}
 
 	assert(freeSpace > length);
+#endif // _DEBUG
 
 	//Get write position.  Wrap around if too close to end.
 	i = loop->send;
@@ -501,7 +509,8 @@ void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t t
 	}
 
 	//Write length of packet.
-	*(int*)(loop->loopData + i) = length;
+	byteAlias_t *ba = (byteAlias_t *)&loop->loopData[i];
+	ba->i = length;
 	i += 4;
 
 	//See if the whole packet will fit on the end of the buffer or if we
@@ -515,7 +524,7 @@ void NET_SendLoopPacket (netsrc_t sock, int length, const void *data, netadr_t t
 		//Doesn't all fit, partial copy
 		int copyToEnd = MAX_LOOPDATA - i;
 		memcpy(loop->loopData + i, data, copyToEnd);
-		memcpy(loop->loopData, (char*)data + copyToEnd, length - copyToEnd); 
+		memcpy(loop->loopData, (char*)data + copyToEnd, length - copyToEnd);
 		loop->send = length - copyToEnd;
 	}
 }

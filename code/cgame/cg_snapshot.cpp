@@ -1,25 +1,29 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_snapshot.c -- things that happen on snapshot transition,
 // not necessarily every single frame
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 
@@ -76,7 +80,7 @@ void CG_TransitionEntity( centity_t *cent ) {
 CG_SetInitialSnapshot
 
 This will only happen on the very first snapshot, or
-on tourney restarts.  All other times will use 
+on tourney restarts.  All other times will use
 CG_TransitionSnapshot instead.
 ==================
 */
@@ -147,7 +151,7 @@ void CG_TransitionSnapshot( void ) {
 	// sort out solid entities
 	//CG_BuildSolidList();
 
-	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) 
+	for ( i = 0 ; i < cg.snap->numEntities ; i++ )
 	{
 		if ( 1 ) //cg.snap->entities[ i ].number != 0 ) // I guess the player adds his/her events elsewhere, so doing this also gives us double events for the player!
 		{
@@ -183,9 +187,9 @@ void CG_SetEntityNextState( centity_t *cent, entityState_t *state ) {
 	cent->nextState = state;
 
 	// since we can't interpolate ghoul2 stuff from one frame to another, I'm just going to copy the ghoul2 info directly into the current state now
-//	CGhoul2Info *currentModel = &state->ghoul2[1]; 
+//	CGhoul2Info *currentModel = &state->ghoul2[1];
 //	cent->gent->ghoul2 = state->ghoul2;
-//	CGhoul2Info *newModel = &cent->gent->ghoul2[1]; 
+//	CGhoul2Info *newModel = &cent->gent->ghoul2[1];
 
 
 	// if this frame is a teleport, or the entity wasn't in the
@@ -332,7 +336,6 @@ of an interpolating one)
 void CG_ProcessSnapshots( void ) {
 	snapshot_t		*snap;
 	int				n;
-	qboolean		newSnapshots;
 
 	// see what the latest snapshot the client system has is
 	cgi_GetCurrentSnapshotNumber( &n, &cg.latestSnapshotTime );
@@ -342,9 +345,6 @@ void CG_ProcessSnapshots( void ) {
 			CG_Error( "CG_ProcessSnapshots: n < cg.latestSnapshotNum" );
 		}
 		cg.latestSnapshotNum = n;
-		newSnapshots = qtrue;
-	} else {
-		newSnapshots = qfalse;
 	}
 
 	// If we have yet to receive a snapshot, check for it.
@@ -395,7 +395,7 @@ void CG_ProcessSnapshots( void ) {
 		CG_TransitionSnapshot();
 	} while ( 1 );
 
-	if ( cg.snap->serverTime > cg.time ) 
+	if ( cg.snap->serverTime > cg.time )
 	{
 		cg.time=cg.snap->serverTime;
 #if _DEBUG
@@ -403,7 +403,7 @@ void CG_ProcessSnapshots( void ) {
 #endif
 
 	}
-	if ( cg.nextSnap != NULL && cg.nextSnap->serverTime <= cg.time ) 
+	if ( cg.nextSnap != NULL && cg.nextSnap->serverTime <= cg.time )
 	{
 		cg.time=cg.nextSnap->serverTime-1;
 #if _DEBUG

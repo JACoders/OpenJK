@@ -1,30 +1,34 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // console.c
 
-// leave this as first line for PCH reasons...
-//
-#include "../server/exe_headers.h"
-
+#include "server/exe_headers.h"
 
 #include "client.h"
-#include "../qcommon/stv_version.h"
+#include "qcommon/stringed_ingame.h"
+#include "qcommon/stv_version.h"
 
 int g_console_field_width = 78;
 
@@ -169,7 +173,7 @@ void Con_Dump_f (void)
 	FS_FCloseFile( f );
 }
 
-						
+
 /*
 ================
 Con_ClearNotify
@@ -177,13 +181,13 @@ Con_ClearNotify
 */
 void Con_ClearNotify( void ) {
 	int		i;
-	
+
 	for ( i = 0 ; i < NUM_CON_TIMES ; i++ ) {
 		con.times[i] = 0;
 	}
 }
 
-						
+
 
 /*
 ================
@@ -231,7 +235,7 @@ void Con_CheckResize (void)
 			numlines = con.totallines;
 
 		numchars = oldwidth;
-	
+
 		if (con.linewidth < numchars)
 			numchars = con.linewidth;
 
@@ -279,9 +283,11 @@ void Con_Init (void) {
 
 	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
+	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
+
 	con_opacity = Cvar_Get ("con_opacity", "0.8", CVAR_ARCHIVE);
 	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE);
-	
+
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
 	for ( i = 0 ; i < COMMAND_HISTORY ; i++ ) {
@@ -336,10 +342,10 @@ void CL_ConsolePrint( char *txt ) {
 	if ( cl_noprint && cl_noprint->integer ) {
 		return;
 	}
-	
+
 	if (!con.initialized) {
-		con.color[0] = 
-		con.color[1] = 
+		con.color[0] =
+		con.color[1] =
 		con.color[2] =
 		con.color[3] = 1.0f;
 		con.linewidth = -1;
@@ -479,13 +485,13 @@ void Con_DrawNotify (void)
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++) 
+			for (x = 0 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
-				strcat(sTemp,va("%c",text[x] & 0xFF));				
+				strcat(sTemp,va("%c",text[x] & 0xFF));
 			}
 			//
 			// and print...
@@ -495,7 +501,7 @@ void Con_DrawNotify (void)
 			v +=  iPixelHeightToAdvance;
 		}
 		else
-		{		
+		{
 			for (x = 0 ; x < con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
@@ -507,7 +513,7 @@ void Con_DrawNotify (void)
 				SCR_DrawSmallChar( con.xadjust + (x+1)*SMALLCHAR_WIDTH, v, text[x] & 0xff );
 			}
 			v += SMALLCHAR_HEIGHT;
-		}		
+		}
 	}
 
 	re.SetColor( NULL );
@@ -520,7 +526,7 @@ Con_DrawSolidConsole
 Draws the console with the solid background
 ================
 */
-void Con_DrawSolidConsole( float frac ) 
+void Con_DrawSolidConsole( float frac )
 {
 	int				i, x, y;
 	int				rows;
@@ -564,7 +570,7 @@ void Con_DrawSolidConsole( float frac )
 	i = strlen( Q3_VERSION );
 
 	for (x=0 ; x<i ; x++) {
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH, 
+		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x + 1 ) * SMALLCHAR_WIDTH,
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), Q3_VERSION[x] );
 	}
 
@@ -584,7 +590,7 @@ void Con_DrawSolidConsole( float frac )
 		y -= SMALLCHAR_HEIGHT;
 		rows--;
 	}
-	
+
 	row = con.display;
 
 	if ( con.x == 0 ) {
@@ -600,20 +606,20 @@ void Con_DrawSolidConsole( float frac )
 	int iPixelHeightToAdvance = SMALLCHAR_HEIGHT;
 	if (re.Language_IsAsian())
 	{
-		if (!iFontIndexForAsian) 
+		if (!iFontIndexForAsian)
 		{
 			iFontIndexForAsian = re.RegisterFont("ocr_a");	// must be a font that's used elsewhere
 		}
 		iPixelHeightToAdvance =   (1.3/con.yadjust) * re.Font_HeightPixels(iFontIndexForAsian, fFontScaleForAsian);	// for asian spacing, since we don't want glyphs to touch.
 	}
-		
+
 	for (i=0 ; i<rows ; i++, y -= iPixelHeightToAdvance, row--)
 	{
 		if (row < 0)
 			break;
 		if (con.current - row >= con.totallines) {
 			// past scrollback wrap point
-			continue;	
+			continue;
 		}
 
 		text = con.text + (row % con.totallines)*con.linewidth;
@@ -628,13 +634,13 @@ void Con_DrawSolidConsole( float frac )
 			// concat the text to be printed...
 			//
 			char sTemp[4096]={0};	// ott
-			for (x = 0 ; x < con.linewidth ; x++) 
+			for (x = 0 ; x < con.linewidth ; x++)
 			{
 				if ( ( (text[x]>>8)&Q_COLOR_BITS ) != currentColor ) {
 					currentColor = (text[x]>>8)&Q_COLOR_BITS;
 					strcat(sTemp,va("^%i", (text[x]>>8)&Q_COLOR_BITS) );
 				}
-				strcat(sTemp,va("%c",text[x] & 0xFF));				
+				strcat(sTemp,va("%c",text[x] & 0xFF));
 			}
 			//
 			// and print...
@@ -642,7 +648,7 @@ void Con_DrawSolidConsole( float frac )
 			re.Font_DrawString(con.xadjust*(con.xadjust + (1*SMALLCHAR_WIDTH/*(aesthetics)*/)), con.yadjust*(y), sTemp, g_color_table[currentColor], iFontIndexForAsian, -1, fFontScaleForAsian);
 		}
 		else
-		{		
+		{
 			for (x=0 ; x<con.linewidth ; x++) {
 				if ( ( text[x] & 0xff ) == ' ' ) {
 					continue;
@@ -707,7 +713,7 @@ void Con_RunConsole (void) {
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
-	
+
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
 	{

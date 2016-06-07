@@ -1,24 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
-
 
 // this file is only included when building a dll
 
@@ -50,7 +53,7 @@ void	cgi_Error( const char *fmt ) {
 }
 
 int		cgi_Milliseconds( void ) {
-	return Q_syscall( CG_MILLISECONDS ); 
+	return Q_syscall( CG_MILLISECONDS );
 }
 
 void	cgi_Cvar_Register( vmCvar_t *vmCvar, const char *varName, const char *defaultValue, int flags ) {
@@ -163,7 +166,7 @@ void	cgi_CM_TransformedBoxTrace( trace_t *results, const vec3_t start, const vec
 	Q_syscall( CG_CM_TRANSFORMEDBOXTRACE, results, start, end, mins, maxs, model, brushmask, origin, angles );
 }
 
-int		cgi_CM_MarkFragments( int numPoints, const vec3_t *points, 
+int		cgi_CM_MarkFragments( int numPoints, const vec3_t *points,
 				const vec3_t projection,
 				int maxPoints, vec3_t pointBuffer,
 				int maxFragments, markFragment_t *fragmentBuffer ) {
@@ -175,7 +178,7 @@ void cgi_CM_SnapPVS(vec3_t origin,byte *buffer)
 	Q_syscall(CG_CM_SNAPPVS,origin,buffer);
 }
 
-void cgi_S_StopSounds( void ) 
+void cgi_S_StopSounds( void )
 {
 	Q_syscall( CG_S_STOPSOUNDS);
 }
@@ -331,7 +334,7 @@ void	cgi_R_SetColor( const float *rgba ) {
 	Q_syscall( CG_R_SETCOLOR, rgba );
 }
 
-void	cgi_R_DrawStretchPic( float x, float y, float w, float h, 
+void	cgi_R_DrawStretchPic( float x, float y, float w, float h,
 							   float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	Q_syscall( CG_R_DRAWSTRETCHPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), hShader );
 }
@@ -340,19 +343,19 @@ void	cgi_R_ModelBounds( qhandle_t model, vec3_t mins, vec3_t maxs ) {
 	Q_syscall( CG_R_MODELBOUNDS, model, mins, maxs );
 }
 
-void	cgi_R_LerpTag( orientation_t *tag, qhandle_t mod, int startFrame, int endFrame, 
+void	cgi_R_LerpTag( orientation_t *tag, qhandle_t mod, int startFrame, int endFrame,
 					   float frac, const char *tagName ) {
 	Q_syscall( CG_R_LERPTAG, tag, mod, startFrame, endFrame, PASSFLOAT(frac), tagName );
 }
 
-void	cgi_R_DrawRotatePic( float x, float y, float w, float h, 
-				   float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) 
+void	cgi_R_DrawRotatePic( float x, float y, float w, float h,
+				   float s1, float t1, float s2, float t2,float a, qhandle_t hShader )
 {
 	Q_syscall( CG_R_DRAWROTATEPIC, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), PASSFLOAT(a), hShader );
 }
 
-void	cgi_R_DrawRotatePic2( float x, float y, float w, float h, 
-				   float s1, float t1, float s2, float t2,float a, qhandle_t hShader ) 
+void	cgi_R_DrawRotatePic2( float x, float y, float w, float h,
+				   float s1, float t1, float s2, float t2,float a, qhandle_t hShader )
 {
 	Q_syscall( CG_R_DRAWROTATEPIC2, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h), PASSFLOAT(s1), PASSFLOAT(t1), PASSFLOAT(s2), PASSFLOAT(t2), PASSFLOAT(a), hShader );
 }
@@ -368,7 +371,7 @@ void	cgi_R_LAGoggles( void )
 	Q_syscall( CG_R_LA_GOGGLES );
 }
 
-void	cgi_R_Scissor( float x, float y, float w, float h) 
+void	cgi_R_Scissor( float x, float y, float w, float h)
 {
 	Q_syscall( CG_R_SCISSOR, PASSFLOAT(x), PASSFLOAT(y), PASSFLOAT(w), PASSFLOAT(h));
 }
@@ -454,7 +457,7 @@ void	cgi_R_WorldEffectCommand( const char *command )
 int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits, const char *psAudioFile /* = NULL */) {
   return Q_syscall(CG_CIN_PLAYCINEMATIC, arg0, xpos, ypos, width, height, bits, psAudioFile);
 }
- 
+
 // stops playing the cinematic and ends it.  should always return FMV_EOF
 // cinematics must be stopped in reverse order of when they are started
 e_status trap_CIN_StopCinematic(int handle) {
@@ -466,13 +469,13 @@ e_status trap_CIN_StopCinematic(int handle) {
 e_status trap_CIN_RunCinematic (int handle) {
   return (e_status) Q_syscall(CG_CIN_RUNCINEMATIC, handle);
 }
- 
+
 
 // draws the current frame
 void trap_CIN_DrawCinematic (int handle) {
   Q_syscall(CG_CIN_DRAWCINEMATIC, handle);
 }
- 
+
 
 // allows you to resize the animation dynamically
 void trap_CIN_SetExtents (int handle, int x, int y, int w, int h) {

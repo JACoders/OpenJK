@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -125,7 +129,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		CAPACITY = MAXNODES,
 		MAXFACES = MAXEDGES*2,
@@ -166,10 +170,10 @@ public:
 	//
 	// This is a "quick and dirty" triangulation technique.  It does not give you a very
 	// nice looking or terribly useful mesh, but it is a good place to start.  Once
-	// you have an insertion hull triangulation, you can call delauny_edge_flip() to 
+	// you have an insertion hull triangulation, you can call delauny_edge_flip() to
 	// clean it up some.
 	//
-	// This algorithm's complexity isbounded in the worst case where all the points in 
+	// This algorithm's complexity isbounded in the worst case where all the points in
 	// the mesh are on the "hull", in which case it is O(n^2).  However the number of
 	// points on the hull for most common point clouds is more likely to be log n.
 	//
@@ -286,7 +290,7 @@ public:
 				{
 					mLinks.get(mGraph.node_index(EdgeAt.mA), mGraph.node_index(EdgeAt.mB)) = 0;
 					mLinks.get(mGraph.node_index(EdgeAt.mB), mGraph.node_index(EdgeAt.mA)) = 0;
-					
+
 					CullEdges.push_back(it.index());
 				}
 			}
@@ -315,7 +319,7 @@ public:
 			{
 				mLinks.get(mGraph.node_index((*it).mA), mGraph.node_index((*it).mB)) = 0;
 				mLinks.get(mGraph.node_index((*it).mB), mGraph.node_index((*it).mA)) = 0;
-				
+
 				CullEdges.push_back(it.index());
 			}
 		}
@@ -353,13 +357,13 @@ private:
 	typedef		typename ratl::list_vs<int, MAXNODES>::iterator				THullIter;
 	typedef		typename ratl::grid2_vs<int,	MAXNODES, MAXNODES>				TLinks;
 
-    
+
 	////////////////////////////////////////////////////////////////////////////////////
 	// The Local Edge Class
 	//
-	//       RIGHT    
-	//   B<-<-<-<-<-<-A 
-	//       LEFT    
+	//       RIGHT
+	//   B<-<-<-<-<-<-A
+	//       LEFT
 	//
     ////////////////////////////////////////////////////////////////////////////////////
 	class	edge
@@ -410,14 +414,14 @@ private:
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// The Local Face Class
-	// 
+	//
 	//       _ C
 	//       /|  \
 	//  LEFT/     \RIGHT
-	//     /       \  
-	//    B-<-<-<-<-A 
-	//       BOTTOM    
-	//  
+	//     /       \
+	//    B-<-<-<-<-A
+	//       BOTTOM
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	class	face
 	{
@@ -529,7 +533,7 @@ private:
 			mSortNode.mNodePointer	= &(*i);
 			mSortNodes.push_back(mSortNode);
 		}
-		mSortNodes.sort();		
+		mSortNodes.sort();
 
 	}
 
@@ -547,7 +551,7 @@ private:
 		if (nEdge==0)
 		{
 			nEdge= mEdges.alloc();
-			
+
 			mHull.insert_after(mHullIter, nEdge);
 			assert(mHullIter!=mHull.end());
 
@@ -631,9 +635,9 @@ private:
 		// DEBUG ASSERTS
 		//====================================================================================
 		// IF YOU HIT THESE ASSERTS, CHANCES ARE THAT YOU ARE TRYING TO TRIANGULATE OVER A SET
-		// WITH MORE THAN 2 COLINEAR POINTS ON THE SAME FACE.  INSERT HULL WILL FAIL IN THIS 
+		// WITH MORE THAN 2 COLINEAR POINTS ON THE SAME FACE.  INSERT HULL WILL FAIL IN THIS
 		// FACE.  INSERT HULL WILL FAIL IN THIS SITUATION
-		
+
 		assert(mGraph.get_node(C).LRTest(mGraph.get_node(A), mGraph.get_node(B))==Side_Right);
 		assert(mGraph.get_node(A).LRTest(mGraph.get_node(B), mGraph.get_node(C))==Side_Right);
 		assert(mGraph.get_node(B).LRTest(mGraph.get_node(C), mGraph.get_node(A))==Side_Right);
@@ -703,8 +707,8 @@ private:
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Edge Flip Function
-	// 
-	// This function scans the edge list for any edge that is "bad" (defined as not 
+	//
+	// This function scans the edge list for any edge that is "bad" (defined as not
 	// fitting within the circumscribed circle of either adjoining face).  When it
 	// encounters one, it "flips" the edge in question and fixes up the adjoining faces
 	// which were altered.
@@ -716,23 +720,23 @@ private:
 	//
 	//          BEFORE                         AFTER
 	//
-	//           (PtR)				           (PtA)				
-	//           /   \				           / | \				
-	//         /       \			         /   |   \			
-	//       /  (FaceR)  \			       /     V     \			
-	//     /               \		     /       |       \		
-	//  (PtB)-<---------<-(PtA)		  (PtR)      |     (PtL)		
-	//     \               /		     \       |       /		
-	//       \  (FaceL)  /			       \     V     /			
-	//         \       /			         \   |   /			
-	//           \   /				           \ | /				
-	//           (PtL)				           (PtB)				
+	//           (PtR)				           (PtA)
+	//           /   \				           / | \
+	//         /       \			         /   |   \
+	//       /  (FaceR)  \			       /     V     \
+	//     /               \		     /       |       \
+	//  (PtB)-<---------<-(PtA)		  (PtR)      |     (PtL)
+	//     \               /		     \       |       /
+	//       \  (FaceL)  /			       \     V     /
+	//         \       /			         \   |   /
+	//           \   /				           \ | /
+	//           (PtL)				           (PtB)
 	//
     ////////////////////////////////////////////////////////////////////////////////////
 	int		flip()
 	{
 		int		Flipped = 0;
-		
+
 		int		EdgeHandle;
 		int		PtR,	PtL,	PtA,	PtB;
 		int		EdgeRL,	EdgeRR,	EdgeLL,	EdgeLR;
@@ -765,7 +769,7 @@ private:
 				// Is This Edge Invalid For Delaunay?
 				//-------------------------------------
 				if (!mGraph.get_node(PtB).InCircle(mGraph.get_node(PtR), mGraph.get_node(PtL), mGraph.get_node(PtA)) &&
-					!mGraph.get_node(PtA).InCircle(mGraph.get_node(PtR), mGraph.get_node(PtB), mGraph.get_node(PtL))					
+					!mGraph.get_node(PtA).InCircle(mGraph.get_node(PtR), mGraph.get_node(PtB), mGraph.get_node(PtL))
 					)
 				{
 					// Change The Link: Remove The Old, Add The New

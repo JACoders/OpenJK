@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 /*****************************************************************************
  * name:		cl_cin.c
  *
@@ -1593,17 +1617,15 @@ void CIN_DrawCinematic (int handle) {
 }
 
 void CL_PlayCinematic_f(void) {
-	char	*arg, *s;
-	int bits = CIN_system;
-
 	Com_DPrintf("CL_PlayCinematic_f\n");
 	if (cls.state == CA_CINEMATIC) {
 		SCR_StopCinematic();
 	}
 
-	arg = Cmd_Argv(1);
-	s = Cmd_Argv(2);
+	const char *arg = Cmd_Argv(1);
+	const char *s = Cmd_Argv(2);
 
+	int bits = CIN_system;
 	if ((s && s[0] == '1') || Q_stricmp(arg,"demoend.roq")==0 || Q_stricmp(arg,"end.roq")==0) {
 		bits |= CIN_hold;
 	}
@@ -1690,4 +1712,3 @@ void CIN_UploadCinematic(int handle) {
 		}
 	}
 }
-

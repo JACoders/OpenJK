@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 /*****************************************************************************
  * name:		snd_dma.c
  *
@@ -9,12 +32,19 @@
 #include "snd_mp3.h"
 #include "snd_music.h"
 #include "client.h"
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
+#if defined(_WIN32)
+#include <windows.h>
+#endif
 
 qboolean s_shutUp = qfalse;
 
 static void S_Play_f(void);
 static void S_SoundList_f(void);
 static void S_Music_f(void);
+static void S_StopMusic_f(void);
 static void S_SetDynamicMusic_f(void);
 
 void S_Update_();
@@ -142,7 +172,6 @@ int			s_numSfx;
 #define		LOOP_HASH		128
 static	sfx_t		*sfxHash[LOOP_HASH];
 
-
 cvar_t		*s_volume;
 cvar_t		*s_volumeVoice;
 cvar_t		*s_testsound;
@@ -185,12 +214,15 @@ typedef struct
 int			numLoopSounds;
 loopSound_t	loopSounds[MAX_LOOP_SOUNDS];
 
-
 int			s_rawend;
 portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
 vec3_t		s_entityPosition[MAX_GENTITIES];
 int			s_entityWavVol[MAX_GENTITIES];
 int			s_entityWavVol_back[MAX_GENTITIES];
+
+int			s_numChannels;			// Number of AL Sources == Num of Channels
+
+#ifdef USE_OPENAL
 
 /**************************************************************************************************\
 *
@@ -208,14 +240,11 @@ int			s_entityWavVol_back[MAX_GENTITIES];
 
 int			s_UseOpenAL	= 0;	// Determines if using Open AL or the default software mixer
 
-#ifdef USE_OPENAL
 ALfloat		listener_pos[3];		// Listener Position
 ALfloat		listener_ori[6];		// Listener Orientation
-#endif
-int			s_numChannels;			// Number of AL Sources == Num of Channels
+
 short		s_rawdata[MAX_RAW_SAMPLES*2];	// Used for Raw Samples (Music etc...)
 
-#ifdef USE_OPENAL
 channel_t *S_OpenALPickChannel(int entnum, int entchannel);
 int  S_MP3PreProcessLipSync(channel_t *ch, short *data);
 void UpdateSingleShotSounds();
@@ -361,10 +390,6 @@ void S_SoundInfo_f(void) {
 	if (!s_soundStarted) {
 		Com_Printf ("sound system not started\n");
 	} else {
-		if ( s_soundMuted ) {
-			Com_Printf ("sound system is muted\n");
-		}
-
 #ifdef USE_OPENAL
 		if (s_UseOpenAL)
 		{
@@ -381,7 +406,7 @@ void S_SoundInfo_f(void) {
 			Com_Printf("%5d samplebits\n", dma.samplebits);
 			Com_Printf("%5d submission_chunk\n", dma.submission_chunk);
 			Com_Printf("%5d speed\n", dma.speed);
-			Com_Printf("0x%x dma buffer\n", dma.buffer);
+			Com_Printf( "0x%" PRIxPTR " dma buffer\n", dma.buffer );
 #ifdef USE_OPENAL
 		}
 #endif
@@ -424,9 +449,9 @@ void S_Init( void ) {
 
 	Com_Printf("\n------- sound initialization -------\n");
 
-	s_volume = Cvar_Get ("s_volume", "0.5", CVAR_ARCHIVE);
-	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE);
-	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE);
+	s_volume = Cvar_Get ("s_volume", "0.5", CVAR_ARCHIVE, "Volume" );
+	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE, "Volume for voice channels" );
+	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE, "Music Volume" );
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
 	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
 	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE);
@@ -441,7 +466,7 @@ void S_Init( void ) {
 	s_lip_threshold_3 = Cvar_Get("s_threshold3" , "7.0",0);
 	s_lip_threshold_4 = Cvar_Get("s_threshold4" , "8.0",0);
 
-	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
+	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART, "Sound language" );
 
 	s_doppler = Cvar_Get("s_doppler", "1", CVAR_ARCHIVE);
 
@@ -455,22 +480,19 @@ void S_Init( void ) {
 		return;
 	}
 
-	Cmd_AddCommand("play", S_Play_f);
-	Cmd_AddCommand("music", S_Music_f);
-	Cmd_AddCommand("soundlist", S_SoundList_f);
-	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
-	Cmd_AddCommand("soundstop", S_StopAllSounds);
+	Cmd_AddCommand("play", S_Play_f, "Plays a sound fx file" );
+	Cmd_AddCommand("music", S_Music_f, "Plays a music file" );
+	Cmd_AddCommand("stopmusic", S_StopMusic_f, "Stops all music" );
+	Cmd_AddCommand("soundlist", S_SoundList_f, "Lists all cached sound and music files" );
+	Cmd_AddCommand("soundinfo", S_SoundInfo_f, "Display information about the sound backend" );
+	Cmd_AddCommand("soundstop", S_StopAllSounds, "Stops all sounds including music" );
 	Cmd_AddCommand("mp3_calcvols", S_MP3_CalcVols_f);
-	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
+	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f, "Change dynamic music state" );
 
+#ifdef USE_OPENAL
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
-#ifdef USE_OPENAL
 	s_UseOpenAL = !!(cv->integer);
-#else
-	s_UseOpenAL = 0;
-#endif
 
-#ifdef USE_OPENAL
 	if (s_UseOpenAL)
 	{
 		int i, j;
@@ -706,6 +728,7 @@ void S_Shutdown( void )
 
 	Cmd_RemoveCommand("play");
 	Cmd_RemoveCommand("music");
+	Cmd_RemoveCommand("stopmusic");
 	Cmd_RemoveCommand("stopsound");
 	Cmd_RemoveCommand("soundlist");
 	Cmd_RemoveCommand("soundinfo");
@@ -714,8 +737,6 @@ void S_Shutdown( void )
 	Cmd_RemoveCommand("s_dynamic");
 	AS_Free();
 }
-
-
 
 /*
 	Mutes / Unmutes all OpenAL sound
@@ -739,10 +760,6 @@ void S_AL_MuteAllSounds(qboolean bMute)
      }
 }
 #endif
-
-
-
-
 
 // =======================================================================
 // Load a sound
@@ -784,10 +801,10 @@ sfx_t *S_FindName( const char *name ) {
 	sfx_t	*sfx;
 
 	if (!name) {
-		Com_Error (ERR_FATAL, "S_FindName: NULL\n");
+		Com_Error (ERR_FATAL, "S_FindName: NULL");
 	}
 	if (!name[0]) {
-		Com_Error (ERR_FATAL, "S_FindName: empty name\n");
+		Com_Error (ERR_FATAL, "S_FindName: empty name");
 	}
 
 	if (strlen(name) >= MAX_QPATH) {
@@ -876,7 +893,6 @@ void S_DefaultSound( sfx_t *sfx ) {
 	}
 }
 
-
 /*
 ===================
 S_DisableSounds
@@ -899,7 +915,6 @@ S_BeginRegistration
 */
 void S_BeginRegistration( void )
 {
-
 	s_soundMuted = qfalse;		// we can play again
 
 #ifdef USE_OPENAL
@@ -932,11 +947,9 @@ void S_BeginRegistration( void )
 	}
 }
 
-
+#ifdef USE_OPENAL
 void EALFileInit(const char *level)
 {
-
-#ifdef USE_OPENAL
 	// If an EAL File is already unloaded, remove it
 	if (s_bEALFileLoaded)
 	{
@@ -977,10 +990,8 @@ void EALFileInit(const char *level)
 			}
 		}
 	}
-#endif
 }
-
-
+#endif
 
 /*
 ==================
@@ -1035,8 +1046,6 @@ sfxHandle_t	S_RegisterSound( const char *name)
 			Com_Printf( S_COLOR_YELLOW "WARNING: could not find %s - using default\n", sfx->sSoundName );
 		}
 #endif
-
-
 		return 0;
 	}
 
@@ -1055,12 +1064,12 @@ void S_memoryLoad(sfx_t	*sfx)
 	sfx->bInMemory = qtrue;
 }
 
-
-
 //=============================================================================
 static qboolean S_CheckChannelStomp( int chan1, int chan2 )
 {
+#ifdef USE_OPENAL
 	if (!s_UseOpenAL)
+#endif
 	{
 		if ( chan1 == chan2 )
 		{
@@ -1075,7 +1084,6 @@ static qboolean S_CheckChannelStomp( int chan1, int chan2 )
 
 	return qfalse;
 }
-
 
 /*
 =================
@@ -1151,17 +1159,15 @@ channel_t *S_PickChannel(int entnum, int entchannel)
 	return firstToDie;
 }
 
-
-
 /*
 	For use with Open AL
 
 	Allows more than one sound of the same type to emanate from the same entity - sounds much better
 	on hardware this way esp. rapid fire modes of weapons!
 */
+#ifdef USE_OPENAL
 channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 {
-#ifdef USE_OPENAL
     int			ch_idx;
 	channel_t	*ch, *ch_firstToDie;
 	bool	foundChan = false;
@@ -1331,11 +1337,8 @@ channel_t *S_OpenALPickChannel(int entnum, int entchannel)
 	ch_firstToDie->bStreaming = false;
 
     return ch_firstToDie;
-#else
-    return NULL;
-#endif
 }
-
+#endif
 
 /*
 =================
@@ -1423,7 +1426,6 @@ void S_SpatializeOrigin (const vec3_t origin, float master_vol, int *left_vol, i
 		*left_vol = 0;
 	}
 }
-
 
 // =======================================================================
 // Start a sound effect
@@ -1735,7 +1737,9 @@ void S_ClearSoundBuffer( void ) {
 #endif
 	s_rawend = 0;
 
+#ifdef USE_OPENAL
 	if (!s_UseOpenAL)
+#endif
 	{
 		if (dma.samplebits == 8)
 			clear = 0x80;
@@ -1882,7 +1886,6 @@ void S_ClearLoopingSounds( void )
 	}
 #endif
 	numLoopSounds = 0;
-
 }
 
 /*
@@ -2140,7 +2143,7 @@ S_RawSamples
 Music streaming
 ============
 */
-void S_RawSamples( int samples, int rate, int width, int s_channels, const byte *data, float volume, int bFirstOrOnlyUpdateThisFrame )
+void S_RawSamples( int samples, int rate, int width, int channels, const byte *data, float volume, int bFirstOrOnlyUpdateThisFrame )
 {
 	int		i;
 	int		src, dst;
@@ -2161,7 +2164,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 	scale = (float)rate / dma.speed;
 
 //Com_Printf ("%i < %i < %i\n", s_soundtime, s_paintedtime, s_rawend);
-	if (s_channels == 2 && width == 2)
+	if (channels == 2 && width == 2)
 	{
 		if (scale == 1.0)
 		{	// optimized case
@@ -2216,7 +2219,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 2)
+	else if (channels == 1 && width == 2)
 	{
 		if (bFirstOrOnlyUpdateThisFrame)
 		{
@@ -2245,7 +2248,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 2 && width == 1)
+	else if (channels == 2 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2276,7 +2279,7 @@ void S_RawSamples( int samples, int rate, int width, int s_channels, const byte 
 			}
 		}
 	}
-	else if (s_channels == 1 && width == 1)
+	else if (channels == 1 && width == 1)
 	{
 		intVolume *= 256;
 
@@ -2422,7 +2425,7 @@ static int S_CheckAmplitude(channel_t	*ch, const unsigned int s_oldpaintedtime )
 				{
 					case ct_16:
 					{
-						sample = LittleShort(current_pos_s[i*100]);
+						sample = current_pos_s[i*100];
 					}
 					break;
 
@@ -2431,7 +2434,7 @@ static int S_CheckAmplitude(channel_t	*ch, const unsigned int s_oldpaintedtime )
 						const int iIndex = (i*100) + ((offset * /*ch->thesfx->width*/2) - ch->iMP3SlidingDecodeWindowPos);
 						const short* pwSamples = (short*) (ch->MP3SlidingDecodeBuffer + iIndex);
 
-						sample = LittleShort(*pwSamples);
+						sample = *pwSamples;
 					}
 					break;
 
@@ -2774,7 +2777,9 @@ void S_Update( void ) {
 	}
 
 	// The Open AL code, handles background music in the S_UpdateRawSamples function
+#ifdef USE_OPENAL
 	if (!s_UseOpenAL)
+#endif
 	{
 		// add raw data from streamed samples
 		S_UpdateBackgroundTrack();
@@ -2795,8 +2800,8 @@ void S_GetSoundtime(void)
 
 	if( CL_VideoRecording( ) )
 	{
-		float fps = min(cl_aviFrameRate->value, 1000.0f);
-		float frameDuration = max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
+		float fps = Q_min(cl_aviFrameRate->value, 1000.0f);
+		float frameDuration = Q_max(dma.speed / fps, 1.0f) + clc.aviSoundFrameRemainder;
 		int msec = (int)frameDuration;
 		s_soundtime += msec;
 		clc.aviSoundFrameRemainder = frameDuration - msec;
@@ -3121,10 +3126,9 @@ void S_Update_(void) {
 #endif
 }
 
-
+#ifdef USE_OPENAL
 void UpdateSingleShotSounds()
 {
-#ifdef USE_OPENAL
 	int i, j, k;
 	ALint state;
 	ALint processed;
@@ -3284,15 +3288,10 @@ void UpdateSingleShotSounds()
 			}
 		}
 	}
-#endif
 }
-
-
-
 
 void UpdateLoopingSounds()
 {
-#ifdef USE_OPENAL
 	int i,j;
 	ALuint source;
 	channel_t *ch;
@@ -3468,16 +3467,10 @@ void UpdateLoopingSounds()
 				s_channels[source].bPlaying = true;
 		}
 	}
-#endif
 }
-
-
-
-
 
 void AL_UpdateRawSamples()
 {
-#ifdef USE_OPENAL
 	ALuint buffer;
 	ALint size;
 	ALint processed;
@@ -3593,9 +3586,8 @@ void AL_UpdateRawSamples()
 	if (alGetError() != AL_NO_ERROR)
 		Com_OPrintf("OAL Error : UpdateRawSamples\n");
 #endif
-#endif /* USE_OPENAL */
 }
-
+#endif
 
 int S_MP3PreProcessLipSync(channel_t *ch, short *data)
 {
@@ -3625,7 +3617,6 @@ int S_MP3PreProcessLipSync(channel_t *ch, short *data)
 
 	return sample;
 }
-
 
 void S_SetLipSyncs()
 {
@@ -3705,7 +3696,6 @@ void S_SetLipSyncs()
 	}
 }
 
-
 /*
 ===============================================================================
 
@@ -3747,6 +3737,10 @@ static void S_Music_f( void ) {
 		Com_Printf ("music <musicfile> [loopfile]\n");
 		return;
 	}
+}
+
+static void S_StopMusic_f( void ) {
+	S_StopBackgroundTrack();
 }
 
 // a debug function, but no harm to leave in...
@@ -3819,7 +3813,6 @@ static void S_SetDynamicMusic_f(void)
 	DynamicMusicInfoPrint();
 }
 
-
 // this table needs to be in-sync with the typedef'd enum "SoundCompressionMethod_t"...	-ste
 //
 static const char *sSoundCompressionMethodStrings[ct_NUMBEROF] =
@@ -3871,8 +3864,6 @@ void S_SoundList_f( void ) {
 	{
 		Com_Printf("( additional (mutually exclusive) options available:\n'wavonly', 'ShouldBeMP3', '1'/'2'/'3' for %%d-variant capping )\n" );
 	}
-
-
 
 	total = 0;
 
@@ -3948,13 +3939,11 @@ void S_SoundList_f( void ) {
 	}
 	Com_Printf(" Slot   Smpls Type  In? Lev  Name\n");
 
-
 	Com_Printf ("Total resident samples: %i %s ( not mem usage, see 'meminfo' ).\n", total, bWavOnly?"(WAV only)":"");
 	Com_Printf ("%d out of %d sfx_t slots used\n", s_numSfx, MAX_SFX);
 	Com_Printf ("%.2fMB bytes used when counting sfx_t->pSoundData + MP3 headers (if any)\n", (float)iTotalBytes / 1024.0f / 1024.0f);
 	S_DisplayFreeMemory();
 }
-
 
 /*
 ===============================================================================
@@ -4067,7 +4056,6 @@ static byte *MP3MusicStream_ReadFromDisk(MusicInfo_t *pMusicInfo, int iReadOffse
 
 	return pMusicInfo->byMP3MusicStream_DiskBuffer + (iReadOffset - pMusicInfo->iMP3MusicStream_DiskWindowPos);
 }
-
 
 // does NOT set s_rawend!...
 //
@@ -4191,7 +4179,6 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 													qtrue	// bStereoDesired
 													);
 
-
 			if (psError == NULL)
 			{
 				// init sfx struct & setup the few fields I actually need...
@@ -4309,7 +4296,6 @@ static qboolean S_StartBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean
 	return qtrue;
 }
 
-
 static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewState, qboolean bNewTrackStartsFullVolume )
 {
 	// copy old track into fader...
@@ -4332,7 +4318,6 @@ static void S_SwitchDynamicTracks( MusicState_e eOldState, MusicState_e eNewStat
 	tMusic_Info[eNewState].iXFadeVolume			= bNewTrackStartsFullVolume ? 255 : 0;
 
 	eMusic_StateActual = eNewState;
-
 
 	if (s_debugdynamic->integer)
 	{
@@ -4363,7 +4348,6 @@ static void S_SetDynamicMusicState( MusicState_e eNewState )
 		}
 	}
 }
-
 
 static void S_HandleDynamicMusicStateChange( void )
 {
@@ -4516,8 +4500,6 @@ static void S_HandleDynamicMusicStateChange( void )
 	}
 }
 
-
-
 static char gsIntroMusic[MAX_QPATH]={0};
 static char gsLoopMusic [MAX_QPATH]={0};
 
@@ -4557,8 +4539,12 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 		loop = intro;
 	}
 
-	Q_strncpyz(gsIntroMusic,intro, sizeof(gsIntroMusic));
-	Q_strncpyz(gsLoopMusic, loop,  sizeof(gsLoopMusic));
+	if ( intro != gsIntroMusic ) {
+		Q_strncpyz( gsIntroMusic, intro, sizeof(gsIntroMusic) );
+	}
+	if ( loop != gsLoopMusic ) {
+		Q_strncpyz( gsLoopMusic, loop, sizeof(gsLoopMusic) );
+	}
 
 	char sNameIntro[MAX_QPATH];
 	char sNameLoop [MAX_QPATH];
@@ -4676,8 +4662,6 @@ void S_StopBackgroundTrack( void )
 	s_rawend = 0;
 }
 
-
-
 // qboolean return is true only if we're changing from a streamed intro to a dynamic loop...
 //
 static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolean bFirstOrOnlyMusicTrack, float fDefaultVolume)
@@ -4743,6 +4727,11 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 
 		// decide how much data needs to be read from the file
 		fileSamples = bufferSamples * pMusicInfo->s_backgroundInfo.rate / dma.speed;
+
+		// don't try to play if there are no more samples in the file
+		if (!fileSamples) {
+			return qfalse;
+		}
 
 		// don't try and read past the end of the file
 		if ( fileSamples > pMusicInfo->s_backgroundSamples ) {
@@ -4851,7 +4840,6 @@ static qboolean S_UpdateBackgroundTrack_Actual( MusicInfo_t *pMusicInfo, qboolea
 	return qfalse;
 }
 
-
 // used to be just for dynamic, but now even non-dynamic music has to know whether it should be silent or not...
 //
 static const char *S_Music_GetRequestedState(void)
@@ -4869,7 +4857,6 @@ static const char *S_Music_GetRequestedState(void)
 
 	return NULL;
 }
-
 
 // scan the configstring to see if there's been a state-change requested...
 // (note that even if the state doesn't change it still gets here, so do a same-state check for applying)
@@ -5053,9 +5040,7 @@ static void S_UpdateBackgroundTrack( void )
 	}
 }
 
-
 cvar_t *s_soundpoolmegs = NULL;
-
 
 // currently passing in sfx as a param in case I want to do something with it later.
 //
@@ -5078,7 +5063,6 @@ byte *SND_malloc(int iSize, sfx_t *sfx)
 	return pData;
 }
 
-
 // called once-only in EXE lifetime...
 //
 void SND_setup()
@@ -5091,7 +5075,6 @@ void SND_setup()
 
 	Com_Printf("Sound memory manager started\n");
 }
-
 
 // ask how much mem an sfx has allocated...
 //
@@ -5194,7 +5177,6 @@ void SND_TouchSFX(sfx_t *sfx)
 	sfx->iLastLevelUsedOn	= re->RegisterMedia_GetLevel();
 }
 
-
 // currently this is only called during snd_shutdown or snd_restart
 //
 void S_FreeAllSFXMem(void)
@@ -5264,7 +5246,6 @@ int SND_FreeOldestSound(void)
 	return SND_FreeOldestSound(NULL);	// I had to add a void-arg version of this because of link issues, sigh
 }
 
-
 // just before we drop into a level, ensure the audio pool is under whatever the maximum
 //	pool size is (but not by dropping out sounds used by the current level)...
 //
@@ -5323,7 +5304,7 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 	return bAtLeastOneSoundDropped;
 }
 
-
+#ifdef USE_OPENAL
 /****************************************************************************************************\
 *
 *	EAX Related
@@ -5335,7 +5316,6 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 */
 void InitEAXManager()
 {
-#ifdef USE_OPENAL
 	LPEAXMANAGERCREATE lpEAXManagerCreateFn;
 	EAXFXSLOTPROPERTIES FXSlotProp;
 	GUID	Effect;
@@ -5445,7 +5425,6 @@ void InitEAXManager()
 	s_bEAX = false;
 
 	return;
-#endif
 }
 
 /*
@@ -5453,7 +5432,6 @@ void InitEAXManager()
 */
 void ReleaseEAXManager()
 {
-#ifdef USE_OPENAL
 	s_bEAX = false;
 
 	UnloadEALFile();
@@ -5468,16 +5446,13 @@ void ReleaseEAXManager()
 		FreeLibrary(s_hEAXManInst);
 		s_hEAXManInst = NULL;
 	}
-#endif
 }
-
 
 /*
 	Try to load the given .eal file
 */
 bool LoadEALFile(char *szEALFilename)
 {
-#ifdef USE_OPENAL
 	char		*ealData = NULL;
 	HRESULT		hr;
 	long		i, j, lID, lEnvID;
@@ -5750,8 +5725,6 @@ bool LoadEALFile(char *szEALFilename)
 		return true;
 	}
 
-
-#endif
 	Com_DPrintf( S_COLOR_YELLOW "Failed to load %s\n", szEALFilename);
 	return false;
 }
@@ -5761,7 +5734,6 @@ bool LoadEALFile(char *szEALFilename)
 */
 void UnloadEALFile()
 {
-#ifdef USE_OPENAL
 	HRESULT hr;
 
 	if ((!s_lpEAXManager) || (!s_bEAX))
@@ -5777,7 +5749,6 @@ void UnloadEALFile()
 	}
 
 	return;
-#endif
 }
 
 /*
@@ -5785,7 +5756,6 @@ void UnloadEALFile()
 */
 void UpdateEAXListener()
 {
-#ifdef USE_OPENAL
 	EMPOINT ListPos, ListOri;
 	EMPOINT EMAperture;
 	EMPOINT EMSourcePoint;
@@ -6098,7 +6068,7 @@ void UpdateEAXListener()
 		float flSin = (float)sin(-flTheta);
 		float flCos = (float)cos(-flTheta);
 
-		for (i = 0; i < min(s_NumFXSlots,s_lNumEnvironments); i++)
+		for (i = 0; i < Q_min(s_NumFXSlots,s_lNumEnvironments); i++)
 		{
 			if (s_FXSlotInfo[i].lEnvID == s_EnvironmentID)
 			{
@@ -6233,7 +6203,6 @@ void UpdateEAXListener()
 	}
 
 	return;
-#endif
 }
 
 /*
@@ -6241,7 +6210,6 @@ void UpdateEAXListener()
 */
 void UpdateEAXBuffer(channel_t *ch)
 {
-#ifdef USE_OPENAL
 	HRESULT hr;
 	EMPOINT EMSourcePoint;
 	EMPOINT EMVirtualSourcePoint;
@@ -6374,18 +6342,10 @@ void UpdateEAXBuffer(channel_t *ch)
 	}
 
 	return;
-#endif
 }
-
-#ifndef USE_OPENAL
-typedef struct _EMPOINT {
-  float fX;
-  float fY;
-  float fZ;
-} EMPOINT;
-#endif
 
 float CalcDistance(EMPOINT A, EMPOINT B)
 {
 	return (float)sqrt(sqr(A.fX - B.fX)+sqr(A.fY - B.fY) + sqr(A.fZ - B.fZ));
 }
+#endif

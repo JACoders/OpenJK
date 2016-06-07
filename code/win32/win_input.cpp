@@ -2,9 +2,8 @@
 This file is part of Jedi Academy.
 
     Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License version 2
+    as published by the Free Software Foundation.
 
     Jedi Academy is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -244,7 +243,7 @@ WIN32 MOUSE CONTROL
 IN_InitWin32Mouse
 ================
 */
-void IN_InitWin32Mouse( void ) 
+void IN_InitWin32Mouse( void )
 {
 }
 
@@ -295,7 +294,7 @@ void IN_ActivateWin32Mouse( void ) {
 IN_DeactivateWin32Mouse
 ================
 */
-void IN_DeactivateWin32Mouse( void ) 
+void IN_DeactivateWin32Mouse( void )
 {
 	ClipCursor (NULL);
 	ReleaseCapture ();
@@ -408,7 +407,7 @@ qboolean IN_InitDIMouse( void ) {
 
 	if (!hInstDI) {
 		hInstDI = LoadLibrary("dinput.dll");
-		
+
 		if (hInstDI == NULL) {
 			Com_Printf ("Couldn't load dinput.dll\n");
 			return qfalse;
@@ -481,14 +480,14 @@ qboolean IN_InitDIMouse( void ) {
 IN_ShutdownDIMouse
 ==========================
 */
-void IN_ShutdownDIMouse( void ) 
+void IN_ShutdownDIMouse( void )
 {
-    if (g_pMouse) 
+    if (g_pMouse)
 	{
 		IDirectInputDevice_Release(g_pMouse);
 		g_pMouse = NULL;
 	}
-	if (g_pdi) 
+	if (g_pdi)
 	{
 		IDirectInput_Release(g_pdi);
 		g_pdi = NULL;
@@ -586,7 +585,7 @@ void IN_DIMouse( int *mx, int *my ) {
 			else
 				Sys_QueEvent( od.dwTimeStamp, SE_KEY, A_MOUSE2, qfalse, 0, NULL );
 			break;
-			
+
 		case DIMOFS_BUTTON2:
 			if (od.dwData & 0x80)
 				Sys_QueEvent( od.dwTimeStamp, SE_KEY, A_MOUSE3, qtrue, 0, NULL );
@@ -623,17 +622,17 @@ IN_ActivateMouse
 Called when the window gains focus or changes in some way
 ===========
 */
-void IN_ActivateMouse( void ) 
+void IN_ActivateMouse( void )
 {
 	if (!s_wmv.mouseInitialized ) {
 		return;
 	}
-	if ( !in_mouse->integer ) 
+	if ( !in_mouse->integer )
 	{
 		s_wmv.mouseActive = qfalse;
 		return;
 	}
-	if ( s_wmv.mouseActive ) 
+	if ( s_wmv.mouseActive )
 	{
 		return;
 	}
@@ -677,7 +676,7 @@ void IN_DeactivateMouse( void ) {
 IN_StartupMouse
 ===========
 */
-void IN_StartupMouse( void ) 
+void IN_StartupMouse( void )
 {
 	s_wmv.mouseInitialized = qfalse;
 
@@ -748,7 +747,7 @@ void IN_MouseEvent (int mstate)
 		{
 			Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, mouseConvert[i], false, 0, NULL );
 		}
-	}	
+	}
 	s_wmv.oldButtonState = mstate;
 }
 
@@ -927,7 +926,7 @@ void IN_Frame (void) {
 IN_ClearStates
 ===================
 */
-void IN_ClearStates (void) 
+void IN_ClearStates (void)
 {
 	s_wmv.oldButtonState = 0;
 }
@@ -1001,7 +1000,7 @@ qboolean IN_LoadXInput ( void )
 		Com_Printf( S_COLOR_RED"XInput not detected on your system. Please download the XBOX 360 drivers from the Microsoft home page.\n" );
 		return qfalse;
 	}
-	
+
 	// MEGA HACK:
 	// Ordinal 100 in the XInput DLL supposedly contains a modified/improved version
 	// of the XInputGetState function, with one key difference: XInputGetState does
@@ -1059,7 +1058,7 @@ void IN_JoystickInitXInput ( void )
 	ZeroMemory( &xiState, sizeof(XINPUT_STATE_EX) );
 	dwLastXIButtonState = 0UL;
 
-	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something, 
+	if (XI_GetStateEx( 0, &xiState ) != ERROR_SUCCESS ) {	// only support for Controller 1 atm. If I get bored or something,
 															// I'll probably add a splitscreen mode just for lulz --eez
 		Com_Printf("XBOX 360 controller not detected -- no drivers or bad connection\n");
 		return;
@@ -1102,7 +1101,7 @@ void IN_JoystickInitDInput ( void )
 
 		if ((mmr = joyGetPosEx (joy.id, &joy.ji)) == JOYERR_NOERROR)
 			break;
-	} 
+	}
 
 	// abort startup if we didn't find a valid joystick
 	if (mmr != JOYERR_NOERROR)
@@ -1116,7 +1115,7 @@ void IN_JoystickInitDInput ( void )
 	memset (&joy.jc, 0, sizeof(joy.jc));
 	if ((mmr = joyGetDevCaps (joy.id, &joy.jc, sizeof(joy.jc))) != JOYERR_NOERROR)
 	{
-		Com_Printf ("joystick not found -- invalid joystick capabilities (%x)\n", mmr); 
+		Com_Printf ("joystick not found -- invalid joystick capabilities (%x)\n", mmr);
 		return;
 	}
 
@@ -1139,17 +1138,17 @@ void IN_JoystickInitDInput ( void )
 	joy.oldpovstate = 0;
 
 	// mark the joystick as available
-	joy.avail = qtrue; 
+	joy.avail = qtrue;
 }
 
-/* 
-=============== 
-IN_StartupJoystick 
-=============== 
-*/  
-void IN_StartupJoystick (void) { 
+/*
+===============
+IN_StartupJoystick
+===============
+*/
+void IN_StartupJoystick (void) {
 	// assume no joystick
-	joy.avail = qfalse; 
+	joy.avail = qfalse;
 
 	if ( in_joystick->integer == 1 )
 	{
@@ -1167,7 +1166,7 @@ void IN_StartupJoystick (void) {
 		Com_Printf ("Joystick is not active.\n");
 		return;
 	}
-	
+
 }
 
 /*
@@ -1181,7 +1180,7 @@ float JoyToF( int value ) {
 	// move centerpoint to zero
 	value -= 32768;
 
-	// convert range from -32768..32767 to -1..1 
+	// convert range from -32768..32767 to -1..1
 	fValue = (float)value / 32768.0;
 
 	if ( fValue < -1 ) {
@@ -1242,7 +1241,7 @@ void IN_DoDirectInput( void )
 	}
 
 	if ( in_debugJoystick->integer ) {
-		Com_Printf( "%8x %5i %5.2f %5.2f %5.2f %5.2f %6i %6i\n", 
+		Com_Printf( "%8x %5i %5.2f %5.2f %5.2f %5.2f %6i %6i\n",
 			joy.ji.dwButtons,
 			joy.ji.dwPOV,
 			JoyToF( joy.ji.dwXpos ), JoyToF( joy.ji.dwYpos ),
@@ -1269,7 +1268,7 @@ void IN_DoDirectInput( void )
 	for (i = 0; i < joy.jc.wNumAxes && i < 4 ; i++) {
 		// get the floating point zero-centered, potentially-inverted data for the current axis
 		fAxisValue = JoyToF( (&joy.ji.dwXpos)[i] );
-		
+
 		if (i == 0 && !joy_xbutton->integer) {
 			if ( fAxisValue < -joy_threshold->value || fAxisValue > joy_threshold->value){
 				Sys_QueEvent( g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_SIDE, (int) -(fAxisValue*127.0), 0, NULL );
@@ -1278,7 +1277,7 @@ void IN_DoDirectInput( void )
 			}
 			continue;
 		}
-		
+
 		if (i == 1 && !joy_ybutton->integer) {
 			if ( fAxisValue < -joy_threshold->value || fAxisValue > joy_threshold->value){
 				Sys_QueEvent( g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_FORWARD, (int) -(fAxisValue*127.0), 0, NULL );
@@ -1287,13 +1286,13 @@ void IN_DoDirectInput( void )
 			}
 			continue;
 		}
-		
+
 		if ( fAxisValue < -joy_threshold->value ) {
 			povstate |= (1<<(i*2));
 		} else if ( fAxisValue > joy_threshold->value ) {
 			povstate |= (1<<(i*2+1));
 		}
-	}		
+	}
 
 	// convert POV information from a direction into 4 button bits
 	if ( joy.jc.wCaps & JOYCAPS_HASPOV ) {
@@ -1429,7 +1428,7 @@ void IN_DoXInput( void )
 		{
 			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value;
 		}
-		
+
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, rightThumbX, 0, NULL);
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, rightThumbY, 0, NULL);
 
@@ -1463,7 +1462,7 @@ void IN_DoXInput( void )
 			if(in_debugJoystick->integer)
 				Com_Printf("rightThumbY: %f\tfactor: %f\tdX: %f\n", rightThumbY, factor, dY);
 		}
-		
+
 		// ...but cap it at a reasonable amount.
 		if(dX < -2.5f) dX = -2.5f;
 		if(dX > 2.5f) dX = 2.5f;
@@ -1549,7 +1548,7 @@ void IN_DoXInput( void )
 IN_JoyMove
 ===========
 */
-void IN_JoyMove( void ) 
+void IN_JoyMove( void )
 {
 	if( in_joystick->integer == 1 && joy.avail)
 	{
@@ -1602,7 +1601,7 @@ static void MIDI_NoteOn( int note, int velocity )
 	Sys_QueEvent( g_wv.sysMsgTime, SE_KEY, qkey, qtrue, 0, NULL );
 }
 
-static void CALLBACK MidiInProc( HMIDIIN hMidiIn, UINT uMsg, DWORD dwInstance, 
+static void CALLBACK MidiInProc( HMIDIIN hMidiIn, UINT uMsg, DWORD dwInstance,
 								 DWORD dwParam1, DWORD dwParam2 )
 {
 	int message;
@@ -1684,7 +1683,7 @@ static void IN_StartupMIDI( void )
 	//
 	// open the MIDI IN port
 	//
-	if ( midiInOpen( &s_midiInfo.hMidiIn, 
+	if ( midiInOpen( &s_midiInfo.hMidiIn,
 		             in_mididevice->integer,
 					 ( unsigned long ) MidiInProc,
 					 ( unsigned long ) NULL,

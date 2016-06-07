@@ -858,8 +858,6 @@ void IN_Activate (qboolean active) {
 	}
 }
 
-extern cvar_t	*r_fullscreen;
-
 /*
 ==================
 IN_Frame
@@ -878,14 +876,11 @@ void IN_Frame (void) {
 	// If not DISCONNECTED (main menu) or ACTIVE (in game), we're loading
 	qboolean loading = (qboolean)( cls.state != CA_DISCONNECTED && cls.state != CA_ACTIVE );
 
+	// temporarily deactivate if not in the game and
+	// running on the desktop
 	if( !Cvar_VariableIntegerValue("r_fullscreen") && ( Key_GetCatcher( ) & KEYCATCH_CONSOLE ) ) {
-	//if ( cls.keyCatchers & KEYCATCH_CONSOLE ) {
-		// temporarily deactivate if not in the game and
-		// running on the desktop
-		//if (r_fullscreen && r_fullscreen->value == 0 )	{
-			IN_DeactivateMouse ();
-			return;
-		//}
+		IN_DeactivateMouse ();
+		return;
 	}
 
 	if( !Cvar_VariableIntegerValue("r_fullscreen") && loading ) {
@@ -1411,7 +1406,7 @@ void IN_DoXInput( void )
 		{
 			dY = (leftThumbY-joy_threshold->value) * in_joyBallScale->value;
 		}
-		
+
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_YAW, rightThumbX, 0, NULL);
 		Sys_QueEvent(g_wv.sysMsgTime, SE_JOYSTICK_AXIS, AXIS_PITCH, rightThumbY, 0, NULL);
 
@@ -1445,7 +1440,7 @@ void IN_DoXInput( void )
 			if(in_debugJoystick->integer)
 				Com_Printf("rightThumbY: %f\tfactor: %f\tdX: %f\n", rightThumbY, factor, dY);
 		}
-		
+
 		// ...but cap it at a reasonable amount.
 		if(dX < -2.5f) dX = -2.5f;
 		if(dX > 2.5f) dX = 2.5f;

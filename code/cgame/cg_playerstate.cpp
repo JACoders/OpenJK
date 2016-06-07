@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_playerstate.c -- this file acts on changes in a new playerState_t
 // With normal play, this will be done after local prediction, but when
@@ -34,7 +39,7 @@ CG_CheckAmmo
 If the ammo has gone low enough to generate the warning, play a sound
 ==============
 */
-void CG_CheckAmmo( void ) 
+void CG_CheckAmmo( void )
 {
 //	int		i;
 	int		total;
@@ -42,18 +47,18 @@ void CG_CheckAmmo( void )
 //	int		weapons;
 
 #if 0
-		
+
 	// see about how many seconds of ammo we have remaining
 	weapons = cg.snap->ps.stats[ STAT_WEAPONS ];
 	total = 0;
 
-	for ( i = WP_SABER; i < WP_NUM_WEAPONS  i++ ) 
+	for ( i = WP_SABER; i < WP_NUM_WEAPONS  i++ )
 	{
 		if ( ! ( weapons & ( 1 << i ) ) )
 			continue;
 
 		/*
-		switch ( i ) 
+		switch ( i )
 		{
 		case WP_ROCKET_LAUNCHER:
 		case WP_GRENADE_LAUNCHER:
@@ -66,8 +71,8 @@ void CG_CheckAmmo( void )
 			break;
 		}
 		*/
-		
-		if ( total >= 5000 ) 
+
+		if ( total >= 5000 )
 		{
 			cg.lowAmmoWarning = 0;
 			return;
@@ -95,7 +100,7 @@ void CG_CheckAmmo( void )
 	if (!total)		// We're completely freak'in out!
 	{
 		cg.lowAmmoWarning = 2;
-	} 
+	}
 	else			// Got a little left
 	{
 		cg.lowAmmoWarning = 1;
@@ -170,7 +175,7 @@ void CG_DamageFeedback( int yawByte, int pitchByte, int damage ) {
 		}
 
 		cg.v_dmg_roll = kick * left;
-		
+
 		cg.v_dmg_pitch = -kick * front;
 
 		if ( front <= 0.1 ) {
@@ -358,7 +363,7 @@ void CG_TransitionPlayerState( playerState_t *ps, playerState_t *ops ) {
 	CG_CheckPlayerstateEvents( ps, ops );
 
 	// smooth the ducking viewheight change
-	if ( ps->viewheight != ops->viewheight ) 
+	if ( ps->viewheight != ops->viewheight )
 	{
 		if ( !cg.nextFrameTeleport )
 		{//when we crouch/uncrouch in mid-air, our viewhieght doesn't actually change in

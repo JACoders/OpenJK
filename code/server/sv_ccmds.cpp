@@ -1,26 +1,27 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
 
 #include "server.h"
 #include "../game/weapons.h"
@@ -44,7 +45,7 @@ qboolean qbLoadTransition = qfalse;
 //=========================================================
 // don't call this directly, it should only be called from SV_Map_f() or SV_MapTransition_f()
 //
-static bool SV_Map_( ForceReload_e eForceReload ) 
+static bool SV_Map_( ForceReload_e eForceReload )
 {
 	char		*map = NULL;
 	char		expanded[MAX_QPATH] = {0};
@@ -85,21 +86,21 @@ static bool SV_Map_( ForceReload_e eForceReload )
 
 
 
-// Save out some player data for later restore if this is a spawn point with KEEP_PREV (spawnflags&1) set...	
+// Save out some player data for later restore if this is a spawn point with KEEP_PREV (spawnflags&1) set...
 //
 // (now also called by auto-save code to setup the cvars correctly
-void SV_Player_EndOfLevelSave(void)						   
+void SV_Player_EndOfLevelSave(void)
 {
 	int	i;
 
 	// I could just call GetClientState() but that's in sv_bot.cpp, and I'm not sure if that's going to be deleted for
 	//	the single player build, so here's the guts again...
 	//
-	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player	
+	client_t* cl = &svs.clients[0];	// 0 because only ever us as a player
 
-	if (cl 
+	if (cl
 		&&
-		cl->gentity && cl->gentity->client	// crash fix for voy4->brig transition when you kill Foster. 
+		cl->gentity && cl->gentity->client	// crash fix for voy4->brig transition when you kill Foster.
 											//	Shouldn't happen, but does sometimes...
 		)
 	{
@@ -223,14 +224,16 @@ void SV_Player_EndOfLevelSave(void)
 // Restart the server on a different map
 //
 static void SV_MapTransition_f(void)
-{		
+{
 	const char	*spawntarget;
 
-//	SCR_PrecacheScreenshot();
+#ifdef JK2_MODE
+	SCR_PrecacheScreenshot();
+#endif
 	SV_Player_EndOfLevelSave();
 
 	spawntarget = Cmd_Argv(2);
-	if ( *spawntarget != '\0' ) 
+	if ( *spawntarget != '\0' )
 	{
 		Cvar_Set( "spawntarget", spawntarget );
 	}
@@ -250,13 +253,18 @@ Restart the server on a different map, but clears a cvar so that typing "map bla
 player weapons/ammo/etc from the previous level that you haven't really exited (ie ignores KEEP_PREV on spawn points)
 ==================
 */
-static void SV_Map_f( void ) 
+#ifdef JK2_MODE
+extern void SCR_UnprecacheScreenshot();
+#endif
+static void SV_Map_f( void )
 {
 	Cvar_Set( sCVARNAME_PLAYERSAVE, "");
 	Cvar_Set( "spawntarget", "" );
 	Cvar_Set("tier_storyinfo", "0");
 	Cvar_Set("tiers_complete", "");
-//	SCR_UnprecacheScreenshot();
+#ifdef JK2_MODE
+	SCR_UnprecacheScreenshot();
+#endif
 
 	ForceReload_e eForceReload = eForceReload_NOTHING;	// default for normal load
 
@@ -282,6 +290,9 @@ static void SV_Map_f( void )
 		// then cheats will be allowed
 		Cvar_Set( "helpUsObi", cheat ? "1" : "0" );
 	}
+#ifdef JK2_MODE
+	Cvar_Set( "cg_missionstatusscreen", "0" );
+#endif
 }
 
 /*
@@ -301,7 +312,9 @@ void SV_LoadTransition_f(void)
 
 	qbLoadTransition = qtrue;
 
-//	SCR_PrecacheScreenshot();
+#ifdef JK2_MODE
+	SCR_PrecacheScreenshot();
+#endif
 	SV_Player_EndOfLevelSave();
 
 	//Save the full current state of the current map so we can return to it later
@@ -309,7 +322,7 @@ void SV_LoadTransition_f(void)
 
 	//set the spawntarget if there is one
 	spawntarget = Cmd_Argv(2);
-	if ( *spawntarget != '\0' ) 
+	if ( *spawntarget != '\0' )
 	{
 		Cvar_Set( "spawntarget", spawntarget );
 	}

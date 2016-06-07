@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //
 // NPC.cpp - generic functions
 //
@@ -228,51 +250,7 @@ int BodyRemovalPadTime( gentity_t *ent )
 
 	if ( !ent || !ent->client )
 		return 0;
-/*
-	switch ( ent->client->playerTeam )
-	{
-	case NPCTEAM_KLINGON:	// no effect, we just remove them when the player isn't looking
-	case NPCTEAM_SCAVENGERS:
-	case NPCTEAM_HIROGEN:
-	case NPCTEAM_MALON:
-	case NPCTEAM_IMPERIAL:
-	case NPCTEAM_STARFLEET:
-		time = 10000; // 15 secs.
-		break;
 
-	case NPCTEAM_BORG:
-		time = 2000;
-		break;
-
-	case NPCTEAM_STASIS:
-		return qtrue;
-		break;
-
-	case NPCTEAM_FORGE:
-		time = 1000;
-		break;
-
-	case NPCTEAM_BOTS:
-//		if (!Q_stricmp( ent->NPC_type, "mouse" ))
-//		{
-			time = 0;
-//		}
-//		else
-//		{
-//			time = 10000;
-//		}
-		break;
-
-	case NPCTEAM_8472:
-		time = 2000;
-		break;
-
-	default:
-		// never go away
-		time = Q3_INFINITE;
-		break;
-	}
-*/
 	// team no longer indicates species/race, so in this case we'd use NPC_class, but
 	switch( ent->client->NPC_class )
 	{
@@ -319,26 +297,6 @@ static void NPC_RemoveBodyEffect(void)
 
 	if ( !NPCS.NPC || !NPCS.NPC->client || (NPCS.NPC->s.eFlags & EF_NODRAW) )
 		return;
-/*
-	switch(NPC->client->playerTeam)
-	{
-	case NPCTEAM_STARFLEET:
-		//FIXME: Starfleet beam out
-		break;
-
-	case NPCTEAM_BOTS:
-//		VectorCopy( NPC->r.currentOrigin, org );
-//		org[2] -= 16;
-//		tent = G_TempEntity( org, EV_BOT_EXPLODE );
-//		tent->owner = NPC;
-
-		break;
-
-	default:
-		break;
-	}
-*/
-
 
 	// team no longer indicates species/race, so in this case we'd use NPC_class, but
 
@@ -1709,13 +1667,10 @@ void NPC_ExecuteBState ( gentity_t *self)//, int msec )
 	}
 	else if ( !NPCS.NPC->enemy )//HACK!
 	{
-//		if(client->ps.weapon != WP_TRICORDER)
-		{
-			if( NPCS.NPC->s.torsoAnim == TORSO_WEAPONREADY1 || NPCS.NPC->s.torsoAnim == TORSO_WEAPONREADY3 )
-			{//we look ready for action, using one of the first 2 weapon, let's rest our weapon on our shoulder
-				NPC_SetAnim(NPCS.NPC,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
-			}
-		}
+        if( NPCS.NPC->s.torsoAnim == TORSO_WEAPONREADY1 || NPCS.NPC->s.torsoAnim == TORSO_WEAPONREADY3 )
+        {//we look ready for action, using one of the first 2 weapon, let's rest our weapon on our shoulder
+            NPC_SetAnim(NPCS.NPC,SETANIM_TORSO,TORSO_WEAPONIDLE3,SETANIM_FLAG_NORMAL);
+        }
 	}
 
 	NPC_CheckAttackHold();

@@ -1,5 +1,25 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 #include "g_local.h"
 
@@ -98,12 +118,10 @@ typedef enum {
 
 typedef struct field_s {
 	const char	*name;
-	int		ofs;
+	size_t		ofs;
 	fieldtype_t	type;
 } field_t;
 
-/* This array MUST be sorted correctly by alphabetical name field */
-/* for conformity, use lower-case names too */
 field_t fields[] = {
 	{ "alliedteam",				FOFS( alliedTeam ),						F_INT },//for misc_turrets
 	{ "angerscript",			FOFS( behaviorSet[BSET_ANGER] ),		F_STRING },//name of script to run
@@ -202,25 +220,6 @@ field_t fields[] = {
 	{ "wait",					FOFS( wait ),							F_FLOAT },
 	{ "zykmodelscale",			FOFS( s.iModelScale ),					F_INT }, // zyk: added this field
 };
-
-static int sortfield( const void *a, const void *b ) {
-	return Q_stricmp( ((field_t*)a)->name, ((field_t*)b)->name );
-}
-
-void G_CheckFields( void ) {
-	field_t sorted[ARRAY_LEN(fields)];
-	int i;
-
-	for ( i = 0 ; i < ARRAY_LEN(fields) ; i++ ) {
-		sorted[i] = fields[i];
-	}
-
-	qsort( sorted, ARRAY_LEN(sorted), sizeof( sorted[0] ), sortfield );
-
-	for ( i = 0; i < ARRAY_LEN(fields) ; i++ ) {
-		trap->Print("%s%s %s\n", Q_stricmp(fields[i].name, sorted[i].name) != 0 ? "*" : "", fields[i].name, sorted[i].name);
-	}
-}
 
 typedef struct spawn_s {
 	const char	*name;
@@ -376,7 +375,7 @@ void SP_NPC_Jedi( gentity_t *self );
 void SP_NPC_Prisoner( gentity_t *self );
 void SP_NPC_Merchant( gentity_t *self ); // zyk: added this function
 void SP_NPC_Rebel( gentity_t *self );
-void SP_NPC_Human_Merc( gentity_t *self ); // zyk: added this function
+void SP_NPC_Human_Merc( gentity_t *self );
 void SP_NPC_Stormtrooper( gentity_t *self );
 void SP_NPC_StormtrooperOfficer( gentity_t *self );
 void SP_NPC_Snowtrooper( gentity_t *self);
@@ -442,6 +441,7 @@ void SP_waypoint_navgoal_4 (gentity_t *ent);
 void SP_waypoint_navgoal_2 (gentity_t *ent);
 void SP_waypoint_navgoal_1 (gentity_t *ent);
 
+void SP_CreateWind( gentity_t *ent );
 void SP_CreateSpaceDust( gentity_t *ent );
 void SP_CreateSnow( gentity_t *ent );
 void SP_CreateRain( gentity_t *ent );
@@ -527,8 +527,6 @@ void SP_gametype_item ( gentity_t* ent )
 
 void SP_emplaced_gun( gentity_t *ent );
 
-/* This array MUST be sorted correctly by alphabetical name field */
-/* for conformity, use lower-case names too */
 spawn_t	spawns[] = {
 	{ "emplaced_gun",						SP_emplaced_gun },
 	{ "func_bobbing",						SP_func_bobbing },
@@ -549,6 +547,7 @@ spawn_t	spawns[] = {
 	{ "fx_runner",							SP_fx_runner },
 	{ "fx_snow",							SP_CreateSnow },
 	{ "fx_spacedust",						SP_CreateSpaceDust },
+	{ "fx_wind",							SP_CreateWind },
 	{ "gametype_item",						SP_gametype_item },
 	{ "info_camp",							SP_info_camp },
 	{ "info_jedimaster_start",				SP_info_jedimaster_start },
@@ -631,7 +630,7 @@ spawn_t	spawns[] = {
 	{ "npc_galak",							SP_NPC_Galak },
 	{ "npc_gran",							SP_NPC_Gran },
 	{ "npc_hazardtrooper",					SP_NPC_HazardTrooper }, // zyk: added this function
-	{ "npc_human_merc",						SP_NPC_Human_Merc }, // zyk: added this function
+	{ "npc_human_merc",						SP_NPC_Human_Merc },
 	{ "npc_imperial",						SP_NPC_Imperial },
 	{ "npc_impworker",						SP_NPC_ImpWorker },
 	{ "npc_jan",							SP_NPC_Jan },
@@ -742,25 +741,6 @@ spawn_t	spawns[] = {
 	{ "zyk_weather",						SP_CreateWeather }, // zyk: added this code
 };
 
-static int sortspawn( const void *a, const void *b ) {
-	return Q_stricmp( ((spawn_t*)a)->name, ((spawn_t*)b)->name );
-}
-
-void G_CheckSpawns( void ) {
-	spawn_t sorted[ARRAY_LEN(spawns)];
-	int i;
-
-	for ( i = 0 ; i < ARRAY_LEN(spawns) ; i++ ) {
-		sorted[i] = spawns[i];
-	}
-
-	qsort( sorted, ARRAY_LEN(sorted), sizeof( sorted[0] ), sortspawn );
-
-	for ( i = 0; i < ARRAY_LEN(spawns) ; i++ ) {
-		trap->Print("%s%s %s\n", Q_stricmp(spawns[i].name, sorted[i].name) != 0 ? "*" : "", sorted[i].name, spawns[i].name, sorted[i].name);
-	}
-}
-
 /*
 ===============
 G_CallSpawn
@@ -792,7 +772,7 @@ qboolean G_CallSpawn( gentity_t *ent ) {
 	}
 
 	// check normal spawn functions
-	s = (spawn_t *)bsearch( ent->classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
+	s = (spawn_t *)Q_LinearSearch( ent->classname, spawns, ARRAY_LEN( spawns ), sizeof( spawn_t ), spawncmp );
 	if ( s )
 	{// found it
 		if ( VALIDSTRING( ent->healingsound ) )
@@ -892,7 +872,7 @@ void G_ParseField( const char *key, const char *value, gentity_t *ent )
 	float	v;
 	vec3_t	vec;
 
-	f = (field_t *)bsearch( key, fields, ARRAY_LEN( fields ), sizeof( field_t ), fieldcmp );
+	f = (field_t *)Q_LinearSearch( key, fields, ARRAY_LEN( fields ), sizeof( field_t ), fieldcmp );
 	if ( f )
 	{// found it
 		b = (byte *)ent;
@@ -1587,9 +1567,9 @@ void SP_worldspawn( void )
 
 	G_SpawnString( "gravity", "800", &text );
 	trap->Cvar_Set( "g_gravity", text );
+	trap->Cvar_Update( &g_gravity );
 
 	G_SpawnString( "enableBreath", "0", &text );
-	trap->Cvar_Set( "g_enableBreath", text );
 
 	G_SpawnString( "soundSet", "default", &text );
 	trap->SetConfigstring( CS_GLOBAL_AMBIENT_SET, text );
@@ -1606,6 +1586,7 @@ void SP_worldspawn( void )
 	trap->SetConfigstring( CS_WARMUP, "" );
 	if ( g_restarted.integer ) {
 		trap->Cvar_Set( "g_restarted", "0" );
+		trap->Cvar_Update( &g_restarted );
 		level.warmupTime = 0;
 	}
 	else if ( g_doWarmup.integer && level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL && level.gametype != GT_SIEGE ) { // Turn it on
@@ -1675,7 +1656,7 @@ void G_PrecacheSoundsets( void )
 void G_LinkLocations( void ) {
 	int i, n;
 
-	if ( level.locations.linked ) 
+	if ( level.locations.linked )
 		return;
 
 	level.locations.linked = qtrue;

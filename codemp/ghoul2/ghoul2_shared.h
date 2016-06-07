@@ -1,20 +1,29 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
-/*
-Ghoul2 Insert Start
-*/
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
-using namespace std;
-/*
-Ghoul2 Insert End
-*/
 
 #define MDXABONEDEF
 #include "rd-common/mdx_format.h"
@@ -221,10 +230,10 @@ struct SSkinGoreData
 
 #define MAX_GHOUL_COUNT_BITS 8 // bits required to send across the MAX_G2_MODELS inside of the networking - this is the only restriction on ghoul models possible per entity
 
-typedef vector <surfaceInfo_t> surfaceInfo_v;
-typedef vector <boneInfo_t> boneInfo_v;
-typedef vector <boltInfo_t> boltInfo_v;
-typedef vector <pair<int,mdxaBone_t> > mdxaBone_v;
+typedef std::vector <surfaceInfo_t> surfaceInfo_v;
+typedef std::vector <boneInfo_t> boneInfo_v;
+typedef std::vector <boltInfo_t> boltInfo_v;
+typedef std::vector <std::pair<int,mdxaBone_t> > mdxaBone_v;
 
 // defines for stuff to go into the mflags
 #define		GHOUL2_NOCOLLIDE 0x001

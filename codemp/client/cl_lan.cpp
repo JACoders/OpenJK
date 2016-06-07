@@ -1,3 +1,26 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "client.h"
 
 // This is for compatibility of old servercache only
@@ -127,6 +150,32 @@ int LAN_AddServer(int source, const char *name, const char *address) {
 		}
 		return 0;
 	}
+	return -1;
+}
+
+int LAN_AddFavAddr( const char *address ) {
+	if ( cls.numfavoriteservers < MAX_OTHER_SERVERS ) {
+		netadr_t adr;
+		if ( !NET_StringToAdr( address, &adr ) ) {
+			return 2;
+		}
+		if ( adr.type == NA_BAD ) {
+			return 3;
+		}
+
+		for ( int i = 0; i < cls.numfavoriteservers; i++ ) {
+			if ( NET_CompareAdr( cls.favoriteServers[i].adr, adr ) ) {
+				return 0;
+			}
+		}
+		cls.favoriteServers[cls.numfavoriteservers].adr = adr;
+		Q_strncpyz( cls.favoriteServers[cls.numfavoriteservers].hostName, address,
+			sizeof(cls.favoriteServers[cls.numfavoriteservers].hostName) );
+		cls.favoriteServers[cls.numfavoriteservers].visible = qtrue;
+		cls.numfavoriteservers++;
+		return 1;
+	}
+
 	return -1;
 }
 

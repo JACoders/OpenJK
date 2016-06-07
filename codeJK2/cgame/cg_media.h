@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __CG_MEDIA_H_
 #define __CG_MEDIA_H_
@@ -51,7 +56,7 @@ extern forceTicPos_t ammoTicPos[];
 
 #define NUM_CHUNK_MODELS	4
 
-enum 
+enum
 {
 	CHUNK_METAL1 = 0,
 	CHUNK_METAL2,
@@ -228,7 +233,6 @@ typedef struct {
 	// sounds
 	sfxHandle_t disintegrateSound;
 	sfxHandle_t disintegrate2Sound;
-	sfxHandle_t disintegrate3Sound;
 
 	sfxHandle_t	grenadeBounce1;
 	sfxHandle_t	grenadeBounce2;
@@ -236,7 +240,7 @@ typedef struct {
 	sfxHandle_t	flechetteStickSound;
 	sfxHandle_t	detPackStickSound;
 	sfxHandle_t	tripMineStickSound;
-	
+
 	sfxHandle_t	selectSound;
 	sfxHandle_t	selectSound2;
 	sfxHandle_t	overchargeSlowSound;
@@ -249,7 +253,7 @@ typedef struct {
 
 	sfxHandle_t talkSound;
 	sfxHandle_t	noAmmoSound;
-	
+
 	sfxHandle_t landSound;
 	sfxHandle_t rollSound;
 	sfxHandle_t messageLitSound;
@@ -257,7 +261,7 @@ typedef struct {
 	sfxHandle_t interfaceSnd1;
 	sfxHandle_t interfaceSnd2;
 	sfxHandle_t interfaceSnd3;
-	
+
 	sfxHandle_t	batteryChargeSound;
 
 	sfxHandle_t watrInSound;
@@ -269,7 +273,7 @@ typedef struct {
 	sfxHandle_t	zoomLoop;
 	sfxHandle_t	zoomEnd;
 	sfxHandle_t	disruptorZoomLoop;
-	
+
 	//blaster reflection sounds
 	sfxHandle_t blasterReflectSound[3];
 
@@ -326,7 +330,7 @@ typedef struct {
 	glconfig_t		glconfig;			// rendering configuration
 
 	int				serverCommandSequence;	// reliable command stream counter
-	
+
 	// parsed from serverinfo
 	int				dmflags;
 	int				teamflags;

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -32,7 +36,7 @@ This file is part of Jedi Academy.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -223,7 +227,7 @@ public:
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	void		truncate_position_to_bounds(float& xReal, float& yReal)
 	{
@@ -246,7 +250,7 @@ public:
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	void		get_cell_position(int x, int y, float& xReal, float& yReal)
 	{
@@ -287,7 +291,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 private:
 	array_vs<T, XSIZE_MAX*YSIZE_MAX>	mData;
-	
+
 	int							mSize[2];
 	float						mMins[2];
 	float						mMaxs[2];
@@ -384,7 +388,7 @@ public:
 
 		int x = (int)( (xReal-mMins[0]) / mScale[0] );
 		int y = (int)( (yReal-mMins[1]) / mScale[1] );
-		
+
 		return begin(x,y);
 	}
 
@@ -412,9 +416,9 @@ public:
 
 		// Constructors
 		//--------------
-		riterator()	
+		riterator()
 		{}
-		riterator(grid2_vs* p, int Range, int SX, int SY)	: 	
+		riterator(grid2_vs* p, int Range, int SX, int SY)	:
 			mOwner(p)
 		{
 			int		Start[2] = {SX, SY};
@@ -453,25 +457,25 @@ public:
 
 		// Equality & Inequality Operators
 		//---------------------------------
-		bool		operator!=(const riterator &t)		
+		bool		operator!=(const riterator &t)
 		{
 			return (mLoc[0]!=t.mLoc[0] || mLoc[1]!=t.mLoc[1]);
 		}
-		bool		operator==(const riterator &t)		
+		bool		operator==(const riterator &t)
 		{
 			return (mLoc[0]==t.mLoc[0] && mLoc[1]==t.mLoc[1]);
 		}
 
 		// Dereference Operator
 		//----------------------
-		T&			operator* ()						
+		T&			operator* ()
 		{
 			return (mOwner->get(mLoc[0], mLoc[1]));
 		}
 
 		// Inc Operator
 		//--------------
-		void		operator++(int)										
+		void		operator++(int)
 		{
 			if (mLoc[1] <= mMaxs[1])
 			{
@@ -522,7 +526,7 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	riterator	rangeBegin(int range, float xReal, float yReal)
 	{

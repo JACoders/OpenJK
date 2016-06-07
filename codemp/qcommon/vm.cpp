@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -63,10 +87,10 @@ intptr_t QDECL VM_DllSyscall( intptr_t arg, ... ) {
 
 	args[0] = arg;
 
-	va_start(ap, arg);
+	va_start( ap, arg );
 	for (size_t i = 1; i < ARRAY_LEN (args); i++)
-		args[i] = va_arg(ap, intptr_t);
-	va_end(ap);
+		args[i] = va_arg( ap, intptr_t );
+	va_end( ap );
 
 	return currentVM->legacy.syscall( args );
 #else // original id code
@@ -111,9 +135,9 @@ vm_t *VM_CreateLegacy( vmSlots_t vmSlot, intptr_t( *systemCalls )(intptr_t *) ) 
 
 	// find the legacy syscall api
 	FS_FindPureDLL( vm->name );
-	Com_Printf( "VM_CreateLegacy: %s"ARCH_STRING DLL_EXT, vm->name );
 	vm->dllHandle = Sys_LoadLegacyGameDll( vm->name, &vm->legacy.main, VM_DllSyscall );
 
+	Com_Printf( "VM_CreateLegacy: %s" ARCH_STRING DLL_EXT, vm->name );
 	if ( vm->dllHandle ) {
 		if ( com_developer->integer )
 			Com_Printf( " succeeded [0x%" PRIxPTR "]\n", (uintptr_t)vm->dllHandle );
@@ -152,7 +176,7 @@ vm_t *VM_Create( vmSlots_t vmSlot ) {
 	FS_FindPureDLL( vm->name );
 	vm->dllHandle = Sys_LoadGameDll( vm->name, &vm->GetModuleAPI );
 
-	Com_Printf( "VM_Create: %s"ARCH_STRING DLL_EXT, vm->name );
+	Com_Printf( "VM_Create: %s" ARCH_STRING DLL_EXT, vm->name );
 	if ( vm->dllHandle ) {
 		if ( com_developer->integer )
 			Com_Printf( " succeeded [0x%" PRIxPTR "+0x%" PRIxPTR "]\n", vm->dllHandle, (intptr_t)vm->GetModuleAPI - (intptr_t)vm->dllHandle );
@@ -257,9 +281,7 @@ float _vmf( intptr_t x ) {
 	return fi.f;
 }
 
-intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
-	intptr_t args[16] = { 0 };
-
+intptr_t QDECL VM_Call( vm_t *vm, int callnum, intptr_t arg0, intptr_t arg1, intptr_t arg2, intptr_t arg3, intptr_t arg4, intptr_t arg5, intptr_t arg6, intptr_t arg7, intptr_t arg8, intptr_t arg9, intptr_t arg10, intptr_t arg11 ) {
 	if ( !vm || !vm->name[0] ) {
 		Com_Error( ERR_FATAL, "VM_Call with NULL vm" );
 		return 0;
@@ -267,13 +289,6 @@ intptr_t QDECL VM_Call( vm_t *vm, int callnum, ... ) {
 
 	VMSwap v( vm );
 
-	//rcg010207 -  see dissertation at top of VM_DllSyscall() in this file.
-	va_list ap;
-	va_start( ap, callnum );
-	for ( size_t i = 0; i < ARRAY_LEN( args ); i++ )
-		args[i] = va_arg( ap, intptr_t );
-	va_end( ap );
-
-	return vm->legacy.main( callnum, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8],
-		args[9], args[10], args[11], args[12], args[13], args[14], args[15] );
+	return vm->legacy.main( callnum, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8,
+		arg9, arg10, arg11 );
 }

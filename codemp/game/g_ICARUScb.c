@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 //====================================================================================
 //
 //rww - ICARUS callback file, all that can be handled within vm's is handled in here.
@@ -2592,7 +2614,7 @@ static qboolean Q3_SetBState( int entID, const char *bs_name )
 	}
 
 	bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
-	if ( bSID != -1 )
+	if ( bSID != (bState_t)-1 )
 	{
 		if ( bSID == BS_SEARCH || bSID == BS_WANDER )
 		{
@@ -2718,7 +2740,7 @@ static qboolean Q3_SetTempBState( int entID, const char *bs_name )
 	}
 
 	bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
-	if ( bSID != -1 )
+	if ( bSID != (bState_t)-1 )
 	{
 		ent->NPC->tempBehavior = bSID;
 	}
@@ -2768,7 +2790,7 @@ static void Q3_SetDefaultBState( int entID, const char *bs_name )
 	}
 
 	bSID = (bState_t)(GetIDForString( BSTable, bs_name ));
-	if ( bSID != -1 )
+	if ( bSID != (bState_t)-1 )
 	{
 		ent->NPC->defaultBehavior = bSID;
 	}

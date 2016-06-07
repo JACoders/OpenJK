@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef TEAMS_H
 #define TEAMS_H
@@ -33,15 +38,15 @@ typedef enum //# team_e
 extern stringID_table_t TeamTable[];
 
 // This list is made up from the model directories, this MUST be in the same order as the ClassNames array in NPC_stats.cpp
-typedef enum 
+typedef enum
 {
 	CLASS_NONE,				// hopefully this will never be used by an npc, just covering all bases
 	CLASS_ATST,				// technically droid...
 	CLASS_BARTENDER,
-	CLASS_BESPIN_COP,		
+	CLASS_BESPIN_COP,
 	CLASS_CLAW,
 	CLASS_COMMANDO,
-	CLASS_DESANN,			
+	CLASS_DESANN,
 	CLASS_FISH,
 	CLASS_FLIER2,
 	CLASS_GALAK,
@@ -54,18 +59,18 @@ typedef enum
 	CLASS_WAMPA,
 	CLASS_IMPERIAL,
 	CLASS_IMPWORKER,
-	CLASS_INTERROGATOR,		// droid 
-	CLASS_JAN,				
-	CLASS_JEDI,				
+	CLASS_INTERROGATOR,		// droid
+	CLASS_JAN,
+	CLASS_JEDI,
 	CLASS_KYLE,
-	CLASS_LANDO,			
+	CLASS_LANDO,
 	CLASS_LIZARD,
-	CLASS_LUKE,				
+	CLASS_LUKE,
 	CLASS_MARK1,			// droid
 	CLASS_MARK2,			// droid
 	CLASS_GALAKMECH,		// droid
 	CLASS_MINEMONSTER,
-	CLASS_MONMOTHA,			
+	CLASS_MONMOTHA,
 	CLASS_MORGANKATARN,
 	CLASS_MOUSE,			// droid
 	CLASS_MURJJ,

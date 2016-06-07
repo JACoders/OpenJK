@@ -1,3 +1,27 @@
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "client.h"
 #include "cl_cgameapi.h"
 #include "cl_uiapi.h"
@@ -467,19 +491,19 @@ Field_Paste
 ================
 */
 void Field_Paste( field_t *edit ) {
-	char	*cbd;
-	int		pasteLen, i;
+	char	*cbd, *c;
 
-	cbd = Sys_GetClipboardData();
+	c = cbd = Sys_GetClipboardData();
 
 	if ( !cbd ) {
 		return;
 	}
 
 	// send as if typed, so insert / overstrike works properly
-	pasteLen = strlen( cbd );
-	for ( i = 0 ; i < pasteLen ; i++ ) {
-		Field_CharEvent( edit, cbd[i] );
+	while( *c )
+	{
+		uint32_t utf32 = ConvertUTF8ToUTF32( c, &c );
+		Field_CharEvent( edit, ConvertUTF32ToExpectedCharset( utf32 ) );
 	}
 
 	Z_Free( cbd );
@@ -1061,7 +1085,7 @@ void Key_Bind_f( void ) {
 
 	if ( c == 2 ) {
 		if ( kg.keys[b].binding && kg.keys[b].binding[0] )
-			Com_Printf( S_COLOR_GREY"Bind "S_COLOR_WHITE"%s = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToString( b ), kg.keys[b].binding );
+			Com_Printf( S_COLOR_GREY "Bind " S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToString( b ), kg.keys[b].binding );
 		else
 			Com_Printf( "\"%s\" is not bound\n", Key_KeynumToString( b ) );
 		return;
@@ -1101,7 +1125,7 @@ Key_Bindlist_f
 void Key_Bindlist_f( void ) {
 	for ( size_t i=0; i<MAX_KEYS; i++ ) {
 		if ( kg.keys[i].binding && kg.keys[i].binding[0] )
-			Com_Printf( S_COLOR_GREY"Key "S_COLOR_WHITE"%s (%s) = "S_COLOR_GREY"\""S_COLOR_WHITE"%s"S_COLOR_GREY"\""S_COLOR_WHITE"\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
+			Com_Printf( S_COLOR_GREY "Key " S_COLOR_WHITE "%s (%s) = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n", Key_KeynumToAscii( i ), Key_KeynumToString( i ), kg.keys[i].binding );
 	}
 }
 
@@ -1162,12 +1186,12 @@ CL_InitKeyCommands
 */
 void CL_InitKeyCommands( void ) {
 	// register our functions
-	Cmd_AddCommand( "bind", Key_Bind_f );
+	Cmd_AddCommand( "bind", Key_Bind_f, "Bind a key to a console command" );
 	Cmd_SetCommandCompletionFunc( "bind", Key_CompleteBind );
-	Cmd_AddCommand( "unbind", Key_Unbind_f );
+	Cmd_AddCommand( "unbind", Key_Unbind_f, "Unbind a key" );
 	Cmd_SetCommandCompletionFunc( "unbind", Key_CompleteUnbind );
-	Cmd_AddCommand( "unbindall", Key_Unbindall_f );
-	Cmd_AddCommand( "bindlist", Key_Bindlist_f );
+	Cmd_AddCommand( "unbindall", Key_Unbindall_f, "Delete all key bindings" );
+	Cmd_AddCommand( "bindlist", Key_Bindlist_f, "Show all bindings in the console" );
 }
 
 /*
@@ -1283,12 +1307,11 @@ void CL_KeyDownEvent( int key, unsigned time )
 		kg.anykeydown = qtrue;
 	}
 
-	/*if( kg.keys[A_ALT].down && key == A_ENTER )
+	if ( cl_allowAltEnter->integer && kg.keys[A_ALT].down && key == A_ENTER )
 	{
-		Cvar_SetValue( "r_fullscreen",
-			!Cvar_VariableIntegerValue( "r_fullscreen" ) );
+		Cvar_SetValue( "r_fullscreen", !Cvar_VariableIntegerValue( "r_fullscreen" ) );
 		return;
-	}*/
+	}
 
 	// console key is hardcoded, so the user can never unbind it
 	if ( key == A_CONSOLE || (kg.keys[A_SHIFT].down && key == A_ESCAPE) ) {
@@ -1424,10 +1447,6 @@ Normal keyboard characters, already shifted / capslocked / etc
 ===================
 */
 void CL_CharEvent( int key ) {
-	// the console key should never be used as a char
-	if ( key == '`' || key == '~' )
-		return;
-
 	// delete is not a printable character and is otherwise handled by Field_KeyDownEvent
 	if ( key == 127 )
 		return;

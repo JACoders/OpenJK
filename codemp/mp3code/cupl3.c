@@ -59,6 +59,10 @@ TO DO: Test mixed blocks (mixed long/short)
 
 #include "mp3struct.h"
 
+#if !defined(min)
+#	define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
 /*====================================================================*/
 static const int mp_sr20_table[2][4] =
 {{441, 480, 320, -999}, {882, 960, 640, -999}};

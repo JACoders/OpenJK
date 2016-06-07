@@ -1,5 +1,6 @@
 // win_local.h: Win32-specific Quake3 header file
 #pragma once
+#error Deprecated file
 
 #include "qcommon/qcommon.h"
 

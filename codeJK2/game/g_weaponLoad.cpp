@@ -1,25 +1,27 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// g_weaponLoad.cpp 
+// g_weaponLoad.cpp
 // fills in memory struct with ext_dat\weapons.dat
-
-// this is excluded from PCH usage 'cos it looks kinda scary to me, being game and ui.... -Ste
 
 #include "g_local.h"
 
@@ -92,7 +94,7 @@ func_t	funcs[] = {
 };
 
 //qboolean COM_ParseInt( char **data, int *i );
-//qboolean COM_ParseString( char **data, char **s ); 
+//qboolean COM_ParseString( char **data, char **s );
 //qboolean COM_ParseFloat( char **data, float *f );
 
 struct wpnParms_s
@@ -150,7 +152,7 @@ void WPN_AltSplashRadius(const char **holdBuf);
 // Legacy weapons.dat force fields
 void WPN_FuncSkip(const char **holdBuf);
 
-typedef struct 
+typedef struct
 {
 	const char	*parmName;
 	void	(*func)(const char **holdBuf);
@@ -313,7 +315,7 @@ const float defaultAltSplashRadius[] = {
 	0							// WP_BLASTER_PISTOL
 };
 
-wpnParms_t WpnParms[] = 
+wpnParms_t WpnParms[] =
 {
 	{ "ammo",				WPN_Ammo },	//ammo
 	{ "ammoicon",			WPN_AmmoIcon },
@@ -378,45 +380,45 @@ void WPN_WeaponType( const char **holdBuf)
 	int weaponNum;
 	const char	*tokenStr;
 
-	if (COM_ParseString(holdBuf,&tokenStr)) 
+	if (COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
 
 	// FIXME : put this in an array (maybe a weaponDataInternal array???)
-	if (!Q_stricmp(tokenStr,"WP_NONE"))	
+	if (!Q_stricmp(tokenStr,"WP_NONE"))
 		weaponNum = WP_NONE;
-	else if (!Q_stricmp(tokenStr,"WP_SABER"))	
+	else if (!Q_stricmp(tokenStr,"WP_SABER"))
 		weaponNum = WP_SABER;
-	else if (!Q_stricmp(tokenStr,"WP_BRYAR_PISTOL"))	
+	else if (!Q_stricmp(tokenStr,"WP_BRYAR_PISTOL"))
 		weaponNum = WP_BRYAR_PISTOL;
-	else if (!Q_stricmp(tokenStr,"WP_BLASTER"))	
+	else if (!Q_stricmp(tokenStr,"WP_BLASTER"))
 		weaponNum = WP_BLASTER;
-	else if (!Q_stricmp(tokenStr,"WP_DISRUPTOR"))	
+	else if (!Q_stricmp(tokenStr,"WP_DISRUPTOR"))
 		weaponNum = WP_DISRUPTOR;
-	else if (!Q_stricmp(tokenStr,"WP_BOWCASTER"))	
+	else if (!Q_stricmp(tokenStr,"WP_BOWCASTER"))
 		weaponNum = WP_BOWCASTER;
-	else if (!Q_stricmp(tokenStr,"WP_REPEATER"))	
+	else if (!Q_stricmp(tokenStr,"WP_REPEATER"))
 		weaponNum = WP_REPEATER;
-	else if (!Q_stricmp(tokenStr,"WP_DEMP2"))	
+	else if (!Q_stricmp(tokenStr,"WP_DEMP2"))
 		weaponNum = WP_DEMP2;
-	else if (!Q_stricmp(tokenStr,"WP_FLECHETTE"))	
+	else if (!Q_stricmp(tokenStr,"WP_FLECHETTE"))
 		weaponNum = WP_FLECHETTE;
-	else if (!Q_stricmp(tokenStr,"WP_ROCKET_LAUNCHER"))	
+	else if (!Q_stricmp(tokenStr,"WP_ROCKET_LAUNCHER"))
 		weaponNum = WP_ROCKET_LAUNCHER;
-	else if (!Q_stricmp(tokenStr,"WP_THERMAL"))	
+	else if (!Q_stricmp(tokenStr,"WP_THERMAL"))
 		weaponNum = WP_THERMAL;
-	else if (!Q_stricmp(tokenStr,"WP_TRIP_MINE"))	
+	else if (!Q_stricmp(tokenStr,"WP_TRIP_MINE"))
 		weaponNum = WP_TRIP_MINE;
-	else if (!Q_stricmp(tokenStr,"WP_DET_PACK"))	
+	else if (!Q_stricmp(tokenStr,"WP_DET_PACK"))
 		weaponNum = WP_DET_PACK;
-	else if (!Q_stricmp(tokenStr,"WP_STUN_BATON"))	
+	else if (!Q_stricmp(tokenStr,"WP_STUN_BATON"))
 		weaponNum = WP_STUN_BATON;
-	else if (!Q_stricmp(tokenStr,"WP_BOT_LASER"))	
+	else if (!Q_stricmp(tokenStr,"WP_BOT_LASER"))
 		weaponNum = WP_BOT_LASER;
-	else if (!Q_stricmp(tokenStr,"WP_EMPLACED_GUN"))	
+	else if (!Q_stricmp(tokenStr,"WP_EMPLACED_GUN"))
 		weaponNum = WP_EMPLACED_GUN;
-	else if (!Q_stricmp(tokenStr,"WP_MELEE"))	
+	else if (!Q_stricmp(tokenStr,"WP_MELEE"))
 		weaponNum = WP_MELEE;
 	else if (!Q_stricmp(tokenStr,"WP_TURRET"))
 		weaponNum = WP_TURRET;
@@ -445,7 +447,7 @@ void WPN_WeaponClass(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if (COM_ParseString(holdBuf,&tokenStr)) 
+	if (COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -468,7 +470,7 @@ void WPN_WeaponModel(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -490,7 +492,7 @@ void WPN_WeaponIcon(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -511,7 +513,7 @@ void WPN_AmmoType(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -531,7 +533,7 @@ void WPN_AmmoLowCnt(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -552,7 +554,7 @@ void WPN_FiringSnd(const char **holdBuf)
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -574,7 +576,7 @@ void WPN_AltFiringSnd( const char **holdBuf )
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -596,7 +598,7 @@ void WPN_StopSnd( const char **holdBuf )
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -618,7 +620,7 @@ void WPN_ChargeSnd(const char **holdBuf)
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -640,7 +642,7 @@ void WPN_AltChargeSnd(const char **holdBuf)
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -662,7 +664,7 @@ void WPN_SelectSnd( const char **holdBuf )
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString( holdBuf,&tokenStr )) 
+	if ( COM_ParseString( holdBuf,&tokenStr ))
 	{
 		return;
 	}
@@ -684,7 +686,7 @@ void WPN_FireTime(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -703,7 +705,7 @@ void WPN_Range(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -723,7 +725,7 @@ void WPN_EnergyPerShot(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -742,7 +744,7 @@ void WPN_AltFireTime(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -761,7 +763,7 @@ void WPN_AltRange(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -781,7 +783,7 @@ void WPN_AltEnergyPerShot(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
@@ -800,30 +802,30 @@ void WPN_Ammo(const char **holdBuf)
 {
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
 
-	if (!Q_stricmp(tokenStr,"AMMO_NONE"))	
+	if (!Q_stricmp(tokenStr,"AMMO_NONE"))
 		wpnParms.ammoNum = AMMO_NONE;
-	else if (!Q_stricmp(tokenStr,"AMMO_FORCE"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_FORCE"))
 		wpnParms.ammoNum = AMMO_FORCE;
-	else if (!Q_stricmp(tokenStr,"AMMO_BLASTER"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_BLASTER"))
 		wpnParms.ammoNum = AMMO_BLASTER;
-	else if (!Q_stricmp(tokenStr,"AMMO_POWERCELL"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_POWERCELL"))
 		wpnParms.ammoNum = AMMO_POWERCELL;
-	else if (!Q_stricmp(tokenStr,"AMMO_METAL_BOLTS"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_METAL_BOLTS"))
 		wpnParms.ammoNum = AMMO_METAL_BOLTS;
-	else if (!Q_stricmp(tokenStr,"AMMO_ROCKETS"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_ROCKETS"))
 		wpnParms.ammoNum = AMMO_ROCKETS;
-	else if (!Q_stricmp(tokenStr,"AMMO_EMPLACED"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_EMPLACED"))
 		wpnParms.ammoNum = AMMO_EMPLACED;
-	else if (!Q_stricmp(tokenStr,"AMMO_THERMAL"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_THERMAL"))
 		wpnParms.ammoNum = AMMO_THERMAL;
-	else if (!Q_stricmp(tokenStr,"AMMO_TRIPMINE"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_TRIPMINE"))
 		wpnParms.ammoNum = AMMO_TRIPMINE;
-	else if (!Q_stricmp(tokenStr,"AMMO_DETPACK"))	
+	else if (!Q_stricmp(tokenStr,"AMMO_DETPACK"))
 		wpnParms.ammoNum = AMMO_DETPACK;
 	else
 	{
@@ -838,7 +840,7 @@ void WPN_AmmoIcon(const char **holdBuf)
 	const char	*tokenStr;
 	int		len;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -860,13 +862,13 @@ void WPN_AmmoMax(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	if ((tokenInt < 0) || (tokenInt > 1000 )) 
+	if ((tokenInt < 0) || (tokenInt > 1000 ))
 	{
 		gi.Printf(S_COLOR_YELLOW"WARNING: bad Ammo Max in external weapon data '%d'\n", tokenInt);
 		return;
@@ -879,13 +881,13 @@ void WPN_BarrelCount(const char **holdBuf)
 {
 	int		tokenInt;
 
-	if ( COM_ParseInt(holdBuf,&tokenInt)) 
+	if ( COM_ParseInt(holdBuf,&tokenInt))
 	{
 		SkipRestOfLine(holdBuf);
 		return;
 	}
 
-	if ((tokenInt < 0) || (tokenInt > 4 )) 
+	if ((tokenInt < 0) || (tokenInt > 4 ))
 	{
 		gi.Printf(S_COLOR_YELLOW"WARNING: bad Range in external weapon data '%d'\n", tokenInt);
 		return;
@@ -911,7 +913,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 		// Loop through possible parameters
 		for (i=0;i<numWpnParms;++i)
 		{
-			if (!Q_stricmp(token,WpnParms[i].parmName))	
+			if (!Q_stricmp(token,WpnParms[i].parmName))
 			{
 				WpnParms[i].func(holdBuf);
 				break;
@@ -923,7 +925,7 @@ static void WP_ParseWeaponParms(const char **holdBuf)
 			continue;
 		}
 		Com_Printf("^3WARNING: bad parameter in external weapon data '%s'\n", token); // errors are far too serious for me
-		//Com_Error(ERR_FATAL,"bad parameter in external weapon data '%s'\n", token);		
+		//Com_Error(ERR_FATAL,"bad parameter in external weapon data '%s'\n", token);
 	}
 }
 
@@ -933,7 +935,7 @@ void WPN_MissileName(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -956,7 +958,7 @@ void WPN_AltMissileName(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -980,7 +982,7 @@ void WPN_MissileHitSound(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -1002,7 +1004,7 @@ void WPN_AltMissileHitSound(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -1024,7 +1026,7 @@ void WPN_MissileSound(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -1048,7 +1050,7 @@ void WPN_AltMissileSound(const char **holdBuf)
 	int len;
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
@@ -1073,7 +1075,7 @@ void WPN_MissileLightColor(const char **holdBuf)
 
 	for (i=0;i<3;++i)
 	{
-		if ( COM_ParseFloat(holdBuf,&tokenFlt)) 
+		if ( COM_ParseFloat(holdBuf,&tokenFlt))
 		{
 			SkipRestOfLine(holdBuf);
 			continue;
@@ -1097,7 +1099,7 @@ void WPN_AltMissileLightColor(const char **holdBuf)
 
 	for (i=0;i<3;++i)
 	{
-		if ( COM_ParseFloat(holdBuf,&tokenFlt)) 
+		if ( COM_ParseFloat(holdBuf,&tokenFlt))
 		{
 			SkipRestOfLine(holdBuf);
 			continue;
@@ -1119,7 +1121,7 @@ void WPN_MissileLight(const char **holdBuf)
 {
 	float	tokenFlt;
 
-	if ( COM_ParseFloat(holdBuf,&tokenFlt)) 
+	if ( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
 		SkipRestOfLine(holdBuf);
 	}
@@ -1136,7 +1138,7 @@ void WPN_AltMissileLight(const char **holdBuf)
 {
 	float	tokenFlt;
 
-	if ( COM_ParseFloat(holdBuf,&tokenFlt)) 
+	if ( COM_ParseFloat(holdBuf,&tokenFlt))
 	{
 		SkipRestOfLine(holdBuf);
 	}
@@ -1154,12 +1156,12 @@ void WPN_FuncName(const char **holdBuf)
 {
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
 
-	int len = strlen(tokenStr);
+	size_t len = strlen(tokenStr);
 
 	len++;
 	if (len > 64)
@@ -1184,12 +1186,12 @@ void WPN_AltFuncName(const char **holdBuf)
 {
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
 
-	int len = strlen(tokenStr);
+	size_t len = strlen(tokenStr);
 	len++;
 	if (len > 64)
 	{
@@ -1212,12 +1214,12 @@ void WPN_MuzzleEffect(const char **holdBuf)
 {
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
 
-	int len = strlen(tokenStr);
+	size_t len = strlen(tokenStr);
 
 	len++;
 	if (len > 64)
@@ -1235,12 +1237,12 @@ void WPN_AltMuzzleEffect(const char **holdBuf)
 {
 	const char	*tokenStr;
 
-	if ( COM_ParseString(holdBuf,&tokenStr)) 
+	if ( COM_ParseString(holdBuf,&tokenStr))
 	{
 		return;
 	}
 
-	int len = strlen(tokenStr);
+	size_t len = strlen(tokenStr);
 
 	len++;
 	if (len > 64)
@@ -1352,15 +1354,15 @@ static void WP_ParseParms(const char *buffer)
 	holdBuf = buffer;
 	COM_BeginParseSession();
 
-	while ( holdBuf ) 
+	while ( holdBuf )
 	{
 		token = COM_ParseExt( &holdBuf, qtrue );
 
-		if ( !Q_stricmp( token, "{" ) ) 
+		if ( !Q_stricmp( token, "{" ) )
 		{
 			WP_ParseWeaponParms(&holdBuf);
 		}
-		 
+
 	}
 
 	COM_EndParseSession(  );
@@ -1371,12 +1373,11 @@ static void WP_ParseParms(const char *buffer)
 void WP_LoadWeaponParms (void)
 {
 	char *buffer;
-	int len;
 
-	len = gi.FS_ReadFile("ext_data/weapons.dat",(void **) &buffer);
+	gi.FS_ReadFile("ext_data/weapons.dat",(void **) &buffer);
 
 	// initialise the data area
-	memset(weaponData, 0, sizeof(weaponData));	
+	memset(weaponData, 0, sizeof(weaponData));
 
 	// put in the default values, because backwards compatibility is awesome!
 	for(int i = 0; i < WP_NUM_WEAPONS; i++)

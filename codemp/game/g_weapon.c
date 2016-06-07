@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // g_weapon.c
 // perform the server side effects of a weapon firing
 
@@ -669,7 +690,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 	int			damage = 0, skip;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
-	vec3_t		muzzle2;
+	//vec3_t		muzzle2;
 	trace_t		tr;
 	gentity_t	*traceEnt, *tent;
 	float		shotRange = 16384.0f; // zyk: default 8192
@@ -680,7 +701,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 
 	damage = zyk_disruptor_alt_damage.integer-30;
 
-	VectorCopy( muzzle, muzzle2 ); // making a backup copy
+	//VectorCopy( muzzle, muzzle2 ); // making a backup copy
 
 	if (ent->client)
 	{
@@ -741,9 +762,18 @@ void WP_DisruptorAltFire( gentity_t *ent )
 			trap->Trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, qfalse, 0, 0 );
 		}
 
-		// fix: shooting ourselves shouldn't be allowed
-		if (tr.entityNum == ent->s.number)
-			break;
+		if ( tr.entityNum == ent->s.number )
+		{
+			// should never happen, but basically we don't want to consider a hit to ourselves?
+			// Get ready for an attempt to trace through another person
+			//VectorCopy( tr.endpos, muzzle2 );
+			VectorCopy( tr.endpos, start );
+			skip = tr.entityNum;
+#ifdef _DEBUG
+			trap->Print( "BAD! Disruptor gun shot somehow traced back and hit the owner!\n" );
+#endif
+			continue;
+		}
 
 		traceEnt = &g_entities[tr.entityNum];
 
@@ -3279,7 +3309,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	int			damage = zyk_concussion_alt_damage.integer, skip, traces = DISRUPTOR_ALT_TRACES;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
-	vec3_t		muzzle2, dir;
+	vec3_t		/*muzzle2,*/ dir;
 	trace_t		tr;
 	gentity_t	*traceEnt, *tent;
 	float		shotRange = 8192.0f;
@@ -3302,7 +3332,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	//FIXME: only if on ground?  So no "rocket jump"?  Or: (see next FIXME)
 	//FIXME: instead, set a forced ucmd backmove instead of this sliding
 
-	VectorCopy( muzzle, muzzle2 ); // making a backup copy
+	//VectorCopy( muzzle, muzzle2 ); // making a backup copy
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );
@@ -3359,7 +3389,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		{
 			// should never happen, but basically we don't want to consider a hit to ourselves?
 			// Get ready for an attempt to trace through another person
-			VectorCopy( tr.endpos, muzzle2 );
+			//VectorCopy( tr.endpos, muzzle2 );
 			VectorCopy( tr.endpos, start );
 			skip = tr.entityNum;
 #ifdef _DEBUG
@@ -3512,7 +3542,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 			}
 		}
 		// Get ready for an attempt to trace through another person
-		VectorCopy( tr.endpos, muzzle2 );
+		//VectorCopy( tr.endpos, muzzle2 );
 		VectorCopy( tr.endpos, start );
 		skip = tr.entityNum;
 		hitDodged = qfalse;

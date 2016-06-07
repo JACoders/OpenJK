@@ -1,22 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every bg_xxxx CPP file
 #include "common_headers.h"
 
 // define GAME_INCLUDE so that g_public.h does not define the
@@ -55,8 +59,8 @@ extern cvar_t	*g_debugMelee;
 
 
 void BG_IK_MoveLimb( CGhoul2Info_v &ghoul2, int boltIndex, char *animBone, char *firstBone, char *secondBone,
-				   int time, entityState_t *ent, int animFileIndex, int basePose, 
-				   vec3_t desiredPos, qboolean *ikInProgress, vec3_t origin, 
+				   int time, entityState_t *ent, int animFileIndex, int basePose,
+				   vec3_t desiredPos, qboolean *ikInProgress, vec3_t origin,
 				   vec3_t angles, vec3_t scale, int blendTime, qboolean forceHalt )
 {
 	mdxaBone_t holdPointMatrix;
@@ -91,7 +95,7 @@ void BG_IK_MoveLimb( CGhoul2Info_v &ghoul2, int boltIndex, char *animBone, char 
 		ikP.pcjOverrides = 0;
 		ikP.radius = 10.0f;
 		VectorCopy( scale, ikP.scale );
-		
+
 		//base pose frames for the limb
 		ikP.startFrame = anim->firstFrame + anim->numFrames;
 		ikP.endFrame = anim->firstFrame + anim->numFrames;
@@ -213,7 +217,7 @@ void BG_IK_MoveLimb( CGhoul2Info_v &ghoul2, int boltIndex, char *animBone, char 
 		gi.G2API_SetBoneIKState( ghoul2, time, "thoracic", IKS_NONE, NULL );
 		gi.G2API_SetBoneIKState( ghoul2, time, secondBone, IKS_NONE, NULL );
 		gi.G2API_SetBoneIKState( ghoul2, time, firstBone, IKS_NONE, NULL );
-		
+
 		//then reset the angles/anims on these PCJs
 		gi.G2API_SetBoneAngles( &ghoul2[0], "lower_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, time );
 		gi.G2API_SetBoneAngles( &ghoul2[0], "upper_lumbar", vec3_origin, BONE_ANGLES_POSTMULT, POSITIVE_X, NEGATIVE_Y, NEGATIVE_Z, NULL, 0, time );
@@ -231,7 +235,7 @@ void BG_IK_MoveLimb( CGhoul2Info_v &ghoul2, int boltIndex, char *animBone, char 
 
 		//And finally, get rid of all the ik state effector data by calling with null bone name (similar to how we init it).
 		gi.G2API_SetBoneIKState( ghoul2, time, NULL, IKS_NONE, NULL );
-		
+
 		*ikInProgress = qfalse;
 	}
 }
@@ -282,9 +286,9 @@ void PM_IKUpdate( gentity_t *ent )
 			{
 				//point the limb
 				BG_IK_MoveLimb( ent->ghoul2, grabbedByBolt, animBone, firstBone, secondBone,
-					level.time, &ent->s, ent->client->clientInfo.animFileIndex, 
+					level.time, &ent->s, ent->client->clientInfo.animFileIndex,
 					ent->client->ps.torsoAnim/*BOTH_DEAD1*/, boltOrg, &ent->client->ps.ikStatus,
-					ent->client->ps.origin, ent->client->ps.viewangles, ent->s.modelScale, 
+					ent->client->ps.origin, ent->client->ps.viewangles, ent->s.modelScale,
 					500, qfalse );
 
 				//now see if we need to be turned and/or pulled
@@ -295,7 +299,7 @@ void PM_IKUpdate( gentity_t *ent )
 
 				gi.G2API_GetBoltMatrix( ent->ghoul2, 0, grabbedByBolt, &boltMatrix, tAngles, ent->client->ps.origin, level.time, 0, ent->s.modelScale );
 				gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, grabbedByOrg );
-				
+
 				//check for turn
 				vec3_t org2Targ, org2Bolt;
 				VectorSubtract( boltOrg, ent->currentOrigin, org2Targ );
@@ -354,9 +358,9 @@ void PM_IKUpdate( gentity_t *ent )
 		if ( ent->client->ps.heldByBolt )
 		{
 			BG_IK_MoveLimb( ent->ghoul2, ent->client->ps.heldByBolt, animBone, firstBone, secondBone,
-				level.time, &ent->s, ent->client->clientInfo.animFileIndex, 
-				ent->client->ps.torsoAnim/*BOTH_DEAD1*/, (float *)vec3_origin, 
-				&ent->client->ps.ikStatus, ent->client->ps.origin, 
+				level.time, &ent->s, ent->client->clientInfo.animFileIndex,
+				ent->client->ps.torsoAnim/*BOTH_DEAD1*/, (float *)vec3_origin,
+				&ent->client->ps.ikStatus, ent->client->ps.origin,
 				ent->client->ps.viewangles, ent->s.modelScale, 500, qtrue );
 		}
 	}
@@ -368,7 +372,7 @@ void BG_G2SetBoneAngles( centity_t *cent, gentity_t *gent, int boneIndex, const 
 {
 	if (boneIndex!=-1)
 	{
-		gi.G2API_SetBoneAnglesIndex( &cent->gent->ghoul2[0], boneIndex, angles, flags, up, right, forward, modelList, 0, 0 ); 
+		gi.G2API_SetBoneAnglesIndex( &cent->gent->ghoul2[0], boneIndex, angles, flags, up, right, forward, modelList, 0, 0 );
 	}
 }
 
@@ -381,7 +385,7 @@ void PM_ScaleUcmd( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 		//clamp the turn rate
 		int maxPitchSpeed = MAX_PITCHSPEED_X_WING;//switch, eventually?  Or read from file?
 		int diff = AngleNormalize180(SHORT2ANGLE((cmd->angles[PITCH]+ps->delta_angles[PITCH]))) - floor(ps->viewangles[PITCH]);
-	
+
 		if ( diff > maxPitchSpeed )
 		{
 			cmd->angles[PITCH] = ANGLE2SHORT( ps->viewangles[PITCH] + maxPitchSpeed ) - ps->delta_angles[PITCH];
@@ -464,9 +468,9 @@ qboolean PM_AdjustAnglesToPuller( gentity_t *ent, gentity_t *puller, usercmd_t *
 qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doMove )
 {
 	if (( ent->client->ps.legsAnim == BOTH_WALL_RUN_RIGHT || ent->client->ps.legsAnim == BOTH_WALL_RUN_LEFT ) && ent->client->ps.legsAnimTimer > 500 )
-	{//wall-running and not at end of anim 
+	{//wall-running and not at end of anim
 		//stick to wall, if there is one
-		vec3_t	fwd, rt, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};		
+		vec3_t	fwd, rt, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};
 		trace_t	trace;
 		float	dist, yawAdjust=0.0f;
 
@@ -484,13 +488,13 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 		}
 		VectorMA( ent->currentOrigin, dist, rt, traceTo );
 		gi.trace( &trace, ent->currentOrigin, mins, maxs, traceTo, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
-		if ( trace.fraction < 1.0f 
+		if ( trace.fraction < 1.0f
 			&& (trace.plane.normal[2] >= 0.0f && trace.plane.normal[2] <= 0.4f) )//&& ent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 		{
 			trace_t	trace2;
 			vec3_t traceTo2;
 			vec3_t	wallRunFwd, wallRunAngles = {0};
-			
+
 			wallRunAngles[YAW] = vectoyaw( trace.plane.normal )+yawAdjust;
 			AngleVectors( wallRunAngles, wallRunFwd, NULL, NULL );
 
@@ -500,8 +504,8 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 			{//wall we can't run on in front of us
 				trace.fraction = 1.0f;//just a way to get it to kick us off the wall below
 			}
-		} 
-		if ( trace.fraction < 1.0f 
+		}
+		if ( trace.fraction < 1.0f
 			&& (trace.plane.normal[2] >= 0.0f && trace.plane.normal[2] <= 0.4f) )//&& ent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 		{//still a vertical wall there
 			//FIXME: don't pull around 90 turns
@@ -544,7 +548,7 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 					}
 					//pull me toward the wall
 					VectorScale( trace.plane.normal, -128, ent->client->ps.velocity );
-					if ( ent->client->ps.legsAnimTimer > 500 ) 
+					if ( ent->client->ps.legsAnimTimer > 500 )
 					{//not at end of anim yet, pushing forward
 						//FIXME: or MA?
 						float speed = 175;
@@ -557,7 +561,7 @@ qboolean PM_AdjustAngleForWallRun( gentity_t *ent, usercmd_t *ucmd, qboolean doM
 							speed = 250;//running speed
 						}
 						VectorMA( ent->client->ps.velocity, speed, fwd, ent->client->ps.velocity );
-					} 
+					}
 					ent->client->ps.velocity[2] = zVel;//preserve z velocity
 					//VectorMA( ent->client->ps.velocity, -128, trace.plane.normal, ent->client->ps.velocity );
 					//pull me toward the wall, too
@@ -688,7 +692,7 @@ qboolean PM_AdjustAnglesForBackAttack( gentity_t *ent, usercmd_t *ucmd )
 			ucmd->angles[PITCH] = ANGLE2SHORT( ent->client->ps.viewangles[PITCH] ) - ent->client->ps.delta_angles[PITCH];
 			ucmd->angles[YAW] = ANGLE2SHORT( ent->client->ps.viewangles[YAW] ) - ent->client->ps.delta_angles[YAW];
 		}
-		else 
+		else
 		{//keep player facing away from their enemy
 			vec3_t enemyBehindDir;
 			VectorSubtract( ent->currentOrigin, ent->enemy->currentOrigin, enemyBehindDir );
@@ -727,8 +731,8 @@ qboolean PM_AdjustAnglesForSaberLock( gentity_t *ent, usercmd_t *ucmd )
 
 int G_MinGetUpTime( gentity_t *ent )
 {
-	if ( ent 
-		&& ent->client 
+	if ( ent
+		&& ent->client
 		&& ( ent->client->ps.legsAnim == BOTH_PLAYER_PA_3_FLY
 			|| ent->client->ps.legsAnim == BOTH_LK_DL_ST_T_SB_1_L
 			|| ent->client->ps.legsAnim == BOTH_RELEASED ) )
@@ -768,7 +772,7 @@ qboolean PM_AdjustAnglesForKnockdown( gentity_t *ent, usercmd_t *ucmd, qboolean 
 	{//being knocked down or getting up, can't do anything!
 		if ( !angleClampOnly )
 		{
-			if ( ent->client->ps.legsAnimTimer > G_MinGetUpTime( ent ) 
+			if ( ent->client->ps.legsAnimTimer > G_MinGetUpTime( ent )
 				|| (ent->s.number >= MAX_CLIENTS&&!G_ControlledByPlayer(ent)) )
 			{//can't get up yet
 				ucmd->forwardmove = 0;
@@ -838,7 +842,7 @@ qboolean PM_AdjustAngleForWallRunUp( gentity_t *ent, usercmd_t *ucmd, qboolean d
 	if ( ent->client->ps.legsAnim == BOTH_FORCEWALLRUNFLIP_START )
 	{//wall-running up
 		//stick to wall, if there is one
-		vec3_t	fwd, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};		
+		vec3_t	fwd, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};
 		trace_t	trace;
 		float	dist = 128;
 
@@ -854,9 +858,9 @@ qboolean PM_AdjustAngleForWallRunUp( gentity_t *ent, usercmd_t *ucmd, qboolean d
 			VectorCopy( top, bottom );
 			bottom[2] -= 64.0f;//was 32.0f
 			gi.trace( &trace2, top, ent->mins, ent->maxs, bottom, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
-			if ( !trace2.allsolid 
-				&& !trace2.startsolid 
-				&& trace2.fraction < 1.0f 
+			if ( !trace2.allsolid
+				&& !trace2.startsolid
+				&& trace2.fraction < 1.0f
 				&& trace2.plane.normal[2] > 0.7f )//slope we can stand on
 			{//cool, do the alt-flip and land on whetever it is we just scaled up
 				VectorScale( fwd, 100, ent->client->ps.velocity );
@@ -870,10 +874,10 @@ qboolean PM_AdjustAngleForWallRunUp( gentity_t *ent, usercmd_t *ucmd, qboolean d
 				return qfalse;
 			}
 		}
-		if ( //ucmd->upmove <= 0 && 
-			ent->client->ps.legsAnimTimer > 0 
-			&& ucmd->forwardmove > 0 
-			&& trace.fraction < 1.0f 
+		if ( //ucmd->upmove <= 0 &&
+			ent->client->ps.legsAnimTimer > 0
+			&& ucmd->forwardmove > 0
+			&& trace.fraction < 1.0f
 			&& (trace.plane.normal[2] >= 0.0f && trace.plane.normal[2] <= MAX_WALL_RUN_Z_NORMAL) )
 		{//still a vertical wall there
 			//make sure there's not a ceiling above us!
@@ -966,7 +970,7 @@ qboolean PM_AdjustAngleForWallJump( gentity_t *ent, usercmd_t *ucmd, qboolean do
 		|| PM_InReboundHold( ent->client->ps.legsAnim ) )
 	{//hugging wall, getting ready to jump off
 		//stick to wall, if there is one
-		vec3_t	checkDir, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};		
+		vec3_t	checkDir, traceTo, mins = {ent->mins[0],ent->mins[1],0}, maxs = {ent->maxs[0],ent->maxs[1],24}, fwdAngles = {0, ent->client->ps.viewangles[YAW], 0};
 		trace_t	trace;
 		float	dist = 128, yawAdjust;
 		switch ( ent->client->ps.legsAnim )
@@ -1022,7 +1026,7 @@ qboolean PM_AdjustAngleForWallJump( gentity_t *ent, usercmd_t *ucmd, qboolean do
 		}
 		VectorMA( ent->currentOrigin, dist, checkDir, traceTo );
 		gi.trace( &trace, ent->currentOrigin, mins, maxs, traceTo, ent->s.number, ent->clipmask, (EG2_Collision)0, 0 );
-		if ( //ucmd->upmove <= 0 && 
+		if ( //ucmd->upmove <= 0 &&
 			ent->client->ps.legsAnimTimer > 100 &&
 			trace.fraction < 1.0f && fabs(trace.plane.normal[2]) <= MAX_WALL_GRAB_SLOPE )
 		{//still a vertical wall there
@@ -1060,7 +1064,7 @@ qboolean PM_AdjustAngleForWallJump( gentity_t *ent, usercmd_t *ucmd, qboolean do
 			ent->client->ps.pm_flags |= PMF_STUCK_TO_WALL;
 			return qtrue;
 		}
-		else if ( doMove 
+		else if ( doMove
 			&& (ent->client->ps.pm_flags&PMF_STUCK_TO_WALL))
 		{//jump off
 			//push off of it!
@@ -1092,7 +1096,7 @@ qboolean PM_AdjustAngleForWallJump( gentity_t *ent, usercmd_t *ucmd, qboolean do
 qboolean PM_AdjustAnglesForBFKick( gentity_t *self, usercmd_t *ucmd, vec3_t fwdAngs, qboolean aimFront )
 {
 	//Auto-aim the player at the ent in front/back of them
-	//FIXME: camera angle should always be in front/behind me for the 2 kicks 
+	//FIXME: camera angle should always be in front/behind me for the 2 kicks
 	//			(to hide how far away the two entities really are)
 	//FIXME: don't let the people we're auto-aiming at move?
 	gentity_t	*ent;
@@ -1104,12 +1108,12 @@ qboolean PM_AdjustAnglesForBFKick( gentity_t *self, usercmd_t *ucmd, vec3_t fwdA
 	float		distToEnt, bestDist = Q3_INFINITE;
 	float		dot, bestDot = -1.1f;
 	float		bestYaw = Q3_INFINITE;
-	
+
 	AngleVectors( fwdAngs, v_fwd, NULL, NULL );
-	
+
 	VectorCopy( self->currentOrigin, center );
 
-	for ( i = 0 ; i < 3 ; i++ ) 
+	for ( i = 0 ; i < 3 ; i++ )
 	{
 		mins[i] = center[i] - radius;
 		maxs[i] = center[i] + radius;
@@ -1117,7 +1121,7 @@ qboolean PM_AdjustAnglesForBFKick( gentity_t *self, usercmd_t *ucmd, vec3_t fwdA
 
 	int numListedEntities = gi.EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
 
-	for ( e = 0 ; e < numListedEntities ; e++ ) 
+	for ( e = 0 ; e < numListedEntities ; e++ )
 	{
 		ent = entityList[ e ];
 
@@ -1149,7 +1153,7 @@ qboolean PM_AdjustAnglesForBFKick( gentity_t *self, usercmd_t *ucmd, vec3_t fwdA
 		distToEnt = VectorNormalize( vec2Ent );
 		if ( distToEnt > radius )
 			continue;
-		
+
 		if ( !aimFront )
 		{//aim away from them
 			VectorScale( vec2Ent, -1, vec2Ent );
@@ -1340,7 +1344,7 @@ qboolean G_OkayToLean( playerState_t *ps, usercmd_t *cmd, qboolean interruptOkay
 		&& ps->groundEntityNum != ENTITYNUM_NONE//on ground
 		&& ( (interruptOkay//okay to interrupt a lean
 				&& PM_DodgeAnim( ps->torsoAnim ) )//already leaning
-			|| 
+			||
 			 (!ps->weaponTime//not attacking or being prevented from attacking
 				&& !ps->legsAnimTimer//not in any held legs anim
 				&& !ps->torsoAnimTimer) //not in any held torso anim
@@ -1364,16 +1368,16 @@ are being updated isntead of a full move
 //FIXME: Now that they pmove twice per think, they snap-look really fast
 ================
 */
-void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent ) 
+void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 {
 	short		temp;
 	float		rootPitch = 0, pitchMin=-75, pitchMax=75, yawMin=0, yawMax=0, lockedYawValue = 0;	//just to shut up warnings
 	int			i;
 	vec3_t		start, end, tmins, tmaxs, right;
 	trace_t		trace;
-	qboolean	lockedYaw = qfalse, clamped = qfalse;
+	qboolean	lockedYaw = qfalse/*, clamped = qfalse*/;
 
-	if ( ps->pm_type == PM_INTERMISSION ) 
+	if ( ps->pm_type == PM_INTERMISSION )
 	{
 		return;		// no view changes at all
 	}
@@ -1386,7 +1390,7 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 	}
 #endif
 
-	if ( ps->pm_type != PM_SPECTATOR && ps->stats[STAT_HEALTH] <= 0 ) 
+	if ( ps->pm_type != PM_SPECTATOR && ps->stats[STAT_HEALTH] <= 0 )
 	{
 		return;		// no view changes at all
 	}
@@ -1401,7 +1405,7 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 		{
 			pitchMin = 0 - gent->client->renderInfo.headPitchRangeUp - gent->client->renderInfo.torsoPitchRangeUp;
 			pitchMax = gent->client->renderInfo.headPitchRangeDown + gent->client->renderInfo.torsoPitchRangeDown;
-			
+
 			yawMin = 0 - gent->client->renderInfo.headYawRangeLeft - gent->client->renderInfo.torsoYawRangeLeft;
 			yawMax = gent->client->renderInfo.headYawRangeRight + gent->client->renderInfo.torsoYawRangeRight;
 
@@ -1489,35 +1493,35 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 	const short yawClampMax = ANGLE2SHORT(lockedYawValue+yawMax);
 
 	// circularly clamp the angles with deltas
-	for (i=0 ; i<3 ; i++) 
+	for (i=0 ; i<3 ; i++)
 	{
 		temp = cmd->angles[i] + ps->delta_angles[i];
-		if ( i == PITCH ) 
+		if ( i == PITCH )
 		{
 			//FIXME get this limit from the NPCs stats?
 			// don't let the player look up or down more than 90 degrees
-			if ( temp > pitchClampMax ) 
+			if ( temp > pitchClampMax )
 			{
 				ps->delta_angles[i] = (pitchClampMax - cmd->angles[i]) & 0xffff;	//& clamp to short
 				temp = pitchClampMax;
-				clamped = qtrue;
-			} 
-			else if ( temp < pitchClampMin ) 
+				//clamped = qtrue;
+			}
+			else if ( temp < pitchClampMin )
 			{
 				ps->delta_angles[i] = (pitchClampMin - cmd->angles[i]) & 0xffff;	//& clamp to short
 				temp = pitchClampMin;
-				clamped = qtrue;
+				//clamped = qtrue;
 			}
 		}
 		/*
-		if ( i == ROLL && ps->vehicleIndex != VEHICLE_NONE ) 
+		if ( i == ROLL && ps->vehicleIndex != VEHICLE_NONE )
 		{
-			if ( temp > pitchClampMax ) 
+			if ( temp > pitchClampMax )
 			{
 				ps->delta_angles[i] = (pitchClampMax - cmd->angles[i]) & 0xffff;
 				temp = pitchClampMax;
-			} 
-			else if ( temp < pitchClampMin ) 
+			}
+			else if ( temp < pitchClampMin )
 			{
 				ps->delta_angles[i] = (pitchClampMin - cmd->angles[i]) & 0xffff;
 				temp = pitchClampMin;
@@ -1526,7 +1530,7 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 		*/
 		//FIXME: Are we losing precision here?  Is this why it jitters?
 		/*
-		if ( i == YAW && lockedYaw ) 
+		if ( i == YAW && lockedYaw )
 		{
 			float multiplier = 1.0f;
 			float newYaw = SHORT2ANGLE(temp);
@@ -1543,14 +1547,14 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 				yawDiff = 360 + yawDiff;
 			}
 			// don't let the player look left or right more than the clamp, if any
-			if ( yawDiff > yawMax ) 
+			if ( yawDiff > yawMax )
 			{
-				clamped = qtrue;
+				//clamped = qtrue;
 				ps->viewangles[i] = AngleNormalize180( lockedYawValue+((yawMax-2)*multiplier) );
-			} 
-			else if ( yawDiff < yawMin ) 
+			}
+			else if ( yawDiff < yawMin )
 			{
-				clamped = qtrue;
+				//clamped = qtrue;
 				ps->viewangles[i] = AngleNormalize180( lockedYawValue+((yawMin+2)*multiplier) );
 			}
 			else
@@ -1559,21 +1563,21 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 			}
 		}
 		*/
-		if ( i == YAW && lockedYaw ) 
+		if ( i == YAW && lockedYaw )
 		{
 			//FIXME get this limit from the NPCs stats?
 			// don't let the player look up or down more than 90 degrees
-			if ( temp > yawClampMax ) 
+			if ( temp > yawClampMax )
 			{
 				ps->delta_angles[i] = (yawClampMax - cmd->angles[i]) & 0xffff;	//& clamp to short
 				temp = yawClampMax;
-				clamped = qtrue;
-			} 
-			else if ( temp < yawClampMin ) 
+				//clamped = qtrue;
+			}
+			else if ( temp < yawClampMin )
 			{
 				ps->delta_angles[i] = (yawClampMin - cmd->angles[i]) & 0xffff;	//& clamp to short
 				temp = yawClampMin;
-				clamped = qtrue;
+				//clamped = qtrue;
 			}
 			ps->viewangles[i] = SHORT2ANGLE(temp);
 		}
@@ -1701,7 +1705,7 @@ void PM_UpdateViewAngles( playerState_t *ps, usercmd_t *cmd, gentity_t *gent )
 					if ( anim != -1 )
 					{
 						int extraHoldTime = 0;
-						if ( PM_DodgeAnim( ps->torsoAnim ) 
+						if ( PM_DodgeAnim( ps->torsoAnim )
 							&& !PM_DodgeHoldAnim( ps->torsoAnim ) )
 						{//already in a dodge
 							//use the hold pose, don't start it all over again

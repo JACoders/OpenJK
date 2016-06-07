@@ -1,7 +1,28 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_syscalls.c -- this file is only included when building a dll
-// cg_syscalls.asm is included instead when building a qvm
 #include "cg_local.h"
 
 static intptr_t (QDECL *Q_syscall)( intptr_t arg, ... ) = (intptr_t (QDECL *)( intptr_t, ...))-1;
@@ -198,7 +219,12 @@ qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 qhandle_t trap_R_RegisterFont( const char *fontName ) {
 	return Q_syscall( CG_R_REGISTERFONT, fontName);
 }
-int	trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
+int trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
+	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
+	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
+	return width * scale;
+}
+float trap_R_Font_StrLenPixelsFloat(const char *text, const int iFontIndex, const float scale) {
 	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
 	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
 	return width * scale;
@@ -207,7 +233,8 @@ int trap_R_Font_StrLenChars(const char *text) {
 	return Q_syscall( CG_R_FONT_STRLENCHARS, text);
 }
 int trap_R_Font_HeightPixels(const int iFontIndex, const float scale) {
-	return Q_syscall( CG_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(scale));
+	float height = (float)Q_syscall( CG_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(1.0f) );
+	return height * scale;
 }
 void trap_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iCharLimit, const float scale) {
 	Q_syscall( CG_R_FONT_DRAWSTRING, ox, oy, text, rgba, setIndex, iCharLimit, PASSFLOAT(scale));
@@ -915,4 +942,6 @@ static void TranslateSyscalls( void ) {
 	trap->G2API_CleanEntAttachments			= trap_G2API_CleanEntAttachments;
 	trap->G2API_OverrideServer				= trap_G2API_OverrideServer;
 	trap->G2API_GetSurfaceName				= trap_G2API_GetSurfaceName;
+
+	trap->ext.R_Font_StrLenPixels			= trap_R_Font_StrLenPixelsFloat;
 }

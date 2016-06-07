@@ -1,24 +1,27 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -262,6 +265,9 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward )
 	}
 	VectorNormalize( bounce_dir );
 	VectorScale( bounce_dir, speed, missile->s.pos.trDelta );
+#ifdef _DEBUG
+		assert( !Q_isnan(missile->s.pos.trDelta[0])&&!Q_isnan(missile->s.pos.trDelta[1])&&!Q_isnan(missile->s.pos.trDelta[2]));
+#endif// _DEBUG
 	missile->s.pos.trTime = level.time - 10;		// move a bit on the very first frame
 	VectorCopy( missile->currentOrigin, missile->s.pos.trBase );
 	if ( missile->s.weapon != WP_SABER )
@@ -552,6 +558,17 @@ void G_MissileImpact( gentity_t *ent, trace_t *trace, int hitLoc=HL_NONE )
 		assert(0&&"missile hit itself!!!");
 		return;
 	}
+	if ( trace->plane.normal[0] == 0.0f &&
+		 trace->plane.normal[1] == 0.0f &&
+		 trace->plane.normal[2] == 0.0f
+		)
+	{//model moved into missile in flight probably...
+		trace->plane.normal[0] = -ent->s.pos.trDelta[0];
+		trace->plane.normal[1] = -ent->s.pos.trDelta[1];
+		trace->plane.normal[2] = -ent->s.pos.trDelta[2];
+		VectorNormalize(trace->plane.normal);
+	}
+
 	if ( ent->owner && (other->takedamage||other->client) )
 	{
 		if ( !ent->lastEnemy || ent->lastEnemy == ent->owner )

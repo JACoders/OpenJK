@@ -1,20 +1,26 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __Q_SHARED_H
 #define __Q_SHARED_H
@@ -71,8 +77,11 @@ This file is part of Jedi Academy.
 #endif
 
 #define	BASEGAME "base"
+#define OPENJKGAME "OpenJK"
 
 #define Q3CONFIG_NAME PRODUCT_NAME ".cfg"
+
+#define BASE_SAVE_COMPAT // this is defined to disable/fix some changes that break save compatibility
 
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
@@ -100,6 +109,10 @@ This file is part of Jedi Academy.
 #include <errno.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+#include <cmath>
+#endif
+
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
 	#define __attribute__(x)
@@ -121,6 +134,12 @@ This file is part of Jedi Academy.
 	#define Q_EXPORT
 #endif
 
+#if defined(__GNUC__)
+#define NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define NORETURN __declspec(noreturn)
+#endif
+
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
@@ -139,7 +158,7 @@ int LongSwap( int l );
 float FloatSwap( const float *f );
 
 
-#include "../qcommon/q_platform.h"
+#include "qcommon/q_platform.h"
 
 // ================================================================
 // TYPE DEFINITIONS
@@ -152,6 +171,8 @@ typedef unsigned long ulong;
 typedef enum { qfalse=0, qtrue } qboolean;
 #define	qboolean	int		//don't want strict type checking on the qboolean
 
+#define Q_min(x,y) ((x)<(y)?(x):(y))
+#define Q_max(x,y) ((x)>(y)?(x):(y))
 
 #if defined (_MSC_VER) && (_MSC_VER >= 1600)
 
@@ -179,6 +200,9 @@ typedef enum { qfalse=0, qtrue } qboolean;
 	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
 #else // not using MSVC
 
+	#if !defined(__STDC_LIMIT_MACROS)
+	#define __STDC_LIMIT_MACROS
+	#endif
 	#include <stdint.h>
 
 	#define Q_vsnprintf vsnprintf
@@ -318,13 +342,11 @@ typedef enum {
 #define UI_FORMATMASK	0x00000007
 #define UI_SMALLFONT	0x00000010
 #define UI_BIGFONT		0x00000020	// default
-#define UI_GIANTFONT	0x00000040
+
 #define UI_DROPSHADOW	0x00000800
 #define UI_BLINK		0x00001000
 #define UI_INVERSE		0x00002000
 #define UI_PULSE		0x00004000
-#define UI_UNDERLINE	0x00008000
-#define UI_TINYFONT		0x00010000
 
 
 #define Com_Memset memset
@@ -347,23 +369,12 @@ MATHLIB
 ==============================================================
 */
 
+typedef float	 vec_t;
+typedef float	 vec2_t[2], vec3_t[3], vec4_t[4], vec5_t[5];
+typedef int		ivec2_t[2], ivec3_t[3], ivec4_t[4], ivec5_t[5];
+typedef vec3_t vec3pair_t[2], matrix3_t[3];
 
-typedef float vec_t;
-typedef vec_t vec2_t[2];
-typedef vec_t vec3_t[3];
-typedef vec_t vec4_t[4];
-typedef vec_t vec5_t[5];
-
-typedef vec3_t	vec3pair_t[2];
-
-typedef int ivec2_t[2];
-typedef int ivec3_t[3];
-typedef int ivec4_t[4];
-typedef int ivec5_t[5];
-
-typedef	int	fixed4_t;
-typedef	int	fixed8_t;
-typedef	int	fixed16_t;
+typedef	int	fixed4_t, fixed8_t, fixed16_t;
 
 #ifndef M_PI
 #define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
@@ -668,7 +679,7 @@ inline void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
 inline int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
 	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]) {
 		return 0;
-	}			
+	}
 	return 1;
 }
 
@@ -678,7 +689,7 @@ inline int VectorCompare2( const vec3_t v1, const vec3_t v2 ) {
 		|| v1[1] > v2[1]+0.0001f || v1[1] < v2[1]-0.0001f
 		|| v1[2] > v2[2]+0.0001f || v1[2] < v2[2]-0.0001f ) {
 		return 0;
-	}			
+	}
 	return 1;
 }
 inline vec_t VectorLength( const vec3_t v ) {
@@ -722,7 +733,7 @@ inline void VectorInverse( vec3_t v ){
 	v[2] = -v[2];
 }
 
-inline void VectorRotate( vec3_t in, vec3_t matrix[3], vec3_t out )
+inline void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out )
 {
 	out[0] = DotProduct( in, matrix[0] );
 	out[1] = DotProduct( in, matrix[1] );
@@ -742,7 +753,7 @@ inline vec_t VectorNormalize( vec3_t v ) {
 		v[1] *= ilength;
 		v[2] *= ilength;
 	}
-		
+
 	return length;
 }
 
@@ -763,15 +774,17 @@ inline vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
 	} else {
 		VectorClear( out );
 	}
-		
+
 	return length;
 }
 
 int Q_log2(int val);
 
 inline qboolean Q_isnan ( float f ) {
-#ifdef _WIN32
+#ifdef _MSC_VER
 	return _isnan (f);
+#elif defined(__cplusplus)
+        return std::isnan (f);
 #else
 	return isnan (f);
 #endif
@@ -790,34 +803,22 @@ inline float Q_crandom( int *seed ) {
 	return 2.0F * ( Q_random( seed ) - 0.5f );
 }
 
-//  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
-inline float Q_flrand(float min, float max) {
-	return ((rand() * (max - min)) / ((float)RAND_MAX)) + min;
-}
-
 // Returns an integer min <= x <= max (ie inclusive)
 inline int Q_irand(int min, int max) {
-	max++; //so it can round down
-#ifdef _WIN32
-	return ((rand() * (max - min)) >> 15) + min;
-#else
-	//rand() returns much larger values on OSX/Linux, so make the result smaller
-	return (((rand() % 0x7fff) * (max - min)) >> 15) + min;
-#endif
+	assert(min <= max);
+	return (rand() % (max - min + 1)) + min;
 }
 
-#ifdef _WIN32
-//returns a float between 0 and 1.0
-inline float random() {
-	return (rand() / ((float)0x7fff));
+#define random() (rand() / (float)RAND_MAX)
+
+//  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
+inline float Q_flrand(float min, float max) {
+	return (random() * (max - min)) + min;
 }
-#else
-#define random() (rand() / ((float)RAND_MAX))
-#endif
 
 //returns a float between -1 and 1.0
 inline float crandom() {
-	return (2.0F * (random() - 0.5F));
+	return Q_flrand(-1.0f, 1.0f);
 }
 
 float erandom( float mean );
@@ -989,6 +990,18 @@ void	COM_DefaultExtension( char *path, int maxSize, const char *extension );
 void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
 
+// For compatibility with shared code
+static inline void COM_BeginParseSession( const char *sessionName )
+{
+	COM_BeginParseSession();
+}
+
+class COM_ParseSession {
+public:
+	COM_ParseSession() { COM_BeginParseSession(); };
+	~COM_ParseSession() { COM_EndParseSession(); };
+};
+
 int		 COM_GetCurrentParseLine( void );
 char	*COM_Parse( const char **data_p );
 char	*COM_ParseExt( const char **data_p, qboolean allowLineBreak );
@@ -1108,7 +1121,7 @@ qboolean Info_Validate( const char *s );
 void Info_NextPair( const char **s, char key[MAX_INFO_KEY], char value[MAX_INFO_VALUE] );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-void	QDECL Com_Error( int level, const char *error, ... );
+void	NORETURN QDECL Com_Error( int level, const char *error, ... );
 void	QDECL Com_Printf( const char *msg, ... );
 
 
@@ -1351,7 +1364,12 @@ Ghoul2 Insert End
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
 
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
+#ifdef BASE_SAVE_COMPAT
+#define CS_RESERVED1		(CS_SOUNDS+MAX_SOUNDS) // reserved field for base compat from immersion removal
+#define	CS_PLAYERS			(CS_RESERVED1 + 96)
+#else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
+#endif
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
 #define CS_TERRAINS			(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS		(CS_TERRAINS + MAX_TERRAINS)
@@ -1364,7 +1382,7 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 #define CS_DYNAMIC_MUSIC_STATE	(CS_CHARSKINS + MAX_CHARSKINS)
-#define CS_WORLD_FX				(CS_DYNAMIC_MUSIC_STATE + 1)	
+#define CS_WORLD_FX				(CS_DYNAMIC_MUSIC_STATE + 1)
 #define CS_MAX					(CS_WORLD_FX + MAX_WORLD_FX)
 
 #if (CS_MAX) > MAX_CONFIGSTRINGS
@@ -1430,8 +1448,8 @@ typedef enum
 #define	MAX_PERSISTANT			16
 
 #define	MAX_POWERUPS			16
-#define	MAX_WEAPONS				32		
-#define MAX_AMMO				10		
+#define	MAX_WEAPONS				32
+#define MAX_AMMO				10
 #define MAX_INVENTORY			15		// See INV_MAX
 #define MAX_SECURITY_KEYS		5
 #define MAX_SECURITY_KEY_MESSSAGE		24
@@ -1456,7 +1474,7 @@ typedef enum
 } waterHeightLevel_t;
 
 // !!!!!!! loadsave affecting struct !!!!!!!
-typedef struct 
+typedef struct
 {
 	// Actual trail stuff
 	int		inAction;	// controls whether should we even consider starting one
@@ -1467,7 +1485,7 @@ typedef struct
 
 	// Marks stuff
 	qboolean	haveOldPos[2];
-	vec3_t		oldPos[2];		
+	vec3_t		oldPos[2];
 	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
 							//	..then we'll need the normal to project a mark blob onto the impact point
 } saberTrail_t;
@@ -1604,10 +1622,10 @@ typedef struct
 	float		animSpeedScale;				//1.0 - plays normal attack animations faster/slower
 
 	//done in both cgame and game (BG code)
-	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack 
-	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack
+	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack
 	int	jumpAtkBackMove;		//LS_INVALID - if set, player will execute this move when they jump+back+attack
 	int	jumpAtkRightMove;		//LS_INVALID - if set, player will execute this move when they jump+rightattack
 	int	jumpAtkLeftMove;		//LS_INVALID - if set, player will execute this move when they jump+left+attack
@@ -1624,7 +1642,7 @@ typedef struct
 	int			bladeStyle2Start;			//0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
 
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
-	
+
 	//===PRIMARY BLADES=====================
 	//done in cgame (client-side code)
 	int			trailStyle;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1646,7 +1664,7 @@ typedef struct
 	float		splashRadius;				//0 - radius of splashDamage
 	int			splashDamage;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
 	float		splashKnockback;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
-	
+
 	//===SECONDARY BLADES===================
 	//done in cgame (client-side code)
 	int			trailStyle2;				//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1699,7 +1717,7 @@ typedef struct
 					blade[iBlade].active = bActive;
 				}
 
-	qboolean	Active() 
+	qboolean	Active()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1710,7 +1728,7 @@ typedef struct
 					}
 					return qfalse;
 				}
-	qboolean	ActiveManualOnly() 
+	qboolean	ActiveManualOnly()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1746,26 +1764,26 @@ typedef struct
 						blade[i].length = length;
 					}
 				}
-	float		Length() 
+	float		Length()
 				{//return largest length
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].length > len1 )
 						{
-							len1 = blade[i].length; 
+							len1 = blade[i].length;
 						}
 					}
 					return len1;
 				};
-	float		LengthMax() 
-				{ 
+	float		LengthMax()
+				{
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].lengthMax > len1 )
 						{
-							len1 = blade[i].lengthMax; 
+							len1 = blade[i].lengthMax;
 						}
 					}
 					return len1;
@@ -1846,7 +1864,7 @@ typedef struct
 					blade[iBlade].active = bActive;
 				}
 
-	qboolean	Active() 
+	qboolean	Active()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1864,26 +1882,26 @@ typedef struct
 						blade[i].length = length;
 					}
 				}
-	float		Length() 
+	float		Length()
 				{//return largest length
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].length > len1 )
 						{
-							len1 = blade[i].length; 
+							len1 = blade[i].length;
 						}
 					}
 					return len1;
 				};
-	float		LengthMax() 
-				{ 
+	float		LengthMax()
+				{
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].lengthMax > len1 )
 						{
-							len1 = blade[i].lengthMax; 
+							len1 = blade[i].lengthMax;
 						}
 					}
 					return len1;
@@ -1930,16 +1948,16 @@ typedef struct playerState_s {
 	int			weaponChargeTime;
 	int			rechargeTime;		// for the phaser
 	int			gravity;
-	int			leanofs;			
+	int			leanofs;
 	int			friction;
 	int			speed;
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 
 	int			groundEntityNum;// ENTITYNUM_NONE = in air
-	int			legsAnim;		// 
+	int			legsAnim;		//
 	int			legsAnimTimer;	// don't change low priority animations on legs until this runs out
-	int			torsoAnim;		// 
+	int			torsoAnim;		//
 	int			torsoAnimTimer;	// don't change low priority animations on torso until this runs out
 	int			movementDir;	// a number 0 to 7 that represents the relative angle
 								// of movement to the view angle (axial and diagonals)
@@ -1977,7 +1995,7 @@ typedef struct playerState_s {
 	int			powerups[MAX_POWERUPS];					// level.time that the powerup runs out
 	int			ammo[MAX_AMMO];
 	int			inventory[MAX_INVENTORY];							// Count of each inventory item.
-	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types 
+	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types
 
 	vec3_t		serverViewOrg;
 
@@ -2017,7 +2035,7 @@ typedef struct playerState_s {
 	int			lastStationary;	//last time you were on the ground
 	int			weaponShotCount;
 
-	//FIXME: maybe allocate all these structures (saber, force powers, vehicles) 
+	//FIXME: maybe allocate all these structures (saber, force powers, vehicles)
 	//			or descend them as classes - so not every client has all this info
 	saberInfo_t	saber[MAX_SABERS];
 	qboolean	dualSabers;
@@ -2031,24 +2049,24 @@ typedef struct playerState_s {
 						saber[1].SetLength( length );
 					}
 				}
-	float		SaberLength() 
+	float		SaberLength()
 				{//return largest length
 					float len1 = saber[0].Length();
 					if ( dualSabers && saber[1].Length() > len1 )
 					{
-						return saber[1].Length(); 
+						return saber[1].Length();
 					}
 					return len1;
 				};
-	float		SaberLengthMax() 
-				{ 
+	float		SaberLengthMax()
+				{
 					if ( saber[0].LengthMax() > saber[1].LengthMax() )
 					{
 						return saber[0].LengthMax();
 					}
 					else if ( dualSabers )
 					{
-						return saber[1].LengthMax(); 
+						return saber[1].LengthMax();
 					}
 					return 0.0f;
 				};
@@ -2077,9 +2095,9 @@ typedef struct playerState_s {
 						saber[1].Activate();
 					}
 				}
-	void		SaberDeactivate( void ) 
-				{ 
-					saber[0].Deactivate(); 
+	void		SaberDeactivate( void )
+				{
+					saber[0].Deactivate();
 					saber[1].Deactivate();
 				};
 	void		SaberActivateTrail ( float duration )
@@ -2184,7 +2202,7 @@ typedef struct playerState_s {
 	int			forceDrainEntityNum;				//what entity I'm draining
 	vec3_t		forceDrainOrg;						//where the drained ent should be lifted to
 	int			forceHealCount;						//how many points of force heal have been applied so far
-	
+
 	//new Jedi Academy force powers
 	int			forceAllowDeactivateTime;
 	int			forceRageDrainTime;
@@ -2236,9 +2254,9 @@ typedef struct playerState_s {
 #define	BUTTON_VEH_SPEED	8			// used for some horrible vehicle hack... :)
 #define	BUTTON_WALKING		16			// walking can't just be infered from MOVE_RUN because a key pressed late in the frame will
 										// only generate a small move value for that frame walking will use different animations and
-										// won't generate footsteps 
+										// won't generate footsteps
 #define	BUTTON_USE			32			// the ol' use key returns!
-#define BUTTON_FORCEGRIP	64			// 
+#define BUTTON_FORCEGRIP	64			//
 #define BUTTON_ALT_ATTACK	128
 
 #define	BUTTON_FORCE_FOCUS	256			// any key whatsoever
@@ -2345,9 +2363,9 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	// for players
 	int		powerups;		// bit flags
 	int		weapon;			// determines weapon and flash model, etc
-	int		legsAnim;		// 
+	int		legsAnim;		//
 	int		legsAnimTimer;	// don't change low priority animations on legs until this runs out
-	int		torsoAnim;		// 
+	int		torsoAnim;		//
 	int		torsoAnimTimer;	// don't change low priority animations on torso until this runs out
 
 	int		scale;			//Scale players
@@ -2361,7 +2379,7 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 #endif
 
 	//int		vehicleIndex;		// What kind of vehicle you're driving
-	vec3_t	vehicleAngles;		// 
+	vec3_t	vehicleAngles;		//
 	int		vehicleArmor;		// current armor of your vehicle (explodes if drops to 0)
 	// 0 if not in a vehicle, otherwise the client number.
 	int m_iVehicleNum;
@@ -2505,7 +2523,7 @@ Ghoul2 Insert Start
 
 enum Eorientations
 {
-	ORIGIN = 0, 
+	ORIGIN = 0,
 	POSITIVE_X,
 	POSITIVE_Z,
 	POSITIVE_Y,
@@ -2522,6 +2540,7 @@ typedef struct parseData_s
 {
 	char	fileName[MAX_QPATH];			// Name of current file being read in
 	int		com_lines;						// Number of lines read in
+	int		com_tokenline;
 	const char	*bufferStart;					// Start address of buffer holding data that was read in
 	const char	*bufferCurrent;					// Where data is currently being parsed from buffer
 } parseData_t;
@@ -2562,8 +2581,5 @@ typedef enum
 	eForceReload_ALL
 
 } ForceReload_e;
-
-
-#include "../game/genericparser2.h"
 
 #endif	// __Q_SHARED_H

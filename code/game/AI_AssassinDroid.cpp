@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "bg_public.h"
 #include "b_local.h"
@@ -34,7 +38,7 @@ This file is part of Jedi Academy.
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool BubbleShield_IsOn()
 {
@@ -42,7 +46,7 @@ bool BubbleShield_IsOn()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_TurnOn()
 {
@@ -55,7 +59,7 @@ void BubbleShield_TurnOn()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_TurnOff()
 {
@@ -73,7 +77,7 @@ void BubbleShield_TurnOff()
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_PushEnt(gentity_t* pushed, vec3_t smackDir)
 {
-	G_Damage(pushed, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE); 
+	G_Damage(pushed, NPC, NPC, smackDir, NPC->currentOrigin, (g_spskill->integer+1)*Q_irand( 5, 10), DAMAGE_NO_KNOCKBACK, MOD_ELECTROCUTE);
 	G_Throw(pushed, smackDir, 10);
 
 	// Make Em Electric
@@ -139,7 +143,7 @@ void BubbleShield_PushRadiusEnts()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void BubbleShield_Update()
 {
@@ -176,15 +180,15 @@ void BubbleShield_Update()
 		{
 			TIMER_Set(NPC, "ShieldsDown", 2000);		// Drop Shields
 			TIMER_Set(NPC, "ShieldsUp", Q_irand(4000, 5000));	// Then Bring Them Back Up For At Least 3 sec
-		} 
+		}
 
 		BubbleShield_TurnOn();
 		if (BubbleShield_IsOn())
 		{
 			// Update Our Shader Value
 			//-------------------------
-	 	 	NPC->client->renderInfo.customRGBA[0] = 
-			NPC->client->renderInfo.customRGBA[1] = 
+	 	 	NPC->client->renderInfo.customRGBA[0] =
+			NPC->client->renderInfo.customRGBA[1] =
 			NPC->client->renderInfo.customRGBA[2] =
   			NPC->client->renderInfo.customRGBA[3] = (NPC->client->ps.stats[STAT_ARMOR] - 100);
 

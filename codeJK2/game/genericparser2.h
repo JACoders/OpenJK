@@ -1,225 +1,187 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // Filename:-	genericparser2.h
 
+#include <vector>
+#include <forward_list>
+#include <array>
+#include <cassert>
+
+#include "qcommon/safe/gsl.h"
+#include "qcommon/safe/memory.h"
+#include "qcommon/safe/files.h"
+#include "qcommon/safe/string.h"
 
 #ifndef GENERICPARSER2_H
 #define GENERICPARSER2_H
 
+namespace GP2
+{
+	template< typename T >
+	using Vector = std::vector< T, Zone::Allocator< T, TAG_GP2 > >;
+}
 
-// conditional expression is constant
-// conversion from int to char, possible loss of data
-// unreferenced inline funciton has been removed
-#pragma warning( disable : 4127 4244 4514 )
+class CGPProperty
+{
+public:
+	using Values = GP2::Vector< gsl::cstring_view >;
+private:
+	gsl::cstring_view mKey;
+	Values mValues;
 
 
-#ifdef DEBUG_LINKING
-	#pragma message("...including GenericParser2.h")
-#endif
+public:
 
-//#include "disablewarnings.h"
+	CGPProperty( gsl::cstring_view initKey, gsl::cstring_view initValue = {} );
 
-#ifdef _JK2EXE
-#define trap_Z_Malloc(x, y)		Z_Malloc(x,y,qtrue)
-#define trap_Z_Free(x)			Z_Free(x)
+	const gsl::cstring_view& GetName() const
+	{
+		return mKey;
+	}
+	bool IsList() const NOEXCEPT
+	{
+		return mValues.size() > 1;
+	}
+	const gsl::cstring_view& GetTopValue() const NOEXCEPT
+	{
+		static gsl::cstring_view empty{};
+		return mValues.empty() ? empty : mValues.front();
+	}
+	const Values& GetValues() const NOEXCEPT
+	{
+		return mValues;
+	}
+	// Copies the value into the textPool and adds a pointer to that copy to the end of the list.
+	void AddValue( gsl::cstring_view newValue );
+};
+
+
+
+class CGPGroup
+{
+public:
+	/// Key-Value-Pairs
+	using Properties = GP2::Vector< CGPProperty >;
+	using SubGroups = GP2::Vector< CGPGroup >;
+private:
+	Properties mProperties;
+	gsl::cstring_view mName = CSTRING_VIEW( "Top Level" );
+	SubGroups mSubGroups;
+public:
+	CGPGroup() = default;
+	CGPGroup( const gsl::cstring_view& initName );
+	// non-copyable; but just for performance reasons, since it would incur a deep copy.
+	CGPGroup( const CGPGroup& ) = delete;
+	CGPGroup& operator=( const CGPGroup& ) = delete;
+	// movable
+#if defined( _MSC_VER ) && _MSC_VER < 1900
+	// alas no default move constructors on VS2013.
+	// TODO DELETEME once we drop VS2013 (because fuck that).
+	CGPGroup( CGPGroup&& rhs )
+		: mProperties( std::move( rhs.mProperties ) )
+		, mName( std::move( rhs.mName ) )
+		, mSubGroups( std::move( rhs.mSubGroups ) )
+	{}
+	CGPGroup& operator=( CGPGroup&& rhs )
+	{
+		mProperties = std::move( rhs.mProperties );
+		mName = std::move( rhs.mName );
+		mSubGroups = std::move( rhs.mSubGroups );
+		return *this;
+	}
 #else
-#define trap_Z_Malloc(x, y)		gi.Malloc(x,y,qtrue)
-#define trap_Z_Free(x)			gi.Free(x)
+	CGPGroup( CGPGroup&& ) = default;
+	CGPGroup& operator=( CGPGroup&& ) = default;
 #endif
 
-
-class CTextPool;
-class CGPObject;
-
-class CTextPool
-{
-private:
-	char		*mPool;
-	CTextPool	*mNext;
-	int			mSize, mUsed;
-
-public:
-	CTextPool(int initSize = 10240);
-	~CTextPool(void);
-
-	CTextPool	*GetNext(void) { return mNext; }
-	void		SetNext(CTextPool *which) { mNext = which; }
-	char		*GetPool(void) { return mPool; }
-	int			GetUsed(void) { return mUsed; }
-
-	char		*AllocText(char *text, bool addNULL = true, CTextPool **poolPtr = 0);
+	const Properties& GetProperties() const NOEXCEPT
+	{
+		return mProperties;
+	}
+	const SubGroups& GetSubGroups() const NOEXCEPT
+	{
+		return mSubGroups;
+	}
+	const CGPGroup* FindSubGroup( const gsl::cstring_view& name ) const NOEXCEPT
+	{
+		for ( auto& sub : GetSubGroups() )
+		{
+			if ( Q::stricmp( name, sub.GetName() ) == Q::Ordering::EQ )
+			{
+				return &sub;
+			}
+		}
+		return nullptr;
+	}
+	const CGPProperty* FindProperty( const gsl::cstring_view& name ) const NOEXCEPT
+	{
+		for ( auto& prop : GetProperties() )
+		{
+			if ( Q::stricmp( name, prop.GetName() ) == Q::Ordering::EQ )
+			{
+				return &prop;
+			}
+		}
+		return nullptr;
+	}
+	const gsl::cstring_view& GetName() const NOEXCEPT
+	{
+		return mName;
+	}
+	void Clear() NOEXCEPT
+	{
+		// name is retained
+		mProperties.clear();
+		mSubGroups.clear();
+	}
+	bool Parse( gsl::cstring_view& data, const bool topLevel = true );
 };
 
-void CleanTextPool(CTextPool *pool);
+/**
+Generic Text Parser.
 
-class CGPObject
-{
-protected:
-	const char	*mName;
-	CGPObject	*mNext, *mInOrderNext, *mInOrderPrevious;
-
-public:
-				CGPObject(const char *initName);
-
-	const char	*GetName(void) { return mName; }
-
-	CGPObject	*GetNext(void) { return mNext; }
-	void		SetNext(CGPObject *which) { mNext = which; }
-	CGPObject	*GetInOrderNext(void) { return mInOrderNext; }
-	void		SetInOrderNext(CGPObject *which) { mInOrderNext = which; }
-	CGPObject	*GetInOrderPrevious(void) { return mInOrderPrevious; }
-	void		SetInOrderPrevious(CGPObject *which) { mInOrderPrevious = which; }
-
-	bool		WriteText(CTextPool **textPool, const char *text);
-};
-
-
-
-class CGPValue : public CGPObject
-{
-private:
-	CGPObject	*mList;
-
-public:
-					CGPValue(const char *initName, const char *initValue = 0);
-					~CGPValue(void);
-
-	CGPValue		*GetNext(void) { return (CGPValue *)mNext; }
-
-	CGPValue		*Duplicate(CTextPool **textPool = 0);
-
-	bool			IsList(void);
-	const char		*GetTopValue(void);
-	CGPObject		*GetList(void) { return mList; }
-	void			AddValue(const char *newValue, CTextPool **textPool = 0);
-
-	bool			Parse(char **dataPtr, CTextPool **textPool);
-
-	bool			Write(CTextPool **textPool, int depth);
-};
-
-
-
-class CGPGroup : public CGPObject
-{
-private:
-	CGPValue			*mPairs, *mInOrderPairs;
-	CGPValue			*mCurrentPair;
-	CGPGroup			*mSubGroups, *mInOrderSubGroups;
-	CGPGroup			*mCurrentSubGroup;
-	CGPGroup			*mParent;
-	bool				mWriteable;
-
-	void	SortObject(CGPObject *object, CGPObject **unsortedList, CGPObject **sortedList, 
-					   CGPObject **lastObject);
-
-public:
-				CGPGroup(const char *initName = "Top Level", CGPGroup *initParent = 0);
-				~CGPGroup(void);
-
-	CGPGroup	*GetNext(void) { return (CGPGroup *)mNext; }
-	int			GetNumSubGroups(void); 
-	int			GetNumPairs(void);
-
-	void		Clean(void); 
-	CGPGroup	*Duplicate(CTextPool **textPool = 0, CGPGroup *initParent = 0);
-
-	void		SetWriteable(const bool writeable) { mWriteable = writeable; }
-	CGPValue	*GetPairs(void) { return mPairs; }
-	CGPValue	*GetInOrderPairs(void) { return mInOrderPairs; }
-	CGPGroup	*GetSubGroups(void) { return mSubGroups; }
-	CGPGroup	*GetInOrderSubGroups(void) { return mInOrderSubGroups; }
-
-	CGPValue	*AddPair(const char *name, const char *value, CTextPool **textPool = 0);
-	void		AddPair(CGPValue *NewPair);
-	CGPGroup	*AddGroup(const char *name, CTextPool **textPool = 0);
-	void		AddGroup(CGPGroup *NewGroup);
-	CGPGroup	*FindSubGroup(const char *name);
-	bool		Parse(char **dataPtr, CTextPool **textPool);
-	bool		Write(CTextPool **textPool, int depth);
-
-	CGPValue	*FindPair(const char *key);
-	const char	*FindPairValue(const char *key, const char *defaultVal = 0);
-};
-
+Used to parse effect files and the dynamic music system files. Parses blocks of the form `name { \n ... \n }`; blocks can contain other blocks or properties of the form `key value`. Value can also be a list; in that case the format is `key [\n value1 \n value2\n]`. Mind the separating newlines, values are actually newline-delimited.
+*/
 class CGenericParser2
 {
 private:
-	CGPGroup		mTopLevel;
-	CTextPool		*mTextPool;
-	bool			mWriteable;
+	CGPGroup mTopLevel;
+	FS::FileBuffer mFileContent;
 
 public:
-	CGenericParser2(void);
-	~CGenericParser2(void);
 
-	void		SetWriteable(const bool writeable) { mWriteable = writeable; }
-	CGPGroup	*GetBaseParseGroup(void) { return &mTopLevel; }
-
-	bool	Parse(char **dataPtr, bool cleanFirst = true, bool writeable = false);
-	bool	Parse(char *dataPtr, bool cleanFirst = true, bool writeable = false)
+	const CGPGroup& GetBaseParseGroup()
 	{
-		return Parse(&dataPtr, cleanFirst, writeable);
+		return mTopLevel;
 	}
-	void	Clean(void);
 
-	bool	Write(CTextPool *textPool);
+	bool Parse( gsl::czstring filename );
+	void Clear() NOEXCEPT;
+	bool ValidFile() const NOEXCEPT
+	{
+		return mFileContent.valid();
+	}
 };
-
-
-
-// The following groups of routines are used for a C interface into GP2.
-// C++ users should just use the objects as normally and not call these routines below
-//
-
-typedef		void	*TGenericParser2;
-typedef		void	*TGPGroup;
-typedef		void	*TGPValue;
-
-// CGenericParser2 (void *) routines
-TGenericParser2		GP_Parse(char **dataPtr, bool cleanFirst, bool writeable);
-void				GP_Clean(TGenericParser2 GP2);
-void				GP_Delete(TGenericParser2 *GP2);
-TGPGroup			GP_GetBaseParseGroup(TGenericParser2 GP2);
-
-// CGPGroup (void *) routines
-const char	*GPG_GetName(TGPGroup GPG);
-TGPGroup	GPG_GetNext(TGPGroup GPG);
-TGPGroup	GPG_GetInOrderNext(TGPGroup GPG);
-TGPGroup	GPG_GetInOrderPrevious(TGPGroup GPG);
-TGPGroup	GPG_GetPairs(TGPGroup GPG);
-TGPGroup	GPG_GetInOrderPairs(TGPGroup GPG);
-TGPGroup	GPG_GetSubGroups(TGPGroup GPG);
-TGPGroup	GPG_GetInOrderSubGroups(TGPGroup GPG);
-TGPGroup	GPG_FindSubGroup(TGPGroup GPG, const char *name);
-TGPValue	GPG_FindPair(TGPGroup GPG, const char *key);
-const char	*GPG_FindPairValue(TGPGroup GPG, const char *key, const char *defaultVal);
-
-// CGPValue (void *) routines
-const char	*GPV_GetName(TGPValue GPV);
-TGPValue	GPV_GetNext(TGPValue GPV);
-TGPValue	GPV_GetInOrderNext(TGPValue GPV);
-TGPValue	GPV_GetInOrderPrevious(TGPValue GPV);
-bool		GPV_IsList(TGPValue GPV);
-const char	*GPV_GetTopValue(TGPValue GPV);
-TGPValue	GPV_GetList(TGPValue GPV);
-
 
 #endif	// #ifndef GENERICPARSER2_H
 

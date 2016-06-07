@@ -1,24 +1,28 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cg_effects.c -- these functions generate localentities
 
-// this line must stay at top so the whole PCH thing works...
 #include "cg_headers.h"
 
 #include "cg_media.h"
@@ -33,7 +37,7 @@ CG_MakeExplosion
 ====================
 */
 /*
-localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir, 
+localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 								qhandle_t hModel, int numFrames, qhandle_t shader,
 								int msec, qboolean isSprite, float scale, int flags )
 {
@@ -51,7 +55,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 
 	ex = CG_AllocLocalEntity();
 	if ( isSprite ) {
-		ex->leType = LE_SPRITE_EXPLOSION; 
+		ex->leType = LE_SPRITE_EXPLOSION;
 		ex->refEntity.rotation = rand() % 360;
 		ex->radius = scale;
 		VectorScale( dir, 16, tmpVec );
@@ -76,7 +80,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 
 	ex->startTime = cg.time - offset;
 	ex->endTime = ex->startTime + msec;
-	
+
 	// bias the time so all shader effects start correctly
 	ex->refEntity.shaderTime = ex->startTime / 1000.0f;
 
@@ -103,7 +107,7 @@ localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 }
 */
 // When calling this version, just pass in a zero for the flags
-//localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir, 
+//localEntity_t *CG_MakeExplosion( vec3_t origin, vec3_t dir,
 //								qhandle_t hModel, int numFrames, qhandle_t shader,
 //								int msec, qboolean isSprite, float scale ) {
 //	return CG_MakeExplosion( origin, dir, hModel, numFrames, shader, msec, isSprite, scale, 0 );
@@ -124,17 +128,17 @@ localEntity_t *CG_AddTempLight( vec3_t origin, float scale, vec3_t color, int ms
 
 	ex = CG_AllocLocalEntity();
 
-	ex->leType = LE_LIGHT; 
+	ex->leType = LE_LIGHT;
 
 	ex->startTime = cg.time;
 	ex->endTime = ex->startTime + msec;
-	
+
 	// set origin
 	VectorCopy ( origin, ex->refEntity.origin);
 	VectorCopy ( origin, ex->refEntity.oldorigin );
 
 	VectorCopy( color, ex->lightColor );
-	ex->light = scale;	
+	ex->light = scale;
 
 	return ex;
 }
@@ -196,9 +200,9 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 
 	//Sparks
 	numSparks = 16 + (random() * 16.0f);
-	
+
 	for ( i = 0; i < numSparks; i++ )
-	{	
+	{
 		scale = 0.25f + (random() * 2.0f);
 		dscale = -scale*0.5;
 
@@ -232,16 +236,16 @@ void CG_SurfaceExplosion( vec3_t origin, vec3_t normal, float radius, float shak
 		VectorSet( temp_vel, velocity[0] + (crandom() * 8.0f), velocity[1] + (crandom() * 8.0f), velocity[2] + (crandom() * 8.0f) );
 
 		FX_AddSprite(	temp_org,
-						temp_vel, 
-						NULL, 
-						64.0f + (random() * 32.0f), 
-						16.0f, 
-						1.0f, 
+						temp_vel,
+						NULL,
+						64.0f + (random() * 32.0f),
+						16.0f,
+						1.0f,
 						0.0f,
 						20.0f + (crandom() * 90.0f),
 						0.5f,
-						1500.0f, 
-						cgs.media.smokeShader, FXF_USE_ALPHA_CHAN );	
+						1500.0f,
+						cgs.media.smokeShader, FXF_USE_ALPHA_CHAN );
 	}
 
 	//Core of the explosion
@@ -394,7 +398,7 @@ Fun chunk spewer
 -------------------------
 */
 
-void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs, 
+void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins, const vec3_t maxs,
 						float speed, int numChunks, material_t chunkType, int customChunk, float baseScale, int customSound = 0 )
 {
 	localEntity_t	*le;
@@ -414,7 +418,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 
 	if ( customSound )
 	{
-		if ( cgs.sound_precache[customSound] ) 
+		if ( cgs.sound_precache[customSound] )
 		{
 			cgi_S_StartSound( NULL, owner, CHAN_BODY, cgs.sound_precache[customSound] );
 		}
@@ -593,7 +597,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 			le->bounceFactor = 0.2f + random() * 0.2f;
 			le->leFlags |= LEF_TUMBLE;
 			le->ownerGentNum = owner;
-			le->leBounceSoundType = bounce; 
+			le->leBounceSoundType = bounce;
 
 			// Make sure that we have the desired start size set
 			le->radius = Q_flrand( baseScale * 0.75f, baseScale * 1.25f );
@@ -607,7 +611,7 @@ void CG_Chunks( int owner, vec3_t origin, const vec3_t normal, const vec3_t mins
 	}
 }
 
-void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int radius ) 
+void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int radius )
 {
 	localEntity_t	*le;
 	refEntity_t		*re;
@@ -654,7 +658,7 @@ void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int ra
 //
 //----------------------------
 
-// Since we have shared verts when we tesselate the glass sheet, it helps to have a 
+// Since we have shared verts when we tesselate the glass sheet, it helps to have a
 //	random offset table set up up front...so that we can have more random looking breaks.
 
 static float offX[20][20],
@@ -692,7 +696,7 @@ static void CG_DoGlassQuad( vec3_t p[4], vec2_t uv[4], bool stick, int time, vec
 			rgb1, rgb1, 0.0f,		// rgb start, rgb end, rgb parm ( not used )
 			rotDelta, bounce, time,	// rotation amount, bounce, and time to delay motion for ( zero if no delay );
 			3500 + random() * 1000,	// life
-			cgi_R_RegisterShader( "gfx/misc/test_crackle" ), 
+			cgi_R_RegisterShader( "gfx/misc/test_crackle" ),
 			FX_APPLY_PHYSICS | FX_ALPHA_NONLINEAR | FX_USE_ALPHA );
 
 	if ( random() > 0.95f && pol )
@@ -736,7 +740,7 @@ static void CG_CalcBiLerp( vec3_t verts[4], vec3_t subVerts[4], vec2_t uv[4] )
 	VectorMA( temp,			uv[3][1],			subVerts[3], subVerts[3] );
 }
 // bilinear
-//f(p',q') = (1 - y) × {[(1 - x) × f(p,q)] + [x × f(p,q+1)]} + y × {[(1 - x) × f(p+1,q)] + [x × f(p+1,q+1)]}. 
+//f(p',q') = (1 - y) × {[(1 - x) × f(p,q)] + [x × f(p,q+1)]} + y × {[(1 - x) × f(p+1,q)] + [x × f(p+1,q+1)]}.
 
 
 static void CG_CalcHeightWidth( vec3_t verts[4], float *height, float *width )
@@ -746,24 +750,24 @@ static void CG_CalcHeightWidth( vec3_t verts[4], float *height, float *width )
 	VectorSubtract( verts[3], verts[0], dir1 ); // v
 	VectorSubtract( verts[1], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*width = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*width = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	VectorSubtract( verts[2], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*width += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*width += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	*width *= 0.5f;
 
 	VectorSubtract( verts[1], verts[0], dir1 ); // v
 	VectorSubtract( verts[2], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*height = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*height = VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	VectorSubtract( verts[3], verts[0], dir2 ); // p-a
 	CrossProduct( dir1, dir2, cross );
-	*height += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v 
+	*height += VectorNormalize( cross ) / VectorNormalize( dir1 ); // v
 	*height *= 0.5f;
 }
-//Consider a line in 3D with position vector "a" and direction vector "v" and 
+//Consider a line in 3D with position vector "a" and direction vector "v" and
 // let "p" be the position vector of an arbitrary point in 3D
-//dist = len( crossprod(p-a,v) ) / len(v); 
+//dist = len( crossprod(p-a,v) ) / len(v);
 
 void CG_InitGlass( void )
 {
@@ -933,9 +937,9 @@ void CG_DoGlass( vec3_t verts[4], vec3_t normal, vec3_t dmgPt, vec3_t dmgDir, fl
 			Vector2Set( biPoints[3], xx, zz + stepHeight );
 
 			CG_CalcBiLerp( verts, subVerts, biPoints );
-			
+
 			float dif = DistanceSquared( subVerts[0], dmgPt ) * timeDecay - random() * 32;
-			
+
 			// If we decrease dif, we are increasing the impact area, making it more likely to blow out large holes
 			dif -= dmgRadius * dmgRadius;
 
@@ -1002,7 +1006,7 @@ void CG_DrawTargetBeam( vec3_t start, vec3_t end, vec3_t norm, const char *beamF
 	SEffectTemplate	*temp;
 
 	// overriding the effect, so give us a copy first
-	temp = theFxScheduler.GetEffectCopy( beamFx, &handle );	
+	temp = theFxScheduler.GetEffectCopy( beamFx, &handle );
 
 	VectorSubtract( start, end, dir );
 	VectorNormalize( dir );
@@ -1052,7 +1056,7 @@ void CG_PlayEffectBolted( const char *fxName, const int modelIndex, const int bo
 						&g_entities[entNum].ghoul2[modelIndex],
 						boltIndex,
 						entNum,
-						modelIndex); 
+						modelIndex);
 	//send direcly to FX scheduler
 	theFxScheduler.PlayEffect( fxName,
 								origin,

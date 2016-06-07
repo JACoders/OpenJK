@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #if !defined(FX_PRIMITIVES_H_INC)
 	#include "FxPrimitives.h"
@@ -33,15 +37,15 @@ bool	FX_ActiveFx(void);	// returns whether there are any active or scheduled eff
 
 
 CParticle *FX_AddParticle( int clientID, const vec3_t org, const vec3_t vel, const vec3_t accel, float gravity,
-							float size1, float size2, float sizeParm, 
-							float alpha1, float alpha2, float alphaParm, 
+							float size1, float size2, float sizeParm,
+							float alpha1, float alpha2, float alphaParm,
 							const vec3_t rgb1, const vec3_t rgb2, float rgbParm,
 							float rotation, float rotationDelta,
-							const vec3_t min, const vec3_t max, float elasticity, 
+							const vec3_t min, const vec3_t max, float elasticity,
 							int deathID, int impactID,
 							int killTime, qhandle_t shader, int flags, int modelNum = -1, int boltNum = -1 );
 
-CLine *FX_AddLine( int clientID, vec3_t start, vec3_t end, 
+CLine *FX_AddLine( int clientID, vec3_t start, vec3_t end,
 							float size1, float size2, float sizeParm,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
@@ -52,16 +56,16 @@ CElectricity *FX_AddElectricity( int clientID, vec3_t start, vec3_t end, float s
 							vec3_t sRGB, vec3_t eRGB, float rgbParm,
 							float chaos, int killTime, qhandle_t shader, int flags, int modelNum = -1, int boltNum = -1 );
 
-CTail *FX_AddTail( int clientID, vec3_t org, vec3_t vel, vec3_t accel, 
-							float size1, float size2, float sizeParm, 
+CTail *FX_AddTail( int clientID, vec3_t org, vec3_t vel, vec3_t accel,
+							float size1, float size2, float sizeParm,
 							float length1, float length2, float lengthParm,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
-							vec3_t min, vec3_t max, float elasticity, 
+							vec3_t min, vec3_t max, float elasticity,
 							int deathID, int impactID,
 							int killTime, qhandle_t shader, int flags, int modelNum = -1, int boltNum = -1 );
 
-CCylinder *FX_AddCylinder( int clientID, vec3_t start, vec3_t normal, 
+CCylinder *FX_AddCylinder( int clientID, vec3_t start, vec3_t normal,
 							float size1s, float size1e, float size1Parm,
 							float size2s, float size2e, float size2Parm,
 							float length1, float length2, float lengthParm,
@@ -74,7 +78,7 @@ CEmitter *FX_AddEmitter( vec3_t org, vec3_t vel, vec3_t accel,
 							float alpha1, float alpha2, float alphaParm,
 							vec3_t rgb1, vec3_t rgb2, float rgbParm,
 							vec3_t angs, vec3_t deltaAngs,
-							vec3_t min, vec3_t max, float elasticity, 
+							vec3_t min, vec3_t max, float elasticity,
 							int deathID, int impactID, int emitterID,
 							float density, float variance,
 							int killTime, qhandle_t model, int flags );
@@ -104,38 +108,38 @@ CFlash *FX_AddFlash( vec3_t origin, vec3_t sRGB, vec3_t eRGB, float rgbParm,
 
 
 // Included for backwards compatibility with CHC and for doing quick programmatic effects.
-void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel, 
-							float scale, float dscale, 
-							float sAlpha, float eAlpha, 
-							float rotation, float bounce, 
+void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel,
+							float scale, float dscale,
+							float sAlpha, float eAlpha,
+							float rotation, float bounce,
 							int life, qhandle_t shader, int flags = 0 );
 
-void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel, 
-							float scale, float dscale, 
-							float sAlpha, float eAlpha, 
-							vec3_t sRGB, vec3_t eRGB, 
-							float rotation, float bounce, 
+void FX_AddSprite( vec3_t origin, vec3_t vel, vec3_t accel,
+							float scale, float dscale,
+							float sAlpha, float eAlpha,
+							vec3_t sRGB, vec3_t eRGB,
+							float rotation, float bounce,
 							int life, qhandle_t shader, int flags = 0 );
 
-void FX_AddLine( vec3_t start, vec3_t end, float stScale, 
-							float width, float dwidth, 
-							float sAlpha, float eAlpha, 
+void FX_AddLine( vec3_t start, vec3_t end, float stScale,
+							float width, float dwidth,
+							float sAlpha, float eAlpha,
 							int life, qhandle_t shader, int flags = 0 );
 
-void FX_AddLine( vec3_t start, vec3_t end, float stScale, 
-							float width, float dwidth, 
-							float sAlpha, float eAlpha, 
-							vec3_t sRGB, vec3_t eRGB, 
+void FX_AddLine( vec3_t start, vec3_t end, float stScale,
+							float width, float dwidth,
+							float sAlpha, float eAlpha,
+							vec3_t sRGB, vec3_t eRGB,
 							int life, qhandle_t shader, int flags = 0 );
 
-void FX_AddQuad( vec3_t origin, vec3_t normal, 
-						vec3_t vel, vec3_t accel, 
-						float sradius, float eradius, 
-						float salpha, float ealpha, 
-						vec3_t sRGB, vec3_t eRGB, 
+void FX_AddQuad( vec3_t origin, vec3_t normal,
+						vec3_t vel, vec3_t accel,
+						float sradius, float eradius,
+						float salpha, float ealpha,
+						vec3_t sRGB, vec3_t eRGB,
 						float rotation, int life, qhandle_t shader, int flags = 0 );
 
-CBezier *FX_AddBezier( const vec3_t start, const vec3_t end, 
+CBezier *FX_AddBezier( const vec3_t start, const vec3_t end,
 						const vec3_t control1, const vec3_t control1Vel,
 						const vec3_t control2, const vec3_t control2Vel,
 						float size1, float size2, float sizeParm,

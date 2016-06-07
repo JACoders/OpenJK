@@ -1,27 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // cl_scrn.c -- master for refresh, status bar, console, chat, notify, etc
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
 
 #include "client.h"
 #include "client_ui.h"
@@ -115,8 +118,8 @@ void SCR_DrawBigChar( int x, int y, int ch ) {
 	size = 0.0625;
 /*
 	re.DrawStretchPic( ax, ay, aw, ah,
-					   fcol, frow, 
-					   fcol + size, frow + size, 
+					   fcol, frow,
+					   fcol + size, frow + size,
 					   cls.charSetShader );
 */
 	float size2;
@@ -127,8 +130,8 @@ void SCR_DrawBigChar( int x, int y, int ch ) {
 	size2 = 0.0625;
 
 	re.DrawStretchPic( ax, ay, aw, ah,
-					   fcol, frow, 
-					   fcol + size, frow + size2, 
+					   fcol, frow,
+					   fcol + size, frow + size2,
 					   cls.charSetShader );
 
 }
@@ -160,8 +163,8 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	size = 0.0625;
 
 	re.DrawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
-					   fcol, frow, 
-					   fcol + size, frow + size, 
+					   fcol, frow,
+					   fcol + size, frow + size,
 					   cls.charSetShader );
 */
 
@@ -172,10 +175,10 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	size = 0.03125;
 	size2 = 0.0625;
 
-	re.DrawStretchPic( x * con.xadjust, y * con.yadjust, 
-						SMALLCHAR_WIDTH * con.xadjust, SMALLCHAR_HEIGHT * con.yadjust, 
-		fcol, frow, 
-		fcol + size, frow + size2, 
+	re.DrawStretchPic( x * con.xadjust, y * con.yadjust,
+						SMALLCHAR_WIDTH * con.xadjust, SMALLCHAR_HEIGHT * con.yadjust,
+		fcol, frow,
+		fcol + size, frow + size2,
 		cls.charSetShader );
 
 }
@@ -308,7 +311,7 @@ static int SCR_Strlen( const char *str ) {
 
 /*
 ** SCR_GetBigStringWidth
-*/ 
+*/
 int	SCR_GetBigStringWidth( const char *str ) {
 	return SCR_Strlen( str ) * BIGCHAR_WIDTH;
 }
@@ -361,7 +364,7 @@ void SCR_DrawDebugGraph (void)
 	x = 0;
 	y = cls.glconfig.vidHeight;
 	re.SetColor( g_color_table[0] );
-	re.DrawStretchPic(x, y - cl_graphheight->integer, 
+	re.DrawStretchPic(x, y - cl_graphheight->integer,
 		w, cl_graphheight->integer, 0, 0, 0, 0, 0 );
 	re.SetColor( NULL );
 
@@ -370,7 +373,7 @@ void SCR_DrawDebugGraph (void)
 		i = (current-1-a+1024) & 1023;
 		v = values[i].value;
 		v = v * cl_graphscale->integer + cl_graphshift->integer;
-		
+
 		if (v < 0)
 			v += cl_graphheight->integer * (1+(int)(-v / cl_graphheight->integer));
 		h = (int)v % cl_graphheight->integer;
@@ -414,16 +417,6 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	qboolean uiFullscreen = _UI_IsFullscreen();
 
-	// wide aspect ratio screens need to have the sides cleared
-	// unless they are displaying game renderings
-	if ( uiFullscreen || (cls.state != CA_ACTIVE && cls.state != CA_CINEMATIC) ) {
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			re.SetColor( g_color_table[0] );
-			re.DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, 0 );
-			re.SetColor( NULL );
-		}
-	}
-
 	// if the menu is going to cover the entire screen, we
 	// don't need to render anything under it
 	if ( !uiFullscreen ) {
@@ -452,7 +445,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		case CA_ACTIVE:
 			if (CL_IsRunningInGameCinematic() || CL_InGameCinematicOnStandBy())
 			{
-				SCR_DrawCinematic();				
+				SCR_DrawCinematic();
 			}
 			else
 			{
@@ -501,18 +494,23 @@ void SCR_UpdateScreen( void ) {
 	}
 	recursive = qtrue;
 
-	// if running in stereo, we need to draw the frame twice
-	if ( cls.glconfig.stereoEnabled ) {
-		SCR_DrawScreenField( STEREO_LEFT );
-		SCR_DrawScreenField( STEREO_RIGHT );
-	} else {
-		SCR_DrawScreenField( STEREO_CENTER );
-	}
+	// If there is no VM, there are also no rendering commands issued. Stop the renderer in
+	// that case.
+	if ( cls.uiStarted )
+	{
+		// if running in stereo, we need to draw the frame twice
+		if ( cls.glconfig.stereoEnabled ) {
+			SCR_DrawScreenField( STEREO_LEFT );
+			SCR_DrawScreenField( STEREO_RIGHT );
+		} else {
+			SCR_DrawScreenField( STEREO_CENTER );
+		}
 
-	if ( com_speeds->integer ) {
-		re.EndFrame( &time_frontend, &time_backend );
-	} else {
-		re.EndFrame( NULL, NULL );
+		if ( com_speeds->integer ) {
+			re.EndFrame( &time_frontend, &time_backend );
+		} else {
+			re.EndFrame( NULL, NULL );
+		}
 	}
 
 	recursive = 0;
@@ -535,11 +533,11 @@ void SCR_PrecacheScreenshot()
 	// No screenshots unless connected to single player local server...
 	//
 //	char *psInfo = cl.gameState.stringData + cl.gameState.stringOffsets[ CS_SERVERINFO ];
-//	int iMaxClients = atoi(Info_ValueForKey( psInfo, "sv_maxclients" ));		
+//	int iMaxClients = atoi(Info_ValueForKey( psInfo, "sv_maxclients" ));
 
 	// (no need to check single-player status in voyager, this code base is all singleplayer)
 	if ( cls.state != CA_ACTIVE )
-	{	
+	{
 		return;
 	}
 
@@ -548,7 +546,7 @@ void SCR_PrecacheScreenshot()
 		// in-game...
 		//
 //		SCR_UnprecacheScreenshot();
-//		pbScreenData = (byte *)Z_Malloc(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4);		
+//		pbScreenData = (byte *)Z_Malloc(SG_SCR_WIDTH * SG_SCR_HEIGHT * 4);
 		S_ClearSoundBuffer();	// clear DMA etc because the following glReadPixels() call can take ages
 		re.GetScreenShot( (byte *) &bScreenData, SG_SCR_WIDTH, SG_SCR_HEIGHT);
 		screenDataValid = qtrue;
@@ -584,9 +582,10 @@ void SCR_SetScreenshot(const byte *pbData, int w, int h)
 }
 
 
+#ifdef JK2_MODE
 // This is just a client-side wrapper for the function RE_TempRawImage_ReadFromFile() in the renderer code...
 //
-/*
+
 byte* SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip)
 {
 	return re.TempRawImage_ReadFromFile(psLocalFilename, piWidth, piHeight, pbReSampleBuffer, qbVertFlip);
@@ -598,5 +597,6 @@ void  SCR_TempRawImage_CleanUp()
 {
 	re.TempRawImage_CleanUp();
 }
-*/
+#endif
+
 

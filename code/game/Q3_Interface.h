@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __Q3_INTERFACE__
 #define __Q3_INTERFACE__
@@ -44,7 +48,7 @@ typedef enum //# setType_e
 	SET_PARM15,//## %s="" # Set entity parm15
 	SET_PARM16,//## %s="" # Set entity parm16
 
-	// NOTE!!! If you add any other SET_xxxxxxSCRIPT types, make sure you update the 'case' statements in 
+	// NOTE!!! If you add any other SET_xxxxxxSCRIPT types, make sure you update the 'case' statements in
 	//	ICARUS_InterrogateScript() (game/g_ICARUS.cpp), or the script-precacher won't find them.
 
 	//# #sep Scripts and other file paths
@@ -64,7 +68,7 @@ typedef enum //# setType_e
 	SET_FFDEATHSCRIPT,//## %s="NULL" !!"W:\game\base\scripts\!!#*.txt" # Script to run when player kills a teammate
 	SET_MINDTRICKSCRIPT,//## %s="NULL" !!"W:\game\base\scripts\!!#*.txt" # Script to run when player kills a teammate
 	SET_VIDEO_PLAY,//## %s="filename" !!"W:\game\base\video\!!#*.roq" # Play a video (inGame)
-	SET_CINEMATIC_SKIPSCRIPT, //## %s="filename" !!"W:\game\base\scripts\!!#*.txt" # Script to run when skipping the running cinematic 
+	SET_CINEMATIC_SKIPSCRIPT, //## %s="filename" !!"W:\game\base\scripts\!!#*.txt" # Script to run when skipping the running cinematic
 	SET_RAILCENTERTRACKLOCKED, //## %s="targetname"  # Turn off the centered movers on the given track
 	SET_RAILCENTERTRACKUNLOCKED, //## %s="targetname"  # Turn on the centered movers on the given track
 	SET_SKIN,//## %s="models/players/???/model_default.skin" # just blindly sets whatever skin you set!  include full path after "base/"... eg: "models/players/tavion_new/model_possessed.skin"
@@ -115,7 +119,7 @@ typedef enum //# setType_e
 	SET_ANGLES,//## %v="0.0 0.0 0.0" # Set angles explicitly or with TAG
 	SET_TELEPORT_DEST,//## %v="0.0 0.0 0.0" # Set origin here as soon as the area is clear
 	SET_SABER_ORIGIN,//## %v="0.0 0.0 0.0" # Removes this ent's saber from their hand, turns it off, and places it at the specified location
-	
+
 	//# #sep floats
 	SET_XVELOCITY,//## %f="0.0" # Velocity along X axis
 	SET_YVELOCITY,//## %f="0.0" # Velocity along Y axis
@@ -133,6 +137,10 @@ typedef enum //# setType_e
 	SET_FACEBLINK,		//## %f="0.0" # Set face to Blink expression for number of seconds
 	SET_FACEBLINKFROWN,	//## %f="0.0" # Set face to Blinkfrown expression for number of seconds
 	SET_FACEFROWN,		//## %f="0.0" # Set face to Frown expression for number of seconds
+	SET_FACESMILE,		//## %f="0.0" # Set face to Smile expression for number of seconds
+	SET_FACEGLAD,		//## %f="0.0" # Set face to Glad expression for number of seconds
+	SET_FACEHAPPY,		//## %f="0.0" # Set face to Happy expression for number of seconds
+	SET_FACESHOCKED,		//## %f="0.0" # Set face to Shocked expression for number of seconds
 	SET_FACENORMAL,		//## %f="0.0" # Set face to Normal expression for number of seconds
 	SET_FACEEYESCLOSED,	//## %f="0.0" # Set face to Eyes closed
 	SET_FACEEYESOPENED,	//## %f="0.0" # Set face to Eyes open
@@ -308,7 +316,7 @@ typedef enum //# setType_e
 	SET_TACTICAL_HIDE,		//## %t="TACTICAL" # Hide tactical info on mission objectives screen
 	SET_OBJECTIVE_CLEARALL,	//## # Force all objectives to be hidden
 /*
-	SET_OBJECTIVEFOSTER,	
+	SET_OBJECTIVEFOSTER,
 */
 	SET_OBJECTIVE_LIGHTSIDE,	//## # Used to get whether the player has chosen the light (succeeded) or dark (failed) side.
 
@@ -322,7 +330,7 @@ typedef enum //# setType_e
 
 	//# #eol
 	SET_
-} setType_t;	
+} setType_t;
 
 
 // this enum isn't used directly by the game, it's mainly for BehavEd to scan for...
@@ -408,7 +416,7 @@ enum
 };
 
 //Token defines
-enum 
+enum
 {
 	TK_BLOCK_START = TK_USERDEF,
 	TK_BLOCK_END,
@@ -476,9 +484,9 @@ enum
 	TYPE_ORIGIN,
 
 	//Affect types
-	TYPE_INSERT,	
-	TYPE_FLUSH,	
-	
+	TYPE_INSERT,
+	TYPE_FLUSH,
+
 	//Camera types
 	TYPE_PAN,
 	TYPE_ZOOM,
@@ -492,7 +500,7 @@ enum
 	TYPE_TRACK,
 	TYPE_DISTANCE,
 	TYPE_FOLLOW,
-		
+
 	//Variable type
 	TYPE_VARIABLE,
 
@@ -544,12 +552,12 @@ typedef struct pscript_s
 } pscript_t;
 
 // STL map type definitions for the Entity List and Script Buffer List.
-typedef	map < string, int, less<string>, allocator<int> >		entitylist_t;
-typedef map < string, pscript_t*, less<string>, allocator<pscript_t*> >	scriptlist_t;
+typedef	std::map < std::string, int >		entitylist_t;
+typedef std::map < std::string, pscript_t* >	scriptlist_t;
 
 // STL map type definitions for the variable containers.
-typedef map < string, string >		varString_m;
-typedef map < string, float >		varFloat_m;
+typedef std::map < std::string, std::string >		varString_m;
+typedef std::map < std::string, float >		varFloat_m;
 
 
 // The Quake 3 Game Interface Class for Quake3 and Icarus to use.
@@ -617,7 +625,7 @@ public:
 
 	// Make a valid script name.
 	int MakeValidScriptName( char **strScriptName );
-	
+
 	// First looks to see if a script has already been loaded, if so, return SCRIPT_ALREADYREGISTERED. If a script has
 	// NOT been already cached, that script is loaded and the return is SCRIPT_REGISTERED. If a script could not
 	// be found cached and could not be loaded we return SCRIPT_COULDNOTREGISTER.
@@ -625,7 +633,7 @@ public:
 
 	// Precache all the resources needed by a Script and it's Entity (or vice-versa).
 	int PrecacheEntity( gentity_t *pEntity );
-	
+
 	// Run the script.
 	void RunScript( const gentity_t *pEntity, const char *strScriptName );
 
@@ -652,7 +660,7 @@ public:
 	void	DebugPrint( e_DebugPrintLevel, const char *, ... );
 	unsigned int GetTime( void );							//Gets the current time
 	//DWORD	GetTimeScale(void );
-	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );	
+	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );
 	void	Lerp2Pos( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	void	Lerp2Angles( int taskID, int entID, vec3_t angles, float duration );
 	int		GetTag( int entID, const char *name, int lookup, vec3_t info );
@@ -692,7 +700,7 @@ public:
 	int		WriteSaveData( unsigned int chid, void *data, int length );
 	int		ReadSaveData( unsigned int chid, void *address, int length, void **addressptr = NULL );
 	int		LinkGame( int entID, int icarusID );
-	
+
 	// Access functions
 	int		CreateIcarus( int entID);
 			//Polls the engine for the sequencer of the entity matching the name passed

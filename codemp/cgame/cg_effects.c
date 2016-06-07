@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // cg_effects.c -- these functions generate localentities, usually as a result
 // of event processing
 
@@ -201,45 +222,6 @@ void CG_TestLine( vec3_t start, vec3_t end, int time, unsigned int color, int ra
 	le->color[3] = 1.0;
 
 	//re->renderfx |= RF_DEPTHHACK;
-}
-
-/*
-==================
-CG_ThrowChunk
-==================
-*/
-void CG_ThrowChunk( vec3_t origin, vec3_t velocity, qhandle_t hModel, int optionalSound, int startalpha ) {
-	localEntity_t	*le;
-	refEntity_t		*re;
-
-	le = CG_AllocLocalEntity();
-	re = &le->refEntity;
-
-	le->leType = LE_FRAGMENT;
-	le->startTime = cg.time;
-	le->endTime = le->startTime + 5000 + random() * 3000;
-
-	VectorCopy( origin, re->origin );
-	AxisCopy( axisDefault, re->axis );
-	re->hModel = hModel;
-
-	le->pos.trType = TR_GRAVITY;
-	le->angles.trType = TR_GRAVITY;
-	VectorCopy( origin, le->pos.trBase );
-	VectorCopy( velocity, le->pos.trDelta );
-	VectorSet(le->angles.trBase, 20, 20, 20);
-	VectorCopy( velocity, le->angles.trDelta );
-	le->pos.trTime = cg.time;
-	le->angles.trTime = cg.time;
-
-	le->leFlags = LEF_TUMBLE;
-
-	le->angles.trBase[YAW] = 180;
-
-	le->bounceFactor = 0.3f;
-	le->bounceSound = optionalSound;
-
-	le->forceAlpha = startalpha;
 }
 
 //----------------------------
@@ -663,244 +645,6 @@ void CG_GlassShatter(int entnum, vec3_t dmgPt, vec3_t dmgDir, float dmgRadius, i
 		CG_DoGlass(verts, normal, dmgPt, dmgDir, dmgRadius, maxShards);
 	}
 	//otherwise something awful has happened.
-}
-
-/*
-==================
-CG_GlassShatter_Old
-Throws glass shards from within a given bounding box in the world
-==================
-*/
-void CG_GlassShatter_Old(int entnum, vec3_t org, vec3_t mins, vec3_t maxs)
-{
-	vec3_t velocity, a, shardorg, dif, difx;
-	float windowmass;
-	float shardsthrow = 0;
-	char chunkname[256];
-
-	trap->S_StartSound(org, entnum, CHAN_BODY, trap->S_RegisterSound("sound/effects/glassbreak1.wav"));
-
-	VectorSubtract(maxs, mins, a);
-
-	windowmass = VectorLength(a); //should give us some idea of how big the chunk of glass is
-
-	while (shardsthrow < windowmass)
-	{
-		velocity[0] = crandom()*150;
-		velocity[1] = crandom()*150;
-		velocity[2] = 150 + crandom()*75;
-
-		Com_sprintf(chunkname, sizeof(chunkname), "models/chunks/glass/glchunks_%i.md3", Q_irand(1, 6));
-		VectorCopy(org, shardorg);
-
-		dif[0] = (maxs[0]-mins[0])/2;
-		dif[1] = (maxs[1]-mins[1])/2;
-		dif[2] = (maxs[2]-mins[2])/2;
-
-		if (dif[0] < 2)
-		{
-			dif[0] = 2;
-		}
-		if (dif[1] < 2)
-		{
-			dif[1] = 2;
-		}
-		if (dif[2] < 2)
-		{
-			dif[2] = 2;
-		}
-
-		difx[0] = Q_irand(1, (dif[0]*0.9)*2);
-		difx[1] = Q_irand(1, (dif[1]*0.9)*2);
-		difx[2] = Q_irand(1, (dif[2]*0.9)*2);
-
-		if (difx[0] > dif[0])
-		{
-			shardorg[0] += difx[0]-(dif[0]);
-		}
-		else
-		{
-			shardorg[0] -= difx[0];
-		}
-		if (difx[1] > dif[1])
-		{
-			shardorg[1] += difx[1]-(dif[1]);
-		}
-		else
-		{
-			shardorg[1] -= difx[1];
-		}
-		if (difx[2] > dif[2])
-		{
-			shardorg[2] += difx[2]-(dif[2]);
-		}
-		else
-		{
-			shardorg[2] -= difx[2];
-		}
-
-		//CG_TestLine(org, shardorg, 5000, 0x0000ff, 3);
-
-		CG_ThrowChunk( shardorg, velocity, trap->R_RegisterModel( chunkname ), 0, 254 );
-
-		shardsthrow += 10;
-	}
-}
-
-/*
-==================
-CG_CreateDebris
-Throws specified debris from within a given bounding box in the world
-==================
-*/
-#define DEBRIS_SPECIALCASE_ROCK			-1
-#define DEBRIS_SPECIALCASE_CHUNKS		-2
-#define DEBRIS_SPECIALCASE_WOOD			-3
-#define DEBRIS_SPECIALCASE_GLASS		-4
-
-#define NUM_DEBRIS_MODELS_GLASS				8
-#define NUM_DEBRIS_MODELS_WOOD				8
-#define NUM_DEBRIS_MODELS_CHUNKS			3
-#define NUM_DEBRIS_MODELS_ROCKS				4 //12
-
-int dbModels_Glass[NUM_DEBRIS_MODELS_GLASS];
-int dbModels_Wood[NUM_DEBRIS_MODELS_WOOD];
-int dbModels_Chunks[NUM_DEBRIS_MODELS_CHUNKS];
-int dbModels_Rocks[NUM_DEBRIS_MODELS_ROCKS];
-
-void CG_CreateDebris(int entnum, vec3_t org, vec3_t mins, vec3_t maxs, int debrissound, int debrismodel)
-{
-	vec3_t velocity, a, shardorg, dif, difx;
-	float windowmass;
-	float shardsthrow = 0;
-	int omodel = debrismodel;
-
-	if (omodel == DEBRIS_SPECIALCASE_GLASS && !dbModels_Glass[0])
-	{ //glass no longer exists, using it for metal.
-		dbModels_Glass[0] = trap->R_RegisterModel("models/chunks/metal/metal1_1.md3");
-		dbModels_Glass[1] = trap->R_RegisterModel("models/chunks/metal/metal1_2.md3");
-		dbModels_Glass[2] = trap->R_RegisterModel("models/chunks/metal/metal1_3.md3");
-		dbModels_Glass[3] = trap->R_RegisterModel("models/chunks/metal/metal1_4.md3");
-		dbModels_Glass[4] = trap->R_RegisterModel("models/chunks/metal/metal2_1.md3");
-		dbModels_Glass[5] = trap->R_RegisterModel("models/chunks/metal/metal2_2.md3");
-		dbModels_Glass[6] = trap->R_RegisterModel("models/chunks/metal/metal2_3.md3");
-		dbModels_Glass[7] = trap->R_RegisterModel("models/chunks/metal/metal2_4.md3");
-	}
-	if (omodel == DEBRIS_SPECIALCASE_WOOD && !dbModels_Wood[0])
-	{
-		dbModels_Wood[0] = trap->R_RegisterModel("models/chunks/crate/crate1_1.md3");
-		dbModels_Wood[1] = trap->R_RegisterModel("models/chunks/crate/crate1_2.md3");
-		dbModels_Wood[2] = trap->R_RegisterModel("models/chunks/crate/crate1_3.md3");
-		dbModels_Wood[3] = trap->R_RegisterModel("models/chunks/crate/crate1_4.md3");
-		dbModels_Wood[4] = trap->R_RegisterModel("models/chunks/crate/crate2_1.md3");
-		dbModels_Wood[5] = trap->R_RegisterModel("models/chunks/crate/crate2_2.md3");
-		dbModels_Wood[6] = trap->R_RegisterModel("models/chunks/crate/crate2_3.md3");
-		dbModels_Wood[7] = trap->R_RegisterModel("models/chunks/crate/crate2_4.md3");
-	}
-	if (omodel == DEBRIS_SPECIALCASE_CHUNKS && !dbModels_Chunks[0])
-	{
-		dbModels_Chunks[0] = trap->R_RegisterModel("models/chunks/generic/chunks_1.md3");
-		dbModels_Chunks[1] = trap->R_RegisterModel("models/chunks/generic/chunks_2.md3");
-	}
-	if (omodel == DEBRIS_SPECIALCASE_ROCK && !dbModels_Rocks[0])
-	{
-		dbModels_Rocks[0] = trap->R_RegisterModel("models/chunks/rock/rock1_1.md3");
-		dbModels_Rocks[1] = trap->R_RegisterModel("models/chunks/rock/rock1_2.md3");
-		dbModels_Rocks[2] = trap->R_RegisterModel("models/chunks/rock/rock1_3.md3");
-		dbModels_Rocks[3] = trap->R_RegisterModel("models/chunks/rock/rock1_4.md3");
-		/*
-		dbModels_Rocks[4] = trap->R_RegisterModel("models/chunks/rock/rock2_1.md3");
-		dbModels_Rocks[5] = trap->R_RegisterModel("models/chunks/rock/rock2_2.md3");
-		dbModels_Rocks[6] = trap->R_RegisterModel("models/chunks/rock/rock2_3.md3");
-		dbModels_Rocks[7] = trap->R_RegisterModel("models/chunks/rock/rock2_4.md3");
-		dbModels_Rocks[8] = trap->R_RegisterModel("models/chunks/rock/rock3_1.md3");
-		dbModels_Rocks[9] = trap->R_RegisterModel("models/chunks/rock/rock3_2.md3");
-		dbModels_Rocks[10] = trap->R_RegisterModel("models/chunks/rock/rock3_3.md3");
-		dbModels_Rocks[11] = trap->R_RegisterModel("models/chunks/rock/rock3_4.md3");
-		*/
-	}
-
-	VectorSubtract(maxs, mins, a);
-
-	windowmass = VectorLength(a); //should give us some idea of how big the chunk of glass is
-
-	while (shardsthrow < windowmass)
-	{
-		velocity[0] = crandom()*150;
-		velocity[1] = crandom()*150;
-		velocity[2] = 150 + crandom()*75;
-
-		if (omodel == DEBRIS_SPECIALCASE_GLASS)
-		{
-			debrismodel = dbModels_Glass[Q_irand(0, NUM_DEBRIS_MODELS_GLASS-1)];
-		}
-		else if (omodel == DEBRIS_SPECIALCASE_WOOD)
-		{
-			debrismodel = dbModels_Wood[Q_irand(0, NUM_DEBRIS_MODELS_WOOD-1)];
-		}
-		else if (omodel == DEBRIS_SPECIALCASE_CHUNKS)
-		{
-			debrismodel = dbModels_Chunks[Q_irand(0, NUM_DEBRIS_MODELS_CHUNKS-1)];
-		}
-		else if (omodel == DEBRIS_SPECIALCASE_ROCK)
-		{
-			debrismodel = dbModels_Rocks[Q_irand(0, NUM_DEBRIS_MODELS_ROCKS-1)];
-		}
-
-		VectorCopy(org, shardorg);
-
-		dif[0] = (maxs[0]-mins[0])/2;
-		dif[1] = (maxs[1]-mins[1])/2;
-		dif[2] = (maxs[2]-mins[2])/2;
-
-		if (dif[0] < 2)
-		{
-			dif[0] = 2;
-		}
-		if (dif[1] < 2)
-		{
-			dif[1] = 2;
-		}
-		if (dif[2] < 2)
-		{
-			dif[2] = 2;
-		}
-
-		difx[0] = Q_irand(1, (dif[0]*0.9)*2);
-		difx[1] = Q_irand(1, (dif[1]*0.9)*2);
-		difx[2] = Q_irand(1, (dif[2]*0.9)*2);
-
-		if (difx[0] > dif[0])
-		{
-			shardorg[0] += difx[0]-(dif[0]);
-		}
-		else
-		{
-			shardorg[0] -= difx[0];
-		}
-		if (difx[1] > dif[1])
-		{
-			shardorg[1] += difx[1]-(dif[1]);
-		}
-		else
-		{
-			shardorg[1] -= difx[1];
-		}
-		if (difx[2] > dif[2])
-		{
-			shardorg[2] += difx[2]-(dif[2]);
-		}
-		else
-		{
-			shardorg[2] -= difx[2];
-		}
-
-		//CG_TestLine(org, shardorg, 5000, 0x0000ff, 3);
-
-		CG_ThrowChunk( shardorg, velocity, debrismodel, debrissound, 0 );
-
-		shardsthrow += 10;
-	}
 }
 
 //==========================================================

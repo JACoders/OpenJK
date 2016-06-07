@@ -1,22 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every FXxxxx.CPP file
 #include "common_headers.h"
 
 #if !defined(FX_SCHEDULER_H_INC)
@@ -48,7 +51,7 @@ void SFxHelper::Print( const char *msg, ... )
 	va_start( argptr, msg );
 	Q_vsnprintf (text, sizeof(text), msg, argptr);
 	va_end( argptr );
- 
+
 	gi.Printf( text );
 
 #endif
@@ -113,13 +116,13 @@ void SFxHelper::PlayLocalSound( int sfxHandle, int channelNum )
 }
 
 //------------------------------------------------------
-void SFxHelper::Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, 
+void SFxHelper::Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max,
 						vec3_t end, int skipEntNum, int flags )
 {
 	CG_Trace( tr, start, min, max, end, skipEntNum, flags );
 }
 
-void SFxHelper::G2Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, 
+void SFxHelper::G2Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max,
 						vec3_t end, int skipEntNum, int flags )
 {
 	//CG_Trace( tr, start, min, max, end, skipEntNum, flags, G2_COLLIDE );
@@ -133,21 +136,23 @@ void SFxHelper::AddFxToScene( refEntity_t *ent )
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterShader( const char *shader )
+int SFxHelper::RegisterShader( const gsl::cstring_view& shader )
 {
-	return cgi_R_RegisterShader( shader );
+	// TODO: it would be nice to change the ABI here to allow for passing of string views
+	return cgi_R_RegisterShader( std::string( shader.begin(), shader.end() ).c_str() );
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterSound( const char *sound )
+int SFxHelper::RegisterSound( const gsl::cstring_view& sound )
 {
-	return cgi_S_RegisterSound( sound );
+	// TODO: it would be nice to change the ABI here to allow for passing of string views
+	return cgi_S_RegisterSound( std::string( sound.begin(), sound.end() ).c_str() );
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterModel( const char *model )
+int SFxHelper::RegisterModel( const gsl::cstring_view& model )
 {
-	return cgi_R_RegisterModel( model );
+	return cgi_R_RegisterModel( std::string( model.begin(), model.end() ).c_str() );
 }
 
 //------------------------------------------------------
@@ -182,7 +187,7 @@ int SFxHelper::GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int bo
 	if ( cent.currentState.eType == ET_PLAYER )
 	{//players use cent.renderAngles
 		VectorCopy( cent.renderAngles, G2Angles );
-		
+
 		if ( cent.gent //has a game entity
 			&& cent.gent->s.m_iVehicleNum != 0 //in a vehicle
 			&& cent.gent->m_pVehicle //have a valid vehicle pointer
@@ -196,9 +201,9 @@ int SFxHelper::GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int bo
 	}
 
 	// go away and get me the bolt position for this frame please
-	doesBoltExist = gi.G2API_GetBoltMatrix(cent.gent->ghoul2, modelNum, 
-		boltNum, &boltMatrix, G2Angles, 
-		cent.lerpOrigin, cg.time, cgs.model_draw, 
+	doesBoltExist = gi.G2API_GetBoltMatrix(cent.gent->ghoul2, modelNum,
+		boltNum, &boltMatrix, G2Angles,
+		cent.lerpOrigin, cg.time, cgs.model_draw,
 		cent.currentState.modelScale);
 	// set up the axis and origin we need for the actual effect spawning
 	origin[0] = boltMatrix.matrix[0][3];

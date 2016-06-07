@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
 
 // this file holds commands that can be executed by the server console, but not remote clients
 
@@ -111,7 +132,7 @@ static void UpdateIPBans( void ) {
 			if ( m.b[j] != 0xFF )
 				Q_strcat( ip, sizeof( ip ), "*" );
 			else
-				Q_strcat( ip, sizeof( ip ), va( "%i", (int)b.c[j] ) );
+				Q_strcat( ip, sizeof( ip ), va( "%i", b.b[j] ) );
 			Q_strcat( ip, sizeof( ip ), (j<3) ? "." : " " );
 		}
 		if ( strlen( iplist_final )+strlen( ip ) < MAX_CVAR_VALUE_STRING )
@@ -497,16 +518,10 @@ int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((svcmd_t*)b)->name );
 }
 
-void G_CheckFields( void );
-void G_CheckSpawns( void );
-
-/* This array MUST be sorted correctly by alphabetical name field */
 svcmd_t svcmds[] = {
 	{ "addbot",						Svcmd_AddBot_f,						qfalse },
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
 	{ "botlist",					Svcmd_BotList_f,					qfalse },
-	{ "checkfields",				G_CheckFields,						qfalse },
-	{ "checkspawns",				G_CheckSpawns,						qfalse },
 	{ "entitylist",					Svcmd_EntityList_f,					qfalse },
 	{ "forceteam",					Svcmd_ForceTeam_f,					qfalse },
 	{ "game_memory",				Svcmd_GameMem_f,					qfalse },
@@ -514,6 +529,7 @@ svcmd_t svcmds[] = {
 	{ "listip",						Svcmd_ListIP_f,						qfalse },
 	{ "removeip",					Svcmd_RemoveIP_f,					qfalse },
 	{ "say",						Svcmd_Say_f,						qtrue },
+	{ "toggleallowvote",			Svcmd_ToggleAllowVote_f,			qfalse },
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
 };
 static const size_t numsvcmds = ARRAY_LEN( svcmds );
@@ -530,7 +546,7 @@ qboolean	ConsoleCommand( void ) {
 
 	trap->Argv( 0, cmd, sizeof( cmd ) );
 
-	command = (svcmd_t *)bsearch( cmd, svcmds, numsvcmds, sizeof( svcmds[0] ), svcmdcmp );
+	command = (svcmd_t *)Q_LinearSearch( cmd, svcmds, numsvcmds, sizeof( svcmds[0] ), svcmdcmp );
 	if ( !command )
 		return qfalse;
 

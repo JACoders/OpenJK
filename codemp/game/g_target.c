@@ -1,5 +1,26 @@
-// Copyright (C) 1999-2000 Id Software, Inc.
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "g_local.h"
 
 //==========================================================
@@ -583,28 +604,35 @@ Closest target_location in sight used for the location, if none
 in site, closest in distance
 */
 void SP_target_location( gentity_t *self ) {
-	static qboolean didwarn = qfalse;
-	if ( !self->message ) {
-		trap->Print( "target_location with no message at %s\n", vtos( self->s.origin ) );
-		G_FreeEntity(self);
+	if ( self->targetname && self->targetname[0] ) {
+		SP_target_position( self );
 		return;
 	}
-
-	if ( level.locations.num >= MAX_LOCATIONS ) {
-		if ( !didwarn ) {
-			trap->Print( "Maximum target_locations hit (%d)\n", MAX_LOCATIONS );
-			didwarn = qtrue;
+	else {
+		static qboolean didwarn = qfalse;
+		if ( !self->message ) {
+			trap->Print( "target_location with no message at %s\n", vtos( self->s.origin ) );
+			G_FreeEntity( self );
+			return;
 		}
-		return;
+
+		if ( level.locations.num >= MAX_LOCATIONS ) {
+			if ( !didwarn ) {
+				trap->Print( "Maximum target_locations hit (%d)! Remaining locations will be removed.\n", MAX_LOCATIONS );
+				didwarn = qtrue;
+			}
+			G_FreeEntity( self );
+			return;
+		}
+
+		VectorCopy( self->s.origin, level.locations.data[level.locations.num].origin );
+		Q_strncpyz( level.locations.data[level.locations.num].message, self->message, sizeof( level.locations.data[level.locations.num].message ) );
+		level.locations.data[level.locations.num].count = Com_Clampi( 0, 7, self->count );
+
+		level.locations.num++;
+
+		G_FreeEntity( self );
 	}
-
-	VectorCopy( self->s.origin, level.locations.data[level.locations.num].origin );
-	Q_strncpyz( level.locations.data[level.locations.num].message, self->message, sizeof( level.locations.data[level.locations.num].message ) );
-	level.locations.data[level.locations.num].count = Com_Clampi( 0, 7, self->count );
-
-	level.locations.num++;
-
-	G_FreeEntity( self );
 }
 
 /*QUAKED target_counter (1.0 0 0) (-4 -4 -4) (4 4 4) x x x x x x x INACTIVE

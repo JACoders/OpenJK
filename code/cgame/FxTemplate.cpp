@@ -1,27 +1,35 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
-// this include must remain at the top of every CPP file
 #include "common_headers.h"
 
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
 #endif
+
+#include "../game/genericparser2.h"
+#include "qcommon/safe/string.h"
+
+#include <array>
 
 //------------------------------------------------------
 // CPrimitiveTemplate
@@ -34,7 +42,7 @@ This file is part of Jedi Academy.
 //	none
 //------------------------------------------------------
 CPrimitiveTemplate::CPrimitiveTemplate()
-{ 
+{
 	// We never start out as a copy or with a name
 	mCopy = false;
 	mName[0] = 0;
@@ -175,7 +183,7 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 //------------------------------------------------------
 // ParseFloat
 //	Removes up to two values from a passed in string and
-//	sets these values into the passed in min and max 
+//	sets these values into the passed in min and max
 //	fields.  if no max is present, min is copied into it.
 //
 // input:
@@ -185,16 +193,10 @@ void CPrimitiveTemplate::operator=(const CPrimitiveTemplate &that)
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseFloat( const char *val, float *min, float *max )
+bool CPrimitiveTemplate::ParseFloat( const gsl::cstring_view& val, float& min, float& max )
 {
-	// We don't allow passing in a null for either of the fields
-	if ( min == 0 || max == 0 )
-	{ // failue
-		return false;
-	}
-
 	// attempt to read out the values
-	int v = sscanf( val, "%f %f", min, max );
+	int v = Q::sscanf( val, min, max );
 
 	if ( v == 0 )
 	{ // nothing was there, failure
@@ -202,7 +204,7 @@ bool CPrimitiveTemplate::ParseFloat( const char *val, float *min, float *max )
 	}
 	else if ( v == 1 )
 	{ // only one field entered, this is ok, but we should copy min into max
-		*max = *min;
+		max = min;
 	}
 
 	return true;
@@ -222,16 +224,16 @@ bool CPrimitiveTemplate::ParseFloat( const char *val, float *min, float *max )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseVector( const char *val, vec3_t min, vec3_t max )
+bool CPrimitiveTemplate::ParseVector( const gsl::cstring_view& val, vec3_t min, vec3_t max )
 {
 	// we don't allow passing in a null
-	if ( min == 0 || max == 0 )
+	if ( min == nullptr || max == nullptr )
 	{
 		return false;
 	}
 
 	// attempt to read out our values
-	int v = sscanf( val, "%f %f %f   %f %f %f", &min[0], &min[1], &min[2], &max[0], &max[1], &max[2] );
+	int v = Q::sscanf( val, min[0], min[1], min[2], max[0], max[1], max[2] );
 
 	// Check for completeness
 	if ( v < 3 || v == 4 || v == 5 )
@@ -244,6 +246,38 @@ bool CPrimitiveTemplate::ParseVector( const char *val, vec3_t min, vec3_t max )
 	}
 
 	return true;
+}
+
+namespace detail
+{
+	// calls Q::sscanf with the elements of the given array as arguments
+
+	template< std::size_t remaining >
+	struct ScanStrings
+	{
+		template< std::size_t count, typename... Args >
+		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
+		{
+			return ScanStrings< remaining - 1 >::call( val, arr, arr[ remaining - 1 ], args... );
+		}
+	};
+
+	template<>
+	struct ScanStrings< 0 >
+	{
+		template< std::size_t count, typename... Args >
+		static int call( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr, Args&... args )
+		{
+			return Q::sscanf( val, args... );
+		}
+	};
+}
+
+template< std::size_t count >
+static gsl::array_view< gsl::cstring_view > scanStrings( const gsl::cstring_view& val, std::array< gsl::cstring_view, count >& arr )
+{
+	int numParsed = detail::ScanStrings< count >::call( val, arr );
+	return{ arr.data(), arr.data() + numParsed };
 }
 
 //------------------------------------------------------
@@ -259,53 +293,35 @@ bool CPrimitiveTemplate::ParseVector( const char *val, vec3_t min, vec3_t max )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseGroupFlags( const char *val, int *flags )
+bool CPrimitiveTemplate::ParseGroupFlags( const gsl::cstring_view& val, int& flags )
 {
-	// Must pass in a non-null pointer
-	if ( flags == 0 )
-	{
-		return false;
-	}
-
-	char	flag[][32] = {"\0","\0","\0","0"};
-	bool	ok = true;
-	
 	// For a sub group, really you probably only have one or two flags set
-	int v = sscanf( val, "%s %s %s %s", flag[0], flag[1], flag[2], flag[3] );
+	std::array< gsl::cstring_view, 4 > flag;
+
+	const auto availableFlag = scanStrings( val, flag );
 
 	// Clear out the flags field, then convert the flag string to an actual value ( use generic flags )
-	*flags = 0;
+	flags = 0;
 
-	for ( int i = 0; i < 4; i++ )
+	bool ok = true;
+	for( auto& cur : availableFlag  )
 	{
-		if ( i + 1 > v )
-		{
-			return true;
-		}
+		static StringViewIMap< int > flagNames{
+			{ CSTRING_VIEW( "linear" ), FX_LINEAR },
+			{ CSTRING_VIEW( "nonlinear" ), FX_NONLINEAR },
+			{ CSTRING_VIEW( "wave" ), FX_WAVE },
+			{ CSTRING_VIEW( "random" ), FX_RAND },
+			{ CSTRING_VIEW( "clamp" ), FX_CLAMP },
+		};
 
-		if ( !Q_stricmp( flag[i], "linear" ))
+		auto pos = flagNames.find( cur );
+		if( pos == flagNames.end() )
 		{
-			*flags |= FX_LINEAR;
-		}
-		else if ( !Q_stricmp( flag[i], "nonlinear" ))
-		{
-			*flags |= FX_NONLINEAR;
-		}
-		else if ( !Q_stricmp( flag[i], "wave" ))
-		{
-			*flags |= FX_WAVE;
-		}
-		else if ( !Q_stricmp( flag[i], "random" ))
-		{
-			*flags |= FX_RAND;
-		}
-		else if ( !Q_stricmp( flag[i], "clamp" ))
-		{
-			*flags |= FX_CLAMP;
+			ok = false;
 		}
 		else
-		{ // we have badness going on, but continue on in case there are any valid fields in here
-			ok = false;
+		{
+			flags |= pos->second;
 		}
 	}
 
@@ -322,7 +338,7 @@ bool CPrimitiveTemplate::ParseGroupFlags( const char *val, int *flags )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseMin( const char *val )
+bool CPrimitiveTemplate::ParseMin( const gsl::cstring_view& val )
 {
 	vec3_t min;
 
@@ -348,7 +364,7 @@ bool CPrimitiveTemplate::ParseMin( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseMax( const char *val )
+bool CPrimitiveTemplate::ParseMax( const gsl::cstring_view& val )
 {
 	vec3_t max;
 
@@ -374,11 +390,11 @@ bool CPrimitiveTemplate::ParseMax( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLife( const char *val )
+bool CPrimitiveTemplate::ParseLife( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mLife.SetRange( min, max );
 		return true;
@@ -397,11 +413,11 @@ bool CPrimitiveTemplate::ParseLife( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseDelay( const char *val )
+bool CPrimitiveTemplate::ParseDelay( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSpawnDelay.SetRange( min, max );
 		return true;
@@ -420,11 +436,11 @@ bool CPrimitiveTemplate::ParseDelay( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseCount( const char *val )
+bool CPrimitiveTemplate::ParseCount( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSpawnCount.SetRange( min, max );
 		return true;
@@ -443,11 +459,11 @@ bool CPrimitiveTemplate::ParseCount( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseElasticity( const char *val )
+bool CPrimitiveTemplate::ParseElasticity( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mElasticity.SetRange( min, max );
 
@@ -470,7 +486,7 @@ bool CPrimitiveTemplate::ParseElasticity( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseOrigin1( const char *val )
+bool CPrimitiveTemplate::ParseOrigin1( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -495,7 +511,7 @@ bool CPrimitiveTemplate::ParseOrigin1( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseOrigin2( const char *val )
+bool CPrimitiveTemplate::ParseOrigin2( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -520,11 +536,11 @@ bool CPrimitiveTemplate::ParseOrigin2( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRadius( const char *val )
+bool CPrimitiveTemplate::ParseRadius( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mRadius.SetRange( min, max );
 		return true;
@@ -543,11 +559,11 @@ bool CPrimitiveTemplate::ParseRadius( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseHeight( const char *val )
+bool CPrimitiveTemplate::ParseHeight( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mHeight.SetRange( min, max );
 		return true;
@@ -566,11 +582,11 @@ bool CPrimitiveTemplate::ParseHeight( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseWindModifier( const char *val )
+bool CPrimitiveTemplate::ParseWindModifier( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mWindModifier.SetRange( min, max );
 		return true;
@@ -589,11 +605,11 @@ bool CPrimitiveTemplate::ParseWindModifier( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRotation( const char *val )
+bool CPrimitiveTemplate::ParseRotation( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == qtrue )
+	if ( ParseFloat( val, min, max ) == qtrue )
 	{
 		mRotation.SetRange( min, max );
 		return true;
@@ -612,11 +628,11 @@ bool CPrimitiveTemplate::ParseRotation( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRotationDelta( const char *val )
+bool CPrimitiveTemplate::ParseRotationDelta( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == qtrue )
+	if ( ParseFloat( val, min, max ) == qtrue )
 	{
 		mRotationDelta.SetRange( min, max );
 		return true;
@@ -635,7 +651,7 @@ bool CPrimitiveTemplate::ParseRotationDelta( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAngle( const char *val )
+bool CPrimitiveTemplate::ParseAngle( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -660,7 +676,7 @@ bool CPrimitiveTemplate::ParseAngle( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAngleDelta( const char *val )
+bool CPrimitiveTemplate::ParseAngleDelta( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -685,7 +701,7 @@ bool CPrimitiveTemplate::ParseAngleDelta( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseVelocity( const char *val )
+bool CPrimitiveTemplate::ParseVelocity( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -702,7 +718,7 @@ bool CPrimitiveTemplate::ParseVelocity( const char *val )
 
 //------------------------------------------------------
 // ParseFlags
-//	These are flags that are not specific to a group, 
+//	These are flags that are not specific to a group,
 //	rather, they are specific to the whole primitive.
 //
 // input:
@@ -711,78 +727,42 @@ bool CPrimitiveTemplate::ParseVelocity( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseFlags( const char *val )
+bool CPrimitiveTemplate::ParseFlags( const gsl::cstring_view& val )
 {
-	char	flag[][32] = {"\0","\0","\0","\0","\0","\0","\0"};
-	bool	ok = true;
-	
 	// For a primitive, really you probably only have two or less flags set
-	int v = sscanf( val, "%s %s %s %s %s %s %s", flag[0], flag[1], flag[2], flag[3], flag[4], flag[5], flag[6] );
+	std::array< gsl::cstring_view, 7 > flag;
 
-	for ( int i = 0; i < 7; i++ )
+	const auto availableFlag = scanStrings( val, flag );
+
+	bool	ok = true;
+	for( auto& cur : availableFlag )
 	{
-		if ( i + 1 > v )
-		{
-			return true;
-		}
+		static StringViewIMap< int > flagNames{
+			{ CSTRING_VIEW( "useModel" ), FX_ATTACHED_MODEL },
+			{ CSTRING_VIEW( "useBBox" ), FX_USE_BBOX },
+			{ CSTRING_VIEW( "usePhysics" ), FX_APPLY_PHYSICS },
+			{ CSTRING_VIEW( "expensivePhysics" ), FX_EXPENSIVE_PHYSICS },
+			//rww - begin g2 stuff
+			{ CSTRING_VIEW( "ghoul2Collision" ), ( FX_GHOUL2_TRACE | FX_APPLY_PHYSICS | FX_EXPENSIVE_PHYSICS ) },
+			{ CSTRING_VIEW( "ghoul2Decals" ), FX_GHOUL2_DECALS },
+			//rww - end
+			{ CSTRING_VIEW( "impactKills" ), FX_KILL_ON_IMPACT },
+			{ CSTRING_VIEW( "impactFx" ), FX_IMPACT_RUNS_FX },
+			{ CSTRING_VIEW( "deathFx" ), FX_DEATH_RUNS_FX },
+			{ CSTRING_VIEW( "useAlpha" ), FX_USE_ALPHA },
+			{ CSTRING_VIEW( "emitFx" ), FX_EMIT_FX },
+			{ CSTRING_VIEW( "depthHack" ), FX_DEPTH_HACK },
+			{ CSTRING_VIEW( "setShaderTime" ), FX_SET_SHADER_TIME },
+		};
 
-		if ( !Q_stricmp( flag[i], "useModel" ))
-		{
-			mFlags |= FX_ATTACHED_MODEL;
-		}
-		else if ( !Q_stricmp( flag[i], "useBBox" ))
-		{
-			mFlags |= FX_USE_BBOX;
-		}
-		else if ( !Q_stricmp( flag[i], "usePhysics" ))
-		{
-			mFlags |= FX_APPLY_PHYSICS;
-		}
-		else if ( !Q_stricmp( flag[i], "expensivePhysics" ))
-		{
-			mFlags |= FX_EXPENSIVE_PHYSICS;
-		}
-		//rww - begin g2 stuff
-		else if ( !Q_stricmp( flag[i], "ghoul2Collision" ))
-		{
-			mFlags |= (FX_GHOUL2_TRACE|FX_APPLY_PHYSICS|FX_EXPENSIVE_PHYSICS);
-		}
-		else if ( !Q_stricmp( flag[i], "ghoul2Decals" ))
-		{
-			mFlags |= FX_GHOUL2_DECALS;
-		}
-		//rww - end
-		else if ( !Q_stricmp( flag[i], "impactKills" ))
-		{
-			mFlags |= FX_KILL_ON_IMPACT;
-		}
-		else if ( !Q_stricmp( flag[i], "impactFx" ))
-		{
-			mFlags |= FX_IMPACT_RUNS_FX;
-		}
-		else if ( !Q_stricmp( flag[i], "deathFx" ))
-		{
-			mFlags |= FX_DEATH_RUNS_FX;
-		}
-		else if ( !Q_stricmp( flag[i], "useAlpha" ))
-		{
-			mFlags |= FX_USE_ALPHA;
-		}
-		else if ( !Q_stricmp( flag[i], "emitFx" ))
-		{
-			mFlags |= FX_EMIT_FX;
-		}
-		else if ( !Q_stricmp( flag[i], "depthHack" ))
-		{
-			mFlags |= FX_DEPTH_HACK;
-		}
-		else if ( !Q_stricmp( flag[i], "setShaderTime" ))
-		{
-			mFlags |= FX_SET_SHADER_TIME;
-		}
-		else
+		auto pos = flagNames.find( cur );
+		if( pos == flagNames.end() )
 		{ // we have badness going on, but continue on in case there are any valid fields in here
 			ok = false;
+		}
+		else
+		{
+			mFlags |= pos->second;
 		}
 	}
 
@@ -791,7 +771,7 @@ bool CPrimitiveTemplate::ParseFlags( const char *val )
 
 //------------------------------------------------------
 // ParseSpawnFlags
-//	These kinds of flags control how things spawn.  They 
+//	These kinds of flags control how things spawn.  They
 //	never get passed on to a primitive.
 //
 // input:
@@ -800,80 +780,40 @@ bool CPrimitiveTemplate::ParseFlags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSpawnFlags( const char *val )
+bool CPrimitiveTemplate::ParseSpawnFlags( const gsl::cstring_view& val )
 {
-	char	flag[][32] = {"\0","\0","\0","\0","\0","\0","\0"};
-	bool	ok = true;
-	
+	std::array< gsl::cstring_view, 7 > flag;
+
 	// For a primitive, really you probably only have two or less flags set
-	int v = sscanf( val, "%s %s %s %s %s %s %s", flag[0], flag[1], flag[2], flag[3], flag[4], flag[5], flag[6] );
+	const auto availableFlag = scanStrings( val, flag );
 
-	for ( int i = 0; i < 7; i++ )
+	bool ok = true;
+	for( auto& cur : availableFlag )
 	{
-		if ( i + 1 > v )
+		static StringViewIMap< int > flagNames{
+			{ CSTRING_VIEW( "org2fromTrace" ), FX_ORG2_FROM_TRACE },
+			{ CSTRING_VIEW( "traceImpactFx" ), FX_TRACE_IMPACT_FX },
+			{ CSTRING_VIEW( "org2isOffset" ), FX_ORG2_IS_OFFSET },
+			{ CSTRING_VIEW( "cheapOrgCalc" ), FX_CHEAP_ORG_CALC },
+			{ CSTRING_VIEW( "cheapOrg2Calc" ), FX_CHEAP_ORG2_CALC },
+			{ CSTRING_VIEW( "absoluteVel" ), FX_VEL_IS_ABSOLUTE },
+			{ CSTRING_VIEW( "absoluteAccel" ), FX_ACCEL_IS_ABSOLUTE },
+			{ CSTRING_VIEW( "orgOnSphere" ), FX_ORG_ON_SPHERE },
+			{ CSTRING_VIEW( "orgOnCylinder" ), FX_ORG_ON_CYLINDER },
+			{ CSTRING_VIEW( "axisFromSphere" ), FX_AXIS_FROM_SPHERE },
+			{ CSTRING_VIEW( "randrotaroundfwd" ), FX_RAND_ROT_AROUND_FWD },
+			{ CSTRING_VIEW( "evenDistribution" ), FX_EVEN_DISTRIBUTION },
+			{ CSTRING_VIEW( "rgbComponentInterpolation" ), FX_RGB_COMPONENT_INTERP },
+			{ CSTRING_VIEW( "lessAttenuation" ), FX_SND_LESS_ATTENUATION },
+		};
+		auto pos = flagNames.find( cur );
+		if( pos == flagNames.end() )
 		{
-			return true;
-		}
-
-		if ( !Q_stricmp( flag[i], "org2fromTrace" ))
-		{
-			mSpawnFlags |= FX_ORG2_FROM_TRACE;
-		}
-		else if ( !Q_stricmp( flag[i], "traceImpactFx" ))
-		{
-			mSpawnFlags |= FX_TRACE_IMPACT_FX;
-		}
-		else if ( !Q_stricmp( flag[i], "org2isOffset" ))
-		{
-			mSpawnFlags |= FX_ORG2_IS_OFFSET;
-		}
-		else if ( !Q_stricmp( flag[i], "cheapOrgCalc" ))
-		{
-			mSpawnFlags |= FX_CHEAP_ORG_CALC;
-		}
-		else if ( !Q_stricmp( flag[i], "cheapOrg2Calc" ))
-		{
-			mSpawnFlags |= FX_CHEAP_ORG2_CALC;
-		}
-		else if ( !Q_stricmp( flag[i], "absoluteVel" ))
-		{
-			mSpawnFlags |= FX_VEL_IS_ABSOLUTE;
-		}
-		else if ( !Q_stricmp( flag[i], "absoluteAccel" ))
-		{
-			mSpawnFlags |= FX_ACCEL_IS_ABSOLUTE;
-		}
-		else if ( !Q_stricmp( flag[i], "orgOnSphere" )) // sphere/ellipsoid
-		{
-			mSpawnFlags |= FX_ORG_ON_SPHERE;
-		}
-		else if ( !Q_stricmp( flag[i], "orgOnCylinder" )) // cylinder/disk
-		{
-			mSpawnFlags |= FX_ORG_ON_CYLINDER;
-		}
-		else if ( !Q_stricmp( flag[i], "axisFromSphere" ))
-		{
-			mSpawnFlags |= FX_AXIS_FROM_SPHERE;
-		}
-		else if ( !Q_stricmp( flag[i], "randrotaroundfwd" ))
-		{
-			mSpawnFlags |= FX_RAND_ROT_AROUND_FWD;
-		}
-		else if ( !Q_stricmp( flag[i], "evenDistribution" ))
-		{
-			mSpawnFlags |= FX_EVEN_DISTRIBUTION;
-		}
-		else if ( !Q_stricmp( flag[i], "rgbComponentInterpolation" ))
-		{
-			mSpawnFlags |= FX_RGB_COMPONENT_INTERP;
-		}
-		else if ( !Q_stricmp( flag[i], "lessAttenuation" ))
-		{
-			mSpawnFlags |= FX_SND_LESS_ATTENUATION;
+			ok = false;
 		}
 		else
-		{ // we have badness going on, but continue on in case there are any valid fields in here
-			ok = false;
+		{
+			mSpawnFlags |= pos->second;
 		}
 	}
 
@@ -890,7 +830,7 @@ bool CPrimitiveTemplate::ParseSpawnFlags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAcceleration( const char *val )
+bool CPrimitiveTemplate::ParseAcceleration( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -915,11 +855,11 @@ bool CPrimitiveTemplate::ParseAcceleration( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseGravity( const char *val )
+bool CPrimitiveTemplate::ParseGravity( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mGravity.SetRange( min, max );
 		return true;
@@ -940,11 +880,11 @@ bool CPrimitiveTemplate::ParseGravity( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseDensity( const char *val )
+bool CPrimitiveTemplate::ParseDensity( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mDensity.SetRange( min, max );
 		return true;
@@ -955,7 +895,7 @@ bool CPrimitiveTemplate::ParseDensity( const char *val )
 
 //------------------------------------------------------
 // ParseVariance
-//	Reads in a ranged variance value.  Variance is only 
+//	Reads in a ranged variance value.  Variance is only
 //	valid for emitters that are calling effects...
 //	it basically determines the amount of slop in the
 //	density calculations
@@ -966,11 +906,11 @@ bool CPrimitiveTemplate::ParseDensity( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseVariance( const char *val )
+bool CPrimitiveTemplate::ParseVariance( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mVariance.SetRange( min, max );
 		return true;
@@ -989,7 +929,7 @@ bool CPrimitiveTemplate::ParseVariance( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBStart( const char *val )
+bool CPrimitiveTemplate::ParseRGBStart( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -1014,7 +954,7 @@ bool CPrimitiveTemplate::ParseRGBStart( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBEnd( const char *val )
+bool CPrimitiveTemplate::ParseRGBEnd( const gsl::cstring_view& val )
 {
 	vec3_t min, max;
 
@@ -1039,11 +979,11 @@ bool CPrimitiveTemplate::ParseRGBEnd( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBParm( const char *val )
+bool CPrimitiveTemplate::ParseRGBParm( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mRGBParm.SetRange( min, max );
 		return true;
@@ -1062,11 +1002,11 @@ bool CPrimitiveTemplate::ParseRGBParm( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGBFlags( const char *val )
+bool CPrimitiveTemplate::ParseRGBFlags( const gsl::cstring_view& val )
 {
 	int flags;
 
-	if ( ParseGroupFlags( val, &flags ) == true )
+	if ( ParseGroupFlags( val, flags ) == true )
 	{
 		// Convert our generic flag values into type specific ones
 		mFlags |= ( flags << FX_RGB_SHIFT );
@@ -1086,11 +1026,11 @@ bool CPrimitiveTemplate::ParseRGBFlags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaStart( const char *val )
+bool CPrimitiveTemplate::ParseAlphaStart( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mAlphaStart.SetRange( min, max );
 		return true;
@@ -1109,11 +1049,11 @@ bool CPrimitiveTemplate::ParseAlphaStart( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaEnd( const char *val )
+bool CPrimitiveTemplate::ParseAlphaEnd( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mAlphaEnd.SetRange( min, max );
 		return true;
@@ -1132,11 +1072,11 @@ bool CPrimitiveTemplate::ParseAlphaEnd( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaParm( const char *val )
+bool CPrimitiveTemplate::ParseAlphaParm( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mAlphaParm.SetRange( min, max );
 		return true;
@@ -1155,11 +1095,11 @@ bool CPrimitiveTemplate::ParseAlphaParm( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlphaFlags( const char *val )
+bool CPrimitiveTemplate::ParseAlphaFlags( const gsl::cstring_view& val )
 {
 	int flags;
 
-	if ( ParseGroupFlags( val, &flags ) == true )
+	if ( ParseGroupFlags( val, flags ) == true )
 	{
 		// Convert our generic flag values into type specific ones
 		mFlags |= ( flags << FX_ALPHA_SHIFT );
@@ -1179,11 +1119,11 @@ bool CPrimitiveTemplate::ParseAlphaFlags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeStart( const char *val )
+bool CPrimitiveTemplate::ParseSizeStart( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSizeStart.SetRange( min, max );
 		return true;
@@ -1202,11 +1142,11 @@ bool CPrimitiveTemplate::ParseSizeStart( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeEnd( const char *val )
+bool CPrimitiveTemplate::ParseSizeEnd( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSizeEnd.SetRange( min, max );
 		return true;
@@ -1225,11 +1165,11 @@ bool CPrimitiveTemplate::ParseSizeEnd( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeParm( const char *val )
+bool CPrimitiveTemplate::ParseSizeParm( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSizeParm.SetRange( min, max );
 		return true;
@@ -1248,11 +1188,11 @@ bool CPrimitiveTemplate::ParseSizeParm( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSizeFlags( const char *val )
+bool CPrimitiveTemplate::ParseSizeFlags( const gsl::cstring_view& val )
 {
 	int flags;
 
-	if ( ParseGroupFlags( val, &flags ) == true )
+	if ( ParseGroupFlags( val, flags ) == true )
 	{
 		// Convert our generic flag values into type specific ones
 		mFlags |= ( flags << FX_SIZE_SHIFT );
@@ -1272,11 +1212,11 @@ bool CPrimitiveTemplate::ParseSizeFlags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2Start( const char *val )
+bool CPrimitiveTemplate::ParseSize2Start( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSize2Start.SetRange( min, max );
 		return true;
@@ -1295,11 +1235,11 @@ bool CPrimitiveTemplate::ParseSize2Start( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2End( const char *val )
+bool CPrimitiveTemplate::ParseSize2End( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSize2End.SetRange( min, max );
 		return true;
@@ -1318,11 +1258,11 @@ bool CPrimitiveTemplate::ParseSize2End( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2Parm( const char *val )
+bool CPrimitiveTemplate::ParseSize2Parm( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mSize2Parm.SetRange( min, max );
 		return true;
@@ -1341,11 +1281,11 @@ bool CPrimitiveTemplate::ParseSize2Parm( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2Flags( const char *val )
+bool CPrimitiveTemplate::ParseSize2Flags( const gsl::cstring_view& val )
 {
 	int flags;
 
-	if ( ParseGroupFlags( val, &flags ) == true )
+	if ( ParseGroupFlags( val, flags ) == true )
 	{
 		// Convert our generic flag values into type specific ones
 		mFlags |= ( flags << FX_SIZE2_SHIFT );
@@ -1365,11 +1305,11 @@ bool CPrimitiveTemplate::ParseSize2Flags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthStart( const char *val )
+bool CPrimitiveTemplate::ParseLengthStart( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mLengthStart.SetRange( min, max );
 		return true;
@@ -1388,11 +1328,11 @@ bool CPrimitiveTemplate::ParseLengthStart( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthEnd( const char *val )
+bool CPrimitiveTemplate::ParseLengthEnd( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mLengthEnd.SetRange( min, max );
 		return true;
@@ -1411,11 +1351,11 @@ bool CPrimitiveTemplate::ParseLengthEnd( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthParm( const char *val )
+bool CPrimitiveTemplate::ParseLengthParm( const gsl::cstring_view& val )
 {
 	float min, max;
 
-	if ( ParseFloat( val, &min, &max ) == true )
+	if ( ParseFloat( val, min, max ) == true )
 	{
 		mLengthParm.SetRange( min, max );
 		return true;
@@ -1434,11 +1374,11 @@ bool CPrimitiveTemplate::ParseLengthParm( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLengthFlags( const char *val )
+bool CPrimitiveTemplate::ParseLengthFlags( const gsl::cstring_view& val )
 {
 	int flags;
 
-	if ( ParseGroupFlags( val, &flags ) == true )
+	if ( ParseGroupFlags( val, flags ) == true )
 	{
 		// Convert our generic flag values into type specific ones
 		mFlags |= ( flags << FX_LENGTH_SHIFT );
@@ -1458,45 +1398,24 @@ bool CPrimitiveTemplate::ParseLengthFlags( const char *val )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseShaders( CGPValue *grp )
+bool CPrimitiveTemplate::ParseShaders( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
+	bool any = false;
+	for( auto& value : grp.GetValues() )
 	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
+		if( !value.empty() )
 		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-
-			handle = theFxHelper.RegisterShader( val );
-			mMediaHandles.AddHandle( handle );
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxHelper.RegisterShader( val );
+			any = true;
+			int handle = theFxHelper.RegisterShader( value );
 			mMediaHandles.AddHandle( handle );
 		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseShaders called with an empty list!\n" );
-			return false;
-		}
 	}
-
+	if( !any )
+	{
+		// empty "list"
+		theFxHelper.Print( "CPrimitiveTemplate::ParseShaders called with an empty list!\n" );
+		return false;
+	}
 	return true;
 }
 
@@ -1510,45 +1429,24 @@ bool CPrimitiveTemplate::ParseShaders( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSounds( CGPValue *grp )
+bool CPrimitiveTemplate::ParseSounds( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
+	bool any = false;
+	for( auto& value : grp.GetValues() )
 	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
+		if( !value.empty() )
 		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-
-			handle = theFxHelper.RegisterSound( val );
-			mMediaHandles.AddHandle( handle );
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxHelper.RegisterSound( val );
+			any = true;
+			int handle = theFxHelper.RegisterSound( value );
 			mMediaHandles.AddHandle( handle );
 		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseSounds called with an empty list!\n" );
-			return false;
-		}
 	}
-
+	if( !any )
+	{
+		// empty "list"
+		theFxHelper.Print( "CPrimitiveTemplate::ParseSounds called with an empty list!\n" );
+		return false;
+	}
 	return true;
 }
 
@@ -1562,48 +1460,54 @@ bool CPrimitiveTemplate::ParseSounds( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseModels( CGPValue *grp )
+bool CPrimitiveTemplate::ParseModels( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
+	bool any = false;
+	for( auto& value : grp.GetValues() )
 	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
+		if( !value.empty() )
 		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-
-			handle = theFxHelper.RegisterModel( val );
-			mMediaHandles.AddHandle( handle );
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxHelper.RegisterModel( val );
+			any = true;
+			int handle = theFxHelper.RegisterModel( value );
 			mMediaHandles.AddHandle( handle );
 		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseModels called with an empty list!\n" );
-			return false;
-		}
 	}
-
+	if( !any )
+	{
+		// empty "list"
+		theFxHelper.Print( "CPrimitiveTemplate::ParseModels called with an empty list!\n" );
+		return false;
+	}
 	mFlags |= FX_ATTACHED_MODEL;
-
 	return true;
+}
+
+static bool ParseFX( const CGPProperty& grp, CFxScheduler& scheduler, CMediaHandles& handles, SFxHelper& helper, int& flags, int successFlags, gsl::czstring loadError, gsl::czstring emptyError )
+{
+	bool any = false;
+	for( auto& value : grp.GetValues() )
+	{
+		if( !value.empty() )
+		{
+			any = true;
+			// TODO: string_view parameter
+			int handle = scheduler.RegisterEffect( std::string( value.begin(), value.end() ).c_str() );
+			if( handle )
+			{
+				handles.AddHandle( handle );
+				flags |= successFlags;
+			}
+			else
+			{
+				helper.Print( "%s", loadError );
+			}
+		}
+	}
+	if( !any )
+	{
+		helper.Print( "%s", emptyError );
+	}
+	return any;
 }
 
 //------------------------------------------------------
@@ -1616,65 +1520,15 @@ bool CPrimitiveTemplate::ParseModels( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseImpactFxStrings( CGPValue *grp )
+bool CPrimitiveTemplate::ParseImpactFxStrings( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
-	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
-		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-			handle = theFxScheduler.RegisterEffect( val );
-	
-			if ( handle )
-			{
-				mImpactFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Impact effect file not found.\n" );
-				return false;
-			}
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxScheduler.RegisterEffect( val );
-
-			if ( handle )
-			{
-				mImpactFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Impact effect file not found.\n" );
-				return false;
-			}
-		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseImpactFxStrings called with an empty list!\n" );
-			return false;
-		}
-	}
-
-	mFlags |= FX_IMPACT_RUNS_FX | FX_APPLY_PHYSICS;	
-
-	return true;
+	return ParseFX(
+		grp,
+		theFxScheduler, mImpactFxHandles, theFxHelper,
+		mFlags, FX_IMPACT_RUNS_FX | FX_APPLY_PHYSICS,
+		"FxTemplate: Impact effect file not found.\n",
+		"CPrimitiveTemplate::ParseImpactFxStrings called with an empty list!\n"
+		);
 }
 
 //------------------------------------------------------
@@ -1687,65 +1541,15 @@ bool CPrimitiveTemplate::ParseImpactFxStrings( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseDeathFxStrings( CGPValue *grp )
+bool CPrimitiveTemplate::ParseDeathFxStrings( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
-	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
-		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-			handle = theFxScheduler.RegisterEffect( val );
-	
-			if ( handle )
-			{
-				mDeathFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Death effect file not found.\n" );
-				return false;
-			}
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxScheduler.RegisterEffect( val );
-
-			if ( handle )
-			{
-				mDeathFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Death effect file not found.\n" );
-				return false;
-			}
-		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseDeathFxStrings called with an empty list!\n" );
-			return false;
-		}
-	}
-
-	mFlags |= FX_DEATH_RUNS_FX;	
-
-	return true;
+	return ParseFX(
+		grp,
+		theFxScheduler, mDeathFxHandles, theFxHelper,
+		mFlags, FX_DEATH_RUNS_FX,
+		"FxTemplate: Death effect file not found.\n",
+		"CPrimitiveTemplate::ParseDeathFxStrings called with an empty list!\n"
+		);
 }
 
 //------------------------------------------------------
@@ -1758,65 +1562,15 @@ bool CPrimitiveTemplate::ParseDeathFxStrings( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseEmitterFxStrings( CGPValue *grp )
+bool CPrimitiveTemplate::ParseEmitterFxStrings( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
-
-	if ( grp->IsList() )
-	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
-		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-			handle = theFxScheduler.RegisterEffect( val );
-
-			if ( handle )
-			{
-				mEmitterFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Emitter effect file not found.\n" );
-				return false;
-			}
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxScheduler.RegisterEffect( val );
-
-			if ( handle )
-			{
-				mEmitterFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Emitter effect file not found.\n" );
-				return false;
-			}
-		}
-		else
-		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParseEmitterFxStrings called with an empty list!\n" );
-			return false;
-		}
-	}
-
-	mFlags |= FX_EMIT_FX;	
-
-	return true;
+	return ParseFX(
+		grp,
+		theFxScheduler, mEmitterFxHandles, theFxHelper,
+		mFlags, FX_EMIT_FX,
+		"FxTemplate: Emitter effect file not found.\n",
+		"CPrimitiveTemplate::ParseEmitterFxStrings called with an empty list!\n"
+		);
 }
 
 //------------------------------------------------------
@@ -1829,62 +1583,32 @@ bool CPrimitiveTemplate::ParseEmitterFxStrings( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParsePlayFxStrings( CGPValue *grp )
+bool CPrimitiveTemplate::ParsePlayFxStrings( const CGPProperty& grp )
 {
-	const char	*val;
-	int			handle;
+	return ParseFX(
+		grp,
+		theFxScheduler, mPlayFxHandles, theFxHelper,
+		mFlags, 0,
+		"FxTemplate: Effect file not found.\n",
+		"CPrimitiveTemplate::ParsePlayFxStrings called with an empty list!\n"
+		);
+}
 
-	if ( grp->IsList() )
+bool CPrimitiveTemplate::ParseGroup( const CGPGroup& grp, const StringViewIMap< ParseMethod >& parseMethods, gsl::czstring name )
+{
+	for( auto& cur : grp.GetProperties() )
 	{
-		// If we are a list we have to do separate processing
-		CGPObject *list = grp->GetList();
-
-		while ( list )
+		auto pos = parseMethods.find( cur.GetName() );
+		if( pos == parseMethods.end() )
 		{
-			// name is actually the value contained in the list
-			val = list->GetName();
-			handle = theFxScheduler.RegisterEffect( val );
-
-			if ( handle )
-			{
-				mPlayFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Effect file not found.\n" );
-				return false;
-			}
-
-			list = (CGPValue *)list->GetNext();
-		}
-	}
-	else
-	{
-		// Let's get a value
-		val = grp->GetTopValue();
-
-		if ( val )
-		{
-			handle = theFxScheduler.RegisterEffect( val );
-
-			if ( handle )
-			{
-				mPlayFxHandles.AddHandle( handle );
-			}
-			else
-			{
-				theFxHelper.Print( "FxTemplate: Effect file not found.\n" );
-				return false;
-			}
+			theFxHelper.Print( "Unknown key parsing %s group!", name );
 		}
 		else
 		{
-			// empty "list"
-			theFxHelper.Print( "CPrimitiveTemplate::ParsePlayFxStrings called with an empty list!\n" );
-			return false;
+			ParseMethod method = pos->second;
+			( this->*method )( cur.GetTopValue() );
 		}
 	}
-
 	return true;
 }
 
@@ -1899,47 +1623,20 @@ bool CPrimitiveTemplate::ParsePlayFxStrings( CGPValue *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseRGB( CGPGroup *grp )
+bool CPrimitiveTemplate::ParseRGB( const CGPGroup& grp )
 {
-	CGPValue	*pairs;
-	const char	*key;
-	const char	*val;
+	static StringViewIMap< ParseMethod > parseMethods{
+		{ CSTRING_VIEW( "start" ), &CPrimitiveTemplate::ParseRGBStart },
 
-	// Inside of the group, we should have a series of pairs
-	pairs = grp->GetPairs();
+		{ CSTRING_VIEW( "end" ), &CPrimitiveTemplate::ParseRGBEnd },
 
-	while( pairs )
-	{	
-		// Let's get the key field
-		key = pairs->GetName();
-		val = pairs->GetTopValue();
+		{ CSTRING_VIEW( "parm" ), &CPrimitiveTemplate::ParseRGBParm },
+		{ CSTRING_VIEW( "parms" ), &CPrimitiveTemplate::ParseRGBParm },
 
-		// Huge stricmp lists suxor
-		if ( !Q_stricmp( key, "start" ))
-		{
-			ParseRGBStart( val );
-		}
-		else if ( !Q_stricmp( key, "end" ))
-		{
-			ParseRGBEnd( val );
-		}
-		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
-		{
-			ParseRGBParm( val );
-		}
-		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
-		{
-			ParseRGBFlags( val );
-		}
-		else
-		{
-			theFxHelper.Print( "Unknown key parsing an RGB group: %s\n", key );
-		}
-
-		pairs = (CGPValue *)pairs->GetNext();
-	}
-
-	return true;
+		{ CSTRING_VIEW( "flag" ), &CPrimitiveTemplate::ParseRGBFlags },
+		{ CSTRING_VIEW( "flags" ), &CPrimitiveTemplate::ParseRGBFlags },
+	};
+	return ParseGroup( grp, parseMethods, "RGB" );
 }
 
 //------------------------------------------------------
@@ -1953,47 +1650,20 @@ bool CPrimitiveTemplate::ParseRGB( CGPGroup *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseAlpha( CGPGroup *grp )
+bool CPrimitiveTemplate::ParseAlpha( const CGPGroup& grp )
 {
-	CGPValue	*pairs;
-	const char	*key;
-	const char	*val;
+	static StringViewIMap< ParseMethod > parseMethods{
+		{ CSTRING_VIEW( "start" ), &CPrimitiveTemplate::ParseAlphaStart },
 
-	// Inside of the group, we should have a series of pairs
-	pairs = grp->GetPairs();
+		{ CSTRING_VIEW( "end" ), &CPrimitiveTemplate::ParseAlphaEnd },
 
-	while( pairs )
-	{	
-		// Let's get the key field
-		key = pairs->GetName();
-		val = pairs->GetTopValue();
+		{ CSTRING_VIEW( "parm" ), &CPrimitiveTemplate::ParseAlphaParm },
+		{ CSTRING_VIEW( "parms" ), &CPrimitiveTemplate::ParseAlphaParm },
 
-		// Huge stricmp lists suxor
-		if ( !Q_stricmp( key, "start" ))
-		{
-			ParseAlphaStart( val );
-		}
-		else if ( !Q_stricmp( key, "end" ))
-		{
-			ParseAlphaEnd( val );
-		}
-		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
-		{
-			ParseAlphaParm( val );
-		}
-		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
-		{
-			ParseAlphaFlags( val );
-		}
-		else
-		{
-			theFxHelper.Print( "Unknown key parsing an Alpha group: %s\n", key );
-		}
-
-		pairs = (CGPValue *)pairs->GetNext();
-	}
-
-	return true;
+		{ CSTRING_VIEW( "flag" ), &CPrimitiveTemplate::ParseAlphaFlags },
+		{ CSTRING_VIEW( "flags" ), &CPrimitiveTemplate::ParseAlphaFlags },
+	};
+	return ParseGroup( grp, parseMethods, "Alpha" );
 }
 
 //------------------------------------------------------
@@ -2007,47 +1677,20 @@ bool CPrimitiveTemplate::ParseAlpha( CGPGroup *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize( CGPGroup *grp )
+bool CPrimitiveTemplate::ParseSize( const CGPGroup& grp )
 {
-	CGPValue	*pairs;
-	const char	*key;
-	const char	*val;
+	static StringViewIMap< ParseMethod > parseMethods{
+		{ CSTRING_VIEW( "start" ), &CPrimitiveTemplate::ParseSizeStart },
 
-	// Inside of the group, we should have a series of pairs
-	pairs = grp->GetPairs();
+		{ CSTRING_VIEW( "end" ), &CPrimitiveTemplate::ParseSizeEnd },
 
-	while( pairs )
-	{	
-		// Let's get the key field
-		key = pairs->GetName();
-		val = pairs->GetTopValue();
+		{ CSTRING_VIEW( "parm" ), &CPrimitiveTemplate::ParseSizeParm },
+		{ CSTRING_VIEW( "parms" ), &CPrimitiveTemplate::ParseSizeParm },
 
-		// Huge stricmp lists suxor
-		if ( !Q_stricmp( key, "start" ))
-		{
-			ParseSizeStart( val );
-		}
-		else if ( !Q_stricmp( key, "end" ))
-		{
-			ParseSizeEnd( val );
-		}
-		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
-		{
-			ParseSizeParm( val );
-		}
-		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
-		{
-			ParseSizeFlags( val );
-		}
-		else
-		{
-			theFxHelper.Print( "Unknown key parsing a Size group: %s\n", key );
-		}
-
-		pairs = (CGPValue *)pairs->GetNext();
-	}
-
-	return true;
+		{ CSTRING_VIEW( "flag" ), &CPrimitiveTemplate::ParseSizeFlags },
+		{ CSTRING_VIEW( "flags" ), &CPrimitiveTemplate::ParseSizeFlags },
+	};
+	return ParseGroup( grp, parseMethods, "Size" );
 }
 
 //------------------------------------------------------
@@ -2061,47 +1704,20 @@ bool CPrimitiveTemplate::ParseSize( CGPGroup *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseSize2( CGPGroup *grp )
+bool CPrimitiveTemplate::ParseSize2( const CGPGroup& grp )
 {
-	CGPValue	*pairs;
-	const char	*key;
-	const char	*val;
+	static StringViewIMap< ParseMethod > parseMethods{
+		{ CSTRING_VIEW( "start" ), &CPrimitiveTemplate::ParseSize2Start },
 
-	// Inside of the group, we should have a series of pairs
-	pairs = grp->GetPairs();
+		{ CSTRING_VIEW( "end" ), &CPrimitiveTemplate::ParseSize2End },
 
-	while( pairs )
-	{	
-		// Let's get the key field
-		key = pairs->GetName();
-		val = pairs->GetTopValue();
+		{ CSTRING_VIEW( "parm" ), &CPrimitiveTemplate::ParseSize2Parm },
+		{ CSTRING_VIEW( "parms" ), &CPrimitiveTemplate::ParseSize2Parm },
 
-		// Huge stricmp lists suxor
-		if ( !Q_stricmp( key, "start" ))
-		{
-			ParseSize2Start( val );
-		}
-		else if ( !Q_stricmp( key, "end" ))
-		{
-			ParseSize2End( val );
-		}
-		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
-		{
-			ParseSize2Parm( val );
-		}
-		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
-		{
-			ParseSize2Flags( val );
-		}
-		else
-		{
-			theFxHelper.Print( "Unknown key parsing a Size2 group: %s\n", key );
-		}
-
-		pairs = (CGPValue *)pairs->GetNext();
-	}
-
-	return true;
+		{ CSTRING_VIEW( "flag" ), &CPrimitiveTemplate::ParseSize2Flags },
+		{ CSTRING_VIEW( "flags" ), &CPrimitiveTemplate::ParseSize2Flags },
+	};
+	return ParseGroup( grp, parseMethods, "Size2" );
 }
 
 //------------------------------------------------------
@@ -2115,241 +1731,145 @@ bool CPrimitiveTemplate::ParseSize2( CGPGroup *grp )
 // return:
 //	success of parse operation.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParseLength( CGPGroup *grp )
+bool CPrimitiveTemplate::ParseLength( const CGPGroup& grp )
 {
-	CGPValue	*pairs;
-	const char	*key;
-	const char	*val;
+	static StringViewIMap< ParseMethod > parseMethods{
+		{ CSTRING_VIEW( "start" ), &CPrimitiveTemplate::ParseLengthStart },
 
-	// Inside of the group, we should have a series of pairs
-	pairs = grp->GetPairs();
+		{ CSTRING_VIEW( "end" ), &CPrimitiveTemplate::ParseLengthEnd },
 
-	while( pairs )
-	{	
-		// Let's get the key field
-		key = pairs->GetName();
-		val = pairs->GetTopValue();
+		{ CSTRING_VIEW( "parm" ), &CPrimitiveTemplate::ParseLengthParm },
+		{ CSTRING_VIEW( "parms" ), &CPrimitiveTemplate::ParseLengthParm },
 
-		// Huge stricmp lists suxor
-		if ( !Q_stricmp( key, "start" ))
-		{
-			ParseLengthStart( val );
-		}
-		else if ( !Q_stricmp( key, "end" ))
-		{
-			ParseLengthEnd( val );
-		}
-		else if ( !Q_stricmp( key, "parm" ) || !Q_stricmp( key, "parms" ))
-		{
-			ParseLengthParm( val );
-		}
-		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
-		{
-			ParseLengthFlags( val );
-		}
-		else
-		{
-			theFxHelper.Print( "Unknown key parsing a Length group: %s\n", key );
-		}
-
-		pairs = (CGPValue *)pairs->GetNext();
-	}
-
-	return true;
+		{ CSTRING_VIEW( "flag" ), &CPrimitiveTemplate::ParseLengthFlags },
+		{ CSTRING_VIEW( "flags" ), &CPrimitiveTemplate::ParseLengthFlags },
+	};
+	return ParseGroup( grp, parseMethods, "Length" );
 }
 
 
 // Parse a primitive, apply defaults first, grab any base level
 //	key pairs, then process any sub groups we may contain.
 //------------------------------------------------------
-bool CPrimitiveTemplate::ParsePrimitive( CGPGroup *grp )
+bool CPrimitiveTemplate::ParsePrimitive( const CGPGroup& grp )
 {
-	CGPGroup	*subGrp;
-	CGPValue	*pairs;
-	const char	*key; 
-	const char	*val;
-
-	// Lets work with the pairs first
-	pairs = grp->GetPairs();
-
-	while( pairs )
+	// Property
+	for( auto& prop : grp.GetProperties() )
 	{
-		// the fields
-		key = pairs->GetName();
-		val = pairs->GetTopValue();
-
-		// Huge stricmp lists suxor
-		if ( !Q_stricmp( key, "count" ))
+		// Single Value Parsing
 		{
-			ParseCount( val );
-		}
-		else if ( !Q_stricmp( key, "shaders" ) || !Q_stricmp( key, "shader" ))
-		{
-			ParseShaders( pairs );
-		}
-		else if ( !Q_stricmp( key, "models" ) || !Q_stricmp( key, "model" ))
-		{
-			ParseModels( pairs );
-		}
-		else if ( !Q_stricmp( key, "sounds" ) || !Q_stricmp( key, "sound" ))
-		{
-			ParseSounds( pairs );
-		}
-		else if ( !Q_stricmp( key, "impactfx" ))
-		{
-			ParseImpactFxStrings( pairs );
-		}
-		else if ( !Q_stricmp( key, "deathfx" ))
-		{
-			ParseDeathFxStrings( pairs );
-		}
-		else if ( !Q_stricmp( key, "emitfx" ))
-		{
-			ParseEmitterFxStrings( pairs );
-		}
-		else if ( !Q_stricmp( key, "playfx" ))
-		{
-			ParsePlayFxStrings( pairs );
-		}
-		else if ( !Q_stricmp( key, "life" ))
-		{
-			ParseLife( val );
-		}
-		else if ( !Q_stricmp( key, "cullrange" ))
-		{
-			mCullRange = atoi( val );
-			mCullRange *= mCullRange; // Square
-		}
-		else if ( !Q_stricmp( key, "delay" ))
-		{
-			ParseDelay( val );
-		}
-		else if ( !Q_stricmp( key, "bounce" ) || !Q_stricmp( key, "intensity" )) // me==bad for reusing this...but it shouldn't hurt anything)
-		{
-			ParseElasticity( val );
-		}
-		else if ( !Q_stricmp( key, "min" ))
-		{
-			ParseMin( val );
-		}
-		else if ( !Q_stricmp( key, "max" ))
-		{
-			ParseMax( val );
-		}
-		else if ( !Q_stricmp( key, "angle" ) || !Q_stricmp( key, "angles" ))
-		{
-			ParseAngle( val );
-		}
-		else if ( !Q_stricmp( key, "angleDelta" ))
-		{
-			ParseAngleDelta( val );
-		}
-		else if ( !Q_stricmp( key, "velocity" ) || !Q_stricmp( key, "vel" ))
-		{
-			ParseVelocity( val );
-		}
-		else if ( !Q_stricmp( key, "acceleration" ) || !Q_stricmp( key, "accel" ))
-		{
-			ParseAcceleration( val );
-		}
-		else if ( !Q_stricmp( key, "gravity" ))
-		{
-			ParseGravity( val );
-		}
-		else if ( !Q_stricmp( key, "density" ))
-		{
-			ParseDensity( val );
-		}
-		else if ( !Q_stricmp( key, "variance" ))
-		{
-			ParseVariance( val );
-		}
-		else if ( !Q_stricmp( key, "origin" ))
-		{
-			ParseOrigin1( val );
-		}
-		else if ( !Q_stricmp( key, "origin2" ))
-		{
-			ParseOrigin2( val );
-		}
-		else if ( !Q_stricmp( key, "radius" )) // part of ellipse/cylinder calcs.
-		{
-			ParseRadius( val );
-		}
-		else if ( !Q_stricmp( key, "height" )) // part of ellipse/cylinder calcs.
-		{
-			ParseHeight( val );
-		}
-		else if ( !Q_stricmp( key, "wind" ))
-		{
-			ParseWindModifier( val );
-		}
-		else if ( !Q_stricmp( key, "rotation" ))
-		{
-			ParseRotation( val );
-		}
-		else if ( !Q_stricmp( key, "rotationDelta" ))
-		{
-			ParseRotationDelta( val );
-		}
-		else if ( !Q_stricmp( key, "flags" ) || !Q_stricmp( key, "flag" ))
-		{ // these need to get passed on to the primitive
-			ParseFlags( val );
-		}
-		else if ( !Q_stricmp( key, "spawnFlags" ) || !Q_stricmp( key, "spawnFlag" ))
-		{ // these are used to spawn things in cool ways, but don't ever get passed on to prims.
-			ParseSpawnFlags( val );
-		}
-		else if ( !Q_stricmp( key, "name" ))
-		{
-			if ( val )
+			static StringViewIMap< ParseMethod > parseMethods{
+				{ CSTRING_VIEW( "count" ), &CPrimitiveTemplate::ParseCount },
+				{ CSTRING_VIEW( "life" ), &CPrimitiveTemplate::ParseLife },
+				{ CSTRING_VIEW( "delay" ), &CPrimitiveTemplate::ParseDelay },
+				{ CSTRING_VIEW( "bounce" ), &CPrimitiveTemplate::ParseElasticity },
+				{ CSTRING_VIEW( "intensity" ), &CPrimitiveTemplate::ParseElasticity },
+				{ CSTRING_VIEW( "min" ), &CPrimitiveTemplate::ParseMin },
+				{ CSTRING_VIEW( "max" ), &CPrimitiveTemplate::ParseMax },
+				{ CSTRING_VIEW( "angle" ), &CPrimitiveTemplate::ParseAngle },
+				{ CSTRING_VIEW( "angles" ), &CPrimitiveTemplate::ParseAngle },
+				{ CSTRING_VIEW( "angleDelta" ), &CPrimitiveTemplate::ParseAngleDelta },
+				{ CSTRING_VIEW( "velocity" ), &CPrimitiveTemplate::ParseVelocity },
+				{ CSTRING_VIEW( "vel" ), &CPrimitiveTemplate::ParseVelocity },
+				{ CSTRING_VIEW( "acceleration" ), &CPrimitiveTemplate::ParseAcceleration },
+				{ CSTRING_VIEW( "accel" ), &CPrimitiveTemplate::ParseAcceleration },
+				{ CSTRING_VIEW( "gravity" ), &CPrimitiveTemplate::ParseGravity },
+				{ CSTRING_VIEW( "density" ), &CPrimitiveTemplate::ParseDensity },
+				{ CSTRING_VIEW( "variance" ), &CPrimitiveTemplate::ParseVariance },
+				{ CSTRING_VIEW( "origin" ), &CPrimitiveTemplate::ParseOrigin1 },
+				{ CSTRING_VIEW( "origin2" ), &CPrimitiveTemplate::ParseOrigin2 },
+				{ CSTRING_VIEW( "radius" ), &CPrimitiveTemplate::ParseRadius },
+				{ CSTRING_VIEW( "height" ), &CPrimitiveTemplate::ParseHeight },
+				{ CSTRING_VIEW( "wind" ), &CPrimitiveTemplate::ParseWindModifier },
+				{ CSTRING_VIEW( "rotation" ), &CPrimitiveTemplate::ParseRotation },
+				{ CSTRING_VIEW( "rotationDelta" ), &CPrimitiveTemplate::ParseRotationDelta },
+				{ CSTRING_VIEW( "flags" ), &CPrimitiveTemplate::ParseFlags },
+				{ CSTRING_VIEW( "flag" ), &CPrimitiveTemplate::ParseFlags },
+				{ CSTRING_VIEW( "spawnFlags" ), &CPrimitiveTemplate::ParseSpawnFlags },
+				{ CSTRING_VIEW( "spawnFlag" ), &CPrimitiveTemplate::ParseSpawnFlags },
+			};
+			auto pos = parseMethods.find( prop.GetName() );
+			if( pos != parseMethods.end() )
 			{
-				// just stash the descriptive name of the primitive
-				strcpy( mName, val );
+				ParseMethod method = pos->second;
+				( this->*method )( prop.GetTopValue() );
+				continue;
 			}
 		}
+		// Property Parsing
+		{
+			using PropertyParseMethod = bool( CPrimitiveTemplate::* )( const CGPProperty& );
+			static StringViewIMap< PropertyParseMethod > parseMethods{
+				{ CSTRING_VIEW( "shaders" ), &CPrimitiveTemplate::ParseShaders },
+				{ CSTRING_VIEW( "shader" ), &CPrimitiveTemplate::ParseShaders },
+				{ CSTRING_VIEW( "models" ), &CPrimitiveTemplate::ParseModels },
+				{ CSTRING_VIEW( "model" ), &CPrimitiveTemplate::ParseModels },
+				{ CSTRING_VIEW( "sounds" ), &CPrimitiveTemplate::ParseSounds },
+				{ CSTRING_VIEW( "sound" ), &CPrimitiveTemplate::ParseSounds },
+				{ CSTRING_VIEW( "impactfx" ), &CPrimitiveTemplate::ParseImpactFxStrings },
+				{ CSTRING_VIEW( "deathfx" ), &CPrimitiveTemplate::ParseDeathFxStrings },
+				{ CSTRING_VIEW( "emitfx" ), &CPrimitiveTemplate::ParseEmitterFxStrings },
+				{ CSTRING_VIEW( "playfx" ), &CPrimitiveTemplate::ParsePlayFxStrings },
+			};
+			auto pos = parseMethods.find( prop.GetName() );
+			if( pos != parseMethods.end() )
+			{
+				PropertyParseMethod method = pos->second;
+				( this->*method )( prop );
+				continue;
+			}
+		}
+		// Special Cases
+		if( Q::stricmp( prop.GetName(), CSTRING_VIEW( "cullrange" ) ) == Q::Ordering::EQ )
+		{
+			mCullRange = Q::svtoi( prop.GetTopValue() );
+			mCullRange *= mCullRange; // Square
+		}
+		else if( Q::stricmp( prop.GetName(), CSTRING_VIEW( "name" ) ) == Q::Ordering::EQ )
+		{
+			if( !prop.GetTopValue().empty() )
+			{
+				// just stash the descriptive name of the primitive
+				std::size_t len = std::min< std::size_t >( prop.GetTopValue().size(), FX_MAX_PRIM_NAME - 1 );
+				auto begin = prop.GetTopValue().begin();
+				std::copy( begin, begin + len, &mName[ 0 ] );
+				mName[ len ] = '\0';
+			}
+		}
+		// Error
 		else
 		{
-			theFxHelper.Print( "Unknown key parsing an effect primitive: %s\n", key );
+			theFxHelper.Print( "Unknown key parsing an effect primitive!\n" );
 		}
-
-		pairs = (CGPValue *)pairs->GetNext();
 	}
 
-	subGrp = grp->GetSubGroups();
-
-	// Lets chomp on the groups now
-	while ( subGrp )
+	for( auto& subGrp : grp.GetSubGroups() )
 	{
-		key = subGrp->GetName();
+		using GroupParseMethod = bool ( CPrimitiveTemplate::* )( const CGPGroup& );
+		static StringViewIMap< GroupParseMethod > parseMethods{
+			{ CSTRING_VIEW( "rgb" ), &CPrimitiveTemplate::ParseRGB },
 
-		if ( !Q_stricmp( key, "rgb" ))
+			{ CSTRING_VIEW( "alpha" ), &CPrimitiveTemplate::ParseAlpha },
+
+			{ CSTRING_VIEW( "size" ), &CPrimitiveTemplate::ParseSize },
+			{ CSTRING_VIEW( "width" ), &CPrimitiveTemplate::ParseSize },
+
+			{ CSTRING_VIEW( "size2" ), &CPrimitiveTemplate::ParseSize2 },
+			{ CSTRING_VIEW( "width2" ), &CPrimitiveTemplate::ParseSize2 },
+
+			{ CSTRING_VIEW( "length" ), &CPrimitiveTemplate::ParseLength },
+			{ CSTRING_VIEW( "height" ), &CPrimitiveTemplate::ParseLength },
+		};
+		auto pos = parseMethods.find( subGrp.GetName() );
+		if( pos == parseMethods.end() )
 		{
-			ParseRGB( subGrp );
-		}
-		else if ( !Q_stricmp( key, "alpha" ))
-		{
-			ParseAlpha( subGrp );
-		}
-		else if ( !Q_stricmp( key, "size" ) || !Q_stricmp( key, "width" ))
-		{
-			ParseSize( subGrp );
-		}
-		else if ( !Q_stricmp( key, "size2" ) || !Q_stricmp( key, "width2" ))
-		{
-			ParseSize2( subGrp );
-		}
-		else if ( !Q_stricmp( key, "length" ) || !Q_stricmp( key, "height" ))
-		{
-			ParseLength( subGrp );
+			theFxHelper.Print( "Unknown group key parsing a particle!\n" );
 		}
 		else
 		{
-			theFxHelper.Print( "Unknown group key parsing a particle: %s\n", key );
+			GroupParseMethod method = pos->second;
+			( this->*method )( subGrp );
 		}
-
-		subGrp = (CGPGroup *)subGrp->GetNext();
 	}
-
 	return true;
 }

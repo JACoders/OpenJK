@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_headers.h"
 
@@ -187,7 +191,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 			lockTime = g_rocketLockTime;
 		}
 		// we'll consider attempting to lock this little poochie onto some baddie.
-		if ( (lockEntNum > 0||ent->NPC&&lockEntNum>=0) && lockEntNum < ENTITYNUM_WORLD && lockTime > 0 )
+		if ( (lockEntNum > 0 || (ent->NPC && lockEntNum >= 0)) && lockEntNum < ENTITYNUM_WORLD && lockTime > 0 )
 		{
 			// take our current lock time and divide that by 8 wedge slices to get the current lock amount
 			int dif = ( level.time - lockTime ) / ( 1200.0f / 8.0f );

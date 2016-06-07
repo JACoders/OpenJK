@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "../cgame/cg_local.h"
 #include "b_local.h"
@@ -87,10 +91,10 @@ void NPC_StandIdle( void )
 
 		newIdle = Q_irand( 0, MAX_IDLE_ANIMS );
 	}
-	
+
 	//Start that animation going
 	NPC_SetAnim( NPC, SETANIM_BOTH, baseSeq + newIdle, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
-	
+
 	int newTime = PM_AnimLength( NPC->client->clientInfo.animFileIndex, (animNumber_t) (baseSeq + newIdle) );
 
 	//Don't do this again for a random amount of time
@@ -123,12 +127,6 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 //			if ( NPC->svFlags&SVF_HEALING )
 //			{//Medic is on the way, get down!
 //				duck_ok = qtrue;
-//			}
-			// no more borg
-///			if ( NPC->client->playerTeam!= TEAM_BORG )
-//			{//Borg don't care if they're about to die
-				//attack_scale will be a max of .66
-//				attack_scale = NPC->health/60;
 //			}
 		}
 	}
@@ -172,7 +170,7 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 }
 
 
-void NPC_BSIdle( void ) 
+void NPC_BSIdle( void )
 {
 	//FIXME if there is no nav data, we need to do something else
 	// if we're stuck, try to move around it
@@ -227,7 +225,7 @@ void NPC_BSStandGuard (void)
 		{
 			NPCInfo->tempBehavior = BS_DEFAULT;
 		}
-		
+
 		if( NPCInfo->behaviorState == BS_STAND_GUARD )
 		{
 			NPCInfo->behaviorState = BS_STAND_AND_SHOOT;
@@ -273,7 +271,7 @@ void NPC_BSHuntAndKill( void )
 			enemyDist = VectorLength(vec);
 			if( enemyDist > 48 && ((enemyDist*1.5)*(enemyDist*1.5) >= NPC_MaxDistSquaredForWeapon() ||
 				oEVis != VIS_SHOOT ||
-				//!(ucmd.buttons & BUTTON_ATTACK) || 
+				//!(ucmd.buttons & BUTTON_ATTACK) ||
 				enemyDist > IdealDistance(NPC)*3 ) )
 			{//We should close in?
 				NPCInfo->goalEntity = NPC->enemy;
@@ -297,7 +295,7 @@ void NPC_BSHuntAndKill( void )
 			}//otherwise, stay where we are
 		}
 	}
-	else 
+	else
 	{//ok, stand guard until we find an enemy
 		if( NPCInfo->tempBehavior == BS_HUNT_AND_KILL )
 		{
@@ -325,7 +323,7 @@ void NPC_BSStandAndShoot (void)
 
 	//FIXME:
 	//When they're all dead, go to some script or wander off to sickbay?
-	
+
 	if(NPC->client->playerTeam && NPC->client->enemyTeam)
 	{
 		//FIXME: don't realize this right away- or else enemies show up and we're standing around
@@ -376,7 +374,7 @@ void NPC_BSStandAndShoot (void)
 	}
 
 	NPC_CheckEnemy(qtrue, qfalse);
-	
+
 	if(NPCInfo->duckDebounceTime > level.time && NPC->client->ps.weapon != WP_SABER )
 	{
 		ucmd.upmove = -127;
@@ -384,7 +382,7 @@ void NPC_BSStandAndShoot (void)
 		{
 			NPC_CheckCanAttack(1.0, qtrue);
 		}
-		return;		
+		return;
 	}
 
 	if(NPC->enemy)
@@ -426,7 +424,7 @@ void NPC_BSRunAndShoot (void)
 	//NPCInfo->combatMove = qtrue;
 
 	NPC_CheckEnemy( qtrue, qfalse );
-	
+
 	if ( NPCInfo->duckDebounceTime > level.time ) // && NPCInfo->hidingGoal )
 	{
 		ucmd.upmove = -127;
@@ -434,7 +432,7 @@ void NPC_BSRunAndShoot (void)
 		{
 			NPC_CheckCanAttack( 1.0, qfalse );
 		}
-		return;		
+		return;
 	}
 
 	if ( NPC->enemy )
@@ -451,13 +449,13 @@ void NPC_BSRunAndShoot (void)
 			if ( VectorLength( vec ) > 128 || NPC->cantHitEnemyCounter >= 10 )
 			{//run at enemy if too far away
 				//The cantHitEnemyCounter getting high has other repercussions
-				//100 (10 seconds) will make you try to pick a new enemy... 
+				//100 (10 seconds) will make you try to pick a new enemy...
 				//But we're chasing, so we clamp it at 50 here
 				if ( NPC->cantHitEnemyCounter > 60 )
 				{
 					NPC->cantHitEnemyCounter = 60;
 				}
-				
+
 				if ( NPC->cantHitEnemyCounter >= (NPCInfo->stats.aggression+1) * 10 )
 				{
 					NPC_LostEnemyDecideChase();
@@ -477,9 +475,9 @@ void NPC_BSRunAndShoot (void)
 				//of a thin wall or something else blocking out shot.  That
 				//would make us just stand there and not go around it...
 				//but maybe it's okay- might look like we're waiting for
-				//him to come out...?  
+				//him to come out...?
 				//Current solution: runs around if cantHitEnemyCounter gets
-				//to 10 (1 second).  
+				//to 10 (1 second).
 			}
 		}
 		else
@@ -507,7 +505,7 @@ void NPC_BSFace (void)
 	if( NPC_UpdateAngles ( qtrue, qtrue ) )
 	{
 		Q3_TaskIDComplete( NPC, TID_BSTATE );
-		
+
 		NPCInfo->desiredYaw = client->ps.viewangles[YAW];
 		NPCInfo->desiredPitch = client->ps.viewangles[PITCH];
 
@@ -540,7 +538,6 @@ void NPC_BSPointShoot (qboolean shoot)
 	switch( NPC->client->ps.weapon )
 	{
 	case WP_NONE:
-//	case WP_TRICORDER:
 	case WP_MELEE:
 	case WP_TUSKEN_STAFF:
 	case WP_SABER:
@@ -561,7 +558,7 @@ void NPC_BSPointShoot (qboolean shoot)
 		{//FIXME: needs to hold this down if using a weapon that requires it, like phaser...
 			ucmd.buttons |= BUTTON_ATTACK;
 		}
-		
+
 		if ( !shoot || !(NPC->svFlags & SVF_LOCKEDENEMY) )
 		{//If locked_enemy is on, dont complete until it is destroyed...
 			Q3_TaskIDComplete( NPC, TID_BSTATE );
@@ -591,7 +588,7 @@ void NPC_BSPointShoot (qboolean shoot)
 			float	dist = VectorLength( dir );
 			float	yawMiss, yawMissAllow = NPC->enemy->maxs[0];
 			float	pitchMiss, pitchMissAllow = (NPC->enemy->maxs[2] - NPC->enemy->mins[2])/2;
-			
+
 			if ( yawMissAllow < 8.0f )
 			{
 				yawMissAllow = 8.0f;
@@ -611,9 +608,9 @@ void NPC_BSPointShoot (qboolean shoot)
 			}
 		}
 	}
-	
+
 	return;
-		
+
 finished:
 	NPCInfo->desiredYaw = client->ps.viewangles[YAW];
 	NPCInfo->desiredPitch = client->ps.viewangles[PITCH];
@@ -659,7 +656,7 @@ void NPC_BSShoot(void)
 
 	enemyVisibility = VIS_SHOOT;
 
-	if ( client->ps.weaponstate != WEAPON_READY && client->ps.weaponstate != WEAPON_FIRING ) 
+	if ( client->ps.weaponstate != WEAPON_READY && client->ps.weaponstate != WEAPON_FIRING )
 	{
 		client->ps.weaponstate = WEAPON_READY;
 	}
@@ -668,12 +665,12 @@ void NPC_BSShoot(void)
 }
 
 /*
-void NPC_BSPatrol( void ) 
+void NPC_BSPatrol( void )
 
   Same as idle, but you look for enemies every "vigilance"
   using your angles, HFOV, VFOV and visrange, and listen for sounds within earshot...
 */
-void NPC_BSPatrol( void ) 
+void NPC_BSPatrol( void )
 {
 	//int	alertEventNum;
 
@@ -721,7 +718,7 @@ void NPC_BSDefault(void)
 extern void NPC_CheckGetNewWeapon( void );
 extern void NPC_BSST_Attack( void );
 
-void NPC_BSDefault( void ) 
+void NPC_BSDefault( void )
 {
 //	vec3_t		enemyDir;
 //	float		enemyDist;
@@ -736,7 +733,7 @@ void NPC_BSDefault( void )
 	qboolean	move = qtrue;
 //	qboolean	shoot = qfalse;
 
-	
+
 	if( NPCInfo->scriptFlags & SCF_FIRE_WEAPON )
 	{
 		WeaponThink( qtrue );
@@ -763,10 +760,10 @@ void NPC_BSDefault( void )
 			{//heard/saw something
 				if ( level.alertEvents[alertEvent].level >= AEL_DISCOVERED && (NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES) )
 				{//was a big event
-					if ( level.alertEvents[alertEvent].owner 
+					if ( level.alertEvents[alertEvent].owner
 						&& level.alertEvents[alertEvent].owner != NPC
-						&& level.alertEvents[alertEvent].owner->client 
-						&& level.alertEvents[alertEvent].owner->health >= 0 
+						&& level.alertEvents[alertEvent].owner->client
+						&& level.alertEvents[alertEvent].owner->health >= 0
 						&& level.alertEvents[alertEvent].owner->client->playerTeam == NPC->client->enemyTeam )
 					{//an enemy
 						G_SetEnemy( NPC, level.alertEvents[alertEvent].owner );
@@ -784,8 +781,8 @@ void NPC_BSDefault( void )
 	{
 		// just use the stormtrooper attack AI...
 		NPC_CheckGetNewWeapon();
-		if ( NPC->client->leader 
-			&& NPCInfo->goalEntity == NPC->client->leader 
+		if ( NPC->client->leader
+			&& NPCInfo->goalEntity == NPC->client->leader
 			&& !Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
 		{
 			NPC_ClearGoal();
@@ -821,7 +818,7 @@ void NPC_BSDefault( void )
 			enemyLOS = qfalse;
 			enemyCS = qfalse;
 		}
-		
+
 		if ( enemyCS && enemyShotFOV )
 		{//can hit enemy if we want
 			NPC->cantHitEnemyCounter = 0;
@@ -882,7 +879,7 @@ void NPC_BSDefault( void )
 		{//pick a new one
 			NPC_CheckEnemy( qtrue, qfalse );
 		}
-		
+
 		if ( enemyPVS && enemyLOS )//&& !enemyShotFOV )
 		{//have a clear LOS to him//, but not looking at him
 			//Find the desired angles
@@ -898,9 +895,9 @@ void NPC_BSDefault( void )
 
 	if ( UpdateGoal() )
 	{//have a goal
-		if ( !NPC->enemy 
-			&& NPC->client->leader 
-			&& NPCInfo->goalEntity == NPC->client->leader 
+		if ( !NPC->enemy
+			&& NPC->client->leader
+			&& NPCInfo->goalEntity == NPC->client->leader
 			&& !Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
 		{
 			NPC_BSFollowLeader();

@@ -1,20 +1,25 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __G_LOCAL_H__
 #define __G_LOCAL_H__
@@ -36,7 +41,7 @@ This file is part of Jedi Academy.
 
 #define BODY_QUEUE_SIZE		8
 
-#define Q3_INFINITE			16777216 
+#define Q3_INFINITE			16777216
 
 #define	FRAMETIME			100					// msec
 #define	EVENT_VALID_MSEC	300
@@ -99,7 +104,7 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
 #define MAX_INTEREST_POINTS		64
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	char		*target;
@@ -109,7 +114,7 @@ typedef struct
 
 #define MAX_COMBAT_POINTS		512
 
-typedef struct 
+typedef struct
 {
 	vec3_t		origin;
 	int			flags;
@@ -176,7 +181,7 @@ typedef struct
 #define	WF_PUFFING		0x00000004	// puffing something
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct 
+typedef struct
 {
 	gclient_t	*clients;		// [maxclients]
 
@@ -254,6 +259,7 @@ extern	cvar_t	*g_ICARUSDebug;
 
 extern cvar_t	*g_npcdebug;
 
+extern	cvar_t	*g_allowBunnyhopping;
 extern gentity_t *player;
 //
 // g_spawn.c
@@ -453,7 +459,7 @@ void G_SayTo( gentity_t *ent, gentity_t *other, int mode, int color, const char 
 // g_main.c
 //
 void G_RunThink (gentity_t *ent);
-void QDECL G_Error( const char *fmt, ... );
+void NORETURN QDECL G_Error( const char *fmt, ... );
 void SetInUse(gentity_t *ent);
 void ClearInUse(gentity_t *ent);
 qboolean PInUse(unsigned int entNum);

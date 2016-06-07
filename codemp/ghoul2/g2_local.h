@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 // defines to setup the
@@ -20,8 +42,8 @@ public:
 	virtual int New()=0;
 	virtual void Delete(int handle)=0;
 	virtual bool IsValid(int handle) const=0;
-	virtual vector<CGhoul2Info> &Get(int handle)=0;
-	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
+	virtual std::vector<CGhoul2Info> &Get(int handle)=0;
+	virtual const std::vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
 IGhoul2InfoArray &TheGhoul2InfoArray();
@@ -47,12 +69,12 @@ class CGhoul2Info_v
 			mItem=0;
 		}
 	}
-	vector<CGhoul2Info> &Array()
+	std::vector<CGhoul2Info> &Array()
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);
 	}
-	const vector<CGhoul2Info> &Array() const
+	const std::vector<CGhoul2Info> &Array() const
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);
@@ -188,7 +210,7 @@ qboolean	G2_Stop_Bone_Angles(const char *fileName, boneInfo_v &blist, const char
 //rww - RAGDOLL_BEGIN
 void		G2_Animate_Bone_List(CGhoul2Info_v &ghoul2, const int currentTime, const int index,CRagDollUpdateParams *params);
 //rww - RAGDOLL_END
-void		G2_Init_Bone_List(boneInfo_v &blist);
+void		G2_Init_Bone_List(boneInfo_v &blist, int numBones);
 int			G2_Find_Bone_In_List(boneInfo_v &blist, const int boneNum);
 void		G2_RemoveRedundantBoneOverrides(boneInfo_v &blist, int *activeBones);
 qboolean	G2_Set_Bone_Angles_Matrix(const char *fileName, boneInfo_v &blist, const char *boneName, const mdxaBone_t &matrix, const int flags, qhandle_t *modelList, const int modelIndex, const int blendTime, const int currentTime);

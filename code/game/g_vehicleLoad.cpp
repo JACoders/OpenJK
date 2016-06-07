@@ -12,7 +12,7 @@ vehicleInfo_t g_vehicleInfo[MAX_VEHICLES];
 int		numVehicles = 1;//first one is null/default
 
 typedef enum {
-	VF_INT, 
+	VF_INT,
 	VF_FLOAT,
 	VF_LSTRING,	// string on disk, pointer in memory, TAG_LEVEL
 	VF_VECTOR,
@@ -28,7 +28,7 @@ typedef struct
 	vehFieldType_t	type;
 } vehField_t;
 
-vehField_t vehFields[VEH_PARM_MAX] = 
+vehField_t vehFields[VEH_PARM_MAX] =
 {
 	{"name", VFOFS(name), VF_LSTRING},	//unique name of the vehicle
 
@@ -159,7 +159,7 @@ void G_VehicleSetDefaults( vehicleInfo_t *vehicle )
 	vehicle->pitchLimit = VEH_DEFAULT_PITCH_LIMIT;		//how far it can pitch forward or backward
 	vehicle->braking = VEH_DEFAULT_BRAKING;				//when pressing on decelerator (backwards)
 	vehicle->turningSpeed = VEH_DEFAULT_TURNING_SPEED;	//how quickly you can turn
-	vehicle->turnWhenStopped = qfalse;					//whether or not you can turn when not moving	
+	vehicle->turnWhenStopped = qfalse;					//whether or not you can turn when not moving
 	vehicle->traction = VEH_DEFAULT_TRACTION;			//how much your command input affects velocity
 	vehicle->friction = VEH_DEFAULT_FRICTION;			//how much velocity is cut on its own
 	vehicle->maxSlope = VEH_DEFAULT_MAX_SLOPE;			//the max slope that it can go up with control
@@ -261,7 +261,7 @@ static void G_ParseVehicleParms( vehicleInfo_t *vehicle, const char **holdBuf )
 	while ( holdBuf )
 	{
 		token = COM_ParseExt( holdBuf, qtrue );
-		if ( !token[0] ) 
+		if ( !token[0] )
 		{
 			gi.Printf( S_COLOR_RED"ERROR: unexpected EOF while parsing vehicles!\n" );
 			return;
@@ -278,11 +278,11 @@ static void G_ParseVehicleParms( vehicleInfo_t *vehicle, const char **holdBuf )
 			if ( vehFields[i].name && !Q_stricmp( vehFields[i].name, token ) )
 			{
 				// found it
-				if ( COM_ParseString( holdBuf, &value ) ) 
+				if ( COM_ParseString( holdBuf, &value ) )
 				{
 					continue;
 				}
-				switch( vehFields[i].type ) 
+				switch( vehFields[i].type )
 				{
 				case VF_INT:
 					*(int *)(b+vehFields[i].ofs) = atoi(value);
@@ -322,7 +322,7 @@ static void G_ParseVehicleParms( vehicleInfo_t *vehicle, const char **holdBuf )
 	}
 }
 
-static void G_VehicleStoreParms( const char *p ) 
+static void G_VehicleStoreParms( const char *p )
 {//load up all into a table: g_vehicleInfo
 	const char	*token;
 	vehicleInfo_t	*vehicle;
@@ -331,7 +331,7 @@ static void G_VehicleStoreParms( const char *p )
 	// The first vehicle just contains all the base level (not 'overridden') function calls.
 	G_SetSharedVehicleFunctions( &g_vehicleInfo[0] );
 	numVehicles = 1;
-	
+
 	//try to parse data out
 	COM_BeginParseSession();
 
@@ -344,7 +344,7 @@ static void G_VehicleStoreParms( const char *p )
 			return;
 		}
 
-		if ( !Q_stricmp( token, "{" ) ) 
+		if ( !Q_stricmp( token, "{" ) )
 		{//found one, parse out the goodies
 			if ( numVehicles >= MAX_VEHICLES )
 			{//sorry, no more vehicle slots!
@@ -379,7 +379,7 @@ static void G_VehicleStoreParms( const char *p )
 	}
 }
 
-void G_VehicleLoadParms( void ) 
+void G_VehicleLoadParms( void )
 {//HMM... only do this if there's a vehicle on the level?
 	int			len, totallen, vehExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
@@ -398,7 +398,7 @@ void G_VehicleLoadParms( void )
 	fileCnt = gi.FS_GetFileList("ext_data/vehicles", ".veh", vehExtensionListBuf, sizeof(vehExtensionListBuf) );
 
 	holdChar = vehExtensionListBuf;
-	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += vehExtFNLen + 1 )
 	{
 		vehExtFNLen = strlen( holdChar );
 
@@ -406,7 +406,7 @@ void G_VehicleLoadParms( void )
 
 		len = gi.FS_ReadFile( va( "ext_data/vehicles/%s", holdChar), (void **) &buffer );
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			gi.Printf( "G_VehicleLoadParms: error reading file %s\n", holdChar );
 		}
@@ -416,7 +416,7 @@ void G_VehicleLoadParms( void )
 			{//don't let it end on a } because that should be a stand-alone token
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 			if ( totallen + len >= MAX_VEHICLE_DATA_SIZE ) {
 				G_Error( "G_VehicleLoadParms: ran out of space before reading %s\n(you must make the .npc files smaller)", holdChar );

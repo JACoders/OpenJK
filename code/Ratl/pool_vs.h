@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2002-2013 Activision
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // RAVEN STANDARD TEMPLATE LIBRARY
@@ -31,7 +35,7 @@ This file is part of Jedi Academy.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -58,11 +62,7 @@ template <class T>
 class pool_root : public ratl_base
 {
 public:
-#ifdef _WIN32
-	typedef typename T TStorageTraits;
-#else
     typedef T TStorageTraits;
-#endif
 	typedef typename T::TValue TTValue;
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -113,7 +113,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// The Number Of Objects Allocated
     ////////////////////////////////////////////////////////////////////////////////////
-	int			size()	 const													
+	int			size()	 const
 	{
 		return (mSize);
 	}
@@ -121,7 +121,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Is Empty
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		empty()	 const													
+	bool		empty()	 const
 	{
 		return (mSize==0);
 	}
@@ -129,7 +129,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Check To See If This Memory Pool Is Full
     ////////////////////////////////////////////////////////////////////////////////////
-	bool		full()	 const													
+	bool		full()	 const
 	{
 		return (mSize==CAPACITY);
 	}
@@ -137,7 +137,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constant Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	const TTValue&	value_at_index(int i) const 									
+	const TTValue&	value_at_index(int i) const
 	{
 		assert(mUsed[i]);
 		return (mData[i]);
@@ -146,7 +146,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	TTValue&			value_at_index(int i)											
+	TTValue&			value_at_index(int i)
 	{
 		assert(mUsed[i]);
 		return (mData[i]);
@@ -290,7 +290,7 @@ public:
 		//---------------------
 		void		operator= (const iterator &t)
 		{
-			mOwner	= t.mOwner;	
+			mOwner	= t.mOwner;
 			mIndex	= t.mIndex;
 		}
 
@@ -307,7 +307,7 @@ public:
 		// Handle & Index Access
 		//-----------------------
 		int		index()							{assert(mOwner && mOwner->is_used_index(mIndex));	return mIndex;}
-		
+
 		// Inc Operator
 		//-------------
 		iterator operator++(int)	 // postfix
@@ -334,7 +334,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Iterator
     ////////////////////////////////////////////////////////////////////////////////////
-	class const_iterator 
+	class const_iterator
 	{
 		int					mIndex;
 		const pool_root<T>*	mOwner;
@@ -365,7 +365,7 @@ public:
 		// Handle & Index Access
 		//-----------------------
 		int		index() const					{assert(mOwner && mOwner->is_used_index(mIndex));	return mIndex;}
-		
+
 		// Inc Operator
 		//-------------
 		const_iterator operator++(int)	 // postfix
@@ -474,11 +474,11 @@ class pool_base : public pool_root<T>
 {
 public:
 	typedef typename T::TValue TTValue;
-	
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Constant Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	const TTValue&	operator[](int i) const 									
+	const TTValue&	operator[](int i) const
 	{
 		return pool_root<T>::value_at_index(i);
 	}
@@ -486,7 +486,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Accessor
     ////////////////////////////////////////////////////////////////////////////////////
-	TTValue&			operator[](int i)											
+	TTValue&			operator[](int i)
 	{
 		return pool_root<T>::value_at_index(i);
 	}
@@ -531,10 +531,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At index
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
-    typename
-#endif
-	pool_root<T>::iterator	at(int index)
+    typename pool_root<T>::iterator	at(int index)
 	{
 		return pool_root<T>::at_index(index);
 	}
@@ -542,10 +539,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Get An Iterator To The Object At index
     ////////////////////////////////////////////////////////////////////////////////////
-#ifndef _WIN32
-    typename
-#endif
-	pool_root<T>::const_iterator	at(int index) const
+    typename pool_root<T>::const_iterator	at(int index) const
 	{
 		return pool_root<T>::at_index(index);
 	}

@@ -1,43 +1,31 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #pragma once
 #if !defined(GHOUL2_SHARED_H_INC)
 #define GHOUL2_SHARED_H_INC
 
-/*
-Ghoul2 Insert Start
-*/
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#pragma warning(disable:4702)	//unreachable code
-#endif
 #include <vector>
 #include <map>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#pragma warning (disable:4503)	// decorated name length xceeded, name was truncated
-#endif
-using namespace std;
-/*
-Ghoul2 Insert End
-*/
 
 #define G2T_SV_TIME (0)
 #define G2T_CG_TIME (1)
@@ -52,7 +40,7 @@ int			G2API_GetTime(int argTime); // this may or may not return arg depending on
 //   G H O U L  I I  D E F I N E S
 //
 // we save the whole surfaceInfo_t struct
-struct surfaceInfo_t 
+struct surfaceInfo_t
 {
 	int			offFlags;		// what the flags are for this model
 	int			surface;		// index into array held inside the model definition of pointers to the actual surface data loaded in - used by both client and game
@@ -60,7 +48,7 @@ struct surfaceInfo_t
 	float		genBarycentricI;	// point 1 barycentric coors - point 2 is 1 - point0 - point1
 	int			genPolySurfaceIndex; // used to point back to the original surface and poly if this is a generated surface
 	int			genLod;			// used to determine original lod of original surface and poly hit location
-	
+
 surfaceInfo_t():
 	offFlags(0),
 	surface(0),
@@ -138,12 +126,12 @@ struct  boneInfo_t
 	int			restTime;
 	int			RagFlags;
 	int			DependentRagIndexMask;
-	mdxaBone_t	originalTrueBoneMatrix;	
+	mdxaBone_t	originalTrueBoneMatrix;
 	mdxaBone_t	parentTrueBoneMatrix;			// figure I will need this sooner or later
 	mdxaBone_t	parentOriginalTrueBoneMatrix;	// figure I will need this sooner or later
 	vec3_t		originalOrigin;
 	vec3_t		originalAngles;
-	vec3_t		lastShotDir;		
+	vec3_t		lastShotDir;
 	mdxaBone_t  *basepose;
 	mdxaBone_t  *baseposeInv;
 	mdxaBone_t  *baseposeParent;
@@ -153,7 +141,7 @@ struct  boneInfo_t
 
 	mdxaBone_t	extraMatrix;	// figure I will need this sooner or later
 	vec3_t		extraVec1;		// I am really tired of recomiling the whole game to add a param here
-	float		extraFloat1;		
+	float		extraFloat1;
 	int			extraInt1;
 
 	vec3_t		ikPosition;
@@ -197,16 +185,16 @@ boneInfo_t():
 	boneBlendTime(0),
 	boneBlendStart(0)
 	{
-		matrix.matrix[0][0] = matrix.matrix[0][1] = matrix.matrix[0][2] = matrix.matrix[0][3] = 
-		matrix.matrix[1][0] = matrix.matrix[1][1] = matrix.matrix[1][2] = matrix.matrix[1][3] = 
+		matrix.matrix[0][0] = matrix.matrix[0][1] = matrix.matrix[0][2] = matrix.matrix[0][3] =
+		matrix.matrix[1][0] = matrix.matrix[1][1] = matrix.matrix[1][2] = matrix.matrix[1][3] =
 		matrix.matrix[2][0] = matrix.matrix[2][1] = matrix.matrix[2][2] = matrix.matrix[2][3] = 0.0f;
 	}
 
 };
 //we save from top to boltUsed here. Don't bother saving the position, it gets rebuilt every frame anyway
 struct boltInfo_t{
-	int			boneNumber;		// bone number bolt attaches to	
-	int			surfaceNumber;	// surface number bolt attaches to 
+	int			boneNumber;		// bone number bolt attaches to
+	int			surfaceNumber;	// surface number bolt attaches to
 	int			surfaceType;	// if we attach to a surface, this tells us if it is an original surface or a generated one - doesn't go across the network
 	int			boltUsed;		// nor does this
 	boltInfo_t():
@@ -220,10 +208,10 @@ struct boltInfo_t{
 
 #define MAX_GHOUL_COUNT_BITS 8 // bits required to send across the MAX_G2_MODELS inside of the networking - this is the only restriction on ghoul models possible per entity
 
-typedef vector <surfaceInfo_t> surfaceInfo_v;
-typedef vector <boneInfo_t> boneInfo_v;
-typedef vector <boltInfo_t> boltInfo_v;
-typedef vector <mdxaBone_t> mdxaBone_v;
+typedef std::vector <surfaceInfo_t> surfaceInfo_v;
+typedef std::vector <boneInfo_t> boneInfo_v;
+typedef std::vector <boltInfo_t> boltInfo_v;
+typedef std::vector <mdxaBone_t> mdxaBone_v;
 
 // defines for stuff to go into the mflags
 #define		GHOUL2_NOCOLLIDE 0x001
@@ -241,11 +229,11 @@ struct model_s;
 class CRenderableSurface
 {
 public:
-	int				ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to 
+	int				ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to
  	CBoneCache 		*boneCache;		// pointer to transformed bone list for this surf
 	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
 
-CRenderableSurface():	
+CRenderableSurface():
 	ident(8), //SF_MDX
 	boneCache(0),
 	surfaceData(0)
@@ -328,7 +316,7 @@ public:
 	{
 		mFileName[0] = 0;
 	}
-}; 
+};
 
 class CGhoul2Info_v;
 
@@ -338,18 +326,16 @@ public:
 	virtual int New()=0;
 	virtual void Delete(int handle)=0;
 	virtual bool IsValid(int handle) const=0;
-	virtual vector<CGhoul2Info> &Get(int handle)=0;
-	virtual const vector<CGhoul2Info> &Get(int handle) const=0;
+	virtual std::vector<CGhoul2Info> &Get(int handle)=0;
+	virtual const std::vector<CGhoul2Info> &Get(int handle) const=0;
 };
 
 #ifdef RENDERER
 IGhoul2InfoArray &TheGhoul2InfoArray();
-#else
-#ifdef _JK2EXE
+#elif _JK2EXE
 IGhoul2InfoArray &_TheGhoul2InfoArray();
 #else
 IGhoul2InfoArray &TheGameGhoul2InfoArray();
-#endif
 #endif
 
 class CGhoul2Info_v
@@ -360,12 +346,10 @@ class CGhoul2Info_v
 	{
 #ifdef RENDERER
 		return TheGhoul2InfoArray();
-#else
-#ifdef _JK2EXE
+#elif _JK2EXE
 		return _TheGhoul2InfoArray();
 #else
 		return TheGameGhoul2InfoArray();
-#endif
 #endif
 	}
 
@@ -384,12 +368,12 @@ class CGhoul2Info_v
 			mItem=0;
 		}
 	}
-	vector<CGhoul2Info> &Array()
+	std::vector<CGhoul2Info> &Array()
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);
 	}
-	const vector<CGhoul2Info> &Array() const
+	const std::vector<CGhoul2Info> &Array() const
 	{
 		assert(InfoArray().IsValid(mItem));
 		return InfoArray().Get(mItem);

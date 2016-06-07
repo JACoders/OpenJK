@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #if !defined(FX_SCHEDULER_H_INC)
 	#include "FxScheduler.h"
@@ -117,21 +121,23 @@ void SFxHelper::AddFxToScene( refEntity_t *ent )
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterShader( const char *shader )
+int SFxHelper::RegisterShader( const gsl::cstring_view& shader )
 {
-	return cgi_R_RegisterShader( shader );
+	// TODO: it would be nice to change the ABI here to allow for passing of string views
+	return cgi_R_RegisterShader( std::string( shader.begin(), shader.end() ).c_str() );
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterSound( const char *sound )
+int SFxHelper::RegisterSound( const gsl::cstring_view& sound )
 {
-	return cgi_S_RegisterSound( sound );
+	// TODO: it would be nice to change the ABI here to allow for passing of string views
+	return cgi_S_RegisterSound( std::string( sound.begin(), sound.end() ).c_str() );
 }
 
 //------------------------------------------------------
-int SFxHelper::RegisterModel( const char *model )
+int SFxHelper::RegisterModel( const gsl::cstring_view& model )
 {
-	return cgi_R_RegisterModel( model );
+	return cgi_R_RegisterModel( std::string( model.begin(), model.end() ).c_str() );
 }
 
 //------------------------------------------------------

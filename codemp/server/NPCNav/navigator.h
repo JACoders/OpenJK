@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #define	__NEWCOLLECT	1
@@ -14,19 +36,9 @@
 #define EFLAG_BLOCKED	0x00000001
 #define EFLAG_FAILED	0x00000002
 
-#ifdef _MSC_VER
-#pragma warning( disable : 4786)
-#endif
-
-#if defined(_WIN32)
-	#define COM_NO_WINDOWS_H
-	#include <objbase.h>
-#endif
-
 #include <map>
 #include <vector>
 #include <list>
-using namespace std;
 
 #include "server/server.h"
 #include "qcommon/q_shared.h"
@@ -36,8 +48,8 @@ using namespace std;
 #define	NAV_HEADER_ID	INT_ID('J','N','V','5')
 #define	NODE_HEADER_ID	INT_ID('N','O','D','E')
 
-typedef multimap<int, int> EdgeMultimap;
-typedef multimap<int, int>::iterator EdgeMultimapIt;
+typedef std::multimap<int, int> EdgeMultimap;
+typedef EdgeMultimap::iterator EdgeMultimapIt;
 
 
 /*
@@ -75,7 +87,7 @@ class CNode
 		byte	flags;
 	} edge_t;
 
-	typedef	vector< edge_t >	edge_v;
+	typedef	std::vector< edge_t >	edge_v;
 
 public:
 
@@ -132,8 +144,8 @@ CNavigator
 #define MAX_FAILED_EDGES	32
 class CNavigator
 {
-	typedef	vector < CNode * >			node_v;
-	typedef	list < CEdge >				edge_l;
+	typedef	std::vector < CNode * >			node_v;
+	typedef	std::list < CEdge >				edge_l;
 
 #if __NEWCOLLECT
 
@@ -143,7 +155,7 @@ class CNavigator
 		unsigned int	distance;
 	};
 
-	typedef list < nodeList_t >		nodeChain_l;
+	typedef std::list < nodeList_t >		nodeChain_l;
 
 #endif	//__NEWCOLLECT
 
@@ -180,7 +192,7 @@ public:
 	int GetNodeEdge( int nodeID, int edge );
 	float GetNodeLeadDistance( int nodeID );
 
-	int GetNumNodes( void )		const	{	return m_nodes.size();		}
+	int GetNumNodes( void )		const	{	return (int)m_nodes.size();		}
 
 	bool Connected( int startID, int endID );
 
@@ -270,7 +282,7 @@ public:
 // DATA
 //--------------------------------------------------------------
 private:
-	vector<CEdge*>	mHeap;
+	std::vector<CEdge*>	mHeap;
 };
 
 extern CNavigator navigator;

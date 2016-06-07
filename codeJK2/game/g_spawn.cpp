@@ -1,25 +1,26 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
-
-// leave this line at the top for all g_xxxx.cpp files...
 #include "g_headers.h"
-
-
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -38,7 +39,7 @@ char		spawnVarChars[MAX_SPAWN_VARS_CHARS];
 #include "../../code/qcommon/sstring.h"
 
 //NOTENOTE: Be sure to change the mirrored code in cgmain.cpp
-typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
+typedef std::map< sstring_t, unsigned char, std::less<sstring_t>, std::allocator< unsigned char >  >	namePrecache_m;
 namePrecache_m	*as_preCacheMap;
 
 qboolean	G_SpawnString( const char *key, const char *defaultString, char **out ) {
@@ -137,9 +138,9 @@ qboolean G_SpawnAngleHack( const char *key, const char *defaultString, float *ou
 
 stringID_table_t flagTable [] =
 {
-	"noTED", EF_NO_TED,
+	{ "noTED", EF_NO_TED },
 	//stringID_table_t Must end with a null entry
-	"", NULL
+	{ "", 0 }
 };
 
 //
@@ -179,7 +180,7 @@ typedef enum {
 typedef struct
 {
 	char	*name;
-	int		ofs;
+	size_t		ofs;
 	fieldtype_t	type;
 	int		flags;
 } field_t;

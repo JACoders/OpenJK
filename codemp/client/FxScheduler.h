@@ -1,22 +1,35 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #pragma once
 
 #include "FxUtil.h"
 #include "qcommon/GenericParser2.h"
 
-#ifdef _MSC_VER
-#pragma warning (push, 3)	//go back down to 3 for the stl include
-#endif
 #include <algorithm>
 #include <vector>
 #include <map>
 #include <list>
 #include <string>
-#ifdef _MSC_VER
-#pragma warning (pop)
-#endif
-
-using namespace std;
-
 
 #define FX_FILE_PATH	"effects"
 
@@ -65,13 +78,13 @@ class CMediaHandles
 {
 private:
 
-	vector<int>	mMediaList;
+	std::vector<int>	mMediaList;
 
 public:
 
 	void	AddHandle( int item )	{ mMediaList.push_back( item );	}
 	int		GetHandle()				{ if (mMediaList.size()==0) {return 0;}
-										else {return mMediaList[irand(0,mMediaList.size()-1)];} }
+										else {return mMediaList[irand(0,(int)mMediaList.size()-1)];} }
 
 	CMediaHandles &operator=(const CMediaHandles &that );
 };
@@ -385,7 +398,7 @@ public:
 		std::rotate (freeAndAllocated, freeAndAllocated + 1, freeAndAllocated + N);
 		numFree--;
 
-		highWatermark = max (highWatermark, N - numFree);
+		highWatermark = Q_max(highWatermark, N - numFree);
 
 		return ptr;
 	}
@@ -486,7 +499,7 @@ class PagedPoolAllocator
 
 				delete[] pages;
 				pages = newPages;
-				
+
 				ptr = pages[numPages].Alloc ();
 				if ( ptr == NULL )
 				{
@@ -601,9 +614,9 @@ private:
 	};
 
 	// this makes looking up the index based on the string name much easier
-	typedef map<string, int>				TEffectID;
+	typedef std::map<std::string, int>				TEffectID;
 
-	typedef list<SScheduledEffect*>			TScheduledEffect;
+	typedef std::list<SScheduledEffect*>			TScheduledEffect;
 
 	// Effects
 	SEffectTemplate		mEffectTemplates[FX_MAX_EFFECTS];
@@ -653,7 +666,7 @@ public:
 	void	Draw2DEffects(float screenXScale, float screenYScale);
 
 	int		GetHighWatermark() const { return mScheduledEffectsPool.GetHighWatermark(); }
-	int		NumScheduledFx()	{ return mFxSchedule.size();	}
+	int		NumScheduledFx()	{ return (int)mFxSchedule.size();	}
 	void	Clean(bool bRemoveTemplates = true, int idToPreserve = 0);	// clean out the system
 
 	// FX Override functions

@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Knight 2.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Knight 2 is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Knight 2 is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Knight 2.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __G_SHARED_H__
 #define __G_SHARED_H__
@@ -288,30 +292,7 @@ typedef enum {
 	TEAM_BEGIN,		// Beginning a team game, spawn at base
 	TEAM_ACTIVE		// Now actively playing
 } playerTeamStateState_t;
-/*
-typedef enum //# race_e
-{
-	RACE_NONE = 0,
-	RACE_HUMAN,
-	RACE_BORG,
-	RACE_KLINGON,
-	RACE_HIROGEN,
-	RACE_MALON,
-	RACE_STASIS,
-	RACE_8472,
-	RACE_BOT,
-	RACE_HARVESTER,
-	RACE_REAVER,
-	RACE_AVATAR,
-	RACE_PARASITE,
-	RACE_VULCAN,
-	RACE_BETAZOID,
-	RACE_BOLIAN,
-	RACE_TALAXIAN,
-	RACE_BAJORAN,
-	RACE_HOLOGRAM
-} race_t;
-*/
+
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct {
 	playerTeamStateState_t	state;
@@ -470,7 +451,6 @@ struct gclient_s {
 	//Used to be in gentity_t, now here.. mostly formation stuff
 	team_t		playerTeam;
 	team_t		enemyTeam;
-//	race_t		race;
 	char		*squadname;
 	gentity_t	*team_leader;
 	gentity_t	*leader;

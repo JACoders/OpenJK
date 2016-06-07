@@ -1,3 +1,25 @@
+/*
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 // Created 3/13/03 by Brian Osman (VV) - Split Zone/Hunk from common
 
 #include "client/client.h" // hi i'm bad
@@ -168,12 +190,10 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 	zoneHeader_t *pMemory = NULL;
 	while (pMemory == NULL)
 	{
-		#ifdef _WIN32
 		if (gbMemFreeupOccured)
 		{
-			Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
+			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
 		}
-		#endif
 
 		if (bZeroit) {
 			pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );
@@ -298,6 +318,22 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit /* = qfalse */, int iU
 
 	void *pvReturnMem = &pMemory[1];
 	return pvReturnMem;
+}
+
+// Special wrapper around Z_Malloc for better separation between the main engine
+// code and the bundled minizip library.
+
+extern "C" Q_EXPORT void* openjk_minizip_malloc(int size);
+extern "C" Q_EXPORT void openjk_minizip_free(void* to_free);
+
+void* openjk_minizip_malloc(int size)
+{
+    return Z_Malloc(size, TAG_MINIZIP, qfalse, 0);
+}
+
+void openjk_minizip_free(void *to_free)
+{
+    Z_Free(to_free);
 }
 
 // used during model cacheing to save an extra malloc, lets us morph the disk-load buffer then
@@ -580,8 +616,8 @@ void Com_InitZoneMemoryVars( void ) {
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 //#endif
 
-	Cmd_AddCommand("zone_stats", Z_Stats_f);
-	Cmd_AddCommand("zone_details", Z_Details_f);
+	Cmd_AddCommand("zone_stats", Z_Stats_f, "Prints out zone memory stats" );
+	Cmd_AddCommand("zone_details", Z_Details_f, "Prints out full detailed zone memory info" );
 
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);

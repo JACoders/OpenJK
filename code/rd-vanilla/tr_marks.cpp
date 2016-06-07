@@ -1,28 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 // tr_marks.c -- polygon projection on the world polygons
 
-// leave this as first line for PCH reasons...
-//
 #include "../server/exe_headers.h"
-
-
 
 #include "tr_local.h"
 
@@ -41,7 +43,7 @@ Out must have space for two more vertexes than in
 #define	SIDE_BACK	1
 #define	SIDE_ON		2
 static void R_ChopPolyBehindPlane( int numInPoints, vec3_t inPoints[MAX_VERTS_ON_POLY],
-								   int *numOutPoints, vec3_t outPoints[MAX_VERTS_ON_POLY], 
+								   int *numOutPoints, vec3_t outPoints[MAX_VERTS_ON_POLY],
 							vec3_t normal, vec_t dist, vec_t epsilon) {
 	float		dists[MAX_VERTS_ON_POLY+4] = { 0 };
 	int			sides[MAX_VERTS_ON_POLY+4] = { 0 };
@@ -90,13 +92,13 @@ static void R_ChopPolyBehindPlane( int numInPoints, vec3_t inPoints[MAX_VERTS_ON
 	for ( i = 0 ; i < numInPoints ; i++ ) {
 		p1 = inPoints[i];
 		clip = outPoints[ *numOutPoints ];
-		
+
 		if ( sides[i] == SIDE_ON ) {
 			VectorCopy( p1, clip );
 			(*numOutPoints)++;
 			continue;
 		}
-	
+
 		if ( sides[i] == SIDE_FRONT ) {
 			VectorCopy( p1, clip );
 			(*numOutPoints)++;
@@ -106,7 +108,7 @@ static void R_ChopPolyBehindPlane( int numInPoints, vec3_t inPoints[MAX_VERTS_ON
 		if ( sides[i+1] == SIDE_ON || sides[i+1] == sides[i] ) {
 			continue;
 		}
-			
+
 		// generate a split point
 		p2 = inPoints[ (i+1) % numInPoints ];
 
@@ -423,11 +425,11 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 			}
 			continue;
 		}
-		else if (*surfaces[i] == SF_TRIANGLES) 
+		else if (*surfaces[i] == SF_TRIANGLES)
 		{
 			const srfTriangles_t * const surf = ( srfTriangles_t * ) surfaces[i];
 
-			for ( k = 0 ; k < surf->numIndexes ; k += 3 ) 
+			for ( k = 0 ; k < surf->numIndexes ; k += 3 )
 			{
 				int i1=surf->indexes[k];
 				int i2=surf->indexes[k+1];
@@ -437,7 +439,7 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 				CrossProduct(v1, v2, normal);
 				VectorNormalizeFast(normal);
 				// check the normal of this triangle
-				if (DotProduct(normal, projectionDir) < -0.1) 
+				if (DotProduct(normal, projectionDir) < -0.1)
 				{
 					VectorMA(surf->verts[i1].xyz, MARKER_OFFSET, normal, clipPoints[0][0]);
 					VectorMA(surf->verts[i2].xyz, MARKER_OFFSET, normal, clipPoints[0][1]);
@@ -449,7 +451,7 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 						maxPoints, pointBuffer,
 						maxFragments, fragmentBuffer,
 						&returnedPoints, &returnedFragments, mins, maxs);
-					if ( returnedFragments == maxFragments ) 
+					if ( returnedFragments == maxFragments )
 					{
 						return returnedFragments;	// not enough space for more fragments
 					}

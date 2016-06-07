@@ -1,87 +1,30 @@
-// leave this as first line for PCH reasons...
-//
+/*
+===========================================================================
+Copyright (C) 1999 - 2005, Id Software, Inc.
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2005 - 2015, ioquake3 contributors
+Copyright (C) 2013 - 2015, OpenJK contributors
+
+This file is part of the OpenJK source code.
+
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
+*/
+
 #include "../server/exe_headers.h"
 
 #include "tr_common.h"
-
-struct TargaHeader {
-	unsigned char 	id_length, colormap_type, image_type;
-	unsigned short	colormap_index, colormap_length;
-	unsigned char	colormap_size;
-	unsigned short	x_origin, y_origin, width, height;
-	unsigned char	pixel_size, attributes;
-};
-
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height)
-{
-	int		columns, rows, numPixels;
-	byte	*buf_p;
-	byte	*buffer;
-	TargaHeader	targa_header;
-	byte	*dataStart;
-
-	*pic = NULL;
-
-	//
-	// load the file
-	//
-	ri.FS_ReadFile ( ( char * ) name, (void **)&buffer);
-	if (!buffer) {
-		return false;
-	}
-
-	buf_p = buffer;
-
-	targa_header.id_length = *buf_p++;
-	targa_header.colormap_type = *buf_p++;
-	targa_header.image_type = *buf_p++;
-	
-	targa_header.colormap_index = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.colormap_length = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.colormap_size = *buf_p++;
-	targa_header.x_origin = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.y_origin = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.width = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.height = LittleShort ( *(short *)buf_p );
-	buf_p += 2;
-	targa_header.pixel_size = *buf_p++;
-	targa_header.attributes = *buf_p++;
-
-	if (targa_header.image_type!=1 )
-	{
-		Com_Error (ERR_DROP, "LoadTGAPalletteImage: Only type 1 (uncompressed pallettised) TGA images supported\n");
-	}
-
-	if ( targa_header.colormap_type == 0 )
-	{
-		Com_Error( ERR_DROP, "LoadTGAPalletteImage: colormaps ONLY supported\n" );
-	}
-
-	columns = targa_header.width;
-	rows = targa_header.height;
-	numPixels = columns * rows;
-
-	if (width)
-		*width = columns;
-	if (height)
-		*height = rows;
-
-	*pic = (unsigned char *) Z_Malloc (numPixels, TAG_TEMP_WORKSPACE, qfalse );
-	if (targa_header.id_length != 0)
-	{
-		buf_p += targa_header.id_length;  // skip TARGA image comment
-	}
-	dataStart = buf_p + (targa_header.colormap_length * (targa_header.colormap_size / 4));
-	memcpy(*pic, dataStart, numPixels);
-	ri.FS_FreeFile (buffer);
-
-	return true;
-}
 
 // My TGA loader...
 //
@@ -119,7 +62,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 
 	// these don't need to be declared or initialised until later, but the compiler whines that 'goto' skips them.
 	//
-	byte *pRGBA = NULL;	
+	byte *pRGBA = NULL;
 	byte *pOut	= NULL;
 	byte *pIn	= NULL;
 
@@ -145,18 +88,18 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	pHeader->wImageHeight = LittleShort(pHeader->wImageHeight);
 
 	if (pHeader->byColourmapType!=0)
-	{	
-		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );		
+	{
+		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );
 	}
 
 	if (pHeader->byImageType != 2 && pHeader->byImageType != 3 && pHeader->byImageType != 10)
 	{
-		TGA_FORMAT_ERROR("LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RLE-RGB) images supported\n");		
+		TGA_FORMAT_ERROR("LoadTGA: Only type 2 (RGB), 3 (gray), and 10 (RLE-RGB) images supported\n");
 	}
-		
+
 	if (pHeader->w1stColourMapEntry != 0)
 	{
-		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );		
+		TGA_FORMAT_ERROR("LoadTGA: colourmaps not supported\n" );
 	}
 
 	if (pHeader->wColourMapLength !=0 && pHeader->wColourMapLength != 256)
@@ -180,7 +123,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 		(pHeader->byScanLineOrder&0x30)!=0x30
 		)
 	{
-		TGA_FORMAT_ERROR("LoadTGA: ScanLineOrder must be either 0x00,0x10,0x20, or 0x30\n");		
+		TGA_FORMAT_ERROR("LoadTGA: ScanLineOrder must be either 0x00,0x10,0x20, or 0x30\n");
 	}
 
 
@@ -208,7 +151,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	//
 	int iYStart,iXStart,iYStep,iXStep;
 
-	switch(pHeader->byScanLineOrder & 0x30)		
+	switch(pHeader->byScanLineOrder & 0x30)
 	{
 		default:	// default case stops the compiler complaining about using uninitialised vars
 		case 0x00:					//	left to right, bottom to top
@@ -259,12 +202,12 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	if (height)
 		*height = pHeader->wImageHeight;
 
-	pRGBA	= (byte *) Z_Malloc (pHeader->wImageWidth * pHeader->wImageHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
+	pRGBA	= (byte *) R_Malloc (pHeader->wImageWidth * pHeader->wImageHeight * 4, TAG_TEMP_WORKSPACE, qfalse);
 	*pic	= pRGBA;
 	pOut	= pRGBA;
 	pIn		= pTempLoadedBuffer + sizeof(*pHeader);
 
-	// I don't know if this ID-thing here is right, since comments that I've seen are at the end of the file, 
+	// I don't know if this ID-thing here is right, since comments that I've seen are at the end of the file,
 	//	with a zero in this field. However, may as well...
 	//
 	if (pHeader->byIDFieldLength != 0)
@@ -276,7 +219,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 	{
 		for (int y=iYStart, iYCount=0; iYCount<pHeader->wImageHeight; y+=iYStep, iYCount++)
 		{
-			pOut = pRGBA + y * pHeader->wImageWidth *4;			
+			pOut = pRGBA + y * pHeader->wImageWidth *4;
 			for (int x=iXStart, iXCount=0; iXCount<pHeader->wImageWidth; x+=iXStep, iXCount++)
 			{
 				switch (pHeader->byImagePlanes)
@@ -311,16 +254,16 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 						*pOut++ = blue;
 						*pOut++ = alpha;
 						break;
-					
+
 					default:
 						assert(0);	// if we ever hit this, someone deleted a header check higher up
-						TGA_FORMAT_ERROR("LoadTGA: Image can only have 8, 24 or 32 planes for RGB/greyscale\n");						
+						TGA_FORMAT_ERROR("LoadTGA: Image can only have 8, 24 or 32 planes for RGB/greyscale\n");
 						break;
 				}
-			}		
+			}
 		}
 	}
-	else 
+	else
 	if (pHeader->byImageType == 10)   // RLE-RGB
 	{
 		// I've no idea if this stuff works, I normally reject RLE targas, but this is from ID's code
@@ -337,7 +280,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 				packetSize   = 1 + (packetHeader & 0x7f);
 				if (packetHeader & 0x80)         // run-length packet
 				{
-					switch (pHeader->byImagePlanes) 
+					switch (pHeader->byImagePlanes)
 					{
 						case 24:
 
@@ -348,7 +291,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 							break;
 
 						case 32:
-							
+
 							blue	= *pIn++;
 							green	= *pIn++;
 							red		= *pIn++;
@@ -360,8 +303,8 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 							TGA_FORMAT_ERROR("LoadTGA: RLE-RGB can only have 24 or 32 planes\n");
 							break;
 					}
-	
-					for (j=0; j<packetSize; j++) 
+
+					for (j=0; j<packetSize; j++)
 					{
 						*pOut++	= red;
 						*pOut++	= green;
@@ -379,12 +322,12 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 						}
 					}
 				}
-				else 
+				else
 				{	// non run-length packet
 
-					for (j=0; j<packetSize; j++) 
+					for (j=0; j<packetSize; j++)
 					{
-						switch (pHeader->byImagePlanes) 
+						switch (pHeader->byImagePlanes)
 						{
 							case 24:
 
@@ -426,7 +369,7 @@ void LoadTGA ( const char *name, byte **pic, int *width, int *height)
 					}
 				}
 			}
-			breakOut:;
+		breakOut:;
 		}
 	}
 

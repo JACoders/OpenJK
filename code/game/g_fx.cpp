@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #include "g_local.h"
 #include "g_functions.h"
@@ -248,14 +252,14 @@ void SP_fx_runner( gentity_t *ent )
 		return;
 	}
 
-	// Try and associate an effect file, unfortunately we won't know if this worked or not 
+	// Try and associate an effect file, unfortunately we won't know if this worked or not
 	//	until the CGAME trys to register it...
 	ent->fxID = G_EffectIndex( ent->fxFile );
 
 	ent->s.eType = ET_MOVER;
 
 	// Give us a bit of time to spawn in the other entities, since we may have to target one of 'em
-	ent->e_ThinkFunc = thinkF_fx_runner_link; 
+	ent->e_ThinkFunc = thinkF_fx_runner_link;
 	ent->nextthink = level.time + 400;
 
 	// Save our position and link us up!
@@ -272,7 +276,7 @@ void SP_fx_runner( gentity_t *ent )
 This world effect will spawn snow globally into the level.
 */
 void SP_CreateSnow( gentity_t *ent )
-{ 
+{
 	cvar_t *r_weatherScale = gi.cvar( "r_weatherScale", "1", CVAR_ARCHIVE );
 	if ( r_weatherScale->value == 0.0f )
 	{
@@ -402,7 +406,7 @@ void SP_CreateWindZone( gentity_t *ent )
 	VectorScale(windDir, ent->speed, windDir);
 
 	char	temp[256];
-	sprintf( temp, "windzone ( %f %f %f ) ( %f %f %f ) ( %f %f %f )", 
+	sprintf( temp, "windzone ( %f %f %f ) ( %f %f %f ) ( %f %f %f )",
 		ent->mins[0], ent->mins[1], ent->mins[2],
 		ent->maxs[0], ent->maxs[1], ent->maxs[2],
 		windDir[0],	  windDir[1],   windDir[2]
@@ -488,9 +492,9 @@ void fx_rain_think( gentity_t *ent )
 			// Play The Effect
 			//-----------------
  			if (PlayEffect)
-			{ 
+			{
   			 	VectorMA(player->currentOrigin, 400.0f, effectDir, effectPos);
-				if (PlaySound) 
+				if (PlaySound)
 				{
 					G_Sound(player, G_SoundIndex(va("sound/ambience/thunder_close%d", Q_irand(1,2))));
 				}
@@ -531,7 +535,7 @@ void fx_rain_think( gentity_t *ent )
 }
 
 void SP_CreateRain( gentity_t *ent )
-{ 
+{
 	// Different Types Of Rain
 	//-------------------------
 	if (ent->spawnflags & 1)
@@ -588,7 +592,7 @@ void SP_CreateRain( gentity_t *ent )
 		G_EffectIndex( "env/huge_lightning" );
 		ent->e_ThinkFunc = thinkF_fx_rain_think;
 		ent->nextthink = level.time + Q_irand(4000, 8000);
-		
+
 		if (!G_SpawnVector( "flashcolor", "200 200 200", ent->pos3))
 		{
 			VectorSet(ent->pos3, 200, 200, 200);
@@ -644,16 +648,16 @@ default 0
 blendmode  <value>
 default 0
 
-// How much to rotate particles per second (in degree's). 
+// How much to rotate particles per second (in degree's).
 rotate ( <min>, <max> )
 default ( 0, 0 )
 
 // Set the area around the player the puffs cover:
-spread ( minX minY minZ ) ( maxX maxY maxZ )			
+spread ( minX minY minZ ) ( maxX maxY maxZ )
 default: ( -600 -600 -500 ) ( 600 600 550 )
 
 // Set the random range that sets the speed the puffs fall:
-velocity ( minX minY minZ ) ( maxX maxY maxZ )			
+velocity ( minX minY minZ ) ( maxX maxY maxZ )
 default: ( -15 -15 -20 ) ( 15 15 -70 )
 
 // Set an area of puff blowing:
@@ -670,7 +674,7 @@ blowing size ( minX minY minZ )
 */
 //----------------------------------------------------------
 void SP_CreatePuffSystem( gentity_t *ent )
-{ 
+{
 	char	temp[128];
 
 	// Initialize the puff system to either 1000 particles or whatever they choose.
@@ -739,7 +743,7 @@ void SP_CreatePuffSystem( gentity_t *ent )
 */
 //----------------------------------------------------------
 /*void SP_Command( gentity_t *ent )
-{ 
+{
 	char *strCommand;
 
 	// Go through all the commands.
@@ -779,10 +783,10 @@ void fx_explosion_trail_think( gentity_t *ent )
 
 	EvaluateTrajectory( &ent->s.pos, level.time, origin );
 
-	gi.trace( &tr, ent->currentOrigin, vec3_origin, vec3_origin, origin, 
+	gi.trace( &tr, ent->currentOrigin, vec3_origin, vec3_origin, origin,
 				ent->owner ? ent->owner->s.number : ENTITYNUM_NONE, ent->clipmask, G2_RETURNONHIT, 10 );
 
-	if ( tr.fraction < 1.0f ) 
+	if ( tr.fraction < 1.0f )
 	{
 		// never explode or bounce on sky
 		if ( !( tr.surfaceFlags & SURF_NOIMPACT ))
@@ -902,7 +906,7 @@ void fx_explosion_trail_link( gentity_t *ent )
 		VectorSubtract( target->s.origin, ent->s.origin, dir );
 		VectorNormalize( dir );
 	}
-	else 
+	else
 	{
 		// we are assuming that we have angles, but there are no checks to verify this
 		AngleVectors( ent->s.angles, dir, NULL, NULL );
@@ -965,7 +969,7 @@ void SP_fx_explosion_trail( gentity_t *ent )
 	}
 
 	// Give us a bit of time to spawn in the other entities, since we may have to target one of 'em
-	ent->e_ThinkFunc = thinkF_fx_explosion_trail_link; 
+	ent->e_ThinkFunc = thinkF_fx_explosion_trail_link;
 	ent->nextthink = level.time + 500;
 
 	// Save our position and link us up!
@@ -992,7 +996,7 @@ void fx_target_beam_set_debounce( gentity_t *self )
 	{
 		self->e_UseFunc = useF_NULL;
 	}
-	else 
+	else
 	{
 		self->attackDebounceTime = level.time + FRAMETIME + Q_irand( -self->random, self->random );
 	}
@@ -1003,18 +1007,17 @@ void fx_target_beam_fire( gentity_t *ent )
 {
 	trace_t		trace;
 	vec3_t		dir, org, end;
-	int			ignore;
 	qboolean	open;
 
 	if ( !ent->enemy || !ent->enemy->inuse )
 	{//info_null most likely
-		ignore = ent->s.number;
+		//ignore = ent->s.number;
 		ent->enemy = NULL;
 		VectorCopy( ent->s.origin2, org );
 	}
 	else
 	{
-		ignore = ent->enemy->s.number;
+		//ignore = ent->enemy->s.number;
 		VectorCopy( ent->enemy->currentOrigin, org );
 	}
 
@@ -1117,7 +1120,6 @@ void fx_target_beam_link( gentity_t *ent )
 {
 	gentity_t	*target = NULL;
 	vec3_t		dir;
-	float		len;
 
 	target = G_Find( target, FOFS(targetname), ent->target );
 
@@ -1135,9 +1137,9 @@ void fx_target_beam_link( gentity_t *ent )
 		G_SetEnemy( ent, target );
 	}
 	VectorSubtract( target->s.origin, ent->s.origin, dir );//er, does it ever use dir?
-	len = VectorNormalize( dir );//er, does it use len or dir?
+	/*len = */VectorNormalize( dir );//er, does it use len or dir?
 	vectoangles( dir, ent->s.angles );//er, does it use s.angles?
-	
+
 	VectorCopy( target->s.origin, ent->s.origin2 );
 
 	if ( ent->spawnflags & 1 )

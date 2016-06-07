@@ -1,20 +1,24 @@
 /*
-This file is part of OpenJK.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    OpenJK is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    OpenJK is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with OpenJK.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2013 OpenJK
 
 #include "g_local.h"
 #include "b_local.h"
@@ -73,7 +77,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 		gi.trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, G2_RETURNONHIT, 0 );
 
 		traceEnt = &g_entities[tr.entityNum];
-		if ( traceEnt 
+		if ( traceEnt
 			&& ( traceEnt->s.weapon == WP_SABER || (traceEnt->client && (traceEnt->client->NPC_class == CLASS_BOBAFETT||traceEnt->client->NPC_class == CLASS_REBORN) ) ) )
 		{//FIXME: need a more reliable way to know we hit a jedi?
 			if ( Jedi_DodgeEvasion( traceEnt, ent, &tr, HL_NONE ) )
@@ -88,7 +92,7 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 		break;
 	}
 
-	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+	if ( tr.surfaceFlags & SURF_NOIMPACT )
 	{
 		render_impact = qfalse;
 	}
@@ -105,10 +109,10 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 			// Create a simple impact type mark that doesn't last long in the world
 			G_PlayEffect( G_EffectIndex( "disruptor/flesh_impact" ), tr.endpos, tr.plane.normal );
 
-			if ( traceEnt->client && LogAccuracyHit( traceEnt, ent )) 
+			if ( traceEnt->client && LogAccuracyHit( traceEnt, ent ))
 			{
 				ent->client->ps.persistant[PERS_ACCURACY_HITS]++;
-			} 
+			}
 
 			int hitLoc = G_GetHitLocFromTrace( &tr, MOD_DISRUPTOR );
 			if ( traceEnt && traceEnt->client && traceEnt->client->NPC_class == CLASS_GALAKMECH )
@@ -120,9 +124,9 @@ static void WP_DisruptorMainFire( gentity_t *ent )
 				G_Damage( traceEnt, ent, ent, forwardVec, tr.endpos, damage, DAMAGE_DEATH_KNOCKBACK, MOD_DISRUPTOR, hitLoc );
 			}
 		}
-		else 
+		else
 		{
-			G_PlayEffect( G_EffectIndex( "disruptor/wall_impact" ), tr.endpos, tr.plane.normal );		
+			G_PlayEffect( G_EffectIndex( "disruptor/wall_impact" ), tr.endpos, tr.plane.normal );
 		}
 	}
 
@@ -221,7 +225,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		//alternately, if you end up hitting an emplaced_gun that has a sitter, just redo this one trace with the "G2_COLLIDE, 10" to see if we it the sitter
 		gi.trace( &tr, start, NULL, NULL, end, skip, MASK_SHOT, G2_COLLIDE, 10 );//G2_RETURNONHIT, 0 );
 
-		if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+		if ( tr.surfaceFlags & SURF_NOIMPACT )
 		{
 			render_impact = qfalse;
 		}
@@ -234,7 +238,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 			VectorCopy( tr.endpos, start );
 			skip = tr.entityNum;
 #ifdef _DEBUG
-			gi.Printf( "BAD! Disruptor gun shot somehow traced back and hit the owner!\n" );			
+			gi.Printf( "BAD! Disruptor gun shot somehow traced back and hit the owner!\n" );
 #endif
 			continue;
 		}
@@ -255,7 +259,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 
 		traceEnt = &g_entities[tr.entityNum];
 
-		if ( traceEnt //&& traceEnt->NPC 
+		if ( traceEnt //&& traceEnt->NPC
 			&& ( traceEnt->s.weapon == WP_SABER || (traceEnt->client && (traceEnt->client->NPC_class == CLASS_BOBAFETT||traceEnt->client->NPC_class == CLASS_REBORN) ) ) )
 		{//FIXME: need a more reliable way to know we hit a jedi?
 			hitDodged = Jedi_DodgeEvasion( traceEnt, ent, &tr, HL_NONE );
@@ -265,22 +269,22 @@ void WP_DisruptorAltFire( gentity_t *ent )
 		{
 			if ( render_impact )
 			{
-				if (( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage ) 
-					|| !Q_stricmp( traceEnt->classname, "misc_model_breakable" ) 
+				if (( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
+					|| !Q_stricmp( traceEnt->classname, "misc_model_breakable" )
 					|| traceEnt->s.eType == ET_MOVER )
 				{
 					// Create a simple impact type mark that doesn't last long in the world
 					G_PlayEffect( G_EffectIndex( "disruptor/alt_hit" ), tr.endpos, tr.plane.normal );
 
-					if ( traceEnt->client && LogAccuracyHit( traceEnt, ent )) 
+					if ( traceEnt->client && LogAccuracyHit( traceEnt, ent ))
 					{//NOTE: hitting multiple ents can still get you over 100% accuracy
 						ent->client->ps.persistant[PERS_ACCURACY_HITS]++;
-					} 
+					}
 
 					int hitLoc = G_GetHitLocFromTrace( &tr, MOD_DISRUPTOR );
 					if ( traceEnt && traceEnt->client && traceEnt->client->NPC_class == CLASS_GALAKMECH )
 					{//hehe
-						G_Damage( traceEnt, ent, ent, forwardVec, tr.endpos, 10, DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, fullCharge ? MOD_SNIPER : MOD_DISRUPTOR, hitLoc );			
+						G_Damage( traceEnt, ent, ent, forwardVec, tr.endpos, 10, DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, fullCharge ? MOD_SNIPER : MOD_DISRUPTOR, hitLoc );
 						break;
 					}
 					G_Damage( traceEnt, ent, ent, forwardVec, tr.endpos, damage, DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, fullCharge ? MOD_SNIPER : MOD_DISRUPTOR, hitLoc );
@@ -289,7 +293,7 @@ void WP_DisruptorAltFire( gentity_t *ent )
 						break;
 					}
 				}
-				else 
+				else
 				{
 					 // we only make this mark on things that can't break or move
 					tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS );

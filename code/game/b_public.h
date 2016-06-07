@@ -1,20 +1,24 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __B_PUBLIC_H__
 #define __B_PUBLIC_H__
@@ -38,7 +42,7 @@ This file is part of Jedi Academy.
 #define NPCAI_LOST				0x00002000	//Can't nav to his goal
 #define NPCAI_SHIELDS			0x00004000	//Has shields, borg can adapt
 #define NPCAI_GREET_ALLIES		0x00008000	//Say hi to nearby allies
-#define NPCAI_FORM_TELE_NAV		0x00010000	//Tells formation people to use nav info to get to 
+#define NPCAI_FORM_TELE_NAV		0x00010000	//Tells formation people to use nav info to get to
 #define NPCAI_ENROUTE_TO_HOMEWP 0x00020000	//Lets us know to run our lostenemyscript when we get to homeWp
 #define NPCAI_MATCHPLAYERWEAPON 0x00040000	//Match the player's weapon except when it changes during cinematics
 #define NPCAI_DIE_ON_IMPACT		0x00100000	//Next time you crashland, die!
@@ -159,7 +163,7 @@ typedef struct gNPCstats_e
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct 
+typedef struct
 {
 	//FIXME: Put in playerInfo or something
 	int			timeOfDeath;			//FIXME do we really need both of these
@@ -187,6 +191,9 @@ typedef struct
 	int			shotTime;
 	int			burstCount;
 	int			burstMin;
+#ifdef BASE_SAVE_COMPAT
+	int			burstMean;			// keeping for original save compatibility
+#endif
 	int			burstMax;
 	int			burstSpacing;
 	int			attackHold;
@@ -212,7 +219,7 @@ typedef struct
 	int			investigateSoundDebounceTime;
 	int			greetingDebounceTime;//when we can greet someone next
 	gentity_t	*eventOwner;
-	
+
 	//bState-specific fields
 	gentity_t	*coverTarg;
 	jumpState_t	jumpState;
@@ -297,7 +304,7 @@ typedef struct
 	int			goalRadius;
 
 	//FIXME: These may be redundant
-	
+
 	/*
 	int			weaponTime;		//Time until refire is valid
 	int			jumpTime;
@@ -323,7 +330,7 @@ typedef struct
 	gentity_t	*watchTarget;	//for BS_CINEMATIC, keeps facing this ent
 
 	int			ffireCount;		//sigh... you'd think I'd be able to find a way to do this without having to use 3 int fields, but...
-	int			ffireDebounce;	
+	int			ffireDebounce;
 	int			ffireFadeDebounce;
 } gNPC_t;
 

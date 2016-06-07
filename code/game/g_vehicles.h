@@ -1,26 +1,30 @@
 /*
-This file is part of Jedi Academy.
+===========================================================================
+Copyright (C) 2000 - 2013, Raven Software, Inc.
+Copyright (C) 2001 - 2013, Activision, Inc.
+Copyright (C) 2013 - 2015, OpenJK contributors
 
-    Jedi Academy is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 2 of the License, or
-    (at your option) any later version.
+This file is part of the OpenJK source code.
 
-    Jedi Academy is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+OpenJK is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License version 2 as
+published by the Free Software Foundation.
 
-    You should have received a copy of the GNU General Public License
-    along with Jedi Academy.  If not, see <http://www.gnu.org/licenses/>.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+===========================================================================
 */
-// Copyright 2001-2013 Raven Software
 
 #ifndef __G_VEHICLES_H
 #define __G_VEHICLES_H
 
 #include "../qcommon/q_shared.h"
-#include "g_public.h"			   
+#include "g_public.h"
 
 typedef enum
 {
@@ -50,7 +54,6 @@ extern stringID_table_t VehicleTable[VH_NUM_VEHICLES+1];
 //===========================================================================================================
 typedef struct
 {
-//*** IMPORTANT!!! *** the number of variables in the vehWeaponStats_t struct (including all elements of arrays) must be reflected by NUM_VWEAP_PARMS!!!
 //*** IMPORTANT!!! *** vWeapFields table correponds to this structure!
 	char	*name;
 	qboolean	bIsProjectile;	//traceline or entity?
@@ -78,8 +81,6 @@ typedef struct
 	int		iLifeTime;	//removes itself after this amount of time
 	qboolean	bExplodeOnExpire;	//when iLifeTime is up, explodes rather than simply removing itself
 } vehWeaponInfo_t;
-//NOTE: this MUST stay up to date with the number of variables in the vehFields table!!!
-#define NUM_VWEAP_PARMS	25
 
 #define	VWFOFS(x) offsetof(vehWeaponInfo_t, x)
 
@@ -239,7 +240,7 @@ typedef struct
 	int			iDmgFX;			//effect to play on damage from a weapon or something
 	int			iArmorLowFX;	//played when armor is less than 30% of full
 	int			iArmorGoneFX;	//played when on armor is completely gone
-	
+
 	//Weapon stats
 	vehWeaponStats_t	weapon[MAX_VEHICLE_WEAPONS];
 
@@ -326,17 +327,17 @@ typedef struct
 	bool (*Eject)( Vehicle_t *pVeh, gentity_t *pEnt, qboolean forceEject );
 
 	// Eject all the inhabitants of this vehicle.
-	bool (*EjectAll)( Vehicle_t *pVeh );	
+	bool (*EjectAll)( Vehicle_t *pVeh );
 
 	// Start a delay until the vehicle dies.
 	void (*StartDeathDelay)( Vehicle_t *pVeh, int iDelayTime );
 
 	// Update death sequence.
 	void (*DeathUpdate)( Vehicle_t *pVeh );
-	
+
 	// Register all the assets used by this vehicle.
 	void (*RegisterAssets)( Vehicle_t *pVeh );
-	
+
 	// Initialize the vehicle (should be called by Spawn?).
 	bool (*Initialize)( Vehicle_t *pVeh );
 
@@ -353,7 +354,7 @@ typedef struct
 
 	// ProcessOrientCommands the Vehicle.
 	void (*ProcessOrientCommands)( Vehicle_t *pVeh );
-	
+
 	// Attachs all the riders of this vehicle to their appropriate position/tag (*driver, *pass1, *pass2, whatever...).
 	void (*AttachRiders)( Vehicle_t *pVeh );
 
@@ -427,11 +428,11 @@ extern void G_CreateWalkerNPC( Vehicle_t **pVeh, const char *strType );
 
 enum
 {
-	VEH_EJECT_LEFT, 
-	VEH_EJECT_RIGHT, 
-	VEH_EJECT_FRONT, 
-	VEH_EJECT_REAR, 
-	VEH_EJECT_TOP, 
+	VEH_EJECT_LEFT,
+	VEH_EJECT_RIGHT,
+	VEH_EJECT_FRONT,
+	VEH_EJECT_REAR,
+	VEH_EJECT_TOP,
 	VEH_EJECT_BOTTOM
 };
 
@@ -459,7 +460,7 @@ struct Muzzle
 	vec3_t m_vMuzzleDir;
 
 	// This is how long to wait before being able to fire a specific muzzle again. This is based on the firing rate
-	// so that a firing rate of 10 rounds/sec would make this value initially 100 miliseconds. 
+	// so that a firing rate of 10 rounds/sec would make this value initially 100 miliseconds.
 	int m_iMuzzleWait;
 
 	// whether this Muzzle was just fired or not (reset at muzzle flash code).
@@ -575,7 +576,7 @@ struct Vehicle_t
 	vec3_t		m_vOrientation;
 
 	// How long you have strafed left or right (increments every frame that you strafe to right, decrements every frame you strafe left)
-	int			m_fStrafeTime;	
+	int			m_fStrafeTime;
 
 	// Previous angles of this vehicle.
 	vec3_t		m_vPrevOrientation;
@@ -590,7 +591,7 @@ struct Vehicle_t
 	int			m_iShields;	//energy shielding - STAT_ARMOR on NPC
 
 	// Timer for all cgame-FX...? ex: exhaust?
-	int			m_iLastFXTime; 
+	int			m_iLastFXTime;
 
 	// When to die.
 	int			m_iDieTime;
