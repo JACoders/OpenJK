@@ -1253,11 +1253,11 @@ static void CG_DrawSimpleSaberStyle( const centity_t *cent )
 		break;
 	case SS_DESANN:
 		Com_sprintf( num, sizeof( num ), "DESANN" );
-		calcColor = CT_HUD_RED;
+		calcColor = CT_GREEN;
 		break;
 	case SS_TAVION:
 		Com_sprintf( num, sizeof( num ), "TAVION" );
-		calcColor = CT_ICON_BLUE;
+		calcColor = CT_MAGENTA;
 		break;
 	case SS_DUAL:
 		Com_sprintf( num, sizeof( num ), "AKIMBO" );
