@@ -8884,6 +8884,84 @@ void zyk_list_player_skills(gentity_t *ent, gentity_t *target_ent, char *arg1)
 	}
 }
 
+void zyk_list_stuff(gentity_t *ent, gentity_t *target_ent)
+{
+	char stuff_message[1024];
+	strcpy(stuff_message, "");
+
+	if (ent->client->pers.secrets_found & (1 << 0))
+		strcpy(stuff_message, va("%s^3\nHoldable Items Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3\nHoldable Items Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 1))
+		strcpy(stuff_message, va("%s^3Bounty Hunter Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Bounty Hunter Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 7))
+		strcpy(stuff_message, va("%s^3Stealth Attacker Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Stealth Attacker Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 8))
+		strcpy(stuff_message, va("%s^3Force Gunner Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Force Gunner Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 9))
+		strcpy(stuff_message, va("%s^3Impact Reducer - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Impact Reducer - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 10))
+		strcpy(stuff_message, va("%s^3Flame Thrower - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Flame Thrower - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 11))
+		strcpy(stuff_message, va("%s^3Power Cell Weapons Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Power Cell Weapons Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 12))
+		strcpy(stuff_message, va("%s^3Blaster Pack Weapons Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Blaster Pack Weapons Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 13))
+		strcpy(stuff_message, va("%s^3Metal Bolts Weapons Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Metal Bolts Weapons Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 14))
+		strcpy(stuff_message, va("%s^3Rocket Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Rocket Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 15))
+		strcpy(stuff_message, va("%s^3Stun Baton Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Stun Baton Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 16))
+		strcpy(stuff_message, va("%s^3Armored Soldier Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Armored Soldier Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 17))
+		strcpy(stuff_message, va("%s^3Jetpack Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Jetpack Upgrade - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 19))
+		strcpy(stuff_message, va("%s^3Force Tank Upgrade - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Force Tank Upgrade - ^1no\n", stuff_message));
+
+	trap->SendServerCommand(target_ent - g_entities, va("print \"%s\n\"", stuff_message));
+}
+
 /*
 ==================
 Cmd_ListAccount_f
@@ -9206,80 +9284,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "stuff" ) == 0)
 			{
-				char stuff_message[1024];
-				strcpy(stuff_message,"");
-
-				if (ent->client->pers.secrets_found & (1 << 0))
-					strcpy(stuff_message,va("%s^3\nHoldable Items Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3\nHoldable Items Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 1))
-					strcpy(stuff_message,va("%s^3Bounty Hunter Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Bounty Hunter Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 7))
-					strcpy(stuff_message,va("%s^3Stealth Attacker Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Stealth Attacker Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 8))
-					strcpy(stuff_message,va("%s^3Force Gunner Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Force Gunner Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 9))
-					strcpy(stuff_message,va("%s^3Impact Reducer - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Impact Reducer - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 10))
-					strcpy(stuff_message,va("%s^3Flame Thrower - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Flame Thrower - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 11))
-					strcpy(stuff_message,va("%s^3Power Cell Weapons Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Power Cell Weapons Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 12))
-					strcpy(stuff_message,va("%s^3Blaster Pack Weapons Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Blaster Pack Weapons Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 13))
-					strcpy(stuff_message,va("%s^3Metal Bolts Weapons Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Metal Bolts Weapons Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 14))
-					strcpy(stuff_message,va("%s^3Rocket Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Rocket Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 15))
-					strcpy(stuff_message,va("%s^3Stun Baton Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Stun Baton Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 16))
-					strcpy(stuff_message,va("%s^3Armored Soldier Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Armored Soldier Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 17))
-					strcpy(stuff_message,va("%s^3Jetpack Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Jetpack Upgrade - ^1no\n",stuff_message));
-
-				if (ent->client->pers.secrets_found & (1 << 19))
-					strcpy(stuff_message,va("%s^3Force Tank Upgrade - ^2yes\n",stuff_message));
-				else
-					strcpy(stuff_message,va("%s^3Force Tank Upgrade - ^1no\n",stuff_message));
-
-				trap->SendServerCommand( ent-g_entities, va("print \"%s\n\"",stuff_message) );
+				zyk_list_stuff(ent, ent);
 			}
 			else
 			{ // zyk: the player can also list the specific info of a skill passing the skill number as argument
@@ -14144,9 +14149,9 @@ void Cmd_Players_f( gentity_t *ent ) {
 
 		if (number_of_args == 2)
 		{
-			trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n^3RPG Class: ^7%s\n\"", 
+			trap->SendServerCommand( ent-g_entities, va("print \"\n%s^3\n\nLevel: ^7%d\n^3Level Up Score: ^7%d\n^3Skill Points: ^7%d\n^3Credits: ^7%d\n^3Skill Counter: ^7%d\n^3Magic Power: ^7%d\n^3RPG Class: ^7%s\n\"", 
 				player_ent->client->pers.netname, player_ent->client->pers.level, player_ent->client->pers.level_up_score, player_ent->client->pers.skillpoints, 
-				player_ent->client->pers.credits, player_ent->client->pers.skill_counter, zyk_rpg_class(player_ent)) );
+				player_ent->client->pers.credits, player_ent->client->pers.skill_counter, player_ent->client->pers.magic_power, zyk_rpg_class(player_ent)) );
 		}
 		else
 		{
@@ -14158,6 +14163,10 @@ void Cmd_Players_f( gentity_t *ent ) {
 				Q_stricmp(arg2, "ammo") == 0 || Q_stricmp(arg2, "items") == 0)
 			{ // zyk: show skills of the player
 				zyk_list_player_skills(player_ent, ent, G_NewString(arg2));
+			}
+			else if (Q_stricmp(arg2, "stuff") == 0)
+			{ // zyk: lists stuff bought by the player
+				zyk_list_stuff(player_ent, ent);
 			}
 			else
 			{
