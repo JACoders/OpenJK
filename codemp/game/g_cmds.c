@@ -6155,8 +6155,6 @@ Cmd_LogoutAccount_f
 ==================
 */
 void Cmd_LogoutAccount_f( gentity_t *ent ) {
-	int i = 0;
-
 	if (ent->client->pers.being_mind_controlled != -1)
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You cant logout while being mind-controlled.\n\"" );
@@ -6208,10 +6206,13 @@ void Cmd_LogoutAccount_f( gentity_t *ent ) {
 	// zyk: resetting force powers
 	WP_InitForcePowers( ent );
 
-	if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0)
+	if (ent->client->ps.fd.forcePowerLevel[FP_SABER_OFFENSE] > FORCE_LEVEL_0 &&
+		level.gametype != GT_JEDIMASTER && level.gametype != GT_SIEGE
+		)
 		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_SABER);
 
-	ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
+	if (level.gametype != GT_JEDIMASTER && level.gametype != GT_SIEGE)
+		ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_BRYAR_PISTOL);
 
 	// zyk: update the rpg stuff info at the client-side game
 	send_rpg_events(10000);

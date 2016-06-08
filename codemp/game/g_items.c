@@ -1104,7 +1104,6 @@ void ItemUse_Sentry( gentity_t *ent )
 	vec3_t yawonly;
 	vec3_t mins, maxs;
 	gentity_t *sentry;
-	int sentry_guns_iterator = 0; // zyk: Bounty Hunter Upgrade allows placing more sentry guns
 
 	if (!ent || !ent->client)
 	{
