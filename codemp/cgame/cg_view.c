@@ -2563,8 +2563,10 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 
 	if (cg.snap->ps.stats[STAT_HEALTH] > 0)
 	{
-		if (cg.predictedPlayerState.weapon == WP_EMPLACED_GUN && cg.predictedPlayerState.emplacedIndex /*&&
-			cg_entities[cg.predictedPlayerState.emplacedIndex].currentState.weapon == WP_NONE*/)
+		
+		if (cg.predictedPlayerState.weapon == WP_EMPLACED_GUN && cg.predictedPlayerState.emplacedIndex && 
+			!cg_fpls.integer// zyk: allow first person for emplaced gun
+			/* cg_entities[cg.predictedPlayerState.emplacedIndex].currentState.weapon == WP_NONE*/) 
 		{ //force third person for e-web and emplaced use
 			cg.renderingThirdPerson = 1;
 		}
@@ -2573,13 +2575,11 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView, qboolean demo
 			cg.predictedPlayerState.forceHandExtend == HANDEXTEND_KNOCKDOWN || cg.predictedPlayerState.fallingToDeath ||
 			cg.predictedPlayerState.m_iVehicleNum || PM_InKnockDown(&cg.predictedPlayerState))
 		{
-#if 0
-			if (cg_fpls.integer && cg.predictedPlayerState.weapon == WP_SABER)
-			{ //force to first person for fpls
+			if (cg_fpls.integer && (cg.predictedPlayerState.weapon == WP_SABER || cg.predictedPlayerState.weapon == WP_MELEE))
+			{ //force to first person for fpls // zyk: added this back to mod
 				cg.renderingThirdPerson = 0;
 			}
 			else
-#endif
 			{
 				cg.renderingThirdPerson = 1;
 			}
