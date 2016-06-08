@@ -3929,7 +3929,8 @@ float CG_DrawRadar ( float y )
 				CG_DrawRotatePic2( RADAR_X + RADAR_RADIUS + sin (angle) * distance + xOffset,
 								   y + RADAR_RADIUS + cos (angle) * distance,
 								   arrow_w, arrow_h,
-								   (360 - cent->lerpAngles[YAW]) + cg.predictedPlayerState.viewangles[YAW], cgs.media.mAutomapPlayerIcon );
+								   (360 - cent->lerpAngles[YAW]) + cg.predictedPlayerState.viewangles[YAW], cgs.media.mAutomapRocketIcon);
+				// zyk: changed mAutomapPlayerIcon to mAutomapRocketIcon due to a bug that prevent mAutomapPlayerIcon to have colors
 				break;
 			}
 		}
