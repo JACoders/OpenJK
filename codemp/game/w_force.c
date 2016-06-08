@@ -4141,6 +4141,23 @@ void ForceThrow( gentity_t *self, qboolean pull )
 				push_list[x]->s.angles[PITCH] = 0;
 
 				push_list[x]->physicsObject = qtrue;
+				if (push_list[x]->item)
+				{
+					if (push_list[x]->item->giType == IT_WEAPON)
+						push_list[x]->nextthink = level.time + g_weaponRespawn.integer * 1000;
+					else if (push_list[x]->item->giType == IT_AMMO)
+						push_list[x]->nextthink = level.time + zyk_ammo_respawn_time.integer * 1000;
+					else if (push_list[x]->item->giType == IT_HOLDABLE)
+						push_list[x]->nextthink = level.time + zyk_holdable_item_respawn_time.integer * 1000;
+					else if (push_list[x]->item->giType == IT_ARMOR)
+						push_list[x]->nextthink = level.time +zyk_shield_respawn_time.integer * 1000;
+					else if (push_list[x]->item->giType == IT_HEALTH)
+						push_list[x]->nextthink = level.time + zyk_health_respawn_time.integer * 1000;
+					else
+						push_list[x]->nextthink = level.time + 60 * 1000;
+						
+				}
+				push_list[x]->think = RespawnItem;
 
 				trap->LinkEntity ((sharedEntity_t *)push_list[x]);
 			}
