@@ -8103,6 +8103,7 @@ void do_downgrade_skill(gentity_t *ent, int downgrade_value)
 		if (ent->client->pers.skill_levels[30] > 0)
 		{
 			ent->client->pers.skill_levels[30]--;
+			set_max_shield(ent);
 			ent->client->pers.skillpoints++;
 		}
 		else
