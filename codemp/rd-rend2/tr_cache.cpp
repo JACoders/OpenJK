@@ -278,7 +278,7 @@ qboolean C_Models_LevelLoadEnd( qboolean deleteUnusedByLevel )
 
 qboolean C_Images_LevelLoadEnd()
 {
-	return qtrue;
+	return qfalse;
 }
 
 /*
