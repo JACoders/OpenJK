@@ -933,10 +933,20 @@ void Svcmd_ToggleTweakForce_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_FORCE_TWEAKS ) {
-			trap->Print( "tweakForce: Invalid range: %i [0, %i]\n", index, MAX_FORCE_TWEAKS - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_FORCE_TWEAKS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("tweakForce: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_FORCE_TWEAKS - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_FORCE_TWEAKS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_tweakForce", va("%i", (1 << index) ^ (g_tweakForce.integer & mask)));
+				trap->Cvar_Update(&g_tweakForce);
+				trap->Print("%s %s^7\n", forceTweaks[index].string, ((g_tweakForce.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+				CVU_TweakForce();
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_tweakForce", va( "%i", (1 << index) ^ (g_tweakForce.integer & mask ) ) );
 		trap->Cvar_Update( &g_tweakForce );
@@ -1049,10 +1059,20 @@ void Svcmd_ToggleStartingWeapons_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_STARTING_WEAPONS ) {
-			trap->Print( "startingWeapons: Invalid range: %i [0, %i]\n", index, MAX_STARTING_WEAPONS - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_STARTING_WEAPONS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("startingWeapons: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_STARTING_WEAPONS - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_STARTING_WEAPONS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_startingWeapons", va("%i", (1 << index) ^ (g_startingWeapons.integer & mask)));
+				trap->Cvar_Update(&g_startingWeapons);
+				trap->Print("%s %s^7\n", saberTweaks[index].string, ((g_startingWeapons.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+				CVU_StartingWeapons();
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_startingWeapons", va( "%i", (1 << index) ^ (g_startingWeapons.integer & mask ) ) );
 		trap->Cvar_Update( &g_startingWeapons );
@@ -1102,10 +1122,19 @@ void Svcmd_ToggleStartingItems_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_STARTING_ITEMS ) {
-			trap->Print( "startingItems: Invalid range: %i [0, %i]\n", index, MAX_STARTING_ITEMS - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_STARTING_ITEMS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("startingItems: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_STARTING_ITEMS - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_SABER_TWEAKS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_startingItems", va("%i", (1 << index) ^ (g_startingItems.integer & mask)));
+				trap->Cvar_Update(&g_startingItems);
+				trap->Print("%s %s^7\n", startingItems[index].string, ((g_startingItems.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_startingItems", va( "%i", (1 << index) ^ (g_startingItems.integer & mask ) ) );
 		trap->Cvar_Update( &g_startingItems );
@@ -1147,10 +1176,19 @@ void Svcmd_ToggleSaberDisable_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_SABER_DISABLES ) {
-			trap->Print( "saberDisable: Invalid range: %i [0, %i]\n", index, MAX_SABER_DISABLES - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_SABER_DISABLES) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("saberDisable: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_SABER_DISABLES - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_SABER_DISABLES; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_saberDisable", va("%i", (1 << index) ^ (g_saberDisable.integer & mask)));
+				trap->Cvar_Update(&g_saberDisable);
+				trap->Print("%s %s^7\n", saberDisables[index].string, ((g_saberDisable.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_saberDisable", va( "%i", (1 << index) ^ (g_saberDisable.integer & mask ) ) );
 		trap->Cvar_Update( &g_saberDisable );
@@ -1306,10 +1344,19 @@ void Svcmd_ToggleVote_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_VOTE_OPTIONS ) {
-			trap->Print( "toggleVote: Invalid range: %i [0, %i]\n", index, MAX_VOTE_OPTIONS - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_VOTE_OPTIONS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("toggleVote: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_VOTE_OPTIONS - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_VOTE_OPTIONS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_allowVote", va("%i", (1 << index) ^ (g_allowVote.integer & mask)));
+				trap->Cvar_Update(&g_allowVote);
+				trap->Print("%s %s^7\n", voteOptions[index].string, ((g_allowVote.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_allowVote", va( "%i", (1 << index) ^ (g_allowVote.integer & mask ) ) );
 		trap->Cvar_Update( &g_allowVote );
@@ -1355,10 +1402,19 @@ void Svcmd_ToggleTweakVote_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_VOTE_TWEAKS ) {
-			trap->Print( "tweakVote: Invalid range: %i [0, %i]\n", index, MAX_VOTE_TWEAKS - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_VOTE_TWEAKS) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("tweakVote: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_VOTE_TWEAKS - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_VOTE_TWEAKS; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_tweakVote", va("%i", (1 << index) ^ (g_tweakVote.integer & mask)));
+				trap->Cvar_Update(&g_tweakVote);
+				trap->Print("%s %s^7\n", voteTweaks[index].string, ((g_tweakVote.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_tweakVote", va( "%i", (1 << index) ^ (g_tweakVote.integer & mask ) ) );
 		trap->Cvar_Update( &g_tweakVote );
@@ -1413,10 +1469,19 @@ void Svcmd_ToggleEmotes_f( void ) {
 		trap->Argv( 1, arg, sizeof(arg) );
 		index = atoi( arg );
 
-		if ( index < 0 || index >= MAX_EMOTE_DISABLES ) {
-			trap->Print( "disableEmotes: Invalid range: %i [0, %i]\n", index, MAX_EMOTE_DISABLES - 1 );
+		//DM Start: New -1 toggle all options.
+		if (index < -1 || index >= MAX_EMOTE_DISABLES) {  //Whereas we need to allow -1 now, we must change the limit for this value.
+			trap->Print("disableEmotes: Invalid range: %i [0-%i, or -1 for toggle all]\n", index, MAX_EMOTE_DISABLES - 1);
 			return;
 		}
+
+		if (index == -1) {
+			for (index = 0; index < MAX_EMOTE_DISABLES; index++) {  //Read every tweak option and set it to the opposite of what it is currently set to.
+				trap->Cvar_Set("g_emotesDisable", va("%i", (1 << index) ^ (g_emotesDisable.integer & mask)));
+				trap->Cvar_Update(&g_emotesDisable);
+				trap->Print("%s %s^7\n", emoteDisables[index].string, ((g_emotesDisable.integer & (1 << index)) ? "^2Enabled" : "^1Disabled"));
+			}
+		} //DM End: New -1 toggle all options.
 
 		trap->Cvar_Set( "g_emotesDisable", va( "%i", (1 << index) ^ (g_emotesDisable.integer & mask ) ) );
 		trap->Cvar_Update( &g_emotesDisable );
@@ -1550,4 +1615,3 @@ qboolean	ConsoleCommand( void ) {
 	command->func();
 	return qtrue;
 }
-

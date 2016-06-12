@@ -3472,7 +3472,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 		CALL_SQLITE (bind_int (stmt, 2, start));
 	}
 	
-	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
+	trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s:\n    ^5Username           Score     SPR       Avg. Rank   Percentile   Golds   Silvers   Bronzes   Count \n\"", styleString));
 
 	while (1) {
 		int s;
@@ -3491,7 +3491,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 			rank = (float)rank/(float)count;
 			percentile = (float)percentile/(float)count;
 
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, rank, percentile, golds, silvers, bronzes, count);
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-9i ^3%-9.2f ^3%-11.2f ^3%-12.2f ^3%-7i ^3%-9i ^3%-9i %i\n", row+start, username, score, (count ? ((float)score/(float)count) : score), rank, percentile, golds, silvers, bronzes, count);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 				msg[0] = '\0';
