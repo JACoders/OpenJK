@@ -839,9 +839,10 @@ static bitInfo_T saberTweaks[] = {
 	{"Spin red DFA"},//11
 	{"Spin backslash"},//12
 	{"JK2 Lunge"},//13
-	{"Remove red DFA Boost"},//13
-	{"Make red DFA cost 0 forcepoints"},//13
-	{"Remove all backslash restrictions"}//8
+	{"Remove red DFA Boost"},//14
+	{"Make red DFA cost 0 forcepoints"},//15
+	{"Remove all backslash restrictions"},//16
+	{"Allow Sabergun"}//17
 };
 static const int MAX_SABER_TWEAKS = ARRAY_LEN( saberTweaks );
 
