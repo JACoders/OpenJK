@@ -491,11 +491,29 @@ void NPC_BSGrenadier_Attack( void )
 	{
 		TIMER_Set( NPCS.NPC, "zyk_check_enemy", Q_irand( 5000, 10000 ) );
 
-		if (NPCS.NPC->enemy && !NPC_ClearLOS4(NPCS.NPC->enemy))
+		if (NPCS.NPC->enemy && !NPC_ClearLOS4(NPCS.NPC->enemy) && NPCS.NPC->health > 0)
 		{ // zyk: if enemy cant be seen, try getting one later
-			NPCS.NPC->enemy = NULL;
-			NPC_BSGrenadier_Patrol();
-			return;
+			if (NPCS.NPC->client && NPCS.NPC->client->pers.guardian_mode == 0)
+			{
+				NPCS.NPC->enemy = NULL;
+				NPC_BSGrenadier_Patrol();
+				return;
+			}
+			else if (NPCS.NPC->client)
+			{ // zyk: guardians have a different way to find enemies. He tries to find the quest player and his allies
+				int zyk_it = 0;
+
+				for (zyk_it = 0; zyk_it < level.maxclients; zyk_it++)
+				{
+					gentity_t *allied_player = &g_entities[zyk_it];
+
+					if (allied_player && allied_player->client && allied_player->client->pers.guardian_mode > 0 &&
+						NPC_ClearLOS4(allied_player))
+					{ // zyk: the quest player or one of his allies. If one of them is in line of sight, choose him as enemy
+						NPCS.NPC->enemy = allied_player;
+					}
+				}
+			}
 		}
 	}
 
