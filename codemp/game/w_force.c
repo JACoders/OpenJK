@@ -6003,7 +6003,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					trap->SendServerCommand(self - g_entities, "cp \" \n\"");
 				}
 
-				self->client->pers.sense_health_timer = level.time + 1500; // zyk: show health each 1.5 seconds
+				self->client->pers.sense_health_timer = level.time + 1000; // zyk: show health each 1 seconds
 			}
 		}
 		if ( (self->client->ps.fd.forcePowersActive&( 1 << i )) )
