@@ -146,7 +146,7 @@ G_ReflectMissile
 vec3_t g_crosshairWorldCoord = {0, 0, 0};
 extern gentity_t *Jedi_FindEnemyInCone( gentity_t *self, gentity_t *fallback, float minDot );
 extern cvar_t	*g_saberAutoBlocking;
-void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward, forcePowers_t powerToUse )
+void G_ReflectMissile(gentity_t *ent, gentity_t *missile, vec3_t forward, forcePowers_t powerToUse)
 {
 	vec3_t	bounce_dir;
 	int		i;
@@ -155,235 +155,237 @@ void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward, force
 	qboolean reflected = qfalse;
 	gentity_t	*owner = ent;
 
-	if ( ent->owner )
+	if (ent->owner)
 	{
 		owner = ent->owner;
 	}
 
 	//save the original speed
-	speed = VectorNormalize( missile->s.pos.trDelta );
+	speed = VectorNormalize(missile->s.pos.trDelta);
 
-	if ( ent && owner && owner->client &&
-		(owner->client->ps.forcePowerLevel[powerToUse] > FORCE_LEVEL_2 || (owner->client->ps.forcePowerLevel[powerToUse]>FORCE_LEVEL_1&&!Q_irand( 0, 3 )) ) )
+	if (ent && owner && owner->client &&
+		(owner->client->ps.forcePowerLevel[powerToUse] > FORCE_LEVEL_2 || (owner->client->ps.forcePowerLevel[powerToUse] > FORCE_LEVEL_1&&!Q_irand(0, 3))))
 		//if high enough force skill (100% at level 3, 25% at level 2, 0% at level 1), reflections are perfectly deflected toward an enemy
 	{
 		perfectReflection = qtrue;
 	}
-	
-	if ( powerToUse == FP_SABER_DEFENSE )
+
+	if (powerToUse == FP_SABER_DEFENSE)
 	{
-		if ( owner->client->ps.saberInFlight )
+		if (owner->client->ps.saberInFlight)
 		{//but need saber in-hand for perfect reflection
 			perfectReflection = qfalse;
 
-	if ( ent && owner && owner->client && !owner->client->ps.saberInFlight &&
-		(owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2 || (owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]>FORCE_LEVEL_1&&!Q_irand( 0, 3 )) ) )
-	{//if high enough defense skill and saber in-hand (100% at level 3, 25% at level 2, 0% at level 1), reflections are perfectly deflected toward an enemy
-		gentity_t *enemy;
-		if ( owner->enemy && Q_irand( 0, 3 ) )
-		{//toward current enemy 75% of the time
-			enemy = owner->enemy;
-		}
-		
-		if ( g_spskill->integer >= 2 && !g_saberAutoBlocking->integer && owner->client->ps.saberBlockingTime < level.time )
-		{//but need to be blocking for perfect reflection on higher difficulties
-			perfectReflection = qfalse;
-		}
-	}
-	
-	if ( perfectReflection )
-	{
-		if (g_spskill->integer < 2 || owner->s.clientNum >= MAX_CLIENTS) //either by autoaim (lower difficulties)
-		{
-			gentity_t *enemy;
-			if ( owner->enemy && Q_irand( 0, 3 ) )
-			{//toward current enemy 75% of the time
-				enemy = owner->enemy;
+			if (ent && owner && owner->client && !owner->client->ps.saberInFlight &&
+				(owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_2 || (owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] > FORCE_LEVEL_1&&!Q_irand(0, 3))))
+			{//if high enough defense skill and saber in-hand (100% at level 3, 25% at level 2, 0% at level 1), reflections are perfectly deflected toward an enemy
+				gentity_t *enemy;
+				if (owner->enemy && Q_irand(0, 3))
+				{//toward current enemy 75% of the time
+					enemy = owner->enemy;
+				}
+
+				if (g_spskill->integer >= 2 && !g_saberAutoBlocking->integer && owner->client->ps.saberBlockingTime < level.time)
+				{//but need to be blocking for perfect reflection on higher difficulties
+					perfectReflection = qfalse;
+				}
 			}
-			else
-			{//find another enemy
-				enemy = Jedi_FindEnemyInCone( owner, owner->enemy, 0.3f );
-			}
-			if ( enemy )
+
+			if (perfectReflection)
 			{
-				vec3_t	bullseye;
-				CalcEntitySpot( enemy, SPOT_HEAD, bullseye );
-				bullseye[0] += Q_irand( -4, 4 );
-				bullseye[1] += Q_irand( -4, 4 );
-				bullseye[2] += Q_irand( -16, 4 );
-				VectorSubtract( bullseye, missile->currentOrigin, bounce_dir );
-				VectorNormalize( bounce_dir );
-				if ( !PM_SaberInParry( owner->client->ps.saberMove )
-					&& !PM_SaberInReflect( owner->client->ps.saberMove )
-					&& !PM_SaberInIdle( owner->client->ps.saberMove ) )
-				{//a bit more wild
-					if ( PM_SaberInAttack( owner->client->ps.saberMove )
-						|| PM_SaberInTransitionAny( owner->client->ps.saberMove )
-						|| PM_SaberInSpecialAttack( owner->client->ps.torsoAnim ) )
-					{//moderately more wild
-						for ( i = 0; i < 3; i++ )
+				if (g_spskill->integer < 2 || owner->s.clientNum >= MAX_CLIENTS) //either by autoaim (lower difficulties)
+				{
+					gentity_t *enemy;
+					if (owner->enemy && Q_irand(0, 3))
+					{//toward current enemy 75% of the time
+						enemy = owner->enemy;
+					}
+					else
+					{//find another enemy
+						enemy = Jedi_FindEnemyInCone(owner, owner->enemy, 0.3f);
+					}
+					if (enemy)
+					{
+						vec3_t	bullseye;
+						CalcEntitySpot(enemy, SPOT_HEAD, bullseye);
+						bullseye[0] += Q_irand(-4, 4);
+						bullseye[1] += Q_irand(-4, 4);
+						bullseye[2] += Q_irand(-16, 4);
+						VectorSubtract(bullseye, missile->currentOrigin, bounce_dir);
+						VectorNormalize(bounce_dir);
+						if (!PM_SaberInParry(owner->client->ps.saberMove)
+							&& !PM_SaberInReflect(owner->client->ps.saberMove)
+							&& !PM_SaberInIdle(owner->client->ps.saberMove))
+						{//a bit more wild
+							if (PM_SaberInAttack(owner->client->ps.saberMove)
+								|| PM_SaberInTransitionAny(owner->client->ps.saberMove)
+								|| PM_SaberInSpecialAttack(owner->client->ps.torsoAnim))
+							{//moderately more wild
+								for (i = 0; i < 3; i++)
+								{
+									bounce_dir[i] += Q_flrand(-0.2f, 0.2f);
+								}
+							}
+							else
+							{//mildly more wild
+								for (i = 0; i < 3; i++)
+								{
+									bounce_dir[i] += Q_flrand(-0.1f, 0.1f);
+								}
+							}
+						}
+						VectorNormalize(bounce_dir);
+						reflected = qtrue;
+					}
+				}
+				else //or by where the crosshair is (higher difficulties)
+				{
+					VectorSubtract(g_crosshairWorldCoord, missile->currentOrigin, bounce_dir);
+					VectorNormalize(bounce_dir);
+					if (!PM_SaberInParry(owner->client->ps.saberMove)
+						&& !PM_SaberInReflect(owner->client->ps.saberMove)
+						&& !PM_SaberInIdle(owner->client->ps.saberMove))
+					{//a bit more wild
+						if (PM_SaberInAttack(owner->client->ps.saberMove)
+							|| PM_SaberInTransitionAny(owner->client->ps.saberMove)
+							|| PM_SaberInSpecialAttack(owner->client->ps.torsoAnim))
+						{//moderately more wild
+							for (i = 0; i < 3; i++)
+							{
+								bounce_dir[i] += Q_flrand(-0.2f, 0.2f);
+							}
+						}
+						else
+						{//mildly more wild
+							for (i = 0; i < 3; i++)
+							{
+								bounce_dir[i] += Q_flrand(-0.1f, 0.1f);
+							}
+						}
+					}
+					VectorNormalize(bounce_dir);
+					reflected = qtrue;
+				}
+			}
+			if (!reflected)
+			{
+				if (g_spskill->integer < 2 || owner->s.clientNum >= MAX_CLIENTS)
+				{
+					if (missile->owner && missile->s.weapon != WP_SABER)
+					{//bounce back at them if you can
+						VectorSubtract(missile->owner->currentOrigin, missile->currentOrigin, bounce_dir);
+						VectorNormalize(bounce_dir);
+					}
+					else
+					{
+						vec3_t missile_dir;
+
+						VectorSubtract(ent->currentOrigin, missile->currentOrigin, missile_dir);
+						VectorCopy(missile->s.pos.trDelta, bounce_dir);
+						VectorScale(bounce_dir, DotProduct(forward, missile_dir), bounce_dir);
+						VectorNormalize(bounce_dir);
+					}
+				}
+				else //deflect off at an angle.
+				{
+					vec3_t deflect_dir, missile_dir;
+					float forceFactor;
+					VectorSubtract(g_crosshairWorldCoord, missile->currentOrigin, deflect_dir);
+					VectorCopy(missile->s.pos.trDelta, missile_dir);
+					VectorNormalize(missile_dir);
+					VectorNormalize(deflect_dir);
+
+					//bigger forceFactors make the reflected shots go closer to the crosshair
+					switch (owner->client->ps.forcePowerLevel[powerToUse])
+					{
+					case FORCE_LEVEL_1:
+						forceFactor = 2.0f;
+						break;
+					case FORCE_LEVEL_2:
+						forceFactor = 3.0f;
+						break;
+					default:
+						forceFactor = 10.0f;
+						break;
+					}
+
+					VectorMA(missile_dir, forceFactor, deflect_dir, bounce_dir);
+
+					VectorNormalize(bounce_dir);
+				}
+				if (owner->s.weapon == WP_SABER && owner->client && powerToUse == FP_SABER_DEFENSE)
+				{//saber
+					if (owner->client->ps.saberInFlight)
+					{//reflecting off a thrown saber is totally wild
+						for (i = 0; i < 3; i++)
 						{
-							bounce_dir[i] += Q_flrand( -0.2f, 0.2f );
+							bounce_dir[i] += Q_flrand(-0.8f, 0.8f);
+						}
+					}
+					else if (owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] <= FORCE_LEVEL_1)
+					{// at level 1 or below
+						for (i = 0; i < 3; i++)
+						{
+							bounce_dir[i] += Q_flrand(-0.4f, 0.4f);
 						}
 					}
 					else
-					{//mildly more wild
-						for ( i = 0; i < 3; i++ )
+					{// at level 2
+						for (i = 0; i < 3; i++)
 						{
-							bounce_dir[i] += Q_flrand( -0.1f, 0.1f );
+							bounce_dir[i] += Q_flrand(-0.2f, 0.2f);
+						}
+					}
+					if (!PM_SaberInParry(owner->client->ps.saberMove)
+						&& !PM_SaberInReflect(owner->client->ps.saberMove)
+						&& !PM_SaberInIdle(owner->client->ps.saberMove))
+					{//a bit more wild
+						if (PM_SaberInAttack(owner->client->ps.saberMove)
+							|| PM_SaberInTransitionAny(owner->client->ps.saberMove)
+							|| PM_SaberInSpecialAttack(owner->client->ps.torsoAnim))
+						{//really wild
+							for (i = 0; i < 3; i++)
+							{
+								bounce_dir[i] += Q_flrand(-0.3f, 0.3f);
+							}
+						}
+						else
+						{//mildly more wild
+							for (i = 0; i < 3; i++)
+							{
+								bounce_dir[i] += Q_flrand(-0.1f, 0.1f);
+							}
 						}
 					}
 				}
-				VectorNormalize( bounce_dir );
-				reflected = qtrue;
-			}
-		}
-		else //or by where the crosshair is (higher difficulties)
-		{
-			VectorSubtract( g_crosshairWorldCoord, missile->currentOrigin, bounce_dir );
-			VectorNormalize( bounce_dir );
-			if ( !PM_SaberInParry( owner->client->ps.saberMove )
-				&& !PM_SaberInReflect( owner->client->ps.saberMove )
-				&& !PM_SaberInIdle( owner->client->ps.saberMove ) )
-			{//a bit more wild
-				if ( PM_SaberInAttack( owner->client->ps.saberMove )
-					|| PM_SaberInTransitionAny( owner->client->ps.saberMove )
-					|| PM_SaberInSpecialAttack( owner->client->ps.torsoAnim ) )
-				{//moderately more wild
-					for ( i = 0; i < 3; i++ )
-					{
-						bounce_dir[i] += Q_flrand( -0.2f, 0.2f );
-					}
-				}
 				else
-				{//mildly more wild
-					for ( i = 0; i < 3; i++ )
+				{//some other kind of reflection
+					for (i = 0; i < 3; i++)
 					{
-						bounce_dir[i] += Q_flrand( -0.1f, 0.1f );
+						bounce_dir[i] += Q_flrand(-0.2f, 0.2f);
 					}
 				}
 			}
-			VectorNormalize( bounce_dir );
-			reflected = qtrue;
-		}
-	}
-	if ( !reflected )
-	{
-		if ( g_spskill->integer < 2 || owner->s.clientNum >= MAX_CLIENTS )
-		{
-			if ( missile->owner && missile->s.weapon != WP_SABER)
-			{//bounce back at them if you can
-				VectorSubtract( missile->owner->currentOrigin, missile->currentOrigin, bounce_dir );
-				VectorNormalize( bounce_dir );
-			}
-			else
-			{
-				vec3_t missile_dir;
-				
-				VectorSubtract( ent->currentOrigin, missile->currentOrigin, missile_dir );
-				VectorCopy( missile->s.pos.trDelta, bounce_dir );
-				VectorScale( bounce_dir, DotProduct( forward, missile_dir ), bounce_dir );
-				VectorNormalize( bounce_dir );
-			}
-		}
-		else //deflect off at an angle.
-		{
-			vec3_t deflect_dir, missile_dir;
-			float forceFactor;
-			VectorSubtract( g_crosshairWorldCoord, missile->currentOrigin, deflect_dir );
-			VectorCopy( missile->s.pos.trDelta, missile_dir );
-			VectorNormalize( missile_dir );
-			VectorNormalize( deflect_dir );
-			
-			//bigger forceFactors make the reflected shots go closer to the crosshair
-			switch( owner->client->ps.forcePowerLevel[powerToUse] )
-			{
-				case FORCE_LEVEL_1:
-					forceFactor = 2.0f;
-					break;
-				case FORCE_LEVEL_2:
-					forceFactor = 3.0f;
-					break;
-				default:
-					forceFactor = 10.0f;
-					break;
-			}
-			
-			VectorMA(missile_dir, forceFactor, deflect_dir, bounce_dir );
-			
-			VectorNormalize( bounce_dir );
-		}
-		if ( owner->s.weapon == WP_SABER && owner->client && powerToUse == FP_SABER_DEFENSE)
-		{//saber
-			if ( owner->client->ps.saberInFlight )
-			{//reflecting off a thrown saber is totally wild
-				for ( i = 0; i < 3; i++ )
-				{
-					bounce_dir[i] += Q_flrand( -0.8f, 0.8f );
-				}
-			}
-			else if ( owner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] <= FORCE_LEVEL_1 )
-			{// at level 1 or below
-				for ( i = 0; i < 3; i++ )
-				{
-					bounce_dir[i] += Q_flrand( -0.4f, 0.4f );
-				}
-			}
-			else
-			{// at level 2
-				for ( i = 0; i < 3; i++ )
-				{
-					bounce_dir[i] += Q_flrand( -0.2f, 0.2f );
-				}
-			}
-			if ( !PM_SaberInParry( owner->client->ps.saberMove )
-				&& !PM_SaberInReflect( owner->client->ps.saberMove )
-				&& !PM_SaberInIdle( owner->client->ps.saberMove ) )
-			{//a bit more wild
-				if ( PM_SaberInAttack( owner->client->ps.saberMove )
-					|| PM_SaberInTransitionAny( owner->client->ps.saberMove )
-					|| PM_SaberInSpecialAttack( owner->client->ps.torsoAnim ) )
-				{//really wild
-					for ( i = 0; i < 3; i++ )
-					{
-						bounce_dir[i] += Q_flrand( -0.3f, 0.3f );
-					}
-				}
-				else
-				{//mildly more wild
-					for ( i = 0; i < 3; i++ )
-					{
-						bounce_dir[i] += Q_flrand( -0.1f, 0.1f );
-					}
-				}
-			}
-		}
-		else
-		{//some other kind of reflection
-			for ( i = 0; i < 3; i++ )
-			{
-				bounce_dir[i] += Q_flrand( -0.2f, 0.2f );
-			}
-		}
-	}
-	VectorNormalize( bounce_dir );
-	VectorScale( bounce_dir, speed, missile->s.pos.trDelta );
+			VectorNormalize(bounce_dir);
+			VectorScale(bounce_dir, speed, missile->s.pos.trDelta);
 #ifdef _DEBUG
-		assert( !Q_isnan(missile->s.pos.trDelta[0])&&!Q_isnan(missile->s.pos.trDelta[1])&&!Q_isnan(missile->s.pos.trDelta[2]));
+			assert(!Q_isnan(missile->s.pos.trDelta[0]) && !Q_isnan(missile->s.pos.trDelta[1]) && !Q_isnan(missile->s.pos.trDelta[2]));
 #endif// _DEBUG
-	missile->s.pos.trTime = level.time - 10;		// move a bit on the very first frame
-	VectorCopy( missile->currentOrigin, missile->s.pos.trBase );
-	if ( missile->s.weapon != WP_SABER )
-	{//you are mine, now!
-		if ( !missile->lastEnemy )
-		{//remember who originally shot this missile
-			missile->lastEnemy = missile->owner;
+			missile->s.pos.trTime = level.time - 10;		// move a bit on the very first frame
+			VectorCopy(missile->currentOrigin, missile->s.pos.trBase);
+			if (missile->s.weapon != WP_SABER)
+			{//you are mine, now!
+				if (!missile->lastEnemy)
+				{//remember who originally shot this missile
+					missile->lastEnemy = missile->owner;
+				}
+				missile->owner = owner;
+			}
+			if (missile->s.weapon == WP_ROCKET_LAUNCHER)
+			{//stop homing
+				missile->e_ThinkFunc = thinkF_NULL;
+			}
 		}
-		missile->owner = owner;
-	}
-	if ( missile->s.weapon == WP_ROCKET_LAUNCHER )
-	{//stop homing
-		missile->e_ThinkFunc = thinkF_NULL;
 	}
 }
 

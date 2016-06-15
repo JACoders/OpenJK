@@ -65,7 +65,7 @@ namespace FS
 #else
 		const long size = FS_ReadFile( path, &buffer );
 #endif
-		return size >= 0 ? FileBuffer{ buffer, size } : FileBuffer{};
+		return size >= 0 ? FileBuffer( buffer, size ) : FileBuffer();
 	}
 
 #if !defined( SP_GAME )
