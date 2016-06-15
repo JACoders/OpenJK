@@ -2161,7 +2161,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			Q_stricmp( ent->NPC_type, "player" ) )
 		{
 			// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
-			char bleh[1024];
+			char bleh[MAX_SPAWN_VARS_CHARS];
 			Q_strncpyz(bleh, ent->NPC_type, sizeof(bleh));
 
 			G_ChangePlayerModel( ent, bleh );
@@ -2360,9 +2360,8 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			Q_stricmp( ent->NPC_type, "player" ) )
 			{
 				// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
-				char bleh[1024];
-				strncpy(bleh, ent->NPC_type, strlen(ent->NPC_type));
-				bleh[strlen(ent->NPC_type)] = '\0';
+				char bleh[MAX_SPAWN_VARS_CHARS];
+				Q_strncpyz(bleh, ent->NPC_type, sizeof(bleh));
 
 				G_ChangePlayerModel( ent, bleh );
 			}

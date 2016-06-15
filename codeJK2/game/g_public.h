@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __G_PUBLIC_H__
 // g_public.h -- game module information visible to server
 
-#define	GAME_API_VERSION	8				// Bumped up to 8, since we support JA's engine now --eez
+#define	GAME_API_VERSION	9				// Bumped up to 8, since we support JA's engine now --eez
 
 // entity->svFlags
 // the server does not know how to interpret most of the values
