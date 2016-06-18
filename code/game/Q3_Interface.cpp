@@ -7278,19 +7278,19 @@ void CQuake3GameInterface::VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	gi.ReadFromSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
+	::sg_read<int32_t>(::gi, INT_ID('F','V','A','R'), numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 
-		gi.ReadFromSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( INT_ID('F','I','D','S'), &tempBuffer, idSize, NULL );
+		::sg_read<int32_t>(::gi, INT_ID('F','I','D','L'), idSize);
+		::sg_read_no_cast(::gi, INT_ID('F','I','D','S'), tempBuffer, idSize);
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-		gi.ReadFromSaveGame( INT_ID('F','V','A','L'), &val, sizeof( float ), NULL );
+		::sg_read<float>(::gi, INT_ID('F','V','A','L'), val);
 
 		DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		SetFloatVariable( (const char *) &tempBuffer, val );
@@ -7309,18 +7309,18 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	gi.ReadFromSaveGame( INT_ID('S','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
+	::sg_read<int32_t>(::gi, INT_ID('S','V','A','R'), numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 
-		gi.ReadFromSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( INT_ID('S','I','D','S'), &tempBuffer, idSize, NULL );
+		::sg_read<int32_t>(::gi, INT_ID('S','I','D','L'), idSize);
+		::sg_read_no_cast(::gi, INT_ID('S','I','D','S'), tempBuffer, idSize);
 		tempBuffer[ idSize ] = 0;
 
-		gi.ReadFromSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( INT_ID('S','V','A','L'), &tempBuffer2, idSize, NULL );
+		::sg_read<int32_t>(::gi, INT_ID('S','V','S','Z'), idSize);
+		::sg_read_no_cast(::gi, INT_ID('S','V','A','L'), tempBuffer2, idSize);
 		tempBuffer2[ idSize ] = 0;
 
 		switch ( type )

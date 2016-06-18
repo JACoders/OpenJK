@@ -260,6 +260,7 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
+	"${SharedDir}/qcommon/ojk_sg_wrappers.h"
 	
 	${SharedCommonFiles}
 	)

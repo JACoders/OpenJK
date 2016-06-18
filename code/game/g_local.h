@@ -88,14 +88,53 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //animations
+#pragma pack(push, 4)
+class SgAnimFileSet
+{
+public:
+    SgArray<int8_t, MAX_QPATH> filename;
+    SgArray<SgAnimation, MAX_ANIMATIONS> animations;
+    SgArray<SgAnimEvent, MAX_ANIM_EVENTS> torsoAnimEvents;
+    SgArray<SgAnimEvent, MAX_ANIM_EVENTS> legsAnimEvents;
+    uint8_t torsoAnimEventCount;
+    uint8_t legsAnimEventCount;
+}; // SgAnimFileSet
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgAnimFileSet;
+
+
 	char			filename[MAX_QPATH];
 	animation_t		animations[MAX_ANIMATIONS];
 	animevent_t		torsoAnimEvents[MAX_ANIM_EVENTS];
 	animevent_t		legsAnimEvents[MAX_ANIM_EVENTS];
 	unsigned char	torsoAnimEventCount;
 	unsigned char	legsAnimEventCount;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(filename, dst.filename);
+        ::sg_export(animations, dst.animations);
+        ::sg_export(torsoAnimEvents, dst.torsoAnimEvents);
+        ::sg_export(legsAnimEvents, dst.legsAnimEvents);
+        ::sg_export(torsoAnimEventCount, dst.torsoAnimEventCount);
+        ::sg_export(legsAnimEventCount, dst.legsAnimEventCount);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.filename, filename);
+        ::sg_import(src.animations, animations);
+        ::sg_import(src.torsoAnimEvents, torsoAnimEvents);
+        ::sg_import(src.legsAnimEvents, legsAnimEvents);
+        ::sg_import(src.torsoAnimEventCount, torsoAnimEventCount);
+        ::sg_import(src.legsAnimEventCount, legsAnimEventCount);
+    }
 } animFileSet_t;
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
@@ -145,8 +184,28 @@ enum alertEventLevel_e
 };
 
 // !!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
+#pragma pack(push, 4)
+class SgAlertEvent
+{
+public:
+    SgVec3 position;
+    float radius;
+    int32_t level;
+    int32_t type;
+    int32_t owner;
+    float light;
+    float addLight;
+    int32_t ID;
+    int32_t timestamp;
+    int32_t onGround;
+}; // SgAlertEvent
+#pragma pack(pop)
+
 typedef struct alertEvent_s
 {
+    using SgType = SgAlertEvent;
+
+
 	vec3_t				position;	//Where the event is located
 	float				radius;		//Consideration radius
 	alertEventLevel_e	level;		//Priority level of the event
@@ -157,6 +216,37 @@ typedef struct alertEvent_s
 	int					ID;			//unique... if get a ridiculous number, this will repeat, but should not be a problem as it's just comparing it to your lastAlertID
 	int					timestamp;	//when it was created
 	qboolean			onGround;	//alert is on the ground (only used for sounds)
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(position, dst.position);
+        ::sg_export(radius, dst.radius);
+        ::sg_export(level, dst.level);
+        ::sg_export(type, dst.type);
+        ::sg_export(owner, dst.owner);
+        ::sg_export(light, dst.light);
+        ::sg_export(addLight, dst.addLight);
+        ::sg_export(ID, dst.ID);
+        ::sg_export(timestamp, dst.timestamp);
+        ::sg_export(onGround, dst.onGround);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.position, position);
+        ::sg_import(src.radius, radius);
+        ::sg_import(src.level, level);
+        ::sg_import(src.type, type);
+        ::sg_import(src.owner, owner);
+        ::sg_import(src.light, light);
+        ::sg_import(src.addLight, addLight);
+        ::sg_import(src.ID, ID);
+        ::sg_import(src.timestamp, timestamp);
+        ::sg_import(src.onGround, onGround);
+    }
 } alertEvent_t;
 
 //
@@ -181,8 +271,35 @@ typedef struct
 #define	WF_PUFFING		0x00000004	// puffing something
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgLevelLocals
+{
+public:
+    int32_t clients;
+    int32_t maxclients;
+    int32_t framenum;
+    int32_t time;
+    int32_t previousTime;
+    int32_t globalTime;
+    SgArray<int8_t, MAX_QPATH> mapname;
+    int32_t locationLinked;
+    int32_t locationHead;
+    SgArray<SgAlertEvent, MAX_ALERT_EVENTS> alertEvents;
+    int32_t numAlertEvents;
+    int32_t curAlertID;
+    SgArray<SgAiGroupInfo, MAX_FRAME_GROUPS> groups;
+    SgArray<SgAnimFileSet, MAX_ANIM_FILES> knownAnimFileSets;
+    int32_t numKnownAnimFileSets;
+    int32_t worldFlags;
+    int32_t dmState;
+}; // SgLevelLocals
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgLevelLocals;
+
+
 	gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
@@ -240,6 +357,51 @@ typedef struct
 	float		mRotationAdjust;
 	char		*mTargetAdjust;
 	qboolean	hasBspInstances;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(clients, dst.clients);
+        ::sg_export(maxclients, dst.maxclients);
+        ::sg_export(framenum, dst.framenum);
+        ::sg_export(time, dst.time);
+        ::sg_export(previousTime, dst.previousTime);
+        ::sg_export(globalTime, dst.globalTime);
+        ::sg_export(mapname, dst.mapname);
+        ::sg_export(locationLinked, dst.locationLinked);
+        ::sg_export(locationHead, dst.locationHead);
+        ::sg_export(alertEvents, dst.alertEvents);
+        ::sg_export(numAlertEvents, dst.numAlertEvents);
+        ::sg_export(curAlertID, dst.curAlertID);
+        ::sg_export(groups, dst.groups);
+        ::sg_export(knownAnimFileSets, dst.knownAnimFileSets);
+        ::sg_export(numKnownAnimFileSets, dst.numKnownAnimFileSets);
+        ::sg_export(worldFlags, dst.worldFlags);
+        ::sg_export(dmState, dst.dmState);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.clients, clients);
+        ::sg_import(src.maxclients, maxclients);
+        ::sg_import(src.framenum, framenum);
+        ::sg_import(src.time, time);
+        ::sg_import(src.previousTime, previousTime);
+        ::sg_import(src.globalTime, globalTime);
+        ::sg_import(src.mapname, mapname);
+        ::sg_import(src.locationLinked, locationLinked);
+        ::sg_import(src.locationHead, locationHead);
+        ::sg_import(src.alertEvents, alertEvents);
+        ::sg_import(src.numAlertEvents, numAlertEvents);
+        ::sg_import(src.curAlertID, curAlertID);
+        ::sg_import(src.groups, groups);
+        ::sg_import(src.knownAnimFileSets, knownAnimFileSets);
+        ::sg_import(src.numKnownAnimFileSets, numKnownAnimFileSets);
+        ::sg_import(src.worldFlags, worldFlags);
+        ::sg_import(src.dmState, dmState);
+    }
 } level_locals_t;
 
 extern	level_locals_t	level;

@@ -453,8 +453,22 @@ enum
 extern void G_VehicleSpawn( gentity_t *self );
 
 // A vehicle weapon muzzle.
+#pragma pack(push, 4)
+class SgMuzzle
+{
+public:
+    SgVec3 m_vMuzzlePos;
+    SgVec3 m_vMuzzleDir;
+    int32_t m_iMuzzleWait;
+    int8_t m_bFired;
+}; // SgMuzzle
+#pragma pack(pop)
+
 struct Muzzle
 {
+    using SgType = SgMuzzle;
+
+
 	// These are updated every frame and represent the current position and direction for the specific muzzle.
 	vec3_t m_vMuzzlePos;
 	vec3_t m_vMuzzleDir;
@@ -466,6 +480,24 @@ struct Muzzle
 	// whether this Muzzle was just fired or not (reset at muzzle flash code).
 	bool m_bFired;
 
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(m_vMuzzlePos, dst.m_vMuzzlePos);
+        ::sg_export(m_vMuzzleDir, dst.m_vMuzzleDir);
+        ::sg_export(m_iMuzzleWait, dst.m_iMuzzleWait);
+        ::sg_export(m_bFired, dst.m_bFired);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.m_vMuzzlePos, m_vMuzzlePos);
+        ::sg_import(src.m_vMuzzleDir, m_vMuzzleDir);
+        ::sg_import(src.m_iMuzzleWait, m_iMuzzleWait);
+        ::sg_import(src.m_bFired, m_bFired);
+    }
 };
 
 //defines for impact damage surface stuff
@@ -491,8 +523,22 @@ struct Muzzle
 #define SHIPSURF_BROKEN_E	(1<<4) //wing 3
 #define SHIPSURF_BROKEN_F	(1<<5) //wing 4
 
+#pragma pack(push, 4)
+class SgVehWeaponStatus
+{
+public:
+    int32_t linked;
+    int32_t ammo;
+    int32_t lastAmmoInc;
+    int32_t nextMuzzle;
+}; // SgVehWeaponStatus
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgVehWeaponStatus;
+
+
 	//linked firing mode
 	qboolean	linked;//weapon 1's muzzles are in linked firing mode
 	//current weapon ammo
@@ -501,10 +547,44 @@ typedef struct
 	int			lastAmmoInc;
 	//which muzzle will fire next
 	int			nextMuzzle;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(linked, dst.linked);
+        ::sg_export(ammo, dst.ammo);
+        ::sg_export(lastAmmoInc, dst.lastAmmoInc);
+        ::sg_export(nextMuzzle, dst.nextMuzzle);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.linked, linked);
+        ::sg_import(src.ammo, ammo);
+        ::sg_import(src.lastAmmoInc, lastAmmoInc);
+        ::sg_import(src.nextMuzzle, nextMuzzle);
+    }
 } vehWeaponStatus_t;
+
+#pragma pack(push, 4)
+class SgVehTurretStatus
+{
+public:
+    int32_t ammo;
+    int32_t lastAmmoInc;
+    int32_t nextMuzzle;
+    int32_t enemyEntNum;
+    int32_t enemyHoldTime;
+}; // SgVehTurretStatus
+#pragma pack(pop)
 
 typedef struct
 {
+    using SgType = SgVehTurretStatus;
+
+
 	//current weapon ammo
 	int			ammo;
 	//debouncer for ammo recharge
@@ -515,13 +595,85 @@ typedef struct
 	int			enemyEntNum;
 	//how long to hold on to our current enemy
 	int			enemyHoldTime;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(ammo, dst.ammo);
+        ::sg_export(lastAmmoInc, dst.lastAmmoInc);
+        ::sg_export(nextMuzzle, dst.nextMuzzle);
+        ::sg_export(enemyEntNum, dst.enemyEntNum);
+        ::sg_export(enemyHoldTime, dst.enemyHoldTime);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.ammo, ammo);
+        ::sg_import(src.lastAmmoInc, lastAmmoInc);
+        ::sg_import(src.nextMuzzle, nextMuzzle);
+        ::sg_import(src.enemyEntNum, enemyEntNum);
+        ::sg_import(src.enemyHoldTime, enemyHoldTime);
+    }
 } vehTurretStatus_t;
 
 // This is the implementation of the vehicle interface and any of the other variables needed. This
 // is what actually represents a vehicle. -AReis.
 // !!!!!!!!!!!!!!!!!! loadsave affecting structure !!!!!!!!!!!!!!!!!!!!!!!
+#pragma pack(push, 4)
+class SgVehicle
+{
+public:
+    int32_t m_pPilot;
+    int32_t m_iPilotTime;
+    int32_t m_bHasHadPilot;
+    int32_t m_pDroidUnit;
+    int32_t m_pParentEntity;
+    int32_t m_iBoarding;
+    int8_t m_bWasBoarding;
+    SgVec3 m_vBoardingVelocity;
+    float m_fTimeModifier;
+    int32_t m_iLeftWingBone;
+    int32_t m_iRightWingBone;
+    SgArray<int32_t, MAX_VEHICLE_EXHAUSTS> m_iExhaustTag;
+    SgArray<int32_t, MAX_VEHICLE_MUZZLES> m_iMuzzleTag;
+    int32_t m_iDroidUnitTag;
+    SgArray<int32_t, MAX_VEHICLE_TURRETS> m_iGunnerViewTag;
+    SgArray<SgMuzzle, MAX_VEHICLE_MUZZLES> m_Muzzles;
+    SgUserCmd m_ucmd;
+    int32_t m_EjectDir;
+    uint32_t m_ulFlags;
+    SgVec3 m_vOrientation;
+    int32_t m_fStrafeTime;
+    SgVec3 m_vPrevOrientation;
+    float m_vAngularVelocity;
+    SgVec3 m_vFullAngleVelocity;
+    int32_t m_iArmor;
+    int32_t m_iShields;
+    int32_t m_iLastFXTime;
+    int32_t m_iDieTime;
+    int32_t m_pVehicleInfo;
+    SgTrace m_LandTrace;
+    int32_t m_iRemovedSurfaces;
+    int32_t m_iTurboTime;
+    int32_t m_iDropTime;
+    int32_t m_iSoundDebounceTimer;
+    int32_t lastShieldInc;
+    int32_t linkWeaponToggleHeld;
+    SgArray<SgVehWeaponStatus, MAX_VEHICLE_WEAPONS> weaponStatus;
+    SgArray<SgVehTurretStatus, MAX_VEHICLE_TURRETS> turretStatus;
+    int32_t m_pOldPilot;
+    int32_t m_safeJumpMountTime;
+    float m_safeJumpMountRightDot;
+}; // SgVehicle
+#pragma pack(pop)
+
 struct Vehicle_t
 {
+    using SgType = SgVehicle;
+
+
 	// The entity who pilots/drives this vehicle.
 	// NOTE: This is redundant (since m_pParentEntity->owner _should_ be the pilot). This makes things clearer though.
 	gentity_t *m_pPilot;
@@ -631,6 +783,99 @@ struct Vehicle_t
 	// don't need these in mp
 	int			m_safeJumpMountTime;
 	float		m_safeJumpMountRightDot;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(m_pPilot, dst.m_pPilot);
+        ::sg_export(m_iPilotTime, dst.m_iPilotTime);
+        ::sg_export(m_bHasHadPilot, dst.m_bHasHadPilot);
+        ::sg_export(m_pDroidUnit, dst.m_pDroidUnit);
+        ::sg_export(m_pParentEntity, dst.m_pParentEntity);
+        ::sg_export(m_iBoarding, dst.m_iBoarding);
+        ::sg_export(m_bWasBoarding, dst.m_bWasBoarding);
+        ::sg_export(m_vBoardingVelocity, dst.m_vBoardingVelocity);
+        ::sg_export(m_fTimeModifier, dst.m_fTimeModifier);
+        ::sg_export(m_iLeftWingBone, dst.m_iLeftWingBone);
+        ::sg_export(m_iRightWingBone, dst.m_iRightWingBone);
+        ::sg_export(m_iExhaustTag, dst.m_iExhaustTag);
+        ::sg_export(m_iMuzzleTag, dst.m_iMuzzleTag);
+        ::sg_export(m_iDroidUnitTag, dst.m_iDroidUnitTag);
+        ::sg_export(m_iGunnerViewTag, dst.m_iGunnerViewTag);
+        ::sg_export(m_Muzzles, dst.m_Muzzles);
+        ::sg_export(m_ucmd, dst.m_ucmd);
+        ::sg_export(m_EjectDir, dst.m_EjectDir);
+        ::sg_export(m_ulFlags, dst.m_ulFlags);
+        ::sg_export(m_vOrientation, dst.m_vOrientation);
+        ::sg_export(m_fStrafeTime, dst.m_fStrafeTime);
+        ::sg_export(m_vPrevOrientation, dst.m_vPrevOrientation);
+        ::sg_export(m_vAngularVelocity, dst.m_vAngularVelocity);
+        ::sg_export(m_vFullAngleVelocity, dst.m_vFullAngleVelocity);
+        ::sg_export(m_iArmor, dst.m_iArmor);
+        ::sg_export(m_iShields, dst.m_iShields);
+        ::sg_export(m_iLastFXTime, dst.m_iLastFXTime);
+        ::sg_export(m_iDieTime, dst.m_iDieTime);
+        ::sg_export(m_pVehicleInfo, dst.m_pVehicleInfo);
+        ::sg_export(m_LandTrace, dst.m_LandTrace);
+        ::sg_export(m_iRemovedSurfaces, dst.m_iRemovedSurfaces);
+        ::sg_export(m_iTurboTime, dst.m_iTurboTime);
+        ::sg_export(m_iDropTime, dst.m_iDropTime);
+        ::sg_export(m_iSoundDebounceTimer, dst.m_iSoundDebounceTimer);
+        ::sg_export(lastShieldInc, dst.lastShieldInc);
+        ::sg_export(linkWeaponToggleHeld, dst.linkWeaponToggleHeld);
+        ::sg_export(weaponStatus, dst.weaponStatus);
+        ::sg_export(turretStatus, dst.turretStatus);
+        ::sg_export(m_pOldPilot, dst.m_pOldPilot);
+        ::sg_export(m_safeJumpMountTime, dst.m_safeJumpMountTime);
+        ::sg_export(m_safeJumpMountRightDot, dst.m_safeJumpMountRightDot);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.m_pPilot, m_pPilot);
+        ::sg_import(src.m_iPilotTime, m_iPilotTime);
+        ::sg_import(src.m_bHasHadPilot, m_bHasHadPilot);
+        ::sg_import(src.m_pDroidUnit, m_pDroidUnit);
+        ::sg_import(src.m_pParentEntity, m_pParentEntity);
+        ::sg_import(src.m_iBoarding, m_iBoarding);
+        ::sg_import(src.m_bWasBoarding, m_bWasBoarding);
+        ::sg_import(src.m_vBoardingVelocity, m_vBoardingVelocity);
+        ::sg_import(src.m_fTimeModifier, m_fTimeModifier);
+        ::sg_import(src.m_iLeftWingBone, m_iLeftWingBone);
+        ::sg_import(src.m_iRightWingBone, m_iRightWingBone);
+        ::sg_import(src.m_iExhaustTag, m_iExhaustTag);
+        ::sg_import(src.m_iMuzzleTag, m_iMuzzleTag);
+        ::sg_import(src.m_iDroidUnitTag, m_iDroidUnitTag);
+        ::sg_import(src.m_iGunnerViewTag, m_iGunnerViewTag);
+        ::sg_import(src.m_Muzzles, m_Muzzles);
+        ::sg_import(src.m_ucmd, m_ucmd);
+        ::sg_import(src.m_EjectDir, m_EjectDir);
+        ::sg_import(src.m_ulFlags, m_ulFlags);
+        ::sg_import(src.m_vOrientation, m_vOrientation);
+        ::sg_import(src.m_fStrafeTime, m_fStrafeTime);
+        ::sg_import(src.m_vPrevOrientation, m_vPrevOrientation);
+        ::sg_import(src.m_vAngularVelocity, m_vAngularVelocity);
+        ::sg_import(src.m_vFullAngleVelocity, m_vFullAngleVelocity);
+        ::sg_import(src.m_iArmor, m_iArmor);
+        ::sg_import(src.m_iShields, m_iShields);
+        ::sg_import(src.m_iLastFXTime, m_iLastFXTime);
+        ::sg_import(src.m_iDieTime, m_iDieTime);
+        ::sg_import(src.m_pVehicleInfo, m_pVehicleInfo);
+        ::sg_import(src.m_LandTrace, m_LandTrace);
+        ::sg_import(src.m_iRemovedSurfaces, m_iRemovedSurfaces);
+        ::sg_import(src.m_iTurboTime, m_iTurboTime);
+        ::sg_import(src.m_iDropTime, m_iDropTime);
+        ::sg_import(src.m_iSoundDebounceTimer, m_iSoundDebounceTimer);
+        ::sg_import(src.lastShieldInc, lastShieldInc);
+        ::sg_import(src.linkWeaponToggleHeld, linkWeaponToggleHeld);
+        ::sg_import(src.weaponStatus, weaponStatus);
+        ::sg_import(src.turretStatus, turretStatus);
+        ::sg_import(src.m_pOldPilot, m_pOldPilot);
+        ::sg_import(src.m_safeJumpMountTime, m_safeJumpMountTime);
+        ::sg_import(src.m_safeJumpMountRightDot, m_safeJumpMountRightDot);
+    }
 };
 
 extern int BG_VehicleGetIndex( const char *vehicleName );

@@ -1644,8 +1644,8 @@ void CG_WriteTheEvilCGHackStuff(void)
 }
 void CG_ReadTheEvilCGHackStuff(void)
 {
-	gi.ReadFromSaveGame(INT_ID('F','P','S','L'), (void *)&gi_cg_forcepowerSelect, sizeof(gi_cg_forcepowerSelect), NULL);
-	gi.ReadFromSaveGame(INT_ID('I','V','S','L'), (void *)&gi_cg_inventorySelect,  sizeof(gi_cg_inventorySelect), NULL);
+	::sg_read<int32_t>(::gi, INT_ID('F','P','S','L'), gi_cg_forcepowerSelect);
+	::sg_read<int32_t>(::gi, INT_ID('I','V','S','L'), gi_cg_inventorySelect);
 	gbUseTheseValuesFromLoadSave = qtrue;
 }
 

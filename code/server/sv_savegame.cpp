@@ -257,7 +257,7 @@ qboolean SG_Open( const char *psPathlessBaseName )
 		return qfalse;
 	}
 	giSaveGameVersion=-1;//jic
-	SG_Read(INT_ID('_','V','E','R'), &giSaveGameVersion, sizeof(giSaveGameVersion));
+	::sg_read<int32_t>(::SG_Read, INT_ID('_','V','E','R'), ::giSaveGameVersion);
 	if (giSaveGameVersion != iSAVEGAME_VERSION)
 	{
 		SG_Close();
@@ -579,7 +579,7 @@ static void WriteGame(qboolean autosave)
 static qboolean ReadGame (void)
 {
 	qboolean qbAutoSave;
-	SG_Read(INT_ID('G','A','M','E'), (void *)&qbAutoSave, sizeof(qbAutoSave));
+	::sg_read<int32_t>(::SG_Read, INT_ID('G','A','M','E'), qbAutoSave);
 
 	if (qbAutoSave)
 	{
@@ -588,25 +588,25 @@ static qboolean ReadGame (void)
 		// read health/armour etc...
 		//
 		memset(s,0,sizeof(s));
-		SG_Read(INT_ID('C','V','S','V'), (void *)&s, sizeof(s));
+		::sg_read_no_cast(::SG_Read, INT_ID('C','V','S','V'), s);
 		Cvar_Set( sCVARNAME_PLAYERSAVE, s );
 
 		// read ammo...
 		//
 		memset(s,0,sizeof(s));
-		SG_Read(INT_ID('A','M','M','O'), (void *)&s, sizeof(s));
+		::sg_read_no_cast(::SG_Read, INT_ID('A','M','M','O'), s);
 		Cvar_Set( "playerammo", s);
 
 		// read inventory...
 		//
 		memset(s,0,sizeof(s));
-		SG_Read(INT_ID('I','V','T','Y'), (void *)&s, sizeof(s));
+		::sg_read_no_cast(::SG_Read, INT_ID('I','V','T','Y'), s);
 		Cvar_Set( "playerinv", s);
 
 		// read force powers...
 		//
 		memset(s,0,sizeof(s));
-		SG_Read(INT_ID('F','P','L','V'), (void *)&s, sizeof(s));
+		::sg_read_no_cast(::SG_Read, INT_ID('F','P','L','V'), s);
 		Cvar_Set( "playerfplvl", s );
 	}
 
@@ -668,12 +668,12 @@ void SG_ReadCvars(void)
 	char	*psName;
 	char	*psValue;
 
-	SG_Read(INT_ID('C','V','C','N'), &iCount, sizeof(iCount));
+	::sg_read<int32_t>(::SG_Read, INT_ID('C','V','C','N'), iCount);
 
 	for (int i = 0; i < iCount; i++)
 	{
-		SG_Read(INT_ID('C','V','A','R'), NULL, 0, (void **)&psName);
-		SG_Read(INT_ID('V','A','L','U'), NULL, 0, (void **)&psValue);
+		::sg_read_allocate(::SG_Read, INT_ID('C','V','A','R'), psName);
+		::sg_read_allocate(::SG_Read, INT_ID('V','A','L','U'), psValue);
 
 		Cvar_Set (psName, psValue);
 
@@ -737,7 +737,7 @@ void SG_ReadServerConfigStrings( void )
 	//
 	int iCount;
 
-	SG_Read(INT_ID('C','S','C','N'), &iCount, sizeof(iCount));
+	::sg_read<int32_t>(::SG_Read, INT_ID('C','S','C','N'), iCount);
 
 	Com_DPrintf( "Reading %d configstrings...\n",iCount);
 
@@ -746,8 +746,8 @@ void SG_ReadServerConfigStrings( void )
 		int iIndex;
 		char *psName;
 
-		SG_Read(INT_ID('C','S','I','N'), &iIndex, sizeof(iIndex));
-		SG_Read(INT_ID('C','S','D','A'), NULL, 0, (void **)&psName);
+		::sg_read<int32_t>(::SG_Read, INT_ID('C','S','I','N'), iIndex);
+		::sg_read_allocate(::SG_Read, INT_ID('C','S','D','A'), psName);
 
 		Com_DPrintf( "Cfg str %d = %s\n",iIndex, psName);
 
@@ -808,19 +808,19 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 		return 0;
 	}
 
-	if (SG_Read( INT_ID('C','O','M','M'), sComment, iSG_COMMENT_SIZE ))
+	if (::sg_read_no_cast(::SG_Read, INT_ID('C','O','M','M'), sComment, iSG_COMMENT_SIZE ))
 	{
 		unsigned int fileTime = 0;
-		if (SG_Read( INT_ID('C','M','T','M'), &fileTime, sizeof(fileTime)))	//read
+		if (::sg_read<uint32_t>(::SG_Read, INT_ID('C','M','T','M'), fileTime))	//read
 		{
 			tFileTime = SG_GetTime (fileTime);
 #ifdef JK2_MODE
-			if (SG_Read(INT_ID('S','H','L','N'), &iScreenShotLength, sizeof(iScreenShotLength)))
+			if (::sg_read<uint32_t>(::SG_Read, INT_ID('S','H','L','N'), iScreenShotLength))
 			{
-				if (SG_Read(INT_ID('S','H','O','T'), NULL, iScreenShotLength, NULL))
+				if (::sg_read_skip(::SG_Read, INT_ID('S','H','O','T'), iScreenShotLength))
 				{
 #endif
-			if (SG_Read(INT_ID('M','P','C','M'), sMapName, iSG_MAPCMD_SIZE ))	// read
+			if (::sg_read_no_cast(::SG_Read, INT_ID('M','P','C','M'), sMapName, iSG_MAPCMD_SIZE))	// read
 			{
 				ret = tFileTime;
 			}
@@ -868,7 +868,7 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	// get JPG screenshot data length...
 	//
 	size_t iScreenShotLength = 0;
-	SG_Read(INT_ID('S','H','L','N'), &iScreenShotLength, sizeof(iScreenShotLength));
+	::sg_read<uint32_t>(::SG_Read, INT_ID('S','H','L','N'), iScreenShotLength);
 	//
 	// alloc enough space plus extra 4K for sloppy JPG-decode reader to not do memory access violation...
 	//
@@ -876,7 +876,7 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	//
 	// now read the JPG data...
 	//
-	SG_Read(INT_ID('S','H','O','T'), pJPGData, iScreenShotLength, 0);
+	::sg_read_no_cast(::SG_Read, INT_ID('S','H','O','T'), pJPGData, iScreenShotLength);
 	//
 	// decompress JPG data...
 	//
@@ -920,8 +920,8 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 		return qfalse;
 	}
 
-	SG_Read(INT_ID('C','O','M','M'), NULL, 0, NULL);	// skip
-	SG_Read(INT_ID('C','M','T','M'), NULL, sizeof( unsigned int ));
+	::sg_read_skip(::SG_Read, INT_ID('C','O','M','M'), 0);	// skip
+	::sg_read_skip<uint32_t>(::SG_Read, INT_ID('C','M','T','M'));
 
 	qboolean bGotSaveImage = SG_ReadScreenshot(qfalse, pvAddress);
 
@@ -1116,14 +1116,14 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 
 	// Read in all the server data...
 	//
-	SG_Read(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
+	::sg_read_no_cast(::SG_Read, INT_ID('C','O','M','M'), sComment);
 	Com_DPrintf("Reading: %s\n", sComment);
-	SG_Read( INT_ID('C','M','T','M'), NULL, sizeof( unsigned int ));
+	::sg_read_skip<uint32_t>(::SG_Read, INT_ID('C','M','T','M'));
 
 #ifdef JK2_MODE
 	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
 #endif
-	SG_Read(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
+	::sg_read_no_cast(::SG_Read, INT_ID('M','P','C','M'), sMapCmd);
 	SG_ReadCvars();
 
 	// read game state
@@ -1136,8 +1136,8 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	//
 	if (!qbAutosave)
 	{
-		SG_Read(INT_ID('T','I','M','E'), (void *)&sv.time, sizeof(sv.time));
-		SG_Read(INT_ID('T','I','M','R'), (void *)&sv.timeResidual, sizeof(sv.timeResidual));
+		::sg_read<int32_t>(::SG_Read, INT_ID('T','I','M','E'), ::sv.time);
+		::sg_read<int32_t>(::SG_Read, INT_ID('T','I','M','R'), ::sv.timeResidual);
 		CM_ReadPortalState();
 		SG_ReadServerConfigStrings();
 	}

@@ -173,7 +173,9 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
 		"${SPDir}/qcommon/MiniHeap.h"
-		
+
+		"${SharedDir}/qcommon/ojk_sg_wrappers.h"
+
 		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})

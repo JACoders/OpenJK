@@ -40,8 +40,24 @@ int			G2API_GetTime(int argTime); // this may or may not return arg depending on
 //   G H O U L  I I  D E F I N E S
 //
 // we save the whole surfaceInfo_t struct
+#pragma pack(push, 4)
+class SgSurfaceInfo
+{
+public:
+    int32_t offFlags;
+    int32_t surface;
+    float genBarycentricJ;
+    float genBarycentricI;
+    int32_t genPolySurfaceIndex;
+    int32_t genLod;
+}; // SgSurfaceInfo
+#pragma pack(pop)
+
 struct surfaceInfo_t
 {
+    using SgType = SgSurfaceInfo;
+
+
 	int			offFlags;		// what the flags are for this model
 	int			surface;		// index into array held inside the model definition of pointers to the actual surface data loaded in - used by both client and game
 	float		genBarycentricJ;	// point 0 barycentric coors
@@ -58,6 +74,28 @@ surfaceInfo_t():
 	genLod(0)
 	{}
 
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(offFlags, dst.offFlags);
+        ::sg_export(surface, dst.surface);
+        ::sg_export(genBarycentricJ, dst.genBarycentricJ);
+        ::sg_export(genBarycentricI, dst.genBarycentricI);
+        ::sg_export(genPolySurfaceIndex, dst.genPolySurfaceIndex);
+        ::sg_export(genLod, dst.genLod);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.offFlags, offFlags);
+        ::sg_import(src.surface, surface);
+        ::sg_import(src.genBarycentricJ, genBarycentricJ);
+        ::sg_import(src.genBarycentricI, genBarycentricI);
+        ::sg_import(src.genPolySurfaceIndex, genPolySurfaceIndex);
+        ::sg_import(src.genLod, genLod);
+    }
 };
 
 #define BONE_ANGLES_PREMULT			0x0001
@@ -87,8 +125,84 @@ typedef struct {
 #include "../rd-common/mdx_format.h"
 
 // we save the whole structure here.
+#pragma pack(push, 4)
+class SgBoneInfo
+{
+public:
+    int32_t boneNumber;
+    SgMdxaBone matrix;
+    int32_t flags;
+    int32_t startFrame;
+    int32_t endFrame;
+    int32_t startTime;
+    int32_t pauseTime;
+    float animSpeed;
+    float blendFrame;
+    int32_t blendLerpFrame;
+    int32_t blendTime;
+    int32_t blendStart;
+    int32_t boneBlendTime;
+    int32_t boneBlendStart;
+    SgMdxaBone newMatrix;
+    int32_t lastTimeUpdated;
+    int32_t lastContents;
+    SgVec3 lastPosition;
+    SgVec3 velocityEffector;
+    SgVec3 lastAngles;
+    SgVec3 minAngles;
+    SgVec3 maxAngles;
+    SgVec3 currentAngles;
+    SgVec3 anglesOffset;
+    SgVec3 positionOffset;
+    float radius;
+    float weight;
+    int32_t ragIndex;
+    SgVec3 velocityRoot;
+    int32_t ragStartTime;
+    int32_t firstTime;
+    int32_t firstCollisionTime;
+    int32_t restTime;
+    int32_t RagFlags;
+    int32_t DependentRagIndexMask;
+    SgMdxaBone originalTrueBoneMatrix;
+    SgMdxaBone parentTrueBoneMatrix;
+    SgMdxaBone parentOriginalTrueBoneMatrix;
+    SgVec3 originalOrigin;
+    SgVec3 originalAngles;
+    SgVec3 lastShotDir;
+    int32_t basepose;
+    int32_t baseposeInv;
+    int32_t baseposeParent;
+    int32_t baseposeInvParent;
+    int32_t parentRawBoneIndex;
+    SgMdxaBone ragOverrideMatrix;
+    SgMdxaBone extraMatrix;
+    SgVec3 extraVec1;
+    float extraFloat1;
+    int32_t extraInt1;
+    SgVec3 ikPosition;
+    float ikSpeed;
+    SgVec3 epVelocity;
+    float epGravFactor;
+    int32_t solidCount;
+    uint8_t physicsSettled;
+    uint8_t snapped;
+    int32_t parentBoneIndex;
+    float offsetRotation;
+    float overGradSpeed;
+    SgVec3 overGoalSpot;
+    uint8_t hasOverGoal;
+    SgMdxaBone animFrameMatrix;
+    int32_t hasAnimFrameMatrix;
+    int32_t airTime;
+}; // SgBoneInfo
+#pragma pack(pop)
+
 struct  boneInfo_t
 {
+    using SgType = SgBoneInfo;
+
+
 	int			boneNumber;		// what bone are we overriding?
 	mdxaBone_t	matrix;			// details of bone angle overrides - some are pre-done on the server, some in ghoul2
 	int			flags;			// flags for override
@@ -190,9 +304,165 @@ boneInfo_t():
 		matrix.matrix[2][0] = matrix.matrix[2][1] = matrix.matrix[2][2] = matrix.matrix[2][3] = 0.0f;
 	}
 
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(boneNumber, dst.boneNumber);
+        ::sg_export(matrix, dst.matrix);
+        ::sg_export(flags, dst.flags);
+        ::sg_export(startFrame, dst.startFrame);
+        ::sg_export(endFrame, dst.endFrame);
+        ::sg_export(startTime, dst.startTime);
+        ::sg_export(pauseTime, dst.pauseTime);
+        ::sg_export(animSpeed, dst.animSpeed);
+        ::sg_export(blendFrame, dst.blendFrame);
+        ::sg_export(blendLerpFrame, dst.blendLerpFrame);
+        ::sg_export(blendTime, dst.blendTime);
+        ::sg_export(blendStart, dst.blendStart);
+        ::sg_export(boneBlendTime, dst.boneBlendTime);
+        ::sg_export(boneBlendStart, dst.boneBlendStart);
+        ::sg_export(newMatrix, dst.newMatrix);
+        ::sg_export(lastTimeUpdated, dst.lastTimeUpdated);
+        ::sg_export(lastContents, dst.lastContents);
+        ::sg_export(lastPosition, dst.lastPosition);
+        ::sg_export(velocityEffector, dst.velocityEffector);
+        ::sg_export(lastAngles, dst.lastAngles);
+        ::sg_export(minAngles, dst.minAngles);
+        ::sg_export(maxAngles, dst.maxAngles);
+        ::sg_export(currentAngles, dst.currentAngles);
+        ::sg_export(anglesOffset, dst.anglesOffset);
+        ::sg_export(positionOffset, dst.positionOffset);
+        ::sg_export(radius, dst.radius);
+        ::sg_export(weight, dst.weight);
+        ::sg_export(ragIndex, dst.ragIndex);
+        ::sg_export(velocityRoot, dst.velocityRoot);
+        ::sg_export(ragStartTime, dst.ragStartTime);
+        ::sg_export(firstTime, dst.firstTime);
+        ::sg_export(firstCollisionTime, dst.firstCollisionTime);
+        ::sg_export(restTime, dst.restTime);
+        ::sg_export(RagFlags, dst.RagFlags);
+        ::sg_export(DependentRagIndexMask, dst.DependentRagIndexMask);
+        ::sg_export(originalTrueBoneMatrix, dst.originalTrueBoneMatrix);
+        ::sg_export(parentTrueBoneMatrix, dst.parentTrueBoneMatrix);
+        ::sg_export(parentOriginalTrueBoneMatrix, dst.parentOriginalTrueBoneMatrix);
+        ::sg_export(originalOrigin, dst.originalOrigin);
+        ::sg_export(originalAngles, dst.originalAngles);
+        ::sg_export(lastShotDir, dst.lastShotDir);
+        ::sg_export(basepose, dst.basepose);
+        ::sg_export(baseposeInv, dst.baseposeInv);
+        ::sg_export(baseposeParent, dst.baseposeParent);
+        ::sg_export(baseposeInvParent, dst.baseposeInvParent);
+        ::sg_export(parentRawBoneIndex, dst.parentRawBoneIndex);
+        ::sg_export(ragOverrideMatrix, dst.ragOverrideMatrix);
+        ::sg_export(extraMatrix, dst.extraMatrix);
+        ::sg_export(extraVec1, dst.extraVec1);
+        ::sg_export(extraFloat1, dst.extraFloat1);
+        ::sg_export(extraInt1, dst.extraInt1);
+        ::sg_export(ikPosition, dst.ikPosition);
+        ::sg_export(ikSpeed, dst.ikSpeed);
+        ::sg_export(epVelocity, dst.epVelocity);
+        ::sg_export(epGravFactor, dst.epGravFactor);
+        ::sg_export(solidCount, dst.solidCount);
+        ::sg_export(physicsSettled, dst.physicsSettled);
+        ::sg_export(snapped, dst.snapped);
+        ::sg_export(parentBoneIndex, dst.parentBoneIndex);
+        ::sg_export(offsetRotation, dst.offsetRotation);
+        ::sg_export(overGradSpeed, dst.overGradSpeed);
+        ::sg_export(overGoalSpot, dst.overGoalSpot);
+        ::sg_export(hasOverGoal, dst.hasOverGoal);
+        ::sg_export(animFrameMatrix, dst.animFrameMatrix);
+        ::sg_export(hasAnimFrameMatrix, dst.hasAnimFrameMatrix);
+        ::sg_export(airTime, dst.airTime);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.boneNumber, boneNumber);
+        ::sg_import(src.matrix, matrix);
+        ::sg_import(src.flags, flags);
+        ::sg_import(src.startFrame, startFrame);
+        ::sg_import(src.endFrame, endFrame);
+        ::sg_import(src.startTime, startTime);
+        ::sg_import(src.pauseTime, pauseTime);
+        ::sg_import(src.animSpeed, animSpeed);
+        ::sg_import(src.blendFrame, blendFrame);
+        ::sg_import(src.blendLerpFrame, blendLerpFrame);
+        ::sg_import(src.blendTime, blendTime);
+        ::sg_import(src.blendStart, blendStart);
+        ::sg_import(src.boneBlendTime, boneBlendTime);
+        ::sg_import(src.boneBlendStart, boneBlendStart);
+        ::sg_import(src.newMatrix, newMatrix);
+        ::sg_import(src.lastTimeUpdated, lastTimeUpdated);
+        ::sg_import(src.lastContents, lastContents);
+        ::sg_import(src.lastPosition, lastPosition);
+        ::sg_import(src.velocityEffector, velocityEffector);
+        ::sg_import(src.lastAngles, lastAngles);
+        ::sg_import(src.minAngles, minAngles);
+        ::sg_import(src.maxAngles, maxAngles);
+        ::sg_import(src.currentAngles, currentAngles);
+        ::sg_import(src.anglesOffset, anglesOffset);
+        ::sg_import(src.positionOffset, positionOffset);
+        ::sg_import(src.radius, radius);
+        ::sg_import(src.weight, weight);
+        ::sg_import(src.ragIndex, ragIndex);
+        ::sg_import(src.velocityRoot, velocityRoot);
+        ::sg_import(src.ragStartTime, ragStartTime);
+        ::sg_import(src.firstTime, firstTime);
+        ::sg_import(src.firstCollisionTime, firstCollisionTime);
+        ::sg_import(src.restTime, restTime);
+        ::sg_import(src.RagFlags, RagFlags);
+        ::sg_import(src.DependentRagIndexMask, DependentRagIndexMask);
+        ::sg_import(src.originalTrueBoneMatrix, originalTrueBoneMatrix);
+        ::sg_import(src.parentTrueBoneMatrix, parentTrueBoneMatrix);
+        ::sg_import(src.parentOriginalTrueBoneMatrix, parentOriginalTrueBoneMatrix);
+        ::sg_import(src.originalOrigin, originalOrigin);
+        ::sg_import(src.originalAngles, originalAngles);
+        ::sg_import(src.lastShotDir, lastShotDir);
+        ::sg_import(src.basepose, basepose);
+        ::sg_import(src.baseposeInv, baseposeInv);
+        ::sg_import(src.baseposeParent, baseposeParent);
+        ::sg_import(src.baseposeInvParent, baseposeInvParent);
+        ::sg_import(src.parentRawBoneIndex, parentRawBoneIndex);
+        ::sg_import(src.ragOverrideMatrix, ragOverrideMatrix);
+        ::sg_import(src.extraMatrix, extraMatrix);
+        ::sg_import(src.extraVec1, extraVec1);
+        ::sg_import(src.extraFloat1, extraFloat1);
+        ::sg_import(src.extraInt1, extraInt1);
+        ::sg_import(src.ikPosition, ikPosition);
+        ::sg_import(src.ikSpeed, ikSpeed);
+        ::sg_import(src.epVelocity, epVelocity);
+        ::sg_import(src.epGravFactor, epGravFactor);
+        ::sg_import(src.solidCount, solidCount);
+        ::sg_import(src.physicsSettled, physicsSettled);
+        ::sg_import(src.snapped, snapped);
+        ::sg_import(src.parentBoneIndex, parentBoneIndex);
+        ::sg_import(src.offsetRotation, offsetRotation);
+        ::sg_import(src.overGradSpeed, overGradSpeed);
+        ::sg_import(src.overGoalSpot, overGoalSpot);
+        ::sg_import(src.hasOverGoal, hasOverGoal);
+        ::sg_import(src.animFrameMatrix, animFrameMatrix);
+        ::sg_import(src.hasAnimFrameMatrix, hasAnimFrameMatrix);
+        ::sg_import(src.airTime, airTime);
+    }
 };
 //we save from top to boltUsed here. Don't bother saving the position, it gets rebuilt every frame anyway
+#pragma pack(push, 4)
+class SgBoltInfo
+{
+public:
+    int32_t boneNumber;
+    int32_t surfaceNumber;
+    int32_t surfaceType;
+    int32_t boltUsed;
+}; // SgBoltInfo
+#pragma pack(pop)
+
 struct boltInfo_t{
+    using SgType = SgBoltInfo;
+
+
 	int			boneNumber;		// bone number bolt attaches to
 	int			surfaceNumber;	// surface number bolt attaches to
 	int			surfaceType;	// if we attach to a surface, this tells us if it is an original surface or a generated one - doesn't go across the network
@@ -203,6 +473,25 @@ struct boltInfo_t{
 	surfaceType(0),
 	boltUsed(0)
 	{}
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(boneNumber, dst.boneNumber);
+        ::sg_export(surfaceNumber, dst.surfaceNumber);
+        ::sg_export(surfaceType, dst.surfaceType);
+        ::sg_export(boltUsed, dst.boltUsed);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.boneNumber, boneNumber);
+        ::sg_import(src.surfaceNumber, surfaceNumber);
+        ::sg_import(src.surfaceType, surfaceType);
+        ::sg_import(src.boltUsed, boltUsed);
+    }
 };
 
 
@@ -247,9 +536,36 @@ CRenderableSurface(const CRenderableSurface& rs):
 };
 #endif
 
+#pragma pack(push, 4)
+class SgCGhoul2Info
+{
+public:
+    int32_t mModelindex;
+    int32_t animModelIndexOffset;
+    int32_t mCustomShader;
+    int32_t mCustomSkin;
+    int32_t mModelBoltLink;
+    int32_t mSurfaceRoot;
+    int32_t mLodBias;
+    int32_t mNewOrigin;
+#ifdef _G2_GORE
+    int32_t mGoreSetTag;
+#endif
+    int32_t mModel;
+    SgArray<char, MAX_QPATH> mFileName;
+    int32_t mAnimFrameDefault;
+    int32_t mSkelFrameNum;
+    int32_t mMeshFrameNum;
+    int32_t mFlags;
+}; // SgCGhoul2Info
+#pragma pack(pop)
+
 class CGhoul2Info
 {
 public:
+    using SgType = SgCGhoul2Info;
+
+
 	surfaceInfo_v 	mSlist;
 	boltInfo_v		mBltlist;
 	boneInfo_v		mBlist;
@@ -316,6 +632,51 @@ public:
 	{
 		mFileName[0] = 0;
 	}
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(mModelindex, dst.mModelindex);
+        ::sg_export(animModelIndexOffset, dst.animModelIndexOffset);
+        ::sg_export(mCustomShader, dst.mCustomShader);
+        ::sg_export(mCustomSkin, dst.mCustomSkin);
+        ::sg_export(mModelBoltLink, dst.mModelBoltLink);
+        ::sg_export(mSurfaceRoot, dst.mSurfaceRoot);
+        ::sg_export(mLodBias, dst.mLodBias);
+        ::sg_export(mNewOrigin, dst.mNewOrigin);
+#ifdef _G2_GORE
+        ::sg_export(mGoreSetTag, dst.mGoreSetTag);
+#endif
+        ::sg_export(mModel, dst.mModel);
+        ::sg_export(mFileName, dst.mFileName);
+        ::sg_export(mAnimFrameDefault, dst.mAnimFrameDefault);
+        ::sg_export(mSkelFrameNum, dst.mSkelFrameNum);
+        ::sg_export(mMeshFrameNum, dst.mMeshFrameNum);
+        ::sg_export(mFlags, dst.mFlags);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.mModelindex, mModelindex);
+        ::sg_import(src.animModelIndexOffset, animModelIndexOffset);
+        ::sg_import(src.mCustomShader, mCustomShader);
+        ::sg_import(src.mCustomSkin, mCustomSkin);
+        ::sg_import(src.mModelBoltLink, mModelBoltLink);
+        ::sg_import(src.mSurfaceRoot, mSurfaceRoot);
+        ::sg_import(src.mLodBias, mLodBias);
+        ::sg_import(src.mNewOrigin, mNewOrigin);
+#ifdef _G2_GORE
+        ::sg_import(src.mGoreSetTag, mGoreSetTag);
+#endif
+        ::sg_import(src.mModel, mModel);
+        ::sg_import(src.mFileName, mFileName);
+        ::sg_import(src.mAnimFrameDefault, mAnimFrameDefault);
+        ::sg_import(src.mSkelFrameNum, mSkelFrameNum);
+        ::sg_import(src.mMeshFrameNum, mMeshFrameNum);
+        ::sg_import(src.mFlags, mFlags);
+    }
 };
 
 class CGhoul2Info_v;
@@ -337,6 +698,14 @@ IGhoul2InfoArray &_TheGhoul2InfoArray();
 #else
 IGhoul2InfoArray &TheGameGhoul2InfoArray();
 #endif
+
+#pragma pack(push, 4)
+class SgCGhoul2InfoV
+{
+public:
+    int32_t mItem;
+}; // SgCGhoul2InfoV
+#pragma pack(pop)
 
 class CGhoul2Info_v
 {
@@ -379,6 +748,9 @@ class CGhoul2Info_v
 		return InfoArray().Get(mItem);
 	}
 public:
+    using SgType = SgCGhoul2InfoV;
+
+
 	CGhoul2Info_v()
 	{
 		mItem=0;
@@ -466,6 +838,19 @@ public:
 		// of making a deep copy
 		mItem=0;
 	}
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(mItem, dst.mItem);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.mItem, mItem);
+    }
 };
 
 
@@ -474,10 +859,31 @@ public:
 #define G2_FRONTFACE 1
 #define	G2_BACKFACE	 0
 
+#pragma pack(push, 4)
+class SgCCollisionRecord
+{
+public:
+    float mDistance;
+    int32_t mEntityNum;
+    int32_t mModelIndex;
+    int32_t mPolyIndex;
+    int32_t mSurfaceIndex;
+    SgVec3 mCollisionPosition;
+    SgVec3 mCollisionNormal;
+    int32_t mFlags;
+    int32_t mMaterial;
+    int32_t mLocation;
+    float mBarycentricI;
+    float mBarycentricJ;
+}; // SgCCollisionRecord
+#pragma pack(pop)
 
 class CCollisionRecord
 {
 public:
+    using SgType = SgCCollisionRecord;
+
+
 	float		mDistance;
 	int			mEntityNum;
 	int			mModelIndex;
@@ -495,6 +901,41 @@ public:
 	mDistance(100000),
 	mEntityNum(-1)
 	{}
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(mDistance, dst.mDistance);
+        ::sg_export(mEntityNum, dst.mEntityNum);
+        ::sg_export(mModelIndex, dst.mModelIndex);
+        ::sg_export(mPolyIndex, dst.mPolyIndex);
+        ::sg_export(mSurfaceIndex, dst.mSurfaceIndex);
+        ::sg_export(mCollisionPosition, dst.mCollisionPosition);
+        ::sg_export(mCollisionNormal, dst.mCollisionNormal);
+        ::sg_export(mFlags, dst.mFlags);
+        ::sg_export(mMaterial, dst.mMaterial);
+        ::sg_export(mLocation, dst.mLocation);
+        ::sg_export(mBarycentricI, dst.mBarycentricI);
+        ::sg_export(mBarycentricJ, dst.mBarycentricJ);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.mDistance, mDistance);
+        ::sg_import(src.mEntityNum, mEntityNum);
+        ::sg_import(src.mModelIndex, mModelIndex);
+        ::sg_import(src.mPolyIndex, mPolyIndex);
+        ::sg_import(src.mSurfaceIndex, mSurfaceIndex);
+        ::sg_import(src.mCollisionPosition, mCollisionPosition);
+        ::sg_import(src.mCollisionNormal, mCollisionNormal);
+        ::sg_import(src.mFlags, mFlags);
+        ::sg_import(src.mMaterial, mMaterial);
+        ::sg_import(src.mLocation, mLocation);
+        ::sg_import(src.mBarycentricI, mBarycentricI);
+        ::sg_import(src.mBarycentricJ, mBarycentricJ);
+    }
 };
 
 // calling defines for the trace function

@@ -439,21 +439,21 @@ int CSequence::Load( void )
 	void			*bData;
 
 	//Get the parent sequence
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','P','I','D'), &id, sizeof( id ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','P','I','D'), id);
 	m_parent = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 	
 	//Get the return sequence
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','R','I','D'), &id, sizeof( id ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','R','I','D'), id);
 	m_return = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 
 	//Get the number of children
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','N','C','H'), &m_numChildren, sizeof( m_numChildren ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','N','C','H'), m_numChildren);
 
 	//Reload all children
 	for ( i = 0; i < m_numChildren; i++ )
 	{
 		//Get the child sequence ID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','C','H','D'), &id, sizeof( id ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','C','H','D'), id);
 
 		//Get the desired sequence
 		if ( ( sequence = m_owner->GetSequence( id ) ) == NULL )
@@ -468,46 +468,46 @@ int CSequence::Load( void )
 
 	
 	//Get the sequence flags
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','F','L','G'), &m_flags, sizeof( m_flags ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','F','L','G'), m_flags);
 
 	//Get the number of iterations
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','I','T','R'), &m_iterations, sizeof( m_iterations ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','I','T','R'), m_iterations);
 
 	int	numCommands;
 
 	//Get the number of commands
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('S','N','M','C'), &numCommands, sizeof( m_numCommands ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','N','M','C'), numCommands);
 
 	//Get all the commands
 	for ( i = 0; i < numCommands; i++ )
 	{
 		//Get the block ID and create a new container
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','L','I','D'), &id, sizeof( id ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), id);
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','F','L','G'), &flags, sizeof( flags ), NULL );
+		::sg_read<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
 		block->SetFlags( flags );
 
 		//Get the number of block members
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof( numMembers ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','I','D'), &bID, sizeof( bID ), NULL );
+			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
 			
 			//Get the member size
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','S','I','Z'), &bSize, sizeof( bSize ), NULL );
+			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
 				return false;
 
 			//Get the actual raw data
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','E','M'), bData, bSize, NULL );
+			::sg_read_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bData, bSize);
 
 			//Write out the correct type
 			switch ( bID )

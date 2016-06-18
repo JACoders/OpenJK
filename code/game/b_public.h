@@ -132,8 +132,36 @@ typedef enum
 } sexType_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgGNpcStats
+{
+public:
+    int32_t aggression;
+    int32_t aim;
+    float earshot;
+    int32_t evasion;
+    int32_t hfov;
+    int32_t intelligence;
+    int32_t move;
+    int32_t reactions;
+    float shootDistance;
+    int32_t vfov;
+    float vigilance;
+    float visrange;
+    int32_t runSpeed;
+    int32_t walkSpeed;
+    float yawSpeed;
+    int32_t health;
+    int32_t acceleration;
+    int32_t sex;
+}; // SgGNpcStats
+#pragma pack(pop)
+
 typedef struct gNPCstats_e
 {//Stats, loaded in, and can be set by scripts
+    using SgType = SgGNpcStats;
+
+
 	//AI
 	int		aggression;			//			"
 	int		aim;				//			"
@@ -155,6 +183,53 @@ typedef struct gNPCstats_e
 	int		acceleration;
 	//sex
 	sexType_t	sex;			//male, female, etc.
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(aggression, dst.aggression);
+        ::sg_export(aim, dst.aim);
+        ::sg_export(earshot, dst.earshot);
+        ::sg_export(evasion, dst.evasion);
+        ::sg_export(hfov, dst.hfov);
+        ::sg_export(intelligence, dst.intelligence);
+        ::sg_export(move, dst.move);
+        ::sg_export(reactions, dst.reactions);
+        ::sg_export(shootDistance, dst.shootDistance);
+        ::sg_export(vfov, dst.vfov);
+        ::sg_export(vigilance, dst.vigilance);
+        ::sg_export(visrange, dst.visrange);
+        ::sg_export(runSpeed, dst.runSpeed);
+        ::sg_export(walkSpeed, dst.walkSpeed);
+        ::sg_export(yawSpeed, dst.yawSpeed);
+        ::sg_export(health, dst.health);
+        ::sg_export(acceleration, dst.acceleration);
+        ::sg_export(sex, dst.sex);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.aggression, aggression);
+        ::sg_import(src.aim, aim);
+        ::sg_import(src.earshot, earshot);
+        ::sg_import(src.evasion, evasion);
+        ::sg_import(src.hfov, hfov);
+        ::sg_import(src.intelligence, intelligence);
+        ::sg_import(src.move, move);
+        ::sg_import(src.reactions, reactions);
+        ::sg_import(src.shootDistance, shootDistance);
+        ::sg_import(src.vfov, vfov);
+        ::sg_import(src.vigilance, vigilance);
+        ::sg_import(src.visrange, visrange);
+        ::sg_import(src.runSpeed, runSpeed);
+        ::sg_import(src.walkSpeed, walkSpeed);
+        ::sg_import(src.yawSpeed, yawSpeed);
+        ::sg_import(src.health, health);
+        ::sg_import(src.acceleration, acceleration);
+        ::sg_import(src.sex, sex);
+    }
 } gNPCstats_t;
 
 
@@ -163,8 +238,134 @@ typedef struct gNPCstats_e
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgGNpc
+{
+public:
+    int32_t timeOfDeath;
+    int32_t touchedByPlayer;
+    int32_t enemyLastVisibility;
+    int32_t aimTime;
+    float desiredYaw;
+    float desiredPitch;
+    float lockedDesiredYaw;
+    float lockedDesiredPitch;
+    int32_t aimingBeam;
+    SgVec3 enemyLastSeenLocation;
+    int32_t enemyLastSeenTime;
+    SgVec3 enemyLastHeardLocation;
+    int32_t enemyLastHeardTime;
+    int32_t lastAlertID;
+    int32_t eFlags;
+    int32_t aiFlags;
+    int32_t currentAmmo;
+    int32_t shotTime;
+    int32_t burstCount;
+    int32_t burstMin;
+
+#ifdef BASE_SAVE_COMPAT
+    int32_t burstMean;
+#endif
+
+    int32_t burstMax;
+    int32_t burstSpacing;
+    int32_t attackHold;
+    int32_t attackHoldTime;
+    SgVec3 shootAngles;
+    int32_t rank;
+    int32_t behaviorState;
+    int32_t defaultBehavior;
+    int32_t tempBehavior;
+    int32_t ignorePain;
+    int32_t duckDebounceTime;
+    int32_t walkDebounceTime;
+    int32_t enemyCheckDebounceTime;
+    int32_t investigateDebounceTime;
+    int32_t investigateCount;
+    SgVec3 investigateGoal;
+    int32_t investigateSoundDebounceTime;
+    int32_t greetingDebounceTime;
+    int32_t eventOwner;
+    int32_t coverTarg;
+    int32_t jumpState;
+    float followDist;
+    int32_t tempGoal;
+    int32_t goalEntity;
+    int32_t lastGoalEntity;
+    int32_t eventualGoal;
+    int32_t captureGoal;
+    int32_t defendEnt;
+    int32_t greetEnt;
+    int32_t goalTime;
+    int32_t straightToGoal;
+    float distToGoal;
+    int32_t navTime;
+    int32_t blockingEntNum;
+    int32_t blockedSpeechDebounceTime;
+    int32_t homeWp;
+    int32_t avoidSide;
+    int32_t leaderAvoidSide;
+    int32_t lastAvoidSteerSide;
+    int32_t lastAvoidSteerSideDebouncer;
+    int32_t group;
+    int32_t troop;
+    SgVec3 lastPathAngles;
+    SgGNpcStats stats;
+    int32_t aimErrorDebounceTime;
+    float lastAimErrorYaw;
+    float lastAimErrorPitch;
+    SgVec3 aimOfs;
+    int32_t currentAim;
+    int32_t currentAggression;
+    int32_t scriptFlags;
+    int32_t desiredSpeed;
+    int32_t currentSpeed;
+    int8_t last_forwardmove;
+    int8_t last_rightmove;
+    SgVec3 lastClearOrigin;
+    int32_t shoveCount;
+    int32_t blockedDebounceTime;
+    int32_t blockedEntity;
+    SgVec3 blockedTargetPosition;
+    int32_t blockedTargetEntity;
+    SgVec3 jumpDest;
+    int32_t jumpTarget;
+    float jumpMaxXYDist;
+    float jumpMazZDist;
+    int32_t jumpSide;
+    int32_t jumpTime;
+    int32_t jumpBackupTime;
+    int32_t jumpNextCheckTime;
+    int32_t combatPoint;
+    int32_t lastFailedCombatPoint;
+    int32_t movementSpeech;
+    float movementSpeechChance;
+    int32_t nextBStateThink;
+    SgUserCmd last_ucmd;
+    int32_t combatMove;
+    int32_t goalRadius;
+    int32_t pauseTime;
+    int32_t standTime;
+    int32_t localState;
+    int32_t squadState;
+    int32_t confusionTime;
+    int32_t charmedTime;
+    int32_t controlledTime;
+    int32_t surrenderTime;
+    int32_t kneelTime;
+    SgArray<SgVec3, ENEMY_POS_LAG_STEPS> enemyLaggedPos;
+    int32_t watchTarget;
+    int32_t ffireCount;
+    int32_t ffireDebounce;
+    int32_t ffireFadeDebounce;
+}; // SgGNpc
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgGNpc;
+
+
 	//FIXME: Put in playerInfo or something
 	int			timeOfDeath;			//FIXME do we really need both of these
 	gentity_t	*touchedByPlayer;
@@ -332,7 +533,251 @@ typedef struct
 	int			ffireCount;		//sigh... you'd think I'd be able to find a way to do this without having to use 3 int fields, but...
 	int			ffireDebounce;
 	int			ffireFadeDebounce;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(timeOfDeath, dst.timeOfDeath);
+        ::sg_export(touchedByPlayer, dst.touchedByPlayer);
+        ::sg_export(enemyLastVisibility, dst.enemyLastVisibility);
+        ::sg_export(aimTime, dst.aimTime);
+        ::sg_export(desiredYaw, dst.desiredYaw);
+        ::sg_export(desiredPitch, dst.desiredPitch);
+        ::sg_export(lockedDesiredYaw, dst.lockedDesiredYaw);
+        ::sg_export(lockedDesiredPitch, dst.lockedDesiredPitch);
+        ::sg_export(aimingBeam, dst.aimingBeam);
+        ::sg_export(enemyLastSeenLocation, dst.enemyLastSeenLocation);
+        ::sg_export(enemyLastSeenTime, dst.enemyLastSeenTime);
+        ::sg_export(enemyLastHeardLocation, dst.enemyLastHeardLocation);
+        ::sg_export(enemyLastHeardTime, dst.enemyLastHeardTime);
+        ::sg_export(lastAlertID, dst.lastAlertID);
+        ::sg_export(eFlags, dst.eFlags);
+        ::sg_export(aiFlags, dst.aiFlags);
+        ::sg_export(currentAmmo, dst.currentAmmo);
+        ::sg_export(shotTime, dst.shotTime);
+        ::sg_export(burstCount, dst.burstCount);
+        ::sg_export(burstMin, dst.burstMin);
+
+#ifdef BASE_SAVE_COMPAT
+        ::sg_export(burstMean, dst.burstMean);
+#endif
+
+        ::sg_export(burstMax, dst.burstMax);
+        ::sg_export(burstSpacing, dst.burstSpacing);
+        ::sg_export(attackHold, dst.attackHold);
+        ::sg_export(attackHoldTime, dst.attackHoldTime);
+        ::sg_export(shootAngles, dst.shootAngles);
+        ::sg_export(rank, dst.rank);
+        ::sg_export(behaviorState, dst.behaviorState);
+        ::sg_export(defaultBehavior, dst.defaultBehavior);
+        ::sg_export(tempBehavior, dst.tempBehavior);
+        ::sg_export(ignorePain, dst.ignorePain);
+        ::sg_export(duckDebounceTime, dst.duckDebounceTime);
+        ::sg_export(walkDebounceTime, dst.walkDebounceTime);
+        ::sg_export(enemyCheckDebounceTime, dst.enemyCheckDebounceTime);
+        ::sg_export(investigateDebounceTime, dst.investigateDebounceTime);
+        ::sg_export(investigateCount, dst.investigateCount);
+        ::sg_export(investigateGoal, dst.investigateGoal);
+        ::sg_export(investigateSoundDebounceTime, dst.investigateSoundDebounceTime);
+        ::sg_export(greetingDebounceTime, dst.greetingDebounceTime);
+        ::sg_export(eventOwner, dst.eventOwner);
+        ::sg_export(coverTarg, dst.coverTarg);
+        ::sg_export(jumpState, dst.jumpState);
+        ::sg_export(followDist, dst.followDist);
+        ::sg_export(tempGoal, dst.tempGoal);
+        ::sg_export(goalEntity, dst.goalEntity);
+        ::sg_export(lastGoalEntity, dst.lastGoalEntity);
+        ::sg_export(eventualGoal, dst.eventualGoal);
+        ::sg_export(captureGoal, dst.captureGoal);
+        ::sg_export(defendEnt, dst.defendEnt);
+        ::sg_export(greetEnt, dst.greetEnt);
+        ::sg_export(goalTime, dst.goalTime);
+        ::sg_export(straightToGoal, dst.straightToGoal);
+        ::sg_export(distToGoal, dst.distToGoal);
+        ::sg_export(navTime, dst.navTime);
+        ::sg_export(blockingEntNum, dst.blockingEntNum);
+        ::sg_export(blockedSpeechDebounceTime, dst.blockedSpeechDebounceTime);
+        ::sg_export(homeWp, dst.homeWp);
+        ::sg_export(avoidSide, dst.avoidSide);
+        ::sg_export(leaderAvoidSide, dst.leaderAvoidSide);
+        ::sg_export(lastAvoidSteerSide, dst.lastAvoidSteerSide);
+        ::sg_export(lastAvoidSteerSideDebouncer, dst.lastAvoidSteerSideDebouncer);
+        ::sg_export(group, dst.group);
+        ::sg_export(troop, dst.troop);
+        ::sg_export(lastPathAngles, dst.lastPathAngles);
+        ::sg_export(stats, dst.stats);
+        ::sg_export(aimErrorDebounceTime, dst.aimErrorDebounceTime);
+        ::sg_export(lastAimErrorYaw, dst.lastAimErrorYaw);
+        ::sg_export(lastAimErrorPitch, dst.lastAimErrorPitch);
+        ::sg_export(aimOfs, dst.aimOfs);
+        ::sg_export(currentAim, dst.currentAim);
+        ::sg_export(currentAggression, dst.currentAggression);
+        ::sg_export(scriptFlags, dst.scriptFlags);
+        ::sg_export(desiredSpeed, dst.desiredSpeed);
+        ::sg_export(currentSpeed, dst.currentSpeed);
+        ::sg_export(last_forwardmove, dst.last_forwardmove);
+        ::sg_export(last_rightmove, dst.last_rightmove);
+        ::sg_export(lastClearOrigin, dst.lastClearOrigin);
+        ::sg_export(shoveCount, dst.shoveCount);
+        ::sg_export(blockedDebounceTime, dst.blockedDebounceTime);
+        ::sg_export(blockedEntity, dst.blockedEntity);
+        ::sg_export(blockedTargetPosition, dst.blockedTargetPosition);
+        ::sg_export(blockedTargetEntity, dst.blockedTargetEntity);
+        ::sg_export(jumpDest, dst.jumpDest);
+        ::sg_export(jumpTarget, dst.jumpTarget);
+        ::sg_export(jumpMaxXYDist, dst.jumpMaxXYDist);
+        ::sg_export(jumpMazZDist, dst.jumpMazZDist);
+        ::sg_export(jumpSide, dst.jumpSide);
+        ::sg_export(jumpTime, dst.jumpTime);
+        ::sg_export(jumpBackupTime, dst.jumpBackupTime);
+        ::sg_export(jumpNextCheckTime, dst.jumpNextCheckTime);
+        ::sg_export(combatPoint, dst.combatPoint);
+        ::sg_export(lastFailedCombatPoint, dst.lastFailedCombatPoint);
+        ::sg_export(movementSpeech, dst.movementSpeech);
+        ::sg_export(movementSpeechChance, dst.movementSpeechChance);
+        ::sg_export(nextBStateThink, dst.nextBStateThink);
+        ::sg_export(last_ucmd, dst.last_ucmd);
+        ::sg_export(combatMove, dst.combatMove);
+        ::sg_export(goalRadius, dst.goalRadius);
+        ::sg_export(pauseTime, dst.pauseTime);
+        ::sg_export(standTime, dst.standTime);
+        ::sg_export(localState, dst.localState);
+        ::sg_export(squadState, dst.squadState);
+        ::sg_export(confusionTime, dst.confusionTime);
+        ::sg_export(charmedTime, dst.charmedTime);
+        ::sg_export(controlledTime, dst.controlledTime);
+        ::sg_export(surrenderTime, dst.surrenderTime);
+        ::sg_export(kneelTime, dst.kneelTime);
+        ::sg_export(enemyLaggedPos, dst.enemyLaggedPos);
+        ::sg_export(watchTarget, dst.watchTarget);
+        ::sg_export(ffireCount, dst.ffireCount);
+        ::sg_export(ffireDebounce, dst.ffireDebounce);
+        ::sg_export(ffireFadeDebounce, dst.ffireFadeDebounce);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.timeOfDeath, timeOfDeath);
+        ::sg_import(src.touchedByPlayer, touchedByPlayer);
+        ::sg_import(src.enemyLastVisibility, enemyLastVisibility);
+        ::sg_import(src.aimTime, aimTime);
+        ::sg_import(src.desiredYaw, desiredYaw);
+        ::sg_import(src.desiredPitch, desiredPitch);
+        ::sg_import(src.lockedDesiredYaw, lockedDesiredYaw);
+        ::sg_import(src.lockedDesiredPitch, lockedDesiredPitch);
+        ::sg_import(src.aimingBeam, aimingBeam);
+        ::sg_import(src.enemyLastSeenLocation, enemyLastSeenLocation);
+        ::sg_import(src.enemyLastSeenTime, enemyLastSeenTime);
+        ::sg_import(src.enemyLastHeardLocation, enemyLastHeardLocation);
+        ::sg_import(src.enemyLastHeardTime, enemyLastHeardTime);
+        ::sg_import(src.lastAlertID, lastAlertID);
+        ::sg_import(src.eFlags, eFlags);
+        ::sg_import(src.aiFlags, aiFlags);
+        ::sg_import(src.currentAmmo, currentAmmo);
+        ::sg_import(src.shotTime, shotTime);
+        ::sg_import(src.burstCount, burstCount);
+        ::sg_import(src.burstMin, burstMin);
+
+#ifdef BASE_SAVE_COMPAT
+        ::sg_import(src.burstMean, burstMean);
+#endif
+
+        ::sg_import(src.burstMax, burstMax);
+        ::sg_import(src.burstSpacing, burstSpacing);
+        ::sg_import(src.attackHold, attackHold);
+        ::sg_import(src.attackHoldTime, attackHoldTime);
+        ::sg_import(src.shootAngles, shootAngles);
+        ::sg_import(src.rank, rank);
+        ::sg_import(src.behaviorState, behaviorState);
+        ::sg_import(src.defaultBehavior, defaultBehavior);
+        ::sg_import(src.tempBehavior, tempBehavior);
+        ::sg_import(src.ignorePain, ignorePain);
+        ::sg_import(src.duckDebounceTime, duckDebounceTime);
+        ::sg_import(src.walkDebounceTime, walkDebounceTime);
+        ::sg_import(src.enemyCheckDebounceTime, enemyCheckDebounceTime);
+        ::sg_import(src.investigateDebounceTime, investigateDebounceTime);
+        ::sg_import(src.investigateCount, investigateCount);
+        ::sg_import(src.investigateGoal, investigateGoal);
+        ::sg_import(src.investigateSoundDebounceTime, investigateSoundDebounceTime);
+        ::sg_import(src.greetingDebounceTime, greetingDebounceTime);
+        ::sg_import(src.eventOwner, eventOwner);
+        ::sg_import(src.coverTarg, coverTarg);
+        ::sg_import(src.jumpState, jumpState);
+        ::sg_import(src.followDist, followDist);
+        ::sg_import(src.tempGoal, tempGoal);
+        ::sg_import(src.goalEntity, goalEntity);
+        ::sg_import(src.lastGoalEntity, lastGoalEntity);
+        ::sg_import(src.eventualGoal, eventualGoal);
+        ::sg_import(src.captureGoal, captureGoal);
+        ::sg_import(src.defendEnt, defendEnt);
+        ::sg_import(src.greetEnt, greetEnt);
+        ::sg_import(src.goalTime, goalTime);
+        ::sg_import(src.straightToGoal, straightToGoal);
+        ::sg_import(src.distToGoal, distToGoal);
+        ::sg_import(src.navTime, navTime);
+        ::sg_import(src.blockingEntNum, blockingEntNum);
+        ::sg_import(src.blockedSpeechDebounceTime, blockedSpeechDebounceTime);
+        ::sg_import(src.homeWp, homeWp);
+        ::sg_import(src.avoidSide, avoidSide);
+        ::sg_import(src.leaderAvoidSide, leaderAvoidSide);
+        ::sg_import(src.lastAvoidSteerSide, lastAvoidSteerSide);
+        ::sg_import(src.lastAvoidSteerSideDebouncer, lastAvoidSteerSideDebouncer);
+        ::sg_import(src.group, group);
+        ::sg_import(src.troop, troop);
+        ::sg_import(src.lastPathAngles, lastPathAngles);
+        ::sg_import(src.stats, stats);
+        ::sg_import(src.aimErrorDebounceTime, aimErrorDebounceTime);
+        ::sg_import(src.lastAimErrorYaw, lastAimErrorYaw);
+        ::sg_import(src.lastAimErrorPitch, lastAimErrorPitch);
+        ::sg_import(src.aimOfs, aimOfs);
+        ::sg_import(src.currentAim, currentAim);
+        ::sg_import(src.currentAggression, currentAggression);
+        ::sg_import(src.scriptFlags, scriptFlags);
+        ::sg_import(src.desiredSpeed, desiredSpeed);
+        ::sg_import(src.currentSpeed, currentSpeed);
+        ::sg_import(src.last_forwardmove, last_forwardmove);
+        ::sg_import(src.last_rightmove, last_rightmove);
+        ::sg_import(src.lastClearOrigin, lastClearOrigin);
+        ::sg_import(src.shoveCount, shoveCount);
+        ::sg_import(src.blockedDebounceTime, blockedDebounceTime);
+        ::sg_import(src.blockedEntity, blockedEntity);
+        ::sg_import(src.blockedTargetPosition, blockedTargetPosition);
+        ::sg_import(src.blockedTargetEntity, blockedTargetEntity);
+        ::sg_import(src.jumpDest, jumpDest);
+        ::sg_import(src.jumpTarget, jumpTarget);
+        ::sg_import(src.jumpMaxXYDist, jumpMaxXYDist);
+        ::sg_import(src.jumpMazZDist, jumpMazZDist);
+        ::sg_import(src.jumpSide, jumpSide);
+        ::sg_import(src.jumpTime, jumpTime);
+        ::sg_import(src.jumpBackupTime, jumpBackupTime);
+        ::sg_import(src.jumpNextCheckTime, jumpNextCheckTime);
+        ::sg_import(src.combatPoint, combatPoint);
+        ::sg_import(src.lastFailedCombatPoint, lastFailedCombatPoint);
+        ::sg_import(src.movementSpeech, movementSpeech);
+        ::sg_import(src.movementSpeechChance, movementSpeechChance);
+        ::sg_import(src.nextBStateThink, nextBStateThink);
+        ::sg_import(src.last_ucmd, last_ucmd);
+        ::sg_import(src.combatMove, combatMove);
+        ::sg_import(src.goalRadius, goalRadius);
+        ::sg_import(src.pauseTime, pauseTime);
+        ::sg_import(src.standTime, standTime);
+        ::sg_import(src.localState, localState);
+        ::sg_import(src.squadState, squadState);
+        ::sg_import(src.confusionTime, confusionTime);
+        ::sg_import(src.charmedTime, charmedTime);
+        ::sg_import(src.controlledTime, controlledTime);
+        ::sg_import(src.surrenderTime, surrenderTime);
+        ::sg_import(src.kneelTime, kneelTime);
+        ::sg_import(src.enemyLaggedPos, enemyLaggedPos);
+        ::sg_import(src.watchTarget, watchTarget);
+        ::sg_import(src.ffireCount, ffireCount);
+        ::sg_import(src.ffireDebounce, ffireDebounce);
+        ::sg_import(src.ffireFadeDebounce, ffireFadeDebounce);
+    }
 } gNPC_t;
+
 
 void G_SquadPathsInit(void);
 void NPC_InitGame( void );

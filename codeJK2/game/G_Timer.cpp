@@ -216,7 +216,7 @@ void TIMER_Load( void )
 	{
 		int numTimers;
 
-		gi.ReadFromSaveGame( INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers), NULL );
+		::sg_read<int32_t>(::gi, INT_ID('T','I','M','E'), numTimers);
 
 		//Make sure there's something to read
 		if ( numTimers == 0 )
@@ -230,7 +230,7 @@ void TIMER_Load( void )
 
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
-			gi.ReadFromSaveGame( INT_ID('T','S','L','N'), (void *) &length, sizeof( length ), NULL );
+			::sg_read<int32_t>(::gi, INT_ID('T','S','L','N'), length);
 			
 			if ( length >= 1024 ) {
 				assert( 0 );
@@ -238,8 +238,8 @@ void TIMER_Load( void )
 			}
 
 			//Read the id and time
-			gi.ReadFromSaveGame( INT_ID('T','S','N','M'), (char *) tempBuffer, length, NULL );
-			gi.ReadFromSaveGame( INT_ID('T','D','T','A'), (void *) &time, sizeof( time ), NULL );
+			::sg_read_no_cast(::gi, INT_ID('T','S','N','M'), tempBuffer, length);
+			::sg_read<int32_t>(::gi, INT_ID('T','D','T','A'), time);
 
 			//this is odd, we saved all the timers in the autosave, but not all the ents are spawned yet from an auto load, so skip it
 			if (ent->inuse)

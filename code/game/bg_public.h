@@ -455,15 +455,49 @@ typedef enum {
 } entity_event_t;
 
 #pragma pack(push, 1)
+class SgAnimation
+{
+public:
+    uint16_t firstFrame;
+    uint16_t numFrames;
+    int16_t frameLerp;
+    int8_t loopFrames;
+    uint8_t glaIndex;
+}; // SgAnimation
+#pragma pack(pop)
+
 typedef struct animation_s {
+    using SgType = SgAnimation;
+
+
 	unsigned short		firstFrame;
 	unsigned short		numFrames;
 	short			frameLerp;			// msec between frames
 	//initial lerp is abs(frameLerp)
 	signed char		loopFrames;			// 0 to numFrames, -1 = no loop
 	unsigned char	glaIndex;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(firstFrame, dst.firstFrame);
+        ::sg_export(numFrames, dst.numFrames);
+        ::sg_export(frameLerp, dst.frameLerp);
+        ::sg_export(loopFrames, dst.loopFrames);
+        ::sg_export(glaIndex, dst.glaIndex);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.firstFrame, firstFrame);
+        ::sg_import(src.numFrames, numFrames);
+        ::sg_import(src.frameLerp, frameLerp);
+        ::sg_import(src.loopFrames, loopFrames);
+        ::sg_import(src.glaIndex, glaIndex);
+    }
 } animation_t;
-#pragma pack(pop)
 
 #define MAX_ANIM_FILES	16
 #define MAX_ANIM_EVENTS 300
@@ -516,14 +550,53 @@ typedef enum
 	AEV_NUM_AEV
 } animEventType_t;
 
+#pragma pack(push, 4)
+class SgAnimEvent
+{
+public:
+    int32_t eventType;
+    int16_t modelOnly;
+    uint16_t glaIndex;
+    uint16_t keyFrame;
+    SgArray<int16_t, AED_ARRAY_SIZE> eventData;
+    int32_t stringData;
+}; // SgAnimEvent
+#pragma pack(pop)
+
 typedef struct animevent_s
 {
+    using SgType = SgAnimEvent;
+
+
 	animEventType_t	eventType;
 	signed short	modelOnly;			//event is specific to a modelname to skeleton
 	unsigned short	glaIndex;
 	unsigned short	keyFrame;			//Frame to play event on
 	signed short	eventData[AED_ARRAY_SIZE];	//Unique IDs, can be soundIndex of sound file to play OR effect index or footstep type, etc.
 	char			*stringData;		//we allow storage of one string, temporarily (in case we have to look up an index later, then make sure to set stringData to NULL so we only do the look-up once)
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(eventType, dst.eventType);
+        ::sg_export(modelOnly, dst.modelOnly);
+        ::sg_export(glaIndex, dst.glaIndex);
+        ::sg_export(keyFrame, dst.keyFrame);
+        ::sg_export(eventData, dst.eventData);
+        ::sg_export(stringData, dst.stringData);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.eventType, eventType);
+        ::sg_import(src.modelOnly, modelOnly);
+        ::sg_import(src.glaIndex, glaIndex);
+        ::sg_import(src.keyFrame, keyFrame);
+        ::sg_import(src.eventData, eventData);
+        ::sg_import(src.stringData, stringData);
+    }
 } animevent_t;
 
 typedef enum

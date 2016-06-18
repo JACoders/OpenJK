@@ -113,6 +113,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #endif
 
+
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
 	#define __attribute__(x)
@@ -159,6 +160,8 @@ float FloatSwap( const float *f );
 
 
 #include "qcommon/q_platform.h"
+#include "qcommon/ojk_sg_wrappers.h"
+
 
 // ================================================================
 // TYPE DEFINITIONS
@@ -1219,12 +1222,48 @@ COLLISION DETECTION
 
 // plane_t structure
 // !!! if this is changed, it must be changed in asm code too !!!
+#pragma pack(push, 4)
+class SgCPlane
+{
+public:
+    SgVec3 normal;
+    float dist;
+    uint8_t type;
+    uint8_t signbits;
+    SgArray<uint8_t, 2> pad;
+}; // SgCPlane
+#pragma pack(pop)
+
 typedef struct cplane_s {
+    using SgType = SgCPlane;
+
+
 	vec3_t	normal;
 	float	dist;
 	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
 	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
 	byte	pad[2];
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(normal, dst.normal);
+        ::sg_export(dist, dst.dist);
+        ::sg_export(type, dst.type);
+        ::sg_export(signbits, dst.signbits);
+        ::sg_export(pad, dst.pad);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.normal, normal);
+        ::sg_import(src.dist, dist);
+        ::sg_import(src.type, type);
+        ::sg_import(src.signbits, signbits);
+        ::sg_import(src.pad, pad);
+    }
 } cplane_t;
 
 /*
@@ -1241,7 +1280,26 @@ Ghoul2 Insert End
 
 #define MAX_G2_COLLISIONS 16
 // a trace is returned when a box is swept through the world
+#pragma pack(push, 4)
+class SgTrace
+{
+public:
+    int32_t allsolid;
+    int32_t startsolid;
+    float fraction;
+    SgVec3 endpos;
+    SgCPlane plane;
+    int32_t surfaceFlags;
+    int32_t contents;
+    int32_t entityNum;
+    SgArray<SgCCollisionRecord, MAX_G2_COLLISIONS> G2CollisionMap;
+}; // SgTrace
+#pragma pack(pop)
+
 typedef struct {
+    using SgType = SgTrace;
+
+
 	qboolean	allsolid;	// if true, plane is not valid
 	qboolean	startsolid;	// if true, the initial point was in a solid area
 	float		fraction;	// time completed, 1.0 = didn't hit anything
@@ -1257,6 +1315,35 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(allsolid, dst.allsolid);
+        ::sg_export(startsolid, dst.startsolid);
+        ::sg_export(fraction, dst.fraction);
+        ::sg_export(endpos, dst.endpos);
+        ::sg_export(plane, dst.plane);
+        ::sg_export(surfaceFlags, dst.surfaceFlags);
+        ::sg_export(contents, dst.contents);
+        ::sg_export(entityNum, dst.entityNum);
+        ::sg_export(G2CollisionMap, dst.G2CollisionMap);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.allsolid, allsolid);
+        ::sg_import(src.startsolid, startsolid);
+        ::sg_import(src.fraction, fraction);
+        ::sg_import(src.endpos, endpos);
+        ::sg_import(src.plane, plane);
+        ::sg_import(src.surfaceFlags, surfaceFlags);
+        ::sg_import(src.contents, contents);
+        ::sg_import(src.entityNum, entityNum);
+        ::sg_import(src.G2CollisionMap, G2CollisionMap);
+    }
 } trace_t;
 
 // trace->entityNum can also be 0 to (MAX_GENTITIES-1)
@@ -1474,8 +1561,26 @@ typedef enum
 } waterHeightLevel_t;
 
 // !!!!!!! loadsave affecting struct !!!!!!!
+#pragma pack(push, 4)
+class SgSaberTrail
+{
+public:
+    int32_t inAction;
+    int32_t duration;
+    int32_t lastTime;
+    SgVec3 base;
+    SgVec3 tip;
+    SgArray<int32_t, 2> haveOldPos;
+    SgArray<SgVec3, 2> oldPos;
+    SgArray<SgVec3, 2> oldNormal;
+}; // SgSaberTrail
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgSaberTrail;
+
+
 	// Actual trail stuff
 	int		inAction;	// controls whether should we even consider starting one
 	int		duration;	// how long each trail seg stays in existence
@@ -1488,12 +1593,61 @@ typedef struct
 	vec3_t		oldPos[2];
 	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
 							//	..then we'll need the normal to project a mark blob onto the impact point
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(inAction, dst.inAction);
+        ::sg_export(duration, dst.duration);
+        ::sg_export(lastTime, dst.lastTime);
+        ::sg_export(base, dst.base);
+        ::sg_export(tip, dst.tip);
+        ::sg_export(haveOldPos, dst.haveOldPos);
+        ::sg_export(oldPos, dst.oldPos);
+        ::sg_export(oldNormal, dst.oldNormal);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.inAction, inAction);
+        ::sg_import(src.duration, duration);
+        ::sg_import(src.lastTime, lastTime);
+        ::sg_import(src.base, base);
+        ::sg_import(src.tip, tip);
+        ::sg_import(src.haveOldPos, haveOldPos);
+        ::sg_import(src.oldPos, oldPos);
+        ::sg_import(src.oldNormal, oldNormal);
+    }
 } saberTrail_t;
+
 #define MAX_SABER_TRAIL_SEGS 8
 
 // !!!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!
+#pragma pack(push, 4)
+class SgBladeInfo
+{
+public:
+    int32_t active;
+    int32_t color;
+    float radius;
+    float length;
+    float lengthMax;
+    float lengthOld;
+    SgVec3 muzzlePoint;
+    SgVec3 muzzlePointOld;
+    SgVec3 muzzleDir;
+    SgVec3 muzzleDirOld;
+    SgSaberTrail trail;
+}; // SgBladeInfo
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgBladeInfo;
+
+
 	qboolean	active;
 	saber_colors_t	color;
 	float		radius;
@@ -1515,7 +1669,41 @@ typedef struct
 					trail.inAction = qfalse;
 					trail.duration = duration;
 				};
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(active, dst.active);
+        ::sg_export(color, dst.color);
+        ::sg_export(radius, dst.radius);
+        ::sg_export(length, dst.length);
+        ::sg_export(lengthMax, dst.lengthMax);
+        ::sg_export(lengthOld, dst.lengthOld);
+        ::sg_export(muzzlePoint, dst.muzzlePoint);
+        ::sg_export(muzzlePointOld, dst.muzzlePointOld);
+        ::sg_export(muzzleDir, dst.muzzleDir);
+        ::sg_export(muzzleDirOld, dst.muzzleDirOld);
+        ::sg_export(trail, dst.trail);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.active, active);
+        ::sg_import(src.color, color);
+        ::sg_import(src.radius, radius);
+        ::sg_import(src.length, length);
+        ::sg_import(src.lengthMax, lengthMax);
+        ::sg_import(src.lengthOld, lengthOld);
+        ::sg_import(src.muzzlePoint, muzzlePoint);
+        ::sg_import(src.muzzlePointOld, muzzlePointOld);
+        ::sg_import(src.muzzleDir, muzzleDir);
+        ::sg_import(src.muzzleDirOld, muzzleDirOld);
+        ::sg_import(src.trail, trail);
+    }
 } bladeInfo_t;
+
 #define MAX_BLADES 8
 
 typedef enum
@@ -1582,8 +1770,94 @@ typedef enum
 #define SFL2_TRANSITION_DAMAGE2		(1<<17)//if set, the blade does damage in start, transition and return anims (like strong style does)
 
 // !!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!!!!!!!!!!!!
+#pragma pack(push, 4)
+class SgSaberInfo
+{
+public:
+    int32_t name;
+    int32_t fullName;
+    int32_t type;
+    int32_t model;
+    int32_t skin;
+    int32_t soundOn;
+    int32_t soundLoop;
+    int32_t soundOff;
+    int32_t numBlades;
+    SgArray<SgBladeInfo, MAX_BLADES> blade;
+    int32_t stylesLearned;
+    int32_t stylesForbidden;
+    int32_t maxChain;
+    int32_t forceRestrictions;
+    int32_t lockBonus;
+    int32_t parryBonus;
+    int32_t breakParryBonus;
+    int32_t breakParryBonus2;
+    int32_t disarmBonus;
+    int32_t disarmBonus2;
+    int32_t singleBladeStyle;
+    int32_t brokenSaber1;
+    int32_t brokenSaber2;
+    int32_t saberFlags;
+    int32_t saberFlags2;
+    int32_t spinSound;
+    SgArray<int32_t, 3> swingSound;
+    SgArray<int32_t, 3> fallSound;
+    float moveSpeedScale;
+    float animSpeedScale;
+    int32_t kataMove;
+    int32_t lungeAtkMove;
+    int32_t jumpAtkUpMove;
+    int32_t jumpAtkFwdMove;
+    int32_t jumpAtkBackMove;
+    int32_t jumpAtkRightMove;
+    int32_t jumpAtkLeftMove;
+    int32_t readyAnim;
+    int32_t drawAnim;
+    int32_t putawayAnim;
+    int32_t tauntAnim;
+    int32_t bowAnim;
+    int32_t meditateAnim;
+    int32_t flourishAnim;
+    int32_t gloatAnim;
+    int32_t bladeStyle2Start;
+    int32_t trailStyle;
+    SgArray<int8_t, MAX_QPATH> g2MarksShader;
+    SgArray<int8_t, MAX_QPATH> g2WeaponMarkShader;
+    SgArray<int32_t, 3> hitSound;
+    SgArray<int32_t, 3> blockSound;
+    SgArray<int32_t, 3> bounceSound;
+    int32_t blockEffect;
+    int32_t hitPersonEffect;
+    int32_t hitOtherEffect;
+    int32_t bladeEffect;
+    float knockbackScale;
+    float damageScale;
+    float splashRadius;
+    int32_t splashDamage;
+    float splashKnockback;
+    int32_t trailStyle2;
+    SgArray<int8_t, MAX_QPATH> g2MarksShader2;
+    SgArray<int8_t, MAX_QPATH> g2WeaponMarkShader2;
+    SgArray<int32_t, 3> hit2Sound;
+    SgArray<int32_t, 3> block2Sound;
+    SgArray<int32_t, 3> bounce2Sound;
+    int32_t blockEffect2;
+    int32_t hitPersonEffect2;
+    int32_t hitOtherEffect2;
+    int32_t bladeEffect2;
+    float knockbackScale2;
+    float damageScale2;
+    float splashRadius2;
+    int32_t splashDamage2;
+    float splashKnockback2;
+}; // SgSaberInfo
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgSaberInfo;
+
+
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -1802,6 +2076,169 @@ typedef struct
 						blade[i].DeactivateTrail( duration );
 					}
 				};
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(name, dst.name);
+        ::sg_export(fullName, dst.fullName);
+        ::sg_export(type, dst.type);
+        ::sg_export(model, dst.model);
+        ::sg_export(skin, dst.skin);
+        ::sg_export(soundOn, dst.soundOn);
+        ::sg_export(soundLoop, dst.soundLoop);
+        ::sg_export(soundOff, dst.soundOff);
+        ::sg_export(numBlades, dst.numBlades);
+        ::sg_export(blade, dst.blade);
+        ::sg_export(stylesLearned, dst.stylesLearned);
+        ::sg_export(stylesForbidden, dst.stylesForbidden);
+        ::sg_export(maxChain, dst.maxChain);
+        ::sg_export(forceRestrictions, dst.forceRestrictions);
+        ::sg_export(lockBonus, dst.lockBonus);
+        ::sg_export(parryBonus, dst.parryBonus);
+        ::sg_export(breakParryBonus, dst.breakParryBonus);
+        ::sg_export(breakParryBonus2, dst.breakParryBonus2);
+        ::sg_export(disarmBonus, dst.disarmBonus);
+        ::sg_export(disarmBonus2, dst.disarmBonus2);
+        ::sg_export(singleBladeStyle, dst.singleBladeStyle);
+        ::sg_export(brokenSaber1, dst.brokenSaber1);
+        ::sg_export(brokenSaber2, dst.brokenSaber2);
+        ::sg_export(saberFlags, dst.saberFlags);
+        ::sg_export(saberFlags2, dst.saberFlags2);
+        ::sg_export(spinSound, dst.spinSound);
+        ::sg_export(swingSound, dst.swingSound);
+        ::sg_export(fallSound, dst.fallSound);
+        ::sg_export(moveSpeedScale, dst.moveSpeedScale);
+        ::sg_export(animSpeedScale, dst.animSpeedScale);
+        ::sg_export(kataMove, dst.kataMove);
+        ::sg_export(lungeAtkMove, dst.lungeAtkMove);
+        ::sg_export(jumpAtkUpMove, dst.jumpAtkUpMove);
+        ::sg_export(jumpAtkFwdMove, dst.jumpAtkFwdMove);
+        ::sg_export(jumpAtkBackMove, dst.jumpAtkBackMove);
+        ::sg_export(jumpAtkRightMove, dst.jumpAtkRightMove);
+        ::sg_export(jumpAtkLeftMove, dst.jumpAtkLeftMove);
+        ::sg_export(readyAnim, dst.readyAnim);
+        ::sg_export(drawAnim, dst.drawAnim);
+        ::sg_export(putawayAnim, dst.putawayAnim);
+        ::sg_export(tauntAnim, dst.tauntAnim);
+        ::sg_export(bowAnim, dst.bowAnim);
+        ::sg_export(meditateAnim, dst.meditateAnim);
+        ::sg_export(flourishAnim, dst.flourishAnim);
+        ::sg_export(gloatAnim, dst.gloatAnim);
+        ::sg_export(bladeStyle2Start, dst.bladeStyle2Start);
+        ::sg_export(trailStyle, dst.trailStyle);
+        ::sg_export(g2MarksShader, dst.g2MarksShader);
+        ::sg_export(g2WeaponMarkShader, dst.g2WeaponMarkShader);
+        ::sg_export(hitSound, dst.hitSound);
+        ::sg_export(blockSound, dst.blockSound);
+        ::sg_export(bounceSound, dst.bounceSound);
+        ::sg_export(blockEffect, dst.blockEffect);
+        ::sg_export(hitPersonEffect, dst.hitPersonEffect);
+        ::sg_export(hitOtherEffect, dst.hitOtherEffect);
+        ::sg_export(bladeEffect, dst.bladeEffect);
+        ::sg_export(knockbackScale, dst.knockbackScale);
+        ::sg_export(damageScale, dst.damageScale);
+        ::sg_export(splashRadius, dst.splashRadius);
+        ::sg_export(splashDamage, dst.splashDamage);
+        ::sg_export(splashKnockback, dst.splashKnockback);
+        ::sg_export(trailStyle2, dst.trailStyle2);
+        ::sg_export(g2MarksShader2, dst.g2MarksShader2);
+        ::sg_export(g2WeaponMarkShader2, dst.g2WeaponMarkShader2);
+        ::sg_export(hit2Sound, dst.hit2Sound);
+        ::sg_export(block2Sound, dst.block2Sound);
+        ::sg_export(bounce2Sound, dst.bounce2Sound);
+        ::sg_export(blockEffect2, dst.blockEffect2);
+        ::sg_export(hitPersonEffect2, dst.hitPersonEffect2);
+        ::sg_export(hitOtherEffect2, dst.hitOtherEffect2);
+        ::sg_export(bladeEffect2, dst.bladeEffect2);
+        ::sg_export(knockbackScale2, dst.knockbackScale2);
+        ::sg_export(damageScale2, dst.damageScale2);
+        ::sg_export(splashRadius2, dst.splashRadius2);
+        ::sg_export(splashDamage2, dst.splashDamage2);
+        ::sg_export(splashKnockback2, dst.splashKnockback2);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.name, name);
+        ::sg_import(src.fullName, fullName);
+        ::sg_import(src.type, type);
+        ::sg_import(src.model, model);
+        ::sg_import(src.skin, skin);
+        ::sg_import(src.soundOn, soundOn);
+        ::sg_import(src.soundLoop, soundLoop);
+        ::sg_import(src.soundOff, soundOff);
+        ::sg_import(src.numBlades, numBlades);
+        ::sg_import(src.blade, blade);
+        ::sg_import(src.stylesLearned, stylesLearned);
+        ::sg_import(src.stylesForbidden, stylesForbidden);
+        ::sg_import(src.maxChain, maxChain);
+        ::sg_import(src.forceRestrictions, forceRestrictions);
+        ::sg_import(src.lockBonus, lockBonus);
+        ::sg_import(src.parryBonus, parryBonus);
+        ::sg_import(src.breakParryBonus, breakParryBonus);
+        ::sg_import(src.breakParryBonus2, breakParryBonus2);
+        ::sg_import(src.disarmBonus, disarmBonus);
+        ::sg_import(src.disarmBonus2, disarmBonus2);
+        ::sg_import(src.singleBladeStyle, singleBladeStyle);
+        ::sg_import(src.brokenSaber1, brokenSaber1);
+        ::sg_import(src.brokenSaber2, brokenSaber2);
+        ::sg_import(src.saberFlags, saberFlags);
+        ::sg_import(src.saberFlags2, saberFlags2);
+        ::sg_import(src.spinSound, spinSound);
+        ::sg_import(src.swingSound, swingSound);
+        ::sg_import(src.fallSound, fallSound);
+        ::sg_import(src.moveSpeedScale, moveSpeedScale);
+        ::sg_import(src.animSpeedScale, animSpeedScale);
+        ::sg_import(src.kataMove, kataMove);
+        ::sg_import(src.lungeAtkMove, lungeAtkMove);
+        ::sg_import(src.jumpAtkUpMove, jumpAtkUpMove);
+        ::sg_import(src.jumpAtkFwdMove, jumpAtkFwdMove);
+        ::sg_import(src.jumpAtkBackMove, jumpAtkBackMove);
+        ::sg_import(src.jumpAtkRightMove, jumpAtkRightMove);
+        ::sg_import(src.jumpAtkLeftMove, jumpAtkLeftMove);
+        ::sg_import(src.readyAnim, readyAnim);
+        ::sg_import(src.drawAnim, drawAnim);
+        ::sg_import(src.putawayAnim, putawayAnim);
+        ::sg_import(src.tauntAnim, tauntAnim);
+        ::sg_import(src.bowAnim, bowAnim);
+        ::sg_import(src.meditateAnim, meditateAnim);
+        ::sg_import(src.flourishAnim, flourishAnim);
+        ::sg_import(src.gloatAnim, gloatAnim);
+        ::sg_import(src.bladeStyle2Start, bladeStyle2Start);
+        ::sg_import(src.trailStyle, trailStyle);
+        ::sg_import(src.g2MarksShader, g2MarksShader);
+        ::sg_import(src.g2WeaponMarkShader, g2WeaponMarkShader);
+        ::sg_import(src.hitSound, hitSound);
+        ::sg_import(src.blockSound, blockSound);
+        ::sg_import(src.bounceSound, bounceSound);
+        ::sg_import(src.blockEffect, blockEffect);
+        ::sg_import(src.hitPersonEffect, hitPersonEffect);
+        ::sg_import(src.hitOtherEffect, hitOtherEffect);
+        ::sg_import(src.bladeEffect, bladeEffect);
+        ::sg_import(src.knockbackScale, knockbackScale);
+        ::sg_import(src.damageScale, damageScale);
+        ::sg_import(src.splashRadius, splashRadius);
+        ::sg_import(src.splashDamage, splashDamage);
+        ::sg_import(src.splashKnockback, splashKnockback);
+        ::sg_import(src.trailStyle2, trailStyle2);
+        ::sg_import(src.g2MarksShader2, g2MarksShader2);
+        ::sg_import(src.g2WeaponMarkShader2, g2WeaponMarkShader2);
+        ::sg_import(src.hit2Sound, hit2Sound);
+        ::sg_import(src.block2Sound, block2Sound);
+        ::sg_import(src.bounce2Sound, bounce2Sound);
+        ::sg_import(src.blockEffect2, blockEffect2);
+        ::sg_import(src.hitPersonEffect2, hitPersonEffect2);
+        ::sg_import(src.hitOtherEffect2, hitOtherEffect2);
+        ::sg_import(src.bladeEffect2, bladeEffect2);
+        ::sg_import(src.knockbackScale2, knockbackScale2);
+        ::sg_import(src.damageScale2, damageScale2);
+        ::sg_import(src.splashRadius2, splashRadius2);
+        ::sg_import(src.splashDamage2, splashDamage2);
+        ::sg_import(src.splashKnockback2, splashKnockback2);
+    }
 } saberInfo_t;
 
 //NOTE: Below is the *retail* version of the saberInfo_t structure - it is ONLY used for loading retail-version savegames (we load the savegame into this smaller structure, then copy each field into the appropriate field in the new structure - see SG_ConvertRetailSaberinfoToNewSaberinfo()
@@ -1935,7 +2372,154 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgPlayerState
+{
+public:
+    int32_t commandTime;
+    int32_t pm_type;
+    int32_t bobCycle;
+    int32_t pm_flags;
+    int32_t pm_time;
+    SgVec3 origin;
+    SgVec3 velocity;
+    int32_t weaponTime;
+    int32_t weaponChargeTime;
+    int32_t rechargeTime;
+    int32_t gravity;
+    int32_t leanofs;
+    int32_t friction;
+    int32_t speed;
+    SgArray<int32_t, 3> delta_angles;
+    int32_t groundEntityNum;
+    int32_t legsAnim;
+    int32_t legsAnimTimer;
+    int32_t torsoAnim;
+    int32_t torsoAnimTimer;
+    int32_t movementDir;
+    int32_t eFlags;
+    int32_t eventSequence;
+    SgArray<int32_t, MAX_PS_EVENTS> events;
+    SgArray<int32_t, MAX_PS_EVENTS> eventParms;
+    int32_t externalEvent;
+    int32_t externalEventParm;
+    int32_t externalEventTime;
+    int32_t clientNum;
+    int32_t weapon;
+    int32_t weaponstate;
+    int32_t batteryCharge;
+    SgVec3 viewangles;
+    float legsYaw;
+    int32_t viewheight;
+    int32_t damageEvent;
+    int32_t damageYaw;
+    int32_t damagePitch;
+    int32_t damageCount;
+    SgArray<int32_t, MAX_STATS> stats;
+    SgArray<int32_t, MAX_PERSISTANT> persistant;
+    SgArray<int32_t, MAX_POWERUPS> powerups;
+    SgArray<int32_t, MAX_AMMO> ammo;
+    SgArray<int32_t, MAX_INVENTORY> inventory;
+    SgArray2d<int8_t, MAX_SECURITY_KEYS, MAX_SECURITY_KEY_MESSSAGE> security_key_message;
+    SgVec3 serverViewOrg;
+    int32_t saberInFlight;
+
+#ifdef JK2_MODE
+    int32_t saberActive;
+    int32_t vehicleModel;
+    int32_t viewEntity;
+    int32_t saberColor;
+    float saberLength;
+    float saberLengthMax;
+    int32_t forcePowersActive;
+#else
+    int32_t viewEntity;
+    int32_t forcePowersActive;
+#endif
+
+    int32_t useTime;
+    int32_t lastShotTime;
+    int32_t ping;
+    int32_t lastOnGround;
+    int32_t lastStationary;
+    int32_t weaponShotCount;
+    SgArray<SgSaberInfo, MAX_SABERS> saber;
+    int32_t dualSabers;
+    int16_t saberMove;
+    int16_t saberMoveNext;
+    int16_t saberBounceMove;
+    int16_t saberBlocking;
+    int16_t saberBlocked;
+    int16_t leanStopDebounceTime;
+
+#ifdef JK2_MODE
+    float saberLengthOld;
+#endif
+
+    int32_t saberEntityNum;
+    float saberEntityDist;
+    int32_t saberThrowTime;
+    int32_t saberEntityState;
+    int32_t saberDamageDebounceTime;
+    int32_t saberHitWallSoundDebounceTime;
+    int32_t saberEventFlags;
+    int32_t saberBlockingTime;
+    int32_t saberAnimLevel;
+    int32_t saberAttackChainCount;
+    int32_t saberLockTime;
+    int32_t saberLockEnemy;
+    int32_t saberStylesKnown;
+
+#ifdef JK2_MODE
+    int32_t saberModel;
+#endif
+
+    int32_t forcePowersKnown;
+    SgArray<int32_t, NUM_FORCE_POWERS> forcePowerDuration;
+    SgArray<int32_t, NUM_FORCE_POWERS> forcePowerDebounce;
+    int32_t forcePower;
+    int32_t forcePowerMax;
+    int32_t forcePowerRegenDebounceTime;
+    int32_t forcePowerRegenRate;
+    int32_t forcePowerRegenAmount;
+    SgArray<int32_t, NUM_FORCE_POWERS> forcePowerLevel;
+    float forceJumpZStart;
+    float forceJumpCharge;
+    int32_t forceGripEntityNum;
+    SgVec3 forceGripOrg;
+    int32_t forceDrainEntityNum;
+    SgVec3 forceDrainOrg;
+    int32_t forceHealCount;
+    int32_t forceAllowDeactivateTime;
+    int32_t forceRageDrainTime;
+    int32_t forceRageRecoveryTime;
+    int32_t forceDrainEntNum;
+    float forceDrainTime;
+    int32_t forcePowersForced;
+    int32_t pullAttackEntNum;
+    int32_t pullAttackTime;
+    int32_t lastKickedEntNum;
+    int32_t taunting;
+    float jumpZStart;
+    SgVec3 moveDir;
+    float waterheight;
+    int32_t waterHeightLevel;
+    int32_t ikStatus;
+    int32_t heldClient;
+    int32_t heldByClient;
+    int32_t heldByBolt;
+    int32_t heldByBone;
+    int32_t vehTurnaroundIndex;
+    int32_t vehTurnaroundTime;
+    int32_t brokenLimbs;
+    int32_t electrifyTime;
+}; // SgPlayerState
+#pragma pack(pop)
+
 typedef struct playerState_s {
+    using SgType = SgPlayerState;
+
+
 	int			commandTime;		// cmd->serverTime of last executed command
 	int			pm_type;
 	int			bobCycle;			// for view bobbing and footstep generation
@@ -2236,8 +2820,292 @@ typedef struct playerState_s {
 	//NOTE: not really used in SP, just for Fighter Vehicle damage stuff
 	int			brokenLimbs;
 	int			electrifyTime;
-} playerState_t;
 
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(commandTime, dst.commandTime);
+        ::sg_export(pm_type, dst.pm_type);
+        ::sg_export(bobCycle, dst.bobCycle);
+        ::sg_export(pm_flags, dst.pm_flags);
+        ::sg_export(pm_time, dst.pm_time);
+        ::sg_export(origin, dst.origin);
+        ::sg_export(velocity, dst.velocity);
+        ::sg_export(weaponTime, dst.weaponTime);
+        ::sg_export(weaponChargeTime, dst.weaponChargeTime);
+        ::sg_export(rechargeTime, dst.rechargeTime);
+        ::sg_export(gravity, dst.gravity);
+        ::sg_export(leanofs, dst.leanofs);
+        ::sg_export(friction, dst.friction);
+        ::sg_export(speed, dst.speed);
+        ::sg_export(delta_angles, dst.delta_angles);
+        ::sg_export(groundEntityNum, dst.groundEntityNum);
+        ::sg_export(legsAnim, dst.legsAnim);
+        ::sg_export(legsAnimTimer, dst.legsAnimTimer);
+        ::sg_export(torsoAnim, dst.torsoAnim);
+        ::sg_export(torsoAnimTimer, dst.torsoAnimTimer);
+        ::sg_export(movementDir, dst.movementDir);
+        ::sg_export(eFlags, dst.eFlags);
+        ::sg_export(eventSequence, dst.eventSequence);
+        ::sg_export(events, dst.events);
+        ::sg_export(eventParms, dst.eventParms);
+        ::sg_export(externalEvent, dst.externalEvent);
+        ::sg_export(externalEventParm, dst.externalEventParm);
+        ::sg_export(externalEventTime, dst.externalEventTime);
+        ::sg_export(clientNum, dst.clientNum);
+        ::sg_export(weapon, dst.weapon);
+        ::sg_export(weaponstate, dst.weaponstate);
+        ::sg_export(batteryCharge, dst.batteryCharge);
+        ::sg_export(viewangles, dst.viewangles);
+        ::sg_export(legsYaw, dst.legsYaw);
+        ::sg_export(viewheight, dst.viewheight);
+        ::sg_export(damageEvent, dst.damageEvent);
+        ::sg_export(damageYaw, dst.damageYaw);
+        ::sg_export(damagePitch, dst.damagePitch);
+        ::sg_export(damageCount, dst.damageCount);
+        ::sg_export(stats, dst.stats);
+        ::sg_export(persistant, dst.persistant);
+        ::sg_export(powerups, dst.powerups);
+        ::sg_export(ammo, dst.ammo);
+        ::sg_export(inventory, dst.inventory);
+        ::sg_export(security_key_message, dst.security_key_message);
+        ::sg_export(serverViewOrg, dst.serverViewOrg);
+        ::sg_export(saberInFlight, dst.saberInFlight);
+
+#ifdef JK2_MODE
+        ::sg_export(saberActive, dst.saberActive);
+        ::sg_export(vehicleModel, dst.vehicleModel);
+        ::sg_export(viewEntity, dst.viewEntity);
+        ::sg_export(saberColor, dst.saberColor);
+        ::sg_export(saberLength, dst.saberLength);
+        ::sg_export(saberLengthMax, dst.saberLengthMax);
+        ::sg_export(forcePowersActive, dst.forcePowersActive);
+#else
+        ::sg_export(viewEntity, dst.viewEntity);
+        ::sg_export(forcePowersActive, dst.forcePowersActive);
+#endif
+
+        ::sg_export(useTime, dst.useTime);
+        ::sg_export(lastShotTime, dst.lastShotTime);
+        ::sg_export(ping, dst.ping);
+        ::sg_export(lastOnGround, dst.lastOnGround);
+        ::sg_export(lastStationary, dst.lastStationary);
+        ::sg_export(weaponShotCount, dst.weaponShotCount);
+        ::sg_export(saber, dst.saber);
+        ::sg_export(dualSabers, dst.dualSabers);
+        ::sg_export(saberMove, dst.saberMove);
+        ::sg_export(saberMoveNext, dst.saberMoveNext);
+        ::sg_export(saberBounceMove, dst.saberBounceMove);
+        ::sg_export(saberBlocking, dst.saberBlocking);
+        ::sg_export(saberBlocked, dst.saberBlocked);
+        ::sg_export(leanStopDebounceTime, dst.leanStopDebounceTime);
+
+#ifdef JK2_MODE
+        ::sg_export(saberLengthOld, dst.saberLengthOld);
+#endif
+
+        ::sg_export(saberEntityNum, dst.saberEntityNum);
+        ::sg_export(saberEntityDist, dst.saberEntityDist);
+        ::sg_export(saberThrowTime, dst.saberThrowTime);
+        ::sg_export(saberEntityState, dst.saberEntityState);
+        ::sg_export(saberDamageDebounceTime, dst.saberDamageDebounceTime);
+        ::sg_export(saberHitWallSoundDebounceTime, dst.saberHitWallSoundDebounceTime);
+        ::sg_export(saberEventFlags, dst.saberEventFlags);
+        ::sg_export(saberBlockingTime, dst.saberBlockingTime);
+        ::sg_export(saberAnimLevel, dst.saberAnimLevel);
+        ::sg_export(saberAttackChainCount, dst.saberAttackChainCount);
+        ::sg_export(saberLockTime, dst.saberLockTime);
+        ::sg_export(saberLockEnemy, dst.saberLockEnemy);
+        ::sg_export(saberStylesKnown, dst.saberStylesKnown);
+
+#ifdef JK2_MODE
+        ::sg_export(saberModel, dst.saberModel);
+#endif
+
+        ::sg_export(forcePowersKnown, dst.forcePowersKnown);
+        ::sg_export(forcePowerDuration, dst.forcePowerDuration);
+        ::sg_export(forcePowerDebounce, dst.forcePowerDebounce);
+        ::sg_export(forcePower, dst.forcePower);
+        ::sg_export(forcePowerMax, dst.forcePowerMax);
+        ::sg_export(forcePowerRegenDebounceTime, dst.forcePowerRegenDebounceTime);
+        ::sg_export(forcePowerRegenRate, dst.forcePowerRegenRate);
+        ::sg_export(forcePowerRegenAmount, dst.forcePowerRegenAmount);
+        ::sg_export(forcePowerLevel, dst.forcePowerLevel);
+        ::sg_export(forceJumpZStart, dst.forceJumpZStart);
+        ::sg_export(forceJumpCharge, dst.forceJumpCharge);
+        ::sg_export(forceGripEntityNum, dst.forceGripEntityNum);
+        ::sg_export(forceGripOrg, dst.forceGripOrg);
+        ::sg_export(forceDrainEntityNum, dst.forceDrainEntityNum);
+        ::sg_export(forceDrainOrg, dst.forceDrainOrg);
+        ::sg_export(forceHealCount, dst.forceHealCount);
+        ::sg_export(forceAllowDeactivateTime, dst.forceAllowDeactivateTime);
+        ::sg_export(forceRageDrainTime, dst.forceRageDrainTime);
+        ::sg_export(forceRageRecoveryTime, dst.forceRageRecoveryTime);
+        ::sg_export(forceDrainEntNum, dst.forceDrainEntNum);
+        ::sg_export(forceDrainTime, dst.forceDrainTime);
+        ::sg_export(forcePowersForced, dst.forcePowersForced);
+        ::sg_export(pullAttackEntNum, dst.pullAttackEntNum);
+        ::sg_export(pullAttackTime, dst.pullAttackTime);
+        ::sg_export(lastKickedEntNum, dst.lastKickedEntNum);
+        ::sg_export(taunting, dst.taunting);
+        ::sg_export(jumpZStart, dst.jumpZStart);
+        ::sg_export(moveDir, dst.moveDir);
+        ::sg_export(waterheight, dst.waterheight);
+        ::sg_export(waterHeightLevel, dst.waterHeightLevel);
+        ::sg_export(ikStatus, dst.ikStatus);
+        ::sg_export(heldClient, dst.heldClient);
+        ::sg_export(heldByClient, dst.heldByClient);
+        ::sg_export(heldByBolt, dst.heldByBolt);
+        ::sg_export(heldByBone, dst.heldByBone);
+        ::sg_export(vehTurnaroundIndex, dst.vehTurnaroundIndex);
+        ::sg_export(vehTurnaroundTime, dst.vehTurnaroundTime);
+        ::sg_export(brokenLimbs, dst.brokenLimbs);
+        ::sg_export(electrifyTime, dst.electrifyTime);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.commandTime, commandTime);
+        ::sg_import(src.pm_type, pm_type);
+        ::sg_import(src.bobCycle, bobCycle);
+        ::sg_import(src.pm_flags, pm_flags);
+        ::sg_import(src.pm_time, pm_time);
+        ::sg_import(src.origin, origin);
+        ::sg_import(src.velocity, velocity);
+        ::sg_import(src.weaponTime, weaponTime);
+        ::sg_import(src.weaponChargeTime, weaponChargeTime);
+        ::sg_import(src.rechargeTime, rechargeTime);
+        ::sg_import(src.gravity, gravity);
+        ::sg_import(src.leanofs, leanofs);
+        ::sg_import(src.friction, friction);
+        ::sg_import(src.speed, speed);
+        ::sg_import(src.delta_angles, delta_angles);
+        ::sg_import(src.groundEntityNum, groundEntityNum);
+        ::sg_import(src.legsAnim, legsAnim);
+        ::sg_import(src.legsAnimTimer, legsAnimTimer);
+        ::sg_import(src.torsoAnim, torsoAnim);
+        ::sg_import(src.torsoAnimTimer, torsoAnimTimer);
+        ::sg_import(src.movementDir, movementDir);
+        ::sg_import(src.eFlags, eFlags);
+        ::sg_import(src.eventSequence, eventSequence);
+        ::sg_import(src.events, events);
+        ::sg_import(src.eventParms, eventParms);
+        ::sg_import(src.externalEvent, externalEvent);
+        ::sg_import(src.externalEventParm, externalEventParm);
+        ::sg_import(src.externalEventTime, externalEventTime);
+        ::sg_import(src.clientNum, clientNum);
+        ::sg_import(src.weapon, weapon);
+        ::sg_import(src.weaponstate, weaponstate);
+        ::sg_import(src.batteryCharge, batteryCharge);
+        ::sg_import(src.viewangles, viewangles);
+        ::sg_import(src.legsYaw, legsYaw);
+        ::sg_import(src.viewheight, viewheight);
+        ::sg_import(src.damageEvent, damageEvent);
+        ::sg_import(src.damageYaw, damageYaw);
+        ::sg_import(src.damagePitch, damagePitch);
+        ::sg_import(src.damageCount, damageCount);
+        ::sg_import(src.stats, stats);
+        ::sg_import(src.persistant, persistant);
+        ::sg_import(src.powerups, powerups);
+        ::sg_import(src.ammo, ammo);
+        ::sg_import(src.inventory, inventory);
+        ::sg_import(src.security_key_message, security_key_message);
+        ::sg_import(src.serverViewOrg, serverViewOrg);
+        ::sg_import(src.saberInFlight, saberInFlight);
+
+#ifdef JK2_MODE
+        ::sg_import(src.saberActive, saberActive);
+        ::sg_import(src.vehicleModel, vehicleModel);
+        ::sg_import(src.viewEntity, viewEntity);
+        ::sg_import(src.saberColor, saberColor);
+        ::sg_import(src.saberLength, saberLength);
+        ::sg_import(src.saberLengthMax, saberLengthMax);
+        ::sg_import(src.forcePowersActive, forcePowersActive);
+#else
+        ::sg_import(src.viewEntity, viewEntity);
+        ::sg_import(src.forcePowersActive, forcePowersActive);
+#endif
+
+        ::sg_import(src.useTime, useTime);
+        ::sg_import(src.lastShotTime, lastShotTime);
+        ::sg_import(src.ping, ping);
+        ::sg_import(src.lastOnGround, lastOnGround);
+        ::sg_import(src.lastStationary, lastStationary);
+        ::sg_import(src.weaponShotCount, weaponShotCount);
+        ::sg_import(src.saber, saber);
+        ::sg_import(src.dualSabers, dualSabers);
+        ::sg_import(src.saberMove, saberMove);
+        ::sg_import(src.saberMoveNext, saberMoveNext);
+        ::sg_import(src.saberBounceMove, saberBounceMove);
+        ::sg_import(src.saberBlocking, saberBlocking);
+        ::sg_import(src.saberBlocked, saberBlocked);
+        ::sg_import(src.leanStopDebounceTime, leanStopDebounceTime);
+
+#ifdef JK2_MODE
+        ::sg_import(src.saberLengthOld, saberLengthOld);
+#endif
+
+        ::sg_import(src.saberEntityNum, saberEntityNum);
+        ::sg_import(src.saberEntityDist, saberEntityDist);
+        ::sg_import(src.saberThrowTime, saberThrowTime);
+        ::sg_import(src.saberEntityState, saberEntityState);
+        ::sg_import(src.saberDamageDebounceTime, saberDamageDebounceTime);
+        ::sg_import(src.saberHitWallSoundDebounceTime, saberHitWallSoundDebounceTime);
+        ::sg_import(src.saberEventFlags, saberEventFlags);
+        ::sg_import(src.saberBlockingTime, saberBlockingTime);
+        ::sg_import(src.saberAnimLevel, saberAnimLevel);
+        ::sg_import(src.saberAttackChainCount, saberAttackChainCount);
+        ::sg_import(src.saberLockTime, saberLockTime);
+        ::sg_import(src.saberLockEnemy, saberLockEnemy);
+        ::sg_import(src.saberStylesKnown, saberStylesKnown);
+
+#ifdef JK2_MODE
+        ::sg_import(src.saberModel, saberModel);
+#endif
+
+        ::sg_import(src.forcePowersKnown, forcePowersKnown);
+        ::sg_import(src.forcePowerDuration, forcePowerDuration);
+        ::sg_import(src.forcePowerDebounce, forcePowerDebounce);
+        ::sg_import(src.forcePower, forcePower);
+        ::sg_import(src.forcePowerMax, forcePowerMax);
+        ::sg_import(src.forcePowerRegenDebounceTime, forcePowerRegenDebounceTime);
+        ::sg_import(src.forcePowerRegenRate, forcePowerRegenRate);
+        ::sg_import(src.forcePowerRegenAmount, forcePowerRegenAmount);
+        ::sg_import(src.forcePowerLevel, forcePowerLevel);
+        ::sg_import(src.forceJumpZStart, forceJumpZStart);
+        ::sg_import(src.forceJumpCharge, forceJumpCharge);
+        ::sg_import(src.forceGripEntityNum, forceGripEntityNum);
+        ::sg_import(src.forceGripOrg, forceGripOrg);
+        ::sg_import(src.forceDrainEntityNum, forceDrainEntityNum);
+        ::sg_import(src.forceDrainOrg, forceDrainOrg);
+        ::sg_import(src.forceHealCount, forceHealCount);
+        ::sg_import(src.forceAllowDeactivateTime, forceAllowDeactivateTime);
+        ::sg_import(src.forceRageDrainTime, forceRageDrainTime);
+        ::sg_import(src.forceRageRecoveryTime, forceRageRecoveryTime);
+        ::sg_import(src.forceDrainEntNum, forceDrainEntNum);
+        ::sg_import(src.forceDrainTime, forceDrainTime);
+        ::sg_import(src.forcePowersForced, forcePowersForced);
+        ::sg_import(src.pullAttackEntNum, pullAttackEntNum);
+        ::sg_import(src.pullAttackTime, pullAttackTime);
+        ::sg_import(src.lastKickedEntNum, lastKickedEntNum);
+        ::sg_import(src.taunting, taunting);
+        ::sg_import(src.jumpZStart, jumpZStart);
+        ::sg_import(src.moveDir, moveDir);
+        ::sg_import(src.waterheight, waterheight);
+        ::sg_import(src.waterHeightLevel, waterHeightLevel);
+        ::sg_import(src.ikStatus, ikStatus);
+        ::sg_import(src.heldClient, heldClient);
+        ::sg_import(src.heldByClient, heldByClient);
+        ::sg_import(src.heldByBolt, heldByBolt);
+        ::sg_import(src.heldByBone, heldByBone);
+        ::sg_import(src.vehTurnaroundIndex, vehTurnaroundIndex);
+        ::sg_import(src.vehTurnaroundTime, vehTurnaroundTime);
+        ::sg_import(src.brokenLimbs, brokenLimbs);
+        ::sg_import(src.electrifyTime, electrifyTime);
+    }
+} playerState_t;
 
 //====================================================================
 
@@ -2284,13 +3152,58 @@ typedef enum
 
 // usercmd_t is sent to the server each client frame
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgUserCmd
+{
+public:
+    int32_t serverTime;
+    int32_t buttons;
+    uint8_t weapon;
+    SgArray<int32_t, 3> angles;
+    uint8_t generic_cmd;
+    int8_t forwardmove;
+    int8_t rightmove;
+    int8_t upmove;
+}; // SgUserCmd
+#pragma pack(pop)
+
 typedef struct usercmd_s {
+    using SgType = SgUserCmd;
+
+
 	int		serverTime;
 	int		buttons;
 	byte	weapon;
 	int		angles[3];
 	byte	generic_cmd;
 	signed char	forwardmove, rightmove, upmove;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(serverTime, dst.serverTime);
+        ::sg_export(buttons, dst.buttons);
+        ::sg_export(weapon, dst.weapon);
+        ::sg_export(angles, dst.angles);
+        ::sg_export(generic_cmd, dst.generic_cmd);
+        ::sg_export(forwardmove, dst.forwardmove);
+        ::sg_export(rightmove, dst.rightmove);
+        ::sg_export(upmove, dst.upmove);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.serverTime, serverTime);
+        ::sg_import(src.buttons, buttons);
+        ::sg_import(src.weapon, weapon);
+        ::sg_import(src.angles, angles);
+        ::sg_import(src.generic_cmd, generic_cmd);
+        ::sg_import(src.forwardmove, forwardmove);
+        ::sg_import(src.rightmove, rightmove);
+        ::sg_import(src.upmove, upmove);
+    }
 } usercmd_t;
 
 //===================================================================
@@ -2308,12 +3221,48 @@ typedef enum {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 	TR_GRAVITY
 } trType_t;
 
+#pragma pack(push, 4)
+class SgTrajectory
+{
+public:
+    int32_t trType;
+    int32_t trTime;
+    int32_t trDuration;
+    SgVec3 trBase;
+    SgVec3 trDelta;
+}; // SgTrajectory
+#pragma pack(pop)
+
 typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
+    using SgType = SgTrajectory;
+
+
 	trType_t	trType;
 	int		trTime;
 	int		trDuration;			// if non 0, trTime + trDuration = stop time
 	vec3_t	trBase;
 	vec3_t	trDelta;			// velocity, etc
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(trType, dst.trType);
+        ::sg_export(trTime, dst.trTime);
+        ::sg_export(trDuration, dst.trDuration);
+        ::sg_export(trBase, dst.trBase);
+        ::sg_export(trDelta, dst.trDelta);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.trType, trType);
+        ::sg_import(src.trTime, trTime);
+        ::sg_import(src.trDuration, trDuration);
+        ::sg_import(src.trBase, trBase);
+        ::sg_import(src.trDelta, trDelta);
+    }
 } trajectory_t;
 
 
@@ -2324,7 +3273,62 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 // The messages are delta compressed, so it doesn't really matter if
 // the structure size is fairly large
 
+#pragma pack(push, 4)
+class SgEntityState
+{
+public:
+    int32_t number;
+    int32_t eType;
+    int32_t eFlags;
+    SgTrajectory pos;
+    SgTrajectory apos;
+    int32_t time;
+    int32_t time2;
+    SgVec3 origin;
+    SgVec3 origin2;
+    SgVec3 angles;
+    SgVec3 angles2;
+    int32_t otherEntityNum;
+    int32_t otherEntityNum2;
+    int32_t groundEntityNum;
+    int32_t constantLight;
+    int32_t loopSound;
+    int32_t modelindex;
+    int32_t modelindex2;
+    int32_t modelindex3;
+    int32_t clientNum;
+    int32_t frame;
+    int32_t solid;
+    int32_t event;
+    int32_t eventParm;
+    int32_t powerups;
+    int32_t weapon;
+    int32_t legsAnim;
+    int32_t legsAnimTimer;
+    int32_t torsoAnim;
+    int32_t torsoAnimTimer;
+    int32_t scale;
+    int32_t saberInFlight;
+    int32_t saberActive;
+
+#ifdef JK2_MODE
+    int32_t vehicleModel;
+#endif
+
+    SgVec3 vehicleAngles;
+    int32_t vehicleArmor;
+    int32_t m_iVehicleNum;
+    SgVec3 modelScale;
+    int32_t radius;
+    int32_t boltInfo;
+    int32_t isPortalEnt;
+}; // SgEntityState
+#pragma pack(pop)
+
 typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!!!!
+    using SgType = SgEntityState;
+
+
 	int		number;			// entity index
 	int		eType;			// entityType_t
 	int		eFlags;
@@ -2396,7 +3400,108 @@ Ghoul2 Insert End
 
 	qboolean	isPortalEnt;
 
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(number, dst.number);
+        ::sg_export(eType, dst.eType);
+        ::sg_export(eFlags, dst.eFlags);
+        ::sg_export(pos, dst.pos);
+        ::sg_export(apos, dst.apos);
+        ::sg_export(time, dst.time);
+        ::sg_export(time2, dst.time2);
+        ::sg_export(origin, dst.origin);
+        ::sg_export(origin2, dst.origin2);
+        ::sg_export(angles, dst.angles);
+        ::sg_export(angles2, dst.angles2);
+        ::sg_export(otherEntityNum, dst.otherEntityNum);
+        ::sg_export(otherEntityNum2, dst.otherEntityNum2);
+        ::sg_export(groundEntityNum, dst.groundEntityNum);
+        ::sg_export(constantLight, dst.constantLight);
+        ::sg_export(loopSound, dst.loopSound);
+        ::sg_export(modelindex, dst.modelindex);
+        ::sg_export(modelindex2, dst.modelindex2);
+        ::sg_export(modelindex3, dst.modelindex3);
+        ::sg_export(clientNum, dst.clientNum);
+        ::sg_export(frame, dst.frame);
+        ::sg_export(solid, dst.solid);
+        ::sg_export(event, dst.event);
+        ::sg_export(eventParm, dst.eventParm);
+        ::sg_export(powerups, dst.powerups);
+        ::sg_export(weapon, dst.weapon);
+        ::sg_export(legsAnim, dst.legsAnim);
+        ::sg_export(legsAnimTimer, dst.legsAnimTimer);
+        ::sg_export(torsoAnim, dst.torsoAnim);
+        ::sg_export(torsoAnimTimer, dst.torsoAnimTimer);
+        ::sg_export(scale, dst.scale);
+        ::sg_export(saberInFlight, dst.saberInFlight);
+        ::sg_export(saberActive, dst.saberActive);
+
+#ifdef JK2_MODE
+        ::sg_export(vehicleModel, dst.vehicleModel);
+#endif
+
+        ::sg_export(vehicleAngles, dst.vehicleAngles);
+        ::sg_export(vehicleArmor, dst.vehicleArmor);
+        ::sg_export(m_iVehicleNum, dst.m_iVehicleNum);
+        ::sg_export(modelScale, dst.modelScale);
+        ::sg_export(radius, dst.radius);
+        ::sg_export(boltInfo, dst.boltInfo);
+        ::sg_export(isPortalEnt, dst.isPortalEnt);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.number, number);
+        ::sg_import(src.eType, eType);
+        ::sg_import(src.eFlags, eFlags);
+        ::sg_import(src.pos, pos);
+        ::sg_import(src.apos, apos);
+        ::sg_import(src.time, time);
+        ::sg_import(src.time2, time2);
+        ::sg_import(src.origin, origin);
+        ::sg_import(src.origin2, origin2);
+        ::sg_import(src.angles, angles);
+        ::sg_import(src.angles2, angles2);
+        ::sg_import(src.otherEntityNum, otherEntityNum);
+        ::sg_import(src.otherEntityNum2, otherEntityNum2);
+        ::sg_import(src.groundEntityNum, groundEntityNum);
+        ::sg_import(src.constantLight, constantLight);
+        ::sg_import(src.loopSound, loopSound);
+        ::sg_import(src.modelindex, modelindex);
+        ::sg_import(src.modelindex2, modelindex2);
+        ::sg_import(src.modelindex3, modelindex3);
+        ::sg_import(src.clientNum, clientNum);
+        ::sg_import(src.frame, frame);
+        ::sg_import(src.solid, solid);
+        ::sg_import(src.event, event);
+        ::sg_import(src.eventParm, eventParm);
+        ::sg_import(src.powerups, powerups);
+        ::sg_import(src.weapon, weapon);
+        ::sg_import(src.legsAnim, legsAnim);
+        ::sg_import(src.legsAnimTimer, legsAnimTimer);
+        ::sg_import(src.torsoAnim, torsoAnim);
+        ::sg_import(src.torsoAnimTimer, torsoAnimTimer);
+        ::sg_import(src.scale, scale);
+        ::sg_import(src.saberInFlight, saberInFlight);
+        ::sg_import(src.saberActive, saberActive);
+
+#ifdef JK2_MODE
+        ::sg_import(src.vehicleModel, vehicleModel);
+#endif
+
+        ::sg_import(src.vehicleAngles, vehicleAngles);
+        ::sg_import(src.vehicleArmor, vehicleArmor);
+        ::sg_import(src.m_iVehicleNum, m_iVehicleNum);
+        ::sg_import(src.modelScale, modelScale);
+        ::sg_import(src.radius, radius);
+        ::sg_import(src.boltInfo, boltInfo);
+        ::sg_import(src.isPortalEnt, isPortalEnt);
+    }
 } entityState_t;
+
 
 typedef enum {
 	CA_UNINITIALIZED,

@@ -84,7 +84,7 @@ OBJ_LoadMissionObjectives
 */
 void OBJ_LoadMissionObjectives( gclient_t *client )
 {
-	gi.ReadFromSaveGame(INT_ID('O','B','J','T'), (void *) &client->sess.mission_objectives, sizeof(client->sess.mission_objectives), NULL);
+	::sg_read_no_cast(::gi, INT_ID('O','B','J','T'), client->sess.mission_objectives);
 }
 
 

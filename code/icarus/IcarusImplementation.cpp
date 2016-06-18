@@ -683,7 +683,7 @@ int CIcarus::Load()
 
 	//Check to make sure we're at the ICARUS save block
 	double	version;
-	game->ReadSaveData( INT_ID('I','C','A','R'), &version, sizeof( version ) );
+	::sg_read<double>(game, INT_ID('I','C','A','R'), version);
 
 	//Versions must match!
 	if ( version != ICARUS_VERSION )
@@ -694,7 +694,7 @@ int CIcarus::Load()
 	}
 
 	// Read into the buffer all our data.
-	/*m_ulBytesAvailable = */game->ReadSaveData( INT_ID('I','S','E','Q'), m_byBuffer, 0 );	//fixme, use real buff size
+	/*m_ulBytesAvailable = */::sg_read_no_cast(game, INT_ID('I','S','E','Q'), m_byBuffer, 0 );	//fixme, use real buff size
 
 	//Load all signals
 	if ( LoadSignals() == false )
@@ -804,7 +804,7 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 	{// We've tried to read past the buffer...
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferRead: Buffer underflow, Looking for new block." );
 		// Read in the next block.
-		/*m_ulBytesAvailable = */IGameInterface::GetGame()->ReadSaveData( INT_ID('I','S','E','Q'), m_byBuffer, 0 );	//FIXME, to actually check underflows, use real buff size
+		/*m_ulBytesAvailable = */::sg_read_no_cast(IGameInterface::GetGame(), INT_ID('I','S','E','Q'), m_byBuffer, 0 );	//FIXME, to actually check underflows, use real buff size
 		m_ulBytesRead = 0;	//reset buffer
 	}
 

@@ -183,7 +183,7 @@ char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		assert(iStrlen+1<=(int)sizeof(sString));
 
-		gi.ReadFromSaveGame(INT_ID('S','T','R','G'), sString, iStrlen, NULL);
+		::sg_read_no_cast(::gi, INT_ID('S','T','R','G'), sString, iStrlen);
 
 		// we can't do string recycling with the new g_alloc pool dumping, so just always alloc here...
 		//
@@ -480,7 +480,7 @@ static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalR
 	switch (pField->eFieldType)
 	{
 	case F_STRING:
-		*(char **)pv = GetStringPtr(*(int *)pv, pbOriginalRefData?*(char**)pvOriginal:NULL);
+		*(char **)pv = GetStringPtr(*(intptr_t *)pv, pbOriginalRefData?*(char**)pvOriginal:NULL);
 		break;
 
 	case F_GENTITY:
@@ -488,7 +488,7 @@ static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalR
 		break;
 
 	case F_GROUP:
-		*(AIGroupInfo_t **)pv = GetGroupPtr(*(int *)pv);
+		*(AIGroupInfo_t **)pv = GetGroupPtr(*(intptr_t *)pv);
 		break;
 
 	case F_GCLIENT:
@@ -496,7 +496,7 @@ static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalR
 		break;
 
 	case F_ITEM:
-		*(gitem_t **)pv = GetGItemPtr(*(int *)pv);
+		*(gitem_t **)pv = GetGItemPtr(*(intptr_t *)pv);
 		break;
 
 	case F_BEHAVIORSET:
@@ -505,7 +505,7 @@ static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalR
 			char **pO= (char **) pvOriginal;
 			for (int i=0; i<NUM_BSETS; i++, p++, pO++)
 			{
-				*p = GetStringPtr(*(int *)p, pbOriginalRefData?*(char **)pO:NULL);
+				*p = GetStringPtr(*(intptr_t *)p, pbOriginalRefData?*(char **)pO:NULL);
 			}
 		}
 		break;
@@ -572,9 +572,18 @@ static const char *SG_GetChidText(unsigned int chid)
 	return chidtext;
 }
 
-static void EvaluateFields(const field_t *pFields, byte *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
+template<typename T>
+static void EvaluateFields(const field_t *pFields, T* pbData, T* pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
 {
-	int iReadSize = gi.ReadFromSaveGame(ulChid, pbData, bOkToSizeMisMatch?0:iSize, NULL);
+    using SgType = typename T::SgType;
+
+    iSize = static_cast<int>(sizeof(SgType));
+
+    auto& sg_buffer = ::sg_get_buffer(iSize);
+
+    auto sg_object = reinterpret_cast<SgType*>(sg_buffer.data());
+
+    int iReadSize = ::gi.ReadFromSaveGame(ulChid, sg_object, bOkToSizeMisMatch?0:iSize, NULL);
 
 	if (iReadSize != iSize)
 	{
@@ -598,11 +607,13 @@ static void EvaluateFields(const field_t *pFields, byte *pbData, byte *pbOrigina
 		}
 	}
 
+    ::sg_import(*sg_object, *pbData);
+
 	if (pFields)
 	{
 		for (const field_t *pField = pFields; pField->psName; pField++)
 		{
-			EvaluateField(pField, pbData, pbOriginalRefData);
+			EvaluateField(pField, reinterpret_cast<byte*>(pbData), reinterpret_cast<byte*>(pbOriginalRefData));
 		}
 	}
 }
@@ -638,7 +649,7 @@ static void ReadLevelLocals ()
 
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;
-	EvaluateFields(savefields_LevelLocals, (byte *)temp, (byte *)&level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
+	EvaluateFields(savefields_LevelLocals, temp, &level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
 	level = *temp;					// struct copy
 
 	level.clients = pClients;				// restore clients
@@ -735,13 +746,13 @@ static void ReadGEntities(qboolean qbAutosave)
 	int		iCount;
 	int		i;
 
-	gi.ReadFromSaveGame(INT_ID('N','M','E','D'), (void *)&iCount, sizeof(iCount), NULL);
+	::sg_read<int32_t>(::gi, INT_ID('N','M','E','D'), iCount);
 
 	int iPreviousEntRead = -1;
 	for (i=0; i<iCount; i++)
 	{
 		int iEntIndex;
-		gi.ReadFromSaveGame(INT_ID('E','D','N','M'), (void *)&iEntIndex, sizeof(iEntIndex), NULL);
+		::sg_read<int32_t>(::gi, INT_ID('E','D','N','M'), iEntIndex);
 
 		if (iEntIndex >= globals.num_entities)
 		{
@@ -776,7 +787,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		gi.G2API_LoadSaveCodeDestructGhoul2Info(pEnt->ghoul2);
 		pEnt->ghoul2.kill();
-		EvaluateFields(savefields_gEntity, (byte *)pEnt, (byte *)pEntOriginal, INT_ID('G','E','N','T'), sizeof(*pEnt),qfalse);
+		EvaluateFields(savefields_gEntity, pEnt, pEntOriginal, INT_ID('G','E','N','T'), sizeof(*pEnt),qfalse);
 		pEnt->ghoul2.kill();
 
 		// now for any fiddly bits...
@@ -785,7 +796,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gNPC_t tempNPC;
 
-			EvaluateFields(savefields_gNPC, (byte *)&tempNPC,(byte *)pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
+			EvaluateFields(savefields_gNPC, &tempNPC,pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -813,7 +824,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gclient_t tempGClient;
 
-			EvaluateFields(savefields_gClient, (byte *)&tempGClient, (byte *)pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qfalse);
+			EvaluateFields(savefields_gClient, &tempGClient, pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qfalse);
 
 			// can we pinch the original's client handle or do we have to alloc a new one?...
 			//
@@ -841,7 +852,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 
-			gi.ReadFromSaveGame(INT_ID('P','A','R','M'), &tempParms, sizeof(tempParms), NULL);
+			::sg_read_no_cast(::gi, INT_ID('P','A','R','M'), tempParms);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -867,7 +878,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		{
 			char *pGhoul2Data = NULL;
-			gi.ReadFromSaveGame(INT_ID('G','H','L','2'), 0, 0, (void**)&pGhoul2Data);
+			::sg_read_allocate(::gi, INT_ID('G','H','L','2'), pGhoul2Data);
 			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
 			gi.Free(pGhoul2Data);
 		}
@@ -928,7 +939,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		// check that Icarus has loaded everything it saved out by having a marker chunk after it...
 		//
 		static int iBlah = 1234;
-		gi.ReadFromSaveGame(INT_ID('I','C','O','K'), &iBlah, sizeof(iBlah), NULL);
+		::sg_read<int32_t>(::gi, INT_ID('I','C','O','K'), iBlah);
 	}
 	if (!qbAutosave)
 	{
@@ -984,11 +995,11 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 
 		//Read & throw away gclient info
 		gclient_t junkClient;
-		EvaluateFields(savefields_gClient, (byte *)&junkClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qfalse);
+		EvaluateFields(savefields_gClient, &junkClient, &level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qfalse);
 
 		//Read & throw away objective info
 		objectives_t	junkObj[MAX_MISSION_OBJ];
-		gi.ReadFromSaveGame(INT_ID('O','B','J','T'), (void *) &junkObj, 0, NULL);
+		::sg_read_no_cast(::gi, INT_ID('O','B','J','T'), junkObj);
 
 		ReadLevelLocals();	// level_locals_t level
 	}
@@ -999,7 +1010,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
 
 			gclient_t GClient;
-			EvaluateFields(savefields_gClient, (byte *)&GClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qfalse);
+			EvaluateFields(savefields_gClient, &GClient, &level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qfalse);
 			level.clients[0] = GClient;	// struct copy
 			ReadLevelLocals();	// level_locals_t level
 		}
@@ -1021,7 +1032,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	// check that the whole file content was loaded by specifically requesting an end-marker...
 	//
 	static int iDONE = 1234;
-	gi.ReadFromSaveGame(INT_ID('D','O','N','E'), &iDONE, sizeof(iDONE), NULL);
+	::sg_read<int32_t>(::gi, INT_ID('D','O','N','E'), iDONE);
 }
 
 extern int killPlayerTimer;

@@ -1228,7 +1228,7 @@ and recalculates the area connections
 */
 void	CM_ReadPortalState ()
 {
-	SG_Read(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	::sg_read<int32_t>(::SG_Read, INT_ID('P','R','T','S'), ::cmg.areaPortals, ::cmg.numAreas * ::cmg.numAreas);
 	CM_FloodAreaConnections (cmg);
 }
 

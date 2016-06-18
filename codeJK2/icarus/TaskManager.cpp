@@ -1815,10 +1815,10 @@ void CTaskManager::Load( void )
 	int				i;
 
 	//Get the GUID
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','M','I','D'), &m_GUID, sizeof( m_GUID ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','M','I','D'), m_GUID);
 
 	//Get the number of tasks to follow
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','S','K','#'), &numTasks, sizeof( numTasks ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','S','K','#'), numTasks);
 	
 	//Reload all the tasks
 	for ( i = 0; i < numTasks; i++ )
@@ -1828,11 +1828,11 @@ void CTaskManager::Load( void )
 		assert( task );
 
 		//Get the GUID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','I','D'), &id, sizeof( id ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','K','I','D'), id);
 		task->SetGUID( id );
 
 		//Get the time stamp
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','T','S'), &timeStamp, sizeof( timeStamp ), NULL );
+		::sg_read<uint32_t>(m_owner->GetInterface(), INT_ID('T','K','T','S'), timeStamp);
 		task->SetTimeStamp( timeStamp );
 
 		//
@@ -1840,25 +1840,25 @@ void CTaskManager::Load( void )
 		//
 
 		//Get the block ID and create a new container
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','L','I','D'), &id, sizeof( id ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), id);
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','F','L','G'), &flags, sizeof( flags ), NULL );
+		::sg_read<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
 		block->SetFlags( flags );
 
 		//Get the number of block members
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof( numMembers ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','I','D'), &bID, sizeof( bID ), NULL );
+			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
 			
 			//Get the member size
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','S','I','Z'), &bSize, sizeof( bSize ), NULL );
+			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
@@ -1868,7 +1868,7 @@ void CTaskManager::Load( void )
 			}
 
 			//Get the actual raw data
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('B','M','E','M'), bData, bSize, NULL );
+			::sg_read_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bData, bSize);
 
 			//Write out the correct type
 			switch ( bID )
@@ -1919,7 +1919,7 @@ void CTaskManager::Load( void )
 	//Load the task groups
 	int numTaskGroups;
 	
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','#','G'), &numTaskGroups, sizeof( numTaskGroups ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','#','G'), numTaskGroups);
 
 	if ( numTaskGroups == 0 )
 		return;
@@ -1934,7 +1934,7 @@ void CTaskManager::Load( void )
 		assert( taskGroup );
 
 		//Get this task group's ID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','G','#'), &taskIDs[i], sizeof( taskIDs[i] ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','K','G','#'), taskIDs[i]);
 		taskGroup->m_GUID = taskIDs[i];
 		
 		m_taskGroupIDMap[ taskIDs[i] ] = taskGroup;
@@ -1949,35 +1949,35 @@ void CTaskManager::Load( void )
 		assert( taskGroup );
 
 		//Load the parent ID
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','K','G','P'), &id, sizeof( id ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','K','G','P'), id);
 		
 		if ( id != -1 )
 			taskGroup->m_parent = ( GetTaskGroup( id ) != NULL ) ? GetTaskGroup( id ) : NULL;
 
 		//Get the number of commands in this group
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','C'), &numMembers, sizeof( numMembers ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','C'), numMembers);
 
 		//Get each command and its completion state
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the ID
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('G','M','I','D'), &id, sizeof( id ), NULL );
+			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('G','M','I','D'), id);
 
 			//Write out the state of completion
-			(m_owner->GetInterface())->I_ReadSaveData( INT_ID('G','M','D','N'), &completed, sizeof( completed ), NULL );
+			::sg_read<uint8_t>(m_owner->GetInterface(), INT_ID('G','M','D','N'), completed);
 
 			//Save it out
 			taskGroup->m_completedTasks[ id ] = completed;
 		}
 
 		//Get the number of completed tasks
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','D','N'), &taskGroup->m_numCompleted, sizeof( taskGroup->m_numCompleted ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','D','N'), taskGroup->m_numCompleted);
 	}
 
 	//Reload the currently active group
 	int curGroupID;
 
-	(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','C','G'), &curGroupID, sizeof( curGroupID ), NULL );
+	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','C','G'), curGroupID);
 
 	//Reload the map entries
 	for ( i = 0; i < numTaskGroups; i++ )
@@ -1986,13 +1986,13 @@ void CTaskManager::Load( void )
 		int		length;
 		
 		//Get the size of the string
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','L'), &length, sizeof( length ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','L'), length);
 
 		//Get the string
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','S'), &name, length, NULL );
+		::sg_read_no_cast(m_owner->GetInterface(), INT_ID('T','G','N','S'), name, length);
 
 		//Get the id
-		(m_owner->GetInterface())->I_ReadSaveData( INT_ID('T','G','N','I'), &id, sizeof( id ), NULL );
+		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','I'), id);
 
 		taskGroup = GetTaskGroup( id );
 		assert( taskGroup );

@@ -94,7 +94,7 @@ void WriteInUseBits(void)
 
 void ReadInUseBits(void)
 {
-	gi.ReadFromSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits), NULL);
+	::sg_read<uint32_t>(::gi, INT_ID('I','N','U','S'), ::g_entityInUseBits);
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
 	for(int i=0;i<MAX_GENTITIES;i++)
@@ -1484,7 +1484,7 @@ void G_LoadSave_WriteMiscData(void)
 
 void G_LoadSave_ReadMiscData(void)
 {
-	gi.ReadFromSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked), NULL);
+	::sg_read<int32_t>(::gi, INT_ID('L','C','K','D'), player_locked);
 }
 
 

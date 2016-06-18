@@ -115,18 +115,78 @@ void NPC_BSAnimal_Default( void );
 //Group AI
 #define	MAX_FRAME_GROUPS	32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgAiGroupMember
+{
+public:
+    int32_t number;
+    int32_t waypoint;
+    int32_t pathCostToEnemy;
+    int32_t closestBuddy;
+}; // SgAiGroupMember
+#pragma pack(pop)
+
 typedef struct AIGroupMember_s
 {
+    using SgType = SgAiGroupMember;
+
+
 	int	number;
 	int waypoint;
 	int pathCostToEnemy;
 	int	closestBuddy;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(number, dst.number);
+        ::sg_export(waypoint, dst.waypoint);
+        ::sg_export(pathCostToEnemy, dst.pathCostToEnemy);
+        ::sg_export(closestBuddy, dst.closestBuddy);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.number, number);
+        ::sg_import(src.waypoint, waypoint);
+        ::sg_import(src.pathCostToEnemy, pathCostToEnemy);
+        ::sg_import(src.closestBuddy, closestBuddy);
+    }
 } AIGroupMember_t;
 
 #define MAX_GROUP_MEMBERS 32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
+#pragma pack(push, 4)
+class SgAiGroupInfo
+{
+public:
+    int32_t numGroup;
+    int32_t processed;
+    int32_t team;
+    int32_t enemy;
+    int32_t enemyWP;
+    int32_t speechDebounceTime;
+    int32_t lastClearShotTime;
+    int32_t lastSeenEnemyTime;
+    int32_t morale;
+    int32_t moraleAdjust;
+    int32_t moraleDebounce;
+    int32_t memberValidateTime;
+    int32_t activeMemberNum;
+    int32_t commander;
+    SgVec3 enemyLastSeenPos;
+    SgArray<int32_t, NUM_SQUAD_STATES> numState;
+    SgArray<SgAiGroupMember, MAX_GROUP_MEMBERS> member;
+}; // SgAiGroupInfo
+#pragma pack(pop)
+
 typedef struct AIGroupInfo_s
 {
+    using SgType = SgAiGroupInfo;
+
+
 	int			numGroup;
 	qboolean	processed;
 	team_t		team;
@@ -144,7 +204,53 @@ typedef struct AIGroupInfo_s
 	vec3_t		enemyLastSeenPos;
 	int			numState[ NUM_SQUAD_STATES ];
 	AIGroupMember_t member[ MAX_GROUP_MEMBERS ];
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(numGroup, dst.numGroup);
+        ::sg_export(processed, dst.processed);
+        ::sg_export(team, dst.team);
+        ::sg_export(enemy, dst.enemy);
+        ::sg_export(enemyWP, dst.enemyWP);
+        ::sg_export(speechDebounceTime, dst.speechDebounceTime);
+        ::sg_export(lastClearShotTime, dst.lastClearShotTime);
+        ::sg_export(lastSeenEnemyTime, dst.lastSeenEnemyTime);
+        ::sg_export(morale, dst.morale);
+        ::sg_export(moraleAdjust, dst.moraleAdjust);
+        ::sg_export(moraleDebounce, dst.moraleDebounce);
+        ::sg_export(memberValidateTime, dst.memberValidateTime);
+        ::sg_export(activeMemberNum, dst.activeMemberNum);
+        ::sg_export(commander, dst.commander);
+        ::sg_export(enemyLastSeenPos, dst.enemyLastSeenPos);
+        ::sg_export(numState, dst.numState);
+        ::sg_export(member, dst.member);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.numGroup, numGroup);
+        ::sg_import(src.processed, processed);
+        ::sg_import(src.team, team);
+        ::sg_import(src.enemy, enemy);
+        ::sg_import(src.enemyWP, enemyWP);
+        ::sg_import(src.speechDebounceTime, speechDebounceTime);
+        ::sg_import(src.lastClearShotTime, lastClearShotTime);
+        ::sg_import(src.lastSeenEnemyTime, lastSeenEnemyTime);
+        ::sg_import(src.morale, morale);
+        ::sg_import(src.moraleAdjust, moraleAdjust);
+        ::sg_import(src.moraleDebounce, moraleDebounce);
+        ::sg_import(src.memberValidateTime, memberValidateTime);
+        ::sg_import(src.activeMemberNum, activeMemberNum);
+        ::sg_import(src.commander, commander);
+        ::sg_import(src.enemyLastSeenPos, enemyLastSeenPos);
+        ::sg_import(src.numState, numState);
+        ::sg_import(src.member, member);
+    }
 } AIGroupInfo_t;
+
 
 int	AI_GetGroupSize( vec3_t origin, int radius, team_t playerTeam, gentity_t *avoid = NULL );
 int AI_GetGroupSize( gentity_t *ent, int radius );

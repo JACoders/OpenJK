@@ -441,22 +441,91 @@ typedef enum {
 
 } entity_event_t;
 
+#pragma pack(push, 4)
+class SgAnimation
+{
+public:
+    int32_t firstFrame;
+    int32_t numFrames;
+    int32_t loopFrames;
+    int32_t frameLerp;
+    int32_t initialLerp;
+}; // SgAnimation
+#pragma pack(pop)
 
 typedef struct animation_s {
+    using SgType = SgAnimation;
+
+
 	int		firstFrame;
 	int		numFrames;
 	int		loopFrames;			// 0 to numFrames, -1 = no loop
 	int		frameLerp;			// msec between frames
 	int		initialLerp;		// msec to get to first frame
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(firstFrame, dst.firstFrame);
+        ::sg_export(numFrames, dst.numFrames);
+        ::sg_export(loopFrames, dst.loopFrames);
+        ::sg_export(frameLerp, dst.frameLerp);
+        ::sg_export(initialLerp, dst.initialLerp);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.firstFrame, firstFrame);
+        ::sg_import(src.numFrames, numFrames);
+        ::sg_import(src.loopFrames, loopFrames);
+        ::sg_import(src.frameLerp, frameLerp);
+        ::sg_import(src.initialLerp, initialLerp);
+    }
 } animation_t;
 
 #define	MAX_RANDOM_ANIMSOUNDS	8
+
+#pragma pack(push, 4)
+class SgAnimSounds
+{
+public:
+    int32_t keyFrame;
+    SgArray<int32_t, MAX_RANDOM_ANIMSOUNDS> soundIndex;
+    int32_t numRandomAnimSounds;
+    int32_t probability;
+}; // SgAnimSounds
+#pragma pack(pop)
+
 typedef struct animsounds_s 
 {
+    using SgType = SgAnimSounds;
+
+
 	int		keyFrame;			//Frame to play sound on
 	int		soundIndex[MAX_RANDOM_ANIMSOUNDS];			//sound file to play - FIXME: should be an index, handle random some other way?
 	int		numRandomAnimSounds;		//string variable min for va("...%d.wav", Q_irand(lowestVa, highestVa))
 	int		probability;		//chance sound will play, zero value will not run this test (0 = 100% basically)
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(keyFrame, dst.keyFrame);
+        ::sg_export(soundIndex, dst.soundIndex);
+        ::sg_export(numRandomAnimSounds, dst.numRandomAnimSounds);
+        ::sg_export(probability, dst.probability);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.keyFrame, keyFrame);
+        ::sg_import(src.soundIndex, soundIndex);
+        ::sg_import(src.numRandomAnimSounds, numRandomAnimSounds);
+        ::sg_import(src.probability, probability);
+    }
 } animsounds_t;
 
 // means of death

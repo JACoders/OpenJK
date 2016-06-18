@@ -650,13 +650,13 @@ void G_LoadCachedRoffs()
 	char	buffer[MAX_QPATH];
 
 	// Get the count of goodies we need to revive
-	gi.ReadFromSaveGame( INT_ID('R','O','F','F'), (void *)&count, sizeof(count), NULL );
+	::sg_read<int32_t>(::gi, INT_ID('R','O','F','F'), count);
 
 	// Now bring 'em back to life
 	for ( i = 0; i < count; i++ )
 	{
-		gi.ReadFromSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len), NULL );
-		gi.ReadFromSaveGame( INT_ID('R','S','T','R'), (void *)(buffer), len, NULL );
+		::sg_read<int32_t>(::gi, INT_ID('S','L','E','N'), len);
+		::sg_read_no_cast(::gi, INT_ID('R','S','T','R'), buffer, len);
 		G_LoadRoff( buffer );
 	}
 }

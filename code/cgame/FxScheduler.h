@@ -401,14 +401,53 @@ struct SEffectTemplate
 
 #define MAX_LOOPED_FX 32
 // We hold a looped effect here
+#pragma pack(push, 4)
+class SgSLoopedEffect
+{
+public:
+    int32_t mId;
+    int32_t mBoltInfo;
+    int32_t mNextTime;
+    int32_t mLoopStopTime;
+    uint8_t mPortalEffect;
+    uint8_t mIsRelative;
+}; // SgSLoopedEffect
+#pragma pack(pop)
+
 struct SLoopedEffect
 {
+    using SgType = SgSLoopedEffect;
+
+
 	int		mId;			// effect id
 	int		mBoltInfo;		// used to determine which bolt on the ghoul2 model we should be attaching this effect to
 	int		mNextTime;		//time to render again
 	int		mLoopStopTime;	//time to die
 	bool	mPortalEffect;	// rww - render this before skyportals, and not in the normal world view.
 	bool	mIsRelative;	// bolt this puppy on keep it updated
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(mId, dst.mId);
+        ::sg_export(mBoltInfo, dst.mBoltInfo);
+        ::sg_export(mNextTime, dst.mNextTime);
+        ::sg_export(mLoopStopTime, dst.mLoopStopTime);
+        ::sg_export(mPortalEffect, dst.mPortalEffect);
+        ::sg_export(mIsRelative, dst.mIsRelative);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.mId, mId);
+        ::sg_import(src.mBoltInfo, mBoltInfo);
+        ::sg_import(src.mNextTime, mNextTime);
+        ::sg_import(src.mLoopStopTime, mLoopStopTime);
+        ::sg_import(src.mPortalEffect, mPortalEffect);
+        ::sg_import(src.mIsRelative, mIsRelative);
+    }
 };
 
 class CFxScheduler

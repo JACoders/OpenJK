@@ -1760,9 +1760,15 @@ void *G2_FindSurface(const model_s *mod, int index, int lod)
 	return (void *)current;
 }
 
+#if 0
 #define SURFACE_SAVE_BLOCK_SIZE	sizeof(surfaceInfo_t)
 #define BOLT_SAVE_BLOCK_SIZE sizeof(boltInfo_t)
 #define BONE_SAVE_BLOCK_SIZE sizeof(boneInfo_t)
+#else
+const auto SURFACE_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgSurfaceInfo));
+const auto BOLT_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoltInfo));
+const auto BONE_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoneInfo));
+#endif
 
 void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 {
@@ -1854,7 +1860,7 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 {
 	// first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
-	int newSize = *(int*)buffer;
+	auto newSize = *(int32_t*)buffer;
 	ghoul2.resize(newSize);
 	buffer += 4;
 
@@ -1866,7 +1872,7 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 	}
 
 	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	const int ghoul2BlockSize = (intptr_t)&ghoul2[0].mTransformedVertsArray - (intptr_t)&ghoul2[0].mModelindex;
+	constexpr auto ghoul2BlockSize = static_cast<int>(sizeof(SgCGhoul2Info));
 
 	// now we have enough instances, lets go through each one and load up the relevant details
 	for (int i=0; i<ghoul2.size(); i++)
@@ -1876,7 +1882,10 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 		ghoul2[i].mFileName[0]=0;
 		ghoul2[i].mValid=false;
 		// load the ghoul2 info from the buffer
-		memcpy(&ghoul2[i].mModelindex, buffer, ghoul2BlockSize);
+        ::sg_import(
+            *reinterpret_cast<const SgCGhoul2Info*>(buffer),
+            ghoul2[i]);
+
 		buffer +=ghoul2BlockSize;
 
 		if (ghoul2[i].mModelindex!=-1&&ghoul2[i].mFileName[0])
@@ -1886,35 +1895,44 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 		}
 
 		// give us enough surfaces to load up the data
-		ghoul2[i].mSlist.resize(*(int*)buffer);
+		ghoul2[i].mSlist.resize(*(int32_t*)buffer);
 		buffer +=4;
 
 		// now load all the surfaces
 		for (size_t x=0; x<ghoul2[i].mSlist.size(); x++)
 		{
-			memcpy(&ghoul2[i].mSlist[x], buffer, SURFACE_SAVE_BLOCK_SIZE);
+            ::sg_import(
+                *reinterpret_cast<const SgSurfaceInfo*>(buffer),
+                ghoul2[i].mSlist[x]);
+
 			buffer += SURFACE_SAVE_BLOCK_SIZE;
 		}
 
 		// give us enough bones to load up the data
-		ghoul2[i].mBlist.resize(*(int*)buffer);
+		ghoul2[i].mBlist.resize(*(int32_t*)buffer);
 		buffer +=4;
 
 		// now load all the bones
 		for (size_t x = 0; x<ghoul2[i].mBlist.size(); x++)
 		{
-			memcpy(&ghoul2[i].mBlist[x], buffer, BONE_SAVE_BLOCK_SIZE);
+            ::sg_import(
+                *reinterpret_cast<const SgBoneInfo*>(buffer),
+                ghoul2[i].mBlist[x]);
+
 			buffer += BONE_SAVE_BLOCK_SIZE;
 		}
 
 		// give us enough bolts to load up the data
-		ghoul2[i].mBltlist.resize(*(int*)buffer);
+		ghoul2[i].mBltlist.resize(*(int32_t*)buffer);
 		buffer +=4;
 
 		// now load all the bolts
 		for (size_t x = 0; x<ghoul2[i].mBltlist.size(); x++)
 		{
-			memcpy(&ghoul2[i].mBltlist[x], buffer, BOLT_SAVE_BLOCK_SIZE);
+            ::sg_import(
+                *reinterpret_cast<const SgBoltInfo*>(buffer),
+                ghoul2[i].mBltlist[x]);
+
 			buffer += BOLT_SAVE_BLOCK_SIZE;
 		}
 	}

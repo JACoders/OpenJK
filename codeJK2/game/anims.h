@@ -1399,13 +1399,49 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 #endif// #ifndef CG_PLAYER_CPP
 
 // !!!!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!!!
+#pragma pack(push, 4)
+class SgAnimFileSet
+{
+public:
+    SgArray<int8_t, MAX_QPATH> filename;
+    SgArray<SgAnimation, MAX_ANIMATIONS> animations;
+    SgArray<SgAnimSounds, MAX_ANIM_SOUNDS> torsoAnimSnds;
+    SgArray<SgAnimSounds, MAX_ANIM_SOUNDS> legsAnimSnds;
+    int32_t soundsCached;
+}; // SgAnimFileSet
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgAnimFileSet;
+
+
 	char			filename[MAX_QPATH];
 	animation_t		animations[MAX_ANIMATIONS];
 	animsounds_t	torsoAnimSnds[MAX_ANIM_SOUNDS];
 	animsounds_t	legsAnimSnds[MAX_ANIM_SOUNDS];
 	qboolean		soundsCached;
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(filename, dst.filename);
+        ::sg_export(animations, dst.animations);
+        ::sg_export(torsoAnimSnds, dst.torsoAnimSnds);
+        ::sg_export(legsAnimSnds, dst.legsAnimSnds);
+        ::sg_export(soundsCached, dst.soundsCached);
+    }
+
+    void sg_import(
+        const SgType& src)
+    {
+        ::sg_import(src.filename, filename);
+        ::sg_import(src.animations, animations);
+        ::sg_import(src.torsoAnimSnds, torsoAnimSnds);
+        ::sg_import(src.legsAnimSnds, legsAnimSnds);
+        ::sg_import(src.soundsCached, soundsCached);
+    }
 } animFileSet_t;
 #define MAX_ANIM_FILES	64
 
