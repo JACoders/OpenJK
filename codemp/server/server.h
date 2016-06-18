@@ -23,12 +23,14 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <chrono>
+#include <string>
+
 #include "qcommon/q_shared.h"
 #include "qcommon/qcommon.h"
 #include "game/g_public.h"
 #include "game/bg_public.h"
 #include "rd-common/tr_public.h"
-
 //=============================================================================
 
 #define	PERS_SCORE				0		// !!! MUST NOT CHANGE, SERVER AND
@@ -237,6 +239,11 @@ typedef struct serverStatic_s {
 	netadr_t	authorizeAddress;			// for rcon return messages
 
 	qboolean	gameStarted;				// gvm is loaded
+	struct {
+		bool enabled;
+		int lastTimeDisconnected;
+		float sv_fps;
+	} hibernation;							// handle hibernation mode data
 } serverStatic_t;
 
 #define SERVER_MAXBANS	1024
@@ -291,6 +298,7 @@ extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
 extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
+extern	cvar_t	*sv_hibernateTime;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;
