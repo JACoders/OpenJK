@@ -710,7 +710,7 @@ void CGCam_Anything( void )
 }
 
 //These are useless for MP. Just taking it for now since I don't want to remove all calls to this in ICARUS.
-int AppendToSaveGame(unsigned long chid, void *data, int length)
+int AppendToSaveGame(unsigned long chid, const void *data, int length)
 {
 	return 1;
 }

@@ -1215,7 +1215,7 @@ int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPt
 
 void CM_WritePortalState ()
 {
-	SG_Append(INT_ID('P','R','T','S'), (void *)cmg.areaPortals, cmg.numAreas * cmg.numAreas * sizeof( *cmg.areaPortals ));
+	::sg_write<int32_t>(::SG_Append, INT_ID('P','R','T','S'), ::cmg.areaPortals, ::cmg.numAreas * ::cmg.numAreas);
 }
 
 /*

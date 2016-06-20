@@ -171,7 +171,7 @@ void TIMER_Save( void )
 		}
 
 		//Write out the timer information
-		gi.AppendToSaveGame(INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers));
+		::sg_write<uint8_t>(::gi, INT_ID('T','I','M','E'), numTimers);
 
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
@@ -185,10 +185,10 @@ void TIMER_Save( void )
 			assert( length < 1024 );//This will cause problems when loading the timer if longer
 
 			//Write out the id string
-			gi.AppendToSaveGame(INT_ID('T','M','I','D'), (void *) timerID, length);
+			::sg_write_no_cast(::gi, INT_ID('T','M','I','D'), timerID, length);
 
 			//Write out the timer data
-			gi.AppendToSaveGame(INT_ID('T','D','T','A'), (void *) &time, sizeof( time ) );
+			::sg_write<int32_t>(::gi, INT_ID('T','D','T','A'), time);
 			p = p->next;
 		}
 	}

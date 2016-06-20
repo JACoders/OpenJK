@@ -338,7 +338,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 	switch (pField->eFieldType)
 	{
 	case F_STRING:
-		*(int *)pv = GetStringNum(*(char **)pv);
+		*(intptr_t *)pv = GetStringNum(*(char **)pv);
 		break;
 
 	case F_GENTITY:
@@ -346,7 +346,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 		break;
 
 	case F_GROUP:
-		*(int *)pv = GetGroupNumber(*(AIGroupInfo_t **)pv);
+		*(intptr_t *)pv = GetGroupNumber(*(AIGroupInfo_t **)pv);
 		break;
 
 	case F_GCLIENT:
@@ -373,7 +373,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 		break;
 
 	case F_ITEM:
-		*(int *)pv = GetGItemNum(*(gitem_t **)pv);
+		*(intptr_t *)pv = GetGItemNum(*(gitem_t **)pv);
 		break;
 
 	case F_BEHAVIORSET:
@@ -382,7 +382,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 			for (int i=0; i<NUM_BSETS; i++)
 			{
 				pv = &p[i];	// since you can't ++ a void ptr
-				*(int *)pv = GetStringNum(*(char **)pv);
+				*(intptr_t *)pv = GetStringNum(*(char **)pv);
 			}
 		}
 		break;
@@ -441,6 +441,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 	}
 }
 
+#if 0
 static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int ulChid, size_t iLen)
 {
 	strList = new std::list<sstring_t>;
@@ -458,19 +459,63 @@ static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int u
 
 	// save out raw data...
 	//
-	gi.AppendToSaveGame(ulChid, pbData, iLen);
+	::sg_write_no_cast(::gi, ulChid, pbData, static_cast<int>(iLen));
 
 	// save out any associated strings..
 	//
 	for (std::list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
 	{
-		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void*)it->c_str(), it->length()+1);
+		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it->c_str(), static_cast<int>(it->length()+1));
 	}
 
 	delete strList;
 	strList = NULL;
 }
+#else
+template<typename T>
+static void EnumerateFields(const field_t *pFields, T* src_instance, unsigned int ulChid, size_t iLen)
+{
+	strList = new std::list<sstring_t>;
 
+    auto pbData = reinterpret_cast<byte*>(src_instance);
+
+	// enumerate all the fields...
+	//
+	if (pFields)
+	{
+		for (const field_t *pField = pFields; pField->psName; pField++)
+		{
+			assert(pField->iOffset < iLen);
+			EnumerateField(pField, pbData);
+		}
+	}
+
+	// save out raw data...
+	//
+    using SgType = typename T::SgType;
+
+    constexpr auto dst_size = static_cast<int>(sizeof(SgType));
+
+    auto& dst_buffer = ::sg_get_buffer(
+        dst_size);
+
+    auto dst_instance = reinterpret_cast<SgType*>(dst_buffer.data());
+
+    ::sg_export(*src_instance, *dst_instance);
+
+	::sg_write_no_cast(::gi, ulChid, dst_buffer.data(), dst_size);
+
+	// save out any associated strings..
+	//
+	for (std::list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
+	{
+		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it->c_str(), static_cast<int>(it->length()+1));
+	}
+
+	delete strList;
+	strList = NULL;
+}
+#endif
 
 static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may be NULL*/)
 {
@@ -630,7 +675,7 @@ static void WriteLevelLocals ()
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// copy out all data into a temp space
 
-	EnumerateFields(savefields_LevelLocals, (byte *)temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));
+	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));
 	gi.Free(temp);
 }
 
@@ -671,7 +716,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		}
 	}
 
-	gi.AppendToSaveGame(INT_ID('N','M','E','D'), &iCount, sizeof(iCount));
+	::sg_write<int32_t>(::gi, INT_ID('N','M','E','D'), iCount);
 
 	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
@@ -679,7 +724,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 		if ( ent->inuse)
 		{
-			gi.AppendToSaveGame(INT_ID('E','D','N','M'), (void *)&i, sizeof(i));
+			::sg_write<int32_t>(::gi, INT_ID('E','D','N','M'), i);
 
 			qboolean qbLinked = ent->linked;
 			gi.unlinkentity( ent );
@@ -691,7 +736,7 @@ static void WriteGEntities(qboolean qbAutosave)
 				gi.linkentity( ent );
 			}
 
-			EnumerateFields(savefields_gEntity, (byte *)&tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
+			EnumerateFields(savefields_gEntity, &tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
 
 			// now for any fiddly bits that would be rather awkward to build into the enumerator...
 			//
@@ -699,18 +744,18 @@ static void WriteGEntities(qboolean qbAutosave)
 			{
 				gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
 
-				EnumerateFields(savefields_gNPC, (byte *)&npc, INT_ID('G','N','P','C'), sizeof(npc));
+				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'), sizeof(npc));
 			}
 
 			if (tempEnt.client == (gclient_t *)-2)	// I know, I know...
 			{
 				gclient_t client = *ent->client;	// NOT *tempEnt.client!!
-				EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));
+				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
 			}
 
 			if (tempEnt.parms)
 			{
-				gi.AppendToSaveGame(INT_ID('P','A','R','M'), ent->parms, sizeof(*ent->parms));
+				::sg_write_no_cast(::gi, INT_ID('P','A','R','M'), *ent->parms);
 			}
 
 			// the scary ghoul2 saver stuff...  (fingers crossed)
@@ -733,7 +778,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		//	This saves time debugging, and makes things easier to track.
 		//
 		static int iBlah = 1234;
-		gi.AppendToSaveGame(INT_ID('I','C','O','K'), &iBlah, sizeof(iBlah));
+		::sg_write<int32_t>(::gi, INT_ID('I','C','O','K'), iBlah);
 	}
 	if (!qbAutosave )//really shouldn't need to write these bits at all, just restore them from the ents...
 	{
@@ -956,7 +1001,7 @@ void WriteLevel(qboolean qbAutosave)
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
 		gclient_t client = level.clients[0];
-		EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));
+		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
 		WriteLevelLocals();	// level_locals_t level
 	}
 
@@ -975,7 +1020,7 @@ void WriteLevel(qboolean qbAutosave)
 	// put out an end-marker so that the load code can check everything was read in...
 	//
 	static int iDONE = 1234;
-	gi.AppendToSaveGame(INT_ID('D','O','N','E'), &iDONE, sizeof(iDONE));
+	::sg_write<int32_t>(::gi, INT_ID('D','O','N','E'), iDONE);
 }
 
 void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)

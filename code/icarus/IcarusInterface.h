@@ -144,7 +144,7 @@ public:
 
 	// Save / Load functions
 
-	virtual int		WriteSaveData( unsigned int chid, void *data, int length ) = 0;
+	virtual int		WriteSaveData( unsigned int chid, const void *data, int length ) = 0;
 	virtual int		ReadSaveData( unsigned int chid, void *address, int length, void **addressptr = NULL )  = 0;
 	virtual int		LinkGame( int gameID, int icarusID ) = 0;
 

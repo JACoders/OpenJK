@@ -288,7 +288,7 @@ Q3_VariableSaveFloats
 void Q3_VariableSaveFloats( varFloat_m &fmap )
 {
 	int numFloats = fmap.size();
-	gi.AppendToSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ) );
+	::sg_write<int32_t>(::gi, INT_ID('F','V','A','R'), numFloats);
 
 	varFloat_m::iterator	vfi;
 	STL_ITERATE( vfi, fmap )
@@ -297,11 +297,11 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 		int	idSize = strlen( ((*vfi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( INT_ID('F','I','D','S'), (void *) ((*vfi).first).c_str(), idSize );
+		::sg_write<int32_t>(::gi, INT_ID('F','I','D','L'), idSize);
+		::sg_write_no_cast(::gi, INT_ID('F','I','D','S'), ((*vfi).first).c_str(), idSize);
 
 		//Save out the float value
-		gi.AppendToSaveGame( INT_ID('F','V','A','L'), &((*vfi).second), sizeof( float ) );
+		::sg_write_no_cast(::gi, INT_ID('F','V','A','L'), (*vfi).second);
 	}
 }
 
@@ -314,7 +314,7 @@ Q3_VariableSaveStrings
 void Q3_VariableSaveStrings( varString_m &smap )
 {
 	int numStrings = smap.size();
-	gi.AppendToSaveGame( INT_ID('S','V','A','R'), &numStrings, sizeof( numStrings ) );
+	::sg_write<int32_t>(::gi, INT_ID('S','V','A','R'), numStrings);
 
 	varString_m::iterator	vsi;
 	STL_ITERATE( vsi, smap )
@@ -323,14 +323,14 @@ void Q3_VariableSaveStrings( varString_m &smap )
 		int	idSize = strlen( ((*vsi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( INT_ID('S','I','D','S'), (void *) ((*vsi).first).c_str(), idSize );
+		::sg_write<int32_t>(::gi, INT_ID('S','I','D','L'), idSize);
+		::sg_write_no_cast(::gi, INT_ID('S','I','D','S'), ((*vsi).first).c_str(), idSize);
 
 		//Save out the string value
 		idSize = strlen( ((*vsi).second).c_str() );
 
-		gi.AppendToSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( INT_ID('S','V','A','L'), (void *) ((*vsi).second).c_str(), idSize );
+		::sg_write<int32_t>(::gi, INT_ID('S','V','S','Z'), idSize);
+		::sg_write_no_cast(::gi, INT_ID('S','V','A','L'), ((*vsi).second).c_str(), idSize);
 	}
 }
 
@@ -372,7 +372,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 
 		float	val;
 
-		::sg_read<float>(::gi, INT_ID('F','V','A','L'), val);
+		::sg_read_no_cast(::gi, INT_ID('F','V','A','L'), val);
 
 		Q3_DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		Q3_SetFloatVariable( (const char *) &tempBuffer, val );

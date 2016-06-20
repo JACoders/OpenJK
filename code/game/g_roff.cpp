@@ -650,15 +650,15 @@ void G_SaveCachedRoffs()
 	int i, len;
 
 	// Write out the number of cached ROFFs
-	gi.AppendToSaveGame( INT_ID('R','O','F','F'), (void *)&num_roffs, sizeof(num_roffs) );
+	::sg_write<int32_t>(::gi, INT_ID('R','O','F','F'), num_roffs);
 
 	// Now dump out the cached ROFF file names in order so they can be loaded on the other end
 	for ( i = 0; i < num_roffs; i++ )
 	{
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
 		len = strlen( roffs[i].fileName ) + 1;
-		gi.AppendToSaveGame( INT_ID('S','L','E','N'), (void *)&len, sizeof(len) );
-		gi.AppendToSaveGame( INT_ID('R','S','T','R'), (void *)roffs[i].fileName, len );
+		::sg_write<int32_t>(::gi, INT_ID('S','L','E','N'), len);
+		::sg_write_no_cast(::gi, INT_ID('R','S','T','R'), roffs[i].fileName, len);
 	}
 }
 

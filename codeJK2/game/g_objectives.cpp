@@ -61,7 +61,7 @@ OBJ_SaveMissionObjectives
 */
 void OBJ_SaveMissionObjectives( gclient_t *client )
 {
-	gi.AppendToSaveGame(INT_ID('O','B','J','T'), client->sess.mission_objectives, sizeof(client->sess.mission_objectives));
+	::sg_write_no_cast(::gi, INT_ID('O','B','J','T'), client->sess.mission_objectives);
 }
 
 

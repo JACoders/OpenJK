@@ -517,14 +517,14 @@ static void EnumerateFields(const save_field_t *pFields, const byte *pbData, uns
 
 	// save out raw data...
 	//
-	gi.AppendToSaveGame(ulChid, pbData, iLen);
+	::sg_write_no_cast(::gi, ulChid, pbData, static_cast<int>(iLen));
 
 	// save out any associated strings..
 	//
 	std::list<sstring_t>::iterator it = strList->begin();
 	for (size_t i=0; i<strList->size(); i++, ++it)
 	{
-		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void *)(*it).c_str(), (*it).length() + 1);
+		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), (*it).c_str(), static_cast<int>((*it).length() + 1));
 	}
 
 	delete strList;
@@ -834,7 +834,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		}
 	}
 
-	gi.AppendToSaveGame(INT_ID('N','M','E','D'), &iCount, sizeof(iCount));
+	::sg_write<int32_t>(::gi, INT_ID('N','M','E','D'), iCount);
 
 	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
@@ -842,7 +842,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 		if ( ent->inuse)
 		{
-			gi.AppendToSaveGame(INT_ID('E','D','N','M'), (void *)&i, sizeof(i));
+			::sg_write<int32_t>(::gi, INT_ID('E','D','N','M'), i);
 
 			qboolean qbLinked = ent->linked;
 			gi.unlinkentity( ent );
@@ -873,7 +873,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 			if (tempEnt.parms)
 			{
-				gi.AppendToSaveGame(INT_ID('P','A','R','M'), ent->parms, sizeof(*ent->parms));
+				::sg_write_no_cast(::gi, INT_ID('P','A','R','M'), *ent->parms);
 			}
 
 			if (tempEnt.m_pVehicle)
@@ -902,7 +902,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		//	This saves time debugging, and makes things easier to track.
 		//
 		static int iBlah = 1234;
-		gi.AppendToSaveGame(INT_ID('I','C','O','K'), &iBlah, sizeof(iBlah));
+		::sg_write<int32_t>(::gi, INT_ID('I','C','O','K'), iBlah);
 	}
 	if (!qbAutosave )//really shouldn't need to write these bits at all, just restore them from the ents...
 	{
@@ -1188,7 +1188,7 @@ void WriteLevel(qboolean qbAutosave)
 	// put out an end-marker so that the load code can check everything was read in...
 	//
 	static int iDONE = 1234;
-	gi.AppendToSaveGame(INT_ID('D','O','N','E'), &iDONE, sizeof(iDONE));
+	::sg_write<int32_t>(::gi, INT_ID('D','O','N','E'), iDONE);
 }
 
 void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)

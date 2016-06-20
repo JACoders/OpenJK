@@ -697,7 +697,7 @@ public:
 	void	FreeVariable( const char *name );
 
 	//Save / Load functions
-	int		WriteSaveData( unsigned int chid, void *data, int length );
+	int		WriteSaveData( unsigned int chid, const void *data, int length );
 	int		ReadSaveData( unsigned int chid, void *address, int length, void **addressptr = NULL );
 	int		LinkGame( int entID, int icarusID );
 

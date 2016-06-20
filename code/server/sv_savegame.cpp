@@ -178,7 +178,7 @@ static qboolean SG_Create( const char *psPathlessBaseName )
 	}
 
 	giSaveGameVersion = iSAVEGAME_VERSION;
-	SG_Append(INT_ID('_','V','E','R'), &giSaveGameVersion, sizeof(giSaveGameVersion));
+	::sg_write<int32_t>(::SG_Append, INT_ID('_','V','E','R'), ::giSaveGameVersion);
 
 	return qtrue;
 }
@@ -539,7 +539,7 @@ void SV_SaveGame_f(void)
 //---------------
 static void WriteGame(qboolean autosave)
 {
-	SG_Append(INT_ID('G','A','M','E'), &autosave, sizeof(autosave));
+	::sg_write<int32_t>(::SG_Append, INT_ID('G','A','M','E'), autosave);
 
 	if (autosave)
 	{
@@ -554,25 +554,25 @@ static void WriteGame(qboolean autosave)
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
-		SG_Append(INT_ID('C','V','S','V'), &s, sizeof(s));
+		::sg_write_no_cast(::SG_Append, INT_ID('C','V','S','V'), s);
 
 		// write ammo...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerammo", s, sizeof(s) );
-		SG_Append(INT_ID('A','M','M','O'), &s, sizeof(s));
+		::sg_write_no_cast(::SG_Append, INT_ID('A','M','M','O'), s);
 
 		// write inventory...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerinv", s, sizeof(s) );
-		SG_Append(INT_ID('I','V','T','Y'), &s, sizeof(s));
+		::sg_write_no_cast(::SG_Append, INT_ID('I','V','T','Y'), s);
 
 		// the new JK2 stuff - force powers, etc...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
-		SG_Append(INT_ID('F','P','L','V'), &s, sizeof(s));
+		::sg_write_no_cast(::SG_Append, INT_ID('F','P','L','V'), s);
 	}
 }
 
@@ -643,7 +643,7 @@ void SG_WriteCvars(void)
 
 	// store count...
 	//
-	SG_Append(INT_ID('C','V','C','N'), &iCount, sizeof(iCount));
+	::sg_write<int32_t>(::SG_Append, INT_ID('C','V','C','N'), iCount);
 
 	// write 'em...
 	//
@@ -657,8 +657,8 @@ void SG_WriteCvars(void)
 		{
 			continue;
 		}
-		SG_Append(INT_ID('C','V','A','R'), var->name,   strlen(var->name) + 1);
-		SG_Append(INT_ID('V','A','L','U'), var->string, strlen(var->string) + 1);
+		::sg_write_no_cast(::SG_Append, INT_ID('C','V','A','R'), var->name, static_cast<int>(strlen(var->name) + 1));
+		::sg_write_no_cast(::SG_Append, INT_ID('V','A','L','U'), var->string, static_cast<int>(strlen(var->string) + 1));
 	}
 }
 
@@ -700,7 +700,7 @@ void SG_WriteServerConfigStrings( void )
 		}
 	}
 
-	SG_Append(INT_ID('C','S','C','N'), &iCount, sizeof(iCount));
+	::sg_write<int32_t>(::SG_Append, INT_ID('C','S','C','N'), iCount);
 
 	// now write 'em...
 	//
@@ -710,8 +710,8 @@ void SG_WriteServerConfigStrings( void )
 		{
 			if (sv.configstrings[i]	&& strlen(sv.configstrings[i]))
 			{
-				SG_Append(INT_ID('C','S','I','N'), &i, sizeof(i));
-				SG_Append(INT_ID('C','S','D','A'), sv.configstrings[i], strlen(sv.configstrings[i])+1);
+				::sg_write<int32_t>(::SG_Append, INT_ID('C','S','I','N'), i);
+				::sg_write_no_cast(::SG_Append, INT_ID('C','S','D','A'), ::sv.configstrings[i], static_cast<int>(strlen(::sv.configstrings[i])+1));
 			}
 		}
 	}
@@ -775,11 +775,11 @@ static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 		Q_strncpyz(sComment,saveGameComment, sizeof(sComment));
 	}
 
-	SG_Append(INT_ID('C','O','M','M'), sComment, sizeof(sComment));
+	::sg_write_no_cast(::SG_Append, INT_ID('C','O','M','M'), sComment);
 
 	// Add Date/Time/Map stamp
 	unsigned int timestamp = SG_UnixTimestamp (time (NULL));
-	SG_Append(INT_ID('C','M','T','M'), &timestamp, sizeof (timestamp));
+	::sg_write<uint32_t>(::SG_Append, INT_ID('C','M','T','M'), timestamp);
 
 	Com_DPrintf("Saving: current (%s)\n", sComment);
 }
@@ -975,8 +975,8 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0 );
 	if ( qbAutosave )
 		delete[] byBlank;
-	SG_Append(INT_ID('S','H','L','N'), &iJPGDataSize, sizeof(iJPGDataSize));
-	SG_Append(INT_ID('S','H','O','T'), pJPGData, iJPGDataSize);
+	::sg_write<uint32_t>(::SG_Append, INT_ID('S','H','L','N'), iJPGDataSize);
+	::sg_write_no_cast(::SG_Append, INT_ID('S','H','O','T'), pJPGData, static_cast<int>(iJPGDataSize));
 	Z_Free(pJPGData);
 	SCR_TempRawImage_CleanUp();
 }
@@ -1056,7 +1056,7 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 #ifdef JK2_MODE
 	SG_WriteScreenshot(qbAutosave, sMapCmd);
 #endif
-	SG_Append(INT_ID('M','P','C','M'), sMapCmd, sizeof(sMapCmd));
+	::sg_write_no_cast(::SG_Append, INT_ID('M','P','C','M'), sMapCmd);
 	SG_WriteCvars();
 
 	WriteGame (qbAutosave);
@@ -1065,8 +1065,8 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	//
 	if (!qbAutosave)
 	{
-		SG_Append(INT_ID('T','I','M','E'), (void *)&sv.time, sizeof(sv.time));
-		SG_Append(INT_ID('T','I','M','R'), (void *)&sv.timeResidual, sizeof(sv.timeResidual));
+		::sg_write<int32_t>(::SG_Append, INT_ID('T','I','M','E'), ::sv.time);
+		::sg_write<int32_t>(::SG_Append, INT_ID('T','I','M','R'), ::sv.timeResidual);
 		CM_WritePortalState();
 		SG_WriteServerConfigStrings();
 	}

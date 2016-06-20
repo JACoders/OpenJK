@@ -89,7 +89,7 @@ qboolean PInUse2(gentity_t *ent)
 
 void WriteInUseBits(void)
 {
-	gi.AppendToSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits) );
+	::sg_write<uint32_t>(::gi, INT_ID('I','N','U','S'), ::g_entityInUseBits);
 }
 
 void ReadInUseBits(void)
@@ -1477,7 +1477,7 @@ extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData(void)
 {
-	gi.AppendToSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked));
+	::sg_write<int32_t>(::gi, INT_ID('L','C','K','D'), player_locked);
 }
 
 

@@ -2330,16 +2330,16 @@ int	CSequencer::Save( void )
 	numSequences = m_sequences.size();
 
 	//Save out the owner sequence
-	m_ie->I_WriteSaveData( INT_ID('S','Q','R','E'), &m_ownerID, sizeof( m_ownerID ) );
+	::sg_write<int32_t>(m_ie, INT_ID('S','Q','R','E'), m_ownerID);
 
 	//Write out the number of sequences we need to read
-	m_ie->I_WriteSaveData( INT_ID('S','Q','R','#'), &numSequences, sizeof( numSequences ) );
+	::sg_write<int32_t>(m_ie, INT_ID('S','Q','R','#'), numSequences);
 
 	//Second pass, save out all sequences, in order
 	STL_ITERATE( si, m_sequences )
 	{
 		id = (*si)->GetID();
-		m_ie->I_WriteSaveData( INT_ID('S','Q','R','I'), &id, sizeof( id ) );
+		::sg_write<int32_t>(m_ie, INT_ID('S','Q','R','I'), id);
 	}
 
 	//Save out the taskManager
@@ -2347,29 +2347,29 @@ int	CSequencer::Save( void )
 
 	//Save out the task sequences mapping the name to the GUIDs
 	numTasks = m_taskSequences.size();
-	m_ie->I_WriteSaveData( INT_ID('S','Q','T','#'), &numTasks, sizeof ( numTasks ) );
+	::sg_write<int32_t>(m_ie, INT_ID('S','Q','T','#'), numTasks);
 
 	STL_ITERATE( ti, m_taskSequences )
 	{	
 		//Save the task group's ID
 		id = ((*ti).first)->GetGUID();
-		m_ie->I_WriteSaveData( INT_ID('S','T','I','D'), &id, sizeof( id ) );
+		::sg_write<int32_t>(m_ie, INT_ID('S','T','I','D'), id);
 
 		//Save the sequence's ID
 		id = ((*ti).second)->GetID();
-		m_ie->I_WriteSaveData( INT_ID('S','S','I','D'), &id, sizeof( id ) );
+		::sg_write<int32_t>(m_ie, INT_ID('S','S','I','D'), id);
 	}
 
 	int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
 
-	m_ie->I_WriteSaveData( INT_ID('S','Q','C','T'), &curGroupID, sizeof ( m_numCommands ) );
+	::sg_write<int32_t>(m_ie, INT_ID('S','Q','C','T'), curGroupID);
 
 	//Output the number of commands
-	m_ie->I_WriteSaveData( INT_ID('S','Q','#','C'), &m_numCommands, sizeof ( m_numCommands ) );	//FIXME: This can be reconstructed
+	::sg_write<int32_t>(m_ie, INT_ID('S','Q','#','C'), m_numCommands);	//FIXME: This can be reconstructed
 
 	//Output the ID of the current sequence
 	id = ( m_curSequence != NULL ) ? m_curSequence->GetID() : -1;
-	m_ie->I_WriteSaveData( INT_ID('S','Q','C','S'), &id, sizeof ( id ) );
+	::sg_write<int32_t>(m_ie, INT_ID('S','Q','C','S'), id);
 
 	return true;
 }

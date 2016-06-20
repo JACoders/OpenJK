@@ -20,9 +20,14 @@
 
 using SgReadFunc = std::function<int (
     unsigned int chunk_id,
-    void *value_storage,
+    void* value_storage,
     int value_size,
-    void **allocated_value)>;
+    void** allocated_value)>;
+
+using SgWriteFunc = std::function<int (
+    unsigned int chunk_id,
+    const void* value_storage,
+    int value_size)>;
 
 
 template<typename T, std::size_t TCount>
@@ -146,6 +151,90 @@ private:
 
 
     // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // WriteSaveData
+
+    template<typename U>
+    static auto test_write_save_data(int) -> decltype(
+        std::declval<U>().WriteSaveData(
+            static_cast<unsigned int>(0),
+            static_cast<const void*>(nullptr),
+            static_cast<int>(0)
+        ) == 0,
+
+        yes()
+    );
+
+    template<typename>
+    static no test_write_save_data(...);
+
+    // WriteSaveData
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // I_WriteSaveData
+
+    template<typename U>
+    static auto test_i_write_save_data(int) -> decltype(
+        std::declval<U>().I_WriteSaveData(
+            static_cast<unsigned int>(0),
+            static_cast<const void*>(nullptr),
+            static_cast<int>(0)
+        ) == 0,
+
+        yes()
+    );
+
+    template<typename>
+    static no test_i_write_save_data(...);
+
+    // I_WriteSaveData
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // AppendToSaveGame
+
+    template<typename U>
+    static auto test_append_to_save_game(int) -> decltype(
+        std::declval<U>().AppendToSaveGame(
+            static_cast<unsigned int>(0),
+            static_cast<const void*>(nullptr),
+            static_cast<int>(0)
+        ) == 0,
+
+        yes()
+    );
+
+    template<typename>
+    static no test_append_to_save_game(...);
+
+    // AppendToSaveGame
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // SG_Append
+
+    template<typename U>
+    static auto test_sg_append(int) -> decltype(
+        std::declval<U>().SG_Append(
+            static_cast<unsigned int>(0),
+            static_cast<const void*>(nullptr),
+            static_cast<int>(0)
+        ) == 0,
+
+        yes()
+    );
+
+    template<typename>
+    static no test_sg_append(...);
+
+    // SG_Append
+    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     // has_sg_export
 
     template<typename U>
@@ -220,6 +309,26 @@ public:
     static constexpr bool has_read_from_save_game()
     {
         return std::is_same<decltype(test_read_from_save_game<T>(0)), yes>::value;
+    }
+
+    static constexpr bool has_write_save_data()
+    {
+        return std::is_same<decltype(test_write_save_data<T>(0)), yes>::value;
+    }
+
+    static constexpr bool has_i_write_save_data()
+    {
+        return std::is_same<decltype(test_i_write_save_data<T>(0)), yes>::value;
+    }
+
+    static constexpr bool has_append_to_save_game()
+    {
+        return std::is_same<decltype(test_append_to_save_game<T>(0)), yes>::value;
+    }
+
+    static constexpr bool has_sg_append()
+    {
+        return std::is_same<decltype(test_sg_append<T>(0)), yes>::value;
     }
 
     static constexpr bool has_sg_export()
@@ -304,6 +413,26 @@ class SgReadFromSaveGameFuncTag
 public:
 }; // SgReadFromSaveGameFuncTag
 
+class SgSgAppendFuncTag
+{
+public:
+}; // SgSgAppendFuncTag
+
+class SgWriteSaveDataFuncTag
+{
+public:
+}; // SgWriteSaveDataFuncTag
+
+class SgIWriteSaveDataFuncTag
+{
+public:
+}; // SgIWriteSaveDataFuncTag
+
+class SgAppendToSaveGameFuncTag
+{
+public:
+}; // SgAppendToSaveGameFuncTag
+
 
 } // detail
 
@@ -311,8 +440,8 @@ public:
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // sg_get_read_func
 //
-// Returns a function wrapper for a function pointer, pointer to an object or
-// a reference to an object.
+// Returns a read function wrapper for a function pointer,
+// pointer to an object or a reference to an object.
 //
 
 namespace detail {
@@ -429,6 +558,142 @@ inline SgReadFunc sg_get_read_func(
 } // detail
 
 // sg_get_read_func
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// sg_get_write_func
+//
+// Returns a write function wrapper for a function pointer,
+// pointer to an object or a reference to an object.
+//
+
+namespace detail {
+
+
+template<typename TFunc>
+inline SgWriteFunc sg_get_write_func(
+    TFunc& func,
+    SgFuncTag)
+{
+    return func;
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance* instance,
+    SgPointerTag,
+    SgSgAppendFuncTag)
+{
+    return instance->SG_Append;
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance* instance,
+    SgPointerTag,
+    SgWriteSaveDataFuncTag)
+{
+    return std::bind(
+        &TInstance::WriteSaveData,
+        instance,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3);
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance* instance,
+    SgPointerTag,
+    SgIWriteSaveDataFuncTag)
+{
+    return instance->I_WriteSaveData;
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance* instance,
+    SgPointerTag,
+    SgAppendToSaveGameFuncTag)
+{
+    return instance->AppendToSaveGame;
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance* instance,
+    SgPointerTag)
+{
+    using Tag = typename std::conditional<
+        SgTraits<TInstance>::has_sg_append(),
+        SgSgAppendFuncTag,
+        typename std::conditional<
+            SgTraits<TInstance>::has_write_save_data(),
+            SgWriteSaveDataFuncTag,
+            typename std::conditional<
+                SgTraits<TInstance>::has_i_write_save_data(),
+                SgIWriteSaveDataFuncTag,
+                typename std::conditional<
+                    SgTraits<TInstance>::has_append_to_save_game(),
+                    SgAppendToSaveGameFuncTag,
+                    void
+                >::type
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported instance type.");
+
+    return sg_get_write_func(
+        instance,
+        SgPointerTag(),
+        Tag());
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance& instance,
+    SgClassTag)
+{
+    return sg_get_write_func(
+        &instance,
+        SgPointerTag());
+}
+
+template<typename TInstance>
+inline SgWriteFunc sg_get_write_func(
+    TInstance& instance)
+{
+    using Tag = typename std::conditional<
+        std::is_function<TInstance>::value,
+        SgFuncTag,
+        typename std::conditional<
+            std::is_class<TInstance>::value,
+            SgClassTag,
+            typename std::conditional<
+                std::is_pointer<TInstance>::value,
+                SgPointerTag,
+                void
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported instance type.");
+
+    return sg_get_write_func(
+        instance,
+        Tag());
+}
+
+
+} // detail
+
+// sg_get_write_func
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
@@ -1058,10 +1323,6 @@ inline int sg_read_no_cast(
         !std::is_same<Tag, void>::value,
         "Unsupported types.");
 
-    if (!dst_values) {
-        throw SgException("Null pointer.");
-    }
-
     return sg_read_no_cast(
         read_func,
         chunk_id,
@@ -1335,7 +1596,7 @@ inline int sg_read(
     SgPointerTag)
 {
     if (!dst_values) {
-        throw SgException("Null destination poiner.");
+        throw SgException("Null pointer.");
     }
 
     const auto src_size = static_cast<int>(dst_count * sizeof(TSrc));
@@ -1402,7 +1663,7 @@ inline int sg_read(
         "Unsupported types.");
 
     if (dst_count < 0) {
-        throw SgException("Negative destination count.");
+        throw SgException("Negative count.");
     }
 
     auto read_func = detail::sg_get_read_func(
@@ -1485,6 +1746,565 @@ inline int sg_read_allocate(
 
     return read_result;
 }
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// sg_write_no_cast (fixed size)
+//
+// Writes a value or a fixed-size array of values into a
+// saved game without conversion.
+//
+
+namespace detail {
+
+
+template<typename TSrc>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc& src_value,
+    SgNumericTag)
+{
+    constexpr auto src_size = static_cast<int>(sizeof(TSrc));
+
+    return write_func(
+        chunk_id,
+        const_cast<TSrc*>(&src_value),
+        src_size);
+}
+
+template<typename TSrc>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc& src_value,
+    SgClassTag)
+{
+    using SgType = typename TSrc::SgType;
+
+    constexpr auto dst_size = static_cast<int>(sizeof(SgType));
+
+    auto& dst_buffer = sg_get_buffer(
+        dst_size);
+
+    auto& dst_value = *reinterpret_cast<SgType*>(dst_buffer.data());
+
+    ::sg_export(src_value, dst_value);
+
+    return write_func(
+        chunk_id,
+        &dst_value,
+        dst_size);
+}
+
+template<typename TSrc, std::size_t TCount>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    SgArray1dTag,
+    SgNumericTag)
+{
+    constexpr auto src_size = static_cast<int>(TCount * sizeof(TSrc));
+
+    return write_func(
+        chunk_id,
+        const_cast<TSrc*>(&src_values[0]),
+        src_size);
+}
+
+template<typename TSrc, std::size_t TCount>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    SgArray1dTag,
+    SgClassTag)
+{
+    using SgType = typename TSrc::SgType;
+
+    constexpr auto dst_size = static_cast<int>(TCount * sizeof(SgType));
+
+    auto& dst_buffer = sg_get_buffer(
+        dst_size);
+
+    auto dst_values = reinterpret_cast<SgType*>(dst_buffer.data());
+
+    for (decltype(TCount) i = 0; i < TCount; ++i) {
+        ::sg_export(src_values[i], dst_values[i]);
+    }
+
+    return write_func(
+        chunk_id,
+        dst_values,
+        dst_size);
+}
+
+template<typename TSrc, std::size_t TCount>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    SgArray1dTag)
+{
+    using Tag = typename std::conditional<
+        std::is_same<TSrc, bool>::value,
+        void,
+        typename std::conditional<
+            detail::SgTraits<TSrc>::is_numeric(),
+            detail::SgNumericTag,
+            typename std::conditional<
+                detail::SgTraits<TSrc>::has_sg_export(),
+                detail::SgClassTag,
+                void
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+    return sg_write_no_cast(
+        write_func,
+        chunk_id,
+        src_values,
+        SgArray1dTag(),
+        Tag()
+    );
+}
+
+
+} // detail
+
+
+template<typename TSrc, typename TInstance>
+inline int sg_write_no_cast(
+    TInstance&& instance,
+    unsigned int chunk_id,
+    const TSrc& src_value)
+{
+    using Tag = typename std::conditional<
+        std::is_same<TSrc, bool>::value,
+        void,
+        typename std::conditional<
+            detail::SgTraits<TSrc>::is_numeric(),
+            detail::SgNumericTag,
+            typename std::conditional<
+                detail::SgTraits<TSrc>::has_sg_export(),
+                detail::SgClassTag,
+                typename std::conditional<
+                    detail::SgTraits<TSrc>::is_array_1d(),
+                    detail::SgArray1dTag,
+                    void
+                >::type
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+    auto write_func = detail::sg_get_write_func(
+        instance);
+
+    return detail::sg_write_no_cast(
+        write_func,
+        chunk_id,
+        src_value,
+        Tag());
+}
+
+// sg_write_no_cast (fixed size)
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// sg_write_no_cast (dynamic size)
+//
+// Writes a specified number of values into a
+// saved game without conversion.
+//
+
+namespace detail {
+
+
+template<typename TSrc>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc* src_values,
+    int src_count,
+    SgPointerTag,
+    SgVoidTag)
+{
+    return write_func(
+        chunk_id,
+        const_cast<TSrc*>(src_values),
+        src_count);
+}
+
+template<typename TSrc>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc* src_values,
+    int src_count,
+    SgPointerTag,
+    SgNumericTag)
+{
+    const auto src_size = static_cast<int>(src_count * sizeof(TSrc));
+
+    return write_func(
+        chunk_id,
+        const_cast<TSrc*>(src_values),
+        src_size);
+}
+
+template<typename TSrc>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc* src_values,
+    int src_count,
+    SgPointerTag)
+{
+    using Tag = typename std::conditional<
+        std::is_same<TSrc, bool>::value,
+        void,
+        typename std::conditional<
+            SgTraits<TSrc>::is_numeric(),
+            SgNumericTag,
+            typename std::conditional<
+                std::is_same<TSrc, void>::value,
+                SgVoidTag,
+                void
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+    if (!src_values) {
+        throw SgException("Null pointer.");
+    }
+
+    return sg_write_no_cast(
+        write_func,
+        chunk_id,
+        src_values,
+        src_count,
+        SgPointerTag(),
+        Tag());
+}
+
+template<typename TSrc, std::size_t TCount>
+inline int sg_write_no_cast(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    int src_count,
+    SgArray1dTag)
+{
+    if (src_count > TCount) {
+        throw SgException("Write overflow.");
+    }
+
+    return sg_write_no_cast(
+        write_func,
+        chunk_id,
+        &src_values[0],
+        src_count,
+        SgPointerTag());
+}
+
+
+} // detail
+
+
+template<typename TSrc, typename TInstance>
+inline int sg_write_no_cast(
+    TInstance&& instance,
+    unsigned int chunk_id,
+    TSrc&& src_value,
+    int src_count)
+{
+    using TSrcTag = typename std::remove_reference<TSrc>::type;
+
+    using Tag = typename std::conditional<
+        std::is_same<TSrcTag, bool>::value,
+        void,
+        typename std::conditional<
+            std::is_pointer<TSrcTag>::value,
+            detail::SgPointerTag,
+            typename std::conditional<
+                detail::SgTraits<TSrcTag>::is_array_1d(),
+                detail::SgArray1dTag,
+                void
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+
+    auto write_func = detail::sg_get_write_func(
+        instance);
+
+    return detail::sg_write_no_cast(
+        write_func,
+        chunk_id,
+        src_value,
+        src_count,
+        Tag());
+}
+
+// sg_write_no_cast (dynamic size)
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// sg_write (fixed size)
+//
+// Writes a value or a fixed-array of values into a
+// saved game with conversion.
+//
+
+namespace detail {
+
+
+template<typename TDst, typename TSrc>
+inline int sg_write(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc& src_value,
+    SgNumericTag)
+{
+    auto dst_value = static_cast<TDst>(src_value);
+    constexpr auto dst_size = static_cast<int>(sizeof(TDst));
+
+    return write_func(
+        chunk_id,
+        &dst_value,
+        dst_size);
+}
+
+template<typename TDst, typename TSrc>
+inline int sg_write(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc& src_value,
+    SgPointerTag)
+{
+    auto dst_value = static_cast<TDst>(reinterpret_cast<std::intptr_t>(src_value));
+
+    constexpr auto dst_size = static_cast<int>(sizeof(TDst));
+
+    return write_func(
+        chunk_id,
+        &dst_value,
+        dst_size);
+}
+
+template<typename TDst, typename TSrc, std::size_t TCount>
+inline int sg_write(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    SgArray1dTag,
+    SgNumericTag)
+{
+    constexpr auto dst_size = static_cast<int>(TCount * sizeof(TDst));
+
+    auto& dst_buffer = sg_get_buffer(
+        dst_size);
+
+    auto dst_values = reinterpret_cast<TDst*>(dst_buffer.data());
+
+    std::uninitialized_copy_n(
+        src_values,
+        TCount,
+        dst_values);
+
+    return write_func(
+        chunk_id,
+        dst_values,
+        dst_size);
+}
+
+template<typename TDst, typename TSrc, std::size_t TCount>
+inline int sg_write(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    SgArray1dTag)
+{
+    using Tag = typename std::conditional<
+        SgTraits<TSrc>::is_numeric() && SgTraits<TDst>::is_numeric(),
+        SgNumericTag,
+        void
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+    return sg_write<TDst>(
+        write_func,
+        chunk_id,
+        src_values,
+        SgArray1dTag(),
+        Tag());
+}
+
+
+} // detail
+
+
+template<typename TDst, typename TSrc, typename TInstance>
+inline int sg_write(
+    TInstance&& instance,
+    unsigned int chunk_id,
+    const TSrc& src_value)
+{
+    using Tag = typename std::conditional<
+        detail::SgTraits<TSrc>::is_numeric() &&
+            detail::SgTraits<TDst>::is_numeric(),
+        detail::SgNumericTag,
+        typename std::conditional<
+            std::is_pointer<TSrc>::value &&
+                detail::SgTraits<TDst>::is_numeric(),
+            detail::SgPointerTag,
+            typename std::conditional<
+                detail::SgTraits<TSrc>::is_array_1d(),
+                detail::SgArray1dTag,
+                void
+            >::type
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+    auto write_func = detail::sg_get_write_func(
+        instance);
+
+    return detail::sg_write<TDst>(
+        write_func,
+        chunk_id,
+        src_value,
+        Tag());
+}
+
+// sg_write (fixed size)
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// sg_write (dynamic size)
+//
+// Reads a spesified number of values from a
+// saved game with conversion.
+//
+
+namespace detail {
+
+
+template<typename TDst, typename TSrc>
+inline int sg_write(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc* src_values,
+    int src_count,
+    SgPointerTag)
+{
+    if (!src_values) {
+        throw SgException("Null pointer.");
+    }
+
+    const auto dst_size = static_cast<int>(src_count * sizeof(TDst));
+
+    auto& dst_buffer = sg_get_buffer(
+        dst_size);
+
+    auto dst_values = reinterpret_cast<TDst*>(dst_buffer.data());
+
+    std::uninitialized_copy_n(
+        src_values,
+        src_count,
+        dst_values);
+
+    return write_func(
+        chunk_id,
+        dst_values,
+        dst_size);
+}
+
+template<typename TDst, typename TSrc, std::size_t TCount>
+inline int sg_write(
+    SgWriteFunc& write_func,
+    unsigned int chunk_id,
+    const TSrc (&src_values)[TCount],
+    int src_count,
+    SgArray1dTag)
+{
+    return sg_write<TDst>(
+        write_func,
+        chunk_id,
+        &src_values[0],
+        src_count,
+        SgPointerTag());
+}
+
+
+} // detail
+
+
+template<typename TDst, typename TSrc, typename TInstance>
+inline int sg_write(
+    TInstance&& instance,
+    unsigned int chunk_id,
+    const TSrc& src_value,
+    int src_count)
+{
+    using Tag = typename std::conditional<
+        std::is_pointer<TSrc>::value &&
+            detail::SgTraits<TDst>::is_numeric(),
+        detail::SgPointerTag,
+        typename std::conditional<
+            detail::SgTraits<TSrc>::is_array_1d(),
+            detail::SgArray1dTag,
+            void
+        >::type
+    >::type;
+
+    static_assert(
+        !std::is_same<Tag, void>::value,
+        "Unsupported types.");
+
+    if (src_count < 0) {
+        throw SgException("Negative count.");
+    }
+
+    auto write_func = detail::sg_get_write_func(
+        instance);
+
+    return detail::sg_write<TDst>(
+        write_func,
+        chunk_id,
+        src_value,
+        src_count,
+        Tag());
+}
+
+// sg_write (dynamic size)
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 #endif // __cplusplus

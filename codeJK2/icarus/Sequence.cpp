@@ -344,15 +344,15 @@ int CSequence::SaveCommand( CBlock *block )
 	
 	//Save out the block ID
 	bID = block->GetBlockID();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','L','I','D'), &bID, sizeof ( bID ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), bID);
 
 	//Save out the block's flags
 	flags = block->GetFlags();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','F','L','G'), &flags, sizeof ( flags ) );
+	::sg_write<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
 
 	//Save out the number of members to read
 	numMembers = block->GetNumMembers();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof ( numMembers ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
 
 	for ( int i = 0; i < numMembers; i++ )
 	{
@@ -360,14 +360,14 @@ int CSequence::SaveCommand( CBlock *block )
 
 		//Save the block id
 		bID = bm->GetID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','I','D'), &bID, sizeof ( bID ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
 		
 		//Save out the data size
 		size = bm->GetSize();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','S','I','Z'), &size, sizeof( size ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), size);
 		
 		//Save out the raw data
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','E','M'), bm->GetData(), size );
+		::sg_write_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bm->GetData(), size);
 	}
 
 	return true;
@@ -387,30 +387,30 @@ int CSequence::Save( void )
 
 	//Save the parent (by GUID)
 	id = ( m_parent != NULL ) ? m_parent->GetID() : -1;
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','P','I','D'), &id, sizeof( id ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','P','I','D'), id);
 
 	//Save the return (by GUID)
 	id = ( m_return != NULL ) ? m_return->GetID() : -1;
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','R','I','D'), &id, sizeof( id ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','R','I','D'), id);
 	
 	//Save the number of children
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','N','C','H'), &m_numChildren, sizeof( m_numChildren ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','N','C','H'), m_numChildren);
 
 	//Save out the children (only by GUID)
 	STL_ITERATE( ci, m_children )
 	{
 		id = (*ci)->GetID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','C','H','D'), &id, sizeof( id ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','C','H','D'), id);
 	}
 
 	//Save flags
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','F','L','G'), &m_flags, sizeof( m_flags ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','F','L','G'), m_flags);
 
 	//Save iterations
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','I','T','R'), &m_iterations, sizeof( m_iterations ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','I','T','R'), m_iterations);
 
 	//Save the number of commands
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('S','N','M','C'), &m_numCommands, sizeof( m_numCommands ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','N','M','C'), m_numCommands);
 
 	//Save the commands
 	STL_ITERATE( bi, m_commands )

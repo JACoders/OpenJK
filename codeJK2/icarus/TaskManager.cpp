@@ -1641,15 +1641,15 @@ int CTaskManager::SaveCommand( CBlock *block )
 	
 	//Save out the block ID
 	bID = block->GetBlockID();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','L','I','D'), &bID, sizeof ( bID ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), bID);
 
 	//Save out the block's flags
 	flags = block->GetFlags();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','F','L','G'), &flags, sizeof ( flags ) );
+	::sg_write<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
 
 	//Save out the number of members to read
 	numMembers = block->GetNumMembers();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','N','U','M'), &numMembers, sizeof ( numMembers ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
 
 	for ( int i = 0; i < numMembers; i++ )
 	{
@@ -1657,14 +1657,14 @@ int CTaskManager::SaveCommand( CBlock *block )
 
 		//Save the block id
 		bID = bm->GetID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','I','D'), &bID, sizeof ( bID ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
 		
 		//Save out the data size
 		size = bm->GetSize();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','S','I','Z'), &size, sizeof( size ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), size);
 		
 		//Save out the raw data
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('B','M','E','M'), bm->GetData(), size );
+		::sg_write_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bm->GetData(), size);
 	}
 
 	return true;
@@ -1687,11 +1687,11 @@ void CTaskManager::Save( void )
 	int			numWritten;
 
 	//Save the taskmanager's GUID
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','M','I','D'), &m_GUID, sizeof( m_GUID ) );	//FIXME: This can be reconstructed
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','M','I','D'), m_GUID);	//FIXME: This can be reconstructed
 
 	//Save out the number of tasks that will follow
 	int iNumTasks = m_tasks.size();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','S','K','#'), &iNumTasks, sizeof(iNumTasks) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','S','K','#'), iNumTasks);
 
 	//Save out all the tasks
 	tasks_l::iterator	ti;
@@ -1700,11 +1700,11 @@ void CTaskManager::Save( void )
 	{
 		//Save the GUID
 		id = (*ti)->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','I','D'), &id, sizeof ( id ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','K','I','D'), id);
 
 		//Save the timeStamp (FIXME: Although, this is going to be worthless if time is not consistent...)
 		timeStamp = (*ti)->GetTimeStamp();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','T','S'), &timeStamp, sizeof ( timeStamp ) );
+		::sg_write<uint32_t>(m_owner->GetInterface(), INT_ID('T','K','T','S'), timeStamp);
 
 		//Save out the block
 		block = (*ti)->GetBlock();
@@ -1713,14 +1713,14 @@ void CTaskManager::Save( void )
 
 	//Save out the number of task groups
 	int numTaskGroups = m_taskGroups.size();
-	(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','#','G'), &numTaskGroups, sizeof( numTaskGroups ) );
+	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','G','#','G'), numTaskGroups);
 	//Save out the IDs of all the task groups
 	numWritten = 0;
 	taskGroup_v::iterator	tgi;
 	STL_ITERATE( tgi, m_taskGroups )
 	{
 		id = (*tgi)->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','G','#'), &id, sizeof( id ) );		
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','K','G','#'), id);		
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);
@@ -1731,11 +1731,11 @@ void CTaskManager::Save( void )
 	{
 		//Save out the parent
 		id = ( (*tgi)->GetParent() == NULL ) ? -1 : ((*tgi)->GetParent())->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','K','G','P'), &id, sizeof( id ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','K','G','P'), id);
 
 		//Save out the number of commands
 		numCommands = (*tgi)->m_completedTasks.size();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','C'), &numCommands, sizeof( numCommands ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','C'), numCommands);
 
 		//Save out the command map
 		CTaskGroup::taskCallback_m::iterator	tci;
@@ -1744,16 +1744,16 @@ void CTaskManager::Save( void )
 		{
 			//Write out the ID
 			id = (*tci).first;
-			(m_owner->GetInterface())->I_WriteSaveData( INT_ID('G','M','I','D'), &id, sizeof( id ) );
+			::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('G','M','I','D'), id);
 
 			//Write out the state of completion
 			completed = (*tci).second;
-			(m_owner->GetInterface())->I_WriteSaveData( INT_ID('G','M','D','N'), &completed, sizeof( completed ) );
+			::sg_write<uint8_t>(m_owner->GetInterface(), INT_ID('G','M','D','N'), completed);
 		}
 
 		//Save out the number of completed commands
 		id = (*tgi)->m_numCompleted;
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','D','N'), &id, sizeof( id ) );	//FIXME: This can be reconstructed
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','G','D','N'), id);	//FIXME: This can be reconstructed
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);
@@ -1763,7 +1763,7 @@ void CTaskManager::Save( void )
 	{
 		//Save out the currently active group
 		int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','C','G'), &curGroupID, sizeof( curGroupID ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','G','C','G'), curGroupID);
 	}
 
 	//Save out the task group name maps
@@ -1779,17 +1779,17 @@ void CTaskManager::Save( void )
 		int length = strlen( name ) + 1;
 
 		//Save out the string size
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','L'), &length, sizeof ( length ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','L'), length);
 
 		//Write out the string
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','S'), (void *) name, length );
+		::sg_write_no_cast(m_owner->GetInterface(), INT_ID('T','G','N','S'), name, length);
 
 		taskGroup = (*tmi).second;
 
 		id = taskGroup->GetGUID();
 
 		//Write out the ID
-		(m_owner->GetInterface())->I_WriteSaveData( INT_ID('T','G','N','I'), &id, sizeof( id ) );
+		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','I'), id);
 		numWritten++;
 	}
 	assert (numWritten == numTaskGroups);

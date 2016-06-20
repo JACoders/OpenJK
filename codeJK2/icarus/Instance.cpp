@@ -302,7 +302,7 @@ int ICARUS_Instance::SaveSequenceIDTable( void )
 {
 	//Save out the number of sequences to follow
 	int		numSequences = m_sequences.size();
-	m_interface->I_WriteSaveData( INT_ID('#','S','E','Q'), &numSequences, sizeof( numSequences ) );
+	::sg_write<int32_t>(m_interface, INT_ID('#','S','E','Q'), numSequences);
 
 	//Sequences are saved first, by ID and information
 	sequence_l::iterator	sqi;
@@ -319,7 +319,7 @@ int ICARUS_Instance::SaveSequenceIDTable( void )
 		idTable[itr++] = (*sqi)->GetID();
 	}
 
-	m_interface->I_WriteSaveData( INT_ID('S','Q','T','B'), idTable, sizeof( int ) * numSequences );
+	::sg_write<int32_t>(m_interface, INT_ID('S','Q','T','B'), idTable, numSequences);
 
 	delete[] idTable;
 
@@ -357,7 +357,7 @@ int ICARUS_Instance::SaveSequencers( void )
 {
 	//Save out the number of sequences to follow
 	int		numSequencers = m_sequencers.size();
-	m_interface->I_WriteSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( numSequencers ) );
+	::sg_write<int32_t>(m_interface, INT_ID('#','S','Q','R'), numSequencers);
 
 	//The sequencers are then saved
 	sequencer_l::iterator	si;
@@ -379,7 +379,7 @@ int ICARUS_Instance::SaveSignals( void )
 {
 	int	numSignals = m_signals.size();
 
-	m_interface->I_WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
+	::sg_write<int32_t>(m_interface, INT_ID('I','S','I','G'), numSignals);
 
 	signal_m::iterator	si;
 	STL_ITERATE( si, m_signals )
@@ -393,10 +393,10 @@ int ICARUS_Instance::SaveSignals( void )
 		int length = strlen( name ) + 1;
 
 		//Save out the string size
-		m_interface->I_WriteSaveData( INT_ID('S','I','G','#'), &length, sizeof ( length ) );
+		::sg_write<int32_t>(m_interface, INT_ID('S','I','G','#'), length);
 
 		//Write out the string
-		m_interface->I_WriteSaveData( INT_ID('S','I','G','N'), (void *) name, length );
+		::sg_write_no_cast(m_interface, INT_ID('S','I','G','N'), name, length );
 	}
 
 	return true;
@@ -412,7 +412,7 @@ int ICARUS_Instance::Save( void )
 {	
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
-	m_interface->I_WriteSaveData( INT_ID('I','C','A','R'), &version, sizeof( version ) );
+	::sg_write_no_cast(m_interface, INT_ID('I','C','A','R'), version);
 
 	//Save out the signals
 	if ( SaveSignals() == false )
@@ -426,7 +426,7 @@ int ICARUS_Instance::Save( void )
 	if ( SaveSequencers() == false )
 		return false;
 
-	m_interface->I_WriteSaveData( INT_ID('I','E','N','D'), &version, sizeof( version ) );
+	::sg_write_no_cast(m_interface, INT_ID('I','E','N','D'), version);
 
 	return true;
 }

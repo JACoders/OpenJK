@@ -1778,12 +1778,13 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	// is there anything to save?
 	if (!ghoul2.IsValid()||!ghoul2.size())
 	{
-		ri.SG_Append(INT_ID('G','H','L','2'),&pGhoul2Data, 4);	//write out a zero buffer
+        uint32_t empty_value = 0;
+		::sg_write_no_cast(::ri, INT_ID('G','H','L','2'), empty_value);	//write out a zero buffer
 		return;
 	}
 
 	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	const int ghoul2BlockSize = (intptr_t)&ghoul2[0].BSAVE_END_FIELD - (intptr_t)&ghoul2[0].BSAVE_START_FIELD;
+	constexpr auto ghoul2BlockSize = static_cast<int>(sizeof(SgCGhoul2Info));
 
 	// add in count for number of ghoul2 models
 	iGhoul2Size += 4;
@@ -1809,51 +1810,75 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	char *tempBuffer = pGhoul2Data;
 
 	// save out how many ghoul2 models we have
-	*(int *)tempBuffer = ghoul2.size();
+	*(int32_t*)tempBuffer = static_cast<int32_t>(ghoul2.size());
 	tempBuffer +=4;
 
 	for (int i = 0; i<ghoul2.size();i++)
 	{
 		// first save out the ghoul2 details themselves
 //		OutputDebugString(va("G2_SaveGhoul2Models(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex));
+#if 0
 		memcpy(tempBuffer, &ghoul2[i].mModelindex, ghoul2BlockSize);
+#else
+        ::sg_export(
+            ghoul2[i],
+            *reinterpret_cast<SgCGhoul2Info*>(tempBuffer));
+#endif
 		tempBuffer += ghoul2BlockSize;
 
 		// save out how many surfaces we have
-		*(int*)tempBuffer = ghoul2[i].mSlist.size();
+		*(int32_t*)tempBuffer = static_cast<int32_t>(ghoul2[i].mSlist.size());
 		tempBuffer +=4;
 
 		// now save the all the surface list info
 		for (size_t x=0; x<ghoul2[i].mSlist.size(); x++)
 		{
+#if 0
 			memcpy(tempBuffer, &ghoul2[i].mSlist[x], SURFACE_SAVE_BLOCK_SIZE);
+#else
+            ::sg_export(
+                ghoul2[i].mSlist[x],
+                *reinterpret_cast<SgSurfaceInfo*>(tempBuffer));
+#endif
 			tempBuffer += SURFACE_SAVE_BLOCK_SIZE;
 		}
 
 		// save out how many bones we have
-		*(int*)tempBuffer = ghoul2[i].mBlist.size();
+		*(int32_t*)tempBuffer = static_cast<int32_t>(ghoul2[i].mBlist.size());
 		tempBuffer +=4;
 
 		// now save the all the bone list info
 		for (size_t x = 0; x<ghoul2[i].mBlist.size(); x++)
 		{
+#if 0
 			memcpy(tempBuffer, &ghoul2[i].mBlist[x], BONE_SAVE_BLOCK_SIZE);
+#else
+            ::sg_export(
+                ghoul2[i].mBlist[x],
+                *reinterpret_cast<SgBoneInfo*>(tempBuffer));
+#endif
 			tempBuffer += BONE_SAVE_BLOCK_SIZE;
 		}
 
 		// save out how many bolts we have
-		*(int*)tempBuffer = ghoul2[i].mBltlist.size();
+		*(int32_t*)tempBuffer = static_cast<int32_t>(ghoul2[i].mBltlist.size());
 		tempBuffer +=4;
 
 		// lastly save the all the bolt list info
 		for (size_t x = 0; x<ghoul2[i].mBltlist.size(); x++)
 		{
+#if 0
 			memcpy(tempBuffer, &ghoul2[i].mBltlist[x], BOLT_SAVE_BLOCK_SIZE);
+#else
+            ::sg_export(
+                ghoul2[i].mBltlist[x],
+                *reinterpret_cast<SgBoltInfo*>(tempBuffer));
+#endif
 			tempBuffer += BOLT_SAVE_BLOCK_SIZE;
 		}
 	}
 
-	ri.SG_Append(INT_ID('G','H','L','2'),pGhoul2Data, iGhoul2Size);
+	::sg_write_no_cast(::ri, INT_ID('G','H','L','2'), pGhoul2Data, iGhoul2Size);
 	R_Free(pGhoul2Data);
 }
 

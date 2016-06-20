@@ -1905,8 +1905,8 @@ static void CG_GameStateReceived( void ) {
 
 void CG_WriteTheEvilCGHackStuff(void)
 {
-	gi.AppendToSaveGame(INT_ID('F','P','S','L'), &cg.forcepowerSelect, sizeof(cg.forcepowerSelect));
-	gi.AppendToSaveGame(INT_ID('I','V','S','L'), &cg.inventorySelect,  sizeof(cg.inventorySelect));
+	::sg_write<int32_t>(::gi, INT_ID('F','P','S','L'), ::cg.forcepowerSelect);
+	::sg_write<int32_t>(::gi, INT_ID('I','V','S','L'), ::cg.inventorySelect);
 
 }
 void CG_ReadTheEvilCGHackStuff(void)
