@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	G_OBJECTIVES_CPP
 
 #include "objectives.h"
+#include "qcommon/ojk_sg_wrappers.h"
 
 qboolean	missionInfo_Updated;
 

@@ -37,6 +37,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <map>
 
+#include "qcommon/ojk_sg_wrappers.h"
+
 static char	saveGameComment[iSG_COMMENT_SIZE];
 
 //#define SG_PROFILE	// enable for debug save stats if you want

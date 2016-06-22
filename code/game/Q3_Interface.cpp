@@ -40,6 +40,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include "g_navigator.h"
+#include "qcommon/ojk_sg_wrappers.h"
 
 extern	cvar_t	*com_buildScript;
 

@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // cmodel.c -- model loading
 
 #include "cm_local.h"
+#include "qcommon/ojk_sg_wrappers.h"
 
 #ifdef BSPC
 void SetPlaneSignbits (cplane_t *out) {

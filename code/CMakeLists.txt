@@ -175,6 +175,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/MiniHeap.h"
 
 		"${SharedDir}/qcommon/ojk_sg_wrappers.h"
+		"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
+		"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
 
 		${SharedCommonFiles}
 		)

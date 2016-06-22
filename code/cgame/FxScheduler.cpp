@@ -41,7 +41,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/safe/string.h"
 #include <cmath>
-
+#include "qcommon/ojk_sg_wrappers.h"
 
 CFxScheduler	theFxScheduler;
 

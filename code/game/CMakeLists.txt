@@ -261,6 +261,8 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
 	"${SharedDir}/qcommon/ojk_sg_wrappers.h"
+	"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
+	"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
 	
 	${SharedCommonFiles}
 	)

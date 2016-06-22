@@ -33,6 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_camera.h"
 #include "g_icarus.h"
 #include "../../code/qcommon/sstring.h"
+#include "qcommon/ojk_sg_wrappers.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 

@@ -25,6 +25,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "Q3_Interface.h"
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
+#include "qcommon/ojk_sg_wrappers.h"
+
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
 int			num_roffs = 0;

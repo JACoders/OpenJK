@@ -11,66 +11,9 @@
 
 
 #include <algorithm>
-#include <array>
 #include <functional>
-#include <stdexcept>
 #include <type_traits>
-#include <vector>
-
-
-using SgReadFunc = std::function<int (
-    unsigned int chunk_id,
-    void* value_storage,
-    int value_size,
-    void** allocated_value)>;
-
-using SgWriteFunc = std::function<int (
-    unsigned int chunk_id,
-    const void* value_storage,
-    int value_size)>;
-
-
-template<typename T, std::size_t TCount>
-using SgArray = std::array<T, TCount>;
-
-template<typename T, std::size_t TCount1, std::size_t TCount2>
-using SgArray2d = SgArray<SgArray<T, TCount2>, TCount1>;
-
-using SgVec3 = SgArray<float, 3>;
-using SgVec4 = SgArray<float, 4>;
-
-using SgBuffer = std::vector<uint8_t>;
-
-
-class SgException :
-    public std::runtime_error
-{
-public:
-    explicit SgException(
-        const std::string& what_arg) :
-            std::runtime_error(what_arg)
-    {
-    }
-
-    explicit SgException(
-        const char* what_arg) :
-            std::runtime_error(what_arg)
-    {
-    }
-
-    virtual ~SgException()
-    {
-    }
-}; // SgException
-
-
-inline SgBuffer& sg_get_buffer(
-    int new_size)
-{
-    static SgBuffer buffer;
-    buffer.resize(new_size);
-    return buffer;
-}
+#include "ojk_sg_wrappers_shared.h"
 
 
 namespace detail {
@@ -447,6 +390,13 @@ public:
 namespace detail {
 
 
+using SgReadFunc = std::function<int (
+    unsigned int chunk_id,
+    void* value_storage,
+    int value_size,
+    void** allocated_value)>;
+
+
 template<typename TFunc>
 inline SgReadFunc sg_get_read_func(
     TFunc& func,
@@ -569,6 +519,12 @@ inline SgReadFunc sg_get_read_func(
 //
 
 namespace detail {
+
+
+using SgWriteFunc = std::function<int (
+    unsigned int chunk_id,
+    const void* value_storage,
+    int value_size)>;
 
 
 template<typename TFunc>
