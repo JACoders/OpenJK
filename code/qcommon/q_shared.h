@@ -2242,8 +2242,45 @@ typedef struct
 } saberInfo_t;
 
 //NOTE: Below is the *retail* version of the saberInfo_t structure - it is ONLY used for loading retail-version savegames (we load the savegame into this smaller structure, then copy each field into the appropriate field in the new structure - see SG_ConvertRetailSaberinfoToNewSaberinfo()
+#pragma pack(push, 4)
+class SgSaberInfoRetail
+{
+public:
+    int32_t name;
+    int32_t fullName;
+    int32_t type;
+    int32_t model;
+    int32_t skin;
+    int32_t soundOn;
+    int32_t soundLoop;
+    int32_t soundOff;
+    int32_t numBlades;
+    SgArray<SgBladeInfo, MAX_BLADES> blade;
+    int32_t style;
+    int32_t maxChain;
+    int32_t lockable;
+    int32_t throwable;
+    int32_t disarmable;
+    int32_t activeBlocking;
+    int32_t twoHanded;
+    int32_t forceRestrictions;
+    int32_t lockBonus;
+    int32_t parryBonus;
+    int32_t breakParryBonus;
+    int32_t disarmBonus;
+    int32_t singleBladeStyle;
+    int32_t singleBladeThrowable;
+    int32_t brokenSaber1;
+    int32_t brokenSaber2;
+    int32_t returnDamage;
+}; // SgSaberInfoRetail
+#pragma pack(pop)
+
 typedef struct
 {
+    using SgType = SgSaberInfoRetail;
+
+
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -2357,6 +2394,71 @@ typedef struct
 						blade[i].DeactivateTrail( duration );
 					}
 				};
+
+
+    void sg_export(
+        SgType& dst) const
+    {
+        ::sg_export(name, dst.name);
+        ::sg_export(fullName, dst.fullName);
+        ::sg_export(type, dst.type);
+        ::sg_export(model, dst.model);
+        ::sg_export(skin, dst.skin);
+        ::sg_export(soundOn, dst.soundOn);
+        ::sg_export(soundLoop, dst.soundLoop);
+        ::sg_export(soundOff, dst.soundOff);
+        ::sg_export(numBlades, dst.numBlades);
+        ::sg_export(blade, dst.blade);
+        ::sg_export(style, dst.style);
+        ::sg_export(maxChain, dst.maxChain);
+        ::sg_export(lockable, dst.lockable);
+        ::sg_export(throwable, dst.throwable);
+        ::sg_export(disarmable, dst.disarmable);
+        ::sg_export(activeBlocking, dst.activeBlocking);
+        ::sg_export(twoHanded, dst.twoHanded);
+        ::sg_export(forceRestrictions, dst.forceRestrictions);
+        ::sg_export(lockBonus, dst.lockBonus);
+        ::sg_export(parryBonus, dst.parryBonus);
+        ::sg_export(breakParryBonus, dst.breakParryBonus);
+        ::sg_export(disarmBonus, dst.disarmBonus);
+        ::sg_export(singleBladeStyle, dst.singleBladeStyle);
+        ::sg_export(singleBladeThrowable, dst.singleBladeThrowable);
+        ::sg_export(brokenSaber1, dst.brokenSaber1);
+        ::sg_export(brokenSaber2, dst.brokenSaber2);
+        ::sg_export(returnDamage, dst.returnDamage);
+    }
+
+    void sg_import(
+        SgType& src)
+    {
+        ::sg_import(src.name, name);
+        ::sg_import(src.fullName, fullName);
+        ::sg_import(src.type, type);
+        ::sg_import(src.model, model);
+        ::sg_import(src.skin, skin);
+        ::sg_import(src.soundOn, soundOn);
+        ::sg_import(src.soundLoop, soundLoop);
+        ::sg_import(src.soundOff, soundOff);
+        ::sg_import(src.numBlades, numBlades);
+        ::sg_import(src.blade, blade);
+        ::sg_import(src.style, style);
+        ::sg_import(src.maxChain, maxChain);
+        ::sg_import(src.lockable, lockable);
+        ::sg_import(src.throwable, throwable);
+        ::sg_import(src.disarmable, disarmable);
+        ::sg_import(src.activeBlocking, activeBlocking);
+        ::sg_import(src.twoHanded, twoHanded);
+        ::sg_import(src.forceRestrictions, forceRestrictions);
+        ::sg_import(src.lockBonus, lockBonus);
+        ::sg_import(src.parryBonus, parryBonus);
+        ::sg_import(src.breakParryBonus, breakParryBonus);
+        ::sg_import(src.disarmBonus, disarmBonus);
+        ::sg_import(src.singleBladeStyle, singleBladeStyle);
+        ::sg_import(src.singleBladeThrowable, singleBladeThrowable);
+        ::sg_import(src.brokenSaber1, brokenSaber1);
+        ::sg_import(src.brokenSaber2, brokenSaber2);
+        ::sg_import(src.returnDamage, returnDamage);
+    }
 } saberInfoRetail_t;
 
 #define MAX_SABERS 2	// if this ever changes then update the table "static const save_field_t savefields_gClient[]"!!!!!!!!!!!!
