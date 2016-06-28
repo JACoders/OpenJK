@@ -153,7 +153,7 @@ static const field_t savefields_gClient[] =
 };
 
 
-static std::list<sstring_t>* strList = NULL;
+static std::list<sstring_t> strList;
 
 
 /////////// char * /////////////
@@ -170,7 +170,7 @@ int GetStringNum(const char *psString)
 		return -1;
 	}
 
-	strList->push_back( psString );
+	strList.push_back( psString );
 	return strlen(psString) + 1;	// this gives us the chunk length for the reader later
 }
 
@@ -445,7 +445,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 template<typename T>
 static void EnumerateFields(const field_t *pFields, T* src_instance, unsigned int ulChid, size_t iLen)
 {
-	strList = new std::list<sstring_t>;
+	strList.clear();
 
     auto pbData = reinterpret_cast<byte*>(src_instance);
 
@@ -477,13 +477,10 @@ static void EnumerateFields(const field_t *pFields, T* src_instance, unsigned in
 
 	// save out any associated strings..
 	//
-	for (const auto& it : *strList)
+	for (const auto& it : strList)
 	{
 		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it.c_str(), static_cast<int>(it.length()+1));
 	}
-
-	delete strList;
-	strList = NULL;
 }
 
 static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may be NULL*/)

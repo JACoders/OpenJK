@@ -157,7 +157,7 @@ static const save_field_t savefields_gClient[] =
 };
 
 // TODO FIXME mrwonko: this has no business being a global variable. WTF Raven?
-std::list<sstring_t> *strList = NULL;
+static std::list<sstring_t> strList;
 
 
 /////////// char * /////////////
@@ -174,7 +174,7 @@ static int GetStringNum(const char *psString)
 		return -1;
 	}
 
-	strList->push_back( psString );
+	strList.push_back( psString );
 	return strlen(psString) + 1;	// this gives us the chunk length for the reader later
 }
 
@@ -504,7 +504,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 template<typename T>
 static void EnumerateFields(const save_field_t *pFields, const T* src_instance, unsigned int ulChid, size_t iLen)
 {
-	strList = new std::list<sstring_t>;
+	strList.clear();
 
     auto pbData = reinterpret_cast<const byte*>(src_instance);
 
@@ -536,13 +536,10 @@ static void EnumerateFields(const save_field_t *pFields, const T* src_instance, 
 
 	// save out any associated strings..
 	//
-	for (const auto& it : *strList)
+	for (const auto& it : strList)
 	{
 		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it.c_str(), static_cast<int>(it.length() + 1));
 	}
-
-	delete strList;
-	strList = NULL;
 }
 
 
