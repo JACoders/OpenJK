@@ -501,9 +501,12 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 	}
 }
 
-static void EnumerateFields(const save_field_t *pFields, const byte *pbData, unsigned int ulChid, size_t iLen)
+template<typename T>
+static void EnumerateFields(const save_field_t *pFields, const T* src_instance, unsigned int ulChid, size_t iLen)
 {
 	strList = new std::list<sstring_t>;
+
+    auto pbData = reinterpret_cast<const byte*>(src_instance);
 
 	// enumerate all the fields...
 	//
@@ -518,14 +521,24 @@ static void EnumerateFields(const save_field_t *pFields, const byte *pbData, uns
 
 	// save out raw data...
 	//
-	::sg_write_no_cast(::gi, ulChid, pbData, static_cast<int>(iLen));
+    using SgType = typename T::SgType;
+
+    constexpr auto dst_size = static_cast<int>(sizeof(SgType));
+
+    auto& dst_buffer = ::sg_get_buffer(
+        dst_size);
+
+    auto dst_instance = reinterpret_cast<SgType*>(dst_buffer.data());
+
+    ::sg_export(*src_instance, *dst_instance);
+
+	::sg_write_no_cast(::gi, ulChid, dst_buffer.data(), dst_size);
 
 	// save out any associated strings..
 	//
-	std::list<sstring_t>::iterator it = strList->begin();
-	for (size_t i=0; i<strList->size(); i++, ++it)
+	for (const auto& it : *strList)
 	{
-		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), (*it).c_str(), static_cast<int>((*it).length() + 1));
+		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it.c_str(), static_cast<int>(it.length() + 1));
 	}
 
 	delete strList;
@@ -794,7 +807,7 @@ static void WriteLevelLocals ()
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// copy out all data into a temp space
 
-	EnumerateFields(savefields_LevelLocals, (byte *)temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
+	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
 	gi.Free(temp);
 }
 
@@ -855,7 +868,7 @@ static void WriteGEntities(qboolean qbAutosave)
 				gi.linkentity( ent );
 			}
 
-			EnumerateFields(savefields_gEntity, (byte *)&tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
+			EnumerateFields(savefields_gEntity, &tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
 
 			// now for any fiddly bits that would be rather awkward to build into the enumerator...
 			//
@@ -863,13 +876,13 @@ static void WriteGEntities(qboolean qbAutosave)
 			{
 				gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
 
-				EnumerateFields(savefields_gNPC, (byte *)&npc, INT_ID('G','N','P','C'), sizeof(npc));
+				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'), sizeof(npc));
 			}
 
 			if (tempEnt.client == (gclient_t *)-2)	// I know, I know...
 			{
 				gclient_t client = *ent->client;	// NOT *tempEnt.client!!
-				EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));
+				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
 			}
 
 			if (tempEnt.parms)
@@ -880,7 +893,7 @@ static void WriteGEntities(qboolean qbAutosave)
 			if (tempEnt.m_pVehicle)
 			{
 				Vehicle_t vehicle = *ent->m_pVehicle;	// NOT *tempEnt.m_pVehicle!!
-				EnumerateFields(savefields_gVHIC, (byte *)&vehicle, INT_ID('V','H','I','C'), sizeof(vehicle));
+				EnumerateFields(savefields_gVHIC, &vehicle, INT_ID('V','H','I','C'), sizeof(vehicle));
 			}
 
 			// the scary ghoul2 saver stuff...  (fingers crossed)
@@ -1169,7 +1182,7 @@ void WriteLevel(qboolean qbAutosave)
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
 		gclient_t client = level.clients[0];
-		EnumerateFields(savefields_gClient, (byte *)&client, INT_ID('G','C','L','I'), sizeof(client));
+		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
 		WriteLevelLocals();	// level_locals_t level
 	}
 
