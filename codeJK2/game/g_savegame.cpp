@@ -442,37 +442,6 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 	}
 }
 
-#if 0
-static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int ulChid, size_t iLen)
-{
-	strList = new std::list<sstring_t>;
-
-	// enumerate all the fields...
-	//
-	if (pFields)
-	{
-		for (const field_t *pField = pFields; pField->psName; pField++)
-		{
-			assert(pField->iOffset < iLen);
-			EnumerateField(pField, pbData);
-		}
-	}
-
-	// save out raw data...
-	//
-	::sg_write_no_cast(::gi, ulChid, pbData, static_cast<int>(iLen));
-
-	// save out any associated strings..
-	//
-	for (std::list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
-	{
-		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it->c_str(), static_cast<int>(it->length()+1));
-	}
-
-	delete strList;
-	strList = NULL;
-}
-#else
 template<typename T>
 static void EnumerateFields(const field_t *pFields, T* src_instance, unsigned int ulChid, size_t iLen)
 {
@@ -508,15 +477,14 @@ static void EnumerateFields(const field_t *pFields, T* src_instance, unsigned in
 
 	// save out any associated strings..
 	//
-	for (std::list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
+	for (const auto& it : *strList)
 	{
-		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it->c_str(), static_cast<int>(it->length()+1));
+		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it.c_str(), static_cast<int>(it.length()+1));
 	}
 
 	delete strList;
 	strList = NULL;
 }
-#endif
 
 static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may be NULL*/)
 {
