@@ -1,6 +1,7 @@
 #include "ojk_sg_archive.h"
 #include "ojk_sg_archive_exception.h"
 #include "qcommon/qcommon.h"
+#include "server/server.h"
 
 
 namespace ojk {
@@ -24,15 +25,66 @@ Archive::~Archive()
 
 bool Archive::open(
     ArchiveMode archive_mode,
-    const std::string& file_path)
+    const std::string& base_file_name)
 {
-    throw ArchiveException(
-        "Not implemented.");
+    validate_archive_mode(
+        archive_mode);
+
+    auto&& file_path = generate_path(
+        base_file_name);
+
+    auto is_succeed = true;
+
+    if (is_succeed) {
+        ::FS_FOpenFileRead(
+            file_path.c_str(),
+            &file_handle_,
+            qtrue);
+
+        if (file_handle_ == 0) {
+            is_succeed = false;
+
+            auto error_message = get_failed_to_open_message(
+                file_path,
+                true);
+
+            ::Com_DPrintf(
+                "%s\n",
+                error_message.c_str());
+        }
+    }
+
+
+    int sg_version = -1;
+
+    if (is_succeed) {
+        read_chunk<int32_t>(
+            INT_ID('_', 'V', 'E', 'R'),
+            sg_version);
+
+        if (sg_version != iSAVEGAME_VERSION) {
+            is_succeed = false;
+
+            ::Com_Printf(
+                S_COLOR_RED "File \"%s\" has version # %d (expecting %d)\n",
+                base_file_name.c_str(),
+                sg_version,
+                iSAVEGAME_VERSION);
+        }
+    }
+
+    if (is_succeed) {
+        archive_mode_ = archive_mode;
+    } else {
+        close();
+    }
+
+    return is_succeed;
 }
 
 bool Archive::create(
     ArchiveMode archive_mode,
-    const std::string& file_path)
+    const std::string& base_file_name)
 {
     throw ArchiveException(
         "Not implemented.");
@@ -98,26 +150,51 @@ void Archive::validate_archive_mode(
     }
 }
 
-const std::string& Archive::add_path(
-    const std::string& path)
+std::string Archive::generate_path(
+    const std::string& base_file_name)
 {
-    auto next_path_index = (path_index_ + 1) % get_max_path_count();
-
-    auto normalized_path = path;
+    auto normalized_file_name = base_file_name;
 
     std::replace(
-        normalized_path.begin(),
-        normalized_path.end(),
+        normalized_file_name.begin(),
+        normalized_file_name.end(),
         '/',
         '_');
 
-    auto new_path = "saves/" + normalized_path + ".sav";
+    auto path = "saves/" + normalized_file_name + ".sav";
 
-    paths_[path_index_] = new_path;
+    return path;
+}
 
-    path_index_ = next_path_index;
+std::string Archive::get_failed_to_open_message(
+    const std::string& file_name,
+    bool is_open)
+{
+    constexpr int max_length = 256;
 
-    return paths_[path_index_];
+    auto message_id =
+        is_open ?
+#ifdef JK2_MODE
+            "MENUS3_FAILED_TO_OPEN_SAVEGAME" :
+            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
+#else
+            "MENUS_FAILED_TO_OPEN_SAVEGAME" :
+            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
+#endif
+    ;
+
+    std::string result(
+        S_COLOR_RED);
+
+    result += ::va(
+        ::SE_GetString(message_id),
+        file_name.c_str());
+
+    if (result.length() > max_length) {
+        result.resize(max_length);
+    }
+
+    return result;
 }
 
 

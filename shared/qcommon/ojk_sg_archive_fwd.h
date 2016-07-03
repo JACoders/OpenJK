@@ -45,12 +45,12 @@ public:
     // Creates a new saved game file for writing.
     bool create(
         ArchiveMode archive_mode,
-        const std::string& file_path);
+        const std::string& base_file_name);
 
     // Opens an existing saved game file for reading.
     bool open(
         ArchiveMode archive_mode,
-        const std::string& file_path);
+        const std::string& base_file_name);
 
     // Closes the current saved game file.
     void close();
@@ -159,7 +159,7 @@ private:
     int path_index_;
 
     // A handle to a file.
-    int file_handle_;
+    int32_t file_handle_;
 
     // I/O buffer.
     Buffer io_buffer_;
@@ -174,8 +174,12 @@ private:
     void validate_archive_mode(
         ArchiveMode archive_mode);
 
-    const std::string& add_path(
-        const std::string& path);
+    static std::string generate_path(
+        const std::string& base_file_name);
+
+    static std::string get_failed_to_open_message(
+        const std::string& file_name,
+        bool is_open);
 
 
     // Checks if there is enough data for reading in the I/O buffer.
