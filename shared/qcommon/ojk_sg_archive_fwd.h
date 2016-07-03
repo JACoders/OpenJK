@@ -162,9 +162,6 @@ private:
     BufferOffset io_buffer_offset_;
 
 
-    static constexpr int get_max_path_count();
-
-
     void validate_archive_mode(
         ArchiveMode archive_mode);
 

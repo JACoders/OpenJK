@@ -136,11 +136,6 @@ Archive& Archive::get_instance()
     return result;
 }
 
-int Archive::get_max_path_count()
-{
-    return 8;
-}
-
 void Archive::validate_archive_mode(
     ArchiveMode archive_mode)
 {
