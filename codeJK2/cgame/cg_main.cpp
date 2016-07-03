@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../../code/qcommon/sstring.h"
 #include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_sg_archive.h"
 
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef std::map< sstring_t, unsigned char, std::less<sstring_t>, std::allocator< unsigned char >  >	namePrecache_m;

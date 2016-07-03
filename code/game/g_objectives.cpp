@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "objectives.h"
 #include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_sg_archive.h"
 
 qboolean	missionInfo_Updated;
 

@@ -51,6 +51,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef _G2_GORE
 #include "../ghoul2/ghoul2_gore.h"
 #include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_sg_archive.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)

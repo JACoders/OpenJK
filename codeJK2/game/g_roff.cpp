@@ -26,6 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_roff.h"
 #include "g_icarus.h"
 #include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_sg_archive.h"
 
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
