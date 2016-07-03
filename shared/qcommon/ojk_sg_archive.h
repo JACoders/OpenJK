@@ -58,7 +58,7 @@ void Archive::accomodate_io_buffer(
 template<typename T>
 T Archive::cast_io_buffer()
 {
-    return reinterpret_cast<T>(&io_buffer_[io_buffer_offset_]);
+    return reinterpret_cast<T>(io_buffer_[io_buffer_offset_]);
 }
 
 template<typename T>
@@ -340,7 +340,7 @@ void Archive::read(
         dst_count);
 
     std::uninitialized_copy_n(
-        cast_io_buffer<const TDst*>(),
+        &cast_io_buffer<const TDst&>(),
         dst_count,
         dst_values);
 
@@ -544,7 +544,7 @@ void Archive::write(
     std::uninitialized_copy_n(
         src_values,
         src_count,
-        cast_io_buffer<TSrc*>());
+        &cast_io_buffer<TSrc&>());
 
     // FIXME Byte order
     //
