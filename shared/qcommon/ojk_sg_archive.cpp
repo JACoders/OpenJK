@@ -43,6 +43,7 @@ bool Archive::open(
             is_succeed = false;
 
             auto error_message = get_failed_to_open_message(
+                archive_mode,
                 file_path,
                 true);
 
@@ -167,21 +168,34 @@ std::string Archive::generate_path(
 }
 
 std::string Archive::get_failed_to_open_message(
+    ArchiveMode archive_mode,
     const std::string& file_name,
     bool is_open)
 {
     constexpr int max_length = 256;
 
-    auto message_id =
-        is_open ?
-#ifdef JK2_MODE
-            "MENUS3_FAILED_TO_OPEN_SAVEGAME" :
-            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
-#else
-            "MENUS_FAILED_TO_OPEN_SAVEGAME" :
-            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
-#endif
-    ;
+    const char* message_id = nullptr;
+
+    switch (archive_mode) {
+    case ArchiveMode::jedi_outcast:
+        if (is_open) {
+            message_id = "MENUS3_FAILED_TO_OPEN_SAVEGAME";
+        } else {
+            message_id = "MENUS3_FAILED_TO_CREATE_SAVEGAME";
+        }
+        break;
+
+    case ArchiveMode::jedi_academy:
+        if (is_open) {
+            message_id = "MENUS_FAILED_TO_OPEN_SAVEGAME";
+        } else {
+            message_id = "MENUS3_FAILED_TO_CREATE_SAVEGAME";
+        }
+        break;
+
+    default:
+        break;
+    }
 
     std::string result(
         S_COLOR_RED);

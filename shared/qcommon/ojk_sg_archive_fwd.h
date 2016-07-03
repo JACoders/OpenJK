@@ -169,6 +169,7 @@ private:
         const std::string& base_file_name);
 
     static std::string get_failed_to_open_message(
+        ArchiveMode archive_mode,
         const std::string& file_name,
         bool is_open);
 
