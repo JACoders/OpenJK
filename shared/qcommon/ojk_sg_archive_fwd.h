@@ -118,7 +118,7 @@ public:
 
     // Remove a saved game file.
     static void remove(
-        const std::string& file_path);
+        const std::string& base_file_name);
 
     // Returns a default instance of the class.
     static Archive& get_instance();

@@ -140,10 +140,13 @@ void Archive::rename(
 }
 
 void Archive::remove(
-    const std::string& file_path)
+    const std::string& base_file_name)
 {
-    throw ArchiveException(
-        "Not implemented.");
+    auto path = generate_path(
+        base_file_name);
+
+    ::FS_DeleteUserGenFile(
+        path.c_str());
 }
 
 Archive& Archive::get_instance()
