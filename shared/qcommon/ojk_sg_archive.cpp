@@ -85,8 +85,40 @@ bool Archive::create(
     ArchiveMode archive_mode,
     const std::string& base_file_name)
 {
-    throw ArchiveException(
-        "Not implemented.");
+    validate_archive_mode(
+        archive_mode);
+
+    remove(
+        base_file_name);
+
+    auto path = generate_path(
+        base_file_name);
+
+    file_handle_ = ::FS_FOpenFileWrite(
+        path.c_str());
+
+    if (file_handle_ == 0) {
+        auto error_message = get_failed_to_open_message(
+            archive_mode,
+            path,
+            false);
+
+        ::Com_Printf(
+            "%s\n",
+            error_message.c_str());
+
+        return false;
+    }
+
+    archive_mode_ = archive_mode;
+
+    int sg_version = iSAVEGAME_VERSION;
+
+    write_chunk<int32_t>(
+        INT_ID('_', 'V', 'E', 'R'),
+        sg_version);
+
+    return true;
 }
 
 void Archive::close()
