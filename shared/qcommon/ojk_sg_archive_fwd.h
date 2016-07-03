@@ -14,14 +14,12 @@
 #include "ojk_sg_archive_exception.h"
 
 
-using fileHandle_t = int32_t;
-
-
 namespace ojk {
 namespace sg {
 
 
 enum class ArchiveMode {
+    none,
     jedi_outcast,
     jedi_academy,
 }; // ArchiveMode
@@ -46,10 +44,12 @@ public:
 
     // Creates a new saved game file for writing.
     bool create(
+        ArchiveMode archive_mode,
         const std::string& file_path);
 
     // Opens an existing saved game file for reading.
     bool open(
+        ArchiveMode archive_mode,
         const std::string& file_path);
 
     // Closes the current saved game file.
@@ -136,6 +136,8 @@ public:
 private:
     using Buffer = std::vector<uint8_t>;
     using BufferOffset = Buffer::size_type;
+    using Paths = std::vector<std::string>;
+
 
     // Tags for dispatching.
     class BooleanTag { public: };
@@ -146,14 +148,34 @@ private:
     class InplaceTag { public: };
     class CastTag { public: };
 
+
+    // An archive mode.
+    ArchiveMode archive_mode_;
+
+    // Saved game paths.
+    Paths paths_;
+
+    // Current path index.
+    int path_index_;
+
     // A handle to a file.
-    fileHandle_t file_handle_;
+    int file_handle_;
 
     // I/O buffer.
     Buffer io_buffer_;
 
     // A current offset inside the I/O buffer.
     BufferOffset io_buffer_offset_;
+
+
+    static constexpr int get_max_path_count();
+
+
+    void validate_archive_mode(
+        ArchiveMode archive_mode);
+
+    const std::string& add_path(
+        const std::string& path);
 
 
     // Checks if there is enough data for reading in the I/O buffer.
