@@ -113,8 +113,8 @@ public:
 
     // Renames a saved game file.
     static void rename(
-        const std::string& old_file_path,
-        const std::string& new_file_path);
+        const std::string& old_base_file_name,
+        const std::string& new_base_file_name);
 
     // Remove a saved game file.
     static void remove(

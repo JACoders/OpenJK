@@ -132,11 +132,24 @@ void Archive::write_chunk(
 }
 
 void Archive::rename(
-    const std::string& old_file_path,
-    const std::string& new_file_path)
+    const std::string& old_base_file_name,
+    const std::string& new_base_file_name)
 {
-    throw ArchiveException(
-        "Not implemented.");
+    auto old_path = generate_path(
+        old_base_file_name);
+
+    auto new_path = generate_path(
+        new_base_file_name);
+
+    auto rename_result = ::FS_MoveUserGenFile(
+        old_path.c_str(),
+        new_path.c_str());
+
+    if (rename_result != 0) {
+        ::Com_Printf(
+            S_COLOR_RED "Error during savegame-rename. Check \"%s\" for write-protect or disk full!\n",
+            new_path.c_str());
+    }
 }
 
 void Archive::remove(
