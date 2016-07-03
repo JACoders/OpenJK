@@ -10,8 +10,6 @@ namespace sg {
 
 Archive::Archive() :
         archive_mode_(),
-        paths_(get_max_path_count()),
-        path_index_(),
         file_handle_(),
         io_buffer_(),
         io_buffer_offset_()
@@ -92,8 +90,15 @@ bool Archive::create(
 
 void Archive::close()
 {
-    throw ArchiveException(
-        "Not implemented.");
+    archive_mode_ = ArchiveMode::none;
+
+    if (file_handle_ != 0) {
+        ::FS_FCloseFile(file_handle_);
+        file_handle_ = 0;
+    }
+
+    io_buffer_.clear();
+    io_buffer_offset_ = 0;
 }
 
 void Archive::read_chunk(

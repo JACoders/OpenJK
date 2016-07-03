@@ -152,12 +152,6 @@ private:
     // An archive mode.
     ArchiveMode archive_mode_;
 
-    // Saved game paths.
-    Paths paths_;
-
-    // Current path index.
-    int path_index_;
-
     // A handle to a file.
     int32_t file_handle_;
 
