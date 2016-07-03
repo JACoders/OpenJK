@@ -9,7 +9,6 @@ namespace sg {
 
 
 Archive::Archive() :
-        archive_mode_(),
         file_handle_(),
         io_buffer_(),
         io_buffer_offset_()
@@ -22,12 +21,8 @@ Archive::~Archive()
 }
 
 bool Archive::open(
-    ArchiveMode archive_mode,
     const std::string& base_file_name)
 {
-    validate_archive_mode(
-        archive_mode);
-
     auto&& file_path = generate_path(
         base_file_name);
 
@@ -43,7 +38,6 @@ bool Archive::open(
             is_succeed = false;
 
             auto error_message = get_failed_to_open_message(
-                archive_mode,
                 file_path,
                 true);
 
@@ -72,9 +66,7 @@ bool Archive::open(
         }
     }
 
-    if (is_succeed) {
-        archive_mode_ = archive_mode;
-    } else {
+    if (!is_succeed) {
         close();
     }
 
@@ -82,12 +74,8 @@ bool Archive::open(
 }
 
 bool Archive::create(
-    ArchiveMode archive_mode,
     const std::string& base_file_name)
 {
-    validate_archive_mode(
-        archive_mode);
-
     remove(
         base_file_name);
 
@@ -99,7 +87,6 @@ bool Archive::create(
 
     if (file_handle_ == 0) {
         auto error_message = get_failed_to_open_message(
-            archive_mode,
             path,
             false);
 
@@ -109,8 +96,6 @@ bool Archive::create(
 
         return false;
     }
-
-    archive_mode_ = archive_mode;
 
     int sg_version = iSAVEGAME_VERSION;
 
@@ -123,8 +108,6 @@ bool Archive::create(
 
 void Archive::close()
 {
-    archive_mode_ = ArchiveMode::none;
-
     if (file_handle_ != 0) {
         ::FS_FCloseFile(file_handle_);
         file_handle_ = 0;
@@ -169,20 +152,6 @@ Archive& Archive::get_instance()
     return result;
 }
 
-void Archive::validate_archive_mode(
-    ArchiveMode archive_mode)
-{
-    switch (archive_mode) {
-    case ArchiveMode::jedi_academy:
-    case ArchiveMode::jedi_outcast:
-        break;
-
-    default:
-        throw ArchiveException(
-            "Invalid mode.");
-    }
-}
-
 std::string Archive::generate_path(
     const std::string& base_file_name)
 {
@@ -200,34 +169,21 @@ std::string Archive::generate_path(
 }
 
 std::string Archive::get_failed_to_open_message(
-    ArchiveMode archive_mode,
     const std::string& file_name,
     bool is_open)
 {
     constexpr int max_length = 256;
 
-    const char* message_id = nullptr;
-
-    switch (archive_mode) {
-    case ArchiveMode::jedi_outcast:
-        if (is_open) {
-            message_id = "MENUS3_FAILED_TO_OPEN_SAVEGAME";
-        } else {
-            message_id = "MENUS3_FAILED_TO_CREATE_SAVEGAME";
-        }
-        break;
-
-    case ArchiveMode::jedi_academy:
-        if (is_open) {
-            message_id = "MENUS_FAILED_TO_OPEN_SAVEGAME";
-        } else {
-            message_id = "MENUS3_FAILED_TO_CREATE_SAVEGAME";
-        }
-        break;
-
-    default:
-        break;
-    }
+    auto message_id =
+        is_open ?
+#if JK2_MODE
+            "MENUS3_FAILED_TO_OPEN_SAVEGAME" :
+            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
+#else
+            "MENUS_FAILED_TO_OPEN_SAVEGAME" :
+            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
+#endif
+    ;
 
     std::string result(
         S_COLOR_RED);

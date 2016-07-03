@@ -18,13 +18,6 @@ namespace ojk {
 namespace sg {
 
 
-enum class ArchiveMode {
-    none,
-    jedi_outcast,
-    jedi_academy,
-}; // ArchiveMode
-
-
 class Archive
 {
 public:
@@ -44,12 +37,10 @@ public:
 
     // Creates a new saved game file for writing.
     bool create(
-        ArchiveMode archive_mode,
         const std::string& base_file_name);
 
     // Opens an existing saved game file for reading.
     bool open(
-        ArchiveMode archive_mode,
         const std::string& base_file_name);
 
     // Closes the current saved game file.
@@ -149,9 +140,6 @@ private:
     class CastTag { public: };
 
 
-    // An archive mode.
-    ArchiveMode archive_mode_;
-
     // A handle to a file.
     int32_t file_handle_;
 
@@ -162,14 +150,10 @@ private:
     BufferOffset io_buffer_offset_;
 
 
-    void validate_archive_mode(
-        ArchiveMode archive_mode);
-
     static std::string generate_path(
         const std::string& base_file_name);
 
     static std::string get_failed_to_open_message(
-        ArchiveMode archive_mode,
         const std::string& file_name,
         bool is_open);
 
