@@ -149,6 +149,18 @@ private:
     // A current offset inside the I/O buffer.
     BufferOffset io_buffer_offset_;
 
+    // RLE codec buffer.
+    Buffer rle_buffer_;
+
+
+    // Compresses I/O buffer into RLE one.
+    // Returns a size of compressed data.
+    int compress();
+
+    // Decompresses I/O buffer into RLE one.
+    void decompress(
+        int dst_size);
+
 
     static std::string generate_path(
         const std::string& base_file_name);

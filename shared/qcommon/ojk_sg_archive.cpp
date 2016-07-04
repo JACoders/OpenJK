@@ -168,6 +168,99 @@ Archive& Archive::get_instance()
     return result;
 }
 
+int Archive::compress()
+{
+    auto src_size = static_cast<int>(io_buffer_.size());
+
+    rle_buffer_.resize(2 * src_size);
+
+    int src_count = 0;
+    int dst_index = 0;
+
+    while (src_count < src_size) {
+        auto src_index = src_count;
+        auto b = io_buffer_[src_index++];
+
+        while (src_index < src_size &&
+            (src_index - src_count) < 127 &&
+            io_buffer_[src_index] == b)
+        {
+            src_index += 1;
+        }
+
+        if ((src_index - src_count) == 1) {
+            while (src_index < src_size &&
+                (src_index - src_count) < 127 && (
+                    io_buffer_[src_index] != io_buffer_[src_index - 1] || (
+                        src_index > 1 &&
+                        io_buffer_[src_index] != io_buffer_[src_index - 2])))
+            {
+                src_index += 1;
+            }
+
+            while (src_index < src_size &&
+                io_buffer_[src_index] == io_buffer_[src_index - 1])
+            {
+                src_index -= 1;
+            }
+
+            rle_buffer_[dst_index++] =
+                static_cast<uint8_t>(src_count - src_index);
+
+            for (auto i = src_count; i < src_index; ++i) {
+                rle_buffer_[dst_index++] = io_buffer_[i];
+            }
+        } else {
+            rle_buffer_[dst_index++] =
+                static_cast<uint8_t>(src_index - src_count);
+
+            rle_buffer_[dst_index++] = b;
+        }
+
+        src_count = src_index;
+    }
+
+    rle_buffer_.resize(
+        dst_index);
+
+    return dst_index;
+}
+
+void Archive::decompress(
+    int dst_size)
+{
+    rle_buffer_.resize(
+        dst_size);
+
+    int src_index = 0;
+    int dst_index = 0;
+
+    while (dst_size > 0) {
+        auto count = static_cast<int8_t>(io_buffer_[src_index++]);
+
+        if (count > 0) {
+            std::uninitialized_fill_n(
+                &rle_buffer_[dst_index],
+                count,
+                io_buffer_[src_index++]);
+        } else {
+            if (count < 0) {
+                count = -count;
+
+                std::uninitialized_copy_n(
+                    &io_buffer_[src_index],
+                    count,
+                    &rle_buffer_[dst_index]);
+
+                src_index += count;
+            }
+        }
+
+        dst_index += count;
+        dst_size -= count;
+    }
+}
+
 std::string Archive::generate_path(
     const std::string& base_file_name)
 {
