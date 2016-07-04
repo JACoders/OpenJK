@@ -1983,8 +1983,7 @@ qboolean NPC_BSFlee( void )
 			//done panicking, time to realize we're dogmeat, if we haven't been able to flee for a few seconds
 			if ((level.time - NPC->lastMoveTime)>3000)
 			{
-				//NPC_CheckSurrender(true);
-				NPC_Surrender();
+				NPC_CheckSurrender(qtrue);
  			}
 		}
 
