@@ -11,7 +11,9 @@ namespace sg {
 Archive::Archive() :
         file_handle_(),
         io_buffer_(),
-        io_buffer_offset_()
+        io_buffer_offset_(),
+        rle_buffer_(),
+        is_testing_read_chunk_()
 {
 }
 
@@ -51,9 +53,9 @@ bool Archive::open(
     int sg_version = -1;
 
     if (is_succeed) {
-        read_chunk<int32_t>(
+        static_cast<void>(read_chunk<int32_t>(
             INT_ID('_', 'V', 'E', 'R'),
-            sg_version);
+            sg_version));
 
         if (sg_version != iSAVEGAME_VERSION) {
             is_succeed = false;
@@ -99,9 +101,9 @@ bool Archive::create(
 
     int sg_version = iSAVEGAME_VERSION;
 
-    write_chunk<int32_t>(
+    static_cast<void>(write_chunk<int32_t>(
         INT_ID('_', 'V', 'E', 'R'),
-        sg_version);
+        sg_version));
 
     return true;
 }
@@ -117,14 +119,14 @@ void Archive::close()
     io_buffer_offset_ = 0;
 }
 
-void Archive::read_chunk(
+bool Archive::read_chunk(
     const Archive::ChunkId chunk_id)
 {
     throw ArchiveException(
         "Not implemented.");
 }
 
-void Archive::write_chunk(
+bool Archive::write_chunk(
     const Archive::ChunkId chunk_id)
 {
     throw ArchiveException(

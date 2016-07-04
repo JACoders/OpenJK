@@ -82,29 +82,33 @@ void Archive::advance_io_buffer(
 // read_chunk
 
 template<typename TSrc, typename TDst>
-void Archive::read_chunk(
+bool Archive::read_chunk(
     const ChunkId chunk_id,
     TDst& dst_value)
 {
-    read_chunk(
+    auto result = read_chunk(
         chunk_id);
 
     read<TSrc>(
         dst_value);
+
+    return result;
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read_chunk(
+bool Archive::read_chunk(
     const ChunkId chunk_id,
     TDst* dst_values,
     int dst_count)
 {
-    read_chunk(
+    auto result = read_chunk(
         chunk_id);
 
     read<TSrc>(
         dst_values,
         dst_count);
+
+    return result;
 }
 
 // read_chunk
@@ -115,7 +119,7 @@ void Archive::read_chunk(
 // write_chunk
 
 template<typename TDst, typename TSrc>
-void Archive::write_chunk(
+bool Archive::write_chunk(
     const ChunkId chunk_id,
     const TSrc& src_value)
 {
@@ -124,12 +128,12 @@ void Archive::write_chunk(
     write<TDst>(
         src_value);
 
-    write_chunk(
+    return write_chunk(
         chunk_id);
 }
 
 template<typename TDst, typename TSrc>
-void Archive::write_chunk(
+bool Archive::write_chunk(
     const ChunkId chunk_id,
     const TSrc* src_values,
     int src_count)
@@ -140,7 +144,7 @@ void Archive::write_chunk(
         src_values,
         src_count);
 
-    write_chunk(
+    return write_chunk(
         chunk_id);
 }
 

@@ -48,40 +48,40 @@ public:
 
 
     // Reads a chunk from the file into the internal buffer.
-    void read_chunk(
+    bool read_chunk(
         const ChunkId chunk_id);
 
     // Reads a value or an array of values from the file via
     // the internal buffer.
     template<typename TSrc = void, typename TDst = void>
-    void read_chunk(
+    bool read_chunk(
         const ChunkId chunk_id,
         TDst& dst_value);
 
     // Reads an array of values with specified count from
     // the file via the internal buffer.
     template<typename TSrc = void, typename TDst = void>
-    void read_chunk(
+    bool read_chunk(
         const ChunkId chunk_id,
         TDst* dst_values,
         int dst_count);
 
 
     // Writes a chunk into the file from the internal buffer.
-    void write_chunk(
+    bool write_chunk(
         const ChunkId chunk_id);
 
     // Writes a value or an array of values into the file via
     // the internal buffer.
     template<typename TDst = void, typename TSrc = void>
-    void write_chunk(
+    bool write_chunk(
         const ChunkId chunk_id,
         const TSrc& src_value);
 
     // Writes an array of values with specified count into
     // the file via the internal buffer.
     template<typename TDst = void, typename TSrc = void>
-    void write_chunk(
+    bool write_chunk(
         const ChunkId chunk_id,
         const TSrc* src_values,
         int src_count);
@@ -151,6 +151,9 @@ private:
 
     // RLE codec buffer.
     Buffer rle_buffer_;
+
+    // Does not throws an exception on chunk reading if true.
+    bool is_testing_read_chunk_;
 
 
     // Compresses I/O buffer into RLE one.
