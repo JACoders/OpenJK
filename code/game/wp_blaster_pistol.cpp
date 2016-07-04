@@ -38,6 +38,11 @@ void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire )
 	int		damage = !alt_fire ? weaponData[WP_BRYAR_PISTOL].damage : weaponData[WP_BRYAR_PISTOL].altDamage;
 	int		velocity = !alt_fire ? weaponData[WP_BRYAR_PISTOL].velocity : weaponData[WP_BRYAR_PISTOL].altVelocity;
 
+	if (ent->s.number != 0 && ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDA)
+	{
+		damage *= weaponData[WP_BRYAR_PISTOL].npcDmgMult;
+	}
+
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 

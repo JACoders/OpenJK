@@ -1187,12 +1187,14 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			ent->footLBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_leg_foot");
 			ent->footRBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*r_leg_foot");
 			if ( ent->client->NPC_class == CLASS_BOBAFETT
-				|| ent->client->NPC_class == CLASS_ROCKETTROOPER )
+				|| ent->client->NPC_class == CLASS_ROCKETTROOPER
+				|| ent->client->NPC_class == CLASS_MANDA)
 			{//get jet bolts
 				ent->genericBolt1 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet1" );
 				ent->genericBolt2 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet2" );
 			}
-			if ( ent->client->NPC_class == CLASS_BOBAFETT )
+			if ( ent->client->NPC_class == CLASS_BOBAFETT
+				|| ent->client->NPC_class == CLASS_MANDA)
 			{//get the flamethrower bolt
 				ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flamethrower");
 			}
@@ -2024,7 +2026,8 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 			ClientUserinfoChanged( ent->s.number );
 			//Ugh, kind of a hack for now:
 			if ( ent->client->NPC_class == CLASS_BOBAFETT
-				|| ent->client->NPC_class == CLASS_ROCKETTROOPER )
+				|| ent->client->NPC_class == CLASS_ROCKETTROOPER
+				|| ent->client->NPC_class == CLASS_MANDA)
 			{
 				//FIXME: remove saber, too?
 				Boba_Precache();	// player as boba?

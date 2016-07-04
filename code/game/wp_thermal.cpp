@@ -314,6 +314,12 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 	{
 		// If not the player, cut the damage a bit so we don't get pounded on so much
 		damageScale = TD_NPC_DAMAGE_CUT;
+		if (alt_fire) {
+			damageScale *= weaponData[WP_THERMAL].npcAltDmgMult;
+		}
+		else {
+			damageScale *= weaponData[WP_THERMAL].npcDmgMult;
+		}
 	}
 
 	if ( !alt_fire && ent->s.number == 0 )
@@ -420,7 +426,13 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 
 	bolt->s.loopSound = G_SoundIndex( "sound/weapons/thermal/thermloop.wav" );
 
-	bolt->damage = weaponData[WP_THERMAL].damage * damageScale;
+	if (alt_fire) {
+		bolt->damage = weaponData[WP_THERMAL].damage * damageScale;
+	}
+	else {
+		bolt->damage = weaponData[WP_THERMAL].altDamage * damageScale;
+	}
+
 	bolt->dflags = 0;
 	bolt->splashDamage = weaponData[WP_THERMAL].splashDamage * damageScale;
 	bolt->splashRadius = weaponData[WP_THERMAL].splashRadius;

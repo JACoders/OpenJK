@@ -977,6 +977,7 @@ static void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 			const int holdSnd = animEvent->eventData[ AED_SOUNDINDEX_START+Q_irand( 0, animEvent->eventData[AED_SOUND_NUMRANDOMSNDS] ) ];
 			if ( holdSnd > 0 )
 			{
+				if (cgs.sound_precache[holdSnd])
 				if ( cgs.sound_precache[ holdSnd ] )
 				{
 					cgi_S_StartSound( NULL, cent->currentState.clientNum, channel, cgs.sound_precache[holdSnd ] );
@@ -984,6 +985,20 @@ static void CG_PlayerAnimEventDo( centity_t *cent, animevent_t *animEvent )
 				else
 				{//try a custom sound
 					const char *s = CG_ConfigString( CS_SOUNDS + holdSnd );
+					
+					if (cent->gent && cent->gent->client) 
+					{
+						if (cent->gent->client->ps.torsoAnim == BOTH_KYLE_PA_1
+							|| cent->gent->client->ps.torsoAnim == BOTH_KYLE_PA_2
+							|| cent->gent->client->ps.torsoAnim == BOTH_KYLE_PA_3)
+						{
+							if (Q_stristr(s, "force") && cent->gent && cent->gent->flags&FL_MELEEKATA_NOFORCEFX)
+							{
+								break; //don't play any force power sounds
+							}
+						}
+					}					
+
 					CG_TryPlayCustomSound(NULL, cent->currentState.clientNum, channel, va("%s.wav",s), CS_TRY_ALL );
 				}
 			}
@@ -2775,12 +2790,12 @@ static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 			{
 				cent->gent->client->renderInfo.legsYaw = angles[YAW];
 			}
-			if ( ((cent->gent->client->ps.eFlags&EF_FORCE_GRIPPED)||((cent->gent->client->NPC_class == CLASS_BOBAFETT||cent->gent->client->NPC_class == CLASS_ROCKETTROOPER)&&cent->gent->client->moveType==MT_FLYSWIM))
+			if (((cent->gent->client->ps.eFlags&EF_FORCE_GRIPPED) || ((cent->gent->client->NPC_class == CLASS_BOBAFETT || cent->gent->client->NPC_class == CLASS_ROCKETTROOPER || cent->gent->client->NPC_class == CLASS_MANDA) && cent->gent->client->moveType == MT_FLYSWIM))
 				&& cent->gent->client->ps.groundEntityNum == ENTITYNUM_NONE )
 			{
 				vec3_t	centFwd, centRt;
 				float	divFactor = 1.0f;
-				if ( (cent->gent->client->NPC_class == CLASS_BOBAFETT||cent->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+				if ((cent->gent->client->NPC_class == CLASS_BOBAFETT || cent->gent->client->NPC_class == CLASS_ROCKETTROOPER || cent->gent->client->NPC_class == CLASS_MANDA)
 					&& cent->gent->client->moveType == MT_FLYSWIM )
 				{
 					divFactor = 3.0f;

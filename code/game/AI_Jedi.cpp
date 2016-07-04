@@ -1328,7 +1328,8 @@ void Kyle_TryGrab( void )
 
 qboolean Kyle_CanDoGrab( void )
 {
-	if ( NPC->client->NPC_class == CLASS_KYLE && (NPC->spawnflags&1) )
+	if ( (NPC->client->NPC_class == CLASS_KYLE && (NPC->spawnflags&1))
+		|| NPCInfo->stats.saberMeleeKatas)
 	{//Boss Kyle
 		if ( NPC->enemy && NPC->enemy->client )
 		{//have a valid enemy
@@ -1402,7 +1403,7 @@ static void Jedi_CombatDistance( int enemy_dist )
 		TIMER_Set( NPC, "attackDelay", Q_irand( 0, 1000 ) );
 	}
 
-	if ( NPC->client->NPC_class == CLASS_BOBAFETT )
+	if ( NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDA )
 	{
 		if ( !TIMER_Done( NPC, "flameTime" ) )
 		{
@@ -2112,6 +2113,10 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 		return qfalse;
 	}
 
+	if (self->NPC && self->NPC->stats.restrictJediPowers && self->client->ps.forcePowerLevel[FP_SPEED] < 2) {
+		return qfalse;
+	}
+
 	if ( self->client->ps.groundEntityNum == ENTITYNUM_NONE )
 	{//can't dodge in mid-air
 		return qfalse;
@@ -2250,7 +2255,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			{//no fancy dodges when raging or recovering
 				return qfalse;
 			}
-			if ( self->client->NPC_class == CLASS_BOBAFETT && !Q_irand(0,1))
+			if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_COMMANDO) && !Q_irand(0,1))
 			{
 				return qfalse; // half the time he dodges
 			}
@@ -2258,7 +2263,8 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 
 			if ( self->client->NPC_class == CLASS_BOBAFETT 
 				|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER)
-				|| self->client->NPC_class == CLASS_ROCKETTROOPER )
+				|| self->client->NPC_class == CLASS_ROCKETTROOPER
+				|| self->client->NPC_class == CLASS_MANDA)
 			{
 				self->client->ps.forceJumpCharge = 280;//FIXME: calc this intelligently?
 			}
@@ -2394,7 +2400,9 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 	}
 	if ( self->client )
 	{
-		if ( self->client->NPC_class == CLASS_BOBAFETT )
+		if ((self->client->NPC_class == CLASS_BOBAFETT 
+			|| self->client->NPC_class == CLASS_MANDA 
+			|| self->client->NPC_class == CLASS_COMMANDO))
 		{//boba can't flip
 			return EVASION_NONE;
 		}
@@ -2474,7 +2482,8 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 		&& Q_irand( 0, 1 ) 
 		&& !PM_InRoll( &self->client->ps )
 		&& !PM_InKnockDown( &self->client->ps )
-		&& !PM_SaberInSpecialAttack( self->client->ps.torsoAnim ) )
+		&& !PM_SaberInSpecialAttack( self->client->ps.torsoAnim )
+		&& self->NPC->stats.move >= 3)
 	{
 		vec3_t fwd, right, traceto, mins = {self->mins[0],self->mins[1],self->mins[2]+STEPSIZE}, maxs = {self->maxs[0],self->maxs[1],24}, fwdAngles = {0, self->client->ps.viewangles[YAW], 0};
 		trace_t	trace;
@@ -2497,8 +2506,9 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 				allowCartWheels = qfalse;
 			}
 		}
-		if (self->client->ps.forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_1)
-		{ //can't do no-handed cartwheels without a bit of force jumping ability
+		if (self->client->ps.forcePowerLevel[FP_LEVITATION] < FORCE_LEVEL_1
+			|| self->NPC->stats.move < 4)
+		{ //can't do no-handed cartwheels without a bit of force jumping ability or teh moves
 			allowCartWheels = qfalse;
 		}
 
@@ -2551,8 +2561,10 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 			self->client->ps.velocity[2] = 200;
 			self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
 			self->client->ps.pm_flags |= PMF_JUMPING;
-			if ( self->client->NPC_class == CLASS_BOBAFETT 
-				 || (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER) )
+			if (self->client->NPC_class == CLASS_BOBAFETT
+				|| self->client->NPC_class == CLASS_MANDA
+				|| self->client->NPC_class == CLASS_COMMANDO
+				|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER) )
 			{
 				G_AddEvent( self, EV_JUMP, 0 );
 			}
@@ -2626,7 +2638,9 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 								NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 								self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
 								self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-								if ( self->client->NPC_class == CLASS_BOBAFETT 
+								if (self->client->NPC_class == CLASS_BOBAFETT
+									|| self->client->NPC_class == CLASS_MANDA
+									|| self->client->NPC_class == CLASS_COMMANDO
 									|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
 								{
 									G_AddEvent( self, EV_JUMP, 0 );
@@ -2703,7 +2717,9 @@ evasionType_t Jedi_CheckFlipEvasions( gentity_t *self, float rightdot, float zdi
 						NPC_SetAnim( self, parts, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 						self->client->ps.forceJumpZStart = self->currentOrigin[2];//so we don't take damage if we land at same height
 						self->client->ps.pm_flags |= (PMF_JUMPING|PMF_SLOW_MO_FALL);
-						if ( self->client->NPC_class == CLASS_BOBAFETT 
+						if (self->client->NPC_class == CLASS_BOBAFETT
+							|| self->client->NPC_class == CLASS_MANDA
+							|| self->client->NPC_class == CLASS_COMMANDO
 							|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER))
 						{
 							G_AddEvent( self, EV_JUMP, 0 );
@@ -3103,7 +3119,9 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	
 	qboolean doDodge = qfalse;
 	qboolean alwaysDodgeOrRoll = qfalse;
-	if ( self->client->NPC_class == CLASS_BOBAFETT )
+	if (self->client->NPC_class == CLASS_BOBAFETT
+		|| self->client->NPC_class == CLASS_MANDA
+		|| self->client->NPC_class == CLASS_COMMANDO)
 	{
 		saberBusy = qtrue;
 		doDodge = qtrue;
@@ -3122,7 +3140,9 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 			|| !self->client->ps.SaberActive() 
 			|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER) )
 		{//either it will miss by a bit (and 25% chance) OR our saber is not in-hand OR saber is off
-			if ( self->NPC && (self->NPC->rank == RANK_CREWMAN || self->NPC->rank >= RANK_LT_JG) )
+			if ( self->NPC 
+				&& (self->NPC->rank == RANK_CREWMAN || self->NPC->rank >= RANK_LT_JG)
+				&& self->NPC->stats.move >= 3)
 			{//acrobat or fencer or above
 				if ( self->client->ps.groundEntityNum != ENTITYNUM_NONE &&//on the ground
 					!(self->client->ps.pm_flags&PMF_DUCKED)&&cmd->upmove>=0&&TIMER_Done( self, "duck" )//not ducking
@@ -3144,9 +3164,10 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 	}
 
 	qboolean doRoll = qfalse;
-	if (	( self->client->NPC_class == CLASS_BOBAFETT //boba fett
+	if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_COMMANDO //boba fett
 				|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER) //non-saber reborn (cultist)
 			)
+			&& self->NPC->stats.move >= 3
 			&& !Q_irand( 0, 2 ) 
 		)
 	{
@@ -3456,7 +3477,7 @@ evasionType_t Jedi_SaberBlockGo( gentity_t *self, usercmd_t *cmd, vec3_t pHitloc
 						&& self->client->ps.forceRageRecoveryTime < level.time
 						&& !(self->client->ps.forcePowersActive&(1<<FP_RAGE)) )
 					{
-						if ( (self->client->NPC_class == CLASS_BOBAFETT 
+						if ( (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_COMMANDO 
 								|| (self->client->NPC_class == CLASS_REBORN && self->s.weapon != WP_SABER)
 							)
 							&& !Q_irand( 0, 1 ) )
@@ -4323,7 +4344,9 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 			}
 			else */if ( NPC->client->ps.weaponTime
 				|| NPC->client->ps.saberInFlight
-				|| NPC->client->NPC_class == CLASS_BOBAFETT
+				|| NPC->client->NPC_class == CLASS_BOBAFETT 
+				|| NPC->client->NPC_class == CLASS_MANDA 
+				|| NPC->client->NPC_class == CLASS_COMMANDO
 				|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 				|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 			{//I'm attacking or recovering from a parry, can only try to strafe/jump right now
@@ -4450,7 +4473,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 				if ( !Q_irand( 0, 5 ) || !Jedi_Strafe( 300, 1000, 0, 1000, qfalse ) )
 				{//certain chance they will pick an alternative evasion
 					//if couldn't strafe, try a different kind of evasion...
-					if (NPC->s.weapon == WP_SABER && Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy) && G_PickAutoKick(NPC, NPC->enemy, qtrue) != LS_NONE)
+					if ((NPC->s.weapon == WP_SABER || NPCInfo->stats.meleeKicks) && Jedi_DecideKick(enemy_dist) && G_CanKickEntity(NPC, NPC->enemy) && G_PickAutoKick(NPC, NPC->enemy, qtrue) != LS_NONE)
 					{//kicked!
 						TIMER_Set( NPC, "kickDebounce", Q_irand( 3000, 10000 ) );
 					}
@@ -4461,7 +4484,7 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 							&& (NPCInfo->stats.aggression < 4 || NPC->s.weapon != WP_SABER || NPC->client->ps.saberInFlight)
 							&& TIMER_Done( NPC, "parryTime" ) ) )
 						{							
-							if ( (NPCInfo->rank == RANK_ENSIGN || NPCInfo->rank > RANK_LT_JG) && !shooting_lightning && Q_irand( 0, 2 ) )
+							if ( (NPCInfo->rank == RANK_ENSIGN || NPCInfo->rank > RANK_LT_JG) && !shooting_lightning && Q_irand( 0, 2 ) && (NPC->client->ps.forcePowerLevel[FP_PUSH] > 0 || !(NPCInfo->stats.restrictJediPowers)) )
 							{//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
 								ForceThrow( NPC, qfalse );
 							}
@@ -4469,7 +4492,9 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 								&& !(NPCInfo->scriptFlags&SCF_NO_ACROBATICS)
 								&& NPC->client->ps.forceRageRecoveryTime < level.time
 								&& !(NPC->client->ps.forcePowersActive&(1<<FP_RAGE))
-								&& !PM_InKnockDown( &NPC->client->ps ) )
+								&& !PM_InKnockDown( &NPC->client->ps )
+								&& (NPC->client->ps.forcePowerLevel[FP_LEVITATION] > 0 
+									|| !(NPCInfo->stats.restrictJediPowers)))
 							{//FIXME: make this a function call?
 								//FIXME: check for clearance, safety of landing spot?
 								NPC->client->ps.forceJumpCharge = 480;
@@ -4532,6 +4557,8 @@ static void Jedi_EvasionSaber( vec3_t enemy_movedir, float enemy_dist, vec3_t en
 					{//FIXME: make this a function call?
 						//FIXME: check for clearance, safety of landing spot?
 						if ( NPC->client->NPC_class == CLASS_BOBAFETT
+							|| NPC->client->NPC_class == CLASS_MANDA 
+							|| NPC->client->NPC_class == CLASS_COMMANDO
 							|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 							|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 						{
@@ -4767,7 +4794,7 @@ static void Jedi_FaceEnemy( qboolean doPitch )
 
 	CalcEntitySpot( NPC->enemy, SPOT_HEAD, enemy_eyes );
 
-	if ( NPC->client->NPC_class == CLASS_BOBAFETT 
+	if ((NPC->client->NPC_class == CLASS_BOBAFETT || NPC->client->NPC_class == CLASS_MANDA)
 		&& TIMER_Done( NPC, "flameTime" )
 		&& NPC->s.weapon != WP_NONE
 		&& NPC->s.weapon != WP_DISRUPTOR
@@ -5323,6 +5350,8 @@ static void Jedi_CombatIdle( int enemy_dist )
 				//FIXME: sometimes he turns it off, then turns it right back on again???
 				if ( enemy_dist > 200 
 					&& NPC->client->NPC_class != CLASS_BOBAFETT
+					&& NPC->client->NPC_class != CLASS_MANDA
+					&& NPC->client->NPC_class != CLASS_COMMANDO
 					&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 					&& NPC->client->NPC_class != CLASS_ROCKETTROOPER
 					&& NPC->client->ps.SaberActive() 
@@ -5465,7 +5494,7 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 		return qfalse;
 	}
 
-	if ( (NPCInfo->scriptFlags&SCF_DONT_FIRE) )
+	if ( (NPCInfo->scriptFlags&SCF_DONT_FIRE && NPCInfo->stats.rareFire) )
 	{//melee cultists punch rarely
 		if (NPC->s.weapon == WP_MELEE 			
 			&& enemy_dist <= 0
@@ -5476,10 +5505,10 @@ static qboolean Jedi_AttackDecide( int enemy_dist )
 			if (!(NPC->client->ps.forcePowerDebounce[FP_PUSH] > level.time || NPC->client->ps.forcePowerDebounce[FP_PULL] > level.time 
 				|| NPC->client->ps.forcePowerDebounce[FP_DRAIN] > level.time || NPC->client->ps.forcePowerDebounce[FP_LIGHTNING] > level.time))
 			{//not in the middle of pushing, pulling, draining, or zapping
-				if ((level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500 
-						|| level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1500)) //we tried pushing/pulling in the last 1.5 seconds
+				if ((level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1000 
+						|| level.time - NPC->client->ps.forcePowerDebounce[FP_PUSH] < 1000)) 
 				{//we already tried to push/pull and aren't using another force power
-					if (!Q_irand(0, 10) - NPCInfo->stats.aggression)
+					if (!Q_irand(0, 6) - NPCInfo->stats.aggression)
 					{
 						TIMER_Set(NPC, "attackDelay", Q_irand(1000, 3000)); //single punches only, don't try again for a while
 					}
@@ -5987,7 +6016,10 @@ static void Jedi_Combat( void )
 					//for gravity with my size, see if it makes it...
 					//this will also catch misacalculations that send you off ledges!
 					//gi.Printf( "Considering Jump\n" );
-					if (NPC->client && NPC->client->NPC_class==CLASS_BOBAFETT)
+					if (NPC->client && 
+						(NPC->client->NPC_class==CLASS_BOBAFETT
+						|| NPC->client->NPC_class == CLASS_MANDA
+						|| NPC->client->NPC_class == CLASS_COMMANDO))
 					{
 						Boba_FireDecide();
 					}
@@ -6013,7 +6045,10 @@ static void Jedi_Combat( void )
 						G_AddVoiceEvent( NPC, Q_irand( EV_JLOST1, EV_JLOST3 ), 3000 );
 						jediSpeechDebounceTime[NPC->client->playerTeam] = NPCInfo->blockedSpeechDebounceTime = level.time + 3000;
 					}
-					if (NPC->client && NPC->client->NPC_class==CLASS_BOBAFETT)
+					if (NPC->client && 
+						(NPC->client->NPC_class==CLASS_BOBAFETT
+						|| NPC->client->NPC_class == CLASS_MANDA
+						|| NPC->client->NPC_class == CLASS_COMMANDO))
 					{
 						Boba_FireDecide();
 					}
@@ -6054,7 +6089,9 @@ static void Jedi_Combat( void )
 	}
 
 	//if ( !enemy_lost )
- 	if (NPC->client->NPC_class != CLASS_BOBAFETT)
+ 	if (NPC->client->NPC_class != CLASS_BOBAFETT
+		&& NPC->client->NPC_class != CLASS_MANDA
+		&& NPC->client->NPC_class != CLASS_COMMANDO)
 	{
 		//Update our seen enemy position
 		if ( !NPC->enemy->client || ( NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_NONE && NPC->client->ps.groundEntityNum != ENTITYNUM_NONE ) )
@@ -6111,7 +6148,9 @@ static void Jedi_Combat( void )
 		else
 		{
 		}
-		if ( NPC->client->NPC_class == CLASS_BOBAFETT )
+		if ( NPC->client->NPC_class == CLASS_BOBAFETT
+			|| NPC->client->NPC_class == CLASS_MANDA
+			|| NPC->client->NPC_class == CLASS_COMMANDO)
 		{
 			Boba_FireDecide();
 		}
@@ -6387,7 +6426,9 @@ void Jedi_Ambush( gentity_t *self )
 	self->client->ps.pm_flags |= PMF_JUMPING|PMF_SLOW_MO_FALL;
 	NPC_SetAnim( self, SETANIM_BOTH, BOTH_CEILING_DROP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
 	self->client->ps.weaponTime = NPC->client->ps.torsoAnimTimer;
-	if ( self->client->NPC_class != CLASS_BOBAFETT 
+	if ( self->client->NPC_class != CLASS_BOBAFETT
+		&& self->client->NPC_class != CLASS_MANDA
+		&& self->client->NPC_class != CLASS_COMMANDO
 		&& self->client->NPC_class != CLASS_ROCKETTROOPER )
 	{
 		self->client->ps.SaberActivate();
@@ -6504,7 +6545,9 @@ static void Jedi_Patrol( void )
 						G_SetEnemy( NPC, best_enemy );
 						NPCInfo->stats.aggression = 3;
 					}
-					else if ( NPC->client->NPC_class != CLASS_BOBAFETT )
+					else if ( NPC->client->NPC_class != CLASS_BOBAFETT
+								&& NPC->client->NPC_class != CLASS_MANDA
+								&& NPC->client->NPC_class != CLASS_COMMANDO)
 					{//the player, toy with him
 						//get progressively more interested over time
 						if ( TIMER_Done( NPC, "watchTime" ) )
@@ -6881,7 +6924,9 @@ static void Jedi_Attack( void )
 		{//my enemy is dead and I killed him
 			NPCInfo->enemyCheckDebounceTime = 0;//keep looking for others
 
-			if ( NPC->client->NPC_class == CLASS_BOBAFETT 
+			if ( NPC->client->NPC_class == CLASS_BOBAFETT
+				|| NPC->client->NPC_class == CLASS_MANDA
+				|| NPC->client->NPC_class == CLASS_COMMANDO
 				|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 				|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 			{
@@ -7058,6 +7103,8 @@ static void Jedi_Attack( void )
 	}
 
 	if ( NPC->client->NPC_class != CLASS_BOBAFETT
+		&& NPC->client->NPC_class != CLASS_MANDA
+		&& NPC->client->NPC_class != CLASS_COMMANDO
 		&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 		&& NPC->client->NPC_class != CLASS_ROCKETTROOPER )
 	{
@@ -7081,6 +7128,8 @@ static void Jedi_Attack( void )
 	}
 
 	if ( NPC->client->NPC_class != CLASS_BOBAFETT
+		&& NPC->client->NPC_class != CLASS_MANDA
+		&& NPC->client->NPC_class != CLASS_COMMANDO
 		&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 		&& NPC->client->NPC_class != CLASS_ROCKETTROOPER )
 	{
@@ -7105,6 +7154,8 @@ static void Jedi_Attack( void )
 	else
 	{//check other special combat behavior
 		if ( NPC->client->NPC_class != CLASS_BOBAFETT 
+			&& NPC->client->NPC_class != CLASS_MANDA
+			&& NPC->client->NPC_class != CLASS_COMMANDO
 			&& (NPC->client->NPC_class != CLASS_REBORN || NPC->s.weapon == WP_SABER)
 			&& NPC->client->NPC_class != CLASS_ROCKETTROOPER )
 		{
@@ -7773,7 +7824,9 @@ void NPC_BSJedi_Default( void )
 
 	if( !NPC->enemy )
 	{//don't have an enemy, look for one
-		if ( NPC->client->NPC_class == CLASS_BOBAFETT 
+		if ( NPC->client->NPC_class == CLASS_BOBAFETT
+			|| NPC->client->NPC_class == CLASS_MANDA
+			|| NPC->client->NPC_class == CLASS_COMMANDO
 			|| (NPC->client->NPC_class == CLASS_REBORN && NPC->s.weapon != WP_SABER)
 			|| NPC->client->NPC_class == CLASS_ROCKETTROOPER )
 		{

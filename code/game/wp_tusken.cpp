@@ -79,6 +79,11 @@ void WP_FireTuskenRifle( gentity_t *ent )
 	{
 		missile->damage = TUSKEN_RIFLE_DAMAGE_EASY;
 	}
+
+	if (ent->s.number >= MAX_CLIENTS) {
+		missile->damage *= weaponData[WP_TUSKEN_RIFLE].npcDmgMult;
+	}
+
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 
 	missile->methodOfDeath = MOD_BRYAR;//???

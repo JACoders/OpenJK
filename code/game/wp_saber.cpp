@@ -31,8 +31,16 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"
 
 #define JK2_RAGDOLL_GRIPNOHEALTH
-
 #define MAX_SABER_VICTIMS 16
+
+#define	HITOWNER_RECOVERY_INTERVAL 1000 //interval at which defense points are recovered in ms
+#define HITOWNER_BASE_DP 1
+#define HITOWNER_SD_DP_INCREASE 1
+
+#define	BLOCK_DELAY_MULT 5 //scales base debounce speed for Medium/Strong/Desann styles
+#define	SLOW_BLOCK_DELAY_MULT 1.75 //further scales debounce time after deflection for Strong/Desann style
+//#define	RUN_BLOCK_DELAY_MULT 1.5 //further scales debounce time after deflection while running
+
 static int		victimEntityNum[MAX_SABER_VICTIMS];
 static float	totalDmg[MAX_SABER_VICTIMS];
 static vec3_t	dmgDir[MAX_SABER_VICTIMS];
@@ -194,14 +202,6 @@ qboolean g_saberNoEffects = qfalse;
 qboolean g_noClashFlare = qfalse;
 int		g_saberFlashTime = 0;
 
-//new variables - Dusty
-const int		HITOWNER_RECOVERY_INTERVAL = 1000; //interval at which defense points are recovered, 1.5 seconds
-const float			BLOCK_SPEED = 5; //affects player's blocking speed
-const float			SLOW_BLOCK_FACTOR = 1.75;
-const float			RUN_BLOCK_FACTOR = 1.5;
-/*extern int		hitOwnerBreakLimit;
-extern int		hitOwnerRecoveryTime; //how long left to recover a defense point
-extern int		hitOwnerBreakCounter; //keeping track of how many strong attacks the defender blocks in a											//a short time period*/
 
 qboolean NPC_JediClass(gentity_t *self) {
 	switch (self->client->NPC_class) {
@@ -1801,7 +1801,9 @@ qboolean WP_SaberApplyDamage(gentity_t *ent, float baseDamage, int baseDFlags,
 						{
 							damage = ceil(totalDmg[i]);
 						}
+
 						G_Damage(victim, inflictor, ent, dmgDir[i], dmgSpot[i], damage, dFlags, MOD_SABER, hitDismemberLoc[i]);
+
 						if (damage > 0 && cg.time)
 						{
 							float sizeTimeScale = 1.0f;
@@ -2940,7 +2942,7 @@ qboolean WP_SaberDamageForTrace(int ignore, vec3_t start, vec3_t end, float dmg,
 
 		if (attacker && attacker->client && attacker->client->ps.saberInFlight)
 		{//thrown saber hit something
-			if ((hitEnt && hitEnt->client && hitEnt->health > 0 && (hitEnt->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda", hitEnt->NPC_type) || hitEnt->client->NPC_class == CLASS_LUKE || hitEnt->client->NPC_class == CLASS_BOBAFETT || (hitEnt->client->ps.powerups[PW_GALAK_SHIELD] > 0))) ||
+			if ((hitEnt && hitEnt->client && hitEnt->health > 0 && (hitEnt->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda", hitEnt->NPC_type) || hitEnt->client->NPC_class == CLASS_LUKE || hitEnt->client->NPC_class == CLASS_BOBAFETT || hitEnt->client->NPC_class == CLASS_MANDA || (hitEnt->client->ps.powerups[PW_GALAK_SHIELD] > 0))) ||
 				(owner && owner->client && owner->health > 0 && (owner->client->NPC_class == CLASS_DESANN || !Q_stricmp("Yoda", owner->NPC_type) || owner->client->NPC_class == CLASS_LUKE || (owner->client->ps.powerups[PW_GALAK_SHIELD] > 0))))
 			{//Luke and Desann slap thrown sabers aside
 				//FIXME: control the direction of the thrown saber... if hit Galak's shield, bounce directly away from his origin?
@@ -3318,7 +3320,9 @@ qboolean WP_SabersCheckLock2(gentity_t *attacker, gentity_t *defender, sabersLoc
 		case LOCK_KYLE_GRAB3:
 			attAnim = BOTH_KYLE_PA_2;
 			defAnim = BOTH_PLAYER_PA_2;
-			defender->forcePushTime = level.time + PM_AnimLength(defender->client->clientInfo.animFileIndex, BOTH_PLAYER_PA_2);
+			if (!(attacker->flags&FL_MELEEKATA_NOFORCEFX)) {
+				defender->forcePushTime = level.time + PM_AnimLength(defender->client->clientInfo.animFileIndex, BOTH_PLAYER_PA_2);
+			}			
 			numSpins = 3.0f;
 			break;
 		}
@@ -6647,7 +6651,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 		if (hitOwner && hitOwner->client)
 		{
 			hitOwnerPowerLevel = 2 * hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE] + 1;
-			hitOwner->breakLimit = 1 + hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE];
+			hitOwner->client->breakLimit = HITOWNER_BASE_DP + hitOwner->client->ps.forcePowerLevel[FP_SABER_DEFENSE]*HITOWNER_SD_DP_INCREASE;
 			hitOwnerAnimLevel = PM_PowerLevelForSaberAnim(&hitOwner->client->ps, saberNum);
 		}		
 
@@ -6676,7 +6680,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 			inFlightSaberBlocked = qtrue;
 		}
 
-			//hitOwner BreakCounter, BreakLimit, RecoveryInterval, RecoveryTime
+			//hitOwner client->breakCounter, client->breakLimit, RecoveryInterval, RecoveryTime
 			//how many strong attacks (where saber offense + saber style modifier total power is greater than defender's defense strength) can be deflected before defender gets tired and his defense breaks, saber defense 1 is 1 hit, 2 is 2 hits, etc.
 
 			//FIXME: based on strength, position and angle of attack & defense, decide if:
@@ -6900,7 +6904,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 						//Ended up not Saber Locking
 						else if (saberHitFraction < 1.0f)
 						{//an actual collision
-							if ((hitOwner->breakCounter <= hitOwner->breakLimit) && activeDefense)
+							if ((hitOwner->client->breakCounter <= hitOwner->client->breakLimit) && activeDefense)
 							{//tired defenders cannot deflect
 								//based on angle of attack & angle of defensive saber, see if I should deflect off in another dir rather than bounce back
 								deflected = WP_GetSaberDeflectionAngle(ent, hitOwner);
@@ -6911,12 +6915,12 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							{ //if the attack was strong add to the stagger/break counter here
 								if (!PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))
 								{ //special attacks just break, no counters
-									hitOwner->breakCounter += (entPowerLevel - hitOwnerPowerLevel);
-									if (hitOwner->breakCounter > hitOwner->breakLimit + 2)
+									hitOwner->client->breakCounter += (entPowerLevel - hitOwnerPowerLevel);
+									if (hitOwner->client->breakCounter > hitOwner->client->breakLimit + 2)
 									{
-										hitOwner->breakCounter = hitOwner->breakLimit + 2; //maximum
+										hitOwner->client->breakCounter = hitOwner->client->breakLimit + 2; //maximum
 									}
-									hitOwner->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
+									hitOwner->client->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 								}
 							}
 							//base parry breaks on combination of animation (saber attack level) and FP_SABER_OFFENSE
@@ -6928,7 +6932,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 							{//knockaways can make fast-attacker go into a broken parry anim if the ent is using fast or med (but not Tavion)
 								//make me parry
 								WP_SaberParryNew(hitOwner, ent, saberNum, bladeNum);
-								if (hitOwner->breakLimit - hitOwner->breakCounter >= 1 //at least 1 BP
+								if (hitOwner->client->breakLimit - hitOwner->client->breakCounter >= 1 //at least 1 BP
 									&& !PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))								
 								{//special attacks can't be interrupted... just semi-blocked...
 									//turn the parry into a knockaway
@@ -6965,7 +6969,7 @@ void WP_SaberDamageTraceNew(gentity_t *ent, int saberNum, int bladeNum)
 #endif
 							}
 							else if (!activeDefense//they're not defending i.e. not holding +block with auto-blocking turned off?
-								|| (hitOwner->breakCounter > hitOwner->breakLimit //too tired to defend strong attacks
+								|| (hitOwner->client->breakCounter > hitOwner->client->breakLimit //too tired to defend strong attacks
 								&& hitOwnerPowerLevel < entPowerLevel)
 								|| PM_SaberInSpecialAttack(ent->client->ps.torsoAnim))//they are defending, but their defense strength is lower than my attack...
 								//or they are doing a special which has slightly
@@ -7688,6 +7692,7 @@ void WP_SaberImpact(gentity_t *owner, gentity_t *saber, trace_t *trace)
 		&& ((other->NPC && (other->NPC->aiFlags&NPCAI_BOSS_CHARACTER))
 		//|| other->client->NPC_class == CLASS_ALORA 
 		|| other->client->NPC_class == CLASS_BOBAFETT
+		|| other->client->NPC_class == CLASS_MANDA
 		|| (other->client->ps.powerups[PW_GALAK_SHIELD] > 0)))
 	{//Luke, Desann and Tavion slap thrown sabers aside
 		WP_SaberDrop(owner, saber);
@@ -9381,7 +9386,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 		return;
 	}
 
-	if (self->client->NPC_class == CLASS_ROCKETTROOPER)
+	if (self->client->NPC_class == CLASS_ROCKETTROOPER || self->client->NPC_class == CLASS_MANDA)
 	{//rockettrooper
 		if (self->client->ps.groundEntityNum != ENTITYNUM_NONE)
 		{//must be in air
@@ -9406,13 +9411,14 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 
 	if (self->client->NPC_class == CLASS_BOBAFETT)
 	{//Boba doesn't dodge quite as much
+		//Manda does because saber throws don't bounce off him
 		if (Q_irand(0, 2 - g_spskill->integer))
 		{//easier level guys do this less
 			return;
 		}
 	}
 
-	if (self->client->NPC_class != CLASS_BOBAFETT
+	if (self->client->NPC_class != CLASS_BOBAFETT && self->client->NPC_class != CLASS_MANDA
 		&& (self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER)
 		&& (self->client->NPC_class != CLASS_ROCKETTROOPER || !self->NPC || self->NPC->rank<RANK_LT)//if a rockettrooper, but not an officer, do these normal checks
 		)
@@ -9601,6 +9607,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 					self->client->ps.forceJumpCharge = 480;
 				}
 				else if (self->client->NPC_class != CLASS_BOBAFETT
+					&& self->client->NPC_class != CLASS_MANDA
 					&& (self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER)
 					&& self->client->NPC_class != CLASS_ROCKETTROOPER)
 				{//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
@@ -9624,7 +9631,8 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			else
 			{
 				if (self->client->NPC_class == CLASS_BOBAFETT
-					|| self->client->NPC_class == CLASS_ROCKETTROOPER)
+					|| self->client->NPC_class == CLASS_ROCKETTROOPER
+					|| self->client->NPC_class == CLASS_MANDA)
 				{
 					/*
 					if ( ent->s.pos.trType == TR_STATIONARY && (ent->s.eFlags&EF_MISSILE_STICK) )
@@ -9747,7 +9755,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			{
 				Jedi_Ambush(self);
 			}
-			if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER)
+			if ((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_ROCKETTROOPER)
 				&& self->client->moveType == MT_FLYSWIM
 				&& incoming->methodOfDeath != MOD_ROCKET_ALT)
 			{//a hovering Boba Fett, not a tracking rocket
@@ -9766,6 +9774,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 				&& Jedi_SaberBlockGo(self, &self->NPC->last_ucmd, NULL, NULL, incoming) != EVASION_NONE)
 			{//make sure to turn on your saber if it's not on
 				if (self->client->NPC_class != CLASS_BOBAFETT
+					&& self->client->NPC_class != CLASS_MANDA
 					&& (self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER))
 				{
 					self->client->ps.SaberActivate();
@@ -9950,6 +9959,16 @@ void WP_SaberUpdate(gentity_t *self, usercmd_t *ucmd)
 			else if (PM_SaberInReturn(self->client->ps.saberMove) && WP_SaberBlockCooldownDone(self))
 			{
 				self->client->ps.saberBlocking = BLK_WIDE;
+			}
+		}
+		else if (self->s.number > 0)
+		{
+			if (self->client->ps.saber[0].saberFlags&SFL_NOT_ACTIVE_BLOCKING || self->client->ps.forcePowerLevel[FP_SABER_DEFENSE] == 0)
+			{//NPCs get a *slightly* smaller block angle if they aren't *really* blocking
+				if (self->client->ps.saberMove == LS_READY)
+				{
+					self->client->ps.saberBlocking = BLK_TIGHT;
+				}
 			}
 		}
 
@@ -10970,16 +10989,18 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 	if (self->health <= 0)
 	{
 		return;
-	}/*
+	}
+
 	if (!WP_ForcePowerUsable(self, FP_PUSH, 0) && !pull)
 	{//don't know this power
 		return;
 	}
+
 	if (!WP_ForcePowerUsable(self, FP_PULL, 0) && pull)
 	{//don't know this power
 		return;
 	}
-	*/
+
 	if (self->client->ps.leanofs)
 	{//can't force-throw while leaning
 		return;
@@ -11506,6 +11527,8 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 							&& push_list[x]->client->NPC_class != CLASS_ROCKETTROOPER//rockettroopers never drop their weapon
 							&& push_list[x]->client->NPC_class != CLASS_VEHICLE
 							&& push_list[x]->client->NPC_class != CLASS_BOBAFETT
+							&& push_list[x]->client->NPC_class != CLASS_MANDA
+							&& push_list[x]->client->NPC_class != CLASS_COMMANDO
 							&& push_list[x]->client->NPC_class != CLASS_TUSKEN
 							&& push_list[x]->client->NPC_class != CLASS_HAZARD_TROOPER
 							&& push_list[x]->client->NPC_class != CLASS_ASSASSIN_DROID
@@ -12477,6 +12500,8 @@ void ForceTelepathy(gentity_t *self)
 		case CLASS_ASSASSIN_DROID:
 		case CLASS_SABER_DROID:
 		case CLASS_BOBAFETT:
+		case CLASS_MANDA:
+		case CLASS_COMMANDO:
 			break;
 		case CLASS_RANCOR:
 			if (!(traceEnt->spawnflags & 1))
@@ -12892,11 +12917,15 @@ void ForceGrip(gentity_t *self)
 				&& traceEnt->client->NPC_class != CLASS_HAZARD_TROOPER
 				&& traceEnt->client->NPC_class != CLASS_TUSKEN
 				&& traceEnt->client->NPC_class != CLASS_BOBAFETT
+				&& traceEnt->client->NPC_class != CLASS_MANDA
+				&& traceEnt->client->NPC_class != CLASS_COMMANDO
 				&& traceEnt->client->NPC_class != CLASS_ASSASSIN_DROID
 				&& traceEnt->s.weapon != WP_CONCUSSION	// so rax can't drop his
 				)
 			{
-				if (traceEnt->client->NPC_class == CLASS_BOBAFETT)
+				if (traceEnt->client->NPC_class == CLASS_BOBAFETT
+					|| traceEnt->client->NPC_class == CLASS_MANDA
+					|| traceEnt->client->NPC_class == CLASS_COMMANDO)
 				{//he doesn't drop them, just puts it away
 					ChangeWeapon(traceEnt, WP_MELEE);
 				}
@@ -14599,6 +14628,7 @@ void ForceJump(gentity_t *self, usercmd_t *ucmd)
 	}
 
 	if (self->client->NPC_class == CLASS_BOBAFETT
+		|| self->client->NPC_class == CLASS_MANDA
 		|| self->client->NPC_class == CLASS_ROCKETTROOPER)
 	{
 		if (self->client->ps.forceJumpCharge > 300)
@@ -14623,7 +14653,7 @@ void ForceJump(gentity_t *self, usercmd_t *ucmd)
 	switch (WP_GetVelocityForForceJump(self, jumpVel, ucmd))
 	{
 	case FJ_FORWARD:
-		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
+		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
 			|| (self->client->ps.saber[0].saberFlags&SFL_NO_FLIPS)
 			|| (self->client->ps.dualSabers && (self->client->ps.saber[1].saberFlags&SFL_NO_FLIPS))
 			|| (self->NPC &&
@@ -14645,7 +14675,7 @@ void ForceJump(gentity_t *self, usercmd_t *ucmd)
 		}
 		break;
 	case FJ_BACKWARD:
-		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
+		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
 			|| (self->client->ps.saber[0].saberFlags&SFL_NO_FLIPS)
 			|| (self->client->ps.dualSabers && (self->client->ps.saber[1].saberFlags&SFL_NO_FLIPS))
 			|| (self->NPC &&
@@ -14660,7 +14690,7 @@ void ForceJump(gentity_t *self, usercmd_t *ucmd)
 		}
 		break;
 	case FJ_RIGHT:
-		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
+		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
 			|| (self->client->ps.saber[0].saberFlags&SFL_NO_FLIPS)
 			|| (self->client->ps.dualSabers && (self->client->ps.saber[1].saberFlags&SFL_NO_FLIPS))
 			|| (self->NPC &&
@@ -14675,7 +14705,7 @@ void ForceJump(gentity_t *self, usercmd_t *ucmd)
 		}
 		break;
 	case FJ_LEFT:
-		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
+		if (((self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_ROCKETTROOPER) && self->client->ps.forceJumpCharge > 300)
 			|| (self->client->ps.saber[0].saberFlags&SFL_NO_FLIPS)
 			|| (self->client->ps.dualSabers && (self->client->ps.saber[1].saberFlags&SFL_NO_FLIPS))
 			|| (self->NPC &&
@@ -14774,24 +14804,24 @@ void WP_SaberBlockPointsRegenerate(gentity_t *self)
 	}
 	if (!canRegen)
 	{
-		self->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
+		self->client->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 		return;
 	}
 
-	if (self->breakCounter) //must have block points that need to be regained
+	if (self->client->breakCounter) //must have block points that need to be regained
 	{
-		if (level.time >= self->breakRecoveryTime)
+		if (level.time >= self->client->breakRecoveryTime)
 		{
-			self->breakCounter -= 1;
-			self->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
+			self->client->breakCounter -= 1;
+			self->client->breakRecoveryTime = level.time + HITOWNER_RECOVERY_INTERVAL;
 		}
 	}
 
 	if (self->NPC)
 	{
-		if (self->saberReactivateTime) //checking for stun after saber deactivation from Grip/Drain
+		if (self->client->saberReactivateTime) //checking for stun after saber deactivation from Grip/Drain
 		{
-			if (level.time >= self->saberReactivateTime)
+			if (level.time >= self->client->saberReactivateTime)
 			{
 				self->client->ps.SaberActivate();
 			}
@@ -14808,29 +14838,28 @@ qboolean WP_SaberBlockCooldownDone(gentity_t *self)
 
 	if (!(self->client->ps.saberEventFlags&SEF_PARRIED)
 		&& !(self->client->ps.saberEventFlags&SEF_DEFLECTED))
-	{//we weren't transitioning from a block
-		return qfalse;
+	{//we weren't returning from a previous block
+		return qfalse; //otherwise wouldn't be vulnerable after attacking
 	}
 
 	if (PM_SaberInReturn(self->client->ps.saberMove))
-	{//we're in a return, probably triggered after a previous deflection
-		//FIXME: Make sure it's a return from a deflection, not a slash?
-		/*if (self->client->ps.saberAnimLevel == SS_FAST || self->client->ps.saberAnimLevel == SS_TAVION
-			//|| self->client->ps.saberAnimLevel == SS_DUAL
-			)
+	{
+		/*
+		if (self->client->ps.saberAnimLevel == SS_FAST || self->client->ps.saberAnimLevel == SS_TAVION || self->client->ps.saberAnimLevel == SS_DUAL)
 		{ //only non-fast deflecting styles get a break
 			return qfalse;
 		}
 		*/
 
-		int totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_SPEED;
+		//there is a delay, but much shorter than waiting for the animation
+		int totalReboundTime = parryDebounce[self->client->ps.forcePowerLevel[FP_SABER_DEFENSE]] * BLOCK_DELAY_MULT;
 		int baseReboundTime = totalReboundTime;
 
 		switch (self->client->ps.saberAnimLevel)
 		{
 		case SS_DESANN:
 		case SS_STRONG:
-			totalReboundTime *= SLOW_BLOCK_FACTOR;
+			totalReboundTime *= SLOW_BLOCK_DELAY_MULT;
 			break;
 		}
 
@@ -15550,7 +15579,7 @@ void WP_ForceForceThrow(gentity_t *thrower)
 	{
 		return;
 	}
-	if (!NPC_JediClass(thrower))
+	if (thrower->NPC->stats.restrictJediPowers)
 	{
 		return;
 	}
@@ -15818,7 +15847,7 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 					}
 					else if (gripEnt->client
 						&& gripEnt->health > 0	//dead dudes don't fly
-						&& (gripEnt->client->NPC_class == CLASS_BOBAFETT || gripEnt->client->NPC_class == CLASS_ROCKETTROOPER)
+						&& (gripEnt->client->NPC_class == CLASS_BOBAFETT || gripEnt->client->NPC_class == CLASS_MANDA || gripEnt->client->NPC_class == CLASS_ROCKETTROOPER)
 						&& self->client->ps.forcePowerDebounce[FP_GRIP] < level.time
 						&& !Q_irand(0, 3)
 						)
@@ -15839,20 +15868,21 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 						&& !Jedi_CultistDestroyer(gripEnt)
 						&& !Q_irand(0, 100 - (gripEnt->NPC->stats.evasion * 8) - (g_spskill->integer * 20)))
 					{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
-						WP_ForceForceThrow(gripEnt);
+						if (!(gripEnt->NPC->stats.restrictJediPowers)) WP_ForceForceThrow(gripEnt);
+						else ForceThrow(gripEnt, 0);
 
 						if (gripEnt->NPC->rank >= RANK_COMMANDER //saber reactivation AI here.
 							|| (gripEnt->NPC->aiFlags&NPCAI_BOSS_CHARACTER))
 						{ //tough guys reactivate their saber faster after being gripped
-							gripEnt->saberReactivateTime = level.time;
+							gripEnt->client->saberReactivateTime = level.time;
 						}
 						else //if (gripEnt->NPC->rank >= RANK_LT_COMM)
 						{ //weaker/less skilled guys are stunned after a grip for longer
-							gripEnt->saberReactivateTime = level.time + 500;
+							gripEnt->client->saberReactivateTime = level.time + 500;
 						}
 						/*else
 						{
-						gripEnt->saberReactivateTime = level.time + (2000 + Q_irand(0, 1000));
+						gripEnt->client->saberReactivateTime = level.time + (2000 + Q_irand(0, 1000));
 						}*/
 
 						//FIXME: I need to go into some pushed back anim...
@@ -16272,7 +16302,7 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 				}
 				else if (drainEnt->client
 					&& drainEnt->health > 0	//dead dudes don't fly
-					&& (drainEnt->client->NPC_class == CLASS_BOBAFETT || drainEnt->client->NPC_class == CLASS_ROCKETTROOPER)
+					&& (drainEnt->client->NPC_class == CLASS_BOBAFETT || drainEnt->client->NPC_class == CLASS_MANDA || drainEnt->client->NPC_class == CLASS_ROCKETTROOPER)
 					&& self->client->ps.forcePowerDebounce[FP_DRAIN] < level.time
 					&& !Q_irand(0, 10))
 				{//boba fett - fly away!
@@ -16293,22 +16323,23 @@ static void WP_ForcePowerRun(gentity_t *self, forcePowers_t forcePower, usercmd_
 					&& level.time - (self->client->ps.forcePowerDebounce[FP_DRAIN]>self->client->ps.forcePowerLevel[FP_DRAIN] * 500)//at level 1, I always get at least 500ms of drain, at level 3 I get 1500ms
 					&& !Q_irand(0, 100 - (drainEnt->NPC->stats.evasion * 8) - (g_spskill->integer * 15)))
 				{//a jedi who broke free FIXME: maybe have some minimum grip length- a reaction time?
-					WP_ForceForceThrow(drainEnt);
+					if (!(drainEnt->NPC->stats.restrictJediPowers)) WP_ForceForceThrow(drainEnt);
+					else ForceThrow(drainEnt, 0);
 					//FIXME: I need to go into some pushed back anim...
 
 					//saber reactivate time - same rules as for Grip
 					if (drainEnt->NPC->rank >= RANK_COMMANDER
 						|| (drainEnt->NPC->aiFlags&NPCAI_BOSS_CHARACTER))
 					{ //tough guys reactivate their saber faster after being gripped
-						drainEnt->saberReactivateTime = 0;
+						drainEnt->client->saberReactivateTime = 0;
 					}
 					else /*if (drainEnt->NPC->rank >= RANK_LT_COMM)*/
 					{ //weaker/less skilled guys are stunned after a grip for longer
-						drainEnt->saberReactivateTime = level.time + 1000;
+						drainEnt->client->saberReactivateTime = level.time + 1000;
 					}
 					/*else
 					{
-					drainEnt->saberReactivateTime = level.time + (2000 + Q_irand(0, 1000));
+					drainEnt->client->saberReactivateTime = level.time + (2000 + Q_irand(0, 1000));
 					}*/
 
 					WP_ForcePowerStop(self, FP_DRAIN);
@@ -16625,7 +16656,7 @@ void WP_ForcePowersUpdate(gentity_t *self, usercmd_t *ucmd)
 	}
 
 	if (!self->s.number
-		&& self->client->NPC_class == CLASS_BOBAFETT)
+		&& (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA))
 	{//Boba Fett
 		if (ucmd->buttons & BUTTON_FORCE_LIGHTNING)
 		{//start flamethrower

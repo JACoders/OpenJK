@@ -1244,7 +1244,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 				|| self->client->NPC_class == CLASS_VEHICLE
 				|| ( magnitude >= 700 ) )//health here is used to simulate structural integrity
 			{
-				if ( (self->s.weapon == WP_SABER || self->s.number<MAX_CLIENTS || (self->client&&(self->client->NPC_class==CLASS_BOBAFETT||self->client->NPC_class==CLASS_ROCKETTROOPER))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000 )
+				if ((self->s.weapon == WP_SABER || self->s.number<MAX_CLIENTS || (self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_COMMANDO))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
 				{//players and jedi take less impact damage
 					//allow for some lenience on high falls
 					magnitude /= 2;
@@ -2335,7 +2335,8 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 			|| radiusEnts[i]->client->NPC_class == CLASS_REBORN //melee force users? Should we allow kataing?
 			|| radiusEnts[i]->client->NPC_class == CLASS_BOBAFETT //he's too leet
 			|| radiusEnts[i]->NPC->aiFlags&NPCAI_BOSS_CHARACTER)
-			|| !Q_stricmp("chewie", radiusEnts[i]->NPC_type)
+			|| ((!Q_stricmp("chewie", radiusEnts[i]->NPC_type) || radiusEnts[i]->client->NPC_class == CLASS_WOOKIEE) 
+				&& ent->client->NPC_class != CLASS_WOOKIEE) //if you are a wook you can kata other wooks?
 			&& !(ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS)))
 		{ //FIXME: Some kind of kata resist animation?
 			continue;
@@ -2371,6 +2372,7 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 		{
 			lockType = LOCK_KYLE_GRAB2;
 		}
+		
 		WP_SabersCheckLock2( ent, bestEnt, (sabersLockMode_t)lockType );
 		return qtrue;
 	}
@@ -3227,16 +3229,35 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 		int	  kickDamage; //= Q_irand( 3, 8 );
 		int	  kickDamage2; //= Q_irand( 3, 8 );
 
+		int	  kickDmgFlux = weaponData[WP_MELEE].velocity;
+		kickDamage = weaponData[WP_MELEE].splashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+		kickDamage2 = weaponData[WP_MELEE].splashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+
+		/*
 		switch (ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE])
 		{
 		case FORCE_LEVEL_0:
-		case FORCE_LEVEL_1:
-			kickDamage = Q_irand(4, 5);
+		case FORCE_LEVEL_1:			
 		case FORCE_LEVEL_2:
 		case FORCE_LEVEL_3:
 			kickDamage = Q_irand(5, 6);
 			kickDamage2 = Q_irand(5, 6);
 		}
+		*/
+
+		switch (ent->client->ps.legsAnim)
+		{
+		case BOTH_A7_KICK_S:
+		case BOTH_A7_KICK_BF:
+		case BOTH_A7_KICK_RL:
+		case BOTH_A7_KICK_F_AIR:
+		case BOTH_A7_KICK_R_AIR:
+		case BOTH_A7_KICK_L_AIR:
+		case BOTH_A7_KICK_B_AIR:
+			kickDamage = weaponData[WP_MELEE].altSplashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+			kickDamage2 = weaponData[WP_MELEE].altSplashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+		}
+
 
 		int	  kickPush = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
 		int	  kickPush2 = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
@@ -3673,7 +3694,6 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case BOTH_A7_KICK_S:
 				kickPush = Q_flrand( 150.0f, 250.0f );//Q_flrand( 75.0f, 125.0f );
-				kickDamage += 4;
 				if ( ent->footRBolt != -1 )
 				{//actually trace to a bolt
 					if ( elapsedTime >= 550
@@ -3741,7 +3761,6 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 				break;
 			case BOTH_A7_KICK_BF:
 				kickPush = Q_flrand( 150.0f, 250.0f );//Q_flrand( 75.0f, 125.0f );
-				kickDamage += 4;
 				if ( elapsedTime < 1500 )
 				{//auto-aim!
 					overridAngles = PM_AdjustAnglesForBFKick( ent, ucmd, fwdAngs, qboolean(elapsedTime<850) )?qtrue:overridAngles;
@@ -3780,7 +3799,6 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 			case BOTH_A7_KICK_RL:
 				kickSoundOnWalls = qtrue;
 				kickPush = Q_flrand( 150.0f, 250.0f );//Q_flrand( 75.0f, 125.0f );
-				kickDamage += 4;
 				//FIXME: auto aim at enemies on the side of us?
 				//overridAngles = PM_AdjustAnglesForRLKick( ent, ucmd, fwdAngs, qboolean(elapsedTime<850) )?qtrue:overridAngles;
 				if ( elapsedTime >= 250 && elapsedTime < 350 )

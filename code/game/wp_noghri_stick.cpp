@@ -45,7 +45,7 @@ void WP_FireNoghriStick( gentity_t *ent )
 	AngleVectors( angs, dir, NULL, NULL );
 
 	// FIXME: if temp_org does not have clear trace to inside the bbox, don't shoot!
-	int velocity	= 1200;
+	int velocity = weaponData[WP_NOGHRI_STICK].velocity;//1200;
 
 	WP_TraceSetStart( ent, muzzle, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
@@ -61,16 +61,21 @@ void WP_FireNoghriStick( gentity_t *ent )
 	{
 		if ( g_spskill->integer == 0 )
 		{
-			missile->damage = 1;
+			missile->damage = NOGHRI_STICK_DAMAGE_EASY;
 		}
 		else if ( g_spskill->integer == 1 )
 		{
-			missile->damage = 5;
+			missile->damage = NOGHRI_STICK_DAMAGE_MEDIUM;
 		}
 		else
 		{
-			missile->damage = 10;
+			missile->damage = NOGHRI_STICK_DAMAGE_HARD;
 		}
+
+		missile->damage *= weaponData[WP_NOGHRI_STICK].npcDmgMult;
+	}
+	else {
+		missile->damage = weaponData[WP_NOGHRI_STICK].damage;
 	}
 
 //	if ( ent->client )

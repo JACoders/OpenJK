@@ -97,6 +97,8 @@ void WP_ATSTSideAltFire( gentity_t *ent )
 		{
 			damage = ATST_SIDE_ROCKET_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_ATST_SIDE].npcAltDmgMult;
 	}
 
 	VectorCopy( forwardVec, missile->movedir );
@@ -146,6 +148,8 @@ void WP_ATSTSideFire( gentity_t *ent )
 		{
 			damage = ATST_SIDE_MAIN_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_ATST_SIDE].npcDmgMult;
 	}
 
 	VectorSet( missile->maxs, ATST_SIDE_MAIN_SIZE, ATST_SIDE_MAIN_SIZE, ATST_SIDE_MAIN_SIZE );

@@ -76,6 +76,15 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define FL_NO_ANGLES			0x00200000	// No bone angle overrides, no pitch or roll in full angles
 #define FL_RED_CROSSHAIR		0x00400000	// Crosshair red on me
 
+//these can affect player and NPC abilities
+#define	FL_DUALPISTOLS			0x00800000		//gives dual pistols if WP_BLASTER_PISTOL
+#define	FL_MELEEKICKS			0x01000000		//allows melee kicks
+#define	FL_MELEEKATAS			0x02000000		//allows melee katas
+#define	FL_MELEEKATA_NOFORCEFX	0x04000000		//hack to stop melee katas from doing force power effects
+#define	FL_CORTOSIS				0x08000000		//halves damage from saber attacks
+#define	FL_MAGPLATING			0x10000000		//halves damage from blaster bolts
+#define	FL_BLASTARMOR			0x20000000		//halves damage from heavy weapons/explosives
+
 
 //Pointer safety utilities
 #define VALID( a )		( a != NULL )

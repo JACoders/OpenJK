@@ -91,7 +91,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	SCF_NAV_CAN_JUMP	0x20000000	//Can attempt to jump when blocked
 #define	SCF_FIRE_WEAPON_NO_ANIM	0x40000000	//Fire weapon but don't play weapon firing anim
 #define	SCF_SAFE_REMOVE		0x80000000	//Remove NPC when it's safe (when player isn't looking)
-//#define SCF_RESTRICT_FIRE	0x100000000 //NPC unlikely to fire except in special cases
+
 
 
 //#ifdef __DEBUG
@@ -156,6 +156,15 @@ typedef struct gNPCstats_e
 	int		acceleration;
 	//sex
 	sexType_t	sex;			//male, female, etc.
+	
+	//new fields
+	qboolean	altFire;		//NPC ONLY: forces to use altFire always, allows NPC to remember its native firing mode
+	qboolean	restrictJediPowers; //NPC ONLY: keeps from *ever* using dodge and push abilities without possessing those force powers
+	int			meleeKicks;		//use kicks with WP_MELEE? If 1-5 controls frequency
+	int			meleeKatas;		//use melee katas with WP_MELEE? If 1-5 controls frequency
+	int			saberMeleeKatas; //NPC ONLY: use melee katas with WP_SABER? kyle_boss ignores this
+	qboolean	rareFire;		
+	
 } gNPCstats_t;
 
 

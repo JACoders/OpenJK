@@ -40,6 +40,7 @@ extern qboolean PM_SaberInIdle( int move );
 extern qboolean PM_SaberInAttack( int move );
 extern qboolean PM_SaberInTransitionAny( int move );
 extern qboolean PM_SaberInSpecialAttack( int anim );
+extern qboolean PM_WalkingOrIdle(gentity_t *self);
 
 //-------------------------------------------------------------------------
 void G_MissileBounceEffect( gentity_t *ent, vec3_t org, vec3_t dir, qboolean hitWorld )
@@ -185,8 +186,16 @@ void G_ReflectMissile(gentity_t *ent, gentity_t *missile, vec3_t forward, forceP
 					enemy = owner->enemy;
 				}
 
-				if (g_spskill->integer >= 2 && !g_saberAutoBlocking->integer && owner->client->ps.saberBlockingTime < level.time)
+				if (g_spskill->integer >= 2 
+					&& !g_saberAutoBlocking->integer 
+					&& owner->client->ps.saberBlockingTime < level.time)
 				{//but need to be blocking for perfect reflection on higher difficulties
+					perfectReflection = qfalse;
+				}
+
+				if (!PM_WalkingOrIdle(ent)
+					|| !PM_SaberInParry)
+				{//no perfect reflections for non-blockers
 					perfectReflection = qfalse;
 				}
 			}

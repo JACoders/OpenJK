@@ -166,6 +166,9 @@ void WPN_AltSplashDamage(const char **holdBuf);
 void WPN_AltSplashRadius(const char **holdBuf);
 void WPN_Velocity(const char **holdBuf);
 void WPN_AltVelocity(const char **holdBuf);
+void WPN_NPCDmgMult(const char **holdBuf);
+void WPN_NPCDmgAltMult(const char **holdBuf);
+
 
 // Legacy weapons.dat force fields
 void WPN_FuncSkip(const char **holdBuf);
@@ -193,7 +196,7 @@ const int defaultDamage[] = {
 	FLECHETTE_MINE_DAMAGE,		// WP_DET_PACK			// HACK, this is what the code sez.
 	CONC_DAMAGE,				// WP_CONCUSSION
 
-	0,							// WP_MELEE				//right punch damage
+	RIGHT_PUNCH_DAMAGE,			// WP_MELEE				//right punch damage
 
 	ATST_MAIN_DAMAGE,			// WP_ATST_MAIN
 	ATST_SIDE_MAIN_DAMAGE,		// WP_ATST_SIDE
@@ -230,7 +233,7 @@ const int defaultAltDamage[] = {
 	FLECHETTE_MINE_DAMAGE,	// WP_DET_PACK				// HACK, this is what the code sez.
 	CONC_ALT_DAMAGE,		// WP_CONCUSION
 
-	0,						// WP_MELEE					// handled by the melee attack function
+	LEFT_PUNCH_DAMAGE,						// WP_MELEE					// handled by the melee attack function
 
 	ATST_MAIN_DAMAGE,		// WP_ATST_MAIN
 	ATST_SIDE_ALT_DAMAGE,	// WP_ATST_SIDE
@@ -267,7 +270,7 @@ const int defaultSplashDamage[] = {
 	FLECHETTE_MINE_SPLASH_DAMAGE,	// WP_DET_PACK		// HACK, this is what the code sez.
 	CONC_SPLASH_DAMAGE,				// WP_CONCUSSION
 
-	0,								// WP_MELEE
+	KICK_DAMAGE,					// WP_MELEE
 
 	0,								// WP_ATST_MAIN
 	ATST_SIDE_MAIN_SPLASH_DAMAGE,	// WP_ATST_SIDE
@@ -304,7 +307,7 @@ const float defaultSplashRadius[] = {
 	FLECHETTE_MINE_SPLASH_RADIUS,	// WP_DET_PACK		// HACK, this is what the code sez.
 	CONC_SPLASH_RADIUS,				// WP_CONCUSSION
 
-	0.0f,							// WP_MELEE
+	HEAVY_MELEE_MULT,				// WP_MELEE
 
 	0.0f,							// WP_ATST_MAIN
 	ATST_SIDE_MAIN_SPLASH_RADIUS,	// WP_ATST_SIDE
@@ -341,7 +344,7 @@ const int defaultAltSplashDamage[] = {
 	FLECHETTE_MINE_SPLASH_DAMAGE,	// WP_DET_PACK		// HACK, this is what the code sez.
 	0,								// WP_CONCUSSION
 
-	0,								// WP_MELEE			// handled by the melee attack function
+	SPECIAL_KICK_DAMAGE,			// WP_MELEE			
 
 	0,								// WP_ATST_MAIN
 	ATST_SIDE_ALT_SPLASH_DAMAGE,	// WP_ATST_SIDE
@@ -378,7 +381,7 @@ const float defaultAltSplashRadius[] = {
 	FLECHETTE_ALT_SPLASH_RAD,		// WP_DET_PACK		// HACK, this is what the code sez.
 	0.0f,							// WP_CONCUSSION
 
-	0.0f,							// WP_MELEE			// handled by the melee attack function
+	0.0f,							// WP_MELEE
 
 	0.0f,							// WP_ATST_MAIN
 	ATST_SIDE_ALT_SPLASH_RADIUS,	// WP_ATST_SIDE
@@ -415,7 +418,7 @@ const int defaultVelocity[WP_NUM_WEAPONS] =
 	0,//WP_TRIP_MINE,
 	0,//WP_DET_PACK,
 	CONC_VELOCITY,//WP_CONCUSSION,
-	0,//WP_MELEE,			// Any ol' melee attack
+	KICK_DAMAGE_RANDOMNESS,//WP_MELEE,			// Any ol' melee attack
 	0,//WP_STUN_BATON,
 	BRYAR_PISTOL_VEL,//WP_BRYAR_PISTOL,
 	EMPLACED_VEL,//WP_EMPLACED_GUN,
@@ -448,7 +451,7 @@ const int defaultAltVelocity[WP_NUM_WEAPONS] =
 	0,//WP_TRIP_MINE,
 	0,//WP_DET_PACK,
 	Q3_INFINITE,//WP_CONCUSSION,
-	0,//WP_MELEE,			// Any ol' melee attack
+	HEAVY_MELEE_RANDOMNESS,//WP_MELEE,			// Any ol' melee attack
 	0,//WP_STUN_BATON,
 	BRYAR_PISTOL_VEL,//WP_BRYAR_PISTOL,
 	EMPLACED_VEL,//WP_EMPLACED_GUN,
@@ -1590,6 +1593,8 @@ void WP_LoadWeaponParms (void)
 		weaponData[i].altSplashRadius = defaultAltSplashRadius[i];
 		weaponData[i].velocity = defaultVelocity[i];
 		weaponData[i].altVelocity = defaultAltVelocity[i];
+		weaponData[i].npcDmgMult = 1.0;
+		weaponData[i].npcAltDmgMult = 1.0;
 	}
 
 	WP_ParseParms(buffer);	

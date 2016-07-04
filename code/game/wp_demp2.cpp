@@ -63,6 +63,8 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 		{
 			damage = DEMP2_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_BLASTER].npcDmgMult;
 	}
 
 	VectorSet( missile->maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );

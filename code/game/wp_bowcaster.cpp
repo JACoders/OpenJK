@@ -57,6 +57,8 @@ static void WP_BowcasterMainFire( gentity_t *ent )
 		{
 			damage = BOWCASTER_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_BLASTER].npcDmgMult;
 	}
 
 	count = ( level.time - ent->client->ps.weaponChargeTime ) / BOWCASTER_CHARGE_UNIT;
@@ -144,7 +146,7 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 
 	WP_MissileTargetHint(ent, start, forwardVec);
 
-	gentity_t *missile = CreateMissile( start, forwardVec, WP_SpeedOfMissileForWeapon(WP_BOWCASTER, 1), 10000, ent, qtrue );
+	gentity_t *missile = CreateMissile(start, forwardVec, weaponData[WP_BOWCASTER].altVelocity, 10000, ent, qtrue);
 
 	missile->classname = "bowcaster_alt_proj";
 	missile->s.weapon = WP_BOWCASTER;
@@ -164,6 +166,8 @@ static void WP_BowcasterAltFire( gentity_t *ent )
 		{
 			damage = BOWCASTER_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_BLASTER].npcAltDmgMult;
 	}
 
 	VectorSet( missile->maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE );

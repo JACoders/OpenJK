@@ -3812,7 +3812,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			//self->owner = old;
 		}
 		if ( self->client->NPC_class == CLASS_BOBAFETT
-			|| self->client->NPC_class == CLASS_ROCKETTROOPER )
+			|| self->client->NPC_class == CLASS_ROCKETTROOPER
+			|| self->client->NPC_class == CLASS_MANDA)
 		{
 			if ( self->client->moveType == MT_FLYSWIM )
 			{
@@ -5448,6 +5449,7 @@ qboolean G_ImmuneToGas( gentity_t *ent )
 		|| ent->client->NPC_class == CLASS_SWAMPTROOPER
 		|| ent->client->NPC_class == CLASS_TUSKEN
 		|| ent->client->NPC_class == CLASS_BOBAFETT
+		|| ent->client->NPC_class == CLASS_MANDA
 		|| ent->client->NPC_class == CLASS_ROCKETTROOPER
 		|| ent->client->NPC_class == CLASS_SABER_DROID
 		|| ent->client->NPC_class == CLASS_ASSASSIN_DROID
@@ -5774,6 +5776,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		{
 			damage *= 6;// more damage to turret things
 		}
+	}
+
+	//new client flags for damage reduction
+	if ((blasterDamage(mod) && targ->flags&FL_MAGPLATING) || (heavyDamage(mod) && targ->flags&FL_BLASTARMOR) || (mod == MOD_SABER && targ->flags&FL_CORTOSIS)) 
+	{
+		damage /= 2;
 	}
 
 	if (targ
@@ -7034,5 +7042,46 @@ void G_RadiusDamage ( const vec3_t origin, gentity_t *attacker, float damage, fl
 
 			G_Damage (ent, NULL, attacker, dir, origin, (int)points, dFlags, mod);
 		}
+	}
+}
+
+qboolean blasterDamage(int mod) {
+	switch (mod) {
+	case MOD_BRYAR:
+	case MOD_BRYAR_ALT:
+	case MOD_BLASTER:
+	case MOD_BLASTER_ALT:
+	case MOD_BOWCASTER:
+	case MOD_BOWCASTER_ALT:
+	case MOD_REPEATER:
+			//case MOD_DEMP2,
+			//case MOD_DEMP2_ALT,
+			//NEW for JKA weapons:
+	case MOD_CONC:
+	case MOD_CONC_ALT:		
+	case MOD_SEEKER:
+	case MOD_EMPLACED:
+		return qtrue;
+	default:
+		return qfalse;
+	}
+}
+
+qboolean heavyDamage(int mod) {
+	switch (mod) {		
+	case MOD_REPEATER_ALT:
+	case MOD_FLECHETTE:
+	case MOD_FLECHETTE_ALT:
+	case MOD_ROCKET:
+	case MOD_ROCKET_ALT:			
+	case MOD_THERMAL:
+	case MOD_THERMAL_ALT:
+	case MOD_DETPACK:
+	case MOD_LASERTRIP:
+	case MOD_LASERTRIP_ALT:
+	case MOD_MELEE:
+		return qtrue;			
+	default:
+		return qfalse;
 	}
 }

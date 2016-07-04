@@ -687,7 +687,10 @@ static void PM_Friction(void) {
 	else if ((pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
 		&& pm->gent
 		&& pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) && pm->gent->client->moveType == MT_FLYSWIM)
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT 
+			|| pm->gent->client->NPC_class == CLASS_ROCKETTROOPER
+			|| pm->gent->client->NPC_class == CLASS_MANDA) 
+		&& pm->gent->client->moveType == MT_FLYSWIM)
 	{//player as Boba
 		drop += speed*pm_waterfriction*pml.frametime;
 	}
@@ -1118,7 +1121,7 @@ static qboolean PM_CheckJump(void)
 #if METROID_JUMP
 	if ((pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
 		&& pm->gent && pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER || pm->gent->client->NPC_class == CLASS_MANDA))
 	{//player playing as boba fett
 		if (pm->cmd.upmove > 0)
 		{//turn on/go up
@@ -2815,7 +2818,8 @@ static void PM_FlyMove(void)
 	if ((pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
 		&& pm->gent
 		&& pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER) && pm->gent->client->moveType == MT_FLYSWIM)
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER ||
+		NPC->client->NPC_class == CLASS_MANDA) && pm->gent->client->moveType == MT_FLYSWIM)
 	{//jetpack accel
 		accel = pm_flyaccelerate;
 		jetPackMove = qtrue;
@@ -3876,8 +3880,10 @@ static qboolean PM_TryRoll(void)
 			{//only jedi/reborn NPCs should be able to do rolls (with a few exceptions)
 				if (!pm->gent
 					|| !pm->gent->client
-					|| (pm->gent->client->NPC_class != CLASS_BOBAFETT //boba can roll with it, baby
-					&& pm->gent->client->NPC_class != CLASS_REBORN //reborn using weapons other than saber can still roll
+					|| (pm->gent->client->NPC_class != CLASS_BOBAFETT
+						&& pm->gent->client->NPC_class != CLASS_MANDA
+						&& pm->gent->client->NPC_class != CLASS_COMMANDO//boba can roll with it, baby
+						&& pm->gent->client->NPC_class != CLASS_REBORN //reborn using weapons other than saber can still roll
 					))
 				{//can't roll
 					return qfalse;
@@ -4063,11 +4069,11 @@ static void PM_CrashLand(void)
 		}
 		else if (pm->gent
 			&& pm->gent->client
-			&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
+			&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER || pm->gent->client->NPC_class == CLASS_MANDA))
 		{
 			if (JET_Flying(pm->gent))
 			{
-				if (pm->gent->client->NPC_class == CLASS_BOBAFETT
+				if (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDA
 					|| (pm->gent->client->NPC_class == CLASS_ROCKETTROOPER&&pm->gent->NPC&&pm->gent->NPC->rank<RANK_LT))
 				{
 					JET_FlyStop(pm->gent);
@@ -4455,11 +4461,11 @@ qboolean PM_RocketeersAvoidDangerousFalls(void)
 {
 	if (pm->gent->NPC
 		&& pm->gent->client
-		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
+		&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDA || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER))
 	{//fixme:  fall through if jetpack broken?
 		if (JET_Flying(pm->gent))
 		{
-			if (pm->gent->client->NPC_class == CLASS_BOBAFETT)
+			if (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDA)
 			{
 				pm->gent->client->jetPackTime = level.time + 2000;
 				//Wait, what if the effect is already playing, how do we know???
@@ -4908,7 +4914,7 @@ static void PM_GroundTraceMissed(void) {
 												}
 												else if (trace.entityNum < ENTITYNUM_NONE
 													&& pm->ps->weapon != WP_SABER
-													&& (!pm->gent || !pm->gent->client || (pm->gent->client->NPC_class != CLASS_BOBAFETT&&pm->gent->client->NPC_class != CLASS_REBORN&&pm->gent->client->NPC_class != CLASS_ROCKETTROOPER)))
+													&& (!pm->gent || !pm->gent->client || (pm->gent->client->NPC_class != CLASS_BOBAFETT&&pm->gent->client->NPC_class != CLASS_REBORN&&pm->gent->client->NPC_class != CLASS_ROCKETTROOPER && pm->gent->client->NPC_class != CLASS_MANDA)))
 												{//Jedi don't scream and die if they're heading for a hard impact
 													gentity_t *traceEnt = &g_entities[trace.entityNum];
 													if (trace.entityNum == ENTITYNUM_WORLD || (traceEnt && traceEnt->bmodel))
@@ -8168,7 +8174,7 @@ static void PM_Footsteps(void)
 					{
 						if (pm->gent
 							&& pm->gent->client
-							&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+							&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDA || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
 							&& pm->gent->client->moveType == MT_FLYSWIM)
 						{//flying around with jetpack
 							//do something else?
@@ -8196,7 +8202,7 @@ static void PM_Footsteps(void)
 			{
 				if (pm->gent
 					&& pm->gent->client
-					&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
+					&& (pm->gent->client->NPC_class == CLASS_BOBAFETT || pm->gent->client->NPC_class == CLASS_MANDA || pm->gent->client->NPC_class == CLASS_ROCKETTROOPER)
 					&& pm->gent->client->moveType == MT_FLYSWIM)
 				{//flying around with jetpack
 					//do something else?
@@ -13772,15 +13778,18 @@ static void PM_Weapon(void)
 					{
 						int anim = -1;
 						if ((pm->ps->clientNum < MAX_CLIENTS || PM_ControlledByPlayer())
-							/*&& g_debugMelee->integer*/)
+							&& !(g_debugMelee->integer < 0) )
 						{//saber offense
 							if ((pm->cmd.buttons&BUTTON_ALT_ATTACK))
 							{
-								if ((pm->cmd.buttons&BUTTON_ATTACK) && pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 1)
+								if ((pm->cmd.buttons&BUTTON_ATTACK) && pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 1
+									/*&& pm->gent->flags&FL_MELEEKATAS*/)
 								{
 									PM_TryGrab();
 								}
-								else if (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD) /*&& pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 0*/)
+								else if (!(pm->ps->pm_flags&PMF_ALT_ATTACK_HELD)
+									//&& pm->gent->flags&FL_MELEEKICKS
+									/*&& pm->ps->forcePowerLevel[FP_SABER_OFFENSE] > 0*/)
 								{
 									PM_CheckKick();
 								}

@@ -32,7 +32,7 @@ void WP_Melee( gentity_t *ent )
 	gentity_t	*tr_ent;
 	trace_t		tr;
 	vec3_t		mins, maxs, end;
-	int			damage = 5;
+	int			damage = weaponData[WP_MELEE].altDamage;
 	float		range = ent->s.number ? 48 : 32;
 
 	VectorMA( muzzle, range, forwardVec, end );
@@ -57,9 +57,8 @@ void WP_Melee( gentity_t *ent )
 	{
 		if (ent->client->ps.torsoAnim == BOTH_MELEE2)
 		{
-			damage = 7;
+			damage = weaponData[WP_MELEE].damage;
 		}
-		//else damage = 5
 	}
 
 	if ( tr_ent && tr_ent->takedamage )
@@ -67,10 +66,10 @@ void WP_Melee( gentity_t *ent )
 		int dflags = DAMAGE_NO_KNOCKBACK;
 		G_PlayEffect( G_EffectIndex( "melee/punch_impact" ), tr.endpos, forwardVec );
 		//G_Sound( tr_ent, G_SoundIndex( va("sound/weapons/melee/punch%d", Q_irand(1, 4)) ) );
-		if ( ent->NPC && (ent->NPC->aiFlags&NPCAI_HEAVY_MELEE) )
+		if ( (ent->NPC && (ent->NPC->aiFlags&NPCAI_HEAVY_MELEE)))
 		{ //4x damage for heavy melee class
-			damage = 5;
-			damage *= 4 + Q_irand(-3, 3);
+			damage *= weaponData[WP_MELEE].splashRadius;
+			damage += Q_irand(-1 * weaponData[WP_MELEE].altSplashRadius, weaponData[WP_MELEE].altSplashRadius);
 			dflags &= ~DAMAGE_NO_KNOCKBACK;
 			dflags |= DAMAGE_DISMEMBER;
 		}

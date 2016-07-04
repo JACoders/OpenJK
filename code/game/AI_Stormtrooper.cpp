@@ -1267,7 +1267,9 @@ void NPC_BSST_Patrol( void )
 				ST_Speech( NPC, SPEECH_COVER, 0 );
 				return;
 			}
-			else if (NPC->client->NPC_class==CLASS_BOBAFETT)
+			else if (NPC->client->NPC_class==CLASS_BOBAFETT
+				|| NPC->client->NPC_class == CLASS_MANDA
+				|| NPC->client->NPC_class == CLASS_COMMANDO)
 			{
 				//NPCInfo->lastAlertID = level.alertEvents[eventID].ID;
 				if ( !level.alertEvents[alertEvent].owner ||
@@ -2379,10 +2381,16 @@ void NPC_BSST_Attack( void )
 		if ( (NPC->client->ps.weapon == WP_FLECHETTE || NPC->client->ps.weapon == WP_REPEATER) &&
 			(NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 		{//shooting an explosive, but enemy too close, switch to primary fire
-			NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-			//FIXME: we can never go back to alt-fire this way since, after this, we don't know if we were initially supposed to use alt-fire or not...
+			NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;			
 		}
-
+	}
+	else if (enemyDist >= MIN_ROCKET_DIST_SQUARED)
+	{
+		if ((NPC->client->ps.weapon == WP_FLECHETTE || NPC->client->ps.weapon == WP_REPEATER) &&
+			(NPCInfo->stats.altFire))
+		{//shooting an explosive, enemy was too close but not anymore
+			NPCInfo->scriptFlags |= SCF_ALT_FIRE;
+		}
 	}
 	else if ( enemyDist > 65536 )//256 squared
 	{
