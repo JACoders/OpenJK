@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <type_traits>
-#include "ojk_sg_archive_fwd.h"
+#include "ojk_saved_game_fwd.h"
 
 
 namespace ojk {

@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ojk_sg_archive_exception.h"
+#include "ojk_saved_game_exception.h"
 
 
 namespace ojk {

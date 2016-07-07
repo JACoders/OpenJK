@@ -1,5 +1,5 @@
-#include "ojk_sg_archive.h"
-#include "ojk_sg_archive_exception.h"
+#include "ojk_saved_game.h"
+#include "ojk_saved_game_exception.h"
 #include "qcommon/qcommon.h"
 #include "server/server.h"
 
