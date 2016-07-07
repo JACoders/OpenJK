@@ -38,7 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <map>
 
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_sg_archive.h"
+#include "qcommon/ojk_saved_game.h"
 
 static char	saveGameComment[iSG_COMMENT_SIZE];
 

@@ -34,7 +34,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_icarus.h"
 #include "../../code/qcommon/sstring.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_sg_archive.h"
+#include "qcommon/ojk_saved_game.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 

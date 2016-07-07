@@ -264,9 +264,9 @@ set(SPGameCommonFiles
 	"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
 	"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
 	"${SharedDir}/qcommon/ojk_exception.h"
-	"${SharedDir}/qcommon/ojk_sg_archive.h"
-	"${SharedDir}/qcommon/ojk_sg_archive_fwd.h"
-	"${SharedDir}/qcommon/ojk_sg_archive_exception.h"
+	"${SharedDir}/qcommon/ojk_saved_game.h"
+	"${SharedDir}/qcommon/ojk_saved_game_fwd.h"
+	"${SharedDir}/qcommon/ojk_saved_game_exception.h"
 	
 	${SharedCommonFiles}
 	)

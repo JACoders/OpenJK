@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cm_local.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_sg_archive.h"
+#include "qcommon/ojk_saved_game.h"
 
 #ifdef BSPC
 void SetPlaneSignbits (cplane_t *out) {

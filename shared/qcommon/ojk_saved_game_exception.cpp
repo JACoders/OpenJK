@@ -1,5 +1,5 @@
 //
-// Saved game archive exception.
+// Saved game exception.
 //
 
 
@@ -7,25 +7,23 @@
 
 
 namespace ojk {
-namespace sg {
 
 
-ArchiveException::ArchiveException(
+SavedGameException::SavedGameException(
     const char* message) :
         Exception(message)
 {
 }
 
-ArchiveException::ArchiveException(
+SavedGameException::SavedGameException(
     const std::string& message) :
         Exception(message)
 {
 }
 
-ArchiveException::~ArchiveException()
+SavedGameException::~SavedGameException()
 {
 }
 
 
-} // sg
 } // ojk

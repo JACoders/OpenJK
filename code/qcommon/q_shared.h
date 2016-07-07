@@ -161,7 +161,7 @@ float FloatSwap( const float *f );
 
 #include "qcommon/q_platform.h"
 #include "qcommon/ojk_sg_wrappers_fwd.h"
-#include "qcommon/ojk_sg_archive_fwd.h"
+#include "qcommon/ojk_saved_game_fwd.h"
 
 
 // ================================================================

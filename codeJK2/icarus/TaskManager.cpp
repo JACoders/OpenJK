@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_sg_archive.h"
+#include "qcommon/ojk_saved_game.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
 

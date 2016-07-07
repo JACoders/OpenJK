@@ -1,11 +1,11 @@
 //
-// Saved game archive.
+// Saved game.
 // (forward declaration)
 //
 
 
-#ifndef OJK_SG_ARCHIVE_FWD_INCLUDED
-#define OJK_SG_ARCHIVE_FWD_INCLUDED
+#ifndef OJK_SAVED_GAME_FWD_INCLUDED
+#define OJK_SAVED_GAME_FWD_INCLUDED
 
 
 #include <cstdint>
@@ -15,24 +15,23 @@
 
 
 namespace ojk {
-namespace sg {
 
 
-class Archive
+class SavedGame
 {
 public:
     using ChunkId = uint32_t;
 
 
-    Archive();
+    SavedGame();
 
-    Archive(
-        const Archive& that) = delete;
+    SavedGame(
+        const SavedGame& that) = delete;
 
-    Archive& operator=(
-        const Archive& that) = delete;
+    SavedGame& operator=(
+        const SavedGame& that) = delete;
 
-    ~Archive();
+    ~SavedGame();
 
 
     // Creates a new saved game file for writing.
@@ -121,7 +120,7 @@ public:
         const std::string& base_file_name);
 
     // Returns a default instance of the class.
-    static Archive& get_instance();
+    static SavedGame& get_instance();
 
 
 private:
@@ -264,11 +263,10 @@ private:
         const TSrc* src_values,
         int src_count,
         CastTag);
-}; // Archive
+}; // SavedGame
 
 
-} // sg
 } // ojk
 
 
-#endif // OJK_SG_ARCHIVE_FWD_INCLUDED
+#endif // OJK_SAVED_GAME_FWD_INCLUDED

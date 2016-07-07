@@ -1,11 +1,10 @@
 //
-// Saved game archive.
-// (forward declaration)
+// Saved game.
 //
 
 
-#ifndef OJK_SG_ARCHIVE_INCLUDED
-#define OJK_SG_ARCHIVE_INCLUDED
+#ifndef OJK_SAVED_GAME_INCLUDED
+#define OJK_SAVED_GAME_INCLUDED
 
 
 #include <cstdint>
@@ -15,35 +14,34 @@
 
 
 namespace ojk {
-namespace sg {
 
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // I/O buffer manipulation.
 
 template<typename T>
-void Archive::check_io_buffer(
+void SavedGame::check_io_buffer(
     int count)
 {
     if (count <= 0) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Zero or negative count.");
     }
 
     const auto data_size = sizeof(T) * count;
 
     if ((io_buffer_offset_ + data_size) > io_buffer_.size()) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Not enough data.");
     }
 }
 
 template<typename T>
-void Archive::accomodate_io_buffer(
+void SavedGame::accomodate_io_buffer(
     int count)
 {
     if (count <= 0) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Zero or negative count.");
     }
 
@@ -56,17 +54,17 @@ void Archive::accomodate_io_buffer(
 }
 
 template<typename T>
-T Archive::cast_io_buffer()
+T SavedGame::cast_io_buffer()
 {
     return reinterpret_cast<T>(io_buffer_[io_buffer_offset_]);
 }
 
 template<typename T>
-void Archive::advance_io_buffer(
+void SavedGame::advance_io_buffer(
     int count)
 {
     if (count <= 0) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Zero or negative count.");
     }
 
@@ -82,7 +80,7 @@ void Archive::advance_io_buffer(
 // read_chunk
 
 template<typename TSrc, typename TDst>
-bool Archive::read_chunk(
+bool SavedGame::read_chunk(
     const ChunkId chunk_id,
     TDst& dst_value)
 {
@@ -96,7 +94,7 @@ bool Archive::read_chunk(
 }
 
 template<typename TSrc, typename TDst>
-bool Archive::read_chunk(
+bool SavedGame::read_chunk(
     const ChunkId chunk_id,
     TDst* dst_values,
     int dst_count)
@@ -119,7 +117,7 @@ bool Archive::read_chunk(
 // write_chunk
 
 template<typename TDst, typename TSrc>
-bool Archive::write_chunk(
+bool SavedGame::write_chunk(
     const ChunkId chunk_id,
     const TSrc& src_value)
 {
@@ -133,7 +131,7 @@ bool Archive::write_chunk(
 }
 
 template<typename TDst, typename TSrc>
-bool Archive::write_chunk(
+bool SavedGame::write_chunk(
     const ChunkId chunk_id,
     const TSrc* src_values,
     int src_count)
@@ -156,7 +154,7 @@ bool Archive::write_chunk(
 // read
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst& dst_value)
 {
     using Tag = typename std::conditional<
@@ -191,7 +189,7 @@ void Archive::read(
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst& dst_value,
     BooleanTag)
 {
@@ -208,7 +206,7 @@ void Archive::read(
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst& dst_value,
     NumericTag)
 {
@@ -223,7 +221,7 @@ void Archive::read(
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst*& dst_value,
     PointerTag)
 {
@@ -248,16 +246,16 @@ void Archive::read(
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst& dst_value,
     ClassTag)
 {
-    throw ArchiveException(
+    throw SavedGameException(
         "Not implemented.");
 }
 
 template<typename TSrc, typename TDst, int TCount>
-void Archive::read(
+void SavedGame::read(
     TDst (&dst_values)[TCount],
     Array1dTag)
 {
@@ -274,7 +272,7 @@ void Archive::read(
 // read (C-array)
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst* dst_values,
     int dst_count)
 {
@@ -286,12 +284,12 @@ void Archive::read(
         "Unsupported types.");
 
     if (!dst_values) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Null pointer.");
     }
 
     if (dst_count < 0) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Negative count.");
     }
 
@@ -335,7 +333,7 @@ void Archive::read(
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst* dst_values,
     int dst_count,
     InplaceTag)
@@ -356,7 +354,7 @@ void Archive::read(
 }
 
 template<typename TSrc, typename TDst>
-void Archive::read(
+void SavedGame::read(
     TDst* dst_values,
     int dst_count,
     CastTag)
@@ -386,7 +384,7 @@ void Archive::read(
 // write
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc& src_value)
 {
     using Tag = typename std::conditional<
@@ -417,7 +415,7 @@ void Archive::write(
 }
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc& src_value,
     NumericTag)
 {
@@ -432,7 +430,7 @@ void Archive::write(
 }
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc*& src_value,
     PointerTag)
 {
@@ -450,16 +448,16 @@ void Archive::write(
 }
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc& src_value,
     ClassTag)
 {
-    throw ArchiveException(
+    throw SavedGameException(
         "Not implemented.");
 }
 
 template<typename TDst, typename TSrc, int TCount>
-void Archive::write(
+void SavedGame::write(
     const TSrc (&src_values)[TCount],
     Array1dTag)
 {
@@ -476,7 +474,7 @@ void Archive::write(
 // write (C-array)
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc* src_values,
     int src_count)
 {
@@ -488,12 +486,12 @@ void Archive::write(
         "Unsupported types.");
 
     if (!src_values) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Null pointer.");
     }
 
     if (src_count < 0) {
-        throw ArchiveException(
+        throw SavedGameException(
             "Negative count.");
     }
 
@@ -537,7 +535,7 @@ void Archive::write(
 }
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc* src_values,
     int src_count,
     InplaceTag)
@@ -558,7 +556,7 @@ void Archive::write(
 }
 
 template<typename TDst, typename TSrc>
-void Archive::write(
+void SavedGame::write(
     const TSrc* src_values,
     int src_count,
     CastTag)
@@ -584,8 +582,7 @@ void Archive::write(
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-} // sg
 } // ojk
 
 
-#endif // OJK_SG_ARCHIVE_INCLUDED
+#endif // OJK_SAVED_GAME_INCLUDED

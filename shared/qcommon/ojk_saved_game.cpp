@@ -5,10 +5,9 @@
 
 
 namespace ojk {
-namespace sg {
 
 
-Archive::Archive() :
+SavedGame::SavedGame() :
         file_handle_(),
         io_buffer_(),
         io_buffer_offset_(),
@@ -17,12 +16,12 @@ Archive::Archive() :
 {
 }
 
-Archive::~Archive()
+SavedGame::~SavedGame()
 {
     close();
 }
 
-bool Archive::open(
+bool SavedGame::open(
     const std::string& base_file_name)
 {
     auto&& file_path = generate_path(
@@ -75,7 +74,7 @@ bool Archive::open(
     return is_succeed;
 }
 
-bool Archive::create(
+bool SavedGame::create(
     const std::string& base_file_name)
 {
     remove(
@@ -108,7 +107,7 @@ bool Archive::create(
     return true;
 }
 
-void Archive::close()
+void SavedGame::close()
 {
     if (file_handle_ != 0) {
         ::FS_FCloseFile(file_handle_);
@@ -119,21 +118,21 @@ void Archive::close()
     io_buffer_offset_ = 0;
 }
 
-bool Archive::read_chunk(
-    const Archive::ChunkId chunk_id)
+bool SavedGame::read_chunk(
+    const SavedGame::ChunkId chunk_id)
 {
-    throw ArchiveException(
+    throw SavedGameException(
         "Not implemented.");
 }
 
-bool Archive::write_chunk(
-    const Archive::ChunkId chunk_id)
+bool SavedGame::write_chunk(
+    const SavedGame::ChunkId chunk_id)
 {
-    throw ArchiveException(
+    throw SavedGameException(
         "Not implemented.");
 }
 
-void Archive::rename(
+void SavedGame::rename(
     const std::string& old_base_file_name,
     const std::string& new_base_file_name)
 {
@@ -154,7 +153,7 @@ void Archive::rename(
     }
 }
 
-void Archive::remove(
+void SavedGame::remove(
     const std::string& base_file_name)
 {
     auto path = generate_path(
@@ -164,13 +163,13 @@ void Archive::remove(
         path.c_str());
 }
 
-Archive& Archive::get_instance()
+SavedGame& SavedGame::get_instance()
 {
-    static Archive result;
+    static SavedGame result;
     return result;
 }
 
-int Archive::compress()
+int SavedGame::compress()
 {
     auto src_size = static_cast<int>(io_buffer_.size());
 
@@ -228,7 +227,7 @@ int Archive::compress()
     return dst_index;
 }
 
-void Archive::decompress(
+void SavedGame::decompress(
     int dst_size)
 {
     rle_buffer_.resize(
@@ -263,7 +262,7 @@ void Archive::decompress(
     }
 }
 
-std::string Archive::generate_path(
+std::string SavedGame::generate_path(
     const std::string& base_file_name)
 {
     auto normalized_file_name = base_file_name;
@@ -279,7 +278,7 @@ std::string Archive::generate_path(
     return path;
 }
 
-std::string Archive::get_failed_to_open_message(
+std::string SavedGame::get_failed_to_open_message(
     const std::string& file_name,
     bool is_open)
 {
@@ -311,5 +310,4 @@ std::string Archive::get_failed_to_open_message(
 }
 
 
-} // sg
 } // ojk
