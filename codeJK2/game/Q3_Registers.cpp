@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "Q3_Registers.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_fwd.h"
 
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 

@@ -12,7 +12,7 @@ SavedGame::SavedGame() :
         io_buffer_(),
         io_buffer_offset_(),
         rle_buffer_(),
-        is_testing_read_chunk_()
+        is_preview_mode_()
 {
 }
 
@@ -121,8 +121,126 @@ void SavedGame::close()
 bool SavedGame::read_chunk(
     const SavedGame::ChunkId chunk_id)
 {
-    throw SavedGameException(
-        "Not implemented.");
+    auto chunk_id_string = get_chunk_id_string(
+        chunk_id);
+
+    ::Com_DPrintf(
+        "Attempting read of chunk %s\n",
+        chunk_id_string.c_str());
+
+    // Load in chid and length...
+    //
+    uint32_t ulLoadedChid = 0;
+    uint32_t uiLoadedLength = 0;
+
+    auto uiLoaded = ::FS_Read(
+        &ulLoadedChid,
+        static_cast<int>(sizeof(ulLoadedChid)),
+        file_handle_);
+
+    uiLoaded += ::FS_Read(
+        &uiLoadedLength,
+        static_cast<int>(sizeof(uiLoadedLength)),
+        file_handle_);
+
+    auto bBlockIsCompressed = (static_cast<int32_t>(uiLoadedLength) < 0);
+
+    if (bBlockIsCompressed) {
+        uiLoadedLength = -static_cast<int32_t>(uiLoadedLength);
+    }
+
+    // Make sure we are loading the correct chunk...
+    //
+    if (ulLoadedChid != chunk_id) {
+        auto loaded_chunk_id_string = get_chunk_id_string(ulLoadedChid);
+
+        if (!is_preview_mode_) {
+            ::Com_Error(
+                ERR_DROP,
+                "Loaded chunk ID (%s) does not match requested chunk ID (%s)",
+                loaded_chunk_id_string.c_str(),
+                chunk_id_string.c_str());
+        }
+
+        return false;
+    }
+
+    // Load in data and magic number...
+    //
+    uint32_t uiCompressedLength = 0;
+
+    if (bBlockIsCompressed) {
+        uiLoaded += ::FS_Read(
+            &uiCompressedLength,
+            static_cast<int>(uiCompressedLength),
+            file_handle_);
+
+        rle_buffer_.resize(
+            uiCompressedLength);
+
+        uiLoaded += ::FS_Read(
+            rle_buffer_.data(),
+            uiCompressedLength,
+            file_handle_);
+
+        decompress(
+            rle_buffer_,
+            io_buffer_);
+    } else {
+        io_buffer_.resize(
+            uiLoadedLength);
+
+        uiLoaded += ::FS_Read(
+            io_buffer_.data(),
+            uiLoadedLength,
+            file_handle_);
+    }
+
+    // Get checksum...
+    //
+    uint32_t uiLoadedCksum = 0;
+
+    uiLoaded += ::FS_Read(
+        &uiLoadedCksum,
+        static_cast<int>(sizeof(uiLoadedCksum)),
+        file_handle_);
+
+    // Make sure the checksums match...
+    //
+    auto uiCksum = ::Com_BlockChecksum(
+        io_buffer_.data(),
+        static_cast<int>(io_buffer_.size()));
+
+    if (uiLoadedCksum != uiCksum) {
+        if (!is_preview_mode_) {
+            ::Com_Error(
+                ERR_DROP,
+                "Failed checksum check for chunk",
+                chunk_id_string.c_str());
+        }
+
+        return false;
+    }
+
+    // Make sure we didn't encounter any read errors...
+    if (uiLoaded !=
+            sizeof(ulLoadedChid) +
+            sizeof(uiLoadedLength) +
+            sizeof(uiLoadedCksum) +
+            (bBlockIsCompressed ? sizeof(uiCompressedLength) : 0) +
+            (bBlockIsCompressed ? uiCompressedLength : io_buffer_.size()))
+    {
+        if (!is_preview_mode_) {
+            ::Com_Error(
+                ERR_DROP,
+                "Error during loading chunk %s",
+                chunk_id_string.c_str());
+        }
+
+        return false;
+    }
+
+    return true;
 }
 
 bool SavedGame::write_chunk(
@@ -169,22 +287,24 @@ SavedGame& SavedGame::get_instance()
     return result;
 }
 
-int SavedGame::compress()
+void SavedGame::compress(
+    const Buffer& src_buffer,
+    Buffer& dst_buffer)
 {
-    auto src_size = static_cast<int>(io_buffer_.size());
+    auto src_size = static_cast<int>(src_buffer.size());
 
-    rle_buffer_.resize(2 * src_size);
+    dst_buffer.resize(2 * src_size);
 
     int src_count = 0;
     int dst_index = 0;
 
     while (src_count < src_size) {
         auto src_index = src_count;
-        auto b = io_buffer_[src_index++];
+        auto b = src_buffer[src_index++];
 
         while (src_index < src_size &&
             (src_index - src_count) < 127 &&
-            io_buffer_[src_index] == b)
+            src_buffer[src_index] == b)
         {
             src_index += 1;
         }
@@ -192,73 +312,71 @@ int SavedGame::compress()
         if ((src_index - src_count) == 1) {
             while (src_index < src_size &&
                 (src_index - src_count) < 127 && (
-                    io_buffer_[src_index] != io_buffer_[src_index - 1] || (
+                    src_buffer[src_index] != src_buffer[src_index - 1] || (
                         src_index > 1 &&
-                        io_buffer_[src_index] != io_buffer_[src_index - 2])))
+                        src_buffer[src_index] != src_buffer[src_index - 2])))
             {
                 src_index += 1;
             }
 
             while (src_index < src_size &&
-                io_buffer_[src_index] == io_buffer_[src_index - 1])
+                src_buffer[src_index] == src_buffer[src_index - 1])
             {
                 src_index -= 1;
             }
 
-            rle_buffer_[dst_index++] =
+            dst_buffer[dst_index++] =
                 static_cast<uint8_t>(src_count - src_index);
 
             for (auto i = src_count; i < src_index; ++i) {
-                rle_buffer_[dst_index++] = io_buffer_[i];
+                dst_buffer[dst_index++] = src_buffer[i];
             }
         } else {
-            rle_buffer_[dst_index++] =
+            dst_buffer[dst_index++] =
                 static_cast<uint8_t>(src_index - src_count);
 
-            rle_buffer_[dst_index++] = b;
+            dst_buffer[dst_index++] = b;
         }
 
         src_count = src_index;
     }
 
-    rle_buffer_.resize(
+    dst_buffer.resize(
         dst_index);
-
-    return dst_index;
 }
 
 void SavedGame::decompress(
-    int dst_size)
+    const Buffer& src_buffer,
+    Buffer& dst_buffer)
 {
-    rle_buffer_.resize(
-        dst_size);
-
     int src_index = 0;
     int dst_index = 0;
 
-    while (dst_size > 0) {
-        auto count = static_cast<int8_t>(io_buffer_[src_index++]);
+    auto remain_size = static_cast<int>(dst_buffer.size());
+
+    while (remain_size > 0) {
+        auto count = static_cast<int8_t>(src_buffer[src_index++]);
 
         if (count > 0) {
             std::uninitialized_fill_n(
-                &rle_buffer_[dst_index],
+                &dst_buffer[dst_index],
                 count,
-                io_buffer_[src_index++]);
+                src_buffer[src_index++]);
         } else {
             if (count < 0) {
                 count = -count;
 
                 std::uninitialized_copy_n(
-                    &io_buffer_[src_index],
+                    &src_buffer[src_index],
                     count,
-                    &rle_buffer_[dst_index]);
+                    &dst_buffer[dst_index]);
 
                 src_index += count;
             }
         }
 
         dst_index += count;
-        dst_size -= count;
+        remain_size -= count;
     }
 }
 
@@ -305,6 +423,19 @@ std::string SavedGame::get_failed_to_open_message(
     if (result.length() > max_length) {
         result.resize(max_length);
     }
+
+    return result;
+}
+
+std::string SavedGame::get_chunk_id_string(
+    uint32_t chunk_id)
+{
+    std::string result(4, '\0');
+
+    result[0] = static_cast<char>((chunk_id >> 24) & 0xFF);
+    result[1] = static_cast<char>((chunk_id >> 16) & 0xFF);
+    result[2] = static_cast<char>((chunk_id >> 8) & 0xFF);
+    result[3] = static_cast<char>((chunk_id >> 0) & 0xFF);
 
     return result;
 }

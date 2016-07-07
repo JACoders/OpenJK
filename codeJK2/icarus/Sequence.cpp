@@ -29,7 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_fwd.h"
 
 CSequence::CSequence( void )
 {

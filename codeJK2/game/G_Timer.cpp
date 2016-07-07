@@ -24,7 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "../../code/Rufl/hstring.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_fwd.h"
 
 #define MAX_GTIMERS	16384
 

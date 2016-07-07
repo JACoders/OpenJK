@@ -152,16 +152,18 @@ private:
     Buffer rle_buffer_;
 
     // Does not throws an exception on chunk reading if true.
-    bool is_testing_read_chunk_;
+    bool is_preview_mode_;
 
 
-    // Compresses I/O buffer into RLE one.
-    // Returns a size of compressed data.
-    int compress();
+    // Compresses data.
+    static void compress(
+        const Buffer& src_buffer,
+        Buffer& dst_buffer);
 
-    // Decompresses I/O buffer into RLE one.
-    void decompress(
-        int dst_size);
+    // Decompresses data.
+    static void decompress(
+        const Buffer& src_buffer,
+        Buffer& dst_buffer);
 
 
     static std::string generate_path(
@@ -170,6 +172,10 @@ private:
     static std::string get_failed_to_open_message(
         const std::string& file_name,
         bool is_open);
+
+
+    static std::string get_chunk_id_string(
+        uint32_t chunk_id);
 
 
     // Checks if there is enough data for reading in the I/O buffer.
