@@ -154,6 +154,8 @@ private:
     // Does not throws an exception on chunk reading if true.
     bool is_preview_mode_;
 
+    bool is_write_failed_;
+
 
     // Compresses data.
     static void compress(

@@ -12,7 +12,8 @@ SavedGame::SavedGame() :
         io_buffer_(),
         io_buffer_offset_(),
         rle_buffer_(),
-        is_preview_mode_()
+        is_preview_mode_(),
+        is_write_failed_()
 {
 }
 
@@ -24,6 +25,9 @@ SavedGame::~SavedGame()
 bool SavedGame::open(
     const std::string& base_file_name)
 {
+    close();
+
+
     auto&& file_path = generate_path(
         base_file_name);
 
@@ -77,6 +81,9 @@ bool SavedGame::open(
 bool SavedGame::create(
     const std::string& base_file_name)
 {
+    close();
+
+
     remove(
         base_file_name);
 
@@ -116,6 +123,8 @@ void SavedGame::close()
 
     io_buffer_.clear();
     io_buffer_offset_ = 0;
+
+    is_write_failed_ = false;
 }
 
 bool SavedGame::read_chunk(
@@ -246,8 +255,115 @@ bool SavedGame::read_chunk(
 bool SavedGame::write_chunk(
     const SavedGame::ChunkId chunk_id)
 {
-    throw SavedGameException(
-        "Not implemented.");
+    auto chunk_id_string = get_chunk_id_string(
+        chunk_id);
+
+    ::Com_DPrintf(
+        "Attempting write of chunk %s\n",
+        chunk_id_string.c_str());
+
+    if (::sv_testsave->integer != 0) {
+        return true;
+    }
+
+    auto src_size = static_cast<int>(io_buffer_.size());
+
+    auto uiCksum = Com_BlockChecksum(
+        io_buffer_.data(),
+        src_size);
+
+    uint32_t uiSaved = ::FS_Write(
+        &chunk_id,
+        static_cast<int>(sizeof(chunk_id)),
+        file_handle_);
+
+    int iCompressedLength = 0;
+
+    if (::sv_compress_saved_games->integer == 0) {
+        iCompressedLength = -1;
+    } else {
+        compress(
+            io_buffer_,
+            rle_buffer_);
+
+        if (rle_buffer_.size() < io_buffer_.size()) {
+            iCompressedLength = static_cast<int>(rle_buffer_.size());
+        }
+    }
+
+    if (iCompressedLength >= 0) {
+        auto iLength = -static_cast<int>(io_buffer_.size());
+
+        uiSaved += ::FS_Write(
+            &iLength,
+            static_cast<int>(sizeof(iLength)),
+            file_handle_);
+
+        uiSaved += ::FS_Write(
+            &iCompressedLength,
+            static_cast<int>(sizeof(iCompressedLength)),
+            file_handle_);
+
+        uiSaved += ::FS_Write(
+            rle_buffer_.data(),
+            iCompressedLength,
+            file_handle_);
+
+        uiSaved += ::FS_Write(
+            &uiCksum,
+            static_cast<int>(sizeof(uiCksum)),
+            file_handle_);
+
+        if (uiSaved !=
+            sizeof(chunk_id) +
+            sizeof(iLength) +
+            sizeof(uiCksum) +
+            sizeof(iCompressedLength) +
+            iCompressedLength)
+        {
+            is_write_failed_ = true;
+
+            ::Com_Printf(
+                S_COLOR_RED "Failed to write %s chunk\n",
+                chunk_id_string.c_str());
+
+            return false;
+        }
+    } else {
+        auto iLength = static_cast<uint32_t>(io_buffer_.size());
+
+        uiSaved += ::FS_Write(
+            &iLength,
+            static_cast<int>(sizeof(iLength)),
+            file_handle_);
+
+        uiSaved += ::FS_Write(
+            io_buffer_.data(),
+            iLength,
+            file_handle_);
+
+        uiSaved += ::FS_Write(
+            &uiCksum,
+            static_cast<int>(sizeof(uiCksum)),
+            file_handle_);
+
+        if (uiSaved !=
+            sizeof(chunk_id) +
+            sizeof(iLength) +
+            sizeof(uiCksum) +
+            iLength)
+        {
+            is_write_failed_ = true;
+
+            ::Com_Printf(
+                S_COLOR_RED "Failed to write %s chunk\n",
+                chunk_id_string.c_str());
+
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void SavedGame::rename(
