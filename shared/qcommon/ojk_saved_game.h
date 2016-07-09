@@ -20,56 +20,9 @@ namespace ojk {
 // I/O buffer manipulation.
 
 template<typename T>
-void SavedGame::check_io_buffer(
-    int count)
+T SavedGame::cast_buffer()
 {
-    if (count <= 0) {
-        throw SavedGameException(
-            "Zero or negative count.");
-    }
-
-    const auto data_size = sizeof(T) * count;
-
-    if ((io_buffer_offset_ + data_size) > io_buffer_.size()) {
-        throw SavedGameException(
-            "Not enough data.");
-    }
-}
-
-template<typename T>
-void SavedGame::accomodate_io_buffer(
-    int count)
-{
-    if (count <= 0) {
-        throw SavedGameException(
-            "Zero or negative count.");
-    }
-
-    const auto data_size = sizeof(T) * count;
-
-    const auto new_buffer_size = io_buffer_offset_ + data_size;
-
-    io_buffer_.resize(
-        new_buffer_size);
-}
-
-template<typename T>
-T SavedGame::cast_io_buffer()
-{
-    return reinterpret_cast<T>(io_buffer_[io_buffer_offset_]);
-}
-
-template<typename T>
-void SavedGame::advance_io_buffer(
-    int count)
-{
-    if (count <= 0) {
-        throw SavedGameException(
-            "Zero or negative count.");
-    }
-
-    const auto data_size = sizeof(T) * count;
-    io_buffer_offset_ += data_size;
+    return reinterpret_cast<T>(*get_current_data());
 }
 
 // I/O buffer manipulation.
@@ -121,7 +74,7 @@ bool SavedGame::write_chunk(
     const ChunkId chunk_id,
     const TSrc& src_value)
 {
-    io_buffer_offset_ = 0;
+    reset_io_buffer_offset();
 
     write<TDst>(
         src_value);
@@ -136,7 +89,7 @@ bool SavedGame::write_chunk(
     const TSrc* src_values,
     int src_count)
 {
-    io_buffer_offset_ = 0;
+    reset_io_buffer_offset();
 
     write<TDst>(
         src_values,
@@ -197,16 +150,18 @@ void SavedGame::read(
     TDst& dst_value,
     BooleanTag)
 {
-    constexpr auto src_size = sizeof(TSrc);
+    constexpr auto src_size = static_cast<int>(sizeof(TSrc));
 
-    check_io_buffer<TSrc>();
+    check_io_buffer(
+        src_size);
 
-    dst_value = (cast_io_buffer<const TSrc&>() != 0);
+    dst_value = (cast_buffer<const TSrc&>() != 0);
 
     // FIXME Byte order
     //
 
-    advance_io_buffer<TSrc>();
+    advance_io_buffer(
+        src_size);
 }
 
 template<typename TSrc, typename TDst>
@@ -214,14 +169,18 @@ void SavedGame::read(
     TDst& dst_value,
     NumericTag)
 {
-    check_io_buffer<TSrc>();
+    constexpr auto src_size = static_cast<int>(sizeof(TSrc));
 
-    dst_value = static_cast<TDst>(cast_io_buffer<const TSrc&>());
+    check_io_buffer(
+        src_size);
+
+    dst_value = static_cast<TDst>(cast_buffer<const TSrc&>());
 
     // FIXME Byte order
     //
 
-    advance_io_buffer<TSrc>();
+    advance_io_buffer(
+        src_size);
 }
 
 template<typename TSrc, typename TDst>
@@ -254,7 +213,7 @@ void SavedGame::read(
     TDst& dst_value,
     ClassTag)
 {
-    throw SavedGameException(
+    throw_error(
         "Not implemented.");
 }
 
@@ -298,12 +257,12 @@ void SavedGame::read(
         "Unsupported types.");
 
     if (!dst_values) {
-        throw SavedGameException(
+        throw_error(
             "Null pointer.");
     }
 
     if (dst_count < 0) {
-        throw SavedGameException(
+        throw_error(
             "Negative count.");
     }
 
@@ -352,18 +311,22 @@ void SavedGame::read(
     int dst_count,
     InplaceTag)
 {
-    check_io_buffer<TDst>(
+    constexpr auto dst_size = static_cast<int>(sizeof(TDst));
+
+    check_io_buffer(
+        dst_size,
         dst_count);
 
     std::uninitialized_copy_n(
-        &cast_io_buffer<const TDst&>(),
+        &cast_buffer<const TDst&>(),
         dst_count,
         dst_values);
 
     // FIXME Byte order
     //
 
-    advance_io_buffer<TDst>(
+    advance_io_buffer(
+        dst_size,
         dst_count);
 }
 
@@ -437,14 +400,18 @@ void SavedGame::write(
     const TSrc& src_value,
     NumericTag)
 {
-    accomodate_io_buffer<TSrc>();
+    constexpr auto src_size = static_cast<int>(sizeof(TSrc));
 
-    cast_io_buffer<TDst&>() = static_cast<TDst>(src_value);
+    accomodate_io_buffer(
+        src_size);
+
+    cast_buffer<TDst&>() = static_cast<TDst>(src_value);
 
     // FIXME Byte order
     //
 
-    advance_io_buffer<TSrc>();
+    advance_io_buffer(
+        src_size);
 }
 
 template<typename TDst, typename TSrc>
@@ -470,7 +437,7 @@ void SavedGame::write(
     const TSrc& src_value,
     ClassTag)
 {
-    throw SavedGameException(
+    throw_error(
         "Not implemented.");
 }
 
@@ -514,12 +481,12 @@ void SavedGame::write(
         "Unsupported types.");
 
     if (!src_values) {
-        throw SavedGameException(
+        throw_error(
             "Null pointer.");
     }
 
     if (src_count < 0) {
-        throw SavedGameException(
+        throw_error(
             "Negative count.");
     }
 
@@ -568,18 +535,22 @@ void SavedGame::write(
     int src_count,
     InplaceTag)
 {
-    accomodate_io_buffer<TSrc>(
+    constexpr auto src_size = static_cast<int>(sizeof(TSrc));
+
+    accomodate_io_buffer(
+        src_size,
         src_count);
 
     std::uninitialized_copy_n(
         src_values,
         src_count,
-        &cast_io_buffer<TSrc&>());
+        &cast_buffer<TSrc&>());
 
     // FIXME Byte order
     //
 
-    advance_io_buffer<TSrc>(
+    advance_io_buffer(
+        src_size,
         src_count);
 }
 

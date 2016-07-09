@@ -364,6 +364,31 @@ bool SavedGame::write_chunk(
     return true;
 }
 
+SavedGame::Buffer& SavedGame::get_buffer()
+{
+    return io_buffer_;
+}
+
+const SavedGame::Buffer& SavedGame::get_buffer() const
+{
+    return io_buffer_;
+}
+
+int SavedGame::get_buffer_offset() const
+{
+    return static_cast<int>(io_buffer_offset_);
+}
+
+uint8_t* SavedGame::get_current_data()
+{
+    return &io_buffer_[io_buffer_offset_];
+}
+
+const uint8_t* SavedGame::get_current_data() const
+{
+    return &io_buffer_[io_buffer_offset_];
+}
+
 void SavedGame::rename(
     const std::string& old_base_file_name,
     const std::string& new_base_file_name)
@@ -399,6 +424,20 @@ SavedGame& SavedGame::get_instance()
 {
     static SavedGame result;
     return result;
+}
+
+void SavedGame::throw_error(
+    const char* message)
+{
+    throw SavedGameException(
+        message);
+}
+
+void SavedGame::throw_error(
+    const std::string& message)
+{
+    throw SavedGameException(
+        message);
 }
 
 void SavedGame::compress(
@@ -552,6 +591,73 @@ std::string SavedGame::get_chunk_id_string(
     result[3] = static_cast<char>((chunk_id >> 0) & 0xFF);
 
     return result;
+}
+
+void SavedGame::check_io_buffer(
+    int item_size,
+    int count)
+{
+    if (item_size <= 0) {
+        throw SavedGameException(
+            "Zero or negative item size.");
+    }
+
+    if (count <= 0) {
+        throw SavedGameException(
+            "Zero or negative count.");
+    }
+
+    const auto data_size = item_size * count;
+
+    if ((io_buffer_offset_ + data_size) > io_buffer_.size()) {
+        throw SavedGameException(
+            "Not enough data.");
+    }
+}
+
+void SavedGame::accomodate_io_buffer(
+    int item_size,
+    int count)
+{
+    if (item_size <= 0) {
+        throw SavedGameException(
+            "Zero or negative item size.");
+    }
+
+    if (count <= 0) {
+        throw SavedGameException(
+            "Zero or negative count.");
+    }
+
+    const auto data_size = item_size * count;
+
+    const auto new_buffer_size = io_buffer_offset_ + data_size;
+
+    io_buffer_.resize(
+        new_buffer_size);
+}
+
+void SavedGame::advance_io_buffer(
+    int item_size,
+    int count)
+{
+    if (item_size <= 0) {
+        throw SavedGameException(
+            "Zero or negative item size.");
+    }
+
+    if (count <= 0) {
+        throw SavedGameException(
+            "Zero or negative count.");
+    }
+
+    const auto data_size = item_size * count;
+    io_buffer_offset_ += data_size;
+}
+
+void SavedGame::reset_io_buffer_offset()
+{
+    io_buffer_offset_ = 0;
 }
 
 

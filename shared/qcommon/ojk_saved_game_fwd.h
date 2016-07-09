@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ojk_saved_game_exception.h"
 
 
 namespace ojk {
@@ -21,6 +20,7 @@ class SavedGame
 {
 public:
     using ChunkId = uint32_t;
+    using Buffer = std::vector<uint8_t>;
 
 
     SavedGame();
@@ -110,6 +110,24 @@ public:
         int src_count);
 
 
+    // Returns an I/O buffer.
+    Buffer& get_buffer();
+
+    // Returns an I/O buffer.
+    const Buffer& get_buffer() const;
+
+    // Returns an I/O buffer offset;
+    int get_buffer_offset() const;
+
+    uint8_t* get_current_data();
+
+    const uint8_t* get_current_data() const;
+
+    // Casts referenced data at current position into a specified type.
+    template<typename T>
+    T cast_buffer();
+
+
     // Renames a saved game file.
     static void rename(
         const std::string& old_base_file_name,
@@ -124,7 +142,6 @@ public:
 
 
 private:
-    using Buffer = std::vector<uint8_t>;
     using BufferOffset = Buffer::size_type;
     using Paths = std::vector<std::string>;
 
@@ -158,6 +175,15 @@ private:
     bool is_write_failed_;
 
 
+    // Throws an exception.
+    static void throw_error(
+        const char* message);
+
+    // Throws an exception.
+    static void throw_error(
+        const std::string& message);
+
+
     // Compresses data.
     static void compress(
         const Buffer& src_buffer,
@@ -177,28 +203,28 @@ private:
         bool is_open);
 
 
+    // Returns a string representation of a chunk id.
     static std::string get_chunk_id_string(
         uint32_t chunk_id);
 
 
     // Checks if there is enough data for reading in the I/O buffer.
-    template<typename T>
     void check_io_buffer(
+        int item_size,
         int count = 1);
 
     // Resizes the I/O buffer according to desire size of data to write.
-    template<typename T>
     void accomodate_io_buffer(
+        int item_size,
         int count = 1);
-
-    // Casts I/O buffer data at the current offset.
-    template<typename T>
-    T cast_io_buffer();
 
     // Advances the current I/O buffer offset.
-    template<typename T>
     void advance_io_buffer(
+        int item_size,
         int count = 1);
+
+    // Resets I/O buffer offset to zero.
+    void reset_io_buffer_offset();
 
 
     template<typename TSrc, typename TDst>
