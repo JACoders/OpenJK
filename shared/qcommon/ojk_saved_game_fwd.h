@@ -135,6 +135,7 @@ private:
     class PointerTag { public: };
     class ClassTag { public: };
     class Array1dTag { public: };
+    class Array2dTag { public: };
     class InplaceTag { public: };
     class CastTag { public: };
 
@@ -225,6 +226,11 @@ private:
         TDst (&dst_values)[TCount],
         Array1dTag);
 
+    template<typename TSrc, typename TDst, int TCount1, int TCount2>
+    void read(
+        TDst(&dst_values)[TCount1][TCount2],
+        Array2dTag);
+
 
     template<typename TSrc, typename TDst>
     void read(
@@ -258,6 +264,11 @@ private:
     void write(
         const TSrc (&src_values)[TCount],
         Array1dTag);
+
+    template<typename TDst, typename TSrc, int TCount1, int TCount2>
+    void write(
+        const TSrc(&src_values)[TCount1][TCount2],
+        Array2dTag);
 
 
     template<typename TDst, typename TSrc>

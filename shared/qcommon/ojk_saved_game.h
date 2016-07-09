@@ -172,7 +172,11 @@ void SavedGame::read(
                     typename std::conditional<
                         std::rank<TDst>::value == 1,
                         Array1dTag,
-                        void
+                        typename std::conditional<
+                            std::rank<TDst>::value == 2,
+                            Array2dTag,
+                            void
+                        >::type
                     >::type
                 >::type
             >::type
@@ -262,6 +266,16 @@ void SavedGame::read(
     read<TSrc>(
         &dst_values[0],
         TCount);
+}
+
+template<typename TSrc, typename TDst, int TCount1, int TCount2>
+void SavedGame::read(
+    TDst(&dst_values)[TCount1][TCount2],
+    Array2dTag)
+{
+    read<TSrc>(
+        &dst_values[0][0],
+        TCount1 * TCount2);
 }
 
 // read
@@ -399,7 +413,11 @@ void SavedGame::write(
                 typename std::conditional<
                     std::rank<TSrc>::value == 1,
                     Array1dTag,
-                    void
+                    typename std::conditional<
+                        std::rank<TSrc>::value == 2,
+                        Array2dTag,
+                        void
+                    >::type
                 >::type
             >::type
         >::type
@@ -464,6 +482,16 @@ void SavedGame::write(
     write<TDst>(
         &src_values[0],
         TCount);
+}
+
+template<typename TDst, typename TSrc, int TCount1, int TCount2>
+void SavedGame::write(
+    const TSrc(&src_values)[TCount1][TCount2],
+    Array2dTag)
+{
+    write<TDst>(
+        &src_values[0][0],
+        TCount1 * TCount2);
 }
 
 // write
