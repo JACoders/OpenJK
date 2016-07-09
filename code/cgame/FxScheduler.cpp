@@ -1911,3 +1911,26 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		}
 	}
 }
+
+
+void SLoopedEffect::sg_export(
+    SgType& dst) const
+{
+    ::sg_export(mId, dst.mId);
+    ::sg_export(mBoltInfo, dst.mBoltInfo);
+    ::sg_export(mNextTime, dst.mNextTime);
+    ::sg_export(mLoopStopTime, dst.mLoopStopTime);
+    ::sg_export(mPortalEffect, dst.mPortalEffect);
+    ::sg_export(mIsRelative, dst.mIsRelative);
+}
+
+void SLoopedEffect::sg_import(
+    const SgType& src)
+{
+    ::sg_import(src.mId, mId);
+    ::sg_import(src.mBoltInfo, mBoltInfo);
+    ::sg_import(src.mNextTime, mNextTime);
+    ::sg_import(src.mLoopStopTime, mLoopStopTime);
+    ::sg_import(src.mPortalEffect, mPortalEffect);
+    ::sg_import(src.mIsRelative, mIsRelative);
+}
