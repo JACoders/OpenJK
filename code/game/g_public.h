@@ -25,6 +25,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __G_PUBLIC_H__
 // g_public.h -- game module information visible to server
 
+
+#include "qcommon/ojk_sg_wrappers_fwd.h"
+
+
 #define	GAME_API_VERSION	8
 
 // entity->svFlags
@@ -185,6 +189,8 @@ typedef struct {
 
 	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
+
+    ojk::SavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc
