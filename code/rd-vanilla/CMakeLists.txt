@@ -138,7 +138,9 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaMainFiles})
 
 	set(SPRDVanillaRdCommonFiles
+		"${SPDir}/rd-common/ghoul2_shared.cpp"
 		"${SPDir}/rd-common/mdx_format.h"
+		"${SPDir}/rd-common/mdx_format.cpp"
 		"${SPDir}/rd-common/tr_common.h"
 		"${SPDir}/rd-common/tr_font.cpp"
 		"${SPDir}/rd-common/tr_font.h"

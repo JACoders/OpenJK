@@ -482,22 +482,10 @@ struct Muzzle
 
 
     void sg_export(
-        SgType& dst) const
-    {
-        ::sg_export(m_vMuzzlePos, dst.m_vMuzzlePos);
-        ::sg_export(m_vMuzzleDir, dst.m_vMuzzleDir);
-        ::sg_export(m_iMuzzleWait, dst.m_iMuzzleWait);
-        ::sg_export(m_bFired, dst.m_bFired);
-    }
+        SgType& dst) const;
 
     void sg_import(
-        const SgType& src)
-    {
-        ::sg_import(src.m_vMuzzlePos, m_vMuzzlePos);
-        ::sg_import(src.m_vMuzzleDir, m_vMuzzleDir);
-        ::sg_import(src.m_iMuzzleWait, m_iMuzzleWait);
-        ::sg_import(src.m_bFired, m_bFired);
-    }
+        const SgType& src);
 };
 
 //defines for impact damage surface stuff
@@ -550,22 +538,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const
-    {
-        ::sg_export(linked, dst.linked);
-        ::sg_export(ammo, dst.ammo);
-        ::sg_export(lastAmmoInc, dst.lastAmmoInc);
-        ::sg_export(nextMuzzle, dst.nextMuzzle);
-    }
+        SgType& dst) const;
 
     void sg_import(
-        const SgType& src)
-    {
-        ::sg_import(src.linked, linked);
-        ::sg_import(src.ammo, ammo);
-        ::sg_import(src.lastAmmoInc, lastAmmoInc);
-        ::sg_import(src.nextMuzzle, nextMuzzle);
-    }
+        const SgType& src);
 } vehWeaponStatus_t;
 
 #pragma pack(push, 4)
@@ -598,24 +574,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const
-    {
-        ::sg_export(ammo, dst.ammo);
-        ::sg_export(lastAmmoInc, dst.lastAmmoInc);
-        ::sg_export(nextMuzzle, dst.nextMuzzle);
-        ::sg_export(enemyEntNum, dst.enemyEntNum);
-        ::sg_export(enemyHoldTime, dst.enemyHoldTime);
-    }
+        SgType& dst) const;
 
     void sg_import(
-        const SgType& src)
-    {
-        ::sg_import(src.ammo, ammo);
-        ::sg_import(src.lastAmmoInc, lastAmmoInc);
-        ::sg_import(src.nextMuzzle, nextMuzzle);
-        ::sg_import(src.enemyEntNum, enemyEntNum);
-        ::sg_import(src.enemyHoldTime, enemyHoldTime);
-    }
+        const SgType& src);
 } vehTurretStatus_t;
 
 // This is the implementation of the vehicle interface and any of the other variables needed. This
@@ -786,96 +748,10 @@ struct Vehicle_t
 
 
     void sg_export(
-        SgType& dst) const
-    {
-        ::sg_export(m_pPilot, dst.m_pPilot);
-        ::sg_export(m_iPilotTime, dst.m_iPilotTime);
-        ::sg_export(m_bHasHadPilot, dst.m_bHasHadPilot);
-        ::sg_export(m_pDroidUnit, dst.m_pDroidUnit);
-        ::sg_export(m_pParentEntity, dst.m_pParentEntity);
-        ::sg_export(m_iBoarding, dst.m_iBoarding);
-        ::sg_export(m_bWasBoarding, dst.m_bWasBoarding);
-        ::sg_export(m_vBoardingVelocity, dst.m_vBoardingVelocity);
-        ::sg_export(m_fTimeModifier, dst.m_fTimeModifier);
-        ::sg_export(m_iLeftWingBone, dst.m_iLeftWingBone);
-        ::sg_export(m_iRightWingBone, dst.m_iRightWingBone);
-        ::sg_export(m_iExhaustTag, dst.m_iExhaustTag);
-        ::sg_export(m_iMuzzleTag, dst.m_iMuzzleTag);
-        ::sg_export(m_iDroidUnitTag, dst.m_iDroidUnitTag);
-        ::sg_export(m_iGunnerViewTag, dst.m_iGunnerViewTag);
-        ::sg_export(m_Muzzles, dst.m_Muzzles);
-        ::sg_export(m_ucmd, dst.m_ucmd);
-        ::sg_export(m_EjectDir, dst.m_EjectDir);
-        ::sg_export(m_ulFlags, dst.m_ulFlags);
-        ::sg_export(m_vOrientation, dst.m_vOrientation);
-        ::sg_export(m_fStrafeTime, dst.m_fStrafeTime);
-        ::sg_export(m_vPrevOrientation, dst.m_vPrevOrientation);
-        ::sg_export(m_vAngularVelocity, dst.m_vAngularVelocity);
-        ::sg_export(m_vFullAngleVelocity, dst.m_vFullAngleVelocity);
-        ::sg_export(m_iArmor, dst.m_iArmor);
-        ::sg_export(m_iShields, dst.m_iShields);
-        ::sg_export(m_iLastFXTime, dst.m_iLastFXTime);
-        ::sg_export(m_iDieTime, dst.m_iDieTime);
-        ::sg_export(m_pVehicleInfo, dst.m_pVehicleInfo);
-        ::sg_export(m_LandTrace, dst.m_LandTrace);
-        ::sg_export(m_iRemovedSurfaces, dst.m_iRemovedSurfaces);
-        ::sg_export(m_iTurboTime, dst.m_iTurboTime);
-        ::sg_export(m_iDropTime, dst.m_iDropTime);
-        ::sg_export(m_iSoundDebounceTimer, dst.m_iSoundDebounceTimer);
-        ::sg_export(lastShieldInc, dst.lastShieldInc);
-        ::sg_export(linkWeaponToggleHeld, dst.linkWeaponToggleHeld);
-        ::sg_export(weaponStatus, dst.weaponStatus);
-        ::sg_export(turretStatus, dst.turretStatus);
-        ::sg_export(m_pOldPilot, dst.m_pOldPilot);
-        ::sg_export(m_safeJumpMountTime, dst.m_safeJumpMountTime);
-        ::sg_export(m_safeJumpMountRightDot, dst.m_safeJumpMountRightDot);
-    }
+        SgType& dst) const;
 
     void sg_import(
-        const SgType& src)
-    {
-        ::sg_import(src.m_pPilot, m_pPilot);
-        ::sg_import(src.m_iPilotTime, m_iPilotTime);
-        ::sg_import(src.m_bHasHadPilot, m_bHasHadPilot);
-        ::sg_import(src.m_pDroidUnit, m_pDroidUnit);
-        ::sg_import(src.m_pParentEntity, m_pParentEntity);
-        ::sg_import(src.m_iBoarding, m_iBoarding);
-        ::sg_import(src.m_bWasBoarding, m_bWasBoarding);
-        ::sg_import(src.m_vBoardingVelocity, m_vBoardingVelocity);
-        ::sg_import(src.m_fTimeModifier, m_fTimeModifier);
-        ::sg_import(src.m_iLeftWingBone, m_iLeftWingBone);
-        ::sg_import(src.m_iRightWingBone, m_iRightWingBone);
-        ::sg_import(src.m_iExhaustTag, m_iExhaustTag);
-        ::sg_import(src.m_iMuzzleTag, m_iMuzzleTag);
-        ::sg_import(src.m_iDroidUnitTag, m_iDroidUnitTag);
-        ::sg_import(src.m_iGunnerViewTag, m_iGunnerViewTag);
-        ::sg_import(src.m_Muzzles, m_Muzzles);
-        ::sg_import(src.m_ucmd, m_ucmd);
-        ::sg_import(src.m_EjectDir, m_EjectDir);
-        ::sg_import(src.m_ulFlags, m_ulFlags);
-        ::sg_import(src.m_vOrientation, m_vOrientation);
-        ::sg_import(src.m_fStrafeTime, m_fStrafeTime);
-        ::sg_import(src.m_vPrevOrientation, m_vPrevOrientation);
-        ::sg_import(src.m_vAngularVelocity, m_vAngularVelocity);
-        ::sg_import(src.m_vFullAngleVelocity, m_vFullAngleVelocity);
-        ::sg_import(src.m_iArmor, m_iArmor);
-        ::sg_import(src.m_iShields, m_iShields);
-        ::sg_import(src.m_iLastFXTime, m_iLastFXTime);
-        ::sg_import(src.m_iDieTime, m_iDieTime);
-        ::sg_import(src.m_pVehicleInfo, m_pVehicleInfo);
-        ::sg_import(src.m_LandTrace, m_LandTrace);
-        ::sg_import(src.m_iRemovedSurfaces, m_iRemovedSurfaces);
-        ::sg_import(src.m_iTurboTime, m_iTurboTime);
-        ::sg_import(src.m_iDropTime, m_iDropTime);
-        ::sg_import(src.m_iSoundDebounceTimer, m_iSoundDebounceTimer);
-        ::sg_import(src.lastShieldInc, lastShieldInc);
-        ::sg_import(src.linkWeaponToggleHeld, linkWeaponToggleHeld);
-        ::sg_import(src.weaponStatus, weaponStatus);
-        ::sg_import(src.turretStatus, turretStatus);
-        ::sg_import(src.m_pOldPilot, m_pOldPilot);
-        ::sg_import(src.m_safeJumpMountTime, m_safeJumpMountTime);
-        ::sg_import(src.m_safeJumpMountRightDot, m_safeJumpMountRightDot);
-    }
+        const SgType& src);
 };
 
 extern int BG_VehicleGetIndex( const char *vehicleName );

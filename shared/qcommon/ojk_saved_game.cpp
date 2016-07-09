@@ -137,8 +137,6 @@ bool SavedGame::read_chunk(
         "Attempting read of chunk %s\n",
         chunk_id_string.c_str());
 
-    // Load in chid and length...
-    //
     uint32_t ulLoadedChid = 0;
     uint32_t uiLoadedLength = 0;
 

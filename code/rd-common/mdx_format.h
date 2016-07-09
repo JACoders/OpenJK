@@ -178,16 +178,10 @@ typedef struct {
 
 #ifdef __cplusplus
     void sg_export(
-        SgType& dst) const
-    {
-        ::sg_export(matrix, dst.matrix);
-    }
+        SgType& dst) const;
 
     void sg_import(
-        const SgType& src)
-    {
-        ::sg_import(src.matrix, matrix);
-    }
+        const SgType& src);
 #endif // __cplusplus
 } mdxaBone_t;
 #endif
