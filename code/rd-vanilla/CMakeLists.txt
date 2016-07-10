@@ -81,10 +81,8 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SharedDir}/qcommon/ojk_sg_wrappers.h"
 		"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
 		"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
-		"${SharedDir}/qcommon/ojk_exception.h"
-		"${SharedDir}/qcommon/ojk_saved_game.h"
-		"${SharedDir}/qcommon/ojk_saved_game_fwd.h"
-		"${SharedDir}/qcommon/ojk_saved_game_exception.h"
+		"${SharedDir}/qcommon/ojk_i_saved_game.h"
+		"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
 		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPRDVanillaCommonFiles})

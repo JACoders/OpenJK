@@ -12,6 +12,8 @@ SavedGame::SavedGame() :
         io_buffer_(),
         io_buffer_offset_(),
         rle_buffer_(),
+        is_readable_(),
+        is_writable_(),
         is_preview_mode_(),
         is_write_failed_()
 {
@@ -56,7 +58,7 @@ bool SavedGame::open(
     int sg_version = -1;
 
     if (is_succeed) {
-        static_cast<void>(read_chunk<int32_t>(
+        static_cast<void>(ISavedGame::read_chunk<int32_t>(
             INT_ID('_', 'V', 'E', 'R'),
             sg_version));
 
@@ -71,7 +73,9 @@ bool SavedGame::open(
         }
     }
 
-    if (!is_succeed) {
+    if (is_succeed) {
+        is_readable_ = true;
+    } else {
         close();
     }
 
@@ -107,9 +111,11 @@ bool SavedGame::create(
 
     int sg_version = iSAVEGAME_VERSION;
 
-    static_cast<void>(write_chunk<int32_t>(
+    static_cast<void>(ISavedGame::write_chunk<int32_t>(
         INT_ID('_', 'V', 'E', 'R'),
         sg_version));
+
+    is_writable_ = false;
 
     return true;
 }
@@ -124,7 +130,20 @@ void SavedGame::close()
     io_buffer_.clear();
     io_buffer_offset_ = 0;
 
+    is_readable_ = false;
+    is_writable_ = false;
+    is_preview_mode_ = false;
     is_write_failed_ = false;
+}
+
+bool SavedGame::is_readable() const
+{
+    return is_readable_;
+}
+
+bool SavedGame::is_writable() const
+{
+    return is_writable_;
 }
 
 bool SavedGame::read_chunk(
@@ -364,29 +383,81 @@ bool SavedGame::write_chunk(
     return true;
 }
 
-SavedGame::Buffer& SavedGame::get_buffer()
+void SavedGame::raw_read(
+    void* dst_data,
+    int dst_size)
 {
-    return io_buffer_;
+    if (!dst_data) {
+        throw_error(
+            "Null pointer.");
+    }
+
+    if (dst_size < 0) {
+        throw_error(
+            "Negative size.");
+    }
+
+    if (!is_readable_) {
+        throw_error(
+            "Not readable.");
+    }
+
+    if (dst_size == 0) {
+        return;
+    }
+
+    if ((io_buffer_offset_ + dst_size) > io_buffer_.size()) {
+        throw_error(
+            "Not enough data.");
+    }
+
+    std::uninitialized_copy_n(
+        &io_buffer_[io_buffer_offset_],
+        dst_size,
+        static_cast<uint8_t*>(dst_data));
+
+    io_buffer_offset_ += dst_size;
+}
+
+void SavedGame::raw_write(
+    const void* src_data,
+    int src_size)
+{
+    if (!src_data) {
+        throw_error(
+            "Null pointer.");
+    }
+
+    if (src_size < 0) {
+        throw_error(
+            "Negative size.");
+    }
+
+    if (!is_writable_) {
+        throw_error(
+            "Not writable.");
+    }
+
+    if (src_size == 0) {
+        return;
+    }
+
+    auto new_buffer_size = io_buffer_offset_ + src_size;
+
+    io_buffer_.resize(
+        new_buffer_size);
+
+    std::uninitialized_copy_n(
+        static_cast<const uint8_t*>(src_data),
+        src_size,
+        &io_buffer_[io_buffer_offset_]);
+
+    io_buffer_offset_ = new_buffer_size;
 }
 
 const SavedGame::Buffer& SavedGame::get_buffer() const
 {
     return io_buffer_;
-}
-
-int SavedGame::get_buffer_offset() const
-{
-    return static_cast<int>(io_buffer_offset_);
-}
-
-uint8_t* SavedGame::get_current_data()
-{
-    return &io_buffer_[io_buffer_offset_];
-}
-
-const uint8_t* SavedGame::get_current_data() const
-{
-    return &io_buffer_[io_buffer_offset_];
 }
 
 void SavedGame::rename(
@@ -593,70 +664,9 @@ std::string SavedGame::get_chunk_id_string(
     return result;
 }
 
-void SavedGame::check_io_buffer(
-    int item_size,
-    int count)
+void SavedGame::reset_buffer()
 {
-    if (item_size <= 0) {
-        throw SavedGameException(
-            "Zero or negative item size.");
-    }
-
-    if (count <= 0) {
-        throw SavedGameException(
-            "Zero or negative count.");
-    }
-
-    const auto data_size = item_size * count;
-
-    if ((io_buffer_offset_ + data_size) > io_buffer_.size()) {
-        throw SavedGameException(
-            "Not enough data.");
-    }
-}
-
-void SavedGame::accomodate_io_buffer(
-    int item_size,
-    int count)
-{
-    if (item_size <= 0) {
-        throw SavedGameException(
-            "Zero or negative item size.");
-    }
-
-    if (count <= 0) {
-        throw SavedGameException(
-            "Zero or negative count.");
-    }
-
-    const auto data_size = item_size * count;
-
-    const auto new_buffer_size = io_buffer_offset_ + data_size;
-
-    io_buffer_.resize(
-        new_buffer_size);
-}
-
-void SavedGame::advance_io_buffer(
-    int item_size,
-    int count)
-{
-    if (item_size <= 0) {
-        throw SavedGameException(
-            "Zero or negative item size.");
-    }
-
-    if (count <= 0) {
-        throw SavedGameException(
-            "Zero or negative count.");
-    }
-
-    const auto data_size = item_size * count;
-    io_buffer_offset_ += data_size;
-}
-
-void SavedGame::reset_io_buffer_offset()
-{
+    io_buffer_.clear();
     io_buffer_offset_ = 0;
 }
 
