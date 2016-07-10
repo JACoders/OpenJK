@@ -18,11 +18,11 @@ namespace ojk {
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // Class stuff
 
-ISavedGame::ISavedGame()
+inline ISavedGame::ISavedGame()
 {
 }
 
-ISavedGame::~ISavedGame()
+inline ISavedGame::~ISavedGame()
 {
 }
 
@@ -298,7 +298,7 @@ void ISavedGame::read(
     int dst_count,
     InplaceTag)
 {
-    constexpr auto dst_size = dst_count * static_cast<int>(sizeof(TDst));
+    const auto dst_size = dst_count * static_cast<int>(sizeof(TDst));
 
     raw_read(
         dst_values,

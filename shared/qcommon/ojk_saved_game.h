@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ojk_i_saved_game_fwd.h"
+#include "ojk_i_saved_game.h"
 
 
 namespace ojk {
@@ -59,9 +59,14 @@ public:
     bool read_chunk(
         const ChunkId chunk_id) override;
 
+    using ISavedGame::read_chunk;
+
+
     // Writes a chunk into the file from the internal buffer.
     bool write_chunk(
         const ChunkId chunk_id) override;
+
+    using ISavedGame::write_chunk;
 
 
     // Reads a raw data from the internal buffer.
@@ -69,10 +74,15 @@ public:
         void* dst_data,
         int dst_size) override;
 
+    using ISavedGame::read;
+
+
     // Writes a raw data into the internal buffer.
     void raw_write(
         const void* src_data,
         int src_size) override;
+
+    using ISavedGame::write;
 
 
     // Returns an I/O buffer.
