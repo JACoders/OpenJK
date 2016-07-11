@@ -180,8 +180,13 @@ static qboolean SG_Create( const char *psPathlessBaseName )
 		return qfalse;
 	}
 
+    auto saved_game = &ojk::SavedGame::get_instance();
+
 	giSaveGameVersion = iSAVEGAME_VERSION;
-	::sg_write<int32_t>(::SG_Append, INT_ID('_','V','E','R'), ::giSaveGameVersion);
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('_','V','E','R'),
+        ::giSaveGameVersion);
 
 	return qtrue;
 }
@@ -548,7 +553,11 @@ void SV_SaveGame_f(void)
 //---------------
 static void WriteGame(qboolean autosave)
 {
-	::sg_write<int32_t>(::SG_Append, INT_ID('G','A','M','E'), autosave);
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('G','A','M','E'),
+        autosave);
 
 	if (autosave)
 	{
@@ -563,25 +572,37 @@ static void WriteGame(qboolean autosave)
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
-		::sg_write_no_cast(::SG_Append, INT_ID('C','V','S','V'), s);
+
+        saved_game->write_chunk(
+            INT_ID('C','V','S','V'),
+            s);
 
 		// write ammo...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerammo", s, sizeof(s) );
-		::sg_write_no_cast(::SG_Append, INT_ID('A','M','M','O'), s);
+
+        saved_game->write_chunk(
+            INT_ID('A','M','M','O'),
+            s);
 
 		// write inventory...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerinv", s, sizeof(s) );
-		::sg_write_no_cast(::SG_Append, INT_ID('I','V','T','Y'), s);
+
+        saved_game->write_chunk(
+            INT_ID('I','V','T','Y'),
+            s);
 
 		// the new JK2 stuff - force powers, etc...
 		//
 		memset(s,0,sizeof(s));
 		Cvar_VariableStringBuffer( "playerfplvl", s, sizeof(s) );
-		::sg_write_no_cast(::SG_Append, INT_ID('F','P','L','V'), s);
+
+        saved_game->write_chunk(
+            INT_ID('F','P','L','V'),
+            s);
 	}
 }
 
@@ -656,6 +677,8 @@ void SG_WriteCvars(void)
 	cvar_t	*var;
 	int		iCount = 0;
 
+    auto saved_game = &ojk::SavedGame::get_instance();
+
 	// count the cvars...
 	//
 	for (var = cvar_vars; var; var = var->next)
@@ -673,7 +696,9 @@ void SG_WriteCvars(void)
 
 	// store count...
 	//
-	::sg_write<int32_t>(::SG_Append, INT_ID('C','V','C','N'), iCount);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('C','V','C','N'),
+        iCount);
 
 	// write 'em...
 	//
@@ -687,8 +712,16 @@ void SG_WriteCvars(void)
 		{
 			continue;
 		}
-		::sg_write_no_cast(::SG_Append, INT_ID('C','V','A','R'), var->name, static_cast<int>(strlen(var->name) + 1));
-		::sg_write_no_cast(::SG_Append, INT_ID('V','A','L','U'), var->string, static_cast<int>(strlen(var->string) + 1));
+
+        saved_game->write_chunk(
+            INT_ID('C','V','A','R'),
+            var->name,
+            static_cast<int>(strlen(var->name) + 1));
+
+        saved_game->write_chunk(
+            INT_ID('V','A','L','U'),
+            var->string,
+            static_cast<int>(strlen(var->string) + 1));
 	}
 }
 
@@ -726,6 +759,8 @@ void SG_ReadCvars(void)
 
 void SG_WriteServerConfigStrings( void )
 {
+    auto saved_game = &ojk::SavedGame::get_instance();
+
 	int iCount = 0;
 	int i;	// not in FOR statement in case compiler goes weird by reg-optimising it then failing to get the address later
 
@@ -742,7 +777,9 @@ void SG_WriteServerConfigStrings( void )
 		}
 	}
 
-	::sg_write<int32_t>(::SG_Append, INT_ID('C','S','C','N'), iCount);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('C','S','C','N'),
+        iCount);
 
 	// now write 'em...
 	//
@@ -752,8 +789,14 @@ void SG_WriteServerConfigStrings( void )
 		{
 			if (sv.configstrings[i]	&& strlen(sv.configstrings[i]))
 			{
-				::sg_write<int32_t>(::SG_Append, INT_ID('C','S','I','N'), i);
-				::sg_write_no_cast(::SG_Append, INT_ID('C','S','D','A'), ::sv.configstrings[i], static_cast<int>(strlen(::sv.configstrings[i])+1));
+                saved_game->write_chunk<int32_t>(
+                    INT_ID('C','S','I','N'),
+                    i);
+
+                saved_game->write_chunk(
+                    INT_ID('C','S','D','A'),
+                    ::sv.configstrings[i],
+                    static_cast<int>(strlen(::sv.configstrings[i])+1));
 			}
 		}
 	}
@@ -816,6 +859,8 @@ static unsigned int SG_UnixTimestamp ( const time_t& t )
 
 static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 {
+    auto saved_game = &ojk::SavedGame::get_instance();
+
 	char	sComment[iSG_COMMENT_SIZE];
 
 	if ( qbAutosave || !*saveGameComment)
@@ -827,11 +872,16 @@ static void SG_WriteComment(qboolean qbAutosave, const char *psMapName)
 		Q_strncpyz(sComment,saveGameComment, sizeof(sComment));
 	}
 
-	::sg_write_no_cast(::SG_Append, INT_ID('C','O','M','M'), sComment);
+    saved_game->write_chunk(
+        INT_ID('C','O','M','M'),
+        sComment);
 
 	// Add Date/Time/Map stamp
 	unsigned int timestamp = SG_UnixTimestamp (time (NULL));
-	::sg_write<uint32_t>(::SG_Append, INT_ID('C','M','T','M'), timestamp);
+
+    saved_game->write_chunk<uint32_t>(
+        INT_ID('C','M','T','M'),
+        timestamp);
 
 	Com_DPrintf("Saving: current (%s)\n", sComment);
 }
@@ -1010,6 +1060,8 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 
 static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 {
+    auto saved_game = &ojk::SavedGame::get_instance();
+
 	byte *pbRawScreenShot = NULL;
 	byte *byBlank = NULL;
 
@@ -1053,8 +1105,16 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0 );
 	if ( qbAutosave )
 		delete[] byBlank;
-	::sg_write<uint32_t>(::SG_Append, INT_ID('S','H','L','N'), iJPGDataSize);
-	::sg_write_no_cast(::SG_Append, INT_ID('S','H','O','T'), pJPGData, static_cast<int>(iJPGDataSize));
+
+    saved_game->write_chunk<uint32_t>(
+        INT_ID('S','H','L','N'),
+        iJPGDataSize);
+
+    saved_game->write_chunk(
+        INT_ID('S','H','O','T'),
+        pJPGData,
+        static_cast<int>(iJPGDataSize));
+
 	Z_Free(pJPGData);
 	SCR_TempRawImage_CleanUp();
 }
@@ -1134,7 +1194,13 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 #ifdef JK2_MODE
 	SG_WriteScreenshot(qbAutosave, sMapCmd);
 #endif
-	::sg_write_no_cast(::SG_Append, INT_ID('M','P','C','M'), sMapCmd);
+
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->write_chunk(
+        INT_ID('M','P','C','M'),
+        sMapCmd);
+
 	SG_WriteCvars();
 
 	WriteGame (qbAutosave);
@@ -1143,8 +1209,14 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	//
 	if (!qbAutosave)
 	{
-		::sg_write<int32_t>(::SG_Append, INT_ID('T','I','M','E'), ::sv.time);
-		::sg_write<int32_t>(::SG_Append, INT_ID('T','I','M','R'), ::sv.timeResidual);
+        saved_game->write_chunk<int32_t>(
+            INT_ID('T','I','M','E'),
+            ::sv.time);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('T','I','M','R'),
+            ::sv.timeResidual);
+
 		CM_WritePortalState();
 		SG_WriteServerConfigStrings();
 	}

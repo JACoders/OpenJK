@@ -539,10 +539,14 @@ int CIcarus::Save()
 	CreateBuffer();
 
 	IGameInterface* game = IGameInterface::GetGame(m_flavor);
+    auto saved_game = game->get_saved_game();
 
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
-	::sg_write_no_cast(game, INT_ID('I','C','A','R'), version);
+
+    saved_game->read_chunk<double>(
+        INT_ID('I','C','A','R'),
+        version);
 
 	//Save out the signals
 	if ( SaveSignals() == false )
@@ -566,7 +570,10 @@ int CIcarus::Save()
 	}
 
 	// Write out the buffer with all our collected data.
-	::sg_write_no_cast(game, INT_ID('I','S','E','Q'), m_byBuffer, static_cast<int>(m_ulBufferCurPos));
+    saved_game->read_chunk(
+        INT_ID('I','S','E','Q'),
+        m_byBuffer,
+        static_cast<int>(m_ulBufferCurPos));
 
 	// De-allocate the temporary buffer.
 	DestroyBuffer();
@@ -796,7 +803,12 @@ void CIcarus::BufferWrite( void *pSrcData, unsigned long ulNumBytesToWrite )
 	if ( MAX_BUFFER_SIZE - m_ulBufferCurPos < ulNumBytesToWrite )
 	{	// Write out the buffer with all our collected data so far...
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferWrite: Out of buffer space, Flushing." );
-		::sg_write_no_cast(IGameInterface::GetGame(), INT_ID('I','S','E','Q'), m_byBuffer, static_cast<int>(m_ulBufferCurPos));
+
+        IGameInterface::GetGame()->get_saved_game()->write_chunk(
+            INT_ID('I','S','E','Q'),
+            m_byBuffer,
+            static_cast<int>(m_ulBufferCurPos));
+
 		m_ulBufferCurPos = 0;	//reset buffer
 	}
 

@@ -536,13 +536,19 @@ static void EnumerateFields(const save_field_t *pFields, const T* src_instance, 
 
     ::sg_export(*src_instance, *dst_instance);
 
-	::sg_write_no_cast(::gi, ulChid, dst_buffer.data(), dst_size);
+    ::gi.saved_game->write_chunk(
+        ulChid,
+        dst_buffer.data(),
+        dst_size);
 
 	// save out any associated strings..
 	//
 	for (const auto& it : strList)
 	{
-		::sg_write_no_cast(::gi, INT_ID('S','T','R','G'), it.c_str(), static_cast<int>(it.length() + 1));
+        ::gi.saved_game->write_chunk(
+            INT_ID('S','T','R','G'),
+            it.c_str(),
+            static_cast<int>(it.length() + 1));
 	}
 }
 
@@ -849,7 +855,9 @@ static void WriteGEntities(qboolean qbAutosave)
 		}
 	}
 
-	::sg_write<int32_t>(::gi, INT_ID('N','M','E','D'), iCount);
+    ::gi.saved_game->write_chunk<int32_t>(
+        INT_ID('N','M','E','D'),
+        iCount);
 
 	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
@@ -857,7 +865,9 @@ static void WriteGEntities(qboolean qbAutosave)
 
 		if ( ent->inuse)
 		{
-			::sg_write<int32_t>(::gi, INT_ID('E','D','N','M'), i);
+            ::gi.saved_game->write_chunk<int32_t>(
+                INT_ID('E','D','N','M'),
+                i);
 
 			qboolean qbLinked = ent->linked;
 			gi.unlinkentity( ent );
@@ -888,7 +898,9 @@ static void WriteGEntities(qboolean qbAutosave)
 
 			if (tempEnt.parms)
 			{
-				::sg_write_no_cast(::gi, INT_ID('P','A','R','M'), *ent->parms);
+                ::gi.saved_game->write_chunk(
+                    INT_ID('P','A','R','M'),
+                    *ent->parms);
 			}
 
 			if (tempEnt.m_pVehicle)
@@ -917,7 +929,10 @@ static void WriteGEntities(qboolean qbAutosave)
 		//	This saves time debugging, and makes things easier to track.
 		//
 		static int iBlah = 1234;
-		::sg_write<int32_t>(::gi, INT_ID('I','C','O','K'), iBlah);
+
+        ::gi.saved_game->write_chunk<int32_t>(
+            INT_ID('I','C','O','K'),
+            iBlah);
 	}
 	if (!qbAutosave )//really shouldn't need to write these bits at all, just restore them from the ents...
 	{
@@ -1216,7 +1231,10 @@ void WriteLevel(qboolean qbAutosave)
 	// put out an end-marker so that the load code can check everything was read in...
 	//
 	static int iDONE = 1234;
-	::sg_write<int32_t>(::gi, INT_ID('D','O','N','E'), iDONE);
+
+    ::gi.saved_game->write_chunk<int32_t>(
+        INT_ID('D','O','N','E'),
+        iDONE);
 }
 
 void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)

@@ -343,18 +343,27 @@ int CSequence::SaveCommand( CBlock *block )
 	unsigned char	flags;
 	int				numMembers, bID, size;
 	CBlockMember	*bm;
-	
+
+    auto saved_game = m_owner->GetInterface()->saved_game;
+
 	//Save out the block ID
 	bID = block->GetBlockID();
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), bID);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('B','L','I','D'),
+        bID);
 
 	//Save out the block's flags
 	flags = block->GetFlags();
-	::sg_write<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
+    saved_game->write_chunk<uint8_t>(
+        INT_ID('B','F','L','G'),
+        flags);
 
 	//Save out the number of members to read
 	numMembers = block->GetNumMembers();
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('B','N','U','M'),
+        numMembers);
 
 	for ( int i = 0; i < numMembers; i++ )
 	{
@@ -362,14 +371,25 @@ int CSequence::SaveCommand( CBlock *block )
 
 		//Save the block id
 		bID = bm->GetID();
-		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('B','M','I','D'),
+            bID);
 		
 		//Save out the data size
 		size = bm->GetSize();
-		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), size);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('B','S','I','Z'),
+            size);
 		
 		//Save out the raw data
-		::sg_write_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bm->GetData(), size);
+        auto raw_data = static_cast<const uint8_t*>(bm->GetData());
+
+        saved_game->write_chunk(
+            INT_ID('B','M','E','M'),
+            raw_data,
+            size);
 	}
 
 	return true;
@@ -387,32 +407,51 @@ int CSequence::Save( void )
 	block_l::iterator		bi;
 	int						id;
 
+    auto saved_game = m_owner->GetInterface()->saved_game;
+
 	//Save the parent (by GUID)
 	id = ( m_parent != NULL ) ? m_parent->GetID() : -1;
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','P','I','D'), id);
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','P','I','D'),
+        id);
 
 	//Save the return (by GUID)
 	id = ( m_return != NULL ) ? m_return->GetID() : -1;
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','R','I','D'), id);
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','R','I','D'),
+        id);
 	
 	//Save the number of children
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','N','C','H'), m_numChildren);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','N','C','H'),
+        m_numChildren);
 
 	//Save out the children (only by GUID)
 	STL_ITERATE( ci, m_children )
 	{
 		id = (*ci)->GetID();
-		::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','C','H','D'), id);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('S','C','H','D'),
+            id);
 	}
 
 	//Save flags
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','F','L','G'), m_flags);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','F','L','G'),
+        m_flags);
 
 	//Save iterations
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','I','T','R'), m_iterations);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','I','T','R'),
+        m_iterations);
 
 	//Save the number of commands
-	::sg_write<int32_t>(m_owner->GetInterface(), INT_ID('S','N','M','C'), m_numCommands);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','N','M','C'),
+        m_numCommands);
 
 	//Save the commands
 	STL_ITERATE( bi, m_commands )

@@ -2328,20 +2328,29 @@ int	CSequencer::Save( void )
 	taskSequence_m::iterator	ti;
 	int							numSequences = 0, id, numTasks;
 
+    auto saved_game = m_ie->saved_game;
+
 	//Get the number of sequences to save out
 	numSequences = m_sequences.size();
 
 	//Save out the owner sequence
-	::sg_write<int32_t>(m_ie, INT_ID('S','Q','R','E'), m_ownerID);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','Q','R','E'),
+        m_ownerID);
 
 	//Write out the number of sequences we need to read
-	::sg_write<int32_t>(m_ie, INT_ID('S','Q','R','#'), numSequences);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','Q','R','#'),
+        numSequences);
 
 	//Second pass, save out all sequences, in order
 	STL_ITERATE( si, m_sequences )
 	{
 		id = (*si)->GetID();
-		::sg_write<int32_t>(m_ie, INT_ID('S','Q','R','I'), id);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('S','Q','R','I'),
+            id);
 	}
 
 	//Save out the taskManager
@@ -2349,29 +2358,45 @@ int	CSequencer::Save( void )
 
 	//Save out the task sequences mapping the name to the GUIDs
 	numTasks = m_taskSequences.size();
-	::sg_write<int32_t>(m_ie, INT_ID('S','Q','T','#'), numTasks);
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','Q','T','#'),
+        numTasks);
 
 	STL_ITERATE( ti, m_taskSequences )
 	{	
 		//Save the task group's ID
 		id = ((*ti).first)->GetGUID();
-		::sg_write<int32_t>(m_ie, INT_ID('S','T','I','D'), id);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('S','T','I','D'),
+            id);
 
 		//Save the sequence's ID
 		id = ((*ti).second)->GetID();
-		::sg_write<int32_t>(m_ie, INT_ID('S','S','I','D'), id);
+
+        saved_game->write_chunk<int32_t>(
+            INT_ID('S','S','I','D'),
+            id);
 	}
 
 	int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
 
-	::sg_write<int32_t>(m_ie, INT_ID('S','Q','C','T'), curGroupID);
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','Q','C','T'),
+        curGroupID);
 
 	//Output the number of commands
-	::sg_write<int32_t>(m_ie, INT_ID('S','Q','#','C'), m_numCommands);	//FIXME: This can be reconstructed
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','Q','#','C'),
+        m_numCommands);	//FIXME: This can be reconstructed
 
 	//Output the ID of the current sequence
 	id = ( m_curSequence != NULL ) ? m_curSequence->GetID() : -1;
-	::sg_write<int32_t>(m_ie, INT_ID('S','Q','C','S'), id);
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('S','Q','C','S'),
+        id);
 
 	return true;
 }

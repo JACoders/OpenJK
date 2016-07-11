@@ -134,7 +134,10 @@ void CFxScheduler::LoadSave_Write()
 {
 	// bsave the data we need...
 	//
-	::sg_write_no_cast(::gi, INT_ID('F','X','L','E'), mLoopedEffectArray);
+    ::gi.saved_game->write_chunk(
+        INT_ID('F','X','L','E'),
+        mLoopedEffectArray);
+
 	//
 	// then cope with the fact that the mID field in each struct of the array we've just saved will not
 	//	necessarily point at the same thing when reloading, so save out the actual fx filename strings they
@@ -166,7 +169,9 @@ void CFxScheduler::LoadSave_Write()
 
 		// write out this string...
 		//
-		::sg_write_no_cast(::gi, INT_ID('F','X','F','N'), sFX_Filename);
+        ::gi.saved_game->write_chunk(
+            INT_ID('F','X','F','N'),
+            sFX_Filename);
 	}
 }
 

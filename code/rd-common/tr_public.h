@@ -114,6 +114,8 @@ typedef struct {
 
 	qboolean			(*SG_Append)						( unsigned int chid, const void *pvData, int iLength );
 
+    ojk::ISavedGame* saved_game;
+
 	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
 	qboolean			(*CM_DeleteCachedMap)				( qboolean bGuaranteedOkToDelete );	// NOT IN MP

@@ -497,7 +497,7 @@ void ISavedGame::write(
     int src_count,
     InplaceTag)
 {
-    constexpr auto src_size = src_count * static_cast<int>(sizeof(TSrc));
+    const auto src_size = src_count * static_cast<int>(sizeof(TSrc));
 
     raw_write(
         src_values,

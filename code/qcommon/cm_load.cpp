@@ -1217,7 +1217,12 @@ int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPt
 
 void CM_WritePortalState ()
 {
-	::sg_write<int32_t>(::SG_Append, INT_ID('P','R','T','S'), ::cmg.areaPortals, ::cmg.numAreas * ::cmg.numAreas);
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->write_chunk<int32_t>(
+        INT_ID('P','R','T','S'),
+        ::cmg.areaPortals,
+        ::cmg.numAreas * ::cmg.numAreas);
 }
 
 /*

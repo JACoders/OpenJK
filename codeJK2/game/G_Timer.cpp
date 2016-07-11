@@ -179,7 +179,9 @@ void TIMER_Save( void )
 		}
 
 		//Write out the timer information
-		::sg_write<int32_t>(::gi, INT_ID('T','I','M','E'), numTimers);
+        ::gi.saved_game->write_chunk<int32_t>(
+            INT_ID('T','I','M','E'),
+            numTimers);
 	
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
@@ -193,11 +195,20 @@ void TIMER_Save( void )
 			assert( length < 1024 );//This will cause problems when loading the timer if longer
 
 			//Write out the string size and data
-			::sg_write<int32_t>(::gi, INT_ID('T','S','L','N'), length);
-			::sg_write_no_cast(::gi, INT_ID('T','S','N','M'), timerID, length);
+            ::gi.saved_game->write_chunk<int32_t>(
+                INT_ID('T','S','L','N'),
+                length);
+
+            ::gi.saved_game->write_chunk(
+                INT_ID('T','S','N','M'),
+                timerID,
+                length);
 
 			//Write out the timer data
-			::sg_write<int32_t>(::gi, INT_ID('T','D','T','A'), time);
+            ::gi.saved_game->write_chunk<int32_t>(
+                INT_ID('T','D','T','A'),
+                time);
+
 			p = p->next;
 		}
 	}

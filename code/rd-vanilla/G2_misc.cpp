@@ -51,7 +51,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifdef _G2_GORE
 #include "../ghoul2/ghoul2_gore.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_i_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)
@@ -1781,7 +1781,11 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 	if (!ghoul2.IsValid()||!ghoul2.size())
 	{
         uint32_t empty_value = 0;
-		::sg_write_no_cast(::ri, INT_ID('G','H','L','2'), empty_value);	//write out a zero buffer
+
+        ::ri.saved_game->write_chunk<uint32_t>(
+            INT_ID('G','H','L','2'),
+            empty_value); //write out a zero buffer
+
 		return;
 	}
 
@@ -1880,7 +1884,11 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 		}
 	}
 
-	::sg_write_no_cast(::ri, INT_ID('G','H','L','2'), pGhoul2Data, iGhoul2Size);
+    ::ri.saved_game->write_chunk(
+        INT_ID('G','H','L','2'),
+        pGhoul2Data,
+        iGhoul2Size);
+
 	R_Free(pGhoul2Data);
 }
 

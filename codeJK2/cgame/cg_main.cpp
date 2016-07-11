@@ -1641,10 +1641,15 @@ Ghoul2 Insert End
 
 void CG_WriteTheEvilCGHackStuff(void)
 {
-	::sg_write<int32_t>(::gi, INT_ID('F','P','S','L'), ::cg.forcepowerSelect);
-	::sg_write<int32_t>(::gi, INT_ID('I','V','S','L'), ::cg.inventorySelect);
+    ::gi.saved_game->write_chunk<int32_t>(
+        INT_ID('F','P','S','L'),
+        ::cg.forcepowerSelect);
 
+    ::gi.saved_game->write_chunk<int32_t>(
+        INT_ID('I','V','S','L'),
+        ::cg.inventorySelect);
 }
+
 void CG_ReadTheEvilCGHackStuff(void)
 {
     ::gi.saved_game->read_chunk<int32_t>(

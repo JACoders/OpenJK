@@ -61,7 +61,9 @@ OBJ_SaveMissionObjectives
 */
 void OBJ_SaveMissionObjectives( gclient_t *client )
 {
-	::sg_write_no_cast(::gi, INT_ID('O','B','J','T'), client->sess.mission_objectives);
+    ::gi.saved_game->write_chunk(
+        INT_ID('O','B','J','T'),
+        client->sess.mission_objectives);
 }
 
 
