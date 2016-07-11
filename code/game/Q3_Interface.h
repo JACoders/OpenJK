@@ -701,6 +701,8 @@ public:
 	int		ReadSaveData( unsigned int chid, void *address, int length, void **addressptr = NULL );
 	int		LinkGame( int entID, int icarusID );
 
+    ojk::ISavedGame* get_saved_game() override;
+
 	// Access functions
 	int		CreateIcarus( int entID);
 			//Polls the engine for the sequencer of the entity matching the name passed

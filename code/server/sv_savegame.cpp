@@ -38,7 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <map>
 
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_saved_game.h"
 
 static char	saveGameComment[iSG_COMMENT_SIZE];
 
@@ -260,7 +260,13 @@ qboolean SG_Open( const char *psPathlessBaseName )
 		return qfalse;
 	}
 	giSaveGameVersion=-1;//jic
-	::sg_read<int32_t>(::SG_Read, INT_ID('_','V','E','R'), ::giSaveGameVersion);
+
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->read_chunk<int32_t>(
+        INT_ID('_','V','E','R'),
+        ::giSaveGameVersion);
+
 	if (giSaveGameVersion != iSAVEGAME_VERSION)
 	{
 		SG_Close();
@@ -582,7 +588,12 @@ static void WriteGame(qboolean autosave)
 static qboolean ReadGame (void)
 {
 	qboolean qbAutoSave;
-	::sg_read<int32_t>(::SG_Read, INT_ID('G','A','M','E'), qbAutoSave);
+
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->read_chunk<int32_t>(
+        INT_ID('G','A','M','E'),
+        qbAutoSave);
 
 	if (qbAutoSave)
 	{
@@ -591,25 +602,41 @@ static qboolean ReadGame (void)
 		// read health/armour etc...
 		//
 		memset(s,0,sizeof(s));
-		::sg_read_no_cast(::SG_Read, INT_ID('C','V','S','V'), s);
+
+        saved_game->read_chunk(
+            INT_ID('C','V','S','V'),
+            s);
+
 		Cvar_Set( sCVARNAME_PLAYERSAVE, s );
 
 		// read ammo...
 		//
 		memset(s,0,sizeof(s));
-		::sg_read_no_cast(::SG_Read, INT_ID('A','M','M','O'), s);
+
+        saved_game->read_chunk(
+            INT_ID('A','M','M','O'),
+            s);
+
 		Cvar_Set( "playerammo", s);
 
 		// read inventory...
 		//
 		memset(s,0,sizeof(s));
-		::sg_read_no_cast(::SG_Read, INT_ID('I','V','T','Y'), s);
+
+        saved_game->read_chunk(
+            INT_ID('I','V','T','Y'),
+            s);
+
 		Cvar_Set( "playerinv", s);
 
 		// read force powers...
 		//
 		memset(s,0,sizeof(s));
-		::sg_read_no_cast(::SG_Read, INT_ID('F','P','L','V'), s);
+
+        saved_game->read_chunk(
+            INT_ID('F','P','L','V'),
+            s);
+
 		Cvar_Set( "playerfplvl", s );
 	}
 
@@ -667,22 +694,34 @@ void SG_WriteCvars(void)
 
 void SG_ReadCvars(void)
 {
-	int		iCount;
-	char	*psName;
-	char	*psValue;
+    int iCount;
+    const char* psName;
+    const char* psValue;
 
-	::sg_read<int32_t>(::SG_Read, INT_ID('C','V','C','N'), iCount);
+    auto saved_game = &ojk::SavedGame::get_instance();
 
-	for (int i = 0; i < iCount; i++)
-	{
-		::sg_read_allocate(::SG_Read, INT_ID('C','V','A','R'), psName);
-		::sg_read_allocate(::SG_Read, INT_ID('V','A','L','U'), psValue);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('C','V','C','N'),
+        iCount);
 
-		Cvar_Set (psName, psValue);
+    for (int i = 0; i < iCount; ++i)
+    {
+        saved_game->read_chunk(
+            INT_ID('C','V','A','R'));
 
-		Z_Free( psName );
-		Z_Free( psValue );
-	}
+        auto name_buffer = saved_game->get_buffer();
+        psName = reinterpret_cast<const char*>(name_buffer.data());
+
+
+        saved_game->read_chunk(
+            INT_ID('V','A','L','U'));
+
+        auto value_buffer = saved_game->get_buffer();
+        psValue = reinterpret_cast<const char*>(value_buffer.data());
+
+
+        ::Cvar_Set(psName, psValue);
+    }
 }
 
 void SG_WriteServerConfigStrings( void )
@@ -740,23 +779,33 @@ void SG_ReadServerConfigStrings( void )
 	//
 	int iCount;
 
-	::sg_read<int32_t>(::SG_Read, INT_ID('C','S','C','N'), iCount);
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->read_chunk<int32_t>(
+        INT_ID('C','S','C','N'),
+        iCount);
 
 	Com_DPrintf( "Reading %d configstrings...\n",iCount);
 
 	for (int i = 0; i<iCount; i++)
 	{
 		int iIndex;
-		char *psName;
+		const char *psName;
 
-		::sg_read<int32_t>(::SG_Read, INT_ID('C','S','I','N'), iIndex);
-		::sg_read_allocate(::SG_Read, INT_ID('C','S','D','A'), psName);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('C','S','I','N'),
+            iIndex);
+
+        saved_game->read_chunk(
+            INT_ID('C','S','D','A'));
+
+        auto& sg_buffer = saved_game->get_buffer();
+        psName = reinterpret_cast<const char*>(sg_buffer.data());
 
 		Com_DPrintf( "Cfg str %d = %s\n",iIndex, psName);
 
 		//sv.configstrings[iIndex] = psName;
 		SV_SetConfigstring(iIndex, psName);
-		Z_Free(psName);
 	}
 }
 
@@ -805,25 +854,39 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 
 	qbSGReadIsTestOnly = qtrue;	// do NOT leave this in this state
 
-	if ( !SG_Open( psPathlessBaseName ))
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+	if (!saved_game->open(
+        psPathlessBaseName))
 	{
 		qbSGReadIsTestOnly = qfalse;
 		return 0;
 	}
 
-	if (::sg_read_no_cast(::SG_Read, INT_ID('C','O','M','M'), sComment, iSG_COMMENT_SIZE ))
+    if (saved_game->read_chunk(
+        INT_ID('C','O','M','M'),
+        sComment,
+        iSG_COMMENT_SIZE))
 	{
 		unsigned int fileTime = 0;
-		if (::sg_read<uint32_t>(::SG_Read, INT_ID('C','M','T','M'), fileTime))	//read
+
+		if (saved_game->read_chunk<uint32_t>(
+            INT_ID('C','M','T','M'),
+            fileTime))
 		{
 			tFileTime = SG_GetTime (fileTime);
 #ifdef JK2_MODE
-			if (::sg_read<uint32_t>(::SG_Read, INT_ID('S','H','L','N'), iScreenShotLength))
+			if (saved_game->read_chunk<uint32_t>(
+                INT_ID('S','H','L','N'),
+                iScreenShotLength))
 			{
-				if (::sg_read_skip(::SG_Read, INT_ID('S','H','O','T'), iScreenShotLength))
+                if (saved_game->read_chunk(INT_ID('S','H','O','T')))
 				{
 #endif
-			if (::sg_read_no_cast(::SG_Read, INT_ID('M','P','C','M'), sMapName, iSG_MAPCMD_SIZE))	// read
+            if (saved_game->read_chunk(
+                INT_ID('M','P','C','M'),
+                sMapName,
+                iSG_MAPCMD_SIZE))
 			{
 				ret = tFileTime;
 			}
@@ -835,10 +898,8 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 	}
 	qbSGReadIsTestOnly = qfalse;
 
-	if (!SG_Close())
-	{
-		return 0;
-	}
+    saved_game->close();
+
 	return ret;
 }
 
@@ -867,11 +928,16 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest = 
 static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 {
 	qboolean bReturn = qfalse;
+    auto saved_game = &ojk::SavedGame::get_instance();
 
 	// get JPG screenshot data length...
 	//
 	size_t iScreenShotLength = 0;
-	::sg_read<uint32_t>(::SG_Read, INT_ID('S','H','L','N'), iScreenShotLength);
+
+    saved_game->read_chunk<uint32_t>(
+        INT_ID('S','H','L','N'),
+        iScreenShotLength);
+
 	//
 	// alloc enough space plus extra 4K for sloppy JPG-decode reader to not do memory access violation...
 	//
@@ -879,7 +945,11 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 	//
 	// now read the JPG data...
 	//
-	::sg_read_no_cast(::SG_Read, INT_ID('S','H','O','T'), pJPGData, iScreenShotLength);
+    saved_game->read_chunk(
+        INT_ID('S','H','O','T'),
+        pJPGData,
+        iScreenShotLength);
+
 	//
 	// decompress JPG data...
 	//
@@ -923,8 +993,13 @@ qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
 		return qfalse;
 	}
 
-	::sg_read_skip(::SG_Read, INT_ID('C','O','M','M'), 0);	// skip
-	::sg_read_skip<uint32_t>(::SG_Read, INT_ID('C','M','T','M'));
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->read_chunk(
+        INT_ID('C','O','M','M'));
+
+    saved_game->read_chunk(
+        INT_ID('C','M','T','M'));
 
 	qboolean bGotSaveImage = SG_ReadScreenshot(qfalse, pvAddress);
 
@@ -1119,14 +1194,24 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 
 	// Read in all the server data...
 	//
-	::sg_read_no_cast(::SG_Read, INT_ID('C','O','M','M'), sComment);
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->read_chunk(
+        INT_ID('C','O','M','M'),
+        sComment);
+
 	Com_DPrintf("Reading: %s\n", sComment);
-	::sg_read_skip<uint32_t>(::SG_Read, INT_ID('C','M','T','M'));
+
+    saved_game->read_chunk(
+        INT_ID('C','M','T','M'));
 
 #ifdef JK2_MODE
 	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
 #endif
-	::sg_read_no_cast(::SG_Read, INT_ID('M','P','C','M'), sMapCmd);
+    saved_game->read_chunk(
+        INT_ID('M','P','C','M'),
+        sMapCmd);
+
 	SG_ReadCvars();
 
 	// read game state
@@ -1139,8 +1224,16 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	//
 	if (!qbAutosave)
 	{
-		::sg_read<int32_t>(::SG_Read, INT_ID('T','I','M','E'), ::sv.time);
-		::sg_read<int32_t>(::SG_Read, INT_ID('T','I','M','R'), ::sv.timeResidual);
+        auto saved_game = &ojk::SavedGame::get_instance();
+
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','I','M','E'),
+            ::sv.time);
+
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','I','M','R'),
+            ::sv.timeResidual);
+
 		CM_ReadPortalState();
 		SG_ReadServerConfigStrings();
 	}

@@ -29,7 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 CSequence::CSequence( void )
 {
@@ -440,22 +440,34 @@ int CSequence::Load( void )
 	int				bID, bSize;
 	void			*bData;
 
+    auto saved_game = m_owner->GetInterface()->saved_game;
+
 	//Get the parent sequence
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','P','I','D'), id);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('S','P','I','D'),
+        id);
+
 	m_parent = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 	
 	//Get the return sequence
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','R','I','D'), id);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('S','R','I','D'),
+        id);
+
 	m_return = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 
 	//Get the number of children
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','N','C','H'), m_numChildren);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('S','N','C','H'),
+        m_numChildren);
 
 	//Reload all children
 	for ( i = 0; i < m_numChildren; i++ )
 	{
 		//Get the child sequence ID
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','C','H','D'), id);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('S','C','H','D'),
+            id);
 
 		//Get the desired sequence
 		if ( ( sequence = m_owner->GetSequence( id ) ) == NULL )
@@ -470,46 +482,67 @@ int CSequence::Load( void )
 
 	
 	//Get the sequence flags
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','F','L','G'), m_flags);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('S','F','L','G'),
+        m_flags);
 
 	//Get the number of iterations
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','I','T','R'), m_iterations);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('S','I','T','R'),
+        m_iterations);
 
 	int	numCommands;
 
 	//Get the number of commands
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('S','N','M','C'), numCommands);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('S','N','M','C'),
+        numCommands);
 
 	//Get all the commands
 	for ( i = 0; i < numCommands; i++ )
 	{
 		//Get the block ID and create a new container
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), id);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('B','L','I','D'),
+            id);
+
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-		::sg_read<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
+        saved_game->read_chunk<uint8_t>(
+            INT_ID('B','F','L','G'),
+            flags);
+
 		block->SetFlags( flags );
 
 		//Get the number of block members
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('B','N','U','M'),
+            numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
-			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
+            saved_game->read_chunk<int32_t>(
+                INT_ID('B','M','I','D'),
+                bID);
 			
 			//Get the member size
-			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), bSize);
+            saved_game->read_chunk<int32_t>(
+                INT_ID('B','S','I','Z'),
+                bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
 				return false;
 
 			//Get the actual raw data
-			::sg_read_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bData, bSize);
+            saved_game->read_chunk(
+                INT_ID('B','M','E','M'),
+                static_cast<uint8_t*>(bData),
+                bSize);
 
 			//Write out the correct type
 			switch ( bID )

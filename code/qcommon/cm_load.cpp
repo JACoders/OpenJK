@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "cm_local.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_saved_game.h"
 
 #ifdef BSPC
 void SetPlaneSignbits (cplane_t *out) {
@@ -1230,7 +1230,15 @@ and recalculates the area connections
 */
 void	CM_ReadPortalState ()
 {
-	::sg_read<int32_t>(::SG_Read, INT_ID('P','R','T','S'), ::cmg.areaPortals, ::cmg.numAreas * ::cmg.numAreas);
+    //auto saved_game = static_cast<ojk::ISavedGame*>(
+    //    &ojk::SavedGame::get_instance());
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->read_chunk<int32_t>(
+        INT_ID('P','R','T','S'),
+        ::cmg.areaPortals,
+        ::cmg.numAreas * ::cmg.numAreas);
+
 	CM_FloodAreaConnections (cmg);
 }
 

@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "assert.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 // Sequencer 
 
@@ -2387,7 +2387,9 @@ int	CSequencer::Load( void )
 	int i;
 
 	//Get the owner of this sequencer
-	::sg_read<int32_t>(m_ie, INT_ID('S','Q','R','E'), m_ownerID);
+    m_ie->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','R','E'),
+        m_ownerID);
 
 	//Link the entity back to the sequencer
 	m_ie->I_LinkEntity( m_ownerID, this, m_taskManager );
@@ -2397,12 +2399,16 @@ int	CSequencer::Load( void )
 	int			numSequences, seqID, taskID, numTasks;
 
 	//Get the number of sequences to read
-	::sg_read<int32_t>(m_ie, INT_ID('S','Q','R','#'), numSequences);
+    m_ie->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','R','#'),
+        numSequences);
 
 	//Read in all the sequences
 	for ( i = 0; i < numSequences; i++ )
 	{
-		::sg_read<int32_t>(m_ie, INT_ID('S','Q','R','I'), seqID);
+        m_ie->saved_game->read_chunk<int32_t>(
+            INT_ID('S','Q','R','I'),
+            seqID);
 
 		seq = m_owner->GetSequence( seqID );
 
@@ -2419,16 +2425,22 @@ int	CSequencer::Load( void )
 	m_taskManager->Load();
 
 	//Get the number of tasks in the map
-	::sg_read<int32_t>(m_ie, INT_ID('S','Q','T','#'), numTasks);
+    m_ie->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','T','#'),
+        numTasks);
 
 	//Read in, and reassociate the tasks to the sequences
 	for ( i = 0; i < numTasks; i++ )
 	{
 		//Read in the task's ID
-		::sg_read<int32_t>(m_ie, INT_ID('S','T','I','D'), taskID);
+        m_ie->saved_game->read_chunk<int32_t>(
+            INT_ID('S','T','I','D'),
+            taskID);
 		
 		//Read in the sequence's ID
-		::sg_read<int32_t>(m_ie, INT_ID('S','S','I','D'), seqID);
+        m_ie->saved_game->read_chunk<int32_t>(
+            INT_ID('S','S','I','D'),
+            seqID);
 
 		taskGroup = m_taskManager->GetTaskGroup( taskID );
 
@@ -2445,15 +2457,21 @@ int	CSequencer::Load( void )
 	int	curGroupID;
 
 	//Get the current task group
-	::sg_read<int32_t>(m_ie, INT_ID('S','Q','C','T'), curGroupID);
+    m_ie->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','C','T'),
+        curGroupID);
 
 	m_curGroup = ( curGroupID == -1 ) ? NULL : m_taskManager->GetTaskGroup( curGroupID );
 
 	//Get the number of commands
-	::sg_read<int32_t>(m_ie, INT_ID('S','Q','#','C'), m_numCommands);
+    m_ie->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','#','C'),
+        m_numCommands);
 
 	//Get the current sequence
-	::sg_read<int32_t>(m_ie, INT_ID('S','Q','C','S'), seqID);
+    m_ie->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','C','S'),
+        seqID);
 
 	m_curSequence = ( seqID != -1 ) ? m_owner->GetSequence( seqID ) : NULL;
 

@@ -54,11 +54,14 @@ bool SavedGame::open(
         }
     }
 
+    if (is_succeed) {
+        is_readable_ = true;
+    }
 
     int sg_version = -1;
 
     if (is_succeed) {
-        static_cast<void>(ISavedGame::read_chunk<int32_t>(
+        static_cast<void>(read_chunk<int32_t>(
             INT_ID('_', 'V', 'E', 'R'),
             sg_version));
 
@@ -73,9 +76,7 @@ bool SavedGame::open(
         }
     }
 
-    if (is_succeed) {
-        is_readable_ = true;
-    } else {
+    if (!is_succeed) {
         close();
     }
 
@@ -109,13 +110,14 @@ bool SavedGame::create(
         return false;
     }
 
-    int sg_version = iSAVEGAME_VERSION;
-
-    static_cast<void>(ISavedGame::write_chunk<int32_t>(
-        INT_ID('_', 'V', 'E', 'R'),
-        sg_version));
 
     is_writable_ = false;
+
+    int sg_version = iSAVEGAME_VERSION;
+
+    static_cast<void>(write_chunk<int32_t>(
+        INT_ID('_', 'V', 'E', 'R'),
+        sg_version));
 
     return true;
 }
@@ -149,6 +151,8 @@ bool SavedGame::is_writable() const
 bool SavedGame::read_chunk(
     const SavedGame::ChunkId chunk_id)
 {
+    io_buffer_offset_ = 0;
+
     auto chunk_id_string = get_chunk_id_string(
         chunk_id);
 
@@ -198,7 +202,7 @@ bool SavedGame::read_chunk(
     if (bBlockIsCompressed) {
         uiLoaded += ::FS_Read(
             &uiCompressedLength,
-            static_cast<int>(uiCompressedLength),
+            static_cast<int>(sizeof(uiCompressedLength)),
             file_handle_);
 
         rle_buffer_.resize(
@@ -208,6 +212,9 @@ bool SavedGame::read_chunk(
             rle_buffer_.data(),
             uiCompressedLength,
             file_handle_);
+
+        io_buffer_.resize(
+            uiLoadedLength);
 
         decompress(
             rle_buffer_,

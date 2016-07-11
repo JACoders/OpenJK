@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 #define ICARUS_VALIDATE(a) if ( a == false ) return TASK_FAILED;
 
@@ -1816,11 +1816,17 @@ void CTaskManager::Load( void )
 	int				bID, bSize;
 	int				i;
 
+    auto saved_game = m_owner->GetInterface()->saved_game;
+
 	//Get the GUID
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','M','I','D'), m_GUID);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('T','M','I','D'),
+        m_GUID);
 
 	//Get the number of tasks to follow
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','S','K','#'), numTasks);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('T','S','K','#'),
+        numTasks);
 	
 	//Reload all the tasks
 	for ( i = 0; i < numTasks; i++ )
@@ -1830,11 +1836,17 @@ void CTaskManager::Load( void )
 		assert( task );
 
 		//Get the GUID
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','K','I','D'), id);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','K','I','D'),
+            id);
+
 		task->SetGUID( id );
 
 		//Get the time stamp
-		::sg_read<uint32_t>(m_owner->GetInterface(), INT_ID('T','K','T','S'), timeStamp);
+        saved_game->read_chunk<uint32_t>(
+            INT_ID('T','K','T','S'),
+            timeStamp);
+
 		task->SetTimeStamp( timeStamp );
 
 		//
@@ -1842,25 +1854,37 @@ void CTaskManager::Load( void )
 		//
 
 		//Get the block ID and create a new container
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','L','I','D'), id);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('B','L','I','D'),
+            id);
+
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-		::sg_read<uint8_t>(m_owner->GetInterface(), INT_ID('B','F','L','G'), flags);
+        saved_game->read_chunk<uint8_t>(
+            INT_ID('B','F','L','G'),
+            flags);
+
 		block->SetFlags( flags );
 
 		//Get the number of block members
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','N','U','M'), numMembers);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('B','N','U','M'),
+            numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
-			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','M','I','D'), bID);
+            saved_game->read_chunk<int32_t>(
+                INT_ID('B','M','I','D'),
+                bID);
 			
 			//Get the member size
-			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('B','S','I','Z'), bSize);
+            saved_game->read_chunk<int32_t>(
+                INT_ID('B','S','I','Z'),
+                bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
@@ -1870,7 +1894,10 @@ void CTaskManager::Load( void )
 			}
 
 			//Get the actual raw data
-			::sg_read_no_cast(m_owner->GetInterface(), INT_ID('B','M','E','M'), bData, bSize);
+            saved_game->read_chunk(
+                INT_ID('B','M','E','M'),
+                static_cast<uint8_t*>(bData),
+                bSize);
 
 			//Write out the correct type
 			switch ( bID )
@@ -1921,7 +1948,9 @@ void CTaskManager::Load( void )
 	//Load the task groups
 	int numTaskGroups;
 	
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','#','G'), numTaskGroups);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('T','G','#','G'),
+        numTaskGroups);
 
 	if ( numTaskGroups == 0 )
 		return;
@@ -1936,7 +1965,10 @@ void CTaskManager::Load( void )
 		assert( taskGroup );
 
 		//Get this task group's ID
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','K','G','#'), taskIDs[i]);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','K','G','#'),
+            taskIDs[i]);
+
 		taskGroup->m_GUID = taskIDs[i];
 		
 		m_taskGroupIDMap[ taskIDs[i] ] = taskGroup;
@@ -1951,35 +1983,47 @@ void CTaskManager::Load( void )
 		assert( taskGroup );
 
 		//Load the parent ID
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','K','G','P'), id);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','K','G','P'),
+            id);
 		
 		if ( id != -1 )
 			taskGroup->m_parent = ( GetTaskGroup( id ) != NULL ) ? GetTaskGroup( id ) : NULL;
 
 		//Get the number of commands in this group
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','C'), numMembers);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','G','N','C'),
+            numMembers);
 
 		//Get each command and its completion state
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the ID
-			::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('G','M','I','D'), id);
+            saved_game->read_chunk<int32_t>(
+                INT_ID('G','M','I','D'),
+                id);
 
 			//Write out the state of completion
-			::sg_read<uint8_t>(m_owner->GetInterface(), INT_ID('G','M','D','N'), completed);
+            saved_game->read_chunk<uint8_t>(
+                INT_ID('G','M','D','N'),
+                completed);
 
 			//Save it out
 			taskGroup->m_completedTasks[ id ] = completed;
 		}
 
 		//Get the number of completed tasks
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','D','N'), taskGroup->m_numCompleted);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','G','D','N'),
+            taskGroup->m_numCompleted);
 	}
 
 	//Reload the currently active group
 	int curGroupID;
 
-	::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','C','G'), curGroupID);
+    saved_game->read_chunk<int32_t>(
+        INT_ID('T','G','C','G'),
+        curGroupID);
 
 	//Reload the map entries
 	for ( i = 0; i < numTaskGroups; i++ )
@@ -1988,13 +2032,20 @@ void CTaskManager::Load( void )
 		int		length;
 		
 		//Get the size of the string
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','L'), length);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','G','N','L'),
+            length);
 
 		//Get the string
-		::sg_read_no_cast(m_owner->GetInterface(), INT_ID('T','G','N','S'), name, length);
+        saved_game->read_chunk(
+            INT_ID('T','G','N','S'),
+            name,
+            length);
 
 		//Get the id
-		::sg_read<int32_t>(m_owner->GetInterface(), INT_ID('T','G','N','I'), id);
+        saved_game->read_chunk<int32_t>(
+            INT_ID('T','G','N','I'),
+            id);
 
 		taskGroup = GetTaskGroup( id );
 		assert( taskGroup );

@@ -26,7 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_local.h"
 #include "g_functions.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
@@ -678,13 +678,22 @@ void G_LoadCachedRoffs()
 	char	buffer[MAX_QPATH];
 
 	// Get the count of goodies we need to revive
-	::sg_read<int32_t>(::gi, INT_ID('R','O','F','F'), count);
+    ::gi.saved_game->read_chunk<int32_t>(
+        INT_ID('R','O','F','F'),
+        count);
 
 	// Now bring 'em back to life
 	for ( i = 0; i < count; i++ )
 	{
-		::sg_read<int32_t>(::gi, INT_ID('S','L','E','N'), len);
-		::sg_read_no_cast(::gi, INT_ID('R','S','T','R'), buffer, len);
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('S','L','E','N'),
+            len);
+
+        ::gi.saved_game->read_chunk(
+            INT_ID('R','S','T','R'),
+            buffer,
+            len);
+
 		G_LoadRoff( buffer );
 	}
 }

@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <assert.h>
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 // Instance
 
@@ -443,7 +443,9 @@ int ICARUS_Instance::LoadSignals( void )
 {
 	int numSignals;
 
-	::sg_read<int32_t>(m_interface, INT_ID('I','S','I','G'), numSignals);
+    m_interface->saved_game->read_chunk<int32_t>(
+        INT_ID('I','S','I','G'),
+        numSignals);
 
 	for ( int i = 0; i < numSignals; i++ )
 	{
@@ -451,12 +453,17 @@ int ICARUS_Instance::LoadSignals( void )
 		int		length;
 
 		//Get the size of the string
-		::sg_read<int32_t>(m_interface, INT_ID('S','I','G','#'), length);
+        m_interface->saved_game->read_chunk<int32_t>(
+            INT_ID('S','I','G','#'),
+            length);
 
 		assert( length < (int)sizeof( buffer ) );
 
 		//Get the string
-		::sg_read_no_cast(m_interface, INT_ID('S','I','G','N'), buffer, length);
+        m_interface->saved_game->read_chunk(
+            INT_ID('S','I','G','N'),
+            buffer,
+            length);
 
 		//Turn it on and add it to the system
 		Signal( (const char *) &buffer );
@@ -497,7 +504,9 @@ int ICARUS_Instance::LoadSequences( void )
 	int			numSequences;
 
 	//Get the number of sequences to read in
-	::sg_read<int32_t>(m_interface, INT_ID('#','S','E','Q'), numSequences);
+    m_interface->saved_game->read_chunk<int32_t>(
+        INT_ID('#','S','E','Q'),
+        numSequences);
 
 	int	*idTable = new int[ numSequences ];
 
@@ -505,7 +514,10 @@ int ICARUS_Instance::LoadSequences( void )
 		return false;
 
 	//Load the sequencer ID table
-	::sg_read<int32_t>(m_interface, INT_ID('S','Q','T','B'), idTable, numSequences);
+    m_interface->saved_game->read_chunk<int32_t>(
+        INT_ID('S','Q','T','B'),
+        idTable,
+        numSequences);
 
 	//First pass, allocate all container sequences and give them their proper IDs
 	if ( AllocateSequences( numSequences, idTable ) == false )
@@ -541,7 +553,9 @@ int ICARUS_Instance::LoadSequencers( void )
 	int			numSequencers;
 
 	//Get the number of sequencers to load
-	::sg_read<int32_t>(m_interface, INT_ID('#','S','Q','R'), numSequencers);
+    m_interface->saved_game->read_chunk<int32_t>(
+        INT_ID('#','S','Q','R'),
+        numSequencers);
 	
 	//Load all sequencers
 	for ( int i = 0; i < numSequencers; i++ )
@@ -570,7 +584,10 @@ int ICARUS_Instance::Load( void )
 
 	//Check to make sure we're at the ICARUS save block
 	double	version;
-	::sg_read<double>(m_interface, INT_ID('I','C','A','R'), version);
+
+    m_interface->saved_game->read_chunk<double>(
+        INT_ID('I','C','A','R'),
+        version);
 
 	//Versions must match!
 	if ( version != ICARUS_VERSION )
@@ -600,7 +617,9 @@ int ICARUS_Instance::Load( void )
 		return false;
 	}
 
-	::sg_read<double>(m_interface, INT_ID('I','E','N','D'), version);
+    m_interface->saved_game->read_chunk<double>(
+        INT_ID('I','E','N','D'),
+        version);
 
 	return true;
 }

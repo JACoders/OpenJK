@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //rww - RAGDOLL_END
 
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 extern void WP_SaberLoadParms( void );
 extern qboolean G_PlayerSpawned( void );
@@ -113,7 +113,10 @@ void WriteInUseBits(void)
 
 void ReadInUseBits(void)
 {
-	::sg_read<uint32_t>(::gi, INT_ID('I','N','U','S'), ::g_entityInUseBits);
+    ::gi.saved_game->read_chunk<uint32_t>(
+        INT_ID('I','N','U','S'),
+        ::g_entityInUseBits);
+
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
 	for(int i=0;i<MAX_GENTITIES;i++)
@@ -2118,7 +2121,9 @@ void G_LoadSave_WriteMiscData(void)
 
 void G_LoadSave_ReadMiscData(void)
 {
-	::sg_read<int32_t>(::gi, INT_ID('L','C','K','D'), player_locked);
+    ::gi.saved_game->read_chunk<int32_t>(
+        INT_ID('L','C','K','D'),
+        ::player_locked);
 }
 
 

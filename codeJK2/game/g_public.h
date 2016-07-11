@@ -179,6 +179,8 @@ typedef struct {
 	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 
+    ojk::ISavedGame* saved_game;
+
 	// add commands to the console as if they were typed in
 	// for map changing, etc
 	void	(*SendConsoleCommand)( const char *text );

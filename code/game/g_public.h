@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 
 #include "qcommon/ojk_sg_wrappers_fwd.h"
+#include "qcommon/ojk_i_saved_game_fwd.h"
 
 
 #define	GAME_API_VERSION	8
@@ -190,7 +191,7 @@ typedef struct {
 	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
 
-    ojk::SavedGame* saved_game;
+    ojk::ISavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc

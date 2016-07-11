@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "objectives.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 qboolean	missionInfo_Updated;
 
@@ -88,7 +88,9 @@ OBJ_LoadMissionObjectives
 */
 void OBJ_LoadMissionObjectives( gclient_t *client )
 {
-    ::sg_read_no_cast(::gi, INT_ID('O','B','J','T'), client->sess.mission_objectives);
+    ::gi.saved_game->read_chunk(
+        INT_ID('O','B','J','T'),
+        client->sess.mission_objectives);
 }
 
 

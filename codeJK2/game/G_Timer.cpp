@@ -24,7 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "../../code/Rufl/hstring.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 #define MAX_GTIMERS	16384
 
@@ -218,7 +218,9 @@ void TIMER_Load( void )
 	{
 		int numTimers;
 
-		::sg_read<int32_t>(::gi, INT_ID('T','I','M','E'), numTimers);
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('T','I','M','E'),
+            numTimers);
 
 		//Make sure there's something to read
 		if ( numTimers == 0 )
@@ -232,7 +234,9 @@ void TIMER_Load( void )
 
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
-			::sg_read<int32_t>(::gi, INT_ID('T','S','L','N'), length);
+            ::gi.saved_game->read_chunk<int32_t>(
+                INT_ID('T','S','L','N'),
+                length);
 			
 			if ( length >= 1024 ) {
 				assert( 0 );
@@ -240,8 +244,14 @@ void TIMER_Load( void )
 			}
 
 			//Read the id and time
-			::sg_read_no_cast(::gi, INT_ID('T','S','N','M'), tempBuffer, length);
-			::sg_read<int32_t>(::gi, INT_ID('T','D','T','A'), time);
+            ::gi.saved_game->read_chunk(
+                INT_ID('T','S','N','M'),
+                tempBuffer,
+                length);
+
+            ::gi.saved_game->read_chunk<int32_t>(
+                INT_ID('T','D','T','A'),
+                time);
 
 			//this is odd, we saved all the timers in the autosave, but not all the ents are spawned yet from an auto load, so skip it
 			if (ent->inuse)

@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "Q3_Registers.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
@@ -362,19 +362,30 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	::sg_read<int32_t>(::gi, INT_ID('F','V','A','R'), numFloats);
+    ::gi.saved_game->read_chunk<int32_t>(
+        INT_ID('F','V','A','R'),
+        numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		::sg_read<int32_t>(::gi, INT_ID('F','I','D','L'), idSize);
-		::sg_read_no_cast(::gi, INT_ID('F','I','D','S'), tempBuffer, idSize);
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('F','I','D','L'),
+            idSize);
+
+        ::gi.saved_game->read_chunk(
+            INT_ID('F','I','D','S'),
+            tempBuffer,
+            idSize);
+
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-		::sg_read_no_cast(::gi, INT_ID('F','V','A','L'), val);
+        ::gi.saved_game->read_chunk<float>(
+            INT_ID('F','V','A','L'),
+            val);
 
 		Q3_DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		Q3_SetFloatVariable( (const char *) &tempBuffer, val );
@@ -393,18 +404,34 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	::sg_read<int32_t>(::gi, INT_ID('S','V','A','R'), numFloats);
+    ::gi.saved_game->read_chunk<int32_t>(
+        INT_ID('S','V','A','R'),
+        numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		::sg_read<int32_t>(::gi, INT_ID('S','I','D','L'), idSize);
-		::sg_read_no_cast(::gi, INT_ID('S','I','D','S'), tempBuffer, idSize);
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('S','I','D','L'),
+            idSize);
+
+        ::gi.saved_game->read_chunk(
+            INT_ID('S','I','D','S'),
+            tempBuffer,
+            idSize);
+
 		tempBuffer[ idSize ] = 0;
 
-		::sg_read<int32_t>(::gi, INT_ID('S','V','S','Z'), idSize);
-		::sg_read_no_cast(::gi, INT_ID('S','V','A','L'), tempBuffer2, idSize);
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('S','V','S','Z'),
+            idSize);
+
+        ::gi.saved_game->read_chunk(
+            INT_ID('S','V','A','L'),
+            tempBuffer2,
+            idSize);
+
 		tempBuffer2[ idSize ] = 0;
 
 		switch ( type )

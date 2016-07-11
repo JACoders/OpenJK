@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_camera.h"
 #include "../qcommon/sstring.h"
 #include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 
@@ -189,7 +189,10 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		assert(iStrlen+1<=(int)sizeof(sString));
 
-		::sg_read_no_cast(::gi, INT_ID('S','T','R','G'), sString, iStrlen);
+        ::gi.saved_game->read_chunk(
+            INT_ID('S','T','R','G'),
+            sString,
+            iStrlen);
 
 		// TAG_G_ALLOC is always blown away, we can never recycle
 		if (psOriginal && gi.bIsFromZone(psOriginal, TAG_G_ALLOC)) {
@@ -927,13 +930,18 @@ static void ReadGEntities(qboolean qbAutosave)
 	int		iCount;
 	int		i;
 
-	::sg_read<int32_t>(::gi, INT_ID('N','M','E','D'), iCount);
+    ::gi.saved_game->read_chunk<int32_t>(
+        INT_ID('N','M','E','D'),
+        iCount);
 
 	int iPreviousEntRead = -1;
 	for (i=0; i<iCount; i++)
 	{
 		int iEntIndex;
-		::sg_read<int32_t>(::gi, INT_ID('E','D','N','M'), iEntIndex);
+
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('E','D','N','M'),
+            iEntIndex);
 
 		if (iEntIndex >= globals.num_entities)
 		{
@@ -1046,7 +1054,9 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 
-			::sg_read_no_cast(::gi, INT_ID('P','A','R','M'), tempParms);
+            ::gi.saved_game->read_chunk(
+                INT_ID('P','A','R','M'),
+                tempParms);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1097,10 +1107,13 @@ static void ReadGEntities(qboolean qbAutosave)
 		// the scary ghoul2 stuff...  (fingers crossed)
 		//
 		{
-			char *pGhoul2Data = NULL;
-			::sg_read_allocate(::gi, INT_ID('G','H','L','2'), pGhoul2Data);
+            ::gi.saved_game->read_chunk(
+                INT_ID('G','H','L','2'));
+
+            auto buffer = ::gi.saved_game->get_buffer();
+            auto pGhoul2Data = reinterpret_cast<char*>(buffer.data());
+
 			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
-			gi.Free(pGhoul2Data);
 		}
 
 //		gi.unlinkentity (pEntOriginal);
@@ -1163,7 +1176,10 @@ static void ReadGEntities(qboolean qbAutosave)
 		// check that Icarus has loaded everything it saved out by having a marker chunk after it...
 		//
 		static int iBlah = 1234;
-		::sg_read<int32_t>(::gi, INT_ID('I','C','O','K'), iBlah);
+
+        ::gi.saved_game->read_chunk<int32_t>(
+            INT_ID('I','C','O','K'),
+            iBlah);
 	}
 	if (!qbAutosave)
 	{
@@ -1231,8 +1247,8 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		ReadLevelLocals();	// level_locals_t level
 
 		//Read & throw away objective info
-		objectives_t	junkObj[MAX_MISSION_OBJ];
-		::sg_read_no_cast(::gi, INT_ID('O','B','J','T'), junkObj);
+        ::gi.saved_game->read_chunk(
+            INT_ID('O','B','J','T'));
 	}
 	else
 	{
@@ -1265,7 +1281,10 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	// check that the whole file content was loaded by specifically requesting an end-marker...
 	//
 	static int iDONE = 1234;
-	::sg_read<int32_t>(::gi, INT_ID('D','O','N','E'), iDONE);
+
+    ::gi.saved_game->read_chunk<int32_t>(
+        INT_ID('D','O','N','E'),
+        iDONE);
 }
 
 extern int killPlayerTimer;
