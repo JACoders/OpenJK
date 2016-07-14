@@ -186,7 +186,7 @@ void ISavedGame::read(
 
 template<typename TSrc, typename TDst>
 void ISavedGame::read(
-    TDst*& dst_value,
+    TDst* dst_value,
     PointerTag)
 {
     static_assert(
@@ -254,6 +254,7 @@ void ISavedGame::read(
         (std::is_arithmetic<TDst>::value &&
             !std::is_same<TDst, bool>::value &&
             !std::is_enum<TDst>::value) ||
+            std::is_pointer<TDst>::value ||
             std::is_class<TDst>::value,
         "Unsupported types.");
 
@@ -272,12 +273,20 @@ void ISavedGame::read(
             (!std::is_same<TDst, bool>::value) &&
             (!std::is_enum<TDst>::value);
 
+    constexpr auto is_src_float_point =
+        std::is_floating_point<Src>::value;
+
+    constexpr auto is_dst_float_point =
+        std::is_floating_point<TDst>::value;
+
     constexpr auto has_same_size =
         (sizeof(Src) == sizeof(TDst));
 
     constexpr auto use_inplace =
         is_src_pure_numeric &&
         is_dst_pure_numeric &&
+        ((!is_src_float_point && !is_dst_float_point) ||
+            (is_src_float_point && is_dst_float_point)) &&
         has_same_size;
 
     using Tag = typename std::conditional<
@@ -318,9 +327,13 @@ void ISavedGame::read(
         std::is_arithmetic<TDst>::value,
         NumericTag,
         typename std::conditional<
-            std::is_class<TDst>::value,
-            ClassTag,
-            void
+            std::is_pointer<TDst>::value,
+            PointerTag,
+            typename std::conditional<
+                std::is_class<TDst>::value,
+                ClassTag,
+                void
+            >::type
         >::type
     >::type;
 
@@ -392,7 +405,7 @@ void ISavedGame::write(
 
 template<typename TDst, typename TSrc>
 void ISavedGame::write(
-    const TSrc*& src_value,
+    const TSrc* src_value,
     PointerTag)
 {
     using DstNumeric = typename std::conditional<
@@ -429,7 +442,7 @@ void ISavedGame::write(
 
 template<typename TDst, typename TSrc, int TCount1, int TCount2>
 void ISavedGame::write(
-    const TSrc(&src_values)[TCount1][TCount2],
+    const TSrc (&src_values)[TCount1][TCount2],
     Array2dTag)
 {
     write<TDst>(
@@ -453,6 +466,7 @@ void ISavedGame::write(
         (std::is_arithmetic<TSrc>::value &&
             !std::is_same<TSrc, bool>::value &&
             !std::is_enum<TSrc>::value) ||
+            std::is_pointer<TSrc>::value ||
             std::is_class<TSrc>::value,
         "Unsupported types.");
 
@@ -471,12 +485,20 @@ void ISavedGame::write(
             (!std::is_same<Dst, bool>::value) &&
             (!std::is_enum<Dst>::value);
 
+    constexpr auto is_src_float_point =
+        std::is_floating_point<TSrc>::value;
+
+    constexpr auto is_dst_float_point =
+        std::is_floating_point<Dst>::value;
+
     constexpr auto has_same_size =
         (sizeof(TSrc) == sizeof(Dst));
 
     constexpr auto use_inplace =
         is_src_pure_numeric &&
         is_dst_pure_numeric &&
+        ((!is_src_float_point && !is_dst_float_point) ||
+            (is_src_float_point && is_dst_float_point)) &&
         has_same_size;
 
     using Tag = typename std::conditional<
@@ -517,9 +539,13 @@ void ISavedGame::write(
         std::is_arithmetic<TSrc>::value,
         NumericTag,
         typename std::conditional<
-            std::is_class<TSrc>::value,
-            ClassTag,
-            void
+            std::is_pointer<TSrc>::value,
+            PointerTag,
+            typename std::conditional<
+                std::is_class<TSrc>::value,
+                ClassTag,
+                void
+            >::type
         >::type
     >::type;
 

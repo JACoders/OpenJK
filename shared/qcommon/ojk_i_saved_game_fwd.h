@@ -147,7 +147,7 @@ protected:
 
     template<typename TSrc, typename TDst>
     void read(
-        TDst*& dst_value,
+        TDst* dst_value,
         PointerTag);
 
     template<typename TSrc, typename TDst>
@@ -157,12 +157,12 @@ protected:
 
     template<typename TSrc, typename TDst, int TCount>
     void read(
-        TDst(&dst_values)[TCount],
+        TDst (&dst_values)[TCount],
         Array1dTag);
 
     template<typename TSrc, typename TDst, int TCount1, int TCount2>
     void read(
-        TDst(&dst_values)[TCount1][TCount2],
+        TDst (&dst_values)[TCount1][TCount2],
         Array2dTag);
 
 
@@ -186,7 +186,7 @@ protected:
 
     template<typename TDst, typename TSrc>
     void write(
-        const TSrc*& src_value,
+        const TSrc* src_value,
         PointerTag);
 
     template<typename TDst, typename TSrc>
@@ -196,12 +196,12 @@ protected:
 
     template<typename TDst, typename TSrc, int TCount>
     void write(
-        const TSrc(&src_values)[TCount],
+        const TSrc (&src_values)[TCount],
         Array1dTag);
 
     template<typename TDst, typename TSrc, int TCount1, int TCount2>
     void write(
-        const TSrc(&src_values)[TCount1][TCount2],
+        const TSrc (&src_values)[TCount1][TCount2],
         Array2dTag);
 
 
