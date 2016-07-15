@@ -14,7 +14,8 @@
 #include "ojk_i_saved_game.h"
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 class SavedGame :

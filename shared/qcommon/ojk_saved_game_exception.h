@@ -10,7 +10,8 @@
 #include "ojk_exception.h"
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 class SavedGameException :

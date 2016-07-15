@@ -5,7 +5,8 @@
 #include "server/server.h"
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 SavedGame::SavedGame() :
@@ -36,13 +37,15 @@ bool SavedGame::open(
 
     auto is_succeed = true;
 
-    if (is_succeed) {
+    if (is_succeed)
+    {
         ::FS_FOpenFileRead(
             file_path.c_str(),
             &file_handle_,
             qtrue);
 
-        if (file_handle_ == 0) {
+        if (file_handle_ == 0)
+        {
             is_succeed = false;
 
             auto error_message = get_failed_to_open_message(
@@ -55,18 +58,21 @@ bool SavedGame::open(
         }
     }
 
-    if (is_succeed) {
+    if (is_succeed)
+    {
         is_readable_ = true;
     }
 
     int sg_version = -1;
 
-    if (is_succeed) {
+    if (is_succeed)
+    {
         static_cast<void>(read_chunk<int32_t>(
             INT_ID('_', 'V', 'E', 'R'),
             sg_version));
 
-        if (sg_version != iSAVEGAME_VERSION) {
+        if (sg_version != iSAVEGAME_VERSION)
+        {
             is_succeed = false;
 
             ::Com_Printf(
@@ -77,7 +83,8 @@ bool SavedGame::open(
         }
     }
 
-    if (!is_succeed) {
+    if (!is_succeed)
+    {
         close();
     }
 
@@ -99,7 +106,8 @@ bool SavedGame::create(
     file_handle_ = ::FS_FOpenFileWrite(
         path.c_str());
 
-    if (file_handle_ == 0) {
+    if (file_handle_ == 0)
+    {
         auto error_message = get_failed_to_open_message(
             path,
             false);
@@ -125,7 +133,8 @@ bool SavedGame::create(
 
 void SavedGame::close()
 {
-    if (file_handle_ != 0) {
+    if (file_handle_ != 0)
+    {
         ::FS_FCloseFile(file_handle_);
         file_handle_ = 0;
     }
@@ -176,16 +185,20 @@ bool SavedGame::read_chunk(
 
     auto bBlockIsCompressed = (static_cast<int32_t>(uiLoadedLength) < 0);
 
-    if (bBlockIsCompressed) {
+    if (bBlockIsCompressed)
+    {
         uiLoadedLength = -static_cast<int32_t>(uiLoadedLength);
     }
 
     // Make sure we are loading the correct chunk...
     //
-    if (ulLoadedChid != chunk_id) {
-        auto loaded_chunk_id_string = get_chunk_id_string(ulLoadedChid);
+    if (ulLoadedChid != chunk_id)
+    {
+        auto loaded_chunk_id_string = get_chunk_id_string(
+            ulLoadedChid);
 
-        if (!is_preview_mode_) {
+        if (!is_preview_mode_)
+        {
             ::Com_Error(
                 ERR_DROP,
                 "Loaded chunk ID (%s) does not match requested chunk ID (%s)",
@@ -200,7 +213,8 @@ bool SavedGame::read_chunk(
     //
     uint32_t uiCompressedLength = 0;
 
-    if (bBlockIsCompressed) {
+    if (bBlockIsCompressed)
+    {
         uiLoaded += ::FS_Read(
             &uiCompressedLength,
             static_cast<int>(sizeof(uiCompressedLength)),
@@ -220,7 +234,9 @@ bool SavedGame::read_chunk(
         decompress(
             rle_buffer_,
             io_buffer_);
-    } else {
+    }
+    else
+    {
         io_buffer_.resize(
             uiLoadedLength);
 
@@ -245,8 +261,10 @@ bool SavedGame::read_chunk(
         io_buffer_.data(),
         static_cast<int>(io_buffer_.size()));
 
-    if (uiLoadedCksum != uiCksum) {
-        if (!is_preview_mode_) {
+    if (uiLoadedCksum != uiCksum)
+    {
+        if (!is_preview_mode_)
+        {
             ::Com_Error(
                 ERR_DROP,
                 "Failed checksum check for chunk",
@@ -258,13 +276,14 @@ bool SavedGame::read_chunk(
 
     // Make sure we didn't encounter any read errors...
     if (uiLoaded !=
-            sizeof(ulLoadedChid) +
-            sizeof(uiLoadedLength) +
-            sizeof(uiLoadedCksum) +
-            (bBlockIsCompressed ? sizeof(uiCompressedLength) : 0) +
-            (bBlockIsCompressed ? uiCompressedLength : io_buffer_.size()))
+        sizeof(ulLoadedChid) +
+        sizeof(uiLoadedLength) +
+        sizeof(uiLoadedCksum) +
+        (bBlockIsCompressed ? sizeof(uiCompressedLength) : 0) +
+        (bBlockIsCompressed ? uiCompressedLength : io_buffer_.size()))
     {
-        if (!is_preview_mode_) {
+        if (!is_preview_mode_)
+        {
             ::Com_Error(
                 ERR_DROP,
                 "Error during loading chunk %s",
@@ -287,7 +306,8 @@ bool SavedGame::write_chunk(
         "Attempting write of chunk %s\n",
         chunk_id_string.c_str());
 
-    if (::sv_testsave->integer != 0) {
+    if (::sv_testsave->integer != 0)
+    {
         return true;
     }
 
@@ -304,19 +324,24 @@ bool SavedGame::write_chunk(
 
     int iCompressedLength = 0;
 
-    if (::sv_compress_saved_games->integer == 0) {
+    if (::sv_compress_saved_games->integer == 0)
+    {
         iCompressedLength = -1;
-    } else {
+    }
+    else
+    {
         compress(
             io_buffer_,
             rle_buffer_);
 
-        if (rle_buffer_.size() < io_buffer_.size()) {
+        if (rle_buffer_.size() < io_buffer_.size())
+        {
             iCompressedLength = static_cast<int>(rle_buffer_.size());
         }
     }
 
-    if (iCompressedLength >= 0) {
+    if (iCompressedLength >= 0)
+    {
         auto iLength = -static_cast<int>(io_buffer_.size());
 
         uiSaved += ::FS_Write(
@@ -354,7 +379,9 @@ bool SavedGame::write_chunk(
 
             return false;
         }
-    } else {
+    }
+    else
+    {
         auto iLength = static_cast<uint32_t>(io_buffer_.size());
 
         uiSaved += ::FS_Write(
@@ -395,26 +422,31 @@ void SavedGame::raw_read(
     void* dst_data,
     int dst_size)
 {
-    if (!dst_data) {
+    if (!dst_data)
+    {
         throw_error(
             "Null pointer.");
     }
 
-    if (dst_size < 0) {
+    if (dst_size < 0)
+    {
         throw_error(
             "Negative size.");
     }
 
-    if (!is_readable_) {
+    if (!is_readable_)
+    {
         throw_error(
             "Not readable.");
     }
 
-    if (dst_size == 0) {
+    if (dst_size == 0)
+    {
         return;
     }
 
-    if ((io_buffer_offset_ + dst_size) > io_buffer_.size()) {
+    if ((io_buffer_offset_ + dst_size) > io_buffer_.size())
+    {
         throw_error(
             "Not enough data.");
     }
@@ -431,22 +463,26 @@ void SavedGame::raw_write(
     const void* src_data,
     int src_size)
 {
-    if (!src_data) {
+    if (!src_data)
+    {
         throw_error(
             "Null pointer.");
     }
 
-    if (src_size < 0) {
+    if (src_size < 0)
+    {
         throw_error(
             "Negative size.");
     }
 
-    if (!is_writable_) {
+    if (!is_writable_)
+    {
         throw_error(
             "Not writable.");
     }
 
-    if (src_size == 0) {
+    if (src_size == 0)
+    {
         return;
     }
 
@@ -482,7 +518,8 @@ void SavedGame::rename(
         old_path.c_str(),
         new_path.c_str());
 
-    if (rename_result != 0) {
+    if (rename_result != 0)
+    {
         ::Com_Printf(
             S_COLOR_RED "Error during savegame-rename. Check \"%s\" for write-protect or disk full!\n",
             new_path.c_str());
@@ -530,7 +567,8 @@ void SavedGame::compress(
     int src_count = 0;
     int dst_index = 0;
 
-    while (src_count < src_size) {
+    while (src_count < src_size)
+    {
         auto src_index = src_count;
         auto b = src_buffer[src_index++];
 
@@ -541,7 +579,8 @@ void SavedGame::compress(
             src_index += 1;
         }
 
-        if ((src_index - src_count) == 1) {
+        if ((src_index - src_count) == 1)
+        {
             while (src_index < src_size &&
                 (src_index - src_count) < 127 && (
                     src_buffer[src_index] != src_buffer[src_index - 1] || (
@@ -560,10 +599,13 @@ void SavedGame::compress(
             dst_buffer[dst_index++] =
                 static_cast<uint8_t>(src_count - src_index);
 
-            for (auto i = src_count; i < src_index; ++i) {
+            for (auto i = src_count; i < src_index; ++i)
+            {
                 dst_buffer[dst_index++] = src_buffer[i];
             }
-        } else {
+        }
+        else
+        {
             dst_buffer[dst_index++] =
                 static_cast<uint8_t>(src_index - src_count);
 
@@ -586,16 +628,21 @@ void SavedGame::decompress(
 
     auto remain_size = static_cast<int>(dst_buffer.size());
 
-    while (remain_size > 0) {
+    while (remain_size > 0)
+    {
         auto count = static_cast<int8_t>(src_buffer[src_index++]);
 
-        if (count > 0) {
+        if (count > 0)
+        {
             std::uninitialized_fill_n(
                 &dst_buffer[dst_index],
                 count,
                 src_buffer[src_index++]);
-        } else {
-            if (count < 0) {
+        }
+        else
+        {
+            if (count < 0)
+            {
                 count = -count;
 
                 std::uninitialized_copy_n(
@@ -637,13 +684,13 @@ std::string SavedGame::get_failed_to_open_message(
     auto message_id =
         is_open ?
 #if JK2_MODE
-            "MENUS3_FAILED_TO_OPEN_SAVEGAME" :
-            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
+        "MENUS3_FAILED_TO_OPEN_SAVEGAME" :
+        "MENUS3_FAILED_TO_CREATE_SAVEGAME"
 #else
-            "MENUS_FAILED_TO_OPEN_SAVEGAME" :
-            "MENUS3_FAILED_TO_CREATE_SAVEGAME"
+        "MENUS_FAILED_TO_OPEN_SAVEGAME" :
+        "MENUS3_FAILED_TO_CREATE_SAVEGAME"
 #endif
-    ;
+        ;
 
     std::string result(
         S_COLOR_RED);
@@ -652,7 +699,8 @@ std::string SavedGame::get_failed_to_open_message(
         ::SE_GetString(message_id),
         file_name.c_str());
 
-    if (result.length() > max_length) {
+    if (result.length() > max_length)
+    {
         result.resize(max_length);
     }
 

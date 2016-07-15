@@ -11,7 +11,8 @@
 #include <string>
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 class Exception :

@@ -13,7 +13,8 @@
 #include <vector>
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 class ISavedGame

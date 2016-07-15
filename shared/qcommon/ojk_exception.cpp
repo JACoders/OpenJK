@@ -6,7 +6,8 @@
 #include "ojk_exception.h"
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 Exception::Exception(

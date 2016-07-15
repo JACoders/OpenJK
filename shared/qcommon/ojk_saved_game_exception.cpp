@@ -6,7 +6,8 @@
 #include "ojk_saved_game_exception.h"
 
 
-namespace ojk {
+namespace ojk
+{
 
 
 SavedGameException::SavedGameException(

@@ -261,7 +261,8 @@ void ISavedGame::read(
     using Src = typename std::conditional<
         std::is_same<TSrc, void>::value,
         TDst,
-        TSrc>::type;
+        TSrc
+    >::type;
 
     constexpr auto is_src_pure_numeric =
         std::is_arithmetic<Src>::value &&
@@ -337,7 +338,8 @@ void ISavedGame::read(
         >::type
     >::type;
 
-    for (int i = 0; i < dst_count; ++i) {
+    for (int i = 0; i < dst_count; ++i)
+    {
         read<TSrc>(
             dst_values[i],
             Tag());
@@ -549,7 +551,8 @@ void ISavedGame::write(
         >::type
     >::type;
 
-    for (int i = 0; i < src_count; ++i) {
+    for (int i = 0; i < src_count; ++i)
+    {
         write<TDst>(
             src_values[i],
             Tag());
