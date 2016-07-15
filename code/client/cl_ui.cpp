@@ -32,9 +32,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 intptr_t CL_UISystemCalls( intptr_t *args );
 
 //prototypes
-#ifdef JK2_MODE
+//#ifdef JK2_MODE
 extern qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress );
-#endif
+//#endif
 extern int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName);
 extern qboolean SG_GameAllowedToSaveHere(qboolean inCamera);
 extern void SG_StoreSaveGameComment(const char *sComment);

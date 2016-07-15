@@ -247,9 +247,9 @@ do the apropriate things.
 =============
 */
 void SG_Shutdown();
-#ifdef JK2_MODE
+//#ifdef JK2_MODE
 extern void SCR_UnprecacheScreenshot();
-#endif
+//#endif
 void NORETURN QDECL Com_Error( int code, const char *fmt, ... ) {
 	va_list		argptr;
 	static int	lastErrorTime;

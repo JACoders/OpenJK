@@ -226,7 +226,7 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	/* And we're done! */
 }
 
-#ifdef JK2_MODE
+//#ifdef JK2_MODE
 void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int *width, int *height ) {
 	/* This struct contains the JPEG decompression parameters and pointers to
 	 * working space (which is allocated as needed by the JPEG library).
@@ -376,7 +376,7 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 
 	/* And we're done! */
 }
-#endif
+//#endif
 
 /* Expanded data destination object for stdio output */
 

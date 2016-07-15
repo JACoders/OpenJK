@@ -378,6 +378,8 @@ vmCvar_t	ui_char_color_green;
 vmCvar_t	ui_char_color_blue;
 vmCvar_t	ui_PrecacheModels;
 
+vmCvar_t	ui_saveGameUseScreenshot;
+
 static cvarTable_t cvarTable[] =
 {
 	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", CVAR_ARCHIVE },
@@ -405,6 +407,7 @@ static cvarTable_t cvarTable[] =
 	{ &ui_char_color_blue,		"ui_char_color_blue",	"", 0},
 
 	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", CVAR_ARCHIVE},
+	{ &ui_PrecacheModels, "ui_saveGameUseScreenshot", "0", CVAR_ARCHIVE },
 };
 
 #define FP_UPDATED_NONE -1
@@ -3821,7 +3824,7 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 		case UI_ALLMAPS_SELECTION://saved game thumbnail
 
 			int levelshot;
-			levelshot = ui.R_RegisterShaderNoMip( va( "levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap ) );
+
 #ifdef JK2_MODE
 			if (screenShotBuf[0])
 			{
@@ -3829,14 +3832,47 @@ static void UI_OwnerDraw(float x, float y, float w, float h, float text_x, float
 			}
 			else
 #endif
-			if (levelshot)
+				
+			if (ui_saveGameUseScreenshot.integer)
 			{
-				ui.R_DrawStretchPic( x, y, w, h, 0, 0, 1, 1, levelshot );
+				if (s_savedata[s_savegame.currentLine].currentSaveFileName)
+				{
+					//To avoid error messages when these screenshots are missing
+					fileHandle_t fp;
+					ui.FS_FOpenFile(va("saves/screenshots/%s.jpg", s_savedata[s_savegame.currentLine].currentSaveFileName), &fp, FS_READ);
+					if (fp)
+					{
+						ui.FS_FCloseFile(fp);
+						levelshot = ui.R_RegisterShaderNoMip(va("saves/screenshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileName));
+					}
+				}
+				if (!levelshot) //no screenshot, just use levelshot
+				{
+					levelshot = ui.R_RegisterShaderNoMip(va("levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap));
+				}
+				if (levelshot)
+				{
+					ui.R_DrawStretchPic(x, y, w, h, 0, 0, 1, 1, levelshot);
+				}
+				else
+				{
+					UI_DrawHandlePic(x, y, w, h, uis.menuBackShader);
+				}
 			}
 			else
 			{
-				UI_DrawHandlePic(x, y, w, h, uis.menuBackShader);
+				levelshot = ui.R_RegisterShaderNoMip(va("levelshots/%s", s_savedata[s_savegame.currentLine].currentSaveFileMap));
+
+				if (levelshot)
+				{
+					ui.R_DrawStretchPic(x, y, w, h, 0, 0, 1, 1, levelshot);
+				}
+				else
+				{
+					UI_DrawHandlePic(x, y, w, h, uis.menuBackShader);
+				}
 			}
+			
 
 			ui.R_Font_DrawString(	x,		// int ox
 									y+h,	// int oy

@@ -208,10 +208,10 @@ typedef struct {
 	// for use with save-games mainly...
 	void	(*GetScreenShot)(byte *data, int w, int h);
 
-#ifdef JK2_MODE
+//#ifdef JK2_MODE
 	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
 	void	(*LoadJPGFromBuffer)( byte *inputBuffer, size_t len, byte **pic, int *width, int *height );
-#endif
+//#endif
 
 	// this is so you can get access to raw pixels from a graphics format (TGA/JPG/BMP etc),
 	//	currently only the save game uses it (to make raw shots for the autosaves)
