@@ -160,7 +160,6 @@ float FloatSwap( const float *f );
 
 
 #include "qcommon/q_platform.h"
-#include "qcommon/ojk_sg_wrappers_fwd.h"
 #include "qcommon/ojk_i_saved_game_fwd.h"
 
 
@@ -1223,22 +1222,7 @@ COLLISION DETECTION
 
 // plane_t structure
 // !!! if this is changed, it must be changed in asm code too !!!
-#pragma pack(push, 4)
-class SgCPlane
-{
-public:
-    SgVec3 normal;
-    float dist;
-    uint8_t type;
-    uint8_t signbits;
-    SgArray<uint8_t, 2> pad;
-}; // SgCPlane
-#pragma pack(pop)
-
 typedef struct cplane_s {
-    using SgType = SgCPlane;
-
-
 	vec3_t	normal;
 	float	dist;
 	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
@@ -1247,10 +1231,10 @@ typedef struct cplane_s {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } cplane_t;
 
 /*
@@ -1267,26 +1251,7 @@ Ghoul2 Insert End
 
 #define MAX_G2_COLLISIONS 16
 // a trace is returned when a box is swept through the world
-#pragma pack(push, 4)
-class SgTrace
-{
-public:
-    int32_t allsolid;
-    int32_t startsolid;
-    float fraction;
-    SgVec3 endpos;
-    SgCPlane plane;
-    int32_t surfaceFlags;
-    int32_t contents;
-    int32_t entityNum;
-    SgArray<SgCCollisionRecord, MAX_G2_COLLISIONS> G2CollisionMap;
-}; // SgTrace
-#pragma pack(pop)
-
 typedef struct {
-    using SgType = SgTrace;
-
-
 	qboolean	allsolid;	// if true, plane is not valid
 	qboolean	startsolid;	// if true, the initial point was in a solid area
 	float		fraction;	// time completed, 1.0 = didn't hit anything
@@ -1305,10 +1270,10 @@ Ghoul2 Insert End
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } trace_t;
 
 // trace->entityNum can also be 0 to (MAX_GENTITIES-1)
@@ -1526,26 +1491,8 @@ typedef enum
 } waterHeightLevel_t;
 
 // !!!!!!! loadsave affecting struct !!!!!!!
-#pragma pack(push, 4)
-class SgSaberTrail
-{
-public:
-    int32_t inAction;
-    int32_t duration;
-    int32_t lastTime;
-    SgVec3 base;
-    SgVec3 tip;
-    SgArray<int32_t, 2> haveOldPos;
-    SgArray<SgVec3, 2> oldPos;
-    SgArray<SgVec3, 2> oldNormal;
-}; // SgSaberTrail
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgSaberTrail;
-
-
 	// Actual trail stuff
 	int		inAction;	// controls whether should we even consider starting one
 	int		duration;	// how long each trail seg stays in existence
@@ -1561,38 +1508,17 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } saberTrail_t;
 
 #define MAX_SABER_TRAIL_SEGS 8
 
 // !!!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!
-#pragma pack(push, 4)
-class SgBladeInfo
-{
-public:
-    int32_t active;
-    int32_t color;
-    float radius;
-    float length;
-    float lengthMax;
-    float lengthOld;
-    SgVec3 muzzlePoint;
-    SgVec3 muzzlePointOld;
-    SgVec3 muzzleDir;
-    SgVec3 muzzleDirOld;
-    SgSaberTrail trail;
-}; // SgBladeInfo
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgBladeInfo;
-
-
 	qboolean	active;
 	saber_colors_t	color;
 	float		radius;
@@ -1617,10 +1543,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } bladeInfo_t;
 
 #define MAX_BLADES 8
@@ -1689,94 +1615,8 @@ typedef enum
 #define SFL2_TRANSITION_DAMAGE2		(1<<17)//if set, the blade does damage in start, transition and return anims (like strong style does)
 
 // !!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!!!!!!!!!!!!
-#pragma pack(push, 4)
-class SgSaberInfo
-{
-public:
-    int32_t name;
-    int32_t fullName;
-    int32_t type;
-    int32_t model;
-    int32_t skin;
-    int32_t soundOn;
-    int32_t soundLoop;
-    int32_t soundOff;
-    int32_t numBlades;
-    SgArray<SgBladeInfo, MAX_BLADES> blade;
-    int32_t stylesLearned;
-    int32_t stylesForbidden;
-    int32_t maxChain;
-    int32_t forceRestrictions;
-    int32_t lockBonus;
-    int32_t parryBonus;
-    int32_t breakParryBonus;
-    int32_t breakParryBonus2;
-    int32_t disarmBonus;
-    int32_t disarmBonus2;
-    int32_t singleBladeStyle;
-    int32_t brokenSaber1;
-    int32_t brokenSaber2;
-    int32_t saberFlags;
-    int32_t saberFlags2;
-    int32_t spinSound;
-    SgArray<int32_t, 3> swingSound;
-    SgArray<int32_t, 3> fallSound;
-    float moveSpeedScale;
-    float animSpeedScale;
-    int32_t kataMove;
-    int32_t lungeAtkMove;
-    int32_t jumpAtkUpMove;
-    int32_t jumpAtkFwdMove;
-    int32_t jumpAtkBackMove;
-    int32_t jumpAtkRightMove;
-    int32_t jumpAtkLeftMove;
-    int32_t readyAnim;
-    int32_t drawAnim;
-    int32_t putawayAnim;
-    int32_t tauntAnim;
-    int32_t bowAnim;
-    int32_t meditateAnim;
-    int32_t flourishAnim;
-    int32_t gloatAnim;
-    int32_t bladeStyle2Start;
-    int32_t trailStyle;
-    SgArray<int8_t, MAX_QPATH> g2MarksShader;
-    SgArray<int8_t, MAX_QPATH> g2WeaponMarkShader;
-    SgArray<int32_t, 3> hitSound;
-    SgArray<int32_t, 3> blockSound;
-    SgArray<int32_t, 3> bounceSound;
-    int32_t blockEffect;
-    int32_t hitPersonEffect;
-    int32_t hitOtherEffect;
-    int32_t bladeEffect;
-    float knockbackScale;
-    float damageScale;
-    float splashRadius;
-    int32_t splashDamage;
-    float splashKnockback;
-    int32_t trailStyle2;
-    SgArray<int8_t, MAX_QPATH> g2MarksShader2;
-    SgArray<int8_t, MAX_QPATH> g2WeaponMarkShader2;
-    SgArray<int32_t, 3> hit2Sound;
-    SgArray<int32_t, 3> block2Sound;
-    SgArray<int32_t, 3> bounce2Sound;
-    int32_t blockEffect2;
-    int32_t hitPersonEffect2;
-    int32_t hitOtherEffect2;
-    int32_t bladeEffect2;
-    float knockbackScale2;
-    float damageScale2;
-    float splashRadius2;
-    int32_t splashDamage2;
-    float splashKnockback2;
-}; // SgSaberInfo
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgSaberInfo;
-
-
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -1998,52 +1838,15 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } saberInfo_t;
 
 //NOTE: Below is the *retail* version of the saberInfo_t structure - it is ONLY used for loading retail-version savegames (we load the savegame into this smaller structure, then copy each field into the appropriate field in the new structure - see SG_ConvertRetailSaberinfoToNewSaberinfo()
-#pragma pack(push, 4)
-class SgSaberInfoRetail
-{
-public:
-    int32_t name;
-    int32_t fullName;
-    int32_t type;
-    int32_t model;
-    int32_t skin;
-    int32_t soundOn;
-    int32_t soundLoop;
-    int32_t soundOff;
-    int32_t numBlades;
-    SgArray<SgBladeInfo, MAX_BLADES> blade;
-    int32_t style;
-    int32_t maxChain;
-    int32_t lockable;
-    int32_t throwable;
-    int32_t disarmable;
-    int32_t activeBlocking;
-    int32_t twoHanded;
-    int32_t forceRestrictions;
-    int32_t lockBonus;
-    int32_t parryBonus;
-    int32_t breakParryBonus;
-    int32_t disarmBonus;
-    int32_t singleBladeStyle;
-    int32_t singleBladeThrowable;
-    int32_t brokenSaber1;
-    int32_t brokenSaber2;
-    int32_t returnDamage;
-}; // SgSaberInfoRetail
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgSaberInfoRetail;
-
-
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -2160,10 +1963,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        SgType& src);
+        ojk::ISavedGame* saved_game);
 } saberInfoRetail_t;
 
 #define MAX_SABERS 2	// if this ever changes then update the table "static const save_field_t savefields_gClient[]"!!!!!!!!!!!!
@@ -2179,154 +1982,7 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgPlayerState
-{
-public:
-    int32_t commandTime;
-    int32_t pm_type;
-    int32_t bobCycle;
-    int32_t pm_flags;
-    int32_t pm_time;
-    SgVec3 origin;
-    SgVec3 velocity;
-    int32_t weaponTime;
-    int32_t weaponChargeTime;
-    int32_t rechargeTime;
-    int32_t gravity;
-    int32_t leanofs;
-    int32_t friction;
-    int32_t speed;
-    SgArray<int32_t, 3> delta_angles;
-    int32_t groundEntityNum;
-    int32_t legsAnim;
-    int32_t legsAnimTimer;
-    int32_t torsoAnim;
-    int32_t torsoAnimTimer;
-    int32_t movementDir;
-    int32_t eFlags;
-    int32_t eventSequence;
-    SgArray<int32_t, MAX_PS_EVENTS> events;
-    SgArray<int32_t, MAX_PS_EVENTS> eventParms;
-    int32_t externalEvent;
-    int32_t externalEventParm;
-    int32_t externalEventTime;
-    int32_t clientNum;
-    int32_t weapon;
-    int32_t weaponstate;
-    int32_t batteryCharge;
-    SgVec3 viewangles;
-    float legsYaw;
-    int32_t viewheight;
-    int32_t damageEvent;
-    int32_t damageYaw;
-    int32_t damagePitch;
-    int32_t damageCount;
-    SgArray<int32_t, MAX_STATS> stats;
-    SgArray<int32_t, MAX_PERSISTANT> persistant;
-    SgArray<int32_t, MAX_POWERUPS> powerups;
-    SgArray<int32_t, MAX_AMMO> ammo;
-    SgArray<int32_t, MAX_INVENTORY> inventory;
-    SgArray2d<int8_t, MAX_SECURITY_KEYS, MAX_SECURITY_KEY_MESSSAGE> security_key_message;
-    SgVec3 serverViewOrg;
-    int32_t saberInFlight;
-
-#ifdef JK2_MODE
-    int32_t saberActive;
-    int32_t vehicleModel;
-    int32_t viewEntity;
-    int32_t saberColor;
-    float saberLength;
-    float saberLengthMax;
-    int32_t forcePowersActive;
-#else
-    int32_t viewEntity;
-    int32_t forcePowersActive;
-#endif
-
-    int32_t useTime;
-    int32_t lastShotTime;
-    int32_t ping;
-    int32_t lastOnGround;
-    int32_t lastStationary;
-    int32_t weaponShotCount;
-    SgArray<SgSaberInfo, MAX_SABERS> saber;
-    int32_t dualSabers;
-    int16_t saberMove;
-    int16_t saberMoveNext;
-    int16_t saberBounceMove;
-    int16_t saberBlocking;
-    int16_t saberBlocked;
-    int16_t leanStopDebounceTime;
-
-#ifdef JK2_MODE
-    float saberLengthOld;
-#endif
-
-    int32_t saberEntityNum;
-    float saberEntityDist;
-    int32_t saberThrowTime;
-    int32_t saberEntityState;
-    int32_t saberDamageDebounceTime;
-    int32_t saberHitWallSoundDebounceTime;
-    int32_t saberEventFlags;
-    int32_t saberBlockingTime;
-    int32_t saberAnimLevel;
-    int32_t saberAttackChainCount;
-    int32_t saberLockTime;
-    int32_t saberLockEnemy;
-    int32_t saberStylesKnown;
-
-#ifdef JK2_MODE
-    int32_t saberModel;
-#endif
-
-    int32_t forcePowersKnown;
-    SgArray<int32_t, NUM_FORCE_POWERS> forcePowerDuration;
-    SgArray<int32_t, NUM_FORCE_POWERS> forcePowerDebounce;
-    int32_t forcePower;
-    int32_t forcePowerMax;
-    int32_t forcePowerRegenDebounceTime;
-    int32_t forcePowerRegenRate;
-    int32_t forcePowerRegenAmount;
-    SgArray<int32_t, NUM_FORCE_POWERS> forcePowerLevel;
-    float forceJumpZStart;
-    float forceJumpCharge;
-    int32_t forceGripEntityNum;
-    SgVec3 forceGripOrg;
-    int32_t forceDrainEntityNum;
-    SgVec3 forceDrainOrg;
-    int32_t forceHealCount;
-    int32_t forceAllowDeactivateTime;
-    int32_t forceRageDrainTime;
-    int32_t forceRageRecoveryTime;
-    int32_t forceDrainEntNum;
-    float forceDrainTime;
-    int32_t forcePowersForced;
-    int32_t pullAttackEntNum;
-    int32_t pullAttackTime;
-    int32_t lastKickedEntNum;
-    int32_t taunting;
-    float jumpZStart;
-    SgVec3 moveDir;
-    float waterheight;
-    int32_t waterHeightLevel;
-    int32_t ikStatus;
-    int32_t heldClient;
-    int32_t heldByClient;
-    int32_t heldByBolt;
-    int32_t heldByBone;
-    int32_t vehTurnaroundIndex;
-    int32_t vehTurnaroundTime;
-    int32_t brokenLimbs;
-    int32_t electrifyTime;
-}; // SgPlayerState
-#pragma pack(pop)
-
 typedef struct playerState_s {
-    using SgType = SgPlayerState;
-
-
 	int			commandTime;		// cmd->serverTime of last executed command
 	int			pm_type;
 	int			bobCycle;			// for view bobbing and footstep generation
@@ -2630,10 +2286,10 @@ typedef struct playerState_s {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } playerState_t;
 
 //====================================================================
@@ -2681,25 +2337,7 @@ typedef enum
 
 // usercmd_t is sent to the server each client frame
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgUserCmd
-{
-public:
-    int32_t serverTime;
-    int32_t buttons;
-    uint8_t weapon;
-    SgArray<int32_t, 3> angles;
-    uint8_t generic_cmd;
-    int8_t forwardmove;
-    int8_t rightmove;
-    int8_t upmove;
-}; // SgUserCmd
-#pragma pack(pop)
-
 typedef struct usercmd_s {
-    using SgType = SgUserCmd;
-
-
 	int		serverTime;
 	int		buttons;
 	byte	weapon;
@@ -2709,10 +2347,10 @@ typedef struct usercmd_s {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } usercmd_t;
 
 //===================================================================
@@ -2730,22 +2368,7 @@ typedef enum {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 	TR_GRAVITY
 } trType_t;
 
-#pragma pack(push, 4)
-class SgTrajectory
-{
-public:
-    int32_t trType;
-    int32_t trTime;
-    int32_t trDuration;
-    SgVec3 trBase;
-    SgVec3 trDelta;
-}; // SgTrajectory
-#pragma pack(pop)
-
 typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
-    using SgType = SgTrajectory;
-
-
 	trType_t	trType;
 	int		trTime;
 	int		trDuration;			// if non 0, trTime + trDuration = stop time
@@ -2754,10 +2377,10 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } trajectory_t;
 
 
@@ -2768,62 +2391,7 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 // The messages are delta compressed, so it doesn't really matter if
 // the structure size is fairly large
 
-#pragma pack(push, 4)
-class SgEntityState
-{
-public:
-    int32_t number;
-    int32_t eType;
-    int32_t eFlags;
-    SgTrajectory pos;
-    SgTrajectory apos;
-    int32_t time;
-    int32_t time2;
-    SgVec3 origin;
-    SgVec3 origin2;
-    SgVec3 angles;
-    SgVec3 angles2;
-    int32_t otherEntityNum;
-    int32_t otherEntityNum2;
-    int32_t groundEntityNum;
-    int32_t constantLight;
-    int32_t loopSound;
-    int32_t modelindex;
-    int32_t modelindex2;
-    int32_t modelindex3;
-    int32_t clientNum;
-    int32_t frame;
-    int32_t solid;
-    int32_t event;
-    int32_t eventParm;
-    int32_t powerups;
-    int32_t weapon;
-    int32_t legsAnim;
-    int32_t legsAnimTimer;
-    int32_t torsoAnim;
-    int32_t torsoAnimTimer;
-    int32_t scale;
-    int32_t saberInFlight;
-    int32_t saberActive;
-
-#ifdef JK2_MODE
-    int32_t vehicleModel;
-#endif
-
-    SgVec3 vehicleAngles;
-    int32_t vehicleArmor;
-    int32_t m_iVehicleNum;
-    SgVec3 modelScale;
-    int32_t radius;
-    int32_t boltInfo;
-    int32_t isPortalEnt;
-}; // SgEntityState
-#pragma pack(pop)
-
 typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!!!!
-    using SgType = SgEntityState;
-
-
 	int		number;			// entity index
 	int		eType;			// entityType_t
 	int		eFlags;
@@ -2897,10 +2465,10 @@ Ghoul2 Insert End
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } entityState_t;
 
 

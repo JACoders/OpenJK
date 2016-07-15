@@ -41,7 +41,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/safe/string.h"
 #include <cmath>
-#include "qcommon/ojk_sg_wrappers.h"
 #include "qcommon/ojk_i_saved_game.h"
 
 CFxScheduler	theFxScheduler;
@@ -1928,23 +1927,23 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 
 
 void SLoopedEffect::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(mId, dst.mId);
-    ::sg_export(mBoltInfo, dst.mBoltInfo);
-    ::sg_export(mNextTime, dst.mNextTime);
-    ::sg_export(mLoopStopTime, dst.mLoopStopTime);
-    ::sg_export(mPortalEffect, dst.mPortalEffect);
-    ::sg_export(mIsRelative, dst.mIsRelative);
+    saved_game->write<int32_t>(mId);
+    saved_game->write<int32_t>(mBoltInfo);
+    saved_game->write<int32_t>(mNextTime);
+    saved_game->write<int32_t>(mLoopStopTime);
+    saved_game->write<int8_t>(mPortalEffect);
+    saved_game->write<int8_t>(mIsRelative);
 }
 
 void SLoopedEffect::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.mId, mId);
-    ::sg_import(src.mBoltInfo, mBoltInfo);
-    ::sg_import(src.mNextTime, mNextTime);
-    ::sg_import(src.mLoopStopTime, mLoopStopTime);
-    ::sg_import(src.mPortalEffect, mPortalEffect);
-    ::sg_import(src.mIsRelative, mIsRelative);
+    saved_game->read<int32_t>(mId);
+    saved_game->read<int32_t>(mBoltInfo);
+    saved_game->read<int32_t>(mNextTime);
+    saved_game->read<int32_t>(mLoopStopTime);
+    saved_game->read<int8_t>(mPortalEffect);
+    saved_game->read<int8_t>(mIsRelative);
 }

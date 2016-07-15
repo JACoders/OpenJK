@@ -174,9 +174,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/timing.h"
 		"${SPDir}/qcommon/MiniHeap.h"
 
-		"${SharedDir}/qcommon/ojk_sg_wrappers.h"
-		"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
-		"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
 		"${SharedDir}/qcommon/ojk_exception.h"
 		"${SharedDir}/qcommon/ojk_exception.cpp"
 		"${SharedDir}/qcommon/ojk_i_saved_game.h"

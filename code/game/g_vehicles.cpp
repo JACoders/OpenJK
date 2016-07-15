@@ -22,8 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 #include "g_local.h"
-#include "qcommon/ojk_sg_wrappers.h"
-#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 #ifdef _JK2 //SP does not have this preprocessor for game like MP does
 #ifndef _JK2MP
@@ -3212,153 +3211,153 @@ void G_SetSharedVehicleFunctions( vehicleInfo_t *pVehInfo )
 
 
 void Muzzle::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(m_vMuzzlePos, dst.m_vMuzzlePos);
-    ::sg_export(m_vMuzzleDir, dst.m_vMuzzleDir);
-    ::sg_export(m_iMuzzleWait, dst.m_iMuzzleWait);
-    ::sg_export(m_bFired, dst.m_bFired);
+    saved_game->write<float>(m_vMuzzlePos);
+    saved_game->write<float>(m_vMuzzleDir);
+    saved_game->write<int32_t>(m_iMuzzleWait);
+    saved_game->write<int8_t>(m_bFired);
 }
 
 void Muzzle::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.m_vMuzzlePos, m_vMuzzlePos);
-    ::sg_import(src.m_vMuzzleDir, m_vMuzzleDir);
-    ::sg_import(src.m_iMuzzleWait, m_iMuzzleWait);
-    ::sg_import(src.m_bFired, m_bFired);
+    saved_game->read<float>(m_vMuzzlePos);
+    saved_game->read<float>(m_vMuzzleDir);
+    saved_game->read<int32_t>(m_iMuzzleWait);
+    saved_game->read<int8_t>(m_bFired);
 }
 
 
 void vehWeaponStatus_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(linked, dst.linked);
-    ::sg_export(ammo, dst.ammo);
-    ::sg_export(lastAmmoInc, dst.lastAmmoInc);
-    ::sg_export(nextMuzzle, dst.nextMuzzle);
+    saved_game->write<int32_t>(linked);
+    saved_game->write<int32_t>(ammo);
+    saved_game->write<int32_t>(lastAmmoInc);
+    saved_game->write<int32_t>(nextMuzzle);
 }
 
 void vehWeaponStatus_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.linked, linked);
-    ::sg_import(src.ammo, ammo);
-    ::sg_import(src.lastAmmoInc, lastAmmoInc);
-    ::sg_import(src.nextMuzzle, nextMuzzle);
+    saved_game->read<int32_t>(linked);
+    saved_game->read<int32_t>(ammo);
+    saved_game->read<int32_t>(lastAmmoInc);
+    saved_game->read<int32_t>(nextMuzzle);
 }
 
 
 void vehTurretStatus_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(ammo, dst.ammo);
-    ::sg_export(lastAmmoInc, dst.lastAmmoInc);
-    ::sg_export(nextMuzzle, dst.nextMuzzle);
-    ::sg_export(enemyEntNum, dst.enemyEntNum);
-    ::sg_export(enemyHoldTime, dst.enemyHoldTime);
+    saved_game->write<int32_t>(ammo);
+    saved_game->write<int32_t>(lastAmmoInc);
+    saved_game->write<int32_t>(nextMuzzle);
+    saved_game->write<int32_t>(enemyEntNum);
+    saved_game->write<int32_t>(enemyHoldTime);
 }
 
 void vehTurretStatus_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.ammo, ammo);
-    ::sg_import(src.lastAmmoInc, lastAmmoInc);
-    ::sg_import(src.nextMuzzle, nextMuzzle);
-    ::sg_import(src.enemyEntNum, enemyEntNum);
-    ::sg_import(src.enemyHoldTime, enemyHoldTime);
+    saved_game->read<int32_t>(ammo);
+    saved_game->read<int32_t>(lastAmmoInc);
+    saved_game->read<int32_t>(nextMuzzle);
+    saved_game->read<int32_t>(enemyEntNum);
+    saved_game->read<int32_t>(enemyHoldTime);
 }
 
 
 void Vehicle_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(m_pPilot, dst.m_pPilot);
-    ::sg_export(m_iPilotTime, dst.m_iPilotTime);
-    ::sg_export(m_bHasHadPilot, dst.m_bHasHadPilot);
-    ::sg_export(m_pDroidUnit, dst.m_pDroidUnit);
-    ::sg_export(m_pParentEntity, dst.m_pParentEntity);
-    ::sg_export(m_iBoarding, dst.m_iBoarding);
-    ::sg_export(m_bWasBoarding, dst.m_bWasBoarding);
-    ::sg_export(m_vBoardingVelocity, dst.m_vBoardingVelocity);
-    ::sg_export(m_fTimeModifier, dst.m_fTimeModifier);
-    ::sg_export(m_iLeftWingBone, dst.m_iLeftWingBone);
-    ::sg_export(m_iRightWingBone, dst.m_iRightWingBone);
-    ::sg_export(m_iExhaustTag, dst.m_iExhaustTag);
-    ::sg_export(m_iMuzzleTag, dst.m_iMuzzleTag);
-    ::sg_export(m_iDroidUnitTag, dst.m_iDroidUnitTag);
-    ::sg_export(m_iGunnerViewTag, dst.m_iGunnerViewTag);
-    ::sg_export(m_Muzzles, dst.m_Muzzles);
-    ::sg_export(m_ucmd, dst.m_ucmd);
-    ::sg_export(m_EjectDir, dst.m_EjectDir);
-    ::sg_export(m_ulFlags, dst.m_ulFlags);
-    ::sg_export(m_vOrientation, dst.m_vOrientation);
-    ::sg_export(m_fStrafeTime, dst.m_fStrafeTime);
-    ::sg_export(m_vPrevOrientation, dst.m_vPrevOrientation);
-    ::sg_export(m_vAngularVelocity, dst.m_vAngularVelocity);
-    ::sg_export(m_vFullAngleVelocity, dst.m_vFullAngleVelocity);
-    ::sg_export(m_iArmor, dst.m_iArmor);
-    ::sg_export(m_iShields, dst.m_iShields);
-    ::sg_export(m_iLastFXTime, dst.m_iLastFXTime);
-    ::sg_export(m_iDieTime, dst.m_iDieTime);
-    ::sg_export(m_pVehicleInfo, dst.m_pVehicleInfo);
-    ::sg_export(m_LandTrace, dst.m_LandTrace);
-    ::sg_export(m_iRemovedSurfaces, dst.m_iRemovedSurfaces);
-    ::sg_export(m_iTurboTime, dst.m_iTurboTime);
-    ::sg_export(m_iDropTime, dst.m_iDropTime);
-    ::sg_export(m_iSoundDebounceTimer, dst.m_iSoundDebounceTimer);
-    ::sg_export(lastShieldInc, dst.lastShieldInc);
-    ::sg_export(linkWeaponToggleHeld, dst.linkWeaponToggleHeld);
-    ::sg_export(weaponStatus, dst.weaponStatus);
-    ::sg_export(turretStatus, dst.turretStatus);
-    ::sg_export(m_pOldPilot, dst.m_pOldPilot);
-    ::sg_export(m_safeJumpMountTime, dst.m_safeJumpMountTime);
-    ::sg_export(m_safeJumpMountRightDot, dst.m_safeJumpMountRightDot);
+    saved_game->write<int32_t>(m_pPilot);
+    saved_game->write<int32_t>(m_iPilotTime);
+    saved_game->write<int32_t>(m_bHasHadPilot);
+    saved_game->write<int32_t>(m_pDroidUnit);
+    saved_game->write<int32_t>(m_pParentEntity);
+    saved_game->write<int32_t>(m_iBoarding);
+    saved_game->write<int8_t>(m_bWasBoarding);
+    saved_game->write<float>(m_vBoardingVelocity);
+    saved_game->write<float>(m_fTimeModifier);
+    saved_game->write<int32_t>(m_iLeftWingBone);
+    saved_game->write<int32_t>(m_iRightWingBone);
+    saved_game->write<int32_t>(m_iExhaustTag);
+    saved_game->write<int32_t>(m_iMuzzleTag);
+    saved_game->write<int32_t>(m_iDroidUnitTag);
+    saved_game->write<int32_t>(m_iGunnerViewTag);
+    saved_game->write<>(m_Muzzles);
+    saved_game->write<>(m_ucmd);
+    saved_game->write<int32_t>(m_EjectDir);
+    saved_game->write<uint32_t>(m_ulFlags);
+    saved_game->write<float>(m_vOrientation);
+    saved_game->write<int32_t>(m_fStrafeTime);
+    saved_game->write<float>(m_vPrevOrientation);
+    saved_game->write<float>(m_vAngularVelocity);
+    saved_game->write<float>(m_vFullAngleVelocity);
+    saved_game->write<int32_t>(m_iArmor);
+    saved_game->write<int32_t>(m_iShields);
+    saved_game->write<int32_t>(m_iLastFXTime);
+    saved_game->write<int32_t>(m_iDieTime);
+    saved_game->write<int32_t>(m_pVehicleInfo);
+    saved_game->write<>(m_LandTrace);
+    saved_game->write<int32_t>(m_iRemovedSurfaces);
+    saved_game->write<int32_t>(m_iTurboTime);
+    saved_game->write<int32_t>(m_iDropTime);
+    saved_game->write<int32_t>(m_iSoundDebounceTimer);
+    saved_game->write<int32_t>(lastShieldInc);
+    saved_game->write<int32_t>(linkWeaponToggleHeld);
+    saved_game->write<>(weaponStatus);
+    saved_game->write<>(turretStatus);
+    saved_game->write<int32_t>(m_pOldPilot);
+    saved_game->write<int32_t>(m_safeJumpMountTime);
+    saved_game->write<float>(m_safeJumpMountRightDot);
 }
 
 void Vehicle_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.m_pPilot, m_pPilot);
-    ::sg_import(src.m_iPilotTime, m_iPilotTime);
-    ::sg_import(src.m_bHasHadPilot, m_bHasHadPilot);
-    ::sg_import(src.m_pDroidUnit, m_pDroidUnit);
-    ::sg_import(src.m_pParentEntity, m_pParentEntity);
-    ::sg_import(src.m_iBoarding, m_iBoarding);
-    ::sg_import(src.m_bWasBoarding, m_bWasBoarding);
-    ::sg_import(src.m_vBoardingVelocity, m_vBoardingVelocity);
-    ::sg_import(src.m_fTimeModifier, m_fTimeModifier);
-    ::sg_import(src.m_iLeftWingBone, m_iLeftWingBone);
-    ::sg_import(src.m_iRightWingBone, m_iRightWingBone);
-    ::sg_import(src.m_iExhaustTag, m_iExhaustTag);
-    ::sg_import(src.m_iMuzzleTag, m_iMuzzleTag);
-    ::sg_import(src.m_iDroidUnitTag, m_iDroidUnitTag);
-    ::sg_import(src.m_iGunnerViewTag, m_iGunnerViewTag);
-    ::sg_import(src.m_Muzzles, m_Muzzles);
-    ::sg_import(src.m_ucmd, m_ucmd);
-    ::sg_import(src.m_EjectDir, m_EjectDir);
-    ::sg_import(src.m_ulFlags, m_ulFlags);
-    ::sg_import(src.m_vOrientation, m_vOrientation);
-    ::sg_import(src.m_fStrafeTime, m_fStrafeTime);
-    ::sg_import(src.m_vPrevOrientation, m_vPrevOrientation);
-    ::sg_import(src.m_vAngularVelocity, m_vAngularVelocity);
-    ::sg_import(src.m_vFullAngleVelocity, m_vFullAngleVelocity);
-    ::sg_import(src.m_iArmor, m_iArmor);
-    ::sg_import(src.m_iShields, m_iShields);
-    ::sg_import(src.m_iLastFXTime, m_iLastFXTime);
-    ::sg_import(src.m_iDieTime, m_iDieTime);
-    ::sg_import(src.m_pVehicleInfo, m_pVehicleInfo);
-    ::sg_import(src.m_LandTrace, m_LandTrace);
-    ::sg_import(src.m_iRemovedSurfaces, m_iRemovedSurfaces);
-    ::sg_import(src.m_iTurboTime, m_iTurboTime);
-    ::sg_import(src.m_iDropTime, m_iDropTime);
-    ::sg_import(src.m_iSoundDebounceTimer, m_iSoundDebounceTimer);
-    ::sg_import(src.lastShieldInc, lastShieldInc);
-    ::sg_import(src.linkWeaponToggleHeld, linkWeaponToggleHeld);
-    ::sg_import(src.weaponStatus, weaponStatus);
-    ::sg_import(src.turretStatus, turretStatus);
-    ::sg_import(src.m_pOldPilot, m_pOldPilot);
-    ::sg_import(src.m_safeJumpMountTime, m_safeJumpMountTime);
-    ::sg_import(src.m_safeJumpMountRightDot, m_safeJumpMountRightDot);
+    saved_game->read<int32_t>(m_pPilot);
+    saved_game->read<int32_t>(m_iPilotTime);
+    saved_game->read<int32_t>(m_bHasHadPilot);
+    saved_game->read<int32_t>(m_pDroidUnit);
+    saved_game->read<int32_t>(m_pParentEntity);
+    saved_game->read<int32_t>(m_iBoarding);
+    saved_game->read<int8_t>(m_bWasBoarding);
+    saved_game->read<float>(m_vBoardingVelocity);
+    saved_game->read<float>(m_fTimeModifier);
+    saved_game->read<int32_t>(m_iLeftWingBone);
+    saved_game->read<int32_t>(m_iRightWingBone);
+    saved_game->read<int32_t>(m_iExhaustTag);
+    saved_game->read<int32_t>(m_iMuzzleTag);
+    saved_game->read<int32_t>(m_iDroidUnitTag);
+    saved_game->read<int32_t>(m_iGunnerViewTag);
+    saved_game->read<>(m_Muzzles);
+    saved_game->read<>(m_ucmd);
+    saved_game->read<int32_t>(m_EjectDir);
+    saved_game->read<uint32_t>(m_ulFlags);
+    saved_game->read<float>(m_vOrientation);
+    saved_game->read<int32_t>(m_fStrafeTime);
+    saved_game->read<float>(m_vPrevOrientation);
+    saved_game->read<float>(m_vAngularVelocity);
+    saved_game->read<float>(m_vFullAngleVelocity);
+    saved_game->read<int32_t>(m_iArmor);
+    saved_game->read<int32_t>(m_iShields);
+    saved_game->read<int32_t>(m_iLastFXTime);
+    saved_game->read<int32_t>(m_iDieTime);
+    saved_game->read<int32_t>(m_pVehicleInfo);
+    saved_game->read<>(m_LandTrace);
+    saved_game->read<int32_t>(m_iRemovedSurfaces);
+    saved_game->read<int32_t>(m_iTurboTime);
+    saved_game->read<int32_t>(m_iDropTime);
+    saved_game->read<int32_t>(m_iSoundDebounceTimer);
+    saved_game->read<int32_t>(lastShieldInc);
+    saved_game->read<int32_t>(linkWeaponToggleHeld);
+    saved_game->read<>(weaponStatus);
+    saved_game->read<>(turretStatus);
+    saved_game->read<int32_t>(m_pOldPilot);
+    saved_game->read<int32_t>(m_safeJumpMountTime);
+    saved_game->read<float>(m_safeJumpMountRightDot);
 }
 

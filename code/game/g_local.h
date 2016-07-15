@@ -88,24 +88,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //animations
-#pragma pack(push, 4)
-class SgAnimFileSet
-{
-public:
-    SgArray<int8_t, MAX_QPATH> filename;
-    SgArray<SgAnimation, MAX_ANIMATIONS> animations;
-    SgArray<SgAnimEvent, MAX_ANIM_EVENTS> torsoAnimEvents;
-    SgArray<SgAnimEvent, MAX_ANIM_EVENTS> legsAnimEvents;
-    uint8_t torsoAnimEventCount;
-    uint8_t legsAnimEventCount;
-}; // SgAnimFileSet
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgAnimFileSet;
-
-
 	char			filename[MAX_QPATH];
 	animation_t		animations[MAX_ANIMATIONS];
 	animevent_t		torsoAnimEvents[MAX_ANIM_EVENTS];
@@ -115,10 +99,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } animFileSet_t;
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
@@ -168,28 +152,8 @@ enum alertEventLevel_e
 };
 
 // !!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
-#pragma pack(push, 4)
-class SgAlertEvent
-{
-public:
-    SgVec3 position;
-    float radius;
-    int32_t level;
-    int32_t type;
-    int32_t owner;
-    float light;
-    float addLight;
-    int32_t ID;
-    int32_t timestamp;
-    int32_t onGround;
-}; // SgAlertEvent
-#pragma pack(pop)
-
 typedef struct alertEvent_s
 {
-    using SgType = SgAlertEvent;
-
-
 	vec3_t				position;	//Where the event is located
 	float				radius;		//Consideration radius
 	alertEventLevel_e	level;		//Priority level of the event
@@ -203,10 +167,10 @@ typedef struct alertEvent_s
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } alertEvent_t;
 
 //
@@ -231,35 +195,8 @@ typedef struct
 #define	WF_PUFFING		0x00000004	// puffing something
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgLevelLocals
-{
-public:
-    int32_t clients;
-    int32_t maxclients;
-    int32_t framenum;
-    int32_t time;
-    int32_t previousTime;
-    int32_t globalTime;
-    SgArray<int8_t, MAX_QPATH> mapname;
-    int32_t locationLinked;
-    int32_t locationHead;
-    SgArray<SgAlertEvent, MAX_ALERT_EVENTS> alertEvents;
-    int32_t numAlertEvents;
-    int32_t curAlertID;
-    SgArray<SgAiGroupInfo, MAX_FRAME_GROUPS> groups;
-    SgArray<SgAnimFileSet, MAX_ANIM_FILES> knownAnimFileSets;
-    int32_t numKnownAnimFileSets;
-    int32_t worldFlags;
-    int32_t dmState;
-}; // SgLevelLocals
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgLevelLocals;
-
-
 	gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
@@ -320,10 +257,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } level_locals_t;
 
 extern	level_locals_t	level;

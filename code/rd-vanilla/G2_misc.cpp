@@ -50,7 +50,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #ifdef _G2_GORE
 #include "../ghoul2/ghoul2_gore.h"
-#include "qcommon/ojk_sg_wrappers.h"
 #include "qcommon/ojk_i_saved_game.h"
 
 #define GORE_TAG_UPPER (256)
@@ -1762,7 +1761,7 @@ void *G2_FindSurface(const model_s *mod, int index, int lod)
 	return (void *)current;
 }
 
-#if 0
+#if 1
 #define SURFACE_SAVE_BLOCK_SIZE	sizeof(surfaceInfo_t)
 #define BOLT_SAVE_BLOCK_SIZE sizeof(boltInfo_t)
 #define BONE_SAVE_BLOCK_SIZE sizeof(boneInfo_t)
@@ -1772,6 +1771,7 @@ const auto BOLT_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoltInfo));
 const auto BONE_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoneInfo));
 #endif
 
+#if 0
 void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 {
 	char *pGhoul2Data = NULL;
@@ -1891,7 +1891,78 @@ void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
 
 	R_Free(pGhoul2Data);
 }
+#else
+void G2_SaveGhoul2Models(
+    CGhoul2Info_v& ghoul2)
+{
+    // is there anything to save?
+    if (!ghoul2.IsValid() || ghoul2.size() == 0) {
+        auto empty_value = 0;
 
+        ::ri.saved_game->write_chunk<int32_t>(
+            INT_ID('G', 'H', 'L', '2'),
+            empty_value); //write out a zero buffer
+
+        return;
+    }
+
+    ::ri.saved_game->reset_buffer();
+
+    // save out how many ghoul2 models we have
+    auto model_count = ghoul2.size();
+
+    ::ri.saved_game->write<int32_t>(
+        model_count);
+
+    for (decltype(model_count) i = 0; i < model_count; ++i) {
+        // first save out the ghoul2 details themselves
+        ghoul2[i].sg_export(
+            ::ri.saved_game);
+
+        // save out how many surfaces we have
+        auto surface_count = ghoul2[i].mSlist.size();
+
+        ::ri.saved_game->write<int32_t>(
+            surface_count);
+
+        // now save the all the surface list info
+        for (decltype(surface_count) x = 0; x < surface_count; ++x) {
+            ghoul2[i].mSlist[x].sg_export(
+                ::ri.saved_game);
+        }
+
+        // save out how many bones we have
+        auto bone_count = ghoul2[i].mBlist.size();
+
+        ::ri.saved_game->write<int32_t>(
+            bone_count);
+
+        // now save the all the bone list info
+        for (decltype(bone_count) x = 0; x < bone_count; ++x) {
+            ghoul2[i].mBlist[x].sg_export(
+                ::ri.saved_game);
+        }
+
+        // save out how many bolts we have
+        auto bolt_count = ghoul2[i].mBltlist.size();
+
+        ::ri.saved_game->write<int32_t>(
+            bolt_count);
+
+        // lastly save the all the bolt list info
+        for (decltype(bolt_count) x = 0; x < bolt_count; ++x)
+        {
+            ghoul2[i].mBltlist[x].sg_export(
+                ::ri.saved_game);
+        }
+    }
+
+    ::ri.saved_game->write_chunk(
+        INT_ID('G', 'H', 'L', '2'));
+}
+#endif
+
+#if 0
 void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 {
 	// first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
@@ -1972,3 +2043,90 @@ void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
 		}
 	}
 }
+#else
+// FIXME Remove 'buffer' parameter
+void G2_LoadGhoul2Model(
+    CGhoul2Info_v& ghoul2,
+    char* buffer)
+{
+    static_cast<void>(buffer);
+
+    // first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
+    auto model_count = 0;
+
+    ::ri.saved_game->read<int32_t>(
+        model_count);
+
+    ghoul2.resize(
+        model_count);
+
+    // did we actually resize to a value?
+    if (model_count == 0) {
+        // no, ok, well, done then.
+        return;
+    }
+
+    // now we have enough instances, lets go through each one and load up the relevant details
+    for (decltype(model_count) i = 0; i < model_count; ++i) {
+        ghoul2[i].mSkelFrameNum = 0;
+        ghoul2[i].mModelindex = -1;
+        ghoul2[i].mFileName[0] = 0;
+        ghoul2[i].mValid = false;
+
+        // load the ghoul2 info from the buffer
+        ghoul2[i].sg_import(
+            ::ri.saved_game);
+
+        if (ghoul2[i].mModelindex != -1 && ghoul2[i].mFileName[0]) {
+            ghoul2[i].mModelindex = i;
+
+            ::G2_SetupModelPointers(
+                &ghoul2[i]);
+        }
+
+        // give us enough surfaces to load up the data
+        auto surface_count = 0;
+
+        ::ri.saved_game->read<int32_t>(
+            surface_count);
+
+        ghoul2[i].mSlist.resize(surface_count);
+
+        // now load all the surfaces
+        for (decltype(surface_count) x = 0; x < surface_count; ++x) {
+            ghoul2[i].mSlist[x].sg_import(
+                ::ri.saved_game);
+        }
+
+        // give us enough bones to load up the data
+        auto bone_count = 0;
+
+        ::ri.saved_game->read<int32_t>(
+            bone_count);
+
+        ghoul2[i].mBlist.resize(
+            bone_count);
+
+        // now load all the bones
+        for (decltype(bone_count) x = 0; x < bone_count; ++x) {
+            ghoul2[i].mBlist[x].sg_import(
+                ::ri.saved_game);
+        }
+
+        // give us enough bolts to load up the data
+        auto bolt_count = 0;
+
+        ::ri.saved_game->read<int32_t>(
+            bolt_count);
+
+        ghoul2[i].mBltlist.resize(
+            bolt_count);
+
+        // now load all the bolts
+        for (decltype(bolt_count) x = 0; x < bolt_count; ++x) {
+            ghoul2[i].mBltlist[x].sg_import(
+                ::ri.saved_game);
+        }
+    }
+}
+#endif

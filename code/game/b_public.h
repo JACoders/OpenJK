@@ -132,36 +132,8 @@ typedef enum
 } sexType_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgGNpcStats
-{
-public:
-    int32_t aggression;
-    int32_t aim;
-    float earshot;
-    int32_t evasion;
-    int32_t hfov;
-    int32_t intelligence;
-    int32_t move;
-    int32_t reactions;
-    float shootDistance;
-    int32_t vfov;
-    float vigilance;
-    float visrange;
-    int32_t runSpeed;
-    int32_t walkSpeed;
-    float yawSpeed;
-    int32_t health;
-    int32_t acceleration;
-    int32_t sex;
-}; // SgGNpcStats
-#pragma pack(pop)
-
 typedef struct gNPCstats_e
 {//Stats, loaded in, and can be set by scripts
-    using SgType = SgGNpcStats;
-
-
 	//AI
 	int		aggression;			//			"
 	int		aim;				//			"
@@ -186,10 +158,10 @@ typedef struct gNPCstats_e
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } gNPCstats_t;
 
 
@@ -198,134 +170,8 @@ typedef struct gNPCstats_e
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgGNpc
-{
-public:
-    int32_t timeOfDeath;
-    int32_t touchedByPlayer;
-    int32_t enemyLastVisibility;
-    int32_t aimTime;
-    float desiredYaw;
-    float desiredPitch;
-    float lockedDesiredYaw;
-    float lockedDesiredPitch;
-    int32_t aimingBeam;
-    SgVec3 enemyLastSeenLocation;
-    int32_t enemyLastSeenTime;
-    SgVec3 enemyLastHeardLocation;
-    int32_t enemyLastHeardTime;
-    int32_t lastAlertID;
-    int32_t eFlags;
-    int32_t aiFlags;
-    int32_t currentAmmo;
-    int32_t shotTime;
-    int32_t burstCount;
-    int32_t burstMin;
-
-#ifdef BASE_SAVE_COMPAT
-    int32_t burstMean;
-#endif
-
-    int32_t burstMax;
-    int32_t burstSpacing;
-    int32_t attackHold;
-    int32_t attackHoldTime;
-    SgVec3 shootAngles;
-    int32_t rank;
-    int32_t behaviorState;
-    int32_t defaultBehavior;
-    int32_t tempBehavior;
-    int32_t ignorePain;
-    int32_t duckDebounceTime;
-    int32_t walkDebounceTime;
-    int32_t enemyCheckDebounceTime;
-    int32_t investigateDebounceTime;
-    int32_t investigateCount;
-    SgVec3 investigateGoal;
-    int32_t investigateSoundDebounceTime;
-    int32_t greetingDebounceTime;
-    int32_t eventOwner;
-    int32_t coverTarg;
-    int32_t jumpState;
-    float followDist;
-    int32_t tempGoal;
-    int32_t goalEntity;
-    int32_t lastGoalEntity;
-    int32_t eventualGoal;
-    int32_t captureGoal;
-    int32_t defendEnt;
-    int32_t greetEnt;
-    int32_t goalTime;
-    int32_t straightToGoal;
-    float distToGoal;
-    int32_t navTime;
-    int32_t blockingEntNum;
-    int32_t blockedSpeechDebounceTime;
-    int32_t homeWp;
-    int32_t avoidSide;
-    int32_t leaderAvoidSide;
-    int32_t lastAvoidSteerSide;
-    int32_t lastAvoidSteerSideDebouncer;
-    int32_t group;
-    int32_t troop;
-    SgVec3 lastPathAngles;
-    SgGNpcStats stats;
-    int32_t aimErrorDebounceTime;
-    float lastAimErrorYaw;
-    float lastAimErrorPitch;
-    SgVec3 aimOfs;
-    int32_t currentAim;
-    int32_t currentAggression;
-    int32_t scriptFlags;
-    int32_t desiredSpeed;
-    int32_t currentSpeed;
-    int8_t last_forwardmove;
-    int8_t last_rightmove;
-    SgVec3 lastClearOrigin;
-    int32_t shoveCount;
-    int32_t blockedDebounceTime;
-    int32_t blockedEntity;
-    SgVec3 blockedTargetPosition;
-    int32_t blockedTargetEntity;
-    SgVec3 jumpDest;
-    int32_t jumpTarget;
-    float jumpMaxXYDist;
-    float jumpMazZDist;
-    int32_t jumpSide;
-    int32_t jumpTime;
-    int32_t jumpBackupTime;
-    int32_t jumpNextCheckTime;
-    int32_t combatPoint;
-    int32_t lastFailedCombatPoint;
-    int32_t movementSpeech;
-    float movementSpeechChance;
-    int32_t nextBStateThink;
-    SgUserCmd last_ucmd;
-    int32_t combatMove;
-    int32_t goalRadius;
-    int32_t pauseTime;
-    int32_t standTime;
-    int32_t localState;
-    int32_t squadState;
-    int32_t confusionTime;
-    int32_t charmedTime;
-    int32_t controlledTime;
-    int32_t surrenderTime;
-    int32_t kneelTime;
-    SgArray<SgVec3, ENEMY_POS_LAG_STEPS> enemyLaggedPos;
-    int32_t watchTarget;
-    int32_t ffireCount;
-    int32_t ffireDebounce;
-    int32_t ffireFadeDebounce;
-}; // SgGNpc
-#pragma pack(pop)
-
 typedef struct
 {
-    using SgType = SgGNpc;
-
-
 	//FIXME: Put in playerInfo or something
 	int			timeOfDeath;			//FIXME do we really need both of these
 	gentity_t	*touchedByPlayer;
@@ -496,10 +342,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } gNPC_t;
 
 

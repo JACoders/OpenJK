@@ -454,22 +454,7 @@ typedef enum {
 
 } entity_event_t;
 
-#pragma pack(push, 1)
-class SgAnimation
-{
-public:
-    uint16_t firstFrame;
-    uint16_t numFrames;
-    int16_t frameLerp;
-    int8_t loopFrames;
-    uint8_t glaIndex;
-}; // SgAnimation
-#pragma pack(pop)
-
 typedef struct animation_s {
-    using SgType = SgAnimation;
-
-
 	unsigned short		firstFrame;
 	unsigned short		numFrames;
 	short			frameLerp;			// msec between frames
@@ -479,10 +464,10 @@ typedef struct animation_s {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } animation_t;
 
 #define MAX_ANIM_FILES	16
@@ -536,24 +521,8 @@ typedef enum
 	AEV_NUM_AEV
 } animEventType_t;
 
-#pragma pack(push, 4)
-class SgAnimEvent
-{
-public:
-    int32_t eventType;
-    int16_t modelOnly;
-    uint16_t glaIndex;
-    uint16_t keyFrame;
-    SgArray<int16_t, AED_ARRAY_SIZE> eventData;
-    int32_t stringData;
-}; // SgAnimEvent
-#pragma pack(pop)
-
 typedef struct animevent_s
 {
-    using SgType = SgAnimEvent;
-
-
 	animEventType_t	eventType;
 	signed short	modelOnly;			//event is specific to a modelname to skeleton
 	unsigned short	glaIndex;
@@ -563,10 +532,10 @@ typedef struct animevent_s
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } animevent_t;
 
 typedef enum

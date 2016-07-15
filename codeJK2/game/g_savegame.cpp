@@ -33,7 +33,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_camera.h"
 #include "g_icarus.h"
 #include "../../code/qcommon/sstring.h"
-#include "qcommon/ojk_sg_wrappers.h"
 #include "qcommon/ojk_i_saved_game.h"
 
 extern void OBJ_LoadTacticalInfo(void);
@@ -447,50 +446,43 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 }
 
 template<typename T>
-static void EnumerateFields(const field_t *pFields, T* src_instance, unsigned int ulChid, size_t iLen)
+static void EnumerateFields(
+    const field_t* pFields,
+    T* src_instance,
+    unsigned int ulChid,
+    size_t iLen)
 {
-	strList.clear();
+    strList.clear();
 
     auto pbData = reinterpret_cast<byte*>(src_instance);
 
-	// enumerate all the fields...
-	//
-	if (pFields)
-	{
-		for (const field_t *pField = pFields; pField->psName; pField++)
-		{
-			assert(pField->iOffset < iLen);
-			EnumerateField(pField, pbData);
-		}
-	}
+    // enumerate all the fields...
+    //
+    if (pFields) {
+        for (auto pField = pFields; pField->psName; ++pField) {
+            assert(pField->iOffset < iLen);
+            ::EnumerateField(pField, pbData);
+        }
+    }
 
-	// save out raw data...
-	//
-    using SgType = typename T::SgType;
+    // save out raw data...
+    //
+    ::gi.saved_game->reset_buffer();
 
-    constexpr auto dst_size = static_cast<int>(sizeof(SgType));
-
-    auto& dst_buffer = ::sg_get_buffer(
-        dst_size);
-
-    auto dst_instance = reinterpret_cast<SgType*>(dst_buffer.data());
-
-    ::sg_export(*src_instance, *dst_instance);
+    src_instance->sg_export(
+        ::gi.saved_game);
 
     ::gi.saved_game->write_chunk(
-        ulChid,
-        dst_buffer.data(),
-        dst_size);
+        ulChid);
 
-	// save out any associated strings..
-	//
-	for (const auto& it : strList)
-	{
+    // save out any associated strings..
+    //
+    for (const auto& it : strList) {
         ::gi.saved_game->write_chunk(
-            INT_ID('S','T','R','G'),
+            INT_ID('S', 'T', 'R', 'G'),
             it.c_str(),
             static_cast<int>(it.length() + 1));
-	}
+    }
 }
 
 static void EvaluateField(const field_t *pField, byte *pbBase, byte *pbOriginalRefData/* may be NULL*/)
@@ -593,6 +585,7 @@ static const char *SG_GetChidText(unsigned int chid)
 	return chidtext;
 }
 
+#if 0
 template<typename T>
 static void EvaluateFields(const field_t *pFields, T* pbData, T* pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
 {
@@ -638,6 +631,32 @@ static void EvaluateFields(const field_t *pFields, T* pbData, T* pbOriginalRefDa
 		}
 	}
 }
+#else
+template<typename T>
+static void EvaluateFields(
+    const field_t* pFields,
+    T* pbData,
+    T* pbOriginalRefData,
+    unsigned int ulChid,
+    int iSize,
+    qboolean bOkToSizeMisMatch)
+{
+    ::gi.saved_game->read_chunk(
+        ulChid);
+
+    pbData->sg_import(
+        ::gi.saved_game);
+
+    if (pFields) {
+        for (auto pField = pFields; pField->psName; ++pField) {
+            ::EvaluateField(
+                pField,
+                reinterpret_cast<byte*>(pbData),
+                reinterpret_cast<byte*>(pbOriginalRefData));
+        }
+    }
+}
+#endif
 
 /*
 ==============
@@ -913,15 +932,18 @@ static void ReadGEntities(qboolean qbAutosave)
 		// the scary ghoul2 stuff...  (fingers crossed)
 		//
 		{
-			char *pGhoul2Data = NULL;
-
             ::gi.saved_game->read_chunk(
                 INT_ID('G','H','L','2'));
 
+// FIXME Remove
+#if 0
             auto buffer = ::gi.saved_game->get_buffer();
-            pGhoul2Data = reinterpret_cast<char*>(buffer.data());
+            auto pGhoul2Data = reinterpret_cast<char*>(buffer.data());
 
-			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
+            gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
+#endif
+
+            gi.G2API_LoadGhoul2Models(pEnt->ghoul2, nullptr);
 		}
 
 //		gi.unlinkentity (pEntOriginal);

@@ -1,246 +1,280 @@
 #include "qcommon/q_shared.h"
 #include "../game/ghoul2_shared.h"
-#include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 
 void surfaceInfo_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(offFlags, dst.offFlags);
-    ::sg_export(surface, dst.surface);
-    ::sg_export(genBarycentricJ, dst.genBarycentricJ);
-    ::sg_export(genBarycentricI, dst.genBarycentricI);
-    ::sg_export(genPolySurfaceIndex, dst.genPolySurfaceIndex);
-    ::sg_export(genLod, dst.genLod);
+    saved_game->write<int32_t>(offFlags);
+    saved_game->write<int32_t>(surface);
+    saved_game->write<float>(genBarycentricJ);
+    saved_game->write<float>(genBarycentricI);
+    saved_game->write<int32_t>(genPolySurfaceIndex);
+    saved_game->write<int32_t>(genLod);
 }
 
 void surfaceInfo_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.offFlags, offFlags);
-    ::sg_import(src.surface, surface);
-    ::sg_import(src.genBarycentricJ, genBarycentricJ);
-    ::sg_import(src.genBarycentricI, genBarycentricI);
-    ::sg_import(src.genPolySurfaceIndex, genPolySurfaceIndex);
-    ::sg_import(src.genLod, genLod);
+    saved_game->read<int32_t>(offFlags);
+    saved_game->read<int32_t>(surface);
+    saved_game->read<float>(genBarycentricJ);
+    saved_game->read<float>(genBarycentricI);
+    saved_game->read<int32_t>(genPolySurfaceIndex);
+    saved_game->read<int32_t>(genLod);
 }
 
 
 void boneInfo_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(boneNumber, dst.boneNumber);
-    ::sg_export(matrix, dst.matrix);
-    ::sg_export(flags, dst.flags);
-    ::sg_export(startFrame, dst.startFrame);
-    ::sg_export(endFrame, dst.endFrame);
-    ::sg_export(startTime, dst.startTime);
-    ::sg_export(pauseTime, dst.pauseTime);
-    ::sg_export(animSpeed, dst.animSpeed);
-    ::sg_export(blendFrame, dst.blendFrame);
-    ::sg_export(blendLerpFrame, dst.blendLerpFrame);
-    ::sg_export(blendTime, dst.blendTime);
-    ::sg_export(blendStart, dst.blendStart);
-    ::sg_export(boneBlendTime, dst.boneBlendTime);
-    ::sg_export(boneBlendStart, dst.boneBlendStart);
-    ::sg_export(newMatrix, dst.newMatrix);
-    ::sg_export(lastTimeUpdated, dst.lastTimeUpdated);
-    ::sg_export(lastContents, dst.lastContents);
-    ::sg_export(lastPosition, dst.lastPosition);
-    ::sg_export(velocityEffector, dst.velocityEffector);
-    ::sg_export(lastAngles, dst.lastAngles);
-    ::sg_export(minAngles, dst.minAngles);
-    ::sg_export(maxAngles, dst.maxAngles);
-    ::sg_export(currentAngles, dst.currentAngles);
-    ::sg_export(anglesOffset, dst.anglesOffset);
-    ::sg_export(positionOffset, dst.positionOffset);
-    ::sg_export(radius, dst.radius);
-    ::sg_export(weight, dst.weight);
-    ::sg_export(ragIndex, dst.ragIndex);
-    ::sg_export(velocityRoot, dst.velocityRoot);
-    ::sg_export(ragStartTime, dst.ragStartTime);
-    ::sg_export(firstTime, dst.firstTime);
-    ::sg_export(firstCollisionTime, dst.firstCollisionTime);
-    ::sg_export(restTime, dst.restTime);
-    ::sg_export(RagFlags, dst.RagFlags);
-    ::sg_export(DependentRagIndexMask, dst.DependentRagIndexMask);
-    ::sg_export(originalTrueBoneMatrix, dst.originalTrueBoneMatrix);
-    ::sg_export(parentTrueBoneMatrix, dst.parentTrueBoneMatrix);
-    ::sg_export(parentOriginalTrueBoneMatrix, dst.parentOriginalTrueBoneMatrix);
-    ::sg_export(originalOrigin, dst.originalOrigin);
-    ::sg_export(originalAngles, dst.originalAngles);
-    ::sg_export(lastShotDir, dst.lastShotDir);
-    ::sg_export(basepose, dst.basepose);
-    ::sg_export(baseposeInv, dst.baseposeInv);
-    ::sg_export(baseposeParent, dst.baseposeParent);
-    ::sg_export(baseposeInvParent, dst.baseposeInvParent);
-    ::sg_export(parentRawBoneIndex, dst.parentRawBoneIndex);
-    ::sg_export(ragOverrideMatrix, dst.ragOverrideMatrix);
-    ::sg_export(extraMatrix, dst.extraMatrix);
-    ::sg_export(extraVec1, dst.extraVec1);
-    ::sg_export(extraFloat1, dst.extraFloat1);
-    ::sg_export(extraInt1, dst.extraInt1);
-    ::sg_export(ikPosition, dst.ikPosition);
-    ::sg_export(ikSpeed, dst.ikSpeed);
-    ::sg_export(epVelocity, dst.epVelocity);
-    ::sg_export(epGravFactor, dst.epGravFactor);
-    ::sg_export(solidCount, dst.solidCount);
-    ::sg_export(physicsSettled, dst.physicsSettled);
-    ::sg_export(snapped, dst.snapped);
-    ::sg_export(parentBoneIndex, dst.parentBoneIndex);
-    ::sg_export(offsetRotation, dst.offsetRotation);
-    ::sg_export(overGradSpeed, dst.overGradSpeed);
-    ::sg_export(overGoalSpot, dst.overGoalSpot);
-    ::sg_export(hasOverGoal, dst.hasOverGoal);
-    ::sg_export(animFrameMatrix, dst.animFrameMatrix);
-    ::sg_export(hasAnimFrameMatrix, dst.hasAnimFrameMatrix);
-    ::sg_export(airTime, dst.airTime);
+    saved_game->write<int32_t>(boneNumber);
+    saved_game->write<>(matrix);
+    saved_game->write<int32_t>(flags);
+    saved_game->write<int32_t>(startFrame);
+    saved_game->write<int32_t>(endFrame);
+    saved_game->write<int32_t>(startTime);
+    saved_game->write<int32_t>(pauseTime);
+    saved_game->write<float>(animSpeed);
+    saved_game->write<float>(blendFrame);
+    saved_game->write<int32_t>(blendLerpFrame);
+    saved_game->write<int32_t>(blendTime);
+    saved_game->write<int32_t>(blendStart);
+    saved_game->write<int32_t>(boneBlendTime);
+    saved_game->write<int32_t>(boneBlendStart);
+    saved_game->write(newMatrix);
+    saved_game->write<int32_t>(lastTimeUpdated);
+    saved_game->write<int32_t>(lastContents);
+    saved_game->write<float>(lastPosition);
+    saved_game->write<float>(velocityEffector);
+    saved_game->write<float>(lastAngles);
+    saved_game->write<float>(minAngles);
+    saved_game->write<float>(maxAngles);
+    saved_game->write<float>(currentAngles);
+    saved_game->write<float>(anglesOffset);
+    saved_game->write<float>(positionOffset);
+    saved_game->write<float>(radius);
+    saved_game->write<float>(weight);
+    saved_game->write<int32_t>(ragIndex);
+    saved_game->write<float>(velocityRoot);
+    saved_game->write<int32_t>(ragStartTime);
+    saved_game->write<int32_t>(firstTime);
+    saved_game->write<int32_t>(firstCollisionTime);
+    saved_game->write<int32_t>(restTime);
+    saved_game->write<int32_t>(RagFlags);
+    saved_game->write<int32_t>(DependentRagIndexMask);
+    saved_game->write<>(originalTrueBoneMatrix);
+    saved_game->write<>(parentTrueBoneMatrix);
+    saved_game->write<>(parentOriginalTrueBoneMatrix);
+    saved_game->write<float>(originalOrigin);
+    saved_game->write<float>(originalAngles);
+    saved_game->write<float>(lastShotDir);
+    saved_game->write<int32_t>(basepose);
+    saved_game->write<int32_t>(baseposeInv);
+    saved_game->write<int32_t>(baseposeParent);
+    saved_game->write<int32_t>(baseposeInvParent);
+    saved_game->write<int32_t>(parentRawBoneIndex);
+    saved_game->write<>(ragOverrideMatrix);
+    saved_game->write<>(extraMatrix);
+    saved_game->write<float>(extraVec1);
+    saved_game->write<float>(extraFloat1);
+    saved_game->write<int32_t>(extraInt1);
+    saved_game->write<float>(ikPosition);
+    saved_game->write<float>(ikSpeed);
+    saved_game->write<float>(epVelocity);
+    saved_game->write<float>(epGravFactor);
+    saved_game->write<int32_t>(solidCount);
+    saved_game->write<int8_t>(physicsSettled);
+    saved_game->write<int8_t>(snapped);
+    saved_game->write<int32_t>(parentBoneIndex);
+    saved_game->write<float>(offsetRotation);
+    saved_game->write<float>(overGradSpeed);
+    saved_game->write<float>(overGoalSpot);
+    saved_game->write<int8_t>(hasOverGoal);
+    saved_game->write<>(animFrameMatrix);
+    saved_game->write<int32_t>(hasAnimFrameMatrix);
+    saved_game->write<int32_t>(airTime);
 }
 
 void boneInfo_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.boneNumber, boneNumber);
-    ::sg_import(src.matrix, matrix);
-    ::sg_import(src.flags, flags);
-    ::sg_import(src.startFrame, startFrame);
-    ::sg_import(src.endFrame, endFrame);
-    ::sg_import(src.startTime, startTime);
-    ::sg_import(src.pauseTime, pauseTime);
-    ::sg_import(src.animSpeed, animSpeed);
-    ::sg_import(src.blendFrame, blendFrame);
-    ::sg_import(src.blendLerpFrame, blendLerpFrame);
-    ::sg_import(src.blendTime, blendTime);
-    ::sg_import(src.blendStart, blendStart);
-    ::sg_import(src.boneBlendTime, boneBlendTime);
-    ::sg_import(src.boneBlendStart, boneBlendStart);
-    ::sg_import(src.newMatrix, newMatrix);
-    ::sg_import(src.lastTimeUpdated, lastTimeUpdated);
-    ::sg_import(src.lastContents, lastContents);
-    ::sg_import(src.lastPosition, lastPosition);
-    ::sg_import(src.velocityEffector, velocityEffector);
-    ::sg_import(src.lastAngles, lastAngles);
-    ::sg_import(src.minAngles, minAngles);
-    ::sg_import(src.maxAngles, maxAngles);
-    ::sg_import(src.currentAngles, currentAngles);
-    ::sg_import(src.anglesOffset, anglesOffset);
-    ::sg_import(src.positionOffset, positionOffset);
-    ::sg_import(src.radius, radius);
-    ::sg_import(src.weight, weight);
-    ::sg_import(src.ragIndex, ragIndex);
-    ::sg_import(src.velocityRoot, velocityRoot);
-    ::sg_import(src.ragStartTime, ragStartTime);
-    ::sg_import(src.firstTime, firstTime);
-    ::sg_import(src.firstCollisionTime, firstCollisionTime);
-    ::sg_import(src.restTime, restTime);
-    ::sg_import(src.RagFlags, RagFlags);
-    ::sg_import(src.DependentRagIndexMask, DependentRagIndexMask);
-    ::sg_import(src.originalTrueBoneMatrix, originalTrueBoneMatrix);
-    ::sg_import(src.parentTrueBoneMatrix, parentTrueBoneMatrix);
-    ::sg_import(src.parentOriginalTrueBoneMatrix, parentOriginalTrueBoneMatrix);
-    ::sg_import(src.originalOrigin, originalOrigin);
-    ::sg_import(src.originalAngles, originalAngles);
-    ::sg_import(src.lastShotDir, lastShotDir);
-    ::sg_import(src.basepose, basepose);
-    ::sg_import(src.baseposeInv, baseposeInv);
-    ::sg_import(src.baseposeParent, baseposeParent);
-    ::sg_import(src.baseposeInvParent, baseposeInvParent);
-    ::sg_import(src.parentRawBoneIndex, parentRawBoneIndex);
-    ::sg_import(src.ragOverrideMatrix, ragOverrideMatrix);
-    ::sg_import(src.extraMatrix, extraMatrix);
-    ::sg_import(src.extraVec1, extraVec1);
-    ::sg_import(src.extraFloat1, extraFloat1);
-    ::sg_import(src.extraInt1, extraInt1);
-    ::sg_import(src.ikPosition, ikPosition);
-    ::sg_import(src.ikSpeed, ikSpeed);
-    ::sg_import(src.epVelocity, epVelocity);
-    ::sg_import(src.epGravFactor, epGravFactor);
-    ::sg_import(src.solidCount, solidCount);
-    ::sg_import(src.physicsSettled, physicsSettled);
-    ::sg_import(src.snapped, snapped);
-    ::sg_import(src.parentBoneIndex, parentBoneIndex);
-    ::sg_import(src.offsetRotation, offsetRotation);
-    ::sg_import(src.overGradSpeed, overGradSpeed);
-    ::sg_import(src.overGoalSpot, overGoalSpot);
-    ::sg_import(src.hasOverGoal, hasOverGoal);
-    ::sg_import(src.animFrameMatrix, animFrameMatrix);
-    ::sg_import(src.hasAnimFrameMatrix, hasAnimFrameMatrix);
-    ::sg_import(src.airTime, airTime);
+    saved_game->read<int32_t>(boneNumber);
+    saved_game->read<>(matrix);
+    saved_game->read<int32_t>(flags);
+    saved_game->read<int32_t>(startFrame);
+    saved_game->read<int32_t>(endFrame);
+    saved_game->read<int32_t>(startTime);
+    saved_game->read<int32_t>(pauseTime);
+    saved_game->read<float>(animSpeed);
+    saved_game->read<float>(blendFrame);
+    saved_game->read<int32_t>(blendLerpFrame);
+    saved_game->read<int32_t>(blendTime);
+    saved_game->read<int32_t>(blendStart);
+    saved_game->read<int32_t>(boneBlendTime);
+    saved_game->read<int32_t>(boneBlendStart);
+    saved_game->read(newMatrix);
+    saved_game->read<int32_t>(lastTimeUpdated);
+    saved_game->read<int32_t>(lastContents);
+    saved_game->read<float>(lastPosition);
+    saved_game->read<float>(velocityEffector);
+    saved_game->read<float>(lastAngles);
+    saved_game->read<float>(minAngles);
+    saved_game->read<float>(maxAngles);
+    saved_game->read<float>(currentAngles);
+    saved_game->read<float>(anglesOffset);
+    saved_game->read<float>(positionOffset);
+    saved_game->read<float>(radius);
+    saved_game->read<float>(weight);
+    saved_game->read<int32_t>(ragIndex);
+    saved_game->read<float>(velocityRoot);
+    saved_game->read<int32_t>(ragStartTime);
+    saved_game->read<int32_t>(firstTime);
+    saved_game->read<int32_t>(firstCollisionTime);
+    saved_game->read<int32_t>(restTime);
+    saved_game->read<int32_t>(RagFlags);
+    saved_game->read<int32_t>(DependentRagIndexMask);
+    saved_game->read<>(originalTrueBoneMatrix);
+    saved_game->read<>(parentTrueBoneMatrix);
+    saved_game->read<>(parentOriginalTrueBoneMatrix);
+    saved_game->read<float>(originalOrigin);
+    saved_game->read<float>(originalAngles);
+    saved_game->read<float>(lastShotDir);
+    saved_game->read<int32_t>(basepose);
+    saved_game->read<int32_t>(baseposeInv);
+    saved_game->read<int32_t>(baseposeParent);
+    saved_game->read<int32_t>(baseposeInvParent);
+    saved_game->read<int32_t>(parentRawBoneIndex);
+    saved_game->read<>(ragOverrideMatrix);
+    saved_game->read<>(extraMatrix);
+    saved_game->read<float>(extraVec1);
+    saved_game->read<float>(extraFloat1);
+    saved_game->read<int32_t>(extraInt1);
+    saved_game->read<float>(ikPosition);
+    saved_game->read<float>(ikSpeed);
+    saved_game->read<float>(epVelocity);
+    saved_game->read<float>(epGravFactor);
+    saved_game->read<int32_t>(solidCount);
+    saved_game->read<int8_t>(physicsSettled);
+    saved_game->read<int8_t>(snapped);
+    saved_game->read<int32_t>(parentBoneIndex);
+    saved_game->read<float>(offsetRotation);
+    saved_game->read<float>(overGradSpeed);
+    saved_game->read<float>(overGoalSpot);
+    saved_game->read<int8_t>(hasOverGoal);
+    saved_game->read<>(animFrameMatrix);
+    saved_game->read<int32_t>(hasAnimFrameMatrix);
+    saved_game->read<int32_t>(airTime);
 }
 
 
 void boltInfo_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(boneNumber, dst.boneNumber);
-    ::sg_export(surfaceNumber, dst.surfaceNumber);
-    ::sg_export(surfaceType, dst.surfaceType);
-    ::sg_export(boltUsed, dst.boltUsed);
+    saved_game->write<int32_t>(boneNumber);
+    saved_game->write<int32_t>(surfaceNumber);
+    saved_game->write<int32_t>(surfaceType);
+    saved_game->write<int32_t>(boltUsed);
 }
 
 void boltInfo_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.boneNumber, boneNumber);
-    ::sg_import(src.surfaceNumber, surfaceNumber);
-    ::sg_import(src.surfaceType, surfaceType);
-    ::sg_import(src.boltUsed, boltUsed);
+    saved_game->read<int32_t>(boneNumber);
+    saved_game->read<int32_t>(surfaceNumber);
+    saved_game->read<int32_t>(surfaceType);
+    saved_game->read<int32_t>(boltUsed);
 }
 
 
 void CGhoul2Info::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(mModelindex, dst.mModelindex);
-    ::sg_export(animModelIndexOffset, dst.animModelIndexOffset);
-    ::sg_export(mCustomShader, dst.mCustomShader);
-    ::sg_export(mCustomSkin, dst.mCustomSkin);
-    ::sg_export(mModelBoltLink, dst.mModelBoltLink);
-    ::sg_export(mSurfaceRoot, dst.mSurfaceRoot);
-    ::sg_export(mLodBias, dst.mLodBias);
-    ::sg_export(mNewOrigin, dst.mNewOrigin);
+    saved_game->write<int32_t>(mModelindex);
+    saved_game->write<int32_t>(animModelIndexOffset);
+    saved_game->write<int32_t>(mCustomShader);
+    saved_game->write<int32_t>(mCustomSkin);
+    saved_game->write<int32_t>(mModelBoltLink);
+    saved_game->write<int32_t>(mSurfaceRoot);
+    saved_game->write<int32_t>(mLodBias);
+    saved_game->write<int32_t>(mNewOrigin);
 #ifdef _G2_GORE
-    ::sg_export(mGoreSetTag, dst.mGoreSetTag);
+    saved_game->write<int32_t>(mGoreSetTag);
 #endif
-    ::sg_export(mModel, dst.mModel);
-    ::sg_export(mFileName, dst.mFileName);
-    ::sg_export(mAnimFrameDefault, dst.mAnimFrameDefault);
-    ::sg_export(mSkelFrameNum, dst.mSkelFrameNum);
-    ::sg_export(mMeshFrameNum, dst.mMeshFrameNum);
-    ::sg_export(mFlags, dst.mFlags);
+    saved_game->write<int32_t>(mModel);
+    saved_game->write<int8_t>(mFileName);
+    saved_game->write<int32_t>(mAnimFrameDefault);
+    saved_game->write<int32_t>(mSkelFrameNum);
+    saved_game->write<int32_t>(mMeshFrameNum);
+    saved_game->write<int32_t>(mFlags);
 }
 
 void CGhoul2Info::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.mModelindex, mModelindex);
-    ::sg_import(src.animModelIndexOffset, animModelIndexOffset);
-    ::sg_import(src.mCustomShader, mCustomShader);
-    ::sg_import(src.mCustomSkin, mCustomSkin);
-    ::sg_import(src.mModelBoltLink, mModelBoltLink);
-    ::sg_import(src.mSurfaceRoot, mSurfaceRoot);
-    ::sg_import(src.mLodBias, mLodBias);
-    ::sg_import(src.mNewOrigin, mNewOrigin);
+    saved_game->read<int32_t>(mModelindex);
+    saved_game->read<int32_t>(animModelIndexOffset);
+    saved_game->read<int32_t>(mCustomShader);
+    saved_game->read<int32_t>(mCustomSkin);
+    saved_game->read<int32_t>(mModelBoltLink);
+    saved_game->read<int32_t>(mSurfaceRoot);
+    saved_game->read<int32_t>(mLodBias);
+    saved_game->read<int32_t>(mNewOrigin);
 #ifdef _G2_GORE
-    ::sg_import(src.mGoreSetTag, mGoreSetTag);
+    saved_game->read<int32_t>(mGoreSetTag);
 #endif
-    ::sg_import(src.mModel, mModel);
-    ::sg_import(src.mFileName, mFileName);
-    ::sg_import(src.mAnimFrameDefault, mAnimFrameDefault);
-    ::sg_import(src.mSkelFrameNum, mSkelFrameNum);
-    ::sg_import(src.mMeshFrameNum, mMeshFrameNum);
-    ::sg_import(src.mFlags, mFlags);
+    saved_game->read<int32_t>(mModel);
+    saved_game->read<int8_t>(mFileName);
+    saved_game->read<int32_t>(mAnimFrameDefault);
+    saved_game->read<int32_t>(mSkelFrameNum);
+    saved_game->read<int32_t>(mMeshFrameNum);
+    saved_game->read<int32_t>(mFlags);
 }
 
 
 void CGhoul2Info_v::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(mItem, dst.mItem);
+    saved_game->write<int32_t>(mItem);
 }
 
 void CGhoul2Info_v::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.mItem, mItem);
+    saved_game->read<int32_t>(mItem);
+}
+
+void CCollisionRecord::sg_export(
+    ojk::ISavedGame* saved_game) const
+{
+    saved_game->write<float>(mDistance);
+    saved_game->write<int32_t>(mEntityNum);
+    saved_game->write<int32_t>(mModelIndex);
+    saved_game->write<int32_t>(mPolyIndex);
+    saved_game->write<int32_t>(mSurfaceIndex);
+    saved_game->write<float>(mCollisionPosition);
+    saved_game->write<float>(mCollisionNormal);
+    saved_game->write<int32_t>(mFlags);
+    saved_game->write<int32_t>(mMaterial);
+    saved_game->write<int32_t>(mLocation);
+    saved_game->write<float>(mBarycentricI);
+    saved_game->write<float>(mBarycentricJ);
+}
+
+void CCollisionRecord::sg_import(
+    ojk::ISavedGame* saved_game)
+{
+    saved_game->read<float>(mDistance);
+    saved_game->read<int32_t>(mEntityNum);
+    saved_game->read<int32_t>(mModelIndex);
+    saved_game->read<int32_t>(mPolyIndex);
+    saved_game->read<int32_t>(mSurfaceIndex);
+    saved_game->read<float>(mCollisionPosition);
+    saved_game->read<float>(mCollisionNormal);
+    saved_game->read<int32_t>(mFlags);
+    saved_game->read<int32_t>(mMaterial);
+    saved_game->read<int32_t>(mLocation);
+    saved_game->read<float>(mBarycentricI);
+    saved_game->read<float>(mBarycentricJ);
 }

@@ -1,42 +1,42 @@
 #include "bg_public.h"
-#include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 
 void animation_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(firstFrame, dst.firstFrame);
-    ::sg_export(numFrames, dst.numFrames);
-    ::sg_export(loopFrames, dst.loopFrames);
-    ::sg_export(frameLerp, dst.frameLerp);
-    ::sg_export(initialLerp, dst.initialLerp);
+    saved_game->write<int32_t>(firstFrame);
+    saved_game->write<int32_t>(numFrames);
+    saved_game->write<int32_t>(loopFrames);
+    saved_game->write<int32_t>(frameLerp);
+    saved_game->write<int32_t>(initialLerp);
 }
 
 void animation_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.firstFrame, firstFrame);
-    ::sg_import(src.numFrames, numFrames);
-    ::sg_import(src.loopFrames, loopFrames);
-    ::sg_import(src.frameLerp, frameLerp);
-    ::sg_import(src.initialLerp, initialLerp);
+    saved_game->read<int32_t>(firstFrame);
+    saved_game->read<int32_t>(numFrames);
+    saved_game->read<int32_t>(loopFrames);
+    saved_game->read<int32_t>(frameLerp);
+    saved_game->read<int32_t>(initialLerp);
 }
 
 
 void animsounds_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(keyFrame, dst.keyFrame);
-    ::sg_export(soundIndex, dst.soundIndex);
-    ::sg_export(numRandomAnimSounds, dst.numRandomAnimSounds);
-    ::sg_export(probability, dst.probability);
+    saved_game->write<int32_t>(keyFrame);
+    saved_game->write<int32_t>(soundIndex);
+    saved_game->write<int32_t>(numRandomAnimSounds);
+    saved_game->write<int32_t>(probability);
 }
 
 void animsounds_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.keyFrame, keyFrame);
-    ::sg_import(src.soundIndex, soundIndex);
-    ::sg_import(src.numRandomAnimSounds, numRandomAnimSounds);
-    ::sg_import(src.probability, probability);
+    saved_game->read<int32_t>(keyFrame);
+    saved_game->read<int32_t>(soundIndex);
+    saved_game->read<int32_t>(numRandomAnimSounds);
+    saved_game->read<int32_t>(probability);
 }

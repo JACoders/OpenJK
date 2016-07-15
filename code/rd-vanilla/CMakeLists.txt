@@ -78,9 +78,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
-		"${SharedDir}/qcommon/ojk_sg_wrappers.h"
-		"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
-		"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
 		"${SharedDir}/qcommon/ojk_i_saved_game.h"
 		"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
 		${SharedCommonFiles}

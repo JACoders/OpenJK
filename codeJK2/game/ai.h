@@ -105,22 +105,8 @@ void NPC_BSHowler_Default( void );
 //Group AI
 #define	MAX_FRAME_GROUPS	32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgAiGroupMember
-{
-public:
-    int32_t number;
-    int32_t waypoint;
-    int32_t pathCostToEnemy;
-    int32_t closestBuddy;
-}; // SgAiGroupMember
-#pragma pack(pop)
-
 typedef struct AIGroupMember_s
 {
-    using SgType = SgAiGroupMember;
-
-
 	int	number;
 	int waypoint;
 	int pathCostToEnemy;
@@ -128,43 +114,16 @@ typedef struct AIGroupMember_s
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } AIGroupMember_t;
 
 #define MAX_GROUP_MEMBERS 32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgAiGroupInfo
-{
-public:
-    int32_t numGroup;
-    int32_t processed;
-    int32_t team;
-    int32_t enemy;
-    int32_t enemyWP;
-    int32_t speechDebounceTime;
-    int32_t lastClearShotTime;
-    int32_t lastSeenEnemyTime;
-    int32_t morale;
-    int32_t moraleAdjust;
-    int32_t moraleDebounce;
-    int32_t memberValidateTime;
-    int32_t activeMemberNum;
-    int32_t commander;
-    SgVec3 enemyLastSeenPos;
-    SgArray<int32_t, NUM_SQUAD_STATES> numState;
-    SgArray<SgAiGroupMember, MAX_GROUP_MEMBERS> member;
-}; // SgAiGroupInfo
-#pragma pack(pop)
-
 typedef struct AIGroupInfo_s
 {
-    using SgType = SgAiGroupInfo;
-
-
 	int			numGroup;
 	qboolean	processed;
 	team_t		team;
@@ -185,10 +144,10 @@ typedef struct AIGroupInfo_s
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } AIGroupInfo_t;
 
 int	AI_GetGroupSize( vec3_t origin, int radius, team_t playerTeam, gentity_t *avoid = NULL );

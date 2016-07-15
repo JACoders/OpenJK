@@ -401,24 +401,8 @@ struct SEffectTemplate
 
 #define MAX_LOOPED_FX 32
 // We hold a looped effect here
-#pragma pack(push, 4)
-class SgSLoopedEffect
-{
-public:
-    int32_t mId;
-    int32_t mBoltInfo;
-    int32_t mNextTime;
-    int32_t mLoopStopTime;
-    uint8_t mPortalEffect;
-    uint8_t mIsRelative;
-}; // SgSLoopedEffect
-#pragma pack(pop)
-
 struct SLoopedEffect
 {
-    using SgType = SgSLoopedEffect;
-
-
 	int		mId;			// effect id
 	int		mBoltInfo;		// used to determine which bolt on the ghoul2 model we should be attaching this effect to
 	int		mNextTime;		//time to render again
@@ -428,10 +412,10 @@ struct SLoopedEffect
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 class CFxScheduler

@@ -36,7 +36,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
-#include "qcommon/ojk_sg_wrappers.h"
 #include "qcommon/ojk_i_saved_game.h"
 
 extern void WP_SaberLoadParms( void );

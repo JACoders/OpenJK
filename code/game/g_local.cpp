@@ -1,101 +1,101 @@
 #include "g_local.h"
-#include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 
 void animFileSet_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(filename, dst.filename);
-    ::sg_export(animations, dst.animations);
-    ::sg_export(torsoAnimEvents, dst.torsoAnimEvents);
-    ::sg_export(legsAnimEvents, dst.legsAnimEvents);
-    ::sg_export(torsoAnimEventCount, dst.torsoAnimEventCount);
-    ::sg_export(legsAnimEventCount, dst.legsAnimEventCount);
+    saved_game->write<int8_t>(filename);
+    saved_game->write<>(animations);
+    saved_game->write<>(torsoAnimEvents);
+    saved_game->write<>(legsAnimEvents);
+    saved_game->write<uint8_t>(torsoAnimEventCount);
+    saved_game->write<uint8_t>(legsAnimEventCount);
 }
 
 void animFileSet_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.filename, filename);
-    ::sg_import(src.animations, animations);
-    ::sg_import(src.torsoAnimEvents, torsoAnimEvents);
-    ::sg_import(src.legsAnimEvents, legsAnimEvents);
-    ::sg_import(src.torsoAnimEventCount, torsoAnimEventCount);
-    ::sg_import(src.legsAnimEventCount, legsAnimEventCount);
+    saved_game->read<int8_t>(filename);
+    saved_game->read<>(animations);
+    saved_game->read<>(torsoAnimEvents);
+    saved_game->read<>(legsAnimEvents);
+    saved_game->read<uint8_t>(torsoAnimEventCount);
+    saved_game->read<uint8_t>(legsAnimEventCount);
 }
 
 
 void alertEvent_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(position, dst.position);
-    ::sg_export(radius, dst.radius);
-    ::sg_export(level, dst.level);
-    ::sg_export(type, dst.type);
-    ::sg_export(owner, dst.owner);
-    ::sg_export(light, dst.light);
-    ::sg_export(addLight, dst.addLight);
-    ::sg_export(ID, dst.ID);
-    ::sg_export(timestamp, dst.timestamp);
-    ::sg_export(onGround, dst.onGround);
+    saved_game->write<float>(position);
+    saved_game->write<float>(radius);
+    saved_game->write<int32_t>(level);
+    saved_game->write<int32_t>(type);
+    saved_game->write<int32_t>(owner);
+    saved_game->write<float>(light);
+    saved_game->write<float>(addLight);
+    saved_game->write<int32_t>(ID);
+    saved_game->write<int32_t>(timestamp);
+    saved_game->write<int32_t>(onGround);
 }
 
 void alertEvent_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.position, position);
-    ::sg_import(src.radius, radius);
-    ::sg_import(src.level, level);
-    ::sg_import(src.type, type);
-    ::sg_import(src.owner, owner);
-    ::sg_import(src.light, light);
-    ::sg_import(src.addLight, addLight);
-    ::sg_import(src.ID, ID);
-    ::sg_import(src.timestamp, timestamp);
-    ::sg_import(src.onGround, onGround);
+    saved_game->read<float>(position);
+    saved_game->read<float>(radius);
+    saved_game->read<int32_t>(level);
+    saved_game->read<int32_t>(type);
+    saved_game->read<int32_t>(owner);
+    saved_game->read<float>(light);
+    saved_game->read<float>(addLight);
+    saved_game->read<int32_t>(ID);
+    saved_game->read<int32_t>(timestamp);
+    saved_game->read<int32_t>(onGround);
 }
 
 
 void level_locals_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(clients, dst.clients);
-    ::sg_export(maxclients, dst.maxclients);
-    ::sg_export(framenum, dst.framenum);
-    ::sg_export(time, dst.time);
-    ::sg_export(previousTime, dst.previousTime);
-    ::sg_export(globalTime, dst.globalTime);
-    ::sg_export(mapname, dst.mapname);
-    ::sg_export(locationLinked, dst.locationLinked);
-    ::sg_export(locationHead, dst.locationHead);
-    ::sg_export(alertEvents, dst.alertEvents);
-    ::sg_export(numAlertEvents, dst.numAlertEvents);
-    ::sg_export(curAlertID, dst.curAlertID);
-    ::sg_export(groups, dst.groups);
-    ::sg_export(knownAnimFileSets, dst.knownAnimFileSets);
-    ::sg_export(numKnownAnimFileSets, dst.numKnownAnimFileSets);
-    ::sg_export(worldFlags, dst.worldFlags);
-    ::sg_export(dmState, dst.dmState);
+    saved_game->write<int32_t>(clients);
+    saved_game->write<int32_t>(maxclients);
+    saved_game->write<int32_t>(framenum);
+    saved_game->write<int32_t>(time);
+    saved_game->write<int32_t>(previousTime);
+    saved_game->write<int32_t>(globalTime);
+    saved_game->write<int8_t>(mapname);
+    saved_game->write<int32_t>(locationLinked);
+    saved_game->write<int32_t>(locationHead);
+    saved_game->write<>(alertEvents);
+    saved_game->write<int32_t>(numAlertEvents);
+    saved_game->write<int32_t>(curAlertID);
+    saved_game->write<>(groups);
+    saved_game->write<>(knownAnimFileSets);
+    saved_game->write<int32_t>(numKnownAnimFileSets);
+    saved_game->write<int32_t>(worldFlags);
+    saved_game->write<int32_t>(dmState);
 }
 
 void level_locals_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.clients, clients);
-    ::sg_import(src.maxclients, maxclients);
-    ::sg_import(src.framenum, framenum);
-    ::sg_import(src.time, time);
-    ::sg_import(src.previousTime, previousTime);
-    ::sg_import(src.globalTime, globalTime);
-    ::sg_import(src.mapname, mapname);
-    ::sg_import(src.locationLinked, locationLinked);
-    ::sg_import(src.locationHead, locationHead);
-    ::sg_import(src.alertEvents, alertEvents);
-    ::sg_import(src.numAlertEvents, numAlertEvents);
-    ::sg_import(src.curAlertID, curAlertID);
-    ::sg_import(src.groups, groups);
-    ::sg_import(src.knownAnimFileSets, knownAnimFileSets);
-    ::sg_import(src.numKnownAnimFileSets, numKnownAnimFileSets);
-    ::sg_import(src.worldFlags, worldFlags);
-    ::sg_import(src.dmState, dmState);
+    saved_game->read<int32_t>(clients);
+    saved_game->read<int32_t>(maxclients);
+    saved_game->read<int32_t>(framenum);
+    saved_game->read<int32_t>(time);
+    saved_game->read<int32_t>(previousTime);
+    saved_game->read<int32_t>(globalTime);
+    saved_game->read<int8_t>(mapname);
+    saved_game->read<int32_t>(locationLinked);
+    saved_game->read<int32_t>(locationHead);
+    saved_game->read<>(alertEvents);
+    saved_game->read<int32_t>(numAlertEvents);
+    saved_game->read<int32_t>(curAlertID);
+    saved_game->read<>(groups);
+    saved_game->read<>(knownAnimFileSets);
+    saved_game->read<int32_t>(numKnownAnimFileSets);
+    saved_game->read<int32_t>(worldFlags);
+    saved_game->read<int32_t>(dmState);
 }

@@ -131,6 +131,7 @@ set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/ai.h"
 	"${JK2SPDir}/game/ai.cpp"
 	"${JK2SPDir}/game/anims.h"
+	"${JK2SPDir}/game/anims.cpp"
 	"${JK2SPDir}/game/b_local.h"
 	"${JK2SPDir}/game/b_public.h"
 	"${JK2SPDir}/game/b_public.cpp"
@@ -237,9 +238,6 @@ set(JK2SPGameCommonFiles
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/strippublic.h"
-	"${SharedDir}/qcommon/ojk_sg_wrappers.h"
-	"${SharedDir}/qcommon/ojk_sg_wrappers_fwd.h"
-	"${SharedDir}/qcommon/ojk_sg_wrappers_shared.h"
 	"${SharedDir}/qcommon/ojk_i_saved_game.h"
 	"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
 

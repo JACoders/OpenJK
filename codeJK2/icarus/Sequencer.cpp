@@ -30,7 +30,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_shared.h"
 
 #include "assert.h"
-#include "qcommon/ojk_sg_wrappers.h"
 #include "qcommon/ojk_i_saved_game.h"
 
 // Sequencer 

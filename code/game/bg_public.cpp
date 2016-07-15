@@ -1,45 +1,45 @@
 #include "bg_public.h"
-#include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 
 void animation_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(firstFrame, dst.firstFrame);
-    ::sg_export(numFrames, dst.numFrames);
-    ::sg_export(frameLerp, dst.frameLerp);
-    ::sg_export(loopFrames, dst.loopFrames);
-    ::sg_export(glaIndex, dst.glaIndex);
+    saved_game->write<uint16_t>(firstFrame);
+    saved_game->write<uint16_t>(numFrames);
+    saved_game->write<int16_t>(frameLerp);
+    saved_game->write<int8_t>(loopFrames);
+    saved_game->write<uint8_t>(glaIndex);
 }
 
 void animation_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.firstFrame, firstFrame);
-    ::sg_import(src.numFrames, numFrames);
-    ::sg_import(src.frameLerp, frameLerp);
-    ::sg_import(src.loopFrames, loopFrames);
-    ::sg_import(src.glaIndex, glaIndex);
+    saved_game->read<uint16_t>(firstFrame);
+    saved_game->read<uint16_t>(numFrames);
+    saved_game->read<int16_t>(frameLerp);
+    saved_game->read<int8_t>(loopFrames);
+    saved_game->read<uint8_t>(glaIndex);
 }
 
 void animevent_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(eventType, dst.eventType);
-    ::sg_export(modelOnly, dst.modelOnly);
-    ::sg_export(glaIndex, dst.glaIndex);
-    ::sg_export(keyFrame, dst.keyFrame);
-    ::sg_export(eventData, dst.eventData);
-    ::sg_export(stringData, dst.stringData);
+    saved_game->write<int32_t>(eventType);
+    saved_game->write<int16_t>(modelOnly);
+    saved_game->write<uint16_t>(glaIndex);
+    saved_game->write<uint16_t>(keyFrame);
+    saved_game->write<int16_t>(eventData);
+    saved_game->write<int32_t>(stringData);
 }
 
 void animevent_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.eventType, eventType);
-    ::sg_import(src.modelOnly, modelOnly);
-    ::sg_import(src.glaIndex, glaIndex);
-    ::sg_import(src.keyFrame, keyFrame);
-    ::sg_import(src.eventData, eventData);
-    ::sg_import(src.stringData, stringData);
+    saved_game->read<int32_t>(eventType);
+    saved_game->read<int16_t>(modelOnly);
+    saved_game->read<uint16_t>(glaIndex);
+    saved_game->read<uint16_t>(keyFrame);
+    saved_game->read<int16_t>(eventData);
+    saved_game->read<int32_t>(stringData);
 }

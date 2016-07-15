@@ -158,30 +158,16 @@ mdxaCompQuatBone_t
 
 
 #ifndef MDXABONEDEF
-#ifdef __cplusplus
-#pragma pack(push, 4)
-class SgMdxaBone
-{
-public:
-    SgArray2d<float, 3, 4> matrix;
-}; // SgMdxaBone
-#pragma pack(pop)
-#endif // __cplusplus
-
 typedef struct {
-#ifdef __cplusplus
-    using SgType = SgMdxaBone;
-#endif // __cplusplus
-
 	float matrix[3][4];
 
 
 #ifdef __cplusplus
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 #endif // __cplusplus
 } mdxaBone_t;
 #endif

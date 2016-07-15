@@ -26,7 +26,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // g_public.h -- game module information visible to server
 
 
-#include "qcommon/ojk_sg_wrappers_fwd.h"
 #include "qcommon/ojk_i_saved_game_fwd.h"
 
 

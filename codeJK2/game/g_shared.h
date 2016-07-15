@@ -121,35 +121,7 @@ typedef enum //# material_e
 #define	MAX_CUSTOM_JEDI_SOUNDS	22
 #define	MAX_CUSTOM_SOUNDS	(MAX_CUSTOM_JEDI_SOUNDS + MAX_CUSTOM_EXTRA_SOUNDS + MAX_CUSTOM_COMBAT_SOUNDS + MAX_CUSTOM_BASIC_SOUNDS)
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgClientInfo
-{
-public:
-    int32_t infoValid;
-    SgArray<int8_t, MAX_QPATH> name;
-    int32_t team;
-    int32_t score;
-    int32_t handicap;
-    int32_t legsModel;
-    int32_t legsSkin;
-    int32_t torsoModel;
-    int32_t torsoSkin;
-    int32_t headModel;
-    int32_t headSkin;
-    int32_t extensions;
-    int32_t animFileIndex;
-    SgArray<int32_t, MAX_CUSTOM_SOUNDS> sounds;
-    int32_t customBasicSoundDir;
-    int32_t customCombatSoundDir;
-    int32_t customExtraSoundDir;
-    int32_t customJediSoundDir;
-}; // SgClientInfo
-#pragma pack(pop)
-
 typedef struct {
-    using SgType = SgClientInfo;
-
-
 	qboolean		infoValid;
 
 	char			name[MAX_QPATH];
@@ -180,10 +152,10 @@ typedef struct {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } clientInfo_t;
 
 
@@ -199,31 +171,18 @@ typedef enum
 // Rendering information structure
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgModelInfo
-{
-public:
-    int32_t modelIndex;
-    SgVec3 customRGB;
-    int32_t customAlpha;
-}; // SgModelInfo
-#pragma pack(pop)
-
 typedef struct modelInfo_s
 {
-    using SgType = SgModelInfo;
-
-
 	int		modelIndex;
 	vec3_t	customRGB;//Red Green Blue, 0 = don't apply
 	int		customAlpha;//Alpha to apply, 0 = none?
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } modelInfo_t;
 
 typedef enum 
@@ -243,65 +202,8 @@ typedef enum
 #define	RF_LOCKEDANGLE	1
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgRenderInfo
-{
-public:
-    SgModelInfo legsModel;
-    SgArray<int8_t, 32> legsModelName;
-    SgModelInfo torsoModel;
-    SgModelInfo headModel;
-    SgArray<int8_t, 32> torsoModelName;
-    SgArray<int8_t, 32> headModelName;
-    int32_t headYawRangeLeft;
-    int32_t headYawRangeRight;
-    int32_t headPitchRangeUp;
-    int32_t headPitchRangeDown;
-    int32_t torsoYawRangeLeft;
-    int32_t torsoYawRangeRight;
-    int32_t torsoPitchRangeUp;
-    int32_t torsoPitchRangeDown;
-    int32_t legsFrame;
-    int32_t torsoFrame;
-    float legsFpsMod;
-    float torsoFpsMod;
-    SgVec3 customRGB;
-    int32_t customAlpha;
-    int32_t renderFlags;
-    SgVec3 muzzlePoint;
-    SgVec3 muzzleDir;
-    SgVec3 muzzlePointOld;
-    SgVec3 muzzleDirOld;
-    int32_t mPCalcTime;
-    float lockYaw;
-    SgVec3 headPoint;
-    SgVec3 headAngles;
-    SgVec3 handRPoint;
-    SgVec3 handLPoint;
-    SgVec3 crotchPoint;
-    SgVec3 footRPoint;
-    SgVec3 footLPoint;
-    SgVec3 torsoPoint;
-    SgVec3 torsoAngles;
-    SgVec3 eyePoint;
-    SgVec3 eyeAngles;
-    int32_t lookTarget;
-    int32_t lookMode;
-    int32_t lookTargetClearTime;
-    int32_t lastVoiceVolume;
-    SgVec3 lastHeadAngles;
-    SgVec3 headBobAngles;
-    SgVec3 targetHeadBobAngles;
-    int32_t lookingDebounceTime;
-    float legsYaw;
-}; // SgRenderInfo
-#pragma pack(pop)
-
 typedef struct renderInfo_s
 {
-    using SgType = SgRenderInfo;
-
-
 	// Legs model, or full model on one piece entities
 	union
 	{
@@ -381,10 +283,10 @@ typedef struct renderInfo_s
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } renderInfo_t;
 
 // Movement information structure
@@ -413,28 +315,7 @@ typedef enum {
 } playerTeamStateState_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgPlayerTeamState
-{
-public:
-    int32_t state;
-    int32_t captures;
-    int32_t basedefense;
-    int32_t carrierdefense;
-    int32_t flagrecovery;
-    int32_t fragcarrier;
-    int32_t assists;
-    float lasthurtcarrier;
-    float lastreturnedflag;
-    float flagsince;
-    float lastfraggedcarrier;
-}; // SgPlayerTeamState
-#pragma pack(pop)
-
 typedef struct {
-    using SgType = SgPlayerTeamState;
-
-
 	playerTeamStateState_t	state;
 
 	int			captures;
@@ -451,66 +332,30 @@ typedef struct {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } playerTeamState_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgObjectives
-{
-public:
-    int32_t display;
-    int32_t status;
-}; // SgObjectives
-#pragma pack(pop)
-
 typedef struct objectives_s
 {
-    using SgType = SgObjectives;
-
-
 	qboolean	display;	// A displayable objective?
 	int			status;	// Succeed or fail or pending
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } objectives_t;
 #define MAX_MISSION_OBJ 80
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgMissionStats
-{
-public:
-    int32_t secretsFound;
-    int32_t totalSecrets;
-    int32_t shotsFired;
-    int32_t hits;
-    int32_t enemiesSpawned;
-    int32_t enemiesKilled;
-    int32_t saberThrownCnt;
-    int32_t saberBlocksCnt;
-    int32_t legAttacksCnt;
-    int32_t armAttacksCnt;
-    int32_t torsoAttacksCnt;
-    int32_t otherAttacksCnt;
-    SgArray<int32_t, NUM_FORCE_POWERS> forceUsed;
-    SgArray<int32_t, WP_NUM_WEAPONS> weaponUsed;
-}; // SgMissionStats
-#pragma pack(pop)
-
 typedef struct missionStats_s
 {
-    using SgType = SgMissionStats;
-
-
 	int				secretsFound;					// # of secret areas found
 	int				totalSecrets;					// # of secret areas that could have been found
 	int				shotsFired;						// total number of shots fired
@@ -528,10 +373,10 @@ typedef struct missionStats_s
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } missionStats_t;
 
 // the auto following clients don't follow a specific client
@@ -545,21 +390,7 @@ typedef struct missionStats_s
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 //
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgClientSession
-{
-public:
-    int32_t missionObjectivesShown;
-    int32_t sessionTeam;
-    SgArray<SgObjectives, MAX_MISSION_OBJ> mission_objectives;
-    SgMissionStats missionStats;
-}; // SgClientSession
-#pragma pack(pop)
-
 typedef struct {
-    using SgType = SgClientSession;
-
-
 	int				missionObjectivesShown;	// Number of times mission objectives have been updated
 	team_t			sessionTeam;
 	objectives_t	mission_objectives[MAX_MISSION_OBJ];
@@ -567,34 +398,16 @@ typedef struct {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } clientSession_t;
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgClientPersistant
-{
-public:
-    int32_t connected;
-    SgUserCmd lastCommand;
-    int32_t localClient;
-    SgArray<int8_t, 34> netname;
-    int32_t maxHealth;
-    int32_t enterTime;
-    SgArray<int16_t, 3> cmd_angles;
-    SgPlayerTeamState teamState;
-}; // SgClientPersistant
-#pragma pack(pop)
-
 typedef struct {
-    using SgType = SgClientPersistant;
-
-
 	clientConnected_t	connected;	
 	usercmd_t	lastCommand;
 	qboolean	localClient;		// true if "ip" info key is "localhost"
@@ -607,10 +420,10 @@ typedef struct {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } clientPersistant_t;
 
 typedef enum {
@@ -636,74 +449,9 @@ typedef enum {
 } saberBlockedType_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
-class SgGClient
-{
-public:
-    SgPlayerState ps;
-    SgClientPersistant pers;
-    SgClientSession sess;
-    int32_t noclip;
-    int32_t lastCmdTime;
-    SgUserCmd usercmd;
-    int32_t buttons;
-    int32_t oldbuttons;
-    int32_t latched_buttons;
-    int32_t damage_armor;
-    int32_t damage_blood;
-    int32_t damage_knockback;
-    SgVec3 damage_from;
-    int32_t damage_fromWorld;
-    int32_t accurateCount;
-    int32_t respawnTime;
-    int32_t inactivityTime;
-    int32_t inactivityWarning;
-    int32_t idleTime;
-    int32_t airOutTime;
-    int32_t timeResidual;
-    float facial_blink;
-    float facial_frown;
-    float facial_aux;
-    SgClientInfo clientInfo;
-    int8_t forced_forwardmove;
-    int8_t forced_rightmove;
-    int32_t fireDelay;
-    int32_t playerTeam;
-    int32_t enemyTeam;
-    int32_t squadname;
-    int32_t team_leader;
-    int32_t leader;
-    int32_t follower;
-    int32_t numFollowers;
-    int32_t formationGoal;
-    int32_t nextFormGoal;
-    int32_t NPC_class;
-    float hiddenDist;
-    SgVec3 hiddenDir;
-    SgRenderInfo renderInfo;
-    SgSaberTrail saberTrail;
-    int32_t dismembered;
-    int8_t dismemberProbLegs;
-    int8_t dismemberProbHead;
-    int8_t dismemberProbArms;
-    int8_t dismemberProbHands;
-    int8_t dismemberProbWaist;
-    int32_t standheight;
-    int32_t crouchheight;
-    int32_t poisonDamage;
-    int32_t poisonTime;
-    int32_t slopeRecalcTime;
-    SgVec3 pushVec;
-    int32_t pushVecTime;
-}; // SgGClient
-#pragma pack(pop)
-
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
 struct gclient_s {
-    using SgType = SgGClient;
-
-
 	// ps MUST be the first element, because the server expects it
 	playerState_t	ps;				// communicated by server to clients
 
@@ -793,33 +541,24 @@ struct gclient_s {
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
-class SgParms
-{
-public:
-    SgArray2d<uint8_t, MAX_PARMS, MAX_PARM_STRING_LENGTH> parm;
-}; // SgParms
-
 typedef struct
 {	
-    using SgType = SgParms;
-
-
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } parms_t;
 
 #define GAME_INCLUDE
@@ -838,193 +577,7 @@ typedef struct
 
 typedef struct centity_s centity_t;
 
-#pragma pack(push, 4)
-class SgGEntity
-{
-public:
-    SgEntityState s;
-    int32_t client;
-    int32_t inuse;
-    int32_t linked;
-    int32_t svFlags;
-    int32_t bmodel;
-    SgVec3 mins;
-    SgVec3 maxs;
-    int32_t contents;
-    SgVec3 absmin;
-    SgVec3 absmax;
-    SgVec3 currentOrigin;
-    SgVec3 currentAngles;
-    int32_t owner;
-    SgCGhoul2InfoV ghoul2;
-    int32_t classname;
-    int32_t spawnflags;
-    int32_t flags;
-    int32_t model;
-    int32_t model2;
-    int32_t freetime;
-    int32_t eventTime;
-    int32_t freeAfterEvent;
-    int32_t unlinkAfterEvent;
-    float physicsBounce;
-    int32_t clipmask;
-    float speed;
-    SgVec3 movedir;
-    SgVec3 lastOrigin;
-    SgVec3 lastAngles;
-    float mass;
-    int32_t lastImpact;
-    int32_t watertype;
-    int32_t waterlevel;
-    float angle;
-    int32_t target;
-    int32_t target2;
-    int32_t target3;
-    int32_t target4;
-    int32_t targetname;
-    int32_t team;
-    int32_t roff;
-    int32_t roff_ctr;
-    int32_t next_roff_time;
-    int32_t fx_time;
-    int32_t nextthink;
-    int32_t e_ThinkFunc;
-    int32_t e_clThinkFunc;
-    int32_t e_ReachedFunc;
-    int32_t e_BlockedFunc;
-    int32_t e_TouchFunc;
-    int32_t e_UseFunc;
-    int32_t e_PainFunc;
-    int32_t e_DieFunc;
-    int32_t health;
-    int32_t max_health;
-    int32_t takedamage;
-    int32_t material;
-    int32_t damage;
-    int32_t dflags;
-    int32_t splashDamage;
-    int32_t splashRadius;
-    int32_t methodOfDeath;
-    int32_t splashMethodOfDeath;
-    SgArray<int32_t, HL_MAX> locationDamage;
-    int32_t chain;
-    int32_t enemy;
-    int32_t activator;
-    int32_t teamchain;
-    int32_t teammaster;
-    int32_t lastEnemy;
-    float wait;
-    float random;
-    int32_t delay;
-    int32_t alt_fire;
-    int32_t count;
-    int32_t bounceCount;
-    int32_t fly_sound_debounce_time;
-    int32_t painDebounceTime;
-    int32_t disconnectDebounceTime;
-    int32_t attackDebounceTime;
-    int32_t pushDebounceTime;
-    int32_t aimDebounceTime;
-    int32_t useDebounceTime;
-    int32_t trigger_formation;
-    int32_t waypoint;
-    int32_t lastWaypoint;
-    int32_t lastValidWaypoint;
-    int32_t noWaypointTime;
-    int32_t combatPoint;
-    SgArray<int32_t, MAX_FAILED_NODES> failedWaypoints;
-    int32_t failedWaypointCheckTime;
-    int32_t loopAnim;
-    int32_t startFrame;
-    int32_t endFrame;
-    int32_t sequencer;
-    int32_t taskManager;
-    SgArray<int32_t, NUM_TIDS> taskID;
-    int32_t parms;
-    SgArray<int32_t, NUM_BSETS> behaviorSet;
-    int32_t script_targetname;
-    int32_t delayScriptTime;
-    int32_t fullName;
-    int32_t soundSet;
-    int32_t setTime;
-    int32_t cameraGroup;
-    int32_t noDamageTeam;
-    int32_t playerModel;
-    int32_t weaponModel;
-    int32_t handRBolt;
-    int32_t handLBolt;
-    int32_t headBolt;
-    int32_t cervicalBolt;
-    int32_t chestBolt;
-    int32_t gutBolt;
-    int32_t torsoBolt;
-    int32_t crotchBolt;
-    int32_t motionBolt;
-    int32_t kneeLBolt;
-    int32_t kneeRBolt;
-    int32_t elbowLBolt;
-    int32_t elbowRBolt;
-    int32_t footLBolt;
-    int32_t footRBolt;
-    int32_t faceBone;
-    int32_t craniumBone;
-    int32_t cervicalBone;
-    int32_t thoracicBone;
-    int32_t upperLumbarBone;
-    int32_t lowerLumbarBone;
-    int32_t hipsBone;
-    int32_t motionBone;
-    int32_t rootBone;
-    int32_t footLBone;
-    int32_t footRBone;
-    int32_t genericBone1;
-    int32_t genericBone2;
-    int32_t genericBone3;
-    int32_t genericBolt1;
-    int32_t genericBolt2;
-    int32_t genericBolt3;
-    int32_t genericBolt4;
-    int32_t genericBolt5;
-    int32_t cinematicModel;
-    int32_t NPC;
-    int32_t ownername;
-    int32_t cantHitEnemyCounter;
-    int32_t NPC_type;
-    int32_t NPC_targetname;
-    int32_t NPC_target;
-    int32_t moverState;
-    int32_t soundPos1;
-    int32_t sound1to2;
-    int32_t sound2to1;
-    int32_t soundPos2;
-    int32_t soundLoop;
-    int32_t nextTrain;
-    int32_t prevTrain;
-    SgVec3 pos1;
-    SgVec3 pos2;
-    SgVec3 pos3;
-    int32_t sounds;
-    int32_t closetarget;
-    int32_t opentarget;
-    int32_t paintarget;
-    int32_t lockCount;
-    float radius;
-    int32_t wpIndex;
-    int32_t noise_index;
-    SgVec4 startRGBA;
-    SgVec4 finalRGBA;
-    int32_t item;
-    int32_t message;
-    float lightLevel;
-    int32_t forcePushTime;
-    int32_t forcePuller;
-}; // SgGEntity
-#pragma pack(pop)
-
 struct gentity_s {
-    using SgType = SgGEntity;
-
-
 	entityState_t	s;				// communicated by server to clients
 	struct gclient_s	*client;	// NULL if not a player (unless it's NPC ( if (this->NPC != NULL)  )  <sigh>... -slc)
 	qboolean	inuse;
@@ -1324,10 +877,10 @@ Ghoul2 Insert End
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 #endif //#ifdef GAME_INCLUDE
 

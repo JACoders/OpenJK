@@ -1,67 +1,67 @@
 #include "../cgame/cg_local.h"
 #include "ai.h"
-#include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 
 void AIGroupMember_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(number, dst.number);
-    ::sg_export(waypoint, dst.waypoint);
-    ::sg_export(pathCostToEnemy, dst.pathCostToEnemy);
-    ::sg_export(closestBuddy, dst.closestBuddy);
+    saved_game->write<int32_t>(number);
+    saved_game->write<int32_t>(waypoint);
+    saved_game->write<int32_t>(pathCostToEnemy);
+    saved_game->write<int32_t>(closestBuddy);
 }
 
 void AIGroupMember_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.number, number);
-    ::sg_import(src.waypoint, waypoint);
-    ::sg_import(src.pathCostToEnemy, pathCostToEnemy);
-    ::sg_import(src.closestBuddy, closestBuddy);
+    saved_game->read<int32_t>(number);
+    saved_game->read<int32_t>(waypoint);
+    saved_game->read<int32_t>(pathCostToEnemy);
+    saved_game->read<int32_t>(closestBuddy);
 }
 
 
 void AIGroupInfo_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(numGroup, dst.numGroup);
-    ::sg_export(processed, dst.processed);
-    ::sg_export(team, dst.team);
-    ::sg_export(enemy, dst.enemy);
-    ::sg_export(enemyWP, dst.enemyWP);
-    ::sg_export(speechDebounceTime, dst.speechDebounceTime);
-    ::sg_export(lastClearShotTime, dst.lastClearShotTime);
-    ::sg_export(lastSeenEnemyTime, dst.lastSeenEnemyTime);
-    ::sg_export(morale, dst.morale);
-    ::sg_export(moraleAdjust, dst.moraleAdjust);
-    ::sg_export(moraleDebounce, dst.moraleDebounce);
-    ::sg_export(memberValidateTime, dst.memberValidateTime);
-    ::sg_export(activeMemberNum, dst.activeMemberNum);
-    ::sg_export(commander, dst.commander);
-    ::sg_export(enemyLastSeenPos, dst.enemyLastSeenPos);
-    ::sg_export(numState, dst.numState);
-    ::sg_export(member, dst.member);
+    saved_game->write<int32_t>(numGroup);
+    saved_game->write<int32_t>(processed);
+    saved_game->write<int32_t>(team);
+    saved_game->write<int32_t>(enemy);
+    saved_game->write<int32_t>(enemyWP);
+    saved_game->write<int32_t>(speechDebounceTime);
+    saved_game->write<int32_t>(lastClearShotTime);
+    saved_game->write<int32_t>(lastSeenEnemyTime);
+    saved_game->write<int32_t>(morale);
+    saved_game->write<int32_t>(moraleAdjust);
+    saved_game->write<int32_t>(moraleDebounce);
+    saved_game->write<int32_t>(memberValidateTime);
+    saved_game->write<int32_t>(activeMemberNum);
+    saved_game->write<int32_t>(commander);
+    saved_game->write<float>(enemyLastSeenPos);
+    saved_game->write<int32_t>(numState);
+    saved_game->write<>(member);
 }
 
 void AIGroupInfo_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.numGroup, numGroup);
-    ::sg_import(src.processed, processed);
-    ::sg_import(src.team, team);
-    ::sg_import(src.enemy, enemy);
-    ::sg_import(src.enemyWP, enemyWP);
-    ::sg_import(src.speechDebounceTime, speechDebounceTime);
-    ::sg_import(src.lastClearShotTime, lastClearShotTime);
-    ::sg_import(src.lastSeenEnemyTime, lastSeenEnemyTime);
-    ::sg_import(src.morale, morale);
-    ::sg_import(src.moraleAdjust, moraleAdjust);
-    ::sg_import(src.moraleDebounce, moraleDebounce);
-    ::sg_import(src.memberValidateTime, memberValidateTime);
-    ::sg_import(src.activeMemberNum, activeMemberNum);
-    ::sg_import(src.commander, commander);
-    ::sg_import(src.enemyLastSeenPos, enemyLastSeenPos);
-    ::sg_import(src.numState, numState);
-    ::sg_import(src.member, member);
+    saved_game->read<int32_t>(numGroup);
+    saved_game->read<int32_t>(processed);
+    saved_game->read<int32_t>(team);
+    saved_game->read<int32_t>(enemy);
+    saved_game->read<int32_t>(enemyWP);
+    saved_game->read<int32_t>(speechDebounceTime);
+    saved_game->read<int32_t>(lastClearShotTime);
+    saved_game->read<int32_t>(lastSeenEnemyTime);
+    saved_game->read<int32_t>(morale);
+    saved_game->read<int32_t>(moraleAdjust);
+    saved_game->read<int32_t>(moraleDebounce);
+    saved_game->read<int32_t>(memberValidateTime);
+    saved_game->read<int32_t>(activeMemberNum);
+    saved_game->read<int32_t>(commander);
+    saved_game->read<float>(enemyLastSeenPos);
+    saved_game->read<int32_t>(numState);
+    saved_game->read<>(member);
 }

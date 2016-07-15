@@ -40,24 +40,8 @@ int			G2API_GetTime(int argTime); // this may or may not return arg depending on
 //   G H O U L  I I  D E F I N E S
 //
 // we save the whole surfaceInfo_t struct
-#pragma pack(push, 4)
-class SgSurfaceInfo
-{
-public:
-    int32_t offFlags;
-    int32_t surface;
-    float genBarycentricJ;
-    float genBarycentricI;
-    int32_t genPolySurfaceIndex;
-    int32_t genLod;
-}; // SgSurfaceInfo
-#pragma pack(pop)
-
 struct surfaceInfo_t
 {
-    using SgType = SgSurfaceInfo;
-
-
 	int			offFlags;		// what the flags are for this model
 	int			surface;		// index into array held inside the model definition of pointers to the actual surface data loaded in - used by both client and game
 	float		genBarycentricJ;	// point 0 barycentric coors
@@ -76,10 +60,10 @@ surfaceInfo_t():
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 #define BONE_ANGLES_PREMULT			0x0001
@@ -109,84 +93,8 @@ typedef struct {
 #include "../rd-common/mdx_format.h"
 
 // we save the whole structure here.
-#pragma pack(push, 4)
-class SgBoneInfo
-{
-public:
-    int32_t boneNumber;
-    SgMdxaBone matrix;
-    int32_t flags;
-    int32_t startFrame;
-    int32_t endFrame;
-    int32_t startTime;
-    int32_t pauseTime;
-    float animSpeed;
-    float blendFrame;
-    int32_t blendLerpFrame;
-    int32_t blendTime;
-    int32_t blendStart;
-    int32_t boneBlendTime;
-    int32_t boneBlendStart;
-    SgMdxaBone newMatrix;
-    int32_t lastTimeUpdated;
-    int32_t lastContents;
-    SgVec3 lastPosition;
-    SgVec3 velocityEffector;
-    SgVec3 lastAngles;
-    SgVec3 minAngles;
-    SgVec3 maxAngles;
-    SgVec3 currentAngles;
-    SgVec3 anglesOffset;
-    SgVec3 positionOffset;
-    float radius;
-    float weight;
-    int32_t ragIndex;
-    SgVec3 velocityRoot;
-    int32_t ragStartTime;
-    int32_t firstTime;
-    int32_t firstCollisionTime;
-    int32_t restTime;
-    int32_t RagFlags;
-    int32_t DependentRagIndexMask;
-    SgMdxaBone originalTrueBoneMatrix;
-    SgMdxaBone parentTrueBoneMatrix;
-    SgMdxaBone parentOriginalTrueBoneMatrix;
-    SgVec3 originalOrigin;
-    SgVec3 originalAngles;
-    SgVec3 lastShotDir;
-    int32_t basepose;
-    int32_t baseposeInv;
-    int32_t baseposeParent;
-    int32_t baseposeInvParent;
-    int32_t parentRawBoneIndex;
-    SgMdxaBone ragOverrideMatrix;
-    SgMdxaBone extraMatrix;
-    SgVec3 extraVec1;
-    float extraFloat1;
-    int32_t extraInt1;
-    SgVec3 ikPosition;
-    float ikSpeed;
-    SgVec3 epVelocity;
-    float epGravFactor;
-    int32_t solidCount;
-    uint8_t physicsSettled;
-    uint8_t snapped;
-    int32_t parentBoneIndex;
-    float offsetRotation;
-    float overGradSpeed;
-    SgVec3 overGoalSpot;
-    uint8_t hasOverGoal;
-    SgMdxaBone animFrameMatrix;
-    int32_t hasAnimFrameMatrix;
-    int32_t airTime;
-}; // SgBoneInfo
-#pragma pack(pop)
-
 struct  boneInfo_t
 {
-    using SgType = SgBoneInfo;
-
-
 	int			boneNumber;		// what bone are we overriding?
 	mdxaBone_t	matrix;			// details of bone angle overrides - some are pre-done on the server, some in ghoul2
 	int			flags;			// flags for override
@@ -290,27 +198,13 @@ boneInfo_t():
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 //we save from top to boltUsed here. Don't bother saving the position, it gets rebuilt every frame anyway
-#pragma pack(push, 4)
-class SgBoltInfo
-{
-public:
-    int32_t boneNumber;
-    int32_t surfaceNumber;
-    int32_t surfaceType;
-    int32_t boltUsed;
-}; // SgBoltInfo
-#pragma pack(pop)
-
 struct boltInfo_t{
-    using SgType = SgBoltInfo;
-
-
 	int			boneNumber;		// bone number bolt attaches to
 	int			surfaceNumber;	// surface number bolt attaches to
 	int			surfaceType;	// if we attach to a surface, this tells us if it is an original surface or a generated one - doesn't go across the network
@@ -324,10 +218,10 @@ struct boltInfo_t{
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 
@@ -372,36 +266,9 @@ CRenderableSurface(const CRenderableSurface& rs):
 };
 #endif
 
-#pragma pack(push, 4)
-class SgCGhoul2Info
-{
-public:
-    int32_t mModelindex;
-    int32_t animModelIndexOffset;
-    int32_t mCustomShader;
-    int32_t mCustomSkin;
-    int32_t mModelBoltLink;
-    int32_t mSurfaceRoot;
-    int32_t mLodBias;
-    int32_t mNewOrigin;
-#ifdef _G2_GORE
-    int32_t mGoreSetTag;
-#endif
-    int32_t mModel;
-    SgArray<char, MAX_QPATH> mFileName;
-    int32_t mAnimFrameDefault;
-    int32_t mSkelFrameNum;
-    int32_t mMeshFrameNum;
-    int32_t mFlags;
-}; // SgCGhoul2Info
-#pragma pack(pop)
-
 class CGhoul2Info
 {
 public:
-    using SgType = SgCGhoul2Info;
-
-
 	surfaceInfo_v 	mSlist;
 	boltInfo_v		mBltlist;
 	boneInfo_v		mBlist;
@@ -471,10 +338,10 @@ public:
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 class CGhoul2Info_v;
@@ -496,14 +363,6 @@ IGhoul2InfoArray &_TheGhoul2InfoArray();
 #else
 IGhoul2InfoArray &TheGameGhoul2InfoArray();
 #endif
-
-#pragma pack(push, 4)
-class SgCGhoul2InfoV
-{
-public:
-    int32_t mItem;
-}; // SgCGhoul2InfoV
-#pragma pack(pop)
 
 class CGhoul2Info_v
 {
@@ -546,9 +405,6 @@ class CGhoul2Info_v
 		return InfoArray().Get(mItem);
 	}
 public:
-    using SgType = SgCGhoul2InfoV;
-
-
 	CGhoul2Info_v()
 	{
 		mItem=0;
@@ -623,7 +479,7 @@ public:
 		{
 			return 0;
 		}
-		return Array().size();
+		return static_cast<int>(Array().size());
 	}
 	bool IsValid() const
 	{
@@ -639,10 +495,10 @@ public:
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 
@@ -651,31 +507,9 @@ public:
 #define G2_FRONTFACE 1
 #define	G2_BACKFACE	 0
 
-#pragma pack(push, 4)
-class SgCCollisionRecord
-{
-public:
-    float mDistance;
-    int32_t mEntityNum;
-    int32_t mModelIndex;
-    int32_t mPolyIndex;
-    int32_t mSurfaceIndex;
-    SgVec3 mCollisionPosition;
-    SgVec3 mCollisionNormal;
-    int32_t mFlags;
-    int32_t mMaterial;
-    int32_t mLocation;
-    float mBarycentricI;
-    float mBarycentricJ;
-}; // SgCCollisionRecord
-#pragma pack(pop)
-
 class CCollisionRecord
 {
 public:
-    using SgType = SgCCollisionRecord;
-
-
 	float		mDistance;
 	int			mEntityNum;
 	int			mModelIndex;
@@ -696,38 +530,10 @@ public:
 
 
     void sg_export(
-        SgType& dst) const
-    {
-        ::sg_export(mDistance, dst.mDistance);
-        ::sg_export(mEntityNum, dst.mEntityNum);
-        ::sg_export(mModelIndex, dst.mModelIndex);
-        ::sg_export(mPolyIndex, dst.mPolyIndex);
-        ::sg_export(mSurfaceIndex, dst.mSurfaceIndex);
-        ::sg_export(mCollisionPosition, dst.mCollisionPosition);
-        ::sg_export(mCollisionNormal, dst.mCollisionNormal);
-        ::sg_export(mFlags, dst.mFlags);
-        ::sg_export(mMaterial, dst.mMaterial);
-        ::sg_export(mLocation, dst.mLocation);
-        ::sg_export(mBarycentricI, dst.mBarycentricI);
-        ::sg_export(mBarycentricJ, dst.mBarycentricJ);
-    }
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src)
-    {
-        ::sg_import(src.mDistance, mDistance);
-        ::sg_import(src.mEntityNum, mEntityNum);
-        ::sg_import(src.mModelIndex, mModelIndex);
-        ::sg_import(src.mPolyIndex, mPolyIndex);
-        ::sg_import(src.mSurfaceIndex, mSurfaceIndex);
-        ::sg_import(src.mCollisionPosition, mCollisionPosition);
-        ::sg_import(src.mCollisionNormal, mCollisionNormal);
-        ::sg_import(src.mFlags, mFlags);
-        ::sg_import(src.mMaterial, mMaterial);
-        ::sg_import(src.mLocation, mLocation);
-        ::sg_import(src.mBarycentricI, mBarycentricI);
-        ::sg_import(src.mBarycentricJ, mBarycentricJ);
-    }
+        ojk::ISavedGame* saved_game);
 };
 
 // calling defines for the trace function

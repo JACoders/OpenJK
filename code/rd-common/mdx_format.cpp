@@ -1,16 +1,16 @@
 #include "qcommon/q_shared.h"
 #include "mdx_format.h"
-#include "qcommon/ojk_sg_wrappers.h"
+#include "qcommon/ojk_i_saved_game.h"
 
 
 void mdxaBone_t::sg_export(
-    SgType& dst) const
+    ojk::ISavedGame* saved_game) const
 {
-    ::sg_export(matrix, dst.matrix);
+    saved_game->write<float>(matrix);
 }
 
 void mdxaBone_t::sg_import(
-    const SgType& src)
+    ojk::ISavedGame* saved_game)
 {
-    ::sg_import(src.matrix, matrix);
+    saved_game->read<float>(matrix);
 }

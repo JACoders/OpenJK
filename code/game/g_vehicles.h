@@ -453,22 +453,8 @@ enum
 extern void G_VehicleSpawn( gentity_t *self );
 
 // A vehicle weapon muzzle.
-#pragma pack(push, 4)
-class SgMuzzle
-{
-public:
-    SgVec3 m_vMuzzlePos;
-    SgVec3 m_vMuzzleDir;
-    int32_t m_iMuzzleWait;
-    int8_t m_bFired;
-}; // SgMuzzle
-#pragma pack(pop)
-
 struct Muzzle
 {
-    using SgType = SgMuzzle;
-
-
 	// These are updated every frame and represent the current position and direction for the specific muzzle.
 	vec3_t m_vMuzzlePos;
 	vec3_t m_vMuzzleDir;
@@ -482,10 +468,10 @@ struct Muzzle
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 //defines for impact damage surface stuff
@@ -538,10 +524,10 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } vehWeaponStatus_t;
 
 #pragma pack(push, 4)
@@ -574,68 +560,17 @@ typedef struct
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 } vehTurretStatus_t;
 
 // This is the implementation of the vehicle interface and any of the other variables needed. This
 // is what actually represents a vehicle. -AReis.
 // !!!!!!!!!!!!!!!!!! loadsave affecting structure !!!!!!!!!!!!!!!!!!!!!!!
-#pragma pack(push, 4)
-class SgVehicle
-{
-public:
-    int32_t m_pPilot;
-    int32_t m_iPilotTime;
-    int32_t m_bHasHadPilot;
-    int32_t m_pDroidUnit;
-    int32_t m_pParentEntity;
-    int32_t m_iBoarding;
-    int8_t m_bWasBoarding;
-    SgVec3 m_vBoardingVelocity;
-    float m_fTimeModifier;
-    int32_t m_iLeftWingBone;
-    int32_t m_iRightWingBone;
-    SgArray<int32_t, MAX_VEHICLE_EXHAUSTS> m_iExhaustTag;
-    SgArray<int32_t, MAX_VEHICLE_MUZZLES> m_iMuzzleTag;
-    int32_t m_iDroidUnitTag;
-    SgArray<int32_t, MAX_VEHICLE_TURRETS> m_iGunnerViewTag;
-    SgArray<SgMuzzle, MAX_VEHICLE_MUZZLES> m_Muzzles;
-    SgUserCmd m_ucmd;
-    int32_t m_EjectDir;
-    uint32_t m_ulFlags;
-    SgVec3 m_vOrientation;
-    int32_t m_fStrafeTime;
-    SgVec3 m_vPrevOrientation;
-    float m_vAngularVelocity;
-    SgVec3 m_vFullAngleVelocity;
-    int32_t m_iArmor;
-    int32_t m_iShields;
-    int32_t m_iLastFXTime;
-    int32_t m_iDieTime;
-    int32_t m_pVehicleInfo;
-    SgTrace m_LandTrace;
-    int32_t m_iRemovedSurfaces;
-    int32_t m_iTurboTime;
-    int32_t m_iDropTime;
-    int32_t m_iSoundDebounceTimer;
-    int32_t lastShieldInc;
-    int32_t linkWeaponToggleHeld;
-    SgArray<SgVehWeaponStatus, MAX_VEHICLE_WEAPONS> weaponStatus;
-    SgArray<SgVehTurretStatus, MAX_VEHICLE_TURRETS> turretStatus;
-    int32_t m_pOldPilot;
-    int32_t m_safeJumpMountTime;
-    float m_safeJumpMountRightDot;
-}; // SgVehicle
-#pragma pack(pop)
-
 struct Vehicle_t
 {
-    using SgType = SgVehicle;
-
-
 	// The entity who pilots/drives this vehicle.
 	// NOTE: This is redundant (since m_pParentEntity->owner _should_ be the pilot). This makes things clearer though.
 	gentity_t *m_pPilot;
@@ -748,10 +683,10 @@ struct Vehicle_t
 
 
     void sg_export(
-        SgType& dst) const;
+        ojk::ISavedGame* saved_game) const;
 
     void sg_import(
-        const SgType& src);
+        ojk::ISavedGame* saved_game);
 };
 
 extern int BG_VehicleGetIndex( const char *vehicleName );

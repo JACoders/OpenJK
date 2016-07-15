@@ -33,7 +33,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "qcommon/ojk_sg_wrappers.h"
 #include "qcommon/ojk_i_saved_game.h"
 
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
