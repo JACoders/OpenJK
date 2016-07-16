@@ -214,8 +214,12 @@ void ISavedGame::read(
     TDst& dst_value,
     ClassTag)
 {
-    throw
-        "Not implemented.";
+    static_assert(
+        std::is_same<TSrc, void>::value,
+        "Unsupported types.");
+
+    dst_value.sg_import(
+        this);
 }
 
 template<typename TSrc, typename TDst, int TCount>
@@ -428,8 +432,12 @@ void ISavedGame::write(
     const TSrc& src_value,
     ClassTag)
 {
-    throw
-        "Not implemented.";
+    static_assert(
+        std::is_same<TDst, void>::value,
+        "Unsupported types.");
+
+    src_value.sg_export(
+        this);
 }
 
 template<typename TDst, typename TSrc, int TCount>
