@@ -510,6 +510,49 @@ void SavedGame::set_preview_mode(
     is_preview_mode_ = value;
 }
 
+void SavedGame::advance_buffer(
+    int count)
+{
+    if (!is_readable_ && !is_writable_)
+    {
+        throw_error(
+            "Not open or created.");
+    }
+
+    if (count < 0)
+    {
+        throw_error(
+            "Negative count.");
+    }
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    auto new_offset = io_buffer_offset_ + count;
+    auto buffer_size = io_buffer_.size();
+
+    if (new_offset > buffer_size)
+    {
+        if (is_readable_)
+        {
+            throw_error(
+                "Not enough data.");
+        }
+        else if (is_writable_)
+        {
+            io_buffer_offset_ = new_offset;
+
+            if (new_offset > buffer_size)
+            {
+                io_buffer_.resize(
+                    new_offset);
+            }
+        }
+    }
+}
+
 const SavedGame::Buffer& SavedGame::get_buffer() const
 {
     return io_buffer_;

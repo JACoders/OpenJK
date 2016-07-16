@@ -91,6 +91,9 @@ public:
     void set_preview_mode(
         bool value);
 
+    // Increments buffer's offset by the specified non-negative count.
+    void advance_buffer(
+        int count) override;
 
     // Returns an I/O buffer.
     const Buffer& get_buffer() const override;

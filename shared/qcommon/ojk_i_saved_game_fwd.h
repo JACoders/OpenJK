@@ -116,6 +116,11 @@ public:
         int src_count);
 
 
+    // Increments buffer's offset by the specified non-negative count.
+    virtual void advance_buffer(
+        int count) = 0;
+
+
     // Returns an I/O buffer.
     virtual const Buffer& get_buffer() const = 0;
 
