@@ -800,16 +800,3 @@ void gentity_s::sg_import(
     saved_game->read<int32_t>(forcePushTime);
     saved_game->read<int32_t>(forcePuller);
 }
-
-
-void CGhoul2Info_v::sg_export(
-    ojk::ISavedGame* saved_game) const
-{
-    saved_game->write<int32_t>(mItem);
-}
-
-void CGhoul2Info_v::sg_import(
-    ojk::ISavedGame* saved_game)
-{
-    saved_game->read<int32_t>(mItem);
-}

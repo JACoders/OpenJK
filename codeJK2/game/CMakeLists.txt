@@ -26,6 +26,7 @@ set(JK2SPGameDefines ${SharedDefines} "JK2_MODE" "SP_GAME")
 set(JK2SPGameIncludeDirectories
 	"${JK2SPDir}"
 	"${JK2SPDir}/game"
+	"${SPDir}"
 	"${SharedDir}"
 	"${GSLIncludeDirectory}"
 	)
@@ -238,6 +239,9 @@ set(JK2SPGameCommonFiles
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/strippublic.h"
+	"${SPDir}/rd-common/ghoul2_shared.cpp"
+	"${SPDir}/rd-common/mdx_format.h"
+	"${SPDir}/rd-common/mdx_format.cpp"
 	"${SharedDir}/qcommon/ojk_i_saved_game.h"
 	"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
 

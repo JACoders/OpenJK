@@ -930,10 +930,6 @@ void SV_InitGameProgs (void) {
 	import.FS_FreeFile = FS_FreeFile;
 	import.FS_GetFileList = FS_GetFileList;
 
-	import.AppendToSaveGame = SG_Append;
-	import.ReadFromSaveGame	= SG_Read;
-	import.ReadFromSaveGameOptional = SG_ReadOptional;
-
     import.saved_game = &ojk::SavedGame::get_instance();
 
 	import.AdjustAreaPortalState = SV_AdjustAreaPortalState;

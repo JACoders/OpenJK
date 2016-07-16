@@ -44,7 +44,11 @@ static char	saveGameComment[iSG_COMMENT_SIZE];
 //#define SG_PROFILE	// enable for debug save stats if you want
 
 int giSaveGameVersion;	// filled in when a savegame file is opened
+
+#if 0
 fileHandle_t fhSaveGame = 0;
+#endif
+
 SavedGameJustLoaded_e eSavedGameJustLoaded = eNO;
 qboolean qbSGReadIsTestOnly = qfalse;	// this MUST be left in this state
 char sLastSaveFileLoaded[MAX_QPATH]={0};
@@ -139,13 +143,14 @@ static const char *SG_AddSavePath( const char *psPathlessBaseName )
 	return sSaveName[i];
 }
 
-void SG_WipeSavegame( const char *psPathlessBaseName )
+void SG_WipeSavegame(
+    const char* psPathlessBaseName)
 {
-	const char *psLocalFilename  = SG_AddSavePath( psPathlessBaseName );
-
-	FS_DeleteUserGenFile( psLocalFilename );
+    ojk::SavedGame::remove(
+        psPathlessBaseName);
 }
 
+#if 0
 static qboolean SG_Move( const char *psPathlessBaseName_Src, const char *psPathlessBaseName_Dst )
 {
 	const char *psLocalFilename_Src = SG_AddSavePath( psPathlessBaseName_Src );
@@ -161,8 +166,9 @@ static qboolean SG_Move( const char *psPathlessBaseName_Src, const char *psPathl
 
 	return qtrue;
 }
+#endif
 
-
+#if 0
 qboolean gbSGWriteFailed = qfalse;
 
 static qboolean SG_Create( const char *psPathlessBaseName )
@@ -189,10 +195,12 @@ static qboolean SG_Create( const char *psPathlessBaseName )
 
 	return qtrue;
 }
+#endif
 
 // called from the ERR_DROP stuff just in case the error occured during loading of a saved game, because if
 //	we didn't do this then we'd run out of quake file handles after the 8th load fail...
 //
+#if 0
 void SG_Shutdown()
 {
 	if (fhSaveGame )
@@ -209,7 +217,25 @@ void SG_Shutdown()
 	extern qboolean gbAlreadyDoingLoad;
 					gbAlreadyDoingLoad = qfalse;
 }
+#else
+void SG_Shutdown()
+{
+    auto saved_game = &ojk::SavedGame::get_instance();
 
+    saved_game->close();
+
+    eSavedGameJustLoaded = eNO;
+    // important to do this if we ERR_DROP during loading, else next map you load after
+    // a bad save-file you'll arrive at dead :-)
+
+    // and this bit stops people messing up the laoder by repeatedly stabbing at the load key during loads...
+    //
+    extern qboolean gbAlreadyDoingLoad;
+    gbAlreadyDoingLoad = qfalse;
+}
+#endif
+
+#if 0
 qboolean SG_Close()
 {
 	assert( fhSaveGame );
@@ -239,8 +265,9 @@ qboolean SG_Close()
 	CompressMem_FreeScratchBuffer();
 	return qtrue;
 }
+#endif
 
-
+#if 0
 qboolean SG_Open( const char *psPathlessBaseName )
 {
 //	if ( fhSaveGame )		// hmmm...
@@ -280,6 +307,7 @@ qboolean SG_Open( const char *psPathlessBaseName )
 
 	return qtrue;
 }
+#endif
 
 // you should only call this when you know you've successfully opened a savegame, and you want to query for
 //	whether it's an old (street-copy) version, or a new (expansion-pack) version
@@ -1030,30 +1058,33 @@ static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
 }
 // Gets the savegame screenshot
 //
-qboolean SG_GetSaveImage( const char *psPathlessBaseName, void *pvAddress )
+qboolean SG_GetSaveImage(const char *psPathlessBaseName, void *pvAddress)
 {
-	if(!psPathlessBaseName)
-	{
-		return qfalse;
-	}
-
-	if (!SG_Open(psPathlessBaseName))
-	{
-		return qfalse;
-	}
+    if (!psPathlessBaseName)
+    {
+        return qfalse;
+    }
 
     auto saved_game = &ojk::SavedGame::get_instance();
 
-    saved_game->read_chunk(
-        INT_ID('C','O','M','M'));
+    if (!saved_game->open(psPathlessBaseName))
+    {
+        return qfalse;
+    }
 
     saved_game->read_chunk(
-        INT_ID('C','M','T','M'));
+        INT_ID('C', 'O', 'M', 'M'));
 
-	qboolean bGotSaveImage = SG_ReadScreenshot(qfalse, pvAddress);
+    saved_game->read_chunk(
+        INT_ID('C', 'M', 'T', 'M'));
 
-	SG_Close();
-	return bGotSaveImage;
+    auto bGotSaveImage = SG_ReadScreenshot(
+        qfalse,
+        pvAddress);
+
+    saved_game->close();
+
+    return bGotSaveImage;
 }
 
 
@@ -1177,7 +1208,9 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 		SG_StoreSaveGameComment(va("--> %s <--",psMapName));
 	}
 
-	if(!SG_Create( "current" ))
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+	if(!saved_game->create( "current" ))
 	{
 		Com_Printf (GetString_FailedToOpenSaveGame("current",qfalse));//S_COLOR_RED "Failed to create savegame\n");
 		SG_WipeSavegame( "current" );
@@ -1193,8 +1226,6 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 #ifdef JK2_MODE
 	SG_WriteScreenshot(qbAutosave, sMapCmd);
 #endif
-
-    auto saved_game = &ojk::SavedGame::get_instance();
 
     saved_game->write_chunk(
         INT_ID('M','P','C','M'),
@@ -1220,8 +1251,12 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 		SG_WriteServerConfigStrings();
 	}
 	ge->WriteLevel(qbAutosave);	// always done now, but ent saver only does player if auto
-	SG_Close();
-	if (gbSGWriteFailed)
+
+    auto is_write_failed = saved_game->is_write_failed();
+
+	saved_game->close();
+
+	if (is_write_failed)
 	{
 		Com_Printf (GetString_FailedToOpenSaveGame("current",qfalse));//S_COLOR_RED "Failed to write savegame!\n");
 		SG_WipeSavegame( "current" );
@@ -1229,7 +1264,13 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 		return qfalse;
 	}
 
+#if 0
 	SG_Move( "current", psPathlessBaseName );
+#else
+    ojk::SavedGame::rename(
+        "current",
+        psPathlessBaseName);
+#endif
 
 
 	sv_testsave->integer = iPrevTestSave;
@@ -1249,7 +1290,9 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	Cvar_Set( "cg_missionstatusscreen", "0" );//reset if loading a game
 #endif
 
-	if (!SG_Open( psPathlessBaseName ))
+    auto saved_game = &ojk::SavedGame::get_instance();
+
+	if (!saved_game->open(psPathlessBaseName))
 	{
 		Com_Printf (GetString_FailedToOpenSaveGame(psPathlessBaseName, qtrue));//S_COLOR_RED "Failed to open savegame \"%s\"\n", psPathlessBaseName);
 		sv_testsave->integer = iPrevTestSave;
@@ -1265,8 +1308,6 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 
 	// Read in all the server data...
 	//
-    auto saved_game = &ojk::SavedGame::get_instance();
-
     saved_game->read_chunk(
         INT_ID('C','O','M','M'),
         sComment);
@@ -1310,18 +1351,22 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	}
 	ge->ReadLevel(qbAutosave, qbLoadTransition);	// always done now, but ent reader only does player if auto
 
+#if 0
 	if(!SG_Close())
 	{
 		Com_Printf (GetString_FailedToOpenSaveGame(psPathlessBaseName,qfalse));//S_COLOR_RED "Failed to close savegame\n");
 		sv_testsave->integer = iPrevTestSave;
 		return qfalse;
 	}
+#else
+    saved_game->close();
+#endif
 
 	sv_testsave->integer = iPrevTestSave;
 	return qtrue;
 }
 
-
+#if 0
 int Compress_RLE(const byte *pIn, int iLength, byte *pOut)
 {
 	int iCount=0,iOutIndex=0;
@@ -1358,7 +1403,9 @@ int Compress_RLE(const byte *pIn, int iLength, byte *pOut)
 	}
 	return iOutIndex;
 }
+#endif
 
+#if 0
 void DeCompress_RLE(byte *pOut, const byte *pIn, int iDecompressedBytesRemaining)
 {
 	signed char count;
@@ -1381,7 +1428,9 @@ void DeCompress_RLE(byte *pOut, const byte *pIn, int iDecompressedBytesRemaining
 		iDecompressedBytesRemaining -= count;
 	}
 }
+#endif
 
+#if 0
 // simulate decompression over original data (but don't actually do it), to test de/compress validity...
 //
 qboolean Verify_RLE(const byte *pOut, const byte *pIn, int iDecompressedBytesRemaining)
@@ -1422,8 +1471,9 @@ qboolean Verify_RLE(const byte *pOut, const byte *pIn, int iDecompressedBytesRem
 
 	return qtrue;
 }
+#endif
 
-
+#if 0
 byte *gpbCompBlock = NULL;
 int   giCompBlockSize = 0;
 static void CompressMem_FreeScratchBuffer(void)
@@ -1435,7 +1485,9 @@ static void CompressMem_FreeScratchBuffer(void)
 	}
 	giCompBlockSize = 0;
 }
+#endif
 
+#if 0
 static byte *CompressMem_AllocScratchBuffer(int iSize)
 {
 	// only alloc new buffer if we need more than the existing one...
@@ -1450,7 +1502,9 @@ static byte *CompressMem_AllocScratchBuffer(int iSize)
 
 	return gpbCompBlock;
 }
+#endif
 
+#if 0
 // returns -1 for compression-not-worth-it, else compressed length...
 //
 int CompressMem(byte *pbData, int iLength, byte *&pbOut)
@@ -1478,15 +1532,17 @@ int CompressMem(byte *pbData, int iLength, byte *&pbOut)
 
 	return iOutputLength;
 }
+#endif
 
+#if 0
 //pass through function
 int SG_Write(const void * chid, const int bytesize, fileHandle_t fhSaveGame)
 {
 		return FS_Write( chid, bytesize, fhSaveGame);
 }
+#endif
 
-
-
+#if 0
 qboolean SG_Append(unsigned int chid, const void *pvData, int iLength)
 {
 	unsigned int	uiCksum;
@@ -1573,21 +1629,24 @@ qboolean SG_Append(unsigned int chid, const void *pvData, int iLength)
 
 	return qtrue;
 }
+#endif
 
+#if 0
 //pass through function
 int SG_ReadBytes(void * chid, int bytesize, fileHandle_t fhSaveGame)
 {
 	return FS_Read( chid, bytesize, fhSaveGame);
 }
+#endif
 
-
+#if 0
 int SG_Seek( fileHandle_t fhSaveGame, long offset, int origin )
 {
 	return FS_Seek(fhSaveGame, offset, origin);
 }
+#endif
 
-
-
+#if 0
 // Pass in pvAddress (or NULL if you want memory to be allocated)
 //	if pvAddress==NULL && ppvAddressPtr == NULL then the block is discarded/skipped.
 //
@@ -1750,17 +1809,21 @@ static int SG_Read_Actual(unsigned int chid, void *pvAddress, int iLength, void 
 
 	return iLength;
 }
+#endif
 
+#if 0
 int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr /* = NULL */)
 {
 	return SG_Read_Actual(chid, pvAddress, iLength, ppvAddressPtr, qfalse );	// qboolean bChunkIsOptional
 }
+#endif
 
+#if 0
 int SG_ReadOptional(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr /* = NULL */)
 {
 	return SG_Read_Actual(chid, pvAddress, iLength, ppvAddressPtr, qtrue);		// qboolean bChunkIsOptional
 }
-
+#endif
 
 void SG_TestSave(void)
 {

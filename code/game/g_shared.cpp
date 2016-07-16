@@ -272,7 +272,7 @@ void clientPersistant_t::sg_export(
     ojk::ISavedGame* saved_game) const
 {
     saved_game->write<int32_t>(connected);
-    saved_game->write<int32_t>(lastCommand);
+    saved_game->write<>(lastCommand);
     saved_game->write<int8_t>(netname);
     saved_game->write<int32_t>(maxHealth);
     saved_game->write<int32_t>(enterTime);
@@ -284,7 +284,7 @@ void clientPersistant_t::sg_import(
     ojk::ISavedGame* saved_game)
 {
     saved_game->read<int32_t>(connected);
-    saved_game->read<int32_t>(lastCommand);
+    saved_game->read<>(lastCommand);
     saved_game->read<int8_t>(netname);
     saved_game->read<int32_t>(maxHealth);
     saved_game->read<int32_t>(enterTime);
@@ -300,7 +300,7 @@ void gclient_s::sg_export(
     saved_game->write<>(pers);
     saved_game->write<>(sess);
     saved_game->write<int32_t>(lastCmdTime);
-    saved_game->write<int32_t>(usercmd);
+    saved_game->write<>(usercmd);
     saved_game->write<int32_t>(buttons);
     saved_game->write<int32_t>(oldbuttons);
     saved_game->write<int32_t>(latched_buttons);
@@ -365,7 +365,7 @@ void gclient_s::sg_import(
     saved_game->read<>(pers);
     saved_game->read<>(sess);
     saved_game->read<int32_t>(lastCmdTime);
-    saved_game->read<int32_t>(usercmd);
+    saved_game->read<>(usercmd);
     saved_game->read<int32_t>(buttons);
     saved_game->read<int32_t>(oldbuttons);
     saved_game->read<int32_t>(latched_buttons);
@@ -813,17 +813,4 @@ void gentity_t::sg_import(
     saved_game->read<float>(lightLevel);
     saved_game->read<int32_t>(forcePushTime);
     saved_game->read<int32_t>(forcePuller);
-}
-
-
-void CGhoul2Info_v::sg_export(
-    ojk::ISavedGame* saved_game) const
-{
-    saved_game->write<int32_t>(mItem);
-}
-
-void CGhoul2Info_v::sg_import(
-    ojk::ISavedGame* saved_game)
-{
-    saved_game->write<int32_t>(mItem);
 }

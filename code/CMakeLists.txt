@@ -281,10 +281,12 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 	set(SPEngineRendererFiles
 		"${SPDir}/rd-common/mdx_format.h"
+		"${SPDir}/rd-common/mdx_format.cpp"
 		"${SPDir}/rd-common/tr_public.h"
 		"${SPDir}/rd-common/tr_types.h"
 		)
-
+	source_group("renderer" FILES ${SPEngineRendererFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRendererFiles})
 
 	# UI files
 	set(SPEngineUIFiles
@@ -308,6 +310,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineGhoul2Files
 		"${SPDir}/ghoul2/G2.h"
 		"${SPDir}/ghoul2/ghoul2_gore.h"
+		"${SPDir}/rd-common/ghoul2_shared.cpp"
 		)
 	source_group("ghoul2" FILES ${SPEngineGhoul2Files})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineGhoul2Files})

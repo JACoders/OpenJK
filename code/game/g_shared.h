@@ -358,7 +358,6 @@ typedef struct missionStats_s
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 //
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-#pragma pack(push, 4)
 typedef struct {
 	int				missionObjectivesShown;	// Number of times mission objectives have been updated
 	team_t			sessionTeam;

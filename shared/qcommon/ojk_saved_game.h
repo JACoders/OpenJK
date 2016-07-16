@@ -86,6 +86,9 @@ public:
     using ISavedGame::write;
 
 
+    bool is_write_failed() const;
+
+
     // Returns an I/O buffer.
     const Buffer& get_buffer() const override;
 

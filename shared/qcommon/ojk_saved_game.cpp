@@ -499,6 +499,11 @@ void SavedGame::raw_write(
     io_buffer_offset_ = new_buffer_size;
 }
 
+bool SavedGame::is_write_failed() const
+{
+    return is_write_failed_;
+}
+
 const SavedGame::Buffer& SavedGame::get_buffer() const
 {
     return io_buffer_;

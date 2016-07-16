@@ -11154,16 +11154,6 @@ void	CQuake3GameInterface::FreeVariable( const char *name )
 }
 
 //Save / Load functions
-int		CQuake3GameInterface::WriteSaveData( unsigned int chid, const void *data, int length )
-{
-	return gi.AppendToSaveGame( chid, data, length );
-}
-
-int		CQuake3GameInterface::ReadSaveData( unsigned int chid, void *address, int length, void **addressptr )
-{
-	return gi.ReadFromSaveGame( chid, address, length, addressptr );
-}
-
 ojk::ISavedGame* CQuake3GameInterface::get_saved_game()
 {
     return ::gi.saved_game;

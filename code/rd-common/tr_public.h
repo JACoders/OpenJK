@@ -112,8 +112,6 @@ typedef struct {
 															const int passEntityNum, const int contentmask,
 															const EG2_Collision eG2TraceType, const int useLod );
 
-	qboolean			(*SG_Append)						( unsigned int chid, const void *pvData, int iLength );
-
     ojk::ISavedGame* saved_game;
 
 	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );

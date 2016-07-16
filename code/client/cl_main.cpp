@@ -1143,7 +1143,6 @@ void CL_InitRef( void ) {
 	RIT(FS_Write);
 	RIT(FS_WriteFile);
 	RIT(Hunk_ClearToMark);
-	RIT(SG_Append);
 	RIT(SND_RegisterAudio_LevelLoadEnd);
 	//RIT(SV_PointContents);
 	RIT(SV_Trace);
