@@ -88,6 +88,9 @@ public:
 
     bool is_write_failed() const;
 
+    void set_preview_mode(
+        bool value);
+
 
     // Returns an I/O buffer.
     const Buffer& get_buffer() const override;

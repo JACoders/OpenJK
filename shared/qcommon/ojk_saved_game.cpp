@@ -504,6 +504,12 @@ bool SavedGame::is_write_failed() const
     return is_write_failed_;
 }
 
+void SavedGame::set_preview_mode(
+    bool value)
+{
+    is_preview_mode_ = value;
+}
+
 const SavedGame::Buffer& SavedGame::get_buffer() const
 {
     return io_buffer_;

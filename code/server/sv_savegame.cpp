@@ -50,7 +50,11 @@ fileHandle_t fhSaveGame = 0;
 #endif
 
 SavedGameJustLoaded_e eSavedGameJustLoaded = eNO;
+
+#if 0
 qboolean qbSGReadIsTestOnly = qfalse;	// this MUST be left in this state
+#endif
+
 char sLastSaveFileLoaded[MAX_QPATH]={0};
 
 #define iSG_MAPCMD_SIZE MAX_QPATH
@@ -91,6 +95,7 @@ typedef map<unsigned int, CChid> CChidInfo_t;
 CChidInfo_t	save_info;
 #endif
 
+#if 0
 const char *SG_GetChidText(unsigned int chid)
 {
 	static union { char c[5]; int i; } chidtext;
@@ -99,7 +104,7 @@ const char *SG_GetChidText(unsigned int chid)
 
 	return chidtext.c;
 }
-
+#endif
 
 static const char *GetString_FailedToOpenSaveGame(const char *psFilename, qboolean bOpen)
 {
@@ -117,6 +122,7 @@ static const char *GetString_FailedToOpenSaveGame(const char *psFilename, qboole
 	return sTemp;
 }
 
+#if 0
 // (copes with up to 8 ptr returns at once)
 //
 static const char *SG_AddSavePath( const char *psPathlessBaseName )
@@ -142,6 +148,7 @@ static const char *SG_AddSavePath( const char *psPathlessBaseName )
 	Com_sprintf( sSaveName[i], MAX_OSPATH, "saves/%s.sav", psPathlessBaseName );
 	return sSaveName[i];
 }
+#endif
 
 void SG_WipeSavegame(
     const char* psPathlessBaseName)
@@ -309,6 +316,7 @@ qboolean SG_Open( const char *psPathlessBaseName )
 }
 #endif
 
+#if 0
 // you should only call this when you know you've successfully opened a savegame, and you want to query for
 //	whether it's an old (street-copy) version, or a new (expansion-pack) version
 //
@@ -316,6 +324,7 @@ int SG_Version(void)
 {
 	return giSaveGameVersion;
 }
+#endif
 
 void SV_WipeGame_f(void)
 {
@@ -929,14 +938,17 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 	size_t iScreenShotLength;
 #endif
 
-	qbSGReadIsTestOnly = qtrue;	// do NOT leave this in this state
-
     auto saved_game = &ojk::SavedGame::get_instance();
+
+    saved_game->set_preview_mode(
+        true);
 
 	if (!saved_game->open(
         psPathlessBaseName))
 	{
-		qbSGReadIsTestOnly = qfalse;
+		saved_game->set_preview_mode(
+            false);
+
 		return 0;
 	}
 
@@ -973,7 +985,6 @@ int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *
 #endif
 		}
 	}
-	qbSGReadIsTestOnly = qfalse;
 
     saved_game->close();
 
