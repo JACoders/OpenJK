@@ -9262,10 +9262,7 @@ void Interface_Init( interface_export_t *pe )
 	pe->I_FreeVariable			=	Q3_FreeVariable;
 
 	//Save / Load functions
-	pe->I_WriteSaveData			=	gi.AppendToSaveGame;
-	pe->I_ReadSaveData			=	gi.ReadFromSaveGame;
 	pe->I_LinkEntity			=	ICARUS_LinkEntity;
-
     pe->saved_game = gi.saved_game;
 
 	gclient_t	*client;

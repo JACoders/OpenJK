@@ -174,11 +174,6 @@ typedef struct {
 
 	// Savegame handling
 	//
-	qboolean	(*AppendToSaveGame)(unsigned int chid, const void *data, int length);
-
-	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-
     ojk::ISavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
