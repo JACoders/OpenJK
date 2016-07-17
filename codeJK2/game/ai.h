@@ -114,10 +114,22 @@ typedef struct AIGroupMember_s
 
 
     void sg_export(
-        ojk::ISavedGame* saved_game) const;
+        ojk::ISavedGame* saved_game) const
+    {
+        saved_game->write<int32_t>(number);
+        saved_game->write<int32_t>(waypoint);
+        saved_game->write<int32_t>(pathCostToEnemy);
+        saved_game->write<int32_t>(closestBuddy);
+    }
 
     void sg_import(
-        ojk::ISavedGame* saved_game);
+        ojk::ISavedGame* saved_game)
+    {
+        saved_game->read<int32_t>(number);
+        saved_game->read<int32_t>(waypoint);
+        saved_game->read<int32_t>(pathCostToEnemy);
+        saved_game->read<int32_t>(closestBuddy);
+    }
 } AIGroupMember_t;
 
 #define MAX_GROUP_MEMBERS 32
@@ -144,10 +156,48 @@ typedef struct AIGroupInfo_s
 
 
     void sg_export(
-        ojk::ISavedGame* saved_game) const;
+        ojk::ISavedGame* saved_game) const
+    {
+        saved_game->write<int32_t>(numGroup);
+        saved_game->write<int32_t>(processed);
+        saved_game->write<int32_t>(team);
+        saved_game->write<int32_t>(enemy);
+        saved_game->write<int32_t>(enemyWP);
+        saved_game->write<int32_t>(speechDebounceTime);
+        saved_game->write<int32_t>(lastClearShotTime);
+        saved_game->write<int32_t>(lastSeenEnemyTime);
+        saved_game->write<int32_t>(morale);
+        saved_game->write<int32_t>(moraleAdjust);
+        saved_game->write<int32_t>(moraleDebounce);
+        saved_game->write<int32_t>(memberValidateTime);
+        saved_game->write<int32_t>(activeMemberNum);
+        saved_game->write<int32_t>(commander);
+        saved_game->write<float>(enemyLastSeenPos);
+        saved_game->write<int32_t>(numState);
+        saved_game->write<>(member);
+    }
 
     void sg_import(
-        ojk::ISavedGame* saved_game);
+        ojk::ISavedGame* saved_game)
+    {
+        saved_game->read<int32_t>(numGroup);
+        saved_game->read<int32_t>(processed);
+        saved_game->read<int32_t>(team);
+        saved_game->read<int32_t>(enemy);
+        saved_game->read<int32_t>(enemyWP);
+        saved_game->read<int32_t>(speechDebounceTime);
+        saved_game->read<int32_t>(lastClearShotTime);
+        saved_game->read<int32_t>(lastSeenEnemyTime);
+        saved_game->read<int32_t>(morale);
+        saved_game->read<int32_t>(moraleAdjust);
+        saved_game->read<int32_t>(moraleDebounce);
+        saved_game->read<int32_t>(memberValidateTime);
+        saved_game->read<int32_t>(activeMemberNum);
+        saved_game->read<int32_t>(commander);
+        saved_game->read<float>(enemyLastSeenPos);
+        saved_game->read<int32_t>(numState);
+        saved_game->read<>(member);
+    }
 } AIGroupInfo_t;
 
 int	AI_GetGroupSize( vec3_t origin, int radius, team_t playerTeam, gentity_t *avoid = NULL );

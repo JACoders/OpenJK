@@ -1924,26 +1924,3 @@ void CFxScheduler::CreateEffect( CPrimitiveTemplate *fx, const vec3_t origin, ve
 		}
 	}
 }
-
-
-void SLoopedEffect::sg_export(
-    ojk::ISavedGame* saved_game) const
-{
-    saved_game->write<int32_t>(mId);
-    saved_game->write<int32_t>(mBoltInfo);
-    saved_game->write<int32_t>(mNextTime);
-    saved_game->write<int32_t>(mLoopStopTime);
-    saved_game->write<int8_t>(mPortalEffect);
-    saved_game->write<int8_t>(mIsRelative);
-}
-
-void SLoopedEffect::sg_import(
-    ojk::ISavedGame* saved_game)
-{
-    saved_game->read<int32_t>(mId);
-    saved_game->read<int32_t>(mBoltInfo);
-    saved_game->read<int32_t>(mNextTime);
-    saved_game->read<int32_t>(mLoopStopTime);
-    saved_game->read<int8_t>(mPortalEffect);
-    saved_game->read<int8_t>(mIsRelative);
-}
