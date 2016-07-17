@@ -26,7 +26,6 @@ set(JK2SPGameDefines ${SharedDefines} "JK2_MODE" "SP_GAME")
 set(JK2SPGameIncludeDirectories
 	"${JK2SPDir}"
 	"${JK2SPDir}/game"
-	"${SPDir}"
 	"${SharedDir}"
 	"${GSLIncludeDirectory}"
 	)

@@ -92,7 +92,7 @@ public:
         bool value);
 
     // Increments buffer's offset by the specified non-negative count.
-    void advance_buffer(
+    void skip(
         int count) override;
 
     // Returns an I/O buffer.

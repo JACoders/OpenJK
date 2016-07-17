@@ -186,7 +186,7 @@ void ISavedGame::read(
 
 template<typename TSrc, typename TDst>
 void ISavedGame::read(
-    TDst* dst_value,
+    TDst*& dst_value,
     PointerTag)
 {
     static_assert(

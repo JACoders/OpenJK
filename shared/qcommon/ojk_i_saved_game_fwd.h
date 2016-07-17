@@ -117,7 +117,7 @@ public:
 
 
     // Increments buffer's offset by the specified non-negative count.
-    virtual void advance_buffer(
+    virtual void skip(
         int count) = 0;
 
 
@@ -153,7 +153,7 @@ protected:
 
     template<typename TSrc, typename TDst>
     void read(
-        TDst* dst_value,
+        TDst*& dst_value,
         PointerTag);
 
     template<typename TSrc, typename TDst>

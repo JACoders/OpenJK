@@ -510,7 +510,7 @@ void SavedGame::set_preview_mode(
     is_preview_mode_ = value;
 }
 
-void SavedGame::advance_buffer(
+void SavedGame::skip(
     int count)
 {
     if (!is_readable_ && !is_writable_)
@@ -542,8 +542,6 @@ void SavedGame::advance_buffer(
         }
         else if (is_writable_)
         {
-            io_buffer_offset_ = new_offset;
-
             if (new_offset > buffer_size)
             {
                 io_buffer_.resize(
@@ -551,6 +549,8 @@ void SavedGame::advance_buffer(
             }
         }
     }
+
+    io_buffer_offset_ = new_offset;
 }
 
 const SavedGame::Buffer& SavedGame::get_buffer() const
