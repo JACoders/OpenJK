@@ -655,9 +655,11 @@ public:
         saved_game->write<>(lastCommand);
         saved_game->write<int32_t>(localClient);
         saved_game->write<int8_t>(netname);
+        saved_game->skip(2);
         saved_game->write<int32_t>(maxHealth);
         saved_game->write<int32_t>(enterTime);
         saved_game->write<int16_t>(cmd_angles);
+        saved_game->skip(2);
         saved_game->write<>(teamState);
     }
 
@@ -668,9 +670,11 @@ public:
         saved_game->read<>(lastCommand);
         saved_game->read<int32_t>(localClient);
         saved_game->read<int8_t>(netname);
+        saved_game->skip(2);
         saved_game->read<int32_t>(maxHealth);
         saved_game->read<int32_t>(enterTime);
         saved_game->read<int16_t>(cmd_angles);
+        saved_game->skip(2);
         saved_game->read<>(teamState);
     }
 }; // jo_clientPersistant_t
@@ -819,6 +823,7 @@ struct gclient_s {
         saved_game->write<>(clientInfo);
         saved_game->write<int8_t>(forced_forwardmove);
         saved_game->write<int8_t>(forced_rightmove);
+        saved_game->skip(2);
         saved_game->write<int32_t>(fireDelay);
         saved_game->write<int32_t>(playerTeam);
         saved_game->write<int32_t>(enemyTeam);
@@ -840,6 +845,7 @@ struct gclient_s {
         saved_game->write<int8_t>(dismemberProbArms);
         saved_game->write<int8_t>(dismemberProbHands);
         saved_game->write<int8_t>(dismemberProbWaist);
+        saved_game->skip(3);
         saved_game->write<int32_t>(standheight);
         saved_game->write<int32_t>(crouchheight);
         saved_game->write<int32_t>(poisonDamage);
@@ -879,6 +885,7 @@ struct gclient_s {
         saved_game->read<>(clientInfo);
         saved_game->read<int8_t>(forced_forwardmove);
         saved_game->read<int8_t>(forced_rightmove);
+        saved_game->skip(2);
         saved_game->read<int32_t>(fireDelay);
         saved_game->read<int32_t>(playerTeam);
         saved_game->read<int32_t>(enemyTeam);
@@ -900,6 +907,7 @@ struct gclient_s {
         saved_game->read<int8_t>(dismemberProbArms);
         saved_game->read<int8_t>(dismemberProbHands);
         saved_game->read<int8_t>(dismemberProbWaist);
+        saved_game->skip(3);
         saved_game->read<int32_t>(standheight);
         saved_game->read<int32_t>(crouchheight);
         saved_game->read<int32_t>(poisonDamage);
