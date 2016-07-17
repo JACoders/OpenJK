@@ -633,7 +633,10 @@ typedef struct {
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct {
+// FIXME Prefix added to avoid debugging problems in Visual Studio.
+class jo_clientPersistant_t
+{
+public:
 	clientConnected_t	connected;	
 	usercmd_t	lastCommand;
 	qboolean	localClient;		// true if "ip" info key is "localhost"
@@ -670,7 +673,7 @@ typedef struct {
         saved_game->read<int16_t>(cmd_angles);
         saved_game->read<>(teamState);
     }
-} clientPersistant_t;
+}; // jo_clientPersistant_t
 
 typedef enum {
 	BLK_NO,
@@ -702,7 +705,7 @@ struct gclient_s {
 	playerState_t	ps;				// communicated by server to clients
 
 	// private to game
-	clientPersistant_t	pers;
+	jo_clientPersistant_t	pers;
 	clientSession_t		sess;
 
 	qboolean	noclip;

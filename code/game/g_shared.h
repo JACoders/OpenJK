@@ -599,7 +599,10 @@ typedef struct {
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct {
+// FIXME Prefix added to avoid debugging problems in Visual Studio.
+class ja_clientPersistant_t
+{
+public:
 	clientConnected_t	connected;
 	usercmd_t	lastCommand;
 	char		netname[34];
@@ -633,7 +636,7 @@ typedef struct {
         saved_game->read<int16_t>(cmd_angles);
         saved_game->read<>(teamState);
     }
-} clientPersistant_t;
+}; // ja_clientPersistant_t
 
 typedef enum {
 	BLK_NO,
@@ -675,7 +678,7 @@ struct gclient_s {
 	playerState_t	ps;				// communicated by server to clients
 
 	// private to game
-	clientPersistant_t	pers;
+	ja_clientPersistant_t	pers;
 	clientSession_t		sess;
 
 	int			lastCmdTime;		// level.time of last usercmd_t, for EF_CONNECTION

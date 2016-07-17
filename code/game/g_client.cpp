@@ -2118,7 +2118,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 	vec3_t	spawn_origin, spawn_angles;
 	gclient_t	*client;
 	int		i;
-	clientPersistant_t	saved;
+	ja_clientPersistant_t	saved;
 	clientSession_t		savedSess;
 	clientInfo_t		savedCi;
 	int		persistant[MAX_PERSISTANT];
