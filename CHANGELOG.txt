@@ -95,19 +95,21 @@ Future ideas
 ----------------------------------------------------------------------------------------------------------------------------
 Things to do -
 - *savegame screenshots
-- *separate cvar for player HP and Shields
-- reborn masters with debounce to limit constant saber throwing + lightning
-- *NPCs avoid cliffs
 - *extra fields in Weapons.dat such as NPCDamageMult, NPCAltDamageMult, saber ignition/deignition time
-- force push strong version, mindtrick changes
-- doing a full slash when starting saber off regardless of movement
 - *camera controls (1st, 2nd, 3rd, 4th person)
 - better AI for NPCs deciding to surrender
 
 - balance staff and duals blocking
 - finish new NPC fields
-- make sure saber stats save correctly
+- make sure saber combat stats save correctly
+- saber flags as cvars for player
 
+Sidelined:
+- *separate cvar for player HP and Shields
+- reborn masters with debounce to limit constant saber throwing + lightning
+- *NPCs avoid cliffs
+- force push strong version, mindtrick changes
+- doing a full slash when starting saber off regardless of movement
 
 * would like to implement into OpenJK
 ** not completely tested but should work

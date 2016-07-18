@@ -226,6 +226,44 @@ cvar_t	*g_char_forceAffinity; //make into ui_cvars?
 cvar_t	*g_char_forceFocus;
 cvar_t	*g_char_forceSensitivity;
 
+/*
+cvar_t	*g_char_moveSpeedScale;			1.0 - you move faster / slower when using this saber
+cvar_t	*g_char_animSpeedScale;			1.0 - plays normal attack animations faster / slower
+
+//replace certain anims
+cvar_t	*g_char_readyAnim;				none - anim to use when standing idle(use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_drawAnim;				none - anim to use when drawing weapon(use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_putawayAnim;				none - anim to use when putting weapon away(use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_tauntAnim;			none - anim to use when hit "taunt" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_bowAnim;					none - anim to use when hit "bow" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_meditateAnim;				none - anim to use when hit "meditate" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_flourishAnim:				none - anim to use when hit "flourish" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_gloatAnim;				none - anim to use when hit "gloat" (use name of enum in anims.h or BehavEd's list)
+
+//optionally disallow certain types of moves and attacks
+noRollStab				0 - if set, cannot do roll - stab move at end of roll
+noPullAttack			0 - if set, cannot do pull + attack move(move not available in MP anyway)
+noBackAttack			0 - if set, cannot do back - stab moves
+noStabDown				0 - if set, cannot do stabdown move(when enemy is on ground)
+noWallRuns				0 - if set, cannot side - run or forward - run on walls
+noWallFlips				0 - if set, cannot do backflip off wall or side - flips off walls
+noWallGrab				0 - if set, cannot grab wall & jump off
+noRolls					0 - if set, cannot roll
+noFlips					0 - if set, cannot do flips
+noCartwheels			0 - if set, cannot do cartwheels
+noKicks					0 - if set, cannot do kicks(can't do kicks anyway if using a throwable saber/sword)
+noMirrorAttacks			0 - if set, cannot do the simultaneous attack left / right moves(only available in Dual Lightsaber Combat Style)
+
+//done in both cgame and game (BG code)
+kataMove				0 - if set, player will execute this move when they press both attack buttons at the same time(see list below for valid values)
+lungeAtkMove			0 - if set, player will execute this move when they crouch + fwd + attack(see list below for valid values)
+jumpAtkUpMove			0 - if set, player will execute this move when they jump + attack(see list below for valid values)
+jumpAtkFwdMove			0 - if set, player will execute this move when they jump + fwd + attack(see list below for valid values)
+jumpAtkBackMove			0 - if set, player will execute this move when they jump + back + attack(see list below for valid values)
+jumpAtkRightMove		0 - if set, player will execute this move when they jump + rightattack(see list below for valid values)
+jumpAtkLeftMove			0 - if set, player will execute this move when they jump + left + attack(see list below for valid values)
+//NOTE: these "move" fields refer to saber moves that are defined in code.  Set to LS_NONE to have the normal move removed, set to one of the following values to override the current move
+*/
 
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;

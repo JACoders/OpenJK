@@ -1651,7 +1651,7 @@ void JET_FlyStart( gentity_t *self )
 		return;
 	}
 	self->lastInAirTime = level.time;
-	if (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA)
+	if (self->client->NPC_class == CLASS_BOBAFETT)
 	{
 		Boba_FlyStart( self );
 	}

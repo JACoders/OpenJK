@@ -100,6 +100,9 @@ static qboolean G_Dismemberable( gentity_t *self, int hitLoc );
 extern gitem_t	*FindItemForAmmo( ammo_t ammo );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
 
+qboolean blasterDamage(int mod);
+qboolean heavyDamage(int mod);
+
 
 qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName, char *returnSurfName, int returnSize );
 /*
@@ -7054,11 +7057,11 @@ qboolean blasterDamage(int mod) {
 	case MOD_BOWCASTER:
 	case MOD_BOWCASTER_ALT:
 	case MOD_REPEATER:
-			//case MOD_DEMP2,
-			//case MOD_DEMP2_ALT,
-			//NEW for JKA weapons:
+		//case MOD_DEMP2,
+		//case MOD_DEMP2_ALT,
+		//NEW for JKA weapons:
 	case MOD_CONC:
-	case MOD_CONC_ALT:		
+	case MOD_CONC_ALT:
 	case MOD_SEEKER:
 	case MOD_EMPLACED:
 		return qtrue;
@@ -7068,19 +7071,19 @@ qboolean blasterDamage(int mod) {
 }
 
 qboolean heavyDamage(int mod) {
-	switch (mod) {		
+	switch (mod) {
 	case MOD_REPEATER_ALT:
 	case MOD_FLECHETTE:
 	case MOD_FLECHETTE_ALT:
 	case MOD_ROCKET:
-	case MOD_ROCKET_ALT:			
+	case MOD_ROCKET_ALT:
 	case MOD_THERMAL:
 	case MOD_THERMAL_ALT:
 	case MOD_DETPACK:
 	case MOD_LASERTRIP:
 	case MOD_LASERTRIP_ALT:
 	case MOD_MELEE:
-		return qtrue;			
+		return qtrue;
 	default:
 		return qfalse;
 	}

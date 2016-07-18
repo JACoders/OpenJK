@@ -369,7 +369,8 @@ qboolean Boba_StopKnockdown( gentity_t *self, gentity_t *pusher, const vec3_t pu
 ////////////////////////////////////////////////////////////////////////////////////////
 qboolean Boba_Flying( gentity_t *self )
 {
-	assert(self && self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA));//self->NPC &&
+	assert(self && self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_MANDA
+		|| self->client->NPC_class == CLASS_COMMANDO));//self->NPC &&
 	return ((qboolean)(self->client->moveType==MT_FLYSWIM));
 }
 
@@ -557,6 +558,11 @@ void Boba_StartFlameThrower( gentity_t *self )
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_DoFlameThrower( gentity_t *self )
 {
+	if (self->client->NPC_class == CLASS_COMMANDO)
+	{
+		return;
+	}
+
 	if ( self->s.number < MAX_CLIENTS )
 	{
 		if ( self->client )
@@ -864,6 +870,26 @@ void	Boba_TacticsSelect()
 		}
 	}
 
+	switch (nextState) {
+		case BTS_FLAMETHROW:
+			if ((!NPC->client->NPC_class == CLASS_BOBAFETT && !NPC->client->NPC_class == CLASS_MANDA))
+			{
+				nextState = BTS_RIFLE;
+				break;
+			}
+		case BTS_MISSILE:
+			if (!HaveWeapon(WP_ROCKET_LAUNCHER))
+			{
+				nextState = BTS_RIFLE;
+				break;
+			}
+		case BTS_SNIPER:
+			if (!HaveWeapon(WP_DISRUPTOR))
+			{
+				nextState = BTS_RIFLE;
+				break;
+			}
+	}
 
 
 	// The Next State Has Been Selected, Now Change Weapon If Necessary
@@ -1111,7 +1137,9 @@ void	Boba_Update()
 	//---------------------------------------------
 	if ( NPC->client->ps.groundEntityNum == ENTITYNUM_NONE
 		&& NPC->client->ps.forceJumpZStart
-		&& !Q_irand( 0, 10 ) )
+		&& !Q_irand( 0, 10 ) 
+		&& NPC->client->NPC_class != CLASS_COMMANDO
+		&& NPC->client->NPC_class != CLASS_MANDA)
 	{//take off
 		Boba_FlyStart( NPC );
 	}

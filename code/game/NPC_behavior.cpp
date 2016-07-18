@@ -1594,7 +1594,7 @@ qboolean NPC_CheckSurrender(qboolean noEscape = qfalse)
 	if (!Q3_TaskIDPending(NPC, TID_MOVE_NAV) //not scripted to go somewhere
 		&& NPC->client->ps.groundEntityNum != ENTITYNUM_NONE //not in the air
 		&& !NPC->client->ps.weaponTime && !PM_InKnockDown(&NPC->client->ps)//not firing and not on the ground
-		&& NPC->enemy && NPC->enemy->client && NPC->enemy->enemy == NPC && NPC->enemy->s.weapon != WP_NONE && (NPC->enemy->s.weapon != WP_MELEE || (NPC->enemy->client->NPC_class == CLASS_RANCOR || NPC->enemy->client->NPC_class == CLASS_WAMPA))//enemy is using a weapon or is a Rancor or Wampa
+		&& NPC->enemy && NPC->enemy->client /*&& NPC->enemy->enemy == NPC*/ && NPC->enemy->s.weapon != WP_NONE && (NPC->enemy->s.weapon != WP_MELEE || (NPC->enemy->client->NPC_class == CLASS_RANCOR || NPC->enemy->client->NPC_class == CLASS_WAMPA))//enemy is using a weapon or is a Rancor or Wampa
 		&& NPC->enemy->health > 20 && NPC->enemy->painDebounceTime < level.time - 3000 && NPC->enemy->client->ps.forcePowerDebounce[FP_SABER_DEFENSE] < level.time - 1000)
 	{//don't surrender if scripted to run somewhere or if we're in the air or if we're busy or if we don't have an enemy or if the enemy is not mad at me or is hurt or not a threat or busy being attacked
 		//FIXME: even if not in a group, don't surrender if there are other enemies in the PVS and within a certain range?

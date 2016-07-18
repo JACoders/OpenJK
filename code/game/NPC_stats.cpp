@@ -1976,6 +1976,11 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	NPC->NPC->allWeaponOrder[6]	= WP_NONE;
 	NPC->NPC->allWeaponOrder[7]	= WP_NONE;
 */
+		NPC->NPC->weapList = new wpnList();
+		NPC->NPC->lightBlasterWeaps = new wpnList();
+		NPC->NPC->heavyBlasterWeaps = new wpnList();
+		NPC->NPC->heavyWeaps = new wpnList();
+
 		// fill in defaults
 		stats->sex			= SEX_MALE;
 		stats->aggression	= 3;
@@ -3540,6 +3545,12 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 						RegisterItem( FindItemForWeapon( (weapon_t)(weap) ) );	//precache the weapon
 						NPC->client->ps.ammo[weaponData[weap].ammoIndex] = ammoData[weaponData[weap].ammoIndex].max;
 					}
+
+					if (lightBlasterWeap(weap)) NPC->NPC->lightBlasterWeaps->add(weap);
+					if (heavyBlasterWeap(weap)) NPC->NPC->heavyBlasterWeaps->add(weap);
+					if (heavyWeap(weap)) NPC->NPC->heavyWeaps->add(weap);
+
+					NPC->NPC->weapList->add(weap);
 				}
 				continue;
 			}
