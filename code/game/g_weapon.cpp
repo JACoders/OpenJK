@@ -1702,3 +1702,66 @@ void SP_misc_weapon_shooter( gentity_t *self )
 		self->wait = 500;
 	}
 }
+
+qboolean heavyWeap(int wp)
+{
+	switch (wp) {
+	case WP_FLECHETTE:
+	case WP_ROCKET_LAUNCHER:
+	case WP_CONCUSSION:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean blasterWeap(int wp)
+{
+	switch (wp) {
+	case WP_BLASTER_PISTOL:
+	case WP_BLASTER:
+	case WP_REPEATER:
+	case WP_BOWCASTER:
+	case WP_NOGHRI_STICK:
+	case WP_BRYAR_PISTOL:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean lightBlasterWeap(int wp)
+{
+	switch (wp) {
+	case WP_BLASTER_PISTOL:
+	case WP_BLASTER:
+	case WP_NOGHRI_STICK:
+	case WP_BRYAR_PISTOL:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean heavyBlasterWeap(int wp)
+{
+	switch (wp) {
+	case WP_REPEATER:
+	case WP_BOWCASTER:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean meleeWeap(int wp)
+{
+	switch (wp) {
+	case WP_SABER:
+	case WP_MELEE:
+	case WP_STUN_BATON:
+		return true;
+	}
+
+	return false;
+}

@@ -1933,6 +1933,11 @@ void NPC_BuildRandom( gentity_t *NPC )
 extern void G_MatchPlayerWeapon( gentity_t *ent );
 extern void G_InitPlayerFromCvars( gentity_t *ent );
 extern void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const char *customSkin, const char *surfOff, const char *surfOn );
+extern qboolean blasterWeap(int wp);
+extern qboolean	lightBlasterWeap(int wp);
+extern qboolean heavyBlasterWeap(int wp);
+extern qboolean heavyWeap(int wp);
+
 qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 {
 	const char	*token;

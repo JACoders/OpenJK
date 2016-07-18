@@ -83,69 +83,6 @@ typedef enum //# weapon_e
 	WP_NUM_WEAPONS
 } weapon_t;
 
-qboolean heavyWeap(int wp)
-{
-	switch (wp) {
-	case WP_FLECHETTE:
-	case WP_ROCKET_LAUNCHER:
-	case WP_CONCUSSION:
-		return true;
-	}
-
-	return false;
-}
-
-qboolean blasterWeap(int wp)
-{
-	switch (wp) {
-	case WP_BLASTER_PISTOL:
-	case WP_BLASTER:
-	case WP_REPEATER:
-	case WP_BOWCASTER:
-	case WP_NOGHRI_STICK:
-	case WP_BRYAR_PISTOL:
-		return true;
-	}
-
-	return false;
-}
-
-qboolean lightBlasterWeap(int wp)
-{
-	switch (wp) {
-	case WP_BLASTER_PISTOL:
-	case WP_BLASTER:
-	case WP_NOGHRI_STICK:
-	case WP_BRYAR_PISTOL:
-		return true;
-	}
-
-	return false;
-}
-
-qboolean heavyBlasterWeap(int wp)
-{
-	switch (wp) {
-	case WP_REPEATER:
-	case WP_BOWCASTER:
-		return true;
-	}
-
-	return false;
-}
-
-qboolean meleeWeap(int wp)
-{
-	switch (wp) {
-	case WP_SABER:
-	case WP_MELEE:
-	case WP_STUN_BATON:
-		return true;
-	}
-
-	return false;
-}
-
 #define FIRST_WEAPON		WP_SABER		// this is the first weapon for next and prev weapon switching
 #define MAX_PLAYER_WEAPONS	WP_STUN_BATON	// this is the max you can switch to and get with the give all. - FIXME: it's actually this one *minus* one... why?
 
