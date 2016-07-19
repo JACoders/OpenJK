@@ -78,7 +78,6 @@ extern cvar_t	*g_char_forceRegen;
 extern cvar_t	*g_char_parryBonus;
 extern cvar_t	*g_char_breakParryBonus;
 
-
 extern qboolean WP_SaberBladeUseSecondBladeStyle(saberInfo_t *saber, int bladeNum);
 extern qboolean WP_SaberBladeDoTransitionDamage(saberInfo_t *saber, int bladeNum);
 extern qboolean Q3_TaskIDPending(gentity_t *ent, taskID_t taskType);
@@ -13316,7 +13315,7 @@ void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, floa
 					}
 
 					VectorMA(traceEnt->client->ps.saber[saberNo].blade[bladeNo].muzzlePoint, traceEnt->client->ps.saber[saberNo].blade[bladeNo].length*Q_flrand(0, 1), traceEnt->client->ps.saber[saberNo].blade[bladeNo].muzzleDir, end);
-					G_PlayEffect(G_EffectIndex("force/lightning"), end, fwd);
+					G_PlayEffect(G_EffectIndex(cg_lightningBlockEffect.string), end, fwd);
 				}
 				else if (blockedWithHand)
 				{

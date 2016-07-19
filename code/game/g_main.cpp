@@ -202,9 +202,20 @@ cvar_t	*g_saber_color;
 cvar_t	*g_saber2_color;
 cvar_t	*g_saberDarkSideSaberColor;
 
+
+// kef -- used with DebugTraceForNPC
+cvar_t	*g_npcdebug;
+
+// mcg -- testing: make NPCs obey do not enter brushes better?
+cvar_t	*g_navSafetyChecks;
+
+cvar_t	*g_broadsword;
+
+cvar_t	*g_allowBunnyhopping;
+
 //new cvars - Dusty
 cvar_t  *g_autoRoll;
-cvar_t	*g_saberNewCombat; 
+cvar_t	*g_saberNewCombat;
 cvar_t  *g_saberLocksEnabled;
 cvar_t	*g_saberDamageScale;
 cvar_t	*g_saberDamageScaleGlobal;
@@ -225,6 +236,8 @@ cvar_t	*g_char_breakParryBonus; //fix this, doesn't apply correctly in all cases
 cvar_t	*g_char_forceAffinity; //make into ui_cvars?
 cvar_t	*g_char_forceFocus;
 cvar_t	*g_char_forceSensitivity;
+
+cvar_t	*g_handicap_maxArmor;
 
 /*
 cvar_t	*g_char_moveSpeedScale;			1.0 - you move faster / slower when using this saber
@@ -265,15 +278,6 @@ jumpAtkLeftMove			0 - if set, player will execute this move when they jump + lef
 //NOTE: these "move" fields refer to saber moves that are defined in code.  Set to LS_NONE to have the normal move removed, set to one of the following values to override the current move
 */
 
-// kef -- used with DebugTraceForNPC
-cvar_t	*g_npcdebug;
-
-// mcg -- testing: make NPCs obey do not enter brushes better?
-cvar_t	*g_navSafetyChecks;
-
-cvar_t	*g_broadsword;
-
-cvar_t	*g_allowBunnyhopping;
 
 qboolean	stop_icarus = qfalse;
 
@@ -773,6 +777,8 @@ void G_InitCvars( void ) {
 	g_char_breakParryBonus = gi.cvar("g_char_breakParryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
 	g_weaponVelocity = gi.cvar("g_weaponVelocity", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
 	g_weaponAltVelocity = gi.cvar("g_weaponAltVelocity", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
+
+	g_handicap_maxArmor = gi.cvar("handicap_maxArmor", "100", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 	
 }
 /*

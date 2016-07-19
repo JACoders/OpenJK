@@ -454,7 +454,7 @@ if desired.
 void ClientUserinfoChanged( int clientNum ) {
 	gentity_t	*ent = g_entities + clientNum;
 	gclient_t	*client = ent->client;
-	int			health=100, maxHealth=100;
+	int			health = 100;
 	const char	*s=NULL;
 	char		userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},
 				sound[MAX_STRING_CHARS]={0},	oldname[34]={0};
@@ -472,12 +472,11 @@ void ClientUserinfoChanged( int clientNum ) {
 	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
 
 	// set max health
-	maxHealth = 200;
-	health = Com_Clampi( 1, 200, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	int handicapLimit = 200; //the health AND armor limit for handicap cvar
+	int handicap = atoi(Info_ValueForKey(userinfo, "handicap"));
+
+	health = Com_Clampi(1, handicapLimit, handicap); //forces handicap value limit
 	client->pers.maxHealth = health;
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
-		client->pers.maxHealth = 200;
-	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds
 	Q_strncpyz( sound, Info_ValueForKey (userinfo, "snd"), sizeof( sound ) );

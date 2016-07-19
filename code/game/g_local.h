@@ -265,10 +265,13 @@ extern	cvar_t	*g_subtitles;
 extern	cvar_t	*g_removeDoors;
 extern	cvar_t	*g_ICARUSDebug;
 extern  cvar_t	*g_npcdebug;
-extern  cvar_t	*g_weaponVelocity;
-extern  cvar_t	*g_weaponAltVelocity;
 
 extern	cvar_t	*g_allowBunnyhopping;
+
+extern  cvar_t	*g_weaponVelocity;
+extern  cvar_t	*g_weaponAltVelocity;
+extern	cvar_t	*g_handicap_maxArmor;
+
 extern gentity_t *player;
 //
 // g_spawn.c

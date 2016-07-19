@@ -339,6 +339,8 @@ vmCvar_t	cg_fovViewmodelAdjust;
 
 vmCvar_t	cg_scaleVehicleSensitivity;
 
+vmCvar_t	cg_lightningBlockEffect;
+
 //new cvars - Dusty
 /*
 vmCvar_t	cg_lightningBolts;
@@ -468,6 +470,7 @@ static cvarTable_t cvarTable[] = {
 	{ &cg_fovViewmodelAdjust, "cg_fovViewmodelAdjust", "1", CVAR_ARCHIVE },
 
 	{ &cg_scaleVehicleSensitivity, "cg_scaleVehicleSensitivity", "1", CVAR_ARCHIVE },
+	{ &cg_lightningBlockEffect, "cg_lightningBlockEffect", "force/lightning", CVAR_ARCHIVE },
 };
 
 static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
