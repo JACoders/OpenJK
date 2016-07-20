@@ -77,7 +77,7 @@ extern qboolean	stop_icarus;
 
 gentity_t		*NPC;
 gNPC_t			*NPCInfo;
-gclient_t		*client;
+ja_gclient_t		*client;
 usercmd_t		ucmd;
 visibility_t	enemyVisibility;
 
@@ -915,7 +915,7 @@ void SetNPCGlobals( gentity_t *ent )
 
 gentity_t	*_saved_NPC;
 gNPC_t		*_saved_NPCInfo;
-gclient_t	*_saved_client;
+ja_gclient_t	*_saved_client;
 usercmd_t	_saved_ucmd;
 
 void SaveNPCGlobals()

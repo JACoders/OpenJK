@@ -74,7 +74,7 @@ extern void NPC_Mark2_Precache(void);
 extern void NPC_GalakMech_Precache( void );
 extern void NPC_GalakMech_Init( gentity_t *ent );
 extern void NPC_Protocol_Precache( void );
-extern int WP_SetSaberModel( gclient_t *client, class_t npcClass );
+extern int WP_SetSaberModel( jo_gclient_t *client, class_t npcClass );
 
 #define	NSF_DROP_TO_FLOOR	16
 
@@ -771,7 +771,7 @@ extern qboolean	stop_icarus;
 void NPC_Begin (gentity_t *ent)
 {
 	vec3_t	spawn_origin, spawn_angles;
-	gclient_t	*client;
+	jo_gclient_t	*client;
 	usercmd_t	ucmd;
 	gentity_t	*spawnPoint = NULL;
 
@@ -1222,7 +1222,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	newent->NPC->tempGoal->owner = newent;
 	newent->NPC->tempGoal->svFlags |= SVF_NOCLIENT;
 
-	newent->client = (gclient_s *)G_Alloc (sizeof(gclient_s));
+	newent->client = (jo_gclient_t *)G_Alloc (sizeof(jo_gclient_t));
 	
 	if ( newent->client == NULL ) 
 	{

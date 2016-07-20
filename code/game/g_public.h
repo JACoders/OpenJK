@@ -76,7 +76,7 @@ class CRagDollParams;
 //rww - RAGDOLL_END
 
 typedef struct gentity_s gentity_t;
-typedef struct gclient_s gclient_t;
+//typedef struct gclient_s gclient_t;
 
 typedef enum
 {

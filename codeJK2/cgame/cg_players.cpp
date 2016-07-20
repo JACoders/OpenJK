@@ -43,7 +43,7 @@ taken from the entityState_t
 
 */
 
-qboolean CG_RegisterClientModelname( clientInfo_t *ci, const char *headModelName, const char *headSkinName,
+qboolean CG_RegisterClientModelname( jo_clientInfo_t *ci, const char *headModelName, const char *headSkinName,
 									const char *torsoModelName, const char *torsoSkinName,
 									const char *legsModelName, const char *legsSkinName );
 
@@ -231,7 +231,7 @@ static const char *GetCustomSound_VariantCapped(const char *ppsTable[], int iEnt
 	return ppsTable[iEntryNum];
 }
 
-static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
+static void CG_RegisterCustomSounds(jo_clientInfo_t *ci, int iSoundEntryBase,
 									int iTableEntries, const char *ppsTable[], const char *psDir
 									)
 {
@@ -273,7 +273,7 @@ CG_CustomSound
 */
 static sfxHandle_t	CG_CustomSound( int entityNum, const char *soundName, int customSoundSet )
 {
-	clientInfo_t *ci;
+	jo_clientInfo_t *ci;
 	int			i;
 
 	if ( soundName[0] != '*' )
@@ -407,7 +407,7 @@ CG_NewClientinfo
 */
 void CG_NewClientinfo( int clientNum )
 {
-	clientInfo_t *ci;
+	jo_clientInfo_t *ci;
 	const char	*configstring;
 	const char	*v;
 //	const char	*s;
@@ -481,7 +481,7 @@ void CG_NewClientinfo( int clientNum )
 /*
 CG_RegisterNPCCustomSounds
 */
-void CG_RegisterNPCCustomSounds( clientInfo_t *ci )
+void CG_RegisterNPCCustomSounds( jo_clientInfo_t *ci )
 {
 //	const char	*s;
 //	int			i;
@@ -578,7 +578,7 @@ qboolean ValidAnimFileIndex ( int index )
 
 
 
-void ParseAnimationSndBlock(const char *asb_filename, animsounds_t *animSounds, animation_t *animations, int *i,const char **text_p)
+void ParseAnimationSndBlock(const char *asb_filename, animsounds_t *animSounds, jo_animation_t *animations, int *i,const char **text_p)
 {
 	const char	*token;
 	char		soundString[MAX_QPATH];
@@ -757,7 +757,7 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 	assert(animFileIndex < MAX_ANIM_FILES);
 	animsounds_t	*legsAnimSnds = level.knownAnimFileSets[animFileIndex].legsAnimSnds;
 	animsounds_t	*torsoAnimSnds = level.knownAnimFileSets[animFileIndex].torsoAnimSnds;
-	animation_t		*animations = level.knownAnimFileSets[animFileIndex].animations;
+	jo_animation_t		*animations = level.knownAnimFileSets[animFileIndex].animations;
 
 	if ( level.knownAnimFileSets[animFileIndex].soundsCached )
 	{//already cached this one
@@ -832,9 +832,9 @@ void CG_ParseAnimationSndFile( const char *as_filename, int animFileIndex )
 CG_SetLerpFrameAnimation
 ===============
 */
-void CG_SetLerpFrameAnimation( clientInfo_t *ci, lerpFrame_t *lf, int newAnimation )
+void CG_SetLerpFrameAnimation( jo_clientInfo_t *ci, lerpFrame_t *lf, int newAnimation )
 {
-	animation_t	*anim;
+	jo_animation_t	*anim;
 
 	if ( newAnimation < 0 || newAnimation >= MAX_ANIMATIONS )
 	{
@@ -870,9 +870,9 @@ Sets cg.snap, cg.oldFrame, and cg.backlerp
 cg.time should be between oldFrameTime and frameTime after exit
 ===============
 */
-qboolean CG_RunLerpFrame( clientInfo_t *ci, lerpFrame_t *lf, int newAnimation, float fpsMod, int entNum ) {
+qboolean CG_RunLerpFrame( jo_clientInfo_t *ci, lerpFrame_t *lf, int newAnimation, float fpsMod, int entNum ) {
 	int			f, animFrameTime;
-	animation_t	*anim;
+	jo_animation_t	*anim;
 	qboolean	newFrame = qfalse;
 
 	if(fpsMod > 2 || fpsMod < 0.5)
@@ -1002,7 +1002,7 @@ qboolean CG_RunLerpFrame( clientInfo_t *ci, lerpFrame_t *lf, int newAnimation, f
 CG_ClearLerpFrame
 ===============
 */
-void CG_ClearLerpFrame( clientInfo_t *ci, lerpFrame_t *lf, int animationNumber )
+void CG_ClearLerpFrame( jo_clientInfo_t *ci, lerpFrame_t *lf, int animationNumber )
 {
 	lf->frameTime = lf->oldFrameTime = cg.time;
 	CG_SetLerpFrameAnimation( ci, lf, animationNumber );
@@ -1023,7 +1023,7 @@ CG_PlayerAnimation
 */
 void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float *legsBackLerp,
 						int *torsoOld, int *torso, float *torsoBackLerp ) {
-	clientInfo_t	*ci;
+	jo_clientInfo_t	*ci;
 	int				legsAnim;
 	int				legsTurnAnim = -1;
 	qboolean		newLegsFrame = qfalse;
@@ -1147,7 +1147,7 @@ void CG_PlayerAnimSounds( int animFileIndex, qboolean torso, int oldFrame, int f
 		else
 		{//still in same anim, check for looping anim
 			inSameAnim = qtrue;
-			animation_t *animation = &level.knownAnimFileSets[animFileIndex].animations[anim];
+			jo_animation_t *animation = &level.knownAnimFileSets[animFileIndex].animations[anim];
 			animBackward = (animation->frameLerp<0);
 			if ( animation->loopFrames != -1 )
 			{//a looping anim!
@@ -2181,7 +2181,7 @@ void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 					int turnAnim = PM_TurnAnimForLegsAnim( cent->gent, cent->gent->client->ps.legsAnim );
 					if ( turnAnim != -1 && cent->gent->health > 0 )
 					{
-						animation_t *animations = level.knownAnimFileSets[cent->gent->client->clientInfo.animFileIndex].animations;
+						jo_animation_t *animations = level.knownAnimFileSets[cent->gent->client->clientInfo.animFileIndex].animations;
 
 						if ( !animatingHips || ( animations[turnAnim].firstFrame != startFrame ) )// only set the anim if we aren't going to do the same animation again
 						{
@@ -3031,7 +3031,7 @@ void CG_PlayerSplash( centity_t *cent )
 
 	if ( cent->gent && cent->gent->client )
 	{
-		gclient_t *cl = cent->gent->client;
+		jo_gclient_t *cl = cent->gent->client;
 
 		if ( cent->gent->disconnectDebounceTime < cg.time ) // can't do these expanding ripples all the time
 		{
@@ -3708,7 +3708,7 @@ static void CG_G2SetHeadAnim( centity_t *cent, int anim )
 {
 	gentity_t	*gent = cent->gent;
 	const int blendTime = 50;
-	const animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
+	const jo_animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
 	int	animFlags = BONE_ANIM_OVERRIDE ;//| BONE_ANIM_BLEND;
 	// animSpeed is 1.0 if the frameLerp (ms/frame) is 50 (20 fps).
 //	float		timeScaleMod = (cg_timescale.value&&gent&&gent->s.clientNum==0&&!player_locked&&!MatrixMode&&gent->client->ps.forcePowersActive&(1<<FP_SPEED))?(1.0/cg_timescale.value):1.0;
@@ -3870,7 +3870,7 @@ CG_PlayerHeadExtension
 */
 int CG_PlayerHeadExtension( centity_t *cent, refEntity_t *head )
 {
-	clientInfo_t	*ci = &cent->gent->client->clientInfo;;
+	jo_clientInfo_t	*ci = &cent->gent->client->clientInfo;;
 
 	// if we have facial texture extensions, go get the sound override and add it to the face skin
 	// if we aren't talking, then it will be 0
@@ -4372,7 +4372,7 @@ extern void FX_AddPrimitive( CEffect **effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, vec3_t origin, vec3_t angles )
 {
-	gclient_s *client = cent->gent->client;
+	jo_gclient_t *client = cent->gent->client;
 	vec3_t		saberOrg;
 	if ( !client )
 	{
@@ -4409,7 +4409,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 	trace_t	trace;
 	float	length;
 
-	gclient_s *client = cent->gent->client;
+	jo_gclient_t *client = cent->gent->client;
 
 	if ( !client )
 	{
@@ -4780,7 +4780,7 @@ CG_Player
 */
 extern qboolean G_ControlledByPlayer( gentity_t *self );
 void CG_Player( centity_t *cent ) {
-	clientInfo_t	*ci;
+	jo_clientInfo_t	*ci;
 	qboolean		shadow, staticScale = qfalse;
 	float			shadowPlane;
 	const weaponData_t  *wData = NULL;

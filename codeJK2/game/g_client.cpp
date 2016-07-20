@@ -382,7 +382,7 @@ ForceClientSkin
 Forces a client's skin (for teamplay)
 ===========
 */
-void ForceClientSkin( gclient_t *client, char *model, const char *skin ) {
+void ForceClientSkin( jo_gclient_t *client, char *model, const char *skin ) {
 	char *p;
 
 	if ((p = strchr(model, '/')) != NULL) {
@@ -469,7 +469,7 @@ if desired.
 */
 void ClientUserinfoChanged( int clientNum ) {
 	gentity_t	*ent = g_entities + clientNum;
-	gclient_t	*client = ent->client;
+	jo_gclient_t	*client = ent->client;
 	int			health=100, maxHealth=100;
 	const char	*s=NULL, *sex=NULL;
 	char		userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},
@@ -540,12 +540,12 @@ char *ClientConnect( int clientNum, qboolean firstTime, SavedGameJustLoaded_e eS
 
 	// they can connect
 	ent->client = level.clients + clientNum;
-	gclient_t *client = ent->client;
+	jo_gclient_t *client = ent->client;
 
 //	if (!qbFromSavedGame)
 	if (eSavedGameJustLoaded != eFULL)
 	{
-		clientSession_t savedSess = client->sess;	//
+		jo_clientSession_t savedSess = client->sess;	//
 		memset( client, 0, sizeof(*client) );
 		client->sess = savedSess;
 	}
@@ -591,7 +591,7 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 //												qboolean qbFromSavedGame
 {
 	gentity_t	*ent;
-	gclient_t	*client;
+	jo_gclient_t	*client;
 
 	ent = g_entities + clientNum;
 	client = level.clients + clientNum;
@@ -688,7 +688,7 @@ Player_RestoreFromPrevLevel
 */
 void Player_RestoreFromPrevLevel(gentity_t *ent)
 {
-	gclient_t	*client = ent->client;
+	jo_gclient_t	*client = ent->client;
 	int			i;
 
 	assert(client);
@@ -1518,11 +1518,11 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 {
 	int		index;
 	vec3_t	spawn_origin, spawn_angles;
-	gclient_t	*client;
+	jo_gclient_t	*client;
 	int		i;
 	jo_clientPersistant_t	saved;
-	clientSession_t		savedSess;
-	clientInfo_t		savedCi;
+	jo_clientSession_t		savedSess;
+	jo_clientInfo_t		savedCi;
 	int		persistant[MAX_PERSISTANT];
 	usercmd_t	ucmd;
 	gentity_t	*spawnPoint;
@@ -1587,11 +1587,11 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			persistant[i] = client->ps.persistant[i];
 		}
 		//Preserve clientInfo
-		memcpy (&savedCi, &client->clientInfo, sizeof(clientInfo_t));
+		memcpy (&savedCi, &client->clientInfo, sizeof(jo_clientInfo_t));
 
 		memset (client, 0, sizeof(*client));
 
-		memcpy (&client->clientInfo, &savedCi, sizeof(clientInfo_t));
+		memcpy (&client->clientInfo, &savedCi, sizeof(jo_clientInfo_t));
 
 		client->pers = saved;
 		client->sess = savedSess;

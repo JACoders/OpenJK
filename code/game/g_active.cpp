@@ -481,7 +481,7 @@ global pain sound events for all clients.
 ===============
 */
 void P_DamageFeedback( gentity_t *player ) {
-	gclient_t	*client;
+	ja_gclient_t	*client;
 	float	count;
 	vec3_t	angles;
 
@@ -1685,7 +1685,7 @@ Actions that happen once a second
 ==================
 */
 void ClientTimerActions( gentity_t *ent, int msec ) {
-	gclient_t *client;
+	ja_gclient_t *client;
 
 	client = ent->client;
 	client->timeResidual += msec;
@@ -1734,7 +1734,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 ClientIntermissionThink
 ====================
 */
-static qboolean ClientCinematicThink( gclient_t *client ) {
+static qboolean ClientCinematicThink( ja_gclient_t *client ) {
 	client->ps.eFlags &= ~EF_FIRING;
 
 	// swap button actions
@@ -1760,7 +1760,7 @@ extern void WP_SaberUpdateOldBladeData( gentity_t *ent );
 void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 	int		i;
 	int		event;
-	gclient_t *client;
+	ja_gclient_t *client;
 	//int		damage;
 #ifndef FINAL_BUILD
 	qboolean	fired = qfalse;
@@ -4412,7 +4412,7 @@ This function is called ONLY from ClientThinkReal, and is responsible for settin
 */
 void	ClientAlterSpeed(gentity_t *ent, usercmd_t *ucmd, qboolean	controlledByPlayer, float vehicleFrameTimeModifier)
 {
-	gclient_t	*client = ent->client;
+	ja_gclient_t	*client = ent->client;
 	Vehicle_t *pVeh = NULL;
 
 	if ( ent->client && ent->client->NPC_class == CLASS_VEHICLE )
@@ -4754,7 +4754,7 @@ extern float	G_CanJumpToEnemyVeh(Vehicle_t *pVeh, const usercmd_t *pUmcd );
 
 void ClientThink_real( gentity_t *ent, usercmd_t *ucmd )
 {
-	gclient_t	*client;
+	ja_gclient_t	*client;
 	pmove_t		pm;
 	vec3_t		oldOrigin;
 	int			oldEventSequence;

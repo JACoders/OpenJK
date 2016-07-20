@@ -722,7 +722,7 @@ Q3_SetObjective
 static void Q3_SetObjective(const char *ObjEnum, int status)
 {
 	int objectiveID;
-	gclient_t	*client;
+	jo_gclient_t	*client;
 	objectives_t	*objective;
 	int				*objectivesShown;
 
@@ -9265,7 +9265,7 @@ void Interface_Init( interface_export_t *pe )
 	pe->I_LinkEntity			=	ICARUS_LinkEntity;
     pe->saved_game = gi.saved_game;
 
-	gclient_t	*client;
+	jo_gclient_t	*client;
 	client = &level.clients[0];
 	memset(&client->sess,0,sizeof(client->sess));
 }

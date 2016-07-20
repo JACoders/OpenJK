@@ -38,7 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 #define	STOFS(x) offsetof(spawn_temp_t, x)
 #define	LLOFS(x) offsetof(level_locals_t, x)
-#define	CLOFS(x) offsetof(gclient_t, x)
+#define	CLOFS(x) offsetof(ja_gclient_t, x)
 #define NPCOFS(x) offsetof(gNPC_t, x)
 #define VHOFS(x) offsetof(Vehicle_t, x)
 

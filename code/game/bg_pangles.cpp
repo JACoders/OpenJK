@@ -67,7 +67,7 @@ void BG_IK_MoveLimb( CGhoul2Info_v &ghoul2, int boltIndex, char *animBone, char 
 	vec3_t holdPoint;
 	vec3_t torg;
 	float distToDest;
-	animation_t	*anim = &level.knownAnimFileSets[animFileIndex].animations[basePose];
+	ja_animation_t	*anim = &level.knownAnimFileSets[animFileIndex].animations[basePose];
 
 	assert( ghoul2.size() );
 

@@ -158,7 +158,7 @@ extern qboolean G_ParseAnimFileSet( const char *filename, const char *animCFG, i
 int temp_animFileIndex;
 void set_MiscAnim( gentity_t *ent)
 {
-	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
+	jo_animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 	if (ent->playerModel & 1)
 	{
 		int anim = BOTH_STAND3;

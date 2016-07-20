@@ -121,7 +121,10 @@ typedef enum //# material_e
 #define	MAX_CUSTOM_JEDI_SOUNDS	22
 #define	MAX_CUSTOM_SOUNDS	(MAX_CUSTOM_JEDI_SOUNDS + MAX_CUSTOM_EXTRA_SOUNDS + MAX_CUSTOM_COMBAT_SOUNDS + MAX_CUSTOM_BASIC_SOUNDS)
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_clientInfo_t
+{
+public:
 	qboolean		infoValid;
 
 	char			name[MAX_QPATH];
@@ -196,7 +199,7 @@ typedef struct {
         saved_game->read<int32_t>(customExtraSoundDir);
         saved_game->read<int32_t>(customJediSoundDir);
     }
-} clientInfo_t;
+}; // jo_clientInfo_t
 
 
 //==================================================================
@@ -604,7 +607,10 @@ typedef struct missionStats_s
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 //
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_clientSession_t
+{
+public:
 	int				missionObjectivesShown;	// Number of times mission objectives have been updated
 	team_t			sessionTeam;
 	objectives_t	mission_objectives[MAX_MISSION_OBJ];
@@ -628,7 +634,7 @@ typedef struct {
         saved_game->read<>(mission_objectives);
         saved_game->read<>(missionStats);
     }
-} clientSession_t;
+}; // jo_clientSession_t
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -704,13 +710,16 @@ typedef enum {
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
-struct gclient_s {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_gclient_t
+{
+public:
 	// ps MUST be the first element, because the server expects it
 	playerState_t	ps;				// communicated by server to clients
 
 	// private to game
 	jo_clientPersistant_t	pers;
-	clientSession_t		sess;
+	jo_clientSession_t		sess;
 
 	qboolean	noclip;
 
@@ -751,7 +760,7 @@ struct gclient_s {
 	float		facial_aux;			// time before next aux. If a minus value, we are in aux mode
 
 	//Client info - updated when ClientInfoChanged is called, instead of using configstrings
-	clientInfo_t	clientInfo;
+	jo_clientInfo_t	clientInfo;
 	signed char		forced_forwardmove;
 	signed char		forced_rightmove;
 	int				fireDelay;		//msec to delay calling G_FireWeapon after EV_FIREWEAPON event is called
@@ -916,7 +925,7 @@ struct gclient_s {
         saved_game->read<float>(pushVec);
         saved_game->read<int32_t>(pushVecTime);
     }
-};
+}; // jo_gclient_t
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
@@ -956,7 +965,7 @@ typedef struct centity_s centity_t;
 
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
-	struct gclient_s	*client;	// NULL if not a player (unless it's NPC ( if (this->NPC != NULL)  )  <sigh>... -slc)
+	jo_gclient_t	*client;	// NULL if not a player (unless it's NPC ( if (this->NPC != NULL)  )  <sigh>... -slc)
 	qboolean	inuse;
 	qboolean	linked;				// qfalse if not in any good cluster
 

@@ -67,7 +67,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //===============================================================
 
 typedef struct gentity_s gentity_t;
-typedef struct gclient_s gclient_t;
+//typedef struct gclient_s gclient_t;
 
 typedef enum
 {

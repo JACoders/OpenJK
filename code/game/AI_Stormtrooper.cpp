@@ -29,10 +29,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 extern void CG_DrawAlert( vec3_t origin, float rating );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
-extern void AI_GroupUpdateSquadstates( AIGroupInfo_t *group, gentity_t *member, int newSquadState );
-extern qboolean AI_GroupContainsEntNum( AIGroupInfo_t *group, int entNum );
-extern void AI_GroupUpdateEnemyLastSeen( AIGroupInfo_t *group, vec3_t spot );
-extern void AI_GroupUpdateClearShotTime( AIGroupInfo_t *group );
+extern void AI_GroupUpdateSquadstates( ja_AIGroupInfo_t *group, gentity_t *member, int newSquadState );
+extern qboolean AI_GroupContainsEntNum( ja_AIGroupInfo_t *group, int entNum );
+extern void AI_GroupUpdateEnemyLastSeen( ja_AIGroupInfo_t *group, vec3_t spot );
+extern void AI_GroupUpdateClearShotTime( ja_AIGroupInfo_t *group );
 extern void NPC_TempLookTarget( gentity_t *self, int lookEntNum, int minLookTime, int maxLookTime );
 extern qboolean G_ExpandPointToBBox( vec3_t point, const vec3_t mins, const vec3_t maxs, int ignore, int clipmask );
 extern void ChangeWeapon( gentity_t *ent, int newWeapon );
@@ -1854,7 +1854,7 @@ void ST_Commander( void )
 {
 	int		i;//, j;
 	int		cp, cpFlags;
-	AIGroupInfo_t	*group = NPCInfo->group;
+	ja_AIGroupInfo_t	*group = NPCInfo->group;
 	gentity_t	*member;//, *buddy;
 	qboolean	enemyLost = qfalse;
 	float		avoidDist;

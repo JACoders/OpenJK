@@ -88,10 +88,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //animations
-typedef struct
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_animFileSet_t
 {
+public:
 	char			filename[MAX_QPATH];
-	animation_t		animations[MAX_ANIMATIONS];
+	ja_animation_t		animations[MAX_ANIMATIONS];
 	animevent_t		torsoAnimEvents[MAX_ANIM_EVENTS];
 	animevent_t		legsAnimEvents[MAX_ANIM_EVENTS];
 	unsigned char	torsoAnimEventCount;
@@ -119,7 +121,7 @@ typedef struct
         saved_game->read<uint8_t>(torsoAnimEventCount);
         saved_game->read<uint8_t>(legsAnimEventCount);
     }
-} animFileSet_t;
+}; // ja_animFileSet_t
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
@@ -168,8 +170,10 @@ enum alertEventLevel_e
 };
 
 // !!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
-typedef struct alertEvent_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_alertEvent_t
 {
+public:
 	vec3_t				position;	//Where the event is located
 	float				radius;		//Consideration radius
 	alertEventLevel_e	level;		//Priority level of the event
@@ -211,7 +215,7 @@ typedef struct alertEvent_s
         saved_game->read<int32_t>(timestamp);
         saved_game->read<int32_t>(onGround);
     }
-} alertEvent_t;
+}; // ja_alertEvent_t
 
 //
 // this structure is cleared as each map is entered
@@ -237,7 +241,7 @@ typedef struct
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct
 {
-	gclient_t	*clients;		// [maxclients]
+	ja_gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
 	int			maxclients;
@@ -253,13 +257,13 @@ typedef struct
 	qboolean	locationLinked;			// target_locations get linked
 	gentity_t	*locationHead;			// head of the location list
 
-	alertEvent_t	alertEvents[ MAX_ALERT_EVENTS ];
+	ja_alertEvent_t	alertEvents[ MAX_ALERT_EVENTS ];
 	int				numAlertEvents;
 	int				curAlertID;
 
-	AIGroupInfo_t	groups[MAX_FRAME_GROUPS];
+	ja_AIGroupInfo_t	groups[MAX_FRAME_GROUPS];
 
-	animFileSet_t	knownAnimFileSets[MAX_ANIM_FILES];
+	ja_animFileSet_t	knownAnimFileSets[MAX_ANIM_FILES];
 	int				numKnownAnimFileSets;
 
 	int				worldFlags;
@@ -631,8 +635,8 @@ void Svcmd_GameMem_f( void );
 //
 // g_session.c
 //
-void G_ReadSessionData( gclient_t *client );
-void G_InitSessionData( gclient_t *client, char *userinfo );
+void G_ReadSessionData( ja_gclient_t *client );
+void G_InitSessionData( ja_gclient_t *client, char *userinfo );
 
 void G_InitWorldSession( void );
 void G_WriteSessionData( void );

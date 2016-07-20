@@ -33,7 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	std::map< sstring_t, unsigned char  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;
-extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
+extern void CG_RegisterNPCCustomSounds( ja_clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
 extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0);
 extern void CG_DrawDataPadInventorySelect( void );
@@ -852,7 +852,7 @@ CLIENT INFO
 CG_RegisterClientSkin
 ==========================
 */
-qboolean	CG_RegisterClientSkin( clientInfo_t *ci,
+qboolean	CG_RegisterClientSkin( ja_clientInfo_t *ci,
 								  const char *headModelName, const char *headSkinName,
 								  const char *torsoModelName, const char *torsoSkinName,
 								  const char *legsModelName, const char *legsSkinName)
@@ -902,7 +902,7 @@ qboolean	CG_RegisterClientSkin( clientInfo_t *ci,
 CG_RegisterClientModelname
 ==========================
 */
-qboolean CG_RegisterClientModelname( clientInfo_t *ci,
+qboolean CG_RegisterClientModelname( ja_clientInfo_t *ci,
 									const char *headModelName, const char *headSkinName,
 									const char *torsoModelName, const char *torsoSkinName,
 									const char *legsModelName, const char *legsSkinName )
@@ -990,7 +990,7 @@ Ghoul2 Insert End
 }
 
 
-void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
+void CG_RegisterClientRenderInfo(ja_clientInfo_t *ci, renderInfo_t *ri)
 {
 	char			*slash;
 	char			headModelName[MAX_QPATH];
@@ -1190,7 +1190,7 @@ void CG_RegisterClientModels (int entityNum)
 
 	if(entityNum < MAX_CLIENTS)
 	{
-		memcpy(&cgs.clientinfo[entityNum], &ent->client->clientInfo, sizeof(clientInfo_t));
+		memcpy(&cgs.clientinfo[entityNum], &ent->client->clientInfo, sizeof(ja_clientInfo_t));
 	}
 }
 

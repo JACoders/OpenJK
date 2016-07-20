@@ -2198,7 +2198,7 @@ void			NAV::RegisterDangerSense(gentity_t* actor, int alertEventIndex)
 	// Get The Alert List For This Ent And The Alert Itself
 	//------------------------------------------------------
 	TAlertList&		al = mEntityAlertList[actor->s.number];
-	alertEvent_t&	ae = level.alertEvents[alertEventIndex];
+	ja_alertEvent_t&	ae = level.alertEvents[alertEventIndex];
 
 	if (ae.radius<=0.0f)
 	{

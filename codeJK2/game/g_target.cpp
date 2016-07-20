@@ -1072,7 +1072,7 @@ void SP_target_autosave( gentity_t *self )
 void target_secret_use(gentity_t *self, gentity_t *other, gentity_t *activator)
 {	 
 	//we'll assume that the activator is the player
-	gclient_t* const client = &level.clients[0];
+	jo_gclient_t* const client = &level.clients[0];
 	client->sess.missionStats.secretsFound++;
 	if ( activator )
 	{

@@ -356,9 +356,9 @@ static int MoveTypeNameToEnum( const char *name )
 	return MT_STATIC;
 }
 
-extern void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri);
+extern void CG_RegisterClientRenderInfo(ja_clientInfo_t *ci, renderInfo_t *ri);
 extern void CG_RegisterClientModels (int entityNum);
-extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
+extern void CG_RegisterNPCCustomSounds( ja_clientInfo_t *ci );
 
 //#define CONVENIENT_ANIMATION_FILE_DEBUG_THING
 
@@ -413,7 +413,7 @@ int CG_CheckAnimFrameForEventType( animevent_t *animEvents, int keyFrame, animEv
 ParseAnimationEvtBlock
 ======================
 */
-static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, const char* aeb_filename, animevent_t *animEvents, animation_t *animations, unsigned char &lastAnimEvent, const char **text_p, bool bIsFrameSkipped)
+static void ParseAnimationEvtBlock(int glaIndex, unsigned short modelIndex, const char* aeb_filename, animevent_t *animEvents, ja_animation_t *animations, unsigned char &lastAnimEvent, const char **text_p, bool bIsFrameSkipped)
 {
 	const char		*token;
 	int				num, n, animNum, keyFrame, lowestVal, highestVal, curAnimEvent = 0;
@@ -829,10 +829,10 @@ void G_ParseAnimationEvtFile(int glaIndex, const char* eventsDirectory, int file
 
 	// Get The Pointers To The Anim Event Arrays
 	//-------------------------------------------
-	animFileSet_t&	afileset		= level.knownAnimFileSets[fileIndex];
+	ja_animFileSet_t&	afileset		= level.knownAnimFileSets[fileIndex];
 	animevent_t	*legsAnimEvents		= afileset.legsAnimEvents;
 	animevent_t	*torsoAnimEvents	= afileset.torsoAnimEvents;
-	animation_t	*animations			= afileset.animations;
+	ja_animation_t	*animations			= afileset.animations;
 
 
 	if (modelSpecific)
@@ -884,7 +884,7 @@ qboolean G_ParseAnimationFile(int glaIndex, const char *skeletonName, int fileIn
 	float			fps			= 0;
 	const char*		text_p		= text;
 	int				animNum		= 0;
-	animation_t*	animations	= level.knownAnimFileSets[fileIndex].animations;
+	ja_animation_t*	animations	= level.knownAnimFileSets[fileIndex].animations;
 	char			skeletonPath[MAX_QPATH];
 
 
@@ -1071,7 +1071,7 @@ int		G_ParseAnimFileSet(const char *skeletonName, const char *modelName=0)
 		level.knownAnimFileSets[fileIndex].torsoAnimEventCount = 0;
 		level.knownAnimFileSets[fileIndex].legsAnimEventCount = 0;
 
-		animation_t*	animations		= level.knownAnimFileSets[fileIndex].animations;
+		ja_animation_t*	animations		= level.knownAnimFileSets[fileIndex].animations;
 		animevent_t*	legsAnimEvents	= level.knownAnimFileSets[fileIndex].legsAnimEvents;
 		animevent_t*	torsoAnimEvents	= level.knownAnimFileSets[fileIndex].torsoAnimEvents;
 
@@ -1577,7 +1577,7 @@ Precaches NPC skins, tgas and md3s.
 */
 void CG_NPC_Precache ( gentity_t *spawner )
 {
-	clientInfo_t	ci={};
+	ja_clientInfo_t	ci={};
 	renderInfo_t	ri={};
 	team_t			playerTeam = TEAM_FREE;
 	const char	*token;
@@ -1941,7 +1941,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	sound[MAX_QPATH];
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
-	clientInfo_t	*ci = &NPC->client->clientInfo;
+	ja_clientInfo_t	*ci = &NPC->client->clientInfo;
 	renderInfo_t	*ri = &NPC->client->renderInfo;
 	gNPCstats_t		*stats = NULL;
 	qboolean	md3Model = qtrue;

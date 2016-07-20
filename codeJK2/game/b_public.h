@@ -270,7 +270,7 @@ typedef struct
 	int			lastSideStepSide;
 	int			sideStepHoldTime;
 	int			homeWp;
-	AIGroupInfo_t	*group;
+	jo_AIGroupInfo_t	*group;
 
 	vec3_t		lastPathAngles;		//So we know which way to face generally when we stop
 

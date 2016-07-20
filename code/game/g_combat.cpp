@@ -2049,7 +2049,7 @@ static qboolean G_Dismember( gentity_t *ent, vec3_t point,
 		gi.G2API_StopBoneAnim( &limb->ghoul2[limb->playerModel], "pelvis" );
 		gi.G2API_StopBoneAnim( &limb->ghoul2[limb->playerModel], "upper_lumbar" );
 		//FIXME: screws up origin
-		animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
+		ja_animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
 		//play the proper dismember anim on the limb
 		gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[limbAnim].firstFrame,
 							animations[limbAnim].numFrames + animations[limbAnim].firstFrame,
@@ -4833,7 +4833,7 @@ CheckArmor
 */
 int CheckArmor (gentity_t *ent, int damage, int dflags, int mod)
 {
-	gclient_t	*client;
+	ja_gclient_t	*client;
 	int			save;
 	int			count;
 
@@ -5488,7 +5488,7 @@ dflags		these flags are used to control how T_Damage works
 */
 void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const vec3_t dir, const vec3_t point, int damage, int dflags, int mod, int hitLoc )
 {
-	gclient_t	*client;
+	ja_gclient_t	*client;
 	int			take;
 	int			asave = 0;
 	int			knockback;
@@ -6330,7 +6330,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
  					gi.G2API_CopyGhoul2Instance(targ->ghoul2, limb->ghoul2, -1);
 					gi.G2API_SetRootSurface(limb->ghoul2, limb->playerModel, "lfront");
 					gi.G2API_SetSurfaceOnOff(&targ->ghoul2[targ->playerModel], "lfront", TURN_OFF);
-					animation_t *animations = level.knownAnimFileSets[targ->client->clientInfo.animFileIndex].animations;
+					ja_animation_t *animations = level.knownAnimFileSets[targ->client->clientInfo.animFileIndex].animations;
 
 					//play the proper dismember anim on the limb
 					gi.G2API_SetBoneAnim(&limb->ghoul2[limb->playerModel], 0, animations[BOTH_A1_BL_TR].firstFrame,

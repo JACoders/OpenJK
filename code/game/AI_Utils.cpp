@@ -33,7 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	DEFAULT_RADIUS		45
 
 extern cvar_t		*d_noGroupAI;
-qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member );
+qboolean AI_ValidateGroupMember( ja_AIGroupInfo_t *group, gentity_t *member );
 
 /*
 -------------------------
@@ -92,7 +92,7 @@ int AI_GetGroupSize( gentity_t *ent, int radius )
 	return AI_GetGroupSize( ent->currentOrigin, radius, ent->client->playerTeam, ent );
 }
 
-void AI_SetClosestBuddy( AIGroupInfo_t *group )
+void AI_SetClosestBuddy( ja_AIGroupInfo_t *group )
 {
 	int	i, j;
 	int	dist, bestDist;
@@ -114,9 +114,9 @@ void AI_SetClosestBuddy( AIGroupInfo_t *group )
 	}
 }
 
-void AI_SortGroupByPathCostToEnemy( AIGroupInfo_t *group )
+void AI_SortGroupByPathCostToEnemy( ja_AIGroupInfo_t *group )
 {
-	AIGroupMember_t bestMembers[MAX_GROUP_MEMBERS];
+	ja_AIGroupMember_t bestMembers[MAX_GROUP_MEMBERS];
 	int				i, j, k;
 	qboolean		sort = qfalse;
 
@@ -212,7 +212,7 @@ qboolean AI_FindSelfInPreviousGroup( gentity_t *self )
 	return qfalse;
 }
 
-void AI_InsertGroupMember( AIGroupInfo_t *group, gentity_t *member )
+void AI_InsertGroupMember( ja_AIGroupInfo_t *group, gentity_t *member )
 {
 	int i;
 	//okay, you know what?  Check this damn group and make sure we're not already in here!
@@ -287,7 +287,7 @@ qboolean AI_GetNextEmptyGroup( gentity_t *self )
 	}
 }
 
-qboolean AI_ValidateNoEnemyGroupMember( AIGroupInfo_t *group, gentity_t *member )
+qboolean AI_ValidateNoEnemyGroupMember( ja_AIGroupInfo_t *group, gentity_t *member )
 {
 	if ( !group )
 	{
@@ -318,7 +318,7 @@ qboolean AI_ValidateNoEnemyGroupMember( AIGroupInfo_t *group, gentity_t *member 
 	return qtrue;
 }
 
-qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member )
+qboolean AI_ValidateGroupMember( ja_AIGroupInfo_t *group, gentity_t *member )
 {
 	//Validate ents
 	if ( member == NULL )
@@ -468,7 +468,7 @@ void AI_GetGroup( gentity_t *self )
 	}
 
 	//create a new one
-	memset( self->NPC->group, 0, sizeof( AIGroupInfo_t ) );
+	memset( self->NPC->group, 0, sizeof( ja_AIGroupInfo_t ) );
 
 	self->NPC->group->enemy = self->enemy;
 	self->NPC->group->team = self->client->playerTeam;
@@ -534,7 +534,7 @@ void AI_GetGroup( gentity_t *self )
 	AI_SetClosestBuddy( self->NPC->group );
 }
 
-void AI_SetNewGroupCommander( AIGroupInfo_t *group )
+void AI_SetNewGroupCommander( ja_AIGroupInfo_t *group )
 {
 	gentity_t *member = NULL;
 	group->commander = NULL;
@@ -549,7 +549,7 @@ void AI_SetNewGroupCommander( AIGroupInfo_t *group )
 	}
 }
 
-void AI_DeleteGroupMember( AIGroupInfo_t *group, int memberNum )
+void AI_DeleteGroupMember( ja_AIGroupInfo_t *group, int memberNum )
 {
 	if ( group->commander && group->commander->s.number == group->member[memberNum].number )
 	{
@@ -673,7 +673,7 @@ void AI_GroupMemberKilled( gentity_t *self )
 	}*/
 }
 
-void AI_GroupUpdateEnemyLastSeen( AIGroupInfo_t *group, vec3_t spot )
+void AI_GroupUpdateEnemyLastSeen( ja_AIGroupInfo_t *group, vec3_t spot )
 {
 	if ( !group )
 	{
@@ -683,7 +683,7 @@ void AI_GroupUpdateEnemyLastSeen( AIGroupInfo_t *group, vec3_t spot )
 	VectorCopy( spot, group->enemyLastSeenPos );
 }
 
-void AI_GroupUpdateClearShotTime( AIGroupInfo_t *group )
+void AI_GroupUpdateClearShotTime( ja_AIGroupInfo_t *group )
 {
 	if ( !group )
 	{
@@ -692,7 +692,7 @@ void AI_GroupUpdateClearShotTime( AIGroupInfo_t *group )
 	group->lastClearShotTime = level.time;
 }
 
-void AI_GroupUpdateSquadstates( AIGroupInfo_t *group, gentity_t *member, int newSquadState )
+void AI_GroupUpdateSquadstates( ja_AIGroupInfo_t *group, gentity_t *member, int newSquadState )
 {
 	if ( !group )
 	{
@@ -712,7 +712,7 @@ void AI_GroupUpdateSquadstates( AIGroupInfo_t *group, gentity_t *member, int new
 	}
 }
 
-qboolean AI_RefreshGroup( AIGroupInfo_t *group )
+qboolean AI_RefreshGroup( ja_AIGroupInfo_t *group )
 {
 	gentity_t	*member;
 	int			i;//, j;
@@ -953,7 +953,7 @@ void AI_UpdateGroups( void )
 	}
 }
 
-qboolean AI_GroupContainsEntNum( AIGroupInfo_t *group, int entNum )
+qboolean AI_GroupContainsEntNum( ja_AIGroupInfo_t *group, int entNum )
 {
 	if ( !group )
 	{

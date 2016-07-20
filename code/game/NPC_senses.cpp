@@ -590,7 +590,7 @@ qboolean G_RememberAlertEvent( gentity_t *self, int alertIndex )
 
 	// Get The Event Struct
 	//----------------------
-	alertEvent_t&	at = level.alertEvents[alertIndex];
+	ja_alertEvent_t&	at = level.alertEvents[alertIndex];
 
 	if ( at.ID == self->NPC->lastAlertID )
 	{//already know this one
@@ -865,12 +865,12 @@ void ClearPlayerAlertEvents( void )
 			{//still have more in the array
 				if ( (i+1) < MAX_ALERT_EVENTS )
 				{
-					memmove( &level.alertEvents[i], &level.alertEvents[i+1], sizeof(alertEvent_t)*(MAX_ALERT_EVENTS-(i+1) ) );
+					memmove( &level.alertEvents[i], &level.alertEvents[i+1], sizeof(ja_alertEvent_t)*(MAX_ALERT_EVENTS-(i+1) ) );
 				}
 			}
 			else
 			{//just clear this one... or should we clear the whole array?
-				memset( &level.alertEvents[i], 0, sizeof( alertEvent_t ) );
+				memset( &level.alertEvents[i], 0, sizeof( ja_alertEvent_t ) );
 			}
 		}
 	}
@@ -905,12 +905,12 @@ qboolean RemoveOldestAlert( void )
 		{//still have more in the array
 			if ( (oldestEvent+1) < MAX_ALERT_EVENTS )
 			{
-				memmove( &level.alertEvents[oldestEvent], &level.alertEvents[oldestEvent+1], sizeof(alertEvent_t)*(MAX_ALERT_EVENTS-(oldestEvent+1) ) );
+				memmove( &level.alertEvents[oldestEvent], &level.alertEvents[oldestEvent+1], sizeof(ja_alertEvent_t)*(MAX_ALERT_EVENTS-(oldestEvent+1) ) );
 			}
 		}
 		else
 		{//just clear this one... or should we clear the whole array?
-			memset( &level.alertEvents[oldestEvent], 0, sizeof( alertEvent_t ) );
+			memset( &level.alertEvents[oldestEvent], 0, sizeof( ja_alertEvent_t ) );
 		}
 	}
 	//make sure this never drops below zero... if it does, something very very bad happened

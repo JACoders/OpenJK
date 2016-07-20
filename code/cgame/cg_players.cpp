@@ -123,7 +123,7 @@ void CG_AddGhoul2Mark(int type, float size, vec3_t hitloc, vec3_t hitdirection,
 	gi.G2API_AddSkinGore(ghoul2,goreSkin);
 }
 
-qboolean CG_RegisterClientModelname( clientInfo_t *ci, const char *headModelName, const char *headSkinName,
+qboolean CG_RegisterClientModelname( ja_clientInfo_t *ci, const char *headModelName, const char *headSkinName,
 									const char *torsoModelName, const char *torsoSkinName,
 									const char *legsModelName, const char *legsSkinName );
 
@@ -319,7 +319,7 @@ static const char *GetCustomSound_VariantCapped(const char *ppsTable[], int iEnt
 
 extern	cvar_t	*g_sex;
 extern	cvar_t	*com_buildScript;
-static void CG_RegisterCustomSounds(clientInfo_t *ci, int iSoundEntryBase,
+static void CG_RegisterCustomSounds(ja_clientInfo_t *ci, int iSoundEntryBase,
 									int iTableEntries, const char *ppsTable[], const char *psDir
 									)
 {
@@ -375,7 +375,7 @@ CG_CustomSound
 */
 static sfxHandle_t	CG_CustomSound( int entityNum, const char *soundName, int customSoundSet )
 {
-	clientInfo_t *ci;
+	ja_clientInfo_t *ci;
 	int			i;
 
 	if ( soundName[0] != '*' )
@@ -517,7 +517,7 @@ CG_NewClientinfo
 */
 void CG_NewClientinfo( int clientNum )
 {
-	clientInfo_t *ci;
+	ja_clientInfo_t *ci;
 	const char	*configstring;
 	const char	*v;
 //	const char	*s;
@@ -591,7 +591,7 @@ void CG_NewClientinfo( int clientNum )
 /*
 CG_RegisterNPCCustomSounds
 */
-void CG_RegisterNPCCustomSounds( clientInfo_t *ci )
+void CG_RegisterNPCCustomSounds( ja_clientInfo_t *ci )
 {
 //	const char	*s;
 //	int			i;
@@ -710,9 +710,9 @@ void CG_ClearAnimEvtCache( void )
 CG_SetLerpFrameAnimation
 ===============
 */
-static void CG_SetLerpFrameAnimation( clientInfo_t *ci, lerpFrame_t *lf, int newAnimation )
+static void CG_SetLerpFrameAnimation( ja_clientInfo_t *ci, lerpFrame_t *lf, int newAnimation )
 {
-	animation_t	*anim;
+	ja_animation_t	*anim;
 
 	if ( newAnimation < 0 || newAnimation >= MAX_ANIMATIONS )
 	{
@@ -748,9 +748,9 @@ Sets cg.snap, cg.oldFrame, and cg.backlerp
 cg.time should be between oldFrameTime and frameTime after exit
 ===============
 */
-static qboolean CG_RunLerpFrame( clientInfo_t *ci, lerpFrame_t *lf, int newAnimation, float fpsMod, int entNum ) {
+static qboolean CG_RunLerpFrame( ja_clientInfo_t *ci, lerpFrame_t *lf, int newAnimation, float fpsMod, int entNum ) {
 	int			f, animFrameTime;
-	animation_t	*anim;
+	ja_animation_t	*anim;
 	qboolean	newFrame = qfalse;
 
 	if(fpsMod > 2 || fpsMod < 0.5)
@@ -877,7 +877,7 @@ static qboolean CG_RunLerpFrame( clientInfo_t *ci, lerpFrame_t *lf, int newAnima
 CG_ClearLerpFrame
 ===============
 */
-static void CG_ClearLerpFrame( clientInfo_t *ci, lerpFrame_t *lf, int animationNumber )
+static void CG_ClearLerpFrame( ja_clientInfo_t *ci, lerpFrame_t *lf, int animationNumber )
 {
 	lf->frameTime = lf->oldFrameTime = cg.time;
 	CG_SetLerpFrameAnimation( ci, lf, animationNumber );
@@ -898,7 +898,7 @@ CG_PlayerAnimation
 */
 static void CG_PlayerAnimation( centity_t *cent, int *legsOld, int *legs, float *legsBackLerp,
 						int *torsoOld, int *torso, float *torsoBackLerp ) {
-	clientInfo_t	*ci;
+	ja_clientInfo_t	*ci;
 	int				legsAnim;
 	int				legsTurnAnim = -1;
 	qboolean		newLegsFrame = qfalse;
@@ -1209,7 +1209,7 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		else
 		{//still in same anim, check for looping anim
 			inSameAnim = qtrue;
-			animation_t *animation = &level.knownAnimFileSets[animFileIndex].animations[anim];
+			ja_animation_t *animation = &level.knownAnimFileSets[animFileIndex].animations[anim];
 			animBackward = (animation->frameLerp<0);
 			if ( animation->loopFrames != -1 )
 			{//a looping anim!
@@ -1649,7 +1649,7 @@ Added 11/06/02 by Aurelio Reis.
 extern vmCvar_t	cg_drawBreath;
 static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 {
-	gclient_s *client = cent->gent->client;
+	ja_gclient_t *client = cent->gent->client;
 
 	/*	cg_drawBreath.integer	== 0 - Don't draw at all.
 								== 1 - Draw both (but bubbles only when under water).
@@ -2686,7 +2686,7 @@ static void CG_G2PlayerAngles( centity_t *cent, vec3_t legs[3], vec3_t angles )
 					int turnAnim = PM_TurnAnimForLegsAnim( cent->gent, cent->gent->client->ps.legsAnim );
 					if ( turnAnim != -1 && cent->gent->health > 0 )
 					{
-						animation_t *animations = level.knownAnimFileSets[cent->gent->client->clientInfo.animFileIndex].animations;
+						ja_animation_t *animations = level.knownAnimFileSets[cent->gent->client->clientInfo.animFileIndex].animations;
 
 						if ( !animatingHips || ( animations[turnAnim].firstFrame != startFrame ) )// only set the anim if we aren't going to do the same animation again
 						{
@@ -3915,7 +3915,7 @@ static void CG_PlayerSplash( centity_t *cent )
 
 	if ( cent->gent && cent->gent->client )
 	{
-		gclient_t *cl = cent->gent->client;
+		ja_gclient_t *cl = cent->gent->client;
 
 		if ( cent->gent->disconnectDebounceTime < cg.time ) // can't do these expanding ripples all the time
 		{
@@ -5093,7 +5093,7 @@ static void CG_G2SetHeadAnim( centity_t *cent, int anim )
 {
 	gentity_t	*gent = cent->gent;
 	const int blendTime = 50;
-	const animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
+	const ja_animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
 	int	animFlags = BONE_ANIM_OVERRIDE ;//| BONE_ANIM_BLEND;
 	// animSpeed is 1.0 if the frameLerp (ms/frame) is 50 (20 fps).
 //	float		timeScaleMod = (cg_timescale.value&&gent&&gent->s.clientNum==0&&!player_locked&&!MatrixMode&&gent->client->ps.forcePowersActive&(1<<FP_SPEED))?(1.0/cg_timescale.value):1.0;
@@ -5519,7 +5519,7 @@ static void CG_StopWeaponSounds( centity_t *cent )
 
 //--------------- SABER STUFF --------
 extern void CG_Smoke( vec3_t origin, vec3_t dir, float radius, float speed, qhandle_t shader, int flags);
-void CG_SaberDoWeaponHitMarks( gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale )
+void CG_SaberDoWeaponHitMarks( ja_gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale )
 {
 	if ( client
 		&& sizeTimeScale > 0.0f
@@ -5932,7 +5932,7 @@ extern void FX_AddPrimitive( CEffect **effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles )
 {
-	gclient_s *client = cent->gent->client;
+	ja_gclient_t *client = cent->gent->client;
 	if ( !client )
 	{
 		return;
@@ -5981,7 +5981,7 @@ static void CG_AddSaberBladeGo( centity_t *cent, centity_t *scent, refEntity_t *
 	mdxaBone_t	boltMatrix;
 	qboolean tagHack = qfalse;
 
-	gclient_s *client = cent->gent->client;
+	ja_gclient_t *client = cent->gent->client;
 
 	if ( !client )
 	{
@@ -6812,7 +6812,7 @@ extern qboolean G_RagDoll(gentity_t *ent, vec3_t forcedAngles);
 int	cg_saberOnSoundTime[MAX_GENTITIES] = {0};
 
 void CG_Player( centity_t *cent ) {
-	clientInfo_t	*ci;
+	ja_clientInfo_t	*ci;
 	qboolean		shadow, staticScale = qfalse;
 	float			shadowPlane;
 	const weaponData_t  *wData = NULL;

@@ -255,9 +255,9 @@ static gentity_t *GetGEntityPtr(intptr_t iEntNum)
 
 
 
-static intptr_t GetGroupNumber(AIGroupInfo_t *pGroup)
+static intptr_t GetGroupNumber(ja_AIGroupInfo_t *pGroup)
 {
-	assert( pGroup != (AIGroupInfo_t *) 0xcdcdcdcd);
+	assert( pGroup != (ja_AIGroupInfo_t *) 0xcdcdcdcd);
 
 	if (pGroup == NULL)
 	{
@@ -272,7 +272,7 @@ static intptr_t GetGroupNumber(AIGroupInfo_t *pGroup)
 	return iReturnIndex;
 }
 
-static AIGroupInfo_t *GetGroupPtr(intptr_t iGroupNum)
+static ja_AIGroupInfo_t *GetGroupPtr(intptr_t iGroupNum)
 {
 	if (iGroupNum == -1)
 	{
@@ -288,12 +288,12 @@ static AIGroupInfo_t *GetGroupPtr(intptr_t iGroupNum)
 /////////// gclient_t * ////////
 //
 //
-static intptr_t GetGClientNum(gclient_t *c, gentity_t *ent)
+static intptr_t GetGClientNum(ja_gclient_t *c, gentity_t *ent)
 {
 	// unfortunately, I now need to see if this is a INT_ID('r','e','a','l') client (and therefore resolve to an enum), or
 	//	whether it's one of the NPC or SP_misc_weapon_shooter
 	//
-	assert(c != (gclient_t *)0xcdcdcdcd);
+	assert(c != (ja_gclient_t *)0xcdcdcdcd);
 
 	if (c == NULL)
 	{
@@ -310,7 +310,7 @@ static intptr_t GetGClientNum(gclient_t *c, gentity_t *ent)
 	}
 }
 
-static gclient_t *GetGClientPtr(intptr_t c)
+static ja_gclient_t *GetGClientPtr(intptr_t c)
 {
 	if (c == -1)
 	{
@@ -318,7 +318,7 @@ static gclient_t *GetGClientPtr(intptr_t c)
 	}
 	if (c == -2)
 	{
-		return (gclient_t *) -2;	// preserve this value so that I know to load in one of Mike's private NPC clients later
+		return (ja_gclient_t *) -2;	// preserve this value so that I know to load in one of Mike's private NPC clients later
 	}
 
 	assert(c >= 0);
@@ -407,11 +407,11 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	case F_GROUP:
-		*(int *)pv = GetGroupNumber(*(AIGroupInfo_t **)pv);
+		*(int *)pv = GetGroupNumber(*(ja_AIGroupInfo_t **)pv);
 		break;
 
 	case F_GCLIENT:
-		*(intptr_t *)pv = GetGClientNum(*(gclient_t **)pv, (gentity_t *) pbBase);
+		*(intptr_t *)pv = GetGClientNum(*(ja_gclient_t **)pv, (gentity_t *) pbBase);
 		break;
 
 	case F_ITEM:
@@ -448,7 +448,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 
 	case F_ALERTEVENT:	// convert all gentity_t ptrs in an alertEvent array into indexes...
 		{
-			alertEvent_t* p = (alertEvent_t *) pv;
+			ja_alertEvent_t* p = (ja_alertEvent_t *) pv;
 
 			for (int i=0; i<MAX_ALERT_EVENTS; i++)
 			{
@@ -459,7 +459,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 
 	case F_AIGROUPS:	// convert to ptrs within this into indexes...
 		{
-			AIGroupInfo_t* p = (AIGroupInfo_t *) pv;
+			ja_AIGroupInfo_t* p = (ja_AIGroupInfo_t *) pv;
 
 			for (int i=0; i<MAX_FRAME_GROUPS; i++)
 			{
@@ -471,7 +471,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 
 	case F_ANIMFILESETS:
 		{
-			animFileSet_t* p = (animFileSet_t *) pv;
+			ja_animFileSet_t* p = (ja_animFileSet_t *) pv;
 
 			for ( int i = 0; i < MAX_ANIM_FILES; i++ ) {
 				for ( int j = 0; j < MAX_ANIM_EVENTS; j++ ) {
@@ -562,11 +562,11 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 		break;
 
 	case F_GROUP:
-		*(AIGroupInfo_t **)pv = GetGroupPtr(*(int *)pv);
+		*(ja_AIGroupInfo_t **)pv = GetGroupPtr(*(int *)pv);
 		break;
 
 	case F_GCLIENT:
-		*(gclient_t **)pv = GetGClientPtr(*(intptr_t *)pv);
+		*(ja_gclient_t **)pv = GetGClientPtr(*(intptr_t *)pv);
 		break;
 
 	case F_ITEM:
@@ -602,7 +602,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 	case F_ALERTEVENT:
 		{
-			alertEvent_t* p = (alertEvent_t *) pv;
+			ja_alertEvent_t* p = (ja_alertEvent_t *) pv;
 
 			for (int i=0; i<MAX_ALERT_EVENTS; i++)
 			{
@@ -613,7 +613,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 	case F_AIGROUPS:	// convert to ptrs within this into indexes...
 		{
-			AIGroupInfo_t* p = (AIGroupInfo_t *) pv;
+			ja_AIGroupInfo_t* p = (ja_AIGroupInfo_t *) pv;
 
 			for (int i=0; i<MAX_FRAME_GROUPS; i++)
 			{
@@ -625,7 +625,7 @@ static void EvaluateField(const save_field_t *pField, byte *pbBase, byte *pbOrig
 
 	case F_ANIMFILESETS:
 		{
-			animFileSet_t* p = (animFileSet_t *) pv;
+			ja_animFileSet_t* p = (ja_animFileSet_t *) pv;
 			char *pO;
 			for (int i=0; i<MAX_ANIM_FILES; i++)
 			{
@@ -853,7 +853,7 @@ static void ReadLevelLocals ()
 {
 	// preserve client ptr either side of the load, because clients are already saved/loaded through Read/Writegame...
 	//
-	gclient_t *pClients = level.clients;	// save clients
+	ja_gclient_t *pClients = level.clients;	// save clients
 
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// struct copy
@@ -914,9 +914,9 @@ static void WriteGEntities(qboolean qbAutosave)
 				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'), sizeof(npc));
 			}
 
-			if (tempEnt.client == (gclient_t *)-2)	// I know, I know...
+			if (tempEnt.client == (ja_gclient_t *)-2)	// I know, I know...
 			{
-				gclient_t client = *ent->client;	// NOT *tempEnt.client!!
+				ja_gclient_t client = *ent->client;	// NOT *tempEnt.client!!
 				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
 			}
 
@@ -1056,9 +1056,9 @@ static void ReadGEntities(qboolean qbAutosave)
 			*/
 		}
 
-		if (pEnt->client == (gclient_t*) -2)	// one of Mike G's NPC clients?
+		if (pEnt->client == (ja_gclient_t*) -2)	// one of Mike G's NPC clients?
 		{
-			gclient_t tempGClient;
+			ja_gclient_t tempGClient;
 
 			EvaluateFields(savefields_gClient, &tempGClient, (byte *)pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qtrue);//qfalse);
 
@@ -1074,7 +1074,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			{
 				// original didn't have one (hmmm...) so make a new one...
 				//
-				pEnt->client = (gclient_t *) G_Alloc(sizeof(*pEnt->client));
+				pEnt->client = (ja_gclient_t *) G_Alloc(sizeof(*pEnt->client));
 			}
 
 			// copy over the one we've just loaded....
@@ -1239,7 +1239,7 @@ void WriteLevel(qboolean qbAutosave)
 		// write out one client - us!
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
-		gclient_t client = level.clients[0];
+		ja_gclient_t client = level.clients[0];
 		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
 		WriteLevelLocals();	// level_locals_t level
 	}
@@ -1288,7 +1288,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		//SO: We read it in, but throw it away.
 
 		//Read & throw away gclient info
-		gclient_t junkClient;
+		ja_gclient_t junkClient;
 		EvaluateFields(savefields_gClient, &junkClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
 
 		ReadLevelLocals();	// level_locals_t level
@@ -1303,7 +1303,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		{
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
 
-			gclient_t GClient;
+			ja_gclient_t GClient;
 			EvaluateFields(savefields_gClient, &GClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
 			level.clients[0] = GClient;	// struct copy
 			ReadLevelLocals();	// level_locals_t level

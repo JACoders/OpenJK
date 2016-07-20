@@ -985,7 +985,7 @@ extern qboolean	stop_icarus;
 void NPC_Begin (gentity_t *ent)
 {
 	vec3_t	spawn_origin, spawn_angles;
-	gclient_t	*client;
+	ja_gclient_t	*client;
 	usercmd_t	ucmd;
 	gentity_t	*spawnPoint = NULL;
 
@@ -1503,7 +1503,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		return NULL;
 	}
 
-	newent->client = (gclient_s *)gi.Malloc(sizeof(gclient_s), TAG_G_ALLOC, qtrue);
+	newent->client = (ja_gclient_t *)gi.Malloc(sizeof(ja_gclient_t), TAG_G_ALLOC, qtrue);
 
 	newent->svFlags |= SVF_NPC;
 

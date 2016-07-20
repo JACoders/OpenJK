@@ -155,7 +155,7 @@ extern int G_ParseAnimFileSet( const char *skeletonName, const char *modelName=0
 int temp_animFileIndex;
 void set_MiscAnim( gentity_t *ent)
 {
-	animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
+	ja_animation_t *animations = level.knownAnimFileSets[temp_animFileIndex].animations;
 	if (ent->playerModel & 1)
 	{
 		int anim = BOTH_STAND3;

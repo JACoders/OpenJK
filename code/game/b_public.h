@@ -292,7 +292,7 @@ typedef struct
 	int			leaderAvoidSide;
 	int			lastAvoidSteerSide;
 	int			lastAvoidSteerSideDebouncer;
-	AIGroupInfo_t	*group;
+	ja_AIGroupInfo_t	*group;
 	int			troop;
 
 	vec3_t		lastPathAngles;		//So we know which way to face generally when we stop

@@ -123,7 +123,7 @@ typedef struct {
 	qboolean	pitching;
 
 	int			animationNumber;	
-	animation_t	*animation;
+	jo_animation_t	*animation;
 	int			animationTime;		// time when the first frame of the animation will be exact
 } lerpFrame_t;
 

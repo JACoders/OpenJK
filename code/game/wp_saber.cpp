@@ -70,7 +70,7 @@ extern void			G_SetViewEntity( gentity_t *self, gentity_t *viewEntity );
 extern qboolean G_ControlledByPlayer( gentity_t *self );
 extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime );
 extern void CG_ChangeWeapon( int num );
-extern void CG_SaberDoWeaponHitMarks( gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale );
+extern void CG_SaberDoWeaponHitMarks( ja_gclient_t *client, gentity_t *saberEnt, gentity_t *hitEnt, int saberNum, int bladeNum, vec3_t hitPos, vec3_t hitDir, vec3_t uaxis, vec3_t splashBackDir, float sizeTimeScale );
 extern void G_AngerAlert( gentity_t *self );
 extern void G_ReflectMissile( gentity_t *ent, gentity_t *missile, vec3_t forward );
 extern int G_CheckLedgeDive( gentity_t *self, float checkDist, const vec3_t checkVel, qboolean tryOpposite, qboolean tryPerp );
@@ -544,7 +544,7 @@ void G_Throw( gentity_t *targ, const vec3_t newDir, float push )
 	}
 }
 
-int WP_SetSaberModel( gclient_t *client, class_t npcClass )
+int WP_SetSaberModel( ja_gclient_t *client, class_t npcClass )
 {//FIXME: read from NPCs.cfg
 	if ( client )
 	{
@@ -3131,7 +3131,7 @@ qboolean G_CheckIncrementLockAnim( int anim, int winOrLose )
 
 qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *defender, sabersLockMode_t lockMode )
 {
-	animation_t *anim;
+	ja_animation_t *anim;
 	int		attAnim, defAnim, advance = 0;
 	float	attStart = 0.5f, defStart = 0.5f;
 	float	idealDist = 48.0f;

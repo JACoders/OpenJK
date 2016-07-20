@@ -454,7 +454,10 @@ typedef enum {
 
 } entity_event_t;
 
-typedef struct animation_s {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_animation_t
+{
+public:
 	unsigned short		firstFrame;
 	unsigned short		numFrames;
 	short			frameLerp;			// msec between frames
@@ -482,7 +485,7 @@ typedef struct animation_s {
         saved_game->read<int8_t>(loopFrames);
         saved_game->read<uint8_t>(glaIndex);
     }
-} animation_t;
+}; // ja_animation_t
 
 #define MAX_ANIM_FILES	16
 #define MAX_ANIM_EVENTS 300

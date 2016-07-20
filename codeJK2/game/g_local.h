@@ -129,8 +129,10 @@ enum alertEventLevel_e
 };
 
 // !!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
-typedef struct alertEvent_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_alertEvent_t
 {
+public:
 	vec3_t				position;	//Where the event is located
 	float				radius;		//Consideration radius
 	alertEventLevel_e	level;		//Priority level of the event
@@ -169,7 +171,7 @@ typedef struct alertEvent_s
         saved_game->read<int32_t>(ID);
         saved_game->read<int32_t>(timestamp);
     }
-} alertEvent_t;
+}; // jo_alertEvent_t
 
 //
 // this structure is cleared as each map is entered
@@ -194,7 +196,7 @@ typedef struct
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct 
 {
-	gclient_t	*clients;		// [maxclients]
+	jo_gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
 	int			maxclients;
@@ -210,13 +212,13 @@ typedef struct
 	qboolean	locationLinked;			// target_locations get linked
 	gentity_t	*locationHead;			// head of the location list
 
-	alertEvent_t	alertEvents[ MAX_ALERT_EVENTS ];
+	jo_alertEvent_t	alertEvents[ MAX_ALERT_EVENTS ];
 	int				numAlertEvents;
 	int				curAlertID;
 
-	AIGroupInfo_t	groups[MAX_FRAME_GROUPS];
+	jo_AIGroupInfo_t	groups[MAX_FRAME_GROUPS];
 
-	animFileSet_t	knownAnimFileSets[MAX_ANIM_FILES];
+	jo_animFileSet_t	knownAnimFileSets[MAX_ANIM_FILES];
 	int				numKnownAnimFileSets;
 
 	int				worldFlags;
@@ -467,8 +469,8 @@ team_t PickTeam( int ignoreClientNum );
 void SetClientViewAngle( gentity_t *ent, vec3_t angle );
 gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec3_t angles );
 void respawn (gentity_t *ent);
-void InitClientPersistant (gclient_t *client);
-void InitClientResp (gclient_t *client);
+void InitClientPersistant (jo_gclient_t *client);
+void InitClientResp (jo_gclient_t *client);
 qboolean ClientSpawn( gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded );
 void player_die (gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int mod, int dFlags, int hitLoc);
 void AddScore( gentity_t *ent, int score );
@@ -572,8 +574,8 @@ void Svcmd_GameMem_f( void );
 //
 // g_session.c
 //
-void G_ReadSessionData( gclient_t *client );
-void G_InitSessionData( gclient_t *client, char *userinfo );
+void G_ReadSessionData( jo_gclient_t *client );
+void G_InitSessionData( jo_gclient_t *client, char *userinfo );
 
 void G_InitWorldSession( void );
 void G_WriteSessionData( void );

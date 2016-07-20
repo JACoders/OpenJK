@@ -419,7 +419,7 @@ global pain sound events for all clients.
 ===============
 */
 void P_DamageFeedback( gentity_t *player ) {
-	gclient_t	*client;
+	jo_gclient_t	*client;
 	float	count;
 	vec3_t	angles;
 
@@ -1134,7 +1134,7 @@ ClientInactivityTimer
 Returns qfalse if the client is dropped
 =================
 */
-qboolean ClientInactivityTimer( gclient_t *client ) {
+qboolean ClientInactivityTimer( jo_gclient_t *client ) {
 	if ( ! g_inactivity->integer ) 
 	{
 		// give everyone some time, so if the operator sets g_inactivity during
@@ -1178,7 +1178,7 @@ Actions that happen once a second
 ==================
 */
 void ClientTimerActions( gentity_t *ent, int msec ) {
-	gclient_t *client;
+	jo_gclient_t *client;
 
 	client = ent->client;
 	client->timeResidual += msec;
@@ -1215,7 +1215,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 ClientIntermissionThink
 ====================
 */
-static qboolean ClientCinematicThink( gclient_t *client ) {
+static qboolean ClientCinematicThink( jo_gclient_t *client ) {
 	client->ps.eFlags &= ~EF_FIRING;
 
 	// swap button actions
@@ -1241,7 +1241,7 @@ extern void WP_SaberUpdateOldBladeData( gentity_t *ent );
 void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 	int		i;
 	int		event;
-	gclient_t *client;
+	jo_gclient_t *client;
 	//int		damage;
 #ifndef FINAL_BUILD
 	qboolean	fired = qfalse;
@@ -1982,7 +1982,7 @@ usually be a couple times for each server frame on fast clients.
 extern int G_FindLocalInterestPoint( gentity_t *self );
 void ClientThink_real( gentity_t *ent, usercmd_t *ucmd ) 
 {
-	gclient_t	*client;
+	jo_gclient_t	*client;
 	pmove_t		pm;
 	vec3_t		oldOrigin;
 	int			oldEventSequence;

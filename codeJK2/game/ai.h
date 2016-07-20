@@ -105,8 +105,10 @@ void NPC_BSHowler_Default( void );
 //Group AI
 #define	MAX_FRAME_GROUPS	32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct AIGroupMember_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_AIGroupMember_t
 {
+public:
 	int	number;
 	int waypoint;
 	int pathCostToEnemy;
@@ -130,12 +132,14 @@ typedef struct AIGroupMember_s
         saved_game->read<int32_t>(pathCostToEnemy);
         saved_game->read<int32_t>(closestBuddy);
     }
-} AIGroupMember_t;
+}; // jo_AIGroupMember_t
 
 #define MAX_GROUP_MEMBERS 32
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct AIGroupInfo_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_AIGroupInfo_t
 {
+public:
 	int			numGroup;
 	qboolean	processed;
 	team_t		team;
@@ -152,7 +156,7 @@ typedef struct AIGroupInfo_s
 	gentity_t	*commander;
 	vec3_t		enemyLastSeenPos;
 	int			numState[ NUM_SQUAD_STATES ];
-	AIGroupMember_t member[ MAX_GROUP_MEMBERS ];
+	jo_AIGroupMember_t member[ MAX_GROUP_MEMBERS ];
 
 
     void sg_export(
@@ -198,7 +202,7 @@ typedef struct AIGroupInfo_s
         saved_game->read<int32_t>(numState);
         saved_game->read<>(member);
     }
-} AIGroupInfo_t;
+}; // jo_AIGroupInfo_t
 
 int	AI_GetGroupSize( vec3_t origin, int radius, team_t playerTeam, gentity_t *avoid = NULL );
 int AI_GetGroupSize( gentity_t *ent, int radius );

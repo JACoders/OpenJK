@@ -125,7 +125,7 @@ Returns -1 if invalid
 ==================
 */
 int ClientNumberFromString( gentity_t *to, char *s ) {
-	gclient_t	*cl;
+	jo_gclient_t	*cl;
 	int			idnum;
 	char		s2[MAX_STRING_CHARS];
 	char		n2[MAX_STRING_CHARS];

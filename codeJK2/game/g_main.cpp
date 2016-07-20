@@ -645,7 +645,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	ClearAllInUse();
 	// initialize all clients for this game
 	level.maxclients = 1;
-	level.clients = (struct gclient_s *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
+	level.clients = (jo_gclient_t *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
 	memset(level.clients, 0, level.maxclients * sizeof(level.clients[0]));
 
 	// set client fields on player

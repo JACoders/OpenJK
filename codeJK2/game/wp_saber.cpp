@@ -362,7 +362,7 @@ void G_Throw( gentity_t *targ, vec3_t newDir, float push )
 	}
 }
 
-int WP_SetSaberModel( gclient_t *client, class_t npcClass )
+int WP_SetSaberModel( jo_gclient_t *client, class_t npcClass )
 {
 	if ( client )
 	{
@@ -1862,7 +1862,7 @@ extern void PM_SetAnimFrame( gentity_t *gent, int frame, qboolean torso, qboolea
 extern qboolean ValidAnimFileIndex ( int index );
 qboolean WP_SabersCheckLock2( gentity_t *attacker, gentity_t *defender, sabersLockMode_t lockMode )
 {
-	animation_t *anim;
+	jo_animation_t *anim;
 	int		attAnim, defAnim, advance = 0;
 	float	attStart = 0.5f;
 	float	idealDist = 48.0f;

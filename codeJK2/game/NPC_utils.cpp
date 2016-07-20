@@ -1108,7 +1108,7 @@ gentity_t *NPC_PickEnemyExt( qboolean checkAlerts = qfalse )
 		//There is an event to look at
 		if ( alertEvent >= 0 )
 		{
-			alertEvent_t *event = &level.alertEvents[alertEvent];
+			jo_alertEvent_t *event = &level.alertEvents[alertEvent];
 
 			//Don't pay attention to our own alerts
 			if ( event->owner == NPC )
