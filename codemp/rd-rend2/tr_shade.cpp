@@ -697,7 +697,7 @@ static void ComputeFogColorMask( shaderStage_t *pStage, vec4_t fogColorMask )
 	}
 }
 
-static void CaptureDrawData(shaderCommands_t *input, shaderStage_t *stage, int glslShaderIndex, int stageIndex )
+static void CaptureDrawData(const shaderCommands_t *input, shaderStage_t *stage, int glslShaderIndex, int stageIndex )
 {
 	if ( !tr.numFramesToCapture )
 		return;
@@ -857,29 +857,17 @@ void RB_FillDrawCommand(
 	}
 }
 
-static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
-	int		l;
-	//vec3_t	origin;
-	//float	scale;
-	float	radius;
-
+static void ForwardDlight( const shaderCommands_t *input,  VertexArraysProperties *vertexArrays )
+{
 	deform_t deformType;
 	genFunc_t deformGen;
 	float deformParams[7];
-	
-	vec4_t fogDistanceVector, fogDepthVector = {0, 0, 0, 0};
-	float eyeT = 0;
-
-	shaderCommands_t *input = &tess;
-	shaderStage_t *pStage = tess.xstages[0];
 
 	if ( !backEnd.refdef.num_dlights ) {
 		return;
 	}
 	
 	ComputeDeformValues(&deformType, &deformGen, deformParams);
-
-	ComputeFogValues(fogDistanceVector, fogDepthVector, &eyeT);
 
 	cullType_t cullType = RB_GetCullType(&backEnd.viewParms, backEnd.currentEntity, input->shader->cullType);
 
@@ -889,10 +877,39 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 	UniformDataWriter uniformDataWriter;
 	SamplerBindingsWriter samplerBindingsWriter;
 
-	for ( l = 0 ; l < backEnd.refdef.num_dlights ; l++ ) {
-		dlight_t	*dl;
-		shaderProgram_t *sp;
-		vec4_t vector;
+	shaderStage_t *pStage = tess.xstages[0];
+	int index;
+	shaderProgram_t *shaderGroup;
+	uint32_t stateBits = 0;
+	if ( input->shader->numUnfoggedPasses == 1 &&
+			pStage->glslShaderGroup == tr.lightallShader &&
+			(pStage->glslShaderIndex & LIGHTDEF_LIGHTTYPE_MASK) )
+	{
+		index = pStage->glslShaderIndex;
+
+		stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
+		shaderGroup = tr.lightallShader;
+		index &= ~LIGHTDEF_LIGHTTYPE_MASK;
+		index |= LIGHTDEF_USE_LIGHT_VECTOR;
+
+		if (glState.vertexAnimation)
+			index |= LIGHTDEF_USE_VERTEX_ANIMATION;
+
+		if (glState.skeletalAnimation)
+			index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
+	}
+	else
+	{
+		index = 0;
+
+		stateBits = GLS_SRCBLEND_DST_COLOR | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
+		shaderGroup = tr.dlightShader;
+		if ( deformGen != DGEN_NONE )
+			index |= DLIGHTDEF_USE_DEFORM_VERTEXES;
+	}
+
+	shaderProgram_t *sp = shaderGroup + index;
+	for ( int l = 0 ; l < backEnd.refdef.num_dlights ; l++ ) {
 		vec4_t texMatrix;
 		vec4_t texOffTurb;
 
@@ -900,26 +917,8 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 			continue;	// this surface definately doesn't have any of this light
 		}
 
-		dl = &backEnd.refdef.dlights[l];
-		//VectorCopy( dl->transformed, origin );
-		radius = dl->radius;
-		//scale = 1.0f / radius;
-
-		//if (pStage->glslShaderGroup == tr.lightallShader)
-		{
-			int index = pStage->glslShaderIndex;
-
-			index &= ~LIGHTDEF_LIGHTTYPE_MASK;
-			index |= LIGHTDEF_USE_LIGHT_VECTOR;
-
-			if (glState.vertexAnimation)
-				index |= LIGHTDEF_USE_VERTEX_ANIMATION;
-
-			if (glState.skeletalAnimation)
-				index |= LIGHTDEF_USE_SKELETAL_ANIMATION;
-
-			sp = &tr.lightallShader[index];
-		}
+		dlight_t *dl = &backEnd.refdef.dlights[l];
+		float radius = dl->radius;
 
 		backEnd.pc.c_lightallDraws++;
 
@@ -938,18 +937,6 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 			uniformDataWriter.SetUniformInt(UNIFORM_DEFORMFUNC, deformGen);
 			uniformDataWriter.SetUniformFloat(UNIFORM_DEFORMPARAMS, deformParams, 7);
 			uniformDataWriter.SetUniformFloat(UNIFORM_TIME, tess.shaderTime);
-		}
-
-		if ( input->fogNum ) {
-			vec4_t fogColorMask;
-
-			uniformDataWriter.SetUniformVec4(UNIFORM_FOGDISTANCE, fogDistanceVector);
-			uniformDataWriter.SetUniformVec4(UNIFORM_FOGDEPTH, fogDepthVector);
-			uniformDataWriter.SetUniformFloat(UNIFORM_FOGEYET, eyeT);
-
-			ComputeFogColorMask(pStage, fogColorMask);
-
-			uniformDataWriter.SetUniformVec4(UNIFORM_FOGCOLORMASK, fogColorMask);
 		}
 
 		{
@@ -972,13 +959,12 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 
 		uniformDataWriter.SetUniformVec3(UNIFORM_DIRECTEDLIGHT, dl->color);
 
-		VectorSet(vector, 0, 0, 0);
+		vec4_t vector = {};
 		uniformDataWriter.SetUniformVec3(UNIFORM_AMBIENTLIGHT, vector);
 
 		VectorCopy(dl->origin, vector);
 		vector[3] = 1.0f;
 		uniformDataWriter.SetUniformVec4(UNIFORM_LIGHTORIGIN, vector);
-
 		uniformDataWriter.SetUniformFloat(UNIFORM_LIGHTRADIUS, radius);
 
 		uniformDataWriter.SetUniformVec4(UNIFORM_NORMALSCALE, pStage->normalScale);
@@ -1013,9 +999,7 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 		uniformDataWriter.SetUniformVec4(UNIFORM_ENABLETEXTURES, enableTextures);
 
 		if (r_dlightMode->integer >= 2)
-		{
 			samplerBindingsWriter.AddStaticImage(tr.shadowCubemaps[l], TB_SHADOWMAP);
-		}
 
 		ComputeTexMods( pStage, TB_DIFFUSEMAP, texMatrix, texOffTurb );
 		uniformDataWriter.SetUniformVec4(UNIFORM_DIFFUSETEXMATRIX, texMatrix);
@@ -1024,14 +1008,13 @@ static void ForwardDlight( const VertexArraysProperties *vertexArrays ) {
 		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN0, pStage->bundle[0].tcGen);
 		uniformDataWriter.SetUniformInt(UNIFORM_TCGEN1, pStage->bundle[1].tcGen);
 
-
 		CaptureDrawData(input, pStage, 0, 0);
 
 		DrawItem item = {};
 
 		// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
 		// where they aren't rendered
-		item.stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
+		item.stateBits = stateBits;
 		item.cullType = cullType;
 		item.program = sp;
 		item.depthRange = RB_GetDepthRange(backEnd.currentEntity, input->shader);
@@ -1907,7 +1890,7 @@ void RB_StageIteratorGeneric( void )
 				tess.shader->sort <= SS_OPAQUE &&
 				!(tess.shader->surfaceFlags & (SURF_NODLIGHT | SURF_SKY) ) )
 		{
-			ForwardDlight( &vertexArrays );
+			ForwardDlight(input, &vertexArrays);
 		}
 
 		//

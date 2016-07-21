@@ -3,8 +3,6 @@ in vec3 attr_Position;
 in vec2 attr_TexCoord0;
 in vec3 attr_Normal;
 
-uniform vec4 u_DlightInfo;
-
 #if defined(USE_DEFORM_VERTEXES)
 uniform int u_DeformType;
 uniform int u_DeformFunc;
@@ -12,11 +10,14 @@ uniform float u_DeformParams[7];
 uniform float u_Time;
 #endif
 
-uniform vec4 u_Color;
+uniform vec4 u_LightOrigin;
+uniform float u_LightRadius;
+
+uniform mat4 u_ModelMatrix;
 uniform mat4 u_ModelViewProjectionMatrix;
 
-out vec2 var_Tex1;
-out vec4 var_Color;
+out vec3 var_Normal;
+out vec4 var_LightDirAndRadiusSq;
 
 #if defined(USE_DEFORM_VERTEXES)
 float GetNoiseValue( float x, float y, float z, float t )
@@ -159,49 +160,47 @@ vec3 DeformNormal( const in vec3 position, const in vec3 normal )
 void main()
 {
 	vec3 position = attr_Position;
-	vec3 normal = attr_Normal * 2.0 - vec3(1.0);
+	vec3 normal = normalize(attr_Normal * 2.0 - vec3(1.0));
 
 #if defined(USE_DEFORM_VERTEXES)
 	position = DeformPosition(position, normal, attr_TexCoord0.st);
-	normal = DeformNormal( position, normal );
+	normal = DeformNormal(position, normal);
 #endif
 
 	gl_Position = u_ModelViewProjectionMatrix * vec4(position, 1.0);
-		
-	vec3 dist = u_DlightInfo.xyz - position;
-
-	var_Tex1 = dist.xy * u_DlightInfo.a + vec2(0.5);
-	float dlightmod = step(0.0, dot(dist, normal));
-	dlightmod *= clamp(2.0 * (1.0 - abs(dist.z) * u_DlightInfo.a), 0.0, 1.0);
 	
-	var_Color = u_Color * dlightmod;
+	vec3 positionWS = (u_ModelMatrix * vec4(position, 1.0)).xyz;
+	vec3 L = u_LightOrigin.xyz - positionWS;
+	L = (u_ModelMatrix * vec4(L, 0.0)).xyz;
+
+	var_Normal = normalize((u_ModelMatrix * vec4(normal, 0.0)).xyz);
+	var_LightDirAndRadiusSq = vec4(L, u_LightRadius * u_LightRadius);
 }
 
 /*[Fragment]*/
-uniform sampler2D u_DiffuseMap;
-#if defined(USE_ATEST)
-uniform float u_AlphaTestValue;
-#endif
+uniform vec3 u_DirectedLight;
 
-in vec2 var_Tex1;
-in vec4 var_Color;
+in vec3 var_Normal;
+in vec4 var_LightDirAndRadiusSq;
 
 out vec4 out_Color;
 
+float CalcLightAttenuation(float normDist)
+{
+	// zero light at 1.0, approximating q3 style
+	// also don't attenuate directional light
+	float attenuation = (0.5 * normDist - 1.5) + 1.0;
+	return clamp(attenuation, 0.0, 1.0);
+}
+
 void main()
 {
-	vec4 color = texture(u_DiffuseMap, var_Tex1);
+	float lightDistSq = dot(var_LightDirAndRadiusSq.xyz, var_LightDirAndRadiusSq.xyz);
+	vec3  N           = normalize(var_Normal);
+	vec3  L           = var_LightDirAndRadiusSq.xyz / sqrt(lightDistSq);
 
-#if defined(USE_ATEST)
-#  if USE_ATEST == ATEST_CMP_LT
-	if (color.a >= u_AlphaTestValue)
-#  elif USE_ATEST == ATEST_CMP_GT
-	if (color.a <= u_AlphaTestValue)
-#  elif USE_ATEST == ATEST_CMP_GE
-	if (color.a < u_AlphaTestValue)
-#  endif
-		discard;
-#endif
+	float attenuation = CalcLightAttenuation(var_LightDirAndRadiusSq.w / lightDistSq);
+	float NL          = clamp(dot(N, L), 0.0, 1.0);
 
-	out_Color = color * var_Color;
+	out_Color = vec4(NL * attenuation * u_DirectedLight, 1.0);
 }

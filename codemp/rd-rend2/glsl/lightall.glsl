@@ -156,20 +156,12 @@ vec2 ModTexCoords(vec2 st, vec3 position, vec4 texMatrix, vec4 offTurb)
 #endif
 
 
-float CalcLightAttenuation(float point, float normDist)
+float CalcLightAttenuation(in bool isPoint, float normDist)
 {
 	// zero light at 1.0, approximating q3 style
 	// also don't attenuate directional light
-	float attenuation = (0.5 * normDist - 1.5) * point + 1.0;
-
-	// clamp attenuation
-	#if defined(NO_LIGHT_CLAMP)
-	attenuation = max(attenuation, 0.0);
-	#else
-	attenuation = clamp(attenuation, 0.0, 1.0);
-	#endif
-
-	return attenuation;
+	float attenuation = 1.0 + mix(0.0, 0.5 * normDist - 1.5, isPoint);
+	return clamp(attenuation, 0.0, 1.0);
 }
 
 
@@ -503,15 +495,7 @@ float CalcLightAttenuation(float point, float normDist)
 	// zero light at 1.0, approximating q3 style
 	// also don't attenuate directional light
 	float attenuation = (0.5 * normDist - 1.5) * point + 1.0;
-
-	// clamp attenuation
-	#if defined(NO_LIGHT_CLAMP)
-	attenuation = max(attenuation, 0.0);
-	#else
-	attenuation = clamp(attenuation, 0.0, 1.0);
-	#endif
-
-	return attenuation;
+	return clamp(attenuation, 0.0, 1.0);
 }
 
 vec2 GetParallaxOffset(in vec2 texCoords, in vec3 E, in mat3 tangentToWorld )
