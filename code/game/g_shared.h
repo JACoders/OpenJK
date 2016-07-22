@@ -198,8 +198,10 @@ typedef enum
 #define	RF_LOCKEDANGLE	1
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct renderInfo_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_renderInfo_t
 {
+public:
 	// Legs model, or full model on one piece entities
 
 	union
@@ -402,7 +404,7 @@ typedef struct renderInfo_s
         saved_game->read<int32_t>(lookingDebounceTime);
         saved_game->read<float>(legsYaw);
     }
-} renderInfo_t;
+}; // ja_renderInfo_t
 
 // Movement information structure
 
@@ -430,7 +432,10 @@ typedef enum {
 } playerTeamStateState_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_playerTeamState_t
+{
+public:
 	playerTeamStateState_t	state;
 
 	int			captures;
@@ -477,11 +482,13 @@ typedef struct {
         saved_game->read<float>(flagsince);
         saved_game->read<float>(lastfraggedcarrier);
     }
-} playerTeamState_t;
+}; // ja_playerTeamState_t
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct objectives_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_objectives_t
 {
+public:
 	qboolean	display;	// A displayable objective?
 	int			status;	// Succeed or fail or pending
 
@@ -499,14 +506,16 @@ typedef struct objectives_s
         saved_game->read<int32_t>(display);
         saved_game->read<int32_t>(status);
     }
-} objectives_t;
+}; // ja_objectives_t
 // NOTE: This is an arbitrary number greater than our current number of objectives with
 // some fluff just in case we add more in the future.
 #define MAX_MISSION_OBJ 100
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct missionStats_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_missionStats_t
 {
+public:
 	int				secretsFound;					// # of secret areas found
 	int				totalSecrets;					// # of secret areas that could have been found
 	int				shotsFired;						// total number of shots fired
@@ -560,7 +569,7 @@ typedef struct missionStats_s
         saved_game->read<int32_t>(forceUsed);
         saved_game->read<int32_t>(weaponUsed);
     }
-} missionStats_t;
+}; // ja_missionStats_t
 
 // the auto following clients don't follow a specific client
 // number, but instead follow the first two active players
@@ -579,8 +588,8 @@ class ja_clientSession_t
 public:
 	int				missionObjectivesShown;	// Number of times mission objectives have been updated
 	team_t			sessionTeam;
-	objectives_t	mission_objectives[MAX_MISSION_OBJ];
-	missionStats_t	missionStats;			// Various totals while on a mission
+	ja_objectives_t	mission_objectives[MAX_MISSION_OBJ];
+	ja_missionStats_t	missionStats;			// Various totals while on a mission
 
 
     void sg_export(
@@ -616,7 +625,7 @@ public:
 	int			enterTime;			// level.time the client entered the game
 	short		cmd_angles[3];		// angles sent over in the last command
 
-	playerTeamState_t teamState;	// status in teamplay games
+	ja_playerTeamState_t teamState;	// status in teamplay games
 
 
     void sg_export(
@@ -744,7 +753,7 @@ public:
 	float		hiddenDist;//How close ents have to be to pick you up as an enemy
 	vec3_t		hiddenDir;//Normalized direction in which NPCs can't see you (you are hidden)
 
-	renderInfo_t	renderInfo;
+	ja_renderInfo_t	renderInfo;
 
 	//dismember tracker
 	bool		dismembered;
@@ -919,8 +928,10 @@ public:
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
 
-typedef struct
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_parms_t
 {
+public:
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 
 
@@ -935,7 +946,7 @@ typedef struct
     {
         saved_game->read<int8_t>(parm);
     }
-} parms_t;
+}; // ja_parms_t
 
 #ifdef GAME_INCLUDE
 //these hold the place for the enums in functions.h so i don't have to recompile everytime it changes
@@ -1135,7 +1146,7 @@ Ghoul2 Insert End
 //Script/ICARUS-related fields
 	int				m_iIcarusID;
 	int				taskID[NUM_TIDS];
-	parms_t			*parms;
+	ja_parms_t			*parms;
 	char		*behaviorSet[NUM_BSETS];
 	char		*script_targetname;
 	int			delayScriptTime;
@@ -1202,7 +1213,7 @@ Ghoul2 Insert End
 
 	//NPC/Player entity fields
 	//FIXME: Make these client only?
-	gNPC_t		*NPC;//Only allocated if the entity becomes an NPC
+	ja_gNPC_t		*NPC;//Only allocated if the entity becomes an NPC
 
 	//Other NPC/Player-related entity fields
 	char		*ownername;//Used by squadpaths to locate owning NPC

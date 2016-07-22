@@ -452,7 +452,7 @@ private:
 		float			targetNoiseLevel;
 
 		gentity_t*		scanner					= mActors[scannerIndex];
-		gNPCstats_t*	scannerStats			= &(scanner->NPC->stats);
+		ja_gNPCstats_t*	scannerStats			= &(scanner->NPC->stats);
 		float			scannerMaxViewDist		= scannerStats->visrange;
 		float			scannerMinVisability	= 0.1f;//1.0f - scannerStats->vigilance;
 		float			scannerMaxHearDist		= scannerStats->earshot;

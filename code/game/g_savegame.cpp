@@ -835,7 +835,7 @@ All pointer variables (except function pointers) must be handled specially.
 */
 static void WriteLevelLocals ()
 {
-	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
+	ja_level_locals_t *temp = (ja_level_locals_t *)gi.Malloc(sizeof(ja_level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// copy out all data into a temp space
 
 	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
@@ -855,7 +855,7 @@ static void ReadLevelLocals ()
 	//
 	ja_gclient_t *pClients = level.clients;	// save clients
 
-	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
+	ja_level_locals_t *temp = (ja_level_locals_t *)gi.Malloc(sizeof(ja_level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// struct copy
 	EvaluateFields(savefields_LevelLocals, temp, (byte *)&level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
 	level = *temp;					// struct copy
@@ -909,7 +909,7 @@ static void WriteGEntities(qboolean qbAutosave)
 			//
 			if (tempEnt.NPC)
 			{
-				gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
+				ja_gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
 
 				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'), sizeof(npc));
 			}
@@ -1022,7 +1022,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		if (pEnt->NPC)	// will be qtrue/qfalse
 		{
-			gNPC_t tempNPC;
+			ja_gNPC_t tempNPC;
 
 			EvaluateFields(savefields_gNPC, &tempNPC,(byte *)pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
 
@@ -1039,7 +1039,7 @@ static void ReadGEntities(qboolean qbAutosave)
 				// original didn't have one (hmmm...), so make a new one...
 				//
 				//assert(0);	// I want to know about this, though not in release
-				pEnt->NPC = (gNPC_t *) G_Alloc(sizeof(*pEnt->NPC));
+				pEnt->NPC = (ja_gNPC_t *) G_Alloc(sizeof(*pEnt->NPC));
 			}
 
 			// copy over the one we've just loaded...
@@ -1091,7 +1091,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		if (pEnt->parms)	// will be qtrue/qfalse
 		{
-			parms_t tempParms;
+			ja_parms_t tempParms;
 
             ::gi.saved_game->read_chunk(
                 INT_ID('P','A','R','M'),
@@ -1109,7 +1109,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			{
 				// original didn't have one, so make a new one...
 				//
-				pEnt->parms = (parms_t *) G_Alloc(sizeof(*pEnt->parms));
+				pEnt->parms = (ja_parms_t *) G_Alloc(sizeof(*pEnt->parms));
 			}
 
 			// copy over the one we've just loaded...

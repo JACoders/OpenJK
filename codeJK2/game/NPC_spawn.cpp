@@ -1070,9 +1070,9 @@ void NPC_Begin (gentity_t *ent)
 	}
 }
 
-gNPC_t *New_NPC_t()
+jo_gNPC_t *New_NPC_t()
 {
-	gNPC_t *ptr = (gNPC_t *)G_Alloc (sizeof(gNPC_t));
+	jo_gNPC_t *ptr = (jo_gNPC_t *)G_Alloc (sizeof(jo_gNPC_t));
 
 	if (ptr)
 	{

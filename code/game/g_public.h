@@ -90,10 +90,11 @@ typedef enum
 #ifndef GAME_INCLUDE
 
 // the server needs to know enough information to handle collision and snapshot generation
+class playerState_t;
 
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
-	struct playerState_s	*client;
+	playerState_t	*client;
 	qboolean	inuse;
 	qboolean	linked;				// qfalse if not in any good cluster
 

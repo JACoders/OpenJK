@@ -76,13 +76,13 @@ cvar_t		*d_slowmodeath;
 extern qboolean	stop_icarus;
 
 gentity_t		*NPC;
-gNPC_t			*NPCInfo;
+ja_gNPC_t			*NPCInfo;
 ja_gclient_t		*client;
 usercmd_t		ucmd;
 visibility_t	enemyVisibility;
 
 void NPC_SetAnim(gentity_t	*ent,int setAnimParts,int anim,int setAnimFlags, int iBlend);
-static bState_t G_CurrentBState( gNPC_t *gNPC );
+static bState_t G_CurrentBState( ja_gNPC_t *gNPC );
 
 extern int eventClearTime;
 
@@ -914,7 +914,7 @@ void SetNPCGlobals( gentity_t *ent )
 }
 
 gentity_t	*_saved_NPC;
-gNPC_t		*_saved_NPCInfo;
+ja_gNPC_t		*_saved_NPCInfo;
 ja_gclient_t	*_saved_client;
 usercmd_t	_saved_ucmd;
 
@@ -2137,7 +2137,7 @@ void NPC_RunBehavior( int team, int bState )
 	}
 }
 
-static bState_t G_CurrentBState( gNPC_t *gNPC )
+static bState_t G_CurrentBState( ja_gNPC_t *gNPC )
 {
 	if ( gNPC->tempBehavior != BS_DEFAULT )
 	{//Overrides normal behavior until cleared

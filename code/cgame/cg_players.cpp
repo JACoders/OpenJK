@@ -1811,7 +1811,7 @@ CG_AddHeadBob
 */
 static qboolean CG_AddHeadBob( centity_t *cent, vec3_t addTo )
 {
-	renderInfo_t	*renderInfo	= &cent->gent->client->renderInfo;
+	ja_renderInfo_t	*renderInfo	= &cent->gent->client->renderInfo;
 	const int		volume		= gi.VoiceVolume[cent->gent->s.clientNum];
 	const int		volChange	= volume - renderInfo->lastVoiceVolume;//was *3 because voice fromLA was too low
 	int				i;

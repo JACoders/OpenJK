@@ -1026,7 +1026,7 @@ MSG_WriteDeltaPlayerstate
 
 =============
 */
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to ) {
+void MSG_WriteDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to ) {
 	int				i;
 	playerState_t	dummy;
 	int				statsbits;

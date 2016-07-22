@@ -194,8 +194,10 @@ typedef struct
 #define	WF_SNOWING	0x00000002	//snowing
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct 
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_level_locals_t
 {
+public:
 	jo_gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
@@ -291,9 +293,9 @@ typedef struct
         saved_game->read<int32_t>(worldFlags);
         saved_game->read<int32_t>(dmState);
     }
-} level_locals_t;
+}; // jo_level_locals_t
 
-extern	level_locals_t	level;
+extern	jo_level_locals_t	level;
 extern	game_export_t	globals;
 
 extern	cvar_t	*g_gravity;

@@ -62,7 +62,7 @@ extern qboolean g_bCollidableRoffs;
 
 #define	STEPSIZE		18
 
-level_locals_t	level;
+ja_level_locals_t	level;
 game_import_t	gi;
 game_export_t	globals;
 gentity_t		g_entities[MAX_GENTITIES];

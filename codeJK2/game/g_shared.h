@@ -255,8 +255,10 @@ typedef enum
 #define	RF_LOCKEDANGLE	1
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct renderInfo_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_renderInfo_t
 {
+public:
 	// Legs model, or full model on one piece entities
 	union
 	{
@@ -438,7 +440,7 @@ typedef struct renderInfo_s
         saved_game->read<int32_t>(lookingDebounceTime);
         saved_game->read<float>(legsYaw);
     }
-} renderInfo_t;
+}; // jo_renderInfo_t
 
 // Movement information structure
 
@@ -466,7 +468,10 @@ typedef enum {
 } playerTeamStateState_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_playerTeamState_t
+{
+public:
 	playerTeamStateState_t	state;
 
 	int			captures;
@@ -513,11 +518,13 @@ typedef struct {
         saved_game->read<float>(flagsince);
         saved_game->read<float>(lastfraggedcarrier);
     }
-} playerTeamState_t;
+}; // jo_playerTeamState_t
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct objectives_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_objectives_t
 {
+public:
 	qboolean	display;	// A displayable objective?
 	int			status;	// Succeed or fail or pending
 
@@ -535,12 +542,14 @@ typedef struct objectives_s
         saved_game->read<int32_t>(display);
         saved_game->read<int32_t>(status);
     }
-} objectives_t;
+}; // jo_objectives_t
 #define MAX_MISSION_OBJ 80
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct missionStats_s
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_missionStats_t
 {
+public:
 	int				secretsFound;					// # of secret areas found
 	int				totalSecrets;					// # of secret areas that could have been found
 	int				shotsFired;						// total number of shots fired
@@ -594,7 +603,7 @@ typedef struct missionStats_s
         saved_game->read<int32_t>(forceUsed);
         saved_game->read<int32_t>(weaponUsed);
     }
-} missionStats_t;
+}; // jo_missionStats_t
 
 // the auto following clients don't follow a specific client
 // number, but instead follow the first two active players
@@ -613,8 +622,8 @@ class jo_clientSession_t
 public:
 	int				missionObjectivesShown;	// Number of times mission objectives have been updated
 	team_t			sessionTeam;
-	objectives_t	mission_objectives[MAX_MISSION_OBJ];
-	missionStats_t	missionStats;			// Various totals while on a mission
+	jo_objectives_t	mission_objectives[MAX_MISSION_OBJ];
+	jo_missionStats_t	missionStats;			// Various totals while on a mission
 
 
     void sg_export(
@@ -651,7 +660,7 @@ public:
 	int			enterTime;			// level.time the client entered the game
 	short		cmd_angles[3];		// angles sent over in the last command
 
-	playerTeamState_t teamState;	// status in teamplay games
+	jo_playerTeamState_t teamState;	// status in teamplay games
 
 
     void sg_export(
@@ -781,7 +790,7 @@ public:
 	float		hiddenDist;//How close ents have to be to pick you up as an enemy
 	vec3_t		hiddenDir;//Normalized direction in which NPCs can't see you (you are hidden)
 
-	renderInfo_t	renderInfo;
+	jo_renderInfo_t	renderInfo;
 	saberTrail_t	saberTrail;
 
 	//dismember tracker
@@ -929,8 +938,11 @@ public:
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
-typedef struct
-{	
+
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_parms_t
+{
+public:
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
 
 
@@ -945,7 +957,7 @@ typedef struct
     {
         saved_game->read<int8_t>(parm);
     }
-} parms_t;
+}; // jo_parms_t
 
 #define GAME_INCLUDE
 #ifdef GAME_INCLUDE
@@ -1135,7 +1147,7 @@ Ghoul2 Insert End
 	CSequencer		*sequencer;
 	CTaskManager	*taskManager;
 	int				taskID[NUM_TIDS];
-	parms_t			*parms;
+	jo_parms_t			*parms;
 	char		*behaviorSet[NUM_BSETS];
 	char		*script_targetname;
 	int			delayScriptTime;
@@ -1198,7 +1210,7 @@ Ghoul2 Insert End
 //FIELDS USED EXCLUSIVELY BY SPECIFIC CLASSES OF ENTITIES
 	//NPC/Player entity fields
 	//FIXME: Make these client only?
-	gNPC_t		*NPC;//Only allocated if the entity becomes an NPC
+	jo_gNPC_t		*NPC;//Only allocated if the entity becomes an NPC
 
 	//Other NPC/Player-related entity fields
 	char		*ownername;//Used by squadpaths to locate owning NPC

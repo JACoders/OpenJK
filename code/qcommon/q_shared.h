@@ -2278,7 +2278,10 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct playerState_s {
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class playerState_t
+{
+public:
 	int			commandTime;		// cmd->serverTime of last executed command
 	int			pm_type;
 	int			bobCycle;			// for view bobbing and footstep generation
@@ -2864,7 +2867,7 @@ typedef struct playerState_s {
         saved_game->read<int32_t>(brokenLimbs);
         saved_game->read<int32_t>(electrifyTime);
     }
-} playerState_t;
+}; // playerState_t
 
 //====================================================================
 

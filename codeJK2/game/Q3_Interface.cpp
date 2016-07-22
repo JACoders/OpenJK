@@ -723,7 +723,7 @@ static void Q3_SetObjective(const char *ObjEnum, int status)
 {
 	int objectiveID;
 	jo_gclient_t	*client;
-	objectives_t	*objective;
+	jo_objectives_t	*objective;
 	int				*objectivesShown;
 
 	client = &level.clients[0];
@@ -4124,8 +4124,8 @@ void Q3_SetParm (int entID, int parmNum, const char *parmValue)
 
 	if( !ent->parms )
 	{
-		ent->parms = (parms_t *)G_Alloc( sizeof(parms_t) );
-		memset( ent->parms, 0, sizeof(parms_t) );
+		ent->parms = (jo_parms_t *)G_Alloc( sizeof(jo_parms_t) );
+		memset( ent->parms, 0, sizeof(jo_parms_t) );
 	}
 
 	if ( (val = Q3_CheckStringCounterIncrement( parmValue )) )

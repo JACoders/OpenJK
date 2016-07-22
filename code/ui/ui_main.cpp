@@ -2017,12 +2017,13 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 //because the ui can be loaded while the game/cgame are not loaded. So we're going to recreate what we need here.
 #undef MAX_ANIM_FILES
 #define MAX_ANIM_FILES 4
-typedef struct
+class ui_animFileSet_t
 {
+public:
 	char			filename[MAX_QPATH];
 	ja_animation_t		animations[MAX_ANIMATIONS];
-} animFileSet_t;
-static animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
+}; // ui_animFileSet_t
+static ui_animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
 
 int				ui_numKnownAnimFileSets;
 

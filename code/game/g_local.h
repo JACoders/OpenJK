@@ -239,8 +239,10 @@ typedef struct
 #define	WF_PUFFING		0x00000004	// puffing something
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_level_locals_t
 {
+public:
 	ja_gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
@@ -343,9 +345,9 @@ typedef struct
         saved_game->read<int32_t>(worldFlags);
         saved_game->read<int32_t>(dmState);
     }
-} level_locals_t;
+}; // ja_level_locals_t
 
-extern	level_locals_t	level;
+extern	ja_level_locals_t	level;
 extern	game_export_t	globals;
 
 extern	cvar_t	*g_gravity;

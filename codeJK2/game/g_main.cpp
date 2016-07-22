@@ -44,7 +44,7 @@ int		eventClearTime = 0;
 
 #define	STEPSIZE		18
 
-level_locals_t	level;
+jo_level_locals_t	level;
 game_import_t	gi;
 game_export_t	globals;
 gentity_t		g_entities[MAX_GENTITIES];

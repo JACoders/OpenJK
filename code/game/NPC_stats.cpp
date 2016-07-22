@@ -356,7 +356,7 @@ static int MoveTypeNameToEnum( const char *name )
 	return MT_STATIC;
 }
 
-extern void CG_RegisterClientRenderInfo(ja_clientInfo_t *ci, renderInfo_t *ri);
+extern void CG_RegisterClientRenderInfo(ja_clientInfo_t *ci, ja_renderInfo_t *ri);
 extern void CG_RegisterClientModels (int entityNum);
 extern void CG_RegisterNPCCustomSounds( ja_clientInfo_t *ci );
 
@@ -1578,7 +1578,7 @@ Precaches NPC skins, tgas and md3s.
 void CG_NPC_Precache ( gentity_t *spawner )
 {
 	ja_clientInfo_t	ci={};
-	renderInfo_t	ri={};
+	ja_renderInfo_t	ri={};
 	team_t			playerTeam = TEAM_FREE;
 	const char	*token;
 	const char	*value;
@@ -1942,8 +1942,8 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
 	ja_clientInfo_t	*ci = &NPC->client->clientInfo;
-	renderInfo_t	*ri = &NPC->client->renderInfo;
-	gNPCstats_t		*stats = NULL;
+	ja_renderInfo_t	*ri = &NPC->client->renderInfo;
+	ja_gNPCstats_t		*stats = NULL;
 	qboolean	md3Model = qtrue;
 	char	surfOff[1024]={0};
 	char	surfOn[1024]={0};

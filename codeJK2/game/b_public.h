@@ -114,8 +114,9 @@ typedef enum //# movetype_e
 	NUM_MOVETYPES
 } movetype_t;
 
-typedef struct gNPCstats_e
+class jo_gNPCstats_t
 {//Stats, loaded in, and can be set by scripts
+public:
 	//AI
 	int		aggression;			//			"
 	int		aim;				//			"
@@ -183,7 +184,7 @@ typedef struct gNPCstats_e
         saved_game->read<int32_t>(health);
         saved_game->read<int32_t>(acceleration);
     }
-} gNPCstats_t;
+}; // jo_gNPCstats_t
 
 // NOTE!!!  If you add any ptr fields into this structure could you please tell me so I can update the load/save code?
 //	so far the only things I've got to cope with are a bunch of gentity_t*'s, but tell me if any more get added -slc
@@ -193,8 +194,10 @@ typedef struct gNPCstats_e
 #define	ENEMY_POS_LAG_INTERVAL	100
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
 
-typedef struct 
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class jo_gNPC_t
 {
+public:
 	//FIXME: Put in playerInfo or something
 	int			timeOfDeath;			//FIXME do we really need both of these
 	gentity_t	*touchedByPlayer;
@@ -275,7 +278,7 @@ typedef struct
 	vec3_t		lastPathAngles;		//So we know which way to face generally when we stop
 
 	//stats
-	gNPCstats_t	stats;
+	jo_gNPCstats_t	stats;
 	int			aimErrorDebounceTime;
 	float		lastAimErrorYaw;
 	float		lastAimErrorPitch;
@@ -550,7 +553,7 @@ typedef struct
         saved_game->read<int32_t>(ffireDebounce);
         saved_game->read<int32_t>(ffireFadeDebounce);
     }
-} gNPC_t;
+}; // jo_gNPC_t
 
 void G_SquadPathsInit(void);
 void NPC_InitGame( void );

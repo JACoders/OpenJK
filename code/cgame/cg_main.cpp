@@ -990,7 +990,7 @@ Ghoul2 Insert End
 }
 
 
-void CG_RegisterClientRenderInfo(ja_clientInfo_t *ci, renderInfo_t *ri)
+void CG_RegisterClientRenderInfo(ja_clientInfo_t *ci, ja_renderInfo_t *ri)
 {
 	char			*slash;
 	char			headModelName[MAX_QPATH];

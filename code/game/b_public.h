@@ -132,8 +132,9 @@ typedef enum
 } sexType_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct gNPCstats_e
+class ja_gNPCstats_t
 {//Stats, loaded in, and can be set by scripts
+public:
 	//AI
 	int		aggression;			//			"
 	int		aim;				//			"
@@ -202,7 +203,7 @@ typedef struct gNPCstats_e
         saved_game->read<int32_t>(acceleration);
         saved_game->read<int32_t>(sex);
     }
-} gNPCstats_t;
+}; // ja_gNPCstats_t
 
 
 #define	MAX_ENEMY_POS_LAG	2400
@@ -210,8 +211,10 @@ typedef struct gNPCstats_e
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct
+// FIXME Added prefix to avoid debugging problems in Visual Studio.
+class ja_gNPC_t
 {
+public:
 	//FIXME: Put in playerInfo or something
 	int			timeOfDeath;			//FIXME do we really need both of these
 	gentity_t	*touchedByPlayer;
@@ -298,7 +301,7 @@ typedef struct
 	vec3_t		lastPathAngles;		//So we know which way to face generally when we stop
 
 	//stats
-	gNPCstats_t	stats;
+	ja_gNPCstats_t	stats;
 	int			aimErrorDebounceTime;
 	float		lastAimErrorYaw;
 	float		lastAimErrorPitch;
@@ -622,7 +625,7 @@ typedef struct
         saved_game->read<int32_t>(ffireDebounce);
         saved_game->read<int32_t>(ffireFadeDebounce);
     }
-} gNPC_t;
+}; // ja_gNPC_t
 
 
 void G_SquadPathsInit(void);
