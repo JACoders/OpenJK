@@ -296,6 +296,11 @@ bool SavedGame::read_chunk(
     return true;
 }
 
+bool SavedGame::is_all_data_read() const
+{
+    return io_buffer_.size() == io_buffer_offset_;
+}
+
 bool SavedGame::write_chunk(
     const SavedGame::ChunkId chunk_id)
 {

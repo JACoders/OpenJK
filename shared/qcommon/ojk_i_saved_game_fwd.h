@@ -61,6 +61,9 @@ public:
         TDst* dst_values,
         int dst_count);
 
+    // Returns true if all data read from the internal buffer.
+    virtual bool is_all_data_read() const = 0;
+
 
     // Writes a chunk into the file from the internal buffer.
     virtual bool write_chunk(

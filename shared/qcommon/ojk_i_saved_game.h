@@ -44,6 +44,8 @@ bool ISavedGame::read_chunk(
     read<TSrc>(
         dst_value);
 
+    result &= is_all_data_read();
+
     return result;
 }
 
@@ -59,6 +61,8 @@ bool ISavedGame::read_chunk(
     read<TSrc>(
         dst_values,
         dst_count);
+
+    result &= is_all_data_read();
 
     return result;
 }

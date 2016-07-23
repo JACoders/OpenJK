@@ -647,6 +647,13 @@ static void EvaluateFields(
     pbData->sg_import(
         ::gi.saved_game);
 
+    if (!::gi.saved_game->is_all_data_read())
+    {
+        ::G_Error(
+            ::va("EvaluateFields(): variable-sized chunk '%s' without handler!",
+                ::SG_GetChidText(ulChid)));
+    }
+
     if (pFields) {
         for (auto pField = pFields; pField->psName; ++pField) {
             ::EvaluateField(

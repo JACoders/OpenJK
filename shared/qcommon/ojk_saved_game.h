@@ -63,6 +63,10 @@ public:
     using ISavedGame::read_chunk;
 
 
+    // Returns true if all data read from the internal buffer.
+    bool is_all_data_read() const override;
+
+
     // Writes a chunk into the file from the internal buffer.
     bool write_chunk(
         const ChunkId chunk_id) override;
