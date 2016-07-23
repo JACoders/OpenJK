@@ -120,7 +120,7 @@ bool SavedGame::create(
     }
 
 
-    is_writable_ = false;
+    is_writable_ = true;
 
     int sg_version = iSAVEGAME_VERSION;
 
@@ -327,13 +327,9 @@ bool SavedGame::write_chunk(
         static_cast<int>(sizeof(chunk_id)),
         file_handle_);
 
-    int iCompressedLength = 0;
+    int iCompressedLength = -1;
 
-    if (::sv_compress_saved_games->integer == 0)
-    {
-        iCompressedLength = -1;
-    }
-    else
+    if (::sv_compress_saved_games->integer != 0)
     {
         compress(
             io_buffer_,
@@ -577,7 +573,7 @@ void SavedGame::rename(
         old_path.c_str(),
         new_path.c_str());
 
-    if (rename_result != 0)
+    if (rename_result == 0)
     {
         ::Com_Printf(
             S_COLOR_RED "Error during savegame-rename. Check \"%s\" for write-protect or disk full!\n",

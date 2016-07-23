@@ -814,6 +814,15 @@ static void EvaluateFields(
     pbData->sg_import(
         ::gi.saved_game);
 
+    // FIXME Add support for retail version?
+
+    if (!::gi.saved_game->is_all_data_read())
+    {
+        ::G_Error(
+            ::va("EvaluateFields(): variable-sized chunk '%s' without handler!",
+                ::SG_GetChidText(ulChid)));
+    }
+
     if (pFields)
     {
         for (const save_field_t* pField = pFields; pField->psName; ++pField) {

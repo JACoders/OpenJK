@@ -543,7 +543,7 @@ int CIcarus::Save()
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
 
-    saved_game->read_chunk<double>(
+    saved_game->write_chunk<double>(
         INT_ID('I','C','A','R'),
         version);
 
@@ -569,7 +569,7 @@ int CIcarus::Save()
 	}
 
 	// Write out the buffer with all our collected data.
-    saved_game->read_chunk(
+    saved_game->write_chunk(
         INT_ID('I','S','E','Q'),
         m_byBuffer,
         static_cast<int>(m_ulBufferCurPos));
