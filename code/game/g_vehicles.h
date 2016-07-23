@@ -474,6 +474,7 @@ struct Muzzle
         saved_game->write<float>(m_vMuzzleDir);
         saved_game->write<int32_t>(m_iMuzzleWait);
         saved_game->write<int8_t>(m_bFired);
+        saved_game->skip(3);
     }
 
     void sg_import(
@@ -483,6 +484,7 @@ struct Muzzle
         saved_game->read<float>(m_vMuzzleDir);
         saved_game->read<int32_t>(m_iMuzzleWait);
         saved_game->read<int8_t>(m_bFired);
+        saved_game->skip(3);
     }
 };
 
@@ -701,6 +703,7 @@ struct Vehicle_t
         saved_game->write<int32_t>(m_pParentEntity);
         saved_game->write<int32_t>(m_iBoarding);
         saved_game->write<int8_t>(m_bWasBoarding);
+        saved_game->skip(3);
         saved_game->write<float>(m_vBoardingVelocity);
         saved_game->write<float>(m_fTimeModifier);
         saved_game->write<int32_t>(m_iLeftWingBone);
@@ -747,6 +750,7 @@ struct Vehicle_t
         saved_game->read<int32_t>(m_pParentEntity);
         saved_game->read<int32_t>(m_iBoarding);
         saved_game->read<int8_t>(m_bWasBoarding);
+        saved_game->skip(3);
         saved_game->read<float>(m_vBoardingVelocity);
         saved_game->read<float>(m_fTimeModifier);
         saved_game->read<int32_t>(m_iLeftWingBone);

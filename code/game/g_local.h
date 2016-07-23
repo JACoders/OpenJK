@@ -109,6 +109,7 @@ public:
         saved_game->write<>(legsAnimEvents);
         saved_game->write<uint8_t>(torsoAnimEventCount);
         saved_game->write<uint8_t>(legsAnimEventCount);
+        saved_game->skip(2);
     }
 
     void sg_import(
@@ -120,6 +121,7 @@ public:
         saved_game->read<>(legsAnimEvents);
         saved_game->read<uint8_t>(torsoAnimEventCount);
         saved_game->read<uint8_t>(legsAnimEventCount);
+        saved_game->skip(2);
     }
 }; // ja_animFileSet_t
 

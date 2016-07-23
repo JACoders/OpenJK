@@ -634,9 +634,11 @@ public:
         saved_game->write<int32_t>(connected);
         saved_game->write<>(lastCommand);
         saved_game->write<int8_t>(netname);
+        saved_game->skip(2);
         saved_game->write<int32_t>(maxHealth);
         saved_game->write<int32_t>(enterTime);
         saved_game->write<int16_t>(cmd_angles);
+        saved_game->skip(2);
         saved_game->write<>(teamState);
     }
 
@@ -646,9 +648,11 @@ public:
         saved_game->read<int32_t>(connected);
         saved_game->read<>(lastCommand);
         saved_game->read<int8_t>(netname);
+        saved_game->skip(2);
         saved_game->read<int32_t>(maxHealth);
         saved_game->read<int32_t>(enterTime);
         saved_game->read<int16_t>(cmd_angles);
+        saved_game->skip(2);
         saved_game->read<>(teamState);
     }
 }; // ja_clientPersistant_t
@@ -837,6 +841,7 @@ public:
         saved_game->write<int8_t>(dismemberProbArms);
         saved_game->write<int8_t>(dismemberProbHands);
         saved_game->write<int8_t>(dismemberProbWaist);
+        saved_game->skip(2);
         saved_game->write<int32_t>(standheight);
         saved_game->write<int32_t>(crouchheight);
         saved_game->write<int32_t>(poisonDamage);
@@ -902,6 +907,7 @@ public:
         saved_game->read<int8_t>(dismemberProbArms);
         saved_game->read<int8_t>(dismemberProbHands);
         saved_game->read<int8_t>(dismemberProbWaist);
+        saved_game->skip(2);
         saved_game->read<int32_t>(standheight);
         saved_game->read<int32_t>(crouchheight);
         saved_game->read<int32_t>(poisonDamage);

@@ -274,11 +274,13 @@ boneInfo_t():
         saved_game->write<int32_t>(solidCount);
         saved_game->write<int8_t>(physicsSettled);
         saved_game->write<int8_t>(snapped);
+        saved_game->skip(2);
         saved_game->write<int32_t>(parentBoneIndex);
         saved_game->write<float>(offsetRotation);
         saved_game->write<float>(overGradSpeed);
         saved_game->write<float>(overGoalSpot);
         saved_game->write<int8_t>(hasOverGoal);
+        saved_game->skip(3);
         saved_game->write<>(animFrameMatrix);
         saved_game->write<int32_t>(hasAnimFrameMatrix);
         saved_game->write<int32_t>(airTime);
@@ -345,11 +347,13 @@ boneInfo_t():
         saved_game->read<int32_t>(solidCount);
         saved_game->read<int8_t>(physicsSettled);
         saved_game->read<int8_t>(snapped);
+        saved_game->skip(2);
         saved_game->read<int32_t>(parentBoneIndex);
         saved_game->read<float>(offsetRotation);
         saved_game->read<float>(overGradSpeed);
         saved_game->read<float>(overGoalSpot);
         saved_game->read<int8_t>(hasOverGoal);
+        saved_game->skip(3);
         saved_game->read<>(animFrameMatrix);
         saved_game->read<int32_t>(hasAnimFrameMatrix);
         saved_game->read<int32_t>(airTime);

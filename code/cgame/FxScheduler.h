@@ -420,6 +420,7 @@ struct SLoopedEffect
         saved_game->write<int32_t>(mLoopStopTime);
         saved_game->write<int8_t>(mPortalEffect);
         saved_game->write<int8_t>(mIsRelative);
+        saved_game->skip(2);
     }
 
     void sg_import(
@@ -431,6 +432,7 @@ struct SLoopedEffect
         saved_game->read<int32_t>(mLoopStopTime);
         saved_game->read<int8_t>(mPortalEffect);
         saved_game->read<int8_t>(mIsRelative);
+        saved_game->skip(2);
     }
 };
 

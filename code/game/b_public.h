@@ -467,6 +467,7 @@ public:
         saved_game->write<int32_t>(currentSpeed);
         saved_game->write<int8_t>(last_forwardmove);
         saved_game->write<int8_t>(last_rightmove);
+        saved_game->skip(2);
         saved_game->write<float>(lastClearOrigin);
         saved_game->write<int32_t>(shoveCount);
         saved_game->write<int32_t>(blockedDebounceTime);
@@ -588,6 +589,7 @@ public:
         saved_game->read<int32_t>(currentSpeed);
         saved_game->read<int8_t>(last_forwardmove);
         saved_game->read<int8_t>(last_rightmove);
+        saved_game->skip(2);
         saved_game->read<float>(lastClearOrigin);
         saved_game->read<int32_t>(shoveCount);
         saved_game->read<int32_t>(blockedDebounceTime);

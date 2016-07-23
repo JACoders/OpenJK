@@ -2929,6 +2929,7 @@ typedef struct usercmd_s {
         saved_game->write<int32_t>(serverTime);
         saved_game->write<int32_t>(buttons);
         saved_game->write<uint8_t>(weapon);
+        saved_game->skip(3);
         saved_game->write<int32_t>(angles);
         saved_game->write<uint8_t>(generic_cmd);
         saved_game->write<int8_t>(forwardmove);
@@ -2942,6 +2943,7 @@ typedef struct usercmd_s {
         saved_game->read<int32_t>(serverTime);
         saved_game->read<int32_t>(buttons);
         saved_game->read<uint8_t>(weapon);
+        saved_game->skip(3);
         saved_game->read<int32_t>(angles);
         saved_game->read<uint8_t>(generic_cmd);
         saved_game->read<int8_t>(forwardmove);
