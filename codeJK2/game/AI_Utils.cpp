@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 extern	CNavigator	navigator;
 extern cvar_t		*d_noGroupAI;
-qboolean AI_ValidateGroupMember( jo_AIGroupInfo_t *group, gentity_t *member );
+qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member );
 
 /*
 -------------------------
@@ -96,7 +96,7 @@ int AI_GetGroupSize( gentity_t *ent, int radius )
 }
 
 extern int NAV_FindClosestWaypointForPoint( gentity_t *ent, vec3_t point );
-int AI_ClosestGroupEntityNumToPoint( jo_AIGroupInfo_t &group, vec3_t point )
+int AI_ClosestGroupEntityNumToPoint( AIGroupInfo_t &group, vec3_t point )
 {
 	int	markerWP = WAYPOINT_NONE;
 	int	cost, bestCost = Q3_INFINITE;
@@ -127,7 +127,7 @@ int AI_ClosestGroupEntityNumToPoint( jo_AIGroupInfo_t &group, vec3_t point )
 	return closest;
 }
 
-void AI_SetClosestBuddy( jo_AIGroupInfo_t *group )
+void AI_SetClosestBuddy( AIGroupInfo_t *group )
 {
 	int	i, j;
 	int	dist, bestDist;
@@ -149,9 +149,9 @@ void AI_SetClosestBuddy( jo_AIGroupInfo_t *group )
 	}
 }
 
-void AI_SortGroupByPathCostToEnemy( jo_AIGroupInfo_t *group )
+void AI_SortGroupByPathCostToEnemy( AIGroupInfo_t *group )
 {
-	jo_AIGroupMember_t bestMembers[MAX_GROUP_MEMBERS];
+	AIGroupMember_t bestMembers[MAX_GROUP_MEMBERS];
 	int				i, j, k;
 	qboolean		sort = qfalse;
 
@@ -247,7 +247,7 @@ qboolean AI_FindSelfInPreviousGroup( gentity_t *self )
 	return qfalse;
 }
 
-void AI_InsertGroupMember( jo_AIGroupInfo_t *group, gentity_t *member )
+void AI_InsertGroupMember( AIGroupInfo_t *group, gentity_t *member )
 {
 	//okay, you know what?  Check this damn group and make sure we're not already in here!
 	int i;
@@ -322,7 +322,7 @@ qboolean AI_GetNextEmptyGroup( gentity_t *self )
 	}
 }
 
-qboolean AI_ValidateNoEnemyGroupMember( jo_AIGroupInfo_t *group, gentity_t *member )
+qboolean AI_ValidateNoEnemyGroupMember( AIGroupInfo_t *group, gentity_t *member )
 {
 	if ( !group )
 	{
@@ -353,7 +353,7 @@ qboolean AI_ValidateNoEnemyGroupMember( jo_AIGroupInfo_t *group, gentity_t *memb
 	return qtrue;
 }
 
-qboolean AI_ValidateGroupMember( jo_AIGroupInfo_t *group, gentity_t *member )
+qboolean AI_ValidateGroupMember( AIGroupInfo_t *group, gentity_t *member )
 {
 	//Validate ents
 	if ( member == NULL )
@@ -494,7 +494,7 @@ void AI_GetGroup( gentity_t *self )
 	}
 
 	//create a new one
-	memset( self->NPC->group, 0, sizeof( jo_AIGroupInfo_t ) );
+	memset( self->NPC->group, 0, sizeof( AIGroupInfo_t ) );
 
 	self->NPC->group->enemy = self->enemy;
 	self->NPC->group->team = self->client->playerTeam;
@@ -560,7 +560,7 @@ void AI_GetGroup( gentity_t *self )
 	AI_SetClosestBuddy( self->NPC->group );
 }
 
-void AI_SetNewGroupCommander( jo_AIGroupInfo_t *group )
+void AI_SetNewGroupCommander( AIGroupInfo_t *group )
 {
 	gentity_t *member = NULL;
 	group->commander = NULL;
@@ -575,7 +575,7 @@ void AI_SetNewGroupCommander( jo_AIGroupInfo_t *group )
 	}
 }
 
-void AI_DeleteGroupMember( jo_AIGroupInfo_t *group, int memberNum )
+void AI_DeleteGroupMember( AIGroupInfo_t *group, int memberNum )
 {
 	if ( group->commander && group->commander->s.number == group->member[memberNum].number )
 	{
@@ -623,7 +623,7 @@ extern void ST_MarkToCover( gentity_t *self );
 extern void ST_StartFlee( gentity_t *self, gentity_t *enemy, vec3_t dangerPoint, int dangerLevel, int minTime, int maxTime );
 void AI_GroupMemberKilled( gentity_t *self )
 {
-	jo_AIGroupInfo_t *group = self->NPC->group;
+	AIGroupInfo_t *group = self->NPC->group;
 	gentity_t	*member;
 	qboolean	noflee = qfalse;
 
@@ -699,7 +699,7 @@ void AI_GroupMemberKilled( gentity_t *self )
 	}
 }
 
-void AI_GroupUpdateEnemyLastSeen( jo_AIGroupInfo_t *group, vec3_t spot )
+void AI_GroupUpdateEnemyLastSeen( AIGroupInfo_t *group, vec3_t spot )
 {
 	if ( !group )
 	{
@@ -709,7 +709,7 @@ void AI_GroupUpdateEnemyLastSeen( jo_AIGroupInfo_t *group, vec3_t spot )
 	VectorCopy( spot, group->enemyLastSeenPos );
 }
 
-void AI_GroupUpdateClearShotTime( jo_AIGroupInfo_t *group )
+void AI_GroupUpdateClearShotTime( AIGroupInfo_t *group )
 {
 	if ( !group )
 	{
@@ -718,7 +718,7 @@ void AI_GroupUpdateClearShotTime( jo_AIGroupInfo_t *group )
 	group->lastClearShotTime = level.time;
 }
 
-void AI_GroupUpdateSquadstates( jo_AIGroupInfo_t *group, gentity_t *member, int newSquadState )
+void AI_GroupUpdateSquadstates( AIGroupInfo_t *group, gentity_t *member, int newSquadState )
 {
 	if ( !group )
 	{
@@ -738,7 +738,7 @@ void AI_GroupUpdateSquadstates( jo_AIGroupInfo_t *group, gentity_t *member, int 
 	}
 }
 
-qboolean AI_RefreshGroup( jo_AIGroupInfo_t *group )
+qboolean AI_RefreshGroup( AIGroupInfo_t *group )
 {
 	gentity_t	*member;
 	int			i;//, j;
@@ -975,7 +975,7 @@ void AI_UpdateGroups( void )
 	}
 }
 
-qboolean AI_GroupContainsEntNum( jo_AIGroupInfo_t *group, int entNum )
+qboolean AI_GroupContainsEntNum( AIGroupInfo_t *group, int entNum )
 {
 	if ( !group )
 	{

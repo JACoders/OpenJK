@@ -751,8 +751,8 @@ extern qboolean G_CheckPlayerDarkSide( void );
 static void Q3_SetObjective(const char *ObjEnum, int status)
 {
 	int objectiveID;
-	ja_gclient_t	*client;
-	ja_objectives_t	*objective;
+	gclient_t	*client;
+	objectives_t	*objective;
 	int				*objectivesShown;
 
 	client = &level.clients[0];
@@ -4077,8 +4077,8 @@ void Q3_SetParm (int entID, int parmNum, const char *parmValue)
 
 	if( !ent->parms )
 	{
-		ent->parms = (ja_parms_t *)G_Alloc( sizeof(ja_parms_t) );
-		memset( ent->parms, 0, sizeof(ja_parms_t) );
+		ent->parms = (parms_t *)G_Alloc( sizeof(parms_t) );
+		memset( ent->parms, 0, sizeof(parms_t) );
 	}
 
 	if ( (val = Q3_CheckStringCounterIncrement( parmValue )) )
@@ -7453,7 +7453,7 @@ CQuake3GameInterface::CQuake3GameInterface() : IGameInterface()
 
 	player_locked = qfalse;
 
-	ja_gclient_t* client = &level.clients[0];
+	gclient_t* client = &level.clients[0];
 	memset(&client->sess, 0, sizeof(client->sess));
 }
 

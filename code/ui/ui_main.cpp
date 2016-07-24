@@ -2021,7 +2021,7 @@ class ui_animFileSet_t
 {
 public:
 	char			filename[MAX_QPATH];
-	ja_animation_t		animations[MAX_ANIMATIONS];
+	animation_t		animations[MAX_ANIMATIONS];
 }; // ui_animFileSet_t
 static ui_animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
 
@@ -2036,7 +2036,7 @@ qboolean UI_ParseAnimationFile( const char *af_filename )
 	float		fps;
 	char		text[80000];
 	int			animNum;
-	ja_animation_t	*animations = ui_knownAnimFileSets[ui_numKnownAnimFileSets].animations;
+	animation_t	*animations = ui_knownAnimFileSets[ui_numKnownAnimFileSets].animations;
 
 	len = re.GetAnimationCFG(af_filename, text, sizeof(text));
 	if ( len <= 0 )
@@ -2206,7 +2206,7 @@ int UI_G2SetAnim(CGhoul2Info *ghlInfo, const char *boneName, int animNum, const 
 
 	if (animIndex != -1)
 	{
-		ja_animation_t *anim = &ui_knownAnimFileSets[animIndex].animations[animNum];
+		animation_t *anim = &ui_knownAnimFileSets[animIndex].animations[animNum];
 		if (anim->numFrames <= 0)
 		{
 			return 0;

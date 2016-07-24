@@ -121,8 +121,7 @@ typedef enum //# material_e
 #define	MAX_CUSTOM_JEDI_SOUNDS	22
 #define	MAX_CUSTOM_SOUNDS	(MAX_CUSTOM_JEDI_SOUNDS + MAX_CUSTOM_EXTRA_SOUNDS + MAX_CUSTOM_COMBAT_SOUNDS + MAX_CUSTOM_BASIC_SOUNDS)
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_clientInfo_t
+class clientInfo_t
 {
 public:
 	qboolean		infoValid;
@@ -199,7 +198,7 @@ public:
         saved_game->read<int32_t>(customExtraSoundDir);
         saved_game->read<int32_t>(customJediSoundDir);
     }
-}; // jo_clientInfo_t
+}; // clientInfo_t
 
 
 //==================================================================
@@ -255,8 +254,7 @@ typedef enum
 #define	RF_LOCKEDANGLE	1
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_renderInfo_t
+class renderInfo_t
 {
 public:
 	// Legs model, or full model on one piece entities
@@ -440,7 +438,7 @@ public:
         saved_game->read<int32_t>(lookingDebounceTime);
         saved_game->read<float>(legsYaw);
     }
-}; // jo_renderInfo_t
+}; // renderInfo_t
 
 // Movement information structure
 
@@ -468,8 +466,7 @@ typedef enum {
 } playerTeamStateState_t;
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_playerTeamState_t
+class playerTeamState_t
 {
 public:
 	playerTeamStateState_t	state;
@@ -518,11 +515,10 @@ public:
         saved_game->read<float>(flagsince);
         saved_game->read<float>(lastfraggedcarrier);
     }
-}; // jo_playerTeamState_t
+}; // playerTeamState_t
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_objectives_t
+class objectives_t
 {
 public:
 	qboolean	display;	// A displayable objective?
@@ -542,12 +538,11 @@ public:
         saved_game->read<int32_t>(display);
         saved_game->read<int32_t>(status);
     }
-}; // jo_objectives_t
+}; // objectives_t
 #define MAX_MISSION_OBJ 80
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_missionStats_t
+class missionStats_t
 {
 public:
 	int				secretsFound;					// # of secret areas found
@@ -603,7 +598,7 @@ public:
         saved_game->read<int32_t>(forceUsed);
         saved_game->read<int32_t>(weaponUsed);
     }
-}; // jo_missionStats_t
+}; // missionStats_t
 
 // the auto following clients don't follow a specific client
 // number, but instead follow the first two active players
@@ -616,14 +611,13 @@ public:
 // MUST be dealt with in G_InitSessionData() / G_ReadSessionData() / G_WriteSessionData()
 //
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_clientSession_t
+class clientSession_t
 {
 public:
 	int				missionObjectivesShown;	// Number of times mission objectives have been updated
 	team_t			sessionTeam;
-	jo_objectives_t	mission_objectives[MAX_MISSION_OBJ];
-	jo_missionStats_t	missionStats;			// Various totals while on a mission
+	objectives_t	mission_objectives[MAX_MISSION_OBJ];
+	missionStats_t	missionStats;			// Various totals while on a mission
 
 
     void sg_export(
@@ -643,13 +637,13 @@ public:
         saved_game->read<>(mission_objectives);
         saved_game->read<>(missionStats);
     }
-}; // jo_clientSession_t
+}; // clientSession_t
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 // FIXME Prefix added to avoid debugging problems in Visual Studio.
-class jo_clientPersistant_t
+class clientPersistant_t
 {
 public:
 	clientConnected_t	connected;	
@@ -660,7 +654,7 @@ public:
 	int			enterTime;			// level.time the client entered the game
 	short		cmd_angles[3];		// angles sent over in the last command
 
-	jo_playerTeamState_t teamState;	// status in teamplay games
+	playerTeamState_t teamState;	// status in teamplay games
 
 
     void sg_export(
@@ -692,7 +686,7 @@ public:
         saved_game->skip(2);
         saved_game->read<>(teamState);
     }
-}; // jo_clientPersistant_t
+}; // clientPersistant_t
 
 typedef enum {
 	BLK_NO,
@@ -719,16 +713,15 @@ typedef enum {
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_gclient_t
+class gclient_t
 {
 public:
 	// ps MUST be the first element, because the server expects it
 	playerState_t	ps;				// communicated by server to clients
 
 	// private to game
-	jo_clientPersistant_t	pers;
-	jo_clientSession_t		sess;
+	clientPersistant_t	pers;
+	clientSession_t		sess;
 
 	qboolean	noclip;
 
@@ -769,7 +762,7 @@ public:
 	float		facial_aux;			// time before next aux. If a minus value, we are in aux mode
 
 	//Client info - updated when ClientInfoChanged is called, instead of using configstrings
-	jo_clientInfo_t	clientInfo;
+	clientInfo_t	clientInfo;
 	signed char		forced_forwardmove;
 	signed char		forced_rightmove;
 	int				fireDelay;		//msec to delay calling G_FireWeapon after EV_FIREWEAPON event is called
@@ -790,7 +783,7 @@ public:
 	float		hiddenDist;//How close ents have to be to pick you up as an enemy
 	vec3_t		hiddenDir;//Normalized direction in which NPCs can't see you (you are hidden)
 
-	jo_renderInfo_t	renderInfo;
+	renderInfo_t	renderInfo;
 	saberTrail_t	saberTrail;
 
 	//dismember tracker
@@ -934,13 +927,12 @@ public:
         saved_game->read<float>(pushVec);
         saved_game->read<int32_t>(pushVecTime);
     }
-}; // jo_gclient_t
+}; // gclient_t
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path
 
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_parms_t
+class parms_t
 {
 public:
 	char	parm[MAX_PARMS][MAX_PARM_STRING_LENGTH];
@@ -957,7 +949,7 @@ public:
     {
         saved_game->read<int8_t>(parm);
     }
-}; // jo_parms_t
+}; // parms_t
 
 #define GAME_INCLUDE
 #ifdef GAME_INCLUDE
@@ -977,7 +969,7 @@ typedef struct centity_s centity_t;
 
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
-	jo_gclient_t	*client;	// NULL if not a player (unless it's NPC ( if (this->NPC != NULL)  )  <sigh>... -slc)
+	gclient_t	*client;	// NULL if not a player (unless it's NPC ( if (this->NPC != NULL)  )  <sigh>... -slc)
 	qboolean	inuse;
 	qboolean	linked;				// qfalse if not in any good cluster
 
@@ -1147,7 +1139,7 @@ Ghoul2 Insert End
 	CSequencer		*sequencer;
 	CTaskManager	*taskManager;
 	int				taskID[NUM_TIDS];
-	jo_parms_t			*parms;
+	parms_t			*parms;
 	char		*behaviorSet[NUM_BSETS];
 	char		*script_targetname;
 	int			delayScriptTime;
@@ -1210,7 +1202,7 @@ Ghoul2 Insert End
 //FIELDS USED EXCLUSIVELY BY SPECIFIC CLASSES OF ENTITIES
 	//NPC/Player entity fields
 	//FIXME: Make these client only?
-	jo_gNPC_t		*NPC;//Only allocated if the entity becomes an NPC
+	gNPC_t		*NPC;//Only allocated if the entity becomes an NPC
 
 	//Other NPC/Player-related entity fields
 	char		*ownername;//Used by squadpaths to locate owning NPC

@@ -399,7 +399,7 @@ typedef struct {
 	qhandle_t		inlineDrawModel[MAX_SUBMODELS];
 	vec3_t			inlineModelMidpoints[MAX_SUBMODELS];
 
-	ja_clientInfo_t	clientinfo[MAX_CLIENTS];
+	clientInfo_t	clientinfo[MAX_CLIENTS];
 
 	// media
 	cgMedia_t		media;

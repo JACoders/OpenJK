@@ -78,8 +78,8 @@ void	Svcmd_EntityList_f (void) {
 	}
 }
 
-jo_gclient_t	*ClientForString( const char *s ) {
-	jo_gclient_t	*cl;
+gclient_t	*ClientForString( const char *s ) {
+	gclient_t	*cl;
 	int			i;
 	int			idnum;
 

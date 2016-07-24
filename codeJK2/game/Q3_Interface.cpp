@@ -722,8 +722,8 @@ Q3_SetObjective
 static void Q3_SetObjective(const char *ObjEnum, int status)
 {
 	int objectiveID;
-	jo_gclient_t	*client;
-	jo_objectives_t	*objective;
+	gclient_t	*client;
+	objectives_t	*objective;
 	int				*objectivesShown;
 
 	client = &level.clients[0];
@@ -4124,8 +4124,8 @@ void Q3_SetParm (int entID, int parmNum, const char *parmValue)
 
 	if( !ent->parms )
 	{
-		ent->parms = (jo_parms_t *)G_Alloc( sizeof(jo_parms_t) );
-		memset( ent->parms, 0, sizeof(jo_parms_t) );
+		ent->parms = (parms_t *)G_Alloc( sizeof(parms_t) );
+		memset( ent->parms, 0, sizeof(parms_t) );
 	}
 
 	if ( (val = Q3_CheckStringCounterIncrement( parmValue )) )
@@ -9265,7 +9265,7 @@ void Interface_Init( interface_export_t *pe )
 	pe->I_LinkEntity			=	ICARUS_LinkEntity;
     pe->saved_game = gi.saved_game;
 
-	jo_gclient_t	*client;
+	gclient_t	*client;
 	client = &level.clients[0];
 	memset(&client->sess,0,sizeof(client->sess));
 }

@@ -183,7 +183,7 @@ void NPC_BSAnimal_Default( void )
 	int	alertEvent = NPC_CheckAlertEvents(qtrue, qtrue, -1, qfalse, AEL_MINOR, qfalse);
 	if ( alertEvent >= 0 )
 	{
-		ja_alertEvent_t *event = &level.alertEvents[alertEvent];
+		alertEvent_t *event = &level.alertEvents[alertEvent];
 		if (event->owner!=NPC  &&  Distance(event->position, CurrentLocation.v)<event->radius)
 		{
 			ThreatLocation = event->position;

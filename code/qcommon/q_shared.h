@@ -2278,7 +2278,6 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
 class playerState_t
 {
 public:

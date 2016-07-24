@@ -985,7 +985,7 @@ extern qboolean	stop_icarus;
 void NPC_Begin (gentity_t *ent)
 {
 	vec3_t	spawn_origin, spawn_angles;
-	ja_gclient_t	*client;
+	gclient_t	*client;
 	usercmd_t	ucmd;
 	gentity_t	*spawnPoint = NULL;
 
@@ -1503,7 +1503,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		return NULL;
 	}
 
-	newent->client = (ja_gclient_t *)gi.Malloc(sizeof(ja_gclient_t), TAG_G_ALLOC, qtrue);
+	newent->client = (gclient_t *)gi.Malloc(sizeof(gclient_t), TAG_G_ALLOC, qtrue);
 
 	newent->svFlags |= SVF_NPC;
 
@@ -1517,7 +1517,7 @@ gentity_t *NPC_Spawn_Do( gentity_t *ent, qboolean fullSpawnNow )
 		newent->NPC_type = Q_strlwr( G_NewString( ent->NPC_type ) );	//get my own copy so i can free it when i die
 	}
 
-	newent->NPC = (ja_gNPC_t*) gi.Malloc(sizeof(ja_gNPC_t), TAG_G_ALLOC, qtrue);
+	newent->NPC = (gNPC_t*) gi.Malloc(sizeof(gNPC_t), TAG_G_ALLOC, qtrue);
 
 	newent->NPC->tempGoal = G_Spawn();
 

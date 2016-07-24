@@ -1854,7 +1854,7 @@ int PM_LegsAnimForFrame( gentity_t *ent, int legsFrame )
 	if( ValidAnimFileIndex( ent->client->clientInfo.animFileIndex ) == qfalse )
 		return -1;
 
-	jo_animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
+	animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
 
 	for ( int animation = 0; animation < FACE_TALK1; animation++ )
 	{
@@ -1883,7 +1883,7 @@ int PM_LegsAnimForFrame( gentity_t *ent, int legsFrame )
 
 int PM_ValidateAnimRange( int startFrame, int endFrame, float animSpeed )
 {//given a startframe and endframe, see if that lines up with any known animation
-	jo_animation_t *animations = level.knownAnimFileSets[0].animations;
+	animation_t *animations = level.knownAnimFileSets[0].animations;
 
 	for ( int anim = 0; anim < MAX_ANIMATIONS; anim++ )
 	{
@@ -1932,7 +1932,7 @@ int PM_TorsoAnimForFrame( gentity_t *ent, int torsoFrame )
 	if( ValidAnimFileIndex( ent->client->clientInfo.animFileIndex ) == qfalse )
 		return -1;
 
-	jo_animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
+	animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
 
 	for ( int animation = 0; animation < LEGS_WALKBACK1; animation++ )
 	{
@@ -1968,7 +1968,7 @@ qboolean PM_FinishedCurrentLegsAnim( gentity_t *self )
 	curFrame = floor( currentFrame );
 
 	int				legsAnim	= self->client->ps.legsAnim;
-	jo_animation_t		*animations	= level.knownAnimFileSets[self->client->clientInfo.animFileIndex].animations;
+	animation_t		*animations	= level.knownAnimFileSets[self->client->clientInfo.animFileIndex].animations;
 
 	if ( curFrame >= animations[legsAnim].firstFrame + (animations[legsAnim].numFrames - 2) )
 	{
@@ -1999,7 +1999,7 @@ qboolean PM_HasAnimation( gentity_t *ent, int animation )
 	if( ValidAnimFileIndex( ent->client->clientInfo.animFileIndex ) == qfalse )
 		return qfalse;
 
-	jo_animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
+	animation_t *animations = level.knownAnimFileSets[ent->client->clientInfo.animFileIndex].animations;
 
 	//No frames, no anim
 	if ( animations[animation].numFrames == 0 )
@@ -2235,7 +2235,7 @@ void PM_SetAnimFinal(int *torsoAnim,int *legsAnim,
 #endif
 		return;
 	}
-	jo_animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
+	animation_t *animations = level.knownAnimFileSets[gent->client->clientInfo.animFileIndex].animations;
 	float		timeScaleMod = PM_GetTimeScaleMod( gent );
 	float		animSpeed, oldAnimSpeed;
 	int			actualTime = (cg.time?cg.time:level.time);

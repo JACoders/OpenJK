@@ -75,8 +75,8 @@ cvar_t		*d_slowmodeath;
 extern qboolean	stop_icarus;
 
 gentity_t		*NPC;
-jo_gNPC_t			*NPCInfo;
-jo_gclient_t		*client;
+gNPC_t			*NPCInfo;
+gclient_t		*client;
 usercmd_t		ucmd;
 visibility_t	enemyVisibility;
 
@@ -817,8 +817,8 @@ void SetNPCGlobals( gentity_t *ent )
 }
 
 gentity_t	*_saved_NPC;
-jo_gNPC_t		*_saved_NPCInfo;
-jo_gclient_t	*_saved_client;
+gNPC_t		*_saved_NPCInfo;
+gclient_t	*_saved_client;
 usercmd_t	_saved_ucmd;
 
 void SaveNPCGlobals()

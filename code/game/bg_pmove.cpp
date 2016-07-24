@@ -10554,7 +10554,7 @@ qboolean PM_SaberLocked( void )
 				int	remaining = 0;
 				if( ValidAnimFileIndex( gent->client->clientInfo.animFileIndex ) )
 				{
-					ja_animation_t *anim;
+					animation_t *anim;
 					float		currentFrame, junk2;
 					int			curFrame, junk;
 					int			strength = 1;
@@ -10697,7 +10697,7 @@ qboolean PM_SaberLocked( void )
 
 				if( ValidAnimFileIndex( genemy->client->clientInfo.animFileIndex ) )
 				{
-					ja_animation_t *anim;
+					animation_t *anim;
 					anim = &level.knownAnimFileSets[genemy->client->clientInfo.animFileIndex].animations[genemy->client->ps.torsoAnim];
 					/*
 					float		currentFrame, junk2;

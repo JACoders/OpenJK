@@ -747,14 +747,14 @@ the weapon hand animation has 3 anims,
 =================
 */
 extern qboolean ValidAnimFileIndex ( int index );
-int CG_MapTorsoToWeaponFrame( const ja_clientInfo_t *ci, int frame, int animNum, int weaponNum, int firing )
+int CG_MapTorsoToWeaponFrame( const clientInfo_t *ci, int frame, int animNum, int weaponNum, int firing )
 {
 	// we should use the animNum to map a weapon frame instead of relying on the torso frame
 	if ( !ValidAnimFileIndex( ci->animFileIndex ) )
 	{
 		return 0;
 	}
-	ja_animation_t *animations = level.knownAnimFileSets[ci->animFileIndex].animations;
+	animation_t *animations = level.knownAnimFileSets[ci->animFileIndex].animations;
 	int ret=0;
 
 	switch( animNum )
@@ -1144,7 +1144,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 #endif
 	{
 		// get clientinfo for animation map
-		const ja_clientInfo_t	*ci = &cent->gent->client->clientInfo;
+		const clientInfo_t	*ci = &cent->gent->client->clientInfo;
 		int torsoAnim = cent->gent->client->ps.torsoAnim;//pe.torso.animationNumber;
 		float currentFrame;
 		int startFrame,endFrame,flags;

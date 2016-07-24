@@ -114,7 +114,7 @@ typedef enum //# movetype_e
 	NUM_MOVETYPES
 } movetype_t;
 
-class jo_gNPCstats_t
+class gNPCstats_t
 {//Stats, loaded in, and can be set by scripts
 public:
 	//AI
@@ -184,7 +184,7 @@ public:
         saved_game->read<int32_t>(health);
         saved_game->read<int32_t>(acceleration);
     }
-}; // jo_gNPCstats_t
+}; // gNPCstats_t
 
 // NOTE!!!  If you add any ptr fields into this structure could you please tell me so I can update the load/save code?
 //	so far the only things I've got to cope with are a bunch of gentity_t*'s, but tell me if any more get added -slc
@@ -194,8 +194,7 @@ public:
 #define	ENEMY_POS_LAG_INTERVAL	100
 #define	ENEMY_POS_LAG_STEPS	(MAX_ENEMY_POS_LAG/ENEMY_POS_LAG_INTERVAL)
 
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_gNPC_t
+class gNPC_t
 {
 public:
 	//FIXME: Put in playerInfo or something
@@ -273,12 +272,12 @@ public:
 	int			lastSideStepSide;
 	int			sideStepHoldTime;
 	int			homeWp;
-	jo_AIGroupInfo_t	*group;
+	AIGroupInfo_t	*group;
 
 	vec3_t		lastPathAngles;		//So we know which way to face generally when we stop
 
 	//stats
-	jo_gNPCstats_t	stats;
+	gNPCstats_t	stats;
 	int			aimErrorDebounceTime;
 	float		lastAimErrorYaw;
 	float		lastAimErrorPitch;
@@ -555,7 +554,7 @@ public:
         saved_game->read<int32_t>(ffireDebounce);
         saved_game->read<int32_t>(ffireFadeDebounce);
     }
-}; // jo_gNPC_t
+}; // gNPC_t
 
 void G_SquadPathsInit(void);
 void NPC_InitGame( void );

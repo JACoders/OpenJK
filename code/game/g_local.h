@@ -88,12 +88,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define VALIDSTRING( a )	( ( a != NULL ) && ( a[0] != '\0' ) )
 
 //animations
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class ja_animFileSet_t
+class animFileSet_t
 {
 public:
 	char			filename[MAX_QPATH];
-	ja_animation_t		animations[MAX_ANIMATIONS];
+	animation_t		animations[MAX_ANIMATIONS];
 	animevent_t		torsoAnimEvents[MAX_ANIM_EVENTS];
 	animevent_t		legsAnimEvents[MAX_ANIM_EVENTS];
 	unsigned char	torsoAnimEventCount;
@@ -123,7 +122,7 @@ public:
         saved_game->read<uint8_t>(legsAnimEventCount);
         saved_game->skip(2);
     }
-}; // ja_animFileSet_t
+}; // animFileSet_t
 
 extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 
@@ -172,8 +171,7 @@ enum alertEventLevel_e
 };
 
 // !!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class ja_alertEvent_t
+class alertEvent_t
 {
 public:
 	vec3_t				position;	//Where the event is located
@@ -217,7 +215,7 @@ public:
         saved_game->read<int32_t>(timestamp);
         saved_game->read<int32_t>(onGround);
     }
-}; // ja_alertEvent_t
+}; // alertEvent_t
 
 //
 // this structure is cleared as each map is entered
@@ -241,11 +239,10 @@ typedef struct
 #define	WF_PUFFING		0x00000004	// puffing something
 
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class ja_level_locals_t
+class level_locals_t
 {
 public:
-	ja_gclient_t	*clients;		// [maxclients]
+	gclient_t	*clients;		// [maxclients]
 
 	// store latched cvars here that we want to get at often
 	int			maxclients;
@@ -261,13 +258,13 @@ public:
 	qboolean	locationLinked;			// target_locations get linked
 	gentity_t	*locationHead;			// head of the location list
 
-	ja_alertEvent_t	alertEvents[ MAX_ALERT_EVENTS ];
+	alertEvent_t	alertEvents[ MAX_ALERT_EVENTS ];
 	int				numAlertEvents;
 	int				curAlertID;
 
-	ja_AIGroupInfo_t	groups[MAX_FRAME_GROUPS];
+	AIGroupInfo_t	groups[MAX_FRAME_GROUPS];
 
-	ja_animFileSet_t	knownAnimFileSets[MAX_ANIM_FILES];
+	animFileSet_t	knownAnimFileSets[MAX_ANIM_FILES];
 	int				numKnownAnimFileSets;
 
 	int				worldFlags;
@@ -347,9 +344,9 @@ public:
         saved_game->read<int32_t>(worldFlags);
         saved_game->read<int32_t>(dmState);
     }
-}; // ja_level_locals_t
+}; // level_locals_t
 
-extern	ja_level_locals_t	level;
+extern	level_locals_t	level;
 extern	game_export_t	globals;
 
 extern	cvar_t	*g_gravity;
@@ -639,8 +636,8 @@ void Svcmd_GameMem_f( void );
 //
 // g_session.c
 //
-void G_ReadSessionData( ja_gclient_t *client );
-void G_InitSessionData( ja_gclient_t *client, char *userinfo );
+void G_ReadSessionData( gclient_t *client );
+void G_InitSessionData( gclient_t *client, char *userinfo );
 
 void G_InitWorldSession( void );
 void G_WriteSessionData( void );

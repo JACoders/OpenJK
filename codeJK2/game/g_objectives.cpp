@@ -60,7 +60,7 @@ void OBJ_SetPendingObjectives(gentity_t *ent)
 OBJ_SaveMissionObjectives
 ============
 */
-void OBJ_SaveMissionObjectives( jo_gclient_t *client )
+void OBJ_SaveMissionObjectives( gclient_t *client )
 {
     ::gi.saved_game->write_chunk(
         INT_ID('O','B','J','T'),
@@ -75,7 +75,7 @@ OBJ_SaveObjectiveData
 */
 void OBJ_SaveObjectiveData(void)
 {
-	jo_gclient_t *client;
+	gclient_t *client;
 
 	client = &level.clients[0];
 
@@ -87,7 +87,7 @@ void OBJ_SaveObjectiveData(void)
 OBJ_LoadMissionObjectives
 ============
 */
-void OBJ_LoadMissionObjectives( jo_gclient_t *client )
+void OBJ_LoadMissionObjectives( gclient_t *client )
 {
     ::gi.saved_game->read_chunk(
         INT_ID('O','B','J','T'),
@@ -102,7 +102,7 @@ OBJ_LoadObjectiveData
 */
 void OBJ_LoadObjectiveData(void)
 {
-	jo_gclient_t *client;
+	gclient_t *client;
 
 	client = &level.clients[0];
 

@@ -441,8 +441,7 @@ typedef enum {
 
 } entity_event_t;
 
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_animation_t
+class animation_t
 {
 public:
 	int		firstFrame;
@@ -471,7 +470,7 @@ public:
         saved_game->read<int32_t>(frameLerp);
         saved_game->read<int32_t>(initialLerp);
     }
-}; // jo_animation_t
+}; // animation_t
 
 #define	MAX_RANDOM_ANIMSOUNDS	8
 

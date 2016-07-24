@@ -80,8 +80,8 @@ extern void Debug_NPCPrintf( gentity_t *printNPC, cvar_t *cv, int debugLevel, ch
 //MCG - Begin============================================================
 //NPC_ai variables - shared by NPC.cpp andf the following modules
 extern gentity_t	*NPC;
-extern ja_gNPC_t		*NPCInfo;
-extern ja_gclient_t	*client;
+extern gNPC_t		*NPCInfo;
+extern gclient_t	*client;
 extern usercmd_t	ucmd;
 extern visibility_t	enemyVisibility;
 

@@ -1399,12 +1399,11 @@ extern stringID_table_t animTable [MAX_ANIMATIONS+1];
 #endif// #ifndef CG_PLAYER_CPP
 
 // !!!!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!!!
-// FIXME Added prefix to avoid debugging problems in Visual Studio.
-class jo_animFileSet_t
+class animFileSet_t
 {
 public:
 	char			filename[MAX_QPATH];
-	jo_animation_t		animations[MAX_ANIMATIONS];
+	animation_t		animations[MAX_ANIMATIONS];
 	animsounds_t	torsoAnimSnds[MAX_ANIM_SOUNDS];
 	animsounds_t	legsAnimSnds[MAX_ANIM_SOUNDS];
 	qboolean		soundsCached;
@@ -1429,7 +1428,7 @@ public:
         saved_game->read<>(legsAnimSnds);
         saved_game->read<int32_t>(soundsCached);
     }
-}; // jo_animFileSet_t
+}; // animFileSet_t
 #define MAX_ANIM_FILES	64
 
 #endif// #ifndef __ANIMS_H__

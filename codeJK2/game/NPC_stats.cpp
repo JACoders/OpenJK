@@ -301,9 +301,9 @@ static int MoveTypeNameToEnum( const char *name )
 	return MT_STATIC;
 }
 
-extern void CG_RegisterClientRenderInfo(jo_clientInfo_t *ci, jo_renderInfo_t *ri);
+extern void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri);
 extern void CG_RegisterClientModels (int entityNum);
-extern void CG_RegisterNPCCustomSounds( jo_clientInfo_t *ci );
+extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern void CG_RegisterNPCEffects( team_t team );
 extern void CG_ParseAnimationSndFile( const char *filename, int animFileIndex );
 
@@ -355,7 +355,7 @@ qboolean G_ParseAnimationFile( const char *af_filename )
 	//int			skip;
 	char		text[40000];
 	int			animNum;
-	jo_animation_t	*animations = level.knownAnimFileSets[level.numKnownAnimFileSets].animations;
+	animation_t	*animations = level.knownAnimFileSets[level.numKnownAnimFileSets].animations;
 
 	len = gi.RE_GetAnimationCFG(af_filename, NULL, 0);
 	if (len <= 0)
@@ -705,8 +705,8 @@ Precaches NPC skins, tgas and md3s.
 */
 void NPC_Precache ( gentity_t *spawner )
 {
-	jo_clientInfo_t	ci={};
-	jo_renderInfo_t	ri={};
+	clientInfo_t	ci={};
+	renderInfo_t	ri={};
 	team_t			playerTeam = TEAM_FREE;
 	const char	*token;
 	const char	*value;
@@ -1069,9 +1069,9 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	char	sound[MAX_QPATH];
 	char	playerModel[MAX_QPATH];
 	char	customSkin[MAX_QPATH];
-	jo_clientInfo_t	*ci = &NPC->client->clientInfo;
-	jo_renderInfo_t	*ri = &NPC->client->renderInfo;
-	jo_gNPCstats_t		*stats = NULL;
+	clientInfo_t	*ci = &NPC->client->clientInfo;
+	renderInfo_t	*ri = &NPC->client->renderInfo;
+	gNPCstats_t		*stats = NULL;
 	qboolean	md3Model = qtrue;
 	char	surfOff[1024];
 	char	surfOn[1024];

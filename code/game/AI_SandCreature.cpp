@@ -462,7 +462,7 @@ void SandCreature_CheckMovingEnts( void )
 
 void SandCreature_SeekAlert( int alertEvent )
 {
-	ja_alertEvent_t *alert = &level.alertEvents[alertEvent];
+	alertEvent_t *alert = &level.alertEvents[alertEvent];
 
 	//FIXME: check for higher alert status or closer than last location?
 	NPCInfo->enemyLastSeenTime = level.time;

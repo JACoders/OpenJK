@@ -44,7 +44,7 @@ int		eventClearTime = 0;
 
 #define	STEPSIZE		18
 
-jo_level_locals_t	level;
+level_locals_t	level;
 game_import_t	gi;
 game_export_t	globals;
 gentity_t		g_entities[MAX_GENTITIES];
@@ -645,7 +645,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	ClearAllInUse();
 	// initialize all clients for this game
 	level.maxclients = 1;
-	level.clients = (jo_gclient_t *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
+	level.clients = (gclient_t *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
 	memset(level.clients, 0, level.maxclients * sizeof(level.clients[0]));
 
 	// set client fields on player
