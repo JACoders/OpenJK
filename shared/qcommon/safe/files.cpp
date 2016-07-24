@@ -57,7 +57,7 @@ namespace FS
 		return *this;
 	}
 
-	FileBuffer ReadFile( const char* path )
+	FileBuffer ReadFile( gsl::czstring path )
 	{
 		void* buffer;
 #if defined( SP_GAME )

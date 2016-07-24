@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <string>
 
 namespace Q
 {
@@ -24,6 +25,8 @@ namespace Q
 			return stricmp( lhs, rhs ) == Ordering::LT;
 		}
 	};
+
+	gsl::cstring_view substr( const gsl::cstring_view& lhs, const std::string::size_type pos = 0, const std::string::size_type count = std::string::npos );
 
 	int svtoi( const gsl::cstring_view& view );
 	float svtof( const gsl::cstring_view& view );

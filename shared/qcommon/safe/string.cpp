@@ -35,8 +35,20 @@ namespace Q
 			// lhs == rhs
 			return Ordering::EQ;
 		}
-		// lhs is a prefix or rhs
+		// lhs is a prefix of rhs
 		return Ordering::LT;
+	}
+
+	gsl::cstring_view substr( const gsl::cstring_view& lhs, const std::string::size_type pos, const std::string::size_type count )
+	{
+		if( pos > lhs.size() )
+		{
+			throw std::out_of_range( "Q::substr called with out-of-bounds pos parameter!" );
+		}
+		auto start = lhs.begin() + pos;
+		auto end = count == std::string::npos ? lhs.end() : std::min( start + count, lhs.end() );
+		gsl::cstring_view result{ start, end };
+		return result;
 	}
 
 	int svtoi( const gsl::cstring_view& view )
