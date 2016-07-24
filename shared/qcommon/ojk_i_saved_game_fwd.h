@@ -43,20 +43,20 @@ public:
 
 
     // Reads a chunk from the file into the internal buffer.
-    virtual bool read_chunk(
+    virtual void read_chunk(
         const ChunkId chunk_id) = 0;
 
     // Reads a value or an array of values from the file via
     // the internal buffer.
     template<typename TSrc = void, typename TDst = void>
-    bool read_chunk(
+    void read_chunk(
         const ChunkId chunk_id,
         TDst& dst_value);
 
     // Reads an array of values with specified count from
     // the file via the internal buffer.
     template<typename TSrc = void, typename TDst = void>
-    bool read_chunk(
+    void read_chunk(
         const ChunkId chunk_id,
         TDst* dst_values,
         int dst_count);
@@ -64,22 +64,25 @@ public:
     // Returns true if all data read from the internal buffer.
     virtual bool is_all_data_read() const = 0;
 
+    // Throws an exception if all data not read.
+    virtual void ensure_all_data_read() const = 0;
+
 
     // Writes a chunk into the file from the internal buffer.
-    virtual bool write_chunk(
+    virtual void write_chunk(
         const ChunkId chunk_id) = 0;
 
     // Writes a value or an array of values into the file via
     // the internal buffer.
     template<typename TDst = void, typename TSrc = void>
-    bool write_chunk(
+    void write_chunk(
         const ChunkId chunk_id,
         const TSrc& src_value);
 
     // Writes an array of values with specified count into
     // the file via the internal buffer.
     template<typename TDst = void, typename TSrc = void>
-    bool write_chunk(
+    void write_chunk(
         const ChunkId chunk_id,
         const TSrc* src_values,
         int src_count);
@@ -100,6 +103,13 @@ public:
     void read(
         TDst* dst_values,
         int dst_count);
+
+
+    // Tries to read a value or array of values from the internal buffer.
+    // Returns true on success or false otherwise.
+    template<typename TSrc = void, typename TDst = void>
+    bool try_read(
+        TDst& dst_value);
 
 
     // Writes a raw data into the internal buffer.
@@ -142,6 +152,12 @@ protected:
     class Array2dTag { public: };
     class InplaceTag { public: };
     class CastTag { public: };
+
+
+    // If true won't throw an exception when buffer offset is beyond it's size.
+    // Although, no data will be read beyond the buffer.
+    virtual void allow_read_overflow(
+        bool value) = 0;
 
 
     template<typename TSrc, typename TDst>

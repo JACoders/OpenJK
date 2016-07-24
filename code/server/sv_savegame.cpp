@@ -38,6 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <map>
 
 #include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_exception.h"
 
 static char	saveGameComment[iSG_COMMENT_SIZE];
 
@@ -930,65 +931,62 @@ static time_t SG_GetTime ( unsigned int timestamp )
 // Test to see if the given file name is in the save game directory
 // then grab the comment if it's there
 //
-int SG_GetSaveGameComment(const char *psPathlessBaseName, char *sComment, char *sMapName)
+int SG_GetSaveGameComment(
+    const char* psPathlessBaseName,
+    char* sComment,
+    char* sMapName)
 {
-	int ret = 0;
-	time_t tFileTime;
-#ifdef JK2_MODE
-	size_t iScreenShotLength;
-#endif
+    auto ret = 0;
 
     auto saved_game = &ojk::SavedGame::get_instance();
 
-    saved_game->set_preview_mode(
-        true);
+    try
+    {
+        if (!saved_game->open(
+            psPathlessBaseName))
+        {
+            return 0;
+        }
 
-	if (!saved_game->open(
-        psPathlessBaseName))
-	{
-		saved_game->set_preview_mode(
-            false);
+        saved_game->read_chunk(
+            INT_ID('C', 'O', 'M', 'M'),
+            sComment,
+            iSG_COMMENT_SIZE);
 
-		return 0;
-	}
+        unsigned int fileTime = 0;
 
-    if (saved_game->read_chunk(
-        INT_ID('C','O','M','M'),
-        sComment,
-        iSG_COMMENT_SIZE))
-	{
-		unsigned int fileTime = 0;
+        saved_game->read_chunk<uint32_t>(
+            INT_ID('C', 'M', 'T', 'M'),
+            fileTime);
 
-		if (saved_game->read_chunk<uint32_t>(
-            INT_ID('C','M','T','M'),
-            fileTime))
-		{
-			tFileTime = SG_GetTime (fileTime);
+        auto tFileTime = ::SG_GetTime(
+            fileTime);
+
 #ifdef JK2_MODE
-			if (saved_game->read_chunk<uint32_t>(
-                INT_ID('S','H','L','N'),
-                iScreenShotLength))
-			{
-                if (saved_game->read_chunk(INT_ID('S','H','O','T')))
-				{
+        size_t iScreenShotLength;
+
+        saved_game->read_chunk<uint32_t>(
+            INT_ID('S', 'H', 'L', 'N'),
+            iScreenShotLength);
+
+        saved_game->read_chunk(
+            INT_ID('S', 'H', 'O', 'T'));
 #endif
-            if (saved_game->read_chunk(
-                INT_ID('M','P','C','M'),
-                sMapName,
-                iSG_MAPCMD_SIZE))
-			{
-				ret = tFileTime;
-			}
-#ifdef JK2_MODE
-				}
-			}
-#endif
-		}
-	}
+
+        saved_game->read_chunk(
+            INT_ID('M', 'P', 'C', 'M'),
+            sMapName,
+            iSG_MAPCMD_SIZE);
+
+        ret = tFileTime;
+    }
+    catch (ojk::SavedGameException&)
+    {
+    }
 
     saved_game->close();
 
-	return ret;
+    return ret;
 }
 
 
@@ -1288,93 +1286,133 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	return qtrue;
 }
 
-qboolean SG_ReadSavegame(const char *psPathlessBaseName)
+qboolean SG_ReadSavegame(
+    const char* psPathlessBaseName)
 {
-	char		sComment[iSG_COMMENT_SIZE];
-	char		sMapCmd [iSG_MAPCMD_SIZE];
-	qboolean	qbAutosave;
-
-	int iPrevTestSave = sv_testsave->integer;
-	sv_testsave->integer = 0;
+    char sComment[iSG_COMMENT_SIZE];
+    char sMapCmd[iSG_MAPCMD_SIZE];
 
 #ifdef JK2_MODE
-	Cvar_Set( "cg_missionstatusscreen", "0" );//reset if loading a game
+    Cvar_Set(
+        "cg_missionstatusscreen",
+        "0");
 #endif
 
     auto saved_game = &ojk::SavedGame::get_instance();
 
-	if (!saved_game->open(psPathlessBaseName))
-	{
-		Com_Printf (GetString_FailedToOpenSaveGame(psPathlessBaseName, qtrue));//S_COLOR_RED "Failed to open savegame \"%s\"\n", psPathlessBaseName);
-		sv_testsave->integer = iPrevTestSave;
-		return qfalse;
-	}
+    const auto iPrevTestSave = ::sv_testsave->integer;
 
-	// this check isn't really necessary, but it reminds me that these two strings may actually be the same physical one.
-	//
-	if (psPathlessBaseName != sLastSaveFileLoaded)
-	{
-		Q_strncpyz(sLastSaveFileLoaded,psPathlessBaseName,sizeof(sLastSaveFileLoaded));
-	}
+    ojk::ScopeGuard scope_guard(
+        [&]()
+        {
+            ::sv_testsave->integer = 0;
+        },
 
-	// Read in all the server data...
-	//
-    saved_game->read_chunk(
-        INT_ID('C','O','M','M'),
-        sComment);
+        [&]()
+        {
+            saved_game->close();
 
-	Com_DPrintf("Reading: %s\n", sComment);
+            ::sv_testsave->integer = iPrevTestSave;
+        }
+    );
 
-    saved_game->read_chunk(
-        INT_ID('C','M','T','M'));
+    try
+    {
+        if (!saved_game->open(psPathlessBaseName))
+        {
+            //S_COLOR_RED "Failed to open savegame \"%s\"\n", psPathlessBaseName);
+            ::Com_Printf(
+                ::GetString_FailedToOpenSaveGame(
+                    psPathlessBaseName,
+                    qtrue));
+
+            return qfalse;
+        }
+
+        // this check isn't really necessary, but it reminds me that these two strings may actually be the same physical one.
+        //
+        if (psPathlessBaseName != sLastSaveFileLoaded)
+        {
+            ::Q_strncpyz(
+                ::sLastSaveFileLoaded,
+                psPathlessBaseName,
+                sizeof(sLastSaveFileLoaded));
+        }
+
+        // Read in all the server data...
+        //
+        saved_game->read_chunk(
+            INT_ID('C', 'O', 'M', 'M'),
+            sComment);
+
+        ::Com_DPrintf(
+            "Reading: %s\n",
+            sComment);
+
+        saved_game->read_chunk(
+            INT_ID('C', 'M', 'T', 'M'));
 
 #ifdef JK2_MODE
-	SG_ReadScreenshot(qtrue);	// qboolean qbSetAsLoadingScreen
+        ::SG_ReadScreenshot(
+            qtrue);
 #endif
-    saved_game->read_chunk(
-        INT_ID('M','P','C','M'),
-        sMapCmd);
 
-	SG_ReadCvars();
+        saved_game->read_chunk(
+            INT_ID('M', 'P', 'C', 'M'),
+            sMapCmd);
 
-	// read game state
-	qbAutosave = ReadGame();
-	eSavedGameJustLoaded = (qbAutosave)?eAUTO:eFULL;
+        ::SG_ReadCvars();
 
-	SV_SpawnServer(sMapCmd, eForceReload_NOTHING, (eSavedGameJustLoaded != eFULL) );	// note that this also trashes the whole G_Alloc pool as well (of course)
+        // read game state
+        const auto qbAutosave = ::ReadGame();
 
-	// read in all the level data...
-	//
-	if (!qbAutosave)
-	{
-        auto saved_game = &ojk::SavedGame::get_instance();
+        ::eSavedGameJustLoaded = (qbAutosave ? eAUTO : eFULL);
 
-        saved_game->read_chunk<int32_t>(
-            INT_ID('T','I','M','E'),
-            ::sv.time);
+        // note that this also trashes the whole G_Alloc pool as well (of course)
+        ::SV_SpawnServer(
+            sMapCmd,
+            eForceReload_NOTHING,
+            (::eSavedGameJustLoaded != eFULL));
 
-        saved_game->read_chunk<int32_t>(
-            INT_ID('T','I','M','R'),
-            ::sv.timeResidual);
+        // read in all the level data...
+        //
+        if (!qbAutosave)
+        {
+            saved_game->read_chunk<int32_t>(
+                INT_ID('T', 'I', 'M', 'E'),
+                ::sv.time);
 
-		CM_ReadPortalState();
-		SG_ReadServerConfigStrings();
-	}
-	ge->ReadLevel(qbAutosave, qbLoadTransition);	// always done now, but ent reader only does player if auto
+            saved_game->read_chunk<int32_t>(
+                INT_ID('T', 'I', 'M', 'R'),
+                ::sv.timeResidual);
+
+            ::CM_ReadPortalState();
+            ::SG_ReadServerConfigStrings();
+        }
+
+        // always done now, but ent reader only does player if auto
+        ::ge->ReadLevel(
+            qbAutosave,
+            qbLoadTransition);
+    }
+    catch (ojk::SavedGameException& ex)
+    {
+        ::Com_Error(
+            ERR_DROP,
+            "%s",
+            ex.what());
+    }
 
 #if 0
-	if(!SG_Close())
-	{
-		Com_Printf (GetString_FailedToOpenSaveGame(psPathlessBaseName,qfalse));//S_COLOR_RED "Failed to close savegame\n");
-		sv_testsave->integer = iPrevTestSave;
-		return qfalse;
-	}
-#else
-    saved_game->close();
+    if (!SG_Close())
+    {
+        Com_Printf(GetString_FailedToOpenSaveGame(psPathlessBaseName, qfalse));//S_COLOR_RED "Failed to close savegame\n");
+        sv_testsave->integer = iPrevTestSave;
+        return qfalse;
+    }
 #endif
 
-	sv_testsave->integer = iPrevTestSave;
-	return qtrue;
+    return true;
 }
 
 #if 0

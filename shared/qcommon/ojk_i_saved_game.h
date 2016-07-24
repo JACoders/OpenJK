@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <type_traits>
 #include "ojk_i_saved_game_fwd.h"
+#include "ojk_scope_guard.h"
 
 
 namespace ojk {
@@ -34,37 +35,33 @@ inline ISavedGame::~ISavedGame()
 // read_chunk
 
 template<typename TSrc, typename TDst>
-bool ISavedGame::read_chunk(
+void ISavedGame::read_chunk(
     const ChunkId chunk_id,
     TDst& dst_value)
 {
-    auto result = read_chunk(
+    read_chunk(
         chunk_id);
 
     read<TSrc>(
         dst_value);
 
-    result &= is_all_data_read();
-
-    return result;
+    ensure_all_data_read();
 }
 
 template<typename TSrc, typename TDst>
-bool ISavedGame::read_chunk(
+void ISavedGame::read_chunk(
     const ChunkId chunk_id,
     TDst* dst_values,
     int dst_count)
 {
-    auto result = read_chunk(
+    read_chunk(
         chunk_id);
 
     read<TSrc>(
         dst_values,
         dst_count);
 
-    result &= is_all_data_read();
-
-    return result;
+    ensure_all_data_read();
 }
 
 // read_chunk
@@ -75,7 +72,7 @@ bool ISavedGame::read_chunk(
 // write_chunk
 
 template<typename TDst, typename TSrc>
-bool ISavedGame::write_chunk(
+void ISavedGame::write_chunk(
     const ChunkId chunk_id,
     const TSrc& src_value)
 {
@@ -84,12 +81,12 @@ bool ISavedGame::write_chunk(
     write<TDst>(
         src_value);
 
-    return write_chunk(
+    write_chunk(
         chunk_id);
 }
 
 template<typename TDst, typename TSrc>
-bool ISavedGame::write_chunk(
+void ISavedGame::write_chunk(
     const ChunkId chunk_id,
     const TSrc* src_values,
     int src_count)
@@ -100,7 +97,7 @@ bool ISavedGame::write_chunk(
         src_values,
         src_count);
 
-    return write_chunk(
+    write_chunk(
         chunk_id);
 }
 
@@ -247,6 +244,38 @@ void ISavedGame::read(
 }
 
 // read
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// try_read
+
+template<typename TSrc, typename TDst>
+bool ISavedGame::try_read(
+    TDst& dst_value)
+{
+    ScopeGuard scope_guard(
+        [this]()
+        {
+            this->allow_read_overflow(
+                true);
+        },
+
+        [this]()
+        {
+            this->allow_read_overflow(
+                false);
+        }
+    );
+
+
+    read<TSrc>(
+        dst_value);
+
+    return is_all_data_read();
+}
+
+// try_read
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 

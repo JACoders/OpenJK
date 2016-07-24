@@ -57,7 +57,7 @@ public:
 
 
     // Reads a chunk from the file into the internal buffer.
-    bool read_chunk(
+    void read_chunk(
         const ChunkId chunk_id) override;
 
     using ISavedGame::read_chunk;
@@ -66,9 +66,12 @@ public:
     // Returns true if all data read from the internal buffer.
     bool is_all_data_read() const override;
 
+    // Throws an exception if all data not read.
+    void ensure_all_data_read() const override;
+
 
     // Writes a chunk into the file from the internal buffer.
-    bool write_chunk(
+    void write_chunk(
         const ChunkId chunk_id) override;
 
     using ISavedGame::write_chunk;
@@ -91,9 +94,6 @@ public:
 
 
     bool is_write_failed() const;
-
-    void set_preview_mode(
-        bool value);
 
     // Increments buffer's offset by the specified non-negative count.
     void skip(
@@ -119,6 +119,13 @@ public:
     static SavedGame& get_instance();
 
 
+protected:
+    // If true won't throw an exception when buffer offset is beyond it's size.
+    // Although, no data will be read beyond the buffer.
+    void allow_read_overflow(
+        bool value) override;
+
+
 private:
     using BufferOffset = Buffer::size_type;
     using Paths = std::vector<std::string>;
@@ -142,11 +149,11 @@ private:
     // True if saved game opened for writing.
     bool is_writable_;
 
-    // Does not throws an exception on chunk reading if true.
-    bool is_preview_mode_;
-
     // True if any previous write operation failed.
     bool is_write_failed_;
+
+    // Controls exception throw on read overflow.
+    bool is_read_overflow_allowed_;
 
 
     // Throws an exception.
@@ -171,10 +178,6 @@ private:
 
     static std::string generate_path(
         const std::string& base_file_name);
-
-    static std::string get_failed_to_open_message(
-        const std::string& file_name,
-        bool is_open);
 
 
     // Returns a string representation of a chunk id.

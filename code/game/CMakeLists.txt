@@ -263,7 +263,7 @@ set(SPGameCommonFiles
 	"${SPDir}/rd-common/mdx_format.h"
 	"${SharedDir}/qcommon/ojk_i_saved_game.h"
 	"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
-	
+	"${SharedDir}/qcommon/ojk_scope_guard.h"
 	${SharedCommonFiles}
 	)
 source_group("common" FILES ${SPGameCommonFiles})

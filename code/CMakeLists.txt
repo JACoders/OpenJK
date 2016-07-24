@@ -182,6 +182,7 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SharedDir}/qcommon/ojk_saved_game.cpp"
 		"${SharedDir}/qcommon/ojk_saved_game_exception.h"
 		"${SharedDir}/qcommon/ojk_saved_game_exception.cpp"
+		"${SharedDir}/qcommon/ojk_scope_guard.h"
 
 		${SharedCommonFiles}
 		)
