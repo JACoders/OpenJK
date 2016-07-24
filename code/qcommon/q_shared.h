@@ -2083,8 +2083,9 @@ typedef struct
 } saberInfo_t;
 
 //NOTE: Below is the *retail* version of the saberInfo_t structure - it is ONLY used for loading retail-version savegames (we load the savegame into this smaller structure, then copy each field into the appropriate field in the new structure - see SG_ConvertRetailSaberinfoToNewSaberinfo()
-typedef struct
+class saberInfoRetail_t
 {
+public:
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -2263,7 +2264,10 @@ typedef struct
         saved_game->read<int32_t>(brokenSaber2);
         saved_game->read<int32_t>(returnDamage);
     }
-} saberInfoRetail_t;
+
+    void sg_export(
+        saberInfo_t& dst) const;
+}; // saberInfoRetail_t
 
 #define MAX_SABERS 2	// if this ever changes then update the table "static const save_field_t savefields_gClient[]"!!!!!!!!!!!!
 
@@ -2278,7 +2282,8 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-class playerState_t
+template<typename TSaberInfo>
+class PlayerStateBase
 {
 public:
 	int			commandTime;		// cmd->serverTime of last executed command
@@ -2382,7 +2387,7 @@ public:
 
 	//FIXME: maybe allocate all these structures (saber, force powers, vehicles)
 	//			or descend them as classes - so not every client has all this info
-	saberInfo_t	saber[MAX_SABERS];
+	TSaberInfo	saber[MAX_SABERS];
 	qboolean	dualSabers;
 	qboolean	SaberStaff( void ) { return ( saber[0].type == SABER_STAFF || (dualSabers && saber[1].type == SABER_STAFF) ); };
 	qboolean	SaberActive() { return ( saber[0].Active() || (dualSabers&&saber[1].Active()) ); };
@@ -2866,8 +2871,10 @@ public:
         saved_game->read<int32_t>(brokenLimbs);
         saved_game->read<int32_t>(electrifyTime);
     }
-}; // playerState_t
+}; // PlayerStateBase
 
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 //====================================================================
 
 

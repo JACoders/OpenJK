@@ -642,7 +642,6 @@ public:
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Prefix added to avoid debugging problems in Visual Studio.
 class clientPersistant_t
 {
 public:

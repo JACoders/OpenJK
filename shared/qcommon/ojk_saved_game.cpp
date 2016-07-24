@@ -472,7 +472,9 @@ void SavedGame::raw_read(
         return;
     }
 
-    if ((io_buffer_offset_ + dst_size) > io_buffer_.size())
+    auto is_overflowed = ((io_buffer_offset_ + dst_size) > io_buffer_.size());
+
+    if (is_overflowed)
     {
         if (!is_read_overflow_allowed_)
         {
@@ -481,7 +483,7 @@ void SavedGame::raw_read(
         }
     }
 
-    if (!is_read_overflow_allowed_)
+    if (!is_overflowed)
     {
         std::uninitialized_copy_n(
             &io_buffer_[io_buffer_offset_],
@@ -779,6 +781,11 @@ std::string SavedGame::get_chunk_id_string(
 void SavedGame::reset_buffer()
 {
     io_buffer_.clear();
+    reset_buffer_offset();
+}
+
+void SavedGame::reset_buffer_offset()
+{
     io_buffer_offset_ = 0;
 }
 

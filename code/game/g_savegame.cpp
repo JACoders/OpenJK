@@ -738,6 +738,126 @@ static void SG_ConvertRetailSaberinfoToNewSaberinfo( void *sabData, saberInfo_t 
 	}
 }
 
+
+void saberInfoRetail_t::sg_export(
+    saberInfo_t& dst) const
+{
+    ::WP_SaberSetDefaults(
+        &dst,
+        false);
+
+    if (!activeBlocking)
+    {
+        dst.saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
+    }
+
+    ::memcpy(
+        dst.blade,
+        blade,
+        sizeof(blade));
+
+    dst.breakParryBonus = breakParryBonus;
+    dst.brokenSaber1 = brokenSaber1;
+    dst.brokenSaber2 = brokenSaber2;
+
+    if (!disarmable)
+    {
+        dst.saberFlags |= SFL_NOT_DISARMABLE;
+    }
+
+    dst.disarmBonus = disarmBonus;
+    dst.forceRestrictions = forceRestrictions;
+    dst.fullName = fullName;
+
+    if (!lockable)
+    {
+        dst.saberFlags |= SFL_NOT_LOCKABLE;
+    }
+
+    dst.lockBonus = lockBonus;
+    dst.maxChain = maxChain;
+    dst.model = model;
+    dst.name = name;
+    dst.numBlades = numBlades;
+    dst.parryBonus = parryBonus;
+
+    if (returnDamage)
+    {
+        dst.saberFlags |= SFL_RETURN_DAMAGE;
+    }
+
+    dst.singleBladeStyle = singleBladeStyle;
+
+    if (singleBladeThrowable)
+    {
+        dst.saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
+    }
+
+    dst.skin = skin;
+    dst.soundLoop = soundLoop;
+    dst.soundOff = soundOff;
+    dst.soundOn = soundOn;
+
+    if (style != SS_NONE && style < SS_NUM_SABER_STYLES)
+    {
+        //OLD WAY: only allowed ONE style
+        //learn only this style
+        dst.stylesLearned = 1 << style;
+
+        //forbid all other styles
+        dst.stylesForbidden = 0;
+        for (auto styleNum = SS_NONE + 1; styleNum < SS_NUM_SABER_STYLES; ++styleNum)
+        {
+            if (styleNum != style)
+            {
+                dst.stylesForbidden |= 1 << styleNum;
+            }
+        }
+    }
+
+    if (!throwable)
+    {
+        dst.saberFlags |= SFL_NOT_THROWABLE;
+    }
+
+    if (twoHanded)
+    {
+        dst.saberFlags |= SFL_TWO_HANDED;
+    }
+
+    dst.type = type;
+}
+
+static void copy_retail_gclient_to_current(
+    const RetailGClient& src,
+    gclient_t& dst)
+{
+    const auto src_pre_size = offsetof(RetailGClient, ps.saber[0]);
+
+    const auto src_post_offset =
+        offsetof(RetailGClient, ps.dualSabers);
+
+    const auto src_post_size = sizeof(RetailGClient) - src_post_offset;
+
+    const auto dst_post_offset = offsetof(gclient_t, ps.dualSabers);
+
+    ::memcpy(
+        reinterpret_cast<char*>(&dst),
+        reinterpret_cast<const char*>(&src),
+        src_pre_size);
+
+    for (int i = 0; i < MAX_SABERS; ++i)
+    {
+        src.ps.saber[i].sg_export(
+           dst.ps.saber[i]);
+    }
+
+    ::memcpy(
+        reinterpret_cast<char*>(&dst) + src_post_offset,
+        reinterpret_cast<const char*>(&src) + dst_post_offset,
+        src_post_size);
+}
+
 #if 0
 template<typename T>
 static void EvaluateFields(const save_field_t *pFields, T *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
@@ -796,9 +916,6 @@ static void EvaluateFields(const save_field_t *pFields, T *pbData, byte *pbOrigi
 	}
 }
 #else
-// FIXME Retail saved game not supported.
-// FIXME Is it really needed?
-// FIXME Also remove iSize and bOkToSizeMisMatch in that case.
 template<typename T>
 static void EvaluateFields(
     const save_field_t* pFields,
@@ -808,19 +925,44 @@ static void EvaluateFields(
     int iSize,
     qboolean bOkToSizeMisMatch)
 {
-    ::gi.saved_game->read_chunk(
-        ulChid);
+    auto& instance = *pbData;
 
-    pbData->sg_import(
-        ::gi.saved_game);
-
-    // FIXME Add support for retail version?
-
-    if (!::gi.saved_game->is_all_data_read())
+    if (ulChid != INT_ID('G','C','L','I'))
     {
-        ::G_Error(
-            ::va("EvaluateFields(): variable-sized chunk '%s' without handler!",
-                ::SG_GetChidText(ulChid)));
+        ::gi.saved_game->read_chunk(
+            ulChid,
+            instance);
+    }
+    else
+    {
+        ::gi.saved_game->read_chunk(
+            ulChid);
+
+        ::gi.saved_game->try_read(
+            instance);
+
+        if (!::gi.saved_game->is_all_data_read())
+        {
+            RetailGClient retail_client;
+
+            ::gi.saved_game->reset_buffer_offset();
+
+            ::gi.saved_game->try_read(
+                retail_client);
+
+            if (::gi.saved_game->is_all_data_read())
+            {
+                copy_retail_gclient_to_current(
+                    retail_client,
+                    *reinterpret_cast<gclient_t*>(pbData));
+            }
+            else
+            {
+                ::G_Error(
+                    ::va("EvaluateFields(): variable-sized chunk '%s' without handler!",
+                        ::SG_GetChidText(ulChid)));
+            }
+        }
     }
 
     if (pFields)

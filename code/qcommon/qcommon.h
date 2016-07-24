@@ -68,7 +68,11 @@ void MSG_WriteData (msg_t *buf, const void *data, int length);
 
 struct usercmd_s;
 struct entityState_s;
-class playerState_t;
+
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 
 void MSG_WriteBits( msg_t *msg, int value, int bits );
 

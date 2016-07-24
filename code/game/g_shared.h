@@ -608,7 +608,6 @@ public:
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-// FIXME Prefix added to avoid debugging problems in Visual Studio.
 class clientPersistant_t
 {
 public:
@@ -686,11 +685,12 @@ typedef enum //# movetype_e
 
 // this structure is cleared on each ClientSpawn(),
 // except for 'client->pers' and 'client->sess'
-class gclient_t
+template<typename TSaberInfo>
+class GClientBase
 {
 public:
 	// ps MUST be the first element, because the server expects it
-	playerState_t	ps;				// communicated by server to clients
+	PlayerStateBase<TSaberInfo>	ps;				// communicated by server to clients
 
 	// private to game
 	clientPersistant_t	pers;
@@ -922,7 +922,12 @@ public:
         saved_game->read<int32_t>(inSpaceSuffocation);
         saved_game->read<int32_t>(inSpaceIndex);
     }
-}; // gclient_t
+}; // GClientBase
+
+
+using gclient_t = GClientBase<saberInfo_t>;
+using RetailGClient = GClientBase<saberInfoRetail_t>;
+
 
 #define	MAX_PARMS	16
 #define	MAX_PARM_STRING_LENGTH	MAX_QPATH//was 16, had to lengthen it so they could take a valid file path

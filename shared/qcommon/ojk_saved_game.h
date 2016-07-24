@@ -105,6 +105,9 @@ public:
     // Clears buffer and resets it's offset to the beginning.
     void reset_buffer() override;
 
+    // Resets buffer offset to the beginning.
+    void reset_buffer_offset() override;
+
 
     // Renames a saved game file.
     static void rename(

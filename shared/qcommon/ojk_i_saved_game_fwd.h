@@ -141,6 +141,9 @@ public:
     // Clears buffer and resets it's offset to the beginning.
     virtual void reset_buffer() = 0;
 
+    // Resets buffer offset to the beginning.
+    virtual void reset_buffer_offset() = 0;
+
 
 protected:
     // Tags for dispatching.

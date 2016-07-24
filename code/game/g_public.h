@@ -90,7 +90,11 @@ typedef enum
 #ifndef GAME_INCLUDE
 
 // the server needs to know enough information to handle collision and snapshot generation
-class playerState_t;
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
+
 
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
