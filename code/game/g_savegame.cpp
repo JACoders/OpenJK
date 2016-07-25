@@ -508,8 +508,7 @@ template<typename T>
 static void EnumerateFields(
     const save_field_t* pFields,
     const T* src_instance,
-    unsigned int ulChid,
-    size_t iLen)
+    unsigned int ulChid)
 {
     strList.clear();
 
@@ -520,7 +519,7 @@ static void EnumerateFields(
     //
     if (pFields) {
         for (auto pField = pFields; pField->psName; ++pField) {
-            assert(pField->iOffset < iLen);
+            assert(pField->iOffset < sizeof(T));
             ::EnumerateField(pField, pbData);
         }
     }
@@ -666,78 +665,6 @@ static const char *SG_GetChidText( unsigned int chid ) {
 }
 
 extern void WP_SaberSetDefaults( saberInfo_t *saber, qboolean setColors);
-static void SG_ConvertRetailSaberinfoToNewSaberinfo( void *sabData, saberInfo_t *saberNew )
-{
-	saberInfoRetail_t *saberRetail = ((saberInfoRetail_t *)(sabData));
-
-	for ( int saberNum = 0; saberNum < 2; saberNum++ )
-	{
-		WP_SaberSetDefaults( &saberNew[saberNum], qfalse );
-		if ( !saberRetail[saberNum].activeBlocking )
-		{
-			saberNew[saberNum].saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
-		}
-		memcpy( saberNew[saberNum].blade, saberRetail[saberNum].blade, sizeof( saberRetail[saberNum].blade ) );
-		saberNew[saberNum].breakParryBonus = saberRetail[saberNum].breakParryBonus;
-		saberNew[saberNum].brokenSaber1 = saberRetail[saberNum].brokenSaber1;
-		saberNew[saberNum].brokenSaber2 = saberRetail[saberNum].brokenSaber2;
-		if ( !saberRetail[saberNum].disarmable )
-		{
-			saberNew[saberNum].saberFlags |= SFL_NOT_DISARMABLE;
-		}
-		saberNew[saberNum].disarmBonus = saberRetail[saberNum].disarmBonus;
-		saberNew[saberNum].forceRestrictions = saberRetail[saberNum].forceRestrictions;
-		saberNew[saberNum].fullName = saberRetail[saberNum].fullName;
-		if ( !saberRetail[saberNum].lockable )
-		{
-			saberNew[saberNum].saberFlags |= SFL_NOT_LOCKABLE;
-		}
-		saberNew[saberNum].lockBonus = saberRetail[saberNum].lockBonus;
-		saberNew[saberNum].maxChain = saberRetail[saberNum].maxChain;
-		saberNew[saberNum].model = saberRetail[saberNum].model;
-		saberNew[saberNum].name = saberRetail[saberNum].name;
-		saberNew[saberNum].numBlades = saberRetail[saberNum].numBlades;
-		saberNew[saberNum].parryBonus = saberRetail[saberNum].parryBonus;
-		if ( saberRetail[saberNum].returnDamage )
-		{
-			saberNew[saberNum].saberFlags |= SFL_RETURN_DAMAGE;
-		}
-		saberNew[saberNum].singleBladeStyle = saberRetail[saberNum].singleBladeStyle;
-		if ( saberRetail[saberNum].singleBladeThrowable )
-		{
-			saberNew[saberNum].saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
-		}
-		saberNew[saberNum].skin = saberRetail[saberNum].skin;
-		saberNew[saberNum].soundLoop = saberRetail[saberNum].soundLoop;
-		saberNew[saberNum].soundOff = saberRetail[saberNum].soundOff;
-		saberNew[saberNum].soundOn = saberRetail[saberNum].soundOn;
-		if ( saberRetail[saberNum].style != SS_NONE
-			&& saberRetail[saberNum].style < SS_NUM_SABER_STYLES )
-		{//OLD WAY: only allowed ONE style
-			//learn only this style
-			saberNew[saberNum].stylesLearned = (1<<saberRetail[saberNum].style);
-			//forbid all other styles
-			saberNew[saberNum].stylesForbidden = 0;
-			for ( int styleNum = SS_NONE+1; styleNum < SS_NUM_SABER_STYLES; styleNum++ )
-			{
-				if ( styleNum != saberRetail[saberNum].style )
-				{
-					saberNew[saberNum].stylesForbidden |= (1<<styleNum);
-				}
-			}
-		}
-		if ( !saberRetail[saberNum].throwable )
-		{
-			saberNew[saberNum].saberFlags |= SFL_NOT_THROWABLE;
-		}
-		if ( saberRetail[saberNum].twoHanded )
-		{
-			saberNew[saberNum].saberFlags |= SFL_TWO_HANDED;
-		}
-		saberNew[saberNum].type = saberRetail[saberNum].type;
-	}
-}
-
 
 void saberInfoRetail_t::sg_export(
     saberInfo_t& dst) const
@@ -858,72 +785,12 @@ static void copy_retail_gclient_to_current(
         src_post_size);
 }
 
-#if 0
-template<typename T>
-static void EvaluateFields(const save_field_t *pFields, T *pbData, byte *pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
-{
-    using SgType = typename T::SgType;
-
-    iSize = static_cast<int>(sizeof(SgType));
-
-    auto& sg_buffer = ::sg_get_buffer(iSize);
-
-    auto sg_object = reinterpret_cast<SgType*>(sg_buffer.data());
-
-	int iReadSize = ::gi.ReadFromSaveGame(ulChid, sg_object, bOkToSizeMisMatch?0:iSize, NULL);
-
-	if (iReadSize != iSize)
-	{
-		// handle any chunks that are ok to change length (typically this is a last minute hack,
-		//	so hopefully we won't need it any more... ;-)
-		//
-		switch (ulChid)
-		{
-			// example chunk handler...
-			//
-			case INT_ID('G','C','L','I'):
-				if ( iSize == (int)(iReadSize+((sizeof(saberInfo_t)-sizeof(saberInfoRetail_t))*2)) )
-				{
-					gclient_t newClient;
-					const int	preSaberDataSize = ((intptr_t)&newClient.ps.saber[0]-(intptr_t)&newClient);
-					memcpy( &newClient, pbData, preSaberDataSize );
-					SG_ConvertRetailSaberinfoToNewSaberinfo( ((void *)(&((gclient_t *)(pbData))->ps.saber[0])), &newClient.ps.saber[0] );
-					memcpy( &newClient.ps.dualSabers, pbData+preSaberDataSize+(sizeof(saberInfoRetail_t)*2), sizeof(newClient)-(preSaberDataSize+(sizeof(saberInfo_t)*2)) );
-					memcpy( pbData, &newClient, sizeof(gclient_t) );
-				}
-				else
-				{//opps, not a saberInfo size mismatch, some other FUBAR-ness...
-					G_Error(va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
-				}
-				break;
-
-			default:
-				// won't return...
-				//
-				G_Error(va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
-				break;
-		}
-	}
-
-    ::sg_import(*sg_object, *pbData);
-
-	if (pFields)
-	{
-		for (const save_field_t *pField = pFields; pField->psName; pField++)
-		{
-			EvaluateField(pField, reinterpret_cast<byte*>(pbData), pbOriginalRefData);
-		}
-	}
-}
-#else
 template<typename T>
 static void EvaluateFields(
     const save_field_t* pFields,
     T* pbData,
     byte* pbOriginalRefData,
-    unsigned int ulChid,
-    int iSize,
-    qboolean bOkToSizeMisMatch)
+    unsigned int ulChid)
 {
     auto& instance = *pbData;
 
@@ -975,7 +842,6 @@ static void EvaluateFields(
         }
     }
 }
-#endif
 
 /*
 ==============
@@ -989,7 +855,7 @@ static void WriteLevelLocals ()
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// copy out all data into a temp space
 
-	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));	// sizeof(temp));
+	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'));
 	gi.Free(temp);
 }
 
@@ -1008,7 +874,7 @@ static void ReadLevelLocals ()
 
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// struct copy
-	EvaluateFields(savefields_LevelLocals, temp, (byte *)&level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
+	EvaluateFields(savefields_LevelLocals, temp, (byte *)&level, INT_ID('L','V','L','C'));
 	level = *temp;					// struct copy
 
 	level.clients = pClients;				// restore clients
@@ -1054,7 +920,7 @@ static void WriteGEntities(qboolean qbAutosave)
 				gi.linkentity( ent );
 			}
 
-			EnumerateFields(savefields_gEntity, &tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
+			EnumerateFields(savefields_gEntity, &tempEnt, INT_ID('G','E','N','T'));
 
 			// now for any fiddly bits that would be rather awkward to build into the enumerator...
 			//
@@ -1062,13 +928,13 @@ static void WriteGEntities(qboolean qbAutosave)
 			{
 				gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
 
-				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'), sizeof(npc));
+				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'));
 			}
 
 			if (tempEnt.client == (gclient_t *)-2)	// I know, I know...
 			{
 				gclient_t client = *ent->client;	// NOT *tempEnt.client!!
-				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
+				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'));
 			}
 
 			if (tempEnt.parms)
@@ -1081,7 +947,7 @@ static void WriteGEntities(qboolean qbAutosave)
 			if (tempEnt.m_pVehicle)
 			{
 				Vehicle_t vehicle = *ent->m_pVehicle;	// NOT *tempEnt.m_pVehicle!!
-				EnumerateFields(savefields_gVHIC, &vehicle, INT_ID('V','H','I','C'), sizeof(vehicle));
+				EnumerateFields(savefields_gVHIC, &vehicle, INT_ID('V','H','I','C'));
 			}
 
 			// the scary ghoul2 saver stuff...  (fingers crossed)
@@ -1166,7 +1032,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		gi.G2API_LoadSaveCodeDestructGhoul2Info(pEnt->ghoul2);
 		pEnt->ghoul2.kill();
-		EvaluateFields(savefields_gEntity, pEnt, (byte *)pEntOriginal, INT_ID('G','E','N','T'), sizeof(*pEnt),qfalse);
+		EvaluateFields(savefields_gEntity, pEnt, (byte *)pEntOriginal, INT_ID('G','E','N','T'));
 		pEnt->ghoul2.kill();
 
 		// now for any fiddly bits...
@@ -1175,7 +1041,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gNPC_t tempNPC;
 
-			EvaluateFields(savefields_gNPC, &tempNPC,(byte *)pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
+			EvaluateFields(savefields_gNPC, &tempNPC,(byte *)pEntOriginal->NPC, INT_ID('G','N','P','C'));
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1211,7 +1077,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gclient_t tempGClient;
 
-			EvaluateFields(savefields_gClient, &tempGClient, (byte *)pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qtrue);//qfalse);
+			EvaluateFields(savefields_gClient, &tempGClient, (byte *)pEntOriginal->client, INT_ID('G','C','L','I'));
 
 			// can we pinch the original's client handle or do we have to alloc a new one?...
 			//
@@ -1272,7 +1138,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			Vehicle_t tempVehicle;
 
-			EvaluateFields(savefields_gVHIC, &tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'), sizeof (*pEnt->m_pVehicle),qfalse);
+			EvaluateFields(savefields_gVHIC, &tempVehicle,(byte *)pEntOriginal->m_pVehicle, INT_ID('V','H','I','C'));
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1299,14 +1165,6 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
             ::gi.saved_game->read_chunk(
                 INT_ID('G','H','L','2'));
-
-// FIXME Remove
-#if 0
-            auto buffer = ::gi.saved_game->get_buffer();
-            auto pGhoul2Data = reinterpret_cast<char*>(buffer.data());
-
-            gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
-#endif
 
             gi.G2API_LoadGhoul2Models(pEnt->ghoul2, nullptr);
 		}
@@ -1391,7 +1249,7 @@ void WriteLevel(qboolean qbAutosave)
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
 		gclient_t client = level.clients[0];
-		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
+		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'));
 		WriteLevelLocals();	// level_locals_t level
 	}
 
@@ -1440,7 +1298,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 
 		//Read & throw away gclient info
 		gclient_t junkClient;
-		EvaluateFields(savefields_gClient, &junkClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
+		EvaluateFields(savefields_gClient, &junkClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'));
 
 		ReadLevelLocals();	// level_locals_t level
 
@@ -1455,7 +1313,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
 
 			gclient_t GClient;
-			EvaluateFields(savefields_gClient, &GClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qtrue);//qfalse);
+			EvaluateFields(savefields_gClient, &GClient, (byte *)&level.clients[0], INT_ID('G','C','L','I'));
 			level.clients[0] = GClient;	// struct copy
 			ReadLevelLocals();	// level_locals_t level
 		}
@@ -1492,126 +1350,3 @@ qboolean GameAllowedToSaveHere(void)
 }
 
 //////////////////// eof /////////////////////
-
-#if 0
-// !!!!!!!!!!!!!!!!!! loadsave affecting structure !!!!!!!!!!!!!!!!!!!!!!!
-struct Vehicle_t
-{
-	// The entity who pilots/drives this vehicle.
-	// NOTE: This is redundant (since m_pParentEntity->owner _should_ be the pilot). This makes things clearer though.
-	gentity_t *m_pPilot;
-
-	int m_iPilotTime; //if spawnflag to die without pilot and this < level.time then die.
-	qboolean m_bHasHadPilot; //qtrue once the vehicle gets its first pilot
-
-	// The passengers of this vehicle.
-	gentity_t **m_ppPassengers;
-
-	// The number of passengers currently in this vehicle.
-	int m_iNumPassengers;
-
-	//the droid unit NPC for this vehicle, if any
-	gentity_t *m_pDroidUnit;
-
-	// The entity from which this NPC comes from.
-	gentity_t *m_pParentEntity;
-
-	// If not zero, how long to wait before we can do anything with the vehicle (we're getting on still).
-	// -1 = board from left, -2 = board from right, -3 = jump/quick board.  -4 & -5 = throw off existing pilot
-	int		m_iBoarding;
-
-	// Used to check if we've just started the boarding process
-	bool	m_bWasBoarding;
-
-	// The speed the vehicle maintains while boarding occurs (often zero)
-	vec3_t	m_vBoardingVelocity;
-
-	// Time modifier (must only be used in ProcessMoveCommands() and ProcessOrientCommands() and is updated in Update()).
-	float m_fTimeModifier;
-
-	// Ghoul2 Animation info.
-	// NOTE: Since each vehicle has their own model instance, these bolts must be local to each vehicle as well.
-	int m_iLeftWingBone;
-	int m_iRightWingBone;
-	//int m_iDriverTag;
-	int m_iExhaustTag[MAX_VEHICLE_EXHAUSTS];
-	int m_iMuzzleTag[MAX_VEHICLE_MUZZLES];
-	int m_iDroidUnitTag;
-	int	m_iGunnerViewTag[MAX_VEHICLE_TURRETS];//Where to put the view origin of the gunner (index)
-
-	// This vehicles weapon muzzles.
-	Muzzle m_Muzzles[MAX_VEHICLE_MUZZLES];
-
-	// The user commands structure.
-	usercmd_t m_ucmd;
-
-	// The direction an entity will eject from the vehicle towards.
-	int m_EjectDir;
-
-	// Flags that describe the vehicles behavior.
-	unsigned int m_ulFlags;
-
-	// NOTE: Vehicle Type ID, Orientation, and Armor MUST be transmitted over the net.
-
-	// Current angles of this vehicle.
-	vec3_t		m_vOrientation;
-
-	// How long you have strafed left or right (increments every frame that you strafe to right, decrements every frame you strafe left)
-	int			m_fStrafeTime;
-
-	// Previous angles of this vehicle.
-	vec3_t		m_vPrevOrientation;
-
-	// When control is lost on a speeder, current angular velocity is stored here and applied until landing
-	float		m_vAngularVelocity;
-
-	vec3_t		m_vFullAngleVelocity;
-
-	// Current armor and shields of your vehicle (explodes if armor to 0).
-	int			m_iArmor;	//hull strength - STAT_HEALTH on NPC
-	int			m_iShields;	//energy shielding - STAT_ARMOR on NPC
-
-	// Timer for all cgame-FX...? ex: exhaust?
-	int			m_iLastFXTime;
-
-	// When to die.
-	int			m_iDieTime;
-
-	// This pointer is to a valid VehicleInfo (which could be an animal, speeder, fighter, whatever). This
-	// contains the functions actually used to do things to this specific kind of vehicle as well as shared
-	// information (max speed, type, etc...).
-	vehicleInfo_t *m_pVehicleInfo;
-
-	// This trace tells us if we're within landing height.
-	trace_t m_LandTrace;
-
-	//bitflag of surfaces that have broken off
-	int			m_iRemovedSurfaces;
-
-	// the last time this vehicle fired a turbo burst
-	int			m_iTurboTime;
-
-	//how long it should drop like a rock for after freed from SUSPEND
-	int			m_iDropTime;
-
-	int			m_iSoundDebounceTimer;
-
-	//last time we incremented the shields
-	int			lastShieldInc;
-
-	//so we don't hold it down and toggle it back and forth
-	qboolean	linkWeaponToggleHeld;
-
-	//info about our weapons (linked, ammo, etc.)
-	vehWeaponStatus_t	weaponStatus[MAX_VEHICLE_WEAPONS];
-	vehTurretStatus_t	turretStatus[MAX_VEHICLE_TURRETS];
-
-	//the guy who was previously the pilot
-	gentity_t*	m_pOldPilot;
-
-	// don't need these in mp
-	int			m_safeJumpMountTime;
-	float		m_safeJumpMountRightDot;
-};
-
-#endif

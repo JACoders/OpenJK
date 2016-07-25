@@ -449,18 +449,18 @@ template<typename T>
 static void EnumerateFields(
     const field_t* pFields,
     T* src_instance,
-    unsigned int ulChid,
-    size_t iLen)
+    unsigned int ulChid)
 {
     strList.clear();
 
-    auto pbData = reinterpret_cast<byte*>(src_instance);
+    auto pbData = reinterpret_cast<byte*>(
+        src_instance);
 
     // enumerate all the fields...
     //
     if (pFields) {
         for (auto pField = pFields; pField->psName; ++pField) {
-            assert(pField->iOffset < iLen);
+            assert(pField->iOffset < sizeof(T));
             ::EnumerateField(pField, pbData);
         }
     }
@@ -585,61 +585,12 @@ static const char *SG_GetChidText(unsigned int chid)
 	return chidtext;
 }
 
-#if 0
-template<typename T>
-static void EvaluateFields(const field_t *pFields, T* pbData, T* pbOriginalRefData, unsigned int ulChid, int iSize, qboolean bOkToSizeMisMatch)
-{
-    using SgType = typename T::SgType;
-
-    iSize = static_cast<int>(sizeof(SgType));
-
-    auto& sg_buffer = ::sg_get_buffer(iSize);
-
-    auto sg_object = reinterpret_cast<SgType*>(sg_buffer.data());
-
-    int iReadSize = ::gi.ReadFromSaveGame(ulChid, sg_object, bOkToSizeMisMatch?0:iSize, NULL);
-
-	if (iReadSize != iSize)
-	{
-		// handle any chunks that are ok to change length (typically this is a last minute hack,
-		//	so hopefully we won't need it any more... ;-)
-		//
-		switch (ulChid)
-		{
-			// example chunk handler...
-			//
-			case INT_ID('G','C','L','I'):
-/*				assert(iSize>iReadSize);
-				memset(&pbData[iReadSize], 0, iSize-iReadSize);	// zero out new objectives that weren't in old-format save file
-				break;
-*/
-			default:
-				// won't return...
-				//
-				G_Error(va("EvaluateFields(): variable-sized chunk '%s' without handler!",SG_GetChidText(ulChid)));
-				break;
-		}
-	}
-
-    ::sg_import(*sg_object, *pbData);
-
-	if (pFields)
-	{
-		for (const field_t *pField = pFields; pField->psName; pField++)
-		{
-			EvaluateField(pField, reinterpret_cast<byte*>(pbData), reinterpret_cast<byte*>(pbOriginalRefData));
-		}
-	}
-}
-#else
 template<typename T>
 static void EvaluateFields(
     const field_t* pFields,
     T* pbData,
     T* pbOriginalRefData,
-    unsigned int ulChid,
-    int iSize,
-    qboolean bOkToSizeMisMatch)
+    unsigned int ulChid)
 {
     ::gi.saved_game->read_chunk(
         ulChid);
@@ -663,7 +614,6 @@ static void EvaluateFields(
         }
     }
 }
-#endif
 
 /*
 ==============
@@ -677,7 +627,7 @@ static void WriteLevelLocals ()
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;	// copy out all data into a temp space
 
-	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP));
+	EnumerateFields(savefields_LevelLocals, temp, INT_ID('L','V','L','C'));
 	gi.Free(temp);
 }
 
@@ -696,7 +646,7 @@ static void ReadLevelLocals ()
 
 	level_locals_t *temp = (level_locals_t *)gi.Malloc(sizeof(level_locals_t), TAG_TEMP_WORKSPACE, qfalse);
 	*temp = level;
-	EvaluateFields(savefields_LevelLocals, temp, &level, INT_ID('L','V','L','C'), LLOFS(LEVEL_LOCALS_T_SAVESTOP),qfalse);	// sizeof(level_locals_t));
+	EvaluateFields(savefields_LevelLocals, temp, &level, INT_ID('L','V','L','C'));
 	level = *temp;					// struct copy
 
 	level.clients = pClients;				// restore clients
@@ -742,7 +692,7 @@ static void WriteGEntities(qboolean qbAutosave)
 				gi.linkentity( ent );
 			}
 
-			EnumerateFields(savefields_gEntity, &tempEnt, INT_ID('G','E','N','T'), sizeof(tempEnt));
+			EnumerateFields(savefields_gEntity, &tempEnt, INT_ID('G','E','N','T'));
 
 			// now for any fiddly bits that would be rather awkward to build into the enumerator...
 			//
@@ -750,13 +700,13 @@ static void WriteGEntities(qboolean qbAutosave)
 			{
 				gNPC_t npc = *ent->NPC;	// NOT *tempEnt.NPC; !! :-)
 
-				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'), sizeof(npc));
+				EnumerateFields(savefields_gNPC, &npc, INT_ID('G','N','P','C'));
 			}
 
 			if (tempEnt.client == (gclient_t *)-2)	// I know, I know...
 			{
 				gclient_t client = *ent->client;	// NOT *tempEnt.client!!
-				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
+				EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'));
 			}
 
 			if (tempEnt.parms)
@@ -847,7 +797,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		gi.G2API_LoadSaveCodeDestructGhoul2Info(pEnt->ghoul2);
 		pEnt->ghoul2.kill();
-		EvaluateFields(savefields_gEntity, pEnt, pEntOriginal, INT_ID('G','E','N','T'), sizeof(*pEnt),qfalse);
+		EvaluateFields(savefields_gEntity, pEnt, pEntOriginal, INT_ID('G','E','N','T'));
 		pEnt->ghoul2.kill();
 
 		// now for any fiddly bits...
@@ -856,7 +806,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gNPC_t tempNPC;
 
-			EvaluateFields(savefields_gNPC, &tempNPC,pEntOriginal->NPC, INT_ID('G','N','P','C'), sizeof (*pEnt->NPC),qfalse);
+			EvaluateFields(savefields_gNPC, &tempNPC,pEntOriginal->NPC, INT_ID('G','N','P','C'));
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -884,7 +834,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			gclient_t tempGClient;
 
-			EvaluateFields(savefields_gClient, &tempGClient, pEntOriginal->client, INT_ID('G','C','L','I'), sizeof(*pEnt->client),qfalse);
+			EvaluateFields(savefields_gClient, &tempGClient, pEntOriginal->client, INT_ID('G','C','L','I'));
 
 			// can we pinch the original's client handle or do we have to alloc a new one?...
 			//
@@ -941,14 +891,6 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
             ::gi.saved_game->read_chunk(
                 INT_ID('G','H','L','2'));
-
-// FIXME Remove
-#if 0
-            auto buffer = ::gi.saved_game->get_buffer();
-            auto pGhoul2Data = reinterpret_cast<char*>(buffer.data());
-
-            gi.G2API_LoadGhoul2Models(pEnt->ghoul2, pGhoul2Data);	// if it's going to crash anywhere...   <g>
-#endif
 
             gi.G2API_LoadGhoul2Models(pEnt->ghoul2, nullptr);
 		}
@@ -1029,7 +971,7 @@ void WriteLevel(qboolean qbAutosave)
 		//
 		assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way ReadGame works
 		gclient_t client = level.clients[0];
-		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'), sizeof(client));
+		EnumerateFields(savefields_gClient, &client, INT_ID('G','C','L','I'));
 		WriteLevelLocals();	// level_locals_t level
 	}
 
@@ -1071,7 +1013,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 
 		//Read & throw away gclient info
 		gclient_t junkClient;
-		EvaluateFields(savefields_gClient, &junkClient, &level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qfalse);
+		EvaluateFields(savefields_gClient, &junkClient, &level.clients[0], INT_ID('G','C','L','I'));
 
 		//Read & throw away objective info
         ::gi.saved_game->read_chunk(
@@ -1086,7 +1028,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 			assert(level.maxclients == 1);	// I'll need to know if this changes, otherwise I'll need to change the way things work
 
 			gclient_t GClient;
-			EvaluateFields(savefields_gClient, &GClient, &level.clients[0], INT_ID('G','C','L','I'), sizeof(*level.clients), qfalse);
+			EvaluateFields(savefields_gClient, &GClient, &level.clients[0], INT_ID('G','C','L','I'));
 			level.clients[0] = GClient;	// struct copy
 			ReadLevelLocals();	// level_locals_t level
 		}
