@@ -186,6 +186,8 @@ private:
     // Returns a string representation of a chunk id.
     static std::string get_chunk_id_string(
         uint32_t chunk_id);
+
+    static constexpr uint32_t get_jo_magic_value();
 }; // SavedGame
 
 

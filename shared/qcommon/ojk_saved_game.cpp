@@ -196,16 +196,6 @@ void SavedGame::read_chunk(
         const auto&& loaded_chunk_id_string = get_chunk_id_string(
             ulLoadedChid);
 
-#if 0
-        if (!is_preview_mode_)
-        {
-            ::Com_Error(
-                ERR_DROP,
-                "Loaded chunk ID (%s) does not match requested chunk ID (%s)",
-                loaded_chunk_id_string.c_str(),
-                chunk_id_string.c_str());
-        }
-#else
         const auto&& error_message =
             "Loaded chunk ID (" +
             loaded_chunk_id_string +
@@ -215,8 +205,18 @@ void SavedGame::read_chunk(
 
         throw_error(
             error_message);
-#endif
     }
+
+    uint32_t uiLoadedCksum = 0;
+
+#ifdef JK2_MODE
+    // Get checksum...
+    //
+    uiLoaded += ::FS_Read(
+        &uiLoadedCksum,
+        static_cast<int>(sizeof(uiLoadedCksum)),
+        file_handle_);
+#endif // JK2_MODE
 
     // Load in data and magic number...
     //
@@ -255,14 +255,32 @@ void SavedGame::read_chunk(
             file_handle_);
     }
 
+#ifdef JK2_MODE
+    uint32_t uiLoadedMagic = 0;
+
+    uiLoaded += ::FS_Read(
+        &uiLoadedMagic,
+        static_cast<int>(sizeof(uiLoadedMagic)),
+        file_handle_);
+
+    if (uiLoadedMagic != get_jo_magic_value())
+    {
+        const auto&& error_message =
+            "Bad saved game magic for chunk " + chunk_id_string + ".";
+
+        throw_error(
+            error_message);
+    }
+#endif // JK2_MODE
+
+#ifndef JK2_MODE
     // Get checksum...
     //
-    uint32_t uiLoadedCksum = 0;
-
     uiLoaded += ::FS_Read(
         &uiLoadedCksum,
         static_cast<int>(sizeof(uiLoadedCksum)),
         file_handle_);
+#endif // JK2_MODE
 
     // Make sure the checksums match...
     //
@@ -272,21 +290,11 @@ void SavedGame::read_chunk(
 
     if (uiLoadedCksum != uiCksum)
     {
-#if 0
-        if (!is_preview_mode_)
-        {
-            ::Com_Error(
-                ERR_DROP,
-                "Failed checksum check for chunk",
-                chunk_id_string.c_str());
-        }
-#else
         const auto&& error_message =
             "Failed checksum check for chunk " + chunk_id_string + ".";
 
         throw_error(
             error_message);
-#endif
     }
 
     // Make sure we didn't encounter any read errors...
@@ -295,23 +303,17 @@ void SavedGame::read_chunk(
         sizeof(uiLoadedLength) +
         sizeof(uiLoadedCksum) +
         (bBlockIsCompressed ? sizeof(uiCompressedLength) : 0) +
-        (bBlockIsCompressed ? uiCompressedLength : io_buffer_.size()))
+        (bBlockIsCompressed ? uiCompressedLength : io_buffer_.size()) +
+#ifdef JK2_MODE
+        sizeof(uiLoadedMagic) +
+#endif
+        0)
     {
-#if 0
-        if (!is_preview_mode_)
-        {
-            ::Com_Error(
-                ERR_DROP,
-                "Error during loading chunk %s",
-                chunk_id_string.c_str());
-        }
-#else
         const auto&& error_message =
             "Error during loading chunk " + chunk_id_string + ".";
 
         throw_error(
             error_message);
-#endif
     }
 }
 
@@ -355,6 +357,13 @@ void SavedGame::write_chunk(
         static_cast<int>(sizeof(chunk_id)),
         file_handle_);
 
+#ifdef JK2_MODE
+    uiSaved += ::FS_Write(
+        &uiCksum,
+        static_cast<int>(sizeof(uiCksum)),
+        file_handle_);
+#endif // JK2_MODE
+
     auto iCompressedLength = -1;
 
     if (::sv_compress_saved_games->integer != 0)
@@ -368,6 +377,10 @@ void SavedGame::write_chunk(
             iCompressedLength = static_cast<int>(rle_buffer_.size());
         }
     }
+
+#ifdef JK2_MODE
+    const auto uiMagic = get_jo_magic_value();
+#endif // JK2_MODE
 
     if (iCompressedLength > 0)
     {
@@ -388,17 +401,30 @@ void SavedGame::write_chunk(
             iCompressedLength,
             file_handle_);
 
+#ifdef JK2_MODE
+        uiSaved += ::FS_Write(
+            &uiMagic,
+            static_cast<int>(sizeof(uiMagic)),
+            file_handle_);
+#endif // JK2_MODE
+
+#ifndef JK2_MODE
         uiSaved += ::FS_Write(
             &uiCksum,
             static_cast<int>(sizeof(uiCksum)),
             file_handle_);
+#endif // JK2_MODE
 
         if (uiSaved !=
             sizeof(chunk_id) +
             sizeof(iLength) +
             sizeof(uiCksum) +
             sizeof(iCompressedLength) +
-            iCompressedLength)
+            iCompressedLength +
+#ifdef JK2_MODE
+            sizeof(uiMagic) +
+#endif // JK2_MODE
+            0)
         {
             is_write_failed_ = true;
 
@@ -423,16 +449,29 @@ void SavedGame::write_chunk(
             iLength,
             file_handle_);
 
+#ifdef JK2_MODE
+        uiSaved += ::FS_Write(
+            &uiMagic,
+            static_cast<int>(sizeof(uiMagic)),
+            file_handle_);
+#endif // JK2_MODE
+
+#ifdef JK2_MODE
         uiSaved += ::FS_Write(
             &uiCksum,
             static_cast<int>(sizeof(uiCksum)),
             file_handle_);
+#endif // JK2_MODE
 
         if (uiSaved !=
             sizeof(chunk_id) +
             sizeof(iLength) +
             sizeof(uiCksum) +
-            iLength)
+            iLength +
+#ifdef JK2_MODE
+            sizeof(uiMagic) +
+#endif // JK2_MODE
+            0)
         {
             is_write_failed_ = true;
 
@@ -787,6 +826,11 @@ void SavedGame::reset_buffer()
 void SavedGame::reset_buffer_offset()
 {
     io_buffer_offset_ = 0;
+}
+
+constexpr uint32_t SavedGame::get_jo_magic_value()
+{
+    return 0x1234ABCD;
 }
 
 
