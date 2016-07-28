@@ -1595,6 +1595,8 @@ void WP_LoadWeaponParms (void)
 		weaponData[i].altVelocity = defaultAltVelocity[i];
 		weaponData[i].npcDmgMult = 1.0;
 		weaponData[i].npcAltDmgMult = 1.0;
+		weaponData[i].npcFireTimeMult = 1.0; //npc combat function checks for this
+		weaponData[i].npcAltFireTimeMult = 1.0; //npc combat function checks for this
 	}
 
 	WP_ParseParms(buffer);	

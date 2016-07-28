@@ -97,6 +97,7 @@ extern cvar_t	*g_saberRealisticCombat;
 extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_saberNewControlScheme;
 extern cvar_t	*g_forceNewPowers;
+extern cvar_t	*g_playerCheatPowers;
 extern int parryDebounce[];
 //extern int forcePowerNeeded[]; //FIXME doesn't point to anything
 
@@ -2150,7 +2151,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 	}
 	else
 	{//the player
-		if (g_forceNewPowers->integer) 
+		if (g_forceNewPowers->integer && !g_playerCheatPowers->integer)
 		{
 			if (self->client->ps.forcePowerLevel[FP_SPEED] < 2) 
 			{
@@ -2188,7 +2189,8 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			}
 
 		}
-		else { //old force power version
+		else if (!g_playerCheatPowers->integer)
+		{ //old force power version
 			if (!(self->client->ps.forcePowersActive&(1 << FP_SPEED)))
 			{//not already in speed
 				if (!WP_ForcePowerUsable(self, FP_SPEED, 0))
@@ -2341,7 +2343,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			self->client->ps.legsAnimTimer = self->client->ps.torsoAnimTimer;
 		}
 
-		if ( self->s.number )
+		if (self->s.number && g_playerCheatPowers->integer)
 		{//NPC
 			//maybe force them to stop moving in this case?
 			self->client->ps.pm_time = self->client->ps.torsoAnimTimer + Q_irand( 100, 1000 );

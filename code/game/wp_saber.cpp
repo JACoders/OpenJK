@@ -78,6 +78,8 @@ extern cvar_t	*g_char_forceRegen;
 extern cvar_t	*g_char_parryBonus;
 extern cvar_t	*g_char_breakParryBonus;
 
+extern cvar_t	*g_playerCheatPowers;
+
 extern qboolean WP_SaberBladeUseSecondBladeStyle(saberInfo_t *saber, int bladeNum);
 extern qboolean WP_SaberBladeDoTransitionDamage(saberInfo_t *saber, int bladeNum);
 extern qboolean Q3_TaskIDPending(gentity_t *ent, taskID_t taskType);
@@ -9578,7 +9580,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 		}
 		else
 		{
-			if (ent->s.pos.trType == TR_STATIONARY && !self->s.number)
+			if (ent->s.pos.trType == TR_STATIONARY && !self->s.number && !g_playerCheatPowers->integer)
 			{//nothing you can do with a stationary missile if you're the player
 				continue;
 			}
@@ -9623,7 +9625,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			//FIXME: handle tripmines and detpacks somehow... 
 			//			maybe do a force-gesture that makes them explode?  
 			//			But what if we're within it's splashradius?
-			if (!self->s.number)
+			if (!self->s.number && !g_playerCheatPowers->integer)
 			{//players don't auto-handle these at all
 				continue;
 			}
@@ -9703,7 +9705,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			if ((dot1 = DotProduct(dir, forward)) < SABER_REFLECT_MISSILE_CONE)
 				continue;
 		}
-		else if (!self->s.number)
+		else if (!self->s.number && !g_playerCheatPowers->integer)
 		{//player never auto-blocks thrown sabers
 			continue;
 		}//NPCs always try to block sabers coming from behind!
@@ -11379,7 +11381,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 					}
 					continue;
 				}
-				else if (!push_list[x]->s.number)
+				else if (!push_list[x]->s.number && !g_playerCheatPowers->integer)
 				{//player
 					if (!noResist && ShouldPlayerResistForceThrow(push_list[x], self, pull))
 					{
@@ -11413,7 +11415,7 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 					&& push_list[x]->client->ps.groundEntityNum != ENTITYNUM_NONE //on the ground
 					&& InFront(self->currentOrigin, push_list[x]->currentOrigin, push_list[x]->client->ps.viewangles, 0.3f) //I'm in front of him
 					&& (push_list[x]->client->ps.powerups[PW_FORCE_PUSH] > level.time ||//he's pushing too
-					(push_list[x]->s.number != 0 && push_list[x]->client->ps.weaponTime < level.time)//not the player and not attacking (NPC jedi auto-defend against pushes)
+					(push_list[x]->s.number != 0 && push_list[x]->client->ps.weaponTime < level.time || (push_list[x]->s.number == 0 && g_playerCheatPowers->integer))//not the player and not attacking (NPC jedi auto-defend against pushes)
 					)
 					)
 				{//Jedi don't get pushed, they resist as long as they aren't already attacking and are on the ground
@@ -13170,7 +13172,7 @@ void ForceLightningDamage(gentity_t *self, gentity_t *traceEnt, vec3_t dir, floa
 			if (traceEnt->client
 				&& traceEnt->health > 0
 				&& traceEnt->NPC
-				&& (traceEnt->NPC->aiFlags&NPCAI_BOSS_CHARACTER))
+				&& (traceEnt->NPC->aiFlags&NPCAI_BOSS_CHARACTER || (traceEnt->s.number == 0 && g_playerCheatPowers->integer)))
 			{//Luke, Desann Tavion and Kyle can shield themselves from the attack
 				//FIXME: shield effect or something?
 				int parts;
@@ -14904,7 +14906,7 @@ void WP_ForcePowerRegenerate(gentity_t *self, int overrideAmt)
 
 void WP_ForcePowerDrain(gentity_t *self, forcePowers_t forcePower, int overrideAmt)
 {
-	if (self->NPC)
+	if (self->NPC || g_playerCheatPowers->integer >= 2)
 	{//For now, NPCs have infinite force power
 		return;
 	}

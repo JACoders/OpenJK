@@ -3551,11 +3551,15 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 						NPC->client->ps.ammo[weaponData[weap].ammoIndex] = ammoData[weaponData[weap].ammoIndex].max;
 					}
 
-					if (lightBlasterWeap(weap)) NPC->NPC->lightBlasterWeaps->add(weap);
-					if (heavyBlasterWeap(weap)) NPC->NPC->heavyBlasterWeaps->add(weap);
-					if (heavyWeap(weap)) NPC->NPC->heavyWeaps->add(weap);
+					if (!parsingPlayer)
+					{
+						if (lightBlasterWeap(weap)) NPC->NPC->lightBlasterWeaps->add(weap);
+						if (heavyBlasterWeap(weap)) NPC->NPC->heavyBlasterWeaps->add(weap);
+						if (heavyWeap(weap)) NPC->NPC->heavyWeaps->add(weap);
 
-					NPC->NPC->weapList->add(weap);
+						NPC->NPC->weapList->add(weap);
+					}
+					
 				}
 				continue;
 			}
@@ -3809,7 +3813,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				continue;
 			}
 
-			if (!Q_stricmp(token, "meleeKatasForceFx"))
+			if (!Q_stricmp(token, "meleeKatasNoForceFx"))
 			{
 				if (COM_ParseInt(&p, &n))
 				{
@@ -3818,7 +3822,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				if (NPC->client)
 				{
-					if (n == 0)
+					if (n != 0)
 					{
 						NPC->flags |= FL_MELEEKATA_NOFORCEFX;
 					}

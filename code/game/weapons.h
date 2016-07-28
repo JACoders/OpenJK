@@ -161,8 +161,8 @@ typedef struct weaponData_s
 	int		altVelocity;		//MELEE: dmg randomness is +/- this amount for heavy punches
 	float	npcDmgMult;			//scales the damage NPCs do with primary fire
 	float	npcAltDmgMult;		//scales the damage NPCs do with alt fire
-	int		npcFireTime;
-	int		npcAltFireTime;
+	float	npcFireTimeMult;
+	float	npcAltFireTimeMult;
 	
 
 } weaponData_t;

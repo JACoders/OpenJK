@@ -1035,6 +1035,11 @@ void ChangeWeapon( gentity_t *ent, int newWeapon )
 		ent->NPC->aiFlags &= ~NPCAI_BURST_WEAPON;
 		break;
 	}
+
+	if (ent->NPC->scriptFlags&SCF_ALT_FIRE)
+		ent->NPC->burstSpacing *= weaponData[newWeapon].npcAltFireTimeMult;
+	else
+		ent->NPC->burstSpacing *= weaponData[newWeapon].npcFireTimeMult;
 }
 
 void NPC_ChangeWeapon( int newWeapon )
