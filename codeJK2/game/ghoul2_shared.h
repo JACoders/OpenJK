@@ -20,6 +20,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+
+// FIXME Not used.
+#if 0
+
 #pragma once
 #if !defined(GHOUL2_SHARED_H_INC)
 #define GHOUL2_SHARED_H_INC
@@ -426,3 +430,5 @@ enum EG2_Collision
 //====================================================================
 
 #endif // GHOUL2_SHARED_H_INC
+
+#endif // 0

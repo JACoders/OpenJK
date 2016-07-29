@@ -50,7 +50,11 @@ SavedGameJustLoaded_e eSavedGameJustLoaded = eNO;
 
 char sLastSaveFileLoaded[MAX_QPATH]={0};
 
-#define iSG_MAPCMD_SIZE MAX_QPATH
+#ifdef JK2_MODE
+#define iSG_MAPCMD_SIZE (MAX_TOKEN_CHARS)
+#else
+#define iSG_MAPCMD_SIZE (MAX_QPATH)
+#endif // JK2_MODE
 
 static char *SG_GetSaveGameMapName(const char *psPathlessBaseName);
 static void CompressMem_FreeScratchBuffer(void);

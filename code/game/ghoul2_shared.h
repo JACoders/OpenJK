@@ -450,9 +450,13 @@ public:
 	int				mSurfaceRoot;
 	int				mLodBias;
 	int				mNewOrigin;	// this contains the bolt index of the new origin for this model
+
+#ifndef JK2_MODE
 #ifdef _G2_GORE
 	int				mGoreSetTag;
 #endif
+#endif // !JK2_MODE
+
 	qhandle_t		mModel;		// this and the next entries do NOT go across the network. They are for gameside access ONLY
 	char			mFileName[MAX_QPATH];
 	int				mAnimFrameDefault;
@@ -483,9 +487,11 @@ public:
 	mSurfaceRoot(0),
 	mLodBias(0),
 	mNewOrigin(-1),
+#ifndef JK2_MODE
 #ifdef _G2_GORE
 	mGoreSetTag(0),
 #endif
+#endif // !JK2_MODE
 	mModel(0),
 	mAnimFrameDefault(0),
 	mSkelFrameNum(-1),
@@ -517,9 +523,11 @@ public:
         saved_game->write<int32_t>(mLodBias);
         saved_game->write<int32_t>(mNewOrigin);
 
+#ifndef JK2_MODE
 #ifdef _G2_GORE
         saved_game->write<int32_t>(mGoreSetTag);
 #endif // _G2_GORE
+#endif // !JK2_MODE
 
         saved_game->write<int32_t>(mModel);
         saved_game->write<int8_t>(mFileName);
@@ -541,9 +549,11 @@ public:
         saved_game->read<int32_t>(mLodBias);
         saved_game->read<int32_t>(mNewOrigin);
 
+#ifndef JK2_MODE
 #ifdef _G2_GORE
         saved_game->read<int32_t>(mGoreSetTag);
 #endif // _G2_GORE
+#endif // !JK2_MODE
 
         saved_game->read<int32_t>(mModel);
         saved_game->read<int8_t>(mFileName);
