@@ -48,9 +48,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <float.h>
 
+#include "qcommon/ojk_i_saved_game.h"
+
 #ifdef _G2_GORE
 #include "../ghoul2/ghoul2_gore.h"
-#include "qcommon/ojk_i_saved_game.h"
 
 #define GORE_TAG_UPPER (256)
 #define GORE_TAG_MASK (~255)
@@ -574,6 +575,7 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 	vec3_t			correctScale;
 	qboolean		firstModelOnly = qfalse;
 
+#ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
 	{
 		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
@@ -584,6 +586,7 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 	{
 		firstModelOnly = qtrue;
 	}
+#endif // !JK2_MODE
 
 #ifdef _G2_GORE
 	if ( gore
@@ -1560,6 +1563,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	qboolean		firstModelOnly = qfalse;
 	int				firstModel = 0;
 
+#ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
 	{
 		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
@@ -1570,6 +1574,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	{
 		firstModelOnly = qtrue;
 	}
+#endif // !JK2_MODE
 
 #ifdef _G2_GORE
 	if ( gore
@@ -1624,6 +1629,8 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 		}
 
 		lod = G2_DecideTraceLod(g,useLod);
+
+#ifndef JK2_MODE
 		if ( skipIfLODNotMatch )
 		{//we only want to hit this SPECIFIC LOD...
 			if ( lod != useLod )
@@ -1631,6 +1638,8 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 				continue;
 			}
 		}
+#endif // !JK2_MODE
+
 		//reset the quick surface override lookup
 		G2_FindOverrideSurface(-1, g.mSlist);
 

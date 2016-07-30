@@ -138,14 +138,22 @@ static void		UI_UpdateSaberHilt( qboolean secondSaber );
 //static void		UI_UpdateSaberColor( qboolean secondSaber );
 static void		UI_InitWeaponSelect( void );
 static void		UI_WeaponHelpActive( void );
+
+#ifndef JK2_MODE
 static void		UI_UpdateFightingStyle ( void );
 static void		UI_UpdateFightingStyleChoices ( void );
 static void		UI_CalcForceStatus(void);
+#endif // !JK2_MODE
+
 static void		UI_DecrementForcePowerLevel( void );
 static void		UI_DecrementCurrentForcePower ( void );
 static void		UI_ShutdownForceHelp( void );
 static void		UI_ForceHelpActive( void );
+
+#ifndef JK2_MODE
 static void		UI_DemoSetForceLevels( void );
+#endif // !JK2_MODE
+
 static void		UI_RecordForceLevels( void );
 static void		UI_RecordWeapons( void );
 static void		UI_ResetCharacterListBoxes( void );
@@ -1207,10 +1215,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_ResetSaberCvars();
 			}
     	}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "updatefightingstylechoices") == 0)
 		{
 			UI_UpdateFightingStyleChoices();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "initallocforcepower") == 0)
 		{
 			const char *forceName;
@@ -1237,10 +1247,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_ForceHelpActive();
 		}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "demosetforcelevels") == 0)
 		{
 			UI_DemoSetForceLevels();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "recordforcelevels") == 0)
 		{
 			UI_RecordForceLevels();
@@ -1287,10 +1299,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_LoadMissionSelectMenu(cvarName);
 			}
 		}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "calcforcestatus") == 0)
 		{
 			UI_CalcForceStatus();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "giveweapon") == 0)
 		{
 			const char *weaponIndex;
@@ -1455,10 +1469,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 			String_Parse(args, &amount);
 			UI_GiveInventory(atoi(inventoryIndex),atoi(amount));
 		}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "updatefightingstyle") == 0)
 		{
 			UI_UpdateFightingStyle();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "update") == 0)
 		{
 			if (String_Parse(args, &name2))
@@ -1546,6 +1562,7 @@ const char *kyleForceStatusSounds[] =
 };
 
 
+#ifndef JK2_MODE
 static void UI_CalcForceStatus(void)
 {
 	float		lightSide,darkSide,total;
@@ -1661,6 +1678,7 @@ static void UI_CalcForceStatus(void)
 		DC->startLocalSound(DC->registerSound(kyleForceStatusSounds[index], qfalse), CHAN_VOICE );
 	}
 }
+#endif // !JK2_MODE
 
 /*
 =================
@@ -4252,6 +4270,7 @@ static void UI_UpdateSaberCvars ( void )
 	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ) );
 }
 
+#ifndef JK2_MODE
 static void UI_UpdateFightingStyleChoices ( void )
 {
 	//
@@ -4350,6 +4369,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 		}
 	}
 }
+#endif // !JK2_MODE
 
 #define MAX_POWER_ENUMS 16
 
@@ -4360,26 +4380,42 @@ typedef struct {
 
 static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 {
+#ifndef JK2_MODE
 	{ "absorb",		FP_ABSORB },
+#endif // !JK2_MODE
+
 	{ "heal",			FP_HEAL },
 	{ "mindtrick",	FP_TELEPATHY },
+
+#ifndef JK2_MODE
 	{ "protect",		FP_PROTECT },
+#endif // !JK2_MODE
 
 				// Core powers
 	{ "jump",			FP_LEVITATION },
 	{ "pull",			FP_PULL },
 	{ "push",			FP_PUSH },
+
+#ifndef JK2_MODE
 	{ "sense",		FP_SEE },
+#endif // !JK2_MODE
+
 	{ "speed",		FP_SPEED },
 	{ "sabdef",		FP_SABER_DEFENSE },
 	{ "saboff",		FP_SABER_OFFENSE },
 	{ "sabthrow",		FP_SABERTHROW },
 
 				// Dark powers
+#ifndef JK2_MODE
 	{ "drain",		FP_DRAIN },
+#endif // !JK2_MODE
+
 	{ "grip",			FP_GRIP },
 	{ "lightning",	FP_LIGHTNING },
+
+#ifndef JK2_MODE
 	{ "rage",			FP_RAGE },
+#endif // !JK2_MODE
 };
 
 
@@ -4602,6 +4638,7 @@ static void	UI_ForceHelpActive( void )
 	}
 }
 
+#ifndef JK2_MODE
 // Set the force levels depending on the level chosen
 static void	UI_DemoSetForceLevels( void )
 {
@@ -4686,6 +4723,7 @@ static void	UI_DemoSetForceLevels( void )
 		uiInfo.forcePowerLevel[FP_RAGE]=Q_max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
 	}
 }
+#endif // !JK2_MODE
 
 // record the force levels into a cvar so when restoring player from map transition
 // the force levels are set up correctly
@@ -5177,6 +5215,7 @@ static void UI_ResetForceLevels ( void )
 }
 
 
+#ifndef JK2_MODE
 // Set the Players known saber style
 static void UI_UpdateFightingStyle ( void )
 {
@@ -5221,6 +5260,7 @@ static void UI_UpdateFightingStyle ( void )
 		Cvar_Set ( "g_fighting_style", va("%d",saberStyle) );
 	}
 }
+#endif // !JK2_MODE
 
 static void UI_ResetCharacterListBoxes( void )
 {
