@@ -56,7 +56,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
+#ifndef JK2_MODE
 #define _G2_GORE
+#endif // !JK2_MODE
 
 #if JK2_MODE
 #define PRODUCT_NAME			"openjo_sp"
@@ -2519,7 +2521,7 @@ public:
 
 #ifndef JK2_MODE
 	short		saberMoveNext;
-#endif // JK2_MODE
+#endif // !JK2_MODE
 
 	short		saberBounceMove;
 	short		saberBlocking;

@@ -280,7 +280,7 @@ void SavedGame::read_chunk(
         &uiLoadedCksum,
         static_cast<int>(sizeof(uiLoadedCksum)),
         file_handle_);
-#endif // JK2_MODE
+#endif // !JK2_MODE
 
     // Make sure the checksums match...
     //
@@ -413,7 +413,7 @@ void SavedGame::write_chunk(
             &uiCksum,
             static_cast<int>(sizeof(uiCksum)),
             file_handle_);
-#endif // JK2_MODE
+#endif // !JK2_MODE
 
         if (uiSaved !=
             sizeof(chunk_id) +
