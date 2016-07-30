@@ -50,6 +50,9 @@ option(BuildJK2SPRdVanilla "Whether to create projects for the jk2 sp renderer (
 
 option(BuildTests "Whether to build automatic unit tests (requires Boost)" OFF)
 
+Include(CMakeDependentOption)
+CMAKE_DEPENDENT_OPTION(BuildSymbolServer "Build WIP Windows Symbol Server (experimental and unused)" OFF "NOT WIN32 OR NOT MSVC" OFF)
+
 # Configure the use of bundled libraries.  By default, we assume the user is on
 # a platform that does not require any bundling.
 #
@@ -342,7 +345,7 @@ if(BuildJK2SPGame)
 endif()
 add_subdirectory(${MPDir})
 # Windows Symbol Server tools
-if(WIN32 AND MSVC)
+if(BuildSymbolServer)
 	add_subdirectory("tools/WinSymbol")
 endif()
 if(BuildTests)
