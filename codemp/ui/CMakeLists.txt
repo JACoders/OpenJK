@@ -103,13 +103,13 @@ endif()
 if(MakeApplicationBundles AND BuildMPEngine)
 	install(TARGETS ${MPUI}
 		LIBRARY
-		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/japro"
+		DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/eternaljk"
 		COMPONENT ${JKAMPCoreComponent})
 elseif(WIN32)
 else()
 	install(TARGETS ${MPUI}
 		LIBRARY
-		DESTINATION "${JKAInstallDir}/japro"
+		DESTINATION "${JKAInstallDir}/eternaljk"
 		COMPONENT ${JKAMPCoreComponent})
 endif()
 
