@@ -71,6 +71,27 @@ void ISavedGame::read_chunk(
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // write_chunk
 
+template<typename TSize>
+void ISavedGame::write_chunk_and_size(
+    const ChunkId size_chunk_id,
+    const ChunkId data_chunk_id)
+{
+    save_buffer();
+
+    auto data_size = get_buffer_size();
+
+    reset_buffer();
+
+    write_chunk<TSize>(
+        size_chunk_id,
+        data_size);
+
+    load_buffer();
+
+    write_chunk(
+        data_chunk_id);
+}
+
 template<typename TDst, typename TSrc>
 void ISavedGame::write_chunk(
     const ChunkId chunk_id,

@@ -2704,6 +2704,7 @@ public:
         saved_game->write<int16_t>(leanStopDebounceTime);
 
 #ifdef JK2_MODE
+        saved_game->skip(2);
         saved_game->write<float>(saberLengthOld);
 #endif // JK2_MODE
 
@@ -2872,6 +2873,7 @@ public:
         saved_game->read<int16_t>(leanStopDebounceTime);
 
 #ifdef JK2_MODE
+        saved_game->skip(2);
         saved_game->read<float>(saberLengthOld);
 #endif // JK2_MODE
 
@@ -3162,7 +3164,9 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+#ifndef JK2_MODE
 	qboolean	isPortalEnt;
+#endif // !JK2_MODE
 
 
     void sg_export(
@@ -3215,7 +3219,10 @@ Ghoul2 Insert End
         saved_game->write<float>(modelScale);
         saved_game->write<int32_t>(radius);
         saved_game->write<int32_t>(boltInfo);
+
+#ifndef JK2_MODE
         saved_game->write<int32_t>(isPortalEnt);
+#endif // !JK2_MODE
     }
 
     void sg_import(
@@ -3268,7 +3275,10 @@ Ghoul2 Insert End
         saved_game->read<float>(modelScale);
         saved_game->read<int32_t>(radius);
         saved_game->read<int32_t>(boltInfo);
+
+#ifndef JK2_MODE
         saved_game->read<int32_t>(isPortalEnt);
+#endif // !JK2_MODE
     }
 } entityState_t;
 

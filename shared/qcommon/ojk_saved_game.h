@@ -23,7 +23,6 @@ class SavedGame :
 {
 public:
     using ChunkId = uint32_t;
-    using Buffer = std::vector<uint8_t>;
 
 
     SavedGame();
@@ -99,8 +98,20 @@ public:
     void skip(
         int count) override;
 
-    // Returns an I/O buffer.
-    const Buffer& get_buffer() const override;
+
+    // Stores current I/O buffer and it's position.
+    void save_buffer() override;
+
+    // Restores saved I/O buffer and it's position.
+    void load_buffer() override;
+
+
+    // Returns a pointer to data in the I/O buffer.
+    const void* get_buffer_data() const override;
+
+    // Returns a current size of the I/O buffer.
+    int get_buffer_size() const override;
+
 
     // Clears buffer and resets it's offset to the beginning.
     void reset_buffer() override;
@@ -130,6 +141,7 @@ protected:
 
 
 private:
+    using Buffer = std::vector<uint8_t>;
     using BufferOffset = Buffer::size_type;
     using Paths = std::vector<std::string>;
 
@@ -140,8 +152,14 @@ private:
     // I/O buffer.
     Buffer io_buffer_;
 
+    // Saved copy of the I/O buffer.
+    Buffer saved_io_buffer_;
+
     // A current offset inside the I/O buffer.
     BufferOffset io_buffer_offset_;
+
+    // Saved I/O buffer offset.
+    BufferOffset saved_io_buffer_offset_;
 
     // RLE codec buffer.
     Buffer rle_buffer_;

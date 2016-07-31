@@ -709,11 +709,14 @@ int CIcarus::Load()
 	saved_game->read_chunk(
         INT_ID('I','S','E','Q'));
 
-    auto& sg_buffer = saved_game->get_buffer();
+    auto sg_buffer_data = static_cast<const unsigned char*>(
+        saved_game->get_buffer_data());
 
-    std::uninitialized_copy(
-        sg_buffer.cbegin(),
-        sg_buffer.cend(),
+    const auto sg_buffer_size = saved_game->get_buffer_size();
+
+    std::uninitialized_copy_n(
+        sg_buffer_data,
+        sg_buffer_size,
         m_byBuffer);
 
 	//Load all signals
@@ -829,14 +832,20 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 	{// We've tried to read past the buffer...
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferRead: Buffer underflow, Looking for new block." );
 		// Read in the next block.
-        IGameInterface::GetGame()->get_saved_game()->read_chunk(
+
+        auto saved_game = IGameInterface::GetGame()->get_saved_game();
+
+        saved_game->read_chunk(
             INT_ID('I','S','E','Q'));
 
-        auto& sg_buffer = IGameInterface::GetGame()->get_saved_game()->get_buffer();
+        auto sg_buffer_data = static_cast<const unsigned char*>(
+            saved_game->get_buffer_data());
 
-        std::uninitialized_copy(
-            sg_buffer.cbegin(),
-            sg_buffer.cend(),
+        const auto sg_buffer_size = saved_game->get_buffer_size();
+
+        std::uninitialized_copy_n(
+            sg_buffer_data,
+            sg_buffer_size,
             m_byBuffer);
 
 		m_ulBytesRead = 0;	//reset buffer

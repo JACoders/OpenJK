@@ -572,7 +572,7 @@ void SG_WriteCvars(void)
 void SG_ReadCvars(void)
 {
     int iCount;
-    const char* psName;
+    std::string psName;
     const char* psValue;
 
     auto saved_game = &ojk::SavedGame::get_instance();
@@ -586,18 +586,17 @@ void SG_ReadCvars(void)
         saved_game->read_chunk(
             INT_ID('C','V','A','R'));
 
-        auto name_buffer = saved_game->get_buffer();
-        psName = reinterpret_cast<const char*>(name_buffer.data());
+        psName = reinterpret_cast<const char*>(
+            saved_game->get_buffer_data());
 
 
         saved_game->read_chunk(
             INT_ID('V','A','L','U'));
 
-        auto value_buffer = saved_game->get_buffer();
-        psValue = reinterpret_cast<const char*>(value_buffer.data());
+        psValue = reinterpret_cast<const char*>(
+            saved_game->get_buffer_data());
 
-
-        ::Cvar_Set(psName, psValue);
+        ::Cvar_Set(psName.c_str(), psValue);
     }
 }
 
@@ -686,8 +685,8 @@ void SG_ReadServerConfigStrings( void )
         saved_game->read_chunk(
             INT_ID('C','S','D','A'));
 
-        auto& sg_buffer = saved_game->get_buffer();
-        psName = reinterpret_cast<const char*>(sg_buffer.data());
+        psName = reinterpret_cast<const char*>(
+            saved_game->get_buffer_data());
 
 		Com_DPrintf( "Cfg str %d = %s\n",iIndex, psName);
 

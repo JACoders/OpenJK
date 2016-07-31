@@ -10,7 +10,6 @@
 
 #include <cstdint>
 #include <string>
-#include <vector>
 
 
 namespace ojk
@@ -21,7 +20,6 @@ class ISavedGame
 {
 public:
     using ChunkId = uint32_t;
-    using Buffer = std::vector<uint8_t>;
 
 
     ISavedGame();
@@ -71,6 +69,13 @@ public:
     // Writes a chunk into the file from the internal buffer.
     virtual void write_chunk(
         const ChunkId chunk_id) = 0;
+
+    // Writes a data-chunk into the file from the internal buffer
+    // prepended with a size-chunk that holds a size of the data-chunk.
+    template<typename TSize>
+    void write_chunk_and_size(
+        const ChunkId size_chunk_id,
+        const ChunkId data_chunk_id);
 
     // Writes a value or an array of values into the file via
     // the internal buffer.
@@ -134,8 +139,17 @@ public:
         int count) = 0;
 
 
-    // Returns an I/O buffer.
-    virtual const Buffer& get_buffer() const = 0;
+    // Stores current I/O buffer and it's position.
+    virtual void save_buffer() = 0;
+
+    // Restores saved I/O buffer and it's position.
+    virtual void load_buffer() = 0;
+
+    // Returns a pointer to data in the I/O buffer.
+    virtual const void* get_buffer_data() const = 0;
+
+    // Returns a current size of the I/O buffer.
+    virtual int get_buffer_size() const = 0;
 
 
     // Clears buffer and resets it's offset to the beginning.

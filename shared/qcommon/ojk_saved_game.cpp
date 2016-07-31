@@ -12,7 +12,9 @@ namespace ojk
 SavedGame::SavedGame() :
         file_handle_(),
         io_buffer_(),
+        saved_io_buffer_(),
         io_buffer_offset_(),
+        saved_io_buffer_offset_(),
         rle_buffer_(),
         is_readable_(),
         is_writable_(),
@@ -621,9 +623,26 @@ void SavedGame::skip(
     io_buffer_offset_ = new_offset;
 }
 
-const SavedGame::Buffer& SavedGame::get_buffer() const
+void SavedGame::save_buffer()
 {
-    return io_buffer_;
+    saved_io_buffer_ = io_buffer_;
+    saved_io_buffer_offset_ = io_buffer_offset_;
+}
+
+void SavedGame::load_buffer()
+{
+    io_buffer_ = saved_io_buffer_;
+    io_buffer_offset_ = saved_io_buffer_offset_;
+}
+
+const void* SavedGame::get_buffer_data() const
+{
+    return io_buffer_.data();
+}
+
+int SavedGame::get_buffer_size() const
+{
+    return static_cast<int>(io_buffer_.size());
 }
 
 void SavedGame::rename(

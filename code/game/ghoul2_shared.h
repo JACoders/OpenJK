@@ -127,6 +127,7 @@ struct  boneInfo_t
 	int			boneBlendStart;	// time bone angle blend with normal animation began
 	mdxaBone_t	newMatrix;		// This is the lerped matrix that Ghoul2 uses on the client side - does not go across the network
 
+#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	int			lastTimeUpdated;  // if non-zero this is all intialized
 	int			lastContents;
@@ -191,6 +192,7 @@ struct  boneInfo_t
 
 	int			airTime; //base is in air, be more quick and sensitive about collisions
 	//rww - RAGDOLL_END
+#endif // !JK2_MODE
 
 boneInfo_t():
 	boneNumber(-1),
@@ -231,6 +233,8 @@ boneInfo_t():
         saved_game->write<int32_t>(boneBlendTime);
         saved_game->write<int32_t>(boneBlendStart);
         saved_game->write(newMatrix);
+
+#ifndef JK2_MODE
         saved_game->write<int32_t>(lastTimeUpdated);
         saved_game->write<int32_t>(lastContents);
         saved_game->write<float>(lastPosition);
@@ -284,6 +288,7 @@ boneInfo_t():
         saved_game->write<>(animFrameMatrix);
         saved_game->write<int32_t>(hasAnimFrameMatrix);
         saved_game->write<int32_t>(airTime);
+#endif // !JK2_MODE
     }
 
     void sg_import(
@@ -304,6 +309,8 @@ boneInfo_t():
         saved_game->read<int32_t>(boneBlendTime);
         saved_game->read<int32_t>(boneBlendStart);
         saved_game->read(newMatrix);
+
+#ifndef JK2_MODE
         saved_game->read<int32_t>(lastTimeUpdated);
         saved_game->read<int32_t>(lastContents);
         saved_game->read<float>(lastPosition);
@@ -357,6 +364,7 @@ boneInfo_t():
         saved_game->read<>(animFrameMatrix);
         saved_game->read<int32_t>(hasAnimFrameMatrix);
         saved_game->read<int32_t>(airTime);
+#endif // JK2_MODE
     }
 };
 //we save from top to boltUsed here. Don't bother saving the position, it gets rebuilt every frame anyway
@@ -511,7 +519,11 @@ public:
         ojk::ISavedGame* saved_game) const
     {
         saved_game->write<int32_t>(mModelindex);
+
+#ifndef JK2_MODE
         saved_game->write<int32_t>(animModelIndexOffset);
+#endif // !JK2_MODE
+
         saved_game->write<int32_t>(mCustomShader);
         saved_game->write<int32_t>(mCustomSkin);
         saved_game->write<int32_t>(mModelBoltLink);
@@ -535,7 +547,11 @@ public:
         ojk::ISavedGame* saved_game)
     {
         saved_game->read<int32_t>(mModelindex);
+
+#ifndef JK2_MODE
         saved_game->read<int32_t>(animModelIndexOffset);
+#endif // !JK2_MODE
+
         saved_game->read<int32_t>(mCustomShader);
         saved_game->read<int32_t>(mCustomSkin);
         saved_game->read<int32_t>(mModelBoltLink);

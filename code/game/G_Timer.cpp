@@ -234,11 +234,14 @@ void TIMER_Load( void )
             ::gi.saved_game->read_chunk(
                 INT_ID('T','M','I','D'));
 
-            auto& sg_buffer = ::gi.saved_game->get_buffer();
+            auto sg_buffer_data = static_cast<const char*>(
+                ::gi.saved_game->get_buffer_data());
 
-            std::uninitialized_copy(
-                sg_buffer.cbegin(),
-                sg_buffer.cend(),
+            const auto sg_buffer_size = ::gi.saved_game->get_buffer_size();
+
+            std::uninitialized_copy_n(
+                sg_buffer_data,
+                sg_buffer_size,
                 tempBuffer);
 
             ::gi.saved_game->read_chunk<int32_t>(

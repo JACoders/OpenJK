@@ -417,11 +417,13 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
+#ifndef JK2_MODE
 		if (ent->s.isPortalEnt)
 		{ //rww - portal entities are always sent as well
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
 		}
+#endif // !JK2_MODE
 
 #ifndef JK2_MODE
 		if ( sightOn )
