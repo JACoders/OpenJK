@@ -1703,9 +1703,11 @@ CONSOLE LINE EDITING
 
 static const char *completionString;
 static char shortestMatch[MAX_TOKEN_CHARS];
+static qboolean perfectMatch;
 static int	matchCount;
 // field we are working on, passed to Field_AutoComplete(&g_consoleCommand for instance)
 static field_t *completionField;
+static qboolean enterPressed;
 
 /*
 ===============
@@ -1722,8 +1724,12 @@ static void FindMatches( const char *s ) {
 	matchCount++;
 	if ( matchCount == 1 ) {
 		Q_strncpyz( shortestMatch, s, sizeof( shortestMatch ) );
+		perfectMatch = qtrue;
 		return;
 	}
+	
+	if (strlen(shortestMatch) > strlen(s))
+		perfectMatch = qfalse;
 
 	// cut shortestMatch to the amount common with s
 	for ( i = 0 ; s[i] ; i++ ) {
@@ -1735,6 +1741,7 @@ static void FindMatches( const char *s ) {
 	if (!s[i])
 	{
 		shortestMatch[i] = 0;
+		perfectMatch = qtrue;
 	}
 }
 
@@ -1835,7 +1842,7 @@ Field_Complete
 static qboolean Field_Complete( void ) {
 	int completionOffset;
 
-	if ( matchCount == 0 )
+	if (matchCount == 0)
 		return qtrue;
 
 	completionOffset = strlen( completionField->buffer ) - strlen( completionString );
@@ -1850,7 +1857,8 @@ static qboolean Field_Complete( void ) {
 		return qtrue;
 	}
 
-	Com_Printf( "%c%s\n", CONSOLE_PROMPT_CHAR, completionField->buffer );
+	if (!enterPressed)
+		Com_Printf( "%c%s\n", CONSOLE_PROMPT_CHAR, completionField->buffer );
 
 	return qfalse;
 }
@@ -1868,7 +1876,7 @@ void Field_CompleteKeyname( void )
 
 	Key_KeynameCompletion( FindMatches );
 
-	if( !Field_Complete( ) )
+	if( !Field_Complete( ) && !(enterPressed && perfectMatch))
 		Key_KeynameCompletion( PrintKeyMatches );
 }
 #endif
@@ -1942,7 +1950,7 @@ void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars )
 		if ( doCvars )
 			Cvar_CommandCompletion( FindMatches );
 
-		if ( !Field_Complete() ) {
+		if ( !Field_Complete() && !(enterPressed && perfectMatch) ) {
 			// run through again, printing matches
 			if ( doCommands )
 				Cmd_CommandCompletion( PrintMatches );
@@ -1965,8 +1973,19 @@ void Field_AutoComplete( field_t *field ) {
 		return;
 
 	completionField = field;
+	enterPressed = qfalse;
 
 	Field_CompleteCommand( completionField->buffer, qtrue, qtrue );
+}
+
+void Field_AutoComplete(field_t *field, qboolean enterKey) {
+	if (!field || !field->buffer[0])
+		return;
+
+	completionField = field;
+	enterPressed = enterKey;
+
+	Field_CompleteCommand(completionField->buffer, qtrue, qtrue);
 }
 
 /*
