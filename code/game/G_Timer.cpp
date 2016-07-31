@@ -244,6 +244,8 @@ void TIMER_Load( void )
                 sg_buffer_size,
                 tempBuffer);
 
+			tempBuffer[sg_buffer_size] = '\0';
+
             ::gi.saved_game->read_chunk<int32_t>(
                 INT_ID('T','D','T','A'),
                 time);

@@ -1378,14 +1378,24 @@ typedef struct {
 
 
 #define	MAX_MODELS			256
+
+#ifdef JK2_MODE
+#define MAX_SOUNDS (256)
+#else
 #define	MAX_SOUNDS			380
+#endif // JK2_MODE
 
 #define MAX_SUB_BSP			32
 
 #define	MAX_SUBMODELS		512		// nine bits
 
 #define MAX_FX				128
+
+#ifdef JK2_MODE
+#define MAX_WORLD_FX (4)
+#else
 #define MAX_WORLD_FX		66		// was 16 // was 4
+#endif // JK2_MODE
 
 /*
 Ghoul2 Insert Start
@@ -1395,7 +1405,11 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+#ifdef JK2_MODE
+#define MAX_CONFIGSTRINGS (1024)
+#else
 #define	MAX_CONFIGSTRINGS	1300//1024 //rww - I had to up this for terrains
+#endif // JK2_MODE
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication
@@ -1416,19 +1430,40 @@ Ghoul2 Insert End
 
 #define	CS_MODELS			10
 
+#ifndef JK2_MODE
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
+#endif // !JK2_MODE
 
+#ifdef JK2_MODE
+#define CS_SOUNDS (CS_MODELS + MAX_MODELS)
+#else
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
+#endif // JK2_MODE
+
+#ifdef JK2_MODE
+#define CS_PLAYERS (CS_SOUNDS + MAX_SOUNDS)
+#else
 #ifdef BASE_SAVE_COMPAT
 #define CS_RESERVED1		(CS_SOUNDS+MAX_SOUNDS) // reserved field for base compat from immersion removal
 #define	CS_PLAYERS			(CS_RESERVED1 + 96)
 #else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
 #endif
+#endif // JK2_MODE
+
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
+
+#ifndef JK2_MODE
 #define CS_TERRAINS			(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS		(CS_TERRAINS + MAX_TERRAINS)
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+#define CS_EFFECTS (CS_LIGHT_STYLES + (MAX_LIGHT_STYLES * 3))
+#else
 #define CS_EFFECTS			(CS_BSP_MODELS + MAX_SUB_BSP)//(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
+#endif // JK2_MODE
+
 /*
 Ghoul2 Insert Start
 */

@@ -1788,13 +1788,16 @@ void G2_SaveGhoul2Models(
 
     // is there anything to save?
     if (!ghoul2.IsValid() || ghoul2.size() == 0) {
-#ifdef JK2_MODE
-        ::ri.saved_game->write_chunk_and_size<int32_t>(
-            INT_ID('G', 'L', 'S', '2'),
-            INT_ID('G', 'H', 'L', '2'));
-#else
         const int zero_size = 0;
 
+#ifdef JK2_MODE
+		::ri.saved_game->write<int32_t>(
+			zero_size);
+
+        ::ri.saved_game->write_chunk_and_size<int32_t>(
+            INT_ID('G', 'L', '2', 'S'),
+            INT_ID('G', 'H', 'L', '2'));
+#else
         ::ri.saved_game->write_chunk<int32_t>(
             INT_ID('G', 'H', 'L', '2'),
             zero_size); //write out a zero buffer
@@ -1855,7 +1858,7 @@ void G2_SaveGhoul2Models(
 
 #ifdef JK2_MODE
     ::ri.saved_game->write_chunk_and_size<int32_t>(
-        INT_ID('G', 'L', 'S', '2'),
+        INT_ID('G', 'L', '2', 'S'),
         INT_ID('G', 'H', 'L', '2'));
 #else
     ::ri.saved_game->write_chunk(
@@ -1873,8 +1876,18 @@ void G2_LoadGhoul2Model(
     // first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
     auto model_count = 0;
 
+#ifdef JK2_MODE
+	if (::ri.saved_game->get_buffer_size() > 0)
+	{
+#endif // JK2_MODE
+
     ::ri.saved_game->read<int32_t>(
         model_count);
+
+#ifdef JK2_MODE
+	}
+#endif // JK2_MODE
+
 
     ghoul2.resize(
         model_count);
