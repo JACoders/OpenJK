@@ -785,6 +785,7 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot, qhandle_t savepic, const 
 	}
 	
 	// Print savegame pic
+	/*
 	if (cgi_UI_GetMenuItemInfo(
 		"loadScreen",
 		"savepic",
@@ -800,6 +801,7 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot, qhandle_t savepic, const 
 			CG_DrawPic(xPos, yPos, width, height, savepic);
 		}
 	}
+	*/
 
 	// Get player weapons and force power info
 	CG_GetLoadScreenInfo(&weapons,&forcepowers);
@@ -834,7 +836,7 @@ void CG_DrawInformation( void ) {
 	gi.Cvar_VariableStringBuffer(sCVARNAME_PLAYERSAVE, t, sizeof(t)); //better way to get savegame name?
 	
 	qhandle_t	levelshot;	//the map picture
-	qhandle_t	savepic;	//the screenshot of the player's game
+	qhandle_t	savepic = 0;	//the screenshot of the player's game
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
 //	if ( g_eSavedGameJustLoaded == eFULL )
@@ -853,9 +855,12 @@ void CG_DrawInformation( void ) {
 		if (!levelshot) {
 			levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );
 		}
+		if (!savepic) {
+			savepic = cgi_R_RegisterShaderNoMip("menu/art/unknownmap");
+		}
 	}
 
-	savepic = cgi_R_RegisterShaderNoMip(va("saves/screenshots/%s", t));
+	//savepic = cgi_R_RegisterShaderNoMip(va("saves/screenshots/%s", t));
 
 	if ( g_eSavedGameJustLoaded != eFULL && !strcmp(s,"yavin1") )//special case for first map!
 	{

@@ -153,6 +153,8 @@ extern cvar_t	*g_saberForceDrainAmount;
 extern cvar_t	*g_saberLockSuperBreaks;
 extern cvar_t	*g_saberNewCombat;
 extern cvar_t	*g_forceNewPowers;
+extern cvar_t	*g_playerCheatPowers;
+extern cvar_t	*g_moonJump;
 
 static void PM_SetWaterLevelAtPoint(vec3_t org, int *waterlevel, int *watertype);
 
@@ -1109,7 +1111,11 @@ static qboolean PM_CheckJump(void)
 
 	float jumpMultiplier;
 
-	if (g_forceNewPowers->integer)
+	if (g_moonJump->integer)
+	{
+		jumpMultiplier = 5.0;
+	}
+	else if (g_forceNewPowers->integer)
 	{
 		jumpMultiplier = 1.25;
 	}
@@ -2911,7 +2917,11 @@ static void PM_AirMove(void) {
 	float		gravMod = 1.0f;
 
 	float jumpMultiplier;
-	if (g_forceNewPowers->integer)
+	if (g_moonJump->integer)
+	{
+		jumpMultiplier = 5.0;
+	}
+	else if (g_forceNewPowers->integer)
 	{
 		jumpMultiplier = 1.25;
 	}
@@ -3049,6 +3059,10 @@ static void PM_AirMove(void) {
 	{//I am force jumping and I'm not holding the button anymore
 		float curHeight = pm->ps->origin[2] - pm->ps->forceJumpZStart + (pm->ps->velocity[2] * pml.frametime);
 		float maxJumpHeight = forceJumpHeight[pm->ps->forcePowerLevel[FP_LEVITATION]] * jumpMultiplier;
+		if (g_playerCheatPowers->integer || g_moonJump->integer)
+		{
+			maxJumpHeight *= 30;
+		}
 		if (curHeight >= maxJumpHeight)
 		{//reached top, cut velocity
 			pm->ps->velocity[2] = 0;
@@ -4021,7 +4035,11 @@ static void PM_CrashLand(void)
 	qboolean	forceLanding = qfalse;
 
 	float jumpMultiplier;
-	if (g_forceNewPowers->integer)
+	if (g_playerCheatPowers->integer >= 3)
+	{
+		jumpMultiplier = 5.0;
+	}
+	else if (g_forceNewPowers->integer)
 	{
 		jumpMultiplier = 1.25;
 	}

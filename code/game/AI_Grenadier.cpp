@@ -48,7 +48,7 @@ extern qboolean FlyingCreature( gentity_t *ent );
 #define	REALIZE_THRESHOLD	0.6f
 #define CAUTIOUS_THRESHOLD	( REALIZE_THRESHOLD * 0.75 )
 
-#define MELEE_CHANCE		100000
+#define MELEE_CHANCE		1000000
 
 qboolean NPC_CheckPlayerTeamStealth( void );
 

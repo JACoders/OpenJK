@@ -1038,6 +1038,7 @@ qboolean	ConsoleCommand( void ) {
 		}
 
 		gi.cvar_set( "g_debugMelee", "1" );
+		gi.cvar_set( "g_playerCheatPowers", "1" );
 		G_SetWeapon( &g_entities[0], WP_MELEE );
 		for ( int i = FP_FIRST; i < NUM_FORCE_POWERS; i++ )
 		{

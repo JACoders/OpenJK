@@ -362,14 +362,6 @@ float forceJumpHeight[NUM_FORCE_POWER_LEVELS] =
 	384//(+stepheight+crouchdiff = 418) //384
 };
 
-float forceJumpHeightNew[NUM_FORCE_POWER_LEVELS] =
-{
-	32,//normal jump (+stepheight+crouchdiff = 66)
-	96 * 1.25,//(+stepheight+crouchdiff = 130)
-	192 * 1.25,//(+stepheight+crouchdiff = 226)
-	384 * 1.25//(+stepheight+crouchdiff = 418) //384
-};
-
 float forceJumpHeightMax[NUM_FORCE_POWER_LEVELS] =
 {
 	66,//normal jump (32+stepheight(18)+crouchdiff(24) = 74)
@@ -9580,7 +9572,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 		}
 		else
 		{
-			if (ent->s.pos.trType == TR_STATIONARY && !self->s.number && !g_playerCheatPowers->integer)
+			if (ent->s.pos.trType == TR_STATIONARY && !self->s.number && !(g_playerCheatPowers->integer))
 			{//nothing you can do with a stationary missile if you're the player
 				continue;
 			}
@@ -9593,9 +9585,10 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 		//FIXME: handle detpacks, proximity mines and tripmines
 		if (ent->s.weapon == WP_THERMAL)
 		{//thermal detonator!
-			if (self->NPC && dist < ent->splashRadius)
+			if ((self->NPC || (!self->s.number && g_playerCheatPowers->integer)) && dist < ent->splashRadius)
 			{
-				if (dist < ent->splashRadius &&
+				if (!self->s.number &&
+					dist < ent->splashRadius &&
 					ent->nextthink < level.time + 600 &&
 					ent->count &&
 					self->client->ps.groundEntityNum != ENTITYNUM_NONE &&
@@ -9626,7 +9619,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 			//			maybe do a force-gesture that makes them explode?  
 			//			But what if we're within it's splashradius?
 			if (!self->s.number && !g_playerCheatPowers->integer)
-			{//players don't auto-handle these at all
+			{//players don't auto-handle these at all unless cheating
 				continue;
 			}
 			else
@@ -9646,7 +9639,7 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 					//HMM... let's see what happens if these guys try to avoid tripmines and detpacks, too...?
 				}
 				else
-				{//normal Jedi
+				{//normal Jedi or enhanced player
 					if (ent->s.pos.trType == TR_STATIONARY && (ent->s.eFlags&EF_MISSILE_STICK)
 						&& (self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER))
 					{//a placed explosive like a tripmine or detpack
@@ -9679,19 +9672,28 @@ void WP_SaberStartMissileBlockCheck(gentity_t *self, usercmd_t *ucmd)
 							}
 						}
 					}
-					else if (dist < ent->splashRadius
+					else if (self->s.number
+						&& dist < ent->splashRadius
 						&& self->client->ps.groundEntityNum != ENTITYNUM_NONE
 						&& (DotProduct(dir, forward) < SABER_REFLECT_MISSILE_CONE
 						|| !WP_ForcePowerUsable(self, FP_PUSH, 0)))
 					{//NPCs try to evade it
 						self->client->ps.forceJumpCharge = 480;
 					}
-					else if ((self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER))
+					else if ((self->client->NPC_class != CLASS_REBORN || self->s.weapon == WP_SABER)
+						|| (!self->s.number && g_playerCheatPowers->integer))
 					{//else, try to force-throw it away
 						if (!ent->owner || !OnSameTeam(self, ent->owner))
 						{
 							//FIXME: check forcePushRadius[NPC->client->ps.forcePowerLevel[FP_PUSH]]
-							ForceThrow(self, qfalse);
+							if (!self->s.number && self->client->ps.forcePowerLevel[FP_PUSH] == 1 && dist >= 192)
+							{
+								//player with push 1 has to wait until it's closer otherwise the push misses
+							}
+							else
+							{
+								ForceThrow(self, qfalse);
+							}							
 						}
 					}
 					//otherwise, can't block it, so we're screwed
@@ -11441,7 +11443,11 @@ void ForceThrow(gentity_t *self, qboolean pull, qboolean fake)
 						}
 					}
 					int resistChance = Q_irand(0, 2);
-					if (push_list[x]->s.number >= MAX_CLIENTS)
+					if (!push_list[x]->s.number && g_playerCheatPowers->integer)
+					{
+						resistChance = 1;
+					}
+					else if (push_list[x]->s.number >= MAX_CLIENTS)
 					{//NPC
 						if (g_spskill->integer == 1)
 						{//stupid tweak for graham
@@ -14906,9 +14912,13 @@ void WP_ForcePowerRegenerate(gentity_t *self, int overrideAmt)
 
 void WP_ForcePowerDrain(gentity_t *self, forcePowers_t forcePower, int overrideAmt)
 {
-	if (self->NPC || g_playerCheatPowers->integer >= 2)
+	if (self->NPC || g_playerCheatPowers->integer >= 3)
 	{//For now, NPCs have infinite force power
 		return;
+	}
+	else if (!self->NPC && g_playerCheatPowers->integer == 2)
+	{
+		overrideAmt *= 0.5;
 	}
 	//take away the power
 	int	drain = overrideAmt;

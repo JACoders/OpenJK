@@ -2343,7 +2343,7 @@ qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t *tr, in
 			self->client->ps.legsAnimTimer = self->client->ps.torsoAnimTimer;
 		}
 
-		if (self->s.number && g_playerCheatPowers->integer)
+		if (self->s.number || (!self->s.number && g_playerCheatPowers->integer))
 		{//NPC
 			//maybe force them to stop moving in this case?
 			self->client->ps.pm_time = self->client->ps.torsoAnimTimer + Q_irand( 100, 1000 );

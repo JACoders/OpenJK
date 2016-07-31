@@ -49,6 +49,7 @@ extern cvar_t	*g_saber2;
 extern cvar_t	*g_saber_color;
 extern cvar_t	*g_saber2_color;
 extern cvar_t	*g_saberDarkSideSaberColor;
+extern cvar_t	*g_playerCheatPowers;
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -2231,7 +2232,11 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		}
 		ent->classname = "player";
 		ent->targetname = ent->script_targetname = "player";
-		if ( ent->client->NPC_class == CLASS_NONE )
+		if (g_playerCheatPowers->integer)
+		{
+			ent->client->NPC_class = CLASS_LUKE;
+		}
+		else if ( ent->client->NPC_class == CLASS_NONE )
 		{
 			ent->client->NPC_class = CLASS_PLAYER;
 		}

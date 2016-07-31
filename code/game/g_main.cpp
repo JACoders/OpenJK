@@ -240,6 +240,7 @@ cvar_t	*g_char_forceSensitivity;
 cvar_t	*g_handicap_maxArmor;
 cvar_t	*g_saberDeflectAutoAim;
 cvar_t	*g_playerCheatPowers;
+cvar_t	*g_moonJump;
 
 /*
 cvar_t	*g_char_moveSpeedScale;			1.0 - you move faster / slower when using this saber
@@ -782,7 +783,8 @@ void G_InitCvars( void ) {
 
 	g_handicap_maxArmor = gi.cvar("handicap_maxArmor", "100", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
 	g_saberDeflectAutoAim = gi.cvar("g_saberDeflectAutoAim", "0", CVAR_SAVEGAME);
-	g_playerCheatPowers = gi.cvar("g_playerCheatPowers", "0", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_playerCheatPowers = gi.cvar("g_playerCheatPowers", "0", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_CHEAT);
+	g_moonJump = gi.cvar("g_moonJump", "0", CVAR_ARCHIVE | CVAR_CHEAT);
 	
 }
 /*

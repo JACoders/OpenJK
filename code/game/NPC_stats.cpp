@@ -3553,11 +3553,13 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 
 					if (!parsingPlayer)
 					{
+						/*
 						if (lightBlasterWeap(weap)) NPC->NPC->lightBlasterWeaps->add(weap);
 						if (heavyBlasterWeap(weap)) NPC->NPC->heavyBlasterWeaps->add(weap);
 						if (heavyWeap(weap)) NPC->NPC->heavyWeaps->add(weap);
 
 						NPC->NPC->weapList->add(weap);
+						*/
 					}
 					
 				}
