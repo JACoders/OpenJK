@@ -356,13 +356,6 @@ void SavedGame::write_chunk(
 		static_cast<int>(sizeof(chunk_id)),
 		file_handle_);
 
-#ifndef JK2_MODE
-	uiSaved += ::FS_Write(
-		&uiCksum,
-		static_cast<int>(sizeof(uiCksum)),
-		file_handle_);
-#endif // !JK2_MODE
-
 	auto iCompressedLength = -1;
 
 	if (::sv_compress_saved_games->integer != 0)
