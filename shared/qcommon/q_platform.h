@@ -229,13 +229,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // endianness
 // Use compiler builtins where possible for maximum performance
 #include <stdint.h>
-#if !defined(__clang__) && (defined(__GNUC__) || defined(__GNUG__))
-
-// gcc
+#if !defined(__clang__) && (defined(__GNUC__) || defined(__GNUG__)) \
+            && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 403)
+// gcc >= 4.3
 
 static inline uint16_t ShortSwap(uint16_t v)
 {
+#if __GNUC_MINOR__ >= 8
     return __builtin_bswap16(v);
+#else
+    return (v << 8) | (v >> 8);
+#endif // gcc >= 4.8
 }
 
 static inline uint32_t LongSwap(uint32_t v)
@@ -259,13 +263,11 @@ static inline uint32_t LongSwap(uint32_t v)
 }
 
 #else
-// clang and others
-// TODO: investigate about clang bulitins (if they exist)
+// clang, gcc < 4.3 and others
 
 static inline uint16_t ShortSwap(uint16_t v)
 {
-    return ((v & 0x00FF) << 8) |
-           ((v & 0xFF00) >> 8);
+    return (v << 8) | (v >> 8);
 }
 
 static inline uint32_t LongSwap(uint32_t v)
