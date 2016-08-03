@@ -1876,7 +1876,7 @@ void Field_CompleteKeyname( void )
 
 	Key_KeynameCompletion( FindMatches );
 
-	if( !Field_Complete( ) && !(enterPressed && perfectMatch))
+	if (!Field_Complete())
 		Key_KeynameCompletion( PrintKeyMatches );
 }
 #endif
@@ -1931,7 +1931,7 @@ void Field_CompleteCommand( char *cmd, qboolean doCommands, qboolean doCvars )
 
 		if( ( p = Field_FindFirstSeparator( cmd ) ) )
 			Field_CompleteCommand( p + 1, qtrue, qtrue ); // Compound command
-		else
+		else if( !enterPressed )
 			Cmd_CompleteArgument( baseCmd, cmd, completionArgument );
 	}
 	else {
