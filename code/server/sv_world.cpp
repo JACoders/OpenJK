@@ -719,7 +719,10 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 
 			trace.entityNum = touch->s.number;
 			clip->trace = trace;
-			clip->trace.startsolid |= oldStart;
+			if ( oldStart )
+			{
+				clip->trace.startsolid = qtrue;
+			}
 		}
 /*
 Ghoul2 Insert Start

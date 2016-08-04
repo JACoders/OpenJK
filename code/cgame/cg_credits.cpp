@@ -112,9 +112,9 @@ struct CreditData_t
 	CreditCards_t CreditCards;
 	CreditLines_t CreditLines;
 
-	bool Running(void)
+	qboolean Running(void)
 	{
-		return !!( CreditCards.size() || CreditLines.size() );
+		return (qboolean)( CreditCards.size() || CreditLines.size() );
 	}
 };
 
@@ -235,12 +235,12 @@ void CG_Credits_Init( const char *psStripReference, vec4_t *pv4Color)
 	// Play the light side end credits music.
 	if ( g_entities[0].client->sess.mission_objectives[0].status != 2 )
 	{
-		cgi_S_StartBackgroundTrack( "music/endcredits.mp3", NULL, false );
+		cgi_S_StartBackgroundTrack( "music/endcredits.mp3", NULL, qfalse );
 	}
 	// Play the dark side end credits music.
 	else
 	{
-		cgi_S_StartBackgroundTrack( "music/vjun3/vjun3_explore.mp3", NULL, false );
+		cgi_S_StartBackgroundTrack( "music/vjun3/vjun3_explore.mp3", NULL, qfalse );
 	}
 
 	// could make these into parameters later, but for now...

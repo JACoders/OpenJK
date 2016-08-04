@@ -866,7 +866,7 @@ int Com_EventLoop( void ) {
         case SE_NONE:
             break;
 		case SE_KEY:
-			CL_KeyEvent( ev.evValue, ev.evValue2, ev.evTime );
+			CL_KeyEvent( ev.evValue, (qboolean)ev.evValue2, ev.evTime );
 			break;
 		case SE_CHAR:
 			CL_CharEvent( ev.evValue );

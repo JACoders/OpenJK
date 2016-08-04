@@ -5238,15 +5238,6 @@ blockStuff:
 	return didHit;
 }
 
-QINLINE int VectorCompare2( const vec3_t v1, const vec3_t v2 ) {
-	if ( v1[0] > v2[0]+0.0001f || v1[0] < v2[0]-0.0001f
-		|| v1[1] > v2[1]+0.0001f || v1[1] < v2[1]-0.0001f
-		|| v1[2] > v2[2]+0.0001f || v1[2] < v2[2]-0.0001f ) {
-		return 0;
-	}
-	return 1;
-}
-
 #define MAX_SABER_SWING_INC 0.33f
 void G_SPSaberDamageTraceLerped( gentity_t *self, int saberNum, int bladeNum, vec3_t baseNew, vec3_t endNew, int clipmask )
 {

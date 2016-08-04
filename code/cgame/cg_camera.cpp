@@ -38,7 +38,7 @@ void CGCam_FollowDisable( void );
 void CGCam_TrackDisable( void );
 void CGCam_Distance( float distance, qboolean initLerp );
 void CGCam_DistanceDisable( void );
-extern int CG_CalcFOVFromX( float fov_x );
+extern qboolean CG_CalcFOVFromX( float fov_x );
 extern void WP_SaberCatch( gentity_t *self, gentity_t *saber, qboolean switchToSaber );
 
 /*
@@ -418,8 +418,8 @@ void CGCam_SetFade( vec4_t dest )
 {//Instant completion
 	client_camera.info_state &= ~CAMERA_FADING;
 	client_camera.fade_duration = 0;
-	Vector4Copy( dest, client_camera.fade_source );
-	Vector4Copy( dest, client_camera.fade_color );
+	VectorCopy4( dest, client_camera.fade_source );
+	VectorCopy4( dest, client_camera.fade_color );
 }
 
 /*
@@ -436,8 +436,8 @@ void CGCam_Fade( vec4_t source, vec4_t dest, float duration )
 		return;
 	}
 
-	Vector4Copy( source, client_camera.fade_source );
-	Vector4Copy( dest, client_camera.fade_dest );
+	VectorCopy4( source, client_camera.fade_source );
+	VectorCopy4( dest, client_camera.fade_dest );
 
 	client_camera.fade_duration = duration;
 	client_camera.fade_time = cg.time;
@@ -1066,7 +1066,7 @@ void CGCam_UpdateFade( void )
 	{
 		if ( client_camera.fade_time + client_camera.fade_duration < cg.time )
 		{
-			Vector4Copy( client_camera.fade_dest, client_camera.fade_color );
+			VectorCopy4( client_camera.fade_dest, client_camera.fade_color );
 			client_camera.info_state &= ~CAMERA_FADING;
 		}
 		else

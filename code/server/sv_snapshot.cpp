@@ -174,7 +174,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	MSG_WriteLong (msg, client->cmdNum);		// we have executed up to here
 
 	snapFlags = client->droppedCommands << 1;
-	client->droppedCommands = 0;
+	client->droppedCommands = qfalse;
 
 	MSG_WriteByte (msg, snapFlags);
 

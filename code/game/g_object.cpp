@@ -210,7 +210,7 @@ void G_RunObject( gentity_t *ent )
 				G_Sound( ent, G_SoundIndex( "sound/movers/objects/objectHit.wav" ) );
 			}
 		}
-		DoImpact( ent, traceEnt, !(tr.surfaceFlags&SURF_NODAMAGE), &tr );
+		DoImpact( ent, traceEnt, (qboolean)!(tr.surfaceFlags&SURF_NODAMAGE), &tr );
 	}
 
 	if ( !ent || (ent->takedamage&&ent->health <= 0) )

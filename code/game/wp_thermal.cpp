@@ -363,7 +363,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 	}
 
 	float	thrownSpeed = TD_VELOCITY;
-	const qboolean thisIsAShooter = !Q_stricmp( "misc_weapon_shooter", ent->classname);
+	const qboolean thisIsAShooter = (qboolean)!Q_stricmp( "misc_weapon_shooter", ent->classname);
 
 	if (thisIsAShooter)
 	{

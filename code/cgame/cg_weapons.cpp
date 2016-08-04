@@ -2993,7 +2993,7 @@ void CG_MissileHitWall( centity_t *cent, int weapon, vec3_t origin, vec3_t dir, 
 		break;
 
 	case WP_EMPLACED_GUN:
-		FX_EmplacedHitWall( origin, dir, (cent->gent&&cent->gent->alt_fire) );
+		FX_EmplacedHitWall( origin, dir, (qboolean)(cent->gent&&cent->gent->alt_fire) );
 		break;
 
 	case WP_ATST_MAIN:
@@ -3134,7 +3134,7 @@ void CG_MissileHitPlayer( centity_t *cent, int weapon, vec3_t origin, vec3_t dir
 		break;
 
 	case WP_EMPLACED_GUN:
-		FX_EmplacedHitPlayer( origin, dir, (cent->gent&&cent->gent->alt_fire) );
+		FX_EmplacedHitPlayer( origin, dir, (qboolean)(cent->gent&&cent->gent->alt_fire) );
 		break;
 
 	case WP_TRIP_MINE:

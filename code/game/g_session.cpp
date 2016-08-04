@@ -139,7 +139,7 @@ void G_ReadSessionData( gclient_t *client ) {
 	// Clear the objectives out
 	for (i=0;i< MAX_OBJECTIVES; i++)
 	{
-		client->sess.mission_objectives[i].display = 0;
+		client->sess.mission_objectives[i].display = qfalse;
 		client->sess.mission_objectives[i].status = OBJECTIVE_STAT_PENDING;
 	}
 

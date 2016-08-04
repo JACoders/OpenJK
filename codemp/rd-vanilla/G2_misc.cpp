@@ -962,7 +962,7 @@ void G2_GorePolys( const mdxmSurface_t *surface, CTraceSurface &TS, const mdxmSu
 			add.mDeleteTime=G2API_GetTime(0) + TS.gore->lifeTime;
 		}
 		add.mFadeTime = TS.gore->fadeOutTime;
-		add.mFadeRGB = !!(TS.gore->fadeRGB);
+		add.mFadeRGB = (TS.gore->fadeRGB != qfalse);
 		add.mGoreTag = newTag;
 
 		add.mGoreGrowStartTime=G2API_GetTime(0);

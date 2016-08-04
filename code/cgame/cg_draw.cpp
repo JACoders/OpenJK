@@ -2161,7 +2161,7 @@ static void CG_DrawZoomMask( void )
 
 		if ( random() > 0.98f && ( cg.time & 1024 ))
 		{
-			flip = !flip;
+			flip = (qboolean)!flip;
 		}
 
 		if ( power )

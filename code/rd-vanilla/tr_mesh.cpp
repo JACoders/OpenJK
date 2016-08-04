@@ -312,7 +312,7 @@ void R_AddMD3Surfaces( trRefEntity_t *ent ) {
 	qboolean		personalModel;
 
 	// don't add third_person objects if not in a portal
-	personalModel = (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal;
+	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
 
 	if ( ent->e.renderfx & RF_CAP_FRAMES) {
 		if (ent->e.frame > tr.currentModel->md3[0]->numFrames-1)

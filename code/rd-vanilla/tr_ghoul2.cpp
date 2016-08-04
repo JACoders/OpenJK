@@ -2554,7 +2554,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 	shader_t		*gore_shader = 0;
 #endif
 	int				fogNum = 0;
-	bool			personalModel;
+	qboolean		personalModel;
 	int				cull;
 	int				i, whichLod, j;
 	skin_t			*skin;
@@ -2590,7 +2590,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent ) {
 	RootMatrix(ghoul2,currentTime, ent->e.modelScale,rootMatrix);
 
    	// don't add third_person objects if not in a portal
-	personalModel = (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal;
+	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal);
 
 	int modelList[32];
 	assert(ghoul2.size()<=31);

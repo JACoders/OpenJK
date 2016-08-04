@@ -435,7 +435,7 @@ void CG_DrawCaptionText(void)
 	if((textcolor_caption[0] == 0) && (textcolor_caption[1] == 0) &&
 		(textcolor_caption[2] == 0) && (textcolor_caption[3] == 0))
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor_caption );
+		VectorCopy4( colorTable[CT_WHITE], textcolor_caption );
 	}
 
 	cgi_R_SetColor(textcolor_caption);
@@ -733,7 +733,7 @@ void CG_DrawCenterString( void )
 	if((textcolor_center[0] == 0) && (textcolor_center[1] == 0) &&
 		(textcolor_center[2] == 0) && (textcolor_center[3] == 0))
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor_center );
+		VectorCopy4( colorTable[CT_WHITE], textcolor_center );
 	}
 
 	start = cg.centerPrint;

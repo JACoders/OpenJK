@@ -2284,11 +2284,3 @@ float ShortestLineSegBewteen2LineSegs( vec3_t start1, vec3_t end1, vec3_t start2
 
 	return current_dist;
 }
-
-void GetAnglesForDirection( const vec3_t p1, const vec3_t p2, vec3_t out )
-{
-	vec3_t v;
-
-	VectorSubtract( p2, p1, v );
-	vectoangles( v, out );
-}

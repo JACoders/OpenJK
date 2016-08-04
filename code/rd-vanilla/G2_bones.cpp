@@ -438,7 +438,7 @@ qboolean G2_Remove_Bone (CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *bo
 	int			index = G2_Find_Bone(ghlInfo, blist, boneName);
 	if (index==-1)
 	{
-		return false;
+		return qfalse;
 	}
 
 	return G2_Remove_Bone_Index(blist, index);

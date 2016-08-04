@@ -2032,7 +2032,7 @@ static bool Update( Vehicle_t *pVeh, const usercmd_t *pUmcd )
 			{//okay to toggle
 				if ( pVeh->m_pVehicleInfo->weapon[i].linkable == 1 )
 				{//link-toggleable
-					pVeh->weaponStatus[i].linked = !pVeh->weaponStatus[i].linked;
+					pVeh->weaponStatus[i].linked = (qboolean)!pVeh->weaponStatus[i].linked;
 				}
 			}
 			linkHeld = qtrue;

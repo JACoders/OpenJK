@@ -5138,8 +5138,8 @@ qboolean String_Parse(const char **p, const char **out)
 	token = COM_ParseExt(p, qfalse);
 	if (token && token[0] != 0)
 	{
-		*(out) = String_Alloc(token);
-		return *(out)!=NULL;
+		*out = String_Alloc(token);
+		return (qboolean)(*out != NULL);
 	}
 	return qfalse;
 }
@@ -5790,7 +5790,7 @@ qboolean PC_ParseString(const char **string)
 		hold = COM_ParseString(&parseData[parseDataCount].bufferCurrent,string);
 	}
 
-	return(hold);
+	return (qboolean)(hold != 0);
 }
 
 qboolean PC_ParseInt(int *number)
@@ -9142,7 +9142,7 @@ IsVisible
 */
 qboolean IsVisible(int flags)
 {
-  return (flags & WINDOW_VISIBLE && !(flags & WINDOW_FADINGOUT));
+  return (qboolean)((flags & WINDOW_VISIBLE && !(flags & WINDOW_FADINGOUT)) != 0);
 }
 
 /*
@@ -9758,7 +9758,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key)
 
 			if ( key == A_INSERT || key == A_KP_0 )
 			{
-				DC->setOverstrikeMode(!DC->getOverstrikeMode());
+				DC->setOverstrikeMode((qboolean)(!DC->getOverstrikeMode()));
 				return qtrue;
 			}
 		}
@@ -10967,9 +10967,9 @@ qboolean Item_HandleAccept(itemDef_t * item)
 	if (item->accept)
 	{
 		Item_RunScript(item, item->accept);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -10985,9 +10985,9 @@ qboolean Item_HandleSelectionNext(itemDef_t * item)
 	if (item->selectionNext)
 	{
 		Item_RunScript(item, item->selectionNext);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 //JLFDPADSCRIPT MPMOVED
@@ -11002,9 +11002,9 @@ qboolean Item_HandleSelectionPrev(itemDef_t * item)
 	if (item->selectionPrev)
 	{
 		Item_RunScript(item, item->selectionPrev);
-		return true;
+		return qtrue;
 	}
-	return false;
+	return qfalse;
 }
 
 
@@ -11137,7 +11137,7 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 		case A_F11:
 			if (DC->getCVarValue("developer"))
 			{
-				uis.debugMode ^= 1;
+				uis.debugMode = (qboolean)!uis.debugMode;
 			}
 			break;
 

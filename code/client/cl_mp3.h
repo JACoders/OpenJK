@@ -58,7 +58,7 @@ extern const char sKEY_UNCOMP[];
 void		MP3_InitCvars			( void );
 qboolean	MP3_IsValid				( const char *psLocalFilename, void *pvData, int iDataLen, qboolean bStereoDesired = qfalse );
 int			MP3_GetUnpackedSize		( const char *psLocalFilename, void *pvData, int iDataLen, qboolean qbIgnoreID3Tag = qfalse, qboolean bStereoDesired = qfalse );
-qboolean	MP3_UnpackRawPCM		( const char *psLocalFilename, void *pvData, int iDataLen, byte *pbUnpackBuffer, qboolean bStereoDesired = qfalse );
+int			MP3_UnpackRawPCM		( const char *psLocalFilename, void *pvData, int iDataLen, byte *pbUnpackBuffer, qboolean bStereoDesired = qfalse );
 qboolean	MP3Stream_InitPlayingTimeFields( LP_MP3STREAM lpMP3Stream, const char *psLocalFilename, void *pvData, int iDataLen, qboolean bStereoDesired = qfalse);
 float		MP3Stream_GetPlayingTimeInSeconds( LP_MP3STREAM lpMP3Stream );
 float		MP3Stream_GetRemainingTimeInSeconds( LP_MP3STREAM lpMP3Stream );

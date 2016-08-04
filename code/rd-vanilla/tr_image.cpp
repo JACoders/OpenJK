@@ -699,7 +699,7 @@ static void Upload32( unsigned *data,
 		    goto done;
 	    }
 
-		R_LightScaleTexture (data, width, height, !mipmap );
+		R_LightScaleTexture (data, width, height, (qboolean)!mipmap);
 
 	    qglTexImage2D (GL_TEXTURE_2D, 0, *pformat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 
@@ -1034,7 +1034,7 @@ image_t *R_CreateImage( const char *name, const byte *pic, int width, int height
 	GL_Bind(image);
 
 	Upload32( (unsigned *)pic,	format,
-								image->mipmap,
+								(qboolean)image->mipmap,
 								allowPicmip,
 								isLightmap,
 								allowTC,

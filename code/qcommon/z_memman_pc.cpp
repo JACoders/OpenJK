@@ -524,7 +524,7 @@ qboolean Z_IsFromZone(const void *pvAddress, memtag_t eTag)
 		return qfalse;
 	}
 
-	return pMemory->iSize;
+	return (qboolean)(pMemory->iSize != 0);
 }
 
 // stats-query function to ask how big a malloc is...

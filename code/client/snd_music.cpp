@@ -204,7 +204,7 @@ const char *Music_BaseStateToString( MusicState_e eMusicState, qboolean bDebugPr
 	return NULL;
 }
 
-static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Parser, MusicData_t* MusicData, const CGPGroup& pgMusicFiles, const gsl::cstring_view& psMusicName, const gsl::cstring_view& psMusicNameKey, MusicState_e eMusicState )
+static qboolean Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Parser, MusicData_t* MusicData, const CGPGroup& pgMusicFiles, const gsl::cstring_view& psMusicName, const gsl::cstring_view& psMusicNameKey, MusicState_e eMusicState )
 {
 	bool bReturn = false;
 	MusicFile_t MusicFile;
@@ -301,7 +301,7 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 					if( iNumExitPoints > iMAX_EXPLORE_TRANSITIONS )
 					{
 						Music_Parse_Error( filename, build_string( "\"", psMusicName, "\" has > ", iMAX_EXPLORE_TRANSITIONS, " ", psMusicNameKey, " transitions defined!\n" ) );
-						return false;
+						return qfalse;
 					}
 					break;
 
@@ -309,7 +309,7 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 					if( iNumExitPoints > iMAX_ACTION_TRANSITIONS )
 					{
 						Music_Parse_Error( filename, build_string( "\"", psMusicName, "\" has > ", iMAX_ACTION_TRANSITIONS, " ", psMusicNameKey, " transitions defined!\n" ) );
-						return false;
+						return qfalse;
 					}
 					break;
 
@@ -317,7 +317,7 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 				case eBGRNDTRACK_DEATH:
 
 					Music_Parse_Error( filename, build_string( "\"", psMusicName, "\" has ", psMusicNameKey, " transitions defined, this is not allowed!\n" ) );
-					return false;
+					return qfalse;
 				default:
 					break;
 				}
@@ -354,7 +354,7 @@ static bool Music_ParseMusic( gsl::czstring filename, const CGenericParser2& Par
 		( *MusicData )[ psMusicNameKey ] = MusicFile;
 	}
 
-	return bReturn;
+	return (qboolean)bReturn;
 }
 
 // called from SV_SpawnServer, but before map load and music start etc.
@@ -669,9 +669,8 @@ qboolean Music_DynamicDataAvailable(const char *psDynamicMusicLabel)
 	{
 		if (Music_ParseLeveldata(sLevelName))
 		{
-			return !!(	Music_GetBaseMusicFile( eBGRNDTRACK_EXPLORE ) &&
-						Music_GetBaseMusicFile(	eBGRNDTRACK_ACTION	)
-						);
+			return (qboolean)(Music_GetBaseMusicFile(eBGRNDTRACK_EXPLORE) &&
+								Music_GetBaseMusicFile(eBGRNDTRACK_ACTION));
 		}
 	}
 
@@ -742,9 +741,8 @@ const char *Music_GetFileNameForState( MusicState_e eMusicState)
 
 qboolean Music_StateIsTransition( MusicState_e eMusicState )
 {
-	return (eMusicState >= eBGRNDTRACK_FIRSTTRANSITION &&
-			eMusicState <= eBGRNDTRACK_LASTTRANSITION
-			);
+	return (qboolean)(eMusicState >= eBGRNDTRACK_FIRSTTRANSITION &&
+						eMusicState <= eBGRNDTRACK_LASTTRANSITION);
 }
 
 

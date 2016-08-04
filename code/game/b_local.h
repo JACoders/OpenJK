@@ -310,8 +310,8 @@ extern qboolean NPC_SetCombatPoint( int combatPointID );
 
 #define	MAX_COMBAT_POINT_CHECK	32
 
-extern int NPC_ValidEnemy( gentity_t *ent );
-extern int NPC_CheckEnemyExt( qboolean checkAlerts = qfalse );
+extern qboolean NPC_ValidEnemy( gentity_t *ent );
+extern qboolean NPC_CheckEnemyExt( qboolean checkAlerts = qfalse );
 extern qboolean NPC_FindPlayer( void );
 extern qboolean NPC_CheckCanAttackExt( void );
 

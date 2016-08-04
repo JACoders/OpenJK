@@ -483,7 +483,7 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 		break;
 
 	case F_BOOLPTR:
-		*(qboolean *)pv = !!(*(int *)pv);
+		*(qboolean *)pv = (qboolean)(*(int *)pv != 0);
 		break;
 
 	// These are pointers that are always recreated
@@ -1248,7 +1248,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 extern int killPlayerTimer;
 qboolean GameAllowedToSaveHere(void)
 {
-	return (!in_camera&&!killPlayerTimer);
+	return (qboolean)(!in_camera&&!killPlayerTimer);
 }
 
 //////////////////// eof /////////////////////

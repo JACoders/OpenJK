@@ -209,7 +209,12 @@ void NPC_BSStandGuard (void)
 		{
 			if(NPC->client->enemyTeam)
 			{
-				gentity_t *newenemy = NPC_PickEnemy(NPC, NPC->client->enemyTeam, (NPC->cantHitEnemyCounter < 10), (NPC->client->enemyTeam == TEAM_PLAYER), qtrue);
+				gentity_t *newenemy = NPC_PickEnemy(
+					NPC, NPC->client->enemyTeam,
+					(qboolean)(NPC->cantHitEnemyCounter < 10),
+					(qboolean)(NPC->client->enemyTeam == TEAM_PLAYER),
+					qtrue);
+
 				//only checks for vis if couldn't hit last enemy
 				if(newenemy)
 				{
@@ -249,7 +254,7 @@ void NPC_BSHuntAndKill( void )
 	visibility_t	oEVis;
 	int			curAnim;
 
-	NPC_CheckEnemy( NPCInfo->tempBehavior != BS_HUNT_AND_KILL, qfalse );//don't find new enemy if this is tempbehav
+	NPC_CheckEnemy( (qboolean)(NPCInfo->tempBehavior != BS_HUNT_AND_KILL), qfalse );//don't find new enemy if this is tempbehav
 
 	if ( NPC->enemy )
 	{
@@ -747,7 +752,7 @@ void NPC_BSDefault( void )
 		}
 	}
 	//look for a new enemy if don't have one and are allowed to look, validate current enemy if have one
-	NPC_CheckEnemy( (NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES), qfalse );
+	NPC_CheckEnemy( (qboolean)((NPCInfo->scriptFlags&SCF_LOOK_FOR_ENEMIES) != 0), qfalse );
 	if ( !NPC->enemy )
 	{//still don't have an enemy
 		if ( !(NPCInfo->scriptFlags&SCF_IGNORE_ALERTS) )

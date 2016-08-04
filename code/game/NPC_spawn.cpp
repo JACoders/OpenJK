@@ -1300,7 +1300,7 @@ void NPC_Begin (gentity_t *ent)
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	memset( &ucmd, 0, sizeof( ucmd ) );
-	_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+	VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 

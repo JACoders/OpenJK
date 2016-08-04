@@ -167,7 +167,7 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 		// not found, so load it...
 		//
 		fileHandle_t f;
-		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, FS_READ );
+		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, qfalse );
 		if (iLen <= 0)
 		{
 			return 0;

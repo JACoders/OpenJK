@@ -116,11 +116,11 @@
     e=Ax*Cy-Ay*Cx;                                    \
     if(f>0)                                           \
     {                                                 \
-      if(e>=0 && e<=f) return 1;                      \
+      if(e>=0 && e<=f) return qtrue;                      \
     }                                                 \
     else                                              \
     {                                                 \
-      if(e<=0 && e>=f) return 1;                      \
+      if(e<=0 && e>=f) return qtrue;                      \
     }                                                 \
   }
 
@@ -158,7 +158,7 @@
   d2=a*V0[i0]+b*V0[i1]+c;                   \
   if(d0*d1>0.0)                             \
   {                                         \
-    if(d0*d2>0.0) return 1;                 \
+    if(d0*d2>0.0) return qtrue;                 \
   }                                         \
 }
 
@@ -248,7 +248,7 @@ qboolean tri_tri_intersect(vec3_t V0,vec3_t V1,vec3_t V2,
   du0du2=du0*du2;
 
   if(du0du1>0.0f && du0du2>0.0f) /* same sign on all of them + not equal 0 ? */
-    return 0;                    /* no intersection occurs */
+    return qfalse;                    /* no intersection occurs */
 
   /* compute plane of triangle (U0,U1,U2) */
   SUB(E1,U1,U0);
@@ -272,7 +272,7 @@ qboolean tri_tri_intersect(vec3_t V0,vec3_t V1,vec3_t V2,
   dv0dv2=dv0*dv2;
 
   if(dv0dv1>0.0f && dv0dv2>0.0f) /* same sign on all of them + not equal 0 ? */
-    return 0;                    /* no intersection occurs */
+    return qfalse;                    /* no intersection occurs */
 
   /* compute direction of intersection line */
   CROSS(D,N1,N2);

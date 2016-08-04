@@ -2265,7 +2265,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		if ( token[0] == 0 )
 		{
 			COM_EndParseSession(  );
-			return species.ColorCount;
+			return (qboolean)(species.ColorCount != 0);
 		}
 
 		if (species.ColorCount >= species.ColorMax)
@@ -2309,7 +2309,7 @@ bIsImageFile
 builds path and scans for valid image extentions
 =================
 */
-static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean building)
+static qboolean IsImageFile(const char* dirptr, const char* skinname, qboolean building)
 {
 	char fpath[MAX_QPATH];
 	int f;
@@ -2331,10 +2331,10 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 	{
 		ui.FS_FCloseFile(f);
 		if ( building ) ui.R_RegisterShaderNoMip(fpath);
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 static void UI_FreeSpecies( playerSpeciesInfo_t *species )
@@ -2452,7 +2452,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				filelen = strlen(fileptr);
 				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
-				if (bIsImageFile(dirptr, skinname, building))
+				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
 				{ //if it exists
 					if (Q_stricmpn(skinname,"head_",5) == 0)
 					{
