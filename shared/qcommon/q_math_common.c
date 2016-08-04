@@ -309,6 +309,54 @@ signed short ClampShort( int i )
 	return i;
 }
 
+int Com_Clampi( int min, int max, int value )
+{
+	if ( value < min )
+	{
+		return min;
+	}
+	if ( value > max )
+	{
+		return max;
+	}
+	return value;
+}
+
+float Com_Clamp( float min, float max, float value ) {
+	if ( value < min ) {
+		return min;
+	}
+	if ( value > max ) {
+		return max;
+	}
+	return value;
+}
+
+int Com_AbsClampi( int min, int max, int value )
+{
+	if( value < 0 )
+	{
+		return Com_Clampi( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clampi( min, max, value );
+	}
+}
+
+float Com_AbsClamp( float min, float max, float value )
+{
+	if( value < 0.0f )
+	{
+		return Com_Clamp( -max, -min, value );
+	}
+	else
+	{
+		return Com_Clamp( min, max, value );
+	}
+}
+
+
 float Q_rsqrt( float number )
 {
 	byteAlias_t t;

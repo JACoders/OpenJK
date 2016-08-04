@@ -157,15 +157,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define idppc	0
 #endif
 
-
 #include "qcommon/q_platform.h"
 
 // ================================================================
 // TYPE DEFINITIONS
 // ================================================================
-
-#define Q_min(x,y) ((x)<(y)?(x):(y))
-#define Q_max(x,y) ((x)>(y)?(x):(y))
 
 typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
 
@@ -192,15 +188,7 @@ typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, cli
 #define NULL ((void *)0)
 #endif
 
-#define	MAX_QINT			0x7fffffff
-#define	MIN_QINT			(-MAX_QINT-1)
-
 #define INT_ID( a, b, c, d ) (uint32_t)((((a) & 0xff) << 24) | (((b) & 0xff) << 16) | (((c) & 0xff) << 8) | ((d) & 0xff))
-
-// angle indexes
-#define	PITCH				0		// up / down
-#define	YAW					1		// left / right
-#define	ROLL				2		// fall over
 
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
