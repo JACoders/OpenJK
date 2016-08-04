@@ -679,7 +679,8 @@ void Console_Key( int key ) {
 			g_consoleField.cursor--;
 		}
 
-		Field_AutoComplete(&g_consoleField, qtrue);
+		if (cl_allowEnterCompletion->integer)
+			Field_AutoComplete(&g_consoleField, qtrue);
 
 		// print executed command
 		Com_Printf( "%c%s\n", CONSOLE_PROMPT_CHAR, g_consoleField.buffer );

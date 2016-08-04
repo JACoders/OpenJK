@@ -85,6 +85,7 @@ cvar_t	*cl_motdString;
 
 cvar_t	*cl_allowDownload;
 cvar_t	*cl_allowAltEnter;
+cvar_t	*cl_allowEnterCompletion;
 cvar_t	*cl_conXOffset;
 cvar_t	*cl_inGameVideo;
 
@@ -2726,6 +2727,7 @@ void CL_Init( void ) {
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE, "Allow downloading custom paks from server");
 	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE, "Enables use of ALT+ENTER keyboard combo to toggle fullscreen" );
+	cl_allowEnterCompletion = Cvar_Get("cl_allowEnterCompletion", "0", CVAR_ARCHIVE, "Enables autocomplete when pressing enter");
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE );
 
