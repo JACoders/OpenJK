@@ -784,19 +784,19 @@ void UI_GetSaberForMenu( char *saber, int saberNum )
 	case 3://MD_SINGLE_STRONG:
 		if ( saberType != SABER_SINGLE )
 		{
-			Q_strncpyz(saber,"single_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"single_1",MAX_QPATH);
 		}
 		break;
 	case 4://MD_DUAL_SABERS:
 		if ( saberType != SABER_SINGLE )
 		{
-			Q_strncpyz(saber,"single_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"single_1",MAX_QPATH);
 		}
 		break;
 	case 5://MD_SABER_STAFF:
 		if ( saberType == SABER_SINGLE || saberType == SABER_NONE )
 		{
-			Q_strncpyz(saber,"dual_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"dual_1",MAX_QPATH);
 		}
 		break;
 	}

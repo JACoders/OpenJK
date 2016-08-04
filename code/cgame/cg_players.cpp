@@ -552,19 +552,19 @@ void CG_NewClientinfo( int clientNum )
 	v = Info_ValueForKey( configstring, "legsModel" );
 
 	Q_strncpyz(			g_entities[clientNum].client->renderInfo.legsModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.legsModelName), qtrue);
+				sizeof(	g_entities[clientNum].client->renderInfo.legsModelName));
 
 	// torsoModel
 	v = Info_ValueForKey( configstring, "torsoModel" );
 
 	Q_strncpyz(			g_entities[clientNum].client->renderInfo.torsoModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.torsoModelName), qtrue);
+				sizeof(	g_entities[clientNum].client->renderInfo.torsoModelName));
 
 	// headModel
 	v = Info_ValueForKey( configstring, "headModel" );
 
 	Q_strncpyz(			g_entities[clientNum].client->renderInfo.headModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.headModelName), qtrue);
+				sizeof(	g_entities[clientNum].client->renderInfo.headModelName));
 
 	// sounds
 	v = Info_ValueForKey( configstring, "snd" );

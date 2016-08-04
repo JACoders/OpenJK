@@ -2147,7 +2147,7 @@ qboolean UI_ParseAnimFileSet( const char *animCFG, int *animFileIndex )
 	int			i;
 	char		*slash;
 
-	Q_strncpyz( strippedName, animCFG, sizeof(strippedName), qtrue);
+	Q_strncpyz( strippedName, animCFG, sizeof(strippedName));
 	slash = strrchr( strippedName, '/' );
 	if ( slash )
 	{
@@ -2276,7 +2276,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 
 		memset(&species.Color[species.ColorCount], 0, sizeof(playerColor_t));
 
-		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH, qtrue );
+		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH );
 
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
 		if ( token[0] != '{' )
@@ -2415,7 +2415,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			}
 			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
 			memset(species, 0, sizeof(playerSpeciesInfo_t));
-			Q_strncpyz( species->Name, dirptr, MAX_QPATH, qtrue );
+			Q_strncpyz( species->Name, dirptr, MAX_QPATH );
 
 			if (!UI_ParseColorData(buffer.data(),*species))
 			{
@@ -2461,7 +2461,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinHeadMax *= 2;
 							species->SkinHead = (skinName_t *)realloc(species->SkinHead, species->SkinHeadMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<0;
 					} else
 					if (Q_stricmpn(skinname,"torso_",6) == 0)
@@ -2471,7 +2471,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinTorsoMax *= 2;
 							species->SkinTorso = (skinName_t *)realloc(species->SkinTorso, species->SkinTorsoMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<1;
 					} else
 					if (Q_stricmpn(skinname,"lower_",6) == 0)
@@ -2481,7 +2481,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinLegMax *= 2;
 							species->SkinLeg = (skinName_t *)realloc(species->SkinLeg, species->SkinLegMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<2;
 					}
 

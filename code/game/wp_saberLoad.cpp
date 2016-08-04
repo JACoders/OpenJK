@@ -1360,7 +1360,7 @@ static void Saber_ParseG2MarksShader( saberInfo_t *saber, const char **p ) {
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2MarksShader, value, sizeof( saber->g2MarksShader ), qtrue );
+	Q_strncpyz( saber->g2MarksShader, value, sizeof( saber->g2MarksShader ) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseG2WeaponMarkShader( saberInfo_t *saber, const char **p ) {
@@ -1369,7 +1369,7 @@ static void Saber_ParseG2WeaponMarkShader( saberInfo_t *saber, const char **p ) 
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2WeaponMarkShader, value, sizeof( saber->g2WeaponMarkShader ), qtrue );
+	Q_strncpyz( saber->g2WeaponMarkShader, value, sizeof( saber->g2WeaponMarkShader ) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseKnockbackScale( saberInfo_t *saber, const char **p ) {
@@ -1585,7 +1585,7 @@ static void Saber_ParseG2MarksShader2( saberInfo_t *saber, const char **p ) {
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2MarksShader2, value, sizeof(saber->g2MarksShader2), qtrue );
+	Q_strncpyz( saber->g2MarksShader2, value, sizeof(saber->g2MarksShader2) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseG2WeaponMarkShader2( saberInfo_t *saber, const char **p ) {
@@ -1594,7 +1594,7 @@ static void Saber_ParseG2WeaponMarkShader2( saberInfo_t *saber, const char **p )
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2WeaponMarkShader2, value, sizeof(saber->g2WeaponMarkShader2), qtrue );
+	Q_strncpyz( saber->g2WeaponMarkShader2, value, sizeof(saber->g2WeaponMarkShader2) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseKnockbackScale2( saberInfo_t *saber, const char **p ) {

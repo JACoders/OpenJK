@@ -2345,7 +2345,7 @@ qboolean Script_Defer ( itemDef_t* item, const char **args )
 		uiInfo.deferredScriptItem = item;
 
 		// Save the rest of the script
-		Q_strncpyz ( uiInfo.deferredScript, *args, MAX_DEFERRED_SCRIPT, qfalse );
+		Q_strncpyz ( uiInfo.deferredScript, *args, MAX_DEFERRED_SCRIPT );
 
 		// No more running
 		return qfalse;
@@ -5991,14 +5991,14 @@ qboolean Item_EnableShowViaCvar(itemDef_t *item, int flag)
 			}
 
 			COM_EndParseSession();
-			Q_strncpyz(buff, val, sizeof(buff), qtrue);
+			Q_strncpyz(buff, val, sizeof(buff));
 			DC->getCVarString(item->cvarTest, script, sizeof(script));
 			p = script;
 		}
 		else
 		{
 			DC->getCVarString(item->cvarTest, buff, sizeof(buff));
-			Q_strncpyz(script, item->enableCvar, sizeof(script), qtrue);
+			Q_strncpyz(script, item->enableCvar, sizeof(script));
 			p = script;
 		}
 		COM_BeginParseSession();

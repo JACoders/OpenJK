@@ -310,6 +310,8 @@ set(SharedCommonFiles
 	"${SharedDir}/qcommon/q_color.c"
 	"${SharedDir}/qcommon/q_math_common.h"
 	"${SharedDir}/qcommon/q_math_common.c"
+	"${SharedDir}/qcommon/q_string.h"
+	"${SharedDir}/qcommon/q_string.c"
 	"${SharedDir}/qcommon/q_platform.h"
 	)
 set(SharedCommonSafeFiles

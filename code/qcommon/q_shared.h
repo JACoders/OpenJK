@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/q_math_common.h"
 #include "qcommon/q_color.h"
+#include "qcommon/q_string.h"
 
 #ifdef _MSC_VER
 
@@ -165,14 +166,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define Q_min(x,y) ((x)<(y)?(x):(y))
 #define Q_max(x,y) ((x)>(y)?(x):(y))
-
-#if defined (_MSC_VER)
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#else // not using MSVC
-	#define Q_vsnprintf vsnprintf
-#endif
 
 typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
 
@@ -416,52 +409,6 @@ typedef enum {
 } fsOrigin_t;
 
 //=============================================
-
-int Q_isprint( int c );
-int Q_islower( int c );
-int Q_isupper( int c );
-int Q_isalpha( int c );
-qboolean Q_isanumber( const char *s );
-qboolean Q_isintegral( float f );
-
-#if 1
-// portable case insensitive compare
-int		Q_strncmp (const char *s1, const char *s2, int n);
-int		Q_stricmpn (const char *s1, const char *s2, int n);
-inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
-char	*Q_strlwr( char *s1 );
-char	*Q_strupr( char *s1 );
-char	*Q_strrchr( const char* string, int c );
-#else
-// NON-portable (but faster) versions
-inline int	Q_stricmp (const char *s1, const char *s2) { return stricmp(s1, s2); }
-inline int	Q_strncmp (const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
-inline int	Q_stricmpn (const char *s1, const char *s2, int n) { return strnicmp(s1, s2, n); }
-inline char	*Q_strlwr( char *s1 ) { return strlwr(s1); }
-inline char	*Q_strupr( char *s1 ) { return strupr(s1); }
-inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c); }
-#endif
-
-
-// buffer size safe library replacements
-#ifdef __cplusplus
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong = qfalse );
-#else
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong );
-#endif
-void	Q_strcat( char *dest, int size, const char *src );
-
-const char *Q_stristr( const char *s, const char *find );
-
-// strlen that discounts Quake color sequences
-int Q_PrintStrlen( const char *string );
-// removes color sequences from string
-char *Q_CleanStr( char *string );
-void Q_StripColor ( char *string );
-void Q_strstrip( char *string, const char *strip, const char *repl );
-const char *Q_strchrs( const char *string, const char *search );
-//=============================================
-
 char	* QDECL va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
