@@ -93,10 +93,9 @@ static void *captureData = NULL;
 
 //const char defaultString[10] = {"default"};
 #ifdef CGAME
-#define MEM_POOL_SIZE  128 * 1024
+#define MEM_POOL_SIZE  (128 * 1024)
 #else
-//#define MEM_POOL_SIZE  1024 * 1024
-#define MEM_POOL_SIZE  2048 * 1024
+#define MEM_POOL_SIZE  (4 * 1024 * 1024)
 #endif
 
 #define SCROLL_TIME_START				500
