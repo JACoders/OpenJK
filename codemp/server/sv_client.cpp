@@ -60,13 +60,8 @@ to hi-jack client connections.
 =================
 */
 void SV_GetChallenge( netadr_t from ) {
-	int		i;
-	int		oldest;
-	int		oldestTime;
-	int		oldestClientTime;
+	int		challenge;
 	int		clientChallenge;
-	challenge_t	*challenge;
-	qboolean wasfound = qfalse;
 
 	// ignore if we are in single player
 	/*
@@ -86,58 +81,13 @@ void SV_GetChallenge( netadr_t from ) {
 		return;
 	}
 
-	// Allow getchallenge to be DoSed relatively easily, but prevent
-	// excess outbound bandwidth usage when being flooded inbound
-	if ( SVC_RateLimit( &outboundLeakyBucket, 10, 100 ) ) {
-		Com_DPrintf( "SV_GetChallenge: rate limit exceeded, dropping request\n" );
-		return;
-	}
+	// Create a unique challenge for this client without storing state on the server
+	challenge = SV_CreateChallenge(from);
 
-	oldest = 0;
-	oldestClientTime = oldestTime = 0x7fffffff;
-
-	// see if we already have a challenge for this ip
-	challenge = &svs.challenges[0];
+	// Grab the client's challenge to echo back (if given)
 	clientChallenge = atoi(Cmd_Argv(1));
 
-	for (i = 0 ; i < MAX_CHALLENGES ; i++, challenge++)
-	{
-		if(!challenge->connected && NET_CompareAdr(from, challenge->adr))
-		{
-			wasfound = qtrue;
-
-			if(challenge->time < oldestClientTime)
-				oldestClientTime = challenge->time;
-		}
-
-		if(wasfound && i >= MAX_CHALLENGES_MULTI)
-		{
-			i = MAX_CHALLENGES;
-			break;
-		}
-
-		if(challenge->time < oldestTime)
-		{
-			oldestTime = challenge->time;
-			oldest = i;
-		}
-	}
-
-	if (i == MAX_CHALLENGES) {
-		// this is the first time this client has asked for a challenge
-		challenge = &svs.challenges[oldest];
-		challenge->clientChallenge = clientChallenge;
-		challenge->adr = from;
-		challenge->firstTime = svs.time;
-		challenge->connected = qfalse;
-	}
-
-	// always generate a new challenge number, so the client cannot circumvent sv_maxping
-	challenge->challenge = ( (rand() << 16) ^ rand() ) ^ svs.time;
-	challenge->wasrefused = qfalse;
-	challenge->time = svs.time;
-	challenge->pingTime = svs.time;
-	NET_OutOfBandPrint( NS_SERVER, challenge->adr, "challengeResponse %i %i", challenge->challenge, clientChallenge );
+	NET_OutOfBandPrint( NS_SERVER, from, "challengeResponse %i %i", challenge, clientChallenge );
 }
 
 /*
@@ -261,55 +211,15 @@ void SV_DirectConnect( netadr_t from ) {
 	}
 	Info_SetValueForKey( userinfo, "ip", ip );
 
-	// see if the challenge is valid (LAN clients don't need to challenge)
+	// see if the challenge is valid (localhost clients don't need to challenge)
 	if (!NET_IsLocalAddress(from))
 	{
-		int ping;
-		challenge_t *challengeptr;
-
-		for (i=0; i<MAX_CHALLENGES; i++)
+		// Verify the received challenge against the expected challenge
+		if (!SV_VerifyChallenge(challenge, from))
 		{
-			if (NET_CompareAdr(from, svs.challenges[i].adr))
-			{
-				if(challenge == svs.challenges[i].challenge)
-					break;
-			}
-		}
-
-		if (i == MAX_CHALLENGES)
-		{
-			NET_OutOfBandPrint( NS_SERVER, from, "print\nNo or bad challenge for your address.\n" );
+			NET_OutOfBandPrint( NS_SERVER, from, "print\nIncorrect challenge for your address.\n" );
 			return;
 		}
-
-		challengeptr = &svs.challenges[i];
-
-		if(challengeptr->wasrefused)
-		{
-			// Return silently, so that error messages written by the server keep being displayed.
-			return;
-		}
-
-		ping = svs.time - challengeptr->pingTime;
-
-		// never reject a LAN client based on ping
-		if ( !Sys_IsLANAddress( from ) ) {
-			if ( sv_minPing->value && ping < sv_minPing->value ) {
-				NET_OutOfBandPrint( NS_SERVER, from, va("print\n%s\n", SE_GetString("MP_SVGAME", "SERVER_FOR_HIGH_PING")));//Server is for high pings only\n" );
-				Com_DPrintf (SE_GetString("MP_SVGAME", "CLIENT_REJECTED_LOW_PING"), i);//"Client %i rejected on a too low ping\n", i);
-				challengeptr->wasrefused = qtrue;
-				return;
-			}
-			if ( sv_maxPing->value && ping > sv_maxPing->value ) {
-				NET_OutOfBandPrint( NS_SERVER, from, va("print\n%s\n", SE_GetString("MP_SVGAME", "SERVER_FOR_LOW_PING")));//Server is for low pings only\n" );
-				Com_DPrintf (SE_GetString("MP_SVGAME", "CLIENT_REJECTED_HIGH_PING"), i);//"Client %i rejected on a too high ping\n", i);
-				challengeptr->wasrefused = qtrue;
-				return;
-			}
-		}
-
-		Com_Printf( SE_GetString("MP_SVGAME", "CLIENT_CONN_WITH_PING"), i, ping);//"Client %i connecting with %i challenge ping\n", i, ping );
-		challengeptr->connected = qtrue;
 	}
 
 	newcl = &temp;
@@ -465,25 +375,10 @@ or crashing -- SV_FinalMessage() will handle that
 */
 void SV_DropClient( client_t *drop, const char *reason ) {
 	int		i;
-	challenge_t	*challenge;
 	const bool isBot = drop->netchan.remoteAddress.type == NA_BOT;
 
 	if ( drop->state == CS_ZOMBIE ) {
 		return;		// already dropped
-	}
-
-	if ( !isBot ) {
-		// see if we already have a challenge for this ip
-		challenge = &svs.challenges[0];
-
-		for (i = 0 ; i < MAX_CHALLENGES ; i++, challenge++)
-		{
-			if(NET_CompareAdr(drop->netchan.remoteAddress, challenge->adr))
-			{
-				Com_Memset(challenge, 0, sizeof(*challenge));
-				break;
-			}
-		}
 	}
 
 	// Kill any download
