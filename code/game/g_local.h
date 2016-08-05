@@ -37,7 +37,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK"
+#define	GAMEVERSION	"Dusty's Patch"
 
 #define BODY_QUEUE_SIZE		8
 
@@ -75,6 +75,15 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define FL_OVERCHARGED_HEALTH	0x00100000	// Reduce health back to max
 #define FL_NO_ANGLES			0x00200000	// No bone angle overrides, no pitch or roll in full angles
 #define FL_RED_CROSSHAIR		0x00400000	// Crosshair red on me
+
+//these can affect player and NPC abilities
+#define	FL_DUALPISTOLS			0x00800000		//gives dual pistols if WP_BLASTER_PISTOL
+#define	FL_MELEEKICKS			0x01000000		//allows melee kicks
+#define	FL_MELEEKATAS			0x02000000		//allows melee katas
+#define	FL_MELEEKATA_NOFORCEFX	0x04000000		//hack to stop melee katas from doing force power effects
+#define	FL_CORTOSIS				0x08000000		//halves damage from saber attacks
+#define	FL_MAGPLATING			0x10000000		//halves damage from blaster bolts
+#define	FL_BLASTARMOR			0x20000000		//halves damage from heavy weapons/explosives
 
 
 //Pointer safety utilities
@@ -254,12 +263,15 @@ extern	cvar_t	*g_inactivity;
 extern	cvar_t	*g_debugMove;
 extern	cvar_t	*g_subtitles;
 extern	cvar_t	*g_removeDoors;
-
 extern	cvar_t	*g_ICARUSDebug;
-
-extern cvar_t	*g_npcdebug;
+extern  cvar_t	*g_npcdebug;
 
 extern	cvar_t	*g_allowBunnyhopping;
+
+extern  cvar_t	*g_weaponVelocity;
+extern  cvar_t	*g_weaponAltVelocity;
+extern	cvar_t	*g_handicap_maxArmor;
+
 extern gentity_t *player;
 //
 // g_spawn.c

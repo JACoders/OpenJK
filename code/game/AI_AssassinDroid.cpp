@@ -172,7 +172,7 @@ void BubbleShield_Update()
 
 	// If We Have Enough Armor And Are Not Shooting Right Now, Kick The Shield On
 	//----------------------------------------------------------------------------
- 	if (NPC->client->ps.stats[STAT_ARMOR]>100 && TIMER_Done(NPC, "ShieldsDown"))
+ 	if (NPC->client->ps.stats[STAT_ARMOR]>100 && TIMER_Done(NPC, "ShieldsDown")) //now they can shoot while shield is up, had to edit npc_combat or something - Dusty
 	{
 		// Check On Timers To Raise And Lower Shields
 		//--------------------------------------------

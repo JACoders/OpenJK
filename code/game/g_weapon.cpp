@@ -38,6 +38,8 @@ vec3_t	muzzle;
 
 gentity_t *ent_list[MAX_GENTITIES];
 extern cvar_t	*g_debugMelee;
+extern cvar_t	*g_weaponVelocity;
+extern cvar_t	*g_weaponAltVelocity;
 
 // some naughty little things that are used cg side
 int g_rocketLockEntNum = ENTITYNUM_NONE;
@@ -138,6 +140,9 @@ gentity_t *CreateMissile( vec3_t org, vec3_t dir, float vel, int life, gentity_t
 	Vehicle_t*	pVeh = G_IsRidingVehicle(owner);
 
 	missile->alt_fire = altFire;
+
+	if (altFire) vel *= g_weaponAltVelocity->value;
+	else vel *= g_weaponVelocity->value;
 
 	missile->s.pos.trType = TR_LINEAR;
 	missile->s.pos.trTime = level.time;// - 10;	// move a bit on the very first frame
@@ -1696,4 +1701,67 @@ void SP_misc_weapon_shooter( gentity_t *self )
 	{
 		self->wait = 500;
 	}
+}
+
+qboolean heavyWeap(int wp)
+{
+	switch (wp) {
+	case WP_FLECHETTE:
+	case WP_ROCKET_LAUNCHER:
+	case WP_CONCUSSION:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean blasterWeap(int wp)
+{
+	switch (wp) {
+	case WP_BLASTER_PISTOL:
+	case WP_BLASTER:
+	case WP_REPEATER:
+	case WP_BOWCASTER:
+	case WP_NOGHRI_STICK:
+	case WP_BRYAR_PISTOL:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean lightBlasterWeap(int wp)
+{
+	switch (wp) {
+	case WP_BLASTER_PISTOL:
+	case WP_BLASTER:
+	case WP_NOGHRI_STICK:
+	case WP_BRYAR_PISTOL:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean heavyBlasterWeap(int wp)
+{
+	switch (wp) {
+	case WP_REPEATER:
+	case WP_BOWCASTER:
+		return true;
+	}
+
+	return false;
+}
+
+qboolean meleeWeap(int wp)
+{
+	switch (wp) {
+	case WP_SABER:
+	case WP_MELEE:
+	case WP_STUN_BATON:
+		return true;
+	}
+
+	return false;
 }

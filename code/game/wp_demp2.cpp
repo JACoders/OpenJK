@@ -36,13 +36,14 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 {
 	vec3_t	start;
 	int		damage	= weaponData[WP_DEMP2].damage;
+	float		velocity = weaponData[WP_DEMP2].velocity;
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
 
 	WP_MissileTargetHint(ent, start, forwardVec);
 
-	gentity_t *missile = CreateMissile( start, forwardVec, DEMP2_VELOCITY, 10000, ent );
+	gentity_t *missile = CreateMissile( start, forwardVec, velocity, 10000, ent );
 
 	missile->classname = "demp2_proj";
 	missile->s.weapon = WP_DEMP2;
@@ -62,6 +63,8 @@ static void WP_DEMP2_MainFire( gentity_t *ent )
 		{
 			damage = DEMP2_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_BLASTER].npcDmgMult;
 	}
 
 	VectorSet( missile->maxs, DEMP2_SIZE, DEMP2_SIZE, DEMP2_SIZE );
@@ -198,6 +201,7 @@ static void WP_DEMP2_AltFire( gentity_t *ent )
 //---------------------------------------------------------
 {
 	int		damage	= weaponData[WP_REPEATER].altDamage;
+	float		velocity = weaponData[WP_DEMP2].velocity;
 	int		count;
 	vec3_t	start;
 	trace_t	tr;

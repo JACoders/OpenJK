@@ -782,11 +782,11 @@ qboolean UI_GameCommand( void );
 
 
 byte*	SCR_GetScreenshot(qboolean *qValid);
-#ifdef JK2_MODE
+//#ifdef JK2_MODE
 void	SCR_SetScreenshot(const byte *pbData, int w, int h);
 byte*	SCR_TempRawImage_ReadFromFile(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
 void	SCR_TempRawImage_CleanUp();
-#endif
+//#endif
 
 inline int Round(float value)
 {

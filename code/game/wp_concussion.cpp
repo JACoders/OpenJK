@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 static void WP_FireConcussionAlt( gentity_t *ent )
 {//a rail-gun-like beam
 	int			damage = weaponData[WP_CONCUSSION].altDamage, skip, traces = DISRUPTOR_ALT_TRACES;
+	//int			velocity = weaponData[WP_CONCUSSION].altVelocity;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
 	vec3_t		muzzle2, spot, dir;
@@ -80,6 +81,8 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 			damage = CONC_ALT_NPC_DAMAGE_HARD;
 			break;
 		}
+
+		damage *= weaponData[WP_CONCUSSION].npcAltDmgMult;
 	}
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );
@@ -140,7 +143,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 		traceEnt = &g_entities[tr.entityNum];
 
 		if ( traceEnt //&& traceEnt->NPC
-			&& ( traceEnt->s.weapon == WP_SABER || (traceEnt->client && (traceEnt->client->NPC_class == CLASS_BOBAFETT||traceEnt->client->NPC_class == CLASS_REBORN) ) ) )
+			&& (traceEnt->s.weapon == WP_SABER || (traceEnt->client && (traceEnt->client->NPC_class == CLASS_BOBAFETT || traceEnt->client->NPC_class == CLASS_MANDA || traceEnt->client->NPC_class == CLASS_COMMANDO||traceEnt->client->NPC_class == CLASS_REBORN))))
 		{//FIXME: need a more reliable way to know we hit a jedi?
 			hitDodged = Jedi_DodgeEvasion( traceEnt, ent, &tr, HL_NONE );
 			//acts like we didn't even hit him
@@ -254,7 +257,7 @@ static void WP_FireConcussion( gentity_t *ent )
 {//a fast rocket-like projectile
 	vec3_t	start;
 	int		damage	= weaponData[WP_CONCUSSION].damage;
-	float	vel = CONC_VELOCITY;
+	float	vel = weaponData[WP_CONCUSSION].velocity;
 
 	if (ent->s.number >= MAX_CLIENTS)
 	{
@@ -300,6 +303,8 @@ static void WP_FireConcussion( gentity_t *ent )
 		{
 			damage = CONC_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_BLASTER].npcDmgMult;
 	}
 
 	// Make it easier to hit things

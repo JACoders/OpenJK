@@ -202,6 +202,7 @@ cvar_t	*g_saber_color;
 cvar_t	*g_saber2_color;
 cvar_t	*g_saberDarkSideSaberColor;
 
+
 // kef -- used with DebugTraceForNPC
 cvar_t	*g_npcdebug;
 
@@ -211,6 +212,75 @@ cvar_t	*g_navSafetyChecks;
 cvar_t	*g_broadsword;
 
 cvar_t	*g_allowBunnyhopping;
+
+//new cvars - Dusty
+cvar_t  *g_autoRoll;
+cvar_t	*g_saberNewCombat;
+cvar_t  *g_saberLocksEnabled;
+cvar_t	*g_saberDamageScale;
+cvar_t	*g_saberDamageScaleGlobal;
+cvar_t  *g_saberWalkAnims;
+cvar_t	*g_saberForceDrains;
+cvar_t	*g_saberForceDrainAmount;
+cvar_t	*g_saberLockSuperBreaks;
+cvar_t	*g_saberLockStyle;
+cvar_t  *g_forceNewPowers;
+cvar_t	*g_weaponVelocity;
+cvar_t	*g_weaponAltVelocity;
+
+//for character stats
+cvar_t	*g_char_forcePowerMax; //only applies after re-loading level
+cvar_t  *g_char_forceRegen; //only applies after re-loading level
+cvar_t	*g_char_parryBonus; //fix this, doesn't apply correctly in all cases
+cvar_t	*g_char_breakParryBonus; //fix this, doesn't apply correctly in all cases
+cvar_t	*g_char_forceAffinity; //make into ui_cvars?
+cvar_t	*g_char_forceFocus;
+cvar_t	*g_char_forceSensitivity;
+
+cvar_t	*g_handicap_maxArmor;
+cvar_t	*g_saberDeflectAutoAim;
+cvar_t	*g_playerCheatPowers;
+cvar_t	*g_moonJump;
+
+/*
+cvar_t	*g_char_moveSpeedScale;			1.0 - you move faster / slower when using this saber
+cvar_t	*g_char_animSpeedScale;			1.0 - plays normal attack animations faster / slower
+
+//replace certain anims
+cvar_t	*g_char_readyAnim;				none - anim to use when standing idle(use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_drawAnim;				none - anim to use when drawing weapon(use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_putawayAnim;				none - anim to use when putting weapon away(use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_tauntAnim;			none - anim to use when hit "taunt" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_bowAnim;					none - anim to use when hit "bow" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_meditateAnim;				none - anim to use when hit "meditate" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_flourishAnim:				none - anim to use when hit "flourish" (use name of enum in anims.h or BehavEd's list)
+cvar_t	*g_char_gloatAnim;				none - anim to use when hit "gloat" (use name of enum in anims.h or BehavEd's list)
+
+//optionally disallow certain types of moves and attacks
+noRollStab				0 - if set, cannot do roll - stab move at end of roll
+noPullAttack			0 - if set, cannot do pull + attack move(move not available in MP anyway)
+noBackAttack			0 - if set, cannot do back - stab moves
+noStabDown				0 - if set, cannot do stabdown move(when enemy is on ground)
+noWallRuns				0 - if set, cannot side - run or forward - run on walls
+noWallFlips				0 - if set, cannot do backflip off wall or side - flips off walls
+noWallGrab				0 - if set, cannot grab wall & jump off
+noRolls					0 - if set, cannot roll
+noFlips					0 - if set, cannot do flips
+noCartwheels			0 - if set, cannot do cartwheels
+noKicks					0 - if set, cannot do kicks(can't do kicks anyway if using a throwable saber/sword)
+noMirrorAttacks			0 - if set, cannot do the simultaneous attack left / right moves(only available in Dual Lightsaber Combat Style)
+
+//done in both cgame and game (BG code)
+kataMove				0 - if set, player will execute this move when they press both attack buttons at the same time(see list below for valid values)
+lungeAtkMove			0 - if set, player will execute this move when they crouch + fwd + attack(see list below for valid values)
+jumpAtkUpMove			0 - if set, player will execute this move when they jump + attack(see list below for valid values)
+jumpAtkFwdMove			0 - if set, player will execute this move when they jump + fwd + attack(see list below for valid values)
+jumpAtkBackMove			0 - if set, player will execute this move when they jump + back + attack(see list below for valid values)
+jumpAtkRightMove		0 - if set, player will execute this move when they jump + rightattack(see list below for valid values)
+jumpAtkLeftMove			0 - if set, player will execute this move when they jump + left + attack(see list below for valid values)
+//NOTE: these "move" fields refer to saber moves that are defined in code.  Set to LS_NONE to have the normal move removed, set to one of the following values to override the current move
+*/
+
 
 qboolean	stop_icarus = qfalse;
 
@@ -646,7 +716,7 @@ void G_InitCvars( void ) {
 	com_buildScript = gi.cvar ("com_buildscript", "0", 0);
 
 	g_saberAutoBlocking = gi.cvar( "g_saberAutoBlocking", "1", CVAR_CHEAT );//must press +block button to do any blocking
-	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_CHEAT );//makes collision more precise, increases damage
+	g_saberRealisticCombat = gi.cvar( "g_saberMoreRealistic", "0", CVAR_SAVEGAME | CVAR_CHEAT );//makes collision more precise, increases damage
 	debug_subdivision = gi.cvar( "debug_subdivision", "0", CVAR_CHEAT|CVAR_INIT );//debug for dismemberment
 	g_dismemberProbabilities = gi.cvar ( "g_dismemberProbabilities", "1", CVAR_CHEAT );//0 = ignore probabilities, 1 = use probabilities
 	g_saberDamageCapping = gi.cvar( "g_saberDamageCapping", "1", CVAR_CHEAT );//caps damage of sabers vs players and NPC who use sabers
@@ -659,8 +729,7 @@ void G_InitCvars( void ) {
 	g_debugMelee = gi.cvar( "g_debugMelee", "0", CVAR_CHEAT );//just for debugging/development, test kicks and grabs
 	g_saberRestrictForce = gi.cvar( "g_saberRestrictForce", "0", CVAR_ARCHIVE );//restricts certain force powers when using a 2-handed saber or 2 sabers
 	g_saberPickuppableDroppedSabers = gi.cvar( "g_saberPickuppableDroppedSabers", "0", CVAR_CHEAT );//lets you pick up sabers that are dropped
-
-	g_AIsurrender = gi.cvar( "g_AIsurrender", "0", CVAR_CHEAT );
+	g_AIsurrender = gi.cvar( "g_AIsurrender", "1", CVAR_CHEAT );
 	g_numEntities = gi.cvar( "g_numEntities", "0", 0 );
 
 	gi.cvar( "newTotalSecrets", "0", CVAR_ROM );
@@ -694,6 +763,29 @@ void G_InitCvars( void ) {
 
 	gi.cvar( "g_clearstats", "1", CVAR_ROM|CVAR_NORESTART);
 
+	//new cvars yay - Dusty
+	g_autoRoll = gi.cvar("g_autoRoll", "1", CVAR_ARCHIVE);
+	g_saberNewCombat = gi.cvar("g_saberNewCombat", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberLocksEnabled = gi.cvar("g_saberLocksEnabled", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberLockStyle = gi.cvar("g_saberLockStyle", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberLockSuperBreaks = gi.cvar("g_saberLockSuperBreaks", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberForceDrains = gi.cvar("g_saberForceDrains", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberForceDrainAmount = gi.cvar("g_saberForceDrainAmount", "10", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_saberDamageScale = gi.cvar("g_saberDamageScale", "1.0", CVAR_SAVEGAME | CVAR_CHEAT);
+	g_saberDamageScaleGlobal = gi.cvar("g_saberDamageScaleGlobal", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_forceNewPowers = gi.cvar("g_forceNewPowers", "1", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_char_forcePowerMax = gi.cvar("g_char_forcePowerMax", "100", CVAR_CHEAT | CVAR_SAVEGAME );
+	g_char_forceRegen = gi.cvar("g_char_forceRegen", "100", CVAR_CHEAT | CVAR_SAVEGAME);
+	g_char_parryBonus = gi.cvar("g_char_parryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
+	g_char_breakParryBonus = gi.cvar("g_char_breakParryBonus", "0", CVAR_CHEAT | CVAR_SAVEGAME);
+	g_weaponVelocity = gi.cvar("g_weaponVelocity", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
+	g_weaponAltVelocity = gi.cvar("g_weaponAltVelocity", "1.0", CVAR_ARCHIVE | CVAR_CHEAT);
+
+	g_handicap_maxArmor = gi.cvar("handicap_maxArmor", "100", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_NORESTART);
+	g_saberDeflectAutoAim = gi.cvar("g_saberDeflectAutoAim", "0", CVAR_SAVEGAME);
+	g_playerCheatPowers = gi.cvar("g_playerCheatPowers", "0", CVAR_ARCHIVE | CVAR_SAVEGAME | CVAR_CHEAT);
+	g_moonJump = gi.cvar("g_moonJump", "0", CVAR_ARCHIVE | CVAR_CHEAT);
+	
 }
 /*
 ============

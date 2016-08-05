@@ -35,8 +35,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean altFire )
 //---------------------------------------------------------
 {
-	int velocity	= BLASTER_VELOCITY;
-	int	damage		= altFire ? weaponData[WP_BLASTER].altDamage : weaponData[WP_BLASTER].damage;
+	int	damage = altFire ? weaponData[WP_BLASTER].altDamage : weaponData[WP_BLASTER].damage;
+	int	velocity = altFire ? weaponData[WP_BLASTER].altVelocity : weaponData[WP_BLASTER].velocity;
 
 	if ( ent && ent->client && ent->client->NPC_class == CLASS_VEHICLE )
 	{
@@ -46,7 +46,8 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 	else
 	{
 		// If an enemy is shooting at us, lower the velocity so you have a chance to evade
-		if ( ent->client && ent->client->ps.clientNum != 0 && ent->client->NPC_class != CLASS_BOBAFETT )
+		if ( ent->client && ent->client->ps.clientNum != 0 && ent->client->NPC_class != CLASS_BOBAFETT
+			&& ent->client->NPC_class != CLASS_MANDA && ent->client->NPC_class != CLASS_COMMANDO)
 		{
 			if ( g_spskill->integer < 2 )
 			{
@@ -55,7 +56,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 			else
 			{
 				velocity *= BLASTER_NPC_HARD_VEL_CUT;
-			}
+			}					
 		}
 	}
 
@@ -69,7 +70,10 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 	missile->s.weapon = WP_BLASTER;
 
 	// Do the damages
-	if ( ent->s.number != 0 && ent->client->NPC_class != CLASS_BOBAFETT )
+	if (ent->s.number != 0 
+		&& ent->client->NPC_class != CLASS_BOBAFETT 
+		&& ent->client->NPC_class != CLASS_MANDA
+		&& ent->client->NPC_class == CLASS_COMMANDO)
 	{
 		if ( g_spskill->integer == 0 )
 		{
@@ -83,6 +87,8 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 		{
 			damage = BLASTER_NPC_DAMAGE_HARD;
 		}
+
+		damage *= weaponData[WP_BLASTER].npcDmgMult;
 	}
 
 //	if ( ent->client )

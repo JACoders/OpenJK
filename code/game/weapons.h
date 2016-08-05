@@ -120,8 +120,8 @@ typedef struct weaponData_s
 	int		ammoLow;			// Count when ammo is low
 
 	int		energyPerShot;		// Amount of energy used per shot
-	int		fireTime;			// Amount of time between firings
-	int		range;				// Range of weapon
+	int		fireTime;			// Amount of time between firings, saber ignition time (WP_SABER)
+	int		range;				// Range of weapon, saber deignition time (WP_SABER)
 
 	int		altEnergyPerShot;	// Amount of energy used for alt-fire
 	int		altFireTime;		// Amount of time between alt-firings
@@ -150,12 +150,20 @@ typedef struct weaponData_s
 	char	mAltMuzzleEffect[64];
 	int		mAltMuzzleEffectID;
 
-	int		damage;
-	int		altDamage;
-	int		splashDamage;
-	int		altSplashDamage;
-	float	splashRadius;
+	//values are self-explanatory except for WP_MELEE
+	int		damage;				//MELEE: right punch dmg
+	int		altDamage;			//MELEE: left punch dmg
+	int		splashDamage;		//MELEE: regular kick dmg
+	int		altSplashDamage;	//MELEE: mid-air/special kick dmg
+	float	splashRadius;		//MELEE: how much to multiply punch dmg for heavy punches
 	float	altSplashRadius;
+	int		velocity;			//MELEE: dmg randomness is +/- this amount for all kicks
+	int		altVelocity;		//MELEE: dmg randomness is +/- this amount for heavy punches
+	float	npcDmgMult;			//scales the damage NPCs do with primary fire
+	float	npcAltDmgMult;		//scales the damage NPCs do with alt fire
+	float	npcFireTimeMult;
+	float	npcAltFireTimeMult;
+	
 
 } weaponData_t;
 
@@ -165,6 +173,23 @@ typedef struct ammoData_s
 	char	icon[64];	// Name of ammo icon file
 	int		max;		// Max amount player can hold of ammo
 } ammoData_t;
+
+// Melee
+//--------
+#define RIGHT_PUNCH_DAMAGE			6
+#define LEFT_PUNCH_DAMAGE			3
+#define HEAVY_MELEE_MULT			4.0
+#define HEAVY_MELEE_RANDOMNESS		0
+#define KICK_DAMAGE					5
+#define SPECIAL_KICK_DAMAGE			10
+#define KICK_DAMAGE_RANDOMNESS		1
+
+
+// Lightsaber
+//--------
+#define IGNITION_TIME				1800
+#define BRYAR_PISTOL_DAMAGE			14
+#define BRYAR_CHARGE_UNIT			200.0f	// bryar charging gives us one more unit every 200ms--if you change this, you'll have to do the same in bg_pmove
 
 // Bryar Pistol
 //--------
@@ -381,6 +406,14 @@ typedef struct ammoData_s
 #define TUSKEN_RIFLE_DAMAGE_EASY	20		// damaging
 #define TUSKEN_RIFLE_DAMAGE_MEDIUM	30		// very damaging
 #define TUSKEN_RIFLE_DAMAGE_HARD	50		// extremely damaging
+
+// Noghri Stick
+//--------------
+#define NOGHRI_STICK_VEL			1200
+#define NOGHRI_STICK_DAMAGE			10
+#define NOGHRI_STICK_DAMAGE_EASY	1		
+#define NOGHRI_STICK_DAMAGE_MEDIUM	5		
+#define NOGHRI_STICK_DAMAGE_HARD	10
 
 
 #endif//#ifndef __WEAPONS_H__

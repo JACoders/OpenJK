@@ -175,6 +175,9 @@ stringID_table_t ClassTable[] =
 	ENUM2STRING(CLASS_ASSASSIN_DROID),
 	ENUM2STRING(CLASS_HAZARD_TROOPER),
 	ENUM2STRING(CLASS_VEHICLE),
+	ENUM2STRING(CLASS_CULTIST),
+	ENUM2STRING(CLASS_WOOKIEE),
+	ENUM2STRING(CLASS_MANDA),
 	{ "",	-1 }
 };
 
@@ -1930,6 +1933,11 @@ void NPC_BuildRandom( gentity_t *NPC )
 extern void G_MatchPlayerWeapon( gentity_t *ent );
 extern void G_InitPlayerFromCvars( gentity_t *ent );
 extern void G_SetG2PlayerModel( gentity_t * const ent, const char *modelName, const char *customSkin, const char *surfOff, const char *surfOn );
+extern qboolean blasterWeap(int wp);
+extern qboolean	lightBlasterWeap(int wp);
+extern qboolean heavyBlasterWeap(int wp);
+extern qboolean heavyWeap(int wp);
+
 qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 {
 	const char	*token;
@@ -1973,6 +1981,11 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	NPC->NPC->allWeaponOrder[6]	= WP_NONE;
 	NPC->NPC->allWeaponOrder[7]	= WP_NONE;
 */
+		NPC->NPC->weapList = new wpnList();
+		NPC->NPC->lightBlasterWeaps = new wpnList();
+		NPC->NPC->heavyBlasterWeaps = new wpnList();
+		NPC->NPC->heavyWeaps = new wpnList();
+
 		// fill in defaults
 		stats->sex			= SEX_MALE;
 		stats->aggression	= 3;
@@ -1996,6 +2009,14 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 		stats->walkSpeed	= 90;
 		stats->runSpeed		= 300;
 		stats->acceleration	= 15;//Increase/descrease speed this much per frame (20fps)
+
+		//new stats
+		stats->altFire = qfalse;	
+		stats->rareFire = qfalse;
+		stats->restrictJediPowers = qfalse;		
+		stats->meleeKicks = 0;				
+		stats->meleeKatas = 0;				
+		stats->saberMeleeKatas = qfalse;		
 	}
 	else
 	{
@@ -3529,6 +3550,18 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 						RegisterItem( FindItemForWeapon( (weapon_t)(weap) ) );	//precache the weapon
 						NPC->client->ps.ammo[weaponData[weap].ammoIndex] = ammoData[weaponData[weap].ammoIndex].max;
 					}
+
+					if (!parsingPlayer)
+					{
+						/*
+						if (lightBlasterWeap(weap)) NPC->NPC->lightBlasterWeaps->add(weap);
+						if (heavyBlasterWeap(weap)) NPC->NPC->heavyBlasterWeaps->add(weap);
+						if (heavyWeap(weap)) NPC->NPC->heavyWeaps->add(weap);
+
+						NPC->NPC->weapList->add(weap);
+						*/
+					}
+					
 				}
 				continue;
 			}
@@ -3547,13 +3580,261 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 					{
 						if ( n != 0 )
 						{
+							stats->altFire = qtrue;
+						}
+					}
+					if (NPC->NPC)
+					{
+						if (n != 0)
+						{
 							NPC->NPC->scriptFlags |= SCF_ALT_FIRE;
 						}
 					}
 					continue;
+					continue;
 				}
-				//Other unique behaviors/numbers that are currently hardcoded?
+
+				if (!Q_stricmp(token, "dontFire"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (NPC->client)
+					{
+						if (n != 0)
+						{
+							NPC->NPC->scriptFlags |= SCF_DONT_FIRE;
+						}
+					}
+					continue;
+				}
+
+				if (!Q_stricmp(token, "dontFlee"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (NPC->client)
+					{
+						if (n != 0)
+						{
+							NPC->NPC->scriptFlags |= SCF_DONT_FLEE;
+						}
+					}
+					continue;
+				}
+
+				if (!Q_stricmp(token, "rareFire"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (NPC->client)
+					{
+						if (n != 0)
+						{
+							NPC->NPC->scriptFlags |= SCF_DONT_FIRE;
+							stats->rareFire = qtrue;
+						}
+					}
+					continue;
+				}
+
+				//special stats that force certain attributes regardless of class
+				if (!Q_stricmp(token, "dualPistols"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (NPC->client && NPC->client->ps.weapon == WP_BLASTER_PISTOL)
+					{
+						if (n != 0)
+						{
+							NPC->flags |= FL_DUALPISTOLS;
+						}
+					}
+
+					continue;
+				}
+
+				//heavyMelee
+				if (!Q_stricmp(token, "heavyMelee"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+					if (NPC->client)
+					{
+						if (n != 0)
+						{
+							NPC->NPC->aiFlags |= NPCAI_HEAVY_MELEE;
+						}
+					}
+
+					continue;
+				}
+
+				//can they do melee katas with saber out like Boss_Kyle?
+				if (!Q_stricmp(token, "saberMeleeKatas"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+
+					if (NPC->client)
+					{
+						if (n != 0)
+						{
+							stats->saberMeleeKatas = qtrue;
+						}
+					}
+
+					continue;
+				}
+
+				if (!Q_stricmp(token, "undying"))
+				{
+					if (COM_ParseInt(&p, &n))
+					{
+						SkipRestOfLine(&p);
+						continue;
+					}
+
+					if (NPC->client)
+					{
+						if (n != 0)
+						{
+							NPC->flags |= FL_UNDYING;
+						}
+					}
+
+					continue;
+				}
 			}
+			
+
+			//these stats can affect the player
+			if (!Q_stricmp(token, "cortosis"))
+			{
+				if (COM_ParseInt(&p, &n))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				if (NPC->client)
+				{
+					if (n != 0)
+					{
+						NPC->flags |= FL_CORTOSIS;
+					}
+				}
+				continue;
+			}
+
+			if (!Q_stricmp(token, "magPlating"))
+			{
+				if (COM_ParseInt(&p, &n))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				if (NPC->client)
+				{
+					if (n != 0)
+					{
+						NPC->flags |= FL_MAGPLATING;
+					}
+				}
+				continue;
+			}
+
+			if (!Q_stricmp(token, "blastArmor"))
+			{
+				if (COM_ParseInt(&p, &n))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				if (NPC->client)
+				{
+					if (n != 0)
+					{
+						NPC->flags |= FL_BLASTARMOR;
+					}
+				}
+				continue;
+			}
+
+			//special melee characteristics
+			if (!Q_stricmp(token, "meleeKatas"))
+			{
+				if (COM_ParseInt(&p, &n))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				if (NPC->NPC)
+				{
+					if (n != 0)
+					{
+						stats->meleeKatas = n;
+						NPC->flags |= FL_MELEEKATAS;
+					}
+				}
+				continue;
+			}			
+
+			//can they do kicks in Melee?
+			if (!Q_stricmp(token, "meleeKicks"))
+			{
+				if (COM_ParseInt(&p, &n))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				if (NPC->NPC)
+				{
+					if (n != 0)
+					{
+						stats->meleeKicks = n;
+						NPC->flags |= FL_MELEEKICKS;
+					}
+				}
+				continue;
+			}
+
+			if (!Q_stricmp(token, "meleeKatasNoForceFx"))
+			{
+				if (COM_ParseInt(&p, &n))
+				{
+					SkipRestOfLine(&p);
+					continue;
+				}
+				if (NPC->client)
+				{
+					if (n != 0)
+					{
+						NPC->flags |= FL_MELEEKATA_NOFORCEFX;
+					}
+				}
+				continue;
+			}
+
+
+
+			//Other unique behaviors/numbers that are currently hardcoded?
 
 			//force powers
 			int fp = GetIDForString( FPTable, token );

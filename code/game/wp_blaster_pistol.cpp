@@ -36,6 +36,12 @@ void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire )
 {
 	vec3_t	start;
 	int		damage = !alt_fire ? weaponData[WP_BRYAR_PISTOL].damage : weaponData[WP_BRYAR_PISTOL].altDamage;
+	int		velocity = !alt_fire ? weaponData[WP_BRYAR_PISTOL].velocity : weaponData[WP_BRYAR_PISTOL].altVelocity;
+
+	if (ent->s.number != 0 && ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDA)
+	{
+		damage *= weaponData[WP_BRYAR_PISTOL].npcDmgMult;
+	}
 
 	VectorCopy( muzzle, start );
 	WP_TraceSetStart( ent, start, vec3_origin, vec3_origin );//make sure our start point isn't on the other side of a wall
@@ -67,7 +73,7 @@ void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire )
 
 	WP_MissileTargetHint(ent, start, forwardVec);
 
-	gentity_t	*missile = CreateMissile( start, forwardVec, BRYAR_PISTOL_VEL, 10000, ent, alt_fire );
+	gentity_t	*missile = CreateMissile( start, forwardVec, velocity, 10000, ent, alt_fire );
 
 	missile->classname = "bryar_proj";
 	if ( ent->s.weapon == WP_BLASTER_PISTOL

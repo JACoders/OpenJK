@@ -480,6 +480,13 @@ struct gclient_s {
 	//for trigger_space brushes
 	int			inSpaceSuffocation;
 	int			inSpaceIndex;
+
+	//new fields
+	int			saberReactivateTime;	//time after something deactivates a saber for AI to turn it back on
+	int			breakLimit;				
+	int			breakRecoveryTime;		//how long left to recover a defense point
+	int			breakCounter;			//how many strong attacks have we blocked recently?
+	//qboolean	saberDropped;			//did we drop our saber throw?
 };
 
 #define	MAX_PARMS	16
@@ -658,6 +665,7 @@ Ghoul2 Insert End
 	int			pushDebounceTime;
 	int			aimDebounceTime;
 	int			useDebounceTime;
+	
 
 //Unions for miscellaneous fields used under very specific circumstances
 	union

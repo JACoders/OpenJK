@@ -50,6 +50,7 @@ extern cvar_t		*d_slowmodeath;
 extern gentity_t *player;
 extern cvar_t	*debug_subdivision;
 extern cvar_t	*g_dismemberProbabilities;
+extern cvar_t	*g_forceNewPowers;
 
 gentity_t *g_lastClientDamaged;
 
@@ -98,6 +99,9 @@ static void G_TrackWeaponUsage( gentity_t *self, gentity_t *inflictor, int add, 
 static qboolean G_Dismemberable( gentity_t *self, int hitLoc );
 extern gitem_t	*FindItemForAmmo( ammo_t ammo );
 extern void WP_RemoveSaber( gentity_t *ent, int saberNum );
+
+qboolean blasterDamage(int mod);
+qboolean heavyDamage(int mod);
 
 
 qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName, char *returnSurfName, int returnSize );
@@ -3811,7 +3815,8 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 			//self->owner = old;
 		}
 		if ( self->client->NPC_class == CLASS_BOBAFETT
-			|| self->client->NPC_class == CLASS_ROCKETTROOPER )
+			|| self->client->NPC_class == CLASS_ROCKETTROOPER
+			|| self->client->NPC_class == CLASS_MANDA)
 		{
 			if ( self->client->moveType == MT_FLYSWIM )
 			{
@@ -4776,7 +4781,7 @@ void PlayerPain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const 
 		}
 		if ( damage != -1 && (mod==MOD_MELEE || damage==0/*fake damage*/ || (Q_irand( 0, 10 ) <= damage && self->client->damage_blood)) )
 		{//-1 == don't play pain anim
-			if ( ( ((mod==MOD_SABER||mod==MOD_MELEE)&&self->client->damage_blood) || mod == MOD_CRUSH ) && (self->s.weapon == WP_SABER||self->s.weapon==WP_MELEE||cg.renderingThirdPerson) )//FIXME: not only if using saber, but if in third person at all?  But then 1st/third person functionality is different...
+			if ( ( ((mod==MOD_SABER||mod==MOD_MELEE)/*&&self->client->damage_blood*/) || mod == MOD_CRUSH ) && (self->s.weapon == WP_SABER||self->s.weapon==WP_MELEE||cg.renderingThirdPerson) )//FIXME: not only if using saber, but if in third person at all?  But then 1st/third person functionality is different...
 			{//FIXME: only strong-level saber attacks should make me play pain anim?
 				if ( !G_CheckForStrongAttackMomentum( self ) && !PM_SpinningSaberAnim( self->client->ps.legsAnim )
 					&& !PM_SaberInSpecialAttack( self->client->ps.torsoAnim )
@@ -5447,6 +5452,7 @@ qboolean G_ImmuneToGas( gentity_t *ent )
 		|| ent->client->NPC_class == CLASS_SWAMPTROOPER
 		|| ent->client->NPC_class == CLASS_TUSKEN
 		|| ent->client->NPC_class == CLASS_BOBAFETT
+		|| ent->client->NPC_class == CLASS_MANDA
 		|| ent->client->NPC_class == CLASS_ROCKETTROOPER
 		|| ent->client->NPC_class == CLASS_SABER_DROID
 		|| ent->client->NPC_class == CLASS_ASSASSIN_DROID
@@ -5775,6 +5781,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		}
 	}
 
+	//new client flags for damage reduction
+	if ((blasterDamage(mod) && targ->flags&FL_MAGPLATING) || (heavyDamage(mod) && targ->flags&FL_BLASTARMOR) || (mod == MOD_SABER && targ->flags&FL_CORTOSIS)) 
+	{
+		damage /= 2;
+	}
+
 	if (targ
 		&& targ->client
 		&& !(dflags&DAMAGE_NO_PROTECTION)
@@ -5883,6 +5895,61 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_EXPLOSIVE:
 				case MOD_EXPLOSIVE_SPLASH:
 				case MOD_SABER:
+					if (g_forceNewPowers->integer)
+					{
+						doSound = (Q_irand(0, 4) == 0);
+						switch (targ->client->ps.forcePowerLevel[FP_PROTECT])
+						{
+						case FORCE_LEVEL_4:
+							//je suis invincible!!!
+							if (targ->client
+								&& attacker->client
+								&& targ->client->playerTeam == attacker->client->playerTeam
+								&& (!targ->NPC || !targ->NPC->charmedTime))
+							{//complain, but don't turn on them
+								G_FriendlyFireReaction(targ, attacker, dflags);
+							}
+							return;
+							break;
+						case FORCE_LEVEL_3:
+							//one-half damage
+							if (damage <= 1)
+							{
+								damage = 0;
+							}
+							else
+							{
+								damage = ceil((float)damage*0.5f);//was 0.1f);
+							}
+							break;
+						case FORCE_LEVEL_2:
+							//three-quarters damage
+							if (damage <= 1)
+							{
+								damage = 0;
+							}
+							else
+							{
+								damage = ceil((float)damage*0.75f);
+							}
+							break;
+						case FORCE_LEVEL_1:
+							//a little bit of protection
+							if (damage <= 1)
+							{
+								damage = 0;
+							}
+							else
+							{
+								damage = ceil((float)damage*0.9f);
+							}
+							break;
+						}
+						break;
+					}
+					else 
+					{//overflow to normal behavior
+					}					
 				case MOD_DISRUPTOR:
 				case MOD_SNIPER:
 				case MOD_CONC_ALT:
@@ -6978,5 +7045,46 @@ void G_RadiusDamage ( const vec3_t origin, gentity_t *attacker, float damage, fl
 
 			G_Damage (ent, NULL, attacker, dir, origin, (int)points, dFlags, mod);
 		}
+	}
+}
+
+qboolean blasterDamage(int mod) {
+	switch (mod) {
+	case MOD_BRYAR:
+	case MOD_BRYAR_ALT:
+	case MOD_BLASTER:
+	case MOD_BLASTER_ALT:
+	case MOD_BOWCASTER:
+	case MOD_BOWCASTER_ALT:
+	case MOD_REPEATER:
+		//case MOD_DEMP2,
+		//case MOD_DEMP2_ALT,
+		//NEW for JKA weapons:
+	case MOD_CONC:
+	case MOD_CONC_ALT:
+	case MOD_SEEKER:
+	case MOD_EMPLACED:
+		return qtrue;
+	default:
+		return qfalse;
+	}
+}
+
+qboolean heavyDamage(int mod) {
+	switch (mod) {
+	case MOD_REPEATER_ALT:
+	case MOD_FLECHETTE:
+	case MOD_FLECHETTE_ALT:
+	case MOD_ROCKET:
+	case MOD_ROCKET_ALT:
+	case MOD_THERMAL:
+	case MOD_THERMAL_ALT:
+	case MOD_DETPACK:
+	case MOD_LASERTRIP:
+	case MOD_LASERTRIP_ALT:
+	case MOD_MELEE:
+		return qtrue;
+	default:
+		return qfalse;
 	}
 }

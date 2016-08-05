@@ -48,6 +48,10 @@ extern void WP_SaberReflectCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_SaberUpdate( gentity_t *self, usercmd_t *ucmd );
 extern void WP_SaberStartMissileBlockCheck( gentity_t *self, usercmd_t *ucmd  );
 extern void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd );
+extern void WP_SaberBlockPointsRegenerate(gentity_t * self);
+extern void Jedi_MeleeEvasionDefense(gentity_t *self, usercmd_t *ucmd);
+extern void WP_CheckPlayerSaberEvents(gentity_t *self);
+
 extern gentity_t *SeekerAcquiresTarget ( gentity_t *ent, vec3_t pos );
 extern void FireSeeker( gentity_t *owner, gentity_t *target, vec3_t origin, vec3_t dir );
 extern qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold = 0.0f );
@@ -121,6 +125,7 @@ extern cvar_t	*d_slowmodeath;
 extern cvar_t	*g_debugMelee;
 extern vmCvar_t	cg_thirdPersonAlpha;
 extern vmCvar_t	cg_thirdPersonAutoAlpha;
+extern cvar_t	*g_saberNewCombat;
 
 void ClientEndPowerUps( gentity_t *ent );
 
@@ -1239,7 +1244,7 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 				|| self->client->NPC_class == CLASS_VEHICLE
 				|| ( magnitude >= 700 ) )//health here is used to simulate structural integrity
 			{
-				if ( (self->s.weapon == WP_SABER || self->s.number<MAX_CLIENTS || (self->client&&(self->client->NPC_class==CLASS_BOBAFETT||self->client->NPC_class==CLASS_ROCKETTROOPER))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000 )
+				if ((self->s.weapon == WP_SABER || self->s.number<MAX_CLIENTS || (self->client && (self->client->NPC_class == CLASS_BOBAFETT || self->client->NPC_class == CLASS_ROCKETTROOPER || self->client->NPC_class == CLASS_MANDA || self->client->NPC_class == CLASS_COMMANDO))) && self->client && self->client->ps.groundEntityNum < ENTITYNUM_NONE && magnitude < 1000)
 				{//players and jedi take less impact damage
 					//allow for some lenience on high falls
 					magnitude /= 2;
@@ -1295,7 +1300,25 @@ void DoImpact( gentity_t *self, gentity_t *other, qboolean damageSelf, trace_t *
 						magnitude = 0;
 					}
 
-					G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					if( (!Q_stricmp(self->NPC_type, "rosh_penin") ||
+						!Q_stricmp(self->NPC_type, "rosh_penin_noforce")) &&
+						!Q_stricmp(level.mapname, "yavin1b") )
+					{
+						// This is a small little fix I implemented over a matter of 3 commits due to bugs/etc.
+						// There is an EXTREMELY frustrating bug on yavin1b where Rosh can take enough damage from howlers to the point
+						// where, during one section where he jumps over a stream, he can suffer falling damage and die. So the player
+						// would be forced to repeat the level over and over again.
+						// Despite it being clearly a jump, the scripters for the level somehow forgot to add a cushion brush on
+						// the landing zone where Rosh would be, (fucking woglodytes that Raven outsourced the levels to, I swear...)
+						// resulting in a very weird and unnatural death. So it didn't make any sense. So I did the nasty thing and did
+						// it through code.
+						// This could also probably explain why Rosh suddenly dies for NO reason whatsoever in rare occasions on Jedi
+						// Master/Jedi Knight mode at the start of the level. --eezstreet
+					}
+					else
+					{
+						G_Damage( self, NULL, NULL, NULL, self->currentOrigin, magnitude/2, DAMAGE_NO_ARMOR, MOD_FALLING );//FIXME: MOD_IMPACT
+					}
 				}
 			}
 		}
@@ -2099,11 +2122,13 @@ gentity_t *G_KickTrace( gentity_t *ent, vec3_t kickDir, float kickDist, vec3_t k
 						{
 							G_Throw( hitEnt, kickDir, kickPush );
 						}
-						if ( kickPush >= 150.0f/*75.0f*/ && !Q_irand( 0, 2 ) )
-						{
+						if ( kickPush >= 150.0f/*75.0f*/ 
+							&& !Q_irand( 0, 2 )
+							&& ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] >= hitEnt->client->ps.forcePowerLevel[FP_SABER_DEFENSE])
+						{							
 							G_Knockdown( hitEnt, ent, kickDir, 300, qtrue );
 						}
-						else
+						else if (ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE] >= hitEnt->client->ps.forcePowerLevel[FP_SABER_DEFENSE])
 						{
 							G_Knockdown( hitEnt, ent, kickDir, kickPush, qtrue );
 						}
@@ -2233,7 +2258,8 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 	int			numEnts;
 	const float	radius = 100.0f;
 	const float	radiusSquared = (radius*radius);
-	float		bestDistSq = (radiusSquared+1.0f), distSq;
+	float		bestDistSq = (radiusSquared + 1.0f), distSq;
+		
 	int			i;
 	vec3_t		boltOrg;
 
@@ -2283,21 +2309,55 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 			continue;
 		}
 
-		if ( fabs(radiusEnts[i]->currentOrigin[2]-ent->currentOrigin[2])>8.0f )
-		{//have to be close in Z
-			continue;
+		if (ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS))
+		{//either I'm an kyle_boss (an NPC) or player and using cheats = less precise aim necessary
+			if (fabs(radiusEnts[i]->currentOrigin[2] - ent->currentOrigin[2]) > 8.0f)
+			{//have to be close in Z
+				continue;
+			}
 		}
+		else {//more precise aim needed if not cheating or a boss
+			if (fabs(radiusEnts[i]->currentOrigin[2] - ent->currentOrigin[2]) > 1.0f)
+			{//have to be close in Z
+				continue;
+			}
+		}
+		
 
 		if ( !PM_HasAnimation( radiusEnts[i], BOTH_PLAYER_PA_1 ) )
 		{//doesn't have matching anims
 			continue;
 		}
 
+		if (((radiusEnts[i]->client->ps.weapon == WP_SABER 
+			&& radiusEnts[i]->client->ps.forcePowersKnown&(1 << FP_SABER_OFFENSE) 
+			&& radiusEnts[i]->client->ps.forcePowersKnown&(1 << FP_SABER_DEFENSE)) //not on saber-wielders who have skillz
+			|| radiusEnts[i]->client->NPC_class == CLASS_REBORN //melee force users? Should we allow kataing?
+			|| radiusEnts[i]->client->NPC_class == CLASS_BOBAFETT //he's too leet
+			|| radiusEnts[i]->NPC->aiFlags&NPCAI_BOSS_CHARACTER)
+			|| ((!Q_stricmp("chewie", radiusEnts[i]->NPC_type) || radiusEnts[i]->client->NPC_class == CLASS_WOOKIEE) 
+				&& ent->client->NPC_class != CLASS_WOOKIEE) //if you are a wook you can kata other wooks?
+			&& !(ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS)))
+		{ //FIXME: Some kind of kata resist animation?
+			continue;
+		}
+
 		distSq = DistanceSquared( radiusEnts[i]->currentOrigin, boltOrg );
-		if ( distSq < bestDistSq )
-		{
-			bestDistSq = distSq;
-			bestEnt = radiusEnts[i];
+		if (ent->NPC || (g_debugMelee->integer && ent->s.number < MAX_CLIENTS))
+		{//either I'm an kyle_boss (an NPC) or player and using cheats = longer range for grabs
+			if (distSq < bestDistSq)
+			{
+				bestDistSq = distSq;
+				bestEnt = radiusEnts[i];
+			}
+		}
+		else { //player without cheats = 0.5x range
+			if (distSq < (bestDistSq * 0.5))
+			{
+				bestDistSq *= 0.5;
+				bestDistSq = distSq;
+				bestEnt = radiusEnts[i];
+			}
 		}
 	}
 
@@ -2312,6 +2372,7 @@ qboolean G_GrabClient( gentity_t *ent, usercmd_t *ucmd )
 		{
 			lockType = LOCK_KYLE_GRAB2;
 		}
+		
 		WP_SabersCheckLock2( ent, bestEnt, (sabersLockMode_t)lockType );
 		return qtrue;
 	}
@@ -3165,8 +3226,39 @@ qboolean G_CheckClampUcmd( gentity_t *ent, usercmd_t *ucmd )
 		float remainingTime = (animLength-elapsedTime);
 		float kickDist = (ent->maxs[0]*1.5f)+STAFF_KICK_RANGE+8.0f;//fudge factor of 8
 		float kickDist2 = kickDist;
-		int	  kickDamage = Q_irand( 3, 8 );
-		int	  kickDamage2 = Q_irand( 3, 8 );
+		int	  kickDamage; //= Q_irand( 3, 8 );
+		int	  kickDamage2; //= Q_irand( 3, 8 );
+
+		int	  kickDmgFlux = weaponData[WP_MELEE].velocity;
+		kickDamage = weaponData[WP_MELEE].splashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+		kickDamage2 = weaponData[WP_MELEE].splashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+
+		/*
+		switch (ent->client->ps.forcePowerLevel[FP_SABER_OFFENSE])
+		{
+		case FORCE_LEVEL_0:
+		case FORCE_LEVEL_1:			
+		case FORCE_LEVEL_2:
+		case FORCE_LEVEL_3:
+			kickDamage = Q_irand(5, 6);
+			kickDamage2 = Q_irand(5, 6);
+		}
+		*/
+
+		switch (ent->client->ps.legsAnim)
+		{
+		case BOTH_A7_KICK_S:
+		case BOTH_A7_KICK_BF:
+		case BOTH_A7_KICK_RL:
+		case BOTH_A7_KICK_F_AIR:
+		case BOTH_A7_KICK_R_AIR:
+		case BOTH_A7_KICK_L_AIR:
+		case BOTH_A7_KICK_B_AIR:
+			kickDamage = weaponData[WP_MELEE].altSplashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+			kickDamage2 = weaponData[WP_MELEE].altSplashDamage + Q_irand(-kickDmgFlux, kickDmgFlux);
+		}
+
+
 		int	  kickPush = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
 		int	  kickPush2 = Q_flrand( 100.0f, 200.0f );//Q_flrand( 50.0f, 100.0f );
 		qboolean doKick = qfalse;
@@ -5238,10 +5330,17 @@ extern cvar_t	*g_skippingcin;
 	WP_ForcePowersUpdate( ent, ucmd );
 
 	//if we have the saber in hand, check for starting a block to reflect shots
-	if ( ent->s.number < MAX_CLIENTS//player
-		|| ( ent->NPC && G_JediInNormalAI( ent ) ) )//NPC jedi not in a special AI mode
+	if ((ent->s.number < MAX_CLIENTS//player 
+		|| (ent->NPC && G_JediInNormalAI(ent)))) //NPC jedi not in a special AI mode
 	{
-		WP_SaberStartMissileBlockCheck( ent, ucmd  );
+		if (ent->client->ps.weapon == WP_SABER)
+		{
+			WP_SaberStartMissileBlockCheck(ent, ucmd);
+		}
+		else if (ent->s.number)
+		{//we may be a non-saber force user
+			Jedi_MeleeEvasionDefense(ent, ucmd);
+		}
 	}
 
 	// Update the position of the saber, and check to see if we're throwing it

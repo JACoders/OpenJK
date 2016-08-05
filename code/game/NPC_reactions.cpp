@@ -223,8 +223,8 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 	}
 
 	int		pain_anim = -1;
-	float	pain_chance;
-
+	float		pain_chance;
+	int		punchImmuneTime = 0;
 	if ( self->s.weapon == WP_THERMAL && self->client->fireDelay > 0 )
 	{//don't interrupt thermal throwing anim
 		return;
@@ -278,7 +278,16 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 		}
 		else if ( mod == MOD_MELEE )
 		{//higher in rank (skill) we are, less likely we are to be fazed by a punch
-			pain_chance = 1.0f - ((RANK_CAPTAIN-self->NPC->rank)/(float)RANK_CAPTAIN);
+			/*if (NPC->painDebounceTime < level.time - 350 * self->NPC->rank) 
+			{//strong enemies are immune for a short time after being staggered by a punch
+				pain_chance = 0.0f;
+			}
+			else
+			{
+				pain_chance = 1.0f - ((self->NPC->rank) / (float)(RANK_CAPTAIN + 5));
+			}*/
+
+			pain_chance = 1.0f - ((self->NPC->rank) / (float)(RANK_CAPTAIN + 2));
 		}
 		else if ( self->client->NPC_class == CLASS_PROTOCOL )
 		{
@@ -569,7 +578,10 @@ void NPC_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const ve
 		G_UseTargets2(self, other, self->paintarget);
 	}
 
-	if (self->client && self->client->NPC_class==CLASS_BOBAFETT)
+	if (self->client && 
+		(self->client->NPC_class==CLASS_BOBAFETT
+		|| self->client->NPC_class == CLASS_MANDA
+		|| self->client->NPC_class == CLASS_COMMANDO))
 	{
 		Boba_Pain( self, inflictor, damage, mod);
 	}

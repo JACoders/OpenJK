@@ -214,6 +214,9 @@ void G_ClassSetDontFlee( gentity_t *self )
 	case CLASS_ASSASSIN_DROID:
 	case CLASS_PLAYER:
 	case CLASS_VEHICLE:
+	case CLASS_CULTIST:
+	case CLASS_MANDA:
+	case CLASS_COMMANDO:
 		self->NPC->scriptFlags |= SCF_DONT_FLEE;
 		break;
 	default:
@@ -240,15 +243,15 @@ void G_ClassSetDontFlee( gentity_t *self )
 extern void	Vehicle_Register(gentity_t *ent);
 extern void RT_FlyStart( gentity_t *self );
 extern void SandCreature_ClearTimers( gentity_t *ent );
-void NPC_SetMiscDefaultData( gentity_t *ent )
+void NPC_SetMiscDefaultData(gentity_t *ent)
 {
-	if ( ent->spawnflags & SFB_CINEMATIC )
+	if (ent->spawnflags & SFB_CINEMATIC)
 	{//if a cinematic guy, default us to wait bState
 		ent->NPC->behaviorState = BS_CINEMATIC;
 	}
-	if ( ent->client->NPC_class == CLASS_RANCOR )
+	if (ent->client->NPC_class == CLASS_RANCOR)
 	{
-		if ( Q_stricmp( "mutant_rancor", ent->NPC_type ) == 0 )
+		if (Q_stricmp("mutant_rancor", ent->NPC_type) == 0)
 		{
 			ent->spawnflags |= 1;//just so I know it's a mutant rancor as opposed to a normal one
 			ent->NPC->aiFlags |= NPCAI_NAV_THROUGH_BREAKABLES;
@@ -261,37 +264,38 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		}
 		ent->flags |= FL_NO_KNOCKBACK;
 	}
-	else if ( ent->client->NPC_class == CLASS_SAND_CREATURE )
+	else if (ent->client->NPC_class == CLASS_SAND_CREATURE)
 	{//???
-		ent->clipmask = CONTENTS_SOLID|CONTENTS_MONSTERCLIP;//it can go through others
+		ent->clipmask = CONTENTS_SOLID | CONTENTS_MONSTERCLIP;//it can go through others
 		ent->contents = 0;//can't be hit?
 		ent->takedamage = qfalse;//can't be killed
 		ent->flags |= FL_NO_KNOCKBACK;
-		SandCreature_ClearTimers( ent );
+		SandCreature_ClearTimers(ent);
 	}
-	else if ( ent->client->NPC_class == CLASS_BOBAFETT )
+	else if (ent->client->NPC_class == CLASS_BOBAFETT)
 	{//set some stuff, precache
-		ent->client->ps.forcePowersKnown |= ( 1 << FP_LEVITATION );
-		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
-		ent->client->ps.forcePower	= 100;
-		ent->NPC->scriptFlags		|= (SCF_NAV_CAN_FLY|SCF_FLY_WITH_JET|SCF_NAV_CAN_JUMP);
-		NPC->flags					|= FL_UNDYING;		// Can't Kill Boba
-	}
-	else if ( ent->client->NPC_class == CLASS_ROCKETTROOPER )
-	{//set some stuff, precache
-		ent->client->ps.forcePowersKnown |= ( 1 << FP_LEVITATION );
+		ent->client->ps.forcePowersKnown |= (1 << FP_LEVITATION);
 		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
 		ent->client->ps.forcePower = 100;
-		ent->NPC->scriptFlags |= (SCF_NAV_CAN_FLY|SCF_FLY_WITH_JET|SCF_NAV_CAN_JUMP);//no groups, no combat points!
-		if ( Q_stricmp( "rockettrooper2Officer", ent->NPC_type ) == 0 )
+		ent->NPC->scriptFlags |= (SCF_NAV_CAN_FLY | SCF_FLY_WITH_JET | SCF_NAV_CAN_JUMP);
+		if (!Q_stricmp("boba_fett", ent->NPC_type))
+			NPC->flags |= FL_UNDYING;		// Can't Kill Boba
+	}
+	else if (ent->client->NPC_class == CLASS_ROCKETTROOPER)
+	{//set some stuff, precache
+		ent->client->ps.forcePowersKnown |= (1 << FP_LEVITATION);
+		ent->client->ps.forcePowerLevel[FP_LEVITATION] = FORCE_LEVEL_3;
+		ent->client->ps.forcePower = 100;
+		ent->NPC->scriptFlags |= (SCF_NAV_CAN_FLY | SCF_FLY_WITH_JET | SCF_NAV_CAN_JUMP);//no groups, no combat points!
+		if (Q_stricmp("rockettrooper2Officer", ent->NPC_type) == 0)
 		{//start in the air, use spotlight
 			//ent->NPC->scriptFlags |= SCF_NO_GROUPS;
 			ent->NPC->scriptFlags &= ~SCF_FLY_WITH_JET;
-			RT_FlyStart( ent );
-			NPC_SetMoveGoal( ent, ent->currentOrigin, 16, qfalse, -1, NULL );
-			VectorCopy( ent->currentOrigin, ent->pos1 );
+			RT_FlyStart(ent);
+			NPC_SetMoveGoal(ent, ent->currentOrigin, 16, qfalse, -1, NULL);
+			VectorCopy(ent->currentOrigin, ent->pos1);
 		}
-		if ( (ent->spawnflags&2) )
+		if ((ent->spawnflags & 2))
 		{//spotlight
 			ent->client->ps.eFlags |= EF_SPOTLIGHT;
 		}
@@ -300,126 +304,162 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 	{
 		ent->flags |= FL_NO_KNOCKBACK;
 	}
-	else if ( ent->client->NPC_class == CLASS_SABOTEUR )
+	else if (ent->client->NPC_class == CLASS_SABOTEUR)
 	{//can cloak
 		ent->NPC->aiFlags |= NPCAI_SHIELDS;//give them the ability to cloak
-		if ( (ent->spawnflags&16) )
+		if ((ent->spawnflags & 16))
 		{//start cloaked
-			Saboteur_Cloak( ent );
+			Saboteur_Cloak(ent);
 		}
 	}
-	else if ( ent->client->NPC_class == CLASS_ASSASSIN_DROID )
+	else if (ent->client->NPC_class == CLASS_ASSASSIN_DROID)
 	{
 		ent->client->ps.stats[STAT_ARMOR] = 250;	// start with full armor
-		if (ent->s.weapon==WP_BLASTER)
+		if (ent->s.weapon == WP_BLASTER)
 		{
 			ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 		}
 		ent->flags |= (FL_NO_KNOCKBACK);
 	}
 
-	if (ent->spawnflags&4096)
+	if (ent->spawnflags & 4096)
 	{
 		ent->NPC->scriptFlags |= SCF_NO_GROUPS;//don't use combat points or group AI
 	}
 
-	if ( Q_stricmp( "DKothos", ent->NPC_type ) == 0
-		|| Q_stricmp( "VKothos", ent->NPC_type ) == 0 )
+	if (Q_stricmp("DKothos", ent->NPC_type) == 0
+		|| Q_stricmp("VKothos", ent->NPC_type) == 0)
 	{
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;
 		ent->NPC->aiFlags |= NPCAI_HEAL_ROSH;
 		ent->count = 100;
 	}
-	else if ( Q_stricmp( "rosh_dark", ent->NPC_type ) == 0 )
+	else if (Q_stricmp("rosh_dark", ent->NPC_type) == 0)
 	{
 		ent->NPC->aiFlags |= NPCAI_ROSH;
 	}
 
-	if ( Q_stricmpn( ent->NPC_type, "hazardtrooper", 13 ) == 0 )
+	if (Q_stricmpn(ent->NPC_type, "hazardtrooper", 13) == 0)
 	{//hazard trooper
 		ent->NPC->scriptFlags |= SCF_NO_GROUPS;//don't use combat points or group AI
-		ent->flags |= (FL_SHIELDED|FL_NO_KNOCKBACK);//low-level shots bounce off, no knockback
+		ent->flags |= (FL_SHIELDED | FL_NO_KNOCKBACK);//low-level shots bounce off, no knockback
 	}
-	if ( !Q_stricmp( "Yoda", ent->NPC_type ) )
+	if (!Q_stricmp("Yoda", ent->NPC_type))
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_NO_FORCE;//force powers don't work on him
 		ent->NPC->aiFlags |= NPCAI_BOSS_CHARACTER;
 	}
-	if ( !Q_stricmp( "emperor", ent->NPC_type )
-		|| !Q_stricmp( "cultist_grip", ent->NPC_type )
-		|| !Q_stricmp( "cultist_drain", ent->NPC_type )
-		|| !Q_stricmp( "cultist_lightning", ent->NPC_type ))
+	if (!Q_stricmp("emperor", ent->NPC_type)
+		|| !Q_stricmp("cultist_grip", ent->NPC_type)
+		|| !Q_stricmp("cultist_drain", ent->NPC_type)
+		|| !Q_stricmp("cultist_lightning", ent->NPC_type)
+		|| ent->client->NPC_class == CLASS_CULTIST)
 	{//FIXME: extern this into NPC.cfg?
 		ent->NPC->scriptFlags |= SCF_DONT_FIRE;//so he uses only force powers
 	}
-	if (!Q_stricmp( "Rax", ent->NPC_type ) )
+	if (!Q_stricmp("Rax", ent->NPC_type))
 	{
 		ent->NPC->scriptFlags |= SCF_DONT_FLEE;
 	}
-	if ( !Q_stricmp( "cultist_destroyer", ent->NPC_type ) )
+	if (!Q_stricmp("cultist_destroyer", ent->NPC_type))
 	{
 		ent->splashDamage = 1000;
 		ent->splashRadius = 384;
 		//FIXME: precache these!
-		ent->fxID = G_EffectIndex( "force/destruction_exp" );
-		ent->NPC->scriptFlags |= (SCF_DONT_FLEE|SCF_IGNORE_ALERTS);
+		ent->fxID = G_EffectIndex("force/destruction_exp");
+		ent->NPC->scriptFlags |= (SCF_DONT_FLEE | SCF_IGNORE_ALERTS);
 		ent->NPC->ignorePain = qtrue;
 	}
-	if ( Q_stricmp( "chewie", ent->NPC_type ) )
+	if (!Q_stricmp("chewie", ent->NPC_type)
+		|| ent->client->NPC_class == CLASS_WOOKIEE
+		|| ent->client->NPC_class == CLASS_GRAN
+		|| ent->client->NPC_class == CLASS_TRANDOSHAN)
 	{
 		//in case chewie ever loses his gun...
+		//or if Trando or Gran want to get rough
 		ent->NPC->aiFlags |= NPCAI_HEAVY_MELEE;
 	}
 	//==================
-	if ( ent->client->ps.saber[0].type != SABER_NONE
-		&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON)||!ent->weaponModel[0]) )
+	if (ent->client->ps.saber[0].type != SABER_NONE
+		&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))
 	{//if I'm equipped with a saber, initialize it (them)
 		ent->client->ps.SaberDeactivate();
-		ent->client->ps.SetSaberLength( 0 );
-		WP_SaberInitBladeData( ent );
-		if ( ent->client->ps.weapon == WP_SABER )
+		ent->client->ps.SetSaberLength(0);
+		WP_SaberInitBladeData(ent);
+		if (ent->client->ps.weapon == WP_SABER)
 		{//this is our current weapon, add the models now
-			WP_SaberAddG2SaberModels( ent );
+			WP_SaberAddG2SaberModels(ent);
 		}
-		Jedi_ClearTimers( ent );
+		Jedi_ClearTimers(ent);
 	}
-	if ( ent->client->ps.forcePowersKnown != 0 )
+	if (ent->client->ps.forcePowersKnown != 0)
 	{
-		WP_InitForcePowers( ent );
+		WP_InitForcePowers(ent);
 		if (ent->client->ps.forcePowerLevel[FP_LEVITATION] > FORCE_LEVEL_0)
 		{
 			ent->NPC->scriptFlags |= SCF_NAV_CAN_JUMP;	// anyone who has any force jump can jump
 		}
 	}
-	if ( ent->client->NPC_class == CLASS_HOWLER )
+	if (ent->client->NPC_class == CLASS_HOWLER)
 	{
-		Howler_ClearTimers( ent );
+		Howler_ClearTimers(ent);
 		ent->NPC->scriptFlags |= SCF_NO_FALLTODEATH;
 		ent->flags |= FL_NO_IMPACT_DMG;
 		ent->NPC->scriptFlags |= SCF_NAV_CAN_JUMP;	// These jokers can jump
 	}
-	if ( ent->client->NPC_class == CLASS_DESANN
+	if (ent->client->NPC_class == CLASS_DESANN
 		|| ent->client->NPC_class == CLASS_TAVION
 		|| ent->client->NPC_class == CLASS_LUKE
 		|| ent->client->NPC_class == CLASS_KYLE
-		|| Q_stricmp("tavion_scepter", ent->NPC_type ) == 0
-		|| Q_stricmp("alora_dual", ent->NPC_type ) == 0 )
+		|| Q_stricmp("tavion_scepter", ent->NPC_type) == 0
+		|| Q_stricmp("alora_dual", ent->NPC_type) == 0)
 	{
 		ent->NPC->aiFlags |= NPCAI_BOSS_CHARACTER;
 	}
-	else if ( Q_stricmp( "alora", ent->NPC_type ) == 0
-		|| Q_stricmp( "rosh_dark", ent->NPC_type ) == 0 )
+	else if (Q_stricmp("alora", ent->NPC_type) == 0
+		|| Q_stricmp("rosh_dark", ent->NPC_type) == 0)
 	{
 		ent->NPC->aiFlags |= NPCAI_SUBBOSS_CHARACTER;
 	}
-	if ( ent->client->NPC_class == CLASS_TUSKEN )
+	if (ent->client->NPC_class == CLASS_TUSKEN)
 	{
-		if ( g_spskill->integer > 1 )
+		if (g_spskill->integer > 1)
 		{//on hard, tusken raiders are faster than you
 			ent->NPC->stats.runSpeed = 280;
 			ent->NPC->stats.walkSpeed = 65;
 		}
 	}
+
+	//new checks - Dusty
+	/*
+	if (ent->NPC)
+	{
+		if (ent->NPC->stats.rareFire || ent->NPC->stats.dontFire)
+		{
+			ent->NPC->scriptFlags |= SCF_DONT_FIRE;
+		}
+		if (ent->NPC->stats.dontFlee)
+		{
+			ent->NPC->scriptFlags |= SCF_DONT_FLEE;
+		}
+		if (ent->NPC && ent->NPC->stats.altFire)
+		{
+			ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+		}
+		if (ent->NPC->stats.heavyMelee > -1)
+		{
+			if (ent->NPC->stats.heavyMelee == 0) ent->NPC->aiFlags &= ~NPCAI_HEAVY_MELEE;
+			else ent->NPC->aiFlags |= NPCAI_HEAVY_MELEE;
+		}
+		if (ent->NPC->stats.undying)
+		{
+			ent->flags |= FL_UNDYING;
+		}
+	}
+	*/
+	
+
+
 	//***I'm not sure whether I should leave this as a TEAM_ switch, I think NPC_class may be more appropriate - dmv
 	switch(ent->client->playerTeam)
 	{
@@ -457,6 +497,12 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 			{
 			case WP_BRYAR_PISTOL://FIXME: new weapon: imp blaster pistol
 			case WP_BLASTER_PISTOL:
+				if (ent->flags&FL_DUALPISTOLS
+					&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
+				{//dual blaster pistols, so add the left-hand one, too
+					G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1);
+				}
+				break;
 			case WP_DISRUPTOR:
 			case WP_BOWCASTER:
 			case WP_REPEATER:
@@ -566,6 +612,11 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 					{//dual blaster pistols, so add the left-hand one, too
 						G_CreateG2AttachedWeaponModel( ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1 );
 					}
+					else if (ent->flags&FL_DUALPISTOLS
+						&& (!(ent->NPC->aiFlags&NPCAI_MATCHPLAYERWEAPON) || !ent->weaponModel[0]))//they do this themselves
+					{//dual blaster pistols, so add the left-hand one, too
+						G_CreateG2AttachedWeaponModel(ent, weaponData[ent->client->ps.weapon].weaponMdl, ent->handLBolt, 1);
+					}
 					break;
 				case WP_DISRUPTOR:
 					//Sniper
@@ -607,13 +658,14 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 					NPCInfo->scriptFlags |= SCF_PILOT;
 
 					ST_ClearTimers( ent );
-					if ( ent->NPC->rank >= RANK_COMMANDER )
-					{//commanders use alt-fire
-						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+					if ( ent->NPC->rank >= RANK_COMMANDER 
+						&& ent->client->NPC_class == CLASS_IMPERIAL )
+					{//imp commanders and rodians with E11s use alt-fire
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 					}
-					if ( !Q_stricmp( "rodian2", ent->NPC_type ) )
+					if ( ent->client->NPC_class == CLASS_RODIAN )
 					{
-						//ent->NPC->scriptFlags |= SCF_ALT_FIRE;
+						ent->NPC->scriptFlags |= SCF_ALT_FIRE;
 					}
 					break;
 				}
@@ -632,8 +684,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		}
 		break;
 	}
-
-
+	
 	if ( ent->client->NPC_class == CLASS_ATST || ent->client->NPC_class == CLASS_MARK1 ) // chris/steve/kevin requested that the mark1 be shielded also
 	{
 		ent->flags |= (FL_SHIELDED|FL_NO_KNOCKBACK);
@@ -648,6 +699,7 @@ void NPC_SetMiscDefaultData( gentity_t *ent )
 		ent->client->NPC_class==CLASS_GLIDER ||
 		ent->client->NPC_class==CLASS_IMPWORKER ||
 		ent->client->NPC_class==CLASS_BOBAFETT ||
+		ent->client->NPC_class == CLASS_MANDA ||
 		ent->client->NPC_class==CLASS_ROCKETTROOPER
 		)
 	{
@@ -1058,7 +1110,14 @@ void NPC_Begin (gentity_t *ent)
 			}
 			else
 			{
-				ent->NPC->stats.health += ent->NPC->stats.health/4 * g_spskill->integer; // 100% on easy, 125% on medium, 150% on hard
+				if (ent->client->playerTeam == TEAM_PLAYER)
+				{ //good guys lose health for difficulty, don't gain
+					ent->NPC->stats.health = (ent->NPC->stats.health * 1.5) - (ent->NPC->stats.health / 4 * g_spskill->integer); // 150% on easy, 125% on medium, 100% on hard
+				}
+				else
+				{ //bad guys get health bonuses
+					ent->NPC->stats.health += ent->NPC->stats.health / 4 * g_spskill->integer; // 100% on easy, 125% on medium, 150% on hard
+				}
 			}
 		}
 
@@ -1380,7 +1439,8 @@ void NPC_DefaultScriptFlags( gentity_t *ent )
 		return;
 	}
 	//Set up default script flags
-	ent->NPC->scriptFlags = (SCF_CHASE_ENEMIES|SCF_LOOK_FOR_ENEMIES);
+	ent->NPC->scriptFlags |= SCF_CHASE_ENEMIES;
+	ent->NPC->scriptFlags |= SCF_LOOK_FOR_ENEMIES;
 }
 
 #define MAX_SAFESPAWN_ENTS 4

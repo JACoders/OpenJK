@@ -175,7 +175,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 {
 	vec3_t	start;
 	int		damage	= weaponData[WP_ROCKET_LAUNCHER].damage;
-	float	vel = ROCKET_VELOCITY;
+	float	vel = weaponData[WP_ROCKET_LAUNCHER].velocity;
 
 	if ( alt_fire )
 	{
@@ -206,10 +206,12 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 		{
 			damage = ROCKET_NPC_DAMAGE_HARD;
 		}
-		if (ent->client && ent->client->NPC_class==CLASS_BOBAFETT)
+		if (ent->client && (ent->client->NPC_class == CLASS_BOBAFETT || ent->client->NPC_class == CLASS_MANDA))
 		{
 			damage = damage/2;
 		}
+
+		damage = weaponData[WP_ROCKET_LAUNCHER].npcDmgMult;
 	}
 
 	if ( alt_fire )

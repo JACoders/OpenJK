@@ -27,6 +27,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	User interface building blocks and support functions.
 **********************************************************************/
 
+// leave this at the top of all UI_xxxx files for PCH reasons...
+//
+
 #include "../server/exe_headers.h"
 
 #include "ui_local.h"
@@ -409,9 +412,7 @@ UI_SaveMenu_f
 */
 static void UI_SaveMenu_f( void )
 {
-#ifdef JK2_MODE
 	ui.PrecacheScreenshot();
-#endif
 
 	trap_Key_SetCatcher( KEYCATCH_UI );
 	Menus_ActivateByName("ingamesaveMenu");

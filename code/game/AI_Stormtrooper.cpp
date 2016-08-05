@@ -1267,7 +1267,9 @@ void NPC_BSST_Patrol( void )
 				ST_Speech( NPC, SPEECH_COVER, 0 );
 				return;
 			}
-			else if (NPC->client->NPC_class==CLASS_BOBAFETT)
+			else if (NPC->client->NPC_class==CLASS_BOBAFETT
+				|| NPC->client->NPC_class == CLASS_MANDA
+				|| NPC->client->NPC_class == CLASS_COMMANDO)
 			{
 				//NPCInfo->lastAlertID = level.alertEvents[eventID].ID;
 				if ( !level.alertEvents[alertEvent].owner ||
@@ -2355,11 +2357,39 @@ void NPC_BSST_Attack( void )
 
 	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
+		/*if ( enemyDist < (64*64) )			
+		{//enemy is close and not using saber or very close and random chance
+			if (NPC->client->ps.weapon != WP_MELEE)
+			{//I'm not in melee
+				trace_t	trace;
+				gi.trace(&trace, NPC->currentOrigin, NPC->enemy->mins, NPC->enemy->maxs, NPC->enemy->currentOrigin, NPC->s.number, NPC->enemy->clipmask, (EG2_Collision)0, 0);
+				if (!trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPC->enemy->s.number))
+				{//I can get right to him
+					//reset fire-timing variables
+					NPC_ChangeWeapon(WP_MELEE);
+					}
+			}
+		}
+		else if (enemyDist > 65536 || (NPC->enemy->client && NPC->enemy->client->ps.weapon == WP_SABER && NPC->enemy->client->ps.SaberActive()))//256
+		{//enemy is far or using saber
+			if (NPC->client->ps.weapon == WP_MELEE && (NPC->client->ps.stats[STAT_WEAPONS] & (1 << WP_THERMAL)))
+			{//fisticuffs, make switch to thermal if have it
+				//reset fire-timing variables
+				NPC_ChangeWeapon(WP_THERMAL);
+			}
+		}*/ //melee punch stuff
 		if ( (NPC->client->ps.weapon == WP_FLECHETTE || NPC->client->ps.weapon == WP_REPEATER) &&
 			(NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 		{//shooting an explosive, but enemy too close, switch to primary fire
-			NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
-			//FIXME: we can never go back to alt-fire this way since, after this, we don't know if we were initially supposed to use alt-fire or not...
+			NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;			
+		}
+	}
+	else if (enemyDist >= MIN_ROCKET_DIST_SQUARED)
+	{
+		if ((NPC->client->ps.weapon == WP_FLECHETTE || NPC->client->ps.weapon == WP_REPEATER) &&
+			(NPCInfo->stats.altFire))
+		{//shooting an explosive, enemy was too close but not anymore
+			NPCInfo->scriptFlags |= SCF_ALT_FIRE;
 		}
 	}
 	else if ( enemyDist > 65536 )//256 squared

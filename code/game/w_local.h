@@ -38,6 +38,7 @@ extern qboolean Jedi_DodgeEvasion( gentity_t *self, gentity_t *shooter, trace_t 
 extern qboolean PM_DroidMelee( int npc_class );
 extern void G_Knockdown( gentity_t *self, gentity_t *attacker, const vec3_t pushDir, float strength, qboolean breakSaberLock );
 extern qboolean G_HasKnockdownAnims( gentity_t *ent );
+extern float WP_SpeedOfMissileForWeapon(int wp, qboolean alt_fire);
 
 extern gentity_t *ent_list[MAX_GENTITIES];
 

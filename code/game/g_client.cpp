@@ -49,6 +49,7 @@ extern cvar_t	*g_saber2;
 extern cvar_t	*g_saber_color;
 extern cvar_t	*g_saber2_color;
 extern cvar_t	*g_saberDarkSideSaberColor;
+extern cvar_t	*g_playerCheatPowers;
 
 // g_client.c -- client functions that don't happen every frame
 
@@ -454,7 +455,7 @@ if desired.
 void ClientUserinfoChanged( int clientNum ) {
 	gentity_t	*ent = g_entities + clientNum;
 	gclient_t	*client = ent->client;
-	int			health=100, maxHealth=100;
+	int			health = 100;
 	const char	*s=NULL;
 	char		userinfo[MAX_INFO_STRING]={0},	buf[MAX_INFO_STRING]={0},
 				sound[MAX_STRING_CHARS]={0},	oldname[34]={0};
@@ -472,12 +473,11 @@ void ClientUserinfoChanged( int clientNum ) {
 	ClientCleanName( s, client->pers.netname, sizeof( client->pers.netname ) );
 
 	// set max health
-	maxHealth = 100;
-	health = Com_Clampi( 1, 100, atoi( Info_ValueForKey( userinfo, "handicap" ) ) );
+	int handicapLimit = 200; //the health AND armor limit for handicap cvar
+	int handicap = atoi(Info_ValueForKey(userinfo, "handicap"));
+
+	health = Com_Clampi(1, handicapLimit, handicap); //forces handicap value limit
 	client->pers.maxHealth = health;
-	if ( client->pers.maxHealth < 1 || client->pers.maxHealth > maxHealth )
-		client->pers.maxHealth = 100;
-	client->ps.stats[STAT_MAX_HEALTH] = client->pers.maxHealth;
 
 	// sounds
 	Q_strncpyz( sound, Info_ValueForKey (userinfo, "snd"), sizeof( sound ) );
@@ -1187,12 +1187,14 @@ qboolean G_SetG2PlayerModelInfo( gentity_t *ent, const char *modelName, const ch
 			ent->footLBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*l_leg_foot");
 			ent->footRBolt = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*r_leg_foot");
 			if ( ent->client->NPC_class == CLASS_BOBAFETT
-				|| ent->client->NPC_class == CLASS_ROCKETTROOPER )
+				|| ent->client->NPC_class == CLASS_ROCKETTROOPER
+				|| ent->client->NPC_class == CLASS_MANDA)
 			{//get jet bolts
 				ent->genericBolt1 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet1" );
 				ent->genericBolt2 = gi.G2API_AddBolt( &ent->ghoul2[ent->playerModel], "*jet2" );
 			}
-			if ( ent->client->NPC_class == CLASS_BOBAFETT )
+			if ( ent->client->NPC_class == CLASS_BOBAFETT
+				|| ent->client->NPC_class == CLASS_MANDA)
 			{//get the flamethrower bolt
 				ent->genericBolt3 = gi.G2API_AddBolt(&ent->ghoul2[ent->playerModel], "*flamethrower");
 			}
@@ -2024,7 +2026,8 @@ void G_ChangePlayerModel( gentity_t *ent, const char *newModel )
 			ClientUserinfoChanged( ent->s.number );
 			//Ugh, kind of a hack for now:
 			if ( ent->client->NPC_class == CLASS_BOBAFETT
-				|| ent->client->NPC_class == CLASS_ROCKETTROOPER )
+				|| ent->client->NPC_class == CLASS_ROCKETTROOPER
+				|| ent->client->NPC_class == CLASS_MANDA)
 			{
 				//FIXME: remove saber, too?
 				Boba_Precache();	// player as boba?
@@ -2229,7 +2232,11 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		}
 		ent->classname = "player";
 		ent->targetname = ent->script_targetname = "player";
-		if ( ent->client->NPC_class == CLASS_NONE )
+		if (g_playerCheatPowers->integer)
+		{
+			ent->client->NPC_class = CLASS_LUKE;
+		}
+		else if ( ent->client->NPC_class == CLASS_NONE )
 		{
 			ent->client->NPC_class = CLASS_PLAYER;
 		}

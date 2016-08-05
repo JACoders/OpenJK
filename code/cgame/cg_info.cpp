@@ -55,6 +55,8 @@ int obj_graphics[MAX_OBJ_GRAPHICS];
 
 qboolean CG_ForcePower_Valid(int forceKnownBits, int index);
 
+//extern vmCvar_t ui_loadScreen_iconScaling;
+
 /*
 ====================
 ObjectivePrint_Line
@@ -468,6 +470,19 @@ static int CG_DrawLoadWeaponsPrintRow( const char *itemName, int weaponsBits,int
 	iconSize = 60;
 	pad = 12;
 
+	/*
+	if (ui_loadScreen_iconScaling.integer)
+	{
+		iconSize = height;
+		pad = width;
+	}
+	else
+	{
+		iconSize = 60;
+		pad = 12;
+	}
+	*/
+
 	// calculate placement of weapon icons
 	holdX = x + (width - ((iconSize*rowIconCnt) + (pad * (rowIconCnt-1))))/2;
 
@@ -714,7 +729,7 @@ CG_DrawLoadingScreen
 Load screen displays the map pic, the mission briefing and weapons/force powers
 ====================
 */
-static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName)
+static void CG_DrawLoadingScreen( qhandle_t	levelshot, qhandle_t savepic, const char *mapName)
 {
 	int xPos,yPos,width,height;
 	vec4_t	color;
@@ -768,6 +783,25 @@ static void CG_DrawLoadingScreen( qhandle_t	levelshot ,const char *mapName)
 			CG_DrawPic( xPos, yPos, width, height, levelshot );
 		}
 	}
+	
+	// Print savegame pic
+	/*
+	if (cgi_UI_GetMenuItemInfo(
+		"loadScreen",
+		"savepic",
+		&xPos,
+		&yPos,
+		&width,
+		&height,
+		color,
+		&background))
+	{		
+		{
+			cgi_R_SetColor(color);
+			CG_DrawPic(xPos, yPos, width, height, savepic);
+		}
+	}
+	*/
 
 	// Get player weapons and force power info
 	CG_GetLoadScreenInfo(&weapons,&forcepowers);
@@ -798,8 +832,11 @@ void CG_DrawInformation( void ) {
 	// draw the dialog background
 	const char	*info	= CG_ConfigString( CS_SERVERINFO );
 	const char	*s		= Info_ValueForKey( info, "mapname" );
-
-	qhandle_t	levelshot;
+	char	t[1024];
+	gi.Cvar_VariableStringBuffer(sCVARNAME_PLAYERSAVE, t, sizeof(t)); //better way to get savegame name?
+	
+	qhandle_t	levelshot;	//the map picture
+	qhandle_t	savepic = 0;	//the screenshot of the player's game
 
 	extern SavedGameJustLoaded_e g_eSavedGameJustLoaded;	// hack! (hey, it's the last week of coding, ok?
 //	if ( g_eSavedGameJustLoaded == eFULL )
@@ -818,7 +855,12 @@ void CG_DrawInformation( void ) {
 		if (!levelshot) {
 			levelshot = cgi_R_RegisterShaderNoMip( "menu/art/unknownmap" );
 		}
+		if (!savepic) {
+			savepic = cgi_R_RegisterShaderNoMip("menu/art/unknownmap");
+		}
 	}
+
+	//savepic = cgi_R_RegisterShaderNoMip(va("saves/screenshots/%s", t));
 
 	if ( g_eSavedGameJustLoaded != eFULL && !strcmp(s,"yavin1") )//special case for first map!
 	{
@@ -835,7 +877,7 @@ void CG_DrawInformation( void ) {
 	}
 	else
 	{
-		CG_DrawLoadingScreen(levelshot, s);
+		CG_DrawLoadingScreen(levelshot, savepic, s);
 		cgi_UI_Menu_Paint( cgi_UI_GetMenuByName( "loadscreen" ), qtrue );
 		//cgi_UI_MenuPaintAll();
 	}

@@ -1,0 +1,116 @@
+New Cvars
+------------------------------------------------------------------------------------------------------------------------------
+g_autoRoll* - default is 1, if 1 default JA behavior, if 0 you have to be holding USE to roll
+g_char_forcePowerMax* - requires level restart, controls number of player force points
+g_char_forceRegen* - requires level restart, controls force point regen rate of player
+g_char_parryBonus* - same as .sab file setting but applied on savegame load for player
+g_char_breakParryBonus* - same as .sab file setting but applied on game load for player
+g_handicap* - can go up to 200 now
+g_saberDamageScale* - this scales saber damage, and is saved with your savegame. This effect stacks on top of the effect caused by g_saberMoreRealistic.
+g_saberDeflectAutoAim* - if 0, blaster deflections are not auto-aimed but go in the direction of the crosshair with randomness
+based on Saber Defense level
+g_saberForceDrains - if 1 special moves drain the amount of FP from the next cvar, katas not affected
+g_saberForceDrainAmount - if g_saberForceDrains is 1, special moves drain this amount of FP, katas not affected
+g_saberLockSuperBreaks* - if 1 default JA behavior of saber locks, if 0 no super breaks (1-hit KOs) ever happen after saber locks
+g_saberMoreRealistic* - no longer write-protected
+g_weaponVelocity*, g_weaponAltVelocity* - use this to multiply the speed of most projectiles
+
+Gameplay mechanics
+------------------------------------------------------------------------------------------------------------------------------
+Force powers (activated with g_forceNewPowers 1)
+------------------------------------------------------------------------------------------------------------------------------
+- Force Jump height for all levels increased by 25%
+- Force Pull level 1 pulls weapons only, level 2 can knockdown, level 3 can pull toward you a little bit
+- ***Force Sense gives limited snipershot dodging ability (you might need to hold down Use)
+- Force Speed decreases FP cost of sniper shot dodging at Level 3 (for auto-dodging anyway)
+- **Force Protect 1/2/3 gives only 10/20/40% damage reduction against saber attacks instead of 25/50/75%
+- Force Heal costs slightly fewer force points at Level 3 if I remember correctly
+
+NPC AI
+------------------------------------------------------------------------------------------------------------------------------
+Jedi AI changes...
+- Improvements to AI governing use of JA-exclusive abilities and powers...
+only use Force Rage if close to the player and if have > 25% HP, only kick if close to the player,
+only use saber attack katas if close to the player
+- NPC Jedi recover from knockdown very fast on high difficulties (no easy marios for the win)
+- NPC Jedi re-activate their sabers faster after being gripped or drained based on difficulty and NPC rank
+- NPC Jedi will try very hard to dodge your attacks if you knock their saber throw to the ground (before they were more apt to just stand there)
+- Light Jedi with non-dark Jedi AI (class_reborn, class_desann, etc.) classes don't attack surrendered or unarmed enemies
+- Force Cultists react properly to explosives/sniper shots/saber throws
+- Force Cultists punch sometimes
+- Non-saber NPCs with Class_Reborn try extra hard to dodge saber attacks
+- Non-saber NPCs with Class_Reborn cannot cartwheel without Force Jump 1
+
+General NPC AI changes...
+- **Grenadier Grans will still try punching sometimes even if your saber is drawn
+- **NPCs surrender more like JK2 (more consistent, once they decide to surrender they will usually stay surrendered)
+- Allied NPCs receive 150%/125%/100% HP for Padawan/Jedi/Jedi Knight difficulties now instead of 100%/125%/150% like enemies
+- Assassin Droids now fire while shielded
+- Class_Rodian/Class Imperial at commander rank use alt-fire with WP_BLASTER
+
+
+Saber System (activated with g_saberNewCombat 1)
+------------------------------------------------------------------------------------------------------------------------------
+- Saber Offense gives a base "attack power" (AP) (+2/+4/+6)
+- Saber Defense gives a base "defense power" (DP) (+2/+4/+6) and a number of block points (BP, is equal to 1 + your SD level IIRC)
+- "attack power" is modified by saber style (-2/0/+2/-1/+1/-1/+1 for Fast/Med/Strong/Duals/Staff/Tavion/Desann)
+- Desann style is as strong as Red if you are CLASS_DESANN, otherwise it does not cause knockdown as often as Red, and is slightly
+weaker
+- style attack chaining altered:
+can only chain 2 slashes if running, staff and duals cannot chain infinitely (5 slash maximum now), chain counts are also not
+random (Medium can always chain 5 slashes while walking for example)
+
+How saber combat then works:
+- AP > DP = attack blocked but lose a number of BP equivalent to AP - DP
+- all BP lost = guard crushed
+- BPs regenerate about 1 per second if walking/standing still (total BP = your Saber Def. level + 1 if I remember correctly)
+- special attacks ignore BP: either crush guard or are blocked partially
+
+Other saber-related changes
+- player's ability to parry saber attacks and blaster fire is improved while walking or standing still for Medium and Strong
+styles
+- Saber Defense 0 cannot block blaster fire (or was it just a super narrow arc? can't remember...)
+- A saber with autoblocking 0 now has a narrow blocking arc for the player (so you can't cheat and block super easy)
+- Holding Use and standing still will let you try to manual block blaster bolts as it currently does in Base JA, however the arc is super narrow
+
+Melee changes
+--------------------------------------------------------------------------------------------------------------------------------
+- Player can use kicks with any saber type by default, you must use +forcefocus to saberthrow (bind this to a key, maybe your mousewheel click-down)
+- Player's melee abilities determined by Saber Offense level (1 = punches and kicks, 2 = katas, 3 = spin kicks)
+- if you're not cheating (using g_debugMelee or iknowkungfu)... Player melee katas have less range, must be aimed more precisely, and do not work on certain types of enemies
+- Spin/Flip kicks are only enabled for Saber Offense 3 but do slightly more damage
+- Spin Kicks are possible on demand by holding Use and pressing the Alt Attack button, however costs 10 FP (the auto version doesn't cost any)
+- **Knockdown to Jedi happens only if your Saber Offense >= their Saber Defense
+- Player punches do 7/5 damage now instead of 6/3 and aren't randomized
+- **Force Speed punching is more consistent now and less cheap (never did actually test)
+- **Heavy/Slow Melee punching is specifically associated with Chewbacca, Class_Gran, and Class_Trandoshan, other NPC types will punch
+more quickly but weakly if given WP_MELEE
+
+Other additions
+----------------------------------------------------------------------------------------------------------------------------
+- visual effect for blocking Force Lightning with your lightsaber (it's subtle but there, it just plays a reverse-direction version of the Lightning level 1 effect, will make this a separate file)
+- rolls and acrobatics are possible in 1st Person now
+
+Future ideas
+----------------------------------------------------------------------------------------------------------------------------
+Things to do -
+- *savegame screenshots
+- *extra fields in Weapons.dat such as NPCDamageMult, NPCAltDamageMult, saber ignition/deignition time
+- *camera controls (1st, 2nd, 3rd, 4th person)
+- better AI for NPCs deciding to surrender
+
+- balance staff and duals blocking
+- finish new NPC fields
+- make sure saber combat stats save correctly
+- saber flags as cvars for player
+
+Sidelined:
+- *separate cvar for player HP and Shields
+- reborn masters with debounce to limit constant saber throwing + lightning
+- *NPCs avoid cliffs
+- force push strong version, mindtrick changes
+- doing a full slash when starting saber off regardless of movement
+
+* would like to implement into OpenJK
+** not completely tested but should work
+*** incomplete/unfinished/not working completely

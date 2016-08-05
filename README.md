@@ -1,4 +1,10 @@
-# OpenJK
+# Dusty's Patch Readme
+
+Dusty's Patch is a single player modification for Jedi Academy based off the coding framework of OpenJK. It attempts to polish/improve certain gameplay mechanics such as combat, NPC AI, and balance in Jedi Academy's single player and to make small, usually optional, additions.
+
+
+-------------------------------------------------------------------------------------------------------------------------
+# OpenJK's Readme
 
 OpenJK is an effort by the JACoders group to maintain and improve the game engines on which the Jedi Academy (JA) and Jedi Outcast (JO) games run on, while maintaining *full backwards compatibility* with the existing games. *This project does not attempt to rebalance or otherwise modify core gameplay*.
 

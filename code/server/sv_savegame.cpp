@@ -1018,6 +1018,21 @@ qboolean SG_GameAllowedToSaveHere(qboolean inCamera)
 	return ge->GameAllowedToSaveHere();
 }
 
+void SG_WriteScreenshotNew(const char *psPathlessBaseName)
+{
+	char		checkname[MAX_OSPATH];
+	byte *pbRawScreenshot = NULL;
+	qboolean isValid;
+	
+	pbRawScreenshot = SCR_GetScreenshot(&isValid);
+	Com_sprintf( checkname, sizeof(checkname), "saves/screenshots/%s.jpg", psPathlessBaseName );
+	
+	if (isValid)
+	{
+		re.SaveJPG(checkname, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenshot, 0);
+	}
+}
+
 qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 {
 	if (!qbAutosave && !SG_GameAllowedToSaveHere(qfalse))	//full check
@@ -1081,7 +1096,12 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	}
 
 	SG_Move( "current", psPathlessBaseName );
-
+	
+	if ( !qbAutosave )
+	{
+		//do screenshot stuff here
+		SG_WriteScreenshotNew(psPathlessBaseName);
+	}
 
 	sv_testsave->integer = iPrevTestSave;
 	return qtrue;

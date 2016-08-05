@@ -48,6 +48,8 @@ extern qboolean FlyingCreature( gentity_t *ent );
 #define	REALIZE_THRESHOLD	0.6f
 #define CAUTIOUS_THRESHOLD	( REALIZE_THRESHOLD * 0.75 )
 
+#define MELEE_CHANCE		1000000
+
 qboolean NPC_CheckPlayerTeamStealth( void );
 
 static qboolean enemyLOS;
@@ -510,9 +512,17 @@ void NPC_BSGrenadier_Attack( void )
 	shoot = qfalse;
 	enemyDist = DistanceSquared( NPC->enemy->currentOrigin, NPC->currentOrigin );
 
+	qboolean enemyUsingSaber = qfalse;
+	if ((NPC->enemy->client && NPC->enemy->client->ps.weapon == WP_SABER && NPC->enemy->client->ps.SaberActive()))
+	{
+		enemyUsingSaber = qtrue;
+	}
+
 	//See if we should switch to melee attack
-	if ( enemyDist < 16384 && (!NPC->enemy->client||NPC->enemy->client->ps.weapon != WP_SABER||(!NPC->enemy->client->ps.SaberActive())) )//128
-	{//enemy is close and not using saber
+	if ( (enemyDist < 16384 && enemyUsingSaber)
+		|| (enemyDist < 64*64 && !Q_irand(0,50))) //chance to try punching if player is super close
+		// 50% chance if enemy very close to use melee on saber wielding enemy
+	{//enemy is close and not using saber or very close and random chance
 		if ( NPC->client->ps.weapon == WP_THERMAL )
 		{//grenadier
 			trace_t	trace;
@@ -520,20 +530,48 @@ void NPC_BSGrenadier_Attack( void )
 			if ( !trace.allsolid && !trace.startsolid && (trace.fraction == 1.0 || trace.entityNum == NPC->enemy->s.number ) )
 			{//I can get right to him
 				//reset fire-timing variables
-				NPC_ChangeWeapon( WP_MELEE );
-				if ( !(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES) )//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
-				{//FIXME: should we be overriding scriptFlags?
-					NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
-				}
+				if (NPCInfo->aiFlags&NPCAI_HEAVY_MELEE)
+				{
+					if (enemyUsingSaber && !Q_irand(0,MELEE_CHANCE) /*&& TIMER_Done(NPC, "sleepTime")*/)
+					{
+						TIMER_Set(NPC, "sleepTime", Q_irand(2000, 5000));//keep using melee for a short while
+						NPC_ChangeWeapon(WP_MELEE);
+						if (!(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES))//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
+						{//FIXME: should we be overriding scriptFlags?
+							NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
+						}
+					}
+					else
+					{//enemy not using saber, just go for it
+						NPC_ChangeWeapon(WP_MELEE);
+						if (!(NPCInfo->scriptFlags&SCF_CHASE_ENEMIES))//NPCInfo->behaviorState == BS_STAND_AND_SHOOT )
+						{//FIXME: should we be overriding scriptFlags?
+							NPCInfo->scriptFlags |= SCF_CHASE_ENEMIES;//NPCInfo->behaviorState = BS_HUNT_AND_KILL;
+						}
+					}
+					
+				}				
 			}
 		}
 	}
-	else if ( enemyDist > 65536 || (NPC->enemy->client && NPC->enemy->client->ps.weapon == WP_SABER && NPC->enemy->client->ps.SaberActive()) )//256
+	else if ( enemyDist > 65536 || enemyUsingSaber )//256
 	{//enemy is far or using saber
 		if ( NPC->client->ps.weapon == WP_MELEE && (NPC->client->ps.stats[STAT_WEAPONS]&(1<<WP_THERMAL)) )
 		{//fisticuffs, make switch to thermal if have it
 			//reset fire-timing variables
-			NPC_ChangeWeapon( WP_THERMAL );
+			if (enemyUsingSaber && enemyDist < 64*64)
+			{//if enemy is close and using saber, wait until we've at least had a short chance to use melee
+				if (!Q_irand(0,MELEE_CHANCE)/*TIMER_Done(NPC, "sleepTime")*/)
+				{
+					TIMER_Set(NPC, "sleepTime", Q_irand(1500, 3000));
+					NPC_ChangeWeapon(WP_THERMAL);
+				}
+			}
+			else
+			{
+				NPC_ChangeWeapon(WP_THERMAL);
+			}
+			
 		}
 	}
 

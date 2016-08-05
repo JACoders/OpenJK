@@ -4635,7 +4635,7 @@ static void Q3_SetBobaJetPack(int entID, qboolean add)
 	}
 
 	// make sure we this is Boba Fett
-	if ( ent->client && ent->client->NPC_class != CLASS_BOBAFETT )
+	if (ent->client && ent->client->NPC_class != CLASS_BOBAFETT && ent->client->NPC_class != CLASS_MANDA)
 	{
 		Quake3Game()->DebugPrint( IGameInterface::WL_WARNING, "Q3_SetBobaJetPack: '%s' is not Boba Fett!\n", ent->targetname );
 		return;
