@@ -176,12 +176,13 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 
 		"${SharedDir}/qcommon/ojk_exception.h"
 		"${SharedDir}/qcommon/ojk_exception.cpp"
-		"${SharedDir}/qcommon/ojk_i_saved_game.h"
-		"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
-		"${SharedDir}/qcommon/ojk_saved_game.h"
-		"${SharedDir}/qcommon/ojk_saved_game.cpp"
 		"${SharedDir}/qcommon/ojk_saved_game_exception.h"
 		"${SharedDir}/qcommon/ojk_saved_game_exception.cpp"
+		"${SharedDir}/qcommon/ojk_i_saved_game_stream.h"
+		"${SharedDir}/qcommon/ojk_saved_game_file.h"
+		"${SharedDir}/qcommon/ojk_saved_game_file.cpp"
+		"${SharedDir}/qcommon/ojk_saved_game_stream_helper.h"
+		"${SharedDir}/qcommon/ojk_saved_game_stream_helper_fwd.h"
 		"${SharedDir}/qcommon/ojk_scope_guard.h"
 
 		${SharedCommonFiles}

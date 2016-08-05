@@ -1,39 +1,36 @@
 //
-// Saved game.
+// Saved game file.
 // (forward declaration)
 //
 
 
-#ifndef OJK_SAVED_GAME_FWD_INCLUDED
-#define OJK_SAVED_GAME_FWD_INCLUDED
+#ifndef OJK_SAVED_GAME_FILE_INCLUDED
+#define OJK_SAVED_GAME_FILE_INCLUDED
 
 
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ojk_i_saved_game.h"
+#include "ojk_i_saved_game_stream.h"
 
 
 namespace ojk
 {
 
 
-class SavedGame :
-	public ISavedGame
+class SavedGameFile :
+	public ISavedGameStream
 {
 public:
-	using ChunkId = uint32_t;
+	SavedGameFile();
 
+	SavedGameFile(
+		const SavedGameFile& that) = delete;
 
-	SavedGame();
+	SavedGameFile& operator=(
+		const SavedGameFile& that) = delete;
 
-	SavedGame(
-		const SavedGame& that) = delete;
-
-	SavedGame& operator=(
-		const SavedGame& that) = delete;
-
-	virtual ~SavedGame();
+	virtual ~SavedGameFile();
 
 
 	// Creates a new saved game file for writing.
@@ -57,9 +54,9 @@ public:
 
 	// Reads a chunk from the file into the internal buffer.
 	void read_chunk(
-		const ChunkId chunk_id) override;
+		const uint32_t chunk_id) override;
 
-	using ISavedGame::read_chunk;
+	using ISavedGameStream::read_chunk;
 
 
 	// Returns true if all data read from the internal buffer.
@@ -71,25 +68,19 @@ public:
 
 	// Writes a chunk into the file from the internal buffer.
 	void write_chunk(
-		const ChunkId chunk_id) override;
-
-	using ISavedGame::write_chunk;
+		const uint32_t chunk_id) override;
 
 
 	// Reads a raw data from the internal buffer.
-	void raw_read(
+	void read(
 		void* dst_data,
 		int dst_size) override;
 
-	using ISavedGame::read;
-
 
 	// Writes a raw data into the internal buffer.
-	void raw_write(
+	void write(
 		const void* src_data,
 		int src_size) override;
-
-	using ISavedGame::write;
 
 
 	bool is_write_failed() const;
@@ -119,6 +110,11 @@ public:
 	// Resets buffer offset to the beginning.
 	void reset_buffer_offset() override;
 
+	// If true won't throw an exception when buffer offset is beyond it's size.
+	// Although, no data will be read beyond the buffer.
+	void allow_read_overflow(
+		bool value) override;
+
 
 	// Renames a saved game file.
 	static void rename(
@@ -130,14 +126,7 @@ public:
 		const std::string& base_file_name);
 
 	// Returns a default instance of the class.
-	static SavedGame& get_instance();
-
-
-protected:
-	// If true won't throw an exception when buffer offset is beyond it's size.
-	// Although, no data will be read beyond the buffer.
-	void allow_read_overflow(
-		bool value) override;
+	static SavedGameFile& get_instance();
 
 
 private:
@@ -206,10 +195,10 @@ private:
 		uint32_t chunk_id);
 
 	static constexpr uint32_t get_jo_magic_value();
-}; // SavedGame
+}; // SavedGameFile
 
 
 } // ojk
 
 
-#endif // OJK_SAVED_GAME_FWD_INCLUDED
+#endif // OJK_SAVED_GAME_FILE_INCLUDED

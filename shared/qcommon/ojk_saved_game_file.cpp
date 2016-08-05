@@ -1,4 +1,10 @@
-#include "ojk_saved_game.h"
+//
+// Saved game file.
+//
+
+
+#include "ojk_saved_game_file.h"
+#include "ojk_saved_game_stream_helper.h"
 #include <algorithm>
 #include "ojk_saved_game_exception.h"
 #include "qcommon/qcommon.h"
@@ -9,7 +15,7 @@ namespace ojk
 {
 
 
-SavedGame::SavedGame() :
+SavedGameFile::SavedGameFile() :
 		file_handle_(),
 		io_buffer_(),
 		saved_io_buffer_(),
@@ -23,12 +29,12 @@ SavedGame::SavedGame() :
 {
 }
 
-SavedGame::~SavedGame()
+SavedGameFile::~SavedGameFile()
 {
 	close();
 }
 
-bool SavedGame::open(
+bool SavedGameFile::open(
 	const std::string& base_file_name)
 {
 	close();
@@ -66,7 +72,9 @@ bool SavedGame::open(
 
 	if (is_succeed)
 	{
-		static_cast<void>(read_chunk<int32_t>(
+		SavedGameStreamHelper sgsh(this);
+
+		static_cast<void>(sgsh.read_chunk<int32_t>(
 			INT_ID('_', 'V', 'E', 'R'),
 			sg_version));
 
@@ -90,7 +98,7 @@ bool SavedGame::open(
 	return is_succeed;
 }
 
-bool SavedGame::create(
+bool SavedGameFile::create(
 	const std::string& base_file_name)
 {
 	close();
@@ -123,14 +131,16 @@ bool SavedGame::create(
 
 	const auto sg_version = iSAVEGAME_VERSION;
 
-	write_chunk<int32_t>(
+	SavedGameStreamHelper sgsh(this);
+
+	sgsh.write_chunk<int32_t>(
 		INT_ID('_', 'V', 'E', 'R'),
 		sg_version);
 
 	return true;
 }
 
-void SavedGame::close()
+void SavedGameFile::close()
 {
 	if (file_handle_ != 0)
 	{
@@ -146,18 +156,18 @@ void SavedGame::close()
 	is_write_failed_ = false;
 }
 
-bool SavedGame::is_readable() const
+bool SavedGameFile::is_readable() const
 {
 	return is_readable_;
 }
 
-bool SavedGame::is_writable() const
+bool SavedGameFile::is_writable() const
 {
 	return is_writable_;
 }
 
-void SavedGame::read_chunk(
-	const SavedGame::ChunkId chunk_id)
+void SavedGameFile::read_chunk(
+	const uint32_t chunk_id)
 {
 	io_buffer_offset_ = 0;
 
@@ -316,12 +326,12 @@ void SavedGame::read_chunk(
 	}
 }
 
-bool SavedGame::is_all_data_read() const
+bool SavedGameFile::is_all_data_read() const
 {
 	return io_buffer_.size() == io_buffer_offset_;
 }
 
-void SavedGame::ensure_all_data_read() const
+void SavedGameFile::ensure_all_data_read() const
 {
 	if (!is_all_data_read())
 	{
@@ -330,8 +340,8 @@ void SavedGame::ensure_all_data_read() const
 	}
 }
 
-void SavedGame::write_chunk(
-	const SavedGame::ChunkId chunk_id)
+void SavedGameFile::write_chunk(
+	const uint32_t chunk_id)
 {
 	const auto&& chunk_id_string = get_chunk_id_string(
 		chunk_id);
@@ -490,7 +500,7 @@ void SavedGame::write_chunk(
 	}
 }
 
-void SavedGame::raw_read(
+void SavedGameFile::read(
 	void* dst_data,
 	int dst_size)
 {
@@ -539,7 +549,7 @@ void SavedGame::raw_read(
 	io_buffer_offset_ += dst_size;
 }
 
-void SavedGame::raw_write(
+void SavedGameFile::write(
 	const void* src_data,
 	int src_size)
 {
@@ -579,12 +589,12 @@ void SavedGame::raw_write(
 	io_buffer_offset_ = new_buffer_size;
 }
 
-bool SavedGame::is_write_failed() const
+bool SavedGameFile::is_write_failed() const
 {
 	return is_write_failed_;
 }
 
-void SavedGame::skip(
+void SavedGameFile::skip(
 	int count)
 {
 	if (!is_readable_ && !is_writable_)
@@ -627,29 +637,29 @@ void SavedGame::skip(
 	io_buffer_offset_ = new_offset;
 }
 
-void SavedGame::save_buffer()
+void SavedGameFile::save_buffer()
 {
 	saved_io_buffer_ = io_buffer_;
 	saved_io_buffer_offset_ = io_buffer_offset_;
 }
 
-void SavedGame::load_buffer()
+void SavedGameFile::load_buffer()
 {
 	io_buffer_ = saved_io_buffer_;
 	io_buffer_offset_ = saved_io_buffer_offset_;
 }
 
-const void* SavedGame::get_buffer_data() const
+const void* SavedGameFile::get_buffer_data() const
 {
 	return io_buffer_.data();
 }
 
-int SavedGame::get_buffer_size() const
+int SavedGameFile::get_buffer_size() const
 {
 	return static_cast<int>(io_buffer_.size());
 }
 
-void SavedGame::rename(
+void SavedGameFile::rename(
 	const std::string& old_base_file_name,
 	const std::string& new_base_file_name)
 {
@@ -672,7 +682,7 @@ void SavedGame::rename(
 	}
 }
 
-void SavedGame::remove(
+void SavedGameFile::remove(
 	const std::string& base_file_name)
 {
 	const auto&& path = generate_path(
@@ -682,33 +692,33 @@ void SavedGame::remove(
 		path.c_str());
 }
 
-SavedGame& SavedGame::get_instance()
+SavedGameFile& SavedGameFile::get_instance()
 {
-	static SavedGame result;
+	static SavedGameFile result;
 	return result;
 }
 
-void SavedGame::allow_read_overflow(
+void SavedGameFile::allow_read_overflow(
 	bool value)
 {
 	is_read_overflow_allowed_ = value;
 }
 
-void SavedGame::throw_error(
+void SavedGameFile::throw_error(
 	const char* message)
 {
 	throw SavedGameException(
 		message);
 }
 
-void SavedGame::throw_error(
+void SavedGameFile::throw_error(
 	const std::string& message)
 {
 	throw SavedGameException(
 		message);
 }
 
-void SavedGame::compress(
+void SavedGameFile::compress(
 	const Buffer& src_buffer,
 	Buffer& dst_buffer)
 {
@@ -771,7 +781,7 @@ void SavedGame::compress(
 		dst_index);
 }
 
-void SavedGame::decompress(
+void SavedGameFile::decompress(
 	const Buffer& src_buffer,
 	Buffer& dst_buffer)
 {
@@ -811,7 +821,7 @@ void SavedGame::decompress(
 	}
 }
 
-std::string SavedGame::generate_path(
+std::string SavedGameFile::generate_path(
 	const std::string& base_file_name)
 {
 	auto normalized_file_name = base_file_name;
@@ -827,7 +837,7 @@ std::string SavedGame::generate_path(
 	return path;
 }
 
-std::string SavedGame::get_chunk_id_string(
+std::string SavedGameFile::get_chunk_id_string(
 	uint32_t chunk_id)
 {
 	std::string result(4, '\0');
@@ -840,18 +850,18 @@ std::string SavedGame::get_chunk_id_string(
 	return result;
 }
 
-void SavedGame::reset_buffer()
+void SavedGameFile::reset_buffer()
 {
 	io_buffer_.clear();
 	reset_buffer_offset();
 }
 
-void SavedGame::reset_buffer_offset()
+void SavedGameFile::reset_buffer_offset()
 {
 	io_buffer_offset_ = 0;
 }
 
-constexpr uint32_t SavedGame::get_jo_magic_value()
+constexpr uint32_t SavedGameFile::get_jo_magic_value()
 {
 	return 0x1234ABCD;
 }

@@ -1,102 +1,63 @@
 //
-// Saved game interface.
+// Saved game stream helper.
 // (forward declaration)
 //
 
 
-#ifndef OJK_I_SAVED_GAME_FWD_INCLUDED
-#define OJK_I_SAVED_GAME_FWD_INCLUDED
+#ifndef OJK_SAVED_GAME_STREAM_HELPER_FWD_INCLUDED
+#define OJK_SAVED_GAME_STREAM_HELPER_FWD_INCLUDED
 
 
-#include <cstdint>
-#include <string>
+#include "ojk_i_saved_game_stream.h"
 
 
 namespace ojk
 {
 
 
-class ISavedGame
+class SavedGameStreamHelper
 {
 public:
-	using ChunkId = uint32_t;
+	SavedGameStreamHelper(
+		ISavedGameStream* saved_game_stream);
 
-
-	ISavedGame();
-
-	ISavedGame(
-		const ISavedGame& that) = delete;
-
-	ISavedGame& operator=(
-		const ISavedGame& that) = delete;
-
-	virtual ~ISavedGame();
-
-
-	// Returns true if the saved game opened for reading.
-	virtual bool is_readable() const = 0;
-
-	// Returns true if the saved game opened for writing.
-	virtual bool is_writable() const = 0;
-
-
-	// Reads a chunk from the file into the internal buffer.
-	virtual void read_chunk(
-		const ChunkId chunk_id) = 0;
 
 	// Reads a value or an array of values from the file via
 	// the internal buffer.
 	template<typename TSrc = void, typename TDst = void>
 	void read_chunk(
-		const ChunkId chunk_id,
+		const uint32_t chunk_id,
 		TDst& dst_value);
 
 	// Reads an array of values with specified count from
 	// the file via the internal buffer.
 	template<typename TSrc = void, typename TDst = void>
 	void read_chunk(
-		const ChunkId chunk_id,
+		const uint32_t chunk_id,
 		TDst* dst_values,
 		int dst_count);
-
-	// Returns true if all data read from the internal buffer.
-	virtual bool is_all_data_read() const = 0;
-
-	// Throws an exception if all data not read.
-	virtual void ensure_all_data_read() const = 0;
-
-
-	// Writes a chunk into the file from the internal buffer.
-	virtual void write_chunk(
-		const ChunkId chunk_id) = 0;
 
 	// Writes a data-chunk into the file from the internal buffer
 	// prepended with a size-chunk that holds a size of the data-chunk.
 	template<typename TSize>
 	void write_chunk_and_size(
-		const ChunkId size_chunk_id,
-		const ChunkId data_chunk_id);
+		const uint32_t size_chunk_id,
+		const uint32_t data_chunk_id);
 
 	// Writes a value or an array of values into the file via
 	// the internal buffer.
 	template<typename TDst = void, typename TSrc = void>
 	void write_chunk(
-		const ChunkId chunk_id,
+		const uint32_t chunk_id,
 		const TSrc& src_value);
 
 	// Writes an array of values with specified count into
 	// the file via the internal buffer.
 	template<typename TDst = void, typename TSrc = void>
 	void write_chunk(
-		const ChunkId chunk_id,
+		const uint32_t chunk_id,
 		const TSrc* src_values,
 		int src_count);
-
-
-	// Reads a raw data from the internal buffer.
-	virtual void raw_read(
-		void* dst_data,
-		int dst_size) = 0;
 
 	// Reads a value or array of values from the internal buffer.
 	template<typename TSrc = void, typename TDst = void>
@@ -117,11 +78,6 @@ public:
 		TDst& dst_value);
 
 
-	// Writes a raw data into the internal buffer.
-	virtual void raw_write(
-		const void* src_data,
-		int src_size) = 0;
-
 	// Writes a value or array of values into the internal buffer.
 	template<typename TDst = void, typename TSrc = void>
 	void write(
@@ -134,71 +90,19 @@ public:
 		int src_count);
 
 
-	// Increments buffer's offset by the specified non-negative count.
-	virtual void skip(
-		int count) = 0;
+private:
+	ISavedGameStream* saved_game_stream_;
 
 
-	// Stores current I/O buffer and it's position.
-	virtual void save_buffer() = 0;
-
-	// Restores saved I/O buffer and it's position.
-	virtual void load_buffer() = 0;
-
-	// Returns a pointer to data in the I/O buffer.
-	virtual const void* get_buffer_data() const = 0;
-
-	// Returns a current size of the I/O buffer.
-	virtual int get_buffer_size() const = 0;
-
-
-	// Clears buffer and resets it's offset to the beginning.
-	virtual void reset_buffer() = 0;
-
-	// Resets buffer offset to the beginning.
-	virtual void reset_buffer_offset() = 0;
-
-
-protected:
 	// Tags for dispatching.
-	class BooleanTag
-	{
-	public:
-	};
-	class NumericTag
-	{
-	public:
-	};
-	class PointerTag
-	{
-	public:
-	};
-	class ClassTag
-	{
-	public:
-	};
-	class Array1dTag
-	{
-	public:
-	};
-	class Array2dTag
-	{
-	public:
-	};
-	class InplaceTag
-	{
-	public:
-	};
-	class CastTag
-	{
-	public:
-	};
-
-
-	// If true won't throw an exception when buffer offset is beyond it's size.
-	// Although, no data will be read beyond the buffer.
-	virtual void allow_read_overflow(
-		bool value) = 0;
+	class BooleanTag { public: };
+	class NumericTag { public: };
+	class PointerTag { public: };
+	class ClassTag { public: };
+	class Array1dTag { public: };
+	class Array2dTag { public: };
+	class InplaceTag { public: };
+	class CastTag { public: };
 
 
 	template<typename TSrc, typename TDst>
@@ -282,10 +186,11 @@ protected:
 		const TSrc* src_values,
 		int src_count,
 		CastTag);
-}; // ISavedGame
+}; // SavedGameStreamHelper
 
 
-} // ojk
+}
 
 
-#endif // OJK_I_SAVED_GAME_FWD_INCLUDED
+#endif // OJK_SAVED_GAME_STREAM_HELPER_FWD_INCLUDED
+

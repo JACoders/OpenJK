@@ -233,8 +233,11 @@ set(JK2SPGameCommonFiles
 	"${SPDir}/qcommon/q_shared.h"
 	"${SPDir}/qcommon/strippublic.h"
 	"${SPDir}/rd-common/mdx_format.h"
-	"${SharedDir}/qcommon/ojk_i_saved_game.h"
-	"${SharedDir}/qcommon/ojk_i_saved_game_fwd.h"
+	"${SharedDir}/qcommon/ojk_i_saved_game_stream.h"
+	"${SharedDir}/qcommon/ojk_saved_game_file.h"
+	"${SharedDir}/qcommon/ojk_saved_game_file.cpp"
+	"${SharedDir}/qcommon/ojk_saved_game_stream_helper.h"
+	"${SharedDir}/qcommon/ojk_saved_game_stream_helper_fwd.h"
 	"${SharedDir}/qcommon/ojk_scope_guard.h"
 	${SharedCommonFiles}
 	)
