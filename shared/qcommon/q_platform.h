@@ -252,12 +252,12 @@ static inline uint32_t LongSwap(uint32_t v)
 // required for _byteswap_ushort/ulong
 #include <stdlib.h>
 
-static inline uint16_t ShortSwap(uint16_t v)
+static uint16_t ShortSwap(uint16_t v)
 {
     return _byteswap_ushort(v);
 }
 
-static inline uint32_t LongSwap(uint32_t v)
+static uint32_t LongSwap(uint32_t v)
 {
     return _byteswap_ulong(v);
 }
@@ -279,17 +279,17 @@ static inline uint32_t LongSwap(uint32_t v)
 }
 #endif
 
-static inline void CopyShortSwap( void *dest, const void *src )
+static void CopyShortSwap( void *dest, const void *src )
 {
     *(uint16_t*)dest = ShortSwap(*(uint16_t*)src);
 }
 
-static inline void CopyLongSwap( void *dest, const void *src )
+static void CopyLongSwap( void *dest, const void *src )
 {
     *(uint32_t*)dest = LongSwap(*(uint32_t*)src);
 }
 
-static inline float FloatSwap(float f)
+static float FloatSwap(float f)
 {
     float out;
     CopyLongSwap(&out, &f);
