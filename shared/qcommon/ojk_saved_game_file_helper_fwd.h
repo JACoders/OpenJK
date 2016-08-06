@@ -1,29 +1,38 @@
 //
-// Saved game stream helper.
+// Saved game file helper.
 // (forward declaration)
 //
 
 
-#ifndef OJK_SAVED_GAME_STREAM_HELPER_FWD_INCLUDED
-#define OJK_SAVED_GAME_STREAM_HELPER_FWD_INCLUDED
+#ifndef OJK_SAVED_GAME_FILE_HELPER_FWD_INCLUDED
+#define OJK_SAVED_GAME_FILE_HELPER_FWD_INCLUDED
 
 
-#include "ojk_i_saved_game_stream.h"
+#include "ojk_i_saved_game_file.h"
 
 
 namespace ojk
 {
 
 
-class SavedGameStreamHelper
+class SavedGameFileHelper
 {
 public:
-	SavedGameStreamHelper(
-		ISavedGameStream* saved_game_stream);
+	SavedGameFileHelper(
+		ISavedGameFile* saved_game_file);
 
+
+	// Tries to read a value or an array of values from the file via
+	// the internal buffer.
+	// Return true on success or false otherwise.
+	template<typename TSrc = void, typename TDst = void>
+	bool try_read_chunk(
+		const uint32_t chunk_id,
+		TDst& dst_value);
 
 	// Reads a value or an array of values from the file via
 	// the internal buffer.
+	// Calls error method on error.
 	template<typename TSrc = void, typename TDst = void>
 	void read_chunk(
 		const uint32_t chunk_id,
@@ -31,6 +40,16 @@ public:
 
 	// Reads an array of values with specified count from
 	// the file via the internal buffer.
+	// Return true on success or false otherwise.
+	template<typename TSrc = void, typename TDst = void>
+	bool try_read_chunk(
+		const uint32_t chunk_id,
+		TDst* dst_values,
+		int dst_count);
+
+	// Reads an array of values with specified count from
+	// the file via the internal buffer.
+	// Calls error method on error.
 	template<typename TSrc = void, typename TDst = void>
 	void read_chunk(
 		const uint32_t chunk_id,
@@ -59,17 +78,6 @@ public:
 		const TSrc* src_values,
 		int src_count);
 
-	// Reads a value or array of values from the internal buffer.
-	template<typename TSrc = void, typename TDst = void>
-	void read(
-		TDst& dst_value);
-
-	// Reads an array of values with specificed count from the internal buffer.
-	template<typename TSrc = void, typename TDst = void>
-	void read(
-		TDst* dst_values,
-		int dst_count);
-
 
 	// Tries to read a value or array of values from the internal buffer.
 	// Returns true on success or false otherwise.
@@ -77,13 +85,36 @@ public:
 	bool try_read(
 		TDst& dst_value);
 
+	// Reads a value or array of values from the internal buffer.
+	// Calls error method on error.
+	template<typename TSrc = void, typename TDst = void>
+	void read(
+		TDst& dst_value);
+
+	// Tries to read an array of values with specificed count from the internal buffer.
+	// Calls error method on error.
+	// Return true on success or false otherwise.
+	template<typename TSrc = void, typename TDst = void>
+	bool try_read(
+		TDst* dst_values,
+		int dst_count);
+
+	// Reads an array of values with specificed count from the internal buffer.
+	// Calls error method on error.
+	template<typename TSrc = void, typename TDst = void>
+	void read(
+		TDst* dst_values,
+		int dst_count);
+
 
 	// Writes a value or array of values into the internal buffer.
+	// Returns true on success or false otherwise.
 	template<typename TDst = void, typename TSrc = void>
 	void write(
 		const TSrc& src_value);
 
 	// Writes an array of values with specificed count into the internal buffer.
+	// Returns true on success or false otherwise.
 	template<typename TDst = void, typename TSrc = void>
 	void write(
 		const TSrc* src_values,
@@ -91,7 +122,7 @@ public:
 
 
 private:
-	ISavedGameStream* saved_game_stream_;
+	ISavedGameFile* saved_game_file_;
 
 
 	// Tags for dispatching.
@@ -106,44 +137,44 @@ private:
 
 
 	template<typename TSrc, typename TDst>
-	void read(
+	bool try_read(
 		TDst& dst_value,
 		BooleanTag);
 
 	template<typename TSrc, typename TDst>
-	void read(
+	bool try_read(
 		TDst& dst_value,
 		NumericTag);
 
 	template<typename TSrc, typename TDst>
-	void read(
+	bool try_read(
 		TDst*& dst_value,
 		PointerTag);
 
 	template<typename TSrc, typename TDst>
-	void read(
+	bool try_read(
 		TDst& dst_value,
 		ClassTag);
 
 	template<typename TSrc, typename TDst, int TCount>
-	void read(
+	bool try_read(
 		TDst(&dst_values)[TCount],
 		Array1dTag);
 
 	template<typename TSrc, typename TDst, int TCount1, int TCount2>
-	void read(
+	bool try_read(
 		TDst(&dst_values)[TCount1][TCount2],
 		Array2dTag);
 
 
 	template<typename TSrc, typename TDst>
-	void read(
+	bool try_read(
 		TDst* dst_values,
 		int dst_count,
 		InplaceTag);
 
 	template<typename TSrc, typename TDst>
-	void read(
+	bool try_read(
 		TDst* dst_values,
 		int dst_count,
 		CastTag);
@@ -186,11 +217,11 @@ private:
 		const TSrc* src_values,
 		int src_count,
 		CastTag);
-}; // SavedGameStreamHelper
+}; // SavedGameFileHelper
 
 
 }
 
 
-#endif // OJK_SAVED_GAME_STREAM_HELPER_FWD_INCLUDED
+#endif // OJK_SAVED_GAME_FILE_HELPER_FWD_INCLUDED
 

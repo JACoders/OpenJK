@@ -11,7 +11,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ojk_i_saved_game_stream.h"
+#include "ojk_i_saved_game_file.h"
 
 
 namespace ojk
@@ -19,7 +19,7 @@ namespace ojk
 
 
 class SavedGameFile :
-	public ISavedGameStream
+	public ISavedGameFile
 {
 public:
 	SavedGameFile();
@@ -45,48 +45,41 @@ public:
 	void close();
 
 
-	// Returns true if the saved game opened for reading.
-	bool is_readable() const override;
-
-	// Returns true if the saved game opened for writing.
-	bool is_writable() const override;
-
-
 	// Reads a chunk from the file into the internal buffer.
-	void read_chunk(
+	bool read_chunk(
 		const uint32_t chunk_id) override;
-
-	using ISavedGameStream::read_chunk;
 
 
 	// Returns true if all data read from the internal buffer.
 	bool is_all_data_read() const override;
 
-	// Throws an exception if all data not read.
-	void ensure_all_data_read() const override;
+	// Calls error method if all data not read.
+	void ensure_all_data_read() override;
 
 
 	// Writes a chunk into the file from the internal buffer.
-	void write_chunk(
+	// Returns true on success or false otherwise.
+	bool write_chunk(
 		const uint32_t chunk_id) override;
 
 
 	// Reads a raw data from the internal buffer.
-	void read(
+	// Returns true on success or false otherwise.
+	bool read(
 		void* dst_data,
 		int dst_size) override;
 
 
 	// Writes a raw data into the internal buffer.
-	void write(
+	// Returns true on success or false otherwise.
+	bool write(
 		const void* src_data,
 		int src_size) override;
 
 
-	bool is_write_failed() const;
-
 	// Increments buffer's offset by the specified non-negative count.
-	void skip(
+	// Returns true on success or false otherwise.
+	bool skip(
 		int count) override;
 
 
@@ -110,10 +103,16 @@ public:
 	// Resets buffer offset to the beginning.
 	void reset_buffer_offset() override;
 
-	// If true won't throw an exception when buffer offset is beyond it's size.
-	// Although, no data will be read beyond the buffer.
-	void allow_read_overflow(
-		bool value) override;
+
+	// Returns true if read/write operation failed otherwise false.
+	// Any chunk related try-method clears at the beginning this flag.
+	bool is_failed() const override;
+
+	// Clears error flag and message.
+	void clear_error() override;
+
+	// Calls Com_Error with last error message or with a generic one.
+	void throw_error() override;
 
 
 	// Renames a saved game file.
@@ -134,6 +133,9 @@ private:
 	using BufferOffset = Buffer::size_type;
 	using Paths = std::vector<std::string>;
 
+
+	// Last error message.
+	std::string error_message_;
 
 	// A handle to a file.
 	int32_t file_handle_;
@@ -159,20 +161,8 @@ private:
 	// True if saved game opened for writing.
 	bool is_writable_;
 
-	// True if any previous write operation failed.
-	bool is_write_failed_;
-
-	// Controls exception throw on read overflow.
-	bool is_read_overflow_allowed_;
-
-
-	// Throws an exception.
-	static void throw_error(
-		const char* message);
-
-	// Throws an exception.
-	static void throw_error(
-		const std::string& message);
+	// Error flag.
+	bool is_failed_;
 
 
 	// Compresses data.

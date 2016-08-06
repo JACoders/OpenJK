@@ -1,15 +1,15 @@
 //
-// Saved game stream helper.
+// Saved game file helper.
 //
 
 
-#ifndef OJK_SAVED_GAME_STREAM_HELPER_INCLUDED
-#define OJK_SAVED_GAME_STREAM_HELPER_INCLUDED
+#ifndef OJK_SAVED_GAME_FILE_HELPER_INCLUDED
+#define OJK_SAVED_GAME_FILE_HELPER_INCLUDED
 
 
 #include <cstdint>
 #include <type_traits>
-#include "ojk_saved_game_stream_helper_fwd.h"
+#include "ojk_saved_game_file_helper_fwd.h"
 #include "ojk_scope_guard.h"
 
 
@@ -20,9 +20,9 @@ namespace ojk
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // Class stuff
 
-inline SavedGameStreamHelper::SavedGameStreamHelper(
-	ISavedGameStream* saved_game_stream) :
-		saved_game_stream_(saved_game_stream)
+inline SavedGameFileHelper::SavedGameFileHelper(
+	ISavedGameFile* saved_game_file) :
+		saved_game_file_(saved_game_file)
 {
 }
 
@@ -31,36 +31,61 @@ inline SavedGameStreamHelper::SavedGameStreamHelper(
 
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// read_chunk
+// try_read_chunk
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read_chunk(
+bool SavedGameFileHelper::try_read_chunk(
 	const uint32_t chunk_id,
 	TDst& dst_value)
 {
-	saved_game_stream_->read_chunk(
-		chunk_id);
+	if (!saved_game_file_->read_chunk(
+		chunk_id);)
+	{
+		return false;
+	}
 
-	read<TSrc>(
-		dst_value);
+	if (!try_read<TSrc>(
+		dst_value))
+	{
+		return false;
+	}
 
-	saved_game_stream_->ensure_all_data_read();
+	return saved_game_file_->is_all_data_read();
+}
+
+// try_read_chunk
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// read_chunk
+
+template<typename TSrc, typename TDst>
+void SavedGameFileHelper::read_chunk(
+	const uint32_t chunk_id,
+	TDst& dst_value)
+{
+	if (!try_read_chunk<TSrc>(
+		chunk_id,
+		dst_value))
+	{
+		saved_game_file_->throw_error();
+	}
 }
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read_chunk(
+void SavedGameFileHelper::read_chunk(
 	const uint32_t chunk_id,
 	TDst* dst_values,
 	int dst_count)
 {
-	saved_game_stream_->read_chunk(
-		chunk_id);
-
-	read<TSrc>(
-		dst_values,
-		dst_count);
-
-	saved_game_stream_->ensure_all_data_read();
+	if (!try_read_chunk<TSrc>(
+		chunk_id,
+		dst_value,
+		dst_count))
+	{
+		saved_game_file_->throw_error();
+	}
 }
 
 // read_chunk
@@ -71,53 +96,53 @@ void SavedGameStreamHelper::read_chunk(
 // write_chunk
 
 template<typename TSize>
-void SavedGameStreamHelper::write_chunk_and_size(
+void SavedGameFileHelper::write_chunk_and_size(
 	const uint32_t size_chunk_id,
 	const uint32_t data_chunk_id)
 {
-	saved_game_stream_->save_buffer();
+	saved_game_file_->save_buffer();
 
-	auto data_size = saved_game_stream_->get_buffer_size();
+	auto data_size = saved_game_file_->get_buffer_size();
 
-	saved_game_stream_->reset_buffer();
+	saved_game_file_->reset_buffer();
 
 	write_chunk<TSize>(
 		size_chunk_id,
 		data_size);
 
-	saved_game_stream_->load_buffer();
+	saved_game_file_->load_buffer();
 
-	saved_game_stream_->write_chunk(
+	saved_game_file_->write_chunk(
 		data_chunk_id);
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write_chunk(
+void SavedGameFileHelper::write_chunk(
 	const uint32_t chunk_id,
 	const TSrc& src_value)
 {
-	saved_game_stream_->reset_buffer();
+	saved_game_file_->reset_buffer();
 
 	write<TDst>(
 		src_value);
 
-	saved_game_stream_->write_chunk(
+	saved_game_file_->write_chunk(
 		chunk_id);
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write_chunk(
+void SavedGameFileHelper::write_chunk(
 	const uint32_t chunk_id,
 	const TSrc* src_values,
 	int src_count)
 {
-	saved_game_stream_->reset_buffer();
+	saved_game_file_->reset_buffer();
 
 	write<TDst>(
 		src_values,
 		src_count);
 
-	saved_game_stream_->write_chunk(
+	saved_game_file_->write_chunk(
 		chunk_id);
 }
 
@@ -126,10 +151,10 @@ void SavedGameStreamHelper::write_chunk(
 
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// read
+// try_read
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst& dst_value)
 {
 	using Tag = typename std::conditional <
@@ -162,13 +187,32 @@ void SavedGameStreamHelper::read(
 		!std::is_same<Tag, void>::value,
 		"Unsupported type.");
 
-	read<TSrc>(
+	return try_read<TSrc>(
 		dst_value,
 		Tag());
 }
 
+// try_read
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// read
+
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+void SavedGameFileHelper::read(
+	TDst& dst_value)
+{
+	if (!try_read<TSrc>(
+		dst_value,
+		Tag()))
+	{
+		saved_game_file_->throw_error();
+	}
+}
+
+template<typename TSrc, typename TDst>
+bool SavedGameFileHelper::try_read(
 	TDst& dst_value,
 	BooleanTag)
 {
@@ -176,18 +220,23 @@ void SavedGameStreamHelper::read(
 
 	TSrc src_value;
 
-	saved_game_stream_->read(
+	if (!saved_game_file_->read(
 		&src_value,
-		static_cast<int>(sizeof(TSrc)));
+		static_cast<int>(sizeof(TSrc))))
+	{
+		return false;
+	}
 
 	// FIXME Byte order
 	//
 
 	dst_value = (src_value != 0);
+
+	return true;
 }
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst& dst_value,
 	NumericTag)
 {
@@ -195,18 +244,23 @@ void SavedGameStreamHelper::read(
 
 	TSrc src_value;
 
-	saved_game_stream_->read(
+	if (!saved_game_file_->read(
 		&src_value,
-		src_size);
+		src_size))
+	{
+		return false;
+	}
 
 	// FIXME Byte order
 	//
 
 	dst_value = static_cast<TDst>(src_value);
+
+	return true;
 }
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst*& dst_value,
 	PointerTag)
 {
@@ -223,15 +277,20 @@ void SavedGameStreamHelper::read(
 
 	auto dst_number = DstNumeric();
 
-	read<TSrc>(
+	if (!try_read<TSrc>(
 		dst_number,
-		NumericTag());
+		NumericTag()))
+	{
+		return false;
+	}
 
 	dst_value = reinterpret_cast<TDst*>(dst_number);
+
+	return true;
 }
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst& dst_value,
 	ClassTag)
 {
@@ -240,25 +299,27 @@ void SavedGameStreamHelper::read(
 		"Unsupported types.");
 
 	dst_value.sg_import(
-		saved_game_stream_);
+		saved_game_file_);
+
+	return !saved_game_file_->is_failed();
 }
 
 template<typename TSrc, typename TDst, int TCount>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst(&dst_values)[TCount],
 	Array1dTag)
 {
-	read<TSrc>(
+	return try_read<TSrc>(
 		&dst_values[0],
 		TCount);
 }
 
 template<typename TSrc, typename TDst, int TCount1, int TCount2>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst(&dst_values)[TCount1][TCount2],
 	Array2dTag)
 {
-	read<TSrc>(
+	return try_read<TSrc>(
 		&dst_values[0][0],
 		TCount1 * TCount2);
 }
@@ -268,42 +329,10 @@ void SavedGameStreamHelper::read(
 
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// try_read
+// try_read (C-array)
 
 template<typename TSrc, typename TDst>
-bool SavedGameStreamHelper::try_read(
-	TDst& dst_value)
-{
-	ScopeGuard scope_guard(
-		[saved_game_stream_]()
-		{
-			saved_game_stream_->allow_read_overflow(
-				true);
-		},
-
-		[saved_game_stream_]()
-		{
-			saved_game_stream_->allow_read_overflow(
-				false);
-		}
-	);
-
-
-	read<TSrc>(
-		dst_value);
-
-	return saved_game_stream_->is_all_data_read();
-}
-
-// try_read
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
-// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-// read (C-array)
-
-template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst* dst_values,
 	int dst_count)
 {
@@ -353,30 +382,55 @@ void SavedGameStreamHelper::read(
 		CastTag
 	>::type;
 
-	read<TSrc>(
+	return try_read<TSrc>(
 		dst_values,
 		dst_count,
 		Tag());
 }
 
+// try_read (C-array)
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// read (C-array)
+
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+void SavedGameFileHelper::read(
+	TDst* dst_values,
+	int dst_count)
+{
+	if (!try_read<TSrc>(
+		dst_values,
+		dst_count))
+	{
+		saved_game_file_->throw_error();
+	}
+}
+
+template<typename TSrc, typename TDst>
+bool SavedGameFileHelper::try_read(
 	TDst* dst_values,
 	int dst_count,
 	InplaceTag)
 {
 	const auto dst_size = dst_count * static_cast<int>(sizeof(TDst));
 
-	saved_game_stream_->read(
+	if (!saved_game_file_->read(
 		dst_values,
-		dst_size);
+		dst_size))
+	{
+		return false;
+	}
 
 	// FIXME Byte order
 	//
+
+	return true;
 }
 
 template<typename TSrc, typename TDst>
-void SavedGameStreamHelper::read(
+bool SavedGameFileHelper::try_read(
 	TDst* dst_values,
 	int dst_count,
 	CastTag)
@@ -397,10 +451,15 @@ void SavedGameStreamHelper::read(
 
 	for (int i = 0; i < dst_count; ++i)
 	{
-		read<TSrc>(
+		if (!try_read<TSrc>(
 			dst_values[i],
-			Tag());
+			Tag()))
+		{
+			return false;
+		}
 	}
+
+	return true;
 }
 
 // read (C-array)
@@ -411,7 +470,7 @@ void SavedGameStreamHelper::read(
 // write
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc& src_value)
 {
 	using Tag = typename std::conditional<
@@ -446,7 +505,7 @@ void SavedGameStreamHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc& src_value,
 	NumericTag)
 {
@@ -457,13 +516,13 @@ void SavedGameStreamHelper::write(
 	// FIXME Byte order
 	//
 
-	saved_game_stream_->write(
+	saved_game_file_->write(
 		&dst_value,
 		dst_size);
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc* src_value,
 	PointerTag)
 {
@@ -481,7 +540,7 @@ void SavedGameStreamHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc& src_value,
 	ClassTag)
 {
@@ -490,11 +549,11 @@ void SavedGameStreamHelper::write(
 		"Unsupported types.");
 
 	src_value.sg_export(
-		saved_game_stream_);
+		saved_game_file_);
 }
 
 template<typename TDst, typename TSrc, int TCount>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc(&src_values)[TCount],
 	Array1dTag)
 {
@@ -504,7 +563,7 @@ void SavedGameStreamHelper::write(
 }
 
 template<typename TDst, typename TSrc, int TCount1, int TCount2>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc(&src_values)[TCount1][TCount2],
 	Array2dTag)
 {
@@ -521,7 +580,7 @@ void SavedGameStreamHelper::write(
 // write (C-array)
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc* src_values,
 	int src_count)
 {
@@ -577,14 +636,14 @@ void SavedGameStreamHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc* src_values,
 	int src_count,
 	InplaceTag)
 {
 	const auto src_size = src_count * static_cast<int>(sizeof(TSrc));
 
-	saved_game_stream_->write(
+	saved_game_file_->write(
 		src_values,
 		src_size);
 
@@ -593,7 +652,7 @@ void SavedGameStreamHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameStreamHelper::write(
+void SavedGameFileHelper::write(
 	const TSrc* src_values,
 	int src_count,
 	CastTag)
@@ -627,4 +686,4 @@ void SavedGameStreamHelper::write(
 } // ojk
 
 
-#endif // OJK_SAVED_GAME_STREAM_HELPER_INCLUDED
+#endif // OJK_SAVED_GAME_FILE_HELPER_INCLUDED
