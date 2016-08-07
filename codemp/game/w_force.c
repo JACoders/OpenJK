@@ -2202,6 +2202,15 @@ void ForceDrainDamage( gentity_t *self, gentity_t *traceEnt, vec3_t dir, vec3_t 
 					traceEnt->s.genericenemyindex = level.time + 2000;
 				}
 			}
+
+			// zyk: Armored Soldier Upgrade has a chance of setting ysalamiri and resist the force power
+			if (traceEnt->client && traceEnt->client->sess.amrpgmode == 2 && traceEnt->client->pers.rpg_class == 3 &&
+				traceEnt->client->pers.secrets_found & (1 << 16) && traceEnt->client->ps.powerups[PW_YSALAMIRI] < level.time && 
+				Q_irand(0, 9) == 0)
+			{
+				traceEnt->client->ps.powerups[PW_YSALAMIRI] = level.time + 2000;
+			}
+
 			if (ForcePowerUsableOn(self, traceEnt, FP_DRAIN))
 			{
 				int modPowerLevel = -1;
