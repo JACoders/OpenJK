@@ -5432,8 +5432,30 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	}
 }
 
+// zyk: returns the amount of magic powers that are enabled with /magic command
+int zyk_number_of_enabled_magic_powers(gentity_t *ent)
+{
+	int i = 0;
+	int number_of_enabled_powers = 0;
+
+	for (i = 1; i <= 22; i++)
+	{
+		if (!(ent->client->sess.magic_master_disabled_powers & (1 << i)))
+		{
+			number_of_enabled_powers++;
+		}
+	}
+
+	return number_of_enabled_powers;
+}
+
 void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 {
+	if (zyk_number_of_enabled_magic_powers(ent) == 0)
+	{
+		return;
+	}
+
 	if (next_power == qtrue)
 	{
 		do
@@ -5458,6 +5480,11 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 
 void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 {
+	if (zyk_number_of_enabled_magic_powers(ent) == 0)
+	{
+		return;
+	}
+
 	if (next_power == qtrue)
 	{
 		do
@@ -5482,6 +5509,11 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 
 void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 {
+	if (zyk_number_of_enabled_magic_powers(ent) == 0)
+	{
+		return;
+	}
+
 	if (next_power == qtrue)
 	{
 		do
