@@ -4270,6 +4270,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	vec3_t player_yaw;
 	gentity_t *npc_ent = NULL;
 	int i = 0;
+	float boss_bonus_hp = 0;
 
 	// zyk: removing scale from allies
 	for (i = 0; i < level.maxclients; i++)
@@ -4300,9 +4301,18 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	else
 		npc_ent = NPC_SpawnType(ent,boss_name,NULL,qfalse);
 
+	if (ent->client->pers.universe_quest_counter & (1 << 29))
+	{ // zyk: Challenge Mode increases boss hp more
+		boss_bonus_hp = 0.2 * (1 + zyk_number_of_allies(ent, qtrue));
+	}
+	else
+	{
+		boss_bonus_hp = 0.15 * zyk_number_of_allies(ent, qtrue);
+	}
+
 	if (npc_ent)
 	{
-		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health * 0.15 * zyk_number_of_allies(ent,qtrue));
+		npc_ent->NPC->stats.health += (npc_ent->NPC->stats.health * boss_bonus_hp);
 		npc_ent->client->ps.stats[STAT_MAX_HEALTH] = npc_ent->NPC->stats.health;
 		npc_ent->health = npc_ent->client->ps.stats[STAT_MAX_HEALTH];
 
