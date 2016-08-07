@@ -2531,10 +2531,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		self->client->pers.player_statuses &= ~(1 << 10);
 		self->client->pers.player_statuses &= ~(1 << 11);
 
-		// zyk: RPG players lose credits if they die
-		remove_credits(self, 10);
-		save_account(self);
-
 		// zyk: player has the Resurrection Power. Uses mp. Not allowed in CTF gametype
 		if (self->client->pers.universe_quest_progress == NUMBER_OF_UNIVERSE_QUEST_OBJECTIVES && !(self->client->pers.player_settings & (1 << 7)) && 
 			g_gametype.integer != GT_CTF && !(self->client->ps.eFlags2 & EF2_HELD_BY_MONSTER) && 

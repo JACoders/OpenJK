@@ -5638,8 +5638,6 @@ void Cmd_LoginAccount_f( gentity_t *ent ) {
 
 			if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 			{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-				// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-				add_credits(ent, 10);
 				G_Kill(ent);
 			}
 		}
@@ -10512,8 +10510,6 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-			add_credits(ent, 10);
 			G_Kill(ent);
 		}
 	}
@@ -10531,8 +10527,6 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-			add_credits(ent, 10);
 			G_Kill(ent);
 		}
 	}
@@ -10558,8 +10552,6 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 
 		if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-			add_credits(ent, 10);
 			G_Kill(ent);
 		}
 	}
@@ -11382,8 +11374,6 @@ void Cmd_Settings_f( gentity_t *ent ) {
 
 		if (value == 0 && ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.amrpgmode == 2)
 		{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-			// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-			add_credits(ent, 10);
 			G_Kill(ent);
 		}
 
@@ -11553,8 +11543,6 @@ void do_change_class(gentity_t *ent, int value)
 
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR)
 	{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-		// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-		add_credits(ent, 10);
 		G_Kill(ent);
 	}
 
@@ -11746,8 +11734,6 @@ void Cmd_PlayerMode_f( gentity_t *ent ) {
 
 	if (ent->client->sess.sessionTeam != TEAM_SPECTATOR && ent->client->sess.amrpgmode == 2)
 	{ // zyk: this command must kill the player if he is not in spectator mode to prevent exploits
-		// zyk: adding credits because killing the player makes him lose credits, and in this case he should not lose any
-		add_credits(ent, 10);
 		G_Kill(ent);
 	}
 }
