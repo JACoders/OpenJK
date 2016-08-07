@@ -11512,13 +11512,13 @@ void do_change_class(gentity_t *ent, int value)
 
 	if (zyk_allow_class_change.integer == 1)
 	{
-		if (ent->client->pers.credits < 10)
+		if (ent->client->pers.credits < 20)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"You don't have enough credits to change your class.\n\"" );
 			return;
 		}
 
-		remove_credits(ent, 10);
+		remove_credits(ent, 20);
 	}
 
 	save_config(ent);
