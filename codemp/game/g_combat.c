@@ -5065,7 +5065,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (quest_player_ent && quest_player_ent->client && quest_player_ent->client->sess.amrpgmode == 2 && 
 			quest_player_ent->client->pers.universe_quest_counter & (1 << 29))
 		{
-			damage += ((int)ceil(damage * 0.05 * (1 + zyk_number_of_allies(quest_player_ent, qtrue))));
+			damage += ((int)ceil(damage * 0.1 * (1 + zyk_number_of_allies(quest_player_ent, qtrue))));
 		}
 		else
 		{
