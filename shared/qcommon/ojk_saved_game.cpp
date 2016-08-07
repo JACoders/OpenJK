@@ -163,10 +163,8 @@ void SavedGame::close()
 		file_handle_ = 0;
 	}
 
-	error_message_.clear();
-
-	io_buffer_.clear();
-	io_buffer_offset_ = 0;
+	clear_error();
+	reset_buffer();
 
 	saved_io_buffer_.clear();
 	saved_io_buffer_offset_ = 0;
@@ -175,7 +173,6 @@ void SavedGame::close()
 
 	is_readable_ = false;
 	is_writable_ = false;
-	is_failed_ = false;
 }
 
 bool SavedGame::read_chunk(
@@ -186,6 +183,12 @@ bool SavedGame::read_chunk(
 		return false;
 	}
 
+	if (file_handle_ == 0)
+	{
+		is_failed_ = true;
+		error_message_ = "Not open or created.";
+		return false;
+	}
 
 	io_buffer_offset_ = 0;
 
@@ -352,6 +355,16 @@ bool SavedGame::read_chunk(
 
 bool SavedGame::is_all_data_read() const
 {
+	if (is_failed_)
+	{
+		return false;
+	}
+
+	if (file_handle_ == 0)
+	{
+		return false;
+	}
+
 	return io_buffer_.size() == io_buffer_offset_;
 }
 
@@ -370,6 +383,13 @@ bool SavedGame::write_chunk(
 {
 	if (is_failed_)
 	{
+		return false;
+	}
+
+	if (file_handle_ == 0)
+	{
+		is_failed_ = true;
+		error_message_ = "Not open or created.";
 		return false;
 	}
 
@@ -548,6 +568,13 @@ bool SavedGame::read(
 		return false;
 	}
 
+	if (file_handle_ == 0)
+	{
+		is_failed_ = true;
+		error_message_ = "Not open or created.";
+		return false;
+	}
+
 	if (!dst_data)
 	{
 		is_failed_ = true;
@@ -597,6 +624,13 @@ bool SavedGame::write(
 {
 	if (is_failed_)
 	{
+		return false;
+	}
+
+	if (file_handle_ == 0)
+	{
+		is_failed_ = true;
+		error_message_ = "Not open or created.";
 		return false;
 	}
 
@@ -651,6 +685,13 @@ bool SavedGame::skip(
 {
 	if (is_failed_)
 	{
+		return false;
+	}
+
+	if (file_handle_ == 0)
+	{
+		is_failed_ = true;
+		error_message_ = "Not open or created.";
 		return false;
 	}
 

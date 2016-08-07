@@ -22,25 +22,38 @@ public:
 		ISavedGame* saved_game);
 
 
+	// Reads a chunk from the file into the internal buffer.
+	// Calls error method on failure.
 	void read_chunk(
 		const uint32_t chunk_id);
 
+	// Writes a chunk into the file from the internal buffer.
+	// Calls error method on failure.
 	void write_chunk(
 		const uint32_t chunk_id);
 
+	// Increments buffer's offset by the specified non-negative count.
+	// Calls error method on failure.
 	void skip(
 		int count);
 
+	// Clears buffer and resets it's offset to the beginning.
 	const void* get_buffer_data();
 
+	// Returns a current size of the I/O buffer.
 	int get_buffer_size() const;
 
+	// Clears buffer and resets it's offset to the beginning.
 	void reset_buffer();
 
+	// Resets buffer offset to the beginning.
 	void reset_buffer_offset();
 
+	// Calls error method if not all data read.
 	void ensure_all_data_read();
 
+	// Error flag.
+	// Returns true if read/write operation failed otherwise false.
 	bool is_failed() const;
 
 

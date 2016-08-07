@@ -32,7 +32,8 @@ public:
 	}
 
 
-	// Tries to reads a chunk from the file into the internal buffer.
+	// Reads a chunk from the file into the internal buffer.
+	// Returns true on success or false otherwise.
 	virtual bool read_chunk(
 		const uint32_t chunk_id) = 0;
 
@@ -44,21 +45,25 @@ public:
 
 
 	// Writes a chunk into the file from the internal buffer.
+	// Returns true on success or false otherwise.
 	virtual bool write_chunk(
 		const uint32_t chunk_id) = 0;
 
 
 	// Reads data from the internal buffer.
+	// Returns true on success or false otherwise.
 	virtual bool read(
 		void* dst_data,
 		int dst_size) = 0;
 
 	// Writes data into the internal buffer.
+	// Returns true on success or false otherwise.
 	virtual bool write(
 		const void* src_data,
 		int src_size) = 0;
 
 	// Increments buffer's offset by the specified non-negative count.
+	// Returns true on success or false otherwise.
 	virtual bool skip(
 		int count) = 0;
 
