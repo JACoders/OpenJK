@@ -5062,7 +5062,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{ // zyk: attacker is a RPG boss. Increase damage based in the number of allies of the quest player
 		gentity_t *quest_player_ent = &g_entities[attacker->client->pers.guardian_invoked_by_id];
 
-		damage += ((int)ceil(damage * 0.05 * zyk_number_of_allies(quest_player_ent,qtrue)));
+		if (quest_player_ent && quest_player_ent->client && quest_player_ent->client->sess.amrpgmode == 2 && 
+			quest_player_ent->client->pers.universe_quest_counter & (1 << 29))
+		{
+			damage += ((int)ceil(damage * 0.05 * (1 + zyk_number_of_allies(quest_player_ent, qtrue))));
+		}
+		else
+		{
+			damage += ((int)ceil(damage * 0.05 * zyk_number_of_allies(quest_player_ent, qtrue)));
+		}
 	}
 
 	if (targ && targ->client && targ->NPC && targ->client->pers.guardian_invoked_by_id != -1)
@@ -5096,7 +5104,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (targ && targ->client && targ->client->sess.amrpgmode == 2 && 
 		targ->client->pers.can_play_quest == 1 && targ->client->pers.universe_quest_counter & (1 << 29))
 	{ // zyk: Challenge Mode increases damage taken from anything
-		damage = (int)ceil(damage*1.15);
+		damage = (int)ceil(damage*1.1);
 	}
 
 	if (targ && targ->client && (targ->NPC || targ->client->sess.amrpgmode == 2) && targ->client->pers.quest_power_status & (1 << 16))
