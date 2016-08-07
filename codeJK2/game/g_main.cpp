@@ -35,7 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "objectives.h"
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
 #include "time.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 extern CNavigator		navigator;
 
@@ -90,20 +90,20 @@ qboolean PInUse2(gentity_t *ent)
 
 void WriteInUseBits()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<uint32_t>(
+	saved_game.write_chunk<uint32_t>(
 		INT_ID('I', 'N', 'U', 'S'),
 		::g_entityInUseBits);
 }
 
 void ReadInUseBits()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<uint32_t>(
+	saved_game.read_chunk<uint32_t>(
 		INT_ID('I', 'N', 'U', 'S'),
 		::g_entityInUseBits);
 
@@ -1489,10 +1489,10 @@ extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData(void)
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('L', 'C', 'K', 'D'),
 		::player_locked);
 }
@@ -1501,10 +1501,10 @@ void G_LoadSave_WriteMiscData(void)
 
 void G_LoadSave_ReadMiscData(void)
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('L', 'C', 'K', 'D'),
 		::player_locked);
 }

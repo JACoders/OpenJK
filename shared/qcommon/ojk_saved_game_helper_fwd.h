@@ -1,25 +1,25 @@
 //
-// Saved game file helper.
+// Saved game helper.
 // (forward declaration)
 //
 
 
-#ifndef OJK_SAVED_GAME_FILE_HELPER_FWD_INCLUDED
-#define OJK_SAVED_GAME_FILE_HELPER_FWD_INCLUDED
+#ifndef OJK_SAVED_GAME_HELPER_FWD_INCLUDED
+#define OJK_SAVED_GAME_HELPER_FWD_INCLUDED
 
 
-#include "ojk_i_saved_game_file.h"
+#include "ojk_i_saved_game.h"
 
 
 namespace ojk
 {
 
 
-class SavedGameFileHelper
+class SavedGameHelper
 {
 public:
-	SavedGameFileHelper(
-		ISavedGameFile* saved_game_file);
+	SavedGameHelper(
+		ISavedGame* saved_game);
 
 
 	void read_chunk(
@@ -144,7 +144,7 @@ public:
 
 
 private:
-	ISavedGameFile* saved_game_file_;
+	ISavedGame* saved_game_;
 
 
 	// Tags for dispatching.
@@ -239,11 +239,11 @@ private:
 		const TSrc* src_values,
 		int src_count,
 		CastTag);
-}; // SavedGameFileHelper
+}; // SavedGameHelper
 
 
-}
+} // ojk
 
 
-#endif // OJK_SAVED_GAME_FILE_HELPER_FWD_INCLUDED
+#endif // OJK_SAVED_GAME_HELPER_FWD_INCLUDED
 

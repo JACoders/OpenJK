@@ -24,8 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // cmodel.c -- model loading
 
 #include "cm_local.h"
-#include "qcommon/ojk_saved_game_file.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 #ifdef BSPC
 void SetPlaneSignbits (cplane_t *out) {
@@ -1217,10 +1217,10 @@ int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPt
 
 void CM_WritePortalState()
 {
-	ojk::SavedGameFileHelper sgfh(
-		&ojk::SavedGameFile::get_instance());
+	ojk::SavedGameHelper saved_game(
+		&ojk::SavedGame::get_instance());
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('P', 'R', 'T', 'S'),
 		::cmg.areaPortals,
 		::cmg.numAreas * ::cmg.numAreas);
@@ -1236,10 +1236,10 @@ and recalculates the area connections
 */
 void CM_ReadPortalState()
 {
-	ojk::SavedGameFileHelper sgfh(
-		&ojk::SavedGameFile::get_instance());
+	ojk::SavedGameHelper saved_game(
+		&ojk::SavedGame::get_instance());
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('P', 'R', 'T', 'S'),
 		::cmg.areaPortals,
 		::cmg.numAreas * ::cmg.numAreas);

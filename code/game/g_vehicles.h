@@ -468,7 +468,7 @@ struct Muzzle
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<float>(m_vMuzzlePos);
         saved_game.write<float>(m_vMuzzleDir);
@@ -478,7 +478,7 @@ struct Muzzle
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<float>(m_vMuzzlePos);
         saved_game.read<float>(m_vMuzzleDir);
@@ -524,7 +524,7 @@ typedef struct
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(linked);
         saved_game.write<int32_t>(ammo);
@@ -533,7 +533,7 @@ typedef struct
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(linked);
         saved_game.read<int32_t>(ammo);
@@ -557,7 +557,7 @@ typedef struct
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(ammo);
         saved_game.write<int32_t>(lastAmmoInc);
@@ -567,7 +567,7 @@ typedef struct
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(ammo);
         saved_game.read<int32_t>(lastAmmoInc);
@@ -694,7 +694,7 @@ struct Vehicle_t
 
 
     void Vehicle_t::sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(m_pPilot);
         saved_game.write<int32_t>(m_iPilotTime);
@@ -741,7 +741,7 @@ struct Vehicle_t
     }
 
     void Vehicle_t::sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(m_pPilot);
         saved_game.read<int32_t>(m_iPilotTime);

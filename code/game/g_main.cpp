@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 extern void WP_SaberLoadParms( void );
 extern qboolean G_PlayerSpawned( void );
@@ -107,20 +107,20 @@ qboolean PInUse(unsigned int entNum)
 
 void WriteInUseBits()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<uint32_t>(
+	saved_game.write_chunk<uint32_t>(
 		INT_ID('I', 'N', 'U', 'S'),
 		::g_entityInUseBits);
 }
 
 void ReadInUseBits()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<uint32_t>(
+	saved_game.read_chunk<uint32_t>(
 		INT_ID('I', 'N', 'U', 'S'),
 		::g_entityInUseBits);
 
@@ -2121,10 +2121,10 @@ extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('L', 'C', 'K', 'D'),
 		::player_locked);
 }
@@ -2133,10 +2133,10 @@ void G_LoadSave_WriteMiscData()
 
 void G_LoadSave_ReadMiscData()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('L', 'C', 'K', 'D'),
 		::player_locked);
 }

@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_shared.h"
 
 #include "assert.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 // Sequencer 
 
@@ -2332,16 +2332,16 @@ int	CSequencer::Save( void )
 	//Get the number of sequences to save out
 	numSequences = m_sequences.size();
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		m_ie->saved_game);
 
 	//Save out the owner sequence
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'Q', 'R', 'E'),
 		m_ownerID);
 
 	//Write out the number of sequences we need to read
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'Q', 'R', '#'),
 		numSequences);
 
@@ -2350,7 +2350,7 @@ int	CSequencer::Save( void )
 	{
 		id = (*si)->GetID();
 
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'Q', 'R', 'I'),
 			id);
 	}
@@ -2361,7 +2361,7 @@ int	CSequencer::Save( void )
 	//Save out the task sequences mapping the name to the GUIDs
 	numTasks = m_taskSequences.size();
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'Q', 'T', '#'),
 		numTasks);
 
@@ -2370,33 +2370,33 @@ int	CSequencer::Save( void )
 		//Save the task group's ID
 		id = ((*ti).first)->GetGUID();
 
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'T', 'I', 'D'),
 			id);
 
 		//Save the sequence's ID
 		id = ((*ti).second)->GetID();
 
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'S', 'I', 'D'),
 			id);
 	}
 
 	int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'Q', 'C', 'T'),
 		curGroupID);
 
 	//Output the number of commands
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'Q', '#', 'C'),
 		m_numCommands);	//FIXME: This can be reconstructed
 
 	//Output the ID of the current sequence
 	id = ( m_curSequence != NULL ) ? m_curSequence->GetID() : -1;
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'Q', 'C', 'S'),
 		id);
 
@@ -2413,11 +2413,11 @@ int	CSequencer::Load( void )
 {	
 	int i;
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		m_ie->saved_game);
 
 	//Get the owner of this sequencer
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'Q', 'R', 'E'),
 		m_ownerID);
 
@@ -2429,14 +2429,14 @@ int	CSequencer::Load( void )
 	int			numSequences, seqID, taskID, numTasks;
 
 	//Get the number of sequences to read
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'Q', 'R', '#'),
 		numSequences);
 
 	//Read in all the sequences
 	for ( i = 0; i < numSequences; i++ )
 	{
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'Q', 'R', 'I'),
 			seqID);
 
@@ -2455,7 +2455,7 @@ int	CSequencer::Load( void )
 	m_taskManager->Load();
 
 	//Get the number of tasks in the map
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'Q', 'T', '#'),
 		numTasks);
 
@@ -2463,12 +2463,12 @@ int	CSequencer::Load( void )
 	for ( i = 0; i < numTasks; i++ )
 	{
 		//Read in the task's ID
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'T', 'I', 'D'),
 			taskID);
 		
 		//Read in the sequence's ID
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'S', 'I', 'D'),
 			seqID);
 
@@ -2487,19 +2487,19 @@ int	CSequencer::Load( void )
 	int	curGroupID;
 
 	//Get the current task group
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'Q', 'C', 'T'),
 		curGroupID);
 
 	m_curGroup = ( curGroupID == -1 ) ? NULL : m_taskManager->GetTaskGroup( curGroupID );
 
 	//Get the number of commands
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'Q', '#', 'C'),
 		m_numCommands);
 
 	//Get the current sequence
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'Q', 'C', 'S'),
 		seqID);
 

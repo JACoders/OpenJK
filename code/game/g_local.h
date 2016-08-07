@@ -100,7 +100,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int8_t>(filename);
         saved_game.write<>(animations);
@@ -112,7 +112,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int8_t>(filename);
         saved_game.read<>(animations);
@@ -187,7 +187,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<float>(position);
         saved_game.write<float>(radius);
@@ -202,7 +202,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<float>(position);
         saved_game.read<float>(radius);
@@ -302,7 +302,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(clients);
         saved_game.write<int32_t>(maxclients);
@@ -324,7 +324,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(clients);
         saved_game.read<int32_t>(maxclients);

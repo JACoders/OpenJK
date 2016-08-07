@@ -1,15 +1,15 @@
 //
-// Saved game file helper.
+// Saved game helper.
 //
 
 
-#ifndef OJK_SAVED_GAME_FILE_HELPER_INCLUDED
-#define OJK_SAVED_GAME_FILE_HELPER_INCLUDED
+#ifndef OJK_SAVED_GAME_HELPER_INCLUDED
+#define OJK_SAVED_GAME_HELPER_INCLUDED
 
 
 #include <cstdint>
 #include <type_traits>
-#include "ojk_saved_game_file_helper_fwd.h"
+#include "ojk_saved_game_helper_fwd.h"
 #include "ojk_scope_guard.h"
 
 
@@ -20,9 +20,9 @@ namespace ojk
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // Class stuff
 
-inline SavedGameFileHelper::SavedGameFileHelper(
-	ISavedGameFile* saved_game_file) :
-		saved_game_file_(saved_game_file)
+inline SavedGameHelper::SavedGameHelper(
+	ISavedGame* saved_game) :
+		saved_game_(saved_game)
 {
 }
 
@@ -33,64 +33,64 @@ inline SavedGameFileHelper::SavedGameFileHelper(
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // Public methods
 
-inline void SavedGameFileHelper::read_chunk(
+inline void SavedGameHelper::read_chunk(
 	const uint32_t chunk_id)
 {
-	if (!saved_game_file_->read_chunk(
+	if (!saved_game_->read_chunk(
 		chunk_id))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
-inline void SavedGameFileHelper::write_chunk(
+inline void SavedGameHelper::write_chunk(
 	const uint32_t chunk_id)
 {
-	if (!saved_game_file_->write_chunk(
+	if (!saved_game_->write_chunk(
 		chunk_id))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
-inline void SavedGameFileHelper::skip(
+inline void SavedGameHelper::skip(
 	int count)
 {
-	if (!saved_game_file_->skip(
+	if (!saved_game_->skip(
 		count))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
-inline const void* SavedGameFileHelper::get_buffer_data()
+inline const void* SavedGameHelper::get_buffer_data()
 {
-	return saved_game_file_->get_buffer_data();
+	return saved_game_->get_buffer_data();
 }
 
-inline int SavedGameFileHelper::get_buffer_size() const
+inline int SavedGameHelper::get_buffer_size() const
 {
-	return saved_game_file_->get_buffer_size();
+	return saved_game_->get_buffer_size();
 }
 
-inline void SavedGameFileHelper::reset_buffer()
+inline void SavedGameHelper::reset_buffer()
 {
-	saved_game_file_->reset_buffer();
+	saved_game_->reset_buffer();
 }
 
-inline void SavedGameFileHelper::reset_buffer_offset()
+inline void SavedGameHelper::reset_buffer_offset()
 {
-	saved_game_file_->reset_buffer_offset();
+	saved_game_->reset_buffer_offset();
 }
 
-inline void SavedGameFileHelper::ensure_all_data_read()
+inline void SavedGameHelper::ensure_all_data_read()
 {
-	saved_game_file_->ensure_all_data_read();
+	saved_game_->ensure_all_data_read();
 }
 
-inline bool SavedGameFileHelper::is_failed() const
+inline bool SavedGameHelper::is_failed() const
 {
-	return saved_game_file_->is_failed();
+	return saved_game_->is_failed();
 }
 
 // Public methods
@@ -101,11 +101,11 @@ inline bool SavedGameFileHelper::is_failed() const
 // try_read_chunk
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read_chunk(
+bool SavedGameHelper::try_read_chunk(
 	const uint32_t chunk_id,
 	TDst& dst_value)
 {
-	if (!saved_game_file_->read_chunk(
+	if (!saved_game_->read_chunk(
 		chunk_id))
 	{
 		return false;
@@ -117,16 +117,16 @@ bool SavedGameFileHelper::try_read_chunk(
 		return false;
 	}
 
-	return saved_game_file_->is_all_data_read();
+	return saved_game_->is_all_data_read();
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read_chunk(
+bool SavedGameHelper::try_read_chunk(
 	const uint32_t chunk_id,
 	TDst* dst_values,
 	int dst_count)
 {
-	if (!saved_game_file_->read_chunk(
+	if (!saved_game_->read_chunk(
 		chunk_id))
 	{
 		return false;
@@ -139,7 +139,7 @@ bool SavedGameFileHelper::try_read_chunk(
 		return false;
 	}
 
-	return saved_game_file_->is_all_data_read();
+	return saved_game_->is_all_data_read();
 }
 
 // try_read_chunk
@@ -150,7 +150,7 @@ bool SavedGameFileHelper::try_read_chunk(
 // read_chunk
 
 template<typename TSrc, typename TDst>
-void SavedGameFileHelper::read_chunk(
+void SavedGameHelper::read_chunk(
 	const uint32_t chunk_id,
 	TDst& dst_value)
 {
@@ -158,12 +158,12 @@ void SavedGameFileHelper::read_chunk(
 		chunk_id,
 		dst_value))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
 template<typename TSrc, typename TDst>
-void SavedGameFileHelper::read_chunk(
+void SavedGameHelper::read_chunk(
 	const uint32_t chunk_id,
 	TDst* dst_values,
 	int dst_count)
@@ -173,7 +173,7 @@ void SavedGameFileHelper::read_chunk(
 		dst_values,
 		dst_count))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
@@ -185,53 +185,53 @@ void SavedGameFileHelper::read_chunk(
 // write_chunk
 
 template<typename TSize>
-void SavedGameFileHelper::write_chunk_and_size(
+void SavedGameHelper::write_chunk_and_size(
 	const uint32_t size_chunk_id,
 	const uint32_t data_chunk_id)
 {
-	saved_game_file_->save_buffer();
+	saved_game_->save_buffer();
 
-	auto data_size = saved_game_file_->get_buffer_size();
+	auto data_size = saved_game_->get_buffer_size();
 
-	saved_game_file_->reset_buffer();
+	saved_game_->reset_buffer();
 
 	write_chunk<TSize>(
 		size_chunk_id,
 		data_size);
 
-	saved_game_file_->load_buffer();
+	saved_game_->load_buffer();
 
-	saved_game_file_->write_chunk(
+	saved_game_->write_chunk(
 		data_chunk_id);
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write_chunk(
+void SavedGameHelper::write_chunk(
 	const uint32_t chunk_id,
 	const TSrc& src_value)
 {
-	saved_game_file_->reset_buffer();
+	saved_game_->reset_buffer();
 
 	write<TDst>(
 		src_value);
 
-	saved_game_file_->write_chunk(
+	saved_game_->write_chunk(
 		chunk_id);
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write_chunk(
+void SavedGameHelper::write_chunk(
 	const uint32_t chunk_id,
 	const TSrc* src_values,
 	int src_count)
 {
-	saved_game_file_->reset_buffer();
+	saved_game_->reset_buffer();
 
 	write<TDst>(
 		src_values,
 		src_count);
 
-	saved_game_file_->write_chunk(
+	saved_game_->write_chunk(
 		chunk_id);
 }
 
@@ -243,7 +243,7 @@ void SavedGameFileHelper::write_chunk(
 // try_read
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst& dst_value)
 {
 	using Tag = typename std::conditional <
@@ -289,18 +289,18 @@ bool SavedGameFileHelper::try_read(
 // read
 
 template<typename TSrc, typename TDst>
-void SavedGameFileHelper::read(
+void SavedGameHelper::read(
 	TDst& dst_value)
 {
 	if (!try_read<TSrc>(
 		dst_value))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	BooleanTag)
 {
@@ -308,7 +308,7 @@ bool SavedGameFileHelper::try_read(
 
 	TSrc src_value;
 
-	if (!saved_game_file_->read(
+	if (!saved_game_->read(
 		&src_value,
 		static_cast<int>(sizeof(TSrc))))
 	{
@@ -324,7 +324,7 @@ bool SavedGameFileHelper::try_read(
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	NumericTag)
 {
@@ -332,7 +332,7 @@ bool SavedGameFileHelper::try_read(
 
 	TSrc src_value;
 
-	if (!saved_game_file_->read(
+	if (!saved_game_->read(
 		&src_value,
 		src_size))
 	{
@@ -348,7 +348,7 @@ bool SavedGameFileHelper::try_read(
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst*& dst_value,
 	PointerTag)
 {
@@ -378,7 +378,7 @@ bool SavedGameFileHelper::try_read(
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	ClassTag)
 {
@@ -389,11 +389,11 @@ bool SavedGameFileHelper::try_read(
 	dst_value.sg_import(
 		*this);
 
-	return !saved_game_file_->is_failed();
+	return !saved_game_->is_failed();
 }
 
 template<typename TSrc, typename TDst, int TCount>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst(&dst_values)[TCount],
 	Array1dTag)
 {
@@ -403,7 +403,7 @@ bool SavedGameFileHelper::try_read(
 }
 
 template<typename TSrc, typename TDst, int TCount1, int TCount2>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst(&dst_values)[TCount1][TCount2],
 	Array2dTag)
 {
@@ -420,7 +420,7 @@ bool SavedGameFileHelper::try_read(
 // try_read (C-array)
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst* dst_values,
 	int dst_count)
 {
@@ -484,7 +484,7 @@ bool SavedGameFileHelper::try_read(
 // read (C-array)
 
 template<typename TSrc, typename TDst>
-void SavedGameFileHelper::read(
+void SavedGameHelper::read(
 	TDst* dst_values,
 	int dst_count)
 {
@@ -492,19 +492,19 @@ void SavedGameFileHelper::read(
 		dst_values,
 		dst_count))
 	{
-		saved_game_file_->throw_error();
+		saved_game_->throw_error();
 	}
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst* dst_values,
 	int dst_count,
 	InplaceTag)
 {
 	const auto dst_size = dst_count * static_cast<int>(sizeof(TDst));
 
-	if (!saved_game_file_->read(
+	if (!saved_game_->read(
 		dst_values,
 		dst_size))
 	{
@@ -518,7 +518,7 @@ bool SavedGameFileHelper::try_read(
 }
 
 template<typename TSrc, typename TDst>
-bool SavedGameFileHelper::try_read(
+bool SavedGameHelper::try_read(
 	TDst* dst_values,
 	int dst_count,
 	CastTag)
@@ -558,7 +558,7 @@ bool SavedGameFileHelper::try_read(
 // write
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc& src_value)
 {
 	using Tag = typename std::conditional<
@@ -593,7 +593,7 @@ void SavedGameFileHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc& src_value,
 	NumericTag)
 {
@@ -604,13 +604,13 @@ void SavedGameFileHelper::write(
 	// FIXME Byte order
 	//
 
-	saved_game_file_->write(
+	saved_game_->write(
 		&dst_value,
 		dst_size);
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc* src_value,
 	PointerTag)
 {
@@ -628,7 +628,7 @@ void SavedGameFileHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc& src_value,
 	ClassTag)
 {
@@ -641,7 +641,7 @@ void SavedGameFileHelper::write(
 }
 
 template<typename TDst, typename TSrc, int TCount>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc(&src_values)[TCount],
 	Array1dTag)
 {
@@ -651,7 +651,7 @@ void SavedGameFileHelper::write(
 }
 
 template<typename TDst, typename TSrc, int TCount1, int TCount2>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc(&src_values)[TCount1][TCount2],
 	Array2dTag)
 {
@@ -668,7 +668,7 @@ void SavedGameFileHelper::write(
 // write (C-array)
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc* src_values,
 	int src_count)
 {
@@ -724,14 +724,14 @@ void SavedGameFileHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc* src_values,
 	int src_count,
 	InplaceTag)
 {
 	const auto src_size = src_count * static_cast<int>(sizeof(TSrc));
 
-	saved_game_file_->write(
+	saved_game_->write(
 		src_values,
 		src_size);
 
@@ -740,7 +740,7 @@ void SavedGameFileHelper::write(
 }
 
 template<typename TDst, typename TSrc>
-void SavedGameFileHelper::write(
+void SavedGameHelper::write(
 	const TSrc* src_values,
 	int src_count,
 	CastTag)
@@ -774,4 +774,4 @@ void SavedGameFileHelper::write(
 } // ojk
 
 
-#endif // OJK_SAVED_GAME_FILE_HELPER_INCLUDED
+#endif // OJK_SAVED_GAME_HELPER_INCLUDED

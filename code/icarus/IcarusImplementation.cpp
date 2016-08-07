@@ -33,7 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 #include "../qcommon/qcommon.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 #define STL_ITERATE( a, b )		for ( a = b.begin(); a != b.end(); ++a )
 #define STL_INSERT( a, b )		a.insert( a.end(), b );
@@ -539,13 +539,13 @@ int CIcarus::Save()
 
 	IGameInterface* game = IGameInterface::GetGame(m_flavor);
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		game->get_saved_game_file());
 
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
 
-	sgfh.write_chunk<double>(
+	saved_game.write_chunk<double>(
 		INT_ID('I', 'C', 'A', 'R'),
 		version);
 
@@ -571,7 +571,7 @@ int CIcarus::Save()
 	}
 
 	// Write out the buffer with all our collected data.
-	sgfh.write_chunk(
+	saved_game.write_chunk(
 		INT_ID('I', 'S', 'E', 'Q'),
 		m_byBuffer,
 		static_cast<int>(m_ulBufferCurPos));
@@ -688,7 +688,7 @@ int CIcarus::Load()
 
 	IGameInterface* game = IGameInterface::GetGame(m_flavor);
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		game->get_saved_game_file());
 
 	//Clear out any old information
@@ -697,7 +697,7 @@ int CIcarus::Load()
 	//Check to make sure we're at the ICARUS save block
 	double	version;
 
-	sgfh.read_chunk<double>(
+	saved_game.read_chunk<double>(
 		INT_ID('I', 'C', 'A', 'R'),
 		version);
 
@@ -710,13 +710,13 @@ int CIcarus::Load()
 	}
 
 	// Read into the buffer all our data.
-	sgfh.read_chunk(
+	saved_game.read_chunk(
 		INT_ID('I','S','E','Q'));
 
 	auto sg_buffer_data = static_cast<const unsigned char*>(
-		sgfh.get_buffer_data());
+		saved_game.get_buffer_data());
 
-	const auto sg_buffer_size = sgfh.get_buffer_size();
+	const auto sg_buffer_size = saved_game.get_buffer_size();
 
 	std::uninitialized_copy_n(
 		sg_buffer_data,
@@ -810,10 +810,10 @@ void CIcarus::BufferWrite( void *pSrcData, unsigned long ulNumBytesToWrite )
 	{	// Write out the buffer with all our collected data so far...
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferWrite: Out of buffer space, Flushing." );
 
-		ojk::SavedGameFileHelper sgfh(
+		ojk::SavedGameHelper saved_game(
 			IGameInterface::GetGame()->get_saved_game_file());
 
-		sgfh.write_chunk(
+		saved_game.write_chunk(
 			INT_ID('I', 'S', 'E', 'Q'),
 			m_byBuffer,
 			static_cast<int>(m_ulBufferCurPos));
@@ -840,16 +840,16 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 		IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "BufferRead: Buffer underflow, Looking for new block." );
 		// Read in the next block.
 
-		ojk::SavedGameFileHelper sgfh(
+		ojk::SavedGameHelper saved_game(
 			IGameInterface::GetGame()->get_saved_game_file());
 
-		sgfh.read_chunk(
+		saved_game.read_chunk(
 			INT_ID('I', 'S', 'E', 'Q'));
 
 		auto sg_buffer_data = static_cast<const unsigned char*>(
-			sgfh.get_buffer_data());
+			saved_game.get_buffer_data());
 
-		const auto sg_buffer_size = sgfh.get_buffer_size();
+		const auto sg_buffer_size = saved_game.get_buffer_size();
 
 		std::uninitialized_copy_n(
 			sg_buffer_data,

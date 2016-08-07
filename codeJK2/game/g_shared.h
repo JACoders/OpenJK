@@ -154,7 +154,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(infoValid);
         saved_game.write<int8_t>(name);
@@ -177,7 +177,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(infoValid);
         saved_game.read<int8_t>(name);
@@ -221,7 +221,7 @@ typedef struct modelInfo_s
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(modelIndex);
         saved_game.write<float>(customRGB);
@@ -229,7 +229,7 @@ typedef struct modelInfo_s
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(modelIndex);
         saved_game.read<float>(customRGB);
@@ -336,7 +336,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<>(legsModel);
         saved_game.write<int8_t>(legsModelName);
@@ -388,7 +388,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<>(legsModel);
         saved_game.read<int8_t>(legsModelName);
@@ -485,7 +485,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(state);
         saved_game.write<int32_t>(captures);
@@ -501,7 +501,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(state);
         saved_game.read<int32_t>(captures);
@@ -526,14 +526,14 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(display);
         saved_game.write<int32_t>(status);
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(display);
         saved_game.read<int32_t>(status);
@@ -562,7 +562,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(secretsFound);
         saved_game.write<int32_t>(totalSecrets);
@@ -581,7 +581,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(secretsFound);
         saved_game.read<int32_t>(totalSecrets);
@@ -621,7 +621,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(missionObjectivesShown);
         saved_game.write<int32_t>(sessionTeam);
@@ -630,7 +630,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(missionObjectivesShown);
         saved_game.read<int32_t>(sessionTeam);
@@ -657,7 +657,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(connected);
         saved_game.write<>(lastCommand);
@@ -672,7 +672,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(connected);
         saved_game.read<>(lastCommand);
@@ -804,7 +804,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<>(ps);
         saved_game.write<>(pers);
@@ -866,7 +866,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<>(ps);
         saved_game.read<>(pers);
@@ -938,13 +938,13 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int8_t>(parm);
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int8_t>(parm);
     }
@@ -1266,7 +1266,7 @@ Ghoul2 Insert End
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<>(s);
         saved_game.write<int32_t>(client);
@@ -1447,7 +1447,7 @@ Ghoul2 Insert End
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<>(s);
         saved_game.read<int32_t>(client);

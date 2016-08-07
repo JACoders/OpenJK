@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 
 #include "../qcommon/sstring.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef	std::map< sstring_t, unsigned char  >	namePrecache_m;
@@ -1907,28 +1907,28 @@ static void CG_GameStateReceived( void ) {
 
 void CG_WriteTheEvilCGHackStuff()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('F', 'P', 'S', 'L'),
 		::cg.forcepowerSelect);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('I', 'V', 'S', 'L'),
 		::cg.inventorySelect);
 }
 
 void CG_ReadTheEvilCGHackStuff()
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('F', 'P', 'S', 'L'),
 		::gi_cg_forcepowerSelect);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('I', 'V', 'S', 'L'),
 		::gi_cg_inventorySelect);
 

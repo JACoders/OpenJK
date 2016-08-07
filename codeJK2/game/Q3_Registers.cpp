@@ -24,7 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "Q3_Registers.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
@@ -290,10 +290,10 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 {
 	int numFloats = fmap.size();
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('F', 'V', 'A', 'R'),
 		numFloats);
 
@@ -304,17 +304,17 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 		int	idSize = strlen( ((*vfi).first).c_str() );
 		
 		//Save out the real data
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('F', 'I', 'D', 'L'),
 			idSize);
 
-		sgfh.write_chunk(
+		saved_game.write_chunk(
 			INT_ID('F', 'I', 'D', 'S'),
 			((*vfi).first).c_str(),
 			idSize);
 
 		//Save out the float value
-		sgfh.write_chunk<float>(
+		saved_game.write_chunk<float>(
 			INT_ID('F', 'V', 'A', 'L'),
 			(*vfi).second);
 	}
@@ -330,10 +330,10 @@ void Q3_VariableSaveStrings( varString_m &smap )
 {
 	int numStrings = smap.size();
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('S', 'V', 'A', 'R'),
 		numStrings);
 
@@ -344,11 +344,11 @@ void Q3_VariableSaveStrings( varString_m &smap )
 		int	idSize = strlen( ((*vsi).first).c_str() );
 		
 		//Save out the real data
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'I', 'D', 'L'),
 			idSize);
 
-		sgfh.write_chunk(
+		saved_game.write_chunk(
 			INT_ID('S', 'I', 'D', 'S'),
 			((*vsi).first).c_str(),
 			idSize);
@@ -356,11 +356,11 @@ void Q3_VariableSaveStrings( varString_m &smap )
 		//Save out the string value
 		idSize = strlen( ((*vsi).second).c_str() );
 
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('S', 'V', 'S', 'Z'),
 			idSize);
 
-		sgfh.write_chunk(
+		saved_game.write_chunk(
 			INT_ID('S', 'V', 'A', 'L'),
 			((*vsi).second).c_str(),
 			idSize);
@@ -393,10 +393,10 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('F', 'V', 'A', 'R'),
 		numFloats);
 
@@ -404,11 +404,11 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	{
 		int idSize;
 		
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('F', 'I', 'D', 'L'),
 			idSize);
 
-		sgfh.read_chunk(
+		saved_game.read_chunk(
 			INT_ID('F', 'I', 'D', 'S'),
 			tempBuffer,
 			idSize);
@@ -417,7 +417,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 
 		float	val;
 
-		sgfh.read_chunk<float>(
+		saved_game.read_chunk<float>(
 			INT_ID('F', 'V', 'A', 'L'),
 			val);
 
@@ -438,10 +438,10 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('S', 'V', 'A', 'R'),
 		numFloats);
 
@@ -449,22 +449,22 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	{
 		int idSize;
 		
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'I', 'D', 'L'),
 			idSize);
 
-		sgfh.read_chunk(
+		saved_game.read_chunk(
 			INT_ID('S', 'I', 'D', 'S'),
 			tempBuffer,
 			idSize);
 
 		tempBuffer[ idSize ] = 0;
 
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'V', 'S', 'Z'),
 			idSize);
 
-		sgfh.read_chunk(
+		saved_game.read_chunk(
 			INT_ID('S', 'V', 'A', 'L'),
 			tempBuffer2,
 			idSize);

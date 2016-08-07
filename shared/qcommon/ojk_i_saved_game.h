@@ -1,10 +1,10 @@
 //
-// Saved game file interface.
+// Saved game interface.
 //
 
 
-#ifndef OJK_I_SAVED_GAME_FILE_INCLUDED
-#define OJK_I_SAVED_GAME_FILE_INCLUDED
+#ifndef OJK_I_SAVED_GAME_INCLUDED
+#define OJK_I_SAVED_GAME_INCLUDED
 
 
 #include <cstdint>
@@ -14,20 +14,20 @@ namespace ojk
 {
 
 
-class ISavedGameFile
+class ISavedGame
 {
 public:
-	ISavedGameFile()
+	ISavedGame()
 	{
 	}
 
-	ISavedGameFile(
-		const ISavedGameFile& that) = delete;
+	ISavedGame(
+		const ISavedGame& that) = delete;
 
-	ISavedGameFile& operator=(
-		const ISavedGameFile& that) = delete;
+	ISavedGame& operator=(
+		const ISavedGame& that) = delete;
 
-	virtual ~ISavedGameFile()
+	virtual ~ISavedGame()
 	{
 	}
 
@@ -92,10 +92,10 @@ public:
 
 	// Calls Com_Error with last error message or with a generic one.
 	virtual void throw_error() = 0;
-}; // ISavedGameFile
+}; // ISavedGame
 
 
 } // ojk
 
 
-#endif // OJK_I_SAVED_GAME_FILE_INCLUDED
+#endif // OJK_I_SAVED_GAME_INCLUDED

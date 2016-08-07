@@ -22,7 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "../Rufl/hstring.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 #define MAX_GTIMERS	16384
 
@@ -159,7 +159,7 @@ void TIMER_Save( void )
 	int			j;
 	gentity_t	*ent;
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
 	for ( j = 0, ent = &g_entities[0]; j < MAX_GENTITIES; j++, ent++ )
@@ -175,7 +175,7 @@ void TIMER_Save( void )
 		}
 
 		//Write out the timer information
-		sgfh.write_chunk<uint8_t>(
+		saved_game.write_chunk<uint8_t>(
 			INT_ID('T', 'I', 'M', 'E'),
 			numTimers);
 
@@ -191,13 +191,13 @@ void TIMER_Save( void )
 			assert( length < 1024 );//This will cause problems when loading the timer if longer
 
 			//Write out the id string
-			sgfh.write_chunk(
+			saved_game.write_chunk(
 				INT_ID('T', 'M', 'I', 'D'),
 				timerID,
 				length);
 
 			//Write out the timer data
-			sgfh.write_chunk<int32_t>(
+			saved_game.write_chunk<int32_t>(
 				INT_ID('T', 'D', 'T', 'A'),
 				time);
 
@@ -217,14 +217,14 @@ void TIMER_Load( void )
 	int j;
 	gentity_t	*ent;
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
 	for ( j = 0, ent = &g_entities[0]; j < MAX_GENTITIES; j++, ent++ )
 	{
 		unsigned char numTimers;
 
-		sgfh.read_chunk<uint8_t>(
+		saved_game.read_chunk<uint8_t>(
 			INT_ID('T', 'I', 'M', 'E'),
 			numTimers);
 
@@ -237,13 +237,13 @@ void TIMER_Load( void )
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
 			//Read the id string and time
-			sgfh.read_chunk(
+			saved_game.read_chunk(
 				INT_ID('T', 'M', 'I', 'D'));
 
 			auto sg_buffer_data = static_cast<const char*>(
-				sgfh.get_buffer_data());
+				saved_game.get_buffer_data());
 
-			const auto sg_buffer_size = sgfh.get_buffer_size();
+			const auto sg_buffer_size = saved_game.get_buffer_size();
 
 			std::uninitialized_copy_n(
 				sg_buffer_data,
@@ -252,7 +252,7 @@ void TIMER_Load( void )
 
 			tempBuffer[sg_buffer_size] = '\0';
 
-			sgfh.read_chunk<int32_t>(
+			saved_game.read_chunk<int32_t>(
 				INT_ID('T', 'D', 'T', 'A'),
 				time);
 

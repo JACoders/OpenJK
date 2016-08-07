@@ -33,7 +33,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../cgame/cg_camera.h"
 #include "g_icarus.h"
 #include "../../code/qcommon/sstring.h"
-#include "qcommon/ojk_saved_game_file_helper.h"
+#include "qcommon/ojk_saved_game_helper.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 
@@ -184,10 +184,10 @@ char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		assert(iStrlen+1<=(int)sizeof(sString));
 
-		ojk::SavedGameFileHelper sgfh(
+		ojk::SavedGameHelper saved_game(
 			::gi.saved_game);
 
-		sgfh.read_chunk(
+		saved_game.read_chunk(
 			INT_ID('S', 'T', 'R', 'G'),
 			sString,
 			iStrlen);
@@ -470,24 +470,24 @@ static void EnumerateFields(
 		}
 	}
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
 	// save out raw data...
 	//
-	sgfh.reset_buffer();
+	saved_game.reset_buffer();
 
 	src_instance->sg_export(
-		sgfh);
+		saved_game);
 
-	sgfh.write_chunk(
+	saved_game.write_chunk(
 		ulChid);
 
 	// save out any associated strings..
 	//
 	for (const auto& it : strList)
 	{
-		sgfh.write_chunk(
+		saved_game.write_chunk(
 			INT_ID('S', 'T', 'R', 'G'),
 			it.c_str(),
 			static_cast<int>(it.length() + 1));
@@ -601,10 +601,10 @@ static void EvaluateFields(
 	T* pbOriginalRefData,
 	unsigned int ulChid)
 {
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	if (!sgfh.try_read_chunk(
+	if (!saved_game.try_read_chunk(
 		ulChid,
 		*pbData))
 	{
@@ -678,10 +678,10 @@ static void WriteGEntities(qboolean qbAutosave)
 		}
 	}
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('N', 'M', 'E', 'D'),
 		iCount);
 
@@ -691,7 +691,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 		if ( ent->inuse)
 		{
-			sgfh.write_chunk<int32_t>(
+			saved_game.write_chunk<int32_t>(
 				INT_ID('E', 'D', 'N', 'M'),
 				i);
 
@@ -724,7 +724,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 			if (tempEnt.parms)
 			{
-				sgfh.write_chunk(
+				saved_game.write_chunk(
 					INT_ID('P', 'A', 'R', 'M'),
 					*ent->parms);
 			}
@@ -750,7 +750,7 @@ static void WriteGEntities(qboolean qbAutosave)
 		//
 		static int iBlah = 1234;
 
-		sgfh.write_chunk<int32_t>(
+		saved_game.write_chunk<int32_t>(
 			INT_ID('I', 'C', 'O', 'K'),
 			iBlah);
 	}
@@ -765,10 +765,10 @@ static void ReadGEntities(qboolean qbAutosave)
 	int		iCount;
 	int		i;
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('N', 'M', 'E', 'D'),
 		iCount);
 
@@ -777,7 +777,7 @@ static void ReadGEntities(qboolean qbAutosave)
 	{
 		int iEntIndex;
 
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('E', 'D', 'N', 'M'),
 			iEntIndex);
 
@@ -879,7 +879,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 
-			sgfh.read_chunk(
+			saved_game.read_chunk(
 				INT_ID('P', 'A', 'R', 'M'),
 				tempParms);
 
@@ -908,11 +908,11 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 #ifdef JK2_MODE
 			// Skip GL2 data size
-			sgfh.read_chunk(
+			saved_game.read_chunk(
 				INT_ID('G', 'L', '2', 'S'));
 #endif // JK2_MODE
 
-			sgfh.read_chunk(
+			saved_game.read_chunk(
 				INT_ID('G', 'H', 'L', '2'));
 
 			gi.G2API_LoadGhoul2Models(
@@ -977,7 +977,7 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		static int iBlah = 1234;
 
-		sgfh.read_chunk<int32_t>(
+		saved_game.read_chunk<int32_t>(
 			INT_ID('I', 'C', 'O', 'K'),
 			iBlah);
 	}
@@ -1016,10 +1016,10 @@ void WriteLevel(qboolean qbAutosave)
 	//
 	static int iDONE = 1234;
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.write_chunk<int32_t>(
+	saved_game.write_chunk<int32_t>(
 		INT_ID('D', 'O', 'N', 'E'),
 		iDONE);
 }
@@ -1044,10 +1044,10 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		EvaluateFields(savefields_gClient, &junkClient, &level.clients[0], INT_ID('G','C','L','I'));
 
 		//Read & throw away objective info
-		ojk::SavedGameFileHelper sgfh(
+		ojk::SavedGameHelper saved_game(
 			::gi.saved_game);
 
-		sgfh.read_chunk(
+		saved_game.read_chunk(
 			INT_ID('O', 'B', 'J', 'T'));
 
 		ReadLevelLocals();	// level_locals_t level
@@ -1082,10 +1082,10 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	//
 	static int iDONE = 1234;
 
-	ojk::SavedGameFileHelper sgfh(
+	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
 
-	sgfh.read_chunk<int32_t>(
+	saved_game.read_chunk<int32_t>(
 		INT_ID('D', 'O', 'N', 'E'),
 		iDONE);
 }

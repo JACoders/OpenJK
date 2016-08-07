@@ -452,7 +452,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(firstFrame);
         saved_game.write<int32_t>(numFrames);
@@ -462,7 +462,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(firstFrame);
         saved_game.read<int32_t>(numFrames);
@@ -483,7 +483,7 @@ typedef struct animsounds_s
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(keyFrame);
         saved_game.write<int32_t>(soundIndex);
@@ -492,7 +492,7 @@ typedef struct animsounds_s
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(keyFrame);
         saved_game.read<int32_t>(soundIndex);

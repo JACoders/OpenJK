@@ -1,36 +1,35 @@
 //
-// Saved game file.
-// (forward declaration)
+// Saved game interface implementation.
 //
 
 
-#ifndef OJK_SAVED_GAME_FILE_INCLUDED
-#define OJK_SAVED_GAME_FILE_INCLUDED
+#ifndef OJK_SAVED_GAME_INCLUDED
+#define OJK_SAVED_GAME_INCLUDED
 
 
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "ojk_i_saved_game_file.h"
+#include "ojk_i_saved_game.h"
 
 
 namespace ojk
 {
 
 
-class SavedGameFile :
-	public ISavedGameFile
+class SavedGame :
+	public ISavedGame
 {
 public:
-	SavedGameFile();
+	SavedGame();
 
-	SavedGameFile(
-		const SavedGameFile& that) = delete;
+	SavedGame(
+		const SavedGame& that) = delete;
 
-	SavedGameFile& operator=(
-		const SavedGameFile& that) = delete;
+	SavedGame& operator=(
+		const SavedGame& that) = delete;
 
-	virtual ~SavedGameFile();
+	virtual ~SavedGame();
 
 
 	// Creates a new saved game file for writing.
@@ -125,7 +124,7 @@ public:
 		const std::string& base_file_name);
 
 	// Returns a default instance of the class.
-	static SavedGameFile& get_instance();
+	static SavedGame& get_instance();
 
 
 private:
@@ -185,10 +184,10 @@ private:
 		uint32_t chunk_id);
 
 	static constexpr uint32_t get_jo_magic_value();
-}; // SavedGameFile
+}; // SavedGame
 
 
 } // ojk
 
 
-#endif // OJK_SAVED_GAME_FILE_INCLUDED
+#endif // OJK_SAVED_GAME_INCLUDED

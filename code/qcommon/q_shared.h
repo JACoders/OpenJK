@@ -162,7 +162,7 @@ float FloatSwap( const float *f );
 
 
 #include "qcommon/q_platform.h"
-#include "qcommon/ojk_saved_game_file_helper_fwd.h"
+#include "qcommon/ojk_saved_game_helper_fwd.h"
 
 
 // ================================================================
@@ -1233,7 +1233,7 @@ typedef struct cplane_s {
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<float>(normal);
         saved_game.write<float>(dist);
@@ -1243,7 +1243,7 @@ typedef struct cplane_s {
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<float>(normal);
         saved_game.read<float>(dist);
@@ -1286,7 +1286,7 @@ Ghoul2 Insert End
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int8_t>(allsolid);
         saved_game.write<int8_t>(startsolid);
@@ -1300,7 +1300,7 @@ Ghoul2 Insert End
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int8_t>(allsolid);
         saved_game.read<int8_t>(startsolid);
@@ -1585,7 +1585,7 @@ typedef struct
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(inAction);
         saved_game.write<int32_t>(duration);
@@ -1598,7 +1598,7 @@ typedef struct
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(inAction);
         saved_game.read<int32_t>(duration);
@@ -1640,7 +1640,7 @@ typedef struct
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(active);
         saved_game.write<int32_t>(color);
@@ -1656,7 +1656,7 @@ typedef struct
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(active);
         saved_game.read<int32_t>(color);
@@ -1961,7 +1961,7 @@ typedef struct
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(name);
         saved_game.write<int32_t>(fullName);
@@ -2042,7 +2042,7 @@ typedef struct
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(name);
         saved_game.read<int32_t>(fullName);
@@ -2243,7 +2243,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(name);
         saved_game.write<int32_t>(fullName);
@@ -2275,7 +2275,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(name);
         saved_game.read<int32_t>(fullName);
@@ -2652,7 +2652,7 @@ public:
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(commandTime);
         saved_game.write<int32_t>(pm_type);
@@ -2821,7 +2821,7 @@ public:
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(commandTime);
         saved_game.read<int32_t>(pm_type);
@@ -3047,7 +3047,7 @@ typedef struct usercmd_s {
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(serverTime);
         saved_game.write<int32_t>(buttons);
@@ -3061,7 +3061,7 @@ typedef struct usercmd_s {
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(serverTime);
         saved_game.read<int32_t>(buttons);
@@ -3099,7 +3099,7 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(trType);
         saved_game.write<int32_t>(trTime);
@@ -3109,7 +3109,7 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(trType);
         saved_game.read<int32_t>(trTime);
@@ -3205,7 +3205,7 @@ Ghoul2 Insert End
 
 
     void sg_export(
-        ojk::SavedGameFileHelper& saved_game) const
+        ojk::SavedGameHelper& saved_game) const
     {
         saved_game.write<int32_t>(number);
         saved_game.write<int32_t>(eType);
@@ -3261,7 +3261,7 @@ Ghoul2 Insert End
     }
 
     void sg_import(
-        ojk::SavedGameFileHelper& saved_game)
+        ojk::SavedGameHelper& saved_game)
     {
         saved_game.read<int32_t>(number);
         saved_game.read<int32_t>(eType);
