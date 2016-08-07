@@ -465,25 +465,25 @@ public:
 	unsigned char	glaIndex;
 
 
-    void sg_export(
-        ojk::SavedGameHelper& saved_game) const
-    {
-        saved_game.write<uint16_t>(firstFrame);
-        saved_game.write<uint16_t>(numFrames);
-        saved_game.write<int16_t>(frameLerp);
-        saved_game.write<int8_t>(loopFrames);
-        saved_game.write<uint8_t>(glaIndex);
-    }
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<uint16_t>(firstFrame);
+		saved_game.write<uint16_t>(numFrames);
+		saved_game.write<int16_t>(frameLerp);
+		saved_game.write<int8_t>(loopFrames);
+		saved_game.write<uint8_t>(glaIndex);
+	}
 
-    void sg_import(
-        ojk::SavedGameHelper& saved_game)
-    {
-        saved_game.read<uint16_t>(firstFrame);
-        saved_game.read<uint16_t>(numFrames);
-        saved_game.read<int16_t>(frameLerp);
-        saved_game.read<int8_t>(loopFrames);
-        saved_game.read<uint8_t>(glaIndex);
-    }
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<uint16_t>(firstFrame);
+		saved_game.read<uint16_t>(numFrames);
+		saved_game.read<int16_t>(frameLerp);
+		saved_game.read<int8_t>(loopFrames);
+		saved_game.read<uint8_t>(glaIndex);
+	}
 }; // animation_t
 
 #define MAX_ANIM_FILES	16
@@ -547,27 +547,27 @@ typedef struct animevent_s
 	char			*stringData;		//we allow storage of one string, temporarily (in case we have to look up an index later, then make sure to set stringData to NULL so we only do the look-up once)
 
 
-    void sg_export(
-        ojk::SavedGameHelper& saved_game) const
-    {
-        saved_game.write<int32_t>(eventType);
-        saved_game.write<int16_t>(modelOnly);
-        saved_game.write<uint16_t>(glaIndex);
-        saved_game.write<uint16_t>(keyFrame);
-        saved_game.write<int16_t>(eventData);
-        saved_game.write<int32_t>(stringData);
-    }
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(eventType);
+		saved_game.write<int16_t>(modelOnly);
+		saved_game.write<uint16_t>(glaIndex);
+		saved_game.write<uint16_t>(keyFrame);
+		saved_game.write<int16_t>(eventData);
+		saved_game.write<int32_t>(stringData);
+	}
 
-    void sg_import(
-        ojk::SavedGameHelper& saved_game)
-    {
-        saved_game.read<int32_t>(eventType);
-        saved_game.read<int16_t>(modelOnly);
-        saved_game.read<uint16_t>(glaIndex);
-        saved_game.read<uint16_t>(keyFrame);
-        saved_game.read<int16_t>(eventData);
-        saved_game.read<int32_t>(stringData);
-    }
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(eventType);
+		saved_game.read<int16_t>(modelOnly);
+		saved_game.read<uint16_t>(glaIndex);
+		saved_game.read<uint16_t>(keyFrame);
+		saved_game.read<int16_t>(eventData);
+		saved_game.read<int32_t>(stringData);
+	}
 } animevent_t;
 
 typedef enum

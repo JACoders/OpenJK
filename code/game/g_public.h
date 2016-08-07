@@ -190,7 +190,7 @@ typedef struct {
 
 	// Savegame handling
 	//
-    ojk::ISavedGame* saved_game;
+	ojk::ISavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc

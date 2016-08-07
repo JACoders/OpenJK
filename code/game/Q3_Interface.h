@@ -699,7 +699,7 @@ public:
 	//Save / Load functions
 	int		LinkGame( int entID, int icarusID );
 
-    ojk::ISavedGame* get_saved_game_file() override;
+	ojk::ISavedGame* get_saved_game_file() override;
 
 	// Access functions
 	int		CreateIcarus( int entID);

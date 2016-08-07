@@ -145,7 +145,7 @@ public:
 	// Save / Load functions
 
 	virtual int		LinkGame( int gameID, int icarusID ) = 0;
-    virtual ojk::ISavedGame* get_saved_game_file() = 0;
+	virtual ojk::ISavedGame* get_saved_game_file() = 0;
 
 	// Access functions
 

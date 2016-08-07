@@ -110,10 +110,10 @@ static const char *GetString_FailedToOpenSaveGame(const char *psFilename, qboole
 }
 
 void SG_WipeSavegame(
-    const char* psPathlessBaseName)
+	const char* psPathlessBaseName)
 {
-    ojk::SavedGame::remove(
-        psPathlessBaseName);
+	ojk::SavedGame::remove(
+		psPathlessBaseName);
 }
 
 // called from the ERR_DROP stuff just in case the error occured during loading of a saved game, because if
@@ -121,18 +121,18 @@ void SG_WipeSavegame(
 //
 void SG_Shutdown()
 {
-    auto& saved_game = ojk::SavedGame::get_instance();
+	auto& saved_game = ojk::SavedGame::get_instance();
 
-    saved_game.close();
+	saved_game.close();
 
-    eSavedGameJustLoaded = eNO;
-    // important to do this if we ERR_DROP during loading, else next map you load after
-    // a bad save-file you'll arrive at dead :-)
+	eSavedGameJustLoaded = eNO;
+	// important to do this if we ERR_DROP during loading, else next map you load after
+	// a bad save-file you'll arrive at dead :-)
 
-    // and this bit stops people messing up the laoder by repeatedly stabbing at the load key during loads...
-    //
-    extern qboolean gbAlreadyDoingLoad;
-    gbAlreadyDoingLoad = qfalse;
+	// and this bit stops people messing up the laoder by repeatedly stabbing at the load key during loads...
+	//
+	extern qboolean gbAlreadyDoingLoad;
+	gbAlreadyDoingLoad = qfalse;
 }
 
 void SV_WipeGame_f(void)
@@ -981,14 +981,14 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 	if ( qbAutosave )
 		delete[] byBlank;
 
-    saved_game.write_chunk<uint32_t>(
-        INT_ID('S','H','L','N'),
-        iJPGDataSize);
+	saved_game.write_chunk<uint32_t>(
+		INT_ID('S', 'H', 'L', 'N'),
+		iJPGDataSize);
 
-    saved_game.write_chunk(
-        INT_ID('S','H','O','T'),
-        pJPGData,
-        static_cast<int>(iJPGDataSize));
+	saved_game.write_chunk(
+		INT_ID('S', 'H', 'O', 'T'),
+		pJPGData,
+		static_cast<int>(iJPGDataSize));
 
 	Z_Free(pJPGData);
 	SCR_TempRawImage_CleanUp();
@@ -1100,7 +1100,7 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	}
 	ge->WriteLevel(qbAutosave);	// always done now, but ent saver only does player if auto
 
-    auto is_write_failed = saved_game.is_failed();
+	auto is_write_failed = saved_game.is_failed();
 
 	saved_game.close();
 

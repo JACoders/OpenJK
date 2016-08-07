@@ -11168,7 +11168,7 @@ void	CQuake3GameInterface::FreeVariable( const char *name )
 //Save / Load functions
 ojk::ISavedGame* CQuake3GameInterface::get_saved_game_file()
 {
-    return ::gi.saved_game;
+	return ::gi.saved_game;
 }
 
 int		CQuake3GameInterface::LinkGame( int entID, int icarusID )

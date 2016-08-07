@@ -1409,25 +1409,25 @@ public:
 	qboolean		soundsCached;
 
 
-    void sg_export(
-        ojk::SavedGameHelper& saved_game) const
-    {
-        saved_game.write<int8_t>(filename);
-        saved_game.write<>(animations);
-        saved_game.write<>(torsoAnimSnds);
-        saved_game.write<>(legsAnimSnds);
-        saved_game.write<int32_t>(soundsCached);
-    }
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int8_t>(filename);
+		saved_game.write<>(animations);
+		saved_game.write<>(torsoAnimSnds);
+		saved_game.write<>(legsAnimSnds);
+		saved_game.write<int32_t>(soundsCached);
+	}
 
-    void sg_import(
-        ojk::SavedGameHelper& saved_game)
-    {
-        saved_game.read<int8_t>(filename);
-        saved_game.read<>(animations);
-        saved_game.read<>(torsoAnimSnds);
-        saved_game.read<>(legsAnimSnds);
-        saved_game.read<int32_t>(soundsCached);
-    }
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int8_t>(filename);
+		saved_game.read<>(animations);
+		saved_game.read<>(torsoAnimSnds);
+		saved_game.read<>(legsAnimSnds);
+		saved_game.read<int32_t>(soundsCached);
+	}
 }; // animFileSet_t
 #define MAX_ANIM_FILES	64
 

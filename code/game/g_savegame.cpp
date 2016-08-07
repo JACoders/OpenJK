@@ -191,10 +191,10 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 		ojk::SavedGameHelper saved_game(
 			::gi.saved_game);
 
-        saved_game.read_chunk(
-            INT_ID('S','T','R','G'),
-            sString,
-            iStrlen);
+		saved_game.read_chunk(
+			INT_ID('S', 'T', 'R', 'G'),
+			sString,
+			iStrlen);
 
 		// TAG_G_ALLOC is always blown away, we can never recycle
 		if (psOriginal && gi.bIsFromZone(psOriginal, TAG_G_ALLOC)) {
@@ -676,122 +676,122 @@ static const char *SG_GetChidText( unsigned int chid ) {
 extern void WP_SaberSetDefaults( saberInfo_t *saber, qboolean setColors);
 
 void saberInfoRetail_t::sg_export(
-    saberInfo_t& dst) const
+	saberInfo_t& dst) const
 {
-    ::WP_SaberSetDefaults(
-        &dst,
-        false);
+	::WP_SaberSetDefaults(
+		&dst,
+		false);
 
-    if (!activeBlocking)
-    {
-        dst.saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
-    }
+	if (!activeBlocking)
+	{
+		dst.saberFlags |= SFL_NOT_ACTIVE_BLOCKING;
+	}
 
-    ::memcpy(
-        dst.blade,
-        blade,
-        sizeof(blade));
+	::memcpy(
+		dst.blade,
+		blade,
+		sizeof(blade));
 
-    dst.breakParryBonus = breakParryBonus;
-    dst.brokenSaber1 = brokenSaber1;
-    dst.brokenSaber2 = brokenSaber2;
+	dst.breakParryBonus = breakParryBonus;
+	dst.brokenSaber1 = brokenSaber1;
+	dst.brokenSaber2 = brokenSaber2;
 
-    if (!disarmable)
-    {
-        dst.saberFlags |= SFL_NOT_DISARMABLE;
-    }
+	if (!disarmable)
+	{
+		dst.saberFlags |= SFL_NOT_DISARMABLE;
+	}
 
-    dst.disarmBonus = disarmBonus;
-    dst.forceRestrictions = forceRestrictions;
-    dst.fullName = fullName;
+	dst.disarmBonus = disarmBonus;
+	dst.forceRestrictions = forceRestrictions;
+	dst.fullName = fullName;
 
-    if (!lockable)
-    {
-        dst.saberFlags |= SFL_NOT_LOCKABLE;
-    }
+	if (!lockable)
+	{
+		dst.saberFlags |= SFL_NOT_LOCKABLE;
+	}
 
-    dst.lockBonus = lockBonus;
-    dst.maxChain = maxChain;
-    dst.model = model;
-    dst.name = name;
-    dst.numBlades = numBlades;
-    dst.parryBonus = parryBonus;
+	dst.lockBonus = lockBonus;
+	dst.maxChain = maxChain;
+	dst.model = model;
+	dst.name = name;
+	dst.numBlades = numBlades;
+	dst.parryBonus = parryBonus;
 
-    if (returnDamage)
-    {
-        dst.saberFlags |= SFL_RETURN_DAMAGE;
-    }
+	if (returnDamage)
+	{
+		dst.saberFlags |= SFL_RETURN_DAMAGE;
+	}
 
-    dst.singleBladeStyle = singleBladeStyle;
+	dst.singleBladeStyle = singleBladeStyle;
 
-    if (singleBladeThrowable)
-    {
-        dst.saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
-    }
+	if (singleBladeThrowable)
+	{
+		dst.saberFlags |= SFL_SINGLE_BLADE_THROWABLE;
+	}
 
-    dst.skin = skin;
-    dst.soundLoop = soundLoop;
-    dst.soundOff = soundOff;
-    dst.soundOn = soundOn;
+	dst.skin = skin;
+	dst.soundLoop = soundLoop;
+	dst.soundOff = soundOff;
+	dst.soundOn = soundOn;
 
-    if (style != SS_NONE && style < SS_NUM_SABER_STYLES)
-    {
-        //OLD WAY: only allowed ONE style
-        //learn only this style
-        dst.stylesLearned = 1 << style;
+	if (style != SS_NONE && style < SS_NUM_SABER_STYLES)
+	{
+		//OLD WAY: only allowed ONE style
+		//learn only this style
+		dst.stylesLearned = 1 << style;
 
-        //forbid all other styles
-        dst.stylesForbidden = 0;
-        for (auto styleNum = SS_NONE + 1; styleNum < SS_NUM_SABER_STYLES; ++styleNum)
-        {
-            if (styleNum != style)
-            {
-                dst.stylesForbidden |= 1 << styleNum;
-            }
-        }
-    }
+		//forbid all other styles
+		dst.stylesForbidden = 0;
+		for (auto styleNum = SS_NONE + 1; styleNum < SS_NUM_SABER_STYLES; ++styleNum)
+		{
+			if (styleNum != style)
+			{
+				dst.stylesForbidden |= 1 << styleNum;
+			}
+		}
+	}
 
-    if (!throwable)
-    {
-        dst.saberFlags |= SFL_NOT_THROWABLE;
-    }
+	if (!throwable)
+	{
+		dst.saberFlags |= SFL_NOT_THROWABLE;
+	}
 
-    if (twoHanded)
-    {
-        dst.saberFlags |= SFL_TWO_HANDED;
-    }
+	if (twoHanded)
+	{
+		dst.saberFlags |= SFL_TWO_HANDED;
+	}
 
-    dst.type = type;
+	dst.type = type;
 }
 
 static void copy_retail_gclient_to_current(
-    const RetailGClient& src,
-    gclient_t& dst)
+	const RetailGClient& src,
+	gclient_t& dst)
 {
-    const auto src_pre_size = offsetof(RetailGClient, ps.saber[0]);
+	const auto src_pre_size = offsetof(RetailGClient, ps.saber[0]);
 
-    const auto src_post_offset =
-        offsetof(RetailGClient, ps.dualSabers);
+	const auto src_post_offset =
+		offsetof(RetailGClient, ps.dualSabers);
 
-    const auto src_post_size = sizeof(RetailGClient) - src_post_offset;
+	const auto src_post_size = sizeof(RetailGClient) - src_post_offset;
 
-    const auto dst_post_offset = offsetof(gclient_t, ps.dualSabers);
+	const auto dst_post_offset = offsetof(gclient_t, ps.dualSabers);
 
-    ::memcpy(
-        reinterpret_cast<char*>(&dst),
-        reinterpret_cast<const char*>(&src),
-        src_pre_size);
+	::memcpy(
+		reinterpret_cast<char*>(&dst),
+		reinterpret_cast<const char*>(&src),
+		src_pre_size);
 
-    for (int i = 0; i < MAX_SABERS; ++i)
-    {
-        src.ps.saber[i].sg_export(
-           dst.ps.saber[i]);
-    }
+	for (int i = 0; i < MAX_SABERS; ++i)
+	{
+		src.ps.saber[i].sg_export(
+			dst.ps.saber[i]);
+	}
 
-    ::memcpy(
-        reinterpret_cast<char*>(&dst) + src_post_offset,
-        reinterpret_cast<const char*>(&src) + dst_post_offset,
-        src_post_size);
+	::memcpy(
+		reinterpret_cast<char*>(&dst) + src_post_offset,
+		reinterpret_cast<const char*>(&src) + dst_post_offset,
+		src_post_size);
 }
 
 template<typename T>
@@ -1179,7 +1179,7 @@ static void ReadGEntities(qboolean qbAutosave)
 			saved_game.read_chunk(
 				INT_ID('G', 'H', 'L', '2'));
 
-            gi.G2API_LoadGhoul2Models(pEnt->ghoul2, nullptr);
+			gi.G2API_LoadGhoul2Models(pEnt->ghoul2, nullptr);
 		}
 
 //		gi.unlinkentity (pEntOriginal);

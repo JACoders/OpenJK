@@ -1415,11 +1415,11 @@ qboolean G2API_StopBoneAngles(CGhoul2Info *ghlInfo, const char *boneName)
 
 #ifdef JK2_MODE
 void G2API_SetRagDoll(
-    CGhoul2Info_v& ghoul2,
-    CRagDollParams* parms)
+	CGhoul2Info_v& ghoul2,
+	CRagDollParams* parms)
 {
-    static_cast<void>(ghoul2);
-    static_cast<void>(parms);
+	static_cast<void>(ghoul2);
+	static_cast<void>(parms);
 }
 #else
 //rww - RAGDOLL_BEGIN

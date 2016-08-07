@@ -18,37 +18,37 @@ namespace ojk
 class ScopeGuard
 {
 public:
-    using Callback = std::function<void()>;
+	using Callback = std::function<void()>;
 
 
-    ScopeGuard(
-        Callback leave_callback) :
-            leave_callback_(leave_callback)
-    {
-    }
+	ScopeGuard(
+		Callback leave_callback) :
+			leave_callback_(leave_callback)
+	{
+	}
 
-    ScopeGuard(
-        Callback enter_callback,
-        Callback leave_callback) :
-            ScopeGuard(leave_callback)
-    {
-        enter_callback();
-    }
+	ScopeGuard(
+		Callback enter_callback,
+		Callback leave_callback) :
+		ScopeGuard(leave_callback)
+	{
+		enter_callback();
+	}
 
-    ScopeGuard(
-        const ScopeGuard& that) = delete;
+	ScopeGuard(
+		const ScopeGuard& that) = delete;
 
-    ScopeGuard& operator=(
-        const ScopeGuard& that) = delete;
+	ScopeGuard& operator=(
+		const ScopeGuard& that) = delete;
 
-    ~ScopeGuard()
-    {
-        leave_callback_();
-    }
+	~ScopeGuard()
+	{
+		leave_callback_();
+	}
 
 
 private:
-    Callback leave_callback_;
+	Callback leave_callback_;
 }; // ScopeGuard
 
 
