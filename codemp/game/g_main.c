@@ -4268,9 +4268,34 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 {
 	vec3_t player_origin;
 	vec3_t player_yaw;
+	vec3_t boss_spawn_point;
 	gentity_t *npc_ent = NULL;
 	int i = 0;
 	float boss_bonus_hp = 0;
+
+	// zyk: exploding trip mines and detpacks near the boss to prevent 1-hit-kill exploits
+	if ((guardian_mode >= 1 && guardian_mode <= 7) || guardian_mode == 11 || guardian_mode >= 14)
+		VectorSet(boss_spawn_point, gx, gy, gz);
+	else
+		VectorSet(boss_spawn_point, x, y, z);
+
+	for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
+	{
+		gentity_t *this_ent = &g_entities[i];
+
+		if (this_ent && Q_stricmp(this_ent->classname, "laserTrap") == 0 && 
+			Distance(this_ent->r.currentOrigin, boss_spawn_point) < 384.0)
+		{
+			this_ent->think = G_FreeEntity;
+			this_ent->nextthink = level.time;
+		}
+		else if (this_ent && Q_stricmp(this_ent->classname, "detpack") == 0 &&
+			Distance(this_ent->r.currentOrigin, boss_spawn_point) < 384.0)
+		{
+			this_ent->think = G_FreeEntity;
+			this_ent->nextthink = level.time;
+		}
+	}
 
 	// zyk: removing scale from allies
 	for (i = 0; i < level.maxclients; i++)
