@@ -10566,13 +10566,13 @@ void G_RunFrame( int levelTime ) {
 					{ // zyk: uses sleeping flowers or poison mushrooms
 						if (Q_irand(0,3) != 0)
 						{
-							sleeping_flowers(ent,3000,1200);
+							sleeping_flowers(ent,3000,1500);
 							trap->SendServerCommand( -1, "chat \"^2Guardian of Forest: ^7Sleeping Flowers!\"");
 							ent->client->pers.guardian_timer = level.time + 12000;
 						}
 						else
 						{
-							poison_mushrooms(ent,100,2500);
+							poison_mushrooms(ent,100,3000);
 							trap->SendServerCommand( -1, va("chat \"^2Guardian of Forest: ^7Poison Mushrooms!\""));
 							ent->client->pers.guardian_timer = level.time + 11000;
 						}

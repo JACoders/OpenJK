@@ -461,6 +461,13 @@ NPC_Wampa_Pain
 void NPC_Wampa_Pain( gentity_t *self, gentity_t *attacker, int damage )
 {
 	qboolean hitByWampa = qfalse;
+
+	// zyk: Guardian of Forest uses this AI, but bosses take no pain
+	if (self->client->pers.guardian_mode == 3)
+	{
+		return;
+	}
+
 	if ( attacker&&attacker->client&&attacker->client->NPC_class==CLASS_WAMPA )
 	{
 		hitByWampa = qtrue;
