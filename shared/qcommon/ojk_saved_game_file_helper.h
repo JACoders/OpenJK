@@ -31,6 +31,73 @@ inline SavedGameFileHelper::SavedGameFileHelper(
 
 
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+// Public methods
+
+inline void SavedGameFileHelper::read_chunk(
+	const uint32_t chunk_id)
+{
+	if (!saved_game_file_->read_chunk(
+		chunk_id))
+	{
+		saved_game_file_->throw_error();
+	}
+}
+
+inline void SavedGameFileHelper::write_chunk(
+	const uint32_t chunk_id)
+{
+	if (!saved_game_file_->write_chunk(
+		chunk_id))
+	{
+		saved_game_file_->throw_error();
+	}
+}
+
+inline void SavedGameFileHelper::skip(
+	int count)
+{
+	if (!saved_game_file_->skip(
+		count))
+	{
+		saved_game_file_->throw_error();
+	}
+}
+
+inline const void* SavedGameFileHelper::get_buffer_data()
+{
+	return saved_game_file_->get_buffer_data();
+}
+
+inline int SavedGameFileHelper::get_buffer_size() const
+{
+	return saved_game_file_->get_buffer_size();
+}
+
+inline void SavedGameFileHelper::reset_buffer()
+{
+	saved_game_file_->reset_buffer();
+}
+
+inline void SavedGameFileHelper::reset_buffer_offset()
+{
+	saved_game_file_->reset_buffer_offset();
+}
+
+inline void SavedGameFileHelper::ensure_all_data_read()
+{
+	saved_game_file_->ensure_all_data_read();
+}
+
+inline bool SavedGameFileHelper::is_failed() const
+{
+	return saved_game_file_->is_failed();
+}
+
+// Public methods
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+// <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // try_read_chunk
 
 template<typename TSrc, typename TDst>
@@ -39,13 +106,35 @@ bool SavedGameFileHelper::try_read_chunk(
 	TDst& dst_value)
 {
 	if (!saved_game_file_->read_chunk(
-		chunk_id);)
+		chunk_id))
 	{
 		return false;
 	}
 
 	if (!try_read<TSrc>(
 		dst_value))
+	{
+		return false;
+	}
+
+	return saved_game_file_->is_all_data_read();
+}
+
+template<typename TSrc, typename TDst>
+bool SavedGameFileHelper::try_read_chunk(
+	const uint32_t chunk_id,
+	TDst* dst_values,
+	int dst_count)
+{
+	if (!saved_game_file_->read_chunk(
+		chunk_id))
+	{
+		return false;
+	}
+
+	if (!try_read<TSrc>(
+		dst_values,
+		dst_count))
 	{
 		return false;
 	}
@@ -81,7 +170,7 @@ void SavedGameFileHelper::read_chunk(
 {
 	if (!try_read_chunk<TSrc>(
 		chunk_id,
-		dst_value,
+		dst_values,
 		dst_count))
 	{
 		saved_game_file_->throw_error();
@@ -204,8 +293,7 @@ void SavedGameFileHelper::read(
 	TDst& dst_value)
 {
 	if (!try_read<TSrc>(
-		dst_value,
-		Tag()))
+		dst_value))
 	{
 		saved_game_file_->throw_error();
 	}
@@ -299,7 +387,7 @@ bool SavedGameFileHelper::try_read(
 		"Unsupported types.");
 
 	dst_value.sg_import(
-		saved_game_file_);
+		*this);
 
 	return !saved_game_file_->is_failed();
 }
@@ -549,7 +637,7 @@ void SavedGameFileHelper::write(
 		"Unsupported types.");
 
 	src_value.sg_export(
-		saved_game_file_);
+		*this);
 }
 
 template<typename TDst, typename TSrc, int TCount>

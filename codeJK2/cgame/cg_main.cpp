@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../../code/client/vmachine.h"
 
 #include "../../code/qcommon/sstring.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
 typedef std::map< sstring_t, unsigned char, std::less<sstring_t>, std::allocator< unsigned char >  >	namePrecache_m;
@@ -1640,24 +1640,30 @@ Ghoul2 Insert End
 
 void CG_WriteTheEvilCGHackStuff(void)
 {
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('F','P','S','L'),
-        ::cg.forcepowerSelect);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
 
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('I','V','S','L'),
-        ::cg.inventorySelect);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('F', 'P', 'S', 'L'),
+		::cg.forcepowerSelect);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('I', 'V', 'S', 'L'),
+		::cg.inventorySelect);
 }
 
 void CG_ReadTheEvilCGHackStuff(void)
 {
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('F','P','S','L'),
-        ::gi_cg_forcepowerSelect);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
 
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('I','V','S','L'),
-        ::gi_cg_inventorySelect);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('F', 'P', 'S', 'L'),
+		::gi_cg_forcepowerSelect);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('I', 'V', 'S', 'L'),
+		::gi_cg_inventorySelect);
 
 	gbUseTheseValuesFromLoadSave = qtrue;
 }

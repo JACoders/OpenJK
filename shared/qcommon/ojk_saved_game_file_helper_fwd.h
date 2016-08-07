@@ -22,6 +22,28 @@ public:
 		ISavedGameFile* saved_game_file);
 
 
+	void read_chunk(
+		const uint32_t chunk_id);
+
+	void write_chunk(
+		const uint32_t chunk_id);
+
+	void skip(
+		int count);
+
+	const void* get_buffer_data();
+
+	int get_buffer_size() const;
+
+	void reset_buffer();
+
+	void reset_buffer_offset();
+
+	void ensure_all_data_read();
+
+	bool is_failed() const;
+
+
 	// Tries to read a value or an array of values from the file via
 	// the internal buffer.
 	// Return true on success or false otherwise.

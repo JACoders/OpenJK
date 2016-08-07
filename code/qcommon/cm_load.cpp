@@ -24,7 +24,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // cmodel.c -- model loading
 
 #include "cm_local.h"
-#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_file.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 #ifdef BSPC
 void SetPlaneSignbits (cplane_t *out) {
@@ -1214,14 +1215,15 @@ Writes the portal state to a savegame file
 qboolean SG_Append(unsigned int chid, const void *data, int length);
 int SG_Read(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr = NULL);
 
-void CM_WritePortalState ()
+void CM_WritePortalState()
 {
-    auto saved_game = &ojk::SavedGame::get_instance();
+	ojk::SavedGameFileHelper sgfh(
+		&ojk::SavedGameFile::get_instance());
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('P','R','T','S'),
-        ::cmg.areaPortals,
-        ::cmg.numAreas * ::cmg.numAreas);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('P', 'R', 'T', 'S'),
+		::cmg.areaPortals,
+		::cmg.numAreas * ::cmg.numAreas);
 }
 
 /*
@@ -1232,17 +1234,15 @@ Reads the portal state from a savegame file
 and recalculates the area connections
 ===================
 */
-void	CM_ReadPortalState ()
+void CM_ReadPortalState()
 {
-    //auto saved_game = static_cast<ojk::ISavedGame*>(
-    //    &ojk::SavedGame::get_instance());
-    auto saved_game = &ojk::SavedGame::get_instance();
+	ojk::SavedGameFileHelper sgfh(
+		&ojk::SavedGameFile::get_instance());
 
-    saved_game->read_chunk<int32_t>(
-        INT_ID('P','R','T','S'),
-        ::cmg.areaPortals,
-        ::cmg.numAreas * ::cmg.numAreas);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('P', 'R', 'T', 'S'),
+		::cmg.areaPortals,
+		::cmg.numAreas * ::cmg.numAreas);
 
 	CM_FloodAreaConnections (cmg);
 }
-

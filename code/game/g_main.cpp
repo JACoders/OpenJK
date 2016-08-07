@@ -36,7 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 extern void WP_SaberLoadParms( void );
 extern qboolean G_PlayerSpawned( void );
@@ -105,18 +105,24 @@ qboolean PInUse(unsigned int entNum)
 }
 */
 
-void WriteInUseBits(void)
+void WriteInUseBits()
 {
-    ::gi.saved_game->write_chunk<uint32_t>(
-        INT_ID('I','N','U','S'),
-        ::g_entityInUseBits);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
 }
 
-void ReadInUseBits(void)
+void ReadInUseBits()
 {
-    ::gi.saved_game->read_chunk<uint32_t>(
-        INT_ID('I','N','U','S'),
-        ::g_entityInUseBits);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
 
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
@@ -2113,20 +2119,26 @@ extern int delayedShutDown;
 
 extern qboolean player_locked;
 
-void G_LoadSave_WriteMiscData(void)
+void G_LoadSave_WriteMiscData()
 {
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('L','C','K','D'),
-        ::player_locked);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 
 
-void G_LoadSave_ReadMiscData(void)
+void G_LoadSave_ReadMiscData()
 {
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('L','C','K','D'),
-        ::player_locked);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 

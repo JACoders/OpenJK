@@ -41,7 +41,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/safe/string.h"
 #include <cmath>
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 CFxScheduler	theFxScheduler;
 
@@ -110,9 +110,12 @@ void CFxScheduler::LoadSave_Read()
 	Clean();	// need to get rid of old pre-cache handles, or it thinks it has some older effects when it doesn't
 	g_vstrEffectsNeededPerSlot.clear();	// jic
 
-    ::gi.saved_game->read_chunk(
-        INT_ID('F','X','L','E'),
-        ::gLoopedEffectArray);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk(
+		INT_ID('F', 'X', 'L', 'E'),
+		::gLoopedEffectArray);
 
 	//
 	// now read in and re-register the effects we need for those structs...
@@ -121,9 +124,9 @@ void CFxScheduler::LoadSave_Read()
 	{
 		char sFX_Filename[MAX_QPATH];
 
-        ::gi.saved_game->read_chunk(
-            INT_ID('F','X','F','N'),
-            sFX_Filename);
+		sgfh.read_chunk(
+			INT_ID('F', 'X', 'F', 'N'),
+			sFX_Filename);
 
 		g_vstrEffectsNeededPerSlot.push_back( sFX_Filename );
 	}
@@ -131,11 +134,14 @@ void CFxScheduler::LoadSave_Read()
 
 void CFxScheduler::LoadSave_Write()
 {
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
 	// bsave the data we need...
 	//
-    ::gi.saved_game->write_chunk(
-        INT_ID('F','X','L','E'),
-        mLoopedEffectArray);
+	sgfh.write_chunk(
+		INT_ID('F', 'X', 'L', 'E'),
+		mLoopedEffectArray);
 
 	//
 	// then cope with the fact that the mID field in each struct of the array we've just saved will not
@@ -168,9 +174,9 @@ void CFxScheduler::LoadSave_Write()
 
 		// write out this string...
 		//
-        ::gi.saved_game->write_chunk(
-            INT_ID('F','X','F','N'),
-            sFX_Filename);
+		sgfh.write_chunk(
+			INT_ID('F', 'X', 'F', 'N'),
+			sFX_Filename);
 	}
 }
 

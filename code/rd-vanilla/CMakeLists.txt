@@ -79,8 +79,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
 		"${SharedDir}/qcommon/ojk_i_saved_game_file.h"
-		"${SharedDir}/qcommon/ojk_saved_game_file.h"
-		"${SharedDir}/qcommon/ojk_saved_game_file.cpp"
 		"${SharedDir}/qcommon/ojk_saved_game_file_helper.h"
 		"${SharedDir}/qcommon/ojk_saved_game_file_helper_fwd.h"
 		"${SharedDir}/qcommon/ojk_scope_guard.h"

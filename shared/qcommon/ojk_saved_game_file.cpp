@@ -760,11 +760,6 @@ SavedGameFile& SavedGameFile::get_instance()
 	return result;
 }
 
-bool SavedGameFile::is_failed() const
-{
-	return is_failed_;
-}
-
 void SavedGameFile::clear_error()
 {
 	is_failed_ = false;

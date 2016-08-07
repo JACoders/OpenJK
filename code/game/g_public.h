@@ -26,7 +26,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // g_public.h -- game module information visible to server
 
 
-#include "qcommon/ojk_i_saved_game_fwd.h"
+#include "qcommon/ojk_i_saved_game_file.h"
 
 
 #define	GAME_API_VERSION	8
@@ -190,7 +190,7 @@ typedef struct {
 
 	// Savegame handling
 	//
-    ojk::ISavedGame* saved_game;
+    ojk::ISavedGameFile* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc

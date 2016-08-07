@@ -22,7 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "../Rufl/hstring.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 #define MAX_GTIMERS	16384
 
@@ -159,6 +159,9 @@ void TIMER_Save( void )
 	int			j;
 	gentity_t	*ent;
 
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
 	for ( j = 0, ent = &g_entities[0]; j < MAX_GENTITIES; j++, ent++ )
 	{
 		unsigned char numTimers = TIMER_GetCount(j);
@@ -172,9 +175,9 @@ void TIMER_Save( void )
 		}
 
 		//Write out the timer information
-        ::gi.saved_game->write_chunk<uint8_t>(
-            INT_ID('T','I','M','E'),
-            numTimers);
+		sgfh.write_chunk<uint8_t>(
+			INT_ID('T', 'I', 'M', 'E'),
+			numTimers);
 
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
@@ -188,15 +191,15 @@ void TIMER_Save( void )
 			assert( length < 1024 );//This will cause problems when loading the timer if longer
 
 			//Write out the id string
-            ::gi.saved_game->write_chunk(
-                INT_ID('T','M','I','D'),
-                timerID,
-                length);
+			sgfh.write_chunk(
+				INT_ID('T', 'M', 'I', 'D'),
+				timerID,
+				length);
 
 			//Write out the timer data
-            ::gi.saved_game->write_chunk<int32_t>(
-                INT_ID('T','D','T','A'),
-                time);
+			sgfh.write_chunk<int32_t>(
+				INT_ID('T', 'D', 'T', 'A'),
+				time);
 
 			p = p->next;
 		}
@@ -214,13 +217,16 @@ void TIMER_Load( void )
 	int j;
 	gentity_t	*ent;
 
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
 	for ( j = 0, ent = &g_entities[0]; j < MAX_GENTITIES; j++, ent++ )
 	{
 		unsigned char numTimers;
 
-        ::gi.saved_game->read_chunk<uint8_t>(
-            INT_ID('T','I','M','E'),
-            numTimers);
+		sgfh.read_chunk<uint8_t>(
+			INT_ID('T', 'I', 'M', 'E'),
+			numTimers);
 
 		//Read back all entries
 		for ( int i = 0; i < numTimers; i++ )
@@ -231,24 +237,24 @@ void TIMER_Load( void )
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
 			//Read the id string and time
-            ::gi.saved_game->read_chunk(
-                INT_ID('T','M','I','D'));
+			sgfh.read_chunk(
+				INT_ID('T', 'M', 'I', 'D'));
 
-            auto sg_buffer_data = static_cast<const char*>(
-                ::gi.saved_game->get_buffer_data());
+			auto sg_buffer_data = static_cast<const char*>(
+				sgfh.get_buffer_data());
 
-            const auto sg_buffer_size = ::gi.saved_game->get_buffer_size();
+			const auto sg_buffer_size = sgfh.get_buffer_size();
 
-            std::uninitialized_copy_n(
-                sg_buffer_data,
-                sg_buffer_size,
-                tempBuffer);
+			std::uninitialized_copy_n(
+				sg_buffer_data,
+				sg_buffer_size,
+				tempBuffer);
 
 			tempBuffer[sg_buffer_size] = '\0';
 
-            ::gi.saved_game->read_chunk<int32_t>(
-                INT_ID('T','D','T','A'),
-                time);
+			sgfh.read_chunk<int32_t>(
+				INT_ID('T', 'D', 'T', 'A'),
+				time);
 
 			//this is odd, we saved all the timers in the autosave, but not all the ents are spawned yet from an auto load, so skip it
 			if (ent->inuse)

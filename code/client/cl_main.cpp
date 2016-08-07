@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/G2.h"
 #include "qcommon/stringed_ingame.h"
 #include "sys/sys_loadlib.h"
-#include "qcommon/ojk_saved_game.h"
+#include "qcommon/ojk_saved_game_file.h"
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
@@ -1181,7 +1181,7 @@ void CL_InitRef( void ) {
 
 	rit.SV_PointContents = SV_PointContents;
 
-    rit.saved_game = &ojk::SavedGame::get_instance();
+    rit.saved_game = &ojk::SavedGameFile::get_instance();
 
 	ret = GetRefAPI( REF_API_VERSION, &rit );
 

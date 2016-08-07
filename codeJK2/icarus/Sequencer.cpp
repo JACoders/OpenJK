@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_shared.h"
 
 #include "assert.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 // Sequencer 
 
@@ -2332,24 +2332,27 @@ int	CSequencer::Save( void )
 	//Get the number of sequences to save out
 	numSequences = m_sequences.size();
 
+	ojk::SavedGameFileHelper sgfh(
+		m_ie->saved_game);
+
 	//Save out the owner sequence
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','R','E'),
-        m_ownerID);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'R', 'E'),
+		m_ownerID);
 
 	//Write out the number of sequences we need to read
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','R','#'),
-        numSequences);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'R', '#'),
+		numSequences);
 
 	//Second pass, save out all sequences, in order
 	STL_ITERATE( si, m_sequences )
 	{
 		id = (*si)->GetID();
 
-        saved_game->write_chunk<int32_t>(
-            INT_ID('S','Q','R','I'),
-            id);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'Q', 'R', 'I'),
+			id);
 	}
 
 	//Save out the taskManager
@@ -2358,44 +2361,44 @@ int	CSequencer::Save( void )
 	//Save out the task sequences mapping the name to the GUIDs
 	numTasks = m_taskSequences.size();
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','T','#'),
-        numTasks);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'T', '#'),
+		numTasks);
 
 	STL_ITERATE( ti, m_taskSequences )
 	{	
 		//Save the task group's ID
 		id = ((*ti).first)->GetGUID();
 
-        saved_game->write_chunk<int32_t>(
-            INT_ID('S','T','I','D'),
-            id);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'T', 'I', 'D'),
+			id);
 
 		//Save the sequence's ID
 		id = ((*ti).second)->GetID();
 
-        saved_game->write_chunk<int32_t>(
-            INT_ID('S','S','I','D'),
-            id);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'S', 'I', 'D'),
+			id);
 	}
 
 	int	curGroupID = ( m_curGroup == NULL ) ? -1 : m_curGroup->GetGUID();
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','C','T'),
-        curGroupID);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'C', 'T'),
+		curGroupID);
 
 	//Output the number of commands
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','#','C'),
-        m_numCommands);	//FIXME: This can be reconstructed
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', '#', 'C'),
+		m_numCommands);	//FIXME: This can be reconstructed
 
 	//Output the ID of the current sequence
 	id = ( m_curSequence != NULL ) ? m_curSequence->GetID() : -1;
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','C','S'),
-        id);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'C', 'S'),
+		id);
 
 	return true;
 }
@@ -2410,10 +2413,13 @@ int	CSequencer::Load( void )
 {	
 	int i;
 
+	ojk::SavedGameFileHelper sgfh(
+		m_ie->saved_game);
+
 	//Get the owner of this sequencer
-    m_ie->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','R','E'),
-        m_ownerID);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'R', 'E'),
+		m_ownerID);
 
 	//Link the entity back to the sequencer
 	m_ie->I_LinkEntity( m_ownerID, this, m_taskManager );
@@ -2423,16 +2429,16 @@ int	CSequencer::Load( void )
 	int			numSequences, seqID, taskID, numTasks;
 
 	//Get the number of sequences to read
-    m_ie->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','R','#'),
-        numSequences);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'R', '#'),
+		numSequences);
 
 	//Read in all the sequences
 	for ( i = 0; i < numSequences; i++ )
 	{
-        m_ie->saved_game->read_chunk<int32_t>(
-            INT_ID('S','Q','R','I'),
-            seqID);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'Q', 'R', 'I'),
+			seqID);
 
 		seq = m_owner->GetSequence( seqID );
 
@@ -2449,22 +2455,22 @@ int	CSequencer::Load( void )
 	m_taskManager->Load();
 
 	//Get the number of tasks in the map
-    m_ie->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','T','#'),
-        numTasks);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'T', '#'),
+		numTasks);
 
 	//Read in, and reassociate the tasks to the sequences
 	for ( i = 0; i < numTasks; i++ )
 	{
 		//Read in the task's ID
-        m_ie->saved_game->read_chunk<int32_t>(
-            INT_ID('S','T','I','D'),
-            taskID);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'T', 'I', 'D'),
+			taskID);
 		
 		//Read in the sequence's ID
-        m_ie->saved_game->read_chunk<int32_t>(
-            INT_ID('S','S','I','D'),
-            seqID);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'S', 'I', 'D'),
+			seqID);
 
 		taskGroup = m_taskManager->GetTaskGroup( taskID );
 
@@ -2481,21 +2487,21 @@ int	CSequencer::Load( void )
 	int	curGroupID;
 
 	//Get the current task group
-    m_ie->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','C','T'),
-        curGroupID);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'C', 'T'),
+		curGroupID);
 
 	m_curGroup = ( curGroupID == -1 ) ? NULL : m_taskManager->GetTaskGroup( curGroupID );
 
 	//Get the number of commands
-    m_ie->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','#','C'),
-        m_numCommands);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', '#', 'C'),
+		m_numCommands);
 
 	//Get the current sequence
-    m_ie->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','C','S'),
-        seqID);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'C', 'S'),
+		seqID);
 
 	m_curSequence = ( seqID != -1 ) ? m_owner->GetSequence( seqID ) : NULL;
 

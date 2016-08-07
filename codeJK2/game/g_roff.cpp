@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "g_roff.h"
 #include "g_icarus.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];
@@ -626,24 +626,28 @@ void G_SaveCachedRoffs()
 {
 	int i, len;
 
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
 	// Write out the number of cached ROFFs
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('R','O','F','F'),
-        ::num_roffs);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('R', 'O', 'F', 'F'),
+		::num_roffs);
 
 	// Now dump out the cached ROFF file names in order so they can be loaded on the other end
 	for ( i = 0; i < num_roffs; i++ )
 	{
 		// Dump out the string length to make things a bit easier on the other end...heh heh.
 		len = strlen( roffs[i].fileName ) + 1;
-        ::gi.saved_game->write_chunk<int32_t>(
-            INT_ID('S','L','E','N'),
-            len);
 
-        ::gi.saved_game->write_chunk(
-            INT_ID('R','S','T','R'),
-            ::roffs[i].fileName,
-            len);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'L', 'E', 'N'),
+			len);
+
+		sgfh.write_chunk(
+			INT_ID('R', 'S', 'T', 'R'),
+			::roffs[i].fileName,
+			len);
 	}
 }
 
@@ -659,22 +663,25 @@ void G_LoadCachedRoffs()
 	int		i, count, len;
 	char	buffer[MAX_QPATH];
 
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
 	// Get the count of goodies we need to revive
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('R','O','F','F'),
-        count);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('R', 'O', 'F', 'F'),
+		count);
 
 	// Now bring 'em back to life
 	for ( i = 0; i < count; i++ )
 	{
-        ::gi.saved_game->read_chunk<int32_t>(
-            INT_ID('S','L','E','N'),
-            len);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'L', 'E', 'N'),
+			len);
 
-        ::gi.saved_game->read_chunk(
-            INT_ID('R','S','T','R'),
-            buffer,
-            len);
+		sgfh.read_chunk(
+			INT_ID('R', 'S', 'T', 'R'),
+			buffer,
+			len);
 
 		G_LoadRoff( buffer );
 	}

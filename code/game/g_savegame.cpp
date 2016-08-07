@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "objectives.h"
 #include "../cgame/cg_camera.h"
 #include "../qcommon/sstring.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 extern void OBJ_LoadTacticalInfo(void);
 
@@ -188,7 +188,10 @@ static char *GetStringPtr(int iStrlen, char *psOriginal/*may be NULL*/)
 
 		assert(iStrlen+1<=(int)sizeof(sString));
 
-        ::gi.saved_game->read_chunk(
+		ojk::SavedGameFileHelper sgfh(
+			::gi.saved_game);
+
+        sgfh.read_chunk(
             INT_ID('S','T','R','G'),
             sString,
             iStrlen);
@@ -506,42 +509,48 @@ static void EnumerateField(const save_field_t *pField, const byte *pbBase)
 
 template<typename T>
 static void EnumerateFields(
-    const save_field_t* pFields,
-    const T* src_instance,
-    unsigned int ulChid)
+	const save_field_t* pFields,
+	const T* src_instance,
+	unsigned int ulChid)
 {
-    strList.clear();
+	strList.clear();
 
-    auto pbData = reinterpret_cast<const byte*>(
-        src_instance);
+	auto pbData = reinterpret_cast<const byte*>(
+		src_instance);
 
-    // enumerate all the fields...
-    //
-    if (pFields) {
-        for (auto pField = pFields; pField->psName; ++pField) {
-            assert(pField->iOffset < sizeof(T));
-            ::EnumerateField(pField, pbData);
-        }
-    }
+	// enumerate all the fields...
+	//
+	if (pFields)
+	{
+		for (auto pField = pFields; pField->psName; ++pField)
+		{
+			assert(pField->iOffset < sizeof(T));
+			::EnumerateField(pField, pbData);
+		}
+	}
 
-    // save out raw data...
-    //
-    ::gi.saved_game->reset_buffer();
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
 
-    src_instance->sg_export(
-        ::gi.saved_game);
+	// save out raw data...
+	//
+	sgfh.reset_buffer();
 
-    ::gi.saved_game->write_chunk(
-        ulChid);
+	src_instance->sg_export(
+		sgfh);
 
-    // save out any associated strings..
-    //
-    for (const auto& it : strList) {
-        ::gi.saved_game->write_chunk(
-            INT_ID('S', 'T', 'R', 'G'),
-            it.c_str(),
-            static_cast<int>(it.length() + 1));
-    }
+	sgfh.write_chunk(
+		ulChid);
+
+	// save out any associated strings..
+	//
+	for (const auto& it : strList)
+	{
+		sgfh.write_chunk(
+			INT_ID('S', 'T', 'R', 'G'),
+			it.c_str(),
+			static_cast<int>(it.length() + 1));
+	}
 }
 
 
@@ -787,60 +796,58 @@ static void copy_retail_gclient_to_current(
 
 template<typename T>
 static void EvaluateFields(
-    const save_field_t* pFields,
-    T* pbData,
-    byte* pbOriginalRefData,
-    unsigned int ulChid)
+	const save_field_t* pFields,
+	T* pbData,
+	byte* pbOriginalRefData,
+	unsigned int ulChid)
 {
-    auto& instance = *pbData;
+	auto& instance = *pbData;
 
-    if (ulChid != INT_ID('G','C','L','I'))
-    {
-        ::gi.saved_game->read_chunk(
-            ulChid,
-            instance);
-    }
-    else
-    {
-        ::gi.saved_game->read_chunk(
-            ulChid);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
 
-        ::gi.saved_game->try_read(
-            instance);
+	if (ulChid != INT_ID('G', 'C', 'L', 'I'))
+	{
+		sgfh.read_chunk(
+			ulChid,
+			instance);
+	}
+	else
+	{
+		if (!sgfh.try_read_chunk(
+			ulChid,
+			instance))
+		{
+			RetailGClient retail_client;
 
-        if (!::gi.saved_game->is_all_data_read())
-        {
-            RetailGClient retail_client;
+			sgfh.reset_buffer_offset();
 
-            ::gi.saved_game->reset_buffer_offset();
+			if (sgfh.try_read(
+				retail_client))
+			{
+				copy_retail_gclient_to_current(
+					retail_client,
+					*reinterpret_cast<gclient_t*>(pbData));
+			}
+			else
+			{
+				::G_Error(
+					::va("EvaluateFields(): variable-sized chunk '%s' without handler!",
+						::SG_GetChidText(ulChid)));
+			}
+		}
+	}
 
-            ::gi.saved_game->try_read(
-                retail_client);
-
-            if (::gi.saved_game->is_all_data_read())
-            {
-                copy_retail_gclient_to_current(
-                    retail_client,
-                    *reinterpret_cast<gclient_t*>(pbData));
-            }
-            else
-            {
-                ::G_Error(
-                    ::va("EvaluateFields(): variable-sized chunk '%s' without handler!",
-                        ::SG_GetChidText(ulChid)));
-            }
-        }
-    }
-
-    if (pFields)
-    {
-        for (const save_field_t* pField = pFields; pField->psName; ++pField) {
-            ::EvaluateField(
-                pField,
-                reinterpret_cast<byte*>(pbData),
-                pbOriginalRefData);
-        }
-    }
+	if (pFields)
+	{
+		for (const save_field_t* pField = pFields; pField->psName; ++pField)
+		{
+			::EvaluateField(
+				pField,
+				reinterpret_cast<byte*>(pbData),
+				pbOriginalRefData);
+		}
+	}
 }
 
 /*
@@ -896,9 +903,12 @@ static void WriteGEntities(qboolean qbAutosave)
 		}
 	}
 
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('N','M','E','D'),
-        iCount);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('N', 'M', 'E', 'D'),
+		iCount);
 
 	for (i=0; i<(qbAutosave?1:globals.num_entities); i++)
 	{
@@ -906,9 +916,9 @@ static void WriteGEntities(qboolean qbAutosave)
 
 		if ( ent->inuse)
 		{
-            ::gi.saved_game->write_chunk<int32_t>(
-                INT_ID('E','D','N','M'),
-                i);
+			sgfh.write_chunk<int32_t>(
+				INT_ID('E', 'D', 'N', 'M'),
+				i);
 
 			qboolean qbLinked = ent->linked;
 			gi.unlinkentity( ent );
@@ -939,9 +949,9 @@ static void WriteGEntities(qboolean qbAutosave)
 
 			if (tempEnt.parms)
 			{
-                ::gi.saved_game->write_chunk(
-                    INT_ID('P','A','R','M'),
-                    *ent->parms);
+				sgfh.write_chunk(
+					INT_ID('P', 'A', 'R', 'M'),
+					*ent->parms);
 			}
 
 			if (tempEnt.m_pVehicle)
@@ -971,9 +981,9 @@ static void WriteGEntities(qboolean qbAutosave)
 		//
 		static int iBlah = 1234;
 
-        ::gi.saved_game->write_chunk<int32_t>(
-            INT_ID('I','C','O','K'),
-            iBlah);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('I', 'C', 'O', 'K'),
+			iBlah);
 	}
 	if (!qbAutosave )//really shouldn't need to write these bits at all, just restore them from the ents...
 	{
@@ -986,18 +996,21 @@ static void ReadGEntities(qboolean qbAutosave)
 	int		iCount;
 	int		i;
 
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('N','M','E','D'),
-        iCount);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('N', 'M', 'E', 'D'),
+		iCount);
 
 	int iPreviousEntRead = -1;
 	for (i=0; i<iCount; i++)
 	{
 		int iEntIndex;
 
-        ::gi.saved_game->read_chunk<int32_t>(
-            INT_ID('E','D','N','M'),
-            iEntIndex);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('E', 'D', 'N', 'M'),
+			iEntIndex);
 
 		if (iEntIndex >= globals.num_entities)
 		{
@@ -1110,9 +1123,9 @@ static void ReadGEntities(qboolean qbAutosave)
 		{
 			parms_t tempParms;
 
-            ::gi.saved_game->read_chunk(
-                INT_ID('P','A','R','M'),
-                tempParms);
+			sgfh.read_chunk(
+				INT_ID('P', 'A', 'R', 'M'),
+				tempParms);
 
 			// so can we pinch the original's one or do we have to alloc a new one?...
 			//
@@ -1163,8 +1176,8 @@ static void ReadGEntities(qboolean qbAutosave)
 		// the scary ghoul2 stuff...  (fingers crossed)
 		//
 		{
-            ::gi.saved_game->read_chunk(
-                INT_ID('G','H','L','2'));
+			sgfh.read_chunk(
+				INT_ID('G', 'H', 'L', '2'));
 
             gi.G2API_LoadGhoul2Models(pEnt->ghoul2, nullptr);
 		}
@@ -1230,9 +1243,9 @@ static void ReadGEntities(qboolean qbAutosave)
 		//
 		static int iBlah = 1234;
 
-        ::gi.saved_game->read_chunk<int32_t>(
-            INT_ID('I','C','O','K'),
-            iBlah);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('I', 'C', 'O', 'K'),
+			iBlah);
 	}
 	if (!qbAutosave)
 	{
@@ -1270,13 +1283,19 @@ void WriteLevel(qboolean qbAutosave)
 	//
 	static int iDONE = 1234;
 
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('D','O','N','E'),
-        iDONE);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('D', 'O', 'N', 'E'),
+		iDONE);
 }
 
 void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 {
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
 	if ( qbLoadTransition )
 	{
 		// I STRONGLY SUSPECT THAT THIS WILL JUST ERR_DROP BECAUSE OF THE LOAD SWAPPING OF THE CHUNK-ORDER
@@ -1303,8 +1322,8 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 		ReadLevelLocals();	// level_locals_t level
 
 		//Read & throw away objective info
-        ::gi.saved_game->read_chunk(
-            INT_ID('O','B','J','T'));
+		sgfh.read_chunk(
+			INT_ID('O', 'B', 'J', 'T'));
 	}
 	else
 	{
@@ -1338,9 +1357,9 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 	//
 	static int iDONE = 1234;
 
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('D','O','N','E'),
-        iDONE);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('D', 'O', 'N', 'E'),
+		iDONE);
 }
 
 extern int killPlayerTimer;

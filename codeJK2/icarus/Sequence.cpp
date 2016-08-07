@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "icarus.h"
 
 #include <assert.h>
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 CSequence::CSequence( void )
 {
@@ -343,26 +343,29 @@ int CSequence::SaveCommand( CBlock *block )
 	int				numMembers, bID, size;
 	CBlockMember	*bm;
 
-    auto saved_game = m_owner->GetInterface()->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_owner->GetInterface()->saved_game);
 
 	//Save out the block ID
 	bID = block->GetBlockID();
-    saved_game->write_chunk<int32_t>(
-        INT_ID('B','L','I','D'),
-        bID);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('B', 'L', 'I', 'D'),
+		bID);
 
 	//Save out the block's flags
 	flags = block->GetFlags();
-    saved_game->write_chunk<uint8_t>(
-        INT_ID('B','F','L','G'),
-        flags);
+
+	sgfh.write_chunk<uint8_t>(
+		INT_ID('B', 'F', 'L', 'G'),
+		flags);
 
 	//Save out the number of members to read
 	numMembers = block->GetNumMembers();
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('B','N','U','M'),
-        numMembers);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('B', 'N', 'U', 'M'),
+		numMembers);
 
 	for ( int i = 0; i < numMembers; i++ )
 	{
@@ -371,24 +374,24 @@ int CSequence::SaveCommand( CBlock *block )
 		//Save the block id
 		bID = bm->GetID();
 
-        saved_game->write_chunk<int32_t>(
-            INT_ID('B','M','I','D'),
-            bID);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('B', 'M', 'I', 'D'),
+			bID);
 		
 		//Save out the data size
 		size = bm->GetSize();
 
-        saved_game->write_chunk<int32_t>(
-            INT_ID('B','S','I','Z'),
-            size);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('B', 'S', 'I', 'Z'),
+			size);
 		
 		//Save out the raw data
         auto raw_data = static_cast<const uint8_t*>(bm->GetData());
 
-        saved_game->write_chunk(
-            INT_ID('B','M','E','M'),
-            raw_data,
-            size);
+		sgfh.write_chunk(
+			INT_ID('B', 'M', 'E', 'M'),
+			raw_data,
+			size);
 	}
 
 	return true;
@@ -406,51 +409,52 @@ int CSequence::Save( void )
 	block_l::iterator		bi;
 	int						id;
 
-    auto saved_game = m_owner->GetInterface()->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_owner->GetInterface()->saved_game);
 
 	//Save the parent (by GUID)
 	id = ( m_parent != NULL ) ? m_parent->GetID() : -1;
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','P','I','D'),
-        id);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'P', 'I', 'D'),
+		id);
 
 	//Save the return (by GUID)
 	id = ( m_return != NULL ) ? m_return->GetID() : -1;
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','R','I','D'),
-        id);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'R', 'I', 'D'),
+		id);
 	
 	//Save the number of children
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','N','C','H'),
-        m_numChildren);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'N', 'C', 'H'),
+		m_numChildren);
 
 	//Save out the children (only by GUID)
 	STL_ITERATE( ci, m_children )
 	{
 		id = (*ci)->GetID();
 
-        saved_game->write_chunk<int32_t>(
-            INT_ID('S','C','H','D'),
-            id);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'C', 'H', 'D'),
+			id);
 	}
 
 	//Save flags
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','F','L','G'),
-        m_flags);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'F', 'L', 'G'),
+		m_flags);
 
 	//Save iterations
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','I','T','R'),
-        m_iterations);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'I', 'T', 'R'),
+		m_iterations);
 
 	//Save the number of commands
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','N','M','C'),
-        m_numCommands);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'N', 'M', 'C'),
+		m_numCommands);
 
 	//Save the commands
 	STL_ITERATE( bi, m_commands )
@@ -478,34 +482,35 @@ int CSequence::Load( void )
 	int				bID, bSize;
 	void			*bData;
 
-    auto saved_game = m_owner->GetInterface()->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_owner->GetInterface()->saved_game);
 
 	//Get the parent sequence
-    saved_game->read_chunk<int32_t>(
-        INT_ID('S','P','I','D'),
-        id);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'P', 'I', 'D'),
+		id);
 
 	m_parent = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 	
 	//Get the return sequence
-    saved_game->read_chunk<int32_t>(
-        INT_ID('S','R','I','D'),
-        id);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'R', 'I', 'D'),
+		id);
 
 	m_return = ( id != -1 ) ? m_owner->GetSequence( id ) : NULL;
 
 	//Get the number of children
-    saved_game->read_chunk<int32_t>(
-        INT_ID('S','N','C','H'),
-        m_numChildren);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'N', 'C', 'H'),
+		m_numChildren);
 
 	//Reload all children
 	for ( i = 0; i < m_numChildren; i++ )
 	{
 		//Get the child sequence ID
-        saved_game->read_chunk<int32_t>(
-            INT_ID('S','C','H','D'),
-            id);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'C', 'H', 'D'),
+			id);
 
 		//Get the desired sequence
 		if ( ( sequence = m_owner->GetSequence( id ) ) == NULL )
@@ -520,67 +525,67 @@ int CSequence::Load( void )
 
 	
 	//Get the sequence flags
-    saved_game->read_chunk<int32_t>(
-        INT_ID('S','F','L','G'),
-        m_flags);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'F', 'L', 'G'),
+		m_flags);
 
 	//Get the number of iterations
-    saved_game->read_chunk<int32_t>(
-        INT_ID('S','I','T','R'),
-        m_iterations);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'I', 'T', 'R'),
+		m_iterations);
 
 	int	numCommands;
 
 	//Get the number of commands
-    saved_game->read_chunk<int32_t>(
-        INT_ID('S','N','M','C'),
-        numCommands);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'N', 'M', 'C'),
+		numCommands);
 
 	//Get all the commands
 	for ( i = 0; i < numCommands; i++ )
 	{
 		//Get the block ID and create a new container
-        saved_game->read_chunk<int32_t>(
-            INT_ID('B','L','I','D'),
-            id);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('B', 'L', 'I', 'D'),
+			id);
 
 		block = new CBlock;
 		
 		block->Create( id );
 		
 		//Read the block's flags
-        saved_game->read_chunk<uint8_t>(
-            INT_ID('B','F','L','G'),
-            flags);
+		sgfh.read_chunk<uint8_t>(
+			INT_ID('B', 'F', 'L', 'G'),
+			flags);
 
 		block->SetFlags( flags );
 
 		//Get the number of block members
-        saved_game->read_chunk<int32_t>(
-            INT_ID('B','N','U','M'),
-            numMembers);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('B', 'N', 'U', 'M'),
+			numMembers);
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
 			//Get the member ID
-            saved_game->read_chunk<int32_t>(
-                INT_ID('B','M','I','D'),
-                bID);
+			sgfh.read_chunk<int32_t>(
+				INT_ID('B', 'M', 'I', 'D'),
+				bID);
 			
 			//Get the member size
-            saved_game->read_chunk<int32_t>(
-                INT_ID('B','S','I','Z'),
-                bSize);
+			sgfh.read_chunk<int32_t>(
+				INT_ID('B', 'S', 'I', 'Z'),
+				bSize);
 
 			//Get the member's data
 			if ( ( bData = ICARUS_Malloc( bSize ) ) == NULL )
 				return false;
 
 			//Get the actual raw data
-            saved_game->read_chunk(
-                INT_ID('B','M','E','M'),
-                static_cast<uint8_t*>(bData),
-                bSize);
+			sgfh.read_chunk(
+				INT_ID('B', 'M', 'E', 'M'),
+				static_cast<uint8_t*>(bData),
+				bSize);
 
 			//Write out the correct type
 			switch ( bID )

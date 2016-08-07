@@ -48,7 +48,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <float.h>
 
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 #ifdef _G2_GORE
 #include "../ghoul2/ghoul2_gore.h"
@@ -1782,184 +1782,200 @@ const auto BONE_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoneInfo));
 
 
 void G2_SaveGhoul2Models(
-    CGhoul2Info_v& ghoul2)
+	CGhoul2Info_v& ghoul2)
 {
-    ::ri.saved_game->reset_buffer();
+	ojk::SavedGameFileHelper sgfh(
+		::ri.saved_game);
 
-    // is there anything to save?
-    if (!ghoul2.IsValid() || ghoul2.size() == 0) {
-        const int zero_size = 0;
+	sgfh.reset_buffer();
+
+	// is there anything to save?
+	if (!ghoul2.IsValid() || ghoul2.size() == 0)
+	{
+		const int zero_size = 0;
 
 #ifdef JK2_MODE
-		::ri.saved_game->write<int32_t>(
+		sgfh.write<int32_t>(
 			zero_size);
 
-        ::ri.saved_game->write_chunk_and_size<int32_t>(
-            INT_ID('G', 'L', '2', 'S'),
-            INT_ID('G', 'H', 'L', '2'));
+		sgfh.write_chunk_and_size<int32_t>(
+			INT_ID('G', 'L', '2', 'S'),
+			INT_ID('G', 'H', 'L', '2'));
 #else
-        ::ri.saved_game->write_chunk<int32_t>(
-            INT_ID('G', 'H', 'L', '2'),
-            zero_size); //write out a zero buffer
+		sgfh.write_chunk<int32_t>(
+			INT_ID('G', 'H', 'L', '2'),
+			zero_size); //write out a zero buffer
 #endif // JK2_MODE
 
-        return;
-    }
+		return;
+	}
 
 
-    // save out how many ghoul2 models we have
-    auto model_count = ghoul2.size();
+	// save out how many ghoul2 models we have
+	auto model_count = ghoul2.size();
 
-    ::ri.saved_game->write<int32_t>(
-        model_count);
+	sgfh.write<int32_t>(
+		model_count);
 
-    for (decltype(model_count) i = 0; i < model_count; ++i) {
-        // first save out the ghoul2 details themselves
-        ghoul2[i].sg_export(
-            ::ri.saved_game);
+	for (decltype(model_count) i = 0; i < model_count; ++i)
+	{
+		// first save out the ghoul2 details themselves
+		ghoul2[i].sg_export(
+			sgfh);
 
-        // save out how many surfaces we have
-        auto surface_count = ghoul2[i].mSlist.size();
+		// save out how many surfaces we have
+		auto surface_count = ghoul2[i].mSlist.size();
 
-        ::ri.saved_game->write<int32_t>(
-            surface_count);
+		sgfh.write<int32_t>(
+			surface_count);
 
-        // now save the all the surface list info
-        for (decltype(surface_count) x = 0; x < surface_count; ++x) {
-            ghoul2[i].mSlist[x].sg_export(
-                ::ri.saved_game);
-        }
+		// now save the all the surface list info
+		for (decltype(surface_count) x = 0; x < surface_count; ++x)
+		{
+			ghoul2[i].mSlist[x].sg_export(
+				sgfh);
+		}
 
-        // save out how many bones we have
-        auto bone_count = ghoul2[i].mBlist.size();
+		// save out how many bones we have
+		auto bone_count = ghoul2[i].mBlist.size();
 
-        ::ri.saved_game->write<int32_t>(
-            bone_count);
+		sgfh.write<int32_t>(
+			bone_count);
 
-        // now save the all the bone list info
-        for (decltype(bone_count) x = 0; x < bone_count; ++x) {
-            ghoul2[i].mBlist[x].sg_export(
-                ::ri.saved_game);
-        }
+		// now save the all the bone list info
+		for (decltype(bone_count) x = 0; x < bone_count; ++x)
+		{
+			ghoul2[i].mBlist[x].sg_export(
+				sgfh);
+		}
 
-        // save out how many bolts we have
-        auto bolt_count = ghoul2[i].mBltlist.size();
+		// save out how many bolts we have
+		auto bolt_count = ghoul2[i].mBltlist.size();
 
-        ::ri.saved_game->write<int32_t>(
-            bolt_count);
+		sgfh.write<int32_t>(
+			bolt_count);
 
-        // lastly save the all the bolt list info
-        for (decltype(bolt_count) x = 0; x < bolt_count; ++x)
-        {
-            ghoul2[i].mBltlist[x].sg_export(
-                ::ri.saved_game);
-        }
-    }
+		// lastly save the all the bolt list info
+		for (decltype(bolt_count) x = 0; x < bolt_count; ++x)
+		{
+			ghoul2[i].mBltlist[x].sg_export(
+				sgfh);
+		}
+	}
 
 #ifdef JK2_MODE
-    ::ri.saved_game->write_chunk_and_size<int32_t>(
-        INT_ID('G', 'L', '2', 'S'),
-        INT_ID('G', 'H', 'L', '2'));
+	sgfh.write_chunk_and_size<int32_t>(
+		INT_ID('G', 'L', '2', 'S'),
+		INT_ID('G', 'H', 'L', '2'));
 #else
-    ::ri.saved_game->write_chunk(
-        INT_ID('G', 'H', 'L', '2'));
+	sgfh.write_chunk(
+		INT_ID('G', 'H', 'L', '2'));
 #endif // JK2_MODE
 }
 
 // FIXME Remove 'buffer' parameter
 void G2_LoadGhoul2Model(
-    CGhoul2Info_v& ghoul2,
-    char* buffer)
+	CGhoul2Info_v& ghoul2,
+	char* buffer)
 {
-    static_cast<void>(buffer);
+	static_cast<void>(buffer);
 
-    // first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
-    auto model_count = 0;
+	ojk::SavedGameFileHelper sgfh(
+		::ri.saved_game);
+
+	// first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
+	int model_count = 0;
 
 #ifdef JK2_MODE
-	if (::ri.saved_game->get_buffer_size() > 0)
+	if (sgfh.get_buffer_size() > 0)
 	{
 #endif // JK2_MODE
 
-    ::ri.saved_game->read<int32_t>(
-        model_count);
+		sgfh.read<int32_t>(
+			model_count);
 
 #ifdef JK2_MODE
 	}
 #endif // JK2_MODE
 
 
-    ghoul2.resize(
-        model_count);
+	ghoul2.resize(
+		model_count);
 
-    // did we actually resize to a value?
-    if (model_count == 0) {
-        // no, ok, well, done then.
-        return;
-    }
+	// did we actually resize to a value?
+	if (model_count == 0)
+	{
+		// no, ok, well, done then.
+		return;
+	}
 
-    // now we have enough instances, lets go through each one and load up the relevant details
-    for (decltype(model_count) i = 0; i < model_count; ++i) {
-        ghoul2[i].mSkelFrameNum = 0;
-        ghoul2[i].mModelindex = -1;
-        ghoul2[i].mFileName[0] = 0;
-        ghoul2[i].mValid = false;
+	// now we have enough instances, lets go through each one and load up the relevant details
+	for (decltype(model_count) i = 0; i < model_count; ++i)
+	{
+		ghoul2[i].mSkelFrameNum = 0;
+		ghoul2[i].mModelindex = -1;
+		ghoul2[i].mFileName[0] = 0;
+		ghoul2[i].mValid = false;
 
-        // load the ghoul2 info from the buffer
-        ghoul2[i].sg_import(
-            ::ri.saved_game);
+		// load the ghoul2 info from the buffer
+		ghoul2[i].sg_import(
+			sgfh);
 
-        if (ghoul2[i].mModelindex != -1 && ghoul2[i].mFileName[0]) {
-            ghoul2[i].mModelindex = i;
+		if (ghoul2[i].mModelindex != -1 && ghoul2[i].mFileName[0])
+		{
+			ghoul2[i].mModelindex = i;
 
-            ::G2_SetupModelPointers(
-                &ghoul2[i]);
-        }
+			::G2_SetupModelPointers(
+				&ghoul2[i]);
+		}
 
-        // give us enough surfaces to load up the data
-        auto surface_count = 0;
+		// give us enough surfaces to load up the data
+		auto surface_count = 0;
 
-        ::ri.saved_game->read<int32_t>(
-            surface_count);
+		sgfh.read<int32_t>(
+			surface_count);
 
-        ghoul2[i].mSlist.resize(surface_count);
+		ghoul2[i].mSlist.resize(surface_count);
 
-        // now load all the surfaces
-        for (decltype(surface_count) x = 0; x < surface_count; ++x) {
-            ghoul2[i].mSlist[x].sg_import(
-                ::ri.saved_game);
-        }
+		// now load all the surfaces
+		for (decltype(surface_count) x = 0; x < surface_count; ++x)
+		{
+			ghoul2[i].mSlist[x].sg_import(
+				sgfh);
+		}
 
-        // give us enough bones to load up the data
-        auto bone_count = 0;
+		// give us enough bones to load up the data
+		auto bone_count = 0;
 
-        ::ri.saved_game->read<int32_t>(
-            bone_count);
+		sgfh.read<int32_t>(
+			bone_count);
 
-        ghoul2[i].mBlist.resize(
-            bone_count);
+		ghoul2[i].mBlist.resize(
+			bone_count);
 
-        // now load all the bones
-        for (decltype(bone_count) x = 0; x < bone_count; ++x) {
-            ghoul2[i].mBlist[x].sg_import(
-                ::ri.saved_game);
-        }
+		// now load all the bones
+		for (decltype(bone_count) x = 0; x < bone_count; ++x)
+		{
+			ghoul2[i].mBlist[x].sg_import(
+				sgfh);
+		}
 
-        // give us enough bolts to load up the data
-        auto bolt_count = 0;
+		// give us enough bolts to load up the data
+		auto bolt_count = 0;
 
-        ::ri.saved_game->read<int32_t>(
-            bolt_count);
+		sgfh.read<int32_t>(
+			bolt_count);
 
-        ghoul2[i].mBltlist.resize(
-            bolt_count);
+		ghoul2[i].mBltlist.resize(
+			bolt_count);
 
-        // now load all the bolts
-        for (decltype(bolt_count) x = 0; x < bolt_count; ++x) {
-            ghoul2[i].mBltlist[x].sg_import(
-                ::ri.saved_game);
-        }
-    }
+		// now load all the bolts
+		for (decltype(bolt_count) x = 0; x < bolt_count; ++x)
+		{
+			ghoul2[i].mBltlist[x].sg_import(
+				sgfh);
+		}
+	}
 
-	::ri.saved_game->ensure_all_data_read();
+	sgfh.ensure_all_data_read();
 }

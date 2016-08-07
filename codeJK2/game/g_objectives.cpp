@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define	G_OBJECTIVES_CPP
 
 #include "objectives.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 qboolean	missionInfo_Updated;
 
@@ -62,9 +62,12 @@ OBJ_SaveMissionObjectives
 */
 void OBJ_SaveMissionObjectives( gclient_t *client )
 {
-    ::gi.saved_game->write_chunk(
-        INT_ID('O','B','J','T'),
-        client->sess.mission_objectives);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk(
+		INT_ID('O', 'B', 'J', 'T'),
+		client->sess.mission_objectives);
 }
 
 
@@ -89,9 +92,12 @@ OBJ_LoadMissionObjectives
 */
 void OBJ_LoadMissionObjectives( gclient_t *client )
 {
-    ::gi.saved_game->read_chunk(
-        INT_ID('O','B','J','T'),
-        client->sess.mission_objectives);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk(
+		INT_ID('O', 'B', 'J', 'T'),
+		client->sess.mission_objectives);
 }
 
 

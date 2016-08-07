@@ -29,7 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "instance.h"
 
 #include <assert.h>
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 // Instance
 
@@ -304,11 +304,12 @@ int ICARUS_Instance::SaveSequenceIDTable( void )
 	//Save out the number of sequences to follow
 	int		numSequences = m_sequences.size();
 
-    auto saved_game = m_interface->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('#','S','E','Q'),
-        numSequences);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('#', 'S', 'E', 'Q'),
+		numSequences);
 
 	//Sequences are saved first, by ID and information
 	sequence_l::iterator	sqi;
@@ -325,10 +326,10 @@ int ICARUS_Instance::SaveSequenceIDTable( void )
 		idTable[itr++] = (*sqi)->GetID();
 	}
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('S','Q','T','B'),
-        idTable,
-        numSequences);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'T', 'B'),
+		idTable,
+		numSequences);
 
 	delete[] idTable;
 
@@ -367,11 +368,12 @@ int ICARUS_Instance::SaveSequencers( void )
 	//Save out the number of sequences to follow
 	int		numSequencers = m_sequencers.size();
 
-    auto saved_game = m_interface->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('#','S','Q','R'),
-        numSequencers);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('#', 'S', 'Q', 'R'),
+		numSequencers);
 
 	//The sequencers are then saved
 	sequencer_l::iterator	si;
@@ -393,11 +395,12 @@ int ICARUS_Instance::SaveSignals( void )
 {
 	int	numSignals = m_signals.size();
 
-    auto saved_game = m_interface->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
 
-    saved_game->write_chunk<int32_t>(
-        INT_ID('I','S','I','G'),
-        numSignals);
+	sgfh.write_chunk<int32_t>(
+		INT_ID('I', 'S', 'I', 'G'),
+		numSignals);
 
 	signal_m::iterator	si;
 	STL_ITERATE( si, m_signals )
@@ -411,15 +414,15 @@ int ICARUS_Instance::SaveSignals( void )
 		int length = strlen( name ) + 1;
 
 		//Save out the string size
-        saved_game->write_chunk<int32_t>(
-            INT_ID('S','I','G','#'),
-            length);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'I', 'G', '#'),
+			length);
 
 		//Write out the string
-        saved_game->write_chunk(
-            INT_ID('S','I','G','N'),
-            name,
-            length );
+		sgfh.write_chunk(
+			INT_ID('S', 'I', 'G', 'N'),
+			name,
+			length);
 	}
 
 	return true;
@@ -436,11 +439,12 @@ int ICARUS_Instance::Save( void )
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
 
-    auto saved_game = m_interface->saved_game;
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
 
-    saved_game->write_chunk<double>(
-        INT_ID('I','C','A','R'),
-        version);
+	sgfh.write_chunk<double>(
+		INT_ID('I', 'C', 'A', 'R'),
+		version);
 
 	//Save out the signals
 	if ( SaveSignals() == false )
@@ -454,9 +458,9 @@ int ICARUS_Instance::Save( void )
 	if ( SaveSequencers() == false )
 		return false;
 
-    saved_game->write_chunk<double>(
-        INT_ID('I','E','N','D'),
-        version);
+	sgfh.write_chunk<double>(
+		INT_ID('I', 'E', 'N', 'D'),
+		version);
 
 	return true;
 }
@@ -471,9 +475,12 @@ int ICARUS_Instance::LoadSignals( void )
 {
 	int numSignals;
 
-    m_interface->saved_game->read_chunk<int32_t>(
-        INT_ID('I','S','I','G'),
-        numSignals);
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('I', 'S', 'I', 'G'),
+		numSignals);
 
 	for ( int i = 0; i < numSignals; i++ )
 	{
@@ -481,17 +488,17 @@ int ICARUS_Instance::LoadSignals( void )
 		int		length;
 
 		//Get the size of the string
-        m_interface->saved_game->read_chunk<int32_t>(
-            INT_ID('S','I','G','#'),
-            length);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'I', 'G', '#'),
+			length);
 
 		assert( length < (int)sizeof( buffer ) );
 
 		//Get the string
-        m_interface->saved_game->read_chunk(
-            INT_ID('S','I','G','N'),
-            buffer,
-            length);
+		sgfh.read_chunk(
+			INT_ID('S', 'I', 'G', 'N'),
+			buffer,
+			length);
 
 		//Turn it on and add it to the system
 		Signal( (const char *) &buffer );
@@ -531,10 +538,13 @@ int ICARUS_Instance::LoadSequences( void )
 	CSequence	*sequence;
 	int			numSequences;
 
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
+
 	//Get the number of sequences to read in
-    m_interface->saved_game->read_chunk<int32_t>(
-        INT_ID('#','S','E','Q'),
-        numSequences);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('#', 'S', 'E', 'Q'),
+		numSequences);
 
 	int	*idTable = new int[ numSequences ];
 
@@ -542,10 +552,10 @@ int ICARUS_Instance::LoadSequences( void )
 		return false;
 
 	//Load the sequencer ID table
-    m_interface->saved_game->read_chunk<int32_t>(
-        INT_ID('S','Q','T','B'),
-        idTable,
-        numSequences);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'T', 'B'),
+		idTable,
+		numSequences);
 
 	//First pass, allocate all container sequences and give them their proper IDs
 	if ( AllocateSequences( numSequences, idTable ) == false )
@@ -580,10 +590,13 @@ int ICARUS_Instance::LoadSequencers( void )
 	CSequencer	*sequencer;
 	int			numSequencers;
 
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
+
 	//Get the number of sequencers to load
-    m_interface->saved_game->read_chunk<int32_t>(
-        INT_ID('#','S','Q','R'),
-        numSequencers);
+	sgfh.read_chunk<int32_t>(
+		INT_ID('#', 'S', 'Q', 'R'),
+		numSequencers);
 	
 	//Load all sequencers
 	for ( int i = 0; i < numSequencers; i++ )
@@ -613,9 +626,12 @@ int ICARUS_Instance::Load( void )
 	//Check to make sure we're at the ICARUS save block
 	double	version;
 
-    m_interface->saved_game->read_chunk<double>(
-        INT_ID('I','C','A','R'),
-        version);
+	ojk::SavedGameFileHelper sgfh(
+		m_interface->saved_game);
+
+	sgfh.read_chunk<double>(
+		INT_ID('I', 'C', 'A', 'R'),
+		version);
 
 	//Versions must match!
 	if ( version != ICARUS_VERSION )
@@ -645,9 +661,9 @@ int ICARUS_Instance::Load( void )
 		return false;
 	}
 
-    m_interface->saved_game->read_chunk<double>(
-        INT_ID('I','E','N','D'),
-        version);
+	sgfh.read_chunk<double>(
+		INT_ID('I', 'E', 'N', 'D'),
+		version);
 
 	return true;
 }

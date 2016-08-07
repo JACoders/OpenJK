@@ -164,15 +164,15 @@ typedef struct {
 
 #ifdef __cplusplus
 void sg_export(
-    ojk::ISavedGame* saved_game) const
+    ojk::SavedGameFileHelper& saved_game) const
 {
-    saved_game->write<float>(matrix);
+    saved_game.write<float>(matrix);
 }
 
 void sg_import(
-    ojk::ISavedGame* saved_game)
+    ojk::SavedGameFileHelper& saved_game)
 {
-    saved_game->read<float>(matrix);
+    saved_game.read<float>(matrix);
 }
 #endif // __cplusplus
 } mdxaBone_t;

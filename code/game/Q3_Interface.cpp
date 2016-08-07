@@ -40,7 +40,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "wp_saber.h"
 #include "g_vehicles.h"
 #include "g_navigator.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 extern	cvar_t	*com_buildScript;
 
@@ -7208,9 +7208,12 @@ void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 {
 	int numFloats = fmap.size();
 
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('F','V','A','R'),
-        numFloats);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('F', 'V', 'A', 'R'),
+		numFloats);
 
 	varFloat_m::iterator	vfi;
 	STL_ITERATE( vfi, fmap )
@@ -7219,19 +7222,19 @@ void CQuake3GameInterface::VariableSaveFloats( varFloat_m &fmap )
 		int	idSize = strlen( ((*vfi).first).c_str() );
 
 		//Save out the real data
-        ::gi.saved_game->write_chunk<int32_t>(
-            INT_ID('F','I','D','L'),
-            idSize);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('F', 'I', 'D', 'L'),
+			idSize);
 
-        ::gi.saved_game->write_chunk(
-            INT_ID('F','I','D','S'),
-            ((*vfi).first).c_str(),
-            idSize);
+		sgfh.write_chunk(
+			INT_ID('F', 'I', 'D', 'S'),
+			((*vfi).first).c_str(),
+			idSize);
 
 		//Save out the float value
-        ::gi.saved_game->write_chunk<float>(
-            INT_ID('F','V','A','L'),
-            (*vfi).second);
+		sgfh.write_chunk<float>(
+			INT_ID('F', 'V', 'A', 'L'),
+			(*vfi).second);
 	}
 }
 
@@ -7245,9 +7248,12 @@ void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 {
 	int numStrings = smap.size();
 
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('S','V','A','R'),
-        numStrings);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('S', 'V', 'A', 'R'),
+		numStrings);
 
 	varString_m::iterator	vsi;
 	STL_ITERATE( vsi, smap )
@@ -7256,26 +7262,26 @@ void CQuake3GameInterface::VariableSaveStrings( varString_m &smap )
 		int	idSize = strlen( ((*vsi).first).c_str() );
 
 		//Save out the real data
-        ::gi.saved_game->write_chunk<int32_t>(
-            INT_ID('S','I','D','L'),
-            idSize);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'I', 'D', 'L'),
+			idSize);
 
-        ::gi.saved_game->write_chunk(
-            INT_ID('S','I','D','S'),
-            ((*vsi).first).c_str(),
-            idSize);
+		sgfh.write_chunk(
+			INT_ID('S', 'I', 'D', 'S'),
+			((*vsi).first).c_str(),
+			idSize);
 
 		//Save out the string value
 		idSize = strlen( ((*vsi).second).c_str() );
 
-        ::gi.saved_game->write_chunk<int32_t>(
-            INT_ID('S','V','S','Z'),
-            idSize);
+		sgfh.write_chunk<int32_t>(
+			INT_ID('S', 'V', 'S', 'Z'),
+			idSize);
 
-        ::gi.saved_game->write_chunk(
-            INT_ID('S','V','A','L'),
-            ((*vsi).second).c_str(),
-            idSize);
+		sgfh.write_chunk(
+			INT_ID('S', 'V', 'A', 'L'),
+			((*vsi).second).c_str(),
+			idSize);
 	}
 }
 
@@ -7305,30 +7311,33 @@ void CQuake3GameInterface::VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('F','V','A','R'),
-        numFloats);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('F', 'V', 'A', 'R'),
+		numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 
-        ::gi.saved_game->read_chunk<int32_t>(
-            INT_ID('F','I','D','L'),
-            idSize);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('F', 'I', 'D', 'L'),
+			idSize);
 
-        ::gi.saved_game->read_chunk(
-            INT_ID('F','I','D','S'),
-            tempBuffer,
-            idSize);
+		sgfh.read_chunk(
+			INT_ID('F', 'I', 'D', 'S'),
+			tempBuffer,
+			idSize);
 
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-        ::gi.saved_game->read_chunk<float>(
-            INT_ID('F','V','A','L'),
-            val);
+		sgfh.read_chunk<float>(
+			INT_ID('F', 'V', 'A', 'L'),
+			val);
 
 		DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		SetFloatVariable( (const char *) &tempBuffer, val );
@@ -7347,33 +7356,36 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('S','V','A','R'),
-        numFloats);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('S', 'V', 'A', 'R'),
+		numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 
-        ::gi.saved_game->read_chunk<int32_t>(
-            INT_ID('S','I','D','L'),
-            idSize);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'I', 'D', 'L'),
+			idSize);
 
-        ::gi.saved_game->read_chunk(
-            INT_ID('S','I','D','S'),
-            tempBuffer,
-            idSize);
+		sgfh.read_chunk(
+			INT_ID('S', 'I', 'D', 'S'),
+			tempBuffer,
+			idSize);
 
 		tempBuffer[ idSize ] = 0;
 
-        ::gi.saved_game->read_chunk<int32_t>(
-            INT_ID('S','V','S','Z'),
-            idSize);
+		sgfh.read_chunk<int32_t>(
+			INT_ID('S', 'V', 'S', 'Z'),
+			idSize);
 
-        ::gi.saved_game->read_chunk(
-            INT_ID('S','V','A','L'),
-            tempBuffer2,
-            idSize);
+		sgfh.read_chunk(
+			INT_ID('S', 'V', 'A', 'L'),
+			tempBuffer2,
+			idSize);
 
 		tempBuffer2[ idSize ] = 0;
 
@@ -11154,7 +11166,7 @@ void	CQuake3GameInterface::FreeVariable( const char *name )
 }
 
 //Save / Load functions
-ojk::ISavedGame* CQuake3GameInterface::get_saved_game()
+ojk::ISavedGameFile* CQuake3GameInterface::get_saved_game_file()
 {
     return ::gi.saved_game;
 }

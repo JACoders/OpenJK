@@ -35,7 +35,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "objectives.h"
 #include "../cgame/cg_local.h"	// yeah I know this is naughty, but we're shipping soon...
 #include "time.h"
-#include "qcommon/ojk_i_saved_game.h"
+#include "qcommon/ojk_saved_game_file_helper.h"
 
 extern CNavigator		navigator;
 
@@ -88,18 +88,24 @@ qboolean PInUse2(gentity_t *ent)
 	return((g_entityInUseBits[entNum/32]&(((unsigned int)1)<<(entNum&0x1f)))!=0);
 }
 
-void WriteInUseBits(void)
+void WriteInUseBits()
 {
-    ::gi.saved_game->write_chunk<uint32_t>(
-        INT_ID('I','N','U','S'),
-        ::g_entityInUseBits);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
 }
 
-void ReadInUseBits(void)
+void ReadInUseBits()
 {
-    ::gi.saved_game->read_chunk<uint32_t>(
-        INT_ID('I','N','U','S'),
-        ::g_entityInUseBits);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
 
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
@@ -1483,18 +1489,24 @@ extern qboolean player_locked;
 
 void G_LoadSave_WriteMiscData(void)
 {
-    ::gi.saved_game->write_chunk<int32_t>(
-        INT_ID('L','C','K','D'),
-        ::player_locked);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.write_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 
 
 void G_LoadSave_ReadMiscData(void)
 {
-    ::gi.saved_game->read_chunk<int32_t>(
-        INT_ID('L','C','K','D'),
-        ::player_locked);
+	ojk::SavedGameFileHelper sgfh(
+		::gi.saved_game);
+
+	sgfh.read_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 
