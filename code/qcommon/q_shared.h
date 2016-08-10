@@ -1440,16 +1440,12 @@ Ghoul2 Insert End
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
 #endif // JK2_MODE
 
-#ifdef JK2_MODE
-#define CS_PLAYERS (CS_SOUNDS + MAX_SOUNDS)
-#else
 #ifdef BASE_SAVE_COMPAT
 #define CS_RESERVED1		(CS_SOUNDS+MAX_SOUNDS) // reserved field for base compat from immersion removal
 #define	CS_PLAYERS			(CS_RESERVED1 + 96)
 #else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
 #endif
-#endif // JK2_MODE
 
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
 
