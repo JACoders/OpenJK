@@ -2327,8 +2327,6 @@ int	CSequencer::Save( void )
 	taskSequence_m::iterator	ti;
 	int							numSequences = 0, id, numTasks;
 
-    auto saved_game = m_ie->saved_game;
-
 	//Get the number of sequences to save out
 	numSequences = m_sequences.size();
 
