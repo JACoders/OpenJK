@@ -977,7 +977,14 @@ static void SG_WriteScreenshot(qboolean qbAutosave, const char *psMapName)
 	size_t iJPGDataSize = 0;
 	size_t bufSize = SG_SCR_WIDTH * SG_SCR_HEIGHT * 3;
 	byte *pJPGData = (byte *)Z_Malloc( static_cast<int>(bufSize), TAG_TEMP_WORKSPACE, qfalse, 4 );
-	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0 );
+
+#ifdef JK2_MODE
+	bool flip_vertical = true;
+#else
+	bool flip_vertical = false;
+#endif // JK2_MODE
+
+	iJPGDataSize = re.SaveJPGToBuffer(pJPGData, bufSize, JPEG_IMAGE_QUALITY, SG_SCR_WIDTH, SG_SCR_HEIGHT, pbRawScreenShot, 0, flip_vertical );
 	if ( qbAutosave )
 		delete[] byBlank;
 
