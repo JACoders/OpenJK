@@ -58,7 +58,6 @@ char sLastSaveFileLoaded[MAX_QPATH]={0};
 #endif // JK2_MODE
 
 static char *SG_GetSaveGameMapName(const char *psPathlessBaseName);
-static void CompressMem_FreeScratchBuffer(void);
 
 
 #ifdef SG_PROFILE
@@ -765,11 +764,31 @@ int SG_GetSaveGameComment(
 
 	bool is_succeed = true;
 
+	// Read description
+	//
 	is_succeed = sgh.try_read_chunk(
-		INT_ID('C', 'O', 'M', 'M'),
-		sComment,
-		iSG_COMMENT_SIZE);
+		INT_ID('C', 'O', 'M', 'M'));
 
+	if (is_succeed)
+	{
+		if (sComment)
+		{
+			if (sgh.get_buffer_size() == iSG_COMMENT_SIZE)
+			{
+				std::uninitialized_copy_n(
+					static_cast<const char*>(sgh.get_buffer_data()),
+					iSG_COMMENT_SIZE,
+					sComment);
+			}
+			else
+			{
+				sComment[0] = '\0';
+			}
+		}
+	}
+
+	// Read timestamp
+	//
 	auto tFileTime = ::SG_GetTime(0);
 
 	if (is_succeed)
@@ -788,6 +807,9 @@ int SG_GetSaveGameComment(
 	}
 
 #ifdef JK2_MODE
+	// Read screenshot
+	//
+
 	if (is_succeed)
 	{
 		size_t iScreenShotLength;
@@ -799,17 +821,35 @@ int SG_GetSaveGameComment(
 
 	if (is_succeed)
 	{
-		sgh.read_chunk(
+		is_succeed = sgh.try_read_chunk(
 			INT_ID('S', 'H', 'O', 'T'));
 	}
 #endif
 
+	// Read mapname
+	//
 	if (is_succeed)
 	{
-		sgh.read_chunk(
-			INT_ID('M', 'P', 'C', 'M'),
-			sMapName,
-			iSG_MAPCMD_SIZE);
+		is_succeed = sgh.try_read_chunk(
+			INT_ID('M', 'P', 'C', 'M'));
+
+		if (is_succeed)
+		{
+			if (sMapName)
+			{
+				if (sgh.get_buffer_size() == iSG_MAPCMD_SIZE)
+				{
+					std::uninitialized_copy_n(
+						static_cast<const char*>(sgh.get_buffer_data()),
+						iSG_MAPCMD_SIZE,
+						sMapName);
+				}
+				else
+				{
+					sMapName[0] = '\0';
+				}
+			}
+		}
 	}
 
 	ret = tFileTime;
@@ -840,95 +880,144 @@ static char *SG_GetSaveGameMapName(const char *psPathlessBaseName)
 // pass in qtrue to set as loading screen, else pass in pvDest to read it into there...
 //
 #ifdef JK2_MODE
-static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest = NULL);
-static qboolean SG_ReadScreenshot(qboolean qbSetAsLoadingScreen, void *pvDest)
+static bool SG_ReadScreenshot(
+	bool set_as_loading_screen,
+	void* screenshot_ptr)
 {
-	qboolean bReturn = qfalse;
+	bool is_succeed = true;
 
 	ojk::SavedGameHelper saved_game(
 		&ojk::SavedGame::get_instance());
 
 	// get JPG screenshot data length...
 	//
-	size_t iScreenShotLength = 0;
+	size_t screenshot_length = 0;
 
-	saved_game.read_chunk<uint32_t>(
+	is_succeed = saved_game.try_read_chunk<uint32_t>(
 		INT_ID('S', 'H', 'L', 'N'),
-		iScreenShotLength);
+		screenshot_length);
 
 	//
 	// alloc enough space plus extra 4K for sloppy JPG-decode reader to not do memory access violation...
 	//
-	byte *pJPGData = (byte *) Z_Malloc(static_cast<int>(iScreenShotLength + 4096),TAG_TEMP_WORKSPACE, qfalse);
+	byte* jpeg_data = nullptr;
+
+	if (is_succeed)
+	{
+		jpeg_data = static_cast<byte*>(::Z_Malloc(
+			static_cast<int>(screenshot_length + 4096),
+			TAG_TEMP_WORKSPACE,
+			false));
+	}
+
 	//
 	// now read the JPG data...
 	//
-	saved_game.read_chunk(
-		INT_ID('S', 'H', 'O', 'T'),
-		pJPGData,
-		static_cast<int>(iScreenShotLength));
+	if (is_succeed)
+	{
+		is_succeed = saved_game.try_read_chunk(
+			INT_ID('S', 'H', 'O', 'T'),
+			jpeg_data,
+			static_cast<int>(screenshot_length));
+	}
 
 	//
 	// decompress JPG data...
 	//
-	byte *pDecompressedPic = NULL;
-	int iWidth, iHeight;
-	re.LoadJPGFromBuffer(pJPGData, iScreenShotLength, &pDecompressedPic, &iWidth, &iHeight);
-	//
-	// if the loaded image is the same size as the game is expecting, then copy it to supplied arg (if present)...
-	//
-	if (iWidth == SG_SCR_WIDTH && iHeight == SG_SCR_HEIGHT)
+	byte* image = NULL;
+	int width;
+	int height;
+
+	if (is_succeed)
 	{
-		bReturn = qtrue;
+		::re.LoadJPGFromBuffer(
+			jpeg_data,
+			screenshot_length,
+			&image,
+			&width,
+			&height);
 
-		if (pvDest)
+		//
+		// if the loaded image is the same size as the game is expecting, then copy it to supplied arg (if present)...
+		//
+		if (width == SG_SCR_WIDTH && height == SG_SCR_HEIGHT)
 		{
-			memcpy(pvDest, pDecompressedPic, SG_SCR_WIDTH * SG_SCR_HEIGHT * 4);
+			if (screenshot_ptr)
+			{
+				::memcpy(
+					screenshot_ptr,
+					image,
+					SG_SCR_WIDTH * SG_SCR_HEIGHT * 4);
+			}
+
+			if (set_as_loading_screen)
+			{
+				::SCR_SetScreenshot(
+					image,
+					SG_SCR_WIDTH,
+					SG_SCR_HEIGHT);
+			}
 		}
-
-		if (qbSetAsLoadingScreen)
+		else
 		{
-			SCR_SetScreenshot((byte *)pDecompressedPic, SG_SCR_WIDTH, SG_SCR_HEIGHT);
+			is_succeed = false;
 		}
 	}
 
-	Z_Free( pJPGData );
-	Z_Free( pDecompressedPic );
+	if (jpeg_data)
+	{
+		::Z_Free(jpeg_data);
+	}
 
-	return bReturn;
+	if (image)
+	{
+		::Z_Free(image);
+	}
+
+	return is_succeed;
 }
 // Gets the savegame screenshot
 //
-qboolean SG_GetSaveImage(const char *psPathlessBaseName, void *pvAddress)
+qboolean SG_GetSaveImage(
+	const char* base_name,
+	void* image_ptr)
 {
-	if (!psPathlessBaseName)
+	if (!base_name)
 	{
-		return qfalse;
+		return false;
 	}
 
 	auto& saved_game = ojk::SavedGame::get_instance();
 
-	if (!saved_game.open(psPathlessBaseName))
+	if (!saved_game.open(base_name))
 	{
-		return qfalse;
+		return false;
 	}
+
+	bool is_succeed = true;
 
 	ojk::SavedGameHelper sgh(
 		&saved_game);
 
-	sgh.read_chunk(
+	is_succeed = sgh.try_read_chunk(
 		INT_ID('C', 'O', 'M', 'M'));
 
-	sgh.read_chunk(
-		INT_ID('C', 'M', 'T', 'M'));
+	if (is_succeed)
+	{
+		is_succeed = sgh.try_read_chunk(
+			INT_ID('C', 'M', 'T', 'M'));
+	}
 
-	auto bGotSaveImage = SG_ReadScreenshot(
-		qfalse,
-		pvAddress);
+	if (is_succeed)
+	{
+		is_succeed = SG_ReadScreenshot(
+			false,
+			image_ptr);
+	}
 
 	saved_game.close();
 
-	return bGotSaveImage;
+	return is_succeed;
 }
 
 
@@ -1197,7 +1286,8 @@ qboolean SG_ReadSavegame(
 
 #ifdef JK2_MODE
 	::SG_ReadScreenshot(
-		qtrue);
+		true,
+		nullptr);
 #endif
 
 	sgh.read_chunk(

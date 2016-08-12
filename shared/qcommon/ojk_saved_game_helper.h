@@ -100,6 +100,13 @@ inline bool SavedGameHelper::is_failed() const
 // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 // try_read_chunk
 
+inline bool SavedGameHelper::try_read_chunk(
+	const uint32_t chunk_id)
+{
+	return saved_game_->read_chunk(
+		chunk_id);
+}
+
 template<typename TSrc, typename TDst>
 bool SavedGameHelper::try_read_chunk(
 	const uint32_t chunk_id,

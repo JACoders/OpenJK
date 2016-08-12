@@ -57,6 +57,11 @@ public:
 	bool is_failed() const;
 
 
+	// Tries to read a chunk's data into the internal buffer.
+	// Return true on success or false otherwise.
+	bool try_read_chunk(
+		const uint32_t chunk_id);
+
 	// Tries to read a value or an array of values from the file via
 	// the internal buffer.
 	// Return true on success or false otherwise.
