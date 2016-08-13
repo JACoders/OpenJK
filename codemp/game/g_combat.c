@@ -4994,7 +4994,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	{ // zyk: bonus damage of each RPG class
 		if (attacker->client->pers.rpg_class == 0)
 		{
-			damage = (int)ceil(damage * (1.0 + (0.04 * attacker->client->pers.skill_levels[55])));
+			damage = (int)ceil(damage * (1.0 + (0.03 * attacker->client->pers.skill_levels[55])));
 		}
 		else if (attacker->client->pers.rpg_class == 1 && (mod == MOD_SABER || mod == MOD_FORCE_DARK))
 			damage = (int)ceil(damage * (1.05 + (0.05 * attacker->client->pers.skill_levels[55])));
@@ -5153,7 +5153,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{
-			damage = (int)ceil(damage * (1.0 - (0.04 * targ->client->pers.skill_levels[55])));
+			damage = (int)ceil(damage * (1.0 - (0.03 * targ->client->pers.skill_levels[55])));
 		}
 		else if (targ->client->pers.rpg_class == 5 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
 		{ // zyk: Stealth Attacker damage resistance against DEMP2
