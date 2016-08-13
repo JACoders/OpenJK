@@ -29,7 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "qcommon/ojk_i_saved_game.h"
 
 
-#define	GAME_API_VERSION	8
+#define	GAME_API_VERSION	10
 
 // entity->svFlags
 // the server does not know how to interpret most of the values
