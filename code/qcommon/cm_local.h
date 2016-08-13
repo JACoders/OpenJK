@@ -44,10 +44,10 @@ typedef struct {
 	int			cluster;
 	int			area;
 
-	intptr_t	firstLeafBrush;
+	ptrdiff_t	firstLeafBrush;
 	int			numLeafBrushes;
 
-	intptr_t	firstLeafSurface;
+	ptrdiff_t	firstLeafSurface;
 	int			numLeafSurfaces;
 } cLeaf_t;
 

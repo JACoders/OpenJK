@@ -933,12 +933,14 @@ Ghoul2 Insert End
 		memset( &ent, 0, sizeof( ent ) );
 		ent.reType = RT_SPRITE;
 		VectorCopy( cent->lerpOrigin, ent.origin );
+		ent.origin[2] += 16;
 		ent.radius = 14;
 		ent.customShader = cg_items[es->modelindex].icon;
 		ent.shaderRGBA[0] = 255;
 		ent.shaderRGBA[1] = 255;
 		ent.shaderRGBA[2] = 255;
 		ent.shaderRGBA[3] = 255;
+		ent.renderfx |= RF_FORCE_ENT_ALPHA;
 		cgi_R_AddRefEntityToScene(&ent);
 		return;
 	}

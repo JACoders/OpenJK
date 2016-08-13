@@ -14,7 +14,7 @@ namespace FS
 {
 	class FileBuffer
 	{
-		friend FileBuffer ReadFile( const char* );
+		friend FileBuffer ReadFile( gsl::czstring );
 		// called by ReadFile()
 		FileBuffer( void* buffer, const long size ) NOEXCEPT;
 	public:
@@ -55,7 +55,7 @@ namespace FS
 		long _size = 0;
 	};
 
-	FileBuffer ReadFile( const char* path );
+	FileBuffer ReadFile( gsl::czstring path );
 
 	// FileList only available in Client; Library exclusively uses FS_GetFileList(), which by supplying a buffer avoids dynamic allocations.
 	// TODO: investigate making FS_ListFiles available in Library Code?

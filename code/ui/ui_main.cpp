@@ -488,6 +488,8 @@ void _UI_Refresh( int realtime )
 	}
 }
 
+#define MODSBUFSIZE (MAX_MODS * MAX_QPATH)
+
 /*
 ===============
 UI_LoadMods
@@ -495,13 +497,14 @@ UI_LoadMods
 */
 static void UI_LoadMods() {
 	int		numdirs;
-	char	dirlist[2048];
+	char	dirlist[MODSBUFSIZE];
 	char	*dirptr;
-  char  *descptr;
+	char	*descptr;
 	int		i;
 	int		dirlen;
 
 	uiInfo.modCount = 0;
+
 	numdirs = FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
 	dirptr  = dirlist;
 	for( i = 0; i < numdirs; i++ ) {
@@ -515,7 +518,6 @@ static void UI_LoadMods() {
 			break;
 		}
 	}
-
 }
 
 /*

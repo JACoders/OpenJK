@@ -197,6 +197,17 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define IS_NOEXCEPT(x) noexcept(x)
 #endif
 
+#if defined(__cplusplus)
+	#include <cstddef>
+
+	// gcc versions < 4.9 did not add max_align_t to the std:: namespace, but instead
+	// put it in the global namespace. Need this to provide uniform access to max_align_t
+	#if defined(__GNUC__) && ((__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9))
+		typedef max_align_t qmax_align_t;
+	#else
+		typedef std::max_align_t qmax_align_t;
+	#endif
+#endif
 
 // catch missing defines in above blocks
 #if !defined(OS_STRING)
@@ -216,11 +227,74 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 // endianness
-void CopyShortSwap( void *dest, void *src );
-void CopyLongSwap( void *dest, void *src );
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
+// Use compiler builtins where possible for maximum performance
+#include <stdint.h>
+#if !defined(__clang__) && (defined(__GNUC__) || defined(__GNUG__)) \
+            && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 403)
+// gcc >= 4.3
+
+static inline uint16_t ShortSwap(uint16_t v)
+{
+#if __GNUC_MINOR__ >= 8
+    return __builtin_bswap16(v);
+#else
+    return (v << 8) | (v >> 8);
+#endif // gcc >= 4.8
+}
+
+static inline uint32_t LongSwap(uint32_t v)
+{
+    return __builtin_bswap32(v);
+}
+#elif defined(_MSC_VER)
+// MSVC
+
+// required for _byteswap_ushort/ulong
+#include <stdlib.h>
+
+static uint16_t ShortSwap(uint16_t v)
+{
+    return _byteswap_ushort(v);
+}
+
+static uint32_t LongSwap(uint32_t v)
+{
+    return _byteswap_ulong(v);
+}
+
+#else
+// clang, gcc < 4.3 and others
+
+static inline uint16_t ShortSwap(uint16_t v)
+{
+    return (v << 8) | (v >> 8);
+}
+
+static inline uint32_t LongSwap(uint32_t v)
+{
+    return ((v & 0x000000FF) << 24) |
+           ((v & 0x0000FF00) << 8)  |
+           ((v & 0x00FF0000) >> 8)  |
+           ((v & 0xFF000000) >> 24);
+}
+#endif
+
+static void CopyShortSwap( void *dest, const void *src )
+{
+    *(uint16_t*)dest = ShortSwap(*(uint16_t*)src);
+}
+
+static void CopyLongSwap( void *dest, const void *src )
+{
+    *(uint32_t*)dest = LongSwap(*(uint32_t*)src);
+}
+
+static float FloatSwap(float f)
+{
+    float out;
+    CopyLongSwap(&out, &f);
+    return out;
+}
 
 #if defined(Q3_BIG_ENDIAN) && defined(Q3_LITTLE_ENDIAN)
 	#error "Endianness defined as both big and little"
@@ -229,7 +303,7 @@ float FloatSwap( const float *f );
 	#define CopyLittleLong( dest, src )		CopyLongSwap( dest, src )
 	#define LittleShort( x )				ShortSwap( x )
 	#define LittleLong( x )					LongSwap( x )
-	#define LittleFloat( x )				FloatSwap( &x )
+	#define LittleFloat( x )				FloatSwap( x )
 	#define BigShort
 	#define BigLong
 	#define BigFloat
@@ -241,7 +315,7 @@ float FloatSwap( const float *f );
 	#define LittleFloat
 	#define BigShort( x )					ShortSwap( x )
 	#define BigLong( x )					LongSwap( x )
-	#define BigFloat( x )					FloatSwap( &x )
+	#define BigFloat( x )					FloatSwap( x )
 #else
 	#error "Endianness not defined"
 #endif

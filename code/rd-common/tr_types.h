@@ -74,6 +74,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define	RF_DISTORTION	   0x400000	//area distortion effect -rww
 
+#define RF_FORCE_ENT_ALPHA	0x800000 // override shader alpha settings
+
 // refdef flags
 #define RDF_NOWORLDMODEL	1		// used for player configuration screen
 #define RDF_HYPERSPACE		4		// teleportation effect

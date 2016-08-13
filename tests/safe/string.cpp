@@ -35,6 +35,15 @@ BOOST_AUTO_TEST_CASE( stricmp )
 	BOOST_CHECK_EQUAL( Q::stricmp( CSTRING_VIEW( "a" ), CSTRING_VIEW( "" ) ), Q::Ordering::GT );
 }
 
+BOOST_AUTO_TEST_CASE( substr )
+{
+	BOOST_CHECK_EQUAL( Q::substr( CSTRING_VIEW( "Hello World" ), 6 ), CSTRING_VIEW( "World" ) );
+	BOOST_CHECK_EQUAL( Q::substr( CSTRING_VIEW( "Hello World" ), 6, 100 ), CSTRING_VIEW( "World" ) );
+	BOOST_CHECK_EQUAL( Q::substr( CSTRING_VIEW( "Hello World" ), 0, 5 ), CSTRING_VIEW( "Hello" ) );
+	BOOST_CHECK_EQUAL( Q::substr( CSTRING_VIEW( "Hello my World!" ), 6, 2 ), CSTRING_VIEW( "my" ) );
+	BOOST_CHECK_THROW( Q::substr( CSTRING_VIEW( "Hello" ), 20 ), std::out_of_range );
+}
+
 BOOST_AUTO_TEST_CASE( svtoi )
 {
 	BOOST_CHECK_EQUAL( Q::svtoi( CSTRING_VIEW( "" ) ), 0 );

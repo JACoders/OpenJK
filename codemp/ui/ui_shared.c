@@ -127,12 +127,9 @@ extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName
 
 
 #ifdef _CGAME
-	#define MEM_POOL_SIZE  128 * 1024
-	#define UI_ALLOCATION_TAG	TAG_CG_UI_ALLOC
+#define MEM_POOL_SIZE  (128 * 1024)
 #else
-//	#define MEM_POOL_SIZE  1024 * 1024
-	#define MEM_POOL_SIZE  2048 * 1024
-	#define	UI_ALLOCATION_TAG	TAG_UI_ALLOC
+#define MEM_POOL_SIZE  (4 * 1024 * 1024)
 #endif
 
 static char memoryPool[MEM_POOL_SIZE];
@@ -271,7 +268,7 @@ const char *String_Alloc(const char *p) {
 	}
 
 	//Increase STRING_POOL_SIZE.
-	assert(0);
+	Com_Printf( S_COLOR_RED, "String pool has been exhausted.\n" );
 	return NULL;
 }
 

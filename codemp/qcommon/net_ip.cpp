@@ -97,7 +97,7 @@ static cvar_t	*net_port;
 
 static cvar_t	*net_dropsim;
 
-static struct sockaddr	socksRelayAddr;
+static struct sockaddr_in	socksRelayAddr;
 
 static SOCKET	ip_socket = INVALID_SOCKET;
 static SOCKET	socks_socket = INVALID_SOCKET;
@@ -168,27 +168,26 @@ char *NET_ErrorString( void ) {
 #endif
 }
 
-static void NetadrToSockadr( netadr_t *a, struct sockaddr *s ) {
+static void NetadrToSockadr( netadr_t *a, struct sockaddr_in *s ) {
 	memset( s, 0, sizeof(*s) );
 
 	if( a->type == NA_BROADCAST ) {
-		((struct sockaddr_in *)s)->sin_family = AF_INET;
-		((struct sockaddr_in *)s)->sin_port = a->port;
-		((struct sockaddr_in *)s)->sin_addr.s_addr = INADDR_BROADCAST;
+		s->sin_family = AF_INET;
+		s->sin_port = a->port;
+		s->sin_addr.s_addr = INADDR_BROADCAST;
 	}
 	else if( a->type == NA_IP ) {
-		((struct sockaddr_in *)s)->sin_family = AF_INET;
-		((struct sockaddr_in *)s)->sin_addr.s_addr = *(int *)&a->ip;
-		((struct sockaddr_in *)s)->sin_port = a->port;
+		s->sin_family = AF_INET;
+		memcpy( &s->sin_addr, a->ip, sizeof(s->sin_addr) );
+		s->sin_port = a->port;
 	}
 }
 
-static void SockadrToNetadr( struct sockaddr *s, netadr_t *a ) {
-	if (s->sa_family == AF_INET) {
-		a->type = NA_IP;
-		*(int *)&a->ip = ((struct sockaddr_in *)s)->sin_addr.s_addr;
-		a->port = ((struct sockaddr_in *)s)->sin_port;
-	}
+static void SockadrToNetadr( struct sockaddr_in *s, netadr_t *a ) {
+	assert(s->sin_family == AF_INET);
+	a->type = NA_IP;
+	memcpy( a->ip, &s->sin_addr, sizeof(a->ip) );
+	a->port = s->sin_port;
 }
 
 /*
@@ -196,24 +195,24 @@ static void SockadrToNetadr( struct sockaddr *s, netadr_t *a ) {
 Sys_StringToSockaddr
 =============
 */
-static qboolean Sys_StringToSockaddr( const char *s, struct sockaddr *sadr )
+static qboolean Sys_StringToSockaddr( const char *s, struct sockaddr_in *sadr )
 {
 	struct hostent	*h;
 
 	memset( sadr, 0, sizeof( *sadr ) );
 
-	((struct sockaddr_in *)sadr)->sin_family = AF_INET;
-	((struct sockaddr_in *)sadr)->sin_port = 0;
+	sadr->sin_family = AF_INET;
+	sadr->sin_port = 0;
 
 	if( s[0] >= '0' && s[0] <= '9' )
 	{
-		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = inet_addr(s);
+		sadr->sin_addr.s_addr = inet_addr(s);
 	}
 	else
 	{
 		if( ( h = gethostbyname( s ) ) == 0 )
 			return qfalse;
-		*(int *)&((struct sockaddr_in *)sadr)->sin_addr = *(int *)h->h_addr_list[0];
+		sadr->sin_addr.s_addr = *(uint32_t *)h->h_addr_list[0];
 	}
 
 	return qtrue;
@@ -225,7 +224,7 @@ Sys_StringToAdr
 =============
 */
 qboolean Sys_StringToAdr( const char *s, netadr_t *a ) {
-	struct sockaddr sadr;
+	struct sockaddr_in sadr;
 
 	if ( !Sys_StringToSockaddr( s, &sadr ) ) {
 		return qfalse;
@@ -251,7 +250,7 @@ int	recvfromCount;
 qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 	int ret, err;
 	socklen_t fromlen;
-	struct sockaddr from;
+	struct sockaddr_in from;
 
 	if ( ip_socket == INVALID_SOCKET || !FD_ISSET(ip_socket, fdr) ) {
 		return qfalse;
@@ -273,7 +272,7 @@ qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 		return qfalse;
 	}
 
-	memset( ((struct sockaddr_in *)&from)->sin_zero, 0, 8 );
+	memset( from.sin_zero, 0, 8 );
 
 	if ( usingSocks && memcmp( &from, &socksRelayAddr, fromlen ) == 0 ) {
 		if ( ret < 10 || net_message->data[0] != 0 || net_message->data[1] != 0 || net_message->data[2] != 0 || net_message->data[3] != 1 ) {
@@ -284,7 +283,7 @@ qboolean NET_GetPacket( netadr_t *net_from, msg_t *net_message, fd_set *fdr ) {
 		net_from->ip[1] = net_message->data[5];
 		net_from->ip[2] = net_message->data[6];
 		net_from->ip[3] = net_message->data[7];
-		net_from->port = *(short *)&net_message->data[8];
+		memcpy( &net_from->port, &net_message->data[8], 2 );
 		net_message->readcount = 10;
 	}
 	else {
@@ -311,8 +310,8 @@ Sys_SendPacket
 ==================
 */
 void Sys_SendPacket( int length, const void *data, netadr_t to ) {
-	int				ret;
-	struct sockaddr	addr;
+	int					ret;
+	struct sockaddr_in	addr;
 
 	if ( to.type != NA_BROADCAST && to.type != NA_IP ) {
 		Com_Error( ERR_FATAL, "Sys_SendPacket: bad address type" );
@@ -330,13 +329,13 @@ void Sys_SendPacket( int length, const void *data, netadr_t to ) {
 		socksBuf[1] = 0;
 		socksBuf[2] = 0;	// fragment (not fragmented)
 		socksBuf[3] = 1;	// address type: IPV4
-		*(int *)&socksBuf[4] = ((struct sockaddr_in *)&addr)->sin_addr.s_addr;
-		*(short *)&socksBuf[8] = ((struct sockaddr_in *)&addr)->sin_port;
+		memcpy( &socksBuf[4], &addr.sin_addr, 4 );
+		memcpy( &socksBuf[8], &addr.sin_port, 2 );
 		memcpy( &socksBuf[10], data, length );
-		ret = sendto( ip_socket, socksBuf, length+10, 0, &socksRelayAddr, sizeof(socksRelayAddr) );
+		ret = sendto( ip_socket, socksBuf, length+10, 0, (sockaddr *)&socksRelayAddr, sizeof(socksRelayAddr) );
 	}
 	else {
-		ret = sendto( ip_socket, (const char *)data, length, 0, &addr, sizeof(addr) );
+		ret = sendto( ip_socket, (const char *)data, length, 0, (sockaddr *)&addr, sizeof(addr) );
 	}
 	if( ret == SOCKET_ERROR ) {
 		int err = socketError;
@@ -459,7 +458,7 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 		address.sin_addr.s_addr = INADDR_ANY;
 	}
 	else {
-		if ( !Sys_StringToSockaddr( net_interface, (struct sockaddr *)&address ) ) {
+		if ( !Sys_StringToSockaddr( net_interface, &address ) ) {
 			closesocket( newsocket );
 			return INVALID_SOCKET;
 		}
@@ -469,7 +468,7 @@ SOCKET NET_IPSocket( char *net_interface, int port, int *err ) {
 		address.sin_port = 0;
 	}
 	else {
-		address.sin_port = htons( (short)port );
+		address.sin_port = htons( port );
 	}
 
 	if( bind( newsocket, (const struct sockaddr *)&address, sizeof(address) ) == SOCKET_ERROR ) {
@@ -514,8 +513,8 @@ void NET_OpenSocks( int port ) {
 	}
 	memset( &address, 0, sizeof( address ) );
 	address.sin_family = AF_INET;
-	address.sin_addr.s_addr = *(int *)h->h_addr_list[0];
-	address.sin_port = htons( (short)net_socksPort->integer );
+	address.sin_addr.s_addr = *(uint32_t *)h->h_addr_list[0];
+	address.sin_port = htons( net_socksPort->integer );
 
 	if ( connect( socks_socket, (struct sockaddr *)&address, sizeof( address ) ) == SOCKET_ERROR ) {
 		Com_Printf( "NET_OpenSocks: connect: %s\n", NET_ErrorString() );
@@ -615,8 +614,10 @@ void NET_OpenSocks( int port ) {
 	buf[1] = 3;		// command: UDP associate
 	buf[2] = 0;		// reserved
 	buf[3] = 1;		// address type: IPV4
-	*(int *)&buf[4] = INADDR_ANY;
-	*(short *)&buf[8] = htons( (short)port );		// port
+	const uint32_t innadr = INADDR_ANY; // 0.0.0.0
+	memcpy( &buf[4], &innadr, 4 );
+	uint16_t networkOrderPort = htons( port );		// port
+	memcpy( &buf[8], &networkOrderPort, 2 );
 	if ( send( socks_socket, (const char *)buf, 10, 0 ) == SOCKET_ERROR ) {
 		Com_Printf( "NET_OpenSocks: send: %s\n", NET_ErrorString() );
 		return;
@@ -641,11 +642,10 @@ void NET_OpenSocks( int port ) {
 		Com_Printf( "NET_OpenSocks: relay address is not IPV4: %i\n", buf[3] );
 		return;
 	}
-	memset( &socksRelayAddr, 0, sizeof( socksRelayAddr ) );
-	((struct sockaddr_in *)&socksRelayAddr)->sin_family = AF_INET;
-	((struct sockaddr_in *)&socksRelayAddr)->sin_addr.s_addr = *(int *)&buf[4];
-	((struct sockaddr_in *)&socksRelayAddr)->sin_port = *(short *)&buf[8];
-	memset( ((struct sockaddr_in *)&socksRelayAddr)->sin_zero, 0, 8 );
+	socksRelayAddr.sin_family = AF_INET;
+	memcpy( &socksRelayAddr.sin_addr, &buf[4], 4 );
+	memcpy( &socksRelayAddr.sin_port, &buf[8], 2 );
+	memset( &socksRelayAddr.sin_zero, 0, 8 );
 
 	usingSocks = qtrue;
 }
@@ -798,7 +798,7 @@ void NET_GetLocalAddress( void )
 	}
 
 	while( ( p = hostInfo->h_addr_list[numIP] ) != NULL && numIP < MAX_IPS ) {
-		ip = ntohl( *(int *)p );
+		ip = ntohl( *(uint32_t *)p );
 		localIP[ numIP ][0] = p[0];
 		localIP[ numIP ][1] = p[1];
 		localIP[ numIP ][2] = p[2];
