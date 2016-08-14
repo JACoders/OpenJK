@@ -6198,7 +6198,7 @@ static qboolean PM_DoChargedWeapons( qboolean vehicleRocketLock, bgEntity_t *veh
 			if ( (pm->cmd.buttons & BUTTON_ALT_ATTACK)
 				&& pm->ps->ammo[weaponData[pm->ps->weapon].ammoIndex] >= weaponData[pm->ps->weapon].altEnergyPerShot )
 			{
-				PM_RocketLock(2048,qfalse);
+				PM_RocketLock(4096,qfalse); // zyk: default 2048. Changed to 4096
 				charging = qtrue;
 				altFire = qtrue;
 			}
