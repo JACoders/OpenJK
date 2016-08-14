@@ -10548,7 +10548,7 @@ void G_RunFrame( int levelTime ) {
 				{ // zyk: Guardian of Earth
 					if (ent->client->pers.guardian_timer < level.time)
 					{ // zyk: uses earthquake ability
-						earthquake(ent,2000,((ent->client->ps.stats[STAT_MAX_HEALTH] - ent->health)/20),3000);
+						earthquake(ent,2000,350,3000);
 						ent->client->pers.guardian_timer = level.time + 3000 + ent->health;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Earthquake!\"");
 					}
