@@ -1,6 +1,6 @@
 #pragma once
 
-#include "q_math_common.h"
+#include "q_math.h"
 
 #if defined(__cplusplus)
 extern "C" {

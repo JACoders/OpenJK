@@ -21,7 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "q_math_common.h"
+#include "q_math.h"
 #include <assert.h>
 #include <float.h>
 #include <math.h>
