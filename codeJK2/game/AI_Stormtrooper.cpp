@@ -1596,7 +1596,9 @@ void ST_TransferMoveGoal( gentity_t *self, gentity_t *other )
 	{//I must be going for a goal, give that to him instead
 		if ( self->NPC->goalEntity == self->NPC->tempGoal )
 		{
-			NPC_SetMoveGoal( other, self->NPC->tempGoal->currentOrigin, self->NPC->goalRadius, ((self->NPC->tempGoal->svFlags&SVF_NAVGOAL)?true:false) );
+			NPC_SetMoveGoal(
+				other, self->NPC->tempGoal->currentOrigin, self->NPC->goalRadius,
+				((self->NPC->tempGoal->svFlags & SVF_NAVGOAL) ? qtrue : qfalse));
 		}
 		else
 		{

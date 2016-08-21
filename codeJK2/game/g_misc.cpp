@@ -175,7 +175,7 @@ void misc_dlight_use ( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	ent->misc_dlight_active = !ent->misc_dlight_active;	//toggle
+	ent->misc_dlight_active = (qboolean)!ent->misc_dlight_active;	//toggle
 	misc_lightstyle_set (ent);
 }
 

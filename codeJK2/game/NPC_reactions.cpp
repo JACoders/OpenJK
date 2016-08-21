@@ -900,7 +900,7 @@ void NPC_Respond( gentity_t *self, int userNum )
 	if ( event != -1 )
 	{
 		//hack here because we reuse some "combat" and "extra" sounds
-		qboolean addFlag = (self->NPC->scriptFlags&SCF_NO_COMBAT_TALK);
+		qboolean addFlag = (qboolean)(self->NPC->scriptFlags & SCF_NO_COMBAT_TALK);
 		self->NPC->scriptFlags &= ~SCF_NO_COMBAT_TALK;
 
 		G_AddVoiceEvent( self, event, 3000 );

@@ -441,20 +441,20 @@ void CG_NewClientinfo( int clientNum )
 	// legsModel
 	v = Info_ValueForKey( configstring, "legsModel" );
 
-	Q_strncpyz(			g_entities[clientNum].client->renderInfo.legsModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.legsModelName), qtrue);
+	Q_strncpyz(g_entities[clientNum].client->renderInfo.legsModelName, v,
+				sizeof(	g_entities[clientNum].client->renderInfo.legsModelName));
 
 	// torsoModel
 	v = Info_ValueForKey( configstring, "torsoModel" );
 
-	Q_strncpyz(			g_entities[clientNum].client->renderInfo.torsoModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.torsoModelName), qtrue);
+	Q_strncpyz(g_entities[clientNum].client->renderInfo.torsoModelName, v,
+				sizeof(	g_entities[clientNum].client->renderInfo.torsoModelName));
 
 	// headModel
 	v = Info_ValueForKey( configstring, "headModel" );
 
-	Q_strncpyz(			g_entities[clientNum].client->renderInfo.headModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.headModelName), qtrue);
+	Q_strncpyz(g_entities[clientNum].client->renderInfo.headModelName, v,
+				sizeof(	g_entities[clientNum].client->renderInfo.headModelName));
 
 	// sounds
 	cvar_t	*sex = gi.cvar( "sex", "male", 0 );
@@ -1148,7 +1148,7 @@ void CG_PlayerAnimSounds( int animFileIndex, qboolean torso, int oldFrame, int f
 		{//still in same anim, check for looping anim
 			inSameAnim = qtrue;
 			animation_t *animation = &level.knownAnimFileSets[animFileIndex].animations[anim];
-			animBackward = (animation->frameLerp<0);
+			animBackward = (qboolean)(animation->frameLerp < 0);
 			if ( animation->loopFrames != -1 )
 			{//a looping anim!
 				loopAnim = qtrue;
@@ -1795,7 +1795,7 @@ void CG_ATSTLegsYaw( centity_t *cent, vec3_t trailingLegsAngles )
 
 	float legAngleDiff = AngleNormalize180(ATSTLegsYaw) - AngleNormalize180(cent->pe.legs.yawAngle);
 	int legsAnim = cent->currentState.legsAnim;
-	qboolean moving = (!VectorCompare(cent->gent->client->ps.velocity, vec3_origin));
+	qboolean moving = (qboolean)(!VectorCompare(cent->gent->client->ps.velocity, vec3_origin));
 	if ( moving || legsAnim == BOTH_TURN_LEFT1 || legsAnim == BOTH_TURN_RIGHT1 || fabs(legAngleDiff) > 45 )
 	{//moving or turning or beyond the turn allowance
 		if ( legsAnim == BOTH_STAND1 && !moving )
@@ -2937,9 +2937,9 @@ static qboolean CG_PlayerShadow( centity_t *const cent, float *const shadowPlane
 				cgs.model_draw, cent->currentState.modelScale);
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, sideOrigin );
 		sideOrigin[2] += 30;	//fudge up a bit for coplaner
-		bShadowed = _PlayerShadow(sideOrigin, 0, shadowPlane, 28) || bShadowed;
+		bShadowed = (qboolean)(_PlayerShadow(sideOrigin, 0, shadowPlane, 28) || bShadowed);
 
-		bShadowed =  _PlayerShadow(cent->lerpOrigin, cent->pe.legs.yawAngle, shadowPlane, 64) || bShadowed;
+		bShadowed = (qboolean)(_PlayerShadow(cent->lerpOrigin, cent->pe.legs.yawAngle, shadowPlane, 64) || bShadowed);
 		return bShadowed;
 	}
 	else

@@ -172,11 +172,11 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 			{
 				diff[2] = 0;
 			}
-			return ( VectorLengthSquared( diff ) <= (radius*radius) );
+			return (qboolean)( VectorLengthSquared( diff ) <= (radius*radius) );
 		}
 		else
 		{//must hit exactly
-			return ( DistanceSquared(dest, point) <= (radius*radius) );
+			return (qboolean)( DistanceSquared(dest, point) <= (radius*radius) );
 		}
 		//There is probably a better way to do this, either by preserving the original
 		//		mins and maxs of the navgoal and doing this check ONLY if the radius
@@ -1680,23 +1680,23 @@ void NAV_StoreWaypoint( gentity_t *ent )
 	}
 	if ( ent->targetname )
 	{
-		Q_strncpyz( tempWaypointList[numStoredWaypoints].targetname, ent->targetname, MAX_QPATH, qtrue );
+		Q_strncpyz( tempWaypointList[numStoredWaypoints].targetname, ent->targetname, MAX_QPATH );
 	}
 	if ( ent->target )
 	{
-		Q_strncpyz( tempWaypointList[numStoredWaypoints].target, ent->target, MAX_QPATH, qtrue );
+		Q_strncpyz( tempWaypointList[numStoredWaypoints].target, ent->target, MAX_QPATH );
 	}
 	if ( ent->target2 )
 	{
-		Q_strncpyz( tempWaypointList[numStoredWaypoints].target2, ent->target2, MAX_QPATH, qtrue );
+		Q_strncpyz( tempWaypointList[numStoredWaypoints].target2, ent->target2, MAX_QPATH );
 	}
 	if ( ent->target3 )
 	{
-		Q_strncpyz( tempWaypointList[numStoredWaypoints].target3, ent->target3, MAX_QPATH, qtrue );
+		Q_strncpyz( tempWaypointList[numStoredWaypoints].target3, ent->target3, MAX_QPATH );
 	}
 	if ( ent->target4 )
 	{
-		Q_strncpyz( tempWaypointList[numStoredWaypoints].target4, ent->target4, MAX_QPATH, qtrue );
+		Q_strncpyz( tempWaypointList[numStoredWaypoints].target4, ent->target4, MAX_QPATH );
 	}
 	tempWaypointList[numStoredWaypoints].nodeID = ent->health;
 

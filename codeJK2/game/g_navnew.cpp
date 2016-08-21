@@ -281,7 +281,7 @@ qboolean NAVNEW_SidestepBlocker( gentity_t *self, gentity_t *blocker, vec3_t blo
 		AngleVectors( avoidAngles, movedir, NULL, NULL );
 		VectorMA( self->currentOrigin, blocked_dist, movedir, block_pos );
 		gi.trace( &tr, self->currentOrigin, mins, self->maxs, block_pos, self->s.number, self->clipmask|CONTENTS_BOTCLIP, G2_NOCOLLIDE, 0 );
-		return (tr.fraction==1.0&&!tr.allsolid&&!tr.startsolid);
+		return (qboolean)(tr.fraction == 1.0f && !tr.allsolid && !tr.startsolid);
 	}
 
 	//test right

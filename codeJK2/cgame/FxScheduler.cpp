@@ -1066,7 +1066,7 @@ void CFxScheduler::AddScheduledEffects( void )
 	vec3_t						origin;
 	vec3_t						axis[3];
 	int							oldEntNum = -1, oldBoltIndex = -1, oldModelNum = -1;
-	qboolean					doesBoltExist  = false;
+	qboolean					doesBoltExist  = qfalse;
 
 	itr = mFxSchedule.begin();
 

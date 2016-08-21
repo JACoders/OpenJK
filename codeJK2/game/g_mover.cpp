@@ -333,7 +333,7 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 	VectorAdd( pusher->currentAngles, amove, pusher->currentAngles );
 	gi.linkentity( pusher );
 
-	notMoving = (VectorCompare( vec3_origin, move )&&VectorCompare( vec3_origin, amove ));
+	notMoving = (qboolean)(VectorCompare( vec3_origin, move ) && VectorCompare( vec3_origin, amove ));
 
 	// see if any solid entities are inside the final position
 	for ( e = 0 ; e < listedEntities ; e++ ) {

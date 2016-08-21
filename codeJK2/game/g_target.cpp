@@ -928,7 +928,7 @@ void target_level_change_use(gentity_t *self, gentity_t *other, gentity_t *activ
 	}
 	else
 	{
-		G_ChangeMap( self->message, self->target, (self->spawnflags&1) );
+		G_ChangeMap( self->message, self->target, (qboolean)(self->spawnflags & 1) );
 	}
 	if (self->spawnflags&2)	//HIDEINFO
 	{

@@ -563,7 +563,8 @@ void NPC_BSFollowLeader (void)
 
 	if ( !NPC->enemy  )
 	{//no enemy, find one
-		NPC_CheckEnemy( NPCInfo->confusionTime<level.time, qfalse );//don't find new enemy if this is tempbehav
+		//don't find new enemy if this is tempbehav
+		NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse );
 		if ( NPC->enemy )
 		{//just found one
 			NPCInfo->enemyCheckDebounceTime = level.time + Q_irand( 3000, 10000 );
@@ -621,7 +622,9 @@ void NPC_BSFollowLeader (void)
 		}
 		else if ( NPC->client->ps.weapon && NPCInfo->enemyCheckDebounceTime < level.time )
 		{
-			NPC_CheckEnemy( (NPCInfo->confusionTime<level.time||NPCInfo->tempBehavior!=BS_FOLLOW_LEADER), qfalse );//don't find new enemy if this is tempbehav
+			NPC_CheckEnemy(
+				(qboolean)((NPCInfo->confusionTime < level.time) || (NPCInfo->tempBehavior != BS_FOLLOW_LEADER)),
+				qfalse);//don't find new enemy if this is tempbehav
 		}
 	}
 

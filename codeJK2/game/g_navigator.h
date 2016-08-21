@@ -210,7 +210,7 @@ public:
 	qboolean NodesAreNeighbors( int startID, int endID );
 	void ClearFailedEdge( failedEdge_t	*failedEdge );
 	void ClearAllFailedEdges( void );
-	qboolean EdgeFailed( int startID, int endID );
+	int EdgeFailed( int startID, int endID );
 	void AddFailedEdge( int entID, int startID, int endID );
 	qboolean CheckFailedEdge( failedEdge_t *failedEdge );
 	void CheckAllFailedEdges( void );

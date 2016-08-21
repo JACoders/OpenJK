@@ -42,6 +42,7 @@ typedef	int	fixed4_t, fixed8_t, fixed16_t;
 #define	MAX_QINT			0x7fffffff
 #define	MIN_QINT			(-MAX_QINT-1)
 
+
 ///////////////////////////////////////////////////////////////////////////
 //
 //      DIRECTION ENCODING
@@ -51,6 +52,7 @@ int DirToByte( vec3_t dir );
 void ByteToDir( int b, vec3_t dir );
 void NormalToLatLong( const vec3_t normal, byte bytes[2] );
 
+
 ///////////////////////////////////////////////////////////////////////////
 //
 //      RANDOM NUMBER GENERATION
@@ -58,15 +60,15 @@ void NormalToLatLong( const vec3_t normal, byte bytes[2] );
 ///////////////////////////////////////////////////////////////////////////
 #define QRAND_MAX 32768
 
-int Q_rand( int *seed );
+int   Q_rand( int *seed );
 float Q_random( int *seed );
 float Q_crandom( int *seed );
 
-void Rand_Init( int seed );
-float flrand(float min, float max);
+void  Rand_Init( int seed );
 float Q_flrand( float min, float max );
-int irand( int min, int max );
-int Q_irand( int value1, int value2 );
+int   Q_irand( int value1, int value2 );
+float flrand( float min, float max );
+int   irand( int min, int max );
 
 float erandom( float mean );
 

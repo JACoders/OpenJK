@@ -1236,7 +1236,7 @@ void JK2SP_Init(void)
 //	Cvar_Set("sp_language", va("%d", SP_LANGUAGE_JAPANESE));	// stetest, do NOT leave in
 
 	JK2SP_UpdateLanguage();
-	sp_language->modified = false;
+	sp_language->modified = qfalse;
 
 	JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
 }
@@ -1248,7 +1248,7 @@ void JK2SP_CheckForLanguageUpdates(void)
 	if (sp_language && sp_language->modified)
 	{
 		JK2SP_UpdateLanguage();	// force language package to reload
-		sp_language->modified = false;
+		sp_language->modified = qfalse;
 	}
 }
 

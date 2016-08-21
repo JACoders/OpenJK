@@ -483,39 +483,39 @@ static void SetTextColor ( vec4_t textcolor,const char *color)
 
 	if (Q_stricmp(color,"BLACK") == 0)
 	{
-		Vector4Copy( colorTable[CT_BLACK], textcolor );
+		VectorCopy4( colorTable[CT_BLACK], textcolor );
 	}
 	else if (Q_stricmp(color,"RED") == 0)
 	{
-		Vector4Copy( colorTable[CT_RED], textcolor );
+		VectorCopy4( colorTable[CT_RED], textcolor );
 	}
 	else if (Q_stricmp(color,"GREEN") == 0)
 	{
-		Vector4Copy( colorTable[CT_GREEN], textcolor );
+		VectorCopy4( colorTable[CT_GREEN], textcolor );
 	}
 	else if (Q_stricmp(color,"YELLOW") == 0)
 	{
-		Vector4Copy( colorTable[CT_YELLOW], textcolor );
+		VectorCopy4( colorTable[CT_YELLOW], textcolor );
 	}
 	else if (Q_stricmp(color,"BLUE") == 0)
 	{
-		Vector4Copy( colorTable[CT_BLUE], textcolor );
+		VectorCopy4( colorTable[CT_BLUE], textcolor );
 	}
 	else if (Q_stricmp(color,"CYAN") == 0)
 	{
-		Vector4Copy( colorTable[CT_CYAN], textcolor );
+		VectorCopy4( colorTable[CT_CYAN], textcolor );
 	}
 	else if (Q_stricmp(color,"MAGENTA") == 0)
 	{
-		Vector4Copy( colorTable[CT_MAGENTA], textcolor );
+		VectorCopy4( colorTable[CT_MAGENTA], textcolor );
 	}
 	else if (Q_stricmp(color,"WHITE") == 0)
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor );
+		VectorCopy4( colorTable[CT_WHITE], textcolor );
 	}
 	else 
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor );
+		VectorCopy4( colorTable[CT_WHITE], textcolor );
 	}
 
 	return;
@@ -1010,7 +1010,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	soundChannel_t	voice_chan = CHAN_VOICE; // set a default so the compiler doesn't bitch
 	qboolean		type_voice = qfalse;
 
-	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
+	Q_strncpyz( finalName, name, MAX_QPATH );
 	Q_strupr(finalName);
 	//G_AddSexToMunroString( finalName, qtrue );
 
@@ -5330,7 +5330,7 @@ static void Q3_SetDismemberable( int entID, qboolean dismemberable)
 		return;
 	}
 
-	ent->client->dismembered = !dismemberable;
+	ent->client->dismembered = (qboolean)(!dismemberable);
 }
 
 
@@ -6767,7 +6767,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 
 	case SET_ICARUS_FREEZE:
 	case SET_ICARUS_UNFREEZE:
-		Q3_SetICARUSFreeze( entID, (char *) data, (toSet==SET_ICARUS_FREEZE) );
+		Q3_SetICARUSFreeze( entID, (char *) data, (qboolean)(toSet == SET_ICARUS_FREEZE) );
 		break;
 
 	case SET_WEAPON:

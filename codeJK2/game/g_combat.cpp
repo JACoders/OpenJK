@@ -410,7 +410,7 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 )
 //		return qtrue;
 //	}
 
-	return ( ent1->client->playerTeam == ent2->client->playerTeam );
+	return (qboolean)( ent1->client->playerTeam == ent2->client->playerTeam );
 }
 
 
@@ -1706,7 +1706,6 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 
 	case HL_FOOT_LT:
 		if ( ent->locationDamage[HL_FOOT_LT] >= Q3_INFINITE )
@@ -1721,7 +1720,6 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 
 	case HL_HAND_LT:
 		if ( ent->locationDamage[HL_HAND_LT] >= Q3_INFINITE )
@@ -1741,7 +1739,6 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 
 	case HL_HAND_RT:
 		if ( ent->locationDamage[HL_HAND_RT] >= Q3_INFINITE )
@@ -1761,7 +1758,6 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 
 	case HL_HEAD:
 		if ( ent->locationDamage[HL_HEAD] >= Q3_INFINITE )
@@ -1776,10 +1772,8 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 	default:
-		return (ent->locationDamage[hitLoc]>=Q3_INFINITE);
-		break;
+		return (qboolean)(ent->locationDamage[hitLoc] >= Q3_INFINITE);
 	}
 }
 
@@ -3392,7 +3386,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		NPC_FreeCombatPoint( self->NPC->combatPoint );
 		if ( self->NPC->group )
 		{
-			lastInGroup = (self->NPC->group->numGroup < 2);
+			lastInGroup = (qboolean)(self->NPC->group->numGroup < 2);
 			AI_GroupMemberKilled( self );
 			AI_DeleteSelfFromGroup( self );
 		}
