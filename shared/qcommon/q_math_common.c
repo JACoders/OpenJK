@@ -275,7 +275,7 @@ float erandom( float mean )
 	float	r;
 
 	do {
-		r = random();
+		r = Q_flrand(0.0f, 1.0f);
 	} while ( r == 0.0 );
 
 	return -mean * logf( r );

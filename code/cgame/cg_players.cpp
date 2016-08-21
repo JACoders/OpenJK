@@ -3878,8 +3878,8 @@ static void _PlayerSplash( const vec3_t origin, const vec3_t velocity, const flo
 
 	VectorCopy( trace.endpos, end );
 
-	end[0] += crandom() * 3.0f;
-	end[1] += crandom() * 3.0f;
+	end[0] += Q_flrand(-1.0f, 1.0f) * 3.0f;
+	end[1] += Q_flrand(-1.0f, 1.0f) * 3.0f;
 	end[2] += 1.0f; //fudge up
 
 	int t = VectorLengthSquared( velocity );
@@ -3892,10 +3892,10 @@ static void _PlayerSplash( const vec3_t origin, const vec3_t velocity, const flo
 	float alpha = ( t / 8192.0f ) * 0.6f + 0.2f;
 
 	FX_AddOrientedParticle( -1, end, trace.plane.normal, NULL, NULL,
-								6.0f, radius + random() * 48.0f, 0,
+								6.0f, radius + Q_flrand(0.0f, 1.0f) * 48.0f, 0,
 								alpha, 0.0f, 0.0f,
 								WHITE, WHITE, 0.0f,
-								random() * 360, crandom() * 6.0f, NULL, NULL, 0.0f, 0 ,0, 1200,
+								Q_flrand(0.0f, 1.0f) * 360, Q_flrand(-1.0f, 1.0f) * 6.0f, NULL, NULL, 0.0f, 0 ,0, 1200,
 								cgs.media.wakeMarkShader, FX_ALPHA_LINEAR | FX_SIZE_LINEAR );
 }
 
@@ -3949,7 +3949,7 @@ static void CG_PlayerSplash( centity_t *cent )
 				_PlayerSplash( cent->lerpOrigin, cl->ps.velocity, 36, cl->renderInfo.eyePoint[2] - cent->lerpOrigin[2] + 5 );
 			}
 
-			cent->gent->disconnectDebounceTime = cg.time + 125 + random() * 50.0f;
+			cent->gent->disconnectDebounceTime = cg.time + 125 + Q_flrand(0.0f, 1.0f) * 50.0f;
 		}
 	}
 }
@@ -4005,7 +4005,7 @@ static void CG_LightningBolt( centity_t *cent, vec3_t origin )
 	if ( cent->gent->fx_time < cg.time && !(trace.surfaceFlags & SURF_NOIMPACT ))
 	{
 		spark = qtrue;
-		cent->gent->fx_time = cg.time + random() * 100 + 100;
+		cent->gent->fx_time = cg.time + Q_flrand(0.0f, 1.0f) * 100 + 100;
 	}
 
 	// Don't draw certain kinds of impacts when it hits a player and such..or when we hit a surface with a NOIMPACT flag
@@ -4355,7 +4355,7 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	if ( found )
 	{
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, fxOrg );
-		if ( random() > 0.5f )
+		if ( Q_flrand(0.0f, 1.0f) > 0.5f )
 		{
 			gi.G2API_GiveMeVectorFromMatrix( boltMatrix, NEGATIVE_X, dir );
 		}
@@ -4365,15 +4365,15 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 		}
 
 		// Add some fudge, makes us not normalized, but that isn't really important
-		dir[0] += crandom() * 0.4f;
-		dir[1] += crandom() * 0.4f;
-		dir[2] += crandom() * 0.4f;
+		dir[0] += Q_flrand(-1.0f, 1.0f) * 0.4f;
+		dir[1] += Q_flrand(-1.0f, 1.0f) * 0.4f;
+		dir[2] += Q_flrand(-1.0f, 1.0f) * 0.4f;
 	}
 	else
 	{
 		// Just use the lerp Origin and a random direction
 		VectorCopy( cent->lerpOrigin, fxOrg );
-		VectorSet( dir, crandom(), crandom(), crandom() ); // Not normalized, but who cares.
+		VectorSet( dir, Q_flrand(-1.0f, 1.0f), Q_flrand(-1.0f, 1.0f), Q_flrand(-1.0f, 1.0f) ); // Not normalized, but who cares.
 		if ( cent->gent && cent->gent->client )
 		{
 			switch ( cent->gent->client->NPC_class )
@@ -4393,19 +4393,19 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 		}
 	}
 
-	VectorMA( fxOrg, random() * 40 + 40, dir, fxOrg2 );
+	VectorMA( fxOrg, Q_flrand(0.0f, 1.0f) * 40 + 40, dir, fxOrg2 );
 
 	trace_t	tr;
 
 	CG_Trace( &tr, fxOrg, NULL, NULL, fxOrg2, -1, CONTENTS_SOLID );
 
-	if ( tr.fraction < 1.0f || random() > 0.94f || alwaysDo )
+	if ( tr.fraction < 1.0f || Q_flrand(0.0f, 1.0f) > 0.94f || alwaysDo )
 	{
 		FX_AddElectricity( -1, fxOrg, tr.endpos,
 			1.5f, 4.0f, 0.0f,
 			1.0f, 0.5f, 0.0f,
 			rgb, rgb, 0.0f,
-			5.5f, random() * 50 + 100, shader, FX_ALPHA_LINEAR | FX_SIZE_LINEAR | FX_BRANCH | FX_GROW | FX_TAPER, -1, -1 );
+			5.5f, Q_flrand(0.0f, 1.0f) * 50 + 100, shader, FX_ALPHA_LINEAR | FX_SIZE_LINEAR | FX_BRANCH | FX_GROW | FX_TAPER, -1, -1 );
 	}
 }
 
@@ -4666,7 +4666,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 		ent->customShader = 0;
 		cgi_R_AddRefEntityToScene( ent );
 
-		if ( cg.time - ent->endTime < 1000 && (cg_timescale.value * cg_timescale.value * random()) > 0.05f )
+		if ( cg.time - ent->endTime < 1000 && (cg_timescale.value * cg_timescale.value * Q_flrand(0.0f, 1.0f)) > 0.05f )
 		{
 			vec3_t fxOrg;
 			mdxaBone_t	boltMatrix;
@@ -4677,10 +4677,10 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 					gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, fxOrg );
 
 			VectorMA( fxOrg, -18, cg.refdef.viewaxis[0], fxOrg );
-			fxOrg[2] += crandom() * 20;
+			fxOrg[2] += Q_flrand(-1.0f, 1.0f) * 20;
 			theFxScheduler.PlayEffect( "disruptor/death_smoke", fxOrg );
 
-			if ( random() > 0.5f )
+			if ( Q_flrand(0.0f, 1.0f) > 0.5f )
 			{
 				theFxScheduler.PlayEffect( "disruptor/death_smoke", fxOrg );
 			}
@@ -4757,7 +4757,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 	{
 		int	dif = gent->client->ps.powerups[PW_SHOCKED] - cg.time;
 
-		if ( dif > 0 && random() > 0.4f )
+		if ( dif > 0 && Q_flrand(0.0f, 1.0f) > 0.4f )
 		{
 			// fade out over the last 500 ms
 			int brightness = 255;
@@ -4782,7 +4782,7 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 
 			cgi_R_AddRefEntityToScene( ent );
 
-			if ( random() > 0.9f )
+			if ( Q_flrand(0.0f, 1.0f) > 0.9f )
 				cgi_S_StartSound ( ent->origin, gent->s.number, CHAN_AUTO, cgi_S_RegisterSound( "sound/effects/energy_crackle.wav" ) );
 		}
 	}
@@ -5065,7 +5065,7 @@ static void CG_G2SetHeadBlink( centity_t *cent, qboolean bStart )
 	if (bStart)
 	{
 		desiredAngles[YAW] = -38;
-		if ( !in_camera && random() > 0.95f )
+		if ( !in_camera && Q_flrand(0.0f, 1.0f) > 0.95f )
 		{
 			bWink = qtrue;
 			blendTime /=3;
@@ -5739,7 +5739,7 @@ static void CG_DoSaberLight( saberInfo_t *saber )
 			}
 		}
 
-		cgi_R_AddLightToScene( mid, diameter + (random()*8.0f), rgb[0], rgb[1], rgb[2] );
+		cgi_R_AddLightToScene( mid, diameter + (Q_flrand(0.0f, 1.0f)*8.0f), rgb[0], rgb[1], rgb[2] );
 	}
 }
 
@@ -5792,7 +5792,7 @@ static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax
 	{//FIXME: RGB combine all the colors of the sabers you're using into one averaged color!
 		vec3_t rgb={1,1,1};
 		CG_RGBForSaberColor( color, rgb );
-		cgi_R_AddLightToScene( mid, (length*1.4f) + (random()*3.0f), rgb[0], rgb[1], rgb[2] );
+		cgi_R_AddLightToScene( mid, (length*1.4f) + (Q_flrand(0.0f, 1.0f)*3.0f), rgb[0], rgb[1], rgb[2] );
 	}
 
 	memset( &saber, 0, sizeof( refEntity_t ));
@@ -5815,8 +5815,8 @@ static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax
 	float radiusRange = radius * 0.075f;
 	float radiusStart = radius-radiusRange;
 
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-	//saber.radius = (2.8f + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+	//saber.radius = (2.8f + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 
 	VectorCopy( origin, saber.origin );
@@ -5834,8 +5834,8 @@ static void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax
 	saber.customShader = blade;
 	saber.reType = RT_LINE;
 	radiusStart = radius/3.0f;
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-//	saber.radius = (1.0 + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+//	saber.radius = (1.0 + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 	cgi_R_AddRefEntityToScene( &saber );
 }
@@ -5901,8 +5901,8 @@ static void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 			VectorScale( mid, 0.5f, mid );
 			VectorSubtract( v->xyz, mid, delta );
 
-			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * (0.05f + random() * 0.03f);
-			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * (0.15f + random() * 0.05f);
+			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * (0.05f + Q_flrand(0.0f, 1.0f) * 0.03f);
+			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * (0.15f + Q_flrand(0.0f, 1.0f) * 0.05f);
 		}
 
 		// save it persistantly, do burn first
@@ -5921,9 +5921,9 @@ static void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 		mark->alphaFade = qfalse;
 		mark->markShader = cgi_R_RegisterShader("gfx/effects/saberDamageGlow" );
 		mark->poly.numVerts = mf->numPoints;
-		mark->color[0] = 215 + random() * 40.0f;
-		mark->color[1] = 96 + random() * 32.0f;
-		mark->color[2] = mark->color[3] = random()*15.0f;
+		mark->color[0] = 215 + Q_flrand(0.0f, 1.0f) * 40.0f;
+		mark->color[1] = 96 + Q_flrand(0.0f, 1.0f) * 32.0f;
+		mark->color[2] = mark->color[3] = Q_flrand(0.0f, 1.0f)*15.0f;
 		memcpy( mark->verts, verts, mf->numPoints * sizeof( verts[0] ) );
 	}
 }
@@ -8399,9 +8399,9 @@ Ghoul2 Insert End
 				CGCam_Shake( val * val * 0.3f, 100 );
 			}
 
-			val += random() * 0.5f;
+			val += Q_flrand(0.0f, 1.0f) * 0.5f;
 
-			FX_AddSprite( cent->gent->client->renderInfo.muzzlePoint, NULL, NULL, 3.0f * val * scale, 0.0f, 0.7f, 0.7f, WHITE, WHITE, random() * 360, 0.0f, 1.0f, shader, FX_USE_ALPHA );
+			FX_AddSprite( cent->gent->client->renderInfo.muzzlePoint, NULL, NULL, 3.0f * val * scale, 0.0f, 0.7f, 0.7f, WHITE, WHITE, Q_flrand(0.0f, 1.0f) * 360, 0.0f, 1.0f, shader, FX_USE_ALPHA );
 		}
 	}
 }

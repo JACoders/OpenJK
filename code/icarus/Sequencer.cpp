@@ -1257,7 +1257,7 @@ int CSequencer::EvaluateConditional( CBlock *block , CIcarus* icarus)
 	case CIcarus::ID_RANDOM:
 		{
 			float	min, max;
-			//FIXME: This will not account for nested random() statements
+			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
 			min	= *(float *) block->GetMemberData( memberNum++ );
 			max	= *(float *) block->GetMemberData( memberNum++ );
@@ -1428,7 +1428,7 @@ int CSequencer::EvaluateConditional( CBlock *block , CIcarus* icarus)
 
 		{
 			float	min, max;
-			//FIXME: This will not account for nested random() statements
+			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
 			min	= *(float *) block->GetMemberData( memberNum++ );
 			max	= *(float *) block->GetMemberData( memberNum++ );

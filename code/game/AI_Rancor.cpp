@@ -933,7 +933,7 @@ void Rancor_Attack( float distance, qboolean doCharge, qboolean aimAtBlockedEnti
 			return;
 		}
 
-		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + random() * 200 );
+		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + Q_flrand(0.0f, 1.0f) * 200 );
 	}
 
 	// Need to do delayed damage since the attack animations encapsulate multiple mini-attacks

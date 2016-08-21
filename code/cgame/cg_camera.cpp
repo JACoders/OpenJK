@@ -1394,7 +1394,7 @@ void CGCam_UpdateShake( vec3_t origin, vec3_t angles )
 
 	for ( int i = 0; i < 3; i++ )
 	{
-		moveDir[i] = ( crandom() * intensity );
+		moveDir[i] = ( Q_flrand(-1.0f, 1.0f) * intensity );
 	}
 
 	//FIXME: Lerp
@@ -1403,7 +1403,7 @@ void CGCam_UpdateShake( vec3_t origin, vec3_t angles )
 	VectorAdd( origin, moveDir, origin );
 
 	for ( int i = 0; i < 2; i++ ) // Don't do ROLL
-		moveDir[i] = ( crandom() * intensity );
+		moveDir[i] = ( Q_flrand(-1.0f, 1.0f) * intensity );
 
 	//FIXME: Lerp
 

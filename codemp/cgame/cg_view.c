@@ -1922,14 +1922,14 @@ void CG_SE_UpdateShake( vec3_t origin, vec3_t angles )
 
 	for ( i = 0; i < 3; i++ )
 	{
-		moveDir[i] = ( crandom() * intensity );
+		moveDir[i] = ( Q_flrand(-1.0f, 1.0f) * intensity );
 	}
 
 	//Move the camera
 	VectorAdd( origin, moveDir, origin );
 
 	for ( i=0; i < 2; i++ ) // Don't do ROLL
-		moveDir[i] = ( crandom() * intensity );
+		moveDir[i] = ( Q_flrand(-1.0f, 1.0f) * intensity );
 
 	//Move the angles
 	VectorAdd( angles, moveDir, angles );

@@ -1024,9 +1024,9 @@ void NPC_BSGM_Attack( void )
 		
 		VectorCopy( NPC->enemy->currentOrigin, target );
 
-		target[0] += Q_flrand( -5, 5 )+(crandom()*(6-NPCInfo->currentAim)*2);
-		target[1] += Q_flrand( -5, 5 )+(crandom()*(6-NPCInfo->currentAim)*2);
-		target[2] += Q_flrand( -5, 5 )+(crandom()*(6-NPCInfo->currentAim)*2);
+		target[0] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-NPCInfo->currentAim)*2);
+		target[1] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-NPCInfo->currentAim)*2);
+		target[2] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-NPCInfo->currentAim)*2);
 
 		//Find the desired angles
 		qboolean clearshot = WP_LobFire( NPC, muzzle, target, mins, maxs, MASK_SHOT|CONTENTS_LIGHTSABER, 

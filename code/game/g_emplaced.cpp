@@ -745,8 +745,8 @@ void emplaced_gun_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	vec3_t ugly;
 
 	ugly[YAW] = 4;
-	ugly[PITCH] = self->lastAngles[PITCH] * 0.8f + crandom() * 6;
-	ugly[ROLL] = crandom() * 7;
+	ugly[PITCH] = self->lastAngles[PITCH] * 0.8f + Q_flrand(-1.0f, 1.0f) * 6;
+	ugly[ROLL] = Q_flrand(-1.0f, 1.0f) * 7;
 	gi.G2API_SetBoneAnglesIndex( &self->ghoul2[self->playerModel], self->lowerLumbarBone, ugly, BONE_ANGLES_POSTMULT, POSITIVE_Y, POSITIVE_Z, POSITIVE_X, NULL, 0, 0 );
 
 	VectorCopy( self->currentOrigin,  org );

@@ -152,7 +152,7 @@ enum
 
 static void ST_Speech( gentity_t *self, int speechType, float failChance )
 {
-	if ( random() < failChance )
+	if ( Q_flrand(0.0f, 1.0f) < failChance )
 	{
 		return;
 	}

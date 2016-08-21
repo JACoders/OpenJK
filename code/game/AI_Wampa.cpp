@@ -311,7 +311,7 @@ void Wampa_Attack( float distance, qboolean doCharge )
 			TIMER_Set( NPC, "attack_dmg", 250 );
 		}
 
-		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + random() * 200 );
+		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + Q_flrand(0.0f, 1.0f) * 200 );
 		//allow us to re-evaluate our running speed/anim
 		TIMER_Set( NPC, "runfar", -1 );
 		TIMER_Set( NPC, "runclose", -1 );

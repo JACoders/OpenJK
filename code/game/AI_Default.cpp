@@ -116,8 +116,8 @@ qboolean NPC_StandTrackAndShoot (gentity_t *NPC, qboolean canDuck)
 	{
 		if ( NPC->health < 20 )
 		{
-		//	if( NPC->svFlags&SVF_HEALING || random() )
-			if( random() )
+		//	if( NPC->svFlags&SVF_HEALING || Q_flrand(0.0f, 1.0f) )
+			if( Q_flrand(0.0f, 1.0f) )
 			{
 				duck_ok = qtrue;
 			}
@@ -205,7 +205,7 @@ void NPC_BSStandGuard (void)
 	//FIXME: Use Snapshot info
 	if ( NPC->enemy == NULL )
 	{//Possible to pick one up by being shot
-		if( random() < 0.5 )
+		if( Q_flrand(0.0f, 1.0f) < 0.5 )
 		{
 			if(NPC->client->enemyTeam)
 			{

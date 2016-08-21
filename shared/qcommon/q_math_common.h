@@ -72,9 +72,6 @@ int   irand( int min, int max );
 
 float erandom( float mean );
 
-#define random()	((rand () & 0x7fff) / ((float)0x7fff))
-#define crandom()	(2.0 * (random() - 0.5))
-
 
 ///////////////////////////////////////////////////////////////////////////
 //

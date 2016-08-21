@@ -1615,7 +1615,7 @@ void misc_weapon_shooter_fire( gentity_t *self )
 		self->e_ThinkFunc = thinkF_misc_weapon_shooter_fire;
 		if (self->random)
 		{
-			self->nextthink = level.time + self->wait + (int)(random()*self->random);
+			self->nextthink = level.time + self->wait + (int)(Q_flrand(0.0f, 1.0f)*self->random);
 		}
 		else
 		{

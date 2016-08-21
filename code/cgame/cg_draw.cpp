@@ -2131,9 +2131,9 @@ static void CG_DrawZoomMask( void )
 		if ( power )
 		{
 			// Flickery color
-			color1[0] = 0.7f + crandom() * 0.1f;
-			color1[1] = 0.8f + crandom() * 0.1f;
-			color1[2] = 0.7f + crandom() * 0.1f;
+			color1[0] = 0.7f + Q_flrand(-1.0f, 1.0f) * 0.1f;
+			color1[1] = 0.8f + Q_flrand(-1.0f, 1.0f) * 0.1f;
+			color1[2] = 0.7f + Q_flrand(-1.0f, 1.0f) * 0.1f;
 			color1[3] = 1.0f;
 			cgi_R_SetColor( color1 );
 
@@ -2159,7 +2159,7 @@ static void CG_DrawZoomMask( void )
 			CG_DrawPic( 307, 40, 26, 30, cgs.media.binocularTri );
 		}
 
-		if ( random() > 0.98f && ( cg.time & 1024 ))
+		if ( Q_flrand(0.0f, 1.0f) > 0.98f && ( cg.time & 1024 ))
 		{
 			flip = (qboolean)!flip;
 		}
@@ -2298,9 +2298,9 @@ static void CG_DrawZoomMask( void )
 			float pos2 = 220 + cos( cg.time * 0.0004f + light * 0.05f ) * 40 + sin( cg.time * 0.0013f + 1 ) * 20 + sin( cg.time * 0.0021f ) * 5;
 
 			// Flickery color
-			color1[0] = 0.7f + crandom() * 0.2f;
-			color1[1] = 0.8f + crandom() * 0.2f;
-			color1[2] = 0.7f + crandom() * 0.2f;
+			color1[0] = 0.7f + Q_flrand(-1.0f, 1.0f) * 0.2f;
+			color1[1] = 0.8f + Q_flrand(-1.0f, 1.0f) * 0.2f;
+			color1[2] = 0.7f + Q_flrand(-1.0f, 1.0f) * 0.2f;
 			color1[3] = 1.0f;
 			cgi_R_SetColor( color1 );
 

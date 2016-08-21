@@ -6168,14 +6168,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 				//for (int i=0; i<numPuffs; i++)
 				{
- 					testDirection[0] = (random() * 0.5f) - 0.25f;
-					testDirection[1] = (random() * 0.5f) - 0.25f;
+ 					testDirection[0] = (Q_flrand(0.0f, 1.0f) * 0.5f) - 0.25f;
+					testDirection[1] = (Q_flrand(0.0f, 1.0f) * 0.5f) - 0.25f;
 					testDirection[2] = 1.0f;
 					VectorMA(targ->currentOrigin, 60.0f, testDirection, testStartPos);
 					VectorCopy(targ->currentOrigin, testEndPos);
-					testEndPos[0] += (random() * 8.0f) - 4.0f;
-					testEndPos[1] += (random() * 8.0f) - 4.0f;
-					testEndPos[2] += (random() * 8.0f);
+					testEndPos[0] += (Q_flrand(0.0f, 1.0f) * 8.0f) - 4.0f;
+					testEndPos[1] += (Q_flrand(0.0f, 1.0f) * 8.0f) - 4.0f;
+					testEndPos[2] += (Q_flrand(0.0f, 1.0f) * 8.0f);
 
 					gi.trace (&testTrace, testStartPos, NULL, NULL, testEndPos, ENTITYNUM_NONE, MASK_SHOT, G2_COLLIDE, 0);
 
@@ -6188,7 +6188,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					}
 //					CG_DrawEdge(testStartPos,	testEndPos,	EDGE_IMPACT_POSSIBLE);
 					float chanceOfFizz = gi.WE_GetChanceOfSaberFizz();
-					TIMER_Set(targ, "AcidPainDebounce", 200 + (10000.0f * random() * chanceOfFizz));
+					TIMER_Set(targ, "AcidPainDebounce", 200 + (10000.0f * Q_flrand(0.0f, 1.0f) * chanceOfFizz));
 					hitLoc = HL_CHEST;
 				}
 			}

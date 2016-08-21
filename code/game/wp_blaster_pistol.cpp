@@ -52,13 +52,13 @@ void WP_FireBryarPistol( gentity_t *ent, qboolean alt_fire )
 
 			if ( ent->client->NPC_class == CLASS_IMPWORKER )
 			{//*sigh*, hack to make impworkers less accurate without affecteing imperial officer accuracy
-				angs[PITCH] += ( crandom() * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-				angs[YAW]	+= ( crandom() * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+				angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+				angs[YAW]	+= ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
 			}
 			else
 			{
-				angs[PITCH] += ( crandom() * ((5-ent->NPC->currentAim)*0.25f) );
-				angs[YAW]	+= ( crandom() * ((5-ent->NPC->currentAim)*0.25f) );
+				angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * ((5-ent->NPC->currentAim)*0.25f) );
+				angs[YAW]	+= ( Q_flrand(-1.0f, 1.0f) * ((5-ent->NPC->currentAim)*0.25f) );
 			}
 
 			AngleVectors( angs, forwardVec, NULL, NULL );

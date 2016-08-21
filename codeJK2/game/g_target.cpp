@@ -81,7 +81,7 @@ void Use_Target_Delay( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	ent->nextthink = level.time + ( ent->wait + ent->random * crandom() ) * 1000;
+	ent->nextthink = level.time + ( ent->wait + ent->random * Q_flrand(-1.0f, 1.0f) ) * 1000;
 	ent->e_ThinkFunc = thinkF_Think_Target_Delay;
 	ent->activator = activator;
 }
