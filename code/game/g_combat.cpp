@@ -476,7 +476,7 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 )
 //		return qtrue;
 //	}
 
-	return ( ent1->client->playerTeam == ent2->client->playerTeam );
+	return (qboolean)( ent1->client->playerTeam == ent2->client->playerTeam );
 }
 
 
@@ -1879,10 +1879,8 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 	default:
-		return (ent->locationDamage[hitLoc]>=Q3_INFINITE);
-		break;
+		return (qboolean)(ent->locationDamage[hitLoc]>=Q3_INFINITE);
 	}
 }
 
@@ -2309,7 +2307,7 @@ qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName,
 {
 	if ( !gi.G2API_GetSurfaceRenderStatus( &ent->ghoul2[ent->playerModel], rootSurfName ) )
 	{//see if the basic name without variants is on
-		Q_strncpyz( returnSurfName, rootSurfName, returnSize, qtrue );
+		Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 		return qtrue;
 	}
 	else
@@ -2324,7 +2322,7 @@ qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName,
 			}
 		}
 	}
-	Q_strncpyz( returnSurfName, rootSurfName, returnSize, qtrue );
+	Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 	return qfalse;
 }
 
@@ -3778,7 +3776,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		NPC_FreeCombatPoint( self->NPC->combatPoint );
 		if ( self->NPC->group )
 		{
-			lastInGroup = (self->NPC->group->numGroup < 2);
+			lastInGroup = (qboolean)(self->NPC->group->numGroup < 2);
 			AI_GroupMemberKilled( self );
 			AI_DeleteSelfFromGroup( self );
 		}
@@ -5904,7 +5902,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_LAVA:
 				case MOD_FALLING:
 				case MOD_MELEE:
-					doSound = (Q_irand(0,4)==0);
+					doSound = (qboolean)(Q_irand(0,4)==0);
 					switch ( targ->client->ps.forcePowerLevel[FP_PROTECT] )
 					{
 					case FORCE_LEVEL_4:
@@ -6447,14 +6445,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 	// Undying If:
 	//--------------------------------------------------------------------------
-	qboolean	targUndying = (!alreadyDead
-							&& !(dflags&DAMAGE_NO_PROTECTION)
-							&& (
-								(targ->flags&FL_UNDYING)
-								|| (dflags&DAMAGE_NO_KILL)
-								|| ((targ->client) && (targ->client->ps.forcePowersActive & (1<<FP_RAGE)) && !(dflags&DAMAGE_NO_PROTECTION) && !(dflags&DAMAGE_DIE_ON_IMPACT))
-							    )
-						   );
+	qboolean targUndying = (qboolean)(
+		!alreadyDead &&
+		!(dflags & DAMAGE_NO_PROTECTION) &&
+		((targ->flags&FL_UNDYING) ||
+			(dflags&DAMAGE_NO_KILL) ||
+			((targ->client) &&
+				(targ->client->ps.forcePowersActive & (1 << FP_RAGE)) &
+				!(dflags&DAMAGE_NO_PROTECTION) &&
+				!(dflags&DAMAGE_DIE_ON_IMPACT))));
 
 	if ( targ->client
 		&& targ->client->NPC_class == CLASS_WAMPA

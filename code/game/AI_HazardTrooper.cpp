@@ -785,7 +785,7 @@ private:
 
 			if (mActors[actorIndex]->NPC->combatPoint!=-1)
 			{
-				NPC_FreeCombatPoint(mActors[actorIndex]->NPC->combatPoint, false);
+				NPC_FreeCombatPoint(mActors[actorIndex]->NPC->combatPoint, qfalse);
 				mActors[actorIndex]->NPC->combatPoint = -1;
 			}
 

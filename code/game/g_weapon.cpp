@@ -1609,7 +1609,7 @@ TOGGLE - keep firing until used again (fires at intervals of "wait")
 */
 void misc_weapon_shooter_fire( gentity_t *self )
 {
-	FireWeapon( self, (self->spawnflags&1) );
+	FireWeapon( self, (qboolean)((self->spawnflags&1) != 0) );
 	if ( (self->spawnflags&2) )
 	{//repeat
 		self->e_ThinkFunc = thinkF_misc_weapon_shooter_fire;

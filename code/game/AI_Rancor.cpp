@@ -1164,7 +1164,7 @@ void Rancor_Combat( void )
 		}
 		else
 		{
-			Rancor_Move( 1 );
+			Rancor_Move( qtrue );
 		}
 	}
 	else
@@ -1571,7 +1571,7 @@ void NPC_BSRancor_Default( void )
 					{//breakable brush
 						if ( !Rancor_AttackBBrush() )
 						{//didn't move inside that func, so call move here...?
-							Rancor_Move( 1 );
+							Rancor_Move( qtrue );
 						}
 						NPC_UpdateAngles( qtrue, qtrue );
 						return;
@@ -1621,7 +1621,7 @@ void NPC_BSRancor_Default( void )
 			{
 				gentity_t *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 				NPC->enemy = NULL;
-				gentity_t *newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+				gentity_t *newEnemy = NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse, qfalse );
 				NPC->enemy = sav_enemy;
 				if ( newEnemy && newEnemy != sav_enemy )
 				{//picked up a new enemy!

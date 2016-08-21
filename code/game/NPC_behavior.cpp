@@ -243,7 +243,7 @@ void NPC_BSCinematic( void )
 		if (TIMER_Done(NPC, "NoAnimFireDelay"))
 		{
 			TIMER_Set(NPC, "NoAnimFireDelay", NPC_AttackDebounceForWeapon());
-			FireWeapon(NPC, (NPCInfo->scriptFlags&SCF_ALT_FIRE)) ;
+			FireWeapon(NPC, (qboolean)((NPCInfo->scriptFlags&SCF_ALT_FIRE) != 0));
 		}
 	}
 
@@ -593,7 +593,7 @@ void NPC_BSFollowLeader_UpdateEnemy(void)
 {
 	if ( !NPC->enemy  )
 	{//no enemy, find one
-		NPC_CheckEnemy( NPCInfo->confusionTime<level.time, qfalse );//don't find new enemy if this is tempbehav
+		NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime<level.time), qfalse );//don't find new enemy if this is tempbehav
 		if ( NPC->enemy )
 		{//just found one
 			NPCInfo->enemyCheckDebounceTime = level.time + Q_irand( 3000, 10000 );
@@ -651,7 +651,7 @@ void NPC_BSFollowLeader_UpdateEnemy(void)
 		}
 		else if ( NPC->client->ps.weapon && NPCInfo->enemyCheckDebounceTime < level.time )
 		{
-			NPC_CheckEnemy( (NPCInfo->confusionTime<level.time||NPCInfo->tempBehavior!=BS_FOLLOW_LEADER), qfalse );//don't find new enemy if this is tempbehav
+			NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime<level.time||NPCInfo->tempBehavior!=BS_FOLLOW_LEADER), qfalse );//don't find new enemy if this is tempbehav
 		}
 	}
 }

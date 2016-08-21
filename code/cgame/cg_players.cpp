@@ -552,19 +552,19 @@ void CG_NewClientinfo( int clientNum )
 	v = Info_ValueForKey( configstring, "legsModel" );
 
 	Q_strncpyz(			g_entities[clientNum].client->renderInfo.legsModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.legsModelName), qtrue);
+				sizeof(	g_entities[clientNum].client->renderInfo.legsModelName));
 
 	// torsoModel
 	v = Info_ValueForKey( configstring, "torsoModel" );
 
 	Q_strncpyz(			g_entities[clientNum].client->renderInfo.torsoModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.torsoModelName), qtrue);
+				sizeof(	g_entities[clientNum].client->renderInfo.torsoModelName));
 
 	// headModel
 	v = Info_ValueForKey( configstring, "headModel" );
 
 	Q_strncpyz(			g_entities[clientNum].client->renderInfo.headModelName, v,
-				sizeof(	g_entities[clientNum].client->renderInfo.headModelName), qtrue);
+				sizeof(	g_entities[clientNum].client->renderInfo.headModelName));
 
 	// sounds
 	v = Info_ValueForKey( configstring, "snd" );
@@ -1210,7 +1210,7 @@ static void CG_PlayerAnimEvents( int animFileIndex, qboolean torso, int oldFrame
 		{//still in same anim, check for looping anim
 			inSameAnim = qtrue;
 			animation_t *animation = &level.knownAnimFileSets[animFileIndex].animations[anim];
-			animBackward = (animation->frameLerp<0);
+			animBackward = (qboolean)(animation->frameLerp<0);
 			if ( animation->loopFrames != -1 )
 			{//a looping anim!
 				loopAnim = qtrue;
@@ -1940,7 +1940,7 @@ static void CG_ATSTLegsYaw( centity_t *cent, vec3_t trailingLegsAngles )
 
 	float legAngleDiff = AngleNormalize180(ATSTLegsYaw) - AngleNormalize180(cent->pe.legs.yawAngle);
 	int legsAnim = cent->currentState.legsAnim;
-	qboolean moving = (!VectorCompare(cent->gent->client->ps.velocity, vec3_origin));
+	qboolean moving = (qboolean)!VectorCompare(cent->gent->client->ps.velocity, vec3_origin);
 	if ( moving || legsAnim == BOTH_TURN_LEFT1 || legsAnim == BOTH_TURN_RIGHT1 || fabs(legAngleDiff) > 45 )
 	{//moving or turning or beyond the turn allowance
 		if ( legsAnim == BOTH_STAND1 && !moving )
@@ -3540,9 +3540,9 @@ static qboolean CG_PlayerShadow( centity_t *const cent, float *const shadowPlane
 				cgs.model_draw, cent->currentState.modelScale);
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, sideOrigin );
 		sideOrigin[2] += 30;	//fudge up a bit for coplaner
-		bShadowed = _PlayerShadow(sideOrigin, 0, shadowPlane, 28, cgs.media.shadowMarkShader) || bShadowed;
+		bShadowed = (qboolean)(_PlayerShadow(sideOrigin, 0, shadowPlane, 28, cgs.media.shadowMarkShader) || bShadowed);
 
-		bShadowed =  _PlayerShadow(rootOrigin, cent->pe.legs.yawAngle, shadowPlane, 64, cgs.media.shadowMarkShader) || bShadowed;
+		bShadowed = (qboolean)( _PlayerShadow(rootOrigin, cent->pe.legs.yawAngle, shadowPlane, 64, cgs.media.shadowMarkShader) || bShadowed);
 		return bShadowed;
 	}
 	else if ( cent->gent->client->NPC_class == CLASS_RANCOR )
@@ -6728,7 +6728,12 @@ Ghoul2 Insert End
 	}
 	// Pass in the renderfx flags attached to the saber weapon model...this is done so that saber glows
 	//	will get rendered properly in a mirror...not sure if this is necessary??
-	CG_DoSaber( org_, axis_[0], length, client->ps.saber[saberNum].blade[bladeNum].lengthMax, client->ps.saber[saberNum].blade[bladeNum].radius, client->ps.saber[saberNum].blade[bladeNum].color, renderfx, (noDlight==qfalse) );
+	CG_DoSaber(
+		org_, axis_[0], length,
+		client->ps.saber[saberNum].blade[bladeNum].lengthMax,
+		client->ps.saber[saberNum].blade[bladeNum].radius,
+		client->ps.saber[saberNum].blade[bladeNum].color,
+		renderfx, (qboolean)!noDlight );
 }
 
 void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, int renderfx, int modelIndex, vec3_t origin, vec3_t angles )

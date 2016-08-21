@@ -4429,8 +4429,8 @@ void	ClientAlterSpeed(gentity_t *ent, usercmd_t *ucmd, qboolean	controlledByPlay
 		{
 			if ( !(ucmd->buttons & BUTTON_USE) )
 			{//Not leaning
-				qboolean Flying = (ucmd->upmove && ent->client->moveType == MT_FLYSWIM);
-				qboolean Climbing = (ucmd->upmove && ent->watertype&CONTENTS_LADDER );
+				qboolean Flying = (qboolean)(ucmd->upmove && ent->client->moveType == MT_FLYSWIM);
+				qboolean Climbing = (qboolean)(ucmd->upmove && ent->watertype&CONTENTS_LADDER );
 
 				client->ps.friction = 6;
 
@@ -4900,7 +4900,7 @@ extern cvar_t	*g_skippingcin;
 		{//lock out player control
 			if ( !player_locked )
 			{
-				VectorClear( ucmd->angles );
+				VectorClearM( ucmd->angles );
 			}
 			ucmd->forwardmove = 0;
 			ucmd->rightmove = 0;
@@ -5394,7 +5394,7 @@ extern cvar_t	*g_skippingcin;
 	pm.trace = gi.trace;
 	pm.pointcontents = gi.pointcontents;
 	pm.debugLevel = g_debugMove->integer;
-	pm.noFootsteps = 0;//( g_dmflags->integer & DF_NO_FOOTSTEPS ) > 0;
+	pm.noFootsteps = qfalse;//( g_dmflags->integer & DF_NO_FOOTSTEPS ) > 0;
 
 	if ( ent->client && ent->NPC )
 	{
@@ -5448,7 +5448,7 @@ extern cvar_t	*g_skippingcin;
 	ent->waterlevel = pm.waterlevel;
 	ent->watertype = pm.watertype;
 
-	_VectorCopy( ucmd->angles, client->pers.cmd_angles );
+	VectorCopyM( ucmd->angles, client->pers.cmd_angles );
 
 	// execute client events
 	ClientEvents( ent, oldEventSequence );

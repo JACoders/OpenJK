@@ -661,7 +661,7 @@ qboolean FS_MoveUserGenFile( const char *filename_src, const char *filename_dst 
 	FS_CheckFilenameIsMutable( to_ospath, __func__ );
 
 	remove( to_ospath );
-	return !rename( from_ospath, to_ospath );
+	return (qboolean)!rename( from_ospath, to_ospath );
 }
 
 /*

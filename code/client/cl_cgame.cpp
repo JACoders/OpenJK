@@ -868,7 +868,7 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		return 0;
 
 	case CG_CM_LOADMAP:
-		CL_CM_LoadMap( (const char *) VMA(1), args[2] );
+		CL_CM_LoadMap( (const char *) VMA(1), (qboolean)(args[2] != 0) );
 		return 0;
 	case CG_CM_NUMINLINEMODELS:
 		return CM_NumInlineModels();
@@ -944,12 +944,12 @@ intptr_t CL_CgameSystemCalls( intptr_t *args ) {
 		S_UpdateEntityPosition( args[1], (const float *) VMA(2) );
 		return 0;
 	case CG_S_RESPATIALIZE:
-		S_Respatialize( args[1], (const float *) VMA(2), (float(*)[3]) VMA(3), args[4] );
+		S_Respatialize( args[1], (const float *) VMA(2), (float(*)[3]) VMA(3), (qboolean)(args[4] != 0) );
 		return 0;
 	case CG_S_REGISTERSOUND:
 		return S_RegisterSound( (const char *) VMA(1) );
 	case CG_S_STARTBACKGROUNDTRACK:
-		S_StartBackgroundTrack( (const char *) VMA(1), (const char *) VMA(2), args[3]);
+		S_StartBackgroundTrack( (const char *) VMA(1), (const char *) VMA(2), (qboolean)(args[3] != 0) );
 		return 0;
 	case CG_S_GETSAMPLELENGTH:
 		return S_GetSampleLengthInMilliSeconds(  args[1]);
@@ -1190,7 +1190,7 @@ Ghoul2 Insert End
 		return 0;
 
 	case CG_OPENJK_MENU_PAINT:
-		Menu_Paint( (menuDef_t *)VMA(1), args[2] );
+		Menu_Paint( (menuDef_t *)VMA(1), (qboolean)(args[2] != 0) );
 		return 0;
 
 	case CG_OPENJK_GETMENU_BYNAME:
@@ -1444,7 +1444,7 @@ qboolean CL_GameCommand( void ) {
 		return qfalse;
 	}
 
-	return VM_Call( CG_CONSOLE_COMMAND );
+	return (qboolean)(VM_Call( CG_CONSOLE_COMMAND ) != 0);
 }
 
 

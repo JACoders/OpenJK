@@ -190,11 +190,11 @@ void CQuickSpriteSystem::StartGroup(textureBundle_t *bundle, uint32_t glbits, in
 
 	if(cullingOn)
 	{
-		mTurnCullBackOn=true;
+		mTurnCullBackOn=qtrue;
 	}
 	else
 	{
-		mTurnCullBackOn=false;
+		mTurnCullBackOn=qfalse;
 	}
 	qglDisable(GL_CULL_FACE);
 }

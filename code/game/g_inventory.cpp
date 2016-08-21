@@ -90,7 +90,7 @@ qboolean INV_SecurityKeyGive( gentity_t *target, const char *keyname )
 		if ( target->client->ps.security_key_message[i][0] == '\0' )
 		{//fill in the first empty slot we find with this key
 			target->client->ps.inventory[INV_SECURITY_KEY]++;	// He got the key
-			Q_strncpyz( target->client->ps.security_key_message[i], keyname, MAX_SECURITY_KEY_MESSSAGE, qtrue );
+			Q_strncpyz( target->client->ps.security_key_message[i], keyname, MAX_SECURITY_KEY_MESSSAGE );
 			return qtrue;
 		}
 	}

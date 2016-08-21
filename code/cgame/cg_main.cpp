@@ -1799,7 +1799,7 @@ void CG_StartMusic( qboolean bForceStart ) {
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
 	COM_EndParseSession();
 
-	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
+	cgi_S_StartBackgroundTrack( parm1, parm2, (qboolean)!bForceStart );
 }
 
 /*

@@ -257,7 +257,7 @@ void turret_head_think( gentity_t *self )
 					self->modelScale );
 		if ( (self->spawnflags&SPF_TURRETG2_TURBO) )
 		{
-			self->alt_fire = !self->alt_fire;
+			self->alt_fire = (qboolean)!self->alt_fire;
 		}
 
 		gi.G2API_GiveMeVectorFromMatrix( boltMatrix, ORIGIN, org );

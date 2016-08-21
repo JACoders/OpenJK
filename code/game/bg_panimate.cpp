@@ -1192,7 +1192,7 @@ qboolean PM_InAnimForSaberMove( int anim, int saberMove )
 	}
 	if ( anim >= BOTH_P1_S1_T_ && anim <= BOTH_H1_S1_BR )
 	{//parries, knockaways and broken parries
-		return (anim==saberMoveData[saberMove].animToUse);
+		return (qboolean)(anim==saberMoveData[saberMove].animToUse);
 	}
 	return qfalse;
 }
@@ -7125,7 +7125,7 @@ qboolean PM_SaberLockBreakAnim( int anim )
 	case BOTH_LK_ST_S_S_B_1_W:	//normal break I won
 	case BOTH_LK_ST_S_T_B_1_L:	//normal break I lost
 	case BOTH_LK_ST_S_T_B_1_W:	//normal break I won
-		return (PM_SuperBreakLoseAnim(anim)||PM_SuperBreakWinAnim(anim));
+		return (qboolean)(PM_SuperBreakLoseAnim(anim)||PM_SuperBreakWinAnim(anim));
 		break;
 	}
 	return qfalse;
