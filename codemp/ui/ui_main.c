@@ -9633,8 +9633,10 @@ UI_BuildPlayerModel_List
 */
 static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 {
+	static const size_t DIR_LIST_SIZE = 16384;
+
 	int		numdirs;
-	char	dirlist[2048];
+	char	*dirlist = malloc(DIR_LIST_SIZE);
 	char*	dirptr;
 	int		dirlen;
 	int		i;
@@ -9646,15 +9648,14 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, 2048 );
+	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, DIR_LIST_SIZE );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
-		char	filelist[2048];
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[2048];
+		char fpath[MAX_QPATH];
 
 		dirlen = strlen(dirptr);
 
@@ -9671,11 +9672,12 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
 			continue;
 
-		Com_sprintf(fpath, 2048, "models/players/%s/PlayerChoice.txt", dirptr);
+		Com_sprintf(fpath, sizeof(fpath), "models/players/%s/PlayerChoice.txt", dirptr);
 		filelen = trap->FS_Open(fpath, &f, FS_READ);
 
 		if (f)
 		{
+			char	filelist[2048];
 			playerSpeciesInfo_t *species;
 			char                 skinname[64];
 			int                  numfiles;
@@ -9718,7 +9720,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 			free(buffer);
 
-			numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
+			numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, sizeof(filelist) );
 			fileptr  = filelist;
 			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
 			{
@@ -9786,6 +9788,8 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			}
 		}
 	}
+
+	free(dirlist);
 }
 
 static qhandle_t UI_RegisterShaderNoMip( const char *name ) {
