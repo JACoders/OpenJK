@@ -9636,11 +9636,24 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	static const size_t DIR_LIST_SIZE = 16384;
 
 	int		numdirs;
-	char	*dirlist = malloc(DIR_LIST_SIZE);
+	size_t	dirListSize = DIR_LIST_SIZE;
+	char	stackDirList[8192];
+	char	*dirlist;
 	char*	dirptr;
 	int		dirlen;
 	int		i;
 	int		j;
+
+	dirlist = malloc(DIR_LIST_SIZE);
+	if ( !dirlist )
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Failed to allocate %u bytes of memory for player model "
+			"directory list. Using stack allocated buffer of %u bytes instead.",
+			DIR_LIST_SIZE, sizeof(stackDirList));
+
+		dirlist = stackDirList;
+		dirListSize = sizeof(stackDirList);
+	}
 
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
@@ -9648,7 +9661,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, DIR_LIST_SIZE );
+	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, dirListSize );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
@@ -9789,7 +9802,10 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		}
 	}
 
-	free(dirlist);
+	if ( dirlist != stackDirList )
+	{
+		free(dirlist);
+	}
 }
 
 static qhandle_t UI_RegisterShaderNoMip( const char *name ) {
