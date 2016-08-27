@@ -577,7 +577,7 @@ void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, 
 	float   m[3][3];
 	float   c, s, t;
 
-	degrees = DEG2RAD( degrees );
+	degrees = -DEG2RAD( degrees );
 	s = sinf( degrees );
 	c = cosf( degrees );
 	t = 1 - c;
