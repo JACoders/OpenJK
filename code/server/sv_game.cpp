@@ -1068,8 +1068,9 @@ void SV_InitGameProgs (void) {
 
 	if (ge->apiversion != GAME_API_VERSION)
 	{
+		int apiVersion = ge->apiversion;
 		Sys_UnloadDll( gameLibrary );
-		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion, GAME_API_VERSION);
+		Com_Error (ERR_DROP, "game is version %i, not %i", apiVersion, GAME_API_VERSION);
 	}
 
 	//hook up the client while we're here
