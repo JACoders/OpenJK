@@ -6110,17 +6110,17 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_1)
 				{
 					targ->client->ps.fd.forcePower -= (int)ceil(take*0.5*force_decrease_change);
-					take = (int)ceil(take*0.8);
+					take = (int)ceil(take*0.85);
 				}
 				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_2)
 				{
 					targ->client->ps.fd.forcePower -= (int)ceil(take*0.25*force_decrease_change);
-					take = (int)ceil(take*0.6);
+					take = (int)ceil(take*0.65);
 				}
 				else if (targ->client->ps.fd.forcePowerLevel[FP_PROTECT] == FORCE_LEVEL_3)
 				{
 					targ->client->ps.fd.forcePower -= (int)ceil(take*0.125*force_decrease_change);
-					take = (int)ceil(take*0.4);
+					take = (int)ceil(take*0.45);
 				}
 
 				if (targ->client->ps.fd.forcePower < 0)
