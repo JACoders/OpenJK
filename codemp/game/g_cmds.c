@@ -10521,6 +10521,9 @@ void Cmd_ResetAccount_f( gentity_t *ent ) {
 		ent->client->pers.universe_quest_progress = 0;
 		ent->client->pers.universe_quest_counter = 0;
 
+		// zyk: resetting Difficulty to Normal Mode
+		ent->client->pers.player_settings &= ~(1 << 15);
+
 		save_account(ent);
 
 		trap->SendServerCommand( ent-g_entities, "print \"Your quests are reset.\n\"" );
