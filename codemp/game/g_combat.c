@@ -6148,11 +6148,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)) && (inflictor->client || attacker->client))
 		{ // zyk: new Force Rage code
 			if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 1)
-				take = (int)ceil(take*0.8);
+				take = (int)ceil(take*0.85);
 			else if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 2)
-				take = (int)ceil(take*0.6);
+				take = (int)ceil(take*0.65);
 			else if (targ->client->ps.fd.forcePowerLevel[FP_RAGE] == 3)
-				take = (int)ceil(take*0.4);
+				take = (int)ceil(take*0.45);
 		}
 
 		if (!targ->NPC && targ->client && targ->client->sess.amrpgmode == 2)
