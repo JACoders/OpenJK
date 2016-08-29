@@ -235,6 +235,12 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 		return;
 	}
 
+	// zyk: Guardian of Map also resist attack and does not have pain anim
+	if (level.guardian_quest > 0 && self->s.number == level.guardian_quest)
+	{
+		return;
+	}
+
 	if ( self->s.weapon == WP_THERMAL && self->client->ps.weaponTime > 0 )
 	{//don't interrupt thermal throwing anim
 		return;
