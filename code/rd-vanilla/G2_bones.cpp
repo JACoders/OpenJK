@@ -39,12 +39,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "../ghoul2/G2.h"
 #endif
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 #include <float.h>
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 extern	cvar_t	*r_Ghoul2BlendMultiplier;
 
@@ -96,11 +94,9 @@ int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName)
 	mdxaSkelOffsets_t	*offsets;
 	boneInfo_t			tempBone;
 
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	memset(&tempBone, 0, sizeof(tempBone));
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
    	offsets = (mdxaSkelOffsets_t *)((byte *)mod->mdxa + sizeof(mdxaHeader_t));
 
@@ -1050,7 +1046,6 @@ qboolean G2_Stop_Bone_Angles(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char
 	return qfalse;
 }
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 /*
 
@@ -4760,7 +4755,6 @@ qboolean G2_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params
 #endif
 	return qtrue;
 }
-#endif // !JK2_MODE
 
 // set the bone list to all unused so the bone transformation routine ignores it.
 void G2_Init_Bone_List(boneInfo_v &blist, int numBones)
@@ -4781,7 +4775,6 @@ int	G2_Get_Bone_Index(CGhoul2Info *ghoul2, const char *boneName, qboolean bAddIf
 	}
 }
 
-#ifndef JK2_MODE
 void G2_FreeRag(void)
 {
 	if(rag) {
@@ -4789,4 +4782,3 @@ void G2_FreeRag(void)
 		rag = NULL;
 	}
 }
-#endif // !JK2_MODE

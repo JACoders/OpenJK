@@ -127,7 +127,6 @@ struct  boneInfo_t
 	int			boneBlendStart;	// time bone angle blend with normal animation began
 	mdxaBone_t	newMatrix;		// This is the lerped matrix that Ghoul2 uses on the client side - does not go across the network
 
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	int			lastTimeUpdated;  // if non-zero this is all intialized
 	int			lastContents;
@@ -192,7 +191,6 @@ struct  boneInfo_t
 
 	int			airTime; //base is in air, be more quick and sensitive about collisions
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 boneInfo_t():
 	boneNumber(-1),

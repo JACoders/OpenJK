@@ -70,11 +70,9 @@ void G2Time_ReportTimers(void)
 }
 #endif
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 #include <float.h>
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 extern	cvar_t	*r_Ghoul2UnSqash;
 extern	cvar_t	*r_Ghoul2AnimSmooth;
@@ -103,11 +101,9 @@ const static mdxaBone_t		identityMatrix =
 class CTransformBone
 {
 public:
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	int				touchRender;
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	mdxaBone_t		boneMatrix; //final matrix
 	int				parent; // only set once
@@ -116,11 +112,9 @@ public:
 	{
 		touch=0;
 
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 		touchRender = 0;
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 	}
 
 };
@@ -165,7 +159,6 @@ class CBoneCache
 		}
 	}
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 	void SmoothLow(int index)
 	{
@@ -210,7 +203,6 @@ class CBoneCache
 #endif// _DEBUG
 	}
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 public:
 	int					frameSize;
@@ -232,13 +224,11 @@ public:
 
 	int				mCurrentTouch;
 
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	int				mCurrentTouchRender;
 	int				mLastTouch;
 	int				mLastLastTouch;
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	// for render smoothing
 	bool			mSmoothingActive;
@@ -274,13 +264,10 @@ public:
 		}
 		mCurrentTouch=3;
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 		mLastTouch=2;
 		mLastLastTouch=1;
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
-
 	}
 	~CBoneCache ()
 	{
@@ -369,7 +356,6 @@ public:
 		return mFinalBones[index].boneMatrix;
 	}
 
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	const inline mdxaBone_t &EvalRender(int index)
 	{
@@ -406,7 +392,6 @@ public:
 		return mFinalBones[index].parent;
 	}
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	// Added by BTO (VV) - This is probably broken
 	// Need to add in smoothing step?
@@ -441,7 +426,6 @@ static inline float G2_GetVertBoneWeightNotSlow( const mdxmVertex_t *pVert, cons
 	return fBoneWeight;
 }
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 const mdxaHeader_t *G2_GetModA(CGhoul2Info &ghoul2)
 {
@@ -656,7 +640,6 @@ int G2_GetParentBoneMatrixLow(CGhoul2Info &ghoul2,int boneNum,const vec3_t scale
 	return parent;
 }
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 void RemoveBoneCache(CBoneCache *boneCache)
 {
@@ -1215,7 +1198,6 @@ void G2_TimingModel(boneInfo_t &bone,int currentTime,int numFramesInFile,int &cu
 	*/
 }
 
-#ifndef JK2_MODE
 //basically construct a seperate skeleton with full hierarchy to store a matrix
 //off which will give us the desired settling position given the frame in the skeleton
 //that should be used -rww
@@ -1343,7 +1325,6 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 
 	matrix = bone.animFrameMatrix;
 }
-#endif // !JK2_MODE
 
 // transform each individual bone's information - making sure to use any override information provided, both for angles and for animations, as
 // well as multiplying each bone's matrix by it's parents matrix
@@ -1885,7 +1866,6 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 	float val=r_Ghoul2AnimSmooth->value;
 	if (smooth&&val>0.0f&&val<1.0f)
 	{
-#ifndef JK2_MODE
 		ghoul2.mBoneCache->mLastTouch=ghoul2.mBoneCache->mLastLastTouch;
 
 		if(ghoul2.mFlags & GHOUL2_RAG_STARTED)
@@ -1913,7 +1893,6 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 				}
 			}
 		}
-#endif // !JK2_MODE
 
 		ghoul2.mBoneCache->mSmoothFactor=val;
 		ghoul2.mBoneCache->mSmoothingActive=true;
@@ -1928,7 +1907,6 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 	}
 	ghoul2.mBoneCache->mCurrentTouch++;
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 	if (HackadelicOnClient)
 	{
@@ -1940,7 +1918,6 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 		ghoul2.mBoneCache->mCurrentTouchRender=0;
 	}
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 //	ghoul2.mBoneCache->mWraithID=0;
 	ghoul2.mBoneCache->frameSize = 0;// can be deleted in new G2 format	//(int)( &((mdxaFrame_t *)0)->boneIndexes[ ghoul2.aHeader->numBones ] );
@@ -3021,7 +2998,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 		for ( j = 0; j < numVerts; j++, baseVertex++,v++ )
 		{
 #ifdef JK2_MODE
-			// FIXME BBi
 			bone = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, 0 )]);
 #else
 			bone = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, 0 )]);
@@ -3043,7 +3019,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 				if (iNumWeights==2)
 				{
 #ifdef JK2_MODE
-					// FIXME BBi
 					bone2 = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, 1 )]);
 #else
 					bone2 = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, 1 )]);
@@ -3077,7 +3052,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 					for (k=1; k < iNumWeights-1 ; k++)
 					{
 #ifdef JK2_MODE
-						// FIXME BBi
 						bone = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
 #else
 						bone = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
@@ -3092,7 +3066,6 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 					}
 
 #ifdef JK2_MODE
-					// FIXME BBi
 					bone = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
 #else
 					bone = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
