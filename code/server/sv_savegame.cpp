@@ -749,7 +749,7 @@ int SG_GetSaveGameComment(
 	char* sComment,
 	char* sMapName)
 {
-	auto ret = 0;
+	int ret = 0;
 
 	auto& saved_game = ojk::SavedGame::get_instance();
 
@@ -789,7 +789,7 @@ int SG_GetSaveGameComment(
 
 	// Read timestamp
 	//
-	auto tFileTime = ::SG_GetTime(0);
+	time_t tFileTime = ::SG_GetTime(0);
 
 	if (is_succeed)
 	{
@@ -1196,7 +1196,7 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 	}
 	ge->WriteLevel(qbAutosave);	// always done now, but ent saver only does player if auto
 
-	auto is_write_failed = saved_game.is_failed();
+	bool is_write_failed = saved_game.is_failed();
 
 	saved_game.close();
 
@@ -1233,7 +1233,7 @@ qboolean SG_ReadSavegame(
 	ojk::SavedGameHelper sgh(
 		&saved_game);
 
-	const auto iPrevTestSave = ::sv_testsave->integer;
+	const int iPrevTestSave = ::sv_testsave->integer;
 
 	ojk::ScopeGuard scope_guard(
 		[&]()
@@ -1297,7 +1297,7 @@ qboolean SG_ReadSavegame(
 	::SG_ReadCvars();
 
 	// read game state
-	const auto qbAutosave = ::ReadGame();
+	const int qbAutosave = ::ReadGame();
 
 	::eSavedGameJustLoaded = (qbAutosave ? eAUTO : eFULL);
 

@@ -456,7 +456,7 @@ static void EnumerateFields(
 {
 	strList.clear();
 
-	auto pbData = reinterpret_cast<byte*>(
+	byte* pbData = reinterpret_cast<byte*>(
 		src_instance);
 
 	// enumerate all the fields...

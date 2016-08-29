@@ -240,10 +240,10 @@ void TIMER_Load( void )
 			saved_game.read_chunk(
 				INT_ID('T', 'M', 'I', 'D'));
 
-			auto sg_buffer_data = static_cast<const char*>(
+			const char* sg_buffer_data = static_cast<const char*>(
 				saved_game.get_buffer_data());
 
-			const auto sg_buffer_size = saved_game.get_buffer_size();
+			const int sg_buffer_size = saved_game.get_buffer_size();
 
 			std::uninitialized_copy_n(
 				sg_buffer_data,

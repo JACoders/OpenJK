@@ -39,7 +39,7 @@ bool SavedGame::open(
 	close();
 
 
-	const auto file_path = generate_path(
+	const std::string file_path = generate_path(
 		base_file_name);
 
 	bool is_succeed = true;
@@ -116,7 +116,7 @@ bool SavedGame::create(
 	remove(
 		base_file_name);
 
-	const auto file_path = generate_path(
+	const std::string file_path = generate_path(
 		base_file_name);
 
 	file_handle_ = ::FS_FOpenFileWrite(
@@ -124,7 +124,7 @@ bool SavedGame::create(
 
 	if (file_handle_ == 0)
 	{
-		const auto error_message =
+		const std::string error_message =
 			S_COLOR_RED "Failed to create a saved game file: \"" +
 			file_path + "\".";
 
@@ -138,7 +138,7 @@ bool SavedGame::create(
 
 	is_writable_ = true;
 
-	const auto sg_version = iSAVEGAME_VERSION;
+	constexpr int sg_version = iSAVEGAME_VERSION;
 
 	SavedGameHelper sgsh(this);
 
@@ -192,7 +192,7 @@ bool SavedGame::read_chunk(
 
 	io_buffer_offset_ = 0;
 
-	const auto chunk_id_string = get_chunk_id_string(
+	const std::string chunk_id_string = get_chunk_id_string(
 		chunk_id);
 
 	::Com_DPrintf(
@@ -202,7 +202,7 @@ bool SavedGame::read_chunk(
 	uint32_t ulLoadedChid = 0;
 	uint32_t uiLoadedLength = 0;
 
-	auto uiLoaded = ::FS_Read(
+	int uiLoaded = ::FS_Read(
 		&ulLoadedChid,
 		static_cast<int>(sizeof(ulLoadedChid)),
 		file_handle_);
@@ -225,7 +225,7 @@ bool SavedGame::read_chunk(
 	{
 		is_failed_ = true;
 
-		const auto loaded_chunk_id_string = get_chunk_id_string(
+		const std::string loaded_chunk_id_string = get_chunk_id_string(
 			ulLoadedChid);
 
 		error_message_ =
@@ -316,7 +316,7 @@ bool SavedGame::read_chunk(
 
 	// Make sure the checksums match...
 	//
-	const auto uiCksum = ::Com_BlockChecksum(
+	const uint32_t uiCksum = ::Com_BlockChecksum(
 		io_buffer_.data(),
 		static_cast<int>(io_buffer_.size()));
 
@@ -394,7 +394,7 @@ bool SavedGame::write_chunk(
 	}
 
 
-	const auto chunk_id_string = get_chunk_id_string(
+	const std::string chunk_id_string = get_chunk_id_string(
 		chunk_id);
 
 	::Com_DPrintf(
@@ -406,9 +406,9 @@ bool SavedGame::write_chunk(
 		return true;
 	}
 
-	const auto src_size = static_cast<int>(io_buffer_.size());
+	const int src_size = static_cast<int>(io_buffer_.size());
 
-	const auto uiCksum = Com_BlockChecksum(
+	const uint32_t uiCksum = Com_BlockChecksum(
 		io_buffer_.data(),
 		src_size);
 
@@ -417,7 +417,7 @@ bool SavedGame::write_chunk(
 		static_cast<int>(sizeof(chunk_id)),
 		file_handle_);
 
-	auto iCompressedLength = -1;
+	int iCompressedLength = -1;
 
 	if (::sv_compress_saved_games->integer != 0)
 	{
@@ -432,12 +432,12 @@ bool SavedGame::write_chunk(
 	}
 
 #ifdef JK2_MODE
-	const auto uiMagic = get_jo_magic_value();
+	const int uiMagic = get_jo_magic_value();
 #endif // JK2_MODE
 
 	if (iCompressedLength > 0)
 	{
-		const auto iLength = -static_cast<int>(io_buffer_.size());
+		const int iLength = -static_cast<int>(io_buffer_.size());
 
 		uiSaved += ::FS_Write(
 			&iLength,
@@ -500,7 +500,7 @@ bool SavedGame::write_chunk(
 	}
 	else
 	{
-		const auto iLength = static_cast<uint32_t>(io_buffer_.size());
+		const uint32_t iLength = static_cast<uint32_t>(io_buffer_.size());
 
 		uiSaved += ::FS_Write(
 			&iLength,
@@ -660,7 +660,7 @@ bool SavedGame::write(
 		return true;
 	}
 
-	const auto new_buffer_size = io_buffer_offset_ + src_size;
+	const size_t new_buffer_size = io_buffer_offset_ + src_size;
 
 	io_buffer_.resize(
 		new_buffer_size);
@@ -714,8 +714,8 @@ bool SavedGame::skip(
 		return true;
 	}
 
-	const auto new_offset = io_buffer_offset_ + count;
-	const auto buffer_size = io_buffer_.size();
+	const size_t new_offset = io_buffer_offset_ + count;
+	const size_t buffer_size = io_buffer_.size();
 
 	if (new_offset > buffer_size)
 	{
@@ -766,13 +766,13 @@ void SavedGame::rename(
 	const std::string& old_base_file_name,
 	const std::string& new_base_file_name)
 {
-	const auto&& old_path = generate_path(
+	const std::string old_path = generate_path(
 		old_base_file_name);
 
-	const auto&& new_path = generate_path(
+	const std::string new_path = generate_path(
 		new_base_file_name);
 
-	const auto rename_result = ::FS_MoveUserGenFile(
+	const int rename_result = ::FS_MoveUserGenFile(
 		old_path.c_str(),
 		new_path.c_str());
 
@@ -788,7 +788,7 @@ void SavedGame::rename(
 void SavedGame::remove(
 	const std::string& base_file_name)
 {
-	const auto&& path = generate_path(
+	const std::string path = generate_path(
 		base_file_name);
 
 	::FS_DeleteUserGenFile(
@@ -826,17 +826,17 @@ void SavedGame::compress(
 	const Buffer& src_buffer,
 	Buffer& dst_buffer)
 {
-	const auto src_size = static_cast<int>(src_buffer.size());
+	const int src_size = static_cast<int>(src_buffer.size());
 
 	dst_buffer.resize(2 * src_size);
 
-	auto src_count = 0;
-	auto dst_index = 0;
+	int src_count = 0;
+	int dst_index = 0;
 
 	while (src_count < src_size)
 	{
-		auto src_index = src_count;
-		auto b = src_buffer[src_index++];
+		int src_index = src_count;
+		uint8_t b = src_buffer[src_index++];
 
 		while (src_index < src_size &&
 			(src_index - src_count) < 127 &&
@@ -865,7 +865,7 @@ void SavedGame::compress(
 			dst_buffer[dst_index++] =
 				static_cast<uint8_t>(src_count - src_index);
 
-			for (auto i = src_count; i < src_index; ++i)
+			for (int i = src_count; i < src_index; ++i)
 			{
 				dst_buffer[dst_index++] = src_buffer[i];
 			}
@@ -889,14 +889,14 @@ void SavedGame::decompress(
 	const Buffer& src_buffer,
 	Buffer& dst_buffer)
 {
-	auto src_index = 0;
-	auto dst_index = 0;
+	int src_index = 0;
+	int dst_index = 0;
 
-	auto remain_size = static_cast<int>(dst_buffer.size());
+	int remain_size = static_cast<int>(dst_buffer.size());
 
 	while (remain_size > 0)
 	{
-		auto count = static_cast<int8_t>(src_buffer[src_index++]);
+		int8_t count = static_cast<int8_t>(src_buffer[src_index++]);
 
 		if (count > 0)
 		{
@@ -928,7 +928,7 @@ void SavedGame::decompress(
 std::string SavedGame::generate_path(
 	const std::string& base_file_name)
 {
-	auto normalized_file_name = base_file_name;
+	std::string normalized_file_name = base_file_name;
 
 	std::replace(
 		normalized_file_name.begin(),
@@ -936,9 +936,7 @@ std::string SavedGame::generate_path(
 		'/',
 		'_');
 
-	auto&& path = "saves/" + normalized_file_name + ".sav";
-
-	return path;
+	return "saves/" + normalized_file_name + ".sav";
 }
 
 std::string SavedGame::get_chunk_id_string(

@@ -713,10 +713,10 @@ int CIcarus::Load()
 	saved_game.read_chunk(
 		INT_ID('I','S','E','Q'));
 
-	auto sg_buffer_data = static_cast<const unsigned char*>(
+	const unsigned char* sg_buffer_data = static_cast<const unsigned char*>(
 		saved_game.get_buffer_data());
 
-	const auto sg_buffer_size = saved_game.get_buffer_size();
+	const int sg_buffer_size = saved_game.get_buffer_size();
 
 	std::uninitialized_copy_n(
 		sg_buffer_data,
@@ -846,10 +846,10 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 		saved_game.read_chunk(
 			INT_ID('I', 'S', 'E', 'Q'));
 
-		auto sg_buffer_data = static_cast<const unsigned char*>(
+		const unsigned char* sg_buffer_data = static_cast<const unsigned char*>(
 			saved_game.get_buffer_data());
 
-		const auto sg_buffer_size = saved_game.get_buffer_size();
+		const int sg_buffer_size = saved_game.get_buffer_size();
 
 		std::uninitialized_copy_n(
 			sg_buffer_data,

@@ -1807,51 +1807,51 @@ void G2_SaveGhoul2Models(
 
 
 	// save out how many ghoul2 models we have
-	auto model_count = ghoul2.size();
+	const int model_count = static_cast<int>(ghoul2.size());
 
 	saved_game.write<int32_t>(
 		model_count);
 
-	for (decltype(model_count) i = 0; i < model_count; ++i)
+	for (int i = 0; i < model_count; ++i)
 	{
 		// first save out the ghoul2 details themselves
 		ghoul2[i].sg_export(
 			saved_game);
 
 		// save out how many surfaces we have
-		auto surface_count = ghoul2[i].mSlist.size();
+		const int surface_count = static_cast<int>(ghoul2[i].mSlist.size());
 
 		saved_game.write<int32_t>(
 			surface_count);
 
 		// now save the all the surface list info
-		for (decltype(surface_count) x = 0; x < surface_count; ++x)
+		for (int x = 0; x < surface_count; ++x)
 		{
 			ghoul2[i].mSlist[x].sg_export(
 				saved_game);
 		}
 
 		// save out how many bones we have
-		auto bone_count = ghoul2[i].mBlist.size();
+		const int bone_count = static_cast<int>(ghoul2[i].mBlist.size());
 
 		saved_game.write<int32_t>(
 			bone_count);
 
 		// now save the all the bone list info
-		for (decltype(bone_count) x = 0; x < bone_count; ++x)
+		for (int x = 0; x < bone_count; ++x)
 		{
 			ghoul2[i].mBlist[x].sg_export(
 				saved_game);
 		}
 
 		// save out how many bolts we have
-		auto bolt_count = ghoul2[i].mBltlist.size();
+		const int bolt_count = static_cast<int>(ghoul2[i].mBltlist.size());
 
 		saved_game.write<int32_t>(
 			bolt_count);
 
 		// lastly save the all the bolt list info
-		for (decltype(bolt_count) x = 0; x < bolt_count; ++x)
+		for (int x = 0; x < bolt_count; ++x)
 		{
 			ghoul2[i].mBltlist[x].sg_export(
 				saved_game);
@@ -1925,7 +1925,7 @@ void G2_LoadGhoul2Model(
 		}
 
 		// give us enough surfaces to load up the data
-		auto surface_count = 0;
+		int surface_count = 0;
 
 		saved_game.read<int32_t>(
 			surface_count);
@@ -1940,7 +1940,7 @@ void G2_LoadGhoul2Model(
 		}
 
 		// give us enough bones to load up the data
-		auto bone_count = 0;
+		int bone_count = 0;
 
 		saved_game.read<int32_t>(
 			bone_count);
@@ -1956,7 +1956,7 @@ void G2_LoadGhoul2Model(
 		}
 
 		// give us enough bolts to load up the data
-		auto bolt_count = 0;
+		int bolt_count = 0;
 
 		saved_game.read<int32_t>(
 			bolt_count);

@@ -515,7 +515,7 @@ static void EnumerateFields(
 {
 	strList.clear();
 
-	auto pbData = reinterpret_cast<const byte*>(
+	const byte* pbData = reinterpret_cast<const byte*>(
 		src_instance);
 
 	// enumerate all the fields...
@@ -742,7 +742,7 @@ void saberInfoRetail_t::sg_export(
 
 		//forbid all other styles
 		dst.stylesForbidden = 0;
-		for (auto styleNum = SS_NONE + 1; styleNum < SS_NUM_SABER_STYLES; ++styleNum)
+		for (int styleNum = SS_NONE + 1; styleNum < SS_NUM_SABER_STYLES; ++styleNum)
 		{
 			if (styleNum != style)
 			{
@@ -768,14 +768,10 @@ static void copy_retail_gclient_to_current(
 	const RetailGClient& src,
 	gclient_t& dst)
 {
-	const auto src_pre_size = offsetof(RetailGClient, ps.saber[0]);
-
-	const auto src_post_offset =
-		offsetof(RetailGClient, ps.dualSabers);
-
-	const auto src_post_size = sizeof(RetailGClient) - src_post_offset;
-
-	const auto dst_post_offset = offsetof(gclient_t, ps.dualSabers);
+	constexpr size_t src_pre_size = offsetof(RetailGClient, ps.saber[0]);
+	constexpr size_t src_post_offset = offsetof(RetailGClient, ps.dualSabers);
+	constexpr size_t src_post_size = sizeof(RetailGClient) - src_post_offset;
+	constexpr size_t dst_post_offset = offsetof(gclient_t, ps.dualSabers);
 
 	::memcpy(
 		reinterpret_cast<char*>(&dst),
@@ -801,7 +797,7 @@ static void EvaluateFields(
 	byte* pbOriginalRefData,
 	unsigned int ulChid)
 {
-	auto& instance = *pbData;
+	T& instance = *pbData;
 
 	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);

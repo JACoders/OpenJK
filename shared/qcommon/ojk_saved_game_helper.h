@@ -198,7 +198,7 @@ void SavedGameHelper::write_chunk_and_size(
 {
 	saved_game_->save_buffer();
 
-	auto data_size = saved_game_->get_buffer_size();
+	const int data_size = saved_game_->get_buffer_size();
 
 	saved_game_->reset_buffer();
 
@@ -311,7 +311,7 @@ bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	BooleanTag)
 {
-	constexpr auto src_size = static_cast<int>(sizeof(TSrc));
+	constexpr int src_size = static_cast<int>(sizeof(TSrc));
 
 	TSrc src_value;
 
@@ -335,7 +335,7 @@ bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	NumericTag)
 {
-	constexpr auto src_size = static_cast<int>(sizeof(TSrc));
+	constexpr int src_size = static_cast<int>(sizeof(TSrc));
 
 	TSrc src_value;
 
@@ -370,7 +370,7 @@ bool SavedGameHelper::try_read(
 		std::uintptr_t
 	>::type;
 
-	auto dst_number = DstNumeric();
+	DstNumeric dst_number;
 
 	if (!try_read<TSrc>(
 		dst_number,
@@ -445,26 +445,26 @@ bool SavedGameHelper::try_read(
 		TSrc
 	>::type;
 
-	constexpr auto is_src_pure_numeric =
+	constexpr bool is_src_pure_numeric =
 		std::is_arithmetic<Src>::value &&
 		(!std::is_same<Src, bool>::value) &&
 		(!std::is_enum<Src>::value);
 
-	constexpr auto is_dst_pure_numeric =
+	constexpr bool is_dst_pure_numeric =
 		std::is_arithmetic<TDst>::value &&
 		(!std::is_same<TDst, bool>::value) &&
 		(!std::is_enum<TDst>::value);
 
-	constexpr auto is_src_float_point =
+	constexpr bool is_src_float_point =
 		std::is_floating_point<Src>::value;
 
-	constexpr auto is_dst_float_point =
+	constexpr bool is_dst_float_point =
 		std::is_floating_point<TDst>::value;
 
-	constexpr auto has_same_size =
+	constexpr bool has_same_size =
 		(sizeof(Src) == sizeof(TDst));
 
-	constexpr auto use_inplace =
+	constexpr bool use_inplace =
 		is_src_pure_numeric &&
 		is_dst_pure_numeric &&
 		((!is_src_float_point && !is_dst_float_point) ||
@@ -509,7 +509,7 @@ bool SavedGameHelper::try_read(
 	int dst_count,
 	InplaceTag)
 {
-	const auto dst_size = dst_count * static_cast<int>(sizeof(TDst));
+	const int dst_size = dst_count * static_cast<int>(sizeof(TDst));
 
 	if (!saved_game_->read(
 		dst_values,
@@ -604,9 +604,9 @@ void SavedGameHelper::write(
 	const TSrc& src_value,
 	NumericTag)
 {
-	constexpr auto dst_size = static_cast<int>(sizeof(TDst));
+	constexpr int dst_size = static_cast<int>(sizeof(TDst));
 
-	auto dst_value = static_cast<TDst>(src_value);
+	const TDst dst_value = static_cast<TDst>(src_value);
 
 	// FIXME Byte order
 	//
@@ -627,7 +627,7 @@ void SavedGameHelper::write(
 		std::uintptr_t
 	>::type;
 
-	auto dst_number = reinterpret_cast<DstNumeric>(src_value);
+	const DstNumeric dst_number = reinterpret_cast<DstNumeric>(src_value);
 
 	write<TDst>(
 		dst_number,
@@ -692,26 +692,26 @@ void SavedGameHelper::write(
 		TSrc,
 		TDst>::type;
 
-	constexpr auto is_src_pure_numeric =
+	constexpr bool is_src_pure_numeric =
 		std::is_arithmetic<TSrc>::value &&
 		(!std::is_same<TSrc, bool>::value) &&
 		(!std::is_enum<TSrc>::value);
 
-	constexpr auto is_dst_pure_numeric =
+	constexpr bool is_dst_pure_numeric =
 		std::is_arithmetic<Dst>::value &&
 		(!std::is_same<Dst, bool>::value) &&
 		(!std::is_enum<Dst>::value);
 
-	constexpr auto is_src_float_point =
+	constexpr bool is_src_float_point =
 		std::is_floating_point<TSrc>::value;
 
-	constexpr auto is_dst_float_point =
+	constexpr bool is_dst_float_point =
 		std::is_floating_point<Dst>::value;
 
-	constexpr auto has_same_size =
+	constexpr bool has_same_size =
 		(sizeof(TSrc) == sizeof(Dst));
 
-	constexpr auto use_inplace =
+	constexpr bool use_inplace =
 		is_src_pure_numeric &&
 		is_dst_pure_numeric &&
 		((!is_src_float_point && !is_dst_float_point) ||
@@ -736,7 +736,7 @@ void SavedGameHelper::write(
 	int src_count,
 	InplaceTag)
 {
-	const auto src_size = src_count * static_cast<int>(sizeof(TSrc));
+	const int src_size = src_count * static_cast<int>(sizeof(TSrc));
 
 	saved_game_->write(
 		src_values,
