@@ -120,7 +120,7 @@ void SG_WipeSavegame(
 //
 void SG_Shutdown()
 {
-	auto& saved_game = ojk::SavedGame::get_instance();
+	ojk::SavedGame& saved_game = ojk::SavedGame::get_instance();
 
 	saved_game.close();
 
@@ -751,7 +751,7 @@ int SG_GetSaveGameComment(
 {
 	int ret = 0;
 
-	auto& saved_game = ojk::SavedGame::get_instance();
+	ojk::SavedGame& saved_game = ojk::SavedGame::get_instance();
 
 	ojk::SavedGameHelper sgh(
 		&ojk::SavedGame::get_instance());
@@ -987,7 +987,7 @@ qboolean SG_GetSaveImage(
 		return false;
 	}
 
-	auto& saved_game = ojk::SavedGame::get_instance();
+	ojk::SavedGame& saved_game = ojk::SavedGame::get_instance();
 
 	if (!saved_game.open(base_name))
 	{
@@ -1149,7 +1149,7 @@ qboolean SG_WriteSavegame(const char *psPathlessBaseName, qboolean qbAutosave)
 		SG_StoreSaveGameComment(va("--> %s <--",psMapName));
 	}
 
-	auto& saved_game = ojk::SavedGame::get_instance();
+	ojk::SavedGame& saved_game = ojk::SavedGame::get_instance();
 
 	if(!saved_game.create( "current" ))
 	{
@@ -1228,7 +1228,7 @@ qboolean SG_ReadSavegame(
 		"0");
 #endif
 
-	auto& saved_game = ojk::SavedGame::get_instance();
+	ojk::SavedGame& saved_game = ojk::SavedGame::get_instance();
 
 	ojk::SavedGameHelper sgh(
 		&saved_game);
