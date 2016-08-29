@@ -260,7 +260,6 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	"${SPDir}/rd-common/mdx_format.h"
 	"${SharedDir}/qcommon/ojk_i_saved_game.h"
 	"${SharedDir}/qcommon/ojk_saved_game_helper.h"
 	"${SharedDir}/qcommon/ojk_saved_game_helper_fwd.h"
