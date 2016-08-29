@@ -1770,15 +1770,10 @@ void *G2_FindSurface(const model_s *mod, int index, int lod)
 	return (void *)current;
 }
 
-#if 1
+
 #define SURFACE_SAVE_BLOCK_SIZE	sizeof(surfaceInfo_t)
 #define BOLT_SAVE_BLOCK_SIZE sizeof(boltInfo_t)
 #define BONE_SAVE_BLOCK_SIZE sizeof(boneInfo_t)
-#else
-const auto SURFACE_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgSurfaceInfo));
-const auto BOLT_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoltInfo));
-const auto BONE_SAVE_BLOCK_SIZE = static_cast<int>(sizeof(SgBoneInfo));
-#endif
 
 
 void G2_SaveGhoul2Models(
