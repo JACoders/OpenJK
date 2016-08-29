@@ -1683,7 +1683,7 @@ int CTaskManager::SaveCommand( CBlock *block )
 			size);
 		
 		//Save out the raw data
-        const uint8_t* raw_data = static_cast<const uint8_t*>(bm->GetData());
+		const uint8_t* raw_data = static_cast<const uint8_t*>(bm->GetData());
 
 		saved_game.write_chunk(
 			INT_ID('B', 'M', 'E', 'M'),

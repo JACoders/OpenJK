@@ -1181,7 +1181,7 @@ void CL_InitRef( void ) {
 
 	rit.SV_PointContents = SV_PointContents;
 
-    rit.saved_game = &ojk::SavedGame::get_instance();
+	rit.saved_game = &ojk::SavedGame::get_instance();
 
 	ret = GetRefAPI( REF_API_VERSION, &rit );
 

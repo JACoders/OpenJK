@@ -9263,7 +9263,7 @@ void Interface_Init( interface_export_t *pe )
 
 	//Save / Load functions
 	pe->I_LinkEntity			=	ICARUS_LinkEntity;
-    pe->saved_game = gi.saved_game;
+	pe->saved_game = gi.saved_game;
 
 	gclient_t	*client;
 	client = &level.clients[0];
