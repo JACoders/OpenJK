@@ -337,7 +337,7 @@ bool SavedGame::read_chunk(
 		(is_compressed ? compressed_size : io_buffer_.size());
 
 #ifdef JK2_MODE
-	ref_chunk_size += sizeof(uiLoadedMagic);
+	ref_chunk_size += sizeof(loaded_magic_value);
 #endif
 
 	if (loaded_chunk_size != ref_chunk_size)
@@ -521,8 +521,8 @@ bool SavedGame::write_chunk(
 
 #ifdef JK2_MODE
 		saved_chunk_size += ::FS_Write(
-			&uiMagic,
-			static_cast<int>(sizeof(uiMagic)),
+			&magic_value,
+			static_cast<int>(sizeof(magic_value)),
 			file_handle_);
 #else
 		saved_chunk_size += ::FS_Write(
