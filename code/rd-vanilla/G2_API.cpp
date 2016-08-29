@@ -41,11 +41,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#endif
 #endif
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 extern mdxaBone_t		worldMatrix;
 extern mdxaBone_t		worldMatrixInv;
@@ -974,12 +972,10 @@ qboolean G2API_RemoveGhoul2Model(CGhoul2Info_v &ghlInfo, const int modelIndex)
 	return qtrue;
 }
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 #define		GHOUL2_RAG_STARTED						0x0010
 #define		GHOUL2_RAG_FORCESOLVE					0x1000		//api-override, determine if ragdoll should be forced to continue solving even if it thinks it is settled
 //rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 int		 G2API_GetAnimIndex(CGhoul2Info *ghlInfo)
 {
@@ -1022,14 +1018,12 @@ qboolean G2API_SetAnimIndex(CGhoul2Info *ghlInfo, const int index)
 
 qboolean G2API_SetBoneAnimIndex(CGhoul2Info *ghlInfo, const int index, const int startFrame, const int endFrame, const int flags, const float animSpeed, const int AcurrentTime, const float setFrame, const int blendTime)
 {
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	if (ghlInfo && (ghlInfo->mFlags & GHOUL2_RAG_STARTED))
 	{
 		return qfalse;
 	}
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	qboolean ret=qfalse;
 	if (G2_SetupModelPointers(ghlInfo))
@@ -1076,14 +1070,12 @@ qboolean G2API_SetBoneAnimIndex(CGhoul2Info *ghlInfo, const int index, const int
 
 qboolean G2API_SetBoneAnim(CGhoul2Info *ghlInfo, const char *boneName, const int startFrame, const int endFrame, const int flags, const float animSpeed, const int AcurrentTime, const float setFrame, const int blendTime)
 {
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	if (ghlInfo && ghlInfo->mFlags & GHOUL2_RAG_STARTED)
 	{
 		return qfalse;
 	}
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	qboolean ret=qfalse;
 	G2ERROR(boneName,"NULL boneName");
@@ -1296,14 +1288,12 @@ qboolean G2API_SetBoneAnglesIndex(CGhoul2Info *ghlInfo, const int index, const v
 							 const Eorientations yaw, const Eorientations pitch, const Eorientations roll,
 							 qhandle_t *, int blendTime, int AcurrentTime)
 {
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	if (ghlInfo && ghlInfo->mFlags & GHOUL2_RAG_STARTED)
 	{
 		return qfalse;
 	}
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	qboolean ret=qfalse;
 	if (G2_SetupModelPointers(ghlInfo))
@@ -1325,14 +1315,12 @@ qboolean G2API_SetBoneAngles(CGhoul2Info *ghlInfo, const char *boneName, const v
 							 const Eorientations up, const Eorientations left, const Eorientations forward,
 							 qhandle_t *, int blendTime, int AcurrentTime )
 {
-#ifndef JK2_MODE
 	//rww - RAGDOLL_BEGIN
 	if (ghlInfo && ghlInfo->mFlags & GHOUL2_RAG_STARTED)
 	{
 		return qfalse;
 	}
 	//rww - RAGDOLL_END
-#endif // !JK2_MODE
 
 	qboolean ret=qfalse;
 	G2ERROR(boneName,"NULL boneName");
@@ -1437,22 +1425,15 @@ qboolean G2API_RemoveBone(CGhoul2Info *ghlInfo, const char *boneName)
 	return ret;
 }
 
-#ifndef JK2_MODE
 //rww - RAGDOLL_BEGIN
 #ifdef _DEBUG
 extern int ragTraceTime;
 extern int ragSSCount;
 extern int ragTraceCount;
 #endif
-#endif // !JK2_MODE
 
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(AcurrentTime);
-	static_cast<void>(params);
-#else
 	int model;
 	int currentTime=G2API_GetTime(AcurrentTime);
 
@@ -1476,11 +1457,9 @@ void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdat
 //	assert(ragTraceTime < 15);
 	//assert(ragTraceCount < 600);
 #endif
-#endif // JK2_MODE
 }
 //rww - RAGDOLL_END
 
-#ifndef JK2_MODE
 int G2_Find_Bone_Rag(CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *boneName);
 #define RAG_PCJ						(0x00001)
 #define RAG_EFFECTOR				(0x00100)
@@ -1511,18 +1490,9 @@ static inline boneInfo_t *G2_GetRagBoneConveniently(CGhoul2Info_v &ghoul2, const
 
 	return bone;
 }
-#endif // !JK2_MODE
 
 qboolean G2API_RagPCJConstraint(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t min, vec3_t max)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(boneName);
-	static_cast<void>(min);
-	static_cast<void>(max);
-
-	return false;
-#else
 	boneInfo_t *bone = G2_GetRagBoneConveniently(ghoul2, boneName);
 
 	if (!bone)
@@ -1539,18 +1509,10 @@ qboolean G2API_RagPCJConstraint(CGhoul2Info_v &ghoul2, const char *boneName, vec
 	VectorCopy(max, bone->maxAngles);
 
 	return qtrue;
-#endif // JK2_MODE
 }
 
 qboolean G2API_RagPCJGradientSpeed(CGhoul2Info_v &ghoul2, const char *boneName, const float speed)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(boneName);
-	static_cast<void>(speed);
-
-	return false;
-#else
 	boneInfo_t *bone = G2_GetRagBoneConveniently(ghoul2, boneName);
 
 	if (!bone)
@@ -1566,18 +1528,10 @@ qboolean G2API_RagPCJGradientSpeed(CGhoul2Info_v &ghoul2, const char *boneName, 
 	bone->overGradSpeed = speed;
 
 	return qtrue;
-#endif // JK2_MODE
 }
 
 qboolean G2API_RagEffectorGoal(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(boneName);
-	static_cast<void>(pos);
-
-	return false;
-#else
 	boneInfo_t *bone = G2_GetRagBoneConveniently(ghoul2, boneName);
 
 	if (!bone)
@@ -1600,7 +1554,6 @@ qboolean G2API_RagEffectorGoal(CGhoul2Info_v &ghoul2, const char *boneName, vec3
 		bone->hasOverGoal = true;
 	}
 	return qtrue;
-#endif // JK2_MODE
 }
 
 qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos, vec3_t entAngles, vec3_t entPos, vec3_t entScale)
@@ -1610,13 +1563,6 @@ qboolean G2API_GetRagBonePos(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t
 
 qboolean G2API_RagEffectorKick(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(boneName);
-	static_cast<void>(velocity);
-
-	return false;
-#else
 	boneInfo_t *bone = G2_GetRagBoneConveniently(ghoul2, boneName);
 
 	if (!bone)
@@ -1634,17 +1580,10 @@ qboolean G2API_RagEffectorKick(CGhoul2Info_v &ghoul2, const char *boneName, vec3
 	bone->physicsSettled = false;
 
 	return qtrue;
-#endif // JK2_MODE
 }
 
 qboolean G2API_RagForceSolve(CGhoul2Info_v &ghoul2, qboolean force)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(force);
-
-	return false;
-#else
 	assert(ghoul2.size());
 	CGhoul2Info *ghlInfo = &ghoul2[0];
 
@@ -1663,43 +1602,20 @@ qboolean G2API_RagForceSolve(CGhoul2Info_v &ghoul2, qboolean force)
 	}
 
 	return qtrue;
-#endif // JK2_MODE
 }
 
-#ifndef JK2_MODE
 qboolean G2_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params);
-#endif // !JK2_MODE
 
 qboolean G2API_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(time);
-	static_cast<void>(boneName);
-	static_cast<void>(ikState);
-	static_cast<void>(params);
-
-	return false;
-#else
 	return G2_SetBoneIKState(ghoul2, time, boneName, ikState, params);
-#endif // JK2_MODE
 }
 
-#ifndef JK2_MODE
 qboolean G2_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
-#endif // !JK2_MODE
 
 qboolean G2API_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params)
 {
-#ifdef JK2_MODE
-	static_cast<void>(ghoul2);
-	static_cast<void>(time);
-	static_cast<void>(params);
-
-	return false;
-#else
 	return G2_IKMove(ghoul2, time, params);
-#endif // !JK2_MODE
 }
 
 qboolean G2API_RemoveBolt(CGhoul2Info *ghlInfo, const int index)
