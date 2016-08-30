@@ -53,11 +53,11 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 			{
 				diff[2] = 0;
 			}
-			return ( VectorLengthSquared( diff ) <= (radius*radius) );
+			return (qboolean)( VectorLengthSquared( diff ) <= (radius*radius) );
 		}
 		else
 		{//must hit exactly
-			return ( DistanceSquared(dest, point) <= (radius*radius) );
+			return (qboolean)( DistanceSquared(dest, point) <= (radius*radius) );
 		}
 		//There is probably a better way to do this, either by preserving the original
 		//		mins and maxs of the navgoal and doing this check ONLY if the radius

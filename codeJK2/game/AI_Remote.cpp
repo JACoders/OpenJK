@@ -187,7 +187,7 @@ void Remote_Strafe( void )
 
 		// Set the strafe start time so we can do a controlled roll
 		NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 

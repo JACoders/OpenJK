@@ -234,13 +234,14 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 	if ( RE_SplitSkins(name, (char*)&skinhead, (char*)&skintorso, (char*)&skinlower ) )
 	{//three part
 		hSkin = RE_RegisterIndividualSkin(skinhead, hSkin);
-		if (hSkin)
+		if (hSkin && strcmp(skinhead, skintorso))
 		{
 			hSkin = RE_RegisterIndividualSkin(skintorso, hSkin);
-			if (hSkin)
-			{
-				hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
-			}
+		}
+
+		if (hSkin && strcmp(skinhead, skinlower) && strcmp(skintorso, skinlower))
+		{
+			hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
 		}
 	}
 	else

@@ -93,7 +93,7 @@ qboolean PInUse(unsigned int entNum)
 {
 	assert(entNum>=0);
 	assert(entNum<MAX_GENTITIES);
-	return((g_entityInUseBits[entNum/32]&(((unsigned int)1)<<(entNum&0x1f)))!=0);
+	return (qboolean)((g_entityInUseBits[entNum/32]&(((unsigned int)1)<<(entNum&0x1f)))!=0);
 }
 
 /*qboolean PInUse2(gentity_t *ent)
@@ -726,7 +726,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	//rww - default this to 0, we will auto-set it to 1 if we run into a terrain ent
 	gi.cvar_set("RMG", "0");
 
-	g_bCollidableRoffs = false;
+	g_bCollidableRoffs = qfalse;
 
 	giMapChecksum = checkSum;
 	g_eSavedGameJustLoaded = eSavedGameJustLoaded;

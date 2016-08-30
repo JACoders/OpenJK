@@ -75,7 +75,6 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	# Misc files
 	set(SPRDVanillaCommonFiles
 		"${SPDir}/qcommon/matcomp.cpp"
-		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
 		"${SharedDir}/qcommon/ojk_i_saved_game.h"

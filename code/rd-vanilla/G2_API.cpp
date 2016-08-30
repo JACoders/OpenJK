@@ -827,7 +827,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 qboolean G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mLodBias = lodBias;
 		return qtrue;
@@ -839,14 +839,14 @@ qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t ren
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 #ifdef JK2_MODE
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		return qtrue;
 	}
 	return qfalse;
 #else
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		if (renderSkin)
@@ -863,7 +863,7 @@ extern void G2API_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t rende
 qboolean G2API_SetShader(CGhoul2Info *ghlInfo, qhandle_t customShader)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomShader = customShader;
 		return qtrue;
@@ -1814,7 +1814,7 @@ void G2API_ListBones(CGhoul2Info *ghlInfo, int frame)
 // decide if we have Ghoul2 models associated with this ghoul list or not
 qboolean G2API_HaveWeGhoul2Models(CGhoul2Info_v &ghoul2)
 {
-	return !!ghoul2.IsValid();
+	return (qboolean)ghoul2.IsValid();
 }
 
 // run through the Ghoul2 models and set each of the mModel values to the correct one from the cgs.gameModel offset lsit

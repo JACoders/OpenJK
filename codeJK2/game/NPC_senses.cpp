@@ -120,7 +120,7 @@ qboolean InFront( vec3_t spot, vec3_t from, vec3_t fromAngles, float threshHold 
 
 	dot = DotProduct( dir, forward );
 
-	return (dot > threshHold);
+	return (qboolean)(dot > threshHold);
 }
 
 /*
@@ -750,7 +750,7 @@ qboolean RemoveOldestAlert( void )
 	//make sure this never drops below zero... if it does, something very very bad happened
 	assert( level.numAlertEvents >= 0 );
 	//return true is have room for one now
-	return (level.numAlertEvents<MAX_ALERT_EVENTS);
+	return (qboolean)(level.numAlertEvents < MAX_ALERT_EVENTS);
 }
 
 /*

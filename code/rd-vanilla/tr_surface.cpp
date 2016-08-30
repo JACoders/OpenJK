@@ -664,14 +664,14 @@ static int f_count;
 static void CreateShape()
 //----------------------------------------------------------------------------
 {
-	VectorSet( sh1, 0.66f,// + crandom() * 0.1f,	// fwd
-				0.08f + crandom() * 0.02f,
-				0.08f + crandom() * 0.02f );
+	VectorSet( sh1, 0.66f,// + Q_flrand(-1.0f, 1.0f) * 0.1f,	// fwd
+				0.08f + Q_flrand(-1.0f, 1.0f) * 0.02f,
+				0.08f + Q_flrand(-1.0f, 1.0f) * 0.02f );
 
 	// it seems to look best to have a point on one side of the ideal line, then the other point on the other side.
-	VectorSet( sh2, 0.33f,// + crandom() * 0.1f,	// fwd
-					-sh1[1] + crandom() * 0.02f,	// forcing point to be on the opposite side of the line -- right
-					-sh1[2] + crandom() * 0.02f );// up
+	VectorSet( sh2, 0.33f,// + Q_flrand(-1.0f, 1.0f) * 0.1f,	// fwd
+					-sh1[1] + Q_flrand(-1.0f, 1.0f) * 0.02f,	// forcing point to be on the opposite side of the line -- right
+					-sh1[2] + Q_flrand(-1.0f, 1.0f) * 0.02f );// up
 }
 
 //----------------------------------------------------------------------------
@@ -1161,14 +1161,14 @@ static void RB_SurfaceSaberGlow()
 	{
 		VectorMA( e->origin, i, e->axis[0], end );
 
-		DoSprite( end, e->radius, 0.0f );//random() * 360.0f );
+		DoSprite( end, e->radius, 0.0f );//Q_flrand(0.0f, 1.0f) * 360.0f );
 		e->radius += 0.017f;
 	}
 
 	// Big hilt sprite
 	// Please don't kill me Pat...I liked the hilt glow blob, but wanted a subtle pulse.:)  Feel free to ditch it if you don't like it.  --Jeff
 	// Please don't kill me Jeff...  The pulse is good, but now I want the halo bigger if the saber is shorter...  --Pat
-	DoSprite( e->origin, 5.5f + random() * 0.25f, 0.0f );//random() * 360.0f );
+	DoSprite( e->origin, 5.5f + Q_flrand(0.0f, 1.0f) * 0.25f, 0.0f );//Q_flrand(0.0f, 1.0f) * 360.0f );
 }
 
 /*

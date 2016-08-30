@@ -2447,7 +2447,7 @@ void funcBBrushDieGo (gentity_t *self)
 
 	VectorSubtract( self->r.absmax, self->r.absmin, org );// size
 
-	numChunks = random() * 6 + 18;
+	numChunks = Q_flrand(0.0f, 1.0f) * 6 + 18;
 
 	// This formula really has no logical basis other than the fact that it seemed to be the closest to yielding the results that I wanted.
 	// Volume is length * width * height...then break that volume down based on how many chunks we have

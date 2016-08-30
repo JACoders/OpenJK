@@ -521,7 +521,7 @@ public:
 class objectives_t
 {
 public:
-	qboolean	display;	// A displayable objective?
+	int			display;	// A displayable objective?
 	int			status;	// Succeed or fail or pending
 
 

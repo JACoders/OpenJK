@@ -1335,7 +1335,7 @@ void SG_TestSave(void)
 {
 	if (sv_testsave->integer && sv.state == SS_GAME)
 	{
-		WriteGame (false);
-		ge->WriteLevel(false);
+		WriteGame(qfalse);
+		ge->WriteLevel(qfalse);
 	}
 }

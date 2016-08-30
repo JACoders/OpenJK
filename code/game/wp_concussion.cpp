@@ -42,8 +42,8 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 	{
 		vec3_t angles;
 		vectoangles(forwardVec, angles);
-		angles[PITCH] += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-		angles[YAW]	  += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[YAW]	  += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
 		AngleVectors(angles, forwardVec, vrightVec, up);
 	}
 
@@ -162,7 +162,7 @@ static void WP_FireConcussionAlt( gentity_t *ent )
 					}
 
 					int hitLoc = G_GetHitLocFromTrace( &tr, MOD_CONC_ALT );
-					qboolean noKnockBack = (traceEnt->flags&FL_NO_KNOCKBACK);//will be set if they die, I want to know if it was on *before* they died
+					qboolean noKnockBack = (qboolean)((traceEnt->flags&FL_NO_KNOCKBACK) != 0);//will be set if they die, I want to know if it was on *before* they died
 					if ( traceEnt && traceEnt->client && traceEnt->client->NPC_class == CLASS_GALAKMECH )
 					{//hehe
 						G_Damage( traceEnt, ent, ent, forwardVec, tr.endpos, 10, DAMAGE_NO_KNOCKBACK|DAMAGE_NO_HIT_LOC, MOD_CONC_ALT, hitLoc );
@@ -260,8 +260,8 @@ static void WP_FireConcussion( gentity_t *ent )
 	{
 		vec3_t angles;
 		vectoangles(forwardVec, angles);
-		angles[PITCH] += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-		angles[YAW]	  += ( crandom() * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+		angles[YAW]	  += ( Q_flrand(-1.0f, 1.0f) * (CONC_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
 		AngleVectors(angles, forwardVec, vrightVec, up);
 	}
 

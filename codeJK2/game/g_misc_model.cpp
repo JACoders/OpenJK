@@ -386,18 +386,18 @@ void GunRackAddItem( gitem_t *gun, vec3_t org, vec3_t angs, float ffwd, float fr
 			{
 				if ( t == YAW )
 				{
-					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 180 + crandom() * 14 );
+					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 180 + Q_flrand(-1.0f, 1.0f) * 14 );
 				}
 				else
 				{
-					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + crandom() * 4 );
+					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + Q_flrand(-1.0f, 1.0f) * 4 );
 				}
 			}
 			else
 			{
 				if ( t == YAW )
 				{
-					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 90 + crandom() * 4 );
+					it_ent->s.angles[t] = AngleNormalize180( it_ent->s.angles[t] + 90 + Q_flrand(-1.0f, 1.0f) * 4 );
 				}
 			}
 		}
@@ -465,7 +465,7 @@ void SP_misc_model_gun_rack( gentity_t *ent )
 	{
 		for ( int i = 0; i < ct; i++ )
 		{
-			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, crandom() * 2, ( i - 1 ) * 9 + crandom() * 2, ofz[i] );
+			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 2, ( i - 1 ) * 9 + Q_flrand(-1.0f, 1.0f) * 2, ofz[i] );
 		}
 	}
 
@@ -640,7 +640,7 @@ void spawn_rack_goods( gentity_t *ent )
 	{
 		for ( int i = 0; i < ct; i++ )
 		{
-			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, crandom() * 0.5f, (i-1)* 8, 7.0f );
+			GunRackAddItem( itemList[i], ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 0.5f, (i-1)* 8, 7.0f );
 		}
 	}
 
@@ -676,9 +676,9 @@ void spawn_rack_goods( gentity_t *ent )
 		{
 			// since we may have to put up a health pack on the shelf, we should know where we randomly put
 			//	the gun so we don't put the pack on the same spot..so pick either the left or right side
-			pos = ( random() > .5 ) ? -1 : 1;
+			pos = ( Q_flrand(0.0f, 1.0f) > .5 ) ? -1 : 1;
 
-			GunRackAddItem( it, ent->s.origin, ent->s.angles, crandom() * 2, ( random() * 6 + 4 ) * pos, v_off );
+			GunRackAddItem( it, ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 2, ( Q_flrand(0.0f, 1.0f) * 6 + 4 ) * pos, v_off );
 		}
 	}
 
@@ -688,7 +688,7 @@ void spawn_rack_goods( gentity_t *ent )
 		if ( !pos )
 		{
 			// we haven't picked a side already...
-			pos = ( random() > .5 ) ? -1 : 1;
+			pos = ( Q_flrand(0.0f, 1.0f) > .5 ) ? -1 : 1;
 		}
 		else
 		{
@@ -696,7 +696,7 @@ void spawn_rack_goods( gentity_t *ent )
 			pos *= -1;
 		}
 
-		GunRackAddItem( health, ent->s.origin, ent->s.angles, crandom() * 0.5f, ( random() * 4 + 4 ) * pos, 24 );
+		GunRackAddItem( health, ent->s.origin, ent->s.angles, Q_flrand(-1.0f, 1.0f) * 0.5f, ( Q_flrand(0.0f, 1.0f) * 4 + 4 ) * pos, 24 );
 	}
 
 	ent->s.modelindex = G_ModelIndex( "models/map_objects/kejim/weaponsrung.md3" );
@@ -755,8 +755,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( health )
 		{
-			temp[0] = org[0] + crandom() * 8 + 16;
-			temp[1] = org[1] + crandom() * 8 + 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
 
 			LaunchItem( health, temp, (float *)vec3_origin, NULL );
 		}
@@ -767,8 +767,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( shields )
 		{
-			temp[0] = org[0] + crandom() * 8 - 16;
-			temp[1] = org[1] + crandom() * 8 + 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
 
 			LaunchItem( shields, temp, (float *)vec3_origin, NULL );
 		}
@@ -780,8 +780,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( bacta )
 		{
-			temp[0] = org[0] + crandom() * 8 - 16;
-			temp[1] = org[1] + crandom() * 8 - 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
 
 			LaunchItem( bacta, temp, (float *)vec3_origin, NULL );
 		}
@@ -793,8 +793,8 @@ void misc_model_cargo_die( gentity_t *self, gentity_t *inflictor, gentity_t *att
 
 		if ( batteries )
 		{
-			temp[0] = org[0] + crandom() * 8 + 16;
-			temp[1] = org[1] + crandom() * 8 - 16;
+			temp[0] = org[0] + Q_flrand(-1.0f, 1.0f) * 8 + 16;
+			temp[1] = org[1] + Q_flrand(-1.0f, 1.0f) * 8 - 16;
 
 			LaunchItem( batteries, temp, (float *)vec3_origin, NULL );
 		}

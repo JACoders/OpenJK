@@ -154,7 +154,6 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/msg.cpp"
 		"${SPDir}/qcommon/net_chan.cpp"
 
-		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
 

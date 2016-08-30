@@ -2342,7 +2342,7 @@ qboolean WP_SaberDamageEffects( trace_t *tr, const vec3_t start, float length, f
 			}
 		}
 	}
-	return (numHitEnts>0);
+	return (qboolean)(numHitEnts>0);
 }
 
 void WP_SaberBlockEffect( gentity_t *attacker, int saberNum, int bladeNum, vec3_t position, vec3_t normal, qboolean cutNotBlock )
@@ -5280,7 +5280,7 @@ void WP_SaberDamageTrace( gentity_t *ent, int saberNum, int bladeNum )
 				}
 				else if ( entAttacking && hitOwnerDefending )
 				{//I'm attacking hit, they're parrying
-					qboolean activeDefense = (hitOwner->s.number||g_saberAutoBlocking->integer||hitOwner->client->ps.saberBlockingTime > level.time);
+					qboolean activeDefense = (qboolean)(hitOwner->s.number||g_saberAutoBlocking->integer||hitOwner->client->ps.saberBlockingTime > level.time);
 					if ( !Q_irand( 0, g_saberLockRandomNess->integer*3 )
 						&& activeDefense
 						&& (g_debugSaberLock->integer || forceLock ||
@@ -9552,15 +9552,15 @@ void ForceThrow( gentity_t *self, qboolean pull, qboolean fake )
 							&& ((!pull&&self->client->ps.forcePowerLevel[FP_PUSH] < FORCE_LEVEL_2 && push_list[x]->client->ps.forcePowerLevel[FP_PUSH] < FORCE_LEVEL_1) //level 1 push
 								|| (pull && self->client->ps.forcePowerLevel[FP_PULL] < FORCE_LEVEL_2 && push_list[x]->client->ps.forcePowerLevel[FP_PULL] < FORCE_LEVEL_1)) )//level 1 pull
 						{//NPC or third person player (without force push/pull skill), and force push/pull level is at 1
-							WP_ForceKnockdown( push_list[x], self, pull, (!pull&&knockback>150), qfalse );
+							WP_ForceKnockdown( push_list[x], self, pull, (qboolean)(!pull&&knockback>150), qfalse );
 						}
 						else if ( !push_list[x]->s.number )
 						{//player, have to force an anim on him
-							WP_ForceKnockdown( push_list[x], self, pull, (!pull&&knockback>150), qfalse );
+							WP_ForceKnockdown( push_list[x], self, pull, (qboolean)(!pull&&knockback>150), qfalse );
 						}
 						else
 						{//NPC and force-push/pull at level 2 or higher
-							WP_ForceKnockdown( push_list[x], self, pull, (!pull&&knockback>100), qfalse );
+							WP_ForceKnockdown( push_list[x], self, pull, (qboolean)(!pull&&knockback>100), qfalse );
 						}
 					}
 					push_list[x]->forcePushTime = level.time + 600; // let the push effect last for 600 ms

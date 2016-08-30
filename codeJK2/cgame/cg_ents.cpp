@@ -810,7 +810,7 @@ Ghoul2 Insert End
 				// Only display when we have damage
 				if ( t >= 0.0f && t <= 1.0f ) 
 				{
-					t *= random();
+					t *= Q_flrand(0.0f, 1.0f);
 
 					ent.shaderRGBA[0] = ent.shaderRGBA[1] = ent.shaderRGBA[2] = 255.0f * t;
 					ent.shaderRGBA[3] = 255;
@@ -845,7 +845,7 @@ static void CG_Speaker( centity_t *cent ) {
 
 	//	ent->s.frame = ent->wait * 10;
 	//	ent->s.clientNum = ent->random * 10;
-	cent->miscTime = (int)(cg.time + cent->currentState.frame * 100 + cent->currentState.clientNum * 100 * crandom());
+	cent->miscTime = (int)(cg.time + cent->currentState.frame * 100 + cent->currentState.clientNum * 100 * Q_flrand(-1.0f, 1.0f));
 }
 
 /*

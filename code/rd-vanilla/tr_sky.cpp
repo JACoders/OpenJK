@@ -600,7 +600,7 @@ static void FillCloudBox( const shader_t *shader, int stage )
 		}
 
 		// only add indexes for first stage
-		FillCloudySkySide( sky_mins_subd, sky_maxs_subd, ( stage == 0 ) );
+		FillCloudySkySide( sky_mins_subd, sky_maxs_subd, (qboolean)( stage == 0 ) );
 	}
 }
 

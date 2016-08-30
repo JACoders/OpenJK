@@ -791,7 +791,7 @@ gentity_t *SelectRandomFurthestSpawnPoint ( vec3_t avoidPoint, vec3_t origin, ve
 	}
 
 	// select a random spot from the spawn points furthest away
-	rnd = random() * (numSpots / 2);
+	rnd = Q_flrand(0.0f, 1.0f) * (numSpots / 2);
 
 	VectorCopy (list_spot[rnd]->s.origin, origin);
 	origin[2] += 9;
@@ -884,7 +884,7 @@ tryAgain:
 	}
 
 	// select a random spot from the spawn points furthest away
-	rnd = random() * (numSpots / 2);
+	rnd = Q_flrand(0.0f, 1.0f) * (numSpots / 2);
 
 	VectorCopy (list_spot[rnd]->s.origin, origin);
 	origin[2] += 9;

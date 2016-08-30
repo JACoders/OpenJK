@@ -392,7 +392,7 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	/*
 	if ( doLight )
 	{//FIXME: RGB combine all the colors of the sabers you're using into one averaged color!
-		cgi_R_AddLightToScene( mid, (length*2.0f) + (random()*8.0f), rgb[0], rgb[1], rgb[2] );
+		cgi_R_AddLightToScene( mid, (length*2.0f) + (Q_flrand(0.0f, 1.0f)*8.0f), rgb[0], rgb[1], rgb[2] );
 	}
 	*/
 
@@ -416,8 +416,8 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	float radiusRange = radius * 0.075f;
 	float radiusStart = radius-radiusRange;
 
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-	//saber.radius = (2.8f + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+	//saber.radius = (2.8f + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 
 	VectorCopy( origin, saber.origin );
@@ -435,8 +435,8 @@ void UI_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.customShader = blade;
 	saber.reType = RT_LINE;
 	radiusStart = radius/3.0f;
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-//	saber.radius = (1.0 + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+//	saber.radius = (1.0 + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 	DC->addRefEntityToScene( &saber );
 }
@@ -784,19 +784,19 @@ void UI_GetSaberForMenu( char *saber, int saberNum )
 	case 3://MD_SINGLE_STRONG:
 		if ( saberType != SABER_SINGLE )
 		{
-			Q_strncpyz(saber,"single_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"single_1",MAX_QPATH);
 		}
 		break;
 	case 4://MD_DUAL_SABERS:
 		if ( saberType != SABER_SINGLE )
 		{
-			Q_strncpyz(saber,"single_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"single_1",MAX_QPATH);
 		}
 		break;
 	case 5://MD_SABER_STAFF:
 		if ( saberType == SABER_SINGLE || saberType == SABER_NONE )
 		{
-			Q_strncpyz(saber,"dual_1",MAX_QPATH,qtrue);
+			Q_strncpyz(saber,"dual_1",MAX_QPATH);
 		}
 		break;
 	}

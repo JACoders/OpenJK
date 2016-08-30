@@ -42,7 +42,7 @@ qboolean MP3_IsValid( const char *psLocalFilename, void *pvData, int iDataLen, q
 		Com_Printf(va(S_COLOR_RED"%s(%s)\n",psError, psLocalFilename));
 	}
 
-	return !psError;
+	return (qboolean)(!psError);
 }
 
 
@@ -168,7 +168,7 @@ qboolean MP3_FakeUpWAVInfo( const char *psLocalFilename, void *pvData, int iData
 	//
 	samples	= iUnpackedDataLength / width;
 
-	return !psError;
+	return (qboolean)(!psError);
 }
 
 
@@ -232,7 +232,7 @@ qboolean MP3_ReadSpecialTagInfo(byte *pbLoadedFile, int iLoadedFileLen,
 		*ppTAG = pTAG;
 	}
 
-	return (pTAG && !qbError);
+	return (qboolean)(pTAG && !qbError);
 }
 
 

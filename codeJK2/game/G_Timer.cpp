@@ -382,7 +382,7 @@ qboolean TIMER_Done( gentity_t *ent, const char *identifier )
 		return qtrue;
 	}
 
-	return (timer->time < level.time);
+	return (qboolean)(timer->time < level.time);
 }
 
 /*
@@ -405,7 +405,7 @@ qboolean TIMER_Done2( gentity_t *ent, const char *identifier, qboolean remove )
 		return qfalse;
 	}
 
-	res = (timer->time < level.time);
+	res = (qboolean)(timer->time < level.time);
 
 	if (res && remove)
 	{

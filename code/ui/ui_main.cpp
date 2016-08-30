@@ -2166,7 +2166,7 @@ qboolean UI_ParseAnimFileSet( const char *animCFG, int *animFileIndex )
 	int			i;
 	char		*slash;
 
-	Q_strncpyz( strippedName, animCFG, sizeof(strippedName), qtrue);
+	Q_strncpyz( strippedName, animCFG, sizeof(strippedName));
 	slash = strrchr( strippedName, '/' );
 	if ( slash )
 	{
@@ -2284,7 +2284,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		if ( token[0] == 0 )
 		{
 			COM_EndParseSession(  );
-			return species.ColorCount;
+			return (qboolean)(species.ColorCount != 0);
 		}
 
 		if (species.ColorCount >= species.ColorMax)
@@ -2295,7 +2295,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 
 		memset(&species.Color[species.ColorCount], 0, sizeof(playerColor_t));
 
-		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH, qtrue );
+		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH );
 
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
 		if ( token[0] != '{' )
@@ -2328,7 +2328,7 @@ bIsImageFile
 builds path and scans for valid image extentions
 =================
 */
-static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean building)
+static qboolean IsImageFile(const char* dirptr, const char* skinname, qboolean building)
 {
 	char fpath[MAX_QPATH];
 	int f;
@@ -2350,10 +2350,10 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 	{
 		ui.FS_FCloseFile(f);
 		if ( building ) ui.R_RegisterShaderNoMip(fpath);
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 static void UI_FreeSpecies( playerSpeciesInfo_t *species )
@@ -2383,12 +2383,27 @@ PlayerModel_BuildList
 */
 static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 {
+	static const size_t DIR_LIST_SIZE = 16384;
+
 	int		numdirs;
-	char	dirlist[2048];
+	size_t	dirListSize = DIR_LIST_SIZE;
+	char	stackDirList[8192];
+	char	*dirlist;
 	char*	dirptr;
 	int		dirlen;
 	int		i;
 	const int building = Cvar_VariableIntegerValue("com_buildscript");
+
+	dirlist = (char *)malloc(DIR_LIST_SIZE);
+	if ( !dirlist )
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Failed to allocate %u bytes of memory for player model "
+			"directory list. Using stack allocated buffer of %u bytes instead.",
+			DIR_LIST_SIZE, sizeof(stackDirList));
+
+		dirlist = stackDirList;
+		dirListSize = sizeof(stackDirList);
+	}
 
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
@@ -2396,15 +2411,14 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, 2048 );
+	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, dirListSize );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
-		char	filelist[2048];
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[2048];
+		char fpath[MAX_QPATH];
 
 		dirlen = strlen(dirptr);
 
@@ -2413,11 +2427,12 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
 			continue;
 
-		Com_sprintf(fpath, 2048, "models/players/%s/PlayerChoice.txt", dirptr);
+		Com_sprintf(fpath, sizeof(fpath), "models/players/%s/PlayerChoice.txt", dirptr);
 		filelen = ui.FS_FOpenFile(fpath, &f, FS_READ);
 
 		if (f)
 		{
+			char filelist[2048];
 			playerSpeciesInfo_t *species = NULL;
 
 			std::vector<char> buffer(filelen + 1);
@@ -2434,7 +2449,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			}
 			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
 			memset(species, 0, sizeof(playerSpeciesInfo_t));
-			Q_strncpyz( species->Name, dirptr, MAX_QPATH, qtrue );
+			Q_strncpyz( species->Name, dirptr, MAX_QPATH );
 
 			if (!UI_ParseColorData(buffer.data(),*species))
 			{
@@ -2454,7 +2469,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			int		numfiles;
 			int		iSkinParts=0;
 
-			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
+			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, sizeof(filelist) );
 			fileptr  = filelist;
 			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
 			{
@@ -2471,7 +2486,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				filelen = strlen(fileptr);
 				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
-				if (bIsImageFile(dirptr, skinname, building))
+				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
 				{ //if it exists
 					if (Q_stricmpn(skinname,"head_",5) == 0)
 					{
@@ -2480,7 +2495,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinHeadMax *= 2;
 							species->SkinHead = (skinName_t *)realloc(species->SkinHead, species->SkinHeadMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<0;
 					} else
 					if (Q_stricmpn(skinname,"torso_",6) == 0)
@@ -2490,7 +2505,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinTorsoMax *= 2;
 							species->SkinTorso = (skinName_t *)realloc(species->SkinTorso, species->SkinTorsoMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<1;
 					} else
 					if (Q_stricmpn(skinname,"lower_",6) == 0)
@@ -2500,7 +2515,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinLegMax *= 2;
 							species->SkinLeg = (skinName_t *)realloc(species->SkinLeg, species->SkinLegMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<2;
 					}
 
@@ -2525,6 +2540,10 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		}
 	}
 
+	if ( dirlist != stackDirList )
+	{
+		free(dirlist);
+	}
 }
 
 /*

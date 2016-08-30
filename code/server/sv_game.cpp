@@ -441,12 +441,12 @@ static void SV_G2API_AnimateG2Models( CGhoul2Info_v &ghoul2, int AcurrentTime, C
 	re.G2API_AnimateG2Models( ghoul2, AcurrentTime, params );
 }
 
-static int SV_G2API_AttachEnt( int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum )
+static qboolean SV_G2API_AttachEnt( int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum )
 {
 	return re.G2API_AttachEnt( boltInfo, ghlInfoTo, toBoltIndex, entNum, toModelNum );
 }
 
-static int SV_G2API_AttachG2Model( CGhoul2Info *ghlInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int toModel )
+static qboolean SV_G2API_AttachG2Model( CGhoul2Info *ghlInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int toModel )
 {
 	return re.G2API_AttachG2Model( ghlInfo, ghlInfoTo, toBoltIndex, toModel );
 }
@@ -578,7 +578,7 @@ static void SV_G2API_GiveMeVectorFromMatrix( mdxaBone_t &boltMatrix, Eorientatio
 	re.G2API_GiveMeVectorFromMatrix( boltMatrix, flags, vec );
 }
 
-static int SV_G2API_HaveWeGhoul2Models( CGhoul2Info_v &ghoul2 )
+static qboolean SV_G2API_HaveWeGhoul2Models( CGhoul2Info_v &ghoul2 )
 {
 	return re.G2API_HaveWeGhoul2Models( ghoul2 );
 }

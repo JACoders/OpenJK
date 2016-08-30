@@ -306,6 +306,12 @@ endif()
 
 # Files shared across all projects
 set(SharedCommonFiles
+	"${SharedDir}/qcommon/q_color.h"
+	"${SharedDir}/qcommon/q_color.c"
+	"${SharedDir}/qcommon/q_math.h"
+	"${SharedDir}/qcommon/q_math.c"
+	"${SharedDir}/qcommon/q_string.h"
+	"${SharedDir}/qcommon/q_string.c"
 	"${SharedDir}/qcommon/q_platform.h"
 	)
 set(SharedCommonSafeFiles
