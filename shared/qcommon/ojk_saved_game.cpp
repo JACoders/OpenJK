@@ -47,7 +47,7 @@ bool SavedGame::open(
 	static_cast<void>(::FS_FOpenFileRead(
 		file_path.c_str(),
 		&file_handle_,
-		true));
+		qtrue));
 
 	if (file_handle_ == 0)
 	{

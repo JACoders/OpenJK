@@ -24,6 +24,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "q_platform.h"
 
+#ifdef __cplusplus
+#include "ojk_saved_game_helper_fwd.h"
+#endif // __cplusplus
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
@@ -180,6 +184,29 @@ typedef struct cplane_s {
 	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
 	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
 	byte	pad[2];
+
+
+#ifdef __cplusplus
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<float>(normal);
+		saved_game.write<float>(dist);
+		saved_game.write<uint8_t>(type);
+		saved_game.write<uint8_t>(signbits);
+		saved_game.write<uint8_t>(pad);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<float>(normal);
+		saved_game.read<float>(dist);
+		saved_game.read<uint8_t>(type);
+		saved_game.read<uint8_t>(signbits);
+		saved_game.read<uint8_t>(pad);
+	}
+#endif // __cplusplus
 } cplane_t;
 
 void SetPlaneSignbits( cplane_t *out );

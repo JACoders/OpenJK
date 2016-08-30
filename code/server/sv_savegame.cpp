@@ -907,7 +907,7 @@ static bool SG_ReadScreenshot(
 		jpeg_data = static_cast<byte*>(::Z_Malloc(
 			static_cast<int>(screenshot_length + 4096),
 			TAG_TEMP_WORKSPACE,
-			false));
+			qfalse));
 	}
 
 	//
@@ -984,14 +984,14 @@ qboolean SG_GetSaveImage(
 {
 	if (!base_name)
 	{
-		return false;
+		return qfalse;
 	}
 
 	ojk::SavedGame& saved_game = ojk::SavedGame::get_instance();
 
 	if (!saved_game.open(base_name))
 	{
-		return false;
+		return qfalse;
 	}
 
 	bool is_succeed = true;
@@ -1017,7 +1017,7 @@ qboolean SG_GetSaveImage(
 
 	saved_game.close();
 
-	return is_succeed;
+	return is_succeed ? qtrue : qfalse;
 }
 
 
@@ -1297,7 +1297,7 @@ qboolean SG_ReadSavegame(
 	::SG_ReadCvars();
 
 	// read game state
-	const int qbAutosave = ::ReadGame();
+	const qboolean qbAutosave = ::ReadGame();
 
 	::eSavedGameJustLoaded = (qbAutosave ? eAUTO : eFULL);
 
@@ -1305,7 +1305,7 @@ qboolean SG_ReadSavegame(
 	::SV_SpawnServer(
 		sMapCmd,
 		eForceReload_NOTHING,
-		(::eSavedGameJustLoaded != eFULL));
+		(::eSavedGameJustLoaded != eFULL ? qtrue : qfalse));
 
 	// read in all the level data...
 	//
@@ -1328,7 +1328,7 @@ qboolean SG_ReadSavegame(
 		qbAutosave,
 		qbLoadTransition);
 
-	return true;
+	return qtrue;
 }
 
 void SG_TestSave(void)

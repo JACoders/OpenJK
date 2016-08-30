@@ -432,9 +432,8 @@ bool SavedGameHelper::try_read(
 	int dst_count)
 {
 	static_assert(
-		(std::is_arithmetic<TDst>::value &&
-			!std::is_same<TDst, bool>::value &&
-			!std::is_enum<TDst>::value) ||
+		std::is_arithmetic<TDst>::value ||
+			std::is_enum<TDst>::value ||
 			std::is_pointer<TDst>::value ||
 			std::is_class<TDst>::value,
 		"Unsupported types.");
@@ -531,7 +530,8 @@ bool SavedGameHelper::try_read(
 	CastTag)
 {
 	using Tag = typename std::conditional<
-		std::is_arithmetic<TDst>::value,
+		std::is_arithmetic<TDst>::value ||
+			std::is_enum<TDst>::value,
 		NumericTag,
 		typename std::conditional<
 			std::is_pointer<TDst>::value,
@@ -680,9 +680,8 @@ void SavedGameHelper::write(
 	int src_count)
 {
 	static_assert(
-		(std::is_arithmetic<TSrc>::value &&
-			!std::is_same<TSrc, bool>::value &&
-			!std::is_enum<TSrc>::value) ||
+		std::is_arithmetic<TSrc>::value ||
+			std::is_enum<TSrc>::value ||
 			std::is_pointer<TSrc>::value ||
 			std::is_class<TSrc>::value,
 		"Unsupported types.");
@@ -753,7 +752,8 @@ void SavedGameHelper::write(
 	CastTag)
 {
 	using Tag = typename std::conditional<
-		std::is_arithmetic<TSrc>::value,
+		std::is_arithmetic<TSrc>::value ||
+			std::is_enum<TSrc>::value,
 		NumericTag,
 		typename std::conditional<
 			std::is_pointer<TSrc>::value,

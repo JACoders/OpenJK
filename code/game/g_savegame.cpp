@@ -680,7 +680,7 @@ void saberInfoRetail_t::sg_export(
 {
 	::WP_SaberSetDefaults(
 		&dst,
-		false);
+		qfalse);
 
 	if (!activeBlocking)
 	{
