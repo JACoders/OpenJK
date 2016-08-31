@@ -11,6 +11,7 @@
 #include <type_traits>
 #include "ojk_saved_game_helper_fwd.h"
 #include "ojk_scope_guard.h"
+#include "ojk_saved_game_class_archivers.h"
 
 
 namespace ojk
@@ -393,8 +394,39 @@ bool SavedGameHelper::try_read(
 		std::is_same<TSrc, void>::value,
 		"Unsupported types.");
 
+	using Tag = typename std::conditional<
+		SavedGameClassArchiver<TDst>::is_implemented(),
+		ExternalTag,
+		InternalTag
+	>::type;
+
+	return try_read<TSrc>(
+		dst_value,
+		ClassTag(),
+		Tag());
+}
+
+template<typename TSrc, typename TDst>
+bool SavedGameHelper::try_read(
+	TDst& dst_value,
+	ClassTag,
+	InternalTag)
+{
 	dst_value.sg_import(
 		*this);
+
+	return !saved_game_->is_failed();
+}
+
+template<typename TSrc, typename TDst>
+bool SavedGameHelper::try_read(
+	TDst& dst_value,
+	ClassTag,
+	ExternalTag)
+{
+	SavedGameClassArchiver<TDst>::sg_import(
+		*this,
+		dst_value);
 
 	return !saved_game_->is_failed();
 }
@@ -643,8 +675,37 @@ void SavedGameHelper::write(
 		std::is_same<TDst, void>::value,
 		"Unsupported types.");
 
+	using Tag = typename std::conditional<
+		SavedGameClassArchiver<TSrc>::is_implemented(),
+		ExternalTag,
+		InternalTag
+	>::type;
+
+	write<TDst>(
+		src_value,
+		ClassTag(),
+		Tag());
+}
+
+template<typename TDst, typename TSrc>
+void SavedGameHelper::write(
+	const TSrc& src_value,
+	ClassTag,
+	InternalTag)
+{
 	src_value.sg_export(
 		*this);
+}
+
+template<typename TDst, typename TSrc>
+void SavedGameHelper::write(
+	const TSrc& src_value,
+	ClassTag,
+	ExternalTag)
+{
+	SavedGameClassArchiver<TSrc>::sg_export(
+		*this,
+		src_value);
 }
 
 template<typename TDst, typename TSrc, int TCount>

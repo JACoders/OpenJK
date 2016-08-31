@@ -174,6 +174,8 @@ private:
 	class Array2dTag { public: };
 	class InplaceTag { public: };
 	class CastTag { public: };
+	class InternalTag { public: };
+	class ExternalTag { public: };
 
 
 	template<typename TSrc, typename TDst>
@@ -195,6 +197,18 @@ private:
 	bool try_read(
 		TDst& dst_value,
 		ClassTag);
+
+	template<typename TSrc, typename TDst>
+	bool try_read(
+		TDst& dst_value,
+		ClassTag,
+		InternalTag);
+
+	template<typename TSrc, typename TDst>
+	bool try_read(
+		TDst& dst_value,
+		ClassTag,
+		ExternalTag);
 
 	template<typename TSrc, typename TDst, int TCount>
 	bool try_read(
@@ -235,6 +249,18 @@ private:
 		const TSrc& src_value,
 		ClassTag);
 
+	template<typename TDst, typename TSrc>
+	void write(
+		const TSrc& src_value,
+		ClassTag,
+		InternalTag);
+
+	template<typename TDst, typename TSrc>
+	void write(
+		const TSrc& src_value,
+		ClassTag,
+		ExternalTag);
+
 	template<typename TDst, typename TSrc, int TCount>
 	void write(
 		const TSrc(&src_values)[TCount],
@@ -258,6 +284,37 @@ private:
 		int src_count,
 		CastTag);
 }; // SavedGameHelper
+
+
+template<typename T>
+class SavedGameClassArchiver
+{
+public:
+	static constexpr bool is_implemented()
+	{
+		return false;
+	}
+
+	static void sg_export(
+		SavedGameHelper& saved_game,
+		const T& instance)
+	{
+		static_cast<void>(saved_game);
+		static_cast<void>(instance);
+
+		static_assert(false, "Not implemented.");
+	}
+
+	static void sg_import(
+		SavedGameHelper& saved_game,
+		T& instance)
+	{
+		static_cast<void>(saved_game);
+		static_cast<void>(instance);
+
+		static_assert(false, "Not implemented.");
+	}
+};
 
 
 } // ojk
