@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "g_local.h"
 #include "g_roff.h"
 #include "g_icarus.h"
-#include "qcommon/ojk_saved_game_helper.h"
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 // The list of precached ROFFs
 roff_list_t	roffs[MAX_ROFFS];

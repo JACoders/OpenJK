@@ -173,12 +173,12 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/timing.h"
 		"${SPDir}/qcommon/MiniHeap.h"
 
-		"${SharedDir}/qcommon/ojk_i_saved_game.h"
-		"${SharedDir}/qcommon/ojk_saved_game.h"
-		"${SharedDir}/qcommon/ojk_saved_game.cpp"
-		"${SharedDir}/qcommon/ojk_saved_game_helper.h"
-		"${SharedDir}/qcommon/ojk_saved_game_helper_fwd.h"
-		"${SharedDir}/qcommon/ojk_scope_guard.h"
+		"${SPDir}/qcommon/ojk_i_saved_game.h"
+		"${SPDir}/qcommon/ojk_saved_game.h"
+		"${SPDir}/qcommon/ojk_saved_game.cpp"
+		"${SPDir}/qcommon/ojk_saved_game_helper.h"
+		"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+		"${SPDir}/qcommon/ojk_scope_guard.h"
 
 		${SharedCommonFiles}
 		)

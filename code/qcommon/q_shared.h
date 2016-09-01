@@ -161,7 +161,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "qcommon/q_platform.h"
-#include "qcommon/ojk_saved_game_helper_fwd.h"
+#include "ojk_saved_game_helper_fwd.h"
 
 
 // ================================================================

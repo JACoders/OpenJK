@@ -7,7 +7,7 @@
 #define OJK_SAVED_GAME_CLASS_ARCHIVERS_INCLUDED
 
 
-#include "q_math.h"
+#include "qcommon/q_math.h"
 #include "ojk_saved_game_helper_fwd.h"
 
 

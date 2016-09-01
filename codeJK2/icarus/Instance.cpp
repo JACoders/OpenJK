@@ -29,7 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "instance.h"
 
 #include <assert.h>
-#include "qcommon/ojk_saved_game_helper.h"
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 // Instance
 
