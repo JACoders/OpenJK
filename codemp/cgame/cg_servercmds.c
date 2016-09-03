@@ -1767,6 +1767,21 @@ static void CG_ZykMod( void )
 			else
 				trap->Cvar_Set("ui_zyk_upgrade_1_value","Bounty Hunter Upgrade - no");
 
+			if (secrets_found & (1 << 2))
+				trap->Cvar_Set("ui_zyk_upgrade_14_value", "Unique Upgrade 1 - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_14_value", "Unique Upgrade 1 - no");
+
+			if (secrets_found & (1 << 3))
+				trap->Cvar_Set("ui_zyk_upgrade_15_value", "Unique Upgrade 2 - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_15_value", "Unique Upgrade 2 - no");
+
+			if (secrets_found & (1 << 4))
+				trap->Cvar_Set("ui_zyk_upgrade_16_value", "Unique Upgrade 3 - yes");
+			else
+				trap->Cvar_Set("ui_zyk_upgrade_16_value", "Unique Upgrade 3 - no");
+
 			if (secrets_found & (1 << 7))
 				trap->Cvar_Set("ui_zyk_upgrade_2_value","Stealth Attacker Upgrade - yes");
 			else
