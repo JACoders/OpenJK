@@ -5414,6 +5414,17 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->pers.quest_power_status &= ~(1 << 13);
 		}
 
+		// zyk: the player can have only one of the Unique Upgrades. If for some reason he has more, remove all of them
+		if ((ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3)) || 
+			(ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.secrets_found & (1 << 4)) || 
+			(ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 4)) || 
+			(ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.secrets_found & (1 << 4)))
+		{
+			ent->client->pers.secrets_found &= ~(1 << 2);
+			ent->client->pers.secrets_found &= ~(1 << 3);
+			ent->client->pers.secrets_found &= ~(1 << 4);
+		}
+
 		// zyk: update the rpg stuff info at the client-side game
 		send_rpg_events(10000);
 	}
@@ -8899,6 +8910,21 @@ void zyk_list_stuff(gentity_t *ent, gentity_t *target_ent)
 	else
 		strcpy(stuff_message, va("%s^3Bounty Hunter Upgrade - ^1no\n", stuff_message));
 
+	if (ent->client->pers.secrets_found & (1 << 2))
+		strcpy(stuff_message, va("%s^3Unique Upgrade 1 - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Unique Upgrade 1 - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 3))
+		strcpy(stuff_message, va("%s^3Unique Upgrade 2 - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Unique Upgrade 2 - ^1no\n", stuff_message));
+
+	if (ent->client->pers.secrets_found & (1 << 4))
+		strcpy(stuff_message, va("%s^3Unique Upgrade 3 - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Unique Upgrade 3 - ^1no\n", stuff_message));
+
 	if (ent->client->pers.secrets_found & (1 << 7))
 		strcpy(stuff_message, va("%s^3Stealth Attacker Upgrade - ^2yes\n", stuff_message));
 	else
@@ -9566,7 +9592,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000 - Sell: ^1no\n^315 - Impact Reducer: ^7Buy: 4300 - Sell: ^1no\n^316 - Flame Thrower: ^7Buy: 3000 - Sell: ^1no\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000 - Sell: ^1no\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500 - Sell: ^1no\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500 - Sell: ^1no\n^328 - Rocket Upgrade: ^7Buy: 3000 - Sell: ^1no\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000 - Sell: ^1no\n^333 - Stun Baton Upgrade: ^7Buy: 1200 - Sell: ^1no\n^339 - Armored Soldier Upgrade: ^7Buy: 5000 - Sell: ^1no\n^340 - Holdable Items Upgrade: ^7Buy: 3000 - Sell: ^1no\n^345 - Force Gunner Upgrade: ^7Buy: 5000 - Sell: ^1no\n^346 - Jetpack Upgrade: ^7Buy: 10000 - Sell: ^1no\n^347 - Force Tank Upgrade: ^7Buy: 5000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Upgrade 1: ^7Buy: 8000\n^354 - Unique Upgrade 2: ^7Buy: 8000\n^355 - Unique Upgrade 3: ^7Buy: 8000\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9776,6 +9802,18 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"\n^3Energy Crystal: ^7regens shield, blaster pack ammo and power cell ammo. If the player dies, he loses the crystal\n\n\"");
 		}
+		else if (i == 53)
+		{
+			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7\n\n\"");
+		}
+		else if (i == 54)
+		{
+			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7\n\n\"");
+		}
+		else if (i == 55)
+		{
+			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 3: ^7\n\n\"");
+		}
 	}
 }
 
@@ -9787,7 +9825,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,8000,8000,8000};
 
 	if (trap->Argc() == 1)
 	{
@@ -10174,6 +10212,24 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.player_statuses |= (1 << 11);
 		}
+		else if (value == 53)
+		{
+			ent->client->pers.secrets_found |= (1 << 2);
+			ent->client->pers.secrets_found &= ~(1 << 3);
+			ent->client->pers.secrets_found &= ~(1 << 4);
+		}
+		else if (value == 54)
+		{
+			ent->client->pers.secrets_found &= ~(1 << 2);
+			ent->client->pers.secrets_found |= (1 << 3);
+			ent->client->pers.secrets_found &= ~(1 << 4);
+		}
+		else if (value == 55)
+		{
+			ent->client->pers.secrets_found &= ~(1 << 2);
+			ent->client->pers.secrets_found &= ~(1 << 3);
+			ent->client->pers.secrets_found |= (1 << 4);
+		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
 
@@ -10200,7 +10256,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0,0,0,0,0,0,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0,0,0,0,0,0,0,0,0,0};
 
 	if (trap->Argc() == 1)
 	{
@@ -10414,7 +10470,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SENTRY_GUN)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SEEKER)) && 
 		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_EWEB)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_MEDPAC_BIG)) && 
 		!(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_SHIELD)) && !(ent->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_CLOAK)))
-	{ // zyk: if player sold an holdable item and no longer has no items left, deselect the held item
+	{ // zyk: if player sold an holdable item and has no items left, deselect the held item
 		ent->client->ps.stats[STAT_HOLDABLE_ITEM] = 0;
 	}
 			

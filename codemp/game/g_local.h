@@ -586,7 +586,7 @@ typedef enum {
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
 // zyk: quantity of items at the jawa seller
-#define NUMBER_OF_SELLER_ITEMS 52
+#define NUMBER_OF_SELLER_ITEMS 55
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -742,9 +742,9 @@ typedef struct clientPersistant_s {
 	// Possible bit values (1 << bit_value) are:
 	// 0 - Holdable Items Upgrade
 	// 1 - Bounty Hunter Upgrade
-	// 2 - unused
-	// 3 - unused
-	// 4 - unused
+	// 2 - Unique Upgrade 1
+	// 3 - Unique Upgrade 2
+	// 4 - Unique Upgrade 3
 	// 5 - unused
 	// 6 - unused
 	// 7 - Stealth Attacker Upgrade
