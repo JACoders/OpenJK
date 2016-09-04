@@ -5415,14 +5415,10 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 
 		// zyk: the player can have only one of the Unique Upgrades. If for some reason he has more, remove all of them
-		if ((ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3)) || 
-			(ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.secrets_found & (1 << 4)) || 
-			(ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 4)) || 
-			(ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.secrets_found & (1 << 4)))
+		if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3))
 		{
 			ent->client->pers.secrets_found &= ~(1 << 2);
 			ent->client->pers.secrets_found &= ~(1 << 3);
-			ent->client->pers.secrets_found &= ~(1 << 4);
 		}
 
 		// zyk: update the rpg stuff info at the client-side game
@@ -8920,11 +8916,6 @@ void zyk_list_stuff(gentity_t *ent, gentity_t *target_ent)
 	else
 		strcpy(stuff_message, va("%s^3Unique Upgrade 2 - ^1no\n", stuff_message));
 
-	if (ent->client->pers.secrets_found & (1 << 4))
-		strcpy(stuff_message, va("%s^3Unique Upgrade 3 - ^2yes\n", stuff_message));
-	else
-		strcpy(stuff_message, va("%s^3Unique Upgrade 3 - ^1no\n", stuff_message));
-
 	if (ent->client->pers.secrets_found & (1 << 7))
 		strcpy(stuff_message, va("%s^3Stealth Attacker Upgrade - ^2yes\n", stuff_message));
 	else
@@ -9592,7 +9583,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Upgrade 1: ^7Buy: 8000\n^354 - Unique Upgrade 2: ^7Buy: 8000\n^355 - Unique Upgrade 3: ^7Buy: 8000\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Upgrade 1: ^7Buy: 8000\n^354 - Unique Upgrade 2: ^7Buy: 8000\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9806,28 +9797,24 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			if (ent->client->pers.rpg_class == 4)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 5)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7You can only have one Unique Upgrade at a time. Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
 			}
 			else
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7You can only have one Unique Upgrade at a time.\n\n\"");
 			}
 		}
 		else if (i == 54)
 		{
-			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7\n\n\"");
-		}
-		else if (i == 55)
-		{
-			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 3: ^7\n\n\"");
+			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7You can only have one Unique Upgrade at a time.\n\n\"");
 		}
 	}
 }
@@ -9840,7 +9827,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,8000,8000,8000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,8000,8000};
 
 	if (trap->Argc() == 1)
 	{
@@ -10231,19 +10218,11 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.secrets_found |= (1 << 2);
 			ent->client->pers.secrets_found &= ~(1 << 3);
-			ent->client->pers.secrets_found &= ~(1 << 4);
 		}
 		else if (value == 54)
 		{
 			ent->client->pers.secrets_found &= ~(1 << 2);
 			ent->client->pers.secrets_found |= (1 << 3);
-			ent->client->pers.secrets_found &= ~(1 << 4);
-		}
-		else if (value == 55)
-		{
-			ent->client->pers.secrets_found &= ~(1 << 2);
-			ent->client->pers.secrets_found &= ~(1 << 3);
-			ent->client->pers.secrets_found |= (1 << 4);
 		}
 
 		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
@@ -10271,7 +10250,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0,0,0,0,0,0,0,0,0,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0,0,0,0,0,0,0,0,0};
 
 	if (trap->Argc() == 1)
 	{
@@ -14518,10 +14497,6 @@ void Cmd_Unique_f(gentity_t *ent) {
 	else if (ent->client->pers.secrets_found & (1 << 3))
 	{ // zyk: Unique Upgrade 2
 		
-	}
-	else if (ent->client->pers.secrets_found & (1 << 4))
-	{ // zyk: Unique Upgrade 3
-
 	}
 	else
 	{
