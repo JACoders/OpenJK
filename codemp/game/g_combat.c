@@ -5168,7 +5168,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			// zyk: Armored Soldier Lightning Shield reduces damage
 			if (targ->client->ps.powerups[PW_SHIELDHIT] > level.time)
 			{
-				armored_soldier_bonus_resistance += 0.2;
+				armored_soldier_bonus_resistance += 0.25;
 			}
 			
 			damage = (int)ceil(damage * (0.9 - ((0.05 * targ->client->pers.skill_levels[55]) + armored_soldier_bonus_resistance)));

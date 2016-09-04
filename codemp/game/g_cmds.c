@@ -9795,7 +9795,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 53)
 		{
-			if (ent->client->pers.rpg_class == 4)
+			if (ent->client->pers.rpg_class == 3)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Armored Soldier gets the Lightning Shield, which increases resistance to damage. Using /unique again will release a small lightning dome. Spends 5 power cell ammo\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 4)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
 			}
@@ -14420,26 +14424,28 @@ extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
 	{ // zyk: Unique Upgrade 1
+		if (ent->client->pers.rpg_class == 3 && ent->client->ps.powerups[PW_SHIELDHIT] > level.time)
+		{ // zyk: releasing the small lightning dome
+			ent->client->ps.powerups[PW_SHIELDHIT] = 0;
+
+			lightning_dome(ent, 50);
+
+			return;
+		}
+
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
 			if (ent->client->pers.rpg_class == 3)
 			{ // zyk: Armored Soldier Lightning Shield. Decreases damage and releases a small lightning dome when /unique is used again
 				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5)
 				{
-					if (ent->client->ps.powerups[PW_SHIELDHIT] < level.time)
-					{
-						ent->client->ps.powerups[PW_SHIELDHIT] = level.time + 8000;
+					ent->client->ps.ammo[AMMO_POWERCELL] -= 5;
 
-						ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+					ent->client->ps.powerups[PW_SHIELDHIT] = level.time + 8000;
 
-						ent->client->pers.unique_skill_timer = level.time + 30000;
-					}
-					else
-					{
-						ent->client->ps.powerups[PW_SHIELDHIT] = 0;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
-						lightning_dome(ent, 50);
-					}
+					ent->client->pers.unique_skill_timer = level.time + 30000;
 				}
 				else
 				{
