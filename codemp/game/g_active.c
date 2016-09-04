@@ -858,9 +858,9 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			{ // zyk: Monk auto-healing ability
 				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 				{ // zyk: Monk Unique Skill
-					if ((ent->health + 3) < client->pers.max_rpg_health)
+					if ((ent->health + 4) < client->pers.max_rpg_health)
 					{
-						ent->health += 3;
+						ent->health += 4;
 					}
 					else
 					{
@@ -3503,7 +3503,22 @@ void ClientThink_real( gentity_t *ent ) {
 						{ // zyk: Monk
 							if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 							{
+								int player_it = 0;
+
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
+
+								// zyk: disable grip of the enemy
+								for (player_it = 0; player_it < level.num_entities; player_it++)
+								{
+									gentity_t *player_ent = &g_entities[player_it];
+
+									if (ent->s.number != player_it && player_ent && player_ent->client && 
+										player_ent->client->ps.fd.forceGripEntityNum == ent->s.number)
+									{
+										WP_ForcePowerStop(player_ent, FP_GRIP);
+										break;
+									}
+								}
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
