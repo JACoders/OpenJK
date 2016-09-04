@@ -9812,6 +9812,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 8)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
+			}
 			else
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7\n\n\"");
