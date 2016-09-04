@@ -3513,6 +3513,7 @@ void ClientThink_real( gentity_t *ent ) {
 									gentity_t *player_ent = &g_entities[player_it];
 
 									if (ent->s.number != player_it && player_ent && player_ent->client && 
+										player_ent->client->ps.fd.forcePowersActive & (1 << FP_GRIP) && 
 										player_ent->client->ps.fd.forceGripEntityNum == ent->s.number)
 									{
 										WP_ForcePowerStop(player_ent, FP_GRIP);
@@ -3585,9 +3586,20 @@ void ClientThink_real( gentity_t *ent ) {
 													player_ent->client->ps.powerups[PW_QUAD] = level.time + 8000;
 												}
 
+												if (player_ent->client->ps.powerups[PW_CLOAKED] && 
+													!(player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.rpg_class == 5))
+												{ // zyk: disables cloak of enemies, except Stealth Attacker
+													Jedi_Decloak(player_ent);
+												}
+
 												if (player_ent->client->ps.fd.forcePowerMax > 0)
 												{ // zyk: disables force regen
 													player_ent->client->ps.powerups[PW_QUAD] = level.time + 8000;
+
+													if (player_ent->client->ps.fd.forcePowersActive & (1 << FP_SPEED))
+													{ // zyk: disables force Speed
+														WP_ForcePowerStop(player_ent, FP_SPEED);
+													}
 												}
 											}
 										}
