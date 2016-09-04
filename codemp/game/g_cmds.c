@@ -9818,7 +9818,14 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 54)
 		{
-			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7You can only have one Unique Upgrade at a time.\n\n\"");
+			if (ent->client->pers.rpg_class == 4)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage\n\n\"");
+			}
+			else
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7You can only have one Unique Upgrade at a time.\n\n\"");
+			}
 		}
 	}
 }
@@ -14526,7 +14533,62 @@ void Cmd_Unique_f(gentity_t *ent) {
 	}
 	else if (ent->client->pers.secrets_found & (1 << 3))
 	{ // zyk: Unique Upgrade 2
-		
+		if (ent->client->pers.unique_skill_timer < level.time)
+		{
+			if (ent->client->pers.rpg_class == 4)
+			{ // zyk: Monk Spin Kick ability. Kicks everyone around the Monk with very high damage
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					int i = 0;
+
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_A7_KICK_S;
+					ent->client->ps.forceHandExtendTime = level.time + 1000;
+
+					ent->client->pers.player_statuses |= (1 << 1);
+
+					for (i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 80)
+						{
+							G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_MELEE);
+
+							// zyk: removing emotes to prevent exploits
+							if (player_ent->client->pers.player_statuses & (1 << 1))
+							{
+								player_ent->client->pers.player_statuses &= ~(1 << 1);
+								player_ent->client->ps.forceHandExtendTime = level.time;
+							}
+
+							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+							player_ent->client->ps.forceHandExtendTime = level.time + 1000;
+							player_ent->client->ps.velocity[2] += 200;
+							player_ent->client->ps.forceDodgeAnim = 0;
+							player_ent->client->ps.quickerGetup = qtrue;
+
+							G_Sound(ent, CHAN_AUTO, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
+						}
+					}
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 30000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+		}
+		else
+		{
+			trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time) / 1000)));
+		}
 	}
 	else
 	{
