@@ -9804,7 +9804,14 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 53)
 		{
-			trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7\n\n\"");
+			if (ent->client->pers.rpg_class == 5)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
+			}
+			else
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7\n\n\"");
+			}
 		}
 		else if (i == 54)
 		{
@@ -14418,6 +14425,72 @@ void Cmd_Saber_f( gentity_t *ent ) {
 
 /*
 ==================
+Cmd_Unique_f
+==================
+*/
+extern void Jedi_Cloak(gentity_t *self);
+extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
+void Cmd_Unique_f(gentity_t *ent) {
+	if (ent->client->pers.secrets_found & (1 << 2))
+	{ // zyk: Unique Upgrade 1
+		if (ent->client->pers.unique_skill_timer < level.time)
+		{
+			if (ent->client->pers.rpg_class == 5)
+			{ // zyk: Stealth Attacker Ultra Cloak. Uses Mind Trick code to make it work
+				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5)
+				{
+					int i = 0;
+
+					ent->client->ps.ammo[AMMO_POWERCELL] -= 5;
+
+					for (i = 0; i < MAX_CLIENTS; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent->s.number != i)
+						{
+							WP_AddAsMindtricked(&ent->client->ps.fd, i);
+						}
+					}
+
+					ent->client->ps.fd.forcePowersActive |= (1 << FP_TELEPATHY);
+
+					ent->client->ps.fd.forcePowerDuration[FP_TELEPATHY] = level.time + 10000;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					Jedi_Cloak(ent);
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Skill: ^7needs 2 power cell ammo to use it\"");
+				}
+			}
+		}
+		else
+		{
+			trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time) / 1000)));
+		}
+	}
+	else if (ent->client->pers.secrets_found & (1 << 3))
+	{ // zyk: Unique Upgrade 2
+		
+	}
+	else if (ent->client->pers.secrets_found & (1 << 4))
+	{ // zyk: Unique Upgrade 3
+
+	}
+	else
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You have no Unique Upgrades to use this command\n\"");
+		return;
+	}
+}
+
+/*
+==================
 Cmd_Magic_f
 ==================
 */
@@ -14595,6 +14668,7 @@ command_t commands[] = {
 	{ "tell",				Cmd_Tell_f,					0 },
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE|CMD_NOINTERMISSION },
 	{ "t_use",				Cmd_TargetUse_f,			CMD_CHEAT|CMD_ALIVE },
+	{ "unique",				Cmd_Unique_f,				CMD_RPG | CMD_ALIVE | CMD_NOINTERMISSION },
 	{ "up",					Cmd_UpSkill_f,				CMD_RPG|CMD_NOINTERMISSION },
 	{ "vehiclelist",		Cmd_VehicleList_f,			CMD_NOINTERMISSION },
 	{ "voice_cmd",			Cmd_VoiceCommand_f,			CMD_NOINTERMISSION },
