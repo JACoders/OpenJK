@@ -4648,7 +4648,10 @@ void lightning_dome(gentity_t *ent, int damage)
 
 	VectorCopy( tr.plane.normal, missile->pos1 );
 
-	missile->count = 9;
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 3) // zyk: Armored Soldier Lightning Shield has less radius
+		missile->count = 6;
+	else
+		missile->count = 9;
 
 	missile->classname = "demp2_alt_proj";
 	missile->s.weapon = WP_DEMP2;
@@ -4662,7 +4665,11 @@ void lightning_dome(gentity_t *ent, int damage)
 
 	missile->splashDamage = missile->damage = damage;
 	missile->splashMethodOfDeath = missile->methodOfDeath = MOD_DEMP2;
-	missile->splashRadius = 768;
+
+	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 3) // zyk: Armored Soldier Lightning Shield has less radius
+		missile->splashRadius = 512;
+	else
+		missile->splashRadius = 768;
 
 	missile->r.ownerNum = ent->s.number;
 

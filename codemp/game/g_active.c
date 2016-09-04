@@ -945,8 +945,6 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				if (client->ps.fd.forcePower < client->pers.max_force_power)
 					client->ps.fd.forcePower += 1;
 
-				client->ps.powerups[PW_SHIELDHIT] = level.time + 2000;
-
 				send_rpg_events(1000);
 			}
 
@@ -957,8 +955,6 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 				Add_Ammo(ent, AMMO_BLASTER, 1);
 				Add_Ammo(ent, AMMO_POWERCELL, 1);
-
-				client->ps.powerups[PW_SHIELDHIT] = level.time + 2000;
 			}
 		}
 

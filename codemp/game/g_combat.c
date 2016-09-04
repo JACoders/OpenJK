@@ -5164,6 +5164,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			// zyk: Armored Soldier Upgrade increases damage resistance
 			if (targ->client->pers.secrets_found & (1 << 16))
 				armored_soldier_bonus_resistance = 0.05;
+
+			// zyk: Armored Soldier Lightning Shield reduces damage
+			if (targ->client->ps.powerups[PW_SHIELDHIT] > level.time)
+			{
+				armored_soldier_bonus_resistance += 0.2;
+			}
 			
 			damage = (int)ceil(damage * (0.9 - ((0.05 * targ->client->pers.skill_levels[55]) + armored_soldier_bonus_resistance)));
 		}

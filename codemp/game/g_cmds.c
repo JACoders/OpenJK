@@ -9583,7 +9583,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Upgrade 1: ^7Buy: 8000\n^354 - Unique Upgrade 2: ^7Buy: 8000\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Upgrade 1: ^7Buy: 7000\n^354 - Unique Upgrade 2: ^7Buy: 7000\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9827,7 +9827,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,8000,8000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,7000,7000};
 
 	if (trap->Argc() == 1)
 	{
@@ -14422,7 +14422,31 @@ void Cmd_Unique_f(gentity_t *ent) {
 	{ // zyk: Unique Upgrade 1
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 4)
+			if (ent->client->pers.rpg_class == 3)
+			{ // zyk: Armored Soldier Lightning Shield. Decreases damage and releases a small lightning dome when /unique is used again
+				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5)
+				{
+					if (ent->client->ps.powerups[PW_SHIELDHIT] < level.time)
+					{
+						ent->client->ps.powerups[PW_SHIELDHIT] = level.time + 8000;
+
+						ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+						ent->client->pers.unique_skill_timer = level.time + 30000;
+					}
+					else
+					{
+						ent->client->ps.powerups[PW_SHIELDHIT] = 0;
+
+						lightning_dome(ent, 50);
+					}
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 5 power cell ammo to use it\"");
+				}
+			}
+			else if (ent->client->pers.rpg_class == 4)
 			{ // zyk: Monk Meditation Strength. Setting the meditate taunt and the duration of the ability
 				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 				{
