@@ -2154,6 +2154,10 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	self->client->pers.quest_power_status = 0;
 	self->client->pers.player_statuses &= ~(1 << 20);
 
+	// zyk: remove Monk Meditation Strength from this Monk or ally
+	self->client->pers.player_statuses &= ~(1 << 21);
+	self->client->pers.player_statuses &= ~(1 << 22);
+
 	// zyk: resetting boss battle music to default one if needed
 	if (self->client->pers.guardian_invoked_by_id != -1)
 	{
@@ -4992,6 +4996,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{ // zyk: bonus damage of each RPG class
+		// zyk: Monk Meditation Strength increases damage of allies
+		if (attacker->client->pers.player_statuses & (1 << 22))
+		{
+			damage = (int)ceil(damage * (1.1));
+		}
+
 		if (attacker->client->pers.rpg_class == 0)
 		{
 			damage = (int)ceil(damage * (1.0 + (0.03 * attacker->client->pers.skill_levels[55])));
@@ -5138,6 +5148,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			damage = (int)ceil(damage * 0.85);
 		}
 
+		// zyk: Monk Meditation Strength increases resistance to damage of allies
+		if (targ->client->pers.player_statuses & (1 << 22))
+		{
+			damage = (int)ceil(damage * (0.9));
+		}
+
 		if (targ->client->pers.rpg_class == 1 && targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Force User damage resistance
 		{ // zyk: Unique Skill of Force User
 			damage = (int)ceil(damage * 0.25);
@@ -5150,6 +5166,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				armored_soldier_bonus_resistance = 0.05;
 			
 			damage = (int)ceil(damage * (0.9 - ((0.05 * targ->client->pers.skill_levels[55]) + armored_soldier_bonus_resistance)));
+		}
+		else if (targ->client->pers.rpg_class == 4 && targ->client->pers.player_statuses & (1 << 21) && 
+				 targ->client->ps.legsAnim == BOTH_MEDITATE)
+		{ // zyk: Monk Meditation Strength increases resistance to damage of Monk
+			damage = (int)ceil(damage * (0.5));
 		}
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{

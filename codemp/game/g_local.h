@@ -637,6 +637,8 @@ typedef struct clientPersistant_s {
 	// 18 - NPC has the guard order
 	// 19 - NPC has the cover order
 	// 20 - hit by poison dart
+	// 21 - Monk Meditation Strength - used on Monk
+	// 22 - Monk Meditation Strength - used on Monk allies
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison

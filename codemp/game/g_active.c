@@ -819,6 +819,14 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	client = ent->client;
 	client->timeResidual += msec;
 
+	if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 4 && ent->client->pers.player_statuses & (1 << 21) && 
+		ent->client->ps.legsAnim != BOTH_MEDITATE && client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+	{ // zyk: Monk must remain meditating while using his Meditation Strength
+		client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+		client->ps.forceDodgeAnim = BOTH_MEDITATE;
+		client->ps.forceHandExtendTime = client->ps.powerups[PW_NEUTRALFLAG] - level.time + 1000;
+	}
+
 	while ( client->timeResidual >= 1000 )
 	{
 		client->timeResidual -= 1000;
@@ -858,18 +866,45 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			{ // zyk: Monk auto-healing ability
 				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 				{ // zyk: Monk Unique Skill
-					if ((ent->health + 4) < client->pers.max_rpg_health)
+					int heal_amount = 4;
+
+					if (ent->client->pers.player_statuses & (1 << 21) && ent->client->ps.legsAnim == BOTH_MEDITATE)
+					{ // zyk: Meditation Strength
+						heal_amount *= 2;
+					}
+
+					if ((ent->health + heal_amount) < client->pers.max_rpg_health)
 					{
-						ent->health += 4;
+						ent->health += heal_amount;
 					}
 					else
 					{
 						ent->health = client->pers.max_rpg_health;
 					}
 				}
-				else if (ent->health < client->pers.max_rpg_health)
+				else
 				{
-					ent->health += 1;
+					if (ent->client->pers.player_statuses & (1 << 21))
+					{ // zyk: end of Meditation Strength
+						int player_it = 0;
+
+						ent->client->pers.player_statuses &= ~(1 << 21);
+
+						for (player_it = 0; player_it < level.maxclients; player_it++)
+						{
+							gentity_t *player_ent = &g_entities[player_it];
+
+							if (zyk_is_ally(ent, player_ent) == qtrue)
+							{
+								player_ent->client->pers.player_statuses &= ~(1 << 21);
+							}
+						}
+					}
+
+					if (ent->health < client->pers.max_rpg_health)
+					{
+						ent->health += 1;
+					}
 				}
 			}
 

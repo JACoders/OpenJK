@@ -9804,7 +9804,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 53)
 		{
-			if (ent->client->pers.rpg_class == 5)
+			if (ent->client->pers.rpg_class == 4)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 5)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
 			}
@@ -14435,7 +14439,40 @@ void Cmd_Unique_f(gentity_t *ent) {
 	{ // zyk: Unique Upgrade 1
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 5)
+			if (ent->client->pers.rpg_class == 4)
+			{ // zyk: Monk Meditation Strength. Setting the meditate taunt and the duration of the ability
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
+				{
+					int i = 0;
+
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
+
+					for (i = 0; i < level.maxclients; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (zyk_is_ally(ent, player_ent) == qtrue)
+						{
+							player_ent->client->pers.player_statuses |= (1 << 21);
+						}
+					}
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_MEDITATE;
+					ent->client->ps.forceHandExtendTime = level.time + 8000;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
+
+					ent->client->pers.player_statuses |= (1 << 21);
+
+					ent->client->pers.unique_skill_timer = level.time + 30000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 5)
 			{ // zyk: Stealth Attacker Ultra Cloak. Uses Mind Trick code to make it work
 				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5)
 				{
@@ -14443,7 +14480,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.ammo[AMMO_POWERCELL] -= 5;
 
-					for (i = 0; i < MAX_CLIENTS; i++)
+					for (i = 0; i < level.maxclients; i++)
 					{
 						gentity_t *player_ent = &g_entities[i];
 
@@ -14465,7 +14502,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Skill: ^7needs 2 power cell ammo to use it\"");
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 5 power cell ammo to use it\"");
 				}
 			}
 		}

@@ -6046,6 +6046,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					WP_ForcePowerRegenerate( self, (1 + self->client->pers.skill_levels[55]) ); // zyk: Force User and Duelist classes regen force faster
 				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 7 && self->client->pers.secrets_found & (1 << 8))
 					WP_ForcePowerRegenerate( self, 2); // zyk: Force Gunner with Upgrade regens force a bit faster
+				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 4 && self->client->pers.player_statuses & (1 << 21) && self->client->ps.legsAnim == BOTH_MEDITATE)
+					WP_ForcePowerRegenerate(self, 2); // zyk: Monk Meditation Strength makes him regen force faster
 				else
 					WP_ForcePowerRegenerate( self, 0 );
 			}
