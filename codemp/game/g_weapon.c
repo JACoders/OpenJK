@@ -2207,6 +2207,101 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	missile->bounceCount = 0;
 }
 
+//---------------------------------------------------------
+void zyk_WP_FireRocket(gentity_t *ent)
+//---------------------------------------------------------
+{
+	int	damage = zyk_rocket_damage.integer;
+	int splash_damage = zyk_rocket_splash_damage.integer;
+	int	vel = zyk_rocket_velocity.integer;
+	int dif = 0;
+	float rTime;
+	gentity_t *missile;
+	vec3_t dir, zyk_forward;
+	int i = 0;
+
+	for (i = 0; i < 5; i++)
+	{
+		VectorSet(dir, ent->client->ps.viewangles[0] + crandom() * 4.0, ent->client->ps.viewangles[1] + crandom() * 4.0, 0);
+
+		AngleVectors(dir, zyk_forward, NULL, NULL);
+
+		missile = CreateMissile(ent->client->ps.origin, zyk_forward, vel, 30000, ent, qfalse);
+
+		if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
+		{
+			float lockTimeInterval = ((level.gametype == GT_SIEGE) ? 2400.0f : 1200.0f) / 16.0f;
+			rTime = ent->client->ps.rocketLockTime;
+
+			if (rTime == -1)
+			{
+				rTime = ent->client->ps.rocketLastValidTime;
+			}
+			dif = (level.time - rTime) / lockTimeInterval;
+
+			if (dif < 0)
+			{
+				dif = 0;
+			}
+
+			//It's 10 even though it locks client-side at 8, because we want them to have a sturdy lock first, and because there's a slight difference in time between server and client
+			if (dif >= 10 && rTime != -1)
+			{
+				missile->enemy = &g_entities[ent->client->ps.rocketLockIndex];
+
+				if (missile->enemy && missile->enemy->client && missile->enemy->health > 0 && !OnSameTeam(ent, missile->enemy))
+				{ //if enemy became invalid, died, or is on the same team, then don't seek it
+					missile->angle = 0.5f;
+					missile->think = rocketThink;
+					missile->nextthink = level.time + ROCKET_ALT_THINK_TIME;
+				}
+			}
+
+			ent->client->ps.rocketLockIndex = ENTITYNUM_NONE;
+			ent->client->ps.rocketLockTime = 0;
+			ent->client->ps.rocketTargetTime = 0;
+		}
+
+		missile->classname = "rocket_proj";
+		missile->s.weapon = WP_ROCKET_LAUNCHER;
+
+		// Make it easier to hit things
+		VectorSet(missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE);
+		VectorScale(missile->r.maxs, -1, missile->r.mins);
+
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[26] == 2)
+		{
+			damage = damage * 1.25;
+		}
+
+		missile->damage = damage;
+		missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
+		missile->methodOfDeath = MOD_ROCKET;
+		missile->splashMethodOfDeath = MOD_ROCKET_SPLASH;
+
+		//===testing being able to shoot rockets out of the air==================================
+		missile->health = 10;
+		missile->takedamage = qtrue;
+		missile->r.contents = MASK_SHOT;
+		missile->die = RocketDie;
+		//===testing being able to shoot rockets out of the air==================================
+
+		missile->clipmask = MASK_SHOT;
+
+		if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[26] == 2)
+		{
+			splash_damage = splash_damage * 1.25;
+		}
+
+		missile->splashDamage = splash_damage;
+		missile->splashRadius = ROCKET_SPLASH_RADIUS;
+
+		// we don't want it to ever bounce
+		missile->bounceCount = 0;
+	}
+}
+
 /*
 ======================================================================
 

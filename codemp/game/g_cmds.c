@@ -9795,7 +9795,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 53)
 		{
-			if (ent->client->pers.rpg_class == 3)
+			if (ent->client->pers.rpg_class == 2)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Rocket Spam, which shoots 5 rockets with spread. Spends 5 rocket ammo\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 3)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Armored Soldier gets the Lightning Shield, which increases resistance to damage. Using /unique again will release a small lightning dome. Spends 5 power cell ammo\n\n\"");
 			}
@@ -14444,6 +14448,7 @@ Cmd_Unique_f
 */
 extern void Jedi_Cloak(gentity_t *self);
 extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
+extern void zyk_WP_FireRocket(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
 	{ // zyk: Unique Upgrade 1
@@ -14458,7 +14463,24 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 3)
+			if (ent->client->pers.rpg_class == 2)
+			{ // zyk: Bounty Hunter Rocket Spam. Shoots 5 rockets with spread
+				if (ent->client->ps.ammo[AMMO_ROCKETS] >= 5)
+				{
+					ent->client->ps.ammo[AMMO_ROCKETS] -= 5;
+
+					zyk_WP_FireRocket(ent);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 5 rocket ammo to use it\"");
+				}
+			}
+			else if (ent->client->pers.rpg_class == 3)
 			{ // zyk: Armored Soldier Lightning Shield. Decreases damage and releases a small lightning dome when /unique is used again
 				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5)
 				{
