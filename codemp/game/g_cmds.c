@@ -9813,7 +9813,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7You can only have one Unique Upgrade at a time. Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 9)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force Tank gets Force Armor, which activates his resistance shield, with damage resistance, gun shot deflection, and ability to resist force powers. Spends 50 force\n\n\"");
 			}
 			else
 			{
@@ -14542,6 +14546,40 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 8)
+			{ // zyk: Magic Master Spread Bolts activation
+				if (ent->client->pers.magic_power > 0)
+				{
+					ent->client->pers.magic_power--;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+					send_rpg_events(2000);
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 1 MP to use it\"");
+				}
+			}
+			else if (ent->client->pers.rpg_class == 9)
+			{ // zyk: Force Tank Force Armor. Increases resistance, resists force powers and has shield flag
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					ent->flags |= FL_SHIELDED;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
 				{

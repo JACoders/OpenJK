@@ -591,6 +591,13 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	}
 
+	if (other && other->client && other->client->sess.amrpgmode == 2 &&
+		other->client->pers.rpg_class == 9 && other->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
+		other->flags & FL_SHIELDED)
+	{ // zyk: Force Tank Force Armor protects against force powers
+		return 0;
+	}
+
 	if (forcePower != FP_TEAM_HEAL && forcePower != FP_TEAM_FORCE && attacker && attacker->client && other && other->client && 
 		attacker->client->sess.amrpgmode > 0 && other->client->sess.amrpgmode > 0 && other->client->pers.player_settings & (1 << 6) && 
 		zyk_is_ally(attacker,other) == qtrue)
@@ -6044,10 +6051,10 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 					WP_ForcePowerRegenerate( self, 4 ); //jedi master regenerates 4 times as fast
 				else if (self->client->sess.amrpgmode == 2 && (self->client->pers.rpg_class == 1 || self->client->pers.rpg_class == 6))
 					WP_ForcePowerRegenerate( self, (1 + self->client->pers.skill_levels[55]) ); // zyk: Force User and Duelist classes regen force faster
+				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 4 && self->client->pers.player_statuses & (1 << 21) && self->client->ps.legsAnim == BOTH_MEDITATE)
+					WP_ForcePowerRegenerate(self, 3); // zyk: Monk Meditation Strength makes him regen force faster
 				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 7 && self->client->pers.secrets_found & (1 << 8))
 					WP_ForcePowerRegenerate( self, 2); // zyk: Force Gunner with Upgrade regens force a bit faster
-				else if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 4 && self->client->pers.player_statuses & (1 << 21) && self->client->ps.legsAnim == BOTH_MEDITATE)
-					WP_ForcePowerRegenerate(self, 2); // zyk: Monk Meditation Strength makes him regen force faster
 				else
 					WP_ForcePowerRegenerate( self, 0 );
 			}

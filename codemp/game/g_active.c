@@ -826,6 +826,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		client->ps.forceDodgeAnim = BOTH_MEDITATE;
 		client->ps.forceHandExtendTime = client->ps.powerups[PW_NEUTRALFLAG] - level.time + 1000;
 	}
+	else if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 9 && client->ps.powerups[PW_NEUTRALFLAG] < level.time && 
+			 ent->flags & FL_SHIELDED)
+	{ // zyk: Force Tank Force Armor has run out. Remove the shield flag
+		ent->flags &= ~FL_SHIELDED;
+	}
 
 	while ( client->timeResidual >= 1000 )
 	{
