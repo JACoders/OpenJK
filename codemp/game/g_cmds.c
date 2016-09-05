@@ -9811,6 +9811,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Duelist gets Impale Stab, which hits the enemy with his saber doing a lot of damage. Spends 50 force\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 7)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force Gunner gets Ammo Fill, which recovers some ammo in all of his ammo skills. Spends 50 force\n\n\"");
+			}
 			else if (ent->client->pers.rpg_class == 8)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
@@ -14546,6 +14550,34 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 7)
+			{ // zyk: Force Gunner Ammo Fill. Recovers some ammo in all of his ammo skills
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					Add_Ammo(ent, AMMO_BLASTER, 100);
+
+					Add_Ammo(ent, AMMO_POWERCELL, 100);
+
+					Add_Ammo(ent, AMMO_METAL_BOLTS, 100);
+
+					Add_Ammo(ent, AMMO_ROCKETS, 10);
+
+					ent->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
+					Add_Ammo(ent, AMMO_THERMAL, 4);
+
+					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
 				{
