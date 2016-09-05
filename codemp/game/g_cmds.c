@@ -9832,7 +9832,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			if (ent->client->pers.rpg_class == 4)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage. Spends 50 force\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 6)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Duelist gets Vertical DFA, which makes him jump and hit the enemy with the saber, with a very high damage. Spends 50 force\n\n\"");
 			}
 			else
 			{
@@ -14638,9 +14642,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
 					ent->client->ps.forceDodgeAnim = BOTH_A7_KICK_S;
-					ent->client->ps.forceHandExtendTime = level.time + 1000;
-
-					ent->client->pers.player_statuses |= (1 << 1);
+					ent->client->ps.forceHandExtendTime = level.time + 2000;
 
 					for (i = 0; i < level.num_entities; i++)
 					{
@@ -14671,6 +14673,26 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
 					ent->client->pers.unique_skill_timer = level.time + 30000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 6)
+			{ // zyk: Duelist Vertical DFA
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_FORCELEAP2_T__B_;
+					ent->client->ps.forceHandExtendTime = level.time + 2000;
+					ent->client->ps.velocity[2] = 300;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
 				else
 				{
