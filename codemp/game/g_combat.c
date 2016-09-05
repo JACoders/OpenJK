@@ -2158,6 +2158,9 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	self->client->pers.player_statuses &= ~(1 << 21);
 	self->client->pers.player_statuses &= ~(1 << 22);
 
+	// zyk: removing Free Warrior Mimic Damage
+	self->client->pers.player_statuses &= ~(1 << 23);
+
 	// zyk: resetting boss battle music to default one if needed
 	if (self->client->pers.guardian_invoked_by_id != -1)
 	{
@@ -5180,6 +5183,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{
+			// zyk: Free Warrior Mimic Damage ability. Deals half of the damage taken back to the enemy
+			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time && targ->client->pers.player_statuses & (1 << 23))
+			{
+				G_Damage(attacker, targ, targ, NULL, NULL, (int)ceil(damage * (0.5)), 0, MOD_UNKNOWN);
+			}
+
 			damage = (int)ceil(damage * (1.0 - (0.03 * targ->client->pers.skill_levels[55])));
 		}
 		else if (targ->client->pers.rpg_class == 5 && (mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))

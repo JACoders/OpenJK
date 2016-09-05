@@ -9795,7 +9795,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 53)
 		{
-			if (ent->client->pers.rpg_class == 2)
+			if (ent->client->pers.rpg_class == 0)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Free Warrior gets Mimic Damage. If you take damage, does part of the damage back to the enemy. Spends 50 force and 25 mp\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 2)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Rocket Spam, which shoots 5 rockets with spread. Spends 5 rocket ammo\n\n\"");
 			}
@@ -14463,7 +14467,27 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 2)
+			if (ent->client->pers.rpg_class == 0)
+			{ // zyk: Free Warrior Mimic Damage. Makes the enemy receive back part of the damage he did
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4) && ent->client->pers.magic_power >= 25)
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+					ent->client->pers.magic_power -= 25;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
+
+					send_rpg_events(2000);
+
+					ent->client->pers.unique_skill_timer = level.time + 60000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force and 25 mp to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 2)
 			{ // zyk: Bounty Hunter Rocket Spam. Shoots 5 rockets with spread
 				if (ent->client->ps.ammo[AMMO_ROCKETS] >= 5)
 				{
