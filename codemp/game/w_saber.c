@@ -4338,6 +4338,12 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 				dmg = 0;
 		}
 
+		// zyk: Duelist Impale Stab. Heavily increases saber damage
+		if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 6 && self->client->ps.torsoAnim == BOTH_PULL_IMPALE_STAB)
+		{
+			dmg = 80;
+		}
+
 		idleDamage = qtrue;
 	}
 	else
