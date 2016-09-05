@@ -14547,7 +14547,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.forceDodgeAnim = BOTH_PULL_IMPALE_STAB;
 					ent->client->ps.forceHandExtendTime = level.time + 2000;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
