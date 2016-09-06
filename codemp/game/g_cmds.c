@@ -14688,11 +14688,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.stats[STAT_ARMOR] -= 50;
 
-					Add_Ammo(ent, AMMO_BLASTER, 20);
+					Add_Ammo(ent, AMMO_BLASTER, 150);
 
-					Add_Ammo(ent, AMMO_POWERCELL, 20);
-
-					Add_Ammo(ent, AMMO_METAL_BOLTS, 10);
+					Add_Ammo(ent, AMMO_POWERCELL, 150);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
