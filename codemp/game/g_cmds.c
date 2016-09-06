@@ -9838,7 +9838,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 54)
 		{
-			if (ent->client->pers.rpg_class == 4)
+			if (ent->client->pers.rpg_class == 3)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Armored Soldier gets Shield to Ammo, which recovers some ammo by spending his shield. Spends 50 shield\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 4)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage. Spends 50 force\n\n\"");
 			}
@@ -14678,7 +14682,30 @@ void Cmd_Unique_f(gentity_t *ent) {
 	{ // zyk: Unique Upgrade 2
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 4)
+			if (ent->client->pers.rpg_class == 3)
+			{ // zyk: Armored Soldier Shield to Ammo. Recovers ammo by spending his shield
+				if (ent->client->ps.stats[STAT_ARMOR] >= 50)
+				{
+					ent->client->ps.stats[STAT_ARMOR] -= 50;
+
+					Add_Ammo(ent, AMMO_BLASTER, 20);
+
+					Add_Ammo(ent, AMMO_POWERCELL, 20);
+
+					Add_Ammo(ent, AMMO_METAL_BOLTS, 10);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 30000;
+
+					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/player/pickupenergy.wav"));
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs 50 shield to use it\""));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 4)
 			{ // zyk: Monk Spin Kick ability. Kicks everyone around the Monk with very high damage
 				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
 				{
