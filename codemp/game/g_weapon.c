@@ -2228,20 +2228,13 @@ void zyk_WP_FireRocket(gentity_t *ent)
 	missile = CreateMissile(ent->client->ps.origin, zyk_forward, vel, 30000, ent, qfalse);
 
 	// zyk: sets the target
-	if (ent->client->ps.hasLookTarget == qtrue)
+	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)
 	{
-		ent->client->ps.rocketLockIndex = ent->client->ps.lookTarget;
-		ent->client->ps.rocketLockTime = level.time;
-
 		missile->enemy = &g_entities[ent->client->ps.rocketLockIndex];
 
-		if (missile->enemy && missile->enemy->client && missile->enemy->health > 0 && !OnSameTeam(ent, missile->enemy) &&
-			zyk_is_ally(ent, missile->enemy) == qfalse)
-		{ //if enemy became invalid, died, or is on the same team, then don't seek it
-			missile->angle = 0.5f;
-			missile->think = rocketThink;
-			missile->nextthink = level.time + ROCKET_ALT_THINK_TIME;
-		}
+		missile->angle = 0.5f;
+		missile->think = rocketThink;
+		missile->nextthink = level.time + ROCKET_ALT_THINK_TIME;
 
 		ent->client->ps.rocketLockIndex = ENTITYNUM_NONE;
 		ent->client->ps.rocketLockTime = 0;

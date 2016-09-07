@@ -9805,7 +9805,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Homing Rocket, which shoots a powerful rocket that automatically goes after the target that your head is looking at. Spends 5 rocket ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Homing Rocket, which shoots a powerful rocket that automatically goes after the nearest target. Spends 5 rocket ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
@@ -14546,7 +14546,35 @@ void Cmd_Unique_f(gentity_t *ent) {
 			{ // zyk: Bounty Hunter Homing Rocket. Shoots a powerful rocket that automatically goes after someone
 				if (ent->client->ps.ammo[AMMO_ROCKETS] >= 5)
 				{
+					int i = 0;
+					int min_dist = 700;
+					gentity_t *chosen_ent = NULL;
+
 					ent->client->ps.ammo[AMMO_ROCKETS] -= 5;
+
+					for (i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent != player_ent && player_ent->health > 0 && 
+							OnSameTeam(ent, player_ent) == qfalse && zyk_is_ally(ent, player_ent) == qfalse)
+						{
+							int player_dist = Distance(ent->client->ps.origin, player_ent->client->ps.origin);
+
+							if (player_dist < min_dist)
+							{
+								min_dist = player_dist;
+
+								chosen_ent = player_ent;
+							}
+						}
+					}
+
+					if (chosen_ent)
+					{ // zyk: if we have a target, shoot a rocket at him
+						ent->client->ps.rocketLockIndex = chosen_ent->s.number;
+						ent->client->ps.rocketLockTime = level.time;
+					}
 
 					zyk_WP_FireRocket(ent);
 
