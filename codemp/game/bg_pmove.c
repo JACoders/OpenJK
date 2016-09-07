@@ -10610,6 +10610,12 @@ void PmoveSingle (pmove_t *pmove) {
 	qboolean noAnimate = qfalse;
 	int savedGravity = 0;
 
+#if defined( _GAME )
+	gentity_t *player_ent = NULL;
+
+	int rpg_class = -1;
+#endif
+
 	pm = pmove;
 
 	if (pm->cmd.buttons & BUTTON_ATTACK && pm->cmd.buttons & BUTTON_USE_HOLDABLE)
@@ -10668,6 +10674,15 @@ void PmoveSingle (pmove_t *pmove) {
 			pm->cmd.upmove = 0;
 		}
 	}
+
+#if defined( _GAME )
+	player_ent = &g_entities[pm->ps->clientNum];
+
+	if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2)
+	{
+		rpg_class = player_ent->client->pers.rpg_class;
+	}
+#endif
 
 	if (pm->ps->pm_type == PM_FLOAT)
 	{ //You get no control over where you go in grip movement
@@ -10760,9 +10775,7 @@ void PmoveSingle (pmove_t *pmove) {
 		qboolean stop_meditate_anim = qtrue;
 
 #if defined( _GAME )
-		gentity_t *player_ent = &g_entities[pm->ps->clientNum];
-
-		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.rpg_class == 4 &&
+		if (rpg_class == 4 &&
 			player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 21))
 		{ // zyk: Monk Meditation Strength ability does not allow stop the meditate anim
 			stop_meditate_anim = qfalse;
@@ -10915,6 +10928,14 @@ void PmoveSingle (pmove_t *pmove) {
 		}
 	}
 	*/
+
+#if defined( _GAME )
+	if (rpg_class == 1 &&
+		player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 24))
+	{ // zyk: Force User Force Maelstrom ability does not allow him to move
+		stiffenedUp = qtrue;
+	}
+#endif
 
 	if (stiffenedUp)
 	{
