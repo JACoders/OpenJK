@@ -9805,7 +9805,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Rocket Spam, which shoots 5 rockets with spread. Spends 5 rocket ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Homing Rocket, which shoots a powerful rocket that automatically goes after the target that your head is looking at. Spends 5 rocket ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
@@ -14538,7 +14538,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 			}
 			else if (ent->client->pers.rpg_class == 2)
-			{ // zyk: Bounty Hunter Rocket Spam. Shoots 5 rockets with spread
+			{ // zyk: Bounty Hunter Homing Rocket. Shoots a powerful rocket that automatically goes after someone
 				if (ent->client->ps.ammo[AMMO_ROCKETS] >= 5)
 				{
 					ent->client->ps.ammo[AMMO_ROCKETS] -= 5;
