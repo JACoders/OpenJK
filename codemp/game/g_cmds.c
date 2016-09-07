@@ -9799,6 +9799,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Free Warrior gets Mimic Damage. If you take damage, does part of the damage back to the enemy. Spends 50 force and 25 mp\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 1)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force User gets Force Maelstrom, which grips enemies nearby, damages them, sets force shield and uses lightning if player has the force power. Spends 50 force\n\n\"");
+			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Rocket Spam, which shoots 5 rockets with spread. Spends 5 rocket ammo\n\n\"");
@@ -14489,6 +14493,48 @@ void Cmd_Unique_f(gentity_t *ent) {
 				else
 				{
 					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force and 25 mp to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 1)
+			{ // zyk: Force User Force Maelstrom
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					int i = 0;
+
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					for (i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
+						{
+							G_Damage(player_ent, ent, ent, NULL, NULL, 50, 0, MOD_FORCE_DARK);
+
+							//Must play custom sounds on the actual entity. Don't use G_Sound (it creates a temp entity for the sound)
+							G_EntitySound(player_ent, CHAN_VOICE, G_SoundIndex(va("*choke%d.wav", Q_irand(1, 3))));
+
+							player_ent->client->ps.forceHandExtend = HANDEXTEND_CHOKE;
+							player_ent->client->ps.forceHandExtendTime = level.time + 4000;
+
+							player_ent->client->ps.fd.forceGripBeingGripped = level.time + 4000;
+						}
+					}
+
+					// zyk: activating Force Lightning
+					ent->client->ps.fd.forcePowersActive |= (1 << FP_LIGHTNING);
+					ent->client->ps.fd.forcePowerDuration[FP_LIGHTNING] = level.time + 4000;
+
+					ent->client->pers.player_statuses |= (1 << 24);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 4000;
+
+					ent->client->pers.unique_skill_timer = level.time + 60000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
 				}
 			}
 			else if (ent->client->pers.rpg_class == 2)
