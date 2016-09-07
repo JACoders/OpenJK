@@ -9854,6 +9854,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Duelist gets Vertical DFA, which makes him jump and hit the enemy with the saber, with a very high damage. Spends 50 force\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 9)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force Tank gets Force Scream, which sets the resistance shield during 6 seconds, and makes a scream that damages nearby enemies. Spends 50 force\n\n\"");
+			}
 			else
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7You can only have one Unique Upgrade at a time.\n\n\"");
@@ -14461,6 +14465,7 @@ Cmd_Unique_f
 extern void Jedi_Cloak(gentity_t *self);
 extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
 extern void zyk_WP_FireRocket(gentity_t *ent);
+extern void force_scream(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
 	{ // zyk: Unique Upgrade 1
@@ -14810,6 +14815,25 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 9)
+			{ // zyk: Force Tank Force Scream
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					ent->client->pers.player_statuses |= (1 << 25);
+
+					force_scream(ent);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 6000;
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
 				{

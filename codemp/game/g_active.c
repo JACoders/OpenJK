@@ -866,7 +866,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				{ // zyk: Monk Unique Skill
 					int heal_amount = 4;
 
-					if (ent->client->pers.player_statuses & (1 << 21) && ent->client->ps.legsAnim == BOTH_MEDITATE)
+					if (client->pers.player_statuses & (1 << 21) && client->ps.legsAnim == BOTH_MEDITATE)
 					{ // zyk: Meditation Strength
 						heal_amount *= 2;
 					}
@@ -882,11 +882,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				}
 				else
 				{
-					if (ent->client->pers.player_statuses & (1 << 21))
+					if (client->pers.player_statuses & (1 << 21))
 					{ // zyk: end of Meditation Strength
 						int player_it = 0;
 
-						ent->client->pers.player_statuses &= ~(1 << 21);
+						client->pers.player_statuses &= ~(1 << 21);
 
 						for (player_it = 0; player_it < level.maxclients; player_it++)
 						{
@@ -905,8 +905,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 					}
 				}
 			}
-
-			if (client->pers.rpg_class == 3 && ent->health > 0)
+			else if (client->pers.rpg_class == 3 && ent->health > 0)
 			{ // zyk: Armored Soldier auto-shield-healing ability
 				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time)
 				{ // zyk: Armored Soldier Unique Skill
@@ -922,6 +921,13 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				else if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
 				{
 					client->ps.stats[STAT_ARMOR] += 1;
+				}
+			}
+			else if (client->pers.rpg_class == 9 && ent->health > 0)
+			{ // zyk: Force Tank Force Scream ability. Removing flag
+				if (client->ps.powerups[PW_NEUTRALFLAG] < level.time && client->pers.player_statuses & (1 << 25))
+				{
+					client->pers.player_statuses &= ~(1 << 25);
 				}
 			}
 

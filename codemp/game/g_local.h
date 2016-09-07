@@ -641,6 +641,7 @@ typedef struct clientPersistant_s {
 	// 22 - Monk Meditation Strength - used on Monk allies
 	// 23 - Free Warrior Mimic Damage
 	// 24 - Force User Force Maelstrom
+	// 25 - Force Tank Force Scream
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison

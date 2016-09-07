@@ -4721,7 +4721,11 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 		zyk_set_entity_field(new_ent,"classname","fx_runner");
 		zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
 		zyk_set_entity_field(new_ent,"targetname",targetname);
-		zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
+
+		if (Q_stricmp(targetname, "zyk_effect_scream") == 0)
+			zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)target_ent->r.currentOrigin[0], (int)target_ent->r.currentOrigin[1], (int)target_ent->r.currentOrigin[2] + 50));
+		else
+			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
 
 		new_ent->s.modelindex = G_EffectIndex( effect_path );
 
@@ -4757,6 +4761,14 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 		level.special_power_effects[new_ent->s.number] = ent->s.number;
 		level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
 	}
+}
+
+// zyk: Force Scream ability
+void force_scream(gentity_t *ent)
+{
+	zyk_quest_effect_spawn(ent, ent, "zyk_effect_scream", "4", "howler/sonic", 0, 100, 300, 6000);
+
+	G_Sound(ent, CHAN_VOICE, G_SoundIndex("sound/chars/howler/howl.mp3"));
 }
 
 // zyk: Healing Water

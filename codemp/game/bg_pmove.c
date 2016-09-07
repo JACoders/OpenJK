@@ -10935,6 +10935,11 @@ void PmoveSingle (pmove_t *pmove) {
 	{ // zyk: Force User Force Maelstrom ability does not allow him to move
 		stiffenedUp = qtrue;
 	}
+	else if (rpg_class == 9 &&
+		player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 25))
+	{ // zyk: Force Tank Force Scream ability does not allow him to move
+		stiffenedUp = qtrue;
+	}
 #endif
 
 	if (stiffenedUp)
