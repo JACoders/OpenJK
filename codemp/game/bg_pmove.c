@@ -10757,24 +10757,37 @@ void PmoveSingle (pmove_t *pmove) {
 	else if ( BG_FullBodyTauntAnim( pm->ps->legsAnim )
 		&& BG_FullBodyTauntAnim( pm->ps->torsoAnim ) )
 	{
-		if ( (pm->cmd.buttons&BUTTON_ATTACK)
+		qboolean stop_meditate_anim = qtrue;
+
+#if defined( _GAME )
+		gentity_t *player_ent = &g_entities[pm->ps->clientNum];
+
+		if (player_ent && player_ent->client && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.rpg_class == 4 &&
+			player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 21))
+		{ // zyk: Monk Meditation Strength ability does not allow stop the meditate anim
+			stop_meditate_anim = qfalse;
+		}
+#endif
+
+		if (stop_meditate_anim == qtrue && 
+			((pm->cmd.buttons&BUTTON_ATTACK)
 			|| (pm->cmd.buttons&BUTTON_ALT_ATTACK)
 			|| (pm->cmd.buttons&BUTTON_FORCEPOWER)
 			|| (pm->cmd.buttons&BUTTON_FORCEGRIP)
 			|| (pm->cmd.buttons&BUTTON_FORCE_LIGHTNING)
 			|| (pm->cmd.buttons&BUTTON_FORCE_DRAIN)
-			|| pm->cmd.upmove )
+			|| pm->cmd.upmove) )
 		{//stop the anim
-			if ( pm->ps->legsAnim == BOTH_MEDITATE
-				&& pm->ps->torsoAnim == BOTH_MEDITATE )
+			if (pm->ps->legsAnim == BOTH_MEDITATE
+				&& pm->ps->torsoAnim == BOTH_MEDITATE)
 			{
-				PM_SetAnim( SETANIM_BOTH, BOTH_MEDITATE_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
+				PM_SetAnim(SETANIM_BOTH, BOTH_MEDITATE_END, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD);
 			}
 			else
 			{
 				pm->ps->legsTimer = pm->ps->torsoTimer = 0;
 			}
-			if ( pm->ps->forceHandExtend == HANDEXTEND_TAUNT )
+			if (pm->ps->forceHandExtend == HANDEXTEND_TAUNT)
 			{
 				pm->ps->forceHandExtend = 0;
 			}

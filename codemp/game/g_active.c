@@ -819,14 +819,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	client = ent->client;
 	client->timeResidual += msec;
 
-	if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 4 && ent->client->pers.player_statuses & (1 << 21) && 
-		ent->client->ps.legsAnim != BOTH_MEDITATE && client->ps.powerups[PW_NEUTRALFLAG] > level.time)
-	{ // zyk: Monk must remain meditating while using his Meditation Strength
-		client->ps.forceHandExtend = HANDEXTEND_TAUNT;
-		client->ps.forceDodgeAnim = BOTH_MEDITATE;
-		client->ps.forceHandExtendTime = client->ps.powerups[PW_NEUTRALFLAG] - level.time + 1000;
-	}
-	else if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 9 && client->ps.powerups[PW_NEUTRALFLAG] < level.time && 
+	if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 9 && client->ps.powerups[PW_NEUTRALFLAG] < level.time && 
 			 ent->flags & FL_SHIELDED)
 	{ // zyk: Force Tank Force Armor has run out. Remove the shield flag
 		ent->flags &= ~FL_SHIELDED;
