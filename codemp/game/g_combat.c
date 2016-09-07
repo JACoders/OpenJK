@@ -6612,10 +6612,20 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_flame") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0 ||
-							Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0 || 
-							Q_stricmp(attacker->targetname, "zyk_effect_scream") == 0)
-						{ // zyk: it will also not knockback by Force Scream ability
+							Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0)
+						{
 							G_Damage (ent, quest_power_user, quest_power_user, NULL, origin, (int)points, DAMAGE_RADIUS, mod);
+						}
+						else if (Q_stricmp(attacker->targetname, "zyk_effect_scream") == 0)
+						{ // zyk: it will also not knockback by Force Scream ability
+							if (Q_irand(0, 3) == 0)
+							{ // zyk: it has a chance of setting a stun anim on the target
+								ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+								ent->client->ps.forceDodgeAnim = BOTH_SONICPAIN_END;
+								ent->client->ps.forceHandExtendTime = level.time + 3000;
+							}
+
+							G_Damage(ent, quest_power_user, quest_power_user, NULL, origin, (int)points, DAMAGE_RADIUS, mod);
 						}
 						else
 						{
