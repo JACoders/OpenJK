@@ -9842,7 +9842,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 54)
 		{
-			if (ent->client->pers.rpg_class == 3)
+			if (ent->client->pers.rpg_class == 2)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Sentry Buff, which increases hp and ammo of deployed sentries. Spends 10 power cell ammo\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 3)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Armored Soldier gets Shield to Ammo, which recovers some ammo by spending his shield. Spends 50 shield\n\n\"");
 			}
@@ -14761,7 +14765,36 @@ void Cmd_Unique_f(gentity_t *ent) {
 	{ // zyk: Unique Upgrade 2
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 3)
+			if (ent->client->pers.rpg_class == 2)
+			{ // zyk: Bounty Hunter Sentry Buff
+				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 10)
+				{
+					int i = 0;
+
+					ent->client->ps.ammo[AMMO_POWERCELL] -= 10;
+
+					for (i = MAX_CLIENTS; i < level.num_entities; i++)
+					{
+						gentity_t *sentry_ent = &g_entities[i];
+
+						if (sentry_ent && Q_stricmp(sentry_ent->classname, "sentryGun") == 0 && 
+							sentry_ent->parent == ent)
+						{ // zyk: increases hp and ammo of the sentry gun
+							sentry_ent->health += 200;
+							sentry_ent->count *= 2;
+						}
+					}
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 10 power cell ammo to use it\"");
+				}
+			}
+			else if (ent->client->pers.rpg_class == 3)
 			{ // zyk: Armored Soldier Shield to Ammo. Recovers ammo by spending his shield
 				if (ent->client->ps.stats[STAT_ARMOR] >= 50)
 				{
