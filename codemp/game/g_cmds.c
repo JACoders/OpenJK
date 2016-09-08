@@ -9842,7 +9842,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 54)
 		{
-			if (ent->client->pers.rpg_class == 2)
+			if (ent->client->pers.rpg_class == 1)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force User gets Force Repulse, which pushes everyone away from you. Spends 50 force\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 2)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Sentry Buff, which increases hp and ammo of deployed sentries. Spends 10 power cell ammo\n\n\"");
 			}
@@ -14767,7 +14771,65 @@ void Cmd_Unique_f(gentity_t *ent) {
 	{ // zyk: Unique Upgrade 2
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 2)
+			if (ent->client->pers.rpg_class == 1)
+			{ // zyk: Force User Force Repulse
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					int i = 0;
+					int push_scale = 500;
+
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					for (i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
+						{
+							vec3_t dir;
+
+							VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
+							VectorNormalize(dir);
+
+							player_ent->client->ps.velocity[0] = dir[0] * push_scale;
+							player_ent->client->ps.velocity[1] = dir[1] * push_scale;
+							player_ent->client->ps.velocity[2] = 250;
+
+							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+							player_ent->client->ps.forceHandExtendTime = level.time + 700;
+							player_ent->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
+							player_ent->client->ps.quickerGetup = qtrue;
+						}
+					}
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					G_Sound(ent, CHAN_BODY, G_SoundIndex("sound/weapons/force/push.wav"));
+					if (ent->client->ps.forceHandExtend == HANDEXTEND_NONE)
+					{
+						ent->client->ps.forceHandExtend = HANDEXTEND_FORCEPUSH;
+						ent->client->ps.forceHandExtendTime = level.time + 1000;
+					}
+					else if (ent->client->ps.forceHandExtend == HANDEXTEND_KNOCKDOWN && G_InGetUpAnim(&ent->client->ps))
+					{
+						if (ent->client->ps.forceDodgeAnim > 4)
+						{
+							ent->client->ps.forceDodgeAnim -= 8;
+						}
+						ent->client->ps.forceDodgeAnim += 8; //special case, play push on upper torso, but keep playing current knockdown anim on legs
+					}
+					ent->client->ps.powerups[PW_DISINT_4] = level.time + 1100;
+					ent->client->ps.powerups[PW_PULL] = 0;
+
+					ent->client->pers.unique_skill_timer = level.time + 60000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 2)
 			{ // zyk: Bounty Hunter Sentry Buff
 				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 10)
 				{
