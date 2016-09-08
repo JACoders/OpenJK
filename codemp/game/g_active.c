@@ -824,6 +824,11 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	{ // zyk: Force Tank Force Armor has run out. Remove the shield flag
 		ent->flags &= ~FL_SHIELDED;
 	}
+	else if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 8 && client->ps.powerups[PW_NEUTRALFLAG] < level.time &&
+			 client->pers.player_statuses & (1 << 26))
+	{ // zyk: Magic Master Spread Bolts run out. Remove flag
+		ent->client->pers.player_statuses &= ~(1 << 26);
+	}
 
 	while ( client->timeResidual >= 1000 )
 	{

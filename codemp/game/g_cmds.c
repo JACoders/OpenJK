@@ -9829,7 +9829,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Magic Master Unique Skill will make him shoot Spread Normal Bolts and Spread Electric Bolts, but will spend a lot of mp\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Magic Master gets Spread Bolts, which makes Normal and Electric Bolts shoot 3 spread bolts. Each shot spends some mp\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
@@ -14723,9 +14723,11 @@ void Cmd_Unique_f(gentity_t *ent) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{ // zyk: Magic Master Spread Bolts activation
-				if (ent->client->pers.magic_power > 0)
+				if (ent->client->pers.magic_power >= 1)
 				{
-					ent->client->pers.magic_power--;
+					ent->client->pers.magic_power -= 1;
+
+					ent->client->pers.player_statuses |= (1 << 26);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 

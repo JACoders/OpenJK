@@ -6533,7 +6533,8 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						npcs_on_same_team(quest_power_user, ent) == qtrue || zyk_is_ally(quest_power_user,ent) == qtrue))
 					{
 						if (quest_power_user->client->sess.amrpgmode == 2 && quest_power_user->client->pers.rpg_class == 8 && 
-							quest_power_user->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+							quest_power_user->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
+							!(quest_power_user->client->pers.player_statuses & (1 << 26)))
 						{ // zyk: Magic Master Unique Skill increases amount of health recovered
 							int heal_amount = 5;
 							int shield_amount = 2;
@@ -6562,7 +6563,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						}
 						else
 						{
-							int heal_amount = 2;
+							int heal_amount = 3;
 
 							// zyk: Universe Power
 							if (quest_power_user->client->pers.quest_power_status & (1 << 13))

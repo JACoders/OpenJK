@@ -642,6 +642,7 @@ typedef struct clientPersistant_s {
 	// 23 - Free Warrior Mimic Damage
 	// 24 - Force User Force Maelstrom
 	// 25 - Force Tank Force Scream
+	// 26 - Magic Master Spread Bolts
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison

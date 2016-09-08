@@ -3919,7 +3919,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				else
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-				if (ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 4) && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				if (ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 4) && 
+					ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && ent->client->pers.player_statuses & (1 << 26))
 				{ // zyk: Magic Master Unique Upgrade 1 increases number of electric bolt shots
 					number_of_shots = 3;
 				}
@@ -3945,7 +3946,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					VectorSet(missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE);
 					VectorScale(missile->r.maxs, -1, missile->r.mins);
 
-					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 26))) // zyk: Unique Skill increases damage
 						missile->damage = zyk_magic_fist_damage.integer * 2;
 					else
 						missile->damage = zyk_magic_fist_damage.integer;
@@ -3981,7 +3982,8 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				else
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-				if (ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 10) && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				if (ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 10) && 
+					ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && ent->client->pers.player_statuses & (1 << 26))
 				{ // zyk: Magic Master Unique Upgrade 1 increases number of electric bolt shots
 					number_of_shots = 3;
 				}
@@ -4009,7 +4011,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					VectorSet(missile->r.maxs, 2, 2, 2);
 					VectorScale(missile->r.maxs, -1, missile->r.mins);
 
-					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 26))) // zyk: Unique Skill increases damage
 						missile->damage = zyk_magic_fist_damage.integer * 4;
 					else
 						missile->damage = zyk_magic_fist_damage.integer * 2;
