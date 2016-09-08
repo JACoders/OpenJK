@@ -2215,9 +2215,11 @@ void zyk_WP_FireRocket(gentity_t *ent)
 	int splash_damage = zyk_rocket_splash_damage.integer;
 	int	vel = zyk_rocket_velocity.integer;
 	gentity_t *missile;
-	vec3_t dir, zyk_forward;
+	vec3_t zyk_origin, dir, zyk_forward;
 
-	VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+	// zyk: subtracts 90 to make rocket go up before targetting the enemy
+	VectorSet(dir, ent->client->ps.viewangles[0] - 90, ent->client->ps.viewangles[1], 0);
+	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 20);
 
 	AngleVectors(dir, zyk_forward, NULL, NULL);
 
@@ -2225,7 +2227,7 @@ void zyk_WP_FireRocket(gentity_t *ent)
 	damage *= 2;
 	splash_damage *= 2;
 
-	missile = CreateMissile(ent->client->ps.origin, zyk_forward, vel, 30000, ent, qfalse);
+	missile = CreateMissile(zyk_origin, zyk_forward, vel, 30000, ent, qfalse);
 
 	// zyk: sets the target
 	if (ent->client && ent->client->ps.rocketLockIndex != ENTITYNUM_NONE)

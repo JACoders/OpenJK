@@ -14551,7 +14551,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				if (ent->client->ps.ammo[AMMO_ROCKETS] >= 5)
 				{
 					int i = 0;
-					int min_dist = 700;
+					int min_dist = 900;
 					gentity_t *chosen_ent = NULL;
 
 					ent->client->ps.ammo[AMMO_ROCKETS] -= 5;
