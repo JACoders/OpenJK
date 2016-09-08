@@ -4638,8 +4638,8 @@ static void WP_UpdateMindtrickEnts(gentity_t *self)
 				if (trap->InPVS(ent->client->ps.origin, self->client->ps.origin) &&
 					OrgVisible(ent->client->ps.origin, self->client->ps.origin, ent->s.number))
 				{
-					if (self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class != 1)
-					{ // zyk: if player has mind control this power wont stop if the player attacks
+					if (self->client->sess.amrpgmode < 2 || (self->client->pers.rpg_class != 1 && self->client->pers.rpg_class != 5))
+					{ // zyk: Force User wont stop Mind Trick (specially because it may be a Mind Control) and Stealth Attacker Ultra Cloak
 						if (ent && !ent->NPC) // zyk: remove tricked entity only for players
 							RemoveTrickedEnt(&self->client->ps.fd, i);
 					}
