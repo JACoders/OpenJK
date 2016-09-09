@@ -6019,12 +6019,8 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 						}
 					}
 				}
-				else
-				{
-					trap->SendServerCommand(self - g_entities, "cp \" \n\"");
-				}
 
-				self->client->pers.sense_health_timer = level.time + 1000; // zyk: show health each 1 seconds
+				self->client->pers.sense_health_timer = level.time + 1000; // zyk: show health each second
 			}
 		}
 		if ( (self->client->ps.fd.forcePowersActive&( 1 << i )) )

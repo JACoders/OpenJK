@@ -9856,7 +9856,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 5)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Stealth Attacker gets Timed Bomb, which places a powerful bomb that explodes after 5 seconds. Spends 5 power cell ammo and 5 metal bolts ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Stealth Attacker gets Timed Bomb, which places a powerful bomb that explodes after some seconds. Spends 5 power cell ammo and 5 metal bolts ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 6)
 			{

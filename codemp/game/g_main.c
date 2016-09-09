@@ -4798,7 +4798,7 @@ void zyk_add_bomb_model(gentity_t *ent)
 
 	zyk_set_entity_field(new_ent, "targetname", "zyk_timed_bomb");
 
-	zyk_set_entity_field(new_ent, "count", "5");
+	zyk_set_entity_field(new_ent, "count", "3");
 
 	new_ent->parent = ent;
 	new_ent->think = zyk_bomb_model_think;
