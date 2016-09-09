@@ -9864,7 +9864,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 7)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. . Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force Gunner gets No Attack, which makes the nearby enemies not able to attack for some seconds. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
@@ -14964,6 +14964,36 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 7)
+			{ // zyk: Force Gunner No Attack
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					int i = 0;
+
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+
+					for (i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
+						{
+							player_ent->client->ps.weaponTime = 3000;
+						}
+					}
+
+					G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/hologram_off.mp3"));
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
 				{
