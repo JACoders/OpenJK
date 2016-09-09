@@ -4767,6 +4767,48 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 	}
 }
 
+void zyk_bomb_model_think(gentity_t *ent)
+{
+	// zyk: bomb timer seconds to explode. Each call to this function decrease counter until it reaches 0
+	ent->count--;
+
+	if (ent->count == 0)
+	{ // zyk: explodes the bomb
+		zyk_quest_effect_spawn(ent->parent, ent, "zyk_timed_bomb_explosion", "4", "explosions/hugeexplosion1", 0, 500, 400, 800);
+
+		ent->think = G_FreeEntity;
+		ent->nextthink = level.time + 500;
+	}
+	else
+	{
+		G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/mpalarm.wav"));
+		ent->nextthink = level.time + 1000;
+	}
+}
+
+void zyk_add_bomb_model(gentity_t *ent)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent, "classname", "misc_model_breakable");
+	zyk_set_entity_field(new_ent, "spawnflags", "0");
+	zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)ent->r.currentOrigin[0], (int)ent->r.currentOrigin[1], (int)ent->r.currentOrigin[2] - 20));
+
+	zyk_set_entity_field(new_ent, "model", "models/map_objects/factory/bomb_new_deact.md3");
+
+	zyk_set_entity_field(new_ent, "targetname", "zyk_timed_bomb");
+
+	zyk_set_entity_field(new_ent, "count", "5");
+
+	new_ent->parent = ent;
+	new_ent->think = zyk_bomb_model_think;
+	new_ent->nextthink = level.time + 1000;
+
+	zyk_spawn_entity(new_ent);
+
+	G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/cloth1.mp3"));
+}
+
 // zyk: Force Scream ability
 void force_scream(gentity_t *ent)
 {

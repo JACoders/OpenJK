@@ -9854,6 +9854,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage. Spends 50 force\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 5)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Stealth Attacker gets Timed Bomb, which places a powerful bomb that explodes after 5 seconds. Spends 5 power cell ammo and 5 metal bolts ammo\n\n\"");
+			}
 			else if (ent->client->pers.rpg_class == 6)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist gets Vertical DFA, which makes him jump and hit the enemy with the saber, with a very high damage. Spends 50 force\n\n\"");
@@ -14470,6 +14474,7 @@ extern void Jedi_Cloak(gentity_t *self);
 extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
 extern qboolean G_InGetUpAnim(playerState_t *ps);
 extern void zyk_WP_FireRocket(gentity_t *ent);
+extern void zyk_add_bomb_model(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
@@ -14921,6 +14926,24 @@ void Cmd_Unique_f(gentity_t *ent) {
 				else
 				{
 					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 5)
+			{ // zyk: Stealth Attacker Timed Bomb
+				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5 && ent->client->ps.ammo[AMMO_METAL_BOLTS] >= 5)
+				{
+					ent->client->ps.ammo[AMMO_POWERCELL] -= 5;
+					ent->client->ps.ammo[AMMO_METAL_BOLTS] -= 5;
+
+					zyk_add_bomb_model(ent);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 5 power cell ammo and 5 metal bolts ammo to use it\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 6)
