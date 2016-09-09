@@ -9862,6 +9862,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist gets Vertical DFA, which makes him jump and hit the enemy with the saber, with a very high damage. Spends 50 force\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 7)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. . Spends 50 force\n\n\"");
+			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force Tank gets Force Scream, which sets the resistance shield during 6 seconds. Player makes a scream that damages nearby enemies and may cause stun anim on them. Spends 50 force\n\n\"");
@@ -14866,9 +14870,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.stats[STAT_ARMOR] -= 50;
 
-					Add_Ammo(ent, AMMO_BLASTER, 150);
+					Add_Ammo(ent, AMMO_BLASTER, 200);
 
-					Add_Ammo(ent, AMMO_POWERCELL, 150);
+					Add_Ammo(ent, AMMO_POWERCELL, 200);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
