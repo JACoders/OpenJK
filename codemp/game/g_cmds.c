@@ -5414,7 +5414,7 @@ void initialize_rpg_skills(gentity_t *ent)
 			ent->client->pers.quest_power_status &= ~(1 << 13);
 		}
 
-		// zyk: the player can have only one of the Unique Upgrades. If for some reason he has more, remove all of them
+		// zyk: the player can have only one of the Unique Abilities. If for some reason he has more, remove all of them
 		if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3))
 		{
 			ent->client->pers.secrets_found &= ~(1 << 2);
@@ -8907,14 +8907,14 @@ void zyk_list_stuff(gentity_t *ent, gentity_t *target_ent)
 		strcpy(stuff_message, va("%s^3Bounty Hunter Upgrade - ^1no\n", stuff_message));
 
 	if (ent->client->pers.secrets_found & (1 << 2))
-		strcpy(stuff_message, va("%s^3Unique Upgrade 1 - ^2yes\n", stuff_message));
+		strcpy(stuff_message, va("%s^3Unique Ability 1 - ^2yes\n", stuff_message));
 	else
-		strcpy(stuff_message, va("%s^3Unique Upgrade 1 - ^1no\n", stuff_message));
+		strcpy(stuff_message, va("%s^3Unique Ability 1 - ^1no\n", stuff_message));
 
 	if (ent->client->pers.secrets_found & (1 << 3))
-		strcpy(stuff_message, va("%s^3Unique Upgrade 2 - ^2yes\n", stuff_message));
+		strcpy(stuff_message, va("%s^3Unique Ability 2 - ^2yes\n", stuff_message));
 	else
-		strcpy(stuff_message, va("%s^3Unique Upgrade 2 - ^1no\n", stuff_message));
+		strcpy(stuff_message, va("%s^3Unique Ability 2 - ^1no\n", stuff_message));
 
 	if (ent->client->pers.secrets_found & (1 << 7))
 		strcpy(stuff_message, va("%s^3Stealth Attacker Upgrade - ^2yes\n", stuff_message));
@@ -9583,7 +9583,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Upgrade 1: ^7Buy: 7000\n^354 - Unique Upgrade 2: ^7Buy: 7000\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Ability 1: ^7Buy: 7000\n^354 - Unique Ability 2: ^7Buy: 7000\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -9797,78 +9797,74 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			if (ent->client->pers.rpg_class == 0)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Free Warrior gets Mimic Damage. If you take damage, does part of the damage back to the enemy. Spends 50 force and 25 mp\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior gets Mimic Damage. If you take damage, does part of the damage back to the enemy. Spends 50 force and 25 mp\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 1)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force User gets Force Maelstrom, which grips enemies nearby, damages them, sets force shield and uses lightning if player has the force power. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Force User gets Force Maelstrom, which grips enemies nearby, damages them, sets force shield and uses lightning if player has the force power. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Homing Rocket, which shoots a powerful rocket that automatically goes after the nearest target. Spends 5 rocket ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Homing Rocket, which shoots a powerful rocket that automatically goes after the nearest target. Spends 5 rocket ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Armored Soldier gets the Lightning Shield, which increases resistance to damage. Using /unique again will release a small lightning dome. Spends 5 power cell ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier gets the Lightning Shield, which increases resistance to damage. Using /unique again will release a small lightning dome. Spends 5 power cell ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 4)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 5)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Stealth Attacker gets Ultra Cloak, which makes him completely invisible. Spends 5 power cell ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 6)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Duelist gets Impale Stab, which hits the enemy with his saber doing a lot of damage. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist gets Impale Stab, which hits the enemy with his saber doing a lot of damage. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 7)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force Gunner gets Ammo Fill, which recovers some ammo in all of his ammo skills. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Force Gunner gets Ammo Fill, which recovers some ammo in all of his ammo skills. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Magic Master gets Spread Bolts, which makes Normal and Electric Bolts shoot 3 spread bolts. Each shot spends some mp\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Magic Master gets Spread Bolts, which makes Normal and Electric Bolts shoot 3 spread bolts. Each shot spends some mp\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force Tank gets Force Armor, which activates his resistance shield, with damage resistance, gun shot deflection, and ability to resist force powers. Spends 50 force\n\n\"");
-			}
-			else
-			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 1: ^7You can only have one Unique Upgrade at a time.\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Force Tank gets Force Armor, which activates his resistance shield, with damage resistance, gun shot deflection, and ability to resist force powers. Spends 50 force\n\n\"");
 			}
 		}
 		else if (i == 54)
 		{
 			if (ent->client->pers.rpg_class == 1)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force User gets Force Repulse, which pushes everyone away from you. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force User gets Force Repulse, which pushes everyone away from you. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Bounty Hunter gets Sentry Buff, which increases hp and ammo of deployed sentries. Spends 10 power cell ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Sentry Buff, which increases hp and ammo of deployed sentries. Spends 10 power cell ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Armored Soldier gets Shield to Ammo, which recovers some ammo by spending his shield. Spends 50 shield\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier gets Shield to Ammo, which recovers some ammo by spending his shield. Spends 50 shield\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 4)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Monk gets Spin Kick ability. Kicks everyone around the Monk with very high damage. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 6)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Duelist gets Vertical DFA, which makes him jump and hit the enemy with the saber, with a very high damage. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist gets Vertical DFA, which makes him jump and hit the enemy with the saber, with a very high damage. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7used with /unique command. You can only have one Unique Upgrade at a time. Force Tank gets Force Scream, which sets the resistance shield during 6 seconds. Player makes a scream that damages nearby enemies and may cause stun anim on them. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force Tank gets Force Scream, which sets the resistance shield during 6 seconds. Player makes a scream that damages nearby enemies and may cause stun anim on them. Spends 50 force\n\n\"");
 			}
 			else
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Upgrade 2: ^7You can only have one Unique Upgrade at a time.\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7You can only have one Unique Ability at a time.\n\n\"");
 			}
 		}
 	}
@@ -14472,11 +14468,12 @@ Cmd_Unique_f
 */
 extern void Jedi_Cloak(gentity_t *self);
 extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
+extern qboolean G_InGetUpAnim(playerState_t *ps);
 extern void zyk_WP_FireRocket(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
-	{ // zyk: Unique Upgrade 1
+	{ // zyk: Unique Ability 1
 		if (ent->client->pers.rpg_class == 3 && ent->client->ps.powerups[PW_SHIELDHIT] > level.time)
 		{ // zyk: releasing the small lightning dome
 			ent->client->ps.powerups[PW_SHIELDHIT] = 0;
@@ -14768,7 +14765,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 		}
 	}
 	else if (ent->client->pers.secrets_found & (1 << 3))
-	{ // zyk: Unique Upgrade 2
+	{ // zyk: Unique Ability 2
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
 			if (ent->client->pers.rpg_class == 1)
@@ -14973,7 +14970,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 	}
 	else
 	{
-		trap->SendServerCommand(ent - g_entities, "print \"You have no Unique Upgrades to use this command\n\"");
+		trap->SendServerCommand(ent - g_entities, "print \"You have no Unique Abilities to use this command\n\"");
 		return;
 	}
 }

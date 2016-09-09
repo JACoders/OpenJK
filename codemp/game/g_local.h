@@ -748,8 +748,8 @@ typedef struct clientPersistant_s {
 	// Possible bit values (1 << bit_value) are:
 	// 0 - Holdable Items Upgrade
 	// 1 - Bounty Hunter Upgrade
-	// 2 - Unique Upgrade 1
-	// 3 - Unique Upgrade 2
+	// 2 - Unique Ability 1
+	// 3 - Unique Ability 2
 	// 4 - unused
 	// 5 - unused
 	// 6 - unused
