@@ -5172,8 +5172,6 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 
 		// zyk: setting rpg control attributes
-		ent->client->pers.unique_skill_timer = 0;
-
 		ent->client->pers.thermal_vision = qfalse;
 
 		if (ent->client->pers.rpg_class != 8 || magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse || 

@@ -2686,6 +2686,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 	// zyk: cooldown time between magic powers
 	client->pers.quest_power_usage_timer = 0;
 
+	// zyk: cooldown time between unique skills and unique abilities
+	client->pers.unique_skill_timer = 0;
+
 	// zyk: sending events to client game
 	client->pers.send_event_timer = level.time + 3000;
 	client->pers.send_event_interval = level.time + 100;
