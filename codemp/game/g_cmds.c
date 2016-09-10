@@ -14810,7 +14810,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
 				{
 					int i = 0;
-					int push_scale = 500;
+					int push_scale = 700;
 
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
@@ -14822,6 +14822,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
 							vec3_t dir;
+
+							G_Damage(player_ent, ent, ent, NULL, NULL, 10, 0, MOD_UNKNOWN);
 
 							VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
 							VectorNormalize(dir);
