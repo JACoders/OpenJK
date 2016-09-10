@@ -9981,7 +9981,7 @@ void CG_Player( centity_t *cent ) {
 		else if (cg.rpg_class[cent->currentState.number] == 9) // zyk: Force Tank, draws the resistance shield around him
 			CG_DrawPlayerSphere(cent, cent->lerpOrigin, 1.4f, cgs.media.ysaliredShader );
 
-		if (cg.snap->ps.clientNum == cent->currentState.number && cg.rpg_class[cent->currentState.number] > 0 && cg.unique_cooldown_timer == 0)
+		if (cg.snap->ps.clientNum == cent->currentState.number && cg.rpg_class[cent->currentState.number] >= 0 && cg.unique_cooldown_timer == 0)
 		{ // zyk: classes that are using Unique Skill must show the cooldown time
 			int unique_duration = 0;
 
