@@ -819,15 +819,19 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	client = ent->client;
 	client->timeResidual += msec;
 
-	if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 9 && client->ps.powerups[PW_NEUTRALFLAG] < level.time && 
-			 ent->flags & FL_SHIELDED)
-	{ // zyk: Force Tank Force Armor has run out. Remove the shield flag
-		ent->flags &= ~FL_SHIELDED;
-	}
-	else if (client->sess.amrpgmode == 2 && client->pers.rpg_class == 8 && client->ps.powerups[PW_NEUTRALFLAG] < level.time &&
-			 client->pers.player_statuses & (1 << 26))
-	{ // zyk: Magic Master Spread Bolts run out. Remove flag
-		client->pers.player_statuses &= ~(1 << 26);
+	if (client->sess.amrpgmode == 2 && client->ps.powerups[PW_NEUTRALFLAG] < level.time)
+	{
+		if (client->pers.player_statuses & (1 << 21))
+		{
+			if (client->pers.rpg_class == 9)
+				ent->flags &= ~FL_SHIELDED;
+
+			client->pers.player_statuses &= ~(1 << 21);
+		}
+		else if (client->pers.player_statuses & (1 << 22))
+		{
+			client->pers.player_statuses &= ~(1 << 22);
+		}
 	}
 
 	while ( client->timeResidual >= 1000 )
@@ -926,13 +930,6 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				else if (client->ps.stats[STAT_ARMOR] < client->pers.max_rpg_shield)
 				{
 					client->ps.stats[STAT_ARMOR] += 1;
-				}
-			}
-			else if (client->pers.rpg_class == 9 && ent->health > 0)
-			{ // zyk: Force Tank Force Scream ability. Removing flag
-				if (client->ps.powerups[PW_NEUTRALFLAG] < level.time && client->pers.player_statuses & (1 << 25))
-				{
-					client->pers.player_statuses &= ~(1 << 25);
 				}
 			}
 

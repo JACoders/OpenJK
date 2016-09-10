@@ -2154,11 +2154,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	self->client->pers.quest_power_status = 0;
 	self->client->pers.player_statuses &= ~(1 << 20);
 
-	// zyk: remove Monk Meditation Strength from this Monk or ally
-	self->client->pers.player_statuses &= ~(1 << 21);
-	self->client->pers.player_statuses &= ~(1 << 22);
-
-	// zyk: removing Free Warrior Mimic Damage
+	// zyk: removing Monk Meditation Strength bonus resistance and damage from ally
 	self->client->pers.player_statuses &= ~(1 << 23);
 
 	// zyk: resetting boss battle music to default one if needed
@@ -5000,7 +4996,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{ // zyk: bonus damage of each RPG class
 		// zyk: Monk Meditation Strength increases damage of allies
-		if (attacker->client->pers.player_statuses & (1 << 22))
+		if (attacker->client->pers.player_statuses & (1 << 23))
 		{
 			damage = (int)ceil(damage * (1.1));
 		}
@@ -5152,7 +5148,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 
 		// zyk: Monk Meditation Strength increases resistance to damage of allies
-		if (targ->client->pers.player_statuses & (1 << 22))
+		if (targ->client->pers.player_statuses & (1 << 23))
 		{
 			damage = (int)ceil(damage * (0.9));
 		}
@@ -5184,7 +5180,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{
 			// zyk: Free Warrior Mimic Damage ability. Deals half of the damage taken back to the enemy
-			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time && targ->client->pers.player_statuses & (1 << 23))
+			if (targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time && targ->client->pers.player_statuses & (1 << 21))
 			{
 				G_Damage(attacker, targ, targ, NULL, NULL, (int)ceil(damage * (0.5)), 0, MOD_UNKNOWN);
 			}
@@ -6534,7 +6530,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 					{
 						if (quest_power_user->client->sess.amrpgmode == 2 && quest_power_user->client->pers.rpg_class == 8 && 
 							quest_power_user->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
-							!(quest_power_user->client->pers.player_statuses & (1 << 26)))
+							!(quest_power_user->client->pers.player_statuses & (1 << 21)))
 						{ // zyk: Magic Master Unique Skill increases amount of health recovered
 							int heal_amount = 5;
 							int shield_amount = 2;

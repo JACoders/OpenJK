@@ -637,12 +637,9 @@ typedef struct clientPersistant_s {
 	// 18 - NPC has the guard order
 	// 19 - NPC has the cover order
 	// 20 - hit by poison dart
-	// 21 - Monk Meditation Strength - used on Monk
-	// 22 - Monk Meditation Strength - used on Monk allies
-	// 23 - Free Warrior Mimic Damage
-	// 24 - Force User Force Maelstrom
-	// 25 - Force Tank Force Scream
-	// 26 - Magic Master Spread Bolts
+	// 21 - Unique Ability 1
+	// 22 - Unique Ability 2
+	// 23 - Monk ally with meditation strength bonus damage and resistance
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison

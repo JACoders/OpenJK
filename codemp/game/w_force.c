@@ -5897,14 +5897,14 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 
 	if ( ucmd->buttons & BUTTON_FORCE_LIGHTNING || 
 		(self->client->sess.amrpgmode == 2 && self->client->pers.rpg_class == 1 && 
-		 self->client->pers.player_statuses & (1 << 24) && self->client->ps.powerups[PW_NEUTRALFLAG] > level.time))
+		 self->client->pers.player_statuses & (1 << 21) && self->client->ps.powerups[PW_NEUTRALFLAG] > level.time))
 	{ //lightning
 		WP_DoSpecificPower(self, ucmd, FP_LIGHTNING);
 	}
 	else
 	{ //see if we're using it generically.. if not, stop.
-		if (self->client->pers.player_statuses & (1 << 24))
-			self->client->pers.player_statuses &= ~(1 << 24);
+		if (self->client->pers.player_statuses & (1 << 21))
+			self->client->pers.player_statuses &= ~(1 << 21);
 
 		if (self->client->ps.fd.forcePowersActive & (1 << FP_LIGHTNING))
 		{

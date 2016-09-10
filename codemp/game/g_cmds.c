@@ -9838,7 +9838,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			if (ent->client->pers.rpg_class == 0)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior gets Super Beam, a powerful beam that highly damages enemies and can disintegrate them. Spends 100 force and 25 mp\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior gets Super Beam, a powerful beam that highly damages enemies. Spends 100 force and 25 mp\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 1)
 			{
@@ -14527,9 +14527,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 					ent->client->pers.magic_power -= 25;
 
-					ent->client->pers.player_statuses |= (1 << 23);
-
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
+
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					send_rpg_events(2000);
 
@@ -14571,9 +14571,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.fd.forcePowersActive |= (1 << FP_LIGHTNING);
 					ent->client->ps.fd.forcePowerDuration[FP_LIGHTNING] = level.time + 4000;
 
-					ent->client->pers.player_statuses |= (1 << 24);
-
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 4000;
+
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					ent->client->pers.unique_skill_timer = level.time + 60000;
 				}
@@ -14658,7 +14658,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 						if (zyk_is_ally(ent, player_ent) == qtrue)
 						{
-							player_ent->client->pers.player_statuses |= (1 << 21);
+							player_ent->client->pers.player_statuses |= (1 << 23);
 						}
 					}
 
@@ -14763,7 +14763,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->pers.magic_power -= 1;
 
-					ent->client->pers.player_statuses |= (1 << 26);
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
@@ -14783,6 +14783,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
 					ent->flags |= FL_SHIELDED;
+
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
@@ -14816,7 +14818,13 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 2);
 					ent->client->pers.magic_power -= 25;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+					ent->client->pers.player_statuses |= (1 << 22);
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_FORCE_DRAIN_START;
+					ent->client->ps.forceHandExtendTime = level.time + 2000;
 
 					zyk_super_beam(ent);
 
@@ -15086,7 +15094,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
-					ent->client->pers.player_statuses |= (1 << 25);
+					ent->client->pers.player_statuses |= (1 << 22);
 
 					force_scream(ent);
 
