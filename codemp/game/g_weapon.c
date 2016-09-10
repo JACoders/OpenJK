@@ -277,6 +277,52 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 	missile->bounceCount = 8;
 }
 
+void zyk_WP_FireBryarPistol(gentity_t *ent)
+//---------------------------------------------------------
+{
+	int damage = zyk_blaster_pistol_damage.integer * 5;
+	int count;
+	float boxSize = BRYAR_ALT_SIZE*(2.5);
+
+	vec3_t zyk_origin, dir, zyk_forward;
+
+	VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 20);
+
+	AngleVectors(dir, zyk_forward, NULL, NULL);
+
+	gentity_t	*missile = CreateMissile(zyk_origin, zyk_forward, zyk_blaster_pistol_velocity.integer, 10000, ent, qtrue);
+
+	missile->classname = "bryar_proj";
+	missile->s.weapon = WP_BRYAR_PISTOL;
+
+	count = 5;
+	damage *= count;
+
+	missile->s.generic1 = count; // The missile will then render according to the charge level.
+
+	VectorSet(missile->r.maxs, boxSize, boxSize, boxSize);
+	VectorSet(missile->r.mins, -boxSize, -boxSize, -boxSize);
+
+	if (ent && ent->client && ent->client->sess.amrpgmode == 2)
+	{ // zyk: Blaster Pack Weapons Upgrade increases damage of the pistols
+		if (ent->client->pers.skill_levels[19] == 2)
+		{
+			damage = damage * 1.25;
+		}
+	}
+
+	missile->damage = damage;
+	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
+
+	missile->methodOfDeath = MOD_BRYAR_PISTOL_ALT;
+
+	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;
+
+	// we don't want it to bounce forever
+	missile->bounceCount = 8;
+}
+
 /*
 ======================================================================
 

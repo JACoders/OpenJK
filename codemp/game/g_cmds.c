@@ -9846,7 +9846,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Sentry Buff, which increases hp and ammo of deployed sentries. Spends 10 power cell ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Wrist Shot, which shoots a powerful blaster shot. Spends 10 blaster pack ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
@@ -14499,6 +14499,7 @@ Cmd_Unique_f
 extern void Jedi_Cloak(gentity_t *self);
 extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
 extern qboolean G_InGetUpAnim(playerState_t *ps);
+extern void zyk_WP_FireBryarPistol(gentity_t *ent);
 extern void zyk_WP_FireRocket(gentity_t *ent);
 extern void zyk_add_bomb_model(gentity_t *ent);
 extern void elemental_attack(gentity_t *ent);
@@ -14905,24 +14906,12 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 			}
 			else if (ent->client->pers.rpg_class == 2)
-			{ // zyk: Bounty Hunter Sentry Buff
-				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 10)
+			{ // zyk: Bounty Hunter Wrist Shot
+				if (ent->client->ps.ammo[AMMO_BLASTER] >= 10)
 				{
-					int i = 0;
+					ent->client->ps.ammo[AMMO_BLASTER] -= 10;
 
-					ent->client->ps.ammo[AMMO_POWERCELL] -= 10;
-
-					for (i = MAX_CLIENTS; i < level.num_entities; i++)
-					{
-						gentity_t *sentry_ent = &g_entities[i];
-
-						if (sentry_ent && Q_stricmp(sentry_ent->classname, "sentryGun") == 0 && 
-							sentry_ent->parent == ent)
-						{ // zyk: increases hp and ammo of the sentry gun
-							sentry_ent->health += 200;
-							sentry_ent->count *= 2;
-						}
-					}
+					zyk_WP_FireBryarPistol(ent);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
@@ -14930,7 +14919,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 10 power cell ammo to use it\"");
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 10 blaster pack ammo to use it\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 3)
