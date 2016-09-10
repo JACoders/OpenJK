@@ -6621,7 +6621,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						}
 						else if (Q_stricmp(attacker->targetname, "zyk_effect_scream") == 0)
 						{ // zyk: it will also not knockback by Force Scream ability
-							if (ent->client && Q_irand(0, 3) == 0)
+							if (ent->client && Q_irand(0, 3) == 0 && zyk_is_ally(quest_power_user, ent) == qfalse)
 							{ // zyk: it has a chance of setting a stun anim on the target
 								ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
 								ent->client->ps.forceDodgeAnim = BOTH_SONICPAIN_END;

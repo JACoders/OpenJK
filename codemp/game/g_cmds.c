@@ -14769,9 +14769,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->pers.magic_power -= 1;
 
-					ent->client->pers.player_statuses |= (1 << 21);
-
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					send_rpg_events(2000);
 
@@ -14790,9 +14790,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->flags |= FL_SHIELDED;
 
-					ent->client->pers.player_statuses |= (1 << 21);
-
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
@@ -14824,9 +14824,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 2);
 					ent->client->pers.magic_power -= 25;
 
-					ent->client->pers.player_statuses |= (1 << 22);
-
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+					ent->client->pers.player_statuses |= (1 << 22);
 
 					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
 					ent->client->ps.forceDodgeAnim = BOTH_FORCE_DRAIN_START;
@@ -15102,11 +15102,11 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
-					ent->client->pers.player_statuses |= (1 << 22);
-
 					force_scream(ent);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 6000;
+
+					ent->client->pers.player_statuses |= (1 << 22);
 
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}

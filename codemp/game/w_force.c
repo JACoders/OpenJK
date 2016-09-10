@@ -5903,9 +5903,6 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 	}
 	else
 	{ //see if we're using it generically.. if not, stop.
-		if (self->client->pers.player_statuses & (1 << 21))
-			self->client->pers.player_statuses &= ~(1 << 21);
-
 		if (self->client->ps.fd.forcePowersActive & (1 << FP_LIGHTNING))
 		{
 			if (!(ucmd->buttons & BUTTON_FORCEPOWER) || self->client->ps.fd.forcePowerSelected != FP_LIGHTNING)
