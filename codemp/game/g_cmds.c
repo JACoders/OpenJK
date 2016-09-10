@@ -15030,7 +15030,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{ // zyk: Magic Master Elemental Attack
-				if (ent->client->pers.magic_power >= 20)
+				if (ent->client->pers.magic_power >= 20 && ent->client->pers.quest_power_usage_timer < level.time)
 				{
 					ent->client->pers.magic_power -= 20;
 
@@ -15045,7 +15045,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 20 MP to use it\"");
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 20 MP to use it and wait some seconds after last magic used\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 9)
