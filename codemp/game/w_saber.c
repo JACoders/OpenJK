@@ -4345,7 +4345,7 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 			if (self->client->ps.torsoAnim == BOTH_PULL_IMPALE_STAB) // zyk: Impale Stab
 				dmg = 80;
 			else if (self->client->ps.torsoAnim == BOTH_FORCELEAP2_T__B_) // zyk: Vertical DFA
-				dmg = 120;
+				dmg = 80;
 		}
 
 		idleDamage = qtrue;

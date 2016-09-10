@@ -4810,7 +4810,7 @@ void zyk_vertical_dfa_effect(gentity_t *ent)
 	gentity_t *new_ent = G_Spawn();
 
 	zyk_set_entity_field(new_ent, "classname", "fx_runner");
-	zyk_set_entity_field(new_ent, "spawnflags", "0");
+	zyk_set_entity_field(new_ent, "spawnflags", "4");
 	zyk_set_entity_field(new_ent, "targetname", "zyk_vertical_dfa");
 
 	zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)ent->r.currentOrigin[0], (int)ent->r.currentOrigin[1], (int)ent->r.currentOrigin[2] - 20));
@@ -4818,6 +4818,10 @@ void zyk_vertical_dfa_effect(gentity_t *ent)
 	new_ent->s.modelindex = G_EffectIndex("repeater/concussion");
 
 	zyk_spawn_entity(new_ent);
+
+	new_ent->splashDamage = 100;
+
+	new_ent->splashRadius = 100;
 
 	new_ent->nextthink = level.time + 900;
 

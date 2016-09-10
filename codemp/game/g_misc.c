@@ -2828,7 +2828,7 @@ void fx_runner_think( gentity_t *ent )
 		VectorSet(shot_mins, -20, -20, -20);
 		VectorSet(shot_maxs, 20, 20, 20);
 
-		trap->Trace(&tr, tfrom, shot_mins, shot_maxs, tto, ent->s.number, MASK_PLAYERSOLID|CONTENTS_TRIGGER, qfalse, 0, 0);
+		trap->Trace(&tr, tfrom, shot_mins, shot_maxs, tto, user_ent->s.number, MASK_PLAYERSOLID, qfalse, 0, 0);
 
 		if (tr.fraction != 1.0 &&
 			tr.entityNum != ENTITYNUM_NONE)
