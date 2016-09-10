@@ -823,8 +823,24 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	{
 		if (client->pers.player_statuses & (1 << 21))
 		{
-			if (client->pers.rpg_class == 9)
+			if (client->pers.rpg_class == 4)
+			{ // zyk: Monk Meditation Strength run out. Remove flag from his allies
+				int i = 0;
+
+				for (i = 0; i < level.maxclients; i++)
+				{
+					gentity_t *player_ent = &g_entities[i];
+
+					if (zyk_is_ally(ent, player_ent) == qtrue)
+					{
+						player_ent->client->pers.player_statuses &= ~(1 << 23);
+					}
+				}
+			}
+			else if (client->pers.rpg_class == 9)
+			{ // zyk: Force Tank Force Armor run out. Remove shield flag
 				ent->flags &= ~FL_SHIELDED;
+			}
 
 			client->pers.player_statuses &= ~(1 << 21);
 		}
