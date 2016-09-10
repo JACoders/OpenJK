@@ -2097,6 +2097,11 @@ qboolean BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 	{ // zyk: Magic Master can only pickup some items
 		return qfalse;
 	}
+	else if (cg.rpg_class[ps->clientNum] == 9 && item->giType == IT_WEAPON &&
+		(item->giTag == WP_THERMAL || item->giTag == WP_TRIP_MINE || item->giTag == WP_DET_PACK))
+	{
+		return;
+	}
 #endif
 
 	if ( ps )
