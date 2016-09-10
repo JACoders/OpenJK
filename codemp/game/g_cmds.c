@@ -14505,6 +14505,7 @@ extern void elemental_attack(gentity_t *ent);
 extern void zyk_super_beam(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
 extern qboolean zyk_unique_ability_can_hit_target(gentity_t *attacker, gentity_t *target);
+extern void zyk_vertical_dfa_effect(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
 	{ // zyk: Unique Ability 1
@@ -15031,6 +15032,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.velocity[2] = 300;
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
+
+					zyk_vertical_dfa_effect(ent);
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}

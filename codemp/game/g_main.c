@@ -4804,6 +4804,27 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 	}
 }
 
+// zyk: used by Duelist Vertical DFA ability
+void zyk_vertical_dfa_effect(gentity_t *ent)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent, "classname", "fx_runner");
+	zyk_set_entity_field(new_ent, "spawnflags", "0");
+	zyk_set_entity_field(new_ent, "targetname", "zyk_vertical_dfa");
+
+	zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)ent->r.currentOrigin[0], (int)ent->r.currentOrigin[1], (int)ent->r.currentOrigin[2] - 20));
+
+	new_ent->s.modelindex = G_EffectIndex("repeater/concussion");
+
+	zyk_spawn_entity(new_ent);
+
+	new_ent->nextthink = level.time + 900;
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + 1550;
+}
+
 void zyk_bomb_model_think(gentity_t *ent)
 {
 	// zyk: bomb timer seconds to explode. Each call to this function decrease counter until it reaches 0
