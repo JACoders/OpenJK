@@ -9864,6 +9864,10 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force Gunner gets No Attack, which makes the nearby enemies not able to attack for some seconds. Spends 50 force\n\n\"");
 			}
+			else if (ent->client->pers.rpg_class == 8)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Magic Master gets Elemental Attack, a magic power that hits enemies with the power of the elements. Spends 20 mp\n\n\"");
+			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force Tank gets Force Scream, which sets the resistance shield during 6 seconds. Player makes a scream that damages nearby enemies and may cause stun anim on them. Spends 50 force\n\n\"");
@@ -14477,6 +14481,7 @@ extern void WP_AddAsMindtricked(forcedata_t *fd, int entNum);
 extern qboolean G_InGetUpAnim(playerState_t *ps);
 extern void zyk_WP_FireRocket(gentity_t *ent);
 extern void zyk_add_bomb_model(gentity_t *ent);
+extern void elemental_attack(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
@@ -14996,6 +15001,26 @@ void Cmd_Unique_f(gentity_t *ent) {
 				else
 				{
 					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 8)
+			{ // zyk: Magic Master Elemental Attack
+				if (ent->client->pers.magic_power >= 20)
+				{
+					ent->client->pers.magic_power -= 20;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					elemental_attack(ent);
+
+					send_rpg_events(2000);
+
+					ent->client->pers.quest_power_usage_timer = level.time + 20000;
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 20 MP to use it\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 9)

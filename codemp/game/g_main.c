@@ -4809,6 +4809,67 @@ void zyk_add_bomb_model(gentity_t *ent)
 	G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/cloth1.mp3"));
 }
 
+void zyk_spawn_ice_element(gentity_t *ent, gentity_t *player_ent)
+{
+	int i = 0;
+	int initial_angle = -179;
+
+	for (i = 0; i < 4; i++)
+	{
+		gentity_t *new_ent = G_Spawn();
+
+		zyk_set_entity_field(new_ent, "classname", "misc_model_breakable");
+		zyk_set_entity_field(new_ent, "spawnflags", "65537");
+		zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)player_ent->r.currentOrigin[0], (int)player_ent->r.currentOrigin[1], (int)player_ent->r.currentOrigin[2]));
+
+		zyk_set_entity_field(new_ent, "angles", va("0 %d 0", initial_angle + (i * 89)));
+
+		zyk_set_entity_field(new_ent, "mins", "-70 -70 -70");
+		zyk_set_entity_field(new_ent, "maxs", "70 70 70");
+
+		zyk_set_entity_field(new_ent, "model", "models/map_objects/rift/crystal_wall.md3");
+
+		zyk_set_entity_field(new_ent, "targetname", "zyk_elemental_ice");
+
+		zyk_spawn_entity(new_ent);
+
+		level.special_power_effects[new_ent->s.number] = ent->s.number;
+		level.special_power_effects_timer[new_ent->s.number] = level.time + 4000;
+	}
+}
+
+// zyk: Elemental Attack
+void elemental_attack(gentity_t *ent)
+{
+	int i = 0;
+	int targets_hit = 0;
+	int min_distance = 100;
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, 500, qfalse, &targets_hit) == qtrue)
+		{
+			// zyk: first element, Ice
+			zyk_spawn_ice_element(ent, player_ent);
+
+			// zyk: second element, Fire
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_elemental_fire", "4", "env/flame_jet", 1000, 40, 35, 2500);
+
+			// zyk: third element, Earth
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_elemental_earth", "4", "env/rock_smash", 2500, 40, 35, 4000);
+
+			// zyk: fourth element, Wind
+			player_ent->client->pers.quest_power_status |= (1 << 5);
+			player_ent->client->pers.quest_power_hit_counter = -179;
+			player_ent->client->pers.quest_target4_timer = level.time + 7000;
+
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/glass_tumble3.wav"));
+		}
+	}
+}
+
 // zyk: Force Scream ability
 void force_scream(gentity_t *ent)
 {
