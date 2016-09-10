@@ -15015,7 +15015,10 @@ void Cmd_Unique_f(gentity_t *ent) {
 						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
+							G_Damage(player_ent, ent, ent, NULL, NULL, 15, 0, MOD_UNKNOWN);
+
 							player_ent->client->ps.weaponTime = 3000;
+							player_ent->client->ps.electrifyTime = level.time + 3000;
 						}
 					}
 
