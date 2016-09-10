@@ -14477,7 +14477,8 @@ void Cmd_Saber_f( gentity_t *ent ) {
 
 qboolean zyk_can_use_unique(gentity_t *ent)
 {
-	if (ent->client->ps.forceHandExtendTime > level.time || ent->client->pers.quest_power_status & (1 << 2))
+	if ((ent->client->ps.forceHandExtend != HANDEXTEND_NONE && ent->client->ps.forceHandExtend != HANDEXTEND_FORCE_HOLD) ||
+		 ent->client->pers.quest_power_status & (1 << 2))
 	{ // zyk: using emotes/anims, special moves, and hit by Time Power. Cannot use unique ability
 		return qfalse;
 	}
