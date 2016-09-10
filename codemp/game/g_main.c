@@ -4870,6 +4870,32 @@ void elemental_attack(gentity_t *ent)
 	}
 }
 
+// zyk: Super Beam ability
+void zyk_super_beam(gentity_t *ent)
+{
+	gentity_t *new_ent = G_Spawn();
+	int angle_yaw = ent->client->ps.viewangles[1];
+
+	if (angle_yaw == 0)
+		angle_yaw = 1;
+
+	zyk_set_entity_field(new_ent, "classname", "fx_runner");
+	zyk_set_entity_field(new_ent, "spawnflags", "0");
+	zyk_set_entity_field(new_ent, "targetname", "zyk_super_beam");
+
+	zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)ent->client->ps.origin[0], (int)ent->client->ps.origin[1], ((int)ent->client->ps.origin[2] + ent->client->ps.viewheight)));
+	zyk_set_entity_field(new_ent, "angles", va("%d %d 0", (int)ent->client->ps.viewangles[0], angle_yaw));
+
+	new_ent->s.modelindex = G_EffectIndex("env/hevil_bolt");
+
+	new_ent->parent = ent;
+
+	zyk_spawn_entity(new_ent);
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + 2000;
+}
+
 // zyk: Force Scream ability
 void force_scream(gentity_t *ent)
 {

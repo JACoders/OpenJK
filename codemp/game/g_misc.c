@@ -2809,6 +2809,41 @@ void fx_runner_think( gentity_t *ent )
 		}
 	}
 
+	// zyk: Super Beam. Traces enemies and damages them
+	if (Q_stricmp(ent->targetname, "zyk_super_beam") == 0)
+	{
+		gentity_t *user_ent = ent->parent;
+		gentity_t *player_ent = NULL;
+		trace_t		tr;
+		vec3_t		tfrom, tto, fwd;
+		vec3_t		shot_mins, shot_maxs;
+		int radius = 32768;
+
+		VectorCopy(ent->s.origin, tfrom);
+		AngleVectors(ent->s.angles, fwd, NULL, NULL);
+		tto[0] = tfrom[0] + fwd[0] * radius;
+		tto[1] = tfrom[1] + fwd[1] * radius;
+		tto[2] = tfrom[2] + fwd[2] * radius;
+
+		VectorSet(shot_mins, -20, -20, -20);
+		VectorSet(shot_maxs, 20, 20, 20);
+
+		trap->Trace(&tr, tfrom, shot_mins, shot_maxs, tto, ent->s.number, MASK_PLAYERSOLID|CONTENTS_TRIGGER, qfalse, 0, 0);
+
+		if (tr.fraction != 1.0 &&
+			tr.entityNum != ENTITYNUM_NONE)
+		{ // zyk: actually hit something
+			player_ent = &g_entities[tr.entityNum];
+		}
+
+		if (player_ent && player_ent->client && user_ent && user_ent->client && user_ent != player_ent &&
+			zyk_is_ally(user_ent, player_ent) == qfalse)
+		{ // zyk: if the enemy is hit by the super beam, damage him
+			G_Damage(player_ent, user_ent, user_ent, NULL, player_ent->client->ps.origin, 50, DAMAGE_NO_PROTECTION, MOD_UNKNOWN);
+		}
+
+		ent->nextthink = level.time + 100;
+	}
 }
 
 //----------------------------------------------------------
@@ -2944,8 +2979,14 @@ void fx_runner_link( gentity_t *ent )
 
 		// Let's get to work right now!
 		ent->think = fx_runner_think;
-		
-		if (Q_stricmp(ent->targetname, "zyk_quest_effect_rockfall") == 0)
+
+		if (Q_stricmp(ent->targetname, "zyk_super_beam") == 0)
+		{ // zyk: starts the super beam effect right now
+			ent->s.modelindex2 = FX_STATE_CONTINUOUS;
+			ent->nextthink = level.time + 100; // wait a small bit, then start working
+			G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/ambience/artus/artus_gen.wav"));
+		}
+		else if (Q_stricmp(ent->targetname, "zyk_quest_effect_rockfall") == 0)
 		{ // zyk: Rockfall power. Starts the effect imediately but damages a bit later
 			ent->s.modelindex2 = FX_STATE_CONTINUOUS;
 			ent->nextthink = level.time + 1500;
@@ -3020,7 +3061,16 @@ void SP_fx_runner( gentity_t *ent )
 
 	// Give us a bit of time to spawn in the other entities, since we may have to target one of 'em
 	ent->think = fx_runner_link;
-	ent->nextthink = level.time + 400;
+
+	// zyk: no need to wait 400 ms with Super Beam effect
+	if (Q_stricmp(ent->targetname, "zyk_super_beam") == 0)
+	{
+		ent->nextthink = level.time;
+	}
+	else
+	{
+		ent->nextthink = level.time + 400;
+	}
 
 	// Save our position and link us up!
 	G_SetOrigin( ent, ent->s.origin );

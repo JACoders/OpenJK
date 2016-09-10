@@ -9836,7 +9836,11 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 54)
 		{
-			if (ent->client->pers.rpg_class == 1)
+			if (ent->client->pers.rpg_class == 0)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior gets Super Beam, a powerful beam that highly damages enemies and can disintegrate them. Spends 100 force and 25 mp\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 1)
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force User gets Force Repulse, which pushes everyone away from you. Spends 50 force\n\n\"");
 			}
@@ -14482,6 +14486,7 @@ extern qboolean G_InGetUpAnim(playerState_t *ps);
 extern void zyk_WP_FireRocket(gentity_t *ent);
 extern void zyk_add_bomb_model(gentity_t *ent);
 extern void elemental_attack(gentity_t *ent);
+extern void zyk_super_beam(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
@@ -14780,7 +14785,27 @@ void Cmd_Unique_f(gentity_t *ent) {
 	{ // zyk: Unique Ability 2
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
-			if (ent->client->pers.rpg_class == 1)
+			if (ent->client->pers.rpg_class == 0)
+			{ // zyk: Free Warrior Super Beam
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 2) && ent->client->pers.magic_power >= 25)
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 2);
+					ent->client->pers.magic_power -= 25;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					zyk_super_beam(ent);
+
+					send_rpg_events(2000);
+
+					ent->client->pers.unique_skill_timer = level.time + 60000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force and 25 mp to use it\"", (zyk_max_force_power.integer / 2)));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 1)
 			{ // zyk: Force User Force Repulse
 				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
 				{
