@@ -14475,6 +14475,16 @@ void Cmd_Saber_f( gentity_t *ent ) {
 	}
 }
 
+qboolean zyk_can_use_unique(gentity_t *ent)
+{
+	if (ent->client->ps.forceHandExtendTime > level.time || ent->client->pers.quest_power_status & (1 << 2))
+	{ // zyk: using emotes/anims, special moves, and hit by Time Power. Cannot use unique ability
+		return qfalse;
+	}
+
+	return qtrue;
+}
+
 /*
 ==================
 Cmd_Unique_f
@@ -14488,6 +14498,7 @@ extern void zyk_add_bomb_model(gentity_t *ent);
 extern void elemental_attack(gentity_t *ent);
 extern void zyk_super_beam(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
+extern qboolean zyk_unique_ability_can_hit_target(gentity_t *attacker, gentity_t *target);
 void Cmd_Unique_f(gentity_t *ent) {
 	if (ent->client->pers.secrets_found & (1 << 2))
 	{ // zyk: Unique Ability 1
@@ -14497,6 +14508,12 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 			lightning_dome(ent, 50);
 
+			return;
+		}
+
+		if (zyk_can_use_unique(ent) == qfalse)
+		{
+			trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7cannot use Unique Ability now\"");
 			return;
 		}
 
@@ -14534,7 +14551,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 					{
 						gentity_t *player_ent = &g_entities[i];
 
-						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+						if (player_ent && player_ent->client && ent != player_ent && zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
 							G_Damage(player_ent, ent, ent, NULL, NULL, 50, 0, MOD_FORCE_DARK);
@@ -14579,7 +14596,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 						gentity_t *player_ent = &g_entities[i];
 
 						if (player_ent && player_ent->client && ent != player_ent && player_ent->health > 0 && 
-							OnSameTeam(ent, player_ent) == qfalse && zyk_is_ally(ent, player_ent) == qfalse)
+							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue)
 						{
 							int player_dist = Distance(ent->client->ps.origin, player_ent->client->ps.origin);
 
@@ -14783,6 +14800,12 @@ void Cmd_Unique_f(gentity_t *ent) {
 	}
 	else if (ent->client->pers.secrets_found & (1 << 3))
 	{ // zyk: Unique Ability 2
+		if (zyk_can_use_unique(ent) == qfalse)
+		{
+			trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7cannot use Unique Ability now\"");
+			return;
+		}
+
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
 			if (ent->client->pers.rpg_class == 0)
@@ -14818,7 +14841,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					{
 						gentity_t *player_ent = &g_entities[i];
 
-						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+						if (player_ent && player_ent->client && ent != player_ent && 
+							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
 							vec3_t dir;
@@ -14931,7 +14955,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					{
 						gentity_t *player_ent = &g_entities[i];
 
-						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+						if (player_ent && player_ent->client && ent != player_ent && 
+							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 80)
 						{
 							G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_MELEE);
@@ -15012,7 +15037,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					{
 						gentity_t *player_ent = &g_entities[i];
 
-						if (player_ent && player_ent->client && ent != player_ent && zyk_is_ally(ent, player_ent) == qfalse &&
+						if (player_ent && player_ent->client && ent != player_ent && 
+							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
 							G_Damage(player_ent, ent, ent, NULL, NULL, 15, 0, MOD_UNKNOWN);

@@ -4398,6 +4398,43 @@ qboolean npcs_on_same_team(gentity_t *attacker, gentity_t *target)
 	return qfalse;
 }
 
+qboolean zyk_unique_ability_can_hit_target(gentity_t *attacker, gentity_t *target)
+{
+	int i = target->s.number;
+
+	if (attacker && target && attacker->s.number != i && target->client && target->health > 0 && zyk_can_hit_target(attacker, target) == qtrue &&
+		(i > MAX_CLIENTS || (target->client->pers.connected == CON_CONNECTED && target->client->sess.sessionTeam != TEAM_SPECTATOR &&
+			target->client->ps.duelInProgress == qfalse)))
+	{ // zyk: target is a player or npc that can be hit by the attacker
+		int is_ally = 0;
+
+		if (i < level.maxclients && !attacker->NPC &&
+			zyk_is_ally(attacker, target) == qtrue)
+		{ // zyk: allies will not be hit by this power
+			is_ally = 1;
+		}
+
+		if (OnSameTeam(attacker, target) == qtrue || npcs_on_same_team(attacker, target) == qtrue)
+		{ // zyk: if one of them is npc, also check for allies
+			is_ally = 1;
+		}
+
+		if (is_ally == 0 &&
+			(attacker->client->pers.guardian_mode == target->client->pers.guardian_mode ||
+			((attacker->client->pers.guardian_mode == 12 || attacker->client->pers.guardian_mode == 13) && target->NPC &&
+				(Q_stricmp(target->NPC_type, "guardian_of_universe") || Q_stricmp(target->NPC_type, "quest_reborn") ||
+					Q_stricmp(target->NPC_type, "quest_reborn_blue") || Q_stricmp(target->NPC_type, "quest_reborn_red") ||
+					Q_stricmp(target->NPC_type, "quest_reborn_boss"))
+				)
+				))
+		{ // zyk: target cannot be attacker ally and cannot be using Immunity Power. Also, non-quest players cannot hit quest players and his allies or bosses and vice-versa
+			return qtrue;
+		}
+	}
+
+	return qfalse;
+}
+
 // zyk: tests if the target entity can be hit by the attacker special power
 qboolean zyk_special_power_can_hit_target(gentity_t *attacker, gentity_t *target, int i, int min_distance, int max_distance, qboolean hit_breakable, int *targets_hit)
 {
