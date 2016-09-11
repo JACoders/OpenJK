@@ -277,11 +277,12 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 	missile->bounceCount = 8;
 }
 
+// zyk: used by Wrist Shot ability
 void zyk_WP_FireBryarPistol(gentity_t *ent)
 //---------------------------------------------------------
 {
-	int damage = zyk_blaster_pistol_damage.integer * 5;
-	int count;
+	int damage = zyk_blaster_pistol_damage.integer * 25;
+	int count = 5;
 	float boxSize = BRYAR_ALT_SIZE*(2.5);
 
 	vec3_t zyk_origin, dir, zyk_forward;
@@ -296,21 +297,10 @@ void zyk_WP_FireBryarPistol(gentity_t *ent)
 	missile->classname = "bryar_proj";
 	missile->s.weapon = WP_BRYAR_PISTOL;
 
-	count = 5;
-	damage *= count;
-
 	missile->s.generic1 = count; // The missile will then render according to the charge level.
 
 	VectorSet(missile->r.maxs, boxSize, boxSize, boxSize);
 	VectorSet(missile->r.mins, -boxSize, -boxSize, -boxSize);
-
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2)
-	{ // zyk: Blaster Pack Weapons Upgrade increases damage of the pistols
-		if (ent->client->pers.skill_levels[19] == 2)
-		{
-			damage = damage * 1.25;
-		}
-	}
 
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
