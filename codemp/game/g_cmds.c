@@ -9850,7 +9850,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier gets Shield to Ammo, which recovers some ammo by spending his shield. Spends 50 shield\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier gets Shield to Ammo, which recovers some ammo by spending his shield. Spends 20 shield\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 4)
 			{
@@ -14930,9 +14930,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{ // zyk: Armored Soldier Shield to Ammo. Recovers ammo by spending his shield
-				if (ent->client->ps.stats[STAT_ARMOR] >= 50)
+				if (ent->client->ps.stats[STAT_ARMOR] >= 20)
 				{
-					ent->client->ps.stats[STAT_ARMOR] -= 50;
+					ent->client->ps.stats[STAT_ARMOR] -= 20;
 
 					Add_Ammo(ent, AMMO_BLASTER, 200);
 
@@ -14946,7 +14946,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs 50 shield to use it\""));
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs 20 shield to use it\""));
 				}
 			}
 			else if (ent->client->pers.rpg_class == 4)
