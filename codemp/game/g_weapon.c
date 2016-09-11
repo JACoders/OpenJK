@@ -288,7 +288,7 @@ void zyk_WP_FireBryarPistol(gentity_t *ent)
 	vec3_t zyk_origin, dir, zyk_forward;
 
 	VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
-	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 20);
+	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 35);
 
 	AngleVectors(dir, zyk_forward, NULL, NULL);
 
