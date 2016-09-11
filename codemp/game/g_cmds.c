@@ -14913,7 +14913,13 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					zyk_WP_FireBryarPistol(ent);
 
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = TORSO_WEAPONREADY4;
+					ent->client->ps.forceHandExtendTime = level.time + 1200;
+
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/bryar/alt_fire.mp3"));
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
