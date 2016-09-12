@@ -932,7 +932,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 			}
 			else if (client->pers.rpg_class == 3 && ent->health > 0)
 			{ // zyk: Armored Soldier auto-shield-healing ability
-				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(client->pers.player_statuses & (1 << 21)))
 				{ // zyk: Armored Soldier Unique Skill
 					if ((client->ps.stats[STAT_ARMOR] + 4) < client->pers.max_rpg_shield)
 					{

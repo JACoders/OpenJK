@@ -14514,6 +14514,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 		{ // zyk: releasing the small lightning dome
 			ent->client->ps.powerups[PW_SHIELDHIT] = 0;
 
+			ent->client->ps.powerups[PW_NEUTRALFLAG] = 0;
+
 			lightning_dome(ent, 50);
 
 			return;
@@ -14642,7 +14644,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_SHIELDHIT] = level.time + 8000;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
+
+					ent->client->pers.player_statuses |= (1 << 21);
 
 					ent->client->pers.unique_skill_timer = level.time + 30000;
 				}
