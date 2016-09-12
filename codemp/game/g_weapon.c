@@ -2243,12 +2243,13 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 	missile->bounceCount = 0;
 }
 
+// zyk: used by Homing Rocket ability
 //---------------------------------------------------------
 void zyk_WP_FireRocket(gentity_t *ent)
 //---------------------------------------------------------
 {
-	int	damage = zyk_rocket_damage.integer * 2.2;
-	int splash_damage = zyk_rocket_splash_damage.integer * 2.2;
+	int	damage = zyk_rocket_damage.integer * 2.3;
+	int splash_damage = zyk_rocket_splash_damage.integer * 2.3;
 	int	vel = zyk_rocket_velocity.integer;
 	gentity_t *missile;
 	vec3_t zyk_origin, dir, zyk_forward;
@@ -2456,6 +2457,79 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean altFire )
 	VectorCopy (start, bolt->r.currentOrigin);
 
 	VectorCopy( start, bolt->pos2 );
+
+	bolt->bounceCount = -5;
+
+	return bolt;
+}
+
+// zyk: used by Thermal Throw ability
+gentity_t *zyk_WP_FireThermalDetonator(gentity_t *ent)
+//---------------------------------------------------------
+{
+	gentity_t	*bolt;
+	vec3_t		dir, start;
+	float chargeAmount = 1.0f; // default of full charge
+
+	vec3_t zyk_origin, zyk_forward;
+
+	VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
+	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 30);
+	AngleVectors(dir, zyk_forward, NULL, NULL);
+
+	VectorCopy(zyk_forward, dir);
+	VectorCopy(zyk_origin, start);
+
+	bolt = G_Spawn();
+
+	bolt->physicsObject = qtrue;
+
+	bolt->classname = "thermal_detonator";
+	bolt->think = thermalThinkStandard;
+	bolt->nextthink = level.time;
+	bolt->touch = touch_NULL;
+
+	// How 'bout we give this thing a size...
+	VectorSet(bolt->r.mins, -3.0f, -3.0f, -3.0f);
+	VectorSet(bolt->r.maxs, 3.0f, 3.0f, 3.0f);
+	bolt->clipmask = MASK_SHOT;
+
+	W_TraceSetStart(ent, start, bolt->r.mins, bolt->r.maxs);//make sure our start point isn't on the other side of a wall
+
+	// normal ones bounce, alt ones explode on impact
+	bolt->genericValue5 = level.time + TD_TIME; // How long 'til she blows
+	bolt->s.pos.trType = TR_GRAVITY;
+	bolt->parent = ent;
+	bolt->r.ownerNum = ent->s.number;
+	VectorScale(dir, zyk_thermal_velocity.integer * chargeAmount, bolt->s.pos.trDelta);
+
+	if (ent->health >= 0)
+	{
+		bolt->s.pos.trDelta[2] += 120;
+	}
+
+	bolt->s.loopSound = G_SoundIndex("sound/weapons/thermal/thermloop.wav");
+	bolt->s.loopIsSoundset = qfalse;
+
+	bolt->damage = zyk_thermal_damage.integer * 2.5;
+	bolt->dflags = 0;
+	bolt->splashDamage = zyk_thermal_splash_damage.integer * 2.5;
+	bolt->splashRadius = 180;
+
+	bolt->s.eType = ET_MISSILE;
+	bolt->r.svFlags = SVF_USE_CURRENT_ORIGIN;
+	bolt->s.weapon = WP_THERMAL;
+
+	bolt->methodOfDeath = MOD_THERMAL;
+	bolt->splashMethodOfDeath = MOD_THERMAL_SPLASH;
+
+	bolt->s.pos.trTime = level.time;		// move a bit on the very first frame
+	VectorCopy(start, bolt->s.pos.trBase);
+
+	SnapVector(bolt->s.pos.trDelta);			// save net bandwidth
+	VectorCopy(start, bolt->r.currentOrigin);
+
+	VectorCopy(start, bolt->pos2);
 
 	bolt->bounceCount = -5;
 
