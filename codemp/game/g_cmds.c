@@ -14562,7 +14562,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 						if (player_ent && player_ent->client && ent != player_ent && zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
 							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
-							G_Damage(player_ent, ent, ent, NULL, NULL, 50, 0, MOD_FORCE_DARK);
+							G_Damage(player_ent, ent, ent, NULL, NULL, 70, 0, MOD_FORCE_DARK);
 
 							//Must play custom sounds on the actual entity. Don't use G_Sound (it creates a temp entity for the sound)
 							G_EntitySound(player_ent, CHAN_VOICE, G_SoundIndex(va("*choke%d.wav", Q_irand(1, 3))));
@@ -14863,7 +14863,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 						{
 							vec3_t dir;
 
-							G_Damage(player_ent, ent, ent, NULL, NULL, 15, 0, MOD_UNKNOWN);
+							G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_UNKNOWN);
 
 							VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
 							VectorNormalize(dir);
