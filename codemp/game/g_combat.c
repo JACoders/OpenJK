@@ -5964,10 +5964,10 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	// zyk: Electric Bolts of Magic Master can disable jetpacks
+	// zyk: Electric Bolts of Magic Master can disable jetpacks. Except Stealth Attacker ones
 	if (mod == MOD_MELEE && inflictor && inflictor->s.weapon == WP_DEMP2 && client)
 	{
-		if (client->jetPackOn)
+		if (client->jetPackOn && (client->sess.amrpgmode != 2 || client->pers.rpg_class != 5 || !(client->pers.secrets_found & (1 << 7))))
 		{ //disable jetpack temporarily
 			Jetpack_Off(targ);
 			client->jetPackToggleTime = level.time + Q_irand(3000, 10000);
