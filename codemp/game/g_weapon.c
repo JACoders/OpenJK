@@ -281,14 +281,14 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 void zyk_WP_FireBryarPistol(gentity_t *ent)
 //---------------------------------------------------------
 {
-	int damage = zyk_blaster_pistol_damage.integer * 25;
+	int damage = zyk_blaster_pistol_damage.integer * 24;
 	int count = 5;
 	float boxSize = BRYAR_ALT_SIZE*(2.5);
 
 	vec3_t zyk_origin, dir, zyk_forward;
 
 	VectorSet(dir, ent->client->ps.viewangles[0], ent->client->ps.viewangles[1], 0);
-	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 35);
+	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 34);
 
 	AngleVectors(dir, zyk_forward, NULL, NULL);
 
@@ -2247,8 +2247,8 @@ static void WP_FireRocket( gentity_t *ent, qboolean altFire )
 void zyk_WP_FireRocket(gentity_t *ent)
 //---------------------------------------------------------
 {
-	int	damage = zyk_rocket_damage.integer;
-	int splash_damage = zyk_rocket_splash_damage.integer;
+	int	damage = zyk_rocket_damage.integer * 2.2;
+	int splash_damage = zyk_rocket_splash_damage.integer * 2.2;
 	int	vel = zyk_rocket_velocity.integer;
 	gentity_t *missile;
 	vec3_t zyk_origin, dir, zyk_forward;
@@ -2258,10 +2258,6 @@ void zyk_WP_FireRocket(gentity_t *ent)
 	VectorSet(zyk_origin, ent->client->ps.origin[0], ent->client->ps.origin[1], ent->client->ps.origin[2] + 20);
 
 	AngleVectors(dir, zyk_forward, NULL, NULL);
-
-	// zyk: this rocket has stronger damage
-	damage *= 2;
-	splash_damage *= 2;
 
 	missile = CreateMissile(zyk_origin, zyk_forward, vel, 30000, ent, qfalse);
 
@@ -2286,11 +2282,6 @@ void zyk_WP_FireRocket(gentity_t *ent)
 	VectorSet(missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE);
 	VectorScale(missile->r.maxs, -1, missile->r.mins);
 
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[26] == 2)
-	{
-		damage = damage * 1.25;
-	}
-
 	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 
@@ -2305,11 +2296,6 @@ void zyk_WP_FireRocket(gentity_t *ent)
 	//===testing being able to shoot rockets out of the air==================================
 
 	missile->clipmask = MASK_SHOT;
-
-	if (ent && ent->client && ent->client->sess.amrpgmode == 2 && ent->client->pers.skill_levels[26] == 2)
-	{
-		splash_damage = splash_damage * 1.25;
-	}
 
 	missile->splashDamage = splash_damage;
 	missile->splashRadius = ROCKET_SPLASH_RADIUS;
