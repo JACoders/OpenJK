@@ -14863,7 +14863,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 						{
 							vec3_t dir;
 
-							G_Damage(player_ent, ent, ent, NULL, NULL, 10, 0, MOD_UNKNOWN);
+							G_Damage(player_ent, ent, ent, NULL, NULL, 15, 0, MOD_UNKNOWN);
 
 							VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
 							VectorNormalize(dir);
@@ -14873,7 +14873,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 							player_ent->client->ps.velocity[2] = 250;
 
 							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-							player_ent->client->ps.forceHandExtendTime = level.time + 700;
+							player_ent->client->ps.forceHandExtendTime = level.time + 1000;
 							player_ent->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 							player_ent->client->ps.quickerGetup = qtrue;
 						}
