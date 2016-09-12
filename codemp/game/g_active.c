@@ -3469,7 +3469,7 @@ void ClientThink_real( gentity_t *ent ) {
 				}
 
 				if (pmove.cmd.generic_cmd == GENCMD_SABERATTACKCYCLE && ent->client->ps.weapon == WP_MELEE)
-				{ // zyk: Unique Skill, used by some RPG classes
+				{ // zyk: Unique Skill, used by RPG classes
 					if (ent->client->pers.unique_skill_timer < level.time && ent->client->pers.skill_levels[38] > 0)
 					{
 						if (ent->client->pers.rpg_class == 0)
@@ -3752,9 +3752,9 @@ void ClientThink_real( gentity_t *ent ) {
 						}
 						else if (ent->client->pers.rpg_class == 8)
 						{ // zyk: Magic Master
-							if (ent->client->pers.magic_power > 0)
+							if (ent->client->pers.magic_power >= 2)
 							{
-								ent->client->pers.magic_power--;
+								ent->client->pers.magic_power -= 2;
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
@@ -3764,7 +3764,7 @@ void ClientThink_real( gentity_t *ent ) {
 							}
 							else
 							{
-								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs at least 1 MP to use it\"");
+								trap->SendServerCommand( ent->s.number, "chat \"^3Unique Skill: ^7needs at least 2 MP to use it\"");
 							}
 						}
 						else if (ent->client->pers.rpg_class == 9)
