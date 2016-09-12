@@ -5163,7 +5163,7 @@ void ice_boulder(gentity_t *ent, int distance, int damage)
 	// zyk: Universe Power
 	if (ent->client->pers.quest_power_status & (1 << 13))
 	{
-		distance += 100;
+		distance += 50;
 	}
 
 	for (i = 0; i < level.num_entities; i++)
