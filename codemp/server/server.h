@@ -291,6 +291,7 @@ extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
 extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
+extern  cvar_t  *zyk_sv_set_default_nextmap;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
 extern	int serverBansCount;

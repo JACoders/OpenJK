@@ -561,7 +561,8 @@ Ghoul2 Insert End
 
 	// set nextmap to the same map, but it may be overriden
 	// by the game startup or another console command
-	Cvar_Set( "nextmap", "map_restart 0");
+	// zyk: now sets the zyk_sv_set_default_nextmap cvar value
+	Cvar_Set( "nextmap", zyk_sv_set_default_nextmap->string);
 //	Cvar_Set( "nextmap", va("map %s", server) );
 
 	for (i=0 ; i<sv_maxclients->integer ; i++) {
@@ -954,6 +955,8 @@ void SV_Init (void) {
 	sv_minPing = Cvar_Get ("sv_minPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
 	sv_maxPing = Cvar_Get ("sv_maxPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
 	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO, "Protect against flooding of server commands" );
+	zyk_sv_set_default_nextmap = Cvar_Get("zyk_sv_set_default_nextmap", "map_restart 0", CVAR_ARCHIVE | CVAR_SERVERINFO, "Sets the default value of nextmap cvar");
+
 	// systeminfo
 	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM, "Allow cheats on server if set to 1" );
 	sv_serverid = Cvar_Get ("sv_serverid", "0", CVAR_SYSTEMINFO | CVAR_ROM );

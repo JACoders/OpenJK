@@ -64,6 +64,7 @@ cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
 cvar_t	*sv_legacyFixForceSelect;
 cvar_t	*sv_banFile;
+cvar_t  *zyk_sv_set_default_nextmap;
 
 serverBan_t serverBans[SERVER_MAXBANS];
 int serverBansCount = 0;
