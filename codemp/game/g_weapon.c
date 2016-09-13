@@ -4108,9 +4108,9 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					VectorScale(missile->r.maxs, -1, missile->r.mins);
 
 					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21))) // zyk: Unique Skill increases damage
-						missile->damage = zyk_magic_fist_damage.integer * 4;
+						missile->damage = zyk_magic_fist_damage.integer * 3.8;
 					else
-						missile->damage = zyk_magic_fist_damage.integer * 2;
+						missile->damage = zyk_magic_fist_damage.integer * 1.9;
 
 					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 					missile->methodOfDeath = MOD_MELEE;
@@ -4340,7 +4340,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			{ // zyk: Ultra Bolt
 				gentity_t	*missile;
 				vec3_t origin, dir, zyk_forward;
-				int damage = zyk_magic_fist_damage.integer * 1.9;
+				int damage = zyk_magic_fist_damage.integer * 1.8;
 
 				if (ent->client->ps.pm_flags & PMF_DUCKED) // zyk: crouched
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 10);
