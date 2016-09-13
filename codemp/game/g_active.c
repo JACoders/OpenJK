@@ -3500,7 +3500,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								send_rpg_events(2000);
 
-								ent->client->pers.unique_skill_timer = level.time + 60000;
+								ent->client->pers.unique_skill_timer = level.time + 55000;
 							}
 							else
 							{
@@ -3515,7 +3515,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 9000;
 
-								ent->client->pers.unique_skill_timer = level.time + 60000;
+								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}
 							else
 							{
@@ -3591,7 +3591,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
-								ent->client->pers.unique_skill_timer = level.time + 50000;
+								ent->client->pers.unique_skill_timer = level.time + 45000;
 							}
 							else
 							{

@@ -14543,7 +14543,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					send_rpg_events(2000);
 
-					ent->client->pers.unique_skill_timer = level.time + 60000;
+					ent->client->pers.unique_skill_timer = level.time + 55000;
 				}
 				else
 				{
@@ -14585,7 +14585,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->pers.player_statuses |= (1 << 21);
 
-					ent->client->pers.unique_skill_timer = level.time + 60000;
+					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
 				{
@@ -14709,13 +14709,13 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.fd.forcePowersActive |= (1 << FP_TELEPATHY);
 
-					ent->client->ps.fd.forcePowerDuration[FP_TELEPATHY] = level.time + 10000;
+					ent->client->ps.fd.forcePowerDuration[FP_TELEPATHY] = level.time + 9000;
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
 					Jedi_Cloak(ent);
 
-					ent->client->pers.unique_skill_timer = level.time + 50000;
+					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
 				else
 				{
@@ -14832,7 +14832,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					send_rpg_events(2000);
 
-					ent->client->pers.unique_skill_timer = level.time + 60000;
+					ent->client->pers.unique_skill_timer = level.time + 55000;
 				}
 				else
 				{
@@ -14893,7 +14893,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_DISINT_4] = level.time + 1100;
 					ent->client->ps.powerups[PW_PULL] = 0;
 
-					ent->client->pers.unique_skill_timer = level.time + 60000;
+					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
 				{
@@ -15003,7 +15003,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
-					ent->client->pers.unique_skill_timer = level.time + 50000;
+					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
 				else
 				{
