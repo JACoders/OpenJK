@@ -281,7 +281,7 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 void zyk_WP_FireBryarPistol(gentity_t *ent)
 //---------------------------------------------------------
 {
-	int damage = zyk_blaster_pistol_damage.integer * 24;
+	int damage = zyk_blaster_pistol_damage.integer * 22;
 	int count = 5;
 	float boxSize = BRYAR_ALT_SIZE*(2.5);
 

@@ -14630,7 +14630,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
-					ent->client->pers.unique_skill_timer = level.time + 45000;
+					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
 				{
@@ -14916,7 +14916,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/bryar/alt_fire.mp3"));
 
-					ent->client->pers.unique_skill_timer = level.time + 45000;
+					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
 				{
