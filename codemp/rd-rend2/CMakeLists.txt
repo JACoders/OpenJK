@@ -93,7 +93,6 @@ set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})
 
 set(MPRend2CommonFiles
 	"${MPDir}/qcommon/matcomp.cpp"
-	"${MPDir}/qcommon/q_math.cpp"
 	"${MPDir}/qcommon/q_shared.cpp"
 	"${SharedCommonFiles}")
 source_group("common" FILES ${MPRend2CommonFiles})
