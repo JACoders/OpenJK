@@ -166,9 +166,7 @@ qboolean RE_RegisterModels_GetDiskFile( const char *psModelFileName, void **ppvB
 		ri.FS_ReadFile( sModelName, ppvBuffer );
 		*pqbAlreadyCached = qfalse;
 
-		const bool bSuccess = !!(*ppvBuffer);
-
-		return bSuccess;
+		return (qboolean)(*ppvBuffer != 0);
 	}
 	else
 	{
@@ -277,11 +275,11 @@ qboolean RE_RegisterModels_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 
 			if (bDeleteEverythingNotUsedThisLevel)
 			{
-				bDeleteThis = (CachedModel.iLastLevelUsedOn != RE_RegisterMedia_GetLevel());
+				bDeleteThis = (qboolean)(CachedModel.iLastLevelUsedOn != RE_RegisterMedia_GetLevel());
 			}
 			else
 			{
-				bDeleteThis = (CachedModel.iLastLevelUsedOn < RE_RegisterMedia_GetLevel());
+				bDeleteThis = (qboolean)(CachedModel.iLastLevelUsedOn < RE_RegisterMedia_GetLevel());
 			}
 
 			// if it wasn't used on this level, dump it...

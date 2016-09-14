@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#define	REF_API_VERSION		15
+#define	REF_API_VERSION		16
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -312,7 +312,7 @@ typedef struct {
 	int			(*G2API_GetSurfaceRenderStatus)(CGhoul2Info *ghlInfo, const char *surfaceName);
 	int			(*G2API_GetTime)(int argTime);
 	void		(*G2API_GiveMeVectorFromMatrix)(mdxaBone_t &boltMatrix, Eorientations flags, vec3_t &vec);
-	int			(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
+	qboolean	(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
 	qboolean	(*G2API_IKMove)(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
 	int			(*G2API_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex,
 					qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias);

@@ -664,9 +664,9 @@ void SG_WriteCvars(void)
 
 void SG_ReadCvars(void)
 {
-	int		iCount;
-	char	*psName;
-	char	*psValue;
+	int		iCount = 0;
+	char	*psName = nullptr;
+	char	*psValue = nullptr;
 
 	SG_Read(INT_ID('C','V','C','N'), &iCount, sizeof(iCount));
 
@@ -1130,7 +1130,7 @@ qboolean SG_ReadSavegame(const char *psPathlessBaseName)
 	qbAutosave = ReadGame();
 	eSavedGameJustLoaded = (qbAutosave)?eAUTO:eFULL;
 
-	SV_SpawnServer(sMapCmd, eForceReload_NOTHING, (eSavedGameJustLoaded != eFULL) );	// note that this also trashes the whole G_Alloc pool as well (of course)
+	SV_SpawnServer(sMapCmd, eForceReload_NOTHING, (qboolean)(eSavedGameJustLoaded != eFULL) );	// note that this also trashes the whole G_Alloc pool as well (of course)
 
 	// read in all the level data...
 	//
@@ -1445,7 +1445,7 @@ static int SG_Read_Actual(unsigned int chid, void *pvAddress, int iLength, void 
 	uiLoaded = SG_ReadBytes( &ulLoadedChid,   sizeof(ulLoadedChid),	fhSaveGame);
 	uiLoaded+= SG_ReadBytes( &uiLoadedLength, sizeof(uiLoadedLength),fhSaveGame);
 
-	qboolean bBlockIsCompressed = ((int)uiLoadedLength < 0);
+	qboolean bBlockIsCompressed = (qboolean)((int)uiLoadedLength < 0);
 	if (	 bBlockIsCompressed)
 	{
 		uiLoadedLength = -((int)uiLoadedLength);
@@ -1599,8 +1599,8 @@ void SG_TestSave(void)
 {
 	if (sv_testsave->integer && sv.state == SS_GAME)
 	{
-		WriteGame (false);
-		ge->WriteLevel(false);
+		WriteGame(qfalse);
+		ge->WriteLevel(qfalse);
 	}
 }
 

@@ -53,13 +53,13 @@ public:
 	sstring(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
-		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data));
 	}
 	sstring(const char *s)
 	{
 		//assert(strlen(s)<MaxSize);
 		//strcpy(mStorage.data,s);
-		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
 	}
 	sstring( const gsl::cstring_view& v )
 	{
@@ -86,14 +86,14 @@ public:
 	sstring<MaxSize> & operator=(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
-		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data));
 		return *this;
 	}
 	sstring<MaxSize> & operator=(const char *s)
 	{
 		assert(strlen(s)<MaxSize);
 		//strcpy(mStorage.data,s);
-		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
 		return *this;
 	}
 	char *c_str()

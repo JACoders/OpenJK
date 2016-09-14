@@ -414,7 +414,7 @@ static qboolean G_InitRoff( char *file, unsigned char *data )
 		}
 	}
 
-	return false;
+	return qfalse;
 }
 
 //-------------------------------------------------------

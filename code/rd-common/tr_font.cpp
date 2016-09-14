@@ -287,16 +287,16 @@ int g_iNonScaledCharRange;	// this is used with auto-scaling of asian fonts, any
 
 extern qboolean Language_IsKorean( void );
 
-static inline bool Korean_ValidKSC5601Hangul( byte _iHi, byte _iLo )
+static inline qboolean Korean_ValidKSC5601Hangul( byte _iHi, byte _iLo )
 {
-	return (_iHi >=KSC5601_HANGUL_HIBYTE_START		&&
-			_iHi <=KSC5601_HANGUL_HIBYTE_STOP		&&
-			_iLo > KSC5601_HANGUL_LOBYTE_LOBOUND	&&
-			_iLo < KSC5601_HANGUL_LOBYTE_HIBOUND
-			);
+	return (qboolean)(
+		_iHi >=KSC5601_HANGUL_HIBYTE_START		&&
+		_iHi <=KSC5601_HANGUL_HIBYTE_STOP		&&
+		_iLo > KSC5601_HANGUL_LOBYTE_LOBOUND	&&
+		_iLo < KSC5601_HANGUL_LOBYTE_HIBOUND);
 }
 
-static inline bool Korean_ValidKSC5601Hangul( unsigned int uiCode )
+static inline qboolean Korean_ValidKSC5601Hangul( unsigned int uiCode )
 {
 	return Korean_ValidKSC5601Hangul( uiCode >> 8, uiCode & 0xFF );
 }
@@ -342,7 +342,7 @@ static int Korean_InitFields(int &iGlyphTPs, const char *&psLang)
 
 extern qboolean Language_IsTaiwanese( void );
 
-static bool Taiwanese_ValidBig5Code( unsigned int uiCode )
+static qboolean Taiwanese_ValidBig5Code( unsigned int uiCode )
 {
 	const byte _iHi = (uiCode >> 8)&0xFF;
 	if (	(_iHi >= BIG5_HIBYTE_START0 && _iHi <= BIG5_HIBYTE_STOP0)
@@ -355,17 +355,17 @@ static bool Taiwanese_ValidBig5Code( unsigned int uiCode )
 			 (_iLo >= BIG5_LOBYTE_LOBOUND1 && _iLo <= BIG5_LOBYTE_HIBOUND1)
 			)
 		{
-			return true;
+			return qtrue;
 		}
 	}
 
-	return false;
+	return qfalse;
 }
 
 
 // only call this when Taiwanese_ValidBig5Code() has already returned true...
 //
-static bool Taiwanese_IsTrailingPunctuation( unsigned int uiCode )
+static qboolean Taiwanese_IsTrailingPunctuation( unsigned int uiCode )
 {
 	// so far I'm just counting the first 21 chars, those seem to be all the basic punctuation...
 	//
@@ -373,10 +373,10 @@ static bool Taiwanese_IsTrailingPunctuation( unsigned int uiCode )
 			uiCode <  (((BIG5_HIBYTE_START0<<8)|BIG5_LOBYTE_LOBOUND0)+20)
 		)
 	{
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 
@@ -427,7 +427,7 @@ static int Taiwanese_InitFields(int &iGlyphTPs, const char *&psLang)
 
 extern qboolean Language_IsJapanese( void );
 
-static bool Japanese_ValidShiftJISCode( byte _iHi, byte _iLo )
+static qboolean Japanese_ValidShiftJISCode( byte _iHi, byte _iLo )
 {
 	if (	(_iHi >= SHIFTJIS_HIBYTE_START0 && _iHi <= SHIFTJIS_HIBYTE_STOP0)
 		||	(_iHi >= SHIFTJIS_HIBYTE_START1 && _iHi <= SHIFTJIS_HIBYTE_STOP1)
@@ -437,14 +437,14 @@ static bool Japanese_ValidShiftJISCode( byte _iHi, byte _iLo )
 			 (_iLo >= SHIFTJIS_LOBYTE_START1 && _iLo <= SHIFTJIS_LOBYTE_STOP1)
 			)
 		{
-			return true;
+			return qtrue;
 		}
 	}
 
-	return false;
+	return qfalse;
 }
 
-static inline bool Japanese_ValidShiftJISCode( unsigned int uiCode )
+static inline qboolean Japanese_ValidShiftJISCode( unsigned int uiCode )
 {
 	return Japanese_ValidShiftJISCode( uiCode >> 8, uiCode & 0xFF );
 }
@@ -452,7 +452,7 @@ static inline bool Japanese_ValidShiftJISCode( unsigned int uiCode )
 
 // only call this when Japanese_ValidShiftJISCode() has already returned true...
 //
-static bool Japanese_IsTrailingPunctuation( unsigned int uiCode )
+static qboolean Japanese_IsTrailingPunctuation( unsigned int uiCode )
 {
 	// so far I'm just counting the first 18 chars, those seem to be all the basic punctuation...
 	//
@@ -460,10 +460,10 @@ static bool Japanese_IsTrailingPunctuation( unsigned int uiCode )
 			uiCode <  (((SHIFTJIS_HIBYTE_START0<<8)|SHIFTJIS_LOBYTE_START0)+18)
 		)
 	{
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 
@@ -513,16 +513,16 @@ static int Japanese_InitFields(int &iGlyphTPs, const char *&psLang)
 
 extern qboolean Language_IsChinese( void );
 
-static inline bool Chinese_ValidGBCode( byte _iHi, byte _iLo )
+static inline qboolean Chinese_ValidGBCode( byte _iHi, byte _iLo )
 {
-	return (_iHi >=GB_HIBYTE_START		&&
-			_iHi <=GB_HIBYTE_STOP		&&
-			_iLo > GB_LOBYTE_LOBOUND	&&
-			_iLo < GB_LOBYTE_HIBOUND
-			);
+	return (qboolean)(
+		_iHi >=GB_HIBYTE_START		&&
+		_iHi <=GB_HIBYTE_STOP		&&
+		_iLo > GB_LOBYTE_LOBOUND	&&
+		_iLo < GB_LOBYTE_HIBOUND);
 }
 
-static inline bool Chinese_ValidGBCode( unsigned int uiCode)
+static inline qboolean Chinese_ValidGBCode( unsigned int uiCode)
 {
 	return Chinese_ValidGBCode( uiCode >> 8, uiCode & 0xFF );
 }
@@ -530,7 +530,7 @@ static inline bool Chinese_ValidGBCode( unsigned int uiCode)
 #ifndef JK2_MODE
 // only call this when Chinese_ValidGBCode() has already returned true...
 //
-static bool Chinese_IsTrailingPunctuation( unsigned int uiCode )
+static qboolean Chinese_IsTrailingPunctuation( unsigned int uiCode )
 {
 	// so far I'm just counting the first 13 chars, those seem to be all the basic punctuation...
 	//
@@ -538,10 +538,10 @@ static bool Chinese_IsTrailingPunctuation( unsigned int uiCode )
 			uiCode <  (((GB_HIBYTE_START<<8)|GB_LOBYTE_LOBOUND)+14)
 		)
 	{
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 #endif
 
@@ -644,9 +644,9 @@ static int Thai_ValidTISCode( const byte *psString, int &iThaiBytes )
 //	we tell the translators to put an underscore ('_') between each word even though in Thai they're
 //	all jammed together at final output onscreen...
 //
-static inline bool Thai_IsTrailingPunctuation( unsigned int uiCode )
+static inline qboolean Thai_IsTrailingPunctuation( unsigned int uiCode )
 {
-	return uiCode == '_';
+	return (qboolean)(uiCode == '_');
 }
 
 // takes a TIS 1,2 or 3 byte code and collapse down to a 0..n glyph index...
@@ -758,13 +758,13 @@ unsigned int AnyLanguage_ReadCharFromString( char *psText, int *piAdvanceCount, 
 
 	if (pbIsTrailingPunctuation)
 	{
-		*pbIsTrailingPunctuation = (uiLetter == '!' ||
-									uiLetter == '?' ||
-									uiLetter == ',' ||
-									uiLetter == '.' ||
-									uiLetter == ';' ||
-									uiLetter == ':'
-									);
+		*pbIsTrailingPunctuation = (qboolean)(
+			uiLetter == '!' ||
+			uiLetter == '?' ||
+			uiLetter == ',' ||
+			uiLetter == '.' ||
+			uiLetter == ';' ||
+			uiLetter == ':');
 	}
 
 	return uiLetter;
@@ -1721,7 +1721,9 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 		case 32:						// Space
 			pLetter = curfont->GetLetter(' ');
 			fx += curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fScale) : pLetter->horizAdvance * fScale;
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && ((fx-fox) > (float)iMaxPixelWidth) );
+			bNextTextWouldOverflow = (qboolean)(
+				iMaxPixelWidth != -1 &&
+				((fx - fox) > (float)iMaxPixelWidth));
 			break;
 
 		default:
@@ -1733,7 +1735,9 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 
 			float fThisScale = uiLetter > 255 ? fScaleAsian : fScale;
 			float fAdvancePixels = curfont->mbRoundCalcs ? Round(pLetter->horizAdvance * fThisScale) : pLetter->horizAdvance * fThisScale;
-			bNextTextWouldOverflow = ( iMaxPixelWidth != -1 && (((fx+fAdvancePixels)-fox) > (float)iMaxPixelWidth) );
+			bNextTextWouldOverflow = (qboolean)(
+				iMaxPixelWidth != -1 &&
+				(((fx + fAdvancePixels) - fox) > (float)iMaxPixelWidth));
 			if (!bNextTextWouldOverflow)
 			{
 				// this 'mbRoundCalcs' stuff is crap, but the only way to make the font code work. Sigh...

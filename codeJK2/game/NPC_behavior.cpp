@@ -156,13 +156,13 @@ void NPC_BSAdvanceFight (void)
 						VectorMA ( muzzle, distanceToEnemy, forward, hitspot);
 						VectorSubtract(hitspot, enemy_org, diff);
 						aim_off = VectorLength(diff);
-						if(aim_off > random() * max_aim_off)//FIXME: use aim value to allow poor aim?
+						if(aim_off > Q_flrand(0.0f, 1.0f) * max_aim_off)//FIXME: use aim value to allow poor aim?
 						{
 							attack_scale *= 0.75;
 							//see if where we're going to shoot is too far from his head
 							VectorSubtract(hitspot, enemy_head, diff);
 							aim_off = VectorLength(diff);
-							if(aim_off > random() * max_aim_off)
+							if(aim_off > Q_flrand(0.0f, 1.0f) * max_aim_off)
 							{
 								attack_ok = qfalse;
 							}
@@ -563,7 +563,8 @@ void NPC_BSFollowLeader (void)
 
 	if ( !NPC->enemy  )
 	{//no enemy, find one
-		NPC_CheckEnemy( NPCInfo->confusionTime<level.time, qfalse );//don't find new enemy if this is tempbehav
+		//don't find new enemy if this is tempbehav
+		NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse );
 		if ( NPC->enemy )
 		{//just found one
 			NPCInfo->enemyCheckDebounceTime = level.time + Q_irand( 3000, 10000 );
@@ -621,7 +622,9 @@ void NPC_BSFollowLeader (void)
 		}
 		else if ( NPC->client->ps.weapon && NPCInfo->enemyCheckDebounceTime < level.time )
 		{
-			NPC_CheckEnemy( (NPCInfo->confusionTime<level.time||NPCInfo->tempBehavior!=BS_FOLLOW_LEADER), qfalse );//don't find new enemy if this is tempbehav
+			NPC_CheckEnemy(
+				(qboolean)((NPCInfo->confusionTime < level.time) || (NPCInfo->tempBehavior != BS_FOLLOW_LEADER)),
+				qfalse);//don't find new enemy if this is tempbehav
 		}
 	}
 

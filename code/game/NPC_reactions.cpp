@@ -144,7 +144,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 		}
 
 		//Randomly pick up the target
-		if ( random() > luckThreshold )
+		if ( Q_flrand(0.0f, 1.0f) > luckThreshold )
 		{
 			G_ClearEnemy( other );
 			other->enemy = NPC;
@@ -295,7 +295,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 	}
 
 	//See if we're going to flinch
-	if ( random() < pain_chance )
+	if ( Q_flrand(0.0f, 1.0f) < pain_chance )
 	{
 		//Pick and play our animation
 		if ( (self->client->ps.eFlags&EF_FORCE_GRIPPED) )
@@ -985,7 +985,7 @@ void NPC_Respond( gentity_t *self, int userNum )
 	if ( event != -1 )
 	{
 		//hack here because we reuse some "combat" and "extra" sounds
-		qboolean addFlag = (self->NPC->scriptFlags&SCF_NO_COMBAT_TALK);
+		qboolean addFlag = (qboolean)((self->NPC->scriptFlags&SCF_NO_COMBAT_TALK) != 0);
 		self->NPC->scriptFlags &= ~SCF_NO_COMBAT_TALK;
 
 		G_AddVoiceEvent( self, event, 3000 );

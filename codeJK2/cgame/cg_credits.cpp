@@ -112,9 +112,9 @@ struct CreditData_t
 	CreditCards_t CreditCards;
 	CreditLines_t CreditLines;
 
-	bool Running(void)
+	qboolean Running(void)
 	{
-		return !!( CreditCards.size() || CreditLines.size() );
+		return (qboolean)(CreditCards.size() || CreditLines.size());
 	}
 };
 

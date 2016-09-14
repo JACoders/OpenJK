@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stringed_ingame.h"
 #include "stv_version.h"
+#include "../shared/sys/sys_local.h"
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -865,7 +866,7 @@ int Com_EventLoop( void ) {
         case SE_NONE:
             break;
 		case SE_KEY:
-			CL_KeyEvent( ev.evValue, ev.evValue2, ev.evTime );
+			CL_KeyEvent( ev.evValue, (qboolean)ev.evValue2, ev.evTime );
 			break;
 		case SE_CHAR:
 			CL_CharEvent( ev.evValue );
@@ -1387,6 +1388,7 @@ void Com_Frame( void ) {
 			else
 				Sys_Sleep(timeVal - 1);
 		} while( (timeVal = Com_TimeVal(minMsec)) != 0 );
+		IN_Frame();
 
 		lastTime = com_frameTime;
 		com_frameTime = Com_EventLoop();

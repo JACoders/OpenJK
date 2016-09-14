@@ -1162,7 +1162,7 @@ redump:
 		case	ZA_SOUND_MONO:
 			if (!cinTable[currentHandle].silent) {
 				ssize = RllDecodeMonoToStereo( framedata, sbuf, cinTable[currentHandle].RoQFrameSize, 0, (unsigned short)cinTable[currentHandle].roq_flags);
-                S_RawSamples( ssize, 22050, 2, 1, (byte *)sbuf, s_volume->value, 1 );
+                S_RawSamples( ssize, 22050, 2, 1, (byte *)sbuf, s_volume->value, qtrue );
 			}
 			break;
 		case	ZA_SOUND_STEREO:
@@ -1172,7 +1172,7 @@ redump:
 					s_rawend = s_soundtime;
 				}
 				ssize = RllDecodeStereoToStereo( framedata, sbuf, cinTable[currentHandle].RoQFrameSize, 0, (unsigned short)cinTable[currentHandle].roq_flags);
-                S_RawSamples( ssize, 22050, 2, 2, (byte *)sbuf, s_volume->value, 1 );
+                S_RawSamples( ssize, 22050, 2, 2, (byte *)sbuf, s_volume->value, qtrue );
 			}
 			break;
 		case	ROQ_QUAD_INFO:
@@ -1494,15 +1494,15 @@ int CIN_PlayCinematic( const char *arg, int x, int y, int w, int h, int systemBi
 	}
 
 	CIN_SetExtents(currentHandle, x, y, w, h);
-	CIN_SetLooping(currentHandle, (systemBits & CIN_loop)!=0);
+	CIN_SetLooping(currentHandle, (qboolean)((systemBits & CIN_loop) != 0));
 
 	cinTable[currentHandle].CIN_HEIGHT = DEFAULT_CIN_HEIGHT;
 	cinTable[currentHandle].CIN_WIDTH  =  DEFAULT_CIN_WIDTH;
-	cinTable[currentHandle].holdAtEnd = (systemBits & CIN_hold) != 0;
-	cinTable[currentHandle].alterGameState = (systemBits & CIN_system) != 0;
+	cinTable[currentHandle].holdAtEnd = (qboolean)((systemBits & CIN_hold) != 0);
+	cinTable[currentHandle].alterGameState = (qboolean)((systemBits & CIN_system) != 0);
 	cinTable[currentHandle].playonwalls = 1;
-	cinTable[currentHandle].silent = (systemBits & CIN_silent) != 0;
-	cinTable[currentHandle].shader = (systemBits & CIN_shader) != 0;
+	cinTable[currentHandle].silent = (qboolean)((systemBits & CIN_silent) != 0);
+	cinTable[currentHandle].shader = (qboolean)((systemBits & CIN_shader) != 0);
 	if (psAudioFile)
 	{
 		cinTable[currentHandle].hSFX = S_RegisterSound(psAudioFile);
@@ -1625,8 +1625,8 @@ static void CIN_AddTextCrawl()
 		verts[i].modulate[3] = 255*fadeDown;
 	}
 
-	_VectorScale( verts[2].modulate, 0.1f, verts[2].modulate ); // darken at the top??
-	_VectorScale( verts[3].modulate, 0.1f, verts[3].modulate );
+	VectorScaleM( verts[2].modulate, 0.1f, verts[2].modulate ); // darken at the top??
+	VectorScaleM( verts[3].modulate, 0.1f, verts[3].modulate );
 
 #define TIMEOFFSET  +(cls.realtime-CL_iPlaybackStartTime-TC_DELAY)*0.000015f -1
 	VectorSet( verts[0].xyz, TC_PLANE_NEAR, -TC_PLANE_WIDTH, TC_PLANE_TOP );
@@ -1856,7 +1856,7 @@ static void PlayCinematic(const char *arg, const char *s, qboolean qbInGame)
 		// work out associated audio-overlay file, if any...
 		//
 		extern cvar_t *s_language;
-		qboolean	bIsForeign	= s_language && Q_stricmp(s_language->string,"english") && Q_stricmp(s_language->string,"");
+		qboolean	bIsForeign	= (qboolean)(s_language && Q_stricmp(s_language->string,"english") && Q_stricmp(s_language->string,""));
 		const char *psAudioFile	= NULL;
 		qhandle_t	hCrawl = 0;
 		if (!Q_stricmp(arg,"video/jk0101_sw.roq"))
@@ -1949,7 +1949,7 @@ qboolean CL_CheckPendingCinematic(void)
 	if ( gbPendingCinematic && CIN_HardwareReadyToPlayVideos() )
 	{
 		gbPendingCinematic = qfalse;	// BEFORE next line, or we get recursion
-		PlayCinematic(sPendingCinematic_Arg,sPendingCinematic_s[0]?sPendingCinematic_s:NULL,false);
+		PlayCinematic(sPendingCinematic_Arg,sPendingCinematic_s[0]?sPendingCinematic_s:NULL,qfalse);
 		return qtrue;
 	}
 	return qfalse;

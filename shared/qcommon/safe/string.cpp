@@ -47,7 +47,8 @@ namespace Q
 		}
 		auto start = lhs.begin() + pos;
 		auto end = count == std::string::npos ? lhs.end() : std::min( start + count, lhs.end() );
-		return{ start, end };
+		gsl::cstring_view result{ start, end };
+		return result;
 	}
 
 	int svtoi( const gsl::cstring_view& view )

@@ -70,11 +70,6 @@ qboolean	in_mlooking;
 
 extern cvar_t	*in_joystick;
 
-#ifndef NO_XINPUT
-void IN_UnloadXInput ( void );
-#endif
-
-
 static void IN_UseGivenForce(void)
 {
 	const char *c = Cmd_Argv(1);

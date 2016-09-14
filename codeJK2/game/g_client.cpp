@@ -614,7 +614,7 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 
 		client->pers.connected = CON_CONNECTED;
 		client->pers.teamState.state = TEAM_BEGIN;
-		_VectorCopy( cmd->angles, client->pers.cmd_angles );
+		VectorCopyM( cmd->angles, client->pers.cmd_angles );
 
 		memset( &client->ps, 0, sizeof( client->ps ) );
 		memset( &client->sess.missionStats, 0, sizeof( client->sess.missionStats ) );
@@ -1746,7 +1746,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		client->ps.commandTime = level.time - 100;
 		ucmd = client->pers.lastCommand;
 		ucmd.serverTime = level.time;
-		_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+		VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 		ucmd.weapon = client->ps.weapon;	// client think calls Pmove which sets the client->ps.weapon to ucmd.weapon, so ...
 		ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 		ClientThink( ent-g_entities, &ucmd );

@@ -2014,7 +2014,7 @@ int AAS_RandomGoalArea(int areanum, int travelflags, int *goalareanum, vec3_t go
 	//if the area has no reachabilities
 	if (!AAS_AreaReachability(areanum)) return qfalse;
 	//
-	n = aasworld.numareas * random();
+	n = aasworld.numareas * Q_flrand(0.0f, 1.0f);
 	for (i = 0; i < aasworld.numareas; i++)
 	{
 		if (n <= 0) n = 1;

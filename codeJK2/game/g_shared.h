@@ -313,8 +313,8 @@ typedef struct {
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
 typedef struct objectives_s
 {
-	qboolean	display;	// A displayable objective?
-	int			status;	// Succeed or fail or pending
+	int display;	// A displayable objective?
+	int	status;	// Succeed or fail or pending
 } objectives_t;
 #define MAX_MISSION_OBJ 80
 

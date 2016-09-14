@@ -604,7 +604,7 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 
 		client->pers.connected = CON_CONNECTED;
 		client->pers.teamState.state = TEAM_BEGIN;
-		_VectorCopy( cmd->angles, client->pers.cmd_angles );
+		VectorCopyM( cmd->angles, client->pers.cmd_angles );
 
 		memset( &client->ps, 0, sizeof( client->ps ) );
 		if( gi.Cvar_VariableIntegerValue( "g_clearstats" ) )
@@ -2161,7 +2161,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			Q_stricmp( ent->NPC_type, "player" ) )
 		{
 			// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
-			char bleh[1024];
+			char bleh[MAX_SPAWN_VARS_CHARS];
 			Q_strncpyz(bleh, ent->NPC_type, sizeof(bleh));
 
 			G_ChangePlayerModel( ent, bleh );
@@ -2360,9 +2360,8 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			Q_stricmp( ent->NPC_type, "player" ) )
 			{
 				// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
-				char bleh[1024];
-				strncpy(bleh, ent->NPC_type, strlen(ent->NPC_type));
-				bleh[strlen(ent->NPC_type)] = '\0';
+				char bleh[MAX_SPAWN_VARS_CHARS];
+				Q_strncpyz(bleh, ent->NPC_type, sizeof(bleh));
 
 				G_ChangePlayerModel( ent, bleh );
 			}
@@ -2382,7 +2381,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		client->ps.commandTime = level.time - 100;
 		ucmd = client->pers.lastCommand;
 		ucmd.serverTime = level.time;
-		_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+		VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 		ucmd.weapon = client->ps.weapon;	// client think calls Pmove which sets the client->ps.weapon to ucmd.weapon, so ...
 		ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 		ClientThink( ent-g_entities, &ucmd );
