@@ -281,7 +281,7 @@ static void WP_FireBryarPistol( gentity_t *ent, qboolean altFire, int weapon )
 void zyk_WP_FireBryarPistol(gentity_t *ent)
 //---------------------------------------------------------
 {
-	int damage = zyk_blaster_pistol_damage.integer * 22;
+	int damage = zyk_blaster_pistol_damage.integer * 8;
 	int count = 5;
 	float boxSize = BRYAR_ALT_SIZE*(2.5);
 
@@ -4389,7 +4389,10 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			}
 		}
 		else if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 2 && 
-				 ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && ent->client->ps.ammo[AMMO_METAL_BOLTS] > 0)
+				 ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
+				 !(ent->client->pers.player_statuses & (1 << 21)) && 
+				 !(ent->client->pers.player_statuses & (1 << 22)) && 
+				 ent->client->ps.ammo[AMMO_METAL_BOLTS] > 0)
 		{ // zyk: Bounty Hunter Unique Skill, fire poison darts
 			vec3_t		fwd, dir, origin;
 			gentity_t	*missile;

@@ -643,6 +643,7 @@ typedef struct clientPersistant_s {
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison
+	// zyk: also used by Wrist Shot ability
 	int poison_dart_hit_counter;
 
 	// zyk: player who hit the target with poison dart

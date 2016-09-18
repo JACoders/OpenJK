@@ -9848,7 +9848,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Wrist Shot, which shoots a powerful blaster shot. Spends 10 blaster pack ammo\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Wrist Shot, which allows shooting three powerful blaster shots. Spends 10 blaster pack ammo and 10 more per shot\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
@@ -14627,6 +14627,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
+					ent->client->pers.player_statuses |= (1 << 21);
+
 					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
@@ -14808,6 +14810,26 @@ void Cmd_Unique_f(gentity_t *ent) {
 			return;
 		}
 
+		if (ent->client->pers.rpg_class == 2 && ent->client->pers.player_statuses & (1 << 22))
+		{ // zyk: Bounty Hunter Wrist Shot ability, can shoot 3 times
+			if (ent->client->ps.ammo[AMMO_BLASTER] >= 10 && ent->client->pers.poison_dart_hit_counter > 0)
+			{
+				ent->client->ps.ammo[AMMO_BLASTER] -= 10;
+
+				ent->client->pers.poison_dart_hit_counter--;
+
+				zyk_WP_FireBryarPistol(ent);
+
+				ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+				ent->client->ps.forceDodgeAnim = BOTH_FORCELIGHTNING_START;
+				ent->client->ps.forceHandExtendTime = level.time + 1200;
+
+				G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/bryar/alt_fire.mp3"));
+			}
+
+			return;
+		}
+
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
 			if (ent->client->pers.rpg_class == 0)
@@ -14903,15 +14925,12 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.ammo[AMMO_BLASTER] -= 10;
 
-					zyk_WP_FireBryarPistol(ent);
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
-					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
-					ent->client->ps.forceDodgeAnim = BOTH_FORCELIGHTNING_START;
-					ent->client->ps.forceHandExtendTime = level.time + 1200;
+					ent->client->pers.player_statuses |= (1 << 22);
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
-
-					G_Sound(ent, CHAN_WEAPON, G_SoundIndex("sound/weapons/bryar/alt_fire.mp3"));
+					// zyk: can shoot 3 times
+					ent->client->pers.poison_dart_hit_counter = 3;
 
 					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
