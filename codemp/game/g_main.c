@@ -8198,7 +8198,7 @@ void G_RunFrame( int levelTime ) {
 						zyk_TeleportPlayer( &g_entities[ent->client->ps.m_iVehicleNum], origin, yaw);
 					}
 				}
-				else if ((int) ent->client->ps.origin[0] < -4436 || (int) ent->client->ps.origin[0] > -3276 || (int) ent->client->ps.origin[1] < -21283 || (int) ent->client->ps.origin[1] > -19320)
+				else if ((int) ent->client->ps.origin[0] < -4536 || (int) ent->client->ps.origin[0] > -2322 || (int) ent->client->ps.origin[1] < -22283 || (int) ent->client->ps.origin[1] > -18520)
 				{ // zyk: player cant start racing before the countdown timer
 					ent->client->pers.race_position = 0;
 					trap->SendServerCommand( -1, va("chat \"^3Race System: ^7%s ^7lost for trying to race before it starts!\n\"",ent->client->pers.netname) );
