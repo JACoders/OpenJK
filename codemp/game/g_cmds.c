@@ -12687,13 +12687,8 @@ void Cmd_EntSave_f( gentity_t *ent ) {
 	system(va("mkdir \"entities/%s\"",zyk_mapname));
 #endif
 
-	// zyk: cleaning the old file
-	this_file = fopen(va("entities/%s/%s.txt",zyk_mapname,arg1),"w");
-	fprintf(this_file,"");
-	fclose(this_file);
-
 	// zyk: saving the entities into the file
-	this_file = fopen(va("entities/%s/%s.txt",zyk_mapname,arg1),"a");
+	this_file = fopen(va("entities/%s/%s.txt",zyk_mapname,arg1),"w");
 
 	for (i = (MAX_CLIENTS + BODY_QUEUE_SIZE); i < level.num_entities; i++)
 	{
