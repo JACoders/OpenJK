@@ -887,7 +887,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		{
 			if (client->pers.rpg_class == 4 && ent->health > 0)
 			{ // zyk: Monk auto-healing ability
-				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time)
+				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(client->pers.player_statuses & (1 << 22)))
 				{ // zyk: Monk Unique Skill
 					int heal_amount = 4;
 

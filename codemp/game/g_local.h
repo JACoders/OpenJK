@@ -44,7 +44,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Zyk OpenJK Mod v3.43"
+#define	GAMEVERSION	"Zyk OpenJK Mod v3.44"
 
 #define SECURITY_LOG "security.log"
 
@@ -716,6 +716,9 @@ typedef struct clientPersistant_s {
 
 	// zyk: this is the cooldown timer of the Unique Skill used by some RPG classes
 	int unique_skill_timer;
+
+	// zyk: Monk Spin Kick ability interval between hits
+	int spin_kick_timer;
 
 	// zyk: stun baton 3/3 timer. This entity has less run speed during this time
 	int stun_baton_less_speed_timer;

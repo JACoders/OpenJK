@@ -5192,6 +5192,8 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		ent->client->pers.print_products_timer = 0;
 
+		ent->client->pers.spin_kick_timer = 0;
+
 		ent->client->pers.credits_modifier = 0;
 		ent->client->pers.score_modifier = 0;
 
@@ -14948,42 +14950,15 @@ void Cmd_Unique_f(gentity_t *ent) {
 			{ // zyk: Monk Spin Kick ability. Kicks everyone around the Monk with very high damage
 				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
 				{
-					int i = 0;
-
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
 					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
 					ent->client->ps.forceDodgeAnim = BOTH_A7_KICK_S;
-					ent->client->ps.forceHandExtendTime = level.time + 2000;
-
-					for (i = 0; i < level.num_entities; i++)
-					{
-						gentity_t *player_ent = &g_entities[i];
-
-						if (player_ent && player_ent->client && ent != player_ent && 
-							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
-							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 80)
-						{
-							G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_MELEE);
-
-							// zyk: removing emotes to prevent exploits
-							if (player_ent->client->pers.player_statuses & (1 << 1))
-							{
-								player_ent->client->pers.player_statuses &= ~(1 << 1);
-								player_ent->client->ps.forceHandExtendTime = level.time;
-							}
-
-							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-							player_ent->client->ps.forceHandExtendTime = level.time + 1000;
-							player_ent->client->ps.velocity[2] += 200;
-							player_ent->client->ps.forceDodgeAnim = 0;
-							player_ent->client->ps.quickerGetup = qtrue;
-
-							G_Sound(ent, CHAN_AUTO, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
-						}
-					}
+					ent->client->ps.forceHandExtendTime = level.time + 1500;
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.player_statuses |= (1 << 22);
 
 					ent->client->pers.unique_skill_timer = level.time + 30000;
 				}
