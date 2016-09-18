@@ -724,6 +724,7 @@ typedef struct clientPersistant_s {
 	int stun_baton_less_speed_timer;
 
 	// zyk: when a bounty hunter is using the thermal vision, it is set to qtrue
+	// zyk: when a stealth attacker is using the sniper scope, it is set to true
 	qboolean thermal_vision;
 
 	// zyk: RPG skills

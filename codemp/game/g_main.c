@@ -8324,6 +8324,23 @@ void G_RunFrame( int levelTime ) {
 
 					ent->client->pers.spin_kick_timer = level.time + 200;
 				}
+				else if (ent->client->pers.rpg_class == 5)
+				{
+					if (ent->client->pers.thermal_vision == qtrue && ent->client->ps.zoomMode == 0)
+					{ // zyk: if the stealth attacker stops using sniper scope, stop the Thermal Detector
+						ent->client->pers.thermal_vision = qfalse;
+						ent->client->ps.fd.forcePowersActive &= ~(1 << FP_SEE);
+						ent->client->ps.fd.forcePowersKnown &= ~(1 << FP_SEE);
+						ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_0;
+					}
+					else if (ent->client->pers.thermal_vision == qfalse && ent->client->ps.zoomMode == 1 && ent->client->pers.secrets_found & (1 << 7))
+					{ // zyk: Stealth Attacker with Upgrade, activate the Thermal Detector
+						ent->client->pers.thermal_vision = qtrue;
+						ent->client->ps.fd.forcePowersKnown |= (1 << FP_SEE);
+						ent->client->ps.fd.forcePowerLevel[FP_SEE] = FORCE_LEVEL_1;
+						ent->client->ps.fd.forcePowersActive |= (1 << FP_SEE);
+					}
+				}
 
 				if (level.quest_map > 0 && ent->client->ps.duelInProgress == qfalse && ent->health > 0)
 				{ // zyk: control the quest events which happen in the quest maps, if player can play quests now, is alive and is not in a private duel

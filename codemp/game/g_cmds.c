@@ -9615,7 +9615,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (i == 8)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stealth Attacker Upgrade: ^7Stealth Attacker will be invulnerable to electric attacks and will have 20 per cent more damage in his starting weapons. Protects from stun baton 3/3 speed decrease and also from losing guns to force pull. Makes him invisible to the Bounty Hunter Upgrade Radar\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^3Stealth Attacker Upgrade: ^7Stealth Attacker will be invulnerable to electric attacks and will have 20 per cent more damage in his starting weapons. Protects from stun baton 3/3 speed decrease and also from losing guns to force pull. Adds the thermal detector in his disruptor scope. Makes him invisible to the Bounty Hunter Upgrade Radar\n\n\"");
 		}
 		else if (i == 9)
 		{
