@@ -299,17 +299,17 @@ static inline uint32_t LongSwap(uint32_t v)
 }
 #endif
 
-static void CopyShortSwap( void *dest, const void *src )
+static QINLINE void CopyShortSwap( void *dest, const void *src )
 {
     *(uint16_t*)dest = ShortSwap(*(uint16_t*)src);
 }
 
-static void CopyLongSwap( void *dest, const void *src )
+static QINLINE void CopyLongSwap( void *dest, const void *src )
 {
     *(uint32_t*)dest = LongSwap(*(uint32_t*)src);
 }
 
-static float FloatSwap(float f)
+static QINLINE float FloatSwap(float f)
 {
     float out;
     CopyLongSwap(&out, &f);
