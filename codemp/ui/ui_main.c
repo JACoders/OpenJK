@@ -7830,7 +7830,7 @@ static void UI_BuildFindPlayerList(qboolean force) {
 		// add a line that shows the number of servers found
 		if (!uiInfo.numFoundPlayerServers)
 		{
-			Com_sprintf(uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers-1], sizeof(uiInfo.foundPlayerServerAddresses[0]), "no servers found");
+			trap->Cvar_Set( "ui_playerServersFound", "no servers found" );
 		}
 		else
 		{
