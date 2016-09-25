@@ -30,6 +30,7 @@ static const size_t SECRET_KEY_LENGTH = MD5_DIGEST_SIZE; // Key length equal to 
 static qboolean challengerInitialized = qfalse;
 static hmacMD5Context_t challenger;
 
+#ifdef DEBUG_SV_CHALLENGE
 /*
 ====================
 BufferToHexString
@@ -52,6 +53,7 @@ static const char *BufferToHexString(byte *buffer, size_t bufferLen)
 	hexString[bufferLen * 2] = '\0';
 	return hexString;
 }
+#endif
 
 /*
 ====================
