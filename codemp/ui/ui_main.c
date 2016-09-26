@@ -7827,14 +7827,17 @@ static void UI_BuildFindPlayerList(qboolean force) {
 		uiInfo.nextFindPlayerRefresh = uiInfo.uiDC.realTime + 25;
 	}
 	else {
+		trap->SE_GetStringTextString("MENUS_SERVERS_FOUNDWITH", holdSPString, sizeof(holdSPString));
 		// add a line that shows the number of servers found
 		if (!uiInfo.numFoundPlayerServers)
 		{
-			trap->Cvar_Set( "ui_playerServersFound", "no servers found" );
+			trap->Cvar_Set( "ui_playerServersFound", va(	holdSPString,
+														0,
+														"s",
+														uiInfo.findPlayerName) );
 		}
 		else
 		{
-			trap->SE_GetStringTextString("MENUS_SERVERS_FOUNDWITH", holdSPString, sizeof(holdSPString));
 			trap->Cvar_Set( "ui_playerServersFound", va(	holdSPString,
 														uiInfo.numFoundPlayerServers-1,
 														uiInfo.numFoundPlayerServers == 2 ? "":"s",
