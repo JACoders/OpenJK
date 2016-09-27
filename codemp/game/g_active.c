@@ -1611,13 +1611,13 @@ void G_SetTauntAnim( gentity_t *ent, int taunt )
 	{ //hack, don't do while moving
 		return;
 	}
-	if ( taunt != TAUNT_TAUNT )
+	/*if ( taunt != TAUNT_TAUNT )
 	{//normal taunt always allowed
 		if ( level.gametype != GT_DUEL && level.gametype != GT_POWERDUEL )
 		{//no taunts unless in Duel
 			return;
 		}
-	}
+	}*/
 
 	// fix: rocket lock bug
 	BG_ClearRocketLock(&ent->client->ps);
