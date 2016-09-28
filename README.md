@@ -1,6 +1,6 @@
 # OpenJK and then some
 
-This is a project that uses OpenJK, but adds a couple features that I believe should have been made. If you're unfamiliar with OpenJK, click here to read more about it.
+This is a project that uses OpenJK, but adds a couple features that I believe should have been made. If you're unfamiliar with OpenJK, [click here](https://github.com/JACoders/OpenJK/blob/master/README.md) to read more about it.
 
 # Changes and additions
 
