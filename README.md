@@ -7,6 +7,6 @@ This is a project that uses OpenJK, but adds a couple features that I believe sh
 * All taunts are available in all game modes (meditate, gloat, flourish, etc)
 * Private duels now start with full health and shield, and can be changed via new cvars (g_duelStartHealth and g_duelStartArmor)
 * Results of a private duel are displayed to all, with the remaining health of the winning player
-* Added a cvar to toggle idle animations (personal annoyance of mine)
+* Added a cvar to toggle idle animations (personal annoyance of mine) - g_useIdleAnims
 
 A couple more to come soon.
