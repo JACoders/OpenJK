@@ -3499,7 +3499,9 @@ void ClientThink_real( gentity_t *ent ) {
 	G_UpdateClientBroadcasts ( ent );
 
 	//try some idle anims on ent if getting no input and not moving for some time
-	G_CheckClientIdle( ent, ucmd );
+	if (g_useIdleAnims.integer) {
+  		G_CheckClientIdle( ent, ucmd );
+	}
 
 	// This code was moved here from clientThink to fix a problem with g_synchronousClients
 	// being set to 1 when in vehicles.
