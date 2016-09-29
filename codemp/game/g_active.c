@@ -2485,7 +2485,7 @@ void ClientThink_real( gentity_t *ent ) {
 			G_AddEvent(ent, EV_PRIVATE_DUEL, 0);
 			G_AddEvent(duelAgainst, EV_PRIVATE_DUEL, 0);
 
-			//Winner gets full health.. providing he's still alive
+			/*//Winner gets full health.. providing he's still alive
 			if (ent->health > 0 && ent->client->ps.stats[STAT_HEALTH] > 0)
 			{
 				if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
@@ -2498,7 +2498,7 @@ void ClientThink_real( gentity_t *ent ) {
 					ent->client->ps.eFlags |= EF_INVULNERABLE;
 					ent->client->invulnerableTimer = level.time + g_spawnInvulnerability.integer;
 				}
-			}
+			}*/
 
 			/*
 			trap->SendServerCommand( ent-g_entities, va("print \"%s %s\n\"", ent->client->pers.netname, G_GetStringEdString("MP_SVGAME", "PLDUELWINNER")) );
