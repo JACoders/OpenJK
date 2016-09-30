@@ -136,7 +136,7 @@ message("Git revision is ${GIT_SHA1}")
 
 
 # Binary names
-set(MPEngine "openjk.${Architecture}")
+set(MPEngine "eternaljk.${Architecture}")
 set(MPVanillaRenderer "rd-vanilla_${Architecture}")
 set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
