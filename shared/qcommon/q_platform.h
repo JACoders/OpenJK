@@ -209,6 +209,26 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#endif
 #endif
 
+#if defined (_MSC_VER)
+	#if _MSC_VER >= 1600
+		#include <stdint.h>
+	#else
+		typedef signed __int64 int64_t;
+		typedef signed __int32 int32_t;
+		typedef signed __int16 int16_t;
+		typedef signed __int8  int8_t;
+		typedef unsigned __int64 uint64_t;
+		typedef unsigned __int32 uint32_t;
+		typedef unsigned __int16 uint16_t;
+		typedef unsigned __int8  uint8_t;
+	#endif
+#else // not using MSVC
+	#if !defined(__STDC_LIMIT_MACROS)
+		#define __STDC_LIMIT_MACROS
+	#endif
+	#include <stdint.h>
+#endif
+
 // catch missing defines in above blocks
 #if !defined(OS_STRING)
 	#error "Operating system not supported"
@@ -227,11 +247,74 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 // endianness
-void CopyShortSwap( void *dest, void *src );
-void CopyLongSwap( void *dest, void *src );
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
+// Use compiler builtins where possible for maximum performance
+#include <stdint.h>
+#if !defined(__clang__) && (defined(__GNUC__) || defined(__GNUG__)) \
+            && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 403)
+// gcc >= 4.3
+
+static inline uint16_t ShortSwap(uint16_t v)
+{
+#if __GNUC_MINOR__ >= 8
+    return __builtin_bswap16(v);
+#else
+    return (v << 8) | (v >> 8);
+#endif // gcc >= 4.8
+}
+
+static inline uint32_t LongSwap(uint32_t v)
+{
+    return __builtin_bswap32(v);
+}
+#elif defined(_MSC_VER)
+// MSVC
+
+// required for _byteswap_ushort/ulong
+#include <stdlib.h>
+
+static uint16_t ShortSwap(uint16_t v)
+{
+    return _byteswap_ushort(v);
+}
+
+static uint32_t LongSwap(uint32_t v)
+{
+    return _byteswap_ulong(v);
+}
+
+#else
+// clang, gcc < 4.3 and others
+
+static inline uint16_t ShortSwap(uint16_t v)
+{
+    return (v << 8) | (v >> 8);
+}
+
+static inline uint32_t LongSwap(uint32_t v)
+{
+    return ((v & 0x000000FF) << 24) |
+           ((v & 0x0000FF00) << 8)  |
+           ((v & 0x00FF0000) >> 8)  |
+           ((v & 0xFF000000) >> 24);
+}
+#endif
+
+static QINLINE void CopyShortSwap( void *dest, const void *src )
+{
+    *(uint16_t*)dest = ShortSwap(*(uint16_t*)src);
+}
+
+static QINLINE void CopyLongSwap( void *dest, const void *src )
+{
+    *(uint32_t*)dest = LongSwap(*(uint32_t*)src);
+}
+
+static QINLINE float FloatSwap(float f)
+{
+    float out;
+    CopyLongSwap(&out, &f);
+    return out;
+}
 
 #if defined(Q3_BIG_ENDIAN) && defined(Q3_LITTLE_ENDIAN)
 	#error "Endianness defined as both big and little"
@@ -240,7 +323,7 @@ float FloatSwap( const float *f );
 	#define CopyLittleLong( dest, src )		CopyLongSwap( dest, src )
 	#define LittleShort( x )				ShortSwap( x )
 	#define LittleLong( x )					LongSwap( x )
-	#define LittleFloat( x )				FloatSwap( &x )
+	#define LittleFloat( x )				FloatSwap( x )
 	#define BigShort
 	#define BigLong
 	#define BigFloat
@@ -252,11 +335,26 @@ float FloatSwap( const float *f );
 	#define LittleFloat
 	#define BigShort( x )					ShortSwap( x )
 	#define BigLong( x )					LongSwap( x )
-	#define BigFloat( x )					FloatSwap( &x )
+	#define BigFloat( x )					FloatSwap( x )
 #else
 	#error "Endianness not defined"
 #endif
 
+typedef unsigned char byte;
+typedef unsigned short word;
+typedef unsigned long ulong;
+
+typedef enum { qfalse, qtrue } qboolean;
+
+// 32 bit field aliasing
+typedef union byteAlias_u {
+	float f;
+	int32_t i;
+	uint32_t ui;
+	qboolean qb;
+	byte b[4];
+	char c[4];
+} byteAlias_t;
 
 // platform string
 #if defined(NDEBUG)

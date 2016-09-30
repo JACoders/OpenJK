@@ -68,7 +68,7 @@ void NPC_SetBlocked( gentity_t *self, gentity_t *blocker )
 		return;
 
 	//self->NPC->aiFlags |= NPCAI_BLOCKED;
-	self->NPC->blockedSpeechDebounceTime = level.time + MIN_BLOCKED_SPEECH_TIME + ( random() * 4000 );
+	self->NPC->blockedSpeechDebounceTime = level.time + MIN_BLOCKED_SPEECH_TIME + ( Q_flrand(0.0f, 1.0f) * 4000 );
 	self->NPC->blockingEntNum = blocker->s.number;
 }
 

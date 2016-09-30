@@ -43,7 +43,7 @@ void TurretPain( gentity_t *self, gentity_t *attacker, int damage )
 
 	if ( attacker->client && attacker->client->ps.weapon == WP_DEMP2 )
 	{
-		self->attackDebounceTime = level.time + 800 + random() * 500;
+		self->attackDebounceTime = level.time + 800 + Q_flrand(0.0f, 1.0f) * 500;
 		self->painDebounceTime = self->attackDebounceTime;
 	}
 	if ( !self->enemy )
@@ -624,7 +624,7 @@ void turret_base_think( gentity_t *self )
 	else
 	{
 		// keep our enemy for a minimum of 2 seconds from now
-		self->bounceCount = level.time + 2000 + random() * 150;
+		self->bounceCount = level.time + 2000 + Q_flrand(0.0f, 1.0f) * 150;
 	}
 
 	turret_aim( self );
@@ -774,7 +774,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	top->speed = 0;
 
 	// this is a random time offset for the no-enemy-search-around-mode
-	top->count = random() * 9000;
+	top->count = Q_flrand(0.0f, 1.0f) * 9000;
 
 	if ( !base->health )
 	{
@@ -829,7 +829,7 @@ qboolean turret_base_spawn_top( gentity_t *base )
 	// How quickly to fire
 	if ( !base->wait )
 	{
-		base->wait = 300 + random() * 55;
+		base->wait = 300 + Q_flrand(0.0f, 1.0f) * 55;
 	}
 	top->wait = base->wait;
 
