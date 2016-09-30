@@ -30,7 +30,6 @@
 			hide 			quickcontrols ;
 			hide			joycontrols ;
 			hide			othercontrols ;
-			hide			japrocontrols ;
 			setitemcolor		movementcontrolbutton 		forecolor 1 1 1 1 ;
 			setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 			setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -39,7 +38,6 @@
 			setitemcolor		quickcontrolbutton 		forecolor 1 .682 0 1 ;
 			setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 			setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-			setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 		}
 
 		onClose 
@@ -492,7 +490,6 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 1 1 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -500,7 +497,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 			}
 		}
 		
@@ -555,7 +551,6 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 1 1 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -563,7 +558,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -617,7 +611,6 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 1 1 1 ;
@@ -625,7 +618,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -679,7 +671,6 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -687,7 +678,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -740,7 +730,6 @@
 				show			forcecontrols2 ;
 				hide			joycontrols ;
 				hide			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -748,7 +737,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 1 1 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -802,7 +790,6 @@
 				hide			forcecontrols2 ;
 				show			joycontrols ;
 				hide			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -810,7 +797,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 1 1 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
 			}
 		}
 
@@ -864,7 +850,6 @@
 				hide			forcecontrols2 ;
 				hide			joycontrols ;
 				show			othercontrols ;
-				hide			japrocontrols ;
 				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
 				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
@@ -872,69 +857,6 @@
 				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
 				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
 				setitemcolor		othercontrolbutton 		forecolor 1 1 1 1 ;
-				setitemcolor		japrocontrolbutton 		forecolor 1 .682 0 1 ;
-			}
-		}
-		
-		// japro  button
-		itemDef 
-		{
-			name				japrocontrolbutton_glow
-			group				mods
-			style				WINDOW_STYLE_SHADER
-			rect				80 353 180 24
-			background			"gfx/menus/menu_blendbox2"			// Frame around button
-			forecolor			1 1 1 1
-			visible				0
-			decoration
-		}
-		
-		itemDef 
-		{
-			name				japrocontrolbutton
-			group				none
-			text				japro
-			type				ITEM_TYPE_BUTTON
-			style				WINDOW_STYLE_EMPTY
-			rect				80 353 170 24
-			font				3
-			textscale			0.9
-			textalignx			160
-			textaligny			2
-			textalign			ITEM_ALIGN_RIGHT
-			textstyle			0
-			forecolor			1 .682 0 1
-			visible			1
-			descText			"Configure your jaPRO controls."
-
-			mouseEnter 
-			{ 
-				show			japrocontrolbutton_glow
-			}
-			mouseExit 
-			{ 
-				hide			japrocontrolbutton_glow
-			}	  	  
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				show			setup_background ;
-				hide			movecontrols ;
-				hide 			attackcontrols ;
-				hide 			weaponcontrols ;
-				hide			forcecontrols ;
-				hide			forcecontrols2 ;
-				hide			joycontrols ;
-				hide			othercontrols ;
-				show			japrocontrols ;
-				setitemcolor		movementcontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		attackcontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		weaponscontrolbutton 		forecolor 1 .682 0 1 ;
-				setitemcolor		forcecontrolbutton 			forecolor 1 .682 0 1 ;
-				setitemcolor		forcecontrolbutton2 		forecolor 1 .682 0 1 ;
-				setitemcolor		mousejoystickcontrolbutton 	forecolor 1 .682 0 1 ;
-				setitemcolor		othercontrolbutton 			forecolor 1 .682 0 1 ;
-				setitemcolor		japrocontrolbutton 			forecolor 1 1 1 1 ;
 			}
 		}
 
@@ -3591,331 +3513,6 @@
 			action 
 			{ 
 				play			"sound/interface/button1.wav" ; 
-			}
-		}
-
-//----------------------------------------------------------------------------------------------
-//
-//	JAPRO BINDING
-//
-//----------------------------------------------------------------------------------------------
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Jetpack:"
-			cvar				"+button12"
-			rect				260 188 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Gives Jetpack"
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight1
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight1
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Dash:"
-			cvar				"+button13"
-			rect				260 202 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Dash in any direction with the Warsow movement style."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight2
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight2
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Throw Flag:"
-			cvar				"throwflag"
-			rect				260 216 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Throw your team's flag in CTF mode."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight3
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight3
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Zoom:"
-			cvar				"+zoom"
-			rect				260 230 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"If held, allows player to zoom in."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight4
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight4
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Full Force Challenge:"
-			cvar				"engage_fullforceduel"
-			rect				260 244 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"Challenge an enemy to a private full force duel, or accept another's challenge."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight5
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight5
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Gun Challenge:"
-			cvar				"engage_gunduel"
-			rect				260 259 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"Challenge an enemy to a private gun duel, or accept another's challenge."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight6
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight6
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Teleport Mark:"
-			cvar				"amTeleMark"
-			rect				260 274 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"Mark a position to teleport back to."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight7
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight7
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Teleport:"
-			cvar				"amTele"
-			rect				260 289 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"Teleport to a teleport mark."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight8
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight8
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"Noclip:"
-			cvar				"noclip"
-			rect				260 304 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"Freely fly around the map in race mode. Use left-click and right-click to move faster."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight9
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight9
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
-			text				"FlipKick:"
-			cvar				"flipkick"
-			rect				260 319 340 14
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			174 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0 
-			descText			"Move forward and tap to flip kick your enemies."
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-			}
-
-			mouseenter 
-			{
-				show			highlight10
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight10
-				hide			keybindstatus
 			}
 		}
 		

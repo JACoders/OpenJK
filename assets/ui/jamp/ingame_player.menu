@@ -300,9 +300,9 @@
 			name				customtitle
 			style				0	
 			text				@MENUS_CUSTOM
-			rect				425 50 160 26
+			rect				425 102 150 26
 			textalign			ITEM_ALIGN_CENTER
-			textalignx			80
+			textalignx			75
 			textaligny			-3
 			outlinecolor		1 .5 .5 .5
 			backcolor			0 0 0 0
@@ -321,7 +321,7 @@
 			descText			@MENUS_CUSTOMPLAYER_DESC
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_SHADER
-			rect				470 76 75 75
+			rect				465 132 75 75
 			font				3
 			textscale			1
 			textaligny			-1
@@ -344,149 +344,6 @@
 				close			ingame_player
 				open			ingame_player2
 			}  	  
-		}
-
-//------------------------------------------------------------------------------------------------
-//	Custom Models
-//------------------------------------------------------------------------------------------------
-		itemDef
-		{
-			name				defaultMale
-			type				ITEM_TYPE_EDITFIELD
-			text				"Default Male Model:"
-			cvar				cg_defaultModel
-			rect				425 151 160 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			118
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			descText			"Lets you specify the default male playermodel."
-			action
-			{
-				play			"sound/interface/button1.wav" ;
-			}
-		}
-		
-		itemDef
-		{
-			name				defaultFemale
-			type				ITEM_TYPE_EDITFIELD
-			text				"Default Female Model:"
-			cvar				cg_defaultFemaleModel
-			rect				425 171 160 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			118
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			descText			"Lets you specify the default female playermodel."
-			action
-			{
-				play			"sound/interface/button1.wav" ;
-			}
-		}
-		
-		itemDef
-		{
-			name				deferModels
-			type				ITEM_TYPE_MULTI
-			text				@MENUS_DEFER_PLAYER_MODELS
-			cvar				cg_deferPlayers
-			cvarFloatList
-			{
-				@MENUS_OFF 0
-				@MENUS_ON 1
-			}
-			rect				425 191 160 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			118
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			descText			@MENUS_DEFERS_LOADING_OF_NEW
-			action
-			{
-				play			"sound/interface/button1.wav" ;
-			}
-		}
-		
-		itemDef
-		{
-			name				forceModels
-			type				ITEM_TYPE_MULTI
-			text				@MENUS_FORCE_PLAYER_MODELS
-			cvar				cg_forceModel
-			cvarFloatList
-			{
-				@MENUS_OFF 0
-				@MENUS_ON 1
-			}
-			rect				425 211 160 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			118
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			descText			@MENUS_FORCE_ALL_PLAYER_MODELS
-			action
-			{
-				play			"sound/interface/button1.wav" ;
-			}
-		}
-		
-		itemDef
-		{
-			name				forceAlly
-			type				ITEM_TYPE_EDITFIELD
-			text				"Force Ally Model:"
-			cvar				cg_forceAllyModel
-			rect				425 231 160 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			118
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			descText			"Lets you force playermodel for allies."
-			cvarTest			cg_forceModel
-			hideCvar			{ 1 }
-			action
-			{
-				play			"sound/interface/button1.wav" ;
-			}
-		}
-		
-		itemDef
-		{
-			name				forceEnemy
-			type				ITEM_TYPE_EDITFIELD
-			text				"Force Enemy Model:"
-			cvar				cg_forceEnemyModel
-			rect				425 251 160 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			118
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				1
-			descText			"Lets you force playermodel for enemies."
-			cvarTest			cg_forceModel
-			hideCvar			{ 1 }
-			action
-			{
-				play			"sound/interface/button1.wav" ;
-			}
 		}
 		
 //------------------------------------------------------------------------------------------------

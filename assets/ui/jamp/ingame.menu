@@ -613,48 +613,6 @@
 //-------------------------------------------
 // Bottom Bar
 //-------------------------------------------
-		itemDef 
-		{
-			name				spectatorButton
-			group				none
-			style				WINDOW_STYLE_SHADER
-			rect				295 464 50 16
-			background			"gfx/menus/menu_buttonback"			// Frame around button
-			forecolor			1 1 1 1
-			decoration
-			visible			0
-		}
-
-		itemDef 
-		{
-			name				spectator
-			text				"Spec"
-			type				1
-			style				WINDOW_STYLE_FILLED
-			rect				295 464 50 16
-			font				2
-			textscale			.7
-			textstyle			3
-			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
-			textaligny			-2
-			forecolor			1 .682 0 1
-			backcolor			0 0 0 0
-			visible				1
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				open			spectatormenu
-			} 
-			mouseenter 
-			{ 
-				show			spectatorButton
-			}
-			mouseexit 
-			{ 
-				hide			spectatorButton
-			}
-		}
 
 		itemDef 
 		{
@@ -698,102 +656,13 @@
 				hide			browserButton
 			}
 		}
-		
-		itemDef 
-		{
-			name				raceButton
-			//group				none
-			style				WINDOW_STYLE_SHADER
-			rect				345 464 50 16
-			background		"gfx/menus/menu_buttonback"			// Frame around button
-			forecolor			1 1 1 1
-			decoration
-			visible			0
-		}
-		
-		itemDef 
-		{
-			name				race
-			text				"Race"
-			type				1
-			style				WINDOW_STYLE_FILLED
-			rect				345 464 50 16
-			font				2
-			textscale			.7
-			textstyle			3
-			textalign			ITEM_ALIGN_CENTER
-			textalignx          25
-			textaligny			-2
-			forecolor			1 .682 0 1
-			backcolor			0 0 0 0
-			visible				1
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				open			racemenu
-			}
-			mouseenter 
-			{ 
-				show			raceButton
-			}
-			mouseexit 
-			{ 
-				hide			raceButton
-			}
-		}
-/*
-		itemDef 
-		{
-			name				printstatsButton
-			group				none
-			style				WINDOW_STYLE_SHADER
-			rect				295 464 50 16
-			background			"gfx/menus/menu_buttonback"			// Frame around button
-			forecolor			1 1 1 1
-			decoration
-			visible			0
-		}
-
-		itemDef 
-		{
-			name				printstats
-			text				"Printstats"
-			type				1
-			style				WINDOW_STYLE_FILLED
-			rect				295 464 50 16
-			font				2
-			textscale			.7
-			textstyle			3
-			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
-			textaligny			-2
-			forecolor			1 .682 0 1
-			backcolor			0 0 0 0
-			visible				1
-			cvartest			"g_gametype"
-			showcvar			{ "6", "8" }
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				exec			"cmd printstats" ; 
-				uiScript		closeingame 
-			} 
-			mouseenter 
-			{ 
-				show			printstatsButton
-			}
-			mouseexit 
-			{ 
-				hide			printstatsButton
-			}
-		}
-*/		
+			
 		itemDef 
 		{
 			name				cameraButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				245 464 50 46
+			rect				195 464 50 46
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -806,7 +675,7 @@
 			text				"Camera"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				245 464 50 16
+			rect				195 464 50 16
 			font				2
 			textscale			.7
 			textstyle			3
@@ -833,53 +702,10 @@
 		
 		itemDef 
 		{
-			name				strafeHelperButton
-			group				none
-			style				WINDOW_STYLE_SHADER
-			rect				195 464 50 16
-			background			"gfx/menus/menu_buttonback"			// Frame around button
-			forecolor			1 1 1 1
-			decoration
-			visible			0
-		}
-
-		itemDef 
-		{
-			name				strafeHelper
-			text				"Strafe H."
-			type				1
-			style				WINDOW_STYLE_FILLED
-			rect				195 464 50 16
-			font				2
-			textscale			.7
-			textstyle			3
-			textalign			ITEM_ALIGN_CENTER
-			textalignx         	25
-			textaligny			-2
-			forecolor			1 .682 0 1
-			backcolor			0 0 0 0
-			visible				1
-			action 
-			{ 
-				play			"sound/interface/button1.wav" ;
-				open			strafehelpermenu
-			} 
-			mouseenter 
-			{ 
-				show			strafeHelperButton
-			}
-			mouseexit 
-			{ 
-				hide			strafeHelperButton
-			}
-		}
-		
-		itemDef 
-		{
 			name				accountButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				295 448 50 16
+			rect				295 464 50 16
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -892,7 +718,7 @@
 			text				"Account"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				295 448 50 16
+			rect				295 464 50 16
 			font				2
 			textscale			.7
 			textstyle			3
