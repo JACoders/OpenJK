@@ -34,36 +34,6 @@ extern cvar_t	*fx_freeze;
 extern cvar_t	*fx_countScale;
 extern cvar_t	*fx_nearCull;
 
-inline void Vector2Clear(vec2_t a)
-{
-	a[0] = 0.0f;
-	a[1] = 0.0f;
-}
-
-inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
-inline void Vector2MA(vec2_t src, float m, vec2_t v, vec2_t dst)
-{
-	dst[0] = src[0] + (m*v[0]);
-	dst[1] = src[1] + (m*v[1]);
-}
-
-inline void Vector2Scale(vec2_t src,float b,vec2_t dst)
-{
-	dst[0] = src[0] * b;
-	dst[1] = src[1] * b;
-}
-
 class SFxHelper
 {
 public:
@@ -79,7 +49,7 @@ public:
 #endif
 
 public:
-	SFxHelper(void);
+	SFxHelper();
 
 	inline	int	GetTime(void) { return mTime; }
 	inline	int	GetFrameTime(void) { return mFrameTime; }

@@ -201,6 +201,31 @@ void AnglesToAxis( const vec3_t angles, matrix3_t axis );
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//      VEC2
+//
+///////////////////////////////////////////////////////////////////////////
+extern vec2_t vec3_zero;
+
+#define VectorScale2M(v, factor, dst) \
+	(dst)[0] = (v[0]) * (factor), \
+	(dst)[1] = (v[1]) * (factor)
+#define VectorCopy2M(src, dst) \
+	(dst)[0] = (src[0]), \
+	(dst)[1] = (src[1])
+#define VectorClear2M(dst) \
+	memset((dst), 0, sizeof((dst)[0]) * 2)
+
+void VectorAdd2( const vec2_t vec1, const vec2_t vec2, vec2_t vecOut );
+void VectorSubtract2( const vec2_t vec1, const vec2_t vec2, vec2_t vec2_t );
+void VectorScale2( const vec2_t vecIn, float scale, vec2_t vecOut );
+void VectorMA2( const vec2_t vec1, float scale, const vec2_t vec2, vec2_t vecOut );
+void VectorSet2( vec2_t vec, float x, float y );
+void VectorClear2( vec2_t vec );
+void VectorCopy2( const vec2_t vecIn, vec2_t vecOut );
+
+
+///////////////////////////////////////////////////////////////////////////
+//
 //      VEC3
 //
 ///////////////////////////////////////////////////////////////////////////
