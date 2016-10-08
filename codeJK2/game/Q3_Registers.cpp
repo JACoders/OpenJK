@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "Q3_Registers.h"
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
@@ -288,7 +289,13 @@ Q3_VariableSaveFloats
 void Q3_VariableSaveFloats( varFloat_m &fmap )
 {
 	int numFloats = fmap.size();
-	gi.AppendToSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ) );
+
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('F', 'V', 'A', 'R'),
+		numFloats);
 
 	varFloat_m::iterator	vfi;
 	STL_ITERATE( vfi, fmap )
@@ -297,11 +304,19 @@ void Q3_VariableSaveFloats( varFloat_m &fmap )
 		int	idSize = strlen( ((*vfi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( INT_ID('F','I','D','S'), (void *) ((*vfi).first).c_str(), idSize );
+		saved_game.write_chunk<int32_t>(
+			INT_ID('F', 'I', 'D', 'L'),
+			idSize);
+
+		saved_game.write_chunk(
+			INT_ID('F', 'I', 'D', 'S'),
+			((*vfi).first).c_str(),
+			idSize);
 
 		//Save out the float value
-		gi.AppendToSaveGame( INT_ID('F','V','A','L'), &((*vfi).second), sizeof( float ) );
+		saved_game.write_chunk<float>(
+			INT_ID('F', 'V', 'A', 'L'),
+			(*vfi).second);
 	}
 }
 
@@ -314,7 +329,13 @@ Q3_VariableSaveStrings
 void Q3_VariableSaveStrings( varString_m &smap )
 {
 	int numStrings = smap.size();
-	gi.AppendToSaveGame( INT_ID('S','V','A','R'), &numStrings, sizeof( numStrings ) );
+
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'V', 'A', 'R'),
+		numStrings);
 
 	varString_m::iterator	vsi;
 	STL_ITERATE( vsi, smap )
@@ -323,14 +344,26 @@ void Q3_VariableSaveStrings( varString_m &smap )
 		int	idSize = strlen( ((*vsi).first).c_str() );
 		
 		//Save out the real data
-		gi.AppendToSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( INT_ID('S','I','D','S'), (void *) ((*vsi).first).c_str(), idSize );
+		saved_game.write_chunk<int32_t>(
+			INT_ID('S', 'I', 'D', 'L'),
+			idSize);
+
+		saved_game.write_chunk(
+			INT_ID('S', 'I', 'D', 'S'),
+			((*vsi).first).c_str(),
+			idSize);
 
 		//Save out the string value
 		idSize = strlen( ((*vsi).second).c_str() );
 
-		gi.AppendToSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ) );
-		gi.AppendToSaveGame( INT_ID('S','V','A','L'), (void *) ((*vsi).second).c_str(), idSize );
+		saved_game.write_chunk<int32_t>(
+			INT_ID('S', 'V', 'S', 'Z'),
+			idSize);
+
+		saved_game.write_chunk(
+			INT_ID('S', 'V', 'A', 'L'),
+			((*vsi).second).c_str(),
+			idSize);
 	}
 }
 
@@ -360,19 +393,33 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 	int		numFloats;
 	char	tempBuffer[1024];
 
-	gi.ReadFromSaveGame( INT_ID('F','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('F', 'V', 'A', 'R'),
+		numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( INT_ID('F','I','D','L'), &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( INT_ID('F','I','D','S'), &tempBuffer, idSize, NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('F', 'I', 'D', 'L'),
+			idSize);
+
+		saved_game.read_chunk(
+			INT_ID('F', 'I', 'D', 'S'),
+			tempBuffer,
+			idSize);
+
 		tempBuffer[ idSize ] = 0;
 
 		float	val;
 
-		gi.ReadFromSaveGame( INT_ID('F','V','A','L'), &val, sizeof( float ), NULL );
+		saved_game.read_chunk<float>(
+			INT_ID('F', 'V', 'A', 'L'),
+			val);
 
 		Q3_DeclareVariable( TK_FLOAT, (const char *) &tempBuffer );
 		Q3_SetFloatVariable( (const char *) &tempBuffer, val );
@@ -391,18 +438,37 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
-	gi.ReadFromSaveGame( INT_ID('S','V','A','R'), &numFloats, sizeof( numFloats ), NULL );
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'V', 'A', 'R'),
+		numFloats);
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
 		int idSize;
 		
-		gi.ReadFromSaveGame( INT_ID('S','I','D','L'), &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( INT_ID('S','I','D','S'), &tempBuffer, idSize, NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('S', 'I', 'D', 'L'),
+			idSize);
+
+		saved_game.read_chunk(
+			INT_ID('S', 'I', 'D', 'S'),
+			tempBuffer,
+			idSize);
+
 		tempBuffer[ idSize ] = 0;
 
-		gi.ReadFromSaveGame( INT_ID('S','V','S','Z'), &idSize, sizeof( idSize ), NULL );
-		gi.ReadFromSaveGame( INT_ID('S','V','A','L'), &tempBuffer2, idSize, NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('S', 'V', 'S', 'Z'),
+			idSize);
+
+		saved_game.read_chunk(
+			INT_ID('S', 'V', 'A', 'L'),
+			tempBuffer2,
+			idSize);
+
 		tempBuffer2[ idSize ] = 0;
 
 		switch ( type )

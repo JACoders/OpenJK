@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "q_platform.h"
 
+
 #if defined(__cplusplus)
 extern "C" {
 #endif

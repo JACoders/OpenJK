@@ -60,7 +60,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 //rww - conveniently toggle "gore" code, for model decals and stuff.
+#ifndef JK2_MODE
 #define _G2_GORE
+#endif // !JK2_MODE
 
 #if JK2_MODE
 #define PRODUCT_NAME			"openjo_sp"
@@ -117,6 +119,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <cmath>
 #endif
 
+
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
 	#define __attribute__(x)
@@ -158,6 +161,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include "qcommon/q_platform.h"
+#include "ojk_saved_game_helper_fwd.h"
+
 
 // ================================================================
 // TYPE DEFINITIONS
@@ -532,6 +537,35 @@ Ghoul2 Insert Start
 /*
 Ghoul2 Insert End
 */
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int8_t>(allsolid);
+		saved_game.write<int8_t>(startsolid);
+		saved_game.write<float>(fraction);
+		saved_game.write<float>(endpos);
+		saved_game.write<>(plane);
+		saved_game.write<int8_t>(surfaceFlags);
+		saved_game.write<int8_t>(contents);
+		saved_game.write<int8_t>(entityNum);
+		saved_game.write<>(G2CollisionMap);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int8_t>(allsolid);
+		saved_game.read<int8_t>(startsolid);
+		saved_game.read<float>(fraction);
+		saved_game.read<float>(endpos);
+		saved_game.read<>(plane);
+		saved_game.read<int8_t>(surfaceFlags);
+		saved_game.read<int8_t>(contents);
+		saved_game.read<int8_t>(entityNum);
+		saved_game.read<>(G2CollisionMap);
+	}
 } trace_t;
 
 // trace->entityNum can also be 0 to (MAX_GENTITIES-1)
@@ -598,14 +632,24 @@ typedef struct {
 
 
 #define	MAX_MODELS			256
+
+#ifdef JK2_MODE
+#define MAX_SOUNDS (256)
+#else
 #define	MAX_SOUNDS			380
+#endif // JK2_MODE
 
 #define MAX_SUB_BSP			32
 
 #define	MAX_SUBMODELS		512		// nine bits
 
 #define MAX_FX				128
+
+#ifdef JK2_MODE
+#define MAX_WORLD_FX (4)
+#else
 #define MAX_WORLD_FX		66		// was 16 // was 4
+#endif // JK2_MODE
 
 /*
 Ghoul2 Insert Start
@@ -615,7 +659,11 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+#ifdef JK2_MODE
+#define MAX_CONFIGSTRINGS (1024)
+#else
 #define	MAX_CONFIGSTRINGS	1300//1024 //rww - I had to up this for terrains
+#endif // JK2_MODE
 
 // these are the only configstrings that the system reserves, all the
 // other ones are strictly for servergame to clientgame communication
@@ -636,19 +684,36 @@ Ghoul2 Insert End
 
 #define	CS_MODELS			10
 
+#ifndef JK2_MODE
 #define	CS_SKYBOXORG		(CS_MODELS+MAX_MODELS)		//rww - skybox info
+#endif // !JK2_MODE
 
+#ifdef JK2_MODE
+#define CS_SOUNDS (CS_MODELS + MAX_MODELS)
+#else
 #define	CS_SOUNDS			(CS_SKYBOXORG+1)
+#endif // JK2_MODE
+
 #ifdef BASE_SAVE_COMPAT
 #define CS_RESERVED1		(CS_SOUNDS+MAX_SOUNDS) // reserved field for base compat from immersion removal
 #define	CS_PLAYERS			(CS_RESERVED1 + 96)
 #else
 #define	CS_PLAYERS			(CS_SOUNDS+MAX_SOUNDS)
 #endif
+
 #define	CS_LIGHT_STYLES		(CS_PLAYERS+MAX_CLIENTS)
+
+#ifndef JK2_MODE
 #define CS_TERRAINS			(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
 #define CS_BSP_MODELS		(CS_TERRAINS + MAX_TERRAINS)
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+#define CS_EFFECTS (CS_LIGHT_STYLES + (MAX_LIGHT_STYLES * 3))
+#else
 #define CS_EFFECTS			(CS_BSP_MODELS + MAX_SUB_BSP)//(CS_LIGHT_STYLES + (MAX_LIGHT_STYLES*3))
+#endif // JK2_MODE
+
 /*
 Ghoul2 Insert Start
 */
@@ -685,12 +750,16 @@ typedef enum
 	FP_SABERTHROW,
 	FP_SABER_DEFENSE,
 	FP_SABER_OFFENSE,
+
+#ifndef JK2_MODE
 	//new Jedi Academy powers
 	FP_RAGE,//duration - speed, invincibility and extra damage for short period, drains your health and leaves you weak and slow afterwards.
 	FP_PROTECT,//duration - protect against physical/energy (level 1 stops blaster/energy bolts, level 2 stops projectiles, level 3 protects against explosions)
 	FP_ABSORB,//duration - protect against dark force powers (grip, lightning, drain - maybe push/pull, too?)
 	FP_DRAIN,//hold/duration - drain force power for health
 	FP_SEE,//duration - detect/see hidden enemies
+#endif // !JK2_MODE
+
 	NUM_FORCE_POWERS
 } forcePowers_t;
 
@@ -763,7 +832,35 @@ typedef struct
 	vec3_t		oldPos[2];
 	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
 							//	..then we'll need the normal to project a mark blob onto the impact point
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(inAction);
+		saved_game.write<int32_t>(duration);
+		saved_game.write<int32_t>(lastTime);
+		saved_game.write<float>(base);
+		saved_game.write<float>(tip);
+		saved_game.write<int32_t>(haveOldPos);
+		saved_game.write<float>(oldPos);
+		saved_game.write<float>(oldNormal);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(inAction);
+		saved_game.read<int32_t>(duration);
+		saved_game.read<int32_t>(lastTime);
+		saved_game.read<float>(base);
+		saved_game.read<float>(tip);
+		saved_game.read<int32_t>(haveOldPos);
+		saved_game.read<float>(oldPos);
+		saved_game.read<float>(oldNormal);
+	}
 } saberTrail_t;
+
 #define MAX_SABER_TRAIL_SEGS 8
 
 // !!!!!!!!!!!!! loadsave affecting struct !!!!!!!!!!!!!!!
@@ -790,7 +887,41 @@ typedef struct
 					trail.inAction = qfalse;
 					trail.duration = duration;
 				};
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(active);
+		saved_game.write<int32_t>(color);
+		saved_game.write<float>(radius);
+		saved_game.write<float>(length);
+		saved_game.write<float>(lengthMax);
+		saved_game.write<float>(lengthOld);
+		saved_game.write<float>(muzzlePoint);
+		saved_game.write<float>(muzzlePointOld);
+		saved_game.write<float>(muzzleDir);
+		saved_game.write<float>(muzzleDirOld);
+		saved_game.write<>(trail);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(active);
+		saved_game.read<int32_t>(color);
+		saved_game.read<float>(radius);
+		saved_game.read<float>(length);
+		saved_game.read<float>(lengthMax);
+		saved_game.read<float>(lengthOld);
+		saved_game.read<float>(muzzlePoint);
+		saved_game.read<float>(muzzlePointOld);
+		saved_game.read<float>(muzzleDir);
+		saved_game.read<float>(muzzleDirOld);
+		saved_game.read<>(trail);
+	}
 } bladeInfo_t;
+
 #define MAX_BLADES 8
 
 typedef enum
@@ -1077,11 +1208,175 @@ typedef struct
 						blade[i].DeactivateTrail( duration );
 					}
 				};
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(name);
+		saved_game.write<int32_t>(fullName);
+		saved_game.write<int32_t>(type);
+		saved_game.write<int32_t>(model);
+		saved_game.write<int32_t>(skin);
+		saved_game.write<int32_t>(soundOn);
+		saved_game.write<int32_t>(soundLoop);
+		saved_game.write<int32_t>(soundOff);
+		saved_game.write<int32_t>(numBlades);
+		saved_game.write<>(blade);
+		saved_game.write<int32_t>(stylesLearned);
+		saved_game.write<int32_t>(stylesForbidden);
+		saved_game.write<int32_t>(maxChain);
+		saved_game.write<int32_t>(forceRestrictions);
+		saved_game.write<int32_t>(lockBonus);
+		saved_game.write<int32_t>(parryBonus);
+		saved_game.write<int32_t>(breakParryBonus);
+		saved_game.write<int32_t>(breakParryBonus2);
+		saved_game.write<int32_t>(disarmBonus);
+		saved_game.write<int32_t>(disarmBonus2);
+		saved_game.write<int32_t>(singleBladeStyle);
+		saved_game.write<int32_t>(brokenSaber1);
+		saved_game.write<int32_t>(brokenSaber2);
+		saved_game.write<int32_t>(saberFlags);
+		saved_game.write<int32_t>(saberFlags2);
+		saved_game.write<int32_t>(spinSound);
+		saved_game.write<int32_t>(swingSound);
+		saved_game.write<int32_t>(fallSound);
+		saved_game.write<float>(moveSpeedScale);
+		saved_game.write<float>(animSpeedScale);
+		saved_game.write<int32_t>(kataMove);
+		saved_game.write<int32_t>(lungeAtkMove);
+		saved_game.write<int32_t>(jumpAtkUpMove);
+		saved_game.write<int32_t>(jumpAtkFwdMove);
+		saved_game.write<int32_t>(jumpAtkBackMove);
+		saved_game.write<int32_t>(jumpAtkRightMove);
+		saved_game.write<int32_t>(jumpAtkLeftMove);
+		saved_game.write<int32_t>(readyAnim);
+		saved_game.write<int32_t>(drawAnim);
+		saved_game.write<int32_t>(putawayAnim);
+		saved_game.write<int32_t>(tauntAnim);
+		saved_game.write<int32_t>(bowAnim);
+		saved_game.write<int32_t>(meditateAnim);
+		saved_game.write<int32_t>(flourishAnim);
+		saved_game.write<int32_t>(gloatAnim);
+		saved_game.write<int32_t>(bladeStyle2Start);
+		saved_game.write<int32_t>(trailStyle);
+		saved_game.write<int8_t>(g2MarksShader);
+		saved_game.write<int8_t>(g2WeaponMarkShader);
+		saved_game.write<int32_t>(hitSound);
+		saved_game.write<int32_t>(blockSound);
+		saved_game.write<int32_t>(bounceSound);
+		saved_game.write<int32_t>(blockEffect);
+		saved_game.write<int32_t>(hitPersonEffect);
+		saved_game.write<int32_t>(hitOtherEffect);
+		saved_game.write<int32_t>(bladeEffect);
+		saved_game.write<float>(knockbackScale);
+		saved_game.write<float>(damageScale);
+		saved_game.write<float>(splashRadius);
+		saved_game.write<int32_t>(splashDamage);
+		saved_game.write<float>(splashKnockback);
+		saved_game.write<int32_t>(trailStyle2);
+		saved_game.write<int8_t>(g2MarksShader2);
+		saved_game.write<int8_t>(g2WeaponMarkShader2);
+		saved_game.write<int32_t>(hit2Sound);
+		saved_game.write<int32_t>(block2Sound);
+		saved_game.write<int32_t>(bounce2Sound);
+		saved_game.write<int32_t>(blockEffect2);
+		saved_game.write<int32_t>(hitPersonEffect2);
+		saved_game.write<int32_t>(hitOtherEffect2);
+		saved_game.write<int32_t>(bladeEffect2);
+		saved_game.write<float>(knockbackScale2);
+		saved_game.write<float>(damageScale2);
+		saved_game.write<float>(splashRadius2);
+		saved_game.write<int32_t>(splashDamage2);
+		saved_game.write<float>(splashKnockback2);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(name);
+		saved_game.read<int32_t>(fullName);
+		saved_game.read<int32_t>(type);
+		saved_game.read<int32_t>(model);
+		saved_game.read<int32_t>(skin);
+		saved_game.read<int32_t>(soundOn);
+		saved_game.read<int32_t>(soundLoop);
+		saved_game.read<int32_t>(soundOff);
+		saved_game.read<int32_t>(numBlades);
+		saved_game.read<>(blade);
+		saved_game.read<int32_t>(stylesLearned);
+		saved_game.read<int32_t>(stylesForbidden);
+		saved_game.read<int32_t>(maxChain);
+		saved_game.read<int32_t>(forceRestrictions);
+		saved_game.read<int32_t>(lockBonus);
+		saved_game.read<int32_t>(parryBonus);
+		saved_game.read<int32_t>(breakParryBonus);
+		saved_game.read<int32_t>(breakParryBonus2);
+		saved_game.read<int32_t>(disarmBonus);
+		saved_game.read<int32_t>(disarmBonus2);
+		saved_game.read<int32_t>(singleBladeStyle);
+		saved_game.read<int32_t>(brokenSaber1);
+		saved_game.read<int32_t>(brokenSaber2);
+		saved_game.read<int32_t>(saberFlags);
+		saved_game.read<int32_t>(saberFlags2);
+		saved_game.read<int32_t>(spinSound);
+		saved_game.read<int32_t>(swingSound);
+		saved_game.read<int32_t>(fallSound);
+		saved_game.read<float>(moveSpeedScale);
+		saved_game.read<float>(animSpeedScale);
+		saved_game.read<int32_t>(kataMove);
+		saved_game.read<int32_t>(lungeAtkMove);
+		saved_game.read<int32_t>(jumpAtkUpMove);
+		saved_game.read<int32_t>(jumpAtkFwdMove);
+		saved_game.read<int32_t>(jumpAtkBackMove);
+		saved_game.read<int32_t>(jumpAtkRightMove);
+		saved_game.read<int32_t>(jumpAtkLeftMove);
+		saved_game.read<int32_t>(readyAnim);
+		saved_game.read<int32_t>(drawAnim);
+		saved_game.read<int32_t>(putawayAnim);
+		saved_game.read<int32_t>(tauntAnim);
+		saved_game.read<int32_t>(bowAnim);
+		saved_game.read<int32_t>(meditateAnim);
+		saved_game.read<int32_t>(flourishAnim);
+		saved_game.read<int32_t>(gloatAnim);
+		saved_game.read<int32_t>(bladeStyle2Start);
+		saved_game.read<int32_t>(trailStyle);
+		saved_game.read<int8_t>(g2MarksShader);
+		saved_game.read<int8_t>(g2WeaponMarkShader);
+		saved_game.read<int32_t>(hitSound);
+		saved_game.read<int32_t>(blockSound);
+		saved_game.read<int32_t>(bounceSound);
+		saved_game.read<int32_t>(blockEffect);
+		saved_game.read<int32_t>(hitPersonEffect);
+		saved_game.read<int32_t>(hitOtherEffect);
+		saved_game.read<int32_t>(bladeEffect);
+		saved_game.read<float>(knockbackScale);
+		saved_game.read<float>(damageScale);
+		saved_game.read<float>(splashRadius);
+		saved_game.read<int32_t>(splashDamage);
+		saved_game.read<float>(splashKnockback);
+		saved_game.read<int32_t>(trailStyle2);
+		saved_game.read<int8_t>(g2MarksShader2);
+		saved_game.read<int8_t>(g2WeaponMarkShader2);
+		saved_game.read<int32_t>(hit2Sound);
+		saved_game.read<int32_t>(block2Sound);
+		saved_game.read<int32_t>(bounce2Sound);
+		saved_game.read<int32_t>(blockEffect2);
+		saved_game.read<int32_t>(hitPersonEffect2);
+		saved_game.read<int32_t>(hitOtherEffect2);
+		saved_game.read<int32_t>(bladeEffect2);
+		saved_game.read<float>(knockbackScale2);
+		saved_game.read<float>(damageScale2);
+		saved_game.read<float>(splashRadius2);
+		saved_game.read<int32_t>(splashDamage2);
+		saved_game.read<float>(splashKnockback2);
+	}
 } saberInfo_t;
 
 //NOTE: Below is the *retail* version of the saberInfo_t structure - it is ONLY used for loading retail-version savegames (we load the savegame into this smaller structure, then copy each field into the appropriate field in the new structure - see SG_ConvertRetailSaberinfoToNewSaberinfo()
-typedef struct
+class saberInfoRetail_t
 {
+public:
 	char		*name;						//entry in sabers.cfg, if any
 	char		*fullName;					//the "Proper Name" of the saber, shown in the UI
 	saberType_t	type;						//none, single or staff
@@ -1195,7 +1490,75 @@ typedef struct
 						blade[i].DeactivateTrail( duration );
 					}
 				};
-} saberInfoRetail_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(name);
+		saved_game.write<int32_t>(fullName);
+		saved_game.write<int32_t>(type);
+		saved_game.write<int32_t>(model);
+		saved_game.write<int32_t>(skin);
+		saved_game.write<int32_t>(soundOn);
+		saved_game.write<int32_t>(soundLoop);
+		saved_game.write<int32_t>(soundOff);
+		saved_game.write<int32_t>(numBlades);
+		saved_game.write<>(blade);
+		saved_game.write<int32_t>(style);
+		saved_game.write<int32_t>(maxChain);
+		saved_game.write<int32_t>(lockable);
+		saved_game.write<int32_t>(throwable);
+		saved_game.write<int32_t>(disarmable);
+		saved_game.write<int32_t>(activeBlocking);
+		saved_game.write<int32_t>(twoHanded);
+		saved_game.write<int32_t>(forceRestrictions);
+		saved_game.write<int32_t>(lockBonus);
+		saved_game.write<int32_t>(parryBonus);
+		saved_game.write<int32_t>(breakParryBonus);
+		saved_game.write<int32_t>(disarmBonus);
+		saved_game.write<int32_t>(singleBladeStyle);
+		saved_game.write<int32_t>(singleBladeThrowable);
+		saved_game.write<int32_t>(brokenSaber1);
+		saved_game.write<int32_t>(brokenSaber2);
+		saved_game.write<int32_t>(returnDamage);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(name);
+		saved_game.read<int32_t>(fullName);
+		saved_game.read<int32_t>(type);
+		saved_game.read<int32_t>(model);
+		saved_game.read<int32_t>(skin);
+		saved_game.read<int32_t>(soundOn);
+		saved_game.read<int32_t>(soundLoop);
+		saved_game.read<int32_t>(soundOff);
+		saved_game.read<int32_t>(numBlades);
+		saved_game.read<>(blade);
+		saved_game.read<int32_t>(style);
+		saved_game.read<int32_t>(maxChain);
+		saved_game.read<int32_t>(lockable);
+		saved_game.read<int32_t>(throwable);
+		saved_game.read<int32_t>(disarmable);
+		saved_game.read<int32_t>(activeBlocking);
+		saved_game.read<int32_t>(twoHanded);
+		saved_game.read<int32_t>(forceRestrictions);
+		saved_game.read<int32_t>(lockBonus);
+		saved_game.read<int32_t>(parryBonus);
+		saved_game.read<int32_t>(breakParryBonus);
+		saved_game.read<int32_t>(disarmBonus);
+		saved_game.read<int32_t>(singleBladeStyle);
+		saved_game.read<int32_t>(singleBladeThrowable);
+		saved_game.read<int32_t>(brokenSaber1);
+		saved_game.read<int32_t>(brokenSaber2);
+		saved_game.read<int32_t>(returnDamage);
+	}
+
+	void sg_export(
+		saberInfo_t& dst) const;
+}; // saberInfoRetail_t
 
 #define MAX_SABERS 2	// if this ever changes then update the table "static const save_field_t savefields_gClient[]"!!!!!!!!!!!!
 
@@ -1210,7 +1573,10 @@ typedef struct
 // so if a playerState_t is transmitted, the entityState_t can be fully derived
 // from it.
 // !!!!!!!!!! LOADSAVE-affecting structure !!!!!!!!!!
-typedef struct playerState_s {
+template<typename TSaberInfo>
+class PlayerStateBase
+{
+public:
 	int			commandTime;		// cmd->serverTime of last executed command
 	int			pm_type;
 	int			bobCycle;			// for view bobbing and footstep generation
@@ -1310,9 +1676,10 @@ typedef struct playerState_s {
 	int			lastStationary;	//last time you were on the ground
 	int			weaponShotCount;
 
+#ifndef JK2_MODE
 	//FIXME: maybe allocate all these structures (saber, force powers, vehicles)
 	//			or descend them as classes - so not every client has all this info
-	saberInfo_t	saber[MAX_SABERS];
+	TSaberInfo	saber[MAX_SABERS];
 	qboolean	dualSabers;
 	qboolean	SaberStaff( void ) { return (qboolean)( saber[0].type == SABER_STAFF || (dualSabers && saber[1].type == SABER_STAFF) ); };
 	qboolean	SaberActive() { return (qboolean)( saber[0].Active() || (dualSabers&&saber[1].Active()) ); };
@@ -1433,9 +1800,14 @@ typedef struct playerState_s {
 					}
 					return parryBonus;
 				};
+#endif // !JK2_MODE
 
 	short		saberMove;
+
+#ifndef JK2_MODE
 	short		saberMoveNext;
+#endif // !JK2_MODE
+
 	short		saberBounceMove;
 	short		saberBlocking;
 	short		saberBlocked;
@@ -1456,7 +1828,11 @@ typedef struct playerState_s {
 	int			saberAttackChainCount;
 	int			saberLockTime;
 	int			saberLockEnemy;
+
+#ifndef JK2_MODE
 	int			saberStylesKnown;
+#endif // !JK2_MODE
+
 #ifdef JK2_MODE
 	char		*saberModel;
 #endif
@@ -1467,17 +1843,26 @@ typedef struct playerState_s {
 	int			forcePower;
 	int			forcePowerMax;
 	int			forcePowerRegenDebounceTime;
+
+#ifndef JK2_MODE
 	int			forcePowerRegenRate;				//default is 100ms
 	int			forcePowerRegenAmount;				//default is 1
+#endif // !JK2_MODE
+
 	int			forcePowerLevel[NUM_FORCE_POWERS];		//so we know the max forceJump power you have
 	float		forceJumpZStart;					//So when you land, you don't get hurt as much
 	float		forceJumpCharge;					//you're current forceJump charge-up level, increases the longer you hold the force jump button down
 	int			forceGripEntityNum;					//what entity I'm gripping
 	vec3_t		forceGripOrg;						//where the gripped ent should be lifted to
+
+#ifndef JK2_MODE
 	int			forceDrainEntityNum;				//what entity I'm draining
 	vec3_t		forceDrainOrg;						//where the drained ent should be lifted to
+#endif // !JK2_MODE
+
 	int			forceHealCount;						//how many points of force heal have been applied so far
 
+#ifndef JK2_MODE
 	//new Jedi Academy force powers
 	int			forceAllowDeactivateTime;
 	int			forceRageDrainTime;
@@ -1488,6 +1873,7 @@ typedef struct playerState_s {
 	int			pullAttackEntNum;
 	int			pullAttackTime;
 	int			lastKickedEntNum;
+#endif // !JK2_MODE
 
 	int			taunting;							//replaced BUTTON_GESTURE
 
@@ -1497,6 +1883,7 @@ typedef struct playerState_s {
 	float		waterheight;						//exactly what the z org of the water is (will be +4 above if under water, -4 below if not in water)
 	waterHeightLevel_t	waterHeightLevel;					//how high it really is
 
+#ifndef JK2_MODE
 	//testing IK grabbing
 	qboolean	ikStatus;		//for IK
 	int			heldClient;		//for IK, who I'm grabbing, if anyone
@@ -1511,9 +1898,350 @@ typedef struct playerState_s {
 	//NOTE: not really used in SP, just for Fighter Vehicle damage stuff
 	int			brokenLimbs;
 	int			electrifyTime;
-} playerState_t;
+#endif // !JK2_MODE
 
 
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(commandTime);
+		saved_game.write<int32_t>(pm_type);
+		saved_game.write<int32_t>(bobCycle);
+		saved_game.write<int32_t>(pm_flags);
+		saved_game.write<int32_t>(pm_time);
+		saved_game.write<float>(origin);
+		saved_game.write<float>(velocity);
+		saved_game.write<int32_t>(weaponTime);
+		saved_game.write<int32_t>(weaponChargeTime);
+		saved_game.write<int32_t>(rechargeTime);
+		saved_game.write<int32_t>(gravity);
+		saved_game.write<int32_t>(leanofs);
+		saved_game.write<int32_t>(friction);
+		saved_game.write<int32_t>(speed);
+		saved_game.write<int32_t>(delta_angles);
+		saved_game.write<int32_t>(groundEntityNum);
+		saved_game.write<int32_t>(legsAnim);
+		saved_game.write<int32_t>(legsAnimTimer);
+		saved_game.write<int32_t>(torsoAnim);
+		saved_game.write<int32_t>(torsoAnimTimer);
+		saved_game.write<int32_t>(movementDir);
+		saved_game.write<int32_t>(eFlags);
+		saved_game.write<int32_t>(eventSequence);
+		saved_game.write<int32_t>(events);
+		saved_game.write<int32_t>(eventParms);
+		saved_game.write<int32_t>(externalEvent);
+		saved_game.write<int32_t>(externalEventParm);
+		saved_game.write<int32_t>(externalEventTime);
+		saved_game.write<int32_t>(clientNum);
+		saved_game.write<int32_t>(weapon);
+		saved_game.write<int32_t>(weaponstate);
+		saved_game.write<int32_t>(batteryCharge);
+		saved_game.write<float>(viewangles);
+		saved_game.write<float>(legsYaw);
+		saved_game.write<int32_t>(viewheight);
+		saved_game.write<int32_t>(damageEvent);
+		saved_game.write<int32_t>(damageYaw);
+		saved_game.write<int32_t>(damagePitch);
+		saved_game.write<int32_t>(damageCount);
+		saved_game.write<int32_t>(stats);
+		saved_game.write<int32_t>(persistant);
+		saved_game.write<int32_t>(powerups);
+		saved_game.write<int32_t>(ammo);
+		saved_game.write<int32_t>(inventory);
+		saved_game.write<int8_t>(security_key_message);
+		saved_game.write<float>(serverViewOrg);
+		saved_game.write<int32_t>(saberInFlight);
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(saberActive);
+		saved_game.write<int32_t>(vehicleModel);
+		saved_game.write<int32_t>(viewEntity);
+		saved_game.write<int32_t>(saberColor);
+		saved_game.write<float>(saberLength);
+		saved_game.write<float>(saberLengthMax);
+		saved_game.write<int32_t>(forcePowersActive);
+#else
+		saved_game.write<int32_t>(viewEntity);
+		saved_game.write<int32_t>(forcePowersActive);
+#endif // JK2_MODE
+
+		saved_game.write<int32_t>(useTime);
+		saved_game.write<int32_t>(lastShotTime);
+		saved_game.write<int32_t>(ping);
+		saved_game.write<int32_t>(lastOnGround);
+		saved_game.write<int32_t>(lastStationary);
+		saved_game.write<int32_t>(weaponShotCount);
+
+#ifndef JK2_MODE
+		saved_game.write<>(saber);
+		saved_game.write<int32_t>(dualSabers);
+#endif // !JK2_MODE
+
+		saved_game.write<int16_t>(saberMove);
+
+#ifndef JK2_MODE
+		saved_game.write<int16_t>(saberMoveNext);
+#endif // !JK2_MODE
+
+		saved_game.write<int16_t>(saberBounceMove);
+		saved_game.write<int16_t>(saberBlocking);
+		saved_game.write<int16_t>(saberBlocked);
+		saved_game.write<int16_t>(leanStopDebounceTime);
+
+#ifdef JK2_MODE
+		saved_game.skip(2);
+		saved_game.write<float>(saberLengthOld);
+#endif // JK2_MODE
+
+		saved_game.write<int32_t>(saberEntityNum);
+		saved_game.write<float>(saberEntityDist);
+		saved_game.write<int32_t>(saberThrowTime);
+		saved_game.write<int32_t>(saberEntityState);
+		saved_game.write<int32_t>(saberDamageDebounceTime);
+		saved_game.write<int32_t>(saberHitWallSoundDebounceTime);
+		saved_game.write<int32_t>(saberEventFlags);
+		saved_game.write<int32_t>(saberBlockingTime);
+		saved_game.write<int32_t>(saberAnimLevel);
+		saved_game.write<int32_t>(saberAttackChainCount);
+		saved_game.write<int32_t>(saberLockTime);
+		saved_game.write<int32_t>(saberLockEnemy);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(saberStylesKnown);
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(saberModel);
+#endif // JK2_MODE
+
+		saved_game.write<int32_t>(forcePowersKnown);
+		saved_game.write<int32_t>(forcePowerDuration);
+		saved_game.write<int32_t>(forcePowerDebounce);
+		saved_game.write<int32_t>(forcePower);
+		saved_game.write<int32_t>(forcePowerMax);
+		saved_game.write<int32_t>(forcePowerRegenDebounceTime);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(forcePowerRegenRate);
+		saved_game.write<int32_t>(forcePowerRegenAmount);
+#endif // !JK2_MODE
+
+		saved_game.write<int32_t>(forcePowerLevel);
+		saved_game.write<float>(forceJumpZStart);
+		saved_game.write<float>(forceJumpCharge);
+		saved_game.write<int32_t>(forceGripEntityNum);
+		saved_game.write<float>(forceGripOrg);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(forceDrainEntityNum);
+		saved_game.write<float>(forceDrainOrg);
+#endif // !JK2_MODE
+
+		saved_game.write<int32_t>(forceHealCount);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(forceAllowDeactivateTime);
+		saved_game.write<int32_t>(forceRageDrainTime);
+		saved_game.write<int32_t>(forceRageRecoveryTime);
+		saved_game.write<int32_t>(forceDrainEntNum);
+		saved_game.write<float>(forceDrainTime);
+		saved_game.write<int32_t>(forcePowersForced);
+		saved_game.write<int32_t>(pullAttackEntNum);
+		saved_game.write<int32_t>(pullAttackTime);
+		saved_game.write<int32_t>(lastKickedEntNum);
+#endif // !JK2_MODE
+
+		saved_game.write<int32_t>(taunting);
+		saved_game.write<float>(jumpZStart);
+		saved_game.write<float>(moveDir);
+		saved_game.write<float>(waterheight);
+		saved_game.write<int32_t>(waterHeightLevel);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(ikStatus);
+		saved_game.write<int32_t>(heldClient);
+		saved_game.write<int32_t>(heldByClient);
+		saved_game.write<int32_t>(heldByBolt);
+		saved_game.write<int32_t>(heldByBone);
+		saved_game.write<int32_t>(vehTurnaroundIndex);
+		saved_game.write<int32_t>(vehTurnaroundTime);
+		saved_game.write<int32_t>(brokenLimbs);
+		saved_game.write<int32_t>(electrifyTime);
+#endif // !JK2_MODE
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(commandTime);
+		saved_game.read<int32_t>(pm_type);
+		saved_game.read<int32_t>(bobCycle);
+		saved_game.read<int32_t>(pm_flags);
+		saved_game.read<int32_t>(pm_time);
+		saved_game.read<float>(origin);
+		saved_game.read<float>(velocity);
+		saved_game.read<int32_t>(weaponTime);
+		saved_game.read<int32_t>(weaponChargeTime);
+		saved_game.read<int32_t>(rechargeTime);
+		saved_game.read<int32_t>(gravity);
+		saved_game.read<int32_t>(leanofs);
+		saved_game.read<int32_t>(friction);
+		saved_game.read<int32_t>(speed);
+		saved_game.read<int32_t>(delta_angles);
+		saved_game.read<int32_t>(groundEntityNum);
+		saved_game.read<int32_t>(legsAnim);
+		saved_game.read<int32_t>(legsAnimTimer);
+		saved_game.read<int32_t>(torsoAnim);
+		saved_game.read<int32_t>(torsoAnimTimer);
+		saved_game.read<int32_t>(movementDir);
+		saved_game.read<int32_t>(eFlags);
+		saved_game.read<int32_t>(eventSequence);
+		saved_game.read<int32_t>(events);
+		saved_game.read<int32_t>(eventParms);
+		saved_game.read<int32_t>(externalEvent);
+		saved_game.read<int32_t>(externalEventParm);
+		saved_game.read<int32_t>(externalEventTime);
+		saved_game.read<int32_t>(clientNum);
+		saved_game.read<int32_t>(weapon);
+		saved_game.read<int32_t>(weaponstate);
+		saved_game.read<int32_t>(batteryCharge);
+		saved_game.read<float>(viewangles);
+		saved_game.read<float>(legsYaw);
+		saved_game.read<int32_t>(viewheight);
+		saved_game.read<int32_t>(damageEvent);
+		saved_game.read<int32_t>(damageYaw);
+		saved_game.read<int32_t>(damagePitch);
+		saved_game.read<int32_t>(damageCount);
+		saved_game.read<int32_t>(stats);
+		saved_game.read<int32_t>(persistant);
+		saved_game.read<int32_t>(powerups);
+		saved_game.read<int32_t>(ammo);
+		saved_game.read<int32_t>(inventory);
+		saved_game.read<int8_t>(security_key_message);
+		saved_game.read<float>(serverViewOrg);
+		saved_game.read<int32_t>(saberInFlight);
+
+#ifdef JK2_MODE
+		saved_game.read<int32_t>(saberActive);
+		saved_game.read<int32_t>(vehicleModel);
+		saved_game.read<int32_t>(viewEntity);
+		saved_game.read<int32_t>(saberColor);
+		saved_game.read<float>(saberLength);
+		saved_game.read<float>(saberLengthMax);
+		saved_game.read<int32_t>(forcePowersActive);
+#else
+		saved_game.read<int32_t>(viewEntity);
+		saved_game.read<int32_t>(forcePowersActive);
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(useTime);
+		saved_game.read<int32_t>(lastShotTime);
+		saved_game.read<int32_t>(ping);
+		saved_game.read<int32_t>(lastOnGround);
+		saved_game.read<int32_t>(lastStationary);
+		saved_game.read<int32_t>(weaponShotCount);
+
+#ifndef JK2_MODE
+		saved_game.read<>(saber);
+		saved_game.read<int32_t>(dualSabers);
+#endif // !JK2_MODE
+
+		saved_game.read<int16_t>(saberMove);
+
+#ifndef JK2_MODE
+		saved_game.read<int16_t>(saberMoveNext);
+#endif // !JK2_MODE
+
+		saved_game.read<int16_t>(saberBounceMove);
+		saved_game.read<int16_t>(saberBlocking);
+		saved_game.read<int16_t>(saberBlocked);
+		saved_game.read<int16_t>(leanStopDebounceTime);
+
+#ifdef JK2_MODE
+		saved_game.skip(2);
+		saved_game.read<float>(saberLengthOld);
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(saberEntityNum);
+		saved_game.read<float>(saberEntityDist);
+		saved_game.read<int32_t>(saberThrowTime);
+		saved_game.read<int32_t>(saberEntityState);
+		saved_game.read<int32_t>(saberDamageDebounceTime);
+		saved_game.read<int32_t>(saberHitWallSoundDebounceTime);
+		saved_game.read<int32_t>(saberEventFlags);
+		saved_game.read<int32_t>(saberBlockingTime);
+		saved_game.read<int32_t>(saberAnimLevel);
+		saved_game.read<int32_t>(saberAttackChainCount);
+		saved_game.read<int32_t>(saberLockTime);
+		saved_game.read<int32_t>(saberLockEnemy);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(saberStylesKnown);
+#endif // !JK2_MODE
+
+#ifdef JK2_MODE
+		saved_game.read<int32_t>(saberModel);
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(forcePowersKnown);
+		saved_game.read<int32_t>(forcePowerDuration);
+		saved_game.read<int32_t>(forcePowerDebounce);
+		saved_game.read<int32_t>(forcePower);
+		saved_game.read<int32_t>(forcePowerMax);
+		saved_game.read<int32_t>(forcePowerRegenDebounceTime);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(forcePowerRegenRate);
+		saved_game.read<int32_t>(forcePowerRegenAmount);
+#endif // !JK2_MODE
+
+		saved_game.read<int32_t>(forcePowerLevel);
+		saved_game.read<float>(forceJumpZStart);
+		saved_game.read<float>(forceJumpCharge);
+		saved_game.read<int32_t>(forceGripEntityNum);
+		saved_game.read<float>(forceGripOrg);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(forceDrainEntityNum);
+		saved_game.read<float>(forceDrainOrg);
+#endif // !JK2_MODE
+
+		saved_game.read<int32_t>(forceHealCount);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(forceAllowDeactivateTime);
+		saved_game.read<int32_t>(forceRageDrainTime);
+		saved_game.read<int32_t>(forceRageRecoveryTime);
+		saved_game.read<int32_t>(forceDrainEntNum);
+		saved_game.read<float>(forceDrainTime);
+		saved_game.read<int32_t>(forcePowersForced);
+		saved_game.read<int32_t>(pullAttackEntNum);
+		saved_game.read<int32_t>(pullAttackTime);
+		saved_game.read<int32_t>(lastKickedEntNum);
+#endif // !JK2_MODE
+
+		saved_game.read<int32_t>(taunting);
+		saved_game.read<float>(jumpZStart);
+		saved_game.read<float>(moveDir);
+		saved_game.read<float>(waterheight);
+		saved_game.read<int32_t>(waterHeightLevel);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(ikStatus);
+		saved_game.read<int32_t>(heldClient);
+		saved_game.read<int32_t>(heldByClient);
+		saved_game.read<int32_t>(heldByBolt);
+		saved_game.read<int32_t>(heldByBone);
+		saved_game.read<int32_t>(vehTurnaroundIndex);
+		saved_game.read<int32_t>(vehTurnaroundTime);
+		saved_game.read<int32_t>(brokenLimbs);
+		saved_game.read<int32_t>(electrifyTime);
+#endif // !JK2_MODE
+	}
+}; // PlayerStateBase
+
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 //====================================================================
 
 
@@ -1566,6 +2294,35 @@ typedef struct usercmd_s {
 	int		angles[3];
 	byte	generic_cmd;
 	signed char	forwardmove, rightmove, upmove;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(serverTime);
+		saved_game.write<int32_t>(buttons);
+		saved_game.write<uint8_t>(weapon);
+		saved_game.skip(3);
+		saved_game.write<int32_t>(angles);
+		saved_game.write<uint8_t>(generic_cmd);
+		saved_game.write<int8_t>(forwardmove);
+		saved_game.write<int8_t>(rightmove);
+		saved_game.write<int8_t>(upmove);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(serverTime);
+		saved_game.read<int32_t>(buttons);
+		saved_game.read<uint8_t>(weapon);
+		saved_game.skip(3);
+		saved_game.read<int32_t>(angles);
+		saved_game.read<uint8_t>(generic_cmd);
+		saved_game.read<int8_t>(forwardmove);
+		saved_game.read<int8_t>(rightmove);
+		saved_game.read<int8_t>(upmove);
+	}
 } usercmd_t;
 
 //===================================================================
@@ -1589,6 +2346,27 @@ typedef struct {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!!
 	int		trDuration;			// if non 0, trTime + trDuration = stop time
 	vec3_t	trBase;
 	vec3_t	trDelta;			// velocity, etc
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(trType);
+		saved_game.write<int32_t>(trTime);
+		saved_game.write<int32_t>(trDuration);
+		saved_game.write<float>(trBase);
+		saved_game.write<float>(trDelta);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(trType);
+		saved_game.read<int32_t>(trTime);
+		saved_game.read<int32_t>(trDuration);
+		saved_game.read<float>(trBase);
+		saved_game.read<float>(trDelta);
+	}
 } trajectory_t;
 
 
@@ -1653,11 +2431,13 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	int		vehicleModel;	// For overriding your playermodel with a drivable vehicle
 #endif
 
+#ifndef JK2_MODE
 	//int		vehicleIndex;		// What kind of vehicle you're driving
 	vec3_t	vehicleAngles;		//
 	int		vehicleArmor;		// current armor of your vehicle (explodes if drops to 0)
 	// 0 if not in a vehicle, otherwise the client number.
 	int m_iVehicleNum;
+#endif // !JK2_MODE
 
 /*
 Ghoul2 Insert Start
@@ -1669,9 +2449,124 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 
+#ifndef JK2_MODE
 	qboolean	isPortalEnt;
+#endif // !JK2_MODE
 
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(number);
+		saved_game.write<int32_t>(eType);
+		saved_game.write<int32_t>(eFlags);
+		saved_game.write<>(pos);
+		saved_game.write<>(apos);
+		saved_game.write<int32_t>(time);
+		saved_game.write<int32_t>(time2);
+		saved_game.write<float>(origin);
+		saved_game.write<float>(origin2);
+		saved_game.write<float>(angles);
+		saved_game.write<float>(angles2);
+		saved_game.write<int32_t>(otherEntityNum);
+		saved_game.write<int32_t>(otherEntityNum2);
+		saved_game.write<int32_t>(groundEntityNum);
+		saved_game.write<int32_t>(constantLight);
+		saved_game.write<int32_t>(loopSound);
+		saved_game.write<int32_t>(modelindex);
+		saved_game.write<int32_t>(modelindex2);
+		saved_game.write<int32_t>(modelindex3);
+		saved_game.write<int32_t>(clientNum);
+		saved_game.write<int32_t>(frame);
+		saved_game.write<int32_t>(solid);
+		saved_game.write<int32_t>(event);
+		saved_game.write<int32_t>(eventParm);
+		saved_game.write<int32_t>(powerups);
+		saved_game.write<int32_t>(weapon);
+		saved_game.write<int32_t>(legsAnim);
+		saved_game.write<int32_t>(legsAnimTimer);
+		saved_game.write<int32_t>(torsoAnim);
+		saved_game.write<int32_t>(torsoAnimTimer);
+		saved_game.write<int32_t>(scale);
+		saved_game.write<int32_t>(saberInFlight);
+		saved_game.write<int32_t>(saberActive);
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(vehicleModel);
+#endif // JK2_MODE
+
+#ifndef JK2_MODE
+		saved_game.write<float>(vehicleAngles);
+		saved_game.write<int32_t>(vehicleArmor);
+		saved_game.write<int32_t>(m_iVehicleNum);
+#endif // !JK2_MODE
+
+		saved_game.write<float>(modelScale);
+		saved_game.write<int32_t>(radius);
+		saved_game.write<int32_t>(boltInfo);
+
+#ifndef JK2_MODE
+		saved_game.write<int32_t>(isPortalEnt);
+#endif // !JK2_MODE
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(number);
+		saved_game.read<int32_t>(eType);
+		saved_game.read<int32_t>(eFlags);
+		saved_game.read<>(pos);
+		saved_game.read<>(apos);
+		saved_game.read<int32_t>(time);
+		saved_game.read<int32_t>(time2);
+		saved_game.read<float>(origin);
+		saved_game.read<float>(origin2);
+		saved_game.read<float>(angles);
+		saved_game.read<float>(angles2);
+		saved_game.read<int32_t>(otherEntityNum);
+		saved_game.read<int32_t>(otherEntityNum2);
+		saved_game.read<int32_t>(groundEntityNum);
+		saved_game.read<int32_t>(constantLight);
+		saved_game.read<int32_t>(loopSound);
+		saved_game.read<int32_t>(modelindex);
+		saved_game.read<int32_t>(modelindex2);
+		saved_game.read<int32_t>(modelindex3);
+		saved_game.read<int32_t>(clientNum);
+		saved_game.read<int32_t>(frame);
+		saved_game.read<int32_t>(solid);
+		saved_game.read<int32_t>(event);
+		saved_game.read<int32_t>(eventParm);
+		saved_game.read<int32_t>(powerups);
+		saved_game.read<int32_t>(weapon);
+		saved_game.read<int32_t>(legsAnim);
+		saved_game.read<int32_t>(legsAnimTimer);
+		saved_game.read<int32_t>(torsoAnim);
+		saved_game.read<int32_t>(torsoAnimTimer);
+		saved_game.read<int32_t>(scale);
+		saved_game.read<int32_t>(saberInFlight);
+		saved_game.read<int32_t>(saberActive);
+
+#ifdef JK2_MODE
+		saved_game.read<int32_t>(vehicleModel);
+#endif // JK2_MODE
+
+#ifndef JK2_MODE
+		saved_game.read<float>(vehicleAngles);
+		saved_game.read<int32_t>(vehicleArmor);
+		saved_game.read<int32_t>(m_iVehicleNum);
+#endif // !JK2_MODE
+
+		saved_game.read<float>(modelScale);
+		saved_game.read<int32_t>(radius);
+		saved_game.read<int32_t>(boltInfo);
+
+#ifndef JK2_MODE
+		saved_game.read<int32_t>(isPortalEnt);
+#endif // !JK2_MODE
+	}
 } entityState_t;
+
 
 typedef enum {
 	CA_UNINITIALIZED,

@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __G_PUBLIC_H__
 // g_public.h -- game module information visible to server
 
-#define	GAME_API_VERSION	9
+#define	GAME_API_VERSION	10
 
 // entity->svFlags
 // the server does not know how to interpret most of the values
@@ -72,7 +72,7 @@ class CRagDollParams;
 //rww - RAGDOLL_END
 
 typedef struct gentity_s gentity_t;
-typedef struct gclient_s gclient_t;
+//typedef struct gclient_s gclient_t;
 
 typedef enum
 {
@@ -86,10 +86,15 @@ typedef enum
 #ifndef GAME_INCLUDE
 
 // the server needs to know enough information to handle collision and snapshot generation
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
+
 
 struct gentity_s {
 	entityState_t	s;				// communicated by server to clients
-	struct playerState_s	*client;
+	playerState_t	*client;
 	qboolean	inuse;
 	qboolean	linked;				// qfalse if not in any good cluster
 
@@ -181,10 +186,7 @@ typedef struct {
 
 	// Savegame handling
 	//
-	qboolean	(*AppendToSaveGame)(unsigned int chid, const void *data, int length);
-
-	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
+	ojk::ISavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc

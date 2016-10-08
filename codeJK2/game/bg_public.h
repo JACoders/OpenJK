@@ -441,22 +441,64 @@ typedef enum {
 
 } entity_event_t;
 
-
-typedef struct animation_s {
+class animation_t
+{
+public:
 	int		firstFrame;
 	int		numFrames;
 	int		loopFrames;			// 0 to numFrames, -1 = no loop
 	int		frameLerp;			// msec between frames
 	int		initialLerp;		// msec to get to first frame
-} animation_t;
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(firstFrame);
+		saved_game.write<int32_t>(numFrames);
+		saved_game.write<int32_t>(loopFrames);
+		saved_game.write<int32_t>(frameLerp);
+		saved_game.write<int32_t>(initialLerp);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(firstFrame);
+		saved_game.read<int32_t>(numFrames);
+		saved_game.read<int32_t>(loopFrames);
+		saved_game.read<int32_t>(frameLerp);
+		saved_game.read<int32_t>(initialLerp);
+	}
+}; // animation_t
 
 #define	MAX_RANDOM_ANIMSOUNDS	8
+
 typedef struct animsounds_s 
 {
 	int		keyFrame;			//Frame to play sound on
 	int		soundIndex[MAX_RANDOM_ANIMSOUNDS];			//sound file to play - FIXME: should be an index, handle random some other way?
 	int		numRandomAnimSounds;		//string variable min for va("...%d.wav", Q_irand(lowestVa, highestVa))
 	int		probability;		//chance sound will play, zero value will not run this test (0 = 100% basically)
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(keyFrame);
+		saved_game.write<int32_t>(soundIndex);
+		saved_game.write<int32_t>(numRandomAnimSounds);
+		saved_game.write<int32_t>(probability);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(keyFrame);
+		saved_game.read<int32_t>(soundIndex);
+		saved_game.read<int32_t>(numRandomAnimSounds);
+		saved_game.read<int32_t>(probability);
+	}
 } animsounds_t;
 
 // means of death

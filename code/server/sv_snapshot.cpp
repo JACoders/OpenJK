@@ -367,6 +367,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 
 	clientpvs = CM_ClusterPVS (clientcluster);
 
+#ifndef JK2_MODE
 	if ( !portal )
 	{//not if this if through a portal...???  James said to do this...
 		if ( (frame->ps.forcePowersActive&(1<<FP_SEE)) )
@@ -374,6 +375,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			sightOn = qtrue;
 		}
 	}
+#endif // !JK2_MODE
 
 	for ( e = 0 ; e < ge->num_entities ; e++ ) {
 		ent = SV_GentityNum(e);
@@ -415,12 +417,15 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 			continue;
 		}
 
+#ifndef JK2_MODE
 		if (ent->s.isPortalEnt)
 		{ //rww - portal entities are always sent as well
 			SV_AddEntToSnapshot( svEnt, ent, eNums );
 			continue;
 		}
+#endif // !JK2_MODE
 
+#ifndef JK2_MODE
 		if ( sightOn )
 		{//force sight is on, sees through portals, so draw them always if in radius
 			if ( SV_PlayerCanSeeEnt( ent, frame->ps.forcePowerLevel[FP_SEE] ) )
@@ -429,6 +434,7 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 				continue;
 			}
 		}
+#endif // !JK2_MODE
 
 		// ignore if not touching a PV leaf
 		// check area

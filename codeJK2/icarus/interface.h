@@ -81,10 +81,11 @@ typedef struct interface_export_s
 
 	//Save / Load functions
 
-	int				(*I_WriteSaveData)( unsigned int chid, void *data, int length );
+	int				(*I_WriteSaveData)( unsigned int chid, const void *data, int length );
 	int				(*I_ReadSaveData)( unsigned int chid, void *address, int length, void **addressptr/* = NULL */);
 	int				(*I_LinkEntity)( int entID, CSequencer *sequencer, CTaskManager *taskManager );
 
+	ojk::ISavedGame* saved_game;
 } interface_export_t;
 
 #endif	//__INTERFACE__

@@ -1649,7 +1649,7 @@ Added 11/06/02 by Aurelio Reis.
 extern vmCvar_t	cg_drawBreath;
 static void CG_BreathPuffs( centity_t *cent, vec3_t angles, vec3_t origin )
 {
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 
 	/*	cg_drawBreath.integer	== 0 - Don't draw at all.
 								== 1 - Draw both (but bubbles only when under water).
@@ -5932,7 +5932,7 @@ extern void FX_AddPrimitive( CEffect **effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int saberNum, int modelIndex, vec3_t origin, vec3_t angles )
 {
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 	if ( !client )
 	{
 		return;
@@ -5981,7 +5981,7 @@ static void CG_AddSaberBladeGo( centity_t *cent, centity_t *scent, refEntity_t *
 	mdxaBone_t	boltMatrix;
 	qboolean tagHack = qfalse;
 
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 
 	if ( !client )
 	{

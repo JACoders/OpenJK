@@ -1023,6 +1023,3 @@ const char *GetStringForID( const stringID_table_t *table, int id )
 
 	return NULL;
 }
-
-// end
-

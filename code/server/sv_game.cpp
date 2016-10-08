@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "server.h"
 #include "../client/vmachine.h"
 #include "../client/client.h"
+#include "qcommon/ojk_saved_game.h"
 /*#include "..\renderer\tr_local.h"
 #include "..\renderer\tr_WorldEffects.h"*/
 /*
@@ -806,6 +807,20 @@ static void  SV_G2API_ClearSkinGore( CGhoul2Info_v &ghoul2 )
 {
 	return re.G2API_ClearSkinGore( ghoul2 );
 }
+#else
+static void SV_G2API_AddSkinGore(
+    CGhoul2Info_v &ghoul2,
+    SSkinGoreData &gore)
+{
+    static_cast<void>(ghoul2);
+    static_cast<void>(gore);
+}
+
+static void SV_G2API_ClearSkinGore(
+    CGhoul2Info_v &ghoul2)
+{
+    static_cast<void>(ghoul2);
+}
 #endif
 
 static IGhoul2InfoArray& SV_TheGhoul2InfoArray( void )
@@ -929,9 +944,7 @@ void SV_InitGameProgs (void) {
 	import.FS_FreeFile = FS_FreeFile;
 	import.FS_GetFileList = FS_GetFileList;
 
-	import.AppendToSaveGame = SG_Append;
-	import.ReadFromSaveGame	= SG_Read;
-	import.ReadFromSaveGameOptional = SG_ReadOptional;
+	import.saved_game = &ojk::SavedGame::get_instance();
 
 	import.AdjustAreaPortalState = SV_AdjustAreaPortalState;
 	import.AreasConnected = CM_AreasConnected;

@@ -36,6 +36,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
+#include "qcommon/ojk_saved_game_helper.h"
+
 extern void WP_SaberLoadParms( void );
 extern qboolean G_PlayerSpawned( void );
 
@@ -103,14 +105,25 @@ qboolean PInUse(unsigned int entNum)
 }
 */
 
-void WriteInUseBits(void)
+void WriteInUseBits()
 {
-	gi.AppendToSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits) );
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.write_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
 }
 
-void ReadInUseBits(void)
+void ReadInUseBits()
 {
-	gi.ReadFromSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits), NULL);
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
+
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
 	for(int i=0;i<MAX_GENTITIES;i++)
@@ -752,7 +765,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	ClearAllInUse();
 	// initialize all clients for this game
 	level.maxclients = 1;
-	level.clients = (struct gclient_s *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
+	level.clients = (gclient_t*) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
 	memset(level.clients, 0, level.maxclients * sizeof(level.clients[0]));
 
 	// set client fields on player
@@ -2106,16 +2119,26 @@ extern int delayedShutDown;
 
 extern qboolean player_locked;
 
-void G_LoadSave_WriteMiscData(void)
+void G_LoadSave_WriteMiscData()
 {
-	gi.AppendToSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked));
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 
 
-void G_LoadSave_ReadMiscData(void)
+void G_LoadSave_ReadMiscData()
 {
-	gi.ReadFromSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked), NULL);
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 

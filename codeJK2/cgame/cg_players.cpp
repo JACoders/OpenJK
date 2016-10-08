@@ -4372,7 +4372,7 @@ extern void FX_AddPrimitive( CEffect **effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, vec3_t origin, vec3_t angles )
 {
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 	vec3_t		saberOrg;
 	if ( !client )
 	{
@@ -4409,7 +4409,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 	trace_t	trace;
 	float	length;
 
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 
 	if ( !client )
 	{

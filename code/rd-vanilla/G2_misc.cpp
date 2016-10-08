@@ -48,6 +48,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include <float.h>
 
+#include "qcommon/ojk_saved_game_helper.h"
+
 #ifdef _G2_GORE
 #include "../ghoul2/ghoul2_gore.h"
 
@@ -573,6 +575,7 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 	vec3_t			correctScale;
 	qboolean		firstModelOnly = qfalse;
 
+#ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
 	{
 		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
@@ -583,6 +586,7 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 	{
 		firstModelOnly = qtrue;
 	}
+#endif // !JK2_MODE
 
 #ifdef _G2_GORE
 	if ( gore
@@ -1559,6 +1563,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	qboolean		firstModelOnly = qfalse;
 	int				firstModel = 0;
 
+#ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
 	{
 		cg_g2MarksAllModels = ri.Cvar_Get( "cg_g2MarksAllModels", "0", 0 );
@@ -1569,6 +1574,7 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	{
 		firstModelOnly = qtrue;
 	}
+#endif // !JK2_MODE
 
 #ifdef _G2_GORE
 	if ( gore
@@ -1623,6 +1629,8 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 		}
 
 		lod = G2_DecideTraceLod(g,useLod);
+
+#ifndef JK2_MODE
 		if ( skipIfLODNotMatch )
 		{//we only want to hit this SPECIFIC LOD...
 			if ( lod != useLod )
@@ -1630,6 +1638,8 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 				continue;
 			}
 		}
+#endif // !JK2_MODE
+
 		//reset the quick surface override lookup
 		G2_FindOverrideSurface(-1, g.mSlist);
 
@@ -1760,162 +1770,207 @@ void *G2_FindSurface(const model_s *mod, int index, int lod)
 	return (void *)current;
 }
 
+
 #define SURFACE_SAVE_BLOCK_SIZE	sizeof(surfaceInfo_t)
 #define BOLT_SAVE_BLOCK_SIZE sizeof(boltInfo_t)
 #define BONE_SAVE_BLOCK_SIZE sizeof(boneInfo_t)
 
-void G2_SaveGhoul2Models(CGhoul2Info_v &ghoul2)
+
+void G2_SaveGhoul2Models(
+	CGhoul2Info_v& ghoul2)
 {
-	char *pGhoul2Data = NULL;
-	int   iGhoul2Size = 0;
+	ojk::SavedGameHelper saved_game(
+		::ri.saved_game);
+
+	saved_game.reset_buffer();
 
 	// is there anything to save?
-	if (!ghoul2.IsValid()||!ghoul2.size())
+	if (!ghoul2.IsValid() || ghoul2.size() == 0)
 	{
-		ri.SG_Append(INT_ID('G','H','L','2'),&pGhoul2Data, 4);	//write out a zero buffer
+		const int zero_size = 0;
+
+#ifdef JK2_MODE
+		saved_game.write<int32_t>(
+			zero_size);
+
+		saved_game.write_chunk_and_size<int32_t>(
+			INT_ID('G', 'L', '2', 'S'),
+			INT_ID('G', 'H', 'L', '2'));
+#else
+		saved_game.write_chunk<int32_t>(
+			INT_ID('G', 'H', 'L', '2'),
+			zero_size); //write out a zero buffer
+#endif // JK2_MODE
+
 		return;
 	}
 
-	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	const int ghoul2BlockSize = (intptr_t)&ghoul2[0].BSAVE_END_FIELD - (intptr_t)&ghoul2[0].BSAVE_START_FIELD;
-
-	// add in count for number of ghoul2 models
-	iGhoul2Size += 4;
-	// start out working out the total size of the buffer we need to allocate
-	for (int i=0; i<ghoul2.size();i++)
-	{
-		iGhoul2Size += ghoul2BlockSize;
-		// add in count for number of surfaces
-		iGhoul2Size += 4;
-		iGhoul2Size += (ghoul2[i].mSlist.size() * SURFACE_SAVE_BLOCK_SIZE);
-		// add in count for number of bones
-		iGhoul2Size += 4;
-		iGhoul2Size += (ghoul2[i].mBlist.size() * BONE_SAVE_BLOCK_SIZE);
-		// add in count for number of bolts
-		iGhoul2Size += 4;
-		iGhoul2Size += (ghoul2[i].mBltlist.size() * BOLT_SAVE_BLOCK_SIZE);
-	}
-
-	// ok, we should know how much space we need now
-	pGhoul2Data = (char*)R_Malloc(iGhoul2Size, TAG_GHOUL2, qfalse);
-
-	// now lets start putting the data we care about into the buffer
-	char *tempBuffer = pGhoul2Data;
 
 	// save out how many ghoul2 models we have
-	*(int *)tempBuffer = ghoul2.size();
-	tempBuffer +=4;
+	const int model_count = static_cast<int>(ghoul2.size());
 
-	for (int i = 0; i<ghoul2.size();i++)
+	saved_game.write<int32_t>(
+		model_count);
+
+	for (int i = 0; i < model_count; ++i)
 	{
 		// first save out the ghoul2 details themselves
-//		OutputDebugString(va("G2_SaveGhoul2Models(): ghoul2[%d].mModelindex = %d\n",i,ghoul2[i].mModelindex));
-		memcpy(tempBuffer, &ghoul2[i].mModelindex, ghoul2BlockSize);
-		tempBuffer += ghoul2BlockSize;
+		ghoul2[i].sg_export(
+			saved_game);
 
 		// save out how many surfaces we have
-		*(int*)tempBuffer = ghoul2[i].mSlist.size();
-		tempBuffer +=4;
+		const int surface_count = static_cast<int>(ghoul2[i].mSlist.size());
+
+		saved_game.write<int32_t>(
+			surface_count);
 
 		// now save the all the surface list info
-		for (size_t x=0; x<ghoul2[i].mSlist.size(); x++)
+		for (int x = 0; x < surface_count; ++x)
 		{
-			memcpy(tempBuffer, &ghoul2[i].mSlist[x], SURFACE_SAVE_BLOCK_SIZE);
-			tempBuffer += SURFACE_SAVE_BLOCK_SIZE;
+			ghoul2[i].mSlist[x].sg_export(
+				saved_game);
 		}
 
 		// save out how many bones we have
-		*(int*)tempBuffer = ghoul2[i].mBlist.size();
-		tempBuffer +=4;
+		const int bone_count = static_cast<int>(ghoul2[i].mBlist.size());
+
+		saved_game.write<int32_t>(
+			bone_count);
 
 		// now save the all the bone list info
-		for (size_t x = 0; x<ghoul2[i].mBlist.size(); x++)
+		for (int x = 0; x < bone_count; ++x)
 		{
-			memcpy(tempBuffer, &ghoul2[i].mBlist[x], BONE_SAVE_BLOCK_SIZE);
-			tempBuffer += BONE_SAVE_BLOCK_SIZE;
+			ghoul2[i].mBlist[x].sg_export(
+				saved_game);
 		}
 
 		// save out how many bolts we have
-		*(int*)tempBuffer = ghoul2[i].mBltlist.size();
-		tempBuffer +=4;
+		const int bolt_count = static_cast<int>(ghoul2[i].mBltlist.size());
+
+		saved_game.write<int32_t>(
+			bolt_count);
 
 		// lastly save the all the bolt list info
-		for (size_t x = 0; x<ghoul2[i].mBltlist.size(); x++)
+		for (int x = 0; x < bolt_count; ++x)
 		{
-			memcpy(tempBuffer, &ghoul2[i].mBltlist[x], BOLT_SAVE_BLOCK_SIZE);
-			tempBuffer += BOLT_SAVE_BLOCK_SIZE;
+			ghoul2[i].mBltlist[x].sg_export(
+				saved_game);
 		}
 	}
 
-	ri.SG_Append(INT_ID('G','H','L','2'),pGhoul2Data, iGhoul2Size);
-	R_Free(pGhoul2Data);
+#ifdef JK2_MODE
+	saved_game.write_chunk_and_size<int32_t>(
+		INT_ID('G', 'L', '2', 'S'),
+		INT_ID('G', 'H', 'L', '2'));
+#else
+	saved_game.write_chunk(
+		INT_ID('G', 'H', 'L', '2'));
+#endif // JK2_MODE
 }
 
-void G2_LoadGhoul2Model(CGhoul2Info_v &ghoul2, char *buffer)
+// FIXME Remove 'buffer' parameter
+void G2_LoadGhoul2Model(
+	CGhoul2Info_v& ghoul2,
+	char* buffer)
 {
+	static_cast<void>(buffer);
+
+	ojk::SavedGameHelper saved_game(
+		::ri.saved_game);
+
 	// first thing, lets see how many ghoul2 models we have, and resize our buffers accordingly
-	int newSize = *(int*)buffer;
-	ghoul2.resize(newSize);
-	buffer += 4;
+	int model_count = 0;
+
+#ifdef JK2_MODE
+	if (saved_game.get_buffer_size() > 0)
+	{
+#endif // JK2_MODE
+
+		saved_game.read<int32_t>(
+			model_count);
+
+#ifdef JK2_MODE
+	}
+#endif // JK2_MODE
+
+
+	ghoul2.resize(
+		model_count);
 
 	// did we actually resize to a value?
-	if (!newSize)
+	if (model_count == 0)
 	{
 		// no, ok, well, done then.
 		return;
 	}
 
-	// this one isn't a define since I couldn't work out how to figure it out at compile time
-	const int ghoul2BlockSize = (intptr_t)&ghoul2[0].mTransformedVertsArray - (intptr_t)&ghoul2[0].mModelindex;
-
 	// now we have enough instances, lets go through each one and load up the relevant details
-	for (int i=0; i<ghoul2.size(); i++)
+	for (decltype(model_count) i = 0; i < model_count; ++i)
 	{
 		ghoul2[i].mSkelFrameNum = 0;
-		ghoul2[i].mModelindex=-1;
-		ghoul2[i].mFileName[0]=0;
-		ghoul2[i].mValid=false;
-		// load the ghoul2 info from the buffer
-		memcpy(&ghoul2[i].mModelindex, buffer, ghoul2BlockSize);
-		buffer +=ghoul2BlockSize;
+		ghoul2[i].mModelindex = -1;
+		ghoul2[i].mFileName[0] = 0;
+		ghoul2[i].mValid = false;
 
-		if (ghoul2[i].mModelindex!=-1&&ghoul2[i].mFileName[0])
+		// load the ghoul2 info from the buffer
+		ghoul2[i].sg_import(
+			saved_game);
+
+		if (ghoul2[i].mModelindex != -1 && ghoul2[i].mFileName[0])
 		{
 			ghoul2[i].mModelindex = i;
-			G2_SetupModelPointers(&ghoul2[i]);
+
+			::G2_SetupModelPointers(
+				&ghoul2[i]);
 		}
 
 		// give us enough surfaces to load up the data
-		ghoul2[i].mSlist.resize(*(int*)buffer);
-		buffer +=4;
+		int surface_count = 0;
+
+		saved_game.read<int32_t>(
+			surface_count);
+
+		ghoul2[i].mSlist.resize(surface_count);
 
 		// now load all the surfaces
-		for (size_t x=0; x<ghoul2[i].mSlist.size(); x++)
+		for (decltype(surface_count) x = 0; x < surface_count; ++x)
 		{
-			memcpy(&ghoul2[i].mSlist[x], buffer, SURFACE_SAVE_BLOCK_SIZE);
-			buffer += SURFACE_SAVE_BLOCK_SIZE;
+			ghoul2[i].mSlist[x].sg_import(
+				saved_game);
 		}
 
 		// give us enough bones to load up the data
-		ghoul2[i].mBlist.resize(*(int*)buffer);
-		buffer +=4;
+		int bone_count = 0;
+
+		saved_game.read<int32_t>(
+			bone_count);
+
+		ghoul2[i].mBlist.resize(
+			bone_count);
 
 		// now load all the bones
-		for (size_t x = 0; x<ghoul2[i].mBlist.size(); x++)
+		for (decltype(bone_count) x = 0; x < bone_count; ++x)
 		{
-			memcpy(&ghoul2[i].mBlist[x], buffer, BONE_SAVE_BLOCK_SIZE);
-			buffer += BONE_SAVE_BLOCK_SIZE;
+			ghoul2[i].mBlist[x].sg_import(
+				saved_game);
 		}
 
 		// give us enough bolts to load up the data
-		ghoul2[i].mBltlist.resize(*(int*)buffer);
-		buffer +=4;
+		int bolt_count = 0;
+
+		saved_game.read<int32_t>(
+			bolt_count);
+
+		ghoul2[i].mBltlist.resize(
+			bolt_count);
 
 		// now load all the bolts
-		for (size_t x = 0; x<ghoul2[i].mBltlist.size(); x++)
+		for (decltype(bolt_count) x = 0; x < bolt_count; ++x)
 		{
-			memcpy(&ghoul2[i].mBltlist[x], buffer, BOLT_SAVE_BLOCK_SIZE);
-			buffer += BOLT_SAVE_BLOCK_SIZE;
+			ghoul2[i].mBltlist[x].sg_import(
+				saved_game);
 		}
 	}
+
+	saved_game.ensure_all_data_read();
 }
