@@ -879,7 +879,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 
 					if (client->pers.player_statuses & (1 << 21) && client->ps.legsAnim == BOTH_MEDITATE)
 					{ // zyk: Meditation Strength
-						heal_amount = 10;
+						heal_amount = 12;
 					}
 
 					if ((ent->health + heal_amount) < client->pers.max_rpg_health)
