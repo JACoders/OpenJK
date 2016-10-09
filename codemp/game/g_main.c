@@ -692,6 +692,8 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	level.guardian_quest_timer = 0;
 
+	level.last_spawned_entity = NULL;
+
 	level.load_entities_timer = 0;
 	strcpy(level.load_entities_file,"");
 

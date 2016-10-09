@@ -1544,7 +1544,10 @@ typedef struct level_locals_s {
 	char load_entities_file[512];
 
 	// zyk: has the player_ids that are ignored for each player
-	int ignored_players[32][2];
+	int ignored_players[MAX_CLIENTS][2];
+
+	// zyk: last entity spawned with /entadd. Used by /entundo command
+	gentity_t *last_spawned_entity;
 
 	char		mapname[MAX_QPATH];
 	char		rawmapname[MAX_QPATH];
