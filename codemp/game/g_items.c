@@ -571,6 +571,12 @@ void pas_fire( gentity_t *ent )
 	VectorCopy(ent->enemy->client->ps.origin, enOrg);
 	enOrg[2] += 24;
 
+	// zyk: if enemy is crouching, aim lower
+	if (ent->enemy->client->ps.pm_flags & PMF_DUCKED)
+	{
+		enOrg[2] -= 24;
+	}
+
 	VectorSubtract(enOrg, myOrg, fwd);
 	VectorNormalize(fwd);
 
@@ -911,6 +917,12 @@ void pas_think( gentity_t *ent )
 		if ( ent->enemy->client )
 		{
 			VectorCopy( ent->enemy->client->ps.origin, org );
+
+			// zyk: if enemy is crouching, aim lower
+			if (ent->enemy->client->ps.pm_flags & PMF_DUCKED)
+			{
+				org[2] -= 20;
+			}
 		}
 		else
 		{
