@@ -453,7 +453,7 @@ static void WriteGame(qboolean autosave)
 
 static qboolean ReadGame (void)
 {
-	qboolean qbAutoSave;
+	qboolean qbAutoSave = qfalse;
 
 	ojk::SavedGameHelper saved_game(
 		&ojk::SavedGame::get_instance());

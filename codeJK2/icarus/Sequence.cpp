@@ -534,7 +534,7 @@ int CSequence::Load( void )
 		INT_ID('S', 'I', 'T', 'R'),
 		m_iterations);
 
-	int	numCommands;
+	int	numCommands = 0;
 
 	//Get the number of commands
 	saved_game.read_chunk<int32_t>(
