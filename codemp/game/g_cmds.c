@@ -14913,7 +14913,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.ammo[AMMO_BLASTER] -= 10;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
 					ent->client->pers.player_statuses |= (1 << 22);
 
