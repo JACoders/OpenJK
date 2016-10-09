@@ -9813,7 +9813,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 4)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Monk gets Meditation Strength, which doubles the auto-healing, doubles force regen, increases damage and resistance of his nearby allies and his own resistance is heavily increased. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 1: ^7used with /unique command. You can only have one Unique Ability at a time. Monk gets Meditation Strength, which increases auto-healing, force regen, and his own resistance is heavily increased. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 5)
 			{
@@ -14659,25 +14659,13 @@ void Cmd_Unique_f(gentity_t *ent) {
 			{ // zyk: Monk Meditation Strength. Setting the meditate taunt and the duration of the ability
 				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer/4))
 				{
-					int i = 0;
-
 					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
-
-					for (i = 0; i < level.maxclients; i++)
-					{
-						gentity_t *player_ent = &g_entities[i];
-
-						if (zyk_is_ally(ent, player_ent) == qtrue)
-						{
-							player_ent->client->pers.player_statuses |= (1 << 23);
-						}
-					}
 
 					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
 					ent->client->ps.forceDodgeAnim = BOTH_MEDITATE;
-					ent->client->ps.forceHandExtendTime = level.time + 8000;
+					ent->client->ps.forceHandExtendTime = level.time + 5000;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 5000;
 
 					ent->client->pers.player_statuses |= (1 << 21);
 

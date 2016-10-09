@@ -2154,9 +2154,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 	self->client->pers.quest_power_status = 0;
 	self->client->pers.player_statuses &= ~(1 << 20);
 
-	// zyk: removing Monk Meditation Strength bonus resistance and damage from ally
-	self->client->pers.player_statuses &= ~(1 << 23);
-
 	// zyk: resetting boss battle music to default one if needed
 	if (self->client->pers.guardian_invoked_by_id != -1)
 	{
@@ -4995,11 +4992,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
 	{ // zyk: bonus damage of each RPG class
-		// zyk: Monk Meditation Strength increases damage of allies
-		if (attacker->client->pers.player_statuses & (1 << 23))
-		{
-			damage = (int)ceil(damage * (1.1));
-		}
 
 		if (attacker->client->pers.rpg_class == 0)
 		{
@@ -5145,12 +5137,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			mod != MOD_FORCE_DARK && mod != MOD_WATER && mod != MOD_FALLING && mod != MOD_SUICIDE && mod != MOD_TELEFRAG && mod != MOD_SLIME)
 		{ // zyk: using the Gun Armor, reduces gun and melee damage
 			damage = (int)ceil(damage * 0.85);
-		}
-
-		// zyk: Monk Meditation Strength increases resistance to damage of allies
-		if (targ->client->pers.player_statuses & (1 << 23))
-		{
-			damage = (int)ceil(damage * (0.9));
 		}
 
 		if (targ->client->pers.rpg_class == 1 && targ->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Force User damage resistance

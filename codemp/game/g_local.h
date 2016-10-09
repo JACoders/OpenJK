@@ -44,7 +44,7 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"Zyk OpenJK Mod v3.44"
+#define	GAMEVERSION	"Zyk OpenJK Mod v3.45"
 
 #define SECURITY_LOG "security.log"
 
@@ -639,7 +639,6 @@ typedef struct clientPersistant_s {
 	// 20 - hit by poison dart
 	// 21 - Unique Ability 1
 	// 22 - Unique Ability 2
-	// 23 - Monk ally with meditation strength bonus damage and resistance
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison
