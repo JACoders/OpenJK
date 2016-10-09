@@ -3486,6 +3486,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 								send_rpg_events(2000);
 
+								rpg_skill_counter(ent, 200);
+
 								ent->client->pers.unique_skill_timer = level.time + 55000;
 							}
 							else
@@ -3500,6 +3502,8 @@ void ClientThink_real( gentity_t *ent ) {
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 9000;
+
+								rpg_skill_counter(ent, 200);
 
 								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}
@@ -3516,6 +3520,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
+								rpg_skill_counter(ent, 200);
+
 								ent->client->pers.unique_skill_timer = level.time + 40000;
 							}
 							else
@@ -3530,6 +3536,8 @@ void ClientThink_real( gentity_t *ent ) {
 								ent->client->ps.ammo[AMMO_POWERCELL] -= 2;
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								rpg_skill_counter(ent, 200);
 
 								ent->client->pers.unique_skill_timer = level.time + 30000;
 							}
@@ -3562,6 +3570,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
+								rpg_skill_counter(ent, 200);
+
 								ent->client->pers.unique_skill_timer = level.time + 30000;
 							}
 							else
@@ -3576,6 +3586,8 @@ void ClientThink_real( gentity_t *ent ) {
 								ent->client->ps.ammo[AMMO_POWERCELL] -= 2;
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+								rpg_skill_counter(ent, 200);
 
 								ent->client->pers.unique_skill_timer = level.time + 45000;
 							}
@@ -3655,6 +3667,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 								send_rpg_events(2000);
 
+								rpg_skill_counter(ent, 200);
+
 								ent->client->pers.unique_skill_timer = level.time + 45000;
 							}
 							else
@@ -3729,6 +3743,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 1000;
 
+								rpg_skill_counter(ent, 200);
+
 								ent->client->pers.unique_skill_timer = level.time + 40000;
 							}
 							else
@@ -3746,6 +3762,8 @@ void ClientThink_real( gentity_t *ent ) {
 
 								send_rpg_events(2000);
 
+								rpg_skill_counter(ent, 200);
+
 								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}
 							else
@@ -3760,6 +3778,8 @@ void ClientThink_real( gentity_t *ent ) {
 								ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer/4);
 
 								ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
+
+								rpg_skill_counter(ent, 200);
 
 								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}

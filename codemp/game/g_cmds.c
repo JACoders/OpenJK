@@ -14540,6 +14540,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					send_rpg_events(2000);
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 55000;
 				}
 				else
@@ -14581,6 +14583,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 4000;
 
 					ent->client->pers.player_statuses |= (1 << 21);
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
@@ -14629,6 +14633,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->pers.player_statuses |= (1 << 21);
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
@@ -14647,6 +14653,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 8000;
 
 					ent->client->pers.player_statuses |= (1 << 21);
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 30000;
 				}
@@ -14668,6 +14676,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 5000;
 
 					ent->client->pers.player_statuses |= (1 << 21);
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 30000;
 				}
@@ -14702,6 +14712,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					Jedi_Cloak(ent);
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
 				else
@@ -14721,6 +14733,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
 				else
@@ -14738,6 +14752,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					zyk_WP_FireThermalDetonator(ent);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
@@ -14758,6 +14774,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					send_rpg_events(2000);
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
@@ -14776,6 +14794,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
 
 					ent->client->pers.player_statuses |= (1 << 21);
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
@@ -14839,6 +14859,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					send_rpg_events(2000);
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 55000;
 				}
 				else
@@ -14900,6 +14922,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_DISINT_4] = level.time + 1100;
 					ent->client->ps.powerups[PW_PULL] = 0;
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
@@ -14920,6 +14944,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					// zyk: can shoot 3 times
 					ent->client->pers.poison_dart_hit_counter = 3;
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
@@ -14938,6 +14964,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					Add_Ammo(ent, AMMO_POWERCELL, 200);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 30000;
 
@@ -14962,6 +14990,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->pers.player_statuses |= (1 << 22);
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 30000;
 				}
 				else
@@ -14979,6 +15009,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					zyk_add_bomb_model(ent);
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
@@ -15001,6 +15033,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2000;
 
 					zyk_vertical_dfa_effect(ent);
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 45000;
 				}
@@ -15036,6 +15070,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 40000;
 				}
 				else
@@ -15059,6 +15095,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					display_yellow_bar(ent, (ent->client->pers.quest_power_usage_timer - level.time));
 
+					rpg_skill_counter(ent, 200);
+
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
@@ -15077,6 +15115,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 6000;
 
 					ent->client->pers.player_statuses |= (1 << 22);
+
+					rpg_skill_counter(ent, 200);
 
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
