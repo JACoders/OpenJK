@@ -1951,18 +1951,29 @@ void ammo_generic_power_converter_use( gentity_t *self, gentity_t *other, gentit
 					break;
 				}
 
-				if (i == AMMO_THERMAL)
-				{
-					activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
+				if (activator->client->sess.amrpgmode == 2 && activator->client->pers.rpg_class == 9 && 
+					(i == AMMO_THERMAL || i == AMMO_TRIPMINE || i == AMMO_DETPACK))
+				{ // zyk: Force Tank cannot get explosive weapons
+					i++;
+					continue;
 				}
-				else if (i == AMMO_TRIPMINE)
+
+				if (level.gametype != GT_SIEGE)
 				{
-					activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_TRIP_MINE);
+					if (i == AMMO_THERMAL)
+					{
+						activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_THERMAL);
+					}
+					else if (i == AMMO_TRIPMINE)
+					{
+						activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_TRIP_MINE);
+					}
+					else if (i == AMMO_DETPACK)
+					{
+						activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DET_PACK);
+					}
 				}
-				else if (i == AMMO_DETPACK)
-				{
-					activator->client->ps.stats[STAT_WEAPONS] |= (1 << WP_DET_PACK);
-				}
+
 				Add_Ammo(activator, i, add);
 				stop = 0;
 			}
