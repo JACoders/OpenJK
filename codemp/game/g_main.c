@@ -4583,7 +4583,8 @@ void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 	{
 		gentity_t *player_ent = &g_entities[i];
 
-		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse, &targets_hit) == qtrue)
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, min_distance, max_distance, qfalse, &targets_hit) == qtrue && 
+			(i < MAX_CLIENTS || player_ent->client->NPC_class != CLASS_VEHICLE))
 		{
 			player_ent->client->pers.quest_power_user2_id = ent->s.number;
 			player_ent->client->pers.quest_power_status |= (1 << 4);
