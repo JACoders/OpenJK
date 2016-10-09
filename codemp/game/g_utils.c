@@ -840,8 +840,12 @@ gentity_t *G_Spawn( void ) {
 			trap->Print("%4i: %s\n", i, g_entities[i].classname);
 		}
 		*/
-		G_SpewEntList();
-		trap->Error( ERR_DROP, "G_Spawn: no free entities" );
+		// G_SpewEntList();
+		// trap->Error( ERR_DROP, "G_Spawn: no free entities" ); zyk: no longer crash the server if there are no free entities
+		G_LogPrintf(S_COLOR_RED"G_Spawn: no free entities\n");
+
+		// zyk: returns NULL because no entity was spawned
+		return NULL;
 	}
 
 	// open up a new slot
