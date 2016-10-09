@@ -1876,15 +1876,15 @@ Load
 
 void CTaskManager::Load( void )
 {
-	unsigned char	flags;
+	unsigned char	flags = 0;
 	CTaskGroup		*taskGroup;
 	CBlock			*block;
 	CTask			*task;
-	uint32_t		timeStamp;
-	bool			completed;
+	uint32_t		timeStamp = 0;
+	bool			completed = false;
 	void			*bData;
-	int				id, numTasks, numMembers;
-	int				bID, bSize;
+	int				id = 0, numTasks = 0, numMembers = 0;
+	int				bID = 0, bSize = 0;
 	int				i;
 
 	ojk::SavedGameHelper saved_game(
@@ -2018,7 +2018,7 @@ void CTaskManager::Load( void )
 	}
 
 	//Load the task groups
-	int numTaskGroups;
+	int numTaskGroups = 0;
 	
 	saved_game.read_chunk<int32_t>(
 		INT_ID('T', 'G', '#', 'G'),
@@ -2101,7 +2101,7 @@ void CTaskManager::Load( void )
 	for ( i = 0; i < numTaskGroups; i++ )
 	{
 		char	name[1024];
-		int		length;
+		int		length = 0;
 		
 		//Get the size of the string
 		saved_game.read_chunk<int32_t>(

@@ -695,7 +695,7 @@ int CIcarus::Load()
 	Free();
 
 	//Check to make sure we're at the ICARUS save block
-	double	version;
+	double	version = 0.0;
 
 	saved_game.read_chunk<double>(
 		INT_ID('I', 'C', 'A', 'R'),

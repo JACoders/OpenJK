@@ -693,7 +693,7 @@ struct Vehicle_t
 	float		m_safeJumpMountRightDot;
 
 
-	void Vehicle_t::sg_export(
+	void sg_export(
 		ojk::SavedGameHelper& saved_game) const
 	{
 		saved_game.write<int32_t>(m_pPilot);
@@ -740,7 +740,7 @@ struct Vehicle_t
 		saved_game.write<float>(m_safeJumpMountRightDot);
 	}
 
-	void Vehicle_t::sg_import(
+	void sg_import(
 		ojk::SavedGameHelper& saved_game)
 	{
 		saved_game.read<int32_t>(m_pPilot);

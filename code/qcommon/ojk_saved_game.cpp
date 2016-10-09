@@ -340,7 +340,7 @@ bool SavedGame::read_chunk(
 	ref_chunk_size += sizeof(loaded_magic_value);
 #endif
 
-	if (loaded_chunk_size != ref_chunk_size)
+	if (loaded_chunk_size != static_cast<int>(ref_chunk_size))
 	{
 		is_failed_ = true;
 

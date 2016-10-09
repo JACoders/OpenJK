@@ -473,7 +473,7 @@ LoadSignals
 
 int ICARUS_Instance::LoadSignals( void )
 {
-	int numSignals;
+	int numSignals = 0;
 
 	ojk::SavedGameHelper saved_game(
 		m_interface->saved_game);
@@ -485,7 +485,7 @@ int ICARUS_Instance::LoadSignals( void )
 	for ( int i = 0; i < numSignals; i++ )
 	{
 		char	buffer[1024];
-		int		length;
+		int		length = 0;
 
 		//Get the size of the string
 		saved_game.read_chunk<int32_t>(
@@ -536,7 +536,7 @@ LoadSequence
 int ICARUS_Instance::LoadSequences( void )
 {
 	CSequence	*sequence;
-	int			numSequences;
+	int			numSequences = 0;
 
 	ojk::SavedGameHelper saved_game(
 		m_interface->saved_game);
@@ -588,7 +588,7 @@ LoadSequencers
 int ICARUS_Instance::LoadSequencers( void )
 {
 	CSequencer	*sequencer;
-	int			numSequencers;
+	int			numSequencers = 0;
 
 	ojk::SavedGameHelper saved_game(
 		m_interface->saved_game);
@@ -624,7 +624,7 @@ int ICARUS_Instance::Load( void )
 	Free();
 
 	//Check to make sure we're at the ICARUS save block
-	double	version;
+	double	version = 0.0;
 
 	ojk::SavedGameHelper saved_game(
 		m_interface->saved_game);

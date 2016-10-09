@@ -2424,7 +2424,7 @@ int	CSequencer::Load( void )
 
 	CTaskGroup	*taskGroup;
 	CSequence	*seq;
-	int			numSequences, seqID, taskID, numTasks;
+	int			numSequences = 0, seqID = 0, taskID = 0, numTasks = 0;
 
 	//Get the number of sequences to read
 	saved_game.read_chunk<int32_t>(
@@ -2482,7 +2482,7 @@ int	CSequencer::Load( void )
 		m_taskSequences[ taskGroup ] = seq;
 	}
 
-	int	curGroupID;
+	int	curGroupID = 0;
 
 	//Get the current task group
 	saved_game.read_chunk<int32_t>(

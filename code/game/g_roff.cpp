@@ -649,7 +649,7 @@ void G_Roff( gentity_t *ent )
 
 void G_SaveCachedRoffs()
 {
-	int i, len;
+	int i, len = 0;
 
 	ojk::SavedGameHelper saved_game(
 		::gi.saved_game);
@@ -685,7 +685,7 @@ void G_SaveCachedRoffs()
 
 void G_LoadCachedRoffs()
 {
-	int		i, count, len;
+	int		i, count = 0, len = 0;
 	char	buffer[MAX_QPATH];
 
 	ojk::SavedGameHelper saved_game(

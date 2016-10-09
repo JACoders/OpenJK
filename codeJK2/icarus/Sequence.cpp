@@ -473,10 +473,10 @@ Load
 
 int CSequence::Load( void )
 {
-	unsigned char	flags; 
+	unsigned char	flags = 0; 
 	CSequence		*sequence;
 	CBlock			*block;
-	int				id, numMembers;
+	int				id = 0, numMembers = 0;
 	int				i;
 
 	int				bID, bSize;
@@ -560,6 +560,8 @@ int CSequence::Load( void )
 
 		block->SetFlags( flags );
 
+		numMembers = 0;
+
 		//Get the number of block members
 		saved_game.read_chunk<int32_t>(
 			INT_ID('B', 'N', 'U', 'M'),
@@ -567,11 +569,15 @@ int CSequence::Load( void )
 		
 		for ( int j = 0; j < numMembers; j++ )
 		{
+			bID = 0;
+
 			//Get the member ID
 			saved_game.read_chunk<int32_t>(
 				INT_ID('B', 'M', 'I', 'D'),
 				bID);
-			
+
+			bSize = 0;
+
 			//Get the member size
 			saved_game.read_chunk<int32_t>(
 				INT_ID('B', 'S', 'I', 'Z'),

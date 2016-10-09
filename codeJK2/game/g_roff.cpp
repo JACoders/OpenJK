@@ -660,7 +660,7 @@ void G_SaveCachedRoffs()
 
 void G_LoadCachedRoffs()
 {
-	int		i, count, len;
+	int		i, count = 0, len = 0;
 	char	buffer[MAX_QPATH];
 
 	ojk::SavedGameHelper saved_game(
