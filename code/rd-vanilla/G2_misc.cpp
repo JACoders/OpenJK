@@ -573,7 +573,10 @@ void G2_TransformModel(CGhoul2Info_v &ghoul2, const int frameNum, vec3_t scale, 
 {
 	int				i, lod;
 	vec3_t			correctScale;
+
+#if !defined(JK2_MODE) || defined(_G2_GORE)
 	qboolean		firstModelOnly = qfalse;
+#endif // !JK2_MODE || _G2_GORE
 
 #ifndef JK2_MODE
 	if ( cg_g2MarksAllModels == NULL )
@@ -1560,7 +1563,9 @@ void G2_TraceModels(CGhoul2Info_v &ghoul2, vec3_t rayStart, vec3_t rayEnd, CColl
 	int				i, lod;
 	skin_t			*skin;
 	shader_t		*cust_shader;
+#if !defined(JK2_MODE) || defined(_G2_GORE)
 	qboolean		firstModelOnly = qfalse;
+#endif // !JK2_MODE || _G2_GORE
 	int				firstModel = 0;
 
 #ifndef JK2_MODE

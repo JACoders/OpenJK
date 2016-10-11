@@ -312,8 +312,6 @@ bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	BooleanTag)
 {
-	constexpr int src_size = static_cast<int>(sizeof(TSrc));
-
 	TSrc src_value;
 
 	if (!saved_game_->read(

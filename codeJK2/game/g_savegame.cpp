@@ -762,7 +762,7 @@ static void WriteGEntities(qboolean qbAutosave)
 
 static void ReadGEntities(qboolean qbAutosave)
 {
-	int		iCount;
+	int		iCount = 0;
 	int		i;
 
 	ojk::SavedGameHelper saved_game(
@@ -775,7 +775,7 @@ static void ReadGEntities(qboolean qbAutosave)
 	int iPreviousEntRead = -1;
 	for (i=0; i<iCount; i++)
 	{
-		int iEntIndex;
+		int iEntIndex = 0;
 
 		saved_game.read_chunk<int32_t>(
 			INT_ID('E', 'D', 'N', 'M'),

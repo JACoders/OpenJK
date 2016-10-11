@@ -453,7 +453,7 @@ static void WriteGame(qboolean autosave)
 
 static qboolean ReadGame (void)
 {
-	qboolean qbAutoSave;
+	qboolean qbAutoSave = qfalse;
 
 	ojk::SavedGameHelper saved_game(
 		&ojk::SavedGame::get_instance());
@@ -574,7 +574,7 @@ void SG_WriteCvars(void)
 
 void SG_ReadCvars()
 {
-	int iCount;
+	int iCount = 0;
 	std::string psName;
 	const char* psValue;
 
@@ -668,7 +668,7 @@ void SG_ReadServerConfigStrings( void )
 
 	// now read the replacement ones...
 	//
-	int iCount;
+	int iCount = 0;
 
 	ojk::SavedGameHelper saved_game(
 		&ojk::SavedGame::get_instance());
@@ -681,7 +681,7 @@ void SG_ReadServerConfigStrings( void )
 
 	for (int i = 0; i<iCount; i++)
 	{
-		int iIndex;
+		int iIndex = 0;
 		const char *psName;
 
 		saved_game.read_chunk<int32_t>(

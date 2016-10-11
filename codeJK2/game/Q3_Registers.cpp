@@ -390,7 +390,7 @@ Q3_VariableLoadFloats
 
 void Q3_VariableLoadFloats( varFloat_m &fmap )
 {
-	int		numFloats;
+	int		numFloats = 0;
 	char	tempBuffer[1024];
 
 	ojk::SavedGameHelper saved_game(
@@ -402,7 +402,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
-		int idSize;
+		int idSize = 0;
 		
 		saved_game.read_chunk<int32_t>(
 			INT_ID('F', 'I', 'D', 'L'),
@@ -415,7 +415,7 @@ void Q3_VariableLoadFloats( varFloat_m &fmap )
 
 		tempBuffer[ idSize ] = 0;
 
-		float	val;
+		float	val = 0.0F;
 
 		saved_game.read_chunk<float>(
 			INT_ID('F', 'V', 'A', 'L'),
@@ -434,7 +434,7 @@ Q3_VariableLoadStrings
 
 void Q3_VariableLoadStrings( int type, varString_m &fmap )
 {
-	int		numFloats;
+	int		numFloats = 0;
 	char	tempBuffer[1024];
 	char	tempBuffer2[1024];
 
@@ -447,7 +447,7 @@ void Q3_VariableLoadStrings( int type, varString_m &fmap )
 
 	for ( int i = 0; i < numFloats; i++ )
 	{
-		int idSize;
+		int idSize = 0;
 		
 		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'I', 'D', 'L'),

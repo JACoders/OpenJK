@@ -302,7 +302,7 @@ public:
 		static_cast<void>(saved_game);
 		static_cast<void>(instance);
 
-		static_assert(false, "Not implemented.");
+		throw "Not implemented.";
 	}
 
 	static void sg_import(
@@ -312,7 +312,7 @@ public:
 		static_cast<void>(saved_game);
 		static_cast<void>(instance);
 
-		static_assert(false, "Not implemented.");
+		throw "Not implemented.";
 	}
 };
 
