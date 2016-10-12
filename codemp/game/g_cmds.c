@@ -730,6 +730,12 @@ void G_Kill( gentity_t *ent ) {
 
 		player_die(ent, other, other, 100000, MOD_SUICIDE);
 	}
+	else if (ent->client->ps.otherKillerTime > level.time && ent->client->ps.otherKiller != ENTITYNUM_NONE)
+	{ // zyk: self killing while otherKiller is set gives kill to the otherKiller
+		gentity_t *other = &g_entities[ent->client->ps.otherKiller];
+
+		player_die(ent, other, other, 100000, MOD_SUICIDE);
+	}
 	else
 	{
 		player_die(ent, ent, ent, 100000, MOD_SUICIDE);

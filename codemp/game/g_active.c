@@ -3113,6 +3113,7 @@ void ClientThink_real( gentity_t *ent ) {
 		}
 	}
 
+	/* zyk: now it will always keep the otherKillerTime, even if the player touches the ground
 	if (ent->client->ps.otherKillerTime > level.time &&
 		ent->client->ps.groundEntityNum != ENTITYNUM_NONE &&
 		ent->client->ps.otherKillerDebounceTime < level.time)
@@ -3128,6 +3129,7 @@ void ClientThink_real( gentity_t *ent ) {
 			ent->client->ps.otherKillerDebounceTime = level.time + 100;
 		}
 	}
+	*/
 
 //	WP_ForcePowersUpdate( ent, msec, ucmd); //update any active force powers
 //	WP_SaberPositionUpdate(ent, ucmd); //check the server-side saber point, do apprioriate server-side actions (effects are cs-only)
