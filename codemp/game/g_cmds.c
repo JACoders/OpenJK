@@ -10039,6 +10039,11 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, "print \"You already have the Force Gunner Upgrade.\n\"" );
 		return;
 	}
+	else if (value == 46 && ent->client->pers.secrets_found & (1 << 17))
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You already have the Jetpack Upgrade.\n\"");
+		return;
+	}
 	else if (value == 47 && ent->client->pers.secrets_found & (1 << 19))
 	{
 		trap->SendServerCommand( ent-g_entities, "print \"You already have the Force Tank Upgrade.\n\"" );
