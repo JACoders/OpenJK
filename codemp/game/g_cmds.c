@@ -723,7 +723,17 @@ void G_Kill( gentity_t *ent ) {
 
 	ent->flags &= ~FL_GODMODE;
 	ent->client->ps.stats[STAT_HEALTH] = ent->health = -999;
-	player_die (ent, ent, ent, 100000, MOD_SUICIDE);
+
+	if (ent->client->ps.duelInProgress == qtrue)
+	{ // zyk: if player is in a private duel, gives kill to the other duelist
+		gentity_t *other = &g_entities[ent->client->ps.duelIndex];
+
+		player_die(ent, other, other, 100000, MOD_SUICIDE);
+	}
+	else
+	{
+		player_die(ent, ent, ent, 100000, MOD_SUICIDE);
+	}
 }
 
 /*
