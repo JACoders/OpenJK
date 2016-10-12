@@ -9858,7 +9858,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Wrist Shot, which allows shooting three powerful blaster shots. Spends 10 blaster pack ammo and 10 more per shot\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter gets Wrist Shot, which allows shooting three powerful blaster shots. Spends 5 blaster pack ammo and 5 more per shot\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
@@ -14886,9 +14886,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 		if (ent->client->pers.rpg_class == 2 && ent->client->pers.player_statuses & (1 << 22))
 		{ // zyk: Bounty Hunter Wrist Shot ability, can shoot 3 times
-			if (ent->client->ps.ammo[AMMO_BLASTER] >= 10 && ent->client->pers.poison_dart_hit_counter > 0)
+			if (ent->client->ps.ammo[AMMO_BLASTER] >= 5 && ent->client->pers.poison_dart_hit_counter > 0)
 			{
-				ent->client->ps.ammo[AMMO_BLASTER] -= 10;
+				ent->client->ps.ammo[AMMO_BLASTER] -= 5;
 
 				ent->client->pers.poison_dart_hit_counter--;
 
@@ -14999,9 +14999,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{ // zyk: Bounty Hunter Wrist Shot
-				if (ent->client->ps.ammo[AMMO_BLASTER] >= 10)
+				if (ent->client->ps.ammo[AMMO_BLASTER] >= 5)
 				{
-					ent->client->ps.ammo[AMMO_BLASTER] -= 10;
+					ent->client->ps.ammo[AMMO_BLASTER] -= 5;
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
@@ -15016,7 +15016,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 10 blaster pack ammo to use it\"");
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs 5 blaster pack ammo to use it\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 3)
