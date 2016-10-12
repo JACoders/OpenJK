@@ -1549,6 +1549,10 @@ typedef struct level_locals_s {
 	// zyk: last entity spawned with /entadd. Used by /entundo command
 	gentity_t *last_spawned_entity;
 
+	// zyk: these variables test if an origin is set in the map to set the origin of a new entity spawned with /entadd command
+	qboolean ent_origin_set;
+	vec3_t ent_origin;
+
 	char		mapname[MAX_QPATH];
 	char		rawmapname[MAX_QPATH];
 } level_locals_t;

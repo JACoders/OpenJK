@@ -12518,6 +12518,24 @@ void Cmd_EntUndo_f(gentity_t *ent) {
 
 /*
 ==================
+Cmd_EntOrigin_f
+==================
+*/
+void Cmd_EntOrigin_f(gentity_t *ent) {
+	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
+	{ // zyk: admin command
+		trap->SendServerCommand(ent - g_entities, "print \"You don't have this admin command.\n\"");
+		return;
+	}
+
+	VectorCopy(ent->client->ps.origin, level.ent_origin);
+	level.ent_origin_set = qtrue;
+
+	trap->SendServerCommand(ent->s.number, va("print \"Entity origin: %s\n\"", vtos(level.ent_origin)));
+}
+
+/*
+==================
 Cmd_EntAdd_f
 ==================
 */
@@ -12529,6 +12547,7 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	char arg2[MAX_STRING_CHARS];
 	char arg3[MAX_STRING_CHARS];
+	qboolean has_origin_set = qfalse; // zyk: if player do not pass an origin key, use the one set with /entorigin
 
 	if (!(ent->client->pers.bitvalue & (1 << ADM_ENTITYSYSTEM)))
 	{ // zyk: admin command
@@ -12569,6 +12588,11 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 			{ // zyk: key
 				trap->Argv( i, arg3, sizeof( arg3 ) );
 				strcpy(key, G_NewString(arg3));
+
+				if (Q_stricmp(key, "origin") == 0)
+				{ // zyk: if origin was passed
+					has_origin_set = qtrue;
+				}
 			}
 			else
 			{ // zyk: value
@@ -12584,6 +12608,11 @@ void Cmd_EntAdd_f( gentity_t *ent ) {
 					zyk_set_entity_field(new_ent,G_NewString(key),G_NewString(arg3));
 				}
 			}
+		}
+
+		if (has_origin_set == qfalse && level.ent_origin_set == qtrue)
+		{ // zyk: if origin was not passed and the ent origin was set, use it
+			zyk_set_entity_field(new_ent, "origin", va("%f %f %f", level.ent_origin[0], level.ent_origin[1], level.ent_origin[2]));
 		}
 
 		zyk_spawn_entity(new_ent);
@@ -14059,7 +14088,7 @@ void Cmd_EntitySystem_f( gentity_t *ent ) {
 		return;
 	}
 
-	trap->SendServerCommand( ent-g_entities, va("print \"\n^2Entity System Commands\n\n^3/entadd <classname> <spawnflags> <key value key value ... etc>: ^7adds a new entity in the map\n^3/entedit <entity id> [key value key value ... etc]: ^7shows entity info or edits the entity fields\n^3/entnear: ^7lists entities in a distance less than 200 map units\n^3/entlist <page number>: ^7lists all entities of the map\n^3/entundo: ^7removes last added entity\n^3/entsave <filename>: ^7saves entities into a file. Use ^3default ^7name to make it load with the map\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n^3/remap <old shader> <new shader>: ^7remaps shaders in the map\n^3/remapsave <file name>: ^7saves remapped shaders in a file. Use ^3default ^7name to make file load with the map\n^3/remapload <file name>: ^7loads remapped shaders from a file\n^3/remapdeletefile <file name>: ^7deletes a remap file\n\n\"") );
+	trap->SendServerCommand( ent-g_entities, va("print \"\n^3/entadd <classname> <spawnflags> <key value key value ... etc>: ^7adds a new entity in the map\n^3/entedit <entity id> [key value key value ... etc]: ^7shows entity info or edits the entity fields\n^3/entnear: ^7lists entities in distance less than 200\n^3/entlist <page number>: ^7lists all entities\n^3/entorigin: ^7sets entity origin of this point to be used for new entities\n^3/entundo: ^7removes last added entity\n^3/entsave <filename>: ^7saves entities into a file. Use ^3default ^7name to make it load with the map\n^3/entload <filename>: ^7loads entities from a file\n^3/entremove <entity id>: ^7removes the entity from the map\n^3/entdeletefile <filename>: ^7removes a file created by /entsave\n^3/remap <shader> <new shader>: ^7remaps shaders in map\n^3/remapsave <file name>: ^7saves remaps in a file. Use ^3default ^7name to make file load with the map\n^3/remapload <file name>: ^7loads remapped shaders from file\n^3/remapdeletefile <file name>: ^7deletes a remap file\n\n\"") );
 }
 
 /*
@@ -15292,9 +15321,10 @@ command_t commands[] = {
 	{ "entlist",			Cmd_EntList_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entload",			Cmd_EntLoad_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entnear",			Cmd_EntNear_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
+	{ "entorigin",			Cmd_EntOrigin_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entremove",			Cmd_EntRemove_f,			CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "entsave",			Cmd_EntSave_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
-	{ "entundo",			Cmd_EntUndo_f,				CMD_LOGGEDIN | CMD_NOINTERMISSION },
+	{ "entundo",			Cmd_EntUndo_f,				CMD_LOGGEDIN|CMD_NOINTERMISSION },
 	{ "follow",				Cmd_Follow_f,				CMD_NOINTERMISSION },
 	{ "follownext",			Cmd_FollowNext_f,			CMD_NOINTERMISSION },
 	{ "followprev",			Cmd_FollowPrev_f,			CMD_NOINTERMISSION },
