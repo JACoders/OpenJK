@@ -6506,7 +6506,8 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 			}
 			else
 			{
-				if (attacker && ent && level.special_power_effects[attacker->s.number] != -1 && Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0)
+				if (attacker && ent && level.special_power_effects[attacker->s.number] != -1 && 
+					Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0)
 				{ // zyk: Healing Area. Heals the user and his allies
 					gentity_t *quest_power_user = &g_entities[level.special_power_effects[attacker->s.number]];
 
@@ -6525,7 +6526,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							// zyk: Universe Power
 							if (quest_power_user->client->pers.quest_power_status & (1 << 13))
 							{
-								heal_amount += 2;
+								heal_amount += 3;
 								shield_amount += 2;
 							}
 
@@ -6536,11 +6537,21 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 
 							if (ent->health == ent->client->ps.stats[STAT_MAX_HEALTH])
 							{ // zyk: Unique Skill makes it possible to heal shield too, if hp is full
-								if (!ent->NPC && 
-									((ent->client->sess.amrpgmode < 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->ps.stats[STAT_MAX_HEALTH]) || 
-									(ent->client->sess.amrpgmode == 2 && ent->client->ps.stats[STAT_ARMOR] < ent->client->pers.max_rpg_shield)))
+								int max_shield = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+								if (ent->client->sess.amrpgmode == 2)
+									max_shield = ent->client->pers.max_rpg_shield;
+
+								if (!ent->NPC)
 								{
-									ent->client->ps.stats[STAT_ARMOR] += shield_amount;
+									if ((ent->client->ps.stats[STAT_ARMOR] + shield_amount) < max_shield)
+									{
+										ent->client->ps.stats[STAT_ARMOR] += shield_amount;
+									}
+									else
+									{
+										ent->client->ps.stats[STAT_ARMOR] = max_shield;
+									}
 								}
 							}
 						}
