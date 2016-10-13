@@ -2183,72 +2183,6 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		try_finishing_race();
 	}
 
-	// zyk: setting the credits_modifier and the bonus score for the RPG player
-	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
-	{
-		if (!self->NPC && self->client->sess.amrpgmode == 2)
-		{ // zyk: RPG Mode player score and credits
-			attacker->client->pers.credits_modifier = self->client->pers.level;
-			attacker->client->pers.score_modifier = self->client->pers.level/50;
-		}
-		else if (self->NPC && self->client->NPC_class == CLASS_VEHICLE)
-		{ // zyk: vehicles will not give any score or credits
-			attacker->client->pers.credits_modifier = -10;
-			attacker->client->pers.score_modifier = -1;
-		}
-		else if (self->NPC && self->client->pers.guardian_invoked_by_id != -1)
-		{ // zyk: guardians give more score and credits
-			attacker->client->pers.credits_modifier = 190;
-			attacker->client->pers.score_modifier = 4;
-		}
-		else if (self->NPC && self->client->ps.fd.forcePowerMax > 0 && self->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
-		{ // zyk: force-user saber npcs give more score and credits
-			attacker->client->pers.credits_modifier = 10;
-			attacker->client->pers.score_modifier = 1;
-		}
-
-		if (level.guardian_quest > 0 && self->NPC && self->s.number == level.guardian_quest)
-		{ // zyk: if player defeated the map guardian npc
-			attacker->client->pers.score_modifier = 2;
-			attacker->client->pers.credits_modifier = 990;
-			trap->SendServerCommand( -1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the Guardian of Map\n\"", attacker->client->pers.netname) );
-			level.guardian_quest = 0;
-			level.boss_battle_music_reset_timer = level.time + 1000;
-			level.guardian_quest_timer = level.time + zyk_guardian_quest_timer.integer;
-		}
-
-		if (attacker->client->pers.rpg_class == 2)
-		{ // zyk: Bounty Hunter class receives more credits
-			attacker->client->pers.credits_modifier += 5 * (attacker->client->pers.skill_levels[55] + 1);
-		}
-
-		// zyk: Bounty Quest manager
-		if (level.bounty_quest_choose_target == qfalse && attacker != self && self->client->sess.amrpgmode == 2)
-		{
-			if (level.bounty_quest_target_id == (attacker-g_entities))
-			{ // zyk: attacker was the target, so the attacker receives bonus credits
-				int bonus_credits = self->client->pers.level * 2;
-
-				attacker->client->pers.credits_modifier += bonus_credits;
-				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s ^7was defeated by the target player, ^3%d ^7bonus credits\n\"", self->client->pers.netname, bonus_credits) );
-			}
-			else if (level.bounty_quest_target_id == (self-g_entities))
-			{ // zyk: target player was defeated. Gives the reward to the attacker
-				attacker->client->pers.credits_modifier += (self->client->pers.level*15);
-				level.bounty_quest_choose_target = qtrue;
-				level.bounty_quest_target_id++;
-				trap->SendServerCommand( -1, va("chat \"^3Bounty Quest: ^7%s^7 receives ^3%d ^7bonus credits\n\"", attacker->client->pers.netname, (self->client->pers.level*15)) );
-			}
-		}
-	}
-
-	if (level.guardian_quest > 0 && self->NPC && self->s.number == level.guardian_quest)
-	{ // zyk: map guardian npc defeated by a non-rpg player
-		trap->SendServerCommand( -1, va("chat \"^3Guardian Quest:^7Map Guardian not defeated by rpg player\n\"") );
-		level.guardian_quest = 0;
-		level.boss_battle_music_reset_timer = level.time + 1000;
-	}
-
 	// zyk: if player dies being mind controlled or controlling someone, stop mind control
 	if (self->client->pers.being_mind_controlled > -1)
 	{
@@ -2856,6 +2790,72 @@ extern void RunEmplacedWeapon( gentity_t *ent, usercmd_t **ucmd );
 		self->client->ps.otherKillerTime > level.time)
 	{
 		attacker = &g_entities[self->client->ps.otherKiller];
+	}
+
+	// zyk: setting the credits_modifier and the bonus score for the RPG player
+	if (attacker && attacker->client && attacker->client->sess.amrpgmode == 2)
+	{
+		if (!self->NPC && self->client->sess.amrpgmode == 2)
+		{ // zyk: RPG Mode player score and credits
+			attacker->client->pers.credits_modifier = self->client->pers.level;
+			attacker->client->pers.score_modifier = self->client->pers.level / 50;
+		}
+		else if (self->NPC && self->client->NPC_class == CLASS_VEHICLE)
+		{ // zyk: vehicles will not give any score or credits
+			attacker->client->pers.credits_modifier = -10;
+			attacker->client->pers.score_modifier = -1;
+		}
+		else if (self->NPC && self->client->pers.guardian_invoked_by_id != -1)
+		{ // zyk: guardians give more score and credits
+			attacker->client->pers.credits_modifier = 190;
+			attacker->client->pers.score_modifier = 4;
+		}
+		else if (self->NPC && self->client->ps.fd.forcePowerMax > 0 && self->client->ps.stats[STAT_WEAPONS] & (1 << WP_SABER))
+		{ // zyk: force-user saber npcs give more score and credits
+			attacker->client->pers.credits_modifier = 10;
+			attacker->client->pers.score_modifier = 1;
+		}
+
+		if (level.guardian_quest > 0 && self->NPC && self->s.number == level.guardian_quest)
+		{ // zyk: if player defeated the map guardian npc
+			attacker->client->pers.score_modifier = 2;
+			attacker->client->pers.credits_modifier = 990;
+			trap->SendServerCommand(-1, va("chat \"^3Guardian Quest: ^7%s^7 receives ^31000 ^7credits for defeating the Guardian of Map\n\"", attacker->client->pers.netname));
+			level.guardian_quest = 0;
+			level.boss_battle_music_reset_timer = level.time + 1000;
+			level.guardian_quest_timer = level.time + zyk_guardian_quest_timer.integer;
+		}
+
+		if (attacker->client->pers.rpg_class == 2)
+		{ // zyk: Bounty Hunter class receives more credits
+			attacker->client->pers.credits_modifier += 5 * (attacker->client->pers.skill_levels[55] + 1);
+		}
+
+		// zyk: Bounty Quest manager
+		if (level.bounty_quest_choose_target == qfalse && attacker != self && self->client->sess.amrpgmode == 2)
+		{
+			if (level.bounty_quest_target_id == (attacker - g_entities))
+			{ // zyk: attacker was the target, so the attacker receives bonus credits
+				int bonus_credits = self->client->pers.level * 2;
+
+				attacker->client->pers.credits_modifier += bonus_credits;
+				trap->SendServerCommand(-1, va("chat \"^3Bounty Quest: ^7%s ^7was defeated by the target player, ^3%d ^7bonus credits\n\"", self->client->pers.netname, bonus_credits));
+			}
+			else if (level.bounty_quest_target_id == (self - g_entities))
+			{ // zyk: target player was defeated. Gives the reward to the attacker
+				attacker->client->pers.credits_modifier += (self->client->pers.level * 15);
+				level.bounty_quest_choose_target = qtrue;
+				level.bounty_quest_target_id++;
+				trap->SendServerCommand(-1, va("chat \"^3Bounty Quest: ^7%s^7 receives ^3%d ^7bonus credits\n\"", attacker->client->pers.netname, (self->client->pers.level * 15)));
+			}
+		}
+	}
+
+	if (level.guardian_quest > 0 && self->NPC && self->s.number == level.guardian_quest)
+	{ // zyk: map guardian npc defeated by a non-rpg player
+		trap->SendServerCommand(-1, va("chat \"^3Guardian Quest:^7Map Guardian not defeated by rpg player\n\""));
+		level.guardian_quest = 0;
+		level.boss_battle_music_reset_timer = level.time + 1000;
 	}
 
 	// check for an almost capture

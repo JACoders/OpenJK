@@ -4567,6 +4567,11 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 			player_ent->client->pers.quest_power_user3_id = ent->s.number;
 			player_ent->client->pers.quest_power_status |= (1 << 8);
 			player_ent->client->pers.quest_target6_timer = level.time + duration;
+
+			// zyk: gives fall kill to the owner of this power
+			player_ent->client->ps.otherKiller = ent->s.number;
+			player_ent->client->ps.otherKillerTime = level.time + duration;
+			player_ent->client->ps.otherKillerDebounceTime = level.time + 100;
 							
 			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
 		}
@@ -4636,6 +4641,11 @@ void chaos_power(gentity_t *ent, int distance, int first_damage)
 			player_ent->client->ps.forceDodgeAnim = 0;
 			player_ent->client->ps.quickerGetup = qtrue;
 			player_ent->client->ps.electrifyTime = level.time + 5000;
+
+			// zyk: gives fall kill to the owner of this power
+			player_ent->client->ps.otherKiller = ent->s.number;
+			player_ent->client->ps.otherKillerTime = level.time + 5000;
+			player_ent->client->ps.otherKillerDebounceTime = level.time + 100;
 
 			G_Damage(player_ent,ent,ent,NULL,NULL,first_damage,0,MOD_UNKNOWN);
 		}
@@ -5346,6 +5356,11 @@ void hurricane(gentity_t *ent, int distance, int duration)
 			player_ent->client->pers.quest_power_status |= (1 << 5);
 			player_ent->client->pers.quest_power_hit_counter = -179;
 			player_ent->client->pers.quest_target4_timer = level.time + duration;
+
+			// zyk: gives fall kill to the owner of this power
+			player_ent->client->ps.otherKiller = ent->s.number;
+			player_ent->client->ps.otherKillerTime = level.time + duration;
+			player_ent->client->ps.otherKillerDebounceTime = level.time + 100;
 							
 			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
 		}
