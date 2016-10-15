@@ -4078,7 +4078,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				else
 					VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-				if (ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 10) && 
+				if (ent->client->pers.magic_power >= (zyk_magic_fist_mp_cost.integer * 8) && 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && ent->client->pers.player_statuses & (1 << 21))
 				{ // zyk: Magic Master Unique Upgrade 1 increases number of electric bolt shots
 					number_of_shots = 3;
@@ -4123,7 +4123,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				}
 
 				if (number_of_shots > 1)
-					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 10);
+					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 8);
 				else
 					ent->client->pers.magic_power -= (zyk_magic_fist_mp_cost.integer * 2);
 

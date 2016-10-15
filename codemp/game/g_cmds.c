@@ -14841,9 +14841,9 @@ void Cmd_Unique_f(gentity_t *ent) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{ // zyk: Magic Master Spread Bolts activation
-				if (ent->client->pers.magic_power >= 1)
+				if (ent->client->pers.magic_power >= 2)
 				{
-					ent->client->pers.magic_power -= 1;
+					ent->client->pers.magic_power -= 2;
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 15000;
 
@@ -14857,7 +14857,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 1 MP to use it\"");
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 2 MP to use it\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 9)
