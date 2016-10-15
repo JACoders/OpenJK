@@ -21,24 +21,18 @@ case "${host}" in
 	(i?86-linux-gnu)
 		set -- \
 			-D CMAKE_TOOLCHAIN_FILE=$(pwd)/CMakeModules/Toolchains/linux-i686.cmake \
-			-D BuildMPGame=OFF \
 			-D BuildMPDed=OFF \
-			-D BuildMPCGame=OFF \
 			"$@"
 		;;
 	(macosx-universal-clang)
 		set -- \
-			-D BuildMPGame=OFF \
 			-D BuildMPDed=OFF \
-			-D BuildMPCGame=OFF \
 			"$@"
 		;;
 	(native)
 		if [ -n "${deploy}" ]; then
 			set -- \
-				-D BuildMPGame=OFF \
 				-D BuildMPDed=OFF \
-				-D BuildMPCGame=OFF \
 				"$@"
 		fi
 		;;
