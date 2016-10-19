@@ -48,12 +48,12 @@ before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   #- set #debug: view all environment variables
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
-  - cmd: echo "Generator='%CMAKE_GENERATOR%', CMAKE_BUILD_TYPE='%CMAKE_BUILD_TYPE%'"
+  - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if exist build rmdir /q /s build #remove build dir
   - mkdir build
   - cmd: cd build
-  - cmd: cmake -G "%CMAKE_GENERATOR%" "-DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cmake -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: ls
 
 build:
