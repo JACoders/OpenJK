@@ -79,7 +79,7 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, byte **pic, int *width, i
 ================================================================================
 */
 // Convert raw image data to JPEG format and store in buffer.
-size_t RE_SaveJPGToBuffer( byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
+size_t RE_SaveJPGToBuffer( byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding, bool flip_vertical );
 
 // Save raw image data as JPEG image file.
 void RE_SaveJPG( const char * filename, int quality, int image_width, int image_height, byte *image_buffer, int padding );

@@ -1580,18 +1580,6 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 	}
 }
 
-static inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-static inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
 #define LATHE_SEG_STEP	10
 #define BEZIER_STEP		0.05f	// must be in the range of 0 to 1
 
@@ -1621,7 +1609,7 @@ static void RB_SurfaceLathe()
 		pain = ( 1.0f - pain ) * 0.08f;
 	}
 
-	Vector2Set( l_oldpt, e->axis[0][0], e->axis[0][1] );
+	VectorSet2( l_oldpt, e->axis[0][0], e->axis[0][1] );
 
 	// do scalability stuff...r_lodbias 0-3
 	int lod = r_lodbias->integer + 1;
@@ -1648,14 +1636,14 @@ static void RB_SurfaceLathe()
 			l_oldpt2[i] = mum13 * e->axis[0][i] + group1 * e->axis[1][i] + group2 * e->axis[2][i] + mu3 * e->oldorigin[i];
 		}
 
-		Vector2Set( oldpt, l_oldpt[0], 0 );
-		Vector2Set( oldpt2, l_oldpt2[0], 0 );
+		VectorSet2( oldpt, l_oldpt[0], 0 );
+		VectorSet2( oldpt2, l_oldpt2[0], 0 );
 
 		// lathe patch section around in a complete circle
 		for ( t = latheStep; t <= 360; t += latheStep )
 		{
-			Vector2Set( pt, l_oldpt[0], 0 );
-			Vector2Set( pt2, l_oldpt2[0], 0 );
+			VectorSet2( pt, l_oldpt[0], 0 );
+			VectorSet2( pt2, l_oldpt2[0], 0 );
 
 			s = sin( DEG2RAD( t ));
 			c = cos( DEG2RAD( t ));
@@ -1733,12 +1721,12 @@ static void RB_SurfaceLathe()
 			tess.indexes[tess.numIndexes++] = vbase;
 
 			// Shuffle new points to old
-			Vector2Copy( pt, oldpt );
-			Vector2Copy( pt2, oldpt2 );
+			VectorCopy2( pt, oldpt );
+			VectorCopy2( pt2, oldpt2 );
 		}
 
 		// shuffle lathe points
-		Vector2Copy( l_oldpt2, l_oldpt );
+		VectorCopy2( l_oldpt2, l_oldpt );
 	}
 }
 
@@ -1902,8 +1890,8 @@ static void RB_SurfaceClouds()
 			tess.indexes[tess.numIndexes++] = vbase;
 
 			// Shuffle new points to old
-			Vector2Copy( pt, oldpt );
-			Vector2Copy( pt2, oldpt2 );
+			VectorCopy2( pt, oldpt );
+			VectorCopy2( pt2, oldpt2 );
 		}
 	}
 }

@@ -36,27 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 extern vmCvar_t	fx_debug;
 extern vmCvar_t	fx_freeze;
 
-inline void Vector2Clear(vec2_t a)
-{
-	a[0] = 0.0f;
-	a[1] = 0.0f;
-}
-
-inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
-
 extern void	CG_CalcEntityLerpPositions( centity_t * );
-
 
 struct SFxHelper
 {

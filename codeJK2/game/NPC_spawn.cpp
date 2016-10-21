@@ -1222,7 +1222,7 @@ void NPC_Spawn_Go( gentity_t *ent )
 	newent->NPC->tempGoal->owner = newent;
 	newent->NPC->tempGoal->svFlags |= SVF_NOCLIENT;
 
-	newent->client = (gclient_s *)G_Alloc (sizeof(gclient_s));
+	newent->client = (gclient_t *)G_Alloc (sizeof(gclient_t));
 	
 	if ( newent->client == NULL ) 
 	{

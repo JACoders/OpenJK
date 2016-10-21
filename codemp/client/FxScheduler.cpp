@@ -928,7 +928,7 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, matrix3_t axis, const int 
 
 				if ( sfx == NULL )
 				{
-					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.\n");
+					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.");
 					return;
 				}
 

@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "instance.h"
 
 #include <assert.h>
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 // Instance
 
@@ -302,7 +303,13 @@ int ICARUS_Instance::SaveSequenceIDTable( void )
 {
 	//Save out the number of sequences to follow
 	int		numSequences = m_sequences.size();
-	m_interface->I_WriteSaveData( INT_ID('#','S','E','Q'), &numSequences, sizeof( numSequences ) );
+
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('#', 'S', 'E', 'Q'),
+		numSequences);
 
 	//Sequences are saved first, by ID and information
 	sequence_l::iterator	sqi;
@@ -319,7 +326,10 @@ int ICARUS_Instance::SaveSequenceIDTable( void )
 		idTable[itr++] = (*sqi)->GetID();
 	}
 
-	m_interface->I_WriteSaveData( INT_ID('S','Q','T','B'), idTable, sizeof( int ) * numSequences );
+	saved_game.write_chunk<int32_t>(
+		INT_ID('S', 'Q', 'T', 'B'),
+		idTable,
+		numSequences);
 
 	delete[] idTable;
 
@@ -357,7 +367,13 @@ int ICARUS_Instance::SaveSequencers( void )
 {
 	//Save out the number of sequences to follow
 	int		numSequencers = m_sequencers.size();
-	m_interface->I_WriteSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( numSequencers ) );
+
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('#', 'S', 'Q', 'R'),
+		numSequencers);
 
 	//The sequencers are then saved
 	sequencer_l::iterator	si;
@@ -379,7 +395,12 @@ int ICARUS_Instance::SaveSignals( void )
 {
 	int	numSignals = m_signals.size();
 
-	m_interface->I_WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('I', 'S', 'I', 'G'),
+		numSignals);
 
 	signal_m::iterator	si;
 	STL_ITERATE( si, m_signals )
@@ -393,10 +414,15 @@ int ICARUS_Instance::SaveSignals( void )
 		int length = strlen( name ) + 1;
 
 		//Save out the string size
-		m_interface->I_WriteSaveData( INT_ID('S','I','G','#'), &length, sizeof ( length ) );
+		saved_game.write_chunk<int32_t>(
+			INT_ID('S', 'I', 'G', '#'),
+			length);
 
 		//Write out the string
-		m_interface->I_WriteSaveData( INT_ID('S','I','G','N'), (void *) name, length );
+		saved_game.write_chunk(
+			INT_ID('S', 'I', 'G', 'N'),
+			name,
+			length);
 	}
 
 	return true;
@@ -412,7 +438,13 @@ int ICARUS_Instance::Save( void )
 {	
 	//Save out a ICARUS save block header with the ICARUS version
 	double	version = ICARUS_VERSION;
-	m_interface->I_WriteSaveData( INT_ID('I','C','A','R'), &version, sizeof( version ) );
+
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
+
+	saved_game.write_chunk<double>(
+		INT_ID('I', 'C', 'A', 'R'),
+		version);
 
 	//Save out the signals
 	if ( SaveSignals() == false )
@@ -426,7 +458,9 @@ int ICARUS_Instance::Save( void )
 	if ( SaveSequencers() == false )
 		return false;
 
-	m_interface->I_WriteSaveData( INT_ID('I','E','N','D'), &version, sizeof( version ) );
+	saved_game.write_chunk<double>(
+		INT_ID('I', 'E', 'N', 'D'),
+		version);
 
 	return true;
 }
@@ -439,22 +473,32 @@ LoadSignals
 
 int ICARUS_Instance::LoadSignals( void )
 {
-	int numSignals;
+	int numSignals = 0;
 
-	m_interface->I_ReadSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ), NULL );
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('I', 'S', 'I', 'G'),
+		numSignals);
 
 	for ( int i = 0; i < numSignals; i++ )
 	{
 		char	buffer[1024];
-		int		length;
+		int		length = 0;
 
 		//Get the size of the string
-		m_interface->I_ReadSaveData( INT_ID('S','I','G','#'), &length, sizeof( length ), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('S', 'I', 'G', '#'),
+			length);
 
 		assert( length < (int)sizeof( buffer ) );
 
 		//Get the string
-		m_interface->I_ReadSaveData( INT_ID('S','I','G','N'), &buffer, length, NULL );
+		saved_game.read_chunk(
+			INT_ID('S', 'I', 'G', 'N'),
+			buffer,
+			length);
 
 		//Turn it on and add it to the system
 		Signal( (const char *) &buffer );
@@ -492,10 +536,15 @@ LoadSequence
 int ICARUS_Instance::LoadSequences( void )
 {
 	CSequence	*sequence;
-	int			numSequences;
+	int			numSequences = 0;
+
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
 
 	//Get the number of sequences to read in
-	m_interface->I_ReadSaveData( INT_ID('#','S','E','Q'), &numSequences, sizeof( numSequences ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('#', 'S', 'E', 'Q'),
+		numSequences);
 
 	int	*idTable = new int[ numSequences ];
 
@@ -503,7 +552,10 @@ int ICARUS_Instance::LoadSequences( void )
 		return false;
 
 	//Load the sequencer ID table
-	m_interface->I_ReadSaveData( INT_ID('S','Q','T','B'), idTable, sizeof( int ) * numSequences, NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('S', 'Q', 'T', 'B'),
+		idTable,
+		numSequences);
 
 	//First pass, allocate all container sequences and give them their proper IDs
 	if ( AllocateSequences( numSequences, idTable ) == false )
@@ -536,10 +588,15 @@ LoadSequencers
 int ICARUS_Instance::LoadSequencers( void )
 {
 	CSequencer	*sequencer;
-	int			numSequencers;
+	int			numSequencers = 0;
+
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
 
 	//Get the number of sequencers to load
-	m_interface->I_ReadSaveData( INT_ID('#','S','Q','R'), &numSequencers, sizeof( numSequencers ), NULL );
+	saved_game.read_chunk<int32_t>(
+		INT_ID('#', 'S', 'Q', 'R'),
+		numSequencers);
 	
 	//Load all sequencers
 	for ( int i = 0; i < numSequencers; i++ )
@@ -567,8 +624,14 @@ int ICARUS_Instance::Load( void )
 	Free();
 
 	//Check to make sure we're at the ICARUS save block
-	double	version;
-	m_interface->I_ReadSaveData( INT_ID('I','C','A','R'), &version, sizeof( version ), NULL );
+	double	version = 0.0;
+
+	ojk::SavedGameHelper saved_game(
+		m_interface->saved_game);
+
+	saved_game.read_chunk<double>(
+		INT_ID('I', 'C', 'A', 'R'),
+		version);
 
 	//Versions must match!
 	if ( version != ICARUS_VERSION )
@@ -598,7 +661,9 @@ int ICARUS_Instance::Load( void )
 		return false;
 	}
 
-	m_interface->I_ReadSaveData( INT_ID('I','E','N','D'), &version, sizeof( version ), NULL );
+	saved_game.read_chunk<double>(
+		INT_ID('I', 'E', 'N', 'D'),
+		version);
 
 	return true;
 }

@@ -10,14 +10,11 @@ shallow_clone: true #GitHub specific (ignores clone_depth)
 #do not build on tags
 skip_tags: true
 
-os: Visual Studio 2015 #  Windows Server 2012
+os: Visual Studio 2013
 
 environment:
-  VisualStudioVersion: "14.0"
-  CMAKE_GENERATOR: "Visual Studio 14 2015"
-  matrix:
-    - CMAKE_BUILD_TYPE: "Debug"
-    - CMAKE_BUILD_TYPE: "Release"
+  VisualStudioVersion: "12.0"
+  CMAKE_GENERATOR: "Visual Studio 12 2013"
 
 matrix:
   fast_finish: false #finish build once one of the jobs fails
@@ -27,7 +24,7 @@ platform:
   - x64
 
 configuration:
-  #- Debug
+  - Debug
   - Release
 
 #scripts that are called at very beginning, before repo cloning
@@ -51,22 +48,18 @@ before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
   #- set #debug: view all environment variables
   - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
-  - cmd: echo "Generator='%CMAKE_GENERATOR%', CMAKE_BUILD_TYPE='%CMAKE_BUILD_TYPE%'"
+  - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if exist build rmdir /q /s build #remove build dir
   - mkdir build
   - cmd: cd build
-  - cmd: cmake -G "%CMAKE_GENERATOR%" "-DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cmake -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: ls
-  #- mkdir ..\nmakebuild
-  #- cd ..\nmakebuild
-  #- cmd:  cmake -G "NMake Makefiles" "-DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE%" "%APPVEYOR_BUILD_FOLDER%"
-  #- cmd: ls
 
 build:
   parallel: true
   project: C:\projects\OpenJK\build\OpenJK.sln
-  verbosity: minimal #quiet|minimal|normal|detailed
+  verbosity: normal
 
 #scripts to run after build
 after_build:

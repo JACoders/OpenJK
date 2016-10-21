@@ -1018,6 +1018,54 @@ void AnglesToAxis( const vec3_t angles, matrix3_t axis ) {
 
 ///////////////////////////////////////////////////////////////////////////
 //
+//      VEC2
+//
+///////////////////////////////////////////////////////////////////////////
+vec2_t		vec2_zero = {0,0};
+
+void VectorAdd2( const vec2_t vec1, const vec2_t vec2, vec2_t vecOut )
+{
+	vecOut[0] = vec1[0]+vec2[0];
+	vecOut[1] = vec1[1]+vec2[1];
+}
+
+void VectorSubtract2( const vec2_t vec1, const vec2_t vec2, vec2_t vecOut )
+{
+	vecOut[0] = vec1[0]-vec2[0];
+	vecOut[1] = vec1[1]-vec2[1];
+}
+
+void VectorScale2( const vec2_t vecIn, float scale, vec2_t vecOut )
+{
+	vecOut[0] = vecIn[0]*scale;
+	vecOut[1] = vecIn[1]*scale;
+}
+
+void VectorMA2( const vec2_t vec1, float scale, const vec2_t vec2, vec2_t vecOut )
+{
+	vecOut[0] = vec1[0] + scale*vec2[0];
+	vecOut[1] = vec1[1] + scale*vec2[1];
+}
+
+void VectorSet2( vec2_t vec, float x, float y )
+{
+	vec[0]=x; vec[1]=y;
+}
+
+void VectorClear2( vec2_t vec )
+{
+	vec[0] = vec[1] = 0.0f;
+}
+
+void VectorCopy2( const vec2_t vecIn, vec2_t vecOut )
+{
+	vecOut[0] = vecIn[0];
+	vecOut[1] = vecIn[1];
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
 //      VEC3
 //
 ///////////////////////////////////////////////////////////////////////////

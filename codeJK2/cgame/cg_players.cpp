@@ -3604,10 +3604,10 @@ void CG_AddRefEntityWithPowerups( refEntity_t *ent, int powerups, centity_t *cen
 		tent.reType = RT_LATHE;
 
 		// Setting up the 2d control points, these get swept around to make a 3D lathed model
-		Vector2Set( tent.axis[0], 0.5, 0 );		// start point of curve
-		Vector2Set( tent.axis[1], 50,	85 );		// control point 1
-		Vector2Set( tent.axis[2], 135, -100 );		// control point 2
-		Vector2Set( tent.oldorigin, 0, -90 );		// end point of curve
+		VectorSet2( tent.axis[0], 0.5, 0 );		// start point of curve
+		VectorSet2( tent.axis[1], 50,	85 );		// control point 1
+		VectorSet2( tent.axis[2], 135, -100 );		// control point 2
+		VectorSet2( tent.oldorigin, 0, -90 );		// end point of curve
 
 		if ( gent->client->poisonTime && gent->client->poisonTime + 1000 > cg.time )
 		{
@@ -4372,7 +4372,7 @@ extern void FX_AddPrimitive( CEffect **effect, int killTime );
 //-------------------------------------------------------
 void CG_CheckSaberInWater( centity_t *cent, centity_t *scent, int modelIndex, vec3_t origin, vec3_t angles )
 {
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 	vec3_t		saberOrg;
 	if ( !client )
 	{
@@ -4409,7 +4409,7 @@ void CG_AddSaberBlade( centity_t *cent, centity_t *scent, refEntity_t *saber, in
 	trace_t	trace;
 	float	length;
 
-	gclient_s *client = cent->gent->client;
+	gclient_t *client = cent->gent->client;
 
 	if ( !client )
 	{

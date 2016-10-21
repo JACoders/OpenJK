@@ -160,6 +160,21 @@ mdxaCompQuatBone_t
 #ifndef MDXABONEDEF
 typedef struct {
 	float matrix[3][4];
+
+
+#ifdef __cplusplus
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<float>(matrix);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<float>(matrix);
+	}
+#endif // __cplusplus
 } mdxaBone_t;
 #endif
 

@@ -584,6 +584,31 @@ struct SLoopedEffect
 	int		mLoopStopTime;	//time to die
 	bool	mPortalEffect;	// rww - render this before skyportals, and not in the normal world view.
 	bool	mIsRelative;	// bolt this puppy on keep it updated
+
+
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<int32_t>(mId);
+		saved_game.write<int32_t>(mBoltInfo);
+		saved_game.write<int32_t>(mNextTime);
+		saved_game.write<int32_t>(mLoopStopTime);
+		saved_game.write<int8_t>(mPortalEffect);
+		saved_game.write<int8_t>(mIsRelative);
+		saved_game.skip(2);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<int32_t>(mId);
+		saved_game.read<int32_t>(mBoltInfo);
+		saved_game.read<int32_t>(mNextTime);
+		saved_game.read<int32_t>(mLoopStopTime);
+		saved_game.read<int8_t>(mPortalEffect);
+		saved_game.read<int8_t>(mIsRelative);
+		saved_game.skip(2);
+	}
 };
 
 class CFxScheduler

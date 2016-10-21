@@ -23,6 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "g_local.h"
 #include "../../code/Rufl/hstring.h"
+#include "../code/qcommon/ojk_saved_game_helper.h"
 
 #define MAX_GTIMERS	16384
 
@@ -164,6 +165,9 @@ void TIMER_Save( void )
 	int			j;
 	gentity_t	*ent;
 
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
 	for ( j = 0, ent = &g_entities[0]; j < MAX_GENTITIES; j++, ent++ )
 	{
 		int numTimers = TIMER_GetCount(j);
@@ -177,7 +181,9 @@ void TIMER_Save( void )
 		}
 
 		//Write out the timer information
-		gi.AppendToSaveGame(INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers));
+		saved_game.write_chunk<int32_t>(
+			INT_ID('T', 'I', 'M', 'E'),
+			numTimers);
 	
 		gtimer_t *p = g_timers[j];
 		assert ((numTimers && p) || (!numTimers && !p));
@@ -191,11 +197,20 @@ void TIMER_Save( void )
 			assert( length < 1024 );//This will cause problems when loading the timer if longer
 
 			//Write out the string size and data
-			gi.AppendToSaveGame(INT_ID('T','S','L','N'), (void*)&length, sizeof(length));
-			gi.AppendToSaveGame(INT_ID('T','S','N','M'), (void*)timerID, length);
+			saved_game.write_chunk<int32_t>(
+				INT_ID('T', 'S', 'L', 'N'),
+				length);
+
+			saved_game.write_chunk(
+				INT_ID('T', 'S', 'N', 'M'),
+				timerID,
+				length);
 
 			//Write out the timer data
-			gi.AppendToSaveGame(INT_ID('T','D','T','A'), (void *) &time, sizeof( time ) );
+			saved_game.write_chunk<int32_t>(
+				INT_ID('T', 'D', 'T', 'A'),
+				time);
+
 			p = p->next;
 		}
 	}
@@ -212,11 +227,16 @@ void TIMER_Load( void )
 	int j;
 	gentity_t	*ent;
 
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
 	for ( j = 0, ent = &g_entities[0]; j < MAX_GENTITIES; j++, ent++ )
 	{
-		int numTimers;
+		int numTimers = 0;
 
-		gi.ReadFromSaveGame( INT_ID('T','I','M','E'), (void *)&numTimers, sizeof(numTimers), NULL );
+		saved_game.read_chunk<int32_t>(
+			INT_ID('T', 'I', 'M', 'E'),
+			numTimers);
 
 		//Make sure there's something to read
 		if ( numTimers == 0 )
@@ -225,12 +245,14 @@ void TIMER_Load( void )
 		//Read back all entries
 		for ( int i = 0; i < numTimers; i++ )
 		{
-			int		length, time;
+			int		length = 0, time = 0;
 			char	tempBuffer[1024];	// Still ugly. Setting ourselves up for 007 AUF all over again. =)
 
 			assert (sizeof(g_timers[0]->time) == sizeof(time) );//make sure we're reading the same size as we wrote
 
-			gi.ReadFromSaveGame( INT_ID('T','S','L','N'), (void *) &length, sizeof( length ), NULL );
+			saved_game.read_chunk<int32_t>(
+				INT_ID('T', 'S', 'L', 'N'),
+				length);
 			
 			if ( length >= 1024 ) {
 				assert( 0 );
@@ -238,8 +260,16 @@ void TIMER_Load( void )
 			}
 
 			//Read the id and time
-			gi.ReadFromSaveGame( INT_ID('T','S','N','M'), (char *) tempBuffer, length, NULL );
-			gi.ReadFromSaveGame( INT_ID('T','D','T','A'), (void *) &time, sizeof( time ), NULL );
+			saved_game.read_chunk(
+				INT_ID('T', 'S', 'N', 'M'),
+				tempBuffer,
+				length);
+
+			tempBuffer[length] = '\0';
+
+			saved_game.read_chunk<int32_t>(
+				INT_ID('T', 'D', 'T', 'A'),
+				time);
 
 			//this is odd, we saved all the timers in the autosave, but not all the ents are spawned yet from an auto load, so skip it
 			if (ent->inuse)
