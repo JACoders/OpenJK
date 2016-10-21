@@ -175,6 +175,9 @@ extern void *g2SaberInstance;
 extern qboolean gEscaping;
 extern int gEscapeTime;
 
+// OpenJK-Alt Serverside - Jcinfo bitvalues
+#define CROUCH_OLD (1<<9)
+
 struct gentity_s {
 	//rww - entstate must be first, to correspond with the bg shared entity structure
 	entityState_t	s;				// communicated by server to clients
