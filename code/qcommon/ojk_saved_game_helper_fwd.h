@@ -290,11 +290,8 @@ template<typename T>
 class SavedGameClassArchiver
 {
 public:
-	static constexpr bool is_implemented()
-	{
-		return false;
-	}
-
+	enum { is_implemented = false };
+	
 	static void sg_export(
 		SavedGameHelper& saved_game,
 		const T& instance)
