@@ -843,12 +843,46 @@ static void Svcmd_Secrets_f(void)
 
 // PADAWAN - g_spskill 0 + cg_crosshairForceHint 1 + handicap 100
 // JEDI - g_spskill 1 + cg_crosshairForceHint 1 + handicap 100
-// JEDI KNIGHT - g_spskill 2 + cg_crosshairForceHint 0 + handicapp 100
+// JEDI KNIGHT - g_spskill 2 + cg_crosshairForceHint 0 + handicap 100
 // JEDI MASTER - g_spskill 2 + cg_crosshairForceHint 0 + handicap 50
 
+extern cvar_t *g_spskill;
 static void Svcmd_Difficulty_f(void)
 {
-	gi.Printf( S_COLOR_RED "This command is not yet implemented!" S_COLOR_WHITE "\n" );
+	if(gi.argc() == 1)
+	{
+		if(g_spskill->integer == 0)
+		{
+			gi.Printf( S_COLOR_GREEN "Current Difficulty: Padawan" S_COLOR_WHITE "\n" );
+		}
+		else if(g_spskill->integer == 1)
+		{
+			gi.Printf( S_COLOR_GREEN "Current Difficulty: Jedi" S_COLOR_WHITE "\n" );
+		}
+		else if(g_spskill->integer == 2)
+		{
+			int crosshairHint = gi.Cvar_VariableIntegerValue("cg_crosshairForceHint");
+			int handicap = gi.Cvar_VariableIntegerValue("handicap");
+			if(handicap == 100 && crosshairHint == 0)
+			{
+				gi.Printf( S_COLOR_GREEN "Current Difficulty: Jedi Knight" S_COLOR_WHITE "\n" );
+			}
+			else if(handicap == 50 && crosshairHint == 0)
+			{
+				gi.Printf( S_COLOR_GREEN "Current Difficulty: Jedi Master" S_COLOR_WHITE "\n" );
+			}
+			else
+			{
+				gi.Printf( S_COLOR_GREEN "Current Difficulty: Jedi Knight (Custom)" S_COLOR_WHITE "\n" );
+				gi.Printf( S_COLOR_GREEN "Crosshair Force Hint: %i" S_COLOR_WHITE "\n", crosshairHint != 0 ? 1 : 0 );
+				gi.Printf( S_COLOR_GREEN "Handicap: %i" S_COLOR_WHITE "\n", handicap );
+			}
+		}
+		else
+		{
+			gi.Printf( S_COLOR_RED "Invalid difficulty cvar set! g_spskill (%i) [0-2] is valid range only" S_COLOR_WHITE "\n", g_spskill->integer );
+		}
+	}
 }
 
 #define CMD_NONE				(0x00000000u)
