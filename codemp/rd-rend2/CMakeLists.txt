@@ -61,6 +61,8 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_surface.cpp"
 	"${MPDir}/rd-rend2/tr_vbo.cpp"
 	"${MPDir}/rd-rend2/tr_world.cpp"
+	"${MPDir}/rd-rend2/tr_weather.cpp"
+	"${MPDir}/rd-rend2/tr_weather.h"
 	)
 source_group("renderer" FILES ${MPRend2Files})
 

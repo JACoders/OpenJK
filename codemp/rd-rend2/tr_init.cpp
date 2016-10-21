@@ -25,6 +25,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ghoul2/g2_local.h"
 #include "tr_cache.h"
 #include "tr_allocator.h"
+#include "tr_weather.h"
 #include <algorithm>
 
 static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
@@ -1766,6 +1767,8 @@ void R_Init( void ) {
 
 	R_InitQueries();
 
+	R_InitWeatherSystem();
+
 	GLSL_EndLoadGPUShaders (shadersStartTime);
 
 #if defined(_DEBUG)
@@ -1794,6 +1797,8 @@ void RE_Shutdown( qboolean destroyWindow, qboolean restarting ) {
 		ri->Cmd_RemoveCommand( commands[i].cmd );
 
 	R_ShutdownBackEndFrameData();
+
+	R_ShutdownWeatherSystem();
 
 	R_ShutdownFonts();
 	if ( tr.registered ) {

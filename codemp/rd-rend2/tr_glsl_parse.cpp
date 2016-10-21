@@ -155,5 +155,13 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 	theProgram.shaders[1].source    = fragmentSource;
 	theProgram.shaders[1].firstLine = fragmentBlock->blockTextFirstLine;
 
+	Block *geometryBlock = FindBlock("Geometry", blocks, numBlocks);
+	if ( geometryBlock )
+	{
+		theProgram.shaders[2].type      = GPUSHADER_FRAGMENT;
+		theProgram.shaders[2].source    = fragmentSource;
+		theProgram.shaders[2].firstLine = fragmentBlock->blockTextFirstLine;
+	}
+
 	return theProgram;
 }

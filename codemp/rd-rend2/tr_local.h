@@ -1143,8 +1143,10 @@ struct Block
 
 enum GPUShaderType
 {
+	GPUSHADER_NONE,
 	GPUSHADER_VERTEX,
-	GPUSHADER_FRAGMENT
+	GPUSHADER_FRAGMENT,
+	GPUSHADER_GEOMETRY,
 };
 
 struct GPUShaderDesc
@@ -1408,7 +1410,8 @@ SURFACES
 typedef byte color4ub_t[4];
 
 // any changes in surfaceType must be mirrored in rb_surfaceTable[]
-typedef enum {
+typedef enum surfaceType_e
+{
 	SF_BAD,
 	SF_SKIP,				// ignore
 	SF_FACE,
@@ -1424,6 +1427,7 @@ typedef enum {
 	SF_VBO_MESH,
 	SF_VBO_MDVMESH,
 	SF_SPRITES,
+	SF_WEATHER,
 
 	SF_NUM_SURFACE_TYPES,
 	SF_MAX = 0x7fffffff			// ensures that sizeof( surfaceType_t ) == sizeof( int )
@@ -1492,6 +1496,11 @@ struct srfSprites_t
 
 	int numAttributes;
 	vertexAttribute_t *attributes;
+};
+
+struct srfWeather_t
+{
+	surfaceType_t surfaceType;
 };
 
 typedef struct
@@ -2141,6 +2150,7 @@ typedef struct {
 ** but may read fields that aren't dynamically modified
 ** by the frontend.
 */
+struct weatherSystem_t;
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
@@ -2240,6 +2250,8 @@ typedef struct trGlobals_s {
 	trRefEntity_t			*currentEntity;
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	model_t					*currentModel;
+
+	weatherSystem_t			*weatherSystem;
 
 	//
 	// GPU shader programs
@@ -2595,6 +2607,7 @@ void	GL_DrawIndexed(GLenum primitiveType, int numIndices, int offset,
 						int numInstances, int baseVertex);
 void	GL_MultiDrawIndexed(GLenum primitiveType, int *numIndices,
 							glIndex_t **offsets, int numDraws);
+void	GL_Draw( GLenum primitiveType, int firstVertex, int numVertices, int numInstances );
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
@@ -3416,6 +3429,12 @@ struct DrawCommand
 			GLsizei numIndices;
 			glIndex_t firstIndex;
 		} indexed;
+
+		struct DrawArrays
+		{
+			glIndex_t firstVertex;
+			GLsizei numVertices;
+		} arrays;
 	} params;
 };
 

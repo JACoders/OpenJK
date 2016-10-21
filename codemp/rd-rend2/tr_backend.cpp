@@ -424,6 +424,12 @@ void GL_MultiDrawIndexed(
 			numDraws);
 }
 
+void GL_Draw( GLenum primitiveType, int firstVertex, int numVertices, int numInstances )
+{
+	assert(numInstances > 0);
+	qglDrawArraysInstanced(primitiveType, firstVertex, numVertices, numInstances);
+}
+
 void GL_SetProjectionMatrix(matrix_t matrix)
 {
 	Matrix16Copy(matrix, glState.projection);
@@ -956,6 +962,16 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 					drawItem.draw.params.indexed.numIndices,
 					drawItem.draw.params.indexed.firstIndex,
 					drawItem.draw.numInstances, 0);
+				break;
+			}
+
+			case DRAW_COMMAND_ARRAYS:
+			{
+				GL_Draw(
+					drawItem.draw.primitiveType,
+					drawItem.draw.params.arrays.firstVertex,
+					drawItem.draw.params.arrays.numVertices,
+					drawItem.draw.numInstances);
 				break;
 			}
 
