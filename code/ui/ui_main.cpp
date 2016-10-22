@@ -2422,7 +2422,15 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 		dirlen = strlen(dirptr);
 
-		if (dirlen && dirptr[dirlen-1]=='/') dirptr[dirlen-1]='\0';
+		if (dirlen)
+		{
+			if (dirptr[dirlen-1]=='/')
+				dirptr[dirlen-1]='\0';
+		}
+		else
+		{
+			continue;
+		}
 
 		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
 			continue;
