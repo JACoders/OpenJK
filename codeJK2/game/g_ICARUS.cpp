@@ -638,7 +638,7 @@ Svcmd_ICARUS_f
 
 void Svcmd_ICARUS_f( void )
 {
-	char	*cmd = gi.argv( 1 );
+	const char *cmd = gi.argv( 1 );
 
 	if ( Q_stricmp( cmd, "log" ) == 0 )
 	{

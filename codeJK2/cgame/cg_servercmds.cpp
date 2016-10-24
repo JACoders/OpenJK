@@ -256,7 +256,7 @@ typedef struct serverCommand_s {
 	void( *func )(void);
 } serverCommand_t;
 
-int svcmdcmp( const void *a, const void *b ) {
+static int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((serverCommand_t*)b)->cmd );
 }
 
