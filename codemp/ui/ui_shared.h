@@ -199,7 +199,7 @@ typedef struct editFieldDef_s {
 	int paintOffset;		//
 } editFieldDef_t;
 
-#define MAX_MULTI_CVARS 32
+#define MAX_MULTI_CVARS 64//32
 
 typedef struct multiDef_s {
 	const char *cvarList[MAX_MULTI_CVARS];
@@ -313,6 +313,8 @@ typedef struct itemDef_s {
 	qboolean	disabled;					// Does this item ignore mouse and keyboard focus
 	int			invertYesNo;
 	int			xoffset;
+
+	qboolean disabledHidden;				// hide the item when 'disabled' is true (for generic image items)
 } itemDef_t;
 
 typedef struct menuDef_s {
@@ -520,8 +522,8 @@ void Menu_Reset(void);
 qboolean Menus_AnyFullScreenVisible( void );
 void  Menus_Activate(menuDef_t *menu);
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p);
-void Menu_ShowGroup (menuDef_t *menu, char *itemName, qboolean showFlag);
-void Menu_ItemDisable(menuDef_t *menu, char *name,int disableFlag);
+void Menu_ShowGroup (menuDef_t *menu, const char *itemName, qboolean showFlag);
+void Menu_ItemDisable(menuDef_t *menu, const char *name, qboolean disableFlag);
 int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name);
 itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *name);
 
