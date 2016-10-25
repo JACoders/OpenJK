@@ -254,7 +254,7 @@ Cmd_Argc() / Cmd_Argv()
 qboolean CG_ConsoleCommand( void ) {
 	consoleCommand_t	*command = NULL;
 
-	command = (consoleCommand_t *)bsearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
+	command = (consoleCommand_t *)Q_LinearSearch( CG_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
 
 	if ( !command )
 		return qfalse;
