@@ -265,6 +265,7 @@ qboolean CG_ConsoleCommand( void ) {
 
 static const char *gcmds[] = {
 	"entitylist",
+	"difficulty",
 	"force_distract",
 	"force_grip",
 	"force_heal",
@@ -283,6 +284,7 @@ static const char *gcmds[] = {
 	"runscript",
 	"saberAttackCycle",
 	"saberColor",
+	"secrets",
 	"setForceAll",
 	"setSaberAll",
 	"setobjective",
