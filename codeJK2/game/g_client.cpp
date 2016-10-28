@@ -696,6 +696,7 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 	{
 		char	s[MAX_STRING_CHARS];
 		const char	*var;
+		int saberActive;
 
 		gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
 
@@ -714,11 +715,12 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 								&client->ps.viewangles[2],
 								&client->ps.forcePowersKnown,
 								&client->ps.forcePower,
-								&client->ps.saberActive,
+								&saberActive,
 								&client->ps.saberAnimLevel,
 								&client->ps.saberLockEnemy,
 								&client->ps.saberLockTime
 					);
+			client->ps.saberActive = (saberActive ? qtrue : qfalse);
 			ent->health = client->ps.stats[STAT_HEALTH];
 
 // slight issue with ths for the moment in that although it'll correctly restore angles it doesn't take into account
