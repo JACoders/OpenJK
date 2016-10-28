@@ -716,12 +716,19 @@ int CIcarus::Load()
 	const unsigned char* sg_buffer_data = static_cast<const unsigned char*>(
 		saved_game.get_buffer_data());
 
-	const int sg_buffer_size = saved_game.get_buffer_size();
+	int sg_buffer_size = saved_game.get_buffer_size();
 
-	std::uninitialized_copy_n(
-		sg_buffer_data,
-		sg_buffer_size,
-		m_byBuffer);
+	if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) >= sizeof(m_byBuffer))
+	{
+		sg_buffer_size = 0;
+	}
+	else
+	{
+		std::uninitialized_copy_n(
+			sg_buffer_data,
+			sg_buffer_size,
+			m_byBuffer);
+	}
 
 	//Load all signals
 	if ( LoadSignals() == false )
@@ -849,12 +856,19 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 		const unsigned char* sg_buffer_data = static_cast<const unsigned char*>(
 			saved_game.get_buffer_data());
 
-		const int sg_buffer_size = saved_game.get_buffer_size();
+		int sg_buffer_size = saved_game.get_buffer_size();
 
-		std::uninitialized_copy_n(
-			sg_buffer_data,
-			sg_buffer_size,
-			m_byBuffer);
+		if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) >= sizeof(m_byBuffer))
+		{
+			sg_buffer_size = 0;
+		}
+		else
+		{
+			std::uninitialized_copy_n(
+				sg_buffer_data,
+				sg_buffer_size,
+				m_byBuffer);
+		}
 
 		m_ulBytesRead = 0;	//reset buffer
 	}

@@ -703,6 +703,9 @@ void G_LoadCachedRoffs()
 			INT_ID('S', 'L', 'E', 'N'),
 			len);
 
+		if (len < 0 || static_cast<size_t>(len) >= sizeof(buffer))
+			len = 0;
+
 		saved_game.read_chunk(
 			INT_ID('R', 'S', 'T', 'R'),
 			buffer,
