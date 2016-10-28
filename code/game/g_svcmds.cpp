@@ -581,7 +581,7 @@ void Svcmd_SaberAttackCycle_f( void )
 		//LIGHTSABERCOMBATSTYLE_TAVION
 		break;
 	case SS_STAFF:
-		gi.Printf( S_COLOR_MAGENTA" Lightsaber Combat Style: Staff\n" );
+		gi.Printf( S_COLOR_MAGENTA "Lightsaber Combat Style: Staff\n" );
 		//LIGHTSABERCOMBATSTYLE_TAVION
 		break;
 	}
