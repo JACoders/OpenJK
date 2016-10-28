@@ -558,7 +558,7 @@ void G_InitCvars( void ) {
 
 	// noset vars
 	gi.cvar( "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM );
-	gi.cvar( "gamedate", __DATE__ , CVAR_ROM );
+	gi.cvar( "gamedate", SOURCE_DATE , CVAR_ROM );
 	g_skippingcin = gi.cvar ("skippingCinematic", "0", CVAR_ROM);
 
 	// latched vars
@@ -620,7 +620,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 
 	gi.Printf ("------- Game Initialization -------\n");
 	gi.Printf ("gamename: %s\n", GAMEVERSION);
-	gi.Printf ("gamedate: %s\n", __DATE__);
+	gi.Printf ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );
 

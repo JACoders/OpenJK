@@ -302,6 +302,15 @@ if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
 endif()
 
+# https://reproducible-builds.org/specs/source-date-epoch/
+if (NOT ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL ""))
+	execute_process(COMMAND "date"
+		"--date=@$ENV{SOURCE_DATE_EPOCH}" "+%b %_d %Y"
+		OUTPUT_VARIABLE source_date
+		ERROR_QUIET
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	set(SharedDefines ${SharedDefines} "SOURCE_DATE=\"${source_date}\"")
+endif()
 
 
 

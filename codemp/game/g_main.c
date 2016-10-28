@@ -193,7 +193,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 
 	trap->Print ("------- Game Initialization -------\n");
 	trap->Print ("gamename: %s\n", GAMEVERSION);
-	trap->Print ("gamedate: %s\n", __DATE__);
+	trap->Print ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );
 
