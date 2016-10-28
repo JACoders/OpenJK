@@ -349,7 +349,9 @@ static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *fra
 	int		leafnum;
 	const byte *clientpvs;
 	const byte *bitvector;
+#ifndef JK2_MODE
 	qboolean sightOn = qfalse;
+#endif
 
 	// during an error shutdown message we may need to transmit
 	// the shutdown message after the server has shutdown, so
