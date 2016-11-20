@@ -59,3 +59,8 @@ build:
 #scripts to run after build
 after_build:
   - cmd: cmake --build . --target INSTALL
+  - cmd: cd install/JediAcademy
+  - ps: 7z a "openjk-$($(Get-Date).ToString('yyyy-MM-dd'))-$($env:appveyor_repo_commit.substring(0,8))-windows.zip" *.exe *.dll base/*.pk3 base/jagame*.dll OpenJK/*.pk3 OpenJK/jagame*.dll
+
+artifacts:
+  - path: 'build/install/JediAcademy/*.zip'
