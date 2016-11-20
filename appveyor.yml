@@ -58,5 +58,4 @@ build:
 
 #scripts to run after build
 after_build:
-  - cmd: cd build
   - cmd: cmake --build . --target INSTALL
