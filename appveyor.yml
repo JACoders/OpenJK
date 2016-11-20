@@ -35,11 +35,6 @@ init:
   #- cmake --help #debug: view available generators
   - python --version #for tests, todo (try starting the built executables)
 
-#scripts that run after cloning repository
-install:
-  #Add cl.exe in path (for nmake)
-  #'"C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64'
-
 #where to clone the git repository to
 clone_folder: C:\projects\OpenJK
 
@@ -51,9 +46,9 @@ before_build:
   - cmd: echo "Generator='%CMAKE_GENERATOR%'"
   - cmd: echo "Platform='%Platform%'"
   - cmd: if exist build rmdir /q /s build #remove build dir
-  - mkdir build
+  - cmd: mkdir build
   - cmd: cd build
-  - cmd: cmake -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: cmake -DCMAKE_INSTALL_PREFIX=install -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
   - cmd: ls
 
 build:
@@ -63,3 +58,5 @@ build:
 
 #scripts to run after build
 after_build:
+  - cmd: cd build
+  - cmd: cmake --build . --target INSTALL
