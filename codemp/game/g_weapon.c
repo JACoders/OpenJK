@@ -4408,7 +4408,7 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 			else
 				VectorSet(origin,ent->client->ps.origin[0],ent->client->ps.origin[1],ent->client->ps.origin[2] + 35);
 
-			missile = CreateMissile( origin, fwd, 4500, 10000, ent, qfalse);
+			missile = CreateMissile( origin, fwd, 5500, 10000, ent, qfalse);
 
 			missile->classname = "flech_proj";
 			missile->s.weapon = WP_FLECHETTE;
