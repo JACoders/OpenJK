@@ -6150,8 +6150,9 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		if (targ->client && targ->s.number < MAX_CLIENTS &&
 			(mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT))
 		{ //uh.. shock them or something. what the hell, I don't know.
-            if (targ->client->ps.weaponTime <= 0)
-			{ //yeah, we were supposed to be beta a week ago, I don't feel like
+			// zyk: now always stuns the enemy
+            //if (targ->client->ps.weaponTime <= 0)
+			//{ //yeah, we were supposed to be beta a week ago, I don't feel like
 				//breaking the game so I'm gonna be safe and only do this only
 				//if your weapon is not busy
 				targ->client->ps.weaponTime = 2000;
@@ -6161,7 +6162,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 				{
 					targ->client->ps.weaponstate = WEAPON_READY;
 				}
-			}
+			//}
 		}
 
 		if (targ->client && (targ->client->ps.fd.forcePowersActive & (1 << FP_RAGE)) && (inflictor->client || attacker->client))

@@ -15163,6 +15163,12 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 							player_ent->client->ps.weaponTime = 3000;
 							player_ent->client->ps.electrifyTime = level.time + 3000;
+
+							if (player_ent->client->ps.weaponstate == WEAPON_CHARGING ||
+								player_ent->client->ps.weaponstate == WEAPON_CHARGING_ALT)
+							{
+								player_ent->client->ps.weaponstate = WEAPON_READY;
+							}
 						}
 					}
 
