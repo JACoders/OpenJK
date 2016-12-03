@@ -10055,6 +10055,16 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		trap->SendServerCommand( ent-g_entities, "print \"You already have the Force Tank Upgrade.\n\"" );
 		return;
 	}
+	else if (value == 53 && ent->client->pers.secrets_found & (1 << 2))
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You already have the Unique Ability 1.\n\"");
+		return;
+	}
+	else if (value == 54 && ent->client->pers.secrets_found & (1 << 3))
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You already have the Unique Ability 2.\n\"");
+		return;
+	}
 
 	// zyk: buying the item if player has enough credits
 	if (ent->client->pers.credits >= item_costs[value-1])
@@ -14717,7 +14727,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					rpg_skill_counter(ent, 200);
 
-					ent->client->pers.unique_skill_timer = level.time + 40000;
+					ent->client->pers.unique_skill_timer = level.time + 35000;
 				}
 				else
 				{
@@ -15028,7 +15038,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					rpg_skill_counter(ent, 200);
 
-					ent->client->pers.unique_skill_timer = level.time + 40000;
+					ent->client->pers.unique_skill_timer = level.time + 35000;
 				}
 				else
 				{
