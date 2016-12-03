@@ -5853,7 +5853,7 @@ void quest_power_events(gentity_t *ent)
 						zyk_quest_effect_spawn(poison_mushrooms_user, ent, "zyk_quest_effect_poison", "0", "noghri_stick/gas_cloud", 0, 0, 0, 800);
 
 						// zyk: Universe Power
-						if (ent->client->pers.quest_power_status & (1 << 13))
+						if (poison_mushrooms_user->client->pers.quest_power_status & (1 << 13))
 							G_Damage(ent,poison_mushrooms_user,poison_mushrooms_user,NULL,NULL,35,0,MOD_UNKNOWN);
 						else
 							G_Damage(ent,poison_mushrooms_user,poison_mushrooms_user,NULL,NULL,32,0,MOD_UNKNOWN);
