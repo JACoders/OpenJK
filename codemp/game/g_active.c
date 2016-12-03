@@ -3490,7 +3490,7 @@ void ClientThink_real( gentity_t *ent ) {
 
 								rpg_skill_counter(ent, 200);
 
-								ent->client->pers.unique_skill_timer = level.time + 55000;
+								ent->client->pers.unique_skill_timer = level.time + 50000;
 							}
 							else
 							{
