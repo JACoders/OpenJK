@@ -7580,12 +7580,14 @@ static qboolean G_KickDownable(gentity_t *ent)
 		return qfalse;
 	}
 
+	/* zyk: now it is possible to knockdown people with saber
 	if (ent->client->ps.weaponTime <= 0 &&
 		ent->client->ps.weapon == WP_SABER &&
 		ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
 	{
 		return qfalse;
 	}
+	*/
 
 	return qtrue;
 }
