@@ -5034,6 +5034,29 @@ void sleeping_flowers(gentity_t *ent, int stun_time, int distance)
 	}
 }
 
+// zyk: Acid Water
+void acid_water(gentity_t *ent, int distance, int damage)
+{
+	int i = 0;
+	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		damage += 15;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_acid", "4", "env/acid_splash", 200, damage, 35, 10000);
+		}
+	}
+}
+
 // zyk: Time Power
 void time_power(gentity_t *ent, int distance, int duration)
 {
