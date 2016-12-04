@@ -5929,11 +5929,56 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 	{
 		return qfalse;
 	}
-	else if (selected_power < 1 || selected_power > 22)
+	else if (selected_power == 23 && !(ent->client->pers.defeated_guardians & (1 << 4)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 24 && !(ent->client->pers.defeated_guardians & (1 << 5)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 25 && !(ent->client->pers.defeated_guardians & (1 << 6)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 26 && !(ent->client->pers.defeated_guardians & (1 << 7)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 27 && !(ent->client->pers.defeated_guardians & (1 << 8)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 28 && !(ent->client->pers.defeated_guardians & (1 << 9)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 29 && !(ent->client->pers.defeated_guardians & (1 << 10)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 30 && !(ent->client->pers.defeated_guardians & (1 << 11)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power == 31 && !(ent->client->pers.defeated_guardians & (1 << 12)) &&
+		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
+	{
+		return qfalse;
+	}
+	else if (selected_power < 1 || selected_power > 31)
 	{ // zyk: if, for some reason, there is an invalid selected power value, does not allow it
 		return qfalse;
 	}
-	else if (ent->client->sess.magic_master_disabled_powers & (1 << selected_power))
+	else if (ent->client->sess.magic_master_disabled_powers & (1 << (selected_power - 1)))
 	{ // zyk: this power was disabled by the player
 		return qfalse;
 	}
@@ -6031,6 +6076,42 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
+	else if (selected_power == 23)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^4Acid Water           ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 24)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^3Shifting Sand        ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 25)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^2Tree of Life         ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 26)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^5Magic Drain          ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 27)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^6Fast and Slow        ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 28)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^1Flaming Area         ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 29)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^7Reverse Wind         ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 30)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^3Enemy Nerf           ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == 31)
+	{
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^5Ice Block            ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
 }
 
 // zyk: returns the amount of magic powers that are enabled with /magic command
@@ -6039,7 +6120,7 @@ int zyk_number_of_enabled_magic_powers(gentity_t *ent)
 	int i = 0;
 	int number_of_enabled_powers = 0;
 
-	for (i = 1; i <= 22; i++)
+	for (i = 1; i <= 31; i++)
 	{
 		if (!(ent->client->sess.magic_master_disabled_powers & (1 << i)))
 		{
@@ -6062,7 +6143,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_special_power++;
-			if (ent->client->sess.selected_special_power == 23)
+			if (ent->client->sess.selected_special_power == 32)
 				ent->client->sess.selected_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
@@ -6072,7 +6153,7 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_special_power--;
 			if (ent->client->sess.selected_special_power == 0)
-				ent->client->sess.selected_special_power = 22;
+				ent->client->sess.selected_special_power = 31;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 
@@ -6091,7 +6172,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_left_special_power++;
-			if (ent->client->sess.selected_left_special_power == 23)
+			if (ent->client->sess.selected_left_special_power == 32)
 				ent->client->sess.selected_left_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
@@ -6101,7 +6182,7 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_left_special_power--;
 			if (ent->client->sess.selected_left_special_power == 0)
-				ent->client->sess.selected_left_special_power = 22;
+				ent->client->sess.selected_left_special_power = 31;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 
@@ -6120,7 +6201,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_right_special_power++;
-			if (ent->client->sess.selected_right_special_power == 23)
+			if (ent->client->sess.selected_right_special_power == 32)
 				ent->client->sess.selected_right_special_power = 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
@@ -6130,7 +6211,7 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		{
 			ent->client->sess.selected_right_special_power--;
 			if (ent->client->sess.selected_right_special_power == 0)
-				ent->client->sess.selected_right_special_power = 22;
+				ent->client->sess.selected_right_special_power = 31;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 

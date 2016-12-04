@@ -15417,18 +15417,23 @@ void Cmd_Magic_f( gentity_t *ent ) {
 
 	if (trap->Argc() == 1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"\n 1 - Inner Area Damage - %s^7\n 2 - Healing Water - %s^7\n 3 - Water Splash - %s^7\n 4 - Earthquake - %s^7\n 5 - Rockfall - %s^7\n 6 - Sleeping Flowers - %s^7\n 7 - Poison Mushrooms - %s^7\n 8 - Magic Shield - %s^7\n 9 - Dome of Damage - %s^7\n10 - Ultra Speed - %s^7\n11 - Slow Motion - %s^7\n12 - Flame Burst - %s^7\n13 - Ultra Flame - %s^7\n14 - Blowing Wind - %s^7\n15 - Hurricane - %s^7\n16 - Ultra Resistance - %s^7\n17 - Ultra Strength - %s^7\n18 - Ice Stalagmite - %s^7\n19 - Ice Boulder - %s^7\n20 - Healing Area - %s^7\n21 - Magic Explosion - %s^7\n22 - Lightning Dome - %s^7\n\"", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 1)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 2)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 3)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 4)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 5)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 6)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 7)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 8)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 9)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 10)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 11)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 12)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 13)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 14)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 15)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 16)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 17)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 18)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 19)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 20)) ? "^2yes" : "^1no", 
-			!(ent->client->sess.magic_master_disabled_powers & (1 << 21)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 22)) ? "^2yes" : "^1no") );
+		trap->SendServerCommand( ent-g_entities, va("print \"\n 1 - Inner Area Damage - %s^7\n 2 - Healing Water - %s^7\n 3 - Water Splash - %s^7\n 4 - Earthquake - %s^7\n 5 - Rockfall - %s^7\n 6 - Sleeping Flowers - %s^7\n 7 - Poison Mushrooms - %s^7\n 8 - Magic Shield - %s^7\n 9 - Dome of Damage - %s^7\n10 - Ultra Speed - %s^7\n11 - Slow Motion - %s^7\n12 - Flame Burst - %s^7\n13 - Ultra Flame - %s^7\n14 - Blowing Wind - %s^7\n15 - Hurricane - %s^7\n16 - Ultra Resistance - %s^7\n17 - Ultra Strength - %s^7\n18 - Ice Stalagmite - %s^7\n19 - Ice Boulder - %s^7\n20 - Healing Area - %s^7\n21 - Magic Explosion - %s^7\n22 - Lightning Dome - %s^7\n23 - Acid Water - %s^7\n24 - Shifting Sand - %s^7\n25 - Tree of Life - %s^7\n26 - Magic Drain - %s^7\n27 - Fast and Slow - %s^7\n28 - Flaming Area - %s^7\n29 - Reverse Wind - %s^7\n30 - Enemy Nerf - %s^7\n31 - Ice Block - %s^7\n\"", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 0)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 1)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 2)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 3)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 4)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 5)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 6)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 7)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 8)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 9)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 10)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 11)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 12)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 13)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 14)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 15)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 16)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 17)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 18)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 19)) ? "^2yes" : "^1no", 
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 20)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 21)) ? "^2yes" : "^1no",
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 22)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 23)) ? "^2yes" : "^1no",
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 24)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 25)) ? "^2yes" : "^1no",
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 26)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 27)) ? "^2yes" : "^1no",
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 28)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 29)) ? "^2yes" : "^1no",
+			!(ent->client->sess.magic_master_disabled_powers & (1 << 30)) ? "^2yes" : "^1no") );
 	}
 	else
 	{
@@ -15438,21 +15443,21 @@ void Cmd_Magic_f( gentity_t *ent ) {
 
 		magic_power = atoi(arg1);
 
-		if (magic_power < 1 || magic_power > 22)
+		if (magic_power < 1 || magic_power > 31)
 		{
 			trap->SendServerCommand( ent-g_entities, "print \"Invalid magic power.\n\"" );
 			return;
 		}
 
-		if (ent->client->sess.magic_master_disabled_powers & (1 << magic_power))
+		if (ent->client->sess.magic_master_disabled_powers & (1 << (magic_power - 1)))
 		{
-			ent->client->sess.magic_master_disabled_powers &= ~(1 << magic_power);
+			ent->client->sess.magic_master_disabled_powers &= ~(1 << (magic_power - 1));
 			zyk_save_magic_master_config(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"Enabled a magic power.\n\"" );
 		}
 		else
 		{
-			ent->client->sess.magic_master_disabled_powers |= (1 << magic_power);
+			ent->client->sess.magic_master_disabled_powers |= (1 << (magic_power - 1));
 			zyk_save_magic_master_config(ent);
 			trap->SendServerCommand( ent-g_entities, "print \"Disabled a magic power.\n\"" );
 		}
