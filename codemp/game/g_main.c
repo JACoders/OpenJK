@@ -4578,6 +4578,38 @@ void blowing_wind(gentity_t *ent, int distance, int duration)
 	}
 }
 
+// zyk: Reverse Wind
+void reverse_wind(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		distance += 200;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			player_ent->client->pers.quest_power_user3_id = ent->s.number;
+			player_ent->client->pers.quest_power_status |= (1 << 20);
+			player_ent->client->pers.quest_target6_timer = level.time + duration;
+
+			// zyk: gives fall kill to the owner of this power
+			player_ent->client->ps.otherKiller = ent->s.number;
+			player_ent->client->ps.otherKillerTime = level.time + duration;
+			player_ent->client->ps.otherKillerDebounceTime = level.time + 100;
+
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/vacuum.mp3"));
+		}
+	}
+}
+
 // zyk: Poison Mushrooms
 void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 {
@@ -6267,6 +6299,38 @@ void quest_power_events(gentity_t *ent)
 				else
 				{
 					ent->client->pers.quest_power_status &= ~(1 << 19);
+				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 20))
+			{ // zyk: Reverse Wind
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 20);
+				}
+
+				if (ent->client->pers.quest_target6_timer > level.time)
+				{
+					gentity_t *reverse_wind_user = &g_entities[ent->client->pers.quest_power_user3_id];
+
+					if (reverse_wind_user && reverse_wind_user->client)
+					{
+						vec3_t dir, forward;
+
+						VectorSubtract(reverse_wind_user->client->ps.origin, ent->client->ps.origin, forward);
+						VectorNormalize(forward);
+
+						if (ent->client->ps.groundEntityNum != ENTITYNUM_NONE)
+							VectorScale(forward, 90.0, dir);
+						else
+							VectorScale(forward, 25.0, dir);
+
+						VectorAdd(ent->client->ps.velocity, dir, ent->client->ps.velocity);
+					}
+				}
+				else
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 20);
 				}
 			}
 		}

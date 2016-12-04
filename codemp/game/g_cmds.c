@@ -3807,6 +3807,7 @@ extern void tree_of_life(gentity_t *ent);
 extern void magic_drain(gentity_t *ent, int distance);
 extern void fast_and_slow(gentity_t *ent, int distance, int duration);
 extern void flaming_area(gentity_t *ent, int damage);
+extern void reverse_wind(gentity_t *ent, int distance, int duration);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3983,6 +3984,11 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 						{ // zyk: Tree of Life
 							use_this_power = 25;
+						}
+						else if (ent->client->pers.rpg_class == 2 && (ent->client->pers.defeated_guardians & (1 << 10) ||
+							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Reverse Wind
+							use_this_power = 29;
 						}
 						else if (ent->client->pers.rpg_class == 3 && (ent->client->pers.defeated_guardians & (1 << 5) ||
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
@@ -4377,6 +4383,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 18000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Flaming Area!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 29 && zyk_enable_reverse_wind.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_reverse_wind_mp_cost.integer * universe_mp_cost_factor)))
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						reverse_wind(ent, 700, 5000);
+						ent->client->pers.magic_power -= (int)ceil((zyk_reverse_wind_mp_cost.integer * universe_mp_cost_factor));
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + 10000;
+						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Reverse Wind!\"", ent->client->pers.netname));
 					}
 				}
 
@@ -14949,7 +14966,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 			}
 			else if (ent->client->pers.rpg_class == 7)
-			{ // zyk: Force Gunner Ammo Fill. Recovers some ammo in all of his ammo skills
+			{ // zyk: Force Gunner Thermal Throw. Throws a high damage thermal
 				if (ent->client->ps.ammo[AMMO_POWERCELL] >= 5 && ent->client->ps.ammo[AMMO_THERMAL] >= 1)
 				{
 					ent->client->ps.ammo[AMMO_POWERCELL] -= 5;

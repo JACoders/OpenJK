@@ -891,6 +891,7 @@ typedef struct clientPersistant_s {
 	// 17 - using Shifting Sand
 	// 18 - Shifting Sand after teleport
 	// 19 - using Tree of Life
+	// 20 - hit by Reverse Wind
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses
