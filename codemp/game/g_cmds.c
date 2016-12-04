@@ -3809,6 +3809,7 @@ extern void fast_and_slow(gentity_t *ent, int distance, int duration);
 extern void flaming_area(gentity_t *ent, int damage);
 extern void reverse_wind(gentity_t *ent, int distance, int duration);
 extern void enemy_nerf(gentity_t *ent, int distance);
+extern void ice_block(gentity_t *ent, int duration);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -4020,6 +4021,11 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 						{ // zyk: Fast and Slow
 							use_this_power = 27;
+						}
+						else if (ent->client->pers.rpg_class == 9 && (ent->client->pers.defeated_guardians & (1 << 12) ||
+							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Ice Cube
+							use_this_power = 31;
 						}
 					}
 				}
@@ -4411,6 +4417,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 16000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Enemy Nerf!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 31 && zyk_enable_ice_block.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ice_block_mp_cost.integer * universe_mp_cost_factor)))
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						ice_block(ent, 4000);
+						ent->client->pers.magic_power -= (int)ceil((zyk_ice_block_mp_cost.integer * universe_mp_cost_factor));
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (20000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + 20000;
+						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Ice Block!\"", ent->client->pers.netname));
 					}
 				}
 

@@ -893,6 +893,7 @@ typedef struct clientPersistant_s {
 	// 19 - using Tree of Life
 	// 20 - hit by Reverse Wind
 	// 21 - hit by Enemy Nerf
+	// 22 - using Ice Block
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses
@@ -909,6 +910,7 @@ typedef struct clientPersistant_s {
 	int quest_power4_timer;
 	int quest_power5_timer;
 	int quest_power6_timer;
+	int quest_power7_timer;
 
 	// zyk: timers used by the quest powers hitting this player
 	int quest_target1_timer;

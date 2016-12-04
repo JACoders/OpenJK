@@ -5396,6 +5396,64 @@ void ice_boulder(gentity_t *ent, int distance, int damage)
 	}
 }
 
+void zyk_spawn_ice_block(gentity_t *ent, int duration, int pitch, int yaw, int x_offset, int y_offset, int z_offset)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent, "classname", "misc_model_breakable");
+	zyk_set_entity_field(new_ent, "spawnflags", "65537");
+	zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)ent->r.currentOrigin[0], (int)ent->r.currentOrigin[1], (int)ent->r.currentOrigin[2]));
+
+	zyk_set_entity_field(new_ent, "angles", va("%d %d 0", pitch, yaw));
+
+	if (x_offset == 0 && y_offset != 0)
+	{
+		zyk_set_entity_field(new_ent, "mins", va("%d -50 %d", y_offset * -1, y_offset * -1));
+		zyk_set_entity_field(new_ent, "maxs", va("%d 50 %d", y_offset, y_offset));
+	}
+	else if (x_offset != 0 && y_offset == 0)
+	{
+		zyk_set_entity_field(new_ent, "mins", va("-50 %d %d", x_offset * -1, x_offset * -1));
+		zyk_set_entity_field(new_ent, "maxs", va("50 %d %d", x_offset, x_offset));
+	}
+	else if (x_offset == 0 && y_offset == 0)
+	{
+		zyk_set_entity_field(new_ent, "mins", va("%d %d -50", z_offset * -1, z_offset * -1));
+		zyk_set_entity_field(new_ent, "maxs", va("%d %d 50", z_offset, z_offset));
+	}
+
+	zyk_set_entity_field(new_ent, "model", "models/map_objects/rift/crystal_wall.md3");
+
+	zyk_set_entity_field(new_ent, "targetname", "zyk_ice_block");
+
+	zyk_set_entity_field(new_ent, "zykmodelscale", "200");
+
+	zyk_spawn_entity(new_ent);
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+}
+
+// zyk: Ice Block
+void ice_block(gentity_t *ent, int duration)
+{
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 2000;
+	}
+
+	zyk_spawn_ice_block(ent, duration, 0, 0, -140, 0, 0);
+	zyk_spawn_ice_block(ent, duration, 0, 90, 140, 0, 0);
+	zyk_spawn_ice_block(ent, duration, 0, 179, 0, -140, 0);
+	zyk_spawn_ice_block(ent, duration, 0, -90, 0, 140, 0);
+	zyk_spawn_ice_block(ent, duration, 90, 0, 0, 0, -140);
+	zyk_spawn_ice_block(ent, duration, -90, 0, 0, 0, 140);
+
+	ent->client->pers.quest_power_status |= (1 << 22);
+	ent->client->pers.quest_power7_timer = level.time + duration;
+}
+
 // zyk: Ultra Drain
 void ultra_drain(gentity_t *ent, int radius, int damage, int duration)
 {
@@ -6371,6 +6429,19 @@ void quest_power_events(gentity_t *ent)
 				if (ent->client->pers.quest_target7_timer < level.time)
 				{
 					ent->client->pers.quest_power_status &= ~(1 << 21);
+				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 22))
+			{ // zyk: Ice Block
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 22);
+				}
+
+				if (ent->client->pers.quest_power7_timer < level.time)
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 22);
 				}
 			}
 		}
