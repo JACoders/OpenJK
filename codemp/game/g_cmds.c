@@ -3806,6 +3806,7 @@ extern void shifting_sand(gentity_t *ent, int distance);
 extern void tree_of_life(gentity_t *ent);
 extern void magic_drain(gentity_t *ent, int distance);
 extern void fast_and_slow(gentity_t *ent, int distance, int duration);
+extern void flaming_area(gentity_t *ent, int damage);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3987,6 +3988,11 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 						{ // zyk: Shifting Sand
 							use_this_power = 24;
+						}
+						else if (ent->client->pers.rpg_class == 4 && (ent->client->pers.defeated_guardians & (1 << 9) ||
+							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Flaming Area
+							use_this_power = 28;
 						}
 						else if (ent->client->pers.rpg_class == 5 && (ent->client->pers.defeated_guardians & (1 << 4) ||
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
@@ -4360,6 +4366,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 12000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Fast and Slow!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 28 && zyk_enable_flaming_area.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_flaming_area_mp_cost.integer * universe_mp_cost_factor)))
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						flaming_area(ent, 30);
+						ent->client->pers.magic_power -= (int)ceil((zyk_flaming_area_mp_cost.integer * universe_mp_cost_factor));
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (18000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + 18000;
+						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Flaming Area!\"", ent->client->pers.netname));
 					}
 				}
 

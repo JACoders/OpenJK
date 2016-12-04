@@ -5508,6 +5508,55 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 	}
 }
 
+// zyk: spawns the flames around the player
+void flaming_area_flames(gentity_t *ent, char *targetname, char *spawnflags, char *effect_path, int start_time, int damage, int radius, int duration, int xoffset, int yoffset)
+{
+	gentity_t *new_ent = G_Spawn();
+
+	zyk_set_entity_field(new_ent, "classname", "fx_runner");
+	zyk_set_entity_field(new_ent, "spawnflags", spawnflags);
+	zyk_set_entity_field(new_ent, "targetname", targetname);
+	zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)ent->r.currentOrigin[0] + xoffset, (int)ent->r.currentOrigin[1] + yoffset, (int)ent->r.currentOrigin[2]));
+
+	new_ent->s.modelindex = G_EffectIndex(effect_path);
+
+	zyk_spawn_entity(new_ent);
+
+	if (damage > 0)
+		new_ent->splashDamage = damage;
+
+	if (radius > 0)
+		new_ent->splashRadius = radius;
+
+	if (start_time > 0)
+		new_ent->nextthink = level.time + start_time;
+
+	G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/fire_lp.wav"));
+
+	level.special_power_effects[new_ent->s.number] = ent->s.number;
+	level.special_power_effects_timer[new_ent->s.number] = level.time + duration;
+}
+
+// zyk: Flaming Area
+void flaming_area(gentity_t *ent, int damage)
+{
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		damage *= 1.5;
+	}
+
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, -50, -50);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, -50, 0);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, -50, 50);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, 0, -50);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, 0, 0);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, 0, 50);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, 50, -50);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, 50, 0);
+	flaming_area_flames(ent, "zyk_quest_effect_flaming_area", "4", "env/fire", 0, damage, 50, 5000, 50, 50);
+}
+
 // zyk: Hurricane
 void hurricane(gentity_t *ent, int distance, int duration)
 {
