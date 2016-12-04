@@ -5054,6 +5054,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		damage = (int)ceil(damage*1.15);
 	}
 
+	if (attacker && attacker->client && attacker->client->pers.quest_power_status & (1 << 21))
+	{ // zyk: Enemy Nerf decreases damage
+		damage = (int)ceil(damage*0.92);
+	}
+
 	if (level.gametype == GT_SIEGE)
 	{
 		damage = (int)ceil(damage*zyk_scale_siege_damage.value);
@@ -5111,6 +5116,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (targ && targ->client && (targ->NPC || targ->client->sess.amrpgmode == 2) && targ->client->pers.quest_power_status & (1 << 16))
 	{ // zyk: Eternity Power reduces damage of every attack
 		damage = (int)ceil(damage*0.85);
+	}
+
+	if (targ && targ->client && targ->client->pers.quest_power_status & (1 << 21))
+	{ // zyk: Enemy Nerf increases damage taken
+		damage = (int)ceil(damage*1.08);
 	}
 
 	// zyk: player or npc with Magic Shield takes little damage

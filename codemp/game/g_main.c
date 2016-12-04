@@ -4610,6 +4610,33 @@ void reverse_wind(gentity_t *ent, int distance, int duration)
 	}
 }
 
+// zyk: Enemy Nerf
+void enemy_nerf(gentity_t *ent, int distance)
+{
+	int i = 0;
+	int targets_hit = 0;
+	int duration = 7000;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 2000;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			player_ent->client->pers.quest_target7_timer = level.time + duration;
+			player_ent->client->pers.quest_power_status |= (1 << 21);
+
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
+		}
+	}
+}
+
 // zyk: Poison Mushrooms
 void poison_mushrooms(gentity_t *ent, int min_distance, int max_distance)
 {
@@ -6331,6 +6358,19 @@ void quest_power_events(gentity_t *ent)
 				else
 				{
 					ent->client->pers.quest_power_status &= ~(1 << 20);
+				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 21))
+			{ // zyk: Enemy Nerf
+				if (ent->client->pers.quest_power_status & (1 << 0))
+				{ // zyk: testing for Immunity Power in target player
+					ent->client->pers.quest_power_status &= ~(1 << 21);
+				}
+
+				if (ent->client->pers.quest_target7_timer < level.time)
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 21);
 				}
 			}
 		}

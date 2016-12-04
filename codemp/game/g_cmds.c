@@ -3808,6 +3808,7 @@ extern void magic_drain(gentity_t *ent, int distance);
 extern void fast_and_slow(gentity_t *ent, int distance, int duration);
 extern void flaming_area(gentity_t *ent, int damage);
 extern void reverse_wind(gentity_t *ent, int distance, int duration);
+extern void enemy_nerf(gentity_t *ent, int distance);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3980,7 +3981,12 @@ qboolean TryGrapple(gentity_t *ent)
 					else if (ent->client->pers.cmd.forwardmove > 0)
 					{
 						// zyk: can use the power if he beat a specific light quest boss
-						if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) ||
+						if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) ||
+							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Enemy Nerf
+							use_this_power = 30;
+						}
+						else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) ||
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 						{ // zyk: Tree of Life
 							use_this_power = 25;
@@ -4394,6 +4400,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 10000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Reverse Wind!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 30 && zyk_enable_enemy_nerf.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_enemy_nerf_mp_cost.integer * universe_mp_cost_factor)))
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						enemy_nerf(ent, 400);
+						ent->client->pers.magic_power -= (int)ceil((zyk_enemy_nerf_mp_cost.integer * universe_mp_cost_factor));
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (16000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + 16000;
+						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Enemy Nerf!\"", ent->client->pers.netname));
 					}
 				}
 
