@@ -4801,6 +4801,9 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 
 		if (Q_stricmp(targetname, "zyk_quest_effect_drain") == 0)
 			G_Sound(new_ent, CHAN_AUTO, G_SoundIndex("sound/effects/arc_lp.wav"));
+
+		if (Q_stricmp(targetname, "zyk_quest_effect_sand") == 0)
+			ent->client->pers.quest_power_effect1_id = new_ent->s.number;
 	}
 	else
 	{ // zyk: model power
@@ -5055,6 +5058,55 @@ void acid_water(gentity_t *ent, int distance, int damage)
 			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_acid", "4", "env/acid_splash", 200, damage, 35, 10000);
 		}
 	}
+}
+
+// zyk Shifting Sand
+void shifting_sand(gentity_t *ent, int distance)
+{
+	int time_to_teleport = 2000;
+	int i = 0;
+	int targets_hit = 0;
+	int min_distance = distance;
+	int enemy_dist = 0;
+	gentity_t *this_enemy = NULL;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		time_to_teleport = 1000;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{ // zyk: teleport to the nearest enemy
+			enemy_dist = Distance(ent->client->ps.origin, player_ent->client->ps.origin);
+
+			if (enemy_dist < min_distance)
+			{
+				min_distance = enemy_dist;
+				this_enemy = player_ent;
+			}
+		}
+	}
+
+	if (this_enemy)
+	{ // zyk: found an enemy
+		vec3_t origin;
+
+		ent->client->pers.quest_power_status |= (1 << 17);
+
+		origin[0] = this_enemy->client->ps.origin[0] + Q_irand(100,200);
+		origin[1] = this_enemy->client->ps.origin[1] + Q_irand(100,200);
+		origin[2] = this_enemy->client->ps.origin[2] + Q_irand(0,100);
+
+		VectorCopy(origin, ent->client->pers.teleport_point);
+	}
+
+	ent->client->pers.quest_power5_timer = level.time + time_to_teleport;
+	zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, time_to_teleport);
 }
 
 // zyk: Time Power
@@ -6006,7 +6058,37 @@ void quest_power_events(gentity_t *ent)
 				{ // zyk: fires the flame thrower
 					Player_FireFlameThrower(ent);
 				}
+			}
 
+			if (ent->client->pers.quest_power_status & (1 << 17))
+			{ // zyk: Shifting Sand
+				if (ent->client->pers.quest_power5_timer < level.time)
+				{ // zyk: after this time, teleports to the new location and add effect there too
+					if (Distance(ent->client->ps.origin, g_entities[ent->client->pers.quest_power_effect1_id].s.origin) < 100)
+					{ // zyk: only teleports if the player is near the effect
+						zyk_TeleportPlayer(ent, ent->client->pers.teleport_point, ent->client->ps.viewangles);
+					}
+
+					ent->client->pers.quest_power_status &= ~(1 << 17);
+					ent->client->pers.quest_power_status |= (1 << 18);
+
+					ent->client->pers.quest_power5_timer = level.time + 1000;
+					zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, 2000);
+				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 18))
+			{ // zyk: Shifting Sand after the teleport, validating if player is not suck
+				if (ent->client->pers.quest_power5_timer < level.time)
+				{
+					if (VectorCompare(ent->client->ps.origin, ent->client->pers.teleport_point) == qtrue)
+					{ // zyk: stuck, teleport back
+						zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, 1000);
+						zyk_TeleportPlayer(ent, ent->client->pers.teleport_point, ent->client->ps.viewangles);
+					}
+
+					ent->client->pers.quest_power_status &= ~(1 << 18);
+				}
 			}
 		}
 		else if (!ent->NPC && ent->client->pers.quest_power_status & (1 << 10) && ent->client->pers.quest_power1_timer < level.time && 

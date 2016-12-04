@@ -888,6 +888,8 @@ typedef struct clientPersistant_s {
 	// 14 - using Light Power
 	// 15 - using Dark Power
 	// 16 - using Eternity Power
+	// 17 - using Shifting Sand
+	// 18 - Shifting Sand after teleport
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses
@@ -901,6 +903,7 @@ typedef struct clientPersistant_s {
 	int quest_power2_timer;
 	int quest_power3_timer;
 	int quest_power4_timer;
+	int quest_power5_timer;
 
 	// zyk: timers used by the quest powers hitting this player
 	int quest_target1_timer;
@@ -914,6 +917,9 @@ typedef struct clientPersistant_s {
 	int quest_power_user1_id;
 	int quest_power_user2_id;
 	int quest_power_user3_id;
+
+	// zyk: sets the id of the effect of the magic used by this player
+	int quest_power_effect1_id;
 
 	// zyk: magic power, required to use Special Powers
 	int magic_power;

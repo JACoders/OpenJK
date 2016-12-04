@@ -3003,7 +3003,8 @@ void fx_runner_link( gentity_t *ent )
 			ent->nextthink = level.time + 1500;
 		}
 		else if (Q_stricmp(ent->targetname, "zyk_quest_effect_watersplash") == 0 || Q_stricmp(ent->targetname, "zyk_quest_effect_sleeping") == 0 || 
-				 Q_stricmp(ent->targetname, "zyk_quest_effect_time") == 0 || Q_stricmp(ent->targetname, "zyk_quest_effect_poison") == 0)
+				 Q_stricmp(ent->targetname, "zyk_quest_effect_time") == 0 || Q_stricmp(ent->targetname, "zyk_quest_effect_poison") == 0 || 
+				 Q_stricmp(ent->targetname, "zyk_quest_effect_sand") == 0)
 		{ // zyk: starts the effect imediately for these magic powers
 			ent->s.modelindex2 = FX_STATE_CONTINUOUS;
 			ent->nextthink = level.time + 200; // wait a small bit, then start working
