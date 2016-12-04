@@ -3980,9 +3980,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_drain(ent,450,55,8000);
 						ent->client->pers.magic_power -= zyk_ultra_drain_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_drain_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (24000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_drain_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 24000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Drain!\"", ent->client->pers.netname));
 					}
 					else if (zyk_enable_immunity_power.integer == 1 && ent->client->pers.universe_quest_counter & (1 << 1) && ent->client->pers.magic_power >= zyk_immunity_power_mp_cost.integer)
@@ -3991,9 +3991,9 @@ qboolean TryGrapple(gentity_t *ent)
 						immunity_power(ent,25000);
 						ent->client->pers.magic_power -= zyk_immunity_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_immunity_power_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (22000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_immunity_power_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 22000;
 
 						ent->client->pers.player_statuses |= (1 << 15);
 
@@ -4005,9 +4005,9 @@ qboolean TryGrapple(gentity_t *ent)
 						chaos_power(ent,400,80);
 						ent->client->pers.magic_power -= zyk_chaos_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_chaos_power_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (25000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_chaos_power_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 25000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Chaos Power!\"", ent->client->pers.netname));
 					}
 					else if (zyk_enable_time_power.integer == 1 && ent->client->pers.universe_quest_counter & (1 << 3) && ent->client->pers.magic_power >= zyk_time_power_mp_cost.integer)
@@ -4016,9 +4016,9 @@ qboolean TryGrapple(gentity_t *ent)
 						time_power(ent,400,5000);
 						ent->client->pers.magic_power -= zyk_time_power_mp_cost.integer;
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_time_power_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (23000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_time_power_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 23000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Time Power!\"", ent->client->pers.netname));
 					}
 				}
@@ -4030,9 +4030,9 @@ qboolean TryGrapple(gentity_t *ent)
 						inner_area_damage(ent,400,80);
 						ent->client->pers.magic_power -= (int)ceil((zyk_inner_area_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_inner_area_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (12000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_inner_area_damage_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 12000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Inner Area Damage!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 17 && zyk_enable_ultra_strength.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_strength_mp_cost.integer * universe_mp_cost_factor)))
@@ -4041,9 +4041,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_strength(ent,30000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_strength_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_strength_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (8000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_strength_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 8000;
 
 						ent->client->pers.player_statuses |= (1 << 16);
 
@@ -4055,9 +4055,9 @@ qboolean TryGrapple(gentity_t *ent)
 						poison_mushrooms(ent,100,600);
 						ent->client->pers.magic_power -= (int)ceil((zyk_poison_mushrooms_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_poison_mushrooms_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_poison_mushrooms_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 10000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Poison Mushrooms!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 3 && zyk_enable_water_splash.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_water_splash_mp_cost.integer * universe_mp_cost_factor)))
@@ -4066,9 +4066,9 @@ qboolean TryGrapple(gentity_t *ent)
 						water_splash(ent,400,15);
 						ent->client->pers.magic_power -= (int)ceil((zyk_water_splash_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_water_splash_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (11000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_water_splash_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 11000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Water Splash!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 13 && zyk_enable_ultra_flame.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_flame_mp_cost.integer * universe_mp_cost_factor)))
@@ -4077,9 +4077,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_flame(ent,500,50);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_flame_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_flame_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_flame_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 10000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Flame!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 5 && zyk_enable_rockfall.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_rockfall_mp_cost.integer * universe_mp_cost_factor)))
@@ -4088,9 +4088,9 @@ qboolean TryGrapple(gentity_t *ent)
 						rock_fall(ent,500,55);
 						ent->client->pers.magic_power -= (int)ceil((zyk_rockfall_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_rockfall_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (11000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_rockfall_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 11000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Rockfall!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 9 && zyk_enable_dome_of_damage.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_dome_of_damage_mp_cost.integer * universe_mp_cost_factor)))
@@ -4099,9 +4099,9 @@ qboolean TryGrapple(gentity_t *ent)
 						dome_of_damage(ent,500,35);
 						ent->client->pers.magic_power -= (int)ceil((zyk_dome_of_damage_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_dome_of_damage_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (16000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_dome_of_damage_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 16000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Dome of Damage!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 15 && zyk_enable_hurricane.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_hurricane_mp_cost.integer * universe_mp_cost_factor)))
@@ -4110,9 +4110,9 @@ qboolean TryGrapple(gentity_t *ent)
 						hurricane(ent,600,5000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_hurricane_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_hurricane_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_hurricane_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 10000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Hurricane!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 11 && zyk_enable_slow_motion.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_slow_motion_mp_cost.integer * universe_mp_cost_factor)))
@@ -4121,9 +4121,9 @@ qboolean TryGrapple(gentity_t *ent)
 						slow_motion(ent,400,15000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_slow_motion_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_slow_motion_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (9000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_slow_motion_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 9000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Slow Motion!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 16 && zyk_enable_ultra_resistance.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_resistance_mp_cost.integer * universe_mp_cost_factor)))
@@ -4132,9 +4132,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_resistance(ent,30000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_resistance_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_resistance_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (8000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_resistance_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 8000;
 
 						ent->client->pers.player_statuses |= (1 << 17);
 
@@ -4146,9 +4146,9 @@ qboolean TryGrapple(gentity_t *ent)
 						sleeping_flowers(ent,2500,350);
 						ent->client->pers.magic_power -= (int)ceil((zyk_sleeping_flowers_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_sleeping_flowers_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (500 * ent->client->pers.skill_levels[55]);
+							ent->client->pers.quest_power_usage_timer = level.time + (15000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (500 * ent->client->pers.skill_levels[55]);
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_sleeping_flowers_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 15000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Sleeping Flowers!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 2 && zyk_enable_healing_water.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_healing_water_mp_cost.integer * universe_mp_cost_factor)))
@@ -4157,9 +4157,9 @@ qboolean TryGrapple(gentity_t *ent)
 						healing_water(ent,120);
 						ent->client->pers.magic_power -= (int)ceil((zyk_healing_water_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_water_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (12000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_water_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 12000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Water!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 12 && zyk_enable_flame_burst.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_flame_burst_mp_cost.integer * universe_mp_cost_factor)))
@@ -4168,9 +4168,9 @@ qboolean TryGrapple(gentity_t *ent)
 						flame_burst(ent, 5000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_flame_burst_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_flame_burst_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_flame_burst_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 10000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Flame Burst!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 4 && zyk_enable_earthquake.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_earthquake_mp_cost.integer * universe_mp_cost_factor)))
@@ -4179,9 +4179,9 @@ qboolean TryGrapple(gentity_t *ent)
 						earthquake(ent,2000,300,500);
 						ent->client->pers.magic_power -= (int)ceil((zyk_earthquake_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_earthquake_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (11000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_earthquake_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 11000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Earthquake!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 8 && zyk_enable_magic_shield.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_magic_shield_mp_cost.integer * universe_mp_cost_factor)))
@@ -4190,9 +4190,9 @@ qboolean TryGrapple(gentity_t *ent)
 						magic_shield(ent, 6000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_magic_shield_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_shield_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (1000 * ent->client->pers.skill_levels[55]);
+							ent->client->pers.quest_power_usage_timer = level.time + (28000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0)) + (1000 * ent->client->pers.skill_levels[55]);
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_magic_shield_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 28000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Magic Shield!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 14 && zyk_enable_blowing_wind.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_blowing_wind_mp_cost.integer * universe_mp_cost_factor)))
@@ -4201,9 +4201,9 @@ qboolean TryGrapple(gentity_t *ent)
 						blowing_wind(ent,700,5000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_blowing_wind_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_blowing_wind_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_blowing_wind_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 10000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Blowing Wind!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 10 && zyk_enable_ultra_speed.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ultra_speed_mp_cost.integer * universe_mp_cost_factor)))
@@ -4212,9 +4212,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ultra_speed(ent,15000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ultra_speed_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ultra_speed_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (9000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ultra_speed_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 9000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ultra Speed!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 18 && zyk_enable_ice_stalagmite.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ice_stalagmite_mp_cost.integer * universe_mp_cost_factor)))
@@ -4223,9 +4223,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ice_stalagmite(ent,500,160);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ice_stalagmite_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_stalagmite_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (20000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_stalagmite_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 20000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Stalagmite!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 19 && zyk_enable_ice_boulder.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ice_boulder_mp_cost.integer * universe_mp_cost_factor)))
@@ -4234,9 +4234,9 @@ qboolean TryGrapple(gentity_t *ent)
 						ice_boulder(ent,380,70);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ice_boulder_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_ice_boulder_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (20000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_ice_boulder_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 20000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Ice Boulder!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 20 && zyk_enable_healing_area.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_healing_area_mp_cost.integer * universe_mp_cost_factor)))
@@ -4245,9 +4245,9 @@ qboolean TryGrapple(gentity_t *ent)
 						healing_area(ent,2,5000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_healing_area_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_healing_area_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (24000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_healing_area_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 24000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Healing Area!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 21 && zyk_enable_magic_explosion.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_magic_explosion_mp_cost.integer * universe_mp_cost_factor)))
@@ -4256,9 +4256,9 @@ qboolean TryGrapple(gentity_t *ent)
 						magic_explosion(ent,320,160,900);
 						ent->client->pers.magic_power -= (int)ceil((zyk_magic_explosion_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_magic_explosion_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (28000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_magic_explosion_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 28000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Magic Explosion!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 22 && zyk_enable_lightning_dome.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_lightning_dome_mp_cost.integer * universe_mp_cost_factor)))
@@ -4267,9 +4267,9 @@ qboolean TryGrapple(gentity_t *ent)
 						lightning_dome(ent,90);
 						ent->client->pers.magic_power -= (int)ceil((zyk_lightning_dome_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (zyk_lightning_dome_cooldown.integer * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (32000 * ((4.0 - ent->client->pers.skill_levels[55])/4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + zyk_lightning_dome_cooldown.integer;
+							ent->client->pers.quest_power_usage_timer = level.time + 32000;
 						trap->SendServerCommand( ent->s.number, va("chat \"%s^7: ^7Lightning Dome!\"", ent->client->pers.netname));
 					}
 				}
