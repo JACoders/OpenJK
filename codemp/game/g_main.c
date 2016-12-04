@@ -5424,6 +5424,37 @@ void ultra_speed(gentity_t *ent, int duration)
 	G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh1.mp3"));
 }
 
+// zyk: Fast and Slow
+void fast_and_slow(gentity_t *ent, int distance, int duration)
+{
+	int i = 0;
+	int targets_hit = 0;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		duration += 2000;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			player_ent->client->pers.quest_power_status |= (1 << 6);
+			player_ent->client->pers.quest_target5_timer = level.time + duration;
+
+			G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh10.mp3"));
+		}
+	}
+
+	ent->client->pers.quest_power_status |= (1 << 9);
+	ent->client->pers.quest_power3_timer = level.time + duration;
+
+	G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh1.mp3"));
+}
+
 // zyk: spawns the circle of fire around the player
 void ultra_flame_circle(gentity_t *ent, char *targetname, char *spawnflags, char *effect_path, int start_time, int damage, int radius, int duration, int xoffset, int yoffset)
 {
