@@ -4350,6 +4350,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 		npc_ent->client->pers.light_quest_messages = 0;
 		npc_ent->client->pers.light_quest_timer = level.time + 7000;
 		npc_ent->client->pers.guardian_timer = level.time + 5000;
+		npc_ent->client->pers.universe_quest_timer = level.time + 11000;
 		npc_ent->client->pers.guardian_mode = guardian_mode;
 
 		if (ent->client->pers.universe_quest_counter & (1 << 29))
@@ -5161,8 +5162,8 @@ void shifting_sand(gentity_t *ent, int distance)
 
 		ent->client->pers.quest_power_status |= (1 << 17);
 
-		origin[0] = this_enemy->client->ps.origin[0] + Q_irand(100,200);
-		origin[1] = this_enemy->client->ps.origin[1] + Q_irand(100,200);
+		origin[0] = this_enemy->client->ps.origin[0] + Q_irand(100,150);
+		origin[1] = this_enemy->client->ps.origin[1] + Q_irand(100,150);
 		origin[2] = this_enemy->client->ps.origin[2] + Q_irand(0,100);
 
 		VectorCopy(origin, ent->client->pers.teleport_point);
@@ -5452,6 +5453,8 @@ void ice_block(gentity_t *ent, int duration)
 
 	ent->client->pers.quest_power_status |= (1 << 22);
 	ent->client->pers.quest_power7_timer = level.time + duration;
+
+	G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/effects/glass_tumble3.wav"));
 }
 
 // zyk: Ultra Drain
@@ -11380,6 +11383,13 @@ void G_RunFrame( int levelTime ) {
 
 						ent->client->pers.guardian_timer = level.time + 12000;
 					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						acid_water(ent, 600, 55);
+						trap->SendServerCommand(-1, "chat \"^4Guardian of Water: ^7Acid Water!\"");
+						ent->client->pers.light_quest_timer = level.time + 10000;
+					}
 				}
 				else if (ent->client->pers.guardian_mode == 2)
 				{ // zyk: Guardian of Earth
@@ -11395,6 +11405,13 @@ void G_RunFrame( int levelTime ) {
 						rock_fall(ent,2000,55);
 						ent->client->pers.light_quest_timer = level.time + 10000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Earth: ^7Rockfall!\"");
+					}
+
+					if (ent->client->pers.universe_quest_timer < level.time)
+					{
+						shifting_sand(ent, 4000);
+						ent->client->pers.universe_quest_timer = level.time + 11000;
+						trap->SendServerCommand(-1, "chat \"^3Guardian of Earth: ^7Shifting Sand!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 3)
@@ -11414,6 +11431,13 @@ void G_RunFrame( int levelTime ) {
 							ent->client->pers.guardian_timer = level.time + 11000;
 						}
 					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						tree_of_life(ent);
+						ent->client->pers.light_quest_timer = level.time + 15000;
+						trap->SendServerCommand(-1, va("chat \"^2Guardian of Forest: ^7Tree of Life!\""));
+					}
 				}
 				else if (ent->client->pers.guardian_mode == 4)
 				{ // zyk: Guardian of Intelligence
@@ -11421,7 +11445,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						if (ent->client->pers.light_quest_messages == 0)
 						{
-							dome_of_damage(ent,1500,40);
+							dome_of_damage(ent,1700,40);
 							ent->client->pers.light_quest_messages = 1;
 							trap->SendServerCommand( -1, "chat \"^5Guardian of Intelligence: ^7Dome of Damage!\"");
 						}
@@ -11433,6 +11457,13 @@ void G_RunFrame( int levelTime ) {
 						}
 
 						ent->client->pers.guardian_timer = level.time + ent->health + 8000;
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						magic_drain(ent, 800);
+						ent->client->pers.light_quest_timer = level.time + 14000;
+						trap->SendServerCommand(-1, "chat \"^5Guardian of Intelligence: ^7Magic Drain!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 5)
@@ -11452,6 +11483,13 @@ void G_RunFrame( int levelTime ) {
 						slow_motion(ent,600,12000);
 						trap->SendServerCommand( -1, "chat \"^6Guardian of Agility: ^7Slow Motion!\"");
 						ent->client->pers.guardian_timer = level.time + 14000;
+					}
+
+					if (ent->client->pers.universe_quest_timer < level.time)
+					{
+						fast_and_slow(ent, 600, 6000);
+						ent->client->pers.universe_quest_timer = level.time + 20000;
+						trap->SendServerCommand(-1, "chat \"^6Guardian of Agility: ^7Fast and Slow!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 6)
@@ -11484,14 +11522,30 @@ void G_RunFrame( int levelTime ) {
 						trap->SendServerCommand( -1, "chat \"^1Guardian of Fire: ^7Ultra Flame!\"");
 						ent->client->pers.light_quest_timer = level.time + 14000;
 					}
+
+					if (ent->client->pers.universe_quest_timer < level.time)
+					{
+						flaming_area(ent, 30);
+						ent->client->pers.universe_quest_timer = level.time + 16000;
+						trap->SendServerCommand(-1, "chat \"^1Guardian of Fire: ^7Flaming Area!\"");
+					}
 				}
 				else if (ent->client->pers.guardian_mode == 7)
 				{ // zyk: Guardian of Wind
 					if (ent->client->pers.guardian_timer < level.time)
 					{
-						blowing_wind(ent,2500,5000);
+						if (!Q_irand(0,1))
+						{ // zyk: randomly choose between Blowing Wind and Reverse Wind
+							blowing_wind(ent, 2500, 5000);
+							trap->SendServerCommand(-1, "chat \"^7Guardian of Wind: ^7Blowing Wind!\"");
+						}
+						else
+						{
+							reverse_wind(ent, 2500, 5000);
+							trap->SendServerCommand(-1, "chat \"^7Guardian of Wind: ^7Reverse Wind!\"");
+						}
+
 						ent->client->pers.guardian_timer = level.time + 12000;
-						trap->SendServerCommand( -1, "chat \"^7Guardian of Wind: ^7Blowing Wind!\"");
 					}
 
 					if (ent->client->pers.light_quest_timer < level.time)
@@ -11506,7 +11560,6 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.guardian_timer < level.time)
 					{
 						ice_stalagmite(ent,500,160);
-
 						ent->client->pers.guardian_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Ice: ^7Ice Stalagmite!\"");
 					}
@@ -11514,9 +11567,15 @@ void G_RunFrame( int levelTime ) {
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
 						ice_boulder(ent,400,80);
-
 						trap->SendServerCommand( -1, "chat \"^5Guardian of Ice: ^7Ice Boulder!\"");
 						ent->client->pers.light_quest_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
+					}
+
+					if (ent->client->pers.universe_quest_timer < level.time)
+					{
+						ice_block(ent, 4000);
+						ent->client->pers.universe_quest_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
+						trap->SendServerCommand(-1, "chat \"^5Guardian of Ice: ^7Ice Block!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 8)
@@ -11581,6 +11640,13 @@ void G_RunFrame( int levelTime ) {
 						ultra_strength(ent, 10000);
 						ent->client->pers.light_quest_timer = level.time + 14000;
 						trap->SendServerCommand( -1, "chat \"^3Guardian of Resistance: ^7Ultra Strength!\"");
+					}
+
+					if (ent->client->pers.universe_quest_timer < level.time)
+					{
+						enemy_nerf(ent, 1000);
+						ent->client->pers.universe_quest_timer = level.time + 11000;
+						trap->SendServerCommand(-1, "chat \"^3Guardian of Resistance: ^7Enemy Nerf!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 12)
