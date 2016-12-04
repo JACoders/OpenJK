@@ -4982,7 +4982,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	if (attacker && attacker->client && (attacker->NPC || attacker->client->sess.amrpgmode == 2) && attacker->client->pers.quest_power_status & (1 << 3))
-	{ // zyk: gets bonus damage if using Ultra Strength
+	{ // zyk: Ultra Strength bonus damage
 		// zyk: Universe Power
 		if (attacker->client->pers.quest_power_status & (1 << 13))
 			damage = (int)ceil(damage * 1.15);
@@ -5056,7 +5056,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (attacker && attacker->client && attacker->client->pers.quest_power_status & (1 << 21))
 	{ // zyk: Enemy Nerf decreases damage
-		damage = (int)ceil(damage*0.92);
+		damage = (int)ceil(damage*0.9);
 	}
 
 	if (level.gametype == GT_SIEGE)
@@ -5120,7 +5120,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 
 	if (targ && targ->client && targ->client->pers.quest_power_status & (1 << 21))
 	{ // zyk: Enemy Nerf increases damage taken
-		damage = (int)ceil(damage*1.08);
+		damage = (int)ceil(damage*1.1);
 	}
 
 	// zyk: player or npc with Magic Shield takes little damage
