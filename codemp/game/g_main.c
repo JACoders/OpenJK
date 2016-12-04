@@ -4811,7 +4811,7 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 		zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
 
 		if (Q_stricmp(targetname, "zyk_tree_of_life") == 0)
-			zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)target_ent->r.currentOrigin[0], (int)target_ent->r.currentOrigin[1], (int)target_ent->r.currentOrigin[2] + 50));
+			zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)target_ent->r.currentOrigin[0], (int)target_ent->r.currentOrigin[1], (int)target_ent->r.currentOrigin[2] + 350));
 		else
 			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
 
