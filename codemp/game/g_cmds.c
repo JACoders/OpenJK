@@ -3804,6 +3804,7 @@ extern void flame_burst(gentity_t *ent, int duration);
 extern void acid_water(gentity_t *ent, int distance, int damage);
 extern void shifting_sand(gentity_t *ent, int distance);
 extern void tree_of_life(gentity_t *ent);
+extern void magic_drain(gentity_t *ent, int distance);
 qboolean TryGrapple(gentity_t *ent)
 {
 	if (ent->client->ps.weaponTime > 0)
@@ -3990,6 +3991,11 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
 						{ // zyk: Acid Water
 							use_this_power = 23;
+						}
+						else if (ent->client->pers.rpg_class == 6 && (ent->client->pers.defeated_guardians & (1 << 7) ||
+							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
+						{ // zyk: Magic Drain
+							use_this_power = 26;
 						}
 					}
 				}
@@ -4326,6 +4332,17 @@ qboolean TryGrapple(gentity_t *ent)
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 24000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Tree of Life!\"", ent->client->pers.netname));
+					}
+					else if (use_this_power == 26 && zyk_enable_magic_drain.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_magic_drain_mp_cost.integer * universe_mp_cost_factor)))
+					{
+						ent->client->ps.powerups[PW_FORCE_ENLIGHTENED_LIGHT] = level.time + 1000;
+						magic_drain(ent, 400);
+						ent->client->pers.magic_power -= (int)ceil((zyk_magic_drain_mp_cost.integer * universe_mp_cost_factor));
+						if (ent->client->pers.rpg_class == 8)
+							ent->client->pers.quest_power_usage_timer = level.time + (18000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+						else
+							ent->client->pers.quest_power_usage_timer = level.time + 18000;
+						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Magic Drain!\"", ent->client->pers.netname));
 					}
 				}
 

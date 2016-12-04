@@ -5231,6 +5231,60 @@ void tree_of_life(gentity_t *ent)
 	zyk_quest_effect_spawn(ent, ent, "zyk_tree_of_life", "1", "models/map_objects/yavin/tree10_b.md3", 0, 0, 0, 4000);
 }
 
+// zyk: Magic Drain
+void magic_drain(gentity_t *ent, int distance)
+{
+	int i = 0;
+	int targets_hit = 0;
+	int mp_amount = 25;
+
+	// zyk: Universe Power
+	if (ent->client->pers.quest_power_status & (1 << 13))
+	{
+		mp_amount += 15;
+	}
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
+		{
+			if (i < MAX_CLIENTS && player_ent->client->sess.amrpgmode == 2 && player_ent->client->pers.magic_power >= mp_amount)
+			{ // zyk: rpg player, drain his mp
+				player_ent->client->pers.magic_power -= mp_amount;
+
+				if ((ent->health + mp_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+					ent->health += mp_amount;
+				else
+					ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+				G_Sound(ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav"));
+			}
+			else if (player_ent->NPC && player_ent->client->pers.guardian_mode > 0)
+			{ // zyk: bosses always have mp
+				if ((ent->health + mp_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+					ent->health += mp_amount;
+				else
+					ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+				G_Sound(ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav"));
+			}
+			else if (player_ent->client->ps.fd.forcePower >= mp_amount)
+			{ // zyk: enemy has enough force to be drained
+				player_ent->client->ps.fd.forcePower -= mp_amount;
+
+				if ((ent->health + mp_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+					ent->health += mp_amount;
+				else
+					ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+				G_Sound(ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav"));
+			}
+		}
+	}
+}
+
 // zyk: Ice Stalagmite
 void ice_stalagmite(gentity_t *ent, int distance, int damage)
 {
