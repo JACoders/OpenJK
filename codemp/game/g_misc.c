@@ -385,6 +385,11 @@ void SP_misc_model_breakable( gentity_t *ent )
 		G_SpawnVector("mins", "-60 -60 -20", ent->r.mins);
 		G_SpawnVector("maxs", "60 60 42", ent->r.maxs);
 	}
+	else if (Q_stricmp(ent->targetname, "zyk_tree_of_life") == 0)
+	{
+		G_SpawnVector("mins", "-70 -70 -50", ent->r.mins);
+		G_SpawnVector("maxs", "70 70 250", ent->r.maxs);
+	}
 	else
 	{
 		if (!(ent->spawnflags & 65536))

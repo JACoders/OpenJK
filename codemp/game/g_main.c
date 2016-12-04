@@ -4809,7 +4809,11 @@ void zyk_quest_effect_spawn(gentity_t *ent, gentity_t *target_ent, char *targetn
 	{ // zyk: model power
 		zyk_set_entity_field(new_ent,"classname","misc_model_breakable");
 		zyk_set_entity_field(new_ent,"spawnflags",spawnflags);
-		zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
+
+		if (Q_stricmp(targetname, "zyk_tree_of_life") == 0)
+			zyk_set_entity_field(new_ent, "origin", va("%d %d %d", (int)target_ent->r.currentOrigin[0], (int)target_ent->r.currentOrigin[1], (int)target_ent->r.currentOrigin[2] + 50));
+		else
+			zyk_set_entity_field(new_ent,"origin",va("%d %d %d",(int)target_ent->r.currentOrigin[0],(int)target_ent->r.currentOrigin[1],(int)target_ent->r.currentOrigin[2]));
 
 		zyk_set_entity_field(new_ent,"model",effect_path);
 
@@ -5215,6 +5219,16 @@ void magic_shield(gentity_t *ent, int duration)
 	ent->client->pers.quest_power_status |= (1 << 11);
 	ent->client->pers.quest_power4_timer = level.time + duration;
 	ent->client->invulnerableTimer = level.time + duration;
+}
+
+// zyk: Tree of Life
+void tree_of_life(gentity_t *ent)
+{
+	ent->client->pers.quest_power_status |= (1 << 19);
+	ent->client->pers.quest_power6_timer = level.time;
+	ent->client->pers.quest_power_hit2_counter = 4;
+
+	zyk_quest_effect_spawn(ent, ent, "zyk_tree_of_life", "1", "models/map_objects/yavin/tree10_b.md3", 0, 0, 0, 4000);
 }
 
 // zyk: Ice Stalagmite
@@ -6088,6 +6102,37 @@ void quest_power_events(gentity_t *ent)
 					}
 
 					ent->client->pers.quest_power_status &= ~(1 << 18);
+				}
+			}
+
+			if (ent->client->pers.quest_power_status & (1 << 19))
+			{ // zyk: Tree of Life
+				if (ent->client->pers.quest_power_hit2_counter > 0)
+				{
+					if (ent->client->pers.quest_power6_timer < level.time)
+					{
+						int heal_amount = 20;
+
+						// zyk: Universe Power
+						if (ent->client->pers.quest_power_status & (1 << 13))
+						{
+							heal_amount = 40;
+						}
+
+						if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+							ent->health += heal_amount;
+						else
+							ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+						ent->client->pers.quest_power_hit2_counter--;
+						ent->client->pers.quest_power6_timer = level.time + 1000;
+
+						G_Sound(ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav"));
+					}
+				}
+				else
+				{
+					ent->client->pers.quest_power_status &= ~(1 << 19);
 				}
 			}
 		}

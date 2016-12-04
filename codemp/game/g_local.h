@@ -890,6 +890,7 @@ typedef struct clientPersistant_s {
 	// 16 - using Eternity Power
 	// 17 - using Shifting Sand
 	// 18 - Shifting Sand after teleport
+	// 19 - using Tree of Life
 	int quest_power_status;
 
 	// zyk: cooldown between quest power uses
@@ -897,6 +898,7 @@ typedef struct clientPersistant_s {
 
 	// zyk: powers that hits the target player more than once need a hit counter
 	int quest_power_hit_counter;
+	int quest_power_hit2_counter;
 
 	// zyk: timers of the quest powers used by this player
 	int quest_power1_timer;
@@ -904,6 +906,7 @@ typedef struct clientPersistant_s {
 	int quest_power3_timer;
 	int quest_power4_timer;
 	int quest_power5_timer;
+	int quest_power6_timer;
 
 	// zyk: timers used by the quest powers hitting this player
 	int quest_target1_timer;
