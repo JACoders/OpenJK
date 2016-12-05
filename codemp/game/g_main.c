@@ -5110,7 +5110,7 @@ void acid_water(gentity_t *ent, int distance, int damage)
 	// zyk: Universe Power
 	if (ent->client->pers.quest_power_status & (1 << 13))
 	{
-		damage += 15;
+		damage += 10;
 	}
 
 	for (i = 0; i < level.num_entities; i++)
@@ -5119,7 +5119,7 @@ void acid_water(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_acid", "4", "env/acid_splash", 200, damage, 35, 10000);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_acid", "4", "env/acid_splash", 200, damage, 40, 10000);
 		}
 	}
 }
