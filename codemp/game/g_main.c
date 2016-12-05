@@ -11575,7 +11575,7 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.universe_quest_timer < level.time)
 					{
-						ice_block(ent, 4000);
+						ice_block(ent, 3500);
 						ent->client->pers.universe_quest_timer = level.time + (ent->client->ps.stats[STAT_MAX_HEALTH] * 2);
 						trap->SendServerCommand(-1, "chat \"^5Guardian of Ice: ^7Ice Block!\"");
 					}
@@ -11771,7 +11771,7 @@ void G_RunFrame( int levelTime ) {
 						}
 						else if (ent->client->pers.hunter_quest_messages == 2)
 						{
-							ice_block(ent, 4000);
+							ice_block(ent, 3500);
 							trap->SendServerCommand(-1, "chat \"^1Guardian of Chaos: ^7Ice Block!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
