@@ -264,7 +264,7 @@ XCVAR_DEF( zyk_shifting_sand_mp_cost, "18",				NULL,				CVAR_ARCHIVE|CVAR_NOREST
 XCVAR_DEF( zyk_tree_of_life_mp_cost,  "17",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_magic_drain_mp_cost, "16",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_fast_and_slow_mp_cost, "22",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
-XCVAR_DEF( zyk_flaming_area_mp_cost, "24",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_flaming_area_mp_cost, "22",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_reverse_wind_mp_cost, "20",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enemy_nerf_mp_cost,	"18",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ice_block_mp_cost, "20",					NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
