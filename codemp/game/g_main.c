@@ -11709,9 +11709,9 @@ void G_RunFrame( int levelTime ) {
 
 					if (ent->client->pers.light_quest_timer < level.time)
 					{
-						reverse_wind(ent, 4000, 5000);
-						trap->SendServerCommand(-1, "chat \"^1Master of Evil: ^7Reverse Wind!\"");
-						ent->client->pers.light_quest_timer = level.time + 22000;
+						ultra_flame(ent, 4000, 55);
+						trap->SendServerCommand(-1, "chat \"^1Master of Evil: ^7Ultra Flame!\"");
+						ent->client->pers.light_quest_timer = level.time + 29000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 13)
@@ -11766,6 +11766,13 @@ void G_RunFrame( int levelTime ) {
 						magic_explosion(ent,320,170,900);
 						trap->SendServerCommand( -1, "chat \"^2Guardian of Universe: ^7Magic Explosion!\"");
 						ent->client->pers.light_quest_timer = level.time + 15000;
+					}
+
+					if (ent->client->pers.universe_quest_timer < level.time)
+					{
+						magic_shield(ent, 6000);
+						ent->client->pers.universe_quest_timer = level.time + 29000;
+						trap->SendServerCommand(-1, "chat \"^2Guardian of Universe: ^7Magic Shield!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 14)
@@ -12138,7 +12145,7 @@ void G_RunFrame( int levelTime ) {
 					ice_block(ent, 3500);
 				}
 
-				ent->client->pers.guardian_timer = level.time + Q_irand(3500, 7000);
+				ent->client->pers.guardian_timer = level.time + Q_irand(3000, 6000);
 			}
 		}
 
