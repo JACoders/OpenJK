@@ -5443,7 +5443,7 @@ void ice_block(gentity_t *ent, int duration)
 	// zyk: Universe Power
 	if (ent->client->pers.quest_power_status & (1 << 13))
 	{
-		duration += 2000;
+		duration += 1500;
 	}
 
 	zyk_spawn_ice_block(ent, duration, 0, 0, -140, 0, 0);

@@ -268,7 +268,7 @@ XCVAR_DEF( zyk_flaming_area_mp_cost, "24",				NULL,				CVAR_ARCHIVE|CVAR_NORESTA
 XCVAR_DEF( zyk_reverse_wind_mp_cost, "20",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enemy_nerf_mp_cost,	"18",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_ice_block_mp_cost, "20",					NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
-XCVAR_DEF( zyk_universe_mp_cost_factor,	"1.5",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
+XCVAR_DEF( zyk_universe_mp_cost_factor,	"1.4",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_inner_area,	"1",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_healing_area,	"1",				NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
 XCVAR_DEF( zyk_enable_lightning_dome,	"1",			NULL,				CVAR_ARCHIVE|CVAR_NORESTART,					qtrue )
