@@ -5332,6 +5332,15 @@ void magic_drain(gentity_t *ent, int distance)
 
 				G_Sound(ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav"));
 			}
+			else if (player_ent->NPC && Q_stricmp(player_ent->NPC_type, "quest_mage") == 0)
+			{ // zyk: quest_mage always have mp
+				if ((ent->health + mp_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
+					ent->health += mp_amount;
+				else
+					ent->health = ent->client->ps.stats[STAT_MAX_HEALTH];
+
+				G_Sound(ent, CHAN_ITEM, G_SoundIndex("sound/weapons/force/heal.wav"));
+			}
 			else if (player_ent->client->ps.fd.forcePower >= mp_amount)
 			{ // zyk: enemy has enough force to be drained
 				player_ent->client->ps.fd.forcePower -= mp_amount;
@@ -5625,7 +5634,7 @@ void ultra_flame(gentity_t *ent, int distance, int damage)
 
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qfalse, &targets_hit) == qtrue)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_flame", "4", "env/flame_jet", 200, damage, 35, 30000);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_quest_effect_flame", "4", "env/flame_jet", 200, damage, 35, 25000);
 		}
 	}
 }
@@ -9034,9 +9043,9 @@ void G_RunFrame( int levelTime ) {
 
 							if (ent->client->pers.universe_quest_messages == 3 && ent->client->pers.universe_quest_artifact_holder_id == -1 && !(ent->client->pers.universe_quest_counter & (1 << 3)))
 							{
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-396,-287,-150,-153);
+								npc_ent = Zyk_NPC_SpawnType("quest_mage",-396,-287,-150,-153);
 								if (npc_ent)
-								{ // zyk: spawning the quest_reborn_boss artifact holder
+								{ // zyk: spawning the quest_mage artifact holder
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
 									npc_ent->client->pers.universe_quest_artifact_holder_id = ent-g_entities;
 
@@ -9080,7 +9089,7 @@ void G_RunFrame( int levelTime ) {
 							if (ent->client->pers.universe_quest_messages == 0)
 							{
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: I sense the presence of an artifact here.\"", ent->client->pers.netname));
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",724,5926,951,31);
+								npc_ent = Zyk_NPC_SpawnType("quest_mage",724,5926,951,31);
 								if (npc_ent)
 								{
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
@@ -9129,7 +9138,7 @@ void G_RunFrame( int levelTime ) {
 								npc_ent = Zyk_NPC_SpawnType("quest_reborn_red",2318,-1744,39,90);
 							else if (ent->client->pers.universe_quest_messages == 2)
 							{
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",2214,-1744,39,90);
+								npc_ent = Zyk_NPC_SpawnType("quest_mage",2214,-1744,39,90);
 								if (npc_ent)
 								{
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
@@ -9790,7 +9799,7 @@ void G_RunFrame( int levelTime ) {
 						if (ent->client->pers.universe_quest_progress == 2 && ent->client->pers.can_play_quest == 1 && ent->client->pers.universe_quest_objective_control == 3 && ent->client->pers.universe_quest_timer < level.time && ent->client->pers.universe_quest_messages < 1 && !(ent->client->pers.universe_quest_counter & (1 << 5)))
 						{
 							gentity_t *npc_ent = NULL;
-							npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-584,296,5977,0);
+							npc_ent = Zyk_NPC_SpawnType("quest_mage",-584,296,5977,0);
 							if (npc_ent)
 							{
 								npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
@@ -10932,7 +10941,7 @@ void G_RunFrame( int levelTime ) {
 								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-792,-1504,729,179);
 							else if (ent->client->pers.universe_quest_messages == 5)
 							{
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",-120,-1630,857,179);
+								npc_ent = Zyk_NPC_SpawnType("quest_mage",-120,-1630,857,179);
 								if (npc_ent)
 								{
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
@@ -10974,7 +10983,7 @@ void G_RunFrame( int levelTime ) {
 							if (ent->client->pers.universe_quest_messages == 0)
 							{
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: I sense the presence of an artifact here.\"", ent->client->pers.netname));
-								npc_ent = Zyk_NPC_SpawnType("quest_reborn_boss",8480,-1084,-90,90);
+								npc_ent = Zyk_NPC_SpawnType("quest_mage",8480,-1084,-90,90);
 								if (npc_ent)
 								{
 									npc_ent->client->ps.powerups[PW_FORCE_BOON] = level.time + 5500;
@@ -11657,7 +11666,7 @@ void G_RunFrame( int levelTime ) {
 					ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 
 					// zyk: take him back if he falls
-					if (ent->client->ps.origin[0] < 500 || ent->client->ps.origin[0] > 3500 || ent->client->ps.origin[1] < -4350 || ent->client->ps.origin[1] > -1350 || ent->client->ps.origin[2] < 2500 || ent->client->ps.origin[2] > 4000)
+					if (ent->client->ps.origin[0] < 400 || ent->client->ps.origin[0] > 3600 || ent->client->ps.origin[1] < -4450 || ent->client->ps.origin[1] > -1250 || ent->client->ps.origin[2] < 2500 || ent->client->ps.origin[2] > 4000)
 					{
 						vec3_t origin;
 						vec3_t yaw;
@@ -11678,11 +11687,13 @@ void G_RunFrame( int levelTime ) {
 						else
 							ent->client->NPC_class = CLASS_REBORN;
 						
-						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/4))
+						if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH] / 5))
+							Zyk_NPC_SpawnType("quest_mage", 2135, -2857, 2800, 90);
+						else if (ent->health < ((ent->client->ps.stats[STAT_MAX_HEALTH]/5) * 2))
 							Zyk_NPC_SpawnType("quest_reborn_boss",2135,-2857,2800,90);
-						else if (ent->health < (ent->client->ps.stats[STAT_MAX_HEALTH]/2))
+						else if (ent->health < ((ent->client->ps.stats[STAT_MAX_HEALTH]/5) * 3))
 							Zyk_NPC_SpawnType("quest_reborn_red",2135,-2857,2800,90);
-						else if (ent->health < ((ent->client->ps.stats[STAT_MAX_HEALTH]/4) * 3))
+						else if (ent->health < ((ent->client->ps.stats[STAT_MAX_HEALTH]/5) * 4))
 							Zyk_NPC_SpawnType("quest_reborn_blue",2135,-2857,2800,90);
 						else if (ent->health < ent->client->ps.stats[STAT_MAX_HEALTH])
 							Zyk_NPC_SpawnType("quest_reborn",2135,-2857,2800,-90);
@@ -11694,6 +11705,13 @@ void G_RunFrame( int levelTime ) {
 						trap->SendServerCommand( -1, "chat \"^1Master of Evil: ^7Ultra Drain!\"");
 
 						ent->client->pers.guardian_timer = level.time + 25000;
+					}
+
+					if (ent->client->pers.light_quest_timer < level.time)
+					{
+						reverse_wind(ent, 4000, 5000);
+						trap->SendServerCommand(-1, "chat \"^1Master of Evil: ^7Reverse Wind!\"");
+						ent->client->pers.light_quest_timer = level.time + 22000;
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 13)
@@ -12006,6 +12024,121 @@ void G_RunFrame( int levelTime ) {
 						ent->client->pers.light_quest_timer = level.time + 25000;
 					}
 				}
+			}
+			else if (ent->health > 0 && Q_stricmp(ent->NPC_type, "quest_mage") == 0 && ent->client->pers.guardian_timer < level.time)
+			{ // zyk: powers used by the quest_mage npc
+				int random_magic = Q_irand(0, 26);
+
+				if (random_magic == 0)
+				{
+					ultra_strength(ent, 30000);
+				}
+				else if (random_magic == 1)
+				{
+					poison_mushrooms(ent, 100, 600);
+				}
+				else if (random_magic == 2)
+				{
+					water_splash(ent, 400, 15);
+				}
+				else if (random_magic == 3)
+				{
+					ultra_flame(ent, 500, 50);
+				}
+				else if (random_magic == 4)
+				{
+					rock_fall(ent, 500, 55);
+				}
+				else if (random_magic == 5)
+				{
+					dome_of_damage(ent, 500, 35);
+				}
+				else if (random_magic == 6)
+				{
+					hurricane(ent, 600, 5000);
+				}
+				else if (random_magic == 7)
+				{
+					slow_motion(ent, 400, 15000);
+				}
+				else if (random_magic == 8)
+				{
+					ultra_resistance(ent, 30000);
+				}
+				else if (random_magic == 9)
+				{
+					sleeping_flowers(ent, 2500, 350);
+				}
+				else if (random_magic == 10)
+				{
+					healing_water(ent, 120);
+				}
+				else if (random_magic == 11)
+				{
+					flame_burst(ent, 5000);
+				}
+				else if (random_magic == 12)
+				{
+					earthquake(ent, 2000, 300, 500);
+				}
+				else if (random_magic == 13)
+				{
+					magic_shield(ent, 6000);
+				}
+				else if (random_magic == 14)
+				{
+					blowing_wind(ent, 700, 5000);
+				}
+				else if (random_magic == 15)
+				{
+					ultra_speed(ent, 15000);
+				}
+				else if (random_magic == 16)
+				{
+					ice_stalagmite(ent, 500, 160);
+				}
+				else if (random_magic == 17)
+				{
+					ice_boulder(ent, 380, 70);
+				}
+				else if (random_magic == 18)
+				{
+					acid_water(ent, 500, 55);
+				}
+				else if (random_magic == 19)
+				{
+					shifting_sand(ent, 800);
+				}
+				else if (random_magic == 20)
+				{
+					tree_of_life(ent);
+				}
+				else if (random_magic == 21)
+				{
+					magic_drain(ent, 400);
+				}
+				else if (random_magic == 22)
+				{
+					fast_and_slow(ent, 400, 6000);
+				}
+				else if (random_magic == 23)
+				{
+					flaming_area(ent, 30);
+				}
+				else if (random_magic == 24)
+				{
+					reverse_wind(ent, 700, 5000);
+				}
+				else if (random_magic == 25)
+				{
+					enemy_nerf(ent, 400);
+				}
+				else if (random_magic == 26)
+				{
+					ice_block(ent, 3500);
+				}
+
+				ent->client->pers.guardian_timer = level.time + Q_irand(3500, 7000);
 			}
 		}
 
