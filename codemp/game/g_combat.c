@@ -5055,7 +5055,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	if (attacker && attacker->client && attacker->client->pers.quest_power_status & (1 << 21))
-	{ // zyk: Enemy Nerf decreases damage
+	{ // zyk: Enemy Weakening decreases damage
 		damage = (int)ceil(damage*0.9);
 	}
 
@@ -5119,7 +5119,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	}
 
 	if (targ && targ->client && targ->client->pers.quest_power_status & (1 << 21))
-	{ // zyk: Enemy Nerf increases damage taken
+	{ // zyk: Enemy Weakening increases damage taken
 		damage = (int)ceil(damage*1.1);
 	}
 

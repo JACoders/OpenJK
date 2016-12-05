@@ -3984,7 +3984,7 @@ qboolean TryGrapple(gentity_t *ent)
 						// zyk: can use the power if he beat a specific light quest boss
 						if (ent->client->pers.rpg_class == 0 && (ent->client->pers.defeated_guardians & (1 << 11) ||
 							ent->client->pers.defeated_guardians == NUMBER_OF_GUARDIANS))
-						{ // zyk: Enemy Nerf
+						{ // zyk: Enemy Weakening
 							use_this_power = 30;
 						}
 						else if (ent->client->pers.rpg_class == 1 && (ent->client->pers.defeated_guardians & (1 << 6) ||
@@ -4358,9 +4358,9 @@ qboolean TryGrapple(gentity_t *ent)
 						tree_of_life(ent);
 						ent->client->pers.magic_power -= (int)ceil((zyk_tree_of_life_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (24000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (28000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + 24000;
+							ent->client->pers.quest_power_usage_timer = level.time + 20000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Tree of Life!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 26 && zyk_enable_magic_drain.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_magic_drain_mp_cost.integer * universe_mp_cost_factor)))
@@ -4402,9 +4402,9 @@ qboolean TryGrapple(gentity_t *ent)
 						reverse_wind(ent, 700, 5000);
 						ent->client->pers.magic_power -= (int)ceil((zyk_reverse_wind_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (10000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (11000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
 						else
-							ent->client->pers.quest_power_usage_timer = level.time + 10000;
+							ent->client->pers.quest_power_usage_timer = level.time + 11000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Reverse Wind!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 30 && zyk_enable_enemy_nerf.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_enemy_nerf_mp_cost.integer * universe_mp_cost_factor)))
@@ -4416,7 +4416,7 @@ qboolean TryGrapple(gentity_t *ent)
 							ent->client->pers.quest_power_usage_timer = level.time + (16000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 16000;
-						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Enemy Nerf!\"", ent->client->pers.netname));
+						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Enemy Weakening!\"", ent->client->pers.netname));
 					}
 					else if (use_this_power == 31 && zyk_enable_ice_block.integer == 1 && ent->client->pers.magic_power >= (int)ceil((zyk_ice_block_mp_cost.integer * universe_mp_cost_factor)))
 					{
@@ -4424,7 +4424,7 @@ qboolean TryGrapple(gentity_t *ent)
 						ice_block(ent, 3500);
 						ent->client->pers.magic_power -= (int)ceil((zyk_ice_block_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (20000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (28000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 20000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Ice Block!\"", ent->client->pers.netname));
@@ -9635,7 +9635,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 				else if (Q_stricmp( arg1, "s" ) == 0)
 				{
 					if (ent->client->pers.rpg_class == 0)
-						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Resistance: ^7increases resistance to damage. Attack with D + special melee to use this power. MP cost: %d\n^3Ultra Strength: ^7increases damage. Attack with A + special melee to use this power. MP cost: %d\n^3Enemy Nerf: ^7decreases damage and resistance of enemies nearby. Attack with W + special melee to use this power. MP cost: %d\n\n\"", zyk_ultra_resistance_mp_cost.integer, zyk_ultra_strength_mp_cost.integer, zyk_enemy_nerf_mp_cost.integer) );
+						trap->SendServerCommand( ent-g_entities, va("print \"^3Ultra Resistance: ^7increases resistance to damage. Attack with D + special melee to use this power. MP cost: %d\n^3Ultra Strength: ^7increases damage. Attack with A + special melee to use this power. MP cost: %d\n^3Enemy Weakening: ^7decreases damage and resistance of enemies nearby. Attack with W + special melee to use this power. MP cost: %d\n\n\"", zyk_ultra_resistance_mp_cost.integer, zyk_ultra_strength_mp_cost.integer, zyk_enemy_nerf_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 1)
 						trap->SendServerCommand( ent-g_entities, va("print \"^3Sleeping Flowers: ^7knocks down enemies for some seconds. Attack with D + special melee to use this power. MP cost: %d\n^3Poison Mushrooms: ^7keep damaging the enemies for some time. Attack with A + special melee to use this power. MP cost: %d\n^3Tree of Life: ^7a big tree appears, protecting you from attacks and healing you. Attack with W + special melee to use this power. MP cost: %d\n\"", zyk_sleeping_flowers_mp_cost.integer, zyk_poison_mushrooms_mp_cost.integer, zyk_tree_of_life_mp_cost.integer) );
 					else if (ent->client->pers.rpg_class == 2)
@@ -15417,7 +15417,7 @@ void Cmd_Magic_f( gentity_t *ent ) {
 
 	if (trap->Argc() == 1)
 	{
-		trap->SendServerCommand( ent-g_entities, va("print \"\n 1 - Inner Area Damage - %s^7\n 2 - Healing Water - %s^7\n 3 - Water Splash - %s^7\n 4 - Earthquake - %s^7\n 5 - Rockfall - %s^7\n 6 - Sleeping Flowers - %s^7\n 7 - Poison Mushrooms - %s^7\n 8 - Magic Shield - %s^7\n 9 - Dome of Damage - %s^7\n10 - Ultra Speed - %s^7\n11 - Slow Motion - %s^7\n12 - Flame Burst - %s^7\n13 - Ultra Flame - %s^7\n14 - Blowing Wind - %s^7\n15 - Hurricane - %s^7\n16 - Ultra Resistance - %s^7\n17 - Ultra Strength - %s^7\n18 - Ice Stalagmite - %s^7\n19 - Ice Boulder - %s^7\n20 - Healing Area - %s^7\n21 - Magic Explosion - %s^7\n22 - Lightning Dome - %s^7\n23 - Acid Water - %s^7\n24 - Shifting Sand - %s^7\n25 - Tree of Life - %s^7\n26 - Magic Drain - %s^7\n27 - Fast and Slow - %s^7\n28 - Flaming Area - %s^7\n29 - Reverse Wind - %s^7\n30 - Enemy Nerf - %s^7\n31 - Ice Block - %s^7\n\"", 
+		trap->SendServerCommand( ent-g_entities, va("print \"\n 1 - Inner Area Damage - %s^7\n 2 - Healing Water - %s^7\n 3 - Water Splash - %s^7\n 4 - Earthquake - %s^7\n 5 - Rockfall - %s^7\n 6 - Sleeping Flowers - %s^7\n 7 - Poison Mushrooms - %s^7\n 8 - Magic Shield - %s^7\n 9 - Dome of Damage - %s^7\n10 - Ultra Speed - %s^7\n11 - Slow Motion - %s^7\n12 - Flame Burst - %s^7\n13 - Ultra Flame - %s^7\n14 - Blowing Wind - %s^7\n15 - Hurricane - %s^7\n16 - Ultra Resistance - %s^7\n17 - Ultra Strength - %s^7\n18 - Ice Stalagmite - %s^7\n19 - Ice Boulder - %s^7\n20 - Healing Area - %s^7\n21 - Magic Explosion - %s^7\n22 - Lightning Dome - %s^7\n23 - Acid Water - %s^7\n24 - Shifting Sand - %s^7\n25 - Tree of Life - %s^7\n26 - Magic Drain - %s^7\n27 - Fast and Slow - %s^7\n28 - Flaming Area - %s^7\n29 - Reverse Wind - %s^7\n30 - Enemy Weakening - %s^7\n31 - Ice Block - %s^7\n\"", 
 			!(ent->client->sess.magic_master_disabled_powers & (1 << 0)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 1)) ? "^2yes" : "^1no", 
 			!(ent->client->sess.magic_master_disabled_powers & (1 << 2)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 3)) ? "^2yes" : "^1no", 
 			!(ent->client->sess.magic_master_disabled_powers & (1 << 4)) ? "^2yes" : "^1no", !(ent->client->sess.magic_master_disabled_powers & (1 << 5)) ? "^2yes" : "^1no", 

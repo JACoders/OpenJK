@@ -4611,7 +4611,7 @@ void reverse_wind(gentity_t *ent, int distance, int duration)
 	}
 }
 
-// zyk: Enemy Nerf
+// zyk: Enemy Weakening
 void enemy_nerf(gentity_t *ent, int distance)
 {
 	int i = 0;
@@ -5452,7 +5452,7 @@ void ice_block(gentity_t *ent, int duration)
 	// zyk: Universe Power
 	if (ent->client->pers.quest_power_status & (1 << 13))
 	{
-		duration += 1500;
+		duration += 1000;
 	}
 
 	zyk_spawn_ice_block(ent, duration, 0, 0, -140, 0, 0);
@@ -6120,7 +6120,7 @@ void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 	}
 	else if (selected_power == 30)
 	{
-		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^3Enemy Nerf           ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^3Enemy Weakening      ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
 	else if (selected_power == 31)
 	{
@@ -6515,7 +6515,7 @@ void quest_power_events(gentity_t *ent)
 			}
 
 			if (ent->client->pers.quest_power_status & (1 << 21))
-			{ // zyk: Enemy Nerf
+			{ // zyk: Enemy Weakening
 				if (ent->client->pers.quest_power_status & (1 << 0))
 				{ // zyk: testing for Immunity Power in target player
 					ent->client->pers.quest_power_status &= ~(1 << 21);
@@ -11657,7 +11657,7 @@ void G_RunFrame( int levelTime ) {
 					{
 						enemy_nerf(ent, 1000);
 						ent->client->pers.universe_quest_timer = level.time + 11000;
-						trap->SendServerCommand(-1, "chat \"^3Guardian of Resistance: ^7Enemy Nerf!\"");
+						trap->SendServerCommand(-1, "chat \"^3Guardian of Resistance: ^7Enemy Weakening!\"");
 					}
 				}
 				else if (ent->client->pers.guardian_mode == 12)
@@ -11929,7 +11929,7 @@ void G_RunFrame( int levelTime ) {
 						else if (ent->client->pers.hunter_quest_messages == 24)
 						{
 							enemy_nerf(ent, 2000);
-							trap->SendServerCommand(-1, "chat \"^1Guardian of Chaos: ^7Enemy Nerf!\"");
+							trap->SendServerCommand(-1, "chat \"^1Guardian of Chaos: ^7Enemy Weakening!\"");
 							ent->client->pers.hunter_quest_messages++;
 						}
 						else if (ent->client->pers.hunter_quest_messages == 25)
