@@ -925,6 +925,7 @@ typedef struct clientPersistant_s {
 	int quest_power_user1_id;
 	int quest_power_user2_id;
 	int quest_power_user3_id;
+	int quest_power_user4_id;
 
 	// zyk: sets the id of the effect of the magic used by this player
 	int quest_power_effect1_id;

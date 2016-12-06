@@ -5158,15 +5158,12 @@ void shifting_sand(gentity_t *ent, int distance)
 
 	if (this_enemy)
 	{ // zyk: found an enemy
-		vec3_t origin;
-
 		ent->client->pers.quest_power_status |= (1 << 17);
 
-		origin[0] = this_enemy->client->ps.origin[0] + Q_irand(100,150);
-		origin[1] = this_enemy->client->ps.origin[1] + Q_irand(100,150);
-		origin[2] = this_enemy->client->ps.origin[2] + Q_irand(0,100);
+		ent->client->pers.quest_power_user4_id = this_enemy->s.number;
 
-		VectorCopy(origin, ent->client->pers.teleport_point);
+		// zyk: used to bring the player back if he gets stuck
+		VectorCopy(ent->client->ps.origin, ent->client->pers.teleport_angles);
 	}
 
 	ent->client->pers.quest_power5_timer = level.time + time_to_teleport;
@@ -6426,13 +6423,22 @@ void quest_power_events(gentity_t *ent)
 				{ // zyk: after this time, teleports to the new location and add effect there too
 					if (Distance(ent->client->ps.origin, g_entities[ent->client->pers.quest_power_effect1_id].s.origin) < 100)
 					{ // zyk: only teleports if the player is near the effect
-						zyk_TeleportPlayer(ent, ent->client->pers.teleport_point, ent->client->ps.viewangles);
+						vec3_t origin;
+						gentity_t *this_enemy = &g_entities[ent->client->pers.quest_power_user4_id];
+
+						origin[0] = this_enemy->client->ps.origin[0] + Q_irand(100, 150);
+						origin[1] = this_enemy->client->ps.origin[1] + Q_irand(100, 150);
+						origin[2] = this_enemy->client->ps.origin[2] + Q_irand(20, 100);
+
+						zyk_TeleportPlayer(ent, origin, ent->client->ps.viewangles);
+
+						VectorCopy(ent->client->ps.origin, ent->client->pers.teleport_point);
 					}
 
 					ent->client->pers.quest_power_status &= ~(1 << 17);
 					ent->client->pers.quest_power_status |= (1 << 18);
 
-					ent->client->pers.quest_power5_timer = level.time + 1000;
+					ent->client->pers.quest_power5_timer = level.time + 4000;
 					zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, 2000);
 				}
 			}
@@ -6444,7 +6450,7 @@ void quest_power_events(gentity_t *ent)
 					if (VectorCompare(ent->client->ps.origin, ent->client->pers.teleport_point) == qtrue)
 					{ // zyk: stuck, teleport back
 						zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, 1000);
-						zyk_TeleportPlayer(ent, ent->client->pers.teleport_point, ent->client->ps.viewangles);
+						zyk_TeleportPlayer(ent, ent->client->pers.teleport_angles, ent->client->ps.viewangles);
 					}
 
 					ent->client->pers.quest_power_status &= ~(1 << 18);

@@ -4347,7 +4347,7 @@ qboolean TryGrapple(gentity_t *ent)
 						shifting_sand(ent, 800);
 						ent->client->pers.magic_power -= (int)ceil((zyk_shifting_sand_mp_cost.integer * universe_mp_cost_factor));
 						if (ent->client->pers.rpg_class == 8)
-							ent->client->pers.quest_power_usage_timer = level.time + (20000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
+							ent->client->pers.quest_power_usage_timer = level.time + (22000 * ((4.0 - ent->client->pers.skill_levels[55]) / 4.0));
 						else
 							ent->client->pers.quest_power_usage_timer = level.time + 20000;
 						trap->SendServerCommand(ent->s.number, va("chat \"%s^7: ^7Shifting Sand!\"", ent->client->pers.netname));
