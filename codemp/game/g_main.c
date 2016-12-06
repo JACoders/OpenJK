@@ -4336,7 +4336,7 @@ void spawn_boss(gentity_t *ent,int x,int y,int z,int yaw,char *boss_name,int gx,
 	}
 	else
 	{
-		boss_bonus_hp = 0.15 * zyk_number_of_allies(ent, qtrue);
+		boss_bonus_hp = 0.2 * zyk_number_of_allies(ent, qtrue);
 	}
 
 	if (npc_ent)
