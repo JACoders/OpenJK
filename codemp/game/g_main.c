@@ -6451,6 +6451,7 @@ void quest_power_events(gentity_t *ent)
 					{ // zyk: stuck, teleport back
 						zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, 1000);
 						zyk_TeleportPlayer(ent, ent->client->pers.teleport_angles, ent->client->ps.viewangles);
+						zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_sand", "0", "env/sand_spray", 0, 0, 0, 1000);
 					}
 
 					ent->client->pers.quest_power_status &= ~(1 << 18);
