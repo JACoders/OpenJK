@@ -5588,10 +5588,14 @@ void initialize_rpg_skills(gentity_t *ent)
 		}
 
 		// zyk: the player can have only one of the Unique Abilities. If for some reason he has more, remove all of them
-		if (ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3))
+		if ((ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3)) || 
+			(ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 4)) || 
+			(ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.secrets_found & (1 << 4)) || 
+			(ent->client->pers.secrets_found & (1 << 2) && ent->client->pers.secrets_found & (1 << 3) && ent->client->pers.secrets_found & (1 << 4)))
 		{
 			ent->client->pers.secrets_found &= ~(1 << 2);
 			ent->client->pers.secrets_found &= ~(1 << 3);
+			ent->client->pers.secrets_found &= ~(1 << 4);
 		}
 
 		// zyk: update the rpg stuff info at the client-side game
@@ -9466,7 +9470,7 @@ void Cmd_ListAccount_f( gentity_t *ent ) {
 			}
 			else if (Q_stricmp( arg1, "classes" ) == 0)
 			{
-				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7 The most balanced class\n^31 - Force User\n^7 Has saber and force. Force powers use less force. Mind Trick can mind control enemies\n^32 - Bounty Hunter\n^7 Has guns. Gets more credits in battles\n^33 - Armored Soldier\n^7 Deflects some gun shots. Has guns. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7 Has highest melee damage and some force powers. Melee can destroy objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7 Uses some guns. Has highest gun damage. Does not decloak by electric attacks\n^36 - Duelist\n^7 Has some force powers, more melee damage and the highest saber damage. \n^37 - Force Gunner\n^7 Has some force powers and guns. Can do acrobatic moves (like wall run) while holding a gun and can shoot while doing them\n^38 - Magic Master\n^7 Has very few skills. Learns all magic powers\n^39 - Force Tank\n^7 uses saber and force. Has more resistance to damage but no heal\n\n^3/rpgclass <class number>\n\"" );
+				trap->SendServerCommand( ent-g_entities, "print \"\n^30 - Free Warrior\n^7 The most balanced class\n^31 - Force User\n^7 Has saber and force. Force powers use less force. Mind Trick can mind control enemies\n^32 - Bounty Hunter\n^7 Has guns. Gets more credits in battles\n^33 - Armored Soldier\n^7 Has guns. Takes less damage. Has auto-heal in shield\n^34 - Monk\n^7 Has highest melee damage and some force powers. Melee can destroy objects. Has auto-heal in HP\n^35 - Stealth Attacker\n^7 Uses some guns. Has highest gun damage. Does not decloak by electric attacks\n^36 - Duelist\n^7 Has some force powers, more melee damage and the highest saber damage. \n^37 - Force Gunner\n^7 Has some force powers and guns. Can do acrobatic moves (like wall run) while holding a gun and can shoot while doing them\n^38 - Magic Master\n^7 Has very few skills. Learns all magic powers\n^39 - Force Tank\n^7 uses saber and force. Has more resistance to damage but no heal\n\n^3/rpgclass <class number>\n\"" );
 			}
 			else if (Q_stricmp( arg1, "info" ) == 0)
 			{
@@ -9748,7 +9752,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "items" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^39 - Shield Booster: ^7Buy: 150 - Sell: ^1no\n^310 - Sentry Gun: ^7Buy: 170 - Sell: 60\n^311 - Seeker Drone: ^7Buy: 180 - Sell: 65\n^312 - Big Bacta: ^7Buy: 200 - Sell: 70\n^313 - Force Field: ^7Buy: 300 - Sell: 80\n^314 - Ysalamiri: ^7Buy: 200 - Sell: 50\n^331 - Jetpack Fuel: ^7Buy: 200 - Sell: ^1no\n^334 - Bacta Canister: ^7Buy: 100 - Sell: 20\n^335 - E-Web: ^7Buy: 150 - Sell: 30\n^338 - Binoculars: ^7Buy: 10 - Sell: 5\n^341 - Jetpack: ^7Buy: 50 - Sell: ^1no\n^342 - Cloak Item: ^7Buy: 50 - Sell: 20\n^343 - Force Boon: ^7Buy: 200 - Sell: 50\n^344 - Magic Potion: ^7Buy: 50 - Sell: ^1no\n^349 - Saber Armor: ^7Buy: 2000 - Sell: ^1no\n^350 - Gun Armor: ^7Buy: 2000 - Sell: ^1no\n^351 - Healing Crystal: ^7Buy: 2000 - Sell: ^1no\n^352 - Energy Crystal: ^7Buy: 2000 - Sell: ^1no\n^355 - Book of Riddles: ^7Buy: 100000 - Sell: ^1no^7\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^39 - Shield Booster: ^7Buy: 150 - Sell: ^1no\n^310 - Sentry Gun: ^7Buy: 170 - Sell: 60\n^311 - Seeker Drone: ^7Buy: 180 - Sell: 65\n^312 - Big Bacta: ^7Buy: 200 - Sell: 70\n^313 - Force Field: ^7Buy: 300 - Sell: 80\n^314 - Ysalamiri: ^7Buy: 200 - Sell: 50\n^331 - Jetpack Fuel: ^7Buy: 200 - Sell: ^1no\n^334 - Bacta Canister: ^7Buy: 100 - Sell: 20\n^335 - E-Web: ^7Buy: 150 - Sell: 30\n^338 - Binoculars: ^7Buy: 10 - Sell: 5\n^341 - Jetpack: ^7Buy: 50 - Sell: ^1no\n^342 - Cloak Item: ^7Buy: 50 - Sell: 20\n^343 - Force Boon: ^7Buy: 200 - Sell: 50\n^344 - Magic Potion: ^7Buy: 50 - Sell: ^1no\n^349 - Saber Armor: ^7Buy: 2000 - Sell: ^1no\n^350 - Gun Armor: ^7Buy: 2000 - Sell: ^1no\n^351 - Healing Crystal: ^7Buy: 2000 - Sell: ^1no\n^352 - Energy Crystal: ^7Buy: 2000 - Sell: ^1no\n^356 - Book of Riddles: ^7Buy: 100000 - Sell: ^1no^7\n\n\"");
 		}
 		else if (Q_stricmp(arg1, "weapons" ) == 0)
 		{
@@ -9756,7 +9760,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		}
 		else if (Q_stricmp(arg1, "upgrades" ) == 0)
 		{
-			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Ability 1: ^7Buy: 7000\n^354 - Unique Ability 2: ^7Buy: 7000\n\n\"");
+			trap->SendServerCommand( ent-g_entities, "print \"\n^38 - Stealth Attacker Upgrade: ^7Buy: 5000\n^315 - Impact Reducer: ^7Buy: 4300\n^316 - Flame Thrower: ^7Buy: 3000\n^325 - Power Cell Weapons Upgrade: ^7Buy: 2000\n^326 - Blaster Pack Weapons Upgrade: ^7Buy: 1500\n^327 - Metal Bolts Weapons Upgrade: ^7Buy: 2500\n^328 - Rocket Upgrade: ^7Buy: 3000\n^329 - Bounty Hunter Upgrade: ^7Buy: 5000\n^333 - Stun Baton Upgrade: ^7Buy: 1200\n^339 - Armored Soldier Upgrade: ^7Buy: 5000\n^340 - Holdable Items Upgrade: ^7Buy: 3000\n^345 - Force Gunner Upgrade: ^7Buy: 5000\n^346 - Jetpack Upgrade: ^7Buy: 10000\n^347 - Force Tank Upgrade: ^7Buy: 5000\n^353 - Unique Ability 1: ^7Buy: 7000\n^354 - Unique Ability 2: ^7Buy: 7000\n^355 - Unique Ability 3: ^7Buy: 7000\n\n\"");
 		}
 		else if (i == 1)
 		{
@@ -10051,12 +10055,51 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			{
 				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force Tank gets Force Scream, which sets the resistance shield during 6 seconds. Player makes a scream that damages nearby enemies and may cause stun anim on them. Spends 50 force\n\n\"");
 			}
-			else
-			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7You can only have one Unique Ability at a time.\n\n\"");
-			}
 		}
 		else if (i == 55)
+		{
+			if (ent->client->pers.rpg_class == 0)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 1)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Force User\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 2)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Bounty Hunter\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 3)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 4)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Monk\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 5)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Stealth Attacker\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 6)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 7)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Force Gunner\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 8)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Magic Master\n\n\"");
+			}
+			else if (ent->client->pers.rpg_class == 9)
+			{
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Force Tank\n\n\"");
+			}
+		}
+		else if (i == 56)
 		{
 			trap->SendServerCommand(ent - g_entities, "print \"\n^3Book of Riddles: ^7a legendary book that shows the answers to the riddles created by the Guardian of Eternity\n\n\"");
 		}
@@ -10071,7 +10114,7 @@ Cmd_Buy_f
 void Cmd_Buy_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
-	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,7000,7000,100000};
+	int item_costs[NUMBER_OF_SELLER_ITEMS] = {15,20,25,40,80,120,150,5000,150,170,180,200,300,200,4300,3000,100,120,150,200,110,90,170,300,2000,1500,2500,3000,5000,200,200,20,1200,100,150,150,90,10,5000,3000,50,50,200,50,5000,10000,5000,700,2000,2000,2000,2000,7000,7000,7000,100000};
 
 	if (trap->Argc() == 1)
 	{
@@ -10224,6 +10267,11 @@ void Cmd_Buy_f( gentity_t *ent ) {
 	else if (value == 54 && ent->client->pers.secrets_found & (1 << 3))
 	{
 		trap->SendServerCommand(ent - g_entities, "print \"You already have the Unique Ability 2.\n\"");
+		return;
+	}
+	else if (value == 55 && ent->client->pers.secrets_found & (1 << 4))
+	{
+		trap->SendServerCommand(ent - g_entities, "print \"You already have the Unique Ability 3.\n\"");
 		return;
 	}
 
@@ -10487,13 +10535,21 @@ void Cmd_Buy_f( gentity_t *ent ) {
 		{
 			ent->client->pers.secrets_found |= (1 << 2);
 			ent->client->pers.secrets_found &= ~(1 << 3);
+			ent->client->pers.secrets_found &= ~(1 << 4);
 		}
 		else if (value == 54)
 		{
 			ent->client->pers.secrets_found &= ~(1 << 2);
 			ent->client->pers.secrets_found |= (1 << 3);
+			ent->client->pers.secrets_found &= ~(1 << 4);
 		}
 		else if (value == 55)
+		{
+			ent->client->pers.secrets_found &= ~(1 << 2);
+			ent->client->pers.secrets_found &= ~(1 << 3);
+			ent->client->pers.secrets_found |= (1 << 4);
+		}
+		else if (value == 56)
 		{
 			trap->SendServerCommand(ent - g_entities, "chat \"^3Book of Riddles: ^7key clock sword sun fire water time star nature\n\"");
 		}
@@ -10523,7 +10579,7 @@ void Cmd_Sell_f( gentity_t *ent ) {
 	char arg1[MAX_STRING_CHARS];
 	int value = 0;
 	int sold = 0;
-	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0,0,0,0,0,0,0,0,0,0};
+	int items_costs[NUMBER_OF_SELLER_ITEMS] = {10,15,20,30,35,40,45,0,0,60,65,70,80,50,0,0,50,60,70,100,50,45,90,150,0,0,0,0,0,0,0,10,0,20,30,90,45,5,0,0,0,20,50,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 	if (trap->Argc() == 1)
 	{

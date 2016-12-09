@@ -586,7 +586,7 @@ typedef enum {
 #define JETPACK_SCALE 100 // zyk: used to scale the MAX_JETPACK_FUEL to set the jetpackFuel attribute. Dividing MAX_JETPACK_FUEL per JETPACK_SCALE must result in 100
 
 // zyk: quantity of items at the jawa seller
-#define NUMBER_OF_SELLER_ITEMS 55
+#define NUMBER_OF_SELLER_ITEMS 56
 
 // client data that stays across multiple respawns, but is cleared
 // on each level change or team change at ClientBegin()
@@ -639,6 +639,7 @@ typedef struct clientPersistant_s {
 	// 20 - hit by poison dart
 	// 21 - Unique Ability 1
 	// 22 - Unique Ability 2
+	// 23 - Unique Ability 3
 	int player_statuses;
 
 	// zyk: amount of times player must be hit by poison
@@ -751,7 +752,7 @@ typedef struct clientPersistant_s {
 	// 1 - Bounty Hunter Upgrade
 	// 2 - Unique Ability 1
 	// 3 - Unique Ability 2
-	// 4 - unused
+	// 4 - Unique Ability 3
 	// 5 - unused
 	// 6 - unused
 	// 7 - Stealth Attacker Upgrade
