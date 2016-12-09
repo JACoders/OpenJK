@@ -6424,10 +6424,18 @@ void quest_power_events(gentity_t *ent)
 					if (Distance(ent->client->ps.origin, g_entities[ent->client->pers.quest_power_effect1_id].s.origin) < 100)
 					{ // zyk: only teleports if the player is near the effect
 						vec3_t origin;
+						int random_x = Q_irand(0, 1);
+						int random_y = Q_irand(0, 1);
+
+						if (random_x == 0)
+							random_x = -1;
+						if (random_y == 0)
+							random_y = -1;
+
 						gentity_t *this_enemy = &g_entities[ent->client->pers.quest_power_user4_id];
 
-						origin[0] = this_enemy->client->ps.origin[0] + Q_irand(100, 150);
-						origin[1] = this_enemy->client->ps.origin[1] + Q_irand(100, 150);
+						origin[0] = this_enemy->client->ps.origin[0] + (Q_irand(100, 150) * random_x);
+						origin[1] = this_enemy->client->ps.origin[1] + (Q_irand(100, 150) * random_y);
 						origin[2] = this_enemy->client->ps.origin[2] + Q_irand(20, 100);
 
 						zyk_TeleportPlayer(ent, origin, ent->client->ps.viewangles);
