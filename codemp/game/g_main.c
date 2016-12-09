@@ -4918,7 +4918,7 @@ void zyk_bomb_model_think(gentity_t *ent)
 
 	if (ent->count == 0)
 	{ // zyk: explodes the bomb
-		zyk_quest_effect_spawn(ent->parent, ent, "zyk_timed_bomb_explosion", "4", "explosions/hugeexplosion1", 0, 500, 400, 800);
+		zyk_quest_effect_spawn(ent->parent, ent, "zyk_timed_bomb_explosion", "4", "explosions/hugeexplosion1", 0, 530, 430, 800);
 
 		ent->think = G_FreeEntity;
 		ent->nextthink = level.time + 500;
