@@ -834,6 +834,10 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		{
 			client->pers.player_statuses &= ~(1 << 22);
 		}
+		else if (client->pers.player_statuses & (1 << 23))
+		{
+			client->pers.player_statuses &= ~(1 << 23);
+		}
 	}
 
 	while ( client->timeResidual >= 1000 )
@@ -873,7 +877,8 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 		{
 			if (client->pers.rpg_class == 4 && ent->health > 0)
 			{ // zyk: Monk auto-healing ability
-				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(client->pers.player_statuses & (1 << 22)))
+				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(client->pers.player_statuses & (1 << 22)) && 
+					!(client->pers.player_statuses & (1 << 23)))
 				{ // zyk: Monk Unique Skill
 					int heal_amount = 4;
 
@@ -893,32 +898,16 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 				}
 				else
 				{
-					if (client->pers.player_statuses & (1 << 21))
-					{ // zyk: end of Meditation Strength
-						int player_it = 0;
-
-						client->pers.player_statuses &= ~(1 << 21);
-
-						for (player_it = 0; player_it < level.maxclients; player_it++)
-						{
-							gentity_t *player_ent = &g_entities[player_it];
-
-							if (zyk_is_ally(ent, player_ent) == qtrue)
-							{
-								player_ent->client->pers.player_statuses &= ~(1 << 21);
-							}
-						}
-					}
-
 					if (ent->health < client->pers.max_rpg_health)
-					{
+					{ // zyk: Monk class auto-healing
 						ent->health += 1;
 					}
 				}
 			}
 			else if (client->pers.rpg_class == 3 && ent->health > 0)
 			{ // zyk: Armored Soldier auto-shield-healing ability
-				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(client->pers.player_statuses & (1 << 21)))
+				if (client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(client->pers.player_statuses & (1 << 21)) && 
+					!(client->pers.player_statuses & (1 << 22)) && !(client->pers.player_statuses & (1 << 23)))
 				{ // zyk: Armored Soldier Unique Skill
 					if ((client->ps.stats[STAT_ARMOR] + 4) < client->pers.max_rpg_shield)
 					{

@@ -10072,7 +10072,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 3)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Armored Soldier gets Faster E11, which makes E11 Blaster Rifle have a faster alt firerate. Spends 5 blaster pack ammo\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 4)
 			{
@@ -15443,6 +15443,77 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
 				}
+			}
+		}
+		else
+		{
+			trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7%d seconds left\"", ((ent->client->pers.unique_skill_timer - level.time) / 1000)));
+		}
+	}
+	else if (ent->client->pers.secrets_found & (1 << 4))
+	{ // zyk: Unique Ability 3
+		if (zyk_can_use_unique(ent) == qfalse)
+		{
+			trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7cannot use Unique Ability now\"");
+			return;
+		}
+
+		if (ent->client->pers.unique_skill_timer < level.time)
+		{
+			if (ent->client->pers.rpg_class == 0)
+			{ // zyk: Free Warrior
+
+			}
+			else if (ent->client->pers.rpg_class == 1)
+			{ // zyk: Force User
+
+			}
+			else if (ent->client->pers.rpg_class == 2)
+			{ // zyk: Bounty Hunter
+
+			}
+			else if (ent->client->pers.rpg_class == 3)
+			{ // zyk: Armored Soldier Faster E11. Improves E11 Blaster Rifle alt fire rate
+				if (ent->client->ps.ammo[AMMO_BLASTER] >= 5)
+				{
+					ent->client->ps.ammo[AMMO_BLASTER] -= 5;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 5000;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					rpg_skill_counter(ent, 200);
+
+					ent->client->pers.unique_skill_timer = level.time + 30000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs 5 blaster pack ammo to use it\""));
+				}
+			}
+			else if (ent->client->pers.rpg_class == 4)
+			{ // zyk: Monk
+
+			}
+			else if (ent->client->pers.rpg_class == 5)
+			{ // zyk: Stealth Attacker
+
+			}
+			else if (ent->client->pers.rpg_class == 6)
+			{ // zyk: Duelist
+
+			}
+			else if (ent->client->pers.rpg_class == 7)
+			{ // zyk: Force Gunner
+
+			}
+			else if (ent->client->pers.rpg_class == 8)
+			{ // zyk: Magic Master
+
+			}
+			else if (ent->client->pers.rpg_class == 9)
+			{ // zyk: Force Tank
+
 			}
 		}
 		else
