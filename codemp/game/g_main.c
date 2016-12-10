@@ -5838,158 +5838,158 @@ void clear_special_power_effect(gentity_t *ent)
 
 qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 {
-	if (selected_power == 2 && !(ent->client->pers.defeated_guardians & (1 << 4)) && 
+	if (selected_power == MAGIC_HEALING_WATER && !(ent->client->pers.defeated_guardians & (1 << 4)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 3 && !(ent->client->pers.defeated_guardians & (1 << 4)) && 
+	else if (selected_power == MAGIC_WATER_SPLASH && !(ent->client->pers.defeated_guardians & (1 << 4)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 4 && !(ent->client->pers.defeated_guardians & (1 << 5)) && 
+	else if (selected_power == MAGIC_ACID_WATER && !(ent->client->pers.defeated_guardians & (1 << 4)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 5 && !(ent->client->pers.defeated_guardians & (1 << 5)) && 
+	else if (selected_power == MAGIC_EARTHQUAKE && !(ent->client->pers.defeated_guardians & (1 << 5)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 6 && !(ent->client->pers.defeated_guardians & (1 << 6)) && 
+	else if (selected_power == MAGIC_ROCKFALL && !(ent->client->pers.defeated_guardians & (1 << 5)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 7 && !(ent->client->pers.defeated_guardians & (1 << 6)) && 
+	else if (selected_power == MAGIC_SHIFTING_SAND && !(ent->client->pers.defeated_guardians & (1 << 5)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 8 && !(ent->client->pers.defeated_guardians & (1 << 7)) && 
+	else if (selected_power == MAGIC_SLEEPING_FLOWERS && !(ent->client->pers.defeated_guardians & (1 << 6)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 9 && !(ent->client->pers.defeated_guardians & (1 << 7)) && 
+	else if (selected_power == MAGIC_POISON_MUSHROOMS && !(ent->client->pers.defeated_guardians & (1 << 6)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 10 && !(ent->client->pers.defeated_guardians & (1 << 8)) && 
+	else if (selected_power == MAGIC_TREE_OF_LIFE && !(ent->client->pers.defeated_guardians & (1 << 6)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 11 && !(ent->client->pers.defeated_guardians & (1 << 8)) && 
+	else if (selected_power == MAGIC_MAGIC_SHIELD && !(ent->client->pers.defeated_guardians & (1 << 7)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 12 && !(ent->client->pers.defeated_guardians & (1 << 9)) && 
+	else if (selected_power == MAGIC_DOME_OF_DAMAGE && !(ent->client->pers.defeated_guardians & (1 << 7)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 13 && !(ent->client->pers.defeated_guardians & (1 << 9)) && 
+	else if (selected_power == MAGIC_MAGIC_DRAIN && !(ent->client->pers.defeated_guardians & (1 << 7)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 14 && !(ent->client->pers.defeated_guardians & (1 << 10)) && 
+	else if (selected_power == MAGIC_ULTRA_SPEED && !(ent->client->pers.defeated_guardians & (1 << 8)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 15 && !(ent->client->pers.defeated_guardians & (1 << 10)) && 
+	else if (selected_power == MAGIC_SLOW_MOTION && !(ent->client->pers.defeated_guardians & (1 << 8)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 16 && !(ent->client->pers.defeated_guardians & (1 << 11)) && 
+	else if (selected_power == MAGIC_FAST_AND_SLOW && !(ent->client->pers.defeated_guardians & (1 << 8)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 17 && !(ent->client->pers.defeated_guardians & (1 << 11)) && 
+	else if (selected_power == MAGIC_FLAME_BURST && !(ent->client->pers.defeated_guardians & (1 << 9)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 18 && !(ent->client->pers.defeated_guardians & (1 << 12)) && 
+	else if (selected_power == MAGIC_ULTRA_FLAME && !(ent->client->pers.defeated_guardians & (1 << 9)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 19 && !(ent->client->pers.defeated_guardians & (1 << 12)) && 
+	else if (selected_power == MAGIC_FLAMING_AREA && !(ent->client->pers.defeated_guardians & (1 << 9)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 20 && ent->client->pers.skill_levels[55] < 1)
-	{
-		return qfalse;
-	}
-	else if (selected_power == 21 && ent->client->pers.skill_levels[55] < 2)
-	{
-		return qfalse;
-	}
-	else if (selected_power == 22 && ent->client->pers.skill_levels[55] < 3)
-	{
-		return qfalse;
-	}
-	else if (selected_power == 23 && !(ent->client->pers.defeated_guardians & (1 << 4)) &&
+	else if (selected_power == MAGIC_BLOWING_WIND && !(ent->client->pers.defeated_guardians & (1 << 10)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 24 && !(ent->client->pers.defeated_guardians & (1 << 5)) &&
+	else if (selected_power == MAGIC_HURRICANE && !(ent->client->pers.defeated_guardians & (1 << 10)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 25 && !(ent->client->pers.defeated_guardians & (1 << 6)) &&
+	else if (selected_power == MAGIC_REVERSE_WIND && !(ent->client->pers.defeated_guardians & (1 << 10)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 26 && !(ent->client->pers.defeated_guardians & (1 << 7)) &&
+	else if (selected_power == MAGIC_ULTRA_RESISTANCE && !(ent->client->pers.defeated_guardians & (1 << 11)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 27 && !(ent->client->pers.defeated_guardians & (1 << 8)) &&
+	else if (selected_power == MAGIC_ULTRA_STRENGTH && !(ent->client->pers.defeated_guardians & (1 << 11)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 28 && !(ent->client->pers.defeated_guardians & (1 << 9)) &&
+	else if (selected_power == MAGIC_ENEMY_WEAKENING && !(ent->client->pers.defeated_guardians & (1 << 11)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 29 && !(ent->client->pers.defeated_guardians & (1 << 10)) &&
+	else if (selected_power == MAGIC_ICE_STALAGMITE && !(ent->client->pers.defeated_guardians & (1 << 12)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 30 && !(ent->client->pers.defeated_guardians & (1 << 11)) &&
+	else if (selected_power == MAGIC_ICE_BOULDER && !(ent->client->pers.defeated_guardians & (1 << 12)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power == 31 && !(ent->client->pers.defeated_guardians & (1 << 12)) &&
+	else if (selected_power == MAGIC_ICE_BLOCK && !(ent->client->pers.defeated_guardians & (1 << 12)) &&
 		ent->client->pers.defeated_guardians != NUMBER_OF_GUARDIANS)
 	{
 		return qfalse;
 	}
-	else if (selected_power < 1 || selected_power > 31)
+	else if (selected_power == MAGIC_HEALING_AREA && ent->client->pers.skill_levels[55] < 1)
+	{
+		return qfalse;
+	}
+	else if (selected_power == MAGIC_MAGIC_EXPLOSION && ent->client->pers.skill_levels[55] < 2)
+	{
+		return qfalse;
+	}
+	else if (selected_power == MAGIC_LIGHTNING_DOME && ent->client->pers.skill_levels[55] < 3)
+	{
+		return qfalse;
+	}
+	else if (selected_power < MAGIC_INNER_AREA_DAMAGE || selected_power >= MAX_MAGIC_POWERS)
 	{ // zyk: if, for some reason, there is an invalid selected power value, does not allow it
 		return qfalse;
 	}
-	else if (ent->client->sess.magic_master_disabled_powers & (1 << (selected_power - 1)))
+	else if (ent->client->sess.magic_master_disabled_powers & (1 << selected_power))
 	{ // zyk: this power was disabled by the player
 		return qfalse;
 	}
@@ -5999,129 +5999,129 @@ qboolean magic_master_has_this_power(gentity_t *ent, int selected_power)
 
 void zyk_print_special_power(gentity_t *ent, int selected_power, char direction)
 {
-	if (selected_power == 1)
+	if (selected_power == MAGIC_INNER_AREA_DAMAGE)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Inner Area Damage   ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
-	else if (selected_power == 2)
+	else if (selected_power == MAGIC_HEALING_WATER)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^4Healing Water       ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
-	else if (selected_power == 3)
+	else if (selected_power == MAGIC_WATER_SPLASH)
 	{
 		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^4Water Splash        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
-	else if (selected_power == 4)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Earthquake          ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 5)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Rockfall            ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 6)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^2Sleeping Flowers    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 7)
-	{	
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^2Poison Mushrooms    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 8)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Magic Shield        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 9)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Dome of Damage      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 10)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^6Ultra Speed         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 11)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^6Slow Motion         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 12)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^1Flame Burst         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 13)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^1Ultra Flame         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 14)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Blowing Wind        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 15)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Hurricane           ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 16)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Ultra Resistance    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 17)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Ultra Strength      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 18)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Ice Stalagmite      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 19)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Ice Boulder         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 20)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Area        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 21)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Explosion     ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 22)
-	{
-		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
-	}
-	else if (selected_power == 23)
+	else if (selected_power == MAGIC_ACID_WATER)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^4Acid Water           ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 24)
+	else if (selected_power == MAGIC_EARTHQUAKE)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Earthquake          ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_ROCKFALL)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Rockfall            ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_SHIFTING_SAND)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^3Shifting Sand        ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 25)
+	else if (selected_power == MAGIC_SLEEPING_FLOWERS)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^2Sleeping Flowers    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_POISON_MUSHROOMS)
+	{	
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^2Poison Mushrooms    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_TREE_OF_LIFE)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^2Tree of Life         ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 26)
+	else if (selected_power == MAGIC_MAGIC_SHIELD)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Magic Shield        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_DOME_OF_DAMAGE)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Dome of Damage      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_MAGIC_DRAIN)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^5Magic Drain          ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 27)
+	else if (selected_power == MAGIC_ULTRA_SPEED)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^6Ultra Speed         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_SLOW_MOTION)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^6Slow Motion         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_FAST_AND_SLOW)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^6Fast and Slow        ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 28)
+	else if (selected_power == MAGIC_FLAME_BURST)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^1Flame Burst         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_ULTRA_FLAME)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^1Ultra Flame         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_FLAMING_AREA)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^1Flaming Area         ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 29)
+	else if (selected_power == MAGIC_BLOWING_WIND)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Blowing Wind        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_HURRICANE)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Hurricane           ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_REVERSE_WIND)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^7Reverse Wind         ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 30)
+	else if (selected_power == MAGIC_ULTRA_RESISTANCE)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Ultra Resistance    ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_ULTRA_STRENGTH)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^3Ultra Strength      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_ENEMY_WEAKENING)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^3Enemy Weakening      ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
 	}
-	else if (selected_power == 31)
+	else if (selected_power == MAGIC_ICE_STALAGMITE)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Ice Stalagmite      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_ICE_BOULDER)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^5Ice Boulder         ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_ICE_BLOCK)
 	{
 		trap->SendServerCommand(ent->s.number, va("chat \"^1%c ^5Ice Block            ^3MP: ^7%d\"", direction, ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_HEALING_AREA)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Healing Area        ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_MAGIC_EXPLOSION)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Magic Explosion     ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
+	}
+	else if (selected_power == MAGIC_LIGHTNING_DOME)
+	{
+		trap->SendServerCommand( ent->s.number, va("chat \"^1%c ^7Lightning Dome      ^3MP: ^7%d\"",direction,ent->client->pers.magic_power));
 	}
 }
 
@@ -6131,7 +6131,7 @@ int zyk_number_of_enabled_magic_powers(gentity_t *ent)
 	int i = 0;
 	int number_of_enabled_powers = 0;
 
-	for (i = 1; i <= 31; i++)
+	for (i = MAGIC_INNER_AREA_DAMAGE; i < MAX_MAGIC_POWERS; i++)
 	{
 		if (!(ent->client->sess.magic_master_disabled_powers & (1 << i)))
 		{
@@ -6154,8 +6154,8 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_special_power++;
-			if (ent->client->sess.selected_special_power == 32)
-				ent->client->sess.selected_special_power = 1;
+			if (ent->client->sess.selected_special_power >= MAX_MAGIC_POWERS)
+				ent->client->sess.selected_special_power = MAGIC_INNER_AREA_DAMAGE;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 	else
@@ -6163,8 +6163,8 @@ void zyk_show_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_special_power--;
-			if (ent->client->sess.selected_special_power == 0)
-				ent->client->sess.selected_special_power = 31;
+			if (ent->client->sess.selected_special_power < MAGIC_INNER_AREA_DAMAGE)
+				ent->client->sess.selected_special_power = MAX_MAGIC_POWERS - 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_special_power) == qfalse);
 	}
 
@@ -6183,8 +6183,8 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_left_special_power++;
-			if (ent->client->sess.selected_left_special_power == 32)
-				ent->client->sess.selected_left_special_power = 1;
+			if (ent->client->sess.selected_left_special_power >= MAX_MAGIC_POWERS)
+				ent->client->sess.selected_left_special_power = MAGIC_INNER_AREA_DAMAGE;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 	else
@@ -6192,8 +6192,8 @@ void zyk_show_left_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_left_special_power--;
-			if (ent->client->sess.selected_left_special_power == 0)
-				ent->client->sess.selected_left_special_power = 31;
+			if (ent->client->sess.selected_left_special_power < MAGIC_INNER_AREA_DAMAGE)
+				ent->client->sess.selected_left_special_power = MAX_MAGIC_POWERS - 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_left_special_power) == qfalse);
 	}
 
@@ -6212,8 +6212,8 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_right_special_power++;
-			if (ent->client->sess.selected_right_special_power == 32)
-				ent->client->sess.selected_right_special_power = 1;
+			if (ent->client->sess.selected_right_special_power >= MAX_MAGIC_POWERS)
+				ent->client->sess.selected_right_special_power = MAGIC_INNER_AREA_DAMAGE;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 	else
@@ -6221,8 +6221,8 @@ void zyk_show_right_magic_master_powers(gentity_t *ent, qboolean next_power)
 		do
 		{
 			ent->client->sess.selected_right_special_power--;
-			if (ent->client->sess.selected_right_special_power == 0)
-				ent->client->sess.selected_right_special_power = 31;
+			if (ent->client->sess.selected_right_special_power < MAGIC_INNER_AREA_DAMAGE)
+				ent->client->sess.selected_right_special_power = MAX_MAGIC_POWERS - 1;
 		} while (magic_master_has_this_power(ent, ent->client->sess.selected_right_special_power) == qfalse);
 	}
 
