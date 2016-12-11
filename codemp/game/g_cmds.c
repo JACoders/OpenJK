@@ -10065,7 +10065,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 		{
 			if (ent->client->pers.rpg_class == 0)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Free Warrior gets Knockdown Area, which will knockdown everyone near him. Spends 50 force and 10 mp\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 1)
 			{
@@ -15466,8 +15466,50 @@ void Cmd_Unique_f(gentity_t *ent) {
 		if (ent->client->pers.unique_skill_timer < level.time)
 		{
 			if (ent->client->pers.rpg_class == 0)
-			{ // zyk: Free Warrior
+			{ // zyk: Free Warrior Knockdown Area
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4) && ent->client->pers.magic_power >= 10)
+				{
+					int i = 0;
 
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
+					ent->client->pers.magic_power -= 10;
+
+					for (i = 0; i < level.num_entities; i++)
+					{
+						gentity_t *player_ent = &g_entities[i];
+
+						if (player_ent && player_ent->client && ent != player_ent &&
+							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
+							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 340)
+						{
+							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+							player_ent->client->ps.forceHandExtendTime = level.time + 1500;
+							player_ent->client->ps.velocity[2] += 150;
+							player_ent->client->ps.forceDodgeAnim = 0;
+							player_ent->client->ps.quickerGetup = qtrue;
+
+							G_Sound(player_ent, CHAN_AUTO, G_SoundIndex("sound/effects/woosh6.mp3"));
+						}
+					}
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_FORCE_2HANDEDLIGHTNING_HOLD;
+					ent->client->ps.forceHandExtendTime = level.time + 1000;
+
+					send_rpg_events(2000);
+
+					rpg_skill_counter(ent, 200);
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force and 10 mp to use it\"", (zyk_max_force_power.integer / 4)));
+				}
 			}
 			else if (ent->client->pers.rpg_class == 1)
 			{ // zyk: Force User
