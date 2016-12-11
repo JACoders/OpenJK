@@ -5730,9 +5730,9 @@ void zyk_load_magic_master_config(gentity_t *ent)
 		{ // zyk: if the file does not exist yet, load default Magic Master config
 			ent->client->sess.magic_fist_selection = 0;
 			ent->client->sess.magic_master_disabled_powers = 0;
-			ent->client->sess.selected_special_power = 1;
-			ent->client->sess.selected_left_special_power = 1;
-			ent->client->sess.selected_right_special_power = 1;
+			ent->client->sess.selected_special_power = MAGIC_INNER_AREA_DAMAGE;
+			ent->client->sess.selected_left_special_power = MAGIC_INNER_AREA_DAMAGE;
+			ent->client->sess.selected_right_special_power = MAGIC_INNER_AREA_DAMAGE;
 		}
 	}
 }

@@ -2611,6 +2611,7 @@ extern qboolean	gSiegeRoundBegun;
 extern qboolean	gSiegeRoundEnded;
 extern qboolean g_dontPenalizeTeam; //g_cmds.c
 extern void load_account(gentity_t *ent, qboolean change_mode);
+extern void zyk_load_magic_master_config(gentity_t *ent);
 extern void initialize_rpg_skills(gentity_t *ent);
 void SetTeamQuick(gentity_t *ent, int team, qboolean doBegin);
 void ClientBegin( int clientNum, qboolean allowTeamReset ) {
@@ -2708,6 +2709,9 @@ void ClientBegin( int clientNum, qboolean allowTeamReset ) {
 
 		// zyk: load account again
 		load_account(ent, qfalse);
+
+		zyk_load_magic_master_config(ent);
+
 		initialize_rpg_skills(ent);
 	}
 
