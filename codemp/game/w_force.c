@@ -5094,8 +5094,8 @@ void FindGenericEnemyIndex(gentity_t *self)
 		{
 			if (zyk_is_ally(self,ent) == qfalse && 
 				(ent->NPC || (ent->client->pers.connected == CON_CONNECTED && ent->client->sess.sessionTeam != TEAM_SPECTATOR && 
-				 ent->client->ps.duelInProgress == qfalse)))
-			{ // zyk: allies and not connected players cant be attacked by seeker drone
+				 ent->client->ps.duelInProgress == qfalse && self->client->pers.guardian_mode == ent->client->pers.guardian_mode)))
+			{ // zyk: allies and not connected players cant be attacked by seeker drone. Also, players in boss battle cannot attack players not in it and vice-versa
 				VectorSubtract(ent->client->ps.origin, self->client->ps.origin, a);
 				tlen = VectorLength(a);
 

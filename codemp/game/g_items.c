@@ -675,6 +675,12 @@ static qboolean pas_find_enemies( gentity_t *self )
 				continue;
 			}
 
+			if (self->parent && self->parent->client && self->parent->client->pers.guardian_mode != target->client->pers.guardian_mode && 
+				!target->NPC)
+			{ // zyk: sentry of players in boss battle can only hit the boss and his npcs, and players outside boss battle cannot hit players in boss battle
+				continue;
+			}
+
 			VectorCopy( target->client->ps.origin, org );
 		}
 		else
