@@ -6596,7 +6596,8 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						(!(ent->client->pers.quest_power_status & (1 << 0)) || 
 						  Q_stricmp(attacker->targetname, "zyk_effect_scream") == 0 || 
 						  Q_stricmp(attacker->targetname, "zyk_timed_bomb_explosion") == 0 ||
-						  Q_stricmp(attacker->targetname, "zyk_vertical_dfa") == 0)))
+						  Q_stricmp(attacker->targetname, "zyk_vertical_dfa") == 0 ||
+						  Q_stricmp(attacker->targetname, "zyk_force_storm") == 0)))
 					{ // zyk: can only hit if this player or boss is not using Immunity Power
 						gentity_t *quest_power_user = &g_entities[level.special_power_effects[attacker->s.number]];
 
@@ -6623,7 +6624,7 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						}
 
 						// zyk: target will not be knocked back by Rockfall, Dome of Damage, Ultra Flame, Ultra Drain, Water Splash, 
-						// Acid Water, Flaming Area and Healing Area
+						// Acid Water, Flaming Area, Healing Area, Vertical DFA and Force Storm
 						if (Q_stricmp(attacker->targetname, "zyk_quest_effect_rockfall") == 0 || 
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_watersplash") == 0 ||
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_dome") == 0 || 
@@ -6632,7 +6633,8 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_acid") == 0 ||
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_drain") == 0 ||
 							Q_stricmp(attacker->targetname, "zyk_quest_effect_healing") == 0 || 
-							Q_stricmp(attacker->targetname, "zyk_vertical_dfa") == 0)
+							Q_stricmp(attacker->targetname, "zyk_vertical_dfa") == 0 || 
+							Q_stricmp(attacker->targetname, "zyk_force_storm") == 0)
 						{
 							G_Damage (ent, quest_power_user, quest_power_user, NULL, origin, (int)points, DAMAGE_RADIUS, mod);
 						}

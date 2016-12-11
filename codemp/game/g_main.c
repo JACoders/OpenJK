@@ -5040,6 +5040,26 @@ void zyk_super_beam(gentity_t *ent)
 	level.special_power_effects_timer[new_ent->s.number] = level.time + 2000;
 }
 
+// zyk: Force Storm ability
+void zyk_force_storm(gentity_t *ent)
+{
+	int i = 0;
+
+	zyk_quest_effect_spawn(ent, ent, "zyk_force_storm", "4", "env/huge_lightning", 0, 50, 120, 3000);
+
+	for (i = 0; i < level.num_entities; i++)
+	{
+		gentity_t *player_ent = &g_entities[i];
+
+		if (player_ent && player_ent->client && ent != player_ent &&
+			zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
+			Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
+		{
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_force_storm", "4", "env/huge_lightning", 0, 50, 120, 3000);
+		}
+	}
+}
+
 // zyk: Force Scream ability
 void force_scream(gentity_t *ent)
 {

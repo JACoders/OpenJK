@@ -10069,7 +10069,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 1)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Force User\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Force User gets Force Storm, which protects you with Force Shield and attacks enemies nearby with powerful lightning strikes. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
@@ -14821,6 +14821,7 @@ extern void zyk_add_bomb_model(gentity_t *ent);
 extern void elemental_attack(gentity_t *ent);
 extern void zyk_super_beam(gentity_t *ent);
 extern void force_scream(gentity_t *ent);
+extern void zyk_force_storm(gentity_t *ent);
 extern qboolean zyk_unique_ability_can_hit_target(gentity_t *attacker, gentity_t *target);
 extern void zyk_vertical_dfa_effect(gentity_t *ent);
 void Cmd_Unique_f(gentity_t *ent) {
@@ -15480,7 +15481,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 						if (player_ent && player_ent->client && ent != player_ent &&
 							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
-							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 340)
+							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 						{
 							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
 							player_ent->client->ps.forceHandExtendTime = level.time + 1500;
@@ -15512,8 +15513,29 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 			}
 			else if (ent->client->pers.rpg_class == 1)
-			{ // zyk: Force User
+			{ // zyk: Force User Force Storm
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 3000;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_FORCE_RAGE;
+					ent->client->ps.forceHandExtendTime = level.time + 3000;
+
+					zyk_force_storm(ent);
+
+					rpg_skill_counter(ent, 200);
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{ // zyk: Bounty Hunter

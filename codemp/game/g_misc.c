@@ -3002,6 +3002,12 @@ void fx_runner_link( gentity_t *ent )
 			ent->nextthink = level.time + 100; // wait a small bit, then start working
 			G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/ambience/artus/artus_gen.wav"));
 		}
+		else if (Q_stricmp(ent->targetname, "zyk_force_storm") == 0)
+		{ // zyk: starts the force storm effect right now
+			ent->s.modelindex2 = FX_STATE_CONTINUOUS;
+			ent->nextthink = level.time + 100; // wait a small bit, then start working
+			G_Sound(ent, CHAN_AUTO, G_SoundIndex("sound/ambience/thunder_close1.mp3"));
+		}
 		else if (Q_stricmp(ent->targetname, "zyk_quest_effect_rockfall") == 0)
 		{ // zyk: Rockfall power. Starts the effect imediately but damages a bit later
 			ent->s.modelindex2 = FX_STATE_CONTINUOUS;
@@ -3079,8 +3085,8 @@ void SP_fx_runner( gentity_t *ent )
 	// Give us a bit of time to spawn in the other entities, since we may have to target one of 'em
 	ent->think = fx_runner_link;
 
-	// zyk: no need to wait 400 ms with Super Beam effect
-	if (Q_stricmp(ent->targetname, "zyk_super_beam") == 0)
+	// zyk: no need to wait 400 ms with these effects
+	if (Q_stricmp(ent->targetname, "zyk_super_beam") == 0 || Q_stricmp(ent->targetname, "zyk_force_storm") == 0)
 	{
 		ent->nextthink = level.time;
 	}
