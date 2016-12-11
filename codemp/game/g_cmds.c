@@ -9093,6 +9093,11 @@ void zyk_list_stuff(gentity_t *ent, gentity_t *target_ent)
 	else
 		strcpy(stuff_message, va("%s^3Unique Ability 2 - ^1no\n", stuff_message));
 
+	if (ent->client->pers.secrets_found & (1 << 4))
+		strcpy(stuff_message, va("%s^3Unique Ability 3 - ^2yes\n", stuff_message));
+	else
+		strcpy(stuff_message, va("%s^3Unique Ability 3 - ^1no\n", stuff_message));
+
 	if (ent->client->pers.secrets_found & (1 << 7))
 		strcpy(stuff_message, va("%s^3Stealth Attacker Upgrade - ^2yes\n", stuff_message));
 	else
@@ -10084,7 +10089,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 6)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Duelist gets Super Throw, which throws the saber ahead, doing a lot of damage. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 7)
 			{
@@ -15478,7 +15483,7 @@ void Cmd_Unique_f(gentity_t *ent) {
 				{
 					ent->client->ps.ammo[AMMO_BLASTER] -= 5;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 5000;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 6000;
 
 					ent->client->pers.player_statuses |= (1 << 23);
 
@@ -15500,8 +15505,27 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 			}
 			else if (ent->client->pers.rpg_class == 6)
-			{ // zyk: Duelist
+			{ // zyk: Duelist Super Throw
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 2800;
+
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_ALORA_SPIN_THROW;
+					ent->client->ps.forceHandExtendTime = level.time + 2800;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					rpg_skill_counter(ent, 200);
+
+					ent->client->pers.unique_skill_timer = level.time + 45000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
 			}
 			else if (ent->client->pers.rpg_class == 7)
 			{ // zyk: Force Gunner

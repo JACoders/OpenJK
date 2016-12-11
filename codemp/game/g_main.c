@@ -8971,7 +8971,7 @@ void G_RunFrame( int levelTime ) {
 							else if (ent->client->pers.universe_quest_messages == 5)
 								trap->SendServerCommand( ent->s.number, va("chat \"%s^7: Sage of Universe?\"", ent->client->pers.netname));
 							else if (ent->client->pers.universe_quest_messages == 6)
-								trap->SendServerCommand( ent->s.number, va("chat \"^3Note^7: Ha has the amulet of Universe, about which we did not tell you before.\""));
+								trap->SendServerCommand( ent->s.number, va("chat \"^3Note^7: He has the amulet of Universe, about which we did not tell you before.\""));
 							else if (ent->client->pers.universe_quest_messages == 7)
 								trap->SendServerCommand( ent->s.number, va("chat \"^3Note^7: Forgive us for that, please.\""));
 							else if (ent->client->pers.universe_quest_messages == 8)
