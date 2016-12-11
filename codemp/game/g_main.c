@@ -5045,6 +5045,10 @@ void force_scream(gentity_t *ent)
 {
 	zyk_quest_effect_spawn(ent, ent, "zyk_effect_scream", "4", "howler/sonic", 0, 25, 300, 6000);
 
+	ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+	ent->client->ps.forceDodgeAnim = BOTH_FORCE_RAGE;
+	ent->client->ps.forceHandExtendTime = level.time + 4500;
+
 	G_Sound(ent, CHAN_VOICE, G_SoundIndex("sound/chars/howler/howl.mp3"));
 }
 
