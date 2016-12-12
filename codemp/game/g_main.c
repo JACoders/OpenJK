@@ -8916,7 +8916,7 @@ void G_RunFrame( int levelTime ) {
 								VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
 								VectorNormalize(dir);
 
-								G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_MELEE);
+								G_Damage(player_ent, ent, ent, NULL, NULL, 22, 0, MOD_MELEE);
 
 								// zyk: removing emotes to prevent exploits
 								if (player_ent->client->pers.player_statuses & (1 << 1))
