@@ -4729,7 +4729,8 @@ void inner_area_damage(gentity_t *ent, int distance, int damage)
 		if (zyk_special_power_can_hit_target(ent, player_ent, i, 0, distance, qtrue, &targets_hit) == qtrue)
 		{
 			if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && 
-				ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21)))
+				ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21)) && 
+				!(ent->client->pers.player_statuses & (1 << 22)) && !(ent->client->pers.player_statuses & (1 << 23)))
 			{ // zyk: Magic Master Unique Skill increases damage
 				G_Damage(player_ent,ent,ent,NULL,NULL,damage * 2,0,MOD_UNKNOWN);
 			}
@@ -4774,7 +4775,8 @@ void lightning_dome(gentity_t *ent, int damage)
 
 	// zyk: Magic Master Unique Skill increases damage
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time &&
-		!(ent->client->pers.player_statuses & (1 << 21)))
+		!(ent->client->pers.player_statuses & (1 << 21)) && !(ent->client->pers.player_statuses & (1 << 22)) && 
+		!(ent->client->pers.player_statuses & (1 << 23)))
 	{
 		damage *= 2;
 	}
@@ -5505,7 +5507,8 @@ void magic_explosion(gentity_t *ent, int radius, int damage, int duration)
 	}
 
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
-		!(ent->client->pers.player_statuses & (1 << 21)))
+		!(ent->client->pers.player_statuses & (1 << 21)) && !(ent->client->pers.player_statuses & (1 << 22)) && 
+		!(ent->client->pers.player_statuses & (1 << 23)))
 	{ // zyk: Magic Master Unique Skill increases damage
 		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_explosion", "4", "explosions/hugeexplosion1", 500, damage * 2, radius, duration);
 	}
@@ -5525,7 +5528,7 @@ void healing_area(gentity_t *ent, int damage, int duration)
 	}
 
 	if (ent->client->sess.amrpgmode == 2 && ent->client->pers.rpg_class == 8 && ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
-		!(ent->client->pers.player_statuses & (1 << 21)))
+		!(ent->client->pers.player_statuses & (1 << 21)) && !(ent->client->pers.player_statuses & (1 << 22)))
 	{ // zyk: Magic Master Unique Skill increases damage
 		zyk_quest_effect_spawn(ent, ent, "zyk_quest_effect_healing", "4", "env/red_cyc", 0, damage * 2, 228, duration);
 	}

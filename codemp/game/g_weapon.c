@@ -4042,10 +4042,15 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					VectorSet(missile->r.maxs, BOWCASTER_SIZE, BOWCASTER_SIZE, BOWCASTER_SIZE);
 					VectorScale(missile->r.maxs, -1, missile->r.mins);
 
-					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21))) // zyk: Unique Skill increases damage
+					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21)) &&
+						!(ent->client->pers.player_statuses & (1 << 22)) && !(ent->client->pers.player_statuses & (1 << 23)))
+					{// zyk: Unique Skill increases damage
 						missile->damage = zyk_magic_fist_damage.integer * 2;
+					}
 					else
+					{
 						missile->damage = zyk_magic_fist_damage.integer;
+					}
 
 					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 					missile->methodOfDeath = MOD_MELEE;
@@ -4107,10 +4112,15 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 					VectorSet(missile->r.maxs, 2, 2, 2);
 					VectorScale(missile->r.maxs, -1, missile->r.mins);
 
-					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21))) // zyk: Unique Skill increases damage
+					if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21)) &&
+						!(ent->client->pers.player_statuses & (1 << 22)) && !(ent->client->pers.player_statuses & (1 << 23)))
+					{ // zyk: Unique Skill increases damage
 						missile->damage = zyk_magic_fist_damage.integer * 3.8;
+					}
 					else
+					{
 						missile->damage = zyk_magic_fist_damage.integer * 1.9;
+					}
 
 					missile->dflags = DAMAGE_DEATH_KNOCKBACK;
 					missile->methodOfDeath = MOD_MELEE;
@@ -4144,8 +4154,11 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				int			i;
 				int damage = zyk_magic_fist_damage.integer * 1.2;
 
-				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21)) &&
+					!(ent->client->pers.player_statuses & (1 << 22)) && !(ent->client->pers.player_statuses & (1 << 23)))
+				{// zyk: Unique Skill increases damage
 					damage *= 2;
+				}
 
 				VectorCopy( muzzle, muzzle2 ); // making a backup copy
 
@@ -4363,8 +4376,11 @@ void WP_FireMelee( gentity_t *ent, qboolean alt_fire )
 				VectorSet( missile->r.maxs, ROCKET_SIZE, ROCKET_SIZE, ROCKET_SIZE );
 				VectorScale( missile->r.maxs, -1, missile->r.mins );
 
-				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time) // zyk: Unique Skill increases damage
+				if (ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && !(ent->client->pers.player_statuses & (1 << 21)) &&
+					!(ent->client->pers.player_statuses & (1 << 22)) && !(ent->client->pers.player_statuses & (1 << 23)))
+				{ // zyk: Unique Skill increases damage
 					damage *= 2;
+				}
 
 				missile->damage = damage;
 

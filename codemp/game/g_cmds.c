@@ -10097,7 +10097,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Magic Master\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Magic Master gets Healing Improvement, which makes Healing Area restore more hp and shield, and increases its damage. Spends 15 mp\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 9)
 			{
@@ -15412,6 +15412,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 500;
 
+					ent->client->pers.player_statuses |= (1 << 22);
+
 					elemental_attack(ent);
 
 					send_rpg_events(2000);
@@ -15615,8 +15617,25 @@ void Cmd_Unique_f(gentity_t *ent) {
 
 			}
 			else if (ent->client->pers.rpg_class == 8)
-			{ // zyk: Magic Master
+			{ // zyk: Magic Master Healing Improvement
+				if (ent->client->pers.magic_power >= 15)
+				{
+					ent->client->pers.magic_power -= 15;
 
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					send_rpg_events(2000);
+
+					rpg_skill_counter(ent, 200);
+
+					ent->client->pers.unique_skill_timer = level.time + 50000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 15 MP to use it\"");
+				}
 			}
 			else if (ent->client->pers.rpg_class == 9)
 			{ // zyk: Force Tank

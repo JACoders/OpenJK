@@ -6535,7 +6535,8 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 					{
 						if (quest_power_user->client->sess.amrpgmode == 2 && quest_power_user->client->pers.rpg_class == 8 && 
 							quest_power_user->client->ps.powerups[PW_NEUTRALFLAG] > level.time && 
-							!(quest_power_user->client->pers.player_statuses & (1 << 21)))
+							!(quest_power_user->client->pers.player_statuses & (1 << 21)) && 
+							!(quest_power_user->client->pers.player_statuses & (1 << 22)))
 						{ // zyk: Magic Master Unique Skill increases amount of health recovered
 							int heal_amount = 5;
 							int shield_amount = 2;
@@ -6545,6 +6546,13 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							{
 								heal_amount += 3;
 								shield_amount += 2;
+							}
+
+							// zyk: Magic Master Healing Improvement unique ability. Increases healing
+							if (quest_power_user->client->pers.player_statuses & (1 << 23))
+							{
+								heal_amount *= 2;
+								shield_amount *= 2;
 							}
 
 							if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])
