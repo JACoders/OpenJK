@@ -5173,10 +5173,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			
 			damage = (int)ceil(damage * (0.9 - ((0.05 * targ->client->pers.skill_levels[55]) + armored_soldier_bonus_resistance)));
 		}
-		else if (targ->client->pers.rpg_class == 4 && targ->client->pers.player_statuses & (1 << 21) && 
+		else if (targ->client->pers.rpg_class == 4 && 
 				 targ->client->ps.legsAnim == BOTH_MEDITATE)
-		{ // zyk: Monk Meditation Strength increases resistance to damage of Monk
-			damage = (int)ceil(damage * (0.5));
+		{ // zyk: Monk Meditation Strength and Meditation Drain increases resistance to damage of Monk
+			if (targ->client->pers.player_statuses & (1 << 21) || targ->client->pers.player_statuses & (1 << 23))
+				damage = (int)ceil(damage * (0.5));
 		}
 		else if (targ->client->pers.rpg_class == 0) // zyk: Free Warrior damage resistance
 		{

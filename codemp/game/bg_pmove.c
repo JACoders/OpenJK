@@ -10791,6 +10791,11 @@ void PmoveSingle (pmove_t *pmove) {
 		{ // zyk: Monk Meditation Strength ability does not allow stop the meditate anim
 			stop_meditate_anim = qfalse;
 		}
+		else if (rpg_class == 4 &&
+				 player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 23))
+		{ // zyk: Monk Meditation Drain ability does not allow stop the meditate anim
+			stop_meditate_anim = qfalse;
+		}
 #endif
 
 		if (stop_meditate_anim == qtrue && 
@@ -10959,6 +10964,11 @@ void PmoveSingle (pmove_t *pmove) {
 	else if (rpg_class == 4 &&
 		player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 21))
 	{ // zyk: Monk Meditation Strength ability does not allow him to move
+		stiffenedUp = qtrue;
+	}
+	else if (rpg_class == 4 &&
+		player_ent->client->ps.powerups[PW_NEUTRALFLAG] > level.time && player_ent->client->pers.player_statuses & (1 << 23))
+	{ // zyk: Monk Meditation Drain ability does not allow him to move
 		stiffenedUp = qtrue;
 	}
 	else if (rpg_class == 9 &&

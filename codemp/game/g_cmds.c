@@ -5365,7 +5365,7 @@ void initialize_rpg_skills(gentity_t *ent)
 
 		ent->client->pers.print_products_timer = 0;
 
-		ent->client->pers.spin_kick_timer = 0;
+		ent->client->pers.monk_unique_timer = 0;
 
 		ent->client->pers.credits_modifier = 0;
 		ent->client->pers.score_modifier = 0;
@@ -10081,7 +10081,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 4)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Monk\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 3: ^7used with /unique command. You can only have one Unique Ability at a time. Monk gets Meditation Drain, which heavily increases resistance and drains shield and health from enemies nearby to restore health and shield. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 5)
 			{
@@ -15561,8 +15561,27 @@ void Cmd_Unique_f(gentity_t *ent) {
 				}
 			}
 			else if (ent->client->pers.rpg_class == 4)
-			{ // zyk: Monk
+			{ // zyk: Monk Meditation Drain
+				if (ent->client->ps.fd.forcePower >= (zyk_max_force_power.integer / 4))
+				{
+					ent->client->ps.fd.forcePower -= (zyk_max_force_power.integer / 4);
 
+					ent->client->ps.forceHandExtend = HANDEXTEND_TAUNT;
+					ent->client->ps.forceDodgeAnim = BOTH_MEDITATE;
+					ent->client->ps.forceHandExtendTime = level.time + 3000;
+
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 3000;
+
+					ent->client->pers.player_statuses |= (1 << 23);
+
+					rpg_skill_counter(ent, 200);
+
+					ent->client->pers.unique_skill_timer = level.time + 30000;
+				}
+				else
+				{
+					trap->SendServerCommand(ent->s.number, va("chat \"^3Unique Ability: ^7needs %d force to use it\"", (zyk_max_force_power.integer / 4)));
+				}
 			}
 			else if (ent->client->pers.rpg_class == 5)
 			{ // zyk: Stealth Attacker

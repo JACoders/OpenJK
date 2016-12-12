@@ -820,7 +820,7 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	client->timeResidual += msec;
 
 	if (client->sess.amrpgmode == 2 && client->ps.powerups[PW_NEUTRALFLAG] < level.time)
-	{
+	{ // zyk: Unique Ability run out. Remove the flags
 		if (client->pers.player_statuses & (1 << 21))
 		{
 			if (client->pers.rpg_class == 9)

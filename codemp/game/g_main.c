@@ -8893,9 +8893,10 @@ void G_RunFrame( int levelTime ) {
 						ent->client->ps.fd.forcePowersActive |= (1 << FP_SEE);
 					}
 				}
-				else if (ent->client->pers.rpg_class == 4 && ent->client->pers.player_statuses & (1 << 22) && 
-						 ent->client->pers.spin_kick_timer < level.time)
-				{ // zyk: Monk Spin Kick ability. Keeps hitting players nearby while doing the move
+				else if (ent->client->pers.rpg_class == 4 && 
+						(ent->client->pers.player_statuses & (1 << 22) || ent->client->pers.player_statuses & (1 << 23)) &&
+						 ent->client->pers.monk_unique_timer < level.time)
+				{ // zyk: Monk unique abilities
 					int player_it = 0;
 					int push_scale = 100;
 
@@ -8904,38 +8905,67 @@ void G_RunFrame( int levelTime ) {
 						gentity_t *player_ent = &g_entities[player_it];
 
 						if (player_ent && player_ent->client && ent != player_ent &&
-							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
-							Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 80 && 
-							player_ent->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN)
+							zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue)
 						{ // zyk: can only hit the target if he is not knocked down yet
-							vec3_t dir;
+							if (ent->client->pers.player_statuses & (1 << 22) && 
+								Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 80 &&
+								player_ent->client->ps.forceHandExtend != HANDEXTEND_KNOCKDOWN)
+							{ // zyk: Spin Kick
+								vec3_t dir;
 
-							VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
-							VectorNormalize(dir);
+								VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
+								VectorNormalize(dir);
 
-							G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_MELEE);
+								G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_MELEE);
 
-							// zyk: removing emotes to prevent exploits
-							if (player_ent->client->pers.player_statuses & (1 << 1))
-							{
-								player_ent->client->pers.player_statuses &= ~(1 << 1);
-								player_ent->client->ps.forceHandExtendTime = level.time;
+								// zyk: removing emotes to prevent exploits
+								if (player_ent->client->pers.player_statuses & (1 << 1))
+								{
+									player_ent->client->pers.player_statuses &= ~(1 << 1);
+									player_ent->client->ps.forceHandExtendTime = level.time;
+								}
+
+								player_ent->client->ps.velocity[0] = dir[0] * push_scale;
+								player_ent->client->ps.velocity[1] = dir[1] * push_scale;
+								player_ent->client->ps.velocity[2] = 250;
+
+								player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
+								player_ent->client->ps.forceHandExtendTime = level.time + 1000;
+								player_ent->client->ps.forceDodgeAnim = 0;
+								player_ent->client->ps.quickerGetup = qtrue;
+
+								G_Sound(ent, CHAN_AUTO, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
 							}
+							else if (ent->client->pers.player_statuses & (1 << 23) && 
+									 Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
+							{ // zyk: Meditation Drain
+								int heal_amount = 8;
 
-							player_ent->client->ps.velocity[0] = dir[0] * push_scale;
-							player_ent->client->ps.velocity[1] = dir[1] * push_scale;
-							player_ent->client->ps.velocity[2] = 250;
+								G_Damage(player_ent, ent, ent, NULL, NULL, heal_amount/3, 0, MOD_MELEE);
 
-							player_ent->client->ps.forceHandExtend = HANDEXTEND_KNOCKDOWN;
-							player_ent->client->ps.forceHandExtendTime = level.time + 1000;
-							player_ent->client->ps.forceDodgeAnim = 0;
-							player_ent->client->ps.quickerGetup = qtrue;
+								player_ent->client->ps.electrifyTime = level.time + 1000;
 
-							G_Sound(ent, CHAN_AUTO, G_SoundIndex(va("sound/weapons/melee/punch%d", Q_irand(1, 4))));
+								if ((ent->health + heal_amount) < ent->client->pers.max_rpg_health)
+								{
+									ent->health += heal_amount;
+								}
+								else if (ent->health < ent->client->pers.max_rpg_health)
+								{
+									ent->health = ent->client->pers.max_rpg_health;
+								}
+								else if ((ent->client->ps.stats[STAT_ARMOR] + heal_amount) < ent->client->pers.max_rpg_shield)
+								{
+									ent->client->ps.stats[STAT_ARMOR] += heal_amount;
+								}
+								else
+								{
+									ent->client->ps.stats[STAT_ARMOR] = ent->client->pers.max_rpg_shield;
+								}
+							}
 						}
 					}
 
-					ent->client->pers.spin_kick_timer = level.time + 200;
+					ent->client->pers.monk_unique_timer = level.time + 200;
 				}
 				else if (ent->client->pers.rpg_class == 5)
 				{
