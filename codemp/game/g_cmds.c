@@ -10026,7 +10026,7 @@ void Cmd_Stuff_f( gentity_t *ent ) {
 			}
 			else if (ent->client->pers.rpg_class == 1)
 			{
-				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force User gets Force Repulse, which pushes everyone away from you. Spends 50 force\n\n\"");
+				trap->SendServerCommand(ent - g_entities, "print \"\n^3Unique Ability 2: ^7used with /unique command. You can only have one Unique Ability at a time. Force User gets Force Repulse, which damages and pushes everyone away from you. Spends 50 force\n\n\"");
 			}
 			else if (ent->client->pers.rpg_class == 2)
 			{
@@ -15206,8 +15206,6 @@ void Cmd_Unique_f(gentity_t *ent) {
 						{
 							vec3_t dir;
 
-							G_Damage(player_ent, ent, ent, NULL, NULL, 20, 0, MOD_UNKNOWN);
-
 							VectorSubtract(player_ent->client->ps.origin, ent->client->ps.origin, dir);
 							VectorNormalize(dir);
 
@@ -15219,6 +15217,8 @@ void Cmd_Unique_f(gentity_t *ent) {
 							player_ent->client->ps.forceHandExtendTime = level.time + 1000;
 							player_ent->client->ps.forceDodgeAnim = 0; //this toggles between 1 and 0, when it's 1 we should play the get up anim
 							player_ent->client->ps.quickerGetup = qtrue;
+
+							G_Damage(player_ent, ent, ent, NULL, NULL, 40, 0, MOD_UNKNOWN);
 						}
 					}
 
