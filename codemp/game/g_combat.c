@@ -6538,13 +6538,13 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 							!(quest_power_user->client->pers.player_statuses & (1 << 21)) && 
 							!(quest_power_user->client->pers.player_statuses & (1 << 22)))
 						{ // zyk: Magic Master Unique Skill increases amount of health recovered
-							int heal_amount = 5;
-							int shield_amount = 2;
+							int heal_amount = 8;
+							int shield_amount = 8;
 
 							// zyk: Universe Power
 							if (quest_power_user->client->pers.quest_power_status & (1 << 13))
 							{
-								heal_amount += 3;
+								heal_amount += 2;
 								shield_amount += 2;
 							}
 
@@ -6582,12 +6582,12 @@ qboolean G_RadiusDamage ( vec3_t origin, gentity_t *attacker, float damage, floa
 						}
 						else
 						{
-							int heal_amount = 3;
+							int heal_amount = 6;
 
 							// zyk: Universe Power
 							if (quest_power_user->client->pers.quest_power_status & (1 << 13))
 							{
-								heal_amount += 1;
+								heal_amount += 2;
 							}
 
 							if ((ent->health + heal_amount) < ent->client->ps.stats[STAT_MAX_HEALTH])

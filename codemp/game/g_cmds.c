@@ -15618,23 +15618,29 @@ void Cmd_Unique_f(gentity_t *ent) {
 			}
 			else if (ent->client->pers.rpg_class == 8)
 			{ // zyk: Magic Master Healing Improvement
-				if (ent->client->pers.magic_power >= 15)
+				if (ent->client->pers.magic_power >= 15 && ent->client->pers.quest_power_usage_timer < level.time)
 				{
 					ent->client->pers.magic_power -= 15;
 
-					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 10000;
+					ent->client->ps.powerups[PW_NEUTRALFLAG] = level.time + 5500;
 
 					ent->client->pers.player_statuses |= (1 << 23);
+
+					healing_area(ent, 2, 5000);
 
 					send_rpg_events(2000);
 
 					rpg_skill_counter(ent, 200);
 
+					ent->client->pers.quest_power_usage_timer = level.time + 5000;
+
+					display_yellow_bar(ent, (ent->client->pers.quest_power_usage_timer - level.time));
+
 					ent->client->pers.unique_skill_timer = level.time + 50000;
 				}
 				else
 				{
-					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 15 MP to use it\"");
+					trap->SendServerCommand(ent->s.number, "chat \"^3Unique Ability: ^7needs at least 15 MP to use it and wait some seconds after last magic used\"");
 				}
 			}
 			else if (ent->client->pers.rpg_class == 9)

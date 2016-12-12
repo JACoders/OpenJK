@@ -5047,7 +5047,7 @@ void zyk_force_storm(gentity_t *ent)
 {
 	int i = 0;
 
-	zyk_quest_effect_spawn(ent, ent, "zyk_force_storm", "4", "env/huge_lightning", 0, 50, 120, 3000);
+	zyk_quest_effect_spawn(ent, ent, "zyk_force_storm", "4", "env/huge_lightning", 0, 40, 120, 3000);
 
 	for (i = 0; i < level.num_entities; i++)
 	{
@@ -5057,7 +5057,7 @@ void zyk_force_storm(gentity_t *ent)
 			zyk_unique_ability_can_hit_target(ent, player_ent) == qtrue &&
 			Distance(ent->client->ps.origin, player_ent->client->ps.origin) < 300)
 		{
-			zyk_quest_effect_spawn(ent, player_ent, "zyk_force_storm", "4", "env/huge_lightning", 0, 50, 120, 3000);
+			zyk_quest_effect_spawn(ent, player_ent, "zyk_force_storm", "4", "env/huge_lightning", 0, 40, 120, 3000);
 		}
 	}
 }
