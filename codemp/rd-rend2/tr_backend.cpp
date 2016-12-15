@@ -1040,6 +1040,36 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	void *allocMark = backEndData->perFrameMemory->Mark();
 
+	/*
+	merging surfaces together that share the same shader (e.g. polys, patches)
+	upload per frame data - but this might be the same between render passes?
+
+	how about:
+		tr.refdef.entities[]
+
+		and .... entityCullInfo_t tr.refdef.entityCullInfo[]
+		struct visibleEntity_t
+		{
+			uint32_t frustumMask; // bitfield of frustums which intersect
+			EntityId entityId;
+		};
+
+		foreach ghoul2 model:
+			transform bones
+
+		foreach visibleEntity:
+			upload per frame data
+
+		for polygons:
+			merge them, create new surface and upload data
+
+		for patch meshes:
+			merge them, create new surface and upload data
+
+
+	each surface corresponds to something which has all of its gpu data uploaded
+	*/
+
 	assert(backEndData->currentPass == nullptr);
 	backEndData->currentPass = RB_CreatePass(*backEndData->perFrameMemory, numDrawSurfs * 4);
 

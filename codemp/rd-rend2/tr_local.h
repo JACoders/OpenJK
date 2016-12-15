@@ -1295,6 +1295,16 @@ struct technique_t
 	shaderProgram_t *forward;
 };
 
+struct EntityCullInfo
+{
+	uint32_t frustumMask;
+};
+
+struct WorkingScene
+{
+	EntityCullInfo entityCullInfo[MAX_REFENTITIES];
+};
+
 // trRefdef_t holds everything that comes in refdef_t,
 // as well as the locally generated scene information
 typedef struct {
@@ -1470,6 +1480,7 @@ typedef struct drawSurf_s {
 // as soon as it is called
 typedef struct srfPoly_s {
 	surfaceType_t	surfaceType;
+	struct srfPoly_s *next;
 	qhandle_t		hShader;
 	int				fogIndex;
 	int				numVerts;
@@ -2556,7 +2567,7 @@ void R_AddBeamSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddRailSurfaces( trRefEntity_t *e, qboolean isUnderwater );
 void R_AddLightningBoltSurfaces( trRefEntity_t *e );
 
-void R_AddPolygonSurfaces( void );
+void R_AddPolygonSurfaces( const trRefdef_t *refdef );
 
 void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender );
 uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender);
@@ -2798,7 +2809,7 @@ WORLD MAP
 */
 
 void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
-void R_AddWorldSurfaces( void );
+void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef );
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
 
 

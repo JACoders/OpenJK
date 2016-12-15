@@ -425,7 +425,8 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, 
 
 		// if the node wasn't marked as potentially visible, exit
 		// pvs is skipped for depth shadows
-		if (!(tr.viewParms.flags & VPF_DEPTHSHADOW) && node->visCounts[tr.visIndex] != tr.visCounts[tr.visIndex]) {
+		if (!(tr.viewParms.flags & VPF_DEPTHSHADOW) &&
+				node->visCounts[tr.visIndex] != tr.visCounts[tr.visIndex]) {
 			return;
 		}
 
@@ -780,43 +781,43 @@ static void R_MarkLeaves (void) {
 R_AddWorldSurfaces
 =============
 */
-void R_AddWorldSurfaces (void) {
+void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef ) {
 	int planeBits, dlightBits, pshadowBits;
 
 	if ( !r_drawworld->integer ) {
 		return;
 	}
 
-	if ( tr.refdef.rdflags & RDF_NOWORLDMODEL ) {
+	if ( refdef->rdflags & RDF_NOWORLDMODEL ) {
 		return;
 	}
 
 	// determine which leaves are in the PVS / areamask
-	if (!(tr.viewParms.flags & VPF_DEPTHSHADOW))
+	if (!(viewParms->flags & VPF_DEPTHSHADOW))
 		R_MarkLeaves ();
 
 	// clear out the visible min/max
-	ClearBounds( tr.viewParms.visBounds[0], tr.viewParms.visBounds[1] );
+	ClearBounds(viewParms->visBounds[0], viewParms->visBounds[1]);
 
 	// perform frustum culling and flag all the potentially visible surfaces
-	tr.refdef.num_dlights = Q_min (tr.refdef.num_dlights, 32) ;
-	tr.refdef.num_pshadows = Q_min (tr.refdef.num_pshadows, 32) ;
+	refdef->num_dlights = Q_min(refdef->num_dlights, 32);
+	refdef->num_pshadows = Q_min(refdef->num_pshadows, 32);
 
-	planeBits = (tr.viewParms.flags & VPF_FARPLANEFRUSTUM) ? 31 : 15;
+	planeBits = (viewParms->flags & VPF_FARPLANEFRUSTUM) ? 31 : 15;
 
-	if ( tr.viewParms.flags & VPF_DEPTHSHADOW )
+	if ( viewParms->flags & VPF_DEPTHSHADOW )
 	{
 		dlightBits = 0;
 		pshadowBits = 0;
 	}
-	else if ( !(tr.viewParms.flags & VPF_SHADOWMAP) )
+	else if ( !(viewParms->flags & VPF_SHADOWMAP) )
 	{
-		dlightBits = ( 1 << tr.refdef.num_dlights ) - 1;
-		pshadowBits = ( 1 << tr.refdef.num_pshadows ) - 1;
+		dlightBits = ( 1 << refdef->num_dlights ) - 1;
+		pshadowBits = ( 1 << refdef->num_pshadows ) - 1;
 	}
 	else
 	{
-		dlightBits = ( 1 << tr.refdef.num_dlights ) - 1;
+		dlightBits = ( 1 << refdef->num_dlights ) - 1;
 		pshadowBits = 0;
 	}
 
@@ -824,28 +825,33 @@ void R_AddWorldSurfaces (void) {
 
 	// now add all the potentially visible surfaces
 	// also mask invisible dlights for next frame
+	refdef->dlightMask = 0;
+
+	for (int i = 0; i < tr.world->numWorldSurfaces; i++)
 	{
-		int i;
+		if (tr.world->surfacesViewCount[i] != tr.viewCount)
+			continue;
 
-		tr.refdef.dlightMask = 0;
-
-		for (i = 0; i < tr.world->numWorldSurfaces; i++)
-		{
-			if (tr.world->surfacesViewCount[i] != tr.viewCount)
-				continue;
-
-			R_AddWorldSurface( tr.world->surfaces + i, REFENTITYNUM_WORLD, tr.world->surfacesDlightBits[i], tr.world->surfacesPshadowBits[i] );
-			tr.refdef.dlightMask |= tr.world->surfacesDlightBits[i];
-		}
-		for (i = 0; i < tr.world->numMergedSurfaces; i++)
-		{
-			if (tr.world->mergedSurfacesViewCount[i] != tr.viewCount)
-				continue;
-
-			R_AddWorldSurface( tr.world->mergedSurfaces + i, REFENTITYNUM_WORLD, tr.world->mergedSurfacesDlightBits[i], tr.world->mergedSurfacesPshadowBits[i] );
-			tr.refdef.dlightMask |= tr.world->mergedSurfacesDlightBits[i];
-		}
-
-		tr.refdef.dlightMask = ~tr.refdef.dlightMask;
+		R_AddWorldSurface(
+			tr.world->surfaces + i,
+			REFENTITYNUM_WORLD,
+			tr.world->surfacesDlightBits[i],
+			tr.world->surfacesPshadowBits[i]);
+		refdef->dlightMask |= tr.world->surfacesDlightBits[i];
 	}
+
+	for (int i = 0; i < tr.world->numMergedSurfaces; i++)
+	{
+		if (tr.world->mergedSurfacesViewCount[i] != tr.viewCount)
+			continue;
+
+		R_AddWorldSurface(
+			tr.world->mergedSurfaces + i,
+			REFENTITYNUM_WORLD,
+			tr.world->mergedSurfacesDlightBits[i],
+			tr.world->mergedSurfacesPshadowBits[i]);
+		refdef->dlightMask |= tr.world->mergedSurfacesDlightBits[i];
+	}
+
+	refdef->dlightMask = ~refdef->dlightMask;
 }
