@@ -2258,7 +2258,6 @@ typedef struct trGlobals_s {
 	vec3_t                  *cubemapOrigins;
 	image_t                 **cubemaps;
 
-	trRefEntity_t			*currentEntity;
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	model_t					*currentModel;
 
@@ -2573,7 +2572,7 @@ void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postR
 uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender);
 void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
-bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity );
+bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity );
 
 void R_CalcTexDirs(vec3_t sdir, vec3_t tdir, const vec3_t v1, const vec3_t v2,
 					const vec3_t v3, const vec2_t w1, const vec2_t w2, const vec2_t w3);
@@ -2835,12 +2834,12 @@ LIGHTS
 ============================================================
 */
 
-void R_DlightBmodel( bmodel_t *bmodel );
+void R_DlightBmodel( bmodel_t *bmodel, trRefEntity_t *ent );
 void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent );
 void R_TransformDlights( int count, dlight_t *dl, orientationr_t *ori );
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir );
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world );
-int R_CubemapForPoint( vec3_t point );
+int R_CubemapForPoint( const vec3_t point );
 
 
 /*

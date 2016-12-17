@@ -102,7 +102,7 @@ void R_AddPolygonSurfaces( const trRefdef_t *refdef ) {
 			sh,
 			poly->fogIndex & fogMask,
 			qfalse,
-			R_IsPostRenderEntity(REFENTITYNUM_WORLD, tr.currentEntity),
+			qfalse,
 			0 /* cubemapIndex */ );
 	}
 }

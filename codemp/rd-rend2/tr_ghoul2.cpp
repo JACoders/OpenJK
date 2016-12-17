@@ -2367,7 +2367,7 @@ void G2_ProcessGeneratedSurfaceBolts(CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, m
 #endif
 }
 
-void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripping right from SP.
+void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum )
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_RenderSurfaces.Start();
@@ -2426,7 +2426,7 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 			shader = R_GetShaderByHandle( surfInfo->shaderIndex );
 		}
 
-		int cubemapIndex = R_CubemapForPoint (tr.currentEntity->e.origin);
+		int cubemapIndex = R_CubemapForPoint (ent->e.origin);
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
@@ -2437,7 +2437,7 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 
-			R_AddDrawSurf ((surfaceType_t *)newSurf, entityNum, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity (entityNum, tr.currentEntity), cubemapIndex);
+			R_AddDrawSurf ((surfaceType_t *)newSurf, entityNum, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex);
 
 #ifdef _G2_GORE
 			if (RS.gore_set && drawGore)
@@ -2517,7 +2517,7 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 
 						last->goreChain=newSurf2;
 						last=newSurf2;
-						R_AddDrawSurf ((surfaceType_t *)newSurf2, entityNum, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity (entityNum, tr.currentEntity), cubemapIndex);
+						R_AddDrawSurf ((surfaceType_t *)newSurf2, entityNum, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex);
 					}
 				}
 			}
@@ -2535,7 +2535,7 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 	for (i=0; i< surfInfo->numChildren; i++)
 	{
 		RS.surfaceNum = surfInfo->childIndexes[i];
-		RenderSurfaces(RS, entityNum);
+		RenderSurfaces(RS, ent, entityNum);
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -3313,7 +3313,7 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum ) {
 				RS.renderfx |= RF_NOSHADOW;
 			}
 
-			RenderSurfaces(RS, entityNum);
+			RenderSurfaces(RS, ent, entityNum);
 		}
 	}
 	HackadelicOnClient=false;
