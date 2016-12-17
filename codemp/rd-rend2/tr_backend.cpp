@@ -996,8 +996,7 @@ void RB_AddDrawItem( Pass *pass, uint32_t sortKey, const DrawItem& drawItem )
 		}
 
 		pass->sortKeys[pass->numDrawItems] = sortKey;
-		memcpy(pass->drawItems + pass->numDrawItems, &drawItem, sizeof(*pass->drawItems));
-		++pass->numDrawItems;
+		pass->drawItems[pass->numDrawItems++] = drawItem;
 	}
 	else
 	{
@@ -1016,30 +1015,273 @@ static Pass *RB_CreatePass( Allocator& allocator, int capacity )
 	return pass;
 }
 
+static void RB_PrepareForEntity( int entityNum, int *oldDepthRange, float originalTime )
+{
+	int depthRange = 0;
+
+	if ( entityNum != REFENTITYNUM_WORLD )
+	{
+		backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
+		backEnd.refdef.floatTime = originalTime - backEnd.currentEntity->e.shaderTime;
+		// we have to reset the shaderTime as well otherwise image animations start
+		// from the wrong frame
+		tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
+
+		// set up the transformation matrix
+		R_RotateForEntity( backEnd.currentEntity, &backEnd.viewParms, &backEnd.ori );
+
+		if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
+			// No depth at all, very rare but some things for seeing through walls
+			depthRange = 2;
+		}
+		else if ( backEnd.currentEntity->e.renderfx & RF_DEPTHHACK ) {
+			// hack the depth range to prevent view model from poking into walls
+			depthRange = 1;
+		}
+	} else {
+		backEnd.currentEntity = &tr.worldEntity;
+		backEnd.refdef.floatTime = originalTime;
+		backEnd.ori = backEnd.viewParms.world;
+
+		// we have to reset the shaderTime as well otherwise image animations on
+		// the world (like water) continue with the wrong frame
+		tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
+	}
+
+	GL_SetModelviewMatrix( backEnd.ori.modelViewMatrix );
+
+	// change depthrange. Also change projection matrix so first person weapon
+	// does not look like coming out of the screen.
+	if ( *oldDepthRange != depthRange )
+	{
+		switch ( depthRange )
+		{
+			default:
+			case 0:
+				if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
+				{
+					GL_SetProjectionMatrix(backEnd.viewParms.projectionMatrix);
+				}
+				break;
+
+			case 1:
+				if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
+				{
+					viewParms_t temp = backEnd.viewParms;
+					R_SetupProjection(&temp, r_znear->value, 0, qfalse);
+					GL_SetProjectionMatrix(temp.projectionMatrix);
+				}
+				break;
+
+			case 2:
+				if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
+				{
+					viewParms_t temp = backEnd.viewParms;
+					R_SetupProjection(&temp, r_znear->value, 0, qfalse);
+					GL_SetProjectionMatrix(temp.projectionMatrix);
+				}
+				break;
+		}
+
+		*oldDepthRange = depthRange;
+	}
+}
+
+static void RB_SubmitDrawSurfsForDepthFill(
+	drawSurf_t *drawSurfs,
+	int numDrawSurfs,
+	float originalTime )
+{
+	shader_t *oldShader = nullptr;
+	int oldEntityNum = -1;
+	int oldSort = -1;
+	int oldDepthRange = 0;
+
+	drawSurf_t *drawSurf = drawSurfs;
+	for ( int i = 0; i < numDrawSurfs; i++, drawSurf++ )
+	{
+		shader_t *shader;
+		int cubemapIndex;
+		int postRender;
+		int entityNum;
+
+		R_DecomposeSort(drawSurf->sort, &shader, &cubemapIndex, &postRender);
+		assert(shader != nullptr);
+		entityNum = drawSurf->entityNum;
+
+		if ( shader == oldShader &&	entityNum == oldEntityNum )
+		{
+			// fast path, same as previous sort
+			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
+			continue;
+		}
+
+		oldSort = drawSurf->sort;
+
+		// change the tess parameters if needed
+		// a "entityMergable" shader is a shader that can have surfaces from
+		// seperate entities merged into a single batch, like smoke and blood
+		// puff sprites
+		if ( shader != oldShader ||
+				(entityNum != oldEntityNum && !shader->entityMergable) )
+		{
+			if ( oldShader != nullptr )
+			{
+				RB_EndSurface();
+			}
+
+			if ( shader->sort != SS_OPAQUE )
+			{
+				oldShader = nullptr;
+				continue;
+			}
+
+			RB_BeginSurface(shader, 0, 0);
+			backEnd.pc.c_surfBatches++;
+			oldShader = shader;
+		}
+
+		// change the modelview matrix if needed
+		if ( entityNum != oldEntityNum )
+		{
+			RB_PrepareForEntity(entityNum, &oldDepthRange, originalTime);
+			oldEntityNum = entityNum;
+		}
+
+		// add the triangles for this surface
+		rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
+	}
+
+	// draw the contents of the last shader batch
+	if ( oldShader != nullptr )
+	{
+		RB_EndSurface();
+	}
+}
+
+static void RB_SubmitDrawSurfs(
+	drawSurf_t *drawSurfs,
+	int numDrawSurfs,
+	float originalTime )
+{
+	shader_t *oldShader = nullptr;
+	int oldEntityNum = -1;
+	int oldSort = -1;
+	int oldFogNum = -1;
+	int oldDepthRange = 0;
+	int oldDlighted = 0;
+	int oldPostRender = 0;
+	int oldCubemapIndex = -1;
+
+	drawSurf_t *drawSurf = drawSurfs;
+	for ( int i = 0; i < numDrawSurfs; i++, drawSurf++ )
+	{
+		shader_t *shader;
+		int cubemapIndex;
+		int postRender;
+		int entityNum;
+		int fogNum;
+		int dlighted;
+
+		R_DecomposeSort(drawSurf->sort, &shader, &cubemapIndex, &postRender);
+		assert(shader != nullptr);
+		fogNum = drawSurf->fogIndex;
+		entityNum = drawSurf->entityNum;
+		dlighted = drawSurf->dlightBits;
+
+		if ( shader == oldShader &&
+				fogNum == oldFogNum &&
+				postRender == oldPostRender &&
+				cubemapIndex == oldCubemapIndex &&
+				entityNum == oldEntityNum &&
+				dlighted == oldDlighted )
+		{
+			// fast path, same as previous sort
+			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
+			continue;
+		}
+
+		oldSort = drawSurf->sort;
+
+		//
+		// change the tess parameters if needed
+		// a "entityMergable" shader is a shader that can have surfaces from seperate
+		// entities merged into a single batch, like smoke and blood puff sprites
+		if ( (shader != oldShader ||
+				fogNum != oldFogNum ||
+				dlighted != oldDlighted ||
+				postRender != oldPostRender ||
+				cubemapIndex != oldCubemapIndex ||
+				(entityNum != oldEntityNum && !shader->entityMergable)) )
+		{
+			if ( oldShader != nullptr )
+			{
+				RB_EndSurface();
+			}
+
+			RB_BeginSurface(shader, fogNum, cubemapIndex);
+			backEnd.pc.c_surfBatches++;
+			oldShader = shader;
+			oldFogNum = fogNum;
+			oldDlighted = dlighted;
+			oldPostRender = postRender;
+			oldCubemapIndex = cubemapIndex;
+		}
+
+		if ( entityNum != oldEntityNum )
+		{
+			RB_PrepareForEntity(entityNum, &oldDepthRange, originalTime);
+
+			// set up the dynamic lighting if needed
+			if ( entityNum == REFENTITYNUM_WORLD || backEnd.currentEntity->needDlights )
+			{
+				R_TransformDlights(
+					backEnd.refdef.num_dlights,
+					backEnd.refdef.dlights,
+					&backEnd.ori);
+			}
+
+			oldEntityNum = entityNum;
+		}
+
+		// add the triangles for this surface
+		rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
+	}
+
+	// draw the contents of the last shader batch
+	if ( oldShader != nullptr )
+	{
+		RB_EndSurface();
+	}
+}
+
+static void RB_SubmitRenderPass(
+	Pass& renderPass,
+	Allocator& allocator )
+{
+	uint32_t *drawOrder = ojkAllocArray<uint32_t>(
+		allocator, renderPass.numDrawItems);
+
+	uint32_t numDrawItems = renderPass.numDrawItems;
+	for ( uint32_t i = 0; i < numDrawItems; ++i )
+		drawOrder[i] = i;
+
+	uint32_t *sortKeys = renderPass.sortKeys;
+	std::sort(drawOrder, drawOrder + numDrawItems, [sortKeys]( uint32_t a, uint32_t b )
+	{
+		return sortKeys[a] < sortKeys[b];
+	});
+
+	RB_DrawItems(renderPass.numDrawItems, renderPass.drawItems, drawOrder);
+}
+
 /*
 ==================
 RB_RenderDrawSurfList
 ==================
 */
-static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
-	shader_t		*shader, *oldShader;
-	int				fogNum, oldFogNum;
-	int				entityNum, oldEntityNum;
-	int				dlighted, oldDlighted;
-	int				postRender, oldPostRender;
-	int             cubemapIndex, oldCubemapIndex;
-	int		depthRange, oldDepthRange;
-	int				i;
-	drawSurf_t		*drawSurf;
-	int				oldSort;
-	float			originalTime;
-	FBO_t*			fbo = NULL;
-	qboolean		inQuery = qfalse;
-
-	float			depth[2];
-
-	void *allocMark = backEndData->perFrameMemory->Mark();
-
+static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs )
+{
 	/*
 	merging surfaces together that share the same shader (e.g. polys, patches)
 	upload per frame data - but this might be the same between render passes?
@@ -1070,318 +1312,40 @@ static void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	each surface corresponds to something which has all of its gpu data uploaded
 	*/
 
+	// Prepare memory for the current render pass
+	void *allocMark = backEndData->perFrameMemory->Mark();
 	assert(backEndData->currentPass == nullptr);
-	backEndData->currentPass = RB_CreatePass(*backEndData->perFrameMemory, numDrawSurfs * 4);
+	backEndData->currentPass = RB_CreatePass(
+		*backEndData->perFrameMemory, numDrawSurfs * 4);
 
 	// save original time for entity shader offsets
-	originalTime = backEnd.refdef.floatTime;
+	float originalTime = backEnd.refdef.floatTime;
+	FBO_t *fbo = glState.currentFBO;
 
-	fbo = glState.currentFBO;
-
-	// draw everything
-	oldEntityNum = -1;
 	backEnd.currentEntity = &tr.worldEntity;
-	oldShader = NULL;
-	oldFogNum = -1;
-	oldDepthRange = 0;
-	oldDlighted = 0;
-	oldPostRender = 0;
-	oldCubemapIndex = -1;
-	oldSort = -1;
-
-	depth[0] = 0.f;
-	depth[1] = 1.f;
-
 	backEnd.pc.c_surfaces += numDrawSurfs;
 
 	if ( backEnd.depthFill )
 	{
-		for ( i = 0, drawSurf = drawSurfs; i < numDrawSurfs; i++, drawSurf++ ) {
-			R_DecomposeSort(drawSurf->sort, &shader, &cubemapIndex, &postRender);
-			fogNum = drawSurf->fogIndex;
-			entityNum = drawSurf->entityNum;
-
-			if ( shader == oldShader &&	entityNum == oldEntityNum )
-			{
-				if ( shader && shader->sort != SS_OPAQUE )
-					continue;
-
-				// fast path, same as previous sort
-				rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
-				continue;
-			}
-
-			oldSort = drawSurf->sort;
-
-			//
-			// change the tess parameters if needed
-			// a "entityMergable" shader is a shader that can have surfaces from seperate
-			// entities merged into a single batch, like smoke and blood puff sprites
-			if ( shader &&
-					(shader != oldShader ||
-					 (entityNum != oldEntityNum && !shader->entityMergable)) )
-			{
-				if ( oldShader != NULL ) {
-					RB_EndSurface();
-				}
-
-				RB_BeginSurface(shader, 0, 0);
-				backEnd.pc.c_surfBatches++;
-				oldShader = shader;
-			}
-
-			if ( shader && shader->sort != SS_OPAQUE )
-				continue;
-
-			//
-			// change the modelview matrix if needed
-			//
-			if ( entityNum != oldEntityNum ) {
-				depthRange = 0;
-
-				if ( entityNum != REFENTITYNUM_WORLD ) {
-					backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
-					backEnd.refdef.floatTime = originalTime - backEnd.currentEntity->e.shaderTime;
-					// we have to reset the shaderTime as well otherwise image animations start
-					// from the wrong frame
-					tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-
-					// set up the transformation matrix
-					R_RotateForEntity(backEnd.currentEntity, &backEnd.viewParms, &backEnd.ori);
-
-					if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
-						// No depth at all, very rare but some things for seeing through walls
-						depthRange = 2;
-					}
-					else if ( backEnd.currentEntity->e.renderfx & RF_DEPTHHACK ) {
-						// hack the depth range to prevent view model from poking into walls
-						depthRange = 1;
-					}
-				}
-				else {
-					backEnd.currentEntity = &tr.worldEntity;
-					backEnd.refdef.floatTime = originalTime;
-					backEnd.ori = backEnd.viewParms.world;
-					// we have to reset the shaderTime as well otherwise image animations on
-					// the world (like water) continue with the wrong frame
-					tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-				}
-
-				GL_SetModelviewMatrix(backEnd.ori.modelViewMatrix);
-
-				//
-				// change depthrange. Also change projection matrix so first person weapon does not look like coming
-				// out of the screen.
-				//
-				if ( oldDepthRange != depthRange )
-				{
-					switch ( depthRange )
-					{
-					default:
-					case 0:
-						if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
-						{
-							GL_SetProjectionMatrix(backEnd.viewParms.projectionMatrix);
-						}
-						break;
-
-					case 1:
-						if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
-						{
-							viewParms_t temp = backEnd.viewParms;
-							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
-							GL_SetProjectionMatrix(temp.projectionMatrix);
-						}
-						break;
-
-					case 2:
-						if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
-						{
-							viewParms_t temp = backEnd.viewParms;
-							R_SetupProjection(&temp, r_znear->value, 0, qfalse);
-							GL_SetProjectionMatrix(temp.projectionMatrix);
-						}
-						break;
-					}
-
-					oldDepthRange = depthRange;
-				}
-
-				oldEntityNum = entityNum;
-			}
-
-			// add the triangles for this surface
-			rb_surfaceTable[*drawSurf->surface](drawSurf->surface);
-		}
+		RB_SubmitDrawSurfsForDepthFill(drawSurfs, numDrawSurfs, originalTime);
 	}
 	else
 	{
-		for (i = 0, drawSurf = drawSurfs ; i < numDrawSurfs ; i++, drawSurf++) {
-			R_DecomposeSort( drawSurf->sort, &shader, &cubemapIndex, &postRender );
-			fogNum = drawSurf->fogIndex;
-			entityNum = drawSurf->entityNum;
-			dlighted = drawSurf->dlightBits;
-
-			if ( shader == oldShader &&
-					fogNum == oldFogNum &&
-					postRender == oldPostRender &&
-					cubemapIndex == oldCubemapIndex &&
-					entityNum == oldEntityNum &&
-					dlighted == oldDlighted )
-			{
-				// fast path, same as previous sort
-				rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
-				continue;
-			}
-
-			oldSort = drawSurf->sort;
-
-			//
-			// change the tess parameters if needed
-			// a "entityMergable" shader is a shader that can have surfaces from seperate
-			// entities merged into a single batch, like smoke and blood puff sprites
-			if ( shader != NULL &&
-					( shader != oldShader ||
-						fogNum != oldFogNum ||
-						dlighted != oldDlighted ||
-						postRender != oldPostRender ||
-						cubemapIndex != oldCubemapIndex ||
-						(entityNum != oldEntityNum && !shader->entityMergable)))
-			{
-				if (oldShader != NULL) {
-					RB_EndSurface();
-				}
-
-				RB_BeginSurface( shader, fogNum, cubemapIndex );
-				backEnd.pc.c_surfBatches++;
-				oldShader = shader;
-				oldFogNum = fogNum;
-				oldDlighted = dlighted;
-				oldPostRender = postRender;
-				oldCubemapIndex = cubemapIndex;
-			}
-
-			//
-			// change the modelview matrix if needed
-			//
-			if ( entityNum != oldEntityNum ) {
-				depthRange = 0;
-
-				if ( entityNum != REFENTITYNUM_WORLD ) {
-					backEnd.currentEntity = &backEnd.refdef.entities[entityNum];
-					backEnd.refdef.floatTime = originalTime - backEnd.currentEntity->e.shaderTime;
-					// we have to reset the shaderTime as well otherwise image animations start
-					// from the wrong frame
-					tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-
-					// set up the transformation matrix
-					R_RotateForEntity( backEnd.currentEntity, &backEnd.viewParms, &backEnd.ori );
-
-					// set up the dynamic lighting if needed
-					if ( backEnd.currentEntity->needDlights ) {
-						R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-					}
-
-					if ( backEnd.currentEntity->e.renderfx & RF_NODEPTH ) {
-						// No depth at all, very rare but some things for seeing through walls
-						depthRange = 2;
-					}
-					else if ( backEnd.currentEntity->e.renderfx & RF_DEPTHHACK ) {
-						// hack the depth range to prevent view model from poking into walls
-						depthRange = 1;
-					}
-				} else {
-					backEnd.currentEntity = &tr.worldEntity;
-					backEnd.refdef.floatTime = originalTime;
-					backEnd.ori = backEnd.viewParms.world;
-					// we have to reset the shaderTime as well otherwise image animations on
-					// the world (like water) continue with the wrong frame
-					tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
-					R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.ori );
-				}
-
-				GL_SetModelviewMatrix( backEnd.ori.modelViewMatrix );
-
-				//
-				// change depthrange. Also change projection matrix so first person weapon does not look like coming
-				// out of the screen.
-				//
-				if (oldDepthRange != depthRange)
-				{
-					switch ( depthRange )
-					{
-						default:
-						case 0:
-							if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
-							{
-								GL_SetProjectionMatrix(backEnd.viewParms.projectionMatrix);
-							}
-							break;
-
-						case 1:
-							if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
-							{
-								viewParms_t temp = backEnd.viewParms;
-								R_SetupProjection(&temp, r_znear->value, 0, qfalse);
-								GL_SetProjectionMatrix(temp.projectionMatrix);
-							}
-							break;
-
-						case 2:
-							if ( backEnd.viewParms.stereoFrame != STEREO_CENTER )
-							{
-								viewParms_t temp = backEnd.viewParms;
-								R_SetupProjection(&temp, r_znear->value, 0, qfalse);
-								GL_SetProjectionMatrix(temp.projectionMatrix);
-							}
-							break;
-					}
-
-					oldDepthRange = depthRange;
-				}
-
-				oldEntityNum = entityNum;
-			}
-
-			// add the triangles for this surface
-			rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
-		}
+		RB_SubmitDrawSurfs(drawSurfs, numDrawSurfs, originalTime);
 	}
 
-	backEnd.refdef.floatTime = originalTime;
-
-	// draw the contents of the last shader batch
-	if (oldShader != NULL) {
-		RB_EndSurface();
-	}
-
-	uint32_t *drawOrder = ojkAllocArray<uint32_t>(
-		*backEndData->perFrameMemory, backEndData->currentPass->numDrawItems);
-
-	uint32_t numDrawItems = backEndData->currentPass->numDrawItems;
-	for ( uint32_t i = 0; i < numDrawItems; ++i )
-		drawOrder[i] = i;
-
-	uint32_t *sortKeys = backEndData->currentPass->sortKeys;
-	std::sort(drawOrder, drawOrder + numDrawItems, [sortKeys]( uint32_t a, uint32_t b )
-	{
-		return sortKeys[a] < sortKeys[b];
-	});
-
-	RB_DrawItems(backEndData->currentPass->numDrawItems, backEndData->currentPass->drawItems, drawOrder);
+	// Do the drawing and release memory
+	RB_SubmitRenderPass(
+		*backEndData->currentPass,
+		*backEndData->perFrameMemory);
 
 	backEndData->perFrameMemory->ResetTo(allocMark);
 	backEndData->currentPass = nullptr;
 
-	if (inQuery) {
-		qglEndQuery(GL_SAMPLES_PASSED);
-	}
-
+	// Reset things to how they were
+	backEnd.refdef.floatTime = originalTime;
 	FBO_Bind(fbo);
-
-	// go back to the world modelview matrix
-
-	GL_SetModelviewMatrix( backEnd.viewParms.world.modelViewMatrix );
+	GL_SetModelviewMatrix(backEnd.viewParms.world.modelViewMatrix);
 }
 
 
