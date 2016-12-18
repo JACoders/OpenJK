@@ -1873,6 +1873,102 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->nextthink = level.time + 50;
 }
 
+static void WP_FireHitscanShotgun( gentity_t *ent )
+{
+	//Get base damage
+	//Get position, end position
+	//Get spread angle
+	//Make temp entity
+	//For each game entity...
+		//Do in fov test with position, spread angle
+		//Get range of hit, spread angle of hit
+		//Apply damage
+}
+#if 0
+/*{
+	int			damage = 60 * g_weaponDamageScale.value;
+	qboolean	render_impact = qtrue;
+	vec3_t		start, end;
+	trace_t		tr;
+	gentity_t	*traceEnt, *tent;
+	float		shotRange = 256;
+	int			ignore;
+
+	memset(&tr, 0, sizeof(tr)); //to shut the compiler up
+
+	VectorCopy( ent->client->ps.origin, start );
+	start[2] += ent->client->ps.viewheight;//By eyes - but why???
+	VectorMA( start, shotRange, forward, end );
+	VectorMA( start, 1, vright, start );
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_TimeShiftAllClients( ent->client->pers.cmd.serverTime, ent, qfalse );
+
+	ignore = ent->s.number;
+
+	//JP_Trace( &tr, start, NULL, NULL, end, ignore, MASK_SHOT, qfalse, 0, 0 ); //Never use small hitbox for shocklance
+
+	if ( tr.entityNum == ENTITYNUM_NONE )
+	{
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+			G_UnTimeShiftAllClients( ent, qfalse );
+		return;
+	}
+	//fix: shooting ourselves shouldn't be allowed 
+	if (tr.entityNum == ent->s.number)
+	{
+		if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+			G_UnTimeShiftAllClients( ent, qfalse );
+		return;
+	}
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if ( g_unlagged.integer & UNLAGGED_HITSCAN )
+		G_UnTimeShiftAllClients( ent, qfalse );
+
+	if ( tr.surfaceFlags & SURF_NOIMPACT ) 
+	{
+		render_impact = qfalse;
+	}
+
+	// always render a shot beam, doing this the old way because I don't much feel like overriding the effect.
+	tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_MAIN_SHOT );
+	VectorCopy( muzzle, tent->s.origin2 );
+	tent->s.eventParm = ent->s.number;
+
+	traceEnt = &g_entities[tr.entityNum];
+
+	if ( render_impact )
+	{
+		if ( tr.entityNum < ENTITYNUM_WORLD && traceEnt->takedamage )
+		{
+			if ( traceEnt->client && LogAccuracyHit( traceEnt, ent )) 
+			{
+				ent->client->accuracy_hits++;
+			} 
+
+			G_Damage( traceEnt, ent, ent, forward, tr.endpos, damage, DAMAGE_NORMAL, MOD_TURBLAST ); //I guess keep this as turblast since MOD_STUN is used for healgun .. and we dont want shocklance to heal :\
+			
+			tent = G_TempEntity( tr.endpos, EV_MISSILE_HIT );
+			tent->s.eventParm = DirToByte( tr.plane.normal );
+			if (traceEnt->client)
+			{
+				tent->s.weapon = 1;
+			}
+		}
+		else 
+		{
+			 // Hmmm, maybe don't make any marks on things that could break
+			tent = G_TempEntity( tr.endpos, EV_DISRUPTOR_SNIPER_MISS );
+			tent->s.eventParm = DirToByte( tr.plane.normal );
+			tent->s.weapon = 1;
+		}
+	}
+	
+}
+*/
+
 static void WP_FireStakeGun( gentity_t *ent ) 
 {
 	gentity_t	*stake;
@@ -2159,6 +2255,8 @@ static void WP_FireFlechette( gentity_t *ent, qboolean altFire, int seed )
 	{
 		if (g_tweakWeapons.integer & WT_STAKE_GUN)
 			WP_FireStakeGun( ent );
+		else if (0)
+			WP_FireHitscanShotgun(ent);
 		else
 			WP_FlechetteMainFire( ent, seed );
 	}
