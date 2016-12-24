@@ -3364,19 +3364,25 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
 
-/*
-Ghoul2 Insert Start
-*/
 // tr_ghoul2.cpp
-void		Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in);
-extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
-void		RE_InsertModelIntoHash(const char *name, model_t *mod);
+void Mat3x4_Multiply(mdxaBone_t *out, const mdxaBone_t *in2, const mdxaBone_t *in);
+void Mat3x4_Scale( mdxaBone_t *result, const mdxaBone_t *lhs, const float scale );
+void Mat3x4_Lerp(
+	mdxaBone_t *result,
+	const mdxaBone_t *lhs,
+	const mdxaBone_t *rhs,
+	const float t );
+const mdxaBone_t operator +( const mdxaBone_t& lhs, const mdxaBone_t& rhs );
+const mdxaBone_t operator -( const mdxaBone_t& lhs, const mdxaBone_t& rhs );
+const mdxaBone_t operator *( const mdxaBone_t& lhs, const mdxaBone_t& rhs );
+const mdxaBone_t operator *( const mdxaBone_t& lhs, const float scale );
+const mdxaBone_t operator *( const float scale, const mdxaBone_t& rhs );
+
+qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
+qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
+bool LoadTGAPalletteImage( const char *name, byte **pic, int *width, int *height);
+void RE_InsertModelIntoHash( const char *name, model_t *mod );
 void ResetGhoul2RenderableSurfaceHeap();
-/*
-Ghoul2 Insert End
-*/
 
 void R_InitDecals( void );
 void RE_ClearDecals( void );

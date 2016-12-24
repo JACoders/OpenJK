@@ -54,18 +54,16 @@ struct surfaceInfo_t
 	int			genPolySurfaceIndex; // used to point back to the original surface and poly if this is a generated surface
 	int			genLod;			// used to determine original lod of original surface and poly hit location
 
-surfaceInfo_t():
-	offFlags(0),
-	surface(0),
-	genBarycentricJ(0),
-	genBarycentricI(0),
-	genPolySurfaceIndex(0),
-	genLod(0)
-	{}
-
+	surfaceInfo_t()
+	: offFlags(0)
+	, surface(0)
+	, genBarycentricJ(0)
+	, genBarycentricI(0)
+	, genPolySurfaceIndex(0)
+	, genLod(0)
+	{
+	}
 };
-
-
 
 #define MDXABONEDEF				// used in the mdxformat.h file to stop redefinitions of the bone struct.
 
@@ -153,26 +151,24 @@ struct  boneInfo_t
 	int			airTime; //base is in air, be more quick and sensitive about collisions
 	//rww - RAGDOLL_END
 
-boneInfo_t():
-	boneNumber(-1),
-	flags(0),
-	startFrame(0),
-	endFrame(0),
-	startTime(0),
-	pauseTime(0),
-	animSpeed(0),
-	blendFrame(0),
-	blendLerpFrame(0),
-	blendTime(0),
-	blendStart(0),
-	boneBlendTime(0),
-	boneBlendStart(0),
-	lastTime(0),
-	RagFlags(0)
+	boneInfo_t()
+	: boneNumber(-1)
+	, flags(0)
+	, startFrame(0)
+	, endFrame(0)
+	, startTime(0)
+	, pauseTime(0)
+	, animSpeed(0)
+	, blendFrame(0)
+	, blendLerpFrame(0)
+	, blendTime(0)
+	, blendStart(0)
+	, boneBlendTime(0)
+	, boneBlendStart(0)
+	, lastTime(0)
+	, RagFlags(0)
 	{
-		matrix.matrix[0][0] = matrix.matrix[0][1] = matrix.matrix[0][2] = matrix.matrix[0][3] =
-		matrix.matrix[1][0] = matrix.matrix[1][1] = matrix.matrix[1][2] = matrix.matrix[1][3] =
-		matrix.matrix[2][0] = matrix.matrix[2][1] = matrix.matrix[2][2] = matrix.matrix[2][3] = 0.0f;
+		Com_Memset(&matrix, 0, sizeof(matrix));
 	}
 
 };

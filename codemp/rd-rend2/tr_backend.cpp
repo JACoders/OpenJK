@@ -2085,6 +2085,20 @@ static void RB_RenderAllDepthRelatedPasses( drawSurf_t *drawSurfs, int numDrawSu
 	}
 }
 
+static void RB_TransformAllAnimations( drawSurf_t *drawSurfs, int numDrawSurfs )
+{
+	drawSurf_t *drawSurf = drawSurfs;
+	for ( int i = 0; i < numDrawSurfs; ++i, ++drawSurf )
+	{
+		if ( *drawSurf->surface != SF_MDX )
+		{
+			continue;
+		}
+
+		CRenderableSurface *g2Surface = reinterpret_cast<CRenderableSurface *>(drawSurf);
+	}
+}
+
 /*
 =============
 RB_DrawSurfs
@@ -2106,6 +2120,8 @@ static const void *RB_DrawSurfs( const void *data ) {
 
 	// clear the z buffer, set the modelview, etc
 	RB_BeginDrawingView ();
+
+	RB_TransformAllAnimations(cmd->drawSurfs, cmd->numDrawSurfs);
 
 	RB_RenderAllDepthRelatedPasses(cmd->drawSurfs, cmd->numDrawSurfs);
 

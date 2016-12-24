@@ -1963,7 +1963,7 @@ qboolean G2API_GetBoltMatrix_SPMethod(CGhoul2Info_v &ghoul2, const int modelInde
 			VectorNormalize((float*)use->matrix[1]);
 			VectorNormalize((float*)use->matrix[2]);
 
-			Multiply_3x4Matrix(matrix, &worldMatrix, use);
+			Mat3x4_Multiply(matrix, &worldMatrix, use);
 			return qtrue;
 		}
 	}
@@ -2007,24 +2007,10 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 			{
 				mdxaBone_t bolt;
 
-#if 0 //yeah, screw it
-				if (!gG2_GBMNoReconstruct)
-				{ //This should only be used when you know what you're doing.
-					if (G2_NeedsRecalc(ghlInfo,tframeNum))
-					{
-						G2_ConstructGhoulSkeleton(ghoul2,tframeNum,true,scale);
-					}
-				}
-				else
-				{
-					gG2_GBMNoReconstruct = qfalse;
-				}
-#else
 				if (G2_NeedsRecalc(ghlInfo,tframeNum))
 				{
 					G2_ConstructGhoulSkeleton(ghoul2,tframeNum,true,scale);
 				}
-#endif
 
 				G2_GetBoltMatrixLow(*ghlInfo,boltIndex,scale,bolt);
 				// scale the bolt position by the scale factor for this model since at this point its still in model space
@@ -2044,7 +2030,7 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 				VectorNormalize((float*)&bolt.matrix[1]);
 				VectorNormalize((float*)&bolt.matrix[2]);
 
-				Multiply_3x4Matrix(matrix, &worldMatrix, &bolt);												
+				Mat3x4_Multiply(matrix, &worldMatrix, &bolt);												
 #if G2API_DEBUG
 				for ( int i = 0; i < 3; i++ )
 				{
@@ -2062,13 +2048,13 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 					vec3_t		newangles = {0,270,0};
 					Create_Matrix(newangles, &rotMat);
 					// make the model space matrix we have for this bolt into a world matrix
-					Multiply_3x4Matrix(&tempMatrix, &worldMatrix, &bolt);	
+					Mat3x4_Multiply(&tempMatrix, &worldMatrix, &bolt);	
 					vec3_t origin;
 					origin[0] = tempMatrix.matrix[0][3];
 					origin[1] = tempMatrix.matrix[1][3];
 					origin[2] = tempMatrix.matrix[2][3];
 					tempMatrix.matrix[0][3] = tempMatrix.matrix[1][3] = tempMatrix.matrix[2][3] = 0;
-					Multiply_3x4Matrix(matrix, &tempMatrix, &rotMat);
+					Mat3x4_Multiply(matrix, &tempMatrix, &rotMat);
 					matrix->matrix[0][3] = origin[0];
 					matrix->matrix[1][3] = origin[1];
 					matrix->matrix[2][3] = origin[2];
@@ -2086,7 +2072,7 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 	{
 		G2WARNING(0,"G2API_GetBoltMatrix Failed on empty or bad model");
 	}
-	Multiply_3x4Matrix(matrix, &worldMatrix, (mdxaBone_t *)&identityMatrix);
+	Mat3x4_Multiply(matrix, &worldMatrix, (mdxaBone_t *)&identityMatrix);
 	return qfalse;
 }
 
@@ -2271,22 +2257,6 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 #else
 			G2_TransformModel(ghoul2, frameNumber, scale, G2VertSpace, useLod);
 #endif
-
-			//don't need to do this anymore now that I am using a flag for zone alloc.
-			/*
-			i = 0;
-			while (i < ghoul2.size())
-			{
-				CGhoul2Info &g2 = ghoul2[i];
-				int iSize = g2.currentModel->mdxm->numSurfaces * 4;
-
-				int *zoneMem = (int *)Z_Malloc(iSize, TAG_GHOUL2, qtrue);
-				memcpy(zoneMem, g2.mTransformedVertsArray, iSize);
-				g2.mTransformedVertsArray = zoneMem;
-				g2.mFlags |= GHOUL2_ZONETRANSALLOC;
-				i++;
-			}
-			*/
 		}
 
 		// pre generate the world matrix - used to transform the incoming ray
@@ -2313,18 +2283,21 @@ void G2API_CollisionDetectCache(CollisionRecord_t *collRecMap, CGhoul2Info_v &gh
 }
 
 
-void G2API_CollisionDetect(CollisionRecord_t *collRecMap, CGhoul2Info_v &ghoul2, const vec3_t angles, const vec3_t position,
-										  int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, IHeapAllocator *G2VertSpace, int traceFlags, int useLod, float fRadius)
+void G2API_CollisionDetect(
+	CollisionRecord_t *collRecMap,
+	CGhoul2Info_v &ghoul2,
+	const vec3_t angles,
+	const vec3_t position,
+	int frameNumber,
+	int entNum,
+	vec3_t rayStart,
+	vec3_t rayEnd,
+	vec3_t scale,
+	IHeapAllocator *G2VertSpace,
+	int traceFlags,
+	int useLod,
+	float fRadius)
 {
-	/*
-	if (1)
-	{
-		G2API_CollisionDetectCache(collRecMap, ghoul2, angles, position, frameNumber, entNum,
-			rayStart, rayEnd, scale, G2VertSpace, traceFlags, useLod, fRadius);
-		return;
-	}
-	*/
-
 	if (G2_SetupModelPointers(ghoul2))
 	{
 		vec3_t	transRayStart, transRayEnd;
@@ -2773,7 +2746,6 @@ void G2API_AddSkinGore(CGhoul2Info_v &ghoul2,SSkinGoreData &gore)
 	}
 
 	// make sure we have transformed the whole skeletons for each model
-	//G2_ConstructGhoulSkeleton(ghoul2, gore.currentTime, NULL, true, gore.angles, gore.position, gore.scale, false);
 	G2_ConstructGhoulSkeleton(ghoul2, gore.currentTime, true, gore.scale);
 
 	// pre generate the world matrix - used to transform the incoming ray
