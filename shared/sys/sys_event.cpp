@@ -91,6 +91,31 @@ void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptr
 	static bool printedWarning = false;
 #endif
 
+	// try to combine all sequential mouse moves in one event
+	if ( type == SE_MOUSE )
+	{
+		// get previous event from queue
+		ev = &eventQue[ ( eventHead + MASK_QUED_EVENTS - 1 ) & MASK_QUED_EVENTS ];
+		if ( ev->evType == SE_MOUSE )
+		{
+			if ( eventTail == eventHead && eventTail )
+			{
+				ev->evValue = 0;
+				ev->evValue2 = 0;
+				eventTail--;
+			}
+
+			if ( time == 0 )
+				time = Sys_Milliseconds();
+
+			ev->evValue += value;
+			ev->evValue2 += value2;
+			ev->evTime = time;
+
+			return;
+		}
+	}
+
 	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
 
 	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
