@@ -2649,123 +2649,92 @@ void *G2_FindSurface_BC(const model_s *mod, int index, int lod)
 	return (void *)current;
 }
 
-//#define G2EVALRENDER
-
 // We've come across a surface that's designated as a bolt surface, process it and put it in the appropriate bolt place
-void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface, int boltNum, boltInfo_v &boltList, const surfaceInfo_t *surfInfo, const model_t *mod,mdxaBone_t &retMatrix)
+void G2_ProcessSurfaceBolt2(
+	CBoneCache &boneCache,
+	const mdxmSurface_t *surface,
+	int boltNum,
+	boltInfo_v &boltList,
+	const surfaceInfo_t *surfInfo,
+	const model_t *mod,
+	mdxaBone_t &retMatrix)
 {
- 	mdxmVertex_t 	*v, *vert0, *vert1, *vert2;
- 	vec3_t			axes[3], sides[3];
- 	float			pTri[3][3], d;
- 	int				j, k;
+ 	float pTri[3][3];
 
-	// now there are two types of tag surface - model ones and procedural generated types - lets decide which one we have here.
+	// now there are two types of tag surface - model ones and procedural
+	// generated types - lets decide which one we have here.
 	if (surfInfo && surfInfo->offFlags == G2SURFACEFLAG_GENERATED)
 	{
-		int surfNumber = surfInfo->genPolySurfaceIndex & 0x0ffff;
-		int	polyNumber = (surfInfo->genPolySurfaceIndex >> 16) & 0x0ffff;
+		const int surfNumber = surfInfo->genPolySurfaceIndex & 0x0ffff;
+		const int polyNumber = (surfInfo->genPolySurfaceIndex >> 16) & 0x0ffff;
 
 		// find original surface our original poly was in.
-		mdxmSurface_t	*originalSurf = (mdxmSurface_t *)G2_FindSurface_BC(mod, surfNumber, surfInfo->genLod);
-		mdxmTriangle_t	*originalTriangleIndexes = (mdxmTriangle_t *)((byte*)originalSurf + originalSurf->ofsTriangles);
+		const mdxmSurface_t *originalSurf =
+			(mdxmSurface_t *)G2_FindSurface_BC(mod, surfNumber, surfInfo->genLod);
+		const mdxmTriangle_t *originalTriangleIndexes =
+			(mdxmTriangle_t *)((byte*)originalSurf + originalSurf->ofsTriangles);
 
 		// get the original polys indexes 
-		int index0 = originalTriangleIndexes[polyNumber].indexes[0];
-		int index1 = originalTriangleIndexes[polyNumber].indexes[1];
-		int index2 = originalTriangleIndexes[polyNumber].indexes[2];
+		const int index0 = originalTriangleIndexes[polyNumber].indexes[0];
+		const int index1 = originalTriangleIndexes[polyNumber].indexes[1];
+		const int index2 = originalTriangleIndexes[polyNumber].indexes[2];
 
 		// decide where the original verts are
- 		vert0 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert0+=index0;
-
-		vert1 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert1+=index1;
-
-		vert2 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert2+=index2;
+		const mdxmVertex_t *surfVerts = 
+ 			(mdxmVertex_t *)((byte *)originalSurf + originalSurf->ofsVerts);
+		const mdxmVertex_t *verts[3] = {
+ 			surfVerts + index0,
+			surfVerts + index1,
+			surfVerts + index2
+		};
 
 		// clear out the triangle verts to be
- 	   	VectorClear( pTri[0] );
- 	   	VectorClear( pTri[1] );
- 	   	VectorClear( pTri[2] );
-		int *piBoneReferences = (int*) ((byte*)originalSurf + originalSurf->ofsBoneReferences);
+ 	   	VectorClear(pTri[0]);
+ 	   	VectorClear(pTri[1]);
+ 	   	VectorClear(pTri[2]);
+		const int *piBoneReferences =
+			(int *)((byte*)originalSurf + originalSurf->ofsBoneReferences);
 
-//		mdxmWeight_t	*w;
-		
-		// now go and transform just the points we need from the surface that was hit originally
-//		w = vert0->weights;
-		float fTotalWeight = 0.0f;
-		int iNumWeights = G2_GetVertWeights( vert0 );
- 		for ( k = 0 ; k < iNumWeights ; k++ ) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert0, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert0, k, fTotalWeight, iNumWeights );
+		for ( int i = 0; i < 3; ++i )
+		{
+			// now go and transform just the points we need from the surface that
+			// was hit originally
+			const int iNumWeights = G2_GetVertWeights(verts[i]);
+			float fTotalWeight = 0.0f;
+			for ( int k = 0 ; k < iNumWeights ; k++ ) 
+			{
+				const int iBoneIndex = G2_GetVertBoneIndex(verts[i], k);
+				const float fBoneWeight = G2_GetVertBoneWeight(
+					verts[i], k, fTotalWeight, iNumWeights);
+				const mdxaBone_t &bone = boneCache.Eval(piBoneReferences[iBoneIndex]);
 
-#ifdef G2EVALRENDER
-			const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
-			pTri[0][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert0->vertCoords ) + bone.matrix[0][3] );
- 			pTri[0][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert0->vertCoords ) + bone.matrix[1][3] );
- 			pTri[0][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert0->vertCoords ) + bone.matrix[2][3] );
+				pTri[i][0] += fBoneWeight *
+					(DotProduct(bone.matrix[0], verts[i]->vertCoords) + bone.matrix[0][3]);
+				pTri[i][1] += fBoneWeight *
+					(DotProduct(bone.matrix[1], verts[i]->vertCoords) + bone.matrix[1][3]);
+				pTri[i][2] += fBoneWeight *
+					(DotProduct(bone.matrix[2], verts[i]->vertCoords) + bone.matrix[2][3]);
+			}
 		}
 
-//		w = vert1->weights;
-		fTotalWeight = 0.0f;
-		iNumWeights = G2_GetVertWeights( vert1 );
- 		for ( k = 0 ; k < iNumWeights ; k++) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert1, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert1, k, fTotalWeight, iNumWeights );
-
-#ifdef G2EVALRENDER
-			const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
- 			pTri[1][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert1->vertCoords ) + bone.matrix[0][3] );
- 			pTri[1][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert1->vertCoords ) + bone.matrix[1][3] );
- 			pTri[1][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert1->vertCoords ) + bone.matrix[2][3] );
-		}
-
-//		w = vert2->weights;
-		fTotalWeight = 0.0f;
-		iNumWeights = G2_GetVertWeights( vert2 );
- 		for ( k = 0 ; k < iNumWeights ; k++) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert2, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert2, k, fTotalWeight, iNumWeights );
-
-#ifdef G2EVALRENDER
-			const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
- 			pTri[2][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert2->vertCoords ) + bone.matrix[0][3] );
- 			pTri[2][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert2->vertCoords ) + bone.matrix[1][3] );
- 			pTri[2][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert2->vertCoords ) + bone.matrix[2][3] );
-		}
- 			
-   		vec3_t normal;
-		vec3_t up;
-		vec3_t right;
-		vec3_t vec0, vec1;
-		// work out baryCentricK
-		float baryCentricK = 1.0 - (surfInfo->genBarycentricI + surfInfo->genBarycentricJ);
+		const float baryCentricK =
+			1.0f - (surfInfo->genBarycentricI + surfInfo->genBarycentricJ);
 
 		// now we have the model transformed into model space, now generate an origin.
-		retMatrix.matrix[0][3] = (pTri[0][0] * surfInfo->genBarycentricI) + (pTri[1][0] * surfInfo->genBarycentricJ) + (pTri[2][0] * baryCentricK);
-		retMatrix.matrix[1][3] = (pTri[0][1] * surfInfo->genBarycentricI) + (pTri[1][1] * surfInfo->genBarycentricJ) + (pTri[2][1] * baryCentricK);
-		retMatrix.matrix[2][3] = (pTri[0][2] * surfInfo->genBarycentricI) + (pTri[1][2] * surfInfo->genBarycentricJ) + (pTri[2][2] * baryCentricK);
+		for ( int i = 0; i < 3; ++i )
+		{
+			retMatrix.matrix[i][3] =
+				(pTri[0][i] * surfInfo->genBarycentricI) +
+				(pTri[1][i] * surfInfo->genBarycentricJ) +
+				(pTri[2][i] * baryCentricK);
+		}
 
 		// generate a normal to this new triangle
+		vec3_t vec0, vec1;
 		VectorSubtract(pTri[0], pTri[1], vec0);
 		VectorSubtract(pTri[2], pTri[1], vec1);
 
+   		vec3_t normal;
 		CrossProduct(vec0, vec1, normal);
 		VectorNormalize(normal);
 
@@ -2776,6 +2745,7 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 
 		// up will be towards point 0 of the original triangle.
 		// so lets work it out. Vector is hit point - point 0
+		vec3_t up;
 		up[0] = retMatrix.matrix[0][3] - pTri[0][0];
 		up[1] = retMatrix.matrix[1][3] - pTri[0][1];
 		up[2] = retMatrix.matrix[2][3] - pTri[0][2];
@@ -2789,80 +2759,81 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 		retMatrix.matrix[2][1] = up[2];
 
 		// right is always straight
-
+		vec3_t right;
 		CrossProduct( normal, up, right );
+
 		// that's the up vector
 		retMatrix.matrix[0][2] = right[0];
 		retMatrix.matrix[1][2] = right[1];
 		retMatrix.matrix[2][2] = right[2];
-
 
 	}
 	// no, we are looking at a normal model tag
 	else
 	{
 	 	// whip through and actually transform each vertex
- 		v = (mdxmVertex_t *) ((byte *)surface + surface->ofsVerts);
-		int *piBoneReferences = (int*) ((byte*)surface + surface->ofsBoneReferences);
- 		for ( j = 0; j < 3; j++ ) 
+		const mdxmVertex_t *v =
+			(const mdxmVertex_t *)((byte *)surface + surface->ofsVerts);
+		const int *piBoneReferences =
+			(const int*)((byte *)surface + surface->ofsBoneReferences);
+ 		for ( int j = 0; j < 3; j++ ) 
  		{
-// 			mdxmWeight_t	*w;
-
- 			VectorClear( pTri[j] );
- //			w = v->weights;
+ 			VectorClear(pTri[j]);
 
 			const int iNumWeights = G2_GetVertWeights( v );
-
 			float fTotalWeight = 0.0f;
- 			for ( k = 0 ; k < iNumWeights ; k++) 
+ 			for ( int k = 0 ; k < iNumWeights ; k++) 
  			{
-				int		iBoneIndex	= G2_GetVertBoneIndex( v, k );
-				float	fBoneWeight	= G2_GetVertBoneWeight( v, k, fTotalWeight, iNumWeights );
+				const int iBoneIndex = G2_GetVertBoneIndex(v, k);
+				const float fBoneWeight =
+					G2_GetVertBoneWeight(v, k, fTotalWeight, iNumWeights);
+				const mdxaBone_t &bone = boneCache.Eval(piBoneReferences[iBoneIndex]);
 
-#ifdef G2EVALRENDER
-				const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-				const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
- 				pTri[j][0] += fBoneWeight * ( DotProduct( bone.matrix[0], v->vertCoords ) + bone.matrix[0][3] );
- 				pTri[j][1] += fBoneWeight * ( DotProduct( bone.matrix[1], v->vertCoords ) + bone.matrix[1][3] );
- 				pTri[j][2] += fBoneWeight * ( DotProduct( bone.matrix[2], v->vertCoords ) + bone.matrix[2][3] );
+ 				pTri[j][0] += fBoneWeight *
+					(DotProduct(bone.matrix[0], v->vertCoords) + bone.matrix[0][3]);
+ 				pTri[j][1] += fBoneWeight *
+					(DotProduct(bone.matrix[1], v->vertCoords) + bone.matrix[1][3]);
+ 				pTri[j][2] += fBoneWeight *
+					(DotProduct(bone.matrix[2], v->vertCoords) + bone.matrix[2][3]);
  			}
  			
- 			v++;// = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surface->maxVertBoneWeights];
+ 			v++;
  		}
 
  		// clear out used arrays
- 		memset( axes, 0, sizeof( axes ) );
- 		memset( sides, 0, sizeof( sides ) );
+		vec3_t axes[3] = {};
+		vec3_t sides[3] = {};
 
  		// work out actual sides of the tag triangle
- 		for ( j = 0; j < 3; j++ )
+ 		for ( int j = 0; j < 3; j++ )
  		{
- 			sides[j][0] = pTri[(j+1)%3][0] - pTri[j][0];
- 			sides[j][1] = pTri[(j+1)%3][1] - pTri[j][1];
- 			sides[j][2] = pTri[(j+1)%3][2] - pTri[j][2];
+ 			sides[j][0] = pTri[(j + 1) % 3][0] - pTri[j][0];
+ 			sides[j][1] = pTri[(j + 1) % 3][1] - pTri[j][1];
+ 			sides[j][2] = pTri[(j + 1) % 3][2] - pTri[j][2];
  		}
 
- 		// do math trig to work out what the matrix will be from this triangle's translated position
- 		VectorNormalize2( sides[iG2_TRISIDE_LONGEST], axes[0] );
- 		VectorNormalize2( sides[iG2_TRISIDE_SHORTEST], axes[1] );
+		// do math trig to work out what the matrix will be from this
+		// triangle's translated position
+ 		VectorNormalize2(sides[iG2_TRISIDE_LONGEST], axes[0]);
+ 		VectorNormalize2(sides[iG2_TRISIDE_SHORTEST], axes[1]);
 
- 		// project shortest side so that it is exactly 90 degrees to the longer side
- 		d = DotProduct( axes[0], axes[1] );
- 		VectorMA( axes[0], -d, axes[1], axes[0] );
- 		VectorNormalize2( axes[0], axes[0] );
+		// project shortest side so that it is exactly 90 degrees to the longer
+		// side
+ 		float d = DotProduct(axes[0], axes[1]);
+ 		VectorMA(axes[0], -d, axes[1], axes[0]);
+ 		VectorNormalize2(axes[0], axes[0]);
 
- 		CrossProduct( sides[iG2_TRISIDE_LONGEST], sides[iG2_TRISIDE_SHORTEST], axes[2] );
- 		VectorNormalize2( axes[2], axes[2] );
+ 		CrossProduct(sides[iG2_TRISIDE_LONGEST], sides[iG2_TRISIDE_SHORTEST], axes[2]);
+ 		VectorNormalize2(axes[2], axes[2]);
 
- 		// set up location in world space of the origin point in out going matrix
+		// set up location in world space of the origin point in out going
+		// matrix
  		retMatrix.matrix[0][3] = pTri[MDX_TAG_ORIGIN][0];
  		retMatrix.matrix[1][3] = pTri[MDX_TAG_ORIGIN][1];
  		retMatrix.matrix[2][3] = pTri[MDX_TAG_ORIGIN][2];
 
- 		// copy axis to matrix - do some magic to orient minus Y to positive X and so on so bolt on stuff is oriented correctly
+		// copy axis to matrix - do some magic to orient minus Y to positive X
+		// and so on so bolt on stuff is oriented correctly
 		retMatrix.matrix[0][0] = axes[1][0];
 		retMatrix.matrix[0][1] = axes[0][0];
 		retMatrix.matrix[0][2] = -axes[2][0];

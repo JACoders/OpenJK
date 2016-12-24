@@ -428,16 +428,24 @@ qboolean G2_Remove_Bone (CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *bo
 #define DEBUG_PCJ (0)
 
 
-// Given a model handle, and a bone name, we want to set angles specifically for overriding
-qboolean G2_Set_Bone_Angles_Index( boneInfo_v &blist, const int index,
-							const float *angles, const int flags, const Eorientations yaw,
-							const Eorientations pitch, const Eorientations roll, qhandle_t *modelList,
-							const int modelIndex, const int blendTime, const int currentTime)
+// Given a model handle, and a bone name, we want to set angles specifically
+// for overriding
+qboolean G2_Set_Bone_Angles_Index(
+	boneInfo_v &blist,
+	const int index,
+	const float *angles,
+	const int flags,
+	const Eorientations yaw,
+	const Eorientations pitch,
+	const Eorientations roll,
+	qhandle_t *modelList,
+	const int modelIndex,
+	const int blendTime,
+	const int currentTime)
 {
-	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
+	if ( index >= (int)blist.size() || blist[index].boneNumber == -1 )
 	{
 		// we are attempting to set a bone override that doesn't exist
-		assert(0);
 		return qfalse;
 	}
 
@@ -445,29 +453,42 @@ qboolean G2_Set_Bone_Angles_Index( boneInfo_v &blist, const int index,
 	{
 		if (blist[index].flags & BONE_ANGLES_RAGDOLL)
 		{
-			return qtrue; // don't accept any calls on ragdoll bones
+			// don't accept any calls on ragdoll bones
+			return qtrue;
 		}
 	}
 	
 	if (flags & (BONE_ANGLES_PREMULT | BONE_ANGLES_POSTMULT))
 	{
-		// you CANNOT call this with an index with these kinds of bone overrides - we need the model details for these kinds of bone angle overrides
-		assert(0);
+		// you CANNOT call this with an index with these kinds of bone
+		// overrides - we need the model details for these kinds of bone angle
+		// overrides
 		return qfalse;
 	}
 
 	// yes, so set the angles and flags correctly
-	blist[index].flags &= ~(BONE_ANGLES_TOTAL);
+	blist[index].flags &= ~BONE_ANGLES_TOTAL;
 	blist[index].flags |= flags;
 	blist[index].boneBlendStart = currentTime;
 	blist[index].boneBlendTime = blendTime;
+
 #if DEBUG_PCJ
-	Com_OPrintf("PCJ %2d %6d   (%6.2f,%6.2f,%6.2f) %d %d %d %d\n",index,currentTime,angles[0],angles[1],angles[2],yaw,pitch,roll,flags);
+	Com_OPrintf(
+		"PCJ %2d %6d   (%6.2f,%6.2f,%6.2f) %d %d %d %d\n",
+		index,
+		currentTime,
+		angles[0],
+		angles[1],
+		angles[2],
+		yaw,
+		pitch,
+		roll,
+		flags);
 #endif
 
-	G2_Generate_Matrix(NULL, blist, index, angles, flags, yaw, pitch, roll);
-	return qtrue;
+	G2_Generate_Matrix(nullptr, blist, index, angles, flags, yaw, pitch, roll);
 
+	return qtrue;
 }
 
 // Given a model handle, and a bone name, we want to set angles specifically for overriding
