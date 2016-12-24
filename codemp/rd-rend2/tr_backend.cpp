@@ -1116,8 +1116,6 @@ static void RB_SubmitDrawSurfsForDepthFill(
 			continue;
 		}
 
-		oldSort = drawSurf->sort;
-
 		// change the tess parameters if needed
 		// a "entityMergable" shader is a shader that can have surfaces from
 		// seperate entities merged into a single batch, like smoke and blood
@@ -1125,21 +1123,23 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		if ( shader != oldShader ||
 				(entityNum != oldEntityNum && !shader->entityMergable) )
 		{
+			if ( shader->sort != SS_OPAQUE )
+			{
+				// Don't draw yet, let's see what's to come
+				continue;
+			}
+
 			if ( oldShader != nullptr )
 			{
 				RB_EndSurface();
-			}
-
-			if ( shader->sort != SS_OPAQUE )
-			{
-				oldShader = nullptr;
-				continue;
 			}
 
 			RB_BeginSurface(shader, 0, 0);
 			backEnd.pc.c_surfBatches++;
 			oldShader = shader;
 		}
+
+		oldSort = drawSurf->sort;
 
 		// change the modelview matrix if needed
 		if ( entityNum != oldEntityNum )

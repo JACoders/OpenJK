@@ -2273,94 +2273,110 @@ void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
-		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
+		{
+			// set the surface info to point at the where the transformed bone
+			// list is going to be for when the surface gets rendered out
 			CRenderableSurface *newSurf = AllocGhoul2RenderableSurface();
 			newSurf->vboMesh = &RS.currentModel->data.glm->vboModels[RS.lod].vboMeshes[RS.surfaceNum];
 			assert (newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 
-			R_AddDrawSurf ((surfaceType_t *)newSurf, entityNum, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex);
+			R_AddDrawSurf(
+				(surfaceType_t *)newSurf,
+				entityNum,
+				(shader_t *)shader,
+				RS.fogNum,
+				qfalse,
+				R_IsPostRenderEntity(ent),
+				cubemapIndex);
 
 #ifdef _G2_GORE
-			if (RS.gore_set && drawGore)
+			if ( RS.gore_set && drawGore )
 			{
 				int curTime = G2API_GetTime(tr.refdef.time);
-				std::pair<std::multimap<int,SGoreSurface>::iterator,std::multimap<int,SGoreSurface>::iterator> range=
-					RS.gore_set->mGoreRecords.equal_range(RS.surfaceNum);
-				std::multimap<int,SGoreSurface>::iterator k,kcur;
-				CRenderableSurface *last=newSurf;
-				for (k=range.first;k!=range.second;)
-				{
-					kcur=k;
-					k++;
-					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
-					if (!tex ||											 // it is gone, lets get rid of it
-						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
-					{
-						if (tex)
-						{
-							(*tex).~GoreTextureCoordinates();
-							//I don't know what's going on here, it should call the destructor for
-							//this when it erases the record but sometimes it doesn't. -rww
-						}
 
+				auto range = RS.gore_set->mGoreRecords.equal_range(RS.surfaceNum);
+				CRenderableSurface *last = newSurf;
+				for ( auto k = range.first; k != range.second; /* blank */ )
+				{
+					auto kcur = k;
+					k++;
+
+					GoreTextureCoordinates *tex = FindGoreRecord(kcur->second.mGoreTag);
+					if (!tex ||	// it is gone, lets get rid of it
+						(kcur->second.mDeleteTime &&
+						 curTime >= kcur->second.mDeleteTime)) // out of time
+					{
 						RS.gore_set->mGoreRecords.erase(kcur);
 					}
 					else if (tex->tex[RS.lod])
 					{
 						CRenderableSurface *newSurf2 = AllocGhoul2RenderableSurface();
-						*newSurf2=*newSurf;
-						newSurf2->goreChain=0;
-						newSurf2->alternateTex=tex->tex[RS.lod];
-						newSurf2->scale=1.0f;
-						newSurf2->fade=1.0f;
-						newSurf2->impactTime=1.0f;	// done with
-						int magicFactor42=500; // ms, impact time
-						if (curTime>(*kcur).second.mGoreGrowStartTime && curTime<(*kcur).second.mGoreGrowStartTime+magicFactor42)
+						*newSurf2 = *newSurf;
+						newSurf2->goreChain = 0;
+						newSurf2->alternateTex = tex->tex[RS.lod];
+						newSurf2->scale = 1.0f;
+						newSurf2->fade = 1.0f;
+						newSurf2->impactTime = 1.0f;  // done with
+						int magicFactor42 = 500; // ms, impact time
+						if (curTime > kcur->second.mGoreGrowStartTime &&
+							curTime < (kcur->second.mGoreGrowStartTime + magicFactor42) )
 						{
-							newSurf2->impactTime=float(curTime-(*kcur).second.mGoreGrowStartTime)/float(magicFactor42);  // linear
+							newSurf2->impactTime =
+								float(curTime - kcur->second.mGoreGrowStartTime) /
+								float(magicFactor42);  // linear
 						}
-						if (curTime<(*kcur).second.mGoreGrowEndTime)
+
+						if (curTime < kcur->second.mGoreGrowEndTime)
 						{
-							newSurf2->scale=1.0f/((curTime-(*kcur).second.mGoreGrowStartTime)*(*kcur).second.mGoreGrowFactor + (*kcur).second.mGoreGrowOffset);
-							if (newSurf2->scale<1.0f)
-							{
-								newSurf2->scale=1.0f;
-							}
+							newSurf2->scale = Q_max(
+								1.0f,
+								1.0f /
+									((curTime - kcur->second.mGoreGrowStartTime) *
+									kcur->second.mGoreGrowFactor +
+									kcur->second.mGoreGrowOffset));
 						}
+
 						shader_t *gshader;
-						if ((*kcur).second.shader)
+						if (kcur->second.shader)
 						{
- 							gshader=R_GetShaderByHandle((*kcur).second.shader);
+ 							gshader = R_GetShaderByHandle(kcur->second.shader);
 						}
 						else
 						{
-							gshader=R_GetShaderByHandle(goreShader);
+							gshader = R_GetShaderByHandle(goreShader);
 						}
 
 						// Set fade on surf.
-						//Only if we have a fade time set, and let us fade on rgb if we want -rww
-						if ((*kcur).second.mDeleteTime && (*kcur).second.mFadeTime)
+						// Only if we have a fade time set, and let us fade on
+						// rgb if we want -rww
+						if (kcur->second.mDeleteTime && kcur->second.mFadeTime)
 						{
-							if ((*kcur).second.mDeleteTime - curTime < (*kcur).second.mFadeTime)
+							if ( (kcur->second.mDeleteTime - curTime) < kcur->second.mFadeTime )
 							{
-								newSurf2->fade=(float)((*kcur).second.mDeleteTime - curTime)/(*kcur).second.mFadeTime;
-								if ((*kcur).second.mFadeRGB)
-								{ //RGB fades are scaled from 2.0f to 3.0f (simply to differentiate)
-									newSurf2->fade += 2.0f;
-
-									if (newSurf2->fade < 2.01f)
-									{
-										newSurf2->fade = 2.01f;
-									}
+								newSurf2->fade =
+									(float)(kcur->second.mDeleteTime - curTime) /
+									kcur->second.mFadeTime;
+								if (kcur->second.mFadeRGB)
+								{
+									// RGB fades are scaled from 2.0f to 3.0f
+									// (simply to differentiate)
+									newSurf2->fade = Q_max(2.01f, newSurf2->fade + 2.0f);
 								}
 							}
 						}
 
-						last->goreChain=newSurf2;
-						last=newSurf2;
-						R_AddDrawSurf ((surfaceType_t *)newSurf2, entityNum, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex);
+						last->goreChain = newSurf2;
+						last = newSurf2;
+						R_AddDrawSurf(
+							(surfaceType_t *)newSurf2,
+							entityNum,
+							gshader,
+							RS.fogNum,
+							qfalse,
+							R_IsPostRenderEntity(ent),
+							cubemapIndex);
 					}
 				}
 			}

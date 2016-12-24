@@ -1933,13 +1933,14 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 					R_AddGhoulSurfaces(ent, entityNum);
 				break;
 			case MOD_BAD:		// null model axis
-				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
+				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal ) {
 					break;
 				}
 
-				if( ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
+				if ( ent->e.ghoul2 &&
+					G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
 				{
-					R_AddGhoulSurfaces( ent, entityNum );
+					R_AddGhoulSurfaces(ent, entityNum);
 					break;
 				}
 
@@ -1959,9 +1960,16 @@ static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int
 		}
 		break;
 	case RT_ENT_CHAIN:
-			shader = R_GetShaderByHandle( ent->e.customShader );
-			R_AddDrawSurf( &entitySurface, entityNum, shader, R_SpriteFogNum( ent ), false, R_IsPostRenderEntity(ent), 0 /* cubeMap */ );
-			break;
+		shader = R_GetShaderByHandle(ent->e.customShader);
+		R_AddDrawSurf(
+			&entitySurface,
+			entityNum,
+			shader,
+			R_SpriteFogNum(ent),
+			false,
+			R_IsPostRenderEntity(ent),
+			0 /* cubeMap */ );
+		break;
 	default:
 		ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );
 	}
@@ -2516,7 +2524,9 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 				R_AddEntitySurface(&tr.refdef, ent, entityNum);
 			}
 
-			R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+			R_SortAndSubmitDrawSurfs(
+				tr.refdef.drawSurfs + firstDrawSurf,
+				tr.refdef.numDrawSurfs - firstDrawSurf);
 		}
 	}
 }

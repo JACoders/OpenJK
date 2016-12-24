@@ -3068,17 +3068,17 @@ public:
 	}
 #endif
 
-CRenderableSurface():	
-	ident(SF_MDX),
-	boneCache(0),
+	CRenderableSurface():	
+		ident(SF_MDX),
+		boneCache(0),
 #ifdef _G2_GORE
-	surfaceData(0),
-	alternateTex(0),
-	goreChain(0)
+		surfaceData(0),
+		alternateTex(0),
+		goreChain(0)
 #else
-	surfaceData(0)
+		surfaceData(0)
 #endif
-	{}
+		{}
 
 #ifdef _G2_GORE
 	void Init()
