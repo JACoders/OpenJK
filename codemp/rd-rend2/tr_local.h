@@ -3037,27 +3037,34 @@ Ghoul2 Insert Start
 class CRenderableSurface
 {
 public:
-#ifdef _G2_GORE
-	int				ident;
-#else
-	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to 
-#endif
-	CBoneCache 		*boneCache;
-	mdxmVBOMesh_t	*vboMesh;
-	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
-#ifdef _G2_GORE
-	float			*alternateTex;		// alternate texture coordinates.
-	void			*goreChain;
+	// ident of this surface - required so the materials renderer knows what
+	// sort of surface this refers to
+	int ident;
 
-	float			scale;
-	float			fade;
-	float			impactTime; // this is a number between 0 and 1 that dictates the progression of the bullet impact
-#endif
+	CBoneCache *boneCache;
+	mdxmVBOMesh_t *vboMesh;
+
+	// pointer to surface data loaded into file - only used by client renderer
+	// DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of
+	// wack on the game
+	mdxmSurface_t *surfaceData;
 
 #ifdef _G2_GORE
-	CRenderableSurface& operator= ( const CRenderableSurface& src )
+	// alternate texture coordinates
+	float *alternateTex;
+	void *goreChain;
+
+	float scale;
+	float fade;
+
+	// this is a number between 0 and 1 that dictates the progression of the
+	// bullet impact
+	float impactTime;
+#endif
+
+	CRenderableSurface& operator =( const CRenderableSurface& src )
 	{
-		ident	 = src.ident;
+		ident = src.ident;
 		boneCache = src.boneCache;
 		surfaceData = src.surfaceData;
 		alternateTex = src.alternateTex;
@@ -3066,29 +3073,31 @@ public:
 
 		return *this;
 	}
-#endif
 
-	CRenderableSurface():	
-		ident(SF_MDX),
-		boneCache(0),
+	CRenderableSurface()
+		: ident(SF_MDX)
+		, boneCache(nullptr)
+		, vboMesh(nullptr)
+		, surfaceData(nullptr)
 #ifdef _G2_GORE
-		surfaceData(0),
-		alternateTex(0),
-		goreChain(0)
-#else
-		surfaceData(0)
+		, alternateTex(nullptr)
+		, goreChain(nullptr)
+		, scale(1.0f)
+		, fade(0.0f)
+		, impactTime(0.0f)
 #endif
-		{}
+	{
+	}
 
 #ifdef _G2_GORE
 	void Init()
 	{
 		ident = SF_MDX;
-		boneCache=0;
-		surfaceData=0;
-		alternateTex=0;
-		goreChain=0;
-		vboMesh = NULL;
+		boneCache = nullptr;
+		surfaceData = nullptr;
+		alternateTex = nullptr;
+		goreChain = nullptr;
+		vboMesh = nullptr;
 	}
 #endif
 };
