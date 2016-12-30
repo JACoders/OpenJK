@@ -1873,6 +1873,7 @@ void CreateStake( gentity_t *stake, vec3_t start, gentity_t *owner )
 	stake->nextthink = level.time + 50;
 }
 
+/*
 static void WP_FireHitscanShotgun( gentity_t *ent )
 {
 	//Get base damage
@@ -1883,9 +1884,7 @@ static void WP_FireHitscanShotgun( gentity_t *ent )
 		//Do in fov test with position, spread angle
 		//Get range of hit, spread angle of hit
 		//Apply damage
-}
-#if 0
-/*{
+
 	int			damage = 60 * g_weaponDamageScale.value;
 	qboolean	render_impact = qtrue;
 	vec3_t		start, end;
@@ -2255,8 +2254,8 @@ static void WP_FireFlechette( gentity_t *ent, qboolean altFire, int seed )
 	{
 		if (g_tweakWeapons.integer & WT_STAKE_GUN)
 			WP_FireStakeGun( ent );
-		else if (0)
-			WP_FireHitscanShotgun(ent);
+		//else if (0)
+			//WP_FireHitscanShotgun(ent);
 		else
 			WP_FlechetteMainFire( ent, seed );
 	}
