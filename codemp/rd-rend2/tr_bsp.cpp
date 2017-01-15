@@ -38,9 +38,6 @@ void RE_LoadWorldMap( const char *name );
 static	world_t		s_worldData;
 static	byte		*fileBase;
 
-int			c_subdivisions;
-int			c_gridVerts;
-
 //===============================================================================
 
 static void HSVtoRGB( float h, float s, float v, float rgb[3] )
@@ -2266,7 +2263,6 @@ static	void R_LoadSubmodels( world_t *worldData, lump_t *l ) {
 
 		model = R_AllocModel();
 
-		assert( model != NULL );			// this should never happen
 		if ( model == NULL ) {
 			ri->Error(ERR_DROP, "R_LoadSubmodels: R_AllocModel() failed");
 		}
@@ -3077,8 +3073,12 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 
 			surf1 = worldData->surfaces + surfNum1;
 
-			if ((*surf1->data != SF_GRID) && (*surf1->data != SF_TRIANGLES) && (*surf1->data != SF_FACE))
+			if ((*surf1->data != SF_GRID) &&
+				(*surf1->data != SF_TRIANGLES) &&
+				(*surf1->data != SF_FACE))
+			{
 				continue;
+			}
 
 			shader1 = surf1->shader;
 
@@ -3111,7 +3111,9 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 				
 				surf2 = worldData->surfaces + surfNum2;
 
-				if ((*surf2->data != SF_GRID) && (*surf2->data != SF_TRIANGLES) && (*surf2->data != SF_FACE))
+				if ((*surf2->data != SF_GRID) &&
+					(*surf2->data != SF_TRIANGLES) &&
+					(*surf2->data != SF_FACE))
 					continue;
 
 				shader2 = surf2->shader;
@@ -3174,15 +3176,25 @@ static void R_MergeLeafSurfaces(world_t *worldData)
 	}
 
 	// Allocate merged surfaces
-	worldData->mergedSurfaces = (msurface_t *)ri->Hunk_Alloc(sizeof(*worldData->mergedSurfaces) * numMergedSurfaces, h_low);
-	worldData->mergedSurfacesViewCount = (int *)ri->Hunk_Alloc(sizeof(*worldData->mergedSurfacesViewCount) * numMergedSurfaces, h_low);
-	worldData->mergedSurfacesDlightBits = (int *)ri->Hunk_Alloc(sizeof(*worldData->mergedSurfacesDlightBits) * numMergedSurfaces, h_low);
-	worldData->mergedSurfacesPshadowBits = (int *)ri->Hunk_Alloc(sizeof(*worldData->mergedSurfacesPshadowBits) * numMergedSurfaces, h_low);
+	worldData->mergedSurfaces =
+		(msurface_t *)ri->Hunk_Alloc(
+			sizeof(*worldData->mergedSurfaces) * numMergedSurfaces, h_low);
+	worldData->mergedSurfacesViewCount =
+		(int *)ri->Hunk_Alloc(
+			sizeof(*worldData->mergedSurfacesViewCount) * numMergedSurfaces, h_low);
+	worldData->mergedSurfacesDlightBits =
+		(int *)ri->Hunk_Alloc(
+			sizeof(*worldData->mergedSurfacesDlightBits) * numMergedSurfaces, h_low);
+	worldData->mergedSurfacesPshadowBits =
+		(int *)ri->Hunk_Alloc(
+			sizeof(*worldData->mergedSurfacesPshadowBits) * numMergedSurfaces, h_low);
 	worldData->numMergedSurfaces = numMergedSurfaces;
 	
 	// view surfaces are like mark surfaces, except negative ones represent merged surfaces
 	// -1 represents 0, -2 represents 1, and so on
-	worldData->viewSurfaces = (int *)ri->Hunk_Alloc(sizeof(*worldData->viewSurfaces) * worldData->nummarksurfaces, h_low);
+	worldData->viewSurfaces =
+		(int *)ri->Hunk_Alloc(
+			sizeof(*worldData->viewSurfaces) * worldData->nummarksurfaces, h_low);
 
 	// copy view surfaces into mark surfaces
 	for (i = 0; i < worldData->nummarksurfaces; i++)
@@ -3581,96 +3593,93 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 	}
 }
 
-/*
-=================
-RE_LoadWorldMap
-
-Called directly from cgame
-=================
-*/
-void RE_LoadWorldMap( const char *name ) {
-	int			i;
-	dheader_t	*header;
+world_t *R_LoadBSP(const char *name, int *bspIndex)
+{
 	union {
 		byte *b;
 		void *v;
 	} buffer;
-	byte		*startMarker;
-	world_t *worldData = &s_worldData;
 
-	if ( tr.worldMapLoaded ) {
-		ri->Error( ERR_DROP, "ERROR: attempted to redundantly load world map" );
+	world_t *worldData;
+	if (bspIndex == nullptr)
+	{
+		worldData = &s_worldData;
 	}
+	else
+	{
+		if (tr.numBspModels >= MAX_SUB_BSP)
+		{
+			// too many
+			return nullptr;
+		}
 
-	// set default map light scale
-	tr.mapLightScale  = 1.0f;
-	tr.sunShadowScale = 0.5f;
-
-	// set default sun direction to be used if it isn't
-	// overridden by a shader
-	tr.sunDirection[0] = 0.45f;
-	tr.sunDirection[1] = 0.3f;
-	tr.sunDirection[2] = 0.9f;
-
-	VectorNormalize( tr.sunDirection );
-
-	// set default autoexposure settings
-	tr.autoExposureMinMax[0] = -2.0f;
-	tr.autoExposureMinMax[1] = 2.0f;
-
-	// set default tone mapping settings
-	tr.toneMinAvgMaxLevel[0] = -8.0f;
-	tr.toneMinAvgMaxLevel[1] = -2.0f;
-	tr.toneMinAvgMaxLevel[2] = 0.0f;
-
-	tr.worldMapLoaded = qtrue;
+		*bspIndex = tr.numBspModels;
+		worldData = tr.bspModels[tr.numBspModels];
+		++tr.numBspModels;
+	}
 
 	// load it
-    ri->FS_ReadFile( name, &buffer.v );
-	if ( !buffer.b ) {
-		ri->Error (ERR_DROP, "RE_LoadWorldMap: %s not found", name);
+    ri->FS_ReadFile(name, &buffer.v);
+	if (!buffer.b)
+	{
+		if (bspIndex == nullptr)
+		{
+			ri->Error (ERR_DROP, "RE_LoadWorldMap: %s not found", name);
+		}
+
+		return nullptr;
 	}
 
-	// clear tr.world so if the level fails to load, the next
-	// try will not look at the partially loaded version
-	tr.world = NULL;
-
-	Com_Memset( worldData, 0, sizeof( *worldData ) );
-	Q_strncpyz( worldData->name, name, sizeof( worldData->name ) );
-
-	Q_strncpyz( worldData->baseName, COM_SkipPath( worldData->name ), sizeof( worldData->name ) );
+	Com_Memset(worldData, 0, sizeof(*worldData));
+	Q_strncpyz(worldData->name, name, sizeof(worldData->name));
+	Q_strncpyz(worldData->baseName, COM_SkipPath(worldData->name), sizeof(worldData->name));
 	COM_StripExtension(worldData->baseName, worldData->baseName, sizeof(worldData->baseName));
 
-	startMarker = (byte *)ri->Hunk_Alloc(0, h_low);
-	c_gridVerts = 0;
-
-	header = (dheader_t *)buffer.b;
+	byte *startMarker = (byte *)ri->Hunk_Alloc(0, h_low);
+	dheader_t *header = (dheader_t *)buffer.b;
 	fileBase = (byte *)header;
 
-	i = LittleLong (header->version);
-	if ( i != BSP_VERSION ) {
-		ri->Error (ERR_DROP, "RE_LoadWorldMap: %s has wrong version number (%i should be %i)", 
-			name, i, BSP_VERSION);
+	int bspVersion = LittleLong(header->version);
+	if (bspVersion != BSP_VERSION)
+	{
+		ri->Error(
+			ERR_DROP,
+			"R_LoadBSP: %s has wrong version number (%i should be %i)", 
+			name,
+			bspVersion,
+			BSP_VERSION);
 	}
 
 	// swap all the lumps
-	for (i=0 ; i<sizeof(dheader_t)/4 ; i++) {
+	for (int i = 0; i < sizeof(dheader_t) / 4; ++i)
+	{
 		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
 	}
 
 	// load into heap
-	R_LoadEntities( worldData, &header->lumps[LUMP_ENTITIES] );
-	R_LoadShaders( worldData, &header->lumps[LUMP_SHADERS] );
-	R_LoadLightmaps( worldData, &header->lumps[LUMP_LIGHTMAPS], &header->lumps[LUMP_SURFACES] );
-	R_LoadPlanes( worldData, &header->lumps[LUMP_PLANES] );
-	R_LoadFogs( worldData, &header->lumps[LUMP_FOGS], &header->lumps[LUMP_BRUSHES], &header->lumps[LUMP_BRUSHSIDES] );
-	R_LoadSurfaces( worldData, &header->lumps[LUMP_SURFACES], &header->lumps[LUMP_DRAWVERTS], &header->lumps[LUMP_DRAWINDEXES] );
-	R_LoadMarksurfaces( worldData, &header->lumps[LUMP_LEAFSURFACES] );
-	R_LoadNodesAndLeafs( worldData, &header->lumps[LUMP_NODES], &header->lumps[LUMP_LEAFS] );
-	R_LoadSubmodels( worldData, &header->lumps[LUMP_MODELS] );
-	R_LoadVisibility( worldData, &header->lumps[LUMP_VISIBILITY] );
-	R_LoadLightGrid( worldData, &header->lumps[LUMP_LIGHTGRID] );
-	R_LoadLightGridArray( worldData, &header->lumps[LUMP_LIGHTARRAY] );
+	R_LoadEntities(worldData, &header->lumps[LUMP_ENTITIES]);
+	R_LoadShaders(worldData, &header->lumps[LUMP_SHADERS]);
+	R_LoadLightmaps(
+		worldData,
+		&header->lumps[LUMP_LIGHTMAPS],
+		&header->lumps[LUMP_SURFACES]);
+	R_LoadPlanes(worldData, &header->lumps[LUMP_PLANES]);
+	R_LoadFogs(
+		worldData,
+		&header->lumps[LUMP_FOGS],
+		&header->lumps[LUMP_BRUSHES],
+		&header->lumps[LUMP_BRUSHSIDES]);
+	R_LoadSurfaces(
+		worldData,
+		&header->lumps[LUMP_SURFACES],
+		&header->lumps[LUMP_DRAWVERTS],
+		&header->lumps[LUMP_DRAWINDEXES]);
+	R_LoadMarksurfaces(worldData, &header->lumps[LUMP_LEAFSURFACES]);
+	R_LoadNodesAndLeafs(worldData, &header->lumps[LUMP_NODES], &header->lumps[LUMP_LEAFS]);
+	R_LoadSubmodels(worldData, &header->lumps[LUMP_MODELS]);
+	R_LoadVisibility(worldData, &header->lumps[LUMP_VISIBILITY]);
+	R_LoadLightGrid(worldData, &header->lumps[LUMP_LIGHTGRID]);
+	R_LoadLightGridArray(worldData, &header->lumps[LUMP_LIGHTARRAY]);
 
 	R_GenerateSurfaceSprites(worldData);
 	
@@ -3702,9 +3711,6 @@ void RE_LoadWorldMap( const char *name ) {
 
 	worldData->dataSize = (byte *)ri->Hunk_Alloc(0, h_low) - startMarker;
 
-	// only set tr.world now that we know the entire level has loaded properly
-	tr.world = worldData;
-
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -3715,5 +3721,54 @@ void RE_LoadWorldMap( const char *name ) {
 		R_RenderAllCubemaps();
 	}
 
-    ri->FS_FreeFile( buffer.v );
+	ri->FS_FreeFile(buffer.v);
+
+	return worldData;
+}
+
+/*
+=================
+RE_LoadWorldMap
+
+Called directly from cgame
+=================
+*/
+void RE_LoadWorldMap( const char *name ) {
+	if (tr.worldMapLoaded)
+	{
+		ri->Error(ERR_DROP, "ERROR: attempted to redundantly load world map");
+	}
+
+	world_t *world = R_LoadBSP(name);
+	if (world == nullptr)
+	{
+		// clear tr.world so the next/ try will not look at the partially
+		// loaded version
+		tr.world = nullptr;
+		return;
+	}
+
+	tr.worldMapLoaded = qtrue;
+	tr.world = world;
+
+	// set default map light scale
+	tr.mapLightScale  = 1.0f;
+	tr.sunShadowScale = 0.5f;
+
+	// set default sun direction to be used if it isn't
+	// overridden by a shader
+	tr.sunDirection[0] = 0.45f;
+	tr.sunDirection[1] = 0.3f;
+	tr.sunDirection[2] = 0.9f;
+
+	VectorNormalize(tr.sunDirection);
+
+	// set default autoexposure settings
+	tr.autoExposureMinMax[0] = -2.0f;
+	tr.autoExposureMinMax[1] = 2.0f;
+
+	// set default tone mapping settings
+	tr.toneMinAvgMaxLevel[0] = -8.0f;
+	tr.toneMinAvgMaxLevel[1] = -2.0f;
+	tr.toneMinAvgMaxLevel[2] = 0.0f;
 }
