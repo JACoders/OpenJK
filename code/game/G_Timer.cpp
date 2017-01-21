@@ -248,15 +248,13 @@ void TIMER_Load( void )
 
 			if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) >= sizeof(tempBuffer))
 			{
-				sg_buffer_size = 0;
+				::G_Error("invalid length for TMID string in saved game: %d\n", sg_buffer_size);
 			}
-			else
-			{
-				std::uninitialized_copy_n(
-					sg_buffer_data,
-					sg_buffer_size,
-					tempBuffer);
-			}
+
+			std::uninitialized_copy_n(
+				sg_buffer_data,
+				sg_buffer_size,
+				tempBuffer);
 
 			tempBuffer[sg_buffer_size] = '\0';
 
