@@ -22,6 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // IcarusImplementation.cpp
 
+#include <memory>
 #include "StdAfx.h"
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"

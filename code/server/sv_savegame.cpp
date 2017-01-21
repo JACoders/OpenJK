@@ -21,6 +21,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 */
 
 // Filename:-	sv_savegame.cpp
+#include <memory>
 #include "../server/exe_headers.h"
 
 #define JPEG_IMAGE_QUALITY 95
