@@ -4,8 +4,9 @@
 
 
 #include "ojk_saved_game.h"
-#include "ojk_saved_game_helper.h"
 #include <algorithm>
+#include <memory>
+#include "ojk_saved_game_helper.h"
 #include "qcommon/qcommon.h"
 #include "server/server.h"
 
