@@ -704,7 +704,9 @@ void G_LoadCachedRoffs()
 			len);
 
 		if (len < 0 || static_cast<size_t>(len) >= sizeof(buffer))
-			len = 0;
+		{
+			::G_Error("invalid length for RSTR string in save game: %d bytes\n", len);
+		}
 
 		saved_game.read_chunk(
 			INT_ID('R', 'S', 'T', 'R'),
