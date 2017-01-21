@@ -720,15 +720,15 @@ int CIcarus::Load()
 
 	if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) > MAX_BUFFER_SIZE)
 	{
-		sg_buffer_size = 0;
+		DestroyBuffer();
+		game->DebugPrint( IGameInterface::WL_ERROR, "invalid ISEQ length: %d bytes\n", sg_buffer_size);
+		return false;
 	}
-	else
-	{
-		std::uninitialized_copy_n(
-			sg_buffer_data,
-			sg_buffer_size,
-			m_byBuffer);
-	}
+
+	std::uninitialized_copy_n(
+		sg_buffer_data,
+		sg_buffer_size,
+		m_byBuffer);
 
 	//Load all signals
 	if ( LoadSignals() == false )
@@ -860,15 +860,14 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 
 		if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) > MAX_BUFFER_SIZE)
 		{
-			sg_buffer_size = 0;
+			IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "invalid ISEQ length: %d bytes\n", sg_buffer_size);
+			return;
 		}
-		else
-		{
-			std::uninitialized_copy_n(
-				sg_buffer_data,
-				sg_buffer_size,
-				m_byBuffer);
-		}
+
+		std::uninitialized_copy_n(
+			sg_buffer_data,
+			sg_buffer_size,
+			m_byBuffer);
 
 		m_ulBytesRead = 0;	//reset buffer
 	}
