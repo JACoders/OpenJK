@@ -718,7 +718,7 @@ int CIcarus::Load()
 
 	int sg_buffer_size = saved_game.get_buffer_size();
 
-	if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) >= sizeof(m_byBuffer))
+	if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) > MAX_BUFFER_SIZE)
 	{
 		sg_buffer_size = 0;
 	}
@@ -858,7 +858,7 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 
 		int sg_buffer_size = saved_game.get_buffer_size();
 
-		if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) >= sizeof(m_byBuffer))
+		if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) > MAX_BUFFER_SIZE)
 		{
 			sg_buffer_size = 0;
 		}
