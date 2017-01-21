@@ -26,6 +26,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"
 
+#include <memory>
+
 #include "blockstream.h"
 #include "sequence.h"
 #include "taskmanager.h"
