@@ -1700,7 +1700,6 @@ typedef struct cullinfo_s {
 } cullinfo_t;
 
 typedef struct msurface_s {
-	//int					viewCount;		// if == tr.viewCount, already added
 	struct shader_s		*shader;
 	int					fogIndex;
 	int                 cubemapIndex;
@@ -1735,7 +1734,8 @@ typedef struct mnode_s {
 
 typedef struct {
 	vec3_t		bounds[2];		// for culling
-	int	        firstSurface;
+	int			worldIndex;
+	int			firstSurface;
 	int			numSurfaces;
 } bmodel_t;
 

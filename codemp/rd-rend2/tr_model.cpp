@@ -255,6 +255,30 @@ model_t *R_AllocModel( void ) {
 	return mod;
 }
 
+static qhandle_t RE_RegisterBSP(const char *name)
+{
+	char bspFilePath[MAX_QPATH];
+	Com_sprintf(bspFilePath, sizeof(bspFilePath), "maps/%s.bsp", name + 1);
+
+	int bspIndex;
+	world_t *world = R_LoadBSP(bspFilePath, &bspIndex);
+	if (world == nullptr)
+	{
+		return 0;
+	}
+
+	char bspModelIdent[MAX_QPATH];
+	Com_sprintf(bspModelIdent, sizeof(bspModelIdent), "*%d-0", bspIndex);
+
+	qhandle_t modelHandle = CModelCache->GetModelHandle(bspModelIdent);
+	if (modelHandle == -1)
+	{
+		return 0;
+	}
+
+	return modelHandle;
+}
+
 /*
 ====================
 RE_RegisterModel
@@ -301,8 +325,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 
 	if( name[0] == '#' )
 	{
-		// TODO: BSP models
-		return 0;
+		return RE_RegisterBSP(name);
 	}
 
 	// allocate a new model_t

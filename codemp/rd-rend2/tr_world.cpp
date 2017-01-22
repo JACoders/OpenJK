@@ -22,6 +22,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 
 
+static world_t *R_GetWorld(int worldIndex)
+{
+	if (worldIndex == -1)
+	{
+		return tr.world;
+	}
+	else
+	{
+		return tr.bspModels[worldIndex];
+	}
+}
 
 /*
 ================
@@ -321,7 +332,13 @@ static int R_PshadowSurface( msurface_t *surf, int pshadowBits ) {
 R_AddWorldSurface
 ======================
 */
-static void R_AddWorldSurface( msurface_t *surf, const trRefEntity_t *entity, int entityNum, int dlightBits, int pshadowBits ) {
+static void R_AddWorldSurface(
+	msurface_t *surf,
+	const trRefEntity_t *entity,
+	int entityNum,
+	int dlightBits,
+	int pshadowBits)
+{
 	// FIXME: bmodel fog?
 
 	// try to cull before dlighting or adding
@@ -374,16 +391,9 @@ R_AddBrushModelSurfaces
 =================
 */
 void R_AddBrushModelSurfaces ( trRefEntity_t *ent, int entityNum ) {
-	bmodel_t	*bmodel;
-	int			clip;
-	model_t		*pModel;
-	int			i;
-
-	pModel = R_GetModelByHandle( ent->e.hModel );
-
-	bmodel = pModel->data.bmodel;
-
-	clip = R_CullLocalBox( bmodel->bounds );
+	model_t *pModel = R_GetModelByHandle( ent->e.hModel );
+	bmodel_t *bmodel = pModel->data.bmodel;
+	int clip = R_CullLocalBox( bmodel->bounds );
 	if ( clip == CULL_OUT ) {
 		return;
 	}
@@ -391,13 +401,14 @@ void R_AddBrushModelSurfaces ( trRefEntity_t *ent, int entityNum ) {
 	R_SetupEntityLighting( &tr.refdef, ent );
 	R_DlightBmodel( bmodel, ent );
 
-	for ( i = 0 ; i < bmodel->numSurfaces ; i++ ) {
+	for ( int i = 0 ; i < bmodel->numSurfaces ; i++ ) {
 		int surf = bmodel->firstSurface + i;
+		world_t *world = R_GetWorld(bmodel->worldIndex);
 
-		if (tr.world->surfacesViewCount[surf] != tr.viewCount)
+		if (world->surfacesViewCount[surf] != tr.viewCount)
 		{
-			tr.world->surfacesViewCount[surf] = tr.viewCount;
-			R_AddWorldSurface(tr.world->surfaces + surf, ent, entityNum, ent->needDlights, 0);
+			world->surfacesViewCount[surf] = tr.viewCount;
+			R_AddWorldSurface(world->surfaces + surf, ent, entityNum, ent->needDlights, 0);
 		}
 	}
 }
@@ -558,25 +569,13 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, 
 		tr.pc.c_leafs++;
 
 		// add to z buffer bounds
-		if ( node->mins[0] < tr.viewParms.visBounds[0][0] ) {
-			tr.viewParms.visBounds[0][0] = node->mins[0];
-		}
-		if ( node->mins[1] < tr.viewParms.visBounds[0][1] ) {
-			tr.viewParms.visBounds[0][1] = node->mins[1];
-		}
-		if ( node->mins[2] < tr.viewParms.visBounds[0][2] ) {
-			tr.viewParms.visBounds[0][2] = node->mins[2];
-		}
+		tr.viewParms.visBounds[0][0] = std::min(node->mins[0], tr.viewParms.visBounds[0][0]);
+		tr.viewParms.visBounds[0][1] = std::min(node->mins[1], tr.viewParms.visBounds[0][1]);
+		tr.viewParms.visBounds[0][2] = std::min(node->mins[2], tr.viewParms.visBounds[0][2]);
 
-		if ( node->maxs[0] > tr.viewParms.visBounds[1][0] ) {
-			tr.viewParms.visBounds[1][0] = node->maxs[0];
-		}
-		if ( node->maxs[1] > tr.viewParms.visBounds[1][1] ) {
-			tr.viewParms.visBounds[1][1] = node->maxs[1];
-		}
-		if ( node->maxs[2] > tr.viewParms.visBounds[1][2] ) {
-			tr.viewParms.visBounds[1][2] = node->maxs[2];
-		}
+		tr.viewParms.visBounds[1][0] = std::min(node->maxs[0], tr.viewParms.visBounds[1][0]);
+		tr.viewParms.visBounds[1][1] = std::min(node->maxs[1], tr.viewParms.visBounds[1][1]);
+		tr.viewParms.visBounds[1][2] = std::min(node->maxs[2], tr.viewParms.visBounds[1][2]);
 
 		// add merged and unmerged surfaces
 		if (tr.world->viewSurfaces && !r_nocurves->integer)

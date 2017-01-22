@@ -2245,7 +2245,7 @@ static	void R_LoadSurfaces( world_t *worldData, lump_t *surfs, lump_t *verts, lu
 R_LoadSubmodels
 =================
 */
-static	void R_LoadSubmodels( world_t *worldData, lump_t *l ) {
+static void R_LoadSubmodels( world_t *worldData, int worldIndex, lump_t *l ) {
 	dmodel_t	*in;
 	bmodel_t	*out;
 	int			i, j, count;
@@ -2278,10 +2278,11 @@ static	void R_LoadSubmodels( world_t *worldData, lump_t *l ) {
 
 		CModelCache->InsertModelHandle(model->name, model->index);
 
+		out->worldIndex = worldIndex;
 		out->firstSurface = LittleLong( in->firstSurface );
 		out->numSurfaces = LittleLong( in->numSurfaces );
 
-		if(i == 0)
+		if (i == 0)
 		{
 			// Add this for limiting VBO surface creation
 			worldData->numWorldSurfaces = out->numSurfaces;
@@ -3601,6 +3602,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	} buffer;
 
 	world_t *worldData;
+	int worldIndex = -1;
 	if (bspIndex == nullptr)
 	{
 		worldData = &s_worldData;
@@ -3613,7 +3615,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 			return nullptr;
 		}
 
-		*bspIndex = tr.numBspModels;
+		worldIndex = *bspIndex = tr.numBspModels;
 		worldData = tr.bspModels[tr.numBspModels];
 		++tr.numBspModels;
 	}
@@ -3635,7 +3637,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	Q_strncpyz(worldData->baseName, COM_SkipPath(worldData->name), sizeof(worldData->name));
 	COM_StripExtension(worldData->baseName, worldData->baseName, sizeof(worldData->baseName));
 
-	byte *startMarker = (byte *)ri->Hunk_Alloc(0, h_low);
+	const byte *startMarker = (const byte *)ri->Hunk_Alloc(0, h_low);
 	dheader_t *header = (dheader_t *)buffer.b;
 	fileBase = (byte *)header;
 
@@ -3676,7 +3678,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 		&header->lumps[LUMP_DRAWINDEXES]);
 	R_LoadMarksurfaces(worldData, &header->lumps[LUMP_LEAFSURFACES]);
 	R_LoadNodesAndLeafs(worldData, &header->lumps[LUMP_NODES], &header->lumps[LUMP_LEAFS]);
-	R_LoadSubmodels(worldData, &header->lumps[LUMP_MODELS]);
+	R_LoadSubmodels(worldData, worldIndex, &header->lumps[LUMP_MODELS]);
 	R_LoadVisibility(worldData, &header->lumps[LUMP_VISIBILITY]);
 	R_LoadLightGrid(worldData, &header->lumps[LUMP_LIGHTGRID]);
 	R_LoadLightGridArray(worldData, &header->lumps[LUMP_LIGHTARRAY]);
@@ -3709,7 +3711,7 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 		R_MergeLeafSurfaces(worldData);
 	}
 
-	worldData->dataSize = (byte *)ri->Hunk_Alloc(0, h_low) - startMarker;
+	worldData->dataSize = (const byte *)ri->Hunk_Alloc(0, h_low) - startMarker;
 
 	// make sure the VBO glState entries are safe
 	R_BindNullVBO();
