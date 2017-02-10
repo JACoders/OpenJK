@@ -43,6 +43,7 @@ extern const GPUProgramDesc fallback_tonemapProgram;
 extern const GPUProgramDesc fallback_dglow_downsampleProgram;
 extern const GPUProgramDesc fallback_dglow_upsampleProgram;
 extern const GPUProgramDesc fallback_surface_spritesProgram;
+extern const GPUProgramDesc fallback_weatherProgram;
 
 
 const uniformBlockInfo_t uniformBlocksInfo[UNIFORM_BLOCK_COUNT] = {
@@ -1785,6 +1786,16 @@ int GLSL_BeginLoadGPUShaders(void)
 	}
 	allocator.Reset();
 
+	/////////////////////////////////////////////////////////////////////////////
+	programDesc = LoadProgramSource("weather", allocator, fallback_weatherProgram);
+	attribs = ATTR_POSITION;
+
+	if (!GLSL_BeginLoadGPUShader(&tr.weatherShader, "weather", attribs,
+			nullptr, *programDesc))
+	{
+		ri->Error(ERR_FATAL, "Could not load weather shader!");
+	}
+	allocator.Reset();
 
 	return startTime;
 }
@@ -2093,6 +2104,16 @@ void GLSL_EndLoadGPUShaders ( int startTime )
 		GLSL_FinishGPUShader(program);
 		numEtcShaders++;
 	}
+
+	if (!GLSL_EndLoadGPUShader(&tr.weatherShader))
+	{
+		ri->Error(ERR_FATAL, "Could not load weather shader!");
+	}
+
+	GLSL_InitUniforms(&tr.weatherShader);
+	GLSL_FinishGPUShader(&tr.weatherShader);
+
+	numEtcShaders++;
 
 #if 0
 	attribs = ATTR_POSITION | ATTR_TEXCOORD0;

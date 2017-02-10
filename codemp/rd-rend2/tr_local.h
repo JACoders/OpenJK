@@ -1143,10 +1143,10 @@ struct Block
 
 enum GPUShaderType
 {
-	GPUSHADER_NONE,
 	GPUSHADER_VERTEX,
 	GPUSHADER_FRAGMENT,
 	GPUSHADER_GEOMETRY,
+	GPUSHADER_TYPE_COUNT
 };
 
 struct GPUShaderDesc
@@ -2287,6 +2287,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t dglowDownsample;
 	shaderProgram_t dglowUpsample;
 	shaderProgram_t spriteShader[SSDEF_COUNT];
+	shaderProgram_t weatherShader;
 
 	// -----------------------------------------
 
