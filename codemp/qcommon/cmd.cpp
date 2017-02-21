@@ -803,9 +803,11 @@ void Cmd_Print( const cmd_function_t *cmd )
 {
 	Com_Printf( S_COLOR_GREY "Cmd " S_COLOR_WHITE "%s", cmd->name );
 
-	if ( VALIDSTRING( cmd->description ) )
+	const char *description = Cmd_DescriptionString( cmd );
+
+	if ( VALIDSTRING( description ) )
 	{
-		Com_Printf( S_COLOR_GREEN " - %s" S_COLOR_WHITE, cmd->description );
+		Com_Printf( S_COLOR_GREEN " - %s" S_COLOR_WHITE, description );
 	}
 
 	Com_Printf( "\n" );
