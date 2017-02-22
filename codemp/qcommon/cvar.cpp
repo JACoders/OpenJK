@@ -614,7 +614,7 @@ void Cvar_Print( cvar_t *v ) {
 	const char *description = Cvar_DescriptionString( v, qtrue );
 
 	if ( description )
-		Com_Printf( "%s\n", description );
+		Com_Printf( S_COLOR_GREEN "%s " S_COLOR_WHITE " \n", description );
 }
 
 /*
