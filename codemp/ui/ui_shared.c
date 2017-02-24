@@ -3370,7 +3370,7 @@ const char *Item_Multi_Setting(itemDef_t *item) {
  			}
  		}
 	}
-	return "";
+	return "@MENUS_CUSTOM";
 }
 
 qboolean Item_Multi_HandleKey(itemDef_t *item, int key)

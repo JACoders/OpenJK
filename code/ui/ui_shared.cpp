@@ -3045,7 +3045,11 @@ const char *Item_Multi_Setting(itemDef_t *item)
  		}
 	}
 
-	return "";
+#ifdef JK2_MODE
+	return "@MENUS1_CUSTOM";
+#else
+	return "@MENUS_CUSTOM";
+#endif
 }
 
 //---------------------------------------------------------------------------------------------------------
