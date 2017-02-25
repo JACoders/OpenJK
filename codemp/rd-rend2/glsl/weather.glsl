@@ -1,9 +1,9 @@
 /*[Vertex]*/
-in vec3 in_Position;
+in vec3 attr_Position;
 
 void main()
 {
-	gl_Position = vec4(in_Position, 1.0);
+	gl_Position = vec4(attr_Position, 1.0);
 }
 
 /*[Geometry]*/
@@ -15,21 +15,21 @@ uniform vec3 u_ViewOrigin;
 
 void main()
 {
-	const vec2 dirs[] = vec2[](
-		vec2(-2.0, -2.0),
-		vec2( 2.0, -2.0),
-		vec2( 2.0,  2.0),
-		vec2(-2.0,  2.0)
+	const vec2 offsets[] = vec2[](
+		vec2(-4.0, -4.0),
+		vec2( 4.0, -4.0),
+		vec2(-4.0,  4.0),
+		vec2( 4.0,  4.0)
 	);
 
 	vec3 P = gl_in[0].gl_Position.xyz;
 	vec3 V = u_ViewOrigin - P;
-	vec2 toCamera = normalize(V.xy);
-	toCamera.xy = vec2(toCamera.y, -toCamera.x);
+	vec2 toCamera = normalize(vec2(V.y, -V.x));
 
 	for (int i = 0; i < 4; ++i)
 	{
-		vec4 worldPos = vec4(P.xy + dirs[i] * toCamera, P.z, 1.0);
+		vec3 offset = vec3(offsets[i].x * toCamera.xy, offsets[i].y);
+		vec4 worldPos = vec4(P + offset, 1.0);
 		gl_Position = u_ModelViewProjectionMatrix * worldPos;
 		EmitVertex();
 	}

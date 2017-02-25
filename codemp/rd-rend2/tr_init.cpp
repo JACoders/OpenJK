@@ -1127,6 +1127,7 @@ void GL_SetDefaultState( void )
 	qglDepthMask( GL_TRUE );
 	qglDisable( GL_DEPTH_TEST );
 	qglEnable( GL_SCISSOR_TEST );
+	qglEnable(GL_PROGRAM_POINT_SIZE);
 	qglDisable( GL_CULL_FACE );
 	qglDisable( GL_BLEND );
 

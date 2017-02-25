@@ -4825,6 +4825,11 @@ static void CreateInternalShaders( void ) {
 	shader.defaultShader = qfalse;
 	tr.distortionShader = FinishShader();
 	shader.defaultShader = qtrue;
+
+	// weather shader placeholder
+	Q_strncpyz(shader.name, "<weather>", sizeof(shader.name));
+	shader.sort = SS_SEE_THROUGH;
+	tr.weatherInternalShader = FinishShader();
 }
 
 static void CreateExternalShaders( void ) {

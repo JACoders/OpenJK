@@ -2239,6 +2239,7 @@ typedef struct trGlobals_s {
 	shader_t				*shadowShader;
 	shader_t				*distortionShader;
 	shader_t				*projectionShadowShader;
+	shader_t				*weatherInternalShader;
 
 	shader_t				*flareShader;
 	shader_t				*sunShader;

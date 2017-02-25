@@ -45,9 +45,9 @@ namespace
 		for ( int i = 0; i < MAX_RAIN_VERTICES; ++i )
 		{
 			rainVertex_t& vertex = rainVertices[i];
-			vertex.position[0] = Q_flrand(-1000.0f, 1000.0f);
-			vertex.position[1] = Q_flrand(-1000.0f, 1000.0f);
-			vertex.position[2] = Q_flrand(-1000.0f, 1000.0f);
+			vertex.position[0] = Q_flrand(-500.0f, 500.0f);
+			vertex.position[1] = Q_flrand(-500.0f, 500.0f);
+			vertex.position[2] = Q_flrand(-500.0f, 500.0f);
 			vertex.seed[0] = Q_flrand(0.0f, 1.0f);
 			vertex.seed[1] = Q_flrand(0.0f, 1.0f);
 			vertex.seed[2] = Q_flrand(0.0f, 1.0f);
@@ -89,7 +89,7 @@ void R_AddWeatherSurfaces()
 	R_AddDrawSurf(
 		(surfaceType_t *)&tr.weatherSystem->weatherSurface,
 		REFENTITYNUM_WORLD,
-		tr.defaultShader,
+		tr.weatherInternalShader,
 		0, /* fogIndex */
 		qfalse, /* dlightMap */
 		qfalse, /* postRender */
@@ -109,6 +109,9 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	DrawItem item = {};
 
 	SamplerBindingsWriter samplerBindingsWriter;
+	// FIXME: This is a bit ugly with the casting
+	item.samplerBindings = samplerBindingsWriter.Finish(
+		*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
 
 	UniformDataWriter uniformDataWriter;
 	uniformDataWriter.Start(&tr.weatherShader);
@@ -118,16 +121,15 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	uniformDataWriter.SetUniformVec3(
 			UNIFORM_VIEWORIGIN,
 			backEnd.viewParms.ori.origin);
+	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 
-	// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
-	// where they aren't rendered
-	item.stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
+	item.stateBits = GLS_DEPTHFUNC_LESS;
 	item.cullType = CT_FRONT_SIDED;
 	item.program = &tr.weatherShader;
 	item.depthRange = { 0.0f, 1.0f };
 
 	vertexAttribute_t attribs[2] = {};
-	attribs[0].index = 0;
+	attribs[0].index = ATTR_INDEX_POSITION;
 	attribs[0].numComponents = 3;
 	attribs[0].offset = offsetof(rainVertex_t, position);
 	attribs[0].stride = sizeof(rainVertex_t);
@@ -144,16 +146,12 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	item.numAttributes = numAttribs;
 	item.attributes = ojkAllocArray<vertexAttribute_t>(
 		*backEndData->perFrameMemory, numAttribs);
-	memcpy(item.attributes, attribs, sizeof(*item.attributes)*numAttribs);
-
-	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
-	// FIXME: This is a bit ugly with the casting
-	item.samplerBindings = samplerBindingsWriter.Finish(
-		*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
+	memcpy(item.attributes, attribs, sizeof(*item.attributes) * numAttribs);
 
 	item.draw.type = DRAW_COMMAND_ARRAYS;
 	item.draw.numInstances = 100;
-	item.draw.primitiveType = GL_TRIANGLES;
+	item.draw.primitiveType = GL_POINTS;
+	item.draw.params.arrays.numVertices = ws.numVertices;
 
 	uint32_t key = RB_CreateSortKey(item, 15, SS_SEE_THROUGH);
 	RB_AddDrawItem(backEndData->currentPass, key, item);
