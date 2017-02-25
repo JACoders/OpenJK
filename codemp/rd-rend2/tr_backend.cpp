@@ -935,7 +935,10 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 		GL_Cull(drawItem.cullType);
 		GL_State(drawItem.stateBits);
 		GL_DepthRange(drawItem.depthRange.minDepth, drawItem.depthRange.maxDepth);
-		R_BindIBO(drawItem.ibo);
+		if ( drawItem.ibo != nullptr )
+		{
+			R_BindIBO(drawItem.ibo);
+		}
 		GLSL_BindProgram(drawItem.program);
 
 		// FIXME: There was a reason I didn't have const on attributes. Can't remember at the moment

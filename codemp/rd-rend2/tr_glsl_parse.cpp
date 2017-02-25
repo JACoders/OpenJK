@@ -168,9 +168,9 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 			block->blockTextLength);
 
 		GPUShaderDesc& shaderDesc = theProgram.shaders[shaderIndex];
-		shaderDesc.type      = static_cast<GPUShaderType>(shaderType);
-		shaderDesc.source    = source;
-		shaderDesc.firstLine = block->blockTextFirstLine;
+		shaderDesc.type = static_cast<GPUShaderType>(shaderType);
+		shaderDesc.source = source;
+		shaderDesc.firstLineNumber = block->blockTextFirstLine;
 		++shaderIndex;
 	}
 

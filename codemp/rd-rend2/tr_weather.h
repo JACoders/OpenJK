@@ -28,4 +28,4 @@ struct srfWeather_t;
 void R_InitWeatherSystem();
 void R_AddWeatherSurfaces();
 void R_ShutdownWeatherSystem();
-void R_RenderWeatherSurface( srfWeather_t *surfaceType );
+void RB_SurfaceWeather( srfWeather_t *surfaceType );

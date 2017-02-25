@@ -181,7 +181,7 @@ int main( int argc, char *argv[] )
 
 			ss << "  { " << ToString(shaderDesc.type) << ", "
 						"fallback_" << shaderName << suffix << ", "
-						<< shaderDesc.firstLine << " },\n";
+						<< shaderDesc.firstLineNumber << " },\n";
 		}
 		ss << "};\n";
 

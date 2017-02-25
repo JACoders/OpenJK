@@ -22,15 +22,15 @@ void main()
 		vec2(-2.0,  2.0)
 	);
 
-	vec3 V = u_ViewOrigin - gl_in.gl_Position;
+	vec3 P = gl_in[0].gl_Position.xyz;
+	vec3 V = u_ViewOrigin - P;
 	vec2 toCamera = normalize(V.xy);
 	toCamera.xy = vec2(toCamera.y, -toCamera.x);
 
 	for (int i = 0; i < 4; ++i)
 	{
-		vec3 P = gl_in.gl_Position.xyz;
 		vec4 worldPos = vec4(P.xy + dirs[i] * toCamera, P.z, 1.0);
-		gl_Position = u_ModelViewProjection * worldPos;
+		gl_Position = u_ModelViewProjectionMatrix * worldPos;
 		EmitVertex();
 	}
 

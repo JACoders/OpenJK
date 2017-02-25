@@ -1153,7 +1153,7 @@ struct GPUShaderDesc
 {
 	GPUShaderType type;
 	const char *source;
-	int firstLine;
+	int firstLineNumber;
 };
 
 struct GPUProgramDesc
@@ -1274,10 +1274,8 @@ typedef struct shaderProgram_s
 {
 	char *name;
 
-	GLuint     program;
-	GLuint     vertexShader;
-	GLuint     fragmentShader;
-	uint32_t        attribs;	// vertex array attributes
+	GLuint program;
+	uint32_t attribs; // vertex array attributes
 
 	// uniform parameters
 	GLint *uniforms;
@@ -2955,8 +2953,7 @@ GLSL
 */
 
 void GLSL_InitSplashScreenShader();
-int GLSL_BeginLoadGPUShaders(void);
-void GLSL_EndLoadGPUShaders( int startTime );
+void GLSL_LoadGPUShaders();
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArrays);
 void GLSL_VertexAttribPointers(const VertexArraysProperties *vertexArrays);

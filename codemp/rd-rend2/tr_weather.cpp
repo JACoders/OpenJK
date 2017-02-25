@@ -63,6 +63,7 @@ void R_InitWeatherSystem()
 	Com_Printf("Initializing weather system\n");
 	tr.weatherSystem = (weatherSystem_t *)Z_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
 	GenerateRainModel(*tr.weatherSystem);
+	tr.weatherSystem->weatherSurface.surfaceType = SF_WEATHER;
 }
 
 void R_ShutdownWeatherSystem()
@@ -96,7 +97,7 @@ void R_AddWeatherSurfaces()
 	);
 }
 
-void R_RenderWeatherSurface( srfWeather_t *surf )
+void RB_SurfaceWeather( srfWeather_t *surf )
 {
 	assert(tr.weatherSystem);
 
@@ -107,14 +108,22 @@ void R_RenderWeatherSurface( srfWeather_t *surf )
 
 	DrawItem item = {};
 
-	UniformDataWriter uniformDataWriter;
 	SamplerBindingsWriter samplerBindingsWriter;
+
+	UniformDataWriter uniformDataWriter;
+	uniformDataWriter.Start(&tr.weatherShader);
+	uniformDataWriter.SetUniformMatrix4x4(
+			UNIFORM_MODELVIEWPROJECTIONMATRIX,
+			glState.modelviewProjection);
+	uniformDataWriter.SetUniformVec3(
+			UNIFORM_VIEWORIGIN,
+			backEnd.viewParms.ori.origin);
 
 	// include GLS_DEPTHFUNC_EQUAL so alpha tested surfaces don't add light
 	// where they aren't rendered
 	item.stateBits = GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE | GLS_DEPTHFUNC_EQUAL;
 	item.cullType = CT_FRONT_SIDED;
-	item.program = nullptr;
+	item.program = &tr.weatherShader;
 	item.depthRange = { 0.0f, 1.0f };
 
 	vertexAttribute_t attribs[2] = {};

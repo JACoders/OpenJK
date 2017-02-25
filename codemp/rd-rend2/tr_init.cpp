@@ -1752,8 +1752,7 @@ void R_Init( void ) {
 
 	FBO_Init();
 
-	int shadersStartTime = GLSL_BeginLoadGPUShaders();
-
+	GLSL_LoadGPUShaders();
 
 	R_InitShaders (qfalse);
 
@@ -1768,8 +1767,6 @@ void R_Init( void ) {
 	R_InitQueries();
 
 	R_InitWeatherSystem();
-
-	GLSL_EndLoadGPUShaders (shadersStartTime);
 
 #if defined(_DEBUG)
 	GLenum err = qglGetError();

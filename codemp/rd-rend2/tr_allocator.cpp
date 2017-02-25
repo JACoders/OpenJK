@@ -49,6 +49,11 @@ void *Allocator::Base() const
 	return alignedBase;
 }
 
+size_t Allocator::GetSize() const
+{
+	return (size_t)((char *)end - (char *)alignedBase);
+}
+
 void *Allocator::Alloc( size_t allocSize )
 {
 	if ( (size_t)((char *)end - (char *)mark) < allocSize )
