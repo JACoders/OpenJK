@@ -35,10 +35,10 @@ uniform vec3 u_ViewOrigin;
 void main()
 {
 	const vec2 offsets[] = vec2[](
-		vec2(-0.5, -5.0),
-		vec2( 0.5, -5.0),
-		vec2(-0.5,  5.0),
-		vec2( 0.5,  5.0)
+		vec2(-0.5, -7.0),
+		vec2( 0.5, -7.0),
+		vec2(-0.5,  7.0),
+		vec2( 0.5,  7.0)
 	);
 
 	vec3 P = gl_in[0].gl_Position.xyz;
@@ -61,5 +61,5 @@ out vec4 out_Color;
 
 void main()
 {
-	out_Color = vec4(0.2, 0.8, 0.2, 1.0);
+	out_Color = vec4(0.7, 0.8, 0.7, 0.4);
 }
