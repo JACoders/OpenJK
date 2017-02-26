@@ -45,12 +45,12 @@ namespace
 		for ( int i = 0; i < MAX_RAIN_VERTICES; ++i )
 		{
 			rainVertex_t& vertex = rainVertices[i];
-			vertex.position[0] = Q_flrand(-500.0f, 500.0f);
-			vertex.position[1] = Q_flrand(-500.0f, 500.0f);
-			vertex.position[2] = Q_flrand(-500.0f, 500.0f);
-			vertex.seed[0] = Q_flrand(0.0f, 1.0f);
-			vertex.seed[1] = Q_flrand(0.0f, 1.0f);
-			vertex.seed[2] = Q_flrand(0.0f, 1.0f);
+			vertex.position[0] = Q_flrand(-1000.0f, 1000.0f);
+			vertex.position[1] = Q_flrand(-1000.0f, 1000.0f);
+			vertex.position[2] = Q_flrand(-1000.0f, 1000.0f);
+			vertex.seed[0] = Q_flrand(-2.0f, 2.0f);
+			vertex.seed[1] = Q_flrand(-2.0f, 2.0f);
+			vertex.seed[2] = Q_flrand(-20.0f, 0.0f);
 		}
 
 		ws.vbo = R_CreateVBO((byte *)rainVertices, sizeof(rainVertices), VBO_USAGE_STATIC);
@@ -61,7 +61,8 @@ namespace
 void R_InitWeatherSystem()
 {
 	Com_Printf("Initializing weather system\n");
-	tr.weatherSystem = (weatherSystem_t *)Z_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
+	tr.weatherSystem =
+		(weatherSystem_t *)Z_Malloc(sizeof(*tr.weatherSystem), TAG_R_TERRAIN, qtrue);
 	GenerateRainModel(*tr.weatherSystem);
 	tr.weatherSystem->weatherSurface.surfaceType = SF_WEATHER;
 }
@@ -121,6 +122,9 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	uniformDataWriter.SetUniformVec3(
 			UNIFORM_VIEWORIGIN,
 			backEnd.viewParms.ori.origin);
+	const vec2_t mapZExtents = { -3000.0, 9000.0 };
+	uniformDataWriter.SetUniformVec2(UNIFORM_MAPZEXTENTS, mapZExtents);
+	uniformDataWriter.SetUniformFloat(UNIFORM_TIME, backEnd.refdef.floatTime);
 	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
 
 	item.stateBits = GLS_DEPTHFUNC_LESS;
@@ -135,7 +139,7 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	attribs[0].stride = sizeof(rainVertex_t);
 	attribs[0].type = GL_FLOAT;
 	attribs[0].vbo = ws.vbo;
-	attribs[1].index = 1;
+	attribs[1].index = ATTR_INDEX_COLOR;
 	attribs[1].numComponents = 3;
 	attribs[1].offset = offsetof(rainVertex_t, seed);
 	attribs[1].stride = sizeof(rainVertex_t);
@@ -149,7 +153,7 @@ void RB_SurfaceWeather( srfWeather_t *surf )
 	memcpy(item.attributes, attribs, sizeof(*item.attributes) * numAttribs);
 
 	item.draw.type = DRAW_COMMAND_ARRAYS;
-	item.draw.numInstances = 100;
+	item.draw.numInstances = 225;
 	item.draw.primitiveType = GL_POINTS;
 	item.draw.params.arrays.numVertices = ws.numVertices;
 

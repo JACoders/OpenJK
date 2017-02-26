@@ -1173,7 +1173,9 @@ static void RB_FogPass( shaderCommands_t *input, const fog_t *fog, const VertexA
 	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
 	uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
-	uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque);
+	uniformDataWriter.SetUniformFloat(
+		UNIFORM_FOGDEPTHTOOPAQUE,
+		sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque);
 	uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.refdef.vieworg);
 
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;

@@ -1,9 +1,28 @@
 /*[Vertex]*/
 in vec3 attr_Position;
+in vec3 attr_Color;
+
+uniform vec2 u_MapZExtents;
+uniform float u_Time;
+uniform vec3 u_ViewOrigin;
 
 void main()
 {
-	gl_Position = vec4(attr_Position, 1.0);
+	int z = gl_InstanceID / 25;
+	int remaining = gl_InstanceID - (z * 25);
+	int y = remaining % 5;
+	int x = remaining / 5;
+
+	float zOffset = mod(
+		1000.0 * float(z) + u_Time * 1000.0,
+		u_MapZExtents.y - u_MapZExtents.x - 2000.0);
+	vec3 offset = vec3(
+		1000.0 * float(x - 2),
+		1000.0 * float(y - 2),
+		u_MapZExtents.y - zOffset);
+	offset.xy += attr_Color.xy * u_Time;
+
+	gl_Position = vec4(attr_Position + offset, 1.0);
 }
 
 /*[Geometry]*/
@@ -16,10 +35,10 @@ uniform vec3 u_ViewOrigin;
 void main()
 {
 	const vec2 offsets[] = vec2[](
-		vec2(-4.0, -4.0),
-		vec2( 4.0, -4.0),
-		vec2(-4.0,  4.0),
-		vec2( 4.0,  4.0)
+		vec2(-0.5, -5.0),
+		vec2( 0.5, -5.0),
+		vec2(-0.5,  5.0),
+		vec2( 0.5,  5.0)
 	);
 
 	vec3 P = gl_in[0].gl_Position.xyz;
@@ -42,5 +61,5 @@ out vec4 out_Color;
 
 void main()
 {
-	out_Color = vec4(1.0, 1.0, 0.0, 1.0);
+	out_Color = vec4(0.2, 0.8, 0.2, 1.0);
 }

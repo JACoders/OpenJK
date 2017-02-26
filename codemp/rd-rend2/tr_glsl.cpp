@@ -151,6 +151,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_AlphaTestValue",		GLSL_FLOAT, 1 },
 
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
+	{ "u_MapZExtents",			GLSL_VEC2, 1 },
 };
 
 static void GLSL_PrintProgramInfoLog(GLuint object, qboolean developerOnly)
@@ -2108,7 +2109,7 @@ static int GLSL_LoadGPUProgramWeather(
 		&tr.weatherShader,
 		"weather",
 		fallback_weatherProgram,
-		ATTR_POSITION);
+		ATTR_POSITION | ATTR_COLOR);
 
 	GLSL_InitUniforms(&tr.weatherShader);
 	GLSL_FinishGPUShader(&tr.weatherShader);
