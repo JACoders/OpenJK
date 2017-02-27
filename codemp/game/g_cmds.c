@@ -678,6 +678,15 @@ void QINLINE ResetPlayerTimers(gentity_t *ent, qboolean print)
 		if (ent->client->sess.movementStyle == 7 || ent->client->sess.movementStyle == 8) { //Get rid of their rockets when they tele/noclip..?
 			DeletePlayerProjectiles(ent);
 		}
+
+		if (ent->client->sess.movementStyle == MV_SPEED) {
+			ent->client->ps.fd.forcePower = 50;
+		}
+
+		if (ent->client->sess.movementStyle == MV_JETPACK) {
+			ent->client->ps.jetpackFuel = 100;
+			Jetpack_Off(ent);
+		}
 	}
 
 	if (wasReset && print)
@@ -6559,7 +6568,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 		return;
 
 	if (trap->Argc() != 2) {
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, or jetpack>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, or speed>.\n\"" );
 		return;
 	}
 

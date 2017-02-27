@@ -5702,9 +5702,7 @@ void WP_ForcePowersUpdate( gentity_t *self, usercmd_t *ucmd )
 		self->client->force.lightningDebounce = level.time;
 
 	if ( (!self->client->ps.fd.forcePowersActive || self->client->ps.fd.forcePowersActive == (1 << FP_DRAIN)) && //whats up with fp_drain being mentioned here
-			(!self->client->ps.saberInFlight) && 
-			(self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) &&
-			(self->client->ps.stats[STAT_MOVEMENTSTYLE != MV_SPEED]) )
+			!self->client->ps.saberInFlight && (self->client->ps.stats[STAT_MOVEMENTSTYLE] != MV_SPEED) && (self->client->ps.weapon != WP_SABER || !BG_SaberInSpecial(self->client->ps.saberMove)) )
 	{//when not using the force, regenerate at 1 point per half second
 		int overrideAmt = 0, debounce = max(g_forceRegenTime.integer, 1), holo = 0;
 
