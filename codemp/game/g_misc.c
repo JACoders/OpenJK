@@ -280,9 +280,15 @@ void AmTeleportPlayer( gentity_t *player, vec3_t origin, vec3_t angles, qboolean
 	player->client->noclip = qtrue;
 	ResetPlayerTimers(player, qtrue);
 	player->client->ps.fd.forceJumpZStart = -65536; //maybe this will fix that annoying overbounce tele shit
-	if (player->client->sess.raceMode && player->client->sess.movementStyle == MV_JETPACK) {
-		player->client->ps.jetpackFuel = 100;
-		Jetpack_Off(player);
+
+	if (player->client->sess.raceMode) {	
+		if (player->client->sess.movementStyle == MV_JETPACK) {
+			player->client->ps.jetpackFuel = 100;
+			Jetpack_Off(player);
+		}
+		else if (player->client->sess.movementStyle == MV_SPEED) {
+			player->client->ps.fd.forcePower = 50;
+		}
 	}
 
 	if (droptofloor) {

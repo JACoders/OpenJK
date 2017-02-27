@@ -1042,6 +1042,7 @@ void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 		case 8:	Q_strncpyz(styleString, "rjcpm", styleStringSize); break;
 		case 9:	Q_strncpyz(styleString, "swoop", styleStringSize); break;
 		case 10: Q_strncpyz(styleString, "jetpack", styleStringSize); break;
+		case 11: Q_strncpyz(styleString, "speed", styleStringSize); break;
 		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
 	}
 }
@@ -3513,6 +3514,52 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 }
 #endif
 
+/*
+void Cmd_DFRecent_f(gentity_t *ent) {
+	const int args = trap->Argc();
+	int style = -1;
+	char input1[40];
+
+	if (args == 1) { //dfRecent  - All styles
+	}
+	else if (args == 2) {//dfRecent <style>
+		trap->Argv(1, input1, sizeof(input1));
+		style = RaceNameToInteger(input1);
+		if (style < 0) { //Invalid style
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the top10 for the specified course.\n\"");
+			return;
+		}
+	}
+	else {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)>.  This displays recent records for the specified style.\n\"");
+		return;
+	}
+
+	//Go through memory and print all maps?, keeping track of how many
+	//Go through database and print maps until total count printed is 10 ?
+
+
+		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
+		for (i = 0; i < 10; i++) {
+			char *tmpMsg = NULL;
+
+			if (!Q_stricmp(HighScores[course][style][i].end_time, "Just Now")) {
+				TimeToString(HighScores[course][style][i].duration_ms, timeStr, sizeof(timeStr), qfalse);
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
+				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
+					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
+					msg[0] = '\0';
+				}
+				Q_strcat(msg, sizeof(msg), tmpMsg);
+			}
+		}
+		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+
+		//Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
+
+}
+*/
+
 void Cmd_DFTop10_f(gentity_t *ent) {
 	const int args = trap->Argc();
 	char input1[40], input2[32], courseName[40] = {0}, courseNameFull[40] = {0}, msg[1024-128] = {0}, timeStr[32], styleString[16] = {0};
@@ -3590,6 +3637,8 @@ void Cmd_DFTop10_f(gentity_t *ent) {
 			Q_strcat(courseNameFull, sizeof(courseNameFull), va(" (%s)", courseName));
 		Q_strlwr(courseNameFull);
 		Q_CleanStr(courseNameFull);
+
+		//This should partial match instead of exact match.. ? to fix weird behaviour where partial match will print outdated database results instead of up-to-date cache results on a map that just had a highscore recorded.
 
 		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
 		for (i = 0; i < 10; i++) {
@@ -4148,6 +4197,8 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 						Q_strncpyz(strStyle, "^7swoop^7", sizeof(strStyle));
 					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 10)
 						Q_strncpyz(strStyle, "^7jetpack^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 11)
+						Q_strncpyz(strStyle, "^7speed^7", sizeof(strStyle));
 
 				}
 			}

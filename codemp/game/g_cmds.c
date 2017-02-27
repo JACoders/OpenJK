@@ -6609,7 +6609,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			ent->client->ourSwoopNum = 0;
 		}
 
-		if (style == 7 || style == 8) {
+		if (style == MV_RJQ3 || style == MV_RJCPM) {
 			ent->client->ps.stats[STAT_WEAPONS] = (1 << WP_MELEE) + (1 << WP_SABER) + (1 << WP_ROCKET_LAUNCHER);
 		}
 		else {
@@ -6617,15 +6617,19 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			ent->client->ps.ammo[AMMO_ROCKETS] = 0;
 		}
 
-		if (style == 9) {
+		if (style == MV_SWOOP) {
 			SpawnRaceSwoop(ent);
 		}
 
-		if (style == 10) {
+		if (style == MV_JETPACK) {
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] |= (1 << HI_JETPACK);
 		}
 		else {
 			ent->client->ps.stats[STAT_HOLDABLE_ITEMS] &= ~(1 << HI_JETPACK); 
+		}
+
+		if (style == MV_SPEED) {
+			ent->client->ps.fd.forcePower = 50;
 		}
 
 		if (ent->client->pers.stats.startTime || ent->client->pers.stats.startTimeFlag) {
@@ -6636,7 +6640,7 @@ static void Cmd_MovementStyle_f(gentity_t *ent)
 			trap->SendServerCommand(ent-g_entities, "print \"Movement style updated.\n\"");
 	}
 	else
-		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, or jetpack>.\n\"" );
+		trap->SendServerCommand( ent-g_entities, "print \"Usage: /move <siege, jka, qw, cpm, q3, pjk, wsw, rjq3, rjcpm, swoop, jetpack, or speed>.\n\"" );
 }
 
 static void Cmd_JumpChange_f(gentity_t *ent) 
@@ -8130,6 +8134,7 @@ void Cmd_ACLogin_f( gentity_t *ent );
 void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
+//void Cmd_DFRecent_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary

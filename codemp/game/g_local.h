@@ -1253,6 +1253,7 @@ typedef enum //movementstyle enum
 	MV_RJCPM,
 	MV_SWOOP,
 	MV_JETPACK,
+	MV_SPEED,
 #if _SPPHYSICS
 	MV_SP,
 #endif
