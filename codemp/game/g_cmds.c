@@ -8143,7 +8143,7 @@ void Cmd_ACLogin_f( gentity_t *ent );
 void Cmd_ACLogout_f( gentity_t *ent );
 void Cmd_ACRegister_f( gentity_t *ent );
 void Cmd_ACWhois_f( gentity_t *ent );
-//void Cmd_DFRecent_f( gentity_t *ent );
+void Cmd_DFRecent_f( gentity_t *ent );
 void Cmd_DFTop10_f( gentity_t *ent );
 void Cmd_DFTopRank_f( gentity_t *ent );
 void Cmd_DFRefresh_f(gentity_t *ent);//loda temporary
@@ -8235,9 +8235,10 @@ command_t commands[] = {
 	//{ "debugsetbodyanim",	Cmd_DebugSetBodyAnim_f,		CMD_CHEAT|CMD_ALIVE },
 	//{ "debugSetSaberMove",	Cmd_DebugSetSaberMove_f,	 CMD_CHEAT|CMD_ALIVE },
 
+	{ "dfrecent",			Cmd_DFRecent_f,				CMD_NOINTERMISSION },
 	{ "dfrefresh",			Cmd_DFRefresh_f,			CMD_NOINTERMISSION },
 	{ "dftop10",			Cmd_DFTop10_f,				CMD_NOINTERMISSION },
-	{ "dftopRank",			Cmd_DFTopRank_f,				CMD_NOINTERMISSION },
+	{ "dftopRank",			Cmd_DFTopRank_f,			CMD_NOINTERMISSION },
 
 	{ "duelteam",			Cmd_DuelTeam_f,				CMD_NOINTERMISSION },
 	{ "engage_fullforceduel",	Cmd_ForceDuel_f,		CMD_NOINTERMISSION },//JAPRO - Serverside - Fullforce Duels

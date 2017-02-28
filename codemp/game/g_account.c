@@ -2678,6 +2678,7 @@ void Cmd_ACLogout_f( gentity_t *ent ) { //If logged in, print logout msg, remove
 		trap->SendServerCommand(ent-g_entities, "print \"You are not logged in!\n\"");
 }
 
+#if 0 //includes kills/deaths stuff
 void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
 	sqlite3 * db;
     char * sql;
@@ -2836,12 +2837,120 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 
 	//DebugWriteToDB("Cmd_Stats_f");
 }
+#endif
+
+void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in memory? id then have to live update them.. but its doable.. worth it though?
+	sqlite3 * db;
+    char * sql;
+    sqlite3_stmt * stmt;
+	char username[16];
+	int row = 0, lastlogin = 0, s, highscores = 0, course, style, numGolds = 0, numSilvers = 0, numBronzes = 0;
+	char buf[MAX_STRING_CHARS-64] = {0};
+	char timeStr[64] = {0};
+	char goldStr[128] = {0}, silverStr[128] = {0}, bronzeStr[128] = {0}, styleStr[16] = {0};
+	const int NUM_MEDALS_TO_DISPLAY = 5;
+
+	if (trap->Argc() != 2) {
+		trap->SendServerCommand(ent-g_entities, "print \"Usage: /stats <username>\n\"");
+		return;
+	}
+
+	trap->Argv(1, username, sizeof(username));
+	Q_strlwr(username);
+	Q_CleanStr(username);
+
+	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	sql = "SELECT lastlogin FROM LocalAccount WHERE username = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
+	
+    while (1) {
+        s = sqlite3_step(stmt);
+        if (s == SQLITE_ROW) {
+			lastlogin = sqlite3_column_int(stmt, 5);
+            row++;
+        }
+        else if (s == SQLITE_DONE)
+            break;
+        else {
+            fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+        }
+    }
+	CALL_SQLITE (finalize(stmt));
+	CALL_SQLITE (close(db));
+
+	if (row == 0) { //no account found, or more than 1 account with same name, problem
+		trap->SendServerCommand(ent-g_entities, "print \"Account not found!\n\"");
+		return;
+	}
+	else if (row > 1) {
+		trap->SendServerCommand(ent-g_entities, "print \"ERROR: Multiple accounts found!\n\"");
+		return;
+	}
+
+
+	getDateTime(lastlogin, timeStr, sizeof(timeStr));
+
+	//For each course-style, find the 1/2/3 rank.  If it matches username, add to count.
+	for (course = 0; course < level.numCourses; course++) { //For each course
+		for (style = 0; style < MV_NUMSTYLES; style++) { //For each style...0 = siege, 8 = rjcpm
+			IntegerToRaceName(style, styleStr, sizeof(styleStr));
+
+			if (!Q_stricmp(HighScores[course][style][0].username, username)) { //They have gold
+				numGolds++;
+				if (numGolds <= 1)
+					Q_strcat(goldStr, sizeof(goldStr), va("%s (%s)", level.courseName[course], styleStr ) );
+				else if (numGolds <= NUM_MEDALS_TO_DISPLAY)
+					Q_strcat(goldStr, sizeof(goldStr), va(", %s (%s)", level.courseName[course], styleStr ) );
+			}
+			else if (!Q_stricmp(HighScores[course][style][1].username, username)) { //They have silver
+				numSilvers++;
+				if (numSilvers <= 1)
+					Q_strcat(silverStr, sizeof(silverStr), va("%s (%s)", level.courseName[course], styleStr ) );
+				else if (numSilvers <= NUM_MEDALS_TO_DISPLAY)
+					Q_strcat(silverStr, sizeof(silverStr), va(", %s (%s)", level.courseName[course], styleStr ) );
+			}
+			else if (!Q_stricmp(HighScores[course][style][2].username, username)) { //They have bronze
+				numBronzes++;
+				if (numBronzes <= 1)
+					Q_strcat(bronzeStr, sizeof(bronzeStr), va("%s (%s)", level.courseName[course], styleStr ) );
+				else if (numBronzes <= NUM_MEDALS_TO_DISPLAY)
+					Q_strcat(bronzeStr, sizeof(bronzeStr), va(", %s (%s)", level.courseName[course], styleStr ) );
+			}
+		}
+	}
+
+	if (numGolds > NUM_MEDALS_TO_DISPLAY)
+		Q_strcat(goldStr, sizeof(goldStr), " ..." );
+	if (numSilvers > NUM_MEDALS_TO_DISPLAY)
+		Q_strcat(silverStr, sizeof(silverStr), " ..." );
+	if (numBronzes > NUM_MEDALS_TO_DISPLAY)
+		Q_strcat(bronzeStr, sizeof(bronzeStr), " ..." );
+
+	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
+
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Golds (%i): %s\n", numGolds, goldStr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Silvers (%i): %s\n", numSilvers, silverStr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Current map Bronzes (%i): %s\n", numBronzes, bronzeStr));
+
+	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
+
+	//--find a way to rank player in defrag.. maybe when building every highscore table on mapload, increment number of points each player has in a new table..in database.. 
+	// make 1st places worth 10 points, 2nd place 9 points.. etc..? 
+
+	trap->SendServerCommand(ent-g_entities, va("print \"%s\"", buf));
+
+	//DebugWriteToDB("Cmd_Stats_f");
+}
 
 //Search array list to find players row
 //If found, update it
 //If not found, add a new row at next empty spot
 //A new function will read the array on mapchange, and do the querys updates
 void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type) {
+//Useless feature
+#if 0
 	int row;
 	char userName[16];
 
@@ -2896,9 +3005,13 @@ void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type) {
 		UserStats[row].captures++;
 	else if (type == 5) //Returns
 		UserStats[row].returns++;
+
+#endif
 }
 
 void G_AddSimpleStatsToFile() { //For each item in array.. do an update query?  Called on shutdown game.
+	//Useless feature
+#if 0
 	//fileHandle_t	f;	
 	char	buf[8 * 4096] = {0};
 	int		row;
@@ -2915,9 +3028,13 @@ void G_AddSimpleStatsToFile() { //For each item in array.. do an update query?  
 
 	trap->FS_Write( buf, strlen( buf ), level.tempStatLog );
 	trap->Print("Adding stats to file: %s\n", TEMP_STAT_LOG);
+
+#endif
 }
 
 void G_AddSimpleStatsToDB() {
+//Useless feature
+#if 0
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
 	char	buf[8 * 1024] = {0}, empty[8] = {0};//eh
@@ -2997,6 +3114,7 @@ void G_AddSimpleStatsToDB() {
 		trap->Print("ERROR: Unable to insert previous map stats into database.\n");
 
 	//DebugWriteToDB("G_AddSimpleStatToDB");
+#endif
 }
 
 #if 0
@@ -3516,7 +3634,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 }
 #endif
 
-/*
+
 void Cmd_DFRecent_f(gentity_t *ent) {
 	const int args = trap->Argc();
 	int style = -1;
@@ -3537,30 +3655,107 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		return;
 	}
 
-	//Go through memory and print all maps?, keeping track of how many
-	//Go through database and print maps until total count printed is 10 ?
 
+	{
+		sqlite3 * db;
+		char * sql;
+		sqlite3_stmt * stmt;
+		int row = 1;
+		char dateStr[64] = {0}, timeStr[32] = {0}, styleStr[16] = {0}, msg[128] = {0};
+		int s;
 
-		trap->SendServerCommand(ent-g_entities, va("print \"Highscore results for %s using %s style:\n    ^5Username           Time         Topspeed    Average      Date\n\"", courseNameFull, styleString));
-		for (i = 0; i < 10; i++) {
-			char *tmpMsg = NULL;
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-			if (!Q_stricmp(HighScores[course][style][i].end_time, "Just Now")) {
-				TimeToString(HighScores[course][style][i].duration_ms, timeStr, sizeof(timeStr), qfalse);
-				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", i + 1, HighScores[course][style][i].username, timeStr, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time);
+		//Problem - this ignores recent times on current map since they are not yet in database
+		//fix by searching that first (will ignore non top10 recent times on current map)
+		//fix that by just making race times go to database immediately and forgetting this stupid manual caching system
+
+		sql = "SELECT username, coursename, style, duration_ms, end_time FROM LocalRun ORDER BY end_time DESC LIMIT 10";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		
+		trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Time         Date\n\"");
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				char *tmpMsg = NULL;
+				TimeToString(sqlite3_column_int(stmt, 3), timeStr, sizeof(timeStr), qfalse);
+				getDateTime(sqlite3_column_int(stmt, 4), dateStr, sizeof(dateStr));
+				IntegerToRaceName(sqlite3_column_int(stmt, 2), styleStr, sizeof(styleStr));
+
+				tmpMsg = va("^5%2i^3: ^3%-18s ^3%-30s ^3%-11s ^3%-12s %s\n", row, sqlite3_column_text(stmt, 0), sqlite3_column_text(stmt, 1), styleStr, timeStr, dateStr);
 				if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 					trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 					msg[0] = '\0';
 				}
 				Q_strcat(msg, sizeof(msg), tmpMsg);
+				row++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				break;
 			}
 		}
 		trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
 
-		//Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
+		CALL_SQLITE (finalize(stmt));
+		CALL_SQLITE (close(db));
+}
+
+	//Go through memory and print all maps?, keeping track of how many
+	//Go through database and print maps until total count printed is 10 ?
+
+	//For each course in level.numCourses, and for each style in
+/*
+	for (course = 0; course < level.numCourses; course++) { //For each course
+		Q_strncpyz(msg, "", sizeof(msg));
+		printed = qfalse;
+		for (style = 0; style < MV_NUMSTYLES; style++) { //For each style
+			found = qfalse;
+			for (i=0; i<10; i++) {
+				if (!Q_stricmp(HighScores[course][style][i].end_time, "Just Now")) {
+					found = qtrue;
+					break;
+				}
+				else if (!HighScores[course][style][i].username || (HighScores[course][style][i].username && !HighScores[course][style][i].username[0])) { //End
+					found = qfalse;
+					break;
+				}
+			}
+
+			if (!found) {
+				if (!printed) {
+					Q_strcat(msg, sizeof(msg), va("^5%2i^3: ^3%-18s ^3%-12s ^3%-11i ^3%-12i %s\n", 
+						j + 1, HighScores[course][style][i].username, styleString, HighScores[course][style][i].topspeed, HighScores[course][style][i].average, HighScores[course][style][i].end_time));
+					printed = qtrue;
+					j++;
+				}
+				else {
+					//Q_strcat(msg, sizeof(msg), ":");
+				}
+				//Q_strcat(msg, sizeof(msg), va("<%i, %i>", found, printed));
+				//Q_strcat(msg, sizeof(msg), "-");
+				IntegerToRaceName(style, styleString, sizeof(styleString));
+				Q_strcat(msg, sizeof(msg), va(" ^5%-6s", styleString));
+			}
+			else
+			{
+				if (printed)
+					Q_strcat(msg, sizeof(msg), "       ");
+			}
+		}
+		if (printed) {
+			Q_strcat(msg, sizeof(msg), "\n");
+			trap->SendServerCommand(ent-g_entities, va("print \"%s\"", msg));
+		}
+	}
+*/
+
+
 
 }
-*/
+
 
 void Cmd_DFTop10_f(gentity_t *ent) {
 	const int args = trap->Argc();
