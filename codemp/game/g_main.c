@@ -294,11 +294,13 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		trap->Print( "WARNING: Couldn't open logfile: "TEMP_RACE_LOG"\n" );
 #endif
 
+#if _STATLOG //useless
 	trap->FS_Open( TEMP_STAT_LOG, &level.tempStatLog, FS_APPEND_SYNC );
 	if ( level.tempStatLog )
 		trap->Print( "Logging to "TEMP_STAT_LOG"\n" );
 	else
 		trap->Print( "WARNING: Couldn't open logfile: "TEMP_STAT_LOG"\n" );
+#endif
 
 	trap->FS_Open( PLAYER_LOG, &level.playerLog, FS_APPEND_SYNC );
 	if ( level.playerLog )
@@ -608,10 +610,12 @@ void G_ShutdownGame( int restart ) {
 	}
 #endif
 
+#if _STATLOG
 	if ( level.tempStatLog ) {
 		trap->FS_Close( level.tempStatLog );
 		level.tempStatLog = 0;
 	}
+#endif
 
 	if ( level.playerLog ) {
 		trap->FS_Close( level.playerLog );

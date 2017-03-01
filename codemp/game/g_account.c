@@ -839,6 +839,7 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 	//DebugWriteToDB("G_AddDuel");
 }
 
+#if !_NEWRACERANKING
 void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times from file before we add them??.. keep a record idk..?
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s = 0, row = 0, i, j; //MAX_FILESIZE = 4096
@@ -972,6 +973,7 @@ void G_AddToDBFromFile(void) { //loda fixme, we can filter out the slower times 
 
 	//DebugWriteToDB("G_AddToDBFromFile");
 }
+#endif
 
 gentity_t *G_SoundTempEntity( vec3_t origin, int event, int channel );
 #if 0
@@ -999,6 +1001,7 @@ void PlayActualGlobalSound(char * sound) {
 	}
 }
 
+#if _RACECACHE
 void WriteToTmpRaceLog(char *string, size_t stringSize) {
 	int fLen = 0;
 	fileHandle_t f;
@@ -1020,6 +1023,7 @@ void WriteToTmpRaceLog(char *string, size_t stringSize) {
 		return;
 	}
 }
+#endif
 
 /*
 void PrintCompletedRace(qboolean valid, char *netname, char *username, int rank, char *removeduser) {//JAPRO Timers
@@ -1072,7 +1076,7 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	//DebugWriteToDB("CleanupLocalRun");
 }
 
-#if 1//_NEWRACERANKING
+#if 1//NEWRACERANKING
 void G_GetRaceScore(int id, char *username, char *coursename, int style, sqlite3 * db) {
 	char * sql;
 	sqlite3_stmt * stmt;
@@ -1275,7 +1279,79 @@ void SV_RebuildRaceRanks_f() {
 
 #endif
 #if _NEWRACERANKING
+void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldRank_self, int newRank_self, sqlite3 * db) {
+	qboolean newDB = qfalse;
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s, rank = -1;
 
+	if (!db) {
+		//sqlite3 * db;
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
+		newDB = qtrue;
+		//Com_Printf("Opening new db in addnewracetodb\n");
+	}
+
+	sql = "SELECT rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 3, style_self));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		rank = sqlite3_column_int(stmt, 0);
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		//CALL_SQLITE (finalize(stmt));
+		//if (newDB) {
+			//CALL_SQLITE (close(db));
+		//}
+		//return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	if (rank == -1) { //Not found, so insert
+		//Add new record to db here?
+		sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, duration_ms_self));
+		CALL_SQLITE (bind_int (stmt, 4, topspeed_self));
+		CALL_SQLITE (bind_int (stmt, 5, average_self));
+		CALL_SQLITE (bind_int (stmt, 6, style_self));
+		CALL_SQLITE (bind_int (stmt, 7, end_time_self));
+		CALL_SQLITE (bind_int (stmt, 8, 0)); //Newrank not calculated
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+	}
+	else { //Found, so update
+		sql = "UPDATE LocalRun SET duration_ms = ?, topspeed = ?, average = ?, end_time = ? WHERE username = ? AND coursename= ? AND style = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_int (stmt, 1, duration_ms_self));
+		CALL_SQLITE (bind_int (stmt, 2, topspeed_self));
+		CALL_SQLITE (bind_int (stmt, 3, average_self));
+		CALL_SQLITE (bind_int (stmt, 4, end_time_self));
+		CALL_SQLITE (bind_text (stmt, 5, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 6, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 7, style_self));
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE)
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
+	}
+
+	if (newDB) {
+		CALL_SQLITE (close(db));
+	}
+}
+
+
+#if 0
 void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldRank_self, int newRank_self, sqlite3 * db) {
 	int oldCount = 0, newCount = 0; //count = number of records for this course/style.
 	qboolean newDB = qfalse;
@@ -1655,6 +1731,7 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 
 }
 #endif
+#endif
 
 void StripWhitespace(char *s);
 void G_AddRaceTime(char *username, char *message, int duration_ms, int style, int topspeed, int average, int clientNum) {//should be short.. but have to change elsewhere? is it worth it?
@@ -1692,7 +1769,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username, courseName, duration_ms, topspeed, average, style, rawtime);
 
 	if (level.raceLog)
-		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
+		trap->FS_Write(string, strlen(string), level.raceLog ); //Always write to text file races.log
 
 	//Now for live highscore stuff:
 
@@ -1837,6 +1914,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 
 				if (s == SQLITE_ROW) {
 					oldBest = sqlite3_column_int(stmt, 0);
+					CALL_SQLITE (finalize(stmt));
 
 					//trap->Print("Oldbest, Duration_ms: %i, %i\n", oldBest, duration_ms);
 
@@ -1850,14 +1928,12 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 							if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 								trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 #endif
-							CALL_SQLITE (finalize(stmt));
 							CALL_SQLITE (close(db));
 							break;
 						}
 						else { //Our time we jus recorded is slower, so add faster time from db to cache
 							//trap->Print("Time not found in cache, adding time from db: %i\n", oldBest);
 							PersonalBests[style][i].duration_ms = oldBest;
-							CALL_SQLITE (finalize(stmt));
 							CALL_SQLITE (close(db));
 							break;
 						}
@@ -1871,18 +1947,17 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 						if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 							trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
 #endif
-						CALL_SQLITE (finalize(stmt));
 						CALL_SQLITE (close(db));
 						break;
 					}
 				}
 				else if (s != SQLITE_DONE) {
+					CALL_SQLITE (finalize(stmt));
 					fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
 				}
 
 				//trap->Print("PersonalBest cache updated with %s, %s, %i", username, courseName, PersonalBests[style][i].duration_ms);
 
-				CALL_SQLITE (finalize(stmt));
 				CALL_SQLITE (close(db));
 
 				break;
@@ -2950,7 +3025,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 //A new function will read the array on mapchange, and do the querys updates
 void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type) {
 //Useless feature
-#if 0
+#if _STATLOG
 	int row;
 	char userName[16];
 
@@ -3011,7 +3086,7 @@ void G_AddSimpleStat(gentity_t *self, gentity_t *other, int type) {
 
 void G_AddSimpleStatsToFile() { //For each item in array.. do an update query?  Called on shutdown game.
 	//Useless feature
-#if 0
+#if _STATLOG
 	//fileHandle_t	f;	
 	char	buf[8 * 4096] = {0};
 	int		row;
@@ -3034,7 +3109,7 @@ void G_AddSimpleStatsToFile() { //For each item in array.. do an update query?  
 
 void G_AddSimpleStatsToDB() {
 //Useless feature
-#if 0
+#if _STATLOG
 	fileHandle_t f;	
 	int		fLen = 0, args = 1, s; //MAX_FILESIZE = 4096
 	char	buf[8 * 1024] = {0}, empty[8] = {0};//eh
@@ -3522,7 +3597,7 @@ void Cmd_NotCompleted_f(gentity_t *ent) {
 	}
 }
 
-#if 1//_NEWRACERANKING
+#if 1//NEWRACERANKING
 void Cmd_DFTopRank_f(gentity_t *ent) {
 	sqlite3 * db;
     char * sql;
@@ -4484,7 +4559,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 
-#if 1//_NEWRACERANKING
+#if 1//NEWRACERANKING
 	sql = "CREATE TABLE IF NOT EXISTS LocalRun(id INTEGER PRIMARY KEY, username VARCHAR(16), coursename VARCHAR(40), duration_ms UNSIGNED INTEGER, topspeed UNSIGNED SMALLINT, "
 		"average UNSIGNED SMALLINT, style UNSIGNED TINYINT, end_time UNSIGNED INTEGER, rank UNSIGNED SMALLINT)";
 #else
@@ -4514,7 +4589,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (finalize(stmt));
 #endif
 
-#if 1//_NEWRACERANKING
+#if 1//NEWRACERANKING
 	sql = "CREATE TABLE IF NOT EXISTS RaceRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), style UNSIGNED SMALLINT, score DECIMAL(6,2), percentilesum DECIMAL(6,2), ranksum DECIMAL(6,2), golds UNSIGNED SMALLINT, silvers UNSIGNED SMALLINT, bronzes UNSIGNED SMALLINT, count UNSIGNED SMALLINT)"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);

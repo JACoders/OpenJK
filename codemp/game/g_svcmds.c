@@ -1515,7 +1515,7 @@ void Svcmd_DBInfo_f( void );
 //void G_TestAddDuel( void );
 void SV_RebuildElo_f( void );
 #endif
-#if 1//_NEWRACERANKING
+#if 1//NEWRACERANKING
 void SV_RebuildRaceRanks_f( void );
 #endif
 #if 1
@@ -1566,7 +1566,7 @@ svcmd_t svcmds[] = {
 	{ "rebuildElo",					SV_RebuildElo_f,					qfalse },
 #endif
 
-#if 1//_NEWRACERANKING
+#if 1//NEWRACERANKING
 	{ "rebuildRaces",				SV_RebuildRaceRanks_f,				qfalse },
 #endif
 

@@ -30,7 +30,9 @@ extern vec3_t gPainPoint;
 #if !_NEWRACERANKING
 #define TEMP_RACE_LOG "currentRaces.tmp" //racelog
 #endif
+#if _STATLOG
 #define TEMP_STAT_LOG "currentStats.tmp" //racelog
+#endif
 #define	PLAYER_LOG "players.log" //Name, IP, Guid
 
 #define BODY_QUEUE_SIZE		8
@@ -1442,7 +1444,9 @@ typedef struct level_locals_s {
 #if !_NEWRACERANKING
 	fileHandle_t	tempRaceLog;
 #endif
+#if _STATLOG
 	fileHandle_t	tempStatLog;
+#endif
 	fileHandle_t	playerLog;
 
 	char		courseName[24][32];//japro defrag	
