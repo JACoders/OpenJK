@@ -1292,58 +1292,43 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 		//Com_Printf("Opening new db in addnewracetodb\n");
 	}
 
-	sql = "SELECT rank FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+	//problem, if database is locked the time wont get added.. and it will never try again.  before the .tmp file persisted until time was sucessfully added.
+	//fix, write to tmp file times that dont sucessfully get added?
+
+	sql = "UPDATE LocalRun SET duration_ms = ?, topspeed = ?, average = ?, end_time = ? WHERE username = ? AND coursename = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_int (stmt, 1, duration_ms_self));
+	CALL_SQLITE (bind_int (stmt, 2, topspeed_self));
+	CALL_SQLITE (bind_int (stmt, 3, average_self));
+	CALL_SQLITE (bind_int (stmt, 4, end_time_self));
+	CALL_SQLITE (bind_text (stmt, 5, username_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 6, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 7, style_self));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "INSERT OR IGNORE INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 3, style_self));
+	CALL_SQLITE (bind_int (stmt, 3, duration_ms_self));
+	CALL_SQLITE (bind_int (stmt, 4, topspeed_self));
+	CALL_SQLITE (bind_int (stmt, 5, average_self));
+	CALL_SQLITE (bind_int (stmt, 6, style_self));
+	CALL_SQLITE (bind_int (stmt, 7, end_time_self));
+	CALL_SQLITE (bind_int (stmt, 8, 0)); //Newrank not calculated
 	s = sqlite3_step(stmt);
-	if (s == SQLITE_ROW) {
-		rank = sqlite3_column_int(stmt, 0);
-	}
-	else if (s != SQLITE_DONE) {
-		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
-		//CALL_SQLITE (finalize(stmt));
-		//if (newDB) {
-			//CALL_SQLITE (close(db));
-		//}
-		//return;
+	if (s != SQLITE_DONE) {
+		char string[1024] = {0};
+
+		Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, end_time_self);
+		trap->FS_Write( string, strlen( string ), level.failRaceLog );
+
+		trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
 	}
 	CALL_SQLITE (finalize(stmt));
-
-	if (rank == -1) { //Not found, so insert
-		//Add new record to db here?
-		sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 3, duration_ms_self));
-		CALL_SQLITE (bind_int (stmt, 4, topspeed_self));
-		CALL_SQLITE (bind_int (stmt, 5, average_self));
-		CALL_SQLITE (bind_int (stmt, 6, style_self));
-		CALL_SQLITE (bind_int (stmt, 7, end_time_self));
-		CALL_SQLITE (bind_int (stmt, 8, 0)); //Newrank not calculated
-		s = sqlite3_step(stmt);
-		if (s != SQLITE_DONE) {
-			trap->Print( "Error: Could not write to database: %i.\n", s);
-		}
-		CALL_SQLITE (finalize(stmt));
-	}
-	else { //Found, so update
-		sql = "UPDATE LocalRun SET duration_ms = ?, topspeed = ?, average = ?, end_time = ? WHERE username = ? AND coursename= ? AND style = ?";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-		CALL_SQLITE (bind_int (stmt, 1, duration_ms_self));
-		CALL_SQLITE (bind_int (stmt, 2, topspeed_self));
-		CALL_SQLITE (bind_int (stmt, 3, average_self));
-		CALL_SQLITE (bind_int (stmt, 4, end_time_self));
-		CALL_SQLITE (bind_text (stmt, 5, username_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_text (stmt, 6, coursename_self, -1, SQLITE_STATIC));
-		CALL_SQLITE (bind_int (stmt, 7, style_self));
-		s = sqlite3_step(stmt);
-		if (s != SQLITE_DONE)
-			trap->Print( "Error: Could not write to database: %i.\n", s);
-		CALL_SQLITE (finalize(stmt));
-	}
 
 	if (newDB) {
 		CALL_SQLITE (close(db));
