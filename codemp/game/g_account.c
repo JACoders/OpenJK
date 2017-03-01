@@ -1292,9 +1292,6 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 		//Com_Printf("Opening new db in addnewracetodb\n");
 	}
 
-	//problem, if database is locked the time wont get added.. and it will never try again.  before the .tmp file persisted until time was sucessfully added.
-	//fix, write to tmp file times that dont sucessfully get added?
-
 	sql = "UPDATE LocalRun SET duration_ms = ?, topspeed = ?, average = ?, end_time = ? WHERE username = ? AND coursename = ? AND style = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, duration_ms_self));
@@ -1309,7 +1306,7 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 		trap->Print( "Error: Could not write to database: %i.\n", s);
 	CALL_SQLITE (finalize(stmt));
 
-	sql = "INSERT OR IGNORE INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE (Select Changes() = 0)";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
