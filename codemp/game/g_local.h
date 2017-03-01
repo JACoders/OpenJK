@@ -28,7 +28,7 @@ extern vec3_t gPainPoint;
 #define DUEL_LOG "duels.log" //duellog
 #define RACE_LOG "races.log" //racelog
 #if 1
-#define FAIL_RACE_LOG "failedRaces.tmp" //racelog
+#define FAIL_RACE_LOG "failedRaces.log" //racelog
 #endif
 #if _STATLOG
 #define TEMP_STAT_LOG "currentStats.tmp" //racelog
