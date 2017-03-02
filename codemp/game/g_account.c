@@ -3695,7 +3695,7 @@ void Cmd_DFTopRank_f(gentity_t *ent) {
 void Cmd_DFRecent_f(gentity_t *ent) {
 	const int args = trap->Argc();
 	int style = -1;
-	char input1[40];
+	char input1[40], inputStyleString[16];
 
 	if (args == 1) { //dfRecent  - All styles
 	}
@@ -3703,7 +3703,7 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		trap->Argv(1, input1, sizeof(input1));
 		style = RaceNameToInteger(input1);
 		if (style < 0) { //Invalid style
-			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dftop10 <course (if needed)> <style (optional)>.  This displays the top10 for the specified course.\n\"");
+			trap->SendServerCommand(ent-g_entities, "print \"Usage: /dfRecent <style (optional)>.  This displays recent records for the specified style.\n\"");
 			return;
 		}
 	}
@@ -3727,10 +3727,19 @@ void Cmd_DFRecent_f(gentity_t *ent) {
 		//fix by searching that first (will ignore non top10 recent times on current map)
 		//fix that by just making race times go to database immediately and forgetting this stupid manual caching system
 
-		sql = "SELECT username, coursename, style, duration_ms, end_time FROM LocalRun ORDER BY end_time DESC LIMIT 10";
-		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		if (style == -1) {
+			sql = "SELECT username, coursename, style, duration_ms, end_time FROM LocalRun ORDER BY end_time DESC LIMIT 10";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Time         Date\n\"");
+		}
+		else {
+			sql = "SELECT username, coursename, style, duration_ms, end_time FROM LocalRun WHERE style = ? ORDER BY end_time DESC LIMIT 10";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_int (stmt, 1, style));
+			IntegerToRaceName(style, inputStyleString, sizeof(inputStyleString));
+			trap->SendServerCommand(ent-g_entities, va("print \"Recent results for %s style:\n    ^5Username           Coursename                     Style       Time         Date\n\"", inputStyleString));
+		}
 		
-		trap->SendServerCommand(ent-g_entities, "print \"Recent results:\n    ^5Username           Coursename                     Style       Time         Date\n\"");
 		while (1) {
 			s = sqlite3_step(stmt);
 			if (s == SQLITE_ROW) {
