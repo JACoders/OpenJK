@@ -75,7 +75,7 @@ struct MusicExitTime_t	// need to declare this way for operator < below
 
 	// I'm defining this '<' operator so STL's sort algorithm will work
 	//
-	bool operator < (const MusicExitTime_t& __X) const {return (fTime < __X.fTime);}
+	bool operator < (const MusicExitTime_t& X) const {return (fTime < X.fTime);}
 };
 
 // it's possible for all 3 of these to be empty if it's boss or death music

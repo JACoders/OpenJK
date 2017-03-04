@@ -148,7 +148,7 @@ typedef struct
 	// I'm defining this '<' operator so this struct can be used as an STL <map> key...
 	//
 	#ifdef __cplusplus
-	bool operator < (const mdxaCompQuatBone_t& __X) const {return (memcmp(Comp,__X.Comp,sizeof(Comp))<0);}
+	bool operator < (const mdxaCompQuatBone_t& X) const {return (memcmp(Comp,X.Comp,sizeof(Comp))<0);}
 	#endif
 }
 #ifndef __cplusplus
