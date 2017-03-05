@@ -77,6 +77,10 @@ if(APPLE)
   set(UseInternalJPEGDefault ON)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "BSD")
+  add_definitions(-DIOAPI_NO_64)
+endif()
+
 option(UseInternalOpenAL "If set, use bundled OpenAL."  ${UseInternalOpenALDefault})
 option(UseInternalZlib   "If set, use bundled zlib."    ${UseInternalZlibDefault})
 option(UseInternalPNG    "If set, use bundled libpng."  ${UseInternalPNGDefault})
