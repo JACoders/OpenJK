@@ -6349,6 +6349,11 @@ void Item_Paint(itemDef_t *item)
 		}
 	}
 
+	if (item->disabled && item->disabledHidden)
+	{
+		return;
+	}
+
 	if (item->cvarFlags & (CVAR_SHOW | CVAR_HIDE)) {
 		if (!Item_EnableShowViaCvar(item, CVAR_SHOW)) {
 			return;
@@ -8456,7 +8461,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 		}
 	}
 
-	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && item->cvarFlags & CVAR_HIDE ) {
+	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && (item->cvarFlags & CVAR_HIDE) ) {
 		if( item->parent )
 		{
 			menuDef_t *parent = (menuDef_t *)item->parent;
