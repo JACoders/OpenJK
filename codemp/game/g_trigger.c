@@ -1403,6 +1403,7 @@ void TimerStart(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO 
 	}
 }
 
+void IntegerToRaceName(int style, char *styleString, size_t styleStringSize);
 void TimeToString(int duration_ms, char *timeStr, size_t strSize, qboolean noMS);
 void G_AddRaceTime(char *account, char *courseName, int duration_ms, int style, int topspeed, int average, int clientNum); //should this be extern?
 void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO Timers
@@ -1465,6 +1466,13 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 		else if (trigger->noise_index) 
 			G_Sound(player, CHAN_AUTO, trigger->noise_index);
 
+
+		//
+
+		IntegerToRaceName(player->client->ps.stats[STAT_MOVEMENTSTYLE], style, sizeof(style));
+		//
+
+		/*
 		if (player->client->ps.stats[STAT_RACEMODE]) {
 			if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SIEGE)
 				Q_strncpyz(style, "siege", sizeof(style));
@@ -1488,6 +1496,8 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 				Q_strncpyz(style, "swoop", sizeof(style));
 			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_JETPACK)
 				Q_strncpyz(style, "jetpack", sizeof(style));
+			else if (player->client->ps.stats[STAT_MOVEMENTSTYLE] == MV_SPEED)
+				Q_strncpyz(style, "speed", sizeof(style));
 		}
 		else if (g_movementStyle.integer == MV_SIEGE)
 			Q_strncpyz(style, "siege", sizeof(style));
@@ -1507,6 +1517,10 @@ void TimerStop(gentity_t *trigger, gentity_t *player, trace_t *trace) {//JAPRO T
 			Q_strncpyz(style, "rjq3", sizeof(style));
 		else if (g_movementStyle.integer == MV_RJCPM)
 			Q_strncpyz(style, "rjcpm", sizeof(style));
+		else if (g_movementStyle.integer == MV_SPEED)
+			Q_strncpyz(style, "speed", sizeof(style));
+
+			*/
 
 		/*
 		if (time >= 60.0f) { //LODA FIXME, make this use the 

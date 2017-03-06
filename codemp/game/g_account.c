@@ -3315,7 +3315,7 @@ int RaceNameToInteger(char *style) {
 		return 9;
 	if (!Q_stricmp(style, "jetpack") || !Q_stricmp(style, "10"))
 		return 10;
-	if (!Q_stricmp(style, "speed") || !Q_stricmp(style, "ctf"))
+	if (!Q_stricmp(style, "speed") || !Q_stricmp(style, "ctf") || !Q_stricmp(style, "11"))
 		return 11;
 #if _SPPHYSICS
 	if (!Q_stricmp(style, "sp") || !Q_stricmp(style, "singleplayer"))
