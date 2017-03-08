@@ -63,12 +63,6 @@ gentity_t* NPC_AnimalUpdateLeader(void)
 			}
 
 			mPacks.erase_swap(i);
-
-			if (i>=mPacks.size())
-			{
-				closestLeader = 0;
-				break;
-			}
 		}
 
 		// Don't Count Self
