@@ -395,7 +395,8 @@ typedef struct itemDef_s {
 	int			font;						// FONT_SMALL,FONT_MEDIUM,FONT_LARGE
 	int			invertYesNo;
 	int			xoffset;
-
+	qboolean	disabled;					// Does this item ignore mouse and keyboard focus
+	qboolean	disabledHidden;				// hide the item when 'disabled' is true (for generic image items)
 } itemDef_t;
 
 typedef struct {
@@ -471,6 +472,11 @@ qboolean	Menus_AnyFullScreenVisible(void);
 void		Menus_CloseAll(void);
 int			Menu_Count(void);
 itemDef_t	*Menu_FindItemByName(menuDef_t *menu, const char *p);
+void Menu_ShowGroup (menuDef_t *menu, const char *itemName, qboolean showFlag);
+void Menu_ItemDisable(menuDef_t *menu, const char *name, qboolean disableFlag);
+int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name);
+itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *name);
+
 void		Menu_HandleKey(menuDef_t *menu, int key, qboolean down);
 void		Menu_New(char *buffer);
 void		Menus_OpenByName(const char *p);

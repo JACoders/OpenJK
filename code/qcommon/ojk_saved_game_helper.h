@@ -334,7 +334,7 @@ bool SavedGameHelper::try_read(
 	TDst& dst_value,
 	NumericTag)
 {
-	constexpr int src_size = static_cast<int>(sizeof(TSrc));
+	const int src_size = static_cast<int>(sizeof(TSrc));
 
 	TSrc src_value;
 
@@ -393,7 +393,7 @@ bool SavedGameHelper::try_read(
 		"Unsupported types.");
 
 	using Tag = typename std::conditional<
-		SavedGameClassArchiver<TDst>::is_implemented(),
+		SavedGameClassArchiver<TDst>::is_implemented,
 		ExternalTag,
 		InternalTag
 	>::type;
@@ -474,26 +474,26 @@ bool SavedGameHelper::try_read(
 		TSrc
 	>::type;
 
-	constexpr bool is_src_pure_numeric =
+	const bool is_src_pure_numeric =
 		std::is_arithmetic<Src>::value &&
 		(!std::is_same<Src, bool>::value) &&
 		(!std::is_enum<Src>::value);
 
-	constexpr bool is_dst_pure_numeric =
+	const bool is_dst_pure_numeric =
 		std::is_arithmetic<TDst>::value &&
 		(!std::is_same<TDst, bool>::value) &&
 		(!std::is_enum<TDst>::value);
 
-	constexpr bool is_src_float_point =
+	const bool is_src_float_point =
 		std::is_floating_point<Src>::value;
 
-	constexpr bool is_dst_float_point =
+	const bool is_dst_float_point =
 		std::is_floating_point<TDst>::value;
 
-	constexpr bool has_same_size =
+	const bool has_same_size =
 		(sizeof(Src) == sizeof(TDst));
 
-	constexpr bool use_inplace =
+	const bool use_inplace =
 		is_src_pure_numeric &&
 		is_dst_pure_numeric &&
 		((!is_src_float_point && !is_dst_float_point) ||
@@ -634,7 +634,7 @@ void SavedGameHelper::write(
 	const TSrc& src_value,
 	NumericTag)
 {
-	constexpr int dst_size = static_cast<int>(sizeof(TDst));
+	const int dst_size = static_cast<int>(sizeof(TDst));
 
 	const TDst dst_value = static_cast<TDst>(src_value);
 
@@ -674,7 +674,7 @@ void SavedGameHelper::write(
 		"Unsupported types.");
 
 	using Tag = typename std::conditional<
-		SavedGameClassArchiver<TSrc>::is_implemented(),
+		SavedGameClassArchiver<TSrc>::is_implemented,
 		ExternalTag,
 		InternalTag
 	>::type;
@@ -750,26 +750,26 @@ void SavedGameHelper::write(
 		TSrc,
 		TDst>::type;
 
-	constexpr bool is_src_pure_numeric =
+	const bool is_src_pure_numeric =
 		std::is_arithmetic<TSrc>::value &&
 		(!std::is_same<TSrc, bool>::value) &&
 		(!std::is_enum<TSrc>::value);
 
-	constexpr bool is_dst_pure_numeric =
+	const bool is_dst_pure_numeric =
 		std::is_arithmetic<Dst>::value &&
 		(!std::is_same<Dst, bool>::value) &&
 		(!std::is_enum<Dst>::value);
 
-	constexpr bool is_src_float_point =
+	const bool is_src_float_point =
 		std::is_floating_point<TSrc>::value;
 
-	constexpr bool is_dst_float_point =
+	const bool is_dst_float_point =
 		std::is_floating_point<Dst>::value;
 
-	constexpr bool has_same_size =
+	const bool has_same_size =
 		(sizeof(TSrc) == sizeof(Dst));
 
-	constexpr bool use_inplace =
+	const bool use_inplace =
 		is_src_pure_numeric &&
 		is_dst_pure_numeric &&
 		((!is_src_float_point && !is_dst_float_point) ||

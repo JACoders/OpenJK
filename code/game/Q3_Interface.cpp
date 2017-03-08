@@ -7326,6 +7326,11 @@ void CQuake3GameInterface::VariableLoadFloats( varFloat_m &fmap )
 			INT_ID('F', 'I', 'D', 'L'),
 			idSize);
 
+		if (idSize < 0 || static_cast<size_t>(idSize) >= sizeof(tempBuffer))
+		{
+			::G_Error("invalid length for FIDS string in save game: %d bytes\n", idSize);
+		}
+
 		saved_game.read_chunk(
 			INT_ID('F', 'I', 'D', 'S'),
 			tempBuffer,
@@ -7371,6 +7376,11 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 			INT_ID('S', 'I', 'D', 'L'),
 			idSize);
 
+		if (idSize < 0 || static_cast<size_t>(idSize) >= sizeof(tempBuffer))
+		{
+			::G_Error("invalid length for SIDS string in save game: %d bytes\n", idSize);
+		}
+
 		saved_game.read_chunk(
 			INT_ID('S', 'I', 'D', 'S'),
 			tempBuffer,
@@ -7381,6 +7391,11 @@ void CQuake3GameInterface::VariableLoadStrings( int type, varString_m &fmap )
 		saved_game.read_chunk<int32_t>(
 			INT_ID('S', 'V', 'S', 'Z'),
 			idSize);
+
+		if (idSize < 0 || static_cast<size_t>(idSize) >= sizeof(tempBuffer2))
+		{
+			::G_Error("invalid length for SVAL string in save game: %d bytes\n", idSize);
+		}
 
 		saved_game.read_chunk(
 			INT_ID('S', 'V', 'A', 'L'),

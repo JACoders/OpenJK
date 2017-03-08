@@ -1471,7 +1471,8 @@ void GfxInfo_f( void )
 	ri->Printf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
 	ri->Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
 	ri->Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
-	ri->Printf( PRINT_ALL, "lightmap texture bits: %d\n", r_texturebitslm->integer );
+	if ( r_texturebitslm->integer > 0 )
+		ri->Printf( PRINT_ALL, "lightmap texture bits: %d\n", r_texturebitslm->integer );
 	ri->Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
 	ri->Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
 	ri->Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
@@ -1585,7 +1586,7 @@ void R_Register( void )
 	r_vertexLight						= ri->Cvar_Get( "r_vertexLight",					"0",						CVAR_ARCHIVE|CVAR_LATCH, "" );
 	r_uiFullScreen						= ri->Cvar_Get( "r_uifullscreen",					"0",						CVAR_NONE, "" );
 	r_subdivisions						= ri->Cvar_Get( "r_subdivisions",					"4",						CVAR_ARCHIVE|CVAR_LATCH, "" );
-	ri->Cvar_CheckRange( r_subdivisions, 4, 80, qfalse );
+	ri->Cvar_CheckRange( r_subdivisions, 0, 80, qfalse );
 
 	r_fullbright						= ri->Cvar_Get( "r_fullbright",						"0",						CVAR_CHEAT, "" );
 	r_intensity							= ri->Cvar_Get( "r_intensity",						"1",						CVAR_LATCH, "" );

@@ -20,6 +20,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <memory>
 #include "g_local.h"
 #include "../Rufl/hstring.h"
 #include "qcommon/ojk_saved_game_helper.h"
@@ -243,7 +244,12 @@ void TIMER_Load( void )
 			const char* sg_buffer_data = static_cast<const char*>(
 				saved_game.get_buffer_data());
 
-			const int sg_buffer_size = saved_game.get_buffer_size();
+			int sg_buffer_size = saved_game.get_buffer_size();
+
+			if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) >= sizeof(tempBuffer))
+			{
+				::G_Error("invalid length for TMID string in saved game: %d\n", sg_buffer_size);
+			}
 
 			std::uninitialized_copy_n(
 				sg_buffer_data,

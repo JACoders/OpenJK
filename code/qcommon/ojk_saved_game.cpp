@@ -4,8 +4,9 @@
 
 
 #include "ojk_saved_game.h"
-#include "ojk_saved_game_helper.h"
 #include <algorithm>
+#include <memory>
+#include "ojk_saved_game_helper.h"
 #include "qcommon/qcommon.h"
 #include "server/server.h"
 
@@ -138,7 +139,7 @@ bool SavedGame::create(
 
 	is_writable_ = true;
 
-	constexpr int sg_version = iSAVEGAME_VERSION;
+	const int sg_version = iSAVEGAME_VERSION;
 
 	SavedGameHelper sgsh(this);
 
@@ -963,7 +964,7 @@ void SavedGame::reset_buffer_offset()
 	io_buffer_offset_ = 0;
 }
 
-constexpr uint32_t SavedGame::get_jo_magic_value()
+const uint32_t SavedGame::get_jo_magic_value()
 {
 	return 0x1234ABCD;
 }

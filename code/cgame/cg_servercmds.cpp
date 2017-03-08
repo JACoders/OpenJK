@@ -239,7 +239,7 @@ static void CG_ServerCommand( void ) {
 		return;
 	}
 
-	command = (serverCommand_t *)bsearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
+	command = (serverCommand_t *)Q_LinearSearch( cmd, commands, numCommands, sizeof( commands[0] ), svcmdcmp );
 
 	if ( command ) {
 		command->func();

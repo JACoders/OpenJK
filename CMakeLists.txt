@@ -77,6 +77,10 @@ if(APPLE)
   set(UseInternalJPEGDefault ON)
 endif()
 
+if(CMAKE_SYSTEM_NAME MATCHES "BSD")
+  add_definitions(-DIOAPI_NO_64)
+endif()
+
 option(UseInternalOpenAL "If set, use bundled OpenAL."  ${UseInternalOpenALDefault})
 option(UseInternalZlib   "If set, use bundled zlib."    ${UseInternalZlibDefault})
 option(UseInternalPNG    "If set, use bundled libpng."  ${UseInternalPNGDefault})
@@ -272,7 +276,8 @@ elseif (("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_C_COMPILER_ID}" S
 		endif()
 	elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings")
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-write-strings")
+		#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-writable-strings")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-invalid-offsetof")
 	endif()
@@ -301,6 +306,15 @@ if(BuildPortableVersion)
 	set(SharedDefines ${SharedDefines} "_PORTABLE_VERSION")
 endif()
 
+# https://reproducible-builds.org/specs/source-date-epoch/
+if (NOT ("$ENV{SOURCE_DATE_EPOCH}" STREQUAL ""))
+	execute_process(COMMAND "date"
+		"--date=@$ENV{SOURCE_DATE_EPOCH}" "+%b %_d %Y"
+		OUTPUT_VARIABLE source_date
+		ERROR_QUIET
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	set(SharedDefines ${SharedDefines} "SOURCE_DATE=\"${source_date}\"")
+endif()
 
 
 

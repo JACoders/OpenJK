@@ -768,10 +768,10 @@ static void copy_retail_gclient_to_current(
 	const RetailGClient& src,
 	gclient_t& dst)
 {
-	constexpr size_t src_pre_size = offsetof(RetailGClient, ps.saber[0]);
-	constexpr size_t src_post_offset = offsetof(RetailGClient, ps.dualSabers);
-	constexpr size_t src_post_size = sizeof(RetailGClient) - src_post_offset;
-	constexpr size_t dst_post_offset = offsetof(gclient_t, ps.dualSabers);
+	const size_t src_pre_size = offsetof(RetailGClient, ps.saber[0]);
+	const size_t src_post_offset = offsetof(RetailGClient, ps.dualSabers);
+	const size_t src_post_size = sizeof(RetailGClient) - src_post_offset;
+	const size_t dst_post_offset = offsetof(gclient_t, ps.dualSabers);
 
 	::memcpy(
 		reinterpret_cast<char*>(&dst),

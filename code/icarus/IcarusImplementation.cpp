@@ -22,6 +22,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // IcarusImplementation.cpp
 
+#include <memory>
 #include "StdAfx.h"
 #include "IcarusInterface.h"
 #include "IcarusImplementation.h"
@@ -716,7 +717,14 @@ int CIcarus::Load()
 	const unsigned char* sg_buffer_data = static_cast<const unsigned char*>(
 		saved_game.get_buffer_data());
 
-	const int sg_buffer_size = saved_game.get_buffer_size();
+	int sg_buffer_size = saved_game.get_buffer_size();
+
+	if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) > MAX_BUFFER_SIZE)
+	{
+		DestroyBuffer();
+		game->DebugPrint( IGameInterface::WL_ERROR, "invalid ISEQ length: %d bytes\n", sg_buffer_size);
+		return false;
+	}
 
 	std::uninitialized_copy_n(
 		sg_buffer_data,
@@ -849,7 +857,13 @@ void CIcarus::BufferRead( void *pDstBuff, unsigned long ulNumBytesToRead )
 		const unsigned char* sg_buffer_data = static_cast<const unsigned char*>(
 			saved_game.get_buffer_data());
 
-		const int sg_buffer_size = saved_game.get_buffer_size();
+		int sg_buffer_size = saved_game.get_buffer_size();
+
+		if (sg_buffer_size < 0 || static_cast<size_t>(sg_buffer_size) > MAX_BUFFER_SIZE)
+		{
+			IGameInterface::GetGame()->DebugPrint( IGameInterface::WL_ERROR, "invalid ISEQ length: %d bytes\n", sg_buffer_size);
+			return;
+		}
 
 		std::uninitialized_copy_n(
 			sg_buffer_data,

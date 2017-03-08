@@ -33,7 +33,7 @@ public:
 		z(_z)
 	{
 	}
-	bool operator== (const CPoint& _P) const {return((x==_P.x)&&(y==_P.y)&&(z==_P.z));}
+	bool operator== (const CPoint& P) const {return((x==P.x)&&(y==P.y)&&(z==P.z));}
 };
 /*
 class CPointComparator
