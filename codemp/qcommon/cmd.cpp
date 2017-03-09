@@ -764,7 +764,7 @@ extern void UIVM_CommandHelp( const char *commandName, char *helpBuffer, size_t 
 
 char *Cmd_DescriptionString( const cmd_function_t *cmd )
 {
-	static char description[MAX_STRING_CHARS];
+	static char description[2048];
 
 	// give UI a chance to fill description
 	description[0] = '\0';
