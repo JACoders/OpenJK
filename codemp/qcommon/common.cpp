@@ -417,7 +417,7 @@ void Com_StartupVariable( const char *match ) {
 		char *s = Cmd_Argv(1);
 
 		if ( !match || !strcmp( s, match ) )
-			Cvar_User_Set( s, Cmd_Argv( 2 ) );
+			Cvar_User_Set( s, Cmd_ArgsFrom( 2 ) );
 	}
 }
 
