@@ -691,7 +691,6 @@ static const char *legacyCvars[] = {
 	"g_dlURL",
 	"g_synchronousClients",
 	"jp_DlBaseURL",
-	"g_dlURL",
 	"pmove_fixed",
 	"pmove_float",
 	"pmove_msec",
