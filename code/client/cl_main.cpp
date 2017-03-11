@@ -1160,6 +1160,7 @@ void CL_InitRef( void ) {
     rit.WIN_Shutdown = WIN_Shutdown;
     rit.WIN_Present = WIN_Present;
 	rit.GL_GetProcAddress = WIN_GL_GetProcAddress;
+	rit.GL_ExtensionSupported = WIN_GL_ExtensionSupported;
 
 	rit.PD_Load = PD_Load;
 	rit.PD_Store = PD_Store;
