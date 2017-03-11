@@ -141,9 +141,9 @@ void G_CacheGametype( void )
 		else
 			level.gametype = gt;
 	}
-	else if ( g_gametype.integer < 0 || level.gametype >= GT_MAX_GAME_TYPE )
+	else if ( g_gametype.integer < 0 || g_gametype.integer >= GT_MAX_GAME_TYPE )
 	{
-		trap->Print( "g_gametype %i is out of range, defaulting to 0\n", level.gametype );
+		trap->Print( "g_gametype %i is out of range, defaulting to 0 (FFA/Deathmatch)\n", g_gametype.integer );
 		level.gametype = GT_FFA;
 	}
 	else
