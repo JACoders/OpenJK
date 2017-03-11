@@ -11283,7 +11283,23 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 		case A_F12:
 			if (DC->getCVarValue("developer"))
 			{
-				DC->executeText(EXEC_APPEND, "screenshot\n");
+				switch ( DC->screenshotFormat )
+				{
+					case SSF_JPEG:
+						DC->executeText(EXEC_APPEND, "screenshot\n");
+						break;
+					case SSF_TGA:
+						DC->executeText(EXEC_APPEND, "screenshot_tga\n");
+						break;
+					case SSF_PNG:
+						DC->executeText(EXEC_APPEND, "screenshot_png\n");
+						break;
+					default:
+						if (DC->Print) {
+							DC->Print(S_COLOR_YELLOW "Menu_HandleKey[F12]: Unknown screenshot format assigned! This should not happen.\n");
+						}
+						break;
+				}
 			}
 			break;
 		case A_KP_8:
