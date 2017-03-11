@@ -54,6 +54,7 @@ static const char *UI_GetScreenshotFormatString( int format )
 
 static void UI_UpdateScreenshot( void )
 {
+	qboolean changed = qfalse;
 	// check some things
 	if ( ui_screenshotType.string[0] && isalpha( ui_screenshotType.string[0] ) )
 	{
@@ -62,6 +63,7 @@ static void UI_UpdateScreenshot( void )
 		{
 			trap->Print( "UI Screenshot Format Type '%s' unrecognised, defaulting to JPEG\n", ui_screenshotType.string );
 			uiInfo.uiDC.screenshotFormat = SSF_JPEG;
+			changed = qtrue;
 		}
 		else
 			uiInfo.uiDC.screenshotFormat = ssf;
@@ -70,12 +72,17 @@ static void UI_UpdateScreenshot( void )
 	{
 		trap->Print( "ui_screenshotType %i is out of range, defaulting to 0 (JPEG)\n", ui_screenshotType.integer );
 		uiInfo.uiDC.screenshotFormat = SSF_JPEG;
+		changed = qtrue;
 	}
-	else
+	else {
 		uiInfo.uiDC.screenshotFormat = atoi( ui_screenshotType.string );
+		changed = qtrue;
+	}
 
-	trap->Cvar_Set( "ui_screenshotType", UI_GetScreenshotFormatString( uiInfo.uiDC.screenshotFormat ) );
-	trap->Cvar_Update( &ui_screenshotType );
+	if ( changed ) {
+		trap->Cvar_Set( "ui_screenshotType", UI_GetScreenshotFormatString( uiInfo.uiDC.screenshotFormat ) );
+		trap->Cvar_Update( &ui_screenshotType );
+	}
 }
 
 
