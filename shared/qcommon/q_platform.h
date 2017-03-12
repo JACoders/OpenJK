@@ -193,6 +193,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define IS_NOEXCEPT(x) noexcept(x)
 #endif
 
+#define OVERRIDE override
+
 #if defined(__cplusplus)
 	#include <cstddef>
 
