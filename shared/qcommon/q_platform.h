@@ -200,6 +200,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define NORETURN __declspec(noreturn)
 // __declspec doesn't work on function pointers
 #define NORETURN_PTR /* nothing */
+#else
+#define NORETURN /* nothing */
+#define NORETURN_PTR /* nothing */
 #endif
 
 #define OVERRIDE override
