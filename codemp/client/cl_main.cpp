@@ -2458,6 +2458,7 @@ void CL_InitRef( void ) {
     ri.WIN_Shutdown = WIN_Shutdown;
     ri.WIN_Present = WIN_Present;
 	ri.GL_GetProcAddress = WIN_GL_GetProcAddress;
+	ri.GL_ExtensionSupported = WIN_GL_ExtensionSupported;
 
 	ri.CM_GetCachedMapDiskImage = CM_GetCachedMapDiskImage;
 	ri.CM_SetCachedMapDiskImage = CM_SetCachedMapDiskImage;
