@@ -124,13 +124,13 @@ qboolean SpotWouldTelefrag( gentity_t *spot, team_t checkteam )
 	vec3_t		mins, maxs;
 
 	// If we have a mins, use that instead of the hardcoded bounding box
-	if ( spot->mins && VectorLength( spot->mins ) )
+	if ( !VectorCompare(spot->mins, vec3_origin) && && VectorLength( spot->mins ) )
 		VectorAdd( spot->s.origin, spot->mins, mins );
 	else
 		VectorAdd( spot->s.origin, playerMins, mins );
 
 	// If we have a maxs, use that instead of the hardcoded bounding box
-	if ( spot->maxs && VectorLength( spot->maxs ) )
+	if ( !VectorCompare(spot->maxs, vec3_origin) && && VectorLength( spot->maxs ) )
 		VectorAdd( spot->s.origin, spot->maxs, maxs );
 	else
 		VectorAdd( spot->s.origin, playerMaxs, maxs );
@@ -290,7 +290,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec
 	gentity_t	*spot;
 	gentity_t	*nearestSpot;
 
-	if ( level.spawntarget != NULL && level.spawntarget[0] )
+	if ( level.spawntarget[0] )
 	{//we have a spawnpoint specified, try to find it
 		if ( (nearestSpot = spot = G_Find( NULL, FOFS(targetname), level.spawntarget )) == NULL )
 		{//you HAVE to be able to find the desired spot

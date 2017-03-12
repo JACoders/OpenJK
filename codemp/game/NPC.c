@@ -364,9 +364,6 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope )
 		if ( trace.fraction >= 1.0 )
 			return;
 
-		if( !( &trace.plane ) )
-			return;
-
 		if ( VectorCompare( vec3_origin, trace.plane.normal ) )
 			return;
 
@@ -376,7 +373,6 @@ void pitch_roll_for_slope( gentity_t *forwhom, vec3_t pass_slope )
 	{
 		VectorCopy( pass_slope, slope );
 	}
-
 
 	AngleVectors( forwhom->r.currentAngles, ovf, ovr, NULL );
 

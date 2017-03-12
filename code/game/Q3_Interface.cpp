@@ -128,7 +128,7 @@ stringID_table_t BSETTable[] =
 
 stringID_table_t WPTable[] =
 {
-	{ "NULL",WP_NONE },
+	{ "NULL", WP_NONE },
 	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_SABER),				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
