@@ -38,7 +38,9 @@ typedef struct {
 	void		(*Printf)( const char *fmt, ... );
 
 	// abort the game
-	void		(*Error)( int level, const char *fmt, ... );
+	// (this is not NORETURN because MSVC's version of NORETURN is not
+	// supported for function pointers)
+	__attribute__((noreturn)) void	(*Error)( int level, const char *fmt, ... );
 
 	// console variable interaction
 	void		(*Cvar_Set)( const char *name, const char *value );

@@ -44,7 +44,7 @@ int PASSFLOAT( float x ) {
 void trap_Print( const char *fmt ) {
 	Q_syscall( CG_PRINT, fmt );
 }
-void trap_Error( const char *fmt ) {
+NORETURN void trap_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
 	exit(1);
 }
@@ -706,7 +706,7 @@ float CGSyscall_R_GetDistanceCull( void ) { float tmp; trap_R_GetDistanceCull( &
 void CGSyscall_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal ) { if ( isPortal ) trap_FX_PlayPortalEffectID( id, org, fwd, vol, rad ); else trap_FX_PlayEffectID( id, org, fwd, vol, rad ); }
 void CGSyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
 
-void QDECL CG_Error( int level, const char *error, ... ) {
+NORETURN void QDECL CG_Error( int level, const char *error, ... ) {
 	va_list argptr;
 	char text[1024] = {0};
 

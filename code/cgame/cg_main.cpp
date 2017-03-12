@@ -570,7 +570,7 @@ void CG_Printf( const char *msg, ... ) {
 	cgi_Printf( text );
 }
 
-void CG_Error( const char *msg, ... ) {
+NORETURN void CG_Error( const char *msg, ... ) {
 	va_list		argptr;
 	char		text[1024];
 
