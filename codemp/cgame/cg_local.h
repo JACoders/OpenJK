@@ -432,7 +432,7 @@ typedef struct centity_s {
 	int				trickAlphaTime;
 
 	int				teamPowerEffectTime;
-	qboolean		teamPowerType; //0 regen, 1 heal, 2 drain, 3 absorb
+	int				teamPowerType; //0 regen, 1 heal, 2 drain, 3 absorb
 
 	qboolean		isRagging;
 	qboolean		ownerRagging;
