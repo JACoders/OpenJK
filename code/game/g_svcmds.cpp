@@ -222,7 +222,7 @@ static void Svcmd_SaberBlade_f()
 		gi.Printf( "USAGE: saberblade <sabernum> <bladenum> [0 = off, 1 = on, no arg = toggle]\n" );
 		return;
 	}
-	if ( &g_entities[0] == NULL || &g_entities[0].client == NULL )
+	if ( &g_entities[0] == NULL || g_entities[0].client == NULL )
 	{
 		return;
 	}
@@ -328,11 +328,6 @@ static void Svcmd_ForceSetLevel_f( int forcePower )
 {
 	if ( !&g_entities[0] || !g_entities[0].client )
 	{
-		return;
-	}
-	if ( !g_cheats->integer )
-	{
-		gi.SendServerCommand( 0, "print \"Cheats are not enabled on this server.\n\"");
 		return;
 	}
 	const char *newVal = gi.argv(1);
@@ -941,6 +936,7 @@ static svcmd_t svcmds[] = {
 	{ "control",					Svcmd_Control_f,							CMD_CHEAT },
 	{ "grab",						Svcmd_Grab_f,								CMD_CHEAT },
 	{ "knockdown",					Svcmd_Knockdown_f,							CMD_CHEAT },
+
 	{ "playerModel",				Svcmd_PlayerModel_f,						CMD_NONE },
 	{ "playerTint",					Svcmd_PlayerTint_f,							CMD_NONE },
 	
