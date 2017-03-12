@@ -1220,7 +1220,7 @@ KeywordHash_Key
 */
 int KeywordHash_Key(const char *keyword)
 {
-	int register hash, i;
+	int hash, i;
 
 	hash = 0;
 	for (i = 0; keyword[i] != '\0'; i++) {
