@@ -760,11 +760,7 @@ typedef enum gameExportLegacy_e {
 typedef struct gameImport_s {
 	// misc
 	void		(*Print)								( const char *msg, ... );
-
-	// this is not NORETURN because MSVC's version of NORETURN is not
-	// supported for function pointers
-	__attribute__((noreturn)) void (*Error)( int level, const char *fmt, ... );
-
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	int			(*Milliseconds)							( void );
 	void		(*PrecisionTimerStart)					( void **timer );
 	int			(*PrecisionTimerEnd)					( void *timer );

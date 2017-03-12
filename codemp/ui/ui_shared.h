@@ -461,11 +461,7 @@ typedef struct displayContextDef_s {
 	void			(*getBindingBuf)					( int keynum, char *buf, int buflen );
 	void			(*setBinding)						( int keynum, const char *binding );
 	void			(*executeText)						( int exec_when, const char *text );
-
-	// this is not NORETURN because MSVC's version of NORETURN is not
-	// supported for function pointers
-	__attribute__((noreturn)) void (*Error)( int level, const char *fmt, ... );
-
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	void			(*Print)							( const char *msg, ... );
 	void			(*Pause)							( qboolean b );
 	int				(*ownerDrawWidth)					( int ownerDraw, float scale );

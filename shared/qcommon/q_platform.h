@@ -195,8 +195,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #if defined(__GNUC__)
 #define NORETURN __attribute__((noreturn))
+#define NORETURN_PTR __attribute__((noreturn))
 #elif defined(_MSC_VER)
 #define NORETURN __declspec(noreturn)
+// __declspec doesn't work on function pointers
+#define NORETURN_PTR /* nothing */
 #endif
 
 #define OVERRIDE override

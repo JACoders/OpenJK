@@ -476,11 +476,7 @@ typedef enum cgameExportLegacy_e {
 typedef struct cgameImport_s {
 	// common
 	void			(*Print)								( const char *msg, ... );
-
-	// this is not NORETURN because MSVC's version of NORETURN is not
-	// supported for function pointers
-	__attribute__((noreturn)) void (*Error)( int level, const char *fmt, ... );
-
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	void			(*SnapVector)							( float *v );
 	int				(*MemoryRemaining)						( void );
 	void			(*RegisterSharedMemory)					( char *memory );
