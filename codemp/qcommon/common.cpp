@@ -1364,6 +1364,12 @@ void Com_WriteConfig_f( void ) {
 		return;
 	}
 
+	if(!FS_FilenameCompare(filename, "mpdefault.cfg") || !FS_FilenameCompare(filename, "default.cfg"))
+	{
+		Com_Printf( S_COLOR_YELLOW "Com_WriteConfig_f: The filename \"%s\" is reserved! Please choose another name.\n", filename );
+		return;
+	}
+
 	Com_Printf( "Writing %s.\n", filename );
 	Com_WriteConfigToFile( filename );
 }
