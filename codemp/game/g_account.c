@@ -2565,7 +2565,7 @@ void Svcmd_AccountInfo_f(void)
 	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
 	Q_strncpyz(buf, va("Stats for %s:\n", username), sizeof(buf));
-		Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
+	Q_strcat(buf, sizeof(buf), va("   ^5Last login: ^2%s\n", timeStr));
 	Q_strcat(buf, sizeof(buf), va("   ^5Last IP^3: ^2%u\n", lastip));
 
 	trap->Print( "%s", buf);
@@ -2924,7 +2924,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     while (1) {
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
-			lastlogin = sqlite3_column_int(stmt, 5);
+			lastlogin = sqlite3_column_int(stmt, 1);
             row++;
         }
         else if (s == SQLITE_DONE)

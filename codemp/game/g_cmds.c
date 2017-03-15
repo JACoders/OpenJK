@@ -7654,6 +7654,109 @@ static qboolean LoadEnts(char *fileName) {
 	return qtrue;
 }
 
+
+//
+#if _TESTBSP
+static void Cmd_TestBSP_f(gentity_t *self) {
+	char	temp[MAX_QPATH];
+	char	*out;
+	float	newAngle;
+	int		tempint;
+
+	gentity_t *ent;
+	ent = G_Spawn(qtrue);
+
+	G_SpawnFloat( "angle", "0", &newAngle );
+	if (newAngle != 0.0)
+	{
+		ent->s.angles[1] = newAngle;
+	}
+	// don't support rotation any other way
+	ent->s.angles[0] = 0.0;
+	ent->s.angles[2] = 0.0;
+	
+	G_SpawnString("bspmodel", "t1_inter", &out);
+
+	ent->s.eFlags = EF_PERMANENT;
+
+	// Mainly for debugging
+	G_SpawnInt( "spacing", "0", &tempint);
+	ent->s.time2 = tempint;
+	G_SpawnInt( "flatten", "0", &tempint);
+	ent->s.time = tempint;
+
+	Com_sprintf(temp, MAX_QPATH, "#%s", out);
+	trap->SetBrushModel( (sharedEntity_t *)ent, temp );  // SV_SetBrushModel -- sets mins and maxs
+	G_BSPIndex(temp);
+
+	level.mNumBSPInstances++;
+	Com_sprintf(temp, MAX_QPATH, "%d-", level.mNumBSPInstances);
+	VectorCopy(ent->s.origin, level.mOriginAdjust);
+	level.mRotationAdjust = ent->s.angles[1];
+	level.mTargetAdjust = temp;
+	//level.hasBspInstances = qtrue; //rww - also not referenced anywhere.
+	level.mBSPInstanceDepth++;
+	/*
+	G_SpawnString("filter", "", &out);
+	strcpy(level.mFilter, out);
+	*/
+	G_SpawnString("teamfilter", "", &out);
+	strcpy(level.mTeamFilter, out);
+
+	VectorCopy( ent->s.origin, ent->s.pos.trBase );
+	VectorCopy( ent->s.origin, ent->r.currentOrigin );
+	VectorCopy( ent->s.angles, ent->s.apos.trBase );
+	VectorCopy( ent->s.angles, ent->r.currentAngles );
+
+	ent->s.eType = ET_MOVER;
+
+	trap->LinkEntity ((sharedEntity_t *)ent);
+
+	trap->SetActiveSubBSP(ent->s.modelindex);
+	G_SpawnEntitiesFromString(qtrue);
+	trap->SetActiveSubBSP(-1);
+
+	level.mBSPInstanceDepth--;
+	//level.mFilter[0] = level.mTeamFilter[0] = 0;
+	level.mTeamFilter[0] = 0;
+
+
+	//G_SetOrigin(ent, ent->s.origin);
+	//trap->LinkEntity( (sharedEntity_t *)ent );
+}
+/*
+static void Cmd_TestBSP_f(gentity_t *self) {
+	gentity_t *newEnt;
+	vec3_t origin = {0, 0, 0};
+
+	newEnt = G_Spawn(qtrue);
+
+	Com_Printf("Spot 1\n");
+
+	newEnt->classname = "misc_bsp";
+	newEnt->model = "t1_inter";	
+
+
+	Com_Printf("Spot 2\n");
+
+	VectorCopy(origin, newEnt->s.origin);
+
+	Com_Printf("Spot 3\n");
+
+	if (!G_CallSpawn(newEnt)) {
+		Com_Printf("Spot 4\n");
+		G_FreeEntity(newEnt);
+	}
+
+	Com_Printf("Spot 5\n");
+
+	//G_SetOrigin(ent, newOrigin);
+	//trap->LinkEntity( (sharedEntity_t *)newEnt );
+
+}
+*/
+#endif
+//
 static void Cmd_MapEnts_f(gentity_t *self)
 {
 	char arg1[32], arg2[MAX_QPATH], info[1024] = {0}, fileName[MAX_QPATH];
@@ -8153,6 +8256,9 @@ void Cmd_PersonalBest_f( gentity_t *ent);
 void Cmd_Nudge_f( gentity_t *ent);
 void Cmd_MapEnts_f( gentity_t *self);
 void Cmd_NotCompleted_f( gentity_t *ent );
+#if _TESTBSP
+void Cmd_TestBSP_f( gentity_t *ent );
+#endif
 #if _ELORANKING
 void Cmd_DuelTop10_f( gentity_t *ent );
 #endif
@@ -8307,6 +8413,11 @@ command_t commands[] = {
 //	{ "teamtask",			Cmd_TeamTask_f,				CMD_NOINTERMISSION },
 	{ "teamvote",			Cmd_TeamVote_f,				CMD_NOINTERMISSION },
 	{ "tell",				Cmd_Tell_f,					0 },
+
+#if _TESTBSP
+	{ "testBSP",			Cmd_TestBSP_f,				CMD_CHEAT|CMD_NOINTERMISSION },
+#endif
+
 	{ "thedestroyer",		Cmd_TheDestroyer_f,			CMD_CHEAT|CMD_ALIVE },
 	{ "throwflag",			Cmd_Throwflag_f,			CMD_ALIVE|CMD_NOINTERMISSION },
 
