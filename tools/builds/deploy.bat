@@ -1,4 +1,7 @@
+SETLOCAL CYGWIN_ROOT=C:\cygwin
+SETLOCAL DEPLOY_LOCATION=ojkwinbuilder@upload.openjk.org:/home/ojkwinbuilder/builds/
+
 if "%APPVEYOR_FORCED_BUILD%"=="True" (
-	C:\cygwin\setup-x86.exe -qnNdO -R C:/cygwin -s http://cygwin.mirror.constant.com -l C:/cygwin/var/cache/setup -P rsync
-	C:\cygwin\bin\bash -lc rsync -avz --progress -e 'ssh -p 29022' --protocol=29 openjk-windows*.zip ojkwinbuilder@upload.openjk.org:/home/ojkwinbuilder/builds/
+	%CYGWIN_ROOT%\setup-x86.exe -qnNdO -R %CYGWIN_ROOT% -s http://cygwin.mirror.constant.com -l %CYGWIN_ROOT%/var/cache/setup -P rsync
+	%CYGWIN_ROOT%\bin\bash -lc 'rsync -avz --progress -e "ssh -p 29022" --protocol=29 openjk-windows*.zip "%DEPLOY_LOCATION%"'
 )
