@@ -1502,7 +1502,7 @@ void Cvar_Init (void) {
 	memset( cvar_indexes, 0, sizeof( cvar_indexes ) );
 	memset( hashTable, 0, sizeof( hashTable ) );
 
-	cvar_cheats = Cvar_Get( "sv_cheats", "1", CVAR_ROM|CVAR_SYSTEMINFO, "Allow cheats on server if set to 1" );
+	cvar_cheats = Cvar_Get( "sv_cheats", "1", CVAR_SYSTEMINFO, "Allow cheats on server if set to 1" );
 
 	Cmd_AddCommand( "print", Cvar_Print_f, "Print cvar help" );
 	Cmd_SetCommandCompletionFunc( "print", Cvar_CompleteCvarName );
