@@ -10,11 +10,11 @@ This is a project that uses OpenJK, but adds a couple features that I believe sh
 
 1.01
 * Added a cvar to toggle idle animations (personal annoyance of mine) - g_useIdleAnims
+
 1.02
-
 * restored the ability to use map glitches via dmflags 520
-1.03
 
+1.03
 * Cheats are now toggled via rcon - sv_cheats
 
 A couple more to come soon.
