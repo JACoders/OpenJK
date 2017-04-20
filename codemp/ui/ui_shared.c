@@ -3370,7 +3370,7 @@ const char *Item_Multi_Setting(itemDef_t *item) {
  			}
  		}
 	}
-	return "";
+	return "@MENUS_CUSTOM";
 }
 
 qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
@@ -4284,7 +4284,22 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 
 		case A_F12:
 			if (DC->getCVarValue("developer")) {
-				DC->executeText(EXEC_APPEND, "screenshot\n");
+				switch ( DC->screenshotFormat ) {
+					case SSF_JPEG:
+						DC->executeText(EXEC_APPEND, "screenshot\n");
+						break;
+					case SSF_TGA:
+						DC->executeText(EXEC_APPEND, "screenshot_tga\n");
+						break;
+					case SSF_PNG:
+						DC->executeText(EXEC_APPEND, "screenshot_png\n");
+						break;
+					default:
+						if (DC->Print) {
+							DC->Print(S_COLOR_YELLOW "Menu_HandleKey[F12]: Unknown screenshot format assigned! This should not happen.\n");
+						}
+						break;
+				}
 			}
 			break;
 		case A_KP_8:
@@ -6347,6 +6362,11 @@ void Item_Paint(itemDef_t *item)
 		} else {
 			item->window.flags |= WINDOW_VISIBLE;
 		}
+	}
+
+	if (item->disabled && item->disabledHidden)
+	{
+		return;
 	}
 
 	if (item->cvarFlags & (CVAR_SHOW | CVAR_HIDE)) {
@@ -8456,7 +8476,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 		}
 	}
 
-	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && item->cvarFlags & CVAR_HIDE ) {
+	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && (item->cvarFlags & CVAR_HIDE) ) {
 		if( item->parent )
 		{
 			menuDef_t *parent = (menuDef_t *)item->parent;

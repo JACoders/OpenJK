@@ -24,6 +24,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef __UI_SHARED_H
 #define __UI_SHARED_H
 
+enum {
+	SSF_JPEG = 0,
+	SSF_TGA,
+	SSF_PNG
+};
+
 #define MAX_TOKENLENGTH		1024
 #define MAX_OPEN_MENUS 16
 #define	MAX_TEXTSCROLL_LINES		256
@@ -238,6 +244,8 @@ typedef struct {
 	qhandle_t	whiteShader;
 	qhandle_t	gradientImage;
 	float FPS;
+
+	int			screenshotFormat;
 
 } displayContextDef_t;
 

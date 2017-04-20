@@ -4,8 +4,8 @@ branches:
   except:
     - release/1.0
 
-clone_depth: 1 #clone entire repository history if not defined
-shallow_clone: true #GitHub specific (ignores clone_depth)
+clone_depth: 1
+shallow_clone: true
 
 #do not build on tags
 skip_tags: true
@@ -32,24 +32,21 @@ init:
   - ps: Update-AppveyorBuild -Version "1.0-git-$($env:appveyor_repo_commit.substring(0,8))"
   - cmake --version
   - msbuild /version
-  #- cmake --help #debug: view available generators
-  - python --version #for tests, todo (try starting the built executables)
 
 #where to clone the git repository to
 clone_folder: C:\projects\OpenJK
 
 #scripts to run before build
 before_build:
-  - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  #- set #debug: view all environment variables
-  - cmd: if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
-  - cmd: echo "Generator='%CMAKE_GENERATOR%'"
-  - cmd: echo "Platform='%Platform%'"
-  - cmd: if exist build rmdir /q /s build #remove build dir
-  - cmd: mkdir build
-  - cmd: cd build
-  - cmd: cmake -DCMAKE_INSTALL_PREFIX=install -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
-  - cmd: ls
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - if "%Platform%"=="x64" set "CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64"
+  - echo "Generator='%CMAKE_GENERATOR%'"
+  - echo "Platform='%Platform%'"
+  - if exist build rmdir /q /s build #remove build dir
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=install -G "%CMAKE_GENERATOR%" "%APPVEYOR_BUILD_FOLDER%"
+  - ls
 
 build:
   parallel: true
@@ -58,4 +55,15 @@ build:
 
 #scripts to run after build
 after_build:
-  - cmd: cmake --build . --target INSTALL
+  - cmake --build . --target INSTALL
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - 7z a openjk-windows.zip %APPVEYOR_BUILD_FOLDER%/build/install/JediAcademy/*
+  - 7z l openjk-windows.zip # list files in the zip file
+
+artifacts:
+  - path: openjk-windows.zip
+    name: OpenJK Jedi Academy ZIP
+    type: zip
+
+deploy_script:
+  - tools/builds/deploy.bat

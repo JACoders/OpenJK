@@ -79,7 +79,7 @@ extern cvar_t	*g_skippingcin;
 
 extern qboolean	stop_icarus;
 
-#define stringIDExpand(str, strEnum)	str, strEnum, ENUM2STRING(strEnum)
+#define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
 //#define stringIDExpand(str, strEnum)	str,strEnum
 
 /*
@@ -125,12 +125,12 @@ stringID_table_t BSETTable[] =
 	ENUM2STRING(BSET_FFIRE),//# script to run when player shoots their own teammates
 	ENUM2STRING(BSET_FFDEATH),//# script to run when player kills a teammate
 	stringIDExpand("", BSET_INVALID),
-	"",				-1,
+	{"",				-1},
 };
 
 stringID_table_t WPTable[] =
 {
-	"NULL",WP_NONE,
+	{"NULL", WP_NONE},
 	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_SABER),				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
@@ -2303,7 +2303,7 @@ stringID_table_t teamTable [] =
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
-	"", TEAM_FREE,
+	{"", TEAM_FREE},
 };
 
 

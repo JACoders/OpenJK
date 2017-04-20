@@ -1048,7 +1048,7 @@ static void Item_ApplyHacks( itemDef_t *item ) {
 		}
 	}
 	
-	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && item->cvarFlags & CVAR_HIDE ) {
+	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && (item->cvarFlags & CVAR_HIDE) ) {
 		if( item->parent )
 		{
 			menuDef_t *parent = (menuDef_t *)item->parent;
@@ -1220,7 +1220,7 @@ KeywordHash_Key
 */
 int KeywordHash_Key(const char *keyword)
 {
-	int register hash, i;
+	int hash, i;
 
 	hash = 0;
 	for (i = 0; keyword[i] != '\0'; i++) {
@@ -3045,7 +3045,11 @@ const char *Item_Multi_Setting(itemDef_t *item)
  		}
 	}
 
-	return "";
+#ifdef JK2_MODE
+	return "@MENUS1_CUSTOM";
+#else
+	return "@MENUS_CUSTOM";
+#endif
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -11279,7 +11283,23 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down)
 		case A_F12:
 			if (DC->getCVarValue("developer"))
 			{
-				DC->executeText(EXEC_APPEND, "screenshot\n");
+				switch ( DC->screenshotFormat )
+				{
+					case SSF_JPEG:
+						DC->executeText(EXEC_APPEND, "screenshot\n");
+						break;
+					case SSF_TGA:
+						DC->executeText(EXEC_APPEND, "screenshot_tga\n");
+						break;
+					case SSF_PNG:
+						DC->executeText(EXEC_APPEND, "screenshot_png\n");
+						break;
+					default:
+						if (DC->Print) {
+							DC->Print(S_COLOR_YELLOW "Menu_HandleKey[F12]: Unknown screenshot format assigned! This should not happen.\n");
+						}
+						break;
+				}
 			}
 			break;
 		case A_KP_8:

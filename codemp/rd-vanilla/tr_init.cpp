@@ -316,23 +316,14 @@ void R_Splash()
 
   Cannot use strstr directly to differentiate between (for eg) reg_combiners and reg_combiners2
 */
-bool GL_CheckForExtension(const char *ext)
-{
-	const char *ptr = Q_stristr( glConfigExt.originalExtensionString, ext );
-	if (ptr == NULL)
-		return false;
-	ptr += strlen(ext);
-	return ((*ptr == ' ') || (*ptr == '\0'));  // verify it's complete string.
-}
-
 
 static void GLW_InitTextureCompression( void )
 {
 	bool newer_tc, old_tc;
 
 	// Check for available tc methods.
-	newer_tc = GL_CheckForExtension("ARB_texture_compression") && GL_CheckForExtension("EXT_texture_compression_s3tc");
-	old_tc = GL_CheckForExtension("GL_S3_s3tc");
+	newer_tc = ri->GL_ExtensionSupported("GL_ARB_texture_compression") && ri->GL_ExtensionSupported("GL_EXT_texture_compression_s3tc");
+	old_tc = ri->GL_ExtensionSupported("GL_S3_s3tc");
 
 	if ( old_tc )
 	{
@@ -457,7 +448,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_env_add
 	glConfig.textureEnvAddAvailable = qfalse;
-	if ( GL_CheckForExtension( "EXT_texture_env_add" ) )
+	if ( ri->GL_ExtensionSupported( "GL_EXT_texture_env_add" ) )
 	{
 		if ( r_ext_texture_env_add->integer )
 		{
@@ -477,7 +468,7 @@ static void GLimp_InitExtensions( void )
 
 	// GL_EXT_texture_filter_anisotropic
 	glConfig.maxTextureFilterAnisotropy = 0;
-	if ( GL_CheckForExtension( "EXT_texture_filter_anisotropic" ) )
+	if ( ri->GL_ExtensionSupported( "GL_EXT_texture_filter_anisotropic" ) )
 	{
 		qglGetFloatv( GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &glConfig.maxTextureFilterAnisotropy );
 		Com_Printf ("...GL_EXT_texture_filter_anisotropic available\n" );
@@ -510,7 +501,7 @@ static void GLimp_InitExtensions( void )
 	qglMultiTexCoord2fARB = NULL;
 	qglActiveTextureARB = NULL;
 	qglClientActiveTextureARB = NULL;
-	if ( GL_CheckForExtension( "GL_ARB_multitexture" ) )
+	if ( ri->GL_ExtensionSupported( "GL_ARB_multitexture" ) )
 	{
 		if ( r_ext_multitexture->integer )
 		{
@@ -548,7 +539,7 @@ static void GLimp_InitExtensions( void )
 	// GL_EXT_compiled_vertex_array
 	qglLockArraysEXT = NULL;
 	qglUnlockArraysEXT = NULL;
-	if ( GL_CheckForExtension( "GL_EXT_compiled_vertex_array" ) )
+	if ( ri->GL_ExtensionSupported( "GL_EXT_compiled_vertex_array" ) )
 	{
 		if ( r_ext_compiled_vertex_array->integer )
 		{
@@ -571,7 +562,7 @@ static void GLimp_InitExtensions( void )
 
 	bool bNVRegisterCombiners = false;
 	// Register Combiners.
-	if ( GL_CheckForExtension( "GL_NV_register_combiners" ) )
+	if ( ri->GL_ExtensionSupported( "GL_NV_register_combiners" ) )
 	{
 		// NOTE: This extension requires multitexture support (over 2 units).
 		if ( glConfig.maxActiveTextures >= 2 )
@@ -624,7 +615,7 @@ static void GLimp_InitExtensions( void )
 
 	// Vertex Programs.
 	bool bARBVertexProgram = false;
-	if ( GL_CheckForExtension( "GL_ARB_vertex_program" ) )
+	if ( ri->GL_ExtensionSupported( "GL_ARB_vertex_program" ) )
 	{
 		bARBVertexProgram = true;
 	}
@@ -636,7 +627,7 @@ static void GLimp_InitExtensions( void )
 
 	// Fragment Programs.
 	bool bARBFragmentProgram = false;
-	if ( GL_CheckForExtension( "GL_ARB_fragment_program" ) )
+	if ( ri->GL_ExtensionSupported( "GL_ARB_fragment_program" ) )
 	{
 		bARBFragmentProgram = true;
 	}
@@ -695,7 +686,7 @@ static void GLimp_InitExtensions( void )
 		g_bTextureRectangleHack = true;
 	}
 
-	if ( GL_CheckForExtension( "GL_NV_texture_rectangle" ) || GL_CheckForExtension( "GL_EXT_texture_rectangle" ) )
+	if ( ri->GL_ExtensionSupported( "GL_NV_texture_rectangle" ) || ri->GL_ExtensionSupported( "GL_EXT_texture_rectangle" ) )
 	{
 		bTexRectSupported = true;
 	}

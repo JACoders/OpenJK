@@ -1084,7 +1084,7 @@ void CL_InitRef( void ) {
 	GetRefAPI_t	GetRefAPI;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
-    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
+    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH|CVAR_PROTECTED );
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
@@ -1160,6 +1160,7 @@ void CL_InitRef( void ) {
     rit.WIN_Shutdown = WIN_Shutdown;
     rit.WIN_Present = WIN_Present;
 	rit.GL_GetProcAddress = WIN_GL_GetProcAddress;
+	rit.GL_ExtensionSupported = WIN_GL_ExtensionSupported;
 
 	rit.PD_Load = PD_Load;
 	rit.PD_Store = PD_Store;

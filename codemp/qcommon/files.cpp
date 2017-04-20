@@ -1267,6 +1267,7 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 	//unz_s			*zfi;
 	//void			*temp;
 	int				l;
+	bool			isUserConfig = false;
 
 	hash = 0;
 
@@ -1300,6 +1301,8 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 		return -1;
 	}
 
+	isUserConfig = !Q_stricmp( filename, "autoexec.cfg" ) || !Q_stricmp( filename, Q3CONFIG_CFG );
+
 	//
 	// search through the path, one element at a time
 	//
@@ -1327,6 +1330,11 @@ long FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean unique
 			if ( search->pack && search->pack->hashTable[hash] ) {
 				// disregard if it doesn't match one of the allowed pure pak files
 				if ( !FS_PakIsPure(search->pack) ) {
+					continue;
+				}
+
+				// autoexec.cfg and openjk.cfg can only be loaded outside of pk3 files.
+				if ( isUserConfig ) {
 					continue;
 				}
 
