@@ -5519,7 +5519,7 @@ static const char *g_bindCommands[] = {
 #endif
 	"saberAttackCycle",
 #ifdef JK2_MODE
-	"save quik*",
+	"save quik",
 #else
 	"save quick",
 #endif
