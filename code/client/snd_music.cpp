@@ -516,7 +516,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 						else
 						{
 							const CGPProperty *pValueBoss = pgLevelMusicOfBoss->FindProperty( sKEY_BOSS );
-							if( pValueBoss )
+							if( !pValueBoss )
 							{
 								Music_Parse_Error( filename, build_string( "'useboss' \"", psName_UseBoss, "\" has no \"boss\" entry!\n" ) );
 								bReturn = qfalse;
