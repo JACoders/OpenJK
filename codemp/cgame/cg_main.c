@@ -2620,10 +2620,6 @@ Ghoul2 Insert End
 	cg.distanceCull = trap->R_GetDistanceCull();
 
 	CG_ParseEntitiesFromString();
-
-	trap->Cvar_VariableStringBuffer( "rate", buf, sizeof( buf ) );
-	if ( atoi( buf ) == 4000 )
-		trap->Print( "^3WARNING: Default /rate value detected. Suggest typing /rate 25000 for a smoother connection!\n" );
 }
 
 //makes sure returned string is in localized format
