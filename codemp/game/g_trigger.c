@@ -1221,7 +1221,7 @@ qboolean ValidRaceSettings(int restrictions, gentity_t *player)
 	}
 	if (player->client->pers.haste && !(restrictions & (1 << 3))) 
 		return qfalse; //IF client has haste, and the course does not allow haste, dont count it.
-	if ((style != MV_JETPACK) && (player->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && !(restrictions & (1 << 4)))
+	if ((style != MV_JETPACK) && (player->client->ps.stats[STAT_HOLDABLE_ITEMS] & (1 << HI_JETPACK)) && !(restrictions & (1 << 4))) //kinda deprecated.. maybe just never allow jetpack?
 		return qfalse; //IF client has jetpack, and the course does not allow jetpack, dont count it.
 	if (style == MV_SWOOP && !player->client->ps.m_iVehicleNum)
 		return qfalse;

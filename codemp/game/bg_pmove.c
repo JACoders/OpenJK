@@ -1371,6 +1371,12 @@ static float PM_CmdScale( usercmd_t *cmd ) {
 	int		umove = 0; //cmd->upmove;
 			//don't factor upmove into scaling speed
 
+#if _SPPHYSICS
+	if (PM_GetMovePhysics() == MV_SP) {
+		umove = cmd->upmove;
+	}
+#endif
+
 	max = abs( cmd->forwardmove );
 	if ( abs( cmd->rightmove ) > max ) {
 		max = abs( cmd->rightmove );
@@ -3728,8 +3734,15 @@ static void PM_AirMove( void ) {
 	accelerate = pm_airaccelerate;
 
 #if _SPPHYSICS
-	if (PM_GetMovePhysics() == MV_SP)
+	if (PM_GetMovePhysics() == MV_SP) {
 		accelerate = 4.0f;
+
+		//SP Air Decel ?
+		if ((DotProduct(pm->ps->velocity, wishdir)) < 0.0f)
+		{//Encourage deceleration away from the current velocity
+			wishspeed *= 1.35f;//pm_airDecelRate
+		}
+	}
 #endif
 
 	if ( pVeh && pVeh->m_pVehicleInfo->type == VH_SPEEDER )
@@ -4203,7 +4216,7 @@ static void PM_WalkMove( void ) {
 	}
 #if _SPPHYSICS
 	else if (PM_GetMovePhysics() == MV_SP) {
-		realaccelerate = 14.0f;
+		realaccelerate = 12.0f;
 	}
 #endif
 

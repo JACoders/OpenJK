@@ -197,9 +197,6 @@ XCVAR_DEF( g_selfDamageScale,			"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_projectileInheritance,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fullInheritance,			"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 
-
-
-
 //JAPRO MOVEMENT
 XCVAR_DEF( g_flipKick,					"0",			CVU_Flipkick,		CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_nonRandomKnockdown,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -256,6 +253,7 @@ XCVAR_DEF( g_damageNumbers,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_fixKillCredit,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_stopHealthESP,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_blockDuelHealthSpec,		"0",			NULL,				CVAR_ARCHIVE,									qtrue )
+
 #define _ANTIWALLHACK 1
 #if _ANTIWALLHACK
 XCVAR_DEF( g_antiWallhack,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )
@@ -318,19 +316,14 @@ XCVAR_DEF( g_eloProvisionalCutoff,			"10",			NULL,				CVAR_ARCHIVE,									qfal
 XCVAR_DEF( g_eloProvisionalChangeBig,		"2",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloProvisionalChangeSmall,		"1.5",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( g_eloMinimumDuels,				"20",			NULL,				CVAR_ARCHIVE,									qfalse )
-
-#define _NEWRACERANKING 1
-#if _NEWRACERANKING
-#endif
-
-#define _STATLOG 0
-#define _TESTBSP 0
-
 XCVAR_DEF( g_eloKValue1,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_eloKValue2,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( g_eloKValue3,						"25",			NULL,				CVAR_ARCHIVE,									qtrue )
 #endif
 
+#define _NEWRACERANKING 1
+#define _STATLOG 0
+#define _TESTBSP 0
 
 //XCVAR_DEF( cl_yawspeed,				"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )
 //XCVAR_DEF( cl_allowDownload,			"0",			NULL,				CVAR_SYSTEMINFO,								qfalse )

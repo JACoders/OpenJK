@@ -230,6 +230,13 @@ extern int dueltypes[MAX_CLIENTS];//JAPRO - Serverside - Fullforce Duels y is th
 #define	WT_NO_SPREAD			(1<<27)
 #define WT_SLOW_SNIPER			(1<<28)
 #define WT_SOLID_ROCKET			(1<<29)
+
+//wt_halt 
+//wt_hook
+//wt proj barrier
+//wt discord/tag
+
+
 /*
 //#define REDUCE_SABERBLOCK	(1<<20) //s
 #define ALLOW_GUNROLL		(1<<21)      //CLIENT
@@ -1241,7 +1248,7 @@ typedef enum
 	AET_SOUND,
 } alertEventType_e;
 
-#define _SPPHYSICS 0
+#define _SPPHYSICS 1
 typedef enum //movementstyle enum
 {
 	MV_SIEGE,

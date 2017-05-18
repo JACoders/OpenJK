@@ -1584,9 +1584,10 @@ svcmd_t svcmds[] = {
 	{ "startingWeapons",			Svcmd_ToggleStartingWeapons_f,		qfalse },
 	{ "toggleAdmin",				Svcmd_ToggleAdmin_f,				qfalse },
 	{ "toggleEmotes",				Svcmd_ToggleEmotes_f,				qfalse },
-	{ "toggleVote",					Svcmd_ToggleVote_f,					qfalse },
 
 	{ "toggleuserinfovalidation",	Svcmd_ToggleUserinfoValidation_f,	qfalse },
+	{ "toggleVote",					Svcmd_ToggleVote_f,					qfalse },
+
 	{ "tweakForce",					Svcmd_ToggleTweakForce_f,			qfalse },
 	{ "tweakSaber",					Svcmd_ToggleTweakSaber_f,			qfalse },
 	{ "tweakVote",					Svcmd_ToggleTweakVote_f,			qfalse },
