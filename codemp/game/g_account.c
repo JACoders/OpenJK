@@ -1047,6 +1047,7 @@ void IntegerToRaceName(int style, char *styleString, size_t styleStringSize) {
 		case 9:	Q_strncpyz(styleString, "swoop", styleStringSize); break;
 		case 10: Q_strncpyz(styleString, "jetpack", styleStringSize); break;
 		case 11: Q_strncpyz(styleString, "speed", styleStringSize); break;
+		case 12: Q_strncpyz(styleString, "sp", styleStringSize); break;
 		default: Q_strncpyz(styleString, "ERROR", styleStringSize); break;
 	}
 }
