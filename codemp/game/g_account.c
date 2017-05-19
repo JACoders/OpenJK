@@ -2925,7 +2925,7 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
     while (1) {
         s = sqlite3_step(stmt);
         if (s == SQLITE_ROW) {
-			lastlogin = sqlite3_column_int(stmt, 1);
+			lastlogin = sqlite3_column_int(stmt, 0);
             row++;
         }
         else if (s == SQLITE_DONE)
@@ -2946,7 +2946,6 @@ void Cmd_Stats_f( gentity_t *ent ) { //Should i bother to cache player stats in 
 		trap->SendServerCommand(ent-g_entities, "print \"ERROR: Multiple accounts found!\n\"");
 		return;
 	}
-
 
 	getDateTime(lastlogin, timeStr, sizeof(timeStr));
 
@@ -4439,7 +4438,7 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 					Q_strncpyz(strRace, (cl->sess.raceMode) ? "^2Yes^7" : "^1No^7", sizeof(strRace));
 					Q_strncpyz(strHidden, (cl->pers.noFollow) ? "^2Yes^7" : "^1No^7", sizeof(strHidden));
 
-					if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)
+					if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 0)  //should use integertoracename ?
 						Q_strncpyz(strStyle, "^7siege^7", sizeof(strStyle));
 					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 1)
 						Q_strncpyz(strStyle, "^7jka^7", sizeof(strStyle));
@@ -4463,6 +4462,8 @@ void Cmd_ACWhois_f( gentity_t *ent ) { //why does this crash sometimes..? condit
 						Q_strncpyz(strStyle, "^7jetpack^7", sizeof(strStyle));
 					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 11)
 						Q_strncpyz(strStyle, "^7speed^7", sizeof(strStyle));
+					else if (cl->ps.stats[STAT_MOVEMENTSTYLE] == 12)
+						Q_strncpyz(strStyle, "^7sp^7", sizeof(strStyle));
 
 				}
 			}
