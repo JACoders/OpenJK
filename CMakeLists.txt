@@ -206,6 +206,13 @@ if(MSVC)
 
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
+	
+	# Configure MSVC Runtime
+	include(MSVCRuntime)
+	if(NOT DEFINED MSVC_RUNTIME)
+		set(MSVC_RUNTIME "dynamic")
+	endif()
+	configure_msvc_runtime()
 
 	# We don't try to control symbol visibility under MSVC.
 	set(OPENJK_VISIBILITY_FLAGS "")
