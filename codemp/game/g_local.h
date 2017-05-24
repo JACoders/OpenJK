@@ -44,7 +44,8 @@ extern vec3_t gPainPoint;
 //==================================================================
 
 // the "gameversion" client command will print this plus compile date
-#define	GAMEVERSION	"OpenJK"
+// OpenJK-Alt by Circa		Version 1.03
+#define	GAMEVERSION	"basejka"
 
 #define SECURITY_LOG "security.log"
 
@@ -173,6 +174,9 @@ extern void *g2SaberInstance;
 
 extern qboolean gEscaping;
 extern int gEscapeTime;
+
+// OpenJK-Alt Serverside - Jcinfo bitvalues
+#define CROUCH_OLD (1<<9)
 
 struct gentity_s {
 	//rww - entstate must be first, to correspond with the bg shared entity structure
