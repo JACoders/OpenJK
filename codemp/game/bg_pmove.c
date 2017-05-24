@@ -4409,7 +4409,7 @@ Sets mins, maxs, and pm->ps->viewheight
 */
 static void PM_CheckDuck (void)
 {
-//	trace_t	trace;
+	trace_t	trace;
 
 	if ( pm->ps->m_iVehicleNum > 0 && pm->ps->m_iVehicleNum < ENTITYNUM_NONE )
 	{//riding a vehicle or are a vehicle
@@ -4503,6 +4503,14 @@ static void PM_CheckDuck (void)
 				pm->ps->pm_flags &= ~PMF_ROLLING;
 			}
 		}
+		else if ((pm->ps->pm_flags & PMF_ROLLING) && dmflags.integer & CROUCH_OLD) 
+		{
+			// try to stand up
+			pm->maxs[2] = pm->ps->standheight;//DEFAULT_MAXS_2;
+			pm->trace(&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+			if (!trace.allsolid)
+				pm->ps->pm_flags &= ~PMF_ROLLING;
+		}
 		else if (pm->cmd.upmove < 0 ||
 			pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
 			pm->ps->forceHandExtend == HANDEXTEND_PRETHROWN ||
@@ -4517,6 +4525,14 @@ static void PM_CheckDuck (void)
 				if ( PM_CanStand() ) {
 					pm->maxs[2] = pm->ps->standheight;
 					pm->ps->pm_flags &= ~PMF_DUCKED;
+				}
+				else if ((pm->ps->pm_flags & PMF_DUCKED) && dmflags.integer & CROUCH_OLD)
+				{
+					// try to stand up
+					pm->maxs[2] = pm->ps->standheight;//DEFAULT_MAXS_2;
+					pm->trace(&trace, pm->ps->origin, pm->mins, pm->maxs, pm->ps->origin, pm->ps->clientNum, pm->tracemask);
+					if (!trace.allsolid)
+						pm->ps->pm_flags &= ~PMF_DUCKED;
 				}
 			}
 		}
@@ -10366,11 +10382,11 @@ void PmoveSingle (pmove_t *pmove) {
 			if ( pm->ps->legsTimer > 0 || pm->ps->torsoTimer > 0 )
 			{
 				stiffenedUp = qtrue;
-				PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
+				// PM_SetPMViewAngle(pm->ps, pm->ps->viewangles, &pm->cmd);
 				pm->cmd.rightmove = 0;
 				pm->cmd.upmove = 0;
 				pm->cmd.forwardmove = 0;
-				pm->cmd.buttons = 0;
+				// pm->cmd.buttons = 0;
 			}
 		}
 	}
