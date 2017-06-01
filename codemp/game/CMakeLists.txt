@@ -1,17 +1,17 @@
 #============================================================================
 # Copyright (C) 2013 - 2015, OpenJK contributors
-# 
+#
 # This file is part of the OpenJK source code.
-# 
+#
 # OpenJK is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License version 2 as
 # published by the Free Software Foundation.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>.
 #============================================================================
@@ -21,7 +21,11 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPGameIncludeDirectories "${MPDir}")
+set(MPGameIncludeDirectories
+	"${MPDir}"
+	"${SharedDir}"
+	"${GSLIncludeDirectory}"
+	)
 if(WIN32)
 	set(MPGameLibraries "winmm")
 endif(WIN32)
@@ -141,15 +145,21 @@ source_group("game" FILES ${MPGameGameFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameGameFiles})
 
 set(MPGameCommonFiles
-	"${MPDir}/qcommon/q_math.c"
 	"${MPDir}/qcommon/q_shared.c"
 	"${MPDir}/qcommon/disablewarnings.h"
 	"${MPDir}/qcommon/q_shared.h"
-	"${MPDir}/qcommon/q_platform.h"
 	"${MPDir}/qcommon/tags.h"
+	
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${MPGameCommonFiles})
 set(MPGameFiles ${MPGameFiles} ${MPGameCommonFiles})
+
+set(MPGameCommonSafeFiles
+	${SharedCommonSafeFiles}
+	)
+source_group("common/safe" FILES ${MPGameCommonSafeFiles})
+set(MPGameFiles ${MPGameFiles} ${MPGameCommonSafeFiles})
 
 set(MPGameCgameFiles
 	"${MPDir}/cgame/animtable.h"
@@ -238,6 +248,10 @@ else()
 endif()
 
 set_target_properties(${MPGame} PROPERTIES COMPILE_DEFINITIONS "${MPGameDefines}")
+
+# Hide symbols not explicitly marked public.
+set_property(TARGET ${MPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 set_target_properties(${MPGame} PROPERTIES INCLUDE_DIRECTORIES "${MPGameIncludeDirectories}")
 set_target_properties(${MPGame} PROPERTIES PROJECT_LABEL "MP Game Library")
 # no libraries used

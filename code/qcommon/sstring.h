@@ -30,6 +30,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define SSTRING_H
 
 #include "../qcommon/q_shared.h"
+#include "qcommon/safe/gsl.h"
+#include <algorithm>
 
 template<int MaxSize>
 class sstring
@@ -47,17 +49,26 @@ public:
 		assert(strlen(o.mStorage.data)<MaxSize);
 		strcpy(mStorage.data,o.mStorage.data);
 	}
-*/	
+*/
 	sstring(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
-		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data));
 	}
 	sstring(const char *s)
 	{
 		//assert(strlen(s)<MaxSize);
 		//strcpy(mStorage.data,s);
-		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
+	}
+	sstring( const gsl::cstring_view& v )
+	{
+		if( v.size() + 1 > sizeof( mStorage.data ) )
+		{
+			Com_Error( ERR_FATAL, "String dest buffer too small (%d) to hold string of length %d", sizeof( mStorage.data ), v.size() );
+		}
+		std::copy( v.begin(), v.end(), mStorage.data );
+		mStorage.data[ v.size() ] = '\0';
 	}
 	sstring()
 	{
@@ -71,28 +82,28 @@ public:
 		strcpy(mStorage.data,o.mStorage.data);
 		return *this;
 	}
-*/	
+*/
 	sstring<MaxSize> & operator=(const sstring<MaxSize> &o)
 	{
 		//strcpy(mStorage.data,o.mStorage.data);
-		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,o.mStorage.data,sizeof(mStorage.data));
 		return *this;
 	}
 	sstring<MaxSize> & operator=(const char *s)
 	{
 		assert(strlen(s)<MaxSize);
 		//strcpy(mStorage.data,s);
-		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data),qtrue);
+		Q_strncpyz(mStorage.data,s,sizeof(mStorage.data));
 		return *this;
 	}
 	char *c_str()
 	{
 		return mStorage.data;
-	}	
+	}
 	const char *c_str() const
 	{
 		return mStorage.data;
-	}	
+	}
 	int capacity() const
 	{
 		return MaxSize;	// not sure if this should be MaxSize-1? depends if talking bytes or strlen space I guess

@@ -246,7 +246,7 @@ void R_Splash()
 	{
 		extern void	RB_SetGL2D (void);
 		RB_SetGL2D();
-		
+
 		GL_Bind( pImage );
 		GL_State(GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO);
 
@@ -816,7 +816,7 @@ byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *pa
 	padwidth = PAD(linelen, packAlign);
 
 	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = (byte *)ri.Z_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse, 4);
+	buffer = (byte *) R_Malloc(padwidth * height + *offset + packAlign - 1, TAG_TEMP_WORKSPACE, qfalse);
 
 	bufstart = (byte *)PADP((intptr_t) buffer + *offset, packAlign);
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
@@ -884,7 +884,7 @@ void R_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 
 	ri.FS_WriteFile(fileName, buffer, memcount + 18);
 
-	ri.Z_Free(allbuf);
+	R_Free(allbuf);
 }
 
 /*
@@ -899,7 +899,7 @@ void R_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) 
 
 	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
 	RE_SavePNG( fileName, buffer, width, height, 3 );
-	ri.Z_Free( buffer );
+	R_Free( buffer );
 }
 
 /*
@@ -920,7 +920,7 @@ void R_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName )
 		R_GammaCorrect(buffer + offset, memcount);
 
 	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
-	ri.Z_Free(buffer);
+	R_Free(buffer);
 }
 
 /*
@@ -964,7 +964,7 @@ static void R_LevelShot( void ) {
 	allsource = RB_ReadPixels(0, 0, glConfig.vidWidth, glConfig.vidHeight, &offset, &padlen);
 	source = allsource + offset;
 
-	buffer = (byte *)ri.Z_Malloc(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse, 4);
+	buffer = (byte *) R_Malloc(LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18, TAG_TEMP_WORKSPACE, qfalse);
 	Com_Memset (buffer, 0, 18);
 	buffer[2] = 2;		// uncompressed type
 	buffer[12] = LEVELSHOTSIZE & 255;
@@ -1001,8 +1001,8 @@ static void R_LevelShot( void ) {
 
 	ri.FS_WriteFile( checkname, buffer, LEVELSHOTSIZE * LEVELSHOTSIZE*3 + 18 );
 
-	ri.Z_Free( buffer );
-	ri.Z_Free( allsource );
+	R_Free( buffer );
+	R_Free( allsource );
 
 	Com_Printf ("Wrote %s\n", checkname );
 }
@@ -1180,22 +1180,37 @@ void GL_SetDefaultState( void )
 ================
 R_PrintLongString
 
-Workaround for ri.Printf's 1024 characters buffer limit.
+Workaround for Com_Printf's 1024 characters buffer limit.
 ================
 */
-
-void R_PrintLongString(const char *string) {
+void R_PrintLongString(const char *string)
+{
 	char buffer[1024];
-	const char *p;
-	int size = strlen(string);
+	const char *p = string;
+	int remainingLength = strlen(string);
 
-	p = string;
-	while(size > 0)
+	while (remainingLength > 0)
 	{
-		Q_strncpyz(buffer, p, sizeof (buffer) );
+		// Take as much characters as possible from the string without splitting words between buffers
+		// This avoids the client console splitting a word up when one half fits on the current line,
+		// but the second half would have to be written on a new line
+		int charsToTake = sizeof(buffer) - 1;
+		if (remainingLength > charsToTake) {
+			while (p[charsToTake - 1] > ' ' && p[charsToTake] > ' ') {
+				charsToTake--;
+				if (charsToTake == 0) {
+					charsToTake = sizeof(buffer) - 1;
+					break;
+				}
+			}
+		} else if (remainingLength < charsToTake) {
+			charsToTake = remainingLength;
+		}
+
+		Q_strncpyz( buffer, p, charsToTake + 1 );
 		Com_Printf( "%s", buffer );
-		p += 1023;
-		size -= 1023;
+		remainingLength -= charsToTake;
+		p += charsToTake;
 	}
 }
 
@@ -1732,7 +1747,7 @@ void R_Init( void ) {
 	R_NoiseInit();
 	R_Register();
 
-	backEndData = (backEndData_t *) Hunk_Alloc( sizeof( backEndData_t ), qtrue );
+	backEndData = (backEndData_t *) R_Hunk_Alloc( sizeof( backEndData_t ), qtrue );
 	R_InitNextFrame();
 
 	const color4ub_t color = {0xff, 0xff, 0xff, 0xff};

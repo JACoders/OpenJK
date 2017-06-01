@@ -27,8 +27,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // Bit Field
 // ---------
-// The bits class is a bit field of any length which supports all the 
-// standard bitwize operations in addition to some operators for adding & removing 
+// The bits class is a bit field of any length which supports all the
+// standard bitwize operations in addition to some operators for adding & removing
 // individual bits by their integer indicies and a string conversion method.
 //
 //
@@ -51,7 +51,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #endif
 namespace ratl
 {
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // The Bit Field Class
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ class bits_vs : public bits_base<SZ>
 			this->mV[i>>this->BITS_SHIFT] &= ~(1<<(i&this->BITS_AND));
 		}
 	}
-	
+
 public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
@@ -131,7 +131,7 @@ public:
 	int			size()	const
 	{
 		return SIZE;
-	}	
+	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	// Execute A Bitwise Flip On All The Bits
@@ -154,11 +154,11 @@ public:
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
-	// Query 
+	// Query
 	////////////////////////////////////////////////////////////////////////////////////////
 	bool		get_bit(const int i) const
 	{
-		// If you hit this assert, then you are trying 
+		// If you hit this assert, then you are trying
 		// to query a bit that goes beyond the number
 		// of bits this object can hold.
 		//--------------------------------------------

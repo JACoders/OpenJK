@@ -67,8 +67,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define FACE_LADDER					2		//ladder
 #define FACE_GROUND					4		//standing on ground when in this face
 #define FACE_GAP					8		//gap in the ground
-#define FACE_LIQUID					16		//face seperating two areas with liquid
-#define FACE_LIQUIDSURFACE			32		//face seperating liquid and air
+#define FACE_LIQUID					16		//face separating two areas with liquid
+#define FACE_LIQUIDSURFACE			32		//face separating liquid and air
 #define FACE_BRIDGE					64		//can walk over this face if bridge is closed
 
 //area contents

@@ -34,9 +34,9 @@ class ICARUS_Instance;
 class CSequence
 {
 
-	typedef list < CSequence * >	sequence_l;
-	typedef	map	< int, CSequence *> sequenceID_m;
-	typedef list < CBlock * >		block_l;
+	typedef std::list < CSequence * >	sequence_l;
+	typedef	std::map	< int, CSequence *> sequenceID_m;
+	typedef std::list < CBlock * >		block_l;
 
 public:
 

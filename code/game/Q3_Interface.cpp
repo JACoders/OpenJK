@@ -530,39 +530,39 @@ static void SetTextColor ( vec4_t textcolor,const char *color)
 
 	if (Q_stricmp(color,"BLACK") == 0)
 	{
-		Vector4Copy( colorTable[CT_BLACK], textcolor );
+		VectorCopy4( colorTable[CT_BLACK], textcolor );
 	}
 	else if (Q_stricmp(color,"RED") == 0)
 	{
-		Vector4Copy( colorTable[CT_RED], textcolor );
+		VectorCopy4( colorTable[CT_RED], textcolor );
 	}
 	else if (Q_stricmp(color,"GREEN") == 0)
 	{
-		Vector4Copy( colorTable[CT_GREEN], textcolor );
+		VectorCopy4( colorTable[CT_GREEN], textcolor );
 	}
 	else if (Q_stricmp(color,"YELLOW") == 0)
 	{
-		Vector4Copy( colorTable[CT_YELLOW], textcolor );
+		VectorCopy4( colorTable[CT_YELLOW], textcolor );
 	}
 	else if (Q_stricmp(color,"BLUE") == 0)
 	{
-		Vector4Copy( colorTable[CT_BLUE], textcolor );
+		VectorCopy4( colorTable[CT_BLUE], textcolor );
 	}
 	else if (Q_stricmp(color,"CYAN") == 0)
 	{
-		Vector4Copy( colorTable[CT_CYAN], textcolor );
+		VectorCopy4( colorTable[CT_CYAN], textcolor );
 	}
 	else if (Q_stricmp(color,"MAGENTA") == 0)
 	{
-		Vector4Copy( colorTable[CT_MAGENTA], textcolor );
+		VectorCopy4( colorTable[CT_MAGENTA], textcolor );
 	}
 	else if (Q_stricmp(color,"WHITE") == 0)
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor );
+		VectorCopy4( colorTable[CT_WHITE], textcolor );
 	}
 	else
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor );
+		VectorCopy4( colorTable[CT_WHITE], textcolor );
 	}
 
 	return;
@@ -764,10 +764,10 @@ static void Q3_SetObjective(const char *ObjEnum, int status)
 	switch (status)
 	{
 	case SET_OBJ_HIDE :
-		objective->display = OBJECTIVE_HIDE;
+		objective->display = (qboolean)(OBJECTIVE_HIDE != 0);
 		break;
 	case SET_OBJ_SHOW :
-		objective->display = OBJECTIVE_SHOW;
+		objective->display = (qboolean)(OBJECTIVE_SHOW != 0);
 		objectivesShown++;
 		missionInfo_Updated = qtrue;	// Activate flashing text
 		break;
@@ -2191,19 +2191,6 @@ static void Q3_SetLeader( int entID, const char *name )
 stringID_table_t teamTable [] =
 {
 	ENUM2STRING(TEAM_FREE),
-//	ENUM2STRING(TEAM_STARFLEET),
-//	ENUM2STRING(TEAM_BORG),
-//	ENUM2STRING(TEAM_PARASITE),
-//	ENUM2STRING(TEAM_SCAVENGERS),
-//	ENUM2STRING(TEAM_KLINGON),
-//	ENUM2STRING(TEAM_MALON),
-//	ENUM2STRING(TEAM_HIROGEN),
-//	ENUM2STRING(TEAM_IMPERIAL),
-//	ENUM2STRING(TEAM_STASIS),
-//	ENUM2STRING(TEAM_8472),
-//	ENUM2STRING(TEAM_BOTS),
-//	ENUM2STRING(TEAM_FORGE),
-//	ENUM2STRING(TEAM_DISGUISE),
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
@@ -7433,7 +7420,7 @@ CQuake3GameInterface::~CQuake3GameInterface()
 	}
 
 	// Clear out all precached script's.
-	for ( iterScript = m_ScriptList.begin(); iterScript != m_ScriptList.end(); iterScript++ )
+	for ( iterScript = m_ScriptList.begin(); iterScript != m_ScriptList.end(); ++iterScript )
 	{
 		Free( (*iterScript).second->buffer );
 		delete (*iterScript).second;
@@ -7858,7 +7845,7 @@ int 	CQuake3GameInterface::PlayIcarusSound( int taskID, int entID, const char *n
 	soundChannel_t	voice_chan = CHAN_VOICE; // set a default so the compiler doesn't bitch
 	qboolean		type_voice = qfalse;
 
-	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
+	Q_strncpyz( finalName, name, MAX_QPATH );
 	Q_strlwr(finalName);
 	G_AddSexToPlayerString( finalName, qtrue );
 
@@ -8165,7 +8152,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 	if(!Q_stricmpn(type_name, "cvar_", 5) &&
 		strlen(type_name) > 5)
 	{
-		cgi_Cvar_Set(type_name+5, data);
+		gi.cvar_set(type_name+5, data);
 		return;
 	}
 
@@ -8402,7 +8389,7 @@ void	CQuake3GameInterface::Set( int taskID, int entID, const char *type_name, co
 
 	case SET_ICARUS_FREEZE:
 	case SET_ICARUS_UNFREEZE:
-		Q3_SetICARUSFreeze( entID, (char *) data, (toSet==SET_ICARUS_FREEZE) );
+		Q3_SetICARUSFreeze( entID, (char *) data, (qboolean)(toSet==SET_ICARUS_FREEZE) );
 		break;
 
 	case SET_WEAPON:
@@ -10514,7 +10501,7 @@ int		CQuake3GameInterface::GetString( int entID, const char *name, char **value 
 	case SET_ANIM_BOTH:
 		*value = (char *) Q3_GetAnimBoth( ent );
 
-		if ( VALIDSTRING( value ) == false )
+		if ( VALIDSTRING( *value ) == false )
 			return false;
 
 		break;
@@ -11241,9 +11228,9 @@ void	CQuake3GameInterface::PrecacheScript( const char *name )
 
 void	CQuake3GameInterface::PrecacheSound( const char *name )
 {
-	char			finalName[MAX_QPATH];
+	char finalName[MAX_QPATH];
 
-	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
+	Q_strncpyz( finalName, name, MAX_QPATH );
 	Q_strlwr(finalName);
 	if (com_buildScript->integer)
 	{	//get the male sound first

@@ -31,7 +31,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	TAGDEF(HUNKMISCMODELS),			// sub-hunk alloc to track misc models
 	TAGDEF(FILESYS),					// general filesystem usage
 	TAGDEF(EVENT),
-	TAGDEF(CLIPBOARD),					
+	TAGDEF(CLIPBOARD),
 	TAGDEF(LISTFILES),					// for "*.blah" lists
 	TAGDEF(AMBIENTSET),
 	TAGDEF(G_ALLOC),					// used by G_Alloc()
@@ -68,6 +68,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	TAGDEF(NEWDEL),
 	TAGDEF(MINIZIP),
 	TAGDEF(COUNT)
-	
+
 //////////////// eof //////////////
 

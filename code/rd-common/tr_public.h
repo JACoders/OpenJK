@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#define	REF_API_VERSION		15
+#define	REF_API_VERSION		16
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -40,7 +40,7 @@ typedef struct {
 	int					(*Milliseconds)						( void );
 
 	void				(*Hunk_ClearToMark)					( void );
-	void*				(*Z_Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
+	void*				(*Malloc)							( int iSize, memtag_t eTag, qboolean zeroIt, int iAlign );
 	int					(*Z_Free)							( void *memory );
 	int					(*Z_MemSize)						( memtag_t eTag );
 	void				(*Z_MorphMallocTag)					( void *pvBuffer, memtag_t eDesiredTag );
@@ -88,7 +88,7 @@ typedef struct {
 	qboolean			(*SND_RegisterAudio_LevelLoadEnd)	( qboolean bDeleteEverythingNotUsedThisLevel );
 
 	e_status			(*CIN_RunCinematic)					( int handle );
-	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height, 
+	int					(*CIN_PlayCinematic)				( const char *arg0, int xpos, int ypos, int width, int height,
 															int bits, const char *psAudioFile /* = NULL */ );
 	void				(*CIN_UploadCinematic)				( int handle );
 
@@ -108,8 +108,8 @@ typedef struct {
 	const void *	(*PD_Load)							( const char *name, size_t *size );
 
 	// ============= NOT IN MP BEYOND THIS POINT
-	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
-															const int passEntityNum, const int contentmask, 
+	void				(*SV_Trace)							( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
+															const int passEntityNum, const int contentmask,
 															const EG2_Collision eG2TraceType, const int useLod );
 
 	qboolean			(*SG_Append)						( unsigned int chid, const void *pvData, int iLength );
@@ -183,11 +183,11 @@ typedef struct {
 	qboolean(*GetLighting)( const vec3_t org, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir);
 
 	void	(*SetColor)( const float *rgba );	// NULL = 1,1,1,1
-	void	(*DrawStretchPic) ( float x, float y, float w, float h, 
+	void	(*DrawStretchPic) ( float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, qhandle_t hShader );	// 0 = white
-	void	(*DrawRotatePic) ( float x, float y, float w, float h, 
+	void	(*DrawRotatePic) ( float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, float a1, qhandle_t hShader );	// 0 = white
-	void	(*DrawRotatePic2) ( float x, float y, float w, float h, 
+	void	(*DrawRotatePic2) ( float x, float y, float w, float h,
 		float s1, float t1, float s2, float t2, float a1, qhandle_t hShader );	// 0 = white
 	void	(*LAGoggles)(void);
 	void	(*Scissor) ( float x, float y, float w, float h);	// 0 = white
@@ -207,13 +207,13 @@ typedef struct {
 
 	// for use with save-games mainly...
 	void	(*GetScreenShot)(byte *data, int w, int h);
-	
+
 #ifdef JK2_MODE
 	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
 	void	(*LoadJPGFromBuffer)( byte *inputBuffer, size_t len, byte **pic, int *width, int *height );
 #endif
 
-	// this is so you can get access to raw pixels from a graphics format (TGA/JPG/BMP etc), 
+	// this is so you can get access to raw pixels from a graphics format (TGA/JPG/BMP etc),
 	//	currently only the save game uses it (to make raw shots for the autosaves)
 	//
 	byte*	(*TempRawImage_ReadFromFile)(const char *psLocalFilename, int *piWidth, int *piHeight, byte *pbReSampleBuffer, qboolean qbVertFlip);
@@ -224,7 +224,7 @@ typedef struct {
 				   int maxPoints, vec3_t pointBuffer, int maxFragments, markFragment_t *fragmentBuffer );
 
 	//model stuff
-	void	(*LerpTag)( orientation_t *tag,  qhandle_t model, int startFrame, int endFrame, 
+	void	(*LerpTag)( orientation_t *tag,  qhandle_t model, int startFrame, int endFrame,
 					 float frac, const char *tagName );
 	void	(*ModelBounds)( qhandle_t model, vec3_t mins, vec3_t maxs );
 
@@ -298,7 +298,7 @@ typedef struct {
 	qboolean	(*G2API_GetBoneAnim)(CGhoul2Info *ghlInfo, const char *boneName, const int AcurrentTime,
 					float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *);
 	qboolean	(*G2API_GetBoneAnimIndex)(CGhoul2Info *ghlInfo, const int iBoneIndex, const int AcurrentTime,
-					float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *); 
+					float *currentFrame, int *startFrame, int *endFrame, int *flags, float *animSpeed, int *);
 	int			(*G2API_GetBoneIndex)(CGhoul2Info *ghlInfo, const char *boneName, qboolean bAddIfNotFound);
 	qboolean	(*G2API_GetBoltMatrix)(CGhoul2Info_v &ghoul2, const int modelIndex,  const int boltIndex, mdxaBone_t *matrix,
 					const vec3_t angles, const vec3_t position, const int AframeNum, qhandle_t *modelList, const vec3_t scale);
@@ -312,9 +312,9 @@ typedef struct {
 	int			(*G2API_GetSurfaceRenderStatus)(CGhoul2Info *ghlInfo, const char *surfaceName);
 	int			(*G2API_GetTime)(int argTime);
 	void		(*G2API_GiveMeVectorFromMatrix)(mdxaBone_t &boltMatrix, Eorientations flags, vec3_t &vec);
-	int			(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
+	qboolean	(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
 	qboolean	(*G2API_IKMove)(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
-	int			(*G2API_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex, 
+	int			(*G2API_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex,
 					qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias);
 	qboolean	(*G2API_IsPaused)(CGhoul2Info *ghlInfo, const char *boneName);
 	void		(*G2API_ListBones)(CGhoul2Info *ghlInfo, int frame);
@@ -325,7 +325,7 @@ typedef struct {
 	qboolean	(*G2API_PauseBoneAnimIndex)(CGhoul2Info *ghlInfo, const int boneIndex, const int AcurrentTime);
 	qhandle_t	(*G2API_PrecacheGhoul2Model)(const char *fileName);
 	qboolean	(*G2API_RagEffectorGoal)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t pos);
-	qboolean	(*G2API_RagEffectorKick)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity); 
+	qboolean	(*G2API_RagEffectorKick)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t velocity);
 	qboolean	(*G2API_RagForceSolve)(CGhoul2Info_v &ghoul2, qboolean force);
 	qboolean	(*G2API_RagPCJConstraint)(CGhoul2Info_v &ghoul2, const char *boneName, vec3_t min, vec3_t max);
 	qboolean	(*G2API_RagPCJGradientSpeed)(CGhoul2Info_v &ghoul2, const char *boneName, const float speed);
@@ -349,7 +349,7 @@ typedef struct {
 					const int flags, qhandle_t *modelList, int blendTime, int AcurrentTime);
 	qboolean	(*G2API_SetBoneAnglesMatrixIndex)(CGhoul2Info *ghlInfo, const int index, const mdxaBone_t &matrix,
 					const int flags, qhandle_t *modelList, int blandeTime, int AcurrentTime);
-	qboolean	(*G2API_SetBoneIKState)(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, 
+	qboolean	(*G2API_SetBoneIKState)(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState,
 					sharedSetBoneIKStateParams_t *params);
 	qboolean	(*G2API_SetGhoul2ModelFlags)(CGhoul2Info *ghlInfo, const int flags);
 	void		(*G2API_SetGhoul2ModelIndexes)(CGhoul2Info_v &ghoul2, qhandle_t *modelList, qhandle_t *skinList);

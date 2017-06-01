@@ -129,7 +129,7 @@ Key: [-] removed, [+] added, [\*] modified
 * [\*] Improved `echo` command by preserving colors based off of ioquake3 patches.
 * [\*] Improved `GL_Extensions` printing using ioquake3 fix to prevent crashes on newer cards.
 * [\*] Alt-tab works properly
-* [\*] Fix Windows issue where pressing alt key in windowed mode caused a temporary freeze
+* [\*] ~~Fix Windows issue where pressing alt key in windowed mode caused a temporary freeze~~
 * [\*] Fixed never fading shadow in text
 * [\*] Fix up font renderer glyph positioning
 * [\*] Fixed a hang with some weird music sample rates

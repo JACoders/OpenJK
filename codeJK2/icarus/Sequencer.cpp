@@ -95,7 +95,7 @@ int CSequencer::Free( void )
 	sequence_l::iterator	sli;
 
 	//Flush the sequences
-	for ( sli = m_sequences.begin(); sli != m_sequences.end(); sli++ )
+	for ( sli = m_sequences.begin(); sli != m_sequences.end(); ++sli )
 	{
 		m_owner->DeleteSequence( (*sli) );
 	}
@@ -138,7 +138,7 @@ int CSequencer::Flush( CSequence *owner )
 	{
 		if ( ( (*sli) == owner ) || ( owner->HasChild( (*sli) ) ) || ( (*sli)->HasFlag( SQ_PENDING ) ) || ( (*sli)->HasFlag( SQ_TASK ) ) )
 		{
-			sli++;
+			++sli;
 			continue;
 		}
 
@@ -190,7 +190,7 @@ Deletes parsing stream
 */
 void CSequencer::DeleteStream( bstream_t *bstream )
 {
-	vector<bstream_t*>::iterator finder = std::find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
+	std::vector<bstream_t*>::iterator finder = std::find(m_streamsCreated.begin(), m_streamsCreated.end(), bstream);
 	if(finder != m_streamsCreated.end())
 	{
 		m_streamsCreated.erase(finder);
@@ -1176,7 +1176,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 	case ID_RANDOM:
 		{
 			float	min, max;
-			//FIXME: This will not account for nested random() statements
+			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
 			min	= *(float *) block->GetMemberData( memberNum++ );
 			max	= *(float *) block->GetMemberData( memberNum++ );
@@ -1347,7 +1347,7 @@ int CSequencer::EvaluateConditional( CBlock *block )
 		
 		{
 			float	min, max;
-			//FIXME: This will not account for nested random() statements
+			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
 			min	= *(float *) block->GetMemberData( memberNum++ );
 			max	= *(float *) block->GetMemberData( memberNum++ );

@@ -64,7 +64,7 @@ void NPC_SetMoveGoal( gentity_t *ent, vec3_t point, int radius, qboolean isNavGo
 	//Copy the origin
 	//VectorCopy( point, ent->NPC->goalPoint );	//FIXME: Make it use this, and this alone!
 	VectorCopy( point, ent->NPC->tempGoal->currentOrigin );
-	
+
 	//Copy the mins and maxs to the tempGoal
 	VectorCopy( ent->mins, ent->NPC->tempGoal->mins );
 	VectorCopy( ent->mins, ent->NPC->tempGoal->maxs );
@@ -173,7 +173,7 @@ void SP_waypoint ( gentity_t *ent )
 {
 		VectorSet(ent->mins, DEFAULT_MINS_0, DEFAULT_MINS_1, DEFAULT_MINS_2);
 		VectorSet(ent->maxs, DEFAULT_MAXS_0, DEFAULT_MAXS_1, DEFAULT_MAXS_2);
-		
+
 		ent->contents = CONTENTS_TRIGGER;
 		ent->clipmask = MASK_DEADSOLID;
 
@@ -293,7 +293,7 @@ void SP_waypoint_navgoal( gentity_t *ent )
 	TAG_Add( ent->targetname, NULL, ent->s.origin, ent->s.angles, radius, RTF_NAVGOAL );
 
 	ent->classname = "navgoal";
-	
+
 	NAV::SpawnedPoint(ent, NAV::PT_GOALNODE);
 
 	G_FreeEntity( ent );//can't do this, they need to be found later by some functions, though those could be fixed, maybe?
@@ -316,11 +316,11 @@ void Svcmd_Nav_f( void )
 		if ( Q_stricmp( cmd, "all" ) == 0 )
 		{
 			NAVDEBUG_showNodes = !NAVDEBUG_showNodes;
-			
+
 			//NOTENOTE: This causes the two states to sync up if they aren't already
-			NAVDEBUG_showCollision = NAVDEBUG_showNavGoals = 
-			NAVDEBUG_showCombatPoints = NAVDEBUG_showEnemyPath = 
-			NAVDEBUG_showEdges = NAVDEBUG_showNearest = NAVDEBUG_showRadius = NAVDEBUG_showNodes;		
+			NAVDEBUG_showCollision = NAVDEBUG_showNavGoals =
+			NAVDEBUG_showCombatPoints = NAVDEBUG_showEnemyPath =
+			NAVDEBUG_showEdges = NAVDEBUG_showNearest = NAVDEBUG_showRadius = NAVDEBUG_showNodes;
 		}
 		else if ( Q_stricmp( cmd, "nodes" ) == 0 )
 		{
@@ -357,7 +357,7 @@ void Svcmd_Nav_f( void )
 		else if ( Q_stricmp( cmd, "grid" ) == 0 )
 		{
 			NAVDEBUG_showGrid = !NAVDEBUG_showGrid;
-		}	
+		}
 		else if ( Q_stricmp( cmd, "nearest" ) == 0 )
 		{
 			NAVDEBUG_showNearest = !NAVDEBUG_showNearest;

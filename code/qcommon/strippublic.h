@@ -93,7 +93,7 @@ inline void				JK2SP_Shutdown(void)
 
 extern cvar_t	*sp_language;
 // query function from font code
-// 
+//
 /*inline qboolean Language_IsKorean(void)
 {
 	return (sp_language && sp_language->integer == SP_LANGUAGE_KOREAN);

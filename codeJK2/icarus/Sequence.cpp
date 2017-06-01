@@ -85,14 +85,14 @@ void CSequence::Delete( void )
 	//Clear all children
 	if ( m_numChildren > 0 )
 	{
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->SetParent( NULL );
 		}
 	}
 
 	//Clear all held commands
-	for ( bi = m_commands.begin(); bi != m_commands.end(); bi++ )
+	for ( bi = m_commands.begin(); bi != m_commands.end(); ++bi )
 	{
 		delete (*bi);	//Free() handled internally
 	}
@@ -146,7 +146,7 @@ bool CSequence::HasChild( CSequence *sequence )
 {
 	sequence_l::iterator	ci;
 
-	for ( ci = m_children.begin(); ci != m_children.end(); ci++ )
+	for ( ci = m_children.begin(); ci != m_children.end(); ++ci )
 	{
 		if ( (*ci) == sequence )
 			return true;
@@ -280,7 +280,7 @@ void CSequence::RemoveFlag( int flag, bool children )
 	{
 		sequence_l::iterator	si;
 
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->RemoveFlag( flag, true );
 		}

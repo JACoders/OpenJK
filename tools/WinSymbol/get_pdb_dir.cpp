@@ -1,6 +1,9 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#pragma warning(push)
+#pragma warning(disable:4091)
 #include <DbgHelp.h>
+#pragma warning(pop)
 
 #include <cstdint>
 #include <cstring>

@@ -42,7 +42,7 @@ void *G_Alloc( int size ) {
 
 
 	allocPoint += size;
-	
+
 	return gi.Malloc(size, TAG_G_ALLOC, qfalse);
 }
 

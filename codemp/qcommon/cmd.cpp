@@ -26,6 +26,9 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/qcommon.h"
 
+#include <vector>
+#include <algorithm>
+
 #define	MAX_CMD_BUFFER	128*1024
 #define	MAX_CMD_LINE	1024
 
@@ -50,7 +53,7 @@ next frame.  This allows commands like:
 bind g "cmd use rocket ; +attack ; wait ; -attack ; cmd use blaster"
 ============
 */
-void Cmd_Wait_f( void ) {
+static void Cmd_Wait_f( void ) {
 	if ( Cmd_Argc() == 2 ) {
 		cmd_wait = atoi( Cmd_Argv( 1 ) );
 		if ( cmd_wait < 0 )
@@ -266,7 +269,7 @@ void Cbuf_Execute (void)
 Cmd_Exec_f
 ===============
 */
-void Cmd_Exec_f( void ) {
+static void Cmd_Exec_f( void ) {
 	bool quiet;
 	fileBuffer_t f;
 	char	filename[MAX_QPATH];
@@ -302,7 +305,7 @@ Cmd_Vstr_f
 Inserts the current value of a variable as command text
 ===============
 */
-void Cmd_Vstr_f( void ) {
+static void Cmd_Vstr_f( void ) {
 	char	*v;
 
 	if (Cmd_Argc () != 2) {
@@ -322,7 +325,7 @@ Cmd_Echo_f
 Just prints the rest of the line to the console
 ===============
 */
-void Cmd_Echo_f (void)
+static void Cmd_Echo_f (void)
 {
 	Com_Printf ("%s\n", Cmd_Args());
 }
@@ -340,9 +343,11 @@ typedef struct cmd_function_s
 {
 	struct cmd_function_s	*next;
 	char					*name;
+	char					*description;
 	xcommand_t				function;
 	completionFunc_t		complete;
 } cmd_function_t;
+
 
 
 static	int			cmd_argc;
@@ -466,7 +471,7 @@ char *Cmd_Cmd(void)
    https://bugzilla.icculus.org/show_bug.cgi?id=4769
 */
 
-void Cmd_Args_Sanitize( void ) {
+/*void Cmd_Args_Sanitize( void ) {
 	for ( int i=1; i<cmd_argc; i++ )
 	{
 		char *c = cmd_argv[i];
@@ -478,6 +483,20 @@ void Cmd_Args_Sanitize( void ) {
 			*c = ' ';
 			++c;
 		}
+	}
+}*/
+
+void Cmd_Args_Sanitize( size_t length, const char *strip, const char *repl )
+{
+	for ( int i = 1; i < cmd_argc; i++ )
+	{
+		char *c = cmd_argv[i];
+
+		if ( length > 0 && strlen( c ) >= length )
+			c[length - 1] = '\0';
+
+		if ( VALIDSTRING( strip ) && VALIDSTRING( repl ) )
+			Q_strstrip( c, strip, repl );
 	}
 }
 
@@ -632,7 +651,7 @@ cmd_function_t *Cmd_FindCommand( const char *cmd_name )
 Cmd_AddCommand
 ============
 */
-void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
+void	Cmd_AddCommand( const char *cmd_name, xcommand_t function, const char *cmd_desc ) {
 	cmd_function_t	*cmd;
 
 	// fail if the command already exists
@@ -648,10 +667,32 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function ) {
 	// use a small malloc to avoid zone fragmentation
 	cmd = (struct cmd_function_s *)S_Malloc (sizeof(cmd_function_t));
 	cmd->name = CopyString( cmd_name );
+	if ( VALIDSTRING( cmd_desc ) )
+		cmd->description = CopyString( cmd_desc );
+	else
+		cmd->description = NULL;
 	cmd->function = function;
 	cmd->complete = NULL;
 	cmd->next = cmd_functions;
 	cmd_functions = cmd;
+}
+
+void Cmd_AddCommandList( const cmdList_t *cmdList )
+{
+	for ( const cmdList_t *cmd = cmdList; cmd && cmd->name; cmd++ )
+	{
+		Cmd_AddCommand( cmd->name, cmd->func, cmd->description );
+		if ( cmd->complete )
+			Cmd_SetCommandCompletionFunc( cmd->name, cmd->complete );
+	}
+}
+
+void Cmd_RemoveCommandList( const cmdList_t *cmdList )
+{
+	for ( const cmdList_t *cmd = cmdList; cmd && cmd->name; cmd++ )
+	{
+		Cmd_RemoveCommand( cmd->name );
+	}
 }
 
 /*
@@ -683,9 +724,8 @@ void	Cmd_RemoveCommand( const char *cmd_name ) {
 		}
 		if ( !strcmp( cmd_name, cmd->name ) ) {
 			*back = cmd->next;
-			if (cmd->name) {
-				Z_Free(cmd->name);
-			}
+			Z_Free(cmd->name);
+			Z_Free(cmd->description);
 			Z_Free (cmd);
 			return;
 		}
@@ -713,6 +753,38 @@ void Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot ) {
 	}
 
 	Cmd_RemoveCommand( cmd_name );
+}
+
+/*
+============
+Cmd_DescriptionString
+============
+*/
+char *Cmd_DescriptionString( const char *cmd_name )
+{
+	const cmd_function_t *cmd = Cmd_FindCommand( cmd_name );
+
+	if ( !cmd || !VALIDSTRING( cmd->description ) )
+		return "";
+	return cmd->description;
+}
+
+/*
+============
+Cmd_Print
+
+============
+*/
+void Cmd_Print( const cmd_function_t *cmd )
+{
+	Com_Printf( S_COLOR_GREY "Cmd " S_COLOR_WHITE "%s", cmd->name );
+
+	if ( VALIDSTRING( cmd->description ) )
+	{
+		Com_Printf( S_COLOR_GREEN " - %s" S_COLOR_WHITE, cmd->description );
+	}
+
+	Com_Printf( "\n" );
 }
 
 /*
@@ -803,16 +875,24 @@ void	Cmd_ExecuteString( const char *text ) {
 	CL_ForwardCommandToServer ( text );
 }
 
+typedef std::vector<const cmd_function_t *> CmdFuncVector;
+
+bool CmdSort( const cmd_function_t *cmd1, const cmd_function_t *cmd2 )
+{
+	return Q_stricmp( cmd1->name, cmd2->name ) < 0;
+}
+
 /*
 ============
 Cmd_List_f
 ============
 */
-void Cmd_List_f (void)
+static void Cmd_List_f (void)
 {
-	cmd_function_t	*cmd = NULL;
+	const cmd_function_t	*cmd = NULL;
 	int				i, j;
 	char			*match = NULL;
+	CmdFuncVector	cmds;
 
 	if ( Cmd_Argc() > 1 ) {
 		match = Cmd_Argv( 1 );
@@ -825,13 +905,62 @@ void Cmd_List_f (void)
 		if ( !cmd->name || (match && !Com_Filter( match, cmd->name, qfalse )) )
 			continue;
 
-		Com_Printf (" %s\n", cmd->name);
+		cmds.push_back( cmd );
 		j++;
+	}
+
+	// sort list alphabetically
+	std::sort( cmds.begin(), cmds.end(), CmdSort );
+
+	CmdFuncVector::const_iterator itr;
+	for ( itr = cmds.begin();
+	itr != cmds.end();
+		++itr )
+	{
+		cmd = (*itr);
+		if ( VALIDSTRING( cmd->description ) )
+			Com_Printf( " %s" S_COLOR_GREEN " - %s" S_COLOR_WHITE "\n", cmd->name, cmd->description );
+		else
+			Com_Printf( " %s\n", cmd->name );
 	}
 
 	Com_Printf ("\n%i total commands\n", i);
 	if ( i != j )
 		Com_Printf( "%i matching commands\n", j );
+}
+
+static void Cmd_PrintHelp_f( void )
+{
+	if ( Cmd_Argc() != 2 )
+	{
+		Com_Printf( "usage: help <command or alias>\n" );
+		return;
+	}
+
+	const char *name = Cmd_Argv( 1 );
+	const cmd_function_t *cmd = Cmd_FindCommand( name );
+
+	if ( cmd )
+		Cmd_Print( cmd );
+	else
+		Com_Printf( "Command %s does not exist.\n", name );
+}
+
+/*
+==================
+Cmd_CompleteCmdName
+==================
+*/
+void Cmd_CompleteCmdName( char *args, int argNum )
+{
+	if ( argNum == 2 )
+	{
+		// Skip "<cmd> "
+		char *p = Com_SkipTokens( args, 1, " " );
+
+		if ( p > args )
+			Field_CompleteCommand( p, qtrue, qfalse );
+	}
 }
 
 /*
@@ -851,14 +980,16 @@ Cmd_Init
 ============
 */
 void Cmd_Init (void) {
-	Cmd_AddCommand ("cmdlist",Cmd_List_f);
-	Cmd_AddCommand ("exec",Cmd_Exec_f);
-	Cmd_AddCommand ("execq",Cmd_Exec_f);
+	Cmd_AddCommand( "cmdlist", Cmd_List_f, "List all commands to console" );
+	Cmd_AddCommand( "help", Cmd_PrintHelp_f, "Print command help" );
+	Cmd_SetCommandCompletionFunc( "help", Cmd_CompleteCmdName );
+	Cmd_AddCommand( "echo", Cmd_Echo_f, "Print message to console" );
+	Cmd_AddCommand( "exec", Cmd_Exec_f, "Execute a script file" );
+	Cmd_AddCommand( "execq", Cmd_Exec_f, "Execute a script file without displaying a message" );
 	Cmd_SetCommandCompletionFunc( "exec", Cmd_CompleteCfgName );
 	Cmd_SetCommandCompletionFunc( "execq", Cmd_CompleteCfgName );
-	Cmd_AddCommand ("vstr",Cmd_Vstr_f);
+	Cmd_AddCommand( "vstr", Cmd_Vstr_f, "Execute the value of a cvar" );
 	Cmd_SetCommandCompletionFunc( "vstr", Cvar_CompleteCvarName );
-	Cmd_AddCommand ("echo",Cmd_Echo_f);
-	Cmd_AddCommand ("wait", Cmd_Wait_f);
+	Cmd_AddCommand( "wait", Cmd_Wait_f, "Pause command buffer execution" );
 }
 

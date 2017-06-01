@@ -146,7 +146,7 @@ enum
 
 //"Matrix" effect flags
 #define MEF_NO_TIMESCALE		0x000001	//no timescale
-#define MEF_NO_VERTBOB			0x000002	//no vert bob 
+#define MEF_NO_VERTBOB			0x000002	//no vert bob
 #define MEF_NO_SPIN				0x000004	//no spin
 #define MEF_NO_RANGEVAR			0x000008	//no camera range variation
 #define MEF_HIT_GROUND_STOP		0x000010	//stop effect when subject hits the ground
@@ -460,7 +460,7 @@ typedef struct
 	int blocking;
 	saberMoveName_t chain_idle;			// What move to call if the attack button is not pressed at the end of this anim
 	saberMoveName_t chain_attack;		// What move to call if the attack button (and nothing else) is pressed
-	qboolean trailLength;
+	int trailLength;
 } saberMoveData_t;
 
 extern saberMoveData_t	saberMoveData[LS_MOVE_MAX];

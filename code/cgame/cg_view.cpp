@@ -2053,7 +2053,7 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 
 	float mPitchOverride = 0.0f;
 	float mYawOverride = 0.0f;
-	if ( cg.snap->ps.clientNum == 0 )
+	if ( cg.snap->ps.clientNum == 0 && cg_scaleVehicleSensitivity.integer )
 	{//pointless check, but..
 		if ( cg_entities[0].gent->s.eFlags & EF_LOCKED_TO_WEAPON )
 		{
@@ -2087,11 +2087,12 @@ void CG_DrawActiveFrame( int serverTime, stereoFrame_t stereoView ) {
 		cg.zoomMode = 0;
 	}
 	// decide on third person view
-	cg.renderingThirdPerson = cg_thirdPerson.integer
-								|| (cg.snap->ps.stats[STAT_HEALTH] <= 0)
-								|| (cg.snap->ps.eFlags&EF_HELD_BY_SAND_CREATURE)
-								|| ((g_entities[0].client&&g_entities[0].client->NPC_class==CLASS_ATST)
-								|| (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE) );
+	cg.renderingThirdPerson = (qboolean)(
+		cg_thirdPerson.integer
+		|| (cg.snap->ps.stats[STAT_HEALTH] <= 0)
+		|| (cg.snap->ps.eFlags&EF_HELD_BY_SAND_CREATURE)
+		|| ((g_entities[0].client&&g_entities[0].client->NPC_class==CLASS_ATST)
+		|| (cg.snap->ps.weapon == WP_SABER || cg.snap->ps.weapon == WP_MELEE) ));
 
 	if ( cg.zoomMode )
 	{

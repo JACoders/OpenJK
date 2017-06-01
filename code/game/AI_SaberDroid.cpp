@@ -50,7 +50,7 @@ void NPC_SaberDroid_PlayConfusionSound( gentity_t *self )
 	TIMER_Set( self, "flee", 0 );
 	self->NPC->squadState = SQUAD_IDLE;
 	self->NPC->tempBehavior = BS_DEFAULT;
-	
+
 	//self->NPC->behaviorState = BS_PATROL;
 	G_ClearEnemy( self );//FIXME: or just self->enemy = NULL;?
 
@@ -76,13 +76,13 @@ static qboolean SaberDroid_Move( void )
 
 	qboolean	moved = NPC_MoveToGoal( qtrue );
 //	navInfo_t	info;
-	
+
 	//Get the doMove info
 //	NAV_GetLastMove( info );
 
 	//FIXME: if we bump into another one of our guys and can't get around him, just stop!
 	//If we hit our target, then stop and fire!
-//	if ( info.flags & NIF_COLLISION ) 
+//	if ( info.flags & NIF_COLLISION )
 //	{
 //		if ( info.blocker == NPC->enemy )
 //		{
@@ -134,8 +134,8 @@ void NPC_BSSaberDroid_Patrol( void )
 				//NPCInfo->lastAlertID = level.alertEvents[alertEvent].ID;
 				if ( level.alertEvents[alertEvent].level >= AEL_DISCOVERED )
 				{
-					if ( level.alertEvents[alertEvent].owner && 
-						level.alertEvents[alertEvent].owner->client && 
+					if ( level.alertEvents[alertEvent].owner &&
+						level.alertEvents[alertEvent].owner->client &&
 						level.alertEvents[alertEvent].owner->health >= 0 &&
 						level.alertEvents[alertEvent].owner->client->playerTeam == NPC->client->enemyTeam )
 					{//an enemy
@@ -161,15 +161,15 @@ void NPC_BSSaberDroid_Patrol( void )
 				//NOTE: stops walking or doing anything else below
 				vec3_t	dir, angles;
 				float	o_yaw, o_pitch;
-				
+
 				VectorSubtract( NPCInfo->investigateGoal, NPC->client->renderInfo.eyePoint, dir );
 				vectoangles( dir, angles );
-				
+
 				o_yaw = NPCInfo->desiredYaw;
 				o_pitch = NPCInfo->desiredPitch;
 				NPCInfo->desiredYaw = angles[YAW];
 				NPCInfo->desiredPitch = angles[PITCH];
-				
+
 				NPC_UpdateAngles( qtrue, qtrue );
 
 				NPCInfo->desiredYaw = o_yaw;
@@ -368,7 +368,7 @@ void NPC_BSSaberDroid_Attack( void )
 		}
 	}//this should make him chase enemy when out of range...?
 
-	if ( NPC->client->ps.legsAnimTimer 
+	if ( NPC->client->ps.legsAnimTimer
 		&& NPC->client->ps.legsAnim != BOTH_A3__L__R )//this one is a running attack
 	{//in the middle of a held, stationary anim, can't doMove
 		doMove = qfalse;
@@ -402,13 +402,13 @@ void NPC_BSSaberDroid_Attack( void )
 	{
 		shoot = qfalse;
 	}
-	
+
 	//FIXME: need predicted blocking?
 	//FIXME: don't shoot right away!
 	if ( shoot )
 	{//try to shoot if it's time
 		if ( TIMER_Done( NPC, "attackDelay" ) )
-		{	
+		{
 			if( !(NPCInfo->scriptFlags & SCF_FIRE_WEAPON) ) // we've already fired, no need to do it again here
 			{
 				NPC_SaberDroid_PickAttack();

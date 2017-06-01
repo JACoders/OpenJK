@@ -65,7 +65,7 @@ public:
     ////////////////////////////////////////////////////////////////////////////////////
 	// Capacity Enum
     ////////////////////////////////////////////////////////////////////////////////////
- 	enum 
+ 	enum
 	{
 		NULL_REGION	= -1,
 		NULL_EDGE	= -1,
@@ -77,7 +77,7 @@ public:
 	// Some Public Type Defines
     ////////////////////////////////////////////////////////////////////////////////////
 	typedef		ragl::graph_vs<TNODE, MAXNODES, TEDGE, MAXEDGES, NUM_EDGES_PER_NODE>	TGraph;
-	typedef		ratl::vector_vs<int, MAXNODES>						TRegions;		
+	typedef		ratl::vector_vs<int, MAXNODES>						TRegions;
 	typedef		ratl::vector_vs<short, MAXREGIONS>					TRegionEdge;	// List Of All Edges Which Connect RegionA<->RegionB
 	typedef		ratl::pool_vs<TRegionEdge, MAXREGIONEDGES>			TEdges;			// Pool Of All RegionEdges
 	typedef		ratl::grid2_vs<short, MAXREGIONS, MAXREGIONS>		TLinks;			// Graph Of Links From Region To Region, Each Points To A RegionEdge
@@ -139,7 +139,7 @@ public:
 
     ////////////////////////////////////////////////////////////////////////////////////
 	// Call this function to find out if it is at all possible to get from nodeA to
-	// nodeB.  If there is no possible connection, or there is one, but the connection 
+	// nodeB.  If there is no possible connection, or there is one, but the connection
 	// is not valid at the current time, this routine will return false.  Use it as
 	// a quick cull routine before a search.
 	//
@@ -278,7 +278,7 @@ public:
 							}
 						}
 
-						
+
 						// Add This Edge To The Other Region Links
 						//-----------------------------------------
 						else if (!ReservedRegionLink)
@@ -360,7 +360,7 @@ private:
 					for (int j=0; j<mEdges[CurRegionEdge].size(); j++)
 					{
 						if (user.is_valid(
-										mGraph.get_edge(mEdges[CurRegionEdge][j]), 
+										mGraph.get_edge(mEdges[CurRegionEdge][j]),
 										(NextRegion==TargetRegion)?(-1):(0)
 										)
 							)
@@ -421,7 +421,7 @@ public:
 		if (mRegionCount)
 		{
 			int RegionEdges = 0;
-			for (typename TEdges::iterator it=mEdges.begin(); it!=mEdges.end(); it++)
+			for (typename TEdges::iterator it=mEdges.begin(); it!=mEdges.end(); ++it)
 			{
 				RegionEdges += (*it).size();
 			}

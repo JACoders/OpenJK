@@ -93,10 +93,10 @@ static void GetClipboardData( char *buf, int buflen ) {
 Key_KeynumToStringBuf
 ====================
 */
-// only ever called by binding-display code, therefore returns non-technical "friendly" names 
+// only ever called by binding-display code, therefore returns non-technical "friendly" names
 //	in any language that don't necessarily match those in the config file...
 //
-void Key_KeynumToStringBuf( int keynum, char *buf, int buflen ) 
+void Key_KeynumToStringBuf( int keynum, char *buf, int buflen )
 {
 	const char *psKeyName = Key_KeynumToString( keynum/*, qtrue */);
 
@@ -129,7 +129,7 @@ void Key_GetBindingBuf( int keynum, char *buf, int buflen ) {
 FloatAsInt
 ====================
 */
-static int FloatAsInt( float f ) 
+static int FloatAsInt( float f )
 {
 	byteAlias_t fi;
 	fi.f = f;
@@ -152,7 +152,7 @@ static int GetConfigString(int index, char *buf, int size)
 		return qfalse;
 
 	Q_strncpyz( buf, cl.gameState.stringData+offset, size);
- 
+
 	return qtrue;
 }
 
@@ -309,7 +309,7 @@ void CL_InitUI( void ) {
 
 	uii.Milliseconds			= Sys_Milliseconds2;
 
-	UI_Init(UI_API_VERSION, &uii, (cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
+	UI_Init(UI_API_VERSION, &uii, (qboolean)(cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
 
 //	uie->UI_Init( UI_API_VERSION, &uii );
 
@@ -326,7 +326,7 @@ qboolean UI_GameCommand( void ) {
 
 
 void CL_GenericMenu_f(void)
-{		
+{
 	const char *arg = Cmd_Argv( 1 );
 
 	if (cls.uiStarted) {
@@ -341,7 +341,7 @@ void CL_EndScreenDissolve_f(void)
 }
 
 void CL_DataPad_f(void)
-{		
+{
 	if (cls.uiStarted && cls.cgameStarted && (cls.state == CA_ACTIVE) ) {
 		UI_SetActiveMenu("datapad",NULL);
 	}
@@ -352,7 +352,7 @@ void CL_DataPad_f(void)
 CL_GetGlConfig
 ====================
 */
-static void CL_GetGlconfig( glconfig_t *config ) 
+static void CL_GetGlconfig( glconfig_t *config )
 {
 	*config = cls.glconfig;
 }
@@ -367,17 +367,17 @@ CL_UISystemCalls
 The ui module is making a system call
 ====================
 */
-intptr_t CL_UISystemCalls( intptr_t *args ) 
+intptr_t CL_UISystemCalls( intptr_t *args )
 {
 
-	switch( args[0] ) 
+	switch( args[0] )
 	{
 	case UI_ERROR:
 		Com_Error( ERR_DROP, "%s", VMA(1) );
 		return 0;
 
 	case UI_CVAR_REGISTER:
-		Cvar_Register( (vmCvar_t *)VMA(1),(const char *) VMA(2),(const char *) VMA(3), args[4] ); 
+		Cvar_Register( (vmCvar_t *)VMA(1),(const char *) VMA(2),(const char *) VMA(3), args[4] );
 		return 0;
 
 	case UI_CVAR_SET:
@@ -446,7 +446,7 @@ intptr_t CL_UISystemCalls( intptr_t *args )
 
 //	case UI_PC_READ_TOKEN:
 //		return PC_ReadTokenHandle( args[1], VMA(2) );
-		
+
 //	case UI_PC_SOURCE_FILE_AND_LINE:
 //		return PC_SourceFileAndLine( args[1], VMA(2), VMA(3) );
 

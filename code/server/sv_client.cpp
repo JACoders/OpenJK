@@ -80,10 +80,10 @@ void SV_DirectConnect( netadr_t from ) {
 			continue;
 		}
 		if ( NET_CompareBaseAdr( from, cl->netchan.remoteAddress )
-			&& ( cl->netchan.qport == qport 
+			&& ( cl->netchan.qport == qport
 			|| from.port == cl->netchan.remoteAddress.port ) )
 		{
-			if (( sv.time - cl->lastConnectTime) 
+			if (( sv.time - cl->lastConnectTime)
 				< (sv_reconnectlimit->integer * 1000))
 			{
 				Com_DPrintf ("%s:reconnect rejected : too soon\n", NET_AdrToString (from));
@@ -111,7 +111,7 @@ void SV_DirectConnect( netadr_t from ) {
 		return;
 	}
 
-gotnewcl:	
+gotnewcl:
 	// build a new connection
 	// accept the new client
 	// this is the only place a client_t is ever initialized
@@ -255,7 +255,7 @@ void SV_ClientEnterWorld( client_t *client, usercmd_t *cmd, SavedGameJustLoaded_
 	client->gentity = ent;
 
 	// normally I check 'qbFromSavedGame' to avoid overwriting loaded client data, but this stuff I want
-	//	to be reset so that client packet delta-ing bgins afresh, rather than based on your previous frame 
+	//	to be reset so that client packet delta-ing bgins afresh, rather than based on your previous frame
 	//	(which didn't in fact happen now if we've just loaded from a saved game...)
 	//
 	client->deltaMessage = -1;
@@ -331,7 +331,7 @@ SV_ExecuteClientCommand
 */
 void SV_ExecuteClientCommand( client_t *cl, const char *s ) {
 	ucmd_t	*u;
-	
+
 	Cmd_TokenizeString( s );
 
 	// see if it is a server level command
@@ -371,7 +371,7 @@ static void SV_ClientCommand( client_t *cl, msg_t *msg ) {
 
 	// drop the connection if we have somehow lost commands
 	if ( seq > cl->lastClientCommand + 1 ) {
-		Com_Printf( "Client %s lost %i clientCommands\n", cl->name, 
+		Com_Printf( "Client %s lost %i clientCommands\n", cl->name,
 			seq - cl->lastClientCommand + 1 );
 	}
 
@@ -403,7 +403,7 @@ void SV_ClientThink (client_t *cl, usercmd_t *cmd) {
 ==================
 SV_UserMove
 
-The message usually contains all the movement commands 
+The message usually contains all the movement commands
 that were in the last three packets, so that the information
 in dropped packets can be recovered.
 
@@ -501,7 +501,7 @@ static void SV_UserMove( client_t *cl, msg_t *msg ) {
 	// with a packetdup of 0, firstNum == cmdNum
 	firstNum = cmdNum - ( cmdCount - 1 );
 	if ( cl->cmdNum < firstNum - 1 ) {
-		cl->droppedCommands = qtrue; 
+		cl->droppedCommands = qtrue;
 		if ( sv_showloss->integer ) {
 			Com_Printf("Lost %i usercmds from %s\n", firstNum - 1 - cl->cmdNum,
 				cl->name);
@@ -546,18 +546,18 @@ void SV_ExecuteClientMessage( client_t *cl, msg_t *msg ) {
 		if ( msg->readcount > msg->cursize ) {
 			SV_DropClient (cl, "had a badread");
 			return;
-		}	
+		}
 
 		c = MSG_ReadByte( msg );
 		if ( c == -1 ) {
 			break;
 		}
-				
+
 		switch( c ) {
 		default:
 			SV_DropClient( cl,"had an unknown command char" );
 			return;
-						
+
 		case clc_nop:
 			break;
 

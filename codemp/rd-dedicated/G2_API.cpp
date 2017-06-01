@@ -1130,7 +1130,7 @@ qboolean G2API_GetBoneAnim(CGhoul2Info_v& ghoul2, int modelIndex, const char *bo
 	assert(startFrame!=flags); //this is bad
 	assert(endFrame!=flags); //this is bad
 	assert(currentFrame!=animSpeed); //this is bad
-	
+
 	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
 
 	if (G2_SetupModelPointers(ghlInfo))
@@ -1866,11 +1866,11 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 					ftemp = matrix->matrix[0][0];
 					matrix->matrix[0][0] = -matrix->matrix[0][1];
 					matrix->matrix[0][1] = ftemp;
-					
+
 					ftemp = matrix->matrix[1][0];
 					matrix->matrix[1][0] = -matrix->matrix[1][1];
 					matrix->matrix[1][1] = ftemp;
-					
+
 					ftemp = matrix->matrix[2][0];
 					matrix->matrix[2][0] = -matrix->matrix[2][1];
 					matrix->matrix[2][1] = ftemp;

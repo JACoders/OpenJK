@@ -21,9 +21,14 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(JK2SPGameDefines ${SharedDefines} "JK2_MODE")
+set(JK2SPGameDefines ${SharedDefines} "JK2_MODE" "SP_GAME")
 
-set(JK2SPGameIncludeDirectories "${JK2SPDir}/game")
+set(JK2SPGameIncludeDirectories
+	"${JK2SPDir}"
+	"${JK2SPDir}/game"
+	"${SharedDir}"
+	"${GSLIncludeDirectory}"
+	)
 if(WIN32)
 	set(JK2SPGameLibraries "winmm")
 endif(WIN32)
@@ -132,7 +137,6 @@ set(JK2SPGameGameFiles
 	"${JK2SPDir}/game/bset.h"
 	"${JK2SPDir}/game/bstate.h"
 	"${JK2SPDir}/game/channels.h"
-	"${JK2SPDir}/game/characters.h"
 	"${JK2SPDir}/game/dmstates.h"
 	"${JK2SPDir}/game/events.h"
 	"${JK2SPDir}/game/fields.h"
@@ -224,14 +228,23 @@ set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameUIFiles})
 set(JK2SPGameCommonFiles
 	#We only have JKA qcommon files now.
 	"${SPDir}/qcommon/tri_coll_test.cpp"
-	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	"${SPDir}/qcommon/q_platform.h"
 	"${SPDir}/qcommon/strippublic.h"
+	
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${JK2SPGameCommonFiles})
 set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonFiles})
+
+set(JK2SPGameCommonSafeFiles
+	${SharedCommonSafeFiles}
+	"${SharedDir}/qcommon/safe/files.h"
+	"${SharedDir}/qcommon/safe/files.cpp"
+	"${JK2SPDir}/qcommon/safe/memory.h"
+	)
+source_group("common/safe" FILES ${JK2SPGameCommonSafeFiles})
+set(JK2SPGameFiles ${JK2SPGameFiles} ${JK2SPGameCommonSafeFiles})
 
 set(JK2SPGameIcarusFiles
 	"${JK2SPDir}/icarus/BlockStream.cpp"
@@ -282,7 +295,12 @@ else(WIN32)
 		install(TARGETS ${JK2SPGame} LIBRARY DESTINATION "${JK2InstallDir}/OpenJK")
 	endif(MakeApplicationBundles AND BuildJK2SPEngine)
 endif(WIN32)
+
 set_target_properties(${JK2SPGame} PROPERTIES COMPILE_DEFINITIONS "${JK2SPGameDefines}")
+
+# Hide symbols not explicitly marked public.
+set_property(TARGET ${JK2SPGame} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
+
 set_target_properties(${JK2SPGame} PROPERTIES INCLUDE_DIRECTORIES "${JK2SPGameIncludeDirectories}")
 set_target_properties(${JK2SPGame} PROPERTIES PROJECT_LABEL "JK2 SP Game Library")
 # no libraries used

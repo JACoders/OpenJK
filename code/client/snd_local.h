@@ -73,7 +73,7 @@ typedef struct {
 typedef enum
 {
 	ct_16 = 0,		// formerly ct_NONE in EF1, now indicates 16-bit samples (the default)
-	ct_MP3,			
+	ct_MP3,
 	//
 	ct_NUMBEROF		// used only for array sizing
 
@@ -85,7 +85,7 @@ typedef struct sfx_s {
 	bool			bDefaultSound;			// couldn't be loaded, so use buzz
 	bool			bInMemory;				// not in Memory, set qtrue when loaded, and qfalse when its buffers are freed up because of being old, so can be reloaded
 	short			iLastLevelUsedOn;		// used for cacheing purposes
-	SoundCompressionMethod_t eSoundCompressionMethod;	
+	SoundCompressionMethod_t eSoundCompressionMethod;
 	MP3STREAM		*pMP3StreamHeader;		// NULL ptr unless this sfx_t is an MP3. Use Z_Malloc and Z_Free
 	int 			iSoundLengthInSamples;	// length in samples, always kept as 16bit now so this is #shorts (watch for stereo later for music?)
 	char 			sSoundName[MAX_QPATH];

@@ -393,7 +393,7 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 					//Snap to
 					if(fabs(error) > 10)
 					{
-						if(random() > 0.6)
+						if(Q_flrand(0.0f, 1.0f) > 0.6)
 						{
 							doSound = qtrue;
 						}
@@ -467,7 +467,7 @@ qboolean NPC_UpdateAngles ( qboolean doPitch, qboolean doYaw )
 					//Snap to
 					if(fabs(error) > 10)
 					{
-						if(random() > 0.6)
+						if(Q_flrand(0.0f, 1.0f) > 0.6)
 						{
 							doSound = qtrue;
 						}
@@ -1094,16 +1094,6 @@ NPC_PickEnemyExt
 
 gentity_t *NPC_PickEnemyExt( qboolean checkAlerts = qfalse )
 {
-	//Check for Hazard Team status and remove this check
-	/*
-	if ( NPC->client->playerTeam != TEAM_STARFLEET )
-	{
-		//If we've found the player, return it
-		if ( NPC_FindPlayer() )
-			return &g_entities[0];
-	}
-	*/
-
 	//If we've asked for the closest enemy
 	int entID = NPC_FindNearestEnemy( NPC );
 

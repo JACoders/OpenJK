@@ -89,17 +89,21 @@ R_AddPolygonSurfaces
 Adds all the scene's polys into this view's drawsurf list
 =====================
 */
-void R_AddPolygonSurfaces( void ) {
-	int			i;
-	shader_t	*sh;
-	srfPoly_t	*poly;
-	int		fogMask;
+void R_AddPolygonSurfaces( const trRefdef_t *refdef ) {
+	srfPoly_t *poly;
+	int	fogMask = -((refdef->rdflags & RDF_NOFOG) == 0);
 
-	fogMask = -((tr.refdef.rdflags & RDF_NOFOG) == 0);
-
-	for ( i = 0, poly = tr.refdef.polys; i < tr.refdef.numPolys ; i++, poly++ ) {
-		sh = R_GetShaderByHandle( poly->hShader );
-		R_AddDrawSurf( ( surfaceType_t * )poly, REFENTITYNUM_WORLD, sh, poly->fogIndex & fogMask, qfalse, R_IsPostRenderEntity (REFENTITYNUM_WORLD, tr.currentEntity), 0 /* cubemapIndex */ );
+	int i;
+	for ( i = 0, poly = refdef->polys; i < refdef->numPolys ; i++, poly++ ) {
+		shader_t *sh = R_GetShaderByHandle( poly->hShader );
+		R_AddDrawSurf(
+			(surfaceType_t *)poly,
+			REFENTITYNUM_WORLD,
+			sh,
+			poly->fogIndex & fogMask,
+			qfalse,
+			qfalse,
+			0 /* cubemapIndex */ );
 	}
 }
 
@@ -120,22 +124,11 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 		return;
 	}
 
-	if ( !hShader ) {
-		// This isn't a useful warning, and an hShader of zero isn't a null shader, it's
-		// the default shader.
-		//ri->Printf( PRINT_WARNING, "WARNING: RE_AddPolyToScene: NULL poly shader\n");
-		//return;
-	}
-
 	for ( j = 0; j < numPolys; j++ ) {
-		if ( r_numpolyverts + numVerts > max_polyverts || r_numpolys >= max_polys ) {
-      /*
-      NOTE TTimo this was initially a PRINT_WARNING
-      but it happens a lot with high fighting scenes and particles
-      since we don't plan on changing the const and making for room for those effects
-      simply cut this message to developer only
-      */
-			ri->Printf( PRINT_DEVELOPER, "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
+		if ( (r_numpolyverts + numVerts) > max_polyverts || r_numpolys >= max_polys ) {
+			ri->Printf(
+				PRINT_DEVELOPER,
+				S_COLOR_YELLOW "WARNING: RE_AddPolyToScene: r_max_polys or r_max_polyverts reached\n");
 			return;
 		}
 

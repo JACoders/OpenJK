@@ -53,14 +53,14 @@ qboolean NAV_HitNavGoal( vec3_t point, vec3_t mins, vec3_t maxs, vec3_t dest, in
 			{
 				diff[2] = 0;
 			}
-			return ( VectorLengthSquared( diff ) <= (radius*radius) );
+			return (qboolean)( VectorLengthSquared( diff ) <= (radius*radius) );
 		}
 		else
 		{//must hit exactly
-			return ( DistanceSquared(dest, point) <= (radius*radius) );
+			return (qboolean)( DistanceSquared(dest, point) <= (radius*radius) );
 		}
 		//There is probably a better way to do this, either by preserving the original
-		//		mins and maxs of the navgoal and doing this check ONLY if the radius 
+		//		mins and maxs of the navgoal and doing this check ONLY if the radius
 		//		is non-zero (like the original implementation) or some boolean to
 		//		tell us to do this check rather than the fake bbox overlap check...
 	}
@@ -95,7 +95,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t &trace, int clipma
 
 	//Offset the step height
 	VectorSet( mins, self->mins[0], self->mins[1], self->mins[2] + STEPSIZE );
-	
+
 	gi.trace( &trace, self->currentOrigin, mins, self->maxs, end, self->s.number, clipmask, (EG2_Collision)0, 0 );
 
 	if ( trace.startsolid&&(trace.contents&CONTENTS_BOTCLIP) )
@@ -123,7 +123,7 @@ qboolean NAV_CheckAhead( gentity_t *self, vec3_t end, trace_t &trace, int clipma
 	if ( trace.entityNum < ENTITYNUM_WORLD )
 	{
 		gentity_t	*blocker = &g_entities[trace.entityNum];
-		
+
 		if VALIDSTRING( blocker->classname )
 		{
 			if ( G_EntIsUnlockedDoor( blocker->s.number ) )
@@ -200,7 +200,7 @@ qboolean NAV_DirSafe( gentity_t *self, vec3_t dir, float dist )
 
 	//Offset the step height
 	VectorSet( mins, self->mins[0], self->mins[1], self->mins[2] + STEPSIZE );
-	
+
 	gi.trace( &trace, self->currentOrigin, mins, self->maxs, end, self->s.number, CONTENTS_BOTCLIP, (EG2_Collision)0, 0 );
 
 	//Do a simple check

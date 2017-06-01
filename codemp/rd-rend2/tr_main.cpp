@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_main.c -- main control flow for each frame
 
 #include "tr_local.h"
+#include "tr_weather.h"
 
 #include <string.h> // memcpy
 
@@ -769,19 +770,19 @@ R_RotateForViewer
 Sets up the modelview matrix for a given viewParm
 =================
 */
-static void R_RotateForViewer(viewParms_t *viewParms) 
+static void R_RotateForViewer(orientationr_t *ori, viewParms_t *viewParms) 
 {
 	float	viewerMatrix[16];
 	vec3_t	origin;
 
-	Com_Memset (&tr.ori, 0, sizeof(tr.ori));
+	*ori = {};
 	tr.ori.axis[0][0] = 1;
 	tr.ori.axis[1][1] = 1;
 	tr.ori.axis[2][2] = 1;
-	VectorCopy (viewParms->ori.origin, tr.ori.viewOrigin);
+	VectorCopy(viewParms->ori.origin, ori->viewOrigin);
 
 	// transform by the camera placement
-	VectorCopy( viewParms->ori.origin, origin );
+	VectorCopy(viewParms->ori.origin, origin);
 
 	viewerMatrix[0] = viewParms->ori.axis[0][0];
 	viewerMatrix[4] = viewParms->ori.axis[0][1];
@@ -805,28 +806,28 @@ static void R_RotateForViewer(viewParms_t *viewParms)
 
 	// convert from our coordinate system (looking down X)
 	// to OpenGL's coordinate system (looking down -Z)
-	myGlMultMatrix( viewerMatrix, s_flipMatrix, tr.ori.modelViewMatrix );
+	myGlMultMatrix(viewerMatrix, s_flipMatrix, ori->modelViewMatrix);
+	Matrix16Identity(ori->modelMatrix);
 
-	viewParms->world = tr.ori;
-
+	viewParms->world = *ori;
 }
 
 /*
 ** SetFarClip
 */
-static void R_SetFarClip( void )
+static void R_SetFarClip( viewParms_t *viewParms, const trRefdef_t *refdef )
 {
 	float	farthestCornerDistance = 0;
 	int		i;
 
 	// if not rendering the world (icons, menus, etc)
 	// set a 2k far clip plane
-	if ( tr.refdef.rdflags & RDF_NOWORLDMODEL ) {
+	if ( refdef->rdflags & RDF_NOWORLDMODEL ) {
 		// override the zfar then
-		if ( tr.refdef.rdflags & RDF_AUTOMAP )
-			tr.viewParms.zFar = 32768.0f;
+		if ( refdef->rdflags & RDF_AUTOMAP )
+			viewParms->zFar = 32768.0f;
 		else
-			tr.viewParms.zFar = 2048.0f;
+			viewParms->zFar = 2048.0f;
 		return;
 	}
 
@@ -840,42 +841,43 @@ static void R_SetFarClip( void )
 
 		if ( i & 1 )
 		{
-			v[0] = tr.viewParms.visBounds[0][0];
+			v[0] = viewParms->visBounds[0][0];
 		}
 		else
 		{
-			v[0] = tr.viewParms.visBounds[1][0];
+			v[0] = viewParms->visBounds[1][0];
 		}
 
 		if ( i & 2 )
 		{
-			v[1] = tr.viewParms.visBounds[0][1];
+			v[1] = viewParms->visBounds[0][1];
 		}
 		else
 		{
-			v[1] = tr.viewParms.visBounds[1][1];
+			v[1] = viewParms->visBounds[1][1];
 		}
 
 		if ( i & 4 )
 		{
-			v[2] = tr.viewParms.visBounds[0][2];
+			v[2] = viewParms->visBounds[0][2];
 		}
 		else
 		{
-			v[2] = tr.viewParms.visBounds[1][2];
+			v[2] = viewParms->visBounds[1][2];
 		}
 
-		distance = DistanceSquared( tr.viewParms.ori.origin, v );
+		distance = DistanceSquared( viewParms->ori.origin, v );
 
 		if ( distance > farthestCornerDistance )
 		{
 			farthestCornerDistance = distance;
 		}
 	}
+
 	// Bring in the zFar to the distanceCull distance
 	// The sky renders at zFar so need to move it out a little
 	// ...and make sure there is a minimum zfar to prevent problems
-	tr.viewParms.zFar = Com_Clamp(2048.0f, tr.distanceCull * (1.732), sqrtf( farthestCornerDistance ));
+	viewParms->zFar = Com_Clamp(2048.0f, tr.distanceCull * (1.732), sqrtf( farthestCornerDistance ));
 }
 
 /*
@@ -1239,10 +1241,10 @@ qboolean R_GetPortalOrientations( drawSurf_t *drawSurf, int entityNum,
 
 	// rotate the plane if necessary
 	if ( entityNum != REFENTITYNUM_WORLD ) {
-		tr.currentEntity = &tr.refdef.entities[entityNum];
+		const trRefEntity_t *currentEntity = &tr.refdef.entities[entityNum];
 
 		// get the orientation of the entity
-		R_RotateForEntity( tr.currentEntity, &tr.viewParms, &tr.ori );
+		R_RotateForEntity( currentEntity, &tr.viewParms, &tr.ori );
 
 		// rotate the plane, but keep the non-rotated version for matching
 		// against the portalSurface entities
@@ -1356,10 +1358,10 @@ static qboolean IsMirror( const drawSurf_t *drawSurf, int entityNum )
 	// rotate the plane if necessary
 	if ( entityNum != REFENTITYNUM_WORLD ) 
 	{
-		tr.currentEntity = &tr.refdef.entities[entityNum];
+		const trRefEntity_t *currentEntity = &tr.refdef.entities[entityNum];
 
 		// get the orientation of the entity
-		R_RotateForEntity( tr.currentEntity, &tr.viewParms, &tr.ori );
+		R_RotateForEntity( currentEntity, &tr.viewParms, &tr.ori );
 
 		// rotate the plane, but keep the non-rotated version for matching
 		// against the portalSurface entities
@@ -1416,10 +1418,11 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 	unsigned int pointOr = 0;
 	unsigned int pointAnd = (unsigned int)~0;
 
-	R_RotateForViewer(&tr.viewParms);
+	R_RotateForViewer(&tr.ori, &tr.viewParms);
 
-	R_DecomposeSort( drawSurf->sort, &shader, &cubemap, &fogNum, &postRender );
+	R_DecomposeSort( drawSurf->sort, &shader, &cubemap, &postRender );
 	entityNum = drawSurf->entityNum;
+	fogNum = drawSurf->fogIndex;
 
 	RB_BeginSurface( shader, fogNum, cubemap );
 	rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
@@ -1730,13 +1733,8 @@ static void R_RadixSort( drawSurf_t *source, int size )
 
 //==========================================================================================
 
-bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity )
+bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity )
 {
-	if ( refEntityNum == REFENTITYNUM_WORLD )
-	{
-		return false;
-	}
-
 	return (refEntity->e.renderfx & RF_DISTORTION) ||
 			(refEntity->e.renderfx & RF_FORCEPOST) ||
 			(refEntity->e.renderfx & RF_FORCE_ENT_ALPHA);
@@ -1747,21 +1745,19 @@ bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity )
 R_DecomposeSort
 =================
 */
-void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *fogNum, int *postRender )
+void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender )
 {
-	*fogNum = (sort >> QSORT_FOGNUM_SHIFT) & QSORT_FOGNUM_MASK;
 	*shader = tr.sortedShaders[ ( sort >> QSORT_SHADERNUM_SHIFT ) & QSORT_SHADERNUM_MASK ];
 	*postRender = (sort >> QSORT_POSTRENDER_SHIFT ) & QSORT_POSTRENDER_MASK;
 	*cubemap = (sort >> QSORT_CUBEMAP_SHIFT ) & QSORT_CUBEMAP_MASK;
 }
 
-uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int fogIndex, int postRender)
+uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender)
 {
 	uint32_t key = 0;
 
 	key |= (sortedShaderIndex & QSORT_SHADERNUM_MASK) << QSORT_SHADERNUM_SHIFT;
 	key |= (cubemapIndex & QSORT_CUBEMAP_MASK) << QSORT_CUBEMAP_SHIFT;
-	key |= (fogIndex & QSORT_FOGNUM_MASK) << QSORT_FOGNUM_SHIFT;
 	key |= (postRender & QSORT_POSTRENDER_MASK) << QSORT_POSTRENDER_SHIFT;
 
 	return key;
@@ -1792,10 +1788,11 @@ void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,  in
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 	surf = tr.refdef.drawSurfs + index;
 
-	surf->sort = R_CreateSortKey(shader->sortedIndex, cubemap, fogIndex, postRender);
+	surf->sort = R_CreateSortKey(shader->sortedIndex, cubemap, postRender);
 	surf->entityNum = entityNum;
-	surf->lit = (qboolean)dlightMap;
+	surf->dlightBits = dlightMap;
 	surf->surface = surface;
+	surf->fogIndex = fogIndex;
 
 	tr.refdef.numDrawSurfs++;
 }
@@ -1829,11 +1826,10 @@ void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 			for ( int i = 0 ; i < numDrawSurfs ; i++ ) {
 				int entityNum;
 				shader_t *shader;
-				int fogNum;
 				int postRender;
 				int cubemap;
 
-				R_DecomposeSort( (drawSurfs+i)->sort, &shader, &cubemap, &fogNum, &postRender );
+				R_DecomposeSort( (drawSurfs+i)->sort, &shader, &cubemap, &postRender );
 				entityNum = drawSurfs[i].entityNum;
 
 				if ( shader->sort > SS_PORTAL ) {
@@ -1860,12 +1856,9 @@ void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	R_AddDrawSurfCmd( drawSurfs, numDrawSurfs );
 }
 
-static void R_AddEntitySurface (int entityNum)
+static void R_AddEntitySurface(const trRefdef_t *refdef, trRefEntity_t *ent, int entityNum)
 {
-	trRefEntity_t	*ent;
 	shader_t		*shader;
-
-	ent = tr.currentEntity = &tr.refdef.entities[entityNum];
 
 	ent->needDlights = qfalse;
 
@@ -1897,7 +1890,14 @@ static void R_AddEntitySurface (int entityNum)
 			return;
 		}
 		shader = R_GetShaderByHandle( ent->e.customShader );
-		R_AddDrawSurf( &entitySurface, entityNum, shader, R_SpriteFogNum( ent ), 0, R_IsPostRenderEntity (entityNum, ent), 0 /* cubeMap */ );
+		R_AddDrawSurf(
+			&entitySurface,
+			entityNum,
+			shader,
+			R_SpriteFogNum(ent),
+			0,
+			R_IsPostRenderEntity(ent),
+			0 /* cubeMap */ );
 		break;
 
 	case RT_MODEL:
@@ -1906,7 +1906,14 @@ static void R_AddEntitySurface (int entityNum)
 
 		tr.currentModel = R_GetModelByHandle( ent->e.hModel );
 		if (!tr.currentModel) {
-			R_AddDrawSurf( &entitySurface, entityNum, tr.defaultShader, 0, 0, R_IsPostRenderEntity (entityNum, ent), 0/* cubeMap */ );
+			R_AddDrawSurf(
+				&entitySurface,
+				entityNum,
+				tr.defaultShader,
+				0,
+				0,
+				R_IsPostRenderEntity(ent),
+				0/* cubeMap */ );
 		} else {
 			switch ( tr.currentModel->type ) {
 			case MOD_MESH:
@@ -1926,17 +1933,25 @@ static void R_AddEntitySurface (int entityNum)
 					R_AddGhoulSurfaces(ent, entityNum);
 				break;
 			case MOD_BAD:		// null model axis
-				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal) {
+				if ( (ent->e.renderfx & RF_THIRD_PERSON) && !tr.viewParms.isPortal ) {
 					break;
 				}
 
-				if( ent->e.ghoul2 && G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
+				if ( ent->e.ghoul2 &&
+					G2API_HaveWeGhoul2Models(*((CGhoul2Info_v *)ent->e.ghoul2)) )
 				{
-					R_AddGhoulSurfaces( ent, entityNum );
+					R_AddGhoulSurfaces(ent, entityNum);
 					break;
 				}
 
-				R_AddDrawSurf( &entitySurface, entityNum, tr.defaultShader, 0, 0, R_IsPostRenderEntity (entityNum, ent), 0 /* cubeMap */ );
+				R_AddDrawSurf(
+					&entitySurface,
+					entityNum,
+					tr.defaultShader,
+					0,
+					0,
+					R_IsPostRenderEntity(ent),
+					0 /* cubeMap */ );
 				break;
 			default:
 				ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad modeltype" );
@@ -1945,9 +1960,16 @@ static void R_AddEntitySurface (int entityNum)
 		}
 		break;
 	case RT_ENT_CHAIN:
-			shader = R_GetShaderByHandle( ent->e.customShader );
-			R_AddDrawSurf( &entitySurface, entityNum, shader, R_SpriteFogNum( ent ), false, R_IsPostRenderEntity (entityNum, ent), 0 /* cubeMap */ );
-			break;
+		shader = R_GetShaderByHandle(ent->e.customShader);
+		R_AddDrawSurf(
+			&entitySurface,
+			entityNum,
+			shader,
+			R_SpriteFogNum(ent),
+			false,
+			R_IsPostRenderEntity(ent),
+			0 /* cubeMap */ );
+		break;
 	default:
 		ri->Error( ERR_DROP, "R_AddEntitySurfaces: Bad reType" );
 	}
@@ -1958,15 +1980,18 @@ static void R_AddEntitySurface (int entityNum)
 R_AddEntitySurfaces
 =============
 */
-void R_AddEntitySurfaces (void) {
-	int i;
-
-	if ( !r_drawentities->integer ) {
+static void R_AddEntitySurfaces(const trRefdef_t *refdef)
+{
+	if ( !r_drawentities->integer )
+	{
 		return;
 	}
 
-	for ( i = 0; i < tr.refdef.num_entities; i++)
-		R_AddEntitySurface(i);
+	for (int i = 0; i < refdef->num_entities; i++)
+	{
+		trRefEntity_t *ent = refdef->entities + i;
+		R_AddEntitySurface(refdef, ent, i);
+	}
 }
 
 
@@ -1975,10 +2000,10 @@ void R_AddEntitySurfaces (void) {
 R_GenerateDrawSurfs
 ====================
 */
-void R_GenerateDrawSurfs( void ) {
-	R_AddWorldSurfaces ();
+static void R_GenerateDrawSurfs( viewParms_t *viewParms, trRefdef_t *refdef ) {
+	R_AddWorldSurfaces(viewParms, refdef);
 
-	R_AddPolygonSurfaces();
+	R_AddPolygonSurfaces(refdef);
 
 	// set the projection matrix with the minimum zfar
 	// now that we have the world bounded
@@ -1989,13 +2014,18 @@ void R_GenerateDrawSurfs( void ) {
 	// dynamically compute far clip plane distance
 	if (!(tr.viewParms.flags & VPF_SHADOWMAP))
 	{
-		R_SetFarClip();
+		R_SetFarClip(viewParms, refdef);
 	}
 
 	// we know the size of the clipping volume. Now set the rest of the projection matrix.
-	R_SetupProjectionZ (&tr.viewParms);
+	R_SetupProjectionZ(viewParms);
 
-	R_AddEntitySurfaces ();
+	R_AddEntitySurfaces(refdef);
+
+	if ( !(tr.viewParms.flags & VPF_SHADOWMAP) )
+	{
+		R_AddWeatherSurfaces();
+	}
 }
 
 /*
@@ -2078,11 +2108,11 @@ void R_RenderView (viewParms_t *parms) {
 	tr.viewCount++;
 
 	// set viewParms.world
-	R_RotateForViewer(&tr.viewParms);
+	R_RotateForViewer(&tr.ori, &tr.viewParms);
 
 	R_SetupProjection(&tr.viewParms, r_zproj->value, tr.viewParms.zFar, qtrue);
 
-	R_GenerateDrawSurfs();
+	R_GenerateDrawSurfs(&tr.viewParms, &tr.refdef);
 
 	R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
 
@@ -2116,7 +2146,7 @@ void R_RenderDlightCubemaps(const refdef_t *fd)
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
-		shadowParms.flags = (int)(VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL);
+		shadowParms.flags = (viewParmFlags_t)(VPF_SHADOWMAP | VPF_DEPTHSHADOW | VPF_NOVIEWMODEL);
 		shadowParms.zFar = tr.refdef.dlights[i].radius;
 
 		VectorCopy( tr.refdef.dlights[i].origin, shadowParms.ori.origin );
@@ -2369,7 +2399,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 		VectorScale(lightDir, -1.0f, shadow->lightViewAxis[0]);
 		VectorSet(up, 0, 0, -1);
 
-		if ( abs(DotProduct(up, shadow->lightViewAxis[0])) > 0.9f )
+		if ( fabs(DotProduct(up, shadow->lightViewAxis[0])) > 0.9f )
 		{
 			VectorSet(up, -1, 0, 0);
 		}
@@ -2426,7 +2456,7 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 			tr.viewCount++;
 
 			// set viewParms.world
-			R_RotateForViewer(&tr.viewParms);
+			R_RotateForViewer(&tr.ori, &tr.viewParms);
 
 			{
 				float xmin, xmax, ymin, ymax, znear, zfar;
@@ -2489,10 +2519,14 @@ void R_RenderPshadowMaps(const refdef_t *fd)
 
 			for (j = 0; j < shadow->numEntities; j++)
 			{
-				R_AddEntitySurface(shadow->entityNums[j]);
+				int entityNum = shadow->entityNums[j];
+				trRefEntity_t *ent = tr.refdef.entities + entityNum;
+				R_AddEntitySurface(&tr.refdef, ent, entityNum);
 			}
 
-			R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+			R_SortAndSubmitDrawSurfs(
+				tr.refdef.drawSurfs + firstDrawSurf,
+				tr.refdef.numDrawSurfs - firstDrawSurf);
 		}
 	}
 }
@@ -2505,7 +2539,6 @@ static float CalcSplit(float n, float f, float i, float m)
 
 void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 {
-	viewParms_t shadowParms;
 	vec4_t lightDir, lightCol;
 	vec3_t lightViewAxis[3];
 	vec3_t lightOrigin;
@@ -2598,7 +2631,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 	}
 
 	// Check if too close to parallel to light direction
-	if (abs(DotProduct(lightViewAxis[2], lightViewAxis[0])) > 0.9f)
+	if (fabs(DotProduct(lightViewAxis[2], lightViewAxis[0])) > 0.9f)
 	{
 		if (lightViewIndependentOfCameraView)
 		{
@@ -2691,27 +2724,24 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		// Moving the Light in Texel-Sized Increments
 		// from http://msdn.microsoft.com/en-us/library/windows/desktop/ee416324%28v=vs.85%29.aspx
 		//
-		if (lightViewIndependentOfCameraView)
-		{
-			float cascadeBound, worldUnitsPerTexel, invWorldUnitsPerTexel;
+		float cascadeBound, worldUnitsPerTexel, invWorldUnitsPerTexel;
 
-			cascadeBound = MAX(lightviewBounds[1][0] - lightviewBounds[0][0], lightviewBounds[1][1] - lightviewBounds[0][1]);
-			cascadeBound = MAX(cascadeBound, lightviewBounds[1][2] - lightviewBounds[0][2]);
-			worldUnitsPerTexel = cascadeBound / tr.sunShadowFbo[level]->width;
-			invWorldUnitsPerTexel = 1.0f / worldUnitsPerTexel;
+		cascadeBound = MAX(lightviewBounds[1][0] - lightviewBounds[0][0], lightviewBounds[1][1] - lightviewBounds[0][1]);
+		cascadeBound = MAX(cascadeBound, lightviewBounds[1][2] - lightviewBounds[0][2]);
+		worldUnitsPerTexel = cascadeBound / tr.sunShadowFbo[level]->width;
+		invWorldUnitsPerTexel = 1.0f / worldUnitsPerTexel;
 
-			VectorScale(lightviewBounds[0], invWorldUnitsPerTexel, lightviewBounds[0]);
-			lightviewBounds[0][0] = floor(lightviewBounds[0][0]);
-			lightviewBounds[0][1] = floor(lightviewBounds[0][1]);
-			lightviewBounds[0][2] = floor(lightviewBounds[0][2]);
-			VectorScale(lightviewBounds[0], worldUnitsPerTexel, lightviewBounds[0]);
+		VectorScale(lightviewBounds[0], invWorldUnitsPerTexel, lightviewBounds[0]);
+		lightviewBounds[0][0] = floor(lightviewBounds[0][0]);
+		lightviewBounds[0][1] = floor(lightviewBounds[0][1]);
+		lightviewBounds[0][2] = floor(lightviewBounds[0][2]);
+		VectorScale(lightviewBounds[0], worldUnitsPerTexel, lightviewBounds[0]);
 
-			VectorScale(lightviewBounds[1], invWorldUnitsPerTexel, lightviewBounds[1]);
-			lightviewBounds[1][0] = floor(lightviewBounds[1][0]);
-			lightviewBounds[1][1] = floor(lightviewBounds[1][1]);
-			lightviewBounds[1][2] = floor(lightviewBounds[1][2]);
-			VectorScale(lightviewBounds[1], worldUnitsPerTexel, lightviewBounds[1]);
-		}
+		VectorScale(lightviewBounds[1], invWorldUnitsPerTexel, lightviewBounds[1]);
+		lightviewBounds[1][0] = floor(lightviewBounds[1][0]);
+		lightviewBounds[1][1] = floor(lightviewBounds[1][1]);
+		lightviewBounds[1][2] = floor(lightviewBounds[1][2]);
+		VectorScale(lightviewBounds[1], worldUnitsPerTexel, lightviewBounds[1]);
 
 		//ri->Printf(PRINT_ALL, "znear %f zfar %f\n", lightviewBounds[0][0], lightviewBounds[1][0]);		
 		//ri->Printf(PRINT_ALL, "fovx %f fovy %f xmin %f xmax %f ymin %f ymax %f\n", fd->fov_x, fd->fov_y, xmin, xmax, ymin, ymax);
@@ -2719,23 +2749,20 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 
 
 	{
-		int firstDrawSurf;
-
-		Com_Memset( &shadowParms, 0, sizeof( shadowParms ) );
-
+		viewParms_t shadowParms = {};
 		shadowParms.viewportX = 0;
 		shadowParms.viewportY = 0;
 		shadowParms.viewportWidth  = tr.sunShadowFbo[level]->width;
 		shadowParms.viewportHeight = tr.sunShadowFbo[level]->height;
 		shadowParms.isPortal = qfalse;
 		shadowParms.isMirror = qfalse;
-
 		shadowParms.fovX = 90;
 		shadowParms.fovY = 90;
 
 		shadowParms.targetFbo = tr.sunShadowFbo[level];
 
-		shadowParms.flags = (viewParmFlags_t)( VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL );
+		shadowParms.flags = (viewParmFlags_t)(
+			VPF_DEPTHSHADOW | VPF_DEPTHCLAMP | VPF_ORTHOGRAPHIC | VPF_NOVIEWMODEL);
 		shadowParms.zFar = lightviewBounds[1][0];
 
 		VectorCopy(lightOrigin, shadowParms.ori.origin);
@@ -2744,7 +2771,7 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 		VectorCopy(lightViewAxis[1], shadowParms.ori.axis[1]);
 		VectorCopy(lightViewAxis[2], shadowParms.ori.axis[2]);
 
-		VectorCopy(lightOrigin, shadowParms.pvsOrigin );
+		VectorCopy(lightOrigin, shadowParms.pvsOrigin);
 
 		{
 			tr.viewCount++;
@@ -2753,25 +2780,30 @@ void R_RenderSunShadowMaps(const refdef_t *fd, int level)
 			tr.viewParms.frameSceneNum = tr.frameSceneNum;
 			tr.viewParms.frameCount = tr.frameCount;
 
-			firstDrawSurf = tr.refdef.numDrawSurfs;
+			int firstDrawSurf = tr.refdef.numDrawSurfs;
 
 			tr.viewCount++;
 
 			// set viewParms.world
-			R_RotateForViewer(&tr.viewParms);
+			R_RotateForViewer(&tr.ori, &tr.viewParms);
 
 			R_SetupProjectionOrtho(&tr.viewParms, lightviewBounds);
 
-			R_AddWorldSurfaces ();
+			R_AddWorldSurfaces(&tr.viewParms, &tr.refdef);
 
-			R_AddPolygonSurfaces();
+			R_AddPolygonSurfaces(&tr.refdef);
 
-			R_AddEntitySurfaces ();
+			R_AddEntitySurfaces(&tr.refdef);
 
-			R_SortAndSubmitDrawSurfs( tr.refdef.drawSurfs + firstDrawSurf, tr.refdef.numDrawSurfs - firstDrawSurf );
+			R_SortAndSubmitDrawSurfs(
+				tr.refdef.drawSurfs + firstDrawSurf,
+				tr.refdef.numDrawSurfs - firstDrawSurf);
+
+			Matrix16Multiply(
+				tr.viewParms.projectionMatrix,
+				tr.viewParms.world.modelViewMatrix,
+				tr.refdef.sunShadowMvp[level]);
 		}
-
-		Matrix16Multiply(tr.viewParms.projectionMatrix, tr.viewParms.world.modelViewMatrix, tr.refdef.sunShadowMvp[level]);
 	}
 }
 

@@ -152,7 +152,7 @@ static const field_t savefields_gClient[] =
 };
 
 
-static list<sstring_t>* strList = NULL;
+static std::list<sstring_t>* strList = NULL;
 
 
 /////////// char * /////////////
@@ -424,7 +424,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 		break;
 
 	case F_BOOLPTR:
-		*(qboolean *)pv = !!(*(int *)pv);
+		*(qboolean *)pv = (*(int *)pv) ? qtrue : qfalse;
 		break;
 
 	// These are pointers that are always recreated
@@ -443,7 +443,7 @@ void EnumerateField(const field_t *pField, byte *pbBase)
 
 static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int ulChid, size_t iLen)
 {
-	strList = new list<sstring_t>;
+	strList = new std::list<sstring_t>;
 
 	// enumerate all the fields...
 	//
@@ -462,7 +462,7 @@ static void EnumerateFields(const field_t *pFields, byte *pbData, unsigned int u
 
 	// save out any associated strings..
 	//
-	for (list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
+	for (std::list<sstring_t>::iterator it = strList->begin(); it != strList->end(); ++it)
 	{
 		gi.AppendToSaveGame(INT_ID('S','T','R','G'), (void*)it->c_str(), it->length()+1);
 	}
@@ -1027,7 +1027,7 @@ void ReadLevel(qboolean qbAutosave, qboolean qbLoadTransition)
 extern int killPlayerTimer;
 qboolean GameAllowedToSaveHere(void)
 {
-	return (!in_camera&&!killPlayerTimer);
+	return (qboolean)(!in_camera && !killPlayerTimer);
 }
 
 //////////////////// eof /////////////////////

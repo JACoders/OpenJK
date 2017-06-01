@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define NUM_EXPLOSION_SHADERS	8
 #define NUM_EXPLOSION_FRAMES	3
 
-#define	CMD_BACKUP			64	
+#define	CMD_BACKUP			64
 #define	CMD_MASK			(CMD_BACKUP - 1)
 // allow a lot of command backups for very fast systems
 // multiple commands may be combined into a single packet, so this
@@ -44,7 +44,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // Snapshots are generated at regular time intervals by the server,
 // but they may not be sent if a client's rate level is exceeded, or
 // they may be dropped by the network.
-struct snapshot_s 
+struct snapshot_s
 {
 	int				snapFlags;			// SNAPFLAG_RATE_DELAYED, SNAPFLAG_DROPPED_COMMANDS
 

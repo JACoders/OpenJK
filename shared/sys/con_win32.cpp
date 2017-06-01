@@ -155,7 +155,7 @@ static void CON_HistNext( void )
 	if( qconsole_history_pos == qconsole_history_oldest )
 		return;
 
-	pos = ( qconsole_history_pos >= QCONSOLE_HISTORY - 1 ) ? 0 : ( qconsole_history_pos + 1 ); 
+	pos = ( qconsole_history_pos >= QCONSOLE_HISTORY - 1 ) ? 0 : ( qconsole_history_pos + 1 );
 
 	// clear the edit buffer if they try to advance to a future command
 	if( pos == qconsole_history_oldest )
@@ -197,8 +197,8 @@ static void CON_Show( void )
 		return;
 
 	writeArea.Left = 0;
-	writeArea.Top = binfo.dwCursorPosition.Y; 
-	writeArea.Bottom = binfo.dwCursorPosition.Y; 
+	writeArea.Top = binfo.dwCursorPosition.Y;
+	writeArea.Bottom = binfo.dwCursorPosition.Y;
 	writeArea.Right = MAX_EDIT_LINE;
 
 	// set color to white
@@ -222,7 +222,7 @@ static void CON_Show( void )
 
 	if( qconsole_linelen > binfo.srWindow.Right )
 	{
-		WriteConsoleOutput( qconsole_hout, 
+		WriteConsoleOutput( qconsole_hout,
 			line + (qconsole_linelen - binfo.srWindow.Right ),
 			writeSize, writePos, &writeArea );
 	}
@@ -303,7 +303,7 @@ void CON_Init( void )
 	// allow mouse wheel scrolling
 	SetConsoleMode( qconsole_hin, qconsole_orig_mode & ~ENABLE_MOUSE_INPUT );
 
-	FlushConsoleInputBuffer( qconsole_hin ); 
+	FlushConsoleInputBuffer( qconsole_hin );
 
 	GetConsoleScreenBufferInfo( qconsole_hout, &info );
 	qconsole_attrib = info.wAttributes;
@@ -337,13 +337,13 @@ char *CON_Input( void )
 
 	if( events < 1 )
 		return NULL;
-  
+
 	// if we have overflowed, start dropping oldest input events
 	if( events >= MAX_EDIT_LINE )
 	{
 		ReadConsoleInput( qconsole_hin, buff, 1, &events );
 		return NULL;
-	} 
+	}
 
 	if( !ReadConsoleInput( qconsole_hin, buff, events, &count ) )
 		return NULL;
@@ -354,7 +354,7 @@ char *CON_Input( void )
 	{
 		if( buff[ i ].EventType != KEY_EVENT )
 			continue;
-		if( !buff[ i ].Event.KeyEvent.bKeyDown ) 
+		if( !buff[ i ].Event.KeyEvent.bKeyDown )
 			continue;
 
 		key = buff[ i ].Event.KeyEvent.wVirtualKeyCode;
@@ -455,7 +455,7 @@ char *CON_Input( void )
 				qconsole_line[ qconsole_cursor++ ] = c;
 
 				qconsole_linelen++;
-				qconsole_line[ qconsole_linelen ] = '\0'; 
+				qconsole_line[ qconsole_linelen ] = '\0';
 			}
 		}
 	}

@@ -566,7 +566,7 @@ qboolean PM_InAnimForSaberMove( int anim, int saberMove )
 	}
 	if ( anim >= BOTH_P1_S1_T_ && anim <= BOTH_H1_S1_BR )
 	{//parries, knockaways and broken parries
-		return (anim==saberMoveData[saberMove].animToUse);
+		return (qboolean)(anim == saberMoveData[saberMove].animToUse);
 	}
 	return qfalse;
 }

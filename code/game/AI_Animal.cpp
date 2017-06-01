@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, see <http://www.gnu.org/licenses/>.
 ===========================================================================
 */
-	    
+
 #include "b_local.h"
 #include "g_navigator.h"
 
@@ -50,7 +50,7 @@ gentity_t* NPC_AnimalUpdateLeader(void)
 	gentity_t*	closestLeader = 0;
 	float		closestDist = 0;
 	int			myLeaderNum = 0;
-	
+
 	for (int i=0; i<mPacks.size(); i++)
 	{
 		// Dump Dead Leaders
@@ -118,7 +118,7 @@ gentity_t* NPC_AnimalUpdateLeader(void)
 			{
 				NPC->client->leader = 0;
 			}
-			
+
 			// If My Leader Isn't His Own Leader, Then, Use His Leader
 			//---------------------------------------------------------
 			else if (NPC->client->leader->client->leader!=NPC->client->leader)
@@ -336,10 +336,10 @@ void NPC_BSAnimal_Default( void )
 						//-------------------
 						int		NEXTSUBSTATE = Q_irand(0, 10);
 
-						bool	RandomPathNode = (NEXTSUBSTATE<8); //(NEXTSUBSTATE<9);  
-						bool	PathlessWander = (NEXTSUBSTATE<9); //false;				
+						bool	RandomPathNode = (NEXTSUBSTATE<8); //(NEXTSUBSTATE<9);
+						bool	PathlessWander = (NEXTSUBSTATE<9); //false;
 
-						
+
 
 						// Random Path Node
 						//------------------
@@ -405,7 +405,7 @@ void NPC_BSAnimal_Default( void )
 			}
 		}
 	}
-	STEER::DeActivate(NPC, &ucmd); 
+	STEER::DeActivate(NPC, &ucmd);
 
 	NPC_UpdateAngles( qtrue, qtrue );
 }

@@ -28,7 +28,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <algorithm>
 #include "qcommon/qcommon.h"
 
-typedef std::vector<cvar_t *> cvarvec_t;
+typedef std::vector<cvar_t *> CvarPtrVector;
 
 cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;
@@ -178,6 +178,21 @@ void Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize 
 
 /*
 ============
+Cvar_DescriptionString
+============
+*/
+char *Cvar_DescriptionString( const char *var_name )
+{
+	cvar_t *var;
+
+	var = Cvar_FindVar( var_name );
+	if ( !var || !VALIDSTRING( var->description ) )
+		return "";
+	return var->description;
+}
+
+/*
+============
 Cvar_Flags
 ============
 */
@@ -203,7 +218,7 @@ void	Cvar_CommandCompletion( callbackFunc_t callback ) {
 	cvar_t		*cvar;
 
 	for ( cvar = cvar_vars ; cvar ; cvar = cvar->next ) {
-		// Dont show internal cvars
+		// Don't show internal cvars
 		if ( cvar->flags & CVAR_INTERNAL )
 		{
 			continue;
@@ -322,7 +337,7 @@ If the variable already exists, the value will not be set unless CVAR_ROM
 The flags will be or'ed in if the variable exists.
 ============
 */
-cvar_t *Cvar_Get( const char *var_name, const char *var_value, uint32_t flags ) {
+cvar_t *Cvar_Get( const char *var_name, const char *var_value, uint32_t flags, const char *var_desc ) {
 	cvar_t	*var;
 	long	hash;
 	int		index;
@@ -412,6 +427,13 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, uint32_t flags ) 
 			Cvar_FreeString( s );
 		}
 
+		if ( var_desc && var_desc[0] != '\0' )
+		{
+			if(var->description )
+				Cvar_FreeString( var->description );
+			var->description = CopyString( var_desc );
+		}
+
 		// ZOID--needs to be set so that cvars the game sets as
 		// SERVERINFO get sent to clients
 		cvar_modifiedFlags |= flags;
@@ -445,6 +467,10 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, uint32_t flags ) 
 
 	var->name = CopyString (var_name);
 	var->string = CopyString (var_value);
+	if ( var_desc && var_desc[0] != '\0' )
+		var->description = CopyString( var_desc );
+	else
+		var->description = NULL;
 	var->modified = qtrue;
 	var->modificationCount = 1;
 	var->value = atof (var->string);
@@ -498,6 +524,9 @@ void Cvar_Print( cvar_t *v ) {
 
 	if ( v->latchedString )
 		Com_Printf( "     latched = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"\n", v->latchedString );
+
+	if ( v->description )
+		Com_Printf( "%s\n", v->description );
 }
 
 /*
@@ -997,6 +1026,51 @@ void Cvar_Set_f( void ) {
 
 /*
 ============
+Cvar_Math_f
+============
+*/
+void Cvar_Math_f( void )
+{
+	int		c;
+	char	*cmd;
+
+	c = Cmd_Argc();
+	cmd = Cmd_Argv( 0 );
+
+	if ( c != 3 )
+	{
+		Com_Printf( "usage: %s <variable> <value>\n", cmd );
+		return;
+	}
+
+	if ( !Q_stricmp( cmd, "cvarAdd" ) )
+	{
+		Cvar_User_SetValue( Cmd_Argv( 1 ), Cvar_VariableValue( Cmd_Argv( 1 ) ) + atof( Cmd_Argv( 2 ) ) );
+	}
+	else if ( !Q_stricmp( cmd, "cvarSub" ) )
+	{
+		Cvar_User_SetValue( Cmd_Argv( 1 ), Cvar_VariableValue( Cmd_Argv( 1 ) ) - atof( Cmd_Argv( 2 ) ) );
+	}
+	else if ( !Q_stricmp( cmd, "cvarMult" ) )
+	{
+		Cvar_User_SetValue( Cmd_Argv( 1 ), Cvar_VariableValue( Cmd_Argv( 1 ) ) * atof( Cmd_Argv( 2 ) ) );
+	}
+	else if ( !Q_stricmp( cmd, "cvarDiv" ) )
+	{
+		float value = atof( Cmd_Argv( 2 ) );
+		if ( value != 0 )
+			Cvar_User_SetValue( Cmd_Argv( 1 ), Cvar_VariableValue( Cmd_Argv( 1 ) ) / value );
+		else
+			Com_Printf( "Cannot divide by zero!\n" );
+	}
+	else if ( !Q_stricmp( cmd, "cvarMod" ) )
+	{
+		Cvar_User_SetValue( Cmd_Argv( 1 ), Cvar_VariableIntegerValue( Cmd_Argv( 1 ) ) % atoi( Cmd_Argv( 2 ) ) );
+	}
+}
+
+/*
+============
 Cvar_Reset_f
 ============
 */
@@ -1022,21 +1096,21 @@ with the archive flag set to qtrue.
 ============
 */
 void Cvar_WriteVariables( fileHandle_t f ) {
-	cvarvec_t cvar_vec;
+	CvarPtrVector cvars;
 	for (cvar_t *var = cvar_vars ; var ; var = var->next) {
 		if( !var->name )
 			continue;
 
 		if( var->flags & CVAR_ARCHIVE ) {
-			cvar_vec.push_back(var);
+			cvars.push_back( var );
 		}
 	}
 
-	std::sort(cvar_vec.begin(), cvar_vec.end(), CvarSort);
+	std::sort( cvars.begin(), cvars.end(), CvarSort );
 
-	cvarvec_t::const_iterator itr;
+	CvarPtrVector::const_iterator itr;
 	char buffer[1024];
-	for (itr = cvar_vec.begin(); itr != cvar_vec.end(); ++itr)
+	for ( itr = cvars.begin(); itr != cvars.end(); ++itr )
 	{
 		// write the latched value, even if it hasn't taken effect yet
 		if ( (*itr)->latchedString ) {
@@ -1067,6 +1141,7 @@ void Cvar_List_f( void ) {
 	cvar_t *var = NULL;
 	int i = 0;
 	char *match = NULL;
+	CvarPtrVector cvars;
 
 	if ( Cmd_Argc() > 1 )
 		match = Cmd_Argv( 1 );
@@ -1078,6 +1153,19 @@ void Cvar_List_f( void ) {
 		if ( !var->name || (match && !Com_Filter( match, var->name, qfalse )) )
 			continue;
 
+		cvars.push_back( var );
+	}
+
+
+	// sort list alphabetically
+	std::sort( cvars.begin(), cvars.end(), CvarSort );
+
+	CvarPtrVector::const_iterator itr;
+	for ( itr = cvars.begin();
+		itr != cvars.end();
+		++itr )
+	{
+		var = (*itr);
 		if (var->flags & CVAR_SERVERINFO)	Com_Printf( "S" );	else Com_Printf( " " );
 		if (var->flags & CVAR_SYSTEMINFO)	Com_Printf( "s" );	else Com_Printf( " " );
 		if (var->flags & CVAR_USERINFO)		Com_Printf( "U" );	else Com_Printf( " " );
@@ -1102,7 +1190,7 @@ void Cvar_List_f( void ) {
 void Cvar_ListModified_f( void ) {
 	cvar_t *var = NULL;
 	int i = 0;
-	cvarvec_t cvar_vec;
+	CvarPtrVector cvars;
 
 	// build a list of cvars that are modified
 	for ( var=cvar_vars, i=0;
@@ -1113,16 +1201,16 @@ void Cvar_ListModified_f( void ) {
 		if ( !var->name || !var->modificationCount || !strcmp( value, var->resetString ) )
 			continue;
 
-		cvar_vec.push_back( var );
+		cvars.push_back( var );
 	}
 
 	// sort list alphabetically
-	std::sort( cvar_vec.begin(), cvar_vec.end(), CvarSort );
+	std::sort( cvars.begin(), cvars.end(), CvarSort );
 
 	// print them
-	cvarvec_t::const_iterator itr;
-	for ( itr = cvar_vec.begin();
-		itr != cvar_vec.end();
+	CvarPtrVector::const_iterator itr;
+	for ( itr = cvars.begin();
+		itr != cvars.end();
 		++itr )
 	{
 		char *value = (*itr)->latchedString ? (*itr)->latchedString : (*itr)->string;
@@ -1151,6 +1239,8 @@ cvar_t *Cvar_Unset(cvar_t *cv)
 
 	if(cv->name)
 		Cvar_FreeString(cv->name);
+	if(cv->description)
+		Cvar_FreeString(cv->description);
 	if(cv->string)
 		Cvar_FreeString(cv->string);
 	if(cv->latchedString)
@@ -1376,9 +1466,9 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 		return;		// variable might have been cleared by a cvar_restart
 	}
 	vmCvar->modificationCount = cv->modificationCount;
-	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING ) 
+	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING )
 		Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING", cv->string, (unsigned int) strlen(cv->string));
-	Q_strncpyz( vmCvar->string, cv->string, MAX_CVAR_VALUE_STRING ); 
+	Q_strncpyz( vmCvar->string, cv->string, MAX_CVAR_VALUE_STRING );
 
 	vmCvar->value = cv->value;
 	vmCvar->integer = cv->integer;
@@ -1412,29 +1502,38 @@ void Cvar_Init (void) {
 	memset( cvar_indexes, 0, sizeof( cvar_indexes ) );
 	memset( hashTable, 0, sizeof( hashTable ) );
 
-	cvar_cheats = Cvar_Get( "sv_cheats", "1", CVAR_ROM|CVAR_SYSTEMINFO );
+	cvar_cheats = Cvar_Get( "sv_cheats", "1", CVAR_ROM|CVAR_SYSTEMINFO, "Allow cheats on server if set to 1" );
 
-	Cmd_AddCommand( "print", Cvar_Print_f );
+	Cmd_AddCommand( "print", Cvar_Print_f, "Print cvar help" );
 	Cmd_SetCommandCompletionFunc( "print", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "toggle", Cvar_Toggle_f );
+	Cmd_AddCommand( "toggle", Cvar_Toggle_f, "Toggle a cvar between values" );
 	Cmd_SetCommandCompletionFunc( "toggle", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "set", Cvar_Set_f );
+	Cmd_AddCommand( "set", Cvar_Set_f, "Set a cvar" );
 	Cmd_SetCommandCompletionFunc( "set", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "sets", Cvar_Set_f );
+	Cmd_AddCommand( "sets", Cvar_Set_f, "Set a cvar and apply serverinfo flag" );
 	Cmd_SetCommandCompletionFunc( "sets", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "setu", Cvar_Set_f );
+	Cmd_AddCommand( "setu", Cvar_Set_f, "Set a cvar and apply userinfo flag" );
 	Cmd_SetCommandCompletionFunc( "setu", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "seta", Cvar_Set_f );
+	Cmd_AddCommand( "seta", Cvar_Set_f, "Set a cvar and apply archive flag" );
 	Cmd_SetCommandCompletionFunc( "seta", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "reset", Cvar_Reset_f );
+	Cmd_AddCommand( "cvarAdd", Cvar_Math_f, "Add a value to a cvar" );
+	Cmd_SetCommandCompletionFunc( "cvarAdd", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "cvarSub", Cvar_Math_f, "Subtract a value from a cvar" );
+	Cmd_SetCommandCompletionFunc( "cvarSub", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "cvarMult", Cvar_Math_f, "Multiply a value to a cvar" );
+	Cmd_SetCommandCompletionFunc( "cvarMult", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "cvarDiv", Cvar_Math_f, "Divide a value from a cvar" );
+	Cmd_SetCommandCompletionFunc( "cvarDiv", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "cvarMod", Cvar_Math_f, "Apply a modulo on a cvar" );
+	Cmd_SetCommandCompletionFunc( "cvarMod", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "reset", Cvar_Reset_f, "Reset a cvar to default" );
 	Cmd_SetCommandCompletionFunc( "reset", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "unset", Cvar_Unset_f );
+	Cmd_AddCommand( "unset", Cvar_Unset_f, "Unset a user generated cvar" );
 	Cmd_SetCommandCompletionFunc( "unset", Cvar_CompleteCvarName );
-	Cmd_AddCommand( "cvarlist", Cvar_List_f );
-	Cmd_AddCommand( "cvar_modified", Cvar_ListModified_f );
-	Cmd_AddCommand( "cvar_restart", Cvar_Restart_f );
+	Cmd_AddCommand( "cvarlist", Cvar_List_f, "Show all cvars" );
+	Cmd_AddCommand( "cvar_modified", Cvar_ListModified_f, "Show all modified cvars" );
+	Cmd_AddCommand( "cvar_restart", Cvar_Restart_f, "Resetart the cvar sub-system" );
 }
-
 
 static void Cvar_Realloc(char **string, char *memPool, int &memPoolUsed)
 {
@@ -1461,6 +1560,9 @@ void Cvar_Defrag(void)
 		if (var->name) {
 			totalMem += strlen(var->name) + 1;
 		}
+		if (var->description) {
+			totalMem += strlen(var->description) + 1;
+		}
 		if (var->string) {
 			totalMem += strlen(var->string) + 1;
 		}
@@ -1482,6 +1584,7 @@ void Cvar_Defrag(void)
 		Cvar_Realloc(&var->string, mem, totalMem);
 		Cvar_Realloc(&var->resetString, mem, totalMem);
 		Cvar_Realloc(&var->latchedString, mem, totalMem);
+		Cvar_Realloc(&var->description, mem, totalMem);
 	}
 
 	if(lastMemPool) {

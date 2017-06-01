@@ -72,7 +72,7 @@ void NPC_SandCreature_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *ot
 		//FIXME: shootable during this anim?
 		NPC_SetAnim( self, SETANIM_LEGS, Q_irand(BOTH_ATTACK1,BOTH_ATTACK2), SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_RESTART );
 		G_AddEvent( self, EV_PAIN, Q_irand( 0, 100 ) );
-		TIMER_Set( self, "pain", self->client->ps.legsAnimTimer + Q_irand( 500, 2000 ) );	
+		TIMER_Set( self, "pain", self->client->ps.legsAnimTimer + Q_irand( 500, 2000 ) );
 		float playerDist = Distance( player->currentOrigin, self->currentOrigin );
 		if ( playerDist < 256 )
 		{
@@ -92,14 +92,14 @@ void SandCreature_MoveEffect( void )
 	{
 		CGCam_Shake( 0.75f*playerDist/256.0f, 250 );
 	}
-	
+
 	if ( level.time-NPC->client->ps.lastStationary > 2000 )
 	{//first time moving for at least 2 seconds
 		//clear speakingtime
 		TIMER_Set( NPC, "speaking", -level.time );
 	}
 
-	if ( TIMER_Done( NPC, "breaching" ) 
+	if ( TIMER_Done( NPC, "breaching" )
 		&& TIMER_Done( NPC, "breachDebounce" )
 		&& TIMER_Done( NPC, "pain" )
 		&& TIMER_Done( NPC, "attacking" )
@@ -232,8 +232,8 @@ qboolean SandCreature_Move( void )
 
 void SandCreature_Attack( qboolean miss )
 {
-	//FIXME: make it able to grab a thermal detonator, take it down, 
-	//		then have it explode inside them, killing them 
+	//FIXME: make it able to grab a thermal detonator, take it down,
+	//		then have it explode inside them, killing them
 	//		(or, do damage, making them stick half out of the ground and
 	//		screech for a bit, giving you a chance to run for it!)
 
@@ -254,7 +254,7 @@ void SandCreature_Attack( qboolean miss )
 	{
 		//FIXME: tone this down
 		CGCam_Shake( 0.75f*playerDist/128.0f, NPC->client->ps.legsAnimTimer );
-	} 
+	}
 
 	if ( miss )
 	{//purposely missed him, chance of knocking him down
@@ -281,7 +281,7 @@ void SandCreature_Attack( qboolean miss )
 					G_Throw( NPC->enemy, dir2Enemy, throwStr );
 					if ( g_spskill->integer > 1 )
 					{//knock them down, too
-						if ( NPC->enemy->health > 0 
+						if ( NPC->enemy->health > 0
 							&& Q_flrand( 50, 150 ) > enemyDist )
 						{//knock them down
 							G_Knockdown( NPC->enemy, NPC, dir2Enemy, 300, qtrue );
@@ -389,12 +389,12 @@ void SandCreature_CheckMovingEnts( void )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnts[i] == NPC )
 		{//Skip the rancor ent
 			continue;
 		}
-		
+
 		if ( radiusEnts[i]->client == NULL )
 		{//must be a client
 			if ( radiusEnts[i]->s.eType != ET_MISSILE
@@ -424,7 +424,7 @@ void SandCreature_CheckMovingEnts( void )
 			{//not if invisible
 				continue;
 			}
-	
+
 			if ( radiusEnts[i]->client->ps.groundEntityNum != ENTITYNUM_WORLD )
 			{//not on the ground
 				continue;
@@ -520,7 +520,7 @@ void SandCreature_Chase( void )
 		NPC->enemy = NULL;
 		return;
 	}
-	
+
 	if ( (NPC->svFlags&SVF_LOCKEDENEMY) )
 	{//always know where he is
 		NPCInfo->enemyLastSeenTime = level.time;
@@ -547,8 +547,8 @@ void SandCreature_Chase( void )
 		}
 	}
 	//chase the enemy
-	if ( NPC->enemy->client 
-		&& NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_WORLD 
+	if ( NPC->enemy->client
+		&& NPC->enemy->client->ps.groundEntityNum != ENTITYNUM_WORLD
 		&& !(NPC->svFlags&SVF_LOCKEDENEMY) )
 	{//off the ground!
 		//FIXME: keep moving in the dir we were moving for a little bit...
@@ -556,7 +556,7 @@ void SandCreature_Chase( void )
 	else
 	{
 		float enemyScore = SandCreature_EntScore( NPC->enemy );
-		if ( enemyScore < MIN_SCORE 
+		if ( enemyScore < MIN_SCORE
 			&& !(NPC->svFlags&SVF_LOCKEDENEMY) )
 		{//too slow or too far away
 		}
@@ -579,7 +579,7 @@ void SandCreature_Chase( void )
 		}
 	}
 
-	if ( (level.time-NPCInfo->enemyLastSeenTime) > 5000 
+	if ( (level.time-NPCInfo->enemyLastSeenTime) > 5000
 		&& !(NPC->svFlags&SVF_LOCKEDENEMY) )
 	{//enemy hasn't moved in about 5 seconds, see if there's anything else of interest
 		SandCreature_CheckAlerts();
@@ -598,7 +598,7 @@ void SandCreature_Chase( void )
 			SandCreature_MoveEffect();
 		}
 	}
-	else if ( (level.time-NPCInfo->enemyLastSeenTime) <= 5000 
+	else if ( (level.time-NPCInfo->enemyLastSeenTime) <= 5000
 		&& !(NPC->svFlags&SVF_LOCKEDENEMY) )
 	{//NOTE: this leaves a 2-second dead zone in which they'll just sit there unless their enemy moves
 		//If there is an event we might be interested in if we weren't still interested in our enemy
@@ -620,9 +620,9 @@ void SandCreature_Chase( void )
 			SandCreature_Attack( qfalse );
 		}
 	}
-	else if ( enemyDistSq < MAX_MISS_DIST_SQ 
+	else if ( enemyDistSq < MAX_MISS_DIST_SQ
 		&& enemyDistSq > MIN_MISS_DIST_SQ
-		&& NPC->enemy->client 
+		&& NPC->enemy->client
 		&& TIMER_Done( NPC, "breaching" )
 		&& TIMER_Done( NPC, "missDebounce" )
 		&& !VectorCompare( NPC->pos1, NPC->currentOrigin ) //so we don't come up again in the same spot
@@ -644,7 +644,7 @@ void SandCreature_Hunt( void )
 	SandCreature_CheckMovingEnts();
 	//If we have somewhere to go, then do that
 	//FIXME: keeps chasing goalEntity even when it's already reached it...?
-	if ( NPCInfo->goalEntity 
+	if ( NPCInfo->goalEntity
 		&& SandCreature_DistSqToGoal( qfalse ) >= MIN_ATTACK_DIST_SQ )
 	{
 		ucmd.buttons |= BUTTON_WALKING;
@@ -664,7 +664,7 @@ void SandCreature_Sleep( void )
 	SandCreature_CheckAlerts();
 	SandCreature_CheckMovingEnts();
 	//FIXME: keeps chasing goalEntity even when it's already reached it!
-	if ( NPCInfo->goalEntity 
+	if ( NPCInfo->goalEntity
 		&& SandCreature_DistSqToGoal( qfalse ) >= MIN_ATTACK_DIST_SQ )
 	{
 		ucmd.buttons |= BUTTON_WALKING;
@@ -729,7 +729,7 @@ void	SandCreature_PushEnts()
 void NPC_BSSandCreature_Default( void )
 {
 	qboolean visible = qfalse;
-	
+
 	//clear it every frame, will be set if we actually move this frame...
 	NPC->s.loopSound = 0;
 
@@ -759,15 +759,15 @@ void NPC_BSSandCreature_Default( void )
 	}
 
 	//FIXME: when in start and end of attack/pain anims, need ground disturbance effect around him
-	// NOTENOTE: someone stubbed this code in, so I figured I'd use it.  The timers are all weird, ie, magic numbers that sort of work, 
+	// NOTENOTE: someone stubbed this code in, so I figured I'd use it.  The timers are all weird, ie, magic numbers that sort of work,
 	//	but maybe I'll try and figure out real values later if I have time.
 	if ( NPC->client->ps.legsAnim == BOTH_ATTACK1
-		|| NPC->client->ps.legsAnim == BOTH_ATTACK2 ) 
+		|| NPC->client->ps.legsAnim == BOTH_ATTACK2 )
 	{//FIXME: get start and end frame numbers for this effect for each of these anims
 		vec3_t	up={0,0,1};
 		vec3_t org;
 		VectorCopy( NPC->currentOrigin, org );
-		org[2] -= 40; 
+		org[2] -= 40;
 		if ( NPC->client->ps.legsAnimTimer > 3700 )
 		{
 //			G_PlayEffect( G_EffectIndex( "env/sand_dive"  ), NPC->currentOrigin, up );
@@ -779,7 +779,7 @@ void NPC_BSSandCreature_Default( void )
 		}
 		//G_PlayEffect( G_EffectIndex( "env/sand_attack_breach" ), org, up );
 	}
-	
+
 
 	if ( !TIMER_Done( NPC, "pain" ) )
 	{

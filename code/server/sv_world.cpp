@@ -118,7 +118,7 @@ worldSector_t *SV_CreateworldSector( int depth, vec3_t mins, vec3_t maxs ) {
 		anode->children[0] = anode->children[1] = NULL;
 		return anode;
 	}
-	
+
 	VectorSubtract (maxs, mins, size);
 	if (size[0] > size[1]) {
 		anode->axis = 0;
@@ -127,13 +127,13 @@ worldSector_t *SV_CreateworldSector( int depth, vec3_t mins, vec3_t maxs ) {
 	}
 
 	anode->dist = 0.5 * (maxs[anode->axis] + mins[anode->axis]);
-	VectorCopy (mins, mins1);	
-	VectorCopy (mins, mins2);	
-	VectorCopy (maxs, maxs1);	
-	VectorCopy (maxs, maxs2);	
-	
+	VectorCopy (mins, mins1);
+	VectorCopy (mins, mins2);
+	VectorCopy (maxs, maxs1);
+	VectorCopy (maxs, maxs2);
+
 	maxs1[anode->axis] = mins2[anode->axis] = anode->dist;
-	
+
 	anode->children[0] = SV_CreateworldSector (depth+1, mins2, maxs2);
 	anode->children[1] = SV_CreateworldSector (depth+1, mins1, maxs1);
 
@@ -278,7 +278,7 @@ void SV_LinkEntity( gentity_t *gEnt ) {
 		}
 	} else {
 		// normal
-		VectorAdd (origin, gEnt->mins, gEnt->absmin);	
+		VectorAdd (origin, gEnt->mins, gEnt->absmin);
 		VectorAdd (origin, gEnt->maxs, gEnt->absmax);
 	}
 
@@ -356,7 +356,7 @@ void SV_LinkEntity( gentity_t *gEnt ) {
 		else
 			break;		// crosses the node
 	}
-	
+
 	// link it in
 	ent->worldSector = node;
 	ent->nextEntityInWorldSector = node->entities;
@@ -415,7 +415,7 @@ void SV_AreaEntities_r( worldSector_t *node, areaParms_t *ap ) {
 		ap->list[ap->count] = gcheck;
 		ap->count++;
 	}
-	
+
 	if (node->axis == -1) {
 		return;		// terminal node
 	}
@@ -663,7 +663,7 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			vec3_t sh_mins;
 			vec3_t sh_maxs;
 			int j;
-			for ( j=0 ; j<3 ; j++ ) 
+			for ( j=0 ; j<3 ; j++ )
 			{
 					sh_mins[j]=clip->mins[j]+superSizedAdd;
 					sh_maxs[j]=clip->maxs[j]-superSizedAdd;
@@ -685,13 +685,13 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 				clip->mins, clip->maxs, clipHandle,  clip->contentmask,
 				origin, angles);
 #endif
-		//FIXME: when startsolid in another ent, doesn't return correct entityNum 
+		//FIXME: when startsolid in another ent, doesn't return correct entityNum
 		//ALSO: 2 players can be standing next to each other and this function will
 		//think they're in each other!!!
 		}
 		oldTrace = clip->trace;
 
-		if ( trace.allsolid ) 
+		if ( trace.allsolid )
 		{
 			if(!clip->trace.allsolid)
 			{//We didn't come in here all solid, so set the clip->trace's entityNum
@@ -699,8 +699,8 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			}
 			clip->trace.allsolid = qtrue;
 			trace.entityNum = touch->s.number;
-		} 
-		else if ( trace.startsolid ) 
+		}
+		else if ( trace.startsolid )
 		{
 			if(!clip->trace.startsolid)
 			{//We didn't come in here starting solid, so set the clip->trace's entityNum
@@ -710,7 +710,7 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 			trace.entityNum = touch->s.number;
 		}
 
-		if ( trace.fraction < clip->trace.fraction ) 
+		if ( trace.fraction < clip->trace.fraction )
 		{
 			qboolean	oldStart;
 
@@ -719,7 +719,10 @@ void SV_ClipMoveToEntities( moveclip_t *clip ) {
 
 			trace.entityNum = touch->s.number;
 			clip->trace = trace;
-			clip->trace.startsolid |= oldStart;
+			if ( oldStart )
+			{
+				clip->trace.startsolid = qtrue;
+			}
 		}
 /*
 Ghoul2 Insert Start
@@ -763,7 +766,7 @@ Ghoul2 Insert Start
 				if (touch->client)
 				{
 					vec3_t world_angles;
-					
+
 					world_angles[PITCH] =  0;
 					//legs do not *always* point toward the viewangles!
 					//world_angles[YAW] =  touch->client->viewangles[YAW];
@@ -782,7 +785,7 @@ Ghoul2 Insert Start
 				}
 
 				// set our new trace record size
- 
+
 				for (z=0;z<MAX_G2_COLLISIONS;z++)
 				{
 					if (clip->trace.G2CollisionMap[z].mEntityNum != -1)
@@ -865,17 +868,17 @@ Ghoul2 Insert End
 	//BoxTrace or have it not clip against entity brushes here.
 	CM_BoxTrace( &clip.trace, start, end, mins, maxs, 0, contentmask );
 	clip.trace.entityNum = clip.trace.fraction != 1.0 ? ENTITYNUM_WORLD : ENTITYNUM_NONE;
-	if ( clip.trace.fraction == 0 ) 
+	if ( clip.trace.fraction == 0 )
 	{// blocked immediately by the world
 		*results = clip.trace;
-//		goto addtime;		
+//		goto addtime;
 		return;
 	}
 
 	clip.contentmask = contentmask;
 /*
 Ghoul2 Insert Start
-*/	
+*/
 	VectorCopy( start, clip.start );
 	clip.eG2TraceType = eG2TraceType;
 	clip.useLod = useLod;
@@ -888,7 +891,7 @@ Ghoul2 Insert End
 	world_frac = clip.trace.fraction;
 	//set the fraction back to 1.0 for the trace vs. entities
 	clip.trace.fraction = 1.0f;
-	
+
 	//VectorCopy( end, clip.end );
 	// create the bounding box of the entire move
 	// we can limit it to the part of the move not
@@ -902,7 +905,7 @@ Ghoul2 Insert End
 
 	if (eG2TraceType==G2_SUPERSIZEDBBOX)
 	{
-		for ( i=0 ; i<3 ; i++ ) 
+		for ( i=0 ; i<3 ; i++ )
 		{
 				superMin[i]=mins[i]-superSizedAdd;
 				superMax[i]=maxs[i]+superSizedAdd;

@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // Handle String
 // -------------
-// Handle strings are allocated once in a static buffer (with a hash index), and are 
+// Handle strings are allocated once in a static buffer (with a hash index), and are
 // never cleared out.  You should use these for very common string names which are
 // redundant or intended to last a long time.
 //
@@ -52,7 +52,7 @@ public:
 	hstring(const char *str);
 	hstring(const hstring &str);
 
-	
+
     ////////////////////////////////////////////////////////////////////////////////////
 	// Assignment
     ////////////////////////////////////////////////////////////////////////////////////

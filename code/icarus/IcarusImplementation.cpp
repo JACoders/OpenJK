@@ -59,7 +59,7 @@ IIcarusInterface* IIcarusInterface::GetIcarus(int flavor,bool constructIfNecessa
 			//OutputDebugString( "ICARUS flavor successfully created\n" );
 		}
 	}
-	
+
 	if(flavor >= CIcarus::s_flavorsAvailable || !CIcarus::s_instances )
 	{
 		return NULL;
@@ -92,7 +92,7 @@ int CIcarus::s_flavorsAvailable = 0;
 
 CIcarus** CIcarus::s_instances = NULL;
 
-CIcarus::CIcarus(int flavor) : 
+CIcarus::CIcarus(int flavor) :
 	m_flavor(flavor), m_nextSequencerID(0)
 {
 
@@ -108,7 +108,7 @@ CIcarus::CIcarus(int flavor) :
 	m_DEBUG_NumSequenceFreed	= 0;
 	m_DEBUG_NumSequenceResidual	= 0;
 
-#endif 
+#endif
 
 	m_ulBufferCurPos = 0;
 	m_ulBytesRead = 0;
@@ -169,7 +169,7 @@ void CIcarus::Free( void )
 	STL_ITERATE( sri, m_sequencers )
 	{
 		(*sri)->Free(this);
-		
+
 #ifdef _DEBUG
 
 		m_DEBUG_NumSequencerResidual++;
@@ -206,7 +206,7 @@ int CIcarus::GetIcarusID( int gameID )
 {
 	CSequencer		*sequencer = CSequencer::Create();
 	CTaskManager	*taskManager = CTaskManager::Create();
-	
+
 	sequencer->Init( gameID, taskManager );
 
 	taskManager->Init( sequencer );
@@ -220,7 +220,7 @@ int CIcarus::GetIcarusID( int gameID )
 	m_DEBUG_NumSequencerAlloc++;
 
 #endif
-	
+
 	return sequencer->GetID();
 }
 
@@ -253,7 +253,7 @@ void CIcarus::DeleteIcarusID( int& icarusID )
 		delete taskManager;
 	}
 
-	m_sequencers.remove( sequencer );	
+	m_sequencers.remove( sequencer );
 
 	sequencer->Free(this);
 
@@ -278,7 +278,7 @@ CSequence *CIcarus::GetSequence( void )
 
 	m_DEBUG_NumSequenceAlloc++;
 
-#endif 
+#endif
 
 	return sequence;
 }
@@ -297,7 +297,7 @@ CSequence *CIcarus::GetSequence( int id )
 
 void CIcarus::DeleteSequence( CSequence *sequence )
 {
-	m_sequences.remove( sequence );	
+	m_sequences.remove( sequence );
 
 	sequence->Delete(this);
 	delete sequence;
@@ -306,7 +306,7 @@ void CIcarus::DeleteSequence( CSequence *sequence )
 
 	m_DEBUG_NumSequenceFreed++;
 
-#endif 
+#endif
 }
 
 int CIcarus::AllocateSequences( int numSequences, int *idTable )
@@ -366,7 +366,7 @@ void CIcarus::Precache(char* buffer, long length)
 			break;
 
 		case ID_PLAY:	// to cache ROFF files
-			
+
 			sVal1 = (const char *) block.GetMemberData( 0 );
 
 			if (!Q_stricmp(sVal1,"PLAY_ROFF"))
@@ -374,7 +374,7 @@ void CIcarus::Precache(char* buffer, long length)
 				sVal1 = (const char *) block.GetMemberData( 1 );
 
 				game->PrecacheRoff(sVal1);
-			}			
+			}
 			break;
 
 		//Run commands
@@ -382,7 +382,7 @@ void CIcarus::Precache(char* buffer, long length)
 			sVal1 = (const char *) block.GetMemberData( 0 );
 			game->PrecacheScript( sVal1 );
 			break;
-		
+
 		case ID_SOUND:
 			sVal1 = (const char *) block.GetMemberData( 1 );	//0 is channel, 1 is filename
 			game->PrecacheSound(sVal1);
@@ -398,7 +398,7 @@ void CIcarus::Precache(char* buffer, long length)
 			{
 				sVal1 = (const char *) block.GetMemberData( 0 );
 				sVal2 = (const char *) block.GetMemberData( 1 );
-		
+
 				game->PrecacheFromSet( sVal1 , sVal2);
 			}
 			break;
@@ -512,7 +512,7 @@ int CIcarus::SaveSignals()
 	{
 		//game->WriteSaveData( INT_ID('I','S','I','G'), &numSignals, sizeof( numSignals ) );
 		const char *name = ((*si).first).c_str();
-		
+
 		int length = strlen( name ) + 1;
 
 		//Save out the string size
@@ -785,7 +785,7 @@ void CIcarus::BufferWrite( void *pSrcData, unsigned long ulNumBytesToWrite )
 		IGameInterface::GetGame()->WriteSaveData( INT_ID('I','S','E','Q'), m_byBuffer, m_ulBufferCurPos );
 		m_ulBufferCurPos = 0;	//reset buffer
 	}
-	
+
 	assert( MAX_BUFFER_SIZE - m_ulBufferCurPos >= ulNumBytesToWrite );
 	{
 		memcpy( m_byBuffer + m_ulBufferCurPos, pSrcData, ulNumBytesToWrite );

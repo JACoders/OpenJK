@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // Also included is a safeguarded assert file for all the asserts in RTL.
 //
-// This file is included in EVERY TEMPLATE, so it should be very light in order to 
+// This file is included in EVERY TEMPLATE, so it should be very light in order to
 // reduce compile times.
 //
 //
@@ -97,7 +97,7 @@ inline void *operator new(size_t,TRatlNew *where)
 
 inline void operator delete(void *, TRatlNew *)
 {
-	return; 
+	return;
 }
 
 namespace ratl
@@ -135,7 +135,7 @@ namespace	mem
 	{
 		unsigned char space[16];
 	} __attribute__ ((aligned(16)));
-#endif 
+#endif
 
 	inline void*	cpy( void *dest, const void *src, size_t count )
 	{
@@ -292,12 +292,12 @@ public:
 
 
 
-	
+
 ////////////////////////////////////////////////////////////////////////////////////////
 // The Raven Template Library Base Class
 //
 // This is the base class for all the Raven Template Library container classes like
-// vector_vs and pool_vs.  
+// vector_vs and pool_vs.
 //
 // This class might be a good place to put memory profile code in the future.
 //
@@ -465,7 +465,7 @@ struct ratl_compare
 	float	mCost;
 	int		mHandle;
 
-	bool	operator<(const ratl_compare& t) const	
+	bool	operator<(const ratl_compare& t) const
 	{
 		return (mCost<t.mCost);
 	}
@@ -517,7 +517,7 @@ namespace storage
 		typedef TStorage TArray[SIZE];
 
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -593,15 +593,15 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void construct(TStorage *me,const TValue &v)
 		{
-			new(raw(me)) TValue(v);									
+			new(raw(me)) TValue(v);
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -632,7 +632,7 @@ namespace storage
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
 			return ((TStorage *)s1)-((TStorage *)s2);
-		}	
+		}
 	};
 	template<class T,int SIZE,int MAX_CLASS_SIZE>
 	struct virtual_semantics
@@ -649,7 +649,7 @@ namespace storage
 		};
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -658,11 +658,11 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -693,7 +693,7 @@ namespace storage
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
 			return ((TStorage *)s1)-((TStorage *)s2);
-		}	
+		}
 		template<class CAST_TO>
 		static CAST_TO *verify_alloc(CAST_TO *p)
 		{
@@ -727,7 +727,7 @@ namespace storage
 		typedef bits_true TConstructed;
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -782,10 +782,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
+			return
+				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) -
 				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+		}
 	};
 
 	template<class T,int SIZE,class NODE>
@@ -810,7 +810,7 @@ namespace storage
 		typedef TStorage TArray[SIZE];
 
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=0,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -819,15 +819,15 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void construct(TStorage *me,const TValue &v)
 		{
-			new(raw(me)) TValue(v);									
+			new(raw(me)) TValue(v);
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -876,10 +876,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
+			return
+				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) -
 				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+		}
 	};
 	template<class T,int SIZE,int MAX_CLASS_SIZE,class NODE>
 	struct virtual_semantics_node
@@ -902,7 +902,7 @@ namespace storage
 		typedef SNode		TStorage;		// this is what we make our array of
 		typedef TStorage TArray[SIZE];
 
-		enum 
+		enum
 		{
 			NEEDS_CONSTRUCT=1,
 			TOTAL_SIZE=sizeof(TStorage),
@@ -911,11 +911,11 @@ namespace storage
 
 		static void construct(TStorage *me)
 		{
-			new(raw(me)) TValue();						
+			new(raw(me)) TValue();
 		}
 		static void destruct(TStorage *me)
 		{
-			ptr(me)->~T();				
+			ptr(me)->~T();
 		}
 		static TRatlNew *raw(TStorage *me)
 		{
@@ -964,10 +964,10 @@ namespace storage
 		// this is hideous
 		static int pointer_to_index(const void *s1,const void *s2)
 		{
-			return 
-				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) - 
+			return
+				((TStorage *)(((unsigned char *)s1)-int(&((TStorage *)0)->value))) -
 				((TStorage *)(((unsigned char *)s2)-int(&((TStorage *)0)->value)));
-		}	
+		}
 		template<class CAST_TO>
 		static CAST_TO *verify_alloc(CAST_TO *p)
 		{

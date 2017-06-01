@@ -140,7 +140,7 @@ static char *CommaParse( char **data_p ) {
 class CStringComparator
 {
 public:
-	bool operator()(const char *s1, const char *s2) const { return(stricmp(s1, s2) < 0); } 
+	bool operator()(const char *s1, const char *s2) const { return(stricmp(s1, s2) < 0); }
 };
 */
 typedef std::map<sstring_t,char * /*, CStringComparator*/ >	AnimationCFGs_t;
@@ -150,7 +150,7 @@ typedef std::map<sstring_t,char * /*, CStringComparator*/ >	AnimationCFGs_t;
 //	with our use of cached models but uncached animation.cfg files (so frame sequences are out of sync
 //	if someone rebuild the model while you're ingame and you change levels)...
 //
-// Usage:  call with psDest == NULL for a size enquire (for malloc), 
+// Usage:  call with psDest == NULL for a size enquire (for malloc),
 //				then with NZ ptr for it to copy to your supplied buffer...
 //
 int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
@@ -167,13 +167,13 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 		// not found, so load it...
 		//
 		fileHandle_t f;
-		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, FS_READ );
+		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, qfalse );
 		if (iLen <= 0)
 		{
 			return 0;
 		}
 
-		psText = (char *) ri.Z_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse, 4 );
+		psText = (char *) R_Malloc( iLen+1, TAG_ANIMATION_CFG, qfalse );
 
 		ri.FS_Read( psText, iLen, f );
 		psText[iLen] = '\0';
@@ -202,7 +202,7 @@ void RE_AnimationCFGs_DeleteAll(void)
 	for (AnimationCFGs_t::iterator it = AnimationCFGs.begin(); it != AnimationCFGs.end(); ++it)
 	{
 		char *psText = (*it).second;
-		Z_Free(psText);
+		R_Free(psText);
 	}
 
 	AnimationCFGs.clear();
@@ -264,7 +264,7 @@ bool RE_SplitSkins(const char *INname, char *skinhead, char *skintorso, char *sk
 }
 
 // given a name, go get the skin we want and return
-qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin) 
+qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 {
 	skin_t		*skin;
 	skinSurface_t	*surf;
@@ -322,7 +322,7 @@ qhandle_t RE_RegisterIndividualSkin( const char *name , qhandle_t hSkin)
 			ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterSkin( '%s' ) more than %u surfaces!\n", name, (unsigned int)ARRAY_LEN(skin->surfaces) );
 			break;
 		}
-		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
+		surf = skin->surfaces[ skin->numSurfaces ] = (skinSurface_t *) R_Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
 		Q_strncpyz( surf->name, surfName, sizeof( surf->name ) );
 		surf->shader = R_FindShader( token, lightmapsNone, stylesDefault, qtrue );
 		skin->numSurfaces++;
@@ -349,7 +349,7 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	qhandle_t	hSkin;
 	skin_t		*skin;
 
-//	if (!cls.cgameStarted && !cls.uiStarted)		
+//	if (!cls.cgameStarted && !cls.uiStarted)
 //	{
 		//rww - added uiStarted exception because we want ghoul2 models in the menus.
 		// gwg well we need our skins to set surfaces on and off, so we gotta get em
@@ -388,7 +388,7 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	}
 	// allocate a new skin
 	tr.numSkins++;
-	skin = (skin_t*) Hunk_Alloc( sizeof( skin_t ), qtrue );
+	skin = (skin_t*) R_Hunk_Alloc( sizeof( skin_t ), qtrue );
 	tr.skins[hSkin] = skin;
 	Q_strncpyz( skin->name, name, sizeof( skin->name ) );	//always make one so it won't search for it again
 
@@ -396,12 +396,12 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	if ( strcmp( name + strlen( name ) - 5, ".skin" ) ) {
 #ifdef JK2_MODE
 		skin->numSurfaces = 1;
-		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
+		skin->surfaces[0] = (skinSurface_t *) R_Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
 		return hSkin;
 #endif
 /*		skin->numSurfaces = 1;
-		skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
+		skin->surfaces[0] = (skinSurface_t *) R_Hunk_Alloc( sizeof(skin->surfaces[0]), qtrue );
 		skin->surfaces[0]->shader = R_FindShader( name, lightmapsNone, stylesDefault, qtrue );
 		return hSkin;
 */
@@ -413,13 +413,14 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	if ( RE_SplitSkins(name, (char*)&skinhead, (char*)&skintorso, (char*)&skinlower ) )
 	{//three part
 		hSkin = RE_RegisterIndividualSkin(skinhead, hSkin);
-		if (hSkin)
+		if (hSkin && strcmp(skinhead, skintorso))
 		{
 			hSkin = RE_RegisterIndividualSkin(skintorso, hSkin);
-			if (hSkin)
-			{
-				hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
-			}
+		}
+
+		if (hSkin && strcmp(skinhead, skinlower) && strcmp(skintorso, skinlower))
+		{
+			hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
 		}
 	}
 	else
@@ -442,10 +443,10 @@ void	R_InitSkins( void ) {
 	tr.numSkins = 1;
 
 	// make the default skin have all default shaders
-	skin = tr.skins[0] = (skin_t*) Hunk_Alloc( sizeof( skin_t ), qtrue );
+	skin = tr.skins[0] = (skin_t*) R_Hunk_Alloc( sizeof( skin_t ), qtrue );
 	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
 	skin->numSurfaces = 1;
-	skin->surfaces[0] = (skinSurface_t *) Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
+	skin->surfaces[0] = (skinSurface_t *) R_Hunk_Alloc( sizeof( *skin->surfaces[0] ), qtrue );
 	skin->surfaces[0]->shader = tr.defaultShader;
 }
 
@@ -476,7 +477,7 @@ void	R_SkinList_f (void) {
 		skin = tr.skins[i];
 		ri.Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
 		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {
-			ri.Printf( PRINT_ALL, "       %s = %s\n", 
+			ri.Printf( PRINT_ALL, "       %s = %s\n",
 				skin->surfaces[j]->name, skin->surfaces[j]->shader->name );
 		}
 	}

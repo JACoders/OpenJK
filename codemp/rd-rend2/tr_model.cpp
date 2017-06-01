@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 // tr_models.c -- model loading and caching
 
 #include "tr_local.h"
+#include "tr_cache.h"
 #include <qcommon/sstring.h>
 
 #define	LL(x) x=LittleLong(x)
@@ -71,7 +72,7 @@ qhandle_t R_RegisterMD3(const char *name, model_t *mod)
 
 		ident = *(unsigned *)buf;
 		if( !bAlreadyCached )
-			ident = LittleLong(ident);
+			LL(ident);
 		
 		switch(ident)
 		{
@@ -195,7 +196,7 @@ qhandle_t R_RegisterIQM(const char *name, model_t *mod)
 
 typedef struct
 {
-	char *ext;
+	const char *ext;
 	qhandle_t (*ModelLoader)( const char *, model_t * );
 } modelExtToLoaderMap_t;
 
@@ -254,6 +255,30 @@ model_t *R_AllocModel( void ) {
 	return mod;
 }
 
+static qhandle_t RE_RegisterBSP(const char *name)
+{
+	char bspFilePath[MAX_QPATH];
+	Com_sprintf(bspFilePath, sizeof(bspFilePath), "maps/%s.bsp", name + 1);
+
+	int bspIndex;
+	world_t *world = R_LoadBSP(bspFilePath, &bspIndex);
+	if (world == nullptr)
+	{
+		return 0;
+	}
+
+	char bspModelIdent[MAX_QPATH];
+	Com_sprintf(bspModelIdent, sizeof(bspModelIdent), "*%d-0", bspIndex);
+
+	qhandle_t modelHandle = CModelCache->GetModelHandle(bspModelIdent);
+	if (modelHandle == -1)
+	{
+		return 0;
+	}
+
+	return modelHandle;
+}
+
 /*
 ====================
 RE_RegisterModel
@@ -287,7 +312,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 	}
 
 	// search the currently loaded models
-	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+	if( ( hModel = CModelCache->GetModelHandle( name ) ) != -1 )
 		return hModel;
 
 	if ( name[0] == '*' )
@@ -300,8 +325,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 
 	if( name[0] == '#' )
 	{
-		// TODO: BSP models
-		return 0;
+		return RE_RegisterBSP(name);
 	}
 
 	// allocate a new model_t
@@ -352,7 +376,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 			else
 			{
 				// Something loaded
-				CModelCache->InsertLoaded( name, hModel );
+				CModelCache->InsertModelHandle( name, hModel );
 				return mod->index;
 			}
 		}
@@ -382,7 +406,7 @@ qhandle_t RE_RegisterModel( const char *name ) {
 		}
 	}
 
-	CModelCache->InsertLoaded( name, hModel );
+	CModelCache->InsertModelHandle( name, hModel );
 	return hModel;
 }
 
@@ -649,7 +673,7 @@ qhandle_t R_RegisterMDX_Server(const char *name, model_t *mod)
 
 		ident = *(unsigned *)buf;
 		if( !bAlreadyCached )
-			ident = LittleLong(ident);
+			LL(ident);
 		
 		switch(ident)
 		{
@@ -719,7 +743,7 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 
 	if (!r_noServerGhoul2)
 	{ //keep it from choking when it gets to these checks in the g2 code. Registering all r_ cvars for the server would be a Bad Thing though.
-		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0);
+		r_noServerGhoul2 = ri->Cvar_Get( "r_noserverghoul2", "0", 0, "");
 	}
 
 	if ( !name || !name[0] ) {
@@ -731,7 +755,7 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 	}
 
 	// search the currently loaded models
-	if( ( hModel = CModelCache->SearchLoaded( name ) ) != -1 )
+	if( ( hModel = CModelCache->GetModelHandle( name ) ) != -1 )
 		return hModel;
 
 	if ( name[0] == '*' )
@@ -782,13 +806,13 @@ qhandle_t RE_RegisterServerModel( const char *name ) {
 			if( hModel )
 			{
 				// Something loaded
-				CModelCache->InsertLoaded( name, hModel );
+				CModelCache->InsertModelHandle( name, hModel );
 				return mod->index;
 			}
 		}
 	}
 
-	CModelCache->InsertLoaded( name, hModel );
+	CModelCache->InsertModelHandle( name, hModel );
 	return hModel;
 }
 

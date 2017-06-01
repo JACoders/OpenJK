@@ -76,11 +76,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CURSOR_ARROW				0x00000002
 #define CURSOR_SIZER				0x00000004
 
-#ifdef _CGAME
-	#define STRING_POOL_SIZE 128*1024
-#else
-	#define STRING_POOL_SIZE 384*1024
-#endif
+#define STRING_POOL_SIZE (2*1024*1024)
 
 #define MAX_STRING_HANDLES 4096
 #define MAX_SCRIPT_ARGS 12
@@ -485,6 +481,10 @@ typedef struct displayContextDef_s {
 	qhandle_t		gradientImage;
 	qhandle_t		cursor;
 	float			FPS;
+
+	struct {
+		float			(*Font_StrLenPixels)				( const char *text, const int iFontIndex, const float scale );
+	} ext;
 } displayContextDef_t;
 
 

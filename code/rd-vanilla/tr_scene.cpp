@@ -150,7 +150,7 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 	poly->hShader = hShader;
 	poly->numVerts = numVerts;
 	poly->verts = &backEndData->polyVerts[r_numpolyverts];
-	
+
 	memcpy( poly->verts, verts, numVerts * sizeof( *verts ) );
 	r_numpolys++;
 	r_numpolyverts += numVerts;
@@ -166,13 +166,13 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 			AddPointToBounds( poly->verts[i].xyz, bounds[0], bounds[1] );
 		}
 		for ( int fI = 1 ; fI < tr.world->numfogs ; fI++ ) {
-			fog = &tr.world->fogs[fI]; 
+			fog = &tr.world->fogs[fI];
 			if ( bounds[0][0] >= fog->bounds[0][0]
 				&& bounds[0][1] >= fog->bounds[0][1]
 				&& bounds[0][2] >= fog->bounds[0][2]
 				&& bounds[1][0] <= fog->bounds[1][0]
 				&& bounds[1][1] <= fog->bounds[1][1]
-				&& bounds[1][2] <= fog->bounds[1][2] ) 
+				&& bounds[1][2] <= fog->bounds[1][2] )
 			{//completely in this one
 				fogIndex = fI;
 				break;
@@ -180,7 +180,7 @@ void RE_AddPolyToScene( qhandle_t hShader , int numVerts, const polyVert_t *vert
 			else if ( ( bounds[0][0] >= fog->bounds[0][0] && bounds[0][1] >= fog->bounds[0][1] && bounds[0][2] >= fog->bounds[0][2] &&
 						bounds[0][0] <= fog->bounds[1][0] && bounds[0][1] <= fog->bounds[1][1] && bounds[0][2] <= fog->bounds[1][2]) ||
 				( bounds[1][0] >= fog->bounds[0][0] && bounds[1][1] >= fog->bounds[0][1] && bounds[1][2] >= fog->bounds[0][2] &&
-					bounds[1][0] <= fog->bounds[1][0] && bounds[1][1] <= fog->bounds[1][1] && bounds[1][2] <= fog->bounds[1][2] ) ) 
+					bounds[1][0] <= fog->bounds[1][0] && bounds[1][1] <= fog->bounds[1][1] && bounds[1][2] <= fog->bounds[1][2] ) )
 			{//partially in this one
 				if ( tr.refdef.fogIndex == fI || R_FogParmsMatch( tr.refdef.fogIndex, fI ) )
 				{//take new one only if it's the same one that the viewpoint is in

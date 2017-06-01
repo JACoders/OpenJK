@@ -403,18 +403,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 	//*** not sure how to handle this, should I pass in class instead of team and go from there? - dmv
 	switch(team)
 	{
-	// no longer exists
-//	case TEAM_BORG:
-//		break;
-
-//	case TEAM_HIROGEN:
-//		if( Q_stricmp( "hirogenalpha", NPC_type ) == 0 )
-//			return ( 1 << WP_BLASTER);
-		//Falls through
-
-//	case TEAM_KLINGON:
-
-		//NOTENOTE: Falls through
 
 //	case TEAM_IMPERIAL:
 	case TEAM_ENEMY:
@@ -426,8 +414,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 //			return ( 1 << WP_IMPERIAL_BLADE);
 		//NOTENOTE: Falls through if not a knife user
 
-//	case TEAM_SCAVENGERS:
-//	case TEAM_MALON:
 		//FIXME: default weapon in npc config?
 		if ( Q_strncmp( "stofficer", NPC_type, 9 ) == 0 )
 		{
@@ -552,9 +538,6 @@ int NPC_WeaponsForTeam( team_t team, int spawnflags, const char *NPC_type )
 		break;
 
 	case TEAM_PLAYER:
-		
-//		if(spawnflags & SFB_TRICORDER)
-//			return ( 1 << WP_TRICORDER);
 		
 		if(spawnflags & SFB_RIFLEMAN)
 			return ( 1 << WP_REPEATER);
@@ -1062,7 +1045,7 @@ void NPC_Begin (gentity_t *ent)
 	// run a client frame to drop exactly to the floor,
 	// initialize animations and other things
 	memset( &ucmd, 0, sizeof( ucmd ) );
-	_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+	VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 	
 	ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 

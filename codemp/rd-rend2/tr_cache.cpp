@@ -1,35 +1,41 @@
 // tr_cache.cpp - Cache models, images, and more..
 
 #include "tr_local.h"
+#include "tr_cache.h"
+#include <algorithm>
+
+namespace
+{
+
+void NormalizePath( char *out, const char *path, size_t outSize )
+{
+	assert(outSize == MAX_QPATH);
+	Q_strncpyz(out, path, outSize);
+	Q_strlwr(out);
+}
+
+}
 
 // This differs significantly from Raven's own caching code.
 // For starters, we are allowed to use ri-> whatever because we don't care about running on dedicated (use rd-vanilla!)
 
-CImageCacheManager *CImgCache = new CImageCacheManager();
 CModelCacheManager *CModelCache = new CModelCacheManager();
 
-/*
- * CCacheManager::SearchLoaded
- * Return -1 if asset not currently loaded, return positive qhandle_t if found
- */
-qhandle_t CCacheManager::SearchLoaded( const char *fileName )
+CachedFile::CachedFile()
+	: pDiskImage(nullptr)
+	, iLevelLastUsedOn(0)
+	, iPAKChecksum(-1)
+	, iAllocSize(0)
 {
-	loadedMap_t::iterator it = loaded.find(fileName);
-	if( it == loaded.end() )
-		return -1; // asset not found
-	return it->second.handle;
 }
 
-/*
- * CCacheManager::InsertLoaded
- * We have a loaded model/image, let's insert it into the list of loaded models
- */
-void CCacheManager::InsertLoaded( const char *fileName, qhandle_t handle )
+CModelCacheManager::FileCache::iterator CModelCacheManager::FindFile( const char *path )
 {
-	FileHash_t fh;
-	fh.handle = handle;
-	Q_strncpyz( fh.fileName, fileName, sizeof(fh.fileName) );
-	loaded.insert(std::make_pair(fileName, fh));
+	return std::find_if(
+		std::begin(files), std::end(files), [path]( const CachedFile& file )
+		{
+			return strcmp(path, file.path) == 0;
+		});
 }
 
 static const byte FakeGLAFile[] = 
@@ -55,23 +61,15 @@ static const byte FakeGLAFile[] =
 	0x00, 0x80, 0x00, 0x80, 0x00, 0x80
 };
 
-/*
- * CCacheManager::LoadFile
- * Load the file and chuck the contents into ppFileBuffer, OR
- * if we're cached already, chuck cached contents into ppFileBuffer
- * and set *pbAlreadyCached to qtrue (otherwise, *pbAlreadyCached = false)
- */
-qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached )
+qboolean CModelCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qboolean *pbAlreadyCached )
 {
-	char sFileName[MAX_QPATH];
+	char path[MAX_QPATH];
+	NormalizePath(path, pFileName, sizeof(path));
 
-	Q_strncpyz(sFileName, pFileName, MAX_QPATH);
-	Q_strlwr  (sFileName);
-
-	auto cacheEntry = cache.find (sFileName);
-	if ( cacheEntry != cache.end() )
+	auto cacheEntry = FindFile(path);
+	if ( cacheEntry != std::end(files) )
 	{
-		*ppFileBuffer = cacheEntry->second.pDiskImage;
+		*ppFileBuffer = cacheEntry->pDiskImage;
 		*pbAlreadyCached = qtrue;
 
 		return qtrue;
@@ -80,18 +78,18 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	*pbAlreadyCached = qfalse;
 
 	// special case intercept first...
-	if (!strcmp (sDEFAULT_GLA_NAME ".gla", pFileName))
+	if (!strcmp (sDEFAULT_GLA_NAME ".gla", path))
 	{
 		// return fake params as though it was found on disk...
-		void *pvFakeGLAFile = Z_Malloc (sizeof (FakeGLAFile), TAG_FILESYS, qfalse);
+		void *pvFakeGLAFile = Z_Malloc(sizeof (FakeGLAFile), TAG_FILESYS, qfalse);
 
-		memcpy (pvFakeGLAFile, &FakeGLAFile[0], sizeof (FakeGLAFile));
+		memcpy(pvFakeGLAFile, &FakeGLAFile[0], sizeof (FakeGLAFile));
 		*ppFileBuffer = pvFakeGLAFile;
 
 		return qtrue;	
 	}
 
-	int len = ri->FS_ReadFile( pFileName, ppFileBuffer );
+	int len = ri->FS_ReadFile(path, ppFileBuffer);
 	if ( len == -1 || *ppFileBuffer == NULL )
 	{
 		return qfalse;
@@ -102,12 +100,8 @@ qboolean CCacheManager::LoadFile( const char *pFileName, void **ppFileBuffer, qb
 	return qtrue;
 }
 
-/*
- * CCacheManager::Allocate
- * Allocate appropriate memory for stuff dealing with cached images
- * FIXME: only applies to models?
- */
-void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag )
+
+void* CModelCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psModelFileName, qboolean *bAlreadyFound, memtag_t eTag )
 {
 	int		iChecksum;
 	char	sModelName[MAX_QPATH];
@@ -119,25 +113,26 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 	if( !bAlreadyFound )
 		return NULL;
 
-	/* Convert psModelFileName to lowercase */
-	Q_strncpyz(sModelName, psModelFileName, MAX_QPATH);
-	Q_strlwr  (sModelName);
+	NormalizePath(sModelName, psModelFileName, sizeof(sModelName));
 
-	CachedFile_t *pFile;
-	auto cacheEntry = cache.find (sModelName);
-
-	if (cacheEntry == cache.end())
-	{ /* Create this image. */
-		pFile = &cache[sModelName];
+	CachedFile *pFile = nullptr;
+	auto cacheEntry = FindFile(sModelName);
+	if (cacheEntry == files.end())
+	{
+		/* Create this image. */
 
 		if( pvDiskBuffer )
 			Z_MorphMallocTag( pvDiskBuffer, eTag );
 		else
-			pvDiskBuffer		= Z_Malloc(iSize, eTag, qfalse);
-		pFile->pDiskImage	= pvDiskBuffer;
-		pFile->iAllocSize	= iSize;
+			pvDiskBuffer = Z_Malloc(iSize, eTag, qfalse);
 
-		if( ri->FS_FileIsInPAK( psModelFileName, &iChecksum ) )
+		files.emplace_back();
+		pFile = &files.back();
+		pFile->pDiskImage = pvDiskBuffer;
+		pFile->iAllocSize = iSize;
+		Q_strncpyz(pFile->path, sModelName, sizeof(pFile->path));
+
+		if( ri->FS_FileIsInPAK( sModelName, &iChecksum ) )
 			pFile->iPAKChecksum = iChecksum;  /* Otherwise, it will be -1. */
 
 		*bAlreadyFound = qfalse;
@@ -149,7 +144,7 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 		 * TODO: shader caching.
 		 */
 		*bAlreadyFound = qtrue;
-		pFile = &cacheEntry->second;
+		pFile = &(*cacheEntry);
 	}
 
 	pFile->iLevelLastUsedOn = tr.currentLevel;
@@ -158,69 +153,41 @@ void* CCacheManager::Allocate( int iSize, void *pvDiskBuffer, const char *psMode
 }
 
 /*
- * CCacheManager::DeleteAll
  * Clears out the cache (done on renderer shutdown I suppose)
  */
-void CCacheManager::DeleteAll( void )
+void CModelCacheManager::DeleteAll( void )
 {
-	for( auto it = cache.begin(); it != cache.end(); ++it )
+	for ( auto& file : files )
 	{
-		Z_Free(it->second.pDiskImage);
+		Z_Free(file.pDiskImage);
 	}
 
-	cache.clear();
-	loaded.clear();
-}
-
-void CImageCacheManager::DeleteLightMaps( void )
-{
-	for( auto it = cache.begin(); it != cache.end(); /* empty */ )
-	{
-		CachedFile_t pFile = it->second;
-		if( pFile.fileName[0] == '*' && strstr(pFile.fileName, "lightmap") )
-		{
-			if( pFile.pDiskImage )
-				Z_Free( pFile.pDiskImage );
-
-			it = cache.erase(it);
-		}
-		else if( pFile.fileName[0] == '_' && strstr(pFile.fileName, "fatlightmap") )
-		{
-			if( pFile.pDiskImage )
-				Z_Free( pFile.pDiskImage );
-
-			it = cache.erase(it);
-		}
-		else
-		{
-			++it;
-		}
-	}
+	FileCache().swap(files);
+	AssetCache().swap(assets);
 }
 
 /*
- * CCacheManager::DumpNonPure
  * Scans the cache for assets which don't match the checksum, and dumps
  * those that don't match.
  */
-void CCacheManager::DumpNonPure( void )
+void CModelCacheManager::DumpNonPure( void )
 {
 	ri->Printf( PRINT_DEVELOPER,  "CCacheManager::DumpNonPure():\n");
 
-	for(assetCache_t::iterator it = cache.begin(); it != cache.end(); /* empty */ )
+	for ( auto it = files.begin(); it != files.end(); /* empty */ )
 	{
 		int iChecksum;
-		int iInPak = ri->FS_FileIsInPAK( it->first.c_str(), &iChecksum );
+		int iInPak = ri->FS_FileIsInPAK( it->path, &iChecksum );
 
-		if( iInPak == -1 || iChecksum != it->second.iPAKChecksum )
+		if( iInPak == -1 || iChecksum != it->iPAKChecksum )
 		{
 			/* Erase the file because it doesn't match the checksum */
-			ri->Printf( PRINT_DEVELOPER, "Dumping none pure model \"%s\"", it->first );
+			ri->Printf( PRINT_DEVELOPER, "Dumping none pure model \"%s\"", it->path );
 
-			if( it->second.pDiskImage )
-				Z_Free( it->second.pDiskImage );
+			if( it->pDiskImage )
+				Z_Free( it->pDiskImage );
 
-			it = cache.erase(it);
+			it = files.erase(it);
 		}
 		else
 		{
@@ -231,45 +198,63 @@ void CCacheManager::DumpNonPure( void )
 	ri->Printf( PRINT_DEVELOPER, "CCacheManager::DumpNonPure(): Ok\n");	
 }
 
-/*
- * LevelLoadEnd virtual funcs
- */
+CModelCacheManager::AssetCache::iterator CModelCacheManager::FindAsset( const char *path )
+{
+	return std::find_if(
+		std::begin(assets), std::end(assets), [path]( const Asset& asset )
+		{
+			return strcmp(path, asset.path) == 0;
+		});
+}
 
-/*
- * This function is /badly/ designed in vanilla. For starters, LETS NOT USE ANY INCREMENTERS BECAUSE THATS COOL
- * Secondly, it randomly decides to keep track of the amount of model memory and break out of the loop if we run
- * higher than r_modelpoolmegs...thing is, logically that doesn't make any sense, since you're freeing memory
- * here, not allocating more of it. Fail.
- */
-qboolean CModelCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel )
+qhandle_t CModelCacheManager::GetModelHandle( const char *fileName )
+{
+	char path[MAX_QPATH];
+	NormalizePath(path, fileName, sizeof(path));
+
+	const auto it = FindAsset(path);
+	if( it == std::end(assets) )
+		return -1; // asset not found
+
+	return it->handle;
+}
+
+void CModelCacheManager::InsertModelHandle( const char *fileName, qhandle_t handle )
+{
+	char path[MAX_QPATH];
+	NormalizePath(path, fileName, sizeof(path));
+
+	Asset asset;
+	asset.handle = handle;
+	Q_strncpyz(asset.path, path, sizeof(asset.path));
+	assets.emplace_back(asset);
+}
+
+qboolean CModelCacheManager::LevelLoadEnd( qboolean deleteUnusedByLevel )
 {
 	qboolean bAtLeastOneModelFreed	= qfalse;
 
 	ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "CModelCacheManager::LevelLoadEnd():\n");
 
-	for(auto it = cache.begin(); it != cache.end(); /* empty */)
+	for ( auto it = files.begin(); it != files.end(); /* empty */ )
 	{
-		CachedFile_t pFile			= it->second;
-		bool bDeleteThis			= false;
+		bool bDeleteThis = false;
 
-		if( bDeleteEverythingNotUsedThisLevel )
-			bDeleteThis = ( pFile.iLevelLastUsedOn != tr.currentLevel );
+		if( deleteUnusedByLevel )
+			bDeleteThis = (it->iLevelLastUsedOn != tr.currentLevel);
 		else
-			bDeleteThis = ( pFile.iLevelLastUsedOn < tr.currentLevel );
+			bDeleteThis = (it->iLevelLastUsedOn < tr.currentLevel);
 
 		if( bDeleteThis )
 		{
-			const char *psModelName = it->first.c_str();
-
-			ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "Dumping \"%s\"", psModelName);
-
-			if( pFile.pDiskImage )
+			ri->Printf( PRINT_DEVELOPER, S_COLOR_GREEN "Dumping \"%s\"", it->path);
+			if( it->pDiskImage )
 			{
-				Z_Free( pFile.pDiskImage );
+				Z_Free( it->pDiskImage );
 				bAtLeastOneModelFreed = qtrue;	// FIXME: is this correct? shouldn't it be in the next lower scope?
 			}
 
-			it = cache.erase(it);
+			it = files.erase(it);
 		}
 		else
 		{
@@ -282,23 +267,18 @@ qboolean CModelCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThis
 	return bAtLeastOneModelFreed;
 }
 
-qboolean CImageCacheManager::LevelLoadEnd( qboolean bDeleteEverythingNotUsedThisLevel /* unused */ )
-{
-	return qtrue;
-}
-
 /*
  * Wrappers for the above funcs so they export properly.
  */
 
-qboolean C_Models_LevelLoadEnd( qboolean bDeleteEverythingNotUsedInThisLevel )
+qboolean C_Models_LevelLoadEnd( qboolean deleteUnusedByLevel )
 {
-	return CModelCache->LevelLoadEnd( bDeleteEverythingNotUsedInThisLevel );
+	return CModelCache->LevelLoadEnd(deleteUnusedByLevel);
 }
 
-qboolean C_Images_LevelLoadEnd( void )
+qboolean C_Images_LevelLoadEnd()
 {
-	return CImgCache->LevelLoadEnd( qfalse );
+	return qfalse;
 }
 
 /*
@@ -308,107 +288,56 @@ qboolean C_Images_LevelLoadEnd( void )
 void CModelCacheManager::StoreShaderRequest( const char *psModelFileName, const char *psShaderName, int *piShaderIndexPoke )
 {
 	char sModelName[MAX_QPATH];
+	NormalizePath(sModelName, psModelFileName, sizeof(sModelName));
 
-	Q_strncpyz(sModelName, psModelFileName, sizeof(sModelName));
-	Q_strlwr  (sModelName);
-
-	auto cacheEntry = cache.find (sModelName);
-	if ( cacheEntry == cache.end() )
+	auto file = FindFile(sModelName);
+	if ( file == files.end() )
 	{
 		return;
 	}
 
-	CachedFile_t &rFile = cacheEntry->second;
-	if( rFile.pDiskImage == NULL )
+	if( file->pDiskImage == NULL )
 	{
 		/* Shouldn't even happen. */
 		assert(0);
 		return;
 	}
 	
-	int iNameOffset =		  psShaderName		- (char *)rFile.pDiskImage;
-	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)rFile.pDiskImage;
+	int iNameOffset =		  psShaderName		- (char *)file->pDiskImage;
+	int iPokeOffset = (char*) piShaderIndexPoke	- (char *)file->pDiskImage;
 
-	rFile.shaderCache.push_back( std::make_pair( iNameOffset, iPokeOffset ) );
+	file->shaderCache.push_back(ShaderCacheEntry(iNameOffset, iPokeOffset));
 }
 
 void CModelCacheManager::AllocateShaders( const char *psFileName )
 {
 	// if we already had this model entry, then re-register all the shaders it wanted...
-	//
+
 	char sModelName[MAX_QPATH];
+	NormalizePath(sModelName, psFileName, sizeof(sModelName));
 
-	Q_strncpyz(sModelName, psFileName, sizeof(sModelName));
-	Q_strlwr  (sModelName);
-
-	auto cacheEntry = cache.find (sModelName);
-	if ( cacheEntry == cache.end() )
+	auto file = FindFile(sModelName);
+	if ( file == files.end() )
 	{
 		return;
 	}
 
-	CachedFile_t &rFile = cacheEntry->second;
-
-	if( rFile.pDiskImage == NULL )
+	if( file->pDiskImage == NULL )
 	{
 		/* Shouldn't even happen. */
 		assert(0);
 		return;
 	}
 
-	for( auto storedShader = rFile.shaderCache.begin(); storedShader != rFile.shaderCache.end(); ++storedShader )
+	for( const ShaderCacheEntry& shader : file->shaderCache )
 	{
-		int iShaderNameOffset	= storedShader->first;
-		int iShaderPokeOffset	= storedShader->second;
+		char *psShaderName		=		 ((char*)file->pDiskImage + shader.nameOffset);
+		int  *piShaderPokePtr	= (int *)((char*)file->pDiskImage + shader.pokeOffset);
 
-		char *psShaderName		=		  &((char*)rFile.pDiskImage)[iShaderNameOffset];
-		int  *piShaderPokePtr	= (int *) &((char*)rFile.pDiskImage)[iShaderPokeOffset];
-
-		shader_t *sh = R_FindShader( psShaderName, lightmapsNone, stylesDefault, qtrue );
-	            
+		shader_t *sh = R_FindShader(psShaderName, lightmapsNone, stylesDefault, qtrue);
 		if ( sh->defaultShader ) 
 			*piShaderPokePtr = 0;
 		else 
 			*piShaderPokePtr = sh->index;
 	}
-}
-
-/*
- * These processes occur outside of the CacheManager class. They are exported by the renderer.
- */
-
-void C_LevelLoadBegin(const char *psMapName, ForceReload_e eForceReload)
-{
-	static char sPrevMapName[MAX_QPATH]={0};
-	bool bDeleteModels = eForceReload == eForceReload_MODELS || eForceReload == eForceReload_ALL;
-
-	if( bDeleteModels )
-		CModelCache->DeleteAll();
-	else if( ri->Cvar_VariableIntegerValue( "sv_pure" ) )
-		CModelCache->DumpNonPure();
-
-	tr.numBSPModels = 0;
-
-	CImgCache->DeleteLightMaps();
-	//R_Images_DeleteLightMaps();
-
-	/* If we're switching to the same level, don't increment current level */
-	if (Q_stricmp( psMapName,sPrevMapName ))
-	{
-		Q_strncpyz( sPrevMapName, psMapName, sizeof(sPrevMapName) );
-		tr.currentLevel++;
-	}
-}
-
-int C_GetLevel( void )
-{
-	return tr.currentLevel;
-}
-
-void C_LevelLoadEnd( void )
-{
-	CModelCache->LevelLoadEnd( qfalse );
-	CImgCache->LevelLoadEnd( qfalse );
-	ri->SND_RegisterAudio_LevelLoadEnd( qfalse );
-	ri->S_RestartMusic();
 }

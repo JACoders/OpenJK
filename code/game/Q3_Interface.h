@@ -48,7 +48,7 @@ typedef enum //# setType_e
 	SET_PARM15,//## %s="" # Set entity parm15
 	SET_PARM16,//## %s="" # Set entity parm16
 
-	// NOTE!!! If you add any other SET_xxxxxxSCRIPT types, make sure you update the 'case' statements in 
+	// NOTE!!! If you add any other SET_xxxxxxSCRIPT types, make sure you update the 'case' statements in
 	//	ICARUS_InterrogateScript() (game/g_ICARUS.cpp), or the script-precacher won't find them.
 
 	//# #sep Scripts and other file paths
@@ -68,7 +68,7 @@ typedef enum //# setType_e
 	SET_FFDEATHSCRIPT,//## %s="NULL" !!"W:\game\base\scripts\!!#*.txt" # Script to run when player kills a teammate
 	SET_MINDTRICKSCRIPT,//## %s="NULL" !!"W:\game\base\scripts\!!#*.txt" # Script to run when player kills a teammate
 	SET_VIDEO_PLAY,//## %s="filename" !!"W:\game\base\video\!!#*.roq" # Play a video (inGame)
-	SET_CINEMATIC_SKIPSCRIPT, //## %s="filename" !!"W:\game\base\scripts\!!#*.txt" # Script to run when skipping the running cinematic 
+	SET_CINEMATIC_SKIPSCRIPT, //## %s="filename" !!"W:\game\base\scripts\!!#*.txt" # Script to run when skipping the running cinematic
 	SET_RAILCENTERTRACKLOCKED, //## %s="targetname"  # Turn off the centered movers on the given track
 	SET_RAILCENTERTRACKUNLOCKED, //## %s="targetname"  # Turn on the centered movers on the given track
 	SET_SKIN,//## %s="models/players/???/model_default.skin" # just blindly sets whatever skin you set!  include full path after "base/"... eg: "models/players/tavion_new/model_possessed.skin"
@@ -119,7 +119,7 @@ typedef enum //# setType_e
 	SET_ANGLES,//## %v="0.0 0.0 0.0" # Set angles explicitly or with TAG
 	SET_TELEPORT_DEST,//## %v="0.0 0.0 0.0" # Set origin here as soon as the area is clear
 	SET_SABER_ORIGIN,//## %v="0.0 0.0 0.0" # Removes this ent's saber from their hand, turns it off, and places it at the specified location
-	
+
 	//# #sep floats
 	SET_XVELOCITY,//## %f="0.0" # Velocity along X axis
 	SET_YVELOCITY,//## %f="0.0" # Velocity along Y axis
@@ -316,7 +316,7 @@ typedef enum //# setType_e
 	SET_TACTICAL_HIDE,		//## %t="TACTICAL" # Hide tactical info on mission objectives screen
 	SET_OBJECTIVE_CLEARALL,	//## # Force all objectives to be hidden
 /*
-	SET_OBJECTIVEFOSTER,	
+	SET_OBJECTIVEFOSTER,
 */
 	SET_OBJECTIVE_LIGHTSIDE,	//## # Used to get whether the player has chosen the light (succeeded) or dark (failed) side.
 
@@ -330,7 +330,7 @@ typedef enum //# setType_e
 
 	//# #eol
 	SET_
-} setType_t;	
+} setType_t;
 
 
 // this enum isn't used directly by the game, it's mainly for BehavEd to scan for...
@@ -416,7 +416,7 @@ enum
 };
 
 //Token defines
-enum 
+enum
 {
 	TK_BLOCK_START = TK_USERDEF,
 	TK_BLOCK_END,
@@ -484,9 +484,9 @@ enum
 	TYPE_ORIGIN,
 
 	//Affect types
-	TYPE_INSERT,	
-	TYPE_FLUSH,	
-	
+	TYPE_INSERT,
+	TYPE_FLUSH,
+
 	//Camera types
 	TYPE_PAN,
 	TYPE_ZOOM,
@@ -500,7 +500,7 @@ enum
 	TYPE_TRACK,
 	TYPE_DISTANCE,
 	TYPE_FOLLOW,
-		
+
 	//Variable type
 	TYPE_VARIABLE,
 
@@ -625,7 +625,7 @@ public:
 
 	// Make a valid script name.
 	int MakeValidScriptName( char **strScriptName );
-	
+
 	// First looks to see if a script has already been loaded, if so, return SCRIPT_ALREADYREGISTERED. If a script has
 	// NOT been already cached, that script is loaded and the return is SCRIPT_REGISTERED. If a script could not
 	// be found cached and could not be loaded we return SCRIPT_COULDNOTREGISTER.
@@ -633,7 +633,7 @@ public:
 
 	// Precache all the resources needed by a Script and it's Entity (or vice-versa).
 	int PrecacheEntity( gentity_t *pEntity );
-	
+
 	// Run the script.
 	void RunScript( const gentity_t *pEntity, const char *strScriptName );
 
@@ -660,7 +660,7 @@ public:
 	void	DebugPrint( e_DebugPrintLevel, const char *, ... );
 	unsigned int GetTime( void );							//Gets the current time
 	//DWORD	GetTimeScale(void );
-	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );	
+	int 	PlayIcarusSound( int taskID, int entID, const char *name, const char *channel );
 	void	Lerp2Pos( int taskID, int entID, vec3_t origin, vec3_t angles, float duration );
 	void	Lerp2Angles( int taskID, int entID, vec3_t angles, float duration );
 	int		GetTag( int entID, const char *name, int lookup, vec3_t info );
@@ -700,7 +700,7 @@ public:
 	int		WriteSaveData( unsigned int chid, void *data, int length );
 	int		ReadSaveData( unsigned int chid, void *address, int length, void **addressptr = NULL );
 	int		LinkGame( int entID, int icarusID );
-	
+
 	// Access functions
 	int		CreateIcarus( int entID);
 			//Polls the engine for the sequencer of the entity matching the name passed

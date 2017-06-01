@@ -4029,7 +4029,7 @@ static void CG_G2SetHeadBlink( centity_t *cent, qboolean bStart )
 	if (bStart)
 	{
 		desiredAngles[YAW] = -50;
-		if ( random() > 0.95f )
+		if ( Q_flrand(0.0f, 1.0f) > 0.95f )
 		{
 			bWink = qtrue;
 			blendTime /=3;
@@ -5160,7 +5160,7 @@ void CG_DrawPlayerShield(centity_t *cent, vec3_t origin)
 	ent.origin[2] += 10.0;
 	AnglesToAxis( cent->damageAngles, ent.axis );
 
-	alpha = 255.0 * ((cent->damageTime - cg.time) / MIN_SHIELD_TIME) + random()*16;
+	alpha = 255.0 * ((cent->damageTime - cg.time) / MIN_SHIELD_TIME) + Q_flrand(0.0f, 1.0f)*16;
 	if (alpha>255)
 		alpha=255;
 
@@ -5353,7 +5353,7 @@ static void CG_DoSaberLight( saberInfo_t *saber )
 			}
 		}
 
-		trap->R_AddLightToScene( mid, diameter + (random()*8.0f), rgb[0], rgb[1], rgb[2] );
+		trap->R_AddLightToScene( mid, diameter + (Q_flrand(0.0f, 1.0f)*8.0f), rgb[0], rgb[1], rgb[2] );
 	}
 }
 
@@ -5411,7 +5411,7 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	{	// always add a light because sabers cast a nice glow before they slice you in half!!  or something...
 		vec3_t rgb={1,1,1};
 		CG_RGBForSaberColor( color, rgb );
-		trap->R_AddLightToScene( mid, (length*1.4f) + (random()*3.0f), rgb[0], rgb[1], rgb[2] );
+		trap->R_AddLightToScene( mid, (length*1.4f) + (Q_flrand(0.0f, 1.0f)*3.0f), rgb[0], rgb[1], rgb[2] );
 	}
 
 	memset( &saber, 0, sizeof( refEntity_t ));
@@ -5439,8 +5439,8 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	radiusRange = radius * 0.075f;
 	radiusStart = radius-radiusRange;
 
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-	//saber.radius = (2.8f + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+	//saber.radius = (2.8f + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 	VectorCopy( origin, saber.origin );
 	VectorCopy( dir, saber.axis[0] );
@@ -5460,8 +5460,8 @@ void CG_DoSaber( vec3_t origin, vec3_t dir, float length, float lengthMax, float
 	saber.customShader = blade;
 	saber.reType = RT_LINE;
 	radiusStart = radius/3.0f;
-	saber.radius = (radiusStart + crandom() * radiusRange)*radiusmult;
-//	saber.radius = (1.0 + crandom() * 0.2f)*radiusmult;
+	saber.radius = (radiusStart + Q_flrand(-1.0f, 1.0f) * radiusRange)*radiusmult;
+//	saber.radius = (1.0 + Q_flrand(-1.0f, 1.0f) * 0.2f)*radiusmult;
 
 	saber.shaderTexCoord[0] = saber.shaderTexCoord[1] = 1.0f;
 	saber.shaderRGBA[0] = saber.shaderRGBA[1] = saber.shaderRGBA[2] = saber.shaderRGBA[3] = 0xff;
@@ -5558,8 +5558,8 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 			VectorScale( mid, 0.5f, mid );
 			VectorSubtract( v->xyz, mid, delta );
 
-			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * (0.05f + random() * 0.03f);
-			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * (0.15f + random() * 0.05f);
+			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * (0.05f + Q_flrand(0.0f, 1.0f) * 0.03f);
+			v->st[1] = 0.5 + DotProduct( delta, axis[2] ) * (0.15f + Q_flrand(0.0f, 1.0f) * 0.05f);
 		}
 
 		if (cg_saberDynamicMarks.integer)
@@ -5631,9 +5631,9 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 			trap->FX_AddPoly(&apArgs);
 
 			apArgs.shader = cgs.media.mSaberDamageGlow;
-			apArgs.rgb1[0] = 215 + random() * 40.0f;
-			apArgs.rgb1[1] = 96 + random() * 32.0f;
-			apArgs.rgb1[2] = apArgs.alphaParm = random()*15.0f;
+			apArgs.rgb1[0] = 215 + Q_flrand(0.0f, 1.0f) * 40.0f;
+			apArgs.rgb1[1] = 96 + Q_flrand(0.0f, 1.0f) * 32.0f;
+			apArgs.rgb1[2] = apArgs.alphaParm = Q_flrand(0.0f, 1.0f)*15.0f;
 
 			apArgs.rgb1[0] /= 255;
 			apArgs.rgb1[1] /= 255;
@@ -5662,9 +5662,9 @@ void CG_CreateSaberMarks( vec3_t start, vec3_t end, vec3_t normal )
 			mark->alphaFade = qfalse;
 			mark->markShader = cgs.media.mSaberDamageGlow;
 			mark->poly.numVerts = mf->numPoints;
-			mark->color[0] = 215 + random() * 40.0f;
-			mark->color[1] = 96 + random() * 32.0f;
-			mark->color[2] = mark->color[3] = random()*15.0f;
+			mark->color[0] = 215 + Q_flrand(0.0f, 1.0f) * 40.0f;
+			mark->color[1] = 96 + Q_flrand(0.0f, 1.0f) * 32.0f;
+			mark->color[2] = mark->color[3] = Q_flrand(0.0f, 1.0f)*15.0f;
 			memcpy( mark->verts, verts, mf->numPoints * sizeof( verts[0] ) );
 		}
 	}
@@ -6699,7 +6699,7 @@ void CG_AddLightningBeam(vec3_t start, vec3_t end)
 	VectorMA( b.start, 0.6666f * len, dir, c2 );
 
 	// get some chaos values that really aren't very chaotic :)
-	s1 = sin( cg.time * 0.005f ) * 2 + crandom() * 0.2f;
+	s1 = sin( cg.time * 0.005f ) * 2 + Q_flrand(-1.0f, 1.0f) * 0.2f;
 	s2 = sin( cg.time * 0.001f );
 	s3 = sin( cg.time * 0.011f );
 
@@ -7843,7 +7843,7 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 	if ( found )
 	{
 		BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, fxOrg );
-		if ( random() > 0.5f )
+		if ( Q_flrand(0.0f, 1.0f) > 0.5f )
 		{
 			BG_GiveMeVectorFromMatrix( &boltMatrix, NEGATIVE_X, dir );
 		}
@@ -7853,15 +7853,15 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 		}
 
 		// Add some fudge, makes us not normalized, but that isn't really important
-		dir[0] += crandom() * 0.4f;
-		dir[1] += crandom() * 0.4f;
-		dir[2] += crandom() * 0.4f;
+		dir[0] += Q_flrand(-1.0f, 1.0f) * 0.4f;
+		dir[1] += Q_flrand(-1.0f, 1.0f) * 0.4f;
+		dir[2] += Q_flrand(-1.0f, 1.0f) * 0.4f;
 	}
 	else
 	{
 		// Just use the lerp Origin and a random direction
 		VectorCopy( cent->lerpOrigin, fxOrg );
-		VectorSet( dir, crandom(), crandom(), crandom() ); // Not normalized, but who cares.
+		VectorSet( dir, Q_flrand(-1.0f, 1.0f), Q_flrand(-1.0f, 1.0f), Q_flrand(-1.0f, 1.0f) ); // Not normalized, but who cares.
 		switch ( cent->currentState.NPC_class )
 		{
 		case CLASS_PROBE:
@@ -7878,11 +7878,11 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 		}
 	}
 
-	VectorMA( fxOrg, random() * 40 + 40, dir, fxOrg2 );
+	VectorMA( fxOrg, Q_flrand(0.0f, 1.0f) * 40 + 40, dir, fxOrg2 );
 
 	CG_Trace( &tr, fxOrg, NULL, NULL, fxOrg2, -1, CONTENTS_SOLID );
 
-	if ( tr.fraction < 1.0f || random() > 0.94f || alwaysDo )
+	if ( tr.fraction < 1.0f || Q_flrand(0.0f, 1.0f) > 0.94f || alwaysDo )
 	{
 		addElectricityArgStruct_t p;
 
@@ -7898,7 +7898,7 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 		VectorCopy(rgb, p.eRGB);
 		p.rgbParm = 0.0f;
 		p.chaos = 5.0f;
-		p.killTime = (random() * 50 + 100);
+		p.killTime = (Q_flrand(0.0f, 1.0f) * 50 + 100);
 		p.shader = shader;
 		p.flags = (0x00000001 | 0x00000100 | 0x02000000 | 0x04000000 | 0x01000000);
 
@@ -7910,7 +7910,7 @@ static void CG_ForceElectrocution( centity_t *cent, const vec3_t origin, vec3_t 
 			1.5f, 4.0f, 0.0f,
 			1.0f, 0.5f, 0.0f,
 			rgb, rgb, 0.0f,
-			5.5f, random() * 50 + 100, shader, FX_ALPHA_LINEAR | FX_SIZE_LINEAR | FX_BRANCH | FX_GROW | FX_TAPER );
+			5.5f, Q_flrand(0.0f, 1.0f) * 50 + 100, shader, FX_ALPHA_LINEAR | FX_SIZE_LINEAR | FX_BRANCH | FX_GROW | FX_TAPER );
 		*/
 	}
 }
@@ -10903,7 +10903,7 @@ stillDoSaber:
 		legs.shaderRGBA[0] = 255;
 		legs.shaderRGBA[1] = 255;
 		legs.shaderRGBA[2] = 255;
-		legs.shaderRGBA[3] = 10.0f+(sin((float)(cg.time/4))*128.0f);//112.0 * ((cent->damageTime - cg.time) / MIN_SHIELD_TIME) + random()*16;
+		legs.shaderRGBA[3] = 10.0f+(sin((float)(cg.time/4))*128.0f);//112.0 * ((cent->damageTime - cg.time) / MIN_SHIELD_TIME) + Q_flrand(0.0f, 1.0f)*16;
 
 		legs.renderfx &= ~RF_RGB_TINT;
 		legs.renderfx &= ~RF_FORCE_ENT_ALPHA;
@@ -11065,7 +11065,7 @@ stillDoSaber:
 		int	dif = cent->currentState.emplacedOwner - cg.time;
 		vec3_t tempAngles;
 
-		if ( dif > 0 && random() > 0.4f )
+		if ( dif > 0 && Q_flrand(0.0f, 1.0f) > 0.4f )
 		{
 			// fade out over the last 500 ms
 			int brightness = 255;
@@ -11093,7 +11093,7 @@ stillDoSaber:
 
 			trap->R_AddRefEntityToScene( &legs );
 
-			if ( random() > 0.9f )
+			if ( Q_flrand(0.0f, 1.0f) > 0.9f )
 				trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
 		}
 

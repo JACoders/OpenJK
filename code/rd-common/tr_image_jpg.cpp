@@ -33,12 +33,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
  * (stdio.h is sufficient on ANSI-conforming systems.)
  * You may also wish to include "jerror.h".
  */
-#ifdef USE_INTERNAL_JPEG
-#define JPEG_INTERNALS
-#include "jpeg-8c/jpeglib.h"
-#else
+
 #include <jpeglib.h>
-#endif
 
 static void R_JPGErrorExit(j_common_ptr cinfo)
 {
@@ -132,8 +128,8 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 
 	/* Step 4: set parameters for decompression */
 
- 
-	/* Make sure it always converts images to RGB color space. This will 
+
+	/* Make sure it always converts images to RGB color space. This will
 	* automatically convert 8-bit greyscale images to RGB as well.	*/
 	cinfo.out_color_space = JCS_RGB;
 
@@ -149,20 +145,20 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	* output image dimensions available, as well as the output colormap
 	* if we asked for color quantization.
 	* In this example, we need to make an output work buffer of the right size.
-	*/ 
+	*/
 	/* JSAMPLEs per row in output buffer */
 	pixelcount = cinfo.output_width * cinfo.output_height;
 
-	if(!cinfo.output_width || !cinfo.output_height 
-		|| ((pixelcount * 4) / cinfo.output_width) / 4 != cinfo.output_height 
-		|| pixelcount > 0x1FFFFFFF || cinfo.output_components != 3 
-		) 
-	{ 
-		// Free the memory to make sure we don't leak memory 
-		ri.FS_FreeFile (fbuffer.v); 
-		jpeg_destroy_decompress(&cinfo); 
+	if(!cinfo.output_width || !cinfo.output_height
+		|| ((pixelcount * 4) / cinfo.output_width) / 4 != cinfo.output_height
+		|| pixelcount > 0x1FFFFFFF || cinfo.output_components != 3
+		)
+	{
+		// Free the memory to make sure we don't leak memory
+		ri.FS_FreeFile (fbuffer.v);
+		jpeg_destroy_decompress(&cinfo);
 
-		ri.Printf( PRINT_ALL, "LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename, 
+		ri.Printf( PRINT_ALL, "LoadJPG: %s has an invalid image format: %dx%d*4=%d, components: %d", filename,
 			cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
 		return;
 	}
@@ -170,7 +166,7 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	memcount = pixelcount * 4;
 	row_stride = cinfo.output_width * cinfo.output_components;
 
-	out = (byte *)Z_Malloc(memcount, TAG_TEMP_WORKSPACE, qfalse);
+	out = (byte *)R_Malloc(memcount, TAG_TEMP_WORKSPACE, qfalse);
 
 	*width = cinfo.output_width;
 	*height = cinfo.output_height;
@@ -195,9 +191,9 @@ void LoadJPG( const char *filename, unsigned char **pic, int *width, int *height
 	// Expand from RGB to RGBA
 	sindex = pixelcount * cinfo.output_components;
 	dindex = memcount;
- 
+
 	do {
-		buf[--dindex] = 255; 
+		buf[--dindex] = 255;
 		buf[--dindex] = buf[--sindex];
 		buf[--dindex] = buf[--sindex];
 		buf[--dindex] = buf[--sindex];
@@ -256,13 +252,13 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 	unsigned int sindex, dindex;
 	byte *out;
 	byte  *buf;
-	
+
 	if (!inputBuffer) {
 		return;
 	}
-	
+
 	/* Step 1: allocate and initialize JPEG decompression object */
-	
+
 	/* We have to set up the error handler first, in case the initialization
 	 * step fails.  (Unlikely, but it could happen if you are out of memory.)
 	 * This routine fills in the contents of struct jerr, and returns jerr's
@@ -271,37 +267,37 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 	cinfo.err = jpeg_std_error(&jerr);
 	cinfo.err->error_exit = R_JPGErrorExit;
 	cinfo.err->output_message = R_JPGOutputMessage;
-	
+
 	/* Now we can initialize the JPEG decompression object. */
 	jpeg_create_decompress(&cinfo);
-	
+
 	/* Step 2: specify data source (eg, a file) */
-	
+
 	jpeg_mem_src(&cinfo, inputBuffer, len);
-	
+
 	/* Step 3: read file parameters with jpeg_read_header() */
-	
+
 	(void) jpeg_read_header(&cinfo, TRUE);
 	/* We can ignore the return value from jpeg_read_header since
 	 *   (a) suspension is not possible with the stdio data source, and
 	 *   (b) we passed TRUE to reject a tables-only JPEG file as an error.
 	 * See libjpeg.doc for more info.
 	 */
-	
+
 	/* Step 4: set parameters for decompression */
-	
-	
+
+
 	/* Make sure it always converts images to RGB color space. This will
 	 * automatically convert 8-bit greyscale images to RGB as well.	*/
 	cinfo.out_color_space = JCS_RGB;
-	
+
 	/* Step 5: Start decompressor */
-	
+
 	(void) jpeg_start_decompress(&cinfo);
 	/* We can ignore the return value since suspension is not possible
 	 * with the stdio data source.
 	 */
-	
+
 	/* We may need to do some setup of our own at this point before reading
 	 * the data.  After jpeg_start_decompress() we have the correct scaled
 	 * output image dimensions available, as well as the output colormap
@@ -310,7 +306,7 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 	 */
 	/* JSAMPLEs per row in output buffer */
 	pixelcount = cinfo.output_width * cinfo.output_height;
-	
+
 	if(!cinfo.output_width || !cinfo.output_height
 	   || ((pixelcount * 4) / cinfo.output_width) / 4 != cinfo.output_height
 	   || pixelcount > 0x1FFFFFFF || cinfo.output_components != 3
@@ -318,23 +314,23 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 	{
 		// Free the memory to make sure we don't leak memory
 		jpeg_destroy_decompress(&cinfo);
-		
+
 		ri.Printf( PRINT_ALL, "LoadJPG: invalid image format: %dx%d*4=%d, components: %d",
 				  cinfo.output_width, cinfo.output_height, pixelcount * 4, cinfo.output_components);
 		return;
 	}
-	
+
 	memcount = pixelcount * 4;
 	row_stride = cinfo.output_width * cinfo.output_components;
-	
-	out = (byte *)Z_Malloc(memcount, TAG_TEMP_WORKSPACE, qfalse);
-	
+
+	out = (byte *)R_Malloc(memcount, TAG_TEMP_WORKSPACE, qfalse);
+
 	*width = cinfo.output_width;
 	*height = cinfo.output_height;
-	
+
 	/* Step 6: while (scan lines remain to be read) */
 	/*           jpeg_read_scanlines(...); */
-	
+
 	/* Here we use the library's state variable cinfo.output_scanline as the
 	 * loop counter, so that we don't have to keep track ourselves.
 	 */
@@ -347,37 +343,37 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 		buffer = &buf;
 		(void) jpeg_read_scanlines(&cinfo, buffer, 1);
 	}
-	
+
 	buf = out;
 	// Expand from RGB to RGBA
 	sindex = pixelcount * cinfo.output_components;
 	dindex = memcount;
-	
+
 	do {
 		buf[--dindex] = 255;
 		buf[--dindex] = buf[--sindex];
 		buf[--dindex] = buf[--sindex];
 		buf[--dindex] = buf[--sindex];
 	} while(sindex);
-	
+
 	*pic = out;
-	
+
 	/* Step 7: Finish decompression */
-	
+
 	(void) jpeg_finish_decompress(&cinfo);
 	/* We can ignore the return value since suspension is not possible
 	 * with the stdio data source.
 	 */
-	
+
 	/* Step 8: Release JPEG decompression object */
-	
+
 	/* This is an important step since it will release a good deal of memory. */
 	jpeg_destroy_decompress(&cinfo);
-	
+
 	/* At this point you may want to check to see whether any corrupt-data
 	 * warnings occurred (test whether jerr.pub.num_warnings is nonzero).
 	 */
-	
+
 	/* And we're done! */
 }
 #endif
@@ -510,7 +506,7 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 	cinfo.err = jpeg_std_error(&jerr);
 	cinfo.err->error_exit = R_JPGErrorExit;
 	cinfo.err->output_message = R_JPGOutputMessage;
-	
+
 	/* Now we can initialize the JPEG compression object. */
 	jpeg_create_compress(&cinfo);
 
@@ -571,11 +567,11 @@ void RE_SaveJPG(const char * filename, int quality, int image_width, int image_h
 	size_t bufSize;
 
 	bufSize = image_width * image_height * 3;
-	out = (byte *)ri.Z_Malloc( bufSize, TAG_TEMP_WORKSPACE, qfalse, 4 );
+	out = (byte *) R_Malloc( bufSize, TAG_TEMP_WORKSPACE, qfalse );
 
 	bufSize = RE_SaveJPGToBuffer(out, bufSize, quality, image_width, image_height, image_buffer, padding);
 	ri.FS_WriteFile(filename, out, bufSize);
 
-	ri.Z_Free(out);
+	R_Free(out);
 }
 

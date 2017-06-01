@@ -195,28 +195,6 @@ typedef struct client_s {
 //=============================================================================
 
 
-// MAX_CHALLENGES is made large to prevent a denial
-// of service attack that could cycle all of them
-// out before legitimate users connected
-#define	MAX_CHALLENGES	2048
-// Allow a certain amount of challenges to have the same IP address
-// to make it a bit harder to DOS one single IP address from connecting
-// while not allowing a single ip to grab all challenge resources
-#define MAX_CHALLENGES_MULTI (MAX_CHALLENGES / 2)
-
-#define	AUTHORIZE_TIMEOUT	5000
-
-typedef struct challenge_s {
-	netadr_t	adr;
-	int			challenge;
-	int			clientChallenge;		// challenge number coming from the client
-	int			time;				// time the last packet was sent to the autherize server
-	int			pingTime;			// time the challenge response was sent to client
-	int			firstTime;			// time the adr was first used, for authorize timeout checks
-	qboolean	wasrefused;
-	qboolean	connected;
-} challenge_t;
-
 // this structure will be cleared only when the game dll changes
 typedef struct serverStatic_s {
 	qboolean	initialized;				// sv_init has completed
@@ -231,7 +209,6 @@ typedef struct serverStatic_s {
 	int			nextSnapshotEntities;		// next snapshotEntities to use
 	entityState_t	*snapshotEntities;		// [numSnapshotEntities]
 	int			nextHeartbeatTime;
-	challenge_t	challenges[MAX_CHALLENGES];	// to prevent invalid IPs from connecting
 	netadr_t	redirectAddress;			// for rcon return messages
 
 	netadr_t	authorizeAddress;			// for rcon return messages
@@ -289,7 +266,7 @@ extern	cvar_t	*sv_filterCommands;
 extern	cvar_t	*sv_autoDemo;
 extern	cvar_t	*sv_autoDemoBots;
 extern	cvar_t	*sv_autoDemoMaxMaps;
-extern	cvar_t	*sv_blockJumpSelect;
+extern	cvar_t	*sv_legacyFixForceSelect;
 extern	cvar_t	*sv_banFile;
 
 extern	serverBan_t serverBans[SERVER_MAXBANS];
@@ -348,6 +325,14 @@ void SV_ChangeMaxClients( void );
 void SV_SpawnServer( char *server, qboolean killBots, ForceReload_e eForceReload );
 
 
+
+//
+// sv_challenge.cpp
+//
+void SV_ChallengeInit();
+void SV_ChallengeShutdown();
+int SV_CreateChallenge(netadr_t from);
+qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from);
 
 //
 // sv_client.c

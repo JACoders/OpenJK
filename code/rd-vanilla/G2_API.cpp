@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../qcommon/q_shared.h"
 #include "tr_local.h"
+#include "tr_common.h"
 #include "../ghoul2/G2.h"
 #include "../qcommon/MiniHeap.h"
 
@@ -82,7 +83,7 @@ public:
 		Com_DPrintf(mess);
 
 		std::map<std::string,int>::iterator i;
-		for (i=mErrors.begin();i!=mErrors.end();i++)
+		for (i=mErrors.begin();i!=mErrors.end();++i)
 		{
 			total+=(*i).second;
 			sprintf(mess,"%s (hits %d)\n",(*i).first.c_str(),(*i).second);
@@ -570,7 +571,7 @@ public:
 			for (i=0;i<MAX_G2_MODELS;i++)
 			{
 				std::list<int>::iterator j;
-				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();j++)
+				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();++j)
 				{
 					if (*j==i)
 						break;
@@ -728,7 +729,7 @@ void RestoreGhoul2InfoArray()
 		size_t read =
 #endif // _DEBUG
 			singleton->Deserialize ((const char *)data, size);
-		Z_Free ((void *)data);
+		R_Free ((void *)data);
 
 		assert (read == size);
 	}
@@ -737,7 +738,7 @@ void RestoreGhoul2InfoArray()
 void SaveGhoul2InfoArray()
 {
 	size_t size = singleton->GetSerializedSize();
-	void *data = Z_Malloc (size, TAG_GHOUL2, qfalse);
+	void *data = R_Malloc (size, TAG_GHOUL2, qfalse);
 #ifdef _DEBUG
 	size_t written =
 #endif // _DEBUG
@@ -826,7 +827,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 qboolean G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mLodBias = lodBias;
 		return qtrue;
@@ -838,14 +839,14 @@ qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t ren
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 #ifdef JK2_MODE
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		return qtrue;
 	}
 	return qfalse;
 #else
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		if (renderSkin)
@@ -862,7 +863,7 @@ extern void G2API_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t rende
 qboolean G2API_SetShader(CGhoul2Info *ghlInfo, qhandle_t customShader)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomShader = customShader;
 		return qtrue;
@@ -1814,7 +1815,7 @@ void G2API_ListBones(CGhoul2Info *ghlInfo, int frame)
 // decide if we have Ghoul2 models associated with this ghoul list or not
 qboolean G2API_HaveWeGhoul2Models(CGhoul2Info_v &ghoul2)
 {
-	return !!ghoul2.IsValid();
+	return (qboolean)ghoul2.IsValid();
 }
 
 // run through the Ghoul2 models and set each of the mModel values to the correct one from the cgs.gameModel offset lsit

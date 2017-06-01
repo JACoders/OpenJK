@@ -7,11 +7,18 @@ host="$1"
 flavour="$2"
 shift 2
 
-# We need cmake from Ubuntu 14.04 (trusty), the version in 12.04 is too old.
-# We also need SDL2, which is broken in 14.04 but OK in trusty-updates;
-# and dpkg from 14.04 fixes installation of libglib2.0-dev:i386.
-echo "deb http://archive.ubuntu.com/ubuntu trusty main universe" | sudo tee -a /etc/apt/sources.list
-echo "deb http://archive.ubuntu.com/ubuntu trusty-updates main universe" | sudo tee -a /etc/apt/sources.list
+# travis-ci's Ubuntu 14.04 image provides an apt source for Chrome,
+# which breaks i386 multiarch. Disable it: we don't need it for any of
+# these builds anyway.
+: | sudo tee /etc/apt/sources.list.d/google-chrome.list
+
+# do this before apt-get update
+case "${host}" in
+	(i?86-linux-gnu)
+		sudo dpkg --add-architecture i386
+		;;
+esac
+
 sudo apt-get update -qq
 sudo apt-get -q -y install cmake dpkg
 
@@ -39,6 +46,7 @@ case "${host}" in
 			libgl1-mesa-dev:i386 libpulse-dev:i386 libglu1-mesa-dev:i386 \
 			libsdl2-dev:i386 libjpeg-turbo8-dev:i386 zlib1g-dev:i386 libc6-dev:i386 \
 			libpng12-dev:i386 \
-			g++-multilib g++ gcc cpp g++-4.8 gcc-4.8 g++-4.8-multilib
+			g++-multilib g++-4.8-multilib gcc-4.8-multilib \
+			g++ g++-4.8 gcc gcc-4.8 cpp cpp-4.8
 		;;
 esac

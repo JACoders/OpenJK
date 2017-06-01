@@ -379,6 +379,7 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 	intptr_t	findhandle;
 	int			flag;
 	int			i;
+	int			extLen;
 
 	if (filter) {
 
@@ -412,6 +413,8 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 		flag = _A_SUBDIR;
 	}
 
+	extLen = strlen( extension );
+
 	Com_sprintf( search, sizeof(search), "%s\\*%s", directory, extension );
 
 	// search
@@ -425,6 +428,14 @@ char **Sys_ListFiles( const char *directory, const char *extension, char *filter
 
 	do {
 		if ( (!wantsubs && flag ^ ( findinfo.attrib & _A_SUBDIR )) || (wantsubs && findinfo.attrib & _A_SUBDIR) ) {
+			if (*extension) {
+				if ( strlen( findinfo.name ) < extLen ||
+					Q_stricmp(
+						findinfo.name + strlen( findinfo.name ) - extLen,
+						extension ) ) {
+					continue; // didn't match
+				}
+			}
 			if ( nfiles == MAX_FOUND_FILES - 1 ) {
 				break;
 			}
@@ -497,9 +508,9 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 	int len = FS_ReadFile(name, &data);
 
 	if (len >= 1)
-	{ 
+	{
 		if (FS_FileIsInPAK(name, NULL) == 1)
-		{ 
+		{
 			char *tempFileName;
 			if ( FS_WriteToTemporaryFile(data, len, &tempFileName) )
 			{

@@ -156,10 +156,10 @@ void CQuickSpriteSystem::Flush(void)
 		backEnd.pc.c_totalIndexes += mNextVert;
 	}
 
-	// 
+	//
 	// unlock arrays
 	//
-	if (qglUnlockArraysEXT) 
+	if (qglUnlockArraysEXT)
 	{
 		qglUnlockArraysEXT();
 		GLimp_LogComment( "glUnlockArraysEXT\n" );
@@ -190,11 +190,11 @@ void CQuickSpriteSystem::StartGroup(textureBundle_t *bundle, uint32_t glbits, in
 
 	if(cullingOn)
 	{
-		mTurnCullBackOn=true;
+		mTurnCullBackOn=qtrue;
 	}
 	else
 	{
-		mTurnCullBackOn=false;
+		mTurnCullBackOn=qfalse;
 	}
 	qglDisable(GL_CULL_FACE);
 }

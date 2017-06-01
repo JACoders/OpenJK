@@ -390,7 +390,7 @@ static void RB_VerticalSurfaceSprite(vec3_t loc, float width, float height, byte
 
 	if ( flattened )
 	{
-		right[0] = sin( DEG2RAD( loc[0] ) ) * width; 
+		right[0] = sin( DEG2RAD( loc[0] ) ) * width;
 		right[1] = cos( DEG2RAD( loc[0] ) ) * height;
 		right[2] = 0.0f;
 	}
@@ -485,7 +485,7 @@ static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float hei
 
 	if ( flattened )
 	{
-		right[0] = sin( DEG2RAD( loc[0] ) ) * width; 
+		right[0] = sin( DEG2RAD( loc[0] ) ) * width;
 		right[1] = cos( DEG2RAD( loc[0] ) ) * height;
 		right[2] = 0.0f;
 	}
@@ -493,7 +493,7 @@ static void RB_VerticalSurfaceSpriteWindPoint(vec3_t loc, float width, float hei
 	{
 		VectorScale(ssrightvectors[rightvectorcount], width*0.5, right);
 	}
-	
+
 
 	color[0]=light;
 	color[1]=light;

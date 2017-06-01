@@ -155,6 +155,7 @@ void IN_MLookDown( void ) {
 	in_mlooking = qtrue;
 }
 
+void IN_CenterView( void );
 void IN_MLookUp( void ) {
 	in_mlooking = qfalse;
 	if ( !cl_freelook->integer ) {
@@ -1384,23 +1385,27 @@ void CL_CreateNewCommands( void ) {
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
-	if ( cls.state < CA_PRIMED ) {
+	if ( cls.state < CA_PRIMED )
 		return;
-	}
 
 	frame_msec = com_frameTime - old_com_frameTime;
 
+	// if running over 1000fps, act as if each frame is 1ms
+	// prevents divisions by zero
+	if ( frame_msec < 1 )
+		frame_msec = 1;
+
 	// if running less than 5fps, truncate the extra time to prevent
 	// unexpected moves after a hitch
-	if ( frame_msec > 200 ) {
+	if ( frame_msec > 200 )
 		frame_msec = 200;
-	}
+
 	old_com_frameTime = com_frameTime;
 
 	// generate a command for this frame
 	cl.cmdNumber++;
 	cmdNum = cl.cmdNumber & CMD_MASK;
-	cl.cmds[cmdNum] = CL_CreateCmd ();
+	cl.cmds[cmdNum] = CL_CreateCmd();
 }
 
 /*
@@ -1635,6 +1640,118 @@ void CL_SendCmd( void ) {
 	CL_WritePacket();
 }
 
+static const cmdList_t inputCmds[] =
+{
+	{ "centerview", "Centers view on screen", IN_CenterView, NULL },
+	{ "+moveup", "Jump", IN_UpDown, NULL },
+	{ "-moveup", NULL, IN_UpUp, NULL },
+	{ "+movedown", "Crouch", IN_DownDown, NULL },
+	{ "-movedown", NULL, IN_DownUp, NULL },
+	{ "+left", "Rotate camera left", IN_LeftDown, NULL },
+	{ "-left", NULL, IN_LeftUp, NULL },
+	{ "+right", "Rotate camera right", IN_RightDown, NULL },
+	{ "-right", NULL, IN_RightUp, NULL },
+	{ "+forward", "Move forward", IN_ForwardDown, NULL },
+	{ "-forward", NULL, IN_ForwardUp, NULL },
+	{ "+back", "Move backward", IN_BackDown, NULL },
+	{ "-back", NULL, IN_BackUp, NULL },
+	{ "+lookup", "Tilt camera up", IN_LookupDown, NULL },
+	{ "-lookup", NULL, IN_LookupUp, NULL },
+	{ "+lookdown", "Tilt camera down", IN_LookdownDown, NULL },
+	{ "-lookdown", NULL, IN_LookdownUp, NULL },
+	{ "+strafe", "Hold to strafe", IN_StrafeDown, NULL },
+	{ "-strafe", NULL, IN_StrafeUp, NULL },
+	{ "+moveleft", "Strafe left", IN_MoveleftDown, NULL },
+	{ "-moveleft", NULL, IN_MoveleftUp, NULL },
+	{ "+moveright", "Strafe right", IN_MoverightDown, NULL },
+	{ "-moveright", NULL, IN_MoverightUp, NULL },
+	{ "+speed", "Walk or run", IN_SpeedDown, NULL },
+	{ "-speed", NULL, IN_SpeedUp, NULL },
+	{ "+attack", "Primary Attack", IN_Button0Down, NULL },
+	{ "-attack", NULL, IN_Button0Up, NULL },
+	{ "+use", "Use item", IN_Button5Down, NULL },
+	{ "-use", NULL, IN_Button5Up, NULL },
+	{ "+force_grip", "Hold to use grip force power", IN_Button6Down, NULL },
+	{ "-force_grip", NULL, IN_Button6Up, NULL },
+	{ "+altattack", "Alternate Attack", IN_Button7Down, NULL },
+	{ "-altattack", NULL, IN_Button7Up, NULL },
+	{ "+useforce", "Use selected force power", IN_Button9Down, NULL },
+	{ "-useforce", NULL, IN_Button9Up, NULL },
+	{ "+force_lightning", "Hold to use lightning force power", IN_Button10Down, NULL },
+	{ "-force_lightning", NULL, IN_Button10Up, NULL },
+	{ "+force_drain", "Hold to use drain force power", IN_Button11Down, NULL },
+	{ "-force_drain", NULL, IN_Button11Up, NULL },
+	{ "+button0", "Button 0", IN_Button0Down, NULL },
+	{ "-button0", NULL, IN_Button0Up, NULL },
+	{ "+button1", "Button 1", IN_Button1Down, NULL },
+	{ "-button1", NULL, IN_Button1Up, NULL },
+	{ "+button2", "Button 2", IN_Button2Down, NULL },
+	{ "-button2", NULL, IN_Button2Up, NULL },
+	{ "+button3", "Button 3", IN_Button3Down, NULL },
+	{ "-button3", NULL, IN_Button3Up, NULL },
+	{ "+button4", "Button 4", IN_Button4Down, NULL },
+	{ "-button4", NULL, IN_Button4Up, NULL },
+	{ "+button5", "Button 5", IN_Button5Down, NULL },
+	{ "-button5", NULL, IN_Button5Up, NULL },
+	{ "+button6", "Button 6", IN_Button6Down, NULL },
+	{ "-button6", NULL, IN_Button6Up, NULL },
+	{ "+button7", "Button 7", IN_Button7Down, NULL },
+	{ "-button7", NULL, IN_Button7Up, NULL },
+	{ "+button8", "Button 8", IN_Button8Down, NULL },
+	{ "-button8", NULL, IN_Button8Up, NULL },
+	{ "+button9", "Button 9", IN_Button9Down, NULL },
+	{ "-button9", NULL, IN_Button9Up, NULL },
+	{ "+button10", "Button 10", IN_Button10Down, NULL },
+	{ "-button10", NULL, IN_Button10Up, NULL },
+	{ "+button11", "Button 11", IN_Button11Down, NULL },
+	{ "-button11", NULL, IN_Button11Up, NULL },
+	{ "+button12", "Button 12", IN_Button12Down, NULL },
+	{ "-button12", NULL, IN_Button12Up, NULL },
+	{ "+button13", "Button 13", IN_Button13Down, NULL },
+	{ "-button13", NULL, IN_Button13Up, NULL },
+	{ "+button14", "Button 14", IN_Button14Down, NULL },
+	{ "-button14", NULL, IN_Button14Up, NULL },
+	{ "+button15", "Button 15", IN_Button15Down, NULL },
+	{ "-button15", NULL, IN_Button15Up, NULL },
+	{ "+mlook", "Hold to use mouse look", IN_MLookDown, NULL },
+	{ "-mlook", NULL, IN_MLookUp, NULL },
+	{ "sv_saberswitch", "Holster/activate lightsaber", IN_GenCMD1, NULL },
+	{ "engage_duel", "Engage private duel", IN_GenCMD2, NULL },
+	{ "force_heal", "Use heal force power", IN_GenCMD3, NULL },
+	{ "force_speed", "Activate speed force power", IN_GenCMD4, NULL },
+	{ "force_pull", "Use pull force power", IN_GenCMD5, NULL },
+	{ "force_distract", "Activate mind trick force power", IN_GenCMD6, NULL },
+	{ "force_rage", "Activate rage force power", IN_GenCMD7, NULL },
+	{ "force_protect", "Activate protect force power", IN_GenCMD8, NULL },
+	{ "force_absorb", "Activate absorb force power", IN_GenCMD9, NULL },
+	{ "force_healother", "Use team heal force power", IN_GenCMD10, NULL },
+	{ "force_forcepowerother", "Use team energize force power", IN_GenCMD11, NULL },
+	{ "force_seeing", "Activate seeing force power", IN_GenCMD12, NULL },
+	{ "use_seeker", "Use seeker drone item", IN_GenCMD13, NULL },
+	{ "use_field", "Use forcefield item", IN_GenCMD14, NULL },
+	{ "use_bacta", "Use bacta item", IN_GenCMD15, NULL },
+	{ "use_electrobinoculars", "Use electro binoculars item", IN_GenCMD16, NULL },
+	{ "zoom", "Use binoculars item", IN_GenCMD17, NULL },
+	{ "use_sentry", "Use sentry gun item", IN_GenCMD18, NULL },
+	{ "saberAttackCycle", "Switch lightsaber attack styles", IN_GenCMD19, NULL },
+	{ "force_throw", "Use push force power", IN_GenCMD20, NULL },
+	{ "use_jetpack", "Use jetpack item", IN_GenCMD21, NULL },
+	{ "use_bactabig", "Use big bacta item", IN_GenCMD22, NULL },
+	{ "use_healthdisp", "Use health dispenser item", IN_GenCMD23, NULL },
+	{ "use_ammodisp", "Use ammo dispenser item", IN_GenCMD24, NULL },
+	{ "use_eweb", "Use e-web item", IN_GenCMD25, NULL },
+	{ "use_cloak", "Use cloaking item", IN_GenCMD26, NULL },
+	{ "taunt", "Taunt", IN_GenCMD27, NULL },
+	{ "bow", "Bow", IN_GenCMD28, NULL },
+	{ "meditate", "Meditate", IN_GenCMD29, NULL },
+	{ "flourish", "Flourish", IN_GenCMD30, NULL },
+	{ "gloat", "Gloat", IN_GenCMD31, NULL },
+	{ "useGivenForce", "Use specified force power", IN_UseGivenForce, NULL },
+	{ "automap_button", "Show/hide automap", IN_AutoMapButton, NULL },
+	{ "automap_toggle", "Show/hide radar", IN_AutoMapToggle, NULL },
+	{ "voicechat", "Open voice chat menu", IN_VoiceChatButton, NULL },
+	{ NULL, NULL, NULL, NULL }
+};
 
 /*
 ============
@@ -1642,123 +1759,7 @@ CL_InitInput
 ============
 */
 void CL_InitInput( void ) {
-	Cmd_AddCommand ("centerview",IN_CenterView);
-
-	//Cmd_AddCommand ("+taunt", IN_Button3Down);//gesture
-	//Cmd_AddCommand ("-taunt", IN_Button3Up);
-	Cmd_AddCommand ("+moveup",IN_UpDown);
-	Cmd_AddCommand ("-moveup",IN_UpUp);
-	Cmd_AddCommand ("+movedown",IN_DownDown);
-	Cmd_AddCommand ("-movedown",IN_DownUp);
-	Cmd_AddCommand ("+left",IN_LeftDown);
-	Cmd_AddCommand ("-left",IN_LeftUp);
-	Cmd_AddCommand ("+right",IN_RightDown);
-	Cmd_AddCommand ("-right",IN_RightUp);
-	Cmd_AddCommand ("+forward",IN_ForwardDown);
-	Cmd_AddCommand ("-forward",IN_ForwardUp);
-	Cmd_AddCommand ("+back",IN_BackDown);
-	Cmd_AddCommand ("-back",IN_BackUp);
-	Cmd_AddCommand ("+lookup", IN_LookupDown);
-	Cmd_AddCommand ("-lookup", IN_LookupUp);
-	Cmd_AddCommand ("+lookdown", IN_LookdownDown);
-	Cmd_AddCommand ("-lookdown", IN_LookdownUp);
-	Cmd_AddCommand ("+strafe", IN_StrafeDown);
-	Cmd_AddCommand ("-strafe", IN_StrafeUp);
-	Cmd_AddCommand ("+moveleft", IN_MoveleftDown);
-	Cmd_AddCommand ("-moveleft", IN_MoveleftUp);
-	Cmd_AddCommand ("+moveright", IN_MoverightDown);
-	Cmd_AddCommand ("-moveright", IN_MoverightUp);
-	Cmd_AddCommand ("+speed", IN_SpeedDown);
-	Cmd_AddCommand ("-speed", IN_SpeedUp);
-	Cmd_AddCommand ("+attack", IN_Button0Down);
-	Cmd_AddCommand ("-attack", IN_Button0Up);
-	//Cmd_AddCommand ("+force_jump", IN_Button1Down);//force jump
-	//Cmd_AddCommand ("-force_jump", IN_Button1Up);
-	Cmd_AddCommand ("+use", IN_Button5Down);
-	Cmd_AddCommand ("-use", IN_Button5Up);
-	Cmd_AddCommand ("+force_grip", IN_Button6Down);//force grip
-	Cmd_AddCommand ("-force_grip", IN_Button6Up);
-	Cmd_AddCommand ("+altattack", IN_Button7Down);//altattack
-	Cmd_AddCommand ("-altattack", IN_Button7Up);
-	Cmd_AddCommand ("+useforce", IN_Button9Down);//active force power
-	Cmd_AddCommand ("-useforce", IN_Button9Up);
-	Cmd_AddCommand ("+force_lightning", IN_Button10Down);//active force power
-	Cmd_AddCommand ("-force_lightning", IN_Button10Up);
-	Cmd_AddCommand ("+force_drain", IN_Button11Down);//active force power
-	Cmd_AddCommand ("-force_drain", IN_Button11Up);
-	//buttons
-	Cmd_AddCommand ("+button0", IN_Button0Down);//attack
-	Cmd_AddCommand ("-button0", IN_Button0Up);
-	Cmd_AddCommand ("+button1", IN_Button1Down);//force jump
-	Cmd_AddCommand ("-button1", IN_Button1Up);
-	Cmd_AddCommand ("+button2", IN_Button2Down);//use holdable (not used - change to use jedi power?)
-	Cmd_AddCommand ("-button2", IN_Button2Up);
-	Cmd_AddCommand ("+button3", IN_Button3Down);//gesture
-	Cmd_AddCommand ("-button3", IN_Button3Up);
-	Cmd_AddCommand ("+button4", IN_Button4Down);//walking
-	Cmd_AddCommand ("-button4", IN_Button4Up);
-	Cmd_AddCommand ("+button5", IN_Button5Down);//use object
-	Cmd_AddCommand ("-button5", IN_Button5Up);
-	Cmd_AddCommand ("+button6", IN_Button6Down);//force grip
-	Cmd_AddCommand ("-button6", IN_Button6Up);
-	Cmd_AddCommand ("+button7", IN_Button7Down);//altattack
-	Cmd_AddCommand ("-button7", IN_Button7Up);
-	Cmd_AddCommand ("+button8", IN_Button8Down);
-	Cmd_AddCommand ("-button8", IN_Button8Up);
-	Cmd_AddCommand ("+button9", IN_Button9Down);//active force power
-	Cmd_AddCommand ("-button9", IN_Button9Up);
-	Cmd_AddCommand ("+button10", IN_Button10Down);//force lightning
-	Cmd_AddCommand ("-button10", IN_Button10Up);
-	Cmd_AddCommand ("+button11", IN_Button11Down);//force drain
-	Cmd_AddCommand ("-button11", IN_Button11Up);
-	Cmd_AddCommand ("+button12", IN_Button12Down);
-	Cmd_AddCommand ("-button12", IN_Button12Up);
-	Cmd_AddCommand ("+button13", IN_Button13Down);
-	Cmd_AddCommand ("-button13", IN_Button13Up);
-	Cmd_AddCommand ("+button14", IN_Button14Down);
-	Cmd_AddCommand ("-button14", IN_Button14Up);
-	Cmd_AddCommand ("+button15", IN_Button15Down);
-	Cmd_AddCommand ("-button15", IN_Button15Up);
-	Cmd_AddCommand ("+mlook", IN_MLookDown);
-	Cmd_AddCommand ("-mlook", IN_MLookUp);
-
-	Cmd_AddCommand ("sv_saberswitch", IN_GenCMD1);
-	Cmd_AddCommand ("engage_duel", IN_GenCMD2);
-	Cmd_AddCommand ("force_heal", IN_GenCMD3);
-	Cmd_AddCommand ("force_speed", IN_GenCMD4);
-	Cmd_AddCommand ("force_pull", IN_GenCMD5);
-	Cmd_AddCommand ("force_distract", IN_GenCMD6);
-	Cmd_AddCommand ("force_rage", IN_GenCMD7);
-	Cmd_AddCommand ("force_protect", IN_GenCMD8);
-	Cmd_AddCommand ("force_absorb", IN_GenCMD9);
-	Cmd_AddCommand ("force_healother", IN_GenCMD10);
-	Cmd_AddCommand ("force_forcepowerother", IN_GenCMD11);
-	Cmd_AddCommand ("force_seeing", IN_GenCMD12);
-	Cmd_AddCommand ("use_seeker", IN_GenCMD13);
-	Cmd_AddCommand ("use_field", IN_GenCMD14);
-	Cmd_AddCommand ("use_bacta", IN_GenCMD15);
-	Cmd_AddCommand ("use_electrobinoculars", IN_GenCMD16);
-	Cmd_AddCommand ("zoom", IN_GenCMD17);
-	Cmd_AddCommand ("use_sentry", IN_GenCMD18);
-	Cmd_AddCommand ("use_jetpack", IN_GenCMD21);
-	Cmd_AddCommand ("use_bactabig", IN_GenCMD22);
-	Cmd_AddCommand ("use_healthdisp", IN_GenCMD23);
-	Cmd_AddCommand ("use_ammodisp", IN_GenCMD24);
-	Cmd_AddCommand ("use_eweb", IN_GenCMD25);
-	Cmd_AddCommand ("use_cloak", IN_GenCMD26);
-	Cmd_AddCommand ("taunt", IN_GenCMD27);
-	Cmd_AddCommand ("bow", IN_GenCMD28);
-	Cmd_AddCommand ("meditate", IN_GenCMD29);
-	Cmd_AddCommand ("flourish", IN_GenCMD30);
-	Cmd_AddCommand ("gloat", IN_GenCMD31);
-	Cmd_AddCommand ("saberAttackCycle", IN_GenCMD19);
-	Cmd_AddCommand ("force_throw", IN_GenCMD20);
-	Cmd_AddCommand ("useGivenForce", IN_UseGivenForce);
-
-
-	Cmd_AddCommand("automap_button", IN_AutoMapButton);
-	Cmd_AddCommand("automap_toggle", IN_AutoMapToggle);
-	Cmd_AddCommand("voicechat", IN_VoiceChatButton);
+	Cmd_AddCommandList( inputCmds );
 
 	cl_nodelta = Cvar_Get ("cl_nodelta", "0", 0);
 	cl_debugMove = Cvar_Get ("cl_debugMove", "0", 0);
@@ -1769,119 +1770,6 @@ void CL_InitInput( void ) {
 CL_ShutdownInput
 ============
 */
-void CL_ShutdownInput(void)
-{
-	Cmd_RemoveCommand ("centerview");
-
-	Cmd_RemoveCommand ("+moveup");
-	Cmd_RemoveCommand ("-moveup");
-	Cmd_RemoveCommand ("+movedown");
-	Cmd_RemoveCommand ("-movedown");
-	Cmd_RemoveCommand ("+left");
-	Cmd_RemoveCommand ("-left");
-	Cmd_RemoveCommand ("+right");
-	Cmd_RemoveCommand ("-right");
-	Cmd_RemoveCommand ("+forward");
-	Cmd_RemoveCommand ("-forward");
-	Cmd_RemoveCommand ("+back");
-	Cmd_RemoveCommand ("-back");
-	Cmd_RemoveCommand ("+lookup");
-	Cmd_RemoveCommand ("-lookup");
-	Cmd_RemoveCommand ("+lookdown");
-	Cmd_RemoveCommand ("-lookdown");
-	Cmd_RemoveCommand ("+strafe");
-	Cmd_RemoveCommand ("-strafe");
-	Cmd_RemoveCommand ("+moveleft");
-	Cmd_RemoveCommand ("-moveleft");
-	Cmd_RemoveCommand ("+moveright");
-	Cmd_RemoveCommand ("-moveright");
-	Cmd_RemoveCommand ("+speed");
-	Cmd_RemoveCommand ("-speed");
-	Cmd_RemoveCommand ("+attack");
-	Cmd_RemoveCommand ("-attack");
-	Cmd_RemoveCommand ("+use");
-	Cmd_RemoveCommand ("-use");
-	Cmd_RemoveCommand ("+force_grip");//force grip
-	Cmd_RemoveCommand ("-force_grip");
-	Cmd_RemoveCommand ("+altattack");//altattack
-	Cmd_RemoveCommand ("-altattack");
-	Cmd_RemoveCommand ("+useforce");//active force power
-	Cmd_RemoveCommand ("-useforce");
-	Cmd_RemoveCommand ("+force_lightning");//active force power
-	Cmd_RemoveCommand ("-force_lightning");
-	Cmd_RemoveCommand ("+force_drain");//active force power
-	Cmd_RemoveCommand ("-force_drain");
-	//buttons
-	Cmd_RemoveCommand ("+button0");//attack
-	Cmd_RemoveCommand ("-button0");
-	Cmd_RemoveCommand ("+button1");//force jump
-	Cmd_RemoveCommand ("-button1");
-	Cmd_RemoveCommand ("+button2");//use holdable (not used - change to use jedi power?)
-	Cmd_RemoveCommand ("-button2");
-	Cmd_RemoveCommand ("+button3");//gesture
-	Cmd_RemoveCommand ("-button3");
-	Cmd_RemoveCommand ("+button4");//walking
-	Cmd_RemoveCommand ("-button4");
-	Cmd_RemoveCommand ("+button5");//use object
-	Cmd_RemoveCommand ("-button5");
-	Cmd_RemoveCommand ("+button6");//force grip
-	Cmd_RemoveCommand ("-button6");
-	Cmd_RemoveCommand ("+button7");//altattack
-	Cmd_RemoveCommand ("-button7");
-	Cmd_RemoveCommand ("+button8");
-	Cmd_RemoveCommand ("-button8");
-	Cmd_RemoveCommand ("+button9");//active force power
-	Cmd_RemoveCommand ("-button9");
-	Cmd_RemoveCommand ("+button10");//force lightning
-	Cmd_RemoveCommand ("-button10");
-	Cmd_RemoveCommand ("+button11");//force drain
-	Cmd_RemoveCommand ("-button11");
-	Cmd_RemoveCommand ("+button12");
-	Cmd_RemoveCommand ("-button12");
-	Cmd_RemoveCommand ("+button13");
-	Cmd_RemoveCommand ("-button13");
-	Cmd_RemoveCommand ("+button14");
-	Cmd_RemoveCommand ("-button14");
-	Cmd_RemoveCommand ("+button15");
-	Cmd_RemoveCommand ("-button15");
-	Cmd_RemoveCommand ("+mlook");
-	Cmd_RemoveCommand ("-mlook");
-
-	Cmd_RemoveCommand ("sv_saberswitch");
-	Cmd_RemoveCommand ("engage_duel");
-	Cmd_RemoveCommand ("force_heal");
-	Cmd_RemoveCommand ("force_speed");
-	Cmd_RemoveCommand ("force_pull");
-	Cmd_RemoveCommand ("force_distract");
-	Cmd_RemoveCommand ("force_rage");
-	Cmd_RemoveCommand ("force_protect");
-	Cmd_RemoveCommand ("force_absorb");
-	Cmd_RemoveCommand ("force_healother");
-	Cmd_RemoveCommand ("force_forcepowerother");
-	Cmd_RemoveCommand ("force_seeing");
-	Cmd_RemoveCommand ("use_seeker");
-	Cmd_RemoveCommand ("use_field");
-	Cmd_RemoveCommand ("use_bacta");
-	Cmd_RemoveCommand ("use_electrobinoculars");
-	Cmd_RemoveCommand ("zoom");
-	Cmd_RemoveCommand ("use_sentry");
-	Cmd_RemoveCommand ("use_jetpack");
-	Cmd_RemoveCommand ("use_bactabig");
-	Cmd_RemoveCommand ("use_healthdisp");
-	Cmd_RemoveCommand ("use_ammodisp");
-	Cmd_RemoveCommand ("use_eweb");
-	Cmd_RemoveCommand ("use_cloak");
-	Cmd_RemoveCommand ("taunt");
-	Cmd_RemoveCommand ("bow");
-	Cmd_RemoveCommand ("meditate");
-	Cmd_RemoveCommand ("flourish");
-	Cmd_RemoveCommand ("gloat");
-	Cmd_RemoveCommand ("saberAttackCycle");
-	Cmd_RemoveCommand ("force_throw");
-	Cmd_RemoveCommand ("useGivenForce");
-
-
-	Cmd_RemoveCommand("automap_button");
-	Cmd_RemoveCommand("automap_toggle");
-	Cmd_RemoveCommand("voicechat");
+void CL_ShutdownInput( void ) {
+	Cmd_RemoveCommandList( inputCmds );
 }

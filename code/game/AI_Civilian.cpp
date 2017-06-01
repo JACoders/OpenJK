@@ -30,13 +30,13 @@ extern void NPC_BehaviorSet_Default( int bState );
 void NPC_BSCivilian_Default( int bState )
 {
 	if ( NPC->enemy
-		&& NPC->s.weapon == WP_NONE 
+		&& NPC->s.weapon == WP_NONE
 		&& NPC_CheckSurrender() )
 	{//surrendering, do nothing
 	}
-	else if ( NPC->enemy 
-		&& NPC->s.weapon == WP_NONE 
-		&& bState != BS_HUNT_AND_KILL 
+	else if ( NPC->enemy
+		&& NPC->s.weapon == WP_NONE
+		&& bState != BS_HUNT_AND_KILL
 		&& !Q3_TaskIDPending( NPC, TID_MOVE_NAV ) )
 	{//if in battle and have no weapon, run away, fixme: when in BS_HUNT_AND_KILL, they just stand there
 		if ( !NPCInfo->goalEntity

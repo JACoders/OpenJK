@@ -34,7 +34,7 @@ void WP_FireTurboLaserMissile( gentity_t *ent, vec3_t start, vec3_t dir )
 	gentity_t *missile;
 
 	missile = CreateMissile( start, dir, velocity, 10000, ent, qfalse );
-	
+
 	//use a custom shot effect
 	//missile->s.otherEntityNum2 = G_EffectIndex( "turret/turb_shot" );
 	//use a custom impact effect
@@ -77,7 +77,7 @@ void WP_EmplacedFire( gentity_t *ent )
 	missile->classname = "emplaced_proj";
 	missile->s.weapon = WP_EMPLACED_GUN;
 
-	missile->damage = damage; 
+	missile->damage = damage;
 	missile->dflags = DAMAGE_DEATH_KNOCKBACK | DAMAGE_HEAVY_WEAP_CLASS;
 	missile->methodOfDeath = MOD_EMPLACED;
 	missile->clipmask = MASK_SHOT | CONTENTS_LIGHTSABER;

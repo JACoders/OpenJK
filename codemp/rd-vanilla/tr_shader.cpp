@@ -3319,24 +3319,24 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 {
 	image_t          *image;
 	char          fileName[ MAX_QPATH ];
-	
+
 	// don't bother with vertex lighting
 	if( *lightmapIndex < 0 )
 		return lightmapIndex;
-	
+
 	// does this lightmap already exist?
 	if( *lightmapIndex < tr.numLightmaps && tr.lightmaps[ *lightmapIndex ] != NULL )
 		return lightmapIndex;
-	
+
 	// bail if no world dir
 	if( tr.worldDir == NULL || !*tr.worldDir )
 	{
 		return lightmapsVertex;
 	}
-	
+
 	// sync up render thread, because we're going to have to load an image
 	//R_SyncRenderThread();
-	
+
 	// attempt to load an external lightmap
 	Com_sprintf( fileName, sizeof(fileName), "%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex );
 	image = R_FindImageFile( fileName, qfalse, qfalse, (qboolean)r_ext_compressed_lightmaps->integer, GL_CLAMP );
@@ -3344,7 +3344,7 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 	{
 		return lightmapsVertex;
 	}
-	
+
 	// add it to the lightmap list
 	if( *lightmapIndex >= tr.numLightmaps )
 		tr.numLightmaps = *lightmapIndex + 1;
@@ -3399,9 +3399,9 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	{
 		lightmapIndex = lightmapsVertex;
 	}*/
-	
+
 	lightmapIndex = R_FindLightmap( lightmapIndex );
-	
+
 	if ( lightmapIndex[0] < LIGHTMAP_2D )
 	{
 		// negative lightmap indexes cause stray pointers (think tr.lightmaps[lightmapIndex])

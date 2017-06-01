@@ -12,6 +12,7 @@
 #pragma warning (disable: 4512)	//default assignment operator could not be gened
 #endif
 #include "qcommon/disablewarnings.h"
+#include "tr_cache.h"
 
 #define	LL(x) x=LittleLong(x)
 
@@ -104,7 +105,7 @@ void ResetGhoul2RenderableSurfaceHeap()
 	currentRenderSurfIndex = 0;
 }
 
-bool HackadelicOnClient=false; // means this is a render traversal
+bool HackadelicOnClient = false; // means this is a render traversal
 
 qboolean G2_SetupModelPointers(CGhoul2Info *ghlInfo);
 qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2);
@@ -112,23 +113,7 @@ qboolean G2_SetupModelPointers(CGhoul2Info_v &ghoul2);
 extern cvar_t	*r_Ghoul2AnimSmooth;
 extern cvar_t	*r_Ghoul2UnSqashAfterSmooth;
 
-static inline int G2_Find_Bone_ByNum(const model_t *mod, boneInfo_v &blist, const int boneNum)
-{
-	size_t i = 0;
-
-	while (i < blist.size())
-	{
-		if (blist[i].boneNumber == boneNum)
-		{
-			return i;
-		}
-		i++;
-	}
-
-	return -1;
-}
-
-const static mdxaBone_t		identityMatrix = 
+static const mdxaBone_t identityMatrix = 
 { 
 	{
 		{ 0.0f, -1.0f, 0.0f, 0.0f },
@@ -144,6 +129,137 @@ mdxaBone_t		worldMatrixInv;
 qhandle_t		goreShader=-1;
 #endif
 
+// nasty little matrix multiply going on here..
+void Mat3x4_Multiply(mdxaBone_t *out, const mdxaBone_t *in2, const mdxaBone_t *in)
+{
+	assert(out != nullptr);
+	assert(in2 != nullptr);
+	assert(in != nullptr);
+
+	// Let's say we are doing R = N * M
+	const float n00 = in2->matrix[0][0];
+	const float n01 = in2->matrix[0][1];
+	const float n02 = in2->matrix[0][2];
+	const float n03 = in2->matrix[0][3];
+	const float n10 = in2->matrix[1][0];
+	const float n11 = in2->matrix[1][1];
+	const float n12 = in2->matrix[1][2];
+	const float n13 = in2->matrix[1][3];
+	const float n20 = in2->matrix[2][0];
+	const float n21 = in2->matrix[2][1];
+	const float n22 = in2->matrix[2][2];
+	const float n23 = in2->matrix[2][3];
+
+	const float m00 = in->matrix[0][0];
+	const float m01 = in->matrix[0][1];
+	const float m02 = in->matrix[0][2];
+	const float m03 = in->matrix[0][3];
+	const float m10 = in->matrix[1][0];
+	const float m11 = in->matrix[1][1];
+	const float m12 = in->matrix[1][2];
+	const float m13 = in->matrix[1][3];
+	const float m20 = in->matrix[2][0];
+	const float m21 = in->matrix[2][1];
+	const float m22 = in->matrix[2][2];
+	const float m23 = in->matrix[2][3];
+	
+	// first row of out
+	out->matrix[0][0] = (n00 * m00) + (n01 * m10) + (n02 * m20);
+	out->matrix[0][1] = (n00 * m01) + (n01 * m11) + (n02 * m21);
+	out->matrix[0][2] = (n00 * m02) + (n01 * m12) + (n02 * m22);
+	out->matrix[0][3] = (n00 * m03) + (n01 * m13) + (n02 * m23) + n03;
+
+	// second row of outf out
+	out->matrix[1][0] = (n10 * m00) + (n11 * m10) + (n12 * m20);
+	out->matrix[1][1] = (n10 * m01) + (n11 * m11) + (n12 * m21);
+	out->matrix[1][2] = (n10 * m02) + (n11 * m12) + (n12 * m22);
+	out->matrix[1][3] = (n10 * m03) + (n11 * m13) + (n12 * m23) + n13;
+
+	// third row of out  out
+	out->matrix[2][0] = (n20 * m00) + (n21 * m10) + (n22 * m20);
+	out->matrix[2][1] = (n20 * m01) + (n21 * m11) + (n22 * m21);
+	out->matrix[2][2] = (n20 * m02) + (n21 * m12) + (n22 * m22);
+	out->matrix[2][3] = (n20 * m03) + (n21 * m13) + (n22 * m23) + n23;
+}
+
+void Mat3x4_Scale( mdxaBone_t *result, const mdxaBone_t *lhs, const float scale )
+{
+	for ( int i = 0; i < 3; ++i )
+	{
+		for ( int j = 0; j < 3; ++j )
+		{
+			result->matrix[i][j] = lhs->matrix[i][j] * scale;
+		}
+	}
+}
+
+void Mat3x4_Lerp(
+	mdxaBone_t *result,
+	const mdxaBone_t *lhs,
+	const mdxaBone_t *rhs,
+	const float t )
+{
+	for ( int i = 0; i < 3; ++i )
+	{
+		for ( int j = 0; j < 4; ++j )
+		{
+			result->matrix[i][j] = lhs->matrix[i][j] * t + rhs->matrix[i][j] * (1.0f - t);
+		}
+	}
+}
+
+const mdxaBone_t operator +( const mdxaBone_t& lhs, const mdxaBone_t& rhs )
+{
+	mdxaBone_t result;
+	for ( int i = 0; i < 3; ++i )
+	{
+		for ( int j = 0; j < 4; ++j )
+		{
+			result.matrix[i][j] = lhs.matrix[i][j] + rhs.matrix[i][j];
+		}
+	}
+	return result;
+}
+
+const mdxaBone_t operator -( const mdxaBone_t& lhs, const mdxaBone_t& rhs )
+{
+	mdxaBone_t result;
+	for ( int i = 0; i < 3; ++i )
+	{
+		for ( int j = 0; j < 4; ++j )
+		{
+			result.matrix[i][j] = lhs.matrix[i][j] - rhs.matrix[i][j];
+		}
+	}
+	return result;
+}
+
+const mdxaBone_t operator *( const mdxaBone_t& lhs, const mdxaBone_t& rhs )
+{
+	mdxaBone_t result;
+	Mat3x4_Multiply(&result, &lhs, &rhs);
+	return result;
+}
+
+const mdxaBone_t operator *( const mdxaBone_t& lhs, const float scale )
+{
+	mdxaBone_t result;
+	for ( int i = 0; i < 3; ++i )
+	{
+		for ( int j = 0; j < 4; ++j )
+		{
+			result.matrix[i][j] = lhs.matrix[i][j] * scale;
+		}
+	}
+	return result;
+}
+
+const mdxaBone_t operator *( const float scale, const mdxaBone_t& rhs )
+{
+	return rhs * scale;
+}
+
+
 class CConstructBoneList
 {
 public:
@@ -154,226 +270,175 @@ public:
 	boneInfo_v		&boneList; 
 
 	CConstructBoneList(
-	int				initsurfaceNum,
-	int				*initboneUsedList,
-	surfaceInfo_v	&initrootSList,
-	model_t			*initcurrentModel,
-	boneInfo_v		&initboneList):
-
-	surfaceNum(initsurfaceNum),
-	boneUsedList(initboneUsedList),
-	rootSList(initrootSList),
-	currentModel(initcurrentModel),
-	boneList(initboneList) { }
-
+		int initsurfaceNum,
+		int *initboneUsedList,
+		surfaceInfo_v& initrootSList,
+		model_t *initcurrentModel,
+		boneInfo_v& initboneList)
+		: surfaceNum(initsurfaceNum)
+		, boneUsedList(initboneUsedList)
+		, rootSList(initrootSList)
+		, currentModel(initcurrentModel)
+		, boneList(initboneList)
+	{
+	}
 };
 
 class CTransformBone
 {
 public:
-	int				touch; // for minimal recalculation
-	//rww - RAGDOLL_BEGIN
-	int				touchRender;
-	//rww - RAGDOLL_END
-	mdxaBone_t		boneMatrix; //final matrix
-	int				parent; // only set once
+	int touch; // for minimal recalculation
+	int touchRender;
+	mdxaBone_t boneMatrix; //final matrix
+	int parent; // only set once
 
 	CTransformBone()
+		: touch(0)
+		, touchRender(0)
 	{
-		touch=0;
-	//rww - RAGDOLL_BEGIN
-		touchRender = 0;
-	//rww - RAGDOLL_END
 	}
 
 };
 
 struct SBoneCalc
 {
-	int				newFrame;
-	int				currentFrame;
-	float			backlerp;
-	float			blendFrame;
-	int				blendOldFrame;
-	bool			blendMode;
-	float			blendLerp;
+	int newFrame;
+	int	currentFrame;
+	float backlerp;
+	float blendFrame;
+	int blendOldFrame;
+	bool blendMode;
+	float blendLerp;
 };
 
 class CBoneCache;
-void G2_TransformBone(int index,CBoneCache &CB);
+static void G2_TransformBone( int index, CBoneCache &CB );
 
 class CBoneCache
 {
-	void SetRenderMatrix(CTransformBone *bone) {
-	}
-
-	void EvalLow(int index)
+	void EvalLow( int index )
 	{
-		assert(index>=0&&index<(int)mBones.size());
-		if (mFinalBones[index].touch!=mCurrentTouch)
+		assert(index >= 0 && index < (int)mBones.size());
+
+		if ( mFinalBones[index].touch != mCurrentTouch )
 		{
 			// need to evaluate the bone
-			assert((mFinalBones[index].parent>=0&&mFinalBones[index].parent<(int)mFinalBones.size())||(index==0&&mFinalBones[index].parent==-1));
-			if (mFinalBones[index].parent>=0)
+			assert((mFinalBones[index].parent >= 0
+						&& mFinalBones[index].parent < (int)mFinalBones.size()) ||
+					(index == 0 && mFinalBones[index].parent == -1));
+
+			if ( mFinalBones[index].parent >= 0 )
 			{
 				EvalLow(mFinalBones[index].parent); // make sure parent is evaluated
-				SBoneCalc &par=mBones[mFinalBones[index].parent];
-				mBones[index].newFrame=par.newFrame;
-				mBones[index].currentFrame=par.currentFrame;
-				mBones[index].backlerp=par.backlerp;
-				mBones[index].blendFrame=par.blendFrame;
-				mBones[index].blendOldFrame=par.blendOldFrame;
-				mBones[index].blendMode=par.blendMode;
-				mBones[index].blendLerp=par.blendLerp;
+
+				const SBoneCalc &par = mBones[mFinalBones[index].parent];
+				SBoneCalc &bone = mBones[index];
+				bone.newFrame = par.newFrame;
+				bone.currentFrame = par.currentFrame;
+				bone.backlerp = par.backlerp;
+				bone.blendFrame = par.blendFrame;
+				bone.blendOldFrame = par.blendOldFrame;
+				bone.blendMode = par.blendMode;
+				bone.blendLerp = par.blendLerp;
 			}
-			G2_TransformBone(index,*this);
-			mFinalBones[index].touch=mCurrentTouch;
+
+			G2_TransformBone(index, *this);
+
+			mFinalBones[index].touch = mCurrentTouch;
 		}
 	}
-//rww - RAGDOLL_BEGIN
-	void SmoothLow(int index)
+
+	void SmoothLow( int index )
 	{
-		if (mSmoothBones[index].touch==mLastTouch)
+		if ( mSmoothBones[index].touch == mLastTouch )
 		{
-			int i;
-			float *oldM=&mSmoothBones[index].boneMatrix.matrix[0][0];
-			float *newM=&mFinalBones[index].boneMatrix.matrix[0][0];
-#if 0 //this is just too slow. I need a better way.
-			static float smoothFactor;
+			const mdxaBone_t& newM = mFinalBones[index].boneMatrix;
+			mdxaBone_t& oldM = mSmoothBones[index].boneMatrix;
 
-			smoothFactor = mSmoothFactor;
-
-			//Special rag smoothing -rww
-			if (smoothFactor < 0)
-			{ //I need a faster way to do this but I do not want to store more in the bonecache
-				static int blistIndex;
-				assert(mod);
-				assert(rootBoneList);
-				blistIndex = G2_Find_Bone_ByNum(mod, *rootBoneList, index);
-
-				assert(blistIndex != -1);
-
-				boneInfo_t &bone = (*rootBoneList)[blistIndex];
-
-				if (bone.flags & BONE_ANGLES_RAGDOLL)
-				{
-					if ((bone.RagFlags & (0x00008)) || //pelvis
-                        (bone.RagFlags & (0x00004))) //model_root
-					{ //pelvis and root do not smooth much
-						smoothFactor = 0.2f;
-					}
-					else if (bone.solidCount > 4)
-					{ //if stuck in solid a lot then snap out quickly
-						smoothFactor = 0.1f;
-					}
-					else
-					{ //otherwise smooth a bunch
-						smoothFactor = 0.8f;
-					}
-				}
-				else
-				{ //not a rag bone
-					smoothFactor = 0.3f;
-				}
-			}
-#endif
-
-			for (i=0;i<12;i++,oldM++,newM++)
-			{
-				*oldM=mSmoothFactor*(*oldM-*newM)+*newM;
-			}
+			oldM = mSmoothFactor * (oldM - newM) + newM;
 		}
 		else
 		{
-			memcpy(&mSmoothBones[index].boneMatrix,&mFinalBones[index].boneMatrix,sizeof(mdxaBone_t));
+			mSmoothBones[index].boneMatrix = mFinalBones[index].boneMatrix;
 		}
-		mdxaSkelOffsets_t *offsets = (mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
-		mdxaSkel_t *skel = (mdxaSkel_t *)((byte *)header + sizeof(mdxaHeader_t) + offsets->offsets[index]);
-		mdxaBone_t tempMatrix;
-		Multiply_3x4Matrix(&tempMatrix,&mSmoothBones[index].boneMatrix, &skel->BasePoseMat);
-		float maxl;
-		maxl=VectorLength(&skel->BasePoseMat.matrix[0][0]);
+
+		const mdxaSkelOffsets_t *offsets =
+			(mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
+		const mdxaSkel_t *skel =
+			(mdxaSkel_t *)((byte *)offsets + offsets->offsets[index]);
+
+		mdxaBone_t tempMatrix =
+			mSmoothBones[index].boneMatrix * skel->BasePoseMat;
+		const float maxl = VectorLength(&skel->BasePoseMat.matrix[0][0]);
 		VectorNormalize(&tempMatrix.matrix[0][0]);
 		VectorNormalize(&tempMatrix.matrix[1][0]);
 		VectorNormalize(&tempMatrix.matrix[2][0]);
+		Mat3x4_Scale(&tempMatrix, &tempMatrix, maxl);
 
-		VectorScale(&tempMatrix.matrix[0][0],maxl,&tempMatrix.matrix[0][0]);
-		VectorScale(&tempMatrix.matrix[1][0],maxl,&tempMatrix.matrix[1][0]);
-		VectorScale(&tempMatrix.matrix[2][0],maxl,&tempMatrix.matrix[2][0]);
-		Multiply_3x4Matrix(&mSmoothBones[index].boneMatrix,&tempMatrix,&skel->BasePoseMatInv);
-		mSmoothBones[index].touch=mCurrentTouch;
+		mSmoothBones[index].boneMatrix = tempMatrix * skel->BasePoseMatInv;
+		mSmoothBones[index].touch = mCurrentTouch;
+
 #ifdef _DEBUG
 		for ( int i = 0; i < 3; i++ )
 		{
 			for ( int j = 0; j < 4; j++ )
 			{
-				assert( !Q_isnan(mSmoothBones[index].boneMatrix.matrix[i][j]));
+				assert(!Q_isnan(mSmoothBones[index].boneMatrix.matrix[i][j]));
 			}
 		}
 #endif// _DEBUG
 	}
-//rww - RAGDOLL_END
+
 public:
-	int					frameSize; 
-	const mdxaHeader_t	*header; 
-	const model_t		*mod; 
+	int frameSize; 
+	const mdxaHeader_t *header; 
+	const model_t *mod; 
 
 	// these are split for better cpu cache behavior
 	std::vector<SBoneCalc> mBones;
 	std::vector<CTransformBone> mFinalBones;
-
 	std::vector<CTransformBone> mSmoothBones; // for render smoothing
-	//vector<mdxaSkel_t *>   mSkels;
 
-	boneInfo_v		*rootBoneList;
-	mdxaBone_t		rootMatrix;
-	int				incomingTime;
+	boneInfo_v *rootBoneList;
+	mdxaBone_t rootMatrix;
+	int incomingTime;
 
-	int				mCurrentTouch;
-	//rww - RAGDOLL_BEGIN
-	int				mCurrentTouchRender;
-	int				mLastTouch; 
-	int				mLastLastTouch;
-	//rww - RAGDOLL_END
+	int mCurrentTouch;
+	int mCurrentTouchRender;
+	int mLastTouch; 
+	int mLastLastTouch;
 
 	// for render smoothing
-	bool			mSmoothingActive;
-	bool			mUnsquash;
-	float			mSmoothFactor;
+	bool mSmoothingActive;
+	bool mUnsquash;
+	float mSmoothFactor;
 
-	CBoneCache(const model_t *amod,const mdxaHeader_t *aheader) :
-		header(aheader),
-		mod(amod)
+	CBoneCache( const model_t *amod, const mdxaHeader_t *aheader )
+		: header(aheader)
+		, mod(amod)
+		, mBones(header->numBones)
+		, mFinalBones(header->numBones)
+		, mSmoothBones(header->numBones)
+		, mCurrentTouch(3)
+		, mLastTouch(2)
+		, mLastLastTouch(1)
+		, mSmoothingActive(false)
+		, mUnsquash(false)
+		, mSmoothFactor(0.0f)
 	{
 		assert(amod);
 		assert(aheader);
-		mSmoothingActive=false;
-		mUnsquash=false;
-		mSmoothFactor=0.0f;
 
-		int numBones=header->numBones;
-		mBones.resize(numBones);
-		mFinalBones.resize(numBones);
-		mSmoothBones.resize(numBones);
-//		mSkels.resize(numBones);
-		//rww - removed mSkels
-		mdxaSkelOffsets_t *offsets;
-		mdxaSkel_t		*skel;
-		offsets = (mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
+		int numBones = header->numBones;
+		mdxaSkelOffsets_t *offsets =
+			(mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
 
-		int i;
-		for (i=0;i<numBones;i++)
+		for ( int i = 0; i < numBones; ++i )
 		{
-			skel = (mdxaSkel_t *)((byte *)header + sizeof(mdxaHeader_t) + offsets->offsets[i]);
-			//mSkels[i]=skel;
-			//ditto
-			mFinalBones[i].parent=skel->parent;
+			mdxaSkel_t *skel =
+				(mdxaSkel_t *)((byte *)offsets + offsets->offsets[i]);
+			mFinalBones[i].parent = skel->parent;
 		}
-		mCurrentTouch=3;
-//rww - RAGDOLL_BEGIN
-		mLastTouch=2;
-		mLastLastTouch=1;
-//rww - RAGDOLL_END
 	}
 
 	SBoneCalc &Root()
@@ -381,115 +446,68 @@ public:
 		assert(mBones.size());
 		return mBones[0];
 	}
-	const mdxaBone_t &EvalUnsmooth(int index)
+
+	const mdxaBone_t &EvalUnsmooth( int index )
 	{
 		EvalLow(index);
-		if (mSmoothingActive&&mSmoothBones[index].touch)
+		if ( mSmoothingActive && mSmoothBones[index].touch )
 		{
 			return mSmoothBones[index].boneMatrix;
 		}
+
 		return mFinalBones[index].boneMatrix;
 	}
-	const mdxaBone_t &Eval(int index)
+
+	const mdxaBone_t &Eval( int index )
 	{
-		/*
-		bool wasEval=EvalLow(index);
-		if (mSmoothingActive)
-		{
-			if (mSmoothBones[index].touch!=incomingTime||wasEval)
-			{
-				float dif=float(incomingTime)-float(mSmoothBones[index].touch);
-				if (mSmoothBones[index].touch&&dif<300.0f)
-				{
-
-					if (dif<16.0f)  // 60 fps
-					{
-						dif=16.0f;
-					}
-					if (dif>100.0f) // 10 fps
-					{
-						dif=100.0f;
-					}
-					float f=1.0f-pow(1.0f-mSmoothFactor,16.0f/dif);
-
-					int i;
-					float *oldM=&mSmoothBones[index].boneMatrix.matrix[0][0];
-					float *newM=&mFinalBones[index].boneMatrix.matrix[0][0];
-					for (i=0;i<12;i++,oldM++,newM++)
-					{
-						*oldM=f*(*oldM-*newM)+*newM;
-					}
-					if (mUnsquash)
-					{
-						mdxaBone_t tempMatrix;
-						Multiply_3x4Matrix(&tempMatrix,&mSmoothBones[index].boneMatrix, &mSkels[index]->BasePoseMat);
-						float maxl;
-						maxl=VectorLength(&mSkels[index]->BasePoseMat.matrix[0][0]);
-						VectorNormalize(&tempMatrix.matrix[0][0]);
-						VectorNormalize(&tempMatrix.matrix[1][0]);
-						VectorNormalize(&tempMatrix.matrix[2][0]);
-
-						VectorScale(&tempMatrix.matrix[0][0],maxl,&tempMatrix.matrix[0][0]);
-						VectorScale(&tempMatrix.matrix[1][0],maxl,&tempMatrix.matrix[1][0]);
-						VectorScale(&tempMatrix.matrix[2][0],maxl,&tempMatrix.matrix[2][0]);
-						Multiply_3x4Matrix(&mSmoothBones[index].boneMatrix,&tempMatrix,&mSkels[index]->BasePoseMatInv);
-					}
-				}
-				else
-				{
-					memcpy(&mSmoothBones[index].boneMatrix,&mFinalBones[index].boneMatrix,sizeof(mdxaBone_t));
-				}
-				mSmoothBones[index].touch=incomingTime;
-			}
-			return mSmoothBones[index].boneMatrix;
-		}
-		return mFinalBones[index].boneMatrix;
-		*/
-
 		//Hey, this is what sof2 does. Let's try it out.
-		assert(index>=0&&index<(int)mBones.size());
-		if (mFinalBones[index].touch!=mCurrentTouch)
+		assert(index >= 0 && index <( int)mBones.size());
+		if ( mFinalBones[index].touch != mCurrentTouch )
 		{
 			EvalLow(index);
 		}
+
 		return mFinalBones[index].boneMatrix;
 	}
-	//rww - RAGDOLL_BEGIN
-	const inline mdxaBone_t &EvalRender(int index)
+
+	const mdxaBone_t &EvalRender( int index )
 	{
-		assert(index>=0&&index<(int)mBones.size());
-		if (mFinalBones[index].touch!=mCurrentTouch)
+		assert(index >= 0 && index < (int)mBones.size());
+		if ( mFinalBones[index].touch != mCurrentTouch )
 		{
-			mFinalBones[index].touchRender=mCurrentTouchRender;
+			mFinalBones[index].touchRender = mCurrentTouchRender;
 			EvalLow(index);
 		}
-		if (mSmoothingActive)
+
+		if ( mSmoothingActive )
 		{
-			if (mSmoothBones[index].touch!=mCurrentTouch)
+			if ( mSmoothBones[index].touch != mCurrentTouch )
 			{
 				SmoothLow(index);
 			}
+
 			return mSmoothBones[index].boneMatrix;
 		}
+
 		return mFinalBones[index].boneMatrix;
 	}
-	//rww - RAGDOLL_END
-	//rww - RAGDOLL_BEGIN
-	bool WasRendered(int index)
+
+	bool WasRendered( int index )
 	{
-		assert(index>=0&&index<(int)mBones.size());
-		return mFinalBones[index].touchRender==mCurrentTouchRender;
+		assert(index >= 0 && index < (int)mBones.size());
+		return mFinalBones[index].touchRender == mCurrentTouchRender;
 	}
-	int GetParent(int index)
+
+	int GetParent( int index )
 	{
-		if (index==0)
+		if ( index == 0 )
 		{
 			return -1;
 		}
-		assert(index>=0&&index<(int)mBones.size());
+
+		assert( index > 0 && index < (int)mBones.size());
 		return mFinalBones[index].parent;
 	}
-	//rww - RAGDOLL_END
 };
 
 void RemoveBoneCache(CBoneCache *boneCache)
@@ -514,7 +532,7 @@ const mdxaBone_t &EvalBoneCache(int index,CBoneCache *boneCache)
 	return boneCache->Eval(index);
 }
 
-//rww - RAGDOLL_BEGIN
+// rww - RAGDOLL_BEGIN
 const mdxaHeader_t *G2_GetModA(CGhoul2Info &ghoul2)
 {
 	if (!ghoul2.mBoneCache)
@@ -529,43 +547,46 @@ const mdxaHeader_t *G2_GetModA(CGhoul2Info &ghoul2)
 int G2_GetBoneDependents(CGhoul2Info &ghoul2,int boneNum,int *tempDependents,int maxDep)
 {
 	// fixme, these should be precomputed
-	if (!ghoul2.mBoneCache||!maxDep)
+	if (!ghoul2.mBoneCache || !maxDep)
 	{
 		return 0;
 	}
 
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
-	mdxaSkel_t		*skel;
-	mdxaSkelOffsets_t *offsets;
-	offsets = (mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
-	int i;
-	int ret=0;
-	for (i=0;i<skel->numChildren;i++)
+	CBoneCache &boneCache = *ghoul2.mBoneCache;
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
+	mdxaSkel_t *skel =
+		(mdxaSkel_t *)((byte *)offsets + offsets->offsets[boneNum]);
+
+	int numDependencies = 0;
+	for (int i = 0; i < skel->numChildren; i++)
 	{
 		if (!maxDep)
 		{
 			return i; // number added
 		}
-		*tempDependents=skel->children[i];
-		assert(*tempDependents>0&&*tempDependents<boneCache.header->numBones);
+
+		*tempDependents = skel->children[i];
+		assert(*tempDependents > 0 && *tempDependents < boneCache.header->numBones);
 		maxDep--;
 		tempDependents++;
-		ret++;
+		numDependencies++;
 	}
-	for (i=0;i<skel->numChildren;i++)
+
+	for (int i = 0; i < skel->numChildren; i++)
 	{
-		int num=G2_GetBoneDependents(ghoul2,skel->children[i],tempDependents,maxDep);
-		tempDependents+=num;
-		ret+=num;
-		maxDep-=num;
-		assert(maxDep>=0);
+		int num = G2_GetBoneDependents(ghoul2, skel->children[i], tempDependents, maxDep);
+		tempDependents += num;
+		numDependencies += num;
+		maxDep -= num;
+		assert(maxDep >= 0);
 		if (!maxDep)
 		{
 			break;
 		}
 	}
-	return ret;
+
+	return numDependencies;
 }
 
 bool G2_WasBoneRendered(CGhoul2Info &ghoul2,int boneNum)
@@ -574,31 +595,36 @@ bool G2_WasBoneRendered(CGhoul2Info &ghoul2,int boneNum)
 	{
 		return false;
 	}
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
 
+	CBoneCache &boneCache = *ghoul2.mBoneCache;
 	return boneCache.WasRendered(boneNum);
 }
 
-void G2_GetBoneBasepose(CGhoul2Info &ghoul2,int boneNum,mdxaBone_t *&retBasepose,mdxaBone_t *&retBaseposeInv)
+void G2_GetBoneBasepose(
+	CGhoul2Info &ghoul2,
+	int boneNum,
+	mdxaBone_t *&retBasepose,
+	mdxaBone_t *&retBaseposeInv)
 {
 	if (!ghoul2.mBoneCache)
 	{
 		// yikes
-		retBasepose=const_cast<mdxaBone_t *>(&identityMatrix);
-		retBaseposeInv=const_cast<mdxaBone_t *>(&identityMatrix);
+		retBasepose = const_cast<mdxaBone_t *>(&identityMatrix);
+		retBaseposeInv = const_cast<mdxaBone_t *>(&identityMatrix);
 		return;
 	}
-	assert(ghoul2.mBoneCache);
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
-	assert(boneCache.mod);
-	assert(boneNum>=0&&boneNum<boneCache.header->numBones);
 
-	mdxaSkel_t		*skel;
-	mdxaSkelOffsets_t *offsets;
-	offsets = (mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
-	retBasepose=&skel->BasePoseMat;
-	retBaseposeInv=&skel->BasePoseMatInv;
+	assert(ghoul2.mBoneCache);
+	CBoneCache &boneCache = *ghoul2.mBoneCache;
+	assert(boneCache.mod);
+	assert(boneNum >= 0 && boneNum < boneCache.header->numBones);
+
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
+	mdxaSkel_t *skel = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[boneNum]);
+
+	retBasepose = &skel->BasePoseMat;
+	retBaseposeInv = &skel->BasePoseMatInv;
 }
 
 char *G2_GetBoneNameFromSkel(CGhoul2Info &ghoul2, int boneNum)
@@ -607,122 +633,156 @@ char *G2_GetBoneNameFromSkel(CGhoul2Info &ghoul2, int boneNum)
 	{
 		return NULL;
 	}
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
-	assert(boneCache.mod);
-	assert(boneNum>=0&&boneNum<boneCache.header->numBones);
 
-	mdxaSkel_t		*skel;
-	mdxaSkelOffsets_t *offsets;
-	offsets = (mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
+	CBoneCache &boneCache = *ghoul2.mBoneCache;
+	assert(boneCache.mod);
+	assert(boneNum >= 0 && boneNum < boneCache.header->numBones);
+
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
+	mdxaSkel_t *skel = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[boneNum]);
 
 	return skel->name;
 }
 
-void G2_RagGetBoneBasePoseMatrixLow(CGhoul2Info &ghoul2, int boneNum, mdxaBone_t &boneMatrix, mdxaBone_t &retMatrix, vec3_t scale)
+void G2_RagGetBoneBasePoseMatrixLow(
+	CGhoul2Info &ghoul2,
+	int boneNum,
+	mdxaBone_t &boneMatrix,
+	mdxaBone_t &retMatrix,
+	vec3_t scale)
 {
 	assert(ghoul2.mBoneCache);
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
+	CBoneCache &boneCache = *ghoul2.mBoneCache;
 	assert(boneCache.mod);
-	assert(boneNum>=0&&boneNum<boneCache.header->numBones);
+	assert(boneNum >= 0 && boneNum < boneCache.header->numBones);
 
-	mdxaSkel_t		*skel;
-	mdxaSkelOffsets_t *offsets;
-	offsets = (mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
-	Multiply_3x4Matrix(&retMatrix, &boneMatrix, &skel->BasePoseMat);
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
+	mdxaSkel_t *skel = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[boneNum]);
+
+	Mat3x4_Multiply(&retMatrix, &boneMatrix, &skel->BasePoseMat);
 
 	if (scale[0])
 	{
 		retMatrix.matrix[0][3] *= scale[0];
 	}
+
 	if (scale[1])
 	{
 		retMatrix.matrix[1][3] *= scale[1];
 	}
+
 	if (scale[2])
 	{
 		retMatrix.matrix[2][3] *= scale[2];
 	}
 
-	VectorNormalize((float*)&retMatrix.matrix[0]);
-	VectorNormalize((float*)&retMatrix.matrix[1]);
-	VectorNormalize((float*)&retMatrix.matrix[2]);
+	VectorNormalize((float *)&retMatrix.matrix[0]);
+	VectorNormalize((float *)&retMatrix.matrix[1]);
+	VectorNormalize((float *)&retMatrix.matrix[2]);
 }
 
-void G2_GetBoneMatrixLow(CGhoul2Info &ghoul2,int boneNum,const vec3_t scale,mdxaBone_t &retMatrix,mdxaBone_t *&retBasepose,mdxaBone_t *&retBaseposeInv)
+void G2_GetBoneMatrixLow(
+	CGhoul2Info &ghoul2,
+	int boneNum,
+	const vec3_t scale,
+	mdxaBone_t &retMatrix,
+	mdxaBone_t *&retBasepose,
+	mdxaBone_t *&retBaseposeInv)
 {
-	if (!ghoul2.mBoneCache)
+	if ( !ghoul2.mBoneCache )
 	{
-		retMatrix=identityMatrix;
+		retMatrix = identityMatrix;
 		// yikes
-		retBasepose=const_cast<mdxaBone_t *>(&identityMatrix);
-		retBaseposeInv=const_cast<mdxaBone_t *>(&identityMatrix);
+		retBasepose = const_cast<mdxaBone_t *>(&identityMatrix);
+		retBaseposeInv = const_cast<mdxaBone_t *>(&identityMatrix);
 		return;
 	}
+
 	mdxaBone_t bolt;
 	assert(ghoul2.mBoneCache);
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
+	CBoneCache &boneCache = *ghoul2.mBoneCache;
 	assert(boneCache.mod);
-	assert(boneNum>=0&&boneNum<boneCache.header->numBones);
+	assert(boneNum >= 0 && boneNum < boneCache.header->numBones);
 
-	mdxaSkel_t		*skel;
-	mdxaSkelOffsets_t *offsets;
-	offsets = (mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
-	Multiply_3x4Matrix(&bolt, (mdxaBone_t *)&boneCache.Eval(boneNum), &skel->BasePoseMat); // DEST FIRST ARG
-	retBasepose=&skel->BasePoseMat;
-	retBaseposeInv=&skel->BasePoseMatInv;
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
+	mdxaSkel_t *skel = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[boneNum]);
+
+	Mat3x4_Multiply(
+		&bolt,
+		&boneCache.Eval(boneNum),
+		&skel->BasePoseMat);
+	retBasepose = &skel->BasePoseMat;
+	retBaseposeInv = &skel->BasePoseMatInv;
 
 	if (scale[0])
 	{
 		bolt.matrix[0][3] *= scale[0];
 	}
+
 	if (scale[1])
 	{
 		bolt.matrix[1][3] *= scale[1];
 	}
+
 	if (scale[2])
 	{
 		bolt.matrix[2][3] *= scale[2];
 	}
-	VectorNormalize((float*)&bolt.matrix[0]);
-	VectorNormalize((float*)&bolt.matrix[1]);
-	VectorNormalize((float*)&bolt.matrix[2]);
 
-	Multiply_3x4Matrix(&retMatrix,&worldMatrix, &bolt);												
-	
+	VectorNormalize((float *)&bolt.matrix[0]);
+	VectorNormalize((float *)&bolt.matrix[1]);
+	VectorNormalize((float *)&bolt.matrix[2]);
+
+	Mat3x4_Multiply(&retMatrix, &worldMatrix, &bolt);
+
 #ifdef _DEBUG
-	for ( int i = 0; i < 3; i++ )
+	for (int i = 0; i < 3; i++)
 	{
-		for ( int j = 0; j < 4; j++ )
+		for (int j = 0; j < 4; j++)
 		{
-			assert( !Q_isnan(retMatrix.matrix[i][j]));
+			assert(!Q_isnan(retMatrix.matrix[i][j]));
 		}
 	}
-#endif// _DEBUG
+#endif // _DEBUG
 }
 
-int G2_GetParentBoneMatrixLow(CGhoul2Info &ghoul2,int boneNum,const vec3_t scale,mdxaBone_t &retMatrix,mdxaBone_t *&retBasepose,mdxaBone_t *&retBaseposeInv)
+int G2_GetParentBoneMatrixLow(
+	CGhoul2Info &ghoul2,
+	int boneNum,
+	const vec3_t scale,
+	mdxaBone_t &retMatrix,
+	mdxaBone_t *&retBasepose,
+	mdxaBone_t *&retBaseposeInv)
 {
-	int parent=-1;
-	if (ghoul2.mBoneCache)
+	int parent = -1;
+	if ( ghoul2.mBoneCache )
 	{
-		CBoneCache &boneCache=*ghoul2.mBoneCache;
+		CBoneCache &boneCache = *ghoul2.mBoneCache;
 		assert(boneCache.mod);
-		assert(boneNum>=0&&boneNum<boneCache.header->numBones);
-		parent=boneCache.GetParent(boneNum);
-		if (parent<0||parent>=boneCache.header->numBones)
+		assert(boneNum >= 0 && boneNum < boneCache.header->numBones);
+
+		parent = boneCache.GetParent(boneNum);
+		if ( parent < 0 || parent >= boneCache.header->numBones )
 		{
-			parent=-1;
-			retMatrix=identityMatrix;
+			parent = -1;
+			retMatrix = identityMatrix;
+
 			// yikes
-			retBasepose=const_cast<mdxaBone_t *>(&identityMatrix);
-			retBaseposeInv=const_cast<mdxaBone_t *>(&identityMatrix);
+			retBasepose = const_cast<mdxaBone_t *>(&identityMatrix);
+			retBaseposeInv = const_cast<mdxaBone_t *>(&identityMatrix);
 		}
 		else
 		{
-			G2_GetBoneMatrixLow(ghoul2,parent,scale,retMatrix,retBasepose,retBaseposeInv);
+			G2_GetBoneMatrixLow(
+				ghoul2,
+				parent,
+				scale,
+				retMatrix,
+				retBasepose,
+				retBaseposeInv);
 		}
 	}
 	return parent;
@@ -749,42 +809,41 @@ public:
 #endif
 
 	CRenderSurface(
-	int				initsurfaceNum,
-	surfaceInfo_v	&initrootSList,
-	shader_t		*initcust_shader,
-	int				initfogNum,
-	qboolean		initpersonalModel,
-	CBoneCache		*initboneCache,
-	int				initrenderfx,
-	skin_t			*initskin,
-	model_t			*initcurrentModel,
-	int				initlod,
+		int				initsurfaceNum,
+		surfaceInfo_v	&initrootSList,
+		shader_t		*initcust_shader,
+		int				initfogNum,
+		qboolean		initpersonalModel,
+		CBoneCache		*initboneCache,
+		int				initrenderfx,
+		skin_t			*initskin,
+		model_t			*initcurrentModel,
+		int				initlod,
 #ifdef _G2_GORE
-	boltInfo_v		&initboltList,
-	shader_t		*initgore_shader,
-	CGoreSet		*initgore_set
+		boltInfo_v		&initboltList,
+		shader_t		*initgore_shader,
+		CGoreSet		*initgore_set
 #else
-	boltInfo_v		&initboltList
+		boltInfo_v		&initboltList
 #endif
-	):
-	surfaceNum(initsurfaceNum),
-	rootSList(initrootSList),
-	cust_shader(initcust_shader),
-	fogNum(initfogNum),
-	personalModel(initpersonalModel),
-	boneCache(initboneCache),
-	renderfx(initrenderfx),
-	skin(initskin),
-	currentModel(initcurrentModel),
-	lod(initlod),
+		)
+		: surfaceNum(initsurfaceNum)
+		, rootSList(initrootSList)
+		, cust_shader(initcust_shader)
+		, fogNum(initfogNum)
+		, personalModel(initpersonalModel)
+		, boneCache(initboneCache)
+		, renderfx(initrenderfx)
+		, skin(initskin)
+		, currentModel(initcurrentModel)
+		, lod(initlod)
+		, boltList(initboltList)
 #ifdef _G2_GORE
-	boltList(initboltList),
-	gore_shader(initgore_shader),
-	gore_set(initgore_set)
-#else
-	boltList(initboltList)
+		, gore_shader(initgore_shader)
+		, gore_set(initgore_set)
 #endif
-	{}
+	{
+	}
 };
 
 /*
@@ -907,7 +966,11 @@ static int G2_ComputeLOD( trRefEntity_t *ent, const model_t *currentModel, int l
 		largestScale = 1;
 	}
 
-	if ( ( projectedRadius = ProjectRadius( 0.75*largestScale*ent->e.radius, ent->e.origin ) ) != 0 )	//we reduce the radius to make the LOD match other model types which use the actual bound box size
+	projectedRadius = ProjectRadius( 0.75*largestScale*ent->e.radius, ent->e.origin );
+
+	// we reduce the radius to make the LOD match other model types which use
+	// the actual bound box size
+	if ( projectedRadius != 0 )	
  	{
  		lodscale = (r_lodscale->value+r_autolodscalevalue->value);
  		if ( lodscale > 20 ) 
@@ -959,10 +1022,10 @@ void G2_CreateQuaterion(mdxaBone_t *mat, vec4_t quat)
     float t = 1 + mat->matrix[0][0] + mat->matrix[1][1] + mat->matrix[2][2];
 	float s;
 
-    //If the trace of the matrix is greater than zero, then
-    //perform an "instant" calculation.
-    //Important note wrt. rouning errors:
-    //Test if ( T > 0.00000001 ) to avoid large distortions!
+	// If the trace of the matrix is greater than zero, then
+	// perform an "instant" calculation.
+	// Important note wrt. rouning errors:
+	// Test if ( T > 0.00000001 ) to avoid large distortions!
 	if (t > 0.00000001)
 	{
       s = sqrt(t) * 2;
@@ -973,26 +1036,28 @@ void G2_CreateQuaterion(mdxaBone_t *mat, vec4_t quat)
 	}
 	else
 	{
-		//If the trace of the matrix is equal to zero then identify
-		//which major diagonal element has the greatest value.
+		// If the trace of the matrix is equal to zero then identify
+		// which major diagonal element has the greatest value.
 
-		//Depending on this, calculate the following:
-
-		if ( mat->matrix[0][0] > mat->matrix[1][1] && mat->matrix[0][0] > mat->matrix[2][2] )  {	// Column 0: 
+		// Depending on this, calculate the following:
+		if ( mat->matrix[0][0] > mat->matrix[1][1] && mat->matrix[0][0] > mat->matrix[2][2] )  {
+			// Column 0: 
 			s  = sqrt( 1.0 + mat->matrix[0][0] - mat->matrix[1][1] - mat->matrix[2][2])* 2;
 			quat[0] = 0.25 * s;
 			quat[1] = (mat->matrix[0][1] + mat->matrix[1][0] ) / s;
 			quat[2] = (mat->matrix[2][0] + mat->matrix[0][2] ) / s;
 			quat[3] = (mat->matrix[1][2] - mat->matrix[2][1] ) / s;
 		
-		} else if ( mat->matrix[1][1] > mat->matrix[2][2] ) {			// Column 1: 
+		} else if ( mat->matrix[1][1] > mat->matrix[2][2] ) {
+			// Column 1: 
 			s  = sqrt( 1.0 + mat->matrix[1][1] - mat->matrix[0][0] - mat->matrix[2][2] ) * 2;
 			quat[0] = (mat->matrix[0][1] + mat->matrix[1][0] ) / s;
 			quat[1] = 0.25 * s;
 			quat[2] = (mat->matrix[1][2] + mat->matrix[2][1] ) / s;
 			quat[3] = (mat->matrix[2][0] - mat->matrix[0][2] ) / s;
 
-		} else {						// Column 2:
+		} else {
+			// Column 2:
 			s  = sqrt( 1.0 + mat->matrix[2][2] - mat->matrix[0][0] - mat->matrix[1][1] ) * 2;
 			quat[0] = (mat->matrix[2][0]+ mat->matrix[0][2] ) / s;
 			quat[1] = (mat->matrix[1][2] + mat->matrix[2][1] ) / s;
@@ -1004,18 +1069,17 @@ void G2_CreateQuaterion(mdxaBone_t *mat, vec4_t quat)
 
 void G2_CreateMatrixFromQuaterion(mdxaBone_t *mat, vec4_t quat)
 {
-	
-    float xx      = quat[0] * quat[0];
-    float xy      = quat[0] * quat[1];
-    float xz      = quat[0] * quat[2];
-    float xw      = quat[0] * quat[3];
+    const float xx = quat[0] * quat[0];
+    const float xy = quat[0] * quat[1];
+    const float xz = quat[0] * quat[2];
+    const float xw = quat[0] * quat[3];
 
-    float yy      = quat[1] * quat[1];
-    float yz      = quat[1] * quat[2];
-    float yw      = quat[1] * quat[3];
+    const float yy = quat[1] * quat[1];
+    const float yz = quat[1] * quat[2];
+    const float yw = quat[1] * quat[3];
 
-    float zz      = quat[2] * quat[2];
-    float zw      = quat[2] * quat[3];
+    const float zz = quat[2] * quat[2];
+    const float zw = quat[2] * quat[3];
 
     mat->matrix[0][0]  = 1 - 2 * ( yy + zz );
     mat->matrix[1][0]  =     2 * ( xy - zw );
@@ -1032,56 +1096,48 @@ void G2_CreateMatrixFromQuaterion(mdxaBone_t *mat, vec4_t quat)
     mat->matrix[0][3]  = mat->matrix[1][3] = mat->matrix[2][3] = 0;
 }
 
-// nasty little matrix multiply going on here..
-void Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in) 
-{
-	// first row of out                                                                                      
-	out->matrix[0][0] = (in2->matrix[0][0] * in->matrix[0][0]) + (in2->matrix[0][1] * in->matrix[1][0]) + (in2->matrix[0][2] * in->matrix[2][0]);
-	out->matrix[0][1] = (in2->matrix[0][0] * in->matrix[0][1]) + (in2->matrix[0][1] * in->matrix[1][1]) + (in2->matrix[0][2] * in->matrix[2][1]);
-	out->matrix[0][2] = (in2->matrix[0][0] * in->matrix[0][2]) + (in2->matrix[0][1] * in->matrix[1][2]) + (in2->matrix[0][2] * in->matrix[2][2]);
-	out->matrix[0][3] = (in2->matrix[0][0] * in->matrix[0][3]) + (in2->matrix[0][1] * in->matrix[1][3]) + (in2->matrix[0][2] * in->matrix[2][3]) + in2->matrix[0][3];
-	// second row of outf out                                                                                     
-	out->matrix[1][0] = (in2->matrix[1][0] * in->matrix[0][0]) + (in2->matrix[1][1] * in->matrix[1][0]) + (in2->matrix[1][2] * in->matrix[2][0]);
-	out->matrix[1][1] = (in2->matrix[1][0] * in->matrix[0][1]) + (in2->matrix[1][1] * in->matrix[1][1]) + (in2->matrix[1][2] * in->matrix[2][1]);
-	out->matrix[1][2] = (in2->matrix[1][0] * in->matrix[0][2]) + (in2->matrix[1][1] * in->matrix[1][2]) + (in2->matrix[1][2] * in->matrix[2][2]);
-	out->matrix[1][3] = (in2->matrix[1][0] * in->matrix[0][3]) + (in2->matrix[1][1] * in->matrix[1][3]) + (in2->matrix[1][2] * in->matrix[2][3]) + in2->matrix[1][3];
-	// third row of out  out                                                                                      
-	out->matrix[2][0] = (in2->matrix[2][0] * in->matrix[0][0]) + (in2->matrix[2][1] * in->matrix[1][0]) + (in2->matrix[2][2] * in->matrix[2][0]);
-	out->matrix[2][1] = (in2->matrix[2][0] * in->matrix[0][1]) + (in2->matrix[2][1] * in->matrix[1][1]) + (in2->matrix[2][2] * in->matrix[2][1]);
-	out->matrix[2][2] = (in2->matrix[2][0] * in->matrix[0][2]) + (in2->matrix[2][1] * in->matrix[1][2]) + (in2->matrix[2][2] * in->matrix[2][2]);
-	out->matrix[2][3] = (in2->matrix[2][0] * in->matrix[0][3]) + (in2->matrix[2][1] * in->matrix[1][3]) + (in2->matrix[2][2] * in->matrix[2][3]) + in2->matrix[2][3]; 
-}
-
-
 static int G2_GetBonePoolIndex(	const mdxaHeader_t *pMDXAHeader, int iFrame, int iBone)
 {
 	const int iOffsetToIndex = (iFrame * pMDXAHeader->numBones * 3) + (iBone * 3);
+	const mdxaIndex_t *pIndex =
+		(mdxaIndex_t *)((byte*)pMDXAHeader + pMDXAHeader->ofsFrames + iOffsetToIndex);
 
-	mdxaIndex_t *pIndex = (mdxaIndex_t *) ((byte*) pMDXAHeader + pMDXAHeader->ofsFrames + iOffsetToIndex);
-
-	return pIndex->iIndex & 0x00FFFFFF;	// this will cause problems for big-endian machines... ;-)
+	// this will cause problems for big-endian machines... ;-)
+	return pIndex->iIndex & 0x00FFFFFF;	
 }
 
-
-/*static inline*/ void UnCompressBone(float mat[3][4], int iBoneIndex, const mdxaHeader_t *pMDXAHeader, int iFrame)
+/*static inline*/ void UnCompressBone(
+	float mat[3][4],
+	int iBoneIndex,
+	const mdxaHeader_t *pMDXAHeader,
+	int iFrame)
 {
-	mdxaCompQuatBone_t *pCompBonePool = (mdxaCompQuatBone_t *) ((byte *)pMDXAHeader + pMDXAHeader->ofsCompBonePool);
-	MC_UnCompressQuat(mat, pCompBonePool[ G2_GetBonePoolIndex( pMDXAHeader, iFrame, iBoneIndex ) ].Comp);
+	mdxaCompQuatBone_t *pCompBonePool =
+		(mdxaCompQuatBone_t *)((byte *)pMDXAHeader + pMDXAHeader->ofsCompBonePool);
+	MC_UnCompressQuat(
+		mat,
+		pCompBonePool[G2_GetBonePoolIndex(pMDXAHeader, iFrame, iBoneIndex)].Comp);
 }
 
 #define DEBUG_G2_TIMING (0)
 #define DEBUG_G2_TIMING_RENDER_ONLY (1)
 
-void G2_TimingModel(boneInfo_t &bone,int currentTime,int numFramesInFile,int &currentFrame,int &newFrame,float &lerp)
+void G2_TimingModel(
+	boneInfo_t &bone,
+	int currentTime,
+	int numFramesInFile,
+	int &currentFrame,
+	int &newFrame,
+	float& lerp)
 {
-	assert(bone.startFrame>=0);
-	assert(bone.startFrame<=numFramesInFile);
-	assert(bone.endFrame>=0);
-	assert(bone.endFrame<=numFramesInFile);
+	assert(bone.startFrame >= 0);
+	assert(bone.startFrame <= numFramesInFile);
+	assert(bone.endFrame >= 0);
+	assert(bone.endFrame <= numFramesInFile);
 
 	// yes - add in animation speed to current frame
-	float	animSpeed = bone.animSpeed;
-	float	time;
+	const float animSpeed = bone.animSpeed;
+	float time;
 	if (bone.pauseTime)
 	{
 		time = (bone.pauseTime - bone.startTime) / 50.0f;
@@ -1090,134 +1146,133 @@ void G2_TimingModel(boneInfo_t &bone,int currentTime,int numFramesInFile,int &cu
 	{			
 		time = (currentTime - bone.startTime) / 50.0f;
 	}
-	if (time<0.0f)
-	{
-		time=0.0f;
-	}
-	float	newFrame_g = bone.startFrame + (time * animSpeed);
 
-	int		animSize = bone.endFrame - bone.startFrame;
-	float	endFrame = (float)bone.endFrame;
+	time = Q_max(0.0f, time);
+	float newLerpFrame = bone.startFrame + (time * animSpeed);
+
+	const int numFramesInAnim = bone.endFrame - bone.startFrame;
+	const float endFrame = (float)bone.endFrame;
+
 	// we are supposed to be animating right?
-	if (animSize)
+	if ( numFramesInAnim > 0 )
 	{
 		// did we run off the end?
-		if (((animSpeed > 0.0f) && (newFrame_g > endFrame - 1)) || 
-			((animSpeed < 0.0f) && (newFrame_g < endFrame+1)))
+		if ( (animSpeed > 0.0f && newLerpFrame > (endFrame - 1)) || 
+			(animSpeed < 0.0f && newLerpFrame < (endFrame + 1)) )
 		{
 			// yep - decide what to do
-			if (bone.flags & BONE_ANIM_OVERRIDE_LOOP)
+			if ( bone.flags & BONE_ANIM_OVERRIDE_LOOP )
 			{
 				// get our new animation frame back within the bounds of the animation set
-				if (animSpeed < 0.0f)
+				if ( animSpeed < 0.0f )
 				{
 					// we don't use this case, or so I am told
 					// if we do, let me know, I need to insure the mod works
 
 					// should we be creating a virtual frame?
-					if ((newFrame_g < endFrame+1) && (newFrame_g >= endFrame))
+					if ( (newLerpFrame < (endFrame + 1)) && (newLerpFrame >= endFrame) )
 					{
-						// now figure out what we are lerping between
-						// delta is the fraction between this frame and the next, since the new anim is always at a .0f;
-						lerp = float(endFrame+1)-newFrame_g;
+						// now figure out what we are lerping between delta is
+						// the fraction between this frame and the next, since
+						// the new anim is always at a .0f;
+						lerp = endFrame + 1 - newLerpFrame;
+
 						// frames are easy to calculate
 						currentFrame = endFrame;
-						assert(currentFrame>=0&&currentFrame<numFramesInFile);
 						newFrame = bone.startFrame;
-						assert(newFrame>=0&&newFrame<numFramesInFile);
 					}
 					else
 					{
-						if (newFrame_g <= endFrame+1)
+						if ( newLerpFrame <= (endFrame + 1) )
 						{
-							newFrame_g=endFrame+fmod(newFrame_g-endFrame,animSize)-animSize;
+							newLerpFrame =
+								endFrame + fmod(newLerpFrame - endFrame, numFramesInAnim) -
+								numFramesInAnim;
 						}
-						// now figure out what we are lerping between
-						// delta is the fraction between this frame and the next, since the new anim is always at a .0f;
-						lerp = (ceil(newFrame_g)-newFrame_g);
+
+						// now figure out what we are lerping between delta is
+						// the fraction between this frame and the next, since
+						// the new anim is always at a .0f;
+						lerp = ceil(newLerpFrame) - newLerpFrame;
+
 						// frames are easy to calculate
-						currentFrame = ceil(newFrame_g);
-						assert(currentFrame>=0&&currentFrame<numFramesInFile);
+						currentFrame = ceil(newLerpFrame);
+
 						// should we be creating a virtual frame?
-						if (currentFrame <= endFrame+1 )
+						if ( currentFrame <= (endFrame + 1) )
 						{
 							newFrame = bone.startFrame;
-							assert(newFrame>=0&&newFrame<numFramesInFile);
 						}
 						else
 						{
 							newFrame = currentFrame - 1;
-							assert(newFrame>=0&&newFrame<numFramesInFile);
 						}
 					}
 				}
 				else
 				{
 					// should we be creating a virtual frame?
-					if ((newFrame_g > endFrame - 1) && (newFrame_g < endFrame))
+					if ( (newLerpFrame > (endFrame - 1)) && (newLerpFrame < endFrame))
 					{
-						// now figure out what we are lerping between
-						// delta is the fraction between this frame and the next, since the new anim is always at a .0f;
-						lerp = (newFrame_g - (int)newFrame_g);
+						// now figure out what we are lerping between delta is
+						// the fraction between this frame and the next, since
+						// the new anim is always at a .0f;
+						lerp = newLerpFrame - (int)newLerpFrame;
+
 						// frames are easy to calculate
-						currentFrame = (int)newFrame_g;
-						assert(currentFrame>=0&&currentFrame<numFramesInFile);
+						currentFrame = (int)newLerpFrame;
 						newFrame = bone.startFrame;
-						assert(newFrame>=0&&newFrame<numFramesInFile);
 					}
 					else
 					{
-						if (newFrame_g >= endFrame)
+						if ( newLerpFrame >= endFrame )
 						{
-							newFrame_g=endFrame+fmod(newFrame_g-endFrame,animSize)-animSize;
+							newLerpFrame =
+								endFrame + fmod(newLerpFrame - endFrame, numFramesInAnim) -
+								numFramesInAnim;
 						}
-						// now figure out what we are lerping between
-						// delta is the fraction between this frame and the next, since the new anim is always at a .0f;
-						lerp = (newFrame_g - (int)newFrame_g);
+
+						// now figure out what we are lerping between delta is
+						// the fraction between this frame and the next, since
+						// the new anim is always at a .0f;
+						lerp = newLerpFrame - (int)newLerpFrame;
+
 						// frames are easy to calculate
-						currentFrame = (int)newFrame_g;
-						assert(currentFrame>=0&&currentFrame<numFramesInFile);
+						currentFrame = (int)newLerpFrame;
+
 						// should we be creating a virtual frame?
-						if (newFrame_g >= endFrame - 1)
+						if ( newLerpFrame >= (endFrame - 1) )
 						{
 							newFrame = bone.startFrame;
-							assert(newFrame>=0&&newFrame<numFramesInFile);
 						}
 						else
 						{
 							newFrame = currentFrame + 1;
-							assert(newFrame>=0&&newFrame<numFramesInFile);
 						}
 					}
 				}
-				// sanity check
-				assert (((newFrame < endFrame) && (newFrame >= bone.startFrame)) || (animSize < 10)); 
 			}
 			else
 			{
-				if (((bone.flags & (BONE_ANIM_OVERRIDE_FREEZE)) == (BONE_ANIM_OVERRIDE_FREEZE)))
+				if ( ((bone.flags & BONE_ANIM_OVERRIDE_FREEZE) == BONE_ANIM_OVERRIDE_FREEZE) )
 				{
 					// if we are supposed to reset the default anim, then do so
-					if (animSpeed > 0.0f)
+					if ( animSpeed > 0.0f )
 					{
 						currentFrame = bone.endFrame - 1;
-						assert(currentFrame>=0&&currentFrame<numFramesInFile);
 					}
 					else
 					{
-						currentFrame = bone.endFrame+1;
-						assert(currentFrame>=0&&currentFrame<numFramesInFile);
+						currentFrame = bone.endFrame + 1;
 					}
 
 					newFrame = currentFrame;
-					assert(newFrame>=0&&newFrame<numFramesInFile);
-					lerp = 0;
+					lerp = 0.0f;
 				}
 				else
 				{
-					bone.flags &= ~(BONE_ANIM_TOTAL);
+					bone.flags &= ~BONE_ANIM_TOTAL;
 				}
-
 			}
 		}
 		else
@@ -1225,104 +1280,107 @@ void G2_TimingModel(boneInfo_t &bone,int currentTime,int numFramesInFile,int &cu
 			if (animSpeed> 0.0)
 			{
 				// frames are easy to calculate
-				currentFrame = (int)newFrame_g;
+				currentFrame = (int)newLerpFrame;
 
-				// figure out the difference between the two frames	- we have to decide what frame and what percentage of that
-				// frame we want to display
-				lerp = (newFrame_g - currentFrame);
+				// figure out the difference between the two frames	- we have
+				// to decide what frame and what percentage of that frame we
+				// want to display
+				lerp = (newLerpFrame - currentFrame);
 
 				assert(currentFrame>=0&&currentFrame<numFramesInFile);
 
 				newFrame = currentFrame + 1;
+
 				// are we now on the end frame?
 				assert((int)endFrame<=numFramesInFile);
 				if (newFrame >= (int)endFrame)
 				{
-					// we only want to lerp with the first frame of the anim if we are looping 
+					// we only want to lerp with the first frame of the anim if
+					// we are looping 
 					if (bone.flags & BONE_ANIM_OVERRIDE_LOOP)
 					{
 					  	newFrame = bone.startFrame;
-						assert(newFrame>=0&&newFrame<numFramesInFile);
 					}
-					// if we intend to end this anim or freeze after this, then just keep on the last frame
 					else
 					{
+						// if we intend to end this anim or freeze after this, then
+						// just keep on the last frame
 						newFrame = bone.endFrame-1;
-						assert(newFrame>=0&&newFrame<numFramesInFile);
 					}
 				}
-				assert(newFrame>=0&&newFrame<numFramesInFile);
 			}
 			else
 			{
-				lerp = (ceil(newFrame_g)-newFrame_g);
+				lerp = (ceil(newLerpFrame)-newLerpFrame);
+
 				// frames are easy to calculate
-				currentFrame = ceil(newFrame_g);
+				currentFrame = ceil(newLerpFrame);
 				if (currentFrame>bone.startFrame)
 				{
 					currentFrame=bone.startFrame;
 					newFrame = currentFrame;
-					lerp=0.0f;
+					lerp = 0.0f;
 				}
 				else
 				{
-					newFrame=currentFrame-1;
+					newFrame = currentFrame-1;
+
 					// are we now on the end frame?
 					if (newFrame < endFrame+1)
 					{
-						// we only want to lerp with the first frame of the anim if we are looping 
+						// we only want to lerp with the first frame of the
+						// anim if we are looping 
 						if (bone.flags & BONE_ANIM_OVERRIDE_LOOP)
 						{
 					  		newFrame = bone.startFrame;
-							assert(newFrame>=0&&newFrame<numFramesInFile);
 						}
-						// if we intend to end this anim or freeze after this, then just keep on the last frame
+						// if we intend to end this anim or freeze after this,
+						// then just keep on the last frame
 						else
 						{
 							newFrame = bone.endFrame+1;
-							assert(newFrame>=0&&newFrame<numFramesInFile);
 						}
 					}
 				}
-				assert(currentFrame>=0&&currentFrame<numFramesInFile);
-				assert(newFrame>=0&&newFrame<numFramesInFile);
 			}
 		}
 	}
 	else
 	{
-		if (animSpeed<0.0)
+		if ( animSpeed < 0.0 )
 		{
-			currentFrame = bone.endFrame+1;
+			currentFrame = bone.endFrame + 1;
 		}
 		else
 		{
-			currentFrame = bone.endFrame-1;
+			currentFrame = bone.endFrame - 1;
 		}
-		if (currentFrame<0)
-		{
-			currentFrame=0;
-		}
-		assert(currentFrame>=0&&currentFrame<numFramesInFile);
-		newFrame = currentFrame;
-		assert(newFrame>=0&&newFrame<numFramesInFile);
-		lerp = 0;
 
+		currentFrame = Q_max(0, currentFrame);
+		newFrame = currentFrame;
+
+		lerp = 0.0f;
 	}
-	assert(currentFrame>=0&&currentFrame<numFramesInFile);
-	assert(newFrame>=0&&newFrame<numFramesInFile);
-	assert(lerp>=0.0f&&lerp<=1.0f);
+
+	assert(currentFrame >= 0 && currentFrame < numFramesInFile);
+	assert(newFrame >= 0 && newFrame < numFramesInFile);
+	assert(lerp >= 0.0f && lerp <= 1.0f);
 }
 
 #ifdef _RAG_PRINT_TEST
 void G2_RagPrintMatrix(mdxaBone_t *mat);
 #endif
-//basically construct a seperate skeleton with full hierarchy to store a matrix
-//off which will give us the desired settling position given the frame in the skeleton
-//that should be used -rww
-int G2_Add_Bone (const model_t *mod, boneInfo_v &blist, const char *boneName);
+// basically construct a seperate skeleton with full hierarchy to store a matrix
+// off which will give us the desired settling position given the frame in the skeleton
+// that should be used -rww
+int G2_Add_Bone(const model_t *mod, boneInfo_v &blist, const char *boneName);
 int G2_Find_Bone(const model_t *mod, boneInfo_v &blist, const char *boneName);
-void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &matrix, const int frame)
+
+void G2_RagGetAnimMatrix(
+	CGhoul2Info &ghoul2,
+	const int boneNum,
+	mdxaBone_t &matrix,
+	const int frame)
 {
 	mdxaBone_t animMatrix;
 	mdxaSkel_t *skel;
@@ -1339,10 +1397,10 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 	assert(ghoul2.animModel);
 
 	offsets = (mdxaSkelOffsets_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
+	skel = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[boneNum]);
 
 	//find/add the bone in the list
-	if (!skel->name || !skel->name[0])
+	if (!skel->name[0])
 	{
 		bListIndex = -1;
 	}
@@ -1374,14 +1432,15 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 	parent = skel->parent;
 	if (boneNum > 0 && parent > -1)
 	{
-		//recursively call to assure all parent matrices are set up
+		// recursively call to assure all parent matrices are set up
 		G2_RagGetAnimMatrix(ghoul2, parent, matrix, frame);
 
-		//assign the new skel ptr for our parent
-		pskel = (mdxaSkel_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t) + offsets->offsets[parent]);
+		// assign the new skel ptr for our parent
+		pskel = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[parent]);
 
-		//taking bone matrix for the skeleton frame and parent's animFrameMatrix into account, determine our final animFrameMatrix
-		if (!pskel->name || !pskel->name[0])
+		// taking bone matrix for the skeleton frame and parent's
+		// animFrameMatrix into account, determine our final animFrameMatrix
+		if (!pskel->name[0])
 		{
 			parentBlistIndex = -1;
 		}
@@ -1398,9 +1457,10 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 
 		boneInfo_t &pbone = ghoul2.mBlist[parentBlistIndex];
 
-		assert(pbone.hasAnimFrameMatrix == frame); //this should have been calc'd in the recursive call
+		// this should have been calc'd in the recursive call
+		assert(pbone.hasAnimFrameMatrix == frame); 
 
-		Multiply_3x4Matrix(&bone.animFrameMatrix, &pbone.animFrameMatrix, &animMatrix);
+		Mat3x4_Multiply(&bone.animFrameMatrix, &pbone.animFrameMatrix, &animMatrix);
 
 #ifdef _RAG_PRINT_TEST
 		if (parentBlistIndex != -1 && bListIndex != -1)
@@ -1414,8 +1474,9 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 #endif
 	}
 	else
-	{ //root
-		Multiply_3x4Matrix(&bone.animFrameMatrix, &ghoul2.mBoneCache->rootMatrix, &animMatrix);
+	{
+		// root
+		Mat3x4_Multiply(&bone.animFrameMatrix, &ghoul2.mBoneCache->rootMatrix, &animMatrix);
 #ifdef _RAG_PRINT_TEST
 		if (bListIndex != -1)
 		{
@@ -1426,10 +1487,6 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 			Com_Printf("BAD LIST INDEX: %s\n", skel->name);
 		}
 #endif
-		//bone.animFrameMatrix = ghoul2.mBoneCache->mFinalBones[boneNum].boneMatrix;
-		//Maybe use this for the root, so that the orientation is in sync with the current
-		//root matrix? However this would require constant recalculation of this base
-		//skeleton which I currently do not want.
 	}
 
 	//never need to figure it out again
@@ -1446,45 +1503,43 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 	matrix = bone.animFrameMatrix;
 }
 
-void G2_TransformBone (int child,CBoneCache &BC)
+static void G2_TransformBone( int child, CBoneCache& BC )
 {
-	SBoneCalc &TB=BC.mBones[child];
-	static mdxaBone_t		tbone[6];
-// 	mdxaFrame_t		*aFrame=0;
-//	mdxaFrame_t		*bFrame=0;
-//	mdxaFrame_t		*aoldFrame=0;
-//	mdxaFrame_t		*boldFrame=0;
-	static mdxaSkel_t		*skel;
-	static mdxaSkelOffsets_t *offsets;
-	boneInfo_v		&boneList = *BC.rootBoneList;
-	static int				j, boneListIndex;
-	int				angleOverride = 0;
+	SBoneCalc &TB = BC.mBones[child];
+	mdxaBone_t currentBone;
+	boneInfo_v& boneList = *BC.rootBoneList;
+	int angleOverride = 0;
 
 #if DEBUG_G2_TIMING
 	bool printTiming=false;
 #endif
 	// should this bone be overridden by a bone in the bone list?
-	boneListIndex = G2_Find_Bone_In_List(boneList, child);
+	int boneListIndex = G2_Find_Bone_In_List(boneList, child);
 	if (boneListIndex != -1)
 	{
 		// we found a bone in the list - we need to override something here.
+		boneInfo_t& bone = boneList[boneListIndex];
+		int boneFlags = bone.flags;
 		
 		// do we override the rotational angles?
-		if ((boneList[boneListIndex].flags) & (BONE_ANGLES_TOTAL))
+		if ( boneFlags & BONE_ANGLES_TOTAL )
 		{
-			angleOverride = (boneList[boneListIndex].flags) & (BONE_ANGLES_TOTAL);
+			angleOverride = boneFlags & BONE_ANGLES_TOTAL;
 		}
 
 		// set blending stuff if we need to
-		if (boneList[boneListIndex].flags & BONE_ANIM_BLEND)
+		if ( boneFlags & BONE_ANIM_BLEND )
 		{
-			float blendTime = BC.incomingTime - boneList[boneListIndex].blendStart;
-			// only set up the blend anim if we actually have some blend time left on this bone anim - otherwise we might corrupt some blend higher up the hiearchy
-			if (blendTime>=0.0f&&blendTime < boneList[boneListIndex].blendTime)
+			const float blendTime = BC.incomingTime - bone.blendStart;
+
+			// only set up the blend anim if we actually have some blend time
+			// left on this bone anim - otherwise we might corrupt some blend
+			// higher up the hiearchy
+			if ( blendTime >= 0.0f && blendTime < bone.blendTime )
 			{
-				TB.blendFrame	 = boneList[boneListIndex].blendFrame;
-				TB.blendOldFrame = boneList[boneListIndex].blendLerpFrame;
-				TB.blendLerp = (blendTime / boneList[boneListIndex].blendTime);
+				TB.blendFrame = bone.blendFrame;
+				TB.blendOldFrame = bone.blendLerpFrame;
+				TB.blendLerp = (blendTime / bone.blendTime);
 				TB.blendMode = true;
 			}
 			else
@@ -1492,78 +1547,99 @@ void G2_TransformBone (int child,CBoneCache &BC)
 				TB.blendMode = false;
 			}
 		}
-		else if (/*r_Ghoul2NoBlend->integer||*/((boneList[boneListIndex].flags) & (BONE_ANIM_OVERRIDE_LOOP | BONE_ANIM_OVERRIDE)))
-		// turn off blending if we are just doing a straing animation override
+		else if ( boneFlags & (BONE_ANIM_OVERRIDE_LOOP | BONE_ANIM_OVERRIDE) )
 		{
+			// turn off blending if we are just doing a straing animation
+			// override
 			TB.blendMode = false;
 		}
 
-		// should this animation be overridden by an animation in the bone list?
-		if ((boneList[boneListIndex].flags) & (BONE_ANIM_OVERRIDE_LOOP | BONE_ANIM_OVERRIDE))
+		// should this animation be overridden by an animation in the bone
+		// list?
+		if (boneFlags & (BONE_ANIM_OVERRIDE_LOOP | BONE_ANIM_OVERRIDE))
 		{
-			G2_TimingModel(boneList[boneListIndex],BC.incomingTime,BC.header->numFrames,TB.currentFrame,TB.newFrame,TB.backlerp);
+			G2_TimingModel(
+				bone,
+				BC.incomingTime,
+				BC.header->numFrames,
+				TB.currentFrame,
+				TB.newFrame,
+				TB.backlerp);
 		}
+
 #if DEBUG_G2_TIMING
 		printTiming=true;
 #endif
-		/*
-		if ((r_Ghoul2NoLerp->integer)||((boneList[boneListIndex].flags) & (BONE_ANIM_NO_LERP)))
-		{
-			TB.backlerp = 0.0f;
-		}
-		*/
-		//rwwFIXMEFIXME: Use?
 	}
+
 	// figure out where the location of the bone animation data is
-	assert(TB.newFrame>=0&&TB.newFrame<BC.header->numFrames);
-	if (!(TB.newFrame>=0&&TB.newFrame<BC.header->numFrames))
+	if ( !(TB.newFrame >= 0 && TB.newFrame < BC.header->numFrames) )
 	{
-		TB.newFrame=0;
+		TB.newFrame = 0;
 	}
-//	aFrame = (mdxaFrame_t *)((byte *)BC.header + BC.header->ofsFrames + TB.newFrame * BC.frameSize );
-	assert(TB.currentFrame>=0&&TB.currentFrame<BC.header->numFrames);
-	if (!(TB.currentFrame>=0&&TB.currentFrame<BC.header->numFrames))
+
+	if ( !(TB.currentFrame >= 0 && TB.currentFrame < BC.header->numFrames) )
 	{
-		TB.currentFrame=0;
+		TB.currentFrame = 0;
 	}
-//	aoldFrame = (mdxaFrame_t *)((byte *)BC.header + BC.header->ofsFrames + TB.currentFrame * BC.frameSize );
 
 	// figure out where the location of the blended animation data is
-	assert(!(TB.blendFrame < 0.0 || TB.blendFrame >= (BC.header->numFrames+1)));
-	if (TB.blendFrame < 0.0 || TB.blendFrame >= (BC.header->numFrames+1) )
+	if ( TB.blendFrame < 0.0 || TB.blendFrame >= (BC.header->numFrames + 1) )
 	{
-		TB.blendFrame=0.0;
+		TB.blendFrame = 0.0;
 	}
-//	bFrame = (mdxaFrame_t *)((byte *)BC.header + BC.header->ofsFrames + (int)TB.blendFrame * BC.frameSize );
-	assert(TB.blendOldFrame>=0&&TB.blendOldFrame<BC.header->numFrames);
-	if (!(TB.blendOldFrame>=0&&TB.blendOldFrame<BC.header->numFrames))
+
+	if ( !(TB.blendOldFrame >= 0 && TB.blendOldFrame < BC.header->numFrames) )
 	{
-		TB.blendOldFrame=0;
+		TB.blendOldFrame = 0;
 	}
+
 #if DEBUG_G2_TIMING
 
 #if DEBUG_G2_TIMING_RENDER_ONLY
 	if (!HackadelicOnClient)
 	{
-		printTiming=false;
+		printTiming = false;
 	}
 #endif
+
 	if (printTiming)
 	{
 		char mess[1000];
 		if (TB.blendMode)
 		{
-			sprintf(mess,"b %2d %5d   %4d %4d %4d %4d  %f %f\n",boneListIndex,BC.incomingTime,(int)TB.newFrame,(int)TB.currentFrame,(int)TB.blendFrame,(int)TB.blendOldFrame,TB.backlerp,TB.blendLerp);
+			sprintf(
+				mess,
+				"b %2d %5d   %4d %4d %4d %4d  %f %f\n",
+				boneListIndex,
+				BC.incomingTime,
+				(int)TB.newFrame,
+				(int)TB.currentFrame,
+				(int)TB.blendFrame,
+				(int)TB.blendOldFrame,
+				TB.backlerp,
+				TB.blendLerp);
 		}
 		else
 		{
-			sprintf(mess,"a %2d %5d   %4d %4d            %f\n",boneListIndex,BC.incomingTime,TB.newFrame,TB.currentFrame,TB.backlerp);
+			sprintf(
+				mess,
+				"a %2d %5d   %4d %4d            %f\n",
+				boneListIndex,
+				BC.incomingTime,
+				TB.newFrame,
+				TB.currentFrame,
+				TB.backlerp);
 		}
+
 		Com_OPrintf("%s",mess);
+
 		const boneInfo_t &bone=boneList[boneListIndex];
 		if (bone.flags&BONE_ANIM_BLEND)
 		{
-			sprintf(mess,"                                                                    bfb[%2d] %5d  %5d  (%5d-%5d) %4.2f %4x   bt(%5d-%5d) %7.2f %5d\n",
+			sprintf(
+				mess,
+				"                                                                    bfb[%2d] %5d  %5d  (%5d-%5d) %4.2f %4x   bt(%5d-%5d) %7.2f %5d\n",
 				boneListIndex,
 				BC.incomingTime,
 				bone.startTime,
@@ -1574,8 +1650,7 @@ void G2_TransformBone (int child,CBoneCache &BC)
 				bone.blendStart,
 				bone.blendStart+bone.blendTime,
 				bone.blendFrame,
-				bone.blendLerpFrame
-				);
+				bone.blendLerpFrame);
 		}
 		else
 		{
@@ -1586,126 +1661,79 @@ void G2_TransformBone (int child,CBoneCache &BC)
 				bone.startFrame,
 				bone.endFrame,
 				bone.animSpeed,
-				bone.flags
-				);
+				bone.flags);
 		}
-//		Com_OPrintf("%s",mess);
 	}
 #endif
-//	boldFrame = (mdxaFrame_t *)((byte *)BC.header + BC.header->ofsFrames + TB.blendOldFrame * BC.frameSize );
 
-//	mdxaCompBone_t	*compBonePointer = (mdxaCompBone_t *)((byte *)BC.header + BC.header->ofsCompBonePool);
-
-	assert(child>=0&&child<BC.header->numBones);
-//	assert(bFrame->boneIndexes[child]>=0);
-//	assert(boldFrame->boneIndexes[child]>=0);
-//	assert(aFrame->boneIndexes[child]>=0);
-//	assert(aoldFrame->boneIndexes[child]>=0);
+	assert(child >=0 && child < BC.header->numBones);
 
 	// decide where the transformed bone is going
-
-	// are we blending with another frame of anim?
-	if (TB.blendMode)
-	{
-		float backlerp = TB.blendFrame - (int)TB.blendFrame;
-		float frontlerp = 1.0 - backlerp;
-		
-// 		MC_UnCompress(tbone[3].matrix,compBonePointer[bFrame->boneIndexes[child]].Comp);
-// 		MC_UnCompress(tbone[4].matrix,compBonePointer[boldFrame->boneIndexes[child]].Comp);
-		UnCompressBone(tbone[3].matrix, child, BC.header, TB.blendFrame);
-		UnCompressBone(tbone[4].matrix, child, BC.header, TB.blendOldFrame);
-
-		for ( j = 0 ; j < 12 ; j++ ) 
-		{
-  			((float *)&tbone[5])[j] = (backlerp * ((float *)&tbone[3])[j])
-				+ (frontlerp * ((float *)&tbone[4])[j]);
-		}
-	}
 	
-  	//
-  	// lerp this bone - use the temp space on the ref entity to put the bone transforms into
-  	//
-  	if (!TB.backlerp)
+	// lerp this bone - use the temp space on the ref entity to put the bone
+	// transforms into
+  	if ( !TB.backlerp )
   	{
-// 		MC_UnCompress(tbone[2].matrix,compBonePointer[aoldFrame->boneIndexes[child]].Comp);
-		UnCompressBone(tbone[2].matrix, child, BC.header, TB.currentFrame);
-
-		// blend in the other frame if we need to
-		if (TB.blendMode)
-		{
-			float blendFrontlerp = 1.0 - TB.blendLerp;
-	  		for ( j = 0 ; j < 12 ; j++ ) 
-			{
-  				((float *)&tbone[2])[j] = (TB.blendLerp * ((float *)&tbone[2])[j])
-					+ (blendFrontlerp * ((float *)&tbone[5])[j]);
-			}
-		}
-
-  		if (!child)
-		{
-			// now multiply by the root matrix, so we can offset this model should we need to
-			Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.rootMatrix, &tbone[2]);
- 		}
+		UnCompressBone(currentBone.matrix, child, BC.header, TB.currentFrame);
   	}
 	else
   	{
-		float frontlerp = 1.0 - TB.backlerp;
-// 		MC_UnCompress(tbone[0].matrix,compBonePointer[aFrame->boneIndexes[child]].Comp);
-//		MC_UnCompress(tbone[1].matrix,compBonePointer[aoldFrame->boneIndexes[child]].Comp);
-		UnCompressBone(tbone[0].matrix, child, BC.header, TB.newFrame);
-		UnCompressBone(tbone[1].matrix, child, BC.header, TB.currentFrame);		
-
-		for ( j = 0 ; j < 12 ; j++ ) 
-		{
-  			((float *)&tbone[2])[j] = (TB.backlerp * ((float *)&tbone[0])[j])
-				+ (frontlerp * ((float *)&tbone[1])[j]);
-		}
-
-		// blend in the other frame if we need to
-		if (TB.blendMode)
-		{
-			float blendFrontlerp = 1.0 - TB.blendLerp;
-	  		for ( j = 0 ; j < 12 ; j++ ) 
-			{
-  				((float *)&tbone[2])[j] = (TB.blendLerp * ((float *)&tbone[2])[j])
-					+ (blendFrontlerp * ((float *)&tbone[5])[j]);
-			}
-		}
-
-  		if (!child)
-  		{
-			// now multiply by the root matrix, so we can offset this model should we need to
-			Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.rootMatrix, &tbone[2]);
-  		}
+		mdxaBone_t newFrameBone;
+		mdxaBone_t currentFrameBone;
+		UnCompressBone(newFrameBone.matrix, child, BC.header, TB.newFrame);
+		UnCompressBone(currentFrameBone.matrix, child, BC.header, TB.currentFrame);		
+		Mat3x4_Lerp(&currentBone, &newFrameBone, &currentFrameBone, TB.backlerp);
 	}
-	// figure out where the bone hirearchy info is
-	offsets = (mdxaSkelOffsets_t *)((byte *)BC.header + sizeof(mdxaHeader_t));
-	skel = (mdxaSkel_t *)((byte *)BC.header + sizeof(mdxaHeader_t) + offsets->offsets[child]);
-//	skel = BC.mSkels[child];
-	//rww - removed mSkels
 
-	int parent=BC.mFinalBones[child].parent;
-	assert((parent==-1&&child==0)||(parent>=0&&parent<(int)BC.mBones.size()));
-	if (angleOverride & BONE_ANGLES_REPLACE)
+	// are we blending with another frame of anim?
+	// blend in the other frame if we need to
+	if ( TB.blendMode )
 	{
-		bool isRag=!!(angleOverride & BONE_ANGLES_RAGDOLL);
-		if (!isRag)
-		{ //do the same for ik.. I suppose.
-			isRag = !!(angleOverride & BONE_ANGLES_IK);
-		}
+		mdxaBone_t blendFrameBone;
+		mdxaBone_t blendOldFrameBone;
+		UnCompressBone(blendFrameBone.matrix, child, BC.header, TB.blendFrame);
+		UnCompressBone(blendOldFrameBone.matrix, child, BC.header, TB.blendOldFrame);
 
-		mdxaBone_t &bone = BC.mFinalBones[child].boneMatrix;
-		boneInfo_t &boneOverride = boneList[boneListIndex];
+		const float backlerp = TB.blendFrame - (int)TB.blendFrame;
+		mdxaBone_t lerpFrameBone;
+		Mat3x4_Lerp(&lerpFrameBone, &blendFrameBone, &blendOldFrameBone, backlerp);
+		Mat3x4_Lerp(&currentBone, &currentBone, &lerpFrameBone, TB.blendLerp);
+	}
 
+	if ( !child )
+	{
+		// now multiply by the root matrix, so we can offset this model
+		// should we need to
+		BC.mFinalBones[child].boneMatrix = BC.rootMatrix * currentBone;
+	}
+
+	// figure out where the bone hirearchy info is
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)BC.header + sizeof(mdxaHeader_t));
+	mdxaSkel_t *skel =
+		(mdxaSkel_t *)((byte *)offsets + offsets->offsets[child]);
+
+	int parent = BC.mFinalBones[child].parent;
+	assert((parent == -1 && child == 0) || (parent >= 0 && parent < (int)BC.mBones.size()));
+
+	if ( angleOverride & BONE_ANGLES_REPLACE )
+	{
+		const bool isRag =
+			((angleOverride & (BONE_ANGLES_RAGDOLL | BONE_ANGLES_IK)) != 0);
+
+		mdxaBone_t& bone = BC.mFinalBones[child].boneMatrix;
+		const boneInfo_t& boneOverride = boneList[boneListIndex];
+
+		// give us the matrix the animation thinks we should have, so we
+		// can get the correct X&Y coors
+		const mdxaBone_t firstPass = BC.mFinalBones[parent].boneMatrix * currentBone;
 		if (isRag)
 		{
-			mdxaBone_t temp, firstPass;
-			// give us the matrix the animation thinks we should have, so we can get the correct X&Y coors
-			Multiply_3x4Matrix(&firstPass, &BC.mFinalBones[parent].boneMatrix, &tbone[2]);
-			// this is crazy, we are gonna drive the animation to ID while we are doing post mults to compensate.
-			Multiply_3x4Matrix(&temp,&firstPass, &skel->BasePoseMat);
-			float	matrixScale = VectorLength((float*)&temp);
-			static mdxaBone_t		toMatrix = 
+			// this is crazy, we are gonna drive the animation to ID while we
+			// are doing post mults to compensate.
+			mdxaBone_t temp = firstPass * skel->BasePoseMat;
+			const float matrixScale = VectorLength((float*)&temp);
+			mdxaBone_t toMatrix = 
 			{ 
 				{
 					{ 1.0f, 0.0f, 0.0f, 0.0f },
@@ -1713,53 +1741,40 @@ void G2_TransformBone (int child,CBoneCache &BC)
 					{ 0.0f, 0.0f, 1.0f, 0.0f }
 				}
 			};
-			toMatrix.matrix[0][0]=matrixScale;
-			toMatrix.matrix[1][1]=matrixScale;
-			toMatrix.matrix[2][2]=matrixScale;
-			toMatrix.matrix[0][3]=temp.matrix[0][3];
-			toMatrix.matrix[1][3]=temp.matrix[1][3];
-			toMatrix.matrix[2][3]=temp.matrix[2][3];
+			toMatrix.matrix[0][0] = matrixScale;
+			toMatrix.matrix[1][1] = matrixScale;
+			toMatrix.matrix[2][2] = matrixScale;
+			toMatrix.matrix[0][3] = temp.matrix[0][3];
+			toMatrix.matrix[1][3] = temp.matrix[1][3];
+			toMatrix.matrix[2][3] = temp.matrix[2][3];
 
- 			Multiply_3x4Matrix(&temp, &toMatrix,&skel->BasePoseMatInv); //dest first arg
+			temp = toMatrix * skel->BasePoseMatInv;
 
-			float blendTime = BC.incomingTime - boneList[boneListIndex].boneBlendStart;
-			float blendLerp = (blendTime / boneList[boneListIndex].boneBlendTime);
-			if (blendLerp>0.0f)
+			float blendTime = BC.incomingTime - boneOverride.boneBlendStart;
+			float blendLerp = (blendTime / boneOverride.boneBlendTime);
+			if (blendLerp > 0.0f)
 			{
 				// has started
-				if (blendLerp>1.0f)
+				if (blendLerp > 1.0f)
 				{
-					// done
-//					Multiply_3x4Matrix(&bone, &BC.mFinalBones[parent].boneMatrix,&temp);
-					memcpy (&bone,&temp, sizeof(mdxaBone_t));
+					bone = temp;
 				}
 				else
 				{
-//					mdxaBone_t lerp;
-					// now do the blend into the destination
-					float blendFrontlerp = 1.0 - blendLerp;
-	  				for ( j = 0 ; j < 12 ; j++ ) 
-					{
-  						((float *)&bone)[j] = (blendLerp * ((float *)&temp)[j])
-							+ (blendFrontlerp * ((float *)&tbone[2])[j]);
-					}
-//					Multiply_3x4Matrix(&bone, &BC.mFinalBones[parent].boneMatrix,&lerp);
+					Mat3x4_Lerp(&bone, &temp, &currentBone, blendLerp);
 				}
 			}
 		}
 		else
 		{
-			mdxaBone_t temp, firstPass;
-
-			// give us the matrix the animation thinks we should have, so we can get the correct X&Y coors
-			Multiply_3x4Matrix(&firstPass, &BC.mFinalBones[parent].boneMatrix, &tbone[2]);
-
-			// are we attempting to blend with the base animation? and still within blend time?
-			if (boneOverride.boneBlendTime && (((boneOverride.boneBlendTime + boneOverride.boneBlendStart) < BC.incomingTime)))
+			// are we attempting to blend with the base animation? and still
+			// within blend time?
+			if (boneOverride.boneBlendTime > 0.0f &&
+				(((boneOverride.boneBlendStart + boneOverride.boneBlendTime) < BC.incomingTime)))
 			{
 				// ok, we are supposed to be blending. Work out lerp
-				float blendTime = BC.incomingTime - boneList[boneListIndex].boneBlendStart;
-				float blendLerp = (blendTime / boneList[boneListIndex].boneBlendTime);
+				const float blendTime = BC.incomingTime - boneOverride.boneBlendStart;
+				const float blendLerp = (blendTime / boneOverride.boneBlendTime);
 
 				if (blendLerp <= 1)
 				{
@@ -1768,245 +1783,126 @@ void G2_TransformBone (int child,CBoneCache &BC)
 						assert(0);
 					}
 
-					// now work out the matrix we want to get *to* - firstPass is where we are coming *from*
-					Multiply_3x4Matrix(&temp, &firstPass, &skel->BasePoseMat);
+					// now work out the matrix we want to get *to* - firstPass
+					// is where we are coming *from*
+					mdxaBone_t temp = firstPass * skel->BasePoseMat;
+					const float matrixScale = VectorLength((const float*)&temp);
 
-					float	matrixScale = VectorLength((float*)&temp);
+					const mdxaBone_t& m =
+						HackadelicOnClient ? boneOverride.newMatrix : boneOverride.matrix;
 
-					mdxaBone_t	newMatrixTemp;
-					
-					if (HackadelicOnClient)
-					{
-						for (int i=0; i<3;i++)
-						{
-							for(int x=0;x<3; x++)
-							{
-								newMatrixTemp.matrix[i][x] = boneOverride.newMatrix.matrix[i][x]*matrixScale;
-							}
-						}
+					mdxaBone_t newMatrixTemp;
+					Mat3x4_Scale(&newMatrixTemp, &m, matrixScale);
+					newMatrixTemp.matrix[0][3] = temp.matrix[0][3];
+					newMatrixTemp.matrix[1][3] = temp.matrix[1][3];
+					newMatrixTemp.matrix[2][3] = temp.matrix[2][3];
 
-						newMatrixTemp.matrix[0][3] = temp.matrix[0][3];
-						newMatrixTemp.matrix[1][3] = temp.matrix[1][3]; 
-						newMatrixTemp.matrix[2][3] = temp.matrix[2][3];
-					}
-					else
-					{
-						for (int i=0; i<3;i++)
-						{
-							for(int x=0;x<3; x++)
-							{
-								newMatrixTemp.matrix[i][x] = boneOverride.matrix.matrix[i][x]*matrixScale;
-							}
-						}
-
-						newMatrixTemp.matrix[0][3] = temp.matrix[0][3];
-						newMatrixTemp.matrix[1][3] = temp.matrix[1][3]; 
-						newMatrixTemp.matrix[2][3] = temp.matrix[2][3];
-					}
-				
- 					Multiply_3x4Matrix(&temp, &newMatrixTemp,&skel->BasePoseMatInv);
-
-					// now do the blend into the destination
-					float blendFrontlerp = 1.0 - blendLerp;
-	  				for ( j = 0 ; j < 12 ; j++ ) 
-					{
-  						((float *)&bone)[j] = (blendLerp * ((float *)&temp)[j])
-							+ (blendFrontlerp * ((float *)&firstPass)[j]);
-					}
+ 					temp = newMatrixTemp * skel->BasePoseMatInv;
+					Mat3x4_Lerp(&bone, &temp, &firstPass, blendLerp);
 				}
 				else
 				{
 					bone = firstPass;
 				}
 			}
-			// no, so just override it directly
 			else
 			{
+				// no, so just override it directly
+				const mdxaBone_t temp = firstPass * skel->BasePoseMat;
+				const float matrixScale = VectorLength((const float*)&temp);
 
-				Multiply_3x4Matrix(&temp,&firstPass, &skel->BasePoseMat);
-				float	matrixScale = VectorLength((float*)&temp);
+				const mdxaBone_t& m =
+					HackadelicOnClient ? boneOverride.newMatrix : boneOverride.matrix;
 
-				mdxaBone_t	newMatrixTemp;
-				
-				if (HackadelicOnClient)
-				{
-					for (int i=0; i<3;i++)
-					{
-						for(int x=0;x<3; x++)
-						{
-							newMatrixTemp.matrix[i][x] = boneOverride.newMatrix.matrix[i][x]*matrixScale;
-						}
-					}
-					
-					newMatrixTemp.matrix[0][3] = temp.matrix[0][3];
-					newMatrixTemp.matrix[1][3] = temp.matrix[1][3]; 
-					newMatrixTemp.matrix[2][3] = temp.matrix[2][3];
-				}
-				else
-				{
-					for (int i=0; i<3;i++)
-					{
-						for(int x=0;x<3; x++)
-						{
-							newMatrixTemp.matrix[i][x] = boneOverride.matrix.matrix[i][x]*matrixScale;
-						}
-					}
-					
-					newMatrixTemp.matrix[0][3] = temp.matrix[0][3];
-					newMatrixTemp.matrix[1][3] = temp.matrix[1][3]; 
-					newMatrixTemp.matrix[2][3] = temp.matrix[2][3];
-				}
-			
- 				Multiply_3x4Matrix(&bone, &newMatrixTemp,&skel->BasePoseMatInv);
+				mdxaBone_t newMatrixTemp;
+				Mat3x4_Scale(&newMatrixTemp, &m, matrixScale);
+				newMatrixTemp.matrix[0][3] = temp.matrix[0][3];
+				newMatrixTemp.matrix[1][3] = temp.matrix[1][3];
+				newMatrixTemp.matrix[2][3] = temp.matrix[2][3];
+
+ 				bone = newMatrixTemp * skel->BasePoseMatInv;
 			}
 		}
 	}
 	else if (angleOverride & BONE_ANGLES_PREMULT)
 	{
-		if ((angleOverride&BONE_ANGLES_RAGDOLL) || (angleOverride&BONE_ANGLES_IK))
+		const mdxaBone_t& boneA =
+			child ? BC.mFinalBones[parent].boneMatrix : BC.rootMatrix;
+
+		const mdxaBone_t& boneB =
+			HackadelicOnClient ?
+				boneList[boneListIndex].newMatrix :
+				boneList[boneListIndex].matrix;
+
+		BC.mFinalBones[child].boneMatrix = boneA * boneB;
+
+		if ((angleOverride & (BONE_ANGLES_RAGDOLL | BONE_ANGLES_IK)) == 0)
 		{
-			mdxaBone_t	tmp;
-			if (!child)
-			{
-				if (HackadelicOnClient)
-				{
-					Multiply_3x4Matrix(&tmp, &BC.rootMatrix, &boneList[boneListIndex].newMatrix);
-				}
-				else
-				{
-					Multiply_3x4Matrix(&tmp, &BC.rootMatrix, &boneList[boneListIndex].matrix);
-				}
-			}
-			else
-			{
-				if (HackadelicOnClient)
-				{
-					Multiply_3x4Matrix(&tmp, &BC.mFinalBones[parent].boneMatrix, &boneList[boneListIndex].newMatrix);
-				}
-				else
-				{
-					Multiply_3x4Matrix(&tmp, &BC.mFinalBones[parent].boneMatrix, &boneList[boneListIndex].matrix);
-				}
-			}
-			Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix,&tmp, &tbone[2]);
-		}
-		else
-		{
-			if (!child)
-			{
-				// use the in coming root matrix as our basis
-				if (HackadelicOnClient)
-				{
-					Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.rootMatrix, &boneList[boneListIndex].newMatrix);
-				}
-				else
-				{
-					Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.rootMatrix, &boneList[boneListIndex].matrix);
-				}
- 			}
-			else
-			{
-				// convert from 3x4 matrix to a 4x4 matrix
-				if (HackadelicOnClient)
-				{
-					Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.mFinalBones[parent].boneMatrix, &boneList[boneListIndex].newMatrix);
-				}
-				else
-				{
-					Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.mFinalBones[parent].boneMatrix, &boneList[boneListIndex].matrix);
-				}
-			}
+			BC.mFinalBones[child].boneMatrix =
+				BC.mFinalBones[child].boneMatrix * currentBone;
 		}
 	}
-	else
-	// now transform the matrix by it's parent, asumming we have a parent, and we aren't overriding the angles absolutely
-	if (child)
+	else if (child)
 	{
-		Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &BC.mFinalBones[parent].boneMatrix, &tbone[2]);
+		// now transform the matrix by it's parent, asumming we have a parent, and
+		// we aren't overriding the angles absolutely
+		BC.mFinalBones[child].boneMatrix =
+			BC.mFinalBones[parent].boneMatrix * currentBone;
 	}
 
 	// now multiply our resulting bone by an override matrix should we need to
 	if (angleOverride & BONE_ANGLES_POSTMULT)
 	{
-		mdxaBone_t	tempMatrix;
-		memcpy (&tempMatrix,&BC.mFinalBones[child].boneMatrix, sizeof(mdxaBone_t));
-		if (HackadelicOnClient)
-		{
-		  	Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &tempMatrix, &boneList[boneListIndex].newMatrix);
-		}
-		else
-		{
-		  	Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix, &tempMatrix, &boneList[boneListIndex].matrix);
-		}
-	}
-	/*
-	if (r_Ghoul2UnSqash->integer)
-	{
-		mdxaBone_t tempMatrix;
-		Multiply_3x4Matrix(&tempMatrix,&BC.mFinalBones[child].boneMatrix, &skel->BasePoseMat);
-		float maxl;
-		maxl=VectorLength(&skel->BasePoseMat.matrix[0][0]);
-		VectorNormalize(&tempMatrix.matrix[0][0]);
-		VectorNormalize(&tempMatrix.matrix[1][0]);
-		VectorNormalize(&tempMatrix.matrix[2][0]);
+		const mdxaBone_t& postMultMatrix =
+			HackadelicOnClient ?
+				boneList[boneListIndex].newMatrix :
+				boneList[boneListIndex].matrix;
 
-		VectorScale(&tempMatrix.matrix[0][0],maxl,&tempMatrix.matrix[0][0]);
-		VectorScale(&tempMatrix.matrix[1][0],maxl,&tempMatrix.matrix[1][0]);
-		VectorScale(&tempMatrix.matrix[2][0],maxl,&tempMatrix.matrix[2][0]);
-		Multiply_3x4Matrix(&BC.mFinalBones[child].boneMatrix,&tempMatrix,&skel->BasePoseMatInv);
+		BC.mFinalBones[child].boneMatrix =
+			BC.mFinalBones[child].boneMatrix * postMultMatrix;
 	}
-	*/
-	//rwwFIXMEFIXME: Care?
-
 }
 
-void G2_SetUpBolts( mdxaHeader_t *header, CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, boltInfo_v &boltList)
+void G2_SetUpBolts(
+	mdxaHeader_t *header,
+	CGhoul2Info &ghoul2,
+	mdxaBone_v &bonePtr,
+	boltInfo_v &boltList)
 {
-	mdxaSkel_t		*skel;
-	mdxaSkelOffsets_t *offsets;
-	offsets = (mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
+	mdxaSkelOffsets_t *offsets =
+		(mdxaSkelOffsets_t *)((byte *)header + sizeof(mdxaHeader_t));
 
-	for (size_t i=0; i<boltList.size(); i++)
+	for ( size_t i = 0; i < boltList.size(); ++i )
 	{
-		if (boltList[i].boneNumber != -1)
+		if ( boltList[i].boneNumber == -1 )
 		{
-			// figure out where the bone hirearchy info is
-			skel = (mdxaSkel_t *)((byte *)header + sizeof(mdxaHeader_t) + offsets->offsets[boltList[i].boneNumber]);
-			Multiply_3x4Matrix(&boltList[i].position, &bonePtr[boltList[i].boneNumber].second, &skel->BasePoseMat);
+			continue;
 		}
+
+		// figure out where the bone hirearchy info is
+		mdxaSkel_t *skel =
+			(mdxaSkel_t *)((byte *)offsets + offsets->offsets[boltList[i].boneNumber]);
+		boltList[i].position = bonePtr[boltList[i].boneNumber].second * skel->BasePoseMat;
 	}
 }
 
-//rww - RAGDOLL_BEGIN
 #define		GHOUL2_RAG_STARTED						0x0010
-//rww - RAGDOLL_END
 //rwwFIXMEFIXME: Move this into the stupid header or something.
 
-void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGhoul2Info &ghoul2, int time,bool smooth=true)
+static void G2_TransformGhoulBones(
+	boneInfo_v &rootBoneList,
+	mdxaBone_t &rootMatrix,
+	CGhoul2Info &ghoul2,
+	int time,
+	bool smooth = true)
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_G2_TransformGhoulBones.Start();
 	G2PerformanceCounter_G2_TransformGhoulBones++;
 #endif
 
-	/*
-	model_t			*currentModel;
-	model_t			*animModel;
-	mdxaHeader_t	*aHeader;
-
-	//currentModel = R_GetModelByHandle(RE_RegisterModel(ghoul2.mFileName));
-	currentModel = R_GetModelByHandle(ghoul2.mModel);
-	assert(currentModel);
-	assert(currentModel->mdxm);
-
-	animModel =  R_GetModelByHandle(currentModel->mdxm->animIndex);
-	assert(animModel);
-	aHeader = animModel->mdxa;
-	assert(aHeader);
-	*/
-	model_t			*currentModel = (model_t *)ghoul2.currentModel;
-	mdxaHeader_t	*aHeader = (mdxaHeader_t *)ghoul2.aHeader;
-
+	model_t *currentModel = (model_t *)ghoul2.currentModel;
+	mdxaHeader_t *aHeader = (mdxaHeader_t *)ghoul2.aHeader;
 
 	assert(ghoul2.aHeader);
 	assert(ghoul2.currentModel);
@@ -2032,53 +1928,30 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 	ghoul2.mBoneCache->mUnsquash=false;
 
 	// master smoothing control
-	if (HackadelicOnClient && smooth && !ri->Cvar_VariableIntegerValue( "dedicated" ))
+	if (HackadelicOnClient && smooth && !ri->Cvar_VariableIntegerValue("dedicated"))
 	{
-		ghoul2.mBoneCache->mLastTouch=ghoul2.mBoneCache->mLastLastTouch;
-		/*
-		float val=r_Ghoul2AnimSmooth->value;
-		if (smooth&&val>0.0f&&val<1.0f)
-		{
-		//	if (HackadelicOnClient)
-		//	{
-				ghoul2.mBoneCache->mLastTouch=ghoul2.mBoneCache->mLastLastTouch;
-		//	}
-
-			ghoul2.mBoneCache->mSmoothFactor=val;
-			ghoul2.mBoneCache->mSmoothingActive=true;
-			if (r_Ghoul2UnSqashAfterSmooth->integer)
-			{
-				ghoul2.mBoneCache->mUnsquash=true;
-			}
-		}
-		else
-		{
-			ghoul2.mBoneCache->mSmoothFactor=1.0f;
-		}
-		*/
+		ghoul2.mBoneCache->mLastTouch = ghoul2.mBoneCache->mLastLastTouch;
 
 		// master smoothing control
-		float val=r_Ghoul2AnimSmooth->value;
-		if (val>0.0f&&val<1.0f)
+		float val = r_Ghoul2AnimSmooth->value;
+		if (val > 0.0f && val < 1.0f)
 		{
-			//if (ghoul2.mFlags&GHOUL2_RESERVED_FOR_RAGDOLL)
-#if 1
-			if(ghoul2.mFlags & GHOUL2_CRAZY_SMOOTH)
+			if (ghoul2.mFlags & GHOUL2_CRAZY_SMOOTH)
 			{
 				val = 0.9f;
 			}
-			else if(ghoul2.mFlags & GHOUL2_RAG_STARTED)
+			else if (ghoul2.mFlags & GHOUL2_RAG_STARTED)
 			{
-				for (size_t k=0;k<rootBoneList.size();k++)
+				for (size_t k = 0; k < rootBoneList.size(); k++)
 				{
-					boneInfo_t &bone=rootBoneList[k];
-					if (bone.flags&BONE_ANGLES_RAGDOLL)
+					boneInfo_t &bone = rootBoneList[k];
+					if (bone.flags & BONE_ANGLES_RAGDOLL)
 					{
 						if (bone.firstCollisionTime &&
-							bone.firstCollisionTime>time-250 &&
-							bone.firstCollisionTime<time)
+							bone.firstCollisionTime > (time - 250) &&
+							bone.firstCollisionTime < time)
 						{
-							val=0.9f;//(val+0.8f)/2.0f;
+							val = 0.9f;
 						}
 						else if (bone.airTime > time)
 						{
@@ -2092,51 +1965,47 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 					}
 				}
 			}
-#endif
 
-//			ghoul2.mBoneCache->mSmoothFactor=(val + 1.0f-pow(1.0f-val,50.0f/dif))/2.0f;  // meaningless formula
-			ghoul2.mBoneCache->mSmoothFactor=val;  // meaningless formula
-			ghoul2.mBoneCache->mSmoothingActive=true;
+			ghoul2.mBoneCache->mSmoothFactor = val; // meaningless formula
+			ghoul2.mBoneCache->mSmoothingActive = true;
 
 			if (r_Ghoul2UnSqashAfterSmooth->integer)
 			{
-				ghoul2.mBoneCache->mUnsquash=true;
+				ghoul2.mBoneCache->mUnsquash = true;
 			}
 		}
 	}
 	else
 	{
-		ghoul2.mBoneCache->mSmoothFactor=1.0f;
+		ghoul2.mBoneCache->mSmoothFactor = 1.0f;
 	}
 
 	ghoul2.mBoneCache->mCurrentTouch++;
 
-//rww - RAGDOLL_BEGIN
 	if (HackadelicOnClient)
 	{
-		ghoul2.mBoneCache->mLastLastTouch=ghoul2.mBoneCache->mCurrentTouch;
-		ghoul2.mBoneCache->mCurrentTouchRender=ghoul2.mBoneCache->mCurrentTouch;
+		ghoul2.mBoneCache->mLastLastTouch = ghoul2.mBoneCache->mCurrentTouch;
+		ghoul2.mBoneCache->mCurrentTouchRender = ghoul2.mBoneCache->mCurrentTouch;
 	}
 	else
 	{
-		ghoul2.mBoneCache->mCurrentTouchRender=0;
+		ghoul2.mBoneCache->mCurrentTouchRender = 0;
 	}
-//rww - RAGDOLL_END
 
-	ghoul2.mBoneCache->frameSize = 0;// can be deleted in new G2 format	//(size_t)( &((mdxaFrame_t *)0)->boneIndexes[ ghoul2.aHeader->numBones ] );   
+	ghoul2.mBoneCache->frameSize = 0;
 
-	ghoul2.mBoneCache->rootBoneList=&rootBoneList;
-	ghoul2.mBoneCache->rootMatrix=rootMatrix;
-	ghoul2.mBoneCache->incomingTime=time;
+	ghoul2.mBoneCache->rootBoneList = &rootBoneList;
+	ghoul2.mBoneCache->rootMatrix = rootMatrix;
+	ghoul2.mBoneCache->incomingTime = time;
 
-	SBoneCalc &TB=ghoul2.mBoneCache->Root();
-	TB.newFrame=0;
-	TB.currentFrame=0;
-	TB.backlerp=0.0f;
-	TB.blendFrame=0;
-	TB.blendOldFrame=0;
-	TB.blendMode=false;
-	TB.blendLerp=0;
+	SBoneCalc &TB = ghoul2.mBoneCache->Root();
+	TB.newFrame = 0;
+	TB.currentFrame = 0;
+	TB.backlerp = 0.0f;
+	TB.blendFrame = 0;
+	TB.blendOldFrame = 0;
+	TB.blendMode = false;
+	TB.blendLerp = 0;
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2Time_G2_TransformGhoulBones += G2PerformanceTimer_G2_TransformGhoulBones.End();
@@ -2152,87 +2021,122 @@ void G2_TransformGhoulBones(boneInfo_v &rootBoneList,mdxaBone_t &rootMatrix, CGh
 
 
 // We've come across a surface that's designated as a bolt surface, process it and put it in the appropriate bolt place
-void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int boltNum, boltInfo_v &boltList, surfaceInfo_t *surfInfo, model_t *mod)
+void G2_ProcessSurfaceBolt(
+	mdxaBone_v &bonePtr,
+	mdxmSurface_t *surface,
+	int boltNum,
+	boltInfo_v &boltList,
+	surfaceInfo_t *surfInfo,
+	model_t *mod)
 {
- 	mdxmVertex_t 	*v, *vert0, *vert1, *vert2;
- 	vec3_t			axes[3], sides[3];
- 	float			pTri[3][3], d;
- 	int				j, k;
+	mdxmVertex_t *v, *vert0, *vert1, *vert2;
+	vec3_t axes[3], sides[3];
+	float pTri[3][3], d;
+	int j, k;
 
-	// now there are two types of tag surface - model ones and procedural generated types - lets decide which one we have here.
+	// now there are two types of tag surface - model ones and procedural
+	// generated types - lets decide which one we have here.
 	if (surfInfo && surfInfo->offFlags == G2SURFACEFLAG_GENERATED)
 	{
 		int surfNumber = surfInfo->genPolySurfaceIndex & 0x0ffff;
-		int	polyNumber = (surfInfo->genPolySurfaceIndex >> 16) & 0x0ffff;
+		int polyNumber = (surfInfo->genPolySurfaceIndex >> 16) & 0x0ffff;
 
 		// find original surface our original poly was in.
-		mdxmSurface_t	*originalSurf = (mdxmSurface_t *)G2_FindSurface((void*)mod, surfNumber, surfInfo->genLod);
-		mdxmTriangle_t	*originalTriangleIndexes = (mdxmTriangle_t *)((byte*)originalSurf + originalSurf->ofsTriangles);
+		mdxmSurface_t *originalSurf =
+			(mdxmSurface_t *)G2_FindSurface((void *)mod, surfNumber, surfInfo->genLod);
+		mdxmTriangle_t *originalTriangleIndexes =
+			(mdxmTriangle_t *)((byte *)originalSurf + originalSurf->ofsTriangles);
 
-		// get the original polys indexes 
+		// get the original polys indexes
 		int index0 = originalTriangleIndexes[polyNumber].indexes[0];
 		int index1 = originalTriangleIndexes[polyNumber].indexes[1];
 		int index2 = originalTriangleIndexes[polyNumber].indexes[2];
 
 		// decide where the original verts are
 
- 		vert0 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert0+= index0;
+		vert0 = (mdxmVertex_t *)((byte *)originalSurf + originalSurf->ofsVerts);
+		vert0 += index0;
 
- 		vert1 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert1+= index1;
-		
- 		vert2 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert2+= index2;
+		vert1 = (mdxmVertex_t *)((byte *)originalSurf + originalSurf->ofsVerts);
+		vert1 += index1;
+
+		vert2 = (mdxmVertex_t *)((byte *)originalSurf + originalSurf->ofsVerts);
+		vert2 += index2;
 
 		// clear out the triangle verts to be
- 	   	VectorClear( pTri[0] );
- 	   	VectorClear( pTri[1] );
- 	   	VectorClear( pTri[2] );
+		VectorClear(pTri[0]);
+		VectorClear(pTri[1]);
+		VectorClear(pTri[2]);
 
-//		mdxmWeight_t	*w;
+		int *piBoneRefs = (int *)((byte *)originalSurf + originalSurf->ofsBoneReferences);
 
-		int *piBoneRefs = (int*) ((byte*)originalSurf + originalSurf->ofsBoneReferences);		
-
-		// now go and transform just the points we need from the surface that was hit originally
-//		w = vert0->weights;
+		// now go and transform just the points we need from the surface that
+		// was hit originally
+		//		w = vert0->weights;
 		float fTotalWeight = 0.0f;
-		int iNumWeights = G2_GetVertWeights( vert0 );
- 		for ( k = 0 ; k < iNumWeights ; k++ ) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert0, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert0, k, fTotalWeight, iNumWeights );
+		int iNumWeights = G2_GetVertWeights(vert0);
+		for (k = 0; k < iNumWeights; k++)
+		{
+			int iBoneIndex = G2_GetVertBoneIndex(vert0, k);
+			float fBoneWeight = G2_GetVertBoneWeight(vert0, k, fTotalWeight, iNumWeights);
 
- 			pTri[0][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert0->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
- 			pTri[0][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert0->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
- 			pTri[0][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert0->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
+			pTri[0][0] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert0->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3]);
+			pTri[0][1] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert0->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3]);
+			pTri[0][2] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert0->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3]);
 		}
-//		w = vert1->weights;
+
 		fTotalWeight = 0.0f;
-		iNumWeights = G2_GetVertWeights( vert1 );
- 		for ( k = 0 ; k < iNumWeights ; k++ ) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert1, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert1, k, fTotalWeight, iNumWeights );
+		iNumWeights = G2_GetVertWeights(vert1);
+		for (k = 0; k < iNumWeights; k++)
+		{
+			int iBoneIndex = G2_GetVertBoneIndex(vert1, k);
+			float fBoneWeight = G2_GetVertBoneWeight(vert1, k, fTotalWeight, iNumWeights);
 
- 			pTri[1][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert1->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
- 			pTri[1][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert1->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
- 			pTri[1][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert1->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
+			pTri[1][0] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert1->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3]);
+			pTri[1][1] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert1->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3]);
+			pTri[1][2] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert1->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3]);
 		}
-//		w = vert2->weights;
+
 		fTotalWeight = 0.0f;
-		iNumWeights = G2_GetVertWeights( vert2 );
- 		for ( k = 0 ; k < iNumWeights ; k++ ) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert2, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert2, k, fTotalWeight, iNumWeights );
+		iNumWeights = G2_GetVertWeights(vert2);
+		for (k = 0; k < iNumWeights; k++)
+		{
+			int iBoneIndex = G2_GetVertBoneIndex(vert2, k);
+			float fBoneWeight = G2_GetVertBoneWeight(vert2, k, fTotalWeight, iNumWeights);
 
- 			pTri[2][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert2->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
- 			pTri[2][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert2->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
- 			pTri[2][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert2->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
+			pTri[2][0] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], vert2->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3]);
+			pTri[2][1] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], vert2->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3]);
+			pTri[2][2] +=
+				fBoneWeight *
+				(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], vert2->vertCoords) +
+				 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3]);
 		}
- 			
-   		vec3_t normal;
+
+		vec3_t normal;
 		vec3_t up;
 		vec3_t right;
 		vec3_t vec0, vec1;
@@ -2240,9 +2144,15 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 		float baryCentricK = 1.0 - (surfInfo->genBarycentricI + surfInfo->genBarycentricJ);
 
 		// now we have the model transformed into model space, now generate an origin.
-		boltList[boltNum].position.matrix[0][3] = (pTri[0][0] * surfInfo->genBarycentricI) + (pTri[1][0] * surfInfo->genBarycentricJ) + (pTri[2][0] * baryCentricK);
-		boltList[boltNum].position.matrix[1][3] = (pTri[0][1] * surfInfo->genBarycentricI) + (pTri[1][1] * surfInfo->genBarycentricJ) + (pTri[2][1] * baryCentricK);
-		boltList[boltNum].position.matrix[2][3] = (pTri[0][2] * surfInfo->genBarycentricI) + (pTri[1][2] * surfInfo->genBarycentricJ) + (pTri[2][2] * baryCentricK);
+		boltList[boltNum].position.matrix[0][3] = (pTri[0][0] * surfInfo->genBarycentricI) +
+												  (pTri[1][0] * surfInfo->genBarycentricJ) +
+												  (pTri[2][0] * baryCentricK);
+		boltList[boltNum].position.matrix[1][3] = (pTri[0][1] * surfInfo->genBarycentricI) +
+												  (pTri[1][1] * surfInfo->genBarycentricJ) +
+												  (pTri[2][1] * baryCentricK);
+		boltList[boltNum].position.matrix[2][3] = (pTri[0][2] * surfInfo->genBarycentricI) +
+												  (pTri[1][2] * surfInfo->genBarycentricJ) +
+												  (pTri[2][2] * baryCentricK);
 
 		// generate a normal to this new triangle
 		VectorSubtract(pTri[0], pTri[1], vec0);
@@ -2272,74 +2182,85 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 
 		// right is always straight
 
-		CrossProduct( normal, up, right );
+		CrossProduct(normal, up, right);
 		// that's the up vector
 		boltList[boltNum].position.matrix[0][2] = right[0];
 		boltList[boltNum].position.matrix[1][2] = right[1];
 		boltList[boltNum].position.matrix[2][2] = right[2];
-
-
 	}
 	// no, we are looking at a normal model tag
 	else
 	{
-		int *piBoneRefs = (int*) ((byte*)surface + surface->ofsBoneReferences);		
+		int *piBoneRefs = (int *)((byte *)surface + surface->ofsBoneReferences);
 
-	 	// whip through and actually transform each vertex
- 		v = (mdxmVertex_t *) ((byte *)surface + surface->ofsVerts);
- 		for ( j = 0; j < 3; j++ ) 
- 		{
-// 			mdxmWeight_t	*w;
+		// whip through and actually transform each vertex
+		v = (mdxmVertex_t *)((byte *)surface + surface->ofsVerts);
+		for (j = 0; j < 3; j++)
+		{
+			// 			mdxmWeight_t	*w;
 
- 			VectorClear( pTri[j] );
- //			w = v->weights;
+			VectorClear(pTri[j]);
+			//			w = v->weights;
 
-			const int iNumWeights = G2_GetVertWeights( v );
+			const int iNumWeights = G2_GetVertWeights(v);
 			float fTotalWeight = 0.0f;
- 			for ( k = 0 ; k < iNumWeights ; k++ ) 
- 			{
-				int		iBoneIndex	= G2_GetVertBoneIndex( v, k );
-				float	fBoneWeight	= G2_GetVertBoneWeight( v, k, fTotalWeight, iNumWeights );
+			for (k = 0; k < iNumWeights; k++)
+			{
+				int iBoneIndex = G2_GetVertBoneIndex(v, k);
+				float fBoneWeight = G2_GetVertBoneWeight(v, k, fTotalWeight, iNumWeights);
 
- 				//bone = bonePtr + piBoneRefs[w->boneIndex];
- 				pTri[j][0] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], v->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3] );
- 				pTri[j][1] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], v->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3] );
- 				pTri[j][2] += fBoneWeight * ( DotProduct( bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], v->vertCoords ) + bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3] );
- 			}
- 			
- 			v++;// = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surface->maxVertBoneWeights];
- 		}
+				// bone = bonePtr + piBoneRefs[w->boneIndex];
+				pTri[j][0] +=
+					fBoneWeight *
+					(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0], v->vertCoords) +
+					 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[0][3]);
+				pTri[j][1] +=
+					fBoneWeight *
+					(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1], v->vertCoords) +
+					 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[1][3]);
+				pTri[j][2] +=
+					fBoneWeight *
+					(DotProduct(bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2], v->vertCoords) +
+					 bonePtr[piBoneRefs[iBoneIndex]].second.matrix[2][3]);
+			}
 
- 		// clear out used arrays
- 		memset( axes, 0, sizeof( axes ) );
- 		memset( sides, 0, sizeof( sides ) );
+			v++;
+		}
 
- 		// work out actual sides of the tag triangle
- 		for ( j = 0; j < 3; j++ )
- 		{
- 			sides[j][0] = pTri[(j+1)%3][0] - pTri[j][0];
- 			sides[j][1] = pTri[(j+1)%3][1] - pTri[j][1];
- 			sides[j][2] = pTri[(j+1)%3][2] - pTri[j][2];
- 		}
+		// clear out used arrays
+		memset(axes, 0, sizeof(axes));
+		memset(sides, 0, sizeof(sides));
 
- 		// do math trig to work out what the matrix will be from this triangle's translated position
- 		VectorNormalize2( sides[iG2_TRISIDE_LONGEST], axes[0] );
- 		VectorNormalize2( sides[iG2_TRISIDE_SHORTEST], axes[1] );
+		// work out actual sides of the tag triangle
+		for (j = 0; j < 3; j++)
+		{
+			sides[j][0] = pTri[(j + 1) % 3][0] - pTri[j][0];
+			sides[j][1] = pTri[(j + 1) % 3][1] - pTri[j][1];
+			sides[j][2] = pTri[(j + 1) % 3][2] - pTri[j][2];
+		}
 
- 		// project shortest side so that it is exactly 90 degrees to the longer side
- 		d = DotProduct( axes[0], axes[1] );
- 		VectorMA( axes[0], -d, axes[1], axes[0] );
- 		VectorNormalize2( axes[0], axes[0] );
+		// do math trig to work out what the matrix will be from this
+		// triangle's translated position
+		VectorNormalize2(sides[iG2_TRISIDE_LONGEST], axes[0]);
+		VectorNormalize2(sides[iG2_TRISIDE_SHORTEST], axes[1]);
 
- 		CrossProduct( sides[iG2_TRISIDE_LONGEST], sides[iG2_TRISIDE_SHORTEST], axes[2] );
- 		VectorNormalize2( axes[2], axes[2] );
+		// project shortest side so that it is exactly 90 degrees to the longer
+		// side
+		d = DotProduct(axes[0], axes[1]);
+		VectorMA(axes[0], -d, axes[1], axes[0]);
+		VectorNormalize2(axes[0], axes[0]);
 
- 		// set up location in world space of the origin point in out going matrix
- 		boltList[boltNum].position.matrix[0][3] = pTri[MDX_TAG_ORIGIN][0];
- 		boltList[boltNum].position.matrix[1][3] = pTri[MDX_TAG_ORIGIN][1];
- 		boltList[boltNum].position.matrix[2][3] = pTri[MDX_TAG_ORIGIN][2];
+		CrossProduct(sides[iG2_TRISIDE_LONGEST], sides[iG2_TRISIDE_SHORTEST], axes[2]);
+		VectorNormalize2(axes[2], axes[2]);
 
- 		// copy axis to matrix - do some magic to orient minus Y to positive X and so on so bolt on stuff is oriented correctly
+		// set up location in world space of the origin point in out going
+		// matrix
+		boltList[boltNum].position.matrix[0][3] = pTri[MDX_TAG_ORIGIN][0];
+		boltList[boltNum].position.matrix[1][3] = pTri[MDX_TAG_ORIGIN][1];
+		boltList[boltNum].position.matrix[2][3] = pTri[MDX_TAG_ORIGIN][2];
+
+		// copy axis to matrix - do some magic to orient minus Y to positive X
+		// and so on so bolt on stuff is oriented correctly
 		boltList[boltNum].position.matrix[0][0] = axes[1][0];
 		boltList[boltNum].position.matrix[0][1] = axes[0][0];
 		boltList[boltNum].position.matrix[0][2] = -axes[2][0];
@@ -2352,55 +2273,69 @@ void G2_ProcessSurfaceBolt(mdxaBone_v &bonePtr, mdxmSurface_t *surface, int bolt
 		boltList[boltNum].position.matrix[2][1] = axes[0][2];
 		boltList[boltNum].position.matrix[2][2] = -axes[2][2];
 	}
-
 }
 
- 
-// now go through all the generated surfaces that aren't included in the model surface hierarchy and create the correct bolt info for them				  
+// now go through all the generated surfaces that aren't included in the model
+// surface hierarchy and create the correct bolt info for them
 void G2_ProcessGeneratedSurfaceBolts(CGhoul2Info &ghoul2, mdxaBone_v &bonePtr, model_t *mod_t)
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_G2_ProcessGeneratedSurfaceBolts.Start();
 #endif
+
 	// look through the surfaces off the end of the pre-defined model surfaces
-	for (size_t i=0; i< ghoul2.mSlist.size(); i++)
+	for ( size_t i = 0, numSurfaces = ghoul2.mSlist.size(); i < numSurfaces; i++ )
 	{
-		// only look for bolts if we are actually a generated surface, and not just an overriden one
+		// only look for bolts if we are actually a generated surface, and not
+		// just an overriden one
 		if (ghoul2.mSlist[i].offFlags & G2SURFACEFLAG_GENERATED)
 		{
-	   		// well alrighty then. Lets see if there is a bolt that is attempting to use it
-			int boltNum = G2_Find_Bolt_Surface_Num(ghoul2.mBltlist, i, G2SURFACEFLAG_GENERATED);
-			// yes - ok, processing time.
+			// well alrighty then. Lets see if there is a bolt that is
+			// attempting to use it
+			int boltNum = G2_Find_Bolt_Surface_Num(
+				ghoul2.mBltlist, i, G2SURFACEFLAG_GENERATED);
+
 			if (boltNum != -1)
 			{
-				G2_ProcessSurfaceBolt(bonePtr, NULL, boltNum, ghoul2.mBltlist, &ghoul2.mSlist[i], mod_t);
+				G2_ProcessSurfaceBolt(
+					bonePtr,
+					nullptr,
+					boltNum,
+					ghoul2.mBltlist,
+					&ghoul2.mSlist[i], mod_t);
 			}
 		}
 	}
+
 #ifdef G2_PERFORMANCE_ANALYSIS
-	G2Time_G2_ProcessGeneratedSurfaceBolts += G2PerformanceTimer_G2_ProcessGeneratedSurfaceBolts.End();
+	G2Time_G2_ProcessGeneratedSurfaceBolts +=
+		G2PerformanceTimer_G2_ProcessGeneratedSurfaceBolts.End();
 #endif
 }
 
-void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripping right from SP.
+void RenderSurfaces( CRenderSurface &RS, const trRefEntity_t *ent, int entityNum )
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_RenderSurfaces.Start();
 #endif
-	int			i;
-	const shader_t	*shader = 0;
-	int			offFlags = 0;
+
+	int i;
+	const shader_t *shader = 0;
+	int offFlags = 0;
 #ifdef _G2_GORE
-	bool		drawGore = true;
+	bool drawGore = true;
 #endif
 
 	assert(RS.currentModel);
 	assert(RS.currentModel->data.glm && RS.currentModel->data.glm->header);
 	// back track and get the surfinfo struct for this surface
-	mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, RS.lod);
-	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)RS.currentModel->data.glm->header + sizeof(mdxmHeader_t));
-	mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
-	
+	mdxmSurface_t *surface =
+		(mdxmSurface_t *)G2_FindSurface(RS.currentModel, RS.surfaceNum, RS.lod);
+	mdxmHierarchyOffsets_t *surfIndexes = (mdxmHierarchyOffsets_t *)
+		((byte *)RS.currentModel->data.glm->header + sizeof(mdxmHeader_t));
+	mdxmSurfHierarchy_t *surfInfo = (mdxmSurfHierarchy_t *)
+		((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
+
 	// see if we have an override surface in the surface list
 	const surfaceInfo_t	*surfOverride = G2_FindOverrideSurface(RS.surfaceNum, RS.rootSList);
 
@@ -2441,98 +2376,114 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 			shader = R_GetShaderByHandle( surfInfo->shaderIndex );
 		}
 
-		int cubemapIndex = R_CubemapForPoint (tr.currentEntity->e.origin);
+		int cubemapIndex = R_CubemapForPoint (ent->e.origin);
 
 		// don't add third_person objects if not viewing through a portal
 		if ( !RS.personalModel ) 
-		{		// set the surface info to point at the where the transformed bone list is going to be for when the surface gets rendered out
+		{
+			// set the surface info to point at the where the transformed bone
+			// list is going to be for when the surface gets rendered out
 			CRenderableSurface *newSurf = AllocGhoul2RenderableSurface();
 			newSurf->vboMesh = &RS.currentModel->data.glm->vboModels[RS.lod].vboMeshes[RS.surfaceNum];
 			assert (newSurf->vboMesh != NULL && RS.surfaceNum == surface->thisSurfaceIndex);
 			newSurf->surfaceData = surface;
 			newSurf->boneCache = RS.boneCache;
 
-			R_AddDrawSurf ((surfaceType_t *)newSurf, entityNum, (shader_t *)shader, RS.fogNum, qfalse, R_IsPostRenderEntity (entityNum, tr.currentEntity), cubemapIndex);
+			R_AddDrawSurf(
+				(surfaceType_t *)newSurf,
+				entityNum,
+				(shader_t *)shader,
+				RS.fogNum,
+				qfalse,
+				R_IsPostRenderEntity(ent),
+				cubemapIndex);
 
 #ifdef _G2_GORE
-			if (RS.gore_set && drawGore)
+			if ( RS.gore_set && drawGore )
 			{
 				int curTime = G2API_GetTime(tr.refdef.time);
-				std::pair<std::multimap<int,SGoreSurface>::iterator,std::multimap<int,SGoreSurface>::iterator> range=
-					RS.gore_set->mGoreRecords.equal_range(RS.surfaceNum);
-				std::multimap<int,SGoreSurface>::iterator k,kcur;
-				CRenderableSurface *last=newSurf;
-				for (k=range.first;k!=range.second;)
-				{
-					kcur=k;
-					k++;
-					GoreTextureCoordinates *tex=FindGoreRecord((*kcur).second.mGoreTag);
-					if (!tex ||											 // it is gone, lets get rid of it
-						(kcur->second.mDeleteTime && curTime>=kcur->second.mDeleteTime)) // out of time
-					{
-						if (tex)
-						{
-							(*tex).~GoreTextureCoordinates();
-							//I don't know what's going on here, it should call the destructor for
-							//this when it erases the record but sometimes it doesn't. -rww
-						}
 
+				auto range = RS.gore_set->mGoreRecords.equal_range(RS.surfaceNum);
+				CRenderableSurface *last = newSurf;
+				for ( auto k = range.first; k != range.second; /* blank */ )
+				{
+					auto kcur = k;
+					k++;
+
+					GoreTextureCoordinates *tex = FindGoreRecord(kcur->second.mGoreTag);
+					if (!tex ||	// it is gone, lets get rid of it
+						(kcur->second.mDeleteTime &&
+						 curTime >= kcur->second.mDeleteTime)) // out of time
+					{
 						RS.gore_set->mGoreRecords.erase(kcur);
 					}
 					else if (tex->tex[RS.lod])
 					{
 						CRenderableSurface *newSurf2 = AllocGhoul2RenderableSurface();
-						*newSurf2=*newSurf;
-						newSurf2->goreChain=0;
-						newSurf2->alternateTex=tex->tex[RS.lod];
-						newSurf2->scale=1.0f;
-						newSurf2->fade=1.0f;
-						newSurf2->impactTime=1.0f;	// done with
-						int magicFactor42=500; // ms, impact time
-						if (curTime>(*kcur).second.mGoreGrowStartTime && curTime<(*kcur).second.mGoreGrowStartTime+magicFactor42)
+						*newSurf2 = *newSurf;
+						newSurf2->goreChain = 0;
+						newSurf2->alternateTex = tex->tex[RS.lod];
+						newSurf2->scale = 1.0f;
+						newSurf2->fade = 1.0f;
+						newSurf2->impactTime = 1.0f;  // done with
+						int magicFactor42 = 500; // ms, impact time
+						if (curTime > kcur->second.mGoreGrowStartTime &&
+							curTime < (kcur->second.mGoreGrowStartTime + magicFactor42) )
 						{
-							newSurf2->impactTime=float(curTime-(*kcur).second.mGoreGrowStartTime)/float(magicFactor42);  // linear
+							newSurf2->impactTime =
+								float(curTime - kcur->second.mGoreGrowStartTime) /
+								float(magicFactor42);  // linear
 						}
-						if (curTime<(*kcur).second.mGoreGrowEndTime)
+
+						if (curTime < kcur->second.mGoreGrowEndTime)
 						{
-							newSurf2->scale=1.0f/((curTime-(*kcur).second.mGoreGrowStartTime)*(*kcur).second.mGoreGrowFactor + (*kcur).second.mGoreGrowOffset);
-							if (newSurf2->scale<1.0f)
-							{
-								newSurf2->scale=1.0f;
-							}
+							newSurf2->scale = Q_max(
+								1.0f,
+								1.0f /
+									((curTime - kcur->second.mGoreGrowStartTime) *
+									kcur->second.mGoreGrowFactor +
+									kcur->second.mGoreGrowOffset));
 						}
+
 						shader_t *gshader;
-						if ((*kcur).second.shader)
+						if (kcur->second.shader)
 						{
- 							gshader=R_GetShaderByHandle((*kcur).second.shader);
+ 							gshader = R_GetShaderByHandle(kcur->second.shader);
 						}
 						else
 						{
-							gshader=R_GetShaderByHandle(goreShader);
+							gshader = R_GetShaderByHandle(goreShader);
 						}
 
 						// Set fade on surf.
-						//Only if we have a fade time set, and let us fade on rgb if we want -rww
-						if ((*kcur).second.mDeleteTime && (*kcur).second.mFadeTime)
+						// Only if we have a fade time set, and let us fade on
+						// rgb if we want -rww
+						if (kcur->second.mDeleteTime && kcur->second.mFadeTime)
 						{
-							if ((*kcur).second.mDeleteTime - curTime < (*kcur).second.mFadeTime)
+							if ( (kcur->second.mDeleteTime - curTime) < kcur->second.mFadeTime )
 							{
-								newSurf2->fade=(float)((*kcur).second.mDeleteTime - curTime)/(*kcur).second.mFadeTime;
-								if ((*kcur).second.mFadeRGB)
-								{ //RGB fades are scaled from 2.0f to 3.0f (simply to differentiate)
-									newSurf2->fade += 2.0f;
-
-									if (newSurf2->fade < 2.01f)
-									{
-										newSurf2->fade = 2.01f;
-									}
+								newSurf2->fade =
+									(float)(kcur->second.mDeleteTime - curTime) /
+									kcur->second.mFadeTime;
+								if (kcur->second.mFadeRGB)
+								{
+									// RGB fades are scaled from 2.0f to 3.0f
+									// (simply to differentiate)
+									newSurf2->fade = Q_max(2.01f, newSurf2->fade + 2.0f);
 								}
 							}
 						}
 
-						last->goreChain=newSurf2;
-						last=newSurf2;
-						R_AddDrawSurf ((surfaceType_t *)newSurf2, entityNum, gshader, RS.fogNum, qfalse, R_IsPostRenderEntity (entityNum, tr.currentEntity), cubemapIndex);
+						last->goreChain = newSurf2;
+						last = newSurf2;
+						R_AddDrawSurf(
+							(surfaceType_t *)newSurf2,
+							entityNum,
+							gshader,
+							RS.fogNum,
+							qfalse,
+							R_IsPostRenderEntity(ent),
+							cubemapIndex);
 					}
 				}
 			}
@@ -2550,7 +2501,7 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 	for (i=0; i< surfInfo->numChildren; i++)
 	{
 		RS.surfaceNum = surfInfo->childIndexes[i];
-		RenderSurfaces(RS, entityNum);
+		RenderSurfaces(RS, ent, entityNum);
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -2558,23 +2509,32 @@ void RenderSurfaces(CRenderSurface &RS, int entityNum) //also ended up just ripp
 #endif
 }
 
-// Go through the model and deal with just the surfaces that are tagged as bolt on points - this is for the server side skeleton construction
-void ProcessModelBoltSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
-					mdxaBone_v &bonePtr, model_t *currentModel, int lod, boltInfo_v &boltList)
+// Go through the model and deal with just the surfaces that are tagged as bolt
+// on points - this is for the server side skeleton construction
+void ProcessModelBoltSurfaces(
+	int surfaceNum,
+	surfaceInfo_v &rootSList,
+	mdxaBone_v &bonePtr,
+	model_t *currentModel,
+	int lod,
+	boltInfo_v &boltList)
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_ProcessModelBoltSurfaces.Start();
 #endif
-	int			i;
-	int			offFlags = 0;
-	
+	int i;
+	int offFlags = 0;
+
 	// back track and get the surfinfo struct for this surface
-	mdxmSurface_t			*surface = (mdxmSurface_t *)G2_FindSurface((void *)currentModel, surfaceNum, 0);
-	mdxmHierarchyOffsets_t	*surfIndexes = (mdxmHierarchyOffsets_t *)((byte *)currentModel->data.glm->header + sizeof(mdxmHeader_t));
-	mdxmSurfHierarchy_t		*surfInfo = (mdxmSurfHierarchy_t *)((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
-	
+	mdxmSurface_t *surface = (mdxmSurface_t *)
+		G2_FindSurface((void *)currentModel, surfaceNum, 0);
+	mdxmHierarchyOffsets_t *surfIndexes = (mdxmHierarchyOffsets_t *)
+		((byte *)currentModel->data.glm->header + sizeof(mdxmHeader_t));
+	mdxmSurfHierarchy_t *surfInfo = (mdxmSurfHierarchy_t *)
+		((byte *)surfIndexes + surfIndexes->offsets[surface->thisSurfaceIndex]);
+
 	// see if we have an override surface in the surface list
-	surfaceInfo_t	*surfOverride = G2_FindOverrideSurface(surfaceNum, rootSList);
+	surfaceInfo_t *surfOverride = G2_FindOverrideSurface(surfaceNum, rootSList);
 
 	// really, we should use the default flags for this surface unless it's been overriden
 	offFlags = surfInfo->flags;
@@ -2606,7 +2566,8 @@ void ProcessModelBoltSurfaces(int surfaceNum, surfaceInfo_v &rootSList,
 	// now recursively call for the children
 	for (i=0; i< surfInfo->numChildren; i++)
 	{
-		ProcessModelBoltSurfaces(surfInfo->childIndexes[i], rootSList, bonePtr, currentModel, lod, boltList);
+		ProcessModelBoltSurfaces(
+			surfInfo->childIndexes[i], rootSList, bonePtr, currentModel, lod, boltList);
 	}
 
 #ifdef G2_PERFORMANCE_ANALYSIS
@@ -2699,75 +2660,93 @@ void G2_ConstructUsedBoneList(CConstructBoneList &CBL)
 }
 
 
-// sort all the ghoul models in this list so if they go in reference order. This will ensure the bolt on's are attached to the right place
-// on the previous model, since it ensures the model being attached to is built and rendered first.
-
-// NOTE!! This assumes at least one model will NOT have a parent. If it does - we are screwed
-static void G2_Sort_Models(CGhoul2Info_v &ghoul2, int * const modelList, int * const modelCount)
+// sort all the ghoul models in this list so if they go in reference order.
+// This will ensure the bolt on's are attached to the right place on the
+// previous model, since it ensures the model being attached to is built and
+// rendered first.
+// NOTE!! This assumes at least one model will NOT have a parent. If it does -
+// we are screwed
+static void G2_Sort_Models(
+	CGhoul2Info_v& ghoul2,
+	int *const modelList,
+	int modelListCapacity,
+	int *const modelCount )
 {
-	int		startPoint, endPoint;
-	int		i, boltTo, j;
-
 	*modelCount = 0;
 
-	// first walk all the possible ghoul2 models, and stuff the out array with those with no parents
-	for (i=0; i<ghoul2.size();i++)
+	if ( modelListCapacity < ghoul2.size() )
 	{
+		return;
+	}
+
+	// first walk all the possible ghoul2 models, and stuff the out array with
+	// those with no parents
+	for ( int i = 0, numModels = ghoul2.size(); i < numModels; ++i )
+	{
+		CGhoul2Info& g2Info = ghoul2[i];
+
 		// have a ghoul model here?
-		if (ghoul2[i].mModelindex == -1)
+		if ( g2Info.mModelindex == -1 )
 		{
 			continue;
 		}
 
-		if (!ghoul2[i].mValid)
+		if ( !g2Info.mValid )
 		{
 			continue;
 		}
 
 		// are we attached to anything?
-		if (ghoul2[i].mModelBoltLink == -1)
+		if ( g2Info.mModelBoltLink == -1 )
 		{
 			// no, insert us first
 			modelList[(*modelCount)++] = i;
 	 	}
 	}
 
-	startPoint = 0;
-	endPoint = *modelCount;
+	int startPoint = 0;
+	int endPoint = *modelCount;
 
-	// now, using that list of parentless models, walk the descendant tree for each of them, inserting the descendents in the list
-	while (startPoint != endPoint)
+	// now, using that list of parentless models, walk the descendant tree for
+	// each of them, inserting the descendents in the list
+	while ( startPoint != endPoint )
 	{
-		for (i=0; i<ghoul2.size(); i++)
+		for ( int i = 0, numModels = ghoul2.size(); i < numModels; ++i )
 		{
+			CGhoul2Info& g2Info = ghoul2[i];
+
 			// have a ghoul model here?
-			if (ghoul2[i].mModelindex == -1)
+			if ( g2Info.mModelindex == -1 )
 			{
 				continue;
 			}
 
-			if (!ghoul2[i].mValid)
+			if ( !g2Info.mValid )
 			{
 				continue;
 			}
 
 			// what does this model think it's attached to?
-			if (ghoul2[i].mModelBoltLink != -1)
+			if ( g2Info.mModelBoltLink == -1 )
 			{
-				boltTo = (ghoul2[i].mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
-				// is it any of the models we just added to the list?
-				for (j=startPoint; j<endPoint; j++)
+				continue;
+			}
+
+			int boltTo = (g2Info.mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
+
+			// is it any of the models we just added to the list?
+			for ( int j = startPoint; j < endPoint; ++j )
+			{
+				// is this my parent model?
+				if ( boltTo == modelList[j] )
 				{
-					// is this my parent model?
-					if (boltTo == modelList[j])
-					{
-						// yes, insert into list and exit now
-						modelList[(*modelCount)++] = i;
-						break;
-					}
+					// yes, insert into list and exit now
+					modelList[(*modelCount)++] = i;
+					break;
 				}
 			}
 		}
+
 		// update start and end points
 		startPoint = endPoint;
 		endPoint = *modelCount;
@@ -2803,123 +2782,92 @@ void *G2_FindSurface_BC(const model_s *mod, int index, int lod)
 	return (void *)current;
 }
 
-//#define G2EVALRENDER
-
 // We've come across a surface that's designated as a bolt surface, process it and put it in the appropriate bolt place
-void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface, int boltNum, boltInfo_v &boltList, const surfaceInfo_t *surfInfo, const model_t *mod,mdxaBone_t &retMatrix)
+void G2_ProcessSurfaceBolt2(
+	CBoneCache &boneCache,
+	const mdxmSurface_t *surface,
+	int boltNum,
+	boltInfo_v &boltList,
+	const surfaceInfo_t *surfInfo,
+	const model_t *mod,
+	mdxaBone_t &retMatrix)
 {
- 	mdxmVertex_t 	*v, *vert0, *vert1, *vert2;
- 	vec3_t			axes[3], sides[3];
- 	float			pTri[3][3], d;
- 	int				j, k;
+ 	float pTri[3][3];
 
-	// now there are two types of tag surface - model ones and procedural generated types - lets decide which one we have here.
+	// now there are two types of tag surface - model ones and procedural
+	// generated types - lets decide which one we have here.
 	if (surfInfo && surfInfo->offFlags == G2SURFACEFLAG_GENERATED)
 	{
-		int surfNumber = surfInfo->genPolySurfaceIndex & 0x0ffff;
-		int	polyNumber = (surfInfo->genPolySurfaceIndex >> 16) & 0x0ffff;
+		const int surfNumber = surfInfo->genPolySurfaceIndex & 0x0ffff;
+		const int polyNumber = (surfInfo->genPolySurfaceIndex >> 16) & 0x0ffff;
 
 		// find original surface our original poly was in.
-		mdxmSurface_t	*originalSurf = (mdxmSurface_t *)G2_FindSurface_BC(mod, surfNumber, surfInfo->genLod);
-		mdxmTriangle_t	*originalTriangleIndexes = (mdxmTriangle_t *)((byte*)originalSurf + originalSurf->ofsTriangles);
+		const mdxmSurface_t *originalSurf =
+			(mdxmSurface_t *)G2_FindSurface_BC(mod, surfNumber, surfInfo->genLod);
+		const mdxmTriangle_t *originalTriangleIndexes =
+			(mdxmTriangle_t *)((byte*)originalSurf + originalSurf->ofsTriangles);
 
 		// get the original polys indexes 
-		int index0 = originalTriangleIndexes[polyNumber].indexes[0];
-		int index1 = originalTriangleIndexes[polyNumber].indexes[1];
-		int index2 = originalTriangleIndexes[polyNumber].indexes[2];
+		const int index0 = originalTriangleIndexes[polyNumber].indexes[0];
+		const int index1 = originalTriangleIndexes[polyNumber].indexes[1];
+		const int index2 = originalTriangleIndexes[polyNumber].indexes[2];
 
 		// decide where the original verts are
- 		vert0 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert0+=index0;
-
-		vert1 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert1+=index1;
-
-		vert2 = (mdxmVertex_t *) ((byte *)originalSurf + originalSurf->ofsVerts);
-		vert2+=index2;
+		const mdxmVertex_t *surfVerts = 
+ 			(mdxmVertex_t *)((byte *)originalSurf + originalSurf->ofsVerts);
+		const mdxmVertex_t *verts[3] = {
+ 			surfVerts + index0,
+			surfVerts + index1,
+			surfVerts + index2
+		};
 
 		// clear out the triangle verts to be
- 	   	VectorClear( pTri[0] );
- 	   	VectorClear( pTri[1] );
- 	   	VectorClear( pTri[2] );
-		int *piBoneReferences = (int*) ((byte*)originalSurf + originalSurf->ofsBoneReferences);
+ 	   	VectorClear(pTri[0]);
+ 	   	VectorClear(pTri[1]);
+ 	   	VectorClear(pTri[2]);
+		const int *piBoneReferences =
+			(int *)((byte*)originalSurf + originalSurf->ofsBoneReferences);
 
-//		mdxmWeight_t	*w;
-		
-		// now go and transform just the points we need from the surface that was hit originally
-//		w = vert0->weights;
-		float fTotalWeight = 0.0f;
-		int iNumWeights = G2_GetVertWeights( vert0 );
- 		for ( k = 0 ; k < iNumWeights ; k++ ) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert0, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert0, k, fTotalWeight, iNumWeights );
+		for ( int i = 0; i < 3; ++i )
+		{
+			// now go and transform just the points we need from the surface that
+			// was hit originally
+			const int iNumWeights = G2_GetVertWeights(verts[i]);
+			float fTotalWeight = 0.0f;
+			for ( int k = 0 ; k < iNumWeights ; k++ ) 
+			{
+				const int iBoneIndex = G2_GetVertBoneIndex(verts[i], k);
+				const float fBoneWeight = G2_GetVertBoneWeight(
+					verts[i], k, fTotalWeight, iNumWeights);
+				const mdxaBone_t &bone = boneCache.Eval(piBoneReferences[iBoneIndex]);
 
-#ifdef G2EVALRENDER
-			const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
-			pTri[0][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert0->vertCoords ) + bone.matrix[0][3] );
- 			pTri[0][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert0->vertCoords ) + bone.matrix[1][3] );
- 			pTri[0][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert0->vertCoords ) + bone.matrix[2][3] );
+				pTri[i][0] += fBoneWeight *
+					(DotProduct(bone.matrix[0], verts[i]->vertCoords) + bone.matrix[0][3]);
+				pTri[i][1] += fBoneWeight *
+					(DotProduct(bone.matrix[1], verts[i]->vertCoords) + bone.matrix[1][3]);
+				pTri[i][2] += fBoneWeight *
+					(DotProduct(bone.matrix[2], verts[i]->vertCoords) + bone.matrix[2][3]);
+			}
 		}
 
-//		w = vert1->weights;
-		fTotalWeight = 0.0f;
-		iNumWeights = G2_GetVertWeights( vert1 );
- 		for ( k = 0 ; k < iNumWeights ; k++) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert1, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert1, k, fTotalWeight, iNumWeights );
-
-#ifdef G2EVALRENDER
-			const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
- 			pTri[1][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert1->vertCoords ) + bone.matrix[0][3] );
- 			pTri[1][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert1->vertCoords ) + bone.matrix[1][3] );
- 			pTri[1][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert1->vertCoords ) + bone.matrix[2][3] );
-		}
-
-//		w = vert2->weights;
-		fTotalWeight = 0.0f;
-		iNumWeights = G2_GetVertWeights( vert2 );
- 		for ( k = 0 ; k < iNumWeights ; k++) 
- 		{
-			int		iBoneIndex	= G2_GetVertBoneIndex( vert2, k );
-			float	fBoneWeight	= G2_GetVertBoneWeight( vert2, k, fTotalWeight, iNumWeights );
-
-#ifdef G2EVALRENDER
-			const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-			const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
- 			pTri[2][0] += fBoneWeight * ( DotProduct( bone.matrix[0], vert2->vertCoords ) + bone.matrix[0][3] );
- 			pTri[2][1] += fBoneWeight * ( DotProduct( bone.matrix[1], vert2->vertCoords ) + bone.matrix[1][3] );
- 			pTri[2][2] += fBoneWeight * ( DotProduct( bone.matrix[2], vert2->vertCoords ) + bone.matrix[2][3] );
-		}
- 			
-   		vec3_t normal;
-		vec3_t up;
-		vec3_t right;
-		vec3_t vec0, vec1;
-		// work out baryCentricK
-		float baryCentricK = 1.0 - (surfInfo->genBarycentricI + surfInfo->genBarycentricJ);
+		const float baryCentricK =
+			1.0f - (surfInfo->genBarycentricI + surfInfo->genBarycentricJ);
 
 		// now we have the model transformed into model space, now generate an origin.
-		retMatrix.matrix[0][3] = (pTri[0][0] * surfInfo->genBarycentricI) + (pTri[1][0] * surfInfo->genBarycentricJ) + (pTri[2][0] * baryCentricK);
-		retMatrix.matrix[1][3] = (pTri[0][1] * surfInfo->genBarycentricI) + (pTri[1][1] * surfInfo->genBarycentricJ) + (pTri[2][1] * baryCentricK);
-		retMatrix.matrix[2][3] = (pTri[0][2] * surfInfo->genBarycentricI) + (pTri[1][2] * surfInfo->genBarycentricJ) + (pTri[2][2] * baryCentricK);
+		for ( int i = 0; i < 3; ++i )
+		{
+			retMatrix.matrix[i][3] =
+				(pTri[0][i] * surfInfo->genBarycentricI) +
+				(pTri[1][i] * surfInfo->genBarycentricJ) +
+				(pTri[2][i] * baryCentricK);
+		}
 
 		// generate a normal to this new triangle
+		vec3_t vec0, vec1;
 		VectorSubtract(pTri[0], pTri[1], vec0);
 		VectorSubtract(pTri[2], pTri[1], vec1);
 
+   		vec3_t normal;
 		CrossProduct(vec0, vec1, normal);
 		VectorNormalize(normal);
 
@@ -2930,6 +2878,7 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 
 		// up will be towards point 0 of the original triangle.
 		// so lets work it out. Vector is hit point - point 0
+		vec3_t up;
 		up[0] = retMatrix.matrix[0][3] - pTri[0][0];
 		up[1] = retMatrix.matrix[1][3] - pTri[0][1];
 		up[2] = retMatrix.matrix[2][3] - pTri[0][2];
@@ -2943,80 +2892,81 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 		retMatrix.matrix[2][1] = up[2];
 
 		// right is always straight
-
+		vec3_t right;
 		CrossProduct( normal, up, right );
+
 		// that's the up vector
 		retMatrix.matrix[0][2] = right[0];
 		retMatrix.matrix[1][2] = right[1];
 		retMatrix.matrix[2][2] = right[2];
-
 
 	}
 	// no, we are looking at a normal model tag
 	else
 	{
 	 	// whip through and actually transform each vertex
- 		v = (mdxmVertex_t *) ((byte *)surface + surface->ofsVerts);
-		int *piBoneReferences = (int*) ((byte*)surface + surface->ofsBoneReferences);
- 		for ( j = 0; j < 3; j++ ) 
+		const mdxmVertex_t *v =
+			(const mdxmVertex_t *)((byte *)surface + surface->ofsVerts);
+		const int *piBoneReferences =
+			(const int*)((byte *)surface + surface->ofsBoneReferences);
+ 		for ( int j = 0; j < 3; j++ ) 
  		{
-// 			mdxmWeight_t	*w;
-
- 			VectorClear( pTri[j] );
- //			w = v->weights;
+ 			VectorClear(pTri[j]);
 
 			const int iNumWeights = G2_GetVertWeights( v );
-
 			float fTotalWeight = 0.0f;
- 			for ( k = 0 ; k < iNumWeights ; k++) 
+ 			for ( int k = 0 ; k < iNumWeights ; k++) 
  			{
-				int		iBoneIndex	= G2_GetVertBoneIndex( v, k );
-				float	fBoneWeight	= G2_GetVertBoneWeight( v, k, fTotalWeight, iNumWeights );
+				const int iBoneIndex = G2_GetVertBoneIndex(v, k);
+				const float fBoneWeight =
+					G2_GetVertBoneWeight(v, k, fTotalWeight, iNumWeights);
+				const mdxaBone_t &bone = boneCache.Eval(piBoneReferences[iBoneIndex]);
 
-#ifdef G2EVALRENDER
-				const mdxaBone_t &bone=boneCache.EvalRender(piBoneReferences[iBoneIndex]);
-#else
-				const mdxaBone_t &bone=boneCache.Eval(piBoneReferences[iBoneIndex]);
-#endif
-
- 				pTri[j][0] += fBoneWeight * ( DotProduct( bone.matrix[0], v->vertCoords ) + bone.matrix[0][3] );
- 				pTri[j][1] += fBoneWeight * ( DotProduct( bone.matrix[1], v->vertCoords ) + bone.matrix[1][3] );
- 				pTri[j][2] += fBoneWeight * ( DotProduct( bone.matrix[2], v->vertCoords ) + bone.matrix[2][3] );
+ 				pTri[j][0] += fBoneWeight *
+					(DotProduct(bone.matrix[0], v->vertCoords) + bone.matrix[0][3]);
+ 				pTri[j][1] += fBoneWeight *
+					(DotProduct(bone.matrix[1], v->vertCoords) + bone.matrix[1][3]);
+ 				pTri[j][2] += fBoneWeight *
+					(DotProduct(bone.matrix[2], v->vertCoords) + bone.matrix[2][3]);
  			}
  			
- 			v++;// = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surface->maxVertBoneWeights];
+ 			v++;
  		}
 
  		// clear out used arrays
- 		memset( axes, 0, sizeof( axes ) );
- 		memset( sides, 0, sizeof( sides ) );
+		vec3_t axes[3] = {};
+		vec3_t sides[3] = {};
 
  		// work out actual sides of the tag triangle
- 		for ( j = 0; j < 3; j++ )
+ 		for ( int j = 0; j < 3; j++ )
  		{
- 			sides[j][0] = pTri[(j+1)%3][0] - pTri[j][0];
- 			sides[j][1] = pTri[(j+1)%3][1] - pTri[j][1];
- 			sides[j][2] = pTri[(j+1)%3][2] - pTri[j][2];
+ 			sides[j][0] = pTri[(j + 1) % 3][0] - pTri[j][0];
+ 			sides[j][1] = pTri[(j + 1) % 3][1] - pTri[j][1];
+ 			sides[j][2] = pTri[(j + 1) % 3][2] - pTri[j][2];
  		}
 
- 		// do math trig to work out what the matrix will be from this triangle's translated position
- 		VectorNormalize2( sides[iG2_TRISIDE_LONGEST], axes[0] );
- 		VectorNormalize2( sides[iG2_TRISIDE_SHORTEST], axes[1] );
+		// do math trig to work out what the matrix will be from this
+		// triangle's translated position
+ 		VectorNormalize2(sides[iG2_TRISIDE_LONGEST], axes[0]);
+ 		VectorNormalize2(sides[iG2_TRISIDE_SHORTEST], axes[1]);
 
- 		// project shortest side so that it is exactly 90 degrees to the longer side
- 		d = DotProduct( axes[0], axes[1] );
- 		VectorMA( axes[0], -d, axes[1], axes[0] );
- 		VectorNormalize2( axes[0], axes[0] );
+		// project shortest side so that it is exactly 90 degrees to the longer
+		// side
+ 		float d = DotProduct(axes[0], axes[1]);
+ 		VectorMA(axes[0], -d, axes[1], axes[0]);
+ 		VectorNormalize2(axes[0], axes[0]);
 
- 		CrossProduct( sides[iG2_TRISIDE_LONGEST], sides[iG2_TRISIDE_SHORTEST], axes[2] );
- 		VectorNormalize2( axes[2], axes[2] );
+ 		CrossProduct(sides[iG2_TRISIDE_LONGEST], sides[iG2_TRISIDE_SHORTEST], axes[2]);
+ 		VectorNormalize2(axes[2], axes[2]);
 
- 		// set up location in world space of the origin point in out going matrix
+		// set up location in world space of the origin point in out going
+		// matrix
  		retMatrix.matrix[0][3] = pTri[MDX_TAG_ORIGIN][0];
  		retMatrix.matrix[1][3] = pTri[MDX_TAG_ORIGIN][1];
  		retMatrix.matrix[2][3] = pTri[MDX_TAG_ORIGIN][2];
 
- 		// copy axis to matrix - do some magic to orient minus Y to positive X and so on so bolt on stuff is oriented correctly
+		// copy axis to matrix - do some magic to orient minus Y to positive X
+		// and so on so bolt on stuff is oriented correctly
 		retMatrix.matrix[0][0] = axes[1][0];
 		retMatrix.matrix[0][1] = axes[0][0];
 		retMatrix.matrix[0][2] = -axes[2][0];
@@ -3029,133 +2979,129 @@ void G2_ProcessSurfaceBolt2(CBoneCache &boneCache, const mdxmSurface_t *surface,
 		retMatrix.matrix[2][1] = axes[0][2];
 		retMatrix.matrix[2][2] = -axes[2][2];
 	}
-
 }
 
-void G2_GetBoltMatrixLow(CGhoul2Info &ghoul2,int boltNum,const vec3_t scale,mdxaBone_t &retMatrix)
+void G2_GetBoltMatrixLow(
+	CGhoul2Info& ghoul2,
+	int boltNum,
+	const vec3_t scale,
+	mdxaBone_t& retMatrix)
 {
-	if (!ghoul2.mBoneCache)
+	if ( !ghoul2.mBoneCache )
 	{
-		retMatrix=identityMatrix;
+		retMatrix = identityMatrix;
 		return;
 	}
-	assert(ghoul2.mBoneCache);
-	CBoneCache &boneCache=*ghoul2.mBoneCache;
+
+	CBoneCache& boneCache = *ghoul2.mBoneCache;
 	assert(boneCache.mod);
-	boltInfo_v &boltList=ghoul2.mBltlist;
 
-	//Raz: This was causing a client crash when rendering a model with no valid g2 bolts, such as Ragnos =]
-	if ( boltList.size() < 1 ) {
-		retMatrix=identityMatrix;
+	boltInfo_v& boltList = ghoul2.mBltlist;
+	if ( boltList.empty() || boltNum >= boltList.size() )
+	{
+		retMatrix = identityMatrix;
 		return;
 	}
 
-	assert(boltNum>=0&&boltNum<(int)boltList.size());
-#if 0 //rwwFIXMEFIXME: Disable this before release!!!!!! I am just trying to find a crash bug.
-	if (boltNum < 0 || boltNum >= boltList.size())
+	boltInfo_t& bolt = boltList[boltNum];
+	int boltBone = bolt.boneNumber;
+	int boltSurface = bolt.surfaceNumber;
+
+	if ( boltBone >= 0 )
 	{
-		char fName[MAX_QPATH];
-		char mName[MAX_QPATH];
-		int bLink = ghoul2.mModelBoltLink;
+		mdxaSkelOffsets_t *offsets =
+			(mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
+		mdxaSkel_t *skel =
+			(mdxaSkel_t *)((byte *)offsets + offsets->offsets[boltBone]);
 
-		if (ghoul2.currentModel)
-		{
-			strcpy(mName, ghoul2.currentModel->name);
-		}
-		else
-		{
-			strcpy(mName, "NULL!");
-		}
-
-		if (ghoul2.mFileName && ghoul2.mFileName[0])
-		{
-			strcpy(fName, ghoul2.mFileName);
-		}
-		else
-		{
-			strcpy(fName, "None?!");
-		}
-
-		Com_Error(ERR_DROP, "Write down or save this error message, show it to Rich\nBad bolt index on model %s (filename %s), index %i boltlink %i\n", mName, fName, boltNum, bLink);
+		Mat3x4_Multiply(
+			&retMatrix,
+			(mdxaBone_t *)&boneCache.EvalUnsmooth(boltBone),
+			&skel->BasePoseMat);
 	}
-#endif
-	if (boltList[boltNum].boneNumber>=0)
+	else if ( boltSurface >= 0 )
 	{
-		mdxaSkel_t		*skel;
-		mdxaSkelOffsets_t *offsets;
-		offsets = (mdxaSkelOffsets_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t));
-		skel = (mdxaSkel_t *)((byte *)boneCache.header + sizeof(mdxaHeader_t) + offsets->offsets[boltList[boltNum].boneNumber]);
-		Multiply_3x4Matrix(&retMatrix, (mdxaBone_t *)&boneCache.EvalUnsmooth(boltList[boltNum].boneNumber), &skel->BasePoseMat);
-	}
-	else if (boltList[boltNum].surfaceNumber>=0)
-	{
-		const surfaceInfo_t *surfInfo=0;
+		const surfaceInfo_t *surfInfo = nullptr;
+		for ( const surfaceInfo_t& t : ghoul2.mSlist )
 		{
-			for (size_t i=0;i<ghoul2.mSlist.size();i++)
+			if ( t.surface == boltSurface )
 			{
-				surfaceInfo_t &t=ghoul2.mSlist[i];
-				if (t.surface==boltList[boltNum].surfaceNumber)
-				{
-					surfInfo=&t;
-				}
+				surfInfo = &t;
 			}
 		}
-		mdxmSurface_t *surface = 0;
-		if (!surfInfo)
+
+		mdxmSurface_t *surface = nullptr;
+		if ( !surfInfo )
 		{
-			surface = (mdxmSurface_t *)G2_FindSurface_BC(boneCache.mod,boltList[boltNum].surfaceNumber, 0);
+			surface = (mdxmSurface_t *)G2_FindSurface_BC(
+				boneCache.mod, boltSurface, 0);
 		}
-		if (!surface&&surfInfo&&surfInfo->surface<10000)
+
+		if ( !surface && surfInfo && surfInfo->surface < 10000 )
 		{
-			surface = (mdxmSurface_t *)G2_FindSurface_BC(boneCache.mod,surfInfo->surface, 0);
+			surface = (mdxmSurface_t *)G2_FindSurface_BC(
+				boneCache.mod, surfInfo->surface, 0);
 		}
-		G2_ProcessSurfaceBolt2(boneCache,surface,boltNum,boltList,surfInfo,(model_t *)boneCache.mod,retMatrix);
+
+		G2_ProcessSurfaceBolt2(
+			boneCache,
+			surface,
+			boltNum,
+			boltList,
+			surfInfo,
+			(model_t *)boneCache.mod,
+			retMatrix);
 	}
 	else
 	{
-		 // we have a bolt without a bone or surface, not a huge problem but we ought to at least clear the bolt matrix
-		retMatrix=identityMatrix;
+		 // we have a bolt without a bone or surface, not a huge problem but we
+		 // ought to at least clear the bolt matrix
+		retMatrix = identityMatrix;
 	}
 }
 
-static void RootMatrix(CGhoul2Info_v &ghoul2,int time,const vec3_t scale,mdxaBone_t &retMatrix)
+static void RootMatrix(
+	CGhoul2Info_v &ghoul2,
+	int time,
+	const vec3_t scale,
+	mdxaBone_t &retMatrix)
 {
-	int i;
-	for (i=0; i<ghoul2.size(); i++)
+	for ( int i = 0, numModels = ghoul2.size(); i < numModels; ++i )
 	{
-		if (ghoul2[i].mModelindex != -1 && ghoul2[i].mValid)
+		if ( ghoul2[i].mModelindex == -1 || !ghoul2[i].mValid )
 		{
-			if (ghoul2[i].mFlags & GHOUL2_NEWORIGIN)
-			{
-				mdxaBone_t bolt;
-				mdxaBone_t		tempMatrix;
+			continue;
+		}
 
-				G2_ConstructGhoulSkeleton(ghoul2,time,false,scale); 
-				G2_GetBoltMatrixLow(ghoul2[i],ghoul2[i].mNewOrigin,scale,bolt);
-				tempMatrix.matrix[0][0]=1.0f;
-				tempMatrix.matrix[0][1]=0.0f;
-				tempMatrix.matrix[0][2]=0.0f;
-				tempMatrix.matrix[0][3]=-bolt.matrix[0][3];
-				tempMatrix.matrix[1][0]=0.0f;
-				tempMatrix.matrix[1][1]=1.0f;
-				tempMatrix.matrix[1][2]=0.0f;
-				tempMatrix.matrix[1][3]=-bolt.matrix[1][3];
-				tempMatrix.matrix[2][0]=0.0f;
-				tempMatrix.matrix[2][1]=0.0f;
-				tempMatrix.matrix[2][2]=1.0f;
-				tempMatrix.matrix[2][3]=-bolt.matrix[2][3];
-//				Inverse_Matrix(&bolt, &tempMatrix);
-				Multiply_3x4Matrix(&retMatrix, &tempMatrix, (mdxaBone_t*)&identityMatrix);
-				return;
-			}
+		if ( ghoul2[i].mFlags & GHOUL2_NEWORIGIN )
+		{
+			mdxaBone_t bolt;
+			mdxaBone_t tempMatrix;
+
+			G2_ConstructGhoulSkeleton(ghoul2, time, false, scale); 
+			G2_GetBoltMatrixLow(ghoul2[i], ghoul2[i].mNewOrigin, scale, bolt);
+
+			tempMatrix.matrix[0][0] = 1.0f;
+			tempMatrix.matrix[0][1] = 0.0f;
+			tempMatrix.matrix[0][2] = 0.0f;
+			tempMatrix.matrix[0][3] = -bolt.matrix[0][3];
+
+			tempMatrix.matrix[1][0] = 0.0f;
+			tempMatrix.matrix[1][1] = 1.0f;
+			tempMatrix.matrix[1][2] = 0.0f;
+			tempMatrix.matrix[1][3] = -bolt.matrix[1][3];
+
+			tempMatrix.matrix[2][0] = 0.0f;
+			tempMatrix.matrix[2][1] = 0.0f;
+			tempMatrix.matrix[2][2] = 1.0f;
+			tempMatrix.matrix[2][3] = -bolt.matrix[2][3];
+
+			retMatrix = tempMatrix * identityMatrix;
+			return;
 		}
 	}
-	retMatrix=identityMatrix;
-}
 
-static inline bool bInShadowRange(vec3_t location)
-{
-	return false;
+	retMatrix = identityMatrix;
 }
 
 /*
@@ -3164,75 +3110,75 @@ R_AddGHOULSurfaces
 ==============
 */
 
-void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum ) {
+void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum )
+{
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_R_AddGHOULSurfaces.Start();
 #endif
-	shader_t		*cust_shader = 0;
-#ifdef _G2_GORE
-	shader_t		*gore_shader = 0;
-#endif
-	int				fogNum = 0;
-	qboolean		personalModel;
-	int				cull;
-	int				i, whichLod, j;
-	skin_t			*skin;
-	int				modelCount;
-	mdxaBone_t		rootMatrix;
-	CGhoul2Info_v	&ghoul2 = *((CGhoul2Info_v *)ent->e.ghoul2);
+
+	CGhoul2Info_v &ghoul2 = *((CGhoul2Info_v *)ent->e.ghoul2);
 
 	if ( !ghoul2.IsValid() )
 	{
 		return;
 	}
-	// if we don't want server ghoul2 models and this is one, or we just don't want ghoul2 models at all, then return
+
+	// if we don't want server ghoul2 models and this is one, or we just don't
+	// want ghoul2 models at all, then return
 	if (r_noServerGhoul2->integer)
 	{
 		return;
 	}
+
 	if (!G2_SetupModelPointers(ghoul2))
 	{
 		return;
 	}
 
-	int currentTime=G2API_GetTime(tr.refdef.time);
+	int currentTime = G2API_GetTime(tr.refdef.time);
 
-
-	// cull the entire model if merged bounding box of both frames
-	// is outside the view frustum.
-	cull = R_GCullModel (ent );
+	// cull the entire model if merged bounding box of both frames is outside
+	// the view frustum.
+	int cull = R_GCullModel(ent);
 	if ( cull == CULL_OUT ) 
 	{
 		return;
 	}
-	HackadelicOnClient=true;
+
+	HackadelicOnClient = true;
+	
 	// are any of these models setting a new origin?
-	RootMatrix(ghoul2,currentTime, ent->e.modelScale,rootMatrix);
+	mdxaBone_t rootMatrix;
+	RootMatrix(ghoul2, currentTime, ent->e.modelScale, rootMatrix);
 
    	// don't add third_person objects if not in a portal
-	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !(tr.viewParms.isPortal 
-	                 || (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
+	qboolean personalModel = (qboolean)(
+		(ent->e.renderfx & RF_THIRD_PERSON) &&
+		!(tr.viewParms.isPortal ||
+			(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
 
 	int modelList[256];
-	assert(ghoul2.size()<=255);
-	modelList[255]=548;
+	assert(ghoul2.size() < ARRAY_LEN(modelList));
+	modelList[255] = 548;
 
 	// set up lighting now that we know we aren't culled
-	if ( !personalModel || r_shadows->integer > 1 ) {
-		R_SetupEntityLighting( &tr.refdef, ent );
+	if ( !personalModel || r_shadows->integer > 1 )
+	{
+		R_SetupEntityLighting(&tr.refdef, ent);
 	}
 
 	// see if we are in a fog volume
-	fogNum = R_GComputeFogNum( ent );
+	int fogNum = R_GComputeFogNum(ent);
 
 	// order sort the ghoul 2 models so bolt ons get bolted to the right model
-	G2_Sort_Models(ghoul2, modelList, &modelCount);
-	assert(modelList[255]==548);
+	int modelCount;
+	G2_Sort_Models(ghoul2, modelList, ARRAY_LEN(modelList), &modelCount);
+	assert(modelList[255] == 548);
 
 #ifdef _G2_GORE
-	if (goreShader == -1)
+	if ( goreShader == -1 )
 	{
-		goreShader=RE_RegisterShader("gfx/damage/burnmark1");
+		goreShader = RE_RegisterShader("gfx/damage/burnmark1");
 	}
 #endif
 
@@ -3240,98 +3186,109 @@ void R_AddGhoulSurfaces( trRefEntity_t *ent, int entityNum ) {
 	G2_GenerateWorldMatrix(ent->e.angles, ent->e.origin);
 
 	// walk each possible model for this entity and try rendering it out
-	for (j=0; j<modelCount; j++)
+	for (int j = 0; j < modelCount; ++j )
 	{
-		i = modelList[j];
-		if (ghoul2[i].mValid&&!(ghoul2[i].mFlags & GHOUL2_NOMODEL)&&!(ghoul2[i].mFlags & GHOUL2_NORENDER))
-		{
-			//
-			// figure out whether we should be using a custom shader for this model
-			//
-			skin = NULL;
-			if (ent->e.customShader)
-			{
-				cust_shader = R_GetShaderByHandle(ent->e.customShader );
-			}
-			else
-			{
-				cust_shader = NULL;
-				// figure out the custom skin thing
-				if (ghoul2[i].mCustomSkin)
-				{
-					skin = R_GetSkinByHandle(ghoul2[i].mCustomSkin );
-				}
-				else if (ent->e.customSkin)
-				{
-					skin = R_GetSkinByHandle(ent->e.customSkin );
-				}
-				else if ( ghoul2[i].mSkin > 0 && ghoul2[i].mSkin < tr.numSkins ) 
-				{
-					skin = R_GetSkinByHandle( ghoul2[i].mSkin );
-				}
-			}
+		CGhoul2Info& g2Info = ghoul2[modelList[j]];
 
-			if (j&&ghoul2[i].mModelBoltLink != -1)
+		if ( !g2Info.mValid )
+		{
+			continue;
+		}
+		
+		if ( (g2Info.mFlags & (GHOUL2_NOMODEL | GHOUL2_NORENDER)) != 0 )
+		{
+			continue;
+		}
+
+		// figure out whether we should be using a custom shader for this model
+		skin_t *skin = nullptr;
+		shader_t *cust_shader = nullptr;
+
+		if (ent->e.customShader)
+		{
+			cust_shader = R_GetShaderByHandle(ent->e.customShader );
+		}
+		else
+		{
+			cust_shader = nullptr;
+			// figure out the custom skin thing
+			if (g2Info.mCustomSkin)
 			{
-				int	boltMod = (ghoul2[i].mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
-				int	boltNum = (ghoul2[i].mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
-				mdxaBone_t bolt;
-				G2_GetBoltMatrixLow(ghoul2[boltMod],boltNum,ent->e.modelScale,bolt);
-				G2_TransformGhoulBones(ghoul2[i].mBlist,bolt, ghoul2[i],currentTime);
+				skin = R_GetSkinByHandle(g2Info.mCustomSkin );
 			}
-			else
+			else if (ent->e.customSkin)
 			{
-				G2_TransformGhoulBones(ghoul2[i].mBlist, rootMatrix, ghoul2[i],currentTime);
+				skin = R_GetSkinByHandle(ent->e.customSkin );
 			}
-			whichLod = G2_ComputeLOD( ent, ghoul2[i].currentModel, ghoul2[i].mLodBias );
-			G2_FindOverrideSurface(-1,ghoul2[i].mSlist); //reset the quick surface override lookup;
+			else if ( g2Info.mSkin > 0 && g2Info.mSkin < tr.numSkins ) 
+			{
+				skin = R_GetSkinByHandle( g2Info.mSkin );
+			}
+		}
+
+		if ( j && g2Info.mModelBoltLink != -1 )
+		{
+			int	boltMod = (g2Info.mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
+			int	boltNum = (g2Info.mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
+
+			mdxaBone_t bolt;
+			G2_GetBoltMatrixLow(ghoul2[boltMod], boltNum, ent->e.modelScale, bolt);
+			G2_TransformGhoulBones(g2Info.mBlist, bolt, g2Info, currentTime);
+		}
+		else
+		{
+			G2_TransformGhoulBones(g2Info.mBlist, rootMatrix, g2Info,currentTime);
+		}
+
+		int whichLod = G2_ComputeLOD( ent, g2Info.currentModel, g2Info.mLodBias );
+		G2_FindOverrideSurface(-1, g2Info.mSlist); //reset the quick surface override lookup;
 
 #ifdef _G2_GORE
-			CGoreSet *gore=0;
-			if (ghoul2[i].mGoreSetTag)
+		CGoreSet *gore = nullptr;
+		if ( g2Info.mGoreSetTag )
+		{
+			gore = FindGoreSet(g2Info.mGoreSetTag);
+			if ( !gore ) // my gore is gone, so remove it
 			{
-				gore=FindGoreSet(ghoul2[i].mGoreSetTag);
-				if (!gore) // my gore is gone, so remove it
-				{
-					ghoul2[i].mGoreSetTag=0;
-				}
+				g2Info.mGoreSetTag = 0;
 			}
-
-			CRenderSurface RS (ghoul2[i].mSurfaceRoot,
-				ghoul2[i].mSlist,
-				cust_shader,
-				fogNum,
-				personalModel,
-				ghoul2[i].mBoneCache,
-				ent->e.renderfx,
-				skin,
-				(model_t *)ghoul2[i].currentModel,
-				whichLod,
-				ghoul2[i].mBltlist,
-				gore_shader,
-				gore);
-#else
-			CRenderSurface RS(ghoul2[i].mSurfaceRoot,
-				ghoul2[i].mSlist,
-				cust_shader,
-				fogNum,
-				personalModel,
-				ghoul2[i].mBoneCache,
-				ent->e.renderfx,
-				skin,
-				(model_t *)ghoul2[i].currentModel,
-				whichLod,
-				ghoul2[i].mBltlist);
-#endif
-			if (!personalModel && (RS.renderfx & RF_SHADOW_PLANE) && !bInShadowRange(ent->e.origin))
-			{
-				RS.renderfx |= RF_NOSHADOW;
-			}
-
-			RenderSurfaces(RS, entityNum);
 		}
+
+		CRenderSurface RS(g2Info.mSurfaceRoot,
+			g2Info.mSlist,
+			cust_shader,
+			fogNum,
+			personalModel,
+			g2Info.mBoneCache,
+			ent->e.renderfx,
+			skin,
+			(model_t *)g2Info.currentModel,
+			whichLod,
+			g2Info.mBltlist,
+			nullptr,
+			gore);
+#else
+		CRenderSurface RS(g2Info.mSurfaceRoot,
+			g2Info.mSlist,
+			cust_shader,
+			fogNum,
+			personalModel,
+			g2Info.mBoneCache,
+			ent->e.renderfx,
+			skin,
+			(model_t *)g2Info.currentModel,
+			whichLod,
+			g2Info.mBltlist);
+#endif
+		if ( !personalModel && (RS.renderfx & RF_SHADOW_PLANE) )
+		{
+			RS.renderfx |= RF_NOSHADOW;
+		}
+
+		RenderSurfaces(RS, ent, entityNum);
 	}
-	HackadelicOnClient=false;
+
+	HackadelicOnClient = false;
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2Time_R_AddGHOULSurfaces += G2PerformanceTimer_R_AddGHOULSurfaces.End();
@@ -3365,60 +3322,77 @@ bool G2_NeedsRecalc(CGhoul2Info *ghlInfo,int frameNum)
 
 /*
 ==============
-G2_ConstructGhoulSkeleton - builds a complete skeleton for all ghoul models in a CGhoul2Info_v class	- using LOD 0
+G2_ConstructGhoulSkeleton
+builds a complete skeleton for all ghoul models in a CGhoul2Info_v class
+using LOD 0
 ==============
 */
-void G2_ConstructGhoulSkeleton( CGhoul2Info_v &ghoul2,const int frameNum,bool checkForNewOrigin,const vec3_t scale)
+void G2_ConstructGhoulSkeleton(
+	CGhoul2Info_v &ghoul2,
+	const int frameNum,
+	bool checkForNewOrigin,
+	const vec3_t scale)
 {
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2PerformanceTimer_G2_ConstructGhoulSkeleton.Start();
 #endif
-	int				i, j;
-	int				modelCount;
-	mdxaBone_t		rootMatrix;
-
+	int modelCount;
+	mdxaBone_t rootMatrix;
 	int modelList[256];
-	assert(ghoul2.size()<=255);
-	modelList[255]=548;
 
-	if (checkForNewOrigin)
+	assert(ghoul2.size() <= ARRAY_LEN(modelList));
+	modelList[255] = 548;
+
+	if ( checkForNewOrigin )
 	{
-		RootMatrix(ghoul2,frameNum,scale,rootMatrix);
+		RootMatrix(ghoul2, frameNum, scale, rootMatrix);
 	}
 	else
 	{
 		rootMatrix = identityMatrix;
 	}
 
-	G2_Sort_Models(ghoul2, modelList, &modelCount);
-	assert(modelList[255]==548);
+	G2_Sort_Models(ghoul2, modelList, ARRAY_LEN(modelList), &modelCount);
+	assert(modelList[255] == 548);
 
-	for (j=0; j<modelCount; j++)
+	for ( int j = 0; j < modelCount; j++ )
 	{
-		// get the sorted model to play with
-		i = modelList[j];
+		int i = modelList[j];
+		CGhoul2Info& g2Info = ghoul2[i];
 
-		if (ghoul2[i].mValid)
+		if ( !g2Info.mValid )
 		{
-			if (j&&ghoul2[i].mModelBoltLink != -1)
-			{
-				int	boltMod = (ghoul2[i].mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
-				int	boltNum = (ghoul2[i].mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
+			continue;
+		}
 
-				mdxaBone_t bolt;
-				G2_GetBoltMatrixLow(ghoul2[boltMod],boltNum,scale,bolt);
-				G2_TransformGhoulBones(ghoul2[i].mBlist,bolt,ghoul2[i],frameNum,checkForNewOrigin);
-			}
+		if ( j && g2Info.mModelBoltLink != -1 )
+		{
+			int	boltMod = (g2Info.mModelBoltLink >> MODEL_SHIFT) & MODEL_AND;
+			int	boltNum = (g2Info.mModelBoltLink >> BOLT_SHIFT) & BOLT_AND;
+
+			mdxaBone_t bolt;
+			G2_GetBoltMatrixLow(ghoul2[boltMod], boltNum, scale, bolt);
+			G2_TransformGhoulBones(
+				g2Info.mBlist,
+				bolt,
+				g2Info,
+				frameNum,
+				checkForNewOrigin);
+		}
+		else
 #ifdef _G2_LISTEN_SERVER_OPT
-			else if (ghoul2[i].entityNum == ENTITYNUM_NONE || ghoul2[i].mSkelFrameNum != frameNum)
-#else
-			else
+		if (g2Info.entityNum == ENTITYNUM_NONE || g2Info.mSkelFrameNum != frameNum)
 #endif
-			{
-				G2_TransformGhoulBones(ghoul2[i].mBlist,rootMatrix,ghoul2[i],frameNum,checkForNewOrigin);
-			}
+		{
+			G2_TransformGhoulBones(
+				g2Info.mBlist,
+				rootMatrix,
+				g2Info,
+				frameNum,
+				checkForNewOrigin);
 		}
 	}
+
 #ifdef G2_PERFORMANCE_ANALYSIS
 	G2Time_G2_ConstructGhoulSkeleton += G2PerformanceTimer_G2_ConstructGhoulSkeleton.End();
 #endif
@@ -3475,6 +3449,7 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 	R_BindIBO(surface->ibo);
 
 	tess.useInternalVBO = qfalse;
+	tess.externalIBO = surface->ibo;
 
 	tess.numIndexes += surface->numIndexes;
 	tess.numVertexes += surface->numVertexes;
@@ -3860,8 +3835,8 @@ Bone  52:   "face_always_":
 
 */
 
-
-qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
+qboolean R_LoadMDXM(model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached)
+{
 	int					i,l, j;
 	mdxmHeader_t		*pinmodel, *mdxm;
 	mdxmLOD_t			*lod;
@@ -3903,15 +3878,15 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 
 	if (!bAlreadyFound)
 	{
-		// horrible new hackery, if !bAlreadyFound then we've just done a tag-morph, so we need to set the 
-		//	bool reference passed into this function to true, to tell the caller NOT to do an ri->FS_Freefile since
-		//	we've hijacked that memory block...
+		// horrible new hackery, if !bAlreadyFound then we've just done a
+		// tag-morph, so we need to set the bool reference passed into this
+		// function to true, to tell the caller NOT to do an ri->FS_Freefile
+		// since we've hijacked that memory block...
 		//
 		// Aaaargh. Kill me now...
 		//
 		bAlreadyCached = qtrue;
 		assert( mdxm == buffer );
-//		memcpy( mdxm, buffer, size );	// and don't do this now, since it's the same thing
 
 		LL(mdxm->ident);
 		LL(mdxm->version);
@@ -3922,7 +3897,8 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 		LL(mdxm->ofsEnd);
 	}
 		
-	// first up, go load in the animation file we need that has the skeletal animation info for this model
+	// first up, go load in the animation file we need that has the skeletal
+	// animation info for this model
 	mdxm->animIndex = RE_RegisterModel(va ("%s.gla",mdxm->animName));
 
 	if (!mdxm->animIndex) 
@@ -4005,62 +3981,25 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			triCount += surf->numTriangles;
 										
 			if ( surf->numVerts > SHADER_MAX_VERTEXES ) {
-				Com_Error (ERR_DROP, "R_LoadMDXM: %s has more than %i verts on a surface (%i)",
-					mod_name, SHADER_MAX_VERTEXES, surf->numVerts );
+				Com_Error(
+					ERR_DROP,
+					"R_LoadMDXM: %s has more than %i verts on a surface (%i)",
+					mod_name,
+					SHADER_MAX_VERTEXES,
+					surf->numVerts);
 			}
 			if ( surf->numTriangles*3 > SHADER_MAX_INDEXES ) {
-				Com_Error (ERR_DROP, "R_LoadMDXM: %s has more than %i triangles on a surface (%i)",
-					mod_name, SHADER_MAX_INDEXES / 3, surf->numTriangles );
+				Com_Error(
+					ERR_DROP,
+					"R_LoadMDXM: %s has more than %i triangles on a surface (%i)",
+					mod_name,
+					SHADER_MAX_INDEXES / 3,
+					surf->numTriangles);
 			}
 		
 			// change to surface identifier
 			surf->ident = SF_MDX;
 			// register the shaders
-#if 0 //#ifndef _M_IX86
-//
-// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
-//
-			// FIXME - is this correct? 
-			// do all the bone reference data
-			boneRef = (int *) ( (byte *)surf + surf->ofsBoneReferences );
-			for ( j = 0 ; j < surf->numBoneReferences ; j++ ) 
-			{
-					LL(boneRef[j]);
-			}
-			
-			// swap all the triangles
-			tri = (mdxmTriangle_t *) ( (byte *)surf + surf->ofsTriangles );
-			for ( j = 0 ; j < surf->numTriangles ; j++, tri++ ) 
-			{
-				LL(tri->indexes[0]);
-				LL(tri->indexes[1]);
-				LL(tri->indexes[2]);
-			}
-
-			// swap all the vertexes
-			v = (mdxmVertex_t *) ( (byte *)surf + surf->ofsVerts );
-			for ( j = 0 ; j < surf->numVerts ; j++ ) 
-			{
-				v->normal[0] = LittleFloat( v->normal[0] );
-				v->normal[1] = LittleFloat( v->normal[1] );
-				v->normal[2] = LittleFloat( v->normal[2] );
-
-				v->texCoords[0] = LittleFloat( v->texCoords[0] );
-				v->texCoords[1] = LittleFloat( v->texCoords[1] );
-
-				v->numWeights = LittleLong( v->numWeights );
-  			    v->offset[0] = LittleFloat( v->offset[0] );
-				v->offset[1] = LittleFloat( v->offset[1] );
-				v->offset[2] = LittleFloat( v->offset[2] );
-
-				for ( k = 0 ; k < /*v->numWeights*/surf->maxVertBoneWeights ; k++ ) 
-				{
-					v->weights[k].boneIndex = LittleLong( v->weights[k].boneIndex );
-					v->weights[k].boneWeight = LittleFloat( v->weights[k].boneWeight );
-				}
-				v = (mdxmVertex_t *)&v->weights[/*v->numWeights*/surf->maxVertBoneWeights];
-			}
-#endif
 
 			if (isAnOldModelFile)
 			{
@@ -4238,8 +4177,6 @@ qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				float *v0, *v1, *v2;
 				float *uv0, *uv1, *uv2;
 				vec3_t normal = { 0.0f, 0.0f, 0.0f };
-				vec3_t tangent = { 0.0f, 0.0f, 0.0f };
-				vec3_t bitangent = { 0.0f, 0.0f, 0.0f };
 
 				index[0] = t[k].indexes[0];
 				index[1] = t[k].indexes[1];
@@ -4499,11 +4436,13 @@ void ShiftMemoryDown(mdxaSkelOffsets_t *offsets, mdxaHeader_t *mdxa, int boneInd
 	memmove((nextBone+CHILD_PADDING), nextBone, size);
 	memset(nextBone, 0, CHILD_PADDING);
 	*endMarker += CHILD_PADDING;
-	//Move the whole thing down CHILD_PADDING amount in memory, clear the new preceding space, and increment the end pointer.
+	// Move the whole thing down CHILD_PADDING amount in memory, clear the new
+	// preceding space, and increment the end pointer.
 
 	i = boneIndex+1;
 
-	//Now add CHILD_PADDING amount to every offset beginning at the offset of the bone that was moved.
+	// Now add CHILD_PADDING amount to every offset beginning at the offset of
+	// the bone that was moved.
 	while (i < mdxa->numBones)
 	{
 		offsets->offsets[i] += CHILD_PADDING;
@@ -4513,7 +4452,8 @@ void ShiftMemoryDown(mdxaSkelOffsets_t *offsets, mdxaHeader_t *mdxa, int boneInd
 	mdxa->ofsFrames += CHILD_PADDING;
 	mdxa->ofsCompBonePool += CHILD_PADDING;
 	mdxa->ofsEnd += CHILD_PADDING;
-	//ofsSkel does not need to be updated because we are only moving memory after that point.
+	// ofsSkel does not need to be updated because we are only moving memory
+	// after that point.
 }
 
 //Proper/desired hierarchy list
@@ -4547,7 +4487,11 @@ static const char *BoneHierarchyList[] =
 };
 
 //Gets the index of a child or parent. If child is passed as qfalse then parent is assumed.
-int BoneParentChildIndex(mdxaHeader_t *mdxa, mdxaSkelOffsets_t *offsets, mdxaSkel_t *boneInfo, qboolean child)
+int BoneParentChildIndex(
+	mdxaHeader_t *mdxa,
+	mdxaSkelOffsets_t *offsets,
+	mdxaSkel_t *boneInfo,
+	qboolean child)
 {
 	int i = 0;
 	int matchindex = -1;
@@ -4557,7 +4501,9 @@ int BoneParentChildIndex(mdxaHeader_t *mdxa, mdxaSkelOffsets_t *offsets, mdxaSke
 	while (BoneHierarchyList[i])
 	{
 		if (!Q_stricmp(boneInfo->name, BoneHierarchyList[i]))
-		{ //we have a match, the slot above this will be our desired parent. (or below for child)
+		{
+			// we have a match, the slot above this will be our desired parent.
+			// (or below for child)
 			if (child)
 			{
 				match = BoneHierarchyList[i+1];
@@ -4600,14 +4546,15 @@ int BoneParentChildIndex(mdxaHeader_t *mdxa, mdxaSkelOffsets_t *offsets, mdxaSke
 R_LoadMDXA - load a Ghoul 2 animation file
 =================
 */
-qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached ) {
+qboolean R_LoadMDXA(model_t *mod, void *buffer, const char *mod_name, qboolean &bAlreadyCached)
+{
 
-	mdxaHeader_t		*pinmodel, *mdxa;
-	int					version;
-	int					size;
+	mdxaHeader_t *pinmodel, *mdxa;
+	int version;
+	int size;
 #ifdef CREATE_LIMB_HIERARCHY
-	int					oSize = 0;
-	byte				*sizeMarker;
+	int oSize = 0;
+	byte *sizeMarker;
 #endif
 
 #if 0 //#ifndef _M_IX86
@@ -4617,27 +4564,32 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	mdxaSkel_t			*boneInfo;
 #endif
 
- 	pinmodel = (mdxaHeader_t *)buffer;
+	pinmodel = (mdxaHeader_t *)buffer;
 	//
-	// read some fields from the binary, but only LittleLong() them when we know this wasn't an already-cached model...
-	//	
+	// read some fields from the binary, but only LittleLong() them when we know this wasn't an
+	// already-cached model...
+	//
 	version = (pinmodel->version);
-	size	= (pinmodel->ofsEnd);
+	size = (pinmodel->ofsEnd);
 
 	if (!bAlreadyCached)
 	{
 		LL(version);
 		LL(size);
 	}
-	
-	if (version != MDXA_VERSION) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMDXA: %s has wrong version (%i should be %i)\n",
-				 mod_name, version, MDXA_VERSION);
+
+	if (version != MDXA_VERSION)
+	{
+		Com_Printf(
+			S_COLOR_YELLOW "R_LoadMDXA: %s has wrong version (%i should be %i)\n",
+			mod_name,
+			version,
+			MDXA_VERSION);
 		return qfalse;
 	}
 
-	mod->type		= MOD_MDXA;
-	mod->dataSize  += size;
+	mod->type = MOD_MDXA;
+	mod->dataSize += size;
 
 	qboolean bAlreadyFound = qfalse;
 
@@ -4645,29 +4597,32 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	oSize = size;
 
 	int childNumber = (NUM_ROOTPARENTS + NUM_OTHERPARENTS);
-	size += (childNumber*(CHILD_PADDING*8)); //Allocate us some extra space so we can shift memory down.
-#endif //CREATE_LIMB_HIERARCHY
 
-	//mdxa = mod->mdxa = (mdxaHeader_t*)ri->Hunk_Alloc( size, h_dontcare );
-	mdxa = (mdxaHeader_t*)CModelCache->Allocate( size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA );
+	// Allocate us some extra space so we can shift memory down.
+	size += (childNumber * (CHILD_PADDING * 8)); 
+#endif // CREATE_LIMB_HIERARCHY
+
+	mdxa = (mdxaHeader_t *)CModelCache->Allocate(
+		size, buffer, mod_name, &bAlreadyFound, TAG_MODEL_GLA);
 	mod->data.gla = mdxa;
 
-	assert(bAlreadyCached == bAlreadyFound);	// I should probably eliminate 'bAlreadyFound', but wtf?
+	// I should probably eliminate 'bAlreadyFound', but wtf?
+	assert(bAlreadyCached == bAlreadyFound); 
 
 	if (!bAlreadyFound)
 	{
 #ifdef CREATE_LIMB_HIERARCHY
-		memcpy( mdxa, buffer, oSize );
+		memcpy(mdxa, buffer, oSize);
 #else
-		// horrible new hackery, if !bAlreadyFound then we've just done a tag-morph, so we need to set the 
-		//	bool reference passed into this function to true, to tell the caller NOT to do an ri->FS_Freefile since
-		//	we've hijacked that memory block...
+		// horrible new hackery, if !bAlreadyFound then we've just done a
+		// tag-morph, so we need to set the bool reference passed into this
+		// function to true, to tell the caller NOT to do an
+		// ri->FS_Freefile since we've hijacked that memory block...
 		//
 		// Aaaargh. Kill me now...
 		//
 		bAlreadyCached = qtrue;
-		assert( mdxa == buffer );
-//		memcpy( mdxa, buffer, size );	// and don't do this now, since it's the same thing
+		assert(mdxa == buffer);
 #endif
 		LL(mdxa->ident);
 		LL(mdxa->version);
@@ -4680,38 +4635,37 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 #ifdef CREATE_LIMB_HIERARCHY
 	if (!bAlreadyFound)
 	{
-		mdxaSkel_t			*boneParent;
-#if 0 //#ifdef _M_IX86
-		mdxaSkel_t			*boneInfo;
-		int i, k;
-#endif
+		mdxaSkel_t *boneParent;
 
 		sizeMarker = (byte *)mdxa + mdxa->ofsEnd;
 
-		//rww - This is probably temporary until we put actual hierarchy in for the models.
-		//It is necessary for the correct operation of ragdoll.
-   		mdxaSkelOffsets_t *offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
+		// rww - This is probably temporary until we put actual hierarchy in
+		// for the models.  It is necessary for the correct operation of
+		// ragdoll.
+		mdxaSkelOffsets_t *offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
 
-		for ( i = 0 ; i < mdxa->numBones ; i++) 
+		for (i = 0; i < mdxa->numBones; i++)
 		{
-			boneInfo = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[i]);
+			boneInfo = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[i]);
 
 			if (boneInfo)
 			{
 				char *bname = boneInfo->name;
 
 				if (BoneIsRootParent(bname))
-				{ //These are the main parent bones. We don't want to change their parents, but we want to give them children.
+				{
+					// These are the main parent bones. We don't want to change
+					// their parents, but we want to give them children.
 					ShiftMemoryDown(offsets, mdxa, i, &sizeMarker);
 
-					boneInfo = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[i]);
+					boneInfo = (mdxaSkel_t *)((byte *)offsets + offsets->offsets[i]);
 
 					int newChild = BoneParentChildIndex(mdxa, offsets, boneInfo, qtrue);
 
 					if (newChild != -1)
 					{
 						boneInfo->numChildren++;
-						boneInfo->children[boneInfo->numChildren-1] = newChild;
+						boneInfo->children[boneInfo->numChildren - 1] = newChild;
 					}
 					else
 					{
@@ -4721,17 +4675,17 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 				else if (BoneIsOtherParent(bname) || BoneIsBottom(bname))
 				{
 					if (!BoneIsBottom(bname))
-					{ //unless it's last in the chain it has the next bone as a child.
+					{ // unless it's last in the chain it has the next bone as a child.
 						ShiftMemoryDown(offsets, mdxa, i, &sizeMarker);
 
-						boneInfo = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[i]);
-
+						boneInfo = (mdxaSkel_t *)
+							((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[i]); 
 						int newChild = BoneParentChildIndex(mdxa, offsets, boneInfo, qtrue);
 
 						if (newChild != -1)
 						{
 							boneInfo->numChildren++;
-							boneInfo->children[boneInfo->numChildren-1] = newChild;
+							boneInfo->children[boneInfo->numChildren - 1] = newChild;
 						}
 						else
 						{
@@ -4739,12 +4693,14 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 						}
 					}
 
-					//Before we set the parent we want to remove this as a child for whoever was parenting it.
+					// Before we set the parent we want to remove this as a
+					// child for whoever was parenting it.
 					int oldParent = boneInfo->parent;
 
 					if (oldParent > -1)
 					{
-						boneParent = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[oldParent]);
+						boneParent = (mdxaSkel_t *)
+							((byte *)offsets + offsets->offsets[oldParent]);
 					}
 					else
 					{
@@ -4758,14 +4714,14 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 						while (k < boneParent->numChildren)
 						{
 							if (boneParent->children[k] == i)
-							{ //this bone is the child
+							{ // this bone is the child
 								k++;
 								while (k < boneParent->numChildren)
 								{
-									boneParent->children[k-1] = boneParent->children[k];
+									boneParent->children[k - 1] = boneParent->children[k];
 									k++;
 								}
-								boneParent->children[k-1] = 0;
+								boneParent->children[k - 1] = 0;
 								boneParent->numChildren--;
 								break;
 							}
@@ -4773,7 +4729,8 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 						}
 					}
 
-					//Now that we have cleared the original parent of ownership, mark the bone's new parent.
+					// Now that we have cleared the original parent of
+					// ownership, mark the bone's new parent.
 					int newParent = BoneParentChildIndex(mdxa, offsets, boneInfo, qfalse);
 
 					if (newParent != -1)
@@ -4788,64 +4745,19 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			}
 		}
 	}
-#endif //CREATE_LIMB_HIERARCHY
+#endif // CREATE_LIMB_HIERARCHY
 
- 	if ( mdxa->numFrames < 1 ) {
-		Com_Printf (S_COLOR_YELLOW  "R_LoadMDXA: %s has no frames\n", mod_name );
+	if (mdxa->numFrames < 1)
+	{
+		Com_Printf(S_COLOR_YELLOW "R_LoadMDXA: %s has no frames\n", mod_name);
 		return qfalse;
 	}
 
 	if (bAlreadyFound)
 	{
-		return qtrue;	// All done, stop here, do not LittleLong() etc. Do not pass go...
+		return qtrue; // All done, stop here, do not LittleLong() etc. Do not pass go...
 	}
 
-#if 0 //#ifndef _M_IX86
-
-	//
-	// optimisation, we don't bother doing this for standard intel case since our data's already in that format...
-	//
-
-	// swap all the skeletal info
-	boneInfo = (mdxaSkel_t *)( (byte *)mdxa + mdxa->ofsSkel);
-	for ( i = 0 ; i < mdxa->numBones ; i++) 
-	{
-		LL(boneInfo->numChildren);
-		LL(boneInfo->parent);
-		for (k=0; k<boneInfo->numChildren; k++)
-		{
-			LL(boneInfo->children[k]);
-		}
-
-		// get next bone
-		boneInfo += (size_t)( &((mdxaSkel_t *)0)->children[ boneInfo->numChildren ] );
-	}
-
-
-	// swap all the frames
-	frameSize = (size_t)( &((mdxaFrame_t *)0)->bones[ mdxa->numBones ] );
-	for ( i = 0 ; i < mdxa->numFrames ; i++) 
-	{
-		cframe = (mdxaFrame_t *) ( (byte *)mdxa + mdxa->ofsFrames + i * frameSize );
-   		cframe->radius = LittleFloat( cframe->radius );
-		for ( j = 0 ; j < 3 ; j++ ) 
-		{
-			cframe->bounds[0][j] = LittleFloat( cframe->bounds[0][j] );
-			cframe->bounds[1][j] = LittleFloat( cframe->bounds[1][j] );
-    		cframe->localOrigin[j] = LittleFloat( cframe->localOrigin[j] );
-		}
-		for ( j = 0 ; j < mdxa->numBones * sizeof( mdxaBone_t ) / 2 ; j++ ) 
-		{
-			((short *)cframe->bones)[j] = LittleShort( ((short *)cframe->bones)[j] );
-		}
-	}
-#endif
 	return qtrue;
 }
-
-
-
-
-
-
 

@@ -90,7 +90,7 @@ typedef struct {
 	int					realtime;
 	int					cursorx;
 	int					cursory;
-	
+
 	glconfig_t			glconfig;
 	qboolean			debugMode;
 	qhandle_t			whiteShader;
@@ -104,7 +104,7 @@ typedef struct {
 
 extern void			UI_FillRect( float x, float y, float width, float height, const float *color );
 extern void			UI_DrawString( int x, int y, const char* str, int style, vec4_t color );
-extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader ); 
+extern void			UI_DrawHandlePic( float x, float y, float w, float h, qhandle_t hShader );
 extern void			UI_UpdateScreen( void );
 extern int			UI_RegisterFont(const char *fontName);
 extern void			UI_SetColor( const float *rgba );
@@ -222,7 +222,7 @@ extern char GoToMenu[];
 // ui_syscalls.c
 //
 int				trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits, const char *psAudioFile /* = NULL */);
-int				trap_CIN_StopCinematic(int handle); 
+int				trap_CIN_StopCinematic(int handle);
 void			trap_Cvar_Set( const char *var_name, const char *value );
 float			trap_Cvar_VariableValue( const char *var_name );
 void			trap_GetGlconfig( glconfig_t *glconfig );

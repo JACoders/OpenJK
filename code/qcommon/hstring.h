@@ -8,12 +8,10 @@
 #include <map>
 #pragma warning (pop)
 
-using namespace std;
-
 class hstring
 {
 	int	mId;
-	
+
 	void Init(const char *str);
 
 public:
@@ -29,7 +27,7 @@ public:
 	{
 		Init(str.c_str());
 	}
-	hstring(const hstring &str) 
+	hstring(const hstring &str)
 	{
 		mId=str.mId;
 	}
@@ -41,7 +39,7 @@ public:
 
 	const char *c_str(void) const;
 	string str(void) const;
-	
+
 	hstring& operator= (const char *str)
 	{
 		Init(str);
@@ -127,32 +125,32 @@ public:
 	typedef const T& const_reference;
 	typedef size_t    size_type;
 	typedef ptrdiff_t difference_type;
-	
+
 	template <class U>
-	struct rebind 
+	struct rebind
 	{
 	   typedef CMapPool<U> other;
 	};
-	
+
 	// return address of values
-	pointer address (reference value) const 
+	pointer address (reference value) const
 	{
 	   return &value;
 	}
-	const_pointer address (const_reference value) const 
+	const_pointer address (const_reference value) const
 	{
 	   return &value;
 	}
-		
+
 	// return maximum number of elements that can be allocated
 	size_type max_size () const
 	{
 //	   return mMaxSize;
 	   return 0xfffffff;	//uh, take a guess
 	}
-	
+
 	// allocate but don't initialize num elements of type T
-	pointer allocate (size_type num, const void* = 0) 
+	pointer allocate (size_type num, const void* = 0)
 	{
 		assert(sizeof(T)<=(MAP_NODE_SIZE-2)); // to big for this pool
 		assert(num==1); //allocator not design for this
@@ -163,24 +161,24 @@ public:
 		assert(size<=(MAP_NODE_SIZE-2)); // to big for this pool
 		return mPool.Alloc();
 	}
-	
+
 	// initialize elements of allocated storage p with value value
-	void construct (pointer p, const T& value) 
+	void construct (pointer p, const T& value)
 	{
 	   // initialize memory with placement new
 	   new((void*)p)T(value);
 	}
-	
+
 	// destroy elements of initialized storage p
-	void destroy (pointer p) 
+	void destroy (pointer p)
 	{
 	   // destroy objects by calling their destructor
 	   p->~T();
 	}
-	
+
 	// deallocate storage p of deleted elements
 	template<class U>
-	void deallocate (U *p, size_type num) 
+	void deallocate (U *p, size_type num)
 	{
 		assert(num==1); //allocator not design for this
 		mPool.Free(p);

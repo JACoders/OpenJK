@@ -479,7 +479,6 @@ void CL_SystemInfoChanged( void ) {
 
 			if(!FS_FilenameCompare(value, BASEGAME))
 			{
-				Com_Printf(S_COLOR_YELLOW "WARNING: Server sent \"%s\" fs_game value, clearing.\n", value);
 				Q_strncpyz(value, "", sizeof(value));
 			}
 

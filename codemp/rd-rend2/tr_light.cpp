@@ -58,7 +58,7 @@ R_DlightBmodel
 Determine which dynamic lights may effect this bmodel
 =============
 */
-void R_DlightBmodel( bmodel_t *bmodel ) {
+void R_DlightBmodel( bmodel_t *bmodel, trRefEntity_t *ent ) {
 	int			i, j;
 	dlight_t	*dl;
 	int			mask;
@@ -88,7 +88,7 @@ void R_DlightBmodel( bmodel_t *bmodel ) {
 		mask |= 1 << i;
 	}
 
-	tr.currentEntity->needDlights = (qboolean)(mask != 0);
+	ent->needDlights = (qboolean)(mask != 0);
 
 	// set the dlight bits in all the surfaces
 	for ( i = 0 ; i < bmodel->numSurfaces ; i++ ) {
@@ -488,7 +488,7 @@ int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *w
 	return qtrue;
 }
 
-int R_CubemapForPoint( vec3_t point )
+int R_CubemapForPoint( const vec3_t point )
 {
 	int cubemapIndex = -1;
 

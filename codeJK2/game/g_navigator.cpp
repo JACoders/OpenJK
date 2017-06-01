@@ -612,7 +612,7 @@ bool CNavigator::Load( const char *filename, int checksum )
 	gi.FS_Read( &failedEdges, sizeof( failedEdges ), file );
 	for ( int j = 0; j < MAX_FAILED_EDGES; j++ )
 	{
-		m_edgeLookupMap.insert(pair<int, int>(failedEdges[j].startID, j));
+		m_edgeLookupMap.insert(std::pair<int, int>(failedEdges[j].startID, j));
 	}
 
 
@@ -931,7 +931,7 @@ ShowEdges
 -------------------------
 */
 
-typedef	map < int, bool >		drawMap_m;
+typedef std::map < int, bool >		drawMap_m;
 
 void CNavigator::ShowEdges( void )
 {
@@ -1653,7 +1653,7 @@ void CNavigator::ShowPath( int start, int end )
 	}
 }
 
-static map<int,byte> CheckedNodes;
+static std::map<int,byte> CheckedNodes;
 void CNavigator::ClearCheckedNodes( void )
 {
 	CheckedNodes.clear();
@@ -1663,7 +1663,7 @@ byte CNavigator::CheckedNode(int wayPoint,int ent)
 {
 	assert(wayPoint>=0&&wayPoint<MAX_STORED_WAYPOINTS);
 	assert(ent>=0&&ent<MAX_GENTITIES);
-	map<int,byte>::iterator f=CheckedNodes.find(wayPoint*MAX_GENTITIES+ent);
+	std::map<int,byte>::iterator f=CheckedNodes.find(wayPoint*MAX_GENTITIES+ent);
 	if (f!=CheckedNodes.end())
 	{
 		return (*f).second;
@@ -1838,7 +1838,7 @@ int CNavigator::EdgeFailed( int startID, int endID )
 {
 	//OPTIMIZED WAY  (bjg 01/02)
 	//find in lookup map
-	pair <EdgeMultimapIt, EdgeMultimapIt> findValue;
+	std::pair <EdgeMultimapIt, EdgeMultimapIt> findValue;
 	findValue = m_edgeLookupMap.equal_range(startID);
 	while ( findValue.first != findValue.second )
 	{
@@ -1947,7 +1947,7 @@ void CNavigator::AddFailedEdge( int entID, int startID, int endID )
 			//Check one second from now to see if it's clear
 			failedEdges[j].checkTime = level.time + CHECK_FAILED_EDGE_INTERVAL + Q_irand( 0, 1000 );
 
-			m_edgeLookupMap.insert(pair<int, int>(startID, j));
+			m_edgeLookupMap.insert(std::pair<int, int>(startID, j));
 
 			/*
 			//DISABLED this for now, makes people stand around too long when
@@ -2667,7 +2667,7 @@ CPriorityQueue::~CPriorityQueue()
 //////////////////////////////////////////////////////////////////
 CEdge* CPriorityQueue::Find(int npNum)
 {
-	for(vector<CEdge*>::iterator HeapIter=mHeap.begin(); HeapIter!=mHeap.end(); HeapIter++)
+	for(std::vector<CEdge*>::iterator HeapIter=mHeap.begin(); HeapIter!=mHeap.end(); HeapIter++)
 	{
 		if ((*HeapIter)->m_first == npNum)
 		{
@@ -2714,7 +2714,7 @@ void CPriorityQueue::Push(CEdge* theEdge )
 //////////////////////////////////////////////////////////////////
 void CPriorityQueue::Update( CEdge* edge )
 {
-   for(vector<CEdge*>::iterator i=mHeap.begin(); i!=mHeap.end(); i++)
+   for(std::vector<CEdge*>::iterator i=mHeap.begin(); i!=mHeap.end(); i++)
    {
       if( (*i)->m_first == edge->m_first )
       {  //Found node - resort from this position in the mHeap

@@ -1,12 +1,20 @@
 #include <algorithm>
+#include <cassert>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 
-typedef std::vector<std::string> string_list;
+#include "tr_local.h"
+#include "tr_allocator.h"
 
-bool should_be_escaped ( char c )
+namespace
+{
+
+using StringList = std::vector<std::string>;
+
+bool ShouldEscape( char c )
 {
 	switch ( c )
 	{
@@ -18,27 +26,27 @@ bool should_be_escaped ( char c )
 	}
 }
 
-std::string& escape_string ( std::string& s )
+std::string& Escape( std::string& s )
 {
-	std::string::difference_type escapable_characters = std::count_if( s.begin(), s.end(), should_be_escaped );
-	if ( escapable_characters == 0 )
+	std::string::difference_type escapableCharacters = std::count_if( s.begin(), s.end(), ShouldEscape );
+	if ( escapableCharacters == 0 )
 	{
 		return s;
 	}
 
-	if ( s.capacity() < s.length() + escapable_characters )
+	if ( s.capacity() < (s.length() + escapableCharacters) )
 	{
 		// Grow if necessary.
-		s.resize (s.length() + escapable_characters);
+		s.resize(s.length() + escapableCharacters);
 	}
 
 	std::string::iterator it = s.begin();
 	while ( it != s.end() )
 	{
 		char c = *it;
-		if ( should_be_escaped (c) )
+		if ( ShouldEscape(c) )
 		{
-			it = s.insert (it, '\\');
+			it = s.insert(it, '\\');
 			it += 2;
 		}
 		else
@@ -50,14 +58,40 @@ std::string& escape_string ( std::string& s )
 	return s;
 }
 
-bool ends_with ( const std::string& s, const std::string& suffix )
+bool EndsWith( const std::string& s, const std::string& suffix )
 {
-	return s.compare (s.length() - suffix.length(), suffix.length(), suffix) == 0;
+	return s.compare(s.length() - suffix.length(), suffix.length(), suffix) == 0;
 }
 
-int main ( int argc, char *argv[] )
+const char *GetShaderSuffix( GPUShaderType type )
 {
-	string_list args (argv, argv + argc);
+	switch ( type )
+	{
+		case GPUSHADER_VERTEX:   return "_vp";
+		case GPUSHADER_FRAGMENT: return "_fp";
+		case GPUSHADER_GEOMETRY: return "_gp";
+		default: assert(!"Invalid shader type");
+	}
+	return nullptr;
+}
+
+const char *ToString( GPUShaderType type )
+{
+	switch ( type )
+	{
+		case GPUSHADER_VERTEX:   return "GPUSHADER_VERTEX";
+		case GPUSHADER_FRAGMENT: return "GPUSHADER_FRAGMENT";
+		case GPUSHADER_GEOMETRY: return "GPUSHADER_GEOMETRY";
+		default: assert(!"Invalid shader type");
+	}
+	return nullptr;
+}
+
+} // anonymous namespace
+
+int main( int argc, char *argv[] )
+{
+	StringList args(argv, argv + argc);
 
 	if ( args.empty() )
 	{
@@ -72,52 +106,94 @@ int main ( int argc, char *argv[] )
 	}
 
 	std::string& outFile = args[1];
-	string_list glslFiles (args.begin() + 2, args.end());
+	StringList glslFiles(args.begin() + 2, args.end());
 
 	std::cout << "Outputting to " << outFile << '\n';
 
-	std::string output = "#include \"tr_local.h\"\n\n";
+	Allocator allocator(512 * 1024);
 
+	std::ostringstream ss;
 	std::string line;
-	for ( string_list::const_iterator it = glslFiles.begin();
+
+	ss << "#include \"tr_local.h\"\n\n";
+	for ( StringList::const_iterator it = glslFiles.begin();
 			it != glslFiles.end(); ++it )
 	{
+
 		// Get shader name from file name
-		if ( !ends_with (*it, ".glsl") )
+		if ( !EndsWith(*it, ".glsl") )
 		{
 			std::cerr << *it << " doesn't end with .glsl extension.\n";
 			continue;
 		}
 
-		std::string::size_type lastSlash = it->find_last_of ("\\/");
-		std::string shaderName (it->begin() + lastSlash + 1, it->end() - 5);
+		std::string::size_type lastSlash = it->find_last_of("\\/");
+		std::string shaderName(it->begin() + lastSlash + 1, it->end() - 5);
 
 		// Write, one line at a time to the output
-		std::ifstream fs (it->c_str(), std::ios::in);
+		std::ifstream fs(it->c_str());
 		if ( !fs )
 		{
 			std::cerr << *it << " could not be opened.\n";
 			continue;
 		}
 
-		output += "const char *fallbackShader_" + shaderName + " = \"";
-		while ( std::getline (fs, line) )
+		std::streampos fileSize;
+		fs.seekg(0, std::ios::end);
+		fileSize = fs.tellg();
+		fs.seekg(0, std::ios::beg);
+
+		allocator.Reset();
+
+		char *programText = ojkAllocString(allocator, fileSize);
+		memset(programText, 0, (size_t)fileSize + 1);
+		fs.read(programText, fileSize);
+
+		GPUProgramDesc programDesc = ParseProgramSource(allocator,  programText);
+		for ( size_t i = 0, numShaders = programDesc.numShaders; i < numShaders; ++i )
 		{
-			if ( line.empty() )
+			GPUShaderDesc& shaderDesc = programDesc.shaders[i];
+			const char *suffix = GetShaderSuffix(shaderDesc.type);
+
+			ss << "const char *fallback_" + shaderName + suffix + " = \"";
+
+			const char *lineStart = shaderDesc.source;
+			const char *lineEnd = strchr(lineStart, '\n');
+			while ( lineEnd )
 			{
-				continue;
+				line.assign(lineStart, lineEnd - lineStart);
+				ss << Escape(line);
+				ss << "\\n\"\n\"";
+
+				lineStart = lineEnd + 1;
+				lineEnd = strchr(lineStart, '\n');
 			}
 
-			output += escape_string (line) + "\\n\"\n\"";
+			line.assign(lineStart);
+			ss << Escape(line) << "\";\n";
 		}
-		output += "\";\n\n";
+
+		ss << "GPUShaderDesc fallback_" << shaderName << "Shaders[] = {\n";
+		for ( size_t i = 0, numShaders = programDesc.numShaders; i < numShaders; ++i )
+		{
+			GPUShaderDesc& shaderDesc = programDesc.shaders[i];
+			const char *suffix = GetShaderSuffix(shaderDesc.type);
+
+			ss << "  { " << ToString(shaderDesc.type) << ", "
+						"fallback_" << shaderName << suffix << ", "
+						<< shaderDesc.firstLineNumber << " },\n";
+		}
+		ss << "};\n";
+
+		ss << "extern const GPUProgramDesc fallback_" << shaderName << "Program = { "
+			<< programDesc.numShaders << ", fallback_" << shaderName << "Shaders };\n\n";
 	}
 
-	std::ofstream ofs (outFile.c_str(), std::ios::out);
+	std::ofstream ofs(outFile.c_str());
 	if ( !ofs )
 	{
 		std::cerr << "Could not create file " << outFile << '\n';
 	}
 
-	ofs << output;
+	ofs << ss.str();
 }

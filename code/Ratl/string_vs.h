@@ -32,7 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 //
 // NOTES:
-// 
+//
 //
 //
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ public:
 	// Copy Constructor
     ////////////////////////////////////////////////////////////////////////////////////
 	string_vs(const string_vs<CAPACITY> &o)
-	{		
+	{
 		assert(str::len(o.mData)<CAPACITY);
 		str::ncpy(mData, o.mData, CAPACITY);		// Safe String Copy
 		mData[CAPACITY-1] = 0;					// Make Sure We Have A Null Terminated Str
@@ -125,7 +125,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	string_vs& operator=(const char *s)
 	{
@@ -244,7 +244,7 @@ public:
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	void			operator+=(const string_vs &o)
 	{
@@ -259,7 +259,7 @@ public:
 	}
 
     ////////////////////////////////////////////////////////////////////////////////////
-	// 
+	//
     ////////////////////////////////////////////////////////////////////////////////////
 	void			operator+=(const char *s)
 	{
@@ -309,7 +309,7 @@ public:
 		//--------------
 		tokenizer()							: mLoc(0)
 		{}
-		tokenizer(const char* t, const char* gap)	
+		tokenizer(const char* t, const char* gap)
 		{
 			strncpy(mGap, gap, TOKEN_GAP_LEN);		// Safe String Copy
 			mGap[TOKEN_GAP_LEN-1] = 0;				// Make Sure We Have A Null Terminated Str
@@ -335,7 +335,7 @@ public:
 
 		// DeReference Operator
 		//----------------------
-		const char*	operator*()								
+		const char*	operator*()
 		{
 			assert(mLoc);
 			return mLoc;

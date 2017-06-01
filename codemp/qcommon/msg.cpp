@@ -754,8 +754,6 @@ void MSG_ReadDeltaUsercmdKey( msg_t *msg, int key, usercmd_t *from, usercmd_t *t
 		to->weapon = MSG_ReadDeltaKey( msg, key, from->weapon, 8);
 
 		to->forcesel = MSG_ReadDeltaKey( msg, key, from->forcesel, 8);
-		if( sv_blockJumpSelect->integer && to->forcesel == 1 ) // FP_LEVIATHAN
-			to->forcesel = 0xFF; // (byte)-1
 		to->invensel = MSG_ReadDeltaKey( msg, key, from->invensel, 8);
 
 		to->generic_cmd = MSG_ReadDeltaKey( msg, key, from->generic_cmd, 8);
@@ -1170,7 +1168,7 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 	lc = MSG_ReadByte(msg);
 
 	if ( lc > numFields || lc < 0 )
-		Com_Error( ERR_DROP, "invalid entityState field count" );
+		Com_Error( ERR_DROP, "invalid entityState field count (got: %i, expecting: %i)", lc, numFields );
 
 	// shownet 2/3 will interleave with other printed info, -1 will
 	// just print the delta records`
@@ -2101,7 +2099,7 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 			&& (to->eFlags&EF_NODRAW) )
 		{//pilot riding *inside* a vehicle!
 			MSG_WriteBits( msg, 1, 1 );	// Pilot player state
-			numFields = (int)ARRAY_LEN( pilotPlayerStateFields ) - 82;
+			numFields = (int)ARRAY_LEN( pilotPlayerStateFields );
 			PSFields = pilotPlayerStateFields;
 		}
 		else
@@ -2350,7 +2348,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 		int isPilot = MSG_ReadBits( msg, 1 );
 		if ( isPilot )
 		{//pilot riding *inside* a vehicle!
-			numFields = (int)ARRAY_LEN( pilotPlayerStateFields ) - 82;
+			numFields = (int)ARRAY_LEN( pilotPlayerStateFields );
 			PSFields = pilotPlayerStateFields;
 		}
 		else
@@ -2366,7 +2364,7 @@ void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *t
 	lc = MSG_ReadByte(msg);
 
 	if ( lc > numFields || lc < 0 )
-		Com_Error( ERR_DROP, "invalid playerState field count" );
+		Com_Error( ERR_DROP, "invalid playerState field count (got: %i, expecting: %i)", lc, numFields );
 
 	for ( i = 0, field = PSFields ; i < lc ; i++, field++ ) {
 		fromF = (int *)( (byte *)from + field->offset );

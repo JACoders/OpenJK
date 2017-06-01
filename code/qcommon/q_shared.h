@@ -28,6 +28,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 // q_shared.h -- included first by ALL program modules.
 // A user mod should never modify this file
 
+#include "qcommon/q_math.h"
+#include "qcommon/q_color.h"
+#include "qcommon/q_string.h"
+
 #ifdef _MSC_VER
 
 #pragma warning(disable : 4018)     // signed/unsigned mismatch
@@ -109,6 +113,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <stddef.h>
 
+#ifdef __cplusplus
+#include <cmath>
+#endif
+
 //Ignore __attribute__ on non-gcc platforms
 #if !defined(__GNUC__) && !defined(__attribute__)
 	#define __attribute__(x)
@@ -149,71 +157,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define idppc	0
 #endif
 
-short ShortSwap( short l );
-int LongSwap( int l );
-float FloatSwap( const float *f );
-
-
-#include "../qcommon/q_platform.h"
+#include "qcommon/q_platform.h"
 
 // ================================================================
 // TYPE DEFINITIONS
 // ================================================================
-
-typedef unsigned char byte;
-typedef unsigned short word;
-typedef unsigned long ulong;
-
-typedef enum { qfalse=0, qtrue } qboolean;
-#define	qboolean	int		//don't want strict type checking on the qboolean
-
-#define Q_min(x,y) ((x)<(y)?(x):(y))
-#define Q_max(x,y) ((x)>(y)?(x):(y))
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1600)
-
-	#include <stdint.h>
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-
-#elif defined (_MSC_VER)
-
-	#include <io.h>
-
-	typedef signed __int64 int64_t;
-	typedef signed __int32 int32_t;
-	typedef signed __int16 int16_t;
-	typedef signed __int8  int8_t;
-	typedef unsigned __int64 uint64_t;
-	typedef unsigned __int32 uint32_t;
-	typedef unsigned __int16 uint16_t;
-	typedef unsigned __int8  uint8_t;
-
-	// vsnprintf is ISO/IEC 9899:1999
-	// abstracting this to make it portable
-	int Q_vsnprintf( char *str, size_t size, const char *format, va_list args );
-#else // not using MSVC
-
-	#if !defined(__STDC_LIMIT_MACROS)
-	#define __STDC_LIMIT_MACROS
-	#endif
-	#include <stdint.h>
-
-	#define Q_vsnprintf vsnprintf
-
-#endif
-
-// 32 bit field aliasing
-typedef union byteAlias_u {
-	float f;
-	int32_t i;
-	uint32_t ui;
-	qboolean qb;
-	byte b[4];
-	char c[4];
-} byteAlias_t;
 
 typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, clipHandle_t;
 
@@ -240,15 +188,7 @@ typedef int32_t qhandle_t, thandle_t, fxHandle_t, sfxHandle_t, fileHandle_t, cli
 #define NULL ((void *)0)
 #endif
 
-#define	MAX_QINT			0x7fffffff
-#define	MIN_QINT			(-MAX_QINT-1)
-
 #define INT_ID( a, b, c, d ) (uint32_t)((((a) & 0xff) << 24) | (((b) & 0xff) << 16) | (((c) & 0xff) << 8) | ((d) & 0xff))
-
-// angle indexes
-#define	PITCH				0		// up / down
-#define	YAW					1		// left / right
-#define	ROLL				2		// fall over
 
 // the game guarantees that no string from the network will ever
 // exceed MAX_STRING_CHARS
@@ -357,40 +297,6 @@ typedef enum {
 #define CIN_shader	16
 
 
-/*
-==============================================================
-
-MATHLIB
-
-==============================================================
-*/
-
-typedef float	 vec_t;
-typedef float	 vec2_t[2], vec3_t[3], vec4_t[4], vec5_t[5];
-typedef int		ivec2_t[2], ivec3_t[3], ivec4_t[4], ivec5_t[5];
-typedef vec3_t vec3pair_t[2], matrix3_t[3];
-
-typedef	int	fixed4_t, fixed8_t, fixed16_t;
-
-#ifndef M_PI
-#define M_PI		3.14159265358979323846	// matches value in gcc v2 math.h
-#endif
-
-#if defined(_MSC_VER)
-static __inline long Q_ftol(float f)
-{
-	return (long)f;
-}
-#else
-static inline long Q_ftol(float f)
-{
-	return (long)f;
-}
-#endif
-
-#define NUMVERTEXNORMALS	162
-extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
-
 // all drawing is done to a 640*480 virtual screen size
 // and will be automatically scaled to the real resolution
 #define	SCREEN_WIDTH		640
@@ -408,129 +314,6 @@ extern	vec3_t	bytedirs[NUMVERTEXNORMALS];
 #define	GIANTCHAR_WIDTH		32
 #define	GIANTCHAR_HEIGHT	48
 
-typedef enum
-{
-CT_NONE,
-CT_BLACK,
-CT_RED,
-CT_GREEN,
-CT_BLUE,
-CT_YELLOW,
-CT_MAGENTA,
-CT_CYAN,
-CT_WHITE,
-CT_LTGREY,
-CT_MDGREY,
-CT_DKGREY,
-CT_DKGREY2,
-
-CT_VLTORANGE,
-CT_LTORANGE,
-CT_DKORANGE,
-CT_VDKORANGE,
-
-CT_VLTBLUE1,
-CT_LTBLUE1,
-CT_DKBLUE1,
-CT_VDKBLUE1,
-
-CT_VLTBLUE2,
-CT_LTBLUE2,
-CT_DKBLUE2,
-CT_VDKBLUE2,
-
-CT_VLTBROWN1,
-CT_LTBROWN1,
-CT_DKBROWN1,
-CT_VDKBROWN1,
-
-CT_VLTGOLD1,
-CT_LTGOLD1,
-CT_DKGOLD1,
-CT_VDKGOLD1,
-
-CT_VLTPURPLE1,
-CT_LTPURPLE1,
-CT_DKPURPLE1,
-CT_VDKPURPLE1,
-
-CT_VLTPURPLE2,
-CT_LTPURPLE2,
-CT_DKPURPLE2,
-CT_VDKPURPLE2,
-
-CT_VLTPURPLE3,
-CT_LTPURPLE3,
-CT_DKPURPLE3,
-CT_VDKPURPLE3,
-
-CT_VLTRED1,
-CT_LTRED1,
-CT_DKRED1,
-CT_VDKRED1,
-CT_VDKRED,
-CT_DKRED,
-
-CT_VLTAQUA,
-CT_LTAQUA,
-CT_DKAQUA,
-CT_VDKAQUA,
-
-CT_LTPINK,
-CT_DKPINK,
-CT_LTCYAN,
-CT_DKCYAN,
-CT_LTBLUE3,
-CT_BLUE3,
-CT_DKBLUE3,
-
-CT_HUD_GREEN,
-CT_HUD_RED,
-CT_ICON_BLUE,
-CT_NO_AMMO_RED,
-CT_HUD_ORANGE,
-
-CT_TITLE,
-
-CT_MAX
-} ct_table_t;
-
-extern vec4_t colorTable[CT_MAX];
-
-#define Q_COLOR_ESCAPE	'^'
-#define Q_COLOR_BITS 0xF // was 7
-
-// you MUST have the last bit on here about colour strings being less than 7 or taiwanese strings register as colour!!!!
-#define Q_IsColorString(p)	( p && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) != Q_COLOR_ESCAPE && *((p)+1) <= '9' && *((p)+1) >= '0' )
-#define Q_IsColorStringExt(p)	((p) && *(p) == Q_COLOR_ESCAPE && *((p)+1) && *((p)+1) >= '0' && *((p)+1) <= '9') // ^[0-9]
-
-#define COLOR_BLACK		'0'
-#define COLOR_RED		'1'
-#define COLOR_GREEN		'2'
-#define COLOR_YELLOW	'3'
-#define COLOR_BLUE		'4'
-#define COLOR_CYAN		'5'
-#define COLOR_MAGENTA	'6'
-#define COLOR_WHITE		'7'
-#define COLOR_ORANGE	'8'
-#define COLOR_GREY		'9'
-#define ColorIndex(c)	( ( (c) - '0' ) & Q_COLOR_BITS )
-
-#define S_COLOR_BLACK	"^0"
-#define S_COLOR_RED		"^1"
-#define S_COLOR_GREEN	"^2"
-#define S_COLOR_YELLOW	"^3"
-#define S_COLOR_BLUE	"^4"
-#define S_COLOR_CYAN	"^5"
-#define S_COLOR_MAGENTA	"^6"
-#define S_COLOR_WHITE	"^7"
-#define S_COLOR_ORANGE	"^8"
-#define S_COLOR_GREY	"^9"
-
-extern vec4_t g_color_table[Q_COLOR_BITS+1];
-
-#define	MAKERGB( v, r, g, b ) v[0]=r;v[1]=g;v[2]=b
-#define	MAKERGBA( v, r, g, b, a ) v[0]=r;v[1]=g;v[2]=b;v[3]=a
 
 // Player weapons effects
 typedef enum
@@ -546,433 +329,9 @@ typedef enum
 
 #define MAX_BATTERIES	2500
 
-#define PI_DIV_180		0.017453292519943295769236907684886
-#define INV_PI_DIV_180	57.295779513082320876798154814105
-
-// Punish Aurelio if you don't like these performance enhancements. :-)
-#define DEG2RAD( a ) ( ( (a) * PI_DIV_180 ) )
-#define RAD2DEG( a ) ( ( (a) * INV_PI_DIV_180 ) )
-
-// A divide can be avoided by just multiplying by PI_DIV_180 which is PI divided by 180. - Aurelio
-//#define DEG2RAD( a ) ( ( (a) * M_PI ) / 180.0F )
-// A divide can be avoided by just multiplying by INV_PI_DIV_180(inverse of PI/180) which is 180 divided by PI. - Aurelio
-//#define RAD2DEG( a ) ( ( (a) * 180.0f ) / M_PI )
-
 #define ENUM2STRING(arg)   { #arg,arg }
 
-struct cplane_s;
-
-extern	const vec3_t	vec3_origin;
-extern	const vec3_t	axisDefault[3];
-
-#define	nanmask (255<<23)
-
-#define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
-
-float Q_fabs( float f );
-float Q_rsqrt( float f );		// reciprocal square root
-
-#define SQRTFAST( x ) ( 1.0f / Q_rsqrt( x ) )
-
-signed char ClampChar( int i );
-signed short ClampShort( int i );
-
-float Q_powf( float x, int y );
-
-// this isn't a real cheap function to call!
-int DirToByte( vec3_t dir );
-void ByteToDir( int b, vec3_t dir );
-
-#define _DotProduct(x,y)		((x)[0]*(y)[0]+(x)[1]*(y)[1]+(x)[2]*(y)[2])
-#define _VectorSubtract(a,b,c)	((c)[0]=(a)[0]-(b)[0],(c)[1]=(a)[1]-(b)[1],(c)[2]=(a)[2]-(b)[2])
-#define _VectorAdd(a,b,c)		((c)[0]=(a)[0]+(b)[0],(c)[1]=(a)[1]+(b)[1],(c)[2]=(a)[2]+(b)[2])
-#define _VectorCopy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2])
-#define	_VectorScale(v, s, o)	((o)[0]=(v)[0]*(s),(o)[1]=(v)[1]*(s),(o)[2]=(v)[2]*(s))
-#define	_VectorMA(v, s, b, o)	((o)[0]=(v)[0]+(b)[0]*(s),(o)[1]=(v)[1]+(b)[1]*(s),(o)[2]=(v)[2]+(b)[2]*(s))
-
-
-#define VectorClear(a)			((a)[0]=(a)[1]=(a)[2]=0)
-#define VectorNegate(a,b)		((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2])
-#define VectorSet(v, x, y, z)	((v)[0]=(x), (v)[1]=(y), (v)[2]=(z))
-#define Vector4Copy(a,b)		((b)[0]=(a)[0],(b)[1]=(a)[1],(b)[2]=(a)[2],(b)[3]=(a)[3])
-
-#define	SnapVector(v) {v[0]=(int)v[0];v[1]=(int)v[1];v[2]=(int)v[2];}
-
-// just in case you do't want to use the macros
-inline void VectorMA( const vec3_t veca, float scale, const vec3_t vecb, vec3_t vecc) {
-	vecc[0] = veca[0] + scale*vecb[0];
-	vecc[1] = veca[1] + scale*vecb[1];
-	vecc[2] = veca[2] + scale*vecb[2];
-}
-
-inline vec_t DotProduct( const vec3_t v1, const vec3_t v2 ) {
-	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
-}
-
-inline void CrossProduct( const vec3_t v1, const vec3_t v2, vec3_t cross ) {
-	cross[0] = v1[1]*v2[2] - v1[2]*v2[1];
-	cross[1] = v1[2]*v2[0] - v1[0]*v2[2];
-	cross[2] = v1[0]*v2[1] - v1[1]*v2[0];
-}
-
-inline void VectorSubtract( const vec3_t veca, const vec3_t vecb, vec3_t o ) {
-	o[0] = veca[0]-vecb[0];
-	o[1] = veca[1]-vecb[1];
-	o[2] = veca[2]-vecb[2];
-}
-
-inline void VectorAdd( const vec3_t veca, const vec3_t vecb, vec3_t o ) {
-	o[0] = veca[0]+vecb[0];
-	o[1] = veca[1]+vecb[1];
-	o[2] = veca[2]+vecb[2];
-}
-
-inline void VectorCopy( const vec3_t in, vec3_t out ) {
-	out[0] = in[0];
-	out[1] = in[1];
-	out[2] = in[2];
-}
-
-inline void VectorScale( const vec3_t i, vec_t scale, vec3_t o ) {
-	o[0] = i[0]*scale;
-	o[1] = i[1]*scale;
-	o[2] = i[2]*scale;
-}
-
-float DotProductNormalize( const vec3_t inVec1, const vec3_t inVec2 );
-
-unsigned ColorBytes3 (float r, float g, float b);
-unsigned ColorBytes4 (float r, float g, float b, float a);
-
-float NormalizeColor( const vec3_t in, vec3_t out );
-float RadiusFromBounds( const vec3_t mins, const vec3_t maxs );
-
-void ClearBounds( vec3_t mins, vec3_t maxs );
-
-inline void AddPointToBounds( const vec3_t v, vec3_t mins, vec3_t maxs ) {
-	if ( v[0] < mins[0] ) {
-		mins[0] = v[0];
-	}
-	if ( v[0] > maxs[0]) {
-		maxs[0] = v[0];
-	}
-
-	if ( v[1] < mins[1] ) {
-		mins[1] = v[1];
-	}
-	if ( v[1] > maxs[1]) {
-		maxs[1] = v[1];
-	}
-
-	if ( v[2] < mins[2] ) {
-		mins[2] = v[2];
-	}
-	if ( v[2] > maxs[2]) {
-		maxs[2] = v[2];
-	}
-}
-
-inline int VectorCompare( const vec3_t v1, const vec3_t v2 ) {
-	if (v1[0] != v2[0] || v1[1] != v2[1] || v1[2] != v2[2]) {
-		return 0;
-	}			
-	return 1;
-}
-
-//NOTE: less precise
-inline int VectorCompare2( const vec3_t v1, const vec3_t v2 ) {
-	if ( v1[0] > v2[0]+0.0001f || v1[0] < v2[0]-0.0001f
-		|| v1[1] > v2[1]+0.0001f || v1[1] < v2[1]-0.0001f
-		|| v1[2] > v2[2]+0.0001f || v1[2] < v2[2]-0.0001f ) {
-		return 0;
-	}			
-	return 1;
-}
-inline vec_t VectorLength( const vec3_t v ) {
-	return (vec_t)sqrt (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-inline vec_t VectorLengthSquared( const vec3_t v ) {
-	return (v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-}
-
-inline vec_t Distance( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t	v;
-
-	VectorSubtract (p2, p1, v);
-	return VectorLength( v );
-}
-
-inline vec_t DistanceSquared( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t	v;
-
-	VectorSubtract (p2, p1, v);
-	return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-}
-
-// fast vector normalize routine that does not check to make sure
-// that length != 0, nor does it return length, uses rsqrt approximation
-inline void VectorNormalizeFast( vec3_t v )
-{
-	float ilength;
-
-	ilength = Q_rsqrt( DotProduct( v, v ) );
-
-	v[0] *= ilength;
-	v[1] *= ilength;
-	v[2] *= ilength;
-}
-
-inline void VectorInverse( vec3_t v ){
-	v[0] = -v[0];
-	v[1] = -v[1];
-	v[2] = -v[2];
-}
-
-inline void VectorRotate( const vec3_t in, vec3_t matrix[3], vec3_t out )
-{
-	out[0] = DotProduct( in, matrix[0] );
-	out[1] = DotProduct( in, matrix[1] );
-	out[2] = DotProduct( in, matrix[2] );
-}
-
-//if length is 0, v is untouched otherwise v is normalized
-inline vec_t VectorNormalize( vec3_t v ) {
-	float	length, ilength;
-
-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);
-
-	if ( length > 0.0001f ) {
-		ilength = 1/length;
-		v[0] *= ilength;
-		v[1] *= ilength;
-		v[2] *= ilength;
-	}
-		
-	return length;
-}
-
-
-//if length is 0, out is cleared, otherwise out is normalized
-inline vec_t VectorNormalize2( const vec3_t v, vec3_t out) {
-	float	length, ilength;
-
-	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
-	length = sqrt (length);
-
-	if (length)
-	{
-		ilength = 1/length;
-		out[0] = v[0]*ilength;
-		out[1] = v[1]*ilength;
-		out[2] = v[2]*ilength;
-	} else {
-		VectorClear( out );
-	}
-		
-	return length;
-}
-
-int Q_log2(int val);
-
-inline qboolean Q_isnan ( float f ) {
-#ifdef _WIN32
-	return _isnan (f);
-#else
-	return isnan (f);
-#endif
-}
-
-inline int Q_rand( int *seed ) {
-	*seed = (69069 * *seed + 1);
-	return *seed;
-}
-
-inline float Q_random( int *seed ) {
-	return ( Q_rand( seed ) & 0xffff ) / (float)0x10000;
-}
-
-inline float Q_crandom( int *seed ) {
-	return 2.0F * ( Q_random( seed ) - 0.5f );
-}
-
-// Returns an integer min <= x <= max (ie inclusive)
-inline int Q_irand(int min, int max) {
-	assert(min <= max);
-	return (rand() % (max - min + 1)) + min;
-}
-
-#define random() (rand() / (float)RAND_MAX)
-
-//  Returns a float min <= x < max (exclusive; will get max - 0.00001; but never max
-inline float Q_flrand(float min, float max) {
-	return (random() * (max - min)) + min;
-}
-
-//returns a float between -1 and 1.0
-inline float crandom() {
-	return Q_flrand(-1.0f, 1.0f);
-}
-
-float erandom( float mean );
-
-void AngleVectors( const vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-
-/*
-=================
-AnglesToAxis
-=================
-*/
-inline void AnglesToAxis( const vec3_t angles, vec3_t axis[3] ) {
-	vec3_t	right;
-
-	// angle vectors returns "right" instead of "y axis"
-	AngleVectors( angles, axis[0], right, axis[2] );
-	VectorSubtract( vec3_origin, right, axis[1] );
-}
-
-inline void AxisClear( vec3_t axis[3] ) {
-	axis[0][0] = 1;
-	axis[0][1] = 0;
-	axis[0][2] = 0;
-	axis[1][0] = 0;
-	axis[1][1] = 1;
-	axis[1][2] = 0;
-	axis[2][0] = 0;
-	axis[2][1] = 0;
-	axis[2][2] = 1;
-}
-
-inline void AxisCopy( const vec3_t in[3], vec3_t out[3] ) {
-	VectorCopy( in[0], out[0] );
-	VectorCopy( in[1], out[1] );
-	VectorCopy( in[2], out[2] );
-}
-
-void vectoangles( const vec3_t value1, vec3_t angles);
-
-vec_t DistanceHorizontal( const vec3_t p1, const vec3_t p2 );
-vec_t DistanceHorizontalSquared( const vec3_t p1, const vec3_t p2 );
-
-inline vec_t GetYawForDirection( const vec3_t p1, const vec3_t p2 ) {
-	vec3_t v, angles;
-
-	VectorSubtract( p2, p1, v );
-	vectoangles( v, angles );
-
-	return angles[YAW];
-}
-
-inline void GetAnglesForDirection( const vec3_t p1, const vec3_t p2, vec3_t out ) {
-	vec3_t v;
-
-	VectorSubtract( p2, p1, v );
-	vectoangles( v, out );
-}
-
-
-void SetPlaneSignbits( struct cplane_s *out );
-int BoxOnPlaneSide (vec3_t emins, vec3_t emaxs, struct cplane_s *plane);
-//float	AngleMod(float a);
-
-inline float LerpAngle (float from, float to, float frac) {
-	float	a;
-
-	if ( to - from > 180 ) {
-		to -= 360;
-	}
-	if ( to - from < -180 ) {
-		to += 360;
-	}
-	a = from + frac * (to - from);
-
-	return a;
-}
-
-/*
-=================
-AngleSubtract
-
-Always returns a value from -180 to 180
-=================
-*/
-inline float	AngleSubtract( float a1, float a2 ) {
-	float	a;
-
-	a = a1 - a2;
-	while ( a > 180 ) {
-		a -= 360;
-	}
-	while ( a < -180 ) {
-		a += 360;
-	}
-	return a;
-}
-
-inline void AnglesSubtract( vec3_t v1, vec3_t v2, vec3_t v3 ) {
-	v3[0] = AngleSubtract( v1[0], v2[0] );
-	v3[1] = AngleSubtract( v1[1], v2[1] );
-	v3[2] = AngleSubtract( v1[2], v2[2] );
-}
-
-/*
-=================
-AngleNormalize360
-
-returns angle normalized to the range [0 <= angle < 360]
-=================
-*/
-inline float AngleNormalize360 ( float angle ) {
-	return (360.0 / 65536) * ((int)(angle * (65536 / 360.0)) & 65535);
-}
-
-/*
-=================
-AngleNormalize180
-
-returns angle normalized to the range [-180 < angle <= 180]
-=================
-*/
-inline float AngleNormalize180 ( float angle ) {
-	angle = AngleNormalize360( angle );
-	if ( angle > 180.0 ) {
-		angle -= 360.0;
-	}
-	return angle;
-}
-
-/*
-=================
-AngleDelta
-
-returns the normalized delta from angle1 to angle2
-=================
-*/
-inline float AngleDelta ( float angle1, float angle2 ) {
-	return AngleNormalize180( angle1 - angle2 );
-}
-
-qboolean PlaneFromPoints( vec4_t plane, const vec3_t a, const vec3_t b, const vec3_t c );
-void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
-void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
-void RotateAroundDirection( vec3_t axis[3], float yaw );
-void MakeNormalVectors( const vec3_t forward, vec3_t right, vec3_t up );
-// perpendicular vector could be replaced by this
-
-int	PlaneTypeForNormal (vec3_t normal);
-
-void MatrixMultiply(float in1[3][3], float in2[3][3], float out[3][3]);
-void PerpendicularVector( vec3_t dst, const vec3_t src );
-
-
-
 //=============================================
-
-int Com_Clampi( int min, int max, int value );
-float Com_Clamp( float min, float max, float value );
-int Com_AbsClampi( int min, int max, int value );
-float Com_AbsClamp( float min, float max, float value );
 
 char	*COM_SkipPath( char *pathname );
 const char	*COM_GetExtension( const char *name );
@@ -985,7 +344,7 @@ void	 COM_BeginParseSession( void );
 void	 COM_EndParseSession( void );
 
 // For compatibility with shared code
-static inline void COM_BeginParseSession( const char *sessionName )
+QINLINE void COM_BeginParseSession( const char *sessionName )
 {
 	COM_BeginParseSession();
 }
@@ -1038,66 +397,6 @@ typedef enum {
 } fsOrigin_t;
 
 //=============================================
-
-int Q_isprint( int c );
-int Q_islower( int c );
-int Q_isupper( int c );
-int Q_isalpha( int c );
-qboolean Q_isanumber( const char *s );
-qboolean Q_isintegral( float f );
-
-#if 1
-// portable case insensitive compare
-int		Q_strncmp (const char *s1, const char *s2, int n);
-int		Q_stricmpn (const char *s1, const char *s2, int n);
-inline  int Q_stricmp (const char *s1, const char *s2) {return Q_stricmpn (s1, s2, 99999);}
-char	*Q_strlwr( char *s1 );
-char	*Q_strupr( char *s1 );
-char	*Q_strrchr( const char* string, int c );
-#else
-// NON-portable (but faster) versions
-inline int	Q_stricmp (const char *s1, const char *s2) { return stricmp(s1, s2); }
-inline int	Q_strncmp (const char *s1, const char *s2, int n) { return strncmp(s1, s2, n); }
-inline int	Q_stricmpn (const char *s1, const char *s2, int n) { return strnicmp(s1, s2, n); }
-inline char	*Q_strlwr( char *s1 ) { return strlwr(s1); }
-inline char	*Q_strupr( char *s1 ) { return strupr(s1); }
-inline const char	*Q_strrchr( const char* str, int c ) { return strrchr(str, c); }
-#endif
-
-
-// buffer size safe library replacements
-#ifdef __cplusplus
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong = qfalse );
-#else
-void	Q_strncpyz( char *dest, const char *src, int destsize, qboolean bBarfIfTooLong );
-#endif
-void	Q_strcat( char *dest, int size, const char *src );
-
-const char *Q_stristr( const char *s, const char *find );
-
-// strlen that discounts Quake color sequences
-int Q_PrintStrlen( const char *string );
-// removes color sequences from string
-char *Q_CleanStr( char *string );
-void Q_StripColor ( char *string );
-void Q_strstrip( char *string, const char *strip, const char *repl );
-const char *Q_strchrs( const char *string, const char *search );
-//=============================================
-
-//=============================================
-/*
-short	BigShort(short l);
-short	LittleShort(short l);
-int		BigLong (int l);
-int		LittleLong (int l);
-qint64  BigLong64 (qint64 l);
-qint64  LittleLong64 (qint64 l);
-float	BigFloat (const float *l);
-float	LittleFloat (const float *l);
-
-void	Swap_Init (void);
-*/
-
 char	* QDECL va(const char *format, ...);
 
 #define TRUNCATE_LENGTH	64
@@ -1202,24 +501,6 @@ COLLISION DETECTION
 */
 
 #include "../game/surfaceflags.h"			// shared with the q3map utility
-
-// plane types are used to speed some tests
-// 0-2 are axial planes
-#define	PLANE_X			0
-#define	PLANE_Y			1
-#define	PLANE_Z			2
-#define	PLANE_NON_AXIAL	3
-
-
-// plane_t structure
-// !!! if this is changed, it must be changed in asm code too !!!
-typedef struct cplane_s {
-	vec3_t	normal;
-	float	dist;
-	byte	type;			// for fast side tests: 0,1,2 = axial, 3 = nonaxial
-	byte	signbits;		// signx + (signy<<1) + (signz<<2), used as lookup during collision
-	byte	pad[2];
-} cplane_t;
 
 /*
 Ghoul2 Insert Start
@@ -1376,7 +657,7 @@ Ghoul2 Insert Start
 Ghoul2 Insert End
 */
 #define CS_DYNAMIC_MUSIC_STATE	(CS_CHARSKINS + MAX_CHARSKINS)
-#define CS_WORLD_FX				(CS_DYNAMIC_MUSIC_STATE + 1)	
+#define CS_WORLD_FX				(CS_DYNAMIC_MUSIC_STATE + 1)
 #define CS_MAX					(CS_WORLD_FX + MAX_WORLD_FX)
 
 #if (CS_MAX) > MAX_CONFIGSTRINGS
@@ -1442,8 +723,8 @@ typedef enum
 #define	MAX_PERSISTANT			16
 
 #define	MAX_POWERUPS			16
-#define	MAX_WEAPONS				32		
-#define MAX_AMMO				10		
+#define	MAX_WEAPONS				32
+#define MAX_AMMO				10
 #define MAX_INVENTORY			15		// See INV_MAX
 #define MAX_SECURITY_KEYS		5
 #define MAX_SECURITY_KEY_MESSSAGE		24
@@ -1468,7 +749,7 @@ typedef enum
 } waterHeightLevel_t;
 
 // !!!!!!! loadsave affecting struct !!!!!!!
-typedef struct 
+typedef struct
 {
 	// Actual trail stuff
 	int		inAction;	// controls whether should we even consider starting one
@@ -1479,7 +760,7 @@ typedef struct
 
 	// Marks stuff
 	qboolean	haveOldPos[2];
-	vec3_t		oldPos[2];		
+	vec3_t		oldPos[2];
 	vec3_t		oldNormal[2];	// store this in case we don't have a connect-the-dots situation
 							//	..then we'll need the normal to project a mark blob onto the impact point
 } saberTrail_t;
@@ -1616,10 +897,10 @@ typedef struct
 	float		animSpeedScale;				//1.0 - plays normal attack animations faster/slower
 
 	//done in both cgame and game (BG code)
-	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack 
-	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	int	kataMove;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	int	lungeAtkMove;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	int	jumpAtkUpMove;			//LS_INVALID - if set, player will execute this move when they jump+attack
+	int	jumpAtkFwdMove;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack
 	int	jumpAtkBackMove;		//LS_INVALID - if set, player will execute this move when they jump+back+attack
 	int	jumpAtkRightMove;		//LS_INVALID - if set, player will execute this move when they jump+rightattack
 	int	jumpAtkLeftMove;		//LS_INVALID - if set, player will execute this move when they jump+left+attack
@@ -1636,7 +917,7 @@ typedef struct
 	int			bladeStyle2Start;			//0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
 
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
-	
+
 	//===PRIMARY BLADES=====================
 	//done in cgame (client-side code)
 	int			trailStyle;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1658,7 +939,7 @@ typedef struct
 	float		splashRadius;				//0 - radius of splashDamage
 	int			splashDamage;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
 	float		splashKnockback;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
-	
+
 	//===SECONDARY BLADES===================
 	//done in cgame (client-side code)
 	int			trailStyle2;				//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1711,7 +992,7 @@ typedef struct
 					blade[iBlade].active = bActive;
 				}
 
-	qboolean	Active() 
+	qboolean	Active()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1722,7 +1003,7 @@ typedef struct
 					}
 					return qfalse;
 				}
-	qboolean	ActiveManualOnly() 
+	qboolean	ActiveManualOnly()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1758,26 +1039,26 @@ typedef struct
 						blade[i].length = length;
 					}
 				}
-	float		Length() 
+	float		Length()
 				{//return largest length
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].length > len1 )
 						{
-							len1 = blade[i].length; 
+							len1 = blade[i].length;
 						}
 					}
 					return len1;
 				};
-	float		LengthMax() 
-				{ 
+	float		LengthMax()
+				{
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].lengthMax > len1 )
 						{
-							len1 = blade[i].lengthMax; 
+							len1 = blade[i].lengthMax;
 						}
 					}
 					return len1;
@@ -1858,7 +1139,7 @@ typedef struct
 					blade[iBlade].active = bActive;
 				}
 
-	qboolean	Active() 
+	qboolean	Active()
 				{
 					for ( int i = 0; i < numBlades; i++ )
 					{
@@ -1876,26 +1157,26 @@ typedef struct
 						blade[i].length = length;
 					}
 				}
-	float		Length() 
+	float		Length()
 				{//return largest length
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].length > len1 )
 						{
-							len1 = blade[i].length; 
+							len1 = blade[i].length;
 						}
 					}
 					return len1;
 				};
-	float		LengthMax() 
-				{ 
+	float		LengthMax()
+				{
 					float len1 = 0;
 					for ( int i = 0; i < numBlades; i++ )
 					{
 						if ( blade[i].lengthMax > len1 )
 						{
-							len1 = blade[i].lengthMax; 
+							len1 = blade[i].lengthMax;
 						}
 					}
 					return len1;
@@ -1942,16 +1223,16 @@ typedef struct playerState_s {
 	int			weaponChargeTime;
 	int			rechargeTime;		// for the phaser
 	int			gravity;
-	int			leanofs;			
+	int			leanofs;
 	int			friction;
 	int			speed;
 	int			delta_angles[3];	// add to command angles to get view direction
 									// changed by spawns, rotating objects, and teleporters
 
 	int			groundEntityNum;// ENTITYNUM_NONE = in air
-	int			legsAnim;		// 
+	int			legsAnim;		//
 	int			legsAnimTimer;	// don't change low priority animations on legs until this runs out
-	int			torsoAnim;		// 
+	int			torsoAnim;		//
 	int			torsoAnimTimer;	// don't change low priority animations on torso until this runs out
 	int			movementDir;	// a number 0 to 7 that represents the relative angle
 								// of movement to the view angle (axial and diagonals)
@@ -1989,7 +1270,7 @@ typedef struct playerState_s {
 	int			powerups[MAX_POWERUPS];					// level.time that the powerup runs out
 	int			ammo[MAX_AMMO];
 	int			inventory[MAX_INVENTORY];							// Count of each inventory item.
-	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types 
+	char  		security_key_message[MAX_SECURITY_KEYS][MAX_SECURITY_KEY_MESSSAGE];	// Security key types
 
 	vec3_t		serverViewOrg;
 
@@ -2029,12 +1310,12 @@ typedef struct playerState_s {
 	int			lastStationary;	//last time you were on the ground
 	int			weaponShotCount;
 
-	//FIXME: maybe allocate all these structures (saber, force powers, vehicles) 
+	//FIXME: maybe allocate all these structures (saber, force powers, vehicles)
 	//			or descend them as classes - so not every client has all this info
 	saberInfo_t	saber[MAX_SABERS];
 	qboolean	dualSabers;
-	qboolean	SaberStaff( void ) { return ( saber[0].type == SABER_STAFF || (dualSabers && saber[1].type == SABER_STAFF) ); };
-	qboolean	SaberActive() { return ( saber[0].Active() || (dualSabers&&saber[1].Active()) ); };
+	qboolean	SaberStaff( void ) { return (qboolean)( saber[0].type == SABER_STAFF || (dualSabers && saber[1].type == SABER_STAFF) ); };
+	qboolean	SaberActive() { return (qboolean)( saber[0].Active() || (dualSabers&&saber[1].Active()) ); };
 	void		SetSaberLength( float length )
 				{
 					saber[0].SetLength( length );
@@ -2043,24 +1324,24 @@ typedef struct playerState_s {
 						saber[1].SetLength( length );
 					}
 				}
-	float		SaberLength() 
+	float		SaberLength()
 				{//return largest length
 					float len1 = saber[0].Length();
 					if ( dualSabers && saber[1].Length() > len1 )
 					{
-						return saber[1].Length(); 
+						return saber[1].Length();
 					}
 					return len1;
 				};
-	float		SaberLengthMax() 
-				{ 
+	float		SaberLengthMax()
+				{
 					if ( saber[0].LengthMax() > saber[1].LengthMax() )
 					{
 						return saber[0].LengthMax();
 					}
 					else if ( dualSabers )
 					{
-						return saber[1].LengthMax(); 
+						return saber[1].LengthMax();
 					}
 					return 0.0f;
 				};
@@ -2089,9 +1370,9 @@ typedef struct playerState_s {
 						saber[1].Activate();
 					}
 				}
-	void		SaberDeactivate( void ) 
-				{ 
-					saber[0].Deactivate(); 
+	void		SaberDeactivate( void )
+				{
+					saber[0].Deactivate();
 					saber[1].Deactivate();
 				};
 	void		SaberActivateTrail ( float duration )
@@ -2196,7 +1477,7 @@ typedef struct playerState_s {
 	int			forceDrainEntityNum;				//what entity I'm draining
 	vec3_t		forceDrainOrg;						//where the drained ent should be lifted to
 	int			forceHealCount;						//how many points of force heal have been applied so far
-	
+
 	//new Jedi Academy force powers
 	int			forceAllowDeactivateTime;
 	int			forceRageDrainTime;
@@ -2248,9 +1529,9 @@ typedef struct playerState_s {
 #define	BUTTON_VEH_SPEED	8			// used for some horrible vehicle hack... :)
 #define	BUTTON_WALKING		16			// walking can't just be infered from MOVE_RUN because a key pressed late in the frame will
 										// only generate a small move value for that frame walking will use different animations and
-										// won't generate footsteps 
+										// won't generate footsteps
 #define	BUTTON_USE			32			// the ol' use key returns!
-#define BUTTON_FORCEGRIP	64			// 
+#define BUTTON_FORCEGRIP	64			//
 #define BUTTON_ALT_ATTACK	128
 
 #define	BUTTON_FORCE_FOCUS	256			// any key whatsoever
@@ -2357,9 +1638,9 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 	// for players
 	int		powerups;		// bit flags
 	int		weapon;			// determines weapon and flash model, etc
-	int		legsAnim;		// 
+	int		legsAnim;		//
 	int		legsAnimTimer;	// don't change low priority animations on legs until this runs out
-	int		torsoAnim;		// 
+	int		torsoAnim;		//
 	int		torsoAnimTimer;	// don't change low priority animations on torso until this runs out
 
 	int		scale;			//Scale players
@@ -2373,7 +1654,7 @@ typedef struct entityState_s {// !!!!!!!!!!! LOADSAVE-affecting struct !!!!!!!!!
 #endif
 
 	//int		vehicleIndex;		// What kind of vehicle you're driving
-	vec3_t	vehicleAngles;		// 
+	vec3_t	vehicleAngles;		//
 	int		vehicleArmor;		// current armor of your vehicle (explodes if drops to 0)
 	// 0 if not in a vehicle, otherwise the client number.
 	int m_iVehicleNum;
@@ -2517,7 +1798,7 @@ Ghoul2 Insert Start
 
 enum Eorientations
 {
-	ORIGIN = 0, 
+	ORIGIN = 0,
 	POSITIVE_X,
 	POSITIVE_Z,
 	POSITIVE_Y,
@@ -2575,8 +1856,5 @@ typedef enum
 	eForceReload_ALL
 
 } ForceReload_e;
-
-
-#include "../game/genericparser2.h"
 
 #endif	// __Q_SHARED_H

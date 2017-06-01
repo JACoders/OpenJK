@@ -113,7 +113,7 @@ void funcBBrushDieGo (gentity_t *self)
 
 	VectorSubtract( self->absmax, self->absmin, org );// size
 
-	numChunks = random() * 6 + 18;
+	numChunks = Q_flrand(0.0f, 1.0f) * 6 + 18;
 
 	// This formula really has no logical basis other than the fact that it seemed to be the closest to yielding the results that I wanted.
 	// Volume is length * width * height...then break that volume down based on how many chunks we have
@@ -465,7 +465,7 @@ void misc_model_breakable_die( gentity_t *self, gentity_t *inflictor, gentity_t 
 	AngleVectors( self->s.apos.trBase, dir, NULL, NULL );
 	VectorNormalize( dir );
 
-	numChunks = random() * 6 + 20;
+	numChunks = Q_flrand(0.0f, 1.0f) * 6 + 20;
 
 	VectorSubtract( self->absmax, self->absmin, dis );
 

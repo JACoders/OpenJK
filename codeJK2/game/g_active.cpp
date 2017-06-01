@@ -1630,33 +1630,7 @@ static int NPC_GetRunSpeed( gentity_t *ent )
 
 	if ( ( ent->client == NULL ) || ( ent->NPC == NULL ) )
 		return 0;
-/*
-	switch ( ent->client->playerTeam )
-	{
-	case TEAM_BORG:
-		runSpeed = ent->NPC->stats.runSpeed;
-		runSpeed += BORG_RUN_INCR * (g_spskill->integer%3);
-		break;
 
-	case TEAM_8472:
-		runSpeed = ent->NPC->stats.runSpeed;
-		runSpeed += SPECIES_RUN_INCR * (g_spskill->integer%3);
-		break;
-
-	case TEAM_STASIS:
-		runSpeed = ent->NPC->stats.runSpeed;
-		runSpeed += STASIS_RUN_INCR * (g_spskill->integer%3);
-		break;
-
-	case TEAM_BOTS:
-		runSpeed = ent->NPC->stats.runSpeed;
-		break;
-
-	default:
-		runSpeed = ent->NPC->stats.runSpeed;
-		break;
-	}
-*/
 	// team no longer indicates species/race.  Use NPC_class to adjust speed for specific npc types
 	switch( ent->client->NPC_class)
 	{
@@ -2162,7 +2136,7 @@ extern cvar_t	*g_skippingcin;
 		{//lock out player control
 			if ( !player_locked )
 			{
-				VectorClear( ucmd->angles );
+				VectorClearM( ucmd->angles );
 			}
 			ucmd->forwardmove = 0;
 			ucmd->rightmove = 0;
@@ -2391,8 +2365,8 @@ extern cvar_t	*g_skippingcin;
 		{
 			if ( !(ucmd->buttons & BUTTON_USE) )
 			{//Not leaning
-				qboolean Flying = (ucmd->upmove && ent->NPC->stats.moveType == MT_FLYSWIM);
-				qboolean Climbing = (ucmd->upmove && ent->watertype&CONTENTS_LADDER );
+				qboolean Flying = (qboolean)(ucmd->upmove && ent->NPC->stats.moveType == MT_FLYSWIM);
+				qboolean Climbing = (qboolean)(ucmd->upmove && (ent->watertype & CONTENTS_LADDER));
 
 				client->ps.friction = 6;
 
@@ -2412,7 +2386,6 @@ extern cvar_t	*g_skippingcin;
 						if ( ent->NPC->currentSpeed >= 80 && !controlledByPlayer )
 						{//At higher speeds, need to slow down close to stuff
 							//Slow down as you approach your goal
-						//	if ( ent->NPC->distToGoal < SLOWDOWN_DIST && client->race != RACE_BORG && !(ent->NPC->aiFlags&NPCAI_NO_SLOWDOWN) )//128
 							if ( ent->NPC->distToGoal < SLOWDOWN_DIST && !(ent->NPC->aiFlags&NPCAI_NO_SLOWDOWN) )//128
 							{
 								if ( ent->NPC->desiredSpeed > MIN_NPC_SPEED )
@@ -2788,7 +2761,7 @@ extern cvar_t	*g_skippingcin;
 	pm.trace = gi.trace;
 	pm.pointcontents = gi.pointcontents;
 	pm.debugLevel = g_debugMove->integer;
-	pm.noFootsteps = 0;//( g_dmflags->integer & DF_NO_FOOTSTEPS ) > 0;
+	pm.noFootsteps = qfalse;//( g_dmflags->integer & DF_NO_FOOTSTEPS ) > 0;
 
 	VectorCopy( client->ps.origin, oldOrigin );
 
@@ -2829,7 +2802,7 @@ extern cvar_t	*g_skippingcin;
 	ent->waterlevel = pm.waterlevel;
 	ent->watertype = pm.watertype;
 
-	_VectorCopy( ucmd->angles, client->pers.cmd_angles );
+	VectorCopyM( ucmd->angles, client->pers.cmd_angles );
 
 	// execute client events
 	ClientEvents( ent, oldEventSequence );

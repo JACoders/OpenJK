@@ -25,7 +25,7 @@
 static const struct {
   uint32_t  	 width;
   uint32_t  	 height;
-  uint32_t  	 bytes_per_pixel; /* 3:RGB, 4:RGBA */ 
+  uint32_t  	 bytes_per_pixel; /* 3:RGB, 4:RGBA */
   uint8_t 		 pixel_data[32 * 32 * 4 + 1];
 } CLIENT_WINDOW_ICON = {
   32, 32, 4,

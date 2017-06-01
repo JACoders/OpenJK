@@ -363,7 +363,7 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 	}
 
 	float	thrownSpeed = TD_VELOCITY;
-	const qboolean thisIsAShooter = !Q_stricmp( "misc_weapon_shooter", ent->classname);
+	const qboolean thisIsAShooter = (qboolean)!Q_stricmp( "misc_weapon_shooter", ent->classname);
 
 	if (thisIsAShooter)
 	{
@@ -397,9 +397,9 @@ gentity_t *WP_FireThermalDetonator( gentity_t *ent, qboolean alt_fire )
 				VectorMA( target, Q_flrand( 0, -32 ), vec, target );//throw a little short
 			}
 
-			target[0] += Q_flrand( -5, 5 )+(crandom()*(6-ent->NPC->currentAim)*2);
-			target[1] += Q_flrand( -5, 5 )+(crandom()*(6-ent->NPC->currentAim)*2);
-			target[2] += Q_flrand( -5, 5 )+(crandom()*(6-ent->NPC->currentAim)*2);
+			target[0] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-ent->NPC->currentAim)*2);
+			target[1] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-ent->NPC->currentAim)*2);
+			target[2] += Q_flrand( -5, 5 )+(Q_flrand(-1.0f, 1.0f)*(6-ent->NPC->currentAim)*2);
 
 			WP_LobFire( ent, start, target, bolt->mins, bolt->maxs, bolt->clipmask, bolt->s.pos.trDelta, qtrue, ent->s.number, ent->enemy->s.number );
 		}

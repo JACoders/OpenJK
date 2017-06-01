@@ -151,7 +151,7 @@ void laserTrapThink( gentity_t *ent )
 	// Find the main impact point
 	VectorMA( ent->s.pos.trBase, 2048, ent->movedir, end );
 	gi.trace( &tr, ent->s.origin2, mins, maxs, end, ent->s.number, MASK_SHOT, G2_RETURNONHIT, 0 );
-	
+
 	traceEnt = &g_entities[ tr.entityNum ];
 
 	// Adjust this so that the effect has a relatively fresh endpoint
@@ -204,7 +204,7 @@ void CreateLaserTrap( gentity_t *laserTrap, vec3_t start, gentity_t *owner )
 	VectorCopy( start, laserTrap->currentOrigin);
 
 	VectorCopy( start, laserTrap->pos2 ); // ?? wtf ?
-	
+
 	laserTrap->fxID = G_EffectIndex( "tripMine/explosion" );
 
 	laserTrap->e_TouchFunc = touchF_touchLaserTrap;

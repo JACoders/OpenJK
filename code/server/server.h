@@ -45,7 +45,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 typedef struct svEntity_s {
 	struct worldSector_s *worldSector;
 	struct svEntity_s *nextEntityInWorldSector;
-	
+
 	entityState_t	baseline;		// for delta compression of initial sighting
 	int			numClusters;		// if -1, use headnode instead
 	int			clusternums[MAX_ENT_CLUSTERS];
@@ -274,7 +274,7 @@ int SV_PointContents( const vec3_t p, int passEntityNum );
 /*
 Ghoul2 Insert Start
 */
-void SV_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, 
+void SV_Trace( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end,
 			  const int passEntityNum, const int contentmask, const EG2_Collision eG2TraceType = G2_NOCOLLIDE, const int useLod = 0);
 /*
 Ghoul2 Insert End
@@ -310,7 +310,7 @@ void SG_Shutdown();
 void SG_TestSave(void);
 //
 // note that this version number does not mean that a savegame with the same version can necessarily be loaded,
-//	since anyone can change any loadsave-affecting structure somewhere in a header and change a chunk size. 
+//	since anyone can change any loadsave-affecting structure somewhere in a header and change a chunk size.
 // What it's used for is for things like mission pack etc if we need to distinguish "street-copy" savegames from
 //	any new enhanced ones that need to ask for new chunks during loading.
 //
@@ -329,7 +329,7 @@ class cStrings
 private:
 	unsigned int	Flags;
 	char			*Reference;
-	
+
 public:
 					 cStrings(unsigned int initFlags = 0, char *initReference = NULL);
 	virtual			~cStrings(void);

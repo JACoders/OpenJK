@@ -142,7 +142,7 @@ baseline will be transmitted
 */
 void SV_CreateBaseline( void ) {
 	gentity_t			*svent;
-	int				entnum;	
+	int				entnum;
 
 	for ( entnum = 0; entnum < ge->num_entities ; entnum++ ) {
 		svent = SV_GentityNum(entnum);
@@ -209,7 +209,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	SV_ShutdownGameProgs(qtrue);
 
 	Com_Printf ("------ Server Initialization ------\n%s\n", com_version->string);
-	Com_Printf ("Server: %s\n",server);	
+	Com_Printf ("Server: %s\n",server);
 
 	// Moved up from below to help reduce fragmentation
 	if (svs.snapshotEntities)
@@ -264,7 +264,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	re.SVModelInit();
 
-	// allocate the snapshot entities 
+	// allocate the snapshot entities
 	svs.snapshotEntities = (entityState_t *) Z_Malloc (sizeof(entityState_t)*svs.numSnapshotEntities, TAG_CLIENTS, qtrue );
 
 	Music_SetLevelName(server);
@@ -301,7 +301,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 
 	// clear physics interaction links
 	SV_ClearWorld ();
-	
+
 	// media configstring setting should be done during
 	// the loading stage, so connected clients don't have
 	// to load during actual gameplay
@@ -344,7 +344,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 				// the new gamestate will be sent
 			}
 		}
-	}	
+	}
 
 	// run another frame to allow things to look at all connected clients
 	ge->RunFrame( sv.time );
@@ -368,7 +368,7 @@ void SV_SpawnServer( const char *server, ForceReload_e eForceReload, qboolean bA
 	Z_Validate();
 	Z_Validate();
 	Z_Validate();
-	
+
 	Com_Printf ("-----------------------------------\n");
 }
 
@@ -428,7 +428,7 @@ to totally exit after returning from this function.
 */
 void SV_FinalMessage( const char *message ) {
 	client_t *cl = svs.clients;
-	
+
 	SV_SendServerCommand( NULL, "print \"%s\"", message );
 	SV_SendServerCommand( NULL, "disconnect" );
 

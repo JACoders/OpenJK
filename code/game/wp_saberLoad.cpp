@@ -206,7 +206,7 @@ qboolean WP_SaberBladeDoTransitionDamage( saberInfo_t *saber, int bladeNum ) {
 }
 
 qboolean WP_UseFirstValidSaberStyle( gentity_t *ent, int *saberAnimLevel )
-{ 
+{
 	if ( ent && ent->client )
 	{
 		qboolean styleInvalid = qfalse;
@@ -399,10 +399,10 @@ void WP_SaberSetDefaults( saberInfo_t *saber, qboolean setColors = qtrue )
 	saber->moveSpeedScale = 1.0f;				//1.0 - you move faster/slower when using this saber
 	saber->animSpeedScale = 1.0f;				//1.0 - plays normal attack animations faster/slower
 
-	saber->kataMove = LS_INVALID;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time 
-	saber->lungeAtkMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack 
-	saber->jumpAtkUpMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they jump+attack 
-	saber->jumpAtkFwdMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack 
+	saber->kataMove = LS_INVALID;				//LS_INVALID - if set, player will execute this move when they press both attack buttons at the same time
+	saber->lungeAtkMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they crouch+fwd+attack
+	saber->jumpAtkUpMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they jump+attack
+	saber->jumpAtkFwdMove = LS_INVALID;			//LS_INVALID - if set, player will execute this move when they jump+fwd+attack
 	saber->jumpAtkBackMove = LS_INVALID;		//LS_INVALID - if set, player will execute this move when they jump+back+attack
 	saber->jumpAtkRightMove = LS_INVALID;		//LS_INVALID - if set, player will execute this move when they jump+rightattack
 	saber->jumpAtkLeftMove = LS_INVALID;		//LS_INVALID - if set, player will execute this move when they jump+left+attack
@@ -419,7 +419,7 @@ void WP_SaberSetDefaults( saberInfo_t *saber, qboolean setColors = qtrue )
 	saber->bladeStyle2Start = 0;			//0 - if set, blades from this number and higher use the following values (otherwise, they use the normal values already set)
 
 	//***The following can be different for the extra blades - not setting them individually defaults them to the value for the whole saber (and first blade)***
-	
+
 	//===PRIMARY BLADES=====================
 	//done in cgame (client-side code)
 	saber->trailStyle = 0;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -447,7 +447,7 @@ void WP_SaberSetDefaults( saberInfo_t *saber, qboolean setColors = qtrue )
 	saber->splashRadius = 0.0f;				//0 - radius of splashDamage
 	saber->splashDamage = 0;				//0 - amount of splashDamage, 100% at a distance of 0, 0% at a distance = splashRadius
 	saber->splashKnockback = 0.0f;			//0 - amount of splashKnockback, 100% at a distance of 0, 0% at a distance = splashRadius
-	
+
 	//===SECONDARY BLADES===================
 	//done in cgame (client-side code)
 	saber->trailStyle2 = 0;					//0 - default (0) is normal, 1 is a motion blur and 2 is no trail at all (good for real-sword type mods)
@@ -1360,7 +1360,7 @@ static void Saber_ParseG2MarksShader( saberInfo_t *saber, const char **p ) {
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2MarksShader, value, sizeof( saber->g2MarksShader ), qtrue );
+	Q_strncpyz( saber->g2MarksShader, value, sizeof( saber->g2MarksShader ) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseG2WeaponMarkShader( saberInfo_t *saber, const char **p ) {
@@ -1369,7 +1369,7 @@ static void Saber_ParseG2WeaponMarkShader( saberInfo_t *saber, const char **p ) 
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2WeaponMarkShader, value, sizeof( saber->g2WeaponMarkShader ), qtrue );
+	Q_strncpyz( saber->g2WeaponMarkShader, value, sizeof( saber->g2WeaponMarkShader ) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseKnockbackScale( saberInfo_t *saber, const char **p ) {
@@ -1585,7 +1585,7 @@ static void Saber_ParseG2MarksShader2( saberInfo_t *saber, const char **p ) {
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2MarksShader2, value, sizeof(saber->g2MarksShader2), qtrue );
+	Q_strncpyz( saber->g2MarksShader2, value, sizeof(saber->g2MarksShader2) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseG2WeaponMarkShader2( saberInfo_t *saber, const char **p ) {
@@ -1594,7 +1594,7 @@ static void Saber_ParseG2WeaponMarkShader2( saberInfo_t *saber, const char **p )
 		SkipRestOfLine( p );
 		return;
 	}
-	Q_strncpyz( saber->g2WeaponMarkShader2, value, sizeof(saber->g2WeaponMarkShader2), qtrue );
+	Q_strncpyz( saber->g2WeaponMarkShader2, value, sizeof(saber->g2WeaponMarkShader2) );
 	//NOTE: registers this on cgame side where it registers all client assets
 }
 static void Saber_ParseKnockbackScale2( saberInfo_t *saber, const char **p ) {
@@ -1986,7 +1986,7 @@ static void WP_SaberSetupKeywordHash( void ) {
 	hashSetup = qtrue;
 }
 
-qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean setColors ) 
+qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean setColors )
 {
 	const char	*token;
 	const char	*p;
@@ -1998,13 +1998,13 @@ qboolean WP_SaberParseParms( const char *SaberName, saberInfo_t *saber, qboolean
 
 	if ( !saber )
 		return qfalse;
-	
+
 	//Set defaults so that, if it fails, there's at least something there
 	WP_SaberSetDefaults( saber, setColors );
 
-	if ( !VALIDSTRING( SaberName ) ) 
+	if ( !VALIDSTRING( SaberName ) )
 		return qfalse;
-	
+
 	//check if we want to set the sabercolors or not (for if we're loading a savegame)
 	Saber_SetColor = setColors;
 
@@ -2090,7 +2090,7 @@ void WP_RemoveSaber( gentity_t *ent, int saberNum )
 				ent->client->ps.saberAnimLevel = i;
 				if ( ent->s.number < MAX_CLIENTS )
 				{
-					cg.saberAnimLevelPending = ent->client->ps.saberAnimLevel; 
+					cg.saberAnimLevelPending = ent->client->ps.saberAnimLevel;
 				}
 				break;
 			}
@@ -2158,7 +2158,7 @@ void WP_SetSaber( gentity_t *ent, int saberNum, const char *saberName )
 	WP_UseFirstValidSaberStyle( ent, &ent->client->ps.saberAnimLevel );
 	if ( ent->s.number < MAX_CLIENTS )
 	{
-		cg.saberAnimLevelPending = ent->client->ps.saberAnimLevel; 
+		cg.saberAnimLevelPending = ent->client->ps.saberAnimLevel;
 	}
 }
 
@@ -2203,7 +2203,7 @@ qboolean WP_BreakSaber( gentity_t *ent, const char *surfName, saberType_t saberT
 		return qfalse;
 	}
 
-	if ( !ent->client->ps.saber[0].brokenSaber1 ) 
+	if ( !ent->client->ps.saber[0].brokenSaber1 )
 	{//not breakable into another type of saber
 		return qfalse;
 	}
@@ -2215,7 +2215,7 @@ qboolean WP_BreakSaber( gentity_t *ent, const char *surfName, saberType_t saberT
 		return qfalse;
 	}
 
-	if ( Q_stricmpn( "w_", surfName, 2 ) 
+	if ( Q_stricmpn( "w_", surfName, 2 )
 		&& Q_stricmpn( "saber", surfName, 5 ) //hack because using mod-community made saber
 		&& Q_stricmp( "cylinder01", surfName ) )//hack because using mod-community made saber
 	{//didn't hit my weapon
@@ -2258,7 +2258,7 @@ qboolean WP_BreakSaber( gentity_t *ent, const char *surfName, saberType_t saberT
 		WP_SetSaberEntModelSkin( ent, &g_entities[ent->client->ps.saberEntityNum] );
 	}
 
-	if ( originalNumBlades <= 1 ) 
+	if ( originalNumBlades <= 1 )
 	{//nothing to split off
 		//FIXME: handle this?
 	}
@@ -2282,7 +2282,7 @@ qboolean WP_BreakSaber( gentity_t *ent, const char *surfName, saberType_t saberT
 	return broken;
 }
 
-void WP_SaberLoadParms( void ) 
+void WP_SaberLoadParms( void )
 {
 	int			len, totallen, saberExtFNLen, fileCnt, i;
 	char		*buffer, *holdChar, *marker;
@@ -2299,13 +2299,13 @@ void WP_SaberLoadParms( void )
 	fileCnt = gi.FS_GetFileList("ext_data/sabers", ".sab", saberExtensionListBuf, sizeof(saberExtensionListBuf) );
 
 	holdChar = saberExtensionListBuf;
-	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 ) 
+	for ( i = 0; i < fileCnt; i++, holdChar += saberExtFNLen + 1 )
 	{
 		saberExtFNLen = strlen( holdChar );
 
 		len = gi.FS_ReadFile( va( "ext_data/sabers/%s", holdChar), (void **) &buffer );
 
-		if ( len == -1 ) 
+		if ( len == -1 )
 		{
 			gi.Printf( "WP_SaberLoadParms: error reading %s\n", holdChar );
 		}
@@ -2315,7 +2315,7 @@ void WP_SaberLoadParms( void )
 			{//don't let it end on a } because that should be a stand-alone token
 				strcat( marker, " " );
 				totallen++;
-				marker++; 
+				marker++;
 			}
 			len = COM_Compress( buffer );
 

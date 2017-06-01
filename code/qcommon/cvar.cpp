@@ -51,7 +51,7 @@ static int memPoolSize;
 static void Cvar_FreeString(char *string)
 {
 	if(!lastMemPool || string < lastMemPool ||
-			string >= lastMemPool + memPoolSize) { 
+			string >= lastMemPool + memPoolSize) {
 		Z_Free(string);
 	}
 }
@@ -108,7 +108,7 @@ static cvar_t *Cvar_FindVar( const char *var_name ) {
 	long hash;
 
 	hash = generateHashValue(var_name);
-	
+
 	for (var=hashTable[hash] ; var ; var=var->hashNext) {
 		if (!Q_stricmp(var_name, var->name)) {
 			return var;
@@ -125,7 +125,7 @@ Cvar_VariableValue
 */
 float Cvar_VariableValue( const char *var_name ) {
 	cvar_t	*var;
-	
+
 	var = Cvar_FindVar (var_name);
 	if (!var)
 		return 0;
@@ -140,7 +140,7 @@ Cvar_VariableIntegerValue
 */
 int Cvar_VariableIntegerValue( const char *var_name ) {
 	cvar_t	*var;
-	
+
 	var = Cvar_FindVar (var_name);
 	if (!var)
 		return 0;
@@ -155,7 +155,7 @@ Cvar_VariableString
 */
 char *Cvar_VariableString( const char *var_name ) {
 	cvar_t *var;
-	
+
 	var = Cvar_FindVar (var_name);
 	if (!var)
 		return "";
@@ -170,7 +170,7 @@ Cvar_VariableStringBuffer
 */
 void Cvar_VariableStringBuffer( const char *var_name, char *buffer, int bufsize ) {
 	cvar_t *var;
-	
+
 	var = Cvar_FindVar (var_name);
 	if (!var) {
 		*buffer = 0;
@@ -206,7 +206,7 @@ Cvar_CommandCompletion
 */
 void	Cvar_CommandCompletion( callbackFunc_t callback ) {
 	cvar_t		*cvar;
-	
+
 	for ( cvar = cvar_vars ; cvar ; cvar = cvar->next ) {
 		if ( (cvar->flags & CVAR_CHEAT) && !cvar_cheats->integer )
 		{
@@ -416,7 +416,7 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 			Cvar_FreeString( s );
 		}
 
-		// ZOID--needs to be set so that cvars the game sets as 
+		// ZOID--needs to be set so that cvars the game sets as
 		// SERVERINFO get sent to clients
 		cvar_modifiedFlags |= flags;
 
@@ -618,9 +618,9 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force ) {
 
 	var->modified = qtrue;
 	var->modificationCount++;
-	
+
 	Cvar_FreeString (var->string);	// free the old value string
-	
+
 	var->string = CopyString(value);
 	var->value = atof (var->string);
 	var->integer = atoi (var->string);
@@ -702,7 +702,7 @@ void Cvar_SetCheatState( void ) {
 	// set all default vars to the safe value
 	for ( var = cvar_vars ; var ; var = var->next ) {
 		if ( var->flags & CVAR_CHEAT ) {
-			// the CVAR_LATCHED|CVAR_CHEAT vars might escape the reset here 
+			// the CVAR_LATCHED|CVAR_CHEAT vars might escape the reset here
 			// because of a different var->latchedString
 			if (var->latchedString)
 			{
@@ -748,7 +748,7 @@ qboolean Cvar_Command( void ) {
 
 	// set the value if forcing isn't required
 	Cvar_Set2 (v->name, Cmd_Args(), qfalse);
-	
+
 	return qtrue;
 }
 
@@ -756,7 +756,7 @@ qboolean Cvar_Command( void ) {
 ============
 Cvar_Print_f
 
-Prints the contents of a cvar 
+Prints the contents of a cvar
 (preferred over Cvar_Command where cvar names and commands conflict)
 ============
 */
@@ -799,8 +799,8 @@ void Cvar_Toggle_f( void ) {
 	}
 
 	if(c == 2) {
-		Cvar_Set2(Cmd_Argv(1), va("%d", 
-			!Cvar_VariableValue(Cmd_Argv(1))), 
+		Cvar_Set2(Cmd_Argv(1), va("%d",
+			!Cvar_VariableValue(Cmd_Argv(1))),
 			qfalse);
 		return;
 	}
@@ -1231,9 +1231,9 @@ void	Cvar_Update( vmCvar_t *vmCvar ) {
 		return;		// variable might have been cleared by a cvar_restart
 	}
 	vmCvar->modificationCount = cv->modificationCount;
-	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING ) 
+	if ( strlen(cv->string)+1 > MAX_CVAR_VALUE_STRING )
 	  Com_Error( ERR_DROP, "Cvar_Update: src %s length %u exceeds MAX_CVAR_VALUE_STRING",
-		     cv->string, 
+		     cv->string,
 		     (unsigned int) strlen(cv->string));
 	Q_strncpyz( vmCvar->string, cv->string, MAX_CVAR_VALUE_STRING );
 	vmCvar->value = cv->value;
@@ -1311,7 +1311,7 @@ void Cvar_Defrag(void)
 	cvar_t	*var;
 	int totalMem = 0;
 	int nextMemPoolSize;
-	
+
 	for (var = cvar_vars; var; var = var->next)
 	{
 		if (var->name) {

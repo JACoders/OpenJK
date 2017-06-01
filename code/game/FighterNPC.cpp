@@ -451,7 +451,7 @@ static void ProcessMoveCommands( Vehicle_t *pVeh )
 		return;
 	}
 
-	isLandingOrLaunching = (FighterIsLanding( pVeh, parentPS )||FighterIsLaunching( pVeh, parentPS ));
+	isLandingOrLaunching = (qboolean)(FighterIsLanding( pVeh, parentPS )||FighterIsLaunching( pVeh, parentPS ));
 
 	// If we are hitting the ground, just allow the fighter to go up and down.
 	if ( isLandingOrLaunching//going slow enough to start landing
@@ -1228,7 +1228,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 #else
 	parentPS = &parent->client->ps;
 	riderPS = &rider->client->ps;
-	isDead = (parentPS->stats[STAT_HEALTH] <= 0 );
+	isDead = (qboolean)(parentPS->stats[STAT_HEALTH] <= 0 );
 #endif
 
 #ifdef _JK2MP
@@ -1267,7 +1267,7 @@ static void ProcessOrientCommands( Vehicle_t *pVeh )
 		pVeh->m_vOrientation[ROLL] = PredictedAngularDecrement(0.95f, angleTimeMod*2.0f, pVeh->m_vOrientation[ROLL]);
 	}
 
-	isLandingOrLanded = (FighterIsLanding( pVeh, parentPS )||FighterIsLanded( pVeh, parentPS ));
+	isLandingOrLanded = (qboolean)(FighterIsLanding( pVeh, parentPS )||FighterIsLanded( pVeh, parentPS ));
 
 	if (!isLandingOrLanded)
 	{ //don't do this stuff while landed.. I guess. I don't want ships spinning in place, looks silly.

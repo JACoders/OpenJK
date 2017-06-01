@@ -242,7 +242,7 @@ void CInterpreter::FreeVars( void )
 {
 	variable_v::iterator	vi;
 
-	for ( vi = m_vars.begin(); vi != m_vars.end(); vi++ )
+	for ( vi = m_vars.begin(); vi != m_vars.end(); ++vi )
 	{
 		delete (*vi);
 	}

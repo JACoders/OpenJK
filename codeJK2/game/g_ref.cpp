@@ -29,8 +29,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #define	TAG_GENERIC_NAME	"__WORLD__"	//If a designer chooses this name, cut a finger off as an example to the others
 
-typedef vector < reference_tag_t * >		refTag_v;
-typedef map < string, reference_tag_t * >	refTag_m;
+typedef std::vector < reference_tag_t * >		refTag_v;
+typedef std::map < std::string, reference_tag_t * >	refTag_m;
 
 typedef struct tagOwner_s
 {
@@ -38,7 +38,7 @@ typedef struct tagOwner_s
 	refTag_m	tagMap;
 } tagOwner_t;
 
-typedef map < string, tagOwner_t * >	refTagOwner_m;
+typedef std::map < std::string, tagOwner_t * >	refTagOwner_m;
 
 refTagOwner_m	refTagOwnerMap;
 
@@ -77,7 +77,7 @@ void TAG_Init( void )
 	refTagOwner_m::iterator	rtoi;
 
 	//Delete all owners
-	for ( rtoi = refTagOwnerMap.begin(); rtoi != refTagOwnerMap.end(); rtoi++ )
+	for ( rtoi = refTagOwnerMap.begin(); rtoi != refTagOwnerMap.end(); ++rtoi )
 	{
 		if ( (*rtoi).second == NULL )
 		{
@@ -88,7 +88,7 @@ void TAG_Init( void )
 		refTag_v::iterator		rti;
 
 		//Delete all tags within the owner's scope
-		for ( rti = ((*rtoi).second)->tags.begin(); rti != ((*rtoi).second)->tags.end(); rti++ )
+		for ( rti = ((*rtoi).second)->tags.begin(); rti != ((*rtoi).second)->tags.end(); ++rti )
 		{
 			if ( (*rti) == NULL )
 			{

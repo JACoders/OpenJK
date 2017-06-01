@@ -555,7 +555,7 @@ void Cmd_Noclip_f( gentity_t *ent ) {
 	} else {
 		msg = "noclip ON\n";
 	}
-	ent->client->noclip = !ent->client->noclip;
+	ent->client->noclip = (qboolean)!ent->client->noclip;
 
 	gi.SendServerCommand( ent-g_entities, "print \"%s\"", msg);
 }

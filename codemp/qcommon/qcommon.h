@@ -281,7 +281,7 @@ typedef struct vm_s {
 
 	// legacy stuff
 	struct {
-		intptr_t	(QDECL *main)( int callNum, ... );		// module vmMain
+		VMMainProc* main; // module vmMain
 		intptr_t	(QDECL *syscall)( intptr_t *parms );	// engine syscall handler
 	} legacy;
 } vm_t;
@@ -326,7 +326,7 @@ vm_t			*VM_Create( vmSlots_t vmSlot );
 void			 VM_Free( vm_t *vm );
 void			 VM_Clear(void);
 vm_t			*VM_Restart( vm_t *vm );
-intptr_t QDECL	 VM_Call( vm_t *vm, int callNum, ... );
+intptr_t QDECL	 VM_Call( vm_t *vm, int callNum, intptr_t arg0 = 0, intptr_t arg1 = 0, intptr_t arg2 = 0, intptr_t arg3 = 0, intptr_t arg4 = 0, intptr_t arg5 = 0, intptr_t arg6 = 0, intptr_t arg7 = 0, intptr_t arg8 = 0, intptr_t arg9 = 0, intptr_t arg10 = 0, intptr_t arg11 = 0 );
 void			 VM_Shifted_Alloc( void **ptr, int size );
 void			 VM_Shifted_Free( void **ptr );
 void			*VM_ArgPtr( intptr_t intValue );
@@ -384,7 +384,7 @@ typedef void ( *callbackFunc_t )( const char *s );
 
 void	Cmd_Init (void);
 
-void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
+void	Cmd_AddCommand( const char *cmd_name, xcommand_t function, const char *cmd_desc=NULL );
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
@@ -394,6 +394,17 @@ void	Cmd_AddCommand( const char *cmd_name, xcommand_t function );
 void	Cmd_RemoveCommand( const char *cmd_name );
 void	Cmd_VM_RemoveCommand( const char *cmd_name, vmSlots_t vmslot );
 typedef void (*completionFunc_t)( char *args, int argNum );
+
+typedef struct cmdList_s
+{
+	const char *name;
+	const char *description;
+	xcommand_t func;
+	completionFunc_t complete;
+} cmdList_t;
+
+void Cmd_AddCommandList( const cmdList_t *cmdList );
+void Cmd_RemoveCommandList( const cmdList_t *cmdList );
 
 void	Cmd_CommandCompletion( callbackFunc_t callback );
 // callback with each valid string
@@ -409,7 +420,7 @@ char	*Cmd_ArgsFrom( int arg );
 void	Cmd_ArgsBuffer( char *buffer, int bufferLength );
 void	Cmd_ArgsFromBuffer( int arg, char *buffer, int bufferLength );
 char	*Cmd_Cmd (void);
-void	Cmd_Args_Sanitize( void );
+void	Cmd_Args_Sanitize( size_t length = MAX_CVAR_VALUE_STRING, const char *strip = "\n\r;", const char *repl = "   " );
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are allways safe.
@@ -451,7 +462,7 @@ modules of the program.
 
 */
 
-cvar_t *Cvar_Get( const char *var_name, const char *value, uint32_t flags );
+cvar_t *Cvar_Get( const char *var_name, const char *value, uint32_t flags, const char *var_desc=NULL );
 // creates the variable if it doesn't exist, or returns the existing one
 // if it exists, the value will not be changed, but flags will be ORed in
 // that allows variables to be unarchived without needing bitflags
@@ -512,6 +523,8 @@ qboolean Cvar_Command( void );
 void 	Cvar_WriteVariables( fileHandle_t f );
 // writes lines containing "set variable value" for all variables
 // with the archive flag set to true.
+
+cvar_t *Cvar_Unset(cvar_t *cv);
 
 void	Cvar_Init( void );
 
@@ -633,15 +646,6 @@ void	FS_ForceFlush( fileHandle_t f );
 void	FS_FreeFile( void *buffer );
 // frees the memory returned by FS_ReadFile
 
-class FS_AutoFreeFile {
-private:
-	FS_AutoFreeFile();
-	void *buffer;
-public:
-	FS_AutoFreeFile(void *inbuf) : buffer(inbuf) { };
-	~FS_AutoFreeFile() { if (buffer) FS_FreeFile(buffer); };
-};
-
 void	FS_WriteFile( const char *qpath, const void *buffer, int size );
 // writes a complete file, creating any subdirectories needed
 
@@ -758,6 +762,7 @@ int			Com_Filter(char *filter, char *name, int casesensitive);
 int			Com_FilterPath(char *filter, char *name, int casesensitive);
 int			Com_RealTime(qtime_t *qtime);
 qboolean	Com_SafeMode( void );
+void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
 
 void		Com_StartupVariable( const char *match );
 // checks for and removes command line "+set var arg" constructs
@@ -787,6 +792,7 @@ extern	cvar_t	*com_G2Report;
 #endif
 
 extern	cvar_t	*com_affinity;
+extern	cvar_t	*com_busyWait;
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -798,7 +804,6 @@ extern	int		time_frontend;
 extern	int		time_backend;		// renderer backend time
 
 extern	int		com_frameTime;
-extern	int		com_frameMsec;
 
 extern	qboolean	com_errorEntered;
 
@@ -978,6 +983,7 @@ void SV_Init( void );
 void SV_Shutdown( char *finalmsg );
 void SV_Frame( int msec );
 void SV_PacketEvent( netadr_t from, msg_t *msg );
+int SV_FrameMsec( void );
 qboolean SV_GameCommand( void );
 
 

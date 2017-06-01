@@ -85,7 +85,7 @@ void MineMonster_Patrol( void )
 	{
 		if ( TIMER_Done( NPCS.NPC, "patrolTime" ))
 		{
-			TIMER_Set( NPCS.NPC, "patrolTime", crandom() * 5000 + 5000 );
+			TIMER_Set( NPCS.NPC, "patrolTime", Q_flrand(-1.0f, 1.0f) * 5000 + 5000 );
 		}
 	}
 
@@ -154,18 +154,18 @@ void MineMonster_Attack( void )
 	if ( !TIMER_Exists( NPCS.NPC, "attacking" ))
 	{
 		// usually try and play a jump attack if the player somehow got above them....or just really rarely
-		if ( NPCS.NPC->enemy && ((NPCS.NPC->enemy->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2] > 10 && random() > 0.1f )
-						|| random() > 0.8f ))
+		if ( NPCS.NPC->enemy && ((NPCS.NPC->enemy->r.currentOrigin[2] - NPCS.NPC->r.currentOrigin[2] > 10 && Q_flrand(0.0f, 1.0f) > 0.1f )
+						|| Q_flrand(0.0f, 1.0f) > 0.8f ))
 		{
 			// Going to do ATTACK4
-			TIMER_Set( NPCS.NPC, "attacking", 1750 + random() * 200 );
+			TIMER_Set( NPCS.NPC, "attacking", 1750 + Q_flrand(0.0f, 1.0f) * 200 );
 			NPC_SetAnim( NPCS.NPC, SETANIM_BOTH, BOTH_ATTACK4, SETANIM_FLAG_OVERRIDE | SETANIM_FLAG_HOLD );
 
 			TIMER_Set( NPCS.NPC, "attack2_dmg", 950 ); // level two damage
 		}
-		else if ( random() > 0.5f )
+		else if ( Q_flrand(0.0f, 1.0f) > 0.5f )
 		{
-			if ( random() > 0.8f )
+			if ( Q_flrand(0.0f, 1.0f) > 0.8f )
 			{
 				// Going to do ATTACK3, (rare)
 				TIMER_Set( NPCS.NPC, "attacking", 850 );

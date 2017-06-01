@@ -3,11 +3,11 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(MPRend2IncludeDirectories ${MPDir})
 set(MPRend2IncludeDirectories
-	${MPRend2IncludeDirectories}
-	${SharedDir}
+	"${SharedDir}"
+	"${MPDir}"
 	"${MPDir}/rd-rend2"
+	"${GSLIncludeDirectory}"
 	)
 
 set(MPRend2Files
@@ -19,10 +19,13 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/G2_bones.cpp"
 	"${MPDir}/rd-rend2/G2_misc.cpp"
 	"${MPDir}/rd-rend2/G2_surfaces.cpp"
+	"${MPDir}/rd-rend2/tr_allocator.cpp"
+	"${MPDir}/rd-rend2/tr_allocator.h"
 	"${MPDir}/rd-rend2/tr_animation.cpp"
 	"${MPDir}/rd-rend2/tr_backend.cpp"
 	"${MPDir}/rd-rend2/tr_bsp.cpp"
 	"${MPDir}/rd-rend2/tr_cache.cpp"
+	"${MPDir}/rd-rend2/tr_cache.h"
 	"${MPDir}/rd-rend2/tr_cmds.cpp"
 	"${MPDir}/rd-rend2/tr_curve.cpp"
 	"${MPDir}/rd-rend2/tr_decals.cpp"
@@ -35,6 +38,7 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_flares.cpp"
 	"${MPDir}/rd-rend2/tr_ghoul2.cpp"
 	"${MPDir}/rd-rend2/tr_glsl.cpp"
+	"${MPDir}/rd-rend2/tr_glsl_parse.cpp"
 	"${MPDir}/rd-rend2/tr_image.cpp"
 	"${MPDir}/rd-rend2/tr_init.cpp"
 	"${MPDir}/rd-rend2/tr_light.cpp"
@@ -57,6 +61,8 @@ set(MPRend2Files
 	"${MPDir}/rd-rend2/tr_surface.cpp"
 	"${MPDir}/rd-rend2/tr_vbo.cpp"
 	"${MPDir}/rd-rend2/tr_world.cpp"
+	"${MPDir}/rd-rend2/tr_weather.cpp"
+	"${MPDir}/rd-rend2/tr_weather.h"
 	)
 source_group("renderer" FILES ${MPRend2Files})
 
@@ -89,84 +95,33 @@ set(MPRend2Files ${MPRend2Files} ${MPRend2RdCommonFiles})
 
 set(MPRend2CommonFiles
 	"${MPDir}/qcommon/matcomp.cpp"
-	"${MPDir}/qcommon/q_math.cpp"
-	"${MPDir}/qcommon/q_shared.cpp")
+	"${MPDir}/qcommon/q_shared.cpp"
+	"${SharedCommonFiles}")
 source_group("common" FILES ${MPRend2CommonFiles})
 set(MPRend2Files ${MPRend2Files} ${MPRend2CommonFiles})
 
-if(UseInternalJPEG)
-	file(GLOB_RECURSE MPRend2JpegFiles "${OpenJKLibDir}/jpeg-8c/*.c" "${OpenJKLibDir}/jpeg-8c/*.h")
-	source_group("jpeg-8c" FILES ${MPRend2JpegFiles})
-	set(MPRend2Files ${MPRend2Files} ${MPRend2JpegFiles})
-else()
-	find_package(JPEG REQUIRED)
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${JPEG_INCLUDE_DIR})
-	set(MPRend2Libraries ${MPRend2Libraries} ${JPEG_LIBRARIES})
-endif()
+set(MPRend2CommonSafeFiles
+	${SharedCommonSafeFiles}
+	)
+source_group("common/safe" FILES ${MPRend2CommonSafeFiles})
+set(MPRend2Files ${MPRend2Files} ${MPRend2CommonSafeFiles})
 
-if(UseInternalPNG)
-	set(MPRend2LibPngFiles
-		"${OpenJKLibDir}/libpng/png.c"
-		"${OpenJKLibDir}/libpng/pngerror.c"
-		"${OpenJKLibDir}/libpng/pngget.c"
-		"${OpenJKLibDir}/libpng/pngmem.c"
-		"${OpenJKLibDir}/libpng/pngpread.c"
-		"${OpenJKLibDir}/libpng/pngread.c"
-		"${OpenJKLibDir}/libpng/pngrio.c"
-		"${OpenJKLibDir}/libpng/pngrtran.c"
-		"${OpenJKLibDir}/libpng/pngrutil.c"
-		"${OpenJKLibDir}/libpng/pngset.c"
-		"${OpenJKLibDir}/libpng/pngtrans.c"
-		"${OpenJKLibDir}/libpng/pngwio.c"
-		"${OpenJKLibDir}/libpng/pngwrite.c"
-		"${OpenJKLibDir}/libpng/pngwtran.c"
-		"${OpenJKLibDir}/libpng/pngwutil.c")
-	source_group("libpng" FILES ${MPRend2LibPngFiles})
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} "${OpenJKLibDir}/libpng")
-	set(MPRend2Files ${MPRend2Files} ${MPRend2LibPngFiles})
-else(UseInternalPNG)
-	find_package(PNG REQUIRED)
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${PNG_INCLUDE_DIR})
-	set(MPRend2Libraries ${MPRend2Libraries} ${PNG_LIBRARIES})
-endif(UseInternalPNG)
+# Transparently use either bundled or system libjpeg.
+list(APPEND MPRend2IncludeDirectories ${JPEG_INCLUDE_DIR})
+list(APPEND MPRend2Libraries          ${JPEG_LIBRARIES})
 
-if(UseInternalZlib)
-	set(MPRend2ZLibFiles
-		"${OpenJKLibDir}/zlib/adler32.c"
-		"${OpenJKLibDir}/zlib/compress.c"
-		"${OpenJKLibDir}/zlib/crc32.c"
-		"${OpenJKLibDir}/zlib/deflate.c"
-		"${OpenJKLibDir}/zlib/gzclose.c"
-		"${OpenJKLibDir}/zlib/gzlib.c"
-		"${OpenJKLibDir}/zlib/gzread.c"
-		"${OpenJKLibDir}/zlib/gzwrite.c"
-		"${OpenJKLibDir}/zlib/infback.c"
-		"${OpenJKLibDir}/zlib/inffast.c"
-		"${OpenJKLibDir}/zlib/inflate.c"
-		"${OpenJKLibDir}/zlib/inftrees.c"
-		"${OpenJKLibDir}/zlib/trees.c"
-		"${OpenJKLibDir}/zlib/uncompr.c"
-		"${OpenJKLibDir}/zlib/zutil.c"
-		"${OpenJKLibDir}/zlib/crc32.h"
-		"${OpenJKLibDir}/zlib/deflate.h"
-		"${OpenJKLibDir}/zlib/gzguts.h"
-		"${OpenJKLibDir}/zlib/inffast.h"
-		"${OpenJKLibDir}/zlib/inffixed.h"
-		"${OpenJKLibDir}/zlib/inflate.h"
-		"${OpenJKLibDir}/zlib/inftrees.h"
-		"${OpenJKLibDir}/zlib/trees.h"
-		"${OpenJKLibDir}/zlib/zconf.h"
-		"${OpenJKLibDir}/zlib/zlib.h"
-		"${OpenJKLibDir}/zlib/zutil.h")
-	source_group("zlib" FILES ${MPRend2ZLibFiles})
-	set(MPRend2Files ${MPRend2Files} ${MPRend2ZLibFiles})
-	
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} "${OpenJKLibDir}/zlib")
-else(UseInternalZlib)
-	find_package(ZLIB REQUIRED)
-	set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${ZLIB_INCLUDE_DIR})
-	set(MPRend2Libraries ${MPRend2Libraries} ${ZLIB_LIBRARY})
-endif(UseInternalZlib)
+# Transparently use either bundled or system libpng.  Order is important --
+# libpng used zlib, so it must come before it on the linker command line.
+list(APPEND MPRend2IncludeDirectories ${PNG_INCLUDE_DIRS})
+list(APPEND MPRend2Libraries          ${PNG_LIBRARIES})
+
+# Transparently use either bundled or system zlib.
+list(APPEND MPRend2IncludeDirectories ${ZLIB_INCLUDE_DIR})
+list(APPEND MPRend2Libraries          ${ZLIB_LIBRARIES})
+
+# Transparently use our bundled minizip.
+list(APPEND MPRend2IncludeDirectories ${MINIZIP_INCLUDE_DIRS})
+list(APPEND MPRend2Libraries          ${MINIZIP_LIBRARIES})
 
 find_package(OpenGL REQUIRED)
 set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OPENGL_INCLUDE_DIR})
@@ -178,30 +133,47 @@ set(MPRend2Files ${MPRend2Files} ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp)
 set(MPRend2IncludeDirectories ${MPRend2IncludeDirectories} ${OpenJKLibDir})
 add_library(${MPRend2} SHARED ${MPRend2Files})
 
-if(NOT WIN32)
+if(NOT MSVC)
 	# remove "lib" prefix for .so/.dylib files
 	set_target_properties(${MPRend2} PROPERTIES PREFIX "")
-endif(NOT WIN32)
+endif()
 
 if(WIN32)
-	install(TARGETS ${MPRend2} RUNTIME DESTINATION ".")
+	install(TARGETS ${MPRend2}
+		RUNTIME
+		DESTINATION ${JKAInstallDir}
+		COMPONENT ${JKAMPClientComponent})
 else(WIN32)
 	if(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPRend2} LIBRARY DESTINATION "${MPEngine}.app/Contents/MacOS/")
-	else(MakeApplicationBundles AND BuildMPEngine)
-		install(TARGETS ${MPRend2} LIBRARY DESTINATION ".")
-	endif(MakeApplicationBundles AND BuildMPEngine)
-endif(WIN32)
-set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS_RELWITHDEBINFO "${SharedDefines};${ReleaseDefines}")
-set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS_MINSIZEREL "${SharedDefines};${ReleaseDefines}")
-set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS_RELEASE "${SharedDefines};${ReleaseDefines}")
-set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS_DEBUG "${SharedDefines};${DebugDefines}")
+		install(TARGETS ${MPRend2}
+			LIBRARY
+			DESTINATION "${JKAInstallDir}/${MPEngine}.app/Contents/MacOS/"
+			COMPONENT ${JKAMPClientComponent})
+	else()
+		install(TARGETS ${MPRend2}
+			LIBRARY
+			DESTINATION ${JKAInstallDir}
+			COMPONENT ${JKAMPClientComponent})
+	endif()
+endif()
+
+set_target_properties(${MPRend2} PROPERTIES COMPILE_DEFINITIONS "${SharedDefines}")
+
+# Hide symbols not explicitly marked public.
+set_property(TARGET ${MPRend2} APPEND PROPERTY COMPILE_OPTIONS ${OPENJK_VISIBILITY_FLAGS})
 set_target_properties(${MPRend2} PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 set_target_properties(${MPRend2} PROPERTIES PROJECT_LABEL "MP Rend2 Renderer")
 target_link_libraries(${MPRend2} ${MPRend2Libraries})
 
 # GLSL shader file generator
-add_executable(compact_glsl ${MPDir}/rd-rend2/glsl/compact.cpp)
+add_executable(compact_glsl
+	${MPDir}/rd-rend2/glsl/compact.cpp
+	${MPDir}/rd-rend2/tr_allocator.cpp
+	${MPDir}/rd-rend2/tr_allocator.h
+	${MPDir}/rd-rend2/tr_glsl_parse.cpp
+	)
+set_target_properties(compact_glsl PROPERTIES COMPILE_DEFINITIONS "GLSL_BUILDTOOL")
+set_target_properties(compact_glsl PROPERTIES INCLUDE_DIRECTORIES "${MPRend2IncludeDirectories}")
 add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp
 	COMMAND compact_glsl ${CMAKE_CURRENT_BINARY_DIR}/glsl_shaders.cpp ${MPRend2GLSLFiles}

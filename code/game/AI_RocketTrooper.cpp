@@ -75,7 +75,7 @@ void RT_FireDecide( void )
 	vec3_t	impactPos;
 	float	enemyDist;
 
-	if ( NPC->client->ps.groundEntityNum == ENTITYNUM_NONE 
+	if ( NPC->client->ps.groundEntityNum == ENTITYNUM_NONE
 		&& NPC->client->ps.forceJumpZStart
 		&& !PM_FlippingAnim( NPC->client->ps.legsAnim )
 		&& !Q_irand( 0, 10 ) )
@@ -103,7 +103,7 @@ void RT_FireDecide( void )
 
 	if ( enemyDist < MIN_ROCKET_DIST_SQUARED )//128
 	{//enemy within 128
-		if ( (NPC->client->ps.weapon == WP_FLECHETTE || NPC->client->ps.weapon == WP_REPEATER) && 
+		if ( (NPC->client->ps.weapon == WP_FLECHETTE || NPC->client->ps.weapon == WP_REPEATER) &&
 			(NPCInfo->scriptFlags & SCF_ALT_FIRE) )
 		{//shooting an explosive, but enemy too close, switch to primary fire
 			NPCInfo->scriptFlags &= ~SCF_ALT_FIRE;
@@ -125,7 +125,7 @@ void RT_FireDecide( void )
 			}
 			else
 			{//can we shoot our target?
-				if ( (NPC->client->ps.weapon == WP_ROCKET_LAUNCHER 
+				if ( (NPC->client->ps.weapon == WP_ROCKET_LAUNCHER
 					|| (NPC->client->ps.weapon == WP_CONCUSSION && !(NPCInfo->scriptFlags&SCF_ALT_FIRE))
 					|| (NPC->client->ps.weapon == WP_FLECHETTE && (NPCInfo->scriptFlags&SCF_ALT_FIRE))) && enemyDist < MIN_ROCKET_DIST_SQUARED )//128*128
 				{
@@ -138,7 +138,7 @@ void RT_FireDecide( void )
 					int hit = NPC_ShotEntity( NPC->enemy, impactPos );
 					gentity_t *hitEnt = &g_entities[hit];
 
-					if ( hit == NPC->enemy->s.number 
+					if ( hit == NPC->enemy->s.number
 						|| ( hitEnt && hitEnt->client && hitEnt->client->playerTeam == NPC->client->enemyTeam )
 						|| ( hitEnt && hitEnt->takedamage && ((hitEnt->svFlags&SVF_GLASS_BRUSH)||hitEnt->health < 40||NPC->s.weapon == WP_EMPLACED_GUN) ) )
 					{//can hit enemy or enemy ally or will hit glass or other minor breakable (or in emplaced gun), so shoot anyway
@@ -185,7 +185,7 @@ void RT_FireDecide( void )
 		if ( !enemyCS )
 		{//if have a clear shot, always try
 			//See if we should continue to fire on their last position
-			//!TIMER_Done( NPC, "stick" ) || 
+			//!TIMER_Done( NPC, "stick" ) ||
 			if ( !hitAlly //we're not going to hit an ally
 				&& enemyInFOV //enemy is in our FOV //FIXME: or we don't have a clear LOS?
 				&& NPCInfo->enemyLastSeenTime > 0 )//we've seen the enemy
@@ -324,7 +324,7 @@ void RT_FireDecide( void )
 				int altChance = 6;//FIXME: base on g_spskill
 				if ( NPC->s.weapon == WP_ROCKET_LAUNCHER )
 				{
-					if ( (ucmd.buttons&BUTTON_ATTACK) 
+					if ( (ucmd.buttons&BUTTON_ATTACK)
 						&& !Q_irand( 0, altChance ) )
 					{//every now and then, shoot a homing rocket
 						ucmd.buttons &= ~BUTTON_ATTACK;
@@ -334,7 +334,7 @@ void RT_FireDecide( void )
 				}
 				else if ( NPC->s.weapon == WP_CONCUSSION )
 				{
-					if ( (ucmd.buttons&BUTTON_ATTACK) 
+					if ( (ucmd.buttons&BUTTON_ATTACK)
 						&& Q_irand( 0, altChance*5 ) )
 					{//fire the beam shot
 						ucmd.buttons &= ~BUTTON_ATTACK;
@@ -352,7 +352,7 @@ void RT_FireDecide( void )
 }
 
 //=====================================================================================
-//FLYING behavior 
+//FLYING behavior
 //=====================================================================================
 qboolean RT_Flying( gentity_t *self )
 {
@@ -361,19 +361,19 @@ qboolean RT_Flying( gentity_t *self )
 
 void RT_FlyStart( gentity_t *self )
 {//switch to seeker AI for a while
-	if ( TIMER_Done( self, "jetRecharge" ) 
+	if ( TIMER_Done( self, "jetRecharge" )
 		&& !RT_Flying( self ) )
 	{
 		self->client->ps.gravity = 0;
 		self->svFlags |= SVF_CUSTOM_GRAVITY;
 		self->client->moveType = MT_FLYSWIM;
 		//Inform NPC_HandleAIFlags we want to fly
-		
+
 		if (self->NPC){
 			self->NPC->aiFlags |= NPCAI_FLY;
 			self->lastInAirTime = level.time;
 		}
-		
+
 		//start jet effect
 		self->client->jetPackTime = Q3_INFINITE;
 		if ( self->genericBolt1 != -1 )
@@ -462,7 +462,7 @@ void RT_Flying_ApplyFriction( float frictionScale )
 }
 
 void RT_Flying_MaintainHeight( void )
-{	
+{
 	float	dif = 0;
 
 	// Update our angles regardless
@@ -490,15 +490,15 @@ void RT_Flying_MaintainHeight( void )
 	}
 	*/
 	// If we have an enemy, we should try to hover at or a little below enemy eye level
-	if ( NPC->enemy 
+	if ( NPC->enemy
 		&& (!Q3_TaskIDPending( NPC, TID_MOVE_NAV ) || !NPCInfo->goalEntity ) )
 	{
 		if (TIMER_Done( NPC, "heightChange" ))
 		{
 			TIMER_Set( NPC,"heightChange",Q_irand( 1000, 3000 ));
-			
+
 			float enemyZHeight = NPC->enemy->currentOrigin[2];
-			if ( NPC->enemy->client 
+			if ( NPC->enemy->client
 				&& NPC->enemy->client->ps.groundEntityNum == ENTITYNUM_NONE
 				&& (NPC->enemy->client->ps.forcePowersActive&(1<<FP_LEVITATION)) )
 			{//so we don't go up when they force jump up at us
@@ -506,7 +506,7 @@ void RT_Flying_MaintainHeight( void )
 			}
 
 			// Find the height difference
-			dif = (enemyZHeight +  Q_flrand( NPC->enemy->maxs[2]/2, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2]; 
+			dif = (enemyZHeight +  Q_flrand( NPC->enemy->maxs[2]/2, NPC->enemy->maxs[2]+8 )) - NPC->currentOrigin[2];
 
 			float	difFactor = 10.0f;
 
@@ -525,7 +525,7 @@ void RT_Flying_MaintainHeight( void )
 		else
 		{//don't get too far away from height of enemy...
 			float enemyZHeight = NPC->enemy->currentOrigin[2];
-			if ( NPC->enemy->client 
+			if ( NPC->enemy->client
 				&& NPC->enemy->client->ps.groundEntityNum == ENTITYNUM_NONE
 				&& (NPC->enemy->client->ps.forcePowersActive&(1<<FP_LEVITATION)) )
 			{//so we don't go up when they force jump up at us
@@ -627,8 +627,8 @@ void RT_Flying_Strafe( void )
 	vec3_t	end, right, dir;
 	trace_t	tr;
 
-	if ( random() > 0.7f 
-		|| !NPC->enemy 
+	if ( Q_flrand(0.0f, 1.0f) > 0.7f
+		|| !NPC->enemy
 		|| !NPC->enemy->client )
 	{
 		// Do a regular style strafe
@@ -663,7 +663,7 @@ void RT_Flying_Strafe( void )
 				}
 			}
 
-			NPCInfo->standTime = level.time + 1000 + random() * 500;
+			NPCInfo->standTime = level.time + 1000 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 	else
@@ -677,7 +677,7 @@ void RT_Flying_Strafe( void )
 		VectorMA( NPC->enemy->currentOrigin, stDis * side, right, end );
 
 		// then add a very small bit of random in front of/behind the player action
-		VectorMA( end, crandom() * 25, dir, end );
+		VectorMA( end, Q_flrand(-1.0f, 1.0f) * 25, dir, end );
 
 		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
@@ -716,7 +716,7 @@ void RT_Flying_Strafe( void )
 				}
 			}
 
-			NPCInfo->standTime = level.time + 2500 + random() * 500;
+			NPCInfo->standTime = level.time + 2500 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 }
@@ -817,7 +817,7 @@ void RT_Flying_Attack( void )
 	RT_Flying_MaintainHeight();
 
 	// Rate our distance to the target, and our visibilty
-	float		distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float		distance	= DistanceHorizontalSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 	qboolean	visible		= NPC_ClearLOS( NPC->enemy );
 	qboolean	advance		= (qboolean)(distance>(256.0f*256.0f));
 
@@ -836,7 +836,7 @@ void RT_Flying_Attack( void )
 
 void RT_Flying_Think( void )
 {
-	if ( Q3_TaskIDPending( NPC, TID_MOVE_NAV ) 
+	if ( Q3_TaskIDPending( NPC, TID_MOVE_NAV )
 		&& UpdateGoal() )
 	{//being scripted to go to a certain spot, don't maintain height
 		if ( NPC_MoveToGoal( qtrue ) )
@@ -857,7 +857,7 @@ void RT_Flying_Think( void )
 	if ( NPC->random == 0.0f )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPC->random = random() * 6.3f; // roughly 2pi
+		NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 	}
 
 	if ( NPC->enemy && NPC->enemy->health && NPC->enemy->inuse )

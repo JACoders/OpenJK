@@ -49,7 +49,7 @@ void WP_FireBlasterMissile( gentity_t *ent, vec3_t start, vec3_t dir, qboolean a
 		if ( ent->client && ent->client->ps.clientNum != 0 && ent->client->NPC_class != CLASS_BOBAFETT )
 		{
 			if ( g_spskill->integer < 2 )
-			{		
+			{
 				velocity *= BLASTER_NPC_VEL_CUT;
 			}
 			else
@@ -129,8 +129,8 @@ void WP_FireBlaster( gentity_t *ent, qboolean alt_fire )
 		if ( alt_fire )
 		{
 			// add some slop to the alt-fire direction
-			angs[PITCH] += crandom() * BLASTER_ALT_SPREAD;
-			angs[YAW]	+= crandom() * BLASTER_ALT_SPREAD;
+			angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
+			angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * BLASTER_ALT_SPREAD;
 		}
 		else
 		{
@@ -140,14 +140,14 @@ void WP_FireBlaster( gentity_t *ent, qboolean alt_fire )
 				( ent->client->NPC_class == CLASS_STORMTROOPER ||
 				ent->client->NPC_class == CLASS_SWAMPTROOPER ) )
 			{
-				angs[PITCH] += ( crandom() * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
-				angs[YAW]	+= ( crandom() * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+				angs[PITCH] += ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
+				angs[YAW]	+= ( Q_flrand(-1.0f, 1.0f) * (BLASTER_NPC_SPREAD+(6-ent->NPC->currentAim)*0.25f));//was 0.5f
 			}
 			else
 			{
 				// add some slop to the main-fire direction
-				angs[PITCH] += crandom() * BLASTER_MAIN_SPREAD;
-				angs[YAW]	+= crandom() * BLASTER_MAIN_SPREAD;
+				angs[PITCH] += Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
+				angs[YAW]	+= Q_flrand(-1.0f, 1.0f) * BLASTER_MAIN_SPREAD;
 			}
 		}
 	}

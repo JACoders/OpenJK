@@ -193,8 +193,10 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent, int entityNum ) {
 
 	header = (mdrHeader_t *)tr.currentModel->data.mdr;
 	
-	personalModel = (qboolean)((ent->e.renderfx & RF_THIRD_PERSON) && !(tr.viewParms.isPortal 
-	                 || (tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
+	personalModel = (qboolean)(
+		(ent->e.renderfx & RF_THIRD_PERSON) &&
+		!(tr.viewParms.isPortal ||
+			(tr.viewParms.flags & (VPF_SHADOWMAP | VPF_DEPTHSHADOW))));
 	
 	if ( ent->e.renderfx & RF_WRAP_FRAMES )
 	{
@@ -288,7 +290,7 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent, int entityNum ) {
 			&& !(ent->e.renderfx & ( RF_NOSHADOW | RF_DEPTHHACK ) )
 			&& shader->sort == SS_OPAQUE )
 		{
-			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, tr.shadowShader, 0, qfalse, R_IsPostRenderEntity (entityNum, ent), 0 );
+			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, tr.shadowShader, 0, qfalse, R_IsPostRenderEntity(ent), 0 );
 		}
 
 		// projection shadows work fine with personal models
@@ -297,11 +299,11 @@ void R_MDRAddAnimSurfaces( trRefEntity_t *ent, int entityNum ) {
 			&& (ent->e.renderfx & RF_SHADOW_PLANE )
 			&& shader->sort == SS_OPAQUE )
 		{
-			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, tr.projectionShadowShader, 0, qfalse, R_IsPostRenderEntity (entityNum, ent), 0 );
+			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, tr.projectionShadowShader, 0, qfalse, R_IsPostRenderEntity(ent), 0 );
 		}
 
 		if (!personalModel)
-			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, shader, fogNum, qfalse, R_IsPostRenderEntity (entityNum, ent), cubemapIndex );
+			R_AddDrawSurf( (surfaceType_t *)surface, entityNum, shader, fogNum, qfalse, R_IsPostRenderEntity(ent), cubemapIndex );
 
 		surface = (mdrSurface_t *)( (byte *)surface + surface->ofsEnd );
 	}

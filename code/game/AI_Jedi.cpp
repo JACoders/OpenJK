@@ -3714,7 +3714,7 @@ static evasionType_t Jedi_CheckEvadeSpecialAttacks( void )
 					float distSq = DistanceSquared( NPC->currentOrigin, NPC->enemy->currentOrigin );
 					if ( distSq < minSafeDistSq )
 					{//evade!
-						qboolean doJump = ( NPC->enemy->client->ps.torsoAnim == BOTH_ROLL_STAB || distSq < 3000.0f );//not much time left, just jump!
+						qboolean doJump = (qboolean)( NPC->enemy->client->ps.torsoAnim == BOTH_ROLL_STAB || distSq < 3000.0f );//not much time left, just jump!
 						if ( (NPCInfo->scriptFlags&SCF_NO_ACROBATICS)
 							|| !doJump )
 						{//roll?
@@ -7647,7 +7647,7 @@ void NPC_BSJedi_Default( void )
 			//FIXME: build a list of all local enemies (since we have to find best anyway) for other AI factors- like when to use group attacks, determine when to change tactics, when surrounded, when blocked by another in the enemy group, etc.  Should we build this group list or let the enemies maintain their own list and we just access it?
 			gentity_t *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 			NPC->enemy = NULL;
-			gentity_t *newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+			gentity_t *newEnemy = NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse, qfalse );
 			NPC->enemy = sav_enemy;
 			if ( newEnemy && newEnemy != sav_enemy )
 			{//picked up a new enemy!

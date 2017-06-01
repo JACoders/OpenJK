@@ -48,7 +48,7 @@ void TurretPain( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, vec
 	if ( mod == MOD_DEMP2 || mod == MOD_DEMP2_ALT )
 	{
 		// DEMP2 makes the turret stop shooting for a bit..and does extra feedback
-		self->attackDebounceTime = level.time + 800 + random() * 500;
+		self->attackDebounceTime = level.time + 800 + Q_flrand(0.0f, 1.0f) * 500;
 		G_PlayEffect( "spark_exp_nosnd", point, dir );
 	}
 
@@ -517,7 +517,7 @@ void turret_base_think( gentity_t *self )
 	else
 	{
 		// keep our enemy for a minimum of 2 seconds from now
-		self->bounceCount = level.time + 2000 + random() * 150;
+		self->bounceCount = level.time + 2000 + Q_flrand(0.0f, 1.0f) * 150;
 	}
 
 	turret_aim( self );
@@ -631,7 +631,7 @@ void finish_spawning_turret( gentity_t *base )
 	base->speed = 0;
 
 	// this is a random time offset for the no-enemy-search-around-mode
-	base->count = random() * 9000;
+	base->count = Q_flrand(0.0f, 1.0f) * 9000;
 
 	if ( !base->health )
 	{
@@ -647,7 +647,7 @@ void finish_spawning_turret( gentity_t *base )
 	// How quickly to fire
 	if ( !base->wait )
 	{
-		base->wait = 150 + random() * 55;
+		base->wait = 150 + Q_flrand(0.0f, 1.0f) * 55;
 	}
 
 	if ( !base->splashDamage )
@@ -1156,7 +1156,7 @@ static qboolean pas_find_enemies( gentity_t *self )
 					G_Sound( self, G_SoundIndex( "sound/chars/turret/startup.wav" ));
 
 					// Wind up turrets for a bit
-					self->attackDebounceTime = level.time + 900 + random() * 200;
+					self->attackDebounceTime = level.time + 900 + Q_flrand(0.0f, 1.0f) * 200;
 				}
 
 				G_SetEnemy( self, target );
@@ -1184,7 +1184,7 @@ void pas_adjust_enemy( gentity_t *ent )
 	{
 		keep = qfalse;
 	}
-	else// if ( random() > 0.5f )
+	else// if ( Q_flrand(0.0f, 1.0f) > 0.5f )
 	{
 		// do a trace every now and then.
 		mdxaBone_t	boltMatrix;
@@ -1220,7 +1220,7 @@ void pas_adjust_enemy( gentity_t *ent )
 
 	if ( keep )
 	{
-		ent->bounceCount = level.time + 500 + random() * 150;
+		ent->bounceCount = level.time + 500 + Q_flrand(0.0f, 1.0f) * 150;
 	}
 	else if ( ent->bounceCount < level.time ) // don't ping pong on and off
 	{
@@ -1353,7 +1353,7 @@ void pas_think( gentity_t *ent )
 		ent->s.loopSound = 0;
 	}
 
-	if ( ent->enemy && ent->attackDebounceTime < level.time && random() > 0.3f )
+	if ( ent->enemy && ent->attackDebounceTime < level.time && Q_flrand(0.0f, 1.0f) > 0.3f )
 	{
 		ent->count--;
 
@@ -1553,7 +1553,7 @@ void ion_cannon_think( gentity_t *self )
 		else
 		{
 			// done with burst, so wait delay amount, plus a random bit
-			self->nextthink = level.time + ( self->delay + crandom() * self->random );
+			self->nextthink = level.time + ( self->delay + Q_flrand(-1.0f, 1.0f) * self->random );
 			self->count = Q_irand(0,5); // 0-5 bursts
 
 			// Not firing this time
@@ -1585,7 +1585,7 @@ void ion_cannon_think( gentity_t *self )
 	}
 
 	gi.G2API_SetBoneAnimIndex( &self->ghoul2[self->playerModel], self->rootBone, 0, 8, BONE_ANIM_OVERRIDE_FREEZE, 0.6f, cg.time, -1, -1 );
-	self->nextthink = level.time + self->wait + crandom() * self->random;
+	self->nextthink = level.time + self->wait + Q_flrand(-1.0f, 1.0f) * self->random;
 }
 
 //----------------------------------------------------------------------------------------------
@@ -1739,7 +1739,7 @@ void SP_misc_ion_cannon( gentity_t *base )
 	{
 		// start thinking now, otherwise, we'll wait until we are used
 		base->e_ThinkFunc = thinkF_ion_cannon_think;
-		base->nextthink = level.time + base->wait + crandom() * base->random;
+		base->nextthink = level.time + base->wait + Q_flrand(-1.0f, 1.0f) * base->random;
 	}
 
 	// Bursts?

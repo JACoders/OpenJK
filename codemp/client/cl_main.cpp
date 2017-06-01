@@ -91,6 +91,9 @@ cvar_t	*cl_inGameVideo;
 cvar_t	*cl_serverStatusResendTime;
 cvar_t	*cl_framerate;
 
+// cvar to enable sending a "ja_guid" player identifier in userinfo to servers
+// ja_guid is a persistent "cookie" that allows servers to track players across game sessions
+cvar_t	*cl_enableGuid;
 cvar_t	*cl_guidServerUniq;
 
 cvar_t	*cl_autolodscale;
@@ -724,17 +727,32 @@ update cl_guid using QKEY_FILE and optional prefix
 */
 static void CL_UpdateGUID( const char *prefix, int prefix_len )
 {
-	fileHandle_t f;
-	int len;
+	if (cl_enableGuid->integer) {
+		fileHandle_t f;
+		int len;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
 
-	if( len != QKEY_SIZE )
-		Cvar_Set( "ja_guid", "" );
-	else
-		Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
-			prefix, prefix_len ) );
+		// initialize the cvar here in case it's unset or was user-created
+		// while tracking was disabled (removes CVAR_USER_CREATED)
+		Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM, "Client GUID" );
+
+		if( len != QKEY_SIZE ) {
+			Cvar_Set( "ja_guid", "" );
+		} else {
+			Cvar_Set( "ja_guid", Com_MD5File( QKEY_FILE, QKEY_SIZE,
+				prefix, prefix_len ) );
+		}
+	} else {
+		// Remove the cvar entirely if tracking is disabled
+		uint32_t flags = Cvar_Flags("ja_guid");
+		// keep the cvar if it's user-created, but destroy it otherwise
+		if (flags != CVAR_NONEXISTENT && !(flags & CVAR_USER_CREATED)) {
+			cvar_t *ja_guid = Cvar_Get("ja_guid", "", 0, "Client GUID" );
+			Cvar_Unset(ja_guid);
+		}
+	}
 }
 
 /*
@@ -1079,9 +1097,8 @@ CL_Rcon_f
 void CL_Rcon_f( void ) {
 	char	message[MAX_RCON_MESSAGE];
 
-	if ( !rcon_client_password->string ) {
-		Com_Printf ("You must set 'rconpassword' before\n"
-					"issuing an rcon command.\n");
+	if ( !rcon_client_password->string[0] ) {
+		Com_Printf( "You must set 'rconpassword' before issuing an rcon command.\n" );
 		return;
 	}
 
@@ -2346,7 +2363,7 @@ void CL_InitRef( void ) {
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
 
-	cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
+	cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH, "Which renderer library to use" );
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
@@ -2360,7 +2377,7 @@ void CL_InitRef( void ) {
 	}
 
 	if ( !rendererLib ) {
-		Com_Error( ERR_FATAL, "Failed to load renderer" );
+		Com_Error( ERR_FATAL, "Failed to load renderer\n" );
 	}
 
 	memset( &ri, 0, sizeof( ri ) );
@@ -2607,34 +2624,36 @@ it by filling it with 2048 bytes of random data.
 
 static void CL_GenerateQKey(void)
 {
-	int len = 0;
-	unsigned char buff[ QKEY_SIZE ];
-	fileHandle_t f;
+	if (cl_enableGuid->integer) {
+		int len = 0;
+		unsigned char buff[ QKEY_SIZE ];
+		fileHandle_t f;
 
-	len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
-	FS_FCloseFile( f );
-	if( len == QKEY_SIZE ) {
-		Com_Printf( "QKEY found.\n" );
-		return;
-	}
-	else {
-		if( len > 0 ) {
-			Com_Printf( "QKEY file size != %d, regenerating\n",
-				QKEY_SIZE );
-		}
-
-		Com_Printf( "QKEY building random string\n" );
-		Com_RandomBytes( buff, sizeof(buff) );
-
-		f = FS_SV_FOpenFileWrite( QKEY_FILE );
-		if( !f ) {
-			Com_Printf( "QKEY could not open %s for write\n",
-				QKEY_FILE );
+		len = FS_SV_FOpenFileRead( QKEY_FILE, &f );
+		FS_FCloseFile( f );
+		if( len == QKEY_SIZE ) {
+			Com_Printf( "QKEY found.\n" );
 			return;
 		}
-		FS_Write( buff, sizeof(buff), f );
-		FS_FCloseFile( f );
-		Com_Printf( "QKEY generated\n" );
+		else {
+			if( len > 0 ) {
+				Com_Printf( "QKEY file size != %d, regenerating\n",
+					QKEY_SIZE );
+			}
+
+			Com_Printf( "QKEY building random string\n" );
+			Com_RandomBytes( buff, sizeof(buff) );
+
+			f = FS_SV_FOpenFileWrite( QKEY_FILE );
+			if( !f ) {
+				Com_Printf( "QKEY could not open %s for write\n",
+					QKEY_FILE );
+				return;
+			}
+			FS_Write( buff, sizeof(buff), f );
+			FS_FCloseFile( f );
+			Com_Printf( "QKEY generated\n" );
+		}
 	}
 }
 
@@ -2660,7 +2679,7 @@ void CL_Init( void ) {
 	// register our variables
 	//
 	cl_noprint = Cvar_Get( "cl_noprint", "0", 0 );
-	cl_motd = Cvar_Get ("cl_motd", "1", CVAR_ARCHIVE );
+	cl_motd = Cvar_Get ("cl_motd", "1", CVAR_ARCHIVE, "Display welcome message from master server on the bottom of connection screen" );
 	cl_motdServer[0] = Cvar_Get( "cl_motdServer1", UPDATE_SERVER_NAME, 0 );
 	cl_motdServer[1] = Cvar_Get( "cl_motdServer2", JKHUB_UPDATE_SERVER_NAME, 0 );
 	for ( int index = 2; index < MAX_MASTER_SERVERS; index++ )
@@ -2673,7 +2692,7 @@ void CL_Init( void ) {
 	cl_showSend = Cvar_Get ("cl_showSend", "0", CVAR_TEMP );
 	cl_showTimeDelta = Cvar_Get ("cl_showTimeDelta", "0", CVAR_TEMP );
 	cl_freezeDemo = Cvar_Get ("cl_freezeDemo", "0", CVAR_TEMP );
-	rcon_client_password = Cvar_Get ("rconPassword", "", CVAR_TEMP );
+	rcon_client_password = Cvar_Get ("rconPassword", "", CVAR_TEMP, "Password for remote console access" );
 	cl_activeAction = Cvar_Get( "activeAction", "", CVAR_TEMP );
 
 	cl_timedemo = Cvar_Get ("timedemo", "0", 0);
@@ -2682,7 +2701,7 @@ void CL_Init( void ) {
 	cl_avi2GBLimit = Cvar_Get ("cl_avi2GBLimit", "1", CVAR_ARCHIVE );
 	cl_forceavidemo = Cvar_Get ("cl_forceavidemo", "0", 0);
 
-	rconAddress = Cvar_Get ("rconAddress", "", 0);
+	rconAddress = Cvar_Get ("rconAddress", "", 0, "Alternate server address to remotely access via rcon protocol");
 
 	cl_yawspeed = Cvar_Get ("cl_yawspeed", "140", CVAR_ARCHIVE);
 	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE);
@@ -2691,22 +2710,22 @@ void CL_Init( void ) {
 	cl_maxpackets = Cvar_Get ("cl_maxpackets", "63", CVAR_ARCHIVE );
 	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
 
-	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
-	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE);
-	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE);
-	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE );
+	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE, "Always run");
+	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE, "Mouse sensitivity value");
+	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE, "Mouse acceleration value");
+	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE, "Mouse look" );
 
 	// 0: legacy mouse acceleration
 	// 1: new implementation
-	cl_mouseAccelStyle = Cvar_Get( "cl_mouseAccelStyle", "0", CVAR_ARCHIVE );
+	cl_mouseAccelStyle = Cvar_Get( "cl_mouseAccelStyle", "0", CVAR_ARCHIVE, "Mouse accelration style (0:legacy, 1:QuakeLive)" );
 	// offset for the power function (for style 1, ignored otherwise)
 	// this should be set to the max rate value
-	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE );
+	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE, "Mouse acceleration offset for style 1" );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
-	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE);
-	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE);
+	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE, "Allow downloading custom paks from server");
+	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE, "Enables use of ALT+ENTER keyboard combo to toggle fullscreen" );
 
 	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE );
 
@@ -2733,38 +2752,40 @@ void CL_Init( void ) {
 
 	cl_motdString = Cvar_Get( "cl_motdString", "", CVAR_ROM );
 
-	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE );
+	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE, "Max. ping for servers when searching the serverlist" );
 
 	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE);
 
-	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE);
+	// enable the ja_guid player identifier in userinfo by default in OpenJK
+	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE, "Enable GUID userinfo identifier" );
+	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE, "Use a unique guid value per server" );
 
 	// ~ and `, as keys and characters
-	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60", CVAR_ARCHIVE);
+	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE, "Which keys are used to toggle the console");
 
 	// userinfo
-	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("model", DEFAULT_MODEL"/default", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("forcepowers", "7-1-032330000000001333", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE, "Player name" );
+	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE, "Data rate" );
+	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE, "Client snapshots per second" );
+	Cvar_Get ("model", DEFAULT_MODEL"/default", CVAR_USERINFO | CVAR_ARCHIVE, "Player model" );
+	Cvar_Get ("forcepowers", "7-1-032330000000001333", CVAR_USERINFO | CVAR_ARCHIVE, "Player forcepowers" );
 //	Cvar_Get ("g_redTeam", DEFAULT_REDTEAM_NAME, CVAR_SERVERINFO | CVAR_ARCHIVE);
 //	Cvar_Get ("g_blueTeam", DEFAULT_BLUETEAM_NAME, CVAR_SERVERINFO | CVAR_ARCHIVE);
-	Cvar_Get ("color1",  "4", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("color2", "4", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("password", "", CVAR_USERINFO);
+	Cvar_Get ("color1",  "4", CVAR_USERINFO | CVAR_ARCHIVE, "Player saber1 color" );
+	Cvar_Get ("color2", "4", CVAR_USERINFO | CVAR_ARCHIVE, "Player saber2 color" );
+	Cvar_Get ("handicap", "100", CVAR_USERINFO | CVAR_ARCHIVE, "Player handicap" );
+	Cvar_Get ("sex", "male", CVAR_USERINFO | CVAR_ARCHIVE, "Player sex" );
+	Cvar_Get ("password", "", CVAR_USERINFO, "Password to join server" );
 	Cvar_Get ("cg_predictItems", "1", CVAR_USERINFO | CVAR_ARCHIVE );
 
 	//default sabers
-	Cvar_Get ("saber1",  DEFAULT_SABER, CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("saber2",  "none", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("saber1",  DEFAULT_SABER, CVAR_USERINFO | CVAR_ARCHIVE, "Player default right hand saber" );
+	Cvar_Get ("saber2",  "none", CVAR_USERINFO | CVAR_ARCHIVE, "Player left hand saber" );
 
 	//skin color
-	Cvar_Get ("char_color_red",  "255", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("char_color_green",  "255", CVAR_USERINFO | CVAR_ARCHIVE );
-	Cvar_Get ("char_color_blue",  "255", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("char_color_red",  "255", CVAR_USERINFO | CVAR_ARCHIVE, "Player tint (Red)" );
+	Cvar_Get ("char_color_green",  "255", CVAR_USERINFO | CVAR_ARCHIVE, "Player tint (Green)" );
+	Cvar_Get ("char_color_blue",  "255", CVAR_USERINFO | CVAR_ARCHIVE, "Player tint (Blue)" );
 
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
@@ -2772,33 +2793,33 @@ void CL_Init( void ) {
 	//
 	// register our commands
 	//
-	Cmd_AddCommand ("cmd", CL_ForwardToServer_f);
-	Cmd_AddCommand ("globalservers", CL_GlobalServers_f);
-	Cmd_AddCommand( "addFavorite", CL_AddFavorite_f );
-	Cmd_AddCommand ("record", CL_Record_f);
-	Cmd_AddCommand ("demo", CL_PlayDemo_f);
+	Cmd_AddCommand ("cmd", CL_ForwardToServer_f, "Forward command to server" );
+	Cmd_AddCommand ("globalservers", CL_GlobalServers_f, "Query the masterserver for serverlist" );
+	Cmd_AddCommand( "addFavorite", CL_AddFavorite_f, "Add server to favorites" );
+	Cmd_AddCommand ("record", CL_Record_f, "Record a demo" );
+	Cmd_AddCommand ("demo", CL_PlayDemo_f, "Playback a demo" );
 	Cmd_SetCommandCompletionFunc( "demo", CL_CompleteDemoName );
-	Cmd_AddCommand ("stoprecord", CL_StopRecord_f);
-	Cmd_AddCommand ("configstrings", CL_Configstrings_f);
-	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f);
-	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f);
-	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f);
-	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
-	Cmd_AddCommand ("cinematic", CL_PlayCinematic_f);
-	Cmd_AddCommand ("connect", CL_Connect_f);
-	Cmd_AddCommand ("reconnect", CL_Reconnect_f);
-	Cmd_AddCommand ("localservers", CL_LocalServers_f);
-	Cmd_AddCommand ("rcon", CL_Rcon_f);
+	Cmd_AddCommand ("stoprecord", CL_StopRecord_f, "Stop recording a demo" );
+	Cmd_AddCommand ("configstrings", CL_Configstrings_f, "Prints the configstrings list" );
+	Cmd_AddCommand ("clientinfo", CL_Clientinfo_f, "Prints the userinfo variables" );
+	Cmd_AddCommand ("snd_restart", CL_Snd_Restart_f, "Restart sound" );
+	Cmd_AddCommand ("vid_restart", CL_Vid_Restart_f, "Restart the renderer - or change the resolution" );
+	Cmd_AddCommand ("disconnect", CL_Disconnect_f, "Disconnect from current server" );
+	Cmd_AddCommand ("cinematic", CL_PlayCinematic_f, "Play a cinematic video" );
+	Cmd_AddCommand ("connect", CL_Connect_f, "Connect to a server" );
+	Cmd_AddCommand ("reconnect", CL_Reconnect_f, "Reconnect to current server" );
+	Cmd_AddCommand ("localservers", CL_LocalServers_f, "Query LAN for local servers" );
+	Cmd_AddCommand ("rcon", CL_Rcon_f, "Execute commands remotely to a server" );
 	Cmd_SetCommandCompletionFunc( "rcon", CL_CompleteRcon );
-	Cmd_AddCommand ("ping", CL_Ping_f );
-	Cmd_AddCommand ("serverstatus", CL_ServerStatus_f );
-	Cmd_AddCommand ("showip", CL_ShowIP_f );
-	Cmd_AddCommand ("fs_openedList", CL_OpenedPK3List_f );
-	Cmd_AddCommand ("fs_referencedList", CL_ReferencedPK3List_f );
-	Cmd_AddCommand ("model", CL_SetModel_f );
+	Cmd_AddCommand ("ping", CL_Ping_f, "Ping a server for info response" );
+	Cmd_AddCommand ("serverstatus", CL_ServerStatus_f, "Retrieve current or specified server's status" );
+	Cmd_AddCommand ("showip", CL_ShowIP_f, "Shows local IP" );
+	Cmd_AddCommand ("fs_openedList", CL_OpenedPK3List_f, "Lists open pak files" );
+	Cmd_AddCommand ("fs_referencedList", CL_ReferencedPK3List_f, "Lists referenced pak files" );
+	Cmd_AddCommand ("model", CL_SetModel_f, "Set the player model" );
 	Cmd_AddCommand ("forcepowers", CL_SetForcePowers_f );
-	Cmd_AddCommand ("video", CL_Video_f );
-	Cmd_AddCommand ("stopvideo", CL_StopVideo_f );
+	Cmd_AddCommand ("video", CL_Video_f, "Record demo to avi" );
+	Cmd_AddCommand ("stopvideo", CL_StopVideo_f, "Stop avi recording" );
 
 	CL_InitRef();
 
@@ -2811,7 +2832,6 @@ void CL_Init( void ) {
 	G2VertSpaceClient = new CMiniHeap (G2_VERT_SPACE_CLIENT_SIZE * 1024);
 
 	CL_GenerateQKey();
-	Cvar_Get( "ja_guid", "", CVAR_USERINFO | CVAR_ROM );
 	CL_UpdateGUID( NULL, 0 );
 
 //	Com_Printf( "----- Client Initialization Complete -----\n" );

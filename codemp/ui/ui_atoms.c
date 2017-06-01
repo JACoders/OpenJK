@@ -83,7 +83,6 @@ int cmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((consoleCommand_t*)b)->cmd );
 }
 
-/* This array MUST be sorted correctly by alphabetical name field */
 static consoleCommand_t	commands[] = {
 	{ "ui_cache",			UI_Cache_f },
 	{ "ui_load",			UI_Load },
@@ -108,7 +107,7 @@ qboolean UI_ConsoleCommand( int realTime ) {
 	uiInfo.uiDC.frameTime = realTime - uiInfo.uiDC.realTime;
 	uiInfo.uiDC.realTime = realTime;
 
-	command = (consoleCommand_t *)bsearch( UI_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
+	command = (consoleCommand_t *)Q_LinearSearch( UI_Argv( 0 ), commands, numCommands, sizeof( commands[0] ), cmdcmp );
 
 	if ( !command )
 		return qfalse;

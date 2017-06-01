@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../server/exe_headers.h"
 
 #include "tr_local.h"
+#include "tr_common.h"
 
 backEndData_t	*backEndData;
 backEndState_t	backEnd;
@@ -567,8 +568,6 @@ static void RB_BeginDrawingView (void) {
 	}
 }
 
-#define	MAC_EVENT_PUMP_MSEC		5
-
 //used by RF_DISTORTION
 static inline bool R_WorldCoordToScreenCoordFloat(vec3_t worldCoord, float *x, float *y)
 {
@@ -706,9 +705,8 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		if (entityNum != REFENTITYNUM_WORLD &&
 			g_numPostRenders < MAX_POST_RENDERS)
 		{
-			if ( (backEnd.refdef.entities[entityNum].e.renderfx & RF_DISTORTION)/* ||
-				(backEnd.refdef.entities[entityNum].e.renderfx & RF_FORCE_ENT_ALPHA)*/)
-				//not sure if we need this alpha fix for sp or not, leaving it out for now -rww
+			if ( (backEnd.refdef.entities[entityNum].e.renderfx & RF_DISTORTION) ||
+				(backEnd.refdef.entities[entityNum].e.renderfx & RF_FORCE_ENT_ALPHA))
 			{ //must render last
 				curEnt = &backEnd.refdef.entities[entityNum];
 				pRender = &g_postRenders[g_numPostRenders];
@@ -1553,7 +1551,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 		long sum = 0;
 		unsigned char *stencilReadback;
 
-		stencilReadback = (unsigned char *) Z_Malloc( glConfig.vidWidth * glConfig.vidHeight, TAG_TEMP_WORKSPACE, qfalse );
+		stencilReadback = (unsigned char *) R_Malloc( glConfig.vidWidth * glConfig.vidHeight, TAG_TEMP_WORKSPACE, qfalse );
 		qglReadPixels( 0, 0, glConfig.vidWidth, glConfig.vidHeight, GL_STENCIL_INDEX, GL_UNSIGNED_BYTE, stencilReadback );
 
 		for ( i = 0; i < glConfig.vidWidth * glConfig.vidHeight; i++ ) {
@@ -1561,7 +1559,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 		}
 
 		backEnd.pc.c_overDraw += sum;
-		Z_Free( stencilReadback );
+		R_Free( stencilReadback );
 	}
 
     if ( !glState.finishCalled ) {

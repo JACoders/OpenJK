@@ -112,7 +112,7 @@ void Wampa_Patrol( void )
 	Wampa_CheckRoar( NPC );
 	TIMER_Set( NPC, "lookForNewEnemy", Q_irand( 5000, 15000 ) );
 }
- 
+
 /*
 -------------------------
 Wampa_Move
@@ -141,7 +141,7 @@ void Wampa_Move( qboolean visible )
 		{//pick correct movement speed and anim
 			//run by default
 			ucmd.buttons &= ~BUTTON_WALKING;
-			if ( !TIMER_Done( NPC, "runfar" ) 
+			if ( !TIMER_Done( NPC, "runfar" )
 				|| !TIMER_Done( NPC, "runclose" ) )
 			{//keep running with this anim & speed for a bit
 			}
@@ -202,12 +202,12 @@ void Wampa_Slash( int boltIndex, qboolean backhand )
 		{
 			continue;
 		}
-		
+
 		if ( radiusEnts[i] == NPC )
 		{//Skip the wampa ent
 			continue;
 		}
-		
+
 		if ( radiusEnts[i]->client == NULL )
 		{//must be a client
 			continue;
@@ -311,7 +311,7 @@ void Wampa_Attack( float distance, qboolean doCharge )
 			TIMER_Set( NPC, "attack_dmg", 250 );
 		}
 
-		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + random() * 200 );
+		TIMER_Set( NPC, "attacking", NPC->client->ps.legsAnimTimer + Q_flrand(0.0f, 1.0f) * 200 );
 		//allow us to re-evaluate our running speed/anim
 		TIMER_Set( NPC, "runfar", -1 );
 		TIMER_Set( NPC, "runclose", -1 );
@@ -357,7 +357,7 @@ void Wampa_Attack( float distance, qboolean doCharge )
 	if ( NPC->client->ps.legsAnim == BOTH_ATTACK1 && distance > (NPC->maxs[0]+MIN_DISTANCE) )
 	{//okay to keep moving
 		ucmd.buttons |= BUTTON_WALKING;
-		Wampa_Move( 1 );
+		Wampa_Move( qtrue );
 	}
 }
 
@@ -378,7 +378,7 @@ void Wampa_Combat( void )
 		NPCInfo->goalEntity = NPC->enemy;
 		NPCInfo->goalRadius = MIN_DISTANCE;//MAX_DISTANCE;	// just get us within combat range
 
-		Wampa_Move( 0 );
+		Wampa_Move( qfalse );
 		return;
 	}
 	/*
@@ -396,7 +396,7 @@ void Wampa_Combat( void )
 	//FIXME: always seems to face off to the left or right?!!!!
 	NPC_FaceEnemy( qtrue );
 
-	float distance	= enemyDist = Distance( NPC->currentOrigin, NPC->enemy->currentOrigin );	
+	float distance	= enemyDist = Distance( NPC->currentOrigin, NPC->enemy->currentOrigin );
 
 	qboolean	advance = (qboolean)( distance > (NPC->maxs[0]+MIN_DISTANCE) ? qtrue : qfalse  );
 	qboolean	doCharge = qfalse;
@@ -424,7 +424,7 @@ void Wampa_Combat( void )
 		}
 		else
 		{
-			Wampa_Move( 1 );
+			Wampa_Move( qtrue );
 		}
 	}
 	else
@@ -445,7 +445,7 @@ void Wampa_Combat( void )
 NPC_Wampa_Pain
 -------------------------
 */
-void NPC_Wampa_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc ) 
+void NPC_Wampa_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, const vec3_t point, int damage, int mod,int hitLoc )
 {
 	qboolean hitByWampa = qfalse;
 	if ( self->count )
@@ -459,8 +459,8 @@ void NPC_Wampa_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, co
 	{
 		hitByWampa = qtrue;
 	}
-	if ( other 
-		&& other->inuse 
+	if ( other
+		&& other->inuse
 		&& other != self->enemy
 		&& !(other->flags&FL_NOTARGET) )
 	{
@@ -468,7 +468,7 @@ void NPC_Wampa_Pain( gentity_t *self, gentity_t *inflictor, gentity_t *other, co
 			|| !self->enemy
 			|| self->enemy->health == 0
 			|| (self->enemy->client&&self->enemy->client->NPC_class == CLASS_WAMPA)
-			|| (!Q_irand(0, 4 ) && DistanceSquared( other->currentOrigin, self->currentOrigin ) < DistanceSquared( self->enemy->currentOrigin, self->currentOrigin )) ) 
+			|| (!Q_irand(0, 4 ) && DistanceSquared( other->currentOrigin, self->currentOrigin ) < DistanceSquared( self->enemy->currentOrigin, self->currentOrigin )) )
 		{//if my enemy is dead (or attacked by player) and I'm not still holding/eating someone, turn on the attacker
 			//FIXME: if can't nav to my enemy, take this guy if I can nav to him
 			self->lastEnemy = other;
@@ -580,8 +580,8 @@ qboolean Wampa_CheckDropVictim( gentity_t *self, qboolean excludeMe )
 	}
 	vec3_t mins={self->activator->mins[0]-1,self->activator->mins[1]-1,0};
 	vec3_t maxs={self->activator->maxs[0]+1,self->activator->maxs[1]+1,1};
-	vec3_t start={self->activator->currentOrigin[0],self->activator->currentOrigin[1],self->activator->absmin[2]}; 
-	vec3_t end={self->activator->currentOrigin[0],self->activator->currentOrigin[1],self->activator->absmax[2]-1}; 
+	vec3_t start={self->activator->currentOrigin[0],self->activator->currentOrigin[1],self->activator->absmin[2]};
+	vec3_t end={self->activator->currentOrigin[0],self->activator->currentOrigin[1],self->activator->absmax[2]-1};
 	trace_t	trace;
 	if ( excludeMe )
 	{
@@ -613,13 +613,13 @@ qboolean Wampa_TryGrab( void )
 {
 	const float	radius = 64.0f;
 
-	if ( !NPC->enemy 
+	if ( !NPC->enemy
 		|| !NPC->enemy->client
 		|| NPC->enemy->health <= 0 )
 	{
 		return qfalse;
 	}
-	
+
 	float enemyDist = NPC_EnemyRangeFromBolt( NPC->handRBolt );
 	if ( enemyDist <= radius
 		&& !NPC->count //don't have one in hand already
@@ -711,7 +711,7 @@ void NPC_BSWampa_Default( void )
 
 	if ( NPC->count )
 	{
-		if ( !NPC->activator 
+		if ( !NPC->activator
 			|| !NPC->activator->client )
 		{//wtf?
 			NPC->count = 0;
@@ -740,10 +740,10 @@ void NPC_BSWampa_Default( void )
 					Wampa_CheckDropVictim( NPC, qfalse );
 				}
 			}
-			else if ( NPC->useDebounceTime >= level.time 
+			else if ( NPC->useDebounceTime >= level.time
 				&& NPC->activator )
 			{//just sniffing the guy
-				if ( NPC->useDebounceTime <= level.time + 100 
+				if ( NPC->useDebounceTime <= level.time + 100
 					&& NPC->client->ps.legsAnim != BOTH_HOLD_DROP)
 				{//just about done, drop him
 					NPC_SetAnim( NPC, SETANIM_BOTH, BOTH_HOLD_DROP, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD );
@@ -752,8 +752,8 @@ void NPC_BSWampa_Default( void )
 			}
 			else
 			{
-				if ( !NPC->useDebounceTime 
-					&& NPC->activator 
+				if ( !NPC->useDebounceTime
+					&& NPC->activator
 					&& NPC->activator->s.number < MAX_CLIENTS )
 				{//first time I pick the player, just sniff them
 					if ( TIMER_Done(NPC,"attacking") )
@@ -816,7 +816,7 @@ void NPC_BSWampa_Default( void )
 		return;
 	}
 
-	if ( NPCInfo->localState == LSTATE_WAITING 
+	if ( NPCInfo->localState == LSTATE_WAITING
 		&& TIMER_Done2( NPC, "takingPain", qtrue ) )
 	{//was not doing anything because we were taking pain, but pain is done now, so clear it...
 		NPCInfo->localState = LSTATE_CLEAR;
@@ -878,7 +878,7 @@ void NPC_BSWampa_Default( void )
 				{
 					gentity_t *sav_enemy = NPC->enemy;//FIXME: what about NPC->lastEnemy?
 					NPC->enemy = NULL;
-					gentity_t *newEnemy = NPC_CheckEnemy( NPCInfo->confusionTime < level.time, qfalse, qfalse );
+					gentity_t *newEnemy = NPC_CheckEnemy( (qboolean)(NPCInfo->confusionTime < level.time), qfalse, qfalse );
 					NPC->enemy = sav_enemy;
 					if ( newEnemy && newEnemy != sav_enemy )
 					{//picked up a new enemy!
@@ -901,7 +901,7 @@ void NPC_BSWampa_Default( void )
 			return;
 		}
 	}
-	else 
+	else
 	{
 		if ( TIMER_Done(NPC,"idlenoise") )
 		{

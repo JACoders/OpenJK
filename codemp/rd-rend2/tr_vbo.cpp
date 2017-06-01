@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "tr_local.h"
 
 
+
 uint32_t R_VboPackTangent(vec4_t v)
 {
 	return (((uint32_t)(v[3] * 1.5f   + 2.0f  )) << 30)
@@ -68,6 +69,41 @@ static GLenum GetGLBufferUsage ( vboUsage_t usage )
 			return GL_INVALID_OPERATION;
 	}
 }
+
+#if 0
+struct Attribute
+{
+	int index;
+	GLenum type;
+	int numElements;
+	qboolean normalised;
+	int offset;
+	int stride;
+	int stream;
+};
+
+const int MAX_ATTRIBUTES = 8;
+struct VertexFormat
+{
+	Attribute attributes[MAX_ATTRIBUTES];
+	int numAttributes;
+};
+
+const int MAX_VERTEX_STREAMS = 2;
+struct VertexArrayObject
+{
+	GLuint vao;
+	IBO_t *ibo;
+	VBO_t *vbos[MAX_VERTEX_STREAMS];
+	int numStreams;
+	VertexFormat format;
+};
+
+VertexArrayObject *R_GetVertexArrayObject( const VertexFormat& format )
+{
+	return nullptr;
+}
+#endif
 
 /*
 ============
@@ -188,7 +224,6 @@ void R_BindVBO(VBO_t * vbo)
 	if(glState.currentVBO != vbo)
 	{
 		glState.currentVBO = vbo;
-		glState.vertexAttribPointersSet = 0;
 
 		glState.vertexAttribsInterpolation = 0;
 		glState.vertexAttribsOldFrame = 0;
@@ -264,7 +299,6 @@ void R_BindNullIBO(void)
 	{
 		qglBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glState.currentIBO = NULL;
-		glState.vertexAttribPointersSet = 0;
 	}
 }
 
@@ -275,9 +309,6 @@ R_InitVBOs
 */
 void R_InitVBOs(void)
 {
-	int             dataSize;
-	int             offset;
-
 	ri->Printf(PRINT_ALL, "------- R_InitVBOs -------\n");
 
 	// glGenBuffers only allocates the IDs for these buffers. The 'buffer object' is
@@ -287,53 +318,6 @@ void R_InitVBOs(void)
 
 	tr.numVBOs = 0;
 	tr.numIBOs = 0;
-
-	dataSize  = 12 * 1024 * 1024;
-	tess.vbo = R_CreateVBO(NULL, dataSize, VBO_USAGE_DYNAMIC);
-
-	offset = 0;
-
-	tess.vbo->offsets[ATTR_INDEX_POSITION]       = offset; offset += sizeof(tess.xyz[0])              * SHADER_MAX_VERTEXES;
-	tess.vbo->offsets[ATTR_INDEX_NORMAL]         = offset; offset += sizeof(tess.normal[0])           * SHADER_MAX_VERTEXES;
-	// these next two are actually interleaved
-	tess.vbo->offsets[ATTR_INDEX_TEXCOORD0]      = offset; offset += sizeof(tess.texCoords[0][0]) * 2 * SHADER_MAX_VERTEXES;
-	tess.vbo->offsets[ATTR_INDEX_TANGENT]        = offset; offset += sizeof(tess.tangent[0])          * SHADER_MAX_VERTEXES;
-
-	tess.vbo->offsets[ATTR_INDEX_COLOR]          = offset; offset += sizeof(tess.vertexColors[0])     * SHADER_MAX_VERTEXES;
-	tess.vbo->offsets[ATTR_INDEX_LIGHTDIRECTION] = offset;
-
-	tess.vbo->strides[ATTR_INDEX_POSITION]       = sizeof(tess.xyz[0]);
-	tess.vbo->strides[ATTR_INDEX_NORMAL]         = sizeof(tess.normal[0]);
-	tess.vbo->strides[ATTR_INDEX_TANGENT]        = sizeof(tess.tangent[0]);
-	tess.vbo->strides[ATTR_INDEX_COLOR]          = sizeof(tess.vertexColors[0]);
-	tess.vbo->strides[ATTR_INDEX_TEXCOORD0]      = sizeof(tess.texCoords[0][0]) * 2;
-	tess.vbo->strides[ATTR_INDEX_LIGHTDIRECTION] = sizeof(tess.lightdir[0]);
-
-	tess.vbo->sizes[ATTR_INDEX_POSITION]         = sizeof(tess.xyz[0]);
-	tess.vbo->sizes[ATTR_INDEX_NORMAL]           = sizeof(tess.normal[0]);
-	tess.vbo->sizes[ATTR_INDEX_TANGENT]          = sizeof(tess.tangent[0]);
-	tess.vbo->sizes[ATTR_INDEX_COLOR]            = sizeof(tess.vertexColors[0]);
-	tess.vbo->sizes[ATTR_INDEX_TEXCOORD0]        = sizeof(tess.texCoords[0][0]) * 2;
-	tess.vbo->sizes[ATTR_INDEX_LIGHTDIRECTION]   = sizeof(tess.lightdir[0]);
-
-	dataSize = 4 * 1024 * 1024;
-	tess.ibo = R_CreateIBO(NULL, dataSize, VBO_USAGE_DYNAMIC);
-
-	if ( glRefConfig.immutableBuffers )
-	{
-		R_BindVBO(tess.vbo);
-		GL_CheckErrors();
-
-		R_BindIBO(tess.ibo);
-		GL_CheckErrors();
-
-		tess.vboData = qglMapBufferRange(GL_ARRAY_BUFFER, 0, tess.vbo->vertexesSize, GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT);
-		GL_CheckErrors();
-
-		tess.iboData = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, 0, tess.ibo->indexesSize, GL_MAP_WRITE_BIT | GL_MAP_COHERENT_BIT | GL_MAP_PERSISTENT_BIT);
-		GL_CheckErrors();
-
-	}
 
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -349,14 +333,6 @@ R_ShutdownVBOs
 void R_ShutdownVBOs(void)
 {
 	ri->Printf(PRINT_ALL, "------- R_ShutdownVBOs -------\n");
-
-	if ( glRefConfig.immutableBuffers )
-	{
-		R_BindVBO(tess.vbo);
-		R_BindIBO(tess.ibo);
-		qglUnmapBuffer(GL_ARRAY_BUFFER);
-		qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
-	}
 
 	R_BindNullVBO();
 	R_BindNullIBO();
@@ -497,6 +473,8 @@ Update the default VBO to replace the client side vertex arrays
 */
 void RB_UpdateVBOs(unsigned int attribBits)
 {
+	gpuFrame_t *currentFrame = backEndData->currentFrame;
+
 	GLimp_LogComment("--- RB_UpdateVBOs ---\n");
 
 	backEnd.pc.c_dynamicVboDraws++;
@@ -504,6 +482,7 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	// update the default VBO
 	if(tess.numVertexes > 0 && tess.numVertexes <= SHADER_MAX_VERTEXES)
 	{
+		VBO_t *frameVbo = currentFrame->dynamicVbo;
 		GLbitfield mapFlags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
 		VertexArraysProperties vertexArrays = {};
 		CalculateVertexArraysProperties(attribBits, &vertexArrays);
@@ -511,24 +490,24 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		int totalVertexDataSize = tess.numVertexes * vertexArrays.vertexDataSize;
 		backEnd.pc.c_dynamicVboTotalSize += totalVertexDataSize;
 
-		if ( (tess.internalVBOWriteOffset + totalVertexDataSize) > tess.vbo->vertexesSize )
+		if ( (currentFrame->dynamicVboWriteOffset + totalVertexDataSize) > frameVbo->vertexesSize )
 		{
-			tess.internalVBOCommitOffset = 0;
-			tess.internalVBOWriteOffset = 0;
-			mapFlags |= GL_MAP_INVALIDATE_BUFFER_BIT;
+			// TODO: Eh...resize?
+			assert(!"This shouldn't happen");
+			return;
 		}
 
-		R_BindVBO(tess.vbo);
+		R_BindVBO(frameVbo);
 
-		// orphan old buffer so we don't stall on it
 		void *dstPtr;
 		if ( glRefConfig.immutableBuffers )
 		{
-			dstPtr = (byte *)tess.vboData + tess.internalVBOWriteOffset;
+			dstPtr = (byte *)currentFrame->dynamicVboMemory + currentFrame->dynamicVboWriteOffset;
 		}
 		else
 		{
-			dstPtr = qglMapBufferRange(GL_ARRAY_BUFFER, tess.internalVBOWriteOffset, totalVertexDataSize, mapFlags);
+			dstPtr = qglMapBufferRange(GL_ARRAY_BUFFER, currentFrame->dynamicVboWriteOffset,
+				totalVertexDataSize, mapFlags);
 		}
 
 		// Interleave the data
@@ -538,8 +517,10 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			for ( int j = 0; j < vertexArrays.numVertexArrays; j++ )
 			{
 				int attributeIndex = vertexArrays.enabledAttributes[j];
+				void *stream = vertexArrays.streams[attributeIndex];
+				size_t vertexSize = vertexArrays.sizes[attributeIndex];
 
-				memcpy(writePtr, (byte *)vertexArrays.streams[attributeIndex] + i * vertexArrays.sizes[attributeIndex], vertexArrays.sizes[attributeIndex]);
+				memcpy(writePtr, (byte *)stream + i * vertexSize, vertexArrays.sizes[attributeIndex]);
 				writePtr = (byte *)writePtr + vertexArrays.sizes[attributeIndex];
 			}
 		}
@@ -549,32 +530,34 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			qglUnmapBuffer(GL_ARRAY_BUFFER);
 		}
 
-		tess.internalVBOWriteOffset += totalVertexDataSize;
+		currentFrame->dynamicVboWriteOffset += totalVertexDataSize;
 	}
 
 	// update the default IBO
 	if(tess.numIndexes > 0 && tess.numIndexes <= SHADER_MAX_INDEXES)
 	{
+		IBO_t *frameIbo = currentFrame->dynamicIbo;
 		GLbitfield mapFlags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
 		int totalIndexDataSize = tess.numIndexes * sizeof(tess.indexes[0]);
 
-		R_BindIBO(tess.ibo);
+		R_BindIBO(frameIbo);
 
-		if ( (tess.internalIBOWriteOffset + totalIndexDataSize) > tess.ibo->indexesSize )
+		if ( (currentFrame->dynamicIboWriteOffset + totalIndexDataSize) > frameIbo->indexesSize )
 		{
-			tess.internalIBOCommitOffset = 0;
-			tess.internalIBOWriteOffset = 0;
-			mapFlags |= GL_MAP_INVALIDATE_BUFFER_BIT;
+			// TODO: Resize the buffer?
+			assert(!"This shouldn't happen");
+			return;
 		}
 
 		void *dst;
 		if ( glRefConfig.immutableBuffers )
 		{
-			dst = (byte *)tess.iboData + tess.internalIBOWriteOffset;
+			dst = (byte *)currentFrame->dynamicIboMemory + currentFrame->dynamicIboWriteOffset;
 		}
 		else
 		{
-			dst = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, tess.internalIBOCommitOffset, totalIndexDataSize, mapFlags);
+			dst = qglMapBufferRange(GL_ELEMENT_ARRAY_BUFFER, currentFrame->dynamicIboWriteOffset,
+				totalIndexDataSize, mapFlags);
 		}
 
 		memcpy(dst, tess.indexes, totalIndexDataSize);
@@ -584,12 +567,29 @@ void RB_UpdateVBOs(unsigned int attribBits)
 			qglUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 		}
 
-		tess.internalIBOWriteOffset += totalIndexDataSize;
+		currentFrame->dynamicIboWriteOffset += totalIndexDataSize;
 	}
 }
 
 void RB_CommitInternalBufferData()
 {
-	tess.internalIBOCommitOffset = tess.internalIBOWriteOffset;
-	tess.internalVBOCommitOffset = tess.internalVBOWriteOffset;
+	gpuFrame_t *currentFrame = backEndData->currentFrame;
+
+	currentFrame->dynamicIboCommitOffset = currentFrame->dynamicIboWriteOffset;
+	currentFrame->dynamicVboCommitOffset = currentFrame->dynamicVboWriteOffset;
+}
+
+void RB_UpdateUniformBlock(uniformBlock_t block, void *data)
+{
+	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
+	gpuFrame_t *thisFrame = backEndData->currentFrame;
+
+	qglBufferSubData(GL_UNIFORM_BUFFER,
+			thisFrame->uboWriteOffset, blockInfo->size, data);
+	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
+			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
+
+	// FIXME: Use actual ubo alignment
+	size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
+	thisFrame->uboWriteOffset += alignedBlockSize;
 }

@@ -26,11 +26,10 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "FxScheduler.h"
 
 #include "../../code/client/vmachine.h"
-#include "../game/characters.h"
 
 #include "../../code/qcommon/sstring.h"
 //NOTENOTE: Be sure to change the mirrored code in g_shared.h
-typedef	map< sstring_t, unsigned char, less<sstring_t>, allocator< unsigned char >  >	namePrecache_m;
+typedef std::map< sstring_t, unsigned char, std::less<sstring_t>, std::allocator< unsigned char >  >	namePrecache_m;
 extern namePrecache_m	*as_preCacheMap;
 extern void CG_RegisterNPCCustomSounds( clientInfo_t *ci );
 extern qboolean G_AddSexToMunroString ( char *string, qboolean qDoBoth );
@@ -991,7 +990,7 @@ void CG_RegisterClientRenderInfo(clientInfo_t *ci, renderInfo_t *ri)
 	}
 
 	//Head
-	if(ri->headModelName && ri->headModelName[0])
+	if(ri->headModelName[0])
 	{
 		Q_strncpyz( headModelName, ri->headModelName, sizeof( headModelName ) );
 		//Head skin
@@ -1519,7 +1518,7 @@ void CG_StartMusic( qboolean bForceStart ) {
 	Q_strncpyz( parm2, COM_Parse( &s ), sizeof( parm2 ) );
 	COM_EndParseSession();
 
-	cgi_S_StartBackgroundTrack( parm1, parm2, !bForceStart );
+	cgi_S_StartBackgroundTrack( parm1, parm2, (qboolean)!bForceStart );
 }
 
 /*

@@ -1355,17 +1355,10 @@ CFontInfo *GetFont(int index)
 	return pFont;
 }
 
-
-int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float fScale)
-{
-	float		fMaxWidth = 0.0f;
-	float		fThisWidth = 0.0f;
-	CFontInfo	*curfont;
-
-	curfont = GetFont(iFontHandle);
-	if(!curfont)
-	{
-		return(0);
+float RE_Font_StrLenPixelsNew( const char *psText, const int iFontHandle, const float fScale ) {
+	CFontInfo *curfont = GetFont(iFontHandle);
+	if ( !curfont ) {
+		return 0.0f;
 	}
 
 	float fScaleAsian = fScale;
@@ -1374,42 +1367,52 @@ int RE_Font_StrLenPixels(const char *psText, const int iFontHandle, const float 
 		fScaleAsian = fScale * 0.75f;
 	}
 
-	while(*psText)
-	{
+	float maxLineWidth = 0.0f;
+	float thisLineWidth = 0.0f;
+	while ( *psText ) {
 		int iAdvanceCount;
 		unsigned int uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
 		psText += iAdvanceCount;
 
-		if (uiLetter == '^' )
-		{
-			if (*psText >= '0' &&
-				*psText <= '9')
-			{
+		if ( uiLetter == '^' ) {
+			if ( *psText >= '0' && *psText <= '9' ) {
 				uiLetter = AnyLanguage_ReadCharFromString( psText, &iAdvanceCount, NULL );
 				psText += iAdvanceCount;
 				continue;
 			}
 		}
 
-		if (uiLetter == 0x0A)
-		{
-			fThisWidth = 0.0f;
+		if ( uiLetter == '\n' ) {
+			thisLineWidth = 0.0f;
 		}
-		else
-		{
-			int iPixelAdvance = curfont->GetLetterHorizAdvance( uiLetter );
+		else {
+			float iPixelAdvance = (float)curfont->GetLetterHorizAdvance( uiLetter );
 
 			float fValue = iPixelAdvance * ((uiLetter > (unsigned)g_iNonScaledCharRange) ? fScaleAsian : fScale);
-			fThisWidth += curfont->mbRoundCalcs ? Round( fValue ) : fValue;
-			if (fThisWidth > fMaxWidth)
-			{
-				fMaxWidth = fThisWidth;
+
+			if ( r_aspectCorrectFonts->integer == 1 ) {
+				fValue *= ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+			}
+			else if ( r_aspectCorrectFonts->integer == 2 ) {
+				fValue = ceilf(
+					fValue * ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth))
+				);
+			}
+			thisLineWidth += curfont->mbRoundCalcs
+				? roundf( fValue )
+				: (r_aspectCorrectFonts->integer == 2)
+					? ceilf( fValue )
+					: fValue;
+			if ( thisLineWidth > maxLineWidth ) {
+				maxLineWidth = thisLineWidth;
 			}
 		}
 	}
+	return maxLineWidth;
+}
 
-	// using ceil because we need to make sure that all the text is contained within the integer pixel width we're returning
-	return (int)ceilf(fMaxWidth);
+int RE_Font_StrLenPixels( const char *psText, const int iFontHandle, const float fScale ) {
+	return (int)ceilf( RE_Font_StrLenPixelsNew( psText, iFontHandle, fScale ) );
 }
 
 // not really a font function, but keeps naming consistant...
@@ -1652,8 +1655,17 @@ void RE_Font_DrawString(int ox, int oy, const char *psText, const float *rgba, c
 								//lastcolour.c,
 								hShader							// qhandle_t hShader
 								);
-
-				fx += fAdvancePixels;
+				if ( r_aspectCorrectFonts->integer == 1 ) {
+					fx += fAdvancePixels
+						* ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth));
+				}
+				else if ( r_aspectCorrectFonts->integer == 2 ) {
+					fx += ceilf( fAdvancePixels
+						* ((float)(SCREEN_WIDTH * glConfig.vidHeight) / (float)(SCREEN_HEIGHT * glConfig.vidWidth)) );
+				}
+				else {
+					fx += fAdvancePixels;
+				}
 			}
 			break;
 		}

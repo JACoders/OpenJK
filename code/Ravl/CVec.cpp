@@ -67,9 +67,9 @@ float	CVec4::Len() const
 float	CVec4::Dist(const CVec4& t) const
 {
 	return sqrtf(
-		(t.v[0]-v[0])*(t.v[0]-v[0]) + 
-		(t.v[1]-v[1])*(t.v[1]-v[1]) + 
-		(t.v[2]-v[2])*(t.v[2]-v[2]) + 
+		(t.v[0]-v[0])*(t.v[0]-v[0]) +
+		(t.v[1]-v[1])*(t.v[1]-v[1]) +
+		(t.v[2]-v[2])*(t.v[2]-v[2]) +
 		(t.v[3]-v[3])*(t.v[3]-v[3]));
 }
 
@@ -81,7 +81,7 @@ float	CVec4::Norm()
 	float	L = Len();
 	(*this)/=L;
 	return L;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Safe Normalize
@@ -90,17 +90,17 @@ float	CVec4::Norm()
 float	CVec4::SafeNorm()
 {
 	float d=this->Len();
-	if (d>1E-10) 
+	if (d>1E-10)
 	{
 		(*this)/=d;
 		return d;
-	} 
-	(*this)=0.0f; 
+	}
+	(*this)=0.0f;
 	return 0;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Angular Normalize 
+// Angular Normalize
 //  All floats Exist(-180, +180)
 ////////////////////////////////////////////////////////////////////////////////////////
 void	CVec4::AngleNorm()
@@ -163,7 +163,7 @@ int		CVec4::MaxElementIndex() const
 	{
 		return 1;
 	}
-	return 2;	
+	return 2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -173,25 +173,25 @@ void	CVec4::VecToAng()
 {
 	float	yaw;
 	float	pitch;
-	
-	if (!v[1] && !v[0]) 
+
+	if (!v[1] && !v[0])
 	{
 		yaw		= 0;
 		pitch	= (v[2]>0) ? (90.0f):(270.0f);
 	}
-	else 
+	else
 	{
 		// Calculate Yaw
 		//---------------
-		if (v[0]) 
+		if (v[0])
 		{
 			yaw = (RAVL_VEC_RADTODEG(atan2f(v[1], v[0])));
-			if (yaw<0) 
+			if (yaw<0)
 			{
 				yaw += 360;
 			}
 		}
-		else 
+		else
 		{
 			yaw	= (v[1]>0) ? (90.0f):(270.0f);
 		}
@@ -282,21 +282,21 @@ void	CVec4::VecToAngRad()
 {
 	float	yaw;
 	float	pitch;
-	
-	if (!v[1] && !v[0]) 
+
+	if (!v[1] && !v[0])
 	{
 		yaw		= 0;
 		pitch	= (v[2]>0) ? (RAVL_VEC_PI*0.5f):(RAVL_VEC_PI*1.5f);
 	}
-	else 
+	else
 	{
 		// Calculate Yaw
 		//---------------
-		if (v[0]) 
+		if (v[0])
 		{
 			yaw = (atan2f(v[1], v[0]));
 		}
-		else 
+		else
 		{
 			yaw	= (v[1]>0) ? (RAVL_VEC_PI*0.5f):(RAVL_VEC_PI*1.5f);
 		}
@@ -418,7 +418,7 @@ void	CVec4::ToStr(char* s) const
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	CVec4::IsFinite()
 {
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
 	return 	(_finite(v[0]) && _finite(v[1]) && _finite(v[2]) && _finite(v[3]));
 #else
 	return isfinite(v[0]) && isfinite(v[1]) && isfinite(v[2]);
@@ -433,7 +433,7 @@ bool	CVec4::IsInitialized()
 	return (v[0]!=RAVL_VEC_UDF && v[1]!=RAVL_VEC_UDF && v[2]!=RAVL_VEC_UDF && v[3]!=RAVL_VEC_UDF);
 }
 
-#endif 
+#endif
 
 
 
@@ -443,14 +443,14 @@ bool	CVec4::IsInitialized()
 //
 //  Returns true if the given point is within the circumscribed
 //  circle of the given ABC Triangle:
-//         _____  
+//         _____
 //        /   B \
 //      /   /   \ \
 //     |  /      \ |
 //     |A---------C|
 //      \    Pt   /
 //       \_______/
-//  
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	CVec4::PtInCircle(const CVec4 &A, const CVec4 &B, const CVec4 &C) const
 {
@@ -490,14 +490,14 @@ bool	CVec4::PtInCircle(const CVec4 &A, const CVec4 &B, const CVec4 &C) const
 // Point In Standard Circle  (True/False)
 //
 //  Returns true if the given point is within the Circle
-//         _____  
+//         _____
 //        /     \
 //      /         \
 //     |   Circle  |
 //     |           |
 //      \    Pt   /
 //       \_______/
-//  
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	CVec4::PtInCircle(const CVec4 &Circle, float Radius) const
 {
@@ -634,8 +634,8 @@ float	CVec3::Len() const
 float	CVec3::Dist(const CVec3& t) const
 {
 	return sqrtf(
-		(t.v[0]-v[0])*(t.v[0]-v[0]) + 
-		(t.v[1]-v[1])*(t.v[1]-v[1]) + 
+		(t.v[0]-v[0])*(t.v[0]-v[0]) +
+		(t.v[1]-v[1])*(t.v[1]-v[1]) +
 		(t.v[2]-v[2])*(t.v[2]-v[2]));
 }
 
@@ -647,7 +647,7 @@ float	CVec3::Norm()
 	float	L = Len();
 	(*this)/=L;
 	return L;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // Safe Normalize
@@ -656,17 +656,17 @@ float	CVec3::Norm()
 float	CVec3::SafeNorm()
 {
 	float d=this->Len();
-	if (d>1E-10) 
+	if (d>1E-10)
 	{
 		(*this)/=d;
 		return d;
-	} 
-	(*this)=0.0f; 
+	}
+	(*this)=0.0f;
 	return 0;
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Angular Normalize 
+// Angular Normalize
 //  All floats Exist(-180, +180)
 ////////////////////////////////////////////////////////////////////////////////////////
 void	CVec3::AngleNorm()
@@ -685,7 +685,7 @@ void	CVec3::AngleNorm()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Angular Normalize 
+// Angular Normalize
 //  All floats Exist(-180, +180)
 ////////////////////////////////////////////////////////////////////////////////////////
 float	CVec3::Truncate(float maxlen)
@@ -748,7 +748,7 @@ int		CVec3::MaxElementIndex() const
 	{
 		return 1;
 	}
-	return 2;	
+	return 2;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -758,25 +758,25 @@ void	CVec3::VecToAng()
 {
 	float	yaw;
 	float	pitch;
-	
-	if (!v[1] && !v[0]) 
+
+	if (!v[1] && !v[0])
 	{
 		yaw		= 0;
 		pitch	= (v[2]>0) ? (90.0f):(270.0f);
 	}
-	else 
+	else
 	{
 		// Calculate Yaw
 		//---------------
-		if (v[0]) 
+		if (v[0])
 		{
 			yaw = (RAVL_VEC_RADTODEG(atan2f(v[1], v[0])));
-			if (yaw<0) 
+			if (yaw<0)
 			{
 				yaw += 360;
 			}
 		}
-		else 
+		else
 		{
 			yaw	= (v[1]>0) ? (90.0f):(270.0f);
 		}
@@ -862,21 +862,21 @@ void	CVec3::VecToAngRad()
 {
 	float	yaw;
 	float	pitch;
-	
-	if (!v[1] && !v[0]) 
+
+	if (!v[1] && !v[0])
 	{
 		yaw		= 0;
 		pitch	= (v[2]>0) ? (RAVL_VEC_PI*0.5f):(RAVL_VEC_PI*1.5f);
 	}
-	else 
+	else
 	{
 		// Calculate Yaw
 		//---------------
-		if (v[0]) 
+		if (v[0])
 		{
 			yaw = (atan2f(v[1], v[0]));
 		}
-		else 
+		else
 		{
 			yaw	= (v[1]>0) ? (RAVL_VEC_PI*0.5f):(RAVL_VEC_PI*1.5f);
 		}
@@ -993,7 +993,7 @@ void	CVec3::ToStr(char* s) const
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	CVec3::IsFinite()
 {
-#if defined(_MSC_VER) 
+#if defined(_MSC_VER)
 		return 	(_finite(v[0]) && _finite(v[1]) && _finite(v[2]));
 #else
 		return isfinite(v[0]) && isfinite(v[1]) && isfinite(v[2]);
@@ -1008,7 +1008,7 @@ bool	CVec3::IsInitialized()
 	return (v[0]!=RAVL_VEC_UDF && v[1]!=RAVL_VEC_UDF && v[2]!=RAVL_VEC_UDF);
 }
 
-#endif 
+#endif
 
 
 
@@ -1018,14 +1018,14 @@ bool	CVec3::IsInitialized()
 //
 //  Returns true if the given point is within the circumscribed
 //  circle of the given ABC Triangle:
-//         _____  
+//         _____
 //        /   B \
 //      /   /   \ \
 //     |  /      \ |
 //     |A---------C|
 //      \    Pt   /
 //       \_______/
-//  
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	CVec3::PtInCircle(const CVec3 &A, const CVec3 &B, const CVec3 &C) const
 {
@@ -1065,14 +1065,14 @@ bool	CVec3::PtInCircle(const CVec3 &A, const CVec3 &B, const CVec3 &C) const
 // Point In Standard Circle  (True/False)
 //
 //  Returns true if the given point is within the Circle
-//         _____  
+//         _____
 //        /     \
 //      /         \
 //     |   Circle  |
 //     |           |
 //      \    Pt   /
 //       \_______/
-//  
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	CVec3::PtInCircle(const CVec3 &Circle, float Radius) const
 {

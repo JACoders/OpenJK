@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../server/exe_headers.h"
 
+#include "tr_common.h"
 #include "tr_local.h"
 
 /*
@@ -269,7 +270,7 @@ static void InvertErrorTable( float errorTable[2][MAX_GRID_SIZE], int width, int
 PutPointsOnCurve
 ==================
 */
-static void PutPointsOnCurve( drawVert_t	ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE], 
+static void PutPointsOnCurve( drawVert_t	ctrl[MAX_GRID_SIZE][MAX_GRID_SIZE],
 							 int width, int height ) {
 	int			i, j;
 	drawVert_t	prev, next;
@@ -451,12 +452,12 @@ srfGridMesh_t *R_SubdividePatchToGrid( int width, int height,
 	MakeMeshNormals( width, height, ctrl );
 
 	// copy the results out to a grid
-	grid = (struct srfGridMesh_s *) Hunk_Alloc( (width * height - 1) * sizeof( drawVert_t ) + sizeof( *grid ), qtrue );
+	grid = (struct srfGridMesh_s *) R_Hunk_Alloc( (width * height - 1) * sizeof( drawVert_t ) + sizeof( *grid ), qtrue );
 
-	grid->widthLodError = (float *) Hunk_Alloc( width * 4, qfalse );
+	grid->widthLodError = (float *) R_Hunk_Alloc( width * 4, qfalse );
 	memcpy( grid->widthLodError, errorTable[0], width * 4 );
 
-	grid->heightLodError = (float *) Hunk_Alloc( height * 4, qfalse );
+	grid->heightLodError = (float *) R_Hunk_Alloc( height * 4, qfalse );
 	memcpy( grid->heightLodError, errorTable[1], height * 4 );
 
 	grid->width = width;

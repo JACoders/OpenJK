@@ -27,6 +27,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef FX_SYSTEM_H_INC
 #define FX_SYSTEM_H_INC
 
+#include "qcommon/safe/gsl.h"
+
 
 #define irand	Q_irand
 #define flrand	Q_flrand
@@ -53,7 +55,7 @@ inline void Vector2Copy(vec2_t src,vec2_t dst)
 }
 
 
-extern void	CG_CalcEntityLerpPositions( centity_t * );	
+extern void	CG_CalcEntityLerpPositions( centity_t * );
 
 
 struct SFxHelper
@@ -76,7 +78,7 @@ struct SFxHelper
 	// Sound
 	void	PlaySound( const vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
 	void	PlayLocalSound( sfxHandle_t sfx, int channelNum );
-	int		RegisterSound( const char *sound );
+	int		RegisterSound( const gsl::cstring_view& sound );
 
 	//G2
 	int		GetOriginAxisFromBolt(const centity_t &cent, int modelNum, int boltNum, vec3_t /*out*/origin, vec3_t /*out*/*axis);
@@ -88,8 +90,8 @@ struct SFxHelper
 	void	AddFxToScene( refEntity_t *ent );
 	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue );
 
-	int		RegisterShader( const char *shader );
-	int		RegisterModel( const char *model );
+	int		RegisterShader( const gsl::cstring_view& shader );
+	int		RegisterModel( const gsl::cstring_view& model );
 
 	void	AddPolyToScene( int shader, int count, polyVert_t *verts );
 

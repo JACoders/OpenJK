@@ -931,7 +931,7 @@ qboolean CalculateUntouchable(gentity_t *ent)
 	playTime = (level.time - ent->client->pers.enterTime)/60000;
 
 	if ( level.gametype == GT_JEDIMASTER && ent->client->ps.isJediMaster )
-	{//Jedi Master (was Borg queen) can only be killed once anyway
+	{//Jedi Master can only be killed once anyway
 		return qfalse;
 	}
 	//------------------------------------------------------ MUST HAVE ACHIEVED 2 KILLS PER MINUTE
@@ -1021,7 +1021,7 @@ qboolean CalculateTactician(gentity_t *ent, int *kills)
 		return qfalse;
 	}
 	if ( level.gametype == GT_JEDIMASTER && ent->client->ps.isJediMaster )
-	{//Jedi Master (was Borg queen) has only 1 weapon
+	{//Jedi Master has only 1 weapon
 		return qfalse;
 	}
 	//------------------------------------------------------ MUST HAVE ACHIEVED 2 KILLS PER MINUTE
@@ -1207,61 +1207,6 @@ qboolean CalculateTeamMVP(gentity_t *ent)
 	}
 	return qfalse;
 }
-
-#if 0
-// Unused
-qboolean CalculateTeamMVPByRank(gentity_t *ent)
-{
-	int			i = 0, nBestPlayer = -1, nScore = 0, nHighestScore = 0,
-				team = ent->client->ps.persistant[PERS_RANK]+1;
-	qboolean	bTied = (team == 3);
-	gentity_t	*player = NULL;
-
-	/*
-	if ( team == ent->client->ps.persistant[PERS_TEAM] && ent->client->ps.persistant[PERS_CLASS] == PC_BORG )
-	{//only the queen can be the MVP
-		if ( borgQueenClientNum == ent->s.number )
-		{
-			return qtrue;
-		}
-		else
-		{
-			return qfalse;
-		}
-	}
-	*/
-
-	for (i = 0; i < sv_maxclients.integer; i++)
-	{
-		nScore = 0;
-		player = g_entities + i;
-		if (!player->inuse)
-			continue;
-		if (!bTied)
-		{
-			 if (player->client->ps.persistant[PERS_TEAM] != team)
-			 {
-				 continue;
-			 }
-		}
-		nScore = player->client->ps.persistant[PERS_SCORE];
-		if (nScore > nHighestScore)
-		{
-			nHighestScore = nScore;
-			nBestPlayer = i;
-		}
-	}
-	if (-1 == nBestPlayer)
-	{
-		return qfalse;
-	}
-	if (nBestPlayer == ent->s.number)
-	{
-		return qtrue;
-	}
-	return qfalse;
-}
-#endif
 
 qboolean CalculateTeamDefender(gentity_t *ent)
 {

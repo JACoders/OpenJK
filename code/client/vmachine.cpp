@@ -42,7 +42,7 @@ intptr_t	VM_Call( int callnum, ... )
 		for ( size_t i = 0; i < ARRAY_LEN( args ); i++ )
 			args[i] = va_arg( ap, intptr_t );
 		va_end(ap);
-		
+
 		return cgvm.entryPoint( callnum,  args[0],  args[1],  args[2], args[3], args[4],  args[5],  args[6], args[7],
 								args[8],  args[9]);
 	}
@@ -71,14 +71,14 @@ intptr_t VM_DllSyscall( intptr_t arg, ... ) {
 	// rcg010206 - see commentary above
 	intptr_t args[16];
 	va_list ap;
-	
+
 	args[0] = arg;
-	
+
 	va_start( ap, arg );
 	for (size_t i = 1; i < ARRAY_LEN (args); i++)
 		args[i] = va_arg( ap, intptr_t );
 	va_end( ap );
-	
+
 	return CL_CgameSystemCalls( args );
 #else // original id code
 	return CL_CgameSystemCalls( &arg );

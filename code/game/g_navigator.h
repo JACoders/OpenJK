@@ -28,8 +28,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 // NAVIGATOR
 // ---------
-// This file provides an interface to two actor related systems: 
-//  - Path Finding 
+// This file provides an interface to two actor related systems:
+//  - Path Finding
 //  - Steering
 //
 //

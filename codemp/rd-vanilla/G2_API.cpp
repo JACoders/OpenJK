@@ -865,7 +865,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v **ghoul2Ptr, const char *fileName, int m
 
 qboolean G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias)
 {
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mLodBias = lodBias;
 		return qtrue;
@@ -878,7 +878,7 @@ qboolean G2API_SetSkin(CGhoul2Info_v& ghoul2, int modelIndex, qhandle_t customSk
 {
 	CGhoul2Info *ghlInfo = &ghoul2[modelIndex];
 
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		if (renderSkin)
@@ -893,7 +893,7 @@ qboolean G2API_SetSkin(CGhoul2Info_v& ghoul2, int modelIndex, qhandle_t customSk
 
 qboolean G2API_SetShader(CGhoul2Info *ghlInfo, qhandle_t customShader)
 {
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomShader = customShader;
 		return qtrue;
@@ -921,7 +921,7 @@ qboolean G2API_SetSurfaceOnOff(CGhoul2Info_v &ghoul2, const char *surfaceName, c
 
 int G2API_GetSurfaceOnOff(CGhoul2Info *ghlInfo, const char *surfaceName)
 {
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		return G2_IsSurfaceOff(ghlInfo, ghlInfo->mSlist, surfaceName);
 	}
@@ -2083,7 +2083,7 @@ qboolean G2API_GetBoltMatrix(CGhoul2Info_v &ghoul2, const int modelIndex, const 
 					ftemp = matrix->matrix[0][0];
 					matrix->matrix[0][0] = -matrix->matrix[0][1];
 					matrix->matrix[0][1] = ftemp;
-					
+
 					ftemp = matrix->matrix[1][0];
 					matrix->matrix[1][0] = -matrix->matrix[1][1];
 					matrix->matrix[1][1] = ftemp;

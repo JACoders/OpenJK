@@ -70,11 +70,6 @@ qboolean	in_mlooking;
 
 extern cvar_t	*in_joystick;
 
-#ifndef NO_XINPUT
-void IN_UnloadXInput ( void );
-#endif
-
-
 static void IN_UseGivenForce(void)
 {
 	const char *c = Cmd_Argv(1);
@@ -140,6 +135,7 @@ void IN_MLookDown( void ) {
 	in_mlooking = qtrue;
 }
 
+void IN_CenterView( void );
 void IN_MLookUp( void ) {
 	in_mlooking = qfalse;
 	if ( !cl_freelook->integer ) {
@@ -150,7 +146,7 @@ void IN_MLookUp( void ) {
 void IN_KeyDown( kbutton_t *b ) {
 	int		k;
 	const char	*c;
-	
+
 	c = Cmd_Argv(1);
 	if ( c[0] ) {
 		k = atoi(c);
@@ -161,7 +157,7 @@ void IN_KeyDown( kbutton_t *b ) {
 	if ( k == b->down[0] || k == b->down[1] ) {
 		return;		// repeating key
 	}
-	
+
 	if ( !b->down[0] ) {
 		b->down[0] = k;
 	} else if ( !b->down[1] ) {
@@ -170,7 +166,7 @@ void IN_KeyDown( kbutton_t *b ) {
 		Com_Printf ("Three keys down for a button!\n");
 		return;
 	}
-	
+
 	if ( b->active ) {
 		return;		// still down
 	}
@@ -356,7 +352,7 @@ Moves the local angle positions
 */
 void CL_AdjustAngles( void ) {
 	float	speed;
-	
+
 	if ( in_speed.active ) {
 		speed = 0.001 * cls.frametime * cl_anglespeedkey->value;
 	} else {
@@ -612,7 +608,7 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 	// figure button bits
 	// send a button bit even if the key was pressed and released in
 	// less than a frame
-	//	
+	//
 	for (i = 0 ; i < 32 ; i++) {
 		if ( in_buttons[i].active || in_buttons[i].wasPressed ) {
 			cmd->buttons |= 1 << i;
@@ -679,7 +675,7 @@ usercmd_t CL_CreateCmd( void ) {
 
 	// keyboard angle adjustment
 	CL_AdjustAngles ();
-	
+
 	memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
@@ -698,7 +694,7 @@ usercmd_t CL_CreateCmd( void ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] + 90;
 	} else if ( oldAngles[PITCH] - cl.viewangles[PITCH] > 90 ) {
 		cl.viewangles[PITCH] = oldAngles[PITCH] - 90;
-	} 
+	}
 
 	if ( cl_overrideAngles )
 	{
@@ -733,23 +729,27 @@ void CL_CreateNewCommands( void ) {
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
-//	if ( cls.state < CA_PRIMED ) {
+//	if ( cls.state < CA_PRIMED )
 //		return;
-//	}
 
 	frame_msec = com_frameTime - old_com_frameTime;
 
+	// if running over 1000fps, act as if each frame is 1ms
+	// prevents divisions by zero
+	if ( frame_msec < 1 )
+		frame_msec = 1;
+
 	// if running less than 5fps, truncate the extra time to prevent
 	// unexpected moves after a hitch
-	if ( frame_msec > 200 ) {
+	if ( frame_msec > 200 )
 		frame_msec = 200;
-	}
+
 	old_com_frameTime = com_frameTime;
 
 	// generate a command for this frame
 	cl.cmdNumber++;
 	cmdNum = cl.cmdNumber & CMD_MASK;
-	cl.cmds[cmdNum] = CL_CreateCmd ();
+	cl.cmds[cmdNum] = CL_CreateCmd();
 }
 
 /*
@@ -765,7 +765,7 @@ getting more delta compression will reduce total bandwidth.
 */
 qboolean CL_ReadyToSendPacket( void ) {
 	// don't send anything if playing back a demo
-//	if ( cls.state == CA_CINEMATIC ) 
+//	if ( cls.state == CA_CINEMATIC )
 	if ( cls.state == CA_CINEMATIC || CL_IsRunningInGameCinematic())
 	{
 		return qfalse;
@@ -814,7 +814,7 @@ void CL_WritePacket( void ) {
 	int			count;
 
 	// don't send anything if playing back a demo
-//	if ( cls.state == CA_CINEMATIC ) 
+//	if ( cls.state == CA_CINEMATIC )
 	if ( cls.state == CA_CINEMATIC || CL_IsRunningInGameCinematic())
 	{
 		return;
@@ -892,7 +892,7 @@ void CL_WritePacket( void ) {
 	cl.packetTime[ packetNum ] = cls.realtime;
 	cl.packetCmdNumber[ packetNum ] = cl.cmdNumber;
 	clc.lastPacketSentTime = cls.realtime;
-	Netchan_Transmit (&clc.netchan, buf.cursize, buf.data);	
+	Netchan_Transmit (&clc.netchan, buf.cursize, buf.data);
 }
 
 /*
@@ -906,7 +906,7 @@ void CL_SendCmd( void ) {
 	// don't send any message if not connected
 	if ( cls.state < CA_CONNECTED ) {
 		return;
-	} 
+	}
 
 	// don't send commands if paused
 	if ( com_sv_running->integer && sv_paused->integer && cl_paused->integer ) {

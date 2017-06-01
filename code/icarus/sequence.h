@@ -98,14 +98,14 @@ public:
 		SQ_COMMON		= 0x00000000, 	//Common one-pass sequence
 		SQ_LOOP			= 0x00000001, 	//Looping sequence
 		SQ_RETAIN		= 0x00000002, 	//Inside a looping sequence list, retain the information
-		SQ_AFFECT		= 0x00000004, 	//Affect sequence 
+		SQ_AFFECT		= 0x00000004, 	//Affect sequence
 		SQ_RUN			= 0x00000008,	//A run block
 		SQ_PENDING		= 0x00000010,	//Pending use, don't free when flushing the sequences
 		SQ_CONDITIONAL	= 0x00000020,	//Conditional statement
 		SQ_TASK			= 0x00000040,	//Task block
 	};
 
-	enum 
+	enum
 	{
 		POP_FRONT,
 		POP_BACK,

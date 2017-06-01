@@ -131,20 +131,20 @@ void G_ReadSessionData( gclient_t *client ) {
 
 //	for (i=0;i< MAX_OBJECTIVES; i++)
 //	{
-//		sscanf( var, "%i %i", 
+//		sscanf( var, "%i %i",
 //			&client->sess.mission_objectives[i].display,
 //			&client->sess.mission_objectives[i].status);
 //			var+=4;
-//	}	
-	// Clear the objectives out 
+//	}
+	// Clear the objectives out
 	for (i=0;i< MAX_OBJECTIVES; i++)
 	{
-		client->sess.mission_objectives[i].display = 0;
+		client->sess.mission_objectives[i].display = qfalse;
 		client->sess.mission_objectives[i].status = OBJECTIVE_STAT_PENDING;
-	}	
+	}
 
 	// Now load the LIGHTSIDE objective. That's the only cross level objective.
-	sscanf( var, "%i %i", 
+	sscanf( var, "%i %i",
 		&client->sess.mission_objectives[LIGHTSIDE_OBJ].display,
 		&client->sess.mission_objectives[LIGHTSIDE_OBJ].status);
 

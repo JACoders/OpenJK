@@ -238,7 +238,7 @@ void TurretG2Pain( gentity_t *self, gentity_t *attacker, int damage )
 
 	if ( attacker->client && attacker->client->ps.weapon == WP_DEMP2 )
 	{
-		self->attackDebounceTime = level.time + 2000 + random() * 500;
+		self->attackDebounceTime = level.time + 2000 + Q_flrand(0.0f, 1.0f) * 500;
 		self->painDebounceTime = self->attackDebounceTime;
 	}
 	if ( !self->enemy )
@@ -962,7 +962,7 @@ void turretG2_base_think( gentity_t *self )
 	else
 	{
 		// keep our enemy for a minimum of 2 seconds from now
-		self->bounceCount = level.time + 2000 + random() * 150;
+		self->bounceCount = level.time + 2000 + Q_flrand(0.0f, 1.0f) * 150;
 	}
 
 	turretG2_aim( self );
@@ -1170,7 +1170,7 @@ void finish_spawning_turretG2( gentity_t *base )
 		// How quickly to fire
 		if ( !base->wait )
 		{
-			base->wait = 1000;// + random() * 500;
+			base->wait = 1000;// + Q_flrand(0.0f, 1.0f) * 500;
 		}
 
 		if ( !base->splashDamage )
@@ -1228,7 +1228,7 @@ void finish_spawning_turretG2( gentity_t *base )
 		// How quickly to fire
 		if ( !base->wait )
 		{
-			base->wait = 150 + random() * 55;
+			base->wait = 150 + Q_flrand(0.0f, 1.0f) * 55;
 		}
 
 		if ( !base->splashDamage )

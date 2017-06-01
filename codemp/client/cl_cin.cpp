@@ -1617,17 +1617,15 @@ void CIN_DrawCinematic (int handle) {
 }
 
 void CL_PlayCinematic_f(void) {
-	char	*arg, *s;
-	int bits = CIN_system;
-
 	Com_DPrintf("CL_PlayCinematic_f\n");
 	if (cls.state == CA_CINEMATIC) {
 		SCR_StopCinematic();
 	}
 
-	arg = Cmd_Argv(1);
-	s = Cmd_Argv(2);
+	const char *arg = Cmd_Argv(1);
+	const char *s = Cmd_Argv(2);
 
+	int bits = CIN_system;
 	if ((s && s[0] == '1') || Q_stricmp(arg,"demoend.roq")==0 || Q_stricmp(arg,"end.roq")==0) {
 		bits |= CIN_hold;
 	}
@@ -1714,4 +1712,3 @@ void CIN_UploadCinematic(int handle) {
 		}
 	}
 }
-

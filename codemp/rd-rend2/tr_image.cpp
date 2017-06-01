@@ -73,7 +73,7 @@ void R_GammaCorrect( byte *buffer, int bufSize ) {
 }
 
 typedef struct {
-	char *name;
+	const char *name;
 	int	minimize, maximize;
 } textureMode_t;
 
@@ -181,7 +181,7 @@ int R_SumOfUsedImages( void ) {
 	return total;
 }
 
-static float GetReadableSize( int bytes, char **units )
+static float GetReadableSize( int bytes, const char **units )
 {
 	float result = bytes;
 	*units = "b ";
@@ -215,14 +215,14 @@ R_ImageList_f
 void R_ImageList_f( void ) {
 	int i;
 	int estTotalSize = 0;
-	char *sizeSuffix;
+	const char *sizeSuffix;
 	image_t *image = tr.images;
 
 	ri->Printf(PRINT_ALL, "\n      -w-- -h-- type  -size- --name-------\n");
 
 	for ( i = 0 ; i < tr.numImages ; i++, image = image->poolNext )
 	{
-		char *format = "???? ";
+		const char *format = "???? ";
 		int estSize;
 
 		estSize = image->uploadHeight * image->uploadWidth;
@@ -271,25 +271,12 @@ void R_ImageList_f( void ) {
 				// 4 bytes per pixel
 				estSize *= 4;
 				break;
-			case GL_LUMINANCE8:
-			case GL_LUMINANCE16:
-			case GL_LUMINANCE:
-				format = "L    ";
-				// 1 byte per pixel?
-				break;
 			case GL_RGB5:
 			case GL_RGB8:
 			case GL_RGB:
 				format = "RGB  ";
 				// 3 bytes per pixel?
 				estSize *= 3;
-				break;
-			case GL_LUMINANCE8_ALPHA8:
-			case GL_LUMINANCE16_ALPHA16:
-			case GL_LUMINANCE_ALPHA:
-				format = "LA   ";
-				// 2 bytes per pixel?
-				estSize *= 2;
 				break;
 			case GL_SRGB:
 			case GL_SRGB8:
@@ -303,18 +290,6 @@ void R_ImageList_f( void ) {
 				// 4 bytes per pixel?
 				estSize *= 4;
 				break;
-			case GL_SLUMINANCE:
-			case GL_SLUMINANCE8:
-				format = "sL   ";
-				// 1 byte per pixel?
-				break;
-			case GL_SLUMINANCE_ALPHA:
-			case GL_SLUMINANCE8_ALPHA8:
-				format = "sLA  ";
-				// 2 byte per pixel?
-				estSize *= 2;
-				break;
-
 			case GL_DEPTH_COMPONENT24:
 				format = "D24  ";
 				break;
@@ -1791,7 +1766,7 @@ static qboolean RawImage_HasAlpha(const byte *scan, int numPixels)
 static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean lightMap, imgType_t type, int flags)
 {
 	int samples = 3;
-	GLenum internalFormat = GL_RGB;
+	GLenum internalFormat = GL_RGB8;
 	qboolean forceNoCompression = (qboolean)(flags & IMGFLAG_NO_COMPRESSION);
 	qboolean normalmap = (qboolean)(type == IMGTYPE_NORMAL || type == IMGTYPE_NORMALHEIGHT);
 
@@ -1817,15 +1792,17 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 			}
 			else
 			{
-				internalFormat = GL_RGBA;
+				internalFormat = GL_RGBA8;
 			}
 		}
 	}
 	else if(lightMap)
 	{
+#if 0
 		if(r_greyscale->integer)
 			internalFormat = GL_LUMINANCE;
 		else
+#endif
 			internalFormat = GL_RGBA;
 	}
 	else
@@ -1838,6 +1815,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 		// select proper internal format
 		if ( samples == 3 )
 		{
+#if 0
 			if(r_greyscale->integer)
 			{
 				if(r_texturebits->integer == 16)
@@ -1848,6 +1826,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 					internalFormat = GL_LUMINANCE;
 			}
 			else
+#endif
 			{
 				if ( !forceNoCompression && (glRefConfig.textureCompression & TCR_BPTC) )
 				{
@@ -1871,12 +1850,13 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 				}
 				else
 				{
-					internalFormat = GL_RGB;
+					internalFormat = GL_RGB8;
 				}
 			}
 		}
 		else if ( samples == 4 )
 		{
+#if 0
 			if(r_greyscale->integer)
 			{
 				if(r_texturebits->integer == 16)
@@ -1887,6 +1867,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 					internalFormat = GL_LUMINANCE_ALPHA;
 			}
 			else
+#endif
 			{
 				if ( !forceNoCompression && (glRefConfig.textureCompression & TCR_BPTC) )
 				{
@@ -1906,7 +1887,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 				}
 				else
 				{
-					internalFormat = GL_RGBA;
+					internalFormat = GL_RGBA8;
 				}
 			}
 		}
@@ -1916,7 +1897,7 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 			switch(internalFormat)
 			{
 				case GL_RGB:
-					internalFormat = GL_SRGB;
+					internalFormat = GL_SRGB8;
 					break;
 
 				case GL_RGB4:
@@ -1932,24 +1913,6 @@ static GLenum RawImage_GetFormat(const byte *data, int numPixels, qboolean light
 				case GL_RGBA4:
 				case GL_RGBA8:
 					internalFormat = GL_SRGB8_ALPHA8;
-					break;
-
-				case GL_LUMINANCE:
-					internalFormat = GL_SLUMINANCE;
-					break;
-
-				case GL_LUMINANCE8:
-				case GL_LUMINANCE16:
-					internalFormat = GL_SLUMINANCE8;
-					break;
-
-				case GL_LUMINANCE_ALPHA:
-					internalFormat = GL_SLUMINANCE_ALPHA;
-					break;
-
-				case GL_LUMINANCE8_ALPHA8:
-				case GL_LUMINANCE16_ALPHA16:
-					internalFormat = GL_SLUMINANCE8_ALPHA8;
 					break;
 
 				case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -2309,7 +2272,7 @@ static void EmptyTexture( int width, int height, imgType_t type, int flags,
 		case GL_DEPTH_COMPONENT16:
 		case GL_DEPTH_COMPONENT24:
 		case GL_DEPTH_COMPONENT32:
-			qglTexParameterf(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
+			//qglTexParameterf(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_LUMINANCE );
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 			break;
@@ -2342,6 +2305,7 @@ static image_t *R_AllocImage()
 	return result;
 }
 
+#if 0
 static void R_FreeImage( image_t *imageToFree )
 {
 	if ( imageToFree )
@@ -2376,6 +2340,7 @@ static void R_FreeImage( image_t *imageToFree )
 		}
 	}
 }
+#endif
 
 /*
 ================

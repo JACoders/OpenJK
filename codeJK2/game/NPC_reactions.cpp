@@ -28,7 +28,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "b_local.h"
 #include "anims.h"
 #include "g_functions.h"
-#include "characters.h"
 #include "wp_saber.h"
 
 extern qboolean G_CheckForStrongAttackMomentum( gentity_t *self );
@@ -147,7 +146,7 @@ static void NPC_CheckAttacker( gentity_t *other, int mod )
 		}
 
 		//Randomly pick up the target
-		if ( random() > luckThreshold )
+		if ( Q_flrand(0.0f, 1.0f) > luckThreshold )
 		{
 			G_ClearEnemy( other );
 			other->enemy = NPC;
@@ -161,14 +160,10 @@ void NPC_SetPainEvent( gentity_t *self )
 {
 	if ( !self->NPC || !(self->NPC->aiFlags&NPCAI_DIE_ON_IMPACT) )
 	{
-	// no more borg
-	//	if( self->client->playerTeam != TEAM_BORG )
-	//	{
-			if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
-			{
-				G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
-			}
-	//	}
+        if ( !Q3_TaskIDPending( self, TID_CHAN_VOICE ) )
+        {
+            G_AddEvent( self, EV_PAIN, floor((float)self->health/self->max_health*100.0f) );
+        }
 	}
 }
 
@@ -286,7 +281,7 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, vec3_t point, i
 	}
 
 	//See if we're going to flinch
-	if ( random() < pain_chance )
+	if ( Q_flrand(0.0f, 1.0f) < pain_chance )
 	{
 		//Pick and play our animation
 		if ( !(self->client->ps.eFlags&EF_FORCE_GRIPPED) )
@@ -905,7 +900,7 @@ void NPC_Respond( gentity_t *self, int userNum )
 	if ( event != -1 )
 	{
 		//hack here because we reuse some "combat" and "extra" sounds
-		qboolean addFlag = (self->NPC->scriptFlags&SCF_NO_COMBAT_TALK);
+		qboolean addFlag = (qboolean)(self->NPC->scriptFlags & SCF_NO_COMBAT_TALK);
 		self->NPC->scriptFlags &= ~SCF_NO_COMBAT_TALK;
 
 		G_AddVoiceEvent( self, event, 3000 );

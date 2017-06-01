@@ -68,7 +68,7 @@ void fx_runner_think( gentity_t *ent )
 	AngleVectors( ent->currentAngles, ent->pos3, NULL, NULL );
 	MakeNormalVectors( ent->pos3, ent->pos4, temp ); // there IS a reason this is done...it's so that it doesn't break every effect in the game...
 
-	ent->nextthink = level.time + ent->delay + random() * ent->random;
+	ent->nextthink = level.time + ent->delay + Q_flrand(0.0f, 1.0f) * ent->random;
 
 	if ( ent->spawnflags & 4 ) // damage
 	{

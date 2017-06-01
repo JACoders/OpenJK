@@ -115,7 +115,7 @@ void SV_AddServerCommand( client_t *client, const char *cmd ) {
 =================
 SV_SendServerCommand
 
-Sends a reliable command string to be interpreted by 
+Sends a reliable command string to be interpreted by
 the client game module: "cp", "print", "chat", etc
 A NULL client will broadcast to all clients
 =================
@@ -125,7 +125,7 @@ void SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	byte		message[MAX_MSGLEN];
 	client_t	*client;
 	int			j;
-	
+
 	message[0] = svc_serverCommand;
 
 	va_start (argptr,fmt);
@@ -350,7 +350,7 @@ void SV_PacketEvent( netadr_t from, msg_t *msg ) {
 		}
 		return;
 	}
-	
+
 	// if we received a sequenced packet from an address we don't reckognize,
 	// send an out of band disconnect packet to it
 	NET_OutOfBandPrint( NS_SERVER, from, "disconnect" );
@@ -378,7 +378,7 @@ void SV_CheckTimeouts( void ) {
 	if ( cl->state >= CS_CONNECTED && cl->lastPacketTime < droppoint ) {
 		// wait several frames so a debugger session doesn't cause a timeout
 		if ( ++cl->timeoutCount > 5 ) {
-			SV_DropClient( cl, "timed out" ); 
+			SV_DropClient( cl, "timed out" );
 			cl->state = CS_FREE; // don't bother with zombie state
 		}
 	}
@@ -405,7 +405,7 @@ This wonderful hack is needed to avoid rendering frames until several camera rel
 have wended their way through the network. The problem is basically that the server asks the
 client where the camera is to decide what entities down to the client. However right after
 certain transitions the client tends to give a wrong answer. CGCam_Disable is one such time/
-When this happens we want to dump all rendered frame until these things have happened, in 
+When this happens we want to dump all rendered frame until these things have happened, in
 order:
 
 0) (This state will mean that we are awaiting state 1)

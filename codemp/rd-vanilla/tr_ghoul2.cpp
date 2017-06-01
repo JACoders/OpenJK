@@ -4876,9 +4876,9 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 	}
 
 	// find the largest index, since the actual number of compressed bone pools is not stored anywhere
-	for ( i = 0 ; i < mdxa->numFrames ; i++ ) 
+	for ( i = 0 ; i < mdxa->numFrames ; i++ )
 	{
-		for ( j = 0 ; j < mdxa->numBones ; j++ ) 
+		for ( j = 0 ; j < mdxa->numBones ; j++ )
 		{
 			k = (i * mdxa->numBones * 3) + (j * 3); // iOffsetToIndex
 			pIndex = (mdxaIndex_t *) ((byte*) mdxa + mdxa->ofsFrames + k);
@@ -4886,7 +4886,7 @@ qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *mod_name, qboolean 
 			// 3 byte ints, yeah...
 			int tmp = pIndex->iIndex & 0xFFFFFF00;
 			LL(tmp);
-			
+
 			if (maxBoneIndex < tmp)
 				maxBoneIndex = tmp;
 		}

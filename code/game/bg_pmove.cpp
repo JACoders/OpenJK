@@ -103,7 +103,7 @@ extern void WP_ForcePowerStop( gentity_t *self, forcePowers_t forcePower );
 extern qboolean WP_ForcePowerAvailable( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 extern void WP_ForcePowerDrain( gentity_t *self, forcePowers_t forcePower, int overrideAmt );
 extern float G_ForceWallJumpStrength( void );
-extern int G_CheckRollSafety( gentity_t *self, int anim, float testDist );
+extern qboolean G_CheckRollSafety( gentity_t *self, int anim, float testDist );
 extern saberMoveName_t PM_CheckDualSpinProtect( void );
 extern saberMoveName_t PM_CheckPullAttack( void );
 extern qboolean JET_Flying( gentity_t *self );
@@ -3597,9 +3597,11 @@ int PM_GetLandingAnim( void )
 	}
 	else if ( anim == BOTH_FLIP_LAND )
 	{
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		return BOTH_LAND1;
 	}
 	else if ( PM_InAirKickingAnim( anim ) )
@@ -3630,58 +3632,74 @@ int PM_GetLandingAnim( void )
 	case BOTH_FORCEJUMPLEFT1:
 	case BOTH_FORCEINAIRLEFT1:
 		anim = BOTH_FORCELANDLEFT1;
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	case BOTH_FORCEJUMPRIGHT1:
 	case BOTH_FORCEINAIRRIGHT1:
 		anim = BOTH_FORCELANDRIGHT1;
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	case BOTH_FORCEJUMP1:
 	case BOTH_FORCEINAIR1:
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		anim = BOTH_FORCELAND1;
 		break;
 	case BOTH_FORCEJUMPBACK1:
 	case BOTH_FORCEINAIRBACK1:
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		anim = BOTH_FORCELANDBACK1;
 		break;
 	case BOTH_JUMPLEFT1:
 	case BOTH_INAIRLEFT1:
 		anim = BOTH_LANDLEFT1;
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	case BOTH_JUMPRIGHT1:
 	case BOTH_INAIRRIGHT1:
 		anim = BOTH_LANDRIGHT1;
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	case BOTH_JUMP1:
 	case BOTH_INAIR1:
 		anim = BOTH_LAND1;
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	case BOTH_JUMPBACK1:
 	case BOTH_INAIRBACK1:
 		anim = BOTH_LANDBACK1;
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	case BOTH_BUTTERFLY_LEFT:
 	case BOTH_BUTTERFLY_RIGHT:
@@ -3743,9 +3761,11 @@ int PM_GetLandingAnim( void )
 		{
 			anim = BOTH_LAND1;
 		}
-		//stick landings some
-		pm->ps->velocity[0] *= 0.5f;
-		pm->ps->velocity[1] *= 0.5f;
+		if ( !g_allowBunnyhopping->integer ) {
+			//stick landings some
+			pm->ps->velocity[0] *= 0.5f;
+			pm->ps->velocity[1] *= 0.5f;
+		}
 		break;
 	}
 	return anim;
@@ -4082,9 +4102,11 @@ static void PM_CrashLand( void )
 				PM_SetAnim( pm, SETANIM_BOTH, anim, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD, 100 );	// Only blend over 100ms
 				pm->ps->saberMove = LS_READY;
 				pm->ps->weaponTime = 0;
-				//stick landings some
-				pm->ps->velocity[0] *= 0.5f;
-				pm->ps->velocity[1] *= 0.5f;
+				if ( !g_allowBunnyhopping->integer ) {
+					//stick landings some
+					pm->ps->velocity[0] *= 0.5f;
+					pm->ps->velocity[1] *= 0.5f;
+				}
 			}
 		}
 		else if ( pm->gent
@@ -8251,7 +8273,7 @@ static void PM_Footsteps( void )
 					PM_SetAnim(pm,SETANIM_LEGS,legsAnim,SETANIM_FLAG_NORMAL);
 				}
 			}
-			else if( (validNPC && pm->ps->weapon > WP_SABER && pm->ps->weapon < WP_DET_PACK ))// && pm->gent->client->race != RACE_BORG))//Being careful or carrying a 2-handed weapon
+			else if( (validNPC && pm->ps->weapon > WP_SABER && pm->ps->weapon < WP_DET_PACK ))//Being careful or carrying a 2-handed weapon
 			{//Squadmates use BOTH_STAND3
 				oldAnim = pm->ps->legsAnim;
 				if(oldAnim != BOTH_GUARD_LOOKAROUND1 && oldAnim != BOTH_GUARD_IDLE1
@@ -13390,12 +13412,7 @@ static void PM_Weapon( void )
 	{
 		if ( pm->gent && pm->gent->client )
 		{
-			// borg no longer exist, use NPC_class to check for any npc's that don't drop their weapons (if there are any)
-			// Sigh..borg shouldn't drop their weapon attachments when they die.  Also, never drop a lightsaber!
-		//	if ( pm->gent->client->playerTeam != TEAM_BORG)
-			{
-				pm->ps->weapon = WP_NONE;
-			}
+			pm->ps->weapon = WP_NONE;
 		}
 
 		if ( pm->gent )
@@ -14082,16 +14099,6 @@ static void PM_VehicleWeapon( void )
 	// check for dead player
 	if ( pm->ps->stats[STAT_HEALTH] <= 0 )
 	{
-		if ( pm->gent && pm->gent->client )
-		{
-			// borg no longer exist, use NPC_class to check for any npc's that don't drop their weapons (if there are any)
-			// Sigh..borg shouldn't drop their weapon attachments when they die.  Also, never drop a lightsaber!
-		//	if ( pm->gent->client->playerTeam != TEAM_BORG)
-			{
-		//		pm->ps->weapon = WP_NONE;
-			}
-		}
-
 		if ( pm->gent )
 		{
 			pm->gent->s.loopSound = 0;

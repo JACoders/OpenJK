@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
 #include "tr_local.h"
+#include "tr_allocator.h"
 
 /*
 =====================
@@ -476,6 +477,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 
 	int frameNumber = backEndData->realFrameNumber;
 	gpuFrame_t *thisFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+	backEndData->currentFrame = thisFrame;
 	if ( thisFrame->sync )
 	{
 		GLsync sync = thisFrame->sync;
@@ -493,6 +495,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 					// FIXME: Doesn't this mean the frame will never render?
 					qglDeleteSync( sync );
 					thisFrame->sync = NULL;
+					backEndData->perFrameMemory->Reset();
 
 					ri->Printf( PRINT_DEVELOPER, S_COLOR_RED "OpenGL: Failed to wait for frame to finish! Aborting frame.\n" );
 					return;
@@ -502,6 +505,18 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		}
 		qglDeleteSync( sync );
 		thisFrame->sync = NULL;
+
+		// Resets resources
+		qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo);
+		thisFrame->uboWriteOffset = 0;
+
+		thisFrame->dynamicIboCommitOffset = 0;
+		thisFrame->dynamicIboWriteOffset = 0;
+
+		thisFrame->dynamicVboCommitOffset = 0;
+		thisFrame->dynamicVboWriteOffset = 0;
+
+		backEndData->perFrameMemory->Reset();
 	}
 
 	tr.frameCount++;

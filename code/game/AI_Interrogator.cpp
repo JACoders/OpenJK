@@ -67,8 +67,8 @@ void Interrogator_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacke
 	*/
 	{
 		self->client->moveType = MT_WALK;
-		self->client->ps.velocity[0] = Q_irand( -10, -20 );
-		self->client->ps.velocity[1] = Q_irand( -10, -20 );
+		self->client->ps.velocity[0] = Q_irand( -20, -10 );
+		self->client->ps.velocity[1] = Q_irand( -20, -10 );
 		self->client->ps.velocity[2] = -100;
 	}
 	//self->takedamage = qfalse;
@@ -289,7 +289,7 @@ void Interrogator_Strafe( void )
 
 		// Set the strafe start time
 		NPC->fx_time = level.time;
-		NPCInfo->standTime = level.time + 3000 + random() * 500;
+		NPCInfo->standTime = level.time + 3000 + Q_flrand(0.0f, 1.0f) * 500;
 	}
 }
 

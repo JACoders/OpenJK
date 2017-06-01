@@ -42,7 +42,6 @@ set -- -D CMAKE_BUILD_TYPE="$flavour" "$@"
 	-D BuildJK2SPGame=ON \
 	-D BuildJK2SPRdVanilla=ON \
 	-D CMAKE_INSTALL_PREFIX=/prefix \
-	-D CMAKE_VERBOSE_MAKEFILE=ON \
 	"$@" .. )
 make -C build
 make -C build install DESTDIR=$(pwd)/build/DESTDIR

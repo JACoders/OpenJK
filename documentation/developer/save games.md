@@ -28,6 +28,7 @@ Save games are handled in `code/server/sv_savegame.cpp`. A save game consists of
 9.  Effects ("FXLE", 32 \* "FXFN")
 10. Entities: `ReadGEntities()`
     1.  All the entities (count = "NMED", count * "EDNM", "GENT", "GNPC", "GCLI", "PARM", "VHIC", "GHL2")
+        * "GHL2" is handled by renderer, which has the G2 code.
     2.  Timers
     3.  Icarus `CIcarus::Load()`
         1.  Version ("ICAR", must match `CIcarus::ICARUS_VERSION`)

@@ -38,8 +38,8 @@ typedef struct netadr_s
 {
 	netadrtype_t	type;
 
-	byte	ip[4];
-	unsigned short	port;
+	byte		ip[4];
+	uint16_t	port;
 } netadr_t;
 
 /*
@@ -67,8 +67,7 @@ typedef enum {
 	SE_CHAR,	// evValue is an ascii char
 	SE_MOUSE,	// evValue and evValue2 are reletive signed x / y moves
 	SE_JOYSTICK_AXIS,	// evValue is an axis number and evValue2 is the current state (-127 to 127)
-	SE_CONSOLE,	// evPtr is a char*
-	SE_PACKET	// evPtr is a netadr_t followed by data bytes to evPtrLength
+	SE_CONSOLE	// evPtr is a char*
 } sysEventType_t;
 
 typedef struct sysEvent_s {
@@ -79,10 +78,11 @@ typedef struct sysEvent_s {
 	void			*evPtr;			// this must be manually freed if not NULL
 } sysEvent_t;
 
-#ifndef DEDICATED
 extern cvar_t *com_minimized;
 extern cvar_t *com_unfocused;
-#endif
+extern cvar_t *com_maxfps;
+extern cvar_t *com_maxfpsMinimized;
+extern cvar_t *com_maxfpsUnfocused;
 
 sysEvent_t	Sys_GetEvent( void );
 
@@ -90,7 +90,7 @@ void	Sys_Init (void);
 
 // general development dll loading for virtual machine testing
 typedef void *GetGameAPIProc( void  *);
-typedef intptr_t QDECL VMMainProc( int, ... );
+typedef intptr_t QDECL VMMainProc( int, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t, intptr_t );
 typedef intptr_t QDECL SystemCallProc( intptr_t, ... );
 typedef void * QDECL GetModuleAPIProc( int, ... );
 

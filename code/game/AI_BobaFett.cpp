@@ -67,7 +67,7 @@ void		Boba_DoFlameThrower( gentity_t *self );
 void		Boba_DoAmbushWait( gentity_t *self);
 void		Boba_DoSniper( gentity_t *self);
 
-// Local: Respawning 
+// Local: Respawning
 //-------------------
 bool		Boba_Respawn();
 
@@ -91,7 +91,7 @@ bool		Boba_Flee();		// If returns true, Jedi and Seeker AI not used
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// External Functions 
+// External Functions
 ////////////////////////////////////////////////////////////////////////////////////////
 extern void		G_SoundAtSpot( vec3_t org, int soundIndex, qboolean broadcast );
 extern void		G_CreateG2AttachedWeaponModel( gentity_t *ent, const char *weaponModel, int boltNum, int weaponNum );
@@ -178,7 +178,7 @@ void	Boba_Printf(const char * format, ...)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// Global Data 
+// Global Data
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	BobaHadDeathScript = false;
 bool	BobaActive = false;
@@ -196,7 +196,7 @@ enum	EBobaTacticsState
 {
 	BTS_NONE,
 
-	// Attack 
+	// Attack
 	//--------
 	BTS_RIFLE,			// Uses Jedi / Seeker Movement
 	BTS_MISSILE,		// Uses Jedi / Seeker Movement
@@ -219,7 +219,7 @@ enum	EBobaTacticsState
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_Precache( void )
 {
@@ -244,7 +244,7 @@ void Boba_Precache( void )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void	Boba_DustFallNear(const vec3_t origin, int dustcount)
 {
@@ -261,22 +261,22 @@ void	Boba_DustFallNear(const vec3_t origin, int dustcount)
 	VectorCopy(origin, testStartPos);
 	for (int i=0; i<dustcount; i++)
 	{
-		testDirection[0] = (random() * 2.0f) - 1.0f;
-		testDirection[1] = (random() * 2.0f) - 1.0f;
+		testDirection[0] = (Q_flrand(0.0f, 1.0f) * 2.0f) - 1.0f;
+		testDirection[1] = (Q_flrand(0.0f, 1.0f) * 2.0f) - 1.0f;
 		testDirection[2] = 1.0f;
 
 		VectorMA(origin, 1000.0f, testDirection, testEndPos);
 		gi.trace (&testTrace, origin, NULL, NULL, testEndPos, (player && player->inuse)?(0):(ENTITYNUM_NONE), MASK_SHOT, (EG2_Collision)0, 0 );
 
-		if (!testTrace.startsolid && 
-			!testTrace.allsolid && 
+		if (!testTrace.startsolid &&
+			!testTrace.allsolid &&
 			testTrace.fraction>0.1f &&
 			testTrace.fraction<0.9f)
 		{
 			G_PlayEffect( "chunks/dustFall", testTrace.endpos, testTrace.plane.normal );
 		}
 	}
-} 
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // This is just a super silly wrapper around NPC_Change Weapon
@@ -369,12 +369,12 @@ qboolean Boba_StopKnockdown( gentity_t *self, gentity_t *pusher, const vec3_t pu
 ////////////////////////////////////////////////////////////////////////////////////////
 qboolean Boba_Flying( gentity_t *self )
 {
-	assert(self && self->client && self->client->NPC_class==CLASS_BOBAFETT);//self->NPC && 
+	assert(self && self->client && self->client->NPC_class==CLASS_BOBAFETT);//self->NPC &&
 	return ((qboolean)(self->client->moveType==MT_FLYSWIM));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	Boba_CanSeeEnemy( gentity_t *self )
 {
@@ -383,7 +383,7 @@ bool	Boba_CanSeeEnemy( gentity_t *self )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void	Boba_Pain( gentity_t *self, gentity_t *inflictor, int damage, int mod)
 {
@@ -399,11 +399,11 @@ void	Boba_Pain( gentity_t *self, gentity_t *inflictor, int damage, int mod)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_FlyStart( gentity_t *self )
 {//switch to seeker AI for a while
-	if ( TIMER_Done( self, "jetRecharge" ) 
+	if ( TIMER_Done( self, "jetRecharge" )
 		&& !Boba_Flying( self ) )
 	{
 		self->client->ps.gravity = 0;
@@ -432,7 +432,7 @@ void Boba_FlyStart( gentity_t *self )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_FlyStop( gentity_t *self )
 {
@@ -471,17 +471,17 @@ void Boba_FireFlameThrower( gentity_t *self )
 	vec3_t		start, end, dir;
 	CVec3		traceMins(self->mins);
 	CVec3		traceMaxs(self->maxs);
-	gentity_t*	traceEnt	= NULL;  
+	gentity_t*	traceEnt	= NULL;
 	int			damage		= Q_irand( BOBA_FLAMETHROWDAMAGEMIN, BOBA_FLAMETHROWDAMAGEMAX );
 
-  	AngleVectors(self->currentAngles, dir, 0, 0); 
-	dir[2] = 0.0f; 
-	VectorCopy(self->currentOrigin, start); 
+  	AngleVectors(self->currentAngles, dir, 0, 0);
+	dir[2] = 0.0f;
+	VectorCopy(self->currentOrigin, start);
 	traceMins *= 0.5f;
-	traceMaxs *= 0.5f; 
+	traceMaxs *= 0.5f;
 	start[2] += 40.0f;
 
-	VectorMA( start, 150.0f, dir, end ); 
+	VectorMA( start, 150.0f, dir, end );
 
 	if (g_bobaDebug->integer)
 	{
@@ -502,7 +502,7 @@ void Boba_FireFlameThrower( gentity_t *self )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_StopFlameThrower( gentity_t *self )
 {
@@ -529,7 +529,7 @@ void Boba_StopFlameThrower( gentity_t *self )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_StartFlameThrower( gentity_t *self )
 {
@@ -553,7 +553,7 @@ void Boba_StartFlameThrower( gentity_t *self )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void Boba_DoFlameThrower( gentity_t *self )
 {
@@ -585,14 +585,14 @@ void Boba_DoFlameThrower( gentity_t *self )
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Boba_DoAmbushWait( gentity_t *self)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Boba_DoSniper( gentity_t *self)
 {
@@ -617,8 +617,8 @@ void		Boba_DoSniper( gentity_t *self)
 
 	// Resolve Blocked Problems
 	//--------------------------
-	if (NPCInfo->aiFlags&NPCAI_BLOCKED && 
-		NPC->client->moveType!=MT_FLYSWIM && 
+	if (NPCInfo->aiFlags&NPCAI_BLOCKED &&
+		NPC->client->moveType!=MT_FLYSWIM &&
 		((level.time - NPCInfo->blockedDebounceTime)>3000)
 		)
 	{
@@ -775,7 +775,7 @@ void Boba_FireDecide( void )
 //	WP_ROCKET_LAUNCHER
 //	WP_BLASTER
 //	WP_DISRUPTOR
-//  
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void	Boba_TacticsSelect()
 {
@@ -866,7 +866,7 @@ void	Boba_TacticsSelect()
 
 
 
-	// The Next State Has Been Selected, Now Change Weapon If Necessary 
+	// The Next State Has Been Selected, Now Change Weapon If Necessary
 	//------------------------------------------------------------------
 	if (nextState!=NPCInfo->localState)
 	{
@@ -927,7 +927,7 @@ bool	Boba_Tactics()
 	// These Tactics Require Seeker & Jedi Movement
 	//----------------------------------------------
 	if (!NPCInfo->localState ||
-		 NPCInfo->localState==BTS_RIFLE || 
+		 NPCInfo->localState==BTS_RIFLE ||
 		 NPCInfo->localState==BTS_MISSILE)
 	{
 		return false;
@@ -963,7 +963,7 @@ bool	Boba_Tactics()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	Boba_Respawn()
 {
@@ -1012,7 +1012,7 @@ bool	Boba_Respawn()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 void	Boba_Update()
 {
@@ -1037,8 +1037,8 @@ void	Boba_Update()
 
 			bool	wasSeen = Boba_CanSeeEnemy(NPC);
 
-			if (!testTrace.startsolid && 
-				!testTrace.allsolid && 
+			if (!testTrace.startsolid &&
+				!testTrace.allsolid &&
 				testTrace.entityNum == NPC->enemy->s.number)
 			{
 				NPCInfo->enemyLastSeenTime	= level.time;
@@ -1109,7 +1109,7 @@ void	Boba_Update()
 
 	// Occasionally A Jump Turns Into A Rocket Fly
 	//---------------------------------------------
-	if ( NPC->client->ps.groundEntityNum == ENTITYNUM_NONE 
+	if ( NPC->client->ps.groundEntityNum == ENTITYNUM_NONE
 		&& NPC->client->ps.forceJumpZStart
 		&& !Q_irand( 0, 10 ) )
 	{//take off
@@ -1150,7 +1150,7 @@ void	Boba_Update()
 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	Boba_Flee()
 {
@@ -1191,9 +1191,9 @@ bool	Boba_Flee()
 
 				case 1:
 					Boba_Printf("SPOOK: Footsteps");
-  					testDirection[0] =  (random() * 0.5f) - 1.0f;
+  					testDirection[0] =  (Q_flrand(0.0f, 1.0f) * 0.5f) - 1.0f;
 	 		 		testDirection[0] += (testDirection[0]>0.0f)?(0.5f):(-0.5f);
-					testDirection[1] = (random() * 0.5f) - 1.0f;
+					testDirection[1] = (Q_flrand(0.0f, 1.0f) * 0.5f) - 1.0f;
 					testDirection[1] += (testDirection[1]>0.0f)?(0.5f):(-0.5f);
 					testDirection[2] = 1.0f;
 		 	 		VectorMA(NPC->enemy->currentOrigin, 400.0f, testDirection, BobaFootStepLoc);
@@ -1247,8 +1247,8 @@ bool	Boba_Flee()
 
 	bool	IsOnAPath = !!NPC_MoveToGoal(qtrue);
 	if (!ReachedEscapePoint &&
-		NPCInfo->aiFlags&NPCAI_BLOCKED && 
-		NPC->client->moveType!=MT_FLYSWIM && 
+		NPCInfo->aiFlags&NPCAI_BLOCKED &&
+		NPC->client->moveType!=MT_FLYSWIM &&
 		((level.time - NPCInfo->blockedDebounceTime)>1000)
 		)
 	{

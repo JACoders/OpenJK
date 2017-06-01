@@ -333,7 +333,7 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 	VectorAdd( pusher->currentAngles, amove, pusher->currentAngles );
 	gi.linkentity( pusher );
 
-	notMoving = (VectorCompare( vec3_origin, move )&&VectorCompare( vec3_origin, amove ));
+	notMoving = (qboolean)(VectorCompare( vec3_origin, move ) && VectorCompare( vec3_origin, amove ));
 
 	// see if any solid entities are inside the final position
 	for ( e = 0 ; e < listedEntities ; e++ ) {
@@ -2121,7 +2121,7 @@ void SP_func_train (gentity_t *self) {
 	{
 		self->spawnflags &= ~32; // once only
 
-		gi.G2API_SetBoneAnim( &self->ghoul2[self->playerModel], "model_root", self->startFrame, self->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + crandom() * 0.1f, 0, -1, -1 );
+		gi.G2API_SetBoneAnim( &self->ghoul2[self->playerModel], "model_root", self->startFrame, self->endFrame, BONE_ANIM_OVERRIDE_LOOP, 1.0f + Q_flrand(-1.0f, 1.0f) * 0.1f, 0, -1, -1 );
 		self->endFrame = 0; // don't allow it to do anything with the animation function in G_main
 	}
 }

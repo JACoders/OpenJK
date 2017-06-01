@@ -24,6 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "../server/exe_headers.h"
 
+#include "tr_common.h"
 #include "tr_local.h"
 #include "tr_stl.h"
 
@@ -33,7 +34,7 @@ static char *s_shaderText;
 
 // the shader is parsed into these global variables, then copied into
 // dynamically allocated memory if it is valid.
-static	shaderStage_t	stages[MAX_SHADER_STAGES];		
+static	shaderStage_t	stages[MAX_SHADER_STAGES];
 static	shader_t		shader;
 static	texModInfo_t	texMods[MAX_SHADER_STAGES][TR_MAX_TEXMODS];
 
@@ -112,7 +113,7 @@ static uint32_t generateHashValueForText( const char *string, size_t length )
 	return (hash ^ (hash >> 10) ^ (hash >> 20));
 }
 
-/* 
+/*
 ====================
 RE_RegisterShader
 
@@ -123,7 +124,7 @@ This should really only be used for explicit shaders, because there is no
 way to ask for different implicit lighting modes (vertex, lightmap, etc)
 ====================
 */
-qhandle_t RE_RegisterShaderLightMap( const char *name, const int *lightmapIndex, const byte *styles ) 
+qhandle_t RE_RegisterShaderLightMap( const char *name, const int *lightmapIndex, const byte *styles )
 {
 	shader_t	*sh;
 
@@ -623,7 +624,7 @@ static void ParseTexMod( const char *_text, shaderStage_t *stage )
 			return;
 		}
 		tmi->wave.frequency = atof( token );
-		
+
 		tmi->type = TMOD_STRETCH;
 	}
 	//
@@ -827,7 +828,7 @@ static void ParseSurfaceSprites(const char *_text, shaderStage_t *stage )
 
 	if (!stage->ss)
 	{
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), qtrue );
+		stage->ss = (surfaceSprite_t *)R_Hunk_Alloc( sizeof( surfaceSprite_t ), qtrue );
 	}
 
 	// These are all set by the command lines.
@@ -891,7 +892,7 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 
 	if (!stage->ss)
 	{
-		stage->ss = (surfaceSprite_t *)Hunk_Alloc( sizeof( surfaceSprite_t ), qtrue );
+		stage->ss = (surfaceSprite_t *)R_Hunk_Alloc( sizeof( surfaceSprite_t ), qtrue );
 	}
 	//
 	// fademax
@@ -1179,7 +1180,7 @@ static void ParseSurfaceSpritesOptional( const char *param, const char *_text, s
 		return;
 	}
 
-	// 
+	//
 	// invalid ss command.
 	//
 	ri.Printf( PRINT_WARNING, "WARNING: invalid optional surfacesprite param '%s' in shader '%s'\n", param, shader.name );
@@ -1245,7 +1246,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 			else
 			{
-				stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_REPEAT );
+				stage->bundle[0].image = R_FindImageFile(
+					token,
+					(qboolean)!shader.noMipMaps,
+					(qboolean)!shader.noPicMip,
+					(qboolean)!shader.noTC,
+					GL_REPEAT );
 				if ( !stage->bundle[0].image )
 				{
 					ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1265,7 +1271,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_CLAMP );
+			stage->bundle[0].image = R_FindImageFile(
+				token,
+				(qboolean)!shader.noMipMaps,
+				(qboolean)!shader.noPicMip,
+				(qboolean)!shader.noTC,
+				GL_CLAMP );
 			if ( !stage->bundle[0].image )
 			{
 				ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1301,7 +1312,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				num = stage->bundle[0].numImageAnimations;
 				if ( num < MAX_IMAGE_ANIMATIONS ) {
-					images[num] = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, bClamp?GL_CLAMP:GL_REPEAT );
+					images[num] = R_FindImageFile(
+						token,
+						(qboolean)!shader.noMipMaps,
+						(qboolean)!shader.noPicMip,
+						(qboolean)!shader.noTC,
+						bClamp?GL_CLAMP:GL_REPEAT);
 					if ( !images[num] )
 					{
 						ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1311,7 +1327,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 			}
 			// Copy image ptrs into an array of ptrs
-			stage->bundle[0].image = (image_t*) Hunk_Alloc( stage->bundle[0].numImageAnimations * sizeof( image_t* ), qfalse );
+			stage->bundle[0].image = (image_t*) R_Hunk_Alloc( stage->bundle[0].numImageAnimations * sizeof( image_t* ), qfalse );
 			memcpy( stage->bundle[0].image,	images,			stage->bundle[0].numImageAnimations * sizeof( image_t* ) );
 		}
 		else if ( !Q_stricmp( token, "videoMap" ) )
@@ -1509,7 +1525,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 		}
 		//
-		// alphaGen 
+		// alphaGen
 		//
 		else if ( !Q_stricmp( token, "alphaGen" ) )
 		{
@@ -1586,7 +1602,7 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 		//
 		// tcGen <function>
 		//
-		else if ( !Q_stricmp(token, "texgen") || !Q_stricmp( token, "tcGen" ) ) 
+		else if ( !Q_stricmp(token, "texgen") || !Q_stricmp( token, "tcGen" ) )
 		{
 			token = COM_ParseExt( text, qfalse );
 			if ( token[0] == 0 )
@@ -1609,14 +1625,14 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 			else if ( !Q_stricmp( token, "vector" ) )
 			{
-				stage->bundle[0].tcGenVectors = ( vec3_t *) Hunk_Alloc( 2 * sizeof( vec3_t ), qfalse );
+				stage->bundle[0].tcGenVectors = ( vec3_t *) R_Hunk_Alloc( 2 * sizeof( vec3_t ), qfalse );
 
 				ParseVector( text, 3, stage->bundle[0].tcGenVectors[0] );
 				ParseVector( text, 3, stage->bundle[0].tcGenVectors[1] );
 
 				stage->bundle[0].tcGen = TCGEN_VECTOR;
 			}
-			else 
+			else
 			{
 				ri.Printf( PRINT_WARNING, "WARNING: unknown texgen parm in shader '%s'\n", shader.name );
 			}
@@ -1790,7 +1806,7 @@ static void ParseDeform( const char **text ) {
 		return;
 	}
 
-	shader.deforms[ shader.numDeforms ] = (deformStage_t *)Hunk_Alloc( sizeof( deformStage_t ), qtrue );
+	shader.deforms[ shader.numDeforms ] = (deformStage_t *)R_Hunk_Alloc( sizeof( deformStage_t ), qtrue );
 
 	ds = shader.deforms[ shader.numDeforms ];
 	shader.numDeforms++;
@@ -1930,7 +1946,7 @@ static void ParseSkyParms( const char **text ) {
 	char		pathname[MAX_QPATH];
 	int			i;
 
-	shader.sky = (skyParms_t *)Hunk_Alloc( sizeof( skyParms_t ), qtrue );
+	shader.sky = (skyParms_t *)R_Hunk_Alloc( sizeof( skyParms_t ), qtrue );
 
 	// outerbox
 	token = COM_ParseExt( text, qfalse );
@@ -1941,7 +1957,7 @@ static void ParseSkyParms( const char **text ) {
 	if ( strcmp( token, "-" ) ) {
 		for (i=0 ; i<6 ; i++) {
 			Com_sprintf( pathname, sizeof(pathname), "%s_%s", token, suf[i] );
-			shader.sky->outerbox[i] = R_FindImageFile( ( char * ) pathname, qtrue, qtrue, !shader.noTC, GL_CLAMP );
+			shader.sky->outerbox[i] = R_FindImageFile( ( char * ) pathname, qtrue, qtrue, (qboolean)!shader.noTC, GL_CLAMP );
 			if ( !shader.sky->outerbox[i] ) {
 				if (i) {
 					shader.sky->outerbox[i] = shader.sky->outerbox[i-1];//not found, so let's use the previous image
@@ -2103,20 +2119,20 @@ const char *materialNames[MATERIAL_LAST] =
 	MATERIALS
 };
 
-static void ParseMaterial( const char **text ) 
+static void ParseMaterial( const char **text )
 {
 	char	*token;
 	int		i;
 
 	token = COM_ParseExt( text, qfalse );
-	if ( token[0] == 0 ) 
+	if ( token[0] == 0 )
 	{
 		Com_Printf( S_COLOR_YELLOW "WARNING: missing material in shader '%s'\n", shader.name );
 		return;
 	}
 	for(i = 0; i < MATERIAL_LAST; i++)
 	{
-		if ( !Q_stricmp( token, materialNames[i] ) ) 
+		if ( !Q_stricmp( token, materialNames[i] ) )
 		{
 			shader.surfaceFlags &= ~MATERIAL_MASK;//safety, clear it first
 			shader.surfaceFlags |= i;
@@ -2312,7 +2328,7 @@ static qboolean ParseShader( const char  **text )
 		// fogParms
 		else if ( !Q_stricmp( token, "fogParms" ) )
 		{
-			shader.fogParms = (fogParms_t *)Hunk_Alloc( sizeof( fogParms_t ), qtrue );
+			shader.fogParms = (fogParms_t *)R_Hunk_Alloc( sizeof( fogParms_t ), qtrue );
 			if ( !ParseVector( text, 3, shader.fogParms->color ) ) {
 				COM_EndParseSession();
 				return qfalse;
@@ -2382,19 +2398,19 @@ static qboolean ParseShader( const char  **text )
 Ghoul2 Insert Start
 */
 
-		// 
+		//
 		// location hit mesh load
 		//
 		else if ( !Q_stricmp( token, "hitLocation" ) )
 		{
-		   
+
 			// grab the filename of the hit location texture
 			token = COM_ParseExt( text, qfalse );
 			if ( token[0] == 0 )
 				break;
 			continue;
 		}
-		// 
+		//
 		// location hit material mesh load
 		//
 		else if ( !Q_stricmp( token, "hitMaterial" ) )
@@ -2466,7 +2482,7 @@ typedef struct {
 } collapse_t;
 
 static collapse_t	collapse[] = {
-	{ 0, GLS_DSTBLEND_SRC_COLOR | GLS_SRCBLEND_ZERO,	
+	{ 0, GLS_DSTBLEND_SRC_COLOR | GLS_SRCBLEND_ZERO,
 		GL_MODULATE, 0 },
 
 	{ 0, GLS_DSTBLEND_ZERO | GLS_SRCBLEND_DST_COLOR,
@@ -2761,7 +2777,7 @@ static shader_t *GeneratePermanentShader( void ) {
 		return tr.defaultShader;
 	}
 
-	newShader = (shader_t *)Hunk_Alloc( sizeof( shader_t ), qtrue );
+	newShader = (shader_t *)R_Hunk_Alloc( sizeof( shader_t ), qtrue );
 
 	*newShader = shader;
 
@@ -2773,14 +2789,14 @@ static shader_t *GeneratePermanentShader( void ) {
 
 	tr.shaders[ tr.numShaders ] = newShader;
 	newShader->index = tr.numShaders;
-	
+
 	tr.sortedShaders[ tr.numShaders ] = newShader;
 	newShader->sortedIndex = tr.numShaders;
 
 	tr.numShaders++;
 
 	size = newShader->numUnfoggedPasses ? newShader->numUnfoggedPasses * sizeof( stages[0] ) : sizeof( stages[0] );
-	newShader->stages = (shaderStage_t *) Hunk_Alloc( size, qtrue );
+	newShader->stages = (shaderStage_t *) R_Hunk_Alloc( size, qtrue );
 
 	for ( i = 0 ; i < newShader->numUnfoggedPasses ; i++ ) {
 		if ( !stages[i].active ) {
@@ -2792,7 +2808,7 @@ static shader_t *GeneratePermanentShader( void ) {
 			if (newShader->stages[i].bundle[b].numTexMods)
 			{
 				size = newShader->stages[i].bundle[b].numTexMods * sizeof( texModInfo_t );
-				newShader->stages[i].bundle[b].texMods = (texModInfo_t *) Hunk_Alloc( size, qfalse );
+				newShader->stages[i].bundle[b].texMods = (texModInfo_t *) R_Hunk_Alloc( size, qfalse );
 				memcpy( newShader->stages[i].bundle[b].texMods, stages[i].bundle[b].texMods, size );
 			}
 			else
@@ -2877,7 +2893,7 @@ static int VertexLightingCollapse( void ) {
 		} else {
 			stages[0].rgbGen = CGEN_EXACT_VERTEX;
 		}
-		stages[0].alphaGen = AGEN_SKIP;		
+		stages[0].alphaGen = AGEN_SKIP;
 	} else {
 		// don't use a lightmap (tesla coils)
 		if ( stages[0].bundle[0].isLightmap ) {
@@ -3120,11 +3136,11 @@ static shader_t *FinishShader( void ) {
 			// don't screw with sort order if this is a portal or environment
 			if ( !shader.sort ) {
 				// see through item, like a grill or grate
-				if ( pStage->stateBits & GLS_DEPTHMASK_TRUE ) 
+				if ( pStage->stateBits & GLS_DEPTHMASK_TRUE )
 				{
 					shader.sort = SS_SEE_THROUGH;
-				} 
-				else 
+				}
+				else
 				{
 					if (( blendSrcBits == GLS_SRCBLEND_ONE ) && ( blendDstBits == GLS_DSTBLEND_ONE ))
 					{
@@ -3158,7 +3174,7 @@ static shader_t *FinishShader( void ) {
 			pStage->mGLFogColorOverride = GLFOGOVERRIDE_WHITE;
 		}
 		else if ((pStage->stateBits & (GLS_SRCBLEND_BITS|GLS_DSTBLEND_BITS)) == 0 && stage)
-		{	// 
+		{	//
 			pStage->mGLFogColorOverride = GLFOGOVERRIDE_WHITE;
 		}
 		else if ((pStage->stateBits & (GLS_SRCBLEND_BITS|GLS_DSTBLEND_BITS)) == 0 && pStage->bundle[0].isLightmap && stage < MAX_SHADER_STAGES-1 &&
@@ -3251,7 +3267,7 @@ static const char *FindShaderInShaderText( const char *shadername ) {
 	}
 
 #ifdef USE_STL_FOR_SHADER_LOOKUPS
-	
+
 	char sLowerCaseName[MAX_QPATH];
 	Q_strncpyz(sLowerCaseName,shadername,sizeof(sLowerCaseName));
 	Q_strlwr(sLowerCaseName);	// Q_strlwr is pretty gay, so I'm not using it
@@ -3315,48 +3331,48 @@ inline qboolean IsShader(shader_t *sh, const char *name, const int *lightmapInde
 	return qtrue;
 }
 
-/* 
-=============== 
-R_FindLightmap ( needed for -external LMs created by ydnar's q3map2 ) 
-given a (potentially erroneous) lightmap index, attempts to load 
-an external lightmap image and/or sets the index to a valid number 
-=============== 
-*/  
-#define EXTERNAL_LIGHTMAP     "lm_%04d.tga"     // THIS MUST BE IN SYNC WITH Q3MAP2 
-static inline const int *R_FindLightmap( const int *lightmapIndex ) 
+/*
+===============
+R_FindLightmap ( needed for -external LMs created by ydnar's q3map2 )
+given a (potentially erroneous) lightmap index, attempts to load
+an external lightmap image and/or sets the index to a valid number
+===============
+*/
+#define EXTERNAL_LIGHTMAP     "lm_%04d.tga"     // THIS MUST BE IN SYNC WITH Q3MAP2
+static inline const int *R_FindLightmap( const int *lightmapIndex )
 {
-	image_t          *image; 
-	char          fileName[ MAX_QPATH ]; 
+	image_t          *image;
+	char          fileName[ MAX_QPATH ];
 
 	// don't bother with vertex lighting
-	if( *lightmapIndex < 0 ) 
-		return lightmapIndex; 
+	if( *lightmapIndex < 0 )
+		return lightmapIndex;
 
-	// does this lightmap already exist? 
-	if( *lightmapIndex < tr.numLightmaps && tr.lightmaps[ *lightmapIndex ] != NULL ) 
-		return lightmapIndex; 
+	// does this lightmap already exist?
+	if( *lightmapIndex < tr.numLightmaps && tr.lightmaps[ *lightmapIndex ] != NULL )
+		return lightmapIndex;
 
-	// bail if no world dir 
-	if( tr.worldDir == NULL || !*tr.worldDir ) 
-	{ 
-		return lightmapsVertex; 
-	} 
+	// bail if no world dir
+	if( tr.worldDir == NULL || !*tr.worldDir )
+	{
+		return lightmapsVertex;
+	}
 
-	// sync up render thread, because we're going to have to load an image 
+	// sync up render thread, because we're going to have to load an image
 	R_IssuePendingRenderCommands(); //
 
-	// attempt to load an external lightmap 
-	Com_sprintf( fileName, sizeof(fileName), "%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex ); 
-	image = R_FindImageFile( fileName, qfalse, qfalse, r_ext_compressed_lightmaps->integer, GL_CLAMP ); 
-	if( image == NULL ) 
-	{ 
-		return lightmapsVertex; 
-	} 
+	// attempt to load an external lightmap
+	Com_sprintf( fileName, sizeof(fileName), "%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex );
+	image = R_FindImageFile( fileName, qfalse, qfalse, (qboolean)(r_ext_compressed_lightmaps->integer != 0), GL_CLAMP );
+	if( image == NULL )
+	{
+		return lightmapsVertex;
+	}
 
-	// add it to the lightmap list 
-	if( *lightmapIndex >= tr.numLightmaps ) 
-		tr.numLightmaps = *lightmapIndex + 1; 
-	tr.lightmaps[ *lightmapIndex ] = image; 
+	// add it to the lightmap list
+	if( *lightmapIndex >= tr.numLightmaps )
+		tr.numLightmaps = *lightmapIndex + 1;
+	tr.lightmaps[ *lightmapIndex ] = image;
 	return lightmapIndex;
 }
 
@@ -3458,7 +3474,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	//
 	image = R_FindImageFile( name, mipRawImage, mipRawImage, qtrue, mipRawImage ? GL_REPEAT : GL_CLAMP );
 	if ( !image ) {
-		if (strncmp(name, "levelshots", 10 )  && strcmp(name, "*off")) 
+		if (strncmp(name, "levelshots", 10 )  && strcmp(name, "*off"))
 		{	//hide these warnings
 			ri.Printf( PRINT_WARNING, "WARNING: Couldn't find image for shader %s\n", name );
 		}
@@ -3522,7 +3538,7 @@ shader_t *R_FindShader( const char *name, const int *lightmapIndex, const byte *
 	return FinishShader();
 }
 
-/* 
+/*
 ====================
 RE_RegisterShader
 
@@ -3662,7 +3678,7 @@ void	R_ShaderList_f (void) {
 
 #ifdef USE_STL_FOR_SHADER_LOOKUPS
 // setup my STL shortcut list as to where all the shaders are, saves re-parsing every line for every .TGA request.
-// 
+//
 static void SetupShaderEntryPtrs(void)
 {
 	const char *p = s_shaderText;
@@ -3670,30 +3686,30 @@ static void SetupShaderEntryPtrs(void)
 
 	ShaderEntryPtrs_Clear();	// extra safe, though done elsewhere already
 
-	if ( !p ) 	
+	if ( !p )
 		return;
 
 	// FIXED this nasty little bugger --eez
 	COM_BeginParseSession();
 
-	while (1) 
+	while (1)
 	{
 		token = COM_ParseExt( &p, qtrue );
-		if ( token[0] == 0 ) 
+		if ( token[0] == 0 )
 			break;				// EOF
-		
+
 		if ( token[0] == '{' )	// '}'	// counterbrace for matching
-		{				
+		{
 			SkipBracedSection( &p );
 		}
 		else
 		{
-			Q_strlwr(token);	// token is always a ptr to com_token here, not the original buffer. 
+			Q_strlwr(token);	// token is always a ptr to com_token here, not the original buffer.
 							//	(Not that it matters, except for reasons of speed by not strlwr'ing the whole buffer)
 
 			// token = a string of this shader name, p = ptr within s_shadertext it's found at, so store it...
 			//
-			ShaderEntryPtrs_Insert(token,p);			
+			ShaderEntryPtrs_Insert(token,p);
 			SkipRestOfLine( &p );		// now legally skip over this name and go get the next one
 		}
 	}
@@ -3753,7 +3769,7 @@ static void ScanAndLoadShaderFiles( void )
 	}
 
 	// build single large buffer
-	s_shaderText = (char *) Hunk_Alloc( sum + numShaderFiles*2, qtrue );
+	s_shaderText = (char *) R_Hunk_Alloc( sum + numShaderFiles*2, qtrue );
 	s_shaderText[0] = '\0';
 	textEnd = s_shaderText;
 

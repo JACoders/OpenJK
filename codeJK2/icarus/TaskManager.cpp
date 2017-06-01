@@ -216,7 +216,7 @@ int CTaskManager::Free( void )
 	tasks_l::iterator		ti;
 
 	//Clear out all pending tasks
-	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ti++ )
+	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ++ti )
 	{
 		(*ti)->Free();
 	}
@@ -224,7 +224,7 @@ int CTaskManager::Free( void )
 	m_tasks.clear();
 
 	//Clear out all taskGroups
-	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); gi++ )
+	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); ++gi )
 	{
 		delete (*gi);
 	}
@@ -361,7 +361,7 @@ IsRunning
 
 qboolean CTaskManager::IsRunning( void )
 {
-	return ( m_tasks.empty() == false );
+	return (qboolean)!m_tasks.empty();
 }
 /*
 -------------------------
@@ -408,7 +408,7 @@ int CTaskManager::GetFloat( int entID, CBlock *block, int &memberNum, float &val
 		return (m_owner->GetInterface())->I_GetFloat( entID, type, name, &value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -480,7 +480,7 @@ int CTaskManager::GetVector( int entID, CBlock *block, int &memberNum, vector_t 
 		return (m_owner->GetInterface())->I_GetVector( entID, type, name, value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -618,7 +618,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value )
 		}
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max, ret;
@@ -930,7 +930,7 @@ int CTaskManager::Completed( int id )
 	taskGroup_v::iterator	tgi;
 
 	//Mark the task as completed
-	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); tgi++ )
+	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); ++tgi )
 	{
 		//If this returns true, then the task was marked properly
 		if ( (*tgi)->MarkTaskComplete( id ) )

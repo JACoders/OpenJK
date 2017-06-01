@@ -101,21 +101,21 @@ void	Pilot_Update(void)
 	mRegistered.clear();
 	for (int i=0; i<ENTITYNUM_WORLD; i++)
 	{
-		if (g_entities[i].inuse && 
+		if (g_entities[i].inuse &&
 			g_entities[i].client &&
-			g_entities[i].NPC && 
+			g_entities[i].NPC &&
 			g_entities[i].NPC->greetEnt &&
 			g_entities[i].NPC->greetEnt->owner==(&g_entities[i])
 			)
 		{
 			mActivePilotCount++;
 		}
-		if ( g_entities[i].inuse && 
+		if ( g_entities[i].inuse &&
 			 g_entities[i].client &&
 			 g_entities[i].m_pVehicle &&
 			!g_entities[i].owner &&
 			 g_entities[i].health>0 &&
-			 g_entities[i].m_pVehicle->m_pVehicleInfo->type==VH_SPEEDER && 
+			 g_entities[i].m_pVehicle->m_pVehicleInfo->type==VH_SPEEDER &&
 			!mRegistered.full())
 		{
 			mRegistered.push_back(&g_entities[i]);
@@ -124,15 +124,15 @@ void	Pilot_Update(void)
 	}
 
 
-	if (player && 
-		player->inuse && 
+	if (player &&
+		player->inuse &&
 		TIMER_Done(player, "FlybySoundArchitectureDebounce"))
 	{
     	TIMER_Set(player, "FlybySoundArchitectureDebounce", 300);
 
 		Vehicle_t*	pVeh = G_IsRidingVehicle(player);
 
-		if (pVeh && 
+		if (pVeh &&
 			(pVeh->m_pVehicleInfo->soundFlyBy || pVeh->m_pVehicleInfo->soundFlyBy2) &&
 			//fabsf(pVeh->m_pParentEntity->currentAngles[2])<15.0f &&
 			VectorLength(pVeh->m_pParentEntity->client->ps.velocity)>500.0f)
@@ -147,19 +147,19 @@ void	Pilot_Update(void)
 			AngleVectors(anglesNoRoll, projectedDirection, projectedRight, 0);
 
 			VectorMA(player->currentOrigin, 1.2f, pVeh->m_pParentEntity->client->ps.velocity, projectedPosition);
-			VectorMA(projectedPosition, Q_flrand(-200.0f, 200.0f), projectedRight, projectedPosition); 
+			VectorMA(projectedPosition, Q_flrand(-200.0f, 200.0f), projectedRight, projectedPosition);
 
-			gi.trace(&mPilotViewTrace, 
-				player->currentOrigin, 
-				0, 
-				0, 
-				projectedPosition, 
-				player->s.number, 
+			gi.trace(&mPilotViewTrace,
+				player->currentOrigin,
+				0,
+				0,
+				projectedPosition,
+				player->s.number,
  				MASK_SHOT, (EG2_Collision)0, 0);
 
-			if ((mPilotViewTrace.allsolid==qfalse) && 
-				(mPilotViewTrace.startsolid==qfalse) && 
-				(mPilotViewTrace.fraction<0.99f) && 
+			if ((mPilotViewTrace.allsolid==qfalse) &&
+				(mPilotViewTrace.startsolid==qfalse) &&
+				(mPilotViewTrace.fraction<0.99f) &&
 				(mPilotViewTrace.plane.normal[2]<0.5f) &&
 				(DotProduct(projectedDirection, mPilotViewTrace.plane.normal)<-0.5f)
 				)
@@ -183,7 +183,7 @@ void	Pilot_Update(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////
 bool	Pilot_AnyVehiclesRegistered()
 {
@@ -289,7 +289,7 @@ bool	Pilot_MasterUpdate()
 						{
 							VectorScale(parent->pos3, (pVeh->m_pVehicleInfo->speedMax * 1.25f), parent->pos3);
 						}
-						else 
+						else
 						{
 							VectorScale(parent->client->ps.velocity, 1.25f, parent->pos3);
 						}
@@ -314,8 +314,8 @@ bool	Pilot_MasterUpdate()
 	//------------------------------------------------------------------
 	if (NPCInfo->greetEnt)
 	{
-		if (!NPCInfo->greetEnt->inuse || 
-			!NPCInfo->greetEnt->m_pVehicle || 
+		if (!NPCInfo->greetEnt->inuse ||
+			!NPCInfo->greetEnt->m_pVehicle ||
 			!NPCInfo->greetEnt->m_pVehicle->m_pVehicleInfo)
 		{
 			NPCInfo->greetEnt = Vehicle_Find(NPC);
@@ -379,20 +379,20 @@ void	Pilot_Update_Enemy()
 		if (NPC->enemy && Distance(NPC->currentOrigin, NPC->enemy->currentOrigin)>1000.0f)
 		{
 			mPilotViewTraceCount ++;
-			gi.trace(&mPilotViewTrace, 
-				NPC->currentOrigin, 
-				0, 
-				0, 
-				NPC->enemy->currentOrigin, 
-				NPC->s.number, 
+			gi.trace(&mPilotViewTrace,
+				NPC->currentOrigin,
+				0,
+				0,
+				NPC->enemy->currentOrigin,
+				NPC->s.number,
 				MASK_SHOT,
 				(EG2_Collision)0, 0);
 
-			if ((mPilotViewTrace.allsolid==qfalse) && 
-				(mPilotViewTrace.startsolid==qfalse ) && 
+			if ((mPilotViewTrace.allsolid==qfalse) &&
+				(mPilotViewTrace.startsolid==qfalse ) &&
 				((mPilotViewTrace.entityNum==NPC->enemy->s.number)||(mPilotViewTrace.entityNum==NPC->enemy->s.m_iVehicleNum)))
 			{
-				TIMER_Set(NPC, "PilotRemoveTime", MIN_STAY_VIEWABLE_TIME);			
+				TIMER_Set(NPC, "PilotRemoveTime", MIN_STAY_VIEWABLE_TIME);
 			}
 		}
 		else
@@ -571,7 +571,7 @@ void	Pilot_Steer_Vehicle()
 			{
 				soundFlyBy = ActorVeh->m_pVehicleInfo->soundFlyBy2;
 			}
-			G_Sound(ActorVeh->m_pParentEntity, soundFlyBy);		
+			G_Sound(ActorVeh->m_pParentEntity, soundFlyBy);
 		}
 	}
 
@@ -582,7 +582,7 @@ void	Pilot_Steer_Vehicle()
  	if (EnemySlideBreak || !TIMER_Done(NPC, "MinHoldDirectionTime"))
 	{
 		if (TIMER_Done(NPC, "MinHoldDirectionTime"))
-		{ 
+		{
 			TIMER_Set(NPC, "MinHoldDirectionTime", 500);	// Hold For At Least 500 ms
 		}
 		ActorAccelerate		= true;							// Go
@@ -626,7 +626,7 @@ void	Pilot_Steer_Vehicle()
 				NPC->client->ps.speed *= (MoveAccuracy + 1.0f);
 			}
 
-	
+
 			MoveDirection	*=        (MoveDistance/ATTACK_FLANK_SLOWING);
 			EnemyDirection	*= 1.0f - (MoveDistance/ATTACK_FLANK_SLOWING);
 			MoveDirection	+= EnemyDirection;
@@ -732,7 +732,7 @@ void	Pilot_Steer_Vehicle()
 						}
 					}*/
 				//}
-				WeaponThink(true);
+				WeaponThink(qtrue);
 			}
 			ucmd.rightmove = (EnemySide==Side_Left)?( 127):(-127);
 		}

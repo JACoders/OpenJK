@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 // tr_surf.c
 #include "tr_local.h"
+#include "tr_weather.h"
 
 /*
 
@@ -46,8 +47,9 @@ RB_CheckOverflow
 ==============
 */
 void RB_CheckOverflow( int verts, int indexes ) {
-	if (tess.numVertexes + verts < SHADER_MAX_VERTEXES
-		&& tess.numIndexes + indexes < SHADER_MAX_INDEXES) {
+	if ((tess.numVertexes + verts) < SHADER_MAX_VERTEXES &&
+			(tess.numIndexes + indexes) < SHADER_MAX_INDEXES)
+	{
 		return;
 	}
 
@@ -65,7 +67,9 @@ void RB_CheckOverflow( int verts, int indexes ) {
 
 void RB_CheckVBOandIBO(VBO_t *vbo, IBO_t *ibo)
 {
-	if (!(vbo == glState.currentVBO && ibo == glState.currentIBO) || tess.multiDrawPrimitives >= MAX_MULTIDRAW_PRIMITIVES)
+	if (vbo != glState.currentVBO ||
+			ibo != glState.currentIBO ||
+			tess.multiDrawPrimitives >= MAX_MULTIDRAW_PRIMITIVES)
 	{
 		RB_EndSurface();
 		RB_BeginSurface(tess.shader, tess.fogNum, tess.cubemapIndex );
@@ -74,8 +78,16 @@ void RB_CheckVBOandIBO(VBO_t *vbo, IBO_t *ibo)
 		R_BindIBO(ibo);
 	}
 
-	if (vbo != tess.vbo && ibo != tess.ibo)
+	if (vbo != backEndData->currentFrame->dynamicVbo &&
+		ibo != backEndData->currentFrame->dynamicIbo)
+	{
 		tess.useInternalVBO = qfalse;
+	}
+
+	if ( ibo != backEndData->currentFrame->dynamicIbo )
+	{
+		tess.externalIBO = ibo;
+	}
 }
 
 
@@ -375,8 +387,9 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	uint32_t        *tangent;
 	glIndex_t      *outIndex;
 	float          *color;
+	gpuFrame_t		*currentFrame = backEndData->currentFrame;
 
-	RB_CheckVBOandIBO(tess.vbo, tess.ibo);
+	RB_CheckVBOandIBO(currentFrame->dynamicVbo, currentFrame->dynamicIbo);
 
 	RB_CHECKOVERFLOW( numVerts, numIndexes );
 
@@ -455,7 +468,9 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	tess.numVertexes += numVerts;
 }
 
-static qboolean RB_SurfaceVbo(VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndexes, int firstIndex, int minIndex, int maxIndex, int dlightBits, int pshadowBits, qboolean shaderCheck)
+static qboolean RB_SurfaceVbo(
+		VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndexes, int firstIndex,
+		int minIndex, int maxIndex, int dlightBits, int pshadowBits, qboolean shaderCheck)
 {
 	int i, mergeForward, mergeBack;
 	GLvoid *firstIndexOffset, *lastIndexOffset;
@@ -465,7 +480,10 @@ static qboolean RB_SurfaceVbo(VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndex
 		return qfalse;
 	}
 
-	if (shaderCheck && !(!ShaderRequiresCPUDeforms(tess.shader) && !tess.shader->isSky && !tess.shader->isPortal))
+	if (shaderCheck &&
+			(ShaderRequiresCPUDeforms(tess.shader) ||
+			 tess.shader->isSky ||
+			 tess.shader->isPortal))
 	{
 		return qfalse;
 	}
@@ -560,10 +578,10 @@ static qboolean RB_SurfaceVbo(VBO_t *vbo, IBO_t *ibo, int numVerts, int numIndex
 
 /*
 =============
-RB_SurfaceTriangles
+RB_SurfaceBSPTriangles
 =============
 */
-static void RB_SurfaceTriangles( srfBspSurface_t *srf ) {
+static void RB_SurfaceBSPTriangles( srfBspSurface_t *srf ) {
 	if( RB_SurfaceVbo (srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
@@ -724,7 +742,7 @@ static void RB_SurfaceSaberGlow()
 	// Big hilt sprite
 	// Please don't kill me Pat...I liked the hilt glow blob, but wanted a subtle pulse.:)  Feel free to ditch it if you don't like it.  --Jeff
 	// Please don't kill me Jeff...  The pulse is good, but now I want the halo bigger if the saber is shorter...  --Pat
-	DoSprite( e->origin, 5.5f + random() * 0.25f, 0.0f );//random() * 360.0f );
+	DoSprite( e->origin, 5.5f + Q_flrand(0.0f, 1.0f) * 0.25f, 0.0f );//random() * 360.0f );
 }
 
 /*
@@ -1085,14 +1103,14 @@ static float Q_crandom( int *seed ) {
 static void CreateShape()
 //----------------------------------------------------------------------------
 {
-	VectorSet( sh1, 0.66f + crandom() * 0.1f,	// fwd
-				0.07f + crandom() * 0.025f,
-				0.07f + crandom() * 0.025f );
+	VectorSet( sh1, 0.66f + Q_flrand(-1.0f, 1.0f) * 0.1f,	// fwd
+				0.07f + Q_flrand(-1.0f, 1.0f) * 0.025f,
+				0.07f + Q_flrand(-1.0f, 1.0f) * 0.025f );
 
 	// it seems to look best to have a point on one side of the ideal line, then the other point on the other side.
-	VectorSet( sh2, 0.33f + crandom() * 0.1f,	// fwd
-					-sh1[1] + crandom() * 0.02f,	// forcing point to be on the opposite side of the line -- right
-					-sh1[2] + crandom() * 0.02f );// up
+	VectorSet( sh2, 0.33f + Q_flrand(-1.0f, 1.0f) * 0.1f,	// fwd
+					-sh1[1] + Q_flrand(-1.0f, 1.0f) * 0.02f,	// forcing point to be on the opposite side of the line -- right
+					-sh1[2] + Q_flrand(-1.0f, 1.0f) * 0.02f );// up
 }
 
 //----------------------------------------------------------------------------
@@ -1694,8 +1712,8 @@ static void RB_SurfaceMesh(mdvSurface_t *surface) {
 RB_SurfaceFace
 ==============
 */
-static void RB_SurfaceFace( srfBspSurface_t *srf ) {
-	if( RB_SurfaceVbo (srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
+static void RB_SurfaceBSPFace( srfBspSurface_t *srf ) {
+	if( RB_SurfaceVbo(srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
@@ -1743,7 +1761,7 @@ RB_SurfaceGrid
 Just copy the grid of points and triangulate
 =============
 */
-static void RB_SurfaceGrid( srfBspSurface_t *srf ) {
+static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 	int		i, j;
 	float	*xyz;
 	float	*texCoords, *lightCoords;
@@ -2065,6 +2083,7 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 	R_BindIBO(surface->ibo);
 
 	tess.useInternalVBO = qfalse;
+	tess.externalIBO = surface->ibo;
 
 	tess.numIndexes += surface->numIndexes;
 	tess.numVertexes += surface->numVerts;
@@ -2101,13 +2120,66 @@ void RB_SurfaceVBOMDVMesh(srfVBOMDVMesh_t * surface)
 static void RB_SurfaceSkip( void *surf ) {
 }
 
+static void RB_SurfaceSprites( srfSprites_t *surf )
+{
+	if ( !r_surfaceSprites->integer )
+	{
+		return;
+	}
+
+	RB_EndSurface();
+
+	// TODO: Do we want a 2-level lod system where far away sprites are
+	// just flat surfaces?
+	
+	// TODO: Check which pass (z-prepass/shadow/forward) we're rendering for?
+	shader_t *shader = surf->shader;
+	shaderStage_t *firstStage = shader->stages[0];
+	shaderProgram_t *programGroup = firstStage->glslShaderGroup;
+	const surfaceSprite_t *ss = surf->sprite;
+
+	uint32_t shaderFlags = 0;
+	if ( firstStage->alphaTestCmp != ATEST_CMP_NONE )
+		shaderFlags |= SSDEF_ALPHA_TEST;
+
+	if ( ss->type == SURFSPRITE_ORIENTED )
+		shaderFlags |= SSDEF_FACE_CAMERA;
+
+	shaderProgram_t *program = programGroup + shaderFlags;
+	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
+
+	SurfaceSpriteBlock data = {};
+	data.width = ss->width;
+	data.height = (ss->facing == SURFSPRITE_FACING_DOWN)
+					? -ss->height : ss->height;
+	data.fadeStartDistance = ss->fadeDist;
+	data.fadeEndDistance = ss->fadeMax;
+	data.fadeScale = ss->fadeScale;
+	data.widthVariance = ss->variance[0];
+	data.heightVariance = ss->variance[1];
+
+	GLSL_BindProgram(program);
+	GL_State(firstStage->stateBits);
+	GL_Cull(CT_TWO_SIDED);
+	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
+	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
+	RB_UpdateUniformBlock(UNIFORM_BLOCK_SURFACESPRITE, &data);
+	GLSL_SetUniformMatrix4x4(program,
+			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	GLSL_SetUniformVec3(program,
+			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
+
+	R_BindIBO(surf->ibo);
+	tess.externalIBO = surf->ibo;
+	qglDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0, surf->numSprites);
+}
 
 void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceBad,			// SF_BAD, 
 	(void(*)(void*))RB_SurfaceSkip,			// SF_SKIP, 
-	(void(*)(void*))RB_SurfaceFace,			// SF_FACE,
-	(void(*)(void*))RB_SurfaceGrid,			// SF_GRID,
-	(void(*)(void*))RB_SurfaceTriangles,	// SF_TRIANGLES,
+	(void(*)(void*))RB_SurfaceBSPFace,		// SF_FACE,
+	(void(*)(void*))RB_SurfaceBSPGrid,		// SF_GRID,
+	(void(*)(void*))RB_SurfaceBSPTriangles,	// SF_TRIANGLES,
 	(void(*)(void*))RB_SurfacePolychain,	// SF_POLY,
 	(void(*)(void*))RB_SurfaceMesh,			// SF_MDV,
 	(void(*)(void*))RB_MDRSurfaceAnim,		// SF_MDR,
@@ -2117,4 +2189,6 @@ void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {
 	(void(*)(void*))RB_SurfaceEntity,		// SF_ENTITY
 	(void(*)(void*))RB_SurfaceVBOMesh,	    // SF_VBO_MESH,
 	(void(*)(void*))RB_SurfaceVBOMDVMesh,   // SF_VBO_MDVMESH
+	(void(*)(void*))RB_SurfaceSprites,      // SF_SPRITES
+	(void(*)(void*))RB_SurfaceWeather,      // SF_WEATHER
 };

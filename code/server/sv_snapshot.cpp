@@ -139,7 +139,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 		// client is asking for a retransmit
 		oldframe = NULL;
 		lastframe = 0;
-	} else if ( client->netchan.outgoingSequence - client->deltaMessage 
+	} else if ( client->netchan.outgoingSequence - client->deltaMessage
 		>= (PACKET_BACKUP - 3) ) {
 		// client hasn't gotten a good message through in a long time
 		Com_DPrintf ("%s: Delta request from out of date packet.\n", client->name);
@@ -174,7 +174,7 @@ static void SV_WriteSnapshotToClient( client_t *client, msg_t *msg ) {
 	MSG_WriteLong (msg, client->cmdNum);		// we have executed up to here
 
 	snapFlags = client->droppedCommands << 1;
-	client->droppedCommands = 0;
+	client->droppedCommands = qfalse;
 
 	MSG_WriteByte (msg, snapFlags);
 
@@ -223,7 +223,7 @@ Build a client snapshot structure
 #define	MAX_SNAPSHOT_ENTITIES	1024
 typedef struct {
 	int		numSnapshotEntities;
-	int		snapshotEntities[MAX_SNAPSHOT_ENTITIES];	
+	int		snapshotEntities[MAX_SNAPSHOT_ENTITIES];
 } snapshotEntityNumbers_t;
 
 /*
@@ -339,7 +339,7 @@ qboolean SV_PlayerCanSeeEnt( gentity_t *ent, int sightLevel )
 SV_AddEntitiesVisibleFromPoint
 ===============
 */
-static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
+static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame,
 									snapshotEntityNumbers_t *eNums, qboolean portal ) {
 	int		e, i;
 	gentity_t	*ent;
@@ -544,8 +544,8 @@ static clientSnapshot_t *SV_BuildClientSnapshot( client_t *client ) {
 	{
 		//org[2] += clent->client->viewheight;
 	}
-	else 
-	{ 
+	else
+	{
 		VectorCopy( clent->client->origin, org );
 		org[2] += clent->client->viewheight;
 
@@ -554,7 +554,7 @@ static clientSnapshot_t *SV_BuildClientSnapshot( client_t *client ) {
 		if (frame->ps.leanofs != 0)
 		{
 			vec3_t	right;
-			//add leaning offset			
+			//add leaning offset
 			vec3_t v3ViewAngles;
 			VectorCopy(clent->client->viewangles, v3ViewAngles);
 			v3ViewAngles[2] += (float)frame->ps.leanofs/2;
@@ -574,7 +574,7 @@ static clientSnapshot_t *SV_BuildClientSnapshot( client_t *client ) {
 	if ( entityNumbers.numSnapshotEntities >= 256 )
 	{
 		for ( int xxx = 0; xxx < entityNumbers.numSnapshotEntities; xxx++ )
-		{	
+		{
 			Com_Printf("%d - ", xxx );
 			ge->PrintEntClassname( entityNumbers.snapshotEntities[xxx] );
 		}
@@ -593,7 +593,7 @@ static clientSnapshot_t *SV_BuildClientSnapshot( client_t *client ) {
 	// in the list which will need to be resorted for the delta compression
 	// to work correctly.  This also catches the error condition
 	// of an entity being included twice.
-	qsort( entityNumbers.snapshotEntities, entityNumbers.numSnapshotEntities, 
+	qsort( entityNumbers.snapshotEntities, entityNumbers.numSnapshotEntities,
 		sizeof( entityNumbers.snapshotEntities[0] ), SV_QsortEntityNumbers );
 
 	// now that all viewpoint's areabits have been OR'd together, invert
