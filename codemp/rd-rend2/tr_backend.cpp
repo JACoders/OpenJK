@@ -1820,12 +1820,6 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 	if (!cubemap)
 		return (const void *)(cmd + 1);
 
-	int cubeMipSize = cubemap->width;
-	int numMips = 0;
-
-	int width = cubemap->width;
-	int height = cubemap->height;
-
 	vec4_t quadVerts[4];
 	vec2_t texCoords[4];
 
@@ -1839,19 +1833,15 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 	texCoords[2][0] = 1; texCoords[2][1] = 1;
 	texCoords[3][0] = 0; texCoords[3][1] = 1;
 
-	while (cubeMipSize)
-	{
-		cubeMipSize >>= 1;
-		numMips++;
-	}
-	numMips = MAX(1, numMips - 2);
-
 	FBO_Bind(tr.preFilterEnvMapFbo);
 	GL_BindToTMU(cubemap, TB_CUBEMAP);
 
 	GLSL_BindProgram(&tr.prefilterEnvMapShader);
 
-	for (int level = 1; level <= numMips; level++)
+	int width = cubemap->width;
+	int height = cubemap->height;
+
+	for (int level = 1; level <= CUBE_MAP_MIPS; level++)
 	{
 		width = width / 2.0;
 		height = height / 2.0;
@@ -1860,14 +1850,12 @@ static const void *RB_PrefilterEnvMap(const void *data) {
 		for (int cubemapSide = 0; cubemapSide < 6; cubemapSide++)
 		{
 			vec4_t viewInfo;
-			VectorSet4(viewInfo, cubemapSide, level, numMips, 0.0);
+			VectorSet4(viewInfo, cubemapSide, level, CUBE_MAP_MIPS, (level / (float)CUBE_MAP_MIPS));
 			GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
 			RB_InstantQuad2(quadVerts, texCoords);
 			qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemapSide, level, 0, 0, 0, 0, width, height);
 		}
 	}
-
-	GL_SelectTexture(0);
 
 	return (const void *)(cmd + 1);
 }

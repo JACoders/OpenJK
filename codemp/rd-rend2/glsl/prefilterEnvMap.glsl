@@ -8,12 +8,10 @@ void main()
 {
 	gl_Position = attr_Position;
 	var_ScreenTex = attr_TexCoord0.xy;
-	//vec2 screenCoords = gl_Position.xy / gl_Position.w;
-	//var_ScreenTex = screenCoords * 0.5 + 0.5;
 }
 
 /*[Fragment]*/
-uniform vec4 u_ViewInfo; // cubeface, mip_level, max_mip_level, 0.0
+uniform vec4 u_ViewInfo; // cubeface, mip_level, max_mip_level, roughness
 uniform samplerCube u_CubeMap;
 in vec2 var_ScreenTex;
 
@@ -58,8 +56,8 @@ vec3 PrefilterEnvMap( float Roughness, vec3 R )
 	vec3 V = R;
 	vec3 PrefilteredColor = vec3(0.0);
 	float TotalWeight = 0.0;
-	uint NumSamples = uint(1024);
-	for ( uint i = uint(0); i < NumSamples; i++ )
+	uint NumSamples = 1024u;
+	for ( uint i = 0u; i < NumSamples; i++ )
 	{
 		vec2 Xi = hammersley2D( i, NumSamples );
 		vec3 H = ImportanceSampleGGX( Xi, Roughness, N );
@@ -77,12 +75,10 @@ vec3 PrefilterEnvMap( float Roughness, vec3 R )
 void main()
 {
 	float cubeFace = u_ViewInfo.x;
-	vec2 vector;
-	vector.x = (var_ScreenTex.x - 0.5) * 2.0;
-	vector.y = (var_ScreenTex.y - 0.5) * 2.0;
+	vec2 vector = (var_ScreenTex - vec2(0.5)) * 2.0;
 	// from http://www.codinglabs.net/article_physically_based_rendering.aspx
 
-	vec3 normal = normalize( vec3(vector.xy, 1) );
+    vec3 normal = normalize( vec3(vector.xy, 1) );
     if(cubeFace==2)
         normal = normalize( vec3(vector.x,  1, -vector.y) );
     else if(cubeFace==3)
@@ -94,7 +90,8 @@ void main()
     else if(cubeFace==5)
         normal = normalize( vec3(-vector.x, vector.y, -1) );
 
-	float roughness = u_ViewInfo.y / u_ViewInfo.z;
+	float roughness = u_ViewInfo.w;
+
 	vec3 result = PrefilterEnvMap(roughness, normal);
 			
 	out_Color = vec4(result, 1.0);

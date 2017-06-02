@@ -332,7 +332,7 @@ uniform sampler2D u_ShadowMap;
 
 #if defined(USE_CUBEMAP)
 uniform samplerCube u_CubeMap;
-uniform sampler2D	u_EnvBrdfMap;
+uniform sampler2D u_EnvBrdfMap;
 #endif
 
 #if defined(USE_NORMALMAP) || defined(USE_DELUXEMAP) || defined(USE_SPECULARMAP) || defined(USE_CUBEMAP)
@@ -531,10 +531,6 @@ vec3 CalcIBLContribution(
 )
 {
 #if defined(USE_CUBEMAP)
-	// EnvironmentBRDF is supposed to work with gloss. Invert roughness for now, but this needs
-	// to be replaced at some point with preconvoluted cubemap code.
-	//vec3 reflectance = EnvironmentBRDF(1.0 - roughness, NE, specular);
-
 	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(1.0 - roughness, NE)).rgb;
 
 	vec3 R = reflect(E, N);

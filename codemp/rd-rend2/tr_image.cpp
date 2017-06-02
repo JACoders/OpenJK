@@ -2875,9 +2875,11 @@ R_CreateEnvBrdfLUT
 from https://github.com/knarkowicz/IntegrateDFG
 ================
 */
-#define	LUT_WIDTH	128
-#define	LUT_HEIGHT	128
 static void R_CreateEnvBrdfLUT(void) {
+
+	static const int LUT_WIDTH = 128;
+	static const int LUT_HEIGHT = 128;
+
 	if (!r_cubeMapping->integer)
 		return;
 
@@ -2885,7 +2887,6 @@ static void R_CreateEnvBrdfLUT(void) {
 	uint16_t	data[LUT_WIDTH][LUT_HEIGHT][4];
 	int		b;
 
-	float const MATH_PI = 3.14159f;
 	unsigned const sampleNum = 1024;
 
 	for (unsigned y = 0; y < LUT_HEIGHT; ++y)
@@ -2909,7 +2910,7 @@ static void R_CreateEnvBrdfLUT(void) {
 				float const e1 = (float)i / sampleNum;
 				float const e2 = (float)((double)ReverseBits(i) / (double)0x100000000LL);
 
-				float const phi = 2.0f * MATH_PI * e1;
+				float const phi = 2.0f * M_PI * e1;
 				float const cosPhi = cosf(phi);
 				float const sinPhi = sinf(phi);
 				float const cosTheta = sqrtf((1.0f - e2) / (1.0f + (roughness * roughness - 1.0f) * e2));
@@ -2948,8 +2949,7 @@ static void R_CreateEnvBrdfLUT(void) {
 		}
 	}
 
-	tr.envBrdfImage = R_CreateImage("*envBrdfLUT", (byte*)data, 128, 128, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA16F);
-	return;
+	tr.envBrdfImage = R_CreateImage("*envBrdfLUT", (byte*)data, LUT_WIDTH, LUT_HEIGHT, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA16F);
 }
 
 /*

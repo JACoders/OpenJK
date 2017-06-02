@@ -378,16 +378,7 @@ static size_t GLSL_GetShaderHeader(
 
 	if (r_cubeMapping->integer)
 	{
-		int cubeMipSize = CUBE_MAP_SIZE; // r_cubemapSize->integer;
-		int numRoughnessMips = 0;
-
-		while (cubeMipSize)
-		{
-			cubeMipSize >>= 1;
-			numRoughnessMips++;
-		}
-		numRoughnessMips = MAX(1, numRoughnessMips - 2);
-		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%d)\n", numRoughnessMips));
+		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%d)\n", CUBE_MAP_MIPS));
 	}
 
 	if (extra)
