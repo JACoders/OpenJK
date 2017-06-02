@@ -28,6 +28,7 @@ void GLSL_BindNullProgram(void);
 extern const GPUProgramDesc fallback_bokehProgram;
 extern const GPUProgramDesc fallback_calclevels4xProgram;
 extern const GPUProgramDesc fallback_depthblurProgram;
+extern const GPUProgramDesc fallback_prefilterEnvMapProgram;
 extern const GPUProgramDesc fallback_dlightProgram;
 extern const GPUProgramDesc fallback_down4xProgram;
 extern const GPUProgramDesc fallback_fogpassProgram;
@@ -70,6 +71,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_TextureMap", GLSL_INT, 1 },
 	{ "u_LevelsMap",  GLSL_INT, 1 },
 	{ "u_CubeMap",    GLSL_INT, 1 },
+	{ "u_EnvBrdfMap", GLSL_INT, 1 },
 
 	{ "u_ScreenImageMap", GLSL_INT, 1 },
 	{ "u_ScreenDepthMap", GLSL_INT, 1 },
@@ -373,6 +375,20 @@ static size_t GLSL_GetShaderHeader(
 						"#endif\n",
 						fbufWidthScale,
 						fbufHeightScale));
+
+	if (r_cubeMapping->integer)
+	{
+		int cubeMipSize = CUBE_MAP_SIZE; // r_cubemapSize->integer;
+		int numRoughnessMips = 0;
+
+		while (cubeMipSize)
+		{
+			cubeMipSize >>= 1;
+			numRoughnessMips++;
+		}
+		numRoughnessMips = MAX(1, numRoughnessMips - 2);
+		Q_strcat(dest, size, va("#define ROUGHNESS_MIPS float(%d)\n", numRoughnessMips));
+	}
 
 	if (extra)
 	{
@@ -1658,6 +1674,7 @@ static int GLSL_LoadGPUProgramLightAll(
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SPECULARMAP, TB_SPECULARMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_SHADOWMAP,   TB_SHADOWMAP);
 		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_CUBEMAP,     TB_CUBEMAP);
+		GLSL_SetUniformInt(&tr.lightallShader[i], UNIFORM_ENVBRDFMAP, TB_ENVBRDFMAP);
 		qglUseProgram(0);
 
 		GLSL_FinishGPUShader(&tr.lightallShader[i]);
@@ -1942,6 +1959,28 @@ static int GLSL_LoadGPUProgramSSAO(
 	return 1;
 }
 
+static int GLSL_LoadGPUProgramPrefilterEnvMap(
+	ShaderProgramBuilder& builder,
+	Allocator& scratchAlloc)
+{
+	GLSL_LoadGPUProgramBasic(
+		builder,
+		scratchAlloc,
+		&tr.prefilterEnvMapShader,
+		"prefilterEnvMap",
+		fallback_prefilterEnvMapProgram);
+
+	GLSL_InitUniforms(&tr.prefilterEnvMapShader);
+
+	qglUseProgram(tr.prefilterEnvMapShader.program);
+	GLSL_SetUniformInt(&tr.prefilterEnvMapShader, UNIFORM_CUBEMAP, TB_CUBEMAP);
+	qglUseProgram(0);
+
+	GLSL_FinishGPUShader(&tr.prefilterEnvMapShader);
+
+	return 1;
+}
+
 static int GLSL_LoadGPUProgramDepthBlur(
 	ShaderProgramBuilder& builder,
 	Allocator& scratchAlloc )
@@ -2196,6 +2235,7 @@ void GLSL_LoadGPUShaders()
 	numEtcShaders += GLSL_LoadGPUProgramCalcLuminanceLevel(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramShadowMask(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramSSAO(builder, allocator);
+	numEtcShaders += GLSL_LoadGPUProgramPrefilterEnvMap(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDepthBlur(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramGaussianBlur(builder, allocator);
 	numEtcShaders += GLSL_LoadGPUProgramDynamicGlowUpsample(builder, allocator);

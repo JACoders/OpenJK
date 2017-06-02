@@ -1799,6 +1799,79 @@ static const void *RB_RotatePic2 ( const void *data )
 	return (const void *)(cmd + 1);
 }
 
+/*
+=============
+RB_PrefilterEnvMap
+=============
+*/
+
+static const void *RB_PrefilterEnvMap(const void *data) {
+
+	const convolveCubemapCommand_t *cmd = (const convolveCubemapCommand_t *)data;
+
+	// finish any 2D drawing if needed
+	if (tess.numIndexes)
+		RB_EndSurface();
+
+	RB_SetGL2D();
+
+	image_t *cubemap = tr.cubemaps[cmd->cubemap];
+
+	if (!cubemap)
+		return (const void *)(cmd + 1);
+
+	int cubeMipSize = cubemap->width;
+	int numMips = 0;
+
+	int width = cubemap->width;
+	int height = cubemap->height;
+
+	vec4_t quadVerts[4];
+	vec2_t texCoords[4];
+
+	VectorSet4(quadVerts[0], -1, 1, 0, 1);
+	VectorSet4(quadVerts[1], 1, 1, 0, 1);
+	VectorSet4(quadVerts[2], 1, -1, 0, 1);
+	VectorSet4(quadVerts[3], -1, -1, 0, 1);
+
+	texCoords[0][0] = 0; texCoords[0][1] = 0;
+	texCoords[1][0] = 1; texCoords[1][1] = 0;
+	texCoords[2][0] = 1; texCoords[2][1] = 1;
+	texCoords[3][0] = 0; texCoords[3][1] = 1;
+
+	while (cubeMipSize)
+	{
+		cubeMipSize >>= 1;
+		numMips++;
+	}
+	numMips = MAX(1, numMips - 2);
+
+	FBO_Bind(tr.preFilterEnvMapFbo);
+	GL_BindToTMU(cubemap, TB_CUBEMAP);
+
+	GLSL_BindProgram(&tr.prefilterEnvMapShader);
+
+	for (int level = 1; level <= numMips; level++)
+	{
+		width = width / 2.0;
+		height = height / 2.0;
+		qglViewport(0, 0, width, height);
+		qglScissor(0, 0, width, height);
+		for (int cubemapSide = 0; cubemapSide < 6; cubemapSide++)
+		{
+			vec4_t viewInfo;
+			VectorSet4(viewInfo, cubemapSide, level, numMips, 0.0);
+			GLSL_SetUniformVec4(&tr.prefilterEnvMapShader, UNIFORM_VIEWINFO, viewInfo);
+			RB_InstantQuad2(quadVerts, texCoords);
+			qglCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemapSide, level, 0, 0, 0, 0, width, height);
+		}
+	}
+
+	GL_SelectTexture(0);
+
+	return (const void *)(cmd + 1);
+}
+
 
 static void RB_RenderSunShadows()
 {
@@ -2672,6 +2745,9 @@ void RB_ExecuteRenderCommands( const void *data ) {
 			break;
 		case RC_CAPSHADOWMAP:
 			data = RB_CaptureShadowMap(data);
+			break;
+		case RC_CONVOLVECUBEMAP:
+			data = RB_PrefilterEnvMap( data );
 			break;
 		case RC_POSTPROCESS:
 			data = RB_PostProcess(data);

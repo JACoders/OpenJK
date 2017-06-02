@@ -332,6 +332,7 @@ uniform sampler2D u_ShadowMap;
 
 #if defined(USE_CUBEMAP)
 uniform samplerCube u_CubeMap;
+uniform sampler2D	u_EnvBrdfMap;
 #endif
 
 #if defined(USE_NORMALMAP) || defined(USE_DELUXEMAP) || defined(USE_SPECULARMAP) || defined(USE_CUBEMAP)
@@ -532,7 +533,9 @@ vec3 CalcIBLContribution(
 #if defined(USE_CUBEMAP)
 	// EnvironmentBRDF is supposed to work with gloss. Invert roughness for now, but this needs
 	// to be replaced at some point with preconvoluted cubemap code.
-	vec3 reflectance = EnvironmentBRDF(1.0 - roughness, NE, specular);
+	//vec3 reflectance = EnvironmentBRDF(1.0 - roughness, NE, specular);
+
+	vec3 EnvBRDF = texture(u_EnvBrdfMap, vec2(1.0 - roughness, NE)).rgb;
 
 	vec3 R = reflect(E, N);
 
@@ -540,9 +543,9 @@ vec3 CalcIBLContribution(
 	// from http://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
 	vec3 parallax = u_CubeMapInfo.xyz + u_CubeMapInfo.w * viewDir;
 
-	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, roughness * 7.0).rgb * u_EnableTextures.w;
+	vec3 cubeLightColor = textureLod(u_CubeMap, R + parallax, roughness * ROUGHNESS_MIPS).rgb * u_EnableTextures.w;
 
-	return cubeLightColor * reflectance;
+	return cubeLightColor * (specular.rgb * EnvBRDF.x + EnvBRDF.y);
 #else
 	return vec3(0.0);
 #endif
