@@ -569,13 +569,13 @@ static void R_RecursiveWorldNode( mnode_t *node, int planeBits, int dlightBits, 
 		tr.pc.c_leafs++;
 
 		// add to z buffer bounds
-		tr.viewParms.visBounds[0][0] = std::min(node->mins[0], tr.viewParms.visBounds[0][0]);
-		tr.viewParms.visBounds[0][1] = std::min(node->mins[1], tr.viewParms.visBounds[0][1]);
-		tr.viewParms.visBounds[0][2] = std::min(node->mins[2], tr.viewParms.visBounds[0][2]);
+		tr.viewParms.visBounds[0][0] = MIN(node->mins[0], tr.viewParms.visBounds[0][0]);
+		tr.viewParms.visBounds[0][1] = MIN(node->mins[1], tr.viewParms.visBounds[0][1]);
+		tr.viewParms.visBounds[0][2] = MIN(node->mins[2], tr.viewParms.visBounds[0][2]);
 
-		tr.viewParms.visBounds[1][0] = std::min(node->maxs[0], tr.viewParms.visBounds[1][0]);
-		tr.viewParms.visBounds[1][1] = std::min(node->maxs[1], tr.viewParms.visBounds[1][1]);
-		tr.viewParms.visBounds[1][2] = std::min(node->maxs[2], tr.viewParms.visBounds[1][2]);
+		tr.viewParms.visBounds[1][0] = MIN(node->maxs[0], tr.viewParms.visBounds[1][0]);
+		tr.viewParms.visBounds[1][1] = MIN(node->maxs[1], tr.viewParms.visBounds[1][1]);
+		tr.viewParms.visBounds[1][2] = MIN(node->maxs[2], tr.viewParms.visBounds[1][2]);
 
 		// add merged and unmerged surfaces
 		if (tr.world->viewSurfaces && !r_nocurves->integer)

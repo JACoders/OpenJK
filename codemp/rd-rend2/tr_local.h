@@ -60,7 +60,7 @@ typedef unsigned int glIndex_t;
 #define MAX_CALC_PSHADOWS    64
 #define MAX_DRAWN_PSHADOWS    16 // do not increase past 32, because bit flags are used on surfaces
 #define PSHADOW_MAP_SIZE      512
-#define CUBE_MAP_MIPS      7
+#define CUBE_MAP_MIPS      8
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 
 /*
@@ -710,7 +710,8 @@ enum
 	TB_SPECULARMAP = 4,
 	TB_SHADOWMAP   = 5,
 	TB_CUBEMAP     = 6,
-	NUM_TEXTURE_BUNDLES = 7
+	TB_ENVBRDFMAP  = 7,
+	NUM_TEXTURE_BUNDLES = 8
 };
 
 typedef enum
@@ -1173,6 +1174,7 @@ typedef enum
 	UNIFORM_TEXTUREMAP,
 	UNIFORM_LEVELSMAP,
 	UNIFORM_CUBEMAP,
+	UNIFORM_ENVBRDFMAP,
 
 	UNIFORM_SCREENIMAGEMAP,
 	UNIFORM_SCREENDEPTHMAP,
@@ -2217,6 +2219,8 @@ typedef struct trGlobals_s {
 	image_t                 *screenSsaoImage;
 	image_t					*hdrDepthImage;
 	image_t                 *renderCubeImage;
+	image_t                 *prefilterEnvMapImage;
+	image_t					*envBrdfImage;
 	
 	image_t					*textureDepthImage;
 
@@ -2235,6 +2239,7 @@ typedef struct trGlobals_s {
 	FBO_t					*screenSsaoFbo;
 	FBO_t					*hdrDepthFbo;
 	FBO_t                   *renderCubeFbo;
+	FBO_t					*preFilterEnvMapFbo;
 
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
@@ -2282,6 +2287,7 @@ typedef struct trGlobals_s {
 	shaderProgram_t ssaoShader;
 	shaderProgram_t depthBlurShader[2];
 	shaderProgram_t testcubeShader;
+	shaderProgram_t prefilterEnvMapShader;
 	shaderProgram_t gaussianBlurShader[2];
 	shaderProgram_t glowCompositeShader;
 	shaderProgram_t dglowDownsample;
@@ -3255,6 +3261,11 @@ typedef struct capShadowmapCommand_s {
 	int cubeSide;
 } capShadowmapCommand_t;
 
+typedef struct convolveCubemapCommand_s {
+	int commandId;
+	int cubemap;
+} convolveCubemapCommand_t;
+
 typedef struct postProcessCommand_s {
 	int		commandId;
 	trRefdef_t	refdef;
@@ -3286,6 +3297,7 @@ typedef enum {
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
 	RC_CAPSHADOWMAP,
+	RC_CONVOLVECUBEMAP,
 	RC_POSTPROCESS,
 	RC_BEGIN_TIMED_BLOCK,
 	RC_END_TIMED_BLOCK
@@ -3363,6 +3375,7 @@ void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 void R_AddCapShadowmapCmd( int dlight, int cubeSide );
+void R_AddConvolveCubemapCmd( int cubemap );
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );
