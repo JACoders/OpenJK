@@ -74,4 +74,5 @@ deploy_script:
   - ps: for ($i = 0; $i -lt $key.Length / 64; $i++) { $min = [math]::min(64, $key.Length - ($i * 64)); $fileContent += $key.substring($i*64, $min) + "`n"; }
   - ps: $fileContent += "-----END RSA PRIVATE KEY-----" + "`n"
   - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
   - scripts/builds/deploy.bat
