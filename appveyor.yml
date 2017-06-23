@@ -32,6 +32,7 @@ init:
   - ps: $env:SHORT_COMMIT_HASH=$env:appveyor_repo_commit.substring(0,8)
   - ps: Update-AppveyorBuild -Version "1.0-git-$env:SHORT_COMMIT_HASH"
   - ps: $env:ARTIFACT_FILE="openjk-$(Get-Date -UFormat "%Y-%m-%d")-$SHORT_COMMIT_HASH-windows.zip"
+  - echo "Artifact file='%ARTIFACT_FILE%'"
   - cmake --version
   - msbuild /version
 
