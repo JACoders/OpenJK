@@ -29,7 +29,9 @@ configuration:
 
 #scripts that are called at very beginning, before repo cloning
 init:
-  - ps: Update-AppveyorBuild -Version "1.0-git-$($env:appveyor_repo_commit.substring(0,8))"
+  - ps: $env:SHORT_COMMIT_HASH=$env:appveyor_repo_commit.substring(0,8)
+  - ps: Update-AppveyorBuild -Version "1.0-git-$env:SHORT_COMMIT_HASH"
+  - ps: $env:ARTIFACT_FILE="openjk-$(Get-Date -UFormat "%Y-%m-%d")-$SHORT_COMMIT_HASH-windows.zip"
   - cmake --version
   - msbuild /version
 
@@ -57,16 +59,13 @@ build:
 after_build:
   - cmake --build . --target INSTALL
   - cd %APPVEYOR_BUILD_FOLDER%
-  - 7z a openjk-windows.zip %APPVEYOR_BUILD_FOLDER%/build/install/JediAcademy/*
-  - 7z l openjk-windows.zip # list files in the zip file
+  - 7z a %ARTIFACT_FILE% %APPVEYOR_BUILD_FOLDER%/build/install/JediAcademy/*
+  - 7z l %ARTIFACT_FILE% # list files in the zip file
 
 artifacts:
   - path: openjk-windows.zip
     name: OpenJK Jedi Academy ZIP
     type: zip
-
-#on_finish:
-#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
 
 deploy_script:
   - ps: $key = $env:DeploymentKey
@@ -74,5 +73,4 @@ deploy_script:
   - ps: for ($i = 0; $i -lt $key.Length / 64; $i++) { $min = [math]::min(64, $key.Length - ($i * 64)); $fileContent += $key.substring($i*64, $min) + "`n"; }
   - ps: $fileContent += "-----END RSA PRIVATE KEY-----" + "`n"
   - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-  - scripts/builds/deploy.bat
+  - scripts/builds/deploy.bat %ARTIFACT_FILE%
