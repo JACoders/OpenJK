@@ -27,7 +27,6 @@ configuration:
   - Debug
   - Release
 
-#scripts that are called at very beginning, before repo cloning
 init:
   - ps: $env:SHORT_COMMIT_HASH=$env:appveyor_repo_commit.substring(0,8)
   - ps: Update-AppveyorBuild -Version "1.0-git-$env:SHORT_COMMIT_HASH"
@@ -36,7 +35,6 @@ init:
   - cmake --version
   - msbuild /version
 
-#where to clone the git repository to
 clone_folder: C:\projects\OpenJK
 
 #scripts to run before build
@@ -56,7 +54,6 @@ build:
   project: C:\projects\OpenJK\build\OpenJK.sln
   verbosity: normal
 
-#scripts to run after build
 after_build:
   - cmake --build . --target INSTALL
   - cd %APPVEYOR_BUILD_FOLDER%
