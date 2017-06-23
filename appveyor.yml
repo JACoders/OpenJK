@@ -63,7 +63,7 @@ after_build:
   - 7z l %ARTIFACT_FILE% # list files in the zip file
 
 artifacts:
-  - path: openjk-windows.zip
+  - path: openjk-*-windows.zip
     name: OpenJK Jedi Academy ZIP
     type: zip
 
