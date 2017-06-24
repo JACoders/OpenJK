@@ -70,5 +70,5 @@ deploy_script:
   - ps: $fileContent = "-----BEGIN RSA PRIVATE KEY-----" + "`n"
   - ps: for ($i = 0; $i -lt $key.Length / 64; $i++) { $min = [math]::min(64, $key.Length - ($i * 64)); $fileContent += $key.substring($i*64, $min) + "`n"; }
   - ps: $fileContent += "-----END RSA PRIVATE KEY-----" + "`n"
-  - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
-  - scripts/builds/deploy.bat %ARTIFACT_FILE%
+  - ps: Set-Content C:\users\appveyor\.ssh\id_rsa $fileContent
+  - scripts/appveyor/deploy.bat %ARTIFACT_FILE%
