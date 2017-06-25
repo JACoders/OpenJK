@@ -55,7 +55,7 @@ build:
   verbosity: normal
 
 after_build:
-  - cmake --build . --target INSTALL
+  - cmake --build . --target INSTALL --config %CONFIGURATION%
   - cd %APPVEYOR_BUILD_FOLDER%
   - 7z a %ARTIFACT_FILE% %APPVEYOR_BUILD_FOLDER%/build/install/JediAcademy/*
   - 7z l %ARTIFACT_FILE% # list files in the zip file
