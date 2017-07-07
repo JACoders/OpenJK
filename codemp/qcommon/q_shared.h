@@ -130,12 +130,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define Q_EXPORT
 #endif
 
-#if defined(__GNUC__)
-#define NORETURN __attribute__((noreturn))
-#elif defined(_MSC_VER)
-#define NORETURN __declspec(noreturn)
-#endif
-
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
@@ -693,7 +687,7 @@ qboolean Info_NextPair( const char **s, char *key, char *value );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
 #if defined( _GAME ) || defined( _CGAME ) || defined( UI_BUILD )
-	void (*Com_Error)( int level, const char *error, ... );
+	NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
 	void (*Com_Printf)( const char *msg, ... );
 #else
 	void NORETURN QDECL Com_Error( int level, const char *error, ... );

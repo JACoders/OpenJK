@@ -95,38 +95,6 @@ int AI_GetGroupSize( gentity_t *ent, int radius )
 	return AI_GetGroupSize( ent->currentOrigin, radius, ent->client->playerTeam, ent );
 }
 
-extern int NAV_FindClosestWaypointForPoint( gentity_t *ent, vec3_t point );
-int AI_ClosestGroupEntityNumToPoint( AIGroupInfo_t &group, vec3_t point )
-{
-	int	markerWP = WAYPOINT_NONE;
-	int	cost, bestCost = Q3_INFINITE;
-	int	closest = ENTITYNUM_NONE;
-
-	if ( group.numGroup <= 0 )
-	{
-		return ENTITYNUM_NONE;
-	}
-
-	markerWP = NAV_FindClosestWaypointForPoint( &g_entities[group.member[0].number], point );
-
-	if ( markerWP == WAYPOINT_NONE )
-	{
-		return ENTITYNUM_NONE;
-	}
-
-	for ( int i = 0; i < group.numGroup; i++ )
-	{
-		cost = navigator.GetPathCost( group.member[i].waypoint, markerWP );
-		if ( cost < bestCost )
-		{
-			bestCost = cost;
-			closest = group.member[i].number;
-		}
-	}
-
-	return closest;
-}
-
 void AI_SetClosestBuddy( AIGroupInfo_t *group )
 {
 	int	i, j;

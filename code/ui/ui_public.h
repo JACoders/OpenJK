@@ -38,7 +38,7 @@ typedef struct {
 	void		(*Printf)( const char *fmt, ... );
 
 	// abort the game
-	void		(*Error)( int level, const char *fmt, ... );
+	NORETURN_PTR void	(*Error)( int level, const char *fmt, ... );
 
 	// console variable interaction
 	void		(*Cvar_Set)( const char *name, const char *value );

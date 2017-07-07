@@ -45,7 +45,7 @@ void	cgi_Printf( const char *fmt ) {
 	Q_syscall( CG_PRINT, fmt );
 }
 
-void	cgi_Error( const char *fmt ) {
+NORETURN void	cgi_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
 	// shut up GCC warning about returning functions, because we know better
 	exit(1);
