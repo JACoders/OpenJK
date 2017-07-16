@@ -469,7 +469,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
 #if defined(_DEBUG)
-	libHandle = Sys_LoadLibrary( name );
+	libHandle = Sys_LoadLibrary( filename );
 	if ( !libHandle )
 #endif
 	{

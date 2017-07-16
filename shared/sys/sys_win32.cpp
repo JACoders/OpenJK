@@ -505,7 +505,7 @@ UnpackDLLResult Sys_UnpackDLL(const char *name)
 {
 	UnpackDLLResult result = {};
 	void *data;
-	int len = FS_ReadFile(name, &data);
+	long len = FS_ReadFile(name, &data);
 
 	if (len >= 1)
 	{
