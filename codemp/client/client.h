@@ -413,6 +413,8 @@ extern	cvar_t	*cl_consoleUseScanCode;
 
 extern  cvar_t  *cl_lanForcePackets;
 
+extern	cvar_t	*cl_drawRecording;
+
 //=================================================
 
 //
