@@ -1229,17 +1229,17 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM, "Is the client running?" );
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 #ifndef _WIN32
-		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE );
+		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE_ND );
 #endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
 #endif
 
-		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
-		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE );
+		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE_ND );
+		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
 
-		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE, "Show intro movies" );
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE_ND, "Show intro movies" );
 
 		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, SOURCE_DATE );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );

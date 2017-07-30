@@ -855,11 +855,11 @@ NET_GetCvars
 static qboolean NET_GetCvars( void ) {
 	int	modified = 0;
 
-	net_enabled = Cvar_Get( "net_enabled", "1", CVAR_LATCH | CVAR_ARCHIVE );
+	net_enabled = Cvar_Get( "net_enabled", "1", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified = net_enabled->modified;
 	net_enabled->modified = qfalse;
 
-	net_forcenonlocal = Cvar_Get( "net_forcenonlocal", "0", CVAR_LATCH | CVAR_ARCHIVE );
+	net_forcenonlocal = Cvar_Get( "net_forcenonlocal", "0", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified += net_forcenonlocal->modified;
 	net_forcenonlocal->modified = qfalse;
 
@@ -871,23 +871,23 @@ static qboolean NET_GetCvars( void ) {
 	modified += net_port->modified;
 	net_port->modified = qfalse;
 
-	net_socksEnabled = Cvar_Get( "net_socksEnabled", "0", CVAR_LATCH | CVAR_ARCHIVE );
+	net_socksEnabled = Cvar_Get( "net_socksEnabled", "0", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified += net_socksEnabled->modified;
 	net_socksEnabled->modified = qfalse;
 
-	net_socksServer = Cvar_Get( "net_socksServer", "", CVAR_LATCH | CVAR_ARCHIVE );
+	net_socksServer = Cvar_Get( "net_socksServer", "", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified += net_socksServer->modified;
 	net_socksServer->modified = qfalse;
 
-	net_socksPort = Cvar_Get( "net_socksPort", "1080", CVAR_LATCH | CVAR_ARCHIVE );
+	net_socksPort = Cvar_Get( "net_socksPort", "1080", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified += net_socksPort->modified;
 	net_socksPort->modified = qfalse;
 
-	net_socksUsername = Cvar_Get( "net_socksUsername", "", CVAR_LATCH | CVAR_ARCHIVE );
+	net_socksUsername = Cvar_Get( "net_socksUsername", "", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified += net_socksUsername->modified;
 	net_socksUsername->modified = qfalse;
 
-	net_socksPassword = Cvar_Get( "net_socksPassword", "", CVAR_LATCH | CVAR_ARCHIVE );
+	net_socksPassword = Cvar_Get( "net_socksPassword", "", CVAR_LATCH | CVAR_ARCHIVE_ND );
 	modified += net_socksPassword->modified;
 	net_socksPassword->modified = qfalse;
 

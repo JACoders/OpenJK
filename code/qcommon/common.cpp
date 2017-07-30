@@ -1115,10 +1115,10 @@ void Com_Init( char *commandLine ) {
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
-		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
-		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE );
+		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE_ND );
+		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
 
-		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE );
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE_ND );
 
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
