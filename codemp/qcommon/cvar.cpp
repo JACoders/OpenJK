@@ -1256,6 +1256,31 @@ void Cvar_ListModified_f( void ) {
 	}
 }
 
+void Cvar_ListUserCreated_f( void ) {
+	cvar_t *var = NULL;
+	uint32_t count = 0;
+
+	// build a list of cvars that are modified
+	for ( var=cvar_vars;
+		var;
+		var=var->next )
+	{
+		char *value = var->latchedString ? var->latchedString : var->string;
+		if ( !(var->flags & CVAR_USER_CREATED) )
+			continue;
+
+		Com_Printf( S_COLOR_GREY "Cvar "
+			S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n",
+			var->name, value );
+		count++;
+	}
+
+	if ( count > 0 )
+		Com_Printf( S_COLOR_GREY "Showing " S_COLOR_WHITE "%u" S_COLOR_GREY " user created cvars" S_COLOR_WHITE "\n", count );
+	else
+		Com_Printf( S_COLOR_GREY "No user created cvars" S_COLOR_WHITE "\n" );
+}
+
 /*
 ============
 Cvar_Unset
@@ -1328,6 +1353,29 @@ void Cvar_Unset_f(void)
 		Cvar_Unset(cv);
 	else
 		Com_Printf("Error: %s: Variable %s is not user created.\n", Cmd_Argv(0), cv->name);
+}
+
+void Cvar_UnsetUserCreated_f(void)
+{
+	cvar_t	*curvar = cvar_vars;
+	uint32_t count = 0;
+
+	while ( curvar )
+	{
+		if ( ( curvar->flags & CVAR_USER_CREATED ) )
+		{
+			// throw out any variables the user created
+			curvar = Cvar_Unset( curvar );
+			count++;
+			continue;
+		}
+		curvar = curvar->next;
+	}
+
+	if ( count > 0 )
+		Com_Printf( S_COLOR_GREY "Removed " S_COLOR_WHITE "%u" S_COLOR_GREY " user created cvars" S_COLOR_WHITE "\n", count );
+	else
+		Com_Printf( S_COLOR_GREY "No user created cvars to remove" S_COLOR_WHITE "\n" );
 }
 
 /*
@@ -1564,7 +1612,9 @@ void Cvar_Init (void) {
 	Cmd_SetCommandCompletionFunc( "reset", Cvar_CompleteCvarName );
 	Cmd_AddCommand( "unset", Cvar_Unset_f, "Unset a user generated cvar" );
 	Cmd_SetCommandCompletionFunc( "unset", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "unset_usercreated", Cvar_UnsetUserCreated_f, "Unset all user generated cvars " S_COLOR_RED "Use with caution!" S_COLOR_WHITE );
 	Cmd_AddCommand( "cvarlist", Cvar_List_f, "Show all cvars" );
+	Cmd_AddCommand( "cvar_usercreated", Cvar_ListUserCreated_f, "Show all user created cvars" );
 	Cmd_AddCommand( "cvar_modified", Cvar_ListModified_f, "Show all modified cvars" );
 	Cmd_AddCommand( "cvar_restart", Cvar_Restart_f, "Resetart the cvar sub-system" );
 }
