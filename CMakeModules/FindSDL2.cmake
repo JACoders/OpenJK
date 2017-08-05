@@ -92,13 +92,14 @@ SET(SDL2_SEARCH_PATHS
 	/opt/local # DarwinPorts
 	/opt/csw # Blastwave
 	/opt
+	/system/develop #Haiku
 )
 
 FIND_PATH(SDL2_INCLUDE_DIR SDL.h
 	NAMES SDL2
 	HINTS
 	$ENV{SDL2DIR}
-	PATH_SUFFIXES include/SDL2 include
+	PATH_SUFFIXES include/SDL2 include headers/x86/SDL2 headers/SDL2
 	PATHS ${SDL2_SEARCH_PATHS}
 )
 

@@ -55,6 +55,11 @@
 #define ftello64 ftello
 #define fseeko64 fseeko
 #endif
+#ifdef __HAIKU__
+#define fopen64 fopen
+#define ftello64 ftello
+#define fseeko64 fseeko
+#endif
 #ifdef _MSC_VER
  #define fopen64 fopen
  #if (_MSC_VER >= 1400) && (!(defined(NO_MSCVER_FILE64_FUNC)))

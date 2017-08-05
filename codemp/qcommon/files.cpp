@@ -553,10 +553,13 @@ qboolean FS_CreatePath (char *OSPath) {
 		if (*ofs == PATH_SEP) {
 			// create the directory
 			*ofs = 0;
-			if (!Sys_Mkdir (path)) {
-				Com_Error( ERR_FATAL, "FS_CreatePath: failed to create path \"%s\"",
-					path );
-			}
+			#ifndef __HAIKU__
+			// Fixme, it cannot bear with read-only packaged FS
+				if (!Sys_Mkdir (path)) {
+					Com_Error( ERR_FATAL, "FS_CreatePath: failed to create path \"%s\"",
+						path );
+				}
+			#endif
 			*ofs = PATH_SEP;
 		}
 	}
