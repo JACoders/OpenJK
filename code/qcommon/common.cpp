@@ -29,6 +29,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "sstring.h"	// to get Gil's string class, because MS's doesn't compile properly in here
 #include "stringed_ingame.h"
 #include "stv_version.h"
+#include "../shared/sys/sys_local.h"
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -48,7 +49,6 @@ cvar_t	*com_speeds;
 cvar_t	*com_developer;
 cvar_t	*com_timescale;
 cvar_t	*com_fixedtime;
-cvar_t	*com_maxfps;
 cvar_t	*com_sv_running;
 cvar_t	*com_cl_running;
 cvar_t	*com_logfile;		// 1 = buffer log, 2 = flush after each print
@@ -64,6 +64,7 @@ cvar_t  *com_homepath;
 #ifndef _WIN32
 cvar_t	*com_ansiColor = NULL;
 #endif
+cvar_t	*com_busyWait;
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 cvar_t	*com_G2Report;
@@ -81,7 +82,6 @@ int		timeInPVSCheck;
 int		numTraces;
 
 int			com_frameTime;
-int			com_frameMsec;
 int			com_frameNumber = 0;
 
 qboolean	com_errorEntered = qfalse;
@@ -162,7 +162,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 
 	// logfile
 	if ( com_logfile && com_logfile->integer ) {
-		if ( !logfile ) {
+		if ( !logfile && FS_Initialized() ) {
 			logfile = FS_FOpenFileWrite( "qconsole.log" );
 			if ( com_logfile->integer > 1 ) {
 				// force it to not buffer so we get valid
@@ -363,7 +363,7 @@ void Com_ParseCommandLine( char *commandLine ) {
 		if (*commandLine == '"') {
 			inq = !inq;
 		}
-		// look for a + seperating character
+		// look for a + separating character
 		// if commandLine came from a file, we might have real line seperators
 		if ( (*commandLine == '+' && !inq) || *commandLine == '\n'  || *commandLine == '\r' ) {
 			if ( com_numConsoleLines == MAX_CONSOLE_LINES ) {
@@ -426,9 +426,9 @@ void Com_StartupVariable( const char *match ) {
 		if(!match || !strcmp(s, match))
 		{
 			if((unsigned)Cvar_Flags(s) == CVAR_NONEXISTENT)
-				Cvar_Get(s, Cmd_Argv(2), CVAR_USER_CREATED);
+				Cvar_Get(s, Cmd_ArgsFrom(2), CVAR_USER_CREATED);
 			else
-				Cvar_Set2(s, Cmd_Argv(2), qfalse);
+				Cvar_Set2(s, Cmd_ArgsFrom(2), qfalse);
 		}
 	}
 }
@@ -866,7 +866,7 @@ int Com_EventLoop( void ) {
         case SE_NONE:
             break;
 		case SE_KEY:
-			CL_KeyEvent( ev.evValue, ev.evValue2, ev.evTime );
+			CL_KeyEvent( ev.evValue, (qboolean)ev.evValue2, ev.evTime );
 			break;
 		case SE_CHAR:
 			CL_CharEvent( ev.evValue );
@@ -880,25 +880,6 @@ int Com_EventLoop( void ) {
 		case SE_CONSOLE:
 			Cbuf_AddText( (char *)ev.evPtr );
 			Cbuf_AddText( "\n" );
-			break;
-		case SE_PACKET:
-			evFrom = *(netadr_t *)ev.evPtr;
-			buf.cursize = ev.evPtrLength - sizeof( evFrom );
-
-			// we must copy the contents of the message out, because
-			// the event buffers are only large enough to hold the
-			// exact payload, but channel messages need to be large
-			// enough to hold fragment reassembly
-			if ( (unsigned)buf.cursize > (unsigned)buf.maxsize ) {
-				Com_Printf("Com_EventLoop: oversize packet\n");
-				continue;
-			}
-			memcpy( buf.data, (byte *)((netadr_t *)ev.evPtr + 1), buf.cursize );
-			if ( com_sv_running->integer ) {
-				Com_RunAndTimeServerPacket( &evFrom, &buf );
-			} else {
-				CL_PacketEvent( evFrom, &buf );
-			}
 			break;
 		}
 
@@ -1069,7 +1050,7 @@ Com_Init
 void Com_Init( char *commandLine ) {
 	char	*s;
 
-	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, __DATE__ );
+	Com_Printf( "%s %s %s\n", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
 	try {
 		Com_InitZoneMemory();
@@ -1114,8 +1095,6 @@ void Com_Init( char *commandLine ) {
 		Cmd_AddCommand ("quit", Com_Quit_f);
 		Cmd_AddCommand ("writeconfig", Com_WriteConfig_f );
 
-		com_maxfps = Cvar_Get ("com_maxfps", "125", CVAR_ARCHIVE);
-
 		com_developer = Cvar_Get ("developer", "0", CVAR_TEMP );
 		com_logfile = Cvar_Get ("logfile", "0", CVAR_TEMP );
 		com_speedslog = Cvar_Get ("speedslog", "0", CVAR_TEMP );
@@ -1136,9 +1115,10 @@ void Com_Init( char *commandLine ) {
 		com_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
-		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
+		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE_ND );
+		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
 
-		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE );
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE_ND );
 
 		if ( com_developer && com_developer->integer ) {
 			Cmd_AddCommand ("error", Com_Error_f);
@@ -1146,7 +1126,7 @@ void Com_Init( char *commandLine ) {
 			Cmd_AddCommand ("freeze", Com_Freeze_f);
 		}
 
-		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, __DATE__ );
+		s = va("%s %s %s", Q3_VERSION, PLATFORM_STRING, SOURCE_DATE );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 #ifdef JK2_MODE
@@ -1266,6 +1246,12 @@ void Com_WriteConfig_f( void ) {
 		return;
 	}
 
+	if(!FS_FilenameCompare(filename, "mpdefault.cfg") || !FS_FilenameCompare(filename, "default.cfg"))
+	{
+		Com_Printf( S_COLOR_YELLOW "Com_WriteConfig_f: The filename \"%s\" is reserved! Please choose another name.\n", filename );
+		return;
+	}
+
 	Com_Printf( "Writing %s.\n", filename );
 	Com_WriteConfigToFile( filename );
 }
@@ -1325,6 +1311,26 @@ int Com_ModifyMsec( int msec, float &fraction )
 
 /*
 =================
+Com_TimeVal
+=================
+*/
+
+int Com_TimeVal(int minMsec)
+{
+	int timeVal;
+
+	timeVal = Sys_Milliseconds() - com_frameTime;
+
+	if(timeVal >= minMsec)
+		timeVal = 0;
+	else
+		timeVal = minMsec - timeVal;
+
+	return timeVal;
+}
+
+/*
+=================
 Com_Frame
 =================
 */
@@ -1347,7 +1353,8 @@ void Com_Frame( void ) {
 	{
 		int		timeBeforeFirstEvents = 0, timeBeforeServer = 0, timeBeforeEvents = 0, timeBeforeClient = 0, timeAfter = 0;
 		int		msec, minMsec;
-		static int	lastTime = 0;
+		int		timeVal;
+		static int	lastTime = 0, bias = 0;
 
 		// write config file if anything changed
 		Com_WriteConfiguration();
@@ -1359,25 +1366,44 @@ void Com_Frame( void ) {
 			timeBeforeFirstEvents = Sys_Milliseconds ();
 		}
 
-		// we may want to spin here if things are going too fast
-		if ( com_maxfps->integer > 0 ) {
+		// Figure out how much time we have
+		if(com_minimized->integer && com_maxfpsMinimized->integer > 0)
+			minMsec = 1000 / com_maxfpsMinimized->integer;
+		else if(com_unfocused->integer && com_maxfpsUnfocused->integer > 0)
+			minMsec = 1000 / com_maxfpsUnfocused->integer;
+		else if(com_maxfps->integer > 0)
 			minMsec = 1000 / com_maxfps->integer;
-		} else {
+		else
 			minMsec = 1;
-		}
+
+		timeVal = com_frameTime - lastTime;
+		bias += timeVal - minMsec;
+
+		if (bias > minMsec)
+			bias = minMsec;
+
+		// Adjust minMsec if previous frame took too long to render so
+		// that framerate is stable at the requested value.
+		minMsec -= bias;
+
+		timeVal = Com_TimeVal(minMsec);
 		do {
-			com_frameTime = Com_EventLoop();
-			if ( lastTime > com_frameTime ) {
-				lastTime = com_frameTime;		// possible on first frame
-			}
-			msec = com_frameTime - lastTime;
-		} while ( msec < minMsec );
-		Cbuf_Execute ();
+			// Busy sleep the last millisecond for better timeout precision
+			if(com_busyWait->integer || timeVal < 1)
+				Sys_Sleep(0);
+			else
+				Sys_Sleep(timeVal - 1);
+		} while( (timeVal = Com_TimeVal(minMsec)) != 0 );
+		IN_Frame();
 
 		lastTime = com_frameTime;
+		com_frameTime = Com_EventLoop();
+
+		msec = com_frameTime - lastTime;
+
+		Cbuf_Execute ();
 
 		// mess with msec if needed
-		com_frameMsec = msec;
 		float fractionMsec=0.0f;
 		msec = Com_ModifyMsec( msec, fractionMsec);
 

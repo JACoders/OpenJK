@@ -309,7 +309,7 @@ void CL_InitUI( void ) {
 
 	uii.Milliseconds			= Sys_Milliseconds2;
 
-	UI_Init(UI_API_VERSION, &uii, (cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
+	UI_Init(UI_API_VERSION, &uii, (qboolean)(cls.state > CA_DISCONNECTED && cls.state <= CA_ACTIVE));
 
 //	uie->UI_Init( UI_API_VERSION, &uii );
 

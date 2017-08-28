@@ -76,11 +76,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define CURSOR_ARROW				0x00000002
 #define CURSOR_SIZER				0x00000004
 
-#ifdef _CGAME
-	#define STRING_POOL_SIZE 128*1024
-#else
-	#define STRING_POOL_SIZE 384*1024
-#endif
+#define STRING_POOL_SIZE (2*1024*1024)
 
 #define MAX_STRING_HANDLES 4096
 #define MAX_SCRIPT_ARGS 12
@@ -112,6 +108,12 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define SLIDER_THUMB_WIDTH 12.0
 #define SLIDER_THUMB_HEIGHT 20.0
 #define	NUM_CROSSHAIRS			9
+
+enum {
+	SSF_JPEG = 0,
+	SSF_TGA,
+	SSF_PNG
+};
 
 typedef struct scriptDef_s {
   const char *command;
@@ -203,7 +205,7 @@ typedef struct editFieldDef_s {
 	int paintOffset;		//
 } editFieldDef_t;
 
-#define MAX_MULTI_CVARS 32
+#define MAX_MULTI_CVARS 64//32
 
 typedef struct multiDef_s {
 	const char *cvarList[MAX_MULTI_CVARS];
@@ -317,6 +319,8 @@ typedef struct itemDef_s {
 	qboolean	disabled;					// Does this item ignore mouse and keyboard focus
 	int			invertYesNo;
 	int			xoffset;
+
+	qboolean disabledHidden;				// hide the item when 'disabled' is true (for generic image items)
 } itemDef_t;
 
 typedef struct menuDef_s {
@@ -457,7 +461,7 @@ typedef struct displayContextDef_s {
 	void			(*getBindingBuf)					( int keynum, char *buf, int buflen );
 	void			(*setBinding)						( int keynum, const char *binding );
 	void			(*executeText)						( int exec_when, const char *text );
-	void			(*Error)							( int level, const char *error, ... );
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	void			(*Print)							( const char *msg, ... );
 	void			(*Pause)							( qboolean b );
 	int				(*ownerDrawWidth)					( int ownerDraw, float scale );
@@ -485,6 +489,11 @@ typedef struct displayContextDef_s {
 	qhandle_t		gradientImage;
 	qhandle_t		cursor;
 	float			FPS;
+	int				screenshotFormat;
+
+	struct {
+		float			(*Font_StrLenPixels)				( const char *text, const int iFontIndex, const float scale );
+	} ext;
 } displayContextDef_t;
 
 
@@ -520,8 +529,8 @@ void Menu_Reset(void);
 qboolean Menus_AnyFullScreenVisible( void );
 void  Menus_Activate(menuDef_t *menu);
 itemDef_t *Menu_FindItemByName(menuDef_t *menu, const char *p);
-void Menu_ShowGroup (menuDef_t *menu, char *itemName, qboolean showFlag);
-void Menu_ItemDisable(menuDef_t *menu, char *name,int disableFlag);
+void Menu_ShowGroup (menuDef_t *menu, const char *itemName, qboolean showFlag);
+void Menu_ItemDisable(menuDef_t *menu, const char *name, qboolean disableFlag);
 int Menu_ItemsMatchingGroup(menuDef_t *menu, const char *name);
 itemDef_t *Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, const char *name);
 

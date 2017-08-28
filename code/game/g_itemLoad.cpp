@@ -346,8 +346,6 @@ static void IT_Tag(const char **holdBuf)
 		tag = WP_TRIP_MINE;
 	else if (!Q_stricmp(tokenStr,"WP_DET_PACK"))
 		tag = WP_DET_PACK;
-//	else if (!Q_stricmp(tokenStr,"WP_TRICORDER"))
-//		tag = WP_TRICORDER;
 	else if (!Q_stricmp(tokenStr,"WP_BOT_LASER"))
 		tag = WP_BOT_LASER;
 	else if (!Q_stricmp(tokenStr,"WP_EMPLACED_GUN"))

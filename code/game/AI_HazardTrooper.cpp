@@ -88,7 +88,7 @@ extern void G_AddVoiceEvent( gentity_t *self, int event, int speakDebounceTime )
 extern void CG_DrawEdge( vec3_t start, vec3_t end, int type );
 static void HT_Speech( gentity_t *self, int speechType, float failChance )
 {
-	if ( random() < failChance )
+	if ( Q_flrand(0.0f, 1.0f) < failChance )
 	{
 		return;
 	}
@@ -785,7 +785,7 @@ private:
 
 			if (mActors[actorIndex]->NPC->combatPoint!=-1)
 			{
-				NPC_FreeCombatPoint(mActors[actorIndex]->NPC->combatPoint, false);
+				NPC_FreeCombatPoint(mActors[actorIndex]->NPC->combatPoint, qfalse);
 				mActors[actorIndex]->NPC->combatPoint = -1;
 			}
 
@@ -1120,7 +1120,7 @@ void		Troop_Initialize()
 ////////////////////////////////////////////////////////////////////////////////////////
 void		Troop_Update()
 {
-	for (TTroopPool::iterator i=mTroops.begin(); i!=mTroops.end(); i++)
+	for (TTroopPool::iterator i=mTroops.begin(); i!=mTroops.end(); ++i)
 	{
 		i->Update();
 	}
@@ -1141,7 +1141,7 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 		TTroopPool::iterator	closestTroop = mTroops.end();
 		trace_t					trace;
 
-		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); iTroop++)
+		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); ++iTroop)
 		{
 			if (iTroop->Team()==actor->client->playerTeam)
 			{
@@ -1196,7 +1196,7 @@ void		Trooper_UpdateTroop(gentity_t* actor)
 		float					closestDist = 0;
 		TTroopPool::iterator	closestTroop = mTroops.end();
 
-		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); iTroop++)
+		for (TTroopPool::iterator iTroop=mTroops.begin(); iTroop!=mTroops.end(); ++iTroop)
 		{
 			curDist = iTroop->DistanceSq(actor);
 			if ((curDist<MAX_TROOP_MERGE_DIST2) &&

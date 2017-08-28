@@ -21,11 +21,12 @@ if(NOT InOpenJK)
 	message(FATAL_ERROR "Use the top-level cmake script!")
 endif(NOT InOpenJK)
 
-set(SPGameDefines ${SharedDefines})
+set(SPGameDefines ${SharedDefines} "SP_GAME")
 set(SPGameIncludeDirectories
 	${SharedDir}
 	${SPDir}
 	"${SPDir}/game"
+	"${GSLIncludeDirectory}"
 	)
 
 if(WIN32)
@@ -256,13 +257,26 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/sstring.h"
 	"${SPDir}/qcommon/tags.h"
 	"${SPDir}/qcommon/timing.h"
-	"${SPDir}/qcommon/q_math.cpp"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	"${SPDir}/qcommon/q_platform.h"
+	"${SPDir}/qcommon/ojk_i_saved_game.h"
+	"${SPDir}/qcommon/ojk_saved_game_class_archivers.h"
+	"${SPDir}/qcommon/ojk_saved_game_helper.h"
+	"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+	"${SPDir}/qcommon/ojk_scope_guard.h"
+	${SharedCommonFiles}
 	)
 source_group("common" FILES ${SPGameCommonFiles})
 set(SPGameFiles ${SPGameFiles} ${SPGameCommonFiles})
+
+set(SPGameCommonSafeFiles
+	${SharedCommonSafeFiles}
+	"${SharedDir}/qcommon/safe/files.h"
+	"${SharedDir}/qcommon/safe/files.cpp"
+	"${SPDir}/qcommon/safe/memory.h"
+	)
+source_group("common/safe" FILES ${SPGameCommonSafeFiles})
+set(SPGameFiles ${SPGameFiles} ${SPGameCommonSafeFiles})
 
 set(SPGameIcarusFiles
 	"${SPDir}/icarus/BlockStream.cpp"

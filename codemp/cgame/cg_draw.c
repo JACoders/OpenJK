@@ -267,9 +267,9 @@ static void CG_DrawZoomMask( void )
 		CG_DrawPic( 82, 94, 16, 16, cgs.media.binocularCircle );
 
 		// Flickery color
-		color1[0] = 0.7f + crandom() * 0.1f;
-		color1[1] = 0.8f + crandom() * 0.1f;
-		color1[2] = 0.7f + crandom() * 0.1f;
+		color1[0] = 0.7f + Q_flrand(-0.1f, 0.1f);
+		color1[1] = 0.8f + Q_flrand(-0.1f, 0.1f);
+		color1[2] = 0.7f + Q_flrand(-0.1f, 0.1f);
 		color1[3] = 1.0f;
 		trap->R_SetColor( color1 );
 
@@ -287,7 +287,7 @@ static void CG_DrawZoomMask( void )
 			CG_DrawPic( 307, 40, 26, 30, cgs.media.binocularTri );
 		}
 
-		if ( random() > 0.98f && ( cg.time & 1024 ))
+		if ( Q_flrand(0.0f, 1.0f) > 0.98f && ( cg.time & 1024 ))
 		{
 			flip = !flip;
 		}
@@ -340,8 +340,8 @@ static void CG_DrawZoomMask( void )
 		val[4] = (ammo / 625) % 5;
 
 		color1[0] = 0.2f;
-		color1[1] = 0.55f + crandom() * 0.1f;
-		color1[2] = 0.5f + crandom() * 0.1f;
+		color1[1] = 0.55f + Q_flrand(-1.0f, 1.0f) * 0.1f;
+		color1[2] = 0.5f + Q_flrand(-1.0f, 1.0f) * 0.1f;
 		color1[3] = 1.0f;
 		trap->R_SetColor( color1 );
 
@@ -5340,7 +5340,7 @@ void CG_SaberClashFlare( void )
 {
 	int				t, maxTime = 150;
 	vec3_t dif;
-	vec3_t color;
+	vec4_t color;
 	int x,y;
 	float v, len;
 	trace_t tr;
@@ -5387,9 +5387,11 @@ void CG_SaberClashFlare( void )
 		v = 0.001f;
 	}
 
-	CG_WorldCoordToScreenCoord( cg_saberFlashPos, &x, &y );
+	if ( !CG_WorldCoordToScreenCoord( cg_saberFlashPos, &x, &y ) ) {
+		return;
+	}
 
-	VectorSet( color, 0.8f, 0.8f, 0.8f );
+	VectorSet4( color, 0.8f, 0.8f, 0.8f, 1.0f );
 	trap->R_SetColor( color );
 
 	CG_DrawPic( x - ( v * 300 ), y - ( v * 300 ),

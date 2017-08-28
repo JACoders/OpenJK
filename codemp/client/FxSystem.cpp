@@ -36,7 +36,7 @@ cvar_t	*fx_nearCull;
 
 // Stuff for the FxHelper
 //------------------------------------------------------
-SFxHelper::SFxHelper(void) :
+SFxHelper::SFxHelper() :
 	mTime(0),
 	mOldTime(0),
 	mFrameTime(0),

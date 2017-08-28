@@ -1609,13 +1609,13 @@ TOGGLE - keep firing until used again (fires at intervals of "wait")
 */
 void misc_weapon_shooter_fire( gentity_t *self )
 {
-	FireWeapon( self, (self->spawnflags&1) );
+	FireWeapon( self, (qboolean)((self->spawnflags&1) != 0) );
 	if ( (self->spawnflags&2) )
 	{//repeat
 		self->e_ThinkFunc = thinkF_misc_weapon_shooter_fire;
 		if (self->random)
 		{
-			self->nextthink = level.time + self->wait + (int)(random()*self->random);
+			self->nextthink = level.time + self->wait + (int)(Q_flrand(0.0f, 1.0f)*self->random);
 		}
 		else
 		{
@@ -1663,7 +1663,7 @@ extern stringID_table_t WPTable[];
 void SP_misc_weapon_shooter( gentity_t *self )
 {
 	//alloc a client just for the weapon code to use
-	self->client = (gclient_s *)gi.Malloc(sizeof(gclient_s), TAG_G_ALLOC, qtrue);
+	self->client = (gclient_t *)gi.Malloc(sizeof(gclient_t), TAG_G_ALLOC, qtrue);
 
 	//set weapon
 	self->s.weapon = self->client->ps.weapon = WP_BLASTER;

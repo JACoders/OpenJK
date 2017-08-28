@@ -449,12 +449,12 @@ void S_Init( void ) {
 
 	Com_Printf("\n------- sound initialization -------\n");
 
-	s_volume = Cvar_Get ("s_volume", "0.5", CVAR_ARCHIVE);
-	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE);
-	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE);
+	s_volume = Cvar_Get ("s_volume", "0.5", CVAR_ARCHIVE, "Volume" );
+	s_volumeVoice= Cvar_Get ("s_volumeVoice", "1.0", CVAR_ARCHIVE, "Volume for voice channels" );
+	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE, "Music Volume" );
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
 	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
-	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE);
+	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE_ND);
 	s_mixahead = Cvar_Get ("s_mixahead", "0.2", CVAR_ARCHIVE);
 
 	s_mixPreStep = Cvar_Get ("s_mixPreStep", "0.05", CVAR_ARCHIVE);
@@ -466,9 +466,9 @@ void S_Init( void ) {
 	s_lip_threshold_3 = Cvar_Get("s_threshold3" , "7.0",0);
 	s_lip_threshold_4 = Cvar_Get("s_threshold4" , "8.0",0);
 
-	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART);
+	s_language = Cvar_Get("s_language","english",CVAR_ARCHIVE | CVAR_NORESTART, "Sound language" );
 
-	s_doppler = Cvar_Get("s_doppler", "1", CVAR_ARCHIVE);
+	s_doppler = Cvar_Get("s_doppler", "1", CVAR_ARCHIVE_ND);
 
 	MP3_InitCvars();
 
@@ -480,14 +480,14 @@ void S_Init( void ) {
 		return;
 	}
 
-	Cmd_AddCommand("play", S_Play_f);
-	Cmd_AddCommand("music", S_Music_f);
-	Cmd_AddCommand("stopmusic", S_StopMusic_f);
-	Cmd_AddCommand("soundlist", S_SoundList_f);
-	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
-	Cmd_AddCommand("soundstop", S_StopAllSounds);
+	Cmd_AddCommand("play", S_Play_f, "Plays a sound fx file" );
+	Cmd_AddCommand("music", S_Music_f, "Plays a music file" );
+	Cmd_AddCommand("stopmusic", S_StopMusic_f, "Stops all music" );
+	Cmd_AddCommand("soundlist", S_SoundList_f, "Lists all cached sound and music files" );
+	Cmd_AddCommand("soundinfo", S_SoundInfo_f, "Display information about the sound backend" );
+	Cmd_AddCommand("soundstop", S_StopAllSounds, "Stops all sounds including music" );
 	Cmd_AddCommand("mp3_calcvols", S_MP3_CalcVols_f);
-	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f);
+	Cmd_AddCommand("s_dynamic", S_SetDynamicMusic_f, "Change dynamic music state" );
 
 #ifdef USE_OPENAL
 	cv = Cvar_Get("s_UseOpenAL" , "0",CVAR_ARCHIVE|CVAR_LATCH);
@@ -4539,8 +4539,12 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 		loop = intro;
 	}
 
-	Q_strncpyz(gsIntroMusic,intro, sizeof(gsIntroMusic));
-	Q_strncpyz(gsLoopMusic, loop,  sizeof(gsLoopMusic));
+	if ( intro != gsIntroMusic ) {
+		Q_strncpyz( gsIntroMusic, intro, sizeof(gsIntroMusic) );
+	}
+	if ( loop != gsLoopMusic ) {
+		Q_strncpyz( gsLoopMusic, loop, sizeof(gsLoopMusic) );
+	}
 
 	char sNameIntro[MAX_QPATH];
 	char sNameLoop [MAX_QPATH];

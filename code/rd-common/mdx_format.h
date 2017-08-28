@@ -148,7 +148,7 @@ typedef struct
 	// I'm defining this '<' operator so this struct can be used as an STL <map> key...
 	//
 	#ifdef __cplusplus
-	bool operator < (const mdxaCompQuatBone_t& _X) const {return (memcmp(Comp,_X.Comp,sizeof(Comp))<0);}
+	bool operator < (const mdxaCompQuatBone_t& X) const {return (memcmp(Comp,X.Comp,sizeof(Comp))<0);}
 	#endif
 }
 #ifndef __cplusplus
@@ -160,6 +160,21 @@ mdxaCompQuatBone_t
 #ifndef MDXABONEDEF
 typedef struct {
 	float matrix[3][4];
+
+
+#ifdef __cplusplus
+	void sg_export(
+		ojk::SavedGameHelper& saved_game) const
+	{
+		saved_game.write<float>(matrix);
+	}
+
+	void sg_import(
+		ojk::SavedGameHelper& saved_game)
+	{
+		saved_game.read<float>(matrix);
+	}
+#endif // __cplusplus
 } mdxaBone_t;
 #endif
 

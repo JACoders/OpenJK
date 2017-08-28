@@ -278,6 +278,7 @@ extern	cvar_t	*m_filter;
 extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_consoleKeys;
+extern	cvar_t	*cl_consoleUseScanCode;
 
 //=================================================
 
@@ -313,9 +314,6 @@ extern 	kbutton_t 	in_speed;
 void CL_InitInput (void);
 void CL_SendCmd (void);
 void CL_ClearState (void);
-void CL_ReadPackets (void);
-void CL_UpdateHotSwap(void);
-bool CL_ExtendSelectTime(void);
 
 void CL_WritePacket( void );
 void IN_CenterView (void);

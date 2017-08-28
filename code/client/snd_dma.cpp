@@ -201,8 +201,8 @@ typedef struct
 	soundChannel_t	entchan;
 
 	// For Open AL
-	bool	bProcessed;
-	bool	bRelative;
+	qboolean	bProcessed;
+	qboolean	bRelative;
 } loopSound_t;
 
 #define	MAX_LOOP_SOUNDS		64
@@ -452,7 +452,7 @@ void S_Init( void ) {
 	s_musicVolume = Cvar_Get ("s_musicvolume", "0.25", CVAR_ARCHIVE);
 	s_separation = Cvar_Get ("s_separation", "0.5", CVAR_ARCHIVE);
 	s_khz = Cvar_Get ("s_khz", "44", CVAR_ARCHIVE|CVAR_LATCH);
-	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE);
+	s_allowDynamicMusic = Cvar_Get ("s_allowDynamicMusic", "1", CVAR_ARCHIVE_ND);
 	s_mixahead = Cvar_Get ("s_mixahead", "0.2", CVAR_ARCHIVE);
 
 	s_mixPreStep = Cvar_Get ("s_mixPreStep", "0.05", CVAR_ARCHIVE);
@@ -1859,7 +1859,7 @@ void S_ClearLoopingSounds( void )
 	if (s_UseOpenAL)
 	{
 		for (int i = 0; i < MAX_LOOP_SOUNDS; i++)
-			loopSounds[i].bProcessed = false;
+			loopSounds[i].bProcessed = qfalse;
 	}
 #endif
 	numLoopSounds = 0;
@@ -1892,7 +1892,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 	}
 
 	sfx = &s_knownSfx[ sfxHandle ];
-	if (sfx->bInMemory == qfalse){
+	if (!sfx->bInMemory){
 		S_memoryLoad(sfx);
 	}
 	SND_TouchSFX(sfx);
@@ -3282,7 +3282,7 @@ void UpdateLoopingSounds()
 
 							alSourcefv(s_channels[i].alSource, AL_POSITION, pos);
 							alSourcei(s_channels[i].alSource, AL_SOURCE_RELATIVE, AL_TRUE);
-							loop->bRelative = true;
+							loop->bRelative = qtrue;
 						}
 
 						// Make sure Gain is set correctly
@@ -3293,13 +3293,13 @@ void UpdateLoopingSounds()
 						}
 
 						ch->bProcessed = true;
-						loop->bProcessed = true;
+						loop->bProcessed = qtrue;
 					}
 					else if ((loop->bProcessed == false) && (ch->thesfx == loop->sfx) && (!memcmp(ch->origin, loop->origin, sizeof(ch->origin))))
 					{
 						// Match !
 						ch->bProcessed = true;
-						loop->bProcessed = true;
+						loop->bProcessed = qtrue;
 
 						// Make sure Gain is set correctly
 						if (ch->master_vol != loop->volume)
@@ -3344,7 +3344,7 @@ void UpdateLoopingSounds()
 						UpdateEAXBuffer(ch);
 
 					ch->bProcessed = true;
-					loop->bProcessed = true;
+					loop->bProcessed = qtrue;
 					break;
 				}
 			}
@@ -3373,7 +3373,7 @@ void UpdateLoopingSounds()
 	{
 		loop = &loopSounds[j];
 
-		if (loop->bProcessed == false)
+		if (!loop->bProcessed)
 		{
 			ch = S_PickChannel(0,0);
 
@@ -3388,7 +3388,7 @@ void UpdateLoopingSounds()
 						&& (loop->origin[2] == listener_pos[1]) )
 			{
 				// Assume that this sound is head relative
-				loop->bRelative = true;
+				loop->bRelative = qtrue;
 				ch->origin[0] = 0.f;
 				ch->origin[1] = 0.f;
 				ch->origin[2] = 0.f;
@@ -3398,7 +3398,7 @@ void UpdateLoopingSounds()
 				ch->origin[0] = loop->origin[0];
 				ch->origin[1] = loop->origin[1];
 				ch->origin[2] = loop->origin[2];
-				loop->bRelative = false;
+				loop->bRelative = qfalse;
 			}
 
 			ch->fixed_origin = loop->bRelative;
@@ -3858,7 +3858,13 @@ void S_SoundList_f( void ) {
 	for (sfx=s_knownSfx, i=0 ; i<s_numSfx ; i++, sfx++)
 	{
 		extern cvar_t *cv_MP3overhead;
-		qboolean bMP3DumpOverride = bShouldBeMP3 && cv_MP3overhead && !sfx->bDefaultSound && !sfx->pMP3StreamHeader && sfx->pSoundData && (Z_Size(sfx->pSoundData) > cv_MP3overhead->integer);
+		qboolean bMP3DumpOverride = (qboolean)(
+			bShouldBeMP3 &&
+			cv_MP3overhead &&
+			!sfx->bDefaultSound &&
+			!sfx->pMP3StreamHeader &&
+			sfx->pSoundData &&
+			(Z_Size(sfx->pSoundData) > cv_MP3overhead->integer));
 
 		if (bMP3DumpOverride || (!bShouldBeMP3 && (!bWavOnly || sfx->eSoundCompressionMethod == ct_16)))
 		{
@@ -4527,8 +4533,12 @@ void S_StartBackgroundTrack( const char *intro, const char *loop, qboolean bCall
 		loop = intro;
 	}
 
-	Q_strncpyz(gsIntroMusic,intro, sizeof(gsIntroMusic));
-	Q_strncpyz(gsLoopMusic, loop,  sizeof(gsLoopMusic));
+	if ( intro != gsIntroMusic ) {
+		Q_strncpyz( gsIntroMusic, intro, sizeof(gsIntroMusic) );
+	}
+	if ( loop != gsLoopMusic ) {
+		Q_strncpyz( gsLoopMusic, loop, sizeof(gsLoopMusic) );
+	}
 
 	char sNameIntro[MAX_QPATH];
 	char sNameLoop [MAX_QPATH];
@@ -5011,7 +5021,7 @@ static void S_UpdateBackgroundTrack( void )
 		// standard / non-dynamic one-track music...
 		//
 		const char *psCommand = S_Music_GetRequestedState();	// special check just for "silence" case...
-		qboolean bShouldBeSilent = (psCommand && !Q_stricmp(psCommand,"silence"));
+		qboolean bShouldBeSilent = (qboolean)(psCommand && !Q_stricmp(psCommand,"silence"));
 		float fDesiredVolume = bShouldBeSilent ? 0.0f : s_musicVolume->value;
 		//
 		// internal to this code is a volume-smoother...
@@ -5269,11 +5279,11 @@ qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLev
 
 				if (bDeleteEverythingNotUsedThisLevel)
 				{
-					bDeleteThis = (sfx->iLastLevelUsedOn != re.RegisterMedia_GetLevel());
+					bDeleteThis = (qboolean)(sfx->iLastLevelUsedOn != re.RegisterMedia_GetLevel());
 				}
 				else
 				{
-					bDeleteThis = (sfx->iLastLevelUsedOn < re.RegisterMedia_GetLevel());
+					bDeleteThis = (qboolean)(sfx->iLastLevelUsedOn < re.RegisterMedia_GetLevel());
 				}
 
 				if (bDeleteThis)

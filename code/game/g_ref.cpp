@@ -77,7 +77,7 @@ void TAG_Init( void )
 	refTagOwner_m::iterator	rtoi;
 
 	//Delete all owners
-	for ( rtoi = refTagOwnerMap.begin(); rtoi != refTagOwnerMap.end(); rtoi++ )
+	for ( rtoi = refTagOwnerMap.begin(); rtoi != refTagOwnerMap.end(); ++rtoi )
 	{
 		if ( (*rtoi).second == NULL )
 		{
@@ -88,7 +88,7 @@ void TAG_Init( void )
 		refTag_v::iterator		rti;
 
 		//Delete all tags within the owner's scope
-		for ( rti = ((*rtoi).second)->tags.begin(); rti != ((*rtoi).second)->tags.end(); rti++ )
+		for ( rti = ((*rtoi).second)->tags.begin(); rti != ((*rtoi).second)->tags.end(); ++rti )
 		{
 			if ( (*rti) == NULL )
 			{

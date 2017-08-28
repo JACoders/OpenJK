@@ -36,6 +36,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/ghoul2_gore.h"
 //rww - RAGDOLL_END
 
+#include "qcommon/ojk_saved_game_helper.h"
+
 extern void WP_SaberLoadParms( void );
 extern qboolean G_PlayerSpawned( void );
 
@@ -91,7 +93,7 @@ qboolean PInUse(unsigned int entNum)
 {
 	assert(entNum>=0);
 	assert(entNum<MAX_GENTITIES);
-	return((g_entityInUseBits[entNum/32]&(((unsigned int)1)<<(entNum&0x1f)))!=0);
+	return (qboolean)((g_entityInUseBits[entNum/32]&(((unsigned int)1)<<(entNum&0x1f)))!=0);
 }
 
 /*qboolean PInUse2(gentity_t *ent)
@@ -103,14 +105,25 @@ qboolean PInUse(unsigned int entNum)
 }
 */
 
-void WriteInUseBits(void)
+void WriteInUseBits()
 {
-	gi.AppendToSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits) );
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.write_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
 }
 
-void ReadInUseBits(void)
+void ReadInUseBits()
 {
-	gi.ReadFromSaveGame(INT_ID('I','N','U','S'), &g_entityInUseBits, sizeof(g_entityInUseBits), NULL);
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<uint32_t>(
+		INT_ID('I', 'N', 'U', 'S'),
+		::g_entityInUseBits);
+
 	// This is only temporary. Once I have converted all the ent->inuse refs,
 	// it won;t be needed -MW.
 	for(int i=0;i<MAX_GENTITIES;i++)
@@ -209,6 +222,8 @@ cvar_t	*g_npcdebug;
 cvar_t	*g_navSafetyChecks;
 
 cvar_t	*g_broadsword;
+
+cvar_t	*g_allowBunnyhopping;
 
 qboolean	stop_icarus = qfalse;
 
@@ -602,7 +617,7 @@ void G_InitCvars( void ) {
 
 	// noset vars
 	gi.cvar( "gamename", GAMEVERSION , CVAR_SERVERINFO | CVAR_ROM );
-	gi.cvar( "gamedate", __DATE__ , CVAR_ROM );
+	gi.cvar( "gamedate", SOURCE_DATE , CVAR_ROM );
 	g_skippingcin = gi.cvar ("skippingCinematic", "0", CVAR_ROM);
 
 	// latched vars
@@ -682,6 +697,8 @@ void G_InitCvars( void ) {
 
 	g_broadsword = gi.cvar( "broadsword", "1", 0);
 
+	g_allowBunnyhopping = gi.cvar( "g_allowBunnyhopping", "0", 0 );
+
 	gi.cvar( "tier_storyinfo", "0", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 	gi.cvar( "tiers_complete", "", CVAR_ROM|CVAR_SAVEGAME|CVAR_NORESTART);
 
@@ -709,7 +726,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	//rww - default this to 0, we will auto-set it to 1 if we run into a terrain ent
 	gi.cvar_set("RMG", "0");
 
-	g_bCollidableRoffs = false;
+	g_bCollidableRoffs = qfalse;
 
 	giMapChecksum = checkSum;
 	g_eSavedGameJustLoaded = eSavedGameJustLoaded;
@@ -717,7 +734,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 
 	gi.Printf ("------- Game Initialization -------\n");
 	gi.Printf ("gamename: %s\n", GAMEVERSION);
-	gi.Printf ("gamedate: %s\n", __DATE__);
+	gi.Printf ("gamedate: %s\n", SOURCE_DATE);
 
 	srand( randomSeed );
 
@@ -748,7 +765,7 @@ void InitGame(  const char *mapname, const char *spawntarget, int checkSum, cons
 	ClearAllInUse();
 	// initialize all clients for this game
 	level.maxclients = 1;
-	level.clients = (struct gclient_s *) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
+	level.clients = (gclient_t*) G_Alloc( level.maxclients * sizeof(level.clients[0]) );
 	memset(level.clients, 0, level.maxclients * sizeof(level.clients[0]));
 
 	// set client fields on player
@@ -2102,16 +2119,26 @@ extern int delayedShutDown;
 
 extern qboolean player_locked;
 
-void G_LoadSave_WriteMiscData(void)
+void G_LoadSave_WriteMiscData()
 {
-	gi.AppendToSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked));
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.write_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 
 
-void G_LoadSave_ReadMiscData(void)
+void G_LoadSave_ReadMiscData()
 {
-	gi.ReadFromSaveGame(INT_ID('L','C','K','D'), &player_locked, sizeof(player_locked), NULL);
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk<int32_t>(
+		INT_ID('L', 'C', 'K', 'D'),
+		::player_locked);
 }
 
 

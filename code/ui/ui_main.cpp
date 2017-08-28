@@ -138,14 +138,22 @@ static void		UI_UpdateSaberHilt( qboolean secondSaber );
 //static void		UI_UpdateSaberColor( qboolean secondSaber );
 static void		UI_InitWeaponSelect( void );
 static void		UI_WeaponHelpActive( void );
+
+#ifndef JK2_MODE
 static void		UI_UpdateFightingStyle ( void );
 static void		UI_UpdateFightingStyleChoices ( void );
 static void		UI_CalcForceStatus(void);
+#endif // !JK2_MODE
+
 static void		UI_DecrementForcePowerLevel( void );
 static void		UI_DecrementCurrentForcePower ( void );
 static void		UI_ShutdownForceHelp( void );
 static void		UI_ForceHelpActive( void );
+
+#ifndef JK2_MODE
 static void		UI_DemoSetForceLevels( void );
+#endif // !JK2_MODE
+
 static void		UI_RecordForceLevels( void );
 static void		UI_RecordWeapons( void );
 static void		UI_ResetCharacterListBoxes( void );
@@ -346,14 +354,38 @@ uiInfo_t uiInfo;
 static void UI_RegisterCvars( void );
 void UI_Load(void);
 
+static int UI_GetScreenshotFormatForString( const char *str ) {
+	if ( !Q_stricmp(str, "jpg") || !Q_stricmp(str, "jpeg") )
+		return SSF_JPEG;
+	else if ( !Q_stricmp(str, "tga") )
+		return SSF_TGA;
+	else if ( !Q_stricmp(str, "png") )
+		return SSF_PNG;
+	else
+		return -1;
+}
 
-typedef struct {
+static const char *UI_GetScreenshotFormatString( int format )
+{
+	switch ( format )
+	{
+	default:
+	case SSF_JPEG:
+		return "jpg";
+	case SSF_TGA:
+		return "tga";
+	case SSF_PNG:
+		return "png";
+	}
+}
+
+typedef struct cvarTable_s {
 	vmCvar_t	*vmCvar;
 	const char		*cvarName;
 	const char		*defaultString;
-	int			cvarFlags;
+	void		(*update)( void );
+	uint32_t	cvarFlags;
 } cvarTable_t;
-
 
 vmCvar_t	ui_menuFiles;
 vmCvar_t	ui_hudFiles;
@@ -372,40 +404,76 @@ vmCvar_t	ui_char_color_red;
 vmCvar_t	ui_char_color_green;
 vmCvar_t	ui_char_color_blue;
 vmCvar_t	ui_PrecacheModels;
+vmCvar_t	ui_screenshotType;
+
+static void UI_UpdateScreenshot( void )
+{
+	qboolean changed = qfalse;
+	// check some things
+	if ( ui_screenshotType.string[0] && isalpha( ui_screenshotType.string[0] ) )
+	{
+		int ssf = UI_GetScreenshotFormatForString( ui_screenshotType.string );
+		if ( ssf == -1 )
+		{
+			ui.Printf( "UI Screenshot Format Type '%s' unrecognised, defaulting to JPEG\n", ui_screenshotType.string );
+			uiInfo.uiDC.screenshotFormat = SSF_JPEG;
+			changed = qtrue;
+		}
+		else
+			uiInfo.uiDC.screenshotFormat = ssf;
+	}
+	else if ( ui_screenshotType.integer < SSF_JPEG || ui_screenshotType.integer > SSF_PNG )
+	{
+		ui.Printf( "ui_screenshotType %i is out of range, defaulting to 0 (JPEG)\n", ui_screenshotType.integer );
+		uiInfo.uiDC.screenshotFormat = SSF_JPEG;
+		changed = qtrue;
+	}
+	else {
+		uiInfo.uiDC.screenshotFormat = atoi( ui_screenshotType.string );
+		changed = qtrue;
+	}
+
+	if ( changed ) {
+		Cvar_Set( "ui_screenshotType", UI_GetScreenshotFormatString( uiInfo.uiDC.screenshotFormat ) );
+		Cvar_Update( &ui_screenshotType );
+	}
+}
 
 static cvarTable_t cvarTable[] =
 {
-	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", CVAR_ARCHIVE },
+	{ &ui_menuFiles,			"ui_menuFiles",			"ui/menus.txt", NULL, CVAR_ARCHIVE },
 #ifdef JK2_MODE
-	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jk2hud.txt",CVAR_ARCHIVE},
+	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jk2hud.txt", NULL, CVAR_ARCHIVE},
 #else
-	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jahud.txt",CVAR_ARCHIVE},
+	{ &ui_hudFiles,				"cg_hudFiles",			"ui/jahud.txt", NULL, CVAR_ARCHIVE},
 #endif
 
-	{ &ui_char_anim,			"ui_char_anim",			"BOTH_WALK1",0},
+	{ &ui_char_anim,			"ui_char_anim",			"BOTH_WALK1", NULL, 0},
 
-	{ &ui_char_model,			"ui_char_model",		"",0},	//these are filled in by the "g_*" versions on load
-	{ &ui_char_skin_head,		"ui_char_skin_head",	"",0},	//the "g_*" versions are initialized in UI_Init, ui_atoms.cpp
-	{ &ui_char_skin_torso,		"ui_char_skin_torso",	"",0},
-	{ &ui_char_skin_legs,		"ui_char_skin_legs",	"",0},
+	{ &ui_char_model,			"ui_char_model",		"", NULL, 0},	//these are filled in by the "g_*" versions on load
+	{ &ui_char_skin_head,		"ui_char_skin_head",	"", NULL, 0},	//the "g_*" versions are initialized in UI_Init, ui_atoms.cpp
+	{ &ui_char_skin_torso,		"ui_char_skin_torso",	"", NULL, 0},
+	{ &ui_char_skin_legs,		"ui_char_skin_legs",	"", NULL, 0},
 
-	{ &ui_saber_type,			"ui_saber_type",		"",0},
-	{ &ui_saber,				"ui_saber",				"",0},
-	{ &ui_saber2,				"ui_saber2",			"",0},
-	{ &ui_saber_color,			"ui_saber_color",		"",0},
-	{ &ui_saber2_color,			"ui_saber2_color",		"",0},
+	{ &ui_saber_type,			"ui_saber_type",		"", NULL, 0},
+	{ &ui_saber,				"ui_saber",				"", NULL, 0},
+	{ &ui_saber2,				"ui_saber2",			"", NULL, 0},
+	{ &ui_saber_color,			"ui_saber_color",		"", NULL, 0},
+	{ &ui_saber2_color,			"ui_saber2_color",		"", NULL, 0},
 
-	{ &ui_char_color_red,		"ui_char_color_red",	"", 0},
-	{ &ui_char_color_green,		"ui_char_color_green",	"", 0},
-	{ &ui_char_color_blue,		"ui_char_color_blue",	"", 0},
+	{ &ui_char_color_red,		"ui_char_color_red",	"", NULL, 0},
+	{ &ui_char_color_green,		"ui_char_color_green",	"", NULL, 0},
+	{ &ui_char_color_blue,		"ui_char_color_blue",	"", NULL, 0},
 
-	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", CVAR_ARCHIVE},
+	{ &ui_PrecacheModels,		"ui_PrecacheModels",	"1", NULL, CVAR_ARCHIVE},
+
+	{ &ui_screenshotType,		"ui_screenshotType",	"jpg", UI_UpdateScreenshot, CVAR_ARCHIVE }
 };
 
 #define FP_UPDATED_NONE -1
 #define NOWEAPON -1
 
-static int cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
+static const size_t cvarTableSize = ARRAY_LEN( cvarTable );
 
 void Text_Paint(float x, float y, float scale, vec4_t color, const char *text, int iMaxPixelWidth, int style, int iFontIndex);
 int Key_GetCatcher( void );
@@ -453,8 +521,6 @@ void _UI_Refresh( int realtime )
 		uiInfo.uiDC.FPS = 1000 * UI_FPS_FRAMES / total;
 	}
 
-
-
 	UI_UpdateCvars();
 
 	if (Menu_Count() > 0)
@@ -480,6 +546,8 @@ void _UI_Refresh( int realtime )
 	}
 }
 
+#define MODSBUFSIZE (MAX_MODS * MAX_QPATH)
+
 /*
 ===============
 UI_LoadMods
@@ -487,13 +555,14 @@ UI_LoadMods
 */
 static void UI_LoadMods() {
 	int		numdirs;
-	char	dirlist[2048];
+	char	dirlist[MODSBUFSIZE];
 	char	*dirptr;
-  char  *descptr;
+	char	*descptr;
 	int		i;
 	int		dirlen;
 
 	uiInfo.modCount = 0;
+
 	numdirs = FS_GetFileList( "$modlist", "", dirlist, sizeof(dirlist) );
 	dirptr  = dirlist;
 	for( i = 0; i < numdirs; i++ ) {
@@ -507,7 +576,6 @@ static void UI_LoadMods() {
 			break;
 		}
 	}
-
 }
 
 /*
@@ -1207,10 +1275,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_ResetSaberCvars();
 			}
     	}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "updatefightingstylechoices") == 0)
 		{
 			UI_UpdateFightingStyleChoices();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "initallocforcepower") == 0)
 		{
 			const char *forceName;
@@ -1237,10 +1307,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 		{
 			UI_ForceHelpActive();
 		}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "demosetforcelevels") == 0)
 		{
 			UI_DemoSetForceLevels();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "recordforcelevels") == 0)
 		{
 			UI_RecordForceLevels();
@@ -1287,10 +1359,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 				UI_LoadMissionSelectMenu(cvarName);
 			}
 		}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "calcforcestatus") == 0)
 		{
 			UI_CalcForceStatus();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "giveweapon") == 0)
 		{
 			const char *weaponIndex;
@@ -1455,10 +1529,12 @@ static qboolean UI_RunMenuScript ( const char **args )
 			String_Parse(args, &amount);
 			UI_GiveInventory(atoi(inventoryIndex),atoi(amount));
 		}
+#ifndef JK2_MODE
 		else if (Q_stricmp(name, "updatefightingstyle") == 0)
 		{
 			UI_UpdateFightingStyle();
 		}
+#endif // !JK2_MODE
 		else if (Q_stricmp(name, "update") == 0)
 		{
 			if (String_Parse(args, &name2))
@@ -1546,6 +1622,7 @@ const char *kyleForceStatusSounds[] =
 };
 
 
+#ifndef JK2_MODE
 static void UI_CalcForceStatus(void)
 {
 	float		lightSide,darkSide,total;
@@ -1661,6 +1738,7 @@ static void UI_CalcForceStatus(void)
 		DC->startLocalSound(DC->registerSound(kyleForceStatusSounds[index], qfalse), CHAN_VOICE );
 	}
 }
+#endif // !JK2_MODE
 
 /*
 =================
@@ -2017,12 +2095,13 @@ static qboolean UI_OwnerDrawHandleKey(int ownerDraw, int flags, float *special, 
 //because the ui can be loaded while the game/cgame are not loaded. So we're going to recreate what we need here.
 #undef MAX_ANIM_FILES
 #define MAX_ANIM_FILES 4
-typedef struct
+class ui_animFileSet_t
 {
+public:
 	char			filename[MAX_QPATH];
 	animation_t		animations[MAX_ANIMATIONS];
-} animFileSet_t;
-static animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
+}; // ui_animFileSet_t
+static ui_animFileSet_t	ui_knownAnimFileSets[MAX_ANIM_FILES];
 
 int				ui_numKnownAnimFileSets;
 
@@ -2145,7 +2224,7 @@ qboolean UI_ParseAnimFileSet( const char *animCFG, int *animFileIndex )
 	int			i;
 	char		*slash;
 
-	Q_strncpyz( strippedName, animCFG, sizeof(strippedName), qtrue);
+	Q_strncpyz( strippedName, animCFG, sizeof(strippedName));
 	slash = strrchr( strippedName, '/' );
 	if ( slash )
 	{
@@ -2263,7 +2342,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 		if ( token[0] == 0 )
 		{
 			COM_EndParseSession(  );
-			return species.ColorCount;
+			return (qboolean)(species.ColorCount != 0);
 		}
 
 		if (species.ColorCount >= species.ColorMax)
@@ -2274,7 +2353,7 @@ static qboolean UI_ParseColorData(char* buf, playerSpeciesInfo_t &species)
 
 		memset(&species.Color[species.ColorCount], 0, sizeof(playerColor_t));
 
-		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH, qtrue );
+		Q_strncpyz( species.Color[species.ColorCount].shader, token, MAX_QPATH );
 
 		token = COM_ParseExt( &p, qtrue );	//looking for action block {
 		if ( token[0] != '{' )
@@ -2307,7 +2386,7 @@ bIsImageFile
 builds path and scans for valid image extentions
 =================
 */
-static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean building)
+static qboolean IsImageFile(const char* dirptr, const char* skinname, qboolean building)
 {
 	char fpath[MAX_QPATH];
 	int f;
@@ -2329,10 +2408,10 @@ static bool bIsImageFile(const char* dirptr, const char* skinname, qboolean buil
 	{
 		ui.FS_FCloseFile(f);
 		if ( building ) ui.R_RegisterShaderNoMip(fpath);
-		return true;
+		return qtrue;
 	}
 
-	return false;
+	return qfalse;
 }
 
 static void UI_FreeSpecies( playerSpeciesInfo_t *species )
@@ -2362,12 +2441,27 @@ PlayerModel_BuildList
 */
 static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 {
+	static const size_t DIR_LIST_SIZE = 16384;
+
 	int		numdirs;
-	char	dirlist[2048];
+	size_t	dirListSize = DIR_LIST_SIZE;
+	char	stackDirList[8192];
+	char	*dirlist;
 	char*	dirptr;
 	int		dirlen;
 	int		i;
 	const int building = Cvar_VariableIntegerValue("com_buildscript");
+
+	dirlist = (char *)malloc(DIR_LIST_SIZE);
+	if ( !dirlist )
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Failed to allocate %u bytes of memory for player model "
+			"directory list. Using stack allocated buffer of %u bytes instead.",
+			DIR_LIST_SIZE, sizeof(stackDirList));
+
+		dirlist = stackDirList;
+		dirListSize = sizeof(stackDirList);
+	}
 
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
@@ -2375,28 +2469,36 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, 2048 );
+	numdirs = ui.FS_GetFileList("models/players", "/", dirlist, dirListSize );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
-		char	filelist[2048];
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[2048];
+		char fpath[MAX_QPATH];
 
 		dirlen = strlen(dirptr);
 
-		if (dirlen && dirptr[dirlen-1]=='/') dirptr[dirlen-1]='\0';
+		if (dirlen)
+		{
+			if (dirptr[dirlen-1]=='/')
+				dirptr[dirlen-1]='\0';
+		}
+		else
+		{
+			continue;
+		}
 
 		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
 			continue;
 
-		Com_sprintf(fpath, 2048, "models/players/%s/PlayerChoice.txt", dirptr);
+		Com_sprintf(fpath, sizeof(fpath), "models/players/%s/PlayerChoice.txt", dirptr);
 		filelen = ui.FS_FOpenFile(fpath, &f, FS_READ);
 
 		if (f)
 		{
+			char filelist[2048];
 			playerSpeciesInfo_t *species = NULL;
 
 			std::vector<char> buffer(filelen + 1);
@@ -2413,7 +2515,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			}
 			species = &uiInfo.playerSpecies[uiInfo.playerSpeciesCount];
 			memset(species, 0, sizeof(playerSpeciesInfo_t));
-			Q_strncpyz( species->Name, dirptr, MAX_QPATH, qtrue );
+			Q_strncpyz( species->Name, dirptr, MAX_QPATH );
 
 			if (!UI_ParseColorData(buffer.data(),*species))
 			{
@@ -2433,7 +2535,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 			int		numfiles;
 			int		iSkinParts=0;
 
-			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
+			numfiles = ui.FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, sizeof(filelist) );
 			fileptr  = filelist;
 			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
 			{
@@ -2450,7 +2552,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				filelen = strlen(fileptr);
 				COM_StripExtension(fileptr,skinname, sizeof(skinname));
 
-				if (bIsImageFile(dirptr, skinname, building))
+				if (IsImageFile(dirptr, skinname, (qboolean)(building != 0)))
 				{ //if it exists
 					if (Q_stricmpn(skinname,"head_",5) == 0)
 					{
@@ -2459,7 +2561,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinHeadMax *= 2;
 							species->SkinHead = (skinName_t *)realloc(species->SkinHead, species->SkinHeadMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinHead[species->SkinHeadCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<0;
 					} else
 					if (Q_stricmpn(skinname,"torso_",6) == 0)
@@ -2469,7 +2571,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinTorsoMax *= 2;
 							species->SkinTorso = (skinName_t *)realloc(species->SkinTorso, species->SkinTorsoMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinTorso[species->SkinTorsoCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<1;
 					} else
 					if (Q_stricmpn(skinname,"lower_",6) == 0)
@@ -2479,7 +2581,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 							species->SkinLegMax *= 2;
 							species->SkinLeg = (skinName_t *)realloc(species->SkinLeg, species->SkinLegMax*sizeof(skinName_t));
 						}
-						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH, qtrue);
+						Q_strncpyz(species->SkinLeg[species->SkinLegCount++].name, skinname, SKIN_LENGTH);
 						iSkinParts |= 1<<2;
 					}
 
@@ -2504,6 +2606,10 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		}
 	}
 
+	if ( dirlist != stackDirList )
+	{
+		free(dirlist);
+	}
 }
 
 /*
@@ -2671,7 +2777,6 @@ void _UI_Init( qboolean inGameLoad )
 
 }
 
-
 /*
 =================
 UI_RegisterCvars
@@ -2679,12 +2784,13 @@ UI_RegisterCvars
 */
 static void UI_RegisterCvars( void )
 {
-	int			i;
-	cvarTable_t	*cv;
+	size_t i = 0;
+	const cvarTable_t *cv = NULL;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ )
-	{
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
 		Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
+		if ( cv->update )
+			cv->update();
 	}
 }
 
@@ -3552,12 +3658,18 @@ UI_UpdateCvars
 */
 void UI_UpdateCvars( void )
 {
-	int			i;
-	cvarTable_t	*cv;
+	size_t i = 0;
+	const cvarTable_t *cv = NULL;
 
-	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ )
-	{
-		Cvar_Update( cv->vmCvar );
+	for ( i=0, cv=cvarTable; i<cvarTableSize; i++, cv++ ) {
+		if ( cv->vmCvar ) {
+			int modCount = cv->vmCvar->modificationCount;
+			Cvar_Update( cv->vmCvar );
+			if ( cv->vmCvar->modificationCount != modCount ) {
+				if ( cv->update )
+					cv->update();
+			}
+		}
 	}
 }
 
@@ -4251,6 +4363,7 @@ static void UI_UpdateSaberCvars ( void )
 	Cvar_Set ( "g_saber2_color", Cvar_VariableString ( "ui_saber2_color" ) );
 }
 
+#ifndef JK2_MODE
 static void UI_UpdateFightingStyleChoices ( void )
 {
 	//
@@ -4349,6 +4462,7 @@ static void UI_UpdateFightingStyleChoices ( void )
 		}
 	}
 }
+#endif // !JK2_MODE
 
 #define MAX_POWER_ENUMS 16
 
@@ -4359,26 +4473,42 @@ typedef struct {
 
 static powerEnum_t powerEnums[MAX_POWER_ENUMS] =
 {
+#ifndef JK2_MODE
 	{ "absorb",		FP_ABSORB },
+#endif // !JK2_MODE
+
 	{ "heal",			FP_HEAL },
 	{ "mindtrick",	FP_TELEPATHY },
+
+#ifndef JK2_MODE
 	{ "protect",		FP_PROTECT },
+#endif // !JK2_MODE
 
 				// Core powers
 	{ "jump",			FP_LEVITATION },
 	{ "pull",			FP_PULL },
 	{ "push",			FP_PUSH },
+
+#ifndef JK2_MODE
 	{ "sense",		FP_SEE },
+#endif // !JK2_MODE
+
 	{ "speed",		FP_SPEED },
 	{ "sabdef",		FP_SABER_DEFENSE },
 	{ "saboff",		FP_SABER_OFFENSE },
 	{ "sabthrow",		FP_SABERTHROW },
 
 				// Dark powers
+#ifndef JK2_MODE
 	{ "drain",		FP_DRAIN },
+#endif // !JK2_MODE
+
 	{ "grip",			FP_GRIP },
 	{ "lightning",	FP_LIGHTNING },
+
+#ifndef JK2_MODE
 	{ "rage",			FP_RAGE },
+#endif // !JK2_MODE
 };
 
 
@@ -4601,6 +4731,7 @@ static void	UI_ForceHelpActive( void )
 	}
 }
 
+#ifndef JK2_MODE
 // Set the force levels depending on the level chosen
 static void	UI_DemoSetForceLevels( void )
 {
@@ -4685,6 +4816,7 @@ static void	UI_DemoSetForceLevels( void )
 		uiInfo.forcePowerLevel[FP_RAGE]=Q_max(pState->forcePowerLevel[FP_RAGE], uiInfo.forcePowerLevel[FP_RAGE]);
 	}
 }
+#endif // !JK2_MODE
 
 // record the force levels into a cvar so when restoring player from map transition
 // the force levels are set up correctly
@@ -5176,6 +5308,7 @@ static void UI_ResetForceLevels ( void )
 }
 
 
+#ifndef JK2_MODE
 // Set the Players known saber style
 static void UI_UpdateFightingStyle ( void )
 {
@@ -5220,6 +5353,7 @@ static void UI_UpdateFightingStyle ( void )
 		Cvar_Set ( "g_fighting_style", va("%d",saberStyle) );
 	}
 }
+#endif // !JK2_MODE
 
 static void UI_ResetCharacterListBoxes( void )
 {

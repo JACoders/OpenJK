@@ -35,7 +35,7 @@ ICARUS_Instance		*iICARUS;
 bufferlist_t		ICARUS_BufferList;
 entlist_t			ICARUS_EntList;
 
-extern unsigned Com_BlockChecksum (const void *buffer, int length);
+extern uint32_t Com_BlockChecksum (const void *buffer, int length);
 extern	void	Q3_DebugPrint( int level, const char *format, ... );
 
 int			ICARUS_entFilter = -1;

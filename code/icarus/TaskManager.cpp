@@ -222,7 +222,7 @@ int CTaskManager::Free( void )
 
 	assert(!m_resident);	//don't free me, i'm currently running!
 	//Clear out all pending tasks
-	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ti++ )
+	for ( ti = m_tasks.begin(); ti != m_tasks.end(); ++ti )
 	{
 		(*ti)->Free();
 	}
@@ -230,7 +230,7 @@ int CTaskManager::Free( void )
 	m_tasks.clear();
 
 	//Clear out all taskGroups
-	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); gi++ )
+	for ( gi = m_taskGroups.begin(); gi != m_taskGroups.end(); ++gi )
 	{
 		delete (*gi);
 	}
@@ -404,7 +404,7 @@ int CTaskManager::GetFloat( int entID, CBlock *block, int &memberNum, float &val
 		return icarus->GetGame()->GetFloat( entID, name, &value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( CIcarus::ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -476,7 +476,7 @@ int CTaskManager::GetVector( int entID, CBlock *block, int &memberNum, vec3_t &v
 		return icarus->GetGame()->GetVector( entID, name, value );
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( CIcarus::ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max;
@@ -619,7 +619,7 @@ int CTaskManager::Get( int entID, CBlock *block, int &memberNum, char **value, C
 		}
 	}
 
-	//Look for a random() inline call
+	//Look for a Q_flrand(0.0f, 1.0f) inline call
 	if ( Check( CIcarus::ID_RANDOM, block, memberNum ) )
 	{
 		float	min, max, ret;
@@ -930,7 +930,7 @@ int CTaskManager::Completed( int id )
 	taskGroup_v::iterator	tgi;
 
 	//Mark the task as completed
-	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); tgi++ )
+	for ( tgi = m_taskGroups.begin(); tgi != m_taskGroups.end(); ++tgi )
 	{
 		//If this returns true, then the task was marked properly
 		if ( (*tgi)->MarkTaskComplete( id ) )

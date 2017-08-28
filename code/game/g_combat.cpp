@@ -476,7 +476,7 @@ qboolean OnSameTeam( gentity_t *ent1, gentity_t *ent2 )
 //		return qtrue;
 //	}
 
-	return ( ent1->client->playerTeam == ent2->client->playerTeam );
+	return (qboolean)( ent1->client->playerTeam == ent2->client->playerTeam );
 }
 
 
@@ -747,11 +747,6 @@ void G_SetMissionStatusText( gentity_t *attacker, int mod )
 	{//crushed
 		statusTextIndex = STAT_JUDGEMENTMUCHDESIRED;
 	}
-	// borg no longer exist
-//	else if ( attacker && attacker->client && attacker->client->playerTeam == TEAM_BORG )
-//	{//assimilated
-//		statusTextIndex = Q_irand( IGT_RESISTANCEISFUTILE, IGT_NAMEIS8OF12 );
-//	}
 	else if ( attacker && Q_stricmp( "trigger_hurt", attacker->classname ) == 0 )
 	{//Killed by something that should have been clearly dangerous
 //		statusTextIndex = Q_irand( IGT_JUDGEMENTDESIRED, IGT_JUDGEMENTMUCHDESIRED );
@@ -761,49 +756,6 @@ void G_SetMissionStatusText( gentity_t *attacker, int mod )
 	{//killed by a teammate
 		statusTextIndex = STAT_INSUBORDINATION;
 	}
-	/*
-	else if ()
-	{//killed a teammate- note: handled above
-		if ( Q_irand( 0, 1 ) )
-		{
-			statusTextIndex = IGT_YOUCAUSEDDEATHOFTEAMMATE;
-		}
-		else
-		{
-			statusTextIndex = IGT_KILLEDANINNOCENTCREWMAN;
-		}
-	}
-	else
-	{
-		//This next block is not contiguous
-		IGT_INADEQUATE,
-		IGT_RESPONSETIME,
-		IGT_SHOOTINRANGE,
-		IGT_TRYAGAIN,
-		IGT_TRAINONHOLODECK,
-		IGT_WHATCOLORSHIRT,
-		IGT_NOTIMPRESS7OF9,
-		IGT_NEELIXFAREDBETTER,
-		IGT_THATMUSTHURT,
-		IGT_TUVOKDISAPPOINTED,
-		IGT_STARFLEETNOTIFYFAMILY,
-		IGT_TEAMMATESWILLMISSYOU,
-		IGT_LESSTHANEXEMPLARY,
-		IGT_SACRIFICEDFORTHEWHOLE,
-		IGT_NOTLIVELONGANDPROSPER,
-		IGT_BETTERUSEOFSIMULATIONS,
-	}
-	*/
-
-	/*
-	//These can be set by designers
-	IGT_INSUBORDINATION,
-	IGT_YOUCAUSEDDEATHOFTEAMMATE,
-	IGT_DIDNTPROTECTTECH,
-	IGT_DIDNTPROTECT7OF9,
-	IGT_NOTSTEALTHYENOUGH,
-	IGT_STEALTHTACTICSNECESSARY,
-	*/
 }
 
 void G_MakeTeamVulnerable( void )
@@ -1927,10 +1879,8 @@ qboolean G_LimbLost( gentity_t *ent, int hitLoc )
 			return qtrue;
 		}
 		return qfalse;
-		break;
 	default:
-		return (ent->locationDamage[hitLoc]>=Q3_INFINITE);
-		break;
+		return (qboolean)(ent->locationDamage[hitLoc]>=Q3_INFINITE);
 	}
 }
 
@@ -2357,7 +2307,7 @@ qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName,
 {
 	if ( !gi.G2API_GetSurfaceRenderStatus( &ent->ghoul2[ent->playerModel], rootSurfName ) )
 	{//see if the basic name without variants is on
-		Q_strncpyz( returnSurfName, rootSurfName, returnSize, qtrue );
+		Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 		return qtrue;
 	}
 	else
@@ -2372,7 +2322,7 @@ qboolean G_GetRootSurfNameWithVariant( gentity_t *ent, const char *rootSurfName,
 			}
 		}
 	}
-	Q_strncpyz( returnSurfName, rootSurfName, returnSize, qtrue );
+	Q_strncpyz( returnSurfName, rootSurfName, returnSize );
 	return qfalse;
 }
 
@@ -3826,7 +3776,7 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 		NPC_FreeCombatPoint( self->NPC->combatPoint );
 		if ( self->NPC->group )
 		{
-			lastInGroup = (self->NPC->group->numGroup < 2);
+			lastInGroup = (qboolean)(self->NPC->group->numGroup < 2);
 			AI_GroupMemberKilled( self );
 			AI_DeleteSelfFromGroup( self );
 		}
@@ -5952,7 +5902,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 				case MOD_LAVA:
 				case MOD_FALLING:
 				case MOD_MELEE:
-					doSound = (Q_irand(0,4)==0);
+					doSound = (qboolean)(Q_irand(0,4)==0);
 					switch ( targ->client->ps.forcePowerLevel[FP_PROTECT] )
 					{
 					case FORCE_LEVEL_4:
@@ -6218,14 +6168,14 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 				//for (int i=0; i<numPuffs; i++)
 				{
- 					testDirection[0] = (random() * 0.5f) - 0.25f;
-					testDirection[1] = (random() * 0.5f) - 0.25f;
+ 					testDirection[0] = (Q_flrand(0.0f, 1.0f) * 0.5f) - 0.25f;
+					testDirection[1] = (Q_flrand(0.0f, 1.0f) * 0.5f) - 0.25f;
 					testDirection[2] = 1.0f;
 					VectorMA(targ->currentOrigin, 60.0f, testDirection, testStartPos);
 					VectorCopy(targ->currentOrigin, testEndPos);
-					testEndPos[0] += (random() * 8.0f) - 4.0f;
-					testEndPos[1] += (random() * 8.0f) - 4.0f;
-					testEndPos[2] += (random() * 8.0f);
+					testEndPos[0] += (Q_flrand(0.0f, 1.0f) * 8.0f) - 4.0f;
+					testEndPos[1] += (Q_flrand(0.0f, 1.0f) * 8.0f) - 4.0f;
+					testEndPos[2] += (Q_flrand(0.0f, 1.0f) * 8.0f);
 
 					gi.trace (&testTrace, testStartPos, NULL, NULL, testEndPos, ENTITYNUM_NONE, MASK_SHOT, G2_COLLIDE, 0);
 
@@ -6238,7 +6188,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 					}
 //					CG_DrawEdge(testStartPos,	testEndPos,	EDGE_IMPACT_POSSIBLE);
 					float chanceOfFizz = gi.WE_GetChanceOfSaberFizz();
-					TIMER_Set(targ, "AcidPainDebounce", 200 + (10000.0f * random() * chanceOfFizz));
+					TIMER_Set(targ, "AcidPainDebounce", 200 + (10000.0f * Q_flrand(0.0f, 1.0f) * chanceOfFizz));
 					hitLoc = HL_CHEST;
 				}
 			}
@@ -6495,14 +6445,15 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 
 	// Undying If:
 	//--------------------------------------------------------------------------
-	qboolean	targUndying = (!alreadyDead
-							&& !(dflags&DAMAGE_NO_PROTECTION)
-							&& (
-								(targ->flags&FL_UNDYING)
-								|| (dflags&DAMAGE_NO_KILL)
-								|| ((targ->client) && (targ->client->ps.forcePowersActive & (1<<FP_RAGE)) && !(dflags&DAMAGE_NO_PROTECTION) && !(dflags&DAMAGE_DIE_ON_IMPACT))
-							    )
-						   );
+	qboolean targUndying = (qboolean)(
+		!alreadyDead &&
+		!(dflags & DAMAGE_NO_PROTECTION) &&
+		((targ->flags&FL_UNDYING) ||
+			(dflags&DAMAGE_NO_KILL) ||
+			((targ->client) &&
+				(targ->client->ps.forcePowersActive & (1 << FP_RAGE)) &
+				!(dflags&DAMAGE_NO_PROTECTION) &&
+				!(dflags&DAMAGE_DIE_ON_IMPACT))));
 
 	if ( targ->client
 		&& targ->client->NPC_class == CLASS_WAMPA

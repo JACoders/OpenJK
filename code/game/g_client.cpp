@@ -124,13 +124,13 @@ qboolean SpotWouldTelefrag( gentity_t *spot, team_t checkteam )
 	vec3_t		mins, maxs;
 
 	// If we have a mins, use that instead of the hardcoded bounding box
-	if ( spot->mins && VectorLength( spot->mins ) )
+	if ( !VectorCompare(spot->mins, vec3_origin) && VectorLength( spot->mins ) )
 		VectorAdd( spot->s.origin, spot->mins, mins );
 	else
 		VectorAdd( spot->s.origin, playerMins, mins );
 
 	// If we have a maxs, use that instead of the hardcoded bounding box
-	if ( spot->maxs && VectorLength( spot->maxs ) )
+	if ( !VectorCompare(spot->maxs, vec3_origin) && VectorLength( spot->maxs ) )
 		VectorAdd( spot->s.origin, spot->maxs, maxs );
 	else
 		VectorAdd( spot->s.origin, playerMaxs, maxs );
@@ -290,7 +290,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec
 	gentity_t	*spot;
 	gentity_t	*nearestSpot;
 
-	if ( level.spawntarget != NULL && level.spawntarget[0] )
+	if ( level.spawntarget[0] )
 	{//we have a spawnpoint specified, try to find it
 		if ( (nearestSpot = spot = G_Find( NULL, FOFS(targetname), level.spawntarget )) == NULL )
 		{//you HAVE to be able to find the desired spot
@@ -604,7 +604,7 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 
 		client->pers.connected = CON_CONNECTED;
 		client->pers.teamState.state = TEAM_BEGIN;
-		_VectorCopy( cmd->angles, client->pers.cmd_angles );
+		VectorCopyM( cmd->angles, client->pers.cmd_angles );
 
 		memset( &client->ps, 0, sizeof( client->ps ) );
 		if( gi.Cvar_VariableIntegerValue( "g_clearstats" ) )
@@ -696,6 +696,8 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 
 		if (strlen(s))	// actually this would be safe anyway because of the way sscanf() works, but this is clearer
 		{//				|general info				  |-force powers |-saber 1										   |-saber 2										  |-general saber
+			int saber1BladeActive[8];
+			int saber2BladeActive[8];
 			unsigned int saber1BladeColor[8];
 			unsigned int saber2BladeColor[8];
 
@@ -718,14 +720,14 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 								&client->ps.forcePowerRegenAmount,
 								//saber 1 data
 								saber0Name,
-								&client->ps.saber[0].blade[0].active,
-								&client->ps.saber[0].blade[1].active,
-								&client->ps.saber[0].blade[2].active,
-								&client->ps.saber[0].blade[3].active,
-								&client->ps.saber[0].blade[4].active,
-								&client->ps.saber[0].blade[5].active,
-								&client->ps.saber[0].blade[6].active,
-								&client->ps.saber[0].blade[7].active,
+								&saber1BladeActive[0],
+								&saber1BladeActive[1],
+								&saber1BladeActive[2],
+								&saber1BladeActive[3],
+								&saber1BladeActive[4],
+								&saber1BladeActive[5],
+								&saber1BladeActive[6],
+								&saber1BladeActive[7],
 								&saber1BladeColor[0],
 								&saber1BladeColor[1],
 								&saber1BladeColor[2],
@@ -736,14 +738,14 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 								&saber1BladeColor[7],
 								//saber 2 data
 								saber1Name,
-								&client->ps.saber[1].blade[0].active,
-								&client->ps.saber[1].blade[1].active,
-								&client->ps.saber[1].blade[2].active,
-								&client->ps.saber[1].blade[3].active,
-								&client->ps.saber[1].blade[4].active,
-								&client->ps.saber[1].blade[5].active,
-								&client->ps.saber[1].blade[6].active,
-								&client->ps.saber[1].blade[7].active,
+								&saber2BladeActive[0],
+								&saber2BladeActive[1],
+								&saber2BladeActive[2],
+								&saber2BladeActive[3],
+								&saber2BladeActive[4],
+								&saber2BladeActive[5],
+								&saber2BladeActive[6],
+								&saber2BladeActive[7],
 								&saber2BladeColor[0],
 								&saber2BladeColor[1],
 								&saber2BladeColor[2],
@@ -760,7 +762,9 @@ static void Player_RestoreFromPrevLevel(gentity_t *ent, SavedGameJustLoaded_e eS
 					);
 			for (int j = 0; j < 8; j++)
 			{
+				client->ps.saber[0].blade[j].active = saber1BladeActive[j] ? qtrue : qfalse;
 				client->ps.saber[0].blade[j].color = (saber_colors_t)saber1BladeColor[j];
+				client->ps.saber[1].blade[j].active = saber2BladeActive[j] ? qtrue : qfalse;
 				client->ps.saber[1].blade[j].color = (saber_colors_t)saber2BladeColor[j];
 			}
 
@@ -2161,7 +2165,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			Q_stricmp( ent->NPC_type, "player" ) )
 		{
 			// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
-			char bleh[1024];
+			char bleh[MAX_SPAWN_VARS_CHARS];
 			Q_strncpyz(bleh, ent->NPC_type, sizeof(bleh));
 
 			G_ChangePlayerModel( ent, bleh );
@@ -2360,9 +2364,8 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 			Q_stricmp( ent->NPC_type, "player" ) )
 			{
 				// FIXME: game doesn't like it when you pass ent->NPC_type into this func. Insert all kinds of noises here --eez
-				char bleh[1024];
-				strncpy(bleh, ent->NPC_type, strlen(ent->NPC_type));
-				bleh[strlen(ent->NPC_type)] = '\0';
+				char bleh[MAX_SPAWN_VARS_CHARS];
+				Q_strncpyz(bleh, ent->NPC_type, sizeof(bleh));
 
 				G_ChangePlayerModel( ent, bleh );
 			}
@@ -2382,7 +2385,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		client->ps.commandTime = level.time - 100;
 		ucmd = client->pers.lastCommand;
 		ucmd.serverTime = level.time;
-		_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+		VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 		ucmd.weapon = client->ps.weapon;	// client think calls Pmove which sets the client->ps.weapon to ucmd.weapon, so ...
 		ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 		ClientThink( ent-g_entities, &ucmd );

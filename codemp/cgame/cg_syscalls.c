@@ -44,7 +44,7 @@ int PASSFLOAT( float x ) {
 void trap_Print( const char *fmt ) {
 	Q_syscall( CG_PRINT, fmt );
 }
-void trap_Error( const char *fmt ) {
+NORETURN void trap_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
 	exit(1);
 }
@@ -219,7 +219,12 @@ qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 qhandle_t trap_R_RegisterFont( const char *fontName ) {
 	return Q_syscall( CG_R_REGISTERFONT, fontName);
 }
-int	trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
+int trap_R_Font_StrLenPixels(const char *text, const int iFontIndex, const float scale) {
+	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
+	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
+	return width * scale;
+}
+float trap_R_Font_StrLenPixelsFloat(const char *text, const int iFontIndex, const float scale) {
 	//HACK! RE_Font_StrLenPixels works better with 1.0f scale
 	float width = (float)Q_syscall( CG_R_FONT_STRLENPIXELS, text, iFontIndex, PASSFLOAT(1.0f));
 	return width * scale;
@@ -228,7 +233,8 @@ int trap_R_Font_StrLenChars(const char *text) {
 	return Q_syscall( CG_R_FONT_STRLENCHARS, text);
 }
 int trap_R_Font_HeightPixels(const int iFontIndex, const float scale) {
-	return Q_syscall( CG_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(scale));
+	float height = (float)Q_syscall( CG_R_FONT_STRHEIGHTPIXELS, iFontIndex, PASSFLOAT(1.0f) );
+	return height * scale;
 }
 void trap_R_Font_DrawString(int ox, int oy, const char *text, const float *rgba, const int setIndex, int iCharLimit, const float scale) {
 	Q_syscall( CG_R_FONT_DRAWSTRING, ox, oy, text, rgba, setIndex, iCharLimit, PASSFLOAT(scale));
@@ -700,7 +706,7 @@ float CGSyscall_R_GetDistanceCull( void ) { float tmp; trap_R_GetDistanceCull( &
 void CGSyscall_FX_PlayEffectID( int id, vec3_t org, vec3_t fwd, int vol, int rad, qboolean isPortal ) { if ( isPortal ) trap_FX_PlayPortalEffectID( id, org, fwd, vol, rad ); else trap_FX_PlayEffectID( id, org, fwd, vol, rad ); }
 void CGSyscall_G2API_CollisionDetect( CollisionRecord_t *collRecMap, void* ghoul2, const vec3_t angles, const vec3_t position, int frameNumber, int entNum, vec3_t rayStart, vec3_t rayEnd, vec3_t scale, int traceFlags, int useLod, float fRadius ) { trap_G2API_CollisionDetect( collRecMap, ghoul2, angles, position, frameNumber, entNum, rayStart, rayEnd, scale, traceFlags, useLod, fRadius ); }
 
-void QDECL CG_Error( int level, const char *error, ... ) {
+NORETURN void QDECL CG_Error( int level, const char *error, ... ) {
 	va_list argptr;
 	char text[1024] = {0};
 
@@ -936,4 +942,6 @@ static void TranslateSyscalls( void ) {
 	trap->G2API_CleanEntAttachments			= trap_G2API_CleanEntAttachments;
 	trap->G2API_OverrideServer				= trap_G2API_OverrideServer;
 	trap->G2API_GetSurfaceName				= trap_G2API_GetSurfaceName;
+
+	trap->ext.R_Font_StrLenPixels			= trap_R_Font_StrLenPixelsFloat;
 }

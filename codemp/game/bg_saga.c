@@ -38,7 +38,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#include "g_local.h"
 #elif _CGAME
 	#include "cgame/cg_local.h"
-#elif _UI
+#elif UI_BUILD
 	#include "ui/ui_local.h"
 #endif
 
@@ -997,7 +997,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 		#elif defined(_CGAME)
 			bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = 0;
 			memset(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,0,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
-		#elif defined(_UI) //ui
+		#elif defined(UI_BUILD) //ui
 			bgSiegeClasses[bgNumSiegeClasses].uiPortraitShader = trap->R_RegisterShaderNoMip(parseBuf);
 			memcpy(bgSiegeClasses[bgNumSiegeClasses].uiPortrait,parseBuf,sizeof(bgSiegeClasses[bgNumSiegeClasses].uiPortrait));
 		#endif
@@ -1015,7 +1015,7 @@ void BG_SiegeParseClassFile(const char *filename, siegeClassDesc_t *descBuffer)
 	#else //cgame, ui
 		#if defined(_CGAME)
 			bgSiegeClasses[bgNumSiegeClasses].classShader = trap->R_RegisterShaderNoMip(parseBuf);
-		#elif defined(_UI)
+		#elif defined(UI_BUILD)
 			bgSiegeClasses[bgNumSiegeClasses].classShader = trap->R_RegisterShaderNoMip(parseBuf);
 		#endif
 		assert( bgSiegeClasses[bgNumSiegeClasses].classShader );

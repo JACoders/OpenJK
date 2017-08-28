@@ -161,7 +161,7 @@ qboolean ReachedGoal( gentity_t *goal )
 		NPCInfo->aiFlags &= ~NPCAI_TOUCHED_GOAL;
 		return qtrue;
 	}
-	return STEER::Reached(NPC, goal, NPCInfo->goalRadius, !!FlyingCreature(NPC));
+	return (qboolean)STEER::Reached(NPC, goal, NPCInfo->goalRadius, FlyingCreature(NPC) != qfalse);
 }
 
 /*

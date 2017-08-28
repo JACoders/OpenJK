@@ -112,7 +112,7 @@ void Rancor_Patrol( void )
 	{
 		if ( TIMER_Done( NPCS.NPC, "patrolTime" ))
 		{
-			TIMER_Set( NPCS.NPC, "patrolTime", crandom() * 5000 + 5000 );
+			TIMER_Set( NPCS.NPC, "patrolTime", Q_flrand(-1.0f, 1.0f) * 5000 + 5000 );
 		}
 	}
 
@@ -499,7 +499,7 @@ void Rancor_Attack( float distance, qboolean doCharge )
 			TIMER_Set( NPCS.NPC, "attack_dmg", 1000 );
 		}
 
-		TIMER_Set( NPCS.NPC, "attacking", NPCS.NPC->client->ps.legsTimer + random() * 200 );
+		TIMER_Set( NPCS.NPC, "attacking", NPCS.NPC->client->ps.legsTimer + Q_flrand(0.0f, 1.0f) * 200 );
 	}
 
 	// Need to do delayed damage since the attack animations encapsulate multiple mini-attacks

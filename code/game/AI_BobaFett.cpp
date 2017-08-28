@@ -261,8 +261,8 @@ void	Boba_DustFallNear(const vec3_t origin, int dustcount)
 	VectorCopy(origin, testStartPos);
 	for (int i=0; i<dustcount; i++)
 	{
-		testDirection[0] = (random() * 2.0f) - 1.0f;
-		testDirection[1] = (random() * 2.0f) - 1.0f;
+		testDirection[0] = (Q_flrand(0.0f, 1.0f) * 2.0f) - 1.0f;
+		testDirection[1] = (Q_flrand(0.0f, 1.0f) * 2.0f) - 1.0f;
 		testDirection[2] = 1.0f;
 
 		VectorMA(origin, 1000.0f, testDirection, testEndPos);
@@ -1191,9 +1191,9 @@ bool	Boba_Flee()
 
 				case 1:
 					Boba_Printf("SPOOK: Footsteps");
-  					testDirection[0] =  (random() * 0.5f) - 1.0f;
+  					testDirection[0] =  (Q_flrand(0.0f, 1.0f) * 0.5f) - 1.0f;
 	 		 		testDirection[0] += (testDirection[0]>0.0f)?(0.5f):(-0.5f);
-					testDirection[1] = (random() * 0.5f) - 1.0f;
+					testDirection[1] = (Q_flrand(0.0f, 1.0f) * 0.5f) - 1.0f;
 					testDirection[1] += (testDirection[1]>0.0f)?(0.5f):(-0.5f);
 					testDirection[2] = 1.0f;
 		 	 		VectorMA(NPC->enemy->currentOrigin, 400.0f, testDirection, BobaFootStepLoc);

@@ -1108,7 +1108,7 @@ void CG_AddViewWeapon( playerState_t *ps )
 				cent->gent->client->ps.saberLength = cent->gent->client->ps.saberLengthMax;
 			}
 		}
-//		FX_Saber( org_, axis_[0], cent->gent->client->ps.saberLength, 2.0 + crandom() * 0.2f, cent->gent->client->ps.saberColor );
+//		FX_Saber( org_, axis_[0], cent->gent->client->ps.saberLength, 2.0 + Q_flrand(-1.0f, 1.0f) * 0.2f, cent->gent->client->ps.saberColor );
 		VectorCopy( axis_[0], cent->gent->client->renderInfo.muzzleDir );
 	}
 //---------
@@ -1216,9 +1216,9 @@ void CG_AddViewWeapon( playerState_t *ps )
 			CGCam_Shake( val * val * 0.3f, 100 );
 		}
 
-		val += random() * 0.5f;
+		val += Q_flrand(0.0f, 1.0f) * 0.5f;
 
-		FX_AddSprite( flash.origin, NULL, NULL, 3.0f * val * scale, 0.0f, 0.7f, 0.7f, WHITE, WHITE, random() * 360, 0.0f, 1.0f, shader, FX_USE_ALPHA | FX_DEPTH_HACK );
+		FX_AddSprite( flash.origin, NULL, NULL, 3.0f * val * scale, 0.0f, 0.7f, 0.7f, WHITE, WHITE, Q_flrand(0.0f, 1.0f) * 360, 0.0f, 1.0f, shader, FX_USE_ALPHA | FX_DEPTH_HACK );
 	}
 
 	// Check if the heavy repeater is finishing up a sustained burst
@@ -1267,7 +1267,7 @@ int CG_WeaponCheck( int weaponIndex )
 {
 	int				value;
 
-	if ( weaponIndex == WP_SABER)
+	if ( weaponIndex == WP_SABER || weaponIndex == WP_STUN_BATON )
 	{
 		return qtrue;
 	}
@@ -1276,13 +1276,19 @@ int CG_WeaponCheck( int weaponIndex )
 							? weaponData[weaponIndex].energyPerShot
 							: weaponData[weaponIndex].altEnergyPerShot;
 
-	if (value > 0)
+	if( !cg.snap )
 	{
-		value = qtrue;
+		return qfalse;
+	}
+
+	// check how much energy(ammo) it takes to fire this weapon against how much ammo we have
+	if ( value > cg.snap->ps.ammo[weaponData[weaponIndex].ammoIndex] )
+	{
+		value = qfalse;
 	}
 	else
 	{
-		value = qfalse;
+		value = qtrue;
 	}
 
 	return value;
@@ -2092,7 +2098,7 @@ extern qboolean Q3_TaskIDPending( gentity_t *ent, taskID_t taskType );
 			{//not waiting on a scripted sound to finish
 				if( !jumping )
 				{
-					if( random() > 0.5 )
+					if( Q_flrand(0.0f, 1.0f) > 0.5 )
 					{
 						G_SoundOnEnt( player, CHAN_VOICE, va( "sound/chars/kyle/09kyk015.wav" ));
 					}

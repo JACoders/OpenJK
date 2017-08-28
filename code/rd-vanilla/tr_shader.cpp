@@ -42,6 +42,10 @@ static	texModInfo_t	texMods[MAX_SHADER_STAGES][TR_MAX_TEXMODS];
 // retail JKA shader for gfx/2d/wedge.
 #define RETAIL_ROCKET_WEDGE_SHADER_HASH (1217042)
 
+// Hash value (generated using the generateHashValueForText function) for the original
+// retail JKA shader for gfx/menus/radar/arrow_w.
+#define RETAIL_ARROW_W_SHADER_HASH (1650186)
+
 
 #define FILE_HASH_SIZE		1024
 static	shader_t*		sh_hashTable[FILE_HASH_SIZE];
@@ -1246,7 +1250,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 			}
 			else
 			{
-				stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_REPEAT );
+				stage->bundle[0].image = R_FindImageFile(
+					token,
+					(qboolean)!shader.noMipMaps,
+					(qboolean)!shader.noPicMip,
+					(qboolean)!shader.noTC,
+					GL_REPEAT );
 				if ( !stage->bundle[0].image )
 				{
 					ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1266,7 +1275,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				return qfalse;
 			}
 
-			stage->bundle[0].image = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, GL_CLAMP );
+			stage->bundle[0].image = R_FindImageFile(
+				token,
+				(qboolean)!shader.noMipMaps,
+				(qboolean)!shader.noPicMip,
+				(qboolean)!shader.noTC,
+				GL_CLAMP );
 			if ( !stage->bundle[0].image )
 			{
 				ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1302,7 +1316,12 @@ static qboolean ParseStage( shaderStage_t *stage, const char **text )
 				}
 				num = stage->bundle[0].numImageAnimations;
 				if ( num < MAX_IMAGE_ANIMATIONS ) {
-					images[num] = R_FindImageFile( token, !shader.noMipMaps, !shader.noPicMip, !shader.noTC, bClamp?GL_CLAMP:GL_REPEAT );
+					images[num] = R_FindImageFile(
+						token,
+						(qboolean)!shader.noMipMaps,
+						(qboolean)!shader.noPicMip,
+						(qboolean)!shader.noTC,
+						bClamp?GL_CLAMP:GL_REPEAT);
 					if ( !images[num] )
 					{
 						ri.Printf( PRINT_WARNING, "WARNING: R_FindImageFile could not find '%s' in shader '%s'\n", token, shader.name );
@@ -1942,7 +1961,7 @@ static void ParseSkyParms( const char **text ) {
 	if ( strcmp( token, "-" ) ) {
 		for (i=0 ; i<6 ; i++) {
 			Com_sprintf( pathname, sizeof(pathname), "%s_%s", token, suf[i] );
-			shader.sky->outerbox[i] = R_FindImageFile( ( char * ) pathname, qtrue, qtrue, !shader.noTC, GL_CLAMP );
+			shader.sky->outerbox[i] = R_FindImageFile( ( char * ) pathname, qtrue, qtrue, (qboolean)!shader.noTC, GL_CLAMP );
 			if ( !shader.sky->outerbox[i] ) {
 				if (i) {
 					shader.sky->outerbox[i] = shader.sky->outerbox[i-1];//not found, so let's use the previous image
@@ -2444,6 +2463,21 @@ Ghoul2 Insert End
 	{
 		stages[0].stateBits &= ~(GLS_SRCBLEND_BITS | GLS_DSTBLEND_BITS);
 		stages[0].stateBits |= GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
+	}
+
+	// The basejka radar arrow contains an incorrect rgbGen of identity
+	// It only worked because the original code didn't check shaders at all,
+	// thus setcolor worked fine but with fixing RB_RotatePic it no longer
+	// functioned because rgbGen identity doesn't work with setcolor.
+	//
+	// We match against retail version of gfx/menus/radar/arrow_w by calculating
+	// the hash value of the shader text, and comparing it against a 
+	// precalculated value.
+	if ( shaderHash == RETAIL_ARROW_W_SHADER_HASH &&
+		Q_stricmp( shader.name, "gfx/menus/radar/arrow_w" ) == 0 )
+	{
+		stages[0].rgbGen = CGEN_VERTEX;
+		stages[0].alphaGen = AGEN_VERTEX;
 	}
 
 	COM_EndParseSession();
@@ -3348,7 +3382,7 @@ static inline const int *R_FindLightmap( const int *lightmapIndex )
 
 	// attempt to load an external lightmap
 	Com_sprintf( fileName, sizeof(fileName), "%s/" EXTERNAL_LIGHTMAP, tr.worldDir, *lightmapIndex );
-	image = R_FindImageFile( fileName, qfalse, qfalse, r_ext_compressed_lightmaps->integer, GL_CLAMP );
+	image = R_FindImageFile( fileName, qfalse, qfalse, (qboolean)(r_ext_compressed_lightmaps->integer != 0), GL_CLAMP );
 	if( image == NULL )
 	{
 		return lightmapsVertex;

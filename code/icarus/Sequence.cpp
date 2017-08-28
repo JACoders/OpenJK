@@ -97,7 +97,7 @@ void CSequence::Delete( CIcarus* icarus )
 			(*iterSeq).second->SetParent( NULL );
 		}*/
 
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->SetParent( NULL );
 		}
@@ -106,7 +106,7 @@ void CSequence::Delete( CIcarus* icarus )
 	//m_childrenMap.clear();
 
 	//Clear all held commands
-	for ( bi = m_commands.begin(); bi != m_commands.end(); bi++ )
+	for ( bi = m_commands.begin(); bi != m_commands.end(); ++bi )
 	{
 		(*bi)->Free(icarus);
 		delete (*bi);	//Free() handled internally -- not any more!!
@@ -317,7 +317,7 @@ void CSequence::RemoveFlag( int flag, bool children )
 		}*/
 
 		sequence_l::iterator	si;
-		for ( si = m_children.begin(); si != m_children.end(); si++ )
+		for ( si = m_children.begin(); si != m_children.end(); ++si )
 		{
 			(*si)->RemoveFlag( flag, true );
 		}

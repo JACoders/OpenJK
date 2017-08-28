@@ -38,18 +38,30 @@ EVENT LOOP
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
 static sysEvent_t	eventQue[MAX_QUED_EVENTS] = {};
-static int			eventHead = 0, eventTail = 0;
-#if !defined(_JK2EXE)
-static byte		sys_packetReceived[MAX_MSGLEN] = {};
-#endif
+static sysEvent_t	*lastEvent = nullptr;
+static uint32_t		eventHead = 0, eventTail = 0;
+
+static const char *Sys_EventName( sysEventType_t evType ) {
+
+	static const char *evNames[SE_MAX] = {
+		"SE_NONE",
+		"SE_KEY",
+		"SE_CHAR",
+		"SE_MOUSE",
+		"SE_JOYSTICK_AXIS",
+		"SE_CONSOLE"
+	};
+
+	if ( evType >= SE_MAX ) {
+		return "SE_UNKNOWN";
+	} else {
+		return evNames[evType];
+	}
+}
 
 sysEvent_t Sys_GetEvent( void ) {
 	sysEvent_t	ev;
 	char		*s;
-#if !defined(_JK2EXE)
-	netadr_t	adr;
-	msg_t		netmsg;
-#endif
 
 	// return if we have data
 	if ( eventHead > eventTail ) {
@@ -68,22 +80,6 @@ sysEvent_t Sys_GetEvent( void ) {
 		strcpy( b, s );
 		Sys_QueEvent( 0, SE_CONSOLE, 0, 0, len, b );
 	}
-
-#if !defined(_JK2EXE)
-	// check for network packets
-	MSG_Init( &netmsg, sys_packetReceived, sizeof( sys_packetReceived ) );
-	if ( Sys_GetPacket ( &adr, &netmsg ) ) {
-		netadr_t		*buf;
-		int				len;
-
-		// copy out to a seperate buffer for qeueing
-		len = sizeof( netadr_t ) + netmsg.cursize;
-		buf = (netadr_t *)Z_Malloc( len,TAG_EVENT,qfalse );
-		*buf = adr;
-		memcpy( buf+1, netmsg.data, netmsg.cursize );
-		Sys_QueEvent( 0, SE_PACKET, 0, 0, len, buf );
-	}
-#endif
 
 	// return if we have data
 	if ( eventHead > eventTail ) {
@@ -108,13 +104,32 @@ Ptr should either be null, or point to a block of data that can
 be freed by the game later.
 ================
 */
-void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
+void Sys_QueEvent( int evTime, sysEventType_t evType, int value, int value2, int ptrLength, void *ptr ) {
 	sysEvent_t	*ev;
+
+	if ( evTime == 0 ) {
+		evTime = Sys_Milliseconds();
+	}
+
+	// try to combine all sequential mouse moves in one event
+	if ( evType == SE_MOUSE && lastEvent && lastEvent->evType == SE_MOUSE ) {
+		// try to reuse already processed item
+		if ( eventTail == eventHead ) {
+			lastEvent->evValue = value;
+			lastEvent->evValue2 = value2;
+			eventTail--;
+		} else {
+			lastEvent->evValue += value;
+			lastEvent->evValue2 += value2;
+		}
+		lastEvent->evTime = evTime;
+		return;
+	}
 
 	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
 
 	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-		Com_Printf("Sys_QueEvent: overflow (event type %i)\n", type);
+		Com_Printf( "Sys_QueEvent(%s,time=%i): overflow\n", Sys_EventName(evType), evTime );
 		// we are discarding an event, but don't leak memory
 		if ( ev->evPtr ) {
 			Z_Free( ev->evPtr );
@@ -124,14 +139,12 @@ void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptr
 
 	eventHead++;
 
-	if ( time == 0 ) {
-		time = Sys_Milliseconds();
-	}
-
-	ev->evTime = time;
-	ev->evType = type;
+	ev->evTime = evTime;
+	ev->evType = evType;
 	ev->evValue = value;
 	ev->evValue2 = value2;
 	ev->evPtrLength = ptrLength;
 	ev->evPtr = ptr;
+
+	lastEvent = ev;
 }

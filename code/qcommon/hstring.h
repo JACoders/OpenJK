@@ -8,8 +8,6 @@
 #include <map>
 #pragma warning (pop)
 
-using namespace std;
-
 class hstring
 {
 	int	mId;

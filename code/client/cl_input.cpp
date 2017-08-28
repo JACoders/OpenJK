@@ -70,11 +70,6 @@ qboolean	in_mlooking;
 
 extern cvar_t	*in_joystick;
 
-#ifndef NO_XINPUT
-void IN_UnloadXInput ( void );
-#endif
-
-
 static void IN_UseGivenForce(void)
 {
 	const char *c = Cmd_Argv(1);
@@ -88,9 +83,12 @@ static void IN_UseGivenForce(void)
 	}
 
 	switch(forceNum) {
+#ifndef JK2_MODE
 	case FP_DRAIN:
 		genCmdNum = GENCMD_FORCE_DRAIN;
 		break;
+#endif // !JK2_MODE
+
 	case FP_PUSH:
 		genCmdNum = GENCMD_FORCE_THROW;
 		break;
@@ -109,6 +107,8 @@ static void IN_UseGivenForce(void)
 	case FP_LIGHTNING:
 		genCmdNum = GENCMD_FORCE_LIGHTNING;
 		break;
+
+#ifndef JK2_MODE
 	case FP_RAGE:
 		genCmdNum = GENCMD_FORCE_RAGE;
 		break;
@@ -121,6 +121,8 @@ static void IN_UseGivenForce(void)
 	case FP_SEE:
 		genCmdNum = GENCMD_FORCE_SEEING;
 		break;
+#endif // !JK2_MODE
+
 	case FP_HEAL:
 		genCmdNum = GENCMD_FORCE_HEAL;
 		break;
@@ -140,6 +142,7 @@ void IN_MLookDown( void ) {
 	in_mlooking = qtrue;
 }
 
+void IN_CenterView( void );
 void IN_MLookUp( void ) {
 	in_mlooking = qfalse;
 	if ( !cl_freelook->integer ) {
@@ -733,23 +736,27 @@ void CL_CreateNewCommands( void ) {
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
-//	if ( cls.state < CA_PRIMED ) {
+//	if ( cls.state < CA_PRIMED )
 //		return;
-//	}
 
 	frame_msec = com_frameTime - old_com_frameTime;
 
+	// if running over 1000fps, act as if each frame is 1ms
+	// prevents divisions by zero
+	if ( frame_msec < 1 )
+		frame_msec = 1;
+
 	// if running less than 5fps, truncate the extra time to prevent
 	// unexpected moves after a hitch
-	if ( frame_msec > 200 ) {
+	if ( frame_msec > 200 )
 		frame_msec = 200;
-	}
+
 	old_com_frameTime = com_frameTime;
 
 	// generate a command for this frame
 	cl.cmdNumber++;
 	cmdNum = cl.cmdNumber & CMD_MASK;
-	cl.cmds[cmdNum] = CL_CreateCmd ();
+	cl.cmds[cmdNum] = CL_CreateCmd();
 }
 
 /*

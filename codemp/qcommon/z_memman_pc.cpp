@@ -616,8 +616,8 @@ void Com_InitZoneMemoryVars( void ) {
 	com_validateZone = Cvar_Get("com_validateZone", "0", 0);
 //#endif
 
-	Cmd_AddCommand("zone_stats", Z_Stats_f);
-	Cmd_AddCommand("zone_details", Z_Details_f);
+	Cmd_AddCommand("zone_stats", Z_Stats_f, "Prints out zone memory stats" );
+	Cmd_AddCommand("zone_details", Z_Details_f, "Prints out full detailed zone memory info" );
 
 #ifdef _DEBUG
 	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);

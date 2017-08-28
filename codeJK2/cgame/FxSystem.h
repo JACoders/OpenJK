@@ -27,6 +27,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #ifndef FX_SYSTEM_H_INC
 #define FX_SYSTEM_H_INC
 
+#include "qcommon/safe/gsl.h"
+
 
 #define irand	Q_irand
 #define flrand	Q_flrand
@@ -34,27 +36,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 extern vmCvar_t	fx_debug;
 extern vmCvar_t	fx_freeze;
 
-inline void Vector2Clear(vec2_t a)
-{
-	a[0] = 0.0f;
-	a[1] = 0.0f;
-}
-
-inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
-
 extern void	CG_CalcEntityLerpPositions( centity_t * );	
-
 
 struct SFxHelper
 {
@@ -77,7 +59,7 @@ struct SFxHelper
 
 	// Sound
 	void	PlaySound( vec3_t origin, int entityNum, int entchannel, sfxHandle_t sfx );
-	int		RegisterSound( const char *sound );
+	int		RegisterSound( const gsl::cstring_view& sound );
 
 	// Physics/collision
 	void	Trace( trace_t *tr, vec3_t start, vec3_t min, vec3_t max, vec3_t end, int skipEntNum, int flags );
@@ -85,8 +67,8 @@ struct SFxHelper
 	void	AddFxToScene( refEntity_t *ent );
 	void	AddLightToScene( vec3_t org, float radius, float red, float green, float blue );
 
-	int		RegisterShader( const char *shader );
-	int		RegisterModel( const char *model );
+	int		RegisterShader( const gsl::cstring_view& shader );
+	int		RegisterModel( const gsl::cstring_view& model );
 
 	void	AddPolyToScene( int shader, int count, polyVert_t *verts );
 

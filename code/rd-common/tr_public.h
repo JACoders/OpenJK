@@ -30,11 +30,11 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#define	REF_API_VERSION		15
+#define	REF_API_VERSION		18
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+	void				(QDECL *Error)						( int errorLevel, const char *fmt, ...) NORETURN_PTR __attribute__ ((format (printf, 2, 3)));
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
 	int					(*Milliseconds)						( void );
@@ -100,6 +100,7 @@ typedef struct {
 
 	// OpenGL-specific
 	void *			(*GL_GetProcAddress)				( const char *name );
+	qboolean		(*GL_ExtensionSupported)			( const char *extension );
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
@@ -112,7 +113,7 @@ typedef struct {
 															const int passEntityNum, const int contentmask,
 															const EG2_Collision eG2TraceType, const int useLod );
 
-	qboolean			(*SG_Append)						( unsigned int chid, const void *pvData, int iLength );
+	ojk::ISavedGame* saved_game;
 
 	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
@@ -209,7 +210,7 @@ typedef struct {
 	void	(*GetScreenShot)(byte *data, int w, int h);
 
 #ifdef JK2_MODE
-	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
+	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding, bool flip_vertical );
 	void	(*LoadJPGFromBuffer)( byte *inputBuffer, size_t len, byte **pic, int *width, int *height );
 #endif
 
@@ -312,7 +313,7 @@ typedef struct {
 	int			(*G2API_GetSurfaceRenderStatus)(CGhoul2Info *ghlInfo, const char *surfaceName);
 	int			(*G2API_GetTime)(int argTime);
 	void		(*G2API_GiveMeVectorFromMatrix)(mdxaBone_t &boltMatrix, Eorientations flags, vec3_t &vec);
-	int			(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
+	qboolean	(*G2API_HaveWeGhoul2Models)(CGhoul2Info_v &ghoul2);
 	qboolean	(*G2API_IKMove)(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
 	int			(*G2API_InitGhoul2Model)(CGhoul2Info_v &ghoul2, const char *fileName, int modelIndex,
 					qhandle_t customSkin, qhandle_t customShader, int modelFlags, int lodBias);

@@ -358,12 +358,12 @@ Con_Init
 void Con_Init (void) {
 	int		i;
 
-	con_notifytime = Cvar_Get ("con_notifytime", "3", 0);
-	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
+	con_notifytime = Cvar_Get ("con_notifytime", "3", 0, "How many seconds notify messages should be shown before they fade away");
+	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0, "Console open/close speed");
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
-	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE);
-	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE);
+	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
+	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;
@@ -372,14 +372,14 @@ void Con_Init (void) {
 		historyEditLines[i].widthInChars = g_console_field_width;
 	}
 
-	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f );
-	Cmd_AddCommand( "togglemenu", Con_ToggleMenu_f );
-	Cmd_AddCommand( "messagemode", Con_MessageMode_f );
-	Cmd_AddCommand( "messagemode2", Con_MessageMode2_f );
-	Cmd_AddCommand( "messagemode3", Con_MessageMode3_f );
-	Cmd_AddCommand( "messagemode4", Con_MessageMode4_f );
-	Cmd_AddCommand( "clear", Con_Clear_f );
-	Cmd_AddCommand( "condump", Con_Dump_f );
+	Cmd_AddCommand( "toggleconsole", Con_ToggleConsole_f, "Show/hide console" );
+	Cmd_AddCommand( "togglemenu", Con_ToggleMenu_f, "Show/hide the menu" );
+	Cmd_AddCommand( "messagemode", Con_MessageMode_f, "Global Chat" );
+	Cmd_AddCommand( "messagemode2", Con_MessageMode2_f, "Team Chat" );
+	Cmd_AddCommand( "messagemode3", Con_MessageMode3_f, "Private Chat with Target Player" );
+	Cmd_AddCommand( "messagemode4", Con_MessageMode4_f, "Private Chat with Last Attacker" );
+	Cmd_AddCommand( "clear", Con_Clear_f, "Clear console text" );
+	Cmd_AddCommand( "condump", Con_Dump_f, "Dump console text to file" );
 	Cmd_SetCommandCompletionFunc( "condump", Cmd_CompleteTxtName );
 }
 

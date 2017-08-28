@@ -68,7 +68,11 @@ void MSG_WriteData (msg_t *buf, const void *data, int length);
 
 struct usercmd_s;
 struct entityState_s;
-struct playerState_s;
+
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 
 void MSG_WriteBits( msg_t *msg, int value, int bits );
 
@@ -99,8 +103,8 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 void MSG_ReadEntity( msg_t *msg, entityState_t *to);
 void MSG_WriteEntity( msg_t *msg, entityState_t *to, int removeNum);
 
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
-void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
+void MSG_WriteDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to );
+void MSG_ReadDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to );
 
 /*
 ==============================================================
@@ -511,15 +515,6 @@ void	FS_ForceFlush( fileHandle_t f );
 void	FS_FreeFile( void *buffer );
 // frees the memory returned by FS_ReadFile
 
-class FS_AutoFreeFile {
-private:
-	FS_AutoFreeFile();
-	void *buffer;
-public:
-	FS_AutoFreeFile(void *inbuf) : buffer(inbuf) { };
-	~FS_AutoFreeFile() { if (buffer) FS_FreeFile(buffer); };
-};
-
 void	FS_WriteFile( const char *qpath, const void *buffer, int size );
 // writes a complete file, creating any subdirectories needed
 
@@ -603,10 +598,11 @@ void 		NORETURN QDECL Com_Error( int code, const char *fmt, ... );
 void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
-unsigned	Com_BlockChecksum( const void *buffer, int length );
+uint32_t	Com_BlockChecksum( const void *buffer, int length );
 int			Com_Filter(const char *filter, const char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, const char *name, int casesensitive);
 qboolean	Com_SafeMode( void );
+void		Com_RunAndTimeServerPacket(netadr_t *evFrom, msg_t *buf);
 
 void		Com_StartupVariable( const char *match );
 // checks for and removes command line "+set var arg" constructs
@@ -626,6 +622,7 @@ extern	cvar_t	*com_ansiColor;
 #endif
 
 extern	cvar_t	*com_affinity;
+extern	cvar_t	*com_busyWait;
 
 // both client and server must agree to pause
 extern	cvar_t	*cl_paused;
@@ -641,7 +638,6 @@ extern	int		timeInPVSCheck;
 extern	int		numTraces;
 
 extern	int		com_frameTime;
-extern	int		com_frameMsec;
 
 extern	qboolean	com_errorEntered;
 

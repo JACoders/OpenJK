@@ -157,13 +157,13 @@ void NPC_BSAdvanceFight (void)
 						VectorMA ( muzzle, distanceToEnemy, forward, hitspot);
 						VectorSubtract(hitspot, enemy_org, diff);
 						aim_off = VectorLength(diff);
-						if(aim_off > random() * max_aim_off)//FIXME: use aim value to allow poor aim?
+						if(aim_off > Q_flrand(0.0f, 1.0f) * max_aim_off)//FIXME: use aim value to allow poor aim?
 						{
 							attack_scale *= 0.75;
 							//see if where we're going to shoot is too far from his head
 							VectorSubtract(hitspot, enemy_head, diff);
 							aim_off = VectorLength(diff);
-							if(aim_off > random() * max_aim_off)
+							if(aim_off > Q_flrand(0.0f, 1.0f) * max_aim_off)
 							{
 								attack_ok = qfalse;
 							}

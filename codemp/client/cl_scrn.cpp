@@ -315,7 +315,9 @@ void SCR_DrawDemoRecording( void ) {
 	if ( clc.spDemoRecording ) {
 		return;
 	}
-
+	if (!cl_drawRecording->integer) {
+		return;
+	}
 	pos = FS_FTell( clc.demofile );
 	Com_sprintf( string, sizeof(string), "RECORDING %s: %ik", clc.demoName, pos / 1024 );
 

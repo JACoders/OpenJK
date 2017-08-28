@@ -664,14 +664,14 @@ static int f_count;
 static void CreateShape()
 //----------------------------------------------------------------------------
 {
-	VectorSet( sh1, 0.66f,// + crandom() * 0.1f,	// fwd
-				0.08f + crandom() * 0.02f,
-				0.08f + crandom() * 0.02f );
+	VectorSet( sh1, 0.66f,// + Q_flrand(-1.0f, 1.0f) * 0.1f,	// fwd
+				0.08f + Q_flrand(-1.0f, 1.0f) * 0.02f,
+				0.08f + Q_flrand(-1.0f, 1.0f) * 0.02f );
 
 	// it seems to look best to have a point on one side of the ideal line, then the other point on the other side.
-	VectorSet( sh2, 0.33f,// + crandom() * 0.1f,	// fwd
-					-sh1[1] + crandom() * 0.02f,	// forcing point to be on the opposite side of the line -- right
-					-sh1[2] + crandom() * 0.02f );// up
+	VectorSet( sh2, 0.33f,// + Q_flrand(-1.0f, 1.0f) * 0.1f,	// fwd
+					-sh1[1] + Q_flrand(-1.0f, 1.0f) * 0.02f,	// forcing point to be on the opposite side of the line -- right
+					-sh1[2] + Q_flrand(-1.0f, 1.0f) * 0.02f );// up
 }
 
 //----------------------------------------------------------------------------
@@ -1161,14 +1161,14 @@ static void RB_SurfaceSaberGlow()
 	{
 		VectorMA( e->origin, i, e->axis[0], end );
 
-		DoSprite( end, e->radius, 0.0f );//random() * 360.0f );
+		DoSprite( end, e->radius, 0.0f );//Q_flrand(0.0f, 1.0f) * 360.0f );
 		e->radius += 0.017f;
 	}
 
 	// Big hilt sprite
 	// Please don't kill me Pat...I liked the hilt glow blob, but wanted a subtle pulse.:)  Feel free to ditch it if you don't like it.  --Jeff
 	// Please don't kill me Jeff...  The pulse is good, but now I want the halo bigger if the saber is shorter...  --Pat
-	DoSprite( e->origin, 5.5f + random() * 0.25f, 0.0f );//random() * 360.0f );
+	DoSprite( e->origin, 5.5f + Q_flrand(0.0f, 1.0f) * 0.25f, 0.0f );//Q_flrand(0.0f, 1.0f) * 360.0f );
 }
 
 /*
@@ -1580,18 +1580,6 @@ void RB_SurfaceGrid( srfGridMesh_t *cv ) {
 	}
 }
 
-static inline void Vector2Set(vec2_t a,float b,float c)
-{
-	a[0] = b;
-	a[1] = c;
-}
-
-static inline void Vector2Copy(vec2_t src,vec2_t dst)
-{
-	dst[0] = src[0];
-	dst[1] = src[1];
-}
-
 #define LATHE_SEG_STEP	10
 #define BEZIER_STEP		0.05f	// must be in the range of 0 to 1
 
@@ -1621,7 +1609,7 @@ static void RB_SurfaceLathe()
 		pain = ( 1.0f - pain ) * 0.08f;
 	}
 
-	Vector2Set( l_oldpt, e->axis[0][0], e->axis[0][1] );
+	VectorSet2( l_oldpt, e->axis[0][0], e->axis[0][1] );
 
 	// do scalability stuff...r_lodbias 0-3
 	int lod = r_lodbias->integer + 1;
@@ -1648,14 +1636,14 @@ static void RB_SurfaceLathe()
 			l_oldpt2[i] = mum13 * e->axis[0][i] + group1 * e->axis[1][i] + group2 * e->axis[2][i] + mu3 * e->oldorigin[i];
 		}
 
-		Vector2Set( oldpt, l_oldpt[0], 0 );
-		Vector2Set( oldpt2, l_oldpt2[0], 0 );
+		VectorSet2( oldpt, l_oldpt[0], 0 );
+		VectorSet2( oldpt2, l_oldpt2[0], 0 );
 
 		// lathe patch section around in a complete circle
 		for ( t = latheStep; t <= 360; t += latheStep )
 		{
-			Vector2Set( pt, l_oldpt[0], 0 );
-			Vector2Set( pt2, l_oldpt2[0], 0 );
+			VectorSet2( pt, l_oldpt[0], 0 );
+			VectorSet2( pt2, l_oldpt2[0], 0 );
 
 			s = sin( DEG2RAD( t ));
 			c = cos( DEG2RAD( t ));
@@ -1733,12 +1721,12 @@ static void RB_SurfaceLathe()
 			tess.indexes[tess.numIndexes++] = vbase;
 
 			// Shuffle new points to old
-			Vector2Copy( pt, oldpt );
-			Vector2Copy( pt2, oldpt2 );
+			VectorCopy2( pt, oldpt );
+			VectorCopy2( pt2, oldpt2 );
 		}
 
 		// shuffle lathe points
-		Vector2Copy( l_oldpt2, l_oldpt );
+		VectorCopy2( l_oldpt2, l_oldpt );
 	}
 }
 
@@ -1902,8 +1890,8 @@ static void RB_SurfaceClouds()
 			tess.indexes[tess.numIndexes++] = vbase;
 
 			// Shuffle new points to old
-			Vector2Copy( pt, oldpt );
-			Vector2Copy( pt2, oldpt2 );
+			VectorCopy2( pt, oldpt );
+			VectorCopy2( pt2, oldpt2 );
 		}
 	}
 }

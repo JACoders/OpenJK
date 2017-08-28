@@ -41,7 +41,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	set(SPEngineIncludeDirectories
 		${SPEngineIncludeDirectories}
 		${SharedDir}
-		${SPDir})
+		${SPDir}
+		"${GSLIncludeDirectory}")
 
 	#    Dependencies
 	# OpenAL (is optionally included for Windows)
@@ -69,22 +70,17 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 	endif()
 
 	if(UseInternalSDL2)
-		if(MSVC14)
-			set(MSVC_SUFFIX "_2015")
-		else()
-			set(MSVC_SUFFIX "")
-		endif()
 		if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 			set(SPEngineLibraries
 				${SPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2main.lib
-				${OpenJKLibDir}/SDL2/lib/x86${MSVC_SUFFIX}/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x86/SDL2.lib
 				)
 		else()
 			set(SPEngineLibraries
 				${SPEngineLibraries}
-				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2main.lib
-				${OpenJKLibDir}/SDL2/lib/x64${MSVC_SUFFIX}/SDL2.lib
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2main.lib
+				${OpenJKLibDir}/SDL2/lib/x64/SDL2.lib
 				)
 		endif()
 
@@ -158,10 +154,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/msg.cpp"
 		"${SPDir}/qcommon/net_chan.cpp"
 
-		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
-		"${SPDir}/qcommon/q_platform.h"
 
 		"${SPDir}/qcommon/sstring.h"
 		"${SPDir}/qcommon/stringed_ingame.cpp"
@@ -178,9 +172,27 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/qcommon/stv_version.h"
 		"${SPDir}/qcommon/timing.h"
 		"${SPDir}/qcommon/MiniHeap.h"
+
+		"${SPDir}/qcommon/ojk_i_saved_game.h"
+		"${SPDir}/qcommon/ojk_saved_game.h"
+		"${SPDir}/qcommon/ojk_saved_game.cpp"
+		"${SPDir}/qcommon/ojk_saved_game_helper.h"
+		"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+		"${SPDir}/qcommon/ojk_scope_guard.h"
+
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPEngineCommonFiles})
 	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonFiles})
+	
+	set(SPEngineCommonSafeFiles
+		"${SharedDir}/qcommon/safe/files.cpp"
+		"${SharedDir}/qcommon/safe/files.h"
+		${SharedCommonSafeFiles}
+		"${SPDir}/qcommon/safe/memory.h"
+		)
+	source_group("common/safe" FILES ${SPEngineCommonSafeFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineCommonSafeFiles})
 
 
 	# Server files
@@ -269,7 +281,8 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 		"${SPDir}/rd-common/tr_public.h"
 		"${SPDir}/rd-common/tr_types.h"
 		)
-
+	source_group("renderer" FILES ${SPEngineRendererFiles})
+	set(SPEngineFiles ${SPEngineFiles} ${SPEngineRendererFiles})
 
 	# UI files
 	set(SPEngineUIFiles
@@ -369,11 +382,11 @@ if(BuildSPEngine OR BuildJK2SPEngine)
 			if(UseInternalSDL2)
 				if(CMAKE_SIZEOF_VOID_P EQUAL 4)
 					set(SPEngineExtraInstallFiles
-						${OpenJKLibDir}/SDL2/bin/x86${MSVC_SUFFIX}/SDL2.dll
+						${OpenJKLibDir}/SDL2/bin/x86/SDL2.dll
 						)
 				else()
 					set(SPEngineExtraInstallFiles
-						${OpenJKLibDir}/SDL2/bin/x64${MSVC_SUFFIX}/SDL2.dll
+						${OpenJKLibDir}/SDL2/bin/x64/SDL2.dll
 						)
 				endif()
 			endif()

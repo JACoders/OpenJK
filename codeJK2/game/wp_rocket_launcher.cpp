@@ -110,7 +110,7 @@ void rocketThink( gentity_t *ent )
 		// add crazy drunkenness
 		for ( int i = 0; i < 3; i++ )
 		{
-			newdir[i] += crandom() * ent->random * 0.25f;
+			newdir[i] += Q_flrand(-1.0f, 1.0f) * ent->random * 0.25f;
 		}
 
 		// decay the randomness
@@ -208,7 +208,7 @@ void WP_FireRocket( gentity_t *ent, qboolean alt_fire )
 			// if we are fully locked, always take on the enemy.  
 			//	Also give a slight advantage to higher, but not quite full charges.  
 			//	Finally, just give any amount of charge a very slight random chance of locking.
-			if ( dif == 8 || random() * dif > 2 || random() > 0.97f )
+			if ( dif == 8 || Q_flrand(0.0f, 1.0f) * dif > 2 || Q_flrand(0.0f, 1.0f) > 0.97f )
 			{
 				missile->enemy = &g_entities[lockEntNum];
 

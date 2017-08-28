@@ -192,7 +192,7 @@ void misc_dlight_use ( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
 	G_ActivateBehavior(ent,BSET_USE);
 
-	ent->misc_dlight_active = !ent->misc_dlight_active;	//toggle
+	ent->misc_dlight_active = (qboolean)!ent->misc_dlight_active;	//toggle
 	misc_lightstyle_set (ent);
 }
 
@@ -2771,7 +2771,7 @@ void gas_random_jet( gentity_t *self )
 
 	G_PlayEffect( "env/mini_gasjet", pt );
 
-	self->nextthink = level.time + random() * 16000 + 12000; // do this rarely
+	self->nextthink = level.time + Q_flrand(0.0f, 1.0f) * 16000 + 12000; // do this rarely
 }
 
 //------------------------------------------------------------
@@ -2827,7 +2827,7 @@ void SP_misc_gas_tank( gentity_t *ent )
 	ent->e_DieFunc = dieF_misc_model_breakable_die;
 
 	ent->e_ThinkFunc = thinkF_gas_random_jet;
-	ent->nextthink = level.time + random() * 12000 + 6000; // do this rarely
+	ent->nextthink = level.time + Q_flrand(0.0f, 1.0f) * 12000 + 6000; // do this rarely
 }
 
 /*QUAKED misc_crystal_crate (1 0 0.25) (-34 -34 0) (34 34 44) NON_SOLID

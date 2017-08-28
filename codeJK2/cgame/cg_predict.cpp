@@ -524,7 +524,7 @@ void CG_TouchTriggerPrediction( void ) {
 		return;
 	}
 
-	spectator = ( cg.predicted_player_state.pm_type == PM_SPECTATOR );
+	spectator = (qboolean)( cg.predicted_player_state.pm_type == PM_SPECTATOR );
 
 	if ( cg.predicted_player_state.pm_type != PM_NORMAL && !spectator ) {
 		return;
@@ -633,7 +633,7 @@ void CG_PredictPlayerState( void ) {
 	cg_pmove.trace = CG_Trace;
 	cg_pmove.pointcontents = CG_PointContents;
 	cg_pmove.tracemask = MASK_PLAYERSOLID;
-	cg_pmove.noFootsteps = 0;//( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
+	cg_pmove.noFootsteps = qfalse;//( cgs.dmflags & DF_NO_FOOTSTEPS ) > 0;
 
 	// save the state before the pmove so we can detect transitions
 	oldPlayerState = cg.predicted_player_state;

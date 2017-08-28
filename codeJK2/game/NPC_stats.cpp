@@ -35,20 +35,6 @@ extern vec3_t playerMaxs;
 char	*TeamNames[TEAM_NUM_TEAMS] =
 {
 	"",
-//	"starfleet",
-//	"borg",
-//	"parasite",
-//	"scavengers",
-//	"klingon",
-//	"malon",
-//	"hirogen",
-//	"imperial",
-//	"stasis",
-//	"species8472",
-//	"dreadnought",
-//	"forge",
-//	"disguise",
-//	"player (not valid)"
 	"player",
 	"enemy",
 	"neutral"
@@ -177,16 +163,6 @@ class_t TranslateClassName( const char *name )
 	return CLASS_NONE;  // I hope this never happens, maybe print a warning
 }
 
-/*
-static race_t TranslateRaceName( const char *name )
-{
-	if ( !Q_stricmp( name, "human" ) )
-	{
-		return RACE_HUMAN;
-	}
-	return RACE_NONE;
-}
-*/
 /*
 static rank_t TranslateRankName( const char *name )
 
@@ -495,7 +471,7 @@ qboolean G_ParseAnimFileSet( const char *filename, const char *animCFG, int *ani
 	int			i;
 	char		*slash;
 
-	Q_strncpyz( strippedName, filename, sizeof(strippedName), qtrue);
+	Q_strncpyz(strippedName, filename, sizeof(strippedName));
 	slash = strchr( strippedName, '/' );
 	if ( slash )
 	{
@@ -560,7 +536,7 @@ void G_LoadAnimFileSet( gentity_t *ent, const char *modelName )
 	}
 	else
 	{
-		Q_strncpyz( animName, GLAName, sizeof( animName ), qtrue );
+		Q_strncpyz(animName, GLAName, sizeof( animName ));
 		slash = strrchr( animName, '/' );
 		if ( slash )
 		{
@@ -647,7 +623,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 				continue;
 			}
 			//must copy data out of this pointer into a different part of memory because the funcs we're about to call will call COM_ParseExt
-			Q_strncpyz( filename, value, sizeof( filename ), qtrue );
+			Q_strncpyz(filename, value, sizeof( filename ));
 			G_ParseAnimFileSet( filename, filename, &junk );
 			COM_EndParseSession(  );
 			return;
@@ -671,7 +647,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 				GLAName = gi.G2API_GetAnimFileNameIndex( handle );
 				if ( GLAName )
 				{
-					Q_strncpyz( animName, GLAName, sizeof( animName ), qtrue );
+					Q_strncpyz(animName, GLAName, sizeof( animName ));
 					slash = strrchr( animName, '/' );
 					if ( slash )
 					{
@@ -680,7 +656,7 @@ void NPC_PrecacheAnimationCFG( const char *NPC_type )
 					strippedName = COM_SkipPath( animName );
 
 					//must copy data out of this pointer into a different part of memory because the funcs we're about to call will call COM_ParseExt
-					Q_strncpyz( filename, value, sizeof( filename ), qtrue );
+					Q_strncpyz(filename, value, sizeof( filename ));
 					G_ParseAnimFileSet( value, strippedName, &junk );//qfalse );
 					COM_EndParseSession(  );
 					//FIXME: still not precaching the animsounds.cfg?
@@ -811,7 +787,7 @@ void NPC_Precache ( gentity_t *spawner )
 			}
 			else
 			{
-				Q_strncpyz( ri.headModelName, value, sizeof(ri.headModelName), qtrue);
+				Q_strncpyz(ri.headModelName, value, sizeof(ri.headModelName));
 			}
 			md3Model = qtrue;
 			continue;
@@ -830,7 +806,7 @@ void NPC_Precache ( gentity_t *spawner )
 			}
 			else
 			{
-				Q_strncpyz( ri.torsoModelName, value, sizeof(ri.torsoModelName), qtrue);
+				Q_strncpyz(ri.torsoModelName, value, sizeof(ri.torsoModelName));
 			}
 			md3Model = qtrue;
 			continue;
@@ -843,7 +819,7 @@ void NPC_Precache ( gentity_t *spawner )
 			{
 				continue;
 			}
-			Q_strncpyz( ri.legsModelName, value, sizeof(ri.legsModelName), qtrue);
+			Q_strncpyz(ri.legsModelName, value, sizeof(ri.legsModelName));
 			md3Model = qtrue;
 			continue;
 		}
@@ -855,7 +831,7 @@ void NPC_Precache ( gentity_t *spawner )
 			{
 				continue;
 			}
-			Q_strncpyz( playerModel, value, sizeof(playerModel), qtrue);
+			Q_strncpyz(playerModel, value, sizeof(playerModel));
 			md3Model = qfalse;
 			continue;
 		}
@@ -867,7 +843,7 @@ void NPC_Precache ( gentity_t *spawner )
 			{
 				continue;
 			}
-			Q_strncpyz( customSkin, value, sizeof(customSkin), qtrue);
+			Q_strncpyz(customSkin, value, sizeof(customSkin));
 			continue;
 		}
 
@@ -1000,13 +976,13 @@ void NPC_BuildRandom( gentity_t *NPC )
 		{
 		default:
 		case 0:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "garren", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "garren", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		case 1:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "garren/salma", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "garren/salma", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		case 2:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "garren/mackey", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "garren/mackey", sizeof(NPC->client->renderInfo.headModelName));
 			color = Q_irand(3, 5);//torso needs to be afam
 			break;
 		}
@@ -1014,25 +990,25 @@ void NPC_BuildRandom( gentity_t *NPC )
 		{
 		default:
 		case 0:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewfemale/gold", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewfemale/gold", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 1:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewfemale", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewfemale", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 2:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewfemale/blue", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewfemale/blue", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 3:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewfemale/aframG", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewfemale/aframG", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 4:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewfemale/aframR", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewfemale/aframR", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 5:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewfemale/aframB", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewfemale/aframB", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		}
-		Q_strncpyz( NPC->client->renderInfo.legsModelName, "crewfemale", sizeof(NPC->client->renderInfo.legsModelName), qtrue );
+		Q_strncpyz(NPC->client->renderInfo.legsModelName, "crewfemale", sizeof(NPC->client->renderInfo.legsModelName));
 		break;
 	default:
 	case 1://male
@@ -1042,41 +1018,40 @@ void NPC_BuildRandom( gentity_t *NPC )
 		{
 		default:
 		case 0:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "chakotay/nelson", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "chakotay/nelson", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		case 1:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "paris/chase", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "paris/chase", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		case 2:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "doctor/pasty", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "doctor/pasty", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		case 3:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "kim/durk", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "kim/durk", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		case 4:
-			Q_strncpyz( NPC->client->renderInfo.headModelName, "paris/kray", sizeof(NPC->client->renderInfo.headModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.headModelName, "paris/kray", sizeof(NPC->client->renderInfo.headModelName));
 			break;
 		}
 		switch( color )
 		{
 		default:
 		case 0:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewthin/red", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewthin/red", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 1:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewthin", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewthin", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 		case 2:
-			Q_strncpyz( NPC->client->renderInfo.torsoModelName, "crewthin/blue", sizeof(NPC->client->renderInfo.torsoModelName), qtrue );
+			Q_strncpyz(NPC->client->renderInfo.torsoModelName, "crewthin/blue", sizeof(NPC->client->renderInfo.torsoModelName));
 			break;
 			//NOTE: 3 - 5 should be red, gold & blue, afram hands
 		}
-		Q_strncpyz( NPC->client->renderInfo.legsModelName, "crewthin", sizeof(NPC->client->renderInfo.legsModelName), qtrue );
+		Q_strncpyz(NPC->client->renderInfo.legsModelName, "crewthin", sizeof(NPC->client->renderInfo.legsModelName));
 		break;
 	}
 
 	NPC->s.modelScale[0] = NPC->s.modelScale[1] = NPC->s.modelScale[2] = Q_irand(87, 102)/100.0f;
-//	NPC->client->race = RACE_HUMAN;
 	NPC->NPC->rank = RANK_CREWMAN;
 	NPC->client->playerTeam = TEAM_PLAYER;
 	NPC->client->clientInfo.customBasicSoundDir = "kyle";
@@ -1153,9 +1128,9 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 	//Set defaults
 	//FIXME: should probably put default torso and head models, but what about enemies
 	//that don't have any- like Stasis?
-	//Q_strncpyz( ri->headModelName,	DEFAULT_HEADMODEL,  sizeof(ri->headModelName),	qtrue);
-	//Q_strncpyz( ri->torsoModelName, DEFAULT_TORSOMODEL, sizeof(ri->torsoModelName),	qtrue);
-	//Q_strncpyz( ri->legsModelName,	DEFAULT_LEGSMODEL,  sizeof(ri->legsModelName),	qtrue);
+	//Q_strncpyz( ri->headModelName,	DEFAULT_HEADMODEL,  sizeof(ri->headModelName));
+	//Q_strncpyz( ri->torsoModelName, DEFAULT_TORSOMODEL, sizeof(ri->torsoModelName));
+	//Q_strncpyz( ri->legsModelName,	DEFAULT_LEGSMODEL,  sizeof(ri->legsModelName));
 	memset( ri->headModelName, 0, sizeof( ri->headModelName ) );
 	memset( ri->torsoModelName, 0, sizeof( ri->torsoModelName ) );
 	memset( ri->legsModelName, 0, sizeof( ri->legsModelName ) );
@@ -1268,7 +1243,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else
 				{
-					Q_strncpyz( ri->headModelName, value, sizeof(ri->headModelName), qtrue);
+					Q_strncpyz( ri->headModelName, value, sizeof(ri->headModelName));
 				}
 				continue;
 			}
@@ -1292,7 +1267,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else
 				{
-					Q_strncpyz( ri->torsoModelName, value, sizeof(ri->torsoModelName), qtrue);
+					Q_strncpyz( ri->torsoModelName, value, sizeof(ri->torsoModelName));
 				}
 				continue;
 			}
@@ -1304,7 +1279,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					continue;
 				}
-				Q_strncpyz( ri->legsModelName, value, sizeof(ri->legsModelName), qtrue);
+				Q_strncpyz( ri->legsModelName, value, sizeof(ri->legsModelName));
 				//Need to do this here to get the right index
 				G_ParseAnimFileSet( ri->legsModelName, ri->legsModelName, &ci->animFileIndex );
 				continue;
@@ -1317,7 +1292,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					continue;
 				}
-				Q_strncpyz( playerModel, value, sizeof(playerModel), qtrue);
+				Q_strncpyz( playerModel, value, sizeof(playerModel));
 				md3Model = qfalse;
 				continue;
 			}
@@ -1329,7 +1304,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				{
 					continue;
 				}
-				Q_strncpyz( customSkin, value, sizeof(customSkin), qtrue);
+				Q_strncpyz( customSkin, value, sizeof(customSkin));
 				continue;
 			}
 
@@ -1347,7 +1322,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else
 				{
-					Q_strncpyz( surfOff, value, sizeof(surfOff), qtrue);
+					Q_strncpyz( surfOff, value, sizeof(surfOff));
 				}
 				continue;
 			}
@@ -1366,7 +1341,7 @@ qboolean NPC_ParseParms( const char *NPCName, gentity_t *NPC )
 				}
 				else
 				{
-					Q_strncpyz( surfOn, value, sizeof(surfOn), qtrue);
+					Q_strncpyz( surfOn, value, sizeof(surfOn));
 				}
 				continue;
 			}

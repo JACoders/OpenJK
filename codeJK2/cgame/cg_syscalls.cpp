@@ -45,7 +45,7 @@ void	cgi_Printf( const char *fmt ) {
 	Q_syscall( CG_PRINT, fmt );
 }
 
-void	cgi_Error( const char *fmt ) {
+NORETURN void	cgi_Error( const char *fmt ) {
 	Q_syscall( CG_ERROR, fmt );
 	// shut up GCC warning about returning functions, because we know better
 	exit(1);
@@ -254,12 +254,12 @@ int cgi_R_Font_HeightPixels(const int iFontIndex, const float scale /*= 1.0f*/) 
 
 qboolean cgi_Language_IsAsian( void )
 {
-	return Q_syscall( CG_LANGUAGE_ISASIAN );
+	return (qboolean)Q_syscall( CG_LANGUAGE_ISASIAN );
 }
 
 qboolean cgi_Language_UsesSpaces(void)
 {
-	return Q_syscall( CG_LANGUAGE_USESSPACES );
+	return (qboolean)Q_syscall( CG_LANGUAGE_USESSPACES );
 }
 
 unsigned int cgi_AnyLanguage_ReadCharFromString( const char **ppText, qboolean *pbIsTrailingPunctuation /* = NULL */ )
@@ -358,11 +358,11 @@ void		cgi_GetCurrentSnapshotNumber( int *snapshotNumber, int *serverTime ) {
 }
 
 qboolean	cgi_GetSnapshot( int snapshotNumber, snapshot_t *snapshot ) {
-	return Q_syscall( CG_GETSNAPSHOT, snapshotNumber, snapshot );
+	return (qboolean)Q_syscall( CG_GETSNAPSHOT, snapshotNumber, snapshot );
 }
 
 qboolean	cgi_GetServerCommand( int serverCommandNumber ) {
-	return Q_syscall( CG_GETSERVERCOMMAND, serverCommandNumber );
+	return (qboolean)Q_syscall( CG_GETSERVERCOMMAND, serverCommandNumber );
 }
 
 int			cgi_GetCurrentCmdNumber( void ) {
@@ -370,7 +370,7 @@ int			cgi_GetCurrentCmdNumber( void ) {
 }
 
 qboolean	cgi_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
-	return Q_syscall( CG_GETUSERCMD, cmdNumber, ucmd );
+	return (qboolean)Q_syscall( CG_GETUSERCMD, cmdNumber, ucmd );
 }
 
 void		cgi_SetUserCmdValue( int stateValue, float sensitivityScale, float mPitchOverride, float mYawOverride ) {

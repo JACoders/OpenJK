@@ -28,6 +28,7 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 		${SharedDir}
 		${SPRDVanillaRendererIncludeDirectories}
 		"${SPDir}/rd-vanilla"
+		"${GSLIncludeDirectory}"
 		)
 
 	# Modular Renderer crap (let's hope this works..)
@@ -74,13 +75,24 @@ if(BuildSPRdVanilla OR BuildJK2SPRdVanilla)
 	# Misc files
 	set(SPRDVanillaCommonFiles
 		"${SPDir}/qcommon/matcomp.cpp"
-		"${SPDir}/qcommon/q_math.cpp"
 		"${SPDir}/qcommon/q_shared.cpp"
 		"${SPDir}/qcommon/q_shared.h"
-		"${SPDir}/qcommon/q_platform.h"
+		"${SPDir}/qcommon/ojk_i_saved_game.h"
+		"${SPDir}/qcommon/ojk_saved_game_class_archivers.h"
+		"${SPDir}/qcommon/ojk_saved_game_helper.h"
+		"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+		"${SPDir}/qcommon/ojk_scope_guard.h"
+		${SharedCommonFiles}
 		)
 	source_group("common" FILES ${SPRDVanillaCommonFiles})
 	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonFiles})
+
+	# Misc files
+	set(SPRDVanillaCommonSafeFiles
+		${SharedCommonSafeFiles}
+		)
+	source_group("common/safe" FILES ${SPRDVanillaCommonSafeFiles})
+	set(SPRDVanillaFiles ${SPRDVanillaFiles} ${SPRDVanillaCommonSafeFiles})
 
 	# main files
 	set(SPRDVanillaMainFiles

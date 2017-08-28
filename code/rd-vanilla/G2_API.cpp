@@ -83,7 +83,7 @@ public:
 		Com_DPrintf(mess);
 
 		std::map<std::string,int>::iterator i;
-		for (i=mErrors.begin();i!=mErrors.end();i++)
+		for (i=mErrors.begin();i!=mErrors.end();++i)
 		{
 			total+=(*i).second;
 			sprintf(mess,"%s (hits %d)\n",(*i).first.c_str(),(*i).second);
@@ -571,7 +571,7 @@ public:
 			for (i=0;i<MAX_G2_MODELS;i++)
 			{
 				std::list<int>::iterator j;
-				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();j++)
+				for (j=mFreeIndecies.begin();j!=mFreeIndecies.end();++j)
 				{
 					if (*j==i)
 						break;
@@ -827,7 +827,7 @@ int G2API_InitGhoul2Model(CGhoul2Info_v &ghoul2, const char *fileName, int, qhan
 qboolean G2API_SetLodBias(CGhoul2Info *ghlInfo, int lodBias)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mLodBias = lodBias;
 		return qtrue;
@@ -839,14 +839,14 @@ qboolean G2API_SetSkin(CGhoul2Info *ghlInfo, qhandle_t customSkin, qhandle_t ren
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
 #ifdef JK2_MODE
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		return qtrue;
 	}
 	return qfalse;
 #else
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomSkin = customSkin;
 		if (renderSkin)
@@ -863,7 +863,7 @@ extern void G2API_SetSurfaceOnOffFromSkin (CGhoul2Info *ghlInfo, qhandle_t rende
 qboolean G2API_SetShader(CGhoul2Info *ghlInfo, qhandle_t customShader)
 {
 	G2ERROR(ghlInfo,"NULL ghlInfo");
-	if (ghlInfo)
+	if (G2_SetupModelPointers(ghlInfo))
 	{
 		ghlInfo->mCustomShader = customShader;
 		return qtrue;
@@ -1434,9 +1434,6 @@ extern int ragTraceCount;
 
 void G2API_AnimateG2Models(CGhoul2Info_v &ghoul2, int AcurrentTime,CRagDollUpdateParams *params)
 {
-#ifdef JK2_MODE
-	return;			// handled elsewhere
-#endif
 	int model;
 	int currentTime=G2API_GetTime(AcurrentTime);
 
@@ -1608,12 +1605,14 @@ qboolean G2API_RagForceSolve(CGhoul2Info_v &ghoul2, qboolean force)
 }
 
 qboolean G2_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params);
+
 qboolean G2API_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName, int ikState, sharedSetBoneIKStateParams_t *params)
 {
 	return G2_SetBoneIKState(ghoul2, time, boneName, ikState, params);
 }
 
 qboolean G2_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params);
+
 qboolean G2API_IKMove(CGhoul2Info_v &ghoul2, int time, sharedIKMoveParams_t *params)
 {
 	return G2_IKMove(ghoul2, time, params);
@@ -1815,7 +1814,7 @@ void G2API_ListBones(CGhoul2Info *ghlInfo, int frame)
 // decide if we have Ghoul2 models associated with this ghoul list or not
 qboolean G2API_HaveWeGhoul2Models(CGhoul2Info_v &ghoul2)
 {
-	return !!ghoul2.IsValid();
+	return (qboolean)ghoul2.IsValid();
 }
 
 // run through the Ghoul2 models and set each of the mModel values to the correct one from the cgs.gameModel offset lsit

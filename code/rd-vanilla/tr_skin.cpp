@@ -167,7 +167,7 @@ int RE_GetAnimationCFG(const char *psCFGFilename, char *psDest, int iDestSize)
 		// not found, so load it...
 		//
 		fileHandle_t f;
-		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, FS_READ );
+		int iLen = ri.FS_FOpenFileRead( psCFGFilename, &f, qfalse );
 		if (iLen <= 0)
 		{
 			return 0;
@@ -413,13 +413,14 @@ qhandle_t RE_RegisterSkin( const char *name) {
 	if ( RE_SplitSkins(name, (char*)&skinhead, (char*)&skintorso, (char*)&skinlower ) )
 	{//three part
 		hSkin = RE_RegisterIndividualSkin(skinhead, hSkin);
-		if (hSkin)
+		if (hSkin && strcmp(skinhead, skintorso))
 		{
 			hSkin = RE_RegisterIndividualSkin(skintorso, hSkin);
-			if (hSkin)
-			{
-				hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
-			}
+		}
+
+		if (hSkin && strcmp(skinhead, skinlower) && strcmp(skintorso, skinlower))
+		{
+			hSkin = RE_RegisterIndividualSkin(skinlower, hSkin);
 		}
 	}
 	else

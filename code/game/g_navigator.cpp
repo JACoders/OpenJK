@@ -641,7 +641,7 @@ public:
 		}
 		else if ( Edge.BlockingBreakable())
 		{//we had a breakable in our way, now it's gone, see if there is anything else in the way
-			if ( NAV::TestEdge( Edge.mNodeA, Edge.mNodeB, false ) )
+			if ( NAV::TestEdge( Edge.mNodeA, Edge.mNodeB, qfalse ) )
 			{//clear it
 				Edge.mFlags.clear_bit(CWayEdge::WE_BLOCKING_BREAK);
 			}
@@ -1911,7 +1911,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 
 		// Try Medium
 		//------------
-		CanGo = TestEdge( at.mNodeA, at.mNodeB, IsDebugEdge );
+		CanGo = TestEdge( at.mNodeA, at.mNodeB, (qboolean)IsDebugEdge );
 		if (!CanGo)
 		{
 			at.mFlags.clear_bit(CWayEdge::WE_SIZE_LARGE);
@@ -1920,7 +1920,7 @@ bool			NAV::LoadFromEntitiesAndSaveToFile(const char *filename, int checksum)
 			{
 				gi.Printf("Nav(%s)<->(%s): Attempting Size Medium...\n", aName, bName);
 			}
-			CanGo = TestEdge( at.mNodeA, at.mNodeB, IsDebugEdge );
+			CanGo = TestEdge( at.mNodeA, at.mNodeB, (qboolean)IsDebugEdge );
 		}
 
 		// If This Edge Can't Go At Any Size, Dump It
@@ -5529,7 +5529,7 @@ bool	STEER::Reached(gentity_t* actor, const vec3_t& target, float targetRadius, 
 void	ClearAllNavStructures(void)
 {
 	TEntEdgeMap::iterator i = mEntEdgeMap.begin();
-	for ( ; i != mEntEdgeMap.end(); i++)
+	for ( ; i != mEntEdgeMap.end(); ++i)
 	{
 		i->clear();
 	}

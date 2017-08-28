@@ -627,7 +627,7 @@ void RT_Flying_Strafe( void )
 	vec3_t	end, right, dir;
 	trace_t	tr;
 
-	if ( random() > 0.7f
+	if ( Q_flrand(0.0f, 1.0f) > 0.7f
 		|| !NPC->enemy
 		|| !NPC->enemy->client )
 	{
@@ -663,7 +663,7 @@ void RT_Flying_Strafe( void )
 				}
 			}
 
-			NPCInfo->standTime = level.time + 1000 + random() * 500;
+			NPCInfo->standTime = level.time + 1000 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 	else
@@ -677,7 +677,7 @@ void RT_Flying_Strafe( void )
 		VectorMA( NPC->enemy->currentOrigin, stDis * side, right, end );
 
 		// then add a very small bit of random in front of/behind the player action
-		VectorMA( end, crandom() * 25, dir, end );
+		VectorMA( end, Q_flrand(-1.0f, 1.0f) * 25, dir, end );
 
 		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
@@ -716,7 +716,7 @@ void RT_Flying_Strafe( void )
 				}
 			}
 
-			NPCInfo->standTime = level.time + 2500 + random() * 500;
+			NPCInfo->standTime = level.time + 2500 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 }
@@ -857,7 +857,7 @@ void RT_Flying_Think( void )
 	if ( NPC->random == 0.0f )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPC->random = random() * 6.3f; // roughly 2pi
+		NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 	}
 
 	if ( NPC->enemy && NPC->enemy->health && NPC->enemy->inuse )

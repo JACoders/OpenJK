@@ -655,6 +655,8 @@ extern	vmCvar_t		cg_speedTrail;
 extern	vmCvar_t		cg_fovViewmodel;
 extern	vmCvar_t		cg_fovViewmodelAdjust;
 
+extern	vmCvar_t		cg_scaleVehicleSensitivity;
+
 void CG_NewClientinfo( int clientNum );
 //
 // cg_main.c
@@ -663,7 +665,7 @@ const char *CG_ConfigString( int index );
 const char *CG_Argv( int arg );
 
 void QDECL CG_Printf( const char *msg, ... );
-void QDECL CG_Error( const char *msg, ... );
+NORETURN void QDECL CG_Error( const char *msg, ... );
 
 void CG_StartMusic( qboolean bForceStart );
 
@@ -919,7 +921,7 @@ qboolean CG_Credits_Draw( void );
 void	cgi_Printf( const char *fmt );
 
 // abort the game
-void	cgi_Error( const char *fmt );
+NORETURN void	cgi_Error( const char *fmt );
 
 // milliseconds should only be used for performance tuning, never
 // for anything game related.  Get time from the CG_DrawActiveFrame parameter

@@ -571,7 +571,7 @@ void Field_KeyDownEvent( field_t *edit, int key ) {
 
 	if ( key == A_INSERT )
 	{
-		kg.key_overstrikeMode = !kg.key_overstrikeMode;
+		kg.key_overstrikeMode = (qboolean)!kg.key_overstrikeMode;
 		return;
 	}
 }
@@ -1173,10 +1173,10 @@ void CL_ParseBinding( int key, qboolean down, unsigned time )
 	Q_strncpyz( buf, kg.keys[keynames[key].upper].binding, sizeof( buf ) );
 
 	// run all bind commands if console, ui, etc aren't reading keys
-	allCommands = ( Key_GetCatcher( ) == 0 );
+	allCommands = (qboolean)( Key_GetCatcher( ) == 0 );
 
 	// allow button up commands if in game even if key catcher is set
-	allowUpCmds = ( cls.state != CA_DISCONNECTED );
+	allowUpCmds = (qboolean)( cls.state != CA_DISCONNECTED );
 
 	while( 1 )
 	{
@@ -1224,7 +1224,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 	kg.keys[keynames[key].upper].repeats++;
 	if( kg.keys[keynames[key].upper].repeats == 1 ) {
 		kg.keyDownCount++;
-		kg.anykeydown = true;
+		kg.anykeydown = qtrue;
 	}
 
 	if ( cl_allowAltEnter->integer && kg.keys[A_ALT].down && key == A_ENTER )
@@ -1243,7 +1243,7 @@ void CL_KeyDownEvent( int key, unsigned time )
 	// keys can still be used for bound actions
 	if ( ( cls.state == CA_CINEMATIC || CL_IsRunningInGameCinematic()) && !Key_GetCatcher() )
 	{
-		SCR_StopCinematic(true);
+		SCR_StopCinematic(qtrue);
 		return;
 //		key = A_ESCAPE;
 	}
@@ -1297,7 +1297,7 @@ void CL_KeyUpEvent( int key, unsigned time )
 	kg.keyDownCount--;
 
 	if (kg.keyDownCount <= 0) {
-		kg.anykeydown = 0;
+		kg.anykeydown = qfalse;
 		kg.keyDownCount = 0;
 	}
 
@@ -1339,10 +1339,6 @@ Normal keyboard characters, already shifted / capslocked / etc
 ===================
 */
 void CL_CharEvent( int key ) {
-	// the console key should never be used as a char
-	if ( key == '`' || key == '~' )
-		return;
-
 	// delete is not a printable character and is otherwise handled by Field_KeyDownEvent
 	if ( key == 127 )
 		return;

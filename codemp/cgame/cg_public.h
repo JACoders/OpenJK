@@ -23,7 +23,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define	CGAME_API_VERSION		1
+#define	CGAME_API_VERSION		2
 
 #define	CMD_BACKUP			64
 #define	CMD_MASK			(CMD_BACKUP - 1)
@@ -476,7 +476,7 @@ typedef enum cgameExportLegacy_e {
 typedef struct cgameImport_s {
 	// common
 	void			(*Print)								( const char *msg, ... );
-	void			(*Error)								( int level, const char *error, ... );
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	void			(*SnapVector)							( float *v );
 	int				(*MemoryRemaining)						( void );
 	void			(*RegisterSharedMemory)					( char *memory );
@@ -713,6 +713,10 @@ typedef struct cgameImport_s {
 	void			(*G2API_CleanEntAttachments)			( void );
 	qboolean		(*G2API_OverrideServer)					( void *serverInstance );
 	void			(*G2API_GetSurfaceName)					( void *ghoul2, int surfNumber, int modelIndex, char *fillBuf );
+
+	struct {
+		float			(*R_Font_StrLenPixels)					( const char *text, const int iFontIndex, const float scale );
+	} ext;
 } cgameImport_t;
 
 typedef struct cgameExport_s {

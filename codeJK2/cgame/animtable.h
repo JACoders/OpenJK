@@ -1383,5 +1383,5 @@ stringID_table_t animTable [MAX_ANIMATIONS+1] =
 	ENUM2STRING(FACE_DEAD),				//# 
 
 	//must be terminated
-	NULL,-1
+	{NULL,-1}
 };

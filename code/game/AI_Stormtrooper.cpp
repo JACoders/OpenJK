@@ -205,7 +205,7 @@ enum
 
 static void ST_Speech( gentity_t *self, int speechType, float failChance )
 {
-	if ( random() < failChance )
+	if ( Q_flrand(0.0f, 1.0f) < failChance )
 	{
 		return;
 	}
@@ -1161,7 +1161,7 @@ void NPC_BSST_Investigate( void )
 	if ( NPCInfo->localState == LSTATE_INVESTIGATE && (NPCInfo->goalEntity!=NULL) )
 	{
 		//See if we're there
-		if ( !STEER::Reached(NPC, NPCInfo->goalEntity, 32, !!FlyingCreature(NPC)) )
+		if ( !STEER::Reached(NPC, NPCInfo->goalEntity, 32, FlyingCreature(NPC) != qfalse) )
 		{
 			ucmd.buttons |= BUTTON_WALKING;
 
@@ -1716,7 +1716,7 @@ void ST_TransferMoveGoal( gentity_t *self, gentity_t *other )
 	{//I must be going for a goal, give that to him instead
 		if ( self->NPC->goalEntity == self->NPC->tempGoal )
 		{
-			NPC_SetMoveGoal( other, self->NPC->tempGoal->currentOrigin, self->NPC->goalRadius, ((self->NPC->tempGoal->svFlags&SVF_NAVGOAL)?true:false) );
+			NPC_SetMoveGoal( other, self->NPC->tempGoal->currentOrigin, self->NPC->goalRadius, (qboolean)((self->NPC->tempGoal->svFlags & SVF_NAVGOAL) != 0) );
 		}
 		else
 		{

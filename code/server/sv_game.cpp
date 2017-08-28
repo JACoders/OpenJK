@@ -30,6 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "server.h"
 #include "../client/vmachine.h"
 #include "../client/client.h"
+#include "qcommon/ojk_saved_game.h"
 /*#include "..\renderer\tr_local.h"
 #include "..\renderer\tr_WorldEffects.h"*/
 /*
@@ -440,12 +441,12 @@ static void SV_G2API_AnimateG2Models( CGhoul2Info_v &ghoul2, int AcurrentTime, C
 	re.G2API_AnimateG2Models( ghoul2, AcurrentTime, params );
 }
 
-static int SV_G2API_AttachEnt( int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum )
+static qboolean SV_G2API_AttachEnt( int *boltInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int entNum, int toModelNum )
 {
 	return re.G2API_AttachEnt( boltInfo, ghlInfoTo, toBoltIndex, entNum, toModelNum );
 }
 
-static int SV_G2API_AttachG2Model( CGhoul2Info *ghlInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int toModel )
+static qboolean SV_G2API_AttachG2Model( CGhoul2Info *ghlInfo, CGhoul2Info *ghlInfoTo, int toBoltIndex, int toModel )
 {
 	return re.G2API_AttachG2Model( ghlInfo, ghlInfoTo, toBoltIndex, toModel );
 }
@@ -577,7 +578,7 @@ static void SV_G2API_GiveMeVectorFromMatrix( mdxaBone_t &boltMatrix, Eorientatio
 	re.G2API_GiveMeVectorFromMatrix( boltMatrix, flags, vec );
 }
 
-static int SV_G2API_HaveWeGhoul2Models( CGhoul2Info_v &ghoul2 )
+static qboolean SV_G2API_HaveWeGhoul2Models( CGhoul2Info_v &ghoul2 )
 {
 	return re.G2API_HaveWeGhoul2Models( ghoul2 );
 }
@@ -806,6 +807,20 @@ static void  SV_G2API_ClearSkinGore( CGhoul2Info_v &ghoul2 )
 {
 	return re.G2API_ClearSkinGore( ghoul2 );
 }
+#else
+static void SV_G2API_AddSkinGore(
+    CGhoul2Info_v &ghoul2,
+    SSkinGoreData &gore)
+{
+    static_cast<void>(ghoul2);
+    static_cast<void>(gore);
+}
+
+static void SV_G2API_ClearSkinGore(
+    CGhoul2Info_v &ghoul2)
+{
+    static_cast<void>(ghoul2);
+}
 #endif
 
 static IGhoul2InfoArray& SV_TheGhoul2InfoArray( void )
@@ -929,9 +944,7 @@ void SV_InitGameProgs (void) {
 	import.FS_FreeFile = FS_FreeFile;
 	import.FS_GetFileList = FS_GetFileList;
 
-	import.AppendToSaveGame = SG_Append;
-	import.ReadFromSaveGame	= SG_Read;
-	import.ReadFromSaveGameOptional = SG_ReadOptional;
+	import.saved_game = &ojk::SavedGame::get_instance();
 
 	import.AdjustAreaPortalState = SV_AdjustAreaPortalState;
 	import.AreasConnected = CM_AreasConnected;
@@ -1055,8 +1068,9 @@ void SV_InitGameProgs (void) {
 
 	if (ge->apiversion != GAME_API_VERSION)
 	{
+		int apiVersion = ge->apiversion;
 		Sys_UnloadDll( gameLibrary );
-		Com_Error (ERR_DROP, "game is version %i, not %i", ge->apiversion, GAME_API_VERSION);
+		Com_Error (ERR_DROP, "game is version %i, not %i", apiVersion, GAME_API_VERSION);
 	}
 
 	//hook up the client while we're here

@@ -118,7 +118,7 @@ void CSequencer::Free( CIcarus* icarus )
 
 	// OLD STUFF!
 	sequence_l::iterator	sli;
-	for ( sli = m_sequences.begin(); sli != m_sequences.end(); sli++ )
+	for ( sli = m_sequences.begin(); sli != m_sequences.end(); ++sli )
 	{
 		icarus->DeleteSequence( (*sli) );
 	}
@@ -181,7 +181,7 @@ int CSequencer::Flush( CSequence *owner, CIcarus* icarus )
 	{
 		if ( ( (*sli) == owner ) || ( owner->HasChild( (*sli) ) ) || ( (*sli)->HasFlag( CSequence::SQ_PENDING ) ) || ( (*sli)->HasFlag( CSequence::SQ_TASK ) ) )
 		{
-			sli++;
+			++sli;
 			continue;
 		}
 
@@ -1257,7 +1257,7 @@ int CSequencer::EvaluateConditional( CBlock *block , CIcarus* icarus)
 	case CIcarus::ID_RANDOM:
 		{
 			float	min, max;
-			//FIXME: This will not account for nested random() statements
+			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
 			min	= *(float *) block->GetMemberData( memberNum++ );
 			max	= *(float *) block->GetMemberData( memberNum++ );
@@ -1428,7 +1428,7 @@ int CSequencer::EvaluateConditional( CBlock *block , CIcarus* icarus)
 
 		{
 			float	min, max;
-			//FIXME: This will not account for nested random() statements
+			//FIXME: This will not account for nested Q_flrand(0.0f, 1.0f) statements
 
 			min	= *(float *) block->GetMemberData( memberNum++ );
 			max	= *(float *) block->GetMemberData( memberNum++ );

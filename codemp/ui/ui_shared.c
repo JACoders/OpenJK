@@ -27,7 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #ifdef _CGAME
 	#include "cgame/cg_local.h"
-#elif _UI
+#elif UI_BUILD
 	#include "ui/ui_local.h"
 #endif
 
@@ -75,7 +75,7 @@ typedef struct scrollInfo_s {
 	qboolean scrollDir;
 } scrollInfo_t;
 
-#ifdef _UI // Defined in ui_main.c, not in the namespace
+#ifdef UI_BUILD // Defined in ui_main.c, not in the namespace
 	// Some extern functions hoisted from the middle of this file to get all the non-cgame,
 	// non-namespace stuff together
 	extern void UI_SaberDrawBlades( itemDef_t *item, vec3_t origin, vec3_t angles );
@@ -127,12 +127,9 @@ extern qboolean ItemParse_model_g2anim_go( itemDef_t *item, const char *animName
 
 
 #ifdef _CGAME
-	#define MEM_POOL_SIZE  128 * 1024
-	#define UI_ALLOCATION_TAG	TAG_CG_UI_ALLOC
+#define MEM_POOL_SIZE  (128 * 1024)
 #else
-//	#define MEM_POOL_SIZE  1024 * 1024
-	#define MEM_POOL_SIZE  2048 * 1024
-	#define	UI_ALLOCATION_TAG	TAG_UI_ALLOC
+#define MEM_POOL_SIZE  (4 * 1024 * 1024)
 #endif
 
 static char memoryPool[MEM_POOL_SIZE];
@@ -271,7 +268,7 @@ const char *String_Alloc(const char *p) {
 	}
 
 	//Increase STRING_POOL_SIZE.
-	assert(0);
+	Com_Printf( S_COLOR_RED, "String pool has been exhausted.\n" );
 	return NULL;
 }
 
@@ -1320,7 +1317,7 @@ qboolean Script_SetItemRect(itemDef_t *item, char **args)
 	return qtrue;
 }
 
-void Menu_ShowGroup (menuDef_t *menu, char *groupName, qboolean showFlag)
+void Menu_ShowGroup (menuDef_t *menu, const char *groupName, qboolean showFlag)
 {
 	itemDef_t *item;
 	int count,j;
@@ -1713,7 +1710,7 @@ void Menu_OrbitItemByName(menuDef_t *menu, const char *p, float x, float y, floa
 	}
 }
 
-void Menu_ItemDisable(menuDef_t *menu, char *name,int disableFlag)
+void Menu_ItemDisable(menuDef_t *menu, const char *name, qboolean disableFlag)
 {
 	int	j,count;
 	itemDef_t *itemFound;
@@ -3373,7 +3370,7 @@ const char *Item_Multi_Setting(itemDef_t *item) {
  			}
  		}
 	}
-	return "";
+	return "@MENUS_CUSTOM";
 }
 
 qboolean Item_Multi_HandleKey(itemDef_t *item, int key)
@@ -3448,7 +3445,7 @@ void Leaving_EditField(itemDef_t *item)
 	}
 }
 
-#ifdef _UI
+#ifdef UI_BUILD
 qboolean Item_TextField_HandleKey( itemDef_t *item, int key );
 void Item_TextField_Paste( itemDef_t *item ) {
 	int		pasteLen, i;
@@ -3485,7 +3482,7 @@ qboolean Item_TextField_HandleKey(itemDef_t *item, int key) {
 		if ( key & K_CHAR_FLAG ) {
 			key &= ~K_CHAR_FLAG;
 
-#ifdef _UI
+#ifdef UI_BUILD
 			if ( key == 'v' - 'a' + 1 ) {	// ctrl-v is paste
 				Item_TextField_Paste( item );
 				return qtrue;
@@ -4287,7 +4284,22 @@ void Menu_HandleKey(menuDef_t *menu, int key, qboolean down) {
 
 		case A_F12:
 			if (DC->getCVarValue("developer")) {
-				DC->executeText(EXEC_APPEND, "screenshot\n");
+				switch ( DC->screenshotFormat ) {
+					case SSF_JPEG:
+						DC->executeText(EXEC_APPEND, "screenshot\n");
+						break;
+					case SSF_TGA:
+						DC->executeText(EXEC_APPEND, "screenshot_tga\n");
+						break;
+					case SSF_PNG:
+						DC->executeText(EXEC_APPEND, "screenshot_png\n");
+						break;
+					default:
+						if (DC->Print) {
+							DC->Print(S_COLOR_YELLOW "Menu_HandleKey[F12]: Unknown screenshot format assigned! This should not happen.\n");
+						}
+						break;
+				}
 			}
 			break;
 		case A_KP_8:
@@ -4694,8 +4706,6 @@ void Item_Text_Paint(itemDef_t *item) {
 	}
 }
 
-
-
 void Item_TextField_Paint(itemDef_t *item) {
 	char buff[1024];
 	vec4_t newColor, lowLight;
@@ -4739,22 +4749,11 @@ void Item_TextField_Paint(itemDef_t *item) {
 void Item_YesNo_Paint(itemDef_t *item) {
 	char	sYES[20];
 	char	sNO[20];
-	vec4_t newColor, lowLight;
+	vec4_t color;
 	float value;
-	menuDef_t *parent = (menuDef_t*)item->parent;
 	const char *yesnovalue;
 
 	value = (item->cvar) ? DC->getCVarValue(item->cvar) : 0;
-
-	if (item->window.flags & WINDOW_HASFOCUS) {
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor,lowLight,newColor,0.5+0.5*sin((float)(DC->realTime / PULSE_DIVISOR)));
-	} else {
-		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
-	}
 
 	trap->SE_GetStringTextString("MENUS_YES",sYES, sizeof(sYES));
 	trap->SE_GetStringTextString("MENUS_NO", sNO,  sizeof(sNO));
@@ -4765,14 +4764,15 @@ void Item_YesNo_Paint(itemDef_t *item) {
 	else
 		yesnovalue = (value != 0) ? sYES : sNO;
 
+	Item_TextColor(item, &color);
 	if (item->text)
 	{
 		Item_Text_Paint(item);
-		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, yesnovalue, 0, 0, item->textStyle, item->iMenuFont);
+		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, color, yesnovalue, 0, 0, item->textStyle, item->iMenuFont);
 	}
 	else
 	{
-		DC->drawText(item->textRect.x, item->textRect.y, item->textscale, newColor, yesnovalue , 0, 0, item->textStyle, item->iMenuFont);
+		DC->drawText(item->textRect.x, item->textRect.y, item->textscale, color, yesnovalue , 0, 0, item->textStyle, item->iMenuFont);
 	}
 
 /* JLF ORIGINAL CODE
@@ -4788,20 +4788,9 @@ void Item_YesNo_Paint(itemDef_t *item) {
 }
 
 void Item_Multi_Paint(itemDef_t *item) {
-	vec4_t newColor, lowLight;
+	vec4_t color;
 	const char *text = "";
-	menuDef_t *parent = (menuDef_t*)item->parent;
 	char	temp[MAX_STRING_CHARS];
-
-	if (item->window.flags & WINDOW_HASFOCUS) {
-		lowLight[0] = 0.8 * parent->focusColor[0];
-		lowLight[1] = 0.8 * parent->focusColor[1];
-		lowLight[2] = 0.8 * parent->focusColor[2];
-		lowLight[3] = 0.8 * parent->focusColor[3];
-		LerpColor(parent->focusColor,lowLight,newColor,0.5+0.5*sin((float)(DC->realTime / PULSE_DIVISOR)));
-	} else {
-		memcpy(&newColor, &item->window.foreColor, sizeof(vec4_t));
-	}
 
 	text = Item_Multi_Setting(item);
 	if (*text == '@')	// string reference
@@ -4816,12 +4805,13 @@ void Item_Multi_Paint(itemDef_t *item) {
 		text = temp;
 	}
 
+	Item_TextColor(item, &color);
 	if (item->text) {
 		Item_Text_Paint(item);
-		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, newColor, text, 0, 0, item->textStyle,item->iMenuFont);
+		DC->drawText(item->textRect.x + item->textRect.w + 8, item->textRect.y, item->textscale, color, text, 0, 0, item->textStyle,item->iMenuFont);
 	} else {
 		//JLF added xoffset
-		DC->drawText(item->textRect.x+item->xoffset, item->textRect.y, item->textscale, newColor, text, 0, 0, item->textStyle,item->iMenuFont);
+		DC->drawText(item->textRect.x+item->xoffset, item->textRect.y, item->textscale, color, text, 0, 0, item->textStyle,item->iMenuFont);
 	}
 }
 
@@ -5264,7 +5254,7 @@ void Item_Model_Paint(itemDef_t *item)
 	}
 
 	// a moves datapad anim is playing
-#ifdef _UI
+#ifdef UI_BUILD
 	if (uiInfo.moveAnimTime && (uiInfo.moveAnimTime < uiInfo.uiDC.realTime))
 	{
 		if (modelPtr)
@@ -6374,6 +6364,11 @@ void Item_Paint(itemDef_t *item)
 		}
 	}
 
+	if (item->disabled && item->disabledHidden)
+	{
+		return;
+	}
+
 	if (item->cvarFlags & (CVAR_SHOW | CVAR_HIDE)) {
 		if (!Item_EnableShowViaCvar(item, CVAR_SHOW)) {
 			return;
@@ -7084,7 +7079,7 @@ ItemParse_asset_model
 */
 qboolean ItemParse_asset_model_go( itemDef_t *item, const char *name,int *runTimeLength )
 {
-#ifdef _UI
+#ifdef UI_BUILD
 	int g2Model;
 	modelDef_t *modelPtr;
 	Item_ValidateTypeData(item);
@@ -7184,7 +7179,7 @@ qboolean ItemParse_asset_model( itemDef_t *item, int handle ) {
 		return qfalse;
 	}
 
-#ifdef _UI
+#ifdef UI_BUILD
 	if (!Q_stricmp(token.string,"ui_char_model") )
 	{
 		char modelPath[MAX_QPATH] = {0};
@@ -8066,7 +8061,7 @@ qboolean ItemParse_cvarFloat( itemDef_t *item, int handle ) {
 	return qfalse;
 }
 
-#ifdef _UI
+#ifdef UI_BUILD
 char currLanguage[32][128];
 static const char languageString[32] = "@MENUS_MYLANGUAGE";
 #endif
@@ -8104,7 +8099,7 @@ qboolean ItemParse_cvarStrList( itemDef_t *item, int handle ) {
 	// languages
 	if (!Q_stricmp(token.string,"feeder") && item->special == FEEDER_LANGUAGES)
 	{
-#ifdef _UI
+#ifdef UI_BUILD
 		for (; multiPtr->count < uiInfo.languageCount; multiPtr->count++)
 		{
 			// The displayed text
@@ -8458,6 +8453,86 @@ void Item_SetupKeywordHash(void) {
 	memset(itemParseKeywordHash, 0, sizeof(itemParseKeywordHash));
 	for (i = 0; itemParseKeywords[i].keyword; i++) {
 		KeywordHash_Add(itemParseKeywordHash, &itemParseKeywords[i]);
+	}
+}
+
+/*
+===============
+Item_ApplyHacks
+Hacks to fix issues with Team Arena menu scripts
+===============
+*/
+static void Item_ApplyHacks( itemDef_t *item ) {
+#if !defined(_WIN32) || ( defined(_WIN32) && defined(idx64) )
+	if ( item->type == ITEM_TYPE_MULTI && item->cvar && !Q_stricmp( item->cvar, "s_UseOpenAL" ) ) {
+		if( item->parent )
+		{
+			menuDef_t *parent = (menuDef_t *)item->parent;
+			VectorSet4( parent->disableColor, 0.5f, 0.5f, 0.5f, 1.0f );
+			item->disabled = qtrue;
+			// Just in case it had focus
+			item->window.flags &= ~WINDOW_MOUSEOVER;
+			Com_Printf( "Disabling eax field because current platform does not support EAX.\n");
+		}
+	}
+
+	if ( item->type == ITEM_TYPE_TEXT && item->window.name && !Q_stricmp( item->window.name, "eax_icon") && item->cvarTest && !Q_stricmp( item->cvarTest, "s_UseOpenAL" ) && item->enableCvar && (item->cvarFlags & CVAR_HIDE) ) {
+		if( item->parent )
+		{
+			menuDef_t *parent = (menuDef_t *)item->parent;
+			VectorSet4( parent->disableColor, 0.5f, 0.5f, 0.5f, 1.0f );
+			item->disabled = item->disabledHidden = qtrue;
+			// Just in case it had focus
+			item->window.flags &= ~WINDOW_MOUSEOVER;
+			Com_Printf( "Hiding eax_icon object because current platform does not support EAX.\n");
+		}
+	}
+#endif
+	
+	// Fix length of favorite address in createfavorite.menu
+	if ( item->type == ITEM_TYPE_EDITFIELD && item->cvar && !Q_stricmp( item->cvar, "ui_favoriteAddress" ) ) {
+		editFieldDef_t *editField = item->typeData.edit;
+
+		// enough to hold an IPv6 address plus null
+		if ( editField->maxChars < 48 ) {
+			Com_Printf( "Extended create favorite address edit field length to hold an IPv6 address\n" );
+			editField->maxChars = 48;
+		}
+	}
+
+	if ( item->type == ITEM_TYPE_EDITFIELD && item->cvar && ( !Q_stricmp( item->cvar, "ui_Name" ) || !Q_stricmp( item->cvar, "ui_findplayer" ) ) ) {
+		editFieldDef_t *editField = item->typeData.edit;
+
+		// enough to hold a full player name
+		if ( editField->maxChars < MAX_NAME_LENGTH ) {
+			if ( editField->maxPaintChars > editField->maxChars ) {
+				editField->maxPaintChars = editField->maxChars;
+			}
+
+			Com_Printf( "Extended player name field using cvar %s to %d characters\n", item->cvar, MAX_NAME_LENGTH );
+			editField->maxChars = MAX_NAME_LENGTH;
+		}
+	}
+
+	if ( item->type == ITEM_TYPE_MULTI && item->window.name && !Q_stricmp( item->window.name, "sound_quality") ) {
+		multiDef_t *multiPtr = item->typeData.multi;
+		int i;
+		qboolean found = qfalse;
+		for( i = 0; i < multiPtr->count; i++ )
+		{
+			if ( multiPtr->cvarValue[i] == 44 )
+			{
+				found = qtrue;
+				break;
+			}
+		}
+		if ( !found && multiPtr->count < MAX_MULTI_CVARS )
+		{
+			multiPtr->cvarList[multiPtr->count] = String_Alloc("@MENUS_VERY_HIGH");
+			multiPtr->cvarValue[multiPtr->count] = 44;
+			multiPtr->count++;
+			Com_Printf( "Extended sound quality field to contain very high setting.\n");
+		}
 	}
 }
 
@@ -9145,13 +9220,16 @@ qboolean MenuParse_fadeCycle( itemDef_t *item, int handle ) {
 qboolean MenuParse_itemDef( itemDef_t *item, int handle ) {
 	menuDef_t *menu = (menuDef_t*)item;
 	if (menu->itemCount < MAX_MENUITEMS) {
-		menu->items[menu->itemCount] = (itemDef_t *) UI_Alloc(sizeof(itemDef_t));
-		Item_Init(menu->items[menu->itemCount]);
-		if (!Item_Parse(handle, menu->items[menu->itemCount])) {
+		itemDef_t *newItem = menu->items[menu->itemCount] = (itemDef_t *) UI_Alloc(sizeof(itemDef_t));
+		Item_Init(newItem);
+		if (!Item_Parse(handle, newItem))
+		{
 			return qfalse;
 		}
-		Item_InitControls(menu->items[menu->itemCount]);
-		menu->items[menu->itemCount++]->parent = menu;
+		Item_InitControls( newItem );
+		newItem->parent = menu->items[menu->itemCount]->parent = menu;
+		menu->itemCount++;
+		Item_ApplyHacks( newItem );
 	}
 	return qtrue;
 }

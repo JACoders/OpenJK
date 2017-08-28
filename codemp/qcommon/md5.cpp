@@ -13,15 +13,13 @@
  * MD5Context structure, pass it to MD5Init, call MD5Update as
  * needed on buffers full of bytes, and then call MD5Final, which
  * will fill a supplied 16-byte array with the digest.
+ *
+ * An implementation of HMAC-MD5 (originally for OpenJK) is also
+ * provided, and also released into the public domain.
  */
-#include "q_shared.h"
-#include "qcommon.h"
 
-typedef struct MD5Context {
-	uint32_t buf[4];
-	uint32_t bits[2];
-	unsigned char in[64];
-} MD5_CTX;
+#include "md5.h"
+#include "qcommon.h"
 
 #ifndef Q3_BIG_ENDIAN
 	#define byteReverse(buf, len)	/* Nothing */
@@ -35,11 +33,11 @@ typedef struct MD5Context {
 	{
 	    uint32_t t;
 	    do {
-		t = (uint32_t)
-			((unsigned) buf[3] << 8 | buf[2]) << 16 |
-			((unsigned) buf[1] << 8 | buf[0]);
-		*(uint32_t *) buf = t;
-		buf += 4;
+			t = (uint32_t)
+				((unsigned) buf[3] << 8 | buf[2]) << 16 |
+				((unsigned) buf[1] << 8 | buf[0]);
+			*(uint32_t *) buf = t;
+			buf += 4;
 	    } while (--longs);
 	}
 #endif // Q3_BIG_ENDIAN
@@ -48,7 +46,7 @@ typedef struct MD5Context {
  * Start MD5 accumulation.  Set bit count to 0 and buffer to mysterious
  * initialization constants.
  */
-static void MD5Init(struct MD5Context *ctx)
+void MD5Init(struct MD5Context *ctx)
 {
     ctx->buf[0] = 0x67452301;
     ctx->buf[1] = 0xefcdab89;
@@ -58,6 +56,7 @@ static void MD5Init(struct MD5Context *ctx)
     ctx->bits[0] = 0;
     ctx->bits[1] = 0;
 }
+
 /* The four core functions - F1 is optimized somewhat */
 
 /* #define F1(x, y, z) (x & y | ~x & z) */
@@ -75,10 +74,9 @@ static void MD5Init(struct MD5Context *ctx)
  * reflect the addition of 16 longwords of new data.  MD5Update blocks
  * the data and converts bytes into longwords for this routine.
  */
-static void MD5Transform(uint32_t buf[4],
-	uint32_t const in[16])
+static void MD5Transform(uint32_t buf[4], uint32_t const in[16])
 {
-    register uint32_t a, b, c, d;
+    uint32_t a, b, c, d;
 
     a = buf[0];
     b = buf[1];
@@ -163,8 +161,7 @@ static void MD5Transform(uint32_t buf[4],
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-static void MD5Update(struct MD5Context *ctx, unsigned char const *buf,
-	unsigned len)
+void MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 {
     uint32_t t;
 
@@ -172,7 +169,7 @@ static void MD5Update(struct MD5Context *ctx, unsigned char const *buf,
 
     t = ctx->bits[0];
     if ((ctx->bits[0] = t + ((uint32_t) len << 3)) < t)
-	ctx->bits[1]++;		/* Carry from low to high */
+		ctx->bits[1]++;		/* Carry from low to high */
     ctx->bits[1] += len >> 29;
 
     t = (t >> 3) & 0x3f;	/* Bytes already in shsInfo->data */
@@ -180,27 +177,27 @@ static void MD5Update(struct MD5Context *ctx, unsigned char const *buf,
     /* Handle any leading odd-sized chunks */
 
     if (t) {
-	unsigned char *p = (unsigned char *) ctx->in + t;
+		unsigned char *p = (unsigned char *) ctx->in + t;
 
-	t = 64 - t;
-	if (len < t) {
-	    memcpy(p, buf, len);
-	    return;
-	}
-	memcpy(p, buf, t);
-	byteReverse(ctx->in, 16);
-	MD5Transform(ctx->buf, (uint32_t *) ctx->in);
-	buf += t;
-	len -= t;
+		t = 64 - t;
+		if (len < t) {
+			memcpy(p, buf, len);
+			return;
+		}
+		memcpy(p, buf, t);
+		byteReverse(ctx->in, 16);
+		MD5Transform(ctx->buf, (uint32_t *) ctx->in);
+		buf += t;
+		len -= t;
     }
     /* Process data in 64-byte chunks */
 
     while (len >= 64) {
-	memcpy(ctx->in, buf, 64);
-	byteReverse(ctx->in, 16);
-	MD5Transform(ctx->buf, (uint32_t *) ctx->in);
-	buf += 64;
-	len -= 64;
+		memcpy(ctx->in, buf, 64);
+		byteReverse(ctx->in, 16);
+		MD5Transform(ctx->buf, (uint32_t *) ctx->in);
+		buf += 64;
+		len -= 64;
     }
 
     /* Handle any remaining bytes of data. */
@@ -208,12 +205,11 @@ static void MD5Update(struct MD5Context *ctx, unsigned char const *buf,
     memcpy(ctx->in, buf, len);
 }
 
-
 /*
  * Final wrapup - pad to 64-byte boundary with the bit pattern
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
-static void MD5Final(struct MD5Context *ctx, unsigned char *digest)
+void MD5Final(struct MD5Context *ctx, unsigned char *digest)
 {
     unsigned count;
     unsigned char *p;
@@ -231,16 +227,16 @@ static void MD5Final(struct MD5Context *ctx, unsigned char *digest)
 
     /* Pad out to 56 mod 64 */
     if (count < 8) {
-	/* Two lots of padding:  Pad the first block to 64 bytes */
-	memset(p, 0, count);
-	byteReverse(ctx->in, 16);
-	MD5Transform(ctx->buf, (uint32_t *) ctx->in);
+		/* Two lots of padding:  Pad the first block to 64 bytes */
+		memset(p, 0, count);
+		byteReverse(ctx->in, 16);
+		MD5Transform(ctx->buf, (uint32_t *) ctx->in);
 
-	/* Now fill the next block with 56 bytes */
-	memset(ctx->in, 0, 56);
+		/* Now fill the next block with 56 bytes */
+		memset(ctx->in, 0, 56);
     } else {
-	/* Pad block to 56 bytes */
-	memset(p, 0, count - 8);
+		/* Pad block to 56 bytes */
+		memset(p, 0, count - 8);
     }
     byteReverse(ctx->in, 14);
 
@@ -255,7 +251,6 @@ static void MD5Final(struct MD5Context *ctx, unsigned char *digest)
 	    memcpy(digest, ctx->buf, 16);
     memset(ctx, 0, sizeof(*ctx));	/* In case it's sensitive */
 }
-
 
 char *Com_MD5File( const char *fn, int length, const char *prefix, int prefix_len )
 {
@@ -307,4 +302,53 @@ char *Com_MD5File( const char *fn, int length, const char *prefix, int prefix_le
 		Q_strcat(final, sizeof(final), va("%02X", digest[i]));
 	}
 	return final;
+}
+
+/*
+ * The following code implements HMAC-MD5 using the public domain MD5 implementation above.
+ * This code (originally for OpenJK) is also released into the public domain.
+ */
+
+void HMAC_MD5_Init(hmacMD5Context_t *ctx, unsigned char const *key, unsigned int keylen)
+{
+	unsigned char shortenedKey[MD5_DIGEST_SIZE];
+	if (keylen > MD5_BLOCK_SIZE) {
+		MD5Init(&ctx->md5Context);
+		MD5Update(&ctx->md5Context, key, keylen);
+		MD5Final(&ctx->md5Context, shortenedKey);
+		key = shortenedKey;
+		keylen = MD5_DIGEST_SIZE;
+	}
+
+	for (unsigned int i = 0; i < keylen; i++) {
+		ctx->iKeyPad[i] = 0x36 ^ key[i];
+		ctx->oKeyPad[i] = 0x5C ^ key[i];
+	}
+	memset(&ctx->iKeyPad[keylen], 0x36, sizeof(ctx->iKeyPad) - keylen);
+	memset(&ctx->oKeyPad[keylen], 0x5C, sizeof(ctx->oKeyPad) - keylen);
+
+	MD5Init(&ctx->md5Context);
+	MD5Update(&ctx->md5Context, ctx->iKeyPad, sizeof(ctx->iKeyPad));
+}
+
+void HMAC_MD5_Update(hmacMD5Context_t *ctx, unsigned char const *buf, unsigned int len)
+{
+	MD5Update(&ctx->md5Context, buf, len);
+}
+
+void HMAC_MD5_Final(hmacMD5Context_t *ctx, unsigned char *digest)
+{
+	unsigned char hashSum1[MD5_DIGEST_SIZE];
+	MD5Final(&ctx->md5Context, hashSum1);
+
+	MD5Init(&ctx->md5Context);
+	MD5Update(&ctx->md5Context, ctx->oKeyPad, sizeof(ctx->oKeyPad));
+	MD5Update(&ctx->md5Context, hashSum1, sizeof(hashSum1));
+	MD5Final(&ctx->md5Context, digest);
+}
+
+void HMAC_MD5_Reset(hmacMD5Context_t *ctx)
+{
+	MD5Init(&ctx->md5Context);
+	MD5Update(&ctx->md5Context, ctx->iKeyPad, sizeof(ctx->iKeyPad));
 }

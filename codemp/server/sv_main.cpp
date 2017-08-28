@@ -32,7 +32,8 @@ server_t		sv;					// local server
 
 cvar_t	*sv_snapsMin;			// minimum snapshots/sec a client can request, also limited by sv_snapsMax
 cvar_t	*sv_snapsMax;			// maximum snapshots/sec a client can request, also limited by sv_fps
-cvar_t	*sv_fps;				// time rate for running non-clients
+cvar_t	*sv_snapsPolicy;		// 0-2
+cvar_t	*sv_fps = NULL;				// time rate for running non-clients
 cvar_t	*sv_timeout;			// seconds without any message
 cvar_t	*sv_zombietime;			// seconds to sink messages after disconnect
 cvar_t	*sv_rconPassword;		// password for remote server commands
@@ -50,6 +51,9 @@ cvar_t	*sv_killserver;			// menu system can set to 1 to shut server down
 cvar_t	*sv_mapname;
 cvar_t	*sv_mapChecksum;
 cvar_t	*sv_serverid;
+cvar_t	*sv_ratePolicy;		// 1-2
+cvar_t	*sv_clientRate;
+cvar_t	*sv_minRate;
 cvar_t	*sv_maxRate;
 cvar_t	*sv_minPing;
 cvar_t	*sv_maxPing;
@@ -62,7 +66,7 @@ cvar_t	*sv_filterCommands; // strict filtering on commands (replace: \r \n ;)
 cvar_t	*sv_autoDemo;
 cvar_t	*sv_autoDemoBots;
 cvar_t	*sv_autoDemoMaxMaps;
-cvar_t	*sv_blockJumpSelect;
+cvar_t	*sv_legacyFixForceSelect;
 cvar_t	*sv_banFile;
 
 serverBan_t serverBans[SERVER_MAXBANS];
@@ -484,8 +488,10 @@ void SVC_Status( netadr_t from ) {
 
 	// Prevent using getstatus as an amplifier
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		Com_DPrintf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
-			NET_AdrToString( from ) );
+		if ( com_developer->integer ) {
+			Com_Printf( "SVC_Status: rate limit from %s exceeded, dropping request\n",
+				NET_AdrToString( from ) );
+		}
 		return;
 	}
 
@@ -554,8 +560,10 @@ void SVC_Info( netadr_t from ) {
 
 	// Prevent using getinfo as an amplifier
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		Com_DPrintf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
-			NET_AdrToString( from ) );
+		if ( com_developer->integer ) {
+			Com_Printf( "SVC_Info: rate limit from %s exceeded, dropping request\n",
+				NET_AdrToString( from ) );
+		}
 		return;
 	}
 
@@ -659,8 +667,10 @@ void SVC_RemoteCommand( netadr_t from, msg_t *msg ) {
 
 	// Prevent using rcon as an amplifier and make dictionary attacks impractical
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		Com_DPrintf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
-			NET_AdrToString( from ) );
+		if ( com_developer->integer ) {
+			Com_Printf( "SVC_RemoteCommand: rate limit from %s exceeded, dropping request\n",
+				NET_AdrToString( from ) );
+		}
 		return;
 	}
 
@@ -738,7 +748,9 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 	Cmd_TokenizeString( s );
 
 	c = Cmd_Argv(0);
-	Com_DPrintf ("SV packet %s : %s\n", NET_AdrToString(from), c);
+	if ( com_developer->integer ) {
+		Com_Printf( "SV packet %s : %s\n", NET_AdrToString( from ), c );
+	}
 
 	if (!Q_stricmp(c, "getstatus")) {
 		SVC_Status( from  );
@@ -757,8 +769,10 @@ void SV_ConnectionlessPacket( netadr_t from, msg_t *msg ) {
 		// server disconnect messages when their new server sees our final
 		// sequenced messages to the old client
 	} else {
-		Com_DPrintf ("bad connectionless packet from %s:\n%s\n",
-			NET_AdrToString (from), s);
+		if ( com_developer->integer ) {
+			Com_Printf( "bad connectionless packet from %s:\n%s\n",
+				NET_AdrToString( from ), s );
+		}
 	}
 }
 
@@ -971,6 +985,8 @@ SV_CheckCvars
 */
 void SV_CheckCvars( void ) {
 	static int lastModHostname = -1, lastModFramerate = -1, lastModSnapsMin = -1, lastModSnapsMax = -1;
+	static int lastModSnapsPolicy = -1, lastModRatePolicy = -1, lastModClientRate = -1;
+	static int lastModMaxRate = -1, lastModMinRate = -1;
 	qboolean changed = qfalse;
 
 	if ( sv_hostname->modificationCount != lastModHostname ) {
@@ -994,29 +1010,129 @@ void SV_CheckCvars( void ) {
 		}
 	}
 
-	// check limits on client "snaps" value based on server framerate and snapshot rate
-	if ( sv_fps->modificationCount != lastModFramerate ||
-		 sv_snapsMin->modificationCount != lastModSnapsMin ||
-		 sv_snapsMax->modificationCount != lastModSnapsMax )
+	// check limits on client "rate" values based on server settings
+	if ( sv_clientRate->modificationCount != lastModClientRate ||
+		 sv_minRate->modificationCount != lastModMinRate ||
+		 sv_maxRate->modificationCount != lastModMaxRate ||
+		 sv_ratePolicy->modificationCount != lastModRatePolicy )
 	{
-		client_t *cl = NULL;
-		int i=0;
-		int minSnaps = Com_Clampi( 1, sv_snapsMax->integer, sv_snapsMin->integer ); // between 1 and sv_snapsMax ( 1 <-> 40 )
-		int maxSnaps = Q_min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
+		sv_clientRate->modificationCount = lastModClientRate;
+		sv_maxRate->modificationCount = lastModMaxRate;
+		sv_minRate->modificationCount = lastModMinRate;
+		sv_ratePolicy->modificationCount = lastModRatePolicy;
 
-		lastModFramerate = sv_fps->modificationCount;
-		lastModSnapsMin = sv_snapsMin->modificationCount;
-		lastModSnapsMax = sv_snapsMax->modificationCount;
+		if (sv_ratePolicy->integer == 1)
+		{
+			// NOTE: what if server sets some dumb sv_clientRate value?
+			client_t *cl = NULL;
+			int i = 0;
 
-		for ( i=0, cl=svs.clients; i<sv_maxclients->integer; i++, cl++ ) {
-			int val = 1000/Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
-			if ( val != cl->snapshotMsec ) {
-				// Reset last sent snapshot so we avoid desync between server frame time and snapshot send time
-				cl->nextSnapshotTime = -1;
-				cl->snapshotMsec = val;
+			for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
+				// if the client is on the same subnet as the server and we aren't running an
+				// internet public server, assume they don't need a rate choke
+				if (Sys_IsLANAddress(cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1) {
+					cl->rate = 100000;	// lans should not rate limit
+				}
+				else {
+					int val = sv_clientRate->integer;
+					if (val != cl->rate) {
+						cl->rate = val;
+					}
+				}
+			}
+		}
+		else if (sv_ratePolicy->integer == 2)
+		{
+			// NOTE: what if server sets some dumb sv_clientRate value?
+			client_t *cl = NULL;
+			int i = 0;
+
+			for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
+				// if the client is on the same subnet as the server and we aren't running an
+				// internet public server, assume they don't need a rate choke
+				if (Sys_IsLANAddress(cl->netchan.remoteAddress) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1) {
+					cl->rate = 100000;	// lans should not rate limit
+				}
+				else {
+					int val = cl->rate;
+					if (!val) {
+						val = sv_maxRate->integer;
+					}
+					val = Com_Clampi( 1000, 90000, val );
+					val = Com_Clampi( sv_minRate->integer, sv_maxRate->integer, val );
+					if (val != cl->rate) {
+						cl->rate = val;
+					}
+				}
 			}
 		}
 	}
+
+	// check limits on client "snaps" value based on server framerate and snapshot rate
+	if ( sv_fps->modificationCount != lastModFramerate ||
+		 sv_snapsMin->modificationCount != lastModSnapsMin ||
+		 sv_snapsMax->modificationCount != lastModSnapsMax ||
+		 sv_snapsPolicy->modificationCount != lastModSnapsPolicy )
+	{
+		lastModFramerate = sv_fps->modificationCount;
+		lastModSnapsMin = sv_snapsMin->modificationCount;
+		lastModSnapsMax = sv_snapsMax->modificationCount;
+		lastModSnapsPolicy = sv_snapsPolicy->modificationCount;
+
+		if (sv_snapsPolicy->integer == 1)
+		{
+			client_t *cl = NULL;
+			int i = 0;
+
+			for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
+				int val = 1000 / sv_fps->integer;
+				if (val != cl->snapshotMsec) {
+					// Reset last sent snapshot so we avoid desync between server frame time and snapshot send time
+					cl->nextSnapshotTime = -1;
+					cl->snapshotMsec = val;
+				}
+			}
+		}
+		else if (sv_snapsPolicy->integer == 2)
+		{
+			client_t *cl = NULL;
+			int i = 0;
+			int minSnaps = Com_Clampi(1, sv_snapsMax->integer, sv_snapsMin->integer); // between 1 and sv_snapsMax ( 1 <-> 40 )
+			int maxSnaps = Q_min(sv_fps->integer, sv_snapsMax->integer); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
+
+			for (i = 0, cl = svs.clients; i < sv_maxclients->integer; i++, cl++) {
+				int val = 1000 / Com_Clampi(minSnaps, maxSnaps, cl->wishSnaps);
+				if (val != cl->snapshotMsec) {
+					// Reset last sent snapshot so we avoid desync between server frame time and snapshot send time
+					cl->nextSnapshotTime = -1;
+					cl->snapshotMsec = val;
+				}
+			}
+		}
+	}
+}
+
+/*
+==================
+SV_FrameMsec
+Return time in millseconds until processing of the next server frame.
+==================
+*/
+int SV_FrameMsec()
+{
+	if(sv_fps)
+	{
+		int frameMsec;
+
+		frameMsec = 1000.0f / sv_fps->value;
+
+		if(frameMsec < sv.timeResidual)
+			return 0;
+		else
+			return frameMsec - sv.timeResidual;
+	}
+	else
+		return 1;
 }
 
 /*
@@ -1062,13 +1178,6 @@ void SV_Frame( int msec ) {
 	sv.timeResidual += msec;
 
 	if (!com_dedicated->integer) SV_BotFrame( sv.time + sv.timeResidual );
-
-	if ( com_dedicated->integer && sv.timeResidual < frameMsec && (!com_timescale || com_timescale->value >= 1) ) {
-		// NET_Sleep will give the OS time slices until either get a packet
-		// or time enough for a server frame has gone by
-		NET_Sleep(frameMsec - sv.timeResidual);
-		return;
-	}
 
 	// if time is about to hit the 32nd bit, kick all clients
 	// and clear sv.time, rather

@@ -178,7 +178,7 @@ void Seeker_Strafe( void )
 	vec3_t	end, right, dir;
 	trace_t	tr;
 
-	if ( random() > 0.7f || !NPC->enemy || !NPC->enemy->client )
+	if ( Q_flrand(0.0f, 1.0f) > 0.7f || !NPC->enemy || !NPC->enemy->client )
 	{
 		// Do a regular style strafe
 		AngleVectors( NPC->client->renderInfo.eyeAngles, NULL, right, NULL );
@@ -208,7 +208,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPC->client->ps.velocity[2] += upPush;
 
-			NPCInfo->standTime = level.time + 1000 + random() * 500;
+			NPCInfo->standTime = level.time + 1000 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 	else
@@ -226,7 +226,7 @@ void Seeker_Strafe( void )
 		VectorMA( NPC->enemy->currentOrigin, stDis * side, right, end );
 
 		// then add a very small bit of random in front of/behind the player action
-		VectorMA( end, crandom() * 25, dir, end );
+		VectorMA( end, Q_flrand(-1.0f, 1.0f) * 25, dir, end );
 
 		gi.trace( &tr, NPC->currentOrigin, NULL, NULL, end, NPC->s.number, MASK_SOLID, (EG2_Collision)0, 0 );
 
@@ -253,7 +253,7 @@ void Seeker_Strafe( void )
 			// Add a slight upward push
 			NPC->client->ps.velocity[2] += upPush;
 
-			NPCInfo->standTime = level.time + 2500 + random() * 500;
+			NPCInfo->standTime = level.time + 2500 + Q_flrand(0.0f, 1.0f) * 500;
 		}
 	}
 }
@@ -434,7 +434,7 @@ void Seeker_FindEnemy( void )
 	if ( best )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPC->random = random() * 6.3f; // roughly 2pi
+		NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 
 		NPC->enemy = best;
 	}
@@ -490,7 +490,7 @@ void Seeker_FollowPlayer( void )
 		{
 			if ( TIMER_Done( NPC, "seekerhiss" ))
 			{
-				TIMER_Set( NPC, "seekerhiss", 1000 + random() * 1000 );
+				TIMER_Set( NPC, "seekerhiss", 1000 + Q_flrand(0.0f, 1.0f) * 1000 );
 				G_Sound( NPC, G_SoundIndex( "sound/chars/seeker/misc/hiss" ));
 			}
 		}
@@ -527,7 +527,7 @@ void NPC_BSSeeker_Default( void )
 	if ( NPC->random == 0.0f )
 	{
 		// used to offset seekers around a circle so they don't occupy the same spot.  This is not a fool-proof method.
-		NPC->random = random() * 6.3f; // roughly 2pi
+		NPC->random = Q_flrand(0.0f, 1.0f) * 6.3f; // roughly 2pi
 	}
 
 	if ( NPC->enemy && NPC->enemy->health && NPC->enemy->inuse )

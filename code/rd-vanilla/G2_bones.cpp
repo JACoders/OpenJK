@@ -438,7 +438,7 @@ qboolean G2_Remove_Bone (CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *bo
 	int			index = G2_Find_Bone(ghlInfo, blist, boneName);
 	if (index==-1)
 	{
-		return false;
+		return qfalse;
 	}
 
 	return G2_Remove_Bone_Index(blist, index);
@@ -4774,7 +4774,6 @@ int	G2_Get_Bone_Index(CGhoul2Info *ghoul2, const char *boneName, qboolean bAddIf
 		return G2_Find_Bone(ghoul2, ghoul2->mBlist, boneName);
 	}
 }
-
 
 void G2_FreeRag(void)
 {

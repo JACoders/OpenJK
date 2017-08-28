@@ -1057,7 +1057,7 @@ void JK2SP_Unload(unsigned char Registration)
 	for(i = JK2SP_ListByName.begin(); i != JK2SP_ListByName.end(); i = next)
 	{
 		next = i;
-		next++;
+		++next;
 
 		if ((*i).second->UnRegister(Registration))
 		{
@@ -1082,7 +1082,7 @@ int JK2SP_GetStringID(const char *inReference)
 	Q_strncpyz(Reference, inReference, MAX_QPATH);
 	Q_strupr(Reference);
 
-	for(i = JK2SP_ListByID.begin(); i != JK2SP_ListByID.end(); i++)
+	for(i = JK2SP_ListByID.begin(); i != JK2SP_ListByID.end(); ++i)
 	{
 		ID = (*i).second->FindStringID(Reference);
 		if (ID >= 0)
@@ -1212,7 +1212,7 @@ static void JK2SP_UpdateLanguage(void)
 	std::list<cStringPackageID>::iterator						spit;
 
 	// Grab all SP ids
-	for(it = JK2SP_ListByID.begin(); it != JK2SP_ListByID.end(); it++)
+	for(it = JK2SP_ListByID.begin(); it != JK2SP_ListByID.end(); ++it)
 	{
 		sps.push_back(cStringPackageID((*it).second->GetName(), (*it).second->GetRegistration()));
 	}
@@ -1220,7 +1220,7 @@ static void JK2SP_UpdateLanguage(void)
 	JK2SP_Unload(SP_REGISTER_CLIENT | SP_REGISTER_SERVER | SP_REGISTER_MENU | SP_REGISTER_REQUIRED);
 
 	// Reinitialise with new language
-	for(spit = sps.begin(); spit != sps.end(); spit++)
+	for(spit = sps.begin(); spit != sps.end(); ++spit)
 	{
 		JK2SP_Register((*spit).GetName(), (*spit).GetReg());
 	}
@@ -1236,7 +1236,7 @@ void JK2SP_Init(void)
 //	Cvar_Set("sp_language", va("%d", SP_LANGUAGE_JAPANESE));	// stetest, do NOT leave in
 
 	JK2SP_UpdateLanguage();
-	sp_language->modified = false;
+	sp_language->modified = qfalse;
 
 	JK2SP_Register("con_text", SP_REGISTER_REQUIRED);	//reference is CON_TEXT
 }
@@ -1248,7 +1248,7 @@ void JK2SP_CheckForLanguageUpdates(void)
 	if (sp_language && sp_language->modified)
 	{
 		JK2SP_UpdateLanguage();	// force language package to reload
-		sp_language->modified = false;
+		sp_language->modified = qfalse;
 	}
 }
 

@@ -1772,6 +1772,18 @@ static void ComputeTexCoords( shaderStage_t *pStage ) {
 	}
 }
 
+void ForceAlpha(unsigned char *dstColors, int TR_ForceEntAlpha)
+{
+	int	i;
+
+	dstColors += 3;
+
+	for ( i = 0; i < tess.numVertexes; i++, dstColors += 4 )
+	{
+		*dstColors = TR_ForceEntAlpha;
+	}
+}
+
 /*
 ** RB_IterateStagesGeneric
 */
@@ -2000,6 +2012,11 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input )
 
 				//don't depthmask, don't blend.. don't do anything
 				GL_State(0);
+			}
+			else if (backEnd.currentEntity && (backEnd.currentEntity->e.renderfx & RF_FORCE_ENT_ALPHA))
+			{
+				ForceAlpha((unsigned char *) tess.svars.colors, backEnd.currentEntity->e.shaderRGBA[3]);
+				GL_State(GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA);
 			}
 			else
 			{

@@ -388,7 +388,7 @@ public:
 
 	virtual bool Update();
 
-	void DrawSegment( vec3_t start, vec3_t end, float texcoord1, float texcoord2 );
+	inline void DrawSegment( vec3_t start, vec3_t end, float texcoord1, float texcoord2 );
 
 	inline void SetControlPoints( const vec3_t ctrl1, const vec3_t ctrl2 )	{ VectorCopy( ctrl1, mControl1 ); VectorCopy( ctrl2, mControl2 ); }
 	inline void SetControlVel( const vec3_t ctrl1v, const vec3_t ctrl2v )	{ VectorCopy( ctrl1v, mControl1Vel ); VectorCopy( ctrl2v, mControl2Vel ); }

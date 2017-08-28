@@ -705,7 +705,7 @@ void CG_Disintegration(centity_t *cent, refEntity_t *ent)
 	ent->customShader = 0;
 	trap->R_AddRefEntityToScene( ent );
 
-	if ( cg.time - ent->endTime < 1000 && (timescale.value * timescale.value * random()) > 0.05f )
+	if ( cg.time - ent->endTime < 1000 && (timescale.value * timescale.value * Q_flrand(0.0f, 1.0f)) > 0.05f )
 	{
 		vec3_t fxOrg, fxDir;
 		mdxaBone_t	boltMatrix;
@@ -718,10 +718,10 @@ void CG_Disintegration(centity_t *cent, refEntity_t *ent)
 				BG_GiveMeVectorFromMatrix( &boltMatrix, ORIGIN, fxOrg );
 
 		VectorMA( fxOrg, -18, cg.refdef.viewaxis[0], fxOrg );
-		fxOrg[2] += crandom() * 20;
+		fxOrg[2] += Q_flrand(-1.0f, 1.0f) * 20;
 		trap->FX_PlayEffectID( cgs.effects.mDisruptorDeathSmoke, fxOrg, fxDir, -1, -1, qfalse );
 
-		if ( random() > 0.5f )
+		if ( Q_flrand(0.0f, 1.0f) > 0.5f )
 		{
 			trap->FX_PlayEffectID( cgs.effects.mDisruptorDeathSmoke, fxOrg, fxDir, -1, -1, qfalse );
 		}
@@ -1499,7 +1499,7 @@ Ghoul2 Insert End
 	{
 		if (cent->bodyFadeTime > cg.time)
 		{
-			qboolean lightSide = cent->teamPowerType;
+			qboolean lightSide = (cent->teamPowerType != 0) ? qtrue : qfalse;
 			vec3_t hitLoc, tempAng;
 			float tempLength;
 			int curTimeDif = ((cg.time + 60000) - cent->bodyFadeTime);
@@ -1611,7 +1611,7 @@ Ghoul2 Insert End
 					{
 						ent.customShader = cgs.media.electricBody2Shader;
 					}
-					if ( random() > 0.9f )
+					if ( Q_flrand(0.0f, 1.0f) > 0.9f )
 					{
 						trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
 					}
@@ -1854,7 +1854,7 @@ static void CG_Speaker( centity_t *cent ) {
 
 	//	ent->s.frame = ent->wait * 10;
 	//	ent->s.clientNum = ent->random * 10;
-	cent->miscTime = cg.time + cent->currentState.frame * 100 + cent->currentState.clientNum * 100 * crandom();
+	cent->miscTime = cg.time + cent->currentState.frame * 100 + cent->currentState.clientNum * 100 * Q_flrand(-1.0f, 1.0f);
 }
 
 qboolean CG_GreyItem(int type, int tag, int plSide)
@@ -3239,7 +3239,7 @@ static void CG_FX( centity_t *cent )
 		cent->muzzleFlashTime = s1->modelindex2;
 	}
 
-	cent->miscTime = cg.time + s1->speed + random() * s1->time;
+	cent->miscTime = cg.time + s1->speed + Q_flrand(0.0f, 1.0f) * s1->time;
 
 	AngleVectors(s1->angles, fxDir, 0, 0);
 

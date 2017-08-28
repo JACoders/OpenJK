@@ -116,6 +116,7 @@ void G_ReadSessionData( gclient_t *client ) {
 	char	s[MAX_STRING_CHARS];
 	const char	*var;
 	int		i;
+	int		lightsideDisplay;
 
 	var = va( "session%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );
@@ -139,14 +140,15 @@ void G_ReadSessionData( gclient_t *client ) {
 	// Clear the objectives out
 	for (i=0;i< MAX_OBJECTIVES; i++)
 	{
-		client->sess.mission_objectives[i].display = 0;
+		client->sess.mission_objectives[i].display = qfalse;
 		client->sess.mission_objectives[i].status = OBJECTIVE_STAT_PENDING;
 	}
 
 	// Now load the LIGHTSIDE objective. That's the only cross level objective.
 	sscanf( var, "%i %i",
-		&client->sess.mission_objectives[LIGHTSIDE_OBJ].display,
+		&lightsideDisplay,
 		&client->sess.mission_objectives[LIGHTSIDE_OBJ].status);
+	client->sess.mission_objectives[LIGHTSIDE_OBJ].display = lightsideDisplay ? qtrue : qfalse;
 
 	var = va( "missionstats%i", client - level.clients );
 	gi.Cvar_VariableStringBuffer( var, s, sizeof(s) );

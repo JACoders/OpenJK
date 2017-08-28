@@ -104,13 +104,13 @@ qboolean SpotWouldTelefrag( gentity_t *spot, team_t checkteam )
 	vec3_t		mins, maxs;
 
 	// If we have a mins, use that instead of the hardcoded bounding box
-	if ( spot->mins && VectorLength( spot->mins ) )
+	if ( !VectorCompare(spot->mins, vec3_origin) && VectorLength( spot->mins ) )
 		VectorAdd( spot->s.origin, spot->mins, mins );
 	else
 		VectorAdd( spot->s.origin, playerMins, mins );
 
 	// If we have a maxs, use that instead of the hardcoded bounding box
-	if ( spot->maxs && VectorLength( spot->maxs ) )
+	if ( !VectorCompare(spot->maxs, vec3_origin) && VectorLength( spot->maxs ) )
 		VectorAdd( spot->s.origin, spot->maxs, maxs );
 	else
 		VectorAdd( spot->s.origin, playerMaxs, maxs );
@@ -270,7 +270,7 @@ gentity_t *SelectSpawnPoint ( vec3_t avoidPoint, team_t team, vec3_t origin, vec
 	gentity_t	*spot;
 	gentity_t	*nearestSpot;
 
-	if ( level.spawntarget != NULL && level.spawntarget[0] )
+	if ( level.spawntarget[0] )
 	{//we have a spawnpoint specified, try to find it
 		if ( (nearestSpot = spot = G_Find( NULL, FOFS(targetname), level.spawntarget )) == NULL )
 		{//you HAVE to be able to find the desired spot
@@ -614,7 +614,7 @@ void ClientBegin( int clientNum, usercmd_t *cmd, SavedGameJustLoaded_e eSavedGam
 
 		client->pers.connected = CON_CONNECTED;
 		client->pers.teamState.state = TEAM_BEGIN;
-		_VectorCopy( cmd->angles, client->pers.cmd_angles );
+		VectorCopyM( cmd->angles, client->pers.cmd_angles );
 
 		memset( &client->ps, 0, sizeof( client->ps ) );
 		memset( &client->sess.missionStats, 0, sizeof( client->sess.missionStats ) );
@@ -696,6 +696,7 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 	{
 		char	s[MAX_STRING_CHARS];
 		const char	*var;
+		int saberActive;
 
 		gi.Cvar_VariableStringBuffer( sCVARNAME_PLAYERSAVE, s, sizeof(s) );
 
@@ -714,11 +715,12 @@ void Player_RestoreFromPrevLevel(gentity_t *ent)
 								&client->ps.viewangles[2],
 								&client->ps.forcePowersKnown,
 								&client->ps.forcePower,
-								&client->ps.saberActive,
+								&saberActive,
 								&client->ps.saberAnimLevel,
 								&client->ps.saberLockEnemy,
 								&client->ps.saberLockTime
 					);
+			client->ps.saberActive = (saberActive ? qtrue : qfalse);
 			ent->health = client->ps.stats[STAT_HEALTH];
 
 // slight issue with ths for the moment in that although it'll correctly restore angles it doesn't take into account
@@ -1746,7 +1748,7 @@ qboolean ClientSpawn(gentity_t *ent, SavedGameJustLoaded_e eSavedGameJustLoaded 
 		client->ps.commandTime = level.time - 100;
 		ucmd = client->pers.lastCommand;
 		ucmd.serverTime = level.time;
-		_VectorCopy( client->pers.cmd_angles, ucmd.angles );
+		VectorCopyM( client->pers.cmd_angles, ucmd.angles );
 		ucmd.weapon = client->ps.weapon;	// client think calls Pmove which sets the client->ps.weapon to ucmd.weapon, so ...
 		ent->client->ps.groundEntityNum = ENTITYNUM_NONE;
 		ClientThink( ent-g_entities, &ucmd );

@@ -6828,7 +6828,7 @@ static void UI_RunMenuScript(char **args)
 						Menu_SetItemBackground(menu, item->window.name, string2);
 
 						// Re-enable this button
-						Menu_ItemDisable(menu,(char *) item->window.name, qfalse);
+						Menu_ItemDisable(menu, item->window.name, qfalse);
 					}
 
 					// Set the new item to the given background
@@ -6845,7 +6845,7 @@ static void UI_RunMenuScript(char **args)
 								trap->Cvar_VariableStringBuffer( cvarLitArg, string, sizeof(string) );
 								Menu_SetItemBackground(menu, item->window.name, string);
 								// Disable button
-								Menu_ItemDisable(menu,(char *) item->window.name, qtrue);
+								Menu_ItemDisable(menu, item->window.name, qtrue);
 							}
 						}
 					}
@@ -7827,14 +7827,17 @@ static void UI_BuildFindPlayerList(qboolean force) {
 		uiInfo.nextFindPlayerRefresh = uiInfo.uiDC.realTime + 25;
 	}
 	else {
+		trap->SE_GetStringTextString("MENUS_SERVERS_FOUNDWITH", holdSPString, sizeof(holdSPString));
 		// add a line that shows the number of servers found
 		if (!uiInfo.numFoundPlayerServers)
 		{
-			Com_sprintf(uiInfo.foundPlayerServerNames[uiInfo.numFoundPlayerServers-1], sizeof(uiInfo.foundPlayerServerAddresses[0]), "no servers found");
+			trap->Cvar_Set( "ui_playerServersFound", va(	holdSPString,
+														0,
+														"s",
+														uiInfo.findPlayerName) );
 		}
 		else
 		{
-			trap->SE_GetStringTextString("MENUS_SERVERS_FOUNDWITH", holdSPString, sizeof(holdSPString));
 			trap->Cvar_Set( "ui_playerServersFound", va(	holdSPString,
 														uiInfo.numFoundPlayerServers-1,
 														uiInfo.numFoundPlayerServers == 2 ? "":"s",
@@ -9633,12 +9636,27 @@ UI_BuildPlayerModel_List
 */
 static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 {
+	static const size_t DIR_LIST_SIZE = 16384;
+
 	int		numdirs;
-	char	dirlist[2048];
+	size_t	dirListSize = DIR_LIST_SIZE;
+	char	stackDirList[8192];
+	char	*dirlist;
 	char*	dirptr;
 	int		dirlen;
 	int		i;
 	int		j;
+
+	dirlist = malloc(DIR_LIST_SIZE);
+	if ( !dirlist )
+	{
+		Com_Printf(S_COLOR_YELLOW "WARNING: Failed to allocate %u bytes of memory for player model "
+			"directory list. Using stack allocated buffer of %u bytes instead.",
+			DIR_LIST_SIZE, sizeof(stackDirList));
+
+		dirlist = stackDirList;
+		dirListSize = sizeof(stackDirList);
+	}
 
 	uiInfo.playerSpeciesCount = 0;
 	uiInfo.playerSpeciesIndex = 0;
@@ -9646,15 +9664,14 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 	uiInfo.playerSpecies = (playerSpeciesInfo_t *)malloc(uiInfo.playerSpeciesMax * sizeof(playerSpeciesInfo_t));
 
 	// iterate directory of all player models
-	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, 2048 );
+	numdirs = trap->FS_GetFileList("models/players", "/", dirlist, dirListSize );
 	dirptr  = dirlist;
 	for (i=0; i<numdirs; i++,dirptr+=dirlen+1)
 	{
-		char	filelist[2048];
 		char*	fileptr;
 		int		filelen;
 		int f = 0;
-		char fpath[2048];
+		char fpath[MAX_QPATH];
 
 		dirlen = strlen(dirptr);
 
@@ -9671,11 +9688,12 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 		if (!strcmp(dirptr,".") || !strcmp(dirptr,".."))
 			continue;
 
-		Com_sprintf(fpath, 2048, "models/players/%s/PlayerChoice.txt", dirptr);
+		Com_sprintf(fpath, sizeof(fpath), "models/players/%s/PlayerChoice.txt", dirptr);
 		filelen = trap->FS_Open(fpath, &f, FS_READ);
 
 		if (f)
 		{
+			char	filelist[2048];
 			playerSpeciesInfo_t *species;
 			char                 skinname[64];
 			int                  numfiles;
@@ -9718,7 +9736,7 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 
 			free(buffer);
 
-			numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, 2048 );
+			numfiles = trap->FS_GetFileList( va("models/players/%s",dirptr), ".skin", filelist, sizeof(filelist) );
 			fileptr  = filelist;
 			for (j=0; j<numfiles; j++,fileptr+=filelen+1)
 			{
@@ -9785,6 +9803,11 @@ static void UI_BuildPlayerModel_List( qboolean inGameLoad )
 				}
 			}
 		}
+	}
+
+	if ( dirlist != stackDirList )
+	{
+		free(dirlist);
 	}
 }
 
@@ -9898,6 +9921,7 @@ void UI_Init( qboolean inGameLoad ) {
 	uiInfo.uiDC.stopCinematic					= &UI_StopCinematic;
 	uiInfo.uiDC.drawCinematic					= &UI_DrawCinematic;
 	uiInfo.uiDC.runCinematicFrame				= &UI_RunCinematicFrame;
+	uiInfo.uiDC.ext.Font_StrLenPixels			= trap->ext.R_Font_StrLenPixels;
 
 	Init_Display(&uiInfo.uiDC);
 

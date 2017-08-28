@@ -79,7 +79,7 @@ extern cvar_t	*g_skippingcin;
 
 extern qboolean	stop_icarus;
 
-#define stringIDExpand(str, strEnum)	str, strEnum, ENUM2STRING(strEnum)
+#define stringIDExpand(str, strEnum)	{ str, strEnum }, ENUM2STRING(strEnum)
 //#define stringIDExpand(str, strEnum)	str,strEnum
 
 /*
@@ -125,12 +125,12 @@ stringID_table_t BSETTable[] =
 	ENUM2STRING(BSET_FFIRE),//# script to run when player shoots their own teammates
 	ENUM2STRING(BSET_FFDEATH),//# script to run when player kills a teammate
 	stringIDExpand("", BSET_INVALID),
-	"",				-1,
+	{"",				-1},
 };
 
 stringID_table_t WPTable[] =
 {
-	"NULL",WP_NONE,
+	{"NULL", WP_NONE},
 	ENUM2STRING(WP_NONE),
 	// Player weapons
 	ENUM2STRING(WP_SABER),				 // NOTE: lots of code assumes this is the first weapon (... which is crap) so be careful -Ste.
@@ -483,39 +483,39 @@ static void SetTextColor ( vec4_t textcolor,const char *color)
 
 	if (Q_stricmp(color,"BLACK") == 0)
 	{
-		Vector4Copy( colorTable[CT_BLACK], textcolor );
+		VectorCopy4( colorTable[CT_BLACK], textcolor );
 	}
 	else if (Q_stricmp(color,"RED") == 0)
 	{
-		Vector4Copy( colorTable[CT_RED], textcolor );
+		VectorCopy4( colorTable[CT_RED], textcolor );
 	}
 	else if (Q_stricmp(color,"GREEN") == 0)
 	{
-		Vector4Copy( colorTable[CT_GREEN], textcolor );
+		VectorCopy4( colorTable[CT_GREEN], textcolor );
 	}
 	else if (Q_stricmp(color,"YELLOW") == 0)
 	{
-		Vector4Copy( colorTable[CT_YELLOW], textcolor );
+		VectorCopy4( colorTable[CT_YELLOW], textcolor );
 	}
 	else if (Q_stricmp(color,"BLUE") == 0)
 	{
-		Vector4Copy( colorTable[CT_BLUE], textcolor );
+		VectorCopy4( colorTable[CT_BLUE], textcolor );
 	}
 	else if (Q_stricmp(color,"CYAN") == 0)
 	{
-		Vector4Copy( colorTable[CT_CYAN], textcolor );
+		VectorCopy4( colorTable[CT_CYAN], textcolor );
 	}
 	else if (Q_stricmp(color,"MAGENTA") == 0)
 	{
-		Vector4Copy( colorTable[CT_MAGENTA], textcolor );
+		VectorCopy4( colorTable[CT_MAGENTA], textcolor );
 	}
 	else if (Q_stricmp(color,"WHITE") == 0)
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor );
+		VectorCopy4( colorTable[CT_WHITE], textcolor );
 	}
 	else 
 	{
-		Vector4Copy( colorTable[CT_WHITE], textcolor );
+		VectorCopy4( colorTable[CT_WHITE], textcolor );
 	}
 
 	return;
@@ -1010,7 +1010,7 @@ static int Q3_PlaySound( int taskID, int entID, const char *name, const char *ch
 	soundChannel_t	voice_chan = CHAN_VOICE; // set a default so the compiler doesn't bitch
 	qboolean		type_voice = qfalse;
 
-	Q_strncpyz( finalName, name, MAX_QPATH, 0 );
+	Q_strncpyz( finalName, name, MAX_QPATH );
 	Q_strupr(finalName);
 	//G_AddSexToMunroString( finalName, qtrue );
 
@@ -2300,23 +2300,10 @@ static void Q3_SetLeader( int entID, const char *name )
 stringID_table_t teamTable [] = 
 {
 	ENUM2STRING(TEAM_FREE),
-//	ENUM2STRING(TEAM_STARFLEET),
-//	ENUM2STRING(TEAM_BORG),
-//	ENUM2STRING(TEAM_PARASITE),
-//	ENUM2STRING(TEAM_SCAVENGERS),
-//	ENUM2STRING(TEAM_KLINGON),
-//	ENUM2STRING(TEAM_MALON),
-//	ENUM2STRING(TEAM_HIROGEN),
-//	ENUM2STRING(TEAM_IMPERIAL),
-//	ENUM2STRING(TEAM_STASIS),
-//	ENUM2STRING(TEAM_8472),
-//	ENUM2STRING(TEAM_BOTS),
-//	ENUM2STRING(TEAM_FORGE),
-//	ENUM2STRING(TEAM_DISGUISE),
 	ENUM2STRING(TEAM_PLAYER),
 	ENUM2STRING(TEAM_ENEMY),
 	ENUM2STRING(TEAM_NEUTRAL),
-	"", TEAM_FREE,
+	{"", TEAM_FREE},
 };
 
 
@@ -5343,7 +5330,7 @@ static void Q3_SetDismemberable( int entID, qboolean dismemberable)
 		return;
 	}
 
-	ent->client->dismembered = !dismemberable;
+	ent->client->dismembered = (qboolean)(!dismemberable);
 }
 
 
@@ -6780,7 +6767,7 @@ static void Q3_Set( int taskID, int entID, const char *type_name, const char *da
 
 	case SET_ICARUS_FREEZE:
 	case SET_ICARUS_UNFREEZE:
-		Q3_SetICARUSFreeze( entID, (char *) data, (toSet==SET_ICARUS_FREEZE) );
+		Q3_SetICARUSFreeze( entID, (char *) data, (qboolean)(toSet == SET_ICARUS_FREEZE) );
 		break;
 
 	case SET_WEAPON:
@@ -8626,7 +8613,7 @@ static int Q3_GetString( int entID, int type, const char *name, char **value )
 	case SET_ANIM_BOTH:
 		*value = (char *) Q3_GetAnimBoth( ent );
 
-		if ( VALIDSTRING( value ) == false )
+		if ( VALIDSTRING( *value ) == false )
 			return false;
 
 		break;
@@ -9275,9 +9262,8 @@ void Interface_Init( interface_export_t *pe )
 	pe->I_FreeVariable			=	Q3_FreeVariable;
 
 	//Save / Load functions
-	pe->I_WriteSaveData			=	(int(*)(unsigned int, void *, int))gi.AppendToSaveGame;
-	pe->I_ReadSaveData			=	gi.ReadFromSaveGame;
 	pe->I_LinkEntity			=	ICARUS_LinkEntity;
+	pe->saved_game = gi.saved_game;
 
 	gclient_t	*client;
 	client = &level.clients[0];

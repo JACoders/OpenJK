@@ -42,7 +42,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
   http://www.altdevblogaday.com/2011/02/12/alternatives-to-malloc-and-new/
 */
 
-#define POOLSIZE	(256 * 1024)
+#define POOLSIZE	(4 * 1024 * 1024) // (256*1024)
 
 static char		memoryPool[POOLSIZE];
 static int		allocPoint;
@@ -76,5 +76,8 @@ void G_InitMemory( void ) {
 }
 
 void Svcmd_GameMem_f( void ) {
-	trap->Print( "Game memory status: %i out of %i bytes allocated\n", allocPoint, POOLSIZE );
+	float f = allocPoint;
+	f /= POOLSIZE;
+	f *= 100;
+	trap->Print("Game Memory Pool is %.1f%% full, %i bytes out of %i used.\n", f, allocPoint, POOLSIZE);
 }
