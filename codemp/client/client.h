@@ -421,6 +421,8 @@ extern	cvar_t	*cl_consoleUseScanCode;
 
 extern  cvar_t  *cl_lanForcePackets;
 
+extern	cvar_t	*cl_drawRecording;
+
 extern cvar_t	*cl_colorString;
 extern cvar_t	*cl_colorStringCount;
 extern cvar_t	*cl_colorStringRandom;
