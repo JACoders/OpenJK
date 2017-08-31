@@ -633,7 +633,7 @@ static void CM_LoadMap_Actual( const char *name, qboolean clientload, int *check
 #ifndef BSPC
 	cm_noAreas = Cvar_Get ("cm_noAreas", "0", CVAR_CHEAT);
 	cm_noCurves = Cvar_Get ("cm_noCurves", "0", CVAR_CHEAT);
-	cm_playerCurveClip = Cvar_Get ("cm_playerCurveClip", "1", CVAR_ARCHIVE|CVAR_CHEAT );
+	cm_playerCurveClip = Cvar_Get ("cm_playerCurveClip", "1", CVAR_ARCHIVE_ND|CVAR_CHEAT );
 	cm_extraVerbose = Cvar_Get ("cm_extraVerbose", "0", CVAR_TEMP );
 #endif
 	Com_DPrintf( "CM_LoadMap( %s, %i )\n", name, clientload );

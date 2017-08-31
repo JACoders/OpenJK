@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../qcommon/qcommon.h"
 #include "../ghoul2/ghoul2_shared.h"
 
-#define	REF_API_VERSION 8
+#define	REF_API_VERSION 9
 
 //
 // these are the functions exported by the refresh module
@@ -252,7 +252,7 @@ typedef struct refexport_s {
 //
 typedef struct refimport_s {
 	void			(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
-	void			(QDECL *Error)						( int errorLevel, const char *fmt, ...) __attribute__ ((noreturn, format (printf, 2, 3)));
+	void			(QDECL *Error)						( int errorLevel, const char *fmt, ...) NORETURN_PTR __attribute__ ((format (printf, 2, 3)));
 	void			(QDECL *OPrintf)					( const char *fmt, ...) __attribute__ ((format (printf, 1, 2)));
 
 	// milliseconds should only be used for profiling, never for anything game related. Get time from the refdef
@@ -331,6 +331,7 @@ typedef struct refimport_s {
 
 	// OpenGL-specific
 	void *			(*GL_GetProcAddress)				( const char *name );
+	qboolean		(*GL_ExtensionSupported)			( const char *extension );
 
 	// gpvCachedMapDiskImage
 	void *			(*CM_GetCachedMapDiskImage)			( void );

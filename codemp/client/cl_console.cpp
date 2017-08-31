@@ -507,8 +507,8 @@ void Con_Init (void) {
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0, "Console open/close speed");
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
-	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE, "Opacity of console background");
-	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE, "Automatically clear console input on close");
+	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
+	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 	con_notifyname = Cvar_Get("con_notifyname", "0", CVAR_ARCHIVE, "Notifies you when name is mentioned");
 	con_notifyconnect = Cvar_Get("con_notifyconnect", "0", CVAR_NONE, "Notifies you when someone connects to the server");
 

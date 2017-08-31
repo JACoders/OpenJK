@@ -417,7 +417,7 @@ void Com_StartupVariable( const char *match ) {
 		char *s = Cmd_Argv(1);
 
 		if ( !match || !strcmp( s, match ) )
-			Cvar_User_Set( s, Cmd_Argv( 2 ) );
+			Cvar_User_Set( s, Cmd_ArgsFrom( 2 ) );
 	}
 }
 
@@ -647,7 +647,7 @@ Com_HashKey
 ============
 */
 int Com_HashKey(char *string, int maxlen) {
-	int register hash, i;
+	int hash, i;
 
 	hash = 0;
 	for (i = 0; i < maxlen && string[i] != '\0'; i++) {
@@ -1126,7 +1126,7 @@ void Com_Init( char *commandLine ) {
 	char	*s;
 	int		qport;
 
-	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, __DATE__ );
+	Com_Printf( "%s %s %s\n", JK_VERSION, PLATFORM_STRING, SOURCE_DATE );
 
 	try
 	{
@@ -1229,19 +1229,19 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM, "Is the client running?" );
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 #ifndef _WIN32
-		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE );
+		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE_ND );
 #endif
 
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
 #endif
 
-		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE );
-		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE );
+		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE_ND );
+		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
 
-		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE, "Show intro movies" );
+		com_bootlogo = Cvar_Get( "com_bootlogo", "1", CVAR_ARCHIVE_ND, "Show intro movies" );
 
-		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, __DATE__ );
+		s = va("%s %s %s", JK_VERSION_OLD, PLATFORM_STRING, SOURCE_DATE );
 		com_version = Cvar_Get ("version", s, CVAR_ROM | CVAR_SERVERINFO );
 
 		SE_Init();
@@ -1361,6 +1361,12 @@ void Com_WriteConfig_f( void ) {
 	if(!COM_CompareExtension(filename, ".cfg"))
 	{
 		Com_Printf( "Com_WriteConfig_f: Only the \".cfg\" extension is supported by this command!\n" );
+		return;
+	}
+
+	if(!FS_FilenameCompare(filename, "mpdefault.cfg") || !FS_FilenameCompare(filename, "default.cfg"))
+	{
+		Com_Printf( S_COLOR_YELLOW "Com_WriteConfig_f: The filename \"%s\" is reserved! Please choose another name.\n", filename );
 		return;
 	}
 

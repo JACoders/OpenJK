@@ -7122,7 +7122,7 @@ static void UI_RunMenuScript(char **args)
 						Menu_SetItemBackground(menu, item->window.name, string2);
 
 						// Re-enable this button
-						Menu_ItemDisable(menu,(char *) item->window.name, qfalse);
+						Menu_ItemDisable(menu, item->window.name, qfalse);
 					}
 
 					// Set the new item to the given background
@@ -7139,7 +7139,7 @@ static void UI_RunMenuScript(char **args)
 								trap->Cvar_VariableStringBuffer( cvarLitArg, string, sizeof(string) );
 								Menu_SetItemBackground(menu, item->window.name, string);
 								// Disable button
-								Menu_ItemDisable(menu,(char *) item->window.name, qtrue);
+								Menu_ItemDisable(menu, item->window.name, qtrue);
 							}
 						}
 					}

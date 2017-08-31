@@ -38,7 +38,26 @@ EVENT LOOP
 #define	MASK_QUED_EVENTS	( MAX_QUED_EVENTS - 1 )
 
 static sysEvent_t	eventQue[MAX_QUED_EVENTS] = {};
-static int			eventHead = 0, eventTail = 0;
+static sysEvent_t	*lastEvent = nullptr;
+static uint32_t		eventHead = 0, eventTail = 0;
+
+static const char *Sys_EventName( sysEventType_t evType ) {
+
+	static const char *evNames[SE_MAX] = {
+		"SE_NONE",
+		"SE_KEY",
+		"SE_CHAR",
+		"SE_MOUSE",
+		"SE_JOYSTICK_AXIS",
+		"SE_CONSOLE"
+	};
+
+	if ( evType >= SE_MAX ) {
+		return "SE_UNKNOWN";
+	} else {
+		return evNames[evType];
+	}
+}
 
 sysEvent_t Sys_GetEvent( void ) {
 	sysEvent_t	ev;
@@ -85,47 +104,47 @@ Ptr should either be null, or point to a block of data that can
 be freed by the game later.
 ================
 */
-void Sys_QueEvent( int time, sysEventType_t type, int value, int value2, int ptrLength, void *ptr ) {
+void Sys_QueEvent( int evTime, sysEventType_t evType, int value, int value2, int ptrLength, void *ptr ) {
 	sysEvent_t	*ev;
-#ifndef _DEBUG
-	static bool printedWarning = false;
-#endif
+
+	if ( evTime == 0 ) {
+		evTime = Sys_Milliseconds();
+	}
+
+	// try to combine all sequential mouse moves in one event
+	if ( evType == SE_MOUSE && lastEvent && lastEvent->evType == SE_MOUSE ) {
+		// try to reuse already processed item
+		if ( eventTail == eventHead ) {
+			lastEvent->evValue = value;
+			lastEvent->evValue2 = value2;
+			eventTail--;
+		} else {
+			lastEvent->evValue += value;
+			lastEvent->evValue2 += value2;
+		}
+		lastEvent->evTime = evTime;
+		return;
+	}
 
 	ev = &eventQue[ eventHead & MASK_QUED_EVENTS ];
 
 	if ( eventHead - eventTail >= MAX_QUED_EVENTS ) {
-		// Spam less often from Com_PushEvent
-#ifndef _DEBUG
-		if ( !printedWarning ) {
-			Com_Printf( "Sys_QueEvent: overflow (event type %i) (value: %i) (value2: %i)\n", type, value, value2 );
-			printedWarning = true;
-		}
-#else
-		Com_Printf( "Sys_QueEvent: overflow (event type %i) (value: %i) (value2: %i)\n", type, value, value2 );
-#endif
+		Com_Printf( "Sys_QueEvent(%s,time=%i): overflow\n", Sys_EventName(evType), evTime );
 		// we are discarding an event, but don't leak memory
 		if ( ev->evPtr ) {
 			Z_Free( ev->evPtr );
 		}
 		eventTail++;
 	}
-#ifndef _DEBUG
-	else
-	{
-		printedWarning = false;
-	}
-#endif
 
 	eventHead++;
 
-	if ( time == 0 ) {
-		time = Sys_Milliseconds();
-	}
-
-	ev->evTime = time;
-	ev->evType = type;
+	ev->evTime = evTime;
+	ev->evType = evType;
 	ev->evValue = value;
 	ev->evValue2 = value2;
 	ev->evPtrLength = ptrLength;
 	ev->evPtr = ptr;
+
+	lastEvent = ev;
 }

@@ -170,8 +170,8 @@ void Sys_Init( void ) {
 #else
 	com_maxfps = Cvar_Get( "com_maxfps", "125", CVAR_ARCHIVE, "Maximum frames per second" );
 #endif
-	com_maxfpsUnfocused = Cvar_Get( "com_maxfpsUnfocused", "0", CVAR_ARCHIVE );
-	com_maxfpsMinimized = Cvar_Get( "com_maxfpsMinimized", "50", CVAR_ARCHIVE );
+	com_maxfpsUnfocused = Cvar_Get( "com_maxfpsUnfocused", "0", CVAR_ARCHIVE_ND );
+	com_maxfpsMinimized = Cvar_Get( "com_maxfpsMinimized", "50", CVAR_ARCHIVE_ND );
 }
 
 static void NORETURN Sys_Exit( int ex ) {
@@ -305,6 +305,13 @@ from executable path, then fs_basepath.
 void *Sys_LoadDll( const char *name, qboolean useSystemLib )
 {
 	void *dllhandle = NULL;
+
+	// Don't load any DLLs that end with the pk3 extension
+	if ( COM_CompareExtension( name, ".pk3" ) )
+	{
+		Com_Printf( S_COLOR_YELLOW "WARNING: Rejecting DLL named \"%s\"", name );
+		return NULL;
+	}
 
 	if ( useSystemLib )
 	{
@@ -470,7 +477,7 @@ void *Sys_LoadLegacyGameDll( const char *name, VMMainProc **vmMain, SystemCallPr
 	Com_sprintf (filename, sizeof(filename), "%s" ARCH_STRING DLL_EXT, name);
 
 #if defined(_DEBUG)
-	libHandle = Sys_LoadLibrary( name );
+	libHandle = Sys_LoadLibrary( filename );
 	if ( !libHandle )
 #endif
 	{

@@ -1848,7 +1848,7 @@ void ParseAnimationEvtBlock(const char *aeb_filename, animevent_t *animEvents, a
 
 		token = COM_Parse( text_p );
 		eventType = (animEventType_t)GetIDForString(animEventTypeTable, token);
-		if ( eventType == AEV_NONE || eventType == -1 )
+		if ( eventType == AEV_NONE || eventType == (animEventType_t)-1 )
 		{//Unrecognized ANIM EVENT TYOE, or we're skipping this line, keep going till you get a good one
 			//Com_Printf(S_COLOR_YELLOW"WARNING: Unknown token %s in animEvent file %s\n", token, aeb_filename );
 			continue;
