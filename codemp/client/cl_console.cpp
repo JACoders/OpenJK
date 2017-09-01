@@ -250,6 +250,17 @@ void Con_CopyLink(void) {
 				break;
 		}
 		Q_StripColor(buffer);
+		if ((link = Q_stristr(buffer, "://"))) {
+			// Move link ptr back until it hits a space or first char of string
+			while (link != &buffer[0] && *(link - 1) != ' ') link--;
+			for (i = 0; buffer[i] != 0; i++) {
+				buffer[i] = *link++;
+				if (*link == ' ' || *link == '"') buffer[i + 1] = 0;
+			}
+			Sys_SetClipboardData(buffer);
+			Com_Printf("^2Link ^7\"%s\" ^2Copied!\n", buffer);
+			break;
+		}
 		if (containsNum && containsPoint) {
 			containsNum = qfalse, containsPoint = qfalse;
 			if (!(point1 = Q_stristr(buffer, ".")) || // Set address of first point
@@ -290,17 +301,6 @@ void Con_CopyLink(void) {
 				Com_Printf("^2IP ^7\"%s\" ^2Copied!\n", buffer);
 				break;
 			}
-		}
-		if ((link = Q_stristr(buffer, "://"))) {
-			// Move link ptr back until it hits a space or first char of string
-			while (link != &buffer[0] && *(link - 1) != ' ') link--;
-			for (i = 0; buffer[i] != 0; i++) {
-				buffer[i] = *link++;
-				if (*link == ' ' || *link == '"') buffer[i + 1] = 0;
-			}
-			Sys_SetClipboardData(buffer);
-			Com_Printf("^2Link ^7\"%s\" ^2Copied!\n", buffer);
-			break;
 		}
 	}
 	if (!link) {
