@@ -375,7 +375,15 @@ void NPC_ChoosePainAnimation( gentity_t *self, gentity_t *other, const vec3_t po
 		{
 			self->painDebounceTime = level.time + 4000;
 		}
-		self->painDebounceTime = level.time + PM_AnimLength( self->client->clientInfo.animFileIndex, (animNumber_t) pain_anim );
+
+		if ( pain_anim >= 0 )
+		{
+			self->painDebounceTime = level.time + PM_AnimLength( self->client->clientInfo.animFileIndex, (animNumber_t) pain_anim );
+		}
+		else
+		{
+			self->painDebounceTime = level.time;
+		}
 		self->client->fireDelay = 0;
 	}
 }
