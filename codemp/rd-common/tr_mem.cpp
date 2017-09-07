@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "tr_common.h"
 
 // ZONE
-void *R_Malloc( int iSize, memtag_t eTag, qboolean bZeroit ) {
+void *R_Malloc( int iSize, memtag_t eTag, qboolean bZeroit) {
   return ri->Malloc( iSize, eTag, bZeroit, 4 );
 }
 

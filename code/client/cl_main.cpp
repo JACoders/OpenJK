@@ -1053,7 +1053,7 @@ int get_com_frameTime( void )
 
 void *CL_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign)
 {
-    return Z_Malloc(iSize, eTag, bZeroit);
+    return Z_Malloc(iSize, eTag, bZeroit, iAlign);
 }
 
 /*

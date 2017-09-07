@@ -988,7 +988,7 @@ static inline void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) 
 	int				noAdjust[4];
 
 	int numFacets;
-	facets = (facet_t*) Z_Malloc(MAX_FACETS*sizeof(facet_t), TAG_TEMP_WORKSPACE, qfalse, 4);
+	facets = (facet_t*) Z_Malloc(MAX_FACETS*sizeof(facet_t), TAG_TEMP_WORKSPACE, qfalse);
 
 	numPlanes = 0;
 	numFacets = 0;

@@ -825,7 +825,7 @@ static IHeapAllocator *GetG2VertSpaceServer( void ) {
 
 void *SV_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int iAlign)
 {
-	return Z_Malloc(iSize, eTag, bZeroit);
+	return Z_Malloc(iSize, eTag, bZeroit, iAlign);
 }
 
 refexport_t	*re = NULL;
