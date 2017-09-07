@@ -24,7 +24,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon.h"
 #include "client/client.h" // hi i'm bad
-extern qboolean CM_DeleteCachedMap(qboolean bGuaranteedOkToDelete);
 
 #ifdef DEBUG_ZONE_ALLOCS
 #include "sstring.h"
@@ -221,7 +220,6 @@ const char *D_Z_Filename_WithoutPath(char *psDest, const char *psFilename)
 #endif
 
 static void Z_Details_f(void);
-static qboolean gbMemFreeupOccured = qfalse;
 
 #ifdef DEBUG_ZONE_ALLOCS
 void *D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFile, int iLine)
@@ -229,9 +227,6 @@ void *D_Z_Malloc ( int iSize, memtag_t eTag, qboolean bZeroit, const char *psFil
 void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 #endif
 {
-	int loopCount = 0;
-	gbMemFreeupOccured = qfalse;
-
 	if (iSize == 0)
 	{
 		zoneHeader_t *pMemory = (zoneHeader_t *) &gZeroMalloc;
@@ -245,108 +240,14 @@ void *Z_Malloc(int iSize, memtag_t eTag, qboolean bZeroit, int /* iAlign = 4 */)
 	// Allocate a chunk...
 	//
 	zoneHeader_t *pMemory = NULL;
-	while (pMemory == NULL)
+	if (bZeroit) {
+		pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );
+	} else {
+		pMemory = (zoneHeader_t *) malloc ( iRealSize );
+	}
+
+	if (pMemory == NULL)
 	{
-		loopCount++;
-		if (gbMemFreeupOccured)
-		{
-			Sys_Sleep(1000);	// sleep for a second, so Windows has a chance to shuffle mem to de-swiss-cheese it
-		}
-
-		if (bZeroit) {
-			pMemory = (zoneHeader_t *) calloc ( iRealSize, 1 );
-		} else {
-			pMemory = (zoneHeader_t *) malloc ( iRealSize );
-		}
-
-		if (pMemory)
-			break;
-
-		if (loopCount < 10)
-		{
-			// new bit, if we fail to malloc memory, try dumping some of the cached stuff that's non-vital and try again...
-			// Aditionally, limit the number of retrials.
-
-			// ditch the BSP cache...
-			//
-			if (CM_DeleteCachedMap(qfalse))
-			{
-				gbMemFreeupOccured = qtrue;
-				continue;		// we've just ditched a whole load of memory, so try again with the malloc
-			}
-
-
-			// ditch any sounds not used on this level...
-			//
-			extern qboolean SND_RegisterAudio_LevelLoadEnd(qboolean bDeleteEverythingNotUsedThisLevel);
-			if (SND_RegisterAudio_LevelLoadEnd(qtrue))
-			{
-				gbMemFreeupOccured = qtrue;
-				continue;		// we've dropped at least one sound, so try again with the malloc
-			}
-
-			// ditch any image_t's (and associated GL texture memory) not used on this level...
-			//
-#ifndef DEDICATED
-			if ( re->RegisterImages_LevelLoadEnd() )
-			{
-				gbMemFreeupOccured = qtrue;
-				continue;		// we've dropped at least one image, so try again with the malloc
-			}
-#endif
-
-#ifndef DEDICATED
-			// ditch the model-binaries cache...  (must be getting desperate here!)
-			//
-			if (re->RegisterModels_LevelLoadEnd(qtrue))
-			{
-				gbMemFreeupOccured = qtrue;
-				continue;
-			}
-#endif
-
-			// as a last panic measure, dump all the audio memory, but not if we're in the audio loader
-			//	(which is annoying, but I'm not sure how to ensure we're not dumping any memory needed by the sound
-			//	currently being loaded if that was the case)...
-			//
-			// note that this keeps querying until it's freed up as many bytes as the requested size, but freeing
-			//	several small blocks might not mean that one larger one is satisfiable after freeup, however that'll
-			//	just make it go round again and try for freeing up another bunch of blocks until the total is satisfied
-			//	again (though this will have freed twice the requested amount in that case), so it'll either work
-			//	eventually or not free up enough and drop through to the final ERR_DROP. No worries...
-			//
-			extern qboolean gbInsideLoadSound;
-			extern int SND_FreeOldestSound();
-			if (!gbInsideLoadSound)
-			{
-				int iBytesFreed = SND_FreeOldestSound();
-				if (iBytesFreed)
-				{
-					int iTheseBytesFreed = 0;
-					while ( (iTheseBytesFreed = SND_FreeOldestSound()) != 0)
-					{
-						iBytesFreed += iTheseBytesFreed;
-						if (iBytesFreed >= iRealSize)
-							break;	// early opt-out since we've managed to recover enough (mem-contiguity issues aside)
-					}
-					gbMemFreeupOccured = qtrue;
-					continue;
-				}
-			}
-		}
-
-#ifdef _DEBUG
-		// If the tag is TAG_SPECIAL_MEM_TEST tag, that means we are in a test and we can safely return NULL.
-		if (eTag == TAG_SPECIAL_MEM_TEST)
-		{
-			return NULL;
-		}
-#endif
-
-		// sigh, dunno what else to try, I guess we'll have to give up and report this as an out-of-mem error...
-		//
-		// findlabel:  "recovermem"
-
 		Com_Printf(S_COLOR_RED"Z_Malloc(): Failed to alloc %d bytes (TAG_%s) !!!!!\n", iSize, psTagStrings[eTag]);
 		Z_Details_f();
 		Com_Error(ERR_FATAL,"(Repeat): Z_Malloc(): Failed to alloc %d bytes (TAG_%s) !!!!!\n", iSize, psTagStrings[eTag]);
@@ -657,48 +558,6 @@ void *S_Malloc( int iSize )
 }
 #endif
 
-#ifdef _DEBUG
-static void Z_MemRecoverTest_f(void)
-{
-	//default amount of available memory
-	float fgb = 4;
-	if (Cmd_Argc() > 2) {
-		Com_Printf("usage: %s [<maximum in GiB>]\n", Cmd_Argv(0));
-		return;
-	}
-	if (Cmd_Argc() == 2) {
-		errno = 0;
-		fgb = strtof(Cmd_Argv(1), 0);
-		if (errno)
-		{
-			fgb = 4;
-		}
-		fgb = fabs(fgb);
-	}
-	size_t origLimit = Sys_LimitAvailableMemory(fgb * 1024 * 1024 * 1024);
-	size_t iTotalMalloc = 0;
-	while (1)
-	{
-		int iThisMalloc = 5 * (1024 * 1024);
-		void *mem = Z_Malloc(iThisMalloc, TAG_SPECIAL_MEM_TEST, qfalse);	// and lose, just to consume memory
-		if (!mem)
-			break;
-		iTotalMalloc += iThisMalloc;
-
-		if (gbMemFreeupOccured)
-			break;
-	}
-
-	Z_TagFree(TAG_SPECIAL_MEM_TEST);
-
-	Com_Printf("Memory garbage collector did %srun.\n", gbMemFreeupOccured ? "" : "NOT ");
-
-	Com_Printf("Maximum allocated memory = %0.03f GiB\n", (float)iTotalMalloc / 1024 / 1024 / 1024);
-
-	Sys_LimitAvailableMemory(origLimit);
-}
-#endif
-
 // Gives a summary of the zone memory usage
 static void Z_Stats_f(void)
 {
@@ -898,10 +757,6 @@ void Com_ShutdownZoneMemory(void)
 	Cmd_RemoveCommand("zone_stats");
 	Cmd_RemoveCommand("zone_details");
 
-#ifdef _DEBUG
-	Cmd_RemoveCommand("zone_memrecovertest");
-#endif
-
 #ifdef DEBUG_ZONE_ALLOCS
 	Cmd_RemoveCommand("zone_tagdebug");
 	Cmd_RemoveCommand("zone_snapshot");
@@ -928,8 +783,6 @@ void Com_InitZoneMemory( void )
 {
 	Com_Printf("Initialising zone memory .....\n");
 
-	gbMemFreeupOccured = qfalse;
-
 	memset(&TheZone, 0, sizeof(TheZone));
 	TheZone.Header.iMagic = ZONE_MAGIC;
 }
@@ -940,10 +793,6 @@ void Com_InitZoneMemoryVars( void )
 
 	Cmd_AddCommand("zone_stats", Z_Stats_f,	 "Prints out zone memory stats" );
 	Cmd_AddCommand("zone_details", Z_Details_f,	"Prints out full detailed zone memory info" );
-
-#ifdef _DEBUG
-	Cmd_AddCommand("zone_memrecovertest", Z_MemRecoverTest_f);
-#endif
 
 #ifdef DEBUG_ZONE_ALLOCS
 	Cmd_AddCommand("zone_tagdebug",	Z_TagDebug_f);
