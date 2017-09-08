@@ -33,6 +33,11 @@ int giZoneSnaphotNum=0;
 typedef sstring<DEBUG_ZONE_ALLOC_OPTIONAL_LABEL_SIZE> sDebugString_t;
 #endif
 
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 // define a string table of all mem tags...
 //
 #ifdef TAGDEF	// itu?
