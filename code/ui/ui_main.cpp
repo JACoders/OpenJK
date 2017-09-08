@@ -2431,7 +2431,10 @@ void UI_FreeAllSpecies( void )
 	{
 		UI_FreeSpecies(&uiInfo.playerSpecies[i]);
 	}
+	uiInfo.playerSpeciesCount = 0;
+
 	free(uiInfo.playerSpecies);
+	uiInfo.playerSpecies = nullptr;
 }
 
 /*
