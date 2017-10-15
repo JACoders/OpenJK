@@ -88,6 +88,43 @@ int			NumSubBSP, TotalSubModels;
 ===============================================================================
 */
 
+typedef struct {
+	const char	*shader;
+	const int	materialNum;
+} MaterialReplace;
+static MaterialReplace replaceMaterials[] = {
+	{	"textures/siege/siege2sand",			MATERIAL_SAND	},
+	{	"textures/siege1/terrain_0",			MATERIAL_SNOW	},
+	{	"textures/siege1/terrain_1",			MATERIAL_SNOW	},
+	{	"textures/siege1/terrain_0to1",			MATERIAL_SNOW	},
+	{	"textures/kor/terrain_0",				MATERIAL_SAND	},
+	{	"textures/kor/terrain_1",				MATERIAL_SAND	},
+	{	"textures/kor/terrain_2",				MATERIAL_SAND	},
+	{	"textures/kor/terrain_0to1",			MATERIAL_SAND	},
+	{	"textures/kor/terrain_0to2",			MATERIAL_SAND	},
+	{	"textures/kor/terrain_1to2",			MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_0",			MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_1",			MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_2",			MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_3",			MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_0to1",		MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_0to2",		MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_0to3",		MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_1to2",		MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_1to3",		MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_2to3",		MATERIAL_SAND	},
+	{	"textures/korriban1/terrain_0to1",		MATERIAL_SAND	},
+	{	"textures/korterra1/terrain_0",			MATERIAL_SAND	},
+	{	"textures/korterra1/terrain_1",			MATERIAL_SAND	},
+	{	"textures/korterra1/terrain_2",			MATERIAL_SAND	},
+	{	"textures/korterra1/terrain_0to1",		MATERIAL_SAND	},
+	{	"textures/korterra1/terrain_0to2",		MATERIAL_SAND	},
+	{	"textures/korterra1/terrain_1to2",		MATERIAL_SAND	},
+	{	"textures/terradesert/terrain_0",		MATERIAL_SAND	},
+	{	"textures/terradesert/terrain_1",		MATERIAL_SAND	},
+	{	"textures/terradesert/terrain_0to1",	MATERIAL_SAND	},
+};
+
 /*
 =================
 CMod_LoadShaders
@@ -117,6 +154,14 @@ static void CMod_LoadShaders( const lump_t *l, clipMap_t &cm )
 		Q_strncpyz(out->shader, in->shader, MAX_QPATH);
 		out->contentFlags = LittleLong( in->contentFlags );
 		out->surfaceFlags = LittleLong( in->surfaceFlags );
+
+		// overrides for some base shaders
+		int j;
+		for (j = 0; j <= ARRAY_LEN(replaceMaterials); j++) {
+			if (!Q_stricmp(out->shader, replaceMaterials[j].shader)) {
+				out->surfaceFlags = replaceMaterials->materialNum;
+			}
+		}
 	}
 }
 
