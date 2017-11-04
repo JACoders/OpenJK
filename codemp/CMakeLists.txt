@@ -577,6 +577,14 @@ if(BuildMPEngine)
 		endif(MakeApplicationBundles)
 	endif(WIN32)
 
+	# add DPI awareness manifest
+	if(MSVC)
+		add_custom_command(TARGET ${MPEngine} POST_BUILD
+			COMMAND "mt.exe" -manifest \"${SharedDir}\\sys\\win_manifest.xml\" -inputresource:\"$<TARGET_FILE:${MPEngine}>\"\;\#1 -outputresource:\"$<TARGET_FILE:${MPEngine}>\"\;\#1
+			COMMENT "Adding manifest..." 
+		)
+	endif()
+
 	if(MakeApplicationBundles)
 		install(TARGETS ${MPEngine}
 			BUNDLE
