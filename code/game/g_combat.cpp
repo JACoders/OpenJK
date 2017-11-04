@@ -6451,7 +6451,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, const
 		((targ->flags&FL_UNDYING) ||
 			(dflags&DAMAGE_NO_KILL) ||
 			((targ->client) &&
-				(targ->client->ps.forcePowersActive & (1 << FP_RAGE)) &
+				(targ->client->ps.forcePowersActive & (1 << FP_RAGE)) &&
 				!(dflags&DAMAGE_NO_PROTECTION) &&
 				!(dflags&DAMAGE_DIE_ON_IMPACT))));
 
