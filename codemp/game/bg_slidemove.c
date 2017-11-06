@@ -1059,7 +1059,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 							VectorCopy(clipped_velocity, pm->ps->velocity);
 					}
 					else {
-						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); // RAMPJUMP
 					}
 				}
 			}

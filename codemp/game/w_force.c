@@ -543,6 +543,12 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 		return 0;
 	if (other && other->client && other->client->sess.raceMode)//fix having forcepowers used on you when in racemode
 		return 0;
+	if (g_godChat.integer) {
+		if (attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))
+			return 0;
+		if (other && other->client && (other->client->ps.eFlags & EF_TALK))
+			return 0;
+	}
 
 //JAPRO - Serverside - Fullforce Duels - Start
 	//Dueling fighters cannot use force powers on others, with the exception of force push when locked with each other
@@ -667,7 +673,7 @@ qboolean WP_ForcePowerUsable( gentity_t *self, forcePowers_t forcePower )
 {
 	if (self->client && self->client->sess.raceMode)
 		return qfalse;
-
+	
 	if (BG_HasYsalamiri(level.gametype, &self->client->ps))
 	{
 		return qfalse;

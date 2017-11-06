@@ -285,7 +285,9 @@ void DuelRankExists(char *username, int type, sqlite3 * db) {
 	int s;
 	int count = -1;
 
+#if 0 //Remove DuelCounts and put it into DuelRanks ?
 	sql = "SELECT COUNT(*) FROM DuelCounts WHERE username = ? AND type = ?";
+
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 	CALL_SQLITE (bind_int (stmt, 2, type));
@@ -313,6 +315,7 @@ void DuelRankExists(char *username, int type, sqlite3 * db) {
 		Com_Printf("Inserting into duelcounts because none found\n");
 		CALL_SQLITE (finalize(stmt));
 	}
+#endif
 
 	//
 	sql = "SELECT COUNT(*) FROM DuelRanks WHERE username = ? AND type = ?";
@@ -353,7 +356,8 @@ int GetDuelCount(char *username, int type, sqlite3 * db) {
     sqlite3_stmt * stmt;
 	int s;
 
-	sql = "SELECT count FROM DuelCounts where type = ? AND username = ?";
+	//sql = "SELECT count FROM DuelCounts where type = ? AND username = ?";
+	sql = "SELECT count FROM DuelRanks where type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, type));
 	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
@@ -425,7 +429,8 @@ void UpdateDuelCount(char *username, int type, sqlite3 * db) {
     sqlite3_stmt * stmt;
 	int s;
 
-	sql = "UPDATE DuelCounts SET count = count + 1 WHERE type = ? AND username = ?";
+	//sql = "UPDATE DuelCounts SET count = count + 1 WHERE type = ? AND username = ?";
+	sql = "UPDATE DuelRanks SET count = count + 1 WHERE type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, type));
 	CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
@@ -586,12 +591,14 @@ void SV_RebuildElo_f() {
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
 
+#if 0 //Replace DuelCounts with DuelRanks
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
     sql = "DELETE FROM DuelCounts";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
 	CALL_SQLITE (close(db));
+#endif
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 	sql = "SELECT winner, loser, type from LocalDuel ORDER BY end_time ASC";
@@ -735,11 +742,16 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 		minimumCount = 0;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
+	/*
 	sql = "SELECT DR.username, DR.rank, DC.count, DR.TSSUM \
 		FROM DuelRanks AS DR LEFT JOIN \
 		DuelCounts AS DC ON DR.username = DC.username \
 		WHERE DR.type = ? AND DC.type = ? AND DC.count > ? \
 		GROUP BY DR.username ORDER BY DR.rank DESC LIMIT 10";
+	*/
+	sql = "SELECT username, rank, count, TSSUM \
+		FROM DuelRanks WHERE type = ? AND count > ? \
+		GROUP BY username ORDER BY rank DESC LIMIT 10";
 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, type));
@@ -4570,13 +4582,15 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (finalize(stmt));
 
 #if _ELORANKING
+	/*
 	//should probably do this with user_id instead of username but then things could get messed up, idk.
 	sql = "CREATE TABLE IF NOT EXISTS DuelCounts(id INTEGER PRIMARY KEY, username VARCHAR(16), type UNSIGNED SMALLINT, count UNSIGNED SMALLINT)";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));
+	*/
 
-	sql = "CREATE TABLE IF NOT EXISTS DuelRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), type UNSIGNED SMALLINT, rank DECIMAL(6,2), TSSUM DECIMAL(9,2))"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
+	sql = "CREATE TABLE IF NOT EXISTS DuelRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), type UNSIGNED SMALLINT, count UNSIGNED INTEGER, rank DECIMAL(6,2), TSSUM DECIMAL(9,2))"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));

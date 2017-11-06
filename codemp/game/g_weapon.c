@@ -526,7 +526,7 @@ static void WP_FireBlaster( gentity_t *ent, qboolean altFire, int seed )
 			float theta = M_PI * Q_crandom(&seed); //Lets use circular spread instead of the shitty box spread?
 			float r = Q_random(&seed) * BLASTER_SPREAD;
 
-			angs[PITCH] += r * sin(theta);
+			angs[PITCH] += r * sin(theta); //r should be squared? r*r
 			angs[YAW] += r * cos(theta);
 		}
 		else
