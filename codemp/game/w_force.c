@@ -544,9 +544,9 @@ int ForcePowerUsableOn(gentity_t *attacker, gentity_t *other, forcePowers_t forc
 	if (other && other->client && other->client->sess.raceMode)//fix having forcepowers used on you when in racemode
 		return 0;
 	if (g_godChat.integer) {
-		if (attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))
+		if (attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK)) //Dont let people in chat use force ever
 			return 0;
-		if (other && other->client && (other->client->ps.eFlags & EF_TALK))
+		if (other && other->client && (other->client->ps.eFlags & EF_TALK) && (other->client->pers.lastChatTime + 3000) < level.time)  //Only god chat them 3 seconds after their chatbox goes up to prevent some abuse :/
 			return 0;
 	}
 
