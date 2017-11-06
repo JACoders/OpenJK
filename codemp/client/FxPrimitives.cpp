@@ -88,7 +88,7 @@ bool CParticle::Cull(void)
 	VectorSubtract( mOrigin1, theFxHelper.refdef->vieworg, dir );
 
 	// Check if it's behind the viewer
-	if ( (DotProduct( theFxHelper.refdef->viewaxis[0], dir )) < 0) // cg.cosHalfFOV * (len - mRadius) )
+	if ( mRefEnt.reType != RT_LINE && (DotProduct( theFxHelper.refdef->viewaxis[0], dir )) < 0) // cg.cosHalfFOV * (len - mRadius) )
 	{
 		return true;
 	}
