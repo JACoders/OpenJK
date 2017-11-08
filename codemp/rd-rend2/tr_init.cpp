@@ -614,8 +614,8 @@ FIXME: the statics don't get a reinit between fs_game changes
 ============================================================================== 
 */ 
 
-/* 
-================== 
+/*
+==================
 RB_ReadPixels
 
 Reads an image but takes care of alignment issues for reading RGB images.
@@ -628,163 +628,227 @@ alignment of packAlign to ensure efficient copying.
 Stores the length of padding after a line of pixels to address padlen
 
 Return value must be freed with ri->Hunk_FreeTempMemory()
-================== 
-*/  
+==================
+*/
 
 byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen)
 {
 	byte *buffer, *bufstart;
 	int padwidth, linelen;
 	GLint packAlign;
-	
+
 	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
-	
+
 	linelen = width * 3;
 	padwidth = PAD(linelen, packAlign);
-	
+
 	// Allocate a few more bytes so that we can choose an alignment we like
 	buffer = (byte *)ri->Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
-	
+
 	bufstart = (byte*)(PADP((intptr_t) buffer + *offset, packAlign));
 	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
-	
+
 	*offset = bufstart - buffer;
 	*padlen = padwidth - linelen;
-	
+
 	return buffer;
 }
 
 /* 
 ================== 
-RB_TakeScreenshot
+R_SaveScreenshotTGA
 ================== 
 */  
-void RB_TakeScreenshot(int x, int y, int width, int height, char *fileName)
+void R_SaveScreenshotTGA(const screenshotReadback_t *screenshotReadback)
 {
-	byte *allbuf, *buffer;
-	byte *srcptr, *destptr;
-	byte *endline, *endmem;
-	byte temp;
-	
-	int linelen, padlen;
-	size_t offset = 18, memcount;
-		
-	allbuf = RB_ReadPixels(x, y, width, height, &offset, &padlen);
-	buffer = allbuf + offset - 18;
-	
-	Com_Memset (buffer, 0, 18);
-	buffer[2] = 2;		// uncompressed type
-	buffer[12] = width & 255;
-	buffer[13] = width >> 8;
-	buffer[14] = height & 255;
-	buffer[15] = height >> 8;
-	buffer[16] = 24;	// pixel size
+	const size_t headerSize = 18;
+	const int width = screenshotReadback->width;
+	const int height = screenshotReadback->height;
+	const int stride = screenshotReadback->strideInBytes;
+	const int linelen = screenshotReadback->rowInBytes;
 
-	// swap rgb to bgr and remove padding from line endings
-	linelen = width * 3;
-	
-	srcptr = destptr = allbuf + offset;
-	endmem = srcptr + (linelen + padlen) * height;
-	
-	while(srcptr < endmem)
+	const size_t pixelBufferSize = stride * height;
+	const size_t bufferSize = headerSize + pixelBufferSize;
+
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, screenshotReadback->pbo);
+
+	byte *pixels = static_cast<byte *>(qglMapBuffer(
+		GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+	if (pixels != nullptr)
 	{
-		endline = srcptr + linelen;
+		byte *buffer = (byte *)ri->Hunk_AllocateTempMemory(bufferSize);
 
-		while(srcptr < endline)
-		{
-			temp = srcptr[0];
-			*destptr++ = srcptr[2];
-			*destptr++ = srcptr[1];
-			*destptr++ = temp;
-			
-			srcptr += 3;
-		}
+		Com_Memset(buffer, 0, 18);
+		buffer[2] = 2;		// uncompressed type
+		buffer[12] = width & 255;
+		buffer[13] = width >> 8;
+		buffer[14] = height & 255;
+		buffer[15] = height >> 8;
+		buffer[16] = 24; // pixel size
+
+		const byte *srcptr = pixels + headerSize;
+		const byte *endmem = srcptr + bufferSize;
+		byte *destptr = buffer + headerSize;
 		
-		// Skip the pad
-		srcptr += padlen;
+		while (srcptr < endmem)
+		{
+			const byte *endline = srcptr + linelen;
+
+			while (srcptr < endline)
+			{
+				// swap rgb to bgr
+				const byte temp = srcptr[0];
+				*destptr++ = srcptr[2];
+				*destptr++ = srcptr[1];
+				*destptr++ = temp;
+				
+				srcptr += 3;
+			}
+			
+			srcptr = endline;
+		}
+
+		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+
+		if (glConfig.deviceSupportsGamma)
+			R_GammaCorrect(buffer + headerSize, pixelBufferSize);
+
+		ri->FS_WriteFile(screenshotReadback->filename, buffer, bufferSize);
+		ri->Hunk_FreeTempMemory(buffer);
+	}
+}
+
+/*
+================== 
+R_SaveScreenshotPNG
+================== 
+*/
+void R_SaveScreenshotPNG(const screenshotReadback_t *screenshotReadback)
+{
+	const int width = screenshotReadback->width;
+	const int height = screenshotReadback->height;
+	const int stride = screenshotReadback->strideInBytes;
+
+	const size_t pixelBufferSize = stride * height;
+
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, screenshotReadback->pbo);
+
+	byte *pixels = static_cast<byte *>(qglMapBuffer(
+		GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+	if (pixels != nullptr)
+	{
+		byte *buffer = (byte *)ri->Hunk_AllocateTempMemory(pixelBufferSize);
+		Com_Memcpy(buffer, pixels, pixelBufferSize);
+		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+
+		if (glConfig.deviceSupportsGamma)
+			R_GammaCorrect(buffer, pixelBufferSize);
+
+		RE_SavePNG(screenshotReadback->filename, buffer, width, height, 3);
+
+		ri->Hunk_FreeTempMemory(buffer);
+	}
+}
+
+/*
+==================
+R_SaveScreenshotJPG
+==================
+*/
+
+void R_SaveScreenshotJPG(const screenshotReadback_t *screenshotReadback)
+{
+	const int width = screenshotReadback->width;
+	const int height = screenshotReadback->height;
+	const int stride = screenshotReadback->strideInBytes;
+
+	const size_t pixelBufferSize = stride * height;
+
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, screenshotReadback->pbo);
+
+	byte *pixels = static_cast<byte *>(qglMapBuffer(
+		GL_PIXEL_PACK_BUFFER, GL_READ_ONLY));
+	if (pixels != nullptr)
+	{
+		byte *buffer = (byte *)ri->Hunk_AllocateTempMemory(pixelBufferSize);
+		Com_Memcpy(buffer, pixels, pixelBufferSize);
+		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+
+		if (glConfig.deviceSupportsGamma)
+			R_GammaCorrect(buffer, pixelBufferSize);
+
+		RE_SaveJPG(
+			screenshotReadback->filename,
+			r_screenshotJpegQuality->integer,
+			width,
+			height,
+			buffer,
+			stride - screenshotReadback->rowInBytes);
+		ri->Hunk_FreeTempMemory(buffer);
+	}
+}
+
+void R_SaveScreenshot(screenshotReadback_t *screenshotReadback)
+{
+	switch (screenshotReadback->format)
+	{
+		case SSF_JPEG:
+			R_SaveScreenshotJPG(screenshotReadback);
+			break;
+		case SSF_TGA:
+			R_SaveScreenshotTGA(screenshotReadback);
+			break;
+		case SSF_PNG:
+			R_SaveScreenshotPNG(screenshotReadback);
+			break;
 	}
 
-	memcount = linelen * height;
-
-	// gamma correct
-	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(allbuf + offset, memcount);
-
-	ri->FS_WriteFile(fileName, buffer, memcount + 18);
-
-	ri->Hunk_FreeTempMemory(allbuf);
-}
-
-/*
-================== 
-R_TakeScreenshotPNG
-================== 
-*/
-void RB_TakeScreenshotPNG( int x, int y, int width, int height, char *fileName ) {
-	byte *buffer;
-	size_t offset = 0, memcount;
-	int padlen;
-
-	buffer = RB_ReadPixels( x, y, width, height, &offset, &padlen );
-	memcount = (width * 3 + padlen) * height;
-
-	// gamma correct
-	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(buffer + offset, memcount);
-
-	RE_SavePNG( fileName, buffer, width, height, 3 );
-	ri->Hunk_FreeTempMemory( buffer );
+	qglDeleteBuffers(1, &screenshotReadback->pbo);
+	screenshotReadback->pbo = 0;
 }
 
 /*
 ==================
-RB_TakeScreenshotJPEG
-==================
-*/
-
-void RB_TakeScreenshotJPEG(int x, int y, int width, int height, char *fileName)
-{
-	byte *buffer;
-	size_t offset = 0, memcount;
-	int padlen;
-
-	buffer = RB_ReadPixels(x, y, width, height, &offset, &padlen);
-	memcount = (width * 3 + padlen) * height;
-
-	// gamma correct
-	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(buffer + offset, memcount);
-
-	RE_SaveJPG(fileName, r_screenshotJpegQuality->integer, width, height, buffer + offset, padlen);
-	ri->Hunk_FreeTempMemory(buffer);
-}
-
-/*
-==================
-RB_TakeScreenshotCmd
+R_TakeScreenshotCmd
 ==================
 */
 const void *RB_TakeScreenshotCmd( const void *data ) {
-	const screenshotCommand_t	*cmd;
+	const screenshotCommand_t *cmd;
 	
 	cmd = (const screenshotCommand_t *)data;
 
 	// finish any 2D drawing if needed
-	if(tess.numIndexes)
+	if (tess.numIndexes)
 		RB_EndSurface();
 
-	switch( cmd->format ) {
-		case SSF_JPEG:
-			RB_TakeScreenshotJPEG( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName );
-			break;
-		case SSF_TGA:
-			RB_TakeScreenshot( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName );
-			break;
-		case SSF_PNG:
-			RB_TakeScreenshotPNG( cmd->x, cmd->y, cmd->width, cmd->height, cmd->fileName );
-			break;
-	}
+	const int frameNumber = backEndData->realFrameNumber;
+	gpuFrame_t *thisFrame = &backEndData->frames[frameNumber % MAX_FRAMES];
+	screenshotReadback_t *screenshot = &thisFrame->screenshotReadback;
+	
+	GLint packAlign;
+	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
+	
+	const int linelen = cmd->width * 3;
+	const int strideInBytes = PAD(linelen, packAlign);
+	
+	qglGenBuffers(1, &screenshot->pbo);
+	qglBindBuffer(GL_PIXEL_PACK_BUFFER, screenshot->pbo);
+	qglBufferData(
+		GL_PIXEL_PACK_BUFFER,
+		strideInBytes * cmd->height,
+		nullptr,
+		GL_STATIC_COPY);
+	qglReadPixels(
+		cmd->x, cmd->y, cmd->width, cmd->height, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
+	screenshot->strideInBytes = strideInBytes;
+	screenshot->rowInBytes = linelen;
+	screenshot->width = cmd->width;
+	screenshot->height = cmd->height;
+	screenshot->format = cmd->format;
+	Q_strncpyz(
+		screenshot->filename, cmd->fileName, sizeof(screenshot->filename));
+	
 	return (const void *)(cmd + 1);	
 }
 

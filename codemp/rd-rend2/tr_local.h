@@ -2643,6 +2643,9 @@ void	R_SkinList_f( void );
 void	R_FontList_f( void );
 // https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=516
 const void *RB_TakeScreenshotCmd( const void *data );
+
+void R_SaveScreenshot(struct screenshotReadback_t *screenshotReadback);
+
 void	R_ScreenShotTGA_f( void );
 void	R_ScreenShotPNG_f( void );
 void	R_ScreenShotJPEG_f( void );
@@ -3292,12 +3295,25 @@ struct gpuTimedBlock_t
 	GLuint endTimer;
 };
 
+struct screenshotReadback_t
+{
+	GLuint pbo;
+	int strideInBytes;
+	int rowInBytes;
+	int width;
+	int height;
+	screenshotFormat_t format;
+	char filename[MAX_QPATH];
+};
+
 #define MAX_GPU_TIMERS (512)
 struct gpuFrame_t
 {
 	GLsync sync;
 	GLuint ubo;
 	size_t uboWriteOffset;
+
+	screenshotReadback_t screenshotReadback;
 
 	VBO_t *dynamicVbo;
 	void *dynamicVboMemory;

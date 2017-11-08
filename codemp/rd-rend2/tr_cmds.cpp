@@ -523,6 +523,10 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 		qglDeleteSync( sync );
 		thisFrame->sync = NULL;
 
+		// Perform readback operations
+		if (thisFrame->screenshotReadback.pbo > 0)
+			R_SaveScreenshot(&thisFrame->screenshotReadback);
+
 		// Resets resources
 		qglBindBuffer(GL_UNIFORM_BUFFER, thisFrame->ubo);
 		thisFrame->uboWriteOffset = 0;
