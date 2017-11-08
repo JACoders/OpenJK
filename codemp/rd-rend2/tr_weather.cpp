@@ -87,15 +87,18 @@ void R_AddWeatherSurfaces()
 {
 	assert(tr.weatherSystem);
 
-	R_AddDrawSurf(
-		(surfaceType_t *)&tr.weatherSystem->weatherSurface,
-		REFENTITYNUM_WORLD,
-		tr.weatherInternalShader,
-		0, /* fogIndex */
-		qfalse, /* dlightMap */
-		qfalse, /* postRender */
-		0 /* cubemapIndex */
-	);
+	if (false)
+	{
+		R_AddDrawSurf(
+			(surfaceType_t *)&tr.weatherSystem->weatherSurface,
+			REFENTITYNUM_WORLD,
+			tr.weatherInternalShader,
+			0, /* fogIndex */
+			qfalse, /* dlightMap */
+			qfalse, /* postRender */
+			0 /* cubemapIndex */
+		);
+	}
 }
 
 void RB_SurfaceWeather( srfWeather_t *surf )

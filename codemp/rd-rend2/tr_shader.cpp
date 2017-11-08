@@ -3962,7 +3962,7 @@ static shader_t *FinishShader( void ) {
 	//
 	stage = CollapseStagesToGLSL();
 
-	if ( shader.lightmapIndex >= 0 && !hasLightmapStage ) {
+	if ( shader.lightmapIndex[0] >= 0 && !hasLightmapStage ) {
 		ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
 		// Don't set this, it will just add duplicate shaders to the hash
   		//shader.lightmapIndex = LIGHTMAP_NONE;
@@ -4565,7 +4565,7 @@ void	R_ShaderList_f (void) {
 
 		ri->Printf( PRINT_ALL, "%i ", shader->numUnfoggedPasses );
 
-		if (shader->lightmapIndex >= 0 ) {
+		if (shader->lightmapIndex[0] >= 0 ) {
 			ri->Printf (PRINT_ALL, "L ");
 		} else {
 			ri->Printf (PRINT_ALL, "  ");
