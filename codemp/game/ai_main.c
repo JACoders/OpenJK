@@ -131,7 +131,7 @@ char *ctfStateDescriptions[] = {
 
 char *siegeStateDescriptions[] = {
 	"I'm not occupied",
-	"I'm attemtping to complete the current objective",
+	"I'm attempting to complete the current objective",
 	"I'm preventing the enemy from completing their objective"
 };
 

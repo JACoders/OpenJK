@@ -30,7 +30,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/G2.h"
 #include "../ghoul2/ghoul2_gore.h"
 
-#define	REF_API_VERSION		16
+#define	REF_API_VERSION		18
 
 typedef struct {
 	void				(QDECL *Printf)						( int printLevel, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
@@ -100,6 +100,7 @@ typedef struct {
 
 	// OpenGL-specific
 	void *			(*GL_GetProcAddress)				( const char *name );
+	qboolean		(*GL_ExtensionSupported)			( const char *extension );
 
 	CMiniHeap *			(*GetG2VertSpaceServer)				( void );
 
@@ -112,7 +113,7 @@ typedef struct {
 															const int passEntityNum, const int contentmask,
 															const EG2_Collision eG2TraceType, const int useLod );
 
-	qboolean			(*SG_Append)						( unsigned int chid, const void *pvData, int iLength );
+	ojk::ISavedGame* saved_game;
 
 	int					(*SV_PointContents)					( const vec3_t p, clipHandle_t model );
 
@@ -209,7 +210,7 @@ typedef struct {
 	void	(*GetScreenShot)(byte *data, int w, int h);
 
 #ifdef JK2_MODE
-	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding );
+	size_t	(*SaveJPGToBuffer)(byte *buffer, size_t bufSize, int quality, int image_width, int image_height, byte *image_buffer, int padding, bool flip_vertical );
 	void	(*LoadJPGFromBuffer)( byte *inputBuffer, size_t len, byte **pic, int *width, int *height );
 #endif
 

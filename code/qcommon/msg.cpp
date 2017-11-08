@@ -953,7 +953,13 @@ static const netField_t	playerStateFields[] =
 { PSF(commandTime), 32 },
 { PSF(pm_type), 8 },
 { PSF(bobCycle), 8 },
+
+#ifdef JK2_MODE
+{ PSF(pm_flags), 17 },
+#else
 { PSF(pm_flags), 32 },
+#endif // JK2_MODE
+
 { PSF(pm_time), -16 },
 { PSF(origin[0]), 0 },
 { PSF(origin[1]), 0 },
@@ -1017,7 +1023,10 @@ static const netField_t	playerStateFields[] =
 { PSF(serverViewOrg[0]), 0 },
 { PSF(serverViewOrg[1]), 0 },
 { PSF(serverViewOrg[2]), 0 },
+
+#ifndef JK2_MODE
 { PSF(forceRageRecoveryTime), 32 },
+#endif // !JK2_MODE
 };
 
 /*
@@ -1026,7 +1035,7 @@ MSG_WriteDeltaPlayerstate
 
 =============
 */
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to ) {
+void MSG_WriteDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to ) {
 	int				i;
 	playerState_t	dummy;
 	int				statsbits;

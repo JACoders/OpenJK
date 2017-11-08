@@ -32,6 +32,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "../ghoul2/G2.h"
 #include "qcommon/stringed_ingame.h"
 #include "sys/sys_loadlib.h"
+#include "qcommon/ojk_saved_game.h"
 
 #define	RETRANSMIT_TIMEOUT	3000	// time between connection packet retransmits
 
@@ -76,6 +77,7 @@ cvar_t	*cl_allowAltEnter;
 cvar_t	*cl_inGameVideo;
 
 cvar_t	*cl_consoleKeys;
+cvar_t	*cl_consoleUseScanCode;
 
 clientActive_t		cl;
 clientConnection_t	clc;
@@ -1082,7 +1084,7 @@ void CL_InitRef( void ) {
 	GetRefAPI_t	GetRefAPI;
 
 	Com_Printf( "----- Initializing Renderer ----\n" );
-    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH );
+    cl_renderer = Cvar_Get( "cl_renderer", DEFAULT_RENDER_LIBRARY, CVAR_ARCHIVE|CVAR_LATCH|CVAR_PROTECTED );
 
 	Com_sprintf( dllName, sizeof( dllName ), "%s_" ARCH_STRING DLL_EXT, cl_renderer->string );
 
@@ -1142,7 +1144,6 @@ void CL_InitRef( void ) {
 	RIT(FS_Write);
 	RIT(FS_WriteFile);
 	RIT(Hunk_ClearToMark);
-	RIT(SG_Append);
 	RIT(SND_RegisterAudio_LevelLoadEnd);
 	//RIT(SV_PointContents);
 	RIT(SV_Trace);
@@ -1159,6 +1160,7 @@ void CL_InitRef( void ) {
     rit.WIN_Shutdown = WIN_Shutdown;
     rit.WIN_Present = WIN_Present;
 	rit.GL_GetProcAddress = WIN_GL_GetProcAddress;
+	rit.GL_ExtensionSupported = WIN_GL_ExtensionSupported;
 
 	rit.PD_Load = PD_Load;
 	rit.PD_Store = PD_Store;
@@ -1180,6 +1182,8 @@ void CL_InitRef( void ) {
 	rit.com_frameTime = get_com_frameTime;
 
 	rit.SV_PointContents = SV_PointContents;
+
+	rit.saved_game = &ojk::SavedGame::get_instance();
 
 	ret = GetRefAPI( REF_API_VERSION, &rit );
 
@@ -1272,6 +1276,7 @@ void CL_Init( void ) {
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE);
+	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE );
 
 	// userinfo
 #ifdef JK2_MODE

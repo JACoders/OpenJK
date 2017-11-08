@@ -4775,7 +4775,6 @@ int	G2_Get_Bone_Index(CGhoul2Info *ghoul2, const char *boneName, qboolean bAddIf
 	}
 }
 
-
 void G2_FreeRag(void)
 {
 	if(rag) {

@@ -76,8 +76,10 @@ void SV_GetChallenge( netadr_t from ) {
 
 	// Prevent using getchallenge as an amplifier
 	if ( SVC_RateLimitAddress( from, 10, 1000 ) ) {
-		Com_DPrintf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
-			NET_AdrToString( from ) );
+		if ( com_developer->integer ) {
+			Com_Printf( "SV_GetChallenge: rate limit from %s exceeded, dropping request\n",
+				NET_AdrToString( from ) );
+		}
 		return;
 	}
 
@@ -1128,35 +1130,54 @@ void SV_UserinfoChanged( client_t *cl ) {
 	// if the client is on the same subnet as the server and we aren't running an
 	// internet public server, assume they don't need a rate choke
 	if ( Sys_IsLANAddress( cl->netchan.remoteAddress ) && com_dedicated->integer != 2 && sv_lanForceRate->integer == 1 ) {
-		cl->rate = 99999;	// lans should not rate limit
+		cl->rate = 100000;	// lans should not rate limit
 	} else {
 		val = Info_ValueForKey (cl->userinfo, "rate");
-		if (strlen(val)) {
+		if (sv_ratePolicy->integer == 1)
+		{
+			// NOTE: what if server sets some dumb sv_clientRate value?
+			cl->rate = sv_clientRate->integer;
+		}
+		else if( sv_ratePolicy->integer == 2)
+		{
 			i = atoi(val);
-			cl->rate = i;
-			if (cl->rate < 1000) {
-				cl->rate = 1000;
-			} else if (cl->rate > 90000) {
-				cl->rate = 90000;
+			if (!i) {
+				i = sv_maxRate->integer; //FIXME old code was 3000 here, should increase to 5000 instead or maxRate?
 			}
-		} else {
-			cl->rate = 3000;
+			i = Com_Clampi(1000, 100000, i);
+			i = Com_Clampi( sv_minRate->integer, sv_maxRate->integer, i );
+			if (i != cl->rate) {
+				cl->rate = i;
+			}
 		}
 	}
 
 	// snaps command
 	//Note: cl->snapshotMsec is also validated in sv_main.cpp -> SV_CheckCvars if sv_fps, sv_snapsMin or sv_snapsMax is changed
-	int minSnaps = Com_Clampi( 1, sv_snapsMax->integer, sv_snapsMin->integer ); // between 1 and sv_snapsMax ( 1 <-> 40 )
-	int maxSnaps = Q_min( sv_fps->integer, sv_snapsMax->integer ); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
-	val = Info_ValueForKey( cl->userinfo, "snaps" );
-	cl->wishSnaps = atoi( val );
-	if ( !cl->wishSnaps )
+	int minSnaps = Com_Clampi(1, sv_snapsMax->integer, sv_snapsMin->integer); // between 1 and sv_snapsMax ( 1 <-> 40 )
+	int maxSnaps = Q_min(sv_fps->integer, sv_snapsMax->integer); // can't produce more than sv_fps snapshots/sec, but can send less than sv_fps snapshots/sec
+	val = Info_ValueForKey(cl->userinfo, "snaps");
+	cl->wishSnaps = atoi(val);
+	if (!cl->wishSnaps)
 		cl->wishSnaps = maxSnaps;
-	i = 1000/Com_Clampi( minSnaps, maxSnaps, cl->wishSnaps );
-	if( i != cl->snapshotMsec ) {
-		// Reset next snapshot so we avoid desync between server frame time and snapshot send time
-		cl->nextSnapshotTime = -1;
-		cl->snapshotMsec = i;
+	if (sv_snapsPolicy->integer == 1)
+	{
+		cl->wishSnaps = sv_fps->integer;
+		i = 1000 / sv_fps->integer;
+		if (i != cl->snapshotMsec) {
+			// Reset next snapshot so we avoid desync between server frame time and snapshot send time
+			cl->nextSnapshotTime = -1;
+			cl->snapshotMsec = i;
+		}
+	}
+	else if (sv_snapsPolicy->integer == 2)
+	{
+		i = 1000 / Com_Clampi(minSnaps, maxSnaps, cl->wishSnaps);
+		if (i != cl->snapshotMsec) {
+			// Reset next snapshot so we avoid desync between server frame time and snapshot send time
+			cl->nextSnapshotTime = -1;
+			cl->snapshotMsec = i;
+		}
 	}
 
 	// TTimo

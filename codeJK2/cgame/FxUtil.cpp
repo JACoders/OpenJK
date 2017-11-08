@@ -1309,7 +1309,7 @@ CPoly *FX_AddPoly( vec3_t *verts, vec2_t *st, int numVerts,
 		for ( int i = 0; i < numVerts; i++ )
 		{
 			VectorCopy( verts[i], fx->mOrg[i] );
-			Vector2Copy( st[i], fx->mST[i] );
+			VectorCopy2( st[i], fx->mST[i] );
 		}
 
 		fx->SetVel( vel );

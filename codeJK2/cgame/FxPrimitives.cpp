@@ -1639,7 +1639,7 @@ void CPoly::Draw()
 		verts[i].modulate[3] = mRefEnt.shaderRGBA[3];
 
 		// Copy the ST coords
-		Vector2Copy( mST[i], verts[i].st );
+		VectorCopy2( mST[i], verts[i].st );
 	}
 
 	// Add this poly

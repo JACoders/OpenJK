@@ -667,6 +667,15 @@ static int SV_RateMsec( client_t *client, int messageSize ) {
 			rate = sv_maxRate->integer;
 		}
 	}
+	if ( sv_minRate->integer ) {
+		if ( sv_minRate->integer < 1000 ) {
+			Cvar_Set( "sv_minRate", "1000" );
+		}
+		if ( sv_minRate->integer > rate ) {
+			rate = sv_minRate->integer;
+		}
+	}
+
 	rateMsec = ( messageSize + HEADER_RATE_BYTES ) * 1000 / ((int) (rate * com_timescale->value));
 
 	return rateMsec;

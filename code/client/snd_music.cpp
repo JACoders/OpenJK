@@ -75,7 +75,7 @@ struct MusicExitTime_t	// need to declare this way for operator < below
 
 	// I'm defining this '<' operator so STL's sort algorithm will work
 	//
-	bool operator < (const MusicExitTime_t& _X) const {return (fTime < _X.fTime);}
+	bool operator < (const MusicExitTime_t& X) const {return (fTime < X.fTime);}
 };
 
 // it's possible for all 3 of these to be empty if it's boss or death music
@@ -516,7 +516,7 @@ static qboolean Music_ParseLeveldata( gsl::czstring psLevelName )
 						else
 						{
 							const CGPProperty *pValueBoss = pgLevelMusicOfBoss->FindProperty( sKEY_BOSS );
-							if( pValueBoss )
+							if( !pValueBoss )
 							{
 								Music_Parse_Error( filename, build_string( "'useboss' \"", psName_UseBoss, "\" has no \"boss\" entry!\n" ) );
 								bReturn = qfalse;

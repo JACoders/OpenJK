@@ -1499,7 +1499,7 @@ Ghoul2 Insert End
 	{
 		if (cent->bodyFadeTime > cg.time)
 		{
-			qboolean lightSide = cent->teamPowerType;
+			qboolean lightSide = (cent->teamPowerType != 0) ? qtrue : qfalse;
 			vec3_t hitLoc, tempAng;
 			float tempLength;
 			int curTimeDif = ((cg.time + 60000) - cent->bodyFadeTime);
