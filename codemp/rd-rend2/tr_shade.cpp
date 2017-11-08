@@ -1251,28 +1251,12 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 			if ( !useAlphaTestGE192 )
 			{
-				if (stage->alphaTestCmp != ATEST_CMP_NONE)
-				{
-					index |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
-					switch ( stage->alphaTestCmp )
-					{
-						case ATEST_CMP_LT:
-							index |= LIGHTDEF_USE_ATEST_LT;
-							break;
-						case ATEST_CMP_GT:
-							index |= LIGHTDEF_USE_ATEST_GT;
-							break;
-						case ATEST_CMP_GE:
-							index |= LIGHTDEF_USE_ATEST_GE;
-							break;
-						default:
-							break;
-					}
-				}
+				if (stage->alphaTestType != ALPHA_TEST_NONE)
+					index |= LIGHTDEF_USE_ALPHA_TEST;
 			}
 			else
 			{
-				index |= LIGHTDEF_USE_ATEST_GE;
+				index |= LIGHTDEF_USE_ALPHA_TEST;
 			}
 
 			result = &stage->glslShaderGroup[index];
@@ -1298,28 +1282,12 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 			if ( !useAlphaTestGE192 )
 			{
-				if (stage->alphaTestCmp != ATEST_CMP_NONE)
-				{
-					index |= GENERICDEF_USE_TCGEN_AND_TCMOD;
-					switch ( stage->alphaTestCmp )
-					{
-						case ATEST_CMP_LT:
-							index |= GENERICDEF_USE_ATEST_LT;
-							break;
-						case ATEST_CMP_GT:
-							index |= GENERICDEF_USE_ATEST_GT;
-							break;
-						case ATEST_CMP_GE:
-							index |= GENERICDEF_USE_ATEST_GE;
-							break;
-						default:
-							break;
-					}
-				}
+				if (stage->alphaTestType != ALPHA_TEST_NONE)
+					index |= GENERICDEF_USE_TCGEN_AND_TCMOD | GENERICDEF_USE_ALPHA_TEST;
 			}
 			else
 			{
-				index |= GENERICDEF_USE_ATEST_GE;
+				index |= GENERICDEF_USE_ALPHA_TEST;
 			}
 
 			result = &tr.genericShader[index];
@@ -1358,28 +1326,12 @@ static shaderProgram_t *SelectShaderProgram( int stageIndex, shaderStage_t *stag
 
 			if ( !useAlphaTestGE192 )
 			{
-				if (stage->alphaTestCmp != ATEST_CMP_NONE)
-				{
-					index |= LIGHTDEF_USE_TCGEN_AND_TCMOD;
-					switch ( stage->alphaTestCmp )
-					{
-						case ATEST_CMP_LT:
-							index |= LIGHTDEF_USE_ATEST_LT;
-							break;
-						case ATEST_CMP_GT:
-							index |= LIGHTDEF_USE_ATEST_GT;
-							break;
-						case ATEST_CMP_GE:
-							index |= LIGHTDEF_USE_ATEST_GE;
-							break;
-						default:
-							break;
-					}
-				}
+				if (stage->alphaTestType != ALPHA_TEST_NONE)
+					index |= LIGHTDEF_USE_TCGEN_AND_TCMOD | LIGHTDEF_USE_ALPHA_TEST;
 			}
 			else
 			{
-				index |= LIGHTDEF_USE_ATEST_GE;
+				index |= LIGHTDEF_USE_ALPHA_TEST;
 			}
 		}
 
@@ -1579,8 +1531,9 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 		uniformDataWriter.SetUniformVec4(UNIFORM_NORMALSCALE, pStage->normalScale);
 		uniformDataWriter.SetUniformVec4(UNIFORM_SPECULARSCALE, pStage->specularScale);
 
-		float alphaTestValue = useAlphaTestGE192 ? 0.75f : pStage->alphaTestValue;
-		uniformDataWriter.SetUniformFloat(UNIFORM_ALPHA_TEST_VALUE, alphaTestValue);
+		const AlphaTestType alphaTestType =
+			useAlphaTestGE192 ? ALPHA_TEST_GE192 : pStage->alphaTestType;
+		uniformDataWriter.SetUniformInt(UNIFORM_ALPHA_TEST_TYPE, alphaTestType);
 
 		//
 		// do multitexture
@@ -1590,7 +1543,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 
 		if ( backEnd.depthFill )
 		{
-			if (pStage->alphaTestCmp == ATEST_CMP_NONE)
+			if (pStage->alphaTestType == ALPHA_TEST_NONE)
 				samplerBindingsWriter.AddStaticImage(tr.whiteImage, 0);
 			else if ( pStage->bundle[TB_COLORMAP].image[0] != 0 )
 				samplerBindingsWriter.AddAnimatedImage(&pStage->bundle[TB_COLORMAP], TB_COLORMAP);

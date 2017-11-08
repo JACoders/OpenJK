@@ -357,8 +357,8 @@ void main()
 
 /*[Fragment]*/
 uniform sampler2D u_DiffuseMap;
-#if defined(USE_ATEST)
-uniform float u_AlphaTestValue;
+#if defined(USE_ALPHA_TEST)
+uniform int u_AlphaTestType;
 #endif
 
 #if defined(USE_FOG)
@@ -416,15 +416,27 @@ void main()
 {
 	vec4 color  = texture(u_DiffuseMap, var_DiffuseTex);
 
-#if defined(USE_ATEST)
-#  if USE_ATEST == ATEST_CMP_LT
-	if (color.a >= u_AlphaTestValue)
-#  elif USE_ATEST == ATEST_CMP_GT
-	if (color.a <= u_AlphaTestValue)
-#  elif USE_ATEST == ATEST_CMP_GE
-	if (color.a < u_AlphaTestValue)
-#  endif
-		discard;
+#if defined(USE_ALPHA_TEST)
+	if (u_AlphaTestType == ALPHA_TEST_GT0)
+	{
+		if (color.a == 0.0)
+			discard;
+	}
+	else if (u_AlphaTestType == ALPHA_TEST_LT128)
+	{
+		if (color.a >= 0.5)
+			discard;
+	}
+	else if (u_AlphaTestType == ALPHA_TEST_GE128)
+	{
+		if (color.a < 0.5)
+			discard;
+	}
+	else if (u_AlphaTestType == ALPHA_TEST_GE192)
+	{
+		if (color.a < 0.75)
+			discard;
+	}
 #endif
 
 #if defined(USE_FOG)

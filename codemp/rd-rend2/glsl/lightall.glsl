@@ -359,8 +359,8 @@ uniform vec4 u_SpecularScale;
 uniform vec4 u_CubeMapInfo;
 #endif
 
-#if defined(USE_ATEST)
-uniform float u_AlphaTestValue;
+#if defined(USE_ALPHA_TEST)
+uniform int u_AlphaTestType;
 #endif
 
 
@@ -603,15 +603,27 @@ void main()
 #endif
 
 	vec4 diffuse = texture(u_DiffuseMap, texCoords);
-#if defined(USE_ATEST)
-#  if USE_ATEST == ATEST_CMP_LT
-	if (diffuse.a >= u_AlphaTestValue)
-#  elif USE_ATEST == ATEST_CMP_GT
-	if (diffuse.a <= u_AlphaTestValue)
-#  elif USE_ATEST == ATEST_CMP_GE
-	if (diffuse.a < u_AlphaTestValue)
-#  endif
-		discard;
+#if defined(USE_ALPHA_TEST)
+	if (u_AlphaTestType == ALPHA_TEST_GT0)
+	{
+		if (diffuse.a == 0.0)
+			discard;
+	}
+	else if (u_AlphaTestType == ALPHA_TEST_LT128)
+	{
+		if (diffuse.a >= 0.5)
+			discard;
+	}
+	else if (u_AlphaTestType == ALPHA_TEST_GE128)
+	{
+		if (diffuse.a < 0.5)
+			discard;
+	}
+	else if (u_AlphaTestType == ALPHA_TEST_GE192)
+	{
+		if (diffuse.a < 0.75)
+			discard;
+	}
 #endif
 
 	//diffuse.rgb = sRGBToLinear(diffuse.rgb);

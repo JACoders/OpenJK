@@ -3517,7 +3517,7 @@ static void R_GenerateSurfaceSprites(
 			bundle, stage->stateBits);
 	out->shader->cullType = shader->cullType;
 	out->shader->stages[0]->glslShaderGroup = tr.spriteShader;
-	out->shader->stages[0]->alphaTestCmp = stage->alphaTestCmp;
+	out->shader->stages[0]->alphaTestType = stage->alphaTestType;
 
 	out->numAttributes = 2;
 	out->attributes = (vertexAttribute_t *)ri->Hunk_Alloc(

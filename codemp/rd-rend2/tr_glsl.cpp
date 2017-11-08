@@ -150,7 +150,7 @@ static uniformInfo_t uniformsInfo[] =
 	{ "u_CubeMapInfo", GLSL_VEC4, 1 },
 
 	{ "u_BoneMatrices",			GLSL_MAT4x3, 20 },
-	{ "u_AlphaTestValue",		GLSL_FLOAT, 1 },
+	{ "u_AlphaTestType",		GLSL_INT, 1 },
 
 	{ "u_FXVolumetricBase",		GLSL_FLOAT, 1 },
 	{ "u_MapZExtents",			GLSL_VEC2, 1 },
@@ -360,12 +360,14 @@ static size_t GLSL_GetShaderHeader(
 						GL_REPLACE));
 
 	Q_strcat(dest, size,
-					 va("#define ATEST_CMP_LT %d\n" 
-						"#define ATEST_CMP_GT %d\n" 
-						"#define ATEST_CMP_GE %d\n",
-						ATEST_CMP_LT,
-						ATEST_CMP_GT,
-						ATEST_CMP_GE));
+					 va("#define ALPHA_TEST_GT0 %d\n"
+						"#define ALPHA_TEST_LT128 %d\n" 
+						"#define ALPHA_TEST_GE128 %d\n"
+						"#define ALPHA_TEST_GE192 %d\n",
+						ALPHA_TEST_GT0,
+						ALPHA_TEST_LT128,
+						ALPHA_TEST_GE128,
+						ALPHA_TEST_GE192));
 
 	fbufWidthScale = 1.0f / ((float)glConfig.vidWidth);
 	fbufHeightScale = 1.0f / ((float)glConfig.vidHeight);
@@ -1312,32 +1314,8 @@ static int GLSL_LoadGPUProgramGeneric(
 		if (i & GENERICDEF_USE_GLOW_BUFFER)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");
 
-		switch ( i & GENERICDEF_USE_ATEST_MASK )
-		{
-			case GENERICDEF_USE_ATEST_LT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_LT\n");
-				break;
-			}
-
-			case GENERICDEF_USE_ATEST_GT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GT\n");
-				break;
-			}
-
-			case GENERICDEF_USE_ATEST_GE:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GE\n");
-				break;
-			}
-
-			default:
-				break;
-		}
+		if (i & GENERICDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
 		if (!GLSL_LoadGPUShader(builder, &tr.genericShader[i], "generic", attribs,
 				extradefines, *programDesc))
@@ -1393,32 +1371,8 @@ static int GLSL_LoadGPUProgramFogPass(
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
-		switch ( i & FOGDEF_USE_ATEST_MASK )
-		{
-			case FOGDEF_USE_ATEST_LT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_LT\n");
-				break;
-			}
-
-			case FOGDEF_USE_ATEST_GT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GT\n");
-				break;
-			}
-
-			case FOGDEF_USE_ATEST_GE:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GE\n");
-				break;
-			}
-
-			default:
-			break;
-		}
+		if (i & FOGDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
 		if (!GLSL_LoadGPUShader(builder, &tr.fogShader[i], "fogpass", attribs,
 				extradefines, *programDesc))
@@ -1451,36 +1405,10 @@ static int GLSL_LoadGPUProgramDLight(
 		extradefines[0] = '\0';
 
 		if (i & DLIGHTDEF_USE_DEFORM_VERTEXES)
-		{
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_DEFORM_VERTEXES\n");
-		}
 
-		switch ( i & DLIGHTDEF_USE_ATEST_MASK )
-		{
-			case DLIGHTDEF_USE_ATEST_LT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_LT\n");
-				break;
-			}
-
-			case DLIGHTDEF_USE_ATEST_GT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GT\n");
-				break;
-			}
-
-			case DLIGHTDEF_USE_ATEST_GE:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GE\n");
-				break;
-			}
-
-			default:
-			break;
-		}
+		if (i & DLIGHTDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
 		if (!GLSL_LoadGPUShader(builder, &tr.dlightShader[i], "dlight", attribs,
 				extradefines, *programDesc))
@@ -1619,32 +1547,8 @@ static int GLSL_LoadGPUProgramLightAll(
 			attribs |= ATTR_BONE_INDEXES | ATTR_BONE_WEIGHTS;
 		}
 
-		switch (i & LIGHTDEF_USE_ATEST_MASK)
-		{
-			case LIGHTDEF_USE_ATEST_LT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_LT\n");
-				break;
-			}
-
-			case LIGHTDEF_USE_ATEST_GT:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GT\n");
-				break;
-			}
-
-			case LIGHTDEF_USE_ATEST_GE:
-			{
-				Q_strcat(extradefines, sizeof(extradefines),
-							"#define USE_ATEST ATEST_CMP_GE\n");
-				break;
-			}
-
-			default:
-			break;
-		}
+		if (i & LIGHTDEF_USE_ALPHA_TEST)
+			Q_strcat(extradefines, sizeof(extradefines), "#define USE_ALPHA_TEST\n");
 
 		if (i & LIGHTDEF_USE_GLOW_BUFFER)
 			Q_strcat(extradefines, sizeof(extradefines), "#define USE_GLOW_BUFFER\n");
@@ -2418,20 +2322,10 @@ shaderProgram_t *GLSL_GetGenericShaderProgram(int stage)
 	int shaderAttribs = 0;
 
 	if (tess.fogNum && pStage->adjustColorsForFog)
-	{
 		shaderAttribs |= GENERICDEF_USE_FOG;
-	}
 
-	if ( pStage->alphaTestCmp != ATEST_CMP_NONE )
-	{
-		switch ( pStage->alphaTestCmp )
-		{
-			case ATEST_CMP_LT:	shaderAttribs |= GENERICDEF_USE_ATEST_LT; break;
-			case ATEST_CMP_GT:	shaderAttribs |= GENERICDEF_USE_ATEST_GT; break;
-			case ATEST_CMP_GE:	shaderAttribs |= GENERICDEF_USE_ATEST_GE; break;
-			default: break;
-		}
-	}
+	if ( pStage->alphaTestType != ALPHA_TEST_NONE )
+		shaderAttribs |= GENERICDEF_USE_ALPHA_TEST;
 
 	switch (pStage->rgbGen)
 	{

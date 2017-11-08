@@ -244,34 +244,20 @@ ParseAlphaTestFunc
 */
 static void ParseAlphaTestFunc( shaderStage_t *stage, const char *funcname )
 {	
-	stage->alphaTestCmp = ATEST_CMP_NONE;
+	stage->alphaTestType = ALPHA_TEST_NONE;
 
 	if ( !Q_stricmp( funcname, "GT0" ) )
-	{
-		stage->alphaTestCmp = ATEST_CMP_GT;
-		stage->alphaTestValue = 0.0f;
-	}
+		stage->alphaTestType = ALPHA_TEST_GT0;
 	else if ( !Q_stricmp( funcname, "LT128" ) )
-	{
-		stage->alphaTestCmp = ATEST_CMP_LT;
-		stage->alphaTestValue = 0.5f;
-	}
+		stage->alphaTestType = ALPHA_TEST_LT128;
 	else if ( !Q_stricmp( funcname, "GE128" ) )
-	{
-		stage->alphaTestCmp = ATEST_CMP_GE;
-		stage->alphaTestValue = 0.5f;
-	}
+		stage->alphaTestType = ALPHA_TEST_GE128;
 	else if ( !Q_stricmp( funcname, "GE192" ) )
-	{
-		stage->alphaTestCmp = ATEST_CMP_GE;
-		stage->alphaTestValue = 0.75f;
-	}
+		stage->alphaTestType = ALPHA_TEST_GE192;
 	else
-	{
 		ri->Printf( PRINT_WARNING,
 				"WARNING: invalid alphaFunc name '%s' in shader '%s'\n",
 				funcname, shader.name );
-	}
 }
 
 
@@ -3029,20 +3015,8 @@ static void CollapseStagesToLightall(shaderStage_t *diffuse,
 	if (diffuse->glow)
 		defs |= LIGHTDEF_USE_GLOW_BUFFER;
 
-	switch ( diffuse->alphaTestCmp )
-	{
-		case ATEST_CMP_LT:
-			defs |= LIGHTDEF_USE_ATEST_LT;
-			break;
-		case ATEST_CMP_GT:
-			defs |= LIGHTDEF_USE_ATEST_GT;
-			break;
-		case ATEST_CMP_GE:
-			defs |= LIGHTDEF_USE_ATEST_GE;
-			break;
-		default:
-			break;
-	}
+	if (diffuse->alphaTestType != ALPHA_TEST_NONE)
+		defs |= LIGHTDEF_USE_ALPHA_TEST;
 
 	//ri->Printf(PRINT_ALL, ".\n");
 

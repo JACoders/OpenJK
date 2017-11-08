@@ -75,10 +75,6 @@ uniform sampler2D u_DiffuseMap;
 in vec2 var_TexCoords;
 in float var_Alpha;
 
-#if defined(ALPHA_TEST)
-uniform float u_AlphaTestValue;
-#endif
-
 layout(std140) uniform SurfaceSprite
 {
 	float u_Width;

@@ -2139,7 +2139,7 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	const surfaceSprite_t *ss = surf->sprite;
 
 	uint32_t shaderFlags = 0;
-	if ( firstStage->alphaTestCmp != ATEST_CMP_NONE )
+	if ( firstStage->alphaTestType != ALPHA_TEST_NONE )
 		shaderFlags |= SSDEF_ALPHA_TEST;
 
 	if ( ss->type == SURFSPRITE_ORIENTED )
