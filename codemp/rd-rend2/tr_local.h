@@ -60,7 +60,7 @@ typedef unsigned int glIndex_t;
 #define MAX_CALC_PSHADOWS    64
 #define MAX_DRAWN_PSHADOWS    16 // do not increase past 32, because bit flags are used on surfaces
 #define PSHADOW_MAP_SIZE      512
-#define CUBE_MAP_MIPS      7
+#define CUBE_MAP_MIPS      8
 #define CUBE_MAP_SIZE      (1 << CUBE_MAP_MIPS)
 
 /*
@@ -710,7 +710,8 @@ enum
 	TB_SPECULARMAP = 4,
 	TB_SHADOWMAP   = 5,
 	TB_CUBEMAP     = 6,
-	NUM_TEXTURE_BUNDLES = 7
+	TB_ENVBRDFMAP  = 7,
+	NUM_TEXTURE_BUNDLES = 8
 };
 
 typedef enum
@@ -1144,14 +1145,16 @@ struct Block
 enum GPUShaderType
 {
 	GPUSHADER_VERTEX,
-	GPUSHADER_FRAGMENT
+	GPUSHADER_FRAGMENT,
+	GPUSHADER_GEOMETRY,
+	GPUSHADER_TYPE_COUNT
 };
 
 struct GPUShaderDesc
 {
 	GPUShaderType type;
 	const char *source;
-	int firstLine;
+	int firstLineNumber;
 };
 
 struct GPUProgramDesc
@@ -1171,6 +1174,7 @@ typedef enum
 	UNIFORM_TEXTUREMAP,
 	UNIFORM_LEVELSMAP,
 	UNIFORM_CUBEMAP,
+	UNIFORM_ENVBRDFMAP,
 
 	UNIFORM_SCREENIMAGEMAP,
 	UNIFORM_SCREENDEPTHMAP,
@@ -1253,6 +1257,7 @@ typedef enum
 	UNIFORM_ALPHA_TEST_VALUE,
 
 	UNIFORM_FX_VOLUMETRIC_BASE,
+	UNIFORM_MAPZEXTENTS,
 
 	UNIFORM_COUNT
 } uniform_t;
@@ -1272,10 +1277,8 @@ typedef struct shaderProgram_s
 {
 	char *name;
 
-	GLuint     program;
-	GLuint     vertexShader;
-	GLuint     fragmentShader;
-	uint32_t        attribs;	// vertex array attributes
+	GLuint program;
+	uint32_t attribs; // vertex array attributes
 
 	// uniform parameters
 	GLint *uniforms;
@@ -1291,6 +1294,16 @@ struct technique_t
 	shaderProgram_t *depthPrepass;
 	shaderProgram_t *shadow;
 	shaderProgram_t *forward;
+};
+
+struct EntityCullInfo
+{
+	uint32_t frustumMask;
+};
+
+struct WorkingScene
+{
+	EntityCullInfo entityCullInfo[MAX_REFENTITIES];
 };
 
 // trRefdef_t holds everything that comes in refdef_t,
@@ -1408,7 +1421,8 @@ SURFACES
 typedef byte color4ub_t[4];
 
 // any changes in surfaceType must be mirrored in rb_surfaceTable[]
-typedef enum {
+typedef enum surfaceType_e
+{
 	SF_BAD,
 	SF_SKIP,				// ignore
 	SF_FACE,
@@ -1424,6 +1438,7 @@ typedef enum {
 	SF_VBO_MESH,
 	SF_VBO_MDVMESH,
 	SF_SPRITES,
+	SF_WEATHER,
 
 	SF_NUM_SURFACE_TYPES,
 	SF_MAX = 0x7fffffff			// ensures that sizeof( surfaceType_t ) == sizeof( int )
@@ -1466,6 +1481,7 @@ typedef struct drawSurf_s {
 // as soon as it is called
 typedef struct srfPoly_s {
 	surfaceType_t	surfaceType;
+	struct srfPoly_s *next;
 	qhandle_t		hShader;
 	int				fogIndex;
 	int				numVerts;
@@ -1492,6 +1508,11 @@ struct srfSprites_t
 
 	int numAttributes;
 	vertexAttribute_t *attributes;
+};
+
+struct srfWeather_t
+{
+	surfaceType_t surfaceType;
 };
 
 typedef struct
@@ -1680,7 +1701,6 @@ typedef struct cullinfo_s {
 } cullinfo_t;
 
 typedef struct msurface_s {
-	//int					viewCount;		// if == tr.viewCount, already added
 	struct shader_s		*shader;
 	int					fogIndex;
 	int                 cubemapIndex;
@@ -1715,7 +1735,8 @@ typedef struct mnode_s {
 
 typedef struct {
 	vec3_t		bounds[2];		// for culling
-	int	        firstSurface;
+	int			worldIndex;
+	int			firstSurface;
 	int			numSurfaces;
 } bmodel_t;
 
@@ -2141,6 +2162,7 @@ typedef struct {
 ** but may read fields that aren't dynamically modified
 ** by the frontend.
 */
+struct weatherSystem_t;
 typedef struct trGlobals_s {
 	qboolean				registered;		// cleared at shutdown, set at beginRegistration
 
@@ -2197,6 +2219,8 @@ typedef struct trGlobals_s {
 	image_t                 *screenSsaoImage;
 	image_t					*hdrDepthImage;
 	image_t                 *renderCubeImage;
+	image_t                 *prefilterEnvMapImage;
+	image_t					*envBrdfImage;
 	
 	image_t					*textureDepthImage;
 
@@ -2215,11 +2239,13 @@ typedef struct trGlobals_s {
 	FBO_t					*screenSsaoFbo;
 	FBO_t					*hdrDepthFbo;
 	FBO_t                   *renderCubeFbo;
+	FBO_t					*preFilterEnvMapFbo;
 
 	shader_t				*defaultShader;
 	shader_t				*shadowShader;
 	shader_t				*distortionShader;
 	shader_t				*projectionShadowShader;
+	shader_t				*weatherInternalShader;
 
 	shader_t				*flareShader;
 	shader_t				*sunShader;
@@ -2237,9 +2263,10 @@ typedef struct trGlobals_s {
 	vec3_t                  *cubemapOrigins;
 	image_t                 **cubemaps;
 
-	trRefEntity_t			*currentEntity;
 	trRefEntity_t			worldEntity;		// point currentEntity at this when rendering world
 	model_t					*currentModel;
+
+	weatherSystem_t			*weatherSystem;
 
 	//
 	// GPU shader programs
@@ -2260,11 +2287,13 @@ typedef struct trGlobals_s {
 	shaderProgram_t ssaoShader;
 	shaderProgram_t depthBlurShader[2];
 	shaderProgram_t testcubeShader;
+	shaderProgram_t prefilterEnvMapShader;
 	shaderProgram_t gaussianBlurShader[2];
 	shaderProgram_t glowCompositeShader;
 	shaderProgram_t dglowDownsample;
 	shaderProgram_t dglowUpsample;
 	shaderProgram_t spriteShader[SSDEF_COUNT];
+	shaderProgram_t weatherShader;
 
 	// -----------------------------------------
 
@@ -2298,6 +2327,9 @@ typedef struct trGlobals_s {
 	//
 	model_t					*models[MAX_MOD_KNOWN];
 	int						numModels;
+
+	world_t					*bspModels[MAX_SUB_BSP];
+	int						numBspModels;
 
 	int						numImages;
 	image_t					*images;
@@ -2544,13 +2576,13 @@ void R_AddBeamSurfaces( trRefEntity_t *e, int entityNum );
 void R_AddRailSurfaces( trRefEntity_t *e, qboolean isUnderwater );
 void R_AddLightningBoltSurfaces( trRefEntity_t *e );
 
-void R_AddPolygonSurfaces( void );
+void R_AddPolygonSurfaces( const trRefdef_t *refdef );
 
 void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender );
 uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender);
 void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
-bool R_IsPostRenderEntity ( int refEntityNum, const trRefEntity_t *refEntity );
+bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity );
 
 void R_CalcTexDirs(vec3_t sdir, vec3_t tdir, const vec3_t v1, const vec3_t v2,
 					const vec3_t v3, const vec2_t w1, const vec2_t w2, const vec2_t w3);
@@ -2595,6 +2627,7 @@ void	GL_DrawIndexed(GLenum primitiveType, int numIndices, int offset,
 						int numInstances, int baseVertex);
 void	GL_MultiDrawIndexed(GLenum primitiveType, int *numIndices,
 							glIndex_t **offsets, int numDraws);
+void	GL_Draw( GLenum primitiveType, int firstVertex, int numVertices, int numInstances );
 
 #define LERP( a, b, w ) ( ( a ) * ( 1.0f - ( w ) ) + ( b ) * ( w ) )
 #define LUMA( red, green, blue ) ( 0.2126f * ( red ) + 0.7152f * ( green ) + 0.0722f * ( blue ) )
@@ -2617,6 +2650,7 @@ qhandle_t	RE_RegisterModel( const char *name );
 qhandle_t	RE_RegisterServerSkin( const char *name );
 qhandle_t	RE_RegisterSkin( const char *name );
 void		RE_Shutdown( qboolean destroyWindow );
+world_t		*R_LoadBSP(const char *name, int *bspIndex = nullptr);
 
 qboolean	R_GetEntityToken( char *buffer, int size );
 
@@ -2785,7 +2819,7 @@ WORLD MAP
 */
 
 void R_AddBrushModelSurfaces( trRefEntity_t *e, int entityNum );
-void R_AddWorldSurfaces( void );
+void R_AddWorldSurfaces( viewParms_t *viewParms, trRefdef_t *refdef );
 qboolean R_inPVS( const vec3_t p1, const vec3_t p2, byte *mask );
 
 
@@ -2811,12 +2845,12 @@ LIGHTS
 ============================================================
 */
 
-void R_DlightBmodel( bmodel_t *bmodel );
+void R_DlightBmodel( bmodel_t *bmodel, trRefEntity_t *ent );
 void R_SetupEntityLighting( const trRefdef_t *refdef, trRefEntity_t *ent );
 void R_TransformDlights( int count, dlight_t *dl, orientationr_t *ori );
 int R_LightForPoint( vec3_t point, vec3_t ambientLight, vec3_t directedLight, vec3_t lightDir );
 int R_LightDirForPoint( vec3_t point, vec3_t lightDir, vec3_t normal, world_t *world );
-int R_CubemapForPoint( vec3_t point );
+int R_CubemapForPoint( const vec3_t point );
 
 
 /*
@@ -2927,8 +2961,7 @@ GLSL
 */
 
 void GLSL_InitSplashScreenShader();
-int GLSL_BeginLoadGPUShaders(void);
-void GLSL_EndLoadGPUShaders( int startTime );
+void GLSL_LoadGPUShaders();
 void GLSL_ShutdownGPUShaders(void);
 void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexArrays);
 void GLSL_VertexAttribPointers(const VertexArraysProperties *vertexArrays);
@@ -3014,27 +3047,34 @@ Ghoul2 Insert Start
 class CRenderableSurface
 {
 public:
-#ifdef _G2_GORE
-	int				ident;
-#else
-	const int		ident;			// ident of this surface - required so the materials renderer knows what sort of surface this refers to 
-#endif
-	CBoneCache 		*boneCache;
-	mdxmVBOMesh_t	*vboMesh;
-	mdxmSurface_t	*surfaceData;	// pointer to surface data loaded into file - only used by client renderer DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of wack on the game
-#ifdef _G2_GORE
-	float			*alternateTex;		// alternate texture coordinates.
-	void			*goreChain;
+	// ident of this surface - required so the materials renderer knows what
+	// sort of surface this refers to
+	int ident;
 
-	float			scale;
-	float			fade;
-	float			impactTime; // this is a number between 0 and 1 that dictates the progression of the bullet impact
-#endif
+	CBoneCache *boneCache;
+	mdxmVBOMesh_t *vboMesh;
+
+	// pointer to surface data loaded into file - only used by client renderer
+	// DO NOT USE IN GAME SIDE - if there is a vid restart this will be out of
+	// wack on the game
+	mdxmSurface_t *surfaceData;
 
 #ifdef _G2_GORE
-	CRenderableSurface& operator= ( const CRenderableSurface& src )
+	// alternate texture coordinates
+	float *alternateTex;
+	void *goreChain;
+
+	float scale;
+	float fade;
+
+	// this is a number between 0 and 1 that dictates the progression of the
+	// bullet impact
+	float impactTime;
+#endif
+
+	CRenderableSurface& operator =( const CRenderableSurface& src )
 	{
-		ident	 = src.ident;
+		ident = src.ident;
 		boneCache = src.boneCache;
 		surfaceData = src.surfaceData;
 		alternateTex = src.alternateTex;
@@ -3043,29 +3083,31 @@ public:
 
 		return *this;
 	}
-#endif
 
-CRenderableSurface():	
-	ident(SF_MDX),
-	boneCache(0),
+	CRenderableSurface()
+		: ident(SF_MDX)
+		, boneCache(nullptr)
+		, vboMesh(nullptr)
+		, surfaceData(nullptr)
 #ifdef _G2_GORE
-	surfaceData(0),
-	alternateTex(0),
-	goreChain(0)
-#else
-	surfaceData(0)
+		, alternateTex(nullptr)
+		, goreChain(nullptr)
+		, scale(1.0f)
+		, fade(0.0f)
+		, impactTime(0.0f)
 #endif
-	{}
+	{
+	}
 
 #ifdef _G2_GORE
 	void Init()
 	{
 		ident = SF_MDX;
-		boneCache=0;
-		surfaceData=0;
-		alternateTex=0;
-		goreChain=0;
-		vboMesh = NULL;
+		boneCache = nullptr;
+		surfaceData = nullptr;
+		alternateTex = nullptr;
+		goreChain = nullptr;
+		vboMesh = nullptr;
 	}
 #endif
 };
@@ -3219,6 +3261,11 @@ typedef struct capShadowmapCommand_s {
 	int cubeSide;
 } capShadowmapCommand_t;
 
+typedef struct convolveCubemapCommand_s {
+	int commandId;
+	int cubemap;
+} convolveCubemapCommand_t;
+
 typedef struct postProcessCommand_s {
 	int		commandId;
 	trRefdef_t	refdef;
@@ -3250,6 +3297,7 @@ typedef enum {
 	RC_COLORMASK,
 	RC_CLEARDEPTH,
 	RC_CAPSHADOWMAP,
+	RC_CONVOLVECUBEMAP,
 	RC_POSTPROCESS,
 	RC_BEGIN_TIMED_BLOCK,
 	RC_END_TIMED_BLOCK
@@ -3327,6 +3375,7 @@ void R_IssuePendingRenderCommands( void );
 
 void R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs );
 void R_AddCapShadowmapCmd( int dlight, int cubeSide );
+void R_AddConvolveCubemapCmd( int cubemap );
 void R_AddPostProcessCmd (void);
 qhandle_t R_BeginTimedBlockCmd( const char *name );
 void R_EndTimedBlockCmd( qhandle_t timerHandle );
@@ -3341,19 +3390,25 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec );
 void RE_TakeVideoFrame( int width, int height,
 		byte *captureBuffer, byte *encodeBuffer, qboolean motionJpeg );
 
-/*
-Ghoul2 Insert Start
-*/
 // tr_ghoul2.cpp
-void		Multiply_3x4Matrix(mdxaBone_t *out, mdxaBone_t *in2, mdxaBone_t *in);
-extern qboolean R_LoadMDXM (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-extern qboolean R_LoadMDXA (model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
-bool LoadTGAPalletteImage ( const char *name, byte **pic, int *width, int *height);
-void		RE_InsertModelIntoHash(const char *name, model_t *mod);
+void Mat3x4_Multiply(mdxaBone_t *out, const mdxaBone_t *in2, const mdxaBone_t *in);
+void Mat3x4_Scale( mdxaBone_t *result, const mdxaBone_t *lhs, const float scale );
+void Mat3x4_Lerp(
+	mdxaBone_t *result,
+	const mdxaBone_t *lhs,
+	const mdxaBone_t *rhs,
+	const float t );
+const mdxaBone_t operator +( const mdxaBone_t& lhs, const mdxaBone_t& rhs );
+const mdxaBone_t operator -( const mdxaBone_t& lhs, const mdxaBone_t& rhs );
+const mdxaBone_t operator *( const mdxaBone_t& lhs, const mdxaBone_t& rhs );
+const mdxaBone_t operator *( const mdxaBone_t& lhs, const float scale );
+const mdxaBone_t operator *( const float scale, const mdxaBone_t& rhs );
+
+qboolean R_LoadMDXM( model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
+qboolean R_LoadMDXA( model_t *mod, void *buffer, const char *name, qboolean &bAlreadyCached );
+bool LoadTGAPalletteImage( const char *name, byte **pic, int *width, int *height);
+void RE_InsertModelIntoHash( const char *name, model_t *mod );
 void ResetGhoul2RenderableSurfaceHeap();
-/*
-Ghoul2 Insert End
-*/
 
 void R_InitDecals( void );
 void RE_ClearDecals( void );
@@ -3416,6 +3471,12 @@ struct DrawCommand
 			GLsizei numIndices;
 			glIndex_t firstIndex;
 		} indexed;
+
+		struct DrawArrays
+		{
+			glIndex_t firstVertex;
+			GLsizei numVertices;
+		} arrays;
 	} params;
 };
 

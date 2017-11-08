@@ -306,8 +306,8 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 		offsets = (mdxaSkelOffsets_t *)((byte *)mdxa + sizeof(mdxaHeader_t));
 		skel = (mdxaSkel_t *)((byte *)mdxa + sizeof(mdxaHeader_t) + offsets->offsets[blist[index].boneNumber]);
 
-		Multiply_3x4Matrix(&temp1,  boneOverride,&skel->BasePoseMatInv);
-		Multiply_3x4Matrix(boneOverride,&skel->BasePoseMat, &temp1);
+		Mat3x4_Multiply(&temp1,  boneOverride,&skel->BasePoseMatInv);
+		Mat3x4_Multiply(boneOverride,&skel->BasePoseMat, &temp1);
 	
 	}
 	else
@@ -401,7 +401,7 @@ void G2_Generate_Matrix(const model_t *mod, boneInfo_v &blist, int index, const 
 			break;
 		}
 
-		Multiply_3x4Matrix(boneOverride, &temp1,&permutation);
+		Mat3x4_Multiply(boneOverride, &temp1,&permutation);
 
 	}
 
@@ -428,16 +428,24 @@ qboolean G2_Remove_Bone (CGhoul2Info *ghlInfo, boneInfo_v &blist, const char *bo
 #define DEBUG_PCJ (0)
 
 
-// Given a model handle, and a bone name, we want to set angles specifically for overriding
-qboolean G2_Set_Bone_Angles_Index( boneInfo_v &blist, const int index,
-							const float *angles, const int flags, const Eorientations yaw,
-							const Eorientations pitch, const Eorientations roll, qhandle_t *modelList,
-							const int modelIndex, const int blendTime, const int currentTime)
+// Given a model handle, and a bone name, we want to set angles specifically
+// for overriding
+qboolean G2_Set_Bone_Angles_Index(
+	boneInfo_v &blist,
+	const int index,
+	const float *angles,
+	const int flags,
+	const Eorientations yaw,
+	const Eorientations pitch,
+	const Eorientations roll,
+	qhandle_t *modelList,
+	const int modelIndex,
+	const int blendTime,
+	const int currentTime)
 {
-	if ((index >= (int)blist.size()) || (blist[index].boneNumber == -1))
+	if ( index >= (int)blist.size() || blist[index].boneNumber == -1 )
 	{
 		// we are attempting to set a bone override that doesn't exist
-		assert(0);
 		return qfalse;
 	}
 
@@ -445,29 +453,42 @@ qboolean G2_Set_Bone_Angles_Index( boneInfo_v &blist, const int index,
 	{
 		if (blist[index].flags & BONE_ANGLES_RAGDOLL)
 		{
-			return qtrue; // don't accept any calls on ragdoll bones
+			// don't accept any calls on ragdoll bones
+			return qtrue;
 		}
 	}
 	
 	if (flags & (BONE_ANGLES_PREMULT | BONE_ANGLES_POSTMULT))
 	{
-		// you CANNOT call this with an index with these kinds of bone overrides - we need the model details for these kinds of bone angle overrides
-		assert(0);
+		// you CANNOT call this with an index with these kinds of bone
+		// overrides - we need the model details for these kinds of bone angle
+		// overrides
 		return qfalse;
 	}
 
 	// yes, so set the angles and flags correctly
-	blist[index].flags &= ~(BONE_ANGLES_TOTAL);
+	blist[index].flags &= ~BONE_ANGLES_TOTAL;
 	blist[index].flags |= flags;
 	blist[index].boneBlendStart = currentTime;
 	blist[index].boneBlendTime = blendTime;
+
 #if DEBUG_PCJ
-	Com_OPrintf("PCJ %2d %6d   (%6.2f,%6.2f,%6.2f) %d %d %d %d\n",index,currentTime,angles[0],angles[1],angles[2],yaw,pitch,roll,flags);
+	Com_OPrintf(
+		"PCJ %2d %6d   (%6.2f,%6.2f,%6.2f) %d %d %d %d\n",
+		index,
+		currentTime,
+		angles[0],
+		angles[1],
+		angles[2],
+		yaw,
+		pitch,
+		roll,
+		flags);
 #endif
 
-	G2_Generate_Matrix(NULL, blist, index, angles, flags, yaw, pitch, roll);
-	return qtrue;
+	G2_Generate_Matrix(nullptr, blist, index, angles, flags, yaw, pitch, roll);
 
+	return qtrue;
 }
 
 // Given a model handle, and a bone name, we want to set angles specifically for overriding
@@ -1770,12 +1791,6 @@ void G2_SetRagDoll(CGhoul2Info_v &ghoul2V,CRagDollParams *parms)
 		// only going to begin ragdoll once, everything else depends on what happens to the origin
 		return;
 	}
-#if 0
-if (index>=0)
-{
-	Com_OPrintf("death %d %d\n",blist[index].startFrame,blist[index].endFrame);
-}
-#endif
 
 	ghoul2.mFlags|=GHOUL2_RAG_PENDING|GHOUL2_RAG_DONE|GHOUL2_RAG_STARTED;  // well anyway we are going live
 	parms->CallRagDollBegin=qtrue;
@@ -1839,7 +1854,6 @@ if (index>=0)
 		BONE_ANIM_OVERRIDE_FREEZE|BONE_ANIM_BLEND,
 		1.0f,curTime,float(startFrame),150,0,true);
 
-//    should already be set					G2_GenerateWorldMatrix(parms->angles, parms->position);
 	G2_ConstructGhoulSkeleton(ghoul2V, curTime, false, parms->scale);
 
 	static const float fRadScale = 0.3f;//0.5f;
@@ -1994,15 +2008,6 @@ if (index>=0)
 		return;
 	}
 	G2_RagDollCurrentPosition(ghoul2V,model,curTime,parms->angles,parms->position,parms->scale);
-#if 0
-	if (rhand>0)
-	{
-		boneInfo_t &bone=blist[rhand];
-		SRagEffector &e=ragEffectors[bone.ragIndex];
-		VectorCopy(bone.originalOrigin,handPos);
-		VectorCopy(e.currentOrigin,handPos2);
-	}
-#endif
 	int k;
 
 	CRagDollUpdateParams fparms;
@@ -2601,7 +2606,6 @@ static void G2_RagDollCurrentPosition(CGhoul2Info_v &ghoul2V,int g2Index,int fra
 {
 	CGhoul2Info &ghoul2=ghoul2V[g2Index];
 	assert(ghoul2.mFileName[0]);
-//Com_OPrintf("angles %f %f %f\n",angles[0],angles[1],angles[2]);
 	G2_GenerateWorldMatrix(angles,position);
 	G2_ConstructGhoulSkeleton(ghoul2V, frameNum, false, scale);
 
@@ -3355,7 +3359,7 @@ static inline void G2_RagGetWorldAnimMatrix(CGhoul2Info &ghoul2, boneInfo_t &bon
 
 	//Use params to multiply world coordinate/dir matrix into the
 	//bone matrix and give us a useable world position
-	Multiply_3x4Matrix(&retMatrix, &worldMatrix, &baseBoneMatrix);
+	Mat3x4_Multiply(&retMatrix, &worldMatrix, &baseBoneMatrix);
 
 	assert(!Q_isnan(retMatrix.matrix[2][3]));
 }
@@ -3389,7 +3393,7 @@ static inline void G2_RagGetPelvisLumbarOffsets(CGhoul2Info &ghoul2, CRagDollUpd
 	//G2_GetRagBoneMatrixLow(ghoul2, boneIndex, x);
 	int bolt = G2_Add_Bolt(&ghoul2, ghoul2.mBltlist, ghoul2.mSlist, "pelvis");
 	G2_GetBoltMatrixLow(ghoul2, bolt, params->scale, x);
-	Multiply_3x4Matrix(&final, &worldMatrix, &x);
+	Mat3x4_Multiply(&final, &worldMatrix, &x);
 	G2API_GiveMeVectorFromMatrix(&final, ORIGIN, pos);
 	G2API_GiveMeVectorFromMatrix(&final, POSITIVE_X, dir);
 #endif
@@ -4021,7 +4025,7 @@ static void G2_RagDollSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int f
 		Create_Matrix(tAngles,&curRot);  //dest 2nd arg
 		Inverse_Matrix(&curRot,&curRotInv);  // dest 2nd arg
 
-		Multiply_3x4Matrix(&P,&ragBones[i],&curRotInv); //dest first arg
+		Mat3x4_Multiply(&P,&ragBones[i],&curRotInv); //dest first arg
 
 
 
@@ -4063,8 +4067,8 @@ static void G2_RagDollSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int f
 				tAngles[k]+=0.5f;
 				Create_Matrix(tAngles,&temp2);  //dest 2nd arg
 				tAngles[k]-=0.5f;
-				Multiply_3x4Matrix(&temp1,&P,&temp2); //dest first arg
-				Multiply_3x4Matrix(&Gs[k],&temp1,&N); //dest first arg
+				Mat3x4_Multiply(&temp1,&P,&temp2); //dest first arg
+				Mat3x4_Multiply(&Gs[k],&temp1,&N); //dest first arg
 
 			}
 
@@ -4091,7 +4095,7 @@ static void G2_RagDollSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int f
 					numRagDep++;
 					for (k=0;k<3;k++)
 					{
-						Multiply_3x4Matrix(&Enew[k],&Gs[k],&ragBones[depIndex]); //dest first arg
+						Mat3x4_Multiply(&Enew[k],&Gs[k],&ragBones[depIndex]); //dest first arg
 						vec3_t tPosition;
 						tPosition[0]=Enew[k].matrix[0][3];
 						tPosition[1]=Enew[k].matrix[1][3];
@@ -4208,8 +4212,8 @@ static void G2_RagDollSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int f
 			}
 
 			Create_Matrix(bone.currentAngles,&temp1);
-			Multiply_3x4Matrix(&temp2,&temp1,bone.baseposeInv);
-			Multiply_3x4Matrix(&bone.ragOverrideMatrix,bone.basepose, &temp2);
+			Mat3x4_Multiply(&temp2,&temp1,bone.baseposeInv);
+			Mat3x4_Multiply(&bone.ragOverrideMatrix,bone.basepose, &temp2);
 			assert( !Q_isnan(bone.ragOverrideMatrix.matrix[2][3]));
 		}
 		G2_Generate_MatrixRag(blist,ragBlistIndex[bone.boneNumber]);
@@ -4298,7 +4302,7 @@ static void G2_IKSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int frameN
 		Create_Matrix(tAngles, &curRot);  //dest 2nd arg
 		Inverse_Matrix(&curRot, &curRotInv);  // dest 2nd arg
 
-		Multiply_3x4Matrix(&P, &ragBones[i], &curRotInv); //dest first arg
+		Mat3x4_Multiply(&P, &ragBones[i], &curRotInv); //dest first arg
 
 
 		vec3_t delAngles;
@@ -4309,8 +4313,8 @@ static void G2_IKSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int frameN
 			tAngles[k] += 0.5f;
 			Create_Matrix(tAngles, &temp2);  //dest 2nd arg
 			tAngles[k] -= 0.5f;
-			Multiply_3x4Matrix(&temp1, &P, &temp2); //dest first arg
-			Multiply_3x4Matrix(&Gs[k], &temp1, &N); //dest first arg
+			Mat3x4_Multiply(&temp1, &P, &temp2); //dest first arg
+			Mat3x4_Multiply(&Gs[k], &temp1, &N); //dest first arg
 		}
 
 		// fixme precompute this
@@ -4337,7 +4341,7 @@ static void G2_IKSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int frameN
 				numRagDep++;
 				for (k=0;k<3;k++)
 				{
-					Multiply_3x4Matrix(&Enew[k],&Gs[k],&ragBones[depIndex]); //dest first arg
+					Mat3x4_Multiply(&Enew[k],&Gs[k],&ragBones[depIndex]); //dest first arg
 					vec3_t tPosition;
 					tPosition[0]=Enew[k].matrix[0][3];
 					tPosition[1]=Enew[k].matrix[1][3];
@@ -4404,8 +4408,7 @@ static void G2_IKSolve(CGhoul2Info_v &ghoul2V,int g2Index,float decay,int frameN
 			}
 		}
 		Create_Matrix(bone.currentAngles, &temp1);
-		Multiply_3x4Matrix(&temp2, &temp1, bone.baseposeInv);
-		Multiply_3x4Matrix(&bone.ragOverrideMatrix, bone.basepose, &temp2);
+		bone.ragOverrideMatrix = *bone.basepose * (temp1 * *bone.baseposeInv);
 		assert( !Q_isnan(bone.ragOverrideMatrix.matrix[2][3]));
 
 		G2_Generate_MatrixRag(blist, ragBlistIndex[bone.boneNumber]);
@@ -4580,31 +4583,7 @@ void G2_InitIK(CGhoul2Info_v &ghoul2V, sharedRagDollUpdateParams_t *parms, int t
 
 	// new base anim, unconscious flop
 	int pcjFlags;
-#if 0
-	vec3_t pcjMin, pcjMax;
-	VectorClear(pcjMin);
-	VectorClear(pcjMax);
 
-	pcjFlags=RAG_PCJ|RAG_PCJ_POST_MULT;//|RAG_EFFECTOR;
-
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"model_root",RAG_PCJ_MODEL_ROOT|RAG_PCJ,10.0f,pcjMin,pcjMax,100);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"pelvis",RAG_PCJ_PELVIS|RAG_PCJ|RAG_PCJ_POST_MULT,10.0f,pcjMin,pcjMax,100);
-
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"lower_lumbar",pcjFlags,10.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"upper_lumbar",pcjFlags,10.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"thoracic",pcjFlags|RAG_EFFECTOR,12.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"cranium",pcjFlags,6.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"rhumerus",pcjFlags,4.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"lhumerus",pcjFlags,4.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"rradius",pcjFlags,3.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"lradius",pcjFlags,3.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"rfemurYZ",pcjFlags,6.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"lfemurYZ",pcjFlags,6.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"rtibia",pcjFlags,4.0f,pcjMin,pcjMax,500);
-	G2_Set_Bone_Angles_IK(ghoul2, mod_a,blist,"ltibia",pcjFlags,4.0f,pcjMin,pcjMax,500);
-
-	G2_ConstructGhoulSkeleton(ghoul2V, curTime, false, parms->scale);
-#endif
 	//Only need the standard effectors for this.
 	pcjFlags = RAG_PCJ|RAG_PCJ_POST_MULT|RAG_EFFECTOR;
 
@@ -4718,28 +4697,9 @@ qboolean G2_SetBoneIKState(CGhoul2Info_v &ghoul2, int time, const char *boneName
 	{ //otherwise if the bone is already flagged as rag, then we can't set it again. (non-active ik bones will be BONE_ANGLES_IK, active are considered rag)
 		return qfalse;
 	}
-#if 0 //this is wrong now.. we're only initing effectors with initik now.. which SHOULDN'T be used as pcj's
-	if (!(bone.flags & BONE_ANGLES_IK) && !(bone.flags & BONE_ANGLES_RAGDOLL))
-	{ //IK system has not been inited yet, because any bone that can be IK should be in the ragdoll list, not flagged as BONE_ANGLES_RAGDOLL but as BONE_ANGLES_IK
-		sharedRagDollUpdateParams_t sRDUP;
-		sRDUP.me = 0;
-		VectorCopy(params->angles, sRDUP.angles);
-		VectorCopy(params->origin, sRDUP.position);
-		VectorCopy(params->scale, sRDUP.scale);
-		VectorClear(sRDUP.velocity);
-		G2_InitIK(ghoul2, &sRDUP, curTime, rmod_a, g2index);
 
-		G2_ConstructGhoulSkeleton(ghoul2, curTime, false, params->scale);
-	}
-	else
-	{
-		G2_GenerateWorldMatrix(params->angles, params->origin);
-		G2_ConstructGhoulSkeleton(ghoul2, curTime, false, params->scale);
-	}
-#else
 	G2_GenerateWorldMatrix(params->angles, params->origin);
 	G2_ConstructGhoulSkeleton(ghoul2, curTime, false, params->scale);
-#endif
 
 	int pcjFlags = RAG_PCJ|RAG_PCJ_IK_CONTROLLED|RAG_PCJ_POST_MULT|RAG_EFFECTOR;
 

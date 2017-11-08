@@ -310,7 +310,7 @@ static int NameToSrcBlendMode( const char *name )
 	{
 		if ( r_ignoreDstAlpha->integer )
 		{
-			return GLS_DSTBLEND_ONE;
+			return GLS_SRCBLEND_ONE;
 		}
 
 		return GLS_SRCBLEND_DST_ALPHA;
@@ -319,7 +319,7 @@ static int NameToSrcBlendMode( const char *name )
 	{
 		if ( r_ignoreDstAlpha->integer )
 		{
-			return GLS_DSTBLEND_ZERO;
+			return GLS_SRCBLEND_ZERO;
 		}
 
 		return GLS_SRCBLEND_ONE_MINUS_DST_ALPHA;
@@ -3962,7 +3962,7 @@ static shader_t *FinishShader( void ) {
 	//
 	stage = CollapseStagesToGLSL();
 
-	if ( shader.lightmapIndex >= 0 && !hasLightmapStage ) {
+	if ( shader.lightmapIndex[0] >= 0 && !hasLightmapStage ) {
 		ri->Printf( PRINT_DEVELOPER, "WARNING: shader '%s' has lightmap but no lightmap stage!\n", shader.name );
 		// Don't set this, it will just add duplicate shaders to the hash
   		//shader.lightmapIndex = LIGHTMAP_NONE;
@@ -4565,7 +4565,7 @@ void	R_ShaderList_f (void) {
 
 		ri->Printf( PRINT_ALL, "%i ", shader->numUnfoggedPasses );
 
-		if (shader->lightmapIndex >= 0 ) {
+		if (shader->lightmapIndex[0] >= 0 ) {
 			ri->Printf (PRINT_ALL, "L ");
 		} else {
 			ri->Printf (PRINT_ALL, "  ");
@@ -4825,6 +4825,11 @@ static void CreateInternalShaders( void ) {
 	shader.defaultShader = qfalse;
 	tr.distortionShader = FinishShader();
 	shader.defaultShader = qtrue;
+
+	// weather shader placeholder
+	Q_strncpyz(shader.name, "<weather>", sizeof(shader.name));
+	shader.sort = SS_SEE_THROUGH;
+	tr.weatherInternalShader = FinishShader();
 }
 
 static void CreateExternalShaders( void ) {

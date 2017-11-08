@@ -131,29 +131,48 @@ GPUProgramDesc ParseProgramSource( Allocator& allocator, const char *text )
 		prevBlock->blockTextLength = (text + i) - prevBlock->blockText;
 	}
 
-	GPUProgramDesc theProgram = {};
-	theProgram.numShaders = 2;
+	static const char *shaderBlockNames[GPUSHADER_TYPE_COUNT] = {
+		"Vertex", "Fragment", "Geometry"
+	};
 
-	Block *vertexBlock = FindBlock("Vertex", blocks, numBlocks);
-	Block *fragmentBlock = FindBlock("Fragment", blocks, numBlocks);
+	GPUProgramDesc theProgram = {};
+	const Block *parsedBlocks[GPUSHADER_TYPE_COUNT] = {};
+	for ( const auto& shaderBlockName : shaderBlockNames )
+	{
+		Block *block = FindBlock(shaderBlockName, blocks, numBlocks);
+		if ( block )
+		{
+			parsedBlocks[theProgram.numShaders++] = block;
+		}
+	}
 
 	theProgram.shaders = ojkAllocArray<GPUShaderDesc>(allocator, theProgram.numShaders);
 
-	char *vertexSource = ojkAllocString(allocator, vertexBlock->blockTextLength);
-	char *fragmentSource = ojkAllocString(allocator, fragmentBlock->blockTextLength);
+	int shaderIndex = 0;
+	for ( int shaderType = 0;
+			shaderType < theProgram.numShaders;
+			++shaderType )
+	{
+		const Block *block = parsedBlocks[shaderType];
+		if ( !block )
+		{
+			continue;
+		}
 
-	strncpy_s(vertexSource, vertexBlock->blockTextLength + 1,
-		vertexBlock->blockText, vertexBlock->blockTextLength);
-	strncpy_s(fragmentSource, fragmentBlock->blockTextLength + 1,
-		fragmentBlock->blockText, fragmentBlock->blockTextLength);
+		char *source = ojkAllocString(allocator, block->blockTextLength);
 
-	theProgram.shaders[0].type      = GPUSHADER_VERTEX;
-	theProgram.shaders[0].source    = vertexSource;
-	theProgram.shaders[0].firstLine = vertexBlock->blockTextFirstLine;
+		strncpy_s(
+			source,
+			block->blockTextLength + 1,
+			block->blockText,
+			block->blockTextLength);
 
-	theProgram.shaders[1].type      = GPUSHADER_FRAGMENT;
-	theProgram.shaders[1].source    = fragmentSource;
-	theProgram.shaders[1].firstLine = fragmentBlock->blockTextFirstLine;
+		GPUShaderDesc& shaderDesc = theProgram.shaders[shaderIndex];
+		shaderDesc.type = static_cast<GPUShaderType>(shaderType);
+		shaderDesc.source = source;
+		shaderDesc.firstLineNumber = block->blockTextFirstLine;
+		++shaderIndex;
+	}
 
 	return theProgram;
 }

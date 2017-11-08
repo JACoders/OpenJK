@@ -69,6 +69,7 @@ const char *GetShaderSuffix( GPUShaderType type )
 	{
 		case GPUSHADER_VERTEX:   return "_vp";
 		case GPUSHADER_FRAGMENT: return "_fp";
+		case GPUSHADER_GEOMETRY: return "_gp";
 		default: assert(!"Invalid shader type");
 	}
 	return nullptr;
@@ -80,6 +81,7 @@ const char *ToString( GPUShaderType type )
 	{
 		case GPUSHADER_VERTEX:   return "GPUSHADER_VERTEX";
 		case GPUSHADER_FRAGMENT: return "GPUSHADER_FRAGMENT";
+		case GPUSHADER_GEOMETRY: return "GPUSHADER_GEOMETRY";
 		default: assert(!"Invalid shader type");
 	}
 	return nullptr;
@@ -179,7 +181,7 @@ int main( int argc, char *argv[] )
 
 			ss << "  { " << ToString(shaderDesc.type) << ", "
 						"fallback_" << shaderName << suffix << ", "
-						<< shaderDesc.firstLine << " },\n";
+						<< shaderDesc.firstLineNumber << " },\n";
 		}
 		ss << "};\n";
 

@@ -30,6 +30,7 @@ public:
 	Allocator( const Allocator& ) = delete;
 	Allocator& operator=( const Allocator& ) = delete;
 
+	size_t GetSize() const;
 	void *Base() const;
 	void *Alloc( size_t allocSize );
 	void *Mark() const;

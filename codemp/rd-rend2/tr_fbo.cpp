@@ -636,6 +636,15 @@ void FBO_Init(void)
 		R_CheckFBO(tr.renderCubeFbo);
 	}
 
+	if (tr.renderCubeImage != NULL)
+	{
+		tr.preFilterEnvMapFbo = FBO_Create("_preFilterEnvMapFbo", tr.renderCubeImage->width, tr.renderCubeImage->height);
+		FBO_Bind(tr.preFilterEnvMapFbo);
+		FBO_AttachTextureImage(tr.prefilterEnvMapImage, 0);
+		FBO_SetupDrawBuffers();
+		R_CheckFBO(tr.preFilterEnvMapFbo);
+	}
+
 	GL_CheckErrors();
 
 	FBO_Bind(NULL);

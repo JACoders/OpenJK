@@ -1173,7 +1173,9 @@ static void RB_FogPass( shaderCommands_t *input, const fog_t *fog, const VertexA
 	uniformDataWriter.SetUniformVec4(UNIFORM_COLOR, fog->color);
 	uniformDataWriter.SetUniformVec4(UNIFORM_FOGPLANE, fog->surface);
 	uniformDataWriter.SetUniformInt(UNIFORM_FOGHASPLANE, fog->hasSurface);
-	uniformDataWriter.SetUniformFloat(UNIFORM_FOGDEPTHTOOPAQUE, sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque);
+	uniformDataWriter.SetUniformFloat(
+		UNIFORM_FOGDEPTHTOOPAQUE,
+		sqrtf(-logf(1.0f / 255.0f)) / fog->parms.depthForOpaque);
 	uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.refdef.vieworg);
 
 	uint32_t stateBits = GLS_SRCBLEND_SRC_ALPHA | GLS_DSTBLEND_ONE_MINUS_SRC_ALPHA;
@@ -1711,6 +1713,7 @@ static void RB_IterateStagesGeneric( shaderCommands_t *input, const VertexArrays
 			vec4_t vec;
 
 			samplerBindingsWriter.AddStaticImage(tr.cubemaps[input->cubemapIndex - 1], TB_CUBEMAP);
+			samplerBindingsWriter.AddStaticImage(tr.envBrdfImage, TB_ENVBRDFMAP);
 
 			vec[0] = tr.cubemapOrigins[input->cubemapIndex - 1][0] - backEnd.viewParms.ori.origin[0];
 			vec[1] = tr.cubemapOrigins[input->cubemapIndex - 1][1] - backEnd.viewParms.ori.origin[1];

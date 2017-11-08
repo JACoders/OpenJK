@@ -2870,6 +2870,89 @@ static void R_CreateFogImage( void ) {
 }
 
 /*
+================
+R_CreateEnvBrdfLUT
+from https://github.com/knarkowicz/IntegrateDFG
+================
+*/
+static void R_CreateEnvBrdfLUT(void) {
+
+	static const int LUT_WIDTH = 128;
+	static const int LUT_HEIGHT = 128;
+
+	if (!r_cubeMapping->integer)
+		return;
+
+	int		x, y;
+	uint16_t	data[LUT_WIDTH][LUT_HEIGHT][4];
+	int		b;
+
+	unsigned const sampleNum = 1024;
+
+	for (unsigned y = 0; y < LUT_HEIGHT; ++y)
+	{
+		float const ndotv = (y + 0.5f) / LUT_HEIGHT;
+
+		for (unsigned x = 0; x < LUT_WIDTH; ++x)
+		{
+			float const gloss = (x + 0.5f) / LUT_WIDTH;
+			float const roughness = powf(1.0f - gloss, 2.0f);
+
+			float const vx = sqrtf(1.0f - ndotv * ndotv);
+			float const vy = 0.0f;
+			float const vz = ndotv;
+
+			float scale = 0.0f;
+			float bias = 0.0f;
+
+			for (unsigned i = 0; i < sampleNum; ++i)
+			{
+				float const e1 = (float)i / sampleNum;
+				float const e2 = (float)((double)ReverseBits(i) / (double)0x100000000LL);
+
+				float const phi = 2.0f * M_PI * e1;
+				float const cosPhi = cosf(phi);
+				float const sinPhi = sinf(phi);
+				float const cosTheta = sqrtf((1.0f - e2) / (1.0f + (roughness * roughness - 1.0f) * e2));
+				float const sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
+
+				float const hx = sinTheta * cosf(phi);
+				float const hy = sinTheta * sinf(phi);
+				float const hz = cosTheta;
+
+				float const vdh = vx * hx + vy * hy + vz * hz;
+				float const lx = 2.0f * vdh * hx - vx;
+				float const ly = 2.0f * vdh * hy - vy;
+				float const lz = 2.0f * vdh * hz - vz;
+
+				float const ndotl = MAX(lz, 0.0f);
+				float const ndoth = MAX(hz, 0.0f);
+				float const vdoth = MAX(vdh, 0.0f);
+
+				if (ndotl > 0.0f)
+				{
+					float const gsmith = GSmithCorrelated(roughness, ndotv, ndotl);
+					float const ndotlVisPDF = ndotl * gsmith * (4.0f * vdoth / ndoth);
+					float const fc = powf(1.0f - vdoth, 5.0f);
+
+					scale += ndotlVisPDF * (1.0f - fc);
+					bias += ndotlVisPDF * fc;
+				}
+			}
+			scale /= sampleNum;
+			bias /= sampleNum;
+
+			data[y][x][0] = FloatToHalf(scale);
+			data[y][x][1] = FloatToHalf(bias);
+			data[y][x][2] = 0.0f;
+			data[y][x][3] = 0.0f;
+		}
+	}
+
+	tr.envBrdfImage = R_CreateImage("*envBrdfLUT", (byte*)data, LUT_WIDTH, LUT_HEIGHT, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA16F);
+}
+
+/*
 ==================
 R_CreateDefaultImage
 ==================
@@ -2949,6 +3032,7 @@ void R_CreateBuiltinImages( void ) {
 
 	R_CreateDlightImage();
 	R_CreateFogImage();
+	R_CreateEnvBrdfLUT();
 
 	int width, height, hdrFormat, rgbFormat;
 
@@ -3042,6 +3126,7 @@ void R_CreateBuiltinImages( void ) {
 	if (r_cubeMapping->integer)
 	{
 		tr.renderCubeImage = R_CreateImage("*renderCube", NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, rgbFormat);
+		tr.prefilterEnvMapImage = R_CreateImage("*prefilterEnvMapFbo", NULL, CUBE_MAP_SIZE / 2, CUBE_MAP_SIZE / 2, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, rgbFormat);
 	}
 }
 
