@@ -1445,9 +1445,9 @@ static void CG_RestoreClientGhoul_f( void ) {
 		body = &cg_entities[bodyIndex];
 
 		if ( side )
-			body->teamPowerType = qtrue; //light side
+			body->teamPowerType = 1; //light side
 		else
-			body->teamPowerType = qfalse; //dark side
+			body->teamPowerType = 0; //dark side
 
 		CG_BodyQueueCopy( body, clent->currentState.number, weaponIndex );
 	}

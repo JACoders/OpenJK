@@ -3,10 +3,10 @@ sudo: required
 dist: trusty
 
 install:
-  - ./tools/travis-install.sh "${host:-native}" "${flavour:-Release}" $opts
+  - ./scripts/travis/install.sh "${host:-native}" "${flavour:-Release}" $opts
 
 script:
-  - ./tools/travis-build.sh "${host:-native}" "${flavour:-Release}" $opts
+  - ./scripts/travis/build.sh "${host:-native}" "${flavour:-Release}" $opts
 
 compiler: gcc
 env:

@@ -123,11 +123,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 		#define OS_STRING "kFreeBSD"
 	#endif
 
-	#ifdef __clang__
-		#define QINLINE static inline
-	#else
-		#define QINLINE inline
-	#endif
+	#define QINLINE inline
 
 	#define PATH_SEP '/'
 
@@ -196,6 +192,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define NOEXCEPT_IF(x) noexcept(x)
 #define IS_NOEXCEPT(x) noexcept(x)
 #endif
+
+#define OVERRIDE override
 
 #if defined(__cplusplus)
 	#include <cstddef>
@@ -299,17 +297,17 @@ static inline uint32_t LongSwap(uint32_t v)
 }
 #endif
 
-static void CopyShortSwap( void *dest, const void *src )
+static QINLINE void CopyShortSwap( void *dest, const void *src )
 {
     *(uint16_t*)dest = ShortSwap(*(uint16_t*)src);
 }
 
-static void CopyLongSwap( void *dest, const void *src )
+static QINLINE void CopyLongSwap( void *dest, const void *src )
 {
     *(uint32_t*)dest = LongSwap(*(uint32_t*)src);
 }
 
-static float FloatSwap(float f)
+static QINLINE float FloatSwap(float f)
 {
     float out;
     CopyLongSwap(&out, &f);
@@ -361,4 +359,9 @@ typedef union byteAlias_u {
 	#define PLATFORM_STRING OS_STRING "-" ARCH_STRING
 #else
 	#define PLATFORM_STRING OS_STRING "-" ARCH_STRING "-debug"
+#endif
+
+// to support https://reproducible-builds.org/specs/source-date-epoch/
+#ifndef SOURCE_DATE
+#define SOURCE_DATE __DATE__
 #endif

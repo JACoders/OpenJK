@@ -41,7 +41,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #include "qcommon/safe/string.h"
 #include <cmath>
-
+#include "qcommon/ojk_saved_game_helper.h"
 
 CFxScheduler	theFxScheduler;
 
@@ -109,23 +109,40 @@ void CFxScheduler::LoadSave_Read()
 {
 	Clean();	// need to get rid of old pre-cache handles, or it thinks it has some older effects when it doesn't
 	g_vstrEffectsNeededPerSlot.clear();	// jic
-	gi.ReadFromSaveGame(INT_ID('F','X','L','E'), (void *) &gLoopedEffectArray, sizeof(gLoopedEffectArray), NULL);
+
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
+	saved_game.read_chunk(
+		INT_ID('F', 'X', 'L', 'E'),
+		::gLoopedEffectArray);
+
 	//
 	// now read in and re-register the effects we need for those structs...
 	//
 	for (int iFX = 0; iFX < MAX_LOOPED_FX; iFX++)
 	{
 		char sFX_Filename[MAX_QPATH];
-		gi.ReadFromSaveGame(INT_ID('F','X','F','N'), sFX_Filename, sizeof(sFX_Filename), NULL);
+
+		saved_game.read_chunk(
+			INT_ID('F', 'X', 'F', 'N'),
+			sFX_Filename);
+
 		g_vstrEffectsNeededPerSlot.push_back( sFX_Filename );
 	}
 }
 
 void CFxScheduler::LoadSave_Write()
 {
+	ojk::SavedGameHelper saved_game(
+		::gi.saved_game);
+
 	// bsave the data we need...
 	//
-	gi.AppendToSaveGame(INT_ID('F','X','L','E'), mLoopedEffectArray, sizeof(mLoopedEffectArray));
+	saved_game.write_chunk(
+		INT_ID('F', 'X', 'L', 'E'),
+		mLoopedEffectArray);
+
 	//
 	// then cope with the fact that the mID field in each struct of the array we've just saved will not
 	//	necessarily point at the same thing when reloading, so save out the actual fx filename strings they
@@ -157,7 +174,9 @@ void CFxScheduler::LoadSave_Write()
 
 		// write out this string...
 		//
-		gi.AppendToSaveGame(INT_ID('F','X','F','N'), sFX_Filename, sizeof(sFX_Filename));
+		saved_game.write_chunk(
+			INT_ID('F', 'X', 'F', 'N'),
+			sFX_Filename);
 	}
 }
 
@@ -330,7 +349,7 @@ void CFxScheduler::Clean(bool bRemoveTemplates /*= true*/, int idToPreserve /*= 
 		next = itr;
 		++next;
 
-		delete *itr;
+		mScheduledEffectsPool.Free (*itr);
 		mFxSchedule.erase(itr);
 
 		itr = next;
@@ -830,7 +849,6 @@ void CFxScheduler::PlayEffect( const char *file, int clientID, bool isPortal )
 	CPrimitiveTemplate		*prim;
 	int						i = 0;
 	int						count = 0, delay = 0;
-	SScheduledEffect		*sfx;
 	float					factor = 0.0f;
 
 	if ( id < 1 || id >= FX_MAX_EFFECTS || !mEffectTemplates[id].mInUse )
@@ -883,9 +901,14 @@ void CFxScheduler::PlayEffect( const char *file, int clientID, bool isPortal )
 			}
 			else
 			{
-				// We have to create a new scheduled effect so that we can create it at a later point
-				//	you should avoid this because it's much more expensive
-				sfx = new SScheduledEffect;
+				SScheduledEffect		*sfx = mScheduledEffectsPool.Alloc();
+
+				if ( sfx == NULL )
+				{
+					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.");
+					return;
+				}
+
 				sfx->mStartTime = theFxHelper.mTime + delay;
 				sfx->mpTemplate = prim;
 				sfx->mClientID	= clientID;
@@ -1190,10 +1213,14 @@ void CFxScheduler::PlayEffect( int id, vec3_t origin, vec3_t axis[3], const int 
 			}
 			else
 			{
-				// We have to create a new scheduled effect so that we can create it at a later point
-				//	you should avoid this because it's much more expensive
-				SScheduledEffect	*sfx;
-				sfx = new SScheduledEffect;
+				SScheduledEffect		*sfx = mScheduledEffectsPool.Alloc();
+
+				if ( sfx == NULL )
+				{
+					Com_Error (ERR_DROP, "ERROR: Failed to allocate EFX from memory pool.");
+					return;
+				}
+
 				sfx->mStartTime = theFxHelper.mTime + delay;
 				sfx->mpTemplate = prim;
 				sfx->mClientID = -1;
@@ -1340,85 +1367,80 @@ void CFxScheduler::AddScheduledEffects( bool portal )
 		AddLoopedEffects();
 	}
 
-	itr = mFxSchedule.begin();
-
-	while ( itr != mFxSchedule.end() )
+	for ( itr = mFxSchedule.begin(); itr != mFxSchedule.end(); /* do nothing */ )
 	{
-		next = itr;
-		++next;
+		SScheduledEffect *effect = *itr;
 
-		if (portal == (*itr)->mPortalEffect)
+		if (portal == effect->mPortalEffect && effect->mStartTime <= theFxHelper.mTime )
 		{
-			if ( *(*itr) <= theFxHelper.mTime )
+			if ( effect->mClientID >= 0 )
 			{
-				if ( (*itr)->mClientID >= 0 )
+				CreateEffect( effect->mpTemplate, effect->mClientID,
+								theFxHelper.mTime - effect->mStartTime );
+			}
+			else if (effect->mBoltNum == -1)
+			{// normal effect
+				if ( effect->mEntNum != -1 ) // -1
 				{
-					CreateEffect( (*itr)->mpTemplate, (*itr)->mClientID,
-									theFxHelper.mTime - (*itr)->mStartTime );
+					// Find out where the entity currently is
+					CreateEffect( effect->mpTemplate,
+								cg_entities[effect->mEntNum].lerpOrigin, effect->mAxis,
+								theFxHelper.mTime - (*itr)->mStartTime );
 				}
-				else if ((*itr)->mBoltNum == -1)
-				{// normal effect
-					if ( (*itr)->mEntNum != -1 )
+				else
+				{
+					CreateEffect( effect->mpTemplate,
+								effect->mOrigin, effect->mAxis,
+								theFxHelper.mTime - effect->mStartTime );
+				}
+			}
+			else
+			{	//bolted on effect
+				// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
+				if ((effect->mModelNum != oldModelNum) || (effect->mEntNum != oldEntNum) || (effect->mBoltNum != oldBoltIndex))
+				{
+					const centity_t &cent = cg_entities[effect->mEntNum];
+					if (cent.gent->ghoul2.IsValid())
 					{
-						// Find out where the entity currently is
-						CreateEffect( (*itr)->mpTemplate,
-									cg_entities[(*itr)->mEntNum].lerpOrigin, (*itr)->mAxis,
-									theFxHelper.mTime - (*itr)->mStartTime );
+						if (effect->mModelNum>=0&&effect->mModelNum<cent.gent->ghoul2.size())
+						{
+							if (cent.gent->ghoul2[effect->mModelNum].mModelindex>=0)
+							{
+								doesBoltExist = (qboolean)(theFxHelper.GetOriginAxisFromBolt(cent, effect->mModelNum, effect->mBoltNum, origin, axis) != 0);
+							}
+						}
+					}
+
+					oldModelNum = effect->mModelNum;
+					oldEntNum = effect->mEntNum;
+					oldBoltIndex = effect->mBoltNum;
+				}
+
+				// only do this if we found the bolt
+				if (doesBoltExist)
+				{
+					if (effect->mIsRelative )
+					{
+						CreateEffect( effect->mpTemplate,
+									vec3_origin, axis,
+									0, effect->mEntNum, effect->mModelNum, effect->mBoltNum );
 					}
 					else
 					{
-						CreateEffect( (*itr)->mpTemplate,
-									(*itr)->mOrigin, (*itr)->mAxis,
-									theFxHelper.mTime - (*itr)->mStartTime );
+						CreateEffect( effect->mpTemplate,
+									origin, axis,
+									theFxHelper.mTime - effect->mStartTime );
 					}
 				}
-				else
-				{	//bolted on effect
-					// do we need to go and re-get the bolt matrix again? Since it takes time lets try to do it only once
-					if (((*itr)->mModelNum != oldModelNum) || ((*itr)->mEntNum != oldEntNum) || ((*itr)->mBoltNum != oldBoltIndex))
-					{
-						const centity_t &cent = cg_entities[(*itr)->mEntNum];
-						if (cent.gent->ghoul2.IsValid())
-						{
-							if ((*itr)->mModelNum>=0&&(*itr)->mModelNum<cent.gent->ghoul2.size())
-							{
-								if (cent.gent->ghoul2[(*itr)->mModelNum].mModelindex>=0)
-								{
-									doesBoltExist = (qboolean)(theFxHelper.GetOriginAxisFromBolt(cent, (*itr)->mModelNum, (*itr)->mBoltNum, origin, axis) != 0);
-								}
-							}
-						}
-
-						oldModelNum = (*itr)->mModelNum;
-						oldEntNum = (*itr)->mEntNum;
-						oldBoltIndex = (*itr)->mBoltNum;
-					}
-
-					// only do this if we found the bolt
-					if (doesBoltExist)
-					{
-						if ((*itr)->mIsRelative )
-						{
-							CreateEffect( (*itr)->mpTemplate,
-										vec3_origin, axis,
-										0, (*itr)->mEntNum, (*itr)->mModelNum, (*itr)->mBoltNum );
-						}
-						else
-						{
-							CreateEffect( (*itr)->mpTemplate,
-										origin, axis,
-										theFxHelper.mTime - (*itr)->mStartTime );
-						}
-					}
-				}
-
-				// Get 'em out of there.
-				delete *itr;
-				mFxSchedule.erase(itr);
 			}
-		}
 
-		itr = next;
+			mScheduledEffectsPool.Free( effect );
+			itr = mFxSchedule.erase( itr );
+		}
+		else
+		{
+			++itr;
+		}
 	}
 
 	// Add all active effects into the scene

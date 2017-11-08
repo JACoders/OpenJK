@@ -104,12 +104,14 @@ public:
 	//rww - RAGDOLL_BEGIN
 	int				touchRender;
 	//rww - RAGDOLL_END
+
 	mdxaBone_t		boneMatrix; //final matrix
 	int				parent; // only set once
 	int				touch; // for minimal recalculation
 	CTransformBone()
 	{
 		touch=0;
+
 	//rww - RAGDOLL_BEGIN
 		touchRender = 0;
 	//rww - RAGDOLL_END
@@ -156,6 +158,7 @@ class CBoneCache
 			mFinalBones[index].touch=mCurrentTouch;
 		}
 	}
+
 //rww - RAGDOLL_BEGIN
 	void SmoothLow(int index)
 	{
@@ -200,6 +203,7 @@ class CBoneCache
 #endif// _DEBUG
 	}
 //rww - RAGDOLL_END
+
 public:
 	int					frameSize;
 	const mdxaHeader_t	*header;
@@ -219,6 +223,7 @@ public:
 	int				incomingTime;
 
 	int				mCurrentTouch;
+
 	//rww - RAGDOLL_BEGIN
 	int				mCurrentTouchRender;
 	int				mLastTouch;
@@ -258,6 +263,7 @@ public:
 			mFinalBones[i].parent=skel->parent;
 		}
 		mCurrentTouch=3;
+
 //rww - RAGDOLL_BEGIN
 		mLastTouch=2;
 		mLastLastTouch=1;
@@ -349,6 +355,7 @@ public:
 		}
 		return mFinalBones[index].boneMatrix;
 	}
+
 	//rww - RAGDOLL_BEGIN
 	const inline mdxaBone_t &EvalRender(int index)
 	{
@@ -390,8 +397,14 @@ public:
 	// Need to add in smoothing step?
 	CTransformBone *EvalFull(int index)
 	{
+#ifdef JK2_MODE
 //		Eval(index);
+
+// FIXME BBi Was commented
+		Eval(index);
+#else
 		EvalRender(index);
+#endif // JK2_MODE
 		if (mSmoothingActive)
 		{
 			return mSmoothBones + index;
@@ -1210,7 +1223,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 	skel = (mdxaSkel_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t) + offsets->offsets[boneNum]);
 
 	//find/add the bone in the list
-	if (!skel->name || !skel->name[0])
+	if (!skel->name[0])
 	{
 		bListIndex = -1;
 	}
@@ -1249,7 +1262,7 @@ void G2_RagGetAnimMatrix(CGhoul2Info &ghoul2, const int boneNum, mdxaBone_t &mat
 		pskel = (mdxaSkel_t *)((byte *)ghoul2.mBoneCache->header + sizeof(mdxaHeader_t) + offsets->offsets[parent]);
 
 		//taking bone matrix for the skeleton frame and parent's animFrameMatrix into account, determine our final animFrameMatrix
-		if (!pskel->name || !pskel->name[0])
+		if (!pskel->name[0])
 		{
 			parentBlistIndex = -1;
 		}
@@ -2984,8 +2997,11 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 		const mdxaBone_t *bone2;
 		for ( j = 0; j < numVerts; j++, baseVertex++,v++ )
 		{
-
+#ifdef JK2_MODE
+			bone = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, 0 )]);
+#else
 			bone = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, 0 )]);
+#endif // JK2_MODE
 			int iNumWeights = G2_GetVertWeights( v );
 			tess.normal[baseVertex][0] = DotProduct( bone->matrix[0], v->normal );
 			tess.normal[baseVertex][1] = DotProduct( bone->matrix[1], v->normal );
@@ -3002,7 +3018,11 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 				fBoneWeight = G2_GetVertBoneWeightNotSlow( v, 0);
 				if (iNumWeights==2)
 				{
+#ifdef JK2_MODE
+					bone2 = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, 1 )]);
+#else
 					bone2 = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, 1 )]);
+#endif // JK2_MODE
 					/*
 					useless transposition
 					tess.xyz[baseVertex][0] =
@@ -3031,7 +3051,12 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 					fTotalWeight=fBoneWeight;
 					for (k=1; k < iNumWeights-1 ; k++)
 					{
+#ifdef JK2_MODE
+						bone = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
+#else
 						bone = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
+#endif // JK2_MODE
+
 						fBoneWeight = G2_GetVertBoneWeightNotSlow( v, k);
 						fTotalWeight += fBoneWeight;
 
@@ -3039,7 +3064,12 @@ void RB_SurfaceGhoul( CRenderableSurface *surf )
 						tess.xyz[baseVertex][1] += fBoneWeight * ( DotProduct( bone->matrix[1], v->vertCoords ) + bone->matrix[1][3] );
 						tess.xyz[baseVertex][2] += fBoneWeight * ( DotProduct( bone->matrix[2], v->vertCoords ) + bone->matrix[2][3] );
 					}
+
+#ifdef JK2_MODE
+					bone = &bones->Eval(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
+#else
 					bone = &bones->EvalRender(piBoneReferences[G2_GetVertBoneIndex( v, k )]);
+#endif // JK2_MODE
 					fBoneWeight	= 1.0f-fTotalWeight;
 
 					tess.xyz[baseVertex][0] += fBoneWeight * ( DotProduct( bone->matrix[0], v->vertCoords ) + bone->matrix[0][3] );

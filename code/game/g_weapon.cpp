@@ -1663,7 +1663,7 @@ extern stringID_table_t WPTable[];
 void SP_misc_weapon_shooter( gentity_t *self )
 {
 	//alloc a client just for the weapon code to use
-	self->client = (gclient_s *)gi.Malloc(sizeof(gclient_s), TAG_G_ALLOC, qtrue);
+	self->client = (gclient_t *)gi.Malloc(sizeof(gclient_t), TAG_G_ALLOC, qtrue);
 
 	//set weapon
 	self->s.weapon = self->client->ps.weapon = WP_BLASTER;

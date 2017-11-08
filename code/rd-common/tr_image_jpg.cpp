@@ -339,7 +339,7 @@ void LoadJPGFromBuffer( byte *inputBuffer, size_t len, unsigned char **pic, int 
 		 * Here the array is only one element long, but you could ask for
 		 * more than one scanline at a time if that's more convenient.
 		 */
-		buf = ((out+(row_stride*cinfo.output_scanline)));
+		buf = ((out+(row_stride*(cinfo.output_height - cinfo.output_scanline - 1))));
 		buffer = &buf;
 		(void) jpeg_read_scanlines(&cinfo, buffer, 1);
 	}
@@ -492,7 +492,7 @@ Expects RGB input data
 =================
 */
 size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
-	int image_width, int image_height, byte *image_buffer, int padding)
+	int image_width, int image_height, byte *image_buffer, int padding, bool flip_vertical)
 {
 	struct jpeg_compress_struct cinfo;
 	struct jpeg_error_mgr jerr;
@@ -543,7 +543,15 @@ size_t RE_SaveJPGToBuffer(byte *buffer, size_t bufSize, int quality,
 		* Here the array is only one element long, but you could pass
 		* more than one scanline at a time if that's more convenient.
 		*/
-		row_pointer[0] = &image_buffer[((cinfo.image_height-1)*row_stride)-cinfo.next_scanline * row_stride];
+
+		int row_index = cinfo.next_scanline;
+
+		if (!flip_vertical)
+		{
+			row_index = cinfo.image_height - cinfo.next_scanline - 1;
+		}
+
+		row_pointer[0] = &image_buffer[row_index * row_stride];
 		(void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
 	}
 
@@ -569,7 +577,7 @@ void RE_SaveJPG(const char * filename, int quality, int image_width, int image_h
 	bufSize = image_width * image_height * 3;
 	out = (byte *) R_Malloc( bufSize, TAG_TEMP_WORKSPACE, qfalse );
 
-	bufSize = RE_SaveJPGToBuffer(out, bufSize, quality, image_width, image_height, image_buffer, padding);
+	bufSize = RE_SaveJPGToBuffer(out, bufSize, quality, image_width, image_height, image_buffer, padding, false);
 	ri.FS_WriteFile(filename, out, bufSize);
 
 	R_Free(out);

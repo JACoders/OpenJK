@@ -372,10 +372,26 @@ static fakeAscii_t IN_TranslateSDLToJKKey( SDL_Keysym *keysym, qboolean down ) {
 	if( in_keyboardDebug->integer )
 		IN_PrintKey( keysym, key, down );
 
-	if( IN_IsConsoleKey( key, 0 ) && !kg.keys[A_ALT].down )
+	if ( cl_consoleUseScanCode->integer )
 	{
-		// Console keys can't be bound or generate characters
-		key = A_CONSOLE;
+		if ( keysym->scancode == SDL_SCANCODE_GRAVE )
+		{
+			SDL_Keycode translated = SDL_GetKeyFromScancode( SDL_SCANCODE_GRAVE );
+
+			if ( (translated != SDLK_CARET) || (translated == SDLK_CARET && (keysym->mod & KMOD_SHIFT)) )
+			{
+				// Console keys can't be bound or generate characters
+				key = A_CONSOLE;
+			}
+		}
+	}
+	else
+	{
+		if ( IN_IsConsoleKey( key, 0 ) )
+		{
+			// Console keys can't be bound or generate characters
+			key = A_CONSOLE;
+		}
 	}
 
 	return key;

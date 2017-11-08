@@ -1267,7 +1267,7 @@ int CG_WeaponCheck( int weaponIndex )
 {
 	int				value;
 
-	if ( weaponIndex == WP_SABER)
+	if ( weaponIndex == WP_SABER || weaponIndex == WP_STUN_BATON )
 	{
 		return qtrue;
 	}
@@ -1276,13 +1276,19 @@ int CG_WeaponCheck( int weaponIndex )
 							? weaponData[weaponIndex].energyPerShot
 							: weaponData[weaponIndex].altEnergyPerShot;
 
-	if (value > 0)
+	if( !cg.snap )
 	{
-		value = qtrue;
+		return qfalse;
+	}
+
+	// check how much energy(ammo) it takes to fire this weapon against how much ammo we have
+	if ( value > cg.snap->ps.ammo[weaponData[weaponIndex].ammoIndex] )
+	{
+		value = qfalse;
 	}
 	else
 	{
-		value = qfalse;
+		value = qtrue;
 	}
 
 	return value;

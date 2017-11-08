@@ -30,6 +30,7 @@ static const size_t SECRET_KEY_LENGTH = MD5_DIGEST_SIZE; // Key length equal to 
 static qboolean challengerInitialized = qfalse;
 static hmacMD5Context_t challenger;
 
+#ifdef DEBUG_SV_CHALLENGE
 /*
 ====================
 BufferToHexString
@@ -52,6 +53,7 @@ static const char *BufferToHexString(byte *buffer, size_t bufferLen)
 	hexString[bufferLen * 2] = '\0';
 	return hexString;
 }
+#endif
 
 /*
 ====================
@@ -124,7 +126,9 @@ static int SV_CreateChallenge(int timestamp, netadr_t from)
 	challenge |= (unsigned int)(timestamp & 0x1) << 31;
 
 #ifdef DEBUG_SV_CHALLENGE
-	Com_DPrintf("Generated challenge %d (timestamp = %d) for %s\n", challenge, timestamp, NET_AdrToString(from));
+	if ( com_developer->integer ) {
+		Com_Printf( "Generated challenge %d (timestamp = %d) for %s\n", challenge, timestamp, NET_AdrToString( from ) );
+	}
 #endif
 
 	return challenge;
@@ -172,7 +176,9 @@ qboolean SV_VerifyChallenge(int receivedChallenge, netadr_t from)
 	int challengeTimestamp = currentTimestamp - (currentPeriod ^ challengePeriod);
 
 #ifdef DEBUG_SV_CHALLENGE
-	Com_DPrintf("Verifying challenge %d (timestamp = %d) for %s\n", receivedChallenge, challengeTimestamp, NET_AdrToString(from));
+	if ( com_developer->integer ) {
+		Com_Printf( "Verifying challenge %d (timestamp = %d) for %s\n", receivedChallenge, challengeTimestamp, NET_AdrToString( from ) );
+	}
 #endif
 
 	int expectedChallenge = SV_CreateChallenge(challengeTimestamp, from);

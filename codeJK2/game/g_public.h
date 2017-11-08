@@ -25,7 +25,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #define __G_PUBLIC_H__
 // g_public.h -- game module information visible to server
 
-#define	GAME_API_VERSION	9				// Bumped up to 8, since we support JA's engine now --eez
+#define	GAME_API_VERSION	10
 
 // entity->svFlags
 // the server does not know how to interpret most of the values
@@ -67,7 +67,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 //===============================================================
 
 typedef struct gentity_s gentity_t;
-typedef struct gclient_s gclient_t;
+//typedef struct gclient_s gclient_t;
 
 typedef enum
 {
@@ -174,10 +174,7 @@ typedef struct {
 
 	// Savegame handling
 	//
-	qboolean	(*AppendToSaveGame)(unsigned int chid, const void *data, int length);
-
-	int			(*ReadFromSaveGame)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
-	int			(*ReadFromSaveGameOptional)(unsigned int chid, void *pvAddress, int iLength, void **ppvAddressPtr );
+	ojk::ISavedGame* saved_game;
 
 	// add commands to the console as if they were typed in
 	// for map changing, etc

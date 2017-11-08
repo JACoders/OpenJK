@@ -68,7 +68,11 @@ void MSG_WriteData (msg_t *buf, const void *data, int length);
 
 struct usercmd_s;
 struct entityState_s;
-struct playerState_s;
+
+template<typename TSaberInfo>
+class PlayerStateBase;
+
+using playerState_t = PlayerStateBase<saberInfo_t>;
 
 void MSG_WriteBits( msg_t *msg, int value, int bits );
 
@@ -99,8 +103,8 @@ void MSG_ReadDeltaEntity( msg_t *msg, entityState_t *from, entityState_t *to,
 void MSG_ReadEntity( msg_t *msg, entityState_t *to);
 void MSG_WriteEntity( msg_t *msg, entityState_t *to, int removeNum);
 
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
-void MSG_ReadDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to );
+void MSG_WriteDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to );
+void MSG_ReadDeltaPlayerstate( msg_t *msg, playerState_t *from, playerState_t *to );
 
 /*
 ==============================================================
@@ -594,7 +598,7 @@ void 		NORETURN QDECL Com_Error( int code, const char *fmt, ... );
 void 		NORETURN Com_Quit_f( void );
 int			Com_EventLoop( void );
 int			Com_Milliseconds( void );	// will be journaled properly
-unsigned	Com_BlockChecksum( const void *buffer, int length );
+uint32_t	Com_BlockChecksum( const void *buffer, int length );
 int			Com_Filter(const char *filter, const char *name, int casesensitive);
 int			Com_FilterPath(const char *filter, const char *name, int casesensitive);
 qboolean	Com_SafeMode( void );

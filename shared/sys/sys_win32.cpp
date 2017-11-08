@@ -167,7 +167,7 @@ char *Sys_DefaultHomePath( void )
 		if( !SUCCEEDED( SHGetFolderPath( NULL, CSIDL_PERSONAL, NULL, 0, homeDirectory ) ) )
 		{
 			Com_Printf( "Unable to determine your home directory.\n" );
-			return false;
+			return NULL;
 		}
 
 		Com_sprintf( homePath, sizeof( homePath ), "%s%cMy Games%c", homeDirectory, PATH_SEP, PATH_SEP );

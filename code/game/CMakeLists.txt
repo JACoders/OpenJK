@@ -259,7 +259,11 @@ set(SPGameCommonFiles
 	"${SPDir}/qcommon/timing.h"
 	"${SPDir}/qcommon/q_shared.cpp"
 	"${SPDir}/qcommon/q_shared.h"
-	
+	"${SPDir}/qcommon/ojk_i_saved_game.h"
+	"${SPDir}/qcommon/ojk_saved_game_class_archivers.h"
+	"${SPDir}/qcommon/ojk_saved_game_helper.h"
+	"${SPDir}/qcommon/ojk_saved_game_helper_fwd.h"
+	"${SPDir}/qcommon/ojk_scope_guard.h"
 	${SharedCommonFiles}
 	)
 source_group("common" FILES ${SPGameCommonFiles})
