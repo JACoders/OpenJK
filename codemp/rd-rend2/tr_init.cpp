@@ -780,6 +780,7 @@ void R_SaveScreenshot(screenshotReadback_t *screenshotReadback)
 
 		byte *pixels = (byte *)ri->Hunk_AllocateTempMemory(pixelBufferSize);
 		Com_Memcpy(pixels, pixelBuffer, pixelBufferSize);
+		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 
 		if (glConfig.deviceSupportsGamma)
 			R_GammaCorrect(pixels, pixelBufferSize);
@@ -803,8 +804,6 @@ void R_SaveScreenshot(screenshotReadback_t *screenshotReadback)
 		}
 
 		ri->Hunk_FreeTempMemory(pixels);
-
-		qglUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 	}
 
 	qglDeleteBuffers(1, &screenshotReadback->pbo);
