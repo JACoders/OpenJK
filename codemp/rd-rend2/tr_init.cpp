@@ -32,6 +32,13 @@ static size_t FRAME_UNIFORM_BUFFER_SIZE = 8*1024*1024;
 static size_t FRAME_VERTEX_BUFFER_SIZE = 8*1024*1024;
 static size_t FRAME_INDEX_BUFFER_SIZE = 2*1024*1024;
 
+#if defined(_WIN32)
+extern "C" {
+    _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
+
 glconfig_t  glConfig;
 glconfigExt_t glConfigExt;
 glRefConfig_t glRefConfig;
