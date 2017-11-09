@@ -680,12 +680,12 @@ static void ConvertRGBtoBGR(
 static void R_SaveTGA(
 	const char *filename,
 	const byte *pixels,
-	size_t pixelBufferSize,
 	int width,
 	int height,
 	int stride)
 {
 	const size_t headerSize = 18;
+	const size_t pixelBufferSize = stride * height;
 	const size_t bufferSize = headerSize + pixelBufferSize;
 
 	byte *buffer = (byte *)ri->Hunk_AllocateTempMemory(bufferSize);
@@ -711,14 +711,11 @@ R_SaveScreenshotTGA
 ================== 
 */  
 static void R_SaveScreenshotTGA(
-	const screenshotReadback_t *screenshotReadback,
-	byte *pixels,
-	size_t pixelBufferSize)
+	const screenshotReadback_t *screenshotReadback, byte *pixels)
 {
 	R_SaveTGA(
 		screenshotReadback->filename,
 		pixels,
-		pixelBufferSize,
 		screenshotReadback->width,
 		screenshotReadback->height,
 		screenshotReadback->strideInBytes);
@@ -730,8 +727,7 @@ R_SaveScreenshotPNG
 ================== 
 */
 static void R_SaveScreenshotPNG(
-	const screenshotReadback_t *screenshotReadback,
-	byte *pixels)
+	const screenshotReadback_t *screenshotReadback, byte *pixels)
 {
 	RE_SavePNG(
 		screenshotReadback->filename,
@@ -747,8 +743,7 @@ R_SaveScreenshotJPG
 ==================
 */
 static void R_SaveScreenshotJPG(
-	const screenshotReadback_t *screenshotReadback,
-	byte *pixels)
+	const screenshotReadback_t *screenshotReadback, byte *pixels)
 {
 	RE_SaveJPG(
 		screenshotReadback->filename,
@@ -788,18 +783,15 @@ void R_SaveScreenshot(screenshotReadback_t *screenshotReadback)
 		switch (screenshotReadback->format)
 		{
 			case SSF_JPEG:
-				R_SaveScreenshotJPG(
-					screenshotReadback, pixels);
+				R_SaveScreenshotJPG(screenshotReadback, pixels);
 				break;
 
 			case SSF_TGA:
-				R_SaveScreenshotTGA(
-					screenshotReadback, pixels, pixelBufferSize);
+				R_SaveScreenshotTGA(screenshotReadback, pixels);
 				break;
 
 			case SSF_PNG:
-				R_SaveScreenshotPNG(
-					screenshotReadback, pixels);
+				R_SaveScreenshotPNG(screenshotReadback, pixels);
 				break;
 		}
 
