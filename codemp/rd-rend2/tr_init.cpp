@@ -677,20 +677,14 @@ static void ConvertRGBtoBGR(
 	}
 }
 
-/* 
-================== 
-R_SaveScreenshotTGA
-================== 
-*/  
-static void R_SaveScreenshotTGA(
-	const screenshotReadback_t *screenshotReadback,
-	byte *pixels,
-	size_t pixelBufferSize)
+static void R_SaveTGA(
+	const char *filename,
+	const byte *pixels,
+	size_t pixelBufferSize,
+	int width,
+	int height,
+	int stride)
 {
-	const int width = screenshotReadback->width;
-	const int height = screenshotReadback->height;
-	const int stride = screenshotReadback->strideInBytes;
-
 	const size_t headerSize = 18;
 	const size_t bufferSize = headerSize + pixelBufferSize;
 
@@ -707,8 +701,27 @@ static void R_SaveScreenshotTGA(
 
 	ConvertRGBtoBGR(buffer + headerSize, pixels, stride, width, height);
 
-	ri->FS_WriteFile(screenshotReadback->filename, buffer, bufferSize);
+	ri->FS_WriteFile(filename, buffer, bufferSize);
 	ri->Hunk_FreeTempMemory(buffer);
+}
+
+/* 
+================== 
+R_SaveScreenshotTGA
+================== 
+*/  
+static void R_SaveScreenshotTGA(
+	const screenshotReadback_t *screenshotReadback,
+	byte *pixels,
+	size_t pixelBufferSize)
+{
+	R_SaveTGA(
+		screenshotReadback->filename,
+		pixels,
+		pixelBufferSize,
+		screenshotReadback->width,
+		screenshotReadback->height,
+		screenshotReadback->strideInBytes);
 }
 
 /*
