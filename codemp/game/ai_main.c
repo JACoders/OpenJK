@@ -500,6 +500,10 @@ void BotChangeViewAngles(bot_state_t *bs, float thinktime) {
 
 	maxchange = bs->skills.maxturn;
 
+	if (g_newBotAI.integer) {
+		maxchange = 1800;
+	}
+	
 	//if (maxchange < 240) maxchange = 240;
 	maxchange *= thinktime;
 	for (i = 0; i < 2; i++) {
@@ -2138,6 +2142,7 @@ int ScanForEnemies(bot_state_t *bs)
 	int i;
 	float hasEnemyDist = 0;
 	qboolean noAttackNonJM = qfalse;
+	float ourHealth = g_entities[bs->client].health;
 
 	closest = 999999;
 	i = 0;
@@ -2179,7 +2184,12 @@ int ScanForEnemies(bot_state_t *bs)
 		{
 			VectorSubtract(g_entities[i].client->ps.origin, bs->eye, a);
 			if (g_newBotAI.integer) {
-				float normalizedHealth = 0.25 + (g_entities[i].health - 1)*(1 - 0.25)/(100-1);
+				float normalizedHealth = 0.25 + (g_entities[i].health - 1)*(1 - 0.25)/(100-1); //Range .25 to 1
+
+				normalizedHealth += (100 - ourHealth) * 0.005; //Bring normalizedhealth closer to 1 the lower HP we ourselves are?, up to +0.5? 
+				if (normalizedHealth > 1)
+					normalizedHealth = 1;
+
 				distcheck = VectorLength(a) * normalizedHealth;
 			}
 			else
@@ -4603,6 +4613,7 @@ float BotWeaponCanLead(bot_state_t *bs)
 }
 
 //offset the desired view angles with aim leading in mind
+QINLINE float G_GetAnimPoint(gentity_t *self);
 void BotAimLeading(bot_state_t *bs, vec3_t headlevel, float leadAmount)
 {
 	int x;
@@ -4652,15 +4663,160 @@ void BotAimLeading(bot_state_t *bs, vec3_t headlevel, float leadAmount)
 	predictedSpot[1] = headlevel[1] + (movementVector[1]*x);
 	predictedSpot[2] = headlevel[2] + (movementVector[2]*x);
 
-	if (g_newBotAI.integer && (bs->cur_ps.weapon == WP_REPEATER) && bs->doAltAttack) { //Aim higher for the orbs
-		const float eta = (bs->frame_Enemy_Len/(1100 * g_projectileVelocityScale.value)); //REPEATER_ALT_VELOCITY = 1100
-		const float drop = (0.5)*(800)*(eta*eta);
-		predictedSpot[2] += drop;
+	if (g_newBotAI.integer) {
+		if ((bs->cur_ps.weapon == WP_REPEATER) && bs->doAltAttack) { //Aim higher for the orbs
+			const float eta = (bs->frame_Enemy_Len/(1100 * g_projectileVelocityScale.value)); //REPEATER_ALT_VELOCITY = 1100
+			const float drop = (0.5)*(800)*(eta*eta);
+			predictedSpot[2] += drop;
+		}
+
+#if 0
+		else if (bs->cur_ps.weapon == WP_SABER && g_entities[bs->client].client->ps.saberMove != LS_NONE && g_entities[bs->client].client->ps.saberMove != LS_READY) { //poke/wiggle
+			//1 - Aim so that tip of saber is closest to enemy
+			//2 - Wiggle back and forth/up down
+
+
+			/*
+			vec3_t saberEnd, saberAngs;
+			VectorCopy(g_entities[bs->client].client->saber[0].blade[0].trail.tip, saberEnd); //Vector of the tip of the saber 
+			VectorSubtract(saberEnd, bs->origin, saberEnd);//This might be backwards, but its the vector of saber tip relative to us
+		
+			vectoangles(saberEnd, saberAngs); //Turn saber tip into angles
+
+			saberAngs[YAW] -= 150;
+
+			saberAngs[PITCH] += 25;//who knows!
+
+			saberAngs[YAW] = AngleSubtract(saberAngs[YAW], bs->viewangles[YAW]);
+			saberAngs[PITCH] = AngleSubtract(saberAngs[PITCH], bs->viewangles[PITCH]);
+
+			bs->ideal_viewangles[YAW] -= saberAngs[YAW]; //Offset our ideal angles by this to keep saber tip always pointed at enemy?
+			bs->ideal_viewangles[PITCH] -= saberAngs[PITCH] * 0.5;
+		
+		*/
+			
+			//Poke time!
+			/*
+			if (level.time % 200 > 100)  {
+				if (bs->aimOffsetAmtYaw > 0) {
+					bs->aimOffsetAmtYaw = -10;
+				}
+				else {
+					bs->aimOffsetAmtYaw = 10;
+				}
+			}
+			*/
+
+
+			//Get our saber tip location.
+			//Get enemy location.
+			//Get difference.
+			//Add difference to desired aim location?
+			//vec3_t saberDiff;
+			//VectorSubtract(g_entities[bs->client].client->saber[0].blade[0].trail.tip, bs->currentEnemy->client->ps.origin, saberDiff);
+			//VectorAdd(saberDiff, predictedSpot, predictedSpot);
+
+			/*U
+			if (g_entities[bs->client].client->ps.saberMove == LS_R_T2B) {
+				if (G_GetAnimPoint(&g_entities[bs->client]) >= 0.9f) { //Start
+					predictedSpot[2] -= 400;	
+				}
+				else { //End
+					predictedSpot[2] += 400;
+				}
+			}
+			*/
+
+			/*
+			if (level.time % 200 > 100)  {
+				predictedSpot[2] += 16;
+			}
+			else {
+				predictedSpot[2] -= 16;
+			}
+
+			if (level.time % 50 > 25)  {
+				predictedSpot[0] += 8;
+			}
+			else {
+				predictedSpot[0] -= 8;
+			}
+
+			if (level.time % 100 > 50)  {
+				predictedSpot[1] += 8;
+			}
+			else {
+				predictedSpot[1] -= 8;
+			}
+			*/
+			
+
+
+		}
+
+#endif
 	}
+
+
+	if (bs->cur_ps.weapon == WP_SABER && g_entities[bs->client].client->ps.saberMove != LS_NONE && 
+	g_entities[bs->client].client->ps.saberMove != LS_READY) { //Poke
+		vec3_t saberDiff;
+		VectorSubtract(bs->currentEnemy->client->ps.origin, g_entities[bs->client].client->saber[0].blade[0].trail.tip, saberDiff);
+		VectorAdd(saberDiff, predictedSpot, predictedSpot);
+	}
+
 
 	VectorSubtract(predictedSpot, bs->eye, a);
 	vectoangles(a, ang);
 	VectorCopy(ang, bs->goalAngles);
+
+
+	if (bs->cur_ps.weapon == WP_SABER && g_entities[bs->client].client->ps.saberMove != LS_NONE && 
+		g_entities[bs->client].client->ps.saberMove != LS_READY) { //Poke and Wiggle
+
+
+			/*
+		vec3_t saberEnd, saberAngs;
+		VectorCopy(g_entities[bs->client].client->saber[0].blade[0].trail.tip, saberEnd); //Vector of the tip of the saber 
+		VectorSubtract(saberEnd, bs->origin, saberEnd);//This might be backwards, but its the vector of saber tip relative to us
+		
+		vectoangles(saberEnd, saberAngs); //Turn saber tip into angles
+
+		saberAngs[YAW] -= 150;
+
+		saberAngs[PITCH] += 25;//who knows!
+
+		saberAngs[YAW] = AngleSubtract(saberAngs[YAW], bs->viewangles[YAW]);
+		saberAngs[PITCH] = AngleSubtract(saberAngs[PITCH], bs->viewangles[PITCH]);
+
+		bs->goalAngles[YAW] -= saberAngs[YAW]; //Offset our ideal angles by this to keep saber tip always pointed at enemy?
+		bs->goalAngles[PITCH] -= saberAngs[PITCH] * 0.5;
+		*/
+
+
+
+		
+
+		if (level.time % 100 > 50)  {
+			bs->goalAngles[YAW] += 3.0f;	
+		}
+		else {
+			bs->goalAngles[YAW] -= 3.0f;	
+		}
+
+		if (level.time % 200 > 100)  {
+			bs->goalAngles[PITCH] += 6.0f;	
+		}
+		else {
+			bs->goalAngles[PITCH] -= 6.0f;	
+		}
+		
+
+		bs->goalAngles[YAW] = AngleNormalize360(bs->goalAngles[YAW]);
+		bs->goalAngles[PITCH] = AngleNormalize360(bs->goalAngles[PITCH]);
+	}
+
+
 }
 
 //wobble our aim around based on our sk1llz
@@ -6012,20 +6168,78 @@ void NewBotAI_GetStrafeAim(bot_state_t *bs)
 void NewBotAI_GetAim(bot_state_t *bs)
 {
 	vec3_t headlevel;
-	float bLeadAmount;
+	float bLeadAmount = 0;
+	int i = 0;
+	int closestSaber = 0, saberDistance = 9999999, dist, saberOwner;
+	vec3_t saberDiff;
+	gentity_t *saber;
 
 	if (bs->runningLikeASissy) {
 		NewBotAI_GetStrafeAim(bs);
 		return;
 	}
 
-	VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
 
-	if (bs->currentEnemy->client)
-		headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
+	/*
+		trType_t	trType;
+	int		trTime;
+	int		trDuration;			// if non 0, trTime + trDuration = stop time
+	vec3_t	trBase;
+	vec3_t	trDelta;			// velocity, etc
+	*/
 
-	bLeadAmount = BotWeaponCanLead(bs);
-	BotAimLeading(bs, headlevel, bLeadAmount);
+	//Well we should loop through every client and see if they are saberthrowing.  Then get the closest saber to us and aim at that if its close enough.
+	while (i <= MAX_CLIENTS)
+	{
+		if (i != bs->client && g_entities[i].client && g_entities[i].client->ps.saberInFlight && !OnSameTeam(&g_entities[bs->client], &g_entities[i]) && PassStandardEnemyChecks(bs, &g_entities[i])
+			&& PassLovedOneCheck(bs, &g_entities[i]))
+		{
+			saber = &g_entities[g_entities[i].client->ps.saberEntityNum];
+			
+			VectorSubtract(bs->cur_ps.origin, saber->s.pos.trBase, saberDiff);
+			dist = VectorLengthSquared(saberDiff);
+
+			if (dist < saberDistance && saber->s.pos.trTime) {
+				saberOwner = i;
+				closestSaber = g_entities[i].client->ps.saberEntityNum;
+				saberDistance = dist;
+			}
+
+		}
+		i++;
+	}
+
+	//Saber is inrange , AND  nearest target is far enough away OR thrower is nearest target(?
+	if (saberDistance < 200*200 && (bs->frame_Enemy_Len > 200 || bs->currentEnemy->client->ps.clientNum == saberOwner)) { //Dont aim at it if theres a diff enemy in saber range?
+		saber = &g_entities[closestSaber];
+
+		VectorCopy(saber->s.pos.trBase, headlevel);
+		BotAimLeading(bs, headlevel, bLeadAmount);
+	}
+
+	/*
+	if (bs->cur_ps.weapon == WP_SABER && bs->currentEnemy->client->ps.saberInFlight && bs->frame_Enemy_Len > 200) { //Try to block saber in air
+		//Go through each entity, check if saber and if owner is currentenemY? if yes aim at it..?
+
+		gentity_t *saber = &g_entities[bs->currentEnemy->client->ps.saberEntityNum];
+		VectorCopy(saber->s.pos.trBase, headlevel);
+
+		BotAimLeading(bs, headlevel, bLeadAmount);
+
+		g_entities[bs->client].client->pers.JAWARUN = qtrue;
+
+
+	} */
+
+	else { //Normal aim at player
+		VectorCopy(bs->currentEnemy->client->ps.origin, headlevel);
+
+		if (bs->currentEnemy->client)
+			headlevel[2] += bs->currentEnemy->client->ps.viewheight - 24;//aim at chest?
+
+		bLeadAmount = BotWeaponCanLead(bs);
+		BotAimLeading(bs, headlevel, bLeadAmount);
+	}
 
 	VectorCopy(bs->goalAngles, bs->ideal_viewangles);
 }
@@ -6040,6 +6254,54 @@ float NewBotAI_GetDist(bot_state_t *bs)
 		return VectorLength(diff);
 	}
 	return 0;
+}
+
+//Milliseconds until 2 moving points are within X distance of eachother
+int NewBotAI_GetTimeToInRange(bot_state_t *bs, int range, int maxTime) {
+	//Get velocity of bot relative to player
+	//Dotproduct that velocity with the position difference between players
+
+	//or simulate it
+	float tick = 1000/sv_fps.integer;
+	int timeToInRange = 0;
+	int i;
+	int attempts = sv_fps.integer * maxTime * 0.001f;
+	int remainder;
+	vec3_t diff, pos1, pos2, vel1, vel2;
+
+	VectorCopy(bs->cur_ps.origin, pos1);
+	VectorCopy(bs->currentEnemy->client->ps.origin, pos2);
+	VectorCopy(bs->cur_ps.velocity, vel1);
+	VectorCopy(bs->currentEnemy->client->ps.velocity, vel2);
+	range = range * range; //for vectorlength squared
+
+	remainder = maxTime % (int)tick;
+	timeToInRange += remainder;
+
+	vel1[0] /= tick;
+	vel1[1] /= tick;
+	vel1[2] /= tick;
+
+	vel2[0] /= tick;
+	vel2[1] /= tick;
+	vel2[2] /= tick;
+
+	for (i=0; i<attempts; i++) { //Check up to 1 second in future?
+		VectorSubtract(pos1, pos2, diff);
+
+		VectorAdd(pos1, vel1, pos1);
+		VectorAdd(pos2, vel2, pos2);
+
+		if (VectorLengthSquared(diff) < range) {
+			break;
+		}
+
+		timeToInRange += tick;
+	}
+
+	//Com_Printf("TTR is %i\n", timeToInRange);
+	return timeToInRange; //If this is less than maxTime, we will be in range!
+
 }
 
 void NewBotAI_Getup(bot_state_t *bs)
@@ -6057,12 +6319,13 @@ void NewBotAI_Getup(bot_state_t *bs)
 void NewBotAI_Flipkick(bot_state_t *bs)
 {
 	if (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1 || bs->cur_ps.fd.forceJumpZStart < 16) {//idk
+		trap->EA_MoveForward(bs->client);
 		trap->EA_Jump(bs->client);
 	}
 
 	else if (((bs->origin[2] - bs->cur_ps.fd.forceJumpZStart) > 24) && ((bs->origin[2] - bs->cur_ps.fd.forceJumpZStart) < 48))
 	{
-		if (random() > 0.5);
+		if (level.framenum % 2)
 			trap->EA_Jump(bs->client);
 	}
 }
@@ -6114,29 +6377,52 @@ void NewBotAI_ReactToBeingGripped(bot_state_t *bs) //Test this more, does it pus
 
 	NewBotAI_Flipkick(bs);
 
-	if (useTheForce) {
+	if (useTheForce && (level.framenum % 2)) {
 		trap->EA_ForcePower(bs->client);
 	}
 }
 
 void NewBotAI_Gripkick(bot_state_t *bs)
 {
-	trap->EA_MoveForward(bs->client);//Always move forward i guess	
+	float heightDiff = bs->cur_ps.origin[2] - bs->currentEnemy->client->ps.origin[2]; //We are above them by this much
+	int gripTime = level.time - bs->currentEnemy->client->ps.fd.forceGripStarted; //Milliseconds we have been gripping them
 
-	if (level.time % 1000 > 500) 
-		bs->ideal_viewangles[PITCH] = -80;
-	else
-		bs->ideal_viewangles[PITCH] = -260;
+	if (gripTime < 1000) { //[0-1] second in the grip (Aim down until in range, kick)
+		bs->ideal_viewangles[PITCH] = 60; //60?
+		trap->EA_MoveForward(bs->client);
 
-	if (bs->ideal_viewangles[YAW] > 360)
-		bs->ideal_viewangles[YAW] -= 20;
-	else if (bs->ideal_viewangles[YAW] > 0)
-		bs->ideal_viewangles[YAW] += 20;
+	} 
+	else if (gripTime < 2000) { //[1-2] seconds in the grip (Aim up, spin)
+		bs->ideal_viewangles[PITCH] = -80; //-80
 
-	NewBotAI_Flipkick(bs);
+		if (level.time % 10000 > 5000) {
+			trap->EA_MoveRight(bs->client);
+			bs->ideal_viewangles[YAW] += 80; //80?
+		}
+		else {
+			trap->EA_MoveLeft(bs->client);
+			bs->ideal_viewangles[YAW] -= 80;//80?
+		}
+	}
+	else if (gripTime < 2200) { //[2-2.2] seconds in the grip (Aim at center for a split second, so they dont get stuck on our head)
+		bs->ideal_viewangles[PITCH] = 0;
+	}
+	else if (gripTime < 4000) { //[2.2-4] seconds in the grip (Aim down until in range, kick)
+		bs->ideal_viewangles[PITCH] = -70; //-70?
+		trap->EA_MoveForward(bs->client);
+	}
 
-	//if (g_entities[bs->client].health > 40)
-		trap->EA_ForcePower(bs->client);
+	if ((bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1)  && NewBotAI_GetTimeToInRange(bs, 40, 100) < 100) { //Start a kick if we are in range and on ground
+		NewBotAI_Flipkick(bs);
+	}
+	else if (bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) { //Always try to flipkick while we are in air
+		NewBotAI_Flipkick(bs);
+	}
+
+	bs->ideal_viewangles[YAW] = AngleNormalize360(bs->ideal_viewangles[YAW]); //Normalize the angles
+	bs->ideal_viewangles[PITCH] = AngleNormalize360(bs->ideal_viewangles[PITCH]);
+
+	trap->EA_ForcePower(bs->client); //Always hold grip key during grip
 }
 
 void NewBotAI_Draining(bot_state_t *bs)
@@ -6203,7 +6489,7 @@ float NewBotAI_GetSpeedTowardsEnemy(bot_state_t *bs)
 
 		VectorCopy(bs->currentEnemy->client->ps.origin, eorg);
 		VectorSubtract(eorg, bs->eye, diff);
-		dot = DotProduct(diff, bs->cur_ps.velocity);
+		dot = DotProduct(diff, bs->cur_ps.velocity); //Should take into account enemy velocity too?
 		if (dot < 0) {
 			dot = -dot;
 			n = qtrue;
@@ -6425,12 +6711,28 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 	if (bs->cur_ps.weapon == WP_SABER) {//Fullforce saber attacks
 		g_entities[bs->client].client->ps.fd.saberAnimLevel = SS_STRONG;
 
+		//todo - skip if we are already during a swing 
+		if ((g_entities[bs->client].client->ps.saberMove == LS_NONE || g_entities[bs->client].client->ps.saberMove == LS_READY) && NewBotAI_GetTimeToInRange(bs, 75, 600) < 600) {
+			if (g_entities[bs->client].health > 70) {
+				if ((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) || 
+					 ((bs->cur_ps.fd.forcePower < 60) || ((bs->frame_Enemy_Len < 80) && (bs->currentEnemy->client->ps.origin[2] - bs->cur_ps.origin[2]) > 50 ))) {
+						trap->EA_Attack(bs->client);
+				}
+			}
+		}
+
+		/*
 		if (((speed >= 0) && ((bs->frame_Enemy_Len / speed) < 1.2f)) || (bs->frame_Enemy_Len < 64)) {
 			if (g_entities[bs->client].health > 60) {
 				if ((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) || bs->cur_ps.fd.forcePower < 40)
 					trap->EA_Attack(bs->client);
 			}
 		}
+		*/
+
+
+
+
 		return;
 	}
 	
@@ -6533,22 +6835,97 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 	}
 	else { //FF Combat movement
 		const float speed = NewBotAI_GetSpeedTowardsEnemy(bs);
+		gentity_t *saber;
+		qboolean crouch = qfalse;
 
 		bs->runningLikeASissy = 0;
 		bs->forceMove_Forward = 0;
 		bs->forceMove_Right = 0;
 
-		if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (bs->frame_Enemy_Len < 450)) {
+		saber = &g_entities[bs->currentEnemy->client->ps.saberEntityNum];
+
+		if (bs->currentEnemy->client->ps.legsAnim == BOTH_GETUP_BROLL_B && bs->frame_Enemy_Len < 100) {//Dodge a getup?
+			trap->EA_Crouch(bs->client);
+			trap->EA_MoveForward(bs->client);
+			crouch = qtrue;
+		}
+		else if ( bs->currentEnemy->client->ps.legsAnim == BOTH_GETUP_BROLL_F && bs->frame_Enemy_Len < 150) {
+			trap->EA_Crouch(bs->client);
+			trap->EA_MoveForward(bs->client);
+			crouch = qtrue;
+		}
+		else if ((g_entities[bs->client].health < 25 || (g_entities[bs->client].health < 50 && bs->cur_ps.fd.forcePower < 30)) && (bs->frame_Enemy_Len < 450)) {
+			qboolean wallRun = qfalse;
+			//Running routine, we should add a wallrun search to this.
+
 			//trap_EA_MoveBack(bs->client);//Always move forward i guess	
-			if (level.time % 1000 > 500)  {
+
+			//Wallrun if possible
+			//Set wallrun flag
+			//If we are touching a suitable wall, insta 180 and wallrun it
+			//stay in wallrun until end then jump
+
+			if (bs->frame_Enemy_Len > 200) {
+				trace_t	trace;
+				vec3_t mins, maxs, traceto;
+
+				//VectorCopy(bs->cur_ps.origin, tracefrom);
+				VectorCopy(bs->cur_ps.origin, traceto);
+				//tracefrom[2] += 16;
+				traceto[2] += 24;
+
+			
+				mins[0] = -36;
+				mins[1] = -36;
+				mins[2] = 0;
+				maxs[0] = 36;
+				maxs[1] = 36;
+				maxs[2] = 12;
+			
+				JP_Trace(&trace, bs->cur_ps.origin, mins, maxs, traceto, bs->cur_ps.clientNum, CONTENTS_SOLID|CONTENTS_BODY, qfalse, 0, 0 );
+
+				if ( trace.fraction < 1.0f ) { //Touching wall ?
+					float GroundDist = BS_GroundDistance(bs);
+					wallRun = qtrue;
+
+					//Com_Printf("Touching Wall\n");
+					//180 somehow
+					if (level.framenum % 2)
+						bs->ideal_viewangles[YAW] += 150;
+					else
+						bs->ideal_viewangles[YAW] += 210;
+					bs->ideal_viewangles[YAW] = AngleNormalize360(bs->ideal_viewangles[YAW]);
+
+
+					trap->EA_MoveForward(bs->client);
+
+					if (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1) {
+						trap->EA_Jump(bs->client); //Jump until we are off ground
+					}
+					else { //In Air
+						if (GroundDist > 20 && GroundDist < 40) { //And we are moving down? idk
+							trap->EA_Jump(bs->client);  //Tap jump while in air at wall
+						}
+						if (1) { //Jump at end of wallrun
+
+						}
+
+					}
+				}
+			}
+			if (level.time % 3000 > 1500 && !wallRun)  {
 				if (bs->frame_Enemy_Len < 140)
 					trap->EA_MoveForward(bs->client);//Always move forward i guess	
+				else if (bs->frame_Enemy_Len < MAX_DRAIN_DISTANCE - 100)
+					trap->EA_MoveBack(bs->client);
 				else
 					trap->EA_MoveLeft(bs->client);
 			}
-			else {
+			else if (!wallRun) {
 				if (bs->frame_Enemy_Len < 140)
 					trap->EA_MoveForward(bs->client);//Always move forward i guess	
+				else if (bs->frame_Enemy_Len < MAX_DRAIN_DISTANCE - 100)
+					trap->EA_MoveBack(bs->client);
 				else
 					trap->EA_MoveRight(bs->client);
 			}
@@ -6556,14 +6933,29 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 		else
 			trap->EA_MoveForward(bs->client);//Always move forward i guess	
 
+
+		if (!crouch && ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) || (bs->currentEnemy->client->ps.saberInFlight && saber->s.pos.trTime) || (NewBotAI_GetTimeToInRange(bs, 60, 100) < 100))) { //Jump if they will be in range of flipkick or they are trying to saberthrow
+			if ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) && bs->currentEnemy->client->ps.saberInFlight && bs->frame_Enemy_Len > 250 && (BS_GroundDistance(bs) > 20)) {
+				trap->EA_Crouch(bs->client); 
+			}
+			else {
+				NewBotAI_Flipkick(bs);
+			}
+
+		}
+
+		/*
 		if ((bs->cur_ps.groundEntityNum != ENTITYNUM_NONE - 1) || ((speed >= 0) && ((bs->frame_Enemy_Len / speed) < 0.63f)) || 
-			(bs->frame_Enemy_Len < 64) || bs->currentEnemy->client->ps.saberInFlight) {//Flipkick if they are close or trying to saberthrow me
+			(bs->frame_Enemy_Len < 90) || bs->currentEnemy->client->ps.saberInFlight) {//Flipkick if they are close or trying to saberthrow me
 				if ((bs->cur_ps.fd.forcePower > 6)) 
 					NewBotAI_Flipkick(bs);
 		}
+		*/
+
+
 		else if (random() < 0.01 && (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1)) {
-			trap->EA_MoveRight(bs->client);
-			NewBotAI_Flipkick(bs);
+			//trap->EA_MoveRight(bs->client);
+			//NewBotAI_Flipkick(bs);
 		}
 	}
 }
@@ -6628,11 +7020,14 @@ int NewBotAI_GetPull(bot_state_t *bs) {
 		return 0;
 	if (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))
 		return 0;
-	if (ourForce < 20)
+	if (ourForce < 21)
 		return 0;
 
-	if (weight < 0)
+	if (weight < 1)
 		weight = 1;
+
+	if (bs->currentEnemy->client->ps.saberInFlight)
+		weight = 0.1f;
 
 	if ((bs->currentEnemy->client->ps.saberMove > 1) && bs->currentEnemy->client->ps.fd.saberAnimLevel != SS_STRONG)
 		weight *= 0.2f; //dont pull red vert swings into us unless we its really important
@@ -6641,17 +7036,33 @@ int NewBotAI_GetPull(bot_state_t *bs) {
 		weight *= 0.5f; //Dont cancel a charge unless its important
 
 	if (bs->frame_Enemy_Len < 200 && ourForce >= 20) { //Pulling their weapon should be top priority always
-		if (bs->currentEnemy->client->ps.weapon < WP_BLASTER)
+		if (bs->currentEnemy->client->ps.weapon > WP_BLASTER)
 			return 100;
 	}
 
 	if (NewBotAI_IsEnemyPullable(bs)) {
-		if (hisHealth <= 20 && bs->frame_Enemy_Len < 250) //Check for the insta kill
+		if (hisHealth <= 20 && bs->frame_Enemy_Len < 250) {//Check for the insta kill, this should be better maybe... on ground pullablable should be a diff range than in air pullable
+			//Com_Printf("pullable 2\n");
 			return 10;
+		}
 		if (BG_InKnockDown(bs->currentEnemy->client->ps.legsAnim)) {
+			//Com_Printf("pullable 3\n");
 			return (weight * 2);
 		}
+		//Com_Printf("pullable 1\n");
 		return (weight);
+	}
+	else { //When should we pull stun?
+		//Lets say they should be on the same plane roughly..
+		float heightDiff = bs->cur_ps.origin[2] - bs->currentEnemy->client->ps.origin[2]; //Us - them.  Positive means we are higher.
+		if (heightDiff > -20 && heightDiff < 40) {//If we are less than 20 above or less than 40 below)
+			if (bs->frame_Enemy_Len < 100 && ourForce >= 60) { //Close enough and enough force
+				weight = ourForce * 0.1f;
+				//Com_Printf("weight: %i\n", weight);
+				return (weight);
+			}
+		}
+
 	}
 
 	return 0;
@@ -6696,6 +7107,8 @@ int NewBotAI_GetDrain(bot_state_t *bs) {
 		return 0;
 	if (ourForce < 21)
 		return 0;
+	if (hisForce == 0)
+		return 0;
 
 	if (bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT)
 		weight *= 0.9f; //Dont cancel a charge unless its important
@@ -6709,9 +7122,16 @@ int NewBotAI_GetDrain(bot_state_t *bs) {
 	}
 
 	if (ourHealth < 100)
-		return ((weight - ourHealth) + 20); //Eeee
+		return ((weight - ourHealth) + 20); //Eeee  //100 - 25 + 20 = 95
 
 	return 0;
+}
+
+int NewBotAI_GetWait(bot_state_t *bs) { //Sometimes the best attack is nothing, like when they are trying to saberthrow you and you want to focus on blocking
+	int weight = 0;
+	if (bs->currentEnemy->client->ps.saberInFlight && bs->frame_Enemy_Len > 200)
+		weight = 10;
+	return weight;
 }
 
 int NewBotAI_GetGrip(bot_state_t *bs) {
@@ -6752,7 +7172,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 {
 	vec3_t a_fo;
 	qboolean useTheForce = qfalse;
-	int pushWeight, pullWeight, drainWeight, gripWeight;
+	int pushWeight, pullWeight, drainWeight, gripWeight, doNothingWeight;
 
 	VectorSubtract(bs->currentEnemy->client->ps.origin, bs->eye, a_fo);
 	vectoangles(a_fo, a_fo);
@@ -6761,24 +7181,31 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 	pushWeight = NewBotAI_GetPush(bs);
 	drainWeight = NewBotAI_GetDrain(bs);
 	gripWeight = NewBotAI_GetGrip(bs);
-
-	//trap->Print("Pull: %i, Push: %i, Drain: %i, Grip: %i\n", pullWeight, pushWeight, drainWeight, gripWeight);
+	doNothingWeight = NewBotAI_GetWait(bs);
 
 	if (pushWeight > pullWeight && pushWeight > drainWeight && pushWeight > gripWeight && pushWeight > 0) {
 		level.clients[bs->client].ps.fd.forcePowerSelected = FP_PUSH;
 		useTheForce = qtrue;
+
+		//trap->Print("Pushing -- Pull: %i, Push: %i, Drain: %i, Grip: %i\n", pullWeight, pushWeight, drainWeight, gripWeight);
 	}
 	else if (pullWeight > pushWeight && pullWeight > drainWeight && pullWeight > gripWeight && pullWeight > 0) {
 		level.clients[bs->client].ps.fd.forcePowerSelected = FP_PULL;
 		useTheForce = qtrue;
+
+		//trap->Print("Pulling -- Pull: %i, Push: %i, Drain: %i, Grip: %i\n", pullWeight, pushWeight, drainWeight, gripWeight);
 	}
 	else if (drainWeight > pushWeight && drainWeight > pullWeight && drainWeight > gripWeight && drainWeight > 0) {
 		level.clients[bs->client].ps.fd.forcePowerSelected = FP_DRAIN;
 		useTheForce = qtrue;
+
+		//trap->Print("Draining -- Pull: %i, Push: %i, Drain: %i, Grip: %i\n", pullWeight, pushWeight, drainWeight, gripWeight);
 	}
 	else if (gripWeight > pushWeight && gripWeight > pullWeight && gripWeight > drainWeight && gripWeight > 0) {
 		level.clients[bs->client].ps.fd.forcePowerSelected = FP_GRIP;
 		useTheForce = qtrue;
+
+		//trap->Print("Gripping -- Pull: %i, Push: %i, Drain: %i, Grip: %i\n", pullWeight, pushWeight, drainWeight, gripWeight);
 	}
 
 	if (!useTheForce && !(g_forcePowerDisable.integer & (1 << FP_SPEED)) && (bs->cur_ps.fd.forcePowersKnown & (1 << FP_SPEED)) && (bs->frame_Enemy_Len > 90)) {
@@ -6807,7 +7234,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
 		useTheForce = qfalse; //Sad hack not sure why?
 
-	if (useTheForce)
+	if (useTheForce && (level.framenum % 2))
 		trap->EA_ForcePower(bs->client);
 }
 
@@ -7118,6 +7545,7 @@ void NewBotAI_NF(bot_state_t *bs)
 		trap->EA_MoveForward(bs->client); 
 	}
 	
+#if 0
 	if (swing && bs->frame_Enemy_Len < 200 && g_entities[bs->client].client->ps.saberMove != 13) //fuck trying to aim backslash like this
 	{
 		vec3_t saberEnd, saberAngs;
@@ -7155,6 +7583,7 @@ void NewBotAI_NF(bot_state_t *bs)
 		//if (swing)
 			//bs->ideal_viewangles[PITCH] += (crandom() * 12);
 	}
+#endif
 
 	//1 - Get moves and movement
 	//2 - Get aim (offset?) //self->client->saber[saberNum].blade[bladeNum].trail.tip
@@ -7350,6 +7779,7 @@ void DoAloneStuff(bot_state_t *bs, float thinktime) {
 }
 
 #define _ADVANCEDBOTSHIT 0
+
 void NewBotAI(bot_state_t *bs, float thinktime) //BOT START
 {
 	int closestID = -1;
