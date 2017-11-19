@@ -106,6 +106,8 @@ cvar_t	*cl_consoleUseScanCode;
 
 cvar_t  *cl_lanForcePackets;
 
+cvar_t	*cl_coloredTextShadows;
+
 cvar_t *cl_drawRecording;
 
 cvar_t *cl_colorString;
@@ -3107,6 +3109,8 @@ void CL_Init( void ) {
 
 	// cgame might not be initialized before menu is used
 	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE_ND );
+
+	cl_coloredTextShadows = Cvar_Get("cl_coloredTextShadows", "0", CVAR_ARCHIVE);
 
 	cl_afkTime = Cvar_Get("cl_afkTime", "5", CVAR_ARCHIVE, "Minutes to autorename to afk, 0 to disable");
 	cl_afkTimeUnfocused = Cvar_Get("cl_afkTimeUnfocused", "1", CVAR_ARCHIVE, "Minutes to autorename to afk while unfocused/minimized");
