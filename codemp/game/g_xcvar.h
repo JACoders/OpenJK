@@ -306,14 +306,14 @@ XCVAR_DEF( g_newBotAITarget,			"-1",			NULL,				CVAR_ARCHIVE,									qfalse )
 XCVAR_DEF( bot_maxbots,					"0",			NULL,				CVAR_ARCHIVE,									qfalse )
 
 //testing
-/*
+
 XCVAR_DEF( bot_s1,						"16",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_s2,						"24",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_s3,						"48",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_s4,						"0.5",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_s5,						"0",			NULL,				CVAR_ARCHIVE,									qtrue )
 XCVAR_DEF( bot_s6,						"64",			NULL,				CVAR_ARCHIVE,									qtrue )
-*/
+
 
 //DEBUG / TOOLS
 XCVAR_DEF( g_showJumpSpot,				"0",			NULL,				CVAR_ARCHIVE,									qtrue )

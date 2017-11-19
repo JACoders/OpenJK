@@ -6715,7 +6715,7 @@ void NewBotAI_GetAttack(bot_state_t *bs)
 		if ((g_entities[bs->client].client->ps.saberMove == LS_NONE || g_entities[bs->client].client->ps.saberMove == LS_READY) && NewBotAI_GetTimeToInRange(bs, 75, 600) < 600) {
 			if (g_entities[bs->client].health > 70) {
 				if ((bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_DRAIN) || (bs->currentEnemy->client->ps.fd.forcePowersActive & (1 << FP_ABSORB))) || 
-					 ((bs->cur_ps.fd.forcePower < 60) || ((bs->frame_Enemy_Len < 80) && (bs->currentEnemy->client->ps.origin[2] - bs->cur_ps.origin[2]) > 50 ))) {
+					 ((bs->cur_ps.fd.forcePower < 60) || ((bs->frame_Enemy_Len < 70) && (bs->currentEnemy->client->ps.origin[2] - bs->cur_ps.origin[2]) > 50 ))) {
 						trap->EA_Attack(bs->client);
 				}
 			}

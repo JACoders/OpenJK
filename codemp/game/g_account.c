@@ -1089,7 +1089,6 @@ void CleanupLocalRun() { //loda fixme, there really has to be a better way to do
 	//DebugWriteToDB("CleanupLocalRun");
 }
 
-#if 1//NEWRACERANKING
 void G_GetRaceScore(int id, char *username, char *coursename, int style, sqlite3 * db) {
 	char * sql;
 	sqlite3_stmt * stmt;
@@ -1290,8 +1289,7 @@ void SV_RebuildRaceRanks_f() {
 
 }
 
-#endif
-#if _NEWRACERANKING
+#if _NEWRACERANKING_V1
 void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldRank_self, int newRank_self, sqlite3 * db) {
 	qboolean newDB = qfalse;
 	char * sql;
@@ -1344,7 +1342,501 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 		CALL_SQLITE (close(db));
 	}
 }
+#endif
 
+/*
+void G_GetRaceInfo(int *oldRank_self, int *newRank_self, int *oldCount, int *newCount, sqlite3 * db, char *username_self, char *coursename_self, int style_self, int duration_ms_self) {
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s;
+
+	//Get counts
+	sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style_self));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		*newCount = *oldCount = sqlite3_column_int(stmt, 0);
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	if (oldRank_self == 0) { //Unknown what their old rank was..
+		//Select all races of that coursename,style, ordered by duration_ms ASC
+		//select the number of row for first occurence of 'username', set as oldrank
+		int i = 1; //1st place is rank 1
+
+		//if nothing found, oldrank_self = -1
+
+		sql = "SELECT username, duration_ms FROM LocalRun  WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				if (!Q_stricmp(username_self, (char*)sqlite3_column_text(stmt, 0))) {
+					oldRank_self = i;
+					break;
+				}
+				i++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				break;
+			}
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (oldRank_self == 0) //Didn't find any old rank.
+			oldRank_self = -1;
+
+	}
+
+	if (newRank_self == 0) { //Unknown what their new rank is
+		//Select all races of that coursename,style, ordered by duration_ms ASC
+		//Select the number of row that our duration_ms would correspond to, set as newrank
+
+		int i = 1; //1st place is rank 1
+
+		//if nothing found, oldrank_self = -1
+
+		sql = "SELECT duration_ms FROM LocalRun  WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				if (duration_ms_self < sqlite3_column_int(stmt, 0)) { //We are faster than this time..
+					newRank_self = i;
+					break;
+				}
+				i++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				break;
+			}
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (newRank_self == 0) { //We wern't faster than any times, so set our rank to count (+ 1) ?
+			newRank_self = oldCount + 1;
+		}
+
+	}
+
+	if (oldRank_self == -1) {//Their first attempt
+		newCount++; //this race is upping the count since its not replacing an old race
+	}
+}
+*/
+
+static void G_UpdateOurLocalRun(sqlite3 * db, int oldRank_self, int newRank_self, int style_self, char *username_self, char *coursename_self, 
+	int duration_ms_self, int topspeed_self, int average_self, int end_time_self) {
+	char * sql;
+	sqlite3_stmt * stmt;
+	int s;
+
+	if (oldRank_self != -1) {//Not our first attempt
+		//delete old record.. here?
+
+		//Update entry
+
+		sql = "DELETE FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?"; //loda fixme cheaper to update?
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, style_self));
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE)
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		CALL_SQLITE (finalize(stmt));
+	}
+
+	//Add new record to db here?
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+    CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 3, duration_ms_self));
+	CALL_SQLITE (bind_int (stmt, 4, topspeed_self));
+	CALL_SQLITE (bind_int (stmt, 5, average_self));
+	CALL_SQLITE (bind_int (stmt, 6, style_self));
+	CALL_SQLITE (bind_int (stmt, 7, end_time_self));
+	CALL_SQLITE (bind_int (stmt, 8, newRank_self));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE) {
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+	}
+	CALL_SQLITE (finalize(stmt));
+
+}
+
+static void G_UpdateOtherLocalRun(sqlite3 * db, int newRank_self, int oldRank_self, int style_self, char *coursename_self) {
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+
+	
+	if (oldRank_self == -1) //First attempt
+		sql = "UPDATE LocalRun SET rank = rank + 1 WHERE coursename = ? and style = ? and rank >= ?";
+	else
+		sql = "UPDATE LocalRun SET rank = rank + 1 WHERE coursename = ? and style = ? and rank >= ? and rank < ?";
+
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		CALL_SQLITE (bind_int (stmt, 3, newRank_self));
+
+		if (oldRank_self != -1)
+			CALL_SQLITE (bind_int (stmt, 4, oldRank_self));
+
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+}
+
+static void G_UpdateOurRaceRank(sqlite3 * db, int newCount, int oldCount, int newRank_self, int oldRank_self, int style_self, char *username_self) {
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+
+	//For our own player.. do medals and racerank stuff.
+	float newScore_self = (float)newCount / (float)(newRank_self);
+	float newPercentile_self = ((float)newCount - ((float)newRank_self - 1)) / (float)newCount; //eh?
+
+	//If raceRank row exists for that username,style, Update it with X , else insert X
+
+
+	if (oldRank_self == -1) { //First try
+		int rank_id, rankCount;
+		//Add to their medals
+
+		//Add new score
+
+		//Insert into on duplicate key bullshit...
+
+		sql = "SELECT id, COUNT(*) FROM RaceRanks WHERE username = ? AND style = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			rank_id = sqlite3_column_int(stmt, 0);
+			rankCount = sqlite3_column_int(stmt, 1);
+		}
+		else if (s != SQLITE_DONE) {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			CALL_SQLITE (finalize(stmt));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (rankCount == 1) { //Found the entry, so update it.
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, golds = golds + 1, count = count + 1 WHERE id = ?";//Save rank into row
+			else if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, silvers = silvers + 1, count = count + 1 WHERE id = ?";//Save rank into row
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, bronzes = bronzes + 1, count = count + 1 WHERE id = ?";//Save rank into row
+			else 
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, count = count + 1 WHERE id = ?";//Save rank into row
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_double (stmt, 1, newScore_self));
+			CALL_SQLITE (bind_double (stmt, 2, newPercentile_self));
+			CALL_SQLITE (bind_int (stmt, 3, newRank_self));
+			CALL_SQLITE (bind_int (stmt, 4, rank_id));
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE)
+				trap->Print( "Error: Could not write to database: %i.\n", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else if (rankCount == 0) { //Not found, so add
+			sql = "INSERT INTO RaceRanks (username, style, score, percentilesum, ranksum, golds, silvers, bronzes, count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)";
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+			CALL_SQLITE (bind_int (stmt, 2, style_self));
+			CALL_SQLITE (bind_double (stmt, 3, newScore_self));
+			CALL_SQLITE (bind_double (stmt, 4, newPercentile_self));
+			CALL_SQLITE (bind_int (stmt, 5, newRank_self));
+			CALL_SQLITE (bind_int (stmt, 6, ((newRank_self == 1) ? 1 : 0)));
+			CALL_SQLITE (bind_int (stmt, 7, ((newRank_self == 2) ? 1 : 0)));
+			CALL_SQLITE (bind_int (stmt, 8, ((newRank_self == 3) ? 1 : 0)));
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE)
+				trap->Print( "Error: Could not write to database: %i.\n", s);
+			CALL_SQLITE (finalize(stmt));
+		}
+		else {
+			trap->Print( "Error: Mupltiple RaceRank rows for single user: %s.\n", username_self);
+			CALL_SQLITE (finalize(stmt));
+			return;
+		}
+	}
+	else { //Replacing a record
+		float oldScore_self = (float)oldCount / (float)(oldRank_self);
+		float oldPercentile_self = ((float)oldCount - ((float)oldRank_self - 1)) / (float)oldCount; //eh?
+
+		//Remove old medals, add new medals.  update scores, percentile, ranksum
+		if (oldRank_self == 1) {
+			if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET golds = golds -1, silvers = silvers + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET golds = golds -1, bronzes = bronzes + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else 
+				sql = "UPDATE RaceRanks SET golds = golds -1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		else if (oldRank_self == 2) {
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET silvers = silvers -1, golds = golds + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET silvers = silvers -1, bronzes = bronzes + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else 
+				sql = "UPDATE RaceRanks SET silvers = silvers -1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		else if (oldRank_self == 3) {
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET bronzes = bronzes -1, golds = golds + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET bronzes = bronzes -1, silvers = silvers + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else 
+				sql = "UPDATE RaceRanks SET bronzes = bronzes -1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		else {
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET golds = golds +1, golds = golds + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET silvers = silvers +1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET bronzes = bronzes +1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else
+				sql = "UPDATE RaceRanks SET count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_double (stmt, 1, newScore_self - oldScore_self));
+		CALL_SQLITE (bind_double (stmt, 2, newPercentile_self - oldPercentile_self));
+		CALL_SQLITE (bind_int (stmt, 3, newRank_self - oldRank_self));
+		CALL_SQLITE (bind_text (stmt, 4, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 5, style_self));
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+	}
+}
+
+static void G_UpdateOtherRaceRank(sqlite3 * db, int newCount, int oldCount, int newRank_self, int oldRank_self, int style_self, char *username_self, char *coursename_self) {
+	char * sql;
+    sqlite3_stmt * stmt;
+	int s;
+	char username[40];
+	int rank;
+	float oldScore, newScore, oldPercentile, newPercentile;
+
+	if (oldRank_self == -1) //First attempt
+		sql = "SELECT username, rank from LocalRun WHERE coursename = ? AND style = ? AND rank >= ?";
+	else
+		sql = "SELECT username, rank from LocalRun WHERE coursename = ? AND style = ? AND rank >= ? AND rank < ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style_self));
+	CALL_SQLITE (bind_int (stmt, 3, newRank_self));
+	if (oldRank_self != -1)
+		CALL_SQLITE (bind_int (stmt, 4, oldRank_self)); //fixme
+
+	while (1) {
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
+			rank = sqlite3_column_int(stmt, 1);
+
+			//if (Q_stricmp(username_self, username)) { //Someone else, since we have already calculated everything for self  -- Move this up after the delete from localrun so we dont have to check this
+			{
+				sqlite3_stmt * stmt2;
+
+				//Old score was..
+					//OldCount / Rank
+				//New score is
+					//NewCount / Rank + 1
+				//Get score diff
+				//Add score diff to score of that style in raceranks
+				//Add +1 to count of that style in raceranks
+
+				oldScore = (float)oldCount / (float)rank;
+				newScore = (float)newCount / (float)(rank+1);
+				oldPercentile = ((float)oldCount - ((float)rank - 1)) / (float)oldCount; //eh?
+				newPercentile = ((float)newCount - ((float)(rank+1) - 1)) / (float)newCount; //eh?
+
+				//Update RaceRanks medals, score, percentile, ranksmu
+				if (rank == 2)
+					sql = "UPDATE RaceRanks SET golds = golds - 1, silvers = silvers + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + 1 WHERE username = ? and style = ?";
+				else if (rank == 3)
+					sql = "UPDATE RaceRanks SET silvers = silvers - 1, bronzes = bronzes + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + 1 WHERE username = ? and style = ?";
+				else if (rank == 4)
+					sql = "UPDATE RaceRanks SET bronzes = bronzes - 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + 1 WHERE username = ? and style = ?";
+				else 
+					sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + 1 WHERE username = ? and style = ?";
+				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt2, NULL));
+				CALL_SQLITE (bind_double (stmt2, 1, newScore - oldScore));
+				CALL_SQLITE (bind_double (stmt2, 2, newPercentile - oldPercentile));
+				CALL_SQLITE (bind_text (stmt2, 3, username, -1, SQLITE_STATIC));
+				CALL_SQLITE (bind_int (stmt2, 4, style_self));
+				s = sqlite3_step(stmt2);
+				if (s != SQLITE_DONE)
+					trap->Print( "Error: Could not write to database: %i.\n", s);
+				CALL_SQLITE (finalize(stmt2));
+
+
+				Com_Printf("Updating rank and score for other player %s, score += %.2f, psum += %.2f, oldrank %i, newrank %i\n", username, newScore - oldScore, newPercentile - oldPercentile, rank, rank+1);
+
+				
+				//Oh fuck, but someones score can increase if someone new completes the course? if new player is ranked worse than them?
+
+
+			//}
+			}
+
+			rank++;
+		}
+		else if (s == SQLITE_DONE)
+			break;
+		else {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+			break;
+		}
+	}
+	CALL_SQLITE (finalize(stmt));
+
+}
+
+#if _NEWRACERANKING
+void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldRank_self, int newRank_self, sqlite3 * db) {
+	char * sql;
+    sqlite3_stmt * stmt;
+	qboolean newDB;
+	int s, oldCount = 0, newCount = 0;
+
+	if (!db) {
+		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
+		newDB = qtrue;
+		Com_Printf("Opening new db in addnewracetodb\n");
+	}
+
+	//Get NewCount, OldCount and if needed get newRank_self, oldRank_self
+	sql = "SELECT COUNT(*) FROM LocalRun WHERE coursename = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style_self));
+	s = sqlite3_step(stmt);
+	if (s == SQLITE_ROW) {
+		newCount = oldCount = sqlite3_column_int(stmt, 0);
+	}
+	else if (s != SQLITE_DONE) {
+		fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+		CALL_SQLITE (finalize(stmt));
+		return;
+	}
+	CALL_SQLITE (finalize(stmt));
+
+	if (oldRank_self == 0) { //Unknown what their old rank was, find it.  If nothing found, oldRank_self = -1.
+		int i = 1; //1st place is rank 1
+
+		sql = "SELECT username, duration_ms FROM LocalRun  WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				if (!Q_stricmp(username_self, (char*)sqlite3_column_text(stmt, 0))) {
+					oldRank_self = i;
+					break;
+				}
+				i++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				break;
+			}
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (oldRank_self == 0) //Didn't find any old rank.
+			oldRank_self = -1;
+
+	}
+
+	if (newRank_self == 0) { //Unknown what their new rank is, so find it.
+		int i = 1; //1st place is rank 1
+
+		sql = "SELECT duration_ms FROM LocalRun  WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC"; //assume just one per person to speed this up..
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		while (1) {
+			s = sqlite3_step(stmt);
+			if (s == SQLITE_ROW) {
+				if (duration_ms_self < sqlite3_column_int(stmt, 0)) { //We are faster than this time..
+					newRank_self = i;
+					break;
+				}
+				i++;
+			}
+			else if (s == SQLITE_DONE)
+				break;
+			else {
+				fprintf (stderr, "ERROR: SQL Select Failed.\n");//Trap print?
+				break;
+			}
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (newRank_self == 0) { //We wern't faster than any times, so set our rank to count (+ 1) ? -- loda checkme
+			newRank_self = oldCount + 1;
+		}
+	}
+
+	if (oldRank_self == -1) {//Confirmed it was their first attempt
+		newCount++; //This race is upping the count since its not replacing an old race
+	}
+
+
+	Com_Printf("ADDING NEW RACE TO DB: %s, %s, %i, %i, %i, %i\n", username_self, coursename_self, style_self, duration_ms_self, oldRank_self, newRank_self);
+
+	//We have all the info we need, now do calculations
+	if (newRank_self != oldRank_self) { //Do this before messing with out race list rank
+		G_UpdateOtherLocalRun(db, newRank_self, oldRank_self, style_self, coursename_self); //Update other spots in race list
+		G_UpdateOtherRaceRank(db, newCount, oldCount, newRank_self, oldRank_self, style_self, username_self, coursename_self); //Update other RaceRanks
+	}
+
+	G_UpdateOurLocalRun(db, oldRank_self, newRank_self, style_self, username_self, coursename_self, duration_ms_self, topspeed_self, average_self, end_time_self);//Update our race list
+
+	if (newRank_self != oldRank_self) { //Only update if rankings changed
+		G_UpdateOurRaceRank(db, newCount, oldCount, newRank_self, oldRank_self, style_self, username_self); //Update our RaceRanks
+	}
+
+	if (newDB) {
+		CALL_SQLITE (close(db));
+	}
+
+}
+#endif
 
 #if 0
 void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldRank_self, int newRank_self, sqlite3 * db) {
@@ -1352,7 +1844,7 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 	qboolean newDB = qfalse;
 	char * sql;
     sqlite3_stmt * stmt;
-	int s, rank, id_self;
+	int s, rank;
 	float oldScore, newScore, oldScore_self, newScore_self, oldPercentile_self, newPercentile_self, oldPercentile, newPercentile;
 	char username[40];
 
@@ -1456,10 +1948,16 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 
 	if (oldRank_self == -1) {//Their first attempt
 		newCount++; //this race is upping the count since its not replacing an old race
+
+		//Insert into DB?
+
 	}
 	else {//Not their first attempt
 		//delete old record.. here?
-		sql = "DELETE FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?";
+
+		//Update entry
+
+		sql = "DELETE FROM LocalRun WHERE username = ? AND coursename = ? AND style = ?"; //loda fixme cheaper to update?
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
@@ -1469,6 +1967,28 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 			trap->Print( "Error: Could not write to database: %i.\n", s);
 		CALL_SQLITE (finalize(stmt));
 	}
+
+	//Update other rank lists first
+	if (oldRank_self == -1) //First attempt
+		sql = "UPDATE LocalRun SET rank = rank + 1 WHERE coursename = ? and style = ? and rank >= ?";
+	else
+		sql = "UPDATE LocalRun SET rank = rank + 1 WHERE coursename = ? and style = ? and rank >= ? and rank < ?";
+
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		CALL_SQLITE (bind_int (stmt, 3, newRank_self));
+
+		if (oldRank_self != -1)
+			CALL_SQLITE (bind_int (stmt, 4, oldRank_self));
+
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+
+
 
 	//Add new record to db here?
 	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";	 //loda fixme, make multiple?
@@ -1493,6 +2013,118 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 	//For our own player.. do medals and racerank stuff.
 	newScore_self = (float)newCount / (float)(newRank_self);
 	newPercentile_self = ((float)newCount - ((float)newRank_self - 1)) / (float)newCount; //eh?
+
+	//If raceRank row exists for that username,style, Update it with X , else insert X
+
+
+#if 0
+/*
+	//Update our own record
+	//So we moved from 8 to 3
+	before
+
+	[3] 3
+	[4] 4
+	[5] 5
+	[6] 6 
+	[7] 7
+	[8] oldrank_self
+
+	from new to old-1 inclusive
+
+	after
+
+	[3] newrank_self
+	[4] 3
+	[5] 4
+	[6] 5
+	[7] 6
+	[8] 7
+
+	from new+1 to old inclusive
+	aka from new to old+1 exclusive
+	aka from > new to <= old
+	*/
+#endif
+
+/*
+	if (oldRank_self == -1) {
+			int rank_id, rankCount;
+
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, golds = golds + 1, count = count + 1 WHERE id = ?";//Save rank into row
+			else if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, silvers = silvers + 1, count = count + 1 WHERE id = ?";//Save rank into row
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, bronzes = bronzes + 1, count = count + 1 WHERE id = ?";//Save rank into row
+			else 
+				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, count = count + 1 WHERE id = ?";//Save rank into row
+			CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+			CALL_SQLITE (bind_double (stmt, 1, newScore_self));
+			CALL_SQLITE (bind_double (stmt, 2, newPercentile_self));
+			CALL_SQLITE (bind_int (stmt, 3, newRank_self));
+			CALL_SQLITE (bind_int (stmt, 4, rank_id));
+			s = sqlite3_step(stmt);
+			if (s != SQLITE_DONE)
+				trap->Print( "Error: Could not write to database: %i.\n", s);
+			CALL_SQLITE (finalize(stmt));
+	}
+	else {
+
+		oldScore_self = (float)oldCount / (float)(oldRank_self);
+		oldPercentile_self = ((float)oldCount - ((float)oldRank_self - 1)) / (float)oldCount; //eh?
+
+		if (oldRank_self == 1) {
+			if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET golds = golds -1, silvers = silvers + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET golds = golds -1, bronzes = bronzes + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else 
+				sql = "UPDATE RaceRanks SET golds = golds -1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		else if (oldRank_self == 2) {
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET silvers = silvers -1, golds = golds + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET silvers = silvers -1, bronzes = bronzes + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else 
+				sql = "UPDATE RaceRanks SET silvers = silvers -1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		else if (oldRank_self == 3) {
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET bronzes = bronzes -1, golds = golds + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET bronzes = bronzes -1, silvers = silvers + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else 
+				sql = "UPDATE RaceRanks SET bronzes = bronzes -1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		else {
+			if (newRank_self == 1)
+				sql = "UPDATE RaceRanks SET golds = golds +1, golds = golds + 1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 2)
+				sql = "UPDATE RaceRanks SET silvers = silvers +1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else if (newRank_self == 3)
+				sql = "UPDATE RaceRanks SET bronzes = bronzes +1, count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+			else
+				sql = "UPDATE RaceRanks SET count = count + 1, score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ? WHERE username = ? and style = ?";
+		}
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_double (stmt, 1, newScore_self - oldScore_self));
+		CALL_SQLITE (bind_double (stmt, 2, newPercentile_self - oldPercentile_self));
+		CALL_SQLITE (bind_int (stmt, 3, newRank_self - oldRank_self));
+		CALL_SQLITE (bind_text (stmt, 4, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 5, style_self));
+		s = sqlite3_step(stmt);
+		if (s != SQLITE_DONE) {
+			trap->Print( "Error: Could not write to database: %i.\n", s);
+		}
+		CALL_SQLITE (finalize(stmt));
+	}
+
+
+	*/
+
+
 
 	if (oldRank_self == -1) { //First try
 		int rank_id, rankCount;
@@ -1519,11 +2151,11 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 		CALL_SQLITE (finalize(stmt));
 
 		if (rankCount == 1) { //Found the entry, so update it.
-			if (rank == 1)
+			if (newRank_self == 1)
 				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, golds = golds + 1, count = count + 1 WHERE id = ?";//Save rank into row
-			else if (rank == 2)
+			else if (newRank_self == 2)
 				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, silvers = silvers + 1, count = count + 1 WHERE id = ?";//Save rank into row
-			else if (rank == 3)
+			else if (newRank_self == 3)
 				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, bronzes = bronzes + 1, count = count + 1 WHERE id = ?";//Save rank into row
 			else 
 				sql = "UPDATE RaceRanks SET score = score + ?, percentilesum = percentilesum + ?, ranksum = ranksum + ?, count = count + 1 WHERE id = ?";//Save rank into row
@@ -1621,36 +2253,69 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 
 
 	//For other players, do medals and racerank stuff and also up their rank.
-	sql = "SELECT id, username FROM LocalRun WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC LIMIT ?, ?"; //assume just one per person to speed this up..
+	//sql = "SELECT id, username FROM LocalRun WHERE coursename = ? AND style = ? ORDER BY duration_ms ASC LIMIT ?, ?"; //assume just one per person to speed this up..
 
 	//Should this go by rank i think?
 
-	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
-	CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
-	CALL_SQLITE (bind_int (stmt, 2, style_self));
-
 	//Oldrank was 10, new rank is 3
-	//For everyone between 3 and 10
-	//limit 3,(10-3)  ?
+	//For everyone between 3 and 9 inclusive
+	//limit 3,(10-3)  ? --or just trust rank? and do >2 && <10
 
 	//oldrank was -1, newrank is 3
 	//for everyone after 3
 	//limit 3,999 ?
 
-	CALL_SQLITE (bind_int (stmt, 3, newRank_self-1));
-	CALL_SQLITE (bind_int (stmt, 4, (oldRank_self == -1) ? (999) : (oldRank_self - newRank_self) ));
-	rank = newRank_self;
+	//rank = rank + 1 where rank > oldrank? and rank < newrank?
+	//If we were gold then remove other gold and add silver, remove other silver and add bronze, remove other bronze
+	//if we were silver then remove other silver and add bronze, remove other bronze
+	//if we were bronze then remove other bronze
+
+	//update localrun where coursename = ? and style = ? and rank > ? and rank < ? set rank = rank + 1  //Easy?
+
+	//return;
+
+	//Now for raceranks
+	//get list of them
+	/*
+	select username from localrun where coursename = ? and style = ? and rank < ? and rank > ?
+	for each item
+			oldrank = i + oldrank_self
+			newrank = oldrank + 1
+
+			oldpercentile = oldrank / oldcount
+			newpercentile = newrank / newcount
+
+			if oldrank == 1, 2 3, do the golds/silvers/bronzes shit and the update.. 
+
+			else //just the standard update
+				update raceranks where username = ? and style = ? set percentilesum = percentilesum - oldpercentile + newpercentile
+
+			and so on...
+		*/
+
+//////
+
+	if (oldRank_self == -1) //First attempt
+		sql = "SELECT username, rank from LocalRun WHERE coursename = ? AND style = ? AND rank >= ?";
+	else
+		sql = "SELECT username, rank from LocalRun WHERE coursename = ? AND style = ? AND rank >= ? AND rank < ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 2, style_self));
+	CALL_SQLITE (bind_int (stmt, 3, newRank_self));
+	if (oldRank_self != -1)
+		CALL_SQLITE (bind_int (stmt, 4, oldRank_self)); //fixme
+
 	while (1) {
 		s = sqlite3_step(stmt);
 		if (s == SQLITE_ROW) {
-			id_self = sqlite3_column_int(stmt, 0);
-			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 1), sizeof(username));
+			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
+			rank = sqlite3_column_int(stmt, 1);
 
-
-			if (Q_stricmp(username_self, username)) { //Someone else, since we have already calculated everything for self
+			//if (Q_stricmp(username_self, username)) { //Someone else, since we have already calculated everything for self  -- Move this up after the delete from localrun so we dont have to check this
+			{
 				sqlite3_stmt * stmt2;
-				int oldRank = rank; // ??
-				int newRank = rank - 1; // ??
+
 				//Old score was..
 					//OldCount / Rank
 				//New score is
@@ -1659,19 +2324,10 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 				//Add score diff to score of that style in raceranks
 				//Add +1 to count of that style in raceranks
 
-				oldScore = (float)oldCount / (float)oldRank;
-				newScore = (float)newCount / (float)newRank;
-				oldPercentile = ((float)oldCount - ((float)oldRank - 1)) / (float)oldCount; //eh?
-				newPercentile = ((float)newCount - ((float)newRank - 1)) / (float)newCount; //eh?
-
-				//Add +1 to rank
-				sql = "UPDATE LocalRun SET rank = rank + 1 WHERE id = ?";
-				CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt2, NULL));
-				CALL_SQLITE (bind_int (stmt2, 1, id_self));
-				s = sqlite3_step(stmt2);
-				if (s != SQLITE_DONE)
-					trap->Print( "Error: Could not write to database: %i.\n", s);
-				CALL_SQLITE (finalize(stmt2));
+				oldScore = (float)oldCount / (float)rank;
+				newScore = (float)newCount / (float)(rank+1);
+				oldPercentile = ((float)oldCount - ((float)rank - 1)) / (float)oldCount; //eh?
+				newPercentile = ((float)newCount - ((float)(rank+1) - 1)) / (float)newCount; //eh?
 
 				//Update RaceRanks medals, score, percentile, ranksmu
 				if (rank == 2)
@@ -1693,12 +2349,13 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 				CALL_SQLITE (finalize(stmt2));
 
 
-				Com_Printf("Updating rank and score for other player %s, score += %.2f, psum += %.2f, oldrank %i, newrank %i\n", username, newScore - oldScore, newPercentile - oldPercentile, oldRank, newRank);
+				Com_Printf("Updating rank and score for other player %s, score += %.2f, psum += %.2f, oldrank %i, newrank %i\n", username, newScore - oldScore, newPercentile - oldPercentile, rank, rank+1);
 
 				
 				//Oh fuck, but someones score can increase if someone new completes the course? if new player is ranked worse than them?
 
 
+			//}
 			}
 
 			rank++;
@@ -1725,7 +2382,6 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 	//so much less expensive to get with an sql query
 
 }
-#endif
 #endif
 
 void StripWhitespace(char *s);
