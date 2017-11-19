@@ -1448,6 +1448,58 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int oldRank_self, int newRank_self
 	sqlite3_stmt * stmt;
 	int s;
 
+
+
+
+	/*
+	sql = "UPDATE LocalRun SET duration_ms = ?, topspeed = ?, average = ?, end_time = ? WHERE username = ? AND coursename = ? AND style = ?";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_int (stmt, 1, duration_ms_self));
+	CALL_SQLITE (bind_int (stmt, 2, topspeed_self));
+	CALL_SQLITE (bind_int (stmt, 3, average_self));
+	CALL_SQLITE (bind_int (stmt, 4, end_time_self));
+	CALL_SQLITE (bind_text (stmt, 5, username_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 6, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 7, style_self));
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE)
+		trap->Print( "Error: Could not write to database: %i.\n", s);
+	CALL_SQLITE (finalize(stmt));
+
+	sql = "INSERT INTO LocalRun (username, coursename, duration_ms, topspeed, average, style, end_time, rank) SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE (Select Changes() = 0)";
+	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+	CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_text (stmt, 2, coursename_self, -1, SQLITE_STATIC));
+	CALL_SQLITE (bind_int (stmt, 3, duration_ms_self));
+	CALL_SQLITE (bind_int (stmt, 4, topspeed_self));
+	CALL_SQLITE (bind_int (stmt, 5, average_self));
+	CALL_SQLITE (bind_int (stmt, 6, style_self));
+	CALL_SQLITE (bind_int (stmt, 7, end_time_self));
+	CALL_SQLITE (bind_int (stmt, 8, 0)); //Newrank not calculated
+	s = sqlite3_step(stmt);
+	if (s != SQLITE_DONE) {
+		char string[1024] = {0};
+
+		Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, end_time_self);
+		trap->FS_Write( string, strlen( string ), level.failRaceLog );
+
+		trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
+	}
+	CALL_SQLITE (finalize(stmt));
+	*/
+
+/*
+	if (oldRank_self == -1) { //First attempt
+		//Insert into
+	}
+	else { //Not first attempt
+		//Update existing
+	}
+*/
+
+
+
+
 	if (oldRank_self != -1) {//Not our first attempt
 		//delete old record.. here?
 
@@ -1477,7 +1529,13 @@ static void G_UpdateOurLocalRun(sqlite3 * db, int oldRank_self, int newRank_self
 	CALL_SQLITE (bind_int (stmt, 8, newRank_self));
 	s = sqlite3_step(stmt);
 	if (s != SQLITE_DONE) {
-		trap->Print( "Error: Could not write to database: %i.\n", s);
+		char string[1024] = {0};
+
+		Com_sprintf(string, sizeof(string), "%s;%s;%i;%i;%i;%i;%i\n", username_self, coursename_self, duration_ms_self, topspeed_self, average_self, style_self, end_time_self);
+		trap->FS_Write( string, strlen( string ), level.failRaceLog );
+
+		trap->Print( "Error: Could not write to database: %i.\n", s); //Write to race error log
+
 	}
 	CALL_SQLITE (finalize(stmt));
 
@@ -1705,6 +1763,7 @@ static void G_UpdateOtherRaceRank(sqlite3 * db, int newCount, int oldCount, int 
 
 				
 				//Oh fuck, but someones score can increase if someone new completes the course? if new player is ranked worse than them?
+				//God dammit.
 
 
 			//}
@@ -1726,9 +1785,11 @@ static void G_UpdateOtherRaceRank(sqlite3 * db, int newCount, int oldCount, int 
 #if _NEWRACERANKING
 void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self, int duration_ms_self, int average_self, int topspeed_self, int end_time_self, int oldRank_self, int newRank_self, sqlite3 * db) {
 	char * sql;
-    sqlite3_stmt * stmt;
+	sqlite3_stmt * stmt;
 	qboolean newDB;
 	int s, oldCount = 0, newCount = 0;
+
+	Com_Printf("start of function, oldrank_self is %i\n", oldRank_self);
 
 	if (!db) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db)); 
@@ -1751,6 +1812,31 @@ void G_AddNewRaceToDB(char *username_self, char *coursename_self, int style_self
 		return;
 	}
 	CALL_SQLITE (finalize(stmt));
+
+
+/* //Requires every row to have proper rank field, but is better performance
+	if (oldRank_self == 0) {
+		sql = "SELECT rank FROM LocalRun  WHERE username = ? coursename = ? AND style = ?";
+		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
+		CALL_SQLITE (bind_text (stmt, 1, username_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_text (stmt, 1, coursename_self, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 2, style_self));
+		s = sqlite3_step(stmt);
+		if (s == SQLITE_ROW) {
+			oldRank_self = sqlite3_column_int(stmt, 0);
+		}
+		else if (s != SQLITE_DONE) {
+			fprintf (stderr, "ERROR: SQL Select Failed.\n");//trap print?
+			CALL_SQLITE (finalize(stmt));
+			return;
+		}
+		CALL_SQLITE (finalize(stmt));
+
+		if (oldRank_self == 0) //Didn't find any old rank.
+			oldRank_self = -1;
+	}
+*/
+
 
 	if (oldRank_self == 0) { //Unknown what their old rank was, find it.  If nothing found, oldRank_self = -1.
 		int i = 1; //1st place is rank 1
@@ -2493,7 +2579,9 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 		Q_strncpyz(HighScores[course][style][newRank].end_time, "Just now", sizeof(HighScores[course][style][newRank].end_time));
 
 #if _NEWRACERANKING
-		G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, rowToDelete >= 0 ? rowToDelete + 1 : rowToDelete, newRank+1, 0); //Its ok if oldrank or newrank is unknown, we will get that in the function if we have to.
+		//I guess we cant get oldRank here since it only checks from 0-10.  //it was was "rowToDelete >= 0 ? rowToDelete + 1 : rowToDelete"
+		//I think we could do if (rowToDelete < 9) then its actually their old rank..? Otherwise its just making room for new spots..
+		G_AddNewRaceToDB(username, courseName, style, duration_ms, average, topspeed, rawtime, 0, newRank+1, 0); //Its ok if oldrank or newrank is unknown, we will get that in the function if we have to.
 #else
 		if (level.tempRaceLog) //Lets try only writing to temp file if we know its a highscore
 			trap->FS_Write(string, strlen(string), level.tempRaceLog ); //Always write to text file, this file is remade every mapchange and its contents are put to database.
