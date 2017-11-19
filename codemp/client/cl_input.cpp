@@ -1331,7 +1331,7 @@ CL_CreateCmd
 usercmd_t CL_CreateCmd( void ) {
 	usercmd_t	cmd;
 	vec3_t		oldAngles;
-
+	
 	VectorCopy( cl.viewangles, oldAngles );
 
 	// keyboard angle adjustment
@@ -1340,6 +1340,22 @@ usercmd_t CL_CreateCmd( void ) {
 	Com_Memset( &cmd, 0, sizeof( cmd ) );
 
 	CL_CmdButtons( &cmd );
+
+	if (!cl.serverTime)cls.afkTime = cls.realtime;
+	else if (cl_afkTime->integer > 0) {
+		if (cmd.buttons != 0 && !(cmd.buttons & BUTTON_TALK)) {
+			cls.afkTime = cls.realtime;
+			if (cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
+				CL_Afk_f();
+			}
+		}
+		else if ((cl_unfocusedTime && cls.realtime - cl_unfocusedTime >= cl_afkTimeUnfocused->value * 60000) ||
+			cls.realtime - cls.afkTime >= cl_afkTime->integer * 60000) {
+			if (!cl_afkName && cls.realtime - cl_nameModifiedTime > 5000) {
+				CL_Afk_f();
+			}
+		}
+	}
 
 	// get basic movement from keyboard
 	CL_KeyMove( &cmd );

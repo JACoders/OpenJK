@@ -304,6 +304,7 @@ void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 		Info_SetValueForKey( info, "hostname", server->hostName);
 		Info_SetValueForKey( info, "mapname", server->mapName);
 		Info_SetValueForKey( info, "clients", va("%i",server->clients));
+		Info_SetValueForKey( info, "filterBots", va("%i", server->filterBots));
 		Info_SetValueForKey( info, "sv_maxclients", va("%i",server->maxClients));
 		Info_SetValueForKey( info, "ping", va("%i",server->ping));
 		Info_SetValueForKey( info, "minping", va("%i",server->minPing));
@@ -411,16 +412,21 @@ int LAN_CompareServers( int source, int sortKey, int sortDir, int s1, int s2 ) {
 			res = Q_stricmp( server1->mapName, server2->mapName );
 			break;
 		case SORT_CLIENTS:
-			if (server1->clients < server2->clients) {
+		{
+			int s1realClients = server1->clients - server1->filterBots;
+			int s2realClients = server2->clients - server2->filterBots;
+
+			if (s1realClients < s2realClients) {
 				res = -1;
 			}
-			else if (server1->clients > server2->clients) {
+			else if (s1realClients > s2realClients) {
 				res = 1;
 			}
 			else {
 				res = 0;
 			}
 			break;
+		}
 		case SORT_GAME:
 			if (server1->gameType < server2->gameType) {
 				res = -1;

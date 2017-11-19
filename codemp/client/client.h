@@ -270,6 +270,7 @@ typedef struct serverInfo_s {
 	int			netType;
 	int			gameType;
 	int		  	clients;
+	int			filterBots;
 	int		  	maxClients;
 	int			minPing;
 	int			maxPing;
@@ -299,6 +300,7 @@ typedef struct clientStatic_s {
 
 	int			realtime;			// ignores pause
 	int			realFrametime;		// ignoring pause, so console always works
+	int			afkTime;
 
 	int			numlocalservers;
 	serverInfo_t	localServers[MAX_OTHER_SERVERS];
@@ -326,6 +328,10 @@ typedef struct clientStatic_s {
 	qhandle_t	charSetShader;
 	qhandle_t	whiteShader;
 	qhandle_t	consoleShader;
+
+	struct {
+		fileHandle_t	chat;
+	} log;
 } clientStatic_t;
 
 #define	CON_TEXTSIZE	0x30000 //was 32768
@@ -347,6 +353,7 @@ typedef struct console_s {
 
 	float	displayFrac;	// aproaches finalFrac at scr_conspeed
 	float	finalFrac;		// 0.0 to 1.0 lines of console to display
+	float	tempFrac;
 
 	int		vislines;		// in scanlines
 
@@ -405,6 +412,7 @@ extern	cvar_t	*cl_activeAction;
 
 extern	cvar_t	*cl_allowDownload;
 extern	cvar_t	*cl_allowAltEnter;
+extern	cvar_t	*cl_allowEnterCompletion;
 extern	cvar_t	*cl_conXOffset;
 extern	cvar_t	*cl_inGameVideo;
 
@@ -412,6 +420,17 @@ extern	cvar_t	*cl_consoleKeys;
 extern	cvar_t	*cl_consoleUseScanCode;
 
 extern  cvar_t  *cl_lanForcePackets;
+
+extern	cvar_t	*cl_drawRecording;
+
+extern cvar_t	*cl_colorString;
+extern cvar_t	*cl_colorStringCount;
+extern cvar_t	*cl_colorStringRandom;
+
+extern cvar_t	*cl_logChat;
+
+extern cvar_t	*cl_afkTime;
+extern cvar_t	*cl_afkTimeUnfocused;
 
 //=================================================
 
@@ -452,7 +471,16 @@ void CL_InitRef( void );
 
 int CL_ServerStatus( const char *serverAddress, char *serverStatusString, int maxLen );
 
+void CL_RandomizeColors(const char*, char*);
+void CL_Afk_f(void);
+
+void CL_LogPrintf(fileHandle_t fileHandle, const char *fmt, ...);
+
 qboolean CL_CheckPaused(void);
+
+extern int		cl_nameModifiedTime;
+extern int		cl_unfocusedTime;
+extern qboolean cl_afkName;
 
 //
 // cl_input
@@ -513,6 +541,13 @@ void Con_Top( void );
 void Con_Bottom( void );
 void Con_Close( void );
 
+void Con_SetFrac(const float conFrac);
+void Con_Copy(void);
+void Con_CopyLink(void);
+
+#ifdef _WIN32
+extern qboolean con_alert;
+#endif
 
 //
 // cl_scrn.c

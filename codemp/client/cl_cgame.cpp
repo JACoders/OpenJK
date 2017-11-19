@@ -485,6 +485,22 @@ rescan:
 	return qtrue;
 }
 
+static void CL_OpenLog(const char *filename, fileHandle_t *f, qboolean sync) {
+	FS_FOpenFileByMode(filename, f, sync ? FS_APPEND_SYNC : FS_APPEND);
+	if (*f)
+		Com_Printf("Logging to %s\n", filename);
+	else
+		Com_Printf("^3WARNING: Couldn't open logfile: %s\n", filename);
+}
+
+static void CL_CloseLog(fileHandle_t *f) {
+	if (!*f)
+		return;
+
+	FS_FCloseFile(*f);
+	*f = NULL_FILE;
+}
+
 /*
 ====================
 CL_ShutdonwCGame
@@ -500,6 +516,9 @@ void CL_ShutdownCGame( void ) {
 	cls.cgameStarted = qfalse;
 
 	CL_UnbindCGame();
+
+	CL_LogPrintf(cls.log.chat, "End logging\n------------------------------------------------------------\n\n");
+	CL_CloseLog(&cls.log.chat);
 }
 
 /*
@@ -564,6 +583,11 @@ void CL_InitCGame( void ) {
 
 	// clear anything that got printed
 	Con_ClearNotify ();
+
+	if (cl_logChat->integer)
+		CL_OpenLog("cl_chat.log", &cls.log.chat, (cl_logChat->integer == 2 ? qtrue : qfalse));
+	else
+		Com_Printf("Not logging chat to disk.\n");
 }
 
 
@@ -769,10 +793,10 @@ void CL_SetCGameTime( void ) {
 			tn = 900;
 		}
 #else
-		if (tn<-30) {
-			tn = -30;
-		} else if (tn>30) {
-			tn = 30;
+		if (tn<-1000) {
+			tn = -1000;
+		} else if (tn>200) {
+			tn = 200;
 		}
 #endif
 

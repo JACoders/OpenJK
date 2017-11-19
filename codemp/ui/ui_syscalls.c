@@ -43,7 +43,7 @@ int PASSFLOAT( float x ) {
 void trap_Print( const char *string ) {
 	Q_syscall( UI_PRINT, string );
 }
-void trap_Error( const char *string ) {
+NORETURN void trap_Error( const char *string ) {
 	Q_syscall( UI_ERROR, string );
 	exit(1);
 }
@@ -469,7 +469,7 @@ void UISyscall_RemoveCommand( const char *cmd_name )
 	Com_Printf( S_COLOR_YELLOW "WARNING: trap->ext.RemoveCommand() is only supported with OpenJK mod API!\n" );
 }
 
-void QDECL UI_Error( int level, const char *error, ... ) {
+NORETURN void QDECL UI_Error( int level, const char *error, ... ) {
 	va_list argptr;
 	char text[4096] = {0};
 

@@ -727,12 +727,12 @@ set(GameLibFullPaths)
 
 	include(InstallZIP)
 	add_zip_command(${AssetsPk3}
-		FILES ${GameLibFullPaths}
+		FILES ${GameLibFullPaths} ${CMAKE_SOURCE_DIR}/assets/*
 		DEPENDS "${GameLibsBuilt}")
 	add_custom_target(Assets
 		ALL
 		DEPENDS ${AssetsPk3})
 	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${AssetsPk3}
-		DESTINATION "${JKAInstallDir}/OpenJK"
+		DESTINATION "${JKAInstallDir}/eternaljk"
 		COMPONENT ${JKAMPCoreComponent})
 endif()

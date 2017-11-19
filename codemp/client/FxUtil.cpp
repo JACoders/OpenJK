@@ -110,8 +110,8 @@ int	FX_Init( refdef_t* refdef )
 	fx_freeze = Cvar_Get("fx_freeze", "0", CVAR_CHEAT);
 #endif
 	fx_debug = Cvar_Get("fx_debug", "0", CVAR_TEMP);
-	fx_countScale = Cvar_Get("fx_countScale", "1", CVAR_ARCHIVE);
-	fx_nearCull = Cvar_Get("fx_nearCull", "16", CVAR_ARCHIVE);
+	fx_countScale = Cvar_Get("fx_countScale", "1", CVAR_ARCHIVE_ND);
+	fx_nearCull = Cvar_Get("fx_nearCull", "16", CVAR_ARCHIVE_ND);
 
 	theFxHelper.ReInit(refdef);
 

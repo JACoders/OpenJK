@@ -24,11 +24,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 // cvar.c -- dynamic variable tracking
 
-#include <vector>
-#include <algorithm>
 #include "qcommon/qcommon.h"
-
-typedef std::vector<cvar_t *> CvarPtrVector;
 
 cvar_t		*cvar_vars = NULL;
 cvar_t		*cvar_cheats;
@@ -40,6 +36,7 @@ int			cvar_numIndexes;
 
 #define FILE_HASH_SIZE		512
 static	cvar_t*		hashTable[FILE_HASH_SIZE];
+static	qboolean cvar_sort = qfalse;
 
 static char *lastMemPool = NULL;
 static int memPoolSize;
@@ -500,7 +497,73 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, uint32_t flags, c
 	var->hashPrev = NULL;
 	hashTable[hash] = var;
 
+	// sort on write
+	cvar_sort = qtrue;
+
 	return var;
+}
+
+static void Cvar_QSortByName( cvar_t **a, int n ) 
+{
+	cvar_t *temp;
+	cvar_t *m;
+	int	i, j; 
+
+	i = 0;
+	j = n;
+	m = a[ n>>1 ];
+
+	do {
+		// sort in descending order
+		while ( strcmp( a[i]->name, m->name ) > 0 ) i++;
+		while ( strcmp( a[j]->name, m->name ) < 0 ) j--;
+
+		if ( i <= j ) {
+			temp = a[i]; 
+			a[i] = a[j]; 
+			a[j] = temp;
+			i++; 
+			j--;
+		}
+	} while ( i <= j );
+
+	if ( j > 0 ) Cvar_QSortByName( a, j );
+	if ( n > i ) Cvar_QSortByName( a+i, n-i );
+}
+
+
+static void Cvar_Sort( void ) 
+{
+	cvar_t *list[ MAX_CVARS ], *var;
+	int count;
+	int i;
+
+	for ( count = 0, var = cvar_vars; var; var = var->next ) {
+		if ( var->name ) {
+			list[ count++ ] = var;
+		} else {
+			Com_Error( ERR_FATAL, "Cvar_Sort: NULL cvar name" );
+		}
+	}
+
+	if ( count < 2 ) {
+		return; // nothing to sort
+	}
+
+	Cvar_QSortByName( &list[0], count-1 );
+	
+	cvar_vars = NULL;
+
+	// relink cvars
+	for ( i = 0; i < count; i++ ) {
+		var = list[ i ];
+		// link the variable in
+		var->next = cvar_vars;
+		if ( cvar_vars )
+			cvar_vars->prev = var;
+		var->prev = NULL;
+		cvar_vars = var;
+	}
 }
 
 /*
@@ -1082,11 +1145,6 @@ void Cvar_Reset_f( void ) {
 	Cvar_Reset( Cmd_Argv( 1 ) );
 }
 
-bool CvarSort(const cvar_t *cv1, const cvar_t *cv2)
-{
-	return Q_stricmp(cv1->name, cv2->name) < 0;
-}
-
 /*
 ============
 Cvar_WriteVariables
@@ -1096,39 +1154,45 @@ with the archive flag set to qtrue.
 ============
 */
 void Cvar_WriteVariables( fileHandle_t f ) {
-	CvarPtrVector cvars;
-	for (cvar_t *var = cvar_vars ; var ; var = var->next) {
-		if( !var->name )
-			continue;
+	cvar_t	*var;
+	char buffer[1024];
 
-		if( var->flags & CVAR_ARCHIVE ) {
-			cvars.push_back( var );
-		}
+	if ( cvar_sort ) {
+		Com_DPrintf( "Cvar_Sort: sort cvars\n" );
+		cvar_sort = qfalse;
+		Cvar_Sort();
 	}
 
-	std::sort( cvars.begin(), cvars.end(), CvarSort );
-
-	CvarPtrVector::const_iterator itr;
-	char buffer[1024];
-	for ( itr = cvars.begin(); itr != cvars.end(); ++itr )
+	for ( var = cvar_vars; var; var = var->next )
 	{
-		// write the latched value, even if it hasn't taken effect yet
-		if ( (*itr)->latchedString ) {
-			if( strlen( (*itr)->name ) + strlen( (*itr)->latchedString ) + 10 > sizeof( buffer ) ) {
-				Com_Printf( S_COLOR_YELLOW "WARNING: value of variable "
-						"\"%s\" too long to write to file\n", (*itr)->name );
-				continue;
+		if ( !var->name || Q_stricmp( var->name, "cl_cdkey" ) == 0 )
+			continue;
+
+		if ( var->flags & CVAR_ARCHIVE ) {
+			// write the latched value, even if it hasn't taken effect yet
+			if ( var->latchedString ) {
+				if( strlen( var->name ) + strlen( var->latchedString ) + 10 > sizeof( buffer ) ) {
+					Com_Printf( S_COLOR_YELLOW "WARNING: value of variable "
+							"\"%s\" too long to write to file\n", var->name );
+					continue;
+				}
+				if ( (var->flags & CVAR_NODEFAULT) && !strcmp( var->latchedString, var->resetString ) ) {
+					continue;
+				}
+				Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", var->name, var->latchedString);
+			} else {
+				if( strlen( var->name ) + strlen( var->string ) + 10 > sizeof( buffer ) ) {
+					Com_Printf( S_COLOR_YELLOW "WARNING: value of variable "
+							"\"%s\" too long to write to file\n", var->name );
+					continue;
+				}
+				if ( (var->flags & CVAR_NODEFAULT) && !strcmp( var->string, var->resetString ) ) {
+					continue;
+				}
+				Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", var->name, var->string);
 			}
-			Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", (*itr)->name, (*itr)->latchedString);
-		} else {
-			if( strlen( (*itr)->name ) + strlen( (*itr)->string ) + 10 > sizeof( buffer ) ) {
-				Com_Printf( S_COLOR_YELLOW "WARNING: value of variable "
-						"\"%s\" too long to write to file\n", (*itr)->name );
-				continue;
-			}
-			Com_sprintf (buffer, sizeof(buffer), "seta %s \"%s\"\n", (*itr)->name, (*itr)->string);
+			FS_Write( buffer, strlen( buffer ), f );
 		}
-		FS_Write( buffer, strlen( buffer ), f );
 	}
 }
 
@@ -1141,7 +1205,6 @@ void Cvar_List_f( void ) {
 	cvar_t *var = NULL;
 	int i = 0;
 	char *match = NULL;
-	CvarPtrVector cvars;
 
 	if ( Cmd_Argc() > 1 )
 		match = Cmd_Argv( 1 );
@@ -1153,19 +1216,6 @@ void Cvar_List_f( void ) {
 		if ( !var->name || (match && !Com_Filter( match, var->name, qfalse )) )
 			continue;
 
-		cvars.push_back( var );
-	}
-
-
-	// sort list alphabetically
-	std::sort( cvars.begin(), cvars.end(), CvarSort );
-
-	CvarPtrVector::const_iterator itr;
-	for ( itr = cvars.begin();
-		itr != cvars.end();
-		++itr )
-	{
-		var = (*itr);
 		if (var->flags & CVAR_SERVERINFO)	Com_Printf( "S" );	else Com_Printf( " " );
 		if (var->flags & CVAR_SYSTEMINFO)	Com_Printf( "s" );	else Com_Printf( " " );
 		if (var->flags & CVAR_USERINFO)		Com_Printf( "U" );	else Com_Printf( " " );
@@ -1189,37 +1239,46 @@ void Cvar_List_f( void ) {
 
 void Cvar_ListModified_f( void ) {
 	cvar_t *var = NULL;
-	int i = 0;
-	CvarPtrVector cvars;
 
 	// build a list of cvars that are modified
-	for ( var=cvar_vars, i=0;
+	for ( var=cvar_vars;
 		var;
-		var=var->next, i++ )
+		var=var->next )
 	{
 		char *value = var->latchedString ? var->latchedString : var->string;
 		if ( !var->name || !var->modificationCount || !strcmp( value, var->resetString ) )
 			continue;
 
-		cvars.push_back( var );
-	}
-
-	// sort list alphabetically
-	std::sort( cvars.begin(), cvars.end(), CvarSort );
-
-	// print them
-	CvarPtrVector::const_iterator itr;
-	for ( itr = cvars.begin();
-		itr != cvars.end();
-		++itr )
-	{
-		char *value = (*itr)->latchedString ? (*itr)->latchedString : (*itr)->string;
-
 		Com_Printf( S_COLOR_GREY "Cvar "
 			S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE ", "
 			S_COLOR_WHITE "default = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n",
-			(*itr)->name, value, (*itr)->resetString );
+			var->name, value, var->resetString );
 	}
+}
+
+void Cvar_ListUserCreated_f( void ) {
+	cvar_t *var = NULL;
+	uint32_t count = 0;
+
+	// build a list of cvars that are modified
+	for ( var=cvar_vars;
+		var;
+		var=var->next )
+	{
+		char *value = var->latchedString ? var->latchedString : var->string;
+		if ( !(var->flags & CVAR_USER_CREATED) )
+			continue;
+
+		Com_Printf( S_COLOR_GREY "Cvar "
+			S_COLOR_WHITE "%s = " S_COLOR_GREY "\"" S_COLOR_WHITE "%s" S_COLOR_GREY "\"" S_COLOR_WHITE "\n",
+			var->name, value );
+		count++;
+	}
+
+	if ( count > 0 )
+		Com_Printf( S_COLOR_GREY "Showing " S_COLOR_WHITE "%u" S_COLOR_GREY " user created cvars" S_COLOR_WHITE "\n", count );
+	else
+		Com_Printf( S_COLOR_GREY "No user created cvars" S_COLOR_WHITE "\n" );
 }
 
 /*
@@ -1294,6 +1353,29 @@ void Cvar_Unset_f(void)
 		Cvar_Unset(cv);
 	else
 		Com_Printf("Error: %s: Variable %s is not user created.\n", Cmd_Argv(0), cv->name);
+}
+
+void Cvar_UnsetUserCreated_f(void)
+{
+	cvar_t	*curvar = cvar_vars;
+	uint32_t count = 0;
+
+	while ( curvar )
+	{
+		if ( ( curvar->flags & CVAR_USER_CREATED ) )
+		{
+			// throw out any variables the user created
+			curvar = Cvar_Unset( curvar );
+			count++;
+			continue;
+		}
+		curvar = curvar->next;
+	}
+
+	if ( count > 0 )
+		Com_Printf( S_COLOR_GREY "Removed " S_COLOR_WHITE "%u" S_COLOR_GREY " user created cvars" S_COLOR_WHITE "\n", count );
+	else
+		Com_Printf( S_COLOR_GREY "No user created cvars to remove" S_COLOR_WHITE "\n" );
 }
 
 /*
@@ -1530,7 +1612,9 @@ void Cvar_Init (void) {
 	Cmd_SetCommandCompletionFunc( "reset", Cvar_CompleteCvarName );
 	Cmd_AddCommand( "unset", Cvar_Unset_f, "Unset a user generated cvar" );
 	Cmd_SetCommandCompletionFunc( "unset", Cvar_CompleteCvarName );
+	Cmd_AddCommand( "unset_usercreated", Cvar_UnsetUserCreated_f, "Unset all user generated cvars " S_COLOR_RED "Use with caution!" S_COLOR_WHITE );
 	Cmd_AddCommand( "cvarlist", Cvar_List_f, "Show all cvars" );
+	Cmd_AddCommand( "cvar_usercreated", Cvar_ListUserCreated_f, "Show all user created cvars" );
 	Cmd_AddCommand( "cvar_modified", Cvar_ListModified_f, "Show all modified cvars" );
 	Cmd_AddCommand( "cvar_restart", Cvar_Restart_f, "Resetart the cvar sub-system" );
 }
