@@ -2170,10 +2170,15 @@ static qboolean PM_CheckJump( void )
 			if ( PM_ForceJumpingUp() )
 			{//holding jump in air
 				float curHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
+				float realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];
+				if (PM_GetMovePhysics() == 2) { //If we have forcejump rampjump, we should be able to jump higher
+					realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / 270.0f);
+				}
+
 				//check for max force jump level and cap off & cut z vel
 				if ( ( curHeight<=forceJumpHeight[0] ||//still below minimum jump height
 						(pm->ps->fd.forcePower&&pm->cmd.upmove>=10) ) &&////still have force power available and still trying to jump up 
-					curHeight < forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] &&
+					curHeight < realForceJumpHeight &&
 					pm->ps->fd.forceJumpZStart)//still below maximum jump height
 				{//can still go up
 #ifdef _CGAME
