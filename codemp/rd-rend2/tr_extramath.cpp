@@ -249,10 +249,12 @@ uint32_t ReverseBits(uint32_t v)
 	return v;
 }
 
-float GSmithCorrelated(float roughness, float ndotv, float ndotl)
+float GSmithCorrelated(float roughness, float NdotV, float NdotL)
 {
-	float m2 = roughness * roughness;
-	float visV = ndotl * sqrt(ndotv * (ndotv - ndotv * m2) + m2);
-	float visL = ndotv * sqrt(ndotl * (ndotl - ndotl * m2) + m2);
+	const float m = roughness * roughness;
+	const float m2 = m * m;
+	const float visV = NdotL * sqrtf(NdotV * (NdotV - NdotV * m2) + m2);
+	const float visL = NdotV * sqrtf(NdotL * (NdotL - NdotL * m2) + m2);
+
 	return 0.5f / (visV + visL);
 }
