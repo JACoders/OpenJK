@@ -2898,6 +2898,8 @@ static void R_CreateEnvBrdfLUT(void) {
 		{
 			float const gloss = (x + 0.5f) / LUT_WIDTH;
 			float const roughness = powf(1.0f - gloss, 2.0f);
+			float const m = roughness * roughness;
+			float const m2 = m * m;
 
 			float scale = 0.0f;
 			float bias = 0.0f;
@@ -2908,7 +2910,7 @@ static void R_CreateEnvBrdfLUT(void) {
 				float const e2 = (float)((double)ReverseBits(i) / (double)0x100000000LL);
 
 				float const phi = 2.0f * M_PI * e1;
-				float const cosTheta = sqrtf((1.0f - e2) / (1.0f + (roughness * roughness - 1.0f) * e2));
+				float const cosTheta = sqrtf((1.0f - e2) / (1.0f + (m2 - 1.0f) * e2));
 				float const sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
 
 				float const hx = sinTheta * cosf(phi);
