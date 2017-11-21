@@ -141,12 +141,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define Q_EXPORT
 #endif
 
-#if defined(__GNUC__)
-#define NORETURN __attribute__((noreturn))
-#elif defined(_MSC_VER)
-#define NORETURN __declspec(noreturn)
-#endif
-
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
@@ -457,6 +451,9 @@ default values.
 #define CVAR_SERVER_CREATED	2048	// cvar was created by a server the client connected to.
 #define CVAR_VM_CREATED		4096	// cvar was created exclusively in one of the VMs.
 #define CVAR_PROTECTED		8192	// prevent modifying this var from VMs or the server
+#define CVAR_NODEFAULT		16384	// do not write to config if matching with default value
+
+#define CVAR_ARCHIVE_ND		(CVAR_ARCHIVE | CVAR_NODEFAULT)
 // These flags are only returned by the Cvar_Flags() function
 #define CVAR_MODIFIED		0x40000000		// Cvar was modified
 #define CVAR_NONEXISTENT	0x80000000		// Cvar doesn't exist.

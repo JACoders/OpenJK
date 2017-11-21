@@ -955,13 +955,13 @@ void SV_Init (void) {
 	
 	//cvar_t	*sv_ratePolicy;		// 1-2
 	//cvar_t	*sv_clientRate;
-	sv_ratePolicy = Cvar_Get( "sv_ratePolicy", "1", CVAR_ARCHIVE, "Determines which policy of enforcement is used for client's \"rate\" cvar" );
+	sv_ratePolicy = Cvar_Get( "sv_ratePolicy", "1", CVAR_ARCHIVE_ND, "Determines which policy of enforcement is used for client's \"rate\" cvar" );
 	Cvar_CheckRange(sv_ratePolicy, 1, 2, qtrue);
-	sv_clientRate = Cvar_Get( "sv_clientRate", "50000", CVAR_ARCHIVE);
-	sv_minRate = Cvar_Get ("sv_minRate", "0", CVAR_ARCHIVE | CVAR_SERVERINFO, "Min bandwidth rate allowed on server. Use 0 for unlimited." );
-	sv_maxRate = Cvar_Get ("sv_maxRate", "0", CVAR_ARCHIVE | CVAR_SERVERINFO, "Max bandwidth rate allowed on server. Use 0 for unlimited." );
-	sv_minPing = Cvar_Get ("sv_minPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
-	sv_maxPing = Cvar_Get ("sv_maxPing", "0", CVAR_ARCHIVE | CVAR_SERVERINFO );
+	sv_clientRate = Cvar_Get( "sv_clientRate", "50000", CVAR_ARCHIVE_ND);
+	sv_minRate = Cvar_Get ("sv_minRate", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Min bandwidth rate allowed on server. Use 0 for unlimited." );
+	sv_maxRate = Cvar_Get ("sv_maxRate", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Max bandwidth rate allowed on server. Use 0 for unlimited." );
+	sv_minPing = Cvar_Get ("sv_minPing", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO );
+	sv_maxPing = Cvar_Get ("sv_maxPing", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO );
 	sv_floodProtect = Cvar_Get ("sv_floodProtect", "1", CVAR_ARCHIVE | CVAR_SERVERINFO, "Protect against flooding of server commands" );
 	// systeminfo
 	Cvar_Get ("sv_cheats", "1", CVAR_SYSTEMINFO | CVAR_ROM, "Allow cheats on server if set to 1" );
@@ -975,9 +975,9 @@ void SV_Init (void) {
 	// server vars
 	sv_rconPassword = Cvar_Get ("rconPassword", "", CVAR_TEMP );
 	sv_privatePassword = Cvar_Get ("sv_privatePassword", "", CVAR_TEMP );
-	sv_snapsMin = Cvar_Get ("sv_snapsMin", "10", CVAR_ARCHIVE ); // 1 <=> sv_snapsMax
-	sv_snapsMax = Cvar_Get ("sv_snapsMax", "40", CVAR_ARCHIVE ); // sv_snapsMin <=> sv_fps
-	sv_snapsPolicy = Cvar_Get ("sv_snapsPolicy", "1", CVAR_ARCHIVE, "Determines which policy of enforcement is used for client's \"snaps\" cvar");
+	sv_snapsMin = Cvar_Get ("sv_snapsMin", "10", CVAR_ARCHIVE_ND ); // 1 <=> sv_snapsMax
+	sv_snapsMax = Cvar_Get ("sv_snapsMax", "40", CVAR_ARCHIVE_ND ); // sv_snapsMin <=> sv_fps
+	sv_snapsPolicy = Cvar_Get ("sv_snapsPolicy", "1", CVAR_ARCHIVE_ND, "Determines which policy of enforcement is used for client's \"snaps\" cvar");
 	Cvar_CheckRange(sv_snapsPolicy, 0, 2, qtrue);
 	sv_fps = Cvar_Get ("sv_fps", "40", CVAR_SERVERINFO, "Server frames per second" );
 	sv_timeout = Cvar_Get ("sv_timeout", "200", CVAR_TEMP );
@@ -988,22 +988,22 @@ void SV_Init (void) {
 	sv_master[0] = Cvar_Get ("sv_master1", MASTER_SERVER_NAME, CVAR_PROTECTED );
 	sv_master[1] = Cvar_Get ("sv_master2", JKHUB_MASTER_SERVER_NAME, CVAR_PROTECTED);
 	for(int index = 2; index < MAX_MASTER_SERVERS; index++)
-		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE|CVAR_PROTECTED);
+		sv_master[index] = Cvar_Get(va("sv_master%d", index + 1), "", CVAR_ARCHIVE_ND|CVAR_PROTECTED);
 	sv_reconnectlimit = Cvar_Get ("sv_reconnectlimit", "3", 0);
 	sv_showghoultraces = Cvar_Get ("sv_showghoultraces", "0", 0);
 	sv_showloss = Cvar_Get ("sv_showloss", "0", 0);
 	sv_padPackets = Cvar_Get ("sv_padPackets", "0", 0);
 	sv_killserver = Cvar_Get ("sv_killserver", "0", 0);
 	sv_mapChecksum = Cvar_Get ("sv_mapChecksum", "", CVAR_ROM);
-	sv_lanForceRate = Cvar_Get ("sv_lanForceRate", "1", CVAR_ARCHIVE );
+	sv_lanForceRate = Cvar_Get ("sv_lanForceRate", "1", CVAR_ARCHIVE_ND );
 
 	sv_filterCommands = Cvar_Get( "sv_filterCommands", "0", CVAR_ARCHIVE );
 
 //	sv_debugserver = Cvar_Get ("sv_debugserver", "0", 0);
 
-	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE | CVAR_SERVERINFO, "Automatically take server-side demos" );
-	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE, "Record server-side demos for bots" );
-	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE );
+	sv_autoDemo = Cvar_Get( "sv_autoDemo", "0", CVAR_ARCHIVE_ND | CVAR_SERVERINFO, "Automatically take server-side demos" );
+	sv_autoDemoBots = Cvar_Get( "sv_autoDemoBots", "0", CVAR_ARCHIVE_ND, "Record server-side demos for bots" );
+	sv_autoDemoMaxMaps = Cvar_Get( "sv_autoDemoMaxMaps", "0", CVAR_ARCHIVE_ND );
 
 	sv_legacyFixForceSelect = Cvar_Get( "sv_legacyFixForceSelect", "1", CVAR_ARCHIVE );
 

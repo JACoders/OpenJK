@@ -103,6 +103,8 @@ cvar_t	*cl_consoleUseScanCode;
 
 cvar_t  *cl_lanForcePackets;
 
+cvar_t	*cl_drawRecording;
+
 vec3_t cl_windVec;
 
 
@@ -1677,7 +1679,7 @@ void CL_ServersResponsePacket( const netadr_t *from, msg_t *msg ) {
 	byte*			buffptr;
 	byte*			buffend;
 
-	Com_Printf("CL_ServersResponsePacket\n");
+	Com_Printf("CL_ServersResponsePacket from %s\n", NET_AdrToString( *from ) );
 
 	if (cls.numglobalservers == -1) {
 		// state to detect lack of servers or lack of response
@@ -2685,11 +2687,11 @@ void CL_Init( void ) {
 	// register our variables
 	//
 	cl_noprint = Cvar_Get( "cl_noprint", "0", 0 );
-	cl_motd = Cvar_Get ("cl_motd", "1", CVAR_ARCHIVE, "Display welcome message from master server on the bottom of connection screen" );
+	cl_motd = Cvar_Get ("cl_motd", "1", CVAR_ARCHIVE_ND, "Display welcome message from master server on the bottom of connection screen" );
 	cl_motdServer[0] = Cvar_Get( "cl_motdServer1", UPDATE_SERVER_NAME, 0 );
 	cl_motdServer[1] = Cvar_Get( "cl_motdServer2", JKHUB_UPDATE_SERVER_NAME, 0 );
 	for ( int index = 2; index < MAX_MASTER_SERVERS; index++ )
-		cl_motdServer[index] = Cvar_Get( va( "cl_motdServer%d", index + 1 ), "", CVAR_ARCHIVE );
+		cl_motdServer[index] = Cvar_Get( va( "cl_motdServer%d", index + 1 ), "", CVAR_ARCHIVE_ND );
 
 	cl_timeout = Cvar_Get ("cl_timeout", "200", 0);
 
@@ -2709,34 +2711,34 @@ void CL_Init( void ) {
 
 	rconAddress = Cvar_Get ("rconAddress", "", 0, "Alternate server address to remotely access via rcon protocol");
 
-	cl_yawspeed = Cvar_Get ("cl_yawspeed", "140", CVAR_ARCHIVE);
-	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE);
-	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE);
+	cl_yawspeed = Cvar_Get ("cl_yawspeed", "140", CVAR_ARCHIVE_ND );
+	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE_ND );
+	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE_ND );
 
 	cl_maxpackets = Cvar_Get ("cl_maxpackets", "63", CVAR_ARCHIVE );
-	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
+	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE_ND );
 
-	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE, "Always run");
+	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE_ND, "Always run");
 	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE, "Mouse sensitivity value");
-	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE, "Mouse acceleration value");
-	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE, "Mouse look" );
+	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE_ND, "Mouse acceleration value");
+	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE_ND, "Mouse look" );
 
 	// 0: legacy mouse acceleration
 	// 1: new implementation
-	cl_mouseAccelStyle = Cvar_Get( "cl_mouseAccelStyle", "0", CVAR_ARCHIVE, "Mouse accelration style (0:legacy, 1:QuakeLive)" );
+	cl_mouseAccelStyle = Cvar_Get( "cl_mouseAccelStyle", "0", CVAR_ARCHIVE_ND, "Mouse accelration style (0:legacy, 1:QuakeLive)" );
 	// offset for the power function (for style 1, ignored otherwise)
 	// this should be set to the max rate value
-	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE, "Mouse acceleration offset for style 1" );
+	cl_mouseAccelOffset = Cvar_Get( "cl_mouseAccelOffset", "5", CVAR_ARCHIVE_ND, "Mouse acceleration offset for style 1" );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
-	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE, "Allow downloading custom paks from server");
-	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE, "Enables use of ALT+ENTER keyboard combo to toggle fullscreen" );
+	cl_allowDownload = Cvar_Get ("cl_allowDownload", "0", CVAR_ARCHIVE_ND, "Allow downloading custom paks from server");
+	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE_ND, "Enables use of ALT+ENTER keyboard combo to toggle fullscreen" );
 
-	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE );
+	cl_autolodscale = Cvar_Get( "cl_autolodscale", "1", CVAR_ARCHIVE_ND );
 
 	cl_conXOffset = Cvar_Get ("cl_conXOffset", "0", 0);
-	cl_inGameVideo = Cvar_Get ("r_inGameVideo", "1", CVAR_ARCHIVE);
+	cl_inGameVideo = Cvar_Get ("r_inGameVideo", "1", CVAR_ARCHIVE_ND );
 
 	cl_serverStatusResendTime = Cvar_Get ("cl_serverStatusResendTime", "750", 0);
 
@@ -2744,34 +2746,36 @@ void CL_Init( void ) {
 	// if the cgame hasn't been started
 	Cvar_Get ("cg_autoswitch", "1", CVAR_ARCHIVE);
 
-	m_pitchVeh = Cvar_Get ("m_pitchVeh", "0.022", CVAR_ARCHIVE);
-	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE);
-	m_yaw = Cvar_Get ("m_yaw", "0.022", CVAR_ARCHIVE);
-	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE);
-	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
+	m_pitchVeh = Cvar_Get ("m_pitchVeh", "0.022", CVAR_ARCHIVE_ND);
+	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE_ND);
+	m_yaw = Cvar_Get ("m_yaw", "0.022", CVAR_ARCHIVE_ND);
+	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE_ND);
+	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE_ND);
 #ifdef MACOS_X
         // Input is jittery on OS X w/o this
-	m_filter = Cvar_Get ("m_filter", "1", CVAR_ARCHIVE);
+	m_filter = Cvar_Get ("m_filter", "1", CVAR_ARCHIVE_ND);
 #else
-	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
+	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE_ND);
 #endif
 
 	cl_motdString = Cvar_Get( "cl_motdString", "", CVAR_ROM );
 
-	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE, "Max. ping for servers when searching the serverlist" );
+	Cvar_Get( "cl_maxPing", "800", CVAR_ARCHIVE_ND, "Max. ping for servers when searching the serverlist" );
 
-	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE);
+	cl_lanForcePackets = Cvar_Get ("cl_lanForcePackets", "1", CVAR_ARCHIVE_ND);
+
+	cl_drawRecording = Cvar_Get("cl_drawRecording", "1", CVAR_ARCHIVE);
 
 	// enable the ja_guid player identifier in userinfo by default in OpenJK
-	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE, "Enable GUID userinfo identifier" );
-	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE, "Use a unique guid value per server" );
+	cl_enableGuid = Cvar_Get("cl_enableGuid", "1", CVAR_ARCHIVE_ND, "Enable GUID userinfo identifier" );
+	cl_guidServerUniq = Cvar_Get ("cl_guidServerUniq", "1", CVAR_ARCHIVE_ND, "Use a unique guid value per server" );
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE, "Which keys are used to toggle the console");
 	cl_consoleUseScanCode = Cvar_Get( "cl_consoleUseScanCode", "1", CVAR_ARCHIVE, "Use native console key detection" );
 
 	// userinfo
-	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE, "Player name" );
+	Cvar_Get ("name", "Padawan", CVAR_USERINFO | CVAR_ARCHIVE_ND, "Player name" );
 	Cvar_Get ("rate", "25000", CVAR_USERINFO | CVAR_ARCHIVE, "Data rate" );
 	Cvar_Get ("snaps", "40", CVAR_USERINFO | CVAR_ARCHIVE, "Client snapshots per second" );
 	Cvar_Get ("model", DEFAULT_MODEL"/default", CVAR_USERINFO | CVAR_ARCHIVE, "Player model" );
@@ -2795,7 +2799,7 @@ void CL_Init( void ) {
 	Cvar_Get ("char_color_blue",  "255", CVAR_USERINFO | CVAR_ARCHIVE, "Player tint (Blue)" );
 
 	// cgame might not be initialized before menu is used
-	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE );
+	Cvar_Get ("cg_viewsize", "100", CVAR_ARCHIVE_ND );
 
 	//
 	// register our commands
@@ -2857,7 +2861,7 @@ void CL_Shutdown( void ) {
 	//Com_Printf( "----- CL_Shutdown -----\n" );
 
 	if ( recursive ) {
-		printf ("recursive CL_Shutdown shutdown\n");
+		Com_Printf ("WARNING: Recursive CL_Shutdown called!\n");
 		return;
 	}
 	recursive = qtrue;
@@ -3292,6 +3296,13 @@ void CL_LocalServers_f( void ) {
 /*
 ==================
 CL_GlobalServers_f
+
+Originally master 0 was Internet and master 1 was MPlayer.
+ioquake3 2008; added support for requesting five separate master servers using 0-4.
+ioquake3 2017; made master 0 fetch all master servers and 1-5 request a single master server.
+OpenJK 2013; added support for requesting five separate master servers using 0-4.
+OpenJK July 2017; made master 0 fetch all master servers and 1-5 request a single master server.
+
 ==================
 */
 void CL_GlobalServers_f( void ) {
@@ -3299,9 +3310,32 @@ void CL_GlobalServers_f( void ) {
 	int			count, i, masterNum;
 	char		command[1024], *masteraddress;
 
-	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > MAX_MASTER_SERVERS - 1)
+	if ((count = Cmd_Argc()) < 3 || (masterNum = atoi(Cmd_Argv(1))) < 0 || masterNum > MAX_MASTER_SERVERS)
 	{
-		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS - 1);
+		Com_Printf("usage: globalservers <master# 0-%d> <protocol> [keywords]\n", MAX_MASTER_SERVERS);
+		return;
+	}
+
+	// request from all master servers
+	if ( masterNum == 0 ) {
+		int numAddress = 0;
+
+		for ( i = 1; i <= MAX_MASTER_SERVERS; i++ ) {
+			Com_sprintf( command, sizeof(command), "sv_master%d", i );
+			masteraddress = Cvar_VariableString(command);
+
+			if(!*masteraddress)
+				continue;
+
+			numAddress++;
+
+			Com_sprintf(command, sizeof(command), "globalservers %d %s %s\n", i, Cmd_Argv(2), Cmd_ArgsFrom(3));
+			Cbuf_AddText(command);
+		}
+
+		if ( !numAddress ) {
+			Com_Printf( "CL_GlobalServers_f: Error: No master server addresses.\n");
+		}
 		return;
 	}
 

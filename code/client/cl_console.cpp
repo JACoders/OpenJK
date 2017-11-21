@@ -285,8 +285,8 @@ void Con_Init (void) {
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0);
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
-	con_opacity = Cvar_Get ("con_opacity", "0.8", CVAR_ARCHIVE);
-	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE);
+	con_opacity = Cvar_Get ("con_opacity", "0.8", CVAR_ARCHIVE_ND);
+	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND);
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;

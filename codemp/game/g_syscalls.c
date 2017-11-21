@@ -43,7 +43,7 @@ int PASSFLOAT( float x ) {
 void trap_Print( const char *fmt ) {
 	Q_syscall( G_PRINT, fmt );
 }
-void trap_Error( const char *fmt ) {
+NORETURN void trap_Error( const char *fmt ) {
 	Q_syscall( G_ERROR, fmt );
 	exit(1);
 }
@@ -1010,7 +1010,7 @@ void SVSyscall_Trace( trace_t *results, const vec3_t start, const vec3_t mins, c
 		trap_Trace( results, start, mins, maxs, end, passEntityNum, contentmask );
 }
 
-void QDECL G_Error( int errorLevel, const char *error, ... ) {
+NORETURN void QDECL G_Error( int errorLevel, const char *error, ... ) {
 	va_list argptr;
 	char text[1024];
 

@@ -17,6 +17,7 @@
 #============================================================================
 
 cmake_minimum_required(VERSION 2.8.9)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.9" CACHE STRING "Minimum OS X deployment version")
 
 # For checks in subdirectories
 set(InOpenJK TRUE)

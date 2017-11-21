@@ -1243,36 +1243,36 @@ void CL_Init( void ) {
 
 	cl_avidemo = Cvar_Get ("cl_avidemo", "0", 0);
 	cl_pano = Cvar_Get ("pano", "0", 0);
-	cl_panoNumShots= Cvar_Get ("panoNumShots", "10", CVAR_ARCHIVE);
+	cl_panoNumShots= Cvar_Get ("panoNumShots", "10", CVAR_ARCHIVE_ND);
 	cl_skippingcin = Cvar_Get ("skippingCinematic", "0", CVAR_ROM);
 	cl_endcredits = Cvar_Get ("cg_endcredits", "0", 0);
 
-	cl_yawspeed = Cvar_Get ("cl_yawspeed", "140", CVAR_ARCHIVE);
-	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE);
-	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE);
+	cl_yawspeed = Cvar_Get ("cl_yawspeed", "140", CVAR_ARCHIVE_ND);
+	cl_pitchspeed = Cvar_Get ("cl_pitchspeed", "140", CVAR_ARCHIVE_ND);
+	cl_anglespeedkey = Cvar_Get ("cl_anglespeedkey", "1.5", CVAR_ARCHIVE_ND);
 
-	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE );
+	cl_packetdup = Cvar_Get ("cl_packetdup", "1", CVAR_ARCHIVE_ND );
 
-	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE);
+	cl_run = Cvar_Get ("cl_run", "1", CVAR_ARCHIVE_ND);
 	cl_sensitivity = Cvar_Get ("sensitivity", "5", CVAR_ARCHIVE);
-	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE);
-	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE );
+	cl_mouseAccel = Cvar_Get ("cl_mouseAccel", "0", CVAR_ARCHIVE_ND);
+	cl_freelook = Cvar_Get( "cl_freelook", "1", CVAR_ARCHIVE_ND );
 
 	cl_showMouseRate = Cvar_Get ("cl_showmouserate", "0", 0);
 
-	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE);
-	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE);
+	cl_allowAltEnter = Cvar_Get ("cl_allowAltEnter", "1", CVAR_ARCHIVE_ND);
+	cl_inGameVideo = Cvar_Get ("cl_inGameVideo", "1", CVAR_ARCHIVE_ND);
 	cl_framerate	= Cvar_Get ("cl_framerate", "0", CVAR_TEMP);
 
 	// init autoswitch so the ui will have it correctly even
 	// if the cgame hasn't been started
 	Cvar_Get ("cg_autoswitch", "1", CVAR_ARCHIVE);
 
-	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE);
-	m_yaw = Cvar_Get ("m_yaw", "0.022", CVAR_ARCHIVE);
-	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE);
-	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE);
-	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE);
+	m_pitch = Cvar_Get ("m_pitch", "0.022", CVAR_ARCHIVE_ND);
+	m_yaw = Cvar_Get ("m_yaw", "0.022", CVAR_ARCHIVE_ND);
+	m_forward = Cvar_Get ("m_forward", "0.25", CVAR_ARCHIVE_ND);
+	m_side = Cvar_Get ("m_side", "0.25", CVAR_ARCHIVE_ND);
+	m_filter = Cvar_Get ("m_filter", "0", CVAR_ARCHIVE_ND);
 
 	// ~ and `, as keys and characters
 	cl_consoleKeys = Cvar_Get( "cl_consoleKeys", "~ ` 0x7e 0x60 0xb2", CVAR_ARCHIVE);
@@ -1280,9 +1280,9 @@ void CL_Init( void ) {
 
 	// userinfo
 #ifdef JK2_MODE
-	Cvar_Get ("name", "Kyle", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("name", "Kyle", CVAR_USERINFO | CVAR_ARCHIVE_ND );
 #else
-	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE );
+	Cvar_Get ("name", "Jaden", CVAR_USERINFO | CVAR_ARCHIVE_ND );
 #endif
 
 #ifdef JK2_MODE
@@ -1342,7 +1342,7 @@ void CL_Shutdown( void ) {
 	Com_Printf( "----- CL_Shutdown -----\n" );
 
 	if ( recursive ) {
-		Com_Printf( "WARNING: Recursive shutdown\n" );
+		Com_Printf( "WARNING: Recursive CL_Shutdown called!\n" );
 		return;
 	}
 	recursive = qtrue;

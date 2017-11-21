@@ -228,7 +228,7 @@ typedef enum uiExportLegacy_e {
 
 typedef struct uiImport_s {
 	void			(*Print)								( const char *msg, ... );
-	void			(*Error)								( int level, const char *error, ... );
+	NORETURN_PTR void (*Error)( int level, const char *fmt, ... );
 	int				(*Milliseconds)							( void );
 	int				(*RealTime)								( qtime_t *qtime );
 	int				(*MemoryRemaining)						( void );

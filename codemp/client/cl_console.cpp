@@ -362,8 +362,8 @@ void Con_Init (void) {
 	con_conspeed = Cvar_Get ("scr_conspeed", "3", 0, "Console open/close speed");
 	Cvar_CheckRange (con_conspeed, 1.0f, 100.0f, qfalse);
 
-	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE, "Opacity of console background");
-	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE, "Automatically clear console input on close");
+	con_opacity = Cvar_Get ("con_opacity", "1.0", CVAR_ARCHIVE_ND, "Opacity of console background");
+	con_autoclear = Cvar_Get ("con_autoclear", "1", CVAR_ARCHIVE_ND, "Automatically clear console input on close");
 
 	Field_Clear( &g_consoleField );
 	g_consoleField.widthInChars = g_console_field_width;

@@ -130,12 +130,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 	#define Q_EXPORT
 #endif
 
-#if defined(__GNUC__)
-#define NORETURN __attribute__((noreturn))
-#elif defined(_MSC_VER)
-#define NORETURN __declspec(noreturn)
-#endif
-
 // this is the define for determining if we have an asm version of a C function
 #if (defined(_M_IX86) || defined(__i386__)) && !defined(__sun__)
 	#define id386	1
@@ -693,7 +687,7 @@ qboolean Info_NextPair( const char **s, char *key, char *value );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
 #if defined( _GAME ) || defined( _CGAME ) || defined( UI_BUILD )
-	void (*Com_Error)( int level, const char *error, ... );
+	NORETURN_PTR void (*Com_Error)( int level, const char *error, ... );
 	void (*Com_Printf)( const char *msg, ... );
 #else
 	void NORETURN QDECL Com_Error( int level, const char *error, ... );
@@ -732,6 +726,9 @@ Many variables can be used for cheating purposes, so when cheats is zero,
 #define CVAR_SERVER_CREATED	(0x00002000u)	// cvar was created by a server the client connected to.
 #define CVAR_VM_CREATED		(0x00004000u)	// cvar was created exclusively in one of the VMs.
 #define CVAR_PROTECTED		(0x00008000u)	// prevent modifying this var from VMs or the server
+#define CVAR_NODEFAULT		(0x00010000u)	// do not write to config if matching with default value
+
+#define CVAR_ARCHIVE_ND		(CVAR_ARCHIVE | CVAR_NODEFAULT)
 // These flags are only returned by the Cvar_Flags() function
 #define CVAR_MODIFIED		(0x40000000u)	// Cvar was modified
 #define CVAR_NONEXISTENT	(0x80000000u)	// Cvar doesn't exist.

@@ -592,7 +592,7 @@ int CIcarus::LoadSignals()
 	for ( int i = 0; i < numSignals; i++ )
 	{
 		char	buffer[1024];
-		int		length;
+		int		length = 0;
 
 		//Get the size of the string
 		BufferRead( &length, sizeof( length ) );
