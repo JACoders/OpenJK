@@ -2158,8 +2158,6 @@ static void RB_TransformAllAnimations( drawSurf_t *drawSurfs, int numDrawSurfs )
 		{
 			continue;
 		}
-
-		CRenderableSurface *g2Surface = reinterpret_cast<CRenderableSurface *>(drawSurf);
 	}
 }
 
