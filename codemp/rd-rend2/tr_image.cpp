@@ -2926,12 +2926,12 @@ static void R_CreateEnvBrdfLUT(void) {
 
 				if (NdotL > 0.0f)
 				{
-					float const gsmith = GSmithCorrelated(roughness, NdotV, NdotL);
-					float const NdotLVisPDF = NdotL * gsmith * (4.0f * VdotH / NdotH);
-					float const fc = powf(1.0f - VdotH, 5.0f);
+					float const visibility = GSmithCorrelated(roughness, NdotV, NdotL);
+					float const NdotLVisPDF = NdotL * visibility * (4.0f * VdotH / NdotH);
+					float const fresnel = powf(1.0f - VdotH, 5.0f);
 
-					scale += NdotLVisPDF * (1.0f - fc);
-					bias += NdotLVisPDF * fc;
+					scale += NdotLVisPDF * (1.0f - fresnel);
+					bias += NdotLVisPDF * fresnel;
 				}
 			}
 
