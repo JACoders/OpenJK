@@ -356,12 +356,12 @@ int PM_GetMovePhysics(void)
 #if _GAME
 	if (pm->ps->stats[STAT_RACEMODE])
 		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
-	else if (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6)
+	else if (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6 || g_movementStyle.integer == MV_SP)
 		return (g_movementStyle.integer);
 	else if (g_movementStyle.integer < 0)
 		return 0;
-	else if (g_movementStyle.integer > 8)
-		return 8;
+	else if (g_movementStyle.integer >= MV_NUMSTYLES)
+		return 1;
 #else
 	if (!cgs.isJAPro)
 		return 1;
@@ -1997,6 +1997,7 @@ static qboolean PM_CheckJump( void )
 {
 	qboolean allowFlips = qtrue;
 	bgEntity_t	*kickedEnt;//JAPRO - Serverside - Allow npcs to be flipkicked
+	int movestyle;
 
 //JAPRO - Serverside - Set up client to check for lastkicktime flood protect - Start
 #ifdef _GAME
@@ -2020,6 +2021,8 @@ static qboolean PM_CheckJump( void )
 			return qfalse;
 		}
 	}
+
+	movestyle = PM_GetMovePhysics();
 
 	if (pm->ps->forceHandExtend == HANDEXTEND_KNOCKDOWN ||
 		pm->ps->forceHandExtend == HANDEXTEND_PRETHROWN ||
@@ -2171,10 +2174,10 @@ static qboolean PM_CheckJump( void )
 			{//holding jump in air
 				float curHeight = pm->ps->origin[2] - pm->ps->fd.forceJumpZStart;
 				float realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];
-				if (PM_GetMovePhysics() == 2) { //If we have forcejump rampjump, we should be able to jump higher
-					realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / 270.0f);
+				if (movestyle == 2 || movestyle == 5) { //If we have forcejump rampjump, we should be able to jump higher
+					realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / (float)JUMP_VELOCITY);
+					//Com_Printf("Max Jump Height %.1f\n", realForceJumpHeight);
 				}
-
 				//check for max force jump level and cap off & cut z vel
 				if ( ( curHeight<=forceJumpHeight[0] ||//still below minimum jump height
 						(pm->ps->fd.forcePower&&pm->cmd.upmove>=10) ) &&////still have force power available and still trying to jump up 
@@ -2321,14 +2324,20 @@ static qboolean PM_CheckJump( void )
 						}
 					}
 
-					//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
+					if (movestyle == 2 || movestyle == 5) {//Forcejump rampjump
+						//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
+						float realForceJumpHeight = forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]] * (pm->ps->stats[STAT_LASTJUMPSPEED] / (float)JUMP_VELOCITY);
+						
+						pm->ps->velocity[2] = (realForceJumpHeight-curHeight)/realForceJumpHeight*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
+						pm->ps->velocity[2] /= 10;//need to scale this down, start with height velocity (based on max force jump height) and scale down to regular jump vel
 
-					pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
-					pm->ps->velocity[2] /= 10;
-					if (PM_GetMovePhysics() == 2)
 						pm->ps->velocity[2] += pm->ps->stats[STAT_LASTJUMPSPEED];
-					else 
+					}
+					else {
+						pm->ps->velocity[2] = (forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]-curHeight)/forceJumpHeight[pm->ps->fd.forcePowerLevel[FP_LEVITATION]]*forceJumpStrength[pm->ps->fd.forcePowerLevel[FP_LEVITATION]];//JUMP_VELOCITY;
+						pm->ps->velocity[2] /= 10;
 						pm->ps->velocity[2] += JUMP_VELOCITY;
+					}
 					pm->ps->pm_flags |= PMF_JUMP_HELD;
 				}
 				/*
@@ -2344,29 +2353,14 @@ static qboolean PM_CheckJump( void )
 				{
 					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
 					{
-						if (PM_GetMovePhysics() != 2)
-							pm->ps->velocity[2] = JUMP_VELOCITY;
+						//if (style != MV_QW) //?? Cant still go up, but we are going up fast
+							//pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
-				if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8) {
-#ifdef _GAME
+				if (movestyle != MV_QW && movestyle != MV_CPM && movestyle != MV_Q3 && movestyle != MV_PJK && movestyle != MV_WSW && movestyle != MV_RJQ3 && movestyle != MV_RJCPM) {
 					{
-						gclient_t *client = NULL;
-						{
-							int clientNum = pm->ps->clientNum;
-							if (0 <= clientNum && clientNum < MAX_CLIENTS) {
-								client = g_entities[clientNum].client;
-							}
-						}
-					}
-
-					if (client && client->pers.practice && client->sess.raceMode) {
-					}
-					else
-#endif
-					{
-					pm->cmd.upmove = 0; // change this to allow hold to jump?
-					return qfalse;
+						pm->cmd.upmove = 0; // change this to allow hold to jump?
+						return qfalse;
 					}
 				}
 			}
@@ -2380,31 +2374,17 @@ static qboolean PM_CheckJump( void )
 		return qfalse;
 	}
 
+	if (movestyle == MV_PJK && pm->ps->stats[STAT_JUMPTIME] > 375) //400 = Just jumped.  Should probably floodprotect all styles but w.e.
+		return qfalse;
+
 	// must wait for jump to be released
 	if ( pm->ps->pm_flags & PMF_JUMP_HELD ) 
 	{
-		// clear upmove so cmdscale doesn't lower running speed - LODA FIXME
-		if (PM_GetMovePhysics() != 2 && PM_GetMovePhysics() != 3 && PM_GetMovePhysics() != 4 && PM_GetMovePhysics() != 6 && PM_GetMovePhysics() != 7 && PM_GetMovePhysics() != 8)
+		// clear upmove so cmdscale doesn't lower running speed - LODA FIXME - no idea what this does lol
+		if (movestyle != MV_QW && movestyle != MV_CPM && movestyle != MV_Q3 && movestyle != MV_PJK && movestyle != MV_WSW && movestyle != MV_RJQ3 && movestyle != MV_RJCPM)
 		{
-#ifdef _GAME
-			{
-				gclient_t *client = NULL;
-				{
-					int clientNum = pm->ps->clientNum;
-					if (0 <= clientNum && clientNum < MAX_CLIENTS) {
-						client = g_entities[clientNum].client;
-					}
-				}
-			}
-
-			if (client && client->pers.practice && client->sess.raceMode) {
-			}
-			else
-#endif
-			{
 			pm->cmd.upmove = 0;
 			return qfalse;
-			}
 		}
 		//hold to jump?
 	}
@@ -2431,11 +2411,11 @@ static qboolean PM_CheckJump( void )
 		(pm->ps->weapon == WP_SABER || pm->ps->weapon == WP_MELEE) &&
 		!PM_IsRocketTrooper() &&
 		!BG_HasYsalamiri(pm->gametype, pm->ps) &&
-		(PM_GetMovePhysics() != 3) &&
-		(PM_GetMovePhysics() != 4) &&
-		(PM_GetMovePhysics() != 6) &&
-		(PM_GetMovePhysics() != 7) &&
-		(PM_GetMovePhysics() != 8) &&
+		(movestyle != 3) &&
+		(movestyle != 4) &&
+		(movestyle != 6) &&
+		(movestyle != 7) &&
+		(movestyle != 8) &&
 		BG_CanUseFPNow(pm->gametype, pm->ps, pm->cmd.serverTime, FP_LEVITATION) )
 	{
 		qboolean allowWallRuns = qtrue;
@@ -3171,18 +3151,15 @@ static qboolean PM_CheckJump( void )
 	}
 	if ( pm->cmd.upmove > 0 )
 	{//no special jumps
-		float realjumpvelocity = JUMP_VELOCITY;
-		if ((PM_GetMovePhysics() == 2) || (PM_GetMovePhysics() == 3) || (PM_GetMovePhysics() == 4) || (PM_GetMovePhysics() == 6) || (PM_GetMovePhysics() == 7) || (PM_GetMovePhysics() == 8))
+		if (movestyle == 2 || movestyle == 3 || movestyle == 4 || movestyle == 5 || movestyle == 6 || movestyle == 7 || movestyle == 8)
 		{
 			vec3_t hVel;
-			float added, xyspeed;
-
-			//PM_SetForceJumpZStart(pm->ps->origin[2]);//so we don't take damage if we land at same height
-			//pm->ps->pm_flags |= PMF_JUMP_HELD;
-
-			if (PM_GetMovePhysics() == 6)
+			float added, xyspeed, realjumpvelocity = JUMP_VELOCITY;
+			
+			if (movestyle == 6)
 				realjumpvelocity = 280.0f;
-			else realjumpvelocity = 270.0f;
+			else if (movestyle == 3 || movestyle == 4 || movestyle == 7 || movestyle == 8)
+				realjumpvelocity = 270.0f;
 
 			hVel[0] = pm->ps->velocity[0];
 			hVel[1] = pm->ps->velocity[1];
@@ -3195,10 +3172,12 @@ static qboolean PM_CheckJump( void )
 				added = (xyspeed * 0.5);//Sad sanity check hack
 
 			if (added > 0) {
-				if ((PM_GetMovePhysics() == 6))
+				if (movestyle == 2 || movestyle == 5)
+					pm->ps->velocity[2] += (added * 0.75f); //Forcejump rampjump initial upspeed
+				else if ((movestyle == 6))
 					pm->ps->velocity[2] += (added * 0.75f);//Make rampjump weaker for wsw since no speedloss
 				else
-					pm->ps->velocity[2] += (added * 1.25f); //Make rampjump stronger
+					pm->ps->velocity[2] += (added * 1.25f); //Make rampjump stronger for cpm/q3
 			}
 			else if (pm->ps->stats[STAT_JUMPTIME] > 0) { //DOUBLEJUMP DOUBLE JUMP
 				pm->ps->velocity[2] += 100.0f;
@@ -3212,13 +3191,12 @@ static qboolean PM_CheckJump( void )
 			}
 #endif
 
-
 			pm->ps->stats[STAT_JUMPTIME] = 401; //The fuck? Great to know
 			pm->ps->stats[STAT_LASTJUMPSPEED] = pm->ps->velocity[2];
 
 		}
 		else
-			pm->ps->velocity[2] = realjumpvelocity;
+			pm->ps->velocity[2] = JUMP_VELOCITY;
 	}
 
 	//Jumping
@@ -5224,7 +5202,7 @@ static void PM_GroundTrace( void ) {
 					VectorCopy(pm->ps->velocity, oldVel);
 					oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
 
-					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP
+					PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP 1
 
 					VectorCopy(clipped_velocity, newVel);
 					newVel[2] = 0;
@@ -9207,14 +9185,20 @@ static void PM_DropTimers( void ) {
 		}
 	}
 
-	if(pm->ps->stats[STAT_DASHTIME] > 0)//JAPRO dodge/dash/wj
+	if (pm->ps->stats[STAT_DASHTIME] > pml.msec)//JAPRO dodge/dash/wj
 		pm->ps->stats[STAT_DASHTIME] -= pml.msec;
+	else if (pm->ps->stats[STAT_DASHTIME] > 0)
+		pm->ps->stats[STAT_DASHTIME] = 0;
 
-	if(pm->ps->stats[STAT_WJTIME] > 0)//JAPRO dodge/dash/wj
+	if (pm->ps->stats[STAT_WJTIME] > pml.msec)//JAPRO dodge/dash/wj
 		pm->ps->stats[STAT_WJTIME] -= pml.msec;
+	else if (pm->ps->stats[STAT_WJTIME] > 0)
+		pm->ps->stats[STAT_WJTIME] = 0;
 
-	if (pm->ps->stats[STAT_JUMPTIME] > 0)
+	if (pm->ps->stats[STAT_JUMPTIME] > pml.msec)
 		pm->ps->stats[STAT_JUMPTIME] -= pml.msec;
+	else if (pm->ps->stats[STAT_JUMPTIME] > 0)
+		pm->ps->stats[STAT_JUMPTIME] = 0;
 
 #ifdef _GAME
 	if (g_tweakSaber.integer & ST_FIXED_SABERSWITCH) {
