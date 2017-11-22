@@ -2351,10 +2351,10 @@ static qboolean PM_CheckJump( void )
 				*/
 				else
 				{
-					if ( pm->ps->velocity[2] > JUMP_VELOCITY )
+					if ( pm->ps->velocity[2] > JUMP_VELOCITY) //Also add a check for pjk/wsw? 
+						//At the end of a forcejump, if we are still going up super fast we dont want to immediately slow down.. would take like 5000 speed rampjump for this to show up though
 					{
-						//if (style != MV_QW) //?? Cant still go up, but we are going up fast
-							//pm->ps->velocity[2] = JUMP_VELOCITY;
+							pm->ps->velocity[2] = JUMP_VELOCITY;
 					}
 				}
 				if (movestyle != MV_QW && movestyle != MV_CPM && movestyle != MV_Q3 && movestyle != MV_PJK && movestyle != MV_WSW && movestyle != MV_RJQ3 && movestyle != MV_RJCPM) {
