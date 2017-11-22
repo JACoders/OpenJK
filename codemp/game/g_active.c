@@ -3750,7 +3750,7 @@ void ClientThink_real( gentity_t *ent ) {
 				ent->flags &= ~FL_GODMODE;
 			ent->takedamage = qtrue;
 		}	
-		else if (g_godChat.integer && (ent->client->ps.eFlags & EF_TALK) && (ent->client->pers.lastChatTime + 3000) < level.time) { //Only god chat them 3 seconds after their chatbox goes up to prevent some abuse :/
+		else if (g_godChat.integer && level.gametype == GT_FFA && (ent->client->ps.eFlags & EF_TALK) && (ent->client->pers.lastChatTime + 3000) < level.time) { //Only god chat them 3 seconds after their chatbox goes up to prevent some abuse :/
 			if (!ent->client->ps.duelInProgress) {
 				if (!sv_cheats.integer)
 					ent->flags |= FL_GODMODE;

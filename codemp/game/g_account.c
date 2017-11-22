@@ -336,7 +336,7 @@ void DuelRankExists(char *username, int type, sqlite3 * db) {
 
 	
 	if (count == 0) {
-		sql = "INSERT INTO DuelRanks(username, type, rank, TSSUM) VALUES (?, ?, 1000, 0)";
+		sql = "INSERT INTO DuelRanks(username, type, rank, TSSUM, count) VALUES (?, ?, 1000, 0, 0)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 2, type));
@@ -408,7 +408,7 @@ void UpdatePlayerRating(char *username, int type, float newElo, float odds, sqli
     sqlite3_stmt * stmt;
 	int s;
 
-	sql = "UPDATE DuelRanks SET rank = ?, TSSUM = TSSUM + ? WHERE type = ? AND username = ?";
+	sql = "UPDATE DuelRanks SET rank = ?, TSSUM = TSSUM + ?, count = count + 1 WHERE type = ? AND username = ?";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_double (stmt, 1, newElo));
 	CALL_SQLITE (bind_double (stmt, 2, odds));
@@ -570,8 +570,8 @@ void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 	if (newLoserElo != loserElo) //Update loser elo
 		UpdatePlayerRating(loser, type, newLoserElo, expectedScoreLoser, db);
 
-	UpdateDuelCount(winner, type, db);
-	UpdateDuelCount(loser, type, db);
+	//UpdateDuelCount(winner, type, db);
+	//UpdateDuelCount(loser, type, db);
 
 	//Com_Printf("Adding duel: odds = %.2f, %s [%.2f -> %.2f (c=%i) (t=%i)] > %s [%.2f -> %.2f (c=%i) (t=%i)] {%i}\n", 
 		//expectedScoreWinner, winner, winnerElo, newWinnerElo, winnerDuelCount, winnerType, loser, loserElo, newLoserElo, loserDuelCount, loserType, type);
@@ -5374,7 +5374,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (finalize(stmt));
 	*/
 
-	sql = "CREATE TABLE IF NOT EXISTS DuelRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), type UNSIGNED SMALLINT, count UNSIGNED INTEGER, rank DECIMAL(6,2), TSSUM DECIMAL(9,2))"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
+	sql = "CREATE TABLE IF NOT EXISTS DuelRanks(id INTEGER PRIMARY KEY, username VARCHAR(16), type UNSIGNED SMALLINT, rank DECIMAL(6,2), TSSUM DECIMAL(9,2), count UNSIGNED INTEGER)"; //We only need like 2 decimal precision here so how do that in sqlite C? --todo
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));

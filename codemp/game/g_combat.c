@@ -4683,7 +4683,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 	if (attacker && attacker->client && attacker->client->noclip)//Japro fix noclip abuse
 		return;
 
-	if (g_godChat.integer && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
+	if (g_godChat.integer && level.gametype == GT_FFA && attacker && attacker->client && (attacker->client->ps.eFlags & EF_TALK))//Japro - dont allow people to chat and still do damage with godchat (should this be after the 3s period instead?)
 		return;
 
 	if ((level.gametype == GT_FFA) && !g_friendlyFire.integer && g_rabbit.integer) {
