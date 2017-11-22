@@ -1042,14 +1042,14 @@ void PM_StepSlideMove( qboolean gravity ) {
 			if (pm->stepSlideFix)
 			{
 				if (trace.fraction < 1.0) {
-					if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) {
+					if (pm->ps->stats[STAT_MOVEMENTSTYLE] == 6) { //Make Warsow Rampjump not slow down your XY speed
 						vec3_t oldVel, clipped_velocity, newVel;
 						float oldSpeed, newSpeed;
 
 						VectorCopy(pm->ps->velocity, oldVel);
 						oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
 
-						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP 3
 
 						VectorCopy(clipped_velocity, newVel);
 						newVel[2] = 0;
@@ -1059,7 +1059,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 							VectorCopy(clipped_velocity, pm->ps->velocity);
 					}
 					else {
-						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); // RAMPJUMP
+						PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
 					}
 				}
 			}
@@ -1083,7 +1083,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 				VectorCopy(pm->ps->velocity, oldVel);
 				oldSpeed = oldVel[0] * oldVel[0] + oldVel[1] * oldVel[1]; 
 
-				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, clipped_velocity, OVERCLIP ); //WSW RAMPJUMP 2
 
 				VectorCopy(clipped_velocity, newVel);
 				newVel[2] = 0;
@@ -1093,7 +1093,7 @@ void PM_StepSlideMove( qboolean gravity ) {
 					VectorCopy(clipped_velocity, pm->ps->velocity);
 			}
 			else {
-				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP ); //WSW RAMPJUMP
+				PM_ClipVelocity( pm->ps->velocity, trace.plane.normal, pm->ps->velocity, OVERCLIP );
 			}
 		}
 	}
