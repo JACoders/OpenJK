@@ -1194,6 +1194,7 @@ qboolean	BG_CanItemBeGrabbed( int gametype, const entityState_t *ent, const play
 #define	DF_NO_FALLING			8
 #define DF_FIXED_FOV			16
 #define	DF_NO_FOOTSTEPS			32
+#define DF_NO_CROUCHFIX			256 //Match JA+ I guess.
 
 //rwwRMG - added in CONTENTS_TERRAIN
 // content masks
