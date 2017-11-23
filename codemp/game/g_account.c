@@ -424,7 +424,8 @@ void UpdatePlayerRating(char *username, int type, float newElo, float odds, sqli
 	CALL_SQLITE (finalize(stmt));
 }
 
-void UpdateDuelCount(char *username, int type, sqlite3 * db) {
+/*
+void UpdateDuelCount(char *username, int type, sqlite3 * db) { //We do this in updateplayerrating now
     char * sql;
     sqlite3_stmt * stmt;
 	int s;
@@ -443,6 +444,7 @@ void UpdateDuelCount(char *username, int type, sqlite3 * db) {
 
 	CALL_SQLITE (finalize(stmt));
 }
+*/
 
 int GetEloKValue(int numDuels) { //Also take rank into account
 	int k1 = g_eloKValue1.integer;
@@ -503,10 +505,9 @@ void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 	if (loserDuelCount < 0) //Error i guess
 		return;
 
-
-	if (winnerDuelCount < newUserCutoff)
+	if (winnerDuelCount <= newUserCutoff)
 		winnerType = NEWUSER;
-	else if (winnerDuelCount < provisionalCutoff)
+	else if (winnerDuelCount <= provisionalCutoff)
 		winnerType = PROVISIONAL;
 	else
 		winnerType = NORMAL;
@@ -517,7 +518,6 @@ void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 		loserType = PROVISIONAL;
 	else
 		loserType = NORMAL;
-
 
 	if (winnerType == NEWUSER)
 		winnerElo = 1000; //always have newusers kept at 1k elo until they get enough duels?
@@ -558,10 +558,10 @@ void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 	expectedScoreWinner = WA / (WA + LA);
 	expectedScoreLoser = LA / (LA + WA); //This is just 1 - expected score winner..?
 
-	if (winnerType == PROVISIONAL || winnerType == NORMAL) 
+	//if (winnerType == PROVISIONAL || winnerType == NORMAL) //Nvm about this.. rank their first duels i guess.
 		newWinnerElo = winnerElo + winnerK * (1 - expectedScoreWinner);
 
-	if (loserType == PROVISIONAL || loserType == NORMAL)
+	//if (loserType == PROVISIONAL || loserType == NORMAL)
 		newLoserElo = loserElo + loserK * (0 - expectedScoreLoser);
 
 	if (newWinnerElo != winnerElo) //Update winner elo
@@ -569,9 +569,6 @@ void G_AddDuelElo(char *winner, char *loser, int type, sqlite3 *db) {
 
 	if (newLoserElo != loserElo) //Update loser elo
 		UpdatePlayerRating(loser, type, newLoserElo, expectedScoreLoser, db);
-
-	//UpdateDuelCount(winner, type, db);
-	//UpdateDuelCount(loser, type, db);
 
 	//Com_Printf("Adding duel: odds = %.2f, %s [%.2f -> %.2f (c=%i) (t=%i)] > %s [%.2f -> %.2f (c=%i) (t=%i)] {%i}\n", 
 		//expectedScoreWinner, winner, winnerElo, newWinnerElo, winnerDuelCount, winnerType, loser, loserElo, newLoserElo, loserDuelCount, loserType, type);
@@ -625,6 +622,7 @@ void SV_RebuildElo_f() {
 	Com_Printf("Duel ranks cleared in %i ms.\n", trap->Milliseconds() - time1);
 }
 
+/*
 void G_TestAddDuel() {
 	char winner[32], loser[32], type[32];
 	int time1;
@@ -645,6 +643,7 @@ void G_TestAddDuel() {
 	CALL_SQLITE (close(db));
 	Com_Printf("Adding duel elo, took %i ms\n", trap->Milliseconds() - time1);
 }
+*/
 
 int DuelTypeToInteger(char *style) {
 	Q_strlwr(style);
@@ -2746,7 +2745,7 @@ void G_AddRaceTime(char *username, char *message, int duration_ms, int style, in
 	//DebugWriteToDB("G_AddRaceTime");
 }
 
-#if 1
+#if 0
 void G_TestAddRace() {
 	char username[40], coursename[40], input[16];
 	int style, duration_ms, average, topspeed, end_time, oldrank, newrank;

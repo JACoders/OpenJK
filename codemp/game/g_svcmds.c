@@ -1518,7 +1518,7 @@ void SV_RebuildElo_f( void );
 #if 1//NEWRACERANKING
 void SV_RebuildRaceRanks_f( void );
 #endif
-#if 1
+#if 0
 void G_TestAddRace( void );
 #endif
 
@@ -1535,7 +1535,7 @@ svcmd_t svcmds[] = {
 
 	{ "addip",						Svcmd_AddIP_f,						qfalse },
 
-#if 1
+#if 0
 	{ "addRace",					G_TestAddRace,						qfalse },
 #endif
 
