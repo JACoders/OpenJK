@@ -1954,23 +1954,24 @@ static void RB_RenderSSAO()
 	const float zmin = r_znear->value;
 	const vec4_t viewInfo = { zmax / zmin, zmax, 0.0f, 0.0f };
 
-	vec4_t quadVerts[4];
-	vec2_t texCoords[4];
 
 	FBO_Bind(tr.quarterFbo[0]);
 
 	qglViewport(0, 0, tr.quarterFbo[0]->width, tr.quarterFbo[0]->height);
 	qglScissor(0, 0, tr.quarterFbo[0]->width, tr.quarterFbo[0]->height);
 
-	VectorSet4(quadVerts[0], -1,  1, 0, 1);
-	VectorSet4(quadVerts[1],  1,  1, 0, 1);
-	VectorSet4(quadVerts[2],  1, -1, 0, 1);
-	VectorSet4(quadVerts[3], -1, -1, 0, 1);
-
-	texCoords[0][0] = 0; texCoords[0][1] = 1;
-	texCoords[1][0] = 1; texCoords[1][1] = 1;
-	texCoords[2][0] = 1; texCoords[2][1] = 0;
-	texCoords[3][0] = 0; texCoords[3][1] = 0;
+	vec4_t quadVerts[4] = {
+		{-1.0f,  1.0f, 0.0f, 1.0f},
+		{ 1.0f,  1.0f, 0.0f, 1.0f},
+		{ 1.0f, -1.0f, 0.0f, 1.0f},
+		{-1.0f, -1.0f, 0.0f, 1.0f},
+	};
+	vec2_t texCoords[4] = {
+		{0.0f, 1.0f},
+		{1.0f, 1.0f},
+		{1.0f, 0.0f},
+		{0.0f, 0.0f},
+	};
 
 	GL_State( GLS_DEPTHTEST_DISABLE );
 

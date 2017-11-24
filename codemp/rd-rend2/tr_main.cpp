@@ -1768,8 +1768,15 @@ uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender
 R_AddDrawSurf
 =================
 */
-void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader,  int fogIndex,
-					int dlightMap, int postRender, int cubemap ) {
+void R_AddDrawSurf(
+	surfaceType_t *surface,
+	int entityNum,
+	shader_t *shader,
+	int fogIndex,
+	int dlightMap,
+	int postRender,
+	int cubemap)
+{
 	int index;
 	drawSurf_t *surf;
 

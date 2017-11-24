@@ -480,7 +480,7 @@ void RB_UpdateVBOs(unsigned int attribBits)
 	backEnd.pc.c_dynamicVboDraws++;
 
 	// update the default VBO
-	if(tess.numVertexes > 0 && tess.numVertexes <= SHADER_MAX_VERTEXES)
+	if (tess.numVertexes > 0 && tess.numVertexes <= SHADER_MAX_VERTEXES)
 	{
 		VBO_t *frameVbo = currentFrame->dynamicVbo;
 		GLbitfield mapFlags = GL_MAP_WRITE_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
