@@ -2988,7 +2988,9 @@ static void R_CreateDefaultImage( void ) {
 		data[x][DEFAULT_SIZE-1][2] =
 		data[x][DEFAULT_SIZE-1][3] = 255;
 	}
-	tr.defaultImage = R_CreateImage("*default", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_MIPMAP, 0);
+	tr.defaultImage = R_CreateImage(
+		"*default", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE,
+		IMGTYPE_COLORALPHA, IMGFLAG_MIPMAP, GL_RGBA8);
 }
 
 /*
@@ -3004,68 +3006,90 @@ void R_CreateBuiltinImages( void ) {
 
 	// we use a solid white image instead of disabling texturing
 	Com_Memset( data, 255, sizeof( data ) );
-	tr.whiteImage = R_CreateImage("*white", (byte *)data, 8, 8, IMGTYPE_COLORALPHA, IMGFLAG_NONE, 0);
+	tr.whiteImage = R_CreateImage(
+		"*white", (byte *)data, 8, 8, IMGTYPE_COLORALPHA, IMGFLAG_NONE,
+		GL_RGBA8);
 
 	if (r_dlightMode->integer >= 2)
 	{
-		for( x = 0; x < MAX_DLIGHTS; x++)
+		for (x = 0; x < MAX_DLIGHTS; x++)
 		{
-			tr.shadowCubemaps[x] = R_CreateImage(va("*shadowcubemap%i", x), NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_CLAMPTOEDGE | IMGFLAG_CUBEMAP, 0);
+			tr.shadowCubemaps[x] = R_CreateImage(
+				va("*shadowcubemap%i", x), NULL, PSHADOW_MAP_SIZE,
+				PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA,
+				IMGFLAG_CLAMPTOEDGE | IMGFLAG_CUBEMAP, 0);
 		}
 	}
 
-	// with overbright bits active, we need an image which is some fraction of full color,
-	// for default lightmaps, etc
-	for (x=0 ; x<DEFAULT_SIZE ; x++) {
-		for (y=0 ; y<DEFAULT_SIZE ; y++) {
+	// with overbright bits active, we need an image which is some fraction of
+	// full color, for default lightmaps, etc
+	for (x = 0; x < DEFAULT_SIZE; x++) {
+		for (y  =0; y < DEFAULT_SIZE; y++) {
 			data[y][x][0] = 
 			data[y][x][1] = 
 			data[y][x][2] = tr.identityLightByte;
-			data[y][x][3] = 255;			
+			data[y][x][3] = 255;
 		}
 	}
 
-	tr.identityLightImage = R_CreateImage("*identityLight", (byte *)data, 8, 8, IMGTYPE_COLORALPHA, IMGFLAG_NONE, 0);
+	tr.identityLightImage = R_CreateImage(
+		"*identityLight", (byte *)data, 8, 8, IMGTYPE_COLORALPHA,
+		IMGFLAG_NONE, 0);
 
-
-	for(x=0;x<32;x++) {
-		// scratchimage is usually used for cinematic drawing
-		tr.scratchImage[x] = R_CreateImage("*scratch", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_PICMIP | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MUTABLE, 0);
+	// scratchimage is usually used for cinematic drawing
+	for (x = 0; x < 32; x++) {
+		tr.scratchImage[x] = R_CreateImage(
+			"*scratch", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE,
+			IMGTYPE_COLORALPHA,
+			IMGFLAG_PICMIP | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MUTABLE, 0);
 	}
 
 	R_CreateDlightImage();
 	R_CreateFogImage();
 	R_CreateEnvBrdfLUT();
 
-	int width, height, hdrFormat, rgbFormat;
+	int width = glConfig.vidWidth;
+	int height = glConfig.vidHeight;
 
-	width = glConfig.vidWidth;
-	height = glConfig.vidHeight;
-
-	hdrFormat = GL_RGBA8;
+	int hdrFormat = GL_RGBA8;
 	if (r_hdr->integer)
 		hdrFormat = GL_RGBA16F;
 
-	rgbFormat = GL_RGBA8;
+	int rgbFormat = GL_RGBA8;
 
-	tr.renderImage = R_CreateImage("_render", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+	tr.renderImage = R_CreateImage(
+		"_render", NULL, width, height, IMGTYPE_COLORALPHA,
+		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
 
-	tr.glowImage = R_CreateImage("*glow", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+	tr.glowImage = R_CreateImage(
+		"*glow", NULL, width, height, IMGTYPE_COLORALPHA,
+		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
 
 	int glowImageWidth = width;
 	int glowImageHeight = height;
-	for ( int i = 0; i < ARRAY_LEN(tr.glowImageScaled); i++ )
+	for (int i = 0; i < ARRAY_LEN(tr.glowImageScaled); i++)
 	{
-		tr.glowImageScaled[i] = R_CreateImage(va("*glowScaled%d", i), NULL, glowImageWidth, glowImageHeight, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+		tr.glowImageScaled[i] = R_CreateImage(
+			va("*glowScaled%d", i), NULL, glowImageWidth, glowImageHeight,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			hdrFormat);
+
 		glowImageWidth = Q_max(1, glowImageWidth >> 1);
 		glowImageHeight = Q_max(1, glowImageHeight >> 1);
 	}
 
 	if (r_drawSunRays->integer)
-		tr.sunRaysImage = R_CreateImage("*sunRays", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, rgbFormat);
+		tr.sunRaysImage = R_CreateImage(
+			"*sunRays", NULL, width, height, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, rgbFormat);
 
-	tr.renderDepthImage  = R_CreateImage("*renderdepth",  NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
-	tr.textureDepthImage = R_CreateImage("*texturedepth", NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
+	tr.renderDepthImage  = R_CreateImage(
+		"*renderdepth",  NULL, width, height, IMGTYPE_COLORALPHA,
+		IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
+	tr.textureDepthImage = R_CreateImage(
+		"*texturedepth", NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE,
+		IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+		GL_DEPTH_COMPONENT24);
 
 	{
 		unsigned short sdata[4];
@@ -3088,48 +3112,84 @@ void R_CreateBuiltinImages( void ) {
 			p = data;
 		}
 
-		tr.calcLevelsImage =   R_CreateImage("*calcLevels",    (byte *)p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-		tr.targetLevelsImage = R_CreateImage("*targetLevels",  (byte *)p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
-		tr.fixedLevelsImage =  R_CreateImage("*fixedLevels",   (byte *)p, 1, 1, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+		tr.calcLevelsImage = R_CreateImage(
+			"*calcLevels", (byte *)p, 1, 1, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+		tr.targetLevelsImage = R_CreateImage(
+			"*targetLevels", (byte *)p, 1, 1, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
+		tr.fixedLevelsImage = R_CreateImage(
+			"*fixedLevels", (byte *)p, 1, 1, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, hdrFormat);
 	}
 
 	for (x = 0; x < 2; x++)
 	{
-		tr.textureScratchImage[x] = R_CreateImage(va("*textureScratch%d", x), NULL, 256, 256, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+		tr.textureScratchImage[x] = R_CreateImage(
+			va("*textureScratch%d", x), NULL, 256, 256, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
 	}
+
 	for (x = 0; x < 2; x++)
 	{
-		tr.quarterImage[x] = R_CreateImage(va("*quarter%d", x), NULL, width / 2, height / 2, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+		tr.quarterImage[x] = R_CreateImage(
+			va("*quarter%d", x), NULL, width / 2, height / 2,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			GL_RGBA8);
 	}
 
 	if (r_ssao->integer)
 	{
-		tr.screenSsaoImage = R_CreateImage("*screenSsao", NULL, width / 2, height / 2, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
-		tr.hdrDepthImage = R_CreateImage("*hdrDepth", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_R32F);
+		tr.screenSsaoImage = R_CreateImage(
+			"*screenSsao", NULL, width / 2, height / 2, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+		tr.hdrDepthImage = R_CreateImage(
+			"*hdrDepth", NULL, width, height, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_R32F);
 	}
 
 	if (r_shadows->integer == 4)
 	{
-		for( x = 0; x < MAX_DRAWN_PSHADOWS; x++)
+		for (x = 0; x < MAX_DRAWN_PSHADOWS; x++)
 		{
-			tr.pshadowMaps[x] = R_CreateImage(va("*shadowmap%i", x), NULL, PSHADOW_MAP_SIZE, PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+			tr.pshadowMaps[x] = R_CreateImage(
+				va("*shadowmap%i", x), NULL, PSHADOW_MAP_SIZE,
+				PSHADOW_MAP_SIZE, IMGTYPE_COLORALPHA,
+				IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
 		}
 	}
 
 	if (r_sunlightMode->integer)
 	{
-		for ( x = 0; x < 3; x++)
+		for (x = 0; x < 3; x++)
 		{
-			tr.sunShadowDepthImage[x] = R_CreateImage(va("*sunshadowdepth%i", x), NULL, r_shadowMapSize->integer, r_shadowMapSize->integer, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_DEPTH_COMPONENT24);
+			tr.sunShadowDepthImage[x] = R_CreateImage(
+				va("*sunshadowdepth%i", x), NULL, r_shadowMapSize->integer,
+				r_shadowMapSize->integer, IMGTYPE_COLORALPHA,
+				IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+				GL_DEPTH_COMPONENT24);
 		}
 
-		tr.screenShadowImage = R_CreateImage("*screenShadow", NULL, width, height, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
+		tr.screenShadowImage = R_CreateImage(
+			"*screenShadow", NULL, width, height, IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, GL_RGBA8);
 	}
 
 	if (r_cubeMapping->integer)
 	{
-		tr.renderCubeImage = R_CreateImage("*renderCube", NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE | IMGFLAG_MIPMAP | IMGFLAG_CUBEMAP, rgbFormat);
-		tr.prefilterEnvMapImage = R_CreateImage("*prefilterEnvMapFbo", NULL, CUBE_MAP_SIZE / 2, CUBE_MAP_SIZE / 2, IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, rgbFormat);
+		tr.renderCubeImage = R_CreateImage(
+			"*renderCube", NULL, CUBE_MAP_SIZE, CUBE_MAP_SIZE,
+			IMGTYPE_COLORALPHA,
+			IMGFLAG_NO_COMPRESSION |
+				IMGFLAG_CLAMPTOEDGE |
+				IMGFLAG_MIPMAP |
+				IMGFLAG_CUBEMAP,
+			rgbFormat);
+
+		tr.prefilterEnvMapImage = R_CreateImage(
+			"*prefilterEnvMapFbo", NULL, CUBE_MAP_SIZE / 2, CUBE_MAP_SIZE / 2,
+			IMGTYPE_COLORALPHA, IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+			rgbFormat);
 	}
 }
 

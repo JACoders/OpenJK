@@ -372,7 +372,6 @@ FBO_Init
 void FBO_Init(void)
 {
 	int             i;
-	// int             width, height, hdrFormat, multisample;
 	int             hdrFormat, multisample;
 
 	ri->Printf(PRINT_ALL, "------- FBO_Init -------\n");
@@ -419,39 +418,40 @@ void FBO_Init(void)
 	// otherwise just render straight to the screen (tr.renderFbo = NULL)
 	if (multisample)
 	{
-		tr.renderFbo = FBO_Create("_render", tr.renderDepthImage->width, tr.renderDepthImage->height);
-		FBO_Bind(tr.renderFbo);
+		tr.renderFbo = FBO_Create(
+			"_render", tr.renderDepthImage->width,
+			tr.renderDepthImage->height);
 
+		FBO_Bind(tr.renderFbo);
 		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 0, multisample);
 		FBO_CreateBuffer(tr.renderFbo, hdrFormat, 1, multisample);
 		FBO_CreateBuffer(tr.renderFbo, GL_DEPTH_COMPONENT24, 0, multisample);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderFbo);
 
-		tr.msaaResolveFbo = FBO_Create("_msaaResolve", tr.renderDepthImage->width, tr.renderDepthImage->height);
-		FBO_Bind(tr.msaaResolveFbo);
+		tr.msaaResolveFbo = FBO_Create(
+			"_msaaResolve", tr.renderDepthImage->width,
+			tr.renderDepthImage->height);
 
+		FBO_Bind(tr.msaaResolveFbo);
 		FBO_AttachTextureImage(tr.renderImage, 0);
 		FBO_AttachTextureImage(tr.glowImage, 1);
-
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.msaaResolveFbo);
 	}
 	else
 	{
-		tr.renderFbo = FBO_Create("_render", tr.renderDepthImage->width, tr.renderDepthImage->height);
-		FBO_Bind(tr.renderFbo);
+		tr.renderFbo = FBO_Create(
+			"_render", tr.renderDepthImage->width,
+			tr.renderDepthImage->height);
 
+		FBO_Bind(tr.renderFbo);
 		FBO_AttachTextureImage(tr.renderImage, 0);
 		FBO_AttachTextureImage(tr.glowImage, 1);
-
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderFbo);
@@ -459,24 +459,20 @@ void FBO_Init(void)
 
 	// clear render buffer
 	// this fixes the corrupt screen bug with r_hdr 1 on older hardware
-	if (tr.renderFbo)
-	{
-		FBO_Bind(tr.renderFbo);
-		qglClearColor( 1, 0, 0.5, 1 );
-		qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-		FBO_Bind(NULL);
-	}
+	FBO_Bind(tr.renderFbo);
+	qglClearColor( 1, 0, 0.5, 1 );
+	qglClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
 	// glow buffers
 	{
 		for ( int i = 0; i < ARRAY_LEN(tr.glowImageScaled); i++ )
 		{
-			tr.glowFboScaled[i] = FBO_Create (va ("*glowScaled%d", i), tr.glowImageScaled[i]->width, tr.glowImageScaled[i]->height);
+			tr.glowFboScaled[i] = FBO_Create(
+				va("*glowScaled%d", i), tr.glowImageScaled[i]->width,
+				tr.glowImageScaled[i]->height);
 
 			FBO_Bind (tr.glowFboScaled[i]);
-
 			FBO_AttachTextureImage (tr.glowImageScaled[i], 0);
-
 			FBO_SetupDrawBuffers();
 
 			R_CheckFBO (tr.glowFboScaled[i]);
@@ -485,13 +481,13 @@ void FBO_Init(void)
 
 	if (r_drawSunRays->integer)
 	{
-		tr.sunRaysFbo = FBO_Create("_sunRays", tr.renderDepthImage->width, tr.renderDepthImage->height);
+		tr.sunRaysFbo = FBO_Create(
+			"_sunRays", tr.renderDepthImage->width,
+			tr.renderDepthImage->height);
+
 		FBO_Bind(tr.sunRaysFbo);
-
 		FBO_AttachTextureImage(tr.sunRaysImage, 0);
-
 		R_AttachFBOTextureDepth(tr.renderDepthImage->texnum);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.sunRaysFbo);
@@ -503,15 +499,13 @@ void FBO_Init(void)
 	{
 		for( i = 0; i < MAX_DRAWN_PSHADOWS; i++)
 		{
-			tr.pshadowFbos[i] = FBO_Create(va("_shadowmap%d", i), tr.pshadowMaps[i]->width, tr.pshadowMaps[i]->height);
+			tr.pshadowFbos[i] = FBO_Create(
+				va("_shadowmap%d", i), tr.pshadowMaps[i]->width,
+				tr.pshadowMaps[i]->height);
+
 			FBO_Bind(tr.pshadowFbos[i]);
-
-			//FBO_CreateBuffer(tr.pshadowFbos[i], GL_RGBA8, 0, 0);
 			FBO_AttachTextureImage(tr.pshadowMaps[i], 0);
-
 			FBO_CreateBuffer(tr.pshadowFbos[i], GL_DEPTH_COMPONENT24, 0, 0);
-			//R_AttachFBOTextureDepth(tr.textureDepthImage->texnum);
-
 			FBO_SetupDrawBuffers();
 
 			R_CheckFBO(tr.pshadowFbos[i]);
@@ -523,27 +517,25 @@ void FBO_Init(void)
 	{
 		for ( i = 0; i < 3; i++)
 		{
-			tr.sunShadowFbo[i] = FBO_Create("_sunshadowmap", tr.sunShadowDepthImage[i]->width, tr.sunShadowDepthImage[i]->height);
-			FBO_Bind(tr.sunShadowFbo[i]);
+			tr.sunShadowFbo[i] = FBO_Create(
+				"_sunshadowmap", tr.sunShadowDepthImage[i]->width,
+				tr.sunShadowDepthImage[i]->height);
 
-			//FBO_CreateBuffer(tr.sunShadowFbo[i], GL_RGBA8, 0, 0);
-			//FBO_AttachTextureImage(tr.sunShadowImage, 0);
+			FBO_Bind(tr.sunShadowFbo[i]);
 			qglDrawBuffer(GL_NONE);
 			qglReadBuffer(GL_NONE);
-
-			//FBO_CreateBuffer(tr.sunShadowFbo, GL_DEPTH_COMPONENT24, 0, 0);
 			R_AttachFBOTextureDepth(tr.sunShadowDepthImage[i]->texnum);
-
 			FBO_SetupDrawBuffers();
 
 			R_CheckFBO(tr.sunShadowFbo[i]);
 		}
 
-		tr.screenShadowFbo = FBO_Create("_screenshadow", tr.screenShadowImage->width, tr.screenShadowImage->height);
-		FBO_Bind(tr.screenShadowFbo);
-		
-		FBO_AttachTextureImage(tr.screenShadowImage, 0);
+		tr.screenShadowFbo = FBO_Create(
+			"_screenshadow", tr.screenShadowImage->width,
+			tr.screenShadowImage->height);
 
+		FBO_Bind(tr.screenShadowFbo);
+		FBO_AttachTextureImage(tr.screenShadowImage, 0);
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.screenShadowFbo);
@@ -551,36 +543,36 @@ void FBO_Init(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		tr.textureScratchFbo[i] = FBO_Create(va("_texturescratch%d", i), tr.textureScratchImage[i]->width, tr.textureScratchImage[i]->height);
+		tr.textureScratchFbo[i] = FBO_Create(
+			va("_texturescratch%d", i), tr.textureScratchImage[i]->width,
+			tr.textureScratchImage[i]->height);
+
 		FBO_Bind(tr.textureScratchFbo[i]);
-
-		//FBO_CreateBuffer(tr.textureScratchFbo[i], GL_RGBA8, 0, 0);
 		FBO_AttachTextureImage(tr.textureScratchImage[i], 0);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.textureScratchFbo[i]);
 	}
 
 	{
-		tr.calcLevelsFbo = FBO_Create("_calclevels", tr.calcLevelsImage->width, tr.calcLevelsImage->height);
+		tr.calcLevelsFbo = FBO_Create(
+			"_calclevels", tr.calcLevelsImage->width,
+			tr.calcLevelsImage->height);
+
 		FBO_Bind(tr.calcLevelsFbo);
-
-		//FBO_CreateBuffer(tr.calcLevelsFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.calcLevelsImage, 0);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.calcLevelsFbo);
 	}
 
 	{
-		tr.targetLevelsFbo = FBO_Create("_targetlevels", tr.targetLevelsImage->width, tr.targetLevelsImage->height);
+		tr.targetLevelsFbo = FBO_Create(
+			"_targetlevels", tr.targetLevelsImage->width,
+			tr.targetLevelsImage->height);
+
 		FBO_Bind(tr.targetLevelsFbo);
-
-		//FBO_CreateBuffer(tr.targetLevelsFbo, hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.targetLevelsImage, 0);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.targetLevelsFbo);
@@ -588,12 +580,12 @@ void FBO_Init(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		tr.quarterFbo[i] = FBO_Create(va("_quarter%d", i), tr.quarterImage[i]->width, tr.quarterImage[i]->height);
+		tr.quarterFbo[i] = FBO_Create(
+			va("_quarter%d", i), tr.quarterImage[i]->width,
+			tr.quarterImage[i]->height);
+
 		FBO_Bind(tr.quarterFbo[i]);
-
-		//FBO_CreateBuffer(tr.quarterFbo[i], hdrFormat, 0, 0);
 		FBO_AttachTextureImage(tr.quarterImage[i], 0);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.quarterFbo[i]);
@@ -601,20 +593,21 @@ void FBO_Init(void)
 
 	if (r_ssao->integer)
 	{
-		tr.hdrDepthFbo = FBO_Create("_hdrDepth", tr.hdrDepthImage->width, tr.hdrDepthImage->height);
+		tr.hdrDepthFbo = FBO_Create(
+			"_hdrDepth", tr.hdrDepthImage->width, tr.hdrDepthImage->height);
+
 		FBO_Bind(tr.hdrDepthFbo);
-
 		FBO_AttachTextureImage(tr.hdrDepthImage, 0);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.hdrDepthFbo);
 
-		tr.screenSsaoFbo = FBO_Create("_screenssao", tr.screenSsaoImage->width, tr.screenSsaoImage->height);
-		FBO_Bind(tr.screenSsaoFbo);
-		
-		FBO_AttachTextureImage(tr.screenSsaoImage, 0);
+		tr.screenSsaoFbo = FBO_Create(
+			"_screenssao", tr.screenSsaoImage->width,
+			tr.screenSsaoImage->height);
 
+		FBO_Bind(tr.screenSsaoFbo);
+		FBO_AttachTextureImage(tr.screenSsaoImage, 0);
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.screenSsaoFbo);
@@ -622,15 +615,16 @@ void FBO_Init(void)
 
 	if (tr.renderCubeImage != NULL)
 	{
-		tr.renderCubeFbo = FBO_Create("_renderCubeFbo", tr.renderCubeImage->width, tr.renderCubeImage->height);
+		tr.renderCubeFbo = FBO_Create(
+			"_renderCubeFbo", tr.renderCubeImage->width,
+			tr.renderCubeImage->height);
+
 		FBO_Bind(tr.renderCubeFbo);
-		
-		R_AttachFBOTexture2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, tr.renderCubeImage->texnum, 0);
+		R_AttachFBOTexture2D(
+			GL_TEXTURE_CUBE_MAP_POSITIVE_X, tr.renderCubeImage->texnum, 0);
 		glState.currentFBO->colorImage[0] = tr.renderCubeImage;
 		glState.currentFBO->colorBuffers[0] = tr.renderCubeImage->texnum;
-
 		FBO_CreateBuffer(tr.renderCubeFbo, GL_DEPTH_COMPONENT24, 0, 0);
-
 		FBO_SetupDrawBuffers();
 
 		R_CheckFBO(tr.renderCubeFbo);
@@ -638,10 +632,14 @@ void FBO_Init(void)
 
 	if (tr.renderCubeImage != NULL)
 	{
-		tr.preFilterEnvMapFbo = FBO_Create("_preFilterEnvMapFbo", tr.renderCubeImage->width, tr.renderCubeImage->height);
+		tr.preFilterEnvMapFbo = FBO_Create(
+			"_preFilterEnvMapFbo", tr.renderCubeImage->width,
+			tr.renderCubeImage->height);
+
 		FBO_Bind(tr.preFilterEnvMapFbo);
 		FBO_AttachTextureImage(tr.prefilterEnvMapImage, 0);
 		FBO_SetupDrawBuffers();
+
 		R_CheckFBO(tr.preFilterEnvMapFbo);
 	}
 
