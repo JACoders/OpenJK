@@ -357,7 +357,7 @@ int GetDuelCount(char *username, int type, int end_time, sqlite3 * db) {
 }
 
 
-float GetDuelElo( char *username, int type, qboolean winner, int end_time, sqlite3 * db) {
+float GetDuelElo( char *username, int type, int end_time, sqlite3 * db) {
 	float elo = -999.0f;
     char * sql;
     sqlite3_stmt * stmt;
@@ -365,20 +365,25 @@ float GetDuelElo( char *username, int type, qboolean winner, int end_time, sqlit
 
 	if (end_time) {
 		sql = "SELECT winner_elo AS elo, end_time FROM LocalDuel where type = ? AND winner = ? AND end_time < ? "
-			"UNION SELECT loser_elo AS elo, end_time FROM LocalDuel where type = 0 AND loser = ? AND end_time < ? "
+			"UNION SELECT loser_elo AS elo, end_time FROM LocalDuel where type = ? AND loser = ? AND end_time < ? "
 			"ORDER BY end_time DESC LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, type));
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 3, end_time));
+		CALL_SQLITE (bind_int (stmt, 4, type));
+		CALL_SQLITE (bind_text (stmt, 5, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 6, end_time));
 	}
 	else {
 		sql = "SELECT winner_elo AS elo, end_time FROM LocalDuel where type = ? AND winner = ? "
-			"UNION SELECT loser_elo AS elo, end_time FROM LocalDuel where type = 0 AND loser = ? "
+			"UNION SELECT loser_elo AS elo, end_time FROM LocalDuel where type = ? AND loser = ? "
 			"ORDER BY end_time DESC LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, type));
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
+		CALL_SQLITE (bind_int (stmt, 3, type));
+		CALL_SQLITE (bind_text (stmt, 4, username, -1, SQLITE_STATIC));
 	}
 
 	s = sqlite3_step(stmt);
@@ -491,15 +496,10 @@ void G_AddDuelElo(char *winner, char *loser, int type, int id, int end_time, sql
 	float expectedScoreWinner, expectedScoreLoser, WA, LA, loserElo, winnerElo, newWinnerElo, newLoserElo;
 	const int NEWUSER = 0, PROVISIONAL = 1, NORMAL = 2;
 
-	//Should we pass in *db so we dont have to keep opening/closing db connection ?
-
-	//make these cvars?
 	int newUserCutoff = g_eloNewUserCutoff.integer;
 	int provisionalCutoff = g_eloProvisionalCutoff.integer;
 	float provisionalChangeBig = g_eloProvisionalChangeBig.value;
 	float provisionalChangeSmall = g_eloProvisionalChangeSmall.value;
-
-	//return;
 
 	if (newUserCutoff < 0)
 		newUserCutoff = 0;
@@ -509,9 +509,6 @@ void G_AddDuelElo(char *winner, char *loser, int type, int id, int end_time, sql
 		provisionalChangeBig = 0.1f;
 	if (provisionalChangeSmall < 0.1f);
 		provisionalChangeSmall = 0.1f;
-
-	//DuelRankExists(winner, type, db); --No need for this since we are updating a current LocalDuel row now
-	//DuelRankExists(loser, type, db);
 
 	winnerDuelCount = GetDuelCount(winner, type, end_time, db);
 	loserDuelCount = GetDuelCount(loser, type, end_time, db);
@@ -538,7 +535,7 @@ void G_AddDuelElo(char *winner, char *loser, int type, int id, int end_time, sql
 	if (winnerType == NEWUSER)
 		winnerElo = 1000; //always have newusers kept at 1k elo until they get enough duels?
 	else 
-		winnerElo = GetDuelElo(winner, type, qtrue, end_time, db);
+		winnerElo = GetDuelElo(winner, type, end_time, db);
 
 	if (winnerElo == -999.0f) //Error i guess
 		return; 
@@ -546,7 +543,7 @@ void G_AddDuelElo(char *winner, char *loser, int type, int id, int end_time, sql
 	if (loserType == NEWUSER)
 		loserElo = 1000; //loda fixme
 	else
-		loserElo = GetDuelElo(loser, type, qfalse, end_time, db);
+		loserElo = GetDuelElo(loser, type, end_time, db);
 
 	if (loserElo == -999.0f) //Error i guess
 		return; 
@@ -606,7 +603,7 @@ void SV_RebuildElo_f() {
 	CALL_SQLITE (close(db));
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT winner, loser, type, id, end_time from LocalDuel ORDER BY end_time ASC";
+	sql = "SELECT winner, loser, type, id, end_time from LocalDuel ORDER BY end_time ASC LIMIT 30";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	
     while (1) {
