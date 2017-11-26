@@ -364,22 +364,18 @@ float GetDuelElo( char *username, int type, qboolean winner, int end_time, sqlit
 	int s;
 
 	if (end_time) {
-		if (winner)
-			sql = "SELECT winner_elo FROM LocalDuel where type = ? AND winner = ? AND end_time < ? ORDER BY end_time DESC LIMIT 1"; //Get our previous duels elo
-		else
-			sql = "SELECT loser_elo FROM LocalDuel where type = ? AND loser = ? AND end_time < ? ORDER BY end_time DESC LIMIT 1"; 
-		//sql = "SELECT rank FROM Duel___Ranks where type = ? AND username = ?";
+		sql = "SELECT winner_elo AS elo, end_time FROM LocalDuel where type = ? AND winner = ? AND end_time < ? "
+			"UNION SELECT loser_elo AS elo, end_time FROM LocalDuel where type = 0 AND loser = ? AND end_time < ? "
+			"ORDER BY end_time DESC LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, type));
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_int (stmt, 3, end_time));
 	}
 	else {
-		if (winner)
-			sql = "SELECT winner_elo FROM LocalDuel where type = ? AND winner = ? ORDER BY end_time DESC LIMIT 1,1"; //Get our previous duels elo
-		else
-			sql = "SELECT loser_elo FROM LocalDuel where type = ? AND loser = ? ORDER BY end_time DESC LIMIT 1,1"; 
-		//sql = "SELECT rank FROM Duel___Ranks where type = ? AND username = ?";
+		sql = "SELECT winner_elo AS elo, end_time FROM LocalDuel where type = ? AND winner = ? "
+			"UNION SELECT loser_elo AS elo, end_time FROM LocalDuel where type = 0 AND loser = ? "
+			"ORDER BY end_time DESC LIMIT 1";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_int (stmt, 1, type));
 		CALL_SQLITE (bind_text (stmt, 2, username, -1, SQLITE_STATIC));
