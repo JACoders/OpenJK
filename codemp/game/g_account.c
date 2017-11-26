@@ -603,7 +603,7 @@ void SV_RebuildElo_f() {
 	CALL_SQLITE (close(db));
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "SELECT winner, loser, type, id, end_time from LocalDuel ORDER BY end_time ASC LIMIT 30";
+	sql = "SELECT winner, loser, type, id, end_time from LocalDuel ORDER BY end_time ASC";
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	
     while (1) {
