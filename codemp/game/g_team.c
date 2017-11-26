@@ -744,7 +744,7 @@ static vec3_t	maxFlagRange = { 44, 36, 36 };
 int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team );
 void G_AddSimpleStat(char *username, int type);
 
-#define _DEBUGCTFCRASH 1
+#define _DEBUGCTFCRASH 0//Its been years so give up on trying to debug this if it even happens anymore
 int Team_TouchOurFlag( gentity_t *ent, gentity_t *other, int team ) {
 	int			i, num, j, enemyTeam;
 	gentity_t	*player;

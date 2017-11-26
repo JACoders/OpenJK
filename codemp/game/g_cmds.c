@@ -8140,6 +8140,13 @@ void Cmd_Throwflag_f( gentity_t *ent ) {
 		ent->client->ps.powerups[ PW_NEUTRALFLAG ] = 0;
 		ent->client->lastThrowTime = level.time;
 	}
+	else {
+		return;
+	}
+
+	G_Sound( ent, CHAN_AUTO, G_SoundIndex( "sound/weapons/melee/swing3.wav" ) );
+	StandardSetBodyAnim(ent, BOTH_FORCEGRIP1, SETANIM_FLAG_OVERRIDE|SETANIM_FLAG_HOLD|SETANIM_FLAG_HOLDLESS, SETANIM_TORSO);
+
 
 }
 
