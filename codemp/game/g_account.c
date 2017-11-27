@@ -722,25 +722,22 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 		minimumCount = 0;
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	/*
-	sql = "SELECT DR.username, DR.rank, DC.count, DR.TSSUM \
-		FROM DuelRanks AS DR LEFT JOIN \
-		DuelCounts AS DC ON DR.username = DC.username \
-		WHERE DR.type = ? AND DC.type = ? AND DC.count > ? \
-		GROUP BY DR.username ORDER BY DR.rank DESC LIMIT 10";
-	*/
+
+	//We dont need to select from loser since we know a users highscore will always be from a winning duel.  And we can ignore users who have never won a duel(?)
+	//How to get count?
+	sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, winner_TSSUM, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
 
 	//loda fixme
+	/*
 	sql = "SELECT username, rank, count, TSSUM \
 		FROM DuelRanks WHERE type = ? AND count > ? \
 		GROUP BY username ORDER BY rank DESC LIMIT 10";
-
-	//SELECT winner, winner_elo FROM LocalDuel ORDER BY winner_elo DESC  ?
+	*/
 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, type));
-	CALL_SQLITE (bind_int (stmt, 2, type));
-	CALL_SQLITE (bind_int (stmt, 3, minimumCount));
+	//CALL_SQLITE (bind_int (stmt, 2, type));
+	//CALL_SQLITE (bind_int (stmt, 3, minimumCount));
 
 	IntegerToDuelType(type, typeString, sizeof(typeString));
 
@@ -3460,6 +3457,11 @@ void Cmd_ACRegister_f( gentity_t *ent ) { //Temporary, until global shit is done
 
 	Q_CleanStr(password);
 
+	if (!Q_stricmp(username, password)) {
+		trap->SendServerCommand(ent-g_entities, "print \"Username and password cannot be the same\n\"");
+		return;
+	}
+
 	if (CheckUserExists(username)) {
 		trap->SendServerCommand(ent-g_entities, "print \"This account name has already been taken!\n\"");
 		return;
@@ -4133,7 +4135,7 @@ void remove_all_chars(char* str, char c) {
     *pw = '\0';
 }
 
-void Cmd_PersonalBest_f(gentity_t *ent) {
+void Cmd_PersonalBest_f(gentity_t *ent) { //loda fixme bugged, always finds in cache even if not there
 	sqlite3 * db;
     char * sql;
     sqlite3_stmt * stmt;
