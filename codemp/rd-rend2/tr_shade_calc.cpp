@@ -215,7 +215,7 @@ void RB_CalcBulgeVertexes( deformStage_t *ds ) {
 
 	now = backEnd.refdef.time * ds->bulgeSpeed * 0.001f;
 
-	for ( i = 0; i < tess.numVertexes; i++, xyz += 4, st += 4, normal++ ) {
+	for ( i = 0; i < tess.numVertexes; i++, xyz += 4, st += NUM_TESS_TEXCOORDS*2, normal++ ) {
 		int		off;
 		float scale;
 		vec3_t fNormal;

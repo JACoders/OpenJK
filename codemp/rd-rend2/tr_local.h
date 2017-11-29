@@ -2713,13 +2713,14 @@ typedef struct stageVars
 
 #define MAX_MULTIDRAW_PRIMITIVES	16384
 
+const int NUM_TESS_TEXCOORDS = 1 + MAXLIGHTMAPS;
 struct shaderCommands_s 
 {
 	glIndex_t	indexes[SHADER_MAX_INDEXES] QALIGN(16);
 	vec4_t		xyz[SHADER_MAX_VERTEXES] QALIGN(16);
 	uint32_t	normal[SHADER_MAX_VERTEXES] QALIGN(16);
 	uint32_t	tangent[SHADER_MAX_VERTEXES] QALIGN(16);
-	vec2_t		texCoords[SHADER_MAX_VERTEXES][2] QALIGN(16);
+	vec2_t		texCoords[SHADER_MAX_VERTEXES][NUM_TESS_TEXCOORDS] QALIGN(16);
 	vec4_t		vertexColors[SHADER_MAX_VERTEXES] QALIGN(16);
 	uint32_t    lightdir[SHADER_MAX_VERTEXES] QALIGN(16);
 	//int			vertexDlightBits[SHADER_MAX_VERTEXES] QALIGN(16);
@@ -2903,6 +2904,7 @@ struct VertexArraysProperties
 	int offsets[ATTR_INDEX_MAX];
 	int sizes[ATTR_INDEX_MAX];
 	int strides[ATTR_INDEX_MAX];
+	int streamStrides[ATTR_INDEX_MAX];
 	void *streams[ATTR_INDEX_MAX];
 };
 

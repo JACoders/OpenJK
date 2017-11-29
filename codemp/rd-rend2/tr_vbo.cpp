@@ -395,7 +395,14 @@ void R_VBOList_f(void)
 	ri->Printf(PRINT_ALL, " %.2f MB in total\n\n", indexesSize / (1024.0f * 1024.0f));
 }
 
-void AddVertexArray(VertexArraysProperties *properties, int attributeIndex, size_t size, int stride, int offset, void *stream )
+void AddVertexArray(
+	VertexArraysProperties *properties,
+	int attributeIndex,
+	size_t size,
+	int stride,
+	int offset,
+	void *stream,
+	int streamStride)
 {
 	properties->enabledAttributes[properties->numVertexArrays]  = attributeIndex;
 	properties->offsets[attributeIndex]                         = offset;
@@ -403,6 +410,7 @@ void AddVertexArray(VertexArraysProperties *properties, int attributeIndex, size
 	properties->sizes[attributeIndex]                           = size;
 	properties->strides[attributeIndex]                         = stride;
 	properties->streams[attributeIndex]                         = stream;
+	properties->streamStrides[attributeIndex]					= streamStride;
 
 	properties->numVertexArrays++;
 }
@@ -412,45 +420,131 @@ void CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties
 	properties->vertexDataSize = 0;
 	properties->numVertexArrays = 0;
 
-	if(attributes & ATTR_BITS)
+	if (!attributes)
+	{
+		attributes =
+			ATTR_POSITION |
+			ATTR_TEXCOORD0 |
+			ATTR_TEXCOORD1 |
+			ATTR_NORMAL |
+			ATTR_TANGENT |
+			ATTR_COLOR |
+			ATTR_LIGHTDIRECTION;
+	}
+
+	if (attributes & ATTR_BITS)
 	{
 		if (attributes & ATTR_POSITION)
-			AddVertexArray(properties, ATTR_INDEX_POSITION, sizeof(tess.xyz[0]), 0, properties->vertexDataSize, tess.xyz);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_POSITION,
+				sizeof(tess.xyz[0]),
+				0,
+				properties->vertexDataSize,
+				tess.xyz,
+				sizeof(tess.xyz[0]));
 
 		if (attributes & ATTR_TEXCOORD0)
-			AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][0]);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_TEXCOORD0,
+				sizeof(tess.texCoords[0][0]),
+				0,
+				properties->vertexDataSize,
+				tess.texCoords[0][0],
+				sizeof(tess.texCoords[0][0]) * NUM_TESS_TEXCOORDS);
 
 		if (attributes & ATTR_TEXCOORD1)
-			AddVertexArray(properties, ATTR_INDEX_TEXCOORD1, sizeof(tess.texCoords[0][1]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][1]);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_TEXCOORD1,
+				sizeof(tess.texCoords[0][1]),
+				0,
+				properties->vertexDataSize,
+				tess.texCoords[0][1],
+				sizeof(tess.texCoords[0][0]) * NUM_TESS_TEXCOORDS);
+
+		if (attributes & ATTR_TEXCOORD2)
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_TEXCOORD2,
+				sizeof(tess.texCoords[0][2]) * 2,
+				0,
+				properties->vertexDataSize,
+				tess.texCoords[0][2],
+				sizeof(tess.texCoords[0][0]) * NUM_TESS_TEXCOORDS);
+;
+
+		if (attributes & ATTR_TEXCOORD3)
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_TEXCOORD3,
+				sizeof(tess.texCoords[0][3]) * 2,
+				0,
+				properties->vertexDataSize,
+				tess.texCoords[0][3],
+				sizeof(tess.texCoords[0][0]) * NUM_TESS_TEXCOORDS);
+
+
+		if (attributes & ATTR_TEXCOORD4)
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_TEXCOORD4,
+				sizeof(tess.texCoords[0][4]) * 2,
+				0,
+				properties->vertexDataSize,
+				tess.texCoords[0][4],
+				sizeof(tess.texCoords[0][0]) * NUM_TESS_TEXCOORDS);
 
 		if (attributes & ATTR_NORMAL)
-			AddVertexArray(properties, ATTR_INDEX_NORMAL, sizeof(tess.normal[0]), 0, properties->vertexDataSize, tess.normal);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_NORMAL,
+				sizeof(tess.normal[0]),
+				0,
+				properties->vertexDataSize,
+				tess.normal,
+				sizeof(tess.normal[0]));
 
 		if (attributes & ATTR_TANGENT)
-			AddVertexArray(properties, ATTR_INDEX_TANGENT, sizeof(tess.tangent[0]), 0, properties->vertexDataSize, tess.tangent);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_TANGENT,
+				sizeof(tess.tangent[0]),
+				0,
+				properties->vertexDataSize,
+				tess.tangent,
+				sizeof(tess.tangent[0]));
 
 		if (attributes & ATTR_COLOR)
-			AddVertexArray(properties, ATTR_INDEX_COLOR, sizeof(tess.vertexColors[0]), 0, properties->vertexDataSize, tess.vertexColors);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_COLOR,
+				sizeof(tess.vertexColors[0]),
+				0,
+				properties->vertexDataSize,
+				tess.vertexColors,
+				sizeof(tess.vertexColors[0]));
 
 		if (attributes & ATTR_LIGHTDIRECTION)
-			AddVertexArray(properties, ATTR_INDEX_LIGHTDIRECTION, sizeof(tess.lightdir[0]), 0, properties->vertexDataSize, tess.lightdir);
-	}
-	else
-	{
-		AddVertexArray(properties, ATTR_INDEX_POSITION, sizeof(tess.xyz[0]), 0, properties->vertexDataSize, tess.xyz);
-		AddVertexArray(properties, ATTR_INDEX_TEXCOORD0, sizeof(tess.texCoords[0][0]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][0]);
-		AddVertexArray(properties, ATTR_INDEX_TEXCOORD1, sizeof(tess.texCoords[0][1]) * 2, 0, properties->vertexDataSize, tess.texCoords[0][1]);
-		AddVertexArray(properties, ATTR_INDEX_NORMAL, sizeof(tess.normal[0]), 0, properties->vertexDataSize, tess.normal);
-		AddVertexArray(properties, ATTR_INDEX_TANGENT, sizeof(tess.tangent[0]), 0, properties->vertexDataSize, tess.tangent);
-		AddVertexArray(properties, ATTR_INDEX_COLOR, sizeof(tess.vertexColors[0]), 0, properties->vertexDataSize, tess.vertexColors);
-		AddVertexArray(properties, ATTR_INDEX_LIGHTDIRECTION, sizeof(tess.lightdir[0]), 0, properties->vertexDataSize, tess.lightdir);
+			AddVertexArray(
+				properties,
+				ATTR_INDEX_LIGHTDIRECTION,
+				sizeof(tess.lightdir[0]),
+				0,
+				properties->vertexDataSize,
+				tess.lightdir,
+				sizeof(tess.lightdir[0]));
 	}
 
 	for ( int i = 0; i < properties->numVertexArrays; i++ )
 		properties->strides[properties->enabledAttributes[i]] = properties->vertexDataSize;
 }
 
-void CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties)
+void CalculateVertexArraysFromVBO(
+	uint32_t attributes,
+	const VBO_t *vbo,
+	VertexArraysProperties *properties)
 {
 	properties->vertexDataSize = 0;
 	properties->numVertexArrays = 0;
@@ -458,7 +552,14 @@ void CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexA
 	for ( int i = 0, j = 1; i < ATTR_INDEX_MAX; i++, j <<= 1 )
 	{
 		if ( attributes & j )
-			AddVertexArray(properties, i, vbo->sizes[i], vbo->strides[i], vbo->offsets[i], NULL);
+			AddVertexArray(
+				properties,
+				i,
+				vbo->sizes[i],
+				vbo->strides[i],
+				vbo->offsets[i],
+				NULL,
+				0);
 	}
 }
 
@@ -516,12 +617,13 @@ void RB_UpdateVBOs(unsigned int attribBits)
 		{
 			for ( int j = 0; j < vertexArrays.numVertexArrays; j++ )
 			{
-				int attributeIndex = vertexArrays.enabledAttributes[j];
+				const int attributeIndex = vertexArrays.enabledAttributes[j];
+				const size_t attribSize = vertexArrays.sizes[attributeIndex];
+				const int streamStride = vertexArrays.streamStrides[attributeIndex];
 				void *stream = vertexArrays.streams[attributeIndex];
-				size_t vertexSize = vertexArrays.sizes[attributeIndex];
 
-				memcpy(writePtr, (byte *)stream + i * vertexSize, vertexArrays.sizes[attributeIndex]);
-				writePtr = (byte *)writePtr + vertexArrays.sizes[attributeIndex];
+				memcpy(writePtr, (byte *)stream + i * streamStride, attribSize);
+				writePtr = (byte *)writePtr + attribSize;
 			}
 		}
 

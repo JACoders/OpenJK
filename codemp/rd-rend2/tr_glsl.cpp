@@ -2255,8 +2255,10 @@ void GLSL_VertexAttribsState(uint32_t stateBits, VertexArraysProperties *vertexA
 
 }
 
-void GL_VertexArraysToAttribs( vertexAttribute_t *attribs,
-	size_t attribsCount, const VertexArraysProperties *vertexArrays )
+void GL_VertexArraysToAttribs(
+	vertexAttribute_t *attribs,
+	size_t attribsCount,
+	const VertexArraysProperties *vertexArrays)
 {
 	assert(attribsCount == ATTR_INDEX_MAX);
 

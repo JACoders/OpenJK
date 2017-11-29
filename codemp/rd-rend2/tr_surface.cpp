@@ -428,7 +428,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	{
 		dv = verts;
 		texCoords = tess.texCoords[ tess.numVertexes ][0];
-		for ( i = 0 ; i < numVerts ; i++, dv++, texCoords+=4 )
+		for ( i = 0 ; i < numVerts ; i++, dv++, texCoords+=NUM_TESS_TEXCOORDS*2 )
 			VectorCopy2(dv->st, texCoords);
 	}
 
@@ -436,7 +436,7 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 	{
 		dv = verts;
 		lightCoords = tess.texCoords[ tess.numVertexes ][1];
-		for ( i = 0 ; i < numVerts ; i++, dv++, lightCoords+=4 )
+		for ( i = 0 ; i < numVerts ; i++, dv++, lightCoords+=NUM_TESS_TEXCOORDS*2 )
 			VectorCopy2(dv->lightmap[0], lightCoords);
 	}
 
@@ -1882,13 +1882,13 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD0 )
 				{
 					VectorCopy2(dv->st, texCoords);
-					texCoords += 4;
+					texCoords += NUM_TESS_TEXCOORDS*2;
 				}
 
 				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD1 )
 				{
 					VectorCopy2(dv->lightmap[0], lightCoords);
-					lightCoords += 4;
+					lightCoords += NUM_TESS_TEXCOORDS*2;
 				}
 
 				if ( tess.shader->vertexAttribs & ATTR_COLOR )
