@@ -2122,9 +2122,7 @@ static void RB_SurfaceSkip( void *surf ) {
 static void RB_SurfaceSprites( srfSprites_t *surf )
 {
 	if ( !r_surfaceSprites->integer )
-	{
 		return;
-	}
 
 	RB_EndSurface();
 
@@ -2147,30 +2145,58 @@ static void RB_SurfaceSprites( srfSprites_t *surf )
 	shaderProgram_t *program = programGroup + shaderFlags;
 	assert(program->uniformBlocks & (1 << UNIFORM_BLOCK_SURFACESPRITE));
 
-	SurfaceSpriteBlock data = {};
-	data.width = ss->width;
-	data.height = (ss->facing == SURFSPRITE_FACING_DOWN)
-					? -ss->height : ss->height;
-	data.fadeStartDistance = ss->fadeDist;
-	data.fadeEndDistance = ss->fadeMax;
-	data.fadeScale = ss->fadeScale;
-	data.widthVariance = ss->variance[0];
-	data.heightVariance = ss->variance[1];
+	SurfaceSpriteBlock *surfaceSpriteBlock =
+		ojkAlloc<SurfaceSpriteBlock>(*backEndData->perFrameMemory);
+	*surfaceSpriteBlock = {};
+	surfaceSpriteBlock->width = ss->width;
+	surfaceSpriteBlock->height =
+		(ss->facing == SURFSPRITE_FACING_DOWN) ? -ss->height : ss->height;
+	surfaceSpriteBlock->fadeStartDistance = ss->fadeDist;
+	surfaceSpriteBlock->fadeEndDistance = ss->fadeMax;
+	surfaceSpriteBlock->fadeScale = ss->fadeScale;
+	surfaceSpriteBlock->widthVariance = ss->variance[0];
+	surfaceSpriteBlock->heightVariance = ss->variance[1];
 
-	GLSL_BindProgram(program);
-	GL_State(firstStage->stateBits);
-	GL_Cull(CT_TWO_SIDED);
-	GL_VertexAttribPointers(surf->numAttributes, surf->attributes);
-	R_BindAnimatedImageToTMU(&firstStage->bundle[0], TB_DIFFUSEMAP);
-	RB_UpdateUniformBlock(UNIFORM_BLOCK_SURFACESPRITE, &data);
-	GLSL_SetUniformMatrix4x4(program,
-			UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
-	GLSL_SetUniformVec3(program,
-			UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
+	UniformDataWriter uniformDataWriter;
+	uniformDataWriter.Start(program);
+	uniformDataWriter.SetUniformMatrix4x4(UNIFORM_MODELVIEWPROJECTIONMATRIX, glState.modelviewProjection);
+	uniformDataWriter.SetUniformVec3(UNIFORM_VIEWORIGIN, backEnd.viewParms.ori.origin);
 
-	R_BindIBO(surf->ibo);
+	SamplerBindingsWriter samplerBindingsWriter;
+	samplerBindingsWriter.AddAnimatedImage(&firstStage->bundle[0], TB_COLORMAP);
+
+	DrawItem item = {};
+	item.stateBits = firstStage->stateBits;
+	item.cullType = CT_TWO_SIDED;
+	item.program = program;
+	item.depthRange = DepthRange{0.0f, 1.0f};
+	item.ibo = surf->ibo;
 	tess.externalIBO = surf->ibo;
-	qglDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0, surf->numSprites);
+
+	item.numAttributes = surf->numAttributes;
+	item.attributes = ojkAllocArray<vertexAttribute_t>(
+		*backEndData->perFrameMemory, surf->numAttributes);
+	memcpy(item.attributes, surf->attributes, sizeof(*item.attributes)*surf->numAttributes);
+
+	item.numUniformBlockBindings = 1;
+	item.uniformBlockBindings = ojkAllocArray<UniformBlockBinding>(*backEndData->perFrameMemory, item.numUniformBlockBindings);
+	item.uniformBlockBindings[0].data = surfaceSpriteBlock;
+	item.uniformBlockBindings[0].block = UNIFORM_BLOCK_SURFACESPRITE;
+
+	item.uniformData = uniformDataWriter.Finish(*backEndData->perFrameMemory);
+	item.samplerBindings = samplerBindingsWriter.Finish(
+		*backEndData->perFrameMemory, (int *)&item.numSamplerBindings);
+
+	item.draw.type = DRAW_COMMAND_INDEXED;
+	item.draw.primitiveType = GL_TRIANGLES;
+	item.draw.numInstances = surf->numSprites;
+	item.draw.params.indexed.indexType = GL_UNSIGNED_SHORT;
+	item.draw.params.indexed.firstIndex = 0;
+	item.draw.params.indexed.numIndices = 6;
+
+uint32_t RB_CreateSortKey( const DrawItem& item, int stage, int layer );
+	uint32_t key = RB_CreateSortKey(item, 0, surf->shader->sort);
+	RB_AddDrawItem(backEndData->currentPass, key, item);
 }
 
 void (*rb_surfaceTable[SF_NUM_SURFACE_TYPES])( void *) = {

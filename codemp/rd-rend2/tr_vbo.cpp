@@ -579,17 +579,26 @@ void RB_CommitInternalBufferData()
 	currentFrame->dynamicVboCommitOffset = currentFrame->dynamicVboWriteOffset;
 }
 
-void RB_UpdateUniformBlock(uniformBlock_t block, void *data)
+void RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data)
 {
 	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
 	gpuFrame_t *thisFrame = backEndData->currentFrame;
 
+	RB_BindUniformBlock(block);
+
 	qglBufferSubData(GL_UNIFORM_BUFFER,
 			thisFrame->uboWriteOffset, blockInfo->size, data);
-	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
-			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
 
 	// FIXME: Use actual ubo alignment
-	size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
+	const size_t alignedBlockSize = (blockInfo->size + 255) & ~255;
 	thisFrame->uboWriteOffset += alignedBlockSize;
+}
+
+void RB_BindUniformBlock(uniformBlock_t block)
+{
+	const uniformBlockInfo_t *blockInfo = uniformBlocksInfo + block;
+	gpuFrame_t *thisFrame = backEndData->currentFrame;
+
+	qglBindBufferRange(GL_UNIFORM_BUFFER, blockInfo->slot,
+			thisFrame->ubo, thisFrame->uboWriteOffset, blockInfo->size);
 }

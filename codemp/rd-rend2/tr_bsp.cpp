@@ -3416,16 +3416,10 @@ static uint32_t UpdateHash( const char *text, uint32_t hash )
 	return (hash ^ (hash >> 10) ^ (hash >> 20));
 }
 
-static void R_GenerateSurfaceSprites(
-		const srfBspSurface_t *bspSurf,
-		const shader_t *shader,
-		const shaderStage_t *stage,
-		srfSprites_t *out)
+static std::vector<sprite_t> R_CreateSurfaceSpritesVertexData(
+	const srfBspSurface_t *bspSurf,
+	float density)
 {
-	const surfaceSprite_t *surfaceSprite = stage->ss;
-	const textureBundle_t *bundle = &stage->bundle[0];
-
-	const float density = surfaceSprite->density;
 	const srfVert_t *verts = bspSurf->verts;
 	const glIndex_t *indexes = bspSurf->indexes;
 
@@ -3495,14 +3489,25 @@ static void R_GenerateSurfaceSprites(
 			}
 		}
 	}
+	return sprites;
+}
+
+static void R_GenerateSurfaceSprites(
+	const srfBspSurface_t *bspSurf,
+	const shader_t *shader,
+	const shaderStage_t *stage,
+	srfSprites_t *out)
+{
+	const surfaceSprite_t *surfaceSprite = stage->ss;
+	const textureBundle_t *bundle = &stage->bundle[0];
 
 	uint32_t hash = 0;
 	for ( int i = 0; bundle->image[i]; ++i )
-	{
 		hash = UpdateHash(bundle->image[i]->imgName, hash);
-	}
 
 	uint16_t indices[] = { 0, 1, 2, 0, 2, 3 };
+	std::vector<sprite_t> sprites =
+		R_CreateSurfaceSpritesVertexData(bspSurf, surfaceSprite->density);
 
 	out->surfaceType = SF_SPRITES;
 	out->sprite = surfaceSprite;
@@ -3559,9 +3564,7 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 			{
 				const shader_t *shader = surf->shader;
 				if ( !shader->numSurfaceSpriteStages )
-				{
 					continue;
-				}
 
 				surf->numSurfaceSprites = shader->numSurfaceSpriteStages;
 				surf->surfaceSprites = (srfSprites_t *)ri->Hunk_Alloc(
@@ -3573,14 +3576,10 @@ static void R_GenerateSurfaceSprites( const world_t *world )
 				{
 					const shaderStage_t *stage = shader->stages[j];
 					if ( !stage )
-					{
 						break;
-					}
 
 					if ( !stage->ss || stage->ss->type == SURFSPRITE_NONE )
-					{
 						continue;
-					}
 
 					srfSprites_t *sprite = surf->surfaceSprites + surfaceSpriteNum;
 					R_GenerateSurfaceSprites(bspSurf, shader, stage, sprite);

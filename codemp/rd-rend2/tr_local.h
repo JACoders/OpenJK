@@ -2599,8 +2599,8 @@ void	GL_DepthRange( float min, float max );
 void	GL_PolygonOffset( qboolean enabled );
 void	GL_VertexAttribPointers(size_t numAttributes,
 								vertexAttribute_t *attributes);
-void	GL_DrawIndexed(GLenum primitiveType, int numIndices, int offset,
-						int numInstances, int baseVertex);
+void	GL_DrawIndexed(GLenum primitiveType, int numIndices, GLenum indexType,
+						int offset, int numInstances, int baseVertex);
 void	GL_MultiDrawIndexed(GLenum primitiveType, int *numIndices,
 							glIndex_t **offsets, int numDraws);
 void	GL_Draw( GLenum primitiveType, int firstVertex, int numVertices, int numInstances );
@@ -2926,7 +2926,8 @@ void            R_VBOList_f(void);
 
 void            RB_UpdateVBOs(unsigned int attribBits);
 void			RB_CommitInternalBufferData();
-void			RB_UpdateUniformBlock(uniformBlock_t block, void *data);
+void			RB_BindUniformBlock(uniformBlock_t block);
+void			RB_BindAndUpdateUniformBlock(uniformBlock_t block, void *data);
 void			CalculateVertexArraysProperties(uint32_t attributes, VertexArraysProperties *properties);
 void			CalculateVertexArraysFromVBO(uint32_t attributes, const VBO_t *vbo, VertexArraysProperties *properties);
 
@@ -3436,6 +3437,12 @@ struct SamplerBinding
 	uint8_t slot;
 };
 
+struct UniformBlockBinding
+{
+	void *data;
+	uniformBlock_t block;
+};
+
 enum DrawCommandType
 {
 	DRAW_COMMAND_MULTI_INDEXED,
@@ -3460,6 +3467,7 @@ struct DrawCommand
 
 		struct DrawIndexed
 		{
+			GLenum indexType;
 			GLsizei numIndices;
 			glIndex_t firstIndex;
 		} indexed;
@@ -3486,6 +3494,9 @@ struct DrawItem
 
 	uint32_t numSamplerBindings;
 	SamplerBinding *samplerBindings;
+
+	uint32_t numUniformBlockBindings;
+	UniformBlockBinding *uniformBlockBindings;
 
 	UniformData *uniformData;
 

@@ -395,6 +395,7 @@ void GL_VertexAttribPointers(
 void GL_DrawIndexed(
 		GLenum primitiveType,
 		int numIndices,
+		GLenum indexType,
 		int offset,
 		int numInstances,
 		int baseVertex)
@@ -403,7 +404,7 @@ void GL_DrawIndexed(
 	qglDrawElementsInstancedBaseVertex(
 			primitiveType,
 			numIndices,
-			GL_INDEX_TYPE,
+			indexType,
 			BUFFER_OFFSET(offset),
 			numInstances,
 			baseVertex);
@@ -926,7 +927,24 @@ static void RB_BindTextures( size_t numBindings, const SamplerBinding *bindings 
 	}
 }
 
-static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t *drawOrder )
+static void RB_BindAndUpdateUniformBlocks(
+	size_t numBindings,
+	const UniformBlockBinding *bindings)
+{
+	for (size_t i = 0; i < numBindings; ++i)
+	{
+		const UniformBlockBinding& binding = bindings[i];
+		if (binding.data)
+			RB_BindAndUpdateUniformBlock(binding.block, binding.data);
+		else
+			RB_BindUniformBlock(binding.block);
+	}
+}
+
+static void RB_DrawItems(
+	int numDrawItems,
+	const DrawItem *drawItems,
+	uint32_t *drawOrder)
 {
 	for ( int i = 0; i < numDrawItems; ++i )
 	{
@@ -936,15 +954,15 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 		GL_State(drawItem.stateBits);
 		GL_DepthRange(drawItem.depthRange.minDepth, drawItem.depthRange.maxDepth);
 		if ( drawItem.ibo != nullptr )
-		{
 			R_BindIBO(drawItem.ibo);
-		}
+
 		GLSL_BindProgram(drawItem.program);
 
-		// FIXME: There was a reason I didn't have const on attributes. Can't remember at the moment
-		// what the reason was though.
 		GL_VertexAttribPointers(drawItem.numAttributes, drawItem.attributes);
 		RB_BindTextures(drawItem.numSamplerBindings, drawItem.samplerBindings);
+		RB_BindAndUpdateUniformBlocks(
+			drawItem.numUniformBlockBindings,
+			drawItem.uniformBlockBindings);
 
 		GLSL_SetUniforms(drawItem.program, drawItem.uniformData);
 
@@ -963,6 +981,7 @@ static void RB_DrawItems( int numDrawItems, const DrawItem *drawItems, uint32_t 
 			{
 				GL_DrawIndexed(drawItem.draw.primitiveType,
 					drawItem.draw.params.indexed.numIndices,
+					drawItem.draw.params.indexed.indexType,
 					drawItem.draw.params.indexed.firstIndex,
 					drawItem.draw.numInstances, 0);
 				break;
@@ -2076,9 +2095,6 @@ static void RB_RenderMainPass( drawSurf_t *drawSurfs, int numDrawSurfs )
 
 	// darken down any stencil shadows
 	RB_ShadowFinish();		
-
-	// add light flares on lights that aren't obscured
-	RB_RenderFlares();
 }
 
 static void RB_GenerateMipmapsForCubemapFaceRender()

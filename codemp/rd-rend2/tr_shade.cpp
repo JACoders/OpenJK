@@ -48,7 +48,7 @@ void R_DrawElementsVBO( int numIndexes, glIndex_t firstIndex, glIndex_t minIndex
 	int offset = firstIndex * sizeof(glIndex_t) +
 		(tess.useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
-	GL_DrawIndexed(GL_TRIANGLES, numIndexes, offset, 1, 0);
+	GL_DrawIndexed(GL_TRIANGLES, numIndexes, GL_INDEX_TYPE, offset, 1, 0);
 }
 
 
@@ -825,6 +825,7 @@ void RB_FillDrawCommand(
 		if ( input->multiDrawPrimitives == 1 )
 		{
 			drawCmd.type = DRAW_COMMAND_INDEXED;
+			drawCmd.params.indexed.indexType = GL_INDEX_TYPE;
 			drawCmd.params.indexed.firstIndex = (glIndex_t)(size_t)(input->multiDrawFirstIndex[0]);
 			drawCmd.params.indexed.numIndices = input->multiDrawNumIndexes[0];
 		}
@@ -852,6 +853,7 @@ void RB_FillDrawCommand(
 			(input->useInternalVBO ? backEndData->currentFrame->dynamicIboCommitOffset : 0);
 
 		drawCmd.type = DRAW_COMMAND_INDEXED;
+		drawCmd.params.indexed.indexType = GL_INDEX_TYPE;
 		drawCmd.params.indexed.firstIndex = offset;
 		drawCmd.params.indexed.numIndices = input->numIndexes;
 	}
