@@ -356,7 +356,7 @@ int PM_GetMovePhysics(void)
 #if _GAME
 	if (pm->ps->stats[STAT_RACEMODE])
 		return (pm->ps->stats[STAT_MOVEMENTSTYLE]);
-	else if (g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6 || g_movementStyle.integer == MV_SP)
+	else if ((g_movementStyle.integer >= 0 && g_movementStyle.integer <= 6) || g_movementStyle.integer == MV_SP)
 		return (g_movementStyle.integer);
 	else if (g_movementStyle.integer < 0)
 		return 0;
