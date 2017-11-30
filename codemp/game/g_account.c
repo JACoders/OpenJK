@@ -412,9 +412,9 @@ void UpdatePlayerRating(char *username, int type, qboolean winner, float newElo,
 
 	if (id) {//We are doing a rebuild of everything so we cant trust end_time, also we can optimize it by using the known id to update
 		if (winner)
-			sql = "UPDATE LocalDuel SET winner_elo = ?, winner_TSSUM = winner_TSSUM + ? WHERE id = ?";
+			sql = "UPDATE LocalDuel SET winner_elo = ?, odds = ? WHERE id = ?";
 		else
-			sql = "UPDATE LocalDuel SET loser_elo = ?, loser_TSSUM = loser_TSSUM + ? WHERE id = ?";
+			sql = "UPDATE LocalDuel SET loser_elo = ?, odds = ? WHERE id = ?";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_double (stmt, 1, newElo));
 		CALL_SQLITE (bind_double (stmt, 2, odds));
@@ -422,9 +422,9 @@ void UpdatePlayerRating(char *username, int type, qboolean winner, float newElo,
 	}
 	else {
 		if (winner)
-			sql = "UPDATE LocalDuel SET winner_elo = ?, loser_TSSUM = winner_TSSUM + ? WHERE type = ? AND winner = ? AND end_time = (SELECT MAX(end_time) FROM LocalDuel WHERE type = ? and winner = ?)";
+			sql = "UPDATE LocalDuel SET winner_elo = ?, odds = ? WHERE type = ? AND winner = ? AND end_time = (SELECT MAX(end_time) FROM LocalDuel WHERE type = ? and winner = ?)";
 		else
-			sql = "UPDATE LocalDuel SET loser_elo = ?, loser_TSSUM = loser_TSSUM + ? WHERE type = ? AND loser = ? AND end_time = (SELECT MAX(end_time) FROM LocalDuel WHERE type = ? and loser = ?)";
+			sql = "UPDATE LocalDuel SET loser_elo = ?, odds = ? WHERE type = ? AND loser = ? AND end_time = (SELECT MAX(end_time) FROM LocalDuel WHERE type = ? and loser = ?)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_double (stmt, 1, newElo));
 		CALL_SQLITE (bind_double (stmt, 2, odds));
@@ -569,7 +569,9 @@ void G_AddDuelElo(char *winner, char *loser, int type, int id, int end_time, sql
 	LA = pow(10, loserElo / 400.0f);
 
 	expectedScoreWinner = WA / (WA + LA);
-	expectedScoreLoser = LA / (LA + WA); //This is just 1 - expected score winner..?
+	expectedScoreLoser = 1 - expectedScoreWinner;
+	//Round to.. 5th digit? or..
+	//expectedScoreLoser = LA / (LA + WA); //This is just 1 - expected score winner..?
 
 	//if (winnerType == PROVISIONAL || winnerType == NORMAL) //Nvm about this.. rank their first duels i guess.
 		newWinnerElo = winnerElo + winnerK * (1 - expectedScoreWinner);
@@ -595,7 +597,7 @@ void SV_RebuildElo_f() {
 	int time1 = trap->Milliseconds();
 
 	CALL_SQLITE (open (LOCAL_DB_PATH, & db));
-	sql = "UPDATE LocalDuel SET winner_elo = -999, loser_elo = -999, winner_TSSUM = 0, loser_TSSUM = 0";//Save rank into row
+	sql = "UPDATE LocalDuel SET winner_elo = -999, loser_elo = -999, odds = 0";//Save rank into row
     //sql = "DELETE FROM DuelRanks";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
@@ -725,7 +727,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 
 	//We dont need to select from loser since we know a users highscore will always be from a winning duel.  And we can ignore users who have never won a duel(?)
 	//How to get count?
-	sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, winner_TSSUM, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
+	sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, odds, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
 
 	//loda fixme
 	/*
@@ -798,7 +800,7 @@ void G_AddDuel(char *winner, char *loser, int start_time, int type, int winner_h
 	if (CheckUserExists(winner) && CheckUserExists(loser)) {
 		CALL_SQLITE (open (LOCAL_DB_PATH, & db));
 
-		sql = "INSERT INTO LocalDuel(winner, loser, duration, type, winner_hp, winner_shield, end_time, winner_elo, loser_elo, winner_TSSUM, loser_TSSUM) VALUES (?, ?, ?, ?, ?, ?, ?, -999, -999, 0, 0)";
+		sql = "INSERT INTO LocalDuel(winner, loser, duration, type, winner_hp, winner_shield, end_time, winner_elo, loser_elo, odds) VALUES (?, ?, ?, ?, ?, ?, ?, -999, -999, 0)";
 		CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 		CALL_SQLITE (bind_text (stmt, 1, winner, -1, SQLITE_STATIC));
 		CALL_SQLITE (bind_text (stmt, 2, loser, -1, SQLITE_STATIC));
@@ -5366,7 +5368,7 @@ void InitGameAccountStuff( void ) { //Called every mapload , move the create tab
 	CALL_SQLITE (finalize(stmt));
 
 	sql = "CREATE TABLE IF NOT EXISTS LocalDuel(id INTEGER PRIMARY KEY, winner VARCHAR(16), loser VARCHAR(16), duration UNSIGNED SMALLINT, "
-		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INTEGER, winner_elo DECIMAL(6,2), loser_elo DECIMAL(6,2), winner_TSSUM DECIMAL(9,2), loser_TSSUM DECIMAL(9,2))";
+		"type UNSIGNED TINYINT, winner_hp UNSIGNED TINYINT, winner_shield UNSIGNED TINYINT, end_time UNSIGNED INTEGER, winner_elo DECIMAL(6,2), loser_elo DECIMAL(6,2), odds DECIMAL(9,2))";
     CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE_EXPECT (step (stmt), DONE);
 	CALL_SQLITE (finalize(stmt));

@@ -7996,6 +7996,8 @@ void Cmd_ServerConfig_f(gentity_t *ent) //loda fixme fix indenting on this, make
 		Q_strcat(buf, sizeof(buf), "   ^5PJK style movement\n");
 	else if (g_movementStyle.integer == 6)
 		Q_strcat(buf, sizeof(buf), "   ^5Warsow style movement\n");
+	else if (g_movementStyle.integer == MV_SP)
+		Q_strcat(buf, sizeof(buf), "   ^5SP style movement\n");
 	if (g_fixRoll.integer == 1)
 		Q_strcat(buf, sizeof(buf), "   ^5Tweaked roll\n"); // idk what the fuck this actually does to roll
 	else if (g_fixRoll.integer == 2)
