@@ -700,8 +700,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
     char * sql;
     sqlite3_stmt * stmt;
 	char input[32], username[32], msg[1024-128] = {0}, typeString[32];
-	float TS;
-	int rank, count, type, i = 0;
+	int rank, count, type, i = 0, TS;
 	int minimumCount = g_eloMinimumDuels.integer;
 	
 	if (!ent->client)
@@ -727,7 +726,12 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 
 	//We dont need to select from loser since we know a users highscore will always be from a winning duel.  And we can ignore users who have never won a duel(?)
 	//How to get count?
-	sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, odds, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
+	//sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, odds, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
+	sql = "SELECT winner, winner_elo, count, TS FROM "
+			"((SELECT winner, winner_elo, odds, end_time, id FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) AS Q1 "
+			"INNER JOIN (SELECT id AS id2, winner AS winner2, type AS type2, SUM(odds) AS TS, COUNT(*) AS count FROM LocalDuel GROUP BY winner2, type2) AS Q2 "
+			"ON Q1.id = Q2.id2) "
+			"GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
 
 	//loda fixme
 	/*
@@ -754,9 +758,9 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
 			rank = sqlite3_column_int(stmt, 1);
 			count = sqlite3_column_int(stmt, 2);
-			TS = sqlite3_column_double(stmt, 3) / count;
+			TS = 100 - (100 * sqlite3_column_double(stmt, 3) / count) + 0.5;
 
-			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", i + 1, username, rank, count, (int)(TS * 100 + 0.5f));
+			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", i + 1, username, rank, count, TS);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
 				trap->SendServerCommand( ent-g_entities, va("print \"%s\"", msg));
 				msg[0] = '\0';
