@@ -727,11 +727,13 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 	//We dont need to select from loser since we know a users highscore will always be from a winning duel.  And we can ignore users who have never won a duel(?)
 	//How to get count?
 	//sql = "SELECT winner, winner_elo, 100, 100 FROM (SELECT winner, winner_elo, odds, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
-	sql = "SELECT winner, winner_elo, count, TS FROM "
-			"((SELECT winner, winner_elo, odds, end_time, id FROM LocalDuel WHERE type = ? ORDER BY end_time ASC) AS Q1 "
-			"INNER JOIN (SELECT id AS id2, winner AS winner2, type AS type2, SUM(odds) AS TS, COUNT(*) AS count FROM LocalDuel GROUP BY winner2, type2) AS Q2 "
-			"ON Q1.id = Q2.id2) "
-			"GROUP BY winner ORDER BY winner_elo DESC LIMIT 10";
+	sql = "SELECT D1.username, elo, 100-ROUND(100*(win_ts + loss_ts)/(win_count+loss_count), 0) AS TS, win_count+loss_count AS count "
+			"FROM ((SELECT username, type, elo FROM ((SELECT winner AS username, type, ROUND(winner_elo,0) AS elo, end_time FROM LocalDuel WHERE type = ? "
+			"UNION ALL SELECT loser AS username, type, ROUND(loser_elo,0) AS elo, end_time FROM LocalDuel WHERE type = ? ORDER BY end_time ASC)) GROUP BY username ORDER BY elo DESC) AS D1 "
+			"INNER JOIN (SELECT winner AS username2, COUNT(*) AS win_count, SUM(odds) AS win_ts FROM LocalDuel WHERE type = ? GROUP BY username2) AS D2 "
+			"ON D1.username = D2.username2) "
+			"INNER JOIN (SELECT loser AS username3, COUNT(*) AS loss_count, SUM(1-odds) AS loss_ts FROM LocalDuel WHERE type = ? GROUP BY username3) AS D3 "
+			"ON D1.username = D3.username3 ORDER BY elo desc LIMIT 10";
 
 	//loda fixme
 	/*
@@ -742,12 +744,16 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 
 	CALL_SQLITE (prepare_v2 (db, sql, strlen (sql) + 1, & stmt, NULL));
 	CALL_SQLITE (bind_int (stmt, 1, type));
+	CALL_SQLITE (bind_int (stmt, 2, type));
+	CALL_SQLITE (bind_int (stmt, 3, type));
+	CALL_SQLITE (bind_int (stmt, 4, type));
+
 	//CALL_SQLITE (bind_int (stmt, 2, type));
 	//CALL_SQLITE (bind_int (stmt, 3, minimumCount));
 
 	IntegerToDuelType(type, typeString, sizeof(typeString));
 
-	trap->SendServerCommand(ent-g_entities, va("print \"Topscore results for %s duels:\n    ^5Username           Skill        Count     TS\n\"", typeString));
+	trap->SendServerCommand(ent-g_entities, va("print \"Topscore results for %s duels:\n    ^5Username           Skill        TS        Count\n\"", typeString));
 	
     while (1) {
         int s;
@@ -758,7 +764,7 @@ void Cmd_DuelTop10_f(gentity_t *ent) {
 			Q_strncpyz(username, (char*)sqlite3_column_text(stmt, 0), sizeof(username));
 			rank = sqlite3_column_int(stmt, 1);
 			count = sqlite3_column_int(stmt, 2);
-			TS = 100 - (100 * sqlite3_column_double(stmt, 3) / count) + 0.5;
+			TS = sqlite3_column_int(stmt, 3);
 
 			tmpMsg = va("^5%2i^3: ^3%-18s ^3%-12i ^3%-9i %i\n", i + 1, username, rank, count, TS);
 			if (strlen(msg) + strlen(tmpMsg) >= sizeof( msg)) {
