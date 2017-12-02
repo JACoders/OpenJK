@@ -432,12 +432,15 @@ static void RB_SurfaceVertsAndIndexes( int numVerts, srfVert_t *verts, int numIn
 			VectorCopy2(dv->st, texCoords);
 	}
 
-	if ( tess.shader->vertexAttribs & ATTR_TEXCOORD1 )
+	for (int tc = 0; tc < MAXLIGHTMAPS; ++tc)
 	{
-		dv = verts;
-		lightCoords = tess.texCoords[ tess.numVertexes ][1];
-		for ( i = 0 ; i < numVerts ; i++, dv++, lightCoords+=NUM_TESS_TEXCOORDS*2 )
-			VectorCopy2(dv->lightmap[0], lightCoords);
+		if ( tess.shader->vertexAttribs & (ATTR_TEXCOORD1 + tc) )
+		{
+			dv = verts;
+			lightCoords = tess.texCoords[ tess.numVertexes ][1 + tc];
+			for ( i = 0 ; i < numVerts ; i++, dv++, lightCoords+=NUM_TESS_TEXCOORDS*2 )
+				VectorCopy2(dv->lightmap[tc], lightCoords);
+		}
 	}
 
 	if ( tess.shader->vertexAttribs & ATTR_COLOR )
@@ -582,11 +585,13 @@ RB_SurfaceBSPTriangles
 =============
 */
 static void RB_SurfaceBSPTriangles( srfBspSurface_t *srf ) {
+#if 0
 	if( RB_SurfaceVbo (srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
+#endif
 
 	RB_SurfaceVertsAndIndexes(srf->numVerts, srf->verts, srf->numIndexes,
 			srf->indexes, srf->dlightBits, srf->pshadowBits);
@@ -1713,11 +1718,13 @@ RB_SurfaceFace
 ==============
 */
 static void RB_SurfaceBSPFace( srfBspSurface_t *srf ) {
+#if 0
 	if( RB_SurfaceVbo(srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
+#endif
 
 	RB_SurfaceVertsAndIndexes(srf->numVerts, srf->verts, srf->numIndexes,
 			srf->indexes, srf->dlightBits, srf->pshadowBits);
@@ -1764,7 +1771,7 @@ Just copy the grid of points and triangulate
 static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 	int		i, j;
 	float	*xyz;
-	float	*texCoords, *lightCoords;
+	float	*texCoords, *lightCoords[MAXLIGHTMAPS];
 	uint32_t *normal;
 	uint32_t *tangent;
 	float   *color;
@@ -1781,11 +1788,13 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 	int     pshadowBits;
 	//int		*vDlightBits;
 
+#if 0
 	if( RB_SurfaceVbo (srf->vbo, srf->ibo, srf->numVerts, srf->numIndexes,
 				srf->firstIndex, srf->minIndex, srf->maxIndex, srf->dlightBits, srf->pshadowBits, qtrue ) )
 	{
 		return;
 	}
+#endif
 
 	dlightBits = srf->dlightBits;
 	tess.dlightBits |= dlightBits;
@@ -1854,7 +1863,8 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 		normal = &tess.normal[numVertexes];
 		tangent = &tess.tangent[numVertexes];
 		texCoords = tess.texCoords[numVertexes][0];
-		lightCoords = tess.texCoords[numVertexes][1];
+		for (int tc = 0; tc < MAXLIGHTMAPS; ++tc)
+			lightCoords[tc] = tess.texCoords[numVertexes][1 + tc];
 		color = tess.vertexColors[numVertexes];
 		lightdir = &tess.lightdir[numVertexes];
 		//vDlightBits = &tess.vertexDlightBits[numVertexes];
@@ -1879,16 +1889,20 @@ static void RB_SurfaceBSPGrid( srfBspSurface_t *srf ) {
 				{
 					*tangent++ = R_VboPackTangent(dv->tangent);
 				}
+
 				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD0 )
 				{
 					VectorCopy2(dv->st, texCoords);
 					texCoords += NUM_TESS_TEXCOORDS*2;
 				}
 
-				if ( tess.shader->vertexAttribs & ATTR_TEXCOORD1 )
+				for (int tc = 0; tc < MAXLIGHTMAPS; ++tc)
 				{
-					VectorCopy2(dv->lightmap[0], lightCoords);
-					lightCoords += NUM_TESS_TEXCOORDS*2;
+					if ( tess.shader->vertexAttribs & (ATTR_TEXCOORD1 + tc) )
+					{
+						VectorCopy2(dv->lightmap[tc], lightCoords[tc]);
+						lightCoords[tc] += NUM_TESS_TEXCOORDS*2;
+					}
 				}
 
 				if ( tess.shader->vertexAttribs & ATTR_COLOR )
