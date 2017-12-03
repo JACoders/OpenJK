@@ -131,9 +131,6 @@ extern cvar_t  *r_arb_half_float_pixel;
 extern cvar_t  *r_ext_framebuffer_multisample;
 extern cvar_t  *r_arb_seamless_cube_map;
 
-extern cvar_t  *r_mergeMultidraws;
-extern cvar_t  *r_mergeLeafSurfaces;
-
 extern cvar_t  *r_cameraExposure;
 
 extern cvar_t  *r_hdr;
@@ -2455,9 +2452,6 @@ extern	cvar_t	*r_lodCurveError;
 extern	cvar_t	*r_skipBackEnd;
 
 extern	cvar_t	*r_anaglyphMode;
-
-extern  cvar_t  *r_mergeMultidraws;
-extern  cvar_t  *r_mergeLeafSurfaces;
 
 extern	cvar_t	*r_externalGLSL;
 
