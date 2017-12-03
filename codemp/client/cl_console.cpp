@@ -619,12 +619,13 @@ void CL_ConsolePrint( const char *txt) {
 			txtc = va("%s", txt);
 			Q_StripColor(txtc);
 			CL_LogPrintf(cls.log.chat, va("%s", txtc));
-			
-			if (con_notifyname->string != "0" && Q_stristr(Q_strrchr(txtc, ':'), con_notifyname->string)) {
-				stampColor = COLOR_CYAN;
+			if (!Q_strrchr(txtc, ':') == '0') { // i feel sick just looking at this
+				if (con_notifyname->string != "0" && Q_stristr(Q_strrchr(txtc, ':'), con_notifyname->string)) {
+					stampColor = COLOR_CYAN;
 #ifdef _WIN32
-				con_alert = qtrue;
+					con_alert = qtrue;
 #endif
+				}
 			}
 			else stampColor = COLOR_WHITE;
 		}
