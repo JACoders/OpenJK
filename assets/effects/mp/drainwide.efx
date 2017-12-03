@@ -1,0 +1,105 @@
+repeatDelay				300
+
+Electricity
+{
+	flags				useModel useBBox usePhysics
+
+	spawnFlags			rgbComponentInterpolation
+
+	count				3 4
+
+	life				50 60
+
+	bounce				0.8 2
+
+	origin2				500 -384 -2 524 384 2
+
+	rgb
+	{
+		end				1 0 0
+	}
+
+	alpha
+	{
+		end				0 1
+		flags			linear
+	}
+
+	size
+	{
+		start			2 5
+		flags			linear
+	}
+
+	shaders
+	[
+		gfx/misc/rline
+	]
+}
+
+Particle
+{
+	flags				useAlpha
+
+	spawnFlags			rgbComponentInterpolation
+
+	life				30
+
+	rotation			0 360
+
+	rgb
+	{
+		start			1 0 0 1 1 1
+		end				1 0 0
+	}
+
+	size
+	{
+		start			10 18
+		flags			random
+	}
+
+	shaders
+	[
+		gfx/misc/lightningFlash
+	]
+}
+
+Electricity
+{
+	name				Copy of Unnamed Electricity 0
+
+	flags				useModel useBBox usePhysics useAlpha
+
+	spawnFlags			rgbComponentInterpolation
+
+	count				2 3
+
+	life				50 60
+
+	bounce				0.8 2
+
+	origin2				500 -384 -2 524 384 2
+
+	rgb
+	{
+		start			1 0 0 1 1 1
+		end				1 0 0
+	}
+
+	alpha
+	{
+		start			0 1
+	}
+
+	size
+	{
+		start			8 10
+		flags			linear
+	}
+
+	shaders
+	[
+		gfx/misc/rline
+	]
+}
