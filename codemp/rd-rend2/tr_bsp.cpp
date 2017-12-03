@@ -201,7 +201,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	dsurface_t  *surf;
 	int			len;
 	byte		*image;
-	int			i, j, numLightmaps, textureInternalFormat = 0;
+	int			i, j, numLightmaps; 
 	float maxIntensity = 0;
 	double sumIntensity = 0;
 
@@ -275,11 +275,6 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		tr.deluxemaps = (image_t **)ri->Hunk_Alloc( tr.numLightmaps * sizeof(image_t *), h_low );
 	}
 
-	if (glRefConfig.floatLightmap)
-		textureInternalFormat = GL_RGBA16F;
-	else
-		textureInternalFormat = GL_RGBA8;
-
 	if (r_mergeLightmaps->integer)
 	{
 		for (i = 0; i < tr.numLightmaps; i++)
@@ -291,7 +286,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 				tr.lightmapAtlasSize[1],
 				IMGTYPE_COLORALPHA,
 				IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
-				textureInternalFormat);
+				GL_RGBA8);
 
 			if (tr.worldDeluxeMapping)
 			{
@@ -487,7 +482,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 					IMGFLAG_NOLIGHTSCALE |
 						IMGFLAG_NO_COMPRESSION |
 						IMGFLAG_CLAMPTOEDGE,
-					textureInternalFormat );
+					GL_RGBA8);
 
 			if (hdrLightmap)
 				ri->FS_FreeFile(hdrLightmap);
