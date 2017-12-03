@@ -32,6 +32,7 @@
 			hide			advancedlighting
 			hide			vidrestart
 			hide			visuals
+			hide			morevisuals
 			hide			hud
 			hide			sound
 			hide			options
@@ -141,6 +142,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				hide			hud
 				hide			sound
 				hide			options
@@ -205,6 +207,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				hide			hud
 				hide			sound
 				hide			options
@@ -269,6 +272,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				show			visuals
+				hide			morevisuals
 				hide			hud
 				hide			sound
 				hide			options
@@ -333,6 +337,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				show			hud
 				hide			sound
 				hide			options
@@ -397,6 +402,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				hide			hud
 				show			sound
 				hide			options
@@ -461,6 +467,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				hide			hud
 				hide			sound
 				show			options
@@ -526,6 +533,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				hide			hud
 				hide			sound
 				hide			options
@@ -605,6 +613,7 @@
 				hide			advancedlighting
 				hide			vidrestart
 				hide			visuals
+				hide			morevisuals
 				hide			hud
 				hide			sound
 				hide			options
@@ -2263,11 +2272,17 @@
 		
 		itemDef 
 		{			
-			name				consoleopacity
+			name				blood
 			group				visuals
-      		type				ITEM_TYPE_SLIDER
-			text				"Console Opacity:"
-			cvarFloat			"con_opacity" 1 0 1
+      		type				ITEM_TYPE_MULTI
+			text				"Blood:"
+			cvar				"com_blood"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+				"On + Gibs" 2
+			}
 			rect				220 63 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2276,23 +2291,49 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Adjust the console's opacity."
+			descText			"Toggle to display display blood."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight2 }
 			mouseexit			{ hide highlight2 }
 		}
 		
 		itemDef 
-		{	
-			name				simpleitems
+		{			
+			name				showabsorb
 			group				visuals
       		type				ITEM_TYPE_MULTI
-			text				@MENUS_SIMPLE_ITEMS
-			cvar				"cg_simpleItems"
+			text				"Always Show Absorb:"
+			cvar				"cg_alwaysShowAbsorb"	
 			cvarFloatList		
 			{ 
-				@MENUS_OFF		0
-				@MENUS_ON		1
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 83 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to always display absorb when active."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
+		}
+		
+		itemDef 
+		{			
+			name				ysalshell
+			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Ysal Shell:"
+			cvar				"cg_drawYsalShell"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
 			}
 			rect				220 103 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -2302,7 +2343,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			@MENUS_RENDER_ICONS_FOR_ITEMS
+			descText			"Toggle to draw ysal shell."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight4 }
 			mouseexit			{ hide highlight4 }
@@ -2310,16 +2351,11 @@
 		
 		itemDef 
 		{			
-			name				wall_marks
+			name				flagalpha
 			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				@MENUS_WALL_MARKS
-			cvar				"cg_marks"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1 
-			}
+      		type				ITEM_TYPE_SLIDER
+			text				"Flag Opacity:"
+			cvarFloat			"cg_thirdPersonFlagAlpha" 1 0 1
 			rect				220 123 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -2328,7 +2364,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			@MENUS_TOGGLE_TO_DISPLAY_SCORCH
+			descText			"Adjust opacity of flag in third person."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight5 }
 			mouseexit			{ hide highlight5 }
@@ -2410,6 +2446,33 @@
 		
 		itemDef 
 		{			
+			name				screenshake
+			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Screen Shake:"
+			cvar				"cg_screenShake"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				"While taking damage." 1
+				"Also during charging and firing a weapon." 2
+			}
+			rect				220 163 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to remove screen shaking."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
+		}
+		
+		itemDef 
+		{			
 			name				drawgun
 			group				visuals
       		type				ITEM_TYPE_MULTI
@@ -2418,7 +2481,10 @@
 			cvarFloatList
 			{
 				@MENUS_OFF 0
-				@MENUS_ON 1
+				"Default" 1
+				"Remove weapon bob while walking/running." 2
+				"Also remove weapon while landing." 3
+				"Also remove idle drift animation." 4
 			}
 			rect				220 183 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -2436,8 +2502,332 @@
 		
 		itemDef 
 		{			
-			name				sabertrail
+			name				playernames
 			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Player Names:"
+			cvar				"cg_drawPlayerNames"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+				"On + Health Bar" 2
+			}
+			rect				220 203 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to always display player names above heads."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight9 }
+			mouseexit			{ hide highlight9 }
+		}
+		
+		itemDef 
+		{			
+			name				drawduelers
+			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Duelers:"
+			cvar				"cg_drawDuelers"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+				"On + New Effect" 2
+			}
+			rect				220 223 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display duelers."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight10 }
+			mouseexit			{ hide highlight10 }
+		}
+		
+		itemDef 
+		{			
+			name				drawracers
+			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Racers:"
+			cvar				"cg_drawRacers"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				"Only outside race mode" 1
+				@MENUS_ON 2
+			}
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display racers."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
+		{
+			name				morevisualsbutton_glow
+			style				WINDOW_STYLE_SHADER
+			rect				260 265 200 16
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 0.5 0.5 1
+			visible				0
+			decoration
+		}
+		
+		itemDef 
+		{			
+			name				morevisualsbutton
+			group				visuals
+      		type				ITEM_TYPE_BUTTON
+			text				"More Visual Options"
+			rect				260 263 200 20
+	   		textalign			ITEM_ALIGN_CENTER
+			textalignx			100
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				0
+			descText			"Configure more visual options."
+			action
+			{
+				play 			"sound/interface/button1"
+				hide			visuals
+				hide			morevisualsbutton_glow
+				show			morevisuals
+			}
+			mouseenter			{ show morevisualsbutton_glow }
+			mouseexit			{ hide morevisualsbutton_glow }
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	MORE VISUALS
+		//
+		//----------------------------------------------------------------------------------------------
+		itemDef 
+		{			
+			name				consoleopacity
+			group				morevisuals
+      		type				ITEM_TYPE_SLIDER
+			text				"Console Opacity:"
+			cvarFloat			"con_opacity" 1 0 1
+			rect				220 43 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Adjust the console's opacity."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight1 }
+			mouseexit			{ hide highlight1 }
+		}
+		
+		itemDef 
+		{			
+			name				corpsefx
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				"Corpse Effects:"
+			cvar				"cg_corpseEffects"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1 
+			}
+			rect				220 63 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display corpse effects."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight2 }
+			mouseexit			{ hide highlight2 }
+		}
+		
+		itemDef 
+		{			
+			name				fleshsparks
+			group				morevisuals
+      		type				ITEM_TYPE_NUMERICFIELD
+			text				"Flesh Sparks:"
+			cvar				"cg_fleshSparks"	
+			rect				220 83 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Adjust the number of flesh sparks."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
+		}
+		
+		itemDef 
+		{	
+			name				simpleitems
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_SIMPLE_ITEMS
+			cvar				"cg_simpleItems"
+			cvarFloatList		
+			{ 
+				@MENUS_OFF		0
+				@MENUS_ON		1
+			}
+			rect				220 103 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			@MENUS_RENDER_ICONS_FOR_ITEMS
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight4 }
+			mouseexit			{ hide highlight4 }
+		}
+		
+		itemDef 
+		{			
+			name				wall_marks
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_WALL_MARKS
+			cvar				"cg_marks"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1 
+			}
+			rect				220 123 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			@MENUS_TOGGLE_TO_DISPLAY_SCORCH
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
+		}
+		
+		itemDef 
+		{			
+			name				nofx
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				"No Effects:"
+			cvar				"cg_noFX"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				"Remove fx_runners" 1
+				"Also remove target_speakers" 2
+				"Also replace misc_models with box/hitbox model" 3
+				"Also remove misc_models" 4
+			}
+			rect				220 143 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle the effects."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight6 }
+			mouseexit			{ hide highlight6 }
+		}
+		
+		itemDef 
+		{			
+			name				telefx
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				"No Teleport Effects:"
+			cvar				"cg_noTeleFX"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 163 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to disable teleport effects."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
+		}
+		
+		itemDef 
+		{			
+			name				remaps
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				"Remaps:"
+			cvar				"cg_remaps"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
+			}
+			rect				220 183 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle remaps."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight8 }
+			mouseexit			{ hide highlight8 }
+		}
+		
+		itemDef 
+		{			
+			name				sabertrail
+			group				morevisuals
       		type				ITEM_TYPE_MULTI
 			text				"Saber Trail:"
 			cvar				"cg_saberTrail"	
@@ -2464,7 +2854,7 @@
 		itemDef 
 		{			
 			name				speedtrail
-			group				visuals
+			group				morevisuals
       		type				ITEM_TYPE_MULTI
 			text				"Speed Trail:"
 			cvar				"cg_speedTrail"
@@ -2488,6 +2878,32 @@
 		}
 		
 		itemDef 
+		{			
+			name				drawhitbox
+			group				morevisuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Hit Box:"
+			cvar				"cg_drawHitBox"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
+			}
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to draw hit box."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
 		{
 			name				done2button_glow
 			style				WINDOW_STYLE_SHADER
@@ -2496,6 +2912,32 @@
 			forecolor			1 0.5 0.5 1
 			visible				0
 			decoration
+		}
+		
+		itemDef 
+		{			
+			name				done2
+			group				morevisuals
+      		type				ITEM_TYPE_BUTTON
+			text				"Done"
+			rect				260 263 200 20
+	   		textalign			ITEM_ALIGN_CENTER
+			textalignx			100
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				0
+			descText			"Return to visuals."
+			action
+			{
+				play 			"sound/interface/button1"
+				show			visuals
+				hide			done2button_glow
+				hide			morevisuals
+			}
+			mouseenter			{ show done2button_glow }
+			mouseexit			{ hide done2button_glow }
 		}
 		
 		//----------------------------------------------------------------------------------------------
@@ -2514,6 +2956,7 @@
 			{ 
 				@MENUS_OFF 0  
 				@MENUS_ON 1
+				"On + Small Text" 2
 			}
 			rect				220 83 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -2540,6 +2983,7 @@
 			{ 
 				@MENUS_OFF 0  
 				@MENUS_ON 1
+				"On + Small Text" 2
 			}
 			rect				220 103 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -2557,6 +3001,32 @@
 		
 		itemDef 
 		{			
+			name				speedgraph
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Speed Graph:"
+			cvar				"cg_speedGraph"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 123 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display speed graph."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
+		}
+		
+		itemDef 
+		{			
 			name				lagometer
 			group				hud
       		type				ITEM_TYPE_MULTI
@@ -2566,6 +3036,8 @@
 			{ 
 				@MENUS_OFF 0  
 				@MENUS_ON 1
+				"On + Ping" 2
+				"On - Background" 3
 			}
 			rect				220 143 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -2583,11 +3055,37 @@
 		
 		itemDef 
 		{			
-			name				simple
+			name				smallscoreboard
 			group				hud
       		type				ITEM_TYPE_MULTI
-			text				"Simple HUD:"
-			cvar				"cg_hudFiles"	
+			text				"Small Scoreboard:"
+			cvar				"cg_smallScoreboard"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 163 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to make the small scoreboard persistant."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
+		}
+		
+		itemDef 
+		{			
+			name				killmessage
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Kill Message:"
+			cvar				"cg_killMessage"	
 			cvarFloatList		
 			{ 
 				@MENUS_OFF 0  
@@ -2601,10 +3099,90 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display simple HUD."
+			descText			"Toggle to display kill message."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight8 }
 			mouseexit			{ hide highlight8 }
+		}
+		
+		itemDef 
+		{			
+			name				tint
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Tint HUD:"
+			cvar				"cg_tintHud"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 203 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight9 }
+			mouseexit			{ hide highlight9 }
+		}
+		
+		itemDef 
+		{			
+			name				simple
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Simple HUD:"
+			cvar				"cg_hudFiles"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 223 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display simple HUD."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight10 }
+			mouseexit			{ hide highlight10 }
+		}
+		
+		itemDef 
+		{			
+			name				gradient
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"HUD Gradient:"
+			cvar				"cg_hudColors"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 0 }
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to add some gradient colors to simple HUD that change depending on health/ammo/force status."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
 		}
 		
 		//----------------------------------------------------------------------------------------------
@@ -2675,6 +3253,26 @@
 				hide			highlight3
 			} 
 		}
+		
+		itemDef
+		{
+			name				duel_music
+			group				sound
+			type				ITEM_TYPE_MULTI
+			text				"Duel:"
+			cvar				"cg_duelMusic"
+			cvarFloatList		{ "On" 1 "Off" 0 }
+			rect				506 81 54 20
+			textalign			ITEM_ALIGN_LEFT
+			textalignx			0
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			desctext			"Toggle the duel soundtrack played during a duel."
+			action				{ play "sound/interface/button1" }
+		}
 
 		itemDef 
 		{
@@ -2706,15 +3304,37 @@
 				hide			highlight4
 			} 
 		}
+
+		itemDef 
+		{	
+			name				hit
+			group				sound
+      		type				ITEM_TYPE_MULTI
+			text				"Hit Sound:"
+			cvar				"cg_hitsounds"
+			cvarFloatList		{ "Default" 0 "Quake 3" 1 "Legions: Overdrive" 2 "Warsow" 3 "Tribes: Ascend" 4 }
+			rect				220 121 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			120
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Set the type of hit sounds."
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 } 
+			action				{ play "sound/interface/button1" }
+		}
 		
 		itemDef 
 		{	
-			name				jump
+			name				roll
 			group				sound
       		type				ITEM_TYPE_MULTI
-			text				"Jump Sounds:"
-			cvar				"cg_jumpSounds"
-			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
+			text				"Roll Sounds:"
+			cvar				"cg_rollSounds"
+			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 }
 			rect				220 141 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
@@ -2723,9 +3343,53 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Set when jump sounds should be played."
+			descText			"Set when roll sounds should be played."
 			mouseenter			{ show highlight6 }
 			mouseexit			{ hide highlight6 } 
+			action				{ play "sound/interface/button1" }
+		}
+		
+		itemDef 
+		{	
+			name				jump
+			group				sound
+      		type				ITEM_TYPE_MULTI
+			text				"Jump Sounds:"
+			cvar				"cg_jumpSounds"
+			cvarFloatList		{ "Always (Default)" 0 "Only play for other clients" 2 }
+			rect				220 161 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			120
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Set when jump sounds should be played."
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 } 
+			action				{ play "sound/interface/button1" }
+		}
+		
+		itemDef 
+		{	
+			name				chat
+			group				sound
+      		type				ITEM_TYPE_MULTI
+			text				"Chat Sounds:"
+			cvar				"cg_chatSounds"
+			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
+			rect				220 181 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			120
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle the chat beep notification."
+			mouseenter			{ show highlight8 }
+			mouseexit			{ hide highlight8 } 
 			action				{ play "sound/interface/button1" }
 		}
 
@@ -2737,7 +3401,7 @@
 			cvar				"s_UseOpenAL"
 			cvarFloatList		{  @MENUS_OFF 0 @MENUS_ON 1 }
 			text				@MENUS_EAX
-			rect				220 181 300 20
+			rect				220 201 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -2754,11 +3418,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight8
+				show			highlight9
 			}
 			mouseexit 
 			{ 
-				hide			highlight8
+				hide			highlight9
 			} 
 		}
 
@@ -2767,7 +3431,7 @@
 			name				eax_icon
 			group				sound
 			style				WINDOW_STYLE_SHADER
-			rect				297 201 128 64
+			rect				297 221 128 64
 			background			"gfx/menus/eax"
 			forecolor			1 1 1 1
 			visible				1
@@ -2783,8 +3447,8 @@
       		type				ITEM_TYPE_MULTI
 			text				@MENUS_SOUND_QUALITY
 			cvar				"s_khz"
-			cvarFloatList		{ @MENUS_LOW 11  @MENUS_HIGH 22 @MENUS_VERY_HIGH 44 }
-			rect				220 201 300 20
+			cvarFloatList		{ @MENUS_LOW 11  @MENUS_HIGH 22 }
+			rect				220 221 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -2798,11 +3462,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight9
+				show			highlight10
 			}
 			mouseexit 
 			{ 
-				hide			highlight9
+				hide			highlight10
 			} 
 			action 
 			{
@@ -2817,10 +3481,161 @@
 		//
 		//----------------------------------------------------------------------------------------------
 		itemDef 
+		{			
+			name				simulatedprojectiles
+			group				options
+      		type				ITEM_TYPE_NUMERICFIELD
+			text				"Simulated Projectiles:"
+			cvar				"cg_simulatedProjectiles"
+			rect				220 61 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Draws an instant clientside projectile to make aiming/tracking easier."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight2 }
+			mouseexit			{ hide highlight2 }
+		}
+		
+		itemDef 
+		{			
+			name				leadindicator
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Lead Indicator:"
+			cvar				"cg_leadIndicator"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				"Automatic" 1
+			}
+			rect				220 81 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle lead indicator to account for your ping on the server."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
+		}
+		
+		itemDef 
+		{			
+			name				autokill
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Kill When Falling:"
+			cvar				"cg_autoKillWhenFalling"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 101 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically self-kill when falling."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight4 }
+			mouseexit			{ hide highlight4 }
+		}
+		
+		itemDef 
+		{			
+			name				autodemo
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Record Demo:"
+			cvar				"cg_autoRecordDemo"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 121 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically record a demo."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
+		}
+		
+		itemDef 
+		{			
+			name				autorace
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Record Race:"
+			cvar				"cg_autoRecordRaceDemo"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 141 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically record a race demo."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight6 }
+			mouseexit			{ hide highlight6 }
+		}
+		
+		itemDef 
+		{			
+			name				autoscreen
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Screenshot:"
+			cvar				"cg_autoScreenshot"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 161 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically take a screenshot at the end of a round."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
+		}
+		
+		itemDef 
 		{	
 			name				footsteps
 			group				options
-      		type				ITEM_TYPE_MULTI
+      			type				ITEM_TYPE_MULTI
 			text				@MENUS_FOOTSTEPS
 			desctext			@MENUS_FOOTSTEPS_DESC
 			cvar				"cg_footsteps"
@@ -3117,6 +3932,27 @@
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight8 }
 			mouseexit			{ hide highlight8 }
+		}
+		
+		itemDef 
+		{
+			name				timenudgeduration
+			group				network
+			type				ITEM_TYPE_NUMERICFIELD
+			text				"Time Nudge Duration:"
+			cvar				"cl_timeNudgeDuration"
+			rect				220 203 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Configure your timenudge duration."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight9 }
+			mouseexit			{ hide highlight9 }
 		}
 		
 		// APPLY CHANGES BUTTON

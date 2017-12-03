@@ -6454,6 +6454,10 @@ static void UI_RunMenuScript(char **args)
 				//trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote kick \"%s\"\n",uiInfo.playerNames[uiInfo.playerIndex]) );
 				trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote clientkick \"%i\"\n",uiInfo.playerIndexes[uiInfo.playerIndex]) );
 			}
+		} else if (Q_stricmp(name, "voteForceSpec") == 0) {
+			if (uiInfo.playerIndex >= 0 && uiInfo.playerIndex < uiInfo.playerCount) {
+				trap->Cmd_ExecuteText(EXEC_APPEND, va("callvote forcespec \"%i\"\n", uiInfo.playerIndexes[uiInfo.playerIndex]));
+			}
 		} else if (Q_stricmp(name, "voteGame") == 0) {
 			if (ui_netGametype.integer >= 0 && ui_netGametype.integer < uiInfo.numGameTypes) {
 				trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote g_gametype %i\n",uiInfo.gameTypes[ui_netGametype.integer].gtEnum) );
@@ -6478,6 +6482,10 @@ static void UI_RunMenuScript(char **args)
 			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote timelimit %i\n", ui_duel_timelimit.integer) );
 		} else if (Q_stricmp(name, "voteDuelFrag") == 0) {
 			trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote fraglimit %i\n", ui_duel_fraglimit.integer) );
+		} else if (Q_stricmp(name, "voteTeamSize") == 0) {
+			if (ui_teamSize.integer >= 1 && ui_teamSize.integer <= 16) {
+				trap->Cmd_ExecuteText( EXEC_APPEND, va("callvote sv_maxteamsize %i\n", ui_teamSize.integer) );
+			}
 		} else if (Q_stricmp(name, "login") == 0) {
 			trap->Cmd_ExecuteText( EXEC_APPEND, va("login %s %s\n", ui_username.string, ui_password.string) );
 		} else if (Q_stricmp(name, "register") == 0) {

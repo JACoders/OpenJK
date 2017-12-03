@@ -60,9 +60,10 @@ fi
 case "${host}" in
 	(macosx-universal-clang)
 		( cd $(pwd)/assets && \
-			zip -r eternaljk-assets.pk3 * && \
-			mv eternaljk-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
-			cd ../build/DESTDIR/prefix/JediAcademy/eternaljk.x86_64.app/Contents/MacOS/eternaljk/ && \
+			zip -r japro3ui-assets.pk3 * && \
+			mv japro3ui-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/openjk.x86_64.app/Contents/MacOS/japro/ && \
+			cd ../build/DESTDIR/prefix/JediAcademy/openjk.x86_64.app/Contents/MacOS/eternaljk/ && \
+			wget http://upsgaming.com/files/japro3.pk3 && \
 			cd ../../../ && \
 			tar czvf eternaljk-macos-"${arch}".tar.gz * && \
 			mv eternaljk-macos-"${arch}".tar.gz /Users/travis/build/eternalcodes/EternalJK/ && \
@@ -72,9 +73,11 @@ case "${host}" in
 	(i?86-linux-gnu|native)
 		if [ -n "${deploy}" ]; then
 			( cd $(pwd)/assets && \
-				zip -r eternaljk-assets.pk3 * && \
-				mv eternaljk-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
-				cd ../build/DESTDIR/prefix/JediAcademy && \
+				zip -r japro3ui-assets.pk3 * && \
+				mv japro3ui-assets.pk3 ../build/DESTDIR/prefix/JediAcademy/eternaljk/ && \
+				cd ../build/DESTDIR/prefix/JediAcademy/eternaljk && \
+				wget http://upsgaming.com/files/japro3.pk3 && \
+				cd ../ && \
 				tar czvf eternaljk-linux-"${arch}".tar.gz * && \
 				mv eternaljk-linux-"${arch}".tar.gz /home/travis/build/eternalcodes/EternalJK/ && \
 				cd ../../ && \

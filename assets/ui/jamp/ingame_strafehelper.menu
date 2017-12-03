@@ -1,0 +1,690 @@
+//-----------------------------------------
+// STRAFEHELPER MENU
+//-----------------------------------------
+{
+	menuDef
+	{
+		name					strafehelpermenu
+		visible					0
+		fullscreen				0
+		outOfBoundsClick
+		rect					10 292 282 148
+		focusColor				1 1 1 1
+		
+		// Overall window backdrop
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 282 148
+			backcolor			0 0 .35 .9
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1
+			decoration
+		}
+		
+		itemDef
+		{
+			name				CutoffSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Cutoff:"
+			cvarfloat			"cg_strafeHelperCutoff" 0 0 230
+			rect				10 4 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				CutoffField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_strafeHelperCutoff"
+			rect				192 4 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				CutoffReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				242 4 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_strafeHelperCutoff "0.00000"
+			}
+		}
+		
+		itemDef
+		{
+			name				RedSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Red:"
+			cvarfloat			"ui_sha_r" 0 0 255
+			rect				10 24 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			1 0 0 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				RedField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"ui_sha_r"
+			rect				192 24 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				RedReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				242 24 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar ui_sha_r "0.00000"
+			}
+		}
+		
+		itemDef
+		{
+			name				GreenSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Green:"
+			cvarfloat			"ui_sha_g" 255 0 255
+			rect				10 44 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			0 1 0 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				GreenField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"ui_sha_g"
+			rect				192 44 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				GreenReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				242 44 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar ui_sha_g "255.000"
+			}
+		}
+		
+		itemDef
+		{
+			name				BlueSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Blue:"
+			cvarfloat			"ui_sha_b" 0 0 255
+			rect				10 64 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			0 .6 1 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				BlueField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"ui_sha_b"
+			rect				192 64 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				BlueReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				242 64 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar ui_sha_b "0.00000"
+			}
+		}
+		
+		itemDef
+		{
+			name				ActiveAlphaSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Act. Alpha:"
+			cvarfloat			"ui_sha_a" 200 25 255
+			rect				10 84 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				ActiveAlphaField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"ui_sha_a"
+			rect				192 84 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				ActiveAlphaReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				242 84 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar ui_sha_a "200.000"
+			}
+		}
+		
+		itemDef
+		{
+			name				InactiveAlphaSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Inact. Alpha:"
+			cvarfloat			"cg_strafeHelperInactiveAlpha" 200 0 255
+			rect				10 104 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				InactiveAlphaField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_strafeHelperInactiveAlpha"
+			rect				192 104 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				InactiveAlphaReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				242 104 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_strafeHelperInactiveAlpha "200.000"
+			}
+		}
+		
+		itemDef 
+		{
+			name				advancedHighlight
+			group				strafeHelper
+			style				WINDOW_STYLE_SHADER
+			rect				10 124 262 20   
+			background			"gfx/menus/menu_buttonback"			// Frame around button
+			forecolor			1 1 1 1
+			decoration
+			visible				0
+		}
+		
+		itemDef
+		{
+			name				advancedButton
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Advanced Options"
+			rect				10 124 262 20
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			131
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+				open			advanced_popmenu
+			}
+			mouseEnter 
+			{ 
+				show			advancedHighlight
+			}
+			mouseExit 
+			{ 
+				hide			advancedHighlight
+			}
+		}
+	}
+	
+	menuDef
+	{
+		name					"advanced_popmenu"
+		visible					0
+		fullscreen				0
+		outOfBoundsClick
+		rect					6 296 290 138
+		focusColor				1 1 1 1
+		style					1
+		border					1
+		popup
+		
+		onEsc
+		{ 
+			play				"sound/interface/esc.wav" ; 
+			close				advanced_popmenu
+		}
+		
+		itemDef 
+		{
+			name				setup_background
+			group				none
+			style				WINDOW_STYLE_FILLED
+			rect				0 0 290 138
+			backcolor			0 0 .35 .9
+			forecolor			1 1 1 1
+			border				1
+			bordercolor			0 0 .8 1
+			visible				1
+			decoration
+		}
+		
+		itemDef 
+		{
+			name				advancedTitle
+			text				"Advanced Strafe Helper Options"
+			style				WINDOW_STYLE_SHADER
+			background			"gfx/menus/menu_blendbox"
+			rect				0 4 290 20
+			font				3
+			textscale			0.7
+			textalign			ITEM_ALIGN_CENTER		
+			textalignx			145
+			textaligny			1
+			forecolor			.549 .854 1 1
+	      	visible				1 
+      		decoration 
+		}
+		
+		itemDef
+		{
+			name				FPSSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"FPS:"
+			cvarfloat			"cg_strafeHelper_FPS" 1000 0 1000
+			rect				14 24 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				FPSField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_strafeHelper_FPS"
+			rect				196 24 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				FPSReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				246 24 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_strafeHelper_FPS "1000.00"
+			}
+		}
+		
+		itemDef
+		{
+			name				PrecisionSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Precision:"
+			cvarfloat			"cg_strafeHelperPrecision" 256 0 1000
+			rect				14 44 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				PrecisionField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_strafeHelperPrecision"
+			rect				196 44 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				PrecisionReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				246 44 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_strafeHelperPrecision "256.000"
+			}
+		}
+		
+		itemDef
+		{
+			name				OffsetSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Offset:"
+			cvarfloat			"cg_strafeHelperOffset" 75 0 200
+			rect				14 64 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				OffsetField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_strafeHelperOffset"
+			rect				196 64 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				OffsetReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				246 64 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_strafeHelperOffset "75.0000"
+			}
+		}
+		
+		itemDef
+		{
+			name				InvertOffsetSlider
+			group				strafeHelper
+			type				ITEM_TYPE_SLIDER
+			text				"Invert Offset:"
+			cvarfloat			"cg_strafeHelperInvertOffset" 75 0 200
+			rect				14 84 172 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			68
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action
+			{
+				play			"sound/interface/button1.wav" ;
+			}
+		}
+		
+		itemDef 
+		{
+			name				InvertOffsetField
+			group				strafeHelper
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_strafeHelperInvertOffset"
+			rect				196 84 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				InvertOffsetReset
+ 			group				strafeHelper
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				246 84 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_strafeHelperInvertOffset "75.0000"
+			}
+		}
+		
+		itemDef 
+		{
+			name				button_glow
+			group				none
+			style				WINDOW_STYLE_SHADER
+			rect				20 104 250 30
+			background			"gfx/menus/menu_buttonback"
+			forecolor			1 1 1 1
+			visible				0
+			decoration
+		}
+		
+		itemDef
+		{
+			name				doneText
+			text				@MENUS_DONE
+			type				1
+			font				3
+			textscale			.8
+			style				WINDOW_STYLE_FILLED
+			rect				20 104 250 30
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			125
+			textaligny			5
+			forecolor			1 .682 0 1
+			visible				1
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				close			advanced_popmenu
+			}
+			mouseEnter 
+			{ 
+				show			button_glow
+			}
+			mouseExit 
+			{ 
+				hide			button_glow
+			}	  	 
+		}
+	}
+}
