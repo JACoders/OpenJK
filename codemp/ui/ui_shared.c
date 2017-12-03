@@ -4889,7 +4889,17 @@ static const char *g_bindCommands[] = {
 	"weapon 8",
 	"weapon 9",
 	"weapprev",
-	"zoom"
+	"zoom",
+	"+zoom",
+	"+button12",
+	"+button13",
+	"throwflag",
+	"engage_fullforceduel",
+	"engage_gunduel",
+	"amTeleMark",
+	"amTele",
+	"noclip",
+	"flipkick"
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)
