@@ -1420,8 +1420,7 @@ static qboolean SurfIsOffscreen( const drawSurf_t *drawSurf, vec4_t clipDest[128
 
 	R_RotateForViewer(&tr.ori, &tr.viewParms);
 
-	R_DecomposeSort( drawSurf->sort, &shader, &cubemap, &postRender );
-	entityNum = drawSurf->entityNum;
+	R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemap, &postRender);
 	fogNum = drawSurf->fogIndex;
 
 	RB_BeginSurface( shader, fogNum, cubemap );
@@ -1745,20 +1744,22 @@ bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity )
 R_DecomposeSort
 =================
 */
-void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender )
+void R_DecomposeSort( uint32_t sort, int *entityNum, shader_t **shader, int *cubemap, int *postRender )
 {
 	*shader = tr.sortedShaders[ ( sort >> QSORT_SHADERNUM_SHIFT ) & QSORT_SHADERNUM_MASK ];
 	*postRender = (sort >> QSORT_POSTRENDER_SHIFT ) & QSORT_POSTRENDER_MASK;
+	*entityNum = (sort >> QSORT_ENTITYNUM_SHIFT) & QSORT_ENTITYNUM_MASK;
 	*cubemap = (sort >> QSORT_CUBEMAP_SHIFT ) & QSORT_CUBEMAP_MASK;
 }
 
-uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender)
+uint32_t R_CreateSortKey(int entityNum, int sortedShaderIndex, int cubemapIndex, int postRender)
 {
 	uint32_t key = 0;
 
 	key |= (sortedShaderIndex & QSORT_SHADERNUM_MASK) << QSORT_SHADERNUM_SHIFT;
 	key |= (cubemapIndex & QSORT_CUBEMAP_MASK) << QSORT_CUBEMAP_SHIFT;
 	key |= (postRender & QSORT_POSTRENDER_MASK) << QSORT_POSTRENDER_SHIFT;
+	key |= (entityNum & QSORT_ENTITYNUM_MASK) << QSORT_ENTITYNUM_SHIFT;
 
 	return key;
 }
@@ -1795,8 +1796,7 @@ void R_AddDrawSurf(
 	index = tr.refdef.numDrawSurfs & DRAWSURF_MASK;
 	surf = tr.refdef.drawSurfs + index;
 
-	surf->sort = R_CreateSortKey(shader->sortedIndex, cubemap, postRender);
-	surf->entityNum = entityNum;
+	surf->sort = R_CreateSortKey(entityNum, shader->sortedIndex, cubemap, postRender);
 	surf->dlightBits = dlightMap;
 	surf->surface = surface;
 	surf->fogIndex = fogIndex;
@@ -1836,9 +1836,7 @@ void R_SortAndSubmitDrawSurfs( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				int postRender;
 				int cubemap;
 
-				R_DecomposeSort( (drawSurfs+i)->sort, &shader, &cubemap, &postRender );
-				entityNum = drawSurfs[i].entityNum;
-
+				R_DecomposeSort( (drawSurfs+i)->sort, &entityNum, &shader, &cubemap, &postRender );
 				if ( shader->sort > SS_PORTAL ) {
 					break;
 				}

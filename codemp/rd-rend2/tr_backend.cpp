@@ -1127,9 +1127,8 @@ static void RB_SubmitDrawSurfsForDepthFill(
 		int postRender;
 		int entityNum;
 
-		R_DecomposeSort(drawSurf->sort, &shader, &cubemapIndex, &postRender);
+		R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemapIndex, &postRender);
 		assert(shader != nullptr);
-		entityNum = drawSurf->entityNum;
 
 		if ( shader == oldShader &&	entityNum == oldEntityNum )
 		{
@@ -1205,10 +1204,9 @@ static void RB_SubmitDrawSurfs(
 		int fogNum;
 		int dlighted;
 
-		R_DecomposeSort(drawSurf->sort, &shader, &cubemapIndex, &postRender);
+		R_DecomposeSort(drawSurf->sort, &entityNum, &shader, &cubemapIndex, &postRender);
 		assert(shader != nullptr);
 		fogNum = drawSurf->fogIndex;
-		entityNum = drawSurf->entityNum;
 		dlighted = drawSurf->dlightBits;
 
 		if ( shader == oldShader &&

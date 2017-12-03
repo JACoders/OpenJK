@@ -1428,7 +1428,11 @@ compared quickly during the qsorting process
 #define QSORT_CUBEMAP_BITS		6
 #define QSORT_CUBEMAP_MASK		((1 << QSORT_CUBEMAP_BITS) - 1)
 
-#define	QSORT_SHADERNUM_SHIFT	(QSORT_CUBEMAP_SHIFT + QSORT_CUBEMAP_BITS)
+#define QSORT_ENTITYNUM_SHIFT	(QSORT_CUBEMAP_SHIFT + QSORT_CUBEMAP_BITS)
+#define QSORT_ENTITYNUM_BITS	REFENTITYNUM_BITS
+#define QSORT_ENTITYNUM_MASK	((1 << QSORT_ENTITYNUM_BITS) - 1)
+
+#define	QSORT_SHADERNUM_SHIFT	(QSORT_ENTITYNUM_SHIFT + QSORT_ENTITYNUM_BITS)
 #define QSORT_SHADERNUM_BITS	SHADERNUM_BITS
 #define QSORT_SHADERNUM_MASK	((1 << QSORT_SHADERNUM_BITS) - 1)
 
@@ -1442,7 +1446,6 @@ compared quickly during the qsorting process
 
 typedef struct drawSurf_s {
 	uint32_t sort; // bit combination for fast compares
-	int entityNum;
 	uint32_t dlightBits;
 	surfaceType_t *surface; // any of surface*_t
 	int fogIndex;
@@ -2554,8 +2557,8 @@ void R_AddLightningBoltSurfaces( trRefEntity_t *e );
 
 void R_AddPolygonSurfaces( const trRefdef_t *refdef );
 
-void R_DecomposeSort( uint32_t sort, shader_t **shader, int *cubemap, int *postRender );
-uint32_t R_CreateSortKey(int sortedShaderIndex, int cubemapIndex, int postRender);
+void R_DecomposeSort( uint32_t sort, int *entityNum, shader_t **shader, int *cubemap, int *postRender );
+uint32_t R_CreateSortKey(int entityNum, int sortedShaderIndex, int cubemapIndex, int postRender);
 void R_AddDrawSurf( surfaceType_t *surface, int entityNum, shader_t *shader, 
 				   int fogIndex, int dlightMap, int postRender, int cubemap );
 bool R_IsPostRenderEntity ( const trRefEntity_t *refEntity );

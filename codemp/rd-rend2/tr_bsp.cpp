@@ -583,7 +583,7 @@ This is called by the clipmodel subsystem so we can share the 1.8 megs of
 space in big maps...
 =================
 */
-void		RE_SetWorldVisData( const byte *vis ) {
+void RE_SetWorldVisData( const byte *vis ) {
 	tr.externalVisData = vis;
 }
 
@@ -593,7 +593,7 @@ void		RE_SetWorldVisData( const byte *vis ) {
 R_LoadVisibility
 =================
 */
-static	void R_LoadVisibility( world_t *worldData, lump_t *l ) {
+static void R_LoadVisibility( world_t *worldData, lump_t *l ) {
 	int		len;
 	byte	*buf;
 
@@ -3705,11 +3705,13 @@ world_t *R_LoadBSP(const char *name, int *bspIndex)
 	}
 
 	// create static VBOS from the world
+#if 0
 	R_CreateWorldVBOs(worldData);
 	if (r_mergeLeafSurfaces->integer)
 	{
 		R_MergeLeafSurfaces(worldData);
 	}
+#endif
 
 	worldData->dataSize = (const byte *)ri->Hunk_Alloc(0, h_low) - startMarker;
 
