@@ -2232,8 +2232,8 @@ typedef struct trGlobals_s {
 	image_t					**lightmaps;
 	image_t					**deluxemaps;
 
-	int                     fatLightmapSize;
-	int		                fatLightmapStep;
+	vec2i_t					lightmapAtlasSize;
+	vec2i_t					lightmapsPerAtlasSide;
 
 	int                     numCubemaps;
 	vec3_t                  *cubemapOrigins;

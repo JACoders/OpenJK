@@ -242,35 +242,26 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		}
 	}
 
-	image = (byte *)Z_Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2, TAG_BSP); // don't want to use TAG_BSP :< but it's the only one that fits
+	image = (byte *)Z_Malloc(tr.lightmapSize * tr.lightmapSize * 4 * 2, TAG_BSP);
 
 	if (tr.worldDeluxeMapping)
 		numLightmaps >>= 1;
 
-	if (r_mergeLightmaps->integer && numLightmaps >= 1024 )
-	{
-		// FIXME: fat light maps don't support more than 1024 light maps
-		ri->Printf(PRINT_WARNING, "WARNING: number of lightmaps > 1024\n");
-		numLightmaps = 1024;
-	}
-
-	// use fat lightmaps of an appropriate size
 	if (r_mergeLightmaps->integer)
 	{
-		tr.fatLightmapSize = 512;
-		tr.fatLightmapStep = tr.fatLightmapSize / tr.lightmapSize;
+		const int targetLightmapsPerX = (int)ceilf(sqrtf(numLightmaps));
 
-		// at most MAX_LIGHTMAP_PAGES
-		while (tr.fatLightmapStep * tr.fatLightmapStep * MAX_LIGHTMAP_PAGES < numLightmaps && tr.fatLightmapSize != glConfig.maxTextureSize )
-		{
-			tr.fatLightmapSize <<= 1;
-			tr.fatLightmapStep = tr.fatLightmapSize / tr.lightmapSize;
-		}
+		int lightmapsPerX = 1;
+		while (lightmapsPerX < targetLightmapsPerX)
+			lightmapsPerX *= 2;
 
-		tr.numLightmaps = numLightmaps / (tr.fatLightmapStep * tr.fatLightmapStep);
+		tr.lightmapsPerAtlasSide[0] = lightmapsPerX;
+		tr.lightmapsPerAtlasSide[1] = (int)ceilf((float)numLightmaps / lightmapsPerX);
 
-		if (numLightmaps % (tr.fatLightmapStep * tr.fatLightmapStep) != 0)
-			tr.numLightmaps++;
+		tr.lightmapAtlasSize[0] = tr.lightmapsPerAtlasSide[0] * LIGHTMAP_WIDTH;
+		tr.lightmapAtlasSize[1] = tr.lightmapsPerAtlasSide[1] * LIGHTMAP_HEIGHT;
+
+		tr.numLightmaps = 1;
 	}
 	else
 	{
@@ -293,11 +284,25 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 	{
 		for (i = 0; i < tr.numLightmaps; i++)
 		{
-			tr.lightmaps[i] = R_CreateImage(va("_fatlightmap%d", i), NULL, tr.fatLightmapSize, tr.fatLightmapSize, IMGTYPE_COLORALPHA, IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, textureInternalFormat );
+			tr.lightmaps[i] = R_CreateImage(
+				va("_lightmapatlas%d", i),
+				NULL,
+				tr.lightmapAtlasSize[0],
+				tr.lightmapAtlasSize[1],
+				IMGTYPE_COLORALPHA,
+				IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+				textureInternalFormat);
 
 			if (tr.worldDeluxeMapping)
 			{
-				tr.deluxemaps[i] = R_CreateImage(va("_fatdeluxemap%d", i), NULL, tr.fatLightmapSize, tr.fatLightmapSize, IMGTYPE_DELUXE, IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, 0 );
+				tr.deluxemaps[i] = R_CreateImage(
+					va("_fatdeluxemap%d", i),
+					NULL,
+					tr.lightmapAtlasSize[0],
+					tr.lightmapAtlasSize[1],
+					IMGTYPE_DELUXE,
+					IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE,
+					0);
 			}
 		}
 	}
@@ -310,11 +315,9 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 		if (r_mergeLightmaps->integer)
 		{
-			int lightmaponpage = i % (tr.fatLightmapStep * tr.fatLightmapStep);
-			xoff = (lightmaponpage % tr.fatLightmapStep) * tr.lightmapSize;
-			yoff = (lightmaponpage / tr.fatLightmapStep) * tr.lightmapSize;
-
-			lightmapnum /= (tr.fatLightmapStep * tr.fatLightmapStep);
+			xoff = (i % tr.lightmapsPerAtlasSide[0]) * tr.lightmapSize;
+			yoff = (i / tr.lightmapsPerAtlasSide[0]) * tr.lightmapSize;
+			lightmapnum = 0;
 		}
 
 		// if (tr.worldLightmapping)
@@ -467,9 +470,24 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 			}
 
 			if (r_mergeLightmaps->integer)
-				R_UpdateSubImage(tr.lightmaps[lightmapnum], image, xoff, yoff, tr.lightmapSize, tr.lightmapSize);
+				R_UpdateSubImage(
+					tr.lightmaps[lightmapnum],
+					image,
+					xoff,
+					yoff,
+					tr.lightmapSize,
+					tr.lightmapSize);
 			else
-				tr.lightmaps[i] = R_CreateImage(va("*lightmap%d", i), image, tr.lightmapSize, tr.lightmapSize, IMGTYPE_COLORALPHA, IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, textureInternalFormat );
+				tr.lightmaps[i] = R_CreateImage(
+					va("*lightmap%d", i),
+					image,
+					tr.lightmapSize,
+					tr.lightmapSize,
+					IMGTYPE_COLORALPHA,
+					IMGFLAG_NOLIGHTSCALE |
+						IMGFLAG_NO_COMPRESSION |
+						IMGFLAG_CLAMPTOEDGE,
+					textureInternalFormat );
 
 			if (hdrLightmap)
 				ri->FS_FreeFile(hdrLightmap);
@@ -497,11 +515,26 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 
 			if (r_mergeLightmaps->integer)
 			{
-				R_UpdateSubImage(tr.deluxemaps[lightmapnum], image, xoff, yoff, tr.lightmapSize, tr.lightmapSize );
+				R_UpdateSubImage(
+					tr.deluxemaps[lightmapnum],
+					image,
+					xoff,
+					yoff,
+					tr.lightmapSize,
+					tr.lightmapSize);
 			}
 			else
 			{
-				tr.deluxemaps[i] = R_CreateImage(va("*deluxemap%d", i), image, tr.lightmapSize, tr.lightmapSize, IMGTYPE_DELUXE, IMGFLAG_NOLIGHTSCALE | IMGFLAG_NO_COMPRESSION | IMGFLAG_CLAMPTOEDGE, 0 );
+				tr.deluxemaps[i] = R_CreateImage(
+					va("*deluxemap%d", i),
+					image,
+					tr.lightmapSize,
+					tr.lightmapSize,
+					IMGTYPE_DELUXE,
+					IMGFLAG_NOLIGHTSCALE |
+						IMGFLAG_NO_COMPRESSION |
+						IMGFLAG_CLAMPTOEDGE,
+					0);
 			}
 		}
 	}
@@ -522,15 +555,12 @@ static float FatPackU(float input, int lightmapnum)
 	if (tr.worldDeluxeMapping)
 		lightmapnum >>= 1;
 
-	if(tr.fatLightmapSize > 0)
+	if (tr.lightmapAtlasSize[0] > 0)
 	{
-		int             x;
+		const int lightmapXOffset = lightmapnum % tr.lightmapsPerAtlasSide[0];
+		const float invLightmapSide = 1.0f / tr.lightmapsPerAtlasSide[0];
 
-		lightmapnum %= (tr.fatLightmapStep * tr.fatLightmapStep);
-
-		x = lightmapnum % tr.fatLightmapStep;
-
-		return (input / ((float)tr.fatLightmapStep)) + ((1.0 / ((float)tr.fatLightmapStep)) * (float)x);
+		return (lightmapXOffset * invLightmapSide) + (input * invLightmapSide);
 	}
 
 	return input;
@@ -544,15 +574,12 @@ static float FatPackV(float input, int lightmapnum)
 	if (tr.worldDeluxeMapping)
 		lightmapnum >>= 1;
 
-	if(tr.fatLightmapSize > 0)
+	if (tr.lightmapAtlasSize[1] > 0)
 	{
-		int             y;
+		const int lightmapYOffset = lightmapnum / tr.lightmapsPerAtlasSide[0];
+		const float invLightmapSide = 1.0f / tr.lightmapsPerAtlasSide[1];
 
-		lightmapnum %= (tr.fatLightmapStep * tr.fatLightmapStep);
-
-		y = lightmapnum / tr.fatLightmapStep;
-
-		return (input / ((float)tr.fatLightmapStep)) + ((1.0 / ((float)tr.fatLightmapStep)) * (float)y);
+		return (lightmapYOffset * invLightmapSide) + (input * invLightmapSide);
 	}
 
 	return input;
@@ -567,10 +594,8 @@ static int FatLightmap(int lightmapnum)
 	if (tr.worldDeluxeMapping)
 		lightmapnum >>= 1;
 
-	if (tr.fatLightmapSize > 0)
-	{
-		return lightmapnum / (tr.fatLightmapStep * tr.fatLightmapStep);
-	}
+	if (tr.lightmapAtlasSize[0] > 0)
+		return 0;
 	
 	return lightmapnum;
 }
@@ -732,8 +757,8 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 
 		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			cv->verts[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), realLightmapNum[j]);
-			cv->verts[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), realLightmapNum[j]);
+			cv->verts[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), ds->lightmapNum[j]);
+			cv->verts[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
 			if (hdrVertColors)
 			{
@@ -835,9 +860,7 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 	int realLightmapNum[MAXLIGHTMAPS];
 
 	for ( j = 0; j < MAXLIGHTMAPS; j++ )
-	{
-		realLightmapNum[j] = FatLightmap (LittleLong (ds->lightmapNum[j]));
-	}
+		realLightmapNum[j] = FatLightmap(LittleLong (ds->lightmapNum[j]));
 
 	surf->numSurfaceSprites = 0;
 	surf->surfaceSprites = nullptr;
@@ -883,8 +906,8 @@ static void ParseMesh ( const world_t *worldData, dsurface_t *ds, drawVert_t *ve
 
 		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			points[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), realLightmapNum[j]);
-			points[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), realLightmapNum[j]);
+			points[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), ds->lightmapNum[j]);
+			points[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
 			if (hdrVertColors)
 			{
@@ -941,6 +964,10 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 	glIndex_t  *tri;
 	int             i, j;
 	int             numVerts, numIndexes, badTriangles;
+	int realLightmapNum[MAXLIGHTMAPS];
+
+	for ( j = 0; j < MAXLIGHTMAPS; j++ )
+		realLightmapNum[j] = FatLightmap(LittleLong (ds->lightmapNum[j]));
 
 	surf->numSurfaceSprites = 0;
 	surf->surfaceSprites = nullptr;
@@ -949,7 +976,7 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 	surf->fogIndex = LittleLong( ds->fogNum ) + 1;
 
 	// get shader
-	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, lightmapsVertex, ds->lightmapStyles, ds->vertexStyles );
+	surf->shader = ShaderForShaderNum( worldData, ds->shaderNum, realLightmapNum, ds->lightmapStyles, ds->vertexStyles );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
 		surf->shader = tr.defaultShader;
 	}
@@ -992,8 +1019,10 @@ static void ParseTriSurf( const world_t *worldData, dsurface_t *ds, drawVert_t *
 
 		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			cv->verts[i].lightmap[j][0] = LittleFloat(verts[i].lightmap[j][0]);
-			cv->verts[i].lightmap[j][1] = LittleFloat(verts[i].lightmap[j][1]);
+			cv->verts[i].lightmap[j][0] = FatPackU(
+				LittleFloat(verts[i].lightmap[j][0]), ds->lightmapNum[j]);
+			cv->verts[i].lightmap[j][1] = FatPackV(
+				LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
 			if (hdrVertColors)
 			{
