@@ -261,6 +261,7 @@ static	void R_LoadLightmaps( world_t *worldData, lump_t *l, lump_t *surfs ) {
 		tr.lightmapAtlasSize[0] = tr.lightmapsPerAtlasSide[0] * LIGHTMAP_WIDTH;
 		tr.lightmapAtlasSize[1] = tr.lightmapsPerAtlasSide[1] * LIGHTMAP_HEIGHT;
 
+		// FIXME: What happens if we need more?
 		tr.numLightmaps = 1;
 	}
 	else
@@ -752,8 +753,10 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 
 		for ( j = 0; j < MAXLIGHTMAPS; j++ )
 		{
-			cv->verts[i].lightmap[j][0] = FatPackU(LittleFloat(verts[i].lightmap[j][0]), ds->lightmapNum[j]);
-			cv->verts[i].lightmap[j][1] = FatPackV(LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
+			cv->verts[i].lightmap[j][0] = FatPackU(
+				LittleFloat(verts[i].lightmap[j][0]), ds->lightmapNum[j]);
+			cv->verts[i].lightmap[j][1] = FatPackV(
+				LittleFloat(verts[i].lightmap[j][1]), ds->lightmapNum[j]);
 
 			if (hdrVertColors)
 			{
@@ -776,7 +779,6 @@ static void ParseFace( const world_t *worldData, dsurface_t *ds, drawVert_t *ver
 					color[1] = verts[i].color[j][1];
 					color[2] = verts[i].color[j][2];
 				}
-
 			}
 			color[3] = verts[i].color[j][3] / 255.0f;
 
