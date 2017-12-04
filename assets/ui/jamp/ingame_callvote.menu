@@ -328,6 +328,9 @@
 			textstyle			3
 			textalign			ITEM_ALIGN_RIGHT
 			forecolor			1 .682 0 1
+			cvarTest			"ui_isJAPro"
+			showCvar 
+			{ "1" }
 			visible				1
 			action 
 			{ 
@@ -1206,30 +1209,3 @@
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
