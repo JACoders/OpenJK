@@ -1592,9 +1592,12 @@ Ghoul2 Insert End
 			{
 				if (lightSide)
 				{
-					if (curTimeDif < 2200)
-					{ //probably temporary
-						trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound( "sound/weapons/saber/saberhum1.wav" ) );
+					if (curTimeDif < 2200
+						&& cg.frametime > 0
+						&& ((cg.frametime < 50 && cg.time % 50 <= cg.frametime)
+							|| cg.frametime >= 50))  //probably temporary 
+					{
+						trap->S_StartSound(NULL, cent->currentState.number, CHAN_AUTO, trap->S_RegisterSound("sound/weapons/saber/saberhum1.wav"));
 					}
 				}
 				else
@@ -1611,7 +1614,10 @@ Ghoul2 Insert End
 					{
 						ent.customShader = cgs.media.electricBody2Shader;
 					}
-					if ( Q_flrand(0.0f, 1.0f) > 0.9f )
+					if ((Q_flrand(0.0f, 1.0f) > 0.9f)
+						&& cg.frametime > 0
+						&& ((cg.frametime < 50 && cg.time % 50 <= cg.frametime)
+							|| cg.frametime >= 50))
 					{
 						trap->S_StartSound ( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.crackleSound );
 					}
