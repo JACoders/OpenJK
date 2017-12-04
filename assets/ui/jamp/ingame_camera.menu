@@ -8,7 +8,7 @@
 		visible					0
 		fullScreen				0
 		outOfBoundsClick
-		rect					10 212 266 228
+		rect					10 212 266 248
 		focusColor				1 1 1 1
 		
 		// Overall window backdrop
@@ -17,7 +17,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 266 228
+			rect				0 0 266 248
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -238,7 +238,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_fov "80.0000"
+				setcvar cg_fov "80.0"
 			}
 		}
 		
@@ -248,7 +248,7 @@
 			group				camera
 			type				ITEM_TYPE_SLIDER
 			text				"Gun FOV:"
-			cvarfloat			"cg_gunfov" 0 0 140
+			cvarfloat			"cg_fovViewmodel" 0 0 140
 			rect				10 64 156 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			52
@@ -268,7 +268,7 @@
 			group				camera
 			type				ITEM_TYPE_NUMERICFIELD
 			text				""
-			cvar				"cg_gunfov"
+			cvar				"cg_fovViewmodel"
 			rect				176 64 40 20
 			font 				4
 			textscale 			1
@@ -291,7 +291,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_gunfov "0.00000"
+				setcvar cg_fovViewmodel "80.0"
 			}
 		}
 		
@@ -344,7 +344,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_zoomfov "40.0000"
+				setcvar cg_zoomfov "40.0"
 			}
 		}
 
@@ -397,7 +397,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonRange "80.0000"
+				setcvar cg_thirdPersonRange "80.0"
 			}
 		}
 		
@@ -447,7 +447,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonAngle "0.00000"
+				setcvar cg_thirdPersonAngle "0.0"
 			}
 		}
 		
@@ -497,7 +497,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonPitchOffset "0.00000"
+				setcvar cg_thirdPersonPitchOffset "0.0"
 			}
 		}
 		
@@ -547,7 +547,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonVertOffset "16.0000"
+				setcvar cg_thirdPersonVertOffset "16.0"
 			}
 		}
 		
@@ -597,7 +597,7 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonHorzOffset "0.00000"
+				setcvar cg_thirdPersonHorzOffset "0.0"
 			}
 		}
 		
@@ -647,7 +647,56 @@
 			action
 			{
 				play "sound/interface/button1.wav" ;
-				setcvar cg_thirdPersonCameraDamp "1.00000"
+				setcvar cg_thirdPersonCameraDamp "0.3"
+			}
+		}
+		itemDef
+		{
+			name				dampSlider2
+			group				camera
+			type				ITEM_TYPE_SLIDER
+			text				"T. Damp:"
+			cvarfloat			"cg_thirdPersonTargetDamp" 1 0 1
+			rect				10 224 156 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			52
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef 
+		{
+			name				dampField2
+			group				camera
+			type				ITEM_TYPE_NUMERICFIELD
+			text				""
+			cvar				"cg_thirdPersonTargetDamp"
+			rect				176 224 40 20
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				1
+			action				{ play "sound/interface/button1.wav" ; }
+		}
+		
+		itemDef
+		{
+			name				dampReset2
+ 			group				camera
+     		type				ITEM_TYPE_BUTTON
+			text				"Reset"
+			rect				226 224 30 20
+			font 				4
+			textscale 			1
+			forecolor			1 .682 0 1
+			visible				1
+			action
+			{
+				play "sound/interface/button1.wav" ;
+				setcvar cg_thirdPersonTargetDamp "0.5"
 			}
 		}
 	}

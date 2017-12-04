@@ -478,8 +478,8 @@ typedef struct displayContextDef_s {
 	float			bias;
 	int				realTime;
 	int				frameTime;
-	int				cursorx;
-	int				cursory;
+	float			cursorx;
+	float			cursory;
 	qboolean		debug;
 
 	cachedAssets_t	Assets;
@@ -489,6 +489,7 @@ typedef struct displayContextDef_s {
 	qhandle_t		gradientImage;
 	qhandle_t		cursor;
 	float			FPS;
+	float			widthRatioCoef;
 	int				screenshotFormat;
 
 	struct {

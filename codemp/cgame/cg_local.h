@@ -1636,8 +1636,8 @@ typedef struct cgs_s {
 
 	clientInfo_t	clientinfo[MAX_CLIENTS];
 
-	int cursorX;
-	int cursorY;
+	float cursorX;
+	float cursorY; 
 	qboolean eventHandling;
 	qboolean mouseCaptured;
 	qboolean sizingHud;

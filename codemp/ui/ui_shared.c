@@ -4889,17 +4889,21 @@ static const char *g_bindCommands[] = {
 	"weapon 8",
 	"weapon 9",
 	"weapprev",
-	"zoom",
+	"zoom", //japro stuff below
 	"+zoom",
-	"+button12",
-	"+button13",
+	"+button12", //grapple on ja+/japro
+	"+button13", //dash on japro
+	"+button14", //jetpack on japro
 	"throwflag",
 	"engage_fullforceduel",
 	"engage_gunduel",
-	"amTeleMark",
-	"amTele",
+	"amTeleMark", //teleport marker
+	"amTele", //teleport to marker
 	"noclip",
-	"flipkick"
+	"lowjump",
+	"flipkick",
+	"kill",
+	"spot"
 };
 
 #define g_bindCount ARRAY_LEN(g_bindCommands)
