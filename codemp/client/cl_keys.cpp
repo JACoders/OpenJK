@@ -392,7 +392,7 @@ EDIT FIELDS
 =============================================================================
 */
 
-
+extern vec4_t chatColour;
 /*
 ===================
 Field_Draw
@@ -448,7 +448,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		SCR_DrawSmallStringExt( x, y, str, color, qfalse, noColorEscape );
 	} else {
 		// draw big string with drop shadow
-		SCR_DrawBigString( x, y, str, 1.0, noColorEscape );
+		SCR_DrawStringExt2(x*cls.ratioFix, y, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, str, chatColour, qfalse, noColorEscape); 
 	}
 
 	// draw the cursor
@@ -470,7 +470,7 @@ void Field_VariableSizeDraw( field_t *edit, int x, int y, int width, int size, q
 		} else {
 			str[0] = cursorChar;
 			str[1] = 0;
-			SCR_DrawBigString( x + ( edit->cursor - prestep - i ) * size, y, str, 1.0, qfalse );
+			SCR_DrawStringExt2((x + (edit->cursor - prestep - i)*size)*cls.ratioFix, y, BIGCHAR_WIDTH*cls.ratioFix, BIGCHAR_HEIGHT, str, chatColour, qfalse, qfalse); 
 		}
 	}
 }

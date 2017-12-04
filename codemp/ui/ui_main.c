@@ -4748,45 +4748,61 @@ static void UI_Update(const char *name) {
 	}
 	else if (Q_stricmp(name, "ui_resolution") == 0)
 	{
-		if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 0 ) {
+		if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == -1 ) {
 			switch (val) {
 				case 0:
-					trap->Cvar_SetValue( "ui_r_mode", 0 );
+					trap->Cvar_SetValue( "ui_r_mode", -2 );
+					break;
+			}
+		} else if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 0 ) {
+			switch (val) {
+				case 0:
+					trap->Cvar_SetValue( "ui_r_mode", 0 ); //320x240
 					break;
 				case 1:
-					trap->Cvar_SetValue( "ui_r_mode", 1 );
+					trap->Cvar_SetValue( "ui_r_mode", 1 ); //400x300
 					break;
 				case 2:
-					trap->Cvar_SetValue( "ui_r_mode", 2 );
+					trap->Cvar_SetValue( "ui_r_mode", 2 ); //512x384
 					break;
 				case 3:
-					trap->Cvar_SetValue( "ui_r_mode", 3 );
+					trap->Cvar_SetValue( "ui_r_mode", 3 ); //640x480
 					break;
 				case 4:
-					trap->Cvar_SetValue( "ui_r_mode", 4 );
+					trap->Cvar_SetValue( "ui_r_mode", 4 ); //800x600
 					break;
 				case 5:
-					trap->Cvar_SetValue( "ui_r_mode", 5 );
+					trap->Cvar_SetValue( "ui_r_mode", 5 ); //960x720
 					break;
 				case 6:
-					trap->Cvar_SetValue( "ui_r_mode", 6 );
+					trap->Cvar_SetValue( "ui_r_mode", 6 ); //1024x768
 					break;
 				case 7:
-					trap->Cvar_SetValue( "ui_r_mode", 7 );
+					trap->Cvar_SetValue( "ui_r_mode", 7 ); //1152x864
 					break;
 				case 8:
-					trap->Cvar_SetValue( "ui_r_mode", 8 );
+					trap->Cvar_SetValue( "ui_r_mode", 8 ); //1280x1024
 					break;
 				case 9:
-					trap->Cvar_SetValue( "ui_r_mode", 9 );
+					trap->Cvar_SetValue( "ui_r_mode", 9 ); //1600x1200
 					break;
 				case 10:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1920 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 1440 );
+					trap->Cvar_SetValue( "ui_r_mode", 10 ); //2048x1536
 					break;
 				case 11:
-					trap->Cvar_SetValue( "ui_r_mode", 10 );
+					trap->Cvar_SetValue("ui_r_mode", -1); //1280x960
+					trap->Cvar_SetValue("ui_r_customwidth", 1280);
+					trap->Cvar_SetValue("ui_r_customheight", 960);
+					break;
+				case 12:
+					trap->Cvar_SetValue("ui_r_mode", -1);
+					trap->Cvar_SetValue("ui_r_customwidth", 1440);
+					trap->Cvar_SetValue("ui_r_customheight", 1080);
+					break;
+				case 13:
+					trap->Cvar_SetValue("ui_r_mode", -1); //1920x1440
+					trap->Cvar_SetValue("ui_r_customWidth", 1920);
+					trap->Cvar_SetValue("ui_r_customHeight", 1440);
 					break;
 			}
 		} else if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 1 ) {
@@ -4808,72 +4824,82 @@ static void UI_Update(const char *name) {
 					break;
 				case 3:
 					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1280 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 720 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 852 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 480 );
 					break;
 				case 4:
 					trap->Cvar_SetValue( "ui_r_mode", -1 );
 					trap->Cvar_SetValue( "ui_r_customWidth", 1280 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 720 );
+					break;
+				case 5: //not sure how the engine will deal with these
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1360 );
 					trap->Cvar_SetValue( "ui_r_customHeight", 768 );
 					break;
-				case 5:
+				case 6:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 1366 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 768 );
+					break;
+				case 7:
 					trap->Cvar_SetValue( "ui_r_mode", -1 );
 					trap->Cvar_SetValue( "ui_r_customWidth", 1600 );
 					trap->Cvar_SetValue( "ui_r_customHeight", 900 );
 					break;
-				case 6:
+				case 8:
 					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1920);
+					trap->Cvar_SetValue( "ui_r_customWidth", 1920 );
 					trap->Cvar_SetValue( "ui_r_customHeight", 1080 );
+					break;
+				case 9:
+					trap->Cvar_SetValue( "ui_r_mode", -1 );
+					trap->Cvar_SetValue( "ui_r_customWidth", 2560 );
+					trap->Cvar_SetValue( "ui_r_customHeight", 1440 );
 					break;
 			}
 		} else if ( trap->Cvar_VariableValue( "ui_aspectratio" ) == 2 ) {
 			switch (val) {
-				case 0:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 640 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 400 );
-					break;
-				case 1:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 800 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 500 );
-					break;
-				case 2:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1024 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 640 );
-					break;
-				case 3:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1280 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 800 );
-					break;
-				case 4:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1440 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 900 );
-					break;
-				case 5:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1600 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 1000 );
-					break;
-				case 6:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1680 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 1050 );
-					break;
-				case 7:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 1920 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 1200 );
-					break;
-				case 8:
-					trap->Cvar_SetValue( "ui_r_mode", -1 );
-					trap->Cvar_SetValue( "ui_r_customWidth", 2560 );
-					trap->Cvar_SetValue( "ui_r_customHeight", 1600 );
-					break;
+			case 0:
+				trap->Cvar_SetValue("ui_r_mode", -1);
+				trap->Cvar_SetValue("ui_r_customWidth", 720);
+				trap->Cvar_SetValue("ui_r_customHeight", 480);
+				break;
+			case 1:
+				trap->Cvar_SetValue("ui_r_mode", -1);
+				trap->Cvar_SetValue("ui_r_customWidth", 1280);
+				trap->Cvar_SetValue("ui_r_customHeight", 768);
+				break;
+			case 2:
+				trap->Cvar_SetValue("ui_r_mode", -1);
+				trap->Cvar_SetValue("ui_r_customWidth", 1280);
+				trap->Cvar_SetValue("ui_r_customHeight", 800);
+				break;
+			case 3:
+				trap->Cvar_SetValue( "ui_r_mode", -1 );
+				trap->Cvar_SetValue( "ui_r_customWidth", 1440 );
+				trap->Cvar_SetValue( "ui_r_customHeight", 900 );
+				break;
+			case 4: //eh? isn't exact 16:10 but im copying the source engine so idk
+				trap->Cvar_SetValue( "ui_r_mode", -1 );
+				trap->Cvar_SetValue( "ui_r_customWidth", 1600 );
+				trap->Cvar_SetValue( "ui_r_customHeight", 1024 );
+				break;
+			case 5:
+				trap->Cvar_SetValue( "ui_r_mode", -1 );
+				trap->Cvar_SetValue( "ui_r_customWidth", 1680 );
+				trap->Cvar_SetValue( "ui_r_customHeight", 1050 );
+				break;
+			case 6:
+				trap->Cvar_SetValue( "ui_r_mode", -1 );
+				trap->Cvar_SetValue( "ui_r_customWidth", 1920 );
+				trap->Cvar_SetValue( "ui_r_customHeight", 1200 );
+				break;
+			case 7:
+				trap->Cvar_SetValue( "ui_r_mode", -1 );
+				trap->Cvar_SetValue( "ui_r_customWidth", 2560 );
+				trap->Cvar_SetValue( "ui_r_customHeight", 1600 );
+				break;
 			}
 		}
 	}
@@ -10176,6 +10202,10 @@ void UI_Init( qboolean inGameLoad ) {
 	// for 640x480 virtualized screen
 	uiInfo.uiDC.yscale = uiInfo.uiDC.glconfig.vidHeight * (1.0/480.0);
 	uiInfo.uiDC.xscale = uiInfo.uiDC.glconfig.vidWidth * (1.0/640.0);
+
+	extern void UI_Set2DRatio(void);
+	UI_Set2DRatio();
+
 	if ( uiInfo.uiDC.glconfig.vidWidth * 480 > uiInfo.uiDC.glconfig.vidHeight * 640 ) {
 		// wide screen
 		uiInfo.uiDC.bias = 0.5 * ( uiInfo.uiDC.glconfig.vidWidth - ( uiInfo.uiDC.glconfig.vidHeight * (640.0/480.0) ) );
@@ -10360,7 +10390,7 @@ void UI_Refresh( int realtime )
 	// draw cursor
 	UI_SetColor( NULL );
 	if (Menu_Count() > 0 && (trap->Key_GetCatcher() & KEYCATCH_UI)) {
-		UI_DrawHandlePic( (float)uiInfo.uiDC.cursorx, (float)uiInfo.uiDC.cursory, 40.0f, 40.0f, uiInfo.uiDC.Assets.cursor);
+		UI_DrawHandlePic(uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 40.0f * uiInfo.uiDC.widthRatioCoef, 40.0f, uiInfo.uiDC.Assets.cursor);
 		//UI_DrawHandlePic( uiInfo.uiDC.cursorx, uiInfo.uiDC.cursory, 48, 48, uiInfo.uiDC.Assets.cursor);
 	}
 

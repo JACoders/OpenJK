@@ -132,8 +132,44 @@
 		{
 			name				join
 			text				@MENUS_JOIN
-			cvarTest			"ui_singleplayeractive"
-			disableCvar 
+			cvarTest			"ui_isJAPro"
+			showCvar 
+			{ 
+				"0" 
+			}
+			rect				75 0 70 32
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_FILLED
+			font				2
+			textscale			.8
+			textstyle			3
+			textalign			ITEM_ALIGN_CENTER
+			textalignx          	35
+			textaligny			2
+			forecolor			1 .682 0 1
+			backcolor			0 0 0 0
+			visible			1
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				open			ingame_join 
+			}
+			mouseenter 
+			{ 
+				show			joinButton
+			}
+			mouseexit 
+			{ 
+				hide			joinButton
+			}
+		}
+		
+		itemDef 
+		{
+			name				joinJAPro
+			text				@MENUS_JOIN
+			cvarTest			"ui_isJAPro"
+			showCvar 
 			{ 
 				"1" 
 			}
@@ -149,12 +185,10 @@
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
 			visible			1
-			cvartest			"g_gametype"
-			showcvar			{ "0", "1", "2", "3", "4", "5", "6", "8" }
 			action 
 			{ 
 				play			"sound/interface/button1.wav" ;
-				open			ingame_join 
+				open			ingame_join_japro
 			}
 			mouseenter 
 			{ 
@@ -618,7 +652,7 @@
 			name				spectatorButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				295 464 50 16
+			rect				295 448 50 16
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -631,7 +665,7 @@
 			text				"Spec"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				295 464 50 16
+			rect				295 448 50 16
 			font				2
 			textscale			.7
 			textstyle			3
@@ -726,6 +760,8 @@
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
+			cvarTest			"ui_isJAPro"
+			showCvar{ 1 }
 			visible				1
 			action 
 			{ 
@@ -793,7 +829,7 @@
 			name				cameraButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				245 464 50 46
+			rect				192 464 50 16
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -806,7 +842,7 @@
 			text				"Camera"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				245 464 50 16
+			rect				192 464 50 16
 			font				2
 			textscale			.7
 			textstyle			3
@@ -836,7 +872,7 @@
 			name				strafeHelperButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				195 464 50 16
+			rect				242 464 50 46
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -849,7 +885,7 @@
 			text				"Strafe H."
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				195 464 50 16
+			rect				242 464 50 16
 			font				2
 			textscale			.7
 			textstyle			3
@@ -858,6 +894,8 @@
 			textaligny			-2
 			forecolor			1 .682 0 1
 			backcolor			0 0 0 0
+			cvarTest			"ui_isJAPro"
+			showCvar{ 1 }
 			visible				1
 			action 
 			{ 
@@ -879,7 +917,7 @@
 			name				accountButton
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				295 448 50 16
+			rect				295 464 50 16
 			background			"gfx/menus/menu_buttonback"			// Frame around button
 			forecolor			1 1 1 1
 			decoration
@@ -892,7 +930,7 @@
 			text				"Account"
 			type				1
 			style				WINDOW_STYLE_FILLED
-			rect				295 448 50 16
+			rect				295 464 50 16
 			font				2
 			textscale			.7
 			textstyle			3

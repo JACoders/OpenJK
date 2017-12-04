@@ -25,7 +25,7 @@ set(InOpenJK TRUE)
 
 
 # Project name
-set(ProjectName "OpenJK" CACHE STRING "Project Name")
+set(ProjectName "EternalJK" CACHE STRING "Project Name")
 project(${ProjectName})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
@@ -36,7 +36,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 option(BuildPortableVersion "Build portable version (does not read or write files from your user/home directory" ON)
 
 option(BuildMPEngine "Whether to create projects for the MP client (openjk.exe)" ON)
-option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-vanilla_x86.dll)" ON)
+option(BuildMPRdVanilla "Whether to create projects for the MP default renderer (rd-eternaljk_x86.dll)" ON)
 option(BuildMPDed "Whether to create projects for the MP dedicated server (openjkded.exe)" ON)
 option(BuildMPGame "Whether to create projects for the MP server-side gamecode (jampgamex86.dll)" ON)
 option(BuildMPCGame "Whether to create projects for the MP clientside gamecode (cgamex86.dll)" ON)
@@ -142,12 +142,12 @@ message("Git revision is ${GIT_SHA1}")
 
 # Binary names
 set(MPEngine "eternaljk.${Architecture}")
-set(MPVanillaRenderer "rd-vanilla_${Architecture}")
+set(MPVanillaRenderer "rd-eternaljk_${Architecture}")
 set(MPDed "openjkded.${Architecture}")
 set(MPGame "jampgame${Architecture}")
 set(MPCGame "cgame${Architecture}")
 set(MPUI "ui${Architecture}")
-set(AssetsPk3 "japro3ui-${Architecture}.pk3")
+set(AssetsPk3 "eternaljk-assets-${Architecture}.pk3")
 # Library names
 set(MPBotLib "botlib")
 set(SharedLib "shared")

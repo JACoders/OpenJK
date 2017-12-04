@@ -10,12 +10,12 @@
 		visible					0
 		fullscreen				0
 		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
-		rect					45 35 550 335
+		rect					45 35 550 380 //45 35 550 335
 		focusColor				1 1 1 1								// Focus color for text and items
 		style					1
 		border					1
 		descX					305
-		descY					347
+		descY					387 //347
 		descScale				1
 		descColor				1 .682 0 .8					// Focus color for text and items
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -62,7 +62,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 570 335
+			rect				0 0 570 380 //0 0 570 335
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -405,6 +405,7 @@
 				hide			morevisuals
 				hide			hud
 				show			sound
+				hide			langapply
 				hide			options
 				hide			network
 				hide			mods
@@ -471,7 +472,7 @@
 				hide			hud
 				hide			sound
 				show			options
-				hide			langapply
+				//hide			langapply
 				hide			network
 				hide			mods
 				hide			defaults
@@ -631,7 +632,7 @@
 			name				setup_background
 			group				none
 			style				WINDOW_STYLE_FILLED
-			rect				210 41 350 250	
+			rect				210 41 350 285	//210 41 350 250	
 			backcolor			0 0 .6 .5
 			forecolor			1 1 1 1
 			border				1
@@ -789,13 +790,37 @@
 			visible			0
 			decoration
 		}
-
+		
 		itemDef
 		{
 			name				highlight13
 			group				highlights
 			style				WINDOW_STYLE_SHADER
-			rect				365 283 120 32
+			rect				220 283 300 20
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+		
+		itemDef
+		{
+			name				highlight14
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				220 303 300 20
+			background			"gfx/menus/menu_blendbox"
+			forecolor			1 1 1 1
+			visible			0
+			decoration
+		}
+
+		itemDef
+		{
+			name				highlightApplyButton
+			group				highlights
+			style				WINDOW_STYLE_SHADER
+			rect				365 293 120 32
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 1 1 1
 			visible			0
@@ -857,9 +882,13 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Aspect Ratio:"
-			cvarFloatList		{ "Desktop Resolution" -1 "4:3" 0 "16:9" 1 "16:10" 2 }
+			cvarFloatList		
+			{ "Desktop Resolution" -1 
+			"4:3" 0 
+			"16:9" 1
+			"16:10" 2 }
 			cvar				"ui_aspectratio"
-			rect				220 83 300 20
+			rect				220 63 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -871,8 +900,8 @@
 			showCvar			{ -1 }
 			visible				0
 
-			mouseenter			{ show highlight3 }
-			mouseexit			{ hide highlight3 }
+			mouseenter			{ show highlight2 }
+			mouseexit			{ hide highlight2 }
 			action
 			{
 				play "sound/interface/button1"
@@ -889,9 +918,14 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Aspect Ratio:"
-			cvarFloatList		{ "4:3" 0 "16:9" 1 "16:10" 2 "Custom" 3 }
+			cvarFloatList		
+			{ "Desktop Resolution" -1
+			"4:3" 0
+			"16:9" 1
+			"16:10" 2
+			"Custom" 3 }
 			cvar				"ui_aspectratio"
-			rect				220 83 300 20
+			rect				220 63 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -903,8 +937,8 @@
 			hideCvar			{ -1 }
 			visible				0
 
-			mouseenter			{ show highlight3 }
-			mouseexit			{ hide highlight3 }
+			mouseenter			{ show highlight2 }
+			mouseexit			{ hide highlight2 }
 			action
 			{
 				play "sound/interface/button1"
@@ -921,9 +955,24 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
-			cvarFloatList		{ "320 X 240" 0 "400 X 300" 1 "512 X 384" 2 @MENUS_640_X_480 3 @MENUS_800_X_600 4  @MENUS_1024_X_768 6 @MENUS_1152_X_864 7  @MENUS_1280_X_1024 8  @MENUS_1600_X_1200 9  "1920 X 1440" 10 @MENUS_2048_X_1536 11 }
+			cvarFloatList		
+			{
+			/*"320 X 240" 0
+			"400 X 300" 1
+			"512 X 384" 2*/
+			@MENUS_640_X_480 3
+			@MENUS_800_X_600 4
+			"960 X 720" 5
+			@MENUS_1024_X_768 6
+			@MENUS_1152_X_864 7
+			"1280 X 960" 11
+			@MENUS_1280_X_1024 8
+			"1440 X 1080" 12
+			@MENUS_1600_X_1200 9
+			"1920 X 1440" 13
+			@MENUS_2048_X_1536 10 }
 			cvar				"ui_resolution"
-			rect				220 103 300 20
+			rect				220 83 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -937,11 +986,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight4
+				show			highlight3
 			}
 			mouseexit 
 			{ 
-				hide			highlight4
+				hide			highlight3
 			} 
 			action 
 			{
@@ -958,9 +1007,19 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
-			cvarFloatList		{ "640 X 360" 0 "800 X 450" 1 "1024 X 576" 2 "1280 X 720" 3 "1280 X 768" 4 "1600 X 900" 5 "1920 X 1080" 6 }
+			//cvarFloatList		{ "640 X 360" 0 "800 X 450" 1 "1024 X 576" 2 "1280 X 720" 3 "1280 X 768" 4 "1600 X 900" 5 "1920 X 1080" 6 }
+			cvarFloatList
+			{
+			"852 X 480" 3
+			"1280 X 720" 4
+			"1360 X 768" 5
+			"1366 X 768" 6
+			"1600 X 900" 7
+			"1920 X 1080" 8
+			//"2560 X 1440" 9
+			}
 			cvar				"ui_resolution"
-			rect				220 103 300 20
+			rect				220 83 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -974,11 +1033,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight4
+				show			highlight3
 			}
 			mouseexit 
 			{ 
-				hide			highlight4
+				hide			highlight3
 			} 
 			action 
 			{
@@ -995,9 +1054,20 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
-			cvarFloatList		{ "640 X 400" 0 "800 X 500" 1 "1024 X 640" 2 "1280 X 800" 3 "1440 X 900" 4 "1600 X 1000" 5 "1600 X 1050" 6 "1920 X 1200" 7 "2560 X 1600" 8 }
+			//cvarFloatList		{ "640 X 400" 0 "800 X 500" 1 "1024 X 640" 2 "1280 X 800" 3 "1440 X 900" 4 "1600 X 1000" 5 "1680 X 1050" 6 "1920 X 1200" 7 "2560 X 1600" 8 }
+			cvarFloatList
+			{
+			"720 X 480" 0
+			"1280 X 768" 1
+			"1280 X 800" 2
+			"1440 X 900" 3
+			"1600 X 1024" 4
+			"1680 X 1050" 5
+			"1920 X 1200" 6
+			"2560 X 1600" 7
+			}
 			cvar				"ui_resolution"
-			rect				220 103 300 20
+			rect				220 83 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -1011,11 +1081,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight4
+				show			highlight3
 			}
 			mouseexit 
 			{ 
-				hide			highlight4
+				hide			highlight3
 			} 
 			action 
 			{
@@ -1032,7 +1102,7 @@
 			group				video
       		type				ITEM_TYPE_TEXT
 			text				"Resolution:"
-			rect				220 103 170 20
+			rect				220 83 170 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -1057,7 +1127,7 @@
       		type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"ui_r_customWidth"
-			rect				392 103 26 20
+			rect				392 83 26 20
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
 			textaligny			0
@@ -1083,7 +1153,7 @@
 			group				video
       		type				ITEM_TYPE_TEXT
 			text				"X"
-			rect				420 103 8 20
+			rect				420 83 8 20
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
 			textaligny			0
@@ -1102,7 +1172,7 @@
       		type				ITEM_TYPE_NUMERICFIELD
 			text				""
 			cvar				"ui_r_customHeight"
-			rect				432 103 26 20
+			rect				432 83 26 20
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
 			textaligny			0
@@ -1129,6 +1199,43 @@
 			group				video
 			type				ITEM_TYPE_MULTI
 			text				@MENUS_FULL_SCREEN
+			rect				220 103 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor		.615 .615 .956 1
+
+			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
+			descText			@MENUS_TOGGLE_BETWEEN_FULL_SCREEN
+			cvar				"ui_r_fullscreen"
+
+			visible			0
+
+			mouseenter 
+			{ 
+				show			highlight4
+			}
+			mouseexit 
+			{ 
+				hide			highlight4
+			} 
+			action 
+			{
+				play			"sound/interface/button1"
+				uiScript		glCustom
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+			}
+		}
+		
+		itemDef 
+		{	
+			name				windowborder
+			group				video
+			type				ITEM_TYPE_MULTI
+			text				"Window Border:"
 			rect				220 123 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -1137,10 +1244,14 @@
 			textscale 			1
 			forecolor		.615 .615 .956 1
 
-			cvarFloatList		{  @MENUS_OFF 0 @MENUS_ON 1 }
+			cvarFloatList		{ @MENUS_OFF 1 @MENUS_ON 0 }
 			descText			@MENUS_TOGGLE_BETWEEN_FULL_SCREEN
-			cvar				"ui_r_fullscreen"
-
+			cvar				"r_noborder"
+			cvarTest			ui_r_fullscreen
+			showCvar			{ 0 }
+			/*cvarTest			ui_r_mode
+			showCvar			{ -2 }*/
+			
 			visible			0
 
 			mouseenter 
@@ -1307,6 +1418,75 @@
 		}
 		
 		itemDef 
+		{	
+			name				video_mode
+			group				video
+			type				ITEM_TYPE_MULTI //ITEM_TYPE_SLIDER
+			text				@MENUS_ANISOTROPIC_FILTERING
+			cvarTest			r_ext_texture_filter_anisotropic_avail
+			disableCvar			{ 0 }     
+			//cvarfloat			r_ext_texture_filter_anisotropic 1 .5 16 //wtf raven!!!
+			rect				220 223 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			cvar				"r_ext_texture_filter_anisotropic"
+			cvarStrList
+			{
+				"@MENUS_OFF" 0
+				"2x" 2
+				"4x" 4
+				"8x" 8
+				"16x" 16
+			}
+			descText			@MENUS_TOGGLE_ADVANCED_TEXTURE
+			mouseenter			{ show highlight10 }
+			mouseexit			{ hide highlight10 }
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+		}
+
+		itemDef 
+		{	
+			name				video_mode
+			group				video
+			type				ITEM_TYPE_MULTI
+			text				"Anti-aliasing:" //@MENUS_ANISOTROPIC_FILTERING
+			rect				220 243 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			cvar				"r_ext_multisample"
+			cvarStrList
+			{
+				"@MENUS_OFF" 0
+				" 2x" 2
+				" 4x" 4
+				" 8x" 8
+				//"16x" 16 //kinda broken on windows
+			}
+			descText			"Multi-sampled anti-aliasing (MSAA)" //@MENUS_TOGGLE_ADVANCED_TEXTURE
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+			action 
+			{ 
+				play			"sound/interface/button1"
+				setcvar			ui_r_modified	1
+				setcvar			ui_vidrestart	1
+			}
+		}
+		
+		itemDef 
 		{			
 			name				VIDEO_SYNC
 			group				video
@@ -1318,7 +1498,7 @@
 				@MENUS_OFF 0  
 				@MENUS_ON 1 
 			}
-			rect				220 223 300 20
+			rect				220 263 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -1335,11 +1515,63 @@
 
 			mouseenter 
 			{ 
-				show			highlight10
+				show			highlight12
 			}
 			mouseexit 
 			{ 
-				hide			highlight10
+				hide			highlight12
+			} 
+		}
+		
+		itemDef 
+		{			
+			name				MAX_FPS
+			group				video
+      		type				ITEM_TYPE_MULTI
+			text				"Max FPS:"
+			cvar				"com_maxfps"	
+			cvarFloatList		
+			{ 
+				"Uncapped" 0  
+				/*"30" 30
+				"60" 60
+				"70" 70
+				"75" 75
+				"85 JAMP.EXE" 85
+				"100" 100
+				"111" 111*/
+				"125 (Default)" 125
+				"142" 142
+				"166" 166
+				"200" 200
+				"250" 250
+				"333" 333
+				"500" 500
+			}
+			rect				220 283 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			cvarTest			r_swapInterval
+			hideCvar			{ 1 }
+			// appearance_slot		1
+			descText			"Max FPS setting."
+			action 
+			{ 
+				play			"sound/interface/button1"
+			}
+
+			mouseenter 
+			{ 
+				show			highlight13
+			}
+			mouseexit 
+			{ 
+				hide			highlight13
 			} 
 		}
 		
@@ -1347,7 +1579,7 @@
 		{
 			name				advancedvideobutton_glow
 			style				WINDOW_STYLE_SHADER
-			rect				260 245 200 16
+			rect				260 305 200 16
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 0.5 0.5 1
 			visible				0
@@ -1360,7 +1592,7 @@
 			group				video
       		type				ITEM_TYPE_BUTTON
 			text				"Advanced Video Options"
-			rect				260 243 200 20
+			rect				260 303 200 20
 	   		textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
@@ -1385,7 +1617,7 @@
 		{
 			name				applybutton_glow
 			style				WINDOW_STYLE_SHADER
-			rect				260 265 200 18
+			rect				260 335 200 18 //260 305 200 18
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 0.5 0.5 1
 			visible			0
@@ -1400,7 +1632,7 @@
 			text				@MENUS_APPLY_CHANGES
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				260 260 200 30
+			rect				260 330 200 30
 			font				4
 			textscale			1
 			textalignx			100
@@ -1546,9 +1778,9 @@
 				Nearest GL_NEAREST
 				Linear GL_LINEAR
 				"Nearest Mipmap Nearest" GL_NEAREST_MIPMAP_NEAREST
-				"Linear Mipmap Nearest" GL_LINEAR_MIPMAP_NEAREST
+				"Linear Mipmap Nearest (Bilinear)" GL_LINEAR_MIPMAP_NEAREST
 				"Nearest Mipmap Linear" GL_NEAREST_MIPMAP_LINEAR
-				"Linear Mipmap Linear" GL_LINEAR_MIPMAP_LINEAR
+				"Linear Mipmap Linear (Trilinear)" GL_LINEAR_MIPMAP_LINEAR
 			}
 			mouseenter			{ show highlight6 }
 			mouseexit			{ hide highlight6 }
@@ -1562,37 +1794,11 @@
 		
 		itemDef 
 		{	
-			name				video_mode
-			group				advancedvideo
-			type				ITEM_TYPE_SLIDER
-			text				@MENUS_ANISOTROPIC_FILTERING
-			cvarTest			r_ext_texture_filter_anisotropic_avail
-			disableCvar			{ 0 }     
-			cvarfloat			r_ext_texture_filter_anisotropic 1 .5 16
-			rect				220 163 300 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			@MENUS_TOGGLE_ADVANCED_TEXTURE
-			mouseenter			{ show highlight7 }
-			mouseexit			{ hide highlight7 }
-			action 
-			{ 
-				play			"sound/interface/button1"
-			}
-		}
-		
-		itemDef 
-		{	
 			name				simple_shaders
 			group				advancedvideo
 			type				ITEM_TYPE_MULTI
 			text				@MENUS_DETAILED_SHADERS
-			rect				220 183 300 20
+			rect				220 163 300 20 //220 183 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -1603,8 +1809,8 @@
 			descText			@MENUS_HIDE_OR_UNHIDE_TEXTURES
 			cvar				"ui_r_detailtextures"
 			visible				0
-			mouseenter			{ show highlight8 }
-			mouseexit			{ hide highlight8 }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
 			action 
 			{ 
 				play			"sound/interface/button1"
@@ -1619,7 +1825,7 @@
 			group				advancedvideo
 			type				ITEM_TYPE_MULTI
 			text				@MENUS_COMPRESSED_TEXTURES
-			rect				220 203 300 20
+			rect				220 183 300 20 //220 203 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -1630,8 +1836,8 @@
 			descText			@MENUS_TAKE_ADVANTAGE_OF_3D
 			cvar				"ui_r_ext_compress_textures"
 			visible				0
-			mouseenter			{ show highlight9 }
-			mouseexit			{ hide highlight9 }
+			mouseenter			{ show highlight8 }
+			mouseexit			{ hide highlight8 }
 			action 
 			{ 
 				play			"sound/interface/button1"
@@ -1639,7 +1845,8 @@
 				setcvar			ui_vidrestart	1
 			}
 		}
-		
+			
+
 		itemDef 
 		{
 			name				donebutton_glow
@@ -2276,7 +2483,7 @@
 			group				visuals
       		type				ITEM_TYPE_MULTI
 			text				"Blood:"
-			cvar				"com_blood"	
+			cvar				"cg_blood"	
 			cvarFloatList		
 			{ 
 				@MENUS_OFF 0  
@@ -2351,12 +2558,38 @@
 		
 		itemDef 
 		{			
+			name				duelshell
+			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Duel Shell:"
+			cvar				"cg_drawDuelShell"
+			cvarFloatList
+			{
+				@MENUS_OFF 0
+				@MENUS_ON 1
+			}
+			rect				220 123 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to draw private duel shell."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
+		}
+		
+		itemDef 
+		{			
 			name				flagalpha
 			group				visuals
       		type				ITEM_TYPE_SLIDER
 			text				"Flag Opacity:"
 			cvarFloat			"cg_thirdPersonFlagAlpha" 1 0 1
-			rect				220 123 300 20
+			rect				220 143 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2366,82 +2599,8 @@
 			visible				0
 			descText			"Adjust opacity of flag in third person."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight5 }
-			mouseexit			{ hide highlight5 }
-		}
-		
-		itemDef 
-		{	
-			name				weaponswayon
-			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				@MENUS_VIEW_SWAYING
-			descText			@MENUS_VIEW_SWAYING_DESC
-			cvar				"ui_disableWeaponSway"
-			cvarFloatList		
-			{ 
-				@MENUS_ON	 0
-				@MENUS_OFF 	1
-			}
-			cvarTest			"ui_disableWeaponSway"
-			showCvar
-			{
-				"0"
-			}
-			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			action 
-			{
-				play			"sound/interface/button1"	
-				exec			"exec noMotion.cfg"
-				show			weaponswayoff
-				setfocus		weaponswayoff
-			}
 			mouseenter			{ show highlight6 }
 			mouseexit			{ hide highlight6 }
-		}
-
-		itemDef 
-		{
-			name				weaponswayoff
-			group				visuals
-      		type				ITEM_TYPE_MULTI
-			text				@MENUS_VIEW_SWAYING
-			descText			@MENUS_VIEW_SWAYING_DESC
-			cvar				"ui_disableWeaponSway"
-			cvarFloatList		
-			{ 
-				@MENUS_ON	0
-				@MENUS_OFF 	1
-			}
-			cvarTest			"ui_disableWeaponSway"
-			hideCvar
-			{
-				"0"
-			}
-			rect				220 143 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor		.615 .615 .956 1
-			visible				0
-			action 
-			{
-				play			"sound/interface/button1"	
-				exec			"exec restoreMotion.cfg"
-				show			weaponswayon
-				setfocus		weaponswayon
-			}
-			mouseenter			{ show highlight6 }
-			mouseexit			{ hide highlight6 } 
 		}
 		
 		itemDef 
@@ -2454,8 +2613,8 @@
 			cvarFloatList
 			{
 				@MENUS_OFF 0
-				"While taking damage." 1
-				"Also during charging and firing a weapon." 2
+				@MENUS_ON 2		//"Also during charging and firing a weapon." 2
+				"While taking damage only." 1
 			}
 			rect				220 163 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
@@ -2465,7 +2624,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to remove screen shaking."
+			descText			"Toggle to remove screen shaking when taking damage or firing a weapon."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight7 }
 			mouseexit			{ hide highlight7 }
@@ -2553,6 +2712,32 @@
 			mouseenter			{ show highlight10 }
 			mouseexit			{ hide highlight10 }
 		}
+
+		itemDef 
+		{			
+			name				drawnonduelers
+			group				visuals
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Non-Duelers:"
+			cvar				"cg_drawNonDuelers"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display other players in private duels."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+		}
 		
 		itemDef 
 		{			
@@ -2567,7 +2752,7 @@
 				"Only outside race mode" 1
 				@MENUS_ON 2
 			}
-			rect				220 243 300 20
+			rect				220 263 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2577,15 +2762,15 @@
 			visible				0
 			descText			"Toggle to display racers."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight11 }
-			mouseexit			{ hide highlight11 }
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 }
 		}
 		
 		itemDef 
 		{
 			name				morevisualsbutton_glow
 			style				WINDOW_STYLE_SHADER
-			rect				260 265 200 16
+			rect				260 305 200 16
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 0.5 0.5 1
 			visible				0
@@ -2598,7 +2783,7 @@
 			group				visuals
       		type				ITEM_TYPE_BUTTON
 			text				"More Visual Options"
-			rect				260 263 200 20
+			rect				260 303 200 20
 	   		textalign			ITEM_ALIGN_CENTER
 			textalignx			100
 			textaligny			0
@@ -2944,7 +3129,7 @@
 		//
 		//	HUD
 		//
-		//----------------------------------------------------------------------------------------------
+		//----------------------------------------------------------------------------------------------\
 		itemDef 
 		{			
 			name				drawfps
@@ -2958,7 +3143,7 @@
 				@MENUS_ON 1
 				"On + Small Text" 2
 			}
-			rect				220 83 300 20
+			rect				220 43 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2968,8 +3153,8 @@
 			visible				0
 			descText			"Toggle to display FPS."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight3 }
-			mouseexit			{ hide highlight3 }
+			mouseenter			{ show highlight1 }
+			mouseexit			{ hide highlight1 }
 		}
 		
 		itemDef 
@@ -2985,7 +3170,7 @@
 				@MENUS_ON 1
 				"On + Small Text" 2
 			}
-			rect				220 103 300 20
+			rect				220 63 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2995,8 +3180,8 @@
 			visible				0
 			descText			"Toggle to display timer."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight4 }
-			mouseexit			{ hide highlight4 }
+			mouseenter			{ show highlight2 }
+			mouseexit			{ hide highlight2 }
 		}
 		
 		itemDef 
@@ -3011,7 +3196,7 @@
 				@MENUS_OFF 0  
 				@MENUS_ON 1
 			}
-			rect				220 123 300 20
+			rect				220 83 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3021,8 +3206,8 @@
 			visible				0
 			descText			"Toggle to display speed graph."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight5 }
-			mouseexit			{ hide highlight5 }
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
 		}
 		
 		itemDef 
@@ -3039,7 +3224,7 @@
 				"On + Ping" 2
 				"On - Background" 3
 			}
-			rect				220 143 300 20
+			rect				220 103 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3049,34 +3234,8 @@
 			visible				0
 			descText			"Toggle to display lagometer."
 			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight6 }
-			mouseexit			{ hide highlight6 }
-		}
-		
-		itemDef 
-		{			
-			name				smallscoreboard
-			group				hud
-      		type				ITEM_TYPE_MULTI
-			text				"Small Scoreboard:"
-			cvar				"cg_smallScoreboard"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			rect				220 163 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to make the small scoreboard persistant."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight7 }
-			mouseexit			{ hide highlight7 }
+			mouseenter			{ show highlight4 }
+			mouseexit			{ hide highlight4 }
 		}
 		
 		itemDef 
@@ -3091,7 +3250,7 @@
 				@MENUS_OFF 0  
 				@MENUS_ON 1
 			}
-			rect				220 183 300 20
+			rect				220 123 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3101,17 +3260,95 @@
 			visible				0
 			descText			"Toggle to display kill message."
 			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
+		}
+		
+		itemDef 
+		{			
+			name				smallscoreboard
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Small Scoreboard:"
+			cvar				"cg_smallScoreboard"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 143 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to make the small scoreboard persistant."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight6 }
+			mouseexit			{ hide highlight6 }
+		}
+		
+		itemDef 
+		{			
+			name				drawenemyinfo
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Draw Enemy Info:"
+			cvar				"cg_drawEnemyInfo"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 163 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Show leader in FFA or opponent in private duel."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
+		}
+		
+		itemDef 
+		{
+			name				teamoverlay
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_TEAM_OVERLAY
+			cvar				"cg_drawTeamOverlay"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 183 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			@MENUS_DRAW_OVERLAY_SHOWING
+			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight8 }
 			mouseexit			{ hide highlight8 }
 		}
 		
 		itemDef 
-		{			
-			name				tint
+		{
+			name				radar
 			group				hud
       		type				ITEM_TYPE_MULTI
-			text				"Tint HUD:"
-			cvar				"cg_tintHud"	
+			text				"Draw Radar:"
+			cvar				"cg_drawRadar"	
 			cvarFloatList		
 			{ 
 				@MENUS_OFF 0  
@@ -3125,7 +3362,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
+			descText			"Toggle radar which shows teammates close-by."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight9 }
 			mouseexit			{ hide highlight9 }
@@ -3159,10 +3396,66 @@
 		
 		itemDef 
 		{			
+			name				tint
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Tint HUD:"
+			cvar				"cg_tintHud"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 1 }
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display the color tinting on your HUD while on red or blue team."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight11 }
+			mouseexit			{ hide highlight11 }
+		}
+		
+		itemDef 
+		{			
+			name				score_line
+			group				hud
+      		type				ITEM_TYPE_MULTI
+			text				"Player Score on HUD:"
+			cvar				"cg_drawScore"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			cvarTest			cg_hudFiles
+			hideCvar			{ 1 }
+			rect				220 263 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to display your personal score on the HUD."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 }
+		}
+		
+		itemDef 
+		{			
 			name				gradient
 			group				hud
       		type				ITEM_TYPE_MULTI
-			text				"HUD Gradient:"
+			text				"Simple HUD Gradient:"
 			cvar				"cg_hudColors"	
 			cvarFloatList		
 			{ 
@@ -3179,11 +3472,12 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			descText			"Toggle to add some gradient colors to simple HUD that change depending on health/ammo/force status."
+			descText			"Color gradients for simple HUD that change depending on health/ammo/force status."
 			action				{ play "sound/interface/button1" }
 			mouseenter			{ show highlight11 }
 			mouseexit			{ hide highlight11 }
 		}
+		
 		
 		//----------------------------------------------------------------------------------------------
 		//
@@ -3197,7 +3491,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				@MENUS_EFFECTS_VOLUME
 			cvarfloat			"s_volume" 0 0 1
-			rect				220 61 300 20
+			rect				220 63 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3229,7 +3523,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				@MENUS_MUSIC_VOLUME
 			cvarfloat			"s_musicvolume" 0 0 1
-			rect				220 81 282 20
+			rect				220 83 282 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3262,7 +3556,7 @@
 			text				"Duel:"
 			cvar				"cg_duelMusic"
 			cvarFloatList		{ "On" 1 "Off" 0 }
-			rect				506 81 54 20
+			rect				506 83 54 20
 			textalign			ITEM_ALIGN_LEFT
 			textalignx			0
 			textaligny			0
@@ -3272,6 +3566,14 @@
 			visible				0
 			desctext			"Toggle the duel soundtrack played during a duel."
 			action				{ play "sound/interface/button1" }
+			mouseenter 
+			{ 
+				show			highlight3
+			}
+			mouseexit 
+			{ 
+				hide			highlight3
+			} 
 		}
 
 		itemDef 
@@ -3281,7 +3583,7 @@
 			type				ITEM_TYPE_SLIDER
 			text				@MENUS_VOICE_VOLUME
 			cvarfloat			"s_volumeVoice" 0 0 1
-			rect				220 101 300 20
+			rect				220 103 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3307,13 +3609,48 @@
 
 		itemDef 
 		{	
+			name				sound_quality
+			group				sound
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_SOUND_QUALITY
+			cvar				"s_khz"
+			cvarFloatList		{ @MENUS_LOW 11  @MENUS_HIGH 22 @MENUS_VERY_HIGH 44 }
+			rect				220 123 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			120
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor		.615 .615 .956 1
+			visible			1
+			descText			@MENUS_TRADE_CLARITY_OF_SOUND
+			cvarTest			"s_UseOpenAL"
+			hideCvar			{ 1 }
+
+			mouseenter 
+			{ 
+				show			highlight5
+			}
+			mouseexit 
+			{ 
+				hide			highlight5
+			} 
+			action 
+			{
+				play			"sound/interface/button1"
+				uiScript		update 	"s_khz"
+			}
+		}
+		
+		itemDef 
+		{	
 			name				hit
 			group				sound
       		type				ITEM_TYPE_MULTI
-			text				"Hit Sound:"
+			text				"Hit Sounds:"
 			cvar				"cg_hitsounds"
-			cvarFloatList		{ "Default" 0 "Quake 3" 1 "Legions: Overdrive" 2 "Warsow" 3 "Tribes: Ascend" 4 }
-			rect				220 121 300 20
+			cvarFloatList		{ "None (Default)" 0 "Quake 3" 1 "Legions: Overdrive" 2 "Warsow" 3 "Tribes: Ascend" 4 }
+			rect				220 143 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3322,8 +3659,8 @@
 			forecolor			.615 .615 .956 1
 			visible				0
 			descText			"Set the type of hit sounds."
-			mouseenter			{ show highlight5 }
-			mouseexit			{ hide highlight5 } 
+			mouseenter			{ show highlight6 }
+			mouseexit			{ hide highlight6 } 
 			action				{ play "sound/interface/button1" }
 		}
 		
@@ -3335,7 +3672,7 @@
 			text				"Roll Sounds:"
 			cvar				"cg_rollSounds"
 			cvarFloatList		{ "None" 0 "Always (Default)" 1 "Only play for other clients" 2 }
-			rect				220 141 300 20
+			rect				220 163 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3344,8 +3681,8 @@
 			forecolor			.615 .615 .956 1
 			visible				0
 			descText			"Set when roll sounds should be played."
-			mouseenter			{ show highlight6 }
-			mouseexit			{ hide highlight6 } 
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 } 
 			action				{ play "sound/interface/button1" }
 		}
 		
@@ -3356,8 +3693,8 @@
       		type				ITEM_TYPE_MULTI
 			text				"Jump Sounds:"
 			cvar				"cg_jumpSounds"
-			cvarFloatList		{ "Always (Default)" 0 "Only play for other clients" 2 }
-			rect				220 161 300 20
+			cvarFloatList		{ "None (Default)" 0 "Always" 1 "Only play for other clients" 2 }
+			rect				220 183 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3366,8 +3703,8 @@
 			forecolor			.615 .615 .956 1
 			visible				0
 			descText			"Set when jump sounds should be played."
-			mouseenter			{ show highlight7 }
-			mouseexit			{ hide highlight7 } 
+			mouseenter			{ show highlight8 }
+			mouseexit			{ hide highlight8 } 
 			action				{ play "sound/interface/button1" }
 		}
 		
@@ -3376,10 +3713,10 @@
 			name				chat
 			group				sound
       		type				ITEM_TYPE_MULTI
-			text				"Chat Sounds:"
+			text				"Chat Sound:"
 			cvar				"cg_chatSounds"
 			cvarFloatList		{ @MENUS_OFF 0 @MENUS_ON 1 }
-			rect				220 181 300 20
+			rect				220 203 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3388,12 +3725,12 @@
 			forecolor			.615 .615 .956 1
 			visible				0
 			descText			"Toggle the chat beep notification."
-			mouseenter			{ show highlight8 }
-			mouseexit			{ hide highlight8 } 
+			mouseenter			{ show highlight9 }
+			mouseexit			{ hide highlight9 } 
 			action				{ play "sound/interface/button1" }
 		}
 
-		itemDef 
+		/*itemDef 
 		{
 			name				eax
 			group				sound
@@ -3401,7 +3738,7 @@
 			cvar				"s_UseOpenAL"
 			cvarFloatList		{  @MENUS_OFF 0 @MENUS_ON 1 }
 			text				@MENUS_EAX
-			rect				220 201 300 20
+			rect				220 223 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			120
 			textaligny			0
@@ -3418,11 +3755,11 @@
 
 			mouseenter 
 			{ 
-				show			highlight9
+				show			highlight10
 			}
 			mouseexit 
 			{ 
-				hide			highlight9
+				hide			highlight10
 			} 
 		}
 
@@ -3431,253 +3768,25 @@
 			name				eax_icon
 			group				sound
 			style				WINDOW_STYLE_SHADER
-			rect				297 221 128 64
+			rect				220 245 128 64 //snug fit: 380 180 128 64 //297 221 128 64 original
 			background			"gfx/menus/eax"
 			forecolor			1 1 1 1
 			visible				1
 			decoration
 			cvarTest			"s_UseOpenAL"
 			hideCvar			{ 0 }
-		}
+		}*/
 		
-		itemDef 
-		{	
-			name				sound_quality
-			group				sound
-      		type				ITEM_TYPE_MULTI
-			text				@MENUS_SOUND_QUALITY
-			cvar				"s_khz"
-			cvarFloatList		{ @MENUS_LOW 11  @MENUS_HIGH 22 }
-			rect				220 221 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			120
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor		.615 .615 .956 1
-			visible			0
-			descText			@MENUS_TRADE_CLARITY_OF_SOUND
-			cvarTest			"s_UseOpenAL"
-			hideCvar			{ 1 }
-
-			mouseenter 
-			{ 
-				show			highlight10
-			}
-			mouseexit 
-			{ 
-				hide			highlight10
-			} 
-			action 
-			{
-				play			"sound/interface/button1"
-				uiScript		update 	"s_khz"
-			}
-		}
-
-		//----------------------------------------------------------------------------------------------
-		//
-		//	OPTION FIELDS
-		//
-		//----------------------------------------------------------------------------------------------
-		itemDef 
-		{			
-			name				simulatedprojectiles
-			group				options
-      		type				ITEM_TYPE_NUMERICFIELD
-			text				"Simulated Projectiles:"
-			cvar				"cg_simulatedProjectiles"
-			rect				220 61 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Draws an instant clientside projectile to make aiming/tracking easier."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight2 }
-			mouseexit			{ hide highlight2 }
-		}
-		
-		itemDef 
-		{			
-			name				leadindicator
-			group				options
-      		type				ITEM_TYPE_MULTI
-			text				"Lead Indicator:"
-			cvar				"cg_leadIndicator"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				"Automatic" 1
-			}
-			rect				220 81 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle lead indicator to account for your ping on the server."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight3 }
-			mouseexit			{ hide highlight3 }
-		}
-		
-		itemDef 
-		{			
-			name				autokill
-			group				options
-      		type				ITEM_TYPE_MULTI
-			text				"Auto Kill When Falling:"
-			cvar				"cg_autoKillWhenFalling"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			rect				220 101 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to automatically self-kill when falling."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight4 }
-			mouseexit			{ hide highlight4 }
-		}
-		
-		itemDef 
-		{			
-			name				autodemo
-			group				options
-      		type				ITEM_TYPE_MULTI
-			text				"Auto Record Demo:"
-			cvar				"cg_autoRecordDemo"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			rect				220 121 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to automatically record a demo."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight5 }
-			mouseexit			{ hide highlight5 }
-		}
-		
-		itemDef 
-		{			
-			name				autorace
-			group				options
-      		type				ITEM_TYPE_MULTI
-			text				"Auto Record Race:"
-			cvar				"cg_autoRecordRaceDemo"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			rect				220 141 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to automatically record a race demo."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight6 }
-			mouseexit			{ hide highlight6 }
-		}
-		
-		itemDef 
-		{			
-			name				autoscreen
-			group				options
-      		type				ITEM_TYPE_MULTI
-			text				"Auto Screenshot:"
-			cvar				"cg_autoScreenshot"	
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 0  
-				@MENUS_ON 1
-			}
-			rect				220 161 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			"Toggle to automatically take a screenshot at the end of a round."
-			action				{ play "sound/interface/button1" }
-			mouseenter			{ show highlight7 }
-			mouseexit			{ hide highlight7 }
-		}
-		
-		itemDef 
-		{	
-			name				footsteps
-			group				options
-      			type				ITEM_TYPE_MULTI
-			text				@MENUS_FOOTSTEPS
-			desctext			@MENUS_FOOTSTEPS_DESC
-			cvar				"cg_footsteps"
-			cvarFloatList		
-			{ 
-				@MENUS_OFF 			0  
-				@MENUS_SOUNDS	 		1 
-				@MENUS_SOUNDS_AND_EFFECTS	2
-				@MENUS_SOUNDS_EFFECTS_GRAPHICS	3
-			}
-			rect				220 181 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4					
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			action
-			{
-				play			"sound/interface/button1.wav"
-			}
-			mouseenter 
-			{ 
-				show			highlight8
-			}
-			mouseexit 
-			{ 
-				hide			highlight8
-			} 
-		}
-
 		itemDef 
 		{	
 			name				text
-			group				options
-	      		type				ITEM_TYPE_MULTI
+			group				sound
+	      	type				ITEM_TYPE_MULTI
 			text				@MENUS_TEXT
 			cvar				"se_language"
 			feeder				40
 			cvarStrList			feeder
-			rect				220 241 300 20
+			rect				220 243 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3692,21 +3801,15 @@
 				show			langapply
 			}
 
-			mouseenter 
-			{ 
-				show			highlight11
-			}
-			mouseexit 
-			{ 
-				hide			highlight11
-			} 
+			mouseenter			{ show	highlight11 }
+			mouseexit			{ hide	highlight11 } 
 		}
 		
 		itemDef 
 		{	
 			name				voice
-			group				options
-	      		type				ITEM_TYPE_MULTI
+			group				sound
+	      	type				ITEM_TYPE_MULTI
 			text				@MENUS_VOICE
 			cvar				"s_language"
 			cvarStrList		
@@ -3716,7 +3819,513 @@
 				Deutsch   			deutsch
 				"Español" 			espanol
 			}
-			rect				220 261 300 20
+			rect				220 263 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor		.615 .615 .956 1
+			visible			0
+			descText			@MENUS_CHOOSE_THE_LANGUAGE_TO
+
+			action
+			{
+				play			"sound/interface/button1.wav"
+				show			langapply
+			}
+			mouseenter 
+			{ 
+				show			highlight12
+			}
+			mouseexit 
+			{ 
+				hide			highlight12
+			} 
+		}
+		
+
+		// APPLY CHANGES button
+		itemDef 
+		{
+			name				langapply
+			group				sound
+			text				@MENUS_SET_LANGUAGE
+			type				ITEM_TYPE_BUTTON
+			style				WINDOW_STYLE_EMPTY
+			rect				365 293 120 32 
+			font				2
+			textscale			1        
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			60
+			textaligny			0
+			descText			@MENUS_SET_LANGUAGE_INFO
+			forecolor			1 .682 0 1
+			visible				0
+			// appearance_slot		5
+
+			action 
+			{ 
+				play		"sound/interface/button1"
+				exec		"ui_load ; snd_restart"
+				hide			langapply
+			}
+			mouseEnter 
+			{ 
+				show			highlightApplyButton
+			}
+			mouseExit 
+			{ 
+				hide			highlightApplyButton
+			}
+		}
+
+		//----------------------------------------------------------------------------------------------
+		//
+		//	OPTION FIELDS
+		//
+		//----------------------------------------------------------------------------------------------
+
+		itemDef 
+		{			
+			name				drawcrosshair
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"@MENUS_DRAW_CROSSHAIR"
+			cvar				"cg_drawcrosshair"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				"On (Default)" 1 //On (1)
+				"On (2)" 2
+				"On (3)" 3
+				"On (4)" 4
+				"On (5)" 5
+				"On (6)" 6
+				"On (7)" 7
+				"On (8)" 8
+				"On (9)" 9
+			}
+			rect				220 43 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"@MENUS_TOGGLE_TO_SHOW_OR_HIDE"
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight1 }
+			mouseexit			{ hide highlight1 }
+		}
+		
+		itemDef 
+		{			
+			name				identifytarget
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_IDENTIFY_TARGET
+			cvar				"cg_drawCrosshairNames"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 63 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			@MENUS_TOGGLE_TO_HAVE_THE_CROSSHAIR
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight2 }
+			mouseexit			{ hide highlight2 }
+		}
+		
+		/*itemDef 
+		{			
+			name				dynamiccrosshair
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Dynamic Crosshair"
+			cvar				"cg_dynamicCrosshair"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 83 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Crosshair moves to where the player is actually looking."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight3 }
+			mouseexit			{ hide highlight3 }
+		}
+		
+		itemDef 
+		{			
+			name				dynamiccrosshairprecision
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Dynamic Crosshair Precision:
+			cvar				"cg_dynamicCrosshairPrecision"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 103 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Dynamic Crosshair Collides with Ghoul2 Meshes"
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight4 }
+			mouseexit			{ hide highlight4 }
+		}*/
+		
+		itemDef 
+		{			
+			name				leadindicator
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Lead Indicator:"
+			cvar				"cg_leadIndicator"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				"Automatic" 1
+			}
+			rect				220 123 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle lead indicator to account for your ping on the server."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight5 }
+			mouseexit			{ hide highlight5 }
+		}
+		
+		itemDef 
+		{			
+			name				simulatedprojectiles
+			group				options
+      		type				ITEM_TYPE_NUMERICFIELD
+			text				"Simulated Projectiles:"
+			cvar				"cg_simulatedProjectiles"
+			rect				220 143 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Draws an instant clientside projectile to make aiming/tracking easier."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight6 }
+			mouseexit			{ hide highlight6 }
+		}
+		
+		itemDef 
+		{			
+			name				autokill
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Kill When Falling:"
+			cvar				"cg_autoKillWhenFalling"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 163 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically self-kill when falling."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight7 }
+			mouseexit			{ hide highlight7 }
+		}
+		
+		itemDef 
+		{			
+			name				autodemo
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Record Demo:"
+			cvar				"cg_autoRecordDemo"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 183 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically record a demo."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight8 }
+			mouseexit			{ hide highlight8 }
+		}
+		
+		itemDef 
+		{			
+			name				autorace
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Record Race:"
+			cvar				"cg_autoRecordRaceDemo"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 203 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically record a race demo."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight9 }
+			mouseexit			{ hide highlight9 }
+		}
+		
+		itemDef 
+		{			
+			name				autoscreen
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Auto Screenshot:"
+			cvar				"cg_autoScreenshot"	
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 0  
+				@MENUS_ON 1
+			}
+			rect				220 223 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			"Toggle to automatically take a screenshot at the end of a round."
+			action				{ play "sound/interface/button1" }
+			mouseenter			{ show highlight10 }
+			mouseexit			{ hide highlight10 }
+		}
+		
+		itemDef 
+		{	
+			name				drawrecording
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				"Demo Recording Message:"
+			desctext			"Toggle to show message when recording demos."
+			cvar				"cl_drawRecording"
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 			0  
+				@MENUS_ON	 		1
+			}
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4					
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter			{ show	highlight11 }
+			mouseexit			{ hide	highlight11 } 
+		}
+		
+		itemDef 
+		{	
+			name				weaponswayon
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_VIEW_SWAYING
+			descText			@MENUS_VIEW_SWAYING_DESC
+			cvar				"ui_disableWeaponSway"
+			cvarFloatList		
+			{ 
+				@MENUS_ON	 0
+				@MENUS_OFF 	1
+			}
+			cvarTest			"ui_disableWeaponSway"
+			showCvar
+			{
+				"0"
+			}
+			rect				220 263 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			action 
+			{
+				play			"sound/interface/button1"	
+				exec			"exec noMotion.cfg"
+				show			weaponswayoff
+				setfocus		weaponswayoff
+			}
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 }
+		}
+
+		itemDef 
+		{
+			name				weaponswayoff
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_VIEW_SWAYING
+			descText			@MENUS_VIEW_SWAYING_DESC
+			cvar				"ui_disableWeaponSway"
+			cvarFloatList		
+			{ 
+				@MENUS_ON	0
+				@MENUS_OFF 	1
+			}
+			cvarTest			"ui_disableWeaponSway"
+			hideCvar
+			{
+				"0"
+			}
+			rect				220 263 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor		.615 .615 .956 1
+			visible				0
+			action 
+			{
+				play			"sound/interface/button1"	
+				exec			"exec restoreMotion.cfg"
+				show			weaponswayon
+				setfocus		weaponswayon
+			}
+			mouseenter			{ show highlight12 }
+			mouseexit			{ hide highlight12 } 
+		}
+		
+		itemDef 
+		{	
+			name				footsteps
+			group				options
+      		type				ITEM_TYPE_MULTI
+			text				@MENUS_FOOTSTEPS
+			desctext			@MENUS_FOOTSTEPS_DESC
+			cvar				"cg_footsteps"
+			cvarFloatList		
+			{ 
+				@MENUS_OFF 			0  
+				@MENUS_SOUNDS	 		1 
+				@MENUS_SOUNDS_AND_EFFECTS	2
+				@MENUS_SOUNDS_EFFECTS_GRAPHICS	3
+			}
+			rect				220 283 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4					
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			action
+			{
+				play			"sound/interface/button1.wav"
+			}
+			mouseenter			{ show	highlight13 }
+			mouseexit			{ hide	highlight13 } 
+		}
+		
+		/*itemDef 
+		{	
+			name				text
+			group				options
+	      		type				ITEM_TYPE_MULTI
+			text				@MENUS_TEXT
+			cvar				"se_language"
+			feeder				40
+			cvarStrList			feeder
+			rect				220 243 300 20
+	   		textalign			ITEM_ALIGN_RIGHT
+			textalignx			165
+			textaligny			0
+			font 				4
+			textscale 			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			descText			@MENUS_CHOOSE_THE_LANGUAGE_FOR
+			action 
+			{ 
+				play			"sound/interface/button1.wav"
+				show			langapply
+			}
+
+			mouseenter			{ show	highlight11 }
+			mouseexit			{ hide	highlight11 } 
+		}
+		
+		itemDef 
+		{	
+			name				voice
+			group				options
+	      	type				ITEM_TYPE_MULTI
+			text				@MENUS_VOICE
+			cvar				"s_language"
+			cvarStrList		
+			{ 
+				English  			english
+				@MENUS_LANG_FRENCH  francais
+				Deutsch   			deutsch
+				"Español" 			espanol
+			}
+			rect				220 263 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -3750,7 +4359,7 @@
 			text				@MENUS_SET_LANGUAGE
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				365 281 120 32 
+			rect				365 283 120 32 
 			font				2
 			textscale			1        
 			textalign			ITEM_ALIGN_CENTER
@@ -3769,14 +4378,14 @@
 			}
 			mouseEnter 
 			{ 
-				show			highlight13
+				show			highlightApplyButton
 			}
 			mouseExit 
 			{ 
-				hide			highlight13
+				hide			highlightApplyButton
 			}	  	  
 
-		}
+		}*/
 		
 		//----------------------------------------------------------------------------------------------
 		//
@@ -3962,7 +4571,7 @@
 			text				@MENUS_APPLY_CHANGES
 			type				ITEM_TYPE_BUTTON
 			style				WINDOW_STYLE_EMPTY
-			rect				260 260 200 30
+			rect				260 330 200 30
 			font				4
 			textscale			1
 			textalignx			100

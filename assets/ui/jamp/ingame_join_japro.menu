@@ -4,7 +4,7 @@
 {
 	menuDef 
 	{
-		name					"ingame_join"
+		name					"ingame_join_japro"
 		visible					1
 		fullScreen				0
 		outOfBoundsClick						// this closes the window if it gets a click out of the rectangle
@@ -118,7 +118,7 @@
 		itemDef 
 		{
 			name				team
-			text				@MENUS_AUTO_TEAM
+			text				Race
 			type				1
 			style				2	
 			rect				2 4 124 30   

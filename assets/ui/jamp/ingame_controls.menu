@@ -3330,8 +3330,8 @@
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
 			text				"Jetpack:"
-			cvar				"+button12"
-			rect				220 61 300 20
+			cvar				"+button14"
+			rect				220 41 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
 			textaligny			0
@@ -3341,6 +3341,39 @@
 			visible				0
 			// appearance_slot		1
 			descText			"Gives Jetpack"
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight1
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight1
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Dash:"
+			cvar				"+button13"
+			rect				220 61 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0
+			// appearance_slot		2
+			descText			"Dash in any direction with the Warsow movement style."
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3362,8 +3395,8 @@
 		{
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
-			text				"Dash:"
-			cvar				"+button13"
+			text				"Throw Flag:"
+			cvar				"throwflag"
 			rect				220 81 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
@@ -3372,8 +3405,8 @@
 			textscale			1
 			forecolor			.615 .615 .956 1
 			visible				0
-			// appearance_slot		2
-			descText			"Dash in any direction with the Warsow movement style."
+			// appearance_slot		3
+			descText			"Throw your team's flag in CTF mode."
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3395,42 +3428,9 @@
 		{
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
-			text				"Throw Flag:"
-			cvar				"throwflag"
-			rect				220 101 300 20
-			textalign			ITEM_ALIGN_RIGHT
-			textalignx			151 
-			textaligny			0
-			font				4
-			textscale			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			// appearance_slot		3
-			descText			"Throw your team's flag in CTF mode."
-			action
-			{
-				play			"sound/interface/button1.wav" ; 
-			}
-
-			mouseenter 
-			{
-				show			highlight4
-				show			keybindstatus
-			}
-			mouseexit 
-			{ 
-				hide			highlight4
-				hide			keybindstatus
-			}
-		}
-		
-		itemDef 
-		{
-			group				japrocontrols
-			type				ITEM_TYPE_BIND
 			text				"Full Force Challenge:"
 			cvar				"engage_fullforceduel"
-			rect				220 141 300 20
+			rect				220 121 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
 			textaligny			0
@@ -3440,6 +3440,40 @@
 			visible				0 
 			// appearance_slot		4
 			descText			"Challenge an enemy to a private full force duel, or accept another's challenge."
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight5
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight5
+				hide			keybindstatus
+			}
+		}
+		
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
+			text				"Gun Challenge:"
+			cvar				"engage_gunduel"
+			rect				220 141 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			// appearance_slot		4
+			descText			"Challenge an enemy to a private gun duel, or accept another's challenge."
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3457,13 +3491,12 @@
 			}
 		}
 		
-		
 		itemDef 
 		{
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
-			text				"Gun Challenge:"
-			cvar				"engage_gunduel"
+			text				"Teleport Mark:"
+			cvar				"amTeleMark"
 			rect				220 161 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
@@ -3473,7 +3506,7 @@
 			forecolor			.615 .615 .956 1
 			visible				0 
 			// appearance_slot		4
-			descText			"Challenge an enemy to a private gun duel, or accept another's challenge."
+			descText			"Mark a position to teleport back to."
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3495,8 +3528,8 @@
 		{
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
-			text				"Teleport Mark:"
-			cvar				"amTeleMark"
+			text				"Teleport:"
+			cvar				"amTele"
 			rect				220 181 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
@@ -3506,7 +3539,7 @@
 			forecolor			.615 .615 .956 1
 			visible				0 
 			// appearance_slot		4
-			descText			"Mark a position to teleport back to."
+			descText			"Teleport to a teleport mark."
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3528,8 +3561,8 @@
 		{
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
-			text				"Teleport:"
-			cvar				"amTele"
+			text				"Noclip:"
+			cvar				"noclip"
 			rect				220 201 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
@@ -3539,7 +3572,7 @@
 			forecolor			.615 .615 .956 1
 			visible				0 
 			// appearance_slot		4
-			descText			"Teleport to a teleport mark."
+			descText			"Freely fly around the map in race mode. Use left-click and right-click to move faster."
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3559,10 +3592,11 @@
 		
 		itemDef 
 		{
+			name				none
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
-			text				"Noclip:"
-			cvar				"noclip"
+			text				"LowJump:"
+			cvar				"lowjump"
 			rect				220 221 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
@@ -3572,7 +3606,7 @@
 			forecolor			.615 .615 .956 1
 			visible				0 
 			// appearance_slot		4
-			descText			"Freely fly around the map in race mode. Use left-click and right-click to move faster."
+			descText			"Jump low like snipe!"
 			action
 			{
 				play			"sound/interface/button1.wav" ; 
@@ -3592,6 +3626,7 @@
 		
 		itemDef 
 		{
+			name				none
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
 			text				"FlipKick:"
@@ -3627,9 +3662,41 @@
 		{
 			group				japrocontrols
 			type				ITEM_TYPE_BIND
+			text				"Suicide:"
+			cvar				"kill"
+			rect				220 261 300 20
+			textalign			ITEM_ALIGN_RIGHT
+			textalignx			151 
+			textaligny			0
+			font				4
+			textscale			1
+			forecolor			.615 .615 .956 1
+			visible				0 
+			descText			"WHAT?/? KILL YOURSELF"
+			action
+			{
+				play			"sound/interface/button1.wav" ; 
+			}
+
+			mouseenter 
+			{
+				show			highlight12
+				show			keybindstatus
+			}
+			mouseexit 
+			{ 
+				hide			highlight12
+				hide			keybindstatus
+			}
+		}
+		
+		itemDef 
+		{
+			group				japrocontrols
+			type				ITEM_TYPE_BIND
 			text				"Spot:"
 			cvar				"spot"
-			rect				220 261 300 20
+			rect				220 281 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			151 
 			textaligny			0
@@ -3645,12 +3712,12 @@
 
 			mouseenter 
 			{
-				show			highlight12
+				show			highlight13
 				show			keybindstatus
 			}
 			mouseexit 
 			{ 
-				hide			highlight12
+				hide			highlight13
 				hide			keybindstatus
 			}
 		}

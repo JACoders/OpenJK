@@ -395,12 +395,32 @@
 				uiScript		closeingame 
 			}
 		}
+
+		itemDef 
+		{
+			text				JKASP
+			type				1
+			rect				102 64 50 20  
+			textalign			ITEM_ALIGN_CENTER
+			textalignx			25
+			textaligny			1     
+			font				4
+			textscale			1
+			forecolor			1 .682 0 1
+			visible				1 
+			action 
+			{ 
+				play			"sound/interface/button1.wav" ;
+				exec			"cmd move sp" ; 
+				uiScript		closeingame 
+			}
+		}
 		
 		itemDef 
 		{
 			text				"RACE!"
 			type				1	
-			rect				121 64 62 20  
+			rect				161 64 62 20  
 			textalign			ITEM_ALIGN_CENTER
 			textalignx			31
 			textaligny			-4
