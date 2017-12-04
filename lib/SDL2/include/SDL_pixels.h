@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,10 +25,11 @@
  *  Header for the enumerated pixel format definitions.
  */
 
-#ifndef _SDL_pixels_h
-#define _SDL_pixels_h
+#ifndef SDL_pixels_h_
+#define SDL_pixels_h_
 
 #include "SDL_stdinc.h"
+#include "SDL_endian.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -260,6 +261,19 @@ enum
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB,
                                SDL_PACKEDLAYOUT_2101010, 32, 4),
 
+    /* Aliases for RGBA byte arrays of color data, for the current platform */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_RGBA8888,
+    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_BGRA8888,
+    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_ABGR8888,
+#else
+    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_BGRA8888,
+    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_RGBA8888,
+#endif
+
     SDL_PIXELFORMAT_YV12 =      /**< Planar mode: Y + V + U  (3 planes) */
         SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'),
     SDL_PIXELFORMAT_IYUV =      /**< Planar mode: Y + U + V  (3 planes) */
@@ -449,6 +463,6 @@ extern DECLSPEC void SDLCALL SDL_CalculateGammaRamp(float gamma, Uint16 * ramp);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_pixels_h */
+#endif /* SDL_pixels_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
