@@ -1264,6 +1264,7 @@ typedef struct cgMedia_s {
 	qhandle_t	enlightenmentShader;
 	qhandle_t	invulnerabilityShader;
 
+#define JK2AWARDS
 #ifdef JK2AWARDS
 	// medals shown during gameplay
 	qhandle_t	medalImpressive;
@@ -1304,11 +1305,15 @@ typedef struct cgMedia_s {
 	sfxHandle_t oneFragSound;
 
 #ifdef JK2AWARDS
+	sfxHandle_t firstImpressiveSound;
 	sfxHandle_t impressiveSound;
+	sfxHandle_t firstExcellentSound;
 	sfxHandle_t excellentSound;
-	sfxHandle_t deniedSound;
+	sfxHandle_t firstHumiliationSound;
 	sfxHandle_t humiliationSound;
+	sfxHandle_t deniedSound;
 	sfxHandle_t defendSound;
+	sfxHandle_t assistSound;
 #endif
 
 	/*
@@ -1620,7 +1625,19 @@ typedef struct cgs_s {
 	int				redflag, blueflag;		// flag status from configstrings
 	int				flagStatus;
 
+//[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - Start]
+	int			cinfo;
+	int			jcinfo;
+	int			restricts;//make this a short?
+	qboolean	isJAPro;
+	qboolean	isJAPlus;
+	int			svfps;
+	qboolean	takenscreenshot;
+	int			hookpull;
+//[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - End]
+
 	qboolean  newHud;
+	float widthRatioCoef;
 
 	//
 	// locally derived information from gamestate

@@ -1455,7 +1455,8 @@ Create a new usercmd_t structure for this frame
 */
 void CL_CreateNewCommands( void ) {
 	int			cmdNum;
-	const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);
+
+	const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);//Loda - FPS UNLOCK ENGINE
 
 	// no need to create usercmds until we have a gamestate
 	if ( cls.state < CA_PRIMED )

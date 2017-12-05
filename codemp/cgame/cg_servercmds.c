@@ -182,6 +182,36 @@ void CG_ParseServerinfo( void ) {
 	cgs.timelimit = i;
 
 	cgs.maxclients = Com_Clampi( 0, MAX_CLIENTS, atoi( Info_ValueForKey( info, "sv_maxclients" ) ) );
+
+	cgs.svfps = atoi( Info_ValueForKey( info, "sv_fps" ) );
+	cgs.isJAPlus = qfalse;
+	cgs.isJAPro = qfalse;
+	cgs.cinfo = 0;
+	cgs.jcinfo = 0;
+	cgs.restricts = 0;
+	if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "JA+ Mod", 7) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "^4U^3A^5Galaxy", 14 ) || !Q_stricmpn(Info_ValueForKey(info, "gamename"), "AbyssMod", 8)) {	//uag :s - yes its fatz
+		cgs.isJAPlus = qtrue;
+		cgs.cinfo = atoi (Info_ValueForKey (info, "jp_cinfo" ));//[JAPRO - Clientside - All - Add jp_cinfo variable to get cinfo from japlus servers]
+		trap->Cvar_Set("ui_isJAPro", "0");
+	} 
+	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
+		cgs.isJAPro = qtrue;
+		cgs.jcinfo = atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+		trap_Cvar_Set("ui_isJAPro", "1");
+
+		cgs.hookpull = atoi (Info_ValueForKey (info, "g_hookStrength" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+		if (cgs.hookpull == 0)
+			cgs.hookpull = 800;
+
+		//
+
+	}
+
+	if (!cgs.isJAPro && !cgs.isJAPlus) //gay hack for base
+		trap->Cvar_Set("ui_isJAPro", "0");
+
+	cgs.restricts = atoi (Info_ValueForKey (info, "restricts" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
+
 	mapname = Info_ValueForKey( info, "mapname" );
 
 	//rww - You must do this one here, Info_ValueForKey always uses the same memory pointer.
