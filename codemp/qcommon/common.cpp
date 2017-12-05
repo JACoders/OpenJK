@@ -69,6 +69,8 @@ cvar_t	*com_ansiColor = NULL;
 #endif
 cvar_t	*com_busyWait;
 
+cvar_t	*cl_commandsize;
+
 cvar_t *com_affinity;
 
 // com_speeds times
@@ -1238,6 +1240,8 @@ void Com_Init( char *commandLine ) {
 
 		com_affinity = Cvar_Get( "com_affinity", "0", CVAR_ARCHIVE_ND );
 		com_busyWait = Cvar_Get( "com_busyWait", "0", CVAR_ARCHIVE_ND );
+
+		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);
 
 		com_bootlogo = Cvar_Get( "com_bootlogo", "0", CVAR_ARCHIVE_ND, "Show intro movies" );
 

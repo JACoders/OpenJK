@@ -1399,6 +1399,7 @@ Create a new usercmd_t structure for this frame
 */
 void CL_CreateNewCommands( void ) {
 	int			cmdNum;
+	const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);
 
 	// no need to create usercmds until we have a gamestate
 	if ( cls.state < CA_PRIMED )
@@ -1420,7 +1421,7 @@ void CL_CreateNewCommands( void ) {
 
 	// generate a command for this frame
 	cl.cmdNumber++;
-	cmdNum = cl.cmdNumber & CMD_MASK;
+	cmdNum = cl.cmdNumber & REAL_CMD_MASK;
 	cl.cmds[cmdNum] = CL_CreateCmd();
 }
 
@@ -1562,6 +1563,8 @@ void CL_WritePacket( void ) {
 		Com_Printf("MAX_PACKET_USERCMDS\n");
 	}
 	if ( count >= 1 ) {
+		const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);
+
 		if ( cl_showSend->integer ) {
 			Com_Printf( "(%i)", count );
 		}
@@ -1587,7 +1590,7 @@ void CL_WritePacket( void ) {
 
 		// write all the commands, including the predicted command
 		for ( i = 0 ; i < count ; i++ ) {
-			j = (cl.cmdNumber - count + i + 1) & CMD_MASK;
+			j = (cl.cmdNumber - count + i + 1) & REAL_CMD_MASK;
 			cmd = &cl.cmds[j];
 			MSG_WriteDeltaUsercmdKey (&buf, key, oldcmd, cmd);
 			oldcmd = cmd;
