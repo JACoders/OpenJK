@@ -58,7 +58,6 @@ cvar_t	*com_G2Report;
 #endif
 
 cvar_t *com_renderfps;
-cvar_t	*cl_commandsize;//Loda - FPS UNLOCK ENGINE
 
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
