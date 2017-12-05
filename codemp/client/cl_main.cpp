@@ -2208,10 +2208,9 @@ void CL_Frame ( int msec ) {
 		return;
 	}
 
-	if ((com_renderfps->integer <= 0) || ((cls.realtime >= cls.lastDrawTime + (1000 / com_renderfps->integer)))) {
+	if ( (com_renderfps->integer <= 0) || ((cls.realtime >= cls.lastDrawTime + (1000 / com_renderfps->integer))) ) {
 		render = qtrue;
-		cls.lastDrawTime = cls.realtime;
-		
+		cls.lastDrawTime = cls.realtime;	
 	}
 
 	SE_CheckForLanguageUpdates();	// will take zero time to execute unless language changes, then will reload strings.

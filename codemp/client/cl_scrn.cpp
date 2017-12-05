@@ -378,10 +378,11 @@ int	SCR_GetBigStringWidth( const char *str ) {
 SCR_DrawDemoRecording
 =================
 */
+
 void SCR_DrawDemoRecording( void ) {
 	const float	ratio = cls.ratioFix;
 	char	string[1024];
-	int		pos;
+	int		pos, xpos, ypos;
 
 	if (com_renderfps->integer > 0) //Draw render FPS - Sad hack sortof
 	{
@@ -400,10 +401,28 @@ void SCR_DrawDemoRecording( void ) {
 		return;
 	}
 	pos = FS_FTell( clc.demofile );
-	Com_sprintf( string, sizeof(string), "RECORDING %s: %ik", clc.demoName, pos / 1024 );
 
-	SCR_DrawStringExt2(SCREEN_WIDTH / 2.0f - strlen(string)*(8.0f / 2.0f)*ratio, 20.0f, 8.0f*ratio, 8.0f, string, g_color_table[7], qtrue, qfalse);
+	if (cl_drawRecording->integer == 1)
+		Com_sprintf( string, sizeof(string), "RECORDING %s: %ik", clc.demoName, pos / 1024 );
+	else if (cl_drawRecording->integer == 2)
+		Com_sprintf( string, sizeof(string), "%s: %ik", clc.demoName, pos / 1024 );
+	else if (cl_drawRecording->integer == 3)
+		Com_sprintf( string, sizeof(string), "%s", clc.demoName );
+	else if (cl_drawRecording->integer > 3)
+		Com_sprintf( string, sizeof(string), "REC" );
+
+	if (cl_drawRecording->integer > 4) {
+		xpos = 5;
+		ypos = 36;
+	}
+	else {
+		xpos = SCREEN_WIDTH / 2.0f - strlen(string)*(8.0f / 2.0f)*ratio;
+		ypos = 20.0f;
+	}
+
+	SCR_DrawStringExt2(xpos, ypos, 8.0f*ratio, 8.0f, string, g_color_table[7], qtrue, qfalse);
 }
+
 
 
 /*
