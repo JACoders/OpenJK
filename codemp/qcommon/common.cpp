@@ -54,6 +54,7 @@ cvar_t  *com_homepath;
 
 cvar_t	*com_RMG;
 
+cvar_t	*cl_commandsize;//Loda - FPS UNLOCK ENGINE
 #ifdef _DEBUG
 cvar_t	*vm_legacy;
 #endif
@@ -1300,6 +1301,7 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM);
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
+		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);//Loda - FPS UNLOCK ENGINE
 #ifdef G2_PERFORMANCE_ANALYSIS
 		com_G2Report = Cvar_Get("com_G2Report", "0", 0);
 #endif

@@ -45,6 +45,8 @@ CL_GetUserCmd
 qboolean CL_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
 	// cmds[cmdNumber] is the last properly generated command
 
+	const int REAL_CMD_MASK = (cl_commandsize->integer >= 4 && cl_commandsize->integer <= 512) ? (cl_commandsize->integer - 1) : (CMD_MASK);//Loda - FPS UNLOCK ENGINE
+
 	// can't return anything that we haven't created yet
 	if ( cmdNumber > cl.cmdNumber ) {
 		Com_Error( ERR_DROP, "CL_GetUserCmd: %i >= %i", cmdNumber, cl.cmdNumber );
@@ -52,11 +54,11 @@ qboolean CL_GetUserCmd( int cmdNumber, usercmd_t *ucmd ) {
 
 	// the usercmd has been overwritten in the wrapping
 	// buffer because it is too far out of date
-	if ( cmdNumber <= cl.cmdNumber - CMD_BACKUP ) {
+	if ( cmdNumber <= cl.cmdNumber - (REAL_CMD_MASK +1) ) { //Originaly CMD_BACKUP, but CMD_BACKUP is just CMD_MASK+1, //Loda - FPS UNLOCK ENGINE
 		return qfalse;
 	}
 
-	*ucmd = cl.cmds[ cmdNumber & CMD_MASK ];
+	*ucmd = cl.cmds[ cmdNumber & REAL_CMD_MASK ];//Loda - FPS UNLOCK ENGINE
 
 	return qtrue;
 }

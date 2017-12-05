@@ -386,6 +386,7 @@ extern	cvar_t	*cl_test;//JAPRO ENGINE
 extern	cvar_t	*cl_testAngle;//JAPRO ENGINE
 #endif
 extern	cvar_t	*cl_idrive;//JAPRO ENGINE
+extern	cvar_t	*cl_commandsize;//JAPRO ENGINE
 
 extern	cvar_t	*cl_timedemo;
 extern	cvar_t	*cl_aviFrameRate;
