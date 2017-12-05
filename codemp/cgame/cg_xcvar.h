@@ -175,6 +175,8 @@ XCVAR_DEF( cg_jumpHeight,						"0",					NULL,					CVAR_ARCHIVE )
 XCVAR_DEF( cp_pluginDisable,					"0",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
 //XCVAR_DEF( cg_movementStyle,					"1",					NULL,					CVAR_ARCHIVE|CVAR_USERINFO )
 
+XCVAR_DEF( cl_commandsize,				"64",			CVAR_ARCHIVE ) //Loda - FPS UNLOCK client modcode
+
 //centermuzzle
 
 //Other

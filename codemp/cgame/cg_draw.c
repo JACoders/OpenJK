@@ -4141,6 +4141,7 @@ static void CG_DrawDisconnect( void ) {
 	usercmd_t	cmd;
 	const char		*s;
 	int			w;  // bk010215 - FIXME char message[1024];
+	const int REAL_CMD_BACKUP = (cl_commandsize.integer >= 4 && cl_commandsize.integer <= 512 ) ? (cl_commandsize.integer) : (CMD_BACKUP); //Loda - FPS UNLOCK
 
 	if (cg.mMapChange)
 	{			
