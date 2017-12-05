@@ -1264,6 +1264,7 @@ typedef struct cgMedia_s {
 	qhandle_t	enlightenmentShader;
 	qhandle_t	invulnerabilityShader;
 
+#define JK2AWARDS
 #ifdef JK2AWARDS
 	// medals shown during gameplay
 	qhandle_t	medalImpressive;
@@ -1304,11 +1305,15 @@ typedef struct cgMedia_s {
 	sfxHandle_t oneFragSound;
 
 #ifdef JK2AWARDS
+	sfxHandle_t firstImpressiveSound;
 	sfxHandle_t impressiveSound;
+	sfxHandle_t firstExcellentSound;
 	sfxHandle_t excellentSound;
-	sfxHandle_t deniedSound;
+	sfxHandle_t firstHumiliationSound;
 	sfxHandle_t humiliationSound;
+	sfxHandle_t deniedSound;
 	sfxHandle_t defendSound;
+	sfxHandle_t assistSound;
 #endif
 
 	/*

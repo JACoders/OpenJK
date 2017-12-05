@@ -57,6 +57,9 @@ cvar_t	*com_optvehtrace;
 cvar_t	*com_G2Report;
 #endif
 
+cvar_t *com_renderfps;
+cvar_t	*cl_commandsize;//Loda - FPS UNLOCK ENGINE
+
 cvar_t	*com_version;
 cvar_t	*com_buildScript;	// for automated data building scripts
 cvar_t	*com_bootlogo;
@@ -1230,6 +1233,9 @@ void Com_Init( char *commandLine ) {
 		com_sv_running = Cvar_Get ("sv_running", "0", CVAR_ROM, "Is a server running?" );
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM, "Is the client running?" );
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
+
+		com_renderfps = Cvar_Get("com_renderfps", "0", CVAR_ARCHIVE);
+		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);//Loda - FPS UNLOCK ENGINE
 #ifndef _WIN32
 		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE_ND );
 #endif
