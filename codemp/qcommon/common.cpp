@@ -1233,8 +1233,8 @@ void Com_Init( char *commandLine ) {
 		com_cl_running = Cvar_Get ("cl_running", "0", CVAR_ROM, "Is the client running?" );
 		com_buildScript = Cvar_Get( "com_buildScript", "0", 0 );
 
-		com_renderfps = Cvar_Get("com_renderfps", "0", CVAR_ARCHIVE);
-		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE);//Loda - FPS UNLOCK ENGINE
+		com_renderfps = Cvar_Get("com_renderfps", "0", CVAR_ARCHIVE_ND);
+		cl_commandsize = Cvar_Get("cl_commandsize", "64", CVAR_ARCHIVE_ND);//Loda - FPS UNLOCK ENGINE
 #ifndef _WIN32
 		com_ansiColor = Cvar_Get( "com_ansiColor", "0", CVAR_ARCHIVE_ND );
 #endif
