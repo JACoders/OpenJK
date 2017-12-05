@@ -286,6 +286,8 @@ typedef struct clientStatic_s {
 	int			realtime;			// ignores pause
 	int			realFrametime;		// ignoring pause, so console always works
 
+	int			lastDrawTime;//Loda - com_renderfps
+
 	int			numlocalservers;
 	serverInfo_t	localServers[MAX_OTHER_SERVERS];
 
