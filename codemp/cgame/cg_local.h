@@ -1620,7 +1620,19 @@ typedef struct cgs_s {
 	int				redflag, blueflag;		// flag status from configstrings
 	int				flagStatus;
 
+//[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - Start]
+	int			cinfo;
+	int			jcinfo;
+	int			restricts;//make this a short?
+	qboolean	isJAPro;
+	qboolean	isJAPlus;
+	int			svfps;
+	qboolean	takenscreenshot;
+	int			hookpull;
+//[JAPRO - Clientside - All - Add cinfo variables to get cinfo from server japlus and japro servers - End]
+
 	qboolean  newHud;
+	float widthRatioCoef;
 
 	//
 	// locally derived information from gamestate

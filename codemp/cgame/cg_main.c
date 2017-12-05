@@ -383,6 +383,13 @@ int CG_CrosshairPlayer( void ) {
 	return cg.crosshairClientNum;
 }
 
+static void CG_Set2DRatio(void) {
+	if (cl_ratioFix.integer)
+		cgs.widthRatioCoef = (float)(SCREEN_WIDTH * cgs.glconfig.vidHeight) / (float)(SCREEN_HEIGHT * cgs.glconfig.vidWidth);
+	else
+		cgs.widthRatioCoef = 1.0f;
+}
+
 int CG_LastAttacker( void ) {
 	if ( !cg.attackerTime )
 		return -1;
