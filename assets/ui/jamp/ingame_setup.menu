@@ -4155,12 +4155,15 @@
 			group				options
       		type				ITEM_TYPE_MULTI
 			text				"Demo Recording Message:"
-			desctext			"Toggle to show message when recording demos."
+			desctext			"Toggle to show RECORDING message when recording demos."
 			cvar				"cl_drawRecording"
 			cvarFloatList		
 			{ 
-				@MENUS_OFF 			0  
-				@MENUS_ON	 		1
+				@MENUS_OFF 								0  
+				@MENUS_ON	 							4
+				"Show demo name only."					3
+				"Show demo name & size."				2
+				"Original message. (default)"			1
 			}
 			rect				220 243 300 20
 	   		textalign			ITEM_ALIGN_RIGHT
