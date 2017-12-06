@@ -5353,7 +5353,12 @@ blockStuff:
 			}
 		}
 
-		self->client->ps.saberAttackWound = level.time + g_saberDmgDelay_Wound.integer;
+		self->client->ps.saberAttackWound = level.time + g_saberDmgDelay_Wound.integer; //The only time this gets set is during saberclash, which seems unintended since its called wound..
+	}
+
+	if (didHit) {
+		self->client->ps.saberAttackWound = level.time + g_saberDmgDelay_Wound.integer; //Also make it set on actual wound, default value is 0 so this won't affect anything in that case
+		//saberAttackWound should be an array for each clientNum to make specific to the person who you damaged
 	}
 
 	return didHit;
