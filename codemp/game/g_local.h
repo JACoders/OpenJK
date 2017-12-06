@@ -1170,6 +1170,7 @@ struct gclient_s {
 	qboolean	iAmALoser;
 
 	int			lastKickTime;	//JAPRO - Serverside - Add this to floodprotect sidekick
+	int			saberHitWound[MAX_CLIENTS];//japro
 	qboolean	didGlitchKick;
 	int			lastTargetLaserTime;
 	int			lastThrowTime;  //JAPRO - Serverside - Add thsi to floodprotect flagthrow?
