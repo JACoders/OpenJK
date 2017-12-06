@@ -4660,6 +4660,13 @@ static QINLINE qboolean CheckSaberDamage(gentity_t *self, int rSaberNum, int rBl
 //[JAPRO - Serverside - Saber - Tweak groundstab requirements - End]
 		self->client->ps.saberIdleWound = level.time + g_saberDmgDelay_Idle.integer;
 
+		//Might as well make this a new cvar to avoid any possible conflicts, also able to make it an array much easier.
+		if (self->client && g_entities[tr.entityNum].client && tr.entityNum < MAX_CLIENTS && g_saberDmgDelay_Hit.integer) {
+			if (self->client->saberHitWound[tr.entityNum] > level.time)
+				return qfalse;
+			self->client->saberHitWound[tr.entityNum] = level.time + g_saberDmgDelay_Hit.integer;
+		}
+
 		didHit = qtrue;
 
 		if ( !SaberSPStyle(self)//let's trying making blocks have to be blocked by a saber

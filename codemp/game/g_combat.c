@@ -4864,10 +4864,6 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
-	if (attacker->client && mod == WP_SABER) { //japro fix saberhit debounce
-		if (attacker->client->ps.saberAttackWound > level.time)
-			return;
-		attacker->client->ps.saberAttackWound = level.time + g_saberDmgDelay_Wound.integer;
 	}
 
 	//JAPRO - check for same frame dmg fix here?
