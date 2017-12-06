@@ -3291,7 +3291,7 @@ static void CL_SetServerInfo(serverInfo_t *server, const char *info, int ping) {
 	if (server) {
 		if (info) {
 			char * filteredHostName = Info_ValueForKey(info, "hostname");
-			if (Q_stricmp(filteredHostName, "")) { Q_strstrip(filteredHostName, "��", NULL); }
+			if (Q_stricmp(filteredHostName, "")) { Q_strstrip(filteredHostName, "¬", NULL); }
 			//server->clients = atoi(Info_ValueForKey(info, "clients"));
 			Q_strncpyz(server->hostName, filteredHostName, MAX_NAME_LENGTH);
 			Q_strncpyz(server->mapName, Info_ValueForKey(info, "mapname"), MAX_NAME_LENGTH);
