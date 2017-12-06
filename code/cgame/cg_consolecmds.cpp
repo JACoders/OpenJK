@@ -27,6 +27,7 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_headers.h"
 
 #include "cg_media.h"	//just for cgs....
+#include "ui/ui_shared.h"
 
 void CG_TargetCommand_f( void );
 extern qboolean	player_locked;
@@ -196,17 +197,15 @@ void CG_ToggleLAGoggles( void )
 	}
 }
 
-void CG_LoadHud_f( void )
-{
-	const char *hudSet;
-
-	hudSet = cg_hudFiles.string;
-	if (hudSet[0] == '\0')
-	{
+void CG_LoadHud_f( void ) {
+	const char *hudSet = cg_hudFiles.string;
+	if ( hudSet[0] == '\0' ) {
 		hudSet = "ui/jahud.txt";
 	}
 
-	CG_LoadMenus(hudSet);
+	String_Init();
+	Menu_Reset();
+	CG_LoadMenus( hudSet );
 }
 
 typedef struct {
