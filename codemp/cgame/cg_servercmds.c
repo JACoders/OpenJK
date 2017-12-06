@@ -197,7 +197,7 @@ void CG_ParseServerinfo( void ) {
 	else if (!Q_stricmpn(Info_ValueForKey(info, "gamename"), "japro", 5)) {
 		cgs.isJAPro = qtrue;
 		cgs.jcinfo = atoi (Info_ValueForKey (info, "jcinfo" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
-		trap_Cvar_Set("ui_isJAPro", "1");
+		trap->Cvar_Set("ui_isJAPro", "1");
 
 		cgs.hookpull = atoi (Info_ValueForKey (info, "g_hookStrength" ));//[JAPRO - Clientside - All - Add gamename variable to get jcinfo from japro servers]
 		if (cgs.hookpull == 0)
