@@ -4864,6 +4864,12 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 		}
 	}
 
+	if (attacker->client && mod == WP_SABER) { //japro fix saberhit debounce
+		if (attacker->client->ps.saberAttackWound > level.time)
+			return;
+		attacker->client->ps.saberAttackWound = level.time + g_saberDmgDelay_Wound.integer;
+	}
+
 	//JAPRO - check for same frame dmg fix here?
 	//Melee, or saber, or hitscan.  If attackers health is below 0, and attackers attacker is our target.. (:S), and attackers health is lower than targets, forget the dmg.
 	//just ignore who the attackers attacker was i guess. dont think ive ever seen a same-frame kill involving 3 people
