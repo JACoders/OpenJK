@@ -27,7 +27,6 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 #include "cg_headers.h"
 
 #include "cg_media.h"	//just for cgs....
-#include "ui/ui_shared.h"
 
 void CG_TargetCommand_f( void );
 extern qboolean	player_locked;
@@ -203,8 +202,8 @@ void CG_LoadHud_f( void ) {
 		hudSet = "ui/jahud.txt";
 	}
 
-	String_Init();
-	Menu_Reset();
+	//cgi_UI_String_Init();
+	//cgi_UI_Menu_Reset();
 	CG_LoadMenus( hudSet );
 }
 
