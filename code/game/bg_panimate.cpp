@@ -4373,12 +4373,12 @@ PM_AnimLength
 -------------------------
 */
 
-int PM_AnimLength( int index, animNumber_t anim )
-{
-	if ( ValidAnimFileIndex( index ) == false )
+int PM_AnimLength( int index, animNumber_t anim ) {
+	if ( !ValidAnimFileIndex( index ) || (int)anim < 0 || anim >= MAX_ANIMATIONS ) {
 		return 0;
+	}
 
-	return level.knownAnimFileSets[index].animations[anim].numFrames * abs(level.knownAnimFileSets[index].animations[anim].frameLerp);
+	return level.knownAnimFileSets[index].animations[anim].numFrames * abs( level.knownAnimFileSets[index].animations[anim].frameLerp );
 }
 
 /*
