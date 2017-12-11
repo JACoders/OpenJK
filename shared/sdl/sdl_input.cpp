@@ -34,6 +34,7 @@ static qboolean mouseActive = qfalse;
 
 static cvar_t *in_mouse             = NULL;
 static cvar_t *in_nograb;
+static cvar_t *in_mouserepeat		= NULL;
 
 cvar_t *in_joystick          		= NULL;
 static cvar_t *in_joystickThreshold = NULL;
@@ -611,6 +612,7 @@ void IN_Init( void *windowData )
 	// mouse variables
 	in_mouse = Cvar_Get( "in_mouse", "1", CVAR_ARCHIVE );
 	in_nograb = Cvar_Get( "in_nograb", "0", CVAR_ARCHIVE_ND );
+	in_mouserepeat = Cvar_Get("in_mouserepeat", "0", CVAR_ARCHIVE_ND);
 
 	SDL_StartTextInput( );
 
@@ -934,6 +936,15 @@ static void IN_ProcessEvents( void )
 				break;
 		}
 	}
+
+
+	if (in_mouserepeat->integer) {
+		if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_X1))
+			Sys_QueEvent(0, SE_KEY, A_MOUSE4, qtrue, 0, NULL);
+		if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_X2))
+			Sys_QueEvent(0, SE_KEY, A_MOUSE5, qtrue, 0, NULL);
+	}
+
 }
 
 /*
