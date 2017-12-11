@@ -2512,9 +2512,10 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 		float dist;
 		vec3_t angles;
 
-		if ( !other->inuse || other->client->pers.connected != CON_CONNECTED ) {
+		if (!other->inuse || other->client->pers.connected != CON_CONNECTED) {
 			// no need to compute visibility for non-connected clients
 			continue;
+		}
 
 		if ( other == self ) {
 			// we are always sent to ourselves anyway, this is purely an optimisation
@@ -2549,6 +2550,18 @@ void G_UpdateClientBroadcasts( gentity_t *self ) {
 	}
 
 	trap->LinkEntity( (sharedEntity_t *)self );
+}
+#else
+void G_UpdateClientBroadcasts(gentity_t *self)
+{
+	// Clear all the broadcast bits for this client
+	memset(self->r.broadcastClients, 0, sizeof(self->r.broadcastClients));
+
+	// The jedi master is broadcast to everyone in range
+	G_UpdateJediMasterBroadcasts(self);
+
+	// Anyone with force sight on should see this client
+	G_UpdateForceSightBroadcasts(self);
 }
 #endif
 

@@ -2214,7 +2214,9 @@ static qboolean PM_CheckJump( void )
 #ifdef _GAME
 							if ((g_onlyBhop.integer == 1) || ((g_onlyBhop.integer > 1) && client->pers.onlyBhop) || client->ps.stats[STAT_ONLYBHOP])
 #else
-							if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && cg_onlyBhop.integer) || pm->ps->stats[STAT_ONLYBHOP]))
+							//eternal todo: cgame
+							//if (cgs.isJAPro && ((cgs.jcinfo & JAPRO_CINFO_BHOP1) || ((cgs.jcinfo & JAPRO_CINFO_BHOP2) && cg_onlyBhop.integer) || pm->ps->stats[STAT_ONLYBHOP]))
+							if (cgs.isJAPro)
 #endif
 							{
 								pm->cmd.upmove = 0;
@@ -4104,7 +4106,7 @@ static void PM_GrappleMove( void ) {
 #if _GAME
 	int pullSpeed = g_hookStrength.integer;
 #else
-	int pullspeed = 800;
+	int pullSpeed = 800;
 #endif
 
 	VectorScale(pml.forward, -16, v);
@@ -4506,7 +4508,9 @@ static int PM_TryRoll( void )
 
 		if (client && client->pers.noRoll)
 #else
-		if (cgs.isJAPro && cg_noRoll.integer)
+		//eternal todo: cgame
+		//if (cgs.isJAPro && cg_noRoll.integer)
+		if (cgs.isJAPro)
 #endif
 		{
 			return 0;
@@ -5579,7 +5583,11 @@ static void PM_CheckDuck (void)
 				pm->ps->pm_flags &= ~PMF_ROLLING;
 			}
 		}
+#ifdef _GAME
 		else if ((pm->ps->pm_flags & PMF_ROLLING) && dmflags.integer & DF_NO_CROUCHFIX)
+#else
+		else if ((pm->ps->pm_flags & PMF_ROLLING) && cgs.dmflags & DF_NO_CROUCHFIX)
+#endif
 		{
 			trace_t	trace;
 			// try to stand up
@@ -5603,7 +5611,11 @@ static void PM_CheckDuck (void)
 					pm->maxs[2] = pm->ps->standheight;
 					pm->ps->pm_flags &= ~PMF_DUCKED;
 				}
+#ifdef _GAME
 				else if ((pm->ps->pm_flags & PMF_DUCKED) && dmflags.integer & DF_NO_CROUCHFIX)
+#else
+				else if ((pm->ps->pm_flags & PMF_DUCKED) && cgs.dmflags & DF_NO_CROUCHFIX)
+#endif
 				{
 					trace_t	trace;
 					// try to stand up
@@ -6629,7 +6641,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6644,7 +6658,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6659,7 +6675,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6674,7 +6692,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6689,7 +6709,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6702,7 +6724,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6734,7 +6758,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6747,7 +6773,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6762,7 +6790,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6775,7 +6805,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6791,7 +6823,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6804,7 +6838,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6817,7 +6853,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6832,7 +6870,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif
@@ -6845,7 +6885,9 @@ static void PM_Footsteps( void ) {
 							desiredAnim = BOTH_RUN4;
 						else
 #else
-						if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						//eternal todo: cgame
+						//if (cgs.isJAPro && (!(cgs.jcinfo & JAPRO_CINFO_NOJAWARUN)) && cg_newRunAnim.integer)
+						if (cgs.isJAPro)
 							desiredAnim = BOTH_RUN4;
 						else
 #endif

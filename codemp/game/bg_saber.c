@@ -2408,9 +2408,9 @@ saberMoveName_t PM_SaberAttackForMovement(saberMoveName_t curmove)
 			}
 		}
 #else
-		if (cgs.isJAPro && cg_noCartwheel.integer) {
+		/*if (cgs.isJAPro && cg_noCartwheel.integer) {
 			allowCartwheels = qfalse;
-		}
+		}*/ //eternal todo: cgame
 #endif
 	}
 

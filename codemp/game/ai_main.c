@@ -6814,7 +6814,7 @@ void NewBotAI_GetGroundDodge(bot_state_t *bs) {
 		trap->EA_MoveLeft(bs->client);
 
 	if (level.time % 1500 > 750) {
-		if (random() > 0.5)
+		if (Q_flrand(0.0f, 1.0f) > 0.5)
 			bs->forceMove_Right = 1;
 		else
 			bs->forceMove_Right = -1;
@@ -6886,7 +6886,7 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 		else { //Chaingun, dodge.  Every half second, pick between A or D at random.
 			trap->EA_MoveForward(bs->client);
 			NewBotAI_GetGroundDodge(bs);
-			if (random() < 0.01) {
+			if (Q_flrand(0.0f, 1.0f) < 0.01) {
 				trap->EA_MoveForward(bs->client);
 				trap->EA_Jump(bs->client);
 			}
@@ -7012,7 +7012,7 @@ void NewBotAI_GetMovement(bot_state_t *bs)
 		*/
 
 
-		else if (random() < 0.01 && (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1)) {
+		else if (Q_flrand(0.0f, 1.0f) < 0.01 && (bs->cur_ps.groundEntityNum == ENTITYNUM_NONE - 1)) {
 			//trap->EA_MoveRight(bs->client);
 			//NewBotAI_Flipkick(bs);
 		}
@@ -7290,7 +7290,7 @@ void NewBotAI_GetDSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
+	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && Q_flrand(0.0f, 1.0f) > 0.5)
 		useTheForce = qfalse; //Sad hack not sure why?
 
 	if (useTheForce && (level.framenum % 2))
@@ -7408,7 +7408,7 @@ void NewBotAI_GetLSForcepower(bot_state_t *bs)
 		}
 	}
 
-	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && random() > 0.5)
+	if (!bs->cur_ps.weaponstate == WEAPON_CHARGING_ALT && (level.clients[bs->client].ps.fd.forcePowerSelected == FP_PULL) && Q_flrand(0.0f, 1.0f) > 0.5)
 		useTheForce = qfalse;
 
 	if (useTheForce) {
@@ -7640,7 +7640,7 @@ void NewBotAI_NF(bot_state_t *bs)
 		
 
 		//if (swing)
-			//bs->ideal_viewangles[PITCH] += (crandom() * 12);
+			//bs->ideal_viewangles[PITCH] += (Q_flrand(-1.0f, 1.0f) * 12);
 	}
 #endif
 

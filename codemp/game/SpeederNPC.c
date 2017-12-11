@@ -22,6 +22,8 @@ along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 #ifdef _GAME //including game headers on cgame is FORBIDDEN ^_^
 	#include "g_local.h"
+#elif _CGAME
+	#include "cgame/cg_local.h"
 #endif
 
 #include "bg_public.h"

@@ -1523,8 +1523,6 @@ int svcmdcmp( const void *a, const void *b ) {
 	return Q_stricmp( (const char *)a, ((svcmd_t*)b)->name );
 }
 
-void G_CheckFields( void );
-void G_CheckSpawns( void );
 void Svcmd_ChangePass_f( void );
 void Svcmd_Register_f( void );
 void Svcmd_AccountInfo_f( void );
@@ -1567,9 +1565,6 @@ svcmd_t svcmds[] = {
 	{ "botlist",					Svcmd_BotList_f,					qfalse },
 
 	{ "changepassword",				Svcmd_ChangePass_f,					qfalse },
-
-	{ "checkfields",				G_CheckFields,						qfalse },
-	{ "checkspawns",				G_CheckSpawns,						qfalse },
 
 	{ "clearIP",					Svcmd_ClearIP_f,					qfalse },
 	{ "DBInfo",						Svcmd_DBInfo_f,						qfalse },

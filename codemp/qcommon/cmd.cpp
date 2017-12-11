@@ -274,7 +274,7 @@ static void Cmd_Exec_f( void ) {
 	fileBuffer_t f;
 	char	filename[MAX_QPATH];
 
-	quiet = !Q_stricmp(Cmd_Argv(0), "silentexec");
+	quiet = !Q_stricmp(Cmd_Argv(0), "execq");
 
 	if (Cmd_Argc () != 2) {
 		Com_Printf ("exec%s <filename> : execute a script file%s\n",

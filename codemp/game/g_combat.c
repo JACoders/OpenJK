@@ -5649,7 +5649,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_
 			if (g_damageNumbers.integer == 4)
 				trap->SendServerCommand( attacker-g_entities, va( "chat \"^3%i ^7damage given to (%s^7)\"", take + asave, targ->client->pers.netname ) );
 			if (g_damageNumbers.integer == 3 || g_damageNumbers.integer == 6) {
-				vec3_t damageorigin = {targ->r.currentOrigin[0] + crandom() * 8, targ->r.currentOrigin[1] + crandom() * 8, targ->r.currentOrigin[2] + 16};
+				vec3_t damageorigin = {targ->r.currentOrigin[0] + Q_flrand(-1.0f, 1.0f) * 8, targ->r.currentOrigin[1] + Q_flrand(-1.0f, 1.0f) * 8, targ->r.currentOrigin[2] + 16};
 				ScorePlum(attacker, damageorigin, take + asave);
 			}
 		}

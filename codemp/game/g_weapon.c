@@ -2487,9 +2487,9 @@ void rocketThink( gentity_t *ent )
 		VectorSubtract(tr.endpos, ent->r.currentOrigin, dir);
 
 		if (VectorLength(dir) < 128) {//sad hack time, stop rocket from getting 'stuck' 'inside' player.
-			dir[0] += crandom() * 10;
-			dir[1] += crandom() * 10;
-			dir[2] += crandom() * 10;
+			dir[0] += Q_flrand(-1.0f, 1.0f) * 10;
+			dir[1] += Q_flrand(-1.0f, 1.0f) * 10;
+			dir[2] += Q_flrand(-1.0f, 1.0f) * 10;
 		}
 
 		VectorNormalize(dir);
