@@ -10,12 +10,12 @@
 		visible					0
 		fullscreen				0
 		outOfBoundsClick									// this closes the window if it gets a click out of the rectangle
-		rect					45 35 550 380 //45 35 550 335
+		rect					45 35 550 380
 		focusColor				1 1 1 1								// Focus color for text and items
 		style					1
 		border					1
 		descX					305
-		descY					387 //347
+		descY					387
 		descScale				1
 		descColor				1 .682 0 .8					// Focus color for text and items
 		descAlignment				ITEM_ALIGN_CENTER		
@@ -62,7 +62,7 @@
 			name				background_pic
 			group				none
 			style				WINDOW_STYLE_SHADER
-			rect				0 0 570 380 //0 0 570 335
+			rect				0 0 570 380
 			background			"gfx/menus/menu_box_ingame"
 			forecolor			1 1 1 1
 			visible				1
@@ -472,7 +472,6 @@
 				hide			hud
 				hide			sound
 				show			options
-				//hide			langapply
 				hide			network
 				hide			mods
 				hide			defaults
@@ -632,7 +631,7 @@
 			name				setup_background
 			group				none
 			style				WINDOW_STYLE_FILLED
-			rect				210 41 350 285	//210 41 350 250	
+			rect				210 41 350 285
 			backcolor			0 0 .6 .5
 			forecolor			1 1 1 1
 			border				1
@@ -1007,9 +1006,11 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
-			//cvarFloatList		{ "640 X 360" 0 "800 X 450" 1 "1024 X 576" 2 "1280 X 720" 3 "1280 X 768" 4 "1600 X 900" 5 "1920 X 1080" 6 }
 			cvarFloatList
 			{
+			/*640 X 360" 0
+			"800 X 450" 1
+			"1024 X 576" 2*/
 			"852 X 480" 3
 			"1280 X 720" 4
 			"1360 X 768" 5
@@ -1054,14 +1055,17 @@
 			group				video
       		type				ITEM_TYPE_MULTI
 			text				"Resolution:"
-			//cvarFloatList		{ "640 X 400" 0 "800 X 500" 1 "1024 X 640" 2 "1280 X 800" 3 "1440 X 900" 4 "1600 X 1000" 5 "1680 X 1050" 6 "1920 X 1200" 7 "2560 X 1600" 8 }
 			cvarFloatList
 			{
+			/*"640 X 400" 0
+			"800 X 500" 1
+			"1024 X 640" 2*/
 			"720 X 480" 0
 			"1280 X 768" 1
 			"1280 X 800" 2
 			"1440 X 900" 3
 			"1600 X 1024" 4
+			//"1600 X 1000" 5
 			"1680 X 1050" 5
 			"1920 X 1200" 6
 			"2560 X 1600" 7
@@ -1285,7 +1289,7 @@
 			textscale 			1
 			forecolor			.615 .615 .956 1
 
-			cvarFloatList		{  @MENUS_DEFAULT 0 @MENUS_16_BIT 16 @MENUS_32_BIT 32 }
+			cvarFloatList		{ @MENUS_DEFAULT 0 @MENUS_16_BIT 16 @MENUS_32_BIT 32 }
 			descText			@MENUS_CHANGE_THE_NUMBER_OF
 			cvar				"ui_r_colorbits"
 
@@ -1421,11 +1425,10 @@
 		{	
 			name				video_mode
 			group				video
-			type				ITEM_TYPE_MULTI //ITEM_TYPE_SLIDER
+			type				ITEM_TYPE_MULTI
 			text				@MENUS_ANISOTROPIC_FILTERING
 			cvarTest			r_ext_texture_filter_anisotropic_avail
 			disableCvar			{ 0 }     
-			//cvarfloat			r_ext_texture_filter_anisotropic 1 .5 16 //wtf raven!!!
 			rect				220 223 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -1457,7 +1460,7 @@
 			name				video_mode
 			group				video
 			type				ITEM_TYPE_MULTI
-			text				"Anti-aliasing:" //@MENUS_ANISOTROPIC_FILTERING
+			text				"Anti-aliasing:"
 			rect				220 243 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
@@ -1473,9 +1476,9 @@
 				" 2x" 2
 				" 4x" 4
 				" 8x" 8
-				//"16x" 16 //kinda broken on windows
+				//"16x" 16 //kinda broken w/ dynamic glow
 			}
-			descText			"Multi-sampled anti-aliasing (MSAA)" //@MENUS_TOGGLE_ADVANCED_TEXTURE
+			descText			"Multi-sampled anti-aliasing (MSAA)"
 			mouseenter			{ show highlight11 }
 			mouseexit			{ hide highlight11 }
 			action 
@@ -1617,7 +1620,7 @@
 		{
 			name				applybutton_glow
 			style				WINDOW_STYLE_SHADER
-			rect				260 335 200 18 //260 305 200 18
+			rect				260 335 200 18
 			background			"gfx/menus/menu_blendbox"
 			forecolor			1 0.5 0.5 1
 			visible			0
@@ -1798,7 +1801,7 @@
 			group				advancedvideo
 			type				ITEM_TYPE_MULTI
 			text				@MENUS_DETAILED_SHADERS
-			rect				220 163 300 20 //220 183 300 20
+			rect				220 163 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -1825,7 +1828,7 @@
 			group				advancedvideo
 			type				ITEM_TYPE_MULTI
 			text				@MENUS_COMPRESSED_TEXTURES
-			rect				220 183 300 20 //220 203 300 20
+			rect				220 183 300 20
 			textalign			ITEM_ALIGN_RIGHT
 			textalignx			165
 			textaligny			0
@@ -2613,7 +2616,7 @@
 			cvarFloatList
 			{
 				@MENUS_OFF 0
-				@MENUS_ON 2		//"Also during charging and firing a weapon." 2
+				@MENUS_ON 2
 				"While taking damage only." 1
 			}
 			rect				220 163 300 20
@@ -3129,7 +3132,7 @@
 		//
 		//	HUD
 		//
-		//----------------------------------------------------------------------------------------------\
+		//----------------------------------------------------------------------------------------------
 		itemDef 
 		{			
 			name				drawfps
@@ -3768,7 +3771,7 @@
 			name				eax_icon
 			group				sound
 			style				WINDOW_STYLE_SHADER
-			rect				220 245 128 64 //snug fit: 380 180 128 64 //297 221 128 64 original
+			rect				220 245 128 64
 			background			"gfx/menus/eax"
 			forecolor			1 1 1 1
 			visible				1
@@ -4285,110 +4288,6 @@
 			mouseenter			{ show	highlight13 }
 			mouseexit			{ hide	highlight13 } 
 		}
-		
-		/*itemDef 
-		{	
-			name				text
-			group				options
-	      		type				ITEM_TYPE_MULTI
-			text				@MENUS_TEXT
-			cvar				"se_language"
-			feeder				40
-			cvarStrList			feeder
-			rect				220 243 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor			.615 .615 .956 1
-			visible				0
-			descText			@MENUS_CHOOSE_THE_LANGUAGE_FOR
-			action 
-			{ 
-				play			"sound/interface/button1.wav"
-				show			langapply
-			}
-
-			mouseenter			{ show	highlight11 }
-			mouseexit			{ hide	highlight11 } 
-		}
-		
-		itemDef 
-		{	
-			name				voice
-			group				options
-	      	type				ITEM_TYPE_MULTI
-			text				@MENUS_VOICE
-			cvar				"s_language"
-			cvarStrList		
-			{ 
-				English  			english
-				@MENUS_LANG_FRENCH  francais
-				Deutsch   			deutsch
-				"Español" 			espanol
-			}
-			rect				220 263 300 20
-	   		textalign			ITEM_ALIGN_RIGHT
-			textalignx			165
-			textaligny			0
-			font 				4
-			textscale 			1
-			forecolor		.615 .615 .956 1
-			visible			0
-			descText			@MENUS_CHOOSE_THE_LANGUAGE_TO
-
-			action
-			{
-				play			"sound/interface/button1.wav"
-				show			langapply
-			}
-			mouseenter 
-			{ 
-				show			highlight12
-			}
-			mouseexit 
-			{ 
-				hide			highlight12
-			} 
-		}
-		
-
-		// APPLY CHANGES button
-		itemDef 
-		{
-			name				langapply
-			group				options
-			text				@MENUS_SET_LANGUAGE
-			type				ITEM_TYPE_BUTTON
-			style				WINDOW_STYLE_EMPTY
-			rect				365 283 120 32 
-			font				2
-			textscale			1        
-			textalign			ITEM_ALIGN_CENTER
-			textalignx			60
-			textaligny			0
-			descText			@MENUS_SET_LANGUAGE_INFO
-			forecolor			1 .682 0 1
-			visible				0
-			// appearance_slot		5
-
-			action 
-			{ 
-				play		"sound/interface/button1"
-				exec		"ui_load ; snd_restart"
-				hide			langapply
-			}
-			mouseEnter 
-			{ 
-				show			highlightApplyButton
-			}
-			mouseExit 
-			{ 
-				hide			highlightApplyButton
-			}	  	  
-
-		}*/
 		
 		//----------------------------------------------------------------------------------------------
 		//
